@@ -48,6 +48,7 @@ literal3 = '''
 '''
 literal4 = '''Here are fifteen quotation marks: """""""""""""""'''
 literal5 = "Here are fifteen apostrophes: '''''''''''''''"
+literal6 = ''''That,' she said, 'is still pointless.''''
 
 withApostrophe = "What if it's not?"
 withSemicolon = "const message = 'hello world';"

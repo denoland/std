@@ -41,6 +41,7 @@ Deno.test({
         literal3: "\\n\\t is 'literal'\\\n",
         literal4: 'Here are fifteen quotation marks: """""""""""""""',
         literal5: "Here are fifteen apostrophes: '''''''''''''''",
+        literal6: "'That,' she said, 'is still pointless.'",
         withApostrophe: "What if it's not?",
         withSemicolon: `const message = 'hello world';`,
         withHexNumberLiteral:
@@ -522,7 +523,7 @@ Deno.test({
       emptyArray: [],
       mixedArray1: [1, { b: 2 }],
       mixedArray2: [{ b: 2 }, 1],
-      nestedArray1: [[{ b: 1 }]],
+      nestedArray1: [[{ b: 1, date: new Date("2022-05-13") }]],
       nestedArray2: [[[{ b: 1 }]]],
       nestedArray3: [[], [{ b: 1 }]],
       deepNested: {
@@ -534,7 +535,7 @@ Deno.test({
     const expected = `emptyArray = []
 mixedArray1 = [1,{b = 2}]
 mixedArray2 = [{b = 2},1]
-nestedArray1 = [[{b = 1}]]
+nestedArray1 = [[{b = 1,date = "2022-05-13T00:00:00.000"}]]
 nestedArray2 = [[[{b = 1}]]]
 nestedArray3 = [[],[{b = 1}]]
 
@@ -760,5 +761,21 @@ Deno.test({
     const actual = stringify(src);
     const expected = 'a = [{"/" = "b"},"c"]\n';
     assertEquals(actual, expected);
+  },
+});
+
+Deno.test({
+  name: "stringify throws on invalid value",
+  fn() {
+    assertThrows(
+      () => stringify({ a: [[null]] }),
+      Error,
+      "should never reach",
+    );
+    assertThrows(
+      () => stringify({ a: [[undefined]] }),
+      Error,
+      "should never reach",
+    );
   },
 });
