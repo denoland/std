@@ -5,6 +5,11 @@
 
 import { assert } from "../assert/assert.ts";
 
+/**
+ * Represents an HTTP Cookie.
+ *
+ * @see {@link https://tools.ietf.org/html/rfc6265#section-4.1.1}
+ */
 export interface Cookie {
   /** Name of the cookie. */
   name: string;
