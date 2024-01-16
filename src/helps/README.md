@@ -39,6 +39,8 @@ The ability to call another help file is provided to each help file optionally.
 They're almost like bottled function parameter calls that have some known good
 effect, where the function always takes just a single text parameter ?
 
+Isolates have code, help have function instructions to call that code.
+
 ## Sections
 
 All sections are optional, and with nothing specified, a deprompted AI will be

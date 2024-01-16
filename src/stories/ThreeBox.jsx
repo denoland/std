@@ -16,12 +16,12 @@ import Git from './Git'
 const debug = Debug('AI:ThreeBox')
 
 const ThreeBox = ({ preload, presubmit }) => {
-  useEffect(() => {
-    const id = setInterval(() => {
-      window.scrollTo(0, document.body.scrollHeight)
-    }, 100)
-    return () => clearInterval(id)
-  }, [])
+  // useEffect(() => {
+  //   const id = setInterval(() => {
+  //     window.scrollTo(0, document.body.scrollHeight)
+  //   }, 100)
+  //   return () => clearInterval(id)
+  // }, [])
   const [isTranscribing, setIsTranscribing] = useState(false)
   const onTranscription = useCallback((isTranscribing) => {
     setIsTranscribing(isTranscribing)
@@ -34,20 +34,21 @@ const ThreeBox = ({ preload, presubmit }) => {
       sx={{
         display: 'flex',
         flexDirection: 'row',
-        height: '100%',
-        width: '100%',
+        // height: '100%',
+        // width: '100%',
+        justifyContent: 'center',
       }}
     >
       <Stack
-        direction="column"
-        alignItems="flex-start"
-        justifyContent="flex-end"
+        direction='column'
+        alignItems='flex-start'
+        justifyContent='flex-end'
         pb={3}
         pr={1}
         sx={{
           minHeight: '100%',
-          minWidth: '600px',
-          maxWidth: '600px',
+          minWidth: '800px',
+          maxWidth: '800px',
         }}
       >
         <Messages messages={messages} isTranscribing={isTranscribing} />
@@ -58,11 +59,11 @@ const ThreeBox = ({ preload, presubmit }) => {
         />
         <Git />
       </Stack>
-      <Box sx={{ flexGrow: 1, p: 1 }}>
+      {/* <Box sx={{ flexGrow: 1, p: 1 }}>
         <Paper elevation={6} sx={{ height: '100%', flexGrow: 1 }}>
           <StateBoard />
         </Paper>
-      </Box>
+      </Box> */}
     </Box>
   )
 }

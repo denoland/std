@@ -15,7 +15,6 @@ export const useArtifact = (path) => {
       return
     }
     const unsubscribe = artifact.subscribe(path, (file) => {
-      debug('artifact file', path)
       setFile(file)
     })
     return () => {
@@ -35,70 +34,41 @@ export const useArtifactJSON = (path) => {
   return JSON.parse(file)
 }
 
-export const useActions = (path) => {
-  assert(posix.isAbsolute(path), `path must be absolute: ${path}`)
+export const useActions = (isolate) => {
+  assert(!posix.isAbsolute(isolate), `path must be relative: ${isolate}`)
   const { artifact } = useContext(ArtifactContext)
   const [actions, setActions] = useState()
-  const [fileExists, setFileExists] = useState(false)
   const [error, setError] = useState()
   if (error) {
     throw error
   }
   useEffect(() => {
-    debug('useActions', path, artifact)
+    debug('useActions', isolate, artifact)
     if (!artifact) {
       return
     }
     let active = true
-    const subscriptionPromise = artifact.subscribeCommits(path, () => {
-      if (!active) {
-        return
-      }
-      debug('commit triggered', path)
-      // TODO handle the case where the file is deleted
-      setFileExists(true)
-    })
-
-    return () => {
-      debug('useActions unmount', path)
-      active = false
-      subscriptionPromise.then((unsubscribe) => unsubscribe())
-      setFileExists(false)
-    }
-  }, [artifact, path])
-
-  useEffect(() => {
-    if (!fileExists) {
-      return
-    }
-    let active = true
     artifact
-      .actions(path)
+      .actions(isolate)
       .then((actions) => {
         if (active) {
           setActions(actions)
         }
       })
-      .catch((error) => {
-        if (active) {
-          setError(error)
-        }
-      })
+      .catch(setError)
+
     return () => {
-      debug('useActions unmount', path)
       active = false
     }
-  }, [artifact, path, fileExists])
+  }, [artifact, isolate])
   return actions
 }
 
-export const usePrompt = (path = '/chat-1.io.json') => {
-  assert(posix.isAbsolute(path), `path must be absolute: ${path}`)
-  // TODO change to be a wrapper around useAction
-  const actions = useActions(path)
+export const usePrompt = () => {
+  const isolate = 'chat'
+  const actions = useActions(isolate)
   const [buffer, setBuffer] = useState([])
   const [prompt, setPrompt] = useState()
-  const { artifact } = useContext(ArtifactContext)
   const [error, setError] = useState()
   if (error) {
     throw error
@@ -113,41 +83,14 @@ export const usePrompt = (path = '/chat-1.io.json') => {
   }, [actions])
 
   useEffect(() => {
-    if (!artifact) {
-      return
-    }
-    debug('chatting up', artifact)
-    let active = true
-    artifact.chatUp().catch((error) => {
-      if (!active) {
-        return
-      }
-      setError(error)
-    })
-    return () => {
-      debug('chatting down')
-      active = false
-    }
-  }, [artifact])
-
-  useEffect(() => {
     if (!prompt || !buffer.length) {
       return
     }
     for (const { resolve, text } of buffer) {
       debug('draining prompt buffer', text)
-      prompt({ text }).then((result) => {
-        if (active) {
-          resolve(result)
-        }
-      })
+      prompt({ text }).then(resolve).catch(setError)
     }
     setBuffer([])
-    let active = true
-    return () => {
-      active = false
-      debug('draining prompt buffer unmount')
-    }
   }, [prompt, buffer])
 
   const bufferingPrompt = useCallback(

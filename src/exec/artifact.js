@@ -178,10 +178,14 @@ export default class Artifact {
     this.#trigger.commit(this.#dir, hash)
   }
   async write(path, file) {
-    debug('write', path)
     assert(posix.isAbsolute(path), `path must be absolute: ${path}`)
     const absolute = posix.normalize(this.#dir + path)
     await this.#fs.writeFile(absolute, file)
     this.#trigger.write(absolute, file)
+  }
+  async stat(path) {
+    assert(posix.isAbsolute(path), `path must be absolute: ${path}`)
+    const absolute = posix.normalize(this.#dir + path)
+    return await this.#fs.stat(absolute)
   }
 }

@@ -28,7 +28,7 @@ export default class IO {
     const io = new IO()
     io.#artifact = artifact
     const { fs, dir, cache, trigger } = opts
-    io.#opts = { fs, dir, cache, trigger, artifact }
+    io.#opts = { fs, dir, cache, trigger }
     return io
   }
   // TODO track purging that is due - immdediately after a commit, clear io.
@@ -129,7 +129,7 @@ export default class IO {
       // TODO handle the isolate changing
       // TODO isolate by branch as well as name
       debug('ensureWorker', isolate)
-      const worker = ioWorker(this.#opts)
+      const worker = ioWorker(this.#artifact)
       const api = await worker.load(isolate)
       this.#workerCache.set(isolate, { api, worker })
       // TODO LRU the cache

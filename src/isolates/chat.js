@@ -49,7 +49,7 @@ export const functions = {
       const sysprompt = curtains.instructions.join('\n').trim()
       messages.shift()
       // add in the tools that can be called
-      messages.unshift({ role: 'assistant', content: sysprompt })
+      messages.unshift({ role: 'system', content: sysprompt })
     }
     if (text) {
       messages.push({ role: 'user', content: text })

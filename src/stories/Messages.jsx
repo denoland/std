@@ -53,8 +53,8 @@ const Chat = ({ content, type }) => (
         {!content && <Progress />}
       </TimelineDot>
     </TimelineSeparator>
-    <TimelineContent className="parent">
-      <Typography variant="h6" component="span">
+    <TimelineContent className='parent'>
+      <Typography variant='h6' component='span'>
         {chatTitles[type]}
       </Typography>
       <br />
@@ -74,15 +74,15 @@ const chatIcons = {
   runner: <ToolIcon />,
 }
 
-const Dave = ({ content }) => <Chat content={content} type="user" />
+const Dave = ({ content }) => <Chat content={content} type='user' />
 Dave.propTypes = {
   content: PropTypes.string,
 }
-const Assistant = ({ content }) => <Chat content={content} type="goalie" />
+const Assistant = ({ content }) => <Chat content={content} type='goalie' />
 Assistant.propTypes = {
   content: PropTypes.string,
 }
-const Runner = ({ content }) => <Chat content={content} type="runner" />
+const Runner = ({ content }) => <Chat content={content} type='runner' />
 Runner.propTypes = {
   content: PropTypes.string,
 }
@@ -91,24 +91,24 @@ const Goal = ({ text, status, helps }) => {
   return (
     <TimelineItem>
       <TimelineSeparator>
-        <TimelineDot color="warning" sx={{ position: 'relative' }}>
+        <TimelineDot color='warning' sx={{ position: 'relative' }}>
           <GoalIcon />
           {status !== STATUS.DONE && <Progress />}
         </TimelineDot>
       </TimelineSeparator>
       <TimelineContent>
-        <Typography variant="h6" component="span" sx={{ mr: 1 }}>
+        <Typography variant='h6' component='span' sx={{ mr: 1 }}>
           HAL
         </Typography>
-        <Tooltip title="Goal" arrow placement="left">
-          <Alert icon={<GoalIcon fontSize="small" />} severity="info">
+        <Tooltip title='Goal' arrow placement='left'>
+          <Alert icon={<GoalIcon fontSize='small' />} severity='info'>
             {text}
           </Alert>
         </Tooltip>
         {helps.map(({ instructions, done, tld, cmds }, key) => (
           <Card sx={{ m: 1 }} key={key}>
             <List>
-              <Tooltip title="Directory" arrow placement="left">
+              <Tooltip title='Directory' arrow placement='left'>
                 <ListItem dense>
                   <ListItemIcon>
                     <FolderIcon />
@@ -116,7 +116,7 @@ const Goal = ({ text, status, helps }) => {
                   <ListItemText primary={tld} />
                 </ListItem>
               </Tooltip>
-              <Tooltip title="Commands" arrow placement="left">
+              <Tooltip title='Commands' arrow placement='left'>
                 <ListItem dense>
                   <ListItemIcon>
                     <Terminal />
@@ -126,15 +126,15 @@ const Goal = ({ text, status, helps }) => {
                       <Chip
                         label={cmd}
                         key={key}
-                        color="primary"
-                        variant="outlined"
+                        color='primary'
+                        variant='outlined'
                         sx={{ mr: 1, fontWeight: 'bold' }}
                       />
                     ))}
                   />
                 </ListItem>
               </Tooltip>
-              <Tooltip title="Instructions" arrow placement="left">
+              <Tooltip title='Instructions' arrow placement='left'>
                 <ListItem dense>
                   <ListItemIcon>
                     <DraftsIcon />
@@ -148,7 +148,7 @@ const Goal = ({ text, status, helps }) => {
                   />
                 </ListItem>
               </Tooltip>
-              <Tooltip title="Checklist" arrow placement="left">
+              <Tooltip title='Checklist' arrow placement='left'>
                 <ListItem dense>
                   <ListItemIcon>
                     <RuleIcon />
@@ -182,7 +182,7 @@ const Tool = ({ status, cmd, schema, args, output, consequences }) => (
   <TimelineItem>
     <TimelineSeparator>
       <TimelineConnector sx={{ bgcolor: 'secondary.main' }} />
-      <TimelineDot color="secondary" sx={{ position: 'relative' }}>
+      <TimelineDot color='secondary' sx={{ position: 'relative' }}>
         <ToolIcon />
         {status !== STATUS.DONE && <Progress />}
       </TimelineDot>
@@ -218,6 +218,8 @@ const Messages = ({ messages = [], isTranscribing }) => {
             return <Dave key={key} content={content} />
           case 'assistant':
             return <Assistant key={key} content={content} />
+          case 'system':
+            return null
           // case 'GOAL':
           //   return <Goal key={key} text={text} status={status} helps={helps} />
           // case 'RUNNER':
@@ -230,7 +232,7 @@ const Messages = ({ messages = [], isTranscribing }) => {
             throw new Error(`unknown type ${role}`)
         }
       })}
-      {isTranscribing && <Dave content="(transcribing...)" />}
+      {isTranscribing && <Dave content='(transcribing...)' />}
     </Timeline>
   )
 }

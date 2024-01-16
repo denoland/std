@@ -3,7 +3,7 @@ import posix from 'path-browserify'
 import Debug from 'debug'
 const debug = Debug('AI:io-worker')
 // TODO make this work in threadsjs
-export default ({ fs, trigger, artifact }) => {
+export default (artifact) => {
   // TODO inside isolation using unique hooks for each worker
   // TODO scope filesystem access
   globalThis['@@io-worker-hooks'] = {
@@ -16,13 +16,12 @@ export default ({ fs, trigger, artifact }) => {
     async writeFile(file, path) {
       // debug('writeFile', path)
       assert(path, 'path is required')
-      await fs.writeFile(path, file)
-      trigger.write(path, file)
+      await artifact.write(path, file)
     },
     async readJS(path) {
       // debug('readJS', path)
       assert(path, 'path is required')
-      const string = await fs.readFile(path, 'utf8')
+      const string = await artifact.read(path)
       return JSON.parse(string)
     },
     async readFile(path) {
@@ -36,7 +35,7 @@ export default ({ fs, trigger, artifact }) => {
     },
     async isFile(path) {
       try {
-        await fs.stat(path)
+        await artifact.stat(path)
         return true
       } catch (err) {
         if (err.code === 'ENOENT') {

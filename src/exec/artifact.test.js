@@ -3,7 +3,7 @@ import Artifact from './artifact'
 import { expect, test, beforeEach } from 'vitest'
 
 beforeEach(async (context) => {
-  context.artifact = await Artifact.boot()
+  context.artifact = await Artifact.boot({ wipe: true })
   // TODO make artifact boot in a sequence of functions
   // so it can be done in the play area of storybook
 })
@@ -14,7 +14,6 @@ test('boot', async ({ artifact }) => {
 test('have a chat', async function ({ artifact }) {
   const isolate = 'chat'
   const { prompt } = await artifact.actions(isolate)
-  Debug.enable('AI:*')
   const result = await prompt({
     text: 'return an exclaimation mark',
     noSysPrompt: true,
@@ -26,19 +25,27 @@ test('have a chat', async function ({ artifact }) {
   const log = await artifact.log({ depth: 1 })
   expect(log.length).toEqual(1)
   expect(log[0].commit.message).toContain('replyIO')
-}, 10000)
+})
 test('curtains', async function ({ artifact }) {
   const isolate = 'chat'
   const { prompt } = await artifact.actions(isolate)
-  Debug.enable('AI:*')
-  const result = await prompt({
-    text: 'hello',
-  })
+  const result = await prompt({ text: 'hello' })
   expect(result.length).toBeGreaterThan(100)
   const session = await artifact.read('/chat-1.session.json')
   const messages = JSON.parse(session)
   expect(messages.length).toEqual(3)
-}, 10000)
+})
+test('curtains multi turn', async function ({ artifact }) {
+  const isolate = 'chat'
+  const { prompt } = await artifact.actions(isolate)
+  await prompt({ text: 'hello' })
+  const result2 = await prompt({ text: 'lounge' })
+
+  expect(result2.length).toBeGreaterThan(100)
+  const session = await artifact.read('/chat-1.session.json')
+  const messages = JSON.parse(session)
+  expect(messages.length).toEqual(5)
+})
 test.skip('edit boot files')
 
 test('add a file', async ({ artifact }) => {

@@ -3,7 +3,7 @@ import Artifact from './artifact'
 import { expect, test, beforeEach } from 'vitest'
 
 beforeEach(async (context) => {
-  context.artifact = await Artifact.boot()
+  context.artifact = await Artifact.boot({ wipe: true })
 })
 
 // test('execute ping by tool call', async function ({ artifact }) {
@@ -18,7 +18,6 @@ beforeEach(async (context) => {
 // })
 test.skip('help with no commands') // should be able to run anything really
 test('dispatch', async ({ artifact }) => {
-  Debug.enable('AI:*')
   const isolate = 'engage-help'
   const { engage } = await artifact.actions(isolate)
   const result = await engage({ help: 'help.fixture' })
