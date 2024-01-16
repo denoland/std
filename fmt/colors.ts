@@ -572,7 +572,9 @@ const ANSI_PATTERN = new RegExp(
  *
  *  @deprecated (will be removed in 1.0.0) Use {@linkcode stripAnsiCode} instead.
  */
-export const stripColor: typeof stripAnsiCode = stripAnsiCode;
+export function stripColor(string: string): string {
+  return stripAnsiCode(string);
+}
 
 /**
  * Remove ANSI escape codes from the string.
