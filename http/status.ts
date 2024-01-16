@@ -162,6 +162,7 @@ export const STATUS_CODE = {
   NetworkAuthenticationRequired: 511,
 } as const;
 
+/** An HTTP status code. */
 export type StatusCode = typeof STATUS_CODE[keyof typeof STATUS_CODE];
 
 /** A record of all the status codes text. */
@@ -231,6 +232,7 @@ export const STATUS_TEXT = {
   [STATUS_CODE.VariantAlsoNegotiates]: "Variant Also Negotiates",
 } as const;
 
+/** An HTTP status text. */
 export type StatusText = typeof STATUS_TEXT[keyof typeof STATUS_TEXT];
 
 /** An HTTP status that is a informational (1XX). */
@@ -311,6 +313,7 @@ export type ServerErrorStatus =
 /** An HTTP status that is an error (4XX and 5XX). */
 export type ErrorStatus = ClientErrorStatus | ServerErrorStatus;
 
+/** Returns whether the provided number is a valid HTTP status code. */
 export function isStatus(status: number): status is StatusCode {
   return Object.values(STATUS_CODE).includes(status as StatusCode);
 }
