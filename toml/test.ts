@@ -765,7 +765,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "stringify throws on invalid value",
+  name: "stringify() throws on invalid value",
   fn() {
     assertThrows(
       () => stringify({ a: [[null]] }),
