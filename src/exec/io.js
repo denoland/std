@@ -27,8 +27,8 @@ export default class IO {
   static create({ artifact, opts }) {
     const io = new IO()
     io.#artifact = artifact
-    const { fs, dir, cache } = opts
-    io.#opts = { fs, dir, cache, artifact }
+    const { fs, dir, cache, trigger } = opts
+    io.#opts = { fs, dir, cache, trigger, artifact }
     return io
   }
   // TODO track purging that is due - immdediately after a commit, clear io.
@@ -53,8 +53,8 @@ export default class IO {
           debug('self', isolate, name, parameters)
           const { api, worker } = await this.#ensureWorker(isolate)
           const schema = api[name]
-          validator(schema)(parameters)
           try {
+            validator(schema)(parameters)
             const result = await worker.execute(name, parameters)
             debug('self result', result)
             await this.#replyIO({ id, result })

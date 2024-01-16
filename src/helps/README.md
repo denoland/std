@@ -30,6 +30,10 @@ problems on the fly. This is different to npm, where npm is a collection of
 things to be invoked, not the invocations themselves, altho npx acts in the same
 way.
 
+The commands are isolates - pieces of code that follow a standard format for
+running in a git based system. The runner is an isolate too, but it is distinct
+in that it is used to boot from ?
+
 ## Sections
 
 All sections are optional, and with nothing specified, a deprompted AI will be

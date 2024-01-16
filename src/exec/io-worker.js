@@ -1,4 +1,5 @@
 import assert from 'assert-fast'
+import posix from 'path-browserify'
 import Debug from 'debug'
 const debug = Debug('AI:io-worker')
 // TODO make this work in threadsjs
@@ -8,10 +9,9 @@ export default ({ fs, trigger, artifact }) => {
   globalThis['@@io-worker-hooks'] = {
     async writeJS(js, path) {
       // debug('writeJS', path)
-      assert(path, 'path is required')
+      assert(posix.isAbsolute(path), `path must be absolute: ${path}`)
       const file = JSON.stringify(js, null, 2)
-      await fs.writeFile(path, file)
-      trigger.write(path, file)
+      await artifact.write(path, file)
     },
     async writeFile(file, path) {
       // debug('writeFile', path)
@@ -35,6 +35,17 @@ export default ({ fs, trigger, artifact }) => {
     },
     async spawns(isolate) {
       return artifact.spawns(isolate)
+    },
+    async isFile(path) {
+      try {
+        await fs.stat(path)
+        return true
+      } catch (err) {
+        if (err.code === 'ENOENT') {
+          return false
+        }
+        throw err
+      }
     },
   }
   // TODO useMemo  where it caches the result for recoverability by a commit

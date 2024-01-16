@@ -12,15 +12,17 @@ test('boot', async ({ artifact }) => {
   expect(artifact).toBeInstanceOf(Artifact)
 })
 test('have a chat', async function ({ artifact }) {
-  const { prompt } = await artifact.chatUp()
+  const isolate = 'chat'
+  const { prompt } = await artifact.actions(isolate)
+  Debug.enable('AI:*')
   const result = await prompt({ text: 'return an exclaimation mark' })
   expect(result.trim()).toEqual('!')
   const session = await artifact.read('/chat-1.session.json')
   const messages = JSON.parse(session)
-  expect(messages.length).toEqual(3)
+  expect(messages.length).toEqual(2)
   const log = await artifact.log({ depth: 1 })
   expect(log.length).toEqual(1)
-  expect(log[0].commit.message.startsWith('Reply: ')).toBeTruthy()
+  expect(log[0].commit.message).toContain('replyIO')
 }, 10000)
 test.skip('edit boot files')
 
@@ -32,27 +34,6 @@ test('add a file', async ({ artifact }) => {
   // expect(files).toEqual(['hello.txt'])
   // const contents = await artifact.read('hello.txt')
   // expect(contents).toEqual('hello world')
-})
-
-Debug.enable('AI:*')
-test('reset session', async ({ artifact }) => {
-  const { prompt } = await artifact.goalUp()
-  const result = await prompt({ text: 'reset my session' })
-  // it should double check if thats what you want
-  // it should ask if you want to delete the current session, or just start a
-  // new one and keep the old one
-
-  // go into the stuckloop to find what the best looking help is
-  // this function can be arbitrarily complex, or simple.
-
-  // be able to edit and refine how the stuckloop works, and wire up different
-  // models
-
-  // so make a function that is stuck-rag
-
-  // then make a function that is post a stuck
-
-  // then publish the stucks to the internet
 })
 
 /**

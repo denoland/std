@@ -31,18 +31,16 @@ export const api = {
 }
 
 export const functions = {
-  prompt: async ({ text }, config) => {
+  prompt: async ({ text }) => {
     assert(typeof text === 'string', 'text must be a string')
     assert(text.length, 'text must not be empty')
-    const { sessionPath, systemPromptPath } = config
     const fs = isolate()
-    const messages = await fs.readJS(sessionPath)
+    let messages = []
+    const sessionPath = '/chat-1.session.json'
+    if (await fs.isFile(sessionPath)) {
+      messages = await fs.readJS(sessionPath)
+    }
     assert(Array.isArray(messages), 'messages must be an array')
-
-    const sysprompt = await fs.readFile(systemPromptPath)
-    messages.shift()
-    // add in the tools that can be called
-    messages.unshift({ role: 'assistant', content: sysprompt })
 
     if (text) {
       messages.push({ role: 'user', content: text })
