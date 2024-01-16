@@ -62,7 +62,11 @@ Deno.test({
     );
     assertEquals(parse('""'), "");
     assertEquals(parse('"a\\n"'), "a\n");
-    assertThrows(() => parse('"a\\0b\\?c"'));
+    assertThrows(
+      () => parse('"a\\0b\\?c"'),
+      TOMLParseError,
+      "Invalid escape sequence: \\0",
+    );
     assertThrows(() => parse(""));
     assertThrows(() => parse('"a'));
     assertThrows(() => parse('"a\nb"'));
@@ -106,7 +110,7 @@ Violets are\\tblue"""`),
     the lazy dog\\0.\\
     """`),
       TOMLParseError,
-      "Invalid escape sequence",
+      "Invalid escape sequence: \\?",
     );
   },
 });
