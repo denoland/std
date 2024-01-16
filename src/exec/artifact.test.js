@@ -15,7 +15,10 @@ test('have a chat', async function ({ artifact }) {
   const isolate = 'chat'
   const { prompt } = await artifact.actions(isolate)
   Debug.enable('AI:*')
-  const result = await prompt({ text: 'return an exclaimation mark' })
+  const result = await prompt({
+    text: 'return an exclaimation mark',
+    noSysPrompt: true,
+  })
   expect(result.trim()).toEqual('!')
   const session = await artifact.read('/chat-1.session.json')
   const messages = JSON.parse(session)
@@ -23,6 +26,18 @@ test('have a chat', async function ({ artifact }) {
   const log = await artifact.log({ depth: 1 })
   expect(log.length).toEqual(1)
   expect(log[0].commit.message).toContain('replyIO')
+}, 10000)
+test('curtains', async function ({ artifact }) {
+  const isolate = 'chat'
+  const { prompt } = await artifact.actions(isolate)
+  Debug.enable('AI:*')
+  const result = await prompt({
+    text: 'hello',
+  })
+  expect(result.length).toBeGreaterThan(100)
+  const session = await artifact.read('/chat-1.session.json')
+  const messages = JSON.parse(session)
+  expect(messages.length).toEqual(3)
 }, 10000)
 test.skip('edit boot files')
 

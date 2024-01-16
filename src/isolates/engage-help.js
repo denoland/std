@@ -14,8 +14,11 @@ export const api = {
 }
 
 export const functions = {
-  engage: async ({ help }) => {
-    debug('engage', help)
+  engage: async ({ help: path }) => {
+    debug('engage:', path)
+    // ? why can't this function run the help directly ?
+    const { default: help } = await import(`../helps/${path}.js`)
+    debug(help)
     return 'testing'
   },
 }

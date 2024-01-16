@@ -13,9 +13,8 @@ test('ping', async ({ artifact }) => {
   expect(result).toBe('local reply')
   const second = await actions.local({})
   expect(second).toBe(result)
-  await expect(() => actions.local('throwme')).rejects.toThrow(
-    'Parameters Validation Error'
-  )
+  const msg = 'Parameters Validation Error'
+  await expect(() => actions.local('throwme')).rejects.toThrow(msg)
 })
 test('child to self', async ({ artifact }) => {})
 test('child to child', async ({ artifact }) => {})

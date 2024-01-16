@@ -1,7 +1,7 @@
 export default {
   config: {},
   runner: {},
-  commands: ['/stucks/stuck-finder.io.json:find'],
+  commands: ['stuck-finder:find'],
   instructions: [
     `
 # Curtains Bot

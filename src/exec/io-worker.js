@@ -26,9 +26,7 @@ export default ({ fs, trigger, artifact }) => {
       return JSON.parse(string)
     },
     async readFile(path) {
-      // debug('readFile', path)
-      assert(path, 'path is required')
-      return fs.readFile(path, 'utf8')
+      return artifact.read(path)
     },
     async actions(isolate) {
       return artifact.actions(isolate)
@@ -48,6 +46,7 @@ export default ({ fs, trigger, artifact }) => {
       }
     },
   }
+  // TODO pass the hooks in as a function parameter, to avoid globalThis
   // TODO useMemo  where it caches the result for recoverability by a commit
   // TODO make paradigm where heavy functions are replayable
   // TODO force the use of sideEffects for network calls

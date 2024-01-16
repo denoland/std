@@ -62,7 +62,7 @@ export default class Artifact {
     })
     await git.init({ ...this.#opts, defaultBranch })
     await this.#fs.mkdir(this.#dir + '/helps')
-    const helps = ['goalie', 'ping.fixture', 'curtains']
+    const helps = ['goalie', 'help.fixture', 'curtains']
     await Promise.all(
       helps.map(async (slug) => {
         const name = '/helps/' + slug + '.js'

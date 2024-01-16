@@ -34,6 +34,11 @@ The commands are isolates - pieces of code that follow a standard format for
 running in a git based system. The runner is an isolate too, but it is distinct
 in that it is used to boot from ?
 
+The ability to call another help file is provided to each help file optionally.
+
+They're almost like bottled function parameter calls that have some known good
+effect, where the function always takes just a single text parameter ?
+
 ## Sections
 
 All sections are optional, and with nothing specified, a deprompted AI will be

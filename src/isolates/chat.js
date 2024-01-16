@@ -26,12 +26,13 @@ export const api = {
         description: 'the text to prompt the AI with',
         type: 'string',
       },
+      noSysPrompt: { type: 'boolean' },
     },
   },
 }
 
 export const functions = {
-  prompt: async ({ text }) => {
+  prompt: async ({ text, noSysPrompt = false }) => {
     assert(typeof text === 'string', 'text must be a string')
     assert(text.length, 'text must not be empty')
     const fs = isolate()
@@ -42,6 +43,14 @@ export const functions = {
     }
     assert(Array.isArray(messages), 'messages must be an array')
 
+    // TODO make this dynamic
+    if (!noSysPrompt) {
+      const { default: curtains } = await import(`../helps/curtains`)
+      const sysprompt = curtains.instructions.join('\n').trim()
+      messages.shift()
+      // add in the tools that can be called
+      messages.unshift({ role: 'assistant', content: sysprompt })
+    }
     if (text) {
       messages.push({ role: 'user', content: text })
     }
