@@ -543,7 +543,7 @@ Deno.test({
     );
     assertThrows(
       () =>
-        ParserFactory((s) => {
+        ParserFactory((_s) => {
           throw "Custom parser";
         })(""),
       TOMLParseError,
