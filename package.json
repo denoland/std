@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "start": "npm run dev",
-    "test": "NODE_NO_WARNINGS=1 vitest run",
+    "test": "NODE_NO_WARNINGS=1 DEBUG_COLORS=1 vitest run",
     "watch": "NODE_NO_WARNINGS=1 DEBUG_COLORS=1 vitest dev",
     "dev": "npm run storybook",
     "vite": "vite",

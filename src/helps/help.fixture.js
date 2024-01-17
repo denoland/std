@@ -4,7 +4,7 @@ export default {
   },
   runner: 'runner-chat',
   commands: ['io.fixture:local', 'io.fixture:error'],
-  instructions: ['ALWAYS respond with a single word ONLY'],
+  instructions: ['ALWAYS be as brief as possible'],
   done: '',
   examples: [],
   tests: [],

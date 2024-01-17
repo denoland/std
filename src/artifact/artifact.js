@@ -78,6 +78,9 @@ export default class Artifact {
     const contents = await this.#fs.readFile(this.#dir + path, 'utf8')
     return contents
   }
+  async readIO() {
+    return await this.#io.readIO()
+  }
   async delete(path) {
     assert(posix.isAbsolute(path), `path must be absolute: ${path}`)
     await this.#fs.unlink(this.#dir + path)

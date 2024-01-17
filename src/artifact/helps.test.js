@@ -13,13 +13,15 @@ test('tool call', async function ({ artifact }) {
   const { engage } = await artifact.actions(isolate)
   const text = 'call the "local" function'
   const result = await engage({ help, text })
-  expect(result).toBe('reply')
+  expect(result).toContain('function was called')
 })
 test('error tool call', async function ({ artifact }) {
   const { engage } = await artifact.actions(isolate)
   const text = 'call the "error" function with the message: "bob"'
-  const result = await engage({ help, text })
-  expect(result).toBe('error')
+  await engage({ help, text })
+  const io = await artifact.readIO()
+  expect(io.inputs[1].name).toBe('error')
+  expect(io.outputs[1].error.message).toBe('bob')
 })
 test.skip('help with no commands') // should be able to run anything really
 test('chat', async ({ artifact }) => {
