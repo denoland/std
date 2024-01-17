@@ -61,6 +61,12 @@ Deno.test({
       'a"\n\t\b\\\あ🦕',
     );
     assertEquals(parse('""'), "");
+    assertEquals(parse('"a\\n"'), "a\n");
+    assertThrows(
+      () => parse('"a\\0b\\?c"'),
+      TOMLParseError,
+      "Invalid escape sequence: \\0",
+    );
     assertThrows(() => parse(""));
     assertThrows(() => parse('"a'));
     assertThrows(() => parse('"a\nb"'));
@@ -96,6 +102,24 @@ Violets are\\tblue"""`),
     """`),
       "The quick brown fox jumps over the lazy dog.",
     );
+    assertThrows(
+      () =>
+        parse(`"""\\
+    The quick brown \\
+    fox jumps over\\? \\
+    the lazy dog\\0.\\
+    """`),
+      TOMLParseError,
+      "Invalid escape sequence: \\?",
+    );
+    assertThrows(
+      () =>
+        parse(`"""
+Roses are red
+Violets are\\tblue`),
+      TOMLParseError,
+      "not closed",
+    );
   },
 });
 
@@ -129,6 +153,14 @@ Deno.test({
 Roses are red
 Violets are\\tblue'''`),
       "Roses are red\nViolets are\\tblue",
+    );
+    assertThrows(
+      () =>
+        parse(`'''
+Roses are red
+Violets are\\tblue`),
+      TOMLParseError,
+      "not closed",
     );
   },
 });
@@ -236,6 +268,7 @@ Deno.test({
     assertEquals(parse("224_617.445_991_228"), 224_617.445_991_228);
     assertThrows(() => parse(""));
     assertThrows(() => parse("X"));
+    assertThrows(() => parse("e_+-"));
   },
 });
 
@@ -336,6 +369,7 @@ Deno.test({
       ]`),
       [1, 2],
     );
+    assertThrows(() => parse("[1, 2, 3"), TOMLParseError, "not closed");
   },
 });
 
@@ -410,6 +444,7 @@ Deno.test({
   fn() {
     const source = {
       foo: {},
+      bar: null,
     };
 
     Utils.deepAssignWithTable(
@@ -430,6 +465,7 @@ Deno.test({
             },
           ],
         },
+        bar: null,
       },
     );
     Utils.deepAssignWithTable(
@@ -453,7 +489,36 @@ Deno.test({
             },
           ],
         },
+        bar: null,
       },
+    );
+
+    assertThrows(
+      () =>
+        Utils.deepAssignWithTable(
+          source,
+          {
+            type: "TableArray",
+            key: [],
+            value: { email: "sub@example.com" },
+          },
+        ),
+      Error,
+      "Unexpected key length",
+    );
+
+    assertThrows(
+      () =>
+        Utils.deepAssignWithTable(
+          source,
+          {
+            type: "TableArray",
+            key: ["bar", "items"],
+            value: { email: "mail@example.com" },
+          },
+        ),
+      Error,
+      "Unexpected assign",
     );
   },
 });
@@ -464,12 +529,25 @@ Deno.test({
     assertThrows(
       () => parse("foo = 1\nbar ="),
       TOMLParseError,
-      "on line 2, column 5",
+      "line 2, column 5",
     );
     assertThrows(
       () => parse("foo = 1\nbar = 'foo\nbaz=1"),
       TOMLParseError,
       "line 2, column 10",
+    );
+    assertThrows(
+      () => parse(""),
+      TOMLParseError,
+      "line 1, column 0",
+    );
+    assertThrows(
+      () =>
+        ParserFactory((_s) => {
+          throw "Custom parser";
+        })(""),
+      TOMLParseError,
+      "[non-error thrown]",
     );
   },
 });

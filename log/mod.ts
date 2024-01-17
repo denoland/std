@@ -356,10 +356,13 @@
  * @module
  */
 
-import { Logger } from "./logger.ts";
-import type { GenericFunction, LogRecord } from "./logger.ts";
+import {
+  type GenericFunction,
+  type LogConfig,
+  Logger,
+  LogRecord,
+} from "./logger.ts";
 import { assert } from "../assert/assert.ts";
-import type { LevelName } from "./levels.ts";
 import { jsonFormatter } from "./formatters.ts";
 import { ConsoleHandler } from "./console_handler.ts";
 import { BaseHandler } from "./base_handler.ts";
@@ -371,25 +374,9 @@ export * from "./base_handler.ts";
 export * from "./console_handler.ts";
 export * from "./file_handler.ts";
 export * from "./rotating_file_handler.ts";
-export { LogLevels } from "./levels.ts";
-export type { LevelName, LogLevel } from "./levels.ts";
-export { Logger } from "./logger.ts";
-export type { LogRecord } from "./logger.ts";
-export type { FormatterFunction, HandlerOptions, LogMode } from "./handlers.ts";
-
-export class LoggerConfig {
-  level?: LevelName;
-  handlers?: string[];
-}
-
-export interface LogConfig {
-  handlers?: {
-    [name: string]: BaseHandler;
-  };
-  loggers?: {
-    [name: string]: LoggerConfig;
-  };
-}
+export * from "./levels.ts";
+export * from "./logger.ts";
+export type { HandlerOptions } from "./handlers.ts";
 
 const DEFAULT_LEVEL = "INFO";
 const DEFAULT_CONFIG: LogConfig = {

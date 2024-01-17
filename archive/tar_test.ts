@@ -14,7 +14,7 @@ import { resolve } from "../path/mod.ts";
 import { Tar } from "./tar.ts";
 import { Untar } from "./untar.ts";
 import { Buffer } from "../io/buffer.ts";
-import { copy } from "../streams/copy.ts";
+import { copy } from "../io/copy.ts";
 import { readAll } from "../io/read_all.ts";
 import { filePath, testdataDir } from "./_test_common.ts";
 

@@ -1,7 +1,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import { getLevelByName, getLevelName, LogLevels } from "./levels.ts";
 import type { LevelName, LogLevel } from "./levels.ts";
-import type { BaseHandler } from "./handlers.ts";
+import type { BaseHandler } from "./base_handler.ts";
 
 // deno-lint-ignore no-explicit-any
 export type GenericFunction = (...args: any[]) => any;
@@ -11,6 +11,20 @@ export interface LogRecordOptions {
   args: unknown[];
   level: LogLevel;
   loggerName: string;
+}
+
+export class LoggerConfig {
+  level?: LevelName;
+  handlers?: string[];
+}
+
+export interface LogConfig {
+  handlers?: {
+    [name: string]: BaseHandler;
+  };
+  loggers?: {
+    [name: string]: LoggerConfig;
+  };
 }
 
 /**

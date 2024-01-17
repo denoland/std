@@ -410,8 +410,9 @@ function EscapeSequence(scanner: Scanner): ParseResult<string> {
         scanner.next();
         return success("\\");
       default:
-        scanner.next();
-        return success(scanner.char());
+        throw new TOMLParseError(
+          `Invalid escape sequence: \\${scanner.char()}`,
+        );
     }
   } else {
     return failure();
@@ -893,7 +894,7 @@ export function ParserFactory<T>(parser: ParserComponent<T>) {
           if (count > line.length) {
             count -= line.length + 1;
           } else {
-            return count;
+            break;
           }
         }
         return count;
