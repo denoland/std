@@ -123,27 +123,27 @@ export default class IO {
     const next = { ...io, outputs: { ...outputs, [id]: { result, error } } }
     await this.#commitIO(next, 'replyIO')
   }
+  async workerApi(isolate) {
+    const { api } = await this.#ensureWorker(isolate)
+    return api
+  }
   async #ensureWorker(isolate) {
     assert(!posix.isAbsolute(isolate), `isolate must be relative: ${isolate}`)
     if (!this.#workerCache.has(isolate)) {
       // TODO handle the isolate changing
       // TODO isolate by branch as well as name
       debug('ensureWorker', isolate)
-      const worker = ioWorker(this.#artifact)
-      const api = await worker.load(isolate)
+      const { worker, api } = await this.#loadWorker(isolate)
       this.#workerCache.set(isolate, { api, worker })
       // TODO LRU the cache
     }
     return this.#workerCache.get(isolate)
   }
-  async workerApi(isolate) {
-    const { api } = await this.#ensureWorker(isolate)
-    return api
-  }
-  async loadWorker(isolate) {
+  async #loadWorker(isolate) {
     debug('loadWorker', isolate)
-    const worker = ioWorker(this.#opts)
-    return await worker.load(isolate)
+    const worker = ioWorker(this.#artifact)
+    const api = await worker.load(isolate)
+    return { worker, api }
   }
   async stop() {
     this.#workerCache.clear()

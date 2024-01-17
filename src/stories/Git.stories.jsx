@@ -5,7 +5,7 @@ import git from 'isomorphic-git'
 import LightningFS from '@isomorphic-git/lightning-fs'
 import { Buffer } from 'buffer'
 import Debug from 'debug'
-import Artifact from '../exec/artifact'
+import Artifact from '../artifact/artifact'
 import { Provider } from './Provider'
 import { useArtifact, useLatestCommit, usePrompt } from '../react/hooks'
 globalThis.Buffer = Buffer

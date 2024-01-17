@@ -41,6 +41,11 @@ effect, where the function always takes just a single text parameter ?
 
 Isolates have code, help have function instructions to call that code.
 
+Helps are the interface between human / AI readable and machine code readable.
+
+Think helps are only ever invoked with a single parameter - the text prompt.
+They are natural language interpreted functions.
+
 ## Sections
 
 All sections are optional, and with nothing specified, a deprompted AI will be

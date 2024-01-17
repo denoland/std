@@ -1,6 +1,6 @@
 import { createContext, useEffect, useState } from 'react'
 import PropTypes from 'prop-types'
-import Artifact from '../exec/artifact'
+import Artifact from '../artifact/artifact'
 import Debug from 'debug'
 const debug = Debug('AI:Provider')
 

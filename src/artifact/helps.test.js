@@ -17,12 +17,16 @@ beforeEach(async (context) => {
 //   // test that in fact local was pinged
 // })
 test.skip('help with no commands') // should be able to run anything really
-test('dispatch', async ({ artifact }) => {
+test.only('chat', async ({ artifact }) => {
   const isolate = 'engage-help'
   const { engage } = await artifact.actions(isolate)
-  const result = await engage({ help: 'help.fixture' })
-  expect(result).toEqual('testing')
+  Debug.enable('AI:engage-help')
+  // the engager should do spawn, daemon, etc as a function call
+  const text = 'say a single "x" character with no whitespace or anything'
+  const result = await engage({ help: 'help.fixture', text })
+  expect(result).toEqual('x')
 })
+test.skip('add a file to the database')
 
 // test('spawn', async ({ artifact }) => {
 //   // spawn creates a new branch and executes the function

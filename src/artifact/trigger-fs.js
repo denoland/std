@@ -62,7 +62,7 @@ export default class TriggerFS {
       }
     }
   }
-  commit(repoPath, hash) {
+  async commit(repoPath, hash) {
     assert(posix.isAbsolute(repoPath), `path must be absolute: ${repoPath}`)
     assert(typeof hash === 'string', `hash must be a string`)
     assert(/^[0-9a-f]{40}$/i.test(hash), `hash must be a SHA1 hash: ${hash}`)
@@ -81,7 +81,7 @@ export default class TriggerFS {
     const { callbacks } = subs
     for (const cb of callbacks) {
       // TODO break the thread here, but preserve call order using iterable
-      cb(hash)
+      await cb(hash) // await allows errors to bubble
     }
   }
 }

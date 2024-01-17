@@ -1,4 +1,4 @@
-import { spawns } from '../exec/io-hooks'
+import { spawns } from '../artifact/io-hooks'
 import Debug from 'debug'
 const debug = Debug('AI:io.fixture')
 

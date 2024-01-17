@@ -19,4 +19,7 @@ module.exports = {
       { allowConstantExport: true },
     ],
   },
+  globals: {
+    Debug: 'readonly',
+  },
 }

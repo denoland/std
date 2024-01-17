@@ -133,15 +133,15 @@ export default class Artifact {
   }
   async actions(isolate) {
     assert(!posix.isAbsolute(isolate), `isolate must be relative: ${isolate}`)
-    const actions = await this.#dispatch(isolate, PROCTYPES.SELF)
+    const actions = await this.#actions(isolate, PROCTYPES.SELF)
     return actions
   }
   async spawns(isolate) {
     assert(!posix.isAbsolute(isolate), `isolate must be relative: ${isolate}`)
-    const actions = await this.#dispatch(isolate, PROCTYPES.SPAWN)
+    const actions = await this.#actions(isolate, PROCTYPES.SPAWN)
     return actions
   }
-  async #dispatch(isolate, proctype) {
+  async #actions(isolate, proctype) {
     assert(!posix.isAbsolute(isolate), `isolate must be relative: ${isolate}`)
     assert(PROCTYPES[proctype], `proctype is required: ${proctype}`)
     debug('actions', isolate)
@@ -163,7 +163,7 @@ export default class Artifact {
     const absolute = posix.normalize(this.#dir + path)
     const filepath = posix.relative(this.#dir, absolute)
     await this.#fs.writeFile(absolute, file)
-    this.#trigger.write(absolute, file)
+    await this.#trigger.write(absolute, file)
     await git.add({ ...this.#opts, filepath })
     await this.#commit({ message, author: { name: 'HAL' } })
   }
@@ -175,7 +175,7 @@ export default class Artifact {
   async #commit({ message, author }) {
     // TODO check commit not empty
     const hash = await git.commit({ ...this.#opts, message, author })
-    this.#trigger.commit(this.#dir, hash)
+    await this.#trigger.commit(this.#dir, hash)
   }
   async write(path, file) {
     assert(posix.isAbsolute(path), `path must be absolute: ${path}`)

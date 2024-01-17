@@ -10,10 +10,6 @@ export default defineConfig({
   plugins: [
     AutoImport({
       imports: [{ debug: [['default', 'Debug']] }],
-      eslintrc: {
-        enabled: true,
-        globalsPropValue: 'readonly',
-      },
     }),
     react(),
   ],

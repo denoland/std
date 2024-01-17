@@ -1,8 +1,8 @@
 export default {
   config: {},
-  runner: {},
+  runner: 'runner-chat',
   commands: ['io.fixture:local'],
-  instructions: ['your only function is to call the local command and die'],
+  instructions: ['your only purpose is to call the local command then die'],
   done: '',
   examples: [],
   tests: [],

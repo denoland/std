@@ -2,13 +2,10 @@ import posix from 'path-browserify'
 import merge from 'lodash.merge'
 import OpenAI from 'openai'
 import { Buffer } from 'buffer'
-import { isolate } from '../artifact/io-hooks'
+import * as hooks from '../artifact/io-hooks.js'
 import assert from 'assert-fast'
 import Debug from 'debug'
-const debug = Debug('AI:isolates:chat')
-const model = 'gpt-4-1106-preview'
-// const model = 'gpt-3.5-turbo-1106'
-
+const debug = Debug('AI:runner-chat')
 const { VITE_OPENAI_API_KEY } = import.meta.env
 
 if (!VITE_OPENAI_API_KEY) {
@@ -17,61 +14,42 @@ if (!VITE_OPENAI_API_KEY) {
 const apiKey = Buffer.from(VITE_OPENAI_API_KEY, 'base64').toString('utf-8')
 const ai = new OpenAI({ apiKey, dangerouslyAllowBrowser: true })
 
-export const api = {
-  prompt: {
-    description: 'prompt the AI',
-    type: 'object',
-    properties: {
-      text: {
-        description: 'the text to prompt the AI with',
-        type: 'string',
-      },
-      noSysPrompt: { type: 'boolean' },
-    },
-  },
+export default async ({ help, text }) => {
+  assert(typeof help === 'object', 'help must be an object')
+  assert(typeof text === 'string', 'text must be a string')
+  // runners always get called with the help object and the text string
+  const sysprompt = help.instructions.join('\n').trim()
+  return await prompt({ text, sysprompt })
 }
 
-export const functions = {
-  prompt: async ({ text, noSysPrompt = false }) => {
-    assert(typeof text === 'string', 'text must be a string')
-    assert(text.length, 'text must not be empty')
-    const fs = isolate()
-    let messages = []
-    const sessionPath = '/chat-1.session.json'
-    if (await fs.isFile(sessionPath)) {
-      messages = await fs.readJS(sessionPath)
-    }
-    assert(Array.isArray(messages), 'messages must be an array')
-
-    // TODO make this dynamic
-    if (!noSysPrompt) {
-      const { default: curtains } = await import(`../helps/curtains`)
-      const sysprompt = curtains.instructions.join('\n').trim()
-      messages.shift()
-      // add in the tools that can be called
-      messages.unshift({ role: 'system', content: sysprompt })
-    }
-    if (text) {
-      messages.push({ role: 'user', content: text })
-    }
-    const assistant = await execute(messages, sessionPath)
-    debug('assistant', assistant)
-    return assistant
-  },
-}
-
-const isArgsParseable = (args) => {
-  try {
-    JSON.parse(args)
-    return true
-  } catch (err) {
-    return false
+const prompt = async ({ text, sysprompt }) => {
+  assert(typeof text === 'string', 'text must be a string')
+  assert(text.length, 'text must not be empty')
+  let messages = []
+  const sessionPath = '/chat-1.session.json'
+  if (await hooks.isFile(sessionPath)) {
+    messages = await hooks.readJS(sessionPath)
   }
+  assert(Array.isArray(messages), 'messages must be an array')
+
+  if (sysprompt) {
+    if (messages[0]?.role === 'system') {
+      messages.shift()
+    }
+    // add in the tools that can be called
+    messages.unshift({ role: 'system', content: sysprompt })
+  }
+  if (text) {
+    messages.push({ role: 'user', content: text })
+  }
+  const assistant = await execute(messages, sessionPath)
+  debug('assistant', assistant)
+  return assistant
 }
 
 const execute = async (messages, sessionPath) => {
   const args = {
-    model,
+    model: 'gpt-4-1106-preview', // pass this in via config in the help
     temperature: 0,
     messages: [...messages],
     stream: true,
@@ -79,8 +57,7 @@ const execute = async (messages, sessionPath) => {
   }
   const assistant = { role: 'assistant' }
   messages.push(assistant)
-  const fs = isolate()
-  await fs.writeJS(messages, sessionPath)
+  await hooks.writeJS(messages, sessionPath)
 
   debug('streamCall started')
   const streamCall = await ai.chat.completions.create(args)
@@ -115,12 +92,11 @@ const execute = async (messages, sessionPath) => {
         }
       }
     }
-    await fs.writeJS(messages, sessionPath)
+    await hooks.writeJS(messages, sessionPath)
   }
   debug('streamCall complete')
   return tools(messages, sessionPath)
 }
-
 const tools = async (messages, sessionPath) => {
   assert(Array.isArray(messages), 'messages must be an array')
   assert(posix.isAbsolute(sessionPath), 'sessionPath must be absolute')
@@ -145,4 +121,13 @@ const tools = async (messages, sessionPath) => {
     // load these up on the messages again, and re-run the ai
   }
   return execute(messages, sessionPath)
+}
+
+const isArgsParseable = (args) => {
+  try {
+    JSON.parse(args)
+    return true
+  } catch (err) {
+    return false
+  }
 }
