@@ -1,7 +1,10 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-import { writeAll as _writeAll } from "../io/write_all.ts";
+import {
+  writeAll as _writeAll,
+  writeAllSync as _writeAllSync,
+} from "../io/write_all.ts";
 import type { Writer, WriterSync } from "../io/types.ts";
 export type { Writer, WriterSync };
 
@@ -19,9 +22,8 @@ export type { Writer, WriterSync };
  *
  * // Example writing to file
  * contentBytes = new TextEncoder().encode("Hello World");
- * const file = await Deno.open('test.file', {write: true});
+ * using file = await Deno.open('test.file', {write: true});
  * await writeAll(file, contentBytes);
- * file.close();
  *
  * // Example writing to buffer
  * contentBytes = new TextEncoder().encode("Hello World");
@@ -50,9 +52,8 @@ export async function writeAll(w: Writer, arr: Uint8Array) {
  *
  * // Example writing to file
  * contentBytes = new TextEncoder().encode("Hello World");
- * const file = Deno.openSync('test.file', {write: true});
+ * using file = Deno.openSync('test.file', {write: true});
  * writeAllSync(file, contentBytes);
- * file.close();
  *
  * // Example writing to buffer
  * contentBytes = new TextEncoder().encode("Hello World");
@@ -64,8 +65,5 @@ export async function writeAll(w: Writer, arr: Uint8Array) {
  * @deprecated (will be removed in 0.214.0) Import from {@link https://deno.land/std/io/write_all.ts} instead.
  */
 export function writeAllSync(w: WriterSync, arr: Uint8Array) {
-  let nwritten = 0;
-  while (nwritten < arr.length) {
-    nwritten += w.writeSync(arr.subarray(nwritten));
-  }
+  _writeAllSync(w, arr);
 }

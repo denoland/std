@@ -31,14 +31,22 @@ Deno.test("expect().toMatchObject()", () => {
   };
 
   expect(house0).toMatchObject(desiredHouse);
+  expect([house0]).toMatchObject([desiredHouse]);
 
   expect(house1).not.toMatchObject(desiredHouse);
+  expect([house1]).not.toMatchObject([desiredHouse]);
 
   assertThrows(() => {
     expect(house1).toMatchObject(desiredHouse);
   }, AssertionError);
+  assertThrows(() => {
+    expect([house1]).toMatchObject([desiredHouse]);
+  }, AssertionError);
 
   assertThrows(() => {
     expect(house0).not.toMatchObject(desiredHouse);
+  }, AssertionError);
+  assertThrows(() => {
+    expect([house0]).not.toMatchObject([desiredHouse]);
   }, AssertionError);
 });

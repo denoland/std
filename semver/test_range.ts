@@ -1,5 +1,5 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-import type { SemVer, SemVerRange } from "./types.ts";
+import type { Range, SemVer, SemVerRange } from "./types.ts";
 import { gte } from "./gte.ts";
 import { lte } from "./lte.ts";
 import { comparatorMin } from "./comparator_min.ts";
@@ -11,12 +11,15 @@ import { comparatorMax } from "./comparator_max.ts";
  * @param range The range to check
  * @returns true if the version is in the range
  */
-export function testRange(version: SemVer, range: SemVerRange): boolean {
-  for (const r of range.ranges) {
+export function testRange(
+  version: SemVer,
+  range: SemVerRange | Range,
+): boolean {
+  for (const r of (Array.isArray(range) ? range : range.ranges)) {
     if (
       r.every((c) =>
-        gte(version, comparatorMin(c.semver, c.operator)) &&
-        lte(version, comparatorMax(c.semver, c.operator))
+        gte(version, comparatorMin(c.semver ?? c, c.operator)) &&
+        lte(version, comparatorMax(c.semver ?? c, c.operator))
       )
     ) {
       return true;

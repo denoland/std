@@ -108,6 +108,16 @@ Check out the documentation [here](https://deno.land/std?doc).
 > For background and discussions regarding the stability of the following
 > sub-modules, see [#3489](https://github.com/denoland/deno_std/issues/3489).
 
+## Design
+
+## Minimal Exports
+
+Files are structured to minimize the number of dependencies they incur and the
+amount of effort required to manage them, both for the maintainer and the user.
+In most cases, only a single function or class, alongside its related types, are
+exported. In other cases, functions that incur negligible dependency overhead
+will be grouped together in the same file.
+
 ## Deprecation Policy
 
 We deprecate the APIs in the Standard Library when they get covered by new

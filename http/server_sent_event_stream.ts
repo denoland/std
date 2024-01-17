@@ -5,6 +5,8 @@ const NEWLINE_REGEXP = /\r\n|\r|\n/;
 const encoder = new TextEncoder();
 
 /**
+ * Represents a message in the Server-Sent Event (SSE) protocol.
+ *
  * @see {@link https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events/Using_server-sent_events#fields}
  */
 export interface ServerSentEventMessage {
