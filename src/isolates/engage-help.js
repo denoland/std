@@ -1,5 +1,5 @@
 import assert from 'assert-fast'
-import loader from '../artifact/load-help.js'
+import loadHelp from '../artifact/load-help.js'
 import Debug from 'debug'
 const debug = Debug('AI:engage-help')
 export const api = {
@@ -24,11 +24,11 @@ export const api = {
 export const functions = {
   engage: async ({ help: path, text }) => {
     debug('engage:', path)
-    const help = await loader(path)
+    const help = await loadHelp(path)
     debug(help)
 
     assert(typeof help.runner === 'string', `no runner: ${help.runner}`)
-    debug('found runner isolate:', help.runner)
+    debug('found runner:', help.runner)
     const { default: runner } = await import(`../runners/${help.runner}.js`)
 
     return await runner({ help, text })

@@ -3,6 +3,14 @@ import Debug from 'debug'
 const debug = Debug('AI:io.fixture')
 
 export const api = {
+  error: {
+    description: 'throw an error',
+    type: 'object',
+    additionalProperties: false,
+    properties: {
+      message: { type: 'string' },
+    },
+  },
   spawn: {
     description: 'ping the AI',
     type: 'object',
@@ -23,6 +31,9 @@ export const api = {
   },
 }
 export const functions = {
+  error: async ({ message }) => {
+    throw new Error(message)
+  },
   spawn: async ({ isolate }) => {
     debug('spawn', isolate)
     const { pong } = await spawns(isolate)

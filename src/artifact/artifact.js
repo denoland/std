@@ -152,8 +152,9 @@ export default class Artifact {
       actions[name] = async (parameters = {}) => {
         return this.#io.dispatch({ isolate, name, parameters, proctype })
       }
+      actions[name].api = api[name]
     }
-    Object.freeze(actions)
+    Object.freeze(actions) // TODO deep freeze
     debug('actions', isolate, Object.keys(actions))
     return actions
   }
