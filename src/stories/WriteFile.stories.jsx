@@ -10,7 +10,7 @@ export default {
 const Template = (args) => {
   Debug.enable('AI:*')
   return (
-    <Provider wipe>
+    <Provider>
       <ThreeBox {...args} />
     </Provider>
   )

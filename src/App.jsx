@@ -3,7 +3,7 @@ import ThreeBox from './stories/ThreeBox'
 
 function App() {
   return (
-    <Provider wipe>
+    <Provider>
       <ThreeBox />
     </Provider>
   )

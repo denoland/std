@@ -96,7 +96,7 @@ const Renderer = () => {
 
 export const Subscribe = () => {
   return (
-    <Provider wipe>
+    <Provider>
       <Renderer />
     </Provider>
   )

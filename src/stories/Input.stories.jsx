@@ -10,7 +10,7 @@ export default {
 const Template = (args) => {
   Debug.enable('*')
   return (
-    <Provider wipe>
+    <Provider>
       <Input {...args} />
     </Provider>
   )

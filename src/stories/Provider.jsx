@@ -8,7 +8,7 @@ export const ArtifactContext = createContext({})
 
 // should it be given a path to chroot to ?
 
-export const Provider = ({ children, wipe = false }) => {
+export const Provider = ({ children, wipe = true }) => {
   // boot up artifact
   const [artifact, setArtifact] = useState()
   const [error, setError] = useState()

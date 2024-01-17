@@ -3,7 +3,7 @@ import Artifact from './artifact'
 import { expect, test, beforeEach } from 'vitest'
 
 beforeEach(async (context) => {
-  context.artifact = await Artifact.boot({ wipe: true })
+  context.artifact = await Artifact.boot()
   // TODO make artifact boot in a sequence of functions
   // so it can be done in the play area of storybook
 })

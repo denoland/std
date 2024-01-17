@@ -6,7 +6,7 @@ const isolate = 'engage-help'
 const help = 'help.fixture'
 
 beforeEach(async (context) => {
-  context.artifact = await Artifact.boot({ wipe: true })
+  context.artifact = await Artifact.boot()
 })
 
 test('tool call', async function ({ artifact }) {

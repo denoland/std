@@ -16,7 +16,7 @@ export default class Artifact {
   #opts
   #trigger
   #io
-  static async boot({ path = 'fs', wipe = false } = {}) {
+  static async boot({ path = 'fs', wipe = true } = {}) {
     const artifact = new Artifact()
     artifact.#trigger = TriggerFS.create()
     artifact.#fs = new LightningFS(path, { wipe }).promises

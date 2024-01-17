@@ -4,7 +4,7 @@ import Debug from 'debug'
 const isolate = 'io.fixture'
 
 beforeEach(async (context) => {
-  context.artifact = await Artifact.boot({ wipe: true })
+  context.artifact = await Artifact.boot()
 })
 
 test('ping', async ({ artifact }) => {
