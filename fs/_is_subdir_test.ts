@@ -2,8 +2,8 @@
 // Copyright the Browserify authors. MIT License.
 
 import { assertEquals } from "../assert/mod.ts";
-import { SEP as SEP_POSIX } from "../path/posix/separator.ts";
-import { SEP as SEP_WIN32 } from "../path/windows/separator.ts";
+import { SEPARATOR as SEP_POSIX } from "../path/posix/constants.ts";
+import { SEPARATOR as SEP_WIN32 } from "../path/windows/constants.ts";
 import { isSubdir } from "./_is_subdir.ts";
 
 Deno.test("isSubdir() returns a boolean indicating if dir is a subdir", function () {

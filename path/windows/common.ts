@@ -2,7 +2,7 @@
 // This module is browser compatible.
 
 import { _common } from "../_common/common.ts";
-import { SEP } from "./separator.ts";
+import { SEPARATOR } from "./constants.ts";
 
 /** Determines the common path from a set of paths, using an optional separator,
  * which defaults to the OS default separator.
@@ -16,6 +16,9 @@ import { SEP } from "./separator.ts";
  *       console.log(p); // "./deno/std/"
  * ```
  */
-export function common(paths: string[], sep: typeof SEP = SEP): string {
+export function common(
+  paths: string[],
+  sep: typeof SEPARATOR = SEPARATOR,
+): string {
   return _common(paths, sep);
 }

@@ -3,7 +3,7 @@
 
 import { GlobOptions } from "../_common/glob_to_reg_exp.ts";
 import { join } from "./join.ts";
-import { SEP } from "./separator.ts";
+import { SEPARATOR } from "./constants.ts";
 import { normalizeGlob } from "./normalize_glob.ts";
 
 /** Like join(), but doesn't collapse "**\/.." when `globstar` is true. */
@@ -20,7 +20,7 @@ export function joinGlobs(
     const path = glob;
     if (path.length > 0) {
       if (!joined) joined = path;
-      else joined += `${SEP}${path}`;
+      else joined += `${SEPARATOR}${path}`;
     }
   }
   if (!joined) return ".";

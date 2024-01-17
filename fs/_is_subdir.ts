@@ -1,7 +1,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // Copyright the Browserify authors. MIT License.
 
-import { SEP } from "../path/separator.ts";
+import { SEPARATOR } from "../path/constants.ts";
 import { toPathString } from "./_to_path_string.ts";
 
 /**
@@ -13,7 +13,7 @@ import { toPathString } from "./_to_path_string.ts";
 export function isSubdir(
   src: string | URL,
   dest: string | URL,
-  sep: string = SEP,
+  sep: string = SEPARATOR,
 ): boolean {
   if (src === dest) {
     return false;
