@@ -18,7 +18,7 @@ import { SEPARATOR } from "./constants.ts";
  */
 export function common(
   paths: string[],
-  sep: typeof SEPARATOR = SEPARATOR,
+  sep: string = SEPARATOR,
 ): string {
   return _common(paths, sep);
 }

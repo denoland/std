@@ -13,7 +13,7 @@ import { toPathString } from "./_to_path_string.ts";
 export function isSubdir(
   src: string | URL,
   dest: string | URL,
-  sep: string = SEPARATOR,
+  sep = SEPARATOR,
 ): boolean {
   if (src === dest) {
     return false;

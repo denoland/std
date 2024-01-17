@@ -2,6 +2,6 @@
 // This module is browser compatible.
 import { isWindows } from "./_os.ts";
 
-export const DELIMITER = isWindows ? ";" : ":";
-export const SEPARATOR = isWindows ? "\\" : "/";
+export const DELIMITER = isWindows ? ";" as const : ":" as const;
+export const SEPARATOR = isWindows ? "\\" as const : "/" as const;
 export const SEPARATOR_PATTERN = isWindows ? /[\\/]+/ : /\/+/;

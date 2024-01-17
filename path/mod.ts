@@ -45,12 +45,12 @@ export const win32: typeof _windows = _windows;
 export const posix: typeof _posix = _posix;
 
 /**
- * @deprecated (will be removed in 0.216.0) Use {@linkcode SEPARATOR} instead.
+ * @deprecated (will be removed in 0.215.0) Use {@linkcode SEPARATOR} instead.
  */
 export const sep = SEPARATOR;
 
 /**
- * @deprecated (will be removed in 0.216.0) Use {@linkcode DELIMITER} instead.
+ * @deprecated (will be removed in 0.215.0) Use {@linkcode DELIMITER} instead.
  */
 export const delimiter = DELIMITER;
 
