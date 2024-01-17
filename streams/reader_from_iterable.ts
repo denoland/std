@@ -12,11 +12,11 @@ import { Reader } from "../io/types.ts";
  * import { readerFromIterable } from "https://deno.land/std@$STD_VERSION/streams/reader_from_iterable.ts";
  * import { copy } from "https://deno.land/std@$STD_VERSION/io/copy.ts";
  *
- * const file = await Deno.open("metrics.txt", { write: true });
+ * const file = await Deno.open("build.txt", { write: true });
  * const reader = readerFromIterable((async function* () {
  *   while (true) {
  *     await new Promise((r) => setTimeout(r, 1000));
- *     const message = `data: ${JSON.stringify(Deno.metrics())}\n\n`;
+ *     const message = `data: ${JSON.stringify(Deno.build)}\n\n`;
  *     yield new TextEncoder().encode(message);
  *   }
  * })());
