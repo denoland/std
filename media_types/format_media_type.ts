@@ -15,7 +15,7 @@ import { isIterator, isToken, needsEncoding } from "./_util.ts";
  * ```ts
  * import { formatMediaType } from "https://deno.land/std@$STD_VERSION/media_types/format_media_type.ts";
  *
- * formatMediaType("text/plain", { charset: "UTF-8" }); // `text/plain; charset=UTF-8`
+ * formatMediaType("text/plain", { charset: "UTF-8" }); // "text/plain; charset=UTF-8"
  * ```
  */
 export function formatMediaType(
