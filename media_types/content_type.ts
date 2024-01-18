@@ -7,14 +7,20 @@ import { formatMediaType } from "./format_media_type.ts";
 import type { db } from "./_db.ts";
 import { typeByExtension } from "./type_by_extension.ts";
 
-type DB = typeof db;
-type ContentTypeToExtension = {
+/** MIME-types database. */
+export type DB = typeof db;
+/** Maps content types to their corresponding file extensions. */
+export type ContentTypeToExtension = {
+  /**
+   * Maps each content type key to its corresponding file extension.
+   */
   [K in keyof DB]: DB[K] extends { "extensions": readonly string[] }
     ? DB[K]["extensions"][number]
     : never;
 };
 
-type KnownExtensionOrType =
+/** Known extension or type. Used in {@linkcode contentType}. */
+export type KnownExtensionOrType =
   | keyof ContentTypeToExtension
   | ContentTypeToExtension[keyof ContentTypeToExtension]
   | `.${ContentTypeToExtension[keyof ContentTypeToExtension]}`;
@@ -39,10 +45,10 @@ type KnownExtensionOrType =
  * ```ts
  * import { contentType } from "https://deno.land/std@$STD_VERSION/media_types/content_type.ts";
  *
- * contentType(".json"); // `application/json; charset=UTF-8`
- * contentType("text/html"); // `text/html; charset=UTF-8`
- * contentType("text/html; charset=UTF-8"); // `text/html; charset=UTF-8`
- * contentType("txt"); // `text/plain; charset=UTF-8`
+ * contentType(".json"); // "application/json; charset=UTF-8"
+ * contentType("text/html"); // "text/html; charset=UTF-8"
+ * contentType("text/html; charset=UTF-8"); // "text/html; charset=UTF-8"
+ * contentType("txt"); // "text/plain; charset=UTF-8"
  * contentType("foo"); // undefined
  * contentType("file.json"); // undefined
  * ```
