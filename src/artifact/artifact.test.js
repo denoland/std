@@ -1,16 +1,15 @@
 import { test, expect, debug } from '../test-context.js'
 import Artifact from './artifact.js'
 
+const isolate = 'engage-help'
+
 test('boot', async ({ artifact }) => {
   expect(artifact).toBeInstanceOf(Artifact)
 })
 test('have a chat', async function ({ artifact }) {
-  const isolate = 'chat'
-  const { prompt } = await artifact.actions(isolate)
-  const result = await prompt({
-    text: 'return an exclaimation mark',
-    noSysPrompt: true,
-  })
+  const help = 'empty.fixture'
+  const { engage } = await artifact.actions(isolate)
+  const result = await engage({ help, text: 'return an exclaimation mark' })
   expect(result.trim()).toEqual('!')
   const session = await artifact.read('/chat-1.session.json')
   const messages = JSON.parse(session)
@@ -20,20 +19,19 @@ test('have a chat', async function ({ artifact }) {
   expect(log[0].commit.message).toContain('replyIO')
 })
 test('curtains', async function ({ artifact }) {
-  const isolate = 'chat'
-  const { prompt } = await artifact.actions(isolate)
-  const result = await prompt({ text: 'hello' })
+  const help = 'curtains'
+  const { engage } = await artifact.actions(isolate)
+  const result = await engage({ help, text: 'hello' })
   expect(result.length).toBeGreaterThan(100)
   const session = await artifact.read('/chat-1.session.json')
   const messages = JSON.parse(session)
   expect(messages.length).toEqual(3)
 })
 test('curtains multi turn', async function ({ artifact }) {
-  const isolate = 'chat'
-  const { prompt } = await artifact.actions(isolate)
-  await prompt({ text: 'hello' })
-  const result2 = await prompt({ text: 'lounge' })
-
+  const help = 'curtains'
+  const { engage } = await artifact.actions(isolate)
+  await engage({ help, text: 'hello' })
+  const result2 = await engage({ help, text: 'lounge' })
   expect(result2.length).toBeGreaterThan(100)
   const session = await artifact.read('/chat-1.session.json')
   const messages = JSON.parse(session)

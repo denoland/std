@@ -25,7 +25,7 @@ export default async ({ help, text }) => {
 class AI {
   #sysprompt
   #model
-  #tools = []
+  #tools
   #actions
   #sessionPath
   static #cache = new Map()
@@ -152,6 +152,9 @@ class AI {
   }
   async #loadCommands(commands) {
     assert(Array.isArray(commands), 'commands must be an array')
+    if (!commands.length) {
+      return
+    }
     const result = []
     const names = new Set()
     const actions = {}
