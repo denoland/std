@@ -71,7 +71,13 @@ export default class Artifact {
       })
     )
     debug('filesystem created')
-    await this.#commitAll({ message: 'init', author: { name: 'HAL' } })
+    // TODO bug in git where cannot do a walk immediately after first commit
+    await git.add({ ...this.#opts, filepath: '.' })
+    await git.commit({
+      ...this.#opts,
+      message: 'init',
+      author: { name: 'HAL' },
+    })
   }
   async read(path) {
     assert(posix.isAbsolute(path), `path must be absolute: ${path}`)

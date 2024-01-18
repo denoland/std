@@ -194,9 +194,13 @@ export default class IO {
     const commit = await git.readCommit({ ...this.#opts, oid: ref })
     const { parent } = commit.commit
     let io
+    const trees = [TREE({ ref })]
+    if (parent && parent.length > 0) {
+      trees.push(TREE({ ref: parent[0] }))
+    }
     const changes = await git.walk({
       ...this.#opts,
-      trees: [TREE({ ref }), TREE({ ref: parent[0] })],
+      trees,
       map: async (path, [current, previous]) => {
         if (current && current.type === 'tree') {
           return null
