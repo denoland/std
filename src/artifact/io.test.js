@@ -1,11 +1,5 @@
-import Artifact from './artifact'
-import { expect, test, beforeEach } from 'vitest'
-import Debug from 'debug'
+import { test, expect, debug } from '../test-context.js'
 const isolate = 'io.fixture'
-
-beforeEach(async (context) => {
-  context.artifact = await Artifact.boot()
-})
 
 test('ping', async ({ artifact }) => {
   const actions = await artifact.actions(isolate)

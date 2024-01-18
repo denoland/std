@@ -148,6 +148,7 @@ export default class IO {
   async stop() {
     this.#workerCache.clear()
   }
+  // what if we want to dispatch into a specific branch ?
   async dispatch({ isolate, name, parameters, proctype }) {
     const io = await this.readIO()
     const action = { isolate, name, parameters, proctype }
@@ -194,13 +195,9 @@ export default class IO {
     const commit = await git.readCommit({ ...this.#opts, oid: ref })
     const { parent } = commit.commit
     let io
-    const trees = [TREE({ ref })]
-    if (parent && parent.length > 0) {
-      trees.push(TREE({ ref: parent[0] }))
-    }
     const changes = await git.walk({
       ...this.#opts,
-      trees,
+      trees: [TREE({ ref }), TREE({ ref: parent[0] })],
       map: async (path, [current, previous]) => {
         if (current && current.type === 'tree') {
           return null

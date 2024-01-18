@@ -21,5 +21,6 @@ export default defineConfig({
     setupFiles: ['fake-indexeddb/auto'],
     testTimeout: 30000,
     reporters: 'tap-flat',
+    isolate: false,
   },
 })

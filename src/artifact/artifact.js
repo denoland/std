@@ -17,6 +17,8 @@ export default class Artifact {
   #trigger
   #io
   static async boot({ path = 'fs', wipe = true } = {}) {
+    // TODO if an existing artifact, boot using a layered fs for instant boot
+    // then pass the top level lock to the next one in the queue
     const artifact = new Artifact()
     artifact.#trigger = TriggerFS.create()
     artifact.#fs = new LightningFS(path, { wipe }).promises

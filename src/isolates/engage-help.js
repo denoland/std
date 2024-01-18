@@ -33,6 +33,14 @@ export const functions = {
 
     return await runner({ help, text })
   },
+  spawn: async ({ help: path, text }) => {
+    debug('spawn:', path)
+    // this would engage the help, but in a new branch
+  },
+  continue: async ({ help: path, text, commit }) => {
+    debug('continue:', path, commit)
+    // this would continue the help, but in the same branch as a previous run
+  },
 }
 
 // because engage help is inside of a runner, it can have any format we like

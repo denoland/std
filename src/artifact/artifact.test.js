@@ -1,12 +1,5 @@
-import Debug from 'debug'
-import Artifact from './artifact'
-import { expect, test, beforeEach } from 'vitest'
-
-beforeEach(async (context) => {
-  context.artifact = await Artifact.boot()
-  // TODO make artifact boot in a sequence of functions
-  // so it can be done in the play area of storybook
-})
+import { test, expect, debug } from '../test-context.js'
+import Artifact from './artifact.js'
 
 test('boot', async ({ artifact }) => {
   expect(artifact).toBeInstanceOf(Artifact)
