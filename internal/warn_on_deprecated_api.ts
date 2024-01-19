@@ -5,6 +5,10 @@
 const { Deno } = globalThis as any;
 
 const ALREADY_WARNED_DEPRECATED = new Set<string>();
+const ENV_VAR_KEY = "DENO_NO_DEPRECATION_WARNINGS";
+const shouldDisableDeprecatedApiWarning =
+  Deno?.permissions.querySync({ name: "env", variable: ENV_VAR_KEY })
+      .state === "granted" && Deno?.env.get(ENV_VAR_KEY) === "1";
 
 interface WarnDeprecatedApiConfig {
   /** The name of the deprecated API. */
@@ -20,15 +24,14 @@ interface WarnDeprecatedApiConfig {
 /**
  * Prints a warning message to the console for the given deprecated API.
  *
- * These warnings can be disabled by setting `NO_DEPRECATION_WARNINGS=1`
+ * These warnings can be disabled by setting `DENO_NO_DEPRECATION_WARNINGS=1`
  * in the current process.
+ *
+ * Mostly copied from
+ * {@link https://github.com/denoland/deno/blob/c62615bfe5a070c2517f3af3208d4308c72eb054/runtime/js/99_main.js#L101}.
  */
 export function warnOnDeprecatedApi(config: WarnDeprecatedApiConfig) {
-  const variable = "NO_DEPRECATION_WARNINGS";
-  if (
-    Deno?.permissions.querySync({ name: "env", variable }).state ===
-      "granted" && Deno?.env.get(variable) === "1"
-  ) return;
+  if (shouldDisableDeprecatedApiWarning) return;
 
   const key = config.apiName + config.stack;
   if (ALREADY_WARNED_DEPRECATED.has(key)) return;
@@ -78,7 +81,7 @@ export function warnOnDeprecatedApi(config: WarnDeprecatedApiConfig) {
   console.log("%c\u2502", "color: yellow;");
   console.log("%c\u2502", "color: yellow;");
   console.log(
-    "%c\u251c Set `NO_DEPRECATION_WARNINGS=1` to disable these deprecation warnings.",
+    "%c\u251c Set `DENO_NO_DEPRECATION_WARNINGS=1` to disable these deprecation warnings.",
     "color: yellow;",
   );
   console.log("%c\u2514 Stack trace:", "color: yellow;");
