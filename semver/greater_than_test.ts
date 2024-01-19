@@ -1,10 +1,10 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import { assertEquals } from "../assert/mod.ts";
 import { parse } from "./parse.ts";
-import { greater } from "./greater.ts";
+import { greaterThan } from "./greater_than.ts";
 
 Deno.test({
-  name: "greater()",
+  name: "greaterThan()",
   fn: async (t) => {
     // [version1, version2]
     // version1 should be greater than version2
@@ -34,7 +34,7 @@ Deno.test({
       await t.step(`${v0} <=> ${v1}`, () => {
         const s0 = parse(v0);
         const s1 = parse(v1);
-        const actual = greater(s0, s1);
+        const actual = greaterThan(s0, s1);
         assertEquals(actual, true, `${v0} > ${v1} : ${actual}`);
       });
     }
