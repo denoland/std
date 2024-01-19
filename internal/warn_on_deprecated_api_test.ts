@@ -20,8 +20,8 @@ Deno.test("warnDeprecatedApi()", async () => {
 │
 ├ Suggestion: Do something else instead.
 │
-│
 ├ Set \`DENO_NO_DEPRECATION_WARNINGS=1\` to disable these deprecation warnings.
+│
 └ Stack trace:
   ├─ at fn (${import.meta.url}:39:12)
   └─ at ${import.meta.url}:47:31

@@ -79,11 +79,11 @@ export function warnOnDeprecatedApi(config: WarnDeprecatedApiConfig) {
   }
 
   console.log("%c\u2502", "color: yellow;");
-  console.log("%c\u2502", "color: yellow;");
   console.log(
     "%c\u251c Set `DENO_NO_DEPRECATION_WARNINGS=1` to disable these deprecation warnings.",
     "color: yellow;",
   );
+  console.log("%c\u2502", "color: yellow;");
   console.log("%c\u2514 Stack trace:", "color: yellow;");
   for (let i = 0; i < stackLines.length; i++) {
     console.log(
