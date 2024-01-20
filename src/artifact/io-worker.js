@@ -7,14 +7,14 @@ export default (artifact) => {
   // TODO inside isolation using unique hooks for each worker
   // TODO scope filesystem access
   globalThis['@@io-worker-hooks'] = {
-    async writeJS(js, path) {
+    async writeJS(path, js) {
       // debug('writeJS', path)
       assert(posix.isAbsolute(path), `path must be absolute: ${path}`)
       const file = JSON.stringify(js, null, 2)
       await artifact.write(path, file)
     },
-    async writeFile(file, path) {
-      // debug('writeFile', path)
+    async write(path, file) {
+      // debug('write', path)
       assert(path, 'path is required')
       await artifact.write(path, file)
     },
@@ -24,7 +24,7 @@ export default (artifact) => {
       const string = await artifact.read(path)
       return JSON.parse(string)
     },
-    async readFile(path) {
+    async read(path) {
       return artifact.read(path)
     },
     async actions(isolate) {
@@ -43,6 +43,12 @@ export default (artifact) => {
         }
         throw err
       }
+    },
+    async ls(path) {
+      return artifact.ls(path)
+    },
+    async rm(path) {
+      return artifact.rm(path)
     },
   }
   // TODO pass the hooks in as a function parameter, to avoid globalThis

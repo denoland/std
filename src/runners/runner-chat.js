@@ -1,3 +1,4 @@
+import loadHelp from '../artifact/load-help.js'
 import posix from 'path-browserify'
 import merge from 'lodash.merge'
 import OpenAI from 'openai'
@@ -15,14 +16,15 @@ if (!VITE_OPENAI_API_KEY) {
 const apiKey = Buffer.from(VITE_OPENAI_API_KEY, 'base64').toString('utf-8')
 const ai = new OpenAI({ apiKey, dangerouslyAllowBrowser: true })
 
-export default async ({ help, text }) => {
-  assert(typeof help === 'object', 'help must be an object')
+export default async ({ path, text }) => {
+  assert(typeof path === 'string', 'help must be a string')
   assert(typeof text === 'string', 'text must be a string')
+  const help = await loadHelp(path)
   const ai = await AI.create(help)
   return await ai.prompt(text)
 }
 
-class AI {
+export class AI {
   #sysprompt
   #model
   #tools
@@ -76,14 +78,16 @@ class AI {
     }
     const assistant = { role: 'assistant' }
     messages.push(assistant)
-    await hooks.writeJS(messages, this.#sessionPath)
+    await hooks.writeJS(this.#sessionPath, messages)
 
     debug('streamCall started')
     const streamCall = await ai.chat.completions.create(args)
     debug('streamCall placed')
+    const ds = debug.extend('part')
     for await (const part of streamCall) {
       const content = part.choices[0]?.delta?.content
       if (content) {
+        ds(content)
         if (!assistant.content) {
           assistant.content = ''
         }
@@ -108,9 +112,10 @@ class AI {
             args.function.arguments += rest.function.arguments
           }
           merge(assistant.tool_calls[index], rest, args)
+          ds(`%o`, assistant.tool_calls[index]?.function)
         }
       }
-      await hooks.writeJS(messages, this.#sessionPath)
+      await hooks.writeJS(this.#sessionPath, messages)
     }
     debug('streamCall complete')
     return this.executeTools(messages)
@@ -132,7 +137,7 @@ class AI {
       assert(this.#actions[name], `missing action: ${name}`)
       const message = { role: 'tool', tool_call_id }
       messages.push(message)
-      await hooks.writeJS(messages, this.#sessionPath)
+      await hooks.writeJS(this.#sessionPath, messages)
       try {
         const parameters = JSON.parse(args)
         const result = await this.#actions[name](parameters)
@@ -147,7 +152,7 @@ class AI {
         message.content = JSON.stringify(serializeError(error), null, 2)
       }
     }
-    await hooks.writeJS(messages, this.#sessionPath)
+    await hooks.writeJS(this.#sessionPath, messages)
     return this.#execute(messages)
   }
   async #loadCommands(commands) {
@@ -160,22 +165,61 @@ class AI {
     const actions = {}
     for (const command of commands) {
       debug('loading command:', command)
-      const [isolate, name] = command.split(':')
-      // ? how to know if we should spawn or run in thread ?
-      const isolateActions = await hooks.actions(isolate)
-      const action = isolateActions[name]
+      let tool, action, name
+      if (!command.includes(':')) {
+        assert(command.startsWith('helps/'), `invalid help: ${command}`)
+        // TODO read in as pure json
+        name = posix.basename(command)
+        const help = await loadHelp(name)
+        assert(help.description, `missing description: ${command}`)
+        // TODO make part of hooks
+        const { engage } = await hooks.spawns('engage-help')
+        action = ({ text }) => engage({ help: name, text })
+        tool = helpToGptApi(name, help, engage)
+      } else {
+        const [isolate, _name] = command.split(':')
+        name = _name
+        const isolateActions = await hooks.actions(isolate)
+        assert(isolateActions[name], `isolate missing command: ${command}`)
+        action = isolateActions[name]
+        tool = isolateToGptApi(name, action)
+      }
       assert(action, `missing action: ${command}`)
       assert(!names.has(name), `duplicate action: ${command}`)
       names.add(name)
+      assert(typeof action === 'function', `invalid action: ${action}`)
       actions[name] = action
-      result.push(toGptApi(name, action))
+      assert(typeof tool === 'object', `invalid tool: ${tool}`)
+      result.push(tool)
     }
     this.#actions = actions
     this.#tools = result
   }
 }
+const helpToGptApi = (name, help, engage) => {
+  const { api } = engage
+  assert(typeof api === 'object', 'api must be an object')
+  assert(typeof api.type === 'string', 'api.type must be a string')
+  const parameters = {
+    type: 'object',
+    additionalProperties: false,
+    required: ['text'],
+    properties: {
+      text: api.properties.text,
+    },
+  }
 
-const toGptApi = (name, action) => {
+  return {
+    type: 'function',
+    function: {
+      name,
+      description: help.description,
+      parameters,
+    },
+  }
+}
+
+const isolateToGptApi = (name, action) => {
   const { api } = action
   assert(typeof api === 'object', 'api must be an object')
   assert(typeof api.type === 'string', 'api.type must be a string')

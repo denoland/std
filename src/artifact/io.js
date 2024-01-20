@@ -111,7 +111,8 @@ export default class IO {
     const [{ oid }] = await git.log({ ...this.#opts, depth: 1 })
     const ref = `${oid}-${id}`
     await git.branch({ ...this.#opts, ref, checkout: true })
-    await this.#artifact.delete(IO_PATH)
+    await this.#artifact.rm(IO_PATH)
+    await this.#artifact.rm('/chat-1.session.json')
     const io = await this.readIO()
     const { next } = input(io, action)
     await this.#commitIO(next, 'spawn')

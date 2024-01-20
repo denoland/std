@@ -1,9 +1,16 @@
 import git from 'git-rev-sync'
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
+import fs from 'node:fs'
 import AutoImport from 'unplugin-auto-import/vite'
 const VITE_GIT_HASH = JSON.stringify(git.long('.'))
 const VITE_GIT_DATE = JSON.stringify(git.date())
+const VITE_HELPS = JSON.stringify(fs.readdirSync('./src/helps'))
+
+import process from 'process'
+process.env.VITE_GIT_HASH = VITE_GIT_HASH
+process.env.VITE_GIT_DATE = VITE_GIT_DATE
+process.env.VITE_HELPS = VITE_HELPS
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -13,10 +20,6 @@ export default defineConfig({
     }),
     react(),
   ],
-  define: {
-    VITE_GIT_HASH,
-    VITE_GIT_DATE,
-  },
   test: {
     setupFiles: ['fake-indexeddb/auto'],
     testTimeout: 30000,

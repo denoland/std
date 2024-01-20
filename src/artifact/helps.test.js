@@ -38,6 +38,7 @@ test('multi step', async ({ artifact }) => {
   // like if adding a customer, and the request is missing name info.
 })
 test.skip('add a file to the database')
+test.skip('editing the help and rerunning it')
 
 // get the GUI back up to parity
 // make some manual helps to ensure the calling is correct, like db add

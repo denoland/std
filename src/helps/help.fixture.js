@@ -5,7 +5,7 @@ export default {
   runner: 'runner-chat',
   commands: ['io.fixture:local', 'io.fixture:error'],
   instructions: ['ALWAYS be as brief as possible'],
-  done: '',
+  done: 'the session file has been increased by 2 prompts, or 3 if this is the first time the help has been used, as this will include the sysprompt',
   examples: [],
   tests: [],
 }

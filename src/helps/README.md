@@ -46,6 +46,15 @@ Helps are the interface between human / AI readable and machine code readable.
 Think helps are only ever invoked with a single parameter - the text prompt.
 They are natural language interpreted functions.
 
+The return for calling a help as a function should have a standard format.
+status: DONE | PENDING | ERROR | NOCANDO output: the NL output of the function -
+there seems no point using json or any other format. To output a given format we
+would need to have called a tool that outputs that format. NOCANDO means that
+what was asked for is outside the competency envelope of this help. PENDING
+means it needs more information to continue.
+
+Might consider returning a confidence rating with results.
+
 ## Sections
 
 All sections are optional, and with nothing specified, a deprompted AI will be

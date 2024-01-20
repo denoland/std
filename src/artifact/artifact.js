@@ -64,12 +64,12 @@ export default class Artifact {
     })
     await git.init({ ...this.#opts, defaultBranch })
     await this.#fs.mkdir(this.#dir + '/helps')
-    const helps = ['empty.fixture', 'goalie', 'help.fixture', 'curtains']
+    // TODO change to use import glob
+    const helps = JSON.parse(import.meta.env.VITE_HELPS)
     await Promise.all(
-      helps.map(async (slug) => {
-        const name = '/helps/' + slug + '.js'
-        const file = await import(`../helps/${slug}.js?raw`)
-        await this.#fs.writeFile(this.#dir + name, file.default)
+      helps.map(async (name) => {
+        const file = await import(`../helps/${name}?raw`)
+        await this.#fs.writeFile(this.#dir + '/helps/' + name, file.default)
       })
     )
     debug('filesystem created')
@@ -89,9 +89,15 @@ export default class Artifact {
   async readIO() {
     return await this.#io.readIO()
   }
-  async delete(path) {
+  async rm(path) {
     assert(posix.isAbsolute(path), `path must be absolute: ${path}`)
-    await this.#fs.unlink(this.#dir + path)
+    try {
+      await this.#fs.unlink(this.#dir + path)
+    } catch (error) {
+      if (error.code !== 'ENOENT') {
+        throw error
+      }
+    }
   }
   async log({ filepath = '/', depth }) {
     filepath = filepath === '/' ? '/hal' : posix.resolve('/hal', filepath)
@@ -178,6 +184,12 @@ export default class Artifact {
     await this.#trigger.write(absolute, file)
     await git.add({ ...this.#opts, filepath })
     await this.#commit({ message, author: { name: 'HAL' } })
+  }
+  async ls(path = '/') {
+    assert(posix.isAbsolute(path), `path must be absolute: ${path}`)
+    const absolute = posix.normalize(this.#dir + path)
+    const files = await this.#fs.readdir(absolute)
+    return files
   }
   async #commitAll({ message, author }) {
     // TODO confirm this adds all files

@@ -40,13 +40,25 @@ test('curtains multi turn', async function ({ artifact }) {
 test.skip('edit boot files')
 
 test('add a file', async ({ artifact }) => {
-  // await artifact.prompt('add a file named hello.txt')
-  // check that the file was actually added and committed
-  // a commit is the action of the AI, which has necessarily modified the fs
-  // const files = await artifact.ls()
-  // expect(files).toEqual(['hello.txt'])
-  // const contents = await artifact.read('hello.txt')
-  // expect(contents).toEqual('hello world')
+  debug.enable('AI:engage-help, AI:runner-chat AI:*part')
+  const help = 'files'
+  const { engage } = await artifact.actions(isolate)
+  const result = await engage({ help, text: 'add a file named hello.txt' })
+  expect(typeof result).toBe('string')
+  const files = await artifact.ls()
+  expect(files).toContain('hello.txt')
+
+  await engage({ help, text: 'write "hello world" to it' })
+  const file = await artifact.read('/hello.txt')
+  expect(file).toEqual('hello world')
+
+  await engage({ help, text: "replace all the o's with p's" })
+  const file2 = await artifact.read('/hello.txt')
+  expect(file2).toEqual('hellp wprld')
+
+  await engage({ help, text: 'now blank it' })
+  const file3 = await artifact.read('/hello.txt')
+  expect(file3).toEqual('')
 })
 
 /**
@@ -55,3 +67,6 @@ test('add a file', async ({ artifact }) => {
  * - sys prompt editing
  * - relay (simply passes actions thru to another io channel)
  */
+
+test.skip('i want to make a bot')
+test.skip('i want to import this database file into my crm records')

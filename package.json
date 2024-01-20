@@ -7,7 +7,7 @@
   "scripts": {
     "start": "npm run dev",
     "test": "NODE_NO_WARNINGS=1 DEBUG_COLORS=1 vitest run",
-    "watch": "NODE_NO_WARNINGS=1 DEBUG_COLORS=1 vitest dev",
+    "watch": "clear && NODE_NO_WARNINGS=1 DEBUG_COLORS=1 vitest dev",
     "dev": "npm run storybook",
     "vite": "vite",
     "build": "vite build",
