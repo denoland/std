@@ -21,7 +21,7 @@ const engage = {
 }
 export const api = {
   engage,
-  engageBranch: engage,
+  engageInBand: engage,
   load: {
     description: 'load the help',
     type: 'object',
@@ -37,7 +37,7 @@ export const api = {
 }
 
 export const functions = {
-  engage: async ({ help: path, text }) => {
+  engageInBand: async ({ help: path, text }) => {
     debug('engage:', path)
     const help = await loadHelp(path)
     debug(help)
@@ -48,13 +48,11 @@ export const functions = {
 
     return await runner({ path, text })
   },
-  // TODO swap the defaultness around - branch should be the default call
-  engageBranch: async ({ help, text }) => {
-    debug('engageBranch:', help)
+  engage: async ({ help, text }) => {
+    debug('engage:', help)
     // TODO should be able to get my own isolate name inside the isolate
-    const { engage } = await hooks.spawns('engage-help')
-    return await engage({ help, text })
-    // this would engage the help, but in a new branch
+    const { engageInBand } = await hooks.spawns('engage-help')
+    return await engageInBand({ help, text })
   },
   continue: async ({ help: path, text, commit }) => {
     debug('continue:', path, commit)
