@@ -20,7 +20,11 @@ type ArrayType =
   | "ONLY_OBJECT_EXCLUDING_ARRAY"
   | "MIXED";
 
+/**
+ * Formatting Options for {@linkcode stringify}
+ */
 export interface FormatOptions {
+  /** Define if the keys should be aligned or not */
   keyAlignment?: boolean;
 }
 
@@ -259,7 +263,7 @@ class Dumper {
  * Stringify dumps source object into TOML string and returns it.
  * @param srcObj
  * @param [fmtOptions] format options
- * @param [fmtOptions.keyAlignment] whether to algin key
+ * @param [fmtOptions.keyAlignment] whether to align keys
  */
 export function stringify(
   srcObj: Record<string, unknown>,
