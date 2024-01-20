@@ -21,7 +21,7 @@ type ArrayType =
   | "MIXED";
 
 /**
- * Formating Options for {@linkcode stringify}
+ * Formatting Options for {@linkcode stringify}
  */
 export interface FormatOptions {
   /** Define if the keys should be aligned or not */
