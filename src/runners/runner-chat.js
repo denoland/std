@@ -1,4 +1,4 @@
-import loadHelp from '../artifact/load-help.js'
+import { load } from '../artifact/load-help.js'
 import posix from 'path-browserify'
 import merge from 'lodash.merge'
 import OpenAI from 'openai'
@@ -24,7 +24,7 @@ const ai = new OpenAI({ apiKey, dangerouslyAllowBrowser: true })
 export default async ({ path, text }) => {
   assert(typeof path === 'string', 'help must be a string')
   assert(typeof text === 'string', 'text must be a string')
-  const help = await loadHelp(path)
+  const help = await load(path)
   const ai = await AI.create(help)
   return await ai.prompt(text)
 }
@@ -178,7 +178,7 @@ export class AI {
         assert(command.startsWith('helps/'), `invalid help: ${command}`)
         // TODO read in as pure json
         name = posix.basename(command)
-        const help = await loadHelp(name)
+        const help = await load(name)
         assert(help.description, `missing description: ${command}`)
         // TODO make part of hooks
         const { engage } = await hooks.spawns('engage-help')

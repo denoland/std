@@ -6,6 +6,7 @@ import { Buffer } from 'buffer'
 import assert from 'assert-fast'
 import TriggerFS from './trigger-fs.js'
 import Debug from 'debug'
+import { loadDir } from './load-help.js'
 const debug = Debug('AI:artifact')
 globalThis.Buffer = Buffer
 
@@ -64,14 +65,11 @@ export default class Artifact {
     })
     await git.init({ ...this.#opts, defaultBranch })
     await this.#fs.mkdir(this.#dir + '/helps')
-    // TODO change to use import glob
-    const helps = JSON.parse(import.meta.env.VITE_HELPS)
-    await Promise.all(
-      helps.map(async (name) => {
-        const file = await import(`../helps/${name}?raw`)
-        await this.#fs.writeFile(this.#dir + '/helps/' + name, file.default)
-      })
-    )
+    const helpFiles = await loadDir()
+    for (const { name, file } of helpFiles) {
+      await this.#fs.writeFile(this.#dir + '/helps/' + name, file)
+    }
+
     debug('filesystem created')
     // TODO bug in git where cannot do a walk immediately after first commit
     await git.add({ ...this.#opts, filepath: '.' })
@@ -87,6 +85,7 @@ export default class Artifact {
     return contents
   }
   async readIO() {
+    // TODO specify a branch and possibly a historical commit to read from
     return await this.#io.readIO()
   }
   async rm(path) {

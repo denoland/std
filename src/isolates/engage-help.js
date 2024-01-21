@@ -1,6 +1,6 @@
 import * as hooks from '../artifact/io-hooks.js'
 import assert from 'assert-fast'
-import loadHelp from '../artifact/load-help.js'
+import { load } from '../artifact/load-help.js'
 import Debug from 'debug'
 const debug = Debug('AI:engage-help')
 const engage = {
@@ -39,11 +39,12 @@ export const api = {
 export const functions = {
   engageInBand: async ({ help: path, text }) => {
     debug('engage:', path)
-    const help = await loadHelp(path)
+    const help = await load(path)
     debug(help)
 
     assert(typeof help.runner === 'string', `no runner: ${help.runner}`)
     debug('found runner:', help.runner)
+    // TODO move to an eager vite glob import or a cache
     const { default: runner } = await import(`../runners/${help.runner}.js`)
 
     return await runner({ path, text })
@@ -60,7 +61,7 @@ export const functions = {
   },
   load: async ({ help }) => {
     debug('load:', help)
-    return await loadHelp(help)
+    return await load(help)
     // TODO this should load up the functions that would be available to, so the
     // model has more to work with
   },

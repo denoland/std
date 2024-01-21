@@ -10,17 +10,17 @@ test('tool call', async function ({ artifact }) {
   expect(result).toContain('function was called')
 })
 test('error tool call', async function ({ artifact }) {
-  const { engage } = await artifact.actions(isolate)
+  const { engageInBand } = await artifact.actions(isolate)
   const text = 'call the "error" function with the message: "bob"'
-  await engage({ help, text })
+  await engageInBand({ help, text })
   const io = await artifact.readIO()
   expect(io.inputs[1].name).toBe('error')
   expect(io.outputs[1].error.message).toBe('bob')
 })
 test('chat', async ({ artifact }) => {
-  const { engage } = await artifact.actions(isolate)
+  const { engageInBand } = await artifact.actions(isolate)
   const text = 'say a single "x" character and do not call any functions'
-  const result = await engage({ help, text })
+  const result = await engageInBand({ help, text })
   expect(result).toEqual('x')
 })
 test('calling another help file', async ({ artifact }) => {

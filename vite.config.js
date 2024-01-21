@@ -5,12 +5,10 @@ import fs from 'node:fs'
 import AutoImport from 'unplugin-auto-import/vite'
 const VITE_GIT_HASH = JSON.stringify(git.long('.'))
 const VITE_GIT_DATE = JSON.stringify(git.date())
-const VITE_HELPS = JSON.stringify(fs.readdirSync('./src/helps'))
 
 import process from 'process'
 process.env.VITE_GIT_HASH = VITE_GIT_HASH
 process.env.VITE_GIT_DATE = VITE_GIT_DATE
-process.env.VITE_HELPS = VITE_HELPS
 
 // https://vitejs.dev/config/
 export default defineConfig({

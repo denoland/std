@@ -46,8 +46,9 @@ export default class IO {
       debug('io changes', branchName, inputs.length, outputs.length)
       for (const { input, id } of inputs) {
         const { isolate, name, parameters, proctype } = input
+        debug('input', isolate, name, parameters, proctype)
         if (proctype === PROCTYPES.SPAWN) {
-          debug('spawn', isolate, name, parameters)
+          debug('spawning', isolate, name, parameters)
           await this.#spawn({ id, isolate, name, parameters })
         } else if (proctype === PROCTYPES.SELF) {
           debug('self', isolate, name, parameters)
@@ -111,6 +112,7 @@ export default class IO {
     const [{ oid }] = await git.log({ ...this.#opts, depth: 1 })
     const ref = `${oid}-${id}`
     await git.branch({ ...this.#opts, ref, checkout: true })
+    debug('spawn', ref, action)
     await this.#artifact.rm(IO_PATH)
     await this.#artifact.rm('/chat-1.session.json')
     const io = await this.readIO()

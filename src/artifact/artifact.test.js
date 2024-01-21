@@ -8,8 +8,8 @@ test('boot', async ({ artifact }) => {
 })
 test('have a chat', async function ({ artifact }) {
   const help = 'empty.fixture'
-  const { engage } = await artifact.actions(isolate)
-  const result = await engage({ help, text: 'return an exclaimation mark' })
+  const { engageInBand } = await artifact.actions(isolate)
+  const result = await engageInBand({ help, text: 'return a "!"' })
   expect(result.trim()).toEqual('!')
   const session = await artifact.read('/chat-1.session.json')
   const messages = JSON.parse(session)
@@ -20,8 +20,8 @@ test('have a chat', async function ({ artifact }) {
 })
 test('curtains', async function ({ artifact }) {
   const help = 'curtains'
-  const { engage } = await artifact.actions(isolate)
-  const result = await engage({ help, text: 'hello' })
+  const { engageInBand } = await artifact.actions(isolate)
+  const result = await engageInBand({ help, text: 'hello' })
   expect(result.length).toBeGreaterThan(100)
   const session = await artifact.read('/chat-1.session.json')
   const messages = JSON.parse(session)
@@ -29,9 +29,9 @@ test('curtains', async function ({ artifact }) {
 })
 test('curtains multi turn', async function ({ artifact }) {
   const help = 'curtains'
-  const { engage } = await artifact.actions(isolate)
-  await engage({ help, text: 'hello' })
-  const result2 = await engage({ help, text: 'lounge' })
+  const { engageInBand } = await artifact.actions(isolate)
+  await engageInBand({ help, text: 'hello' })
+  const result2 = await engageInBand({ help, text: 'lounge' })
   expect(result2.length).toBeGreaterThan(100)
   const session = await artifact.read('/chat-1.session.json')
   const messages = JSON.parse(session)
@@ -40,23 +40,25 @@ test('curtains multi turn', async function ({ artifact }) {
 test.skip('edit boot files')
 
 test('add a file', async ({ artifact }) => {
-  debug.enable('AI:engage-help, AI:runner-chat AI:*part')
   const help = 'files'
-  const { engage } = await artifact.actions(isolate)
-  const result = await engage({ help, text: 'add a file named hello.txt' })
+  const { engageInBand } = await artifact.actions(isolate)
+  const result = await engageInBand({
+    help,
+    text: 'add a file named hello.txt',
+  })
   expect(typeof result).toBe('string')
   const files = await artifact.ls()
   expect(files).toContain('hello.txt')
 
-  await engage({ help, text: 'write "hello world" to it' })
+  await engageInBand({ help, text: 'write "hello world" to it' })
   const file = await artifact.read('/hello.txt')
   expect(file).toEqual('hello world')
 
-  await engage({ help, text: "replace all the o's with p's" })
+  await engageInBand({ help, text: "replace all the o's with p's" })
   const file2 = await artifact.read('/hello.txt')
   expect(file2).toEqual('hellp wprld')
 
-  await engage({ help, text: 'now blank it' })
+  await engageInBand({ help, text: 'now blank it' })
   const file3 = await artifact.read('/hello.txt')
   expect(file3).toEqual('')
 })
