@@ -17,3 +17,12 @@ export const test = vitest.extend({
     await artifact.stop()
   },
 })
+
+export const goal = test.extend({
+  result: async ({ artifact, task }, use) => {
+    const text = task.name
+    const { engage } = await artifact.actions('engage-help')
+    const result = await engage({ help: 'goalie', text })
+    await use(result)
+  },
+})

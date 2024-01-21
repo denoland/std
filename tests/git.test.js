@@ -1,4 +1,4 @@
-import { test, expect, debug } from '../src/test-context.js'
+import { test, expect, debug, goal } from '../src/test-context.js'
 
 // if we could make a help that was aware of the git repo, and the io rules
 // within it, then we could get it to answer questions about how the flow of
@@ -8,3 +8,7 @@ import { test, expect, debug } from '../src/test-context.js'
 
 test.skip('what was the last action to this process ?')
 test.skip('what parameters were used to call the runner at this point ?')
+goal.todo('please commit everything', async ({ result }) => {
+  // this should push whatever the user has done to their branch on github
+  // then we can do whatever we wish from this point
+})

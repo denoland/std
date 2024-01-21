@@ -1,15 +1,16 @@
-import { expect, test, debug } from '../src/test-context'
+import { expect, goal, debug } from '../src/test-context'
 
-const help = 'goalie'
+debug.enable('test *ai-result* ')
 
-test.only('what files do I have ?', async ({ artifact, task }) => {
-  debug.enable('AI:runner-chat test')
-  const text = task.name
-  const { engage } = await artifact.actions('engage-help')
-  const result = await engage({ help, text })
+goal('what files do I have ?', async ({ result }) => {
   debug(result)
   const files = ['.git', 'helps', '.io.json', 'chat-1.session.json']
   files.forEach((file) => {
     expect(result).toContain(file)
   })
+})
+goal('add a file named "hello"', async ({ result, task }) => {
+  debug('task:', task.name)
+  debug(result)
+  expect(result).toContain('hello')
 })

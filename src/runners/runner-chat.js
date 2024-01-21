@@ -8,6 +8,11 @@ import assert from 'assert-fast'
 import Debug from 'debug'
 import { serializeError } from 'serialize-error'
 const debug = Debug('AI:runner-chat')
+const debugResult = debug.extend('ai-result-content')
+const debugPart = debug.extend('ai-part')
+const debugToolCall = debug.extend('ai-result-tool')
+const debugToolResult = debug.extend('ai-tool-result')
+
 const { VITE_OPENAI_API_KEY } = import.meta.env
 
 if (!VITE_OPENAI_API_KEY) {
@@ -26,7 +31,7 @@ export default async ({ path, text }) => {
 
 export class AI {
   #sysprompt
-  #model
+  #config
   #tools
   #actions
   #sessionPath
@@ -38,7 +43,7 @@ export class AI {
       const ai = new AI()
       ai.#sessionPath = '/chat-1.session.json'
       ai.#sysprompt = help.instructions.join('\n').trim()
-      ai.#model = help.config?.model || 'gpt-4-1106-preview'
+      ai.#config = help.config || {}
       await ai.#loadCommands(help.commands)
       AI.#cache.set(key, ai)
     }
@@ -68,9 +73,10 @@ export class AI {
   }
 
   async #execute(messages) {
+    const { model = 'gpt-4-1106-preview', temperature = 0 } = this.#config
     const args = {
-      model: this.#model,
-      temperature: 0,
+      model,
+      temperature,
       messages: [...messages],
       stream: true,
       seed: 1,
@@ -83,11 +89,10 @@ export class AI {
     debug('streamCall started')
     const streamCall = await ai.chat.completions.create(args)
     debug('streamCall placed')
-    const ds = debug.extend('part')
     for await (const part of streamCall) {
       const content = part.choices[0]?.delta?.content
       if (content) {
-        ds(content)
+        debugPart(content)
         if (!assistant.content) {
           assistant.content = ''
         }
@@ -112,7 +117,7 @@ export class AI {
             args.function.arguments += rest.function.arguments
           }
           merge(assistant.tool_calls[index], rest, args)
-          ds(`%o`, assistant.tool_calls[index]?.function)
+          debugPart(`%o`, assistant.tool_calls[index]?.function)
         }
       }
       await hooks.writeJS(this.#sessionPath, messages)
@@ -125,14 +130,15 @@ export class AI {
     messages = [...messages]
     const assistant = messages[messages.length - 1]
     if (!assistant.tool_calls) {
+      debugResult(assistant.content)
       return assistant.content
     }
-    debug('toolCalls count:', assistant.tool_calls.length)
     for (const call of assistant.tool_calls) {
       const {
         function: { name, arguments: args },
         id: tool_call_id,
       } = call
+      debugToolCall(name, args)
       debug('tool call:', name, args)
       assert(this.#actions[name], `missing action: ${name}`)
       const message = { role: 'tool', tool_call_id }
@@ -151,7 +157,9 @@ export class AI {
         debug('tool call error:', error)
         message.content = JSON.stringify(serializeError(error), null, 2)
       }
+      debugToolResult(message.content)
     }
+
     await hooks.writeJS(this.#sessionPath, messages)
     return this.#execute(messages)
   }
