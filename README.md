@@ -199,14 +199,20 @@ This section assumes that a
 ### Deploy to [Deno Deploy](https://deno.com/deploy)
 
 1. Clone this repository for your SaaSKit project.
-1. Sign into [Deno Deploy](https://dash.deno.com) with your GitHub account.
+1. Update your `.github/workflows/deploy.yml` file as needed. Hints are in the
+   file.
+1. Sign into [Deno Deploy](https://dash.deno.com/projects) with your GitHub
+   account.
+1. Click **+ New Project**.
 1. Select your GitHub organization or user, repository, and branch.
-1. Select **Automatic** deployment mode and `main.ts` as the entry point.
-1. Click **Link**, which will start the deployment.
+1. Click **Edit mode** and select **Build step with GitHub Actions** as the
+   build mode and `main.ts` as the entry point.
+1. Click **Add Build Step** and wait until the GitHub Actions Workflow is
+   complete.
 1. Once the deployment is complete, click on **Settings** and add the production
    environmental variables, then hit **Save**.
 
-You should now be able to visit your newly deployed SaaS.
+You should now be able to visit your newly deployed SaaS website.
 
 ### Deploy to any VPS with Docker
 
