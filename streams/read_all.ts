@@ -6,6 +6,7 @@ import {
   readAllSync as _readAllSync,
 } from "../io/read_all.ts";
 import type { Reader, ReaderSync } from "../io/types.ts";
+import { warnOnDeprecatedApi } from "../internal/warn_on_deprecated_api.ts";
 
 /**
  * Read {@linkcode Reader} `r` until EOF (`null`) and resolve to the content as
@@ -33,6 +34,12 @@ import type { Reader, ReaderSync } from "../io/types.ts";
  * @deprecated (will be removed in 0.214.0) Import from {@link https://deno.land/std/io/read_all.ts} instead.
  */
 export async function readAll(r: Reader): Promise<Uint8Array> {
+  warnOnDeprecatedApi({
+    apiName: "readAll()",
+    stack: new Error().stack!,
+    removalVersion: "0.214.0",
+    suggestion: "Import from `https://deno.land/std/io/read_all.ts` instead.",
+  });
   return await _readAll(r);
 }
 
@@ -62,5 +69,11 @@ export async function readAll(r: Reader): Promise<Uint8Array> {
  * @deprecated (will be removed in 0.214.0) Import from {@link https://deno.land/std/io/read_all.ts} instead.
  */
 export function readAllSync(r: ReaderSync): Uint8Array {
+  warnOnDeprecatedApi({
+    apiName: "readAllSync()",
+    stack: new Error().stack!,
+    removalVersion: "0.214.0",
+    suggestion: "Import from `https://deno.land/std/io/read_all.ts` instead.",
+  });
   return _readAllSync(r);
 }
