@@ -177,28 +177,23 @@ Goal.propTypes = {
   ).isRequired,
 }
 
-const Tool = ({ status, cmd, schema, args, output, consequences }) => (
+const Tool = ({ tool_calls, messages }) => (
   <TimelineItem>
     <TimelineSeparator>
       <TimelineConnector sx={{ bgcolor: 'secondary.main' }} />
       <TimelineDot color='secondary' sx={{ position: 'relative' }}>
         <ToolIcon />
-        {status !== STATUS.DONE && <Progress />}
       </TimelineDot>
       <TimelineConnector sx={{ bgcolor: 'secondary.main' }} />
     </TimelineSeparator>
     <TimelineContent>
-      {/* <ToolAction name={cmd} schema={schema} args={args} output={output} /> */}
+      <ToolAction tool_calls={tool_calls} messages={messages} />
     </TimelineContent>
   </TimelineItem>
 )
 Tool.propTypes = {
-  status: PropTypes.oneOf(Object.values(STATUS)),
-  cmd: PropTypes.string,
-  schema: PropTypes.object,
-  args: PropTypes.object,
-  output: PropTypes.object,
-  consequences: PropTypes.object,
+  tool_calls: PropTypes.arrayOf(PropTypes.object),
+  messages: PropTypes.arrayOf(PropTypes.object),
 }
 
 const Messages = ({ messages = [], isTranscribing }) => {
@@ -219,16 +214,13 @@ const Messages = ({ messages = [], isTranscribing }) => {
           case 'assistant':
             if (tool_calls) {
               return (
-                <ToolAction
-                  key={key}
-                  tool_calls={tool_calls}
-                  messages={messages}
-                />
+                <Tool key={key} tool_calls={tool_calls} messages={messages} />
               )
             } else {
               return <Assistant key={key} content={content} />
             }
           case 'system':
+            // TODO list the sysprompt, or the help file if it started from help
             return null
           case 'tool':
             return null
