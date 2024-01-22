@@ -7,7 +7,7 @@ const { Deno } = globalThis as any;
 const ALREADY_WARNED_DEPRECATED = new Set<string>();
 const ENV_VAR_KEY = "DENO_NO_DEPRECATION_WARNINGS";
 const shouldDisableDeprecatedApiWarning =
-  (await Deno?.permissions.query({ name: "env", variable: ENV_VAR_KEY }))
+  Deno?.permissions.querySync?.({ name: "env", variable: ENV_VAR_KEY })
       .state === "granted" && Deno?.env.get(ENV_VAR_KEY) === "1";
 
 interface WarnDeprecatedApiConfig {
