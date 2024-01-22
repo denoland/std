@@ -25,7 +25,7 @@ import DraftsIcon from '@mui/icons-material/Drafts'
 import FolderIcon from '@mui/icons-material/Folder'
 import RuleIcon from '@mui/icons-material/Rule'
 import Tooltip from '@mui/material/Tooltip'
-// import { ToolAction } from './ToolAction'
+import { ToolAction } from './ToolAction'
 import remarkGfm from 'remark-gfm'
 import Markdown from 'react-markdown'
 
@@ -177,7 +177,6 @@ Goal.propTypes = {
   ).isRequired,
 }
 
-// required: ['type', 'cmd', 'schema', 'args', 'output', 'consequences'],
 const Tool = ({ status, cmd, schema, args, output, consequences }) => (
   <TimelineItem>
     <TimelineSeparator>
@@ -212,22 +211,27 @@ const Messages = ({ messages = [], isTranscribing }) => {
         },
       }}
     >
-      {messages.map(({ role, content }, key) => {
+      {messages.map(({ role, content, tool_calls }, key) => {
+        debug('role', role, 'content', content)
         switch (role) {
           case 'user':
             return <Dave key={key} content={content} />
           case 'assistant':
-            return <Assistant key={key} content={content} />
+            if (tool_calls) {
+              return (
+                <ToolAction
+                  key={key}
+                  tool_calls={tool_calls}
+                  messages={messages}
+                />
+              )
+            } else {
+              return <Assistant key={key} content={content} />
+            }
           case 'system':
             return null
-          // case 'GOAL':
-          //   return <Goal key={key} text={text} status={status} helps={helps} />
-          // case 'RUNNER':
-          //   return <Runner key={key} text={text} status={status} />
-          // case 'TOOL':
-          //   return <Tool key={key} {...rest} status={status} />
-          // case 'GOAL_END':
-          //   return null
+          case 'tool':
+            return null
           default:
             throw new Error(`unknown type ${role}`)
         }

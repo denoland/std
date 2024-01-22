@@ -8,7 +8,7 @@ export default {
 }
 
 const Template = (args) => {
-  Debug.enable('AI:hooks AI:trigger-fs AI:Provider AI:isolate-chat')
+  Debug.enable('AI:hooks AI:trigger-fs AI:Provider AI:ThreeBox')
   return (
     <Provider>
       <ThreeBox {...args} />

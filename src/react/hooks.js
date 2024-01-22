@@ -6,6 +6,7 @@ import Debug from 'debug'
 const debug = Debug('AI:hooks')
 
 export const useArtifact = (path) => {
+  // TODO needs to be branch aware and commit aware
   assert(posix.isAbsolute(path), `path must be absolute: ${path}`)
   const { artifact } = useContext(ArtifactContext)
   const [file, setFile] = useState()
@@ -65,7 +66,7 @@ export const useActions = (isolate) => {
 }
 
 export const usePrompt = () => {
-  const isolate = 'chat'
+  const isolate = 'engage-help'
   const actions = useActions(isolate)
   const [buffer, setBuffer] = useState([])
   const [prompt, setPrompt] = useState()
@@ -79,7 +80,10 @@ export const usePrompt = () => {
       return
     }
     debug('setting prompt')
-    setPrompt(() => actions.prompt)
+    const help = 'goalie'
+    const { engageInBand } = actions
+    const prompt = ({ text }) => engageInBand({ help, text })
+    setPrompt(() => prompt)
   }, [actions])
 
   useEffect(() => {
