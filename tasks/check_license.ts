@@ -14,7 +14,8 @@ const ROOT = new URL("../", import.meta.url);
 const CHECK = Deno.args.includes("--check");
 const CURRENT_YEAR = new Date().getFullYear();
 const RX_COPYRIGHT = new RegExp(
-  `// Copyright 2023-([0-9]{4}) the Deno authors\\. All rights reserved\\. MIT license\\.\n`,
+  `// Copyright 2023-([0-9]{4}) the Deno authors\\. All rights reserved\\. MIT license\\.\\n`,
+  "m",
 );
 const COPYRIGHT =
   `// Copyright 2023-${CURRENT_YEAR} the Deno authors. All rights reserved. MIT license.`;
