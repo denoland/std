@@ -44,7 +44,8 @@ for await (const { name: dirName, isDirectory } of Deno.readDir(ROOT)) {
       !name.endsWith(".ts") ||
       name.startsWith(".") ||
       name.startsWith("_") ||
-      name.endsWith("test.ts")
+      name.endsWith("test.ts") ||
+      name.endsWith(".d.ts")
     ) continue;
     const absoluteFilePath = join(dirName, name);
     if (EXCLUDED_PATHS.includes(absoluteFilePath)) continue;
