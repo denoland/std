@@ -306,4 +306,12 @@ export * from "./sort.ts";
 export * from "./types.ts";
 export * from "./lte.ts";
 export * from "./lte.ts";
+
+export * from "./equals.ts";
+export * from "./not_equals.ts";
+export * from "./greater_than.ts";
+export * from "./greater_or_equal.ts";
+export * from "./less_than.ts";
+export * from "./less_or_equal.ts";
+
 export const SEMVER_SPEC_VERSION = "2.0.0";

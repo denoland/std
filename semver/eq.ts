@@ -1,9 +1,12 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-import { compare } from "./compare.ts";
-import type { SemVer } from "./types.ts";
+import { equals } from "./equals.ts";
+import { SemVer } from "./types.ts";
 
-/** Returns `true` if they're logically equivalent, even if they're not the exact
- * same version object. */
+/**
+ * Returns `true` if they're logically equivalent, even if they're not the exact same version object.
+ *
+ * @deprecated (will be removed after 0.213.0) Use {@linkcode equals} instead.
+ */
 export function eq(s0: SemVer, s1: SemVer): boolean {
-  return compare(s0, s1) === 0;
+  return equals(s0, s1);
 }
