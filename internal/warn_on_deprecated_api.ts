@@ -8,7 +8,7 @@ const ALREADY_WARNED_DEPRECATED = new Set<string>();
 const ENV_VAR_KEY = "DENO_NO_DEPRECATION_WARNINGS";
 const shouldDisableDeprecatedApiWarning =
   Deno?.permissions.querySync?.({ name: "env", variable: ENV_VAR_KEY })
-      .state === "granted" && Deno?.env.get(ENV_VAR_KEY) === "1";
+      .state === "granted" && Deno?.env.has(ENV_VAR_KEY);
 
 interface WarnDeprecatedApiConfig {
   /** The name of the deprecated API. */
@@ -78,11 +78,6 @@ export function warnOnDeprecatedApi(config: WarnDeprecatedApiConfig) {
     );
   }
 
-  console.log("%c\u2502", "color: yellow;");
-  console.log(
-    "%c\u251c Set `DENO_NO_DEPRECATION_WARNINGS=1` to disable these deprecation warnings.",
-    "color: yellow;",
-  );
   console.log("%c\u2502", "color: yellow;");
   console.log("%c\u2514 Stack trace:", "color: yellow;");
   for (let i = 0; i < stackLines.length; i++) {
