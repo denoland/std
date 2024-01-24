@@ -41,6 +41,7 @@
     "react-dom": "^18.2.0",
     "react-inspector": "^6.0.2",
     "react-markdown": "^9.0.1",
+    "react-router-dom": "^6.21.3",
     "remark-gfm": "^4.0.0",
     "serialize-error": "^11.0.3",
     "supports-color": "^9.4.0",
