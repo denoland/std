@@ -13,9 +13,9 @@ process.env.VITE_GIT_DATE = VITE_GIT_DATE
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
-    AutoImport({
-      imports: [{ debug: [['default', 'Debug']] }],
-    }),
+    // AutoImport({
+    //   imports: [{ debug: [['default', 'Debug']] }],
+    // }),
     react(),
   ],
   test: {

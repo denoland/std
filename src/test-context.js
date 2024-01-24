@@ -18,6 +18,15 @@ export const test = vitest.extend({
   },
 })
 
+export const help = test.extend({
+  help: async ({ artifact, task }, use) => {
+    const text = task.name
+    const { engageInBand } = await artifact.actions('engage-help')
+    const help = (help) => engageInBand({ help, text })
+    await use(help)
+  },
+})
+
 export const goal = test.extend({
   result: async ({ artifact, task }, use) => {
     const text = task.name
