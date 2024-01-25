@@ -1,6 +1,6 @@
 import * as hooks from '../artifact/io-hooks.js'
 import assert from 'assert-fast'
-import { load } from '../artifact/load-help.js'
+import { load } from './load-help.js'
 import Debug from 'debug'
 const debug = Debug('AI:engage-help')
 const engage = {

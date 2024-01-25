@@ -1,4 +1,4 @@
-import { load } from '../artifact/load-help.js'
+import { load } from '../isolates/load-help.js'
 import posix from 'path-browserify'
 import merge from 'lodash.merge'
 import OpenAI from 'openai'

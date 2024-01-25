@@ -1,3 +1,4 @@
+import { isBrowser } from 'wherearewe'
 import http from 'isomorphic-git/http/web'
 import IO, { PROCTYPES, defaultBranch } from './io.js'
 import posix from 'path-browserify'
@@ -7,7 +8,6 @@ import { Buffer } from 'buffer'
 import assert from 'assert-fast'
 import TriggerFS from './trigger-fs.js'
 import Debug from 'debug'
-import { loadDir } from './load-help.js'
 const debug = Debug('AI:artifact')
 globalThis.Buffer = Buffer
 
@@ -32,10 +32,9 @@ export default class Artifact {
       dir: artifact.#dir,
       cache: artifact.#cache,
       http,
-      // TODO we must have our own proxy to handle credentialed data
-      corsProxy: 'https://cors.isomorphic-git.org',
-      // the deno one seems to conk out on small repos, but is much faster
-      // corsProxy: 'https://artifact-git-cors-proxy.deno.dev',
+    }
+    if (isBrowser) {
+      artifact.#opts.corsProxy = 'https://cors.isomorphic-git.org'
     }
     const opts = { ...artifact.#opts, trigger: artifact.#trigger }
     artifact.#io = IO.create({ artifact, opts })
@@ -74,32 +73,10 @@ export default class Artifact {
     // TODO hook in the status to some loading bar thing
     await git.clone({
       ...this.#opts,
-      // onProgress: debug,
-      // onMessage: debug,
-      // onAuthFailure: debug,
-      // onAuthSuccess: debug,
-      // onAuth: debug,
       url: 'https://github.com/dreamcatcher-tech/HAL.git',
     })
-    debug('done')
-
-    await this.#fs.mkdir(this.#dir + '/helps')
-    const helpFiles = await loadDir()
-    for (const { name, file } of helpFiles) {
-      await this.#fs.writeFile(this.#dir + '/helps/' + name, file)
-    }
-
-    debug('filesystem created')
-    // TODO check if repo is dirty, and make a commit if so
-    // TODO bug in git where cannot do a walk immediately after first commit
-    // await git.add({ ...this.#opts, filepath: '.' })
-    // const ref = await git.commit({
-    //   ...this.#opts,
-    //   message: 'init',
-    //   author: { name: 'HAL' },
-    // })
-    // TODO find why cannot do trigger immediately after init
-    // await Promise.resolve()
+    debug('filesystem cloned')
+    // TODO trigger a commit to cause action processing to begin
     // await this.#trigger.commit(this.#dir, ref)
   }
   async read(path) {
