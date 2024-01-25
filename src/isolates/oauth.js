@@ -46,7 +46,7 @@ export const loop = async () => {
     if (isRunningOnLocalhost()) {
       data.mode = 'development'
     }
-    const url = 'https://aritfact-github-auth.deno.dev'
+    const url = 'https://artifact-github-auth.deno.dev'
     const result = await fetch.post({ url, data })
 
     delete globalThis[fnName]

@@ -4,7 +4,7 @@ Debug.enable('github-auth')
 const allowedOrigins = [
   'http://localhost:5173',
   'hal.dreamcatcher.land',
-  'aritfact-github-auth.deno.dev',
+  'artifact-github-auth.deno.dev',
 ]
 
 Deno.serve(async (req) => {
