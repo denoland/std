@@ -1,2 +1,3 @@
-# artifact-helps
-Help files shared between instances of Artifact
+# HAL
+
+This is the root repo that each new instance of HAL clones.
