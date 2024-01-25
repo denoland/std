@@ -423,6 +423,8 @@ export class Server {
       let httpConn: Deno.HttpConn;
 
       try {
+        // deno-lint-ignore ban-untagged-ignore
+        // deno-lint-ignore
         httpConn = Deno.serveHttp(conn);
       } catch {
         // Connection has been closed.
