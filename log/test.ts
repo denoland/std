@@ -9,7 +9,7 @@ import {
   LogLevelNames,
 } from "./levels.ts";
 
-class TestHandler extends log.handlers.BaseHandler {
+class TestHandler extends log.BaseHandler {
   public messages: string[] = [];
 
   override log(msg: string) {
