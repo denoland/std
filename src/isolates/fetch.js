@@ -1,4 +1,3 @@
-import { serializeError } from 'serialize-error'
 import Debug from 'debug'
 const debug = Debug('AI:fetch')
 
@@ -48,8 +47,6 @@ export const functions = {
     if (data) {
       requestOptions.body = JSON.stringify(data)
     }
-    return fetch(url, requestOptions)
-      .then((response) => response.json())
-      .catch(serializeError)
+    return fetch(url, requestOptions).then((response) => response.json())
   },
 }
