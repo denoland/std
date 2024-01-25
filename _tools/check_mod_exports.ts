@@ -8,8 +8,13 @@ import ts from "npm:typescript";
 const ROOT = new URL("../", import.meta.url);
 const FAIL_FAST = Deno.args.includes("--fail-fast");
 const EXCLUDED_PATHS = [
+  "internal/warn_on_deprecated_api.ts",
   "dotenv/load.ts",
   "path/glob.ts",
+  "front_matter/yaml.ts",
+  "front_matter/json.ts",
+  "front_matter/toml.ts",
+  "front_matter/any.ts",
 ];
 
 const MOD_FILENAME = "mod.ts";
