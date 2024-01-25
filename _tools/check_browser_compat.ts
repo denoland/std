@@ -6,11 +6,14 @@
  *
  * Run using: deno run --allow-read --allow-run _tools/check_browser_compat.ts
  */
-import { walkSync } from "../fs/walk.ts";
+
+import { walk } from "../fs/walk.ts";
+import { COPYRIGHT } from "./check_licence.ts";
 
 const ROOT = new URL("../", import.meta.url);
 const SKIP = [/(test|bench|\/_|\\_|testdata|version.ts)/];
 const DECLARATION = "// This module is browser compatible.";
+const CHECK = Deno.args.includes("--check");
 
 function isBrowserCompatible(filePath: string): boolean {
   const command = new Deno.Command(Deno.execPath(), {
@@ -26,24 +29,24 @@ function isBrowserCompatible(filePath: string): boolean {
   return success;
 }
 
-function hasBrowserCompatibleComment(path: string): boolean {
-  const output = Deno.readTextFileSync(path);
-  return output.includes(DECLARATION);
+function hasBrowserCompatibleComment(source: string): boolean {
+  return source.includes(DECLARATION);
 }
 
-const maybeBrowserCompatibleFiles: string[] = [];
-
-for (const { path } of walkSync(ROOT, { exts: [".ts"], skip: SKIP })) {
-  if (isBrowserCompatible(path) && !hasBrowserCompatibleComment(path)) {
-    maybeBrowserCompatibleFiles.push(path);
+for await (const { path } of walk(ROOT, { exts: [".ts"], skip: SKIP })) {
+  const source = await Deno.readTextFile(path);
+  if (isBrowserCompatible(path) && !hasBrowserCompatibleComment(source)) {
+    if (CHECK) {
+      console.log(
+        `${path} is likely browser-compatible and can have the "${DECLARATION}" comment added.`,
+      );
+    } else {
+      const index = source.indexOf(COPYRIGHT);
+      await Deno.writeTextFile(
+        path,
+        source.slice(0, index + COPYRIGHT.length) + "\n" + DECLARATION + "\n" +
+          source.slice(index + COPYRIGHT.length),
+      );
+    }
   }
-}
-
-if (maybeBrowserCompatibleFiles.length) {
-  console.log(
-    `The following files are likely browser-compatible and can have the "${DECLARATION}" comment added:`,
-  );
-  maybeBrowserCompatibleFiles.forEach((path, index) =>
-    console.log(`${index + 1}. ${path}`)
-  );
 }
