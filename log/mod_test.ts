@@ -64,7 +64,8 @@ Deno.test({
   async fn() {
     const consoleHandler = new TestHandler("DEBUG");
     const anotherConsoleHandler = new TestHandler("DEBUG", {
-      formatter: "[{loggerName}] {levelName} {msg}",
+      formatter: ({ loggerName, levelName, msg }) =>
+        `[${loggerName}] ${levelName} ${msg}`,
     });
     await setup({
       handlers: {

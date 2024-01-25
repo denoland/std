@@ -23,7 +23,8 @@ Deno.test({
   fn() {
     const handlerNoName = new TestHandler("DEBUG");
     const handlerWithLoggerName = new TestHandler("DEBUG", {
-      formatter: "[{loggerName}] {levelName} {msg}",
+      formatter: ({ loggerName, levelName, msg }) =>
+        `[${loggerName}] ${levelName} ${msg}`,
     });
 
     const logger = new Logger("config", "DEBUG", {
