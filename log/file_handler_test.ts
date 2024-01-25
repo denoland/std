@@ -4,7 +4,7 @@ import { LogLevels } from "./levels.ts";
 import { FileHandler } from "./file_handler.ts";
 import { LogRecord } from "./logger.ts";
 
-const LOG_FILE = "./test_log.file";
+const LOG_FILE = "./file_handler_test_log.file";
 
 Deno.test({
   name: "FileHandler Shouldn't Have Broken line",

@@ -10,7 +10,7 @@ import { RotatingFileHandler } from "./rotating_file_handler.ts";
 import { LogRecord } from "./logger.ts";
 import { existsSync } from "../fs/exists.ts";
 
-const LOG_FILE = "./test_log.file";
+const LOG_FILE = "./rotating_file_handler_test_log.file";
 
 Deno.test({
   name:
