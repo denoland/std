@@ -27,8 +27,8 @@ export default class IO {
   static create({ artifact, opts }) {
     const io = new IO()
     io.#artifact = artifact
-    const { fs, dir, cache, trigger } = opts
-    io.#opts = { fs, dir, cache, trigger }
+    const { fs, dir, cache, trigger, corsProxy } = opts
+    io.#opts = { fs, dir, cache, trigger, corsProxy }
     return io
   }
   // TODO track purging that is due - immdediately after a commit, clear io.

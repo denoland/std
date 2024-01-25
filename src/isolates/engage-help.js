@@ -39,12 +39,13 @@ export const api = {
 export const functions = {
   engageInBand: async ({ help: path, text }) => {
     debug('engage:', path)
+    // use the files isolate to load up all the runners
     const help = await load(path)
     debug(help)
 
     assert(typeof help.runner === 'string', `no runner: ${help.runner}`)
     debug('found runner:', help.runner)
-    // TODO move to an eager vite glob import or a cache
+
     const { default: runner } = await import(`../runners/${help.runner}.js`)
 
     return await runner({ path, text })

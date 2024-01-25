@@ -55,6 +55,10 @@ means it needs more information to continue.
 
 Might consider returning a confidence rating with results.
 
+Runners are a subset of isolates, and are called by isolates, so have access to
+the io hooks that isolates do. They have a different interface and specialize in
+the operation of help files, where the help is dynamic.
+
 ## Sections
 
 All sections are optional, and with nothing specified, a deprompted AI will be

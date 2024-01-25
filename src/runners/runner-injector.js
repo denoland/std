@@ -1,6 +1,8 @@
+import posix from 'path-browserify'
 import Debug from 'debug'
 import { AI } from './runner-chat.js'
 import assert from 'assert-fast'
+import * as hooks from '../artifact/io-hooks.js'
 const debug = Debug('AI:runner-injector')
 
 export default async ({ path, text }) => {
@@ -8,27 +10,31 @@ export default async ({ path, text }) => {
   assert(typeof text === 'string', 'text must be a string')
   debug('injector:', path, text)
 
-  // TODO move this to be inside the loadHelp file
-  const imports = import.meta.glob('../helps/*.js')
-
+  const files = await hooks.ls('/helps')
+  debug('files', files)
   const helps = []
   let injectee
-  for (const _path in imports) {
-    const name = _path.substring(
-      '../helps/'.length,
-      _path.length - '.js'.length
-    )
-    const { default: help } = await imports[_path]()
-    if (name == path) {
-      injectee = help
-      continue
+  for (const file of files) {
+    if (file.endsWith('.js')) {
+      const filepath = `/helps/${file}`
+      debug('filepath', filepath)
+      const name = posix.basename(file, posix.extname(file))
+      const help = await hooks.readJS(filepath)
+
+      if (name === path) {
+        injectee = help
+      } else {
+        helps.push({ name, help })
+      }
     }
-    helps.push({ name, help })
   }
+
+  assert(injectee, `no help found for ${path}`)
   injectee = { ...injectee }
   injectee.instructions = [...injectee.instructions]
-  for (const others of helps) {
-    injectee.instructions.push(JSON.stringify(others, null, 2))
+  for (const donor of helps) {
+    // TODO include the commands api descriptions too
+    injectee.instructions.push(JSON.stringify(donor, null, 2))
   }
   const ai = await AI.create(injectee)
   return await ai.prompt(text)

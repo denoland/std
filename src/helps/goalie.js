@@ -20,7 +20,7 @@ Once the name of the help file is returned from the 'help-finder' function, call
 
 If you think the help file will solve the users problem, then call the 'engage' function with the path to the help file and the text that you want to pass to the help file.  The text is natural language as the help file is being executed by an AI like yourself.  The 'engage' function will execute the help file in a separate branch and then return the result to you.  Be sure to gather as much information from the user that the help file will need before you execute the help file.
 
-
+Remember, a help will will not do anything until you call 'engage' on it - until then it is just an inert document.
 `,
   ],
   done: '',

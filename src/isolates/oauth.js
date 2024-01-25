@@ -1,14 +1,18 @@
 import assert from 'assert-fast'
 import { functions as fetch } from './fetch'
+import { write } from '../artifact/io-hooks'
 import Debug from 'debug'
 const debug = Debug('AI:oauth')
 
 export const api = {
   authenticate: {
-    description: `Will check if there is a token in .env first, and if there is, will check its validity against github.com.  If there is no valid token present, it will open a browser window and walk through the oauth dance to get a token.  It will then store that token in .env and return { validToken: true }`,
+    description: `Opens a browser popup window and walk through the oauth dance to get a token.  It will then store that token in .env and return { validToken: true }.  Make sure popups are not being blocked for the current window or this will not work.`,
     type: 'object',
     additionalProperties: false,
     properties: {},
+  },
+  testGithubAccess: {
+    description: `Will check to see if the token in .env is valid by making a call to github.com.  If it is valid, it will return { validToken: true }`,
   },
 }
 export const functions = {
@@ -22,6 +26,9 @@ export const functions = {
     await loop()
     return { validToken: true }
   },
+  testGithubAccess: async () => {
+    // maybe should have a github isolate that does github commands ?
+  },
 }
 
 export const loop = async () => {
@@ -33,26 +40,30 @@ export const loop = async () => {
     reject = rej
   })
   globalThis[fnName] = async (code) => {
-    console.log('overridden oauth-code function', code, typeof code)
     debug('received back github auth code')
 
-    // do the fetch call to the web server to get the token
     const data = { code }
     if (isRunningOnLocalhost()) {
       data.mode = 'development'
     }
     const url = 'https://aritfact-github-auth.deno.dev'
     const result = await fetch.post({ url, data })
-    console.log('result', result)
 
     delete globalThis[fnName]
+    await write('/.env', `GITHUB_PAT=${result.access_token}\n`)
+    resolve(
+      'token is write to .env file with "GITHUB_PAT=${result.access_token}\n"'
+    )
   }
 
   const clientId = import.meta.env.VITE_GITHUB_CLIENT_ID
-  const scope = encodeURIComponent('user,repo')
+  const scope = encodeURIComponent('read:user,repo')
   const oauthUrl = `https://github.com/login/oauth/authorize?client_id=${clientId}&scope=${scope}`
-  // TODO add state callback check
-  openOAuthWindow(oauthUrl, 'Github OAuth')
+  // TODO add state callback check for cross site forgery
+  const openedWindow = openOAuthWindow(oauthUrl, 'Github OAuth')
+  if (!openedWindow) {
+    reject('window.open failed - popup blocked ?')
+  }
   return promise
 }
 
@@ -63,7 +74,7 @@ function openOAuthWindow(oauthUrl, name) {
   const top = (screen.height - height) / 2
   const windowFeatures = `toolbar=no, menubar=no, width=${width}, height=${height}, top=${top}, left=${left}`
 
-  window.open(oauthUrl, name, windowFeatures)
+  return window.open(oauthUrl, name, windowFeatures)
 }
 
 function isRunningOnLocalhost() {

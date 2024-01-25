@@ -1,3 +1,4 @@
+import http from 'isomorphic-git/http/web'
 import IO, { PROCTYPES, defaultBranch } from './io.js'
 import posix from 'path-browserify'
 import git from 'isomorphic-git'
@@ -17,6 +18,7 @@ export default class Artifact {
   #opts
   #trigger
   #io
+  // TODO if we are booting from HAL, then store a cached zip file locally
   static async boot({ path = 'fs', wipe = true } = {}) {
     // TODO if an existing artifact, boot using a layered fs for instant boot
     // then pass the top level lock to the next one in the queue
@@ -29,6 +31,11 @@ export default class Artifact {
       fs: artifact.#fs,
       dir: artifact.#dir,
       cache: artifact.#cache,
+      http,
+      // TODO we must have our own proxy to handle credentialed data
+      corsProxy: 'https://cors.isomorphic-git.org',
+      // the deno one seems to conk out on small repos, but is much faster
+      // corsProxy: 'https://artifact-git-cors-proxy.deno.dev',
     }
     const opts = { ...artifact.#opts, trigger: artifact.#trigger }
     artifact.#io = IO.create({ artifact, opts })
@@ -63,7 +70,19 @@ export default class Artifact {
         throw e
       }
     })
-    await git.init({ ...this.#opts, defaultBranch })
+
+    // TODO hook in the status to some loading bar thing
+    await git.clone({
+      ...this.#opts,
+      // onProgress: debug,
+      // onMessage: debug,
+      // onAuthFailure: debug,
+      // onAuthSuccess: debug,
+      // onAuth: debug,
+      url: 'https://github.com/dreamcatcher-tech/HAL.git',
+    })
+    debug('done')
+
     await this.#fs.mkdir(this.#dir + '/helps')
     const helpFiles = await loadDir()
     for (const { name, file } of helpFiles) {
@@ -71,16 +90,17 @@ export default class Artifact {
     }
 
     debug('filesystem created')
+    // TODO check if repo is dirty, and make a commit if so
     // TODO bug in git where cannot do a walk immediately after first commit
-    await git.add({ ...this.#opts, filepath: '.' })
-    const ref = await git.commit({
-      ...this.#opts,
-      message: 'init',
-      author: { name: 'HAL' },
-    })
+    // await git.add({ ...this.#opts, filepath: '.' })
+    // const ref = await git.commit({
+    //   ...this.#opts,
+    //   message: 'init',
+    //   author: { name: 'HAL' },
+    // })
     // TODO find why cannot do trigger immediately after init
-    await Promise.resolve()
-    await this.#trigger.commit(this.#dir, ref)
+    // await Promise.resolve()
+    // await this.#trigger.commit(this.#dir, ref)
   }
   async read(path) {
     assert(posix.isAbsolute(path), `path must be absolute: ${path}`)
