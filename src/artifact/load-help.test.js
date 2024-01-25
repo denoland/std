@@ -1,8 +1,6 @@
 import { test, debug, expect } from '../test-context.js'
 
-debug.enable('*')
-
-test.only('loadAll', async ({ artifact }) => {
+test('loadAll', async ({ artifact }) => {
   const { loadAll } = await artifact.actions('load-help')
   expect(loadAll).toBeInstanceOf(Function)
   const helps = await loadAll()
@@ -11,7 +9,7 @@ test.only('loadAll', async ({ artifact }) => {
 })
 test('load', async ({ artifact }) => {
   const { load } = await artifact.actions('load-help')
-  const help = await load('help.fixture')
+  const help = await load({ help: 'help.fixture' })
   expect(help).toHaveProperty('runner', 'runner-chat')
   expect(help).toHaveProperty('instructions')
 })
