@@ -304,8 +304,14 @@ export * from "./range_max.ts";
 export * from "./range_min.ts";
 export * from "./sort.ts";
 export * from "./types.ts";
-export * from "./lte.ts";
-export * from "./lte.ts";
+export * from "./try_parse_range.ts";
+export * from "./is_range.ts";
+export * from "./try_parse_comparator.ts";
+export * from "./is_comparator.ts";
+export * from "./can_parse.ts";
+export * from "./reverse_sort.ts";
+export * from "./try_parse.ts";
+export * from "./format_range.ts";
 
 export * from "./equals.ts";
 export * from "./not_equals.ts";
