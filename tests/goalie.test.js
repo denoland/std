@@ -7,7 +7,7 @@ goal('what files do I have ?', async ({ result }) => {
     expect(result).toContain(file)
   })
 })
-goal.only('add a file named "hello.txt"', async ({ result, task }) => {
+goal('add a file named "hello.txt"', async ({ result, task }) => {
   debug(result)
   expect(result).toContain('hello')
 })
