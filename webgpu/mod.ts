@@ -3,6 +3,8 @@
 /**
  * Utilities for interacting with the
  * {@link https://developer.mozilla.org/en-US/docs/Web/API/WebGPU_API | WebGPU API}.
+ * 
+ * @module
  */
 
 export * from "./create_capture.ts";
