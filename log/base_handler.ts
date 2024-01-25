@@ -2,25 +2,22 @@
 import { getLevelByName, LevelName } from "./levels.ts";
 import type { LogRecord } from "./logger.ts";
 
-const DEFAULT_FORMATTER = "{levelName} {msg}";
 export type FormatterFunction = (logRecord: LogRecord) => string;
+const DEFAULT_FORMATTER: FormatterFunction = ({ levelName, msg }) =>
+  `${levelName} ${msg}`;
 
 export interface BaseHandlerOptions {
-  formatter?: string | FormatterFunction;
+  formatter?: FormatterFunction;
 }
 
 export class BaseHandler {
   level: number;
   levelName: LevelName;
-  /**
-   * @deprecated (will be removed in 0.213.0) Use {@linkcode FormatterFunction} instead of a string.
-   */
-  formatter: string | FormatterFunction;
+  formatter: FormatterFunction;
 
   constructor(levelName: LevelName, options: BaseHandlerOptions = {}) {
     this.level = getLevelByName(levelName);
     this.levelName = levelName;
-
     this.formatter = options.formatter || DEFAULT_FORMATTER;
   }
 
@@ -32,20 +29,7 @@ export class BaseHandler {
   }
 
   format(logRecord: LogRecord): string {
-    if (this.formatter instanceof Function) {
-      return this.formatter(logRecord);
-    }
-
-    return this.formatter.replace(/{([^\s}]+)}/g, (match, p1): string => {
-      const value = logRecord[p1 as keyof LogRecord];
-
-      // do not interpolate missing values
-      if (value === undefined) {
-        return match;
-      }
-
-      return String(value);
-    });
+    return this.formatter(logRecord);
   }
 
   log(_msg: string) {}

@@ -33,7 +33,7 @@
  *
  * log.setup({
  *   handlers: {
- *     default: new log.handlers.ConsoleHandler("DEBUG", {
+ *     default: new log.ConsoleHandler("DEBUG", {
  *       formatter: log.formatters.jsonFormatter,
  *       useColors: false,
  *     }),
@@ -102,7 +102,7 @@
  *
  * log.setup({
  *   handlers: {
- *     console: new log.handlers.ConsoleHandler("DEBUG"),
+ *     console: new log.ConsoleHandler("DEBUG"),
  *   },
  *
  *   loggers: {
@@ -146,9 +146,9 @@
  * // custom configuration with 2 loggers (the default and `tasks` loggers).
  * log.setup({
  *   handlers: {
- *     console: new log.handlers.ConsoleHandler("DEBUG"),
+ *     console: new log.ConsoleHandler("DEBUG"),
  *
- *     file: new log.handlers.FileHandler("WARNING", {
+ *     file: new log.FileHandler("WARNING", {
  *       filename: "./log.txt",
  *       // you can change format of output message using any keys in `LogRecord`.
  *       formatter: (record) => `${record.levelName} ${record.msg}`,
@@ -195,11 +195,11 @@
  *
  * log.setup({
  *   handlers: {
- *     stringFmt: new log.handlers.ConsoleHandler("DEBUG", {
+ *     stringFmt: new log.ConsoleHandler("DEBUG", {
  *       formatter: (record) => `[${record.levelName}] ${record.msg}`,
  *     }),
  *
- *     functionFmt: new log.handlers.ConsoleHandler("DEBUG", {
+ *     functionFmt: new log.ConsoleHandler("DEBUG", {
  *       formatter: (logRecord) => {
  *         let msg = `${logRecord.level} ${logRecord.msg}`;
  *
@@ -211,7 +211,7 @@
  *       },
  *     }),
  *
- *     anotherFmt: new log.handlers.ConsoleHandler("DEBUG", {
+ *     anotherFmt: new log.ConsoleHandler("DEBUG", {
  *       formatter: (record) => `[${record.loggerName}] - ${record.levelName} ${record.msg}`,
  *     }),
  *   },
@@ -248,7 +248,7 @@
  *
  * log.setup({
  *   handlers: {
- *     jsonStdout: new log.handlers.ConsoleHandler("DEBUG", {
+ *     jsonStdout: new log.ConsoleHandler("DEBUG", {
  *       formatter: log.formatters.jsonFormatter,
  *       useColors: false,
  *     }),
@@ -285,7 +285,7 @@
  *
  * log.setup({
  *   handlers: {
- *     customJsonFmt: new log.handlers.ConsoleHandler("DEBUG", {
+ *     customJsonFmt: new log.ConsoleHandler("DEBUG", {
  *       formatter: (record) => JSON.stringify({
  *         lvl: record.level,
  *         msg: record.msg,
@@ -333,7 +333,7 @@
  *
  * log.setup({
  *   handlers: {
- *     console: new log.handlers.ConsoleHandler("DEBUG"),
+ *     console: new log.ConsoleHandler("DEBUG"),
  *   },
  *
  *   loggers: {
@@ -366,9 +366,6 @@ import { assert } from "../assert/assert.ts";
 import { jsonFormatter } from "./formatters.ts";
 import { ConsoleHandler } from "./console_handler.ts";
 import { BaseHandler } from "./base_handler.ts";
-import { RotatingFileHandler } from "./rotating_file_handler.ts";
-import { FileHandler } from "./file_handler.ts";
-import { WriterHandler } from "./handlers.ts";
 
 export * from "./base_handler.ts";
 export * from "./console_handler.ts";
@@ -377,8 +374,6 @@ export * from "./rotating_file_handler.ts";
 export * from "./levels.ts";
 export * from "./logger.ts";
 export * from "./formatters.ts";
-
-export type { HandlerOptions } from "./handlers.ts";
 
 const DEFAULT_LEVEL = "INFO";
 const DEFAULT_CONFIG: LogConfig = {
@@ -421,16 +416,7 @@ const state = {
  *
  * For examples check source code of {@linkcode FileHandler}`
  * and {@linkcode TestHandler}.
- *
- * @deprecated (will be removed in 0.214.0) Import the specific handler needed instead.
  */
-export const handlers = {
-  BaseHandler,
-  ConsoleHandler,
-  WriterHandler,
-  FileHandler,
-  RotatingFileHandler,
-};
 
 export const formatters: {
   jsonFormatter(logRecord: LogRecord): string;
