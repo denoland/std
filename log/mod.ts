@@ -373,6 +373,7 @@ export * from "./file_handler.ts";
 export * from "./rotating_file_handler.ts";
 export * from "./levels.ts";
 export * from "./logger.ts";
+export * from "./formatters.ts";
 
 const DEFAULT_LEVEL = "INFO";
 const DEFAULT_CONFIG: LogConfig = {
