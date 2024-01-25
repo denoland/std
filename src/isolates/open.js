@@ -18,11 +18,9 @@ export const api = {
 export const functions = {
   openUrl: async ({ url }) => {
     debugger
-    if (isBrowser) {
-      window.open(url, '_blank')
-    } else {
-      const { default: open, apps } = await import('open')
-      await open(url)
+    if (!isBrowser) {
+      throw new Error('cannot open window unless running in browser')
     }
+    window.open(url, '_blank')
   },
 }
