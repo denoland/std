@@ -15,6 +15,7 @@ const EXCLUDED_PATHS = [
   "front_matter/json.ts",
   "front_matter/toml.ts",
   "front_matter/any.ts",
+  "yaml/schema.ts",
 ];
 
 const MOD_FILENAME = "mod.ts";

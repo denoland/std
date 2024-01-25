@@ -51,4 +51,3 @@ export * from "./parse.ts";
 export * from "./stringify.ts";
 export * from "./type.ts";
 export * from "./schema/mod.ts";
-export * from "./schema.ts";
