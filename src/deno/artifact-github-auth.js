@@ -29,7 +29,6 @@ Deno.serve(async (req) => {
   }
   try {
     const body = await req.json()
-    debug('body', body)
     const { mode, code } = body
     if (!code) {
       throw new Error('code not provided')
@@ -42,7 +41,6 @@ Deno.serve(async (req) => {
       mode ? 'DEV_CLIENT_SECRET' : 'CLIENT_SECRET'
     )
 
-    debug('secrets', client_id, client_secret)
     const requestOptions = {
       method: 'POST',
       headers: {
