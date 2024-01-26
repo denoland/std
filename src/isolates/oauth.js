@@ -49,10 +49,10 @@ export const loop = async () => {
     const url = 'https://artifact-github-auth.deno.dev'
     const result = await fetch.post({ url, data })
 
-    delete globalThis[fnName]
     await write('/.env', `GITHUB_PAT=${result.access_token}\n`)
+    delete globalThis[fnName]
     resolve(
-      'token is write to .env file with "GITHUB_PAT=${result.access_token}\n"'
+      'token written to "/.env" with "GITHUB_PAT=${result.access_token}\n"'
     )
   }
 
@@ -62,6 +62,7 @@ export const loop = async () => {
   // TODO add state callback check for cross site forgery
   const openedWindow = openOAuthWindow(oauthUrl, 'Github OAuth')
   if (!openedWindow) {
+    delete globalThis[fnName]
     reject('window.open failed - popup blocked ?')
   }
   return promise
