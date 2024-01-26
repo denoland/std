@@ -2,6 +2,9 @@
 
 import { concat } from "../bytes/concat.ts";
 
+/**
+ * Value types that can be encoded to MessagePack.
+ */
 export type ValueType =
   | number
   | bigint
@@ -12,7 +15,13 @@ export type ValueType =
   | ValueType[]
   | ValueMap;
 
-interface ValueMap {
+/**
+ * Value map that can be encoded to MessagePack.
+ */
+export interface ValueMap {
+  /**
+   * Value types that can be encoded to MessagePack.
+   */
   [index: string | number]: ValueType;
 }
 

@@ -1,17 +1,17 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-import { validateBinaryLike } from "./_util.ts";
-
 /**
  * Utilities for
- * [base58]{@link https://datatracker.ietf.org/doc/html/draft-msporny-base58-03}
+ * {@link https://datatracker.ietf.org/doc/html/draft-msporny-base58-03 | base58}
  * encoding and decoding.
  *
  * This module is browser compatible.
  *
  * @module
  */
+
+import { validateBinaryLike } from "./_util.ts";
 
 // deno-fmt-ignore
 const mapBase58: Record<string, number> = {

@@ -12,7 +12,7 @@ const DEFAULT_BUFFER_SIZE = 32 * 1024;
  * @param dest Writer
  * @param size Read size
  *
- * @deprecated (will be removed after 1.0.0) Use the [Web Streams API]{@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API} instead.
+ * @deprecated (will be removed after 1.0.0) Use the {@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API | Web Streams API} instead.
  */
 export async function copyN(
   r: Reader,

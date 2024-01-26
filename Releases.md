@@ -1,3 +1,28 @@
+### 0.213.0 / 2024.01.25
+
+- BREAKING(http): remove `CookieMap` (#4179)
+- BREAKING(semver): remove `FormatStyle` (#4182)
+- BREAKING(semver): remove `compareBuild()` (#4181)
+- BREAKING(semver): remove `rsort()` (#4180)
+- deprecation(path): split off all constants into their own files and deprecate
+  old names (#4153)
+- deprecation(semver): deprecate `SemVerRange`, introduce `Range` (#4161)
+- deprecation(semver): deprecate `outside()` (#4185)
+- deprecation(semver): rename `eq()`, `neq()`, `lt()`, `lte()`, `gt()` and
+  `gte()` (#4083)
+- feat(collections): pass `key` to `mapValues()` transformer (#4127)
+- feat(io): un-deprecate `Buffer` (#4184)
+- feat(log): make handlers disposable (#4195)
+- feat: print warning on use of deprecated API (#4200)
+- fix(expect): fix the function signature of `toMatchObject()` (#4202)
+- fix(flags): correct deprecation notices (#4207)
+- fix(fmt): correct `stripColor()` deprecation notice (#4208)
+- fix(log): make `flattenArgs()` private (#4214)
+- fix(toml): `parse()` duplicates the character next to reserved escape
+  sequences (#4192)
+- fix: ignore linting for `Deno.serveHttp()` (#4234)
+- fix: ignore linting rule for `Deno.resources()` (#4233)
+
 ### 0.212.0 / 2024.01.12
 
 - BREAKING(encoding): remove `base32.byteLength()` (#4173)

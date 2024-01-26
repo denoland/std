@@ -3,7 +3,7 @@
 
 /**
  * Utilities for
- * [base64url]{@link https://datatracker.ietf.org/doc/html/rfc4648#section-5}
+ * {@link https://datatracker.ietf.org/doc/html/rfc4648#section-5 | base64url}
  * encoding and decoding.
  *
  * This module is browser compatible.
@@ -13,9 +13,10 @@
 
 import * as base64 from "./base64.ts";
 
-/*
+/**
  * Some variants allow or require omitting the padding '=' signs:
  * https://en.wikipedia.org/wiki/Base64#The_URL_applications
+ *
  * @param base64url
  */
 function addPaddingToBase64url(base64url: string): string {

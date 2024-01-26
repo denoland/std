@@ -139,3 +139,17 @@ Deno.test({
     assertEquals(actual, expected);
   },
 });
+
+Deno.test({
+  name: "mapValues() pass key to transformer",
+  fn() {
+    const key = "key";
+    const actual = mapValues(
+      { [key]: "value" },
+      (_, k) => k,
+    );
+    const expected = { [key]: key };
+
+    assertEquals(actual, expected);
+  },
+});

@@ -894,7 +894,7 @@ export function ParserFactory<T>(parser: ParserComponent<T>) {
           if (count > line.length) {
             count -= line.length + 1;
           } else {
-            return count;
+            break;
           }
         }
         return count;
