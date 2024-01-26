@@ -1,15 +1,15 @@
+import './shim.js'
 import { isBrowser } from 'wherearewe'
 import http from 'isomorphic-git/http/web'
 import IO, { PROCTYPES, defaultBranch } from './io.js'
 import posix from 'path-browserify'
 import git from 'isomorphic-git'
 import LightningFS from '@isomorphic-git/lightning-fs'
-import { Buffer } from 'buffer'
 import assert from 'assert-fast'
 import TriggerFS from './trigger-fs.js'
 import Debug from 'debug'
+
 const debug = Debug('AI:artifact')
-globalThis.Buffer = Buffer
 
 export default class Artifact {
   #fs
