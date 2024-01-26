@@ -1,41 +1,26 @@
-import posix from 'path-browserify'
+import equal from 'fast-deep-equal'
 import Debug from 'debug'
-import { AI } from './runner-chat.js'
+import runner from './runner-chat.js'
 import assert from 'assert-fast'
 import * as hooks from '../artifact/io-hooks.js'
+
 const debug = Debug('AI:runner-injector')
 
-export default async ({ path, text }) => {
-  assert(typeof path === 'string', 'path must be an string')
+export default async ({ help: injectee, text }) => {
+  assert(typeof injectee == 'object', `not object: ${typeof injectee}`)
   assert(typeof text === 'string', 'text must be a string')
-  debug('injector:', path, text)
+  debug('injector:', injectee, text)
 
-  const files = await hooks.ls('/helps')
-  debug('files', files)
-  const helps = []
-  let injectee
-  for (const file of files) {
-    if (file.endsWith('.js')) {
-      const filepath = `/helps/${file}`
-      debug('filepath', filepath)
-      const name = posix.basename(file, posix.extname(file))
-      const help = await hooks.readJS(filepath)
+  const { loadAll } = await hooks.actions('load-help')
+  const allHelps = await loadAll()
+  const helps = allHelps.filter(({ help }) => !equal(help, injectee))
 
-      if (name === path) {
-        injectee = help
-      } else {
-        helps.push({ name, help })
-      }
-    }
-  }
-
-  assert(injectee, `no help found for ${path}`)
   injectee = { ...injectee }
   injectee.instructions = [...injectee.instructions]
   for (const donor of helps) {
     // TODO include the commands api descriptions too
     injectee.instructions.push(JSON.stringify(donor, null, 2))
   }
-  const ai = await AI.create(injectee)
-  return await ai.prompt(text)
+  debug('injectee', injectee)
+  return runner({ help: injectee, text })
 }

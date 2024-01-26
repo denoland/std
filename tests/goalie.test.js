@@ -1,7 +1,6 @@
 import { expect, goal, debug } from '../src/test-context'
 
-debug.enable('AI:runner-injector *ai-part* AI:*')
-goal.only('what files do I have ?', async ({ result }) => {
+goal('what files do I have ?', async ({ result }) => {
   debug(result)
   const files = ['.git', 'helps', '.io.json', 'chat-1.session.json']
   files.forEach((file) => {

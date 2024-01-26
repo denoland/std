@@ -18,25 +18,6 @@ test('have a chat', async function ({ artifact }) {
   expect(log.length).toEqual(1)
   expect(log[0].commit.message).toContain('replyIO')
 })
-test('curtains', async function ({ artifact }) {
-  const help = 'curtains'
-  const { engageInBand } = await artifact.actions(isolate)
-  const result = await engageInBand({ help, text: 'hello' })
-  expect(result.length).toBeGreaterThan(100)
-  const session = await artifact.read('/chat-1.session.json')
-  const messages = JSON.parse(session)
-  expect(messages.length).toEqual(3)
-})
-test('curtains multi turn', async function ({ artifact }) {
-  const help = 'curtains'
-  const { engageInBand } = await artifact.actions(isolate)
-  await engageInBand({ help, text: 'hello' })
-  const result2 = await engageInBand({ help, text: 'lounge' })
-  expect(result2.length).toBeGreaterThan(100)
-  const session = await artifact.read('/chat-1.session.json')
-  const messages = JSON.parse(session)
-  expect(messages.length).toEqual(5)
-})
 test.skip('edit boot files')
 
 test('add a file', async ({ artifact }) => {

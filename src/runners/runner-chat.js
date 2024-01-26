@@ -1,4 +1,3 @@
-import { load } from '../isolates/load-help.js'
 import posix from 'path-browserify'
 import merge from 'lodash.merge'
 import OpenAI from 'openai'
@@ -21,10 +20,9 @@ if (!VITE_OPENAI_API_KEY) {
 const apiKey = Buffer.from(VITE_OPENAI_API_KEY, 'base64').toString('utf-8')
 const ai = new OpenAI({ apiKey, dangerouslyAllowBrowser: true })
 
-export default async ({ path, text }) => {
-  assert(typeof path === 'string', 'help must be a string')
+export default async ({ help, text }) => {
+  assert(typeof help == 'object', `help must be an object: ${typeof help}`)
   assert(typeof text === 'string', 'text must be a string')
-  const help = await load(path)
   const ai = await AI.create(help)
   return await ai.prompt(text)
 }
@@ -168,6 +166,7 @@ export class AI {
     if (!commands.length) {
       return
     }
+    const { load } = await hooks.actions('load-help')
     const result = []
     const names = new Set()
     const actions = {}
@@ -176,11 +175,9 @@ export class AI {
       let tool, action, name
       if (!command.includes(':')) {
         assert(command.startsWith('helps/'), `invalid help: ${command}`)
-        // TODO read in as pure json
         name = posix.basename(command)
-        const help = await load(name)
+        const help = await load({ help: name })
         assert(help.description, `missing description: ${command}`)
-        // TODO make part of hooks
         const { engage } = await hooks.spawns('engage-help')
         action = ({ text }) => engage({ help: name, text })
         tool = helpToGptApi(name, help, engage)

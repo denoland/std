@@ -14,8 +14,8 @@ test('error tool call', async function ({ artifact }) {
   const text = 'call the "error" function with the message: "bob"'
   await engageInBand({ help, text })
   const io = await artifact.readIO()
-  expect(io.inputs[1].name).toBe('error')
-  expect(io.outputs[1].error.message).toBe('bob')
+  expect(io.inputs[2].name).toBe('error')
+  expect(io.outputs[2].error.message).toBe('bob')
 })
 test('chat', async ({ artifact }) => {
   const { engageInBand } = await artifact.actions(isolate)

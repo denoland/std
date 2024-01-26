@@ -1,6 +1,5 @@
 import * as hooks from '../artifact/io-hooks.js'
 import assert from 'assert-fast'
-import { load } from './load-help.js'
 import Debug from 'debug'
 const debug = Debug('AI:engage-help')
 const engage = {
@@ -10,7 +9,7 @@ const engage = {
   required: ['help', 'text'],
   properties: {
     help: {
-      description: 'the path to the help',
+      description: 'the name of the help',
       type: 'string',
     },
     text: {
@@ -22,33 +21,21 @@ const engage = {
 export const api = {
   engage,
   engageInBand: engage,
-  load: {
-    description: 'load the help',
-    type: 'object',
-    additionalProperties: false,
-    required: ['help'],
-    properties: {
-      help: {
-        description: 'the path to the help',
-        type: 'string',
-      },
-    },
-  },
 }
 
 export const functions = {
   engageInBand: async ({ help: path, text }) => {
     debug('engage:', path)
     // use the files isolate to load up all the runners
-    const help = await load(path)
-    debug(help)
+    const { load } = await hooks.actions('load-help')
+    const help = await load({ help: path })
 
     assert(typeof help.runner === 'string', `no runner: ${help.runner}`)
     debug('found runner:', help.runner)
 
     const { default: runner } = await import(`../runners/${help.runner}.js`)
 
-    return await runner({ path, text })
+    return await runner({ help, text })
   },
   engage: async ({ help, text }) => {
     debug('engage:', help)
@@ -59,12 +46,6 @@ export const functions = {
   continue: async ({ help: path, text, commit }) => {
     debug('continue:', path, commit)
     // this would continue the help, but in the same branch as a previous run
-  },
-  load: async ({ help }) => {
-    debug('load:', help)
-    return await load(help)
-    // TODO this should load up the functions that would be available to, so the
-    // model has more to work with
   },
 }
 
