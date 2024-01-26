@@ -12,12 +12,10 @@ const router = createBrowserRouter([
     path: '/',
     element: <App />,
   },
+  // these paths only work in testing
   {
     path: '/oauth-callback',
     loader: ({ request }) => {
-      // start an effect that dispatches an action to the store which fetches
-      // the token and stores it in .env
-
       const url = new URL(request.url)
       const searchParams = new URLSearchParams(url.search)
 
