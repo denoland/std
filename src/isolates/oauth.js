@@ -42,18 +42,23 @@ export const loop = async () => {
   globalThis[fnName] = async (code) => {
     debug('received back github auth code')
 
-    const data = { code }
-    if (isRunningOnLocalhost()) {
-      data.mode = 'development'
-    }
-    const url = 'https://artifact-github-auth.deno.dev'
-    const result = await fetch.post({ url, data })
+    try {
+      const data = { code }
+      if (isRunningOnLocalhost()) {
+        data.mode = 'development'
+      }
+      const url = 'https://artifact-github-auth.deno.dev'
+      const result = await fetch.post({ url, data })
 
-    await write('/.env', `GITHUB_PAT=${result.access_token}\n`)
-    delete globalThis[fnName]
-    resolve(
-      'token written to "/.env" with "GITHUB_PAT=${result.access_token}\n"'
-    )
+      await write('/.env', `GITHUB_PAT=${result.access_token}\n`)
+      delete globalThis[fnName]
+      resolve(
+        'token written to "/.env" with "GITHUB_PAT=${result.access_token}\n"'
+      )
+    } catch (error) {
+      delete globalThis[fnName]
+      reject(error)
+    }
   }
 
   const clientId = import.meta.env.VITE_GITHUB_CLIENT_ID
