@@ -37,14 +37,15 @@ function filterUndefined(obj: any): any {
   if (Symbol.iterator in obj) return obj;
   if (Array.isArray(obj)) return obj.map(filterUndefined);
 
-  // deno-lint-ignore no-explicit-any
-  const result = {} as any;
   for (const key in obj) {
     const val = obj[key];
-    if (val === undefined) continue;
-    result[key] = filterUndefined(val);
+    if (val === undefined) {
+      delete obj[key];
+      continue;
+    }
+    obj[key] = filterUndefined(val);
   }
-  return result;
+  return obj;
 }
 
 export function toEqual(
