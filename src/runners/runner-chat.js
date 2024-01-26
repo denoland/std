@@ -146,6 +146,20 @@ export class AI {
         const parameters = JSON.parse(args)
         const result = await this.#actions[name](parameters)
         debug('tool call result:', result)
+        if (result === '@@ARTIFACT_RELAY@@') {
+          debug('tool call relay')
+
+          const withoutTip = messages.slice(0, -1)
+          const lastToolCall = withoutTip
+            .reverse()
+            .findLast(({ role }) => role === 'tool')
+          assert(lastToolCall, 'missing last tool call')
+          message.content = lastToolCall.content
+          await hooks.writeJS(this.#sessionPath, messages)
+
+          return message.content
+        }
+
         if (result === undefined || typeof result === 'string') {
           message.content = result || ''
         } else {
@@ -226,8 +240,8 @@ const helpToGptApi = (name, help, engage) => {
 
 const isolateToGptApi = (name, action) => {
   const { api } = action
-  assert(typeof api === 'object', 'api must be an object')
-  assert(typeof api.type === 'string', 'api.type must be a string')
+  assert(typeof api === 'object', `api must be an object: ${name}`)
+  assert(typeof api.type === 'string', `api.type must be a string: ${name}`)
   const { ...parameters } = api
   delete parameters.title
   delete parameters.description
