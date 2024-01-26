@@ -53,6 +53,19 @@ export function toEqual(
 ): MatchResult {
   const v = filterUndefined(context.value);
   const e = filterUndefined(expected);
+
+  for (const customTester of context.customTesters) {
+    const result = customTester.call(undefined, v, e, context.customTesters);
+    if (result !== undefined) {
+      if (context.isNot) {
+        assertNotEquals(result, !result, context.customMessage);
+      } else {
+        assertEquals(result, result, context.customMessage);
+      }
+      return;
+    }
+  }
+
   if (context.isNot) {
     assertNotEquals(v, e, context.customMessage);
   } else {

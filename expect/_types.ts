@@ -20,15 +20,10 @@ export type MatchResult = void | Promise<void> | boolean;
 export type AnyConstructor = new (...args: any[]) => any;
 
 export type Tester = (
-  this: TesterContext,
   a: any,
   b: any,
   customTesters: Array<Tester>,
 ) => void;
-
-export interface TesterContext {
-  equals: <T>(actual: T, expect: T, msg?: string) => void;
-}
 
 export interface Expected {
   lastCalledWith(...expected: unknown[]): void;
