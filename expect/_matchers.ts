@@ -13,6 +13,7 @@ import { assertNotMatch } from "../assert/assert_not_match.ts";
 import { AssertionError } from "../assert/assertion_error.ts";
 import { equal } from "../assert/equal.ts";
 import { format } from "./_format.ts";
+import { buildEqualErrorMessage, buildNotEqualErrorMessage } from "./_build_message.ts";
 
 import { AnyConstructor, MatcherContext, MatchResult } from "./_types.ts";
 import { getMockCalls } from "./_mock_util.ts";
@@ -37,15 +38,13 @@ function filterUndefined(obj: any): any {
   if (Symbol.iterator in obj) return obj;
   if (Array.isArray(obj)) return obj.map(filterUndefined);
 
+  const result = Object.create(obj);
   for (const key in obj) {
     const val = obj[key];
-    if (val === undefined) {
-      delete obj[key];
-      continue;
-    }
-    obj[key] = filterUndefined(val);
+    if (val === undefined) continue;
+    result[key] = filterUndefined(val);
   }
-  return obj;
+  return result;
 }
 
 export function toEqual(
@@ -56,12 +55,18 @@ export function toEqual(
   const e = filterUndefined(expected);
 
   for (const customTester of context.customTesters) {
-    const result = customTester.call(undefined, v, e, context.customTesters);
-    if (result !== undefined) {
+    const pass = customTester.call(undefined, v, e, context.customTesters);
+    if (pass !== undefined) {
+      const expected = format(e);
+      const actual = format(v);
       if (context.isNot) {
-        assertNotEquals(result, !result, context.customMessage);
+        if (pass) {
+          throw new AssertionError(buildNotEqualErrorMessage(actual, expected, context.customMessage));
+        }
       } else {
-        assertEquals(result, result, context.customMessage);
+        if (!pass) {
+          throw new AssertionError(buildEqualErrorMessage(actual, expected, context.customMessage));
+        }
       }
       return;
     }
@@ -398,13 +403,27 @@ export function toContainEqual(
   context: MatcherContext,
   expected: unknown,
 ): MatchResult {
-  const { value } = context;
+  const { customTesters, value } = context;
   assertIsIterable(value);
   let doesContain = false;
-  for (const item of value) {
-    if (equal(item, expected)) {
-      doesContain = true;
-      break;
+
+  if (customTesters.length) {
+    for (const customTester of customTesters) {
+      const index = [...value].findIndex(item =>
+        customTester.call(undefined, item, expected, customTesters)
+      );
+
+      if (index > -1) {
+        doesContain = true;
+        break;
+      }
+    }
+  } else {
+    for (const item of value) {
+      if (equal(item, expected)) {
+        doesContain = true;
+        break;
+      }
     }
   }
 

@@ -25,6 +25,17 @@ export type Tester = (
   customTesters: Array<Tester>,
 ) => void;
 
+// a helper type to match any function. Used so that we only convert functions
+// to return a promise and not properties.
+type Fn = (...args: any[]) => unknown;
+
+// converts all the methods in an interface to be async functions
+export type Async<T> = {
+  [K in keyof T]: T[K] extends Fn
+    ? (...args: Parameters<T[K]>) => Promise<ReturnType<T[K]>>
+    : T[K];
+};
+
 export interface Expected {
   lastCalledWith(...expected: unknown[]): void;
   lastReturnedWith(expected: unknown): void;
@@ -80,14 +91,3 @@ export interface Expected {
 }
 
 export type MatcherKey = keyof Omit<Expected, "not" | "resolves" | "rejects">;
-
-// a helper type to match any function. Used so that we only convert functions
-// to return a promise and not properties.
-type Fn = (...args: any[]) => unknown;
-
-// converts all the methods in an interface to be async functions
-export type Async<T> = {
-  [K in keyof T]: T[K] extends Fn
-    ? (...args: Parameters<T[K]>) => Promise<ReturnType<T[K]>>
-    : T[K];
-};

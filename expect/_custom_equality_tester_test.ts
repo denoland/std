@@ -16,7 +16,9 @@ class Duration {
   }
 
   equals(other: Duration): boolean {
-    if (this.unit === other.unit) return this.time === other.time;
+    if (this.unit === other.unit) {
+      return this.time === other.time;
+    }
 
     if (
       (this.unit === "H" && other.unit === "M") ||
@@ -48,22 +50,33 @@ const duration3 = new Duration(120, "S");
 
 expect.addEqualityTester([isDurationMatch]);
 
-Deno.test("toEqual: basic custom equality test", () => {
-  expect(duration1).toEqual(duration1);
-  expect(duration1).toEqual(duration3);
-  expect(duration1).not.toEqual(duration2);
-});
+function* toIterator<T>(array: Array<T>): Iterator<T> {
+  for (const obj of array) {
+    yield obj;
+  }
+}
 
-Deno.test("toBe: basic custom equality test", () => {
+Deno.test("Basic custom equality test", () => {
+  expect(duration1).toEqual(duration1);
+  expect(duration1).not.toEqual(duration3);
+  expect(duration1).not.toEqual(duration2);
   expect(duration2).not.toBe(duration1);
   expect(duration3).toBe(duration3);
 });
 
-Deno.test("toContain: basic custom equality test", () => {
-   expect([duration1]).not.toContain(duration2);
-   expect([duration1]).toContain(duration1);
-     expect({ a: 1, b: { c: duration2 } }).toMatchObject({
-      a: 1,
-      b: { c: duration3 },
-    });
+Deno.test("Basic custom equality test may contain different Duration Object", () => {
+  expect([duration1]).not.toContain(duration2);
+  expect([duration1]).toContain(duration1);
+  expect([duration2]).toContainEqual(duration3);
+
+  // expect({ a: duration1 }).toHaveProperty('a', duration2);
+  // expect([duration1, duration2]).toEqual([duration2, duration1]);
+  expect({ a: duration2, b: undefined }).toStrictEqual({ a: duration3, b: undefined });
+  // expect({a: 1, b: {c: duration1}}).toMatchObject({
+  //   a: 1,
+  //   b: {c: duration2},
+  // });
+  // expect(new Map([['key', duration1]])).toEqual(new Map([['key', duration2]]));
+  // expect(new Set([duration1])).toEqual(new Set([duration2]));
+  // expect(toIterator([duration1, duration2])).toEqual(toIterator([duration2, duration1]));
 });
