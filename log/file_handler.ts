@@ -30,33 +30,33 @@ export interface FileHandlerOptions extends BaseHandlerOptions {
  * This handler requires `--allow-write` permission on the log file.
  */
 export class FileHandler extends BaseHandler {
-  protected file: Deno.FsFile | undefined;
-  protected buf: Uint8Array = new Uint8Array(PAGE_SIZE);
-  protected pointer = 0;
-  protected filename: string;
-  protected mode: LogMode;
-  protected openOptions: Deno.OpenOptions;
-  protected encoder: TextEncoder = new TextEncoder();
+  protected _file: Deno.FsFile | undefined;
+  protected _buf: Uint8Array = new Uint8Array(PAGE_SIZE);
+  protected _pointer = 0;
+  protected _filename: string;
+  protected _mode: LogMode;
+  protected _openOptions: Deno.OpenOptions;
+  protected _encoder: TextEncoder = new TextEncoder();
   #unloadCallback = (() => {
     this.destroy();
   }).bind(this);
 
   constructor(levelName: LevelName, options: FileHandlerOptions) {
     super(levelName, options);
-    this.filename = options.filename;
+    this._filename = options.filename;
     // default to append mode, write only
-    this.mode = options.mode ? options.mode : "a";
-    this.openOptions = {
-      createNew: this.mode === "x",
-      create: this.mode !== "x",
-      append: this.mode === "a",
-      truncate: this.mode !== "a",
+    this._mode = options.mode ? options.mode : "a";
+    this._openOptions = {
+      createNew: this._mode === "x",
+      create: this._mode !== "x",
+      append: this._mode === "a",
+      truncate: this._mode !== "a",
       write: true,
     };
   }
 
   override setup() {
-    this.file = Deno.openSync(this.filename, this.openOptions);
+    this._file = Deno.openSync(this._filename, this._openOptions);
     this.#resetBuffer();
 
     addEventListener("unload", this.#unloadCallback);
@@ -72,20 +72,20 @@ export class FileHandler extends BaseHandler {
   }
 
   override log(msg: string) {
-    const bytes = this.encoder.encode(msg + "\n");
-    if (bytes.byteLength > this.buf.byteLength - this.pointer) {
+    const bytes = this._encoder.encode(msg + "\n");
+    if (bytes.byteLength > this._buf.byteLength - this._pointer) {
       this.flush();
     }
-    this.buf.set(bytes, this.pointer);
-    this.pointer += bytes.byteLength;
+    this._buf.set(bytes, this._pointer);
+    this._pointer += bytes.byteLength;
   }
 
   flush() {
-    if (this.pointer > 0 && this.file) {
+    if (this._pointer > 0 && this._file) {
       let written = 0;
-      while (written < this.pointer) {
-        written += this.file.writeSync(
-          this.buf.subarray(written, this.pointer),
+      while (written < this._pointer) {
+        written += this._file.writeSync(
+          this._buf.subarray(written, this._pointer),
         );
       }
       this.#resetBuffer();
@@ -93,13 +93,13 @@ export class FileHandler extends BaseHandler {
   }
 
   #resetBuffer() {
-    this.pointer = 0;
+    this._pointer = 0;
   }
 
   override destroy() {
     this.flush();
-    this.file?.close();
-    this.file = undefined;
+    this._file?.close();
+    this._file = undefined;
     removeEventListener("unload", this.#unloadCallback);
   }
 }

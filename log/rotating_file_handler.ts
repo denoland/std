@@ -68,35 +68,35 @@ export class RotatingFileHandler extends FileHandler {
     }
     super.setup();
 
-    if (this.mode === "w") {
+    if (this._mode === "w") {
       // Remove old backups too as it doesn't make sense to start with a clean
       // log file, but old backups
       for (let i = 1; i <= this.#maxBackupCount; i++) {
         try {
-          Deno.removeSync(this.filename + "." + i);
+          Deno.removeSync(this._filename + "." + i);
         } catch (error) {
           if (!(error instanceof Deno.errors.NotFound)) {
             throw error;
           }
         }
       }
-    } else if (this.mode === "x") {
+    } else if (this._mode === "x") {
       // Throw if any backups also exist
       for (let i = 1; i <= this.#maxBackupCount; i++) {
-        if (existsSync(this.filename + "." + i)) {
+        if (existsSync(this._filename + "." + i)) {
           this.destroy();
           throw new Deno.errors.AlreadyExists(
-            "Backup log file " + this.filename + "." + i + " already exists",
+            "Backup log file " + this._filename + "." + i + " already exists",
           );
         }
       }
     } else {
-      this.#currentFileSize = (Deno.statSync(this.filename)).size;
+      this.#currentFileSize = (Deno.statSync(this._filename)).size;
     }
   }
 
   override log(msg: string) {
-    const msgByteLength = this.encoder.encode(msg).byteLength + 1;
+    const msgByteLength = this._encoder.encode(msg).byteLength + 1;
 
     if (this.#currentFileSize + msgByteLength > this.#maxBytes) {
       this.rotateLogFiles();
@@ -110,17 +110,17 @@ export class RotatingFileHandler extends FileHandler {
 
   rotateLogFiles() {
     this.flush();
-    this.file!.close();
+    this._file!.close();
 
     for (let i = this.#maxBackupCount - 1; i >= 0; i--) {
-      const source = this.filename + (i === 0 ? "" : "." + i);
-      const dest = this.filename + "." + (i + 1);
+      const source = this._filename + (i === 0 ? "" : "." + i);
+      const dest = this._filename + "." + (i + 1);
 
       if (existsSync(source)) {
         Deno.renameSync(source, dest);
       }
     }
 
-    this.file = Deno.openSync(this.filename, this.openOptions);
+    this._file = Deno.openSync(this._filename, this._openOptions);
   }
 }
