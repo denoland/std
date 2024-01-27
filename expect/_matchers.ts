@@ -40,10 +40,7 @@ function filterUndefined(obj: any): any {
   const result = Object.create(obj);
   for (const key in obj) {
     const val = obj[key];
-    if (val === undefined) {
-      delete result[key];
-      continue;
-    }
+    if (val === undefined) continue;
     result[key] = filterUndefined(val);
   }
   return result;
