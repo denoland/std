@@ -8,9 +8,13 @@ import welcomePlugin from "./plugins/welcome.ts";
 import type { FreshConfig } from "$fresh/server.ts";
 import { ga4Plugin } from "https://deno.land/x/fresh_ga4@0.0.4/mod.ts";
 
+for (const dirEntry of Deno.readDirSync(Deno.cwd())) {
+  console.log(dirEntry.name);
+}
+
 export default {
   plugins: [
-    ga4Plugin(),
+    // ga4Plugin(),
     welcomePlugin,
     kvOAuthPlugin,
     sessionPlugin,

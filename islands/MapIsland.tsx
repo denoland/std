@@ -2,6 +2,8 @@ import * as Leaflet from "https://esm.sh/v135/@types/leaflet@1.9.4/index.d.ts";
 import { IS_BROWSER } from "$fresh/runtime.ts";
 import { useContext, useEffect, useState } from "preact/hooks";
 import { ComponentChildren, createContext } from "preact";
+import _app from "@/routes/_app.tsx";
+import { Octokit } from "https://esm.sh/@octokit/rest?target=es2022&exports=Octokit";
 
 // Create a context to hold Leaflet data/functions
 const LeafletContext = createContext<typeof Leaflet | null>(null);
@@ -9,8 +11,28 @@ const LeafletContext = createContext<typeof Leaflet | null>(null);
 // LeafletProvider component manages Leaflet loading and context
 function LeafletProvider(props: { children: ComponentChildren }) {
   if (!IS_BROWSER) {
-    return <p>eaflet must be loaded on the client. No children will render</p>;
+    return <p>Leaflet must be loaded on the client. No children will render</p>;
   }
+
+  useEffect(() => {
+    console.log("start octo", Octokit);
+    // const MyOctokit = Octokit.plugin(restEndpointMethods);
+    console.log("fetching");
+    // const url = "https://esm.sh/@octokit/rest";
+    // import(url + "?target=browser")
+    //   .then((mod) => {
+    //     console.log("mod", mod);
+    //   });
+    const octokit = new Octokit({ auth: "secret123" });
+    octokit.rest.repos
+      .createFork({
+        owner: "me",
+        repo: "you",
+      })
+      .then((data) => console.log(data))
+      .catch((error) => console.error(error));
+  }, []);
+
   const [value, setValue] = useState<typeof Leaflet | null>(null);
   return (
     <>
