@@ -223,3 +223,15 @@ Deno.test("expect().toEqual() does not throw when a key with undfined value exis
   // bar: undefined is ignored in comparison
   expect({ foo: 1, bar: undefined }).toEqual({ foo: 1 });
 });
+
+// https://github.com/denoland/deno_std/issues/4244
+Deno.test("expect().toEqual does not throw when inherits from the same class", () => {
+  function create() {
+    class Person {
+      constructor(public readonly name = "deno") {}
+    }
+    return new Person();
+  }
+
+  expect([create()]).toEqual([create()]);
+});

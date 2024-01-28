@@ -3,12 +3,6 @@ function isKeyedCollection(x: unknown): x is Set<unknown> {
   return [Symbol.iterator, "size"].every((k) => k in (x as Set<unknown>));
 }
 
-function constructorsEqual(a: object, b: object) {
-  return a.constructor === b.constructor ||
-    a.constructor === Object && !b.constructor ||
-    !a.constructor && b.constructor === Object;
-}
-
 /**
  * Deep equality comparison used in assertions
  * @param c actual value
@@ -52,9 +46,6 @@ export function equal(c: unknown, d: unknown): boolean {
       return true;
     }
     if (a && typeof a === "object" && b && typeof b === "object") {
-      if (a && b && !constructorsEqual(a, b)) {
-        return false;
-      }
       if (a instanceof WeakMap || b instanceof WeakMap) {
         if (!(a instanceof WeakMap && b instanceof WeakMap)) return false;
         throw new TypeError("cannot compare WeakMap instances");
