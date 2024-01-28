@@ -24,6 +24,7 @@
   },
   "imports": {
     "@/": "./",
+    "$std/": "https://deno.land/std@0.208.0/",
     "std/": "https://deno.land/std@0.208.0/",
     "kv_oauth/": "https://deno.land/x/deno_kv_oauth@v0.9.1/",
     "$fresh/": "https://deno.land/x/fresh@1.6.3/",
@@ -41,17 +42,10 @@
     "tailwindcss/plugin": "npm:/tailwindcss@3.3.5/plugin.js",
     "tailwindcss": "npm:tailwindcss@3.3.5"
   },
-  "exclude": [
-    "cov/",
-    "_fresh/",
-    "**/_fresh/*"
-  ],
+  "exclude": ["cov/", "_fresh/", "**/_fresh/*"],
   "lint": {
     "rules": {
-      "tags": [
-        "fresh",
-        "recommended"
-      ]
+      "tags": ["fresh", "recommended"]
     }
   },
   "scopes": {}

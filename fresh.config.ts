@@ -6,11 +6,7 @@ import errorHandling from "./plugins/error_handling.ts";
 import securityHeaders from "./plugins/security_headers.ts";
 import welcomePlugin from "./plugins/welcome.ts";
 import type { FreshConfig } from "$fresh/server.ts";
-import { ga4Plugin } from "https://deno.land/x/fresh_ga4@0.0.4/mod.ts";
-
-for (const dirEntry of Deno.readDirSync(Deno.cwd())) {
-  console.log(dirEntry.name);
-}
+import storiesPlugin from "https://deno.land/x/fresh_stories@0.0.11/stories-plugin.ts";
 
 export default {
   plugins: [
@@ -18,6 +14,7 @@ export default {
     welcomePlugin,
     kvOAuthPlugin,
     sessionPlugin,
+    storiesPlugin(),
     tailwind(),
     errorHandling,
     securityHeaders,

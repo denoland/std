@@ -27,6 +27,7 @@ import * as $pricing from "./routes/pricing.tsx";
 import * as $submit from "./routes/submit.tsx";
 import * as $users_login_ from "./routes/users/[login].tsx";
 import * as $welcome from "./routes/welcome.tsx";
+import * as $Button_story from "./islands/Button.story.tsx";
 import * as $Chart from "./islands/Chart.tsx";
 import * as $ItemsList from "./islands/ItemsList.tsx";
 import * as $MapIsland from "./islands/MapIsland.tsx";
@@ -62,6 +63,7 @@ const manifest = {
     "./routes/welcome.tsx": $welcome,
   },
   islands: {
+    "./islands/Button.story.tsx": $Button_story,
     "./islands/Chart.tsx": $Chart,
     "./islands/ItemsList.tsx": $ItemsList,
     "./islands/MapIsland.tsx": $MapIsland,
