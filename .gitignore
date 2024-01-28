@@ -1,0 +1,10 @@
+.env
+*.DS_Store
+cov/
+cov.lcov
+.idea
+_fresh/
+backup.json
+html_cov/
+coverage/
+node_modules/

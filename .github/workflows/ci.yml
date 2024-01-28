@@ -1,0 +1,41 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  ci:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-latest
+          - windows-latest
+          - macOS-latest
+
+    steps:
+      - name: Setup repo
+        uses: actions/checkout@v4
+
+      - name: Setup Deno
+        uses: denoland/setup-deno@v1
+
+      - name: Check typos
+        if: matrix.os == 'ubuntu-latest'
+        uses: crate-ci/typos@master
+
+      - name: Check formatting, linting, license headers, types and run tests
+        run: deno task ok
+
+      - name: Create lcov file
+        run: deno task cov:gen
+
+      - name: Upload coverage
+        uses: codecov/codecov-action@v3
+        with:
+          name: ${{ matrix.os }}
+          files: cov.lcov
