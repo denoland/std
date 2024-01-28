@@ -34,6 +34,7 @@ export default class Artifact {
       http,
     }
     if (isBrowser) {
+      // artifact.#opts.corsProxy = 'https://artifact-git-cors-proxy.deno.dev'
       artifact.#opts.corsProxy = 'https://cors.isomorphic-git.org'
     }
     const opts = { ...artifact.#opts, trigger: artifact.#trigger }

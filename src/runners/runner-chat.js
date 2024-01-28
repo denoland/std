@@ -71,7 +71,7 @@ export class AI {
   }
 
   async #execute(messages) {
-    const { model = 'gpt-4-1106-preview', temperature = 0 } = this.#config
+    const { model = 'gpt-4-turbo-preview', temperature = 0 } = this.#config
     const args = {
       model,
       temperature,

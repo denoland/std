@@ -1,6 +1,6 @@
 import assert from 'assert-fast'
 import { functions as fetch } from './fetch'
-import { write } from '../artifact/io-hooks'
+import { write, read } from '../artifact/io-hooks'
 import Debug from 'debug'
 const debug = Debug('AI:oauth')
 
@@ -24,11 +24,36 @@ export const functions = {
     // perform a refresh on the system like profile pic
 
     await loop()
+
+    await forkRepo('dreamcatcher-tech', 'artifact')
+
     return { validToken: true }
   },
   testGithubAccess: async () => {
     // maybe should have a github isolate that does github commands ?
   },
+}
+
+async function forkRepo(owner, repo) {
+  const url = `https://api.github.com/repos/${owner}/${repo}/forks`
+
+  const env = await read('/.env')
+  const [key, token] = env.split('=')
+  assert(key === 'GITHUB_PAT', `missing GITHUB_PAT in /.env: ${env}`)
+
+  const options = {
+    method: 'POST',
+    headers: {
+      Authorization: `token ${token}`,
+      Accept: 'application/vnd.github.v3+json',
+    },
+  }
+
+  globalThis
+    .fetch(url, options)
+    .then((response) => response.json())
+    .then((data) => console.log(data))
+    .catch((error) => console.error('Error:', error))
 }
 
 export const loop = async () => {

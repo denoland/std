@@ -24,6 +24,7 @@
     "@mui/icons-material": "5.15.6",
     "@mui/lab": "^5.0.0-alpha.162",
     "@mui/material": "5.15.6",
+    "@octokit/rest": "^20.0.2",
     "ajv": "^8.12.0",
     "assert-fast": "^1.0.3",
     "buffer": "^6.0.3",
