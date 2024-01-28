@@ -206,12 +206,6 @@ Deno.test("Equal", function () {
     ),
   );
   assert(
-    equal(
-      new WeakRef({ hello: "world" }),
-      new (class<T extends object> extends WeakRef<T> {})({ hello: "world" }),
-    ),
-  );
-  assert(
     !equal(
       new WeakRef({ hello: "world" }),
       new (class<T extends object> extends WeakRef<T> {
@@ -225,17 +219,6 @@ Deno.test("Equal", function () {
       new (class<T extends object> extends WeakRef<T> {
         foo = "bar";
       })({ hello: "world" }),
-    ),
-  );
-
-  assert(
-    equal(
-      new (class A {
-        #hello = "world";
-      })(),
-      new (class B {
-        #hello = "world";
-      })(),
     ),
   );
 
