@@ -29,6 +29,7 @@ import * as $users_login_ from "./routes/users/[login].tsx";
 import * as $welcome from "./routes/welcome.tsx";
 import * as $Chart from "./islands/Chart.tsx";
 import * as $ItemsList from "./islands/ItemsList.tsx";
+import * as $MapIsland from "./islands/MapIsland.tsx";
 import * as $UsersTable from "./islands/UsersTable.tsx";
 import { type Manifest } from "$fresh/server.ts";
 
@@ -63,6 +64,7 @@ const manifest = {
   islands: {
     "./islands/Chart.tsx": $Chart,
     "./islands/ItemsList.tsx": $ItemsList,
+    "./islands/MapIsland.tsx": $MapIsland,
     "./islands/UsersTable.tsx": $UsersTable,
   },
   baseUrl: import.meta.url,
