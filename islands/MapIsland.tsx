@@ -9,7 +9,7 @@ const LeafletContext = createContext<typeof Leaflet | null>(null);
 // LeafletProvider component manages Leaflet loading and context
 function LeafletProvider(props: { children: ComponentChildren }) {
   if (!IS_BROWSER) {
-    return <p>Leaflet must be loaded on the client. No children will render</p>;
+    return <p>eaflet must be loaded on the client. No children will render</p>;
   }
   const [value, setValue] = useState<typeof Leaflet | null>(null);
   return (
