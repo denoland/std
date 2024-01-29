@@ -8,10 +8,8 @@ import {
   stripAnsiCode,
   yellow,
 } from "../fmt/colors.ts";
-import { assertThrows } from "../assert/assert_throws.ts";
-import { AssertionError } from "../assert/assertion_error.ts";
+import { assertFalse, assertThrows, AssertionError } from "../assert/mod.ts";
 import { expect } from "./expect.ts";
-import { assertFalse } from "https://deno.land/std@$STD_VERSION/assert/mod.ts";
 
 const createHeader = (): string[] => [
   "",
