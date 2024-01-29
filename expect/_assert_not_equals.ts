@@ -1,8 +1,13 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
+// This file is copied from `std/assert`.
+
+import { AssertionError } from "../assert/assertion_error.ts";
 import { CAN_NOT_DISPLAY } from "./_constants.ts";
-import { equal } from "./equal.ts";
-import { AssertionError } from "./assertion_error.ts";
+import { equal } from "./_equal.ts";
+import { AssertEqualsOptions } from "./_types.ts";
+
+type AssertNotEqualsOptions = Omit<AssertEqualsOptions, "formatter">;
 
 /**
  * Make an assertion that `actual` and `expected` are not equal, deeply.
@@ -18,8 +23,13 @@ import { AssertionError } from "./assertion_error.ts";
  * assertNotEquals(1, 1); // Throws
  * ```
  */
-export function assertNotEquals<T>(actual: T, expected: T, msg?: string) {
-  if (!equal(actual, expected)) {
+export function assertNotEquals<T>(
+  actual: T,
+  expected: T,
+  options: AssertNotEqualsOptions = {},
+) {
+  const { msg, strictCheck } = options;
+  if (!equal(actual, expected, strictCheck)) {
     return;
   }
   let actualString: string;
