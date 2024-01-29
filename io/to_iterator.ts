@@ -11,10 +11,10 @@ export type { Reader, ReaderSync };
  *
  * @example
  * ```ts
- * import { iterate } from "https://deno.land/std@$STD_VERSION/io/iterate.ts";
+ * import { toIterator } from "https://deno.land/std@$STD_VERSION/io/to_iterator.ts";
  *
  * using file = await Deno.open("/etc/passwd");
- * for await (const chunk of iterate(file)) {
+ * for await (const chunk of toIterator(file)) {
  *   console.log(chunk);
  * }
  * ```
@@ -24,10 +24,10 @@ export type { Reader, ReaderSync };
  *
  * @example
  * ```ts
- * import { iterate } from "https://deno.land/std@$STD_VERSION/io/iterate.ts";
+ * import { toIterator } from "https://deno.land/std@$STD_VERSION/io/to_iterator.ts";
  *
  * using file = await Deno.open("/etc/passwd");
- * const iter = iterate(file, {
+ * const iter = toIterator(file, {
  *   bufSize: 1024 * 1024
  * });
  * for await (const chunk of iter) {
@@ -35,7 +35,7 @@ export type { Reader, ReaderSync };
  * }
  * ```
  */
-export async function* iterate(
+export async function* toIterator(
   reader: Reader,
   options?: {
     bufSize?: number;
@@ -57,10 +57,10 @@ export async function* iterate(
  * Turns a {@linkcode ReaderSync} into an iterator.
  *
  * ```ts
- * import { iterateSync } from "https://deno.land/std@$STD_VERSION/io/iterate.ts";
+ * import { toIteratorSync } from "https://deno.land/std@$STD_VERSION/io/to_iterator.ts";
  *
  * using file = Deno.openSync("/etc/passwd");
- * for (const chunk of iterateSync(file)) {
+ * for (const chunk of toIteratorSync(file)) {
  *   console.log(chunk);
  * }
  * ```
@@ -69,10 +69,10 @@ export async function* iterate(
  * Default size of the buffer is 32kB.
  *
  * ```ts
- * import { iterateSync } from "https://deno.land/std@$STD_VERSION/io/iterate.ts";
+ * import { toIteratorSync } from "https://deno.land/std@$STD_VERSION/io/to_iterator.ts";
 
  * using file = await Deno.open("/etc/passwd");
- * const iter = iterateSync(file, {
+ * const iter = toIteratorSync(file, {
  *   bufSize: 1024 * 1024
  * });
  * for (const chunk of iter) {
@@ -85,7 +85,7 @@ export async function* iterate(
  * responsibility to copy contents of the buffer if needed; otherwise the
  * next iteration will overwrite contents of previously returned chunk.
  */
-export function* iterateSync(
+export function* toIteratorSync(
   reader: ReaderSync,
   options?: {
     bufSize?: number;
