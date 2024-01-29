@@ -49,6 +49,9 @@ export function equal(c: unknown, d: unknown, strictCheck?: boolean): boolean {
       }
       return aTime === bTime;
     }
+    if (a instanceof Error && b instanceof Error) {
+      return a.message === b.message;
+    }
     if (typeof a === "number" && typeof b === "number") {
       return Number.isNaN(a) && Number.isNaN(b) || a === b;
     }

@@ -11,6 +11,7 @@ import {
 import { assertThrows } from "../assert/assert_throws.ts";
 import { AssertionError } from "../assert/assertion_error.ts";
 import { expect } from "./expect.ts";
+import { assertFalse } from "https://deno.land/std@$STD_VERSION/assert/mod.ts";
 
 const createHeader = (): string[] => [
   "",
@@ -262,4 +263,17 @@ Deno.test("align to jest test cases", () => {
   assertThrows(() => {
     expect(new A()).not.toEqual(new B());
   }, AssertionError);
+});
+
+Deno.test("toEqual case for Error Object", () => {
+  function getError() {
+    return new Error("missing param: name");
+  }
+
+  const expectErrObjectWithName = new Error("missing param: name");
+  expect(getError()).toEqual(expectErrObjectWithName);
+
+  const expectErrObjectWithEmail = new Error("missing param: email");
+  expect(getError()).not.toEqual(expectErrObjectWithEmail);
+  assertFalse(expect(getError()).not.toEqual(expectErrObjectWithEmail));
 });
