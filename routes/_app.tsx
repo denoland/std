@@ -20,7 +20,6 @@ export default defineApp<State>((_, ctx) => {
               sessionUser={ctx.state?.sessionUser}
             />
             <ctx.Component />
-            <Footer />
           </div>
         </div>
       </body>
