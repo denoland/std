@@ -1,19 +1,19 @@
 // Copyright 2023-2024 the Deno authors. All rights reserved. MIT license.
-import { createGitHubOAuthConfig } from "kv_oauth/mod.ts";
-import { BadRequestError } from "@/utils/http.ts";
+import { createGitHubOAuthConfig } from 'kv_oauth/mod.ts'
+import { BadRequestError } from '@/utils/http.ts'
 
 export function isGitHubSetup() {
   try {
-    createGitHubOAuthConfig();
-    return true;
+    createGitHubOAuthConfig()
+    return true
   } catch {
-    return false;
+    return false
   }
 }
 
 interface GitHubUser {
-  login: string;
-  email: string;
+  login: string
+  email: string
 }
 
 /**
@@ -32,12 +32,12 @@ interface GitHubUser {
  * ```
  */
 export async function getGitHubUser(accessToken: string) {
-  const resp = await fetch("https://api.github.com/user", {
+  const resp = await fetch('https://api.github.com/user', {
     headers: { authorization: `Bearer ${accessToken}` },
-  });
+  })
   if (!resp.ok) {
-    const { message } = await resp.json();
-    throw new BadRequestError(message);
+    const { message } = await resp.json()
+    throw new BadRequestError(message)
   }
-  return await resp.json() as Promise<GitHubUser>;
+  return await resp.json() as Promise<GitHubUser>
 }

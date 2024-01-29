@@ -1,4 +1,4 @@
-import { test, expect, debug, goal } from '../src/test-context.js'
+import { debug, expect, goal, test } from '../src/test-context.js'
 
 // if we could make a help that was aware of the git repo, and the io rules
 // within it, then we could get it to answer questions about how the flow of

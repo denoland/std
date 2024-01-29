@@ -1,15 +1,15 @@
 // Copyright 2023-2024 the Deno authors. All rights reserved. MIT license.
-import { ulid } from "std/ulid/mod.ts";
+import { ulid } from 'std/ulid/mod.ts'
 
-const DENO_KV_PATH_KEY = "DENO_KV_PATH";
-let path = undefined;
+const DENO_KV_PATH_KEY = 'DENO_KV_PATH'
+let path = undefined
 if (
-  (await Deno.permissions.query({ name: "env", variable: DENO_KV_PATH_KEY }))
-    .state === "granted"
+  (await Deno.permissions.query({ name: 'env', variable: DENO_KV_PATH_KEY }))
+    .state === 'granted'
 ) {
-  path = Deno.env.get(DENO_KV_PATH_KEY);
+  path = Deno.env.get(DENO_KV_PATH_KEY)
 }
-export const kv = await Deno.openKv(path);
+export const kv = await Deno.openKv(path)
 
 /**
  * Returns an array of values of a given {@linkcode Deno.KvListIterator} that's
@@ -28,17 +28,17 @@ export const kv = await Deno.openKv(path);
  * ```
  */
 export async function collectValues<T>(iter: Deno.KvListIterator<T>) {
-  return await Array.fromAsync(iter, ({ value }) => value);
+  return await Array.fromAsync(iter, ({ value }) => value)
 }
 
 // Item
 export interface Item {
   // Uses ULID
-  id: string;
-  userLogin: string;
-  title: string;
-  url: string;
-  score: number;
+  id: string
+  userLogin: string
+  title: string
+  url: string
+  score: number
 }
 
 /** For testing */
@@ -49,7 +49,7 @@ export function randomItem(): Item {
     title: crypto.randomUUID(),
     url: `http://${crypto.randomUUID()}.com`,
     score: 0,
-  };
+  }
 }
 
 /**
@@ -71,17 +71,17 @@ export function randomItem(): Item {
  * ```
  */
 export async function createItem(item: Item) {
-  const itemsKey = ["items", item.id];
-  const itemsByUserKey = ["items_by_user", item.userLogin, item.id];
+  const itemsKey = ['items', item.id]
+  const itemsByUserKey = ['items_by_user', item.userLogin, item.id]
 
   const res = await kv.atomic()
     .check({ key: itemsKey, versionstamp: null })
     .check({ key: itemsByUserKey, versionstamp: null })
     .set(itemsKey, item)
     .set(itemsByUserKey, item)
-    .commit();
+    .commit()
 
-  if (!res.ok) throw new Error("Failed to create item");
+  if (!res.ok) throw new Error('Failed to create item')
 }
 
 /**
@@ -100,8 +100,8 @@ export async function createItem(item: Item) {
  * ```
  */
 export async function getItem(id: string) {
-  const res = await kv.get<Item>(["items", id]);
-  return res.value;
+  const res = await kv.get<Item>(['items', id])
+  return res.value
 }
 
 /**
@@ -121,7 +121,7 @@ export async function getItem(id: string) {
  * ```
  */
 export function listItems(options?: Deno.KvListOptions) {
-  return kv.list<Item>({ prefix: ["items"] }, options);
+  return kv.list<Item>({ prefix: ['items'] }, options)
 }
 
 /**
@@ -144,13 +144,13 @@ export function listItemsByUser(
   userLogin: string,
   options?: Deno.KvListOptions,
 ) {
-  return kv.list<Item>({ prefix: ["items_by_user", userLogin] }, options);
+  return kv.list<Item>({ prefix: ['items_by_user', userLogin] }, options)
 }
 
 // Vote
 export interface Vote {
-  itemId: string;
-  userLogin: string;
+  itemId: string
+  userLogin: string
 }
 
 /**
@@ -168,27 +168,27 @@ export interface Vote {
  * ```
  */
 export async function createVote(vote: Vote) {
-  const itemKey = ["items", vote.itemId];
-  const userKey = ["users", vote.userLogin];
-  const [itemRes, userRes] = await kv.getMany<[Item, User]>([itemKey, userKey]);
-  const item = itemRes.value;
-  const user = userRes.value;
-  if (item === null) throw new Deno.errors.NotFound("Item not found");
-  if (user === null) throw new Deno.errors.NotFound("User not found");
+  const itemKey = ['items', vote.itemId]
+  const userKey = ['users', vote.userLogin]
+  const [itemRes, userRes] = await kv.getMany<[Item, User]>([itemKey, userKey])
+  const item = itemRes.value
+  const user = userRes.value
+  if (item === null) throw new Deno.errors.NotFound('Item not found')
+  if (user === null) throw new Deno.errors.NotFound('User not found')
 
   const itemVotedByUserKey = [
-    "items_voted_by_user",
+    'items_voted_by_user',
     vote.userLogin,
     vote.itemId,
-  ];
+  ]
   const userVotedForItemKey = [
-    "users_voted_for_item",
+    'users_voted_for_item',
     vote.itemId,
     vote.userLogin,
-  ];
-  const itemByUserKey = ["items_by_user", item.userLogin, item.id];
+  ]
+  const itemByUserKey = ['items_by_user', item.userLogin, item.id]
 
-  item.score++;
+  item.score++
 
   const res = await kv.atomic()
     .check(itemRes)
@@ -199,9 +199,9 @@ export async function createVote(vote: Vote) {
     .set(itemByUserKey, item)
     .set(itemVotedByUserKey, item)
     .set(userVotedForItemKey, user)
-    .commit();
+    .commit()
 
-  if (!res.ok) throw new Error("Failed to create vote");
+  if (!res.ok) throw new Error('Failed to create vote')
 }
 
 /**
@@ -221,20 +221,20 @@ export async function createVote(vote: Vote) {
  * ```
  */
 export function listItemsVotedByUser(userLogin: string) {
-  return kv.list<Item>({ prefix: ["items_voted_by_user", userLogin] });
+  return kv.list<Item>({ prefix: ['items_voted_by_user', userLogin] })
 }
 
 // User
 export interface User {
   // AKA username
-  login: string;
-  sessionId: string;
+  login: string
+  sessionId: string
   /**
    * Whether the user is subscribed to the "Premium Plan".
    * @default {false}
    */
-  isSubscribed: boolean;
-  stripeCustomerId?: string;
+  isSubscribed: boolean
+  stripeCustomerId?: string
 }
 
 /** For testing */
@@ -244,7 +244,7 @@ export function randomUser(): User {
     sessionId: crypto.randomUUID(),
     isSubscribed: false,
     stripeCustomerId: crypto.randomUUID(),
-  };
+  }
 }
 
 /**
@@ -263,27 +263,27 @@ export function randomUser(): User {
  * ```
  */
 export async function createUser(user: User) {
-  const usersKey = ["users", user.login];
-  const usersBySessionKey = ["users_by_session", user.sessionId];
+  const usersKey = ['users', user.login]
+  const usersBySessionKey = ['users_by_session', user.sessionId]
 
   const atomicOp = kv.atomic()
     .check({ key: usersKey, versionstamp: null })
     .check({ key: usersBySessionKey, versionstamp: null })
     .set(usersKey, user)
-    .set(usersBySessionKey, user);
+    .set(usersBySessionKey, user)
 
   if (user.stripeCustomerId !== undefined) {
     const usersByStripeCustomerKey = [
-      "users_by_stripe_customer",
+      'users_by_stripe_customer',
       user.stripeCustomerId,
-    ];
+    ]
     atomicOp
       .check({ key: usersByStripeCustomerKey, versionstamp: null })
-      .set(usersByStripeCustomerKey, user);
+      .set(usersByStripeCustomerKey, user)
   }
 
-  const res = await atomicOp.commit();
-  if (!res.ok) throw new Error("Failed to create user");
+  const res = await atomicOp.commit()
+  if (!res.ok) throw new Error('Failed to create user')
 }
 
 /**
@@ -301,24 +301,24 @@ export async function createUser(user: User) {
  * ```
  */
 export async function updateUser(user: User) {
-  const usersKey = ["users", user.login];
-  const usersBySessionKey = ["users_by_session", user.sessionId];
+  const usersKey = ['users', user.login]
+  const usersBySessionKey = ['users_by_session', user.sessionId]
 
   const atomicOp = kv.atomic()
     .set(usersKey, user)
-    .set(usersBySessionKey, user);
+    .set(usersBySessionKey, user)
 
   if (user.stripeCustomerId !== undefined) {
     const usersByStripeCustomerKey = [
-      "users_by_stripe_customer",
+      'users_by_stripe_customer',
       user.stripeCustomerId,
-    ];
+    ]
     atomicOp
-      .set(usersByStripeCustomerKey, user);
+      .set(usersByStripeCustomerKey, user)
   }
 
-  const res = await atomicOp.commit();
-  if (!res.ok) throw new Error("Failed to update user");
+  const res = await atomicOp.commit()
+  if (!res.ok) throw new Error('Failed to update user')
 }
 
 /**
@@ -336,28 +336,28 @@ export async function updateUser(user: User) {
  * ```
  */
 export async function updateUserSession(user: User, sessionId: string) {
-  const userKey = ["users", user.login];
-  const oldUserBySessionKey = ["users_by_session", user.sessionId];
-  const newUserBySessionKey = ["users_by_session", sessionId];
-  const newUser: User = { ...user, sessionId };
+  const userKey = ['users', user.login]
+  const oldUserBySessionKey = ['users_by_session', user.sessionId]
+  const newUserBySessionKey = ['users_by_session', sessionId]
+  const newUser: User = { ...user, sessionId }
 
   const atomicOp = kv.atomic()
     .set(userKey, newUser)
     .delete(oldUserBySessionKey)
     .check({ key: newUserBySessionKey, versionstamp: null })
-    .set(newUserBySessionKey, newUser);
+    .set(newUserBySessionKey, newUser)
 
   if (user.stripeCustomerId !== undefined) {
     const usersByStripeCustomerKey = [
-      "users_by_stripe_customer",
+      'users_by_stripe_customer',
       user.stripeCustomerId,
-    ];
+    ]
     atomicOp
-      .set(usersByStripeCustomerKey, user);
+      .set(usersByStripeCustomerKey, user)
   }
 
-  const res = await atomicOp.commit();
-  if (!res.ok) throw new Error("Failed to update user session");
+  const res = await atomicOp.commit()
+  if (!res.ok) throw new Error('Failed to update user session')
 }
 
 /**
@@ -374,8 +374,8 @@ export async function updateUserSession(user: User, sessionId: string) {
  * ```
  */
 export async function getUser(login: string) {
-  const res = await kv.get<User>(["users", login]);
-  return res.value;
+  const res = await kv.get<User>(['users', login])
+  return res.value
 }
 
 /**
@@ -396,13 +396,13 @@ export async function getUser(login: string) {
  * ```
  */
 export async function getUserBySession(sessionId: string) {
-  const key = ["users_by_session", sessionId];
+  const key = ['users_by_session', sessionId]
   const eventualRes = await kv.get<User>(key, {
-    consistency: "eventual",
-  });
-  if (eventualRes.value !== null) return eventualRes.value;
-  const res = await kv.get<User>(key);
-  return res.value;
+    consistency: 'eventual',
+  })
+  if (eventualRes.value !== null) return eventualRes.value
+  const res = await kv.get<User>(key)
+  return res.value
 }
 
 /**
@@ -421,10 +421,10 @@ export async function getUserBySession(sessionId: string) {
  */
 export async function getUserByStripeCustomer(stripeCustomerId: string) {
   const res = await kv.get<User>([
-    "users_by_stripe_customer",
+    'users_by_stripe_customer',
     stripeCustomerId,
-  ]);
-  return res.value;
+  ])
+  return res.value
 }
 
 /**
@@ -443,7 +443,7 @@ export async function getUserByStripeCustomer(stripeCustomerId: string) {
  * ```
  */
 export function listUsers(options?: Deno.KvListOptions) {
-  return kv.list<User>({ prefix: ["users"] }, options);
+  return kv.list<User>({ prefix: ['users'] }, options)
 }
 
 /**
@@ -474,7 +474,7 @@ export function listUsers(options?: Deno.KvListOptions) {
  * ```
  */
 export async function getAreVotedByUser(items: Item[], userLogin: string) {
-  const votedItems = await collectValues(listItemsVotedByUser(userLogin));
-  const votedItemsIds = votedItems.map((item) => item.id);
-  return items.map((item) => votedItemsIds.includes(item.id));
+  const votedItems = await collectValues(listItemsVotedByUser(userLogin))
+  const votedItemsIds = votedItems.map((item) => item.id)
+  return items.map((item) => votedItemsIds.includes(item.id))
 }

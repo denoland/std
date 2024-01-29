@@ -1,5 +1,5 @@
 // Copyright 2023-2024 the Deno authors. All rights reserved. MIT license.
-import { RedirectStatus, STATUS_CODE } from "std/http/status.ts";
+import { RedirectStatus, STATUS_CODE } from 'std/http/status.ts'
 
 /**
  * Returns a response that redirects the client to the given location (URL).
@@ -26,7 +26,7 @@ export function redirect(
       location,
     },
     status,
-  });
+  })
 }
 
 /**
@@ -41,7 +41,7 @@ export function redirect(
  * ```
  */
 export function getCursor(url: URL) {
-  return url.searchParams.get("cursor") ?? "";
+  return url.searchParams.get('cursor') ?? ''
 }
 
 /**
@@ -61,23 +61,23 @@ export function getCursor(url: URL) {
  * ```
  */
 export async function fetchValues<T>(endpoint: string, cursor: string) {
-  let url = endpoint;
-  if (cursor !== "") url += "?cursor=" + cursor;
-  const resp = await fetch(url);
-  if (!resp.ok) throw new Error(`Request failed: GET ${url}`);
-  return await resp.json() as { values: T[]; cursor: string };
+  let url = endpoint
+  if (cursor !== '') url += '?cursor=' + cursor
+  const resp = await fetch(url)
+  if (!resp.ok) throw new Error(`Request failed: GET ${url}`)
+  return await resp.json() as { values: T[]; cursor: string }
 }
 
 export class UnauthorizedError extends Error {
   constructor(message?: string) {
-    super(message);
-    this.name = "UnauthorizedError";
+    super(message)
+    this.name = 'UnauthorizedError'
   }
 }
 
 export class BadRequestError extends Error {
   constructor(message?: string) {
-    super(message);
-    this.name = "BadRequestError";
+    super(message)
+    this.name = 'BadRequestError'
   }
 }

@@ -1,4 +1,4 @@
-import { help, test, debug, expect } from '../test-context.js'
+import { debug, expect, help, test } from '../test-context.js'
 const files = 'files'
 
 help('ls /', async ({ help }) => {

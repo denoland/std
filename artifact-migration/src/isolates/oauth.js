@@ -1,18 +1,20 @@
 import assert from 'assert-fast'
 import { functions as fetch } from './fetch'
-import { write, read } from '../artifact/io-hooks'
+import { read, write } from '../artifact/io-hooks'
 import Debug from 'debug'
 const debug = Debug('AI:oauth')
 
 export const api = {
   authenticate: {
-    description: `Opens a browser popup window and walk through the oauth dance to get a token.  It will then store that token in .env and return { validToken: true }.  Make sure popups are not being blocked for the current window or this will not work.`,
+    description:
+      `Opens a browser popup window and walk through the oauth dance to get a token.  It will then store that token in .env and return { validToken: true }.  Make sure popups are not being blocked for the current window or this will not work.`,
     type: 'object',
     additionalProperties: false,
     properties: {},
   },
   testGithubAccess: {
-    description: `Will check to see if the token in .env is valid by making a call to github.com.  If it is valid, it will return { validToken: true }`,
+    description:
+      `Will check to see if the token in .env is valid by making a call to github.com.  If it is valid, it will return { validToken: true }`,
   },
 }
 export const functions = {
@@ -78,7 +80,7 @@ export const loop = async () => {
       await write('/.env', `GITHUB_PAT=${result.access_token}\n`)
       delete globalThis[fnName]
       resolve(
-        'token written to "/.env" with "GITHUB_PAT=${result.access_token}\n"'
+        'token written to "/.env" with "GITHUB_PAT=${result.access_token}\n"',
       )
     } catch (error) {
       delete globalThis[fnName]
@@ -88,7 +90,8 @@ export const loop = async () => {
 
   const clientId = import.meta.env.VITE_GITHUB_CLIENT_ID
   const scope = encodeURIComponent('read:user,repo')
-  const oauthUrl = `https://github.com/login/oauth/authorize?client_id=${clientId}&scope=${scope}`
+  const oauthUrl =
+    `https://github.com/login/oauth/authorize?client_id=${clientId}&scope=${scope}`
   // TODO add state callback check for cross site forgery
   const openedWindow = openOAuthWindow(oauthUrl, 'Github OAuth')
   if (!openedWindow) {
@@ -103,7 +106,8 @@ function openOAuthWindow(oauthUrl, name) {
   const height = 1100
   const left = (screen.width - width) / 2
   const top = (screen.height - height) / 2
-  const windowFeatures = `toolbar=no, menubar=no, width=${width}, height=${height}, top=${top}, left=${left}`
+  const windowFeatures =
+    `toolbar=no, menubar=no, width=${width}, height=${height}, top=${top}, left=${left}`
 
   return window.open(oauthUrl, name, windowFeatures)
 }

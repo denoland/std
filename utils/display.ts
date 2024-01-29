@@ -1,5 +1,5 @@
 // Copyright 2023-2024 the Deno authors. All rights reserved. MIT license.
-import { difference } from "std/datetime/difference.ts";
+import { difference } from 'std/datetime/difference.ts'
 
 /**
  * Returns a pluralized string for the given amount and unit.
@@ -13,7 +13,7 @@ import { difference } from "std/datetime/difference.ts";
  * ```
  */
 export function pluralize(amount: number, unit: string) {
-  return amount === 1 ? `${amount} ${unit}` : `${amount} ${unit}s`;
+  return amount === 1 ? `${amount} ${unit}` : `${amount} ${unit}s`
 }
 
 /**
@@ -29,28 +29,28 @@ export function pluralize(amount: number, unit: string) {
  * ```
  */
 export function timeAgo(date: Date) {
-  const now = new Date();
-  if (date > now) throw new Error("Timestamp must be in the past");
+  const now = new Date()
+  if (date > now) throw new Error('Timestamp must be in the past')
   const match = Object.entries(
     difference(now, date, {
       // These units make sense for a web UI
       units: [
-        "seconds",
-        "minutes",
-        "hours",
-        "days",
-        "weeks",
-        "months",
-        "years",
+        'seconds',
+        'minutes',
+        'hours',
+        'days',
+        'weeks',
+        'months',
+        'years',
       ],
     }),
   )
     .toReversed()
-    .find(([_, amount]) => amount > 0);
-  if (match === undefined) return "just now";
-  const [unit, amount] = match;
+    .find(([_, amount]) => amount > 0)
+  if (match === undefined) return 'just now'
+  const [unit, amount] = match
   // Remove the last character which is an "s"
-  return pluralize(amount, unit.slice(0, -1)) + " ago";
+  return pluralize(amount, unit.slice(0, -1)) + ' ago'
 }
 
 /**
@@ -71,15 +71,15 @@ export function formatCurrency(
   currency: string,
 ): string {
   return new Intl.NumberFormat(
-    "en-US",
+    'en-US',
     {
-      style: "currency",
+      style: 'currency',
       currency,
-      currencyDisplay: "symbol",
+      currencyDisplay: 'symbol',
       maximumFractionDigits: 0,
     },
   ).format(amount)
     // Issue: https://stackoverflow.com/questions/44533919/space-after-symbol-with-js-intl
-    .replace(/^(\D+)/, "$1")
-    .replace(/\s+/, "");
+    .replace(/^(\D+)/, '$1')
+    .replace(/\s+/, '')
 }

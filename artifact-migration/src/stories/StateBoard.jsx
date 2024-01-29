@@ -1,5 +1,5 @@
 import Box from '@mui/material/Box'
-import React, { useState, useCallback, useEffect } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import PropTypes from 'prop-types'
 import Debug from 'debug'
 import assert from 'assert-fast'
@@ -36,8 +36,7 @@ export const StateBoard = ({ crisp }) => {
   // map paths to or covenants to gui components
   //   const dir = crisp.
 }
-StateBoard.propTypes = {
-}
+StateBoard.propTypes = {}
 
 // stateboard could be loaded up with children that have route props
 // either a path, a switch, or covenant

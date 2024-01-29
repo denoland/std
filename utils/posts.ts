@@ -1,6 +1,6 @@
 // Copyright 2023-2024 the Deno authors. All rights reserved. MIT license.
-import { extract } from "std/front_matter/yaml.ts";
-import { join } from "std/path/join.ts";
+import { extract } from 'std/front_matter/yaml.ts'
+import { join } from 'std/path/join.ts'
 
 /**
  * This code is based on the
@@ -9,11 +9,11 @@ import { join } from "std/path/join.ts";
  */
 
 export interface Post {
-  slug: string;
-  title: string;
-  publishedAt: Date;
-  content: string;
-  summary: string;
+  slug: string
+  title: string
+  publishedAt: Date
+  content: string
+  summary: string
 }
 
 /**
@@ -37,15 +37,15 @@ export interface Post {
  */
 export async function getPost(slug: string): Promise<Post | null> {
   try {
-    const text = await Deno.readTextFile(join("./posts", `${slug}.md`));
-    const { attrs, body } = extract<Post>(text);
+    const text = await Deno.readTextFile(join('./posts', `${slug}.md`))
+    const { attrs, body } = extract<Post>(text)
     return {
       ...attrs,
       slug,
       content: body,
-    };
+    }
   } catch {
-    return null;
+    return null
   }
 }
 
@@ -69,10 +69,10 @@ export async function getPost(slug: string): Promise<Post | null> {
  */
 export async function getPosts(): Promise<Post[]> {
   const posts = await Array.fromAsync(
-    Deno.readDir("./posts"),
-    async (file) => await getPost(file.name.replace(".md", "")),
-  ) as Post[];
+    Deno.readDir('./posts'),
+    async (file) => await getPost(file.name.replace('.md', '')),
+  ) as Post[]
   return posts.toSorted((a, b) =>
     b.publishedAt.getTime() - a.publishedAt.getTime()
-  );
+  )
 }

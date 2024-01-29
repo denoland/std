@@ -26,10 +26,10 @@ const Info = ({ commit }) => {
   const since = `${formatElapsedTime(secondsElapsed)}`
   return (
     <>
-      <Typography mt={1} variant="caption" component="span">
-        <i>commit: </i>
-        <b>{oid.slice(0, 8)}</b> <i>by: </i> {name} <i>message: </i>
-        {message} <i>when: </i>
+      <Typography mt={1} variant='caption' component='span'>
+        <i>commit:</i>
+        <b>{oid.slice(0, 8)}</b> <i>by:</i> {name} <i>message:</i>
+        {message} <i>when:</i>
         {since}
       </Typography>
     </>
@@ -41,7 +41,7 @@ const Git = () => {
   const commit = useLatestCommit()
   if (!commit) {
     return (
-      <Typography mt={1} variant="caption">
+      <Typography mt={1} variant='caption'>
         loading...
       </Typography>
     )

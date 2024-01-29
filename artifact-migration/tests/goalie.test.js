@@ -1,4 +1,4 @@
-import { expect, goal, debug } from '../src/test-context'
+import { debug, expect, goal } from '../src/test-context'
 
 goal('what files do I have ?', async ({ result }) => {
   debug(result)

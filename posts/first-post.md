@@ -9,5 +9,5 @@ summary: This is an excerpt of my first blog post.
 Hello, world!
 
 ```javascript
-console.log("Hello World");
+console.log('Hello World')
 ```

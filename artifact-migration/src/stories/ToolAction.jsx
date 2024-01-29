@@ -40,11 +40,9 @@ export const ToolAction = ({ tool_calls, messages }) => {
           avatar={<Terminal />}
         />
         <CardContent sx={{ pt: 0, pb: 0, fontFamily: 'sans-serif' }}>
-          {typeof output === 'string' ? (
-            <Markdown remarkPlugins={[remarkGfm]}>{output}</Markdown>
-          ) : (
-            <ObjectInspector data={output} expandLevel={999} />
-          )}
+          {typeof output === 'string'
+            ? <Markdown remarkPlugins={[remarkGfm]}>{output}</Markdown>
+            : <ObjectInspector data={output} expandLevel={999} />}
         </CardContent>
       </Card>
     )

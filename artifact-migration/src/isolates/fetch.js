@@ -4,7 +4,8 @@ const debug = Debug('AI:fetch')
 export const api = {
   // TODO make a readPage function that returns a summary of a url
   post: {
-    description: `Sends an http post request to the address in the url parameter with everything in the data parameter being sent as the POST data.  The results are returned as a json object.  For example the following function input parameters:
+    description:
+      `Sends an http post request to the address in the url parameter with everything in the data parameter being sent as the POST data.  The results are returned as a json object.  For example the following function input parameters:
 
       const url = 'https://example.com/api/endpoint'
       const data = {

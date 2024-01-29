@@ -213,8 +213,8 @@ export default class IO {
           const currentContent = await current.content()
           io = JSON.parse(toString(currentContent, 'utf8'))
           const previousContent = previous && (await previous.content())
-          const previousIo =
-            previous && JSON.parse(toString(previousContent, 'utf8'))
+          const previousIo = previous &&
+            JSON.parse(toString(previousContent, 'utf8'))
           const inputs = newInputs(io.inputs, previousIo?.inputs || {})
           const outputs = newOutputs(io.outputs, previousIo?.outputs || {})
           return { inputs, outputs }

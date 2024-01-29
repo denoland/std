@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState, useCallback } from 'react'
+import { useCallback, useContext, useEffect, useState } from 'react'
 import { ArtifactContext } from '../stories/Provider'
 import assert from 'assert-fast'
 import posix from 'path-browserify'
@@ -111,7 +111,7 @@ export const usePrompt = () => {
       debug('prompt', text)
       return await prompt({ text })
     },
-    [prompt]
+    [prompt],
   )
   return bufferingPrompt
 }

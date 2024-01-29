@@ -8,34 +8,34 @@
  * deno task db:restore backup.json
  * ```
  */
-import { kv } from "@/utils/db.ts";
+import { kv } from '@/utils/db.ts'
 
 interface StoredKvU64 {
-  value: string;
+  value: string
 }
 
 function isStoredKvU64(value: unknown): value is StoredKvU64 {
   return (value as StoredKvU64).value !== undefined &&
-    typeof (value as StoredKvU64).value === "string";
+    typeof (value as StoredKvU64).value === 'string'
 }
 
 function reviver(_key: unknown, value: unknown) {
-  return isStoredKvU64(value) ? new Deno.KvU64(BigInt(value.value)) : value;
+  return isStoredKvU64(value) ? new Deno.KvU64(BigInt(value.value)) : value
 }
 
-if (!confirm("WARNING: The database will be restored. Continue?")) Deno.exit();
+if (!confirm('WARNING: The database will be restored. Continue?')) Deno.exit()
 
-const [filePath] = Deno.args;
-if (filePath === undefined) throw new Error("File path must be defined");
+const [filePath] = Deno.args
+if (filePath === undefined) throw new Error('File path must be defined')
 
-const rawEntries = Deno.readTextFileSync(filePath);
+const rawEntries = Deno.readTextFileSync(filePath)
 const entries = JSON.parse(rawEntries, reviver) as Omit<
   Deno.KvEntry<unknown>,
-  "versionstamp"
->[];
+  'versionstamp'
+>[]
 
-const promises = [];
-for (const { key, value } of entries) promises.push(kv.set(key, value));
-await Promise.all(promises);
+const promises = []
+for (const { key, value } of entries) promises.push(kv.set(key, value))
+await Promise.all(promises)
 
-kv.close();
+kv.close()

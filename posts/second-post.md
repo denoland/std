@@ -20,18 +20,18 @@ versions of Lorem Ipsum.
 ## Usage
 
 ```js
-import blog from "https://deno.land/x/blog/blog.tsx";
+import blog from 'https://deno.land/x/blog/blog.tsx'
 
 blog({
-  author: "Dino",
-  title: "My Blog",
-  description: "The blog description.",
-  avatar: "https://deno-avatar.deno.dev/avatar/blog.svg",
-  avatarClass: "rounded-full",
+  author: 'Dino',
+  title: 'My Blog',
+  description: 'The blog description.',
+  avatar: 'https://deno-avatar.deno.dev/avatar/blog.svg',
+  avatarClass: 'rounded-full',
   links: [
-    { title: "Email", url: "mailto:bot@deno.com" },
-    { title: "GitHub", url: "https://github.com/denobot" },
-    { title: "Twitter", url: "https://twitter.com/denobot" },
+    { title: 'Email', url: 'mailto:bot@deno.com' },
+    { title: 'GitHub', url: 'https://github.com/denobot' },
+    { title: 'Twitter', url: 'https://twitter.com/denobot' },
   ],
-});
+})
 ```

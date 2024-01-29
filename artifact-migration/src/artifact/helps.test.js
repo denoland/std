@@ -1,4 +1,4 @@
-import { test, expect, debug } from '../test-context'
+import { debug, expect, test } from '../test-context'
 debug.enable('AI:engage-help, AI:runner-chat')
 const isolate = 'engage-help'
 const help = 'help.fixture'

@@ -1,7 +1,7 @@
 // Copyright 2023-2024 the Deno authors. All rights reserved. MIT license.
-import type Stripe from "stripe";
-import { SITE_DESCRIPTION } from "@/utils/constants.ts";
-import { isStripeEnabled, stripe } from "@/utils/stripe.ts";
+import type Stripe from 'stripe'
+import { SITE_DESCRIPTION } from '@/utils/constants.ts'
+import { isStripeEnabled, stripe } from '@/utils/stripe.ts'
 
 async function createPremiumTierProduct(stripe: Stripe) {
   /**
@@ -9,16 +9,16 @@ async function createPremiumTierProduct(stripe: Stripe) {
    * However, these can be adjusted to fit your use case.
    */
   return await stripe.products.create({
-    name: "Premium",
-    description: "Unlock premium features like flair and more.",
+    name: 'Premium',
+    description: 'Unlock premium features like flair and more.',
     default_price_data: {
       unit_amount: 500,
-      currency: "usd",
+      currency: 'usd',
       recurring: {
-        interval: "month",
+        interval: 'month',
       },
     },
-  });
+  })
 }
 
 async function createDefaultPortalConfiguration(
@@ -32,16 +32,16 @@ async function createDefaultPortalConfiguration(
         enabled: true,
       },
       customer_update: {
-        allowed_updates: ["email", "name"],
+        allowed_updates: ['email', 'name'],
         enabled: true,
       },
       subscription_cancel: {
         enabled: true,
-        mode: "immediately",
+        mode: 'immediately',
       },
       subscription_update: {
         enabled: true,
-        default_allowed_updates: ["price"],
+        default_allowed_updates: ['price'],
         products: [product],
       },
       invoice_history: { enabled: true },
@@ -49,27 +49,27 @@ async function createDefaultPortalConfiguration(
     business_profile: {
       headline: SITE_DESCRIPTION,
     },
-  });
+  })
 }
 
 async function main() {
-  if (!isStripeEnabled()) throw new Error("Stripe is disabled.");
+  if (!isStripeEnabled()) throw new Error('Stripe is disabled.')
 
-  const product = await createPremiumTierProduct(stripe);
+  const product = await createPremiumTierProduct(stripe)
 
-  if (typeof product.default_price !== "string") return;
+  if (typeof product.default_price !== 'string') return
 
   await createDefaultPortalConfiguration(stripe, {
     prices: [product.default_price],
     product: product.id,
-  });
+  })
 
   console.log(
-    "Please copy and paste this value into the `STRIPE_PREMIUM_PLAN_PRICE_ID` variable in `.env`: " +
+    'Please copy and paste this value into the `STRIPE_PREMIUM_PLAN_PRICE_ID` variable in `.env`: ' +
       product.default_price,
-  );
+  )
 }
 
 if (import.meta.main) {
-  await main();
+  await main()
 }

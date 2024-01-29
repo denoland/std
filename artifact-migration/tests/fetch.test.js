@@ -1,4 +1,4 @@
-import { debug, help, expect } from '../src/test-context'
+import { debug, expect, help } from '../src/test-context'
 
 help(
   'login',
@@ -7,5 +7,5 @@ help(
     const result = await help('login-github')
     debug(result)
   },
-  1200000
+  1200000,
 )

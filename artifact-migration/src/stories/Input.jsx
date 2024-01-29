@@ -99,10 +99,8 @@ const Input = ({ preload, presubmit, onTranscription }) => {
 
   const inputProps = {
     endAdornment: (
-      <InputAdornment position="end">
-        {value ? (
-          <Send send={send} />
-        ) : (
+      <InputAdornment position='end'>
+        {value ? <Send send={send} /> : (
           <>
             {isRecording && (
               <LiveAudioVisualizer height={50} mediaRecorder={mediaRecorder} />
@@ -119,9 +117,9 @@ const Input = ({ preload, presubmit, onTranscription }) => {
   // TODO if a file is uploaded, store on fs, then sample it, then goal it
   if (!disabled) {
     inputProps.startAdornment = (
-      <InputAdornment position="start">
+      <InputAdornment position='start'>
         <IconButton onClick={openFilePicker}>
-          <Attach fontSize="medium" />
+          <Attach fontSize='medium' />
         </IconButton>
       </InputAdornment>
     )
@@ -139,7 +137,7 @@ const Input = ({ preload, presubmit, onTranscription }) => {
         setValue('')
       }
     },
-    [send]
+    [send],
   )
   useEffect(() => {
     const listener = (e) => {
@@ -182,8 +180,8 @@ const Input = ({ preload, presubmit, onTranscription }) => {
       value={disabled ? ' ' : value}
       multiline
       fullWidth
-      variant="outlined"
-      label="Input"
+      variant='outlined'
+      label='Input'
       placeholder={disabled ? null : 'Message DreamcatcherGPT...'}
       InputProps={inputProps}
       onChange={(e) => setValue(e.target.value)}

@@ -1,4 +1,4 @@
-import { goal, debug } from '../src/test-context.js'
+import { debug, goal } from '../src/test-context.js'
 
 // tricky because needs authentication as well as content
 

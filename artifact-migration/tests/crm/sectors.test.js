@@ -1,4 +1,4 @@
-import { test, expect, debug } from '../../src/test-context.js'
+import { debug, expect, test } from '../../src/test-context.js'
 
 test.skip('how many sectors are there ?')
 test.skip('add a new sector')

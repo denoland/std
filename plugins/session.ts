@@ -1,22 +1,22 @@
 // Copyright 2023-2024 the Deno authors. All rights reserved. MIT license.
-import { Plugin } from "$fresh/server.ts";
-import type { FreshContext } from "$fresh/server.ts";
-import { getSessionId } from "kv_oauth/mod.ts";
-import { getUserBySession } from "@/utils/db.ts";
-import type { User } from "@/utils/db.ts";
-import { UnauthorizedError } from "@/utils/http.ts";
+import { Plugin } from '$fresh/server.ts'
+import type { FreshContext } from '$fresh/server.ts'
+import { getSessionId } from 'kv_oauth/mod.ts'
+import { getUserBySession } from '@/utils/db.ts'
+import type { User } from '@/utils/db.ts'
+import { UnauthorizedError } from '@/utils/http.ts'
 
 export interface State {
-  sessionUser?: User;
+  sessionUser?: User
 }
 
-export type SignedInState = Required<State>;
+export type SignedInState = Required<State>
 
 export function assertSignedIn(
   ctx: { state: State },
 ): asserts ctx is { state: SignedInState } {
   if (ctx.state.sessionUser === undefined) {
-    throw new UnauthorizedError("User must be signed in");
+    throw new UnauthorizedError('User must be signed in')
   }
 }
 
@@ -24,27 +24,27 @@ async function setSessionState(
   req: Request,
   ctx: FreshContext<State>,
 ) {
-  if (ctx.destination !== "route") return await ctx.next();
+  if (ctx.destination !== 'route') return await ctx.next()
 
   // Initial state
-  ctx.state.sessionUser = undefined;
+  ctx.state.sessionUser = undefined
 
-  const sessionId = getSessionId(req);
-  if (sessionId === undefined) return await ctx.next();
-  const user = await getUserBySession(sessionId);
-  if (user === null) return await ctx.next();
+  const sessionId = getSessionId(req)
+  if (sessionId === undefined) return await ctx.next()
+  const user = await getUserBySession(sessionId)
+  if (user === null) return await ctx.next()
 
-  ctx.state.sessionUser = user;
+  ctx.state.sessionUser = user
 
-  return await ctx.next();
+  return await ctx.next()
 }
 
 async function ensureSignedIn(
   _req: Request,
   ctx: FreshContext<State>,
 ) {
-  assertSignedIn(ctx);
-  return await ctx.next();
+  assertSignedIn(ctx)
+  return await ctx.next()
 }
 
 /**
@@ -62,27 +62,27 @@ async function ensureSignedIn(
  * for more information on Fresh's plugin functionality.
  */
 export default {
-  name: "session",
+  name: 'session',
   middlewares: [
     {
-      path: "/",
+      path: '/',
       middleware: { handler: setSessionState },
     },
     {
-      path: "/account",
+      path: '/account',
       middleware: { handler: ensureSignedIn },
     },
     {
-      path: "/dashboard",
+      path: '/dashboard',
       middleware: { handler: ensureSignedIn },
     },
     {
-      path: "/api/me",
+      path: '/api/me',
       middleware: { handler: ensureSignedIn },
     },
     {
-      path: "/api/vote",
+      path: '/api/vote',
       middleware: { handler: ensureSignedIn },
     },
   ],
-} as Plugin<State>;
+} as Plugin<State>

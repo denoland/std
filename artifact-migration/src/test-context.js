@@ -1,5 +1,5 @@
 import Artifact from './artifact/artifact'
-import { test as vitest, expect as viexpect } from 'vitest'
+import { expect as viexpect, test as vitest } from 'vitest'
 import Debug from 'debug'
 const _debug = Debug('test')
 export const debug = (...args) => {

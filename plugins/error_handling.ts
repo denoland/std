@@ -1,8 +1,8 @@
 // Copyright 2023-2024 the Deno authors. All rights reserved. MIT license.
-import type { Plugin } from "$fresh/server.ts";
-import type { State } from "@/plugins/session.ts";
-import { BadRequestError, redirect, UnauthorizedError } from "@/utils/http.ts";
-import { STATUS_CODE, STATUS_TEXT } from "std/http/status.ts";
+import type { Plugin } from '$fresh/server.ts'
+import type { State } from '@/plugins/session.ts'
+import { BadRequestError, redirect, UnauthorizedError } from '@/utils/http.ts'
+import { STATUS_CODE, STATUS_TEXT } from 'std/http/status.ts'
 
 /**
  * Returns the HTTP status code corresponding to a given runtime error. By
@@ -16,45 +16,45 @@ import { STATUS_CODE, STATUS_TEXT } from "std/http/status.ts";
  * ```
  */
 export function toErrorStatus(error: Error) {
-  if (error instanceof Deno.errors.NotFound) return STATUS_CODE.NotFound;
-  if (error instanceof UnauthorizedError) return STATUS_CODE.Unauthorized;
-  if (error instanceof BadRequestError) return STATUS_CODE.BadRequest;
-  return STATUS_CODE.InternalServerError;
+  if (error instanceof Deno.errors.NotFound) return STATUS_CODE.NotFound
+  if (error instanceof UnauthorizedError) return STATUS_CODE.Unauthorized
+  if (error instanceof BadRequestError) return STATUS_CODE.BadRequest
+  return STATUS_CODE.InternalServerError
 }
 
 export default {
-  name: "error-handling",
+  name: 'error-handling',
   middlewares: [
     {
-      path: "/",
+      path: '/',
       middleware: {
         async handler(_req, ctx) {
           try {
-            return await ctx.next();
+            return await ctx.next()
           } catch (error) {
             if (error instanceof UnauthorizedError) {
-              return redirect("/signin");
+              return redirect('/signin')
             }
-            throw error;
+            throw error
           }
         },
       },
     },
     {
-      path: "/api",
+      path: '/api',
       middleware: {
         async handler(_req, ctx) {
           try {
-            return await ctx.next();
+            return await ctx.next()
           } catch (error) {
-            const status = toErrorStatus(error);
+            const status = toErrorStatus(error)
             return new Response(error.message, {
               statusText: STATUS_TEXT[status],
               status,
-            });
+            })
           }
         },
       },
     },
   ],
-} as Plugin<State>;
+} as Plugin<State>

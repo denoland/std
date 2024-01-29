@@ -158,7 +158,7 @@ needs.
    Hello, world!
 
    ```javascript
-   console.log("Hello World");
+   console.log('Hello World')
    ```
    ````
 1. Start the server:

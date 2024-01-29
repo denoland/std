@@ -1,4 +1,4 @@
-import { test, expect, debug } from '../test-context.js'
+import { debug, expect, test } from '../test-context.js'
 import Artifact from './artifact.js'
 
 const isolate = 'engage-help'

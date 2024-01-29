@@ -3,7 +3,7 @@ import Box from '@mui/material/Box'
 import Paper from '@mui/material/Paper'
 import Stack from '@mui/material/Stack'
 import { StateBoard } from './StateBoard'
-import { useState, useCallback, useEffect } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import PropTypes from 'prop-types'
 import Debug from 'debug'
 import Messages from './Messages'
@@ -59,11 +59,13 @@ const ThreeBox = ({ preload, presubmit }) => {
         />
         <Git />
       </Stack>
-      {/* <Box sx={{ flexGrow: 1, p: 1 }}>
+      {
+        /* <Box sx={{ flexGrow: 1, p: 1 }}>
         <Paper elevation={6} sx={{ height: '100%', flexGrow: 1 }}>
           <StateBoard />
         </Paper>
-      </Box> */}
+      </Box> */
+      }
     </Box>
   )
 }

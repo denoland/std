@@ -1,22 +1,22 @@
 // Copyright 2023-2024 the Deno authors. All rights reserved. MIT license.
-import type { Plugin } from "$fresh/server.ts";
+import type { Plugin } from '$fresh/server.ts'
 import {
   createGitHubOAuthConfig,
   handleCallback,
   signIn,
   signOut,
-} from "kv_oauth/mod.ts";
+} from 'kv_oauth/mod.ts'
 import {
   createUser,
   getUser,
   updateUserSession,
   type User,
-} from "@/utils/db.ts";
-import { isStripeEnabled, stripe } from "@/utils/stripe.ts";
-import { getGitHubUser } from "@/utils/github.ts";
+} from '@/utils/db.ts'
+import { isStripeEnabled, stripe } from '@/utils/stripe.ts'
+import { getGitHubUser } from '@/utils/github.ts'
 
 // Exported for mocking and spying in e2e tests
-export const _internals = { handleCallback };
+export const _internals = { handleCallback }
 
 /**
  * This custom plugin centralizes all authentication logic using the
@@ -27,44 +27,44 @@ export const _internals = { handleCallback };
  * implementation.
  */
 export default {
-  name: "kv-oauth",
+  name: 'kv-oauth',
   routes: [
     {
-      path: "/signin",
+      path: '/signin',
       handler: async (req) => await signIn(req, createGitHubOAuthConfig()),
     },
     {
-      path: "/callback",
+      path: '/callback',
       handler: async (req) => {
         const { response, tokens, sessionId } = await _internals.handleCallback(
           req,
           createGitHubOAuthConfig(),
-        );
+        )
 
-        const githubUser = await getGitHubUser(tokens.accessToken);
-        const user = await getUser(githubUser.login);
+        const githubUser = await getGitHubUser(tokens.accessToken)
+        const user = await getUser(githubUser.login)
 
         if (user === null) {
           const user: User = {
             login: githubUser.login,
             sessionId,
             isSubscribed: false,
-          };
-          if (isStripeEnabled()) {
-            const customer = await stripe.customers.create();
-            user.stripeCustomerId = customer.id;
           }
-          await createUser(user);
+          if (isStripeEnabled()) {
+            const customer = await stripe.customers.create()
+            user.stripeCustomerId = customer.id
+          }
+          await createUser(user)
         } else {
-          await updateUserSession(user, sessionId);
+          await updateUserSession(user, sessionId)
         }
 
-        return response;
+        return response
       },
     },
     {
-      path: "/signout",
+      path: '/signout',
       handler: signOut,
     },
   ],
-} as Plugin;
+} as Plugin

@@ -4,7 +4,8 @@ const debug = Debug('AI:fetch')
 
 export const api = {
   delay: {
-    description: `Delays the execution of the next command by the specified number of milliseconds and then returns the current date and time in the format used by the system locale.  For example the following function input parameters:
+    description:
+      `Delays the execution of the next command by the specified number of milliseconds and then returns the current date and time in the format used by the system locale.  For example the following function input parameters:
     
       const milliseconds = 1000
 

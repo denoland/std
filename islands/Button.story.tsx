@@ -1,7 +1,7 @@
 export default function Stories() {
   return (
     <>
-      <div class="space-y-4">
+      <div class='space-y-4'>
         <div>
           mepw
         </div>
@@ -10,7 +10,7 @@ export default function Stories() {
         </div>
       </div>
     </>
-  );
+  )
 }
 
 export const description = `
@@ -23,4 +23,4 @@ export const description = `
 \`\`\`
 
 
-`;
+`

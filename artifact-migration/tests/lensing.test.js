@@ -1,4 +1,4 @@
-import { goal, debug } from '../src/test-context.js'
+import { debug, goal } from '../src/test-context.js'
 
 // these tests should be able to loop over large numbers of files
 

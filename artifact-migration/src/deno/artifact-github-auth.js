@@ -38,7 +38,7 @@ Deno.serve(async (req) => {
     }
     const client_id = Deno.env.get(mode ? 'DEV_CLIENT_ID' : 'CLIENT_ID')
     const client_secret = Deno.env.get(
-      mode ? 'DEV_CLIENT_SECRET' : 'CLIENT_SECRET'
+      mode ? 'DEV_CLIENT_SECRET' : 'CLIENT_SECRET',
     )
 
     const requestOptions = {

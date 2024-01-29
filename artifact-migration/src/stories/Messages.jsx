@@ -173,7 +173,7 @@ Goal.propTypes = {
   helps: PropTypes.arrayOf(
     PropTypes.shape({
       type: PropTypes.string,
-    })
+    }),
   ).isRequired,
 }
 
@@ -238,7 +238,7 @@ Messages.propTypes = {
     PropTypes.shape({
       role: PropTypes.string,
       content: PropTypes.string,
-    })
+    }),
   ),
 }
 
