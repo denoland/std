@@ -184,7 +184,7 @@ Deno.test("Equal", function () {
   assert(
     equal({ a: undefined, b: undefined }, { a: undefined, c: undefined }),
   );
-  assertFalse(equal({ a: undefined, b: undefined }, { a: undefined }));
+  assert(equal({ a: undefined, b: undefined }, { a: undefined }));
   assertThrows(() => equal(new WeakMap(), new WeakMap()));
   assertThrows(() => equal(new WeakSet(), new WeakSet()));
   assert(!equal(new WeakMap(), new WeakSet()));
@@ -201,12 +201,6 @@ Deno.test("Equal", function () {
   assert(!equal({ hello: "world" }, new WeakRef({ hello: "world" })));
   assertFalse(equal({ hello: "world" }, new WeakRef({ hello: "world" })));
   assert(
-    !equal(
-      new WeakRef({ hello: "world" }),
-      new (class<T extends object> extends WeakRef<T> {})({ hello: "world" }),
-    ),
-  );
-  assertFalse(
     equal(
       new WeakRef({ hello: "world" }),
       new (class<T extends object> extends WeakRef<T> {})({ hello: "world" }),
@@ -230,16 +224,6 @@ Deno.test("Equal", function () {
   );
 
   assert(
-    !equal(
-      new (class A {
-        #hello = "world";
-      })(),
-      new (class B {
-        #hello = "world";
-      })(),
-    ),
-  );
-  assertFalse(
     equal(
       new (class A {
         #hello = "world";
