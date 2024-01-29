@@ -1,6 +1,5 @@
 {
   "lock": false,
-  "nodeModulesDir": true,
   "tasks": {
     "init:stripe": "deno run --allow-read --allow-env --allow-net --env tasks/init_stripe.ts",
     "db:dump": "deno run --allow-read --allow-env --unstable tasks/db_dump.ts",
@@ -48,5 +47,10 @@
       "tags": ["fresh", "recommended"]
     }
   },
-  "scopes": {}
+  "scopes": {},
+  "fmt": {
+    "semiColons": false,
+    "singleQuote": true,
+    "proseWrap": "always"
+  }
 }
