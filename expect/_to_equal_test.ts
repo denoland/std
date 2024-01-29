@@ -8,7 +8,7 @@ import {
   stripAnsiCode,
   yellow,
 } from "../fmt/colors.ts";
-import { assertFalse, assertThrows, AssertionError } from "../assert/mod.ts";
+import { assertFalse, AssertionError, assertThrows } from "../assert/mod.ts";
 import { expect } from "./expect.ts";
 
 const createHeader = (): string[] => [
