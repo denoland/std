@@ -255,4 +255,11 @@ Deno.test("align to jest test cases", () => {
     c: undefined,
   });
   expect({ a: undefined, b: undefined }).toEqual({ a: undefined });
+
+  class A {}
+  class B {}
+  expect(new A()).toEqual(new B());
+  assertThrows(() => {
+    expect(new A()).not.toEqual(new B());
+  }, AssertionError);
 });
