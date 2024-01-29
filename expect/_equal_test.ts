@@ -1,5 +1,9 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-import { assert, assertFalse, assertThrows, equal } from "./mod.ts";
+
+// This file is copied from `std/assert`.
+
+import { assert, assertFalse, assertThrows } from "../assert/mod.ts";
+import { equal } from "./_equal.ts";
 
 Deno.test("EqualDifferentZero", () => {
   assert(equal(0, -0));
@@ -178,9 +182,6 @@ Deno.test("Equal", function () {
     ),
   );
   assert(
-    !equal({ a: undefined, b: undefined }, { a: undefined, c: undefined }),
-  );
-  assertFalse(
     equal({ a: undefined, b: undefined }, { a: undefined, c: undefined }),
   );
   assertFalse(equal({ a: undefined, b: undefined }, { a: undefined }));

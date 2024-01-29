@@ -1,18 +1,16 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+
+// This file is copied from `std/assert`.
+
 function isKeyedCollection(x: unknown): x is Set<unknown> {
   return [Symbol.iterator, "size"].every((k) => k in (x as Set<unknown>));
-}
-
-function constructorsEqual(a: object, b: object) {
-  return a.constructor === b.constructor ||
-    a.constructor === Object && !b.constructor ||
-    !a.constructor && b.constructor === Object;
 }
 
 /**
  * Deep equality comparison used in assertions
  * @param c actual value
  * @param d expected value
+ * @param strictCheck check value in strictMode
  *
  * @example
  * ```ts
@@ -22,7 +20,7 @@ function constructorsEqual(a: object, b: object) {
  * equal({ foo: "bar" }, { foo: "baz" }); // Returns `false
  * ```
  */
-export function equal(c: unknown, d: unknown): boolean {
+export function equal(c: unknown, d: unknown, strictCheck?: boolean): boolean {
   const seen = new Map();
   return (function compare(a: unknown, b: unknown): boolean {
     // Have to render RegExp & Date for string comparison
@@ -52,9 +50,6 @@ export function equal(c: unknown, d: unknown): boolean {
       return true;
     }
     if (a && typeof a === "object" && b && typeof b === "object") {
-      if (a && b && !constructorsEqual(a, b)) {
-        return false;
-      }
       if (a instanceof WeakMap || b instanceof WeakMap) {
         if (!(a instanceof WeakMap && b instanceof WeakMap)) return false;
         throw new TypeError("cannot compare WeakMap instances");
@@ -66,7 +61,33 @@ export function equal(c: unknown, d: unknown): boolean {
       if (seen.get(a) === b) {
         return true;
       }
-      if (Object.keys(a || {}).length !== Object.keys(b || {}).length) {
+
+      const aKeys = Object.keys(a || {});
+      const bKeys = Object.keys(b || {});
+      let aLen = aKeys.length;
+      let bLen = bKeys.length;
+
+      if (!strictCheck) {
+        if (aLen > 0) {
+          for (let i = 0; i < aKeys.length; i += 1) {
+            const key = aKeys[i];
+            if ((key in a) && (a[key as keyof typeof a] === undefined) && !(key in b)) {
+              aLen -= 1;
+            }
+          }
+        }
+
+        if (bLen > 0) {
+          for (let i = 0; i < bKeys.length; i += 1) {
+            const key = bKeys[i];
+            if ((key in b) && (b[key as keyof typeof b] === undefined) && !(key in a)) {
+              bLen -= 1;
+            }
+          }
+        }
+      }
+
+      if (aLen !== bLen) {
         return false;
       }
       seen.set(a, b);
@@ -104,7 +125,10 @@ export function equal(c: unknown, d: unknown): boolean {
         if (!compare(a && a[key as Key], b && b[key as Key])) {
           return false;
         }
-        if (((key in a) && (!(key in b))) || ((key in b) && (!(key in a)))) {
+        if (
+          ((key in a) && (a[key as Key] !== undefined) && (!(key in b))) ||
+          ((key in b) && (b[key as Key] !== undefined) && (!(key in a)))
+        ) {
           return false;
         }
       }
