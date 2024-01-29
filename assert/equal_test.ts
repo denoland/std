@@ -238,6 +238,7 @@ Deno.test("Equal", function () {
       })(),
     ),
   );
+
   assertFalse(
     equal(
       new (class A {
