@@ -7,7 +7,7 @@ import { CAN_NOT_DISPLAY } from "./_constants.ts";
 import { equal } from "./_equal.ts";
 import { AssertEqualsOptions } from "./_types.ts";
 
-type AssertNotEqualsOptions = Omit<AssertEqualsOptions, 'formatter'>
+type AssertNotEqualsOptions = Omit<AssertEqualsOptions, "formatter">;
 
 /**
  * Make an assertion that `actual` and `expected` are not equal, deeply.

@@ -237,18 +237,21 @@ Deno.test("align to jest test cases", () => {
   expect(
     new (class A {
       #hello = "world";
-    })()
+    })(),
   ).toEqual(
     new (class B {
       #hello = "world";
     })(),
   );
   expect(
-    new WeakRef({ hello: "world" })
+    new WeakRef({ hello: "world" }),
   ).toEqual(
     new (class<T extends object> extends WeakRef<T> {})({ hello: "world" }),
   );
 
-  expect({ a: undefined, b: undefined }).toEqual({ a: undefined, c: undefined });
+  expect({ a: undefined, b: undefined }).toEqual({
+    a: undefined,
+    c: undefined,
+  });
   expect({ a: undefined, b: undefined }).toEqual({ a: undefined });
 });

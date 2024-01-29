@@ -71,7 +71,10 @@ export function equal(c: unknown, d: unknown, strictCheck?: boolean): boolean {
         if (aLen > 0) {
           for (let i = 0; i < aKeys.length; i += 1) {
             const key = aKeys[i];
-            if ((key in a) && (a[key as keyof typeof a] === undefined) && !(key in b)) {
+            if (
+              (key in a) && (a[key as keyof typeof a] === undefined) &&
+              !(key in b)
+            ) {
               aLen -= 1;
             }
           }
@@ -80,7 +83,10 @@ export function equal(c: unknown, d: unknown, strictCheck?: boolean): boolean {
         if (bLen > 0) {
           for (let i = 0; i < bKeys.length; i += 1) {
             const key = bKeys[i];
-            if ((key in b) && (b[key as keyof typeof b] === undefined) && !(key in a)) {
+            if (
+              (key in b) && (b[key as keyof typeof b] === undefined) &&
+              !(key in a)
+            ) {
               bLen -= 1;
             }
           }

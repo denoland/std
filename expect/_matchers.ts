@@ -44,9 +44,15 @@ export function toStrictEqual(
   expected: unknown,
 ): MatchResult {
   if (context.isNot) {
-    assertNotEquals(context.value, expected, { msg: context.customMessage, strictCheck: true });
+    assertNotEquals(context.value, expected, {
+      msg: context.customMessage,
+      strictCheck: true,
+    });
   } else {
-    assertEquals(context.value, expected, { msg: context.customMessage, strictCheck: true });
+    assertEquals(context.value, expected, {
+      msg: context.customMessage,
+      strictCheck: true,
+    });
   }
 }
 
@@ -231,7 +237,9 @@ export function toBeNaN(context: MatcherContext): MatchResult {
     assertNotEquals(
       isNaN(Number(context.value)),
       true,
-      { msg: context.customMessage || `Expected ${context.value} to not be NaN` },
+      {
+        msg: context.customMessage || `Expected ${context.value} to not be NaN`,
+      },
     );
   } else {
     assertEquals(
