@@ -9,6 +9,7 @@
     "db:reset": "deno run --allow-read --allow-env --unstable tasks/db_reset.ts",
     "start": "deno run --unstable -A --watch=static/,routes/ --env dev.ts",
     "test": "DENO_KV_PATH=:memory: deno test -A --parallel --unstable --coverage",
+    "watch": "DENO_KV_PATH=:memory: deno test -A --unstable-broadcast-channel --watch",
     "check:license": "deno run --allow-read --allow-write tasks/check_license.ts",
     "check:types": "deno check **/*.ts && deno check **/*.tsx",
     "ok": "deno fmt --check && deno lint && deno task check:license --check && deno task check:types && deno task test",
@@ -22,6 +23,9 @@
     "jsxImportSource": "preact"
   },
   "imports": {
+    "$git": "https://esm.sh/isomorphic-git",
+    "$git/": "https://esm.sh/isomorphic-git/",
+    "$debug": "https://deno.land/x/quiet_debug/mod.ts",
     "@/": "./",
     "$std/": "https://deno.land/std@0.208.0/",
     "std/": "https://deno.land/std@0.208.0/",
@@ -52,5 +56,6 @@
     "semiColons": false,
     "singleQuote": true,
     "proseWrap": "always"
-  }
+  },
+  "nodeModulesDir": true
 }
