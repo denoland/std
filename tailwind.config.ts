@@ -1,5 +1,6 @@
 // Copyright 2023-2024 the Deno authors. All rights reserved. MIT license.
 import { type Config } from 'tailwindcss'
+import forms from 'npm:@tailwindcss/forms'
 
 export default {
   content: [
@@ -16,5 +17,5 @@ export default {
       },
     },
   },
-  plugins: [],
+  plugins: [forms],
 } satisfies Config

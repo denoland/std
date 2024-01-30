@@ -29,6 +29,7 @@ import * as $users_login_ from './routes/users/[login].tsx'
 import * as $welcome from './routes/welcome.tsx'
 import * as $Button_story from './islands/Button.story.tsx'
 import * as $Chart from './islands/Chart.tsx'
+import * as $Input_story from './islands/Input.story.tsx'
 import * as $ItemsList from './islands/ItemsList.tsx'
 import * as $MapIsland from './islands/MapIsland.tsx'
 import * as $UsersTable from './islands/UsersTable.tsx'
@@ -65,6 +66,7 @@ const manifest = {
   islands: {
     './islands/Button.story.tsx': $Button_story,
     './islands/Chart.tsx': $Chart,
+    './islands/Input.story.tsx': $Input_story,
     './islands/ItemsList.tsx': $ItemsList,
     './islands/MapIsland.tsx': $MapIsland,
     './islands/UsersTable.tsx': $UsersTable,

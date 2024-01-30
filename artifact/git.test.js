@@ -32,3 +32,8 @@ Deno.test('git clone', async () => {
   debug('sent snapshot')
   channel.close()
 })
+
+const dlock = {
+  lockBranch() {
+  },
+}
