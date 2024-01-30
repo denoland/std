@@ -1,4 +1,4 @@
-import { debug, goal } from '../../artifact/tst-helpers.js'
+import { debug, goal } from '../src/test-context.js'
 
 // tricky because needs authentication as well as content
 

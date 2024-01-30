@@ -1,6 +1,6 @@
-import Ajv from 'ajv'
+import Ajv from 'npm:ajv'
 
-import assert from 'assert-fast'
+import assert from 'npm:assert-fast'
 
 export default (schema) => {
   const ajv = loadAjv()

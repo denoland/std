@@ -1,4 +1,4 @@
-import { debug, expect, goal } from '../../artifact/tst-helpers.js'
+import { debug, expect, goal } from '../src/test-context.js'
 
 debug.enable('test *ai-* ')
 

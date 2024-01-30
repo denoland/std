@@ -1,4 +1,4 @@
-import { debug, expect, test } from '../test-context.js'
+import { debug, expect, test } from '../../../artifact/tst-helpers.js'
 const isolate = 'io.fixture'
 
 test('ping', async ({ artifact }) => {

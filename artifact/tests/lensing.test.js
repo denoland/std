@@ -1,4 +1,4 @@
-import { debug, goal } from '../../artifact/tst-helpers.js'
+import { debug, goal } from '../src/test-context.js'
 
 // these tests should be able to loop over large numbers of files
 
