@@ -75,3 +75,4 @@ export * from "./glob_to_regexp.ts";
 export * from "./is_glob.ts";
 export * from "./join_globs.ts";
 export * from "./normalize_glob.ts";
+export * from "./path.ts";
