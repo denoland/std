@@ -8,7 +8,7 @@ import {
   stripAnsiCode,
   yellow,
 } from "../fmt/colors.ts";
-import { assertFalse, AssertionError, assertThrows } from "../assert/mod.ts";
+import { AssertionError, assertThrows } from "../assert/mod.ts";
 import { expect } from "./expect.ts";
 
 const createHeader = (): string[] => [
@@ -273,5 +273,4 @@ Deno.test("toEqual case for Error Object", () => {
 
   const expectErrObjectWithEmail = new Error("missing param: email");
   expect(getError()).not.toEqual(expectErrObjectWithEmail);
-  assertFalse(expect(getError()).not.toEqual(expectErrObjectWithEmail));
 });
