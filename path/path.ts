@@ -40,7 +40,8 @@ export class Path {
   /** @internal */
   static [Symbol.hasInstance](instance: unknown): boolean {
     // this should never change because it should work accross versions
-    return (instance?.constructor as typeof Path)?.instanceofSymbol === Path.instanceofSymbol;
+    return (instance?.constructor as typeof Path)?.instanceofSymbol ===
+      Path.instanceofSymbol;
   }
 
   /** @internal */
