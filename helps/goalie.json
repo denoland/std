@@ -1,7 +1,6 @@
 {
   "description": "Figures out what goal the user wants to do and returns the path to a help file that can be executed to achieve the goal.",
   "config": {
-    "model": "gpt-4-1106-preview",
     "temperature": 0.8
   },
   "runner": "runner-chat",
