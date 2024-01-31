@@ -19,7 +19,6 @@ export default class kv {
   }
   async dispatch(msg) {
     const result = await this.#kv.enqueue(msg)
-    console.log('result', result)
   }
   async stop() {
     await this.#kv.close()
