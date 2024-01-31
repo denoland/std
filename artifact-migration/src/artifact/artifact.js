@@ -191,11 +191,6 @@ export default class Artifact {
     const files = await this.#fs.readdir(absolute)
     return files
   }
-  async #commitAll({ message, author }) {
-    // TODO confirm this adds all files
-    await git.add({ ...this.#opts, filepath: '.' })
-    await this.#commit({ message, author })
-  }
   async #commit({ message, author }) {
     // TODO check commit not empty
     const hash = await git.commit({ ...this.#opts, message, author })

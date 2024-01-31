@@ -147,9 +147,6 @@ export default class IO {
     const api = await worker.load(isolate)
     return { worker, api }
   }
-  async stop() {
-    this.#workerCache.clear()
-  }
   // what if we want to dispatch into a specific branch ?
   async dispatch({ isolate, name, parameters, proctype }) {
     const io = await this.readIO()

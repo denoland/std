@@ -9,7 +9,8 @@ export default class kv {
   #listen() {
     this.#kv.listenQueue((msg) => {
       if (Number.isInteger(msg)) {
-        if (msg % 1000 === 0) {
+        console.log('messages processed:', msg)
+        if (msg % 1000 === 0 || msg === 0) {
           console.log('messages processed:', msg)
         }
       } else {
