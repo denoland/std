@@ -1,11 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-/**
- * @module
- * @deprecated (will be removed after 1.0.0) Use the {@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API | Web Streams API} instead.
- */
-
 import { assert } from "../assert/assert.ts";
 import { copy } from "../bytes/copy.ts";
 import type { Reader } from "./types.ts";
