@@ -1,12 +1,15 @@
 import { assertEquals } from "../assert/assert_equals.ts";
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import { toIterator, toIteratorSync } from "./to_iterator.ts";
+import {
+  toReaderIterator,
+  toReaderIteratorSync,
+} from "./to_reader_iterator.ts";
 import { readerFromIterable } from "../streams/reader_from_iterable.ts";
 import { delay } from "../async/delay.ts";
 import type { Reader, ReaderSync } from "./types.ts";
 
-Deno.test("toIterator()", async () => {
+Deno.test("toReaderIterator()", async () => {
   // ref: https://github.com/denoland/deno/issues/2330
   const encoder = new TextEncoder();
 
@@ -35,17 +38,17 @@ Deno.test("toIterator()", async () => {
 
   let totalSize = 0;
   await Array.fromAsync(
-    toIterator(reader),
+    toReaderIterator(reader),
     (buf) => totalSize += buf.byteLength,
   );
 
   assertEquals(totalSize, 12);
 });
 
-Deno.test("toIterator() works with slow consumer", async () => {
+Deno.test("toReaderIterator() works with slow consumer", async () => {
   const a = new Uint8Array([97]);
   const b = new Uint8Array([98]);
-  const iter = toIterator(readerFromIterable([a, b]));
+  const iter = toReaderIterator(readerFromIterable([a, b]));
   const promises = [];
   for await (const bytes of iter) {
     promises.push(delay(10).then(() => bytes));
@@ -53,7 +56,7 @@ Deno.test("toIterator() works with slow consumer", async () => {
   assertEquals([a, b], await Promise.all(promises));
 });
 
-Deno.test("toIteratorSync()", () => {
+Deno.test("toReaderIteratorSync()", () => {
   // ref: https://github.com/denoland/deno/issues/2330
   const encoder = new TextEncoder();
 
@@ -81,14 +84,14 @@ Deno.test("toIteratorSync()", () => {
   const reader = new TestReader("hello world!");
 
   let totalSize = 0;
-  for (const buf of toIteratorSync(reader)) {
+  for (const buf of toReaderIteratorSync(reader)) {
     totalSize += buf.byteLength;
   }
 
   assertEquals(totalSize, 12);
 });
 
-Deno.test("toIteratorSync() works with slow consumer", async () => {
+Deno.test("toReaderIteratorSync() works with slow consumer", async () => {
   const a = new Uint8Array([97]);
   const b = new Uint8Array([98]);
   const data = [a, b];
@@ -102,7 +105,7 @@ Deno.test("toIteratorSync() works with slow consumer", async () => {
       return null;
     },
   };
-  const iter = toIteratorSync(readerSync);
+  const iter = toReaderIteratorSync(readerSync);
   const promises = [];
   for (const bytes of iter) {
     promises.push(delay(10).then(() => bytes));

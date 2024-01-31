@@ -1,7 +1,10 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-import { toIterator, toIteratorSync } from "../io/to_iterator.ts";
+import {
+  toReaderIterator,
+  toReaderIteratorSync,
+} from "../io/to_reader_iterator.ts";
 import type { Reader, ReaderSync } from "../io/types.ts";
 
 export type { Reader, ReaderSync };
@@ -35,7 +38,7 @@ export type { Reader, ReaderSync };
  * }
  * ```
  *
- * @deprecated (will be removed in 0.216.0) Use {@linkcode toIterator} instead.
+ * @deprecated (will be removed in 0.216.0) Use {@linkcode toReaderIterator} instead.
  */
 export function iterateReader(
   r: Reader,
@@ -43,7 +46,7 @@ export function iterateReader(
     bufSize?: number;
   },
 ): AsyncIterableIterator<Uint8Array> {
-  return toIterator(r, options);
+  return toReaderIterator(r, options);
 }
 
 /**
@@ -78,7 +81,7 @@ export function iterateReader(
  * responsibility to copy contents of the buffer if needed; otherwise the
  * next iteration will overwrite contents of previously returned chunk.
  *
- * @deprecated (will be removed in 0.216.0) Use {@linkcode toIteratorSync} instead.
+ * @deprecated (will be removed in 0.216.0) Use {@linkcode toReaderIteratorSync} instead.
  */
 export function iterateReaderSync(
   r: ReaderSync,
@@ -86,5 +89,5 @@ export function iterateReaderSync(
     bufSize?: number;
   },
 ): IterableIterator<Uint8Array> {
-  return toIteratorSync(r, options);
+  return toReaderIteratorSync(r, options);
 }
