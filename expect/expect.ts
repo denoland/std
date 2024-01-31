@@ -4,11 +4,14 @@
 import type {
   Expected,
   Matcher,
-  MatcherKey,
   MatcherContext,
+  MatcherKey,
 } from "./_types.ts";
 import { AssertionError } from "../assert/assertion_error.ts";
-import { addCustomEqualityTester, getCustomEqualityTester } from "./_custom_equality_tester.ts";
+import {
+  addCustomEqualityTester,
+  getCustomEqualityTester,
+} from "./_custom_equality_tester.ts";
 import {
   toBe,
   toBeCloseTo,

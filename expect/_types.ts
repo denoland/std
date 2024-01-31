@@ -91,3 +91,14 @@ export interface Expected {
 }
 
 export type MatcherKey = keyof Omit<Expected, "not" | "resolves" | "rejects">;
+
+export type EqualOptions = {
+  customTesters?: Array<Tester>;
+  msg?: string;
+  formatter?: (value: unknown) => string;
+  strictCheck?: boolean;
+};
+
+export interface EqualOptionUtil extends MatcherContext {
+  strictCheck?: boolean;
+}

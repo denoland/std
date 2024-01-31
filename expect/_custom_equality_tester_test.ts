@@ -27,7 +27,10 @@ class Duration {
       return (this.time * 60) === other.time;
     }
 
-    if ((other.unit === "H" && this.unit === "M") || (other.unit === "M" && this.unit === "S")) {
+    if (
+      (other.unit === "H" && this.unit === "M") ||
+      (other.unit === "M" && this.unit === "S")
+    ) {
       return (other.time * 60) === this.time;
     }
 
@@ -61,7 +64,11 @@ Deno.test("Basic custom equality test", () => {
   expect(duration1).not.toEqual(duration3);
   expect(duration1).not.toEqual(duration2);
   expect(duration2).not.toBe(duration1);
-  expect(duration3).toBe(duration3);
+  expect(toIterator([duration1, duration2])).toEqual(toIterator([duration2, duration1]));
+  expect({ a: duration2, b: undefined }).toStrictEqual({
+    a: duration3,
+    b: undefined,
+  });
 });
 
 Deno.test("Basic custom equality test may contain different Duration Object", () => {
@@ -71,12 +78,10 @@ Deno.test("Basic custom equality test may contain different Duration Object", ()
 
   // expect({ a: duration1 }).toHaveProperty('a', duration2);
   // expect([duration1, duration2]).toEqual([duration2, duration1]);
-  expect({ a: duration2, b: undefined }).toStrictEqual({ a: duration3, b: undefined });
   // expect({a: 1, b: {c: duration1}}).toMatchObject({
   //   a: 1,
   //   b: {c: duration2},
   // });
   // expect(new Map([['key', duration1]])).toEqual(new Map([['key', duration2]]));
   // expect(new Set([duration1])).toEqual(new Set([duration2]));
-  // expect(toIterator([duration1, duration2])).toEqual(toIterator([duration2, duration1]));
 });
