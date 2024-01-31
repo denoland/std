@@ -1,6 +1,6 @@
-import { spawns } from '../artifact/io-hooks'
-import Debug from 'debug'
-const debug = Debug('AI:io.fixture')
+import { spawns } from '@io/io-hooks.js'
+import { debug } from '$debug'
+const log = debug('AI:io.fixture')
 
 export const api = {
   error: {
@@ -35,7 +35,7 @@ export const functions = {
     throw new Error(message)
   },
   spawn: async ({ isolate }) => {
-    debug('spawn', isolate)
+    log('spawn', isolate)
     const { pong } = await spawns(isolate)
     const result = await pong()
     return result

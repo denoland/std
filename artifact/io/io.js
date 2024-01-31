@@ -1,21 +1,15 @@
 import { deserializeError, serializeError } from 'npm:serialize-error'
 import equals from 'npm:fast-deep-equal'
-import validator from './validator.js'
-import ioWorker from './io-worker.js'
-import assert from 'npm:assert-fast'
+import validator from '@io/validator.js'
+import ioWorker from '@io/io-worker.js'
+import { assert } from 'std/assert/mod.ts'
 import git, { TREE } from '$git'
-import { posix } from 'npm:path-browserify'
+import * as posix from 'https://deno.land/std@0.213.0/path/posix/mod.ts'
 import { toString } from 'npm:uint8arrays/to-string'
 import { debug } from '$debug'
 const log = debug('AI:io')
 export const defaultBranch = 'main'
 
-export const PROCTYPES = {
-  SELF: 'SELF',
-  SPAWN: 'SPAWN',
-  LOCAL: 'LOCAL',
-  REMOTE: 'REMOTE',
-}
 const IO_PATH = '/.io.json'
 
 export default class IO {
@@ -23,11 +17,8 @@ export default class IO {
   #opts
   #workerCache = new Map()
   #promises = new Map() // path -> promise ?
-  static create({ artifact, opts }) {
+  static create() {
     const io = new IO()
-    io.#artifact = artifact
-    const { fs, dir, cache, trigger, corsProxy } = opts
-    io.#opts = { fs, dir, cache, trigger, corsProxy }
     return io
   }
   // TODO track purging that is due - immdediately after a commit, clear io.

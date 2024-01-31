@@ -1,11 +1,9 @@
-import assert from 'assert-fast'
-import posix from 'path-browserify'
-import Debug from 'debug'
-const debug = Debug('AI:io-worker')
-// TODO make this work in threadsjs
+import { assert } from 'std/assert/mod.ts'
+import * as posix from 'https://deno.land/std@0.213.0/path/posix/mod.ts'
+import { debug } from '$debug'
+const log = debug('AI:io-worker')
 export default (artifact) => {
-  // TODO inside isolation using unique hooks for each worker
-  // TODO scope filesystem access
+  // TODO scope filesystem access to match deno permissions
   globalThis['@@io-worker-hooks'] = {
     async writeJS(path, js) {
       // debug('writeJS', path)
@@ -59,7 +57,7 @@ export default (artifact) => {
   let code
   return {
     async load(isolate) {
-      debug('load isolate', isolate)
+      log('load isolate', isolate)
       assert(!code, 'code already loaded')
       // TODO load from the git repo or some other path like a cdn
       code = await import(`../isolates/${isolate}.js`)
