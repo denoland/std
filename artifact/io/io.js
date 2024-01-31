@@ -1,14 +1,13 @@
-import { deserializeError } from 'serialize-error'
-import equals from 'fast-deep-equal'
-import validator from './validator'
-import ioWorker from './io-worker'
-import assert from 'assert-fast'
-import git, { TREE } from 'isomorphic-git'
-import { posix } from 'path-browserify'
-import { toString } from 'uint8arrays/to-string'
-import { serializeError } from 'serialize-error'
-import Debug from 'debug'
-const debug = Debug('AI:io')
+import { deserializeError, serializeError } from 'npm:serialize-error'
+import equals from 'npm:fast-deep-equal'
+import validator from './validator.js'
+import ioWorker from './io-worker.js'
+import assert from 'npm:assert-fast'
+import git, { TREE } from '$git'
+import { posix } from 'npm:path-browserify'
+import { toString } from 'npm:uint8arrays/to-string'
+import { debug } from '$debug'
+const log = debug('AI:io')
 export const defaultBranch = 'main'
 
 export const PROCTYPES = {
@@ -35,7 +34,7 @@ export default class IO {
   async start() {
     // TODO subscribe to writes, so we can do internal actions with less commits
     await this.#artifact.subscribeCommits('/', async (ref) => {
-      debug('io commit triggered', ref.substr(0, 7))
+      log('io commit triggered', ref.substr(0, 7))
       // TODO handle resetting the IO which would terminate all in progress
       const { io, changes } = await this.#diffChanges(ref)
       if (!changes) {
@@ -43,24 +42,24 @@ export default class IO {
       }
       const { inputs, outputs } = changes
       const branchName = await git.currentBranch(this.#opts)
-      debug('io changes', branchName, inputs.length, outputs.length)
+      log('io changes', branchName, inputs.length, outputs.length)
       for (const { input, id } of inputs) {
         const { isolate, name, parameters, proctype } = input
-        debug('input', isolate, name, parameters, proctype)
+        log('input', isolate, name, parameters, proctype)
         if (proctype === PROCTYPES.SPAWN) {
-          debug('spawning', isolate, name, parameters)
+          log('spawning', isolate, name, parameters)
           await this.#spawn({ id, isolate, name, parameters })
         } else if (proctype === PROCTYPES.SELF) {
-          debug('self', isolate, name, parameters)
+          log('self', isolate, name, parameters)
           const { api, worker } = await this.#ensureWorker(isolate)
           const schema = api[name]
           try {
             validator(schema)(parameters)
             const result = await worker.execute(name, parameters)
-            debug('self result', result)
+            log('self result', result)
             await this.#replyIO({ id, result })
           } catch (errorObj) {
-            debug('self error', errorObj)
+            log('self error', errorObj)
             const error = serializeError(errorObj)
             return this.#replyIO({ id, error })
           }
@@ -86,7 +85,7 @@ export default class IO {
   async #settleBranch({ address }, { result, error }) {
     assert(address, 'address is required')
     const { branchName, id } = address
-    debug('settleBranch', branchName, id, result, error)
+    log('settleBranch', branchName, id, result, error)
 
     // checkout the parent branch
     const incoming = await git.currentBranch(this.#opts)
@@ -98,7 +97,7 @@ export default class IO {
       parent: ['HEAD', incoming],
     })
     await git.deleteBranch({ ...this.#opts, ref: incoming })
-    debug('commitResult', commitResult)
+    log('commitResult', commitResult)
     // TODO address this reply to know which commit it came from
     // can let the receiver decide if they want to import changed files
     await this.#replyIO({ id, result, error })
@@ -112,7 +111,7 @@ export default class IO {
     const [{ oid }] = await git.log({ ...this.#opts, depth: 1 })
     const ref = `${oid}-${id}`
     await git.branch({ ...this.#opts, ref, checkout: true })
-    debug('spawn', ref, action)
+    log('spawn', ref, action)
     await this.#artifact.rm(IO_PATH)
     await this.#artifact.rm('/chat-1.session.json')
     const io = await this.readIO()
@@ -135,7 +134,7 @@ export default class IO {
     if (!this.#workerCache.has(isolate)) {
       // TODO handle the isolate changing
       // TODO isolate by branch as well as name
-      debug('ensureWorker', isolate)
+      log('ensureWorker', isolate)
       const { worker, api } = await this.#loadWorker(isolate)
       this.#workerCache.set(isolate, { api, worker })
       // TODO LRU the cache
@@ -143,7 +142,7 @@ export default class IO {
     return this.#workerCache.get(isolate)
   }
   async #loadWorker(isolate) {
-    debug('loadWorker', isolate)
+    log('loadWorker', isolate)
     const worker = ioWorker(this.#artifact)
     const api = await worker.load(isolate)
     return { worker, api }
@@ -164,7 +163,7 @@ export default class IO {
       reject = rej
     })
     const pid = `${branchName}_${id}`
-    debug('dispatch pid', pid)
+    log('dispatch pid', pid)
     assert(!this.#promises.has(pid), `pid ${pid} already exists`)
     this.#promises.set(pid, { resolve, reject })
 
@@ -190,7 +189,7 @@ export default class IO {
     }
   }
   async #commitIO(io, message) {
-    debug('commitIO', message)
+    log('commitIO', message)
     const file = JSON.stringify(io, null, 2)
     await this.#artifact.writeCommit(IO_PATH, file, message)
   }
@@ -224,6 +223,8 @@ export default class IO {
     assert(changes.length < 2, `at most one change: ${changes.length}`)
     return { changes: changes[0], io }
   }
+  // this should only seek changes in that single io file
+  // the patch generation should be the same for io as for any splice.
 }
 
 const newInputs = (inputs, previous) => {
@@ -250,6 +251,8 @@ const newOutputs = (outputs, previous) => {
   indices.sort((a, b) => a - b)
   return indices.map((id) => ({ output: outputs[id], id }))
 }
+
+// this should be jsonpatch with some extra validation against a jsonschema
 
 const input = (io, action) => {
   // if no address, it was a loopback only action

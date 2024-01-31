@@ -1,4 +1,4 @@
-import { debug, expect, test } from '../../../artifact/tst-helpers.js'
+import { _debug, expect, test } from '../../../artifact/tst-helpers.js'
 import Artifact from './artifact.js'
 
 const isolate = 'engage-help'

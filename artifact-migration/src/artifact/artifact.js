@@ -1,7 +1,7 @@
 import './shim.js'
 import { isBrowser } from 'wherearewe'
 import http from 'isomorphic-git/http/web'
-import IO, { defaultBranch, PROCTYPES } from './io.js'
+import IO, { defaultBranch, PROCTYPES } from '../../../artifact/io/io.js'
 import posix from 'path-browserify'
 import git from 'isomorphic-git'
 import LightningFS from '@isomorphic-git/lightning-fs'

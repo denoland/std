@@ -1,11 +1,10 @@
-import Artifact from './artifact/artifact'
-import { expect as viexpect, test as vitest } from 'vitest'
-import Debug from 'debug'
-const _debug = Debug('test')
+// import Artifact from './artifact/artifact'
+import { debug as _debug } from '$debug'
+const log = _debug('test')
 export const debug = (...args) => {
-  return _debug(...args)
+  return log(...args)
 }
-debug.enable = Debug.enable.bind(Debug)
+_debug.enable = _debug.enable.bind(_debug)
 export const expect = viexpect
 export const test = vitest.extend({
   // eslint-disable-next-line no-empty-pattern

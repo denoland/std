@@ -1,5 +1,7 @@
 export const isolate = () => globalThis['@@io-worker-hooks']
 
+// MOVE THIS TO BE A SECOND ARG
+
 export const actions = (...args) => isolate().actions(...args)
 export const spawns = (...args) => isolate().spawns(...args)
 export const writeJS = (...args) => isolate().writeJS(...args)
