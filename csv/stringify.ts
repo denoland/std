@@ -111,7 +111,7 @@ export type StringifyOptions = {
   columns?: Column[];
   /**
    * Whether to add a
-   * [byte-order mark](https://en.wikipedia.org/wiki/Byte_order_mark) to the
+   * {@link https://en.wikipedia.org/wiki/Byte_order_mark | byte-order mark} to the
    * beginning of the file content. Required by software such as MS Excel to
    * properly display Unicode text.
    *
