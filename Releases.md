@@ -1,3 +1,14 @@
+### 0.214.0 / 2024.02.01
+
+- BREAKING(io): remove `types.d.ts` (#4237)
+- BREAKING(log): remove string formatter (#4239)
+- BREAKING(log): single-export handler files (#4236)
+- BREAKING(streams): remove `readAll()`, `writeAll()` and `copy()` (#4238)
+- feat(tools,log,http,semver): check mod exports, export items consistently from
+  mod.ts (#4229)
+- fix(expect): add Error object equal check. (#4248)
+- fix(expect): align `toEqual` to jest (#4246)
+
 ### 0.213.0 / 2024.01.25
 
 - BREAKING(http): remove `CookieMap` (#4179)
