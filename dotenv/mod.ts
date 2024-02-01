@@ -76,9 +76,9 @@ export function loadSync(
 
   if (defaultsPath) {
     const confDefaults = parseFileSync(defaultsPath);
-    for (const key in confDefaults) {
+    for (const [key, value] of Object.entries(confDefaults)) {
       if (!(key in conf)) {
-        conf[key] = confDefaults[key];
+        conf[key] = value;
       }
     }
   }
@@ -89,9 +89,9 @@ export function loadSync(
   }
 
   if (_export) {
-    for (const key in conf) {
+    for (const [key, value] of Object.entries(conf)) {
       if (Deno.env.get(key) !== undefined) continue;
-      Deno.env.set(key, conf[key]);
+      Deno.env.set(key, value);
     }
   }
 
@@ -283,9 +283,9 @@ export async function load(
 
   if (defaultsPath) {
     const confDefaults = await parseFile(defaultsPath);
-    for (const key in confDefaults) {
+    for (const [key, value] of Object.entries(confDefaults)) {
       if (!(key in conf)) {
-        conf[key] = confDefaults[key];
+        conf[key] = value;
       }
     }
   }
@@ -296,9 +296,9 @@ export async function load(
   }
 
   if (_export) {
-    for (const key in conf) {
+    for (const [key, value] of Object.entries(conf)) {
       if (Deno.env.get(key) !== undefined) continue;
-      Deno.env.set(key, conf[key]);
+      Deno.env.set(key, value);
     }
   }
 
