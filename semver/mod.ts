@@ -286,7 +286,6 @@ export * from "./gtr.ts";
 export * from "./test_comparator.ts";
 export * from "./test_range.ts";
 export * from "./increment.ts";
-export * from "./is_semver_range.ts";
 export * from "./is_semver.ts";
 export * from "./lt.ts";
 export * from "./lte.ts";
