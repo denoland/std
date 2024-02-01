@@ -3,7 +3,7 @@ import { INVALID } from "./constants.ts";
 import type { Range, SemVer } from "./types.ts";
 import { testRange } from "./test_range.ts";
 import { comparatorMax } from "./comparator_max.ts";
-import { gt } from "./gt.ts";
+import { greaterThan } from "./greater_than.ts";
 
 /**
  * The maximum valid SemVer for a given range or INVALID
@@ -19,7 +19,7 @@ export function rangeMax(range: Range): SemVer {
         comparator.operator,
       );
       if (!testRange(candidate, range)) continue;
-      max = (max && gt(max, candidate)) ? max : candidate;
+      max = (max && greaterThan(max, candidate)) ? max : candidate;
     }
   }
   return max ?? INVALID;

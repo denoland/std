@@ -1,11 +1,10 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import type { Comparator, SemVer } from "./types.ts";
-import { eq } from "./eq.ts";
-import { gt } from "./gt.ts";
-import { gte } from "./gte.ts";
-import { lt } from "./lt.ts";
-import { lte } from "./lte.ts";
-import { neq } from "./neq.ts";
+import { greaterThan } from "./greater_than.ts";
+import { greaterOrEqual } from "./greater_or_equal.ts";
+import { lessThan } from "./less_than.ts";
+import { lessOrEqual } from "./less_or_equal.ts";
+import { equals } from "./equals.ts";
 
 /**
  * Test to see if a semantic version falls within the range of the comparator.
@@ -24,18 +23,18 @@ export function testComparator(
     case "=":
     case "==":
     case "===":
-      return eq(version, comparator.semver ?? comparator);
+      return equals(version, comparator.semver ?? comparator);
     case "!=":
     case "!==":
-      return neq(version, comparator.semver ?? comparator);
+      return !equals(version, comparator.semver ?? comparator);
     case ">":
-      return gt(version, comparator.semver ?? comparator);
+      return greaterThan(version, comparator.semver ?? comparator);
     case ">=":
-      return gte(version, comparator.semver ?? comparator);
+      return greaterOrEqual(version, comparator.semver ?? comparator);
     case "<":
-      return lt(version, comparator.semver ?? comparator);
+      return lessThan(version, comparator.semver ?? comparator);
     case "<=":
-      return lte(version, comparator.semver ?? comparator);
+      return lessOrEqual(version, comparator.semver ?? comparator);
     default:
       throw new TypeError(`Invalid operator: ${comparator.operator}`);
   }

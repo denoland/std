@@ -3,7 +3,7 @@ import { INVALID } from "./constants.ts";
 import type { Range, SemVer } from "./types.ts";
 import { testRange } from "./test_range.ts";
 import { comparatorMin } from "./comparator_min.ts";
-import { lt } from "./lt.ts";
+import { lessThan } from "./less_than.ts";
 
 /**
  * The minimum valid SemVer for a given range or INVALID
@@ -19,7 +19,7 @@ export function rangeMin(range: Range): SemVer {
         comparator.operator,
       );
       if (!testRange(candidate, range)) continue;
-      min = (min && lt(min, candidate)) ? min : candidate;
+      min = (min && lessThan(min, candidate)) ? min : candidate;
     }
   }
   return min ?? INVALID;
