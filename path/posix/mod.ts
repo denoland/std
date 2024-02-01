@@ -21,17 +21,6 @@
  *
  * @module
  */
-
-/**
- * @deprecated (will be removed in 0.215.0) Use {@linkcode SEPARATOR} from {@link https://deno.land/std/path/posix/constants.ts} instead.
- */
-export const sep = "/";
-
-/**
- * @deprecated (will be removed in 0.215.0) Use {@linkcode DELIMITER} from {@link https://deno.land/std/path/posix/constants.ts} instead.
- */
-export const delimiter = "/";
-
 export * from "./basename.ts";
 export * from "./constants.ts";
 export * from "./dirname.ts";
@@ -47,7 +36,6 @@ export * from "./resolve.ts";
 export * from "./to_file_url.ts";
 export * from "./to_namespaced_path.ts";
 export * from "./common.ts";
-export * from "./separator.ts";
 export * from "../_interface.ts";
 export * from "./glob_to_regexp.ts";
 export * from "./is_glob.ts";
