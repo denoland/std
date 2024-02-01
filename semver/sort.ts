@@ -5,7 +5,7 @@ import { compare } from "./compare.ts";
 /**
  * Sorts a list of semantic versions in ascending order.
  *
- * @deprecated (will be removed after 0.214.0) Use `list.sort(compare)` with {@linkcode compare} instead.
+ * @deprecated (will be removed in 0.215.0) Use `list.sort(compare)` with {@linkcode compare} instead.
  */
 export function sort(
   list: SemVer[],

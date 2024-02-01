@@ -13,7 +13,7 @@ import { neq } from "./neq.ts";
  * @param comparator The comparator
  * @returns True if the version is within the comparators set otherwise false
  *
- * @deprecated (will be removed in 0.214.0) Use {@linkcode testRange} instead.
+ * @deprecated (will be removed in 0.215.0) Use {@linkcode testRange} instead.
  */
 export function testComparator(
   version: SemVer,
