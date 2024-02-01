@@ -25,7 +25,7 @@ const MAX_SIZE = 2 ** 32 - 2;
  * ArrayBuffer is a fixed memory allocation. Buffer is implemented on top of
  * ArrayBuffer.
  *
- * Based on [Go Buffer](https://golang.org/pkg/bytes/#Buffer).
+ * Based on {@link https://golang.org/pkg/bytes/#Buffer | Go Buffer}.
  */
 
 export class Buffer implements Writer, WriterSync, Reader, ReaderSync {
@@ -179,7 +179,7 @@ export class Buffer implements Writer, WriterSync, Reader, ReaderSync {
    * throw. If the buffer can't grow it will throw an error.
    *
    * Based on Go Lang's
-   * [Buffer.Grow](https://golang.org/pkg/bytes/#Buffer.Grow). */
+   * {@link https://golang.org/pkg/bytes/#Buffer.Grow | Buffer.Grow}. */
   grow(n: number) {
     if (n < 0) {
       throw Error("Buffer.grow: negative count");
@@ -193,7 +193,7 @@ export class Buffer implements Writer, WriterSync, Reader, ReaderSync {
    * If the buffer becomes too large, `.readFrom()` will reject with an error.
    *
    * Based on Go Lang's
-   * [Buffer.ReadFrom](https://golang.org/pkg/bytes/#Buffer.ReadFrom). */
+   * {@link https://golang.org/pkg/bytes/#Buffer.ReadFrom | Buffer.ReadFrom}. */
   async readFrom(r: Reader): Promise<number> {
     let n = 0;
     const tmp = new Uint8Array(MIN_READ);
@@ -223,7 +223,7 @@ export class Buffer implements Writer, WriterSync, Reader, ReaderSync {
    * buffer becomes too large, `.readFromSync()` will throw an error.
    *
    * Based on Go Lang's
-   * [Buffer.ReadFrom](https://golang.org/pkg/bytes/#Buffer.ReadFrom). */
+   * {@link https://golang.org/pkg/bytes/#Buffer.ReadFrom | Buffer.ReadFrom}. */
   readFromSync(r: ReaderSync): number {
     let n = 0;
     const tmp = new Uint8Array(MIN_READ);

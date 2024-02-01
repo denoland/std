@@ -1,7 +1,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 /**
  * Utilities for working with the
- * [Streams API](https://developer.mozilla.org/en-US/docs/Web/API/Streams_API).
+ * {@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API | Streams API}.
  *
  * Includes buffering and conversion.
  *
