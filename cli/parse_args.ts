@@ -387,10 +387,8 @@ function aliasIsBoolean(
   return false;
 }
 
-const BOOLEAN_VALUE_REGEXP = /^(true|false)$/;
-
 function isBooleanString(value: string) {
-  return BOOLEAN_VALUE_REGEXP.test(value);
+  return value === "true" || value === "false";
 }
 
 function parseBooleanString(value: unknown) {
