@@ -24,7 +24,7 @@ function expandCharacters(str: string): string {
 
   return str.replace(
     /\\([nrt])/g,
-    ($1: keyof CharactersMap): string => charactersMap[$1],
+    ($1: keyof CharactersMap): string => charactersMap[$1] || "",
   );
 }
 
@@ -89,7 +89,10 @@ export function parse(rawDotenv: string): Record<string, string> {
   //https://github.com/motdotla/dotenv-expand/blob/ed5fea5bf517a09fd743ce2c63150e88c8a5f6d1/lib/main.js#L23
   const variablesMap = { ...env };
   keysForExpandCheck.forEach((key) => {
-    env[key] = expand(env[key], variablesMap);
+    const value = env[key];
+    if (typeof value === 'string') {
+      env[key] = expand(value, variablesMap);
+    }
   });
 
   return env;
