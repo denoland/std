@@ -32,7 +32,7 @@
  *
  * > Note: some libraries include accept charset functionality by analyzing the
  * > `Accept-Charset` header. This is a legacy header that
- * > [clients omit and servers should ignore](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Accept-Charset)
+ * > {@link https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Accept-Charset | clients omit and servers should ignore}
  * > therefore is not provided.
  *
  * ## Cookie maps

@@ -5,7 +5,7 @@
 /**
  * The semantic version parser.
  *
- * Adapted directly from [semver](https://github.com/npm/node-semver).
+ * Adapted directly from {@link https://github.com/npm/node-semver | semver}.
  *
  * ## Versions
  *

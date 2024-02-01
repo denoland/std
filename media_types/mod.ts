@@ -3,13 +3,13 @@
 
 /** Utility functions for media types (MIME types).
  *
- * This API is inspired by the GoLang [`mime`](https://pkg.go.dev/mime) package
- * and [jshttp/mime-types](https://github.com/jshttp/mime-types), and is
+ * This API is inspired by the GoLang {@linkcode https://pkg.go.dev/mime | mime} package
+ * and {@link https://github.com/jshttp/mime-types | jshttp/mime-types}, and is
  * designed to integrate and improve the APIs from
- * [deno.land/x/media_types](https://deno.land/x/media_types).
+ * {@link https://deno.land/x/media_types | x/media_types}.
  *
  * The `vendor` folder contains copy of the
- * [jshttp/mime-db](https://github.com/jshttp/mime-types) `db.json` file along
+ * {@link https://github.com/jshttp/mime-types | jshttp/mime-db} `db.json` file along
  * with its license.
  *
  * @module
