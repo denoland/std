@@ -2,7 +2,7 @@
 
 import { BaseHandler } from "./base_handler.ts";
 import { DEFAULT_CONFIG, DEFAULT_LEVEL } from "./_config.ts";
-import { Logger, type LogConfig } from "./logger.ts";
+import { type LogConfig, Logger } from "./logger.ts";
 
 export const state = {
   handlers: new Map<string, BaseHandler>(),
