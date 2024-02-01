@@ -382,7 +382,7 @@ function aliasIsBoolean(
   key: string,
 ): boolean {
   const set = aliasMap.get(key);
-  if (!set) return false;
+  if (set === undefined) return false;
   for (const alias of set) if (booleanSet.has(alias)) return true;
   return false;
 }
