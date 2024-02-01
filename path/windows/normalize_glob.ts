@@ -6,6 +6,8 @@ import { GlobOptions } from "../_common/glob_to_reg_exp.ts";
 import { normalize } from "./normalize.ts";
 import { SEPARATOR_PATTERN } from "./constants.ts";
 
+export type { GlobOptions };
+
 /** Like normalize(), but doesn't collapse "**\/.." when `globstar` is true. */
 export function normalizeGlob(
   glob: string,
