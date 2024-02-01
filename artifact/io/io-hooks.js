@@ -1,13 +1,11 @@
-export const isolate = () => globalThis['@@io-worker-hooks']
+export const isolatedApi = () => globalThis['@@io-worker-hooks']
 
-// MOVE THIS TO BE A SECOND ARG
-
-export const actions = (...args) => isolate().actions(...args)
-export const spawns = (...args) => isolate().spawns(...args)
-export const writeJS = (...args) => isolate().writeJS(...args)
-export const write = (...args) => isolate().write(...args)
-export const readJS = (...args) => isolate().readJS(...args)
-export const read = (...args) => isolate().read(...args)
-export const isFile = (...args) => isolate().isFile(...args)
-export const ls = (...args) => isolate().ls(...args)
-export const rm = (...args) => isolate().rm(...args)
+export const inBand = (...args) => isolatedApi().inBand(...args)
+export const spawns = (...args) => isolatedApi().spawns(...args)
+export const writeJS = (...args) => isolatedApi().writeJS(...args)
+export const write = (...args) => isolatedApi().write(...args)
+export const readJS = (...args) => isolatedApi().readJS(...args)
+export const read = (...args) => isolatedApi().read(...args)
+export const isFile = (...args) => isolatedApi().isFile(...args)
+export const ls = (...args) => isolatedApi().ls(...args)
+export const rm = (...args) => isolatedApi().rm(...args)

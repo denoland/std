@@ -8,18 +8,11 @@ export default class kv {
   }
   #listen() {
     this.#kv.listenQueue((msg) => {
-      if (Number.isInteger(msg)) {
-        console.log('messages processed:', msg)
-        if (msg % 1000 === 0 || msg === 0) {
-          console.log('messages processed:', msg)
-        }
-      } else {
-        console.log(msg)
-      }
     })
   }
   async dispatch(msg) {
     const result = await this.#kv.enqueue(msg)
+    return result
   }
   async stop() {
     await this.#kv.close()

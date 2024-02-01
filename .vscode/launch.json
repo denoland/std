@@ -10,7 +10,7 @@
       "type": "node",
       "cwd": "${workspaceFolder}",
       "runtimeExecutable": "~/.deno/bin/deno",
-      "runtimeArgs": ["task", "watch", "artifact", "--inspect-wait"],
+      "runtimeArgs": ["task", "watch", "--inspect-wait", "${relativeFile}"],
       "attachSimplePort": 9229
     }
   ]

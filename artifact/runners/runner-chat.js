@@ -1,24 +1,26 @@
-import posix from 'path-browserify'
-import merge from 'lodash.merge'
-import OpenAI from 'openai'
-import { Buffer } from 'buffer'
-import * as hooks from '../artifact/io-hooks.js'
-import assert from 'assert-fast'
-import Debug from 'debug'
-import { serializeError } from 'serialize-error'
-const debug = Debug('AI:runner-chat')
-const debugResult = debug.extend('ai-result-content')
-const debugPart = debug.extend('ai-part')
-const debugToolCall = debug.extend('ai-result-tool')
-const debugToolResult = debug.extend('ai-tool-result')
+import { assert } from 'std/assert/mod.ts'
+import * as posix from 'https://deno.land/std@0.213.0/path/posix/mod.ts'
+import { debug } from 'https://deno.land/x/quiet_debug@v1.0.0/mod.ts'
+import merge from 'npm:lodash.merge'
+import OpenAI from 'npm:openai'
+import * as hooks from '@io/io-hooks.js'
+import { serializeError } from 'npm:serialize-error'
+import { load } from 'https://deno.land/std@0.213.0/dotenv/mod.ts'
 
-const { VITE_OPENAI_API_KEY } = import.meta.env
+const base = 'AI:runner-chat'
+const log = debug(base)
+const debugResult = debug(base + ':ai-result-content')
+const debugPart = debug(base + ':ai-part')
+const debugToolCall = debug(base + ':ai-result-tool')
+const debugToolResult = debug(base + ':ai-tool-result')
 
-if (!VITE_OPENAI_API_KEY) {
-  throw new Error('missing openai api key')
+const env = await load()
+
+if (!env['OPENAI_API_KEY']) {
+  throw new Error('missing openai api key: OPENAI_API_KEY')
 }
-const apiKey = Buffer.from(VITE_OPENAI_API_KEY, 'base64').toString('utf-8')
-const ai = new OpenAI({ apiKey, dangerouslyAllowBrowser: true })
+const apiKey = env['OPENAI_API_KEY']
+const ai = new OpenAI({ apiKey })
 
 export default async ({ help, text }) => {
   assert(typeof help == 'object', `help must be an object: ${typeof help}`)
@@ -51,9 +53,9 @@ export class AI {
     assert(typeof text === 'string', 'text must be a string')
     assert(text.length, 'text must not be empty')
     let messages = []
-    if (await hooks.isFile(this.#sessionPath)) {
-      messages = await hooks.readJS(this.#sessionPath)
-    }
+    // if (await hooks.isFile(this.#sessionPath)) {
+    //   messages = await hooks.readJS(this.#sessionPath)
+    // }
     assert(Array.isArray(messages), 'messages must be an array')
 
     if (this.#sysprompt) {
@@ -66,7 +68,7 @@ export class AI {
       messages.push({ role: 'user', content: text })
     }
     const assistant = await this.#execute(messages)
-    debug('assistant', assistant)
+    log('assistant', assistant)
     return assistant
   }
 
@@ -82,11 +84,11 @@ export class AI {
     }
     const assistant = { role: 'assistant' }
     messages.push(assistant)
-    await hooks.writeJS(this.#sessionPath, messages)
+    // await hooks.writeJS(this.#sessionPath, messages)
 
-    debug('streamCall started')
+    log('streamCall started')
     const streamCall = await ai.chat.completions.create(args)
-    debug('streamCall placed')
+    log('streamCall placed')
     for await (const part of streamCall) {
       const content = part.choices[0]?.delta?.content
       if (content) {
@@ -118,9 +120,9 @@ export class AI {
           debugPart(`%o`, assistant.tool_calls[index]?.function)
         }
       }
-      await hooks.writeJS(this.#sessionPath, messages)
+      // await hooks.writeJS(this.#sessionPath, messages)
     }
-    debug('streamCall complete')
+    log('streamCall complete')
     return this.executeTools(messages)
   }
   async executeTools(messages) {
@@ -137,7 +139,7 @@ export class AI {
         id: tool_call_id,
       } = call
       debugToolCall(name, args)
-      debug('tool call:', name, args)
+      log('tool call:', name, args)
       assert(this.#actions[name], `missing action: ${name}`)
       const message = { role: 'tool', tool_call_id }
       messages.push(message)
@@ -145,9 +147,9 @@ export class AI {
       try {
         const parameters = JSON.parse(args)
         const result = await this.#actions[name](parameters)
-        debug('tool call result:', result)
+        log('tool call result:', result)
         if (result === '@@ARTIFACT_RELAY@@') {
-          debug('tool call relay')
+          log('tool call relay')
 
           const withoutTip = messages.slice(0, -1)
           const lastToolCall = withoutTip
@@ -155,7 +157,7 @@ export class AI {
             .findLast(({ role }) => role === 'tool')
           assert(lastToolCall, 'missing last tool call')
           message.content = lastToolCall.content
-          await hooks.writeJS(this.#sessionPath, messages)
+          // await hooks.writeJS(this.#sessionPath, messages)
 
           return message.content
         }
@@ -166,7 +168,7 @@ export class AI {
           message.content = JSON.stringify(result, null, 2)
         }
       } catch (error) {
-        debug('tool call error:', error)
+        log('tool call error:', error)
         message.content = JSON.stringify(serializeError(error), null, 2)
       }
       debugToolResult(message.content)
@@ -180,12 +182,12 @@ export class AI {
     if (!commands.length) {
       return
     }
-    const { load } = await hooks.actions('load-help')
+    const { load } = await hooks.inBand('load-help')
     const result = []
     const names = new Set()
     const actions = {}
     for (const command of commands) {
-      debug('loading command:', command)
+      log('loading command:', command)
       let tool, action, name
       if (!command.includes(':')) {
         assert(command.startsWith('helps/'), `invalid help: ${command}`)
@@ -198,7 +200,7 @@ export class AI {
       } else {
         const [isolate, _name] = command.split(':')
         name = _name
-        const isolateActions = await hooks.actions(isolate)
+        const isolateActions = await hooks.inBand(isolate)
         assert(isolateActions[name], `isolate missing command: ${command}`)
         action = isolateActions[name]
         tool = isolateToGptApi(name, action)

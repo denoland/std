@@ -7,24 +7,27 @@ import git, { TREE } from '$git'
 import * as posix from 'https://deno.land/std@0.213.0/path/posix/mod.ts'
 import { toString } from 'npm:uint8arrays/to-string'
 import { debug } from '$debug'
+import API from '@/artifact/api.js'
 const log = debug('AI:io')
 export const defaultBranch = 'main'
 
 const IO_PATH = '/.io.json'
 
 export default class IO {
-  #artifact
+  #api
   #opts
   #workerCache = new Map()
   #promises = new Map() // path -> promise ?
-  static create() {
+  static create(api) {
+    assert(api instanceof API, 'api must be an instance of API')
     const io = new IO()
+    io.#api = api
     return io
   }
   // TODO track purging that is due - immdediately after a commit, clear io.
   async start() {
     // TODO subscribe to writes, so we can do internal actions with less commits
-    await this.#artifact.subscribeCommits('/', async (ref) => {
+    await this.#api.subscribeCommits('/', async (ref) => {
       log('io commit triggered', ref.substr(0, 7))
       // TODO handle resetting the IO which would terminate all in progress
       const { io, changes } = await this.#diffChanges(ref)
@@ -43,6 +46,7 @@ export default class IO {
         } else if (proctype === PROCTYPES.SELF) {
           log('self', isolate, name, parameters)
           const { api, worker } = await this.#ensureWorker(isolate)
+          // need a load function, to isolate the fs snapshot
           const schema = api[name]
           try {
             validator(schema)(parameters)
@@ -103,8 +107,8 @@ export default class IO {
     const ref = `${oid}-${id}`
     await git.branch({ ...this.#opts, ref, checkout: true })
     log('spawn', ref, action)
-    await this.#artifact.rm(IO_PATH)
-    await this.#artifact.rm('/chat-1.session.json')
+    await this.#api.rm(IO_PATH)
+    await this.#api.rm('/chat-1.session.json')
     const io = await this.readIO()
     const { next } = input(io, action)
     await this.#commitIO(next, 'spawn')
@@ -134,7 +138,7 @@ export default class IO {
   }
   async #loadWorker(isolate) {
     log('loadWorker', isolate)
-    const worker = ioWorker(this.#artifact)
+    const worker = ioWorker(this.#api)
     const api = await worker.load(isolate)
     return { worker, api }
   }
@@ -167,7 +171,7 @@ export default class IO {
       outputs: {},
     }
     try {
-      const raw = await this.#artifact.read(IO_PATH)
+      const raw = await this.#api.read(IO_PATH)
       return JSON.parse(raw)
     } catch (e) {
       if (e.code === 'ENOENT') {
@@ -179,7 +183,7 @@ export default class IO {
   async #commitIO(io, message) {
     log('commitIO', message)
     const file = JSON.stringify(io, null, 2)
-    await this.#artifact.writeCommit(IO_PATH, file, message)
+    await this.#api.writeCommit(IO_PATH, file, message)
   }
   async #diffChanges(ref) {
     const commit = await git.readCommit({ ...this.#opts, oid: ref })

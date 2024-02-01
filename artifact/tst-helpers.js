@@ -1,9 +1,9 @@
-import { debug as _debug } from '$debug'
+import { debug } from '$debug'
 import { expect } from 'https://deno.land/std@0.213.0/expect/mod.ts'
 
-const log = _debug('test')
-export const debug = (...args) => {
-  return log(...args)
+const _log = debug('AI:test')
+export const log = (...args) => {
+  return _log(...args)
 }
 export { expect }
 

@@ -1,5 +1,5 @@
-import posix from 'path-browserify'
-import { ls, readJS } from '../artifact/io-hooks'
+import * as posix from 'https://deno.land/std@0.213.0/path/posix/mod.ts'
+import { ls, readJS } from '@io/io-hooks.js'
 
 export const api = {
   load: {

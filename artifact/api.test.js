@@ -2,9 +2,9 @@ import API from './api.js'
 import { expect } from './tst-helpers.js'
 
 Deno.test('api', async (t) => {
-  const api = await API.create()
-  await t.step('reload', async () => {
-    await api.reload({ repo: 'dreamcatcher-tech/HAL' })
+  const api = API.create()
+  await t.step('pull', async () => {
+    await api.pull({ repo: 'dreamcatcher-tech/HAL' })
   })
   await t.step('isolateApi', async () => {
     const isolateApi = await api.isolateApi('io.fixture')

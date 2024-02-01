@@ -2,38 +2,37 @@ import { assert } from 'std/assert/mod.ts'
 import * as posix from 'https://deno.land/std@0.213.0/path/posix/mod.ts'
 import { debug } from '$debug'
 const log = debug('AI:io-worker')
-export default (artifact) => {
-  // TODO scope filesystem access to match deno permissions
+export default (api) => {
   globalThis['@@io-worker-hooks'] = {
     async writeJS(path, js) {
       // debug('writeJS', path)
       assert(posix.isAbsolute(path), `path must be absolute: ${path}`)
       const file = JSON.stringify(js, null, 2)
-      await artifact.write(path, file)
+      await api.write(path, file)
     },
     async write(path, file) {
       // debug('write', path)
       assert(path, 'path is required')
-      await artifact.write(path, file)
+      await api.write(path, file)
     },
     async readJS(path) {
       // debug('readJS', path)
       assert(path, 'path is required')
-      const string = await artifact.read(path)
+      const string = await api.read(path)
       return JSON.parse(string)
     },
     async read(path) {
-      return artifact.read(path)
+      return api.read(path)
     },
-    async actions(isolate) {
-      return artifact.actions(isolate)
+    async inBand(isolate) {
+      return api.inBand(isolate)
     },
     async spawns(isolate) {
-      return artifact.spawns(isolate)
+      return api.spawns(isolate)
     },
     async isFile(path) {
       try {
-        await artifact.stat(path)
+        await api.stat(path)
         return true
       } catch (err) {
         if (err.code === 'ENOENT') {
@@ -43,13 +42,12 @@ export default (artifact) => {
       }
     },
     async ls(path) {
-      return artifact.ls(path)
+      return api.ls(path)
     },
     async rm(path) {
-      return artifact.rm(path)
+      return api.rm(path)
     },
   }
-  // TODO pass the hooks in as a function parameter, to avoid globalThis
   // TODO useMemo  where it caches the result for recoverability by a commit
   // TODO make paradigm where heavy functions are replayable
   // TODO force the use of sideEffects for network calls
@@ -69,7 +67,10 @@ export default (artifact) => {
       assert(!missing.length, `Missing functions: ${missing.join(', ')}`)
       return api
     },
-    async execute(functionName, parameters, config) {
+    // async snapshot() => { execute: () => execute once within the snapshot }
+
+    async execute(functionName, parameters) {
+      // this execution must be tied to an isolated fs
       assert(code, 'code not loaded')
       const { functions } = code
       return Promise.resolve().then(() => {
