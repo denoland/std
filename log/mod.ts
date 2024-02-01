@@ -148,7 +148,7 @@
  *   handlers: {
  *     console: new log.ConsoleHandler("DEBUG"),
  *
- *     file: new log.FileHandler("WARNING", {
+ *     file: new log.FileHandler("WARN", {
  *       filename: "./log.txt",
  *       // you can change format of output message using any keys in `LogRecord`.
  *       formatter: (record) => `${record.levelName} ${record.msg}`,
@@ -173,7 +173,7 @@
  *
  * // get default logger.
  * logger = log.getLogger();
- * logger.debug("fizz"); // logs to `console`, because `file` handler requires "WARNING" level.
+ * logger.debug("fizz"); // logs to `console`, because `file` handler requires "WARN" level.
  * logger.warn(41256); // logs to both `console` and `file` handlers.
  *
  * // get custom logger
@@ -477,33 +477,7 @@ export function info<T>(
   return getLogger("default").info(msg, ...args);
 }
 
-/**
- * @deprecated (will be removed after 0.214.0) Use {@linkcode warn} instead.
- *
- * Log with warning level, using default logger.
- */
-export function warning<T>(msg: () => T, ...args: unknown[]): T | undefined;
-/**
- * @deprecated (will be removed after 0.214.0) Use {@linkcode warn} instead.
- *
- * Log with warning level, using default logger.
- */
-export function warning<T>(
-  msg: T extends GenericFunction ? never : T,
-  ...args: unknown[]
-): T;
-export function warning<T>(
-  msg: (T extends GenericFunction ? never : T) | (() => T),
-  ...args: unknown[]
-): T | undefined {
-  // Assist TS compiler with pass-through generic type
-  if (msg instanceof Function) {
-    return warn(msg, ...args);
-  }
-  return warn(msg, ...args);
-}
-
-/** Log with warning level, using default logger. */
+/** Log with warn level, using default logger. */
 export function warn<T>(msg: () => T, ...args: unknown[]): T | undefined;
 export function warn<T>(
   msg: T extends GenericFunction ? never : T,
