@@ -90,7 +90,7 @@ export function parse(rawDotenv: string): Record<string, string> {
   const variablesMap = { ...env };
   keysForExpandCheck.forEach((key) => {
     const value = env[key];
-    if (typeof value === 'string') {
+    if (typeof value === "string") {
       env[key] = expand(value, variablesMap);
     }
   });
