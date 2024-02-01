@@ -387,10 +387,10 @@ export * from "./formatters.ts";
  * and {@linkcode TestHandler}.
  */
 
-export { critical } from "./_critical.ts";
-export { debug } from "./_debug.ts";
-export { error } from "./_error.ts";
-export { getLogger } from "./_get_logger.ts";
-export { info } from "./_info.ts";
+export { critical } from "./critical.ts";
+export { debug } from "./debug.ts";
+export { error } from "./error.ts";
+export { getLogger } from "./get_logger.ts";
+export { info } from "./info.ts";
 export { setup } from "./_state.ts";
-export { warn, warning } from "./_warn.ts";
+export { warn } from "./warn.ts";
