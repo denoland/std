@@ -353,18 +353,6 @@
  * console.log(data); // undefined
  * ```
  *
- * @module
- */
-
-export * from "./base_handler.ts";
-export * from "./console_handler.ts";
-export * from "./file_handler.ts";
-export * from "./rotating_file_handler.ts";
-export * from "./levels.ts";
-export * from "./logger.ts";
-export * from "./formatters.ts";
-
-/**
  * Handlers are responsible for actual output of log messages. When a handler is
  * called by a logger, it firstly checks that {@linkcode LogRecord}'s level is
  * not lower than level of the handler. If level check passes, handlers formats
@@ -385,8 +373,17 @@ export * from "./formatters.ts";
  *
  * For examples check source code of {@linkcode FileHandler}`
  * and {@linkcode TestHandler}.
+ *
+ * @module
  */
 
+export * from "./base_handler.ts";
+export * from "./console_handler.ts";
+export * from "./file_handler.ts";
+export * from "./rotating_file_handler.ts";
+export * from "./levels.ts";
+export * from "./logger.ts";
+export * from "./formatters.ts";
 export * from "./critical.ts";
 export * from "./debug.ts";
 export * from "./error.ts";
