@@ -9,7 +9,7 @@ import { Range, SemVerRange } from "./types.ts";
  * @param range The range to format
  * @returns A string representation of the range
  *
- * @deprecated (will be removed after 0.213.0) Use {@linkcode formatRange} instead.
+ * @deprecated (will be removed in 0.215.0) Use {@linkcode formatRange} instead.
  */
 export function rangeFormat(range: SemVerRange | Range): string {
   return formatRange(range);
