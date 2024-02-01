@@ -1,0 +1,43 @@
+name: workspace publish
+
+on:
+  push:
+    branches: [main, workspace_publish]
+
+env:
+  DENO_UNSTABLE_WORKSPACES: true
+
+jobs:
+  publish:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 30
+
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - name: Clone repository
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - name: Set up Deno
+        uses: denoland/setup-deno@v1
+
+      - name: Convert to workspace
+        run: deno run -A ./_tools/convert_to_workspace.ts
+
+      - name: Format
+        run: deno fmt
+
+      - name: Type check
+        run: deno test --unstable --no-run --doc
+
+      - name: Publish (dry run)
+        if: startsWith(github.ref, 'refs/tags/') == false
+        run: deno publish --dry-run
+
+      - name: Publish (real)
+        if: startsWith(github.ref, 'refs/tags/')
+        run: deno publish

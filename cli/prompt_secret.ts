@@ -31,7 +31,7 @@ export function promptSecret(
   message = "Secret ",
   { mask = "*", clear }: PromptSecretOptions = {},
 ): string | null {
-  if (!Deno.isatty(input.rid)) {
+  if (!input.isTerminal()) {
     return null;
   }
 

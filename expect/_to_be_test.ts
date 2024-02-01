@@ -32,4 +32,11 @@ Deno.test("expect().toBe()", () => {
   assertThrows(() => {
     expect(obj).not.toBe(obj);
   }, AssertionError);
+
+  class A {}
+  class B {}
+  expect(new A()).not.toBe(new B());
+  assertThrows(() => {
+    expect(new A()).toBe(new B());
+  }, AssertionError);
 });

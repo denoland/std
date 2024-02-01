@@ -3,7 +3,7 @@
 
 /**
  * Command line arguments parser based on
- * [minimist](https://github.com/minimistjs/minimist).
+ * {@link https://github.com/minimistjs/minimist | minimist}.
  *
  * This module is browser compatible.
  *
@@ -400,7 +400,8 @@ function parseBooleanString(value: unknown) {
 const FLAG_REGEXP =
   /^(?:-(?:(?<doubleDash>-)(?<negated>no-)?)?)(?<key>.+?)(?:=(?<value>.+?))?$/s;
 
-/** Take a set of command line arguments, optionally with a set of options, and
+/**
+ * Take a set of command line arguments, optionally with a set of options, and
  * return an object representing the flags found in the passed arguments.
  *
  * By default, any arguments starting with `-` or `--` are considered boolean

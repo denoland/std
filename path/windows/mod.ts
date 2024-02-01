@@ -22,10 +22,18 @@
  * @module
  */
 
+/**
+ * @deprecated (will be removed in 0.215.0) Use {@linkcode SEPARATOR} from {@link https://deno.land/std/path/windows/constants.ts} instead.
+ */
 export const sep = "\\";
+
+/**
+ * @deprecated (will be removed in 0.215.0) Use {@linkcode DELIMITER} from {@link https://deno.land/std/path/windows/constants.ts} instead.
+ */
 export const delimiter = ";";
 
 export * from "./basename.ts";
+export * from "./constants.ts";
 export * from "./dirname.ts";
 export * from "./extname.ts";
 export * from "./format.ts";

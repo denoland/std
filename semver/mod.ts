@@ -5,7 +5,7 @@
 /**
  * The semantic version parser.
  *
- * Adapted directly from [semver](https://github.com/npm/node-semver).
+ * Adapted directly from {@link https://github.com/npm/node-semver | semver}.
  *
  * ## Versions
  *
@@ -304,6 +304,20 @@ export * from "./range_max.ts";
 export * from "./range_min.ts";
 export * from "./sort.ts";
 export * from "./types.ts";
-export * from "./lte.ts";
-export * from "./lte.ts";
+export * from "./try_parse_range.ts";
+export * from "./is_range.ts";
+export * from "./try_parse_comparator.ts";
+export * from "./is_comparator.ts";
+export * from "./can_parse.ts";
+export * from "./reverse_sort.ts";
+export * from "./try_parse.ts";
+export * from "./format_range.ts";
+
+export * from "./equals.ts";
+export * from "./not_equals.ts";
+export * from "./greater_than.ts";
+export * from "./greater_or_equal.ts";
+export * from "./less_than.ts";
+export * from "./less_or_equal.ts";
+
 export const SEMVER_SPEC_VERSION = "2.0.0";
