@@ -5,7 +5,9 @@ import { greaterThan } from "./greater_than.ts";
 
 /**
  * Checks to see if the version is greater than all possible versions of the range.
- * @deprecated (will be removed after 0.217.0) Use `greaterThan(version, rangeMax(range))` instead.
+ * @deprecated (will be removed after 0.217.0) See
+ * {@link https://github.com/denoland/deno_std/issues/4273 | deno_std#4273}
+ * for details.
  */
 export function gtr(
   version: SemVer,

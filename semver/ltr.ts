@@ -5,7 +5,9 @@ import { rangeMin } from "./range_min.ts";
 
 /**
  *  Less than range comparison
- * @deprecated (will be removed after 0.217.0) Use `lessThan(version, rangeMin(range))` instead.
+ * @deprecated (will be removed after 0.217.0) See
+ * {@link https://github.com/denoland/deno_std/issues/4273 | deno_std#4273}
+ * for details.
  */
 export function ltr(
   version: SemVer,
