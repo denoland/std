@@ -30,12 +30,10 @@ export function mapKeys<T>(
   transformer: (key: string) => string,
 ): Record<string, T> {
   const ret: Record<string, T> = {};
-  const keys = Object.keys(record);
 
-  for (const key of keys) {
+  for (const [key, value] of Object.entries(record)) {
     const mappedKey = transformer(key);
-
-    ret[mappedKey] = record[key];
+    ret[mappedKey] = value;
   }
 
   return ret;
