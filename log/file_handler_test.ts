@@ -24,7 +24,7 @@ Deno.test({
       }
     }
 
-    using testFileHandler = new TestFileHandler("WARNING", {
+    using testFileHandler = new TestFileHandler("WARN", {
       filename: LOG_FILE,
       mode: "w",
     });
@@ -35,7 +35,7 @@ Deno.test({
         new LogRecord({
           msg: "The starry heavens above me and the moral law within me.",
           args: [],
-          level: LogLevels.WARNING,
+          level: LogLevels.WARN,
           loggerName: "default",
         }),
       );
@@ -46,7 +46,7 @@ Deno.test({
 Deno.test({
   name: "FileHandler with mode 'w' will wipe clean existing log file",
   async fn() {
-    const fileHandler = new FileHandler("WARNING", {
+    const fileHandler = new FileHandler("WARN", {
       filename: LOG_FILE,
       mode: "w",
     });
@@ -56,7 +56,7 @@ Deno.test({
       new LogRecord({
         msg: "Hello World",
         args: [],
-        level: LogLevels.WARNING,
+        level: LogLevels.WARN,
         loggerName: "default",
       }),
     );
@@ -68,7 +68,7 @@ Deno.test({
       new LogRecord({
         msg: "Hello World",
         args: [],
-        level: LogLevels.WARNING,
+        level: LogLevels.WARN,
         loggerName: "default",
       }),
     );
@@ -83,7 +83,7 @@ Deno.test({
 Deno.test({
   name: "FileHandler with mode 'x' will throw if log file already exists",
   fn() {
-    using fileHandler = new FileHandler("WARNING", {
+    using fileHandler = new FileHandler("WARN", {
       filename: LOG_FILE,
       mode: "x",
     });
@@ -100,7 +100,7 @@ Deno.test({
 Deno.test({
   name: "Window unload flushes buffer",
   async fn() {
-    const fileHandler = new FileHandler("WARNING", {
+    const fileHandler = new FileHandler("WARN", {
       filename: LOG_FILE,
       mode: "w",
     });
@@ -126,7 +126,7 @@ Deno.test({
 Deno.test({
   name: "FileHandler: Critical logs trigger immediate flush",
   async fn() {
-    using fileHandler = new FileHandler("WARNING", {
+    using fileHandler = new FileHandler("WARN", {
       filename: LOG_FILE,
       mode: "w",
     });

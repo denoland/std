@@ -6,7 +6,7 @@ import { SemVer } from "./types.ts";
 /**
  * Not equal comparison
  *
- * @deprecated (will be removed in 0.215.0) Use {@linkcode notEquals} instead.
+ * @deprecated (will be removed in 0.216.0) Use {@linkcode notEquals} instead.
  */
 export function neq(s0: SemVer, s1: SemVer): boolean {
   return notEquals(s0, s1);
