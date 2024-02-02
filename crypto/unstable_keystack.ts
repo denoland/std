@@ -144,12 +144,13 @@ export class KeyStack {
    * key can be found, the method returns `-1`.
    */
   async indexOf(data: Data, digest: string): Promise<number> {
-    for (const key of this.#keys) {
+    for (let i = 0; i < this.#keys.length; i++) {
+      const key = this.#keys[i] as Key;
       const cryptoKey = await this.#toCryptoKey(key);
       if (
         await compare(digest, encodeBase64Url(await sign(data, cryptoKey)))
       ) {
-        return this.#keys.findIndex((item) => item === key);
+        return i;
       }
     }
     return -1;
