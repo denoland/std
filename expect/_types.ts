@@ -4,7 +4,7 @@
 export interface MatcherContext {
   value: unknown;
   isNot: boolean;
-  customTesters: Array<Tester>;
+  customTesters: Tester[];
   customMessage: string | undefined;
 }
 
@@ -22,7 +22,7 @@ export type AnyConstructor = new (...args: any[]) => any;
 export type Tester = (
   a: any,
   b: any,
-  customTesters: Array<Tester>,
+  customTesters: Tester[],
 ) => void;
 
 // a helper type to match any function. Used so that we only convert functions
@@ -93,7 +93,7 @@ export interface Expected {
 export type MatcherKey = keyof Omit<Expected, "not" | "resolves" | "rejects">;
 
 export type EqualOptions = {
-  customTesters?: Array<Tester>;
+  customTesters?: Tester[];
   msg?: string;
   formatter?: (value: unknown) => string;
   strictCheck?: boolean;
