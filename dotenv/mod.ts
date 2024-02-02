@@ -76,9 +76,9 @@ export function loadSync(
 
   if (defaultsPath) {
     const confDefaults = parseFileSync(defaultsPath);
-    for (const key in confDefaults) {
+    for (const [key, value] of Object.entries(confDefaults)) {
       if (!(key in conf)) {
-        conf[key] = confDefaults[key];
+        conf[key] = value;
       }
     }
   }
@@ -89,9 +89,9 @@ export function loadSync(
   }
 
   if (_export) {
-    for (const key in conf) {
+    for (const [key, value] of Object.entries(conf)) {
       if (Deno.env.get(key) !== undefined) continue;
-      Deno.env.set(key, conf[key]);
+      Deno.env.set(key, value);
     }
   }
 
@@ -103,8 +103,8 @@ export function loadSync(
  * in a configuration object returned by the `load()` function, as well as optionally
  * exporting them to the process environment using the `export` option.
  *
- * Inspired by the node modules [`dotenv`](https://github.com/motdotla/dotenv)
- * and [`dotenv-expand`](https://github.com/motdotla/dotenv-expand).
+ * Inspired by the node modules {@linkcode https://github.com/motdotla/dotenv | dotenv}
+ * and {@linkcode https://github.com/motdotla/dotenv-expand | dotenv-expand}.
  *
  * ## Basic usage
  * ```sh
@@ -252,7 +252,7 @@ export function loadSync(
  * - inner quotes are maintained (think JSON) (`JSON={"foo": "bar"}` becomes
  *   `{ JSON: "{\"foo\": \"bar\"}" }`)
  * - whitespace is removed from both ends of unquoted values (see more on
- *   [`trim`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/Trim))
+ *   {@linkcode https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/Trim | trim})
  *   (`FOO= some value` becomes `{ FOO: "some value" }`)
  * - whitespace is preserved on both ends of quoted values (`FOO=" some value "`
  *   becomes `{ FOO: " some value " }`)
@@ -283,9 +283,9 @@ export async function load(
 
   if (defaultsPath) {
     const confDefaults = await parseFile(defaultsPath);
-    for (const key in confDefaults) {
+    for (const [key, value] of Object.entries(confDefaults)) {
       if (!(key in conf)) {
-        conf[key] = confDefaults[key];
+        conf[key] = value;
       }
     }
   }
@@ -296,9 +296,9 @@ export async function load(
   }
 
   if (_export) {
-    for (const key in conf) {
+    for (const [key, value] of Object.entries(conf)) {
       if (Deno.env.get(key) !== undefined) continue;
-      Deno.env.set(key, conf[key]);
+      Deno.env.set(key, value);
     }
   }
 

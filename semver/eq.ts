@@ -5,7 +5,7 @@ import { SemVer } from "./types.ts";
 /**
  * Returns `true` if they're logically equivalent, even if they're not the exact same version object.
  *
- * @deprecated (will be removed after 0.213.0) Use {@linkcode equals} instead.
+ * @deprecated (will be removed in 0.216.0) Use {@linkcode equals} instead.
  */
 export function eq(s0: SemVer, s1: SemVer): boolean {
   return equals(s0, s1);

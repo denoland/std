@@ -6,7 +6,7 @@ import { SemVer } from "./types.ts";
 /**
  * Greater than comparison
  *
- * @deprecated (will be removed after 0.213.0) Use {@linkcode greaterThan} instead.
+ * @deprecated (will be removed in 0.216.0) Use {@linkcode greaterThan} instead.
  */
 export function gt(s0: SemVer, s1: SemVer): boolean {
   return greaterThan(s0, s1);

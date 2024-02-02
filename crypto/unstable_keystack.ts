@@ -46,7 +46,8 @@ function sign(data: Data, key: CryptoKey): Promise<ArrayBuffer> {
   return crypto.subtle.sign("HMAC", key, data);
 }
 
-/** Compare two strings, Uint8Arrays, ArrayBuffers, or arrays of numbers in a
+/**
+ * Compare two strings, Uint8Arrays, ArrayBuffers, or arrays of numbers in a
  * way that avoids timing based attacks on the comparisons on the values.
  *
  * The function will return `true` if the values match, or `false`, if they
@@ -67,12 +68,13 @@ async function compare(a: Data, b: Data): Promise<boolean> {
   return timingSafeEqual(ah, bh);
 }
 
-/** A cryptographic key chain which allows signing of data to prevent tampering,
+/**
+ * A cryptographic key chain which allows signing of data to prevent tampering,
  * but also allows for easy key rotation without needing to re-sign the data.
  *
  * Data is signed as SHA256 HMAC.
  *
- * This was inspired by [keygrip](https://github.com/crypto-utils/keygrip/).
+ * This was inspired by {@link https://github.com/crypto-utils/keygrip/ | keygrip}.
  *
  * @example
  * ```ts
@@ -101,7 +103,8 @@ export class KeyStack {
     return this.#keys.length;
   }
 
-  /** A class which accepts an array of keys that are used to sign and verify
+  /**
+   * A class which accepts an array of keys that are used to sign and verify
    * data and allows easy key rotation without invalidation of previously signed
    * data.
    *
@@ -116,24 +119,30 @@ export class KeyStack {
     this.#keys = values;
   }
 
-  /** Take `data` and return a SHA256 HMAC digest that uses the current 0 index
+  /**
+   * Take `data` and return a SHA256 HMAC digest that uses the current 0 index
    * of the `keys` passed to the constructor.  This digest is in the form of a
-   * URL safe base64 encoded string. */
+   * URL safe base64 encoded string.
+   */
   async sign(data: Data): Promise<string> {
     const key = await this.#toCryptoKey(this.#keys[0]);
     return encodeBase64Url(await sign(data, key));
   }
 
-  /** Given `data` and a `digest`, verify that one of the `keys` provided the
+  /**
+   * Given `data` and a `digest`, verify that one of the `keys` provided the
    * constructor was used to generate the `digest`.  Returns `true` if one of
-   * the keys was used, otherwise `false`. */
+   * the keys was used, otherwise `false`.
+   */
   async verify(data: Data, digest: string): Promise<boolean> {
     return (await this.indexOf(data, digest)) > -1;
   }
 
-  /** Given `data` and a `digest`, return the current index of the key in the
+  /**
+   * Given `data` and a `digest`, return the current index of the key in the
    * `keys` passed the constructor that was used to generate the digest.  If no
-   * key can be found, the method returns `-1`. */
+   * key can be found, the method returns `-1`.
+   */
   async indexOf(data: Data, digest: string): Promise<number> {
     for (let i = 0; i < this.#keys.length; i++) {
       const cryptoKey = await this.#toCryptoKey(this.#keys[i]);

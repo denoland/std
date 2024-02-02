@@ -3,36 +3,34 @@
 
 /**
  * {@linkcode parse} and {@linkcode stringify} for handling
- * [TOML](https://toml.io/en/latest) encoded data. Be sure to read the supported
+ * {@link https://toml.io/en/latest | TOML} encoded data. Be sure to read the supported
  * types as not every spec is supported at the moment and the handling in
  * TypeScript side is a bit different.
  *
  * ## Supported types and handling
  *
- * - :heavy_check_mark: [Keys](https://toml.io/en/latest#keys)
- * - :exclamation: [String](https://toml.io/en/latest#string)
- * - :heavy_check_mark: [Multiline String](https://toml.io/en/latest#string)
- * - :heavy_check_mark: [Literal String](https://toml.io/en/latest#string)
- * - :exclamation: [Integer](https://toml.io/en/latest#integer)
- * - :heavy_check_mark: [Float](https://toml.io/en/latest#float)
- * - :heavy_check_mark: [Boolean](https://toml.io/en/latest#boolean)
- * - :heavy_check_mark:
- *   [Offset Date-time](https://toml.io/en/latest#offset-date-time)
- * - :heavy_check_mark:
- *   [Local Date-time](https://toml.io/en/latest#local-date-time)
- * - :heavy_check_mark: [Local Date](https://toml.io/en/latest#local-date)
- * - :exclamation: [Local Time](https://toml.io/en/latest#local-time)
- * - :heavy_check_mark: [Table](https://toml.io/en/latest#table)
- * - :heavy_check_mark: [Inline Table](https://toml.io/en/latest#inline-table)
- * - :exclamation: [Array of Tables](https://toml.io/en/latest#array-of-tables)
+ * - [x] [Keys](https://toml.io/en/latest#keys)
+ * - [ ] [String](https://toml.io/en/latest#string)
+ * - [x] [Multiline String](https://toml.io/en/latest#string)
+ * - [x] [Literal String](https://toml.io/en/latest#string)
+ * - [ ] [Integer](https://toml.io/en/latest#integer)
+ * - [x] [Float](https://toml.io/en/latest#float)
+ * - [x] [Boolean](https://toml.io/en/latest#boolean)
+ * - [x] [Offset Date-time](https://toml.io/en/latest#offset-date-time)
+ * - [x] [Local Date-time](https://toml.io/en/latest#local-date-time)
+ * - [x] [Local Date](https://toml.io/en/latest#local-date)
+ * - [ ] [Local Time](https://toml.io/en/latest#local-time)
+ * - [x] [Table](https://toml.io/en/latest#table)
+ * - [x] [Inline Table](https://toml.io/en/latest#inline-table)
+ * - [ ] [Array of Tables](https://toml.io/en/latest#array-of-tables)
  *
- * :exclamation: _Supported with warnings see [Warning](#Warning)._
+ * _Supported with warnings see [Warning](#Warning)._
  *
- * ### :warning: Warning
+ * ### Warning
  *
  * #### String
  *
- * - Regex : Due to the spec, there is no flag to detect regex properly in a TOML
+ * - Regex: Due to the spec, there is no flag to detect regex properly in a TOML
  *   declaration. So the regex is stored as string.
  *
  * #### Integer
