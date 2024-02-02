@@ -20,13 +20,10 @@ export function testComparator(
   comparator: Comparator,
 ): boolean {
   switch (comparator.operator) {
-    case "":
+    case undefined:
     case "=":
-    case "==":
-    case "===":
       return equals(version, comparator.semver ?? comparator);
     case "!=":
-    case "!==":
       return notEquals(version, comparator.semver ?? comparator);
     case ">":
       return greaterThan(version, comparator.semver ?? comparator);

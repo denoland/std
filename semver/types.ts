@@ -26,7 +26,7 @@ export type Operator = typeof OPERATORS[number];
  * @example >=0.0.0
  */
 export interface Comparator extends SemVer {
-  operator: Operator;
+  operator?: Operator;
   /**
    * @deprecated (will be removed in 0.216.0) {@linkcode Comparator} extends {@linkcode SemVer}. Use `major`, `minor`, `patch`, `prerelease`, and `build` properties instead.
    */

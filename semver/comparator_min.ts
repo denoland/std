@@ -12,7 +12,7 @@ import { increment } from "./increment.ts";
  *
  * @deprecated (will be removed in 0.215.0) Use {@linkcode rangeMin} instead.
  */
-export function comparatorMin(semver: SemVer, operator: Operator): SemVer {
+export function comparatorMin(semver: SemVer, operator?: Operator): SemVer {
   if (semver === ANY) {
     return MIN;
   }
@@ -23,16 +23,13 @@ export function comparatorMin(semver: SemVer, operator: Operator): SemVer {
         ? increment(semver, "pre")
         : increment(semver, "patch");
     case "!=":
-    case "!==":
     case "<=":
     case "<":
       // The min(<0.0.0) is MAX
       return greaterThan(semver, MIN) ? MIN : MAX;
     case ">=":
-    case "":
+    case undefined:
     case "=":
-    case "==":
-    case "===":
       return semver;
   }
 }

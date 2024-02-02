@@ -11,20 +11,17 @@ import { ANY, INVALID, MAX } from "./constants.ts";
  *
  * @deprecated (will be removed in 0.215.0) Use {@linkcode rangeMax} instead.
  */
-export function comparatorMax(semver: SemVer, operator: Operator): SemVer {
+export function comparatorMax(semver: SemVer, operator?: Operator): SemVer {
   if (semver === ANY) {
     return MAX;
   }
   switch (operator) {
     case "!=":
-    case "!==":
     case ">":
     case ">=":
       return MAX;
-    case "":
+    case undefined:
     case "=":
-    case "==":
-    case "===":
     case "<=":
       return semver;
     case "<": {

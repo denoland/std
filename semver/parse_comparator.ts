@@ -30,12 +30,7 @@ export function parseComparator(comparator: string): Comparator {
 
   if (!groups) return NONE;
 
-  const {
-    operator = "",
-
-    prerelease,
-    buildmetadata,
-  } = groups as REGEXP_GROUPS;
+  const { operator, prerelease, buildmetadata } = groups as REGEXP_GROUPS;
 
   const semver = groups.major
     ? {
@@ -47,5 +42,5 @@ export function parseComparator(comparator: string): Comparator {
     }
     : ANY;
 
-  return { operator, ...semver, semver };
+  return { operator: operator || undefined, ...semver, semver };
 }
