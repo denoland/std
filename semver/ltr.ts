@@ -6,7 +6,7 @@ import { warnOnDeprecatedApi } from "../internal/warn_on_deprecated_api.ts";
 
 /**
  *  Less than range comparison
- * @deprecated (will be removed after 0.215.0) Use `lessThan(version, rangeMin(range))` instead.
+ * @deprecated (will be removed after 0.217.0) Use `lessThan(version, rangeMin(range))` instead.
  */
 export function ltr(
   version: SemVer,

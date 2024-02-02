@@ -6,7 +6,7 @@ import { warnOnDeprecatedApi } from "../internal/warn_on_deprecated_api.ts";
 
 /**
  * Checks to see if the version is greater than all possible versions of the range.
- * @deprecated (will be removed after 0.215.0) Use `greaterThan(version, rangeMax(range))` instead.
+ * @deprecated (will be removed after 0.217.0) Use `greaterThan(version, rangeMax(range))` instead.
  */
 export function gtr(
   version: SemVer,
