@@ -9,8 +9,10 @@ function lookupWidth(cp: number) {
   if (!tables) tables = data.tables.map(runLengthDecode);
 
   const t1Offset = (tables[0] as Uint8Array)[(cp >> 13) & 0xff] as number;
-  const t2Offset = (tables[1] as Uint8Array)[128 * t1Offset + ((cp >> 6) & 0x7f)] as number;
-  const packedWidths = (tables[2] as Uint8Array)[16 * t2Offset + ((cp >> 2) & 0xf)] as number;
+  const t2Offset =
+    (tables[1] as Uint8Array)[128 * t1Offset + ((cp >> 6) & 0x7f)] as number;
+  const packedWidths =
+    (tables[2] as Uint8Array)[16 * t2Offset + ((cp >> 2) & 0xf)] as number;
 
   const width = (packedWidths >> (2 * (cp & 0b11))) & 0b11;
 
