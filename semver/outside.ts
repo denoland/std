@@ -1,6 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-import { gt } from "./gt.ts";
-import { lt } from "./lt.ts";
+import { greaterThan } from "./greater_than.ts";
+import { lessThan } from "./less_than.ts";
 import type { Range, SemVer, SemVerRange } from "./types.ts";
 import { rangeMax } from "./range_max.ts";
 import { rangeMin } from "./range_min.ts";
@@ -23,10 +23,11 @@ export function outside(
 ): boolean {
   switch (hilo) {
     case ">":
-      return gt(version, rangeMax(range));
+      return greaterThan(version, rangeMax(range));
     case "<":
-      return lt(version, rangeMin(range));
+      return lessThan(version, rangeMin(range));
     default:
-      return lt(version, rangeMin(range)) || gt(version, rangeMax(range));
+      return lessThan(version, rangeMin(range)) ||
+        greaterThan(version, rangeMax(range));
   }
 }
