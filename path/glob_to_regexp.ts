@@ -9,6 +9,8 @@ import {
   globToRegExp as windowsGlobToRegExp,
 } from "./windows/glob_to_regexp.ts";
 
+export type { GlobOptions };
+
 export type GlobToRegExpOptions = GlobOptions & {
   os?: OSType;
 };

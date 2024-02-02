@@ -17,3 +17,9 @@ function flattenArgs(args: unknown[]): unknown {
     return args;
   }
 }
+
+export const formatters: {
+  jsonFormatter(logRecord: LogRecord): string;
+} = {
+  jsonFormatter,
+};

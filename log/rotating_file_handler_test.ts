@@ -30,7 +30,7 @@ Deno.test({
       new TextEncoder().encode("hello world"),
     );
 
-    const fileHandler = new RotatingFileHandler("WARNING", {
+    const fileHandler = new RotatingFileHandler("WARN", {
       filename: LOG_FILE,
       maxBytes: 50,
       maxBackupCount: 3,
@@ -56,7 +56,7 @@ Deno.test({
       LOG_FILE + ".3",
       new TextEncoder().encode("hello world"),
     );
-    using fileHandler = new RotatingFileHandler("WARNING", {
+    using fileHandler = new RotatingFileHandler("WARN", {
       filename: LOG_FILE,
       maxBytes: 50,
       maxBackupCount: 3,
@@ -78,7 +78,7 @@ Deno.test({
 Deno.test({
   name: "RotatingFileHandler with first rollover, monitor step by step",
   async fn() {
-    using fileHandler = new RotatingFileHandler("WARNING", {
+    using fileHandler = new RotatingFileHandler("WARN", {
       filename: LOG_FILE,
       maxBytes: 25,
       maxBackupCount: 3,
@@ -127,7 +127,7 @@ Deno.test({
 Deno.test({
   name: "RotatingFileHandler with first rollover, check all at once",
   async fn() {
-    const fileHandler = new RotatingFileHandler("WARNING", {
+    const fileHandler = new RotatingFileHandler("WARN", {
       filename: LOG_FILE,
       maxBytes: 25,
       maxBackupCount: 3,
@@ -187,7 +187,7 @@ Deno.test({
       new TextEncoder().encode("original log.3 file"),
     );
 
-    const fileHandler = new RotatingFileHandler("WARNING", {
+    const fileHandler = new RotatingFileHandler("WARN", {
       filename: LOG_FILE,
       maxBytes: 2,
       maxBackupCount: 3,
@@ -232,7 +232,7 @@ Deno.test({
   fn() {
     assertThrows(
       () => {
-        const fileHandler = new RotatingFileHandler("WARNING", {
+        const fileHandler = new RotatingFileHandler("WARN", {
           filename: LOG_FILE,
           maxBytes: 0,
           maxBackupCount: 3,
@@ -251,7 +251,7 @@ Deno.test({
   fn() {
     assertThrows(
       () => {
-        const fileHandler = new RotatingFileHandler("WARNING", {
+        const fileHandler = new RotatingFileHandler("WARN", {
           filename: LOG_FILE,
           maxBytes: 50,
           maxBackupCount: 0,
@@ -268,7 +268,7 @@ Deno.test({
 Deno.test({
   name: "RotatingFileHandler: rotate on byte length, not msg length",
   async fn() {
-    const fileHandler = new RotatingFileHandler("WARNING", {
+    const fileHandler = new RotatingFileHandler("WARN", {
       filename: LOG_FILE,
       maxBytes: 7,
       maxBackupCount: 1,

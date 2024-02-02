@@ -32,12 +32,12 @@ export interface StringifyStreamOptions {
 /**
  * Convert each chunk to JSON string.
  *
- * This can be used to stringify {@link https://jsonlines.org/|JSON lines},
- * {@link https://ndjson.org/|NDJSON},
- * {@link https://datatracker.ietf.org/doc/html/rfc7464|JSON Text Sequences},
- * and {@link https://en.wikipedia.org/wiki/JSON_streaming#Concatenated_JSON|Concatenated JSON}.
+ * This can be used to stringify {@link https://jsonlines.org/ | JSON lines},
+ * {@link https://ndjson.org/ | NDJSON},
+ * {@link https://datatracker.ietf.org/doc/html/rfc7464 | JSON Text Sequences},
+ * and {@link https://en.wikipedia.org/wiki/JSON_streaming#Concatenated_JSON | Concatenated JSON}.
  *
- * You can optionally specify a prefix and suffix for each chunk. The default prefix is "" and the default suffix is "\n".
+ * You can optionally specify a prefix and suffix for each chunk. The default prefix is `""` and the default suffix is `"\n"`.
  *
  * @example
  * ```ts

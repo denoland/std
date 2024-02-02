@@ -1,7 +1,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import type { Operator, SemVer } from "./types.ts";
 import { ANY, MAX, MIN } from "./constants.ts";
-import { gt } from "./gt.ts";
+import { greaterThan } from "./greater_than.ts";
 import { increment } from "./increment.ts";
 
 /**
@@ -10,7 +10,7 @@ import { increment } from "./increment.ts";
  * @param operator The operator of the comparator
  * @returns The minimum valid semantic version
  *
- * @deprecated (will be removed in 0.214.0) Use {@linkcode rangeMin} instead.
+ * @deprecated (will be removed in 0.215.0) Use {@linkcode rangeMin} instead.
  */
 export function comparatorMin(semver: SemVer, operator: Operator): SemVer {
   if (semver === ANY) {
@@ -27,7 +27,7 @@ export function comparatorMin(semver: SemVer, operator: Operator): SemVer {
     case "<=":
     case "<":
       // The min(<0.0.0) is MAX
-      return gt(semver, MIN) ? MIN : MAX;
+      return greaterThan(semver, MIN) ? MIN : MAX;
     case ">=":
     case "":
     case "=":

@@ -12,7 +12,7 @@ import { isComparator } from "./is_comparator.ts";
  * @param value The value to check if its a valid SemVerRange
  * @returns True if its a valid SemVerRange otherwise false.
  *
- * @deprecated (will be removed in 0.215.0) Use {@linkcode isRange} instead.
+ * @deprecated (will be removed in 0.216.0) Use {@linkcode isRange} instead.
  */
 export function isSemVerRange(value: unknown): value is SemVerRange {
   if (value === null || value === undefined) return false;

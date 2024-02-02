@@ -5,7 +5,7 @@
 
 /**
  * Utilities for generating and working with
- * [Universally Unique Lexicographically Sortable Identifiers (ULIDs)]{@link https://github.com/ulid/spec}.
+ * {@link https://github.com/ulid/spec | Universally Unique Lexicographically Sortable Identifiers (ULIDs)}.
  *
  * @module
  */

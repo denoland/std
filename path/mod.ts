@@ -36,23 +36,12 @@
 
 import * as _windows from "./windows/mod.ts";
 import * as _posix from "./posix/mod.ts";
-import { DELIMITER, SEPARATOR } from "./constants.ts";
 
 /** @deprecated (will be removed after 1.0.0) Import from {@link https://deno.land/std/path/windows/mod.ts} instead. */
 export const win32: typeof _windows = _windows;
 
 /** @deprecated (will be removed after 1.0.0) Import from {@link https://deno.land/std/posix/mod.ts} instead. */
 export const posix: typeof _posix = _posix;
-
-/**
- * @deprecated (will be removed in 0.215.0) Use {@linkcode SEPARATOR} instead.
- */
-export const sep = SEPARATOR;
-
-/**
- * @deprecated (will be removed in 0.215.0) Use {@linkcode DELIMITER} instead.
- */
-export const delimiter = DELIMITER;
 
 export * from "./basename.ts";
 export * from "./constants.ts";
@@ -69,7 +58,6 @@ export * from "./resolve.ts";
 export * from "./to_file_url.ts";
 export * from "./to_namespaced_path.ts";
 export * from "./common.ts";
-export * from "./separator.ts";
 export * from "./_interface.ts";
 export * from "./glob_to_regexp.ts";
 export * from "./is_glob.ts";

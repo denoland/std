@@ -1,7 +1,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import type { Comparator } from "./types.ts";
-import { gte } from "./gte.ts";
-import { lte } from "./lte.ts";
+import { greaterOrEqual } from "./greater_or_equal.ts";
+import { lessOrEqual } from "./less_or_equal.ts";
 import { comparatorMin } from "./comparator_min.ts";
 import { comparatorMax } from "./comparator_max.ts";
 /**
@@ -10,7 +10,7 @@ import { comparatorMax } from "./comparator_max.ts";
  * @param c1 The right side comparator
  * @returns True if any part of the comparators intersect
  *
- * @deprecated (will be removed in 0.214.0) Use {@linkcode rangeIntersects} instead.
+ * @deprecated (will be removed in 0.215.0) Use {@linkcode rangeIntersects} instead.
  */
 export function comparatorIntersects(
   c0: Comparator,
@@ -51,5 +51,6 @@ export function comparatorIntersects(
   // l0 -- l1
   //          r0 -- r1
   // ```
-  return (gte(l0, r0) && lte(l0, r1)) || (gte(r0, l0) && lte(r0, l1));
+  return (greaterOrEqual(l0, r0) && lessOrEqual(l0, r1)) ||
+    (greaterOrEqual(r0, l0) && lessOrEqual(r0, l1));
 }

@@ -134,7 +134,7 @@ Deno.test({
           "/home/deno/food.txt": "Plants, preferably fruit",
           "/home/deno/other-dinos.txt": "Noderaptor, Pythonoctorus",
         },
-        (path) => path.split("/").slice(-1)[0],
+        (path) => (path.split("/").slice(-1) as [string])[0],
       ],
       {
         "food.txt": "Plants, preferably fruit",
