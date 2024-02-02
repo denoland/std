@@ -302,7 +302,6 @@ export * from "./range_format.ts";
 export * from "./range_intersects.ts";
 export * from "./range_max.ts";
 export * from "./range_min.ts";
-export * from "./sort.ts";
 export * from "./types.ts";
 export * from "./try_parse_range.ts";
 export * from "./is_range.ts";
