@@ -353,49 +353,6 @@
  * console.log(data); // undefined
  * ```
  *
- * @module
- */
-
-import {
-  type GenericFunction,
-  type LogConfig,
-  Logger,
-  LogRecord,
-} from "./logger.ts";
-import { assert } from "../assert/assert.ts";
-import { jsonFormatter } from "./formatters.ts";
-import { ConsoleHandler } from "./console_handler.ts";
-import { BaseHandler } from "./base_handler.ts";
-
-export * from "./base_handler.ts";
-export * from "./console_handler.ts";
-export * from "./file_handler.ts";
-export * from "./rotating_file_handler.ts";
-export * from "./levels.ts";
-export * from "./logger.ts";
-export * from "./formatters.ts";
-
-const DEFAULT_LEVEL = "INFO";
-const DEFAULT_CONFIG: LogConfig = {
-  handlers: {
-    default: new ConsoleHandler(DEFAULT_LEVEL),
-  },
-
-  loggers: {
-    default: {
-      level: DEFAULT_LEVEL,
-      handlers: ["default"],
-    },
-  },
-};
-
-const state = {
-  handlers: new Map<string, BaseHandler>(),
-  loggers: new Map<string, Logger>(),
-  config: DEFAULT_CONFIG,
-};
-
-/**
  * Handlers are responsible for actual output of log messages. When a handler is
  * called by a logger, it firstly checks that {@linkcode LogRecord}'s level is
  * not lower than level of the handler. If level check passes, handlers formats
@@ -416,159 +373,21 @@ const state = {
  *
  * For examples check source code of {@linkcode FileHandler}`
  * and {@linkcode TestHandler}.
+ *
+ * @module
  */
 
-export const formatters: {
-  jsonFormatter(logRecord: LogRecord): string;
-} = {
-  jsonFormatter,
-};
-
-/** Get a logger instance. If not specified `name`, get the default logger. */
-export function getLogger(name?: string): Logger {
-  if (!name) {
-    const d = state.loggers.get("default");
-    assert(
-      d !== undefined,
-      `"default" logger must be set for getting logger without name`,
-    );
-    return d;
-  }
-  const result = state.loggers.get(name);
-  if (!result) {
-    const logger = new Logger(name, "NOTSET", { handlers: [] });
-    state.loggers.set(name, logger);
-    return logger;
-  }
-  return result;
-}
-
-/** Log with debug level, using default logger. */
-export function debug<T>(msg: () => T, ...args: unknown[]): T | undefined;
-export function debug<T>(
-  msg: T extends GenericFunction ? never : T,
-  ...args: unknown[]
-): T;
-export function debug<T>(
-  msg: (T extends GenericFunction ? never : T) | (() => T),
-  ...args: unknown[]
-): T | undefined {
-  // Assist TS compiler with pass-through generic type
-  if (msg instanceof Function) {
-    return getLogger("default").debug(msg, ...args);
-  }
-  return getLogger("default").debug(msg, ...args);
-}
-
-/** Log with info level, using default logger. */
-export function info<T>(msg: () => T, ...args: unknown[]): T | undefined;
-export function info<T>(
-  msg: T extends GenericFunction ? never : T,
-  ...args: unknown[]
-): T;
-export function info<T>(
-  msg: (T extends GenericFunction ? never : T) | (() => T),
-  ...args: unknown[]
-): T | undefined {
-  // Assist TS compiler with pass-through generic type
-  if (msg instanceof Function) {
-    return getLogger("default").info(msg, ...args);
-  }
-  return getLogger("default").info(msg, ...args);
-}
-
-/** Log with warn level, using default logger. */
-export function warn<T>(msg: () => T, ...args: unknown[]): T | undefined;
-export function warn<T>(
-  msg: T extends GenericFunction ? never : T,
-  ...args: unknown[]
-): T;
-export function warn<T>(
-  msg: (T extends GenericFunction ? never : T) | (() => T),
-  ...args: unknown[]
-): T | undefined {
-  // Assist TS compiler with pass-through generic type
-  if (msg instanceof Function) {
-    return getLogger("default").warn(msg, ...args);
-  }
-  return getLogger("default").warn(msg, ...args);
-}
-
-/** Log with error level, using default logger. */
-export function error<T>(msg: () => T, ...args: unknown[]): T | undefined;
-export function error<T>(
-  msg: T extends GenericFunction ? never : T,
-  ...args: unknown[]
-): T;
-export function error<T>(
-  msg: (T extends GenericFunction ? never : T) | (() => T),
-  ...args: unknown[]
-): T | undefined {
-  // Assist TS compiler with pass-through generic type
-  if (msg instanceof Function) {
-    return getLogger("default").error(msg, ...args);
-  }
-  return getLogger("default").error(msg, ...args);
-}
-
-/** Log with critical level, using default logger. */
-export function critical<T>(msg: () => T, ...args: unknown[]): T | undefined;
-export function critical<T>(
-  msg: T extends GenericFunction ? never : T,
-  ...args: unknown[]
-): T;
-export function critical<T>(
-  msg: (T extends GenericFunction ? never : T) | (() => T),
-  ...args: unknown[]
-): T | undefined {
-  // Assist TS compiler with pass-through generic type
-  if (msg instanceof Function) {
-    return getLogger("default").critical(msg, ...args);
-  }
-  return getLogger("default").critical(msg, ...args);
-}
-
-/** Setup logger config. */
-export function setup(config: LogConfig) {
-  state.config = {
-    handlers: { ...DEFAULT_CONFIG.handlers, ...config.handlers },
-    loggers: { ...DEFAULT_CONFIG.loggers, ...config.loggers },
-  };
-
-  // tear down existing handlers
-  state.handlers.forEach((handler) => {
-    handler.destroy();
-  });
-  state.handlers.clear();
-
-  // setup handlers
-  const handlers = state.config.handlers || {};
-
-  for (const [handlerName, handler] of Object.entries(handlers)) {
-    handler.setup();
-    state.handlers.set(handlerName, handler);
-  }
-
-  // remove existing loggers
-  state.loggers.clear();
-
-  // setup loggers
-  const loggers = state.config.loggers || {};
-  for (const [loggerName, loggerConfig] of Object.entries(loggers)) {
-    const handlerNames = loggerConfig.handlers || [];
-    const handlers: BaseHandler[] = [];
-
-    handlerNames.forEach((handlerName) => {
-      const handler = state.handlers.get(handlerName);
-      if (handler) {
-        handlers.push(handler);
-      }
-    });
-
-    const levelName = loggerConfig.level || DEFAULT_LEVEL;
-    const logger = new Logger(loggerName, levelName, { handlers: handlers });
-    state.loggers.set(loggerName, logger);
-  }
-}
-
-setup(DEFAULT_CONFIG);
+export * from "./base_handler.ts";
+export * from "./console_handler.ts";
+export * from "./file_handler.ts";
+export * from "./rotating_file_handler.ts";
+export * from "./levels.ts";
+export * from "./logger.ts";
+export * from "./formatters.ts";
+export * from "./critical.ts";
+export * from "./debug.ts";
+export * from "./error.ts";
+export * from "./get_logger.ts";
+export * from "./info.ts";
+export * from "./setup.ts";
+export * from "./warn.ts";
