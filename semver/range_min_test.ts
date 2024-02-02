@@ -2,7 +2,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import { assert } from "../assert/mod.ts";
 import { format } from "./format.ts";
-import { eq } from "./eq.ts";
+import { equals } from "./equals.ts";
 import { parse } from "./parse.ts";
 import { parseRange } from "./parse_range.ts";
 import { rangeMin } from "./range_min.ts";
@@ -79,7 +79,7 @@ Deno.test({
         const range = parseRange(a);
         const version = typeof b === "string" ? parse(b) : b;
         const min = rangeMin(range);
-        assert(eq(min, version), `${format(min)} != ${format(version)}`);
+        assert(equals(min, version), `${format(min)} != ${format(version)}`);
       });
     }
   },
@@ -155,7 +155,7 @@ Deno.test({
         const range = parseRange(a);
         const version = typeof b === "string" ? parse(b) : b;
         const min = rangeMin({ ranges: range.ranges });
-        assert(eq(min, version), `${format(min)} != ${format(version)}`);
+        assert(equals(min, version), `${format(min)} != ${format(version)}`);
       });
     }
   },
