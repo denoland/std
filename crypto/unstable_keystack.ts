@@ -125,7 +125,7 @@ export class KeyStack {
    * URL safe base64 encoded string.
    */
   async sign(data: Data): Promise<string> {
-    const key = await this.#toCryptoKey(this.#keys[0]);
+    const key = await this.#toCryptoKey(this.#keys[0]!);
     return encodeBase64Url(await sign(data, key));
   }
 
@@ -144,12 +144,12 @@ export class KeyStack {
    * key can be found, the method returns `-1`.
    */
   async indexOf(data: Data, digest: string): Promise<number> {
-    for (let i = 0; i < this.#keys.length; i++) {
-      const cryptoKey = await this.#toCryptoKey(this.#keys[i]);
+    for (const key of this.#keys) {
+      const cryptoKey = await this.#toCryptoKey(key);
       if (
         await compare(digest, encodeBase64Url(await sign(data, cryptoKey)))
       ) {
-        return i;
+        return this.#keys.findIndex((item) => item === key);
       }
     }
     return -1;
