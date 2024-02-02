@@ -44,7 +44,7 @@ for await (const { path } of walk(ROOT, { exts: [".ts"], skip: SKIP })) {
       const index = source.indexOf(COPYRIGHT);
       await Deno.writeTextFile(
         path,
-        source.slice(0, index + COPYRIGHT.length) + "\n" + DECLARATION + "\n" +
+        source.slice(0, index + COPYRIGHT.length) + "\n" + DECLARATION +
           source.slice(index + COPYRIGHT.length),
       );
     }
