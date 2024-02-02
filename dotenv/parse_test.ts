@@ -50,7 +50,7 @@ Deno.test("parse()", () => {
   );
 
   assertEquals(
-    JSON.parse(load.JSON).foo,
+    JSON.parse(load.JSON || JSON.stringify({})).foo,
     "bar",
     "inner quotes are maintained",
   );
