@@ -6,6 +6,8 @@ import { join } from "./join.ts";
 import { SEPARATOR } from "./constants.ts";
 import { normalizeGlob } from "./normalize_glob.ts";
 
+export type { GlobOptions };
+
 /** Like join(), but doesn't collapse "**\/.." when `globstar` is true. */
 export function joinGlobs(
   globs: string[],

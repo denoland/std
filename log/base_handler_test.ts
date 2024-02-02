@@ -25,7 +25,7 @@ Deno.test("simpleHandler", function () {
       [
         "DEBUG debug-test",
         "INFO info-test",
-        "WARNING warning-test",
+        "WARN warn-test",
         "ERROR error-test",
         "CRITICAL critical-test",
       ],
@@ -34,14 +34,14 @@ Deno.test("simpleHandler", function () {
       LogLevels.INFO,
       [
         "INFO info-test",
-        "WARNING warning-test",
+        "WARN warn-test",
         "ERROR error-test",
         "CRITICAL critical-test",
       ],
     ],
     [
-      LogLevels.WARNING,
-      ["WARNING warning-test", "ERROR error-test", "CRITICAL critical-test"],
+      LogLevels.WARN,
+      ["WARN warn-test", "ERROR error-test", "CRITICAL critical-test"],
     ],
     [LogLevels.ERROR, ["ERROR error-test", "CRITICAL critical-test"]],
     [LogLevels.CRITICAL, ["CRITICAL critical-test"]],
