@@ -23,7 +23,7 @@ export function takeLastWhile<T>(
   predicate: (el: T) => boolean,
 ): T[] {
   let offset = array.length;
-  while (0 < offset && predicate(array[offset - 1])) offset--;
+  while (0 < offset && predicate(array[offset - 1] as T)) offset--;
 
   return array.slice(offset, array.length);
 }
