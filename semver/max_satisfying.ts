@@ -1,7 +1,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import type { Range, SemVer, SemVerRange } from "./types.ts";
 import { testRange } from "./test_range.ts";
-import { gt } from "./gt.ts";
+import { greaterThan } from "./greater_than.ts";
 
 /**
  * Returns the highest version in the list that satisfies the range, or `undefined`
@@ -17,7 +17,7 @@ export function maxSatisfying(
   let max;
   for (const version of versions) {
     if (!testRange(version, range)) continue;
-    max = max && gt(max, version) ? max : version;
+    max = max && greaterThan(max, version) ? max : version;
   }
   return max;
 }

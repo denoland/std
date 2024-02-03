@@ -8,6 +8,8 @@ import {
   normalizeGlob as windowsNormalizeGlob,
 } from "./windows/normalize_glob.ts";
 
+export type { GlobOptions };
+
 /** Like normalize(), but doesn't collapse "**\/.." when `globstar` is true. */
 export function normalizeGlob(
   glob: string,
