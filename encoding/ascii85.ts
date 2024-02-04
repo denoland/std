@@ -114,10 +114,10 @@ export function encodeAscii85(
       }
       break;
     case "RFC 1924":
-      output = output.map((val) => rfc1924[val.charCodeAt(0) - 33]);
+      output = output.map((val) => rfc1924[val.charCodeAt(0) - 33]) as string[];
       break;
     case "Z85":
-      output = output.map((val) => Z85[val.charCodeAt(0) - 33]);
+      output = output.map((val) => Z85[val.charCodeAt(0) - 33]) as string[];
       break;
   }
   return output.slice(0, output.length - difference).join("");

@@ -53,7 +53,7 @@ export function decode(buf: Uint8Array, offset = 0): [bigint, number] {
   let byte;
   do {
     // Get a single byte from the buffer
-    byte = buf[i];
+    byte = buf[i]!;
 
     // 1. Take the lower 7 bits of the byte.
     // 2. Shift the bits into the correct position.
@@ -120,7 +120,7 @@ export function decode32(buf: Uint8Array, offset = 0): [number, number] {
     i <= len;
     i += 1, shift += SHIFT
   ) {
-    const byte = buf[i];
+    const byte = buf[i] as number;
     decoded += (byte & REST) * Math.pow(2, shift);
     if (!(byte & MSB)) return [decoded, i + 1];
   }

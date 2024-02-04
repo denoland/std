@@ -91,7 +91,7 @@ Deno.test({
   name: "encodeBase32()",
   fn() {
     for (const [bin, b32] of testCases) {
-      assertEquals(encodeBase32(fromHexString(bin)), b32);
+      assertEquals(encodeBase32(fromHexString(bin as string)), b32);
     }
   },
 });
@@ -100,7 +100,7 @@ Deno.test({
   name: "decodeBase32()",
   fn() {
     for (const [bin, b32] of testCases) {
-      assertEquals(toHexString(decodeBase32(b32)), bin);
+      assertEquals(toHexString(decodeBase32(b32 as string)), bin);
     }
   },
 });

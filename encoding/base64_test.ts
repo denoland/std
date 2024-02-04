@@ -21,7 +21,7 @@ const testsetBinary = testsetString.map(([str, b64]) => [
 
 Deno.test("encodeBase64() encodes string", () => {
   for (const [input, output] of testsetString) {
-    assertEquals(encodeBase64(input), output);
+    assertEquals(encodeBase64(input as string), output);
   }
 });
 
