@@ -1,7 +1,3 @@
-import { ls, read, write } from '../artifact/io-hooks'
-import Debug from 'debug'
-const debug = Debug('AI:files')
-
 export const api = {
   write: {
     description:
@@ -64,25 +60,26 @@ export const api = {
 }
 
 export const functions = {
-  write: async ({ path, contents = '' }) => {
+  write: async ({ path, contents = '' }, api) => {
     debug('add', path, contents)
-    await write(path, contents)
+    await api.write(path, contents)
     return `added ${path} with length: ${contents.length}`
   },
-  ls: async ({ path }) => {
+  ls: async ({ path }, api) => {
     debug('ls')
-    const result = await ls(path)
+    const result = await api.ls(path)
     return result
   },
-  read: async ({ path }) => {
-    return read(path)
+  read: async ({ path }, api) => {
+    return await api.read(path)
+    // reading should be async, writing should be sync
   },
-  update: async ({ path, regex, replacement }) => {
+  update: async ({ path, regex, replacement }, api) => {
     debug('update', path, regex, replacement)
-    const contents = await read(path)
+    const contents = await api.read(path)
     const matches = contents.match(new RegExp(regex, 'g')) || []
     const result = contents.replace(new RegExp(regex, 'g'), replacement)
-    await write(path, result)
+    await api.write(path, result)
     return matches.length
   },
 }

@@ -1,7 +1,7 @@
-import * as hooks from '../artifact/io-hooks.js'
-import assert from 'assert-fast'
-import Debug from 'debug'
-const debug = Debug('AI:engage-help')
+import { assert } from 'std/assert/mod.ts'
+import { debug } from 'https://deno.land/x/quiet_debug@v1.0.0/mod.ts'
+const log = debug('AI:isolates:engage-help')
+
 const engage = {
   description: 'engage the help',
   type: 'object',
@@ -24,27 +24,27 @@ export const api = {
 }
 
 export const functions = {
-  engageInBand: async ({ help: path, text }) => {
-    debug('engage:', path)
-    // use the files isolate to load up all the runners
-    const { load } = await hooks.actions('load-help')
+  engageInBand: async ({ help: path, text }, api) => {
+    log('engage:', path)
+    const { load } = await api.isolateActions('load-help')
     const help = await load({ help: path })
+    console.log(help)
 
     assert(typeof help.runner === 'string', `no runner: ${help.runner}`)
-    debug('found runner:', help.runner)
+    log('found runner:', help.runner)
 
     const { default: runner } = await import(`../runners/${help.runner}.js`)
 
-    return await runner({ help, text })
+    return await runner({ help, text }, api)
   },
   engage: async ({ help, text }) => {
-    debug('engage:', help)
+    log('engage:', help)
     // TODO should be able to get my own isolate name inside the isolate
     const { engageInBand } = await hooks.spawns('engage-help')
     return await engageInBand({ help, text })
   },
   continue: async ({ help: path, text, commit }) => {
-    debug('continue:', path, commit)
+    log('continue:', path, commit)
     // this would continue the help, but in the same branch as a previous run
   },
 }

@@ -1,0 +1,3 @@
+/**
+ * Manages the git filesystem.
+ */

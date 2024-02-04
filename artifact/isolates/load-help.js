@@ -1,5 +1,4 @@
 import * as posix from 'https://deno.land/std@0.213.0/path/posix/mod.ts'
-import { ls, readJS } from '@io/io-hooks.js'
 
 export const api = {
   load: {
@@ -24,14 +23,15 @@ export const api = {
 }
 
 export const functions = {
-  load: async ({ help }) => {
-    const js = await readJS(`/helps/${help}.json`)
+  load: async ({ help }, api) => {
+    const js = await api.readJSON(`helps/${help}.json`)
     // TODO do some format checking
     return js
   },
-  loadAll: async () => {
+  loadAll: async (_, api) => {
+    // TODO provide a glob as first arg
     const helps = []
-    const files = await ls('/helps')
+    const files = await api.ls('/helps')
     for (const file of files) {
       if (file.endsWith('.json')) {
         const name = posix.basename(file, posix.extname(file))

@@ -22,10 +22,10 @@ if (!env['OPENAI_API_KEY']) {
 const apiKey = env['OPENAI_API_KEY']
 const ai = new OpenAI({ apiKey })
 
-export default async ({ help, text }) => {
+export default async ({ help, text }, api) => {
   assert(typeof help == 'object', `help must be an object: ${typeof help}`)
   assert(typeof text === 'string', 'text must be a string')
-  const ai = await AI.create(help)
+  const ai = await AI.create(help, api)
   return await ai.prompt(text)
 }
 
@@ -35,8 +35,9 @@ export class AI {
   #tools
   #actions
   #sessionPath
+  #api
   static #cache = new Map()
-  static async create(help) {
+  static async create(help, api) {
     assert(typeof help === 'object', 'help must be an object')
     const key = JSON.stringify(help)
     if (!AI.#cache.has(key)) {
@@ -44,6 +45,7 @@ export class AI {
       ai.#sessionPath = '/chat-1.session.json'
       ai.#sysprompt = help.instructions.join('\n').trim()
       ai.#config = help.config || {}
+      ai.#api = api
       await ai.#loadCommands(help.commands)
       AI.#cache.set(key, ai)
     }
@@ -182,7 +184,7 @@ export class AI {
     if (!commands.length) {
       return
     }
-    const { load } = await hooks.inBand('load-help')
+    const { load } = await this.#api.isolateActions('load-help')
     const result = []
     const names = new Set()
     const actions = {}
@@ -200,7 +202,7 @@ export class AI {
       } else {
         const [isolate, _name] = command.split(':')
         name = _name
-        const isolateActions = await hooks.inBand(isolate)
+        const isolateActions = await this.#api.inBand(isolate)
         assert(isolateActions[name], `isolate missing command: ${command}`)
         action = isolateActions[name]
         tool = isolateToGptApi(name, action)

@@ -1,4 +1,4 @@
-import { debug, expect, test } from '../test-context.js'
+import { debug, expect, test } from '../tst-helpers.js'
 
 test('loadAll', async ({ artifact }) => {
   const { loadAll } = await artifact.actions('load-help')
