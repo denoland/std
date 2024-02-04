@@ -161,7 +161,7 @@ export const Utils = {
     key: string[];
     value: Record<string, unknown>;
   }) {
-    if (table.key.length === 0) {
+    if (table.key.length === 0 || table.key[0] == null) {
       throw new Error("Unexpected key length");
     }
     const value = target[table.key[0]];
@@ -614,7 +614,7 @@ export function Integer(scanner: Scanner): ParseResult<number | string> {
     scanner.next();
   }
 
-  if (acc.length === 0 || (acc.length === 1 && /[+-]/.test(acc[0]))) {
+  if (acc.length === 0 || (acc.length === 1 && /[+-]/.test(acc[0]!))) {
     return failure();
   }
 

@@ -55,8 +55,7 @@ class Dumper {
       }
     }
     const sortedProps = inlineProps.concat(multilineProps);
-    for (let i = 0; i < sortedProps.length; i++) {
-      const prop = sortedProps[i];
+    for (const prop of sortedProps) {
       const value = obj[prop];
       if (value instanceof Date) {
         out.push(this.#dateDeclaration([prop], value));
@@ -222,7 +221,7 @@ class Dumper {
     const rDeclaration = /^(\".*\"|[^=]*)\s=/;
     const out = [];
     for (let i = 0; i < this.output.length; i++) {
-      const l = this.output[i];
+      const l = this.output[i] as string;
       // we keep empty entry for array of objects
       if (l[0] === "[" && l[1] !== "[") {
         // non-empty object with only subobjects as properties
@@ -237,7 +236,7 @@ class Dumper {
       } else {
         if (keyAlignment) {
           const m = rDeclaration.exec(l);
-          if (m) {
+          if (m && m[1]) {
             out.push(l.replace(m[1], m[1].padEnd(this.maxPad)));
           } else {
             out.push(l);
@@ -250,7 +249,7 @@ class Dumper {
     // Cleaning multiple spaces
     const cleanedOutput = [];
     for (let i = 0; i < out.length; i++) {
-      const l = out[i];
+      const l = out[i] as string;
       if (!(l === "" && out[i + 1] === "")) {
         cleanedOutput.push(l);
       }
