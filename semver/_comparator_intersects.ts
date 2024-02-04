@@ -2,15 +2,13 @@
 import type { Comparator } from "./types.ts";
 import { greaterOrEqual } from "./greater_or_equal.ts";
 import { lessOrEqual } from "./less_or_equal.ts";
-import { comparatorMin } from "./comparator_min.ts";
-import { comparatorMax } from "./comparator_max.ts";
+import { comparatorMin } from "./_comparator_min.ts";
+import { comparatorMax } from "./_comparator_max.ts";
 /**
  * Returns true if the range of possible versions intersects with the other comparators set of possible versions
  * @param c0 The left side comparator
  * @param c1 The right side comparator
  * @returns True if any part of the comparators intersect
- *
- * @deprecated (will be removed in 0.215.0) Use {@linkcode rangeIntersects} instead.
  */
 export function comparatorIntersects(
   c0: Comparator,
