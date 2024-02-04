@@ -278,6 +278,7 @@ export * from "./format.ts";
 export * from "./gt.ts";
 export * from "./gte.ts";
 export * from "./gtr.ts";
+export * from "./test_range.ts";
 export * from "./increment.ts";
 export * from "./is_semver_range.ts";
 export * from "./is_semver.ts";
