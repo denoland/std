@@ -2,9 +2,9 @@
 // This module is browser compatible.
 
 import {
-  toReaderIterator,
-  toReaderIteratorSync,
-} from "../io/to_reader_iterator.ts";
+  iterateReader as _iterateReader,
+  iterateReaderSync as _iterateReaderSync,
+} from "../io/iterate_reader.ts";
 import type { Reader, ReaderSync } from "../io/types.ts";
 
 export type { Reader, ReaderSync };
@@ -38,7 +38,7 @@ export type { Reader, ReaderSync };
  * }
  * ```
  *
- * @deprecated (will be removed in 0.216.0) Use {@linkcode toReaderIterator} instead.
+ * @deprecated (will be removed in 0.216.0) Use {@linkcode iterateReader} instead.
  */
 export function iterateReader(
   r: Reader,
@@ -46,7 +46,7 @@ export function iterateReader(
     bufSize?: number;
   },
 ): AsyncIterableIterator<Uint8Array> {
-  return toReaderIterator(r, options);
+  return _iterateReader(r, options);
 }
 
 /**
@@ -81,7 +81,7 @@ export function iterateReader(
  * responsibility to copy contents of the buffer if needed; otherwise the
  * next iteration will overwrite contents of previously returned chunk.
  *
- * @deprecated (will be removed in 0.216.0) Use {@linkcode toReaderIteratorSync} instead.
+ * @deprecated (will be removed in 0.216.0) Use {@linkcode iterateReaderSync} instead.
  */
 export function iterateReaderSync(
   r: ReaderSync,
@@ -89,5 +89,5 @@ export function iterateReaderSync(
     bufSize?: number;
   },
 ): IterableIterator<Uint8Array> {
-  return toReaderIteratorSync(r, options);
+  return _iterateReaderSync(r, options);
 }

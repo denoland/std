@@ -11,10 +11,10 @@ export type { Reader, ReaderSync };
  *
  * @example
  * ```ts
- * import { toReaderIterator } from "https://deno.land/std@$STD_VERSION/io/to_reader_iterator.ts";
+ * import { iterateReader } from "https://deno.land/std@$STD_VERSION/io/iterate_reader.ts";
  *
  * using file = await Deno.open("/etc/passwd");
- * for await (const chunk of toReaderIterator(file)) {
+ * for await (const chunk of iterateReader(file)) {
  *   console.log(chunk);
  * }
  * ```
@@ -24,10 +24,10 @@ export type { Reader, ReaderSync };
  *
  * @example
  * ```ts
- * import { toReaderIterator } from "https://deno.land/std@$STD_VERSION/io/to_reader_iterator.ts";
+ * import { iterateReader } from "https://deno.land/std@$STD_VERSION/io/iterate_reader.ts";
  *
  * using file = await Deno.open("/etc/passwd");
- * const iter = toReaderIterator(file, {
+ * const iter = iterateReader(file, {
  *   bufSize: 1024 * 1024
  * });
  * for await (const chunk of iter) {
@@ -35,7 +35,7 @@ export type { Reader, ReaderSync };
  * }
  * ```
  */
-export async function* toReaderIterator(
+export async function* iterateReader(
   reader: Reader,
   options?: {
     bufSize?: number;
@@ -57,10 +57,10 @@ export async function* toReaderIterator(
  * Turns a {@linkcode ReaderSync} into an iterator.
  *
  * ```ts
- * import { toReaderIteratorSync } from "https://deno.land/std@$STD_VERSION/io/to_reader_iterator.ts";
+ * import { iterateReaderSync } from "https://deno.land/std@$STD_VERSION/io/iterate_reader.ts";
  *
  * using file = Deno.openSync("/etc/passwd");
- * for (const chunk of toReaderIteratorSync(file)) {
+ * for (const chunk of iterateReaderSync(file)) {
  *   console.log(chunk);
  * }
  * ```
@@ -69,10 +69,10 @@ export async function* toReaderIterator(
  * Default size of the buffer is 32kB.
  *
  * ```ts
- * import { toReaderIteratorSync } from "https://deno.land/std@$STD_VERSION/io/to_reader_iterator.ts";
+ * import { iterateReaderSync } from "https://deno.land/std@$STD_VERSION/io/iterate_reader.ts";
 
  * using file = await Deno.open("/etc/passwd");
- * const iter = toReaderIteratorSync(file, {
+ * const iter = iterateReaderSync(file, {
  *   bufSize: 1024 * 1024
  * });
  * for (const chunk of iter) {
@@ -85,7 +85,7 @@ export async function* toReaderIterator(
  * responsibility to copy contents of the buffer if needed; otherwise the
  * next iteration will overwrite contents of previously returned chunk.
  */
-export function* toReaderIteratorSync(
+export function* iterateReaderSync(
   reader: ReaderSync,
   options?: {
     bufSize?: number;
