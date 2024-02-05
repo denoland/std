@@ -21,13 +21,17 @@ export function comparatorMin(semver: SemVer, operator?: Operator): SemVer {
         ? increment(semver, "pre")
         : increment(semver, "patch");
     case "!=":
+    case "!==":
     case "<=":
     case "<":
       // The min(<0.0.0) is MAX
       return greaterThan(semver, MIN) ? MIN : MAX;
     case ">=":
     case undefined:
+    case "":
     case "=":
+    case "==":
+    case "===":
       return semver;
   }
 }

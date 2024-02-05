@@ -15,9 +15,13 @@ export function comparatorMax(semver: SemVer, operator?: Operator): SemVer {
   }
   switch (operator) {
     case "!=":
+    case "!==":
     case ">":
     case ">=":
       return MAX;
+    case "":
+    case "==":
+    case "===":
     case undefined:
     case "=":
     case "<=":

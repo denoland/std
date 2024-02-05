@@ -66,6 +66,7 @@ export const ANY: SemVer = {
  * A comparator which will span all valid semantic versions
  */
 export const ALL: Comparator = {
+  operator: "",
   ...ANY,
   semver: ANY,
 };
