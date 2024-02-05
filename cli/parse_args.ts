@@ -333,7 +333,7 @@ interface NestedMapping {
   [key: string]: NestedMapping | unknown;
 }
 
-function isNumberString(x: unknown): boolean {
+function isNumber(x: unknown): boolean {
   if (typeof x === "number") return true;
   if (/^0x[0-9a-f]+$/i.test(String(x))) return true;
   return /^[-+]?(?:\d+(?:\.\d*)?|\.\d+)(e[-+]?\d+)?$/.test(String(x));
@@ -548,7 +548,7 @@ export function parseArgs<
       return;
     }
     if (typeof value === "string" && !stringSet.has(key)) {
-      value = isNumberString(value) ? Number(value) : value;
+      value = isNumber(value) ? Number(value) : value;
     }
 
     const collectable = collect && collectSet.has(key);
@@ -685,7 +685,7 @@ export function parseArgs<
 
     if (unknownFn?.(arg) !== false) {
       argv._.push(
-        stringSet.has("_") || !isNumberString(arg) ? arg : Number(arg),
+        stringSet.has("_") || !isNumber(arg) ? arg : Number(arg),
       );
     }
 
