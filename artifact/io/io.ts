@@ -7,21 +7,18 @@ import * as posix from 'https://deno.land/std@0.213.0/path/posix/mod.ts'
 import { toString } from 'npm:uint8arrays/to-string'
 import { debug } from '$debug'
 import Artifact from '../artifact.ts'
+import IsolateApi from '@/artifact/isolate-api.ts'
 import {
+  DispatchParams,
   IO_PATH,
   IOType,
   JsonValue,
   Parameters,
   PROCTYPES,
 } from '../constants.ts'
+import { ProcessAddress } from '@/artifact/constants.ts'
 const log = debug('AI:io')
-export const defaultBranch = 'main'
 
-export interface DispatchParams {
-  repo: string
-  branch: string
-  args: DispatchArgs
-}
 interface DispatchArgs {
   isolate: string
   name: string
@@ -42,30 +39,29 @@ export default class IO {
   async start() {
     assert(!this.#db, 'already started')
     this.#db = await Deno.openKv()
-    this.#db.listenQueue(async (action) => {
-      const { type, payload } = action
-      log('queue', type, payload)
-      const { isolate, name, parameters, id } = payload
-      // can the types be the same as the proctypes ?
-      switch (type) {
+    this.#db.listenQueue(async (dispatch: DispatchParams) => {
+      log('queue', dispatch)
+
+      const { pid, isolate, name, parameters, proctype } = dispatch
+      switch (proctype) {
         case PROCTYPES.SELF: {
-          log('EXECUTE', { id, isolate, name, parameters })
           const worker = await this.worker(isolate)
-          // ? do we have the branch lock ?
-          const repo = 'somerepo'
-          const branch = 'somebranch'
-          const executor = await worker.snapshot(this.#artifact, repo, branch)
-          const reply: { id: string; result?: JsonValue; error?: JsonValue } = {
-            id,
-          }
+          // get threadlock on the branch
+          // in the background start loading up the memfs stack
+
+          // make the isolated memfs
+          const fs = await this.#artifact.isolateFs(pid)
+          const api = IsolateApi.create(fs, this.#artifact)
+          const actions = worker.actions(api)
+          let result, error
           try {
-            reply.result = await executor(name, parameters)
-            log('self result', reply.result)
+            result = await actions[name](parameters)
+            log('self result', result)
           } catch (errorObj) {
             log('self error', errorObj)
-            reply.error = serializeError(errorObj)
+            error = serializeError(errorObj)
           }
-          // await this.#replyIO(reply)
+          await this.#replyIO(pid, result, error)
           return
         }
         case PROCTYPES.SPAWN: {
@@ -76,14 +72,21 @@ export default class IO {
       }
     })
   }
+  async #replyIO(pid: ProcessAddress, result?: JsonValue, error?: string) {
+    // const io = await this.readIO()
+    // const { sequence, outputs } = io
+    // const next = { sequence: sequence + 1, inputs: { ...outputs, [sequence]: result } }
+    // await this.#commitIO(next, 'reply')
+  }
   stop() {
     assert(this.#db, 'not started')
     this.#db?.close()
   }
 
-  async dispatch({ repo, branch, args }: DispatchParams) {
-    const { isolate, name, parameters, proctype } = args
-    log('dispatch', repo, branch)
+  // { pid, isolate, name, parameters, proctype }
+  async dispatch({ pid, isolate, name, parameters, proctype }: DispatchParams) {
+    log('dispatch')
+
     // but what we need is write lock
     // dispatch needs to call up a branch at random, from anywhere
 

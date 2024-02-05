@@ -1,20 +1,27 @@
 import Artifact from '../artifact.ts'
 import { expect, log } from '../tst-helpers.js'
 const isolate = 'io.fixture'
-import { IsolateFunctions, JsonValue } from '../constants.ts'
+import { JsonValue, ProcessAddress } from '../constants.ts'
 
-Deno.test.only('ping', async (t) => {
-  const artifact = Artifact.create()
+Deno.test.only('io', async (t) => {
+  const artifact = await Artifact.create()
   await artifact.pull('dreamcatcher-tech/HAL')
-  const actions = await artifact.inBands(isolate) as IsolateFunctions
+  const pid: ProcessAddress = {
+    account: 'dreamcatcher-tech',
+    repository: 'HAL',
+    branches: ['main'],
+  }
+  const actions = await artifact.actions(isolate, pid)
 
   // should be able to make a new blank repo, just for testing ?
 
   let result: JsonValue
-  await t.step('local', async () => {
-    result = await actions.local()
-    expect(result).toBe('local reply')
-  })
+  result = await actions.local()
+  expect(result).toBe('local reply')
+  // await t.step('local', async () => {
+  //   result = await actions.local()
+  //   expect(result).toBe('local reply')
+  // })
   // await t.step('second local', async () => {
   //   const second = await actions.local({})
   //   expect(second).toBe(result)
