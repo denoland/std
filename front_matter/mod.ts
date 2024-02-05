@@ -3,14 +3,14 @@
 
 /**
  * Extracts
- * [front matter](https://daily-dev-tips.com/posts/what-exactly-is-frontmatter/)
+ * {@link https://daily-dev-tips.com/posts/what-exactly-is-frontmatter/ | front matter}
  * from strings.
  *
  * {@linkcode createExtractor} and {@linkcode test} functions
  * to handle many forms of front matter.
  *
  * Adapted from
- * [jxson/front-matter](https://github.com/jxson/front-matter/blob/36f139ef797bd9e5196a9ede03ef481d7fbca18e/index.js).
+ * {@link https://github.com/jxson/front-matter/blob/36f139ef797bd9e5196a9ede03ef481d7fbca18e/index.js | jxson/front-matter}.
  *
  * Supported formats:
  *

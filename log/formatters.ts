@@ -10,10 +10,16 @@ export function jsonFormatter(logRecord: LogRecord): string {
   });
 }
 
-export function flattenArgs(args: unknown[]): unknown {
+function flattenArgs(args: unknown[]): unknown {
   if (args.length === 1) {
     return args[0];
   } else if (args.length > 1) {
     return args;
   }
 }
+
+export const formatters: {
+  jsonFormatter(logRecord: LogRecord): string;
+} = {
+  jsonFormatter,
+};

@@ -1,6 +1,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import { assert, assertEquals } from "../assert/mod.ts";
 import {
+  BaseHandler,
   critical,
   debug,
   error,
@@ -12,7 +13,6 @@ import {
   setup,
   warn,
 } from "./mod.ts";
-import { BaseHandler } from "./handlers.ts";
 
 class TestHandler extends BaseHandler {
   public messages: string[] = [];
@@ -64,7 +64,8 @@ Deno.test({
   async fn() {
     const consoleHandler = new TestHandler("DEBUG");
     const anotherConsoleHandler = new TestHandler("DEBUG", {
-      formatter: "[{loggerName}] {levelName} {msg}",
+      formatter: ({ loggerName, levelName, msg }) =>
+        `[${loggerName}] ${levelName} ${msg}`,
     });
     await setup({
       handlers: {
@@ -122,9 +123,9 @@ Deno.test({
     assertEquals(testHandler.messages[2], "CRITICAL critical");
 
     testHandler.messages = [];
-    logger.level = LogLevels.WARNING;
-    assertEquals(logger.levelName, "WARNING");
-    assertEquals(logger.level, LogLevels.WARNING);
+    logger.level = LogLevels.WARN;
+    assertEquals(logger.levelName, "WARN");
+    assertEquals(logger.level, LogLevels.WARN);
 
     logger.debug("debug2");
     logger.error("error2");

@@ -3,7 +3,7 @@
 
 /**
  * Extensions to the
- * [Web Crypto API]{@link https://developer.mozilla.org/en-US/docs/Web/API/Web_Crypto_API}
+ * {@link https://developer.mozilla.org/en-US/docs/Web/API/Web_Crypto_API | Web Crypto API}
  * supporting additional encryption APIs, but also delegating to the built-in
  * APIs when possible.
  *

@@ -1,12 +1,17 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-import type { SemVer, SemVerRange } from "./types.ts";
-import { lt } from "./lt.ts";
+import type { Range, SemVer, SemVerRange } from "./types.ts";
+import { lessThan } from "./less_than.ts";
 import { rangeMin } from "./range_min.ts";
 
-/** Less than range comparison */
+/**
+ *  Less than range comparison
+ * @deprecated (will be removed after 0.217.0) See
+ * {@link https://github.com/denoland/deno_std/issues/4273 | deno_std#4273}
+ * for details.
+ */
 export function ltr(
   version: SemVer,
-  range: SemVerRange,
+  range: SemVerRange | Range,
 ): boolean {
-  return lt(version, rangeMin(range));
+  return lessThan(version, rangeMin(range));
 }

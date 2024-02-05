@@ -17,3 +17,9 @@ export type Matchers = {
 };
 export type MatchResult = void | Promise<void> | boolean;
 export type AnyConstructor = new (...args: any[]) => any;
+
+export type AssertEqualsOptions = {
+  formatter?: (value: unknown) => string;
+  msg?: string;
+  strictCheck?: boolean;
+};

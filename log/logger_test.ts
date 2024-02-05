@@ -2,7 +2,7 @@
 import { assert, assertEquals, assertMatch } from "../assert/mod.ts";
 import { Logger, LogRecord } from "./logger.ts";
 import { LevelName, LogLevels } from "./levels.ts";
-import { BaseHandler } from "./handlers.ts";
+import { BaseHandler } from "./base_handler.ts";
 
 class TestHandler extends BaseHandler {
   public messages: string[] = [];
@@ -23,7 +23,8 @@ Deno.test({
   fn() {
     const handlerNoName = new TestHandler("DEBUG");
     const handlerWithLoggerName = new TestHandler("DEBUG", {
-      formatter: "[{loggerName}] {levelName} {msg}",
+      formatter: ({ loggerName, levelName, msg }) =>
+        `[${loggerName}] ${levelName} ${msg}`,
     });
 
     const logger = new Logger("config", "DEBUG", {
@@ -87,7 +88,7 @@ Deno.test("logFunctions", function () {
   assertEquals(handler.messages, [
     "DEBUG foo",
     "INFO bar",
-    "WARNING baz",
+    "WARN baz",
     "ERROR boo",
     "CRITICAL doo",
   ]);
@@ -96,14 +97,14 @@ Deno.test("logFunctions", function () {
 
   assertEquals(handler.messages, [
     "INFO bar",
-    "WARNING baz",
+    "WARN baz",
     "ERROR boo",
     "CRITICAL doo",
   ]);
 
-  handler = doLog("WARNING");
+  handler = doLog("WARN");
 
-  assertEquals(handler.messages, ["WARNING baz", "ERROR boo", "CRITICAL doo"]);
+  assertEquals(handler.messages, ["WARN baz", "ERROR boo", "CRITICAL doo"]);
 
   handler = doLog("ERROR");
 
@@ -181,8 +182,8 @@ Deno.test(
     assertEquals(data5, 3);
     const data6: number = logger.warn(3, 1);
     assertEquals(data6, 3);
-    assertEquals(handler.messages[4], "WARNING 3");
-    assertEquals(handler.messages[5], "WARNING 3");
+    assertEquals(handler.messages[4], "WARN 3");
+    assertEquals(handler.messages[5], "WARN 3");
 
     // bigint
     const data7: bigint = logger.error(5n);
@@ -221,8 +222,8 @@ Deno.test(
     assertEquals(data15, "abc");
     const data16: string | undefined = logger.warn(fn, 1);
     assertEquals(data16, "abc");
-    assertEquals(handler.messages[14], "WARNING abc");
-    assertEquals(handler.messages[15], "WARNING abc");
+    assertEquals(handler.messages[14], "WARN abc");
+    assertEquals(handler.messages[15], "WARN abc");
 
     // object
     const data17: { payload: string; other: number } = logger.error({

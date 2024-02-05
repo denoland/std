@@ -25,9 +25,12 @@ export type Operator = typeof OPERATORS[number];
  * The shape of a valid semantic version comparator
  * @example >=0.0.0
  */
-export interface Comparator {
+export interface Comparator extends SemVer {
   operator: Operator;
-  semver: SemVer;
+  /**
+   * @deprecated (will be removed in 0.216.0) {@linkcode Comparator} extends {@linkcode SemVer}. Use `major`, `minor`, `patch`, `prerelease`, and `build` properties instead.
+   */
+  semver?: SemVer;
 }
 
 /**
@@ -41,15 +44,21 @@ export interface SemVer {
   build?: string[];
 }
 
-type SemVerRangeAnd = Comparator[];
-type SemVerRangeOr = SemVerRangeAnd[];
-
 /**
  * A type representing a semantic version range. The ranges consist of
  * a nested array, which represents a set of OR comparisons while the
  * inner array represents AND comparisons.
  */
+export type Range = Comparator[][];
+
+/**
+ * A type representing a semantic version range. The ranges consist of
+ * a nested array, which represents a set of OR comparisons while the
+ * inner array represents AND comparisons.
+ *
+ * @deprecated (will be removed in 0.216.0) Use {@linkcode Range} instead.
+ */
 export interface SemVerRange {
   // The outer array is OR while each inner array is AND
-  ranges: SemVerRangeOr;
+  ranges: Comparator[][];
 }

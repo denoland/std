@@ -25,7 +25,7 @@ export function takeWhile<T>(
   let offset = 0;
   const length = array.length;
 
-  while (length > offset && predicate(array[offset])) {
+  while (length > offset && predicate(array[offset] as T)) {
     offset++;
   }
 

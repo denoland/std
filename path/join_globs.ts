@@ -6,6 +6,8 @@ import { isWindows } from "./_os.ts";
 import { joinGlobs as posixJoinGlobs } from "./posix/join_globs.ts";
 import { joinGlobs as windowsJoinGlobs } from "./windows/join_globs.ts";
 
+export type { GlobOptions };
+
 /** Like join(), but doesn't collapse "**\/.." when `globstar` is true. */
 export function joinGlobs(
   globs: string[],

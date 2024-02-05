@@ -5,7 +5,7 @@
 /**
  * The semantic version parser.
  *
- * Adapted directly from [semver](https://github.com/npm/node-semver).
+ * Adapted directly from {@link https://github.com/npm/node-semver | semver}.
  *
  * ## Versions
  *
@@ -251,7 +251,6 @@
  * ```ts
  * import {
  *   parse,
- *   parseComparator,
  *   parseRange,
  *   gt,
  *   lt,
@@ -271,10 +270,6 @@
  *
  * @module
  */
-export * from "./comparator_format.ts";
-export * from "./comparator_intersects.ts";
-export * from "./comparator_max.ts";
-export * from "./comparator_min.ts";
 export * from "./compare.ts";
 export * from "./constants.ts";
 export * from "./difference.ts";
@@ -283,7 +278,6 @@ export * from "./format.ts";
 export * from "./gt.ts";
 export * from "./gte.ts";
 export * from "./gtr.ts";
-export * from "./test_comparator.ts";
 export * from "./test_range.ts";
 export * from "./increment.ts";
 export * from "./is_semver_range.ts";
@@ -295,15 +289,23 @@ export * from "./max_satisfying.ts";
 export * from "./min_satisfying.ts";
 export * from "./neq.ts";
 export * from "./outside.ts";
-export * from "./parse_comparator.ts";
 export * from "./parse_range.ts";
 export * from "./parse.ts";
-export * from "./range_format.ts";
 export * from "./range_intersects.ts";
 export * from "./range_max.ts";
 export * from "./range_min.ts";
-export * from "./sort.ts";
 export * from "./types.ts";
-export * from "./lte.ts";
-export * from "./lte.ts";
+export * from "./try_parse_range.ts";
+export * from "./is_range.ts";
+export * from "./can_parse.ts";
+export * from "./reverse_sort.ts";
+export * from "./try_parse.ts";
+export * from "./format_range.ts";
+export * from "./equals.ts";
+export * from "./not_equals.ts";
+export * from "./greater_than.ts";
+export * from "./greater_or_equal.ts";
+export * from "./less_than.ts";
+export * from "./less_or_equal.ts";
+
 export const SEMVER_SPEC_VERSION = "2.0.0";

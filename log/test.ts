@@ -9,7 +9,7 @@ import {
   LogLevelNames,
 } from "./levels.ts";
 
-class TestHandler extends log.handlers.BaseHandler {
+class TestHandler extends log.BaseHandler {
   public messages: string[] = [];
 
   override log(msg: string) {
@@ -23,7 +23,7 @@ Deno.test("defaultHandlers", async function () {
   } = {
     DEBUG: log.debug,
     INFO: log.info,
-    WARNING: log.warn,
+    WARN: log.warn,
     ERROR: log.error,
     CRITICAL: log.critical,
   };

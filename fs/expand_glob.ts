@@ -1,11 +1,10 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-import { GlobOptions } from "../path/glob.ts";
-import { globToRegExp } from "../path/glob_to_regexp.ts";
+import { type GlobOptions, globToRegExp } from "../path/glob_to_regexp.ts";
 import { joinGlobs } from "../path/join_globs.ts";
 import { isGlob } from "../path/is_glob.ts";
 import { isAbsolute } from "../path/is_absolute.ts";
 import { resolve } from "../path/resolve.ts";
-import { SEP_PATTERN } from "../path/separator.ts";
+import { SEPARATOR_PATTERN } from "../path/constants.ts";
 import { walk, walkSync } from "./walk.ts";
 import { assert } from "../assert/assert.ts";
 import { toPathString } from "./_to_path_string.ts";
@@ -55,10 +54,10 @@ interface SplitPath {
 }
 
 function split(path: string): SplitPath {
-  const s = SEP_PATTERN.source;
+  const s = SEPARATOR_PATTERN.source;
   const segments = path
     .replace(new RegExp(`^${s}|${s}$`, "g"), "")
-    .split(SEP_PATTERN);
+    .split(SEPARATOR_PATTERN);
   const isAbsolute_ = isAbsolute(path);
   return {
     segments,

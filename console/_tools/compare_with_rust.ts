@@ -1,5 +1,5 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-// Run this test with `deno test --unstable -A compare_with_rust.ts`
+// Run this test with `deno test --unstable-ffi -A compare_with_rust.ts`
 
 import { unicodeWidth } from "../unicode_width.ts";
 import { fromFileUrl } from "../../path/mod.ts";
@@ -21,7 +21,7 @@ Deno.test("fast-check equality with unicode_width Rust crate", async (t) => {
 
   const toCString = (str: string) => new TextEncoder().encode(str + "\0");
 
-  // @ts-ignore type-check errors if unavailable due to lack of --unstable flag
+  // @ts-ignore type-check errors if unavailable due to lack of --unstable-ffi flag
   let dylib: Deno.DynamicLibrary<{
     unicode_width: { parameters: ["buffer"]; result: "usize" };
   }>;

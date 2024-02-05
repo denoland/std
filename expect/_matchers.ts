@@ -5,15 +5,15 @@ import { assertStrictEquals } from "../assert/assert_strict_equals.ts";
 import { assertInstanceOf } from "../assert/assert_instance_of.ts";
 import { assertIsError } from "../assert/assert_is_error.ts";
 import { assertNotInstanceOf } from "../assert/assert_not_instance_of.ts";
-import { assertNotEquals } from "../assert/assert_not_equals.ts";
-import { assertEquals } from "../assert/assert_equals.ts";
 import { assertMatch } from "../assert/assert_match.ts";
 import { assertObjectMatch } from "../assert/assert_object_match.ts";
 import { assertNotMatch } from "../assert/assert_not_match.ts";
 import { AssertionError } from "../assert/assertion_error.ts";
-import { equal } from "../assert/equal.ts";
-import { format } from "./_format.ts";
 
+import { assertEquals } from "./_assert_equals.ts";
+import { assertNotEquals } from "./_assert_not_equals.ts";
+import { equal } from "./_equal.ts";
+import { format } from "./_format.ts";
 import { AnyConstructor, MatcherContext, MatchResult } from "./_types.ts";
 import { getMockCalls } from "./_mock_util.ts";
 import { inspectArg, inspectArgs } from "./_inspect_args.ts";
@@ -26,37 +26,16 @@ export function toBe(context: MatcherContext, expect: unknown): MatchResult {
   }
 }
 
-// deno-lint-ignore no-explicit-any
-function filterUndefined(obj: any): any {
-  if (typeof obj !== "object") return obj;
-  if (obj instanceof Date) return obj;
-  if (obj instanceof RegExp) return obj;
-  if (ArrayBuffer.isView(obj)) return obj;
-  if (obj === null) return obj;
-  if ("size" in obj) return obj;
-  if (Symbol.iterator in obj) return obj;
-  if (Array.isArray(obj)) return obj.map(filterUndefined);
-
-  // deno-lint-ignore no-explicit-any
-  const result = {} as any;
-  for (const key in obj) {
-    const val = obj[key];
-    if (val === undefined) continue;
-    result[key] = filterUndefined(val);
-  }
-  return result;
-}
-
 export function toEqual(
   context: MatcherContext,
   expected: unknown,
 ): MatchResult {
-  const v = filterUndefined(context.value);
-  const e = filterUndefined(expected);
+  const v = context.value;
+  const e = expected;
   if (context.isNot) {
-    assertNotEquals(v, e, context.customMessage);
+    assertNotEquals(v, e, { msg: context.customMessage });
   } else {
-    assertEquals(v, e, context.customMessage);
+    assertEquals(v, e, { msg: context.customMessage });
   }
 }
 
@@ -65,9 +44,15 @@ export function toStrictEqual(
   expected: unknown,
 ): MatchResult {
   if (context.isNot) {
-    assertNotEquals(context.value, expected, context.customMessage);
+    assertNotEquals(context.value, expected, {
+      msg: context.customMessage,
+      strictCheck: true,
+    });
   } else {
-    assertEquals(context.value, expected, context.customMessage);
+    assertEquals(context.value, expected, {
+      msg: context.customMessage,
+      strictCheck: true,
+    });
   }
 }
 
@@ -252,13 +237,15 @@ export function toBeNaN(context: MatcherContext): MatchResult {
     assertNotEquals(
       isNaN(Number(context.value)),
       true,
-      context.customMessage || `Expected ${context.value} to not be NaN`,
+      {
+        msg: context.customMessage || `Expected ${context.value} to not be NaN`,
+      },
     );
   } else {
     assertEquals(
       isNaN(Number(context.value)),
       true,
-      context.customMessage || `Expected ${context.value} to be NaN`,
+      { msg: context.customMessage || `Expected ${context.value} to be NaN` },
     );
   }
 }
@@ -432,7 +419,7 @@ export function toMatch(
 
 export function toMatchObject(
   context: MatcherContext,
-  expected: Record<PropertyKey, unknown>,
+  expected: Record<PropertyKey, unknown> | Record<PropertyKey, unknown>[],
 ): MatchResult {
   if (context.isNot) {
     let objectMatch = false;
@@ -440,7 +427,7 @@ export function toMatchObject(
       assertObjectMatch(
         // deno-lint-ignore no-explicit-any
         context.value as Record<PropertyKey, any>,
-        expected,
+        expected as Record<PropertyKey, unknown>,
         context.customMessage,
       );
       objectMatch = true;
@@ -459,7 +446,7 @@ export function toMatchObject(
     assertObjectMatch(
       // deno-lint-ignore no-explicit-any
       context.value as Record<PropertyKey, any>,
-      expected,
+      expected as Record<PropertyKey, unknown>,
       context.customMessage,
     );
   }

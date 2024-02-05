@@ -2,11 +2,9 @@
 // Copyright (c) 2014 Jameson Little. MIT License.
 // This module is browser compatible.
 
-import { validateBinaryLike } from "./_util.ts";
-
 /**
  * Utilities for
- * [base32]{@link https://datatracker.ietf.org/doc/html/rfc4648#section-6}
+ * {@link https://datatracker.ietf.org/doc/html/rfc4648#section-6 | base32}
  * encoding and decoding.
  *
  * Modified from {@link https://github.com/beatgammit/base64-js}.
@@ -15,6 +13,8 @@ import { validateBinaryLike } from "./_util.ts";
  *
  * @module
  */
+
+import { validateBinaryLike } from "./_util.ts";
 
 const lookup: string[] = [];
 const revLookup: number[] = [];

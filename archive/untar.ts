@@ -185,9 +185,9 @@ export class TarEntry implements Reader {
  * import { Untar } from "https://deno.land/std@$STD_VERSION/archive/untar.ts";
  * import { ensureFile } from "https://deno.land/std@$STD_VERSION/fs/ensure_file.ts";
  * import { ensureDir } from "https://deno.land/std@$STD_VERSION/fs/ensure_dir.ts";
- * import { copy } from "https://deno.land/std@$STD_VERSION/streams/copy.ts";
+ * import { copy } from "https://deno.land/std@$STD_VERSION/io/copy.ts";
  *
- * const reader = await Deno.open("./out.tar", { read: true });
+ * using reader = await Deno.open("./out.tar", { read: true });
  * const untar = new Untar(reader);
  *
  * for await (const entry of untar) {
@@ -199,11 +199,10 @@ export class TarEntry implements Reader {
  *   }
  *
  *   await ensureFile(entry.fileName);
- *   const file = await Deno.open(entry.fileName, { write: true });
+ *   using file = await Deno.open(entry.fileName, { write: true });
  *   // <entry> is a reader.
  *   await copy(entry, file);
  * }
- * reader.close();
  * ```
  */
 export class Untar {
