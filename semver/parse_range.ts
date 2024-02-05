@@ -2,7 +2,7 @@
 import { ALL } from "./constants.ts";
 import type { Comparator, Range, SemVerRange } from "./types.ts";
 import { OPERATOR_XRANGE_REGEXP, XRANGE } from "./_shared.ts";
-import { parseComparator } from "./parse_comparator.ts";
+import { parseComparator } from "./_parse_comparator.ts";
 import { parseBuild, parsePrerelease } from "./_shared.ts";
 
 function isWildcard(id: string): boolean {

@@ -1,8 +1,8 @@
 // Copyright Isaac Z. Schlueter and Contributors. All rights reserved. ISC license.
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import { assertEquals } from "../assert/mod.ts";
-import { parseComparator } from "./parse_comparator.ts";
-import { comparatorIntersects } from "./comparator_intersects.ts";
+import { parseComparator } from "./_parse_comparator.ts";
+import { comparatorIntersects } from "./_comparator_intersects.ts";
 import { rangeIntersects } from "./range_intersects.ts";
 
 Deno.test("comparatorIntersects() handles deprecated SemVerRange.ranges property", async (t) => {
