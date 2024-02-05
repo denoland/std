@@ -1,6 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import type { SemVerRange } from "./types.ts";
-import { isComparator } from "./is_comparator.ts";
+import { isComparator } from "./_is_comparator.ts";
 
 /**
  * Does a deep check on the object to determine if its a valid range.
