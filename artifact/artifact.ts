@@ -91,7 +91,7 @@ export default class Artifact {
     const { fs } = memfs()
     // TODO use unionFs to make layers for each branch
     snapshot.fromBinarySnapshotSync(snapshotData, { fs })
-    log('snapshot loaded', toTreeSync(fs))
+    // log('snapshot loaded', toTreeSync(fs))
     return fs
   }
   async updateIsolateFs(pid: ProcessAddress, fs: IFs) {

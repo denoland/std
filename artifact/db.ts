@@ -36,10 +36,13 @@ export default class DB {
       ...pid.branches,
     ], uint8)
   }
-  getTailCommit(pid: ProcessAddress) {
+  async getTailCommit(pid: ProcessAddress) {
     assertPid(pid)
     const tailKey = getTailKey(pid)
-    return this.#kv.get(tailKey)
+    const result = await this.#kv.get(tailKey)
+    if (result.versionstamp) {
+      return result.value
+    }
   }
   async watchPool(action: DispatchParams) {
     const { pid } = action

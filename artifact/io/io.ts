@@ -29,6 +29,7 @@ export default class IO {
     return io
   }
   listen() {
+    // TODO be able to pause the queue processing for debugging
     this.#db.listenQueue(async (dispatch: DispatchParams) => {
       log('queue', dispatch)
 
@@ -77,7 +78,7 @@ export default class IO {
     log('dispatch with isolate: %s', action.isolate)
 
     const tailCommit = await this.#db.getTailCommit(action.pid)
-    log('tailCommit', tailCommit)
+    log('tailCommit:', tailCommit)
 
     const db = this.#db
     const poolDrainedPromise = new Promise((resolve, reject) => {
@@ -89,7 +90,7 @@ export default class IO {
       const watcher = async () => {
         const poolStream = await db.watchPool(action)
         for await (const [event] of poolStream) {
-          log('event', event)
+          log('pool event')
           if (!event.versionstamp) {
             poolDrained()
             return
@@ -100,9 +101,6 @@ export default class IO {
     })
 
     const lockId = await db.getHeadLock(action.pid) // send in an abort controller so we can cancel
-
-    // TODO read in all the other pool items
-
     const fs = await this.#artifact.isolateFs(action.pid)
     const headApi = IsolateApi.create(fs, this.#artifact)
     const { keys, values } = await this.#db.getPooledActions(action.pid)
