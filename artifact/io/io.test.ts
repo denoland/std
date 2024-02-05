@@ -15,7 +15,7 @@ Deno.test.only('io', async (t) => {
 
   // should be able to make a new blank repo, just for testing ?
 
-  let result: JsonValue
+  let result
   result = await actions.local()
   expect(result).toBe('local reply')
   // await t.step('local', async () => {

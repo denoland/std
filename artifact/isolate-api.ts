@@ -23,33 +23,28 @@ export default class IsolateApi {
     return worker.toActions(this)
   }
   writeJSON(path: string, json: JsonValue) {
-    isJSON(path)
+    isJsonPath(path)
     const file = JSON.stringify(json, null, 2)
-    this.#fs.writeFileSync(path, file)
+    this.write(path, file)
   }
-  write(path = '/', file: string | Uint8Array) {
+  write(path: string, file: string | Uint8Array) {
     isRelative(path)
-    this.#fs.writeFileSync(path, file)
+    this.#fs.writeFileSync('/' + path, file)
   }
   async readJSON(path: string) {
+    const string = await this.read(path)
+    return JSON.parse(string)
+  }
+  async read(path: string) {
     isRelative(path)
-    // check if it exists
-    // then do a git checkout for that file
     const fs = this.#fs
-    if (!this.#fs.existsSync(path)) {
-      // TODO must specify branch
+    if (!fs.existsSync('/' + path)) {
       log('checkout', path)
       await git.checkout({ fs, dir: '/', filepaths: [path] })
     }
-    const string = fs.readFileSync('/' + path, 'utf8').toString()
-    return JSON.parse(string)
+    return fs.readFileSync('/' + path, 'utf8').toString()
   }
-  read(path: string): string {
-    isRelative(path)
-    const contents = this.#fs.readFileSync(path, 'utf8').toString()
-    return contents
-  }
-  isFile(path = '/') {
+  isFile(path: string) {
     isRelative(path)
     try {
       this.#fs.statSync(path)
@@ -80,7 +75,7 @@ export default class IsolateApi {
 
 const isRelative = (path: string) =>
   assert(!posix.isAbsolute(path), `path must be relative: ${path}`)
-const isJSON = (path: string) => {
+const isJsonPath = (path: string) => {
   assert(posix.extname(path) === '.json', `path must be *.json: ${path}`)
   isRelative(path)
 }

@@ -23,9 +23,9 @@ export type IsolatedFunctions = {
 }
 export type DispatchFunctions = {
   [key: string]: (
-    arg?: { [key: string]: JsonValue },
+    parameters?: { [key: string]: JsonValue },
     proctype?: PROCTYPES,
-  ) => JsonValue | Promise<JsonValue>
+  ) => unknown | Promise<unknown> // dispatch returns can be undefined
 }
 export type Parameters = { [key: string]: JsonValue }
 
@@ -50,10 +50,18 @@ export type ProcessAddress = {
   repository: string
   branches: [string, ...string[]]
 }
-export interface DispatchParams {
+export type DispatchParams = {
   pid: ProcessAddress
   isolate: string
-  name: string
+  functionName: string
   parameters: Parameters
   proctype: PROCTYPES
+}
+
+export enum KEYSPACES {
+  POOL = 'POOL', // all pending actions trying to be committed
+  HEADLOCK = 'HEADLOCK', // the lock on the head of a given process branch
+  REPO = 'REPO', // this is the latest fs snapshot of a given process branch
+  TIP = 'TIP', // the commit the branch is up to for parallel processing
+  TAIL = 'TAIL', // the commit the branch is up to for sequential processing
 }

@@ -1,10 +1,8 @@
 import { deserializeError, serializeError } from 'npm:serialize-error'
-import equals from 'npm:fast-deep-equal'
 import ioWorker from './io-worker.ts'
 import { assert } from 'std/assert/mod.ts'
-import git, { TREE } from '$git'
+import git from '$git'
 import * as posix from 'https://deno.land/std@0.213.0/path/posix/mod.ts'
-import { toString } from 'npm:uint8arrays/to-string'
 import { debug } from '$debug'
 import Artifact from '../artifact.ts'
 import IsolateApi from '@/artifact/isolate-api.ts'
@@ -17,32 +15,24 @@ import {
   PROCTYPES,
 } from '../constants.ts'
 import { ProcessAddress } from '@/artifact/constants.ts'
+import DB from '@/artifact/db.ts'
 const log = debug('AI:io')
-
-interface DispatchArgs {
-  isolate: string
-  name: string
-  parameters: Parameters
-  proctype: PROCTYPES
-}
 
 export default class IO {
   #artifact!: Artifact
+  #db!: DB
   #workerCache = new Map()
-  #promises = new Map() // path -> promise ?
-  #db: Deno.Kv | undefined
-  static create(artifact: Artifact) {
+  static create(artifact: Artifact, db: DB) {
     const io = new IO()
     io.#artifact = artifact
+    io.#db = db
     return io
   }
-  async start() {
-    assert(!this.#db, 'already started')
-    this.#db = await Deno.openKv()
+  listen() {
     this.#db.listenQueue(async (dispatch: DispatchParams) => {
       log('queue', dispatch)
 
-      const { pid, isolate, name, parameters, proctype } = dispatch
+      const { pid, isolate, functionName, parameters, proctype } = dispatch
       switch (proctype) {
         case PROCTYPES.SELF: {
           const worker = await this.worker(isolate)
@@ -55,7 +45,7 @@ export default class IO {
           const actions = worker.actions(api)
           let result, error
           try {
-            result = await actions[name](parameters)
+            result = await actions[functionName](parameters)
             log('self result', result)
           } catch (errorObj) {
             log('self error', errorObj)
@@ -65,7 +55,7 @@ export default class IO {
           return
         }
         case PROCTYPES.SPAWN: {
-          log('spawning', isolate, name, parameters)
+          log('spawning', isolate, functionName, parameters)
           // await this.#spawn({ id, isolate, name, parameters })
           return
         }
@@ -78,38 +68,67 @@ export default class IO {
     // const next = { sequence: sequence + 1, inputs: { ...outputs, [sequence]: result } }
     // await this.#commitIO(next, 'reply')
   }
-  stop() {
-    assert(this.#db, 'not started')
-    this.#db?.close()
-  }
 
   // { pid, isolate, name, parameters, proctype }
-  async dispatch({ pid, isolate, name, parameters, proctype }: DispatchParams) {
-    log('dispatch')
+  async dispatch(action: DispatchParams) {
+    if (!this.#db) {
+      throw new Error('not running')
+    }
+    log('dispatch with isolate: %s', action.isolate)
 
-    // but what we need is write lock
-    // dispatch needs to call up a branch at random, from anywhere
+    const tailCommit = await this.#db.getTailCommit(action.pid)
+    log('tailCommit', tailCommit)
 
-    // ultimately we want a commit, then an enqueue action to work on that
-    // commit
+    const db = this.#db
+    const poolDrainedPromise = new Promise((resolve, reject) => {
+      const poolDrained = () => {
+        log('poolDrained')
+        // walk back the commits to get the result out
+        resolve(undefined)
+      }
+      const watcher = async () => {
+        const poolStream = await db.watchPool(action)
+        for await (const [event] of poolStream) {
+          log('event', event)
+          if (!event.versionstamp) {
+            poolDrained()
+            return
+          }
+        }
+      }
+      watcher()
+    })
 
-    // const { id, next } = input(io, action)
-    // const branchName = await git.currentBranch(this.#opts)
+    const lockId = await db.getHeadLock(action.pid) // send in an abort controller so we can cancel
 
-    // let resolve, reject
-    // const promise = new Promise((res, rej) => {
-    //   resolve = res
-    //   reject = rej
-    // })
-    // const pid = `${branchName}_${id}`
-    // log('dispatch pid', pid)
-    // assert(!this.#promises.has(pid), `pid ${pid} already exists`)
-    // this.#promises.set(pid, { resolve, reject })
+    // TODO read in all the other pool items
 
-    // await this.#commitIO(next, 'dispatch')
-    // return promise
-    return Promise.resolve(null)
+    const fs = await this.#artifact.isolateFs(action.pid)
+    const headApi = IsolateApi.create(fs, this.#artifact)
+    const { keys, values } = await this.#db.getPooledActions(action.pid)
+    await updateIo(headApi, values)
+    await git.add({ fs, dir: '/', filepath: IO_PATH })
+    const commitHash = await git.commit({
+      fs,
+      dir: '/',
+      message: 'dispatch',
+      author: { name: 'IO' },
+    })
+    log('commitHash', commitHash)
+
+    await this.#artifact.updateIsolateFs(action.pid, fs)
+    await this.#db.enqueue({ type: 'COMMIT', pid: action.pid, commitHash })
+
+    // blank the processed pool items
+    await this.#db.deletePool(keys)
+    await this.#db.releaseHeadlock(action.pid, lockId)
+
+    return poolDrainedPromise
+    // Should do an action for dispatch since io results need to dispatch
+    // too, and their thread would have just spent max time running their
+    // function, and might be exhausted.
   }
+
   async #spawn(id: number, isolate: string, name: string, params: Parameters) {
     // const branchName = await git.currentBranch(this.#opts)
     // const action = { isolate, name, params, proctype: PROCTYPES.SELF }
@@ -153,4 +172,27 @@ export default class IO {
   }
   // the patch generation should be the same for io as for any splice.
   // this should be jsonpatch with some extra validation against a jsonschema
+}
+const updateIo = async (api: IsolateApi, actions: DispatchParams[]) => {
+  log('updateIo')
+  let io: IOType = {
+    sequence: 0,
+    inputs: {},
+    outputs: {},
+  }
+  try {
+    io = await api.readJSON(IO_PATH) // TODO check schema
+  } catch (err) {
+    if (err.code !== 'ENOENT') {
+      throw err
+    }
+  }
+  let { sequence } = io
+  const nextInputs = { ...io.inputs }
+  for (const action of actions) {
+    nextInputs[sequence++] = action
+  }
+  const nextIo = { sequence, inputs: nextInputs, outputs: io.outputs }
+  log('updateIo')
+  api.writeJSON(IO_PATH, nextIo)
 }
