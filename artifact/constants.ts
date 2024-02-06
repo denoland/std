@@ -39,10 +39,10 @@ export type Isolate = {
   functions: IsolateApiFunctions
 }
 
-export type IOType = {
+export type IoStruct = {
   sequence: number
-  inputs: { [key: number]: JsonValue }
-  outputs: { [key: number]: JsonValue }
+  inputs: { [key: string]: Dispatch }
+  outputs: { [key: string]: { result?: JsonValue; error: string } }
 }
 export const ENTRY_BRANCH = 'main'
 export type ProcessAddress = {
@@ -50,20 +50,28 @@ export type ProcessAddress = {
   repository: string
   branches: [string, ...string[]]
 }
-export type DispatchParams = {
+export type Dispatch = {
   pid: ProcessAddress
   isolate: string
   functionName: string
   parameters: Parameters
   proctype: PROCTYPES
 }
+export type QueuedDispatch = {
+  dispatch: Dispatch
+  sequence: number
+  /**
+   * If the dispatch is a sequential process type, this is the key of the item
+   * before it to wait for.
+   */
+  priorKey?: string[]
+}
 
 export enum KEYSPACES {
   POOL = 'POOL', // all pending actions trying to be committed
   HEADLOCK = 'HEADLOCK', // the lock on the head of a given process branch
   REPO = 'REPO', // this is the latest fs snapshot of a given process branch
-  TIP = 'TIP', // the commit the branch is up to for parallel processing
-  TAIL = 'TAIL', // the commit the branch is up to for sequential processing
+  TAIL = 'TAIL', // sequential actions that need to execute in order
 }
 
 export type QueuedMessage = QueuedCommit

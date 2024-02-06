@@ -7,14 +7,12 @@ import { debug } from '$debug'
 import Artifact from '../artifact.ts'
 import IsolateApi from '@/artifact/isolate-api.ts'
 import {
-  DispatchParams,
+  Dispatch,
   IO_PATH,
-  IOType,
+  IoStruct,
   JsonValue,
   Parameters,
   PROCTYPES,
-  QueuedCommit,
-  QueuedMessage,
 } from '../constants.ts'
 import { ProcessAddress } from '@/artifact/constants.ts'
 import DB from '@/artifact/db.ts'
@@ -33,16 +31,24 @@ export default class IO {
   }
   listen() {
     // TODO be able to pause the queue processing for debugging
-    this.#db.listenQueue(async (msg: QueuedMessage) => {
-      log('queue', msg)
+    this.#db.listenQueue(async (dispatch: Dispatch) => {
+      log('queue', dispatch)
 
-      switch (msg.type) {
-        case 'COMMIT': {
-          const { pid, hash } = msg
-
-          // wait till we are elligible to grab the tiplock
+      switch (dispatch.proctype) {
+        case PROCTYPES.SELF: {
+          // await this.#db.tail()
+          // run our isolate
+          // pool the result
+          // delete the tail
 
           return
+        }
+        case PROCTYPES.SPAWN: {
+          // start the branch immediately without waiting for anyone
+          // skip the first commit, since this is wasted
+          // begin executing the isolate
+          // commit the result to the branch
+          // first off the dispatch to the newly created branch to be carried on
         }
       }
     })
@@ -81,21 +87,20 @@ export default class IO {
     // await this.#commitIO(next, 'reply')
   }
 
-  async dispatch(action: DispatchParams) {
+  async dispatch(action: Dispatch) {
     log('dispatch with isolate: %s', action.isolate)
-
-    const tailCommit = await this.#db.getTailCommit(action.pid)
-    log('tailCommit:', tailCommit)
+    const { pid } = action
 
     const db = this.#db
     const poolDrainedPromise = new Promise((resolve, reject) => {
-      const poolDrained = () => {
+      const poolDrained = async () => {
         log('poolDrained')
         // walk back the commits to get the result out
         // update when it is commited
         // update with it is started running
         // do not follow the branch, but know how to walk it
         // update when the output is commited
+        await delay(100)
         resolve(undefined)
       }
       const watcher = async () => {
@@ -111,11 +116,11 @@ export default class IO {
       watcher()
     })
 
-    const lockId = await db.getHeadLock(action.pid) // send in an abort controller so we can cancel
-    const fs = await this.#artifact.isolateFs(action.pid)
+    const lockId = await db.getHeadLock(pid) // send in an abort controller so we can cancel
+    const fs = await this.#artifact.isolateFs(pid)
     const headApi = IsolateApi.create(fs, this.#artifact)
-    const { keys, values } = await this.#db.getPooledActions(action.pid)
-    await updateIo(headApi, values)
+    const { keys, values } = await this.#db.getPooledActions(pid)
+    const io = await updateIo(headApi, values)
     await git.add({ fs, dir: '/', filepath: IO_PATH })
     const hash = await git.commit({
       fs,
@@ -125,13 +130,13 @@ export default class IO {
     })
     log('commitHash', hash)
 
-    await this.#artifact.updateIsolateFs(action.pid, fs)
-    const queuedCommit: QueuedCommit = { type: 'COMMIT', pid: action.pid, hash }
-    await this.#db.enqueue(queuedCommit)
+    await this.#artifact.updateIsolateFs(pid, fs)
+
+    await this.#db.enqueueIo(pid, io)
 
     // blank the processed pool items
     await this.#db.deletePool(keys)
-    await this.#db.releaseHeadlock(action.pid, lockId)
+    await this.#db.releaseHeadlock(pid, lockId)
 
     return poolDrainedPromise
   }
@@ -180,26 +185,28 @@ export default class IO {
   // the patch generation should be the same for io as for any splice.
   // this should be jsonpatch with some extra validation against a jsonschema
 }
-const updateIo = async (api: IsolateApi, actions: DispatchParams[]) => {
+const updateIo = async (api: IsolateApi, actions: Dispatch[]) => {
+  // we could delete teh IO of the current commit, since nobody needs it now ?
   log('updateIo')
-  let io: IOType = {
+  const io: IoStruct = {
     sequence: 0,
     inputs: {},
     outputs: {},
   }
   try {
-    io = await api.readJSON(IO_PATH) // TODO check schema
+    const priorIo = await api.readJSON(IO_PATH) // TODO check schema
+    assert(Number.isInteger(priorIo.sequence), 'sequence must be an integer')
+    assert(priorIo.sequence >= 0, 'sequence must be a whole number')
+    io.sequence = priorIo.sequence
   } catch (err) {
     if (err.code !== 'ENOENT') {
       throw err
     }
   }
-  let { sequence } = io
-  const nextInputs = { ...io.inputs }
   for (const action of actions) {
-    nextInputs[sequence++] = action
+    io.inputs[io.sequence++] = action
   }
-  const nextIo = { sequence, inputs: nextInputs, outputs: io.outputs }
   log('updateIo')
-  api.writeJSON(IO_PATH, nextIo)
+  api.writeJSON(IO_PATH, io)
+  return io
 }

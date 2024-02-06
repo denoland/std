@@ -1,10 +1,11 @@
 import { ulid } from '$std/ulid/mod.ts'
 import { get, set } from 'https://deno.land/x/kv_toolbox@0.6.1/blob.ts'
 import {
-  DispatchParams,
+  Dispatch,
+  IoStruct,
   KEYSPACES,
   ProcessAddress,
-  QueuedMessage,
+  QueuedDispatch,
 } from './constants.ts'
 import { assert } from 'std/assert/assert.ts'
 import { debug } from 'https://deno.land/x/quiet_debug@v1.0.0/mod.ts'
@@ -20,7 +21,7 @@ export default class DB {
   stop() {
     this.#kv.close()
   }
-  listenQueue(callback: (msg: QueuedMessage) => Promise<void>) {
+  listenQueue(callback: (dispatch: Dispatch) => Promise<void>) {
     log('listen queue')
     assert(this.#kv, 'db not open')
     this.#kv.listenQueue(callback)
@@ -41,15 +42,7 @@ export default class DB {
       ...pid.branches,
     ], uint8)
   }
-  async getTailCommit(pid: ProcessAddress) {
-    assertPid(pid)
-    const tailKey = getTailKey(pid)
-    const result = await this.#kv.get(tailKey)
-    if (result.versionstamp) {
-      return result.value
-    }
-  }
-  async watchPool(action: DispatchParams) {
+  async watchPool(action: Dispatch) {
     const { pid } = action
     assertPid(pid)
     const poolKey = getPoolKey(pid)
@@ -71,19 +64,51 @@ export default class DB {
     await this.#kv.set(headLockKey, lockId) // naively assume we have the lock
     return lockId
   }
-  enqueue(msg: QueuedMessage) {
-    log('enqueue %o', msg)
-    return this.#kv.enqueue(msg)
+  async enqueueIo(pid: ProcessAddress, io: IoStruct) {
+    log('enqueueIo %o', io)
+    const ascendingKeys = sort(Object.keys(io.inputs))
+    let priorKey = null
+    for (const key of ascendingKeys) {
+      const dispatch = io.inputs[key]
+      if (dispatch.proctype === 'SELF') {
+        if (!priorKey && key !== '0') {
+          priorKey = await this.#priorTail(pid)
+        }
+        const tailKeyPrefix = getTailKeyPrefix(pid)
+        const sequence = parseInt(key)
+        const tailKey = [...tailKeyPrefix, sequence]
+        await this.#kv.set(tailKey, dispatch)
+
+        // write a tail commit
+        // use a list to get the prior unless the sequence is 0
+        const queuedDispatch: QueuedDispatch = { dispatch, sequence, priorKey }
+        await this.#kv.enqueue(queuedDispatch)
+      }
+    }
+  }
+  async #priorTail(pid: ProcessAddress) {
+    const tailKeyPrefix = getTailKeyPrefix(pid)
+    // const end = set an end as an integer, to skip deeper branches
+    // leverages that branch names are strings
+    const start = [...tailKeyPrefix, 0]
+    const end = [...tailKeyPrefix, Number.MAX_SAFE_INTEGER]
+    const list = this.#kv.list({ start, end }, { reverse: true })
+    for await (const entry of list) {
+      console.log('priorTail', entry)
+      // grab the highest sequence number, or null
+      // refuse items with deeper branch count than us
+      return entry.key
+    }
   }
   async getPooledActions(pid: ProcessAddress) {
     const prefix = getPoolKey(pid)
     prefix.pop()
     log('getPooledActions %o', prefix)
-    const entries = await this.#kv.list({ prefix })
+    const entries = this.#kv.list({ prefix })
     const keys = []
-    const values: DispatchParams[] = []
+    const values: Dispatch[] = []
     for await (const entry of entries) {
-      const value = entry.value as DispatchParams
+      const value = entry.value as Dispatch
       keys.push(entry.key)
       values.push(value)
     }
@@ -109,11 +134,11 @@ const getHeadLockKey = (pid: ProcessAddress) => {
   const { account, repository, branches } = pid
   return [KEYSPACES.HEADLOCK, account, repository, ...branches]
 }
-const getTailKey = (pid: ProcessAddress) => {
+const getTailKeyPrefix = (pid: ProcessAddress) => {
   const { account, repository, branches } = pid
+  // tail, sequence
   return [KEYSPACES.TAIL, account, repository, ...branches]
 }
-
 const openKv = async () => {
   const KEY = 'DENO_KV_PATH'
   let path = ':memory:'
@@ -130,7 +155,6 @@ const openKv = async () => {
   log('open kv', path)
   return Deno.openKv(path)
 }
-
 const assertPid = (pid: ProcessAddress) => {
   assert(pid.account, 'account is required')
   assert(pid.repository, 'repository is required')
@@ -141,3 +165,4 @@ const assertPid = (pid: ProcessAddress) => {
     throw new Error('Invalid GitHub account or repository name: ' + repo)
   }
 }
+const sort = (keys: string[]) => keys.sort((a, b) => parseInt(a) - parseInt(b))
