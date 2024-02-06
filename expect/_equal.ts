@@ -2,6 +2,8 @@
 
 // This file is copied from `std/assert`.
 
+import { EqualOptions } from "./_types.ts";
+
 function isKeyedCollection(x: unknown): x is Set<unknown> {
   return [Symbol.iterator, "size"].every((k) => k in (x as Set<unknown>));
 }
@@ -26,9 +28,20 @@ function constructorsEqual(a: object, b: object) {
  * equal({ foo: "bar" }, { foo: "baz" }); // Returns `false
  * ```
  */
-export function equal(c: unknown, d: unknown, strictCheck?: boolean): boolean {
+export function equal(c: unknown, d: unknown, options?: EqualOptions): boolean {
+  const { customTesters = [], strictCheck } = options || {};
   const seen = new Map();
+
   return (function compare(a: unknown, b: unknown): boolean {
+    if (customTesters?.length) {
+      for (const customTester of customTesters) {
+        const pass = customTester.call(undefined, a, b, customTesters);
+        if (pass !== undefined) {
+          return pass;
+        }
+      }
+    }
+
     // Have to render RegExp & Date for string comparison
     // unless it's mistreated as object
     if (
