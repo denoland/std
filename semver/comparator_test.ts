@@ -4,8 +4,8 @@ import { assertEquals } from "../assert/mod.ts";
 import { parseRange } from "./parse_range.ts";
 import { parse } from "./parse.ts";
 import { testRange } from "./test_range.ts";
-import { parseComparator } from "./parse_comparator.ts";
-import { comparatorFormat } from "./comparator_format.ts";
+import { parseComparator } from "./_parse_comparator.ts";
+import { comparatorFormat } from "./_comparator_format.ts";
 import { Comparator } from "./types.ts";
 
 Deno.test({
