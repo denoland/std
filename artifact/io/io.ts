@@ -13,9 +13,12 @@ import {
   JsonValue,
   Parameters,
   PROCTYPES,
+  QueuedCommit,
+  QueuedMessage,
 } from '../constants.ts'
 import { ProcessAddress } from '@/artifact/constants.ts'
 import DB from '@/artifact/db.ts'
+import { delay } from 'https://deno.land/std@0.211.0/async/delay.ts'
 const log = debug('AI:io')
 
 export default class IO {
@@ -30,38 +33,46 @@ export default class IO {
   }
   listen() {
     // TODO be able to pause the queue processing for debugging
-    this.#db.listenQueue(async (dispatch: DispatchParams) => {
-      log('queue', dispatch)
+    this.#db.listenQueue(async (msg: QueuedMessage) => {
+      log('queue', msg)
 
-      const { pid, isolate, functionName, parameters, proctype } = dispatch
-      switch (proctype) {
-        case PROCTYPES.SELF: {
-          const worker = await this.worker(isolate)
-          // get threadlock on the branch
-          // in the background start loading up the memfs stack
+      switch (msg.type) {
+        case 'COMMIT': {
+          const { pid, hash } = msg
 
-          // make the isolated memfs
-          const fs = await this.#artifact.isolateFs(pid)
-          const api = IsolateApi.create(fs, this.#artifact)
-          const actions = worker.actions(api)
-          let result, error
-          try {
-            result = await actions[functionName](parameters)
-            log('self result', result)
-          } catch (errorObj) {
-            log('self error', errorObj)
-            error = serializeError(errorObj)
-          }
-          await this.#replyIO(pid, result, error)
-          return
-        }
-        case PROCTYPES.SPAWN: {
-          log('spawning', isolate, functionName, parameters)
-          // await this.#spawn({ id, isolate, name, parameters })
+          // wait till we are elligible to grab the tiplock
+
           return
         }
       }
     })
+  }
+  processing() {
+    // case PROCTYPES.SELF: {
+    //   const worker = await this.worker(isolate)
+    //   // get threadlock on the branch
+    //   // in the background start loading up the memfs stack
+
+    //   // make the isolated memfs
+    //   const fs = await this.#artifact.isolateFs(pid)
+    //   const api = IsolateApi.create(fs, this.#artifact)
+    //   const actions = worker.actions(api)
+    //   let result, error
+    //   try {
+    //     result = await actions[functionName](parameters)
+    //     log('self result', result)
+    //   } catch (errorObj) {
+    //     log('self error', errorObj)
+    //     error = serializeError(errorObj)
+    //   }
+    //   await this.#replyIO(pid, result, error)
+    //   return
+    // }
+    // case PROCTYPES.SPAWN: {
+    //   log('spawning', isolate, functionName, parameters)
+    //   // await this.#spawn({ id, isolate, name, parameters })
+    //   return
+    // }
   }
   async #replyIO(pid: ProcessAddress, result?: JsonValue, error?: string) {
     // const io = await this.readIO()
@@ -70,11 +81,7 @@ export default class IO {
     // await this.#commitIO(next, 'reply')
   }
 
-  // { pid, isolate, name, parameters, proctype }
   async dispatch(action: DispatchParams) {
-    if (!this.#db) {
-      throw new Error('not running')
-    }
     log('dispatch with isolate: %s', action.isolate)
 
     const tailCommit = await this.#db.getTailCommit(action.pid)
@@ -85,6 +92,10 @@ export default class IO {
       const poolDrained = () => {
         log('poolDrained')
         // walk back the commits to get the result out
+        // update when it is commited
+        // update with it is started running
+        // do not follow the branch, but know how to walk it
+        // update when the output is commited
         resolve(undefined)
       }
       const watcher = async () => {
@@ -106,25 +117,23 @@ export default class IO {
     const { keys, values } = await this.#db.getPooledActions(action.pid)
     await updateIo(headApi, values)
     await git.add({ fs, dir: '/', filepath: IO_PATH })
-    const commitHash = await git.commit({
+    const hash = await git.commit({
       fs,
       dir: '/',
       message: 'dispatch',
       author: { name: 'IO' },
     })
-    log('commitHash', commitHash)
+    log('commitHash', hash)
 
     await this.#artifact.updateIsolateFs(action.pid, fs)
-    await this.#db.enqueue({ type: 'COMMIT', pid: action.pid, commitHash })
+    const queuedCommit: QueuedCommit = { type: 'COMMIT', pid: action.pid, hash }
+    await this.#db.enqueue(queuedCommit)
 
     // blank the processed pool items
     await this.#db.deletePool(keys)
     await this.#db.releaseHeadlock(action.pid, lockId)
 
     return poolDrainedPromise
-    // Should do an action for dispatch since io results need to dispatch
-    // too, and their thread would have just spent max time running their
-    // function, and might be exhausted.
   }
 
   async #spawn(id: number, isolate: string, name: string, params: Parameters) {

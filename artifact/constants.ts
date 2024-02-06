@@ -65,3 +65,11 @@ export enum KEYSPACES {
   TIP = 'TIP', // the commit the branch is up to for parallel processing
   TAIL = 'TAIL', // the commit the branch is up to for sequential processing
 }
+
+export type QueuedMessage = QueuedCommit
+
+export type QueuedCommit = {
+  type: 'COMMIT'
+  pid: ProcessAddress
+  hash: string
+}

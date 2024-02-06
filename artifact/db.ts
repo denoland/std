@@ -1,6 +1,11 @@
 import { ulid } from '$std/ulid/mod.ts'
 import { get, set } from 'https://deno.land/x/kv_toolbox@0.6.1/blob.ts'
-import { DispatchParams, KEYSPACES, ProcessAddress } from './constants.ts'
+import {
+  DispatchParams,
+  KEYSPACES,
+  ProcessAddress,
+  QueuedMessage,
+} from './constants.ts'
 import { assert } from 'std/assert/assert.ts'
 import { debug } from 'https://deno.land/x/quiet_debug@v1.0.0/mod.ts'
 const log = debug('AI:db')
@@ -15,7 +20,7 @@ export default class DB {
   stop() {
     this.#kv.close()
   }
-  listenQueue(callback: (dispatch: DispatchParams) => Promise<void>) {
+  listenQueue(callback: (msg: QueuedMessage) => Promise<void>) {
     log('listen queue')
     assert(this.#kv, 'db not open')
     this.#kv.listenQueue(callback)
@@ -54,6 +59,7 @@ export default class DB {
     // guarantee key is empty
     const first = await iterator.next()
     assert(!first.value[0].versionstamp)
+    log('watchPool first %o', first)
     await this.#kv.set(poolKey, action)
     return iterator
   }
@@ -65,7 +71,7 @@ export default class DB {
     await this.#kv.set(headLockKey, lockId) // naively assume we have the lock
     return lockId
   }
-  enqueue(msg: any) {
+  enqueue(msg: QueuedMessage) {
     log('enqueue %o', msg)
     return this.#kv.enqueue(msg)
   }
