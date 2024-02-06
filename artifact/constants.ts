@@ -1,9 +1,9 @@
 import IsolateApi from './isolate-api.ts'
 
 export type { CborUint8Array } from 'https://esm.sh/v135/json-joy@9.9.1/es6/json-pack/cbor/types.d.ts?exports=CbotUint8Array'
-export enum PROCTYPES {
-  SELF = 'SELF',
-  SPAWN = 'SPAWN',
+export enum PROCTYPE {
+  SERIAL = 'serial',
+  PARALLEL = 'parallel',
 }
 export const IO_PATH = '.io.json'
 
@@ -24,7 +24,7 @@ export type IsolatedFunctions = {
 export type DispatchFunctions = {
   [key: string]: (
     parameters?: { [key: string]: JsonValue },
-    proctype?: PROCTYPES,
+    proctype?: PROCTYPE,
   ) => unknown | Promise<unknown> // dispatch returns can be undefined
 }
 export type Parameters = { [key: string]: JsonValue }
@@ -40,44 +40,49 @@ export type Isolate = {
 }
 
 export type IoStruct = {
+  [PROCTYPE.SERIAL]: IoProctypeStruct
+  [PROCTYPE.PARALLEL]: IoProctypeStruct
+}
+export type IoProctypeStruct = {
   sequence: number
   inputs: { [key: string]: Dispatch }
   outputs: { [key: string]: { result?: JsonValue; error: string } }
 }
 export const ENTRY_BRANCH = 'main'
-export type ProcessAddress = {
+/**
+ * The Process Identifier used to address a specific process branch.
+ */
+export type PID = {
   account: string
   repository: string
   branches: [string, ...string[]]
 }
 export type Dispatch = {
-  pid: ProcessAddress
+  pid: PID
   isolate: string
   functionName: string
   parameters: Parameters
-  proctype: PROCTYPES
+  proctype: PROCTYPE
 }
 export type QueuedDispatch = {
   dispatch: Dispatch
   sequence: number
-  /**
-   * If the dispatch is a sequential process type, this is the key of the item
-   * before it to wait for.
-   */
-  priorKey?: string[]
 }
 
 export enum KEYSPACES {
   POOL = 'POOL', // all pending actions trying to be committed
   HEADLOCK = 'HEADLOCK', // the lock on the head of a given process branch
   REPO = 'REPO', // this is the latest fs snapshot of a given process branch
-  TAIL = 'TAIL', // sequential actions that need to execute in order
+  /**
+   * sequential actions that need to execute in order
+   */
+  TAIL = 'TAIL',
 }
 
 export type QueuedMessage = QueuedCommit
 
 export type QueuedCommit = {
   type: 'COMMIT'
-  pid: ProcessAddress
+  pid: PID
   hash: string
 }

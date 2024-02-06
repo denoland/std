@@ -12,9 +12,9 @@ import {
   IoStruct,
   JsonValue,
   Parameters,
-  PROCTYPES,
+  PROCTYPE,
 } from '../constants.ts'
-import { ProcessAddress } from '@/artifact/constants.ts'
+import { PID } from '@/artifact/constants.ts'
 import DB from '@/artifact/db.ts'
 import { delay } from 'https://deno.land/std@0.211.0/async/delay.ts'
 const log = debug('AI:io')
@@ -35,7 +35,7 @@ export default class IO {
       log('queue', dispatch)
 
       switch (dispatch.proctype) {
-        case PROCTYPES.SELF: {
+        case PROCTYPE.SERIAL: {
           // await this.#db.tail()
           // run our isolate
           // pool the result
@@ -43,7 +43,7 @@ export default class IO {
 
           return
         }
-        case PROCTYPES.SPAWN: {
+        case PROCTYPE.PARALLEL: {
           // start the branch immediately without waiting for anyone
           // skip the first commit, since this is wasted
           // begin executing the isolate
@@ -80,7 +80,7 @@ export default class IO {
     //   return
     // }
   }
-  async #replyIO(pid: ProcessAddress, result?: JsonValue, error?: string) {
+  async #replyIO(pid: PID, result?: JsonValue, error?: string) {
     // const io = await this.readIO()
     // const { sequence, outputs } = io
     // const next = { sequence: sequence + 1, inputs: { ...outputs, [sequence]: result } }
@@ -185,28 +185,32 @@ export default class IO {
   // the patch generation should be the same for io as for any splice.
   // this should be jsonpatch with some extra validation against a jsonschema
 }
-const updateIo = async (api: IsolateApi, actions: Dispatch[]) => {
+const updateIo = async (api: IsolateApi, dispatches: Dispatch[]) => {
   // we could delete teh IO of the current commit, since nobody needs it now ?
   log('updateIo')
   const io: IoStruct = {
-    sequence: 0,
-    inputs: {},
-    outputs: {},
+    [PROCTYPE.SERIAL]: { sequence: 0, inputs: {}, outputs: {} },
+    [PROCTYPE.PARALLEL]: { sequence: 0, inputs: {}, outputs: {} },
   }
   try {
     const priorIo = await api.readJSON(IO_PATH) // TODO check schema
-    assert(Number.isInteger(priorIo.sequence), 'sequence must be an integer')
-    assert(priorIo.sequence >= 0, 'sequence must be a whole number')
-    io.sequence = priorIo.sequence
+    io[PROCTYPE.SERIAL].sequence = checkSequence(priorIo[PROCTYPE.SERIAL])
+    io[PROCTYPE.PARALLEL].sequence = checkSequence(priorIo[PROCTYPE.PARALLEL])
   } catch (err) {
     if (err.code !== 'ENOENT') {
       throw err
     }
   }
-  for (const action of actions) {
-    io.inputs[io.sequence++] = action
+  for (const dispatch of dispatches) {
+    const queue = io[dispatch.proctype]
+    queue.inputs[queue.sequence++] = dispatch
   }
   log('updateIo')
   api.writeJSON(IO_PATH, io)
   return io
+}
+const checkSequence = (io: { sequence: number }) => {
+  assert(Number.isInteger(io.sequence), 'sequence must be an integer')
+  assert(io.sequence >= 0, 'sequence must be a whole number')
+  return io.sequence
 }

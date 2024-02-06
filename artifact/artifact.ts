@@ -12,8 +12,8 @@ import {
   CborUint8Array,
   DispatchFunctions,
   ENTRY_BRANCH,
-  ProcessAddress,
-  PROCTYPES,
+  PID,
+  PROCTYPE,
 } from './constants.ts'
 import DB from './db.ts'
 
@@ -53,7 +53,7 @@ export default class Artifact {
     log('cloned')
     const uint8 = snapshot.toBinarySnapshotSync({ fs })
     log('snapshot', pretty(uint8.length))
-    const pid: ProcessAddress = {
+    const pid: PID = {
       account,
       repository,
       branches: [ENTRY_BRANCH],
@@ -68,18 +68,18 @@ export default class Artifact {
     const api = await this.#io.workerApi(isolate)
     return api
   }
-  async actions(isolate: string, pid: ProcessAddress) {
+  async actions(isolate: string, pid: PID) {
     log('actions for isolate: %s pid: %o ', isolate, pid)
     const api = await this.workerApi(isolate)
     const actions: DispatchFunctions = {}
     for (const functionName of Object.keys(api)) {
-      actions[functionName] = (parameters = {}, proctype = PROCTYPES.SELF) =>
+      actions[functionName] = (parameters = {}, proctype = PROCTYPE.SERIAL) =>
         this.#io.dispatch({ pid, isolate, functionName, parameters, proctype })
     }
     log('actions', isolate, Object.keys(actions))
     return actions
   }
-  async isolateFs(pid: ProcessAddress) {
+  async isolateFs(pid: PID) {
     const uint8 = await this.#db.loadIsolateFs(pid)
     if (!uint8) {
       const repo = `${pid.account}/${pid.repository}`
@@ -94,7 +94,7 @@ export default class Artifact {
     // log('snapshot loaded', toTreeSync(fs))
     return fs
   }
-  async updateIsolateFs(pid: ProcessAddress, fs: IFs) {
+  async updateIsolateFs(pid: PID, fs: IFs) {
     const uint8 = snapshot.toBinarySnapshotSync({ fs })
     log('updateIsolateFs', pretty(uint8.length))
     await this.#db.updateIsolateFs(pid, uint8)

@@ -4,11 +4,12 @@ import {
   Dispatch,
   IoStruct,
   KEYSPACES,
-  ProcessAddress,
+  PID,
   QueuedDispatch,
 } from './constants.ts'
 import { assert } from 'std/assert/assert.ts'
 import { debug } from 'https://deno.land/x/quiet_debug@v1.0.0/mod.ts'
+import { PROCTYPE } from '@/artifact/constants.ts'
 const log = debug('AI:db')
 
 export default class DB {
@@ -26,7 +27,7 @@ export default class DB {
     assert(this.#kv, 'db not open')
     this.#kv.listenQueue(callback)
   }
-  async loadIsolateFs(pid: ProcessAddress) {
+  async loadIsolateFs(pid: PID) {
     assertPid(pid)
     const { account, repository, branches } = pid
     const key = [KEYSPACES.REPO, account, repository, ...branches]
@@ -34,7 +35,7 @@ export default class DB {
     const uint8 = await get(this.#kv, key)
     return uint8
   }
-  async updateIsolateFs(pid: ProcessAddress, uint8: Uint8Array) {
+  async updateIsolateFs(pid: PID, uint8: Uint8Array) {
     await set(this.#kv, [
       KEYSPACES.REPO,
       pid.account,
@@ -56,7 +57,7 @@ export default class DB {
     await this.#kv.set(poolKey, action)
     return iterator
   }
-  async getHeadLock(pid: ProcessAddress) {
+  async getHeadLock(pid: PID) {
     assertPid(pid)
     const headLockKey = getHeadLockKey(pid)
     log('headLockKey %o', headLockKey)
@@ -64,43 +65,31 @@ export default class DB {
     await this.#kv.set(headLockKey, lockId) // naively assume we have the lock
     return lockId
   }
-  async enqueueIo(pid: ProcessAddress, io: IoStruct) {
+  async enqueueIo(pid: PID, io: IoStruct) {
     log('enqueueIo %o', io)
-    const ascendingKeys = sort(Object.keys(io.inputs))
-    let priorKey = null
+    await Promise.all([
+      this.#enqueueSerial(pid, io[PROCTYPE.SERIAL]),
+      this.#enqueueParallel(pid, io[PROCTYPE.PARALLEL]),
+    ])
+  }
+  async #enqueueSerial(pid: PID, serial: IoStruct[PROCTYPE.SERIAL]) {
+    const ascendingKeys = sort(Object.keys(serial.inputs))
     for (const key of ascendingKeys) {
-      const dispatch = io.inputs[key]
-      if (dispatch.proctype === 'SELF') {
-        if (!priorKey && key !== '0') {
-          priorKey = await this.#priorTail(pid)
-        }
-        const tailKeyPrefix = getTailKeyPrefix(pid)
-        const sequence = parseInt(key)
-        const tailKey = [...tailKeyPrefix, sequence]
-        await this.#kv.set(tailKey, dispatch)
-
-        // write a tail commit
-        // use a list to get the prior unless the sequence is 0
-        const queuedDispatch: QueuedDispatch = { dispatch, sequence, priorKey }
-        await this.#kv.enqueue(queuedDispatch)
-      }
+      const dispatch = serial.inputs[key]
+      const tailKeyPrefix = getTailKeyPrefix(pid)
+      const sequence = parseInt(key)
+      const tailKey = [...tailKeyPrefix, sequence]
+      await this.#kv.set(tailKey, true)
+      const queuedDispatch: QueuedDispatch = { dispatch, sequence }
+      await this.#kv.enqueue(queuedDispatch)
     }
   }
-  async #priorTail(pid: ProcessAddress) {
-    const tailKeyPrefix = getTailKeyPrefix(pid)
-    // const end = set an end as an integer, to skip deeper branches
-    // leverages that branch names are strings
-    const start = [...tailKeyPrefix, 0]
-    const end = [...tailKeyPrefix, Number.MAX_SAFE_INTEGER]
-    const list = this.#kv.list({ start, end }, { reverse: true })
-    for await (const entry of list) {
-      console.log('priorTail', entry)
-      // grab the highest sequence number, or null
-      // refuse items with deeper branch count than us
-      return entry.key
-    }
+  async #enqueueParallel(
+    pid: PID,
+    parallel: IoStruct[PROCTYPE.PARALLEL],
+  ) {
   }
-  async getPooledActions(pid: ProcessAddress) {
+  async getPooledActions(pid: PID) {
     const prefix = getPoolKey(pid)
     prefix.pop()
     log('getPooledActions %o', prefix)
@@ -118,23 +107,23 @@ export default class DB {
     log('deletePool %o', keys)
     await Promise.all(keys.map((key) => this.#kv.delete(key)))
   }
-  async releaseHeadlock(pid: ProcessAddress, lockId: string) {
+  async releaseHeadlock(pid: PID, lockId: string) {
     log('releaseHeadlock %s', lockId)
     const headLockKey = getHeadLockKey(pid)
     // TODO check lock is valid
     await this.#kv.delete(headLockKey)
   }
 }
-const getPoolKey = (pid: ProcessAddress) => {
+const getPoolKey = (pid: PID) => {
   const { account, repository, branches } = pid
   // ulid is external, else use source pid and sequence
   return [KEYSPACES.POOL, account, repository, ...branches, ulid()]
 }
-const getHeadLockKey = (pid: ProcessAddress) => {
+const getHeadLockKey = (pid: PID) => {
   const { account, repository, branches } = pid
   return [KEYSPACES.HEADLOCK, account, repository, ...branches]
 }
-const getTailKeyPrefix = (pid: ProcessAddress) => {
+const getTailKeyPrefix = (pid: PID) => {
   const { account, repository, branches } = pid
   // tail, sequence
   return [KEYSPACES.TAIL, account, repository, ...branches]
@@ -155,7 +144,7 @@ const openKv = async () => {
   log('open kv', path)
   return Deno.openKv(path)
 }
-const assertPid = (pid: ProcessAddress) => {
+const assertPid = (pid: PID) => {
   assert(pid.account, 'account is required')
   assert(pid.repository, 'repository is required')
   assert(pid.branches[0], 'branch is required')

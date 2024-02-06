@@ -1,12 +1,12 @@
 import Artifact from '../artifact.ts'
 import { expect, log } from '../tst-helpers.js'
 const isolate = 'io.fixture'
-import { JsonValue, ProcessAddress } from '../constants.ts'
+import { JsonValue, PID } from '../constants.ts'
 
 Deno.test.only('io', async (t) => {
   const artifact = await Artifact.create()
   await artifact.pull('dreamcatcher-tech/HAL')
-  const pid: ProcessAddress = {
+  const pid: PID = {
     account: 'dreamcatcher-tech',
     repository: 'HAL',
     branches: ['main'],
