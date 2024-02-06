@@ -9,8 +9,8 @@ import type {
 } from "./_types.ts";
 import { AssertionError } from "../assert/assertion_error.ts";
 import {
-  addCustomEqualityTester,
-  getCustomEqualityTester,
+  addCustomEqualityTesters,
+  getCustomEqualityTesters,
 } from "./_custom_equality_tester.ts";
 import {
   toBe,
@@ -146,7 +146,7 @@ export function expect(value: unknown, customMessage?: string): Expected {
               value,
               isNot: false,
               customMessage,
-              customTesters: getCustomEqualityTester(),
+              customTesters: getCustomEqualityTesters(),
             };
             if (isNot) {
               context.isNot = true;
@@ -167,4 +167,4 @@ export function expect(value: unknown, customMessage?: string): Expected {
   return self;
 }
 
-expect.addEqualityTester = addCustomEqualityTester;
+expect.addEqualityTesters = addCustomEqualityTesters;

@@ -51,7 +51,7 @@ const duration1 = new Duration(1, "S");
 const duration2 = new Duration(2, "M");
 const duration3 = new Duration(120, "S");
 
-expect.addEqualityTester([isDurationMatch]);
+expect.addEqualityTesters([isDurationMatch]);
 
 function* toIterator<T>(array: Array<T>): Iterator<T> {
   for (const obj of array) {
@@ -64,9 +64,10 @@ Deno.test("Basic custom equality test", () => {
   expect(duration1).not.toEqual(duration3);
   expect(duration1).not.toEqual(duration2);
   expect(duration2).not.toBe(duration1);
-  expect(toIterator([duration1, duration2])).toEqual(
-    toIterator([duration2, duration1]),
-  );
+  // @todo(cinchen): check iterable check pass
+  // expect(toIterator([duration1, duration2])).not.toEqual(
+  //   toIterator([duration2, duration1]),
+  // );
   expect({ a: duration2, b: undefined }).toStrictEqual({
     a: duration3,
     b: undefined,
@@ -81,4 +82,7 @@ Deno.test("Basic custom equality test may contain different Duration Object", ()
   expect(new Map([["key", duration2]])).toEqual(new Map([["key", duration3]]));
   expect(new Set([duration3])).toEqual(new Set([duration2]));
   expect([duration3, duration2]).toEqual([duration2, duration3]);
+  expect(toIterator([duration3, duration2])).toEqual(
+    toIterator([duration2, duration3]),
+  );
 });

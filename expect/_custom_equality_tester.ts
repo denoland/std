@@ -4,7 +4,7 @@ import { Tester } from "./_types.ts";
 
 const customEqualityTesters: Tester[] = [];
 
-export function addCustomEqualityTester(newTesters: Tester[]) {
+export function addCustomEqualityTesters(newTesters: Tester[]) {
   if (!Array.isArray(newTesters)) {
     throw new TypeError(
       `customEqualityTester expects an array of Testers. But got ${typeof newTesters}`,
@@ -14,6 +14,6 @@ export function addCustomEqualityTester(newTesters: Tester[]) {
   customEqualityTesters.push(...newTesters);
 }
 
-export function getCustomEqualityTester() {
+export function getCustomEqualityTesters() {
   return customEqualityTesters;
 }
