@@ -1,7 +1,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-import { DateTimeFormatter } from "./_common.ts";
+import { DateTimeFormatter, Options } from "./_common.ts";
 
 /**
  * Takes an input `date` and a `formatString` to format to a `string`.
@@ -22,9 +22,14 @@ import { DateTimeFormatter } from "./_common.ts";
  *
  * @param date Date
  * @param formatString Format string
+ * @param options Format options
  * @return formatted date string
  */
-export function format(date: Date, formatString: string): string {
+export function format(
+  date: Date,
+  formatString: string,
+  options?: Options,
+): string {
   const formatter = new DateTimeFormatter(formatString);
-  return formatter.format(date);
+  return formatter.format(date, options);
 }
