@@ -103,18 +103,20 @@ export default class DB {
     channel.postMessage(outcome)
     channel.close()
   }
-  async getHeadLock(pid: PID) {
+  async getHeadLock(pid: PID, abortController?: AbortController) {
     assertPid(pid)
     const headLockKey = getHeadLockKey(pid)
     log('headLockKey %o', headLockKey)
-    const existing = await this.#kv.get(headLockKey)
-    if (existing.versionstamp) {
-      throw new Error('Headlock already exists: ' + headLockKey.join('/'))
-      // TODO just wait for the key to become available
+    for await (const [event] of this.#kv.watch([headLockKey])) {
+      log('headLock event %o', event)
+      if (!event.versionstamp) {
+        const lockId = ulid()
+        // TODO use atomics
+        await this.#kv.set(headLockKey, lockId, { expireIn: 5000 })
+        return lockId
+      }
     }
-    const lockId = ulid()
-    await this.#kv.set(headLockKey, lockId, { expireIn: 5000 }) // naively assume we have the lock
-    return lockId
+    throw new Error('headLock unsuccessful')
   }
   async releaseHeadlock(pid: PID, lockId: string) {
     log('releaseHeadlock %s', lockId)
