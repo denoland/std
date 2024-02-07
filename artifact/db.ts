@@ -62,8 +62,8 @@ export default class DB {
       ...pid.branches,
     ], uint8)
   }
-  async awaitPoolDrained(dispatch: Dispatch) {
-    const { pid, nonce } = dispatch
+  async awaitPoolDrained(action: Poolable) {
+    const { pid, nonce } = action.payload // ? maybe move to meta key ?
     assertPid(pid)
     const poolKey = getPoolKey(pid, nonce)
     log('watch pool %o', poolKey)
@@ -71,9 +71,9 @@ export default class DB {
     const iterator = stream[Symbol.asyncIterator]()
     // guarantee key is empty
     const first = await iterator.next()
-    assert(!first.value[0].versionstamp)
+    assert(!first.value[0].versionstamp, 'pool key must be empty')
     log('watchPool first %o', first)
-    await this.#kv.set(poolKey, dispatch)
+    await this.#kv.set(poolKey, action)
     for await (const [event] of iterator) {
       if (!event.versionstamp) {
         return
@@ -108,9 +108,22 @@ export default class DB {
     assertPid(pid)
     const headLockKey = getHeadLockKey(pid)
     log('headLockKey %o', headLockKey)
+    const existing = await this.#kv.get(headLockKey)
+    if (existing.versionstamp) {
+      throw new Error('Headlock already exists: ' + headLockKey.join('/'))
+    }
     const lockId = ulid()
     await this.#kv.set(headLockKey, lockId) // naively assume we have the lock
     return lockId
+  }
+  async releaseHeadlock(pid: PID, lockId: string) {
+    log('releaseHeadlock %s', lockId)
+    const headLockKey = getHeadLockKey(pid)
+    const existing = await this.#kv.get(headLockKey)
+    if (existing.value !== lockId) {
+      throw new Error('Headlock mismatch: ' + headLockKey.join('/'))
+    }
+    await this.#kv.delete(headLockKey)
   }
   async enqueueIo(pid: PID, io: IoStruct) {
     log('enqueueIo %o', io)
@@ -140,9 +153,9 @@ export default class DB {
     log('getPooledActions %o', prefix)
     const entries = this.#kv.list({ prefix })
     const keys = []
-    const values: Dispatch[] = []
+    const values: Poolable[] = []
     for await (const entry of entries) {
-      const value = entry.value as Dispatch
+      const value = entry.value as Poolable
       keys.push(entry.key)
       values.push(value)
     }
@@ -151,12 +164,6 @@ export default class DB {
   async deletePool(keys: Deno.KvKey[]) {
     log('deletePool %o', keys)
     await Promise.all(keys.map((key) => this.#kv.delete(key)))
-  }
-  async releaseHeadlock(pid: PID, lockId: string) {
-    log('releaseHeadlock %s', lockId)
-    const headLockKey = getHeadLockKey(pid)
-    // TODO check lock is valid
-    await this.#kv.delete(headLockKey)
   }
 }
 

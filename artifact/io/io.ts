@@ -94,16 +94,15 @@ export default class IO {
     await this.#db.releaseHeadlock(pid, lockId)
   }
 
-  async dispatch(dispatch: Dispatch) {
-    log('dispatch with isolate: %s', dispatch.isolate)
-    const { pid } = dispatch
-
+  async dispatch(payload: Dispatch) {
+    log('dispatch with isolate: %s', payload.isolate)
+    const dispatch: Poolable = { type: 'DISPATCH', payload }
     const awaitPoolDrained = this.#db.awaitPoolDrained(dispatch)
     const poolDrainedPromise = new Promise((resolve, reject) => {
       const watch = async () => {
         await awaitPoolDrained
         log('poolDrained')
-        const outcome = await this.#db.awaitOutcome(dispatch)
+        const outcome = await this.#db.awaitOutcome(payload)
         log('outcome', outcome)
         if (!outcome.error) {
           resolve(outcome.result)
@@ -114,6 +113,7 @@ export default class IO {
       watch()
     })
 
+    const { pid } = payload
     const lockId = await this.#db.getHeadLock(pid) // make abortable
 
     const fs = await this.#artifact.isolateFs(pid)
@@ -181,11 +181,11 @@ export default class IO {
     const api = await worker.load(isolate)
     return { worker, api }
   }
+}
+const updateIo = async (api: IsolateApi, actions: Poolable[]) => {
   // the patch generation should be the same for io as for any splice.
   // this should be jsonpatch with some extra validation against a jsonschema
-}
-const updateIo = async (api: IsolateApi, actions: Dispatch[]) => {
-  // we could delete teh IO of the current commit, since nobody needs it now ?
+
   log('updateIo')
   const io: IoStruct = {
     [PROCTYPE.SERIAL]: { sequence: 0, inputs: {}, outputs: {} },
@@ -200,9 +200,26 @@ const updateIo = async (api: IsolateApi, actions: Dispatch[]) => {
       throw err
     }
   }
-  for (const dispatch of actions) {
-    const queue = io[dispatch.proctype]
-    queue.inputs[queue.sequence++] = dispatch
+  for (const action of actions) {
+    switch (action.type) {
+      case 'REPLY': {
+        const queue = io[PROCTYPE.SERIAL]
+        const { sequence, outcome } = action.payload
+        queue.outputs[sequence] = outcome
+        break
+      }
+      case 'MERGE': {
+        const queue = io[PROCTYPE.PARALLEL]
+        // TODO copy over the inputs
+        break
+      }
+      case 'DISPATCH': {
+        const proctype = action.payload.proctype
+        const queue = io[proctype]
+        queue.inputs[queue.sequence++] = action.payload
+        break
+      }
+    }
   }
   log('updateIo')
   api.writeJSON(IO_PATH, io)

@@ -43,10 +43,11 @@ export type IoStruct = {
   [PROCTYPE.SERIAL]: IoProctypeStruct
   [PROCTYPE.PARALLEL]: IoProctypeStruct
 }
+export type Outcome = { result?: JsonValue; error?: string }
 export type IoProctypeStruct = {
   sequence: number
   inputs: { [key: string]: Dispatch }
-  outputs: { [key: string]: { result?: JsonValue; error: string } }
+  outputs: { [key: string]: Outcome }
 }
 export const ENTRY_BRANCH = 'main'
 /**
@@ -58,10 +59,10 @@ export type PID = {
   branches: [string, ...string[]]
 }
 
-export type Poolable = {
-  type: 'REPLY' | 'MERGE' | 'DISPATCH'
-  payload: Reply | Merge | Poolable
-}
+export type Poolable =
+  | { type: 'REPLY'; payload: Reply }
+  | { type: 'MERGE'; payload: Merge }
+  | { type: 'DISPATCH'; payload: Dispatch }
 
 export type Reply = {
   pid: PID
@@ -115,5 +116,3 @@ export type QueuedCommit = {
   pid: PID
   hash: string
 }
-
-export type Outcome = { result?: JsonValue; error?: string }
