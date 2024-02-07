@@ -62,7 +62,7 @@ export default class DB {
       ...pid.branches,
     ], uint8)
   }
-  async awaitPoolDrained(action: Poolable) {
+  async poolAction(action: Poolable) {
     const { pid, nonce } = action.payload // ? maybe move to meta key ?
     assertPid(pid)
     const poolKey = getPoolKey(pid, nonce)

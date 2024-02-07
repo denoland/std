@@ -69,14 +69,24 @@ export default class IO {
     await this.#db.tailDone(dispatch.pid, sequence)
   }
   async #replyIO(pid: PID, fs: IFs, outcome: Outcome, sequence: number) {
+    const nonce = `reply-${sequence}` // TODO try remove nonces altogether
+    const payload = { pid, nonce, sequence, outcome }
+    const reply: Poolable = { type: 'REPLY', payload }
+    this.#db.poolAction(reply)
+    await this.#commitPool(pid, fs)
+  }
+  async #commitPool(pid: PID, fsToCommit?: IFs) {
     const lockId = await this.#db.getHeadLock(pid) // make abortable
+    // TODO await for pool drain, so can concurrently commit
+    const fs = await this.#artifact.isolateFs(pid)
+    if (fsToCommit) {
+      // TODO detect written files in the fs
+      // TODO copy over files from fsToCommit that are not .io.json
+    }
 
-    const headFs = await this.#artifact.isolateFs(pid)
-    const headApi = IsolateApi.create(headFs, this.#artifact)
-
-    // TODO copy over files from fs to headFs
+    const api = IsolateApi.create(fs, this.#artifact)
     const { keys, values } = await this.#db.getPooledActions(pid)
-    const io = await updateIo(headApi, values)
+    const io = await updateIo(api, values)
     await git.add({ fs, dir: '/', filepath: IO_PATH })
     const hash = await git.commit({
       fs,
@@ -89,7 +99,6 @@ export default class IO {
     await this.#artifact.updateIsolateFs(pid, fs)
     await this.#db.enqueueIo(pid, io)
 
-    // blank the processed pool items
     await this.#db.deletePool(keys)
     await this.#db.releaseHeadlock(pid, lockId)
   }
@@ -97,7 +106,7 @@ export default class IO {
   async dispatch(payload: Dispatch) {
     log('dispatch with isolate: %s', payload.isolate)
     const dispatch: Poolable = { type: 'DISPATCH', payload }
-    const awaitPoolDrained = this.#db.awaitPoolDrained(dispatch)
+    const awaitPoolDrained = this.#db.poolAction(dispatch)
     const poolDrainedPromise = new Promise((resolve, reject) => {
       const watch = async () => {
         await awaitPoolDrained
@@ -113,30 +122,7 @@ export default class IO {
       watch()
     })
 
-    const { pid } = payload
-    const lockId = await this.#db.getHeadLock(pid) // make abortable
-
-    const fs = await this.#artifact.isolateFs(pid)
-    const headApi = IsolateApi.create(fs, this.#artifact)
-    const { keys, values } = await this.#db.getPooledActions(pid)
-    const io = await updateIo(headApi, values)
-    await git.add({ fs, dir: '/', filepath: IO_PATH })
-    const hash = await git.commit({
-      fs,
-      dir: '/',
-      message: 'pool',
-      author: { name: 'IO' },
-    })
-    log('commitHash', hash)
-
-    await this.#artifact.updateIsolateFs(pid, fs)
-
-    await this.#db.enqueueIo(pid, io)
-
-    // blank the processed pool items
-    await this.#db.deletePool(keys)
-    await this.#db.releaseHeadlock(pid, lockId)
-
+    await this.#commitPool(payload.pid)
     return poolDrainedPromise
   }
 
