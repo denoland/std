@@ -109,7 +109,7 @@ export default class DB {
     log('headLockKey %o', headLockKey)
     const existing = await this.#kv.get(headLockKey)
     if (existing.versionstamp) {
-      // throw new Error('Headlock already exists: ' + headLockKey.join('/'))
+      throw new Error('Headlock already exists: ' + headLockKey.join('/'))
       // TODO just wait for the key to become available
     }
     const lockId = ulid()
@@ -121,7 +121,9 @@ export default class DB {
     const headLockKey = getHeadLockKey(pid)
     const existing = await this.#kv.get(headLockKey)
     if (existing.value !== lockId) {
-      throw new Error('Headlock mismatch: ' + headLockKey.join('/'))
+      throw new Error(
+        'Headlock mismatch: ' + headLockKey.join('/') + ' ' + lockId,
+      )
     }
     await this.#kv.delete(headLockKey)
   }
