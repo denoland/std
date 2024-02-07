@@ -46,6 +46,7 @@ export default class IO {
           // begin executing the isolate
           // commit the result to the branch
           // first off the dispatch to the newly created branch to be carried on
+          return Promise.resolve()
         }
       }
     })

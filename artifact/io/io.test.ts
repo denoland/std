@@ -2,7 +2,6 @@ import Artifact from '../artifact.ts'
 import { expect, log } from '../tst-helpers.js'
 const isolate = 'io.fixture'
 import { JsonValue, PID } from '../constants.ts'
-import { delay } from 'https://deno.land/std@0.211.0/async/delay.ts'
 
 Deno.test.only('io', async (t) => {
   const artifact = await Artifact.create()
@@ -12,18 +11,14 @@ Deno.test.only('io', async (t) => {
     repository: 'HAL',
     branches: ['main'],
   }
-  const actions = await artifact.actions(isolate, pid)
-
-  // should be able to make a new blank repo, just for testing ?
 
   let result
-  result = await actions.local()
-  log('result:', result)
-  expect(result).toBe('local reply')
-  // await t.step('local', async () => {
-  //   result = await actions.local()
-  //   expect(result).toBe('local reply')
-  // })
+  const actions = await artifact.actions(isolate, pid)
+  await t.step('local', async () => {
+    result = await actions.local()
+    expect(result).toBe('local reply')
+    await artifact.quiesce()
+  })
   // await t.step('second local', async () => {
   //   const second = await actions.local({})
   //   expect(second).toBe(result)
@@ -37,6 +32,7 @@ Deno.test.only('io', async (t) => {
   //   expect(result).toBe('remote pong')
   // })
   artifact.stop()
+  log('done')
 })
 Deno.test.ignore('child to self', async (t) => {})
 Deno.test.ignore('child to child', async (t) => {})

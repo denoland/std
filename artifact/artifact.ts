@@ -40,6 +40,13 @@ export default class Artifact {
   stop() {
     this.#db.stop()
   }
+  /**
+   * Waits until the message queue is empty AND all callback promises have
+   * settled.
+   */
+  quiesce() {
+    return this.#db.quiesce()
+  }
   async pull(repo: string) {
     // TODO split this out to a dedicated network git module
     const [account, repository] = repo.split('/')
