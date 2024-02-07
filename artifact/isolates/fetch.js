@@ -1,6 +1,3 @@
-import Debug from 'debug'
-const debug = Debug('AI:fetch')
-
 export const api = {
   // TODO make a readPage function that returns a summary of a url
   post: {
@@ -36,7 +33,7 @@ export const api = {
   },
 }
 export const functions = {
-  post: async ({ url, data }) => {
+  post: ({ url, data }) => {
     debug('post', url, data)
     const requestOptions = {
       method: 'POST',

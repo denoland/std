@@ -1,7 +1,3 @@
-import { serializeError } from 'serialize-error'
-import Debug from 'debug'
-const debug = Debug('AI:fetch')
-
 export const api = {
   delay: {
     description:
@@ -27,7 +23,6 @@ export const api = {
 }
 export const functions = {
   delay: async ({ milliseconds }) => {
-    debug('delay', milliseconds)
     await new Promise((resolve) => setTimeout(resolve, milliseconds))
     return new Date().toLocaleString()
   },

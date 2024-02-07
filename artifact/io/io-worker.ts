@@ -4,15 +4,18 @@ import { debug } from '$debug'
 import { Isolate, IsolatedFunctions, Parameters } from '@/artifact/constants.ts'
 import IsolateApi from '../isolate-api.ts'
 
+// deno has no dynamic runtime imports, so this is a workaround
+import isolates from '../isolates/index.ts'
+
 const log = debug('AI:io-worker')
 
 const worker = () => {
   let module: Isolate
   return {
-    async load(isolate: string) {
+    load(isolate: string) {
       assert(!module, 'module already loaded: ' + isolate)
       log('load isolate:', isolate)
-      module = await import(`../isolates/${isolate}.js`) as Isolate
+      module = isolates[isolate as keyof typeof isolates] as Isolate
       const { functions, api } = module
       assert(typeof api === 'object', 'api not exported')
       assert(typeof functions === 'object', 'functions not exported')

@@ -1,7 +1,4 @@
-import { isBrowser } from 'wherearewe'
-
-import Debug from 'debug'
-const debug = Debug('AI:io.fixture')
+import { isBrowser } from 'npm:wherearewe'
 
 export const api = {
   openUrl: {
@@ -16,11 +13,10 @@ export const api = {
   },
 }
 export const functions = {
-  openUrl: async ({ url }) => {
-    debugger
+  openUrl: ({ url }) => {
     if (!isBrowser) {
       throw new Error('cannot open window unless running in browser')
     }
-    window.open(url, '_blank')
+    globalThis.open(url, '_blank')
   },
 }
