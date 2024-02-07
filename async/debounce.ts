@@ -26,7 +26,7 @@ export interface DebouncedFunction<T extends Array<unknown>> {
  * ```
  * import { debounce } from "https://deno.land/std@$STD_VERSION/async/debounce.ts";
  *
- * Array.fromAsync(
+ * await Array.fromAsync(
  *   Deno.watchFs('./'),
  *   debounce((event) => {
  *     console.log('[%s] %s', event.kind, event.paths[0]);
