@@ -33,7 +33,7 @@ export default class DB {
     }
     const tailKey = getTailKey(pid, sequence - 1)
     log('awaitPrior %o', tailKey)
-    for await (const [event] of this.#kv.watch([tailKey])) {
+    for await (const [event] of this.#kv.watch([tailKey], { raw: true })) {
       log('awaitPrior event %o', event)
       if (!event.versionstamp) {
         return
@@ -66,7 +66,7 @@ export default class DB {
     assertPid(pid)
     const poolKey = getPoolKey(pid, nonce)
     log('watch pool %o', poolKey)
-    const stream = this.#kv.watch([poolKey])
+    const stream = this.#kv.watch([poolKey], { raw: true })
     const iterator = stream[Symbol.asyncIterator]()
     // guarantee key is empty
     const first = await iterator.next()
@@ -111,7 +111,7 @@ export default class DB {
     const headLockKey = getHeadLockKey(pid)
     log('headLockKey %o', headLockKey)
     const start = Date.now()
-    for await (const [event] of this.#kv.watch([headLockKey])) {
+    for await (const [event] of this.#kv.watch([headLockKey], { raw: true })) {
       log('headLock event %o', event)
       if (!event.versionstamp) {
         const lockId = ulid()

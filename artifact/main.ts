@@ -11,7 +11,7 @@ Deno.serve(async (req) => {
   if (req.url === '/favicon.ico') {
     return new Response('', { status: 404 })
   }
-  log('start')
+  log('start', req.url)
 
   await artifact.pull('dreamcatcher-tech/HAL')
   log('pull done')

@@ -42,7 +42,7 @@ export default class Artifact {
   async pull(repo: string) {
     // TODO split this out to a dedicated network git module
     const [account, repository] = repo.split('/')
-    // TODO acquire lock on the repo in the kv store ?
+    // TODO acquire lock on the repo in the kv store
     // TODO handle existing repo
 
     const { fs } = memfs()

@@ -31,7 +31,6 @@ Deno.test.only('io', async (t) => {
   //   expect(result).toBe('remote pong')
   // })
   artifact.stop()
-  log('done')
 })
 Deno.test.ignore('child to self', async (t) => {})
 Deno.test.ignore('child to child', async (t) => {})
