@@ -182,7 +182,12 @@ const getTailKey = (pid: PID, sequence: number) => {
   const { account, repository, branches } = pid
   return [KEYSPACES.TAIL, account, repository, ...branches, sequence]
 }
+const isDenoDeploy = Deno.env.get('DENO_DEPLOYMENT_ID') !== undefined
 const openKv = async () => {
+  if (isDenoDeploy) {
+    return Deno.openKv()
+  }
+
   const KEY = 'DENO_KV_PATH'
   let path = ':memory:'
   const permission = await Deno.permissions.query({
