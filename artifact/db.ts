@@ -109,10 +109,11 @@ export default class DB {
     log('headLockKey %o', headLockKey)
     const existing = await this.#kv.get(headLockKey)
     if (existing.versionstamp) {
-      throw new Error('Headlock already exists: ' + headLockKey.join('/'))
+      // throw new Error('Headlock already exists: ' + headLockKey.join('/'))
+      // TODO just wait for the key to become available
     }
     const lockId = ulid()
-    await this.#kv.set(headLockKey, lockId) // naively assume we have the lock
+    await this.#kv.set(headLockKey, lockId, { expireIn: 5000 }) // naively assume we have the lock
     return lockId
   }
   async releaseHeadlock(pid: PID, lockId: string) {
@@ -137,7 +138,7 @@ export default class DB {
       const dispatch = serial.inputs[key]
       const sequence = parseInt(key)
       const tailKey = getTailKey(pid, sequence)
-      await this.#kv.set(tailKey, false)
+      await this.#kv.set(tailKey, true)
       const queuedDispatch: QueuedDispatch = { dispatch, sequence }
       await this.#kv.enqueue(queuedDispatch)
     }
