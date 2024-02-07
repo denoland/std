@@ -1,5 +1,5 @@
 import { assert } from 'std/assert/mod.ts'
-import { debug } from 'https://deno.land/x/quiet_debug@v1.0.0/mod.ts'
+import debug from '$debug'
 const log = debug('AI:isolates:engage-help')
 
 const engage = {

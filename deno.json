@@ -34,7 +34,7 @@
     "$fresh/": "https://deno.land/x/fresh@1.6.3/",
     "fresh_charts/": "https://deno.land/x/fresh_charts@0.3.1/",
     "$gfm": "https://deno.land/x/gfm@0.2.5/mod.ts",
-    "$debug": "https://deno.land/x/quiet_debug/mod.ts",
+    "$debug": "https://deno.land/x/debuglog/debug.ts",
     "tabler_icons_tsx/": "https://deno.land/x/tabler_icons_tsx@0.0.4/tsx/",
     "@preact/signals-core": "https://esm.sh/*@preact/signals-core@1.5.0",
     "@preact/signals": "https://esm.sh/*@preact/signals@1.2.1",

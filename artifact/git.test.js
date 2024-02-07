@@ -2,7 +2,7 @@ import { assertEquals } from '$std/assert/mod.ts'
 import { memfs } from 'https://esm.sh/memfs'
 import git from '$git'
 import http from '$git/http/web'
-import { debug } from '$debug'
+import debug from '$debug'
 import * as snapshot from 'https://esm.sh/memfs/lib/snapshot'
 
 const debug = Debug('AI:artifact')

@@ -1,6 +1,6 @@
 import IO from './io/io.ts'
 import * as posix from 'https://deno.land/std@0.213.0/path/posix/mod.ts'
-import { debug } from 'https://deno.land/x/quiet_debug@v1.0.0/mod.ts'
+import debug from '$debug'
 import git from 'https://esm.sh/isomorphic-git@1.25.3'
 import http from 'https://esm.sh/isomorphic-git@1.25.3/http/web'
 import { IFs, memfs } from 'https://esm.sh/memfs@4.6.0'
@@ -73,8 +73,8 @@ export default class Artifact {
     const api = await this.workerApi(isolate)
     const actions: DispatchFunctions = {}
     for (const functionName of Object.keys(api)) {
-      actions[functionName] = (parameters = {}, proctype = PROCTYPE.SERIAL) =>
-        this.#io.dispatch({
+      actions[functionName] = (parameters = {}, proctype = PROCTYPE.SERIAL) => {
+        return this.#io.dispatch({
           pid,
           isolate,
           functionName,
@@ -82,6 +82,7 @@ export default class Artifact {
           proctype,
           nonce: ulid(), // this should be formulaic for chain to chain
         })
+      }
     }
     log('actions', isolate, Object.keys(actions))
     return actions

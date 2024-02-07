@@ -3,7 +3,7 @@ import { assert } from 'std/assert/mod.ts'
 import { JsonValue } from '@/artifact/constants.ts'
 import Artifact from './artifact.ts'
 import * as posix from 'https://deno.land/std@0.213.0/path/posix/mod.ts'
-import { debug } from '$debug'
+import debug from '$debug'
 import git from '$git'
 
 const log = debug('AI:isolateApi')

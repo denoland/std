@@ -1,4 +1,4 @@
-import { debug } from '$debug'
+import debug from '$debug'
 import { expect } from 'https://deno.land/std@0.213.0/expect/mod.ts'
 
 const _log = debug('AI:test')

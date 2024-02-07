@@ -1,6 +1,6 @@
 import { assert } from 'std/assert/mod.ts'
 import * as posix from 'https://deno.land/std@0.213.0/path/posix/mod.ts'
-import { debug } from 'https://deno.land/x/quiet_debug@v1.0.0/mod.ts'
+import debug from '$debug'
 import merge from 'npm:lodash.merge'
 import OpenAI from 'npm:openai'
 import * as hooks from '@io/io-hooks.js'

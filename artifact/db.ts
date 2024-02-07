@@ -10,7 +10,7 @@ import {
   QueuedDispatch,
 } from '@/artifact/constants.ts'
 import { assert } from 'std/assert/assert.ts'
-import { debug } from 'https://deno.land/x/quiet_debug@v1.0.0/mod.ts'
+import debug from '$debug'
 import { PROCTYPE } from '@/artifact/constants.ts'
 const log = debug('AI:db')
 
