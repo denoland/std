@@ -1,9 +1,9 @@
-// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
 /**
  * Extensions to the
- * [Web Crypto](https://developer.mozilla.org/en-US/docs/Web/API/Web_Crypto_API)
+ * {@link https://developer.mozilla.org/en-US/docs/Web/API/Web_Crypto_API | Web Crypto}
  * supporting additional encryption APIs, but also delegating to the built-in
  * APIs when possible.
  *

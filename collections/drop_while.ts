@@ -1,4 +1,4 @@
-// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
 /**
@@ -23,7 +23,7 @@ export function dropWhile<T>(
   let offset = 0;
   const length = array.length;
 
-  while (length > offset && predicate(array[offset])) {
+  while (length > offset && predicate(array[offset] as T)) {
     offset++;
   }
 

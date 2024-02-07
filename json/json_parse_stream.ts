@@ -1,4 +1,4 @@
-// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
 import type { JsonValue, ParseStreamOptions } from "./common.ts";
@@ -12,7 +12,7 @@ function isBrankString(str: string) {
 /**
  * Parse each chunk as JSON.
  *
- * This can be used to parse [JSON lines](https://jsonlines.org/), [NDJSON](http://ndjson.org/) and [JSON Text Sequences](https://datatracker.ietf.org/doc/html/rfc7464).
+ * This can be used to parse {@link https://jsonlines.org/ | JSON lines}, {@link http://ndjson.org/ | NDJSON} and {@link https://datatracker.ietf.org/doc/html/rfc7464 | JSON Text Sequences}.
  * Chunks consisting of spaces, tab characters, or newline characters will be ignored.
  *
  * @example
@@ -56,11 +56,7 @@ function isBrankString(str: string) {
  * ```
  */
 export class JsonParseStream extends TransformStream<string, JsonValue> {
-  /**
-   * @param options
-   * @param options.writableStrategy Controls the buffer of the TransformStream used internally. Check https://developer.mozilla.org/en-US/docs/Web/API/TransformStream/TransformStream.
-   * @param options.readableStrategy Controls the buffer of the TransformStream used internally. Check https://developer.mozilla.org/en-US/docs/Web/API/TransformStream/TransformStream.
-   */
+  /** Constructs new instance. */
   constructor({ writableStrategy, readableStrategy }: ParseStreamOptions = {}) {
     super(
       {

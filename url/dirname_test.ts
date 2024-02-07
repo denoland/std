@@ -1,4 +1,4 @@
-// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
 import { assertEquals } from "../assert/mod.ts";
 import * as url from "./mod.ts";
@@ -24,9 +24,9 @@ const TESTSUITE = [
     new URL("https://deno.land///"),
     new URL("https://deno.land"),
   ],
-];
+] as const;
 
-Deno.test("dirname", function () {
+Deno.test("dirname()", function () {
   for (const [test_url, expected] of TESTSUITE) {
     assertEquals(url.dirname(test_url), expected);
   }

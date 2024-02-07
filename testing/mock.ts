@@ -1,4 +1,4 @@
-// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
 /** A mocking and spying library.
  *
@@ -290,24 +290,12 @@ export interface Spy<
 
 /** Wraps a function with a Spy. */
 function functionSpy<
-  // deno-lint-ignore no-explicit-any
-  Self = any,
-  // deno-lint-ignore no-explicit-any
-  Args extends unknown[] = any[],
-  Return = undefined,
->(): Spy<Self, Args, Return>;
-function functionSpy<
-  Self,
-  Args extends unknown[],
-  Return,
->(func: (this: Self, ...args: Args) => Return): Spy<Self, Args, Return>;
-function functionSpy<
   Self,
   Args extends unknown[],
   Return,
 >(func?: (this: Self, ...args: Args) => Return): Spy<Self, Args, Return> {
-  const original = func ?? (() => {}) as (this: Self, ...args: Args) => Return,
-    calls: SpyCall<Self, Args, Return>[] = [];
+  const original = func ?? (() => {}) as (this: Self, ...args: Args) => Return;
+  const calls: SpyCall<Self, Args, Return>[] = [];
   const spy = function (this: Self, ...args: Args): Return {
     const call: SpyCall<Self, Args, Return> = { args };
     if (this) call.self = this;
@@ -361,7 +349,7 @@ const sessions: Set<Spy<any, any[], any>>[] = [];
 // deno-lint-ignore no-explicit-any
 function getSession(): Set<Spy<any, any[], any>> {
   if (sessions.length === 0) sessions.push(new Set());
-  return sessions[sessions.length - 1];
+  return sessions.at(-1)!;
 }
 // deno-lint-ignore no-explicit-any
 function registerMock(spy: Spy<any, any[], any>) {
@@ -547,8 +535,8 @@ function constructorSpy<
 >(
   constructor: new (...args: Args) => Self,
 ): ConstructorSpy<Self, Args> {
-  const original = constructor,
-    calls: SpyCall<Self, Args, Self>[] = [];
+  const original = constructor;
+  const calls: SpyCall<Self, Args, Self>[] = [];
   // @ts-ignore TS2509: Can't know the type of `original` statically.
   const spy = class extends original {
     constructor(...args: Args) {
@@ -636,17 +624,19 @@ export function spy<
     | Self,
   property?: keyof Self,
 ): SpyLike<Self, Args, Return> {
-  return !funcOrConstOrSelf
-    ? functionSpy<Self, Args, Return>()
-    : property !== undefined
-    ? methodSpy<Self, Args, Return>(funcOrConstOrSelf as Self, property)
-    : funcOrConstOrSelf.toString().startsWith("class")
-    ? constructorSpy<Self, Args>(
+  if (!funcOrConstOrSelf) {
+    return functionSpy<Self, Args, Return>();
+  } else if (property !== undefined) {
+    return methodSpy<Self, Args, Return>(funcOrConstOrSelf as Self, property);
+  } else if (funcOrConstOrSelf.toString().startsWith("class")) {
+    return constructorSpy<Self, Args>(
       funcOrConstOrSelf as new (...args: Args) => Self,
-    )
-    : functionSpy<Self, Args, Return>(
+    );
+  } else {
+    return functionSpy<Self, Args, Return>(
       funcOrConstOrSelf as (this: Self, ...args: Args) => Return,
     );
+  }
 }
 
 /** An instance method replacement that records all calls made to it. */
@@ -818,6 +808,19 @@ export interface ExpectedSpyCall<
   };
 }
 
+function getSpyCall<
+  Self,
+  Args extends unknown[],
+  Return,
+>(
+  spy: SpyLike<Self, Args, Return>,
+  callIndex: number,
+): SpyCall {
+  if (spy.calls.length < (callIndex + 1)) {
+    throw new AssertionError("spy not called as much as expected");
+  }
+  return spy.calls[callIndex]!;
+}
 /**
  * Asserts that a spy is called as expected.
  */
@@ -830,10 +833,7 @@ export function assertSpyCall<
   callIndex: number,
   expected?: ExpectedSpyCall<Self, Args, Return>,
 ) {
-  if (spy.calls.length < (callIndex + 1)) {
-    throw new AssertionError("spy not called as much as expected");
-  }
-  const call: SpyCall = spy.calls[callIndex];
+  const call = getSpyCall(spy, callIndex);
   if (expected) {
     if (expected.args) {
       try {
@@ -915,7 +915,7 @@ export async function assertSpyCallAsync<
     delete expectedSync.error;
   }
   assertSpyCall(spy, callIndex, expectedSync);
-  const call = spy.calls[callIndex];
+  const call = getSpyCall(spy, callIndex);
 
   if (call.error) {
     throw new AssertionError(
@@ -991,9 +991,8 @@ export function assertSpyCallArg<
   argIndex: number,
   expected: ExpectedArg,
 ): ExpectedArg {
-  assertSpyCall(spy, callIndex);
-  const call = spy.calls[callIndex];
-  const arg = call.args[argIndex];
+  const call = getSpyCall(spy, callIndex);
+  const arg = call?.args[argIndex];
   assertEquals(arg, expected);
   return arg as ExpectedArg;
 }
@@ -1049,8 +1048,7 @@ export function assertSpyCallArgs<
   argsEnd?: number | ExpectedArgs,
   expected?: ExpectedArgs,
 ): ExpectedArgs {
-  assertSpyCall(spy, callIndex);
-  const call = spy.calls[callIndex];
+  const call = getSpyCall(spy, callIndex);
   if (!expected) {
     expected = argsEnd as ExpectedArgs;
     argsEnd = undefined;
@@ -1084,8 +1082,8 @@ export function returnsThis<
 // deno-lint-ignore no-explicit-any
 export function returnsArg<Arg, Self = any>(
   idx: number,
-): (this: Self, ...args: Arg[]) => Arg {
-  return function (...args: Arg[]): Arg {
+): (this: Self, ...args: Arg[]) => Arg | undefined {
+  return function (...args: Arg[]): Arg | undefined {
     return args[idx];
   };
 }

@@ -1,5 +1,5 @@
-// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
-import type { SemVer, SemVerComparator } from "./types.ts";
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+import type { Comparator, SemVer } from "./types.ts";
 
 /**
  * MAX is a sentinel value used by some range calculations.
@@ -29,10 +29,10 @@ export const MIN: SemVer = {
  * which may be the result of impossible ranges or comparator operations.
  * @example
  * ```ts
- * import { eq } from "https://deno.land/std@$STD_VERSION/semver/eq.ts";
+ * import { equals } from "https://deno.land/std@$STD_VERSION/semver/equals.ts";
  * import { parse } from "https://deno.land/std@$STD_VERSION/semver/parse.ts";
  * import { INVALID } from "https://deno.land/std@$STD_VERSION/semver/constants.ts"
- * eq(parse("1.2.3"), INVALID);
+ * equals(parse("1.2.3"), INVALID);
  * ```
  */
 export const INVALID: SemVer = {
@@ -48,10 +48,10 @@ export const INVALID: SemVer = {
  * SemVer object and should not be used directly.
  * @example
  * ```ts
- * import { eq } from "https://deno.land/std@$STD_VERSION/semver/eq.ts";
+ * import { equals } from "https://deno.land/std@$STD_VERSION/semver/equals.ts";
  * import { parse } from "https://deno.land/std@$STD_VERSION/semver/parse.ts";
  * import { ANY } from "https://deno.land/std@$STD_VERSION/semver/constants.ts"
- * eq(parse("1.2.3"), ANY); // false
+ * equals(parse("1.2.3"), ANY); // false
  * ```
  */
 export const ANY: SemVer = {
@@ -65,19 +65,17 @@ export const ANY: SemVer = {
 /**
  * A comparator which will span all valid semantic versions
  */
-export const ALL: SemVerComparator = {
+export const ALL: Comparator = {
   operator: "",
+  ...ANY,
   semver: ANY,
-  min: MIN,
-  max: MAX,
 };
 
 /**
  * A comparator which will not span any semantic versions
  */
-export const NONE: SemVerComparator = {
+export const NONE: Comparator = {
   operator: "<",
+  ...MIN,
   semver: MIN,
-  min: MAX,
-  max: MIN,
 };

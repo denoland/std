@@ -1,4 +1,4 @@
-// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
 import { assertEquals } from "../assert/mod.ts";
 import { mapValues } from "./map_values.ts";
@@ -13,7 +13,7 @@ function mapValuesTest<T, O>(
 }
 
 Deno.test({
-  name: "[collections/mapValues] no mutation",
+  name: "mapValues() handles no mutation",
   fn() {
     const object = { a: 5, b: true };
     mapValues(object, (it) => it ?? "nothing");
@@ -23,7 +23,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/mapValues] empty input",
+  name: "mapValues() handles empty input",
   fn() {
     mapValuesTest(
       [{}, (it) => it],
@@ -33,7 +33,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/mapValues] identity",
+  name: "mapValues() handles identity",
   fn() {
     mapValuesTest(
       [
@@ -54,7 +54,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/mapValues] falsy values",
+  name: "mapValues() handles falsy values",
   fn() {
     mapValuesTest<number, null | undefined | string | boolean>(
       [
@@ -77,7 +77,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/mapValues] normal mappers",
+  name: "mapValues() handles normal mappers",
   fn() {
     mapValuesTest(
       [
@@ -107,5 +107,49 @@ Deno.test({
         "Rice": "3.50",
       },
     );
+  },
+});
+
+Deno.test({
+  name: "mapValues() preserves key type (Record)",
+  fn() {
+    type Variants = "a" | "b";
+    const input: Record<Variants, string> = { a: "a", b: "b" };
+    const actual = mapValues(
+      input,
+      (_: string) => 1,
+    );
+    const expected = { a: 1, b: 1 };
+
+    assertEquals(actual, expected);
+  },
+});
+
+Deno.test({
+  name: "mapValues() preserves key type (Partial Record)",
+  fn() {
+    type Variants = "a" | "b";
+    const input: Partial<Record<Variants, string>> = { a: "a" };
+    const actual = mapValues(
+      input,
+      (_: string) => 1,
+    );
+    const expected = { a: 1 };
+
+    assertEquals(actual, expected);
+  },
+});
+
+Deno.test({
+  name: "mapValues() pass key to transformer",
+  fn() {
+    const key = "key";
+    const actual = mapValues(
+      { [key]: "value" },
+      (_, k) => k,
+    );
+    const expected = { [key]: key };
+
+    assertEquals(actual, expected);
   },
 });

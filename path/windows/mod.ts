@@ -1,4 +1,4 @@
-// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // Copyright the Browserify authors. MIT License.
 // Ported mostly from https://github.com/browserify/path-browserify/
 // This module is browser compatible.
@@ -21,11 +21,8 @@
  *
  * @module
  */
-
-export const sep = "\\";
-export const delimiter = ";";
-
 export * from "./basename.ts";
+export * from "./constants.ts";
 export * from "./dirname.ts";
 export * from "./extname.ts";
 export * from "./format.ts";

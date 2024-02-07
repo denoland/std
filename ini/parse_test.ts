@@ -1,4 +1,4 @@
-// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
 import { IniMap, parse, ParseOptions } from "./mod.ts";
 import {
@@ -159,13 +159,13 @@ Deno.test({
           throw new Error("Don't try to set the value directly to the key __proto__.")
         }
       });
-      import { parse } from "${import.meta.resolve("./mod.ts")}";
+      import { parse } from "${import.meta.resolve("./parse.ts")}";
       parse('[__proto__]\\nisAdmin = true');
     `;
     const command = new Deno.Command(Deno.execPath(), {
       stdout: "inherit",
       stderr: "inherit",
-      args: ["eval", testCode],
+      args: ["eval", "--no-lock", testCode],
     });
     const { success } = await command.output();
     assert(success);

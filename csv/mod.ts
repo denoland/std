@@ -1,10 +1,10 @@
-// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
 /** Reads and writes comma-separated values (CSV) files.
  *
  * There are many kinds of CSV files; this module supports the format described
- * in [RFC 4180](https://www.rfc-editor.org/rfc/rfc4180.html).
+ * in {@link https://tools.ietf.org/html/rfc4180 | RFC 4180}.
  *
  * A csv file contains zero or more records of one or more fields per record.
  * Each record is separated by the newline character. The final record may

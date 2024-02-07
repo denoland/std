@@ -1,6 +1,7 @@
-// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import { assert, assertEquals } from "../assert/mod.ts";
 import {
+  BaseHandler,
   critical,
   debug,
   error,
@@ -10,9 +11,8 @@ import {
   Logger,
   LogLevels,
   setup,
-  warning,
+  warn,
 } from "./mod.ts";
-import { BaseHandler } from "./handlers.ts";
 
 class TestHandler extends BaseHandler {
   public messages: string[] = [];
@@ -41,8 +41,8 @@ Deno.test("default loggers work as expected", function () {
   const debugResolver: string | undefined = debug(() => "foo");
   const infoData: number = info(456, 1, 2, 3);
   const infoResolver: boolean | undefined = info(() => true);
-  const warningData: symbol = warning(sym);
-  const warningResolver: null | undefined = warning(() => null);
+  const warnData: symbol = warn(sym);
+  const warnResolver: null | undefined = warn(() => null);
   const errorData: undefined = error(undefined, 1, 2, 3);
   const errorResolver: bigint | undefined = error(() => 5n);
   const criticalData: string = critical("foo");
@@ -51,8 +51,8 @@ Deno.test("default loggers work as expected", function () {
   assertEquals(debugResolver, undefined);
   assertEquals(infoData, 456);
   assertEquals(infoResolver, true);
-  assertEquals(warningData, sym);
-  assertEquals(warningResolver, null);
+  assertEquals(warnData, sym);
+  assertEquals(warnResolver, null);
   assertEquals(errorData, undefined);
   assertEquals(errorResolver, 5n);
   assertEquals(criticalData, "foo");
@@ -64,7 +64,8 @@ Deno.test({
   async fn() {
     const consoleHandler = new TestHandler("DEBUG");
     const anotherConsoleHandler = new TestHandler("DEBUG", {
-      formatter: "[{loggerName}] {levelName} {msg}",
+      formatter: ({ loggerName, levelName, msg }) =>
+        `[${loggerName}] ${levelName} ${msg}`,
     });
     await setup({
       handlers: {
@@ -122,9 +123,9 @@ Deno.test({
     assertEquals(testHandler.messages[2], "CRITICAL critical");
 
     testHandler.messages = [];
-    logger.level = LogLevels.WARNING;
-    assertEquals(logger.levelName, "WARNING");
-    assertEquals(logger.level, LogLevels.WARNING);
+    logger.level = LogLevels.WARN;
+    assertEquals(logger.levelName, "WARN");
+    assertEquals(logger.level, LogLevels.WARN);
 
     logger.debug("debug2");
     logger.error("error2");

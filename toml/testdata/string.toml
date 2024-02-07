@@ -27,7 +27,7 @@ str8 = "Roses are red\fViolets are blue"
 str9 = "Roses are red\bViolets are blue"
 str10 = "Roses are red\\Violets are blue"
 str11 = """
-dobule "quote"
+double "quote"
 single 'quote'
 """
 str12 = """Here are two quotation marks: "". Simple enough."""
@@ -48,6 +48,7 @@ literal3 = '''
 '''
 literal4 = '''Here are fifteen quotation marks: """""""""""""""'''
 literal5 = "Here are fifteen apostrophes: '''''''''''''''"
+literal6 = ''''That,' she said, 'is still pointless.''''
 
 withApostrophe = "What if it's not?"
 withSemicolon = "const message = 'hello world';"

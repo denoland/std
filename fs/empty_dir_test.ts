@@ -1,4 +1,4 @@
-// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import {
   assertEquals,
   assertRejects,
@@ -203,7 +203,7 @@ for (const s of scenes) {
       );
 
       try {
-        const args = ["run", "--quiet", "--no-prompt"];
+        const args = ["run", "--no-lock", "--quiet", "--no-prompt"];
 
         if (s.read) {
           args.push("--allow-read");
@@ -225,9 +225,13 @@ for (const s of scenes) {
           cwd: testdataDir,
           args,
         });
-        const { stdout } = await command.output();
+        const { stdout, stderr } = await command.output();
         assertStringIncludes(new TextDecoder().decode(stdout), s.output);
+        if (stderr.length > 0) {
+          console.log(new TextDecoder().decode(stderr));
+        }
       } catch (err) {
+        console.log(err);
         await Deno.remove(testfolder, { recursive: true });
         throw err;
       }

@@ -1,4 +1,4 @@
-// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
 import { assertArg } from "../_common/from_file_url.ts";
@@ -7,7 +7,7 @@ import { assertArg } from "../_common/from_file_url.ts";
  * Converts a file URL to a path string.
  *
  * ```ts
- * import { fromFileUrl } from "https://deno.land/std@$STD_VERSION/path/win32.ts";
+ * import { fromFileUrl } from "https://deno.land/std@$STD_VERSION/path/windows/from_file_url.ts";
  *
  * fromFileUrl("file:///home/foo"); // "\\home\\foo"
  * fromFileUrl("file:///C:/Users/foo"); // "C:\\Users\\foo"

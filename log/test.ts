@@ -1,4 +1,4 @@
-// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import { assertEquals, assertThrows } from "../assert/mod.ts";
 import * as log from "./mod.ts";
 import {
@@ -9,7 +9,7 @@ import {
   LogLevelNames,
 } from "./levels.ts";
 
-class TestHandler extends log.handlers.BaseHandler {
+class TestHandler extends log.BaseHandler {
   public messages: string[] = [];
 
   override log(msg: string) {
@@ -23,7 +23,7 @@ Deno.test("defaultHandlers", async function () {
   } = {
     DEBUG: log.debug,
     INFO: log.info,
-    WARNING: log.warning,
+    WARN: log.warn,
     ERROR: log.error,
     CRITICAL: log.critical,
   };

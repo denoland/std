@@ -1,4 +1,4 @@
-// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
 import { ascend } from "./comparators.ts";
@@ -378,7 +378,7 @@ export class BinarySearchTree<T> implements Iterable<T> {
         nodes.push(node);
         node = node.left;
       } else {
-        const lastNode: BinarySearchNode<T> = nodes[nodes.length - 1];
+        const lastNode: BinarySearchNode<T> = nodes.at(-1)!;
         if (lastNode.right && lastNode.right !== lastNodeVisited) {
           node = lastNode.right;
         } else {

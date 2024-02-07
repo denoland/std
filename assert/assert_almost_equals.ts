@@ -1,4 +1,4 @@
-// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import { AssertionError } from "./assertion_error.ts";
 
 /**
@@ -22,7 +22,7 @@ export function assertAlmostEquals(
   expected: number,
   tolerance = 1e-7,
   msg?: string,
-): void {
+) {
   if (Object.is(actual, expected)) {
     return;
   }

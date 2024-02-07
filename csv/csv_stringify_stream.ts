@@ -1,6 +1,7 @@
-// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import { stringify } from "./stringify.ts";
 
+/** Options for {@linkcode CsvStringifyStream}. */
 export interface CsvStringifyStreamOptions {
   /**
    * Delimiter used to separate values.
@@ -43,6 +44,7 @@ export class CsvStringifyStream<TOptions extends CsvStringifyStreamOptions>
       : Array<unknown>,
     string
   > {
+  /** Construct a new instance. */
   constructor(options?: TOptions) {
     const {
       separator,

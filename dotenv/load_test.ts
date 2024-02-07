@@ -1,4 +1,4 @@
-// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import { assertEquals } from "../assert/mod.ts";
 import * as path from "../path/mod.ts";
 
@@ -6,13 +6,14 @@ const moduleDir = path.dirname(path.fromFileUrl(import.meta.url));
 const testdataDir = path.resolve(moduleDir, "testdata");
 
 Deno.test({
-  name: "load",
+  name: "load()",
   async fn() {
     const command = new Deno.Command(Deno.execPath(), {
       args: [
         "run",
         "--allow-read",
         "--allow-env",
+        "--no-lock",
         path.join(testdataDir, "./app_load.ts"),
       ],
       clearEnv: true,
@@ -29,11 +30,12 @@ Deno.test({
 });
 
 Deno.test({
-  name: "load when multiple files",
+  name: "load() works as expected when the multiple files are imported",
   async fn() {
     const command = new Deno.Command(Deno.execPath(), {
       args: [
         "run",
+        "--no-lock",
         "--allow-read",
         "--allow-env",
         path.join(testdataDir, "./app_load_parent.ts"),

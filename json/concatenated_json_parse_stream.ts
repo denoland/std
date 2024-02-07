@@ -1,11 +1,10 @@
-// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import { toTransformStream } from "../streams/to_transform_stream.ts";
 import type { JsonValue, ParseStreamOptions } from "./common.ts";
 import { parse } from "./_common.ts";
 
-const blank = new Set(" \t\r\n");
-function isBlankChar(char: string) {
-  return blank.has(char);
+function isBlankChar(char: string | undefined) {
+  return char !== undefined && [" ", "\t", "\r", "\n"].includes(char);
 }
 
 const primitives = new Map(
@@ -13,7 +12,7 @@ const primitives = new Map(
 );
 
 /**
- * Stream to parse [Concatenated JSON](https://en.wikipedia.org/wiki/JSON_streaming#Concatenated_JSON).
+ * Stream to parse {@link https://en.wikipedia.org/wiki/JSON_streaming#Concatenated_JSON|Concatenated JSON}.
  *
  * @example
  * ```ts
@@ -33,13 +32,12 @@ const primitives = new Map(
  */
 export class ConcatenatedJsonParseStream
   implements TransformStream<string, JsonValue> {
+  /** A writable stream of byte data. */
   readonly writable: WritableStream<string>;
+  /** A readable stream of byte data. */
   readonly readable: ReadableStream<JsonValue>;
-  /**
-   * @param options
-   * @param options.writableStrategy Controls the buffer of the TransformStream used internally. Check https://developer.mozilla.org/en-US/docs/Web/API/TransformStream/TransformStream.
-   * @param options.readableStrategy Controls the buffer of the TransformStream used internally. Check https://developer.mozilla.org/en-US/docs/Web/API/TransformStream/TransformStream.
-   */
+
+  /** Constructs a new instance. */
   constructor({ writableStrategy, readableStrategy }: ParseStreamOptions = {}) {
     const { writable, readable } = toTransformStream(
       this.#concatenatedJSONIterator,

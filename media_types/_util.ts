@@ -1,4 +1,4 @@
-// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
 /** Supporting functions for media_types that do not make part of the public
  * API.
@@ -14,7 +14,7 @@ export interface DBEntry {
 }
 
 /** A map of extensions for a given media type. */
-export const extensions = new Map<string, string[]>();
+export const extensions: Map<string, string[]> = new Map();
 
 export function consumeToken(v: string): [token: string, rest: string] {
   const notPos = indexOf(v, isNotTokenChar);
@@ -40,8 +40,9 @@ export function consumeValue(v: string): [value: string, rest: string] {
     if (r === `"`) {
       return [value, v.slice(i + 1)];
     }
-    if (r === "\\" && i + 1 < v.length && isTSpecial(v[i + 1])) {
-      value += v[i + 1];
+    const next = v[i + 1];
+    if (r === "\\" && typeof next === "string" && isTSpecial(next)) {
+      value += next;
       i++;
       continue;
     }
@@ -83,14 +84,15 @@ export function decode2331Encoding(v: string): string | undefined {
   if (sv.length !== 3) {
     return undefined;
   }
-  const charset = sv[0].toLowerCase();
+  const [sv0, , sv2] = sv as [string, string, string];
+  const charset = sv0.toLowerCase();
   if (!charset) {
     return undefined;
   }
   if (charset !== "us-ascii" && charset !== "utf-8") {
     return undefined;
   }
-  const encv = decodeURI(sv[2]);
+  const encv = decodeURI(sv2);
   if (!encv) {
     return undefined;
   }
@@ -133,7 +135,7 @@ function isTokenChar(r: string): boolean {
 }
 
 function isTSpecial(r: string): boolean {
-  return `()<>@,;:\\"/[]?=`.includes(r[0]);
+  return r[0] ? `()<>@,;:\\"/[]?=`.includes(r[0]) : false;
 }
 
 const CHAR_CODE_SPACE = " ".charCodeAt(0);

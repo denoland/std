@@ -1,4 +1,4 @@
-// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import { levenshteinDistance } from "./levenshtein_distance.ts";
 
 // NOTE: this metric may change in future versions (e.g. better than levenshteinDistance)
@@ -24,7 +24,7 @@ const getWordDistance = levenshteinDistance;
 export function compareSimilarity(
   givenWord: string,
   options?: { caseSensitive?: boolean },
-) {
+): (a: string, b: string) => number {
   const { caseSensitive } = { ...options };
   if (caseSensitive) {
     return (a: string, b: string) =>

@@ -1,11 +1,11 @@
-// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // Copyright 2023 Yoshiya Hinosawa. All rights reserved. MIT license.
 // Copyright 2017 Alizain Feerasta. All rights reserved. MIT license.
 // This module is browser compatible.
 
 /**
  * Utilities for generating and working with
- * [Universally Unique Lexicographically Sortable Identifiers (ULIDs)]{@link https://github.com/ulid/spec}.
+ * {@link https://github.com/ulid/spec | Universally Unique Lexicographically Sortable Identifiers (ULIDs)}.
  *
  * @module
  */

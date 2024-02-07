@@ -1,3 +1,112 @@
+### 0.214.0 / 2024.02.01
+
+- BREAKING(io): remove `types.d.ts` (#4237)
+- BREAKING(log): remove string formatter (#4239)
+- BREAKING(log): single-export handler files (#4236)
+- BREAKING(streams): remove `readAll()`, `writeAll()` and `copy()` (#4238)
+- feat(tools,log,http,semver): check mod exports, export items consistently from
+  mod.ts (#4229)
+- fix(expect): add Error object equal check. (#4248)
+- fix(expect): align `toEqual` to jest (#4246)
+
+### 0.213.0 / 2024.01.25
+
+- BREAKING(http): remove `CookieMap` (#4179)
+- BREAKING(semver): remove `FormatStyle` (#4182)
+- BREAKING(semver): remove `compareBuild()` (#4181)
+- BREAKING(semver): remove `rsort()` (#4180)
+- deprecation(path): split off all constants into their own files and deprecate
+  old names (#4153)
+- deprecation(semver): deprecate `SemVerRange`, introduce `Range` (#4161)
+- deprecation(semver): deprecate `outside()` (#4185)
+- deprecation(semver): rename `eq()`, `neq()`, `lt()`, `lte()`, `gt()` and
+  `gte()` (#4083)
+- feat(collections): pass `key` to `mapValues()` transformer (#4127)
+- feat(io): un-deprecate `Buffer` (#4184)
+- feat(log): make handlers disposable (#4195)
+- feat: print warning on use of deprecated API (#4200)
+- fix(expect): fix the function signature of `toMatchObject()` (#4202)
+- fix(flags): correct deprecation notices (#4207)
+- fix(fmt): correct `stripColor()` deprecation notice (#4208)
+- fix(log): make `flattenArgs()` private (#4214)
+- fix(toml): `parse()` duplicates the character next to reserved escape
+  sequences (#4192)
+- fix: ignore linting for `Deno.serveHttp()` (#4234)
+- fix: ignore linting rule for `Deno.resources()` (#4233)
+
+### 0.212.0 / 2024.01.12
+
+- BREAKING(encoding): remove `base32.byteLength()` (#4173)
+- BREAKING(log): remove deprecated APIs (#4104)
+- BREAKING(semver): remove `SemVerComparator` (#4109)
+- BREAKING(semver): remove `canParse()` non-string overload (#4108)
+- BREAKING(semver): remove `cmp()` (#4171)
+- BREAKING(semver): remove `isSemVerComparator()` (#4107)
+- BREAKING(semver): remove `parse(semver: string)` overload (#4172)
+- BREAKING(semver): remove `rcompare()` (#4106)
+- BREAKING: remove `std/signal` sub-module (#4105)
+- deprecation(io): move types file (#4133)
+- deprecation(log): deprecate `LogLevels.WARNING` (#4170)
+- deprecation(log): move handlers to single-export files (#4176)
+- deprecation(log): rename `warning()` to `warn()` (#4117)
+- deprecation(semver): deprecate `Comparator` functions (#4131)
+- deprecation(semver): deprecate `sort()` (#4098)
+- deprecation(semver): rename `rangeFormat()` to `formatRange()` (#4090)
+- feat(cli): make `Spinner.color` public (#4092)
+- feat(io): re-introduce IO functions (#4128)
+- feat(net): add `preferredPort` option to `getAvailablePort()` (#4151)
+- feat(text): cases (#4082)
+- fix(fs): reduce perm requirement of `ensureDir()` (#4041)
+- fix(http): punt removal version of `unstable_cookie_map.ts` (#4125)
+- fix: add `--no-lock` to spawned process args in tests (#4168)
+- fix: use `with` keyword for import attributes (#4141)
+
+### 0.211.0 / 2024.01.04
+
+- BREAKING(collections): remove `groupBy()` (#3923)
+- BREAKING(crypto): remove stable `KeyStack()` (#4055)
+- BREAKING(front_matter): remove deprecated APIs (#4013)
+- BREAKING(http): remove deprecated `createCommonResponse()` and `Status` APIs
+  (#4014)
+- BREAKING(path): remove deprecated APIs (#4016)
+- BREAKING: remove `types.d.ts` at top level (#3922)
+- deprecation(log): string type for `BaseHandler.formatter` (#4023)
+- deprecation(semver): deprecate `compareBuild()` (#4088)
+- deprecation(semver): deprecate `format()` `style` argument (#4050)
+- deprecation(semver): deprecate `testComparator()` (#4037)
+- deprecation(semver): deprecate cmp (#4025)
+- deprecation(semver): rename rsort to reverseSort (#4032)
+- feat(cli): make `Spinner.message` able to be changed on-the-fly (#4079)
+- feat(semver): optional SemVer build and prerelease properties (#4024)
+- fix(cli): document milliseconds unit for `Spinner.interval` (#4017)
+- fix(cli/spinner): export private type aliases used in public API (#4012)
+- fix(expect): align toEqual to jest (#4034)
+- fix(expect): align toStrictEqual behavior to jest (#4035)
+- fix(expect): invalid return typing (#4011)
+- fix(fs): fix `expandGlob()` test race condition (#4081)
+- fix(semver): remove `undefined` return type from `rangeMax()` (#4089)
+- fix(toml): testdata typo (#4074)
+
+### 0.210.0 / 2023.12.21
+
+- BREAKING(crypto): remove `toHashString()` (#3924)
+- BREAKING(encoding): remove deprecated APIs (#3952)
+- BREAKING(http): remove deprecated `std/http/method` API (#3951)
+- deprecation(encoding): deprecate `base32.byteLength()` (#4000)
+- deprecation(semver): comparator min and max properties (#3974)
+- deprecation(semver): deprecate `SemVer` argument for `parse()` and
+  `canParse()` (#3939)
+- deprecation(semver): deprecate `rcompare()` (#3958)
+- deprecation(semver): rename `isSemVerComparator()` (#3957)
+- deprecation(signal): move deprecation forward (#4004)
+- feat(cli): command line spinner (#3968)
+- feat(collections): improve `mapValues()` typing (#3978)
+- feat(log): add support for structured JSON logging (#3960)
+- feat(testing): enable the `using` keyword on `FakeTime()` (#3961)
+- fix(http): account for period in signed cookie name (#3977)
+- fix(path/extname): fix incorrect import (#3970)
+- perf(streams): make `toBlob()` 20-30% faster (#3934)
+
 ### 0.209.0 / 2023.12.13
 
 - BREAKIING(fs): remove `EOL` enum, add OS-dependent `EOL` (#3850)

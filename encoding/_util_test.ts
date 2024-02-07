@@ -1,9 +1,9 @@
-// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
 import { assertEquals, assertThrows } from "../assert/mod.ts";
 import { validateBinaryLike } from "./_util.ts";
 
-Deno.test("validateBinaryLike", () => {
+Deno.test("validateBinaryLike()", () => {
   assertEquals(validateBinaryLike("hello"), new TextEncoder().encode("hello"));
   assertEquals(
     validateBinaryLike(new Uint8Array([1, 2, 3])),
@@ -15,7 +15,7 @@ Deno.test("validateBinaryLike", () => {
   );
 });
 
-Deno.test("validateBinaryLike with invalid inputs", () => {
+Deno.test("validateBinaryLike() throws on invalid inputs", () => {
   assertThrows(
     () => {
       validateBinaryLike(1);

@@ -1,22 +1,9 @@
-// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // Copyright 2019 Allain Lalonde. All rights reserved. ISC License.
 // This module is browser compatible.
 
 /**
- * @module
- *
  * This module provides jest compatible expect assertion functionality.
- *
- * @example
- * ```ts
- * import { expect } from "https://deno.land/std@$STD_VERSION/expect/mod.ts";
- *
- * const x = 6 * 7;
- * expect(x).toEqual(42);
- * expect(x).not.toEqual(0);
- *
- * await expect(Promise.resolve(x)).resolves.toEqual(42);
- * ```
  *
  * Currently this module supports the following matchers:
  * - `toBe`
@@ -81,8 +68,20 @@
  * - `expect.addSnapshotSerializer`
  * - `expect.extend`
  *
- * This module is largely inspired by [x/expect](https://github.com/allain/expect) module by Allain Lalonde.
+ * This module is largely inspired by {@link https://github.com/allain/expect | x/expect} module by Allain Lalonde.
+ *
+ * @example
+ * ```ts
+ * import { expect } from "https://deno.land/std@$STD_VERSION/expect/mod.ts";
+ *
+ * const x = 6 * 7;
+ * expect(x).toEqual(42);
+ * expect(x).not.toEqual(0);
+ *
+ * await expect(Promise.resolve(x)).resolves.toEqual(42);
+ * ```
+ *
+ * @module
  */
-
 export { expect } from "./expect.ts";
 export { fn } from "./fn.ts";

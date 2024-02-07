@@ -1,4 +1,4 @@
-// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 /**
  * Provides user-friendly {@linkcode serve} on top of Deno's native HTTP server
  * and other utilities for creating HTTP servers and clients.
@@ -32,7 +32,7 @@
  *
  * > Note: some libraries include accept charset functionality by analyzing the
  * > `Accept-Charset` header. This is a legacy header that
- * > [clients omit and servers should ignore](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Accept-Charset)
+ * > {@link https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Accept-Charset | clients omit and servers should ignore}
  * > therefore is not provided.
  *
  * ## Cookie maps
@@ -63,11 +63,11 @@
  */
 
 export * from "./cookie.ts";
-export * from "./cookie_map.ts";
 export * from "./etag.ts";
-export * from "./http_status.ts";
+export * from "./status.ts";
 export * from "./negotiation.ts";
 export * from "./server.ts";
 export * from "./unstable_signed_cookie.ts";
 export * from "./server_sent_event_stream.ts";
 export * from "./user_agent.ts";
+export * from "./file_server.ts";

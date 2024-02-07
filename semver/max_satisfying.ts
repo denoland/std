@@ -1,7 +1,7 @@
-// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
-import type { SemVer, SemVerRange } from "./types.ts";
-import { sort } from "./sort.ts";
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+import type { Range, SemVer, SemVerRange } from "./types.ts";
 import { testRange } from "./test_range.ts";
+import { greaterThan } from "./greater_than.ts";
 
 /**
  * Returns the highest version in the list that satisfies the range, or `undefined`
@@ -12,9 +12,12 @@ import { testRange } from "./test_range.ts";
  */
 export function maxSatisfying(
   versions: SemVer[],
-  range: SemVerRange,
+  range: SemVerRange | Range,
 ): SemVer | undefined {
-  const satisfying = versions.filter((v) => testRange(v, range));
-  const sorted = sort(satisfying);
-  return sorted.pop();
+  let max;
+  for (const version of versions) {
+    if (!testRange(version, range)) continue;
+    max = max && greaterThan(max, version) ? max : version;
+  }
+  return max;
 }

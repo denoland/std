@@ -1,8 +1,10 @@
-// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
 /**
  * Utilities for interacting with the
- * [WebGPU API]{@link https://developer.mozilla.org/en-US/docs/Web/API/WebGPU_API}.
+ * {@link https://developer.mozilla.org/en-US/docs/Web/API/WebGPU_API | WebGPU API}.
+ *
+ * @module
  */
 
 export * from "./create_capture.ts";

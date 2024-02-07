@@ -1,4 +1,4 @@
-// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 /*!
  * Ported and modified from: https://github.com/beatgammit/tar-js and
  * licensed as:
@@ -7,7 +7,7 @@
  *
  * Copyright (c) 2011 T. Jameson Little
  * Copyright (c) 2019 Jun Kato
- * Copyright (c) 2018-2023 the Deno authors
+ * Copyright (c) 2018-2024 the Deno authors
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,7 +35,7 @@ import {
   type TarOptions,
   ustarStructure,
 } from "./_common.ts";
-import type { Reader } from "../io/types.d.ts";
+import type { Reader } from "../io/types.ts";
 import { MultiReader } from "../io/multi_reader.ts";
 import { Buffer } from "../io/buffer.ts";
 import { assert } from "../assert/assert.ts";
@@ -151,7 +151,7 @@ export interface TarDataWithSource extends TarData {
  * ```ts
  * import { Tar } from "https://deno.land/std@$STD_VERSION/archive/tar.ts";
  * import { Buffer } from "https://deno.land/std@$STD_VERSION/io/buffer.ts";
- * import { copy } from "https://deno.land/std@$STD_VERSION/streams/copy.ts";
+ * import { copy } from "https://deno.land/std@$STD_VERSION/io/copy.ts";
  *
  * const tar = new Tar();
  *

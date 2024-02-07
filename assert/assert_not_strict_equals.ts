@@ -1,4 +1,4 @@
-// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import { AssertionError } from "./assertion_error.ts";
 import { format } from "./_format.ts";
 
@@ -18,7 +18,7 @@ export function assertNotStrictEquals<T>(
   actual: T,
   expected: T,
   msg?: string,
-): void {
+) {
   if (!Object.is(actual, expected)) {
     return;
   }

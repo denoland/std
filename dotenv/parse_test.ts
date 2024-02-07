@@ -1,4 +1,4 @@
-// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
 import { assertEquals } from "../assert/mod.ts";
 import { parse } from "./parse.ts";
@@ -7,7 +7,7 @@ import * as path from "../path/mod.ts";
 const moduleDir = path.dirname(path.fromFileUrl(import.meta.url));
 const testdataDir = path.resolve(moduleDir, "testdata");
 
-Deno.test("parser", () => {
+Deno.test("parse()", () => {
   const testDotenv = Deno.readTextFileSync(
     path.join(testdataDir, "./.env.test"),
   );
@@ -50,7 +50,7 @@ Deno.test("parser", () => {
   );
 
   assertEquals(
-    JSON.parse(load.JSON).foo,
+    JSON.parse(load.JSON || JSON.stringify({})).foo,
     "bar",
     "inner quotes are maintained",
   );
@@ -142,7 +142,7 @@ Deno.test("parser", () => {
   );
 });
 
-Deno.test("with comments", () => {
+Deno.test("parse() ignores comments", () => {
   const testDotenv = Deno.readTextFileSync(
     path.join(testdataDir, "./.env.comments"),
   );
@@ -166,7 +166,7 @@ Deno.test("with comments", () => {
   );
 });
 
-Deno.test("expand variables", () => {
+Deno.test("parse() expands variables", () => {
   const testDotenv = Deno.readTextFileSync(
     path.join(testdataDir, "./.env.expand.test"),
   );

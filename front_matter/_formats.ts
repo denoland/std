@@ -1,14 +1,6 @@
-// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
 type Delimiter = string | [begin: string, end: string];
-
-/** @deprecated (will be removed in 0.211.0) Use literal types `"yaml" | "toml" | "json" | "unknown"`. */
-export enum Format {
-  YAML = "yaml",
-  TOML = "toml",
-  JSON = "json",
-  UNKNOWN = "unknown",
-}
 
 const { isArray } = Array;
 

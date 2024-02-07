@@ -1,17 +1,17 @@
-// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
-
-import { validateBinaryLike } from "./_util.ts";
 
 /**
  * Utilities for
- * [base64]{@link https://datatracker.ietf.org/doc/html/rfc4648#section-4}
+ * {@link https://datatracker.ietf.org/doc/html/rfc4648#section-4 | base64}
  * encoding and decoding.
  *
  * This module is browser compatible.
  *
  * @module
  */
+
+import { validateBinaryLike } from "./_util.ts";
 
 const base64abc = [
   "A",

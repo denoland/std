@@ -1,4 +1,4 @@
-// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import { format } from "./_format.ts";
 import { AssertionError } from "./assertion_error.ts";
 
@@ -19,7 +19,7 @@ export function assertGreaterOrEqual<T>(
   actual: T,
   expected: T,
   msg?: string,
-): void {
+) {
   if (actual >= expected) return;
 
   const actualString = format(actual);

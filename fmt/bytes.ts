@@ -1,12 +1,60 @@
 // Copyright 2014-2021 Sindre Sorhus. All rights reserved. MIT license.
 // Copyright 2021 Yoshiya Hinosawa. All rights reserved. MIT license.
 // Copyright 2021 Giuseppe Eletto. All rights reserved. MIT license.
-// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-/** Pretty print bytes.
+type LocaleOptions = {
+  minimumFractionDigits?: number;
+  maximumFractionDigits?: number;
+};
+
+/** Options for {@linkcode format}. */
+export interface FormatOptions {
+  /**
+   * Uses bits representation.
+   *
+   * @default {false}
+   */
+  bits?: boolean;
+  /**
+   * Uses binary bytes (e.g. kibibyte).
+   *
+   * @default {false}
+   */
+  binary?: boolean;
+  /**
+   * Include plus sign for positive numbers.
+   *
+   * @default {false}
+   */
+  signed?: boolean;
+  /**
+   * Uses localized number formatting. If it is set to true, uses default
+   * locale on the system. If it's set to string, uses that locale. The given
+   * string should be a
+   * {@link https://en.wikipedia.org/wiki/IETF_language_tag | BCP 47 language tag}.
+   * You can also give the list of language tags.
+   */
+  locale?: boolean | string | string[];
+  /**
+   * The minimum number of fraction digits to display. If neither
+   * {@linkcode minimumFractionDigits} or {@linkcode maximumFractionDigits}
+   * are set, the default behavior is to round to 3 significant digits.
+   */
+  minimumFractionDigits?: number;
+  /**
+   * The maximum number of fraction digits to display. If neither
+   * {@linkcode minimumFractionDigits} or {@linkcode maximumFractionDigits}
+   * are set, the default behavior is to round to 3 significant digits.
+   */
+  maximumFractionDigits?: number;
+}
+
+/**
+ * Convert bytes to a human-readable string: 1337 → 1.34 kB
  *
- * Based on [pretty-bytes](https://github.com/sindresorhus/pretty-bytes).
+ * Based on {@link https://github.com/sindresorhus/pretty-bytes | pretty-bytes}.
  * A utility for displaying file sizes for humans.
  *
  * This module is browser compatible.
@@ -33,38 +81,6 @@
  * format(1337, { locale: "de" });
  * //=> '1,34 kB'
  * ```
- *
- * @module
- */
-
-type LocaleOptions = {
-  minimumFractionDigits?: number;
-  maximumFractionDigits?: number;
-};
-
-/**
- * The options for pretty printing the byte numbers.
- */
-export interface FormatOptions {
-  /** Uses bits representation. Default is false. */
-  bits?: boolean;
-  /** Uses binary bytes (e.g. kibibyte). Default is false. */
-  binary?: boolean;
-  /** Include plus sign for positive numbers. */
-  signed?: boolean;
-  /** Uses localized number formatting. If it is set to true, uses default locale on the system. If it's set to string, uses that locale. The given string should be BCP 47 language tag (ref: https://en.wikipedia.org/wiki/IETF_language_tag). You can also give the list of language tags. */
-  locale?: boolean | string | string[];
-  /** The minimum number of fraction digits to display. If neither minimumFractionDigits or maximumFractionDigits are set, the default behavior is to round to 3 significant digits. */
-  minimumFractionDigits?: number;
-  /** The maximum number of fraction digits to display. If neither minimumFractionDigits or maximumFractionDigits are set, the default behavior is to round to 3 significant digits. */
-  maximumFractionDigits?: number;
-}
-
-/**
- * Convert bytes to a human-readable string: 1337 → 1.34 kB
- *
- * @param num The number to format
- * @param options The options
  */
 export function format(
   num: number,

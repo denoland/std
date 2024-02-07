@@ -1,5 +1,6 @@
-// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
+import { assertExists } from "../assert/assert_exists.ts";
 import { describeTextureFormat } from "./describe_texture_format.ts";
 
 function textureDimensionArrayLayerCount(
@@ -17,6 +18,7 @@ function textureDimensionArrayLayerCount(
 
 function normalizeExtent3D(size: GPUExtent3D): GPUExtent3DDict {
   if (Array.isArray(size)) {
+    assertExists(size[0]);
     return {
       width: size[0],
       height: size[1],

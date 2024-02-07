@@ -1,4 +1,4 @@
-// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import { assertEquals } from "../assert/mod.ts";
 import {
   NAMESPACE_DNS,
@@ -8,7 +8,7 @@ import {
 } from "./constants.ts";
 import { validate } from "./mod.ts";
 
-Deno.test("[UUID] validate_namespaces", () => {
+Deno.test("validate() validates the pre-defined namespaces", () => {
   assertEquals(validate(NAMESPACE_DNS), true);
   assertEquals(validate(NAMESPACE_URL), true);
   assertEquals(validate(NAMESPACE_OID), true);

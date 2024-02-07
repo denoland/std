@@ -1,4 +1,4 @@
-// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
 /**
@@ -39,11 +39,11 @@ export function permutations<T>(inputArray: Iterable<T>): T[][] {
   let i = 1;
 
   while (i < k) {
-    if (c[i] < i) {
+    if (c[i]! < i) {
       if (i % 2 === 0) {
-        [array[0], array[i]] = [array[i], array[0]];
+        [array[0], array[i]] = [array[i], array[0]] as [T, T];
       } else {
-        [array[c[i]], array[i]] = [array[i], array[c[i]]];
+        [array[c[i]!], array[i]] = [array[i], array[c[i]!]] as [T, T];
       }
 
       ret.push([...array]);

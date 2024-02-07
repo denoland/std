@@ -1,11 +1,13 @@
-// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
-import type { SemVer } from "./types.ts";
-import { compare } from "./compare.ts";
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-/** Less than comparison */
-export function lt(
-  s0: SemVer,
-  s1: SemVer,
-): boolean {
-  return compare(s0, s1) < 0;
+import { lessThan } from "./less_than.ts";
+import { SemVer } from "./types.ts";
+
+/**
+ * Less than comparison
+ *
+ * @deprecated (will be removed in 0.216.0) Use {@linkcode lessThan} instead.
+ */
+export function lt(s0: SemVer, s1: SemVer): boolean {
+  return lessThan(s0, s1);
 }

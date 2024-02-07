@@ -1,4 +1,4 @@
-// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
 /**
  * Logging library with the support for terminal and file outputs. Also provides
@@ -18,6 +18,42 @@
  * as argument and outputs string.
  *
  * The default log format is `{levelName} {msg}`.
+ *
+ * ### Logging Structured JSON Lines
+ *
+ * To output logs in a structured JSON format you can configure most handlers
+ * with a formatter that produces a JSON string. Either use the premade
+ * `log.formatters.jsonFormatter` or write your own function that takes a
+ * {@linkcode LogRecord} and returns a JSON.stringify'd object.
+ * If you want the log to go to stdout then use {@linkcode ConsoleHandler} with
+ * the configuration `useColors: false` to turn off the ANSI terminal colours.
+ *
+ * ```ts
+ * import * as log from "https://deno.land/std@$STD_VERSION/log/mod.ts";
+ *
+ * log.setup({
+ *   handlers: {
+ *     default: new log.ConsoleHandler("DEBUG", {
+ *       formatter: log.formatters.jsonFormatter,
+ *       useColors: false,
+ *     }),
+ *   },
+ * });
+ * ```
+ *
+ * The first argument passed to a log function is always treated as the
+ * message and will be stringified differently. To have arguments JSON.stringify'd
+ * you must pass them after the first.
+ *
+ * ```ts
+ * import * as log from "https://deno.land/std@$STD_VERSION/log/mod.ts";
+ *
+ * log.info("This is the message", { thisWillBe: "JSON.stringify'd"});
+ * // {"level":"INFO","datetime":1702501580505,"message":"This is the message","args":{"thisWillBe":"JSON.stringify'd"}}
+ *
+ * log.info({ thisWontBe: "JSON.stringify'd"}, "This is an argument");
+ * // {"level":"INFO","datetime":1702501580505,"message":"{\"thisWontBe\":\"JSON.stringify'd\"}","args":"This is an argument"}
+ * ```
  *
  * ## Inline Logging
  *
@@ -66,7 +102,7 @@
  *
  * log.setup({
  *   handlers: {
- *     console: new log.handlers.ConsoleHandler("DEBUG"),
+ *     console: new log.ConsoleHandler("DEBUG"),
  *   },
  *
  *   loggers: {
@@ -103,19 +139,19 @@
  * // additional logger configurations. You can log any data type.
  * log.debug("Hello world");
  * log.info(123456);
- * log.warning(true);
+ * log.warn(true);
  * log.error({ foo: "bar", fizz: "bazz" });
  * log.critical("500 Internal server error");
  *
  * // custom configuration with 2 loggers (the default and `tasks` loggers).
  * log.setup({
  *   handlers: {
- *     console: new log.handlers.ConsoleHandler("DEBUG"),
+ *     console: new log.ConsoleHandler("DEBUG"),
  *
- *     file: new log.handlers.FileHandler("WARNING", {
+ *     file: new log.FileHandler("WARN", {
  *       filename: "./log.txt",
  *       // you can change format of output message using any keys in `LogRecord`.
- *       formatter: "{levelName} {msg}",
+ *       formatter: (record) => `${record.levelName} ${record.msg}`,
  *     }),
  *   },
  *
@@ -137,8 +173,8 @@
  *
  * // get default logger.
  * logger = log.getLogger();
- * logger.debug("fizz"); // logs to `console`, because `file` handler requires "WARNING" level.
- * logger.warning(41256); // logs to both `console` and `file` handlers.
+ * logger.debug("fizz"); // logs to `console`, because `file` handler requires "WARN" level.
+ * logger.warn(41256); // logs to both `console` and `file` handlers.
  *
  * // get custom logger
  * logger = log.getLogger("tasks");
@@ -159,11 +195,11 @@
  *
  * log.setup({
  *   handlers: {
- *     stringFmt: new log.handlers.ConsoleHandler("DEBUG", {
- *       formatter: "[{levelName}] {msg}",
+ *     stringFmt: new log.ConsoleHandler("DEBUG", {
+ *       formatter: (record) => `[${record.levelName}] ${record.msg}`,
  *     }),
  *
- *     functionFmt: new log.handlers.ConsoleHandler("DEBUG", {
+ *     functionFmt: new log.ConsoleHandler("DEBUG", {
  *       formatter: (logRecord) => {
  *         let msg = `${logRecord.level} ${logRecord.msg}`;
  *
@@ -175,8 +211,8 @@
  *       },
  *     }),
  *
- *     anotherFmt: new log.handlers.ConsoleHandler("DEBUG", {
- *       formatter: "[{loggerName}] - {levelName} {msg}",
+ *     anotherFmt: new log.ConsoleHandler("DEBUG", {
+ *       formatter: (record) => `[${record.loggerName}] - ${record.levelName} ${record.msg}`,
  *     }),
  *   },
  *
@@ -203,6 +239,76 @@
  * // results in:
  * // [dataLogger] - ERROR oh no! // output from anotherFmt handler.
  * ```
+
+ *
+ * @example
+ * JSON to stdout with no color example
+ * ```ts
+ * import * as log from "https://deno.land/std@$STD_VERSION/log/mod.ts";
+ *
+ * log.setup({
+ *   handlers: {
+ *     jsonStdout: new log.ConsoleHandler("DEBUG", {
+ *       formatter: log.formatters.jsonFormatter,
+ *       useColors: false,
+ *     }),
+ *   },
+ *
+ *   loggers: {
+ *     default: {
+ *       level: "DEBUG",
+ *       handlers: ["jsonStdout"],
+ *     },
+ *   },
+ * });
+ *
+ * // calling:
+ * log.info("Hey");
+ * // results in:
+ * // {"level":"INFO","datetime":1702481922294,"message":"Hey"}
+ *
+ * // calling:
+ * log.info("Hey", { product: "nail" });
+ * // results in:
+ * // {"level":"INFO","datetime":1702484111115,"message":"Hey","args":{"product":"nail"}}
+ *
+ * // calling:
+ * log.info("Hey", 1, "two", [3, 4, 5]);
+ * // results in:
+ * // {"level":"INFO","datetime":1702481922294,"message":"Hey","args":[1,"two",[3,4,5]]}
+ * ```
+ *
+ * @example
+ * Custom JSON example
+ * ```ts
+ * import * as log from "https://deno.land/std@$STD_VERSION/log/mod.ts";
+ *
+ * log.setup({
+ *   handlers: {
+ *     customJsonFmt: new log.ConsoleHandler("DEBUG", {
+ *       formatter: (record) => JSON.stringify({
+ *         lvl: record.level,
+ *         msg: record.msg,
+ *         time: record.datetime.toISOString(),
+ *         name: record.loggerName,
+ *       }),
+ *       useColors: false,
+ *     }),
+ *   },
+ *
+ *   loggers: {
+ *     default: {
+ *       level: "DEBUG",
+ *       handlers: ["customJsonFmt"],
+ *     },
+ *   },
+ * });
+ *
+ * // calling:
+ * log.info("complete");
+ * // results in:
+ * // {"lvl":20,"msg":"complete","time":"2023-12-13T16:38:27.328Z","name":"default"}
+ * ```
  *
  * @example
  * Inline Logging
@@ -227,7 +333,7 @@
  *
  * log.setup({
  *   handlers: {
- *     console: new log.handlers.ConsoleHandler("DEBUG"),
+ *     console: new log.ConsoleHandler("DEBUG"),
  *   },
  *
  *   loggers: {
@@ -247,62 +353,6 @@
  * console.log(data); // undefined
  * ```
  *
- * @module
- */
-
-import { Logger } from "./logger.ts";
-import type { GenericFunction } from "./logger.ts";
-import {
-  BaseHandler,
-  ConsoleHandler,
-  FileHandler,
-  RotatingFileHandler,
-  WriterHandler,
-} from "./handlers.ts";
-import { assert } from "../assert/assert.ts";
-import type { LevelName } from "./levels.ts";
-
-export { LogLevels } from "./levels.ts";
-export type { LevelName, LogLevel } from "./levels.ts";
-export { Logger } from "./logger.ts";
-export type { LogRecord } from "./logger.ts";
-export type { FormatterFunction, HandlerOptions, LogMode } from "./handlers.ts";
-
-export class LoggerConfig {
-  level?: LevelName;
-  handlers?: string[];
-}
-
-export interface LogConfig {
-  handlers?: {
-    [name: string]: BaseHandler;
-  };
-  loggers?: {
-    [name: string]: LoggerConfig;
-  };
-}
-
-const DEFAULT_LEVEL = "INFO";
-const DEFAULT_CONFIG: LogConfig = {
-  handlers: {
-    default: new ConsoleHandler(DEFAULT_LEVEL),
-  },
-
-  loggers: {
-    default: {
-      level: DEFAULT_LEVEL,
-      handlers: ["default"],
-    },
-  },
-};
-
-const state = {
-  handlers: new Map<string, BaseHandler>(),
-  loggers: new Map<string, Logger>(),
-  config: DEFAULT_CONFIG,
-};
-
-/**
  * Handlers are responsible for actual output of log messages. When a handler is
  * called by a logger, it firstly checks that {@linkcode LogRecord}'s level is
  * not lower than level of the handler. If level check passes, handlers formats
@@ -323,162 +373,21 @@ const state = {
  *
  * For examples check source code of {@linkcode FileHandler}`
  * and {@linkcode TestHandler}.
+ *
+ * @module
  */
-export const handlers = {
-  BaseHandler,
-  ConsoleHandler,
-  WriterHandler,
-  FileHandler,
-  RotatingFileHandler,
-};
 
-/** Get a logger instance. If not specified `name`, get the default logger. */
-export function getLogger(name?: string): Logger {
-  if (!name) {
-    const d = state.loggers.get("default");
-    assert(
-      d !== undefined,
-      `"default" logger must be set for getting logger without name`,
-    );
-    return d;
-  }
-  const result = state.loggers.get(name);
-  if (!result) {
-    const logger = new Logger(name, "NOTSET", { handlers: [] });
-    state.loggers.set(name, logger);
-    return logger;
-  }
-  return result;
-}
-
-/** Log with debug level, using default logger. */
-export function debug<T>(msg: () => T, ...args: unknown[]): T | undefined;
-export function debug<T>(
-  msg: T extends GenericFunction ? never : T,
-  ...args: unknown[]
-): T;
-export function debug<T>(
-  msg: (T extends GenericFunction ? never : T) | (() => T),
-  ...args: unknown[]
-): T | undefined {
-  // Assist TS compiler with pass-through generic type
-  if (msg instanceof Function) {
-    return getLogger("default").debug(msg, ...args);
-  }
-  return getLogger("default").debug(msg, ...args);
-}
-
-/** Log with info level, using default logger. */
-export function info<T>(msg: () => T, ...args: unknown[]): T | undefined;
-export function info<T>(
-  msg: T extends GenericFunction ? never : T,
-  ...args: unknown[]
-): T;
-export function info<T>(
-  msg: (T extends GenericFunction ? never : T) | (() => T),
-  ...args: unknown[]
-): T | undefined {
-  // Assist TS compiler with pass-through generic type
-  if (msg instanceof Function) {
-    return getLogger("default").info(msg, ...args);
-  }
-  return getLogger("default").info(msg, ...args);
-}
-
-/** Log with warning level, using default logger. */
-export function warning<T>(msg: () => T, ...args: unknown[]): T | undefined;
-export function warning<T>(
-  msg: T extends GenericFunction ? never : T,
-  ...args: unknown[]
-): T;
-export function warning<T>(
-  msg: (T extends GenericFunction ? never : T) | (() => T),
-  ...args: unknown[]
-): T | undefined {
-  // Assist TS compiler with pass-through generic type
-  if (msg instanceof Function) {
-    return getLogger("default").warning(msg, ...args);
-  }
-  return getLogger("default").warning(msg, ...args);
-}
-
-/** Log with error level, using default logger. */
-export function error<T>(msg: () => T, ...args: unknown[]): T | undefined;
-export function error<T>(
-  msg: T extends GenericFunction ? never : T,
-  ...args: unknown[]
-): T;
-export function error<T>(
-  msg: (T extends GenericFunction ? never : T) | (() => T),
-  ...args: unknown[]
-): T | undefined {
-  // Assist TS compiler with pass-through generic type
-  if (msg instanceof Function) {
-    return getLogger("default").error(msg, ...args);
-  }
-  return getLogger("default").error(msg, ...args);
-}
-
-/** Log with critical level, using default logger. */
-export function critical<T>(msg: () => T, ...args: unknown[]): T | undefined;
-export function critical<T>(
-  msg: T extends GenericFunction ? never : T,
-  ...args: unknown[]
-): T;
-export function critical<T>(
-  msg: (T extends GenericFunction ? never : T) | (() => T),
-  ...args: unknown[]
-): T | undefined {
-  // Assist TS compiler with pass-through generic type
-  if (msg instanceof Function) {
-    return getLogger("default").critical(msg, ...args);
-  }
-  return getLogger("default").critical(msg, ...args);
-}
-
-/** Setup logger config. */
-export function setup(config: LogConfig) {
-  state.config = {
-    handlers: { ...DEFAULT_CONFIG.handlers, ...config.handlers },
-    loggers: { ...DEFAULT_CONFIG.loggers, ...config.loggers },
-  };
-
-  // tear down existing handlers
-  state.handlers.forEach((handler) => {
-    handler.destroy();
-  });
-  state.handlers.clear();
-
-  // setup handlers
-  const handlers = state.config.handlers || {};
-
-  for (const handlerName in handlers) {
-    const handler = handlers[handlerName];
-    handler.setup();
-    state.handlers.set(handlerName, handler);
-  }
-
-  // remove existing loggers
-  state.loggers.clear();
-
-  // setup loggers
-  const loggers = state.config.loggers || {};
-  for (const loggerName in loggers) {
-    const loggerConfig = loggers[loggerName];
-    const handlerNames = loggerConfig.handlers || [];
-    const handlers: BaseHandler[] = [];
-
-    handlerNames.forEach((handlerName) => {
-      const handler = state.handlers.get(handlerName);
-      if (handler) {
-        handlers.push(handler);
-      }
-    });
-
-    const levelName = loggerConfig.level || DEFAULT_LEVEL;
-    const logger = new Logger(loggerName, levelName, { handlers: handlers });
-    state.loggers.set(loggerName, logger);
-  }
-}
-
-setup(DEFAULT_CONFIG);
+export * from "./base_handler.ts";
+export * from "./console_handler.ts";
+export * from "./file_handler.ts";
+export * from "./rotating_file_handler.ts";
+export * from "./levels.ts";
+export * from "./logger.ts";
+export * from "./formatters.ts";
+export * from "./critical.ts";
+export * from "./debug.ts";
+export * from "./error.ts";
+export * from "./get_logger.ts";
+export * from "./info.ts";
+export * from "./setup.ts";
+export * from "./warn.ts";

@@ -1,13 +1,13 @@
-// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
 import { descend } from "./comparators.ts";
 
 /** Swaps the values at two indexes in an array. */
 function swap<T>(array: T[], a: number, b: number) {
-  const temp: T = array[a];
-  array[a] = array[b];
-  array[b] = temp;
+  const temp = array[a];
+  array[a] = array[b]!;
+  array[b] = temp!;
 }
 
 /** Returns the parent index for a child index. */
@@ -61,7 +61,7 @@ export class BinaryHeap<T> implements Iterable<T> {
   #data: T[] = [];
   constructor(private compare: (a: T, b: T) => number = descend) {}
   /** Returns the underlying cloned array in arbitrary order without sorting */
-  toArray() {
+  toArray(): T[] {
     return Array.from(this.#data);
   }
   /** Creates a new binary heap from an array like or iterable object. */
@@ -132,11 +132,11 @@ export class BinaryHeap<T> implements Iterable<T> {
     let right: number = 2 * (parent + 1);
     let left: number = right - 1;
     while (left < size) {
-      const greatestChild =
-        right === size || this.compare(this.#data[left], this.#data[right]) <= 0
-          ? left
-          : right;
-      if (this.compare(this.#data[greatestChild], this.#data[parent]) < 0) {
+      const greatestChild = right === size ||
+          this.compare(this.#data[left]!, this.#data[right]!) <= 0
+        ? left
+        : right;
+      if (this.compare(this.#data[greatestChild]!, this.#data[parent]!) < 0) {
         swap(this.#data, parent, greatestChild);
         parent = greatestChild;
       } else {
@@ -155,7 +155,7 @@ export class BinaryHeap<T> implements Iterable<T> {
       let parent: number = getParentIndex(index);
       this.#data.push(value);
       while (
-        index !== 0 && this.compare(this.#data[index], this.#data[parent]) < 0
+        index !== 0 && this.compare(this.#data[index]!, this.#data[parent]!) < 0
       ) {
         swap(this.#data, parent, index);
         index = parent;

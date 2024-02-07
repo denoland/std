@@ -1,11 +1,13 @@
-// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
 import { basename } from "../path/basename.ts";
 import { join } from "../path/join.ts";
 import { resolve } from "../path/resolve.ts";
 import { ensureDir, ensureDirSync } from "./ensure_dir.ts";
-import { getFileInfoType, isSubdir, toPathString } from "./_util.ts";
 import { assert } from "../assert/assert.ts";
+import { getFileInfoType } from "./_get_file_info_type.ts";
+import { toPathString } from "./_to_path_string.ts";
+import { isSubdir } from "./_is_subdir.ts";
 
 const isWindows = Deno.build.os === "windows";
 

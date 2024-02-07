@@ -1,4 +1,4 @@
-// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
 import { assertEquals } from "../assert/mod.ts";
 import { associateWith } from "./associate_with.ts";
@@ -13,7 +13,7 @@ function associateWithTest<T>(
 }
 
 Deno.test({
-  name: "[collections/associateWith] no mutation",
+  name: "associateWith() handles no mutation",
   fn() {
     const arrayA = ["Foo", "Bar"];
     associateWith(arrayA, (it) => it.charAt(0));
@@ -23,14 +23,14 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/associateWith] empty input",
+  name: "associateWith() handles empty input",
   fn() {
     associateWithTest([[], () => "abc"], {});
   },
 });
 
 Deno.test({
-  name: "[collections/associateWith] associates",
+  name: "associateWith() handles associates",
   fn() {
     associateWithTest<number>(
       [
@@ -81,7 +81,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/associateWith] duplicate keys",
+  name: "associateWith() handles duplicate keys",
   fn() {
     associateWithTest(
       [

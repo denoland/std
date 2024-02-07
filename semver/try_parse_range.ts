@@ -1,6 +1,6 @@
-// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import { SemVerRange } from "./types.ts";
+import { Range, SemVerRange } from "./types.ts";
 import { parseRange } from "./parse_range.ts";
 
 /**
@@ -10,7 +10,7 @@ import { parseRange } from "./parse_range.ts";
  */
 export function tryParseRange(
   range: string,
-): SemVerRange | undefined {
+): SemVerRange & Range | undefined {
   try {
     // Return '*' instead of '' so that truthiness works.
     // This will throw if it's invalid anyway

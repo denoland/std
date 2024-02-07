@@ -1,4 +1,4 @@
-// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
 import { deepMerge } from "../collections/deep_merge.ts";
@@ -161,7 +161,7 @@ export const Utils = {
     key: string[];
     value: Record<string, unknown>;
   }) {
-    if (table.key.length === 0) {
+    if (table.key.length === 0 || table.key[0] == null) {
       throw new Error("Unexpected key length");
     }
     const value = target[table.key[0]];
@@ -410,8 +410,9 @@ function EscapeSequence(scanner: Scanner): ParseResult<string> {
         scanner.next();
         return success("\\");
       default:
-        scanner.next();
-        return success(scanner.char());
+        throw new TOMLParseError(
+          `Invalid escape sequence: \\${scanner.char()}`,
+        );
     }
   } else {
     return failure();
@@ -613,7 +614,7 @@ export function Integer(scanner: Scanner): ParseResult<number | string> {
     scanner.next();
   }
 
-  if (acc.length === 0 || (acc.length === 1 && /[+-]/.test(acc[0]))) {
+  if (acc.length === 0 || (acc.length === 1 && /[+-]/.test(acc[0]!))) {
     return failure();
   }
 
@@ -893,7 +894,7 @@ export function ParserFactory<T>(parser: ParserComponent<T>) {
           if (count > line.length) {
             count -= line.length + 1;
           } else {
-            return count;
+            break;
           }
         }
         return count;

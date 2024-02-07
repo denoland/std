@@ -1,4 +1,4 @@
-// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
 import {
   bold,
@@ -8,8 +8,7 @@ import {
   stripAnsiCode,
   yellow,
 } from "../fmt/colors.ts";
-import { assertThrows } from "../assert/assert_throws.ts";
-import { AssertionError } from "../assert/assertion_error.ts";
+import { AssertionError, assertThrows } from "../assert/mod.ts";
 import { expect } from "./expect.ts";
 
 const createHeader = (): string[] => [
@@ -217,4 +216,61 @@ Deno.test("expect().toEqual same Set with object keys", () => {
   ];
   expect(data).toEqual(data);
   expect(new Set(data)).toEqual(new Set(data));
+});
+
+Deno.test("expect().toEqual() does not throw when a key with undfined value exists in only one of values", () => {
+  // bar: undefined is ignored in comparison
+  expect({ foo: 1, bar: undefined }).toEqual({ foo: 1 });
+  expect({ foo: 1, bar: undefined }).not.toEqual({ foo: undefined });
+});
+
+// https://github.com/denoland/deno_std/issues/4244
+Deno.test("align to jest test cases", () => {
+  function create() {
+    class Person {
+      constructor(public readonly name = "deno") {}
+    }
+    return new Person();
+  }
+
+  expect([create()]).toEqual([create()]);
+  expect(
+    new (class A {
+      #hello = "world";
+    })(),
+  ).toEqual(
+    new (class B {
+      #hello = "world";
+    })(),
+  );
+  expect(
+    new WeakRef({ hello: "world" }),
+  ).toEqual(
+    new (class<T extends object> extends WeakRef<T> {})({ hello: "world" }),
+  );
+
+  expect({ a: undefined, b: undefined }).toEqual({
+    a: undefined,
+    c: undefined,
+  });
+  expect({ a: undefined, b: undefined }).toEqual({ a: undefined });
+
+  class A {}
+  class B {}
+  expect(new A()).toEqual(new B());
+  assertThrows(() => {
+    expect(new A()).not.toEqual(new B());
+  }, AssertionError);
+});
+
+Deno.test("toEqual case for Error Object", () => {
+  function getError() {
+    return new Error("missing param: name");
+  }
+
+  const expectErrObjectWithName = new Error("missing param: name");
+  expect(getError()).toEqual(expectErrObjectWithName);
+
+  const expectErrObjectWithEmail = new Error("missing param: email");
+  expect(getError()).not.toEqual(expectErrObjectWithEmail);
 });

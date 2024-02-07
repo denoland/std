@@ -1,4 +1,4 @@
-// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
 async function checkIsWsl() {
   return Deno.build.os === "linux" && await hasMicrosoftProcVersion();
@@ -35,6 +35,8 @@ export function cleanUp(device: GPUDevice) {
 
   // TODO(lucacasonato): webgpu spec should add a explicit destroy method for
   // adapters.
+  // deno-lint-ignore no-deprecated-deno-api
   const resources = Object.keys(Deno.resources());
-  Deno.close(Number(resources[resources.length - 1]));
+  // @ts-ignore Until WebGPU resources cleanup is automatically handled.
+  Deno[Deno.internal].core.close(Number(resources[resources.length - 1]));
 }

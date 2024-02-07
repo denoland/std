@@ -1,5 +1,5 @@
 #!/usr/bin/env -S deno run --allow-net --allow-read
-// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
 // This program serves files in the current directory over HTTP.
 // TODO(bartlomieju): Add tests like these:
@@ -37,7 +37,7 @@ import { extname } from "../path/extname.ts";
 import { join } from "../path/join.ts";
 import { relative } from "../path/relative.ts";
 import { resolve } from "../path/resolve.ts";
-import { SEP_PATTERN } from "../path/separator.ts";
+import { SEPARATOR_PATTERN } from "../path/constants.ts";
 import { contentType } from "../media_types/content_type.ts";
 import { calculate, ifNoneMatch } from "./etag.ts";
 import {
@@ -309,7 +309,7 @@ async function serveDirIndex(
   const urlRoot = options.urlRoot ? "/" + options.urlRoot : "";
   const dirUrl = `/${
     relative(options.target, dirPath).replaceAll(
-      new RegExp(SEP_PATTERN, "g"),
+      new RegExp(SEPARATOR_PATTERN, "g"),
       "/",
     )
   }`;
@@ -608,7 +608,10 @@ export interface ServeDirOptions {
  *
  * @param req The request to handle
  */
-export async function serveDir(req: Request, opts: ServeDirOptions = {}) {
+export async function serveDir(
+  req: Request,
+  opts: ServeDirOptions = {},
+): Promise<Response> {
   let response: Response;
   try {
     response = await createServeDirResponse(req, opts);

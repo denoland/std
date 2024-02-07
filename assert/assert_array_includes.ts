@@ -1,4 +1,4 @@
-// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import { equal } from "./equal.ts";
 import { format } from "./_format.ts";
 import { AssertionError } from "./assertion_error.ts";
@@ -25,7 +25,7 @@ export function assertArrayIncludes<T>(
   actual: ArrayLikeArg<T>,
   expected: ArrayLikeArg<T>,
   msg?: string,
-): void {
+) {
   const missing: unknown[] = [];
   for (let i = 0; i < expected.length; i++) {
     let found = false;

@@ -1,13 +1,11 @@
 // Copyright 2009 The Go Authors. All rights reserved.
 // https://github.com/golang/go/blob/master/LICENSE
-// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
-
-import { validateBinaryLike } from "./_util.ts";
 
 /**
  * Port of the Go
- * [encoding/hex](https://github.com/golang/go/blob/go1.12.5/src/encoding/hex/hex.go)
+ * {@link https://github.com/golang/go/blob/go1.12.5/src/encoding/hex/hex.go | encoding/hex}
  * library.
  *
  * This module is browser compatible.
@@ -30,6 +28,8 @@ import { validateBinaryLike } from "./_util.ts";
  *
  * @module
  */
+
+import { validateBinaryLike } from "./_util.ts";
 
 const hexTable = new TextEncoder().encode("0123456789abcdef");
 const textEncoder = new TextEncoder();

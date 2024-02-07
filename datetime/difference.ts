@@ -1,8 +1,12 @@
-// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
 import { DAY, HOUR, MINUTE, SECOND, WEEK } from "./constants.ts";
 
+/**
+ * Duration units for {@linkcode DifferenceFormat} and
+ * {@linkcode DifferenceOptions}.
+ */
 export type Unit =
   | "milliseconds"
   | "seconds"
@@ -14,8 +18,10 @@ export type Unit =
   | "quarters"
   | "years";
 
+/** Return type for {@linkcode difference}. */
 export type DifferenceFormat = Partial<Record<Unit, number>>;
 
+/** Options for {@linkcode difference}. */
 export type DifferenceOptions = {
   units?: Unit[];
 };

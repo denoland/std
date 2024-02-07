@@ -1,4 +1,4 @@
-// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import { assertEquals, assertThrows } from "../assert/mod.ts";
 import { parse } from "./parse.ts";
 
@@ -131,6 +131,6 @@ Deno.test("invalidVersion", async (t) => {
 });
 
 Deno.test("bigNumericPrerelease", function () {
-  const r = parse("1.2.3-beta." + Number.MAX_SAFE_INTEGER + "0");
+  const r = parse(`1.2.3-beta.${Number.MAX_SAFE_INTEGER}0`);
   assertEquals(r.prerelease, ["beta", "90071992547409910"]);
 });

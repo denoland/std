@@ -1,10 +1,10 @@
-// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import { assert, assertEquals } from "../assert/mod.ts";
 import { BinaryHeap } from "./binary_heap.ts";
 import { ascend, descend } from "./comparators.ts";
 import { Container, MyMath } from "./_test_utils.ts";
 
-Deno.test("[collections/BinaryHeap] with default descend comparator", () => {
+Deno.test("BinaryHeap works with default descend comparator", () => {
   const maxHeap = new BinaryHeap<number>();
   const values: number[] = [-10, 9, -1, 100, 9, 1, 0, 9, -100, 10, -9];
   const expected: number[] = [100, 10, 9, 9, 9, 1, 0, -1, -9, -10, -100];
@@ -13,8 +13,8 @@ Deno.test("[collections/BinaryHeap] with default descend comparator", () => {
   assertEquals(maxHeap.length, 0);
   assertEquals(maxHeap.isEmpty(), true);
   assertEquals(maxHeap.peek(), undefined);
-  for (let i = 0; i < values.length; i++) {
-    assertEquals(maxHeap.push(values[i]), i + 1);
+  for (const [i, value] of values.entries()) {
+    assertEquals(maxHeap.push(value), i + 1);
   }
   assertEquals(maxHeap.length, values.length);
   assertEquals(maxHeap.isEmpty(), false);
@@ -41,7 +41,7 @@ Deno.test("[collections/BinaryHeap] with default descend comparator", () => {
   assertEquals(actual, expected);
 });
 
-Deno.test("[collections/BinaryHeap] with ascend comparator", () => {
+Deno.test("BinaryHeap works with ascend comparator", () => {
   const minHeap = new BinaryHeap<number>(ascend);
   const values: number[] = [-10, 9, -1, 100, 9, 1, 0, 9, -100, 10, -9];
   const expected: number[] = [-100, -10, -9, -1, 0, 1, 9, 9, 9, 10, 100];
@@ -50,8 +50,8 @@ Deno.test("[collections/BinaryHeap] with ascend comparator", () => {
   assertEquals(minHeap.length, 0);
   assertEquals(minHeap.isEmpty(), true);
   assertEquals(minHeap.peek(), undefined);
-  for (let i = 0; i < values.length; i++) {
-    assertEquals(minHeap.push(values[i]), i + 1);
+  for (const [i, value] of values.entries()) {
+    assertEquals(minHeap.push(value), i + 1);
   }
   assertEquals(minHeap.length, values.length);
   assertEquals(minHeap.isEmpty(), false);
@@ -78,15 +78,15 @@ Deno.test("[collections/BinaryHeap] with ascend comparator", () => {
   assertEquals(actual, expected);
 });
 
-Deno.test("[collections/BinaryHeap] containing objects", () => {
+Deno.test("BinaryHeap contains objects", () => {
   const heap = new BinaryHeap((
     a: Container,
     b: Container,
   ) => ascend(a.id, b.id));
   const ids: number[] = [-10, 9, -1, 100, 1, 0, -100, 10, -9];
 
-  for (let i = 0; i < ids.length; i++) {
-    const newContainer: Container = { id: ids[i], values: [] };
+  for (const [i, id] of ids.entries()) {
+    const newContainer: Container = { id, values: [] };
     assertEquals(heap.push(newContainer), i + 1);
     newContainer.values.push(i - 1, i, i + 1);
     assertEquals(heap.length, i + 1);
@@ -95,13 +95,13 @@ Deno.test("[collections/BinaryHeap] containing objects", () => {
 
   const expected: number[] = [-100, -10, -9, -1, 0, 1, 9, 10, 100];
   const expectedValue: number[] = [6, 0, 8, 2, 5, 4, 1, 7, 3];
-  for (let i = 0; i < ids.length; i++) {
+  for (const [i, value] of expectedValue.entries()) {
     assertEquals(heap.length, ids.length - i);
     assertEquals(heap.isEmpty(), false);
 
     const expectedContainer = {
       id: expected[i],
-      values: [expectedValue[i] - 1, expectedValue[i], expectedValue[i] + 1],
+      values: [value - 1, value, value + 1],
     };
     assertEquals(heap.peek(), expectedContainer);
     assertEquals(heap.pop(), expectedContainer);
@@ -110,7 +110,7 @@ Deno.test("[collections/BinaryHeap] containing objects", () => {
   assertEquals(heap.isEmpty(), true);
 });
 
-Deno.test("[collections/BinaryHeap] from Iterable", () => {
+Deno.test("BinaryHeap.from() handles iterable", () => {
   const values: number[] = [-10, 9, -1, 100, 9, 1, 0, 9, -100, 10, -9];
   const originalValues: number[] = Array.from(values);
   const expected: number[] = [100, 10, 9, 9, 9, 1, 0, -1, -9, -10, -100];
@@ -155,7 +155,7 @@ Deno.test("[collections/BinaryHeap] from Iterable", () => {
   assertEquals([...heap].reverse(), expected.map((v: number) => 3 * v));
 });
 
-Deno.test("[collections/BinaryHeap] from BinaryHeap with default descend comparator", () => {
+Deno.test("BinaryHeap.from() handles default descend comparator", () => {
   const values: number[] = [-10, 9, -1, 100, 9, 1, 0, 9, -100, 10, -9];
   const expected: number[] = [100, 10, 9, 9, 9, 1, 0, -1, -9, -10, -100];
   const maxHeap = new BinaryHeap<number>();
@@ -207,7 +207,7 @@ Deno.test("[collections/BinaryHeap] from BinaryHeap with default descend compara
   assertEquals([...heap].reverse(), expected.map((v: number) => 3 * v));
 });
 
-Deno.test("[collections/BinaryHeap] from BinaryHeap with ascend comparator", () => {
+Deno.test("BinaryHeap.from() handles ascend comparator", () => {
   const values: number[] = [-10, 9, -1, 100, 9, 1, 0, 9, -100, 10, -9];
   const expected: number[] = [-100, -10, -9, -1, 0, 1, 9, 9, 9, 10, 100];
   const minHeap = new BinaryHeap<number>(ascend);
@@ -259,7 +259,7 @@ Deno.test("[collections/BinaryHeap] from BinaryHeap with ascend comparator", () 
   assertEquals([...heap].reverse(), expected.map((v: number) => 3 * v));
 });
 
-Deno.test("[collections/BinaryHeap] edge case 1", () => {
+Deno.test("BinaryHeap handles edge case 1", () => {
   const minHeap = new BinaryHeap<number>(ascend);
   minHeap.push(4, 2, 8, 1, 10, 7, 3, 6, 5);
   assertEquals(minHeap.pop(), 1);
@@ -269,7 +269,7 @@ Deno.test("[collections/BinaryHeap] edge case 1", () => {
   assertEquals([...minHeap], expected);
 });
 
-Deno.test("[collections/BinaryHeap] edge case 2", () => {
+Deno.test("BinaryHeap handles edge case 2", () => {
   interface Point {
     x: number;
     y: number;
@@ -281,7 +281,7 @@ Deno.test("[collections/BinaryHeap] edge case 2", () => {
   assertEquals([...minHeap], expected);
 });
 
-Deno.test("[collections/BinaryHeap] edge case 3", () => {
+Deno.test("BinaryHeap handles edge case 3", () => {
   interface Point {
     x: number;
     y: number;
@@ -309,7 +309,7 @@ Deno.test("[collections/BinaryHeap] edge case 3", () => {
   assertEquals([...minHeap], expected);
 });
 
-Deno.test("[collections/BinaryHeap] README example", () => {
+Deno.test("BinaryHeap handles README example", () => {
   const maxHeap = new BinaryHeap<number>();
   maxHeap.push(4, 1, 3, 5, 2);
   assertEquals(maxHeap.peek(), 5);
@@ -332,11 +332,17 @@ Deno.test("[collections/BinaryHeap] README example", () => {
   assertEquals([...words], []);
 });
 
-Deno.test("[collections/BinaryHeap] .toArray() and .clear()", () => {
+Deno.test("BinaryHeap.toArray()", () => {
   const values = [-10, 9, -1, 100, 9, 1, 0, 9, -100, 10, -9];
   const maxHeap = new BinaryHeap<number>();
   maxHeap.push(...values);
   assert(maxHeap.toArray().every((value) => values.includes(value)));
+});
+
+Deno.test("BinaryHeap.clear()", () => {
+  const values = [-10, 9, -1, 100, 9, 1, 0, 9, -100, 10, -9];
+  const maxHeap = new BinaryHeap<number>();
+  maxHeap.push(...values);
   maxHeap.clear();
   assertEquals(maxHeap.toArray(), []);
 });

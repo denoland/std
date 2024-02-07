@@ -1,4 +1,4 @@
-// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
 import { copy } from "../bytes/copy.ts";
 import {
@@ -8,7 +8,7 @@ import {
   assertThrows,
 } from "../assert/mod.ts";
 import { readRange, readRangeSync } from "./read_range.ts";
-import type { Closer, Reader, ReaderSync } from "./types.d.ts";
+import type { Closer, Reader, ReaderSync } from "./types.ts";
 
 // N controls how many iterations of certain checks are performed.
 const N = 100;

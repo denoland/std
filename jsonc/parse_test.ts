@@ -1,4 +1,4 @@
-// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
 import { parse, type ParseOptions } from "./parse.ts";
 import {
@@ -194,7 +194,7 @@ Deno.test({
     const command = new Deno.Command(Deno.execPath(), {
       stdout: "inherit",
       stderr: "inherit",
-      args: ["eval", testCode],
+      args: ["eval", "--no-lock", testCode],
     });
     const { success } = await command.output();
     assert(success);

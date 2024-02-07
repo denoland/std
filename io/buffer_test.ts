@@ -1,4 +1,4 @@
-// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
 // This code has been ported almost directly from Go's src/bytes/buffer_test.go
 // Copyright 2009 The Go Authors. All rights reserved. BSD license.
@@ -10,7 +10,7 @@ import {
   assertThrows,
 } from "../assert/mod.ts";
 import { Buffer } from "./buffer.ts";
-import { writeAllSync } from "../streams/write_all.ts";
+import { writeAllSync } from "./write_all.ts";
 
 const MAX_SIZE = 2 ** 32 - 2;
 // N controls how many iterations of certain checks are performed.

@@ -1,4 +1,4 @@
-// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
 /**
@@ -31,11 +31,10 @@ export function filterKeys<T>(
   predicate: (key: string) => boolean,
 ): Record<string, T> {
   const ret: Record<string, T> = {};
-  const keys = Object.keys(record);
 
-  for (const key of keys) {
+  for (const [key, value] of Object.entries(record)) {
     if (predicate(key)) {
-      ret[key] = record[key];
+      ret[key] = value;
     }
   }
 

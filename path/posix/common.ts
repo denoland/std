@@ -1,8 +1,8 @@
-// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
 import { _common } from "../_common/common.ts";
-import { SEP } from "./separator.ts";
+import { SEPARATOR } from "./constants.ts";
 
 /** Determines the common path from a set of paths, using an optional separator,
  * which defaults to the OS default separator.
@@ -16,6 +16,9 @@ import { SEP } from "./separator.ts";
  *       console.log(p); // "./deno/std/"
  * ```
  */
-export function common(paths: string[], sep = SEP): string {
+export function common(
+  paths: string[],
+  sep: string = SEPARATOR,
+): string {
   return _common(paths, sep);
 }

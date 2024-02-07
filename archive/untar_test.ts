@@ -1,4 +1,4 @@
-// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import { assert, assertEquals, assertExists } from "../assert/mod.ts";
 import { resolve } from "../path/mod.ts";
 import { Tar, type TarMeta } from "./tar.ts";
@@ -9,8 +9,8 @@ import {
   Untar,
 } from "./untar.ts";
 import { Buffer } from "../io/buffer.ts";
-import { copy } from "../streams/copy.ts";
-import { readAll } from "../streams/read_all.ts";
+import { copy } from "../io/copy.ts";
+import { readAll } from "../io/read_all.ts";
 import { filePath, testdataDir } from "./_test_common.ts";
 
 interface TestEntry {
@@ -40,7 +40,7 @@ async function createTar(entries: TestEntry[]): Promise<Tar> {
   return tar;
 }
 
-Deno.test("untarAsyncIterator", async function () {
+Deno.test("Untar() works as an async iterator", async () => {
   const entries: TestEntry[] = [
     {
       name: "output.txt",
@@ -77,9 +77,7 @@ Deno.test("untarAsyncIterator", async function () {
   assertEquals(entries.length, 0);
 });
 
-Deno.test("untarAsyncIteratorWithoutReadingBody", async function (): Promise<
-  void
-> {
+Deno.test("Untar() reads without body", async () => {
   const entries: TestEntry[] = [
     {
       name: "output.txt",
@@ -106,8 +104,8 @@ Deno.test("untarAsyncIteratorWithoutReadingBody", async function (): Promise<
 });
 
 Deno.test(
-  "untarAsyncIteratorWithoutReadingBodyFromFileReader",
-  async function () {
+  "Untar() reads without body from FileReader",
+  async () => {
     const entries: TestEntry[] = [
       {
         name: "output.txt",
@@ -122,11 +120,10 @@ Deno.test(
     const outputFile = resolve(testdataDir, "test.tar");
 
     const tar = await createTar(entries);
-    const file = await Deno.open(outputFile, { create: true, write: true });
+    using file = await Deno.open(outputFile, { create: true, write: true });
     await copy(tar.getReader(), file);
-    file.close();
 
-    const reader = await Deno.open(outputFile, { read: true });
+    using reader = await Deno.open(outputFile, { read: true });
     // read data from a tar archive
     const untar = new Untar(reader);
 
@@ -136,13 +133,12 @@ Deno.test(
       assertEquals(expected.name, entry.fileName);
     }
 
-    reader.close();
     await Deno.remove(outputFile);
     assertEquals(entries.length, 0);
   },
 );
 
-Deno.test("untarAsyncIteratorFromFileReader", async function () {
+Deno.test("Untar() reads from FileReader", async () => {
   const entries: TestEntry[] = [
     {
       name: "output.txt",
@@ -157,11 +153,10 @@ Deno.test("untarAsyncIteratorFromFileReader", async function () {
   const outputFile = resolve(testdataDir, "test.tar");
 
   const tar = await createTar(entries);
-  const file = await Deno.open(outputFile, { create: true, write: true });
+  using file = await Deno.open(outputFile, { create: true, write: true });
   await copy(tar.getReader(), file);
-  file.close();
 
-  const reader = await Deno.open(outputFile, { read: true });
+  using reader = await Deno.open(outputFile, { read: true });
   // read data from a tar archive
   const untar = new Untar(reader);
 
@@ -178,14 +173,13 @@ Deno.test("untarAsyncIteratorFromFileReader", async function () {
     assertEquals(expected.name, entry.fileName);
   }
 
-  reader.close();
   await Deno.remove(outputFile);
   assertEquals(entries.length, 0);
 });
 
 Deno.test(
-  "untarAsyncIteratorReadingLessThanRecordSize",
-  async function () {
+  "Untar() reads less than record size",
+  async () => {
     // record size is 512
     const bufSizes = [1, 53, 256, 511];
 
@@ -229,9 +223,9 @@ Deno.test(
   },
 );
 
-Deno.test("untarLinuxGeneratedTar", async function () {
+Deno.test("Untar() works with Linux generated tar", async () => {
   const filePath = resolve(testdataDir, "deno.tar");
-  const file = await Deno.open(filePath, { read: true });
+  using file = await Deno.open(filePath, { read: true });
 
   type ExpectedEntry = TarMeta & { content?: Uint8Array };
 
@@ -321,12 +315,10 @@ Deno.test("untarLinuxGeneratedTar", async function () {
       assertEquals(content, await readAll(entry));
     }
   }
-
-  file.close();
 });
 
 Deno.test({
-  name: "test TarEntry",
+  name: "TarEntry() handles meta",
   // only: true,
   fn() {
     // test TarEntry class
@@ -334,7 +326,22 @@ Deno.test({
     // Test TarEntry type
     const bufSizes = [1, 53, 256, 511];
     const header: TarHeader = {
-      test: new Uint8Array(bufSizes),
+      fileName: new Uint8Array(bufSizes),
+      fileMode: new Uint8Array(bufSizes),
+      uid: new Uint8Array(bufSizes),
+      gid: new Uint8Array(bufSizes),
+      fileSize: new Uint8Array(bufSizes),
+      mtime: new Uint8Array(bufSizes),
+      checksum: new Uint8Array(bufSizes),
+      type: new Uint8Array(bufSizes),
+      linkName: new Uint8Array(bufSizes),
+      ustar: new Uint8Array(bufSizes),
+      owner: new Uint8Array(bufSizes),
+      group: new Uint8Array(bufSizes),
+      majorNumber: new Uint8Array(bufSizes),
+      minorNumber: new Uint8Array(bufSizes),
+      fileNamePrefix: new Uint8Array(bufSizes),
+      padding: new Uint8Array(bufSizes),
     };
     const content = new TextEncoder().encode("hello tar world!");
     const reader = new Buffer(content);
@@ -354,9 +361,9 @@ Deno.test({
   },
 });
 
-Deno.test("untarArchiveWithLink", async function () {
+Deno.test("Untar() handles archive with link", async function () {
   const filePath = resolve(testdataDir, "with_link.tar");
-  const file = await Deno.open(filePath, { read: true });
+  using file = await Deno.open(filePath, { read: true });
 
   type ExpectedEntry = TarMetaWithLinkName & { content?: Uint8Array };
 
@@ -401,6 +408,4 @@ Deno.test("untarArchiveWithLink", async function () {
       assertEquals(content, await readAll(entry));
     }
   }
-
-  file.close();
 });

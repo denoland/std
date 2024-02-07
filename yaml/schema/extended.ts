@@ -1,4 +1,4 @@
-// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
 import { Schema } from "../schema.ts";
@@ -33,7 +33,7 @@ import { def } from "./default.ts";
  * );
  * ```
  */
-export const extended = new Schema({
+export const extended: Schema = new Schema({
   explicit: [regexp, undefinedType],
   include: [def],
 });

@@ -1,4 +1,4 @@
-// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
 type LineParseResult = {
   key: string;
@@ -24,7 +24,7 @@ function expandCharacters(str: string): string {
 
   return str.replace(
     /\\([nrt])/g,
-    ($1: keyof CharactersMap): string => charactersMap[$1],
+    ($1: keyof CharactersMap): string => charactersMap[$1] || "",
   );
 }
 
@@ -54,6 +54,17 @@ function expand(str: string, variablesMap: { [key: string]: string }): string {
   }
 }
 
+/**
+ * Parse `.env` file output in an object.
+ *
+ * @example
+ * ```ts
+ * import { parse } from "https://deno.land/std@$STD_VERSION/dotenv/parse.ts";
+ *
+ * const env = parse("GREETING=hello world");
+ * env.GREETING; // "hello world"
+ * ```
+ */
 export function parse(rawDotenv: string): Record<string, string> {
   const env: Record<string, string> = {};
 
@@ -78,7 +89,7 @@ export function parse(rawDotenv: string): Record<string, string> {
   //https://github.com/motdotla/dotenv-expand/blob/ed5fea5bf517a09fd743ce2c63150e88c8a5f6d1/lib/main.js#L23
   const variablesMap = { ...env };
   keysForExpandCheck.forEach((key) => {
-    env[key] = expand(env[key], variablesMap);
+    env[key] = expand(env[key]!, variablesMap);
   });
 
   return env;

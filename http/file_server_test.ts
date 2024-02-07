@@ -1,4 +1,4 @@
-// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import {
   assert,
   assertAlmostEquals,
@@ -299,8 +299,7 @@ Deno.test("serveDir() traverses encoded URI path", async () => {
 
 Deno.test("serveDir() serves unusual filename", async () => {
   const filePath = join(testdataDir, "%");
-  const file = await Deno.create(filePath);
-  file.close();
+  using _file = await Deno.create(filePath);
 
   const req1 = new Request("http://localhost/%25");
   const res1 = await serveDir(req1, serveDirOptions);
@@ -345,6 +344,7 @@ Deno.test("serveDir() script prints help", async () => {
       "run",
       "--no-check",
       "--quiet",
+      "--no-lock",
       "file_server.ts",
       "--help",
     ],
@@ -361,6 +361,7 @@ Deno.test("serveDir() script prints version", async () => {
       "run",
       "--no-check",
       "--quiet",
+      "--no-lock",
       "file_server.ts",
       "--version",
     ],
@@ -389,6 +390,7 @@ Deno.test("serveDir() script fails with partial TLS args", async () => {
       "--quiet",
       "--allow-read",
       "--allow-net",
+      "--no-lock",
       "file_server.ts",
       ".",
       "--host",
@@ -801,7 +803,7 @@ Deno.test("serveFile() etag value falls back to DENO_DEPLOYMENT_ID if fileInfo.m
     assertEquals(res.headers.get("etag"), \`${hashedDenoDeploymentId}\`);
   `;
   const command = new Deno.Command(Deno.execPath(), {
-    args: ["eval", code],
+    args: ["eval", "--no-lock", code],
     stdout: "null",
     stderr: "null",
     env: { DENO_DEPLOYMENT_ID },

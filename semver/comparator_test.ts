@@ -1,11 +1,12 @@
 // Copyright Isaac Z. Schlueter and Contributors. All rights reserved. ISC license.
-// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import { assertEquals } from "../assert/mod.ts";
 import { parseRange } from "./parse_range.ts";
 import { parse } from "./parse.ts";
 import { testRange } from "./test_range.ts";
-import { parseComparator } from "./parse_comparator.ts";
-import { comparatorFormat } from "./comparator_format.ts";
+import { parseComparator } from "./_parse_comparator.ts";
+import { comparatorFormat } from "./_comparator_format.ts";
+import { Comparator } from "./types.ts";
 
 Deno.test({
   name: "comparators",
@@ -161,13 +162,31 @@ Deno.test({
   },
 });
 
-Deno.test("tostrings", function () {
+Deno.test("comparatorFormat() handles semver inheritance", function () {
   assertEquals(
     comparatorFormat(parseComparator(">= v1.2.3")),
     ">=1.2.3",
   );
   assertEquals(
     comparatorFormat(parseComparator(">= v1.2.3-pre.1+b.2")),
+    ">=1.2.3-pre.1+b.2",
+  );
+});
+
+Deno.test("comparatorFormat() handles deprecated Comparator.semver property", function () {
+  const c1 = parseComparator(">= v1.2.3");
+  assertEquals(
+    comparatorFormat(
+      { operator: c1.operator, semver: c1.semver } as Comparator,
+    ),
+    ">=1.2.3",
+  );
+  const c2 = parseComparator(">= v1.2.3-pre.1+b.2");
+
+  assertEquals(
+    comparatorFormat(
+      { operator: c2.operator, semver: c2.semver } as Comparator,
+    ),
     ">=1.2.3-pre.1+b.2",
   );
 });

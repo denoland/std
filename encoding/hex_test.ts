@@ -3,7 +3,7 @@
 // Copyright 2009 The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
-// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import { assertEquals, assertThrows } from "../assert/mod.ts";
 
 import { decodeHex, encodeHex } from "./hex.ts";
@@ -31,7 +31,7 @@ const errCases: [string, ErrorConstructor, string][] = [
   ["ffeed", RangeError, ""],
 ];
 
-Deno.test("[encoding.hex] encodeHex", () => {
+Deno.test("encodeHex() handles string", () => {
   {
     const srcStr = "abc";
     const dest = encodeHex(srcStr);
@@ -46,7 +46,7 @@ Deno.test("[encoding.hex] encodeHex", () => {
   }
 });
 
-Deno.test("[encoding.hex] decodeHex", () => {
+Deno.test("decodeHex() handles hex", () => {
   // Case for decoding uppercase hex characters, since
   // Encode always uses lowercase.
   const extraTestcase: [string, number[]][] = [
@@ -61,7 +61,7 @@ Deno.test("[encoding.hex] decodeHex", () => {
   }
 });
 
-Deno.test("[encoding.hex] decodeHex error", () => {
+Deno.test("decodeHex() throws on invalid input", () => {
   for (const [input, expectedErr, msg] of errCases) {
     assertThrows(
       () => decodeHex(input),

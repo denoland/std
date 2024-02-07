@@ -1,4 +1,4 @@
-// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
 const input = Deno.stdin;
 const output = Deno.stdout;
@@ -31,7 +31,7 @@ export function promptSecret(
   message = "Secret ",
   { mask = "*", clear }: PromptSecretOptions = {},
 ): string | null {
-  if (!Deno.isatty(input.rid)) {
+  if (!input.isTerminal()) {
     return null;
   }
 
@@ -73,7 +73,7 @@ function readLineFromStdinSync(callback?: (n: number) => void): string {
     if (c[0] === BS || c[0] === DEL) {
       buf.pop();
     } else {
-      buf.push(c[0]);
+      buf.push(c[0]!);
     }
     if (callback) callback(buf.length);
   }

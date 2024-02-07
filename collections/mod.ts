@@ -1,13 +1,15 @@
-// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
 /**
  * Pure functions for common tasks around collection types like arrays and
- * objects. Heavily inspired by
- * [Kotlin's `kotlin.collections`]{@linkcode https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/}
+ * objects.
+ *
+ * Heavily inspired by
+ * {@link https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/ | Kotlin's Collections}
  * package.
  *
- * @module.
+ * @module
  */
 
 export * from "./aggregate_groups.ts";
@@ -21,7 +23,6 @@ export * from "./drop_while.ts";
 export * from "./filter_entries.ts";
 export * from "./filter_keys.ts";
 export * from "./filter_values.ts";
-export * from "./group_by.ts";
 export * from "./intersect.ts";
 export * from "./map_entries.ts";
 export * from "./map_keys.ts";

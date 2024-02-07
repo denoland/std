@@ -1,9 +1,9 @@
-// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
 // This module was heavily inspired by ua-parser-js
 // (https://www.npmjs.com/package/ua-parser-js) which is MIT licensed and
-// Copyright (c) 2012-2023 Faisal Salman <f@faisalman.com>
+// Copyright (c) 2012-2024 Faisal Salman <f@faisalman.com>
 
 /** Provides {@linkcode UserAgent} and related types to be able to provide a
  * structured understanding of a user agent string.
@@ -71,19 +71,21 @@ interface Matchers {
   os: MatchingTuple[];
 }
 
+/** The browser as described by a user agent string. */
 export interface Browser {
-  /** The major version of a browser as represented by a user agent string. */
+  /** The major version of a browser. */
   readonly major: string | undefined;
-  /** The name of a browser as represented by a user agent string. */
+  /** The name of a browser. */
   readonly name: string | undefined;
-  /** The version of a browser as represented by a user agent string. */
+  /** The version of a browser. */
   readonly version: string | undefined;
 }
 
+/** The device as described by a user agent string. */
 export interface Device {
-  /** The model of a device as represented by a user agent string. */
+  /** The model of the device. */
   readonly model: string | undefined;
-  /** The type of device as represented by a user agent string. */
+  /** The type of device. */
   readonly type:
     | "console"
     | "mobile"
@@ -92,21 +94,29 @@ export interface Device {
     | "wearable"
     | "embedded"
     | undefined;
-  /** The vendor of a device as represented by a user agent string. */
+  /** The vendor of the device. */
   readonly vendor: string | undefined;
 }
 
+/** The browser engine as described by a user agent string. */
 export interface Engine {
+  /** The browser engine name. */
   readonly name: string | undefined;
+  /** The browser engine version. */
   readonly version: string | undefined;
 }
 
+/** The OS as described by a user agent string. */
 export interface Os {
+  /** The OS name. */
   readonly name: string | undefined;
+  /** The OS version. */
   readonly version: string | undefined;
 }
 
+/** The CPU information as described by a user agent string. */
 export interface Cpu {
+  /** The CPU architecture.  */
   readonly architecture: string | undefined;
 }
 
@@ -968,7 +978,11 @@ const matchers: Matchers = {
     ],
   ],
 };
-
+/**
+ * A representation of user agent string, which can be used to determine
+ * environmental information represented by the string. All properties are
+ * determined lazily.
+ */
 export class UserAgent {
   #browser?: Browser;
   #cpu?: Cpu;
@@ -977,10 +991,10 @@ export class UserAgent {
   #os?: Os;
   #ua: string;
 
-  /** A representation of user agent string, which can be used to determine
-   * environmental information represented by the string. All properties are
-   * determined lazily.
+  /**
+   * Constructs a new instance.
    *
+   * @example
    * ```ts
    * import { UserAgent } from "https://deno.land/std@$STD_VERSION/http/user_agent.ts";
    *
@@ -995,8 +1009,10 @@ export class UserAgent {
     this.#ua = ua ?? "";
   }
 
-  /** The name and version of the browser extracted from the user agent
-   * string. */
+  /**
+   * The name and version of the browser extracted from the user agent
+   * string.
+   */
   get browser(): Browser {
     if (!this.#browser) {
       this.#browser = { name: undefined, version: undefined, major: undefined };
@@ -1018,8 +1034,10 @@ export class UserAgent {
     return this.#cpu;
   }
 
-  /** The model, type, and vendor of a device if present in a user agent
-   * string. */
+  /**
+   * The model, type, and vendor of a device if present in a user agent
+   * string.
+   */
   get device(): Device {
     if (!this.#device) {
       this.#device = { model: undefined, type: undefined, vendor: undefined };
@@ -1054,15 +1072,25 @@ export class UserAgent {
     return this.#ua;
   }
 
-  toJSON() {
+  /** Converts the current instance to a JSON representation. */
+  toJSON(): {
+    browser: Browser;
+    cpu: Cpu;
+    device: Device;
+    engine: Engine;
+    os: Os;
+    ua: string;
+  } {
     const { browser, cpu, device, engine, os, ua } = this;
     return { browser, cpu, device, engine, os, ua };
   }
 
+  /** Converts the current instance to a string. */
   toString(): string {
     return this.#ua;
   }
 
+  /** Custom output for {@linkcode Deno.inspect}. */
   [Symbol.for("Deno.customInspect")](
     inspect: (value: unknown) => string,
   ): string {
@@ -1072,6 +1100,10 @@ export class UserAgent {
     }`;
   }
 
+  /**
+   * Custom output for Node's
+   * {@linkcode https://nodejs.org/api/util.html#utilinspectobject-options | util.inspect}.
+   */
   [Symbol.for("nodejs.util.inspect.custom")](
     depth: number,
     // deno-lint-ignore no-explicit-any

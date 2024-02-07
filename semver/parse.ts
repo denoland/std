@@ -1,28 +1,15 @@
-// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import { SemVer } from "./types.ts";
-import { isValidNumber } from "./_shared.ts";
-import { isSemVer } from "./is_semver.ts";
+import { parseBuild, parseNumber, parsePrerelease } from "./_shared.ts";
 import { FULL_REGEXP, MAX_LENGTH } from "./_shared.ts";
 
-/**
- * @deprecated (will be removed in 0.212.0) Use a string argument instead.
- */
-export function parse(version: SemVer): SemVer;
 /**
  * Attempt to parse a string as a semantic version, returning either a `SemVer`
  * object or throws a TypeError.
  * @param version The version string to parse
  * @returns A valid SemVer
  */
-export function parse(version: string): SemVer;
-export function parse(version: string | SemVer): SemVer {
-  if (typeof version === "object") {
-    if (isSemVer(version)) {
-      return version;
-    } else {
-      throw new TypeError(`not a valid SemVer object`);
-    }
-  }
+export function parse(version: string): SemVer {
   if (typeof version !== "string") {
     throw new TypeError(
       `version must be a string`,
@@ -37,43 +24,18 @@ export function parse(version: string | SemVer): SemVer {
 
   version = version.trim();
 
-  const m = version.match(FULL_REGEXP);
-  if (!m) {
-    throw new TypeError(`Invalid Version: ${version}`);
-  }
+  const groups = version.match(FULL_REGEXP)?.groups;
+  if (!groups) throw new TypeError(`Invalid Version: ${version}`);
 
-  // these are actually numbers
-  const major = parseInt(m[1]);
-  const minor = parseInt(m[2]);
-  const patch = parseInt(m[3]);
+  const major = parseNumber(groups.major, "Invalid major version");
+  const minor = parseNumber(groups.minor, "Invalid minor version");
+  const patch = parseNumber(groups.patch, "Invalid patch version");
 
-  if (major > Number.MAX_SAFE_INTEGER || major < 0) {
-    throw new TypeError("Invalid major version");
-  }
+  const prerelease = groups.prerelease
+    ? parsePrerelease(groups.prerelease)
+    : [];
+  const build = groups.buildmetadata ? parseBuild(groups.buildmetadata) : [];
 
-  if (minor > Number.MAX_SAFE_INTEGER || minor < 0) {
-    throw new TypeError("Invalid minor version");
-  }
-
-  if (patch > Number.MAX_SAFE_INTEGER || patch < 0) {
-    throw new TypeError("Invalid patch version");
-  }
-
-  // number-ify any prerelease numeric ids
-  const numericIdentifier = new RegExp(`^(0|[1-9]\\d*)$`);
-  const prerelease = (m[4] ?? "")
-    .split(".")
-    .filter((id) => id)
-    .map((id: string) => {
-      const num = parseInt(id);
-      if (id.match(numericIdentifier) && isValidNumber(num)) {
-        return num;
-      } else {
-        return id;
-      }
-    });
-
-  const build = m[5]?.split(".")?.filter((m) => m) ?? [];
   return {
     major,
     minor,

@@ -1,4 +1,4 @@
-// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
 // Bare keys may only contain ASCII letters,
@@ -20,7 +20,11 @@ type ArrayType =
   | "ONLY_OBJECT_EXCLUDING_ARRAY"
   | "MIXED";
 
+/**
+ * Formatting Options for {@linkcode stringify}
+ */
 export interface FormatOptions {
+  /** Define if the keys should be aligned or not */
   keyAlignment?: boolean;
 }
 
@@ -51,8 +55,7 @@ class Dumper {
       }
     }
     const sortedProps = inlineProps.concat(multilineProps);
-    for (let i = 0; i < sortedProps.length; i++) {
-      const prop = sortedProps[i];
+    for (const prop of sortedProps) {
       const value = obj[prop];
       if (value instanceof Date) {
         out.push(this.#dateDeclaration([prop], value));
@@ -218,7 +221,7 @@ class Dumper {
     const rDeclaration = /^(\".*\"|[^=]*)\s=/;
     const out = [];
     for (let i = 0; i < this.output.length; i++) {
-      const l = this.output[i];
+      const l = this.output[i] as string;
       // we keep empty entry for array of objects
       if (l[0] === "[" && l[1] !== "[") {
         // non-empty object with only subobjects as properties
@@ -233,7 +236,7 @@ class Dumper {
       } else {
         if (keyAlignment) {
           const m = rDeclaration.exec(l);
-          if (m) {
+          if (m && m[1]) {
             out.push(l.replace(m[1], m[1].padEnd(this.maxPad)));
           } else {
             out.push(l);
@@ -246,7 +249,7 @@ class Dumper {
     // Cleaning multiple spaces
     const cleanedOutput = [];
     for (let i = 0; i < out.length; i++) {
-      const l = out[i];
+      const l = out[i] as string;
       if (!(l === "" && out[i + 1] === "")) {
         cleanedOutput.push(l);
       }
@@ -259,7 +262,7 @@ class Dumper {
  * Stringify dumps source object into TOML string and returns it.
  * @param srcObj
  * @param [fmtOptions] format options
- * @param [fmtOptions.keyAlignment] whether to algin key
+ * @param [fmtOptions.keyAlignment] whether to align keys
  */
 export function stringify(
   srcObj: Record<string, unknown>,

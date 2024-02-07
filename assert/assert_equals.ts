@@ -1,4 +1,4 @@
-// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import { equal } from "./equal.ts";
 import { format } from "./_format.ts";
 import { AssertionError } from "./assertion_error.ts";
@@ -28,7 +28,7 @@ export function assertEquals<T>(
   expected: T,
   msg?: string,
   options: { formatter?: (value: unknown) => string } = {},
-): void {
+) {
   if (equal(actual, expected)) {
     return;
   }

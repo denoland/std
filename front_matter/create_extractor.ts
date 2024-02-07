@@ -1,4 +1,4 @@
-// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
 import {
   MAP_FORMAT_TO_EXTRACTOR_RX,
@@ -7,16 +7,19 @@ import {
 
 type Format = "yaml" | "toml" | "json" | "unknown";
 
+/** Return type for {@linkcode Extractor}. */
 export type Extract<T> = {
   frontMatter: string;
   body: string;
   attrs: T;
 };
 
+/** Function return type for {@linkcode createExtractor}. */
 export type Extractor = <T = Record<string, unknown>>(
   str: string,
 ) => Extract<T>;
 
+/** Parser function type used alongside {@linkcode createExtractor}. */
 export type Parser = <T = Record<string, unknown>>(str: string) => T;
 
 function _extract<T>(
@@ -56,7 +59,7 @@ function recognize(str: string, formats?: Format[]): Format {
     formats = Object.keys(MAP_FORMAT_TO_RECOGNIZER_RX) as Format[];
   }
 
-  const [firstLine] = str.split(/(\r?\n)/);
+  const [firstLine] = str.split(/(\r?\n)/) as [string];
 
   for (const format of formats) {
     if (format === "unknown") {

@@ -1,4 +1,4 @@
-// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import { assert, assertEquals, assertStringIncludes } from "../assert/mod.ts";
 import {
   fromFileUrl,
@@ -235,7 +235,7 @@ Deno.test("expandGlobSync() accepts includeDirs option set to false", function (
 Deno.test("expandGlob() throws permission error without fs permissions", async function () {
   const exampleUrl = new URL("testdata/expand_wildcard.js", import.meta.url);
   const command = new Deno.Command(Deno.execPath(), {
-    args: ["run", "--quiet", "--unstable", exampleUrl.toString()],
+    args: ["run", "--quiet", "--no-lock", exampleUrl.toString()],
   });
   const { code, success, stdout, stderr } = await command.output();
   const decoder = new TextDecoder();

@@ -1,4 +1,4 @@
-// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
 /** Order option for {@linkcode SortByOptions}. */
@@ -126,15 +126,15 @@ export function sortBy<T>(
   const selectors = new Array<ReturnType<typeof selector> | null>(len);
   const order = options?.order ?? "asc";
 
-  for (let i = 0; i < len; i++) {
-    indexes[i] = i;
-    const s = selector(array[i]);
-    selectors[i] = Number.isNaN(s) ? null : s;
-  }
+  array.forEach((item, idx) => {
+    indexes[idx] = idx;
+    const s = selector(item);
+    selectors[idx] = Number.isNaN(s) ? null : s;
+  });
 
   indexes.sort((ai, bi) => {
-    let a = selectors[ai];
-    let b = selectors[bi];
+    let a = selectors[ai]!;
+    let b = selectors[bi]!;
     if (order === "desc") {
       [a, b] = [b, a];
     }
@@ -144,7 +144,7 @@ export function sortBy<T>(
   });
 
   for (let i = 0; i < len; i++) {
-    (indexes as unknown as T[])[i] = array[indexes[i]];
+    (indexes as unknown as T[])[i] = array[indexes[i] as number] as T;
   }
 
   return indexes as unknown as T[];

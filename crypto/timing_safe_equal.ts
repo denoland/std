@@ -1,4 +1,4 @@
-// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
 import { assert } from "../assert/assert.ts";
@@ -11,7 +11,7 @@ import { assert } from "../assert/assert.ts";
  *
  * It is likely some form of timing safe equality will make its way to the
  * WebCrypto standard (see:
- * [w3c/webcrypto#270](https://github.com/w3c/webcrypto/issues/270)), but until
+ * {@link https://github.com/w3c/webcrypto/issues/270 | w3c/webcrypto#270}), but until
  * that time, `timingSafeEqual()` is provided:
  *
  * ```ts

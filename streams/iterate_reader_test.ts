@@ -1,10 +1,10 @@
 import { assertEquals } from "../assert/mod.ts";
-// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
 import { iterateReader, iterateReaderSync } from "./iterate_reader.ts";
 import { readerFromIterable } from "./reader_from_iterable.ts";
 import { delay } from "../async/delay.ts";
-import type { Reader, ReaderSync } from "../io/types.d.ts";
+import type { Reader, ReaderSync } from "../io/types.ts";
 
 Deno.test("iterateReader", async () => {
   // ref: https://github.com/denoland/deno/issues/2330

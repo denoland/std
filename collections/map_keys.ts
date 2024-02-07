@@ -1,4 +1,4 @@
-// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
 /**
@@ -30,12 +30,10 @@ export function mapKeys<T>(
   transformer: (key: string) => string,
 ): Record<string, T> {
   const ret: Record<string, T> = {};
-  const keys = Object.keys(record);
 
-  for (const key of keys) {
+  for (const [key, value] of Object.entries(record)) {
     const mappedKey = transformer(key);
-
-    ret[mappedKey] = record[key];
+    ret[mappedKey] = value;
   }
 
   return ret;

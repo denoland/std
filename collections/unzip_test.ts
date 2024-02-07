@@ -1,4 +1,4 @@
-// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
 import { assertEquals } from "../assert/mod.ts";
 import { unzip } from "./unzip.ts";
@@ -13,7 +13,7 @@ function unzipTest<T, U>(
 }
 
 Deno.test({
-  name: "[collections/unzip] no mutation",
+  name: "unzip() handles no mutation",
   fn() {
     const zipped: Array<[number, boolean]> = [
       [1, true],
@@ -31,7 +31,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/unzip] empty input",
+  name: "unzip() handles empty input",
   fn() {
     unzipTest(
       [[]],
@@ -41,7 +41,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/unzip] unzips",
+  name: "unzip() handles unzips",
   fn() {
     unzipTest(
       [

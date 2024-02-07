@@ -1,8 +1,8 @@
-// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import { includesNeedle } from "./includes_needle.ts";
 import { assert } from "../assert/mod.ts";
 
-Deno.test("[bytes] includesNeedle", () => {
+Deno.test("includesNeedle()", () => {
   const encoder = new TextEncoder();
   const source = encoder.encode("deno.land");
   const pattern = encoder.encode("deno");

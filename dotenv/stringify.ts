@@ -1,6 +1,8 @@
-// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
 /**
+ * Stringify an object into a valid `.env` file format.
+ *
  * @example
  * ```ts
  * import { stringify } from "https://deno.land/std@$STD_VERSION/dotenv/stringify.ts";
@@ -12,7 +14,7 @@
  * @param object object to be stringified
  * @returns string of object
  */
-export function stringify(object: Record<string, string>) {
+export function stringify(object: Record<string, string>): string {
   const lines: string[] = [];
   for (const [key, value] of Object.entries(object)) {
     let quote;

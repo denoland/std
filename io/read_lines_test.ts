@@ -1,4 +1,4 @@
-// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This code has been ported almost directly from Go's src/bytes/buffer_test.go
 // Copyright 2009 The Go Authors. All rights reserved. BSD license.
 // https://github.com/golang/go/blob/master/LICENSE
@@ -56,13 +56,11 @@ Deno.test("readStringDelimAndLines", async function () {
 
 Deno.test("readLinesWithEncodingISO-8859-15", async function () {
   const lines_ = [];
-  const file_ = await Deno.open("./io/testdata/iso-8859-15.txt");
+  using file_ = await Deno.open("./io/testdata/iso-8859-15.txt");
 
   for await (const l of readLines(file_, { encoding: "iso-8859-15" })) {
     lines_.push(l);
   }
-
-  file_.close();
 
   assertEquals(lines_.length, 12);
   assertEquals(lines_, [

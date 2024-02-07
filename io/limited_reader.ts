@@ -1,4 +1,4 @@
-// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
 /**
@@ -7,10 +7,10 @@
  * `read` returns `null` when `limit` <= `0` or
  * when the underlying `reader` returns `null`.
  */
-import type { Reader } from "./types.d.ts";
+import type { Reader } from "./types.ts";
 
 /**
- * @deprecated (will be removed after 1.0.0) Use the [Web Streams API]{@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API} instead.
+ * @deprecated (will be removed after 1.0.0) Use the {@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API | Web Streams API} instead.
  */
 export class LimitedReader implements Reader {
   constructor(public reader: Reader, public limit: number) {}

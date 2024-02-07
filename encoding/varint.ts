@@ -1,4 +1,4 @@
-// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // Copyright 2020 Keith Cirkel. All rights reserved. MIT license.
 // Copyright 2023 Skye "MierenManz". All rights reserved. MIT license.
 /**

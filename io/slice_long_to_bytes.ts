@@ -1,4 +1,4 @@
-// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
 /**
@@ -6,11 +6,11 @@
  * @param d The number to be sliced
  * @param dest The sliced array
  *
- * @deprecated (will be removed after 1.0.0) Use the [Web Streams API]{@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API} instead.
+ * @deprecated (will be removed after 1.0.0) Use the {@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API | Web Streams API} instead.
  */
 export function sliceLongToBytes(
   d: number,
-  dest = Array.from<number>({ length: 8 }),
+  dest: number[] = Array.from<number>({ length: 8 }),
 ): number[] {
   let big = BigInt(d);
   for (let i = 0; i < 8; i++) {

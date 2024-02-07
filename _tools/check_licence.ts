@@ -1,4 +1,4 @@
-// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import { walk } from "../fs/walk.ts";
 import { globToRegExp } from "../path/glob_to_regexp.ts";
 
@@ -10,6 +10,7 @@ const EXCLUDED_DIRS = [
   "**/crypto/_wasm/target",
   "**/crypto/_wasm/lib",
   "**/.git",
+  "**/docs/**",
 ];
 
 const ROOT = new URL("../", import.meta.url);
@@ -19,7 +20,7 @@ const CURRENT_YEAR = new Date().getFullYear();
 const RX_COPYRIGHT = new RegExp(
   `// Copyright ([0-9]{4})-([0-9]{4}) the Deno authors\\. All rights reserved\\. MIT license\\.\n`,
 );
-const COPYRIGHT =
+export const COPYRIGHT =
   `// Copyright ${FIRST_YEAR}-${CURRENT_YEAR} the Deno authors. All rights reserved. MIT license.`;
 
 let failed = false;

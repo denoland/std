@@ -1,4 +1,4 @@
-// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
 import { unicodeWidth } from "./unicode_width.ts";
 import { assertEquals } from "../assert/mod.ts";
@@ -42,5 +42,19 @@ Deno.test("unicodeWidth()", async (t) => {
     // `npm:string-width` returns.
     // See discussion at https://github.com/denoland/deno_std/pull/3297#discussion_r1166289430
     assertEquals(unicodeWidth("👩‍🔬"), 4); // Woman Scientist
+  });
+
+  await t.step("checks escape sequences", () => {
+    assertEquals(unicodeWidth("\0"), 0);
+    assertEquals(unicodeWidth("\n"), 0);
+    assertEquals(unicodeWidth("\r"), 0);
+    assertEquals(unicodeWidth("\t"), 0);
+  });
+
+  await t.step("checks C1 controls", () => {
+    assertEquals(unicodeWidth("\u0080"), 0);
+    assertEquals(unicodeWidth("\u008A"), 0);
+    assertEquals(unicodeWidth("\u0093"), 0);
+    assertEquals(unicodeWidth("\u009F"), 0);
   });
 });

@@ -1,4 +1,4 @@
-// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import { delay } from "../async/delay.ts";
 import {
   assertEquals,
@@ -565,7 +565,14 @@ Deno.test("stub types", () => {
 });
 
 Deno.test("mockSession and mockSessionAsync", async () => {
-  const points = Array(6).fill(undefined).map(() => new Point(2, 3));
+  const points = [
+    new Point(2, 3),
+    new Point(2, 3),
+    new Point(2, 3),
+    new Point(2, 3),
+    new Point(2, 3),
+    new Point(2, 3),
+  ] as const;
   let actions: Spy<Point, unknown[], unknown>[] = [];
   function assertRestored(expected: boolean[]) {
     assertEquals(actions.map((action) => action.restored), expected);
@@ -603,7 +610,14 @@ Deno.test("mockSession and mockSessionAsync", async () => {
 });
 
 Deno.test("mockSession and restore current session", () => {
-  const points = Array(6).fill(undefined).map(() => new Point(2, 3));
+  const points = [
+    new Point(2, 3),
+    new Point(2, 3),
+    new Point(2, 3),
+    new Point(2, 3),
+    new Point(2, 3),
+    new Point(2, 3),
+  ] as const;
   let actions: Spy<Point, unknown[], unknown>[];
   function assertRestored(expected: boolean[]) {
     assertEquals(actions.map((action) => action.restored), expected);
@@ -657,7 +671,14 @@ Deno.test("mockSession and restore current session", () => {
 });
 
 Deno.test("mockSession and restore multiple sessions", () => {
-  const points = Array(6).fill(undefined).map(() => new Point(2, 3));
+  const points = [
+    new Point(2, 3),
+    new Point(2, 3),
+    new Point(2, 3),
+    new Point(2, 3),
+    new Point(2, 3),
+    new Point(2, 3),
+  ] as const;
   let actions: Spy<Point, unknown[], unknown>[];
   function assertRestored(expected: boolean[]) {
     assertEquals(actions.map((action) => action.restored), expected);

@@ -1,4 +1,4 @@
-// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
 import {
@@ -10,10 +10,11 @@ import {
   ParseError,
   type ParseResult,
   type ReadOptions,
+  type RecordWithColumn,
 } from "./_io.ts";
 import { assert } from "../assert/assert.ts";
 
-export { ParseError, ReadOptions };
+export { ParseError, type ParseResult, ReadOptions, type RecordWithColumn };
 
 const BYTE_ORDER_MARK = "\ufeff";
 
@@ -280,6 +281,7 @@ class Parser {
   }
 }
 
+/** Options for {@linkcode parse}. */
 export interface ParseOptions extends ReadOptions {
   /**
    * If you provide `skipFirstRow: true` and `columns`, the first line will be
@@ -317,6 +319,29 @@ export interface ParseOptions extends ReadOptions {
  *   If you provide `opt.skipFirstRow` or `opt.columns`, it returns `Record<string, unknown>[]`.
  */
 export function parse(input: string, opt?: undefined): string[][];
+/**
+ * Csv parse helper to manipulate data.
+ * Provides an auto/custom mapper for columns.
+ *
+ * @example
+ * ```ts
+ * import { parse } from "https://deno.land/std@$STD_VERSION/csv/parse.ts";
+ * const string = "a,b,c\nd,e,f";
+ *
+ * console.log(
+ *   await parse(string, {
+ *     skipFirstRow: false,
+ *   }),
+ * );
+ * // output:
+ * // [["a", "b", "c"], ["d", "e", "f"]]
+ * ```
+ *
+ * @param input Input to parse.
+ * @param opt options of the parser.
+ * @returns If you don't provide `opt.skipFirstRow` and `opt.columns`, it returns `string[][]`.
+ *   If you provide `opt.skipFirstRow` or `opt.columns`, it returns `Record<string, unknown>[]`.
+ */
 export function parse<const T extends ParseOptions>(
   input: string,
   opt: T,

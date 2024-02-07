@@ -1,8 +1,8 @@
-// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
 import { DEFAULT_BUFFER_SIZE } from "./_common.ts";
-import type { Reader, ReaderSync } from "../io/types.d.ts";
+import type { Reader, ReaderSync } from "../io/types.ts";
 
 export type { Reader, ReaderSync };
 
@@ -13,11 +13,10 @@ export type { Reader, ReaderSync };
  * ```ts
  * import { iterateReader } from "https://deno.land/std@$STD_VERSION/streams/iterate_reader.ts";
  *
- * let f = await Deno.open("/etc/passwd");
+ * using f = await Deno.open("/etc/passwd");
  * for await (const chunk of iterateReader(f)) {
  *   console.log(chunk);
  * }
- * f.close();
  * ```
  *
  * Second argument can be used to tune size of a buffer.
@@ -27,17 +26,16 @@ export type { Reader, ReaderSync };
  * ```ts
  * import { iterateReader } from "https://deno.land/std@$STD_VERSION/streams/iterate_reader.ts";
  *
- * let f = await Deno.open("/etc/passwd");
+ * using f = await Deno.open("/etc/passwd");
  * const it = iterateReader(f, {
  *   bufSize: 1024 * 1024
  * });
  * for await (const chunk of it) {
  *   console.log(chunk);
  * }
- * f.close();
  * ```
  *
- * @deprecated (will be removed after 1.0.0) Use {@linkcode ReadableStream} instead.
+ * @deprecated (will be removed after 1.0.0) Use {@linkcode ReadableStreamDefaultReader} instead.
  */
 export async function* iterateReader(
   r: Reader,
@@ -63,11 +61,10 @@ export async function* iterateReader(
  * ```ts
  * import { iterateReaderSync } from "https://deno.land/std@$STD_VERSION/streams/iterate_reader.ts";
  *
- * let f = Deno.openSync("/etc/passwd");
+ * using f = Deno.openSync("/etc/passwd");
  * for (const chunk of iterateReaderSync(f)) {
  *   console.log(chunk);
  * }
- * f.close();
  * ```
  *
  * Second argument can be used to tune size of a buffer.
@@ -76,14 +73,13 @@ export async function* iterateReader(
  * ```ts
  * import { iterateReaderSync } from "https://deno.land/std@$STD_VERSION/streams/iterate_reader.ts";
 
- * let f = await Deno.open("/etc/passwd");
+ * using f = await Deno.open("/etc/passwd");
  * const iter = iterateReaderSync(f, {
  *   bufSize: 1024 * 1024
  * });
  * for (const chunk of iter) {
  *   console.log(chunk);
  * }
- * f.close();
  * ```
  *
  * Iterator uses an internal buffer of fixed size for efficiency; it returns

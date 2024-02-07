@@ -1,9 +1,9 @@
-// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import { assertEquals } from "../assert/mod.ts";
 import { format } from "./format.ts";
 
 Deno.test({
-  name: "[std/datetime] format",
+  name: "format()",
   fn: () => {
     // 00 hours
     assertEquals(

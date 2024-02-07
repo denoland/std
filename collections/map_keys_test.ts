@@ -1,4 +1,4 @@
-// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
 import { assertEquals } from "../assert/mod.ts";
 import { mapKeys } from "./map_keys.ts";
@@ -13,7 +13,7 @@ function mapKeysTest<T>(
 }
 
 Deno.test({
-  name: "[collections/mapKeys] no mutation",
+  name: "mapKeys() handles no mutation",
   fn() {
     const object = { a: 5, b: true };
     mapKeys(object, (it) => `${it}a`);
@@ -23,7 +23,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/mapKeys] empty input",
+  name: "mapKeys() handles empty input",
   fn() {
     mapKeysTest(
       [{}, (it) => it],
@@ -33,7 +33,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/mapKeys] identity",
+  name: "mapKeys() handles identity",
   fn() {
     mapKeysTest(
       [
@@ -54,7 +54,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/mapKeys] to constant key",
+  name: "mapKeys() handles to constant key",
   fn() {
     mapKeysTest(
       [
@@ -67,7 +67,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/mapKeys] overlapping keys",
+  name: "mapKeys() handles overlapping keys",
   fn() {
     mapKeysTest(
       [
@@ -104,7 +104,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/mapKeys] empty key",
+  name: "mapKeys() handles empty key",
   fn() {
     mapKeysTest(
       [
@@ -126,7 +126,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/mapKeys] normal mappers",
+  name: "mapKeys() handles normal mappers",
   fn() {
     mapKeysTest(
       [
@@ -134,7 +134,7 @@ Deno.test({
           "/home/deno/food.txt": "Plants, preferably fruit",
           "/home/deno/other-dinos.txt": "Noderaptor, Pythonoctorus",
         },
-        (path) => path.split("/").slice(-1)[0],
+        (path) => (path.split("/").slice(-1) as [string])[0],
       ],
       {
         "food.txt": "Plants, preferably fruit",

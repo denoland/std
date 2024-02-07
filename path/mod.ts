@@ -1,4 +1,4 @@
-// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // Copyright the Browserify authors. MIT License.
 // Ported mostly from https://github.com/browserify/path-browserify/
 // This module is browser compatible.
@@ -34,20 +34,17 @@
  * @module
  */
 
-import { isWindows } from "./_os.ts";
 import * as _windows from "./windows/mod.ts";
 import * as _posix from "./posix/mod.ts";
 
 /** @deprecated (will be removed after 1.0.0) Import from {@link https://deno.land/std/path/windows/mod.ts} instead. */
-export const win32 = _windows;
+export const win32: typeof _windows = _windows;
 
 /** @deprecated (will be removed after 1.0.0) Import from {@link https://deno.land/std/posix/mod.ts} instead. */
-export const posix = _posix;
-
-export const sep = isWindows ? _windows.sep : _posix.sep;
-export const delimiter = isWindows ? _windows.delimiter : _posix.delimiter;
+export const posix: typeof _posix = _posix;
 
 export * from "./basename.ts";
+export * from "./constants.ts";
 export * from "./dirname.ts";
 export * from "./extname.ts";
 export * from "./format.ts";
@@ -61,7 +58,6 @@ export * from "./resolve.ts";
 export * from "./to_file_url.ts";
 export * from "./to_namespaced_path.ts";
 export * from "./common.ts";
-export * from "./separator.ts";
 export * from "./_interface.ts";
 export * from "./glob_to_regexp.ts";
 export * from "./is_glob.ts";

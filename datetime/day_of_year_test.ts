@@ -1,9 +1,9 @@
-// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import { assertEquals } from "../assert/mod.ts";
 import { dayOfYear, dayOfYearUtc } from "./day_of_year.ts";
 
 Deno.test({
-  name: "[std/datetime] dayOfYearUtc",
+  name: "dayOfYearUtc()",
   fn: () => {
     // from https://golang.org/src/time/time_test.go
     // Test YearDay in several different scenarios
@@ -187,7 +187,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[std/datetime] dayOfYear",
+  name: "dayOfYear()",
   fn: () => {
     // from https://golang.org/src/time/time_test.go
     // Test YearDay in several different scenarios

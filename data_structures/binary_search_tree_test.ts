@@ -1,4 +1,4 @@
-// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import {
   assert,
   assertEquals,
@@ -19,11 +19,11 @@ interface Container {
   values: number[];
 }
 
-Deno.test("[collections/BinarySearchTree] with default ascend comparator", () => {
-  const trees: BinarySearchTree<number>[] = [
+Deno.test("BinarySearchTree handles default ascend comparator", () => {
+  const trees = [
     new BinarySearchTree(),
     new BinarySearchTree(),
-  ];
+  ] as const;
   const values: number[] = [-10, 9, -1, 100, 1, 0, -100, 10, -9];
 
   const expectedMin: number[][] = [
@@ -34,49 +34,49 @@ Deno.test("[collections/BinarySearchTree] with default ascend comparator", () =>
     [-10, 9, 9, 100, 100, 100, 100, 100, 100],
     [-9, 10, 10, 10, 10, 100, 100, 100, 100],
   ];
-  for (let i = 0; i < 2; i++) {
-    assertEquals(trees[i].size, 0);
-    assertEquals(trees[i].isEmpty(), true);
-    for (let j = 0; j < values.length; j++) {
-      assertEquals(trees[i].find(values[j]), null);
-      assertEquals(trees[i].insert(values[j]), true);
-      assertEquals(trees[i].find(values[j]), values[j]);
-      assertEquals(trees[i].size, j + 1);
-      assertEquals(trees[i].isEmpty(), false);
-      assertEquals(trees[i].min(), expectedMin[i][j]);
-      assertEquals(trees[i].max(), expectedMax[i][j]);
+  for (const [i, tree] of trees.entries()) {
+    assertEquals(tree.size, 0);
+    assertEquals(tree.isEmpty(), true);
+    for (const [j, value] of values.entries()) {
+      assertEquals(tree.find(value), null);
+      assertEquals(tree.insert(value), true);
+      assertEquals(tree.find(value), value);
+      assertEquals(tree.size, j + 1);
+      assertEquals(tree.isEmpty(), false);
+      assertEquals(tree.min(), expectedMin?.[i]?.[j]);
+      assertEquals(tree.max(), expectedMax?.[i]?.[j]);
     }
-    for (let j = 0; j < values.length; j++) {
-      assertEquals(trees[i].insert(values[j]), false);
-      assertEquals(trees[i].size, values.length);
-      assertEquals(trees[i].isEmpty(), false);
-      assertEquals(trees[i].min(), -100);
-      assertEquals(trees[i].max(), 100);
+    for (const value of values) {
+      assertEquals(tree.insert(value), false);
+      assertEquals(tree.size, values.length);
+      assertEquals(tree.isEmpty(), false);
+      assertEquals(tree.min(), -100);
+      assertEquals(tree.max(), 100);
     }
     values.reverse();
   }
 
-  for (let i = 0; i < 2; i++) {
+  for (const tree of trees) {
     assertEquals(
-      [...trees[i].lnrValues()],
+      [...tree.lnrValues()],
       [-100, -10, -9, -1, 0, 1, 9, 10, 100],
     );
-    assertEquals(trees[i].size, values.length);
-    assertEquals(trees[i].isEmpty(), false);
+    assertEquals(tree.size, values.length);
+    assertEquals(tree.isEmpty(), false);
 
     assertEquals(
-      [...trees[i]],
+      [...tree],
       [-100, -10, -9, -1, 0, 1, 9, 10, 100],
     );
-    assertEquals(trees[i].size, values.length);
-    assertEquals(trees[i].isEmpty(), false);
+    assertEquals(tree.size, values.length);
+    assertEquals(tree.isEmpty(), false);
 
     assertEquals(
-      [...trees[i].rnlValues()],
+      [...tree.rnlValues()],
       [100, 10, 9, 1, 0, -1, -9, -10, -100],
     );
-    assertEquals(trees[i].size, values.length);
-    assertEquals(trees[i].isEmpty(), false);
+    assertEquals(tree.size, values.length);
+    assertEquals(tree.isEmpty(), false);
   }
 
   assertEquals(
@@ -87,9 +87,9 @@ Deno.test("[collections/BinarySearchTree] with default ascend comparator", () =>
     [...trees[1].nlrValues()],
     [-9, -100, -10, 10, 0, -1, 1, 9, 100],
   );
-  for (let i = 0; i < 2; i++) {
-    assertEquals(trees[i].size, values.length);
-    assertEquals(trees[i].isEmpty(), false);
+  for (const tree of trees) {
+    assertEquals(tree.size, values.length);
+    assertEquals(tree.isEmpty(), false);
   }
 
   assertEquals(
@@ -100,9 +100,9 @@ Deno.test("[collections/BinarySearchTree] with default ascend comparator", () =>
     [...trees[1].lrnValues()],
     [-10, -100, -1, 9, 1, 0, 100, 10, -9],
   );
-  for (let i = 0; i < 2; i++) {
-    assertEquals(trees[i].size, values.length);
-    assertEquals(trees[i].isEmpty(), false);
+  for (const tree of trees) {
+    assertEquals(tree.size, values.length);
+    assertEquals(tree.isEmpty(), false);
   }
 
   assertEquals(
@@ -113,37 +113,37 @@ Deno.test("[collections/BinarySearchTree] with default ascend comparator", () =>
     [...trees[1].lvlValues()],
     [-9, -100, 10, -10, 0, 100, -1, 1, 9],
   );
-  for (let i = 0; i < 2; i++) {
-    assertEquals(trees[i].size, values.length);
-    assertEquals(trees[i].isEmpty(), false);
+  for (const tree of trees) {
+    assertEquals(tree.size, values.length);
+    assertEquals(tree.isEmpty(), false);
   }
 
-  for (let i = 0; i < 2; i++) {
+  for (const tree of trees) {
     const expected: number[] = [-100, -10, -9, -1, 0, 1, 9, 10, 100];
-    for (let j = 0; j < values.length; j++) {
-      assertEquals(trees[i].size, values.length - j);
-      assertEquals(trees[i].isEmpty(), false);
-      assertEquals(trees[i].find(values[j]), values[j]);
+    for (const [j, value] of values.entries()) {
+      assertEquals(tree.size, values.length - j);
+      assertEquals(tree.isEmpty(), false);
+      assertEquals(tree.find(value), value);
 
-      assertEquals(trees[i].remove(values[j]), true);
-      expected.splice(expected.indexOf(values[j]), 1);
-      assertEquals([...trees[i]], expected);
-      assertEquals(trees[i].find(values[j]), null);
+      assertEquals(tree.remove(value), true);
+      expected.splice(expected.indexOf(value), 1);
+      assertEquals([...tree], expected);
+      assertEquals(tree.find(value), null);
 
-      assertEquals(trees[i].remove(values[j]), false);
-      assertEquals([...trees[i]], expected);
-      assertEquals(trees[i].find(values[j]), null);
+      assertEquals(tree.remove(value), false);
+      assertEquals([...tree], expected);
+      assertEquals(tree.find(value), null);
     }
-    assertEquals(trees[i].size, 0);
-    assertEquals(trees[i].isEmpty(), true);
+    assertEquals(tree.size, 0);
+    assertEquals(tree.isEmpty(), true);
   }
 });
 
-Deno.test("[collections/BinarySearchTree] with descend comparator", () => {
-  const trees: BinarySearchTree<number>[] = [
+Deno.test("BinarySearchTree handles descend comparator", () => {
+  const trees = [
     new BinarySearchTree(descend),
     new BinarySearchTree(descend),
-  ];
+  ] as const;
   const values: number[] = [-10, 9, -1, 100, 1, 0, -100, 10, -9];
 
   const expectedMin: number[][] = [
@@ -154,49 +154,49 @@ Deno.test("[collections/BinarySearchTree] with descend comparator", () => {
     [-10, -10, -10, -10, -10, -10, -100, -100, -100],
     [-9, -9, -100, -100, -100, -100, -100, -100, -100],
   ];
-  for (let i = 0; i < 2; i++) {
-    assertEquals(trees[i].size, 0);
-    assertEquals(trees[i].isEmpty(), true);
-    for (let j = 0; j < values.length; j++) {
-      assertEquals(trees[i].find(values[j]), null);
-      assertEquals(trees[i].insert(values[j]), true);
-      assertEquals(trees[i].find(values[j]), values[j]);
-      assertEquals(trees[i].size, j + 1);
-      assertEquals(trees[i].isEmpty(), false);
-      assertEquals(trees[i].min(), expectedMin[i][j]);
-      assertEquals(trees[i].max(), expectedMax[i][j]);
+  for (const [i, tree] of trees.entries()) {
+    assertEquals(tree.size, 0);
+    assertEquals(tree.isEmpty(), true);
+    for (const [j, value] of values.entries()) {
+      assertEquals(tree.find(value), null);
+      assertEquals(tree.insert(value), true);
+      assertEquals(tree.find(value), value);
+      assertEquals(tree.size, j + 1);
+      assertEquals(tree.isEmpty(), false);
+      assertEquals(tree.min(), expectedMin?.[i]?.[j]);
+      assertEquals(tree.max(), expectedMax?.[i]?.[j]);
     }
-    for (let j = 0; j < values.length; j++) {
-      assertEquals(trees[i].insert(values[j]), false);
-      assertEquals(trees[i].size, values.length);
-      assertEquals(trees[i].isEmpty(), false);
-      assertEquals(trees[i].min(), 100);
-      assertEquals(trees[i].max(), -100);
+    for (const value of values) {
+      assertEquals(tree.insert(value), false);
+      assertEquals(tree.size, values.length);
+      assertEquals(tree.isEmpty(), false);
+      assertEquals(tree.min(), 100);
+      assertEquals(tree.max(), -100);
     }
     values.reverse();
   }
 
-  for (let i = 0; i < 2; i++) {
+  for (const tree of trees) {
     assertEquals(
-      [...trees[i].lnrValues()],
+      [...tree.lnrValues()],
       [100, 10, 9, 1, 0, -1, -9, -10, -100],
     );
-    assertEquals(trees[i].size, values.length);
-    assertEquals(trees[i].isEmpty(), false);
+    assertEquals(tree.size, values.length);
+    assertEquals(tree.isEmpty(), false);
 
     assertEquals(
-      [...trees[i]],
+      [...tree],
       [100, 10, 9, 1, 0, -1, -9, -10, -100],
     );
-    assertEquals(trees[i].size, values.length);
-    assertEquals(trees[i].isEmpty(), false);
+    assertEquals(tree.size, values.length);
+    assertEquals(tree.isEmpty(), false);
 
     assertEquals(
-      [...trees[i].rnlValues()],
+      [...tree.rnlValues()],
       [-100, -10, -9, -1, 0, 1, 9, 10, 100],
     );
-    assertEquals(trees[i].size, values.length);
-    assertEquals(trees[i].isEmpty(), false);
+    assertEquals(tree.size, values.length);
+    assertEquals(tree.isEmpty(), false);
   }
 
   assertEquals(
@@ -207,9 +207,9 @@ Deno.test("[collections/BinarySearchTree] with descend comparator", () => {
     [...trees[1].nlrValues()],
     [-9, 10, 100, 0, 1, 9, -1, -100, -10],
   );
-  for (let i = 0; i < 2; i++) {
-    assertEquals(trees[i].size, values.length);
-    assertEquals(trees[i].isEmpty(), false);
+  for (const tree of trees) {
+    assertEquals(tree.size, values.length);
+    assertEquals(tree.isEmpty(), false);
   }
 
   assertEquals(
@@ -220,9 +220,9 @@ Deno.test("[collections/BinarySearchTree] with descend comparator", () => {
     [...trees[1].lrnValues()],
     [100, 9, 1, -1, 0, 10, -10, -100, -9],
   );
-  for (let i = 0; i < 2; i++) {
-    assertEquals(trees[i].size, values.length);
-    assertEquals(trees[i].isEmpty(), false);
+  for (const tree of trees) {
+    assertEquals(tree.size, values.length);
+    assertEquals(tree.isEmpty(), false);
   }
 
   assertEquals(
@@ -233,58 +233,58 @@ Deno.test("[collections/BinarySearchTree] with descend comparator", () => {
     [...trees[1].lvlValues()],
     [-9, 10, -100, 100, 0, -10, 1, -1, 9],
   );
-  for (let i = 0; i < 2; i++) {
-    assertEquals(trees[i].size, values.length);
-    assertEquals(trees[i].isEmpty(), false);
+  for (const tree of trees) {
+    assertEquals(tree.size, values.length);
+    assertEquals(tree.isEmpty(), false);
   }
 
-  for (let i = 0; i < 2; i++) {
+  for (const tree of trees) {
     const expected: number[] = [100, 10, 9, 1, 0, -1, -9, -10, -100];
-    for (let j = 0; j < values.length; j++) {
-      assertEquals(trees[i].size, values.length - j);
-      assertEquals(trees[i].isEmpty(), false);
-      assertEquals(trees[i].find(values[j]), values[j]);
+    for (const [j, value] of values.entries()) {
+      assertEquals(tree.size, values.length - j);
+      assertEquals(tree.isEmpty(), false);
+      assertEquals(tree.find(value), value);
 
-      assertEquals(trees[i].remove(values[j]), true);
-      expected.splice(expected.indexOf(values[j]), 1);
-      assertEquals([...trees[i]], expected);
-      assertEquals(trees[i].find(values[j]), null);
+      assertEquals(tree.remove(value), true);
+      expected.splice(expected.indexOf(value), 1);
+      assertEquals([...tree], expected);
+      assertEquals(tree.find(value), null);
 
-      assertEquals(trees[i].remove(values[j]), false);
-      assertEquals([...trees[i]], expected);
-      assertEquals(trees[i].find(values[j]), null);
+      assertEquals(tree.remove(value), false);
+      assertEquals([...tree], expected);
+      assertEquals(tree.find(value), null);
     }
-    assertEquals(trees[i].size, 0);
-    assertEquals(trees[i].isEmpty(), true);
+    assertEquals(tree.size, 0);
+    assertEquals(tree.isEmpty(), true);
   }
 });
 
-Deno.test("[collections/BinarySearchTree] containing objects", () => {
+Deno.test("BinarySearchTree contains objects", () => {
   const tree: BinarySearchTree<Container> = new BinarySearchTree((
     a: Container,
     b: Container,
   ) => ascend(a.id, b.id));
-  const ids: number[] = [-10, 9, -1, 100, 1, 0, -100, 10, -9];
+  const ids = [-10, 9, -1, 100, 1, 0, -100, 10, -9];
 
-  for (let i = 0; i < ids.length; i++) {
-    const newContainer: Container = { id: ids[i], values: [] };
+  for (const [i, id] of ids.entries()) {
+    const newContainer: Container = { id, values: [] };
     assertEquals(tree.find(newContainer), null);
     assertEquals(tree.insert(newContainer), true);
     newContainer.values.push(i - 1, i, i + 1);
-    assertStrictEquals(tree.find({ id: ids[i], values: [] }), newContainer);
+    assertStrictEquals(tree.find({ id, values: [] }), newContainer);
     assertEquals(tree.size, i + 1);
     assertEquals(tree.isEmpty(), false);
   }
-  for (let i = 0; i < ids.length; i++) {
-    const newContainer: Container = { id: ids[i], values: [] };
+  for (const [i, id] of ids.entries()) {
+    const newContainer: Container = { id, values: [] };
     assertEquals(
-      tree.find({ id: ids[i] } as Container),
-      { id: ids[i], values: [i - 1, i, i + 1] },
+      tree.find({ id } as Container),
+      { id, values: [i - 1, i, i + 1] },
     );
     assertEquals(tree.insert(newContainer), false);
     assertEquals(
-      tree.find({ id: ids[i], values: [] }),
-      { id: ids[i], values: [i - 1, i, i + 1] },
+      tree.find({ id, values: [] }),
+      { id, values: [i - 1, i, i + 1] },
     );
     assertEquals(tree.size, ids.length);
     assertEquals(tree.isEmpty(), false);
@@ -298,28 +298,28 @@ Deno.test("[collections/BinarySearchTree] containing objects", () => {
   assertEquals(tree.isEmpty(), false);
 
   const expected: number[] = [-100, -10, -9, -1, 0, 1, 9, 10, 100];
-  for (let i = 0; i < ids.length; i++) {
+  for (const [i, id] of ids.entries()) {
     assertEquals(tree.size, ids.length - i);
     assertEquals(tree.isEmpty(), false);
     assertEquals(
-      tree.find({ id: ids[i], values: [] }),
-      { id: ids[i], values: [i - 1, i, i + 1] },
+      tree.find({ id, values: [] }),
+      { id, values: [i - 1, i, i + 1] },
     );
 
-    assertEquals(tree.remove({ id: ids[i], values: [] }), true);
-    expected.splice(expected.indexOf(ids[i]), 1);
+    assertEquals(tree.remove({ id, values: [] }), true);
+    expected.splice(expected.indexOf(id), 1);
     assertEquals([...tree].map((container) => container.id), expected);
-    assertEquals(tree.find({ id: ids[i], values: [] }), null);
+    assertEquals(tree.find({ id, values: [] }), null);
 
-    assertEquals(tree.remove({ id: ids[i], values: [] }), false);
+    assertEquals(tree.remove({ id, values: [] }), false);
     assertEquals([...tree].map((container) => container.id), expected);
-    assertEquals(tree.find({ id: ids[i], values: [] }), null);
+    assertEquals(tree.find({ id, values: [] }), null);
   }
   assertEquals(tree.size, 0);
   assertEquals(tree.isEmpty(), true);
 });
 
-Deno.test("[collections/BinarySearchTree] from Iterable", () => {
+Deno.test("BinarySearchTree.from() handles iterable", () => {
   const values: number[] = [-10, 9, -1, 100, 9, 1, 0, 9, -100, 10, -9];
   const originalValues: number[] = Array.from(values);
   const expected: number[] = [-100, -10, -9, -1, 0, 1, 9, 10, 100];
@@ -376,7 +376,7 @@ Deno.test("[collections/BinarySearchTree] from Iterable", () => {
   assertEquals([...tree.lvlValues()], [-30, 27, -300, 300, -3, 30, 3, -27, 0]);
 });
 
-Deno.test("[collections/BinarySearchTree] from BinarySearchTree with default ascend comparator", () => {
+Deno.test("BinarySearchTree.from() handles default ascend comparator", () => {
   const values: number[] = [-10, 9, -1, 100, 9, 1, 0, 9, -100, 10, -9];
   const expected: number[] = [-100, -10, -9, -1, 0, 1, 9, 10, 100];
   const originalTree: BinarySearchTree<number> = new BinarySearchTree();
@@ -427,7 +427,7 @@ Deno.test("[collections/BinarySearchTree] from BinarySearchTree with default asc
   assertEquals([...tree].reverse(), expected.map((v: number) => 3 * v));
 });
 
-Deno.test("[collections/BinarySearchTree] from BinarySearchTree with descend comparator", () => {
+Deno.test("BinarySearchTree.from() handles descend comparator", () => {
   const values: number[] = [-10, 9, -1, 100, 9, 1, 0, 9, -100, 10, -9];
   const expected: number[] = [100, 10, 9, 1, 0, -1, -9, -10, -100];
   const originalTree = new BinarySearchTree<number>(descend);
@@ -478,7 +478,7 @@ Deno.test("[collections/BinarySearchTree] from BinarySearchTree with descend com
   assertEquals([...tree].reverse(), expected.map((v: number) => 3 * v));
 });
 
-Deno.test("[collections/BinarySearchTree] README example", () => {
+Deno.test("BinarySearchTree handles README example", () => {
   const values = [3, 10, 13, 4, 6, 7, 1, 14];
   const tree = new BinarySearchTree<number>();
   values.forEach((value) => tree.insert(value));
@@ -534,15 +534,20 @@ Deno.test("[collections/BinarySearchTree] README example", () => {
   ]);
 });
 
-Deno.test("[collections/BinarySearchTree] nully .max() and .clear()", () => {
+Deno.test("BinarySearchTree.max() handles null ", () => {
   const tree = BinarySearchTree.from([1]);
   assert(!tree.isEmpty());
   tree.clear();
-  assert(tree.isEmpty());
   assertEquals(tree.max(), null);
 });
 
-Deno.test("[collections/BinarySearchTree] .rotateNode()", () => {
+Deno.test("BinarySearchTree.clear()", () => {
+  const tree = BinarySearchTree.from([1]);
+  tree.clear();
+  assert(tree.isEmpty());
+});
+
+Deno.test("BinarySearchTree.rotateNode()", () => {
   class MyTree<T> extends BinarySearchTree<T> {
     rotateNode2() {
       super.rotateNode(this.root!, "right");

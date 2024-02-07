@@ -1,11 +1,11 @@
-// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
 import { assertEquals } from "../assert/mod.ts";
 import { readableStreamFromReader } from "./readable_stream_from_reader.ts";
 import { Buffer } from "../io/buffer.ts";
 import { concat } from "../bytes/concat.ts";
 import { copy } from "../bytes/copy.ts";
-import type { Closer, Reader } from "../io/types.d.ts";
+import type { Closer, Reader } from "../io/types.ts";
 
 class MockReaderCloser implements Reader, Closer {
   chunks: Uint8Array[] = [];

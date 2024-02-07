@@ -1,4 +1,4 @@
-// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
 import { VERSION } from "../version.ts";
 import * as semver from "../semver/mod.ts";
@@ -17,9 +17,10 @@ const EXCLUDED_PATHS = [
   "crypto/_wasm",
   "crypto/_fnv",
   "encoding/_yaml",
-  "encoing/_toml",
+  "encoding/_toml",
   "_tools",
   "_util",
+  "docs",
 ];
 
 const ROOT = new URL("../", import.meta.url);

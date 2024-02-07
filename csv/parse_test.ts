@@ -2,7 +2,7 @@
 // https://github.com/golang/go/blob/2cc15b1/src/encoding/csv/reader_test.go
 // Copyright 2011 The Go Authors. All rights reserved. BSD license.
 // https://github.com/golang/go/blob/master/LICENSE
-// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
 import { assert, assertEquals, assertThrows } from "../assert/mod.ts";
 import { parse, ParseError, ParseOptions } from "./parse.ts";
@@ -11,7 +11,7 @@ import type { AssertTrue, IsExact } from "../testing/types.ts";
 const BYTE_ORDER_MARK = "\ufeff";
 
 Deno.test({
-  name: "parse",
+  name: "parse() handles various inputs",
   async fn(t) {
     await t.step({
       name: "Simple",
@@ -817,7 +817,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[csv] correct typing",
+  name: "parse() is correctly typed",
   fn() {
     // If no option is passed, defaults to string[][]
     {

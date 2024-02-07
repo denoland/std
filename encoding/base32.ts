@@ -1,12 +1,10 @@
-// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // Copyright (c) 2014 Jameson Little. MIT License.
 // This module is browser compatible.
 
-import { validateBinaryLike } from "./_util.ts";
-
 /**
  * Utilities for
- * [base32]{@link https://datatracker.ietf.org/doc/html/rfc4648#section-6}
+ * {@link https://datatracker.ietf.org/doc/html/rfc4648#section-6 | base32}
  * encoding and decoding.
  *
  * Modified from {@link https://github.com/beatgammit/base64-js}.
@@ -15,6 +13,8 @@ import { validateBinaryLike } from "./_util.ts";
  *
  * @module
  */
+
+import { validateBinaryLike } from "./_util.ts";
 
 const lookup: string[] = [];
 const revLookup: number[] = [];
@@ -48,15 +48,6 @@ function getLens(b32: string): [number, number] {
   const placeHoldersLen = validLen === len ? 0 : 8 - (validLen % 8);
 
   return [validLen, placeHoldersLen];
-}
-
-/**
- * Returns number of bytes encoded in the given RFC4648 base32 string input.
- * @param b32
- */
-export function byteLength(b32: string): number {
-  const [validLen, placeHoldersLen] = getLens(b32);
-  return _byteLength(validLen, placeHoldersLen);
 }
 
 function _byteLength(validLen: number, placeHoldersLen: number): number {

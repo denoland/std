@@ -1,4 +1,4 @@
-// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import {
   assert,
   assertEquals,
@@ -78,7 +78,7 @@ Deno.test("Fake Date instance methods passthrough to real Date instance methods"
       args: [],
       returned: "2020-05-25T05:00:00.123Z",
     });
-    assertInstanceOf(func1.calls[0].self, _internals.Date);
+    assertInstanceOf(func1.calls?.[0]?.self, _internals.Date);
   } finally {
     func1.restore();
   }

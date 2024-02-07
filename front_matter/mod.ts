@@ -1,16 +1,16 @@
-// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // Copyright (c) Jason Campbell. MIT license
 
 /**
  * Extracts
- * [front matter](https://daily-dev-tips.com/posts/what-exactly-is-frontmatter/)
+ * {@link https://daily-dev-tips.com/posts/what-exactly-is-frontmatter/ | front matter}
  * from strings.
  *
  * {@linkcode createExtractor} and {@linkcode test} functions
  * to handle many forms of front matter.
  *
  * Adapted from
- * [jxson/front-matter](https://github.com/jxson/front-matter/blob/36f139ef797bd9e5196a9ede03ef481d7fbca18e/index.js).
+ * {@link https://github.com/jxson/front-matter/blob/36f139ef797bd9e5196a9ede03ef481d7fbca18e/index.js | jxson/front-matter}.
  *
  * Supported formats:
  *
@@ -37,10 +37,8 @@
  * example.ts
  *
  * ```ts
- * import {
- *   extract,
- *   test,
- * } from "https://deno.land/std@$STD_VERSION/front_matter/any.ts";
+ * import { extract } from "https://deno.land/std@$STD_VERSION/front_matter/any.ts";
+ * import { test } from "https://deno.land/std@$STD_VERSION/front_matter/test.ts";
  *
  * const str = await Deno.readTextFile("./example.md");
  *
@@ -156,4 +154,3 @@
 
 export * from "./create_extractor.ts";
 export * from "./test.ts";
-export { Format } from "./_formats.ts";

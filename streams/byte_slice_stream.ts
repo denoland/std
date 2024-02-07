@@ -1,4 +1,4 @@
-// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
 import { assert } from "../assert/assert.ts";
@@ -21,7 +21,7 @@ export class ByteSliceStream extends TransformStream<Uint8Array, Uint8Array> {
   #offsetEnd = 0;
 
   /** Constructs a new instance. */
-  constructor(start = 0, end = Infinity) {
+  constructor(start = 0, end: number = Infinity) {
     super({
       start: () => {
         assert(start >= 0, "`start` must be greater than 0");

@@ -1,4 +1,4 @@
-// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
 import { types } from "./_db.ts";
@@ -13,8 +13,8 @@ import { types } from "./_db.ts";
  * ```ts
  * import { typeByExtension } from "https://deno.land/std@$STD_VERSION/media_types/type_by_extension.ts";
  *
- * typeByExtension("js"); // `application/json`
- * typeByExtension(".HTML"); // `text/html`
+ * typeByExtension("js"); // "application/json"
+ * typeByExtension(".HTML"); // "text/html"
  * typeByExtension("foo"); // undefined
  * typeByExtension("file.json"); // undefined
  * ```

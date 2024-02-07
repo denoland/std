@@ -1,10 +1,8 @@
-// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-import { validateBinaryLike } from "./_util.ts";
-
 /**
- * Utilities for working with [ascii85]{@link https://en.wikipedia.org/wiki/Ascii85} encoding.
+ * Utilities for working with {@link https://en.wikipedia.org/wiki/Ascii85 | ascii85} encoding.
  *
  * This module is browser compatible.
  *
@@ -13,8 +11,8 @@ import { validateBinaryLike } from "./_util.ts";
  * By default, all functions are using the most popular Adobe version of ascii85
  * and not adding any delimiter. However, there are three more standards
  * supported - btoa (different delimiter and additional compression of 4 bytes
- * equal to 32), [Z85](https://rfc.zeromq.org/spec/32/) and
- * [RFC 1924](https://tools.ietf.org/html/rfc1924). It's possible to use a
+ * equal to 32), {@link https://rfc.zeromq.org/spec/32/ | Z85} and
+ * {@link https://tools.ietf.org/html/rfc1924 | RFC 1924}. It's possible to use a
  * different encoding by specifying it in `options` object as a second parameter.
  *
  * Similarly, it's possible to make `encode` add a delimiter (`<~` and `~>` for
@@ -24,6 +22,8 @@ import { validateBinaryLike } from "./_util.ts";
  *
  * @module
  */
+
+import { validateBinaryLike } from "./_util.ts";
 
 /** Supported ascii85 standards for {@linkcode Ascii85Options}. */
 export type Ascii85Standard = "Adobe" | "btoa" | "RFC 1924" | "Z85";

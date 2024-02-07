@@ -1,4 +1,4 @@
-// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
 import { expect } from "./expect.ts";
 import { fn } from "./fn.ts";
@@ -26,4 +26,19 @@ Deno.test("expect().", () => {
   assertThrows(() => {
     expect(mockFn).not.toHaveBeenNthCalledWith(2, 4, 5, 6);
   });
+});
+
+Deno.test("expect().toHaveBeenNthCalledWith() should throw when mock call does not exist", () => {
+  const mockFn = fn();
+
+  mockFn("hello");
+
+  expect(mockFn).toHaveBeenNthCalledWith(1, "hello");
+  assertThrows(
+    () => {
+      expect(mockFn).toHaveBeenNthCalledWith(2, "hello");
+    },
+    AssertionError,
+    'Expected the n-th call (n=2) of mock function is with "hello", but the n-th call does not exist.',
+  );
 });

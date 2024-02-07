@@ -1,11 +1,13 @@
-// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
-import type { SemVer } from "./types.ts";
-import { compare } from "./compare.ts";
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-/** Less than or equal to comparison */
-export function lte(
-  s0: SemVer,
-  s1: SemVer,
-): boolean {
-  return compare(s0, s1) <= 0;
+import { lessOrEqual } from "./less_or_equal.ts";
+import { SemVer } from "./types.ts";
+
+/**
+ * Less than or equal to comparison
+ *
+ * @deprecated (will be removed in 0.216.0) Use {@linkcode lessOrEqual} instead.
+ */
+export function lte(s0: SemVer, s1: SemVer): boolean {
+  return lessOrEqual(s0, s1);
 }
