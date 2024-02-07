@@ -33,7 +33,7 @@ export default class IO {
   }
   listen() {
     // TODO be able to pause the queue processing for debugging
-    this.#db.listenQueue(({ dispatch, sequence }: QueuedDispatch) => {
+    return this.#db.listenQueue(({ dispatch, sequence }: QueuedDispatch) => {
       log('queue', sequence, dispatch)
       assert(sequence >= 0, 'sequence must be a whole number')
       switch (dispatch.proctype) {
@@ -66,8 +66,9 @@ export default class IO {
       outcome.error = serializeError(errorObj)
     }
     await this.#replyIO(dispatch.pid, fs, outcome, sequence)
-    this.#db.announceOutcome(dispatch, outcome)
     await this.#db.tailDone(dispatch.pid, sequence)
+    // must be last, else fast tests will leak resources
+    this.#db.announceOutcome(dispatch, outcome)
   }
   async #replyIO(pid: PID, fs: IFs, outcome: Outcome, sequence: number) {
     const nonce = `reply-${sequence}` // TODO try remove nonces altogether

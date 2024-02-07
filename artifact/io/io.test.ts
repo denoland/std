@@ -17,12 +17,10 @@ Deno.test.only('io', async (t) => {
   await t.step('local', async () => {
     result = await actions.local()
     expect(result).toBe('local reply')
-    await artifact.quiesce()
   })
   await t.step('second local', async () => {
     const second = await actions.local({})
     expect(second).toBe('local reply')
-    await artifact.quiesce()
   })
   // await t.step('throws', async () => {
   //   const msg = 'Parameters Validation Error'

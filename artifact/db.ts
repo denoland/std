@@ -21,26 +21,11 @@ export default class DB {
     db.#kv = await openKv()
     return db
   }
-  #messageQueue = new Set<Promise<void>>()
-  async quiesce() {
-    while (this.#messageQueue.size > 0) {
-      await Promise.allSettled([...this.#messageQueue])
-    }
-  }
   stop() {
     this.#kv.close()
   }
   listenQueue(callback: (msg: QueuedDispatch) => Promise<void>) {
-    log('listen queue')
-    this.#kv.listenQueue((msg: QueuedDispatch) => {
-      const promise = callback(msg)
-      this.#messageQueue.add(promise)
-      promise.then((result) => {
-        this.#messageQueue.delete(promise)
-        return result
-      })
-      return promise
-    })
+    return this.#kv.listenQueue(callback)
   }
   async awaitPrior(pid: PID, sequence: number) {
     if (sequence === 0) {

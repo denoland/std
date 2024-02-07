@@ -1,4 +1,3 @@
-import { toTreeSync } from 'https://esm.sh/memfs@4.6.0/lib/print'
 import IO from './io/io.ts'
 import * as posix from 'https://deno.land/std@0.213.0/path/posix/mod.ts'
 import { debug } from 'https://deno.land/x/quiet_debug@v1.0.0/mod.ts'
@@ -39,13 +38,6 @@ export default class Artifact {
   }
   stop() {
     this.#db.stop()
-  }
-  /**
-   * Waits until the message queue is empty AND all callback promises have
-   * settled.
-   */
-  quiesce() {
-    return this.#db.quiesce()
   }
   async pull(repo: string) {
     // TODO split this out to a dedicated network git module
