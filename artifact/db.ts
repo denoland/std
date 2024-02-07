@@ -7,7 +7,7 @@ import {
   Outcome,
   PID,
   QueuedDispatch,
-} from './constants.ts'
+} from '@/artifact/constants.ts'
 import { assert } from 'std/assert/assert.ts'
 import { debug } from 'https://deno.land/x/quiet_debug@v1.0.0/mod.ts'
 import { PROCTYPE } from '@/artifact/constants.ts'
@@ -25,7 +25,6 @@ export default class DB {
   }
   listenQueue(callback: (msg: QueuedDispatch) => void) {
     log('listen queue')
-    assert(this.#kv, 'db not open')
     this.#kv.listenQueue(callback)
   }
   async awaitPrior(pid: PID, sequence: number) {
@@ -76,7 +75,6 @@ export default class DB {
     log('watchPool first %o', first)
     await this.#kv.set(poolKey, dispatch)
     for await (const [event] of iterator) {
-      log('pool event')
       if (!event.versionstamp) {
         return
       }
@@ -92,8 +90,8 @@ export default class DB {
       channel.onmessage = (event) => {
         const outcome = event.data as Outcome
         log('channel message', outcome)
-        resolve(outcome)
         channel.close()
+        resolve(outcome)
       }
     })
   }

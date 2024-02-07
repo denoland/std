@@ -24,18 +24,18 @@ export default class Artifact {
   #io!: IO
   #db!: DB
   static async create() {
+    // https://github.com/isomorphic-git/isomorphic-git/pull/1864
+    globalThis.CompressionStream =
+      undefined as unknown as typeof globalThis.CompressionStream
+
     const artifact = new Artifact()
     artifact.#db = await DB.create()
-    await artifact.start()
+    artifact.#io = IO.create(artifact, artifact.#db)
+    artifact.#io.listen()
     return artifact
   }
   get io() {
     return this.#io
-  }
-  async start() {
-    this.#db = await DB.create()
-    this.#io = IO.create(this, this.#db)
-    this.#io.listen()
   }
   stop() {
     this.#db.stop()

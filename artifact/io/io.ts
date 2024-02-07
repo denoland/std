@@ -81,10 +81,9 @@ export default class IO {
     log('dispatch with isolate: %s', dispatch.isolate)
     const { pid } = dispatch
 
-    const db = this.#db
     const poolDrainedPromise = new Promise((resolve, reject) => {
       const watch = async () => {
-        await db.awaitPoolDrained(dispatch)
+        await this.#db.awaitPoolDrained(dispatch)
         log('poolDrained')
         const outcome = await this.#db.awaitOutcome(dispatch)
         log('outcome', outcome)
@@ -97,7 +96,8 @@ export default class IO {
       watch()
     })
 
-    const lockId = await db.getHeadLock(pid) // send in an abort controller
+    const lockId = await this.#db.getHeadLock(pid) // make abortable
+
     const fs = await this.#artifact.isolateFs(pid)
     const headApi = IsolateApi.create(fs, this.#artifact)
     const { keys, values } = await this.#db.getPooledActions(pid)
