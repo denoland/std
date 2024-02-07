@@ -10,13 +10,13 @@ import {
   Dispatch,
   IO_PATH,
   IoStruct,
-  JsonValue,
+  Outcome,
   Parameters,
   PROCTYPE,
-} from '../constants.ts'
-import { PID } from '@/artifact/constants.ts'
+  QueuedDispatch,
+} from '@/artifact/constants.ts'
 import DB from '@/artifact/db.ts'
-import { delay } from 'https://deno.land/std@0.211.0/async/delay.ts'
+import { IFs } from 'https://esm.sh/v135/memfs@4.6.0/lib/index.js'
 const log = debug('AI:io')
 
 export default class IO {
@@ -31,17 +31,12 @@ export default class IO {
   }
   listen() {
     // TODO be able to pause the queue processing for debugging
-    this.#db.listenQueue(async (dispatch: Dispatch) => {
-      log('queue', dispatch)
-
+    this.#db.listenQueue(({ dispatch, sequence }: QueuedDispatch) => {
+      log('queue', sequence, dispatch)
+      assert(sequence >= 0, 'sequence must be a whole number')
       switch (dispatch.proctype) {
         case PROCTYPE.SERIAL: {
-          // await this.#db.tail()
-          // run our isolate
-          // pool the result
-          // delete the tail
-
-          return
+          return this.#processSerial(dispatch, sequence)
         }
         case PROCTYPE.PARALLEL: {
           // start the branch immediately without waiting for anyone
@@ -53,70 +48,56 @@ export default class IO {
       }
     })
   }
-  processing() {
-    // case PROCTYPES.SELF: {
-    //   const worker = await this.worker(isolate)
-    //   // get threadlock on the branch
-    //   // in the background start loading up the memfs stack
-
-    //   // make the isolated memfs
-    //   const fs = await this.#artifact.isolateFs(pid)
-    //   const api = IsolateApi.create(fs, this.#artifact)
-    //   const actions = worker.actions(api)
-    //   let result, error
-    //   try {
-    //     result = await actions[functionName](parameters)
-    //     log('self result', result)
-    //   } catch (errorObj) {
-    //     log('self error', errorObj)
-    //     error = serializeError(errorObj)
-    //   }
-    //   await this.#replyIO(pid, result, error)
-    //   return
-    // }
-    // case PROCTYPES.SPAWN: {
-    //   log('spawning', isolate, functionName, parameters)
-    //   // await this.#spawn({ id, isolate, name, parameters })
-    //   return
-    // }
+  async #processSerial(dispatch: Dispatch, sequence: number) {
+    await this.#db.awaitPrior(dispatch.pid, sequence)
+    const worker = await this.worker(dispatch.isolate)
+    const fs = await this.#artifact.isolateFs(dispatch.pid)
+    const api = IsolateApi.create(fs, this.#artifact)
+    const actions = worker.actions(api)
+    const outcome: Outcome = {}
+    try {
+      outcome.result = await actions[dispatch.functionName](dispatch.parameters)
+      log('self result: %o', outcome.result)
+    } catch (errorObj) {
+      log('self error', errorObj)
+      outcome.error = serializeError(errorObj)
+    }
+    await this.#db.tailDone(dispatch.pid, sequence)
+    await this.#replyIO(dispatch, fs, outcome)
   }
-  async #replyIO(pid: PID, result?: JsonValue, error?: string) {
+  async #replyIO(dispatch: Dispatch, fs: IFs, outcome: Outcome) {
+    // reply should be pooled just like dispatch is
+    // once you have done the commit, then you can end.
+    // ? how should a merge work ?
+
     // const io = await this.readIO()
     // const { sequence, outputs } = io
     // const next = { sequence: sequence + 1, inputs: { ...outputs, [sequence]: result } }
     // await this.#commitIO(next, 'reply')
+    this.#db.announceOutcome(dispatch, outcome)
   }
 
-  async dispatch(action: Dispatch) {
-    log('dispatch with isolate: %s', action.isolate)
-    const { pid } = action
+  async dispatch(dispatch: Dispatch) {
+    log('dispatch with isolate: %s', dispatch.isolate)
+    const { pid } = dispatch
 
     const db = this.#db
     const poolDrainedPromise = new Promise((resolve, reject) => {
-      const poolDrained = async () => {
+      const watch = async () => {
+        await db.awaitPoolDrained(dispatch)
         log('poolDrained')
-        // walk back the commits to get the result out
-        // update when it is commited
-        // update with it is started running
-        // do not follow the branch, but know how to walk it
-        // update when the output is commited
-        await delay(100)
-        resolve(undefined)
-      }
-      const watcher = async () => {
-        const poolStream = await db.watchPool(action)
-        for await (const [event] of poolStream) {
-          log('pool event')
-          if (!event.versionstamp) {
-            poolDrained()
-            return
-          }
+        const outcome = await this.#db.awaitOutcome(dispatch)
+        log('outcome', outcome)
+        if (!outcome.error) {
+          resolve(outcome.result)
+        } else {
+          reject(deserializeError(outcome.error))
         }
       }
-      watcher()
+      watch()
     })
 
-    const lockId = await db.getHeadLock(pid) // send in an abort controller so we can cancel
+    const lockId = await db.getHeadLock(pid) // send in an abort controller
     const fs = await this.#artifact.isolateFs(pid)
     const headApi = IsolateApi.create(fs, this.#artifact)
     const { keys, values } = await this.#db.getPooledActions(pid)

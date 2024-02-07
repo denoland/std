@@ -17,6 +17,7 @@ Deno.test.only('io', async (t) => {
 
   let result
   result = await actions.local()
+  log('result:', result)
   expect(result).toBe('local reply')
   // await t.step('local', async () => {
   //   result = await actions.local()

@@ -63,6 +63,12 @@ export type Dispatch = {
   functionName: string
   parameters: Parameters
   proctype: PROCTYPE
+  /**
+   * This should be a globally unique identifier for the dispatch.  It is used
+   * to provide updates to the dispatch as it is processed, and to allow updates
+   * to be continued during recovery.
+   */
+  nonce: string
 }
 export type QueuedDispatch = {
   dispatch: Dispatch
@@ -70,11 +76,16 @@ export type QueuedDispatch = {
 }
 
 export enum KEYSPACES {
-  POOL = 'POOL', // all pending actions trying to be committed
+  POOL = 'POOL', // all pending IO actions trying to be committed
   HEADLOCK = 'HEADLOCK', // the lock on the head of a given process branch
   REPO = 'REPO', // this is the latest fs snapshot of a given process branch
   /**
-   * sequential actions that need to execute in order
+   * Sequential actions that need to execute in order.  Has the form:
+   *
+   * [KEYSPACES.SERIAL, account, repository, ...branches, sequence] => true
+   *
+   * When completed, the key is deleted, which allows the next dispatch to begin
+   * execution.
    */
   TAIL = 'TAIL',
 }
@@ -86,3 +97,5 @@ export type QueuedCommit = {
   pid: PID
   hash: string
 }
+
+export type Outcome = { result?: JsonValue; error?: string }

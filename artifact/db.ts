@@ -4,6 +4,7 @@ import {
   Dispatch,
   IoStruct,
   KEYSPACES,
+  Outcome,
   PID,
   QueuedDispatch,
 } from './constants.ts'
@@ -22,11 +23,30 @@ export default class DB {
   stop() {
     this.#kv.close()
   }
-  listenQueue(callback: (dispatch: Dispatch) => Promise<void>) {
+  listenQueue(callback: (msg: QueuedDispatch) => void) {
     log('listen queue')
     assert(this.#kv, 'db not open')
     this.#kv.listenQueue(callback)
   }
+  async awaitPrior(pid: PID, sequence: number) {
+    if (sequence === 0) {
+      return
+    }
+    const tailKey = getTailKey(pid, sequence - 1)
+    log('awaitPrior %o', tailKey)
+    for await (const [event] of this.#kv.watch([tailKey])) {
+      log('awaitPrior event %o', event)
+      if (!event.versionstamp) {
+        return
+      }
+    }
+  }
+  async tailDone(pid: PID, sequence: number) {
+    const tailKey = getTailKey(pid, sequence)
+    log('tailDone %o', tailKey)
+    await this.#kv.delete(tailKey)
+  }
+
   async loadIsolateFs(pid: PID) {
     assertPid(pid)
     const { account, repository, branches } = pid
@@ -43,10 +63,10 @@ export default class DB {
       ...pid.branches,
     ], uint8)
   }
-  async watchPool(action: Dispatch) {
-    const { pid } = action
+  async awaitPoolDrained(dispatch: Dispatch) {
+    const { pid, nonce } = dispatch
     assertPid(pid)
-    const poolKey = getPoolKey(pid)
+    const poolKey = getPoolKey(pid, nonce)
     log('watch pool %o', poolKey)
     const stream = this.#kv.watch([poolKey])
     const iterator = stream[Symbol.asyncIterator]()
@@ -54,8 +74,37 @@ export default class DB {
     const first = await iterator.next()
     assert(!first.value[0].versionstamp)
     log('watchPool first %o', first)
-    await this.#kv.set(poolKey, action)
-    return iterator
+    await this.#kv.set(poolKey, dispatch)
+    for await (const [event] of iterator) {
+      log('pool event')
+      if (!event.versionstamp) {
+        return
+      }
+    }
+  }
+  awaitOutcome(dispatch: Dispatch): Promise<Outcome> {
+    const { pid, nonce } = dispatch
+    const poolKey = getPoolKey(pid, nonce)
+    log('awaitOutcome %o', poolKey)
+    const channelKey = poolKey.join(':') // TODO escape chars
+    const channel = new BroadcastChannel(channelKey)
+    return new Promise((resolve) => {
+      channel.onmessage = (event) => {
+        const outcome = event.data as Outcome
+        log('channel message', outcome)
+        resolve(outcome)
+        channel.close()
+      }
+    })
+  }
+  announceOutcome(dispatch: Dispatch, outcome: Outcome) {
+    const { pid, nonce } = dispatch
+    const poolKey = getPoolKey(pid, nonce)
+    log('announceOutcome %o', poolKey)
+    const channelKey = poolKey.join(':') // TODO escape chars
+    const channel = new BroadcastChannel(channelKey)
+    channel.postMessage(outcome)
+    channel.close()
   }
   async getHeadLock(pid: PID) {
     assertPid(pid)
@@ -76,10 +125,9 @@ export default class DB {
     const ascendingKeys = sort(Object.keys(serial.inputs))
     for (const key of ascendingKeys) {
       const dispatch = serial.inputs[key]
-      const tailKeyPrefix = getTailKeyPrefix(pid)
       const sequence = parseInt(key)
-      const tailKey = [...tailKeyPrefix, sequence]
-      await this.#kv.set(tailKey, true)
+      const tailKey = getTailKey(pid, sequence)
+      await this.#kv.set(tailKey, false)
       const queuedDispatch: QueuedDispatch = { dispatch, sequence }
       await this.#kv.enqueue(queuedDispatch)
     }
@@ -90,8 +138,7 @@ export default class DB {
   ) {
   }
   async getPooledActions(pid: PID) {
-    const prefix = getPoolKey(pid)
-    prefix.pop()
+    const prefix = getPoolKeyPrefix(pid)
     log('getPooledActions %o', prefix)
     const entries = this.#kv.list({ prefix })
     const keys = []
@@ -114,19 +161,22 @@ export default class DB {
     await this.#kv.delete(headLockKey)
   }
 }
-const getPoolKey = (pid: PID) => {
+
+const getPoolKeyPrefix = (pid: PID) => {
   const { account, repository, branches } = pid
-  // ulid is external, else use source pid and sequence
-  return [KEYSPACES.POOL, account, repository, ...branches, ulid()]
+  return [KEYSPACES.POOL, account, repository, ...branches]
+}
+const getPoolKey = (pid: PID, nonce: string) => {
+  return [...getPoolKeyPrefix(pid), nonce]
 }
 const getHeadLockKey = (pid: PID) => {
   const { account, repository, branches } = pid
   return [KEYSPACES.HEADLOCK, account, repository, ...branches]
 }
-const getTailKeyPrefix = (pid: PID) => {
+const getTailKey = (pid: PID, sequence: number) => {
+  assert(sequence >= 0, 'sequence must be positive')
   const { account, repository, branches } = pid
-  // tail, sequence
-  return [KEYSPACES.TAIL, account, repository, ...branches]
+  return [KEYSPACES.TAIL, account, repository, ...branches, sequence]
 }
 const openKv = async () => {
   const KEY = 'DENO_KV_PATH'

@@ -16,6 +16,7 @@ import {
   PROCTYPE,
 } from './constants.ts'
 import DB from './db.ts'
+import { ulid } from 'std/ulid/mod.ts'
 
 const log = debug('AI:api')
 
@@ -74,7 +75,14 @@ export default class Artifact {
     const actions: DispatchFunctions = {}
     for (const functionName of Object.keys(api)) {
       actions[functionName] = (parameters = {}, proctype = PROCTYPE.SERIAL) =>
-        this.#io.dispatch({ pid, isolate, functionName, parameters, proctype })
+        this.#io.dispatch({
+          pid,
+          isolate,
+          functionName,
+          parameters,
+          proctype,
+          nonce: ulid(), // this should be formulaic for chain to chain
+        })
     }
     log('actions', isolate, Object.keys(actions))
     return actions
