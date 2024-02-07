@@ -74,13 +74,14 @@ export default class Artifact {
     const actions: DispatchFunctions = {}
     for (const functionName of Object.keys(api)) {
       actions[functionName] = (parameters = {}, proctype = PROCTYPE.SERIAL) => {
+        const nonce = ulid()
         return this.#io.dispatch({
           pid,
           isolate,
           functionName,
           parameters,
           proctype,
-          nonce: ulid(), // this should be formulaic for chain to chain
+          nonce, // this should be formulaic for chain to chain
         })
       }
     }

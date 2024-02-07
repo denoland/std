@@ -101,7 +101,10 @@ export default class DB {
     const channelKey = poolKey.join(':') // TODO escape chars
     const channel = new BroadcastChannel(channelKey)
     channel.postMessage(outcome)
-    channel.close()
+    if (!isDenoDeploy) {
+      // in deno deploy, closing prohibits message propogation if too soon
+      channel.close()
+    }
   }
   async getHeadLock(pid: PID, abortController?: AbortController) {
     assertPid(pid)
