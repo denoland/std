@@ -107,16 +107,19 @@ export default class DB {
     assertPid(pid)
     const headLockKey = getHeadLockKey(pid)
     log('headLockKey %o', headLockKey)
+    const start = Date.now()
     for await (const [event] of this.#kv.watch([headLockKey])) {
       log('headLock event %o', event)
       if (!event.versionstamp) {
         const lockId = ulid()
         // TODO use atomics
         await this.#kv.set(headLockKey, lockId, { expireIn: 5000 })
+        log(`headLock successful after ${Date.now() - start}ms`)
         return lockId
       }
     }
-    throw new Error('headLock unsuccessful')
+    const elapsed = Date.now() - start
+    throw new Error(`headLock unsuccessful after ${elapsed}ms`)
   }
   async releaseHeadlock(pid: PID, lockId: string) {
     log('releaseHeadlock %s', lockId)
