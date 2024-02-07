@@ -6,6 +6,7 @@ import {
   KEYSPACES,
   Outcome,
   PID,
+  Poolable,
   QueuedDispatch,
 } from '@/artifact/constants.ts'
 import { assert } from 'std/assert/assert.ts'
@@ -45,7 +46,6 @@ export default class DB {
     log('tailDone %o', tailKey)
     await this.#kv.delete(tailKey)
   }
-
   async loadIsolateFs(pid: PID) {
     assertPid(pid)
     const { account, repository, branches } = pid

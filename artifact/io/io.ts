@@ -12,11 +12,13 @@ import {
   IoStruct,
   Outcome,
   Parameters,
+  PID,
   PROCTYPE,
   QueuedDispatch,
 } from '@/artifact/constants.ts'
 import DB from '@/artifact/db.ts'
 import { IFs } from 'https://esm.sh/v135/memfs@4.6.0/lib/index.js'
+import { Poolable } from '@/artifact/constants.ts'
 const log = debug('AI:io')
 
 export default class IO {
@@ -62,28 +64,44 @@ export default class IO {
       log('self error', errorObj)
       outcome.error = serializeError(errorObj)
     }
-    await this.#db.tailDone(dispatch.pid, sequence)
-    await this.#replyIO(dispatch, fs, outcome)
-  }
-  async #replyIO(dispatch: Dispatch, fs: IFs, outcome: Outcome) {
-    // reply should be pooled just like dispatch is
-    // once you have done the commit, then you can end.
-    // ? how should a merge work ?
-
-    // const io = await this.readIO()
-    // const { sequence, outputs } = io
-    // const next = { sequence: sequence + 1, inputs: { ...outputs, [sequence]: result } }
-    // await this.#commitIO(next, 'reply')
+    await this.#replyIO(dispatch.pid, fs, outcome, sequence)
     this.#db.announceOutcome(dispatch, outcome)
+    await this.#db.tailDone(dispatch.pid, sequence)
+  }
+  async #replyIO(pid: PID, fs: IFs, outcome: Outcome, sequence: number) {
+    const lockId = await this.#db.getHeadLock(pid) // make abortable
+
+    const headFs = await this.#artifact.isolateFs(pid)
+    const headApi = IsolateApi.create(headFs, this.#artifact)
+
+    // TODO copy over files from fs to headFs
+    const { keys, values } = await this.#db.getPooledActions(pid)
+    const io = await updateIo(headApi, values)
+    await git.add({ fs, dir: '/', filepath: IO_PATH })
+    const hash = await git.commit({
+      fs,
+      dir: '/',
+      message: 'pool',
+      author: { name: 'IO' },
+    })
+    log('commitHash', hash)
+
+    await this.#artifact.updateIsolateFs(pid, fs)
+    await this.#db.enqueueIo(pid, io)
+
+    // blank the processed pool items
+    await this.#db.deletePool(keys)
+    await this.#db.releaseHeadlock(pid, lockId)
   }
 
   async dispatch(dispatch: Dispatch) {
     log('dispatch with isolate: %s', dispatch.isolate)
     const { pid } = dispatch
 
+    const awaitPoolDrained = this.#db.awaitPoolDrained(dispatch)
     const poolDrainedPromise = new Promise((resolve, reject) => {
       const watch = async () => {
-        await this.#db.awaitPoolDrained(dispatch)
+        await awaitPoolDrained
         log('poolDrained')
         const outcome = await this.#db.awaitOutcome(dispatch)
         log('outcome', outcome)
@@ -106,7 +124,7 @@ export default class IO {
     const hash = await git.commit({
       fs,
       dir: '/',
-      message: 'dispatch',
+      message: 'pool',
       author: { name: 'IO' },
     })
     log('commitHash', hash)
@@ -166,7 +184,7 @@ export default class IO {
   // the patch generation should be the same for io as for any splice.
   // this should be jsonpatch with some extra validation against a jsonschema
 }
-const updateIo = async (api: IsolateApi, dispatches: Dispatch[]) => {
+const updateIo = async (api: IsolateApi, actions: Dispatch[]) => {
   // we could delete teh IO of the current commit, since nobody needs it now ?
   log('updateIo')
   const io: IoStruct = {
@@ -182,7 +200,7 @@ const updateIo = async (api: IsolateApi, dispatches: Dispatch[]) => {
       throw err
     }
   }
-  for (const dispatch of dispatches) {
+  for (const dispatch of actions) {
     const queue = io[dispatch.proctype]
     queue.inputs[queue.sequence++] = dispatch
   }

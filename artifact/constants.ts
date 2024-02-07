@@ -57,6 +57,24 @@ export type PID = {
   repository: string
   branches: [string, ...string[]]
 }
+
+export type Poolable = {
+  type: 'REPLY' | 'MERGE' | 'DISPATCH'
+  payload: Reply | Merge | Poolable
+}
+
+export type Reply = {
+  pid: PID
+  nonce: string
+  sequence: number
+  outcome: Outcome
+}
+export type Merge = {
+  pid: PID
+  nonce: string
+  sequence: number
+  source: PID
+}
 export type Dispatch = {
   pid: PID
   isolate: string
