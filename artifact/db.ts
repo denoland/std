@@ -27,7 +27,7 @@ export default class DB {
   listenQueue(callback: (msg: QueuedDispatch) => Promise<void>) {
     return this.#kv.listenQueue(callback)
   }
-  async awaitPrior(pid: PID, sequence: number) {
+  async awaitTail(pid: PID, sequence: number) {
     if (sequence === 0) {
       return
     }
@@ -35,9 +35,9 @@ export default class DB {
     log('awaitPrior %o', tailKey)
     let count = 0
     while (count++ < 1000) {
-      const prior = await this.#kv.get(tailKey)
-      if (!prior.versionstamp) {
-        log('awaitPrior done')
+      const tail = await this.#kv.get(tailKey)
+      if (!tail.versionstamp) {
+        log('awaitPrior done after %d attempts', count)
         return
       }
     }

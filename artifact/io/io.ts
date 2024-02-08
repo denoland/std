@@ -52,7 +52,7 @@ export default class IO {
     })
   }
   async #processSerial(dispatch: Dispatch, sequence: number) {
-    await this.#db.awaitPrior(dispatch.pid, sequence)
+    await this.#db.awaitTail(dispatch.pid, sequence)
     const worker = await this.worker(dispatch.isolate)
     const fs = await this.#artifact.isolateFs(dispatch.pid)
     const api = IsolateApi.create(fs, this.#artifact)
