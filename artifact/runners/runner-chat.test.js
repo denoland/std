@@ -1,4 +1,4 @@
-import Artifact from '../artifact.ts'
+import Artifact from '../artifact2.ts'
 import runner from './runner-chat.js'
 import { expect, log } from '../tst-helpers.js'
 

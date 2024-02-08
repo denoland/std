@@ -1,4 +1,4 @@
-import Artifact from '../artifact.ts'
+import Artifact from '../artifact2.ts'
 import { expect, log } from '../tst-helpers.js'
 const isolate = 'io.fixture'
 import { JsonValue, PID } from '../constants.ts'

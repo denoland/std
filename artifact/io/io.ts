@@ -4,7 +4,7 @@ import { assert } from 'std/assert/mod.ts'
 import git from '$git'
 import * as posix from 'https://deno.land/std@0.213.0/path/posix/mod.ts'
 import debug from '$debug'
-import Artifact from '../artifact.ts'
+import Artifact from '../artifact2.ts'
 import IsolateContext from '@/artifact/isolate-api.ts'
 import {
   Dispatch,

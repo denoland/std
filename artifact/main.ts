@@ -3,7 +3,7 @@
 import { log } from './tst-helpers.js'
 const isolate = 'io.fixture'
 import { PID } from './constants.ts'
-import Artifact from '@/artifact/artifact.ts'
+import Artifact from './artifact2.ts'
 
 const artifact = await Artifact.create()
 

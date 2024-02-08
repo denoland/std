@@ -1,7 +1,7 @@
 import { IFs } from 'https://esm.sh/memfs@4.6.0'
 import { assert } from 'std/assert/mod.ts'
 import { JsonValue } from '@/artifact/constants.ts'
-import Artifact from './artifact.ts'
+import Artifact from './artifact2.ts'
 import * as posix from 'https://deno.land/std@0.213.0/path/posix/mod.ts'
 import debug from '$debug'
 import git from '$git'
