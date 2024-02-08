@@ -75,11 +75,14 @@ export default class IO {
     const nonce = `reply-${sequence}` // TODO try remove nonces altogether
     const payload = { pid, nonce, sequence, outcome }
     const reply: Poolable = { type: 'REPLY', payload }
-    this.#db.poolAction(reply)
-    await this.#commitPool(pid, fs)
+    await this.#commitPool(pid, reply, fs)
   }
-  async #commitPool(pid: PID, fsToCommit?: IFs) {
-    const lockId = await this.#db.getHeadLock(pid) // make abortable
+  async #commitPool(pid: PID, action: Poolable, fsToCommit?: IFs) {
+    await this.#db.poolAction(action)
+    const lockId = await this.#db.getHeadLock(pid, action) // make abortable
+    if (!lockId) {
+      return
+    }
     // TODO await for pool drain, so can concurrently commit
     const fs = await this.#artifact.isolateFs(pid)
     if (fsToCommit) {
@@ -109,23 +112,20 @@ export default class IO {
   async dispatch(payload: Dispatch) {
     log('dispatch with isolate: %s', payload.isolate)
     const dispatch: Poolable = { type: 'DISPATCH', payload }
-    const awaitPoolDrained = this.#db.poolAction(dispatch)
-    const poolDrainedPromise = new Promise((resolve, reject) => {
-      const watch = async () => {
-        await awaitPoolDrained
-        log('poolDrained')
-        const outcome = await this.#db.awaitOutcome(payload)
-        log('outcome', outcome)
-        if (!outcome.error) {
-          resolve(outcome.result)
-        } else {
-          reject(deserializeError(outcome.error))
-        }
-      }
-      watch()
+    await this.#commitPool(payload.pid, dispatch)
+    let resolve!: (value: unknown) => void, reject!: (err: Error) => void
+    const poolDrainedPromise = new Promise((_resolve, _reject) => {
+      resolve = _resolve
+      reject = _reject
     })
+    const outcome = await this.#db.awaitOutcome(payload)
+    log('outcome', outcome)
+    if (!outcome.error) {
+      resolve(outcome.result)
+    } else {
+      reject(deserializeError(outcome.error))
+    }
 
-    await this.#commitPool(payload.pid)
     return poolDrainedPromise
   }
 

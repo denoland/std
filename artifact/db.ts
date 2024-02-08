@@ -64,20 +64,11 @@ export default class DB {
   async poolAction(action: Poolable) {
     const { pid, nonce } = action.payload // ? maybe move to meta key ?
     assertPid(pid)
-    const poolKey = getPoolKey(pid, nonce)
-    log('watch pool %o', poolKey)
-    const stream = this.#kv.watch([poolKey], { raw: true })
-    const iterator = stream[Symbol.asyncIterator]()
-    // guarantee key is empty
-    const first = await iterator.next()
-    assert(!first.value[0].versionstamp, 'pool key must be empty')
-    log('watchPool first %o', first)
-    await this.#kv.set(poolKey, action)
-    for await (const [event] of iterator) {
-      if (!event.versionstamp) {
-        return
-      }
-    }
+    const key = getPoolKey(pid, nonce)
+    log('commit to pool %o', key)
+    await this.#kv.atomic().check({ key, versionstamp: null })
+      .set(key, action).commit()
+    log('commit to pool done')
   }
   awaitOutcome(dispatch: Dispatch): Promise<Outcome> {
     const { pid, nonce } = dispatch
@@ -106,23 +97,40 @@ export default class DB {
       channel.close()
     }
   }
-  async getHeadLock(pid: PID, abortController?: AbortController) {
+  /**
+   * Lock process:
+   *  - optimistically try to grab the lock, atomically checking it is blank
+   *  - if it failed, try get the pool item you are working for
+   *  - if this pool item is not there, then you are done
+   *  - try again to get the lock
+   *  - when you go to write back, do all your changes in an atomic guard
+   *  - final check is that you still have the lock
+   */
+  async getHeadLock(pid: PID, action: Poolable) {
     assertPid(pid)
-    const headLockKey = getHeadLockKey(pid)
-    log('headLockKey %o', headLockKey)
-    const start = Date.now()
-    for await (const [event] of this.#kv.watch([headLockKey], { raw: true })) {
-      log('headLock event %o', event)
-      if (!event.versionstamp) {
-        const lockId = ulid()
-        // TODO use atomics
-        await this.#kv.set(headLockKey, lockId, { expireIn: 5000 })
-        log(`headLock successful after ${Date.now() - start}ms`)
-        return lockId
+    const key = getHeadLockKey(pid)
+    log('start getHeadLock %o', key)
+
+    const lockId = ulid()
+    let result = { ok: false }
+    let count = 0
+    const poolKey = getPoolKey(pid, action.payload.nonce)
+    while (!result.ok && count++ < 100) {
+      result = await this.#kv.atomic().check({ key, versionstamp: null })
+        .set(key, lockId, { expireIn: 5000 }).commit()
+      if (!result.ok) {
+        const existing = await this.#kv.get(poolKey)
+        if (!existing) {
+          log('pool item not found, so no headlock needed')
+          return
+        }
       }
     }
-    const elapsed = Date.now() - start
-    throw new Error(`headLock unsuccessful after ${elapsed}ms`)
+    if (!result.ok) {
+      throw new Error(`Failed to get head lock after ${count} attempts`)
+    }
+    log('getHeadLock successful', lockId)
+    return lockId
   }
   async releaseHeadlock(pid: PID, lockId: string) {
     log('releaseHeadlock %s', lockId)
