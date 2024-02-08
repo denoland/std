@@ -10,7 +10,7 @@
 - deprecation(semver): deprecate `reverseSort()` (#4280)
 - feat(expect): add `expect.addEqualityTesters` api. (#4255)
 - fix: version bump workflow (#4288)
-- refactcor(dotenv): prepare for `noUncheckedIndexedAccess` (#4261)
+- refactor(dotenv): prepare for `noUncheckedIndexedAccess` (#4261)
 - refatcor(toml): prepare for `noUncheckedIndexedAccess` (#4274)
 
 ### 0.214.0 / 2024.02.01
