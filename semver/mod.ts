@@ -288,7 +288,6 @@ export * from "./ltr.ts";
 export * from "./max_satisfying.ts";
 export * from "./min_satisfying.ts";
 export * from "./neq.ts";
-export * from "./outside.ts";
 export * from "./parse_range.ts";
 export * from "./parse.ts";
 export * from "./range_intersects.ts";
