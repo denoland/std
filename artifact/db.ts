@@ -65,10 +65,9 @@ export default class DB {
     const { pid, nonce } = action.payload // ? maybe move to meta key ?
     assertPid(pid)
     const key = getPoolKey(pid, nonce)
-    log('commit to pool %o', key)
-    await this.#kv.atomic().check({ key, versionstamp: null })
-      .set(key, action).commit()
-    log('commit to pool done')
+    log('pooling start %o', key)
+    await this.#kv.set(key, action)
+    log('pooling done')
   }
   awaitOutcome(dispatch: Dispatch): Promise<Outcome> {
     const { pid, nonce } = dispatch

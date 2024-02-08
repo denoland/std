@@ -83,7 +83,6 @@ export default class IO {
     if (!lockId) {
       return
     }
-    // TODO await for pool drain, so can concurrently commit
     const fs = await this.#artifact.isolateFs(pid)
     if (fsToCommit) {
       // TODO detect written files in the fs
