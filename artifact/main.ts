@@ -8,7 +8,7 @@ import Artifact from '@/artifact/artifact.ts'
 const artifact = await Artifact.create()
 
 Deno.serve(async (req) => {
-  if (req.url === '/favicon.ico') {
+  if (req.url.endsWith('/favicon.ico')) {
     return new Response('', { status: 404 })
   }
   log('start', req.url)

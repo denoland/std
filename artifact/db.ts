@@ -33,9 +33,11 @@ export default class DB {
     }
     const tailKey = getTailKey(pid, sequence - 1)
     log('awaitPrior %o', tailKey)
-    for await (const [event] of this.#kv.watch([tailKey], { raw: true })) {
-      log('awaitPrior event %o', event)
-      if (!event.versionstamp) {
+    let count = 0
+    while (count++ < 1000) {
+      const prior = await this.#kv.get(tailKey)
+      if (!prior.versionstamp) {
+        log('awaitPrior done')
         return
       }
     }
