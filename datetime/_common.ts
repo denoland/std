@@ -102,7 +102,7 @@ interface DateTimeFormatPart {
 
 type TimeZone = "UTC";
 
-export interface Options {
+interface Options {
   timeZone?: TimeZone;
 }
 

@@ -108,7 +108,16 @@ Deno.test({
       format(
         new Date("2019-01-01T13:00:00.000+09:00"),
         "yyyy-MM-dd HH:mm:ss.SSS",
-        { timeZone: "UTC" },
+        { utc: true },
+      ),
+    );
+
+    assertEquals(
+      "2019-01-01 18:00:00.000",
+      format(
+        new Date("2019-01-01T13:00:00.000-05:00"),
+        "yyyy-MM-dd HH:mm:ss.SSS",
+        { utc: true },
       ),
     );
   },
