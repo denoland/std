@@ -69,7 +69,7 @@ export default class IO {
     await this.#db.tailDone(dispatch.pid, sequence)
     // must be last, and one event loop later, else fast tests will leak
     // if this fails, we need to bring back quiescence
-    setTimeout(() => this.#db.announceOutcome(dispatch, outcome))
+    this.#db.announceOutcome(dispatch, outcome)
   }
   async #replyIO(pid: PID, fs: IFs, outcome: Outcome, sequence: number) {
     const nonce = `reply-${sequence}` // TODO try remove nonces altogether

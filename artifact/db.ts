@@ -165,11 +165,11 @@ export default class DB {
   async getPooledActions(pid: PID) {
     const prefix = getPoolKeyPrefix(pid)
     log('getPooledActions %o', prefix)
-    const entries = this.#kv.list({ prefix })
+    const entries = this.#kv.list<Poolable>({ prefix })
     const keys = []
     const values: Poolable[] = []
     for await (const entry of entries) {
-      const value = entry.value as Poolable
+      const value = entry.value
       keys.push(entry.key)
       values.push(value)
     }
