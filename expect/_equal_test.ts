@@ -5,7 +5,7 @@
 import { assert, assertFalse, assertThrows } from "../assert/mod.ts";
 import { equal } from "./_equal.ts";
 
-Deno.test("EqualDifferentZero", () => {
+Deno.test("equal() matches with different zero", () => {
   assert(equal(0, -0));
   assert(equal(0, +0));
   assert(equal(+0, -0));
@@ -17,7 +17,7 @@ Deno.test("EqualDifferentZero", () => {
   assert(equal({ msg: "hello", array: [0] }, { msg: "hello", array: [-0] }));
 });
 
-Deno.test("Equal", function () {
+Deno.test("equal() matches when values are equal", function () {
   assert(equal("world", "world"));
   assert(!equal("hello", "world"));
   assertFalse(equal("hello", "world"));
@@ -235,7 +235,7 @@ Deno.test("Equal", function () {
   );
 });
 
-Deno.test("EqualCircular", () => {
+Deno.test("equal() matches when values have circular references", () => {
   const objA: { prop?: unknown } = {};
   objA.prop = objA;
   const objB: { prop?: unknown } = {};
