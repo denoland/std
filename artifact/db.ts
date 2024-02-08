@@ -93,19 +93,14 @@ export default class DB {
     const channelKey = poolKey.join(':') // TODO escape chars
     const channel = new BroadcastChannel(channelKey)
     channel.postMessage(outcome)
-    if (!isDenoDeploy) {
-      // in deno deploy, closing prohibits message propogation if too soon
-      channel.close()
-    }
+    setTimeout(() => channel.close())
   }
   /**
    * Lock process:
    *  - optimistically try to grab the lock, atomically checking it is blank
    *  - if it failed, try get the pool item you are working for
    *  - if this pool item is not there, then you are done
-   *  - try again to get the lock
-   *  - when you go to write back, do all your changes in an atomic guard
-   *  - final check is that you still have the lock
+   *  - loop again to get the lock
    */
   async getHeadLock(pid: PID, action: Poolable) {
     assertPid(pid)
