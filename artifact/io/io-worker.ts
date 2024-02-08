@@ -2,7 +2,7 @@ import validator from '@io/validator.js'
 import { assert } from 'std/assert/mod.ts'
 import debug from '$debug'
 import { Isolate, IsolatedFunctions, Parameters } from '@/artifact/constants.ts'
-import IsolateApi from '../isolate-api.ts'
+import IsolateContext from '../isolate-api.ts'
 
 // deno has no dynamic runtime imports, so this is a workaround
 import isolates from '../isolates/index.ts'
@@ -24,14 +24,14 @@ const worker = () => {
       assert(!missing.length, `Missing functions: ${missing.join(', ')}`)
       return api
     },
-    actions(api: IsolateApi) {
+    actions(context: IsolateContext) {
       assert(module, 'code not loaded')
       const actions: IsolatedFunctions = {}
       for (const functionName in module.api) {
         actions[functionName] = (parameters?: Parameters) => {
           const schema = module.api[functionName]
           validator(schema)(parameters)
-          return module.functions[functionName](parameters, api)
+          return module.functions[functionName](parameters, context)
         }
       }
       return actions

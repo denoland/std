@@ -13,13 +13,14 @@ import {
   ENTRY_BRANCH,
   PID,
   PROCTYPE,
-} from './constants.ts'
+  QueuedMessage,
+} from '@/artifact/constants.ts'
 import DB from './db.ts'
 import { ulid } from 'std/ulid/mod.ts'
 
 const log = debug('AI:api')
 
-export default class Artifact {
+export default class Artifact implements Artifact {
   #io!: IO
   #db!: DB
   static async create() {
@@ -63,14 +64,21 @@ export default class Artifact {
   push(repo: string) {
     throw new Error('not implemented: ' + repo)
   }
-  async workerApi(isolate: string) {
+  clone(repo: string) {
+    // clone a git repo into artifact
+  }
+  init(repo: string) {
+    // initialize a blank git repo, ensuring no name collisions
+  }
+  async isolateApi(isolate: string) {
     assert(!posix.isAbsolute(isolate), `isolate must be relative: ${isolate}`)
     const api = await this.#io.workerApi(isolate)
     return api
   }
   async actions(isolate: string, pid: PID) {
+    // this will be done client side
     log('actions for isolate: %s pid: %o ', isolate, pid)
-    const api = await this.workerApi(isolate)
+    const api = await this.isolateApi(isolate)
     const actions: DispatchFunctions = {}
     for (const functionName of Object.keys(api)) {
       actions[functionName] = (parameters = {}, proctype = PROCTYPE.SERIAL) => {

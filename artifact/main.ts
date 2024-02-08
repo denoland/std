@@ -7,6 +7,8 @@ import Artifact from '@/artifact/artifact.ts'
 
 const artifact = await Artifact.create()
 
+// start a hono api server that mimicks the artifact api
+
 Deno.serve(async (req) => {
   if (req.url.endsWith('/favicon.ico')) {
     return new Response('', { status: 404 })

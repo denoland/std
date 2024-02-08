@@ -7,11 +7,13 @@ import {
   Outcome,
   PID,
   Poolable,
+  PROCTYPE,
+  QUEUE_TYPES,
   QueuedDispatch,
+  QueuedMessage,
 } from '@/artifact/constants.ts'
 import { assert } from 'std/assert/assert.ts'
 import debug from '$debug'
-import { PROCTYPE } from '@/artifact/constants.ts'
 const log = debug('AI:db')
 
 export default class DB {
@@ -24,7 +26,7 @@ export default class DB {
   stop() {
     this.#kv.close()
   }
-  listenQueue(callback: (msg: QueuedDispatch) => Promise<void>) {
+  listenQueue(callback: (msg: QueuedMessage) => Promise<void>) {
     return this.#kv.listenQueue(callback)
   }
   async awaitTail(pid: PID, sequence: number) {
@@ -153,8 +155,9 @@ export default class DB {
       const sequence = parseInt(key)
       const tailKey = getTailKey(pid, sequence)
       await this.#kv.set(tailKey, true)
-      const queuedDispatch: QueuedDispatch = { dispatch, sequence }
-      await this.#kv.enqueue(queuedDispatch)
+      const type = QUEUE_TYPES.DISPATCH
+      const msg: QueuedDispatch = { type, payload: { dispatch, sequence } }
+      await this.#kv.enqueue(msg)
     }
   }
   async #enqueueParallel(
@@ -180,7 +183,6 @@ export default class DB {
     await Promise.all(keys.map((key) => this.#kv.delete(key)))
   }
 }
-
 const getPoolKeyPrefix = (pid: PID) => {
   const { account, repository, branches } = pid
   return [KEYSPACES.POOL, account, repository, ...branches]

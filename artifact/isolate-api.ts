@@ -8,11 +8,11 @@ import git from '$git'
 
 const log = debug('AI:isolateApi')
 
-export default class IsolateApi {
+export default class IsolateContext {
   #fs: IFs
   #artifact: Artifact
   static create(fs: IFs, artifact: Artifact) {
-    return new IsolateApi(fs, artifact)
+    return new IsolateContext(fs, artifact)
   }
   constructor(fs: IFs, artifact: Artifact) {
     this.#fs = fs

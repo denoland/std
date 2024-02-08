@@ -5,7 +5,7 @@ import git from '$git'
 import * as posix from 'https://deno.land/std@0.213.0/path/posix/mod.ts'
 import debug from '$debug'
 import Artifact from '../artifact.ts'
-import IsolateApi from '@/artifact/isolate-api.ts'
+import IsolateContext from '@/artifact/isolate-api.ts'
 import {
   Dispatch,
   IO_PATH,
@@ -54,9 +54,10 @@ export default class IO {
   async #processSerial(dispatch: Dispatch, sequence: number) {
     await this.#db.awaitTail(dispatch.pid, sequence)
     const worker = await this.worker(dispatch.isolate)
-    const fs = await this.#artifact.isolateFs(dispatch.pid)
-    const api = IsolateApi.create(fs, this.#artifact)
-    const actions = worker.actions(api)
+    const memfs = await this.#artifact.isolateFs(dispatch.pid)
+    const fs = IsolateContext.create(memfs, this.#artifact)
+    // could almost make the fs api be the only thing anyone ever touches
+    const actions = worker.actions(fs)
     const outcome: Outcome = {}
     try {
       outcome.result = await actions[dispatch.functionName](dispatch.parameters)
@@ -65,7 +66,7 @@ export default class IO {
       log('self error', errorObj)
       outcome.error = serializeError(errorObj)
     }
-    await this.#replyIO(dispatch.pid, fs, outcome, sequence)
+    await this.#replyIO(dispatch.pid, memfs, outcome, sequence)
     await this.#db.tailDone(dispatch.pid, sequence)
     // must be last, and one event loop later, else fast tests will leak
     // if this fails, we need to bring back quiescence
@@ -89,7 +90,7 @@ export default class IO {
       // TODO copy over files from fsToCommit that are not .io.json
     }
 
-    const api = IsolateApi.create(fs, this.#artifact)
+    const api = IsolateContext.create(fs, this.#artifact)
     const { keys, values } = await this.#db.getPooledActions(pid)
     const io = await updateIo(api, values)
     await git.add({ fs, dir: '/', filepath: IO_PATH })
@@ -163,14 +164,14 @@ export default class IO {
     }
     return this.#workerCache.get(isolate)
   }
-  async #loadWorker(isolate: string) {
+  #loadWorker(isolate: string) {
     log('loadWorker', isolate)
     const worker = ioWorker()
-    const api = await worker.load(isolate)
+    const api = worker.load(isolate)
     return { worker, api }
   }
 }
-const updateIo = async (api: IsolateApi, actions: Poolable[]) => {
+const updateIo = async (fs: IsolateContext, actions: Poolable[]) => {
   // the patch generation should be the same for io as for any splice.
   // this should be jsonpatch with some extra validation against a jsonschema
 
@@ -180,7 +181,7 @@ const updateIo = async (api: IsolateApi, actions: Poolable[]) => {
     [PROCTYPE.PARALLEL]: { sequence: 0, inputs: {}, outputs: {} },
   }
   try {
-    const priorIo = await api.readJSON(IO_PATH) // TODO check schema
+    const priorIo = await fs.readJSON(IO_PATH) // TODO check schema
     io[PROCTYPE.SERIAL].sequence = checkSequence(priorIo[PROCTYPE.SERIAL])
     io[PROCTYPE.PARALLEL].sequence = checkSequence(priorIo[PROCTYPE.PARALLEL])
   } catch (err) {
@@ -210,7 +211,7 @@ const updateIo = async (api: IsolateApi, actions: Poolable[]) => {
     }
   }
   log('updateIo')
-  api.writeJSON(IO_PATH, io)
+  fs.writeJSON(IO_PATH, io)
   return io
 }
 const checkSequence = (io: { sequence: number }) => {

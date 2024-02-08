@@ -1,4 +1,4 @@
-import IsolateApi from './isolate-api.ts'
+import IsolateContext from './isolate-api.ts'
 
 export type { CborUint8Array } from 'https://esm.sh/v135/json-joy@9.9.1/es6/json-pack/cbor/types.d.ts?exports=CbotUint8Array'
 export enum PROCTYPE {
@@ -13,7 +13,7 @@ export type JsonValue = string | number | boolean | null | JsonValue[] | {
 type IsolateApiFunctions = {
   [key: string]: (
     arg?: { [key: string]: JsonValue },
-    api?: IsolateApi,
+    api?: IsolateContext,
   ) => JsonValue | Promise<JsonValue>
 }
 export type IsolatedFunctions = {
@@ -89,11 +89,31 @@ export type Dispatch = {
    */
   nonce: string
 }
+
+export enum QUEUE_TYPES {
+  PULL = 'PULL',
+  PUSH = 'PUSH',
+  CLONE = 'CLONE',
+  INIT = 'INIT',
+  ISOLATE_API = 'ISOLATE_API',
+  DISPATCH = 'DISPATCH',
+}
+export type QueuedMessage = QueuedCommit | QueuedDispatch
 export type QueuedDispatch = {
-  dispatch: Dispatch
-  sequence: number
+  type: QUEUE_TYPES.DISPATCH
+  payload: {
+    dispatch: Dispatch
+    sequence: number
+  }
 }
 
+export type QueuedCommit = {
+  type: 'COMMIT'
+  payload: {
+    pid: PID
+    hash: string
+  }
+}
 export enum KEYSPACES {
   POOL = 'POOL', // all pending IO actions trying to be committed
   HEADLOCK = 'HEADLOCK', // the lock on the head of a given process branch
@@ -109,10 +129,15 @@ export enum KEYSPACES {
   TAIL = 'TAIL',
 }
 
-export type QueuedMessage = QueuedCommit
+export interface Artifact {
+  pull(repo: string): Promise<void>
+  push(repo: string): Promise<void>
+  clone(repo: string): Promise<void>
+  init(repo: string): Promise<void>
+  isolateApi(isolate: string): Promise<IsolateApiSchema>
+  actions(isolate: string, pid: PID): Promise<DispatchFunctions>
 
-export type QueuedCommit = {
-  type: 'COMMIT'
-  pid: PID
-  hash: string
+  // then need things like subscribing to fs updates in a pid, reading files,
+  // but it should all be handled by subscribing to splices / patches ?
+  // also subscribe to binary / read binary
 }
