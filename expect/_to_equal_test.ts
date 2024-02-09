@@ -29,7 +29,7 @@ const removed: (s: string) => string = (s: string): string =>
   red(bold(stripAnsiCode(s)));
 
 Deno.test({
-  name: "pass case",
+  name: "expect().toEqual() matches when values are equal",
   fn() {
     expect({ a: 10 }).toEqual({ a: 10 });
     expect(true).toEqual(true);
@@ -41,7 +41,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "failed with number",
+  name: "expect().toEqual() throws when numbers are not equal",
   fn() {
     assertThrows(
       () => expect(1).toEqual(2),
@@ -58,7 +58,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "failed with number vs string",
+  name: "expect().toEqual() throws when compare number with string",
   fn() {
     assertThrows(
       () => expect(1).toEqual("1"),
@@ -74,7 +74,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "failed with array",
+  name: "expect().toEqual() throws when array are not equal",
   fn() {
     assertThrows(
       () => expect([1, "2", 3]).toEqual(["1", "2", 3]),
@@ -91,7 +91,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "failed with object",
+  name: "expect().toEqual() throws when objects are no equal",
   fn() {
     assertThrows(
       () => expect({ a: 1, b: "2", c: 3 }).toEqual({ a: 1, b: 2, c: [3] }),
@@ -111,7 +111,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "failed with date",
+  name: "expect().toEqual() throws when date are not equal",
   fn() {
     assertThrows(
       () =>
@@ -143,7 +143,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "failed with custom msg",
+  name: "expect().toEqual() throws with a custom message",
   fn() {
     assertThrows(
       () => expect(1, "CUSTOM MESSAGE").toEqual(2),
@@ -160,7 +160,7 @@ Deno.test({
 });
 
 Deno.test(
-  "expect().toEqual compares objects structurally if one object's constructor is undefined and the other is Object",
+  "expect().toEqual() compares objects structurally if one object's constructor is undefined and the other is Object",
   () => {
     const a = Object.create(null);
     a.prop = "test";
@@ -173,7 +173,7 @@ Deno.test(
   },
 );
 
-Deno.test("expect().toEqual diff for differently ordered objects", () => {
+Deno.test("expect().toEqual() diff for differently ordered objects", () => {
   assertThrows(
     () => {
       expect({
@@ -199,7 +199,7 @@ Deno.test("expect().toEqual diff for differently ordered objects", () => {
   );
 });
 
-Deno.test("expect().toEqual same Set with object keys", () => {
+Deno.test("expect().toEqual() same Set with object keys", () => {
   const data = [
     {
       id: "_1p7ZED73OF98VbT1SzSkjn",
@@ -225,7 +225,7 @@ Deno.test("expect().toEqual() does not throw when a key with undfined value exis
 });
 
 // https://github.com/denoland/deno_std/issues/4244
-Deno.test("align to jest test cases", () => {
+Deno.test("expect().toEqual() align to jest test cases", () => {
   function create() {
     class Person {
       constructor(public readonly name = "deno") {}
@@ -263,7 +263,7 @@ Deno.test("align to jest test cases", () => {
   }, AssertionError);
 });
 
-Deno.test("toEqual case for Error Object", () => {
+Deno.test("expect().toEqual() matches when Error Objects are equal", () => {
   function getError() {
     return new Error("missing param: name");
   }
