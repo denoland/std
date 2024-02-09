@@ -15,7 +15,7 @@ Deno.serve(async (req) => {
     return new Response('', { status: 404 })
   }
   log('start', req.url)
-  const result = await artifact.clone()
+  const result = await artifact.clone({ repo: 'dreamcatcher-tech/HAL' })
   log('clone:', result)
   return new Response('reping: ' + JSON.stringify(result, null, 2))
 

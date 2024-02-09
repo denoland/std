@@ -141,17 +141,10 @@ export const functions: IsolateFunctions = {
   ping(_, api: IsolateApi<C>) {
     return enqueue('ping', {}, api)
   },
-  reping(_, api: IsolateApi<C>) {
-    return enqueue('reping', {}, api)
-  },
   clone(params, api: IsolateApi<C>) {
     return enqueue('clone', params, api)
   },
 }
-// could make an isolate wrapper, that just took all the functions in an isolate
-// and wrapped them in a queue.
-
-// probably grab the worker instance, and set it up here
 
 export const lifecycles: IsolateLifecycle = {
   async '@@mount'(api: IsolateApi<C>) {
