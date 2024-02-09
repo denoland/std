@@ -39,7 +39,7 @@ export function format(
   );
 }
 
-/** The options used for formatting date in {@linkcode format}. */
+/** Options for {@linkcode format}. */
 export interface FormatOptions {
   /** Whether returns the formatted date in UTC instead of local time. */
   utc?: boolean;
