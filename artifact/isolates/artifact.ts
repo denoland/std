@@ -31,10 +31,15 @@ export const api = {
     description: 'Check queue processing system is alive',
     properties: {},
   },
-  reping: {
+  clone: {
     type: 'object',
-    description: 'Check queue processing system is alive',
-    properties: {},
+    required: ['repo'],
+    properties: {
+      repo: {
+        type: 'string',
+        pattern: '^[a-zA-Z0-9][a-zA-Z0-9-_]*\/[a-zA-Z0-9][a-zA-Z0-9-_]*$',
+      },
+    },
   },
   // pull: {
   //   type: 'object',
@@ -47,16 +52,6 @@ export const api = {
   //   },
   // },
   // push: {
-  //   type: 'object',
-  //   required: ['repo'],
-  //   properties: {
-  //     repo: {
-  //       type: 'string',
-  //       pattern: /^[a-zA-Z0-9][a-zA-Z0-9-_]*\/[a-zA-Z0-9][a-zA-Z0-9-_]*$/,
-  //     },
-  //   },
-  // },
-  // clone: {
   //   type: 'object',
   //   required: ['repo'],
   //   properties: {
@@ -143,34 +138,15 @@ type C = {
 }
 
 export const functions: IsolateFunctions = {
-  async ping(_, api: IsolateApi<C>) {
+  ping(_, api: IsolateApi<C>) {
     return enqueue('ping', {}, api)
   },
-  async reping(_, api: IsolateApi<C>) {
+  reping(_, api: IsolateApi<C>) {
     return enqueue('reping', {}, api)
   },
-  // async clone(params, api: IsolateApi<C>) {
-  //   const repo = params.repo as string
-  //   const [account, repository] = repo.split('/')
-  //   // TODO acquire lock on the repo in the kv store
-  //   // TODO handle existing repo
-
-  //   const { fs } = memfs()
-  //   const dir = '/'
-  //   const url = `https://github.com/${account}/${repository}.git`
-  //   log('start %s', url)
-  //   await git.clone({ fs, http, dir, url, noCheckout: true })
-  //   log('cloned')
-  //   const uint8 = snapshot.toBinarySnapshotSync({ fs })
-  //   log('snapshot', pretty(uint8.length))
-  //   const pid: PID = {
-  //     account,
-  //     repository,
-  //     branches: [ENTRY_BRANCH],
-  //   }
-  //   const { db } = api.context
-  //   await db!.updateIsolateFs(pid, uint8)
-  // },
+  clone(params, api: IsolateApi<C>) {
+    return enqueue('clone', params, api)
+  },
 }
 // could make an isolate wrapper, that just took all the functions in an isolate
 // and wrapped them in a queue.
@@ -180,15 +156,15 @@ export const functions: IsolateFunctions = {
 export const lifecycles: IsolateLifecycle = {
   async '@@mount'(api: IsolateApi<C>) {
     const db = await DB.create()
-    db.listenQueue(async ({ nonce, name, parameters }: QMessage) => {
+    db.listenQueue(({ nonce, name, parameters }: QMessage) => {
       log('listenQueue', name, nonce)
-      return await wrappedFunctions[name](parameters, api)
+      return wrappedFunctions[name](parameters, api)
     })
     api.context = { db }
     return Promise.resolve('')
   },
-  async '@@unmount'(api: IsolateApi<C>) {
-    api.context.db!.stop()
+  '@@unmount'(api: IsolateApi<C>) {
+    return api.context.db!.stop()
   },
 }
 
@@ -205,5 +181,27 @@ const wrappedFunctions: IsolateFunctions = {
   reping: (params, api) => {
     log('reping')
     return enqueue('ping', params, api)
+  },
+  async clone(params, api: IsolateApi<C>) {
+    const repo = params.repo as string
+    const [account, repository] = repo.split('/')
+    // TODO acquire lock on the repo in the kv store
+    // TODO handle existing repo
+
+    const { fs } = memfs()
+    const dir = '/'
+    const url = `https://github.com/${account}/${repository}.git`
+    log('start %s', url)
+    await git.clone({ fs, http, dir, url, noCheckout: true })
+    log('cloned')
+    const uint8 = snapshot.toBinarySnapshotSync({ fs })
+    log('snapshot', pretty(uint8.length))
+    const pid: PID = {
+      account,
+      repository,
+      branches: [ENTRY_BRANCH],
+    }
+    const { db } = api.context
+    await db!.updateIsolateFs(pid, uint8)
   },
 }

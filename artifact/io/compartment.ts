@@ -12,7 +12,7 @@ import IsolateApi from '../isolate-api.ts'
 // deno has no dynamic runtime imports, so this is a workaround
 import isolates from '../isolates/index.ts'
 
-const log = debug('AI:io-worker')
+const log = debug('AI:compartment')
 
 const compartment = () => {
   let module: Isolate

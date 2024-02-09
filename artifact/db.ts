@@ -32,7 +32,7 @@ export default class DB {
   }
   listenQueue(callback: QCallback) {
     return this.#kv.listenQueue(async (msg: QMessage) => {
-      log('queue', msg)
+      log('listenQueue received', msg)
       const channel = new BroadcastChannel('queue-' + msg.nonce)
       const outcome: Outcome = {}
       try {
@@ -40,7 +40,7 @@ export default class DB {
       } catch (error) {
         outcome.error = serializeError(error)
       }
-      log('announcing %s', msg.nonce, channel.name)
+      log('announcing %s', channel.name)
       channel.postMessage(outcome)
       setTimeout(() => channel.close())
     })

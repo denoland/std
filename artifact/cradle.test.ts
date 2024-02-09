@@ -2,15 +2,19 @@ import cradle from './cradle.ts'
 import { expect, log } from './tst-helpers.js'
 import { JsonValue, PID } from './constants.ts'
 import { delay } from 'https://deno.land/std@0.211.0/async/delay.ts'
+const isolate = 'io.fixture'
 
 Deno.test.only('io', async (t) => {
   const artifact = await cradle()
-  // await artifact.pull('dreamcatcher-tech/HAL')
-  // const pid: PID = {
-  //   account: 'dreamcatcher-tech',
-  //   repository: 'HAL',
-  //   branches: ['main'],
-  // }
+  await t.step('clone', async () => {
+    await artifact.clone({ repo: 'dreamcatcher-tech/HAL' })
+    // TODO read the fs and see what the state of the file system is ?
+  })
+  const pid: PID = {
+    account: 'dreamcatcher-tech',
+    repository: 'HAL',
+    branches: ['main'],
+  }
 
   // let result
   // const actions = await artifact.actions(isolate, pid)
@@ -22,7 +26,6 @@ Deno.test.only('io', async (t) => {
   //   const second = await actions.local({})
   //   expect(second).toBe('local reply')
   // })
-  const result = await artifact.reping()
-  log('ping:', result)
-  artifact.stop()
+
+  await artifact.stop()
 })
