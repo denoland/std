@@ -1,7 +1,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import { greaterThan } from "./greater_than.ts";
 import { lessThan } from "./less_than.ts";
-import type { Range, SemVer, SemVerRange } from "./types.ts";
+import type { Range, SemVer } from "./types.ts";
 import { rangeMax } from "./range_max.ts";
 import { rangeMin } from "./range_min.ts";
 
@@ -18,7 +18,7 @@ import { rangeMin } from "./range_min.ts";
  */
 export function outside(
   version: SemVer,
-  range: SemVerRange | Range,
+  range: Range,
   hilo?: ">" | "<",
 ): boolean {
   switch (hilo) {

@@ -50,15 +50,3 @@ export interface SemVer {
  * inner array represents AND comparisons.
  */
 export type Range = Comparator[][];
-
-/**
- * A type representing a semantic version range. The ranges consist of
- * a nested array, which represents a set of OR comparisons while the
- * inner array represents AND comparisons.
- *
- * @deprecated (will be removed in 0.216.0) Use {@linkcode Range} instead.
- */
-export interface SemVerRange {
-  // The outer array is OR while each inner array is AND
-  ranges: Comparator[][];
-}
