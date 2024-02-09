@@ -22,6 +22,7 @@ import {
 import DB from '../db.ts'
 import { ulid } from 'std/ulid/mod.ts'
 import IsolateApi from '../isolate-api.ts'
+import { delay } from 'https://deno.land/std@0.211.0/async/delay.ts'
 
 const log = debug('AI:artifact')
 
@@ -137,8 +138,9 @@ type C = {
   db: DB
 }
 const directFunctions: IsolateFunctions = {
-  ping: (params: Params) => {
+  ping: async (params: Params) => {
     log('ping')
+    await delay(1000)
     return params
   },
   reping: (params, api) => {
