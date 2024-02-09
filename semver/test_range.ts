@@ -1,5 +1,5 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-import type { Range, SemVer, SemVerRange } from "./types.ts";
+import type { Range, SemVer } from "./types.ts";
 import { greaterOrEqual } from "./greater_or_equal.ts";
 import { lessOrEqual } from "./less_or_equal.ts";
 import { comparatorMin } from "./_comparator_min.ts";
@@ -13,9 +13,9 @@ import { comparatorMax } from "./_comparator_max.ts";
  */
 export function testRange(
   version: SemVer,
-  range: SemVerRange | Range,
+  range: Range,
 ): boolean {
-  for (const r of (Array.isArray(range) ? range : range.ranges)) {
+  for (const r of range) {
     if (
       r.every((c) =>
         greaterOrEqual(version, comparatorMin(c.semver ?? c, c.operator)) &&

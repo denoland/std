@@ -1,5 +1,5 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-import type { Range, SemVer, SemVerRange } from "./types.ts";
+import type { Range, SemVer } from "./types.ts";
 import { rangeMax } from "./range_max.ts";
 import { greaterThan } from "./greater_than.ts";
 
@@ -11,7 +11,7 @@ import { greaterThan } from "./greater_than.ts";
  */
 export function gtr(
   version: SemVer,
-  range: SemVerRange | Range,
+  range: Range,
 ): boolean {
   return greaterThan(version, rangeMax(range));
 }
