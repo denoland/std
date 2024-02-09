@@ -252,8 +252,8 @@
  * import {
  *   parse,
  *   parseRange,
- *   gt,
- *   lt,
+ *   greaterThan,
+ *   lessThan,
  *   format
  * } from "https://deno.land/std@$STD_VERSION/semver/mod.ts";
  *
@@ -262,8 +262,8 @@
  *
  * const s0 = parse("1.2.3");
  * const s1 = parse("9.8.7");
- * gt(s0, s1); // false
- * lt(s0, s1); // true
+ * greaterThan(s0, s1); // false
+ * lessThan(s0, s1); // true
  *
  * format(semver) // "1.2.3"
  * ```
@@ -273,21 +273,15 @@
 export * from "./compare.ts";
 export * from "./constants.ts";
 export * from "./difference.ts";
-export * from "./eq.ts";
 export * from "./format.ts";
-export * from "./gt.ts";
-export * from "./gte.ts";
 export * from "./gtr.ts";
 export * from "./test_range.ts";
 export * from "./increment.ts";
 export * from "./is_semver_range.ts";
 export * from "./is_semver.ts";
-export * from "./lt.ts";
-export * from "./lte.ts";
 export * from "./ltr.ts";
 export * from "./max_satisfying.ts";
 export * from "./min_satisfying.ts";
-export * from "./neq.ts";
 export * from "./parse_range.ts";
 export * from "./parse.ts";
 export * from "./range_intersects.ts";
