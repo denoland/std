@@ -1,5 +1,5 @@
 import { deserializeError, serializeError } from 'npm:serialize-error'
-import compartment from './compartment.ts'
+import Compartment from './compartment.ts'
 import { assert } from 'std/assert/mod.ts'
 import git from '$git'
 import * as posix from 'https://deno.land/std@0.213.0/path/posix/mod.ts'
@@ -166,8 +166,8 @@ export default class IO {
   }
   #loadWorker(isolate: string) {
     log('loadWorker', isolate)
-    const worker = compartment()
-    const api = worker.load(isolate)
+    const worker = Compartment.create(isolate)
+    const api = worker.api
     return { worker, api }
   }
 }

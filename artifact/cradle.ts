@@ -2,24 +2,37 @@
  * This thing fires up and begins listening to the queue
  */
 
-import compartment from './io/compartment.ts'
-import { DispatchFunctions, PROCTYPE } from './constants.ts'
+import Compartment from './io/compartment.ts'
+import { DispatchFunctions, PID, PROCTYPE } from './constants.ts'
 import { IFs, memfs } from 'https://esm.sh/memfs@4.6.0'
 import IsolateApi from './isolate-api.ts'
 import { assert } from 'std/assert/assert.ts'
 
-export default async function cradle() {
-  const instance = compartment()
-  instance.load('artifact')
-  const { fs } = memfs()
-  // pass a dispatch function in so it can call out to other pids
-  const api = IsolateApi.create(fs)
-  await instance.mount(api)
+type Actions = { isolate: string; pid: PID }
+class Cradle {
+  #compartment!: Compartment
+  #context!: IsolateApi
+  static async create() {
+    const cradle = new Cradle()
+    cradle.#compartment = Compartment.create('artifact')
+    const { fs } = memfs()
+    // TODO pass a dispatch function in so it can call out to other pids
+    cradle.#context = IsolateApi.create(fs)
+    await cradle.#compartment.mount(cradle.#context)
 
-  const actions = instance.actions(api)
-  assert(!actions.stop, 'stop is a reserved action')
-  actions.stop = () => instance.unmount(api)
-  return actions
+    const actions = cradle.#compartment.actions(cradle.#context)
+    assert(!actions.stop, 'stop is a reserved action')
+    assert(!actions.actions, 'actions is a reserved action')
+    Object.assign(cradle, actions)
+    return cradle
+  }
+  stop() {
+    this.#compartment.unmount(this.#context)
+  }
+  actions({ isolate, pid }: Actions) {
+    // get the api by doing a remote queue call
+    // then wrap each function with a dispatch call
+  }
 }
 
 // then the hono api server would feed its json requests into the cradle, where
@@ -27,3 +40,9 @@ export default async function cradle() {
 
 // the hono api might need to wrap subscriptions and listen in to the broadcast
 // channel that will be used to send out the patches.
+
+interface Cradle {
+  clone({ repo }: { repo: string }): Promise<void>
+}
+
+export default Cradle

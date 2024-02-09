@@ -23,6 +23,7 @@ import DB from '../db.ts'
 import { ulid } from 'std/ulid/mod.ts'
 import IsolateApi from '../isolate-api.ts'
 import { delay } from 'https://deno.land/std@0.211.0/async/delay.ts'
+import Compartment from '../io/compartment.ts'
 
 const log = debug('AI:artifact')
 
@@ -140,7 +141,10 @@ type C = {
 const directFunctions: IsolateFunctions = {
   ping: async (params: Params) => {
     log('ping')
-    await delay(1000)
+    const start = Date.now()
+    while (Date.now() - start < 1000) {
+      //
+    }
     return params
   },
   reping: (params, api) => {
@@ -172,7 +176,10 @@ const directFunctions: IsolateFunctions = {
     await db!.updateIsolateFs(pid, uint8)
     return { size, elapsed: Date.now() - start }
   },
-  isolateApi: async (params, api: IsolateApi<C>) => {
+  isolateApi: (params: Params) => {
+    const isolate = params.isolate as string
+    const compartment = Compartment.create(isolate)
+    return compartment.api
   },
   dispatch: async (params, api: IsolateApi<C>) => {
     const { isolate, pid } = params
