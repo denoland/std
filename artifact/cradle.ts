@@ -6,6 +6,7 @@ import compartment from './io/compartment.ts'
 import { DispatchFunctions, PROCTYPE } from './constants.ts'
 import { IFs, memfs } from 'https://esm.sh/memfs@4.6.0'
 import IsolateApi from './isolate-api.ts'
+import { assert } from 'std/assert/assert.ts'
 
 export default async function cradle() {
   const instance = compartment()
@@ -16,6 +17,7 @@ export default async function cradle() {
   await instance.mount(api)
 
   const actions = instance.actions(api)
+  assert(!actions.stop, 'stop is a reserved action')
   actions.stop = () => instance.unmount(api)
   return actions
 }

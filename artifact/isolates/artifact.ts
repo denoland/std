@@ -71,44 +71,44 @@ export const api = {
   //     },
   //   },
   // },
-  // isolateApi: {
-  //   type: 'object',
-  //   required: ['isolate'],
-  //   properties: {
-  //     isolate: {
-  //       type: 'string',
-  //     },
-  //   },
-  // },
-  // actions: {
-  //   type: 'object',
-  //   required: ['isolate', 'pid'],
-  //   properties: {
-  //     isolate: {
-  //       type: 'string',
-  //     },
-  //     pid: {
-  //       type: 'object',
-  //       required: ['account', 'repository', 'branches'],
-  //       additionalProperties: false,
-  //       properties: {
-  //         account: {
-  //           type: 'string',
-  //         },
-  //         repository: {
-  //           type: 'string',
-  //         },
-  //         branches: {
-  //           type: 'array',
-  //           items: {
-  //             type: 'string',
-  //           },
-  //           minItems: 1,
-  //         },
-  //       },
-  //     },
-  //   },
-  // },
+  isolateApi: {
+    type: 'object',
+    required: ['isolate'],
+    properties: {
+      isolate: {
+        type: 'string',
+      },
+    },
+  },
+  dispatch: {
+    type: 'object',
+    required: ['isolate'],
+    properties: {
+      isolate: {
+        type: 'string',
+      },
+      pid: {
+        type: 'object',
+        required: ['account', 'repository', 'branches'],
+        additionalProperties: false,
+        properties: {
+          account: {
+            type: 'string',
+          },
+          repository: {
+            type: 'string',
+          },
+          branches: {
+            type: 'array',
+            items: {
+              type: 'string',
+            },
+            minItems: 1,
+          },
+        },
+      },
+    },
+  },
   // then need things like subscribing to fs updates in a pid, reading files,
   // but it should all be handled by subscribing to splices / patches ?
   // also subscribe to binary / read binary
@@ -136,22 +136,56 @@ export const api = {
 type C = {
   db: DB
 }
-
-export const functions: IsolateFunctions = {
-  ping(_, api: IsolateApi<C>) {
-    return enqueue('ping', {}, api)
+const directFunctions: IsolateFunctions = {
+  ping: (params: Params) => {
+    log('ping')
+    return params
   },
-  clone(params, api: IsolateApi<C>) {
-    return enqueue('clone', params, api)
+  reping: (params, api) => {
+    log('reping')
+    return enqueue('ping', params, api)
+  },
+  async clone(params, api: IsolateApi<C>) {
+    const start = Date.now()
+    const repo = params.repo as string
+    const [account, repository] = repo.split('/')
+    // TODO acquire lock on the repo in the kv store
+    // TODO handle existing repo
+
+    const { fs } = memfs()
+    const dir = '/'
+    const url = `https://github.com/${account}/${repository}.git`
+    log('start %s', url)
+    await git.clone({ fs, http, dir, url, noCheckout: true })
+    log('cloned')
+    const uint8 = snapshot.toBinarySnapshotSync({ fs })
+    const size = pretty(uint8.length)
+    log('snapshot', size)
+    const pid: PID = {
+      account,
+      repository,
+      branches: [ENTRY_BRANCH],
+    }
+    const { db } = api.context
+    await db!.updateIsolateFs(pid, uint8)
+    return { size, elapsed: Date.now() - start }
+  },
+  isolateApi: async (params, api: IsolateApi<C>) => {
+  },
+  dispatch: async (params, api: IsolateApi<C>) => {
+    const { isolate, pid } = params
+    // const { account, repository, branches } = pid
+    const { db } = api.context
   },
 }
+export const functions: IsolateFunctions = queueWrap(directFunctions)
 
 export const lifecycles: IsolateLifecycle = {
   async '@@mount'(api: IsolateApi<C>) {
     const db = await DB.create()
     db.listenQueue(({ nonce, name, parameters }: QMessage) => {
       log('listenQueue', name, nonce)
-      return wrappedFunctions[name](parameters, api)
+      return directFunctions[name](parameters, api)
     })
     api.context = { db }
     return Promise.resolve('')
@@ -166,35 +200,12 @@ async function enqueue(name: string, params: Params, api: IsolateApi<C>) {
   return await api.context.db!.enqueueMsg(msg)
 }
 
-const wrappedFunctions: IsolateFunctions = {
-  ping: async (params, api) => {
-    log('ping')
-    return params
-  },
-  reping: (params, api) => {
-    log('reping')
-    return enqueue('ping', params, api)
-  },
-  async clone(params, api: IsolateApi<C>) {
-    const repo = params.repo as string
-    const [account, repository] = repo.split('/')
-    // TODO acquire lock on the repo in the kv store
-    // TODO handle existing repo
-
-    const { fs } = memfs()
-    const dir = '/'
-    const url = `https://github.com/${account}/${repository}.git`
-    log('start %s', url)
-    await git.clone({ fs, http, dir, url, noCheckout: true })
-    log('cloned')
-    const uint8 = snapshot.toBinarySnapshotSync({ fs })
-    log('snapshot', pretty(uint8.length))
-    const pid: PID = {
-      account,
-      repository,
-      branches: [ENTRY_BRANCH],
+function queueWrap(functions: IsolateFunctions): IsolateFunctions {
+  const wrapped: IsolateFunctions = {}
+  for (const name in functions) {
+    wrapped[name] = (params, api) => {
+      return enqueue(name, params, api)
     }
-    const { db } = api.context
-    await db!.updateIsolateFs(pid, uint8)
-  },
+  }
+  return wrapped
 }

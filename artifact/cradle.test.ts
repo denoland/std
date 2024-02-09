@@ -16,12 +16,12 @@ Deno.test.only('io', async (t) => {
     branches: ['main'],
   }
 
-  // let result
-  // const actions = await artifact.actions(isolate, pid)
-  // await t.step('local', async () => {
-  //   result = await actions.local()
-  //   expect(result).toBe('local reply')
-  // })
+  let result
+  const actions = await artifact.actions({ isolate, pid })
+  await t.step('local', async () => {
+    // result = await actions!.local()
+    // expect(result).toBe('local reply')
+  })
   // await t.step('second local', async () => {
   //   const second = await actions.local({})
   //   expect(second).toBe('local reply')

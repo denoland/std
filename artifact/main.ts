@@ -17,6 +17,16 @@ Deno.serve(async (req) => {
   log('start', req.url)
   const result = await artifact.clone({ repo: 'dreamcatcher-tech/HAL' })
   log('clone:', result)
+
+  const promises = []
+
+  for (let i = 0; i < 100; i++) {
+    promises.push(artifact.ping())
+  }
+  log('messages sent')
+  await Promise.all(promises)
+  log('all done')
+
   return new Response('reping: ' + JSON.stringify(result, null, 2))
 
   // await artifact.pull('dreamcatcher-tech/HAL')
