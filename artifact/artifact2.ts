@@ -11,6 +11,7 @@ import {
   CborUint8Array,
   DispatchFunctions,
   ENTRY_BRANCH,
+  Params,
   PID,
   PROCTYPE,
 } from '@/artifact/constants.ts'
@@ -80,17 +81,20 @@ export default class Artifact implements Artifact {
     const api = await this.isolateApi(isolate)
     const actions: DispatchFunctions = {}
     for (const functionName of Object.keys(api)) {
-      actions[functionName] = (parameters = {}, proctype = PROCTYPE.SERIAL) => {
-        const nonce = ulid()
-        return this.#io.dispatch({
-          pid,
-          isolate,
-          functionName,
-          parameters,
-          proctype,
-          nonce, // this should be formulaic for chain to chain
-        })
-      }
+      // actions[functionName] = (
+      //   parameters: Params = {},
+      //   proctype = PROCTYPE.SERIAL,
+      // ) => {
+      //   const nonce = ulid()
+      //   return this.#io.dispatch({
+      //     pid,
+      //     isolate,
+      //     functionName,
+      //     parameters,
+      //     proctype,
+      //     nonce, // this should be formulaic for chain to chain
+      //   })
+      // }
     }
     log('actions', isolate, Object.keys(actions))
     return actions

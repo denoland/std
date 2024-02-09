@@ -1,4 +1,3 @@
-import IO from '../io/io.ts'
 import * as posix from 'https://deno.land/std@0.213.0/path/posix/mod.ts'
 import debug from '$debug'
 import git from 'https://esm.sh/isomorphic-git@1.25.3'
@@ -11,6 +10,11 @@ import {
   CborUint8Array,
   DispatchFunctions,
   ENTRY_BRANCH,
+  IsolateFunction,
+  IsolateFunctions,
+  IsolateLifecycle,
+  IsolateReturn,
+  Params,
   PID,
   PROCTYPE,
   QMessage,
@@ -19,10 +23,15 @@ import DB from '../db.ts'
 import { ulid } from 'std/ulid/mod.ts'
 import IsolateApi from '../isolate-api.ts'
 
-const log = debug('AI:api')
+const log = debug('AI:artifact')
 
 export const api = {
   ping: {
+    type: 'object',
+    description: 'Check queue processing system is alive',
+    properties: {},
+  },
+  reping: {
     type: 'object',
     description: 'Check queue processing system is alive',
     properties: {},
@@ -133,54 +142,68 @@ type C = {
   db: DB
 }
 
-export const functions = {
-  async '@@mount'(api: IsolateApi<C>) {
-    // open up the kv store
-    // get it to start listening to the queue
-    // get it to use the functions described here to process the queue
+export const functions: IsolateFunctions = {
+  async ping(_, api: IsolateApi<C>) {
+    return enqueue('ping', {}, api)
+  },
+  async reping(_, api: IsolateApi<C>) {
+    return enqueue('reping', {}, api)
+  },
+  // async clone(params, api: IsolateApi<C>) {
+  //   const repo = params.repo as string
+  //   const [account, repository] = repo.split('/')
+  //   // TODO acquire lock on the repo in the kv store
+  //   // TODO handle existing repo
 
+  //   const { fs } = memfs()
+  //   const dir = '/'
+  //   const url = `https://github.com/${account}/${repository}.git`
+  //   log('start %s', url)
+  //   await git.clone({ fs, http, dir, url, noCheckout: true })
+  //   log('cloned')
+  //   const uint8 = snapshot.toBinarySnapshotSync({ fs })
+  //   log('snapshot', pretty(uint8.length))
+  //   const pid: PID = {
+  //     account,
+  //     repository,
+  //     branches: [ENTRY_BRANCH],
+  //   }
+  //   const { db } = api.context
+  //   await db!.updateIsolateFs(pid, uint8)
+  // },
+}
+// could make an isolate wrapper, that just took all the functions in an isolate
+// and wrapped them in a queue.
+
+// probably grab the worker instance, and set it up here
+
+export const lifecycles: IsolateLifecycle = {
+  async '@@mount'(api: IsolateApi<C>) {
     const db = await DB.create()
-    db.listenQueue(async (msg: QMessage) => {
-      log('queue', msg)
-      return 'pong'
+    db.listenQueue(async ({ nonce, name, parameters }: QMessage) => {
+      log('listenQueue', name, nonce)
+      return await wrappedFunctions[name](parameters, api)
     })
     api.context = { db }
+    return Promise.resolve('')
   },
-  '@@unmount'(api: IsolateApi<C>) {
-    return api.context.db!.stop()
-  },
-  async ping(_: object, api: IsolateApi<C>) {
-    // convert into a message
-    // put it into the queue
-    // wait for the queue to process it
-    // receive the outcome over the broadcast channel
-    return queueAction('ping', {}, api)
-  },
-
-  async clone({ repo }: { repo: string }, api: IsolateApi<C>) {
-    const [account, repository] = repo.split('/')
-    // TODO acquire lock on the repo in the kv store
-    // TODO handle existing repo
-
-    const { fs } = memfs()
-    const dir = '/'
-    const url = `https://github.com/${account}/${repository}.git`
-    log('start %s', url)
-    await git.clone({ fs, http, dir, url, noCheckout: true })
-    log('cloned')
-    const uint8 = snapshot.toBinarySnapshotSync({ fs })
-    log('snapshot', pretty(uint8.length))
-    const pid: PID = {
-      account,
-      repository,
-      branches: [ENTRY_BRANCH],
-    }
-    const { db } = api.context
-    await db!.updateIsolateFs(pid, uint8)
+  async '@@unmount'(api: IsolateApi<C>) {
+    api.context.db!.stop()
   },
 }
 
-async function queueAction(name: string, params: object, api: IsolateApi<C>) {
-  const msg = { nonce: 'asdf' }
+async function enqueue(name: string, params: Params, api: IsolateApi<C>) {
+  const msg: QMessage = { nonce: ulid(), name, parameters: params }
   return await api.context.db!.enqueueMsg(msg)
+}
+
+const wrappedFunctions: IsolateFunctions = {
+  ping: async (params, api) => {
+    log('ping')
+    return params
+  },
+  reping: (params, api) => {
+    log('reping')
+    return enqueue('ping', params, api)
+  },
 }

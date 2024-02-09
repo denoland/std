@@ -15,9 +15,9 @@ Deno.serve(async (req) => {
     return new Response('', { status: 404 })
   }
   log('start', req.url)
-  const result = await artifact.ping()
-  log('ping:', result)
-  return new Response('ping: ' + result)
+  const result = await artifact.reping()
+  log('reping:', result)
+  return new Response('reping: ' + result)
 
   // await artifact.pull('dreamcatcher-tech/HAL')
   // log('pull done')

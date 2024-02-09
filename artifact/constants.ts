@@ -12,29 +12,26 @@ export type JsonValue = string | number | boolean | null | JsonValue[] | {
 }
 export type IsolateReturn = JsonValue | void
 
-type BaseApiFunctions = {
-  [key: string]: (
-    arg?: { [key: string]: JsonValue },
-    api?: IsolateApi,
-  ) => JsonValue | Promise<JsonValue>
+export type IsolateFunction =
+  | (() => IsolateReturn | Promise<IsolateReturn>)
+  | ((...args: [Params]) => IsolateReturn | Promise<IsolateReturn>)
+  | ((...args: [Params, IsolateApi]) => IsolateReturn | Promise<IsolateReturn>)
+
+export type IsolateFunctions = {
+  [key: string]: IsolateFunction
+}
+export type IsolateLifecycle = {
+  '@@mount': (api: IsolateApi) => Promise<IsolateReturn> | IsolateReturn
+  '@@unmount'?: (api: IsolateApi) => Promise<IsolateReturn> | IsolateReturn
 }
 
-type IsolateApiFunctions = Omit<BaseApiFunctions, '@@mount' | '@@unmount'> & {
-  '@@mount'?: (api: IsolateApi) => Promise<void> | void
-  '@@unmount'?: (api: IsolateApi) => Promise<void> | void
-}
-export type IsolatedFunctions = {
-  [key: string]: (
-    parameters?: Parameters,
-  ) => JsonValue | void | Promise<JsonValue> | Promise<void>
-}
 export type DispatchFunctions = {
   [key: string]: (
     parameters?: { [key: string]: JsonValue },
     proctype?: PROCTYPE,
-  ) => unknown | Promise<unknown> // dispatch returns can be undefined
+  ) => IsolateReturn | Promise<IsolateReturn>
 }
-export type Parameters = { [key: string]: JsonValue }
+export type Params = { [key: string]: JsonValue }
 
 export type IsolateApiSchema = {
   [key: string]: {
@@ -43,7 +40,8 @@ export type IsolateApiSchema = {
 }
 export type Isolate = {
   api: IsolateApiSchema
-  functions: IsolateApiFunctions
+  functions: IsolateFunctions
+  lifecycles?: IsolateLifecycle
 }
 
 export type IoStruct = {
@@ -87,7 +85,7 @@ export type Dispatch = {
   pid: PID
   isolate: string
   functionName: string
-  parameters: Parameters
+  parameters: Params
   proctype: PROCTYPE
   /**
    * This should be a globally unique identifier for the dispatch.  It is used
@@ -105,7 +103,7 @@ export enum QUEUE_TYPES {
   ISOLATE_API = 'ISOLATE_API',
   DISPATCH = 'DISPATCH',
 }
-export type QMessage = { nonce: string }
+export type QMessage = { nonce: string; name: string; parameters: Params }
 export type QCallback = (
   msg: QMessage,
 ) => Promise<IsolateReturn> | IsolateReturn

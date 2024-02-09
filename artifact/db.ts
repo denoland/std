@@ -40,17 +40,18 @@ export default class DB {
       } catch (error) {
         outcome.error = serializeError(error)
       }
+      log('announcing %s', msg.nonce, channel.name)
       channel.postMessage(outcome)
       setTimeout(() => channel.close())
     })
   }
-  async enqueueMsg(msg: QMessage) {
+  async enqueueMsg(msg: QMessage): Promise<IsolateReturn> {
     const channel = new BroadcastChannel('queue-' + msg.nonce)
     await this.#kv.enqueue(msg)
     return new Promise((resolve, reject) => {
       channel.onmessage = (event) => {
         const outcome = event.data as Outcome
-        log('channel message', outcome)
+        log('received %s', channel.name)
         channel.close()
         if (outcome.error) {
           reject(deserializeError(outcome.error))

@@ -22,7 +22,7 @@ Deno.test.only('io', async (t) => {
   //   const second = await actions.local({})
   //   expect(second).toBe('local reply')
   // })
-  const result = await artifact.ping()
+  const result = await artifact.reping()
   log('ping:', result)
   artifact.stop()
 })

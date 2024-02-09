@@ -1,7 +1,12 @@
 import validator from '@io/validator.js'
 import { assert } from 'std/assert/mod.ts'
 import debug from '$debug'
-import { Isolate, IsolatedFunctions, Parameters } from '@/artifact/constants.ts'
+import {
+  DispatchFunctions,
+  Isolate,
+  Params,
+  PROCTYPE,
+} from '@/artifact/constants.ts'
 import IsolateApi from '../isolate-api.ts'
 
 // deno has no dynamic runtime imports, so this is a workaround
@@ -33,8 +38,11 @@ const compartment = () => {
      */
     mount(api: IsolateApi) {
       assert(module, 'code not loaded')
-      if (typeof module.functions['@@mount'] === 'function') {
-        return module.functions['@@mount'](api)
+      if (!module.lifecycles) {
+        return
+      }
+      if (typeof module.lifecycles['@@mount'] === 'function') {
+        return module.lifecycles['@@mount'](api)
       }
     },
     /**
@@ -43,19 +51,23 @@ const compartment = () => {
      */
     unmount(api: IsolateApi) {
       assert(module, 'code not loaded')
-      if (typeof module.functions['@@unmount'] === 'function') {
-        return module.functions['@@unmount'](api)
+      if (!module.lifecycles) {
+        return
+      }
+      if (typeof module.lifecycles['@@unmount'] === 'function') {
+        return module.lifecycles['@@unmount'](api)
       }
     },
     actions(api: IsolateApi) {
       assert(module, 'code not loaded')
-      const actions: IsolatedFunctions = {}
+      const actions: DispatchFunctions = {}
       for (const functionName in module.api) {
-        actions[functionName] = (parameters?: Parameters) => {
+        actions[functionName] = (parameters?: Params, proctype?: PROCTYPE) => {
           const schema = module.api[functionName]
-          if (parameters !== undefined) {
-            validator(schema)(parameters)
+          if (parameters === undefined) {
+            parameters = {}
           }
+          validator(schema)(parameters)
           return module.functions[functionName](parameters, api)
         }
       }

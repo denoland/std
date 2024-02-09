@@ -11,7 +11,7 @@ import {
   IO_PATH,
   IoStruct,
   Outcome,
-  Parameters,
+  Params,
   PID,
   PROCTYPE,
   QueuedDispatch,
@@ -129,7 +129,7 @@ export default class IO {
     return poolDrainedPromise
   }
 
-  async #spawn(id: number, isolate: string, name: string, params: Parameters) {
+  async #spawn(id: number, isolate: string, name: string, params: Params) {
     // const branchName = await git.currentBranch(this.#opts)
     // const action = { isolate, name, params, proctype: PROCTYPES.SELF }
     // action.address = { branchName, id }
