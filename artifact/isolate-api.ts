@@ -7,20 +7,23 @@ import debug from '$debug'
 import git from '$git'
 
 const log = debug('AI:isolateApi')
-
-export default class IsolateContext {
+interface Default {
+  [key: string]: unknown
+}
+export default class IsolateApi<T extends object = Default> {
   #fs: IFs
-  #artifact: Artifact
-  static create(fs: IFs, artifact: Artifact) {
-    return new IsolateContext(fs, artifact)
+  // TODO assign a mount id for each side effect trail
+  #context: Partial<T> = {}
+  static create(fs: IFs) {
+    return new IsolateApi(fs)
   }
-  constructor(fs: IFs, artifact: Artifact) {
+  constructor(fs: IFs) {
     this.#fs = fs
-    this.#artifact = artifact
   }
   async isolateActions(isolate: string) {
-    const worker = await this.#artifact.io.worker(isolate)
-    return worker.toActions(this)
+    throw new Error('not implemented')
+    // const worker = await this.#artifact.io.worker(isolate)
+    // return worker.toActions(this)
   }
   writeJSON(path: string, json: JsonValue) {
     isJsonPath(path)
@@ -70,6 +73,14 @@ export default class IsolateContext {
         throw error
       }
     }
+  }
+  get context() {
+    return this.#context
+  }
+  set context(context: Partial<T>) {
+    assert(typeof context === 'object', 'context must be an object')
+    assert(context !== null, 'context must not be null')
+    this.#context = context
   }
 }
 

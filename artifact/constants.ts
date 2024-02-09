@@ -1,4 +1,4 @@
-import IsolateContext from './isolate-api.ts'
+import IsolateApi from './isolate-api.ts'
 
 export type { CborUint8Array } from 'https://esm.sh/v135/json-joy@9.9.1/es6/json-pack/cbor/types.d.ts?exports=CbotUint8Array'
 export enum PROCTYPE {
@@ -10,16 +10,23 @@ export const IO_PATH = '.io.json'
 export type JsonValue = string | number | boolean | null | JsonValue[] | {
   [key: string]: JsonValue
 }
-type IsolateApiFunctions = {
+export type IsolateReturn = JsonValue | void
+
+type BaseApiFunctions = {
   [key: string]: (
     arg?: { [key: string]: JsonValue },
-    api?: IsolateContext,
+    api?: IsolateApi,
   ) => JsonValue | Promise<JsonValue>
+}
+
+type IsolateApiFunctions = Omit<BaseApiFunctions, '@@mount' | '@@unmount'> & {
+  '@@mount'?: (api: IsolateApi) => Promise<void> | void
+  '@@unmount'?: (api: IsolateApi) => Promise<void> | void
 }
 export type IsolatedFunctions = {
   [key: string]: (
     parameters?: Parameters,
-  ) => JsonValue | Promise<JsonValue>
+  ) => JsonValue | void | Promise<JsonValue> | Promise<void>
 }
 export type DispatchFunctions = {
   [key: string]: (
@@ -43,7 +50,7 @@ export type IoStruct = {
   [PROCTYPE.SERIAL]: IoProctypeStruct
   [PROCTYPE.PARALLEL]: IoProctypeStruct
 }
-export type Outcome = { result?: JsonValue; error?: string }
+export type Outcome = { result?: IsolateReturn; error?: Error }
 export type IoProctypeStruct = {
   sequence: number
   inputs: { [key: string]: Dispatch }
@@ -98,7 +105,11 @@ export enum QUEUE_TYPES {
   ISOLATE_API = 'ISOLATE_API',
   DISPATCH = 'DISPATCH',
 }
-export type QueuedMessage = QueuedCommit | QueuedDispatch
+export type QMessage = { nonce: string }
+export type QCallback = (
+  msg: QMessage,
+) => Promise<IsolateReturn> | IsolateReturn
+
 export type QueuedDispatch = {
   type: QUEUE_TYPES.DISPATCH
   payload: {

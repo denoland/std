@@ -7,6 +7,7 @@ import * as io from './io.js'
 import * as loadHelp from './load-help.js'
 import * as open from './open.js'
 import * as utils from './utils.js'
+import * as artifact from './artifact.ts'
 
 export default {
   'engage-help': engageHelp,
@@ -18,4 +19,5 @@ export default {
   'load-help': loadHelp,
   open,
   utils,
+  artifact,
 }

@@ -3,17 +3,21 @@ import { get, set } from 'https://deno.land/x/kv_toolbox@0.6.1/blob.ts'
 import {
   Dispatch,
   IoStruct,
+  IsolateReturn,
   KEYSPACES,
   Outcome,
   PID,
   Poolable,
   PROCTYPE,
+  QCallback,
+  QMessage,
   QUEUE_TYPES,
   QueuedDispatch,
-  QueuedMessage,
 } from '@/artifact/constants.ts'
 import { assert } from 'std/assert/assert.ts'
 import debug from '$debug'
+import { deserializeError, serializeError } from 'npm:serialize-error'
+
 const log = debug('AI:db')
 
 export default class DB {
@@ -26,8 +30,35 @@ export default class DB {
   stop() {
     this.#kv.close()
   }
-  listenQueue(callback: (msg: QueuedMessage) => Promise<void>) {
-    return this.#kv.listenQueue(callback)
+  listenQueue(callback: QCallback) {
+    return this.#kv.listenQueue(async (msg: QMessage) => {
+      log('queue', msg)
+      const channel = new BroadcastChannel('queue-' + msg.nonce)
+      const outcome: Outcome = {}
+      try {
+        outcome.result = await callback(msg)
+      } catch (error) {
+        outcome.error = serializeError(error)
+      }
+      channel.postMessage(outcome)
+      setTimeout(() => channel.close())
+    })
+  }
+  async enqueueMsg(msg: QMessage) {
+    const channel = new BroadcastChannel('queue-' + msg.nonce)
+    await this.#kv.enqueue(msg)
+    return new Promise((resolve, reject) => {
+      channel.onmessage = (event) => {
+        const outcome = event.data as Outcome
+        log('channel message', outcome)
+        channel.close()
+        if (outcome.error) {
+          reject(deserializeError(outcome.error))
+        } else {
+          resolve(outcome.result)
+        }
+      }
+    })
   }
   async awaitTail(pid: PID, sequence: number) {
     if (sequence === 0) {
@@ -160,6 +191,7 @@ export default class DB {
       await this.#kv.enqueue(msg)
     }
   }
+
   async #enqueueParallel(
     pid: PID,
     parallel: IoStruct[PROCTYPE.PARALLEL],

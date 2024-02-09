@@ -1,11 +1,11 @@
 import { deserializeError, serializeError } from 'npm:serialize-error'
-import ioWorker from './io-worker.ts'
+import ioWorker from './compartment.ts'
 import { assert } from 'std/assert/mod.ts'
 import git from '$git'
 import * as posix from 'https://deno.land/std@0.213.0/path/posix/mod.ts'
 import debug from '$debug'
 import Artifact from '../artifact2.ts'
-import IsolateContext from '@/artifact/isolate-api.ts'
+import IsolateApi from '@/artifact/isolate-api.ts'
 import {
   Dispatch,
   IO_PATH,
@@ -33,31 +33,31 @@ export default class IO {
   }
   listen() {
     // TODO be able to pause the queue processing for debugging
-    return this.#db.listenQueue(({ dispatch, sequence }: QueuedDispatch) => {
-      log('queue', sequence, dispatch)
-      assert(sequence >= 0, 'sequence must be a whole number')
-      switch (dispatch.proctype) {
-        case PROCTYPE.SERIAL: {
-          return this.#processSerial(dispatch, sequence)
-        }
-        case PROCTYPE.PARALLEL: {
-          // start the branch immediately without waiting for anyone
-          // skip the first commit, since this is wasted
-          // begin executing the isolate
-          // commit the result to the branch
-          // first off the dispatch to the newly created branch to be carried on
-          return Promise.resolve()
-        }
-      }
-    })
+    // return this.#db.listenQueue(({ dispatch, sequence }) => {
+    //   log('queue', sequence, dispatch)
+    //   assert(sequence >= 0, 'sequence must be a whole number')
+    //   switch (dispatch.proctype) {
+    //     case PROCTYPE.SERIAL: {
+    //       return this.#processSerial(dispatch, sequence)
+    //     }
+    //     case PROCTYPE.PARALLEL: {
+    //       // start the branch immediately without waiting for anyone
+    //       // skip the first commit, since this is wasted
+    //       // begin executing the isolate
+    //       // commit the result to the branch
+    //       // first off the dispatch to the newly created branch to be carried on
+    //       return Promise.resolve()
+    //     }
+    //   }
+    // })
   }
   async #processSerial(dispatch: Dispatch, sequence: number) {
     await this.#db.awaitTail(dispatch.pid, sequence)
     const worker = await this.worker(dispatch.isolate)
     const memfs = await this.#artifact.isolateFs(dispatch.pid)
-    const fs = IsolateContext.create(memfs, this.#artifact)
+    const api = IsolateApi.create(memfs)
     // could almost make the fs api be the only thing anyone ever touches
-    const actions = worker.actions(fs)
+    const actions = worker.actions(api)
     const outcome: Outcome = {}
     try {
       outcome.result = await actions[dispatch.functionName](dispatch.parameters)
@@ -90,7 +90,7 @@ export default class IO {
       // TODO copy over files from fsToCommit that are not .io.json
     }
 
-    const api = IsolateContext.create(fs, this.#artifact)
+    const api = IsolateApi.create(fs)
     const { keys, values } = await this.#db.getPooledActions(pid)
     const io = await updateIo(api, values)
     await git.add({ fs, dir: '/', filepath: IO_PATH })
@@ -171,7 +171,7 @@ export default class IO {
     return { worker, api }
   }
 }
-const updateIo = async (fs: IsolateContext, actions: Poolable[]) => {
+const updateIo = async (fs: IsolateApi, actions: Poolable[]) => {
   // the patch generation should be the same for io as for any splice.
   // this should be jsonpatch with some extra validation against a jsonschema
 
@@ -211,7 +211,7 @@ const updateIo = async (fs: IsolateContext, actions: Poolable[]) => {
     }
   }
   log('updateIo')
-  fs.writeJSON(IO_PATH, io)
+  fs.writeJSON(IO_PATH, {})
   return io
 }
 const checkSequence = (io: { sequence: number }) => {

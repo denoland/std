@@ -13,7 +13,6 @@ import {
   ENTRY_BRANCH,
   PID,
   PROCTYPE,
-  QueuedMessage,
 } from '@/artifact/constants.ts'
 import DB from './db.ts'
 import { ulid } from 'std/ulid/mod.ts'
