@@ -3,7 +3,13 @@
  */
 
 import Compartment from './io/compartment.ts'
-import { DispatchFunctions, PID, PROCTYPE } from './constants.ts'
+import {
+  DispatchFunctions,
+  IsolateReturn,
+  Params,
+  PID,
+  PROCTYPE,
+} from './constants.ts'
 import { IFs, memfs } from 'https://esm.sh/memfs@4.6.0'
 import IsolateApi from './isolate-api.ts'
 import { assert } from 'std/assert/assert.ts'
@@ -42,8 +48,11 @@ class Cradle {
 // channel that will be used to send out the patches.
 
 interface Cradle {
-  clone({ repo }: { repo: string }): Promise<void>
-  ping(): Promise<void>
+  ping(params: Params): Promise<IsolateReturn>
+  ping(params: Params, api: IsolateApi): Promise<IsolateReturn>
+  clone(params: { repo: string }): Promise<void>
+  isolateApi(params: { isolate: string }): Promise<Record<string, object>>
+  dispatch(params: { isolate: string; pid: PID }): Promise<IsolateReturn>
 }
 
 export default Cradle

@@ -139,7 +139,7 @@ type C = {
   db: DB
 }
 const directFunctions: IsolateFunctions = {
-  ping: async (params: Params) => {
+  ping: (params: Params) => {
     log('ping')
     const start = Date.now()
     while (Date.now() - start < 1000) {
