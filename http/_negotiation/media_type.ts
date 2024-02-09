@@ -56,8 +56,8 @@ function splitMediaTypes(accept: string): string[] {
 
   let j = 0;
   for (let i = 1; i < accepts.length; i++) {
-    if (quoteCount(accepts[j]) % 2 === 0) {
-      accepts[++j] = accepts[i];
+    if (quoteCount(accepts[j]!) % 2 === 0) {
+      accepts[++j] = accepts[i]!;
     } else {
       accepts[j] += `,${accepts[i]}`;
     }
@@ -73,8 +73,8 @@ function splitParameters(str: string): string[] {
 
   let j = 0;
   for (let i = 1; i < parameters.length; i++) {
-    if (quoteCount(parameters[j]) % 2 === 0) {
-      parameters[++j] = parameters[i];
+    if (quoteCount(parameters[j]!) % 2 === 0) {
+      parameters[++j] = parameters[i]!;
     } else {
       parameters[j] += `;${parameters[i]}`;
     }
@@ -87,7 +87,7 @@ function splitParameters(str: string): string[] {
 
 function splitKeyValuePair(str: string): [string, string | undefined] {
   const [key, value] = str.split("=");
-  return [key.toLowerCase(), value];
+  return [key!.toLowerCase(), value];
 }
 
 function parseMediaType(
@@ -102,7 +102,9 @@ function parseMediaType(
 
   const params: { [param: string]: string | undefined } = Object.create(null);
   let q = 1;
-  const [, type, subtype, parameters] = match;
+  const type = match.at(1)!;
+  const subtype = match.at(2)!;
+  const parameters = match.at(3)!;
 
   if (parameters) {
     const kvps = splitParameters(parameters).map(splitKeyValuePair);
@@ -129,7 +131,7 @@ function parseAccept(accept: string): MediaTypeSpecificity[] {
 
   const mediaTypes: MediaTypeSpecificity[] = [];
   for (let i = 0; i < accepts.length; i++) {
-    const mediaType = parseMediaType(accepts[i].trim(), i);
+    const mediaType = parseMediaType(accepts[i]!.trim(), i);
 
     if (mediaType) {
       mediaTypes.push(mediaType);
@@ -233,5 +235,5 @@ export function preferredMediaTypes(
   return priorities
     .filter(isQuality)
     .sort(compareSpecs)
-    .map((priority) => provided[priorities.indexOf(priority)]);
+    .map((priority) => provided[priorities.indexOf(priority)]!);
 }

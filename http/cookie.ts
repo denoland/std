@@ -296,14 +296,14 @@ function parseSetCookie(value: string): Cookie | null {
       return [key, values.join("=")];
     });
   const cookie: Cookie = {
-    name: attrs[0][0],
-    value: attrs[0][1],
+    name: attrs[0]![0]!,
+    value: attrs[0]![1]!,
   };
 
   for (const [key, value] of attrs.slice(1)) {
-    switch (key.toLocaleLowerCase()) {
+    switch (key!.toLocaleLowerCase()) {
       case "expires":
-        cookie.expires = new Date(value);
+        cookie.expires = new Date(value as string);
         break;
       case "max-age":
         cookie.maxAge = Number(value);

@@ -53,7 +53,7 @@ function parseEncoding(
     for (const param of params) {
       const p = param.trim().split("=");
       if (p[0] === "q") {
-        q = parseFloat(p[1]);
+        q = parseFloat(p[1]!);
         break;
       }
     }
@@ -92,7 +92,7 @@ function parseAcceptEncoding(accept: string): EncodingSpecificity[] {
   let minQuality = 1;
 
   for (let i = 0; i < accepts.length; i++) {
-    const encoding = parseEncoding(accepts[i].trim(), i);
+    const encoding = parseEncoding(accepts[i]!.trim(), i);
 
     if (encoding) {
       parsedAccepts.push(encoding);
@@ -158,5 +158,5 @@ export function preferredEncodings(
   return priorities
     .filter(isQuality)
     .sort(compareSpecs)
-    .map((priority) => provided[priorities.indexOf(priority)]);
+    .map((priority) => provided[priorities.indexOf(priority)]!);
 }
