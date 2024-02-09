@@ -43,6 +43,7 @@ class Cradle {
 
 interface Cradle {
   clone({ repo }: { repo: string }): Promise<void>
+  ping(): Promise<void>
 }
 
 export default Cradle

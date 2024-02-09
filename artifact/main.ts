@@ -1,12 +1,12 @@
 // TODO on first boot, run some diagnostic tests and benchmarks
 // should be able to commit these benchmarks back to gh to publish them
 
-import cradle from './cradle.ts'
+import Cradle from './cradle.ts'
 import { expect, log } from './tst-helpers.js'
 import { JsonValue, PID } from './constants.ts'
 import { delay } from 'https://deno.land/std@0.211.0/async/delay.ts'
 
-const artifact = await cradle()
+const artifact = await Cradle.create()
 
 // start a hono api server that mimicks the artifact api
 
