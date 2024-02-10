@@ -293,17 +293,22 @@ function parseSetCookie(value: string): Cookie | null {
     .split(";")
     .map((attr) => {
       const [key, ...values] = attr.trim().split("=");
-      return [key, values.join("=")];
+      return [key!, values.join("=")] as const;
     });
+
+  if (!attrs[0]) {
+    return null;
+  }
+
   const cookie: Cookie = {
-    name: attrs[0]![0]!,
-    value: attrs[0]![1]!,
+    name: attrs[0][0],
+    value: attrs[0][1],
   };
 
   for (const [key, value] of attrs.slice(1)) {
-    switch (key!.toLocaleLowerCase()) {
+    switch (key.toLocaleLowerCase()) {
       case "expires":
-        cookie.expires = new Date(value as string);
+        cookie.expires = new Date(value);
         break;
       case "max-age":
         cookie.maxAge = Number(value);

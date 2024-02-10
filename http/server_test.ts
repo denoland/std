@@ -155,7 +155,7 @@ Deno.test(
 
     try {
       assertEquals(server.addrs.length, 3);
-      assertEquals(server.addrs[0]!.transport, "tcp");
+      assertEquals((server.addrs[0] as Deno.NetAddr).transport, "tcp");
       assertEquals(
         (server.addrs[0] as Deno.NetAddr).hostname,
         listenerOneOptions.hostname,
@@ -164,7 +164,7 @@ Deno.test(
         (server.addrs[0] as Deno.NetAddr).port,
         listenerOneOptions.port,
       );
-      assertEquals(server.addrs[1]!.transport, "tcp");
+      assertEquals((server.addrs[1] as Deno.NetAddr).transport, "tcp");
       assertEquals(
         (server.addrs[1] as Deno.NetAddr).hostname,
         listenerTwoOptions.hostname,
@@ -173,7 +173,7 @@ Deno.test(
         (server.addrs[1] as Deno.NetAddr).port,
         listenerTwoOptions.port,
       );
-      assertEquals(server.addrs[2]!.transport, "tcp");
+      assertEquals((server.addrs[2] as Deno.NetAddr).transport, "tcp");
       assertEquals((server.addrs[2] as Deno.NetAddr).hostname, addrHostname);
       assertEquals((server.addrs[2] as Deno.NetAddr).port, addrPort);
     } finally {

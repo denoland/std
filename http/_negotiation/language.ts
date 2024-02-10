@@ -48,8 +48,11 @@ function parseLanguage(
     return undefined;
   }
 
-  const prefix = match.at(1)!;
-  const suffix = match.at(2)!;
+  const [, prefix, suffix] = match;
+  if (!prefix) {
+    return undefined;
+  }
+
   const full = suffix ? `${prefix}-${suffix}` : prefix;
 
   let q = 1;
@@ -57,8 +60,8 @@ function parseLanguage(
     const params = match[3].split(";");
     for (const param of params) {
       const [key, value] = param.trim().split("=");
-      if (key === "q") {
-        q = parseFloat(value!);
+      if (key === "q" && value) {
+        q = parseFloat(value);
         break;
       }
     }
@@ -71,8 +74,8 @@ function parseAcceptLanguage(accept: string): LanguageSpecificity[] {
   const accepts = accept.split(",");
   const result: LanguageSpecificity[] = [];
 
-  for (let i = 0; i < accepts.length; i++) {
-    const language = parseLanguage(accepts[i]!.trim(), i);
+  for (const [i, accept] of accepts.entries()) {
+    const language = parseLanguage(accept.trim(), i);
     if (language) {
       result.push(language);
     }

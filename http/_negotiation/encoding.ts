@@ -52,8 +52,8 @@ function parseEncoding(
     const params = match[2].split(";");
     for (const param of params) {
       const p = param.trim().split("=");
-      if (p[0] === "q") {
-        q = parseFloat(p[1]!);
+      if (p[0] === "q" && p[1]) {
+        q = parseFloat(p[1]);
         break;
       }
     }
@@ -91,8 +91,8 @@ function parseAcceptEncoding(accept: string): EncodingSpecificity[] {
   let hasIdentity = false;
   let minQuality = 1;
 
-  for (let i = 0; i < accepts.length; i++) {
-    const encoding = parseEncoding(accepts[i]!.trim(), i);
+  for (const [i, accept] of accepts.entries()) {
+    const encoding = parseEncoding(accept.trim(), i);
 
     if (encoding) {
       parsedAccepts.push(encoding);

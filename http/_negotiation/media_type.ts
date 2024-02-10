@@ -100,12 +100,13 @@ function parseMediaType(
     return;
   }
 
+  const [, type, subtype, parameters] = match;
+  if (!type || !subtype) {
+    return;
+  }
+
   const params: { [param: string]: string | undefined } = Object.create(null);
   let q = 1;
-  const type = match.at(1)!;
-  const subtype = match.at(2)!;
-  const parameters = match.at(3)!;
-
   if (parameters) {
     const kvps = splitParameters(parameters).map(splitKeyValuePair);
 
@@ -130,8 +131,8 @@ function parseAccept(accept: string): MediaTypeSpecificity[] {
   const accepts = splitMediaTypes(accept);
 
   const mediaTypes: MediaTypeSpecificity[] = [];
-  for (let i = 0; i < accepts.length; i++) {
-    const mediaType = parseMediaType(accepts[i]!.trim(), i);
+  for (const [index, accept] of accepts.entries()) {
+    const mediaType = parseMediaType(accept.trim(), index);
 
     if (mediaType) {
       mediaTypes.push(mediaType);
