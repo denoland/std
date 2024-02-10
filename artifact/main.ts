@@ -1,47 +1,47 @@
-// TODO on first boot, run some diagnostic tests and benchmarks
-// should be able to commit these benchmarks back to gh to publish them
+// // TODO on first boot, run some diagnostic tests and benchmarks
+// // should be able to commit these benchmarks back to gh to publish them
 
-import Cradle from './cradle.ts'
-import { expect, log } from './tst-helpers.js'
-import { JsonValue, PID } from './constants.ts'
-import { delay } from 'https://deno.land/std@0.211.0/async/delay.ts'
+// import Cradle from './cradle.ts'
+// import { expect, log } from './tst-helpers.js'
+// import { JsonValue, PID } from './constants.ts'
+// import { delay } from 'https://deno.land/std@0.211.0/async/delay.ts'
 
-const artifact = await Cradle.create()
+// const artifact = await Cradle.create()
 
-// start a hono api server that mimicks the artifact api
+// // start a hono api server that mimicks the artifact api
 
-Deno.serve(async (req) => {
-  if (req.url.endsWith('/favicon.ico')) {
-    return new Response('', { status: 404 })
-  }
-  log('start', req.url)
-  const result = await artifact.clone({ repo: 'dreamcatcher-tech/HAL' })
-  log('clone:', result)
+// Deno.serve(async (req) => {
+//   if (req.url.endsWith('/favicon.ico')) {
+//     return new Response('', { status: 404 })
+//   }
+//   log('start', req.url)
+//   const result = await artifact.clone({ repo: 'dreamcatcher-tech/HAL' })
+//   log('clone:', result)
 
-  const promises = []
+//   const promises = []
 
-  for (let i = 0; i < 100; i++) {
-    promises.push(artifact.ping())
-  }
-  log('messages sent')
-  await Promise.all(promises)
-  log('all done')
+//   for (let i = 0; i < 100; i++) {
+//     promises.push(artifact.ping())
+//   }
+//   log('messages sent')
+//   await Promise.all(promises)
+//   log('all done')
 
-  return new Response('reping: ' + JSON.stringify(result, null, 2))
+//   return new Response('reping: ' + JSON.stringify(result, null, 2))
 
-  // await artifact.pull('dreamcatcher-tech/HAL')
-  // log('pull done')
-  // const pid: PID = {
-  //   account: 'dreamcatcher-tech',
-  //   repository: 'HAL',
-  //   branches: ['main'],
-  // }
+//   // await artifact.pull('dreamcatcher-tech/HAL')
+//   // log('pull done')
+//   // const pid: PID = {
+//   //   account: 'dreamcatcher-tech',
+//   //   repository: 'HAL',
+//   //   branches: ['main'],
+//   // }
 
-  // const actions = await artifact.actions(isolate, pid)
-  // log('actions done')
-  // const result = await actions.local()
-  // log('result', result)
-  // const result2 = await actions.local()
-  // log('result2', result2)
-  // return new Response('Hello Artifact')
-})
+//   // const actions = await artifact.actions(isolate, pid)
+//   // log('actions done')
+//   // const result = await actions.local()
+//   // log('result', result)
+//   // const result2 = await actions.local()
+//   // log('result2', result2)
+//   // return new Response('Hello Artifact')
+// })

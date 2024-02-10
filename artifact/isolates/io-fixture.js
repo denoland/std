@@ -1,4 +1,3 @@
-import { spawns } from '@io/io-hooks.js'
 import debug from '$debug'
 const log = debug('AI:io.fixture')
 

@@ -1,10 +1,9 @@
-import Artifact from '../artifact2.ts'
-import runner from './runner-chat.js'
+import Cradle from '../cradle.ts'
 import { expect, log } from '../tst-helpers.js'
 
 Deno.test('runner', async (t) => {
   const repo = 'dreamcatcher-tech/HAL'
-  const artifact = Artifact.create()
+  const artifact = await Cradle.create()
   await artifact.pull({ repo })
   await t.step('load help file', async () => {
     // this should only be able to be called relative to a commit

@@ -2,9 +2,7 @@ import { deserializeError, serializeError } from 'npm:serialize-error'
 import Compartment from './compartment.ts'
 import { assert } from 'std/assert/mod.ts'
 import git from '$git'
-import * as posix from 'https://deno.land/std@0.213.0/path/posix/mod.ts'
 import debug from '$debug'
-import Artifact from '../artifact2.ts'
 import IsolateApi from '@/artifact/isolate-api.ts'
 import {
   Dispatch,
@@ -14,25 +12,23 @@ import {
   Params,
   PID,
   PROCTYPE,
-  QueuedDispatch,
 } from '@/artifact/constants.ts'
 import DB from '@/artifact/db.ts'
 import { IFs } from 'https://esm.sh/v135/memfs@4.6.0/lib/index.js'
 import { Poolable } from '@/artifact/constants.ts'
+import FS from '@/artifact/fs.ts'
 const log = debug('AI:io')
 
 export default class IO {
-  #artifact!: Artifact
   #db!: DB
-  #workerCache = new Map()
-  static create(artifact: Artifact, db: DB) {
+  #fs!: FS
+  static create(db: DB) {
     const io = new IO()
-    io.#artifact = artifact
     io.#db = db
+    io.#fs = FS.create(db)
     return io
   }
   listen() {
-    // TODO be able to pause the queue processing for debugging
     // return this.#db.listenQueue(({ dispatch, sequence }) => {
     //   log('queue', sequence, dispatch)
     //   assert(sequence >= 0, 'sequence must be a whole number')
@@ -53,14 +49,13 @@ export default class IO {
   }
   async #processSerial(dispatch: Dispatch, sequence: number) {
     await this.#db.awaitTail(dispatch.pid, sequence)
-    const worker = await this.worker(dispatch.isolate)
-    const memfs = await this.#artifact.isolateFs(dispatch.pid)
+    const compartment = Compartment.create(dispatch.isolate)
+    const memfs = await this.#fs.isolateFs(dispatch.pid)
     const api = IsolateApi.create(memfs)
-    // could almost make the fs api be the only thing anyone ever touches
-    const actions = worker.actions(api)
+    const actions = compartment.actions(api)
     const outcome: Outcome = {}
     try {
-      outcome.result = await actions[dispatch.functionName](dispatch.parameters)
+      outcome.result = await actions[dispatch.functionName](dispatch.params)
       log('self result: %o', outcome.result)
     } catch (errorObj) {
       log('self error', errorObj)
@@ -68,8 +63,6 @@ export default class IO {
     }
     await this.#replyIO(dispatch.pid, memfs, outcome, sequence)
     await this.#db.tailDone(dispatch.pid, sequence)
-    // must be last, and one event loop later, else fast tests will leak
-    // if this fails, we need to bring back quiescence
     this.#db.announceOutcome(dispatch, outcome)
   }
   async #replyIO(pid: PID, fs: IFs, outcome: Outcome, sequence: number) {
@@ -80,11 +73,11 @@ export default class IO {
   }
   async #commitPool(pid: PID, action: Poolable, fsToCommit?: IFs) {
     await this.#db.poolAction(action)
-    const lockId = await this.#db.getHeadLock(pid, action) // make abortable
+    const lockId = await this.#db.getHeadLock(pid, action)
     if (!lockId) {
       return
     }
-    const fs = await this.#artifact.isolateFs(pid)
+    const fs = await this.#fs.isolateFs(pid)
     if (fsToCommit) {
       // TODO detect written files in the fs
       // TODO copy over files from fsToCommit that are not .io.json
@@ -102,7 +95,7 @@ export default class IO {
     })
     log('commitHash', hash)
 
-    await this.#artifact.updateIsolateFs(pid, fs)
+    await this.#fs.updateIsolateFs(pid, fs)
     await this.#db.enqueueIo(pid, io)
 
     await this.#db.deletePool(keys)
@@ -112,6 +105,15 @@ export default class IO {
   async dispatch(payload: Dispatch) {
     log('dispatch with isolate: %s', payload.isolate)
     const dispatch: Poolable = { type: 'DISPATCH', payload }
+    // watch via kv store means we can stop waiting for announcement
+    // as soon as the dispatch action returns, we can start watching kv
+    // or, we could watch kv right from the dispatch
+    // pool implies we want an outcome
+    // if commits broadcast the output sequences in each commit,
+    // then watches know to go get the commit
+
+    // commits are a reasonable thing to broadcast
+    // or the pool item could be written to with lifecycle events
     await this.#commitPool(payload.pid, dispatch)
     let resolve!: (value: unknown) => void, reject!: (err: Error) => void
     const poolDrainedPromise = new Promise((_resolve, _reject) => {
@@ -143,32 +145,6 @@ export default class IO {
     // const io = await this.readIO()
     // const { next } = input(io, action)
     // await this.#commitIO(next, 'spawn')
-  }
-  async workerApi(isolate: string) {
-    const { api } = await this.#ensureWorker(isolate)
-    return api
-  }
-  async worker(isolate: string) {
-    const { worker } = await this.#ensureWorker(isolate)
-    return worker
-  }
-  async #ensureWorker(isolate: string) {
-    assert(!posix.isAbsolute(isolate), `isolate must be relative: ${isolate}`)
-    if (!this.#workerCache.has(isolate)) {
-      // TODO handle the isolate changing
-      // TODO isolate by branch as well as name
-      // TODO store the hash of the isolate file we loaded in a lock file
-      log('ensureWorker', isolate)
-      const { worker, api } = await this.#loadWorker(isolate)
-      this.#workerCache.set(isolate, { worker, api })
-    }
-    return this.#workerCache.get(isolate)
-  }
-  #loadWorker(isolate: string) {
-    log('loadWorker', isolate)
-    const worker = Compartment.create(isolate)
-    const api = worker.api
-    return { worker, api }
   }
 }
 const updateIo = async (fs: IsolateApi, actions: Poolable[]) => {

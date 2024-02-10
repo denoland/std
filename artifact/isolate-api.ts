@@ -1,7 +1,7 @@
+import Compartment from './io/compartment.ts'
 import { IFs } from 'https://esm.sh/memfs@4.6.0'
 import { assert } from 'std/assert/mod.ts'
 import { JsonValue } from '@/artifact/constants.ts'
-import Artifact from './artifact2.ts'
 import * as posix from 'https://deno.land/std@0.213.0/path/posix/mod.ts'
 import debug from '$debug'
 import git from '$git'
@@ -11,19 +11,17 @@ interface Default {
   [key: string]: unknown
 }
 export default class IsolateApi<T extends object = Default> {
-  #fs: IFs
+  #fs!: IFs
   // TODO assign a mount id for each side effect trail
   #context: Partial<T> = {}
   static create(fs: IFs) {
-    return new IsolateApi(fs)
+    const api = new IsolateApi()
+    api.#fs = fs
+    return api
   }
-  constructor(fs: IFs) {
-    this.#fs = fs
-  }
-  async isolateActions(isolate: string) {
-    throw new Error('not implemented')
-    // const worker = await this.#artifact.io.worker(isolate)
-    // return worker.toActions(this)
+  isolateActions(isolate: string) {
+    const compartment = Compartment.create(isolate)
+    return compartment.actions(this)
   }
   writeJSON(path: string, json: JsonValue) {
     isJsonPath(path)

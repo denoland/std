@@ -3,7 +3,6 @@ import * as posix from 'https://deno.land/std@0.213.0/path/posix/mod.ts'
 import debug from '$debug'
 import merge from 'npm:lodash.merge'
 import OpenAI from 'npm:openai'
-import * as hooks from '@io/io-hooks.js'
 import { serializeError } from 'npm:serialize-error'
 import { load } from 'https://deno.land/std@0.213.0/dotenv/mod.ts'
 

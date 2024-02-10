@@ -1,18 +1,14 @@
-import validator from '@io/validator.js'
+import validator from './validator.ts'
 import { assert } from 'std/assert/mod.ts'
 import debug from '$debug'
-import {
-  DispatchFunctions,
-  Isolate,
-  Params,
-  PROCTYPE,
-} from '@/artifact/constants.ts'
+import { DispatchFunctions, Isolate, Params } from '@/artifact/constants.ts'
 import IsolateApi from '../isolate-api.ts'
 
 // deno has no dynamic runtime imports, so this is a workaround
 import isolates from '../isolates/index.ts'
 
 const log = debug('AI:compartment')
+const cache = new Map()
 
 export default class Compartment {
   #module!: Isolate
@@ -20,9 +16,12 @@ export default class Compartment {
     assert(this.#module, 'code not loaded')
   }
   static create(isolate: string) {
-    const compartment = new Compartment()
-    compartment.#load(isolate)
-    return compartment
+    if (!cache.has(isolate)) {
+      const compartment = new Compartment()
+      compartment.#load(isolate)
+      cache.set(isolate, compartment)
+    }
+    return cache.get(isolate)
   }
   get api() {
     this.#check()
@@ -72,7 +71,7 @@ export default class Compartment {
     this.#check()
     const actions: DispatchFunctions = {}
     for (const functionName in this.#module.api) {
-      actions[functionName] = (parameters?: Params, proctype?: PROCTYPE) => {
+      actions[functionName] = (parameters?: Params) => {
         const schema = this.#module.api[functionName]
         if (parameters === undefined) {
           parameters = {}

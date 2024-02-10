@@ -1,31 +1,34 @@
-import * as posix from 'https://deno.land/std@0.213.0/path/posix/mod.ts'
 import debug from '$debug'
 import git from 'https://esm.sh/isomorphic-git@1.25.3'
 import http from 'https://esm.sh/isomorphic-git@1.25.3/http/web'
-import { IFs, memfs } from 'https://esm.sh/memfs@4.6.0'
-import * as snapshot from 'https://esm.sh/memfs@4.6.0/lib/snapshot'
-import pretty from 'https://esm.sh/pretty-bytes@6.1.1'
-import { assert } from 'std/assert/mod.ts'
+import { memfs } from 'https://esm.sh/memfs@4.6.0'
 import {
-  CborUint8Array,
-  DispatchFunctions,
+  Dispatch,
   ENTRY_BRANCH,
-  IsolateFunction,
   IsolateFunctions,
   IsolateLifecycle,
-  IsolateReturn,
   Params,
   PID,
-  PROCTYPE,
   QMessage,
 } from '@/artifact/constants.ts'
 import DB from '../db.ts'
 import { ulid } from 'std/ulid/mod.ts'
 import IsolateApi from '../isolate-api.ts'
-import { delay } from 'https://deno.land/std@0.211.0/async/delay.ts'
 import Compartment from '../io/compartment.ts'
+import IO from '@io/io.ts'
+import Fs from '../fs.ts'
 
 const log = debug('AI:artifact')
+const repo = {
+  type: 'object',
+  required: ['repo'],
+  properties: {
+    repo: {
+      type: 'string',
+      pattern: '^[a-zA-Z0-9][a-zA-Z0-9-_]*\/[a-zA-Z0-9][a-zA-Z0-9-_]*$',
+    },
+  },
+}
 
 export const api = {
   ping: {
@@ -33,46 +36,10 @@ export const api = {
     description: 'Check queue processing system is alive',
     properties: {},
   },
-  clone: {
-    type: 'object',
-    required: ['repo'],
-    properties: {
-      repo: {
-        type: 'string',
-        pattern: '^[a-zA-Z0-9][a-zA-Z0-9-_]*\/[a-zA-Z0-9][a-zA-Z0-9-_]*$',
-      },
-    },
-  },
-  // pull: {
-  //   type: 'object',
-  //   required: ['repo'],
-  //   properties: {
-  //     repo: {
-  //       type: 'string',
-  //       pattern: /^[a-zA-Z0-9][a-zA-Z0-9-_]*\/[a-zA-Z0-9][a-zA-Z0-9-_]*$/,
-  //     },
-  //   },
-  // },
-  // push: {
-  //   type: 'object',
-  //   required: ['repo'],
-  //   properties: {
-  //     repo: {
-  //       type: 'string',
-  //       pattern: /^[a-zA-Z0-9][a-zA-Z0-9-_]*\/[a-zA-Z0-9][a-zA-Z0-9-_]*$/,
-  //     },
-  //   },
-  // },
-  // init: {
-  //   type: 'object',
-  //   required: ['repo'],
-  //   properties: {
-  //     repo: {
-  //       type: 'string',
-  //       pattern: /^[a-zA-Z0-9][a-zA-Z0-9-_]*\/[a-zA-Z0-9][a-zA-Z0-9-_]*$/,
-  //     },
-  //   },
-  // },
+  clone: repo,
+  pull: repo,
+  push: repo,
+  init: repo,
   isolateApi: {
     type: 'object',
     required: ['isolate'],
@@ -137,14 +104,12 @@ export const api = {
 
 type C = {
   db: DB
+  io: IO
+  fs: Fs
 }
 const directFunctions: IsolateFunctions = {
   ping: (params: Params) => {
     log('ping')
-    const start = Date.now()
-    while (Date.now() - start < 1000) {
-      //
-    }
     return params
   },
   reping: (params, api) => {
@@ -155,8 +120,15 @@ const directFunctions: IsolateFunctions = {
     const start = Date.now()
     const repo = params.repo as string
     const [account, repository] = repo.split('/')
+    const pid: PID = {
+      account,
+      repository,
+      branches: [ENTRY_BRANCH],
+    }
     // TODO acquire lock on the repo in the kv store
     // TODO handle existing repo
+
+    // TODO use the fs option in the context
 
     const { fs } = memfs()
     const dir = '/'
@@ -164,29 +136,29 @@ const directFunctions: IsolateFunctions = {
     log('start %s', url)
     await git.clone({ fs, http, dir, url, noCheckout: true })
     log('cloned')
-    const uint8 = snapshot.toBinarySnapshotSync({ fs })
-    const size = pretty(uint8.length)
+    const { prettySize: size } = await api.context.fs!.updateIsolateFs(pid, fs)
     log('snapshot', size)
-    const pid: PID = {
-      account,
-      repository,
-      branches: [ENTRY_BRANCH],
-    }
-    const { db } = api.context
-    await db!.updateIsolateFs(pid, uint8)
     return { size, elapsed: Date.now() - start }
+  },
+  pull(params, api: IsolateApi<C>) {
+    throw new Error('not implemented')
+  },
+  push(params, api: IsolateApi<C>) {
+    throw new Error('not implemented')
+  },
+  init(params, api: IsolateApi<C>) {
+    throw new Error('not implemented')
   },
   isolateApi: (params: Params) => {
     const isolate = params.isolate as string
     const compartment = Compartment.create(isolate)
     return compartment.api
   },
-  dispatch: async (params, api: IsolateApi<C>) => {
-    const { isolate, pid } = params
-    // const { account, repository, branches } = pid
-    const { db } = api.context
+  dispatch: (params, api: IsolateApi<C>) => {
+    return api.context.io!.dispatch(params as Dispatch)
   },
 }
+
 export const functions: IsolateFunctions = queueWrap(directFunctions)
 
 export const lifecycles: IsolateLifecycle = {
@@ -196,7 +168,9 @@ export const lifecycles: IsolateLifecycle = {
       log('listenQueue', name, nonce)
       return directFunctions[name](parameters, api)
     })
-    api.context = { db }
+    const io = IO.create(db)
+    const fs = Fs.create(db)
+    api.context = { db, io, fs }
     return Promise.resolve('')
   },
   '@@unmount'(api: IsolateApi<C>) {

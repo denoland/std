@@ -1,30 +1,30 @@
-import Ajv from 'npm:ajv'
+import Ajv, { ErrorObject } from 'https://esm.sh/ajv@8.12.0'
 
-import assert from 'npm:assert-fast'
-
-export default (schema) => {
+export default (schema: object) => {
   const ajv = loadAjv()
   const validate = ajv.compile(schema)
 
-  return (parameters) => {
+  return (parameters: object) => {
     if (!validate(parameters)) {
+      if (!validate.errors) {
+        return
+      }
       throwIfNotValid(validate.errors)
     }
   }
 }
 
-let _ajv
+let _ajv: Ajv | undefined
 const loadAjv = () => {
   if (!_ajv) {
     _ajv = new Ajv({ allErrors: true })
   }
   return _ajv
 }
-const throwIfNotValid = (ajvErrors) => {
+const throwIfNotValid = (ajvErrors: ErrorObject[]) => {
   if (!ajvErrors) {
     return
   }
-  assert(Array.isArray(ajvErrors))
   const reasons = ajvErrors
     .map((obj) => JSON.stringify(obj, null, '  '))
     .join('\n')

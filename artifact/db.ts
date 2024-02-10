@@ -3,7 +3,6 @@ import { get, set } from 'https://deno.land/x/kv_toolbox@0.6.1/blob.ts'
 import {
   Dispatch,
   IoStruct,
-  IsolateReturn,
   KEYSPACES,
   Outcome,
   PID,
@@ -45,7 +44,7 @@ export default class DB {
       setTimeout(() => channel.close())
     })
   }
-  async enqueueMsg(msg: QMessage): Promise<IsolateReturn> {
+  async enqueueMsg(msg: QMessage) {
     const channel = new BroadcastChannel('queue-' + msg.nonce)
     await this.#kv.enqueue(msg)
     return new Promise((resolve, reject) => {
@@ -127,6 +126,7 @@ export default class DB {
     const channelKey = poolKey.join(':') // TODO escape chars
     const channel = new BroadcastChannel(channelKey)
     channel.postMessage(outcome)
+    // must be last, and one event loop later, else message not transmitted
     setTimeout(() => channel.close())
   }
   /**

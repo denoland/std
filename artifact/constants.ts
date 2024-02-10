@@ -13,9 +13,9 @@ export type JsonValue = string | number | boolean | null | JsonValue[] | {
 export type IsolateReturn = JsonValue | void
 
 export type IsolateFunction =
-  | (() => IsolateReturn | Promise<IsolateReturn>)
-  | ((...args: [Params]) => IsolateReturn | Promise<IsolateReturn>)
-  | ((...args: [Params, IsolateApi]) => IsolateReturn | Promise<IsolateReturn>)
+  | (() => unknown | Promise<unknown>)
+  | ((...args: [Params]) => unknown | Promise<unknown>)
+  | ((...args: [Params, IsolateApi]) => unknown | Promise<unknown>)
 
 export type IsolateFunctions = {
   [key: string]: IsolateFunction
@@ -27,11 +27,11 @@ export type IsolateLifecycle = {
 
 export type DispatchFunctions = {
   [key: string]: (
-    parameters?: { [key: string]: JsonValue },
+    params?: Params,
     proctype?: PROCTYPE,
-  ) => IsolateReturn | Promise<IsolateReturn>
+  ) => unknown | Promise<unknown>
 }
-export type Params = { [key: string]: JsonValue }
+export type Params = Record<string, unknown>
 
 export type IsolateApiSchema = {
   [key: string]: {
@@ -48,7 +48,7 @@ export type IoStruct = {
   [PROCTYPE.SERIAL]: IoProctypeStruct
   [PROCTYPE.PARALLEL]: IoProctypeStruct
 }
-export type Outcome = { result?: IsolateReturn; error?: Error }
+export type Outcome = { result?: unknown; error?: Error }
 export type IoProctypeStruct = {
   sequence: number
   inputs: { [key: string]: Dispatch }
@@ -85,7 +85,7 @@ export type Dispatch = {
   pid: PID
   isolate: string
   functionName: string
-  parameters: Params
+  params: Params
   proctype: PROCTYPE
   /**
    * This should be a globally unique identifier for the dispatch.  It is used
@@ -106,7 +106,7 @@ export enum QUEUE_TYPES {
 export type QMessage = { nonce: string; name: string; parameters: Params }
 export type QCallback = (
   msg: QMessage,
-) => Promise<IsolateReturn> | IsolateReturn
+) => Promise<unknown> | unknown
 
 export type QueuedDispatch = {
   type: QUEUE_TYPES.DISPATCH
