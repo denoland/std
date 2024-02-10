@@ -17,6 +17,8 @@ const UUID_RE =
  * validate("this-is-not-a-uuid"); // false
  * ```
  */
-export function validate(id: string): id is ReturnType<typeof crypto.randomUUID> {
+export function validate(
+  id: string,
+): id is ReturnType<typeof crypto.randomUUID> {
   return UUID_RE.test(id);
 }
