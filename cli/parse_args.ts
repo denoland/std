@@ -623,37 +623,37 @@ export function parseArgs<
       const letters = arg.slice(1, -1).split("");
 
       let broken = false;
-      for (let j = 0; j < letters.length; j++) {
+      for (const [j, letter] of letters.entries()) {
         const next = arg.slice(j + 2);
 
         if (next === "-") {
-          setArgument(letters[j], next, arg, true);
+          setArgument(letter, next, arg, true);
           continue;
         }
 
-        if (/[A-Za-z]/.test(letters[j]) && /=/.test(next)) {
-          setArgument(letters[j], next.split(/=(.+)/)[1], arg, true);
+        if (/[A-Za-z]/.test(letter) && /=/.test(next)) {
+          setArgument(letter, next.split(/=(.+)/)[1], arg, true);
           broken = true;
           break;
         }
 
         if (
-          /[A-Za-z]/.test(letters[j]) &&
+          /[A-Za-z]/.test(letter) &&
           /-?\d+(\.\d*)?(e-?\d+)?$/.test(next)
         ) {
-          setArgument(letters[j], next, arg, true);
+          setArgument(letter, next, arg, true);
           broken = true;
           break;
         }
 
         if (letters[j + 1] && letters[j + 1].match(/\W/)) {
-          setArgument(letters[j], arg.slice(j + 2), arg, true);
+          setArgument(letter, arg.slice(j + 2), arg, true);
           broken = true;
           break;
         }
         setArgument(
-          letters[j],
-          stringSet.has(letters[j]) ? "" : true,
+          letter,
+          stringSet.has(letter) ? "" : true,
           arg,
           true,
         );
