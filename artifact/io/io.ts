@@ -65,6 +65,25 @@ export default class IO {
     await this.#db.tailDone(dispatch.pid, sequence)
     this.#db.announceOutcome(dispatch, outcome)
   }
+  async dispatch(payload: Dispatch) {
+    log('dispatch with isolate: %s', payload.isolate)
+    const dispatch: Poolable = { type: 'DISPATCH', payload }
+
+    const outcome = new Promise((resolve, reject) => {
+      // must start listening early
+      this.#db.awaitOutcome(payload).then((outcome: Outcome) => {
+        log('outcome', outcome)
+        if (!outcome.error) {
+          resolve(outcome.result)
+        } else {
+          reject(deserializeError(outcome.error))
+        }
+      })
+    })
+    await this.#commitPool(payload.pid, dispatch)
+
+    return outcome
+  }
   async #replyIO(pid: PID, fs: IFs, outcome: Outcome, sequence: number) {
     const nonce = `reply-${sequence}` // TODO try remove nonces altogether
     const payload = { pid, nonce, sequence, outcome }
@@ -96,41 +115,42 @@ export default class IO {
     log('commitHash', hash)
 
     await this.#fs.updateIsolateFs(pid, fs)
-    await this.#db.enqueueIo(pid, io)
+    await this.#enqueueIo(pid, io)
 
     await this.#db.deletePool(keys)
     await this.#db.releaseHeadlock(pid, lockId)
   }
-
-  async dispatch(payload: Dispatch) {
-    log('dispatch with isolate: %s', payload.isolate)
-    const dispatch: Poolable = { type: 'DISPATCH', payload }
-    // watch via kv store means we can stop waiting for announcement
-    // as soon as the dispatch action returns, we can start watching kv
-    // or, we could watch kv right from the dispatch
-    // pool implies we want an outcome
-    // if commits broadcast the output sequences in each commit,
-    // then watches know to go get the commit
-
-    // commits are a reasonable thing to broadcast
-    // or the pool item could be written to with lifecycle events
-    await this.#commitPool(payload.pid, dispatch)
-    let resolve!: (value: unknown) => void, reject!: (err: Error) => void
-    const poolDrainedPromise = new Promise((_resolve, _reject) => {
-      resolve = _resolve
-      reject = _reject
-    })
-    const outcome = await this.#db.awaitOutcome(payload)
-    log('outcome', outcome)
-    if (!outcome.error) {
-      resolve(outcome.result)
-    } else {
-      reject(deserializeError(outcome.error))
-    }
-
-    return poolDrainedPromise
+  async #enqueueIo(pid: PID, io: IoStruct) {
+    await Promise.all([
+      this.#enqueueSerial(pid, io[PROCTYPE.SERIAL]),
+      this.#enqueueParallel(pid, io[PROCTYPE.PARALLEL]),
+    ])
   }
+  async #enqueueSerial(pid: PID, serial: IoStruct[PROCTYPE.SERIAL]) {
+    const ascendingKeys = sort(Object.keys(serial.inputs))
+    log('enqueueSerial %o', ascendingKeys)
+    for (const key of ascendingKeys) {
+      const dispatch = serial.inputs[key]
+      const sequence = parseInt(key)
 
+      // call the self functions with the dispatch value
+      // could call a different isolate ?
+      // ultimately need to end up with a message in the queue, and something to
+      // catch it when it arrives
+
+      const tailKey = getTailKey(pid, sequence)
+      await this.#kv.set(tailKey, true)
+      const type = QUEUE_TYPES.DISPATCH
+      const msg: QueuedDispatch = { type, payload: { dispatch, sequence } }
+      await this.#kv.enqueue(msg)
+    }
+  }
+  async #enqueueParallel(
+    pid: PID,
+    parallel: IoStruct[PROCTYPE.PARALLEL],
+  ) {
+    throw new Error('not implemented')
+  }
   async #spawn(id: number, isolate: string, name: string, params: Params) {
     // const branchName = await git.currentBranch(this.#opts)
     // const action = { isolate, name, params, proctype: PROCTYPES.SELF }
@@ -187,7 +207,7 @@ const updateIo = async (fs: IsolateApi, actions: Poolable[]) => {
     }
   }
   log('updateIo')
-  fs.writeJSON(IO_PATH, {})
+  fs.writeJSON(IO_PATH, io)
   return io
 }
 const checkSequence = (io: { sequence: number }) => {
@@ -195,3 +215,4 @@ const checkSequence = (io: { sequence: number }) => {
   assert(io.sequence >= 0, 'sequence must be a whole number')
   return io.sequence
 }
+const sort = (keys: string[]) => keys.sort((a, b) => parseInt(a) - parseInt(b))

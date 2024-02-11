@@ -17,6 +17,7 @@ export default class FS {
     return fs
   }
   async isolateFs(pid: PID) {
+    // TODO require valid headlock to be passed in
     const uint8 = await this.#db.loadIsolateFs(pid)
     if (!uint8) {
       const repo = `${pid.account}/${pid.repository}`

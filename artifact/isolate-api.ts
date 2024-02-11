@@ -1,7 +1,6 @@
 import Compartment from './io/compartment.ts'
 import { IFs } from 'https://esm.sh/memfs@4.6.0'
 import { assert } from 'std/assert/mod.ts'
-import { JsonValue } from '@/artifact/constants.ts'
 import * as posix from 'https://deno.land/std@0.213.0/path/posix/mod.ts'
 import debug from '$debug'
 import git from '$git'
@@ -21,9 +20,10 @@ export default class IsolateApi<T extends object = Default> {
   }
   isolateActions(isolate: string) {
     const compartment = Compartment.create(isolate)
+    // TODO but these need to be wrapped in a dispatch call somewhere
     return compartment.actions(this)
   }
-  writeJSON(path: string, json: JsonValue) {
+  writeJSON(path: string, json: object) {
     isJsonPath(path)
     const file = JSON.stringify(json, null, 2)
     this.write(path, file)

@@ -32,6 +32,7 @@ export default class DB {
   listenQueue(callback: QCallback) {
     return this.#kv.listenQueue(async (msg: QMessage) => {
       log('listenQueue received', msg)
+      assert(msg.nonce, 'nonce is required')
       const channel = new BroadcastChannel('queue-' + msg.nonce)
       const outcome: Outcome = {}
       try {
@@ -74,6 +75,7 @@ export default class DB {
         return
       }
     }
+    throw new Error(`Failed to awaitTail after ${count} attempts`)
   }
   async tailDone(pid: PID, sequence: number) {
     const tailKey = getTailKey(pid, sequence)
@@ -103,6 +105,15 @@ export default class DB {
     log('pooling start %o', key)
     await this.#kv.set(key, action)
     log('pooling done')
+    // test the speed of watching, so can use instead of broadcast or poll
+    Promise.resolve().then(async () => {
+      const stream = this.#kv.watch([key])
+      const logWatch = debug('AI:db:watch')
+      logWatch('starting stream watch %o', nonce)
+      for await (const event of stream) {
+        logWatch('pooling stream event %o', nonce)
+      }
+    })
   }
   awaitOutcome(dispatch: Dispatch): Promise<Outcome> {
     const { pid, nonce } = dispatch
@@ -141,7 +152,7 @@ export default class DB {
     const key = getHeadLockKey(pid)
     log('start getHeadLock %o', key)
 
-    const lockId = ulid()
+    const lockId = 'headlock-' + ulid()
     let result = { ok: false }
     let count = 0
     const poolKey = getPoolKey(pid, action.payload.nonce)
@@ -172,31 +183,6 @@ export default class DB {
       )
     }
     await this.#kv.delete(headLockKey)
-  }
-  async enqueueIo(pid: PID, io: IoStruct) {
-    log('enqueueIo %o', io)
-    await Promise.all([
-      this.#enqueueSerial(pid, io[PROCTYPE.SERIAL]),
-      this.#enqueueParallel(pid, io[PROCTYPE.PARALLEL]),
-    ])
-  }
-  async #enqueueSerial(pid: PID, serial: IoStruct[PROCTYPE.SERIAL]) {
-    const ascendingKeys = sort(Object.keys(serial.inputs))
-    for (const key of ascendingKeys) {
-      const dispatch = serial.inputs[key]
-      const sequence = parseInt(key)
-      const tailKey = getTailKey(pid, sequence)
-      await this.#kv.set(tailKey, true)
-      const type = QUEUE_TYPES.DISPATCH
-      const msg: QueuedDispatch = { type, payload: { dispatch, sequence } }
-      await this.#kv.enqueue(msg)
-    }
-  }
-
-  async #enqueueParallel(
-    pid: PID,
-    parallel: IoStruct[PROCTYPE.PARALLEL],
-  ) {
   }
   async getPooledActions(pid: PID) {
     const prefix = getPoolKeyPrefix(pid)
@@ -263,4 +249,3 @@ const assertPid = (pid: PID) => {
     throw new Error('Invalid GitHub account or repository name: ' + repo)
   }
 }
-const sort = (keys: string[]) => keys.sort((a, b) => parseInt(a) - parseInt(b))

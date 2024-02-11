@@ -30,6 +30,10 @@ const repo = {
   },
 }
 
+// https://github.com/isomorphic-git/isomorphic-git/pull/1864
+globalThis.CompressionStream =
+  undefined as unknown as typeof globalThis.CompressionStream
+
 export const api = {
   ping: {
     type: 'object',
@@ -78,28 +82,11 @@ export const api = {
       },
     },
   },
-  // then need things like subscribing to fs updates in a pid, reading files,
-  // but it should all be handled by subscribing to splices / patches ?
-  // also subscribe to binary / read binary
-  // in this case, the result back would be a stream or patches.  The sender
-  // would need to decorate it to expect a stream, and the function should be
-  // broadcasting out the patches.
+  // subscribe to json by filepath and pid
+  // subscribe to path in json, so we can subscribe to the output of io.json
+  // subscribe to binary by filepath and pid - done by commit watching
 
-  // requesting a patch would be done with the last patch you got, so we could
-  // resume when the isolates were cancelled.
-
-  // if we give it a user based context slot, then a long running item can store
-  // something in there, like the db instance.  So that each time the isolate
-  // starts, it gets its init function called, and it returns out the context it
-  // wants to store.
-
-  // do we even need a separate queue ?
-
-  // If we load up, then call the init function, then it sets up its own self as
-  // the listener to the queue, and begins processing from there
-
-  // this isolate is the run that runs at the root of your chain, that pulls in
-  // other chains so you can do different things.
+  // requesting a patch would be done with the last known patch as cursor
 }
 
 type C = {
@@ -171,7 +158,6 @@ export const lifecycles: IsolateLifecycle = {
     const io = IO.create(db)
     const fs = Fs.create(db)
     api.context = { db, io, fs }
-    return Promise.resolve('')
   },
   '@@unmount'(api: IsolateApi<C>) {
     return api.context.db!.stop()

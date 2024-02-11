@@ -14,7 +14,7 @@ export default {
   fetch,
   files,
   git,
-  'io.fixture': ioFixture,
+  'io-fixture': ioFixture,
   io,
   'load-help': loadHelp,
   open,
