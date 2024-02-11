@@ -1,3 +1,18 @@
+### 0.215.0 / 2024.02.08
+
+- BREAKING(log): remove `WARNING` log level (#4258)
+- BREAKING(path): remove `glob.ts` files (#4259)
+- BREAKING(path): remove `separator.ts` files (#4260)
+- BREAKING(semver): remove `Comparator` functions (#4278)
+- BREAKING(semver): remove `rangeFormat()` (#4265)
+- BREAKING(semver): remove `sort()` (#4264)
+- deprecation(semver): deprecate `ltr()` and `gtr()` (#4228)
+- deprecation(semver): deprecate `reverseSort()` (#4280)
+- feat(expect): add `expect.addEqualityTesters` api. (#4255)
+- fix: version bump workflow (#4288)
+- refactor(dotenv): prepare for `noUncheckedIndexedAccess` (#4261)
+- refatcor(toml): prepare for `noUncheckedIndexedAccess` (#4274)
+
 ### 0.214.0 / 2024.02.01
 
 - BREAKING(io): remove `types.d.ts` (#4237)

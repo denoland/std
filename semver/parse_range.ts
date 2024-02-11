@@ -1,6 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import { ALL } from "./constants.ts";
-import type { Comparator, Range, SemVerRange } from "./types.ts";
+import type { Comparator, Range } from "./types.ts";
 import { OPERATOR_XRANGE_REGEXP, XRANGE } from "./_shared.ts";
 import { parseComparator } from "./_parse_comparator.ts";
 import { parseBuild, parsePrerelease } from "./_shared.ts";
@@ -273,14 +273,14 @@ function parseRangeString(string: string) {
 }
 
 /**
- * Parses a range string into a SemVerRange object or throws a TypeError.
+ * Parses a range string into a Range object or throws a TypeError.
  * @param range The range set string
  * @returns A valid semantic range
  */
-export function parseRange(range: string): SemVerRange & Range {
+export function parseRange(range: string): Range {
   const ranges = range
     .split(/\s*\|\|\s*/)
     .map((range) => parseHyphenRange(range).flatMap(parseRangeString));
   Object.defineProperty(ranges, "ranges", { value: ranges });
-  return ranges as SemVerRange & Range;
+  return ranges as Range;
 }

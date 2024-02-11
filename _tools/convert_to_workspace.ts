@@ -228,6 +228,11 @@ for (const pkg of packages) {
     version: VERSION,
     exports,
   };
+  /** @see {@link https://github.com/denoland/deno/issues/22317} */
+  if (pkg === "crypto") {
+    // @ts-ignore Trust me
+    denoJson.exclude = ["_wasm/target"];
+  }
   await Deno.writeTextFile(
     join(pkg, "deno.json"),
     JSON.stringify(denoJson, null, 2) + "\n",

@@ -3,7 +3,7 @@
 import { expect } from "./expect.ts";
 import { AssertionError, assertThrows } from "../assert/mod.ts";
 
-Deno.test("expect().toBeLessThanOrEqual", () => {
+Deno.test("expect().toBeLessThanOrEqual()", () => {
   expect(10).toBeLessThanOrEqual(10);
   expect(9).toBeLessThanOrEqual(10);
 

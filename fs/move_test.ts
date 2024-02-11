@@ -388,7 +388,7 @@ Deno.test("move() accepts overwrite option set to true for file content", async 
     [file, url],
     [url, file],
     [url, url],
-  ];
+  ] as const;
 
   for (const p of pairs) {
     const src = p[0];
@@ -415,7 +415,7 @@ Deno.test("move() accepts overwrite option set to true for directories", async f
     [dir, url],
     [url, dir],
     [url, url],
-  ];
+  ] as const;
 
   for (const p of pairs) {
     const src = p[0];
@@ -446,7 +446,7 @@ Deno.test("moveSync() accepts overwrite option set to true for file content", fu
     [file, url],
     [url, file],
     [url, url],
-  ];
+  ] as const;
 
   for (const p of pairs) {
     const src = p[0];
@@ -473,7 +473,7 @@ Deno.test("move() accepts overwrite option set to true for directories", functio
     [dir, url],
     [url, dir],
     [url, url],
-  ];
+  ] as const;
 
   for (const p of pairs) {
     const src = p[0];

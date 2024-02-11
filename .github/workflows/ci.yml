@@ -1,5 +1,8 @@
 name: ci
 
+permissions:
+  contents: write
+
 on:
   push:
     branches: [main]
@@ -50,7 +53,7 @@ jobs:
         run: deno task cov:gen
 
       - name: Upload coverage
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v4
         with:
           name: ${{ matrix.os }}-${{ matrix.deno }}
           files: cov.lcov
