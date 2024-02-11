@@ -4,7 +4,7 @@ import { expect } from "./expect.ts";
 import { fn } from "./fn.ts";
 import { AssertionError, assertThrows } from "../assert/mod.ts";
 
-Deno.test("expect().", () => {
+Deno.test("expect().toHaveBeenNthCalledWith()", () => {
   const mockFn = fn();
 
   mockFn(1, 2, 3);
