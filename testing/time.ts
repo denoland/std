@@ -211,7 +211,7 @@ let dueTree: RedBlackTree<DueNode>;
  * });
  * ```
  */
-export class FakeTime {
+export class FakeTime implements Disposable {
   constructor(
     start?: number | string | Date | null,
     options?: FakeTimeOptions,
