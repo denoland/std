@@ -1,6 +1,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 // This module is generated from https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers.
+// Attributions and copyright licensing by Mozilla Contributors is licensed under CC-BY-SA 2.5.
 
 /**
  * Authentication
