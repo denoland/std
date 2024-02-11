@@ -83,7 +83,10 @@ for await (
 
             if (afterVersion) {
               if (
-                semver.lt(semver.parse(afterVersion), semver.parse(VERSION))
+                semver.lessThan(
+                  semver.parse(afterVersion),
+                  semver.parse(VERSION),
+                )
               ) {
                 console.warn(
                   colors.yellow("Warn"),
@@ -109,7 +112,12 @@ for await (
               continue;
             }
 
-            if (!semver.gt(semver.parse(inVersion), semver.parse(VERSION))) {
+            if (
+              !semver.greaterThan(
+                semver.parse(inVersion),
+                semver.parse(VERSION),
+              )
+            ) {
               console.error(
                 colors.red("Error"),
                 `${

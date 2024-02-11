@@ -21,8 +21,6 @@ type REGEXP_GROUPS = {
  * Parses a comparator string into a valid Comparator.
  * @param comparator
  * @returns A valid Comparator
- *
- * @deprecated (will be removed in 0.215.0) Use {@linkcode parseRange} instead.
  */
 export function parseComparator(comparator: string): Comparator {
   const match = comparator.match(COMPARATOR_REGEXP);

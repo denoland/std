@@ -127,7 +127,7 @@ export async function* expandGlob(
   let fixedRoot = isGlobAbsolute
     ? winRoot !== undefined ? winRoot : "/"
     : absRoot;
-  while (segments.length > 0 && !isGlob(segments[0])) {
+  while (segments.length > 0 && !isGlob(segments[0]!)) {
     const seg = segments.shift();
     assert(seg !== undefined);
     fixedRoot = joinGlobs([fixedRoot, seg], globOptions);
@@ -253,7 +253,7 @@ export function* expandGlobSync(
   let fixedRoot = isGlobAbsolute
     ? winRoot !== undefined ? winRoot : "/"
     : absRoot;
-  while (segments.length > 0 && !isGlob(segments[0])) {
+  while (segments.length > 0 && !isGlob(segments[0]!)) {
     const seg = segments.shift();
     assert(seg !== undefined);
     fixedRoot = joinGlobs([fixedRoot, seg], globOptions);
