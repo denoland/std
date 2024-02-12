@@ -27,11 +27,11 @@ export default class DB {
     return db
   }
   stop() {
-    this.#kv.close()
+    return this.#kv.close()
   }
   listenQueue(callback: QCallback) {
     return this.#kv.listenQueue(async (msg: QMessage) => {
-      log('listenQueue received', msg)
+      log('listenQueue received', msg.name, msg.nonce)
       assert(msg.nonce, 'nonce is required')
       const channel = new BroadcastChannel('queue-' + msg.nonce)
       const outcome: Outcome = {}
@@ -51,7 +51,7 @@ export default class DB {
     return new Promise((resolve, reject) => {
       channel.onmessage = (event) => {
         const outcome = event.data as Outcome
-        log('received %s', channel.name)
+        log('received outcome on %s', channel.name, outcome)
         channel.close()
         if (outcome.error) {
           reject(deserializeError(outcome.error))
@@ -60,6 +60,17 @@ export default class DB {
         }
       }
     })
+  }
+
+  async enqueueTail(dispatch: Dispatch, sequence: number) {
+    const { nonce } = dispatch
+    log('enqueueTail seq: %o nonce: %o', sequence, nonce)
+    const tailKey = getTailKey(dispatch.pid, sequence)
+    await this.#kv.set(tailKey, true)
+
+    // TODO use the api to get the function to call directly
+    const msg: QMessage = { nonce, name: 'serial', parameters: dispatch }
+    await this.enqueueMsg(msg)
   }
   async awaitTail(pid: PID, sequence: number) {
     if (sequence === 0) {
@@ -102,11 +113,11 @@ export default class DB {
     const { pid, nonce } = action.payload // ? maybe move to meta key ?
     assertPid(pid)
     const key = getPoolKey(pid, nonce)
-    log('pooling start %o', key)
+    log('pooling start %o', nonce)
     await this.#kv.set(key, action)
-    log('pooling done')
-    // test the speed of watching, so can use instead of broadcast or poll
+    log('pooling done %o', nonce)
     Promise.resolve().then(async () => {
+      // test the speed of watching, so can use instead of broadcast or poll
       const stream = this.#kv.watch([key])
       const logWatch = debug('AI:db:watch')
       logWatch('starting stream watch %o', nonce)
@@ -118,8 +129,8 @@ export default class DB {
   awaitOutcome(dispatch: Dispatch): Promise<Outcome> {
     const { pid, nonce } = dispatch
     const poolKey = getPoolKey(pid, nonce)
-    log('awaitOutcome %o', poolKey)
-    const channelKey = poolKey.join(':') // TODO escape chars
+    log('awaitOutcome %o', nonce)
+    const channelKey = 'outcome-' + poolKey.join(':') // TODO escape : chars
     const channel = new BroadcastChannel(channelKey)
     return new Promise((resolve) => {
       channel.onmessage = (event) => {
@@ -134,7 +145,7 @@ export default class DB {
     const { pid, nonce } = dispatch
     const poolKey = getPoolKey(pid, nonce)
     log('announceOutcome %o', poolKey)
-    const channelKey = poolKey.join(':') // TODO escape chars
+    const channelKey = 'outcome-' + poolKey.join(':') // TODO escape : chars
     const channel = new BroadcastChannel(channelKey)
     channel.postMessage(outcome)
     // must be last, and one event loop later, else message not transmitted
@@ -189,13 +200,14 @@ export default class DB {
     log('getPooledActions %o', prefix)
     const entries = this.#kv.list<Poolable>({ prefix })
     const keys = []
-    const values: Poolable[] = []
+    const actions: Poolable[] = []
     for await (const entry of entries) {
       const value = entry.value
       keys.push(entry.key)
-      values.push(value)
+      actions.push(value)
     }
-    return { keys, values }
+    log('getPooledActions done %o', keys.length)
+    return { keys, actions }
   }
   async deletePool(keys: Deno.KvKey[]) {
     log('deletePool %o', keys)

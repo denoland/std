@@ -137,16 +137,3 @@ export enum KEYSPACES {
    */
   TAIL = 'TAIL',
 }
-
-export interface Artifact {
-  pull(repo: string): Promise<void>
-  push(repo: string): Promise<void>
-  clone(repo: string): Promise<void>
-  init(repo: string): Promise<void>
-  isolateApi(isolate: string): Promise<IsolateApiSchema>
-  actions(isolate: string, pid: PID): Promise<DispatchFunctions>
-
-  // then need things like subscribing to fs updates in a pid, reading files,
-  // but it should all be handled by subscribing to splices / patches ?
-  // also subscribe to binary / read binary
-}

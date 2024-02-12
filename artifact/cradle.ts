@@ -20,34 +20,36 @@ const log = debug('AI:cradle')
 
 class Cradle {
   #compartment!: Compartment
-  #context!: IsolateApi
+  #api!: IsolateApi
   static async create() {
     const cradle = new Cradle()
     cradle.#compartment = Compartment.create('artifact')
     const { fs } = memfs()
     // TODO pass a dispatch function in so it can call out to other pids
-    cradle.#context = IsolateApi.create(fs)
-    await cradle.#compartment.mount(cradle.#context)
+    cradle.#api = IsolateApi.create(fs)
+    await cradle.#compartment.mount(cradle.#api)
 
-    const actions = cradle.#compartment.actions(cradle.#context)
-    assert(!actions.stop, 'stop is a reserved action')
-    assert(!actions.actions, 'actions is a reserved action')
-    Object.assign(cradle, actions)
+    const functions = cradle.#compartment.functions(cradle.#api)
+    assert(!functions.stop, 'stop is a reserved action')
+    assert(!functions.dispatches, 'dispatches is a reserved action')
+    Object.assign(cradle, functions)
     return cradle
   }
   stop() {
-    return this.#compartment.unmount(this.#context)
+    return this.#compartment.unmount(this.#api)
   }
-  async actions({ isolate, pid }: { isolate: string; pid: PID }) {
+  async dispatches({ isolate, pid }: { isolate: string; pid: PID }) {
     // cradle side, since functions cannot be returned from isolate calls
-    const isolateApi = await this.isolateApi({ isolate })
-    const actions: DispatchFunctions = {}
-    for (const functionName of Object.keys(isolateApi)) {
-      actions[functionName] = (
+    // TODO add a cache for this
+    const apiSchema = await this.apiSchema({ isolate })
+    const dispatches: DispatchFunctions = {}
+    for (const functionName of Object.keys(apiSchema)) {
+      dispatches[functionName] = (
         params: Params = {},
         proctype = PROCTYPE.SERIAL,
       ) => {
         const nonce = ulid()
+        log('dispatch:', functionName, nonce)
         return this.dispatch({
           pid,
           isolate,
@@ -58,8 +60,8 @@ class Cradle {
         })
       }
     }
-    log('actions:', isolate, Object.keys(actions))
-    return actions
+    log('dispatches:', isolate, Object.keys(dispatches))
+    return dispatches
   }
 }
 
@@ -78,7 +80,7 @@ class Cradle {
 interface Cradle {
   ping(params: Params): Promise<IsolateReturn>
   clone(params: { repo: string }): Promise<void>
-  isolateApi(params: { isolate: string }): Promise<Record<string, object>>
+  apiSchema(params: { isolate: string }): Promise<Record<string, object>>
   dispatch(params: Dispatch): Promise<IsolateReturn>
 }
 

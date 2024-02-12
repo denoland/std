@@ -44,7 +44,7 @@ export const api = {
   pull: repo,
   push: repo,
   init: repo,
-  isolateApi: {
+  apiSchema: {
     type: 'object',
     required: ['isolate'],
     properties: {
@@ -120,11 +120,11 @@ const directFunctions: IsolateFunctions = {
     const { fs } = memfs()
     const dir = '/'
     const url = `https://github.com/${account}/${repository}.git`
-    log('start %s', url)
+    log('cloning %s', url)
     await git.clone({ fs, http, dir, url, noCheckout: true })
     log('cloned')
     const { prettySize: size } = await api.context.fs!.updateIsolateFs(pid, fs)
-    log('snapshot', size)
+    log('snapshot size:', size)
     return { size, elapsed: Date.now() - start }
   },
   pull(params, api: IsolateApi<C>) {
@@ -136,13 +136,17 @@ const directFunctions: IsolateFunctions = {
   init(params, api: IsolateApi<C>) {
     throw new Error('not implemented')
   },
-  isolateApi: (params: Params) => {
+  apiSchema: (params: Params) => {
     const isolate = params.isolate as string
     const compartment = Compartment.create(isolate)
     return compartment.api
   },
   dispatch: (params, api: IsolateApi<C>) => {
+    log('dispatch', params.functionName, params.nonce)
     return api.context.io!.dispatch(params as Dispatch)
+  },
+  serial: (params, api: IsolateApi<C>) => {
+    log('serial', params)
   },
 }
 
@@ -164,11 +168,6 @@ export const lifecycles: IsolateLifecycle = {
   },
 }
 
-async function enqueue(name: string, params: Params, api: IsolateApi<C>) {
-  const msg: QMessage = { nonce: ulid(), name, parameters: params }
-  return await api.context.db!.enqueueMsg(msg)
-}
-
 function queueWrap(functions: IsolateFunctions): IsolateFunctions {
   const wrapped: IsolateFunctions = {}
   for (const name in functions) {
@@ -177,4 +176,9 @@ function queueWrap(functions: IsolateFunctions): IsolateFunctions {
     }
   }
   return wrapped
+}
+
+function enqueue(name: string, params: Params, api: IsolateApi<C>) {
+  const msg: QMessage = { nonce: ulid(), name, parameters: params }
+  return api.context.db!.enqueueMsg(msg)
 }

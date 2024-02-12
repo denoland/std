@@ -28,49 +28,38 @@ export default class IO {
     io.#fs = FS.create(db)
     return io
   }
-  listen() {
-    // return this.#db.listenQueue(({ dispatch, sequence }) => {
-    //   log('queue', sequence, dispatch)
-    //   assert(sequence >= 0, 'sequence must be a whole number')
-    //   switch (dispatch.proctype) {
-    //     case PROCTYPE.SERIAL: {
-    //       return this.#processSerial(dispatch, sequence)
-    //     }
-    //     case PROCTYPE.PARALLEL: {
-    //       // start the branch immediately without waiting for anyone
-    //       // skip the first commit, since this is wasted
-    //       // begin executing the isolate
-    //       // commit the result to the branch
-    //       // first off the dispatch to the newly created branch to be carried on
-    //       return Promise.resolve()
-    //     }
-    //   }
-    // })
-  }
   async #processSerial(dispatch: Dispatch, sequence: number) {
     await this.#db.awaitTail(dispatch.pid, sequence)
     const compartment = Compartment.create(dispatch.isolate)
     const memfs = await this.#fs.isolateFs(dispatch.pid)
     const api = IsolateApi.create(memfs)
-    const actions = compartment.actions(api)
+    const functions = compartment.functions(api)
     const outcome: Outcome = {}
     try {
-      outcome.result = await actions[dispatch.functionName](dispatch.params)
+      outcome.result = await functions[dispatch.functionName](dispatch.params)
       log('self result: %o', outcome.result)
     } catch (errorObj) {
       log('self error', errorObj)
       outcome.error = serializeError(errorObj)
     }
-    await this.#replyIO(dispatch.pid, memfs, outcome, sequence)
+    // TODO process the IPC actions from the api collector
     await this.#db.tailDone(dispatch.pid, sequence)
+    await this.#replyIO(dispatch.pid, memfs, outcome, sequence)
     this.#db.announceOutcome(dispatch, outcome)
+  }
+  async #processParallel() {
+    // start the branch immediately without waiting for anyone
+    // skip the first commit, since this is wasted
+    // begin executing the isolate
+    // commit the result to the branch
+    // first off the dispatch to the newly created branch to be carried on
   }
   async dispatch(payload: Dispatch) {
     log('dispatch with isolate: %s', payload.isolate)
     const dispatch: Poolable = { type: 'DISPATCH', payload }
 
     const outcome = new Promise((resolve, reject) => {
-      // must start listening early
+      // must start listening asap for BroadcastChannel to work
       this.#db.awaitOutcome(payload).then((outcome: Outcome) => {
         log('outcome', outcome)
         if (!outcome.error) {
@@ -86,13 +75,14 @@ export default class IO {
   }
   async #replyIO(pid: PID, fs: IFs, outcome: Outcome, sequence: number) {
     const nonce = `reply-${sequence}` // TODO try remove nonces altogether
+    log('replyIO', nonce)
     const payload = { pid, nonce, sequence, outcome }
     const reply: Poolable = { type: 'REPLY', payload }
     await this.#commitPool(pid, reply, fs)
   }
-  async #commitPool(pid: PID, action: Poolable, fsToCommit?: IFs) {
-    await this.#db.poolAction(action)
-    const lockId = await this.#db.getHeadLock(pid, action)
+  async #commitPool(pid: PID, poolable: Poolable, fsToCommit?: IFs) {
+    await this.#db.poolAction(poolable)
+    const lockId = await this.#db.getHeadLock(pid, poolable)
     if (!lockId) {
       return
     }
@@ -103,8 +93,8 @@ export default class IO {
     }
 
     const api = IsolateApi.create(fs)
-    const { keys, values } = await this.#db.getPooledActions(pid)
-    const io = await updateIo(api, values)
+    const { keys, actions } = await this.#db.getPooledActions(pid)
+    const io = await updateIo(api, actions)
     await git.add({ fs, dir: '/', filepath: IO_PATH })
     const hash = await git.commit({
       fs,
@@ -132,17 +122,7 @@ export default class IO {
     for (const key of ascendingKeys) {
       const dispatch = serial.inputs[key]
       const sequence = parseInt(key)
-
-      // call the self functions with the dispatch value
-      // could call a different isolate ?
-      // ultimately need to end up with a message in the queue, and something to
-      // catch it when it arrives
-
-      const tailKey = getTailKey(pid, sequence)
-      await this.#kv.set(tailKey, true)
-      const type = QUEUE_TYPES.DISPATCH
-      const msg: QueuedDispatch = { type, payload: { dispatch, sequence } }
-      await this.#kv.enqueue(msg)
+      await this.#db.enqueueTail(dispatch, sequence)
     }
   }
   async #enqueueParallel(
@@ -167,7 +147,7 @@ export default class IO {
     // await this.#commitIO(next, 'spawn')
   }
 }
-const updateIo = async (fs: IsolateApi, actions: Poolable[]) => {
+const updateIo = async (api: IsolateApi, actions: Poolable[]) => {
   // the patch generation should be the same for io as for any splice.
   // this should be jsonpatch with some extra validation against a jsonschema
 
@@ -177,7 +157,7 @@ const updateIo = async (fs: IsolateApi, actions: Poolable[]) => {
     [PROCTYPE.PARALLEL]: { sequence: 0, inputs: {}, outputs: {} },
   }
   try {
-    const priorIo = await fs.readJSON(IO_PATH) // TODO check schema
+    const priorIo = await api.readJSON(IO_PATH) // TODO check schema
     io[PROCTYPE.SERIAL].sequence = checkSequence(priorIo[PROCTYPE.SERIAL])
     io[PROCTYPE.PARALLEL].sequence = checkSequence(priorIo[PROCTYPE.PARALLEL])
   } catch (err) {
@@ -207,7 +187,7 @@ const updateIo = async (fs: IsolateApi, actions: Poolable[]) => {
     }
   }
   log('updateIo')
-  fs.writeJSON(IO_PATH, io)
+  api.writeJSON(IO_PATH, io)
   return io
 }
 const checkSequence = (io: { sequence: number }) => {

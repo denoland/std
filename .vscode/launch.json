@@ -11,7 +11,8 @@
       "cwd": "${workspaceFolder}",
       "runtimeExecutable": "~/.deno/bin/deno",
       "runtimeArgs": ["task", "watch", "--inspect-wait", "${relativeFile}"],
-      "attachSimplePort": 9229
+      "attachSimplePort": 9229,
+      "internalConsoleOptions": "openOnSessionStart"
     }
   ]
 }
