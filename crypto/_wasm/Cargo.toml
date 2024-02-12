@@ -22,7 +22,7 @@ blake3 = { version = "1.5.0", features = ["traits-preview"] }
 derive_more = "0.99.17"
 digest = { version = "0.10.7", features = ["core-api", "std"] }
 generic-array = "1.0.0"
-js-sys = "0.3.66"
+js-sys = "0.3.68"
 md4 = "0.10.2"
 md-5 = "0.10.6"
 ripemd = "0.1.3"
