@@ -183,5 +183,9 @@ function queueWrap(functions: IsolateFunctions): IsolateFunctions {
 
 function enqueue(name: string, params: Params, api: IsolateApi<C>) {
   const msg: QMessage = { nonce: ulid(), name, parameters: params }
-  return api.context.db!.enqueueMsg(msg)
+  const nonceLog = debug('AI:queue:' + msg.nonce.slice(-6))
+  nonceLog('start', name)
+  const result = api.context.db!.enqueueMsg(msg)
+  nonceLog('stop', name)
+  return result
 }

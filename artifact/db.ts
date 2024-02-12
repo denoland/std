@@ -48,7 +48,11 @@ export default class DB {
   async enqueueMsg(msg: QMessage, skipOutcome?: boolean) {
     const channel = new BroadcastChannel('queue-' + msg.nonce)
     await this.#kv.enqueue(msg)
-    const outcome = new Promise((resolve, reject) => {
+    if (skipOutcome) {
+      channel.close()
+      return
+    }
+    return new Promise((resolve, reject) => {
       channel.onmessage = (event) => {
         const outcome = event.data as Outcome
         log('received outcome on %s', channel.name, outcome)
@@ -60,10 +64,6 @@ export default class DB {
         }
       }
     })
-    if (skipOutcome) {
-      return
-    }
-    return outcome
   }
 
   async enqueueTail(dispatch: Dispatch, sequence: number) {
