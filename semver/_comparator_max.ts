@@ -24,7 +24,13 @@ export function comparatorMax(semver: SemVer, operator: Operator): SemVer {
     case "==":
     case "===":
     case "<=":
-      return semver;
+      return {
+        major: semver.major,
+        minor: semver.minor,
+        patch: semver.patch,
+        prerelease: semver.prerelease,
+        build: semver.build,
+      };
     case "<": {
       const patch = semver.patch - 1;
       const minor = patch >= 0 ? semver.minor : semver.minor - 1;
