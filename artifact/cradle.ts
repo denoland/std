@@ -78,7 +78,7 @@ class Cradle {
 // set is too big
 
 interface Cradle {
-  ping(params: Params): Promise<IsolateReturn>
+  ping(params?: Params): Promise<IsolateReturn>
   clone(params: { repo: string }): Promise<void>
   apiSchema(params: { isolate: string }): Promise<Record<string, object>>
   dispatch(params: Dispatch): Promise<IsolateReturn>

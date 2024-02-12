@@ -28,7 +28,7 @@ export default class IO {
     io.#fs = FS.create(db)
     return io
   }
-  async #processSerial(dispatch: Dispatch, sequence: number) {
+  async processSerial(dispatch: Dispatch, sequence: number) {
     await this.#db.awaitTail(dispatch.pid, sequence)
     const compartment = Compartment.create(dispatch.isolate)
     const memfs = await this.#fs.isolateFs(dispatch.pid)
@@ -59,7 +59,6 @@ export default class IO {
     const dispatch: Poolable = { type: 'DISPATCH', payload }
 
     const outcome = new Promise((resolve, reject) => {
-      // must start listening asap for BroadcastChannel to work
       this.#db.awaitOutcome(payload).then((outcome: Outcome) => {
         log('outcome', outcome)
         if (!outcome.error) {
@@ -129,7 +128,6 @@ export default class IO {
     pid: PID,
     parallel: IoStruct[PROCTYPE.PARALLEL],
   ) {
-    throw new Error('not implemented')
   }
   async #spawn(id: number, isolate: string, name: string, params: Params) {
     // const branchName = await git.currentBranch(this.#opts)

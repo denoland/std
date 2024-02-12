@@ -146,7 +146,10 @@ const directFunctions: IsolateFunctions = {
     return api.context.io!.dispatch(params as Dispatch)
   },
   serial: (params, api: IsolateApi<C>) => {
-    log('serial', params)
+    const dispatch = params.dispatch as Dispatch
+    const sequence = params.sequence as number
+    log('serial', dispatch.nonce)
+    return api.context.io!.processSerial(dispatch, sequence)
   },
 }
 

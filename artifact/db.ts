@@ -45,10 +45,10 @@ export default class DB {
       setTimeout(() => channel.close())
     })
   }
-  async enqueueMsg(msg: QMessage) {
+  async enqueueMsg(msg: QMessage, skipOutcome?: boolean) {
     const channel = new BroadcastChannel('queue-' + msg.nonce)
     await this.#kv.enqueue(msg)
-    return new Promise((resolve, reject) => {
+    const outcome = new Promise((resolve, reject) => {
       channel.onmessage = (event) => {
         const outcome = event.data as Outcome
         log('received outcome on %s', channel.name, outcome)
@@ -60,6 +60,10 @@ export default class DB {
         }
       }
     })
+    if (skipOutcome) {
+      return
+    }
+    return outcome
   }
 
   async enqueueTail(dispatch: Dispatch, sequence: number) {
@@ -69,8 +73,10 @@ export default class DB {
     await this.#kv.set(tailKey, true)
 
     // TODO use the api to get the function to call directly
-    const msg: QMessage = { nonce, name: 'serial', parameters: dispatch }
-    await this.enqueueMsg(msg)
+    const parameters = { dispatch, sequence }
+    const msg: QMessage = { nonce, name: 'serial', parameters }
+    const skipOutcome = true // else will deadlock
+    await this.enqueueMsg(msg, skipOutcome)
   }
   async awaitTail(pid: PID, sequence: number) {
     if (sequence === 0) {
@@ -210,7 +216,8 @@ export default class DB {
     return { keys, actions }
   }
   async deletePool(keys: Deno.KvKey[]) {
-    log('deletePool %o', keys)
+    const nonces = keys.map((key) => key[key.length - 1])
+    log('deletePool %o', nonces)
     await Promise.all(keys.map((key) => this.#kv.delete(key)))
   }
 }
