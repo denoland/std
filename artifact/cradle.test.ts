@@ -12,22 +12,21 @@ Deno.test.only('io', async (t) => {
     // TODO read the fs and see what the state of the file system is ?
   })
 
+  const pid: PID = {
+    account: 'dreamcatcher-tech',
+    repository: 'HAL',
+    branches: ['main'],
+  }
+  const dispatches = await artifact.dispatches({ isolate, pid })
   await t.step('local', async () => {
-    const pid: PID = {
-      account: 'dreamcatcher-tech',
-      repository: 'HAL',
-      branches: ['main'],
-    }
-    const dispatches = await artifact.dispatches({ isolate, pid })
     const result = await dispatches.local()
     log('local result', result)
     expect(result).toBe('local reply')
   })
-  // })
-  // await t.step('second local', async () => {
-  //   const second = await actions.local({})
-  //   expect(second).toBe('local reply')
-  // })
+  await t.step('second local', async () => {
+    const second = await dispatches.local()
+    expect(second).toBe('local reply')
+  })
   // await t.step('throws', async () => {
   //   const msg = 'Parameters Validation Error'
   //   await expect(() => actions.local('throwme')).rejects.toThrow(msg)

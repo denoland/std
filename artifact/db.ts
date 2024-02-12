@@ -84,15 +84,14 @@ export default class DB {
     }
     const tailKey = getTailKey(pid, sequence - 1)
     log('awaitPrior %o', tailKey)
-    let count = 0
-    while (count++ < 1000) {
-      const tail = await this.#kv.get(tailKey)
-      if (!tail.versionstamp) {
-        log('awaitPrior done after %d attempts', count)
+    const stream = this.#kv.watch([tailKey])
+    for await (const [event] of stream) {
+      log('awaitPrior event %o', event.key[event.key.length - 1])
+      if (!event.versionstamp) {
+        log('awaitPrior done')
         return
       }
     }
-    throw new Error(`Failed to awaitTail after ${count} attempts`)
   }
   async tailDone(pid: PID, sequence: number) {
     const tailKey = getTailKey(pid, sequence)
@@ -122,15 +121,6 @@ export default class DB {
     log('pooling start %o', nonce)
     await this.#kv.set(key, action)
     log('pooling done %o', nonce)
-    Promise.resolve().then(async () => {
-      // test the speed of watching, so can use instead of broadcast or poll
-      const stream = this.#kv.watch([key])
-      const logWatch = debug('AI:db:watch')
-      logWatch('starting stream watch %o', nonce)
-      for await (const event of stream) {
-        logWatch('pooling stream event %o', nonce)
-      }
-    })
   }
   awaitOutcome(dispatch: Dispatch): Promise<Outcome> {
     const { pid, nonce } = dispatch
@@ -150,7 +140,7 @@ export default class DB {
   announceOutcome(dispatch: Dispatch, outcome: Outcome) {
     const { pid, nonce } = dispatch
     const poolKey = getPoolKey(pid, nonce)
-    log('announceOutcome %o', poolKey)
+    log('announceOutcome %o', nonce)
     const channelKey = 'outcome-' + poolKey.join(':') // TODO escape : chars
     const channel = new BroadcastChannel(channelKey)
     channel.postMessage(outcome)
@@ -164,31 +154,48 @@ export default class DB {
    *  - if this pool item is not there, then you are done
    *  - loop again to get the lock
    */
-  async getHeadLock(pid: PID, action: Poolable) {
+  getHeadLock(pid: PID, action: Poolable) {
     assertPid(pid)
     const key = getHeadLockKey(pid)
     log('start getHeadLock %o', key)
 
     const lockId = 'headlock-' + ulid()
-    let result = { ok: false }
-    let count = 0
     const poolKey = getPoolKey(pid, action.payload.nonce)
-    while (!result.ok && count++ < 100) {
-      result = await this.#kv.atomic().check({ key, versionstamp: null })
-        .set(key, lockId, { expireIn: 5000 }).commit()
-      if (!result.ok) {
-        const existing = await this.#kv.get(poolKey)
-        if (!existing) {
-          log('pool item not found, so no headlock needed')
-          return
+
+    const headStream = this.#kv.watch([key])[Symbol.asyncIterator]()
+
+    const closeStream = () => {
+      assert(headStream.return)
+      headStream.return()
+    }
+
+    return new Promise<string | void>((resolve) => {
+      const loop = async () => {
+        let result = { ok: false }
+        while (!result.ok) {
+          // TODO wasted round trip to get pool on retry, but should check if
+          // the pool item exists as part of atomics.  Trick is to determine
+          // that this was why !result.ok
+          const existing = await this.#kv.get(poolKey)
+          if (!existing.versionstamp) {
+            log('pool item not found, so no headlock needed')
+            closeStream()
+            resolve()
+          }
+          result = await this.#kv.atomic().check({ key, versionstamp: null })
+            .set(key, lockId, { expireIn: 5000 }).commit()
+          if (!result.ok) {
+            log('headlock failed, waiting for lock release')
+            await headStream.next()
+            log('headlock released')
+          }
         }
+        log('lock acquired %o', lockId)
+        closeStream()
+        resolve(lockId)
       }
-    }
-    if (!result.ok) {
-      throw new Error(`Failed to get head lock after ${count} attempts`)
-    }
-    log('getHeadLock successful', lockId)
-    return lockId
+      loop()
+    })
   }
   async releaseHeadlock(pid: PID, lockId: string) {
     log('releaseHeadlock %s', lockId)
