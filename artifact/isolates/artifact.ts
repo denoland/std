@@ -2,6 +2,7 @@ import debug from '$debug'
 import git from 'https://esm.sh/isomorphic-git@1.25.3'
 import http from 'https://esm.sh/isomorphic-git@1.25.3/http/web'
 import { memfs } from 'https://esm.sh/memfs@4.6.0'
+import time from 'https://esm.sh/pretty-ms'
 import {
   Dispatch,
   ENTRY_BRANCH,
@@ -184,8 +185,14 @@ function queueWrap(functions: IsolateFunctions): IsolateFunctions {
 function enqueue(name: string, params: Params, api: IsolateApi<C>) {
   const msg: QMessage = { nonce: ulid(), name, parameters: params }
   const nonceLog = debug('AI:queue:' + msg.nonce.slice(-6))
+  const start = Date.now()
   nonceLog('start', name)
-  const result = api.context.db!.enqueueMsg(msg)
-  result.then(() => nonceLog('stop', name))
-  return result
+  return api.context.db!.enqueueMsg(msg)
+    .then((outcome) => {
+      nonceLog('stop', name, time(Date.now() - start))
+      return outcome
+    }).catch((error) => {
+      nonceLog('error', name, time(Date.now() - start))
+      throw error
+    })
 }
