@@ -27,10 +27,10 @@ Deno.test.only('io', async (t) => {
     const second = await dispatches.local()
     expect(second).toBe('local reply')
   })
-  // await t.step('throws', async () => {
-  //   const msg = 'Parameters Validation Error'
-  //   await expect(() => actions.local('throwme')).rejects.toThrow(msg)
-  // })
+  await t.step('throws', async () => {
+    const message = 'test message'
+    await expect(dispatches.error({ message })).rejects.toThrow(message)
+  })
   // await t.step('child process', async () => {
   //   const result = await actions.spawn({ isolate })
   //   expect(result).toBe('remote pong')

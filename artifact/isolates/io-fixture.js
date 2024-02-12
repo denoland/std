@@ -30,7 +30,7 @@ export const api = {
   },
 }
 export const functions = {
-  error: async ({ message }) => {
+  error: ({ message }) => {
     throw new Error(message)
   },
   spawn: async ({ isolate }) => {
@@ -39,10 +39,10 @@ export const functions = {
     const result = await pong()
     return result
   },
-  pong: async () => {
+  pong: () => {
     return 'remote pong'
   },
-  local: async () => {
+  local: () => {
     return 'local reply'
   },
 }
