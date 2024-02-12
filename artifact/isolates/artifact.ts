@@ -186,6 +186,6 @@ function enqueue(name: string, params: Params, api: IsolateApi<C>) {
   const nonceLog = debug('AI:queue:' + msg.nonce.slice(-6))
   nonceLog('start', name)
   const result = api.context.db!.enqueueMsg(msg)
-  nonceLog('stop', name)
+  result.then(() => nonceLog('stop', name))
   return result
 }
