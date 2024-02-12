@@ -14,10 +14,7 @@ export function rangeMax(range: Range): SemVer {
   let max;
   for (const comparators of range) {
     for (const comparator of comparators) {
-      const candidate = comparatorMax(
-        comparator.semver ?? comparator,
-        comparator.operator,
-      );
+      const candidate = comparatorMax(comparator);
       if (!testRange(candidate, range)) continue;
       max = (max && greaterThan(max, candidate)) ? max : candidate;
     }
