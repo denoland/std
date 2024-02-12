@@ -159,9 +159,19 @@ export const functions: IsolateFunctions = queueWrap(directFunctions)
 export const lifecycles: IsolateLifecycle = {
   async '@@mount'(api: IsolateApi<C>) {
     const db = await DB.create()
-    db.listenQueue(({ nonce, name, parameters }: QMessage) => {
+    db.listenQueue(async ({ nonce, name, parameters }: QMessage) => {
       log('listenQueue', name, nonce)
-      return directFunctions[name](parameters, api)
+      const nonceLog = debug('AI:queue:' + nonce.slice(-6))
+      const start = Date.now()
+      nonceLog('dequeue start', name)
+      try {
+        const outcome = await directFunctions[name](parameters, api)
+        nonceLog('dequeue stop', name, time(Date.now() - start))
+        return outcome
+      } catch (error) {
+        nonceLog('dequeue error', name, time(Date.now() - start))
+        throw error
+      }
     })
     const io = IO.create(db)
     const fs = Fs.create(db)
@@ -182,17 +192,17 @@ function queueWrap(functions: IsolateFunctions): IsolateFunctions {
   return wrapped
 }
 
-function enqueue(name: string, params: Params, api: IsolateApi<C>) {
+async function enqueue(name: string, params: Params, api: IsolateApi<C>) {
   const msg: QMessage = { nonce: ulid(), name, parameters: params }
-  const nonceLog = debug('AI:queue:' + msg.nonce.slice(-6))
+  const nonceLog = debug('AI:enqueue:' + msg.nonce.slice(-6))
   const start = Date.now()
   nonceLog('start', name)
-  return api.context.db!.enqueueMsg(msg)
-    .then((outcome) => {
-      nonceLog('stop', name, time(Date.now() - start))
-      return outcome
-    }).catch((error) => {
-      nonceLog('error', name, time(Date.now() - start))
-      throw error
-    })
+  try {
+    const outcome = await api.context.db!.enqueueMsg(msg)
+    nonceLog('stop', name, time(Date.now() - start))
+    return outcome
+  } catch (error) {
+    nonceLog('error', name, time(Date.now() - start))
+    throw error
+  }
 }

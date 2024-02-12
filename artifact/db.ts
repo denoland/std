@@ -73,6 +73,7 @@ export default class DB {
     await this.#kv.set(tailKey, true)
 
     // TODO use the api to get the function to call directly
+    // so that with the queue disabled, local testing still works
     const parameters = { dispatch, sequence }
     const msg: QMessage = { nonce, name: 'serial', parameters }
     const skipOutcome = true // else will deadlock
