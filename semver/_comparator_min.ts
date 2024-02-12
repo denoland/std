@@ -31,6 +31,12 @@ export function comparatorMin(semver: SemVer, operator: Operator): SemVer {
     case "=":
     case "==":
     case "===":
-      return semver;
+      return {
+        major: semver.major,
+        minor: semver.minor,
+        patch: semver.patch,
+        prerelease: semver.prerelease,
+        build: semver.build,
+      };
   }
 }
