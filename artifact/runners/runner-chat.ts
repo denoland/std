@@ -23,6 +23,7 @@ const debugToolResult = debug(base + ':ai-tool-result')
 const env = await load()
 
 if (!env['OPENAI_API_KEY']) {
+  log('env', env)
   throw new Error('missing openai api key: OPENAI_API_KEY')
 }
 const apiKey = env['OPENAI_API_KEY']
