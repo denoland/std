@@ -1,5 +1,5 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-import type { Operator, SemVer } from "./types.ts";
+import type { Comparator, SemVer } from "./types.ts";
 import { ANY, INVALID, MAX } from "./constants.ts";
 
 /**
@@ -9,11 +9,10 @@ import { ANY, INVALID, MAX } from "./constants.ts";
  * an out of range semver will be returned.
  * @returns the version, the MAX version or the next smallest patch version
  */
-export function comparatorMax(semver: SemVer, operator: Operator): SemVer {
-  if (semver === ANY) {
-    return MAX;
-  }
-  switch (operator) {
+export function comparatorMax(comparator: Comparator): SemVer {
+  const semver = comparator.semver ?? comparator;
+  if (semver === ANY) return MAX;
+  switch (comparator.operator) {
     case "!=":
     case "!==":
     case ">":

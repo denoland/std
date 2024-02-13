@@ -18,8 +18,8 @@ export function testRange(
   for (const r of range) {
     if (
       r.every((c) =>
-        greaterOrEqual(version, comparatorMin(c.semver ?? c, c.operator)) &&
-        lessOrEqual(version, comparatorMax(c.semver ?? c, c.operator))
+        greaterOrEqual(version, comparatorMin(c)) &&
+        lessOrEqual(version, comparatorMax(c))
       )
     ) {
       return true;
