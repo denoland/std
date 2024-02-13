@@ -12,10 +12,10 @@ function comparatorIsWildcard(c: Comparator): boolean {
 }
 
 /**
- * Returns true if the range of possible versions intersects with the other c1arators set of possible versions
- * @param c0 The left side c1arator
- * @param c1 The right side c1arator
- * @returns True if any part of the c1arators intersect
+ * Returns true if the range of possible versions intersects with the other comparators set of possible versions
+ * @param c0 The left side comparator
+ * @param c1 The right side comparator
+ * @returns True if any part of the comparators intersect
  */
 export function comparatorIntersects(
   c0: Comparator,
