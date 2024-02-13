@@ -32,7 +32,7 @@ export const functions = {
     console.log(help)
 
     assert(typeof help.runner === 'string', `no runner: ${help.runner}`)
-    log('found runner string:', help.runner)
+    log('found runner string:', help.runner, runners)
     assert(runners[help.runner], `no runner: ${help.runner}`)
     const { default: runner } = runners[help.runner]
 
