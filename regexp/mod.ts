@@ -2,8 +2,9 @@
 // This module is browser compatible.
 
 /**
- * Functions for tasks related to regular expression (regexps), such as
- * escaping text for interpolation into a regexp
+ * Functions for tasks related to
+ * {@link https://en.wikipedia.org/wiki/Regular_expression | regular expression} (regexp),
+ * such as escaping text for interpolation into a regexp.
  *
  * @module
  */
