@@ -23,8 +23,11 @@ const debugToolResult = debug(base + ':ai-tool-result')
 const env = await load()
 
 if (!env['OPENAI_API_KEY']) {
-  log('env', env)
-  throw new Error('missing openai api key: OPENAI_API_KEY')
+  const key = Deno.env.get('OPENAI_API_KEY')
+  if (!key) {
+    throw new Error('missing openai api key: OPENAI_API_KEY')
+  }
+  env['OPENAI_API_KEY'] = key
 }
 const apiKey = env['OPENAI_API_KEY']
 const ai = new OpenAI({ apiKey })
