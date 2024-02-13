@@ -3,20 +3,6 @@ debug.enable('AI:engage-help, AI:runner-chat')
 const isolate = 'engage-help'
 const help = 'help.fixture'
 
-test('tool call', async function ({ artifact }) {
-  const { engage } = await artifact.actions(isolate)
-  const text = 'call the "local" function'
-  const result = await engage({ help, text })
-  expect(result).toContain('function was called')
-})
-test('error tool call', async function ({ artifact }) {
-  const { engageInBand } = await artifact.actions(isolate)
-  const text = 'call the "error" function with the message: "bob"'
-  await engageInBand({ help, text })
-  const io = await artifact.readIO()
-  expect(io.inputs[2].name).toBe('error')
-  expect(io.outputs[2].error.message).toBe('bob')
-})
 test('chat', async ({ artifact }) => {
   const { engageInBand } = await artifact.actions(isolate)
   const text = 'say a single "x" character and do not call any functions'

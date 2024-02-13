@@ -23,14 +23,14 @@ Deno.serve(async (req) => {
     repository: 'HAL',
     branches: ['main'],
   }
-  const isolate = 'io-fixture'
-  log('dispatches')
-  const dispatches = await artifact.dispatches({ isolate, pid })
-  log('starting local')
-  const result2 = await dispatches.local()
-  log('local:', result2)
+  const isolate = 'engage-help'
+  const { engageInBand } = await artifact.dispatches({ isolate, pid })
+  const helpResult = await engageInBand({
+    help: 'help.fixture',
+    text: 'hello',
+  })
 
-  return new Response('reping: ' + JSON.stringify(result, null, 2))
+  return new Response('reping: ' + JSON.stringify(helpResult, null, 2))
 
   // await artifact.pull('dreamcatcher-tech/HAL')
   // log('pull done')
