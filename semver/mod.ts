@@ -91,11 +91,6 @@
  * aware of the risk. However, it is still not appropriate to assume that they have
  * opted into taking a similar risk on the _next_ set of prerelease versions.
  *
- * Note that this behavior can be suppressed (treating all prerelease versions as
- * if they were normal versions, for the purpose of range matching) by setting the
- * `includePrerelease` flag on the options object to any [functions](#functions)
- * that do range matching.
- *
  * #### Prerelease Identifiers
  *
  * The method `.increment` takes an additional `identifier` string argument that
