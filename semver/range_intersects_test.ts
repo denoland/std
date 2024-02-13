@@ -69,6 +69,7 @@ Deno.test({
       ["1.x", "1.3.0 || <1.0.0 >2.0.0", true],
       ["*", "*", true],
       ["x", "", true],
+      ["<7.0.0-beta.20", ">7.0.0-beta.0", true],
     ];
 
     for (const [r1, r2, expected] of versions) {
