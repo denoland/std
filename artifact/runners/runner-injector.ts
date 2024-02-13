@@ -1,6 +1,6 @@
 import equal from 'https://esm.sh/fast-deep-equal'
 import debug from '$debug'
-import runner from './runner-chat.js'
+import runner from './runner-chat.ts'
 
 const log = debug('AI:runner-injector')
 

@@ -1,3 +1,4 @@
+import { JSONSchemaType } from 'https://esm.sh/ajv@8.12.0'
 import IsolateApi from './isolate-api.ts'
 export { IsolateApi }
 export type { CborUint8Array } from 'https://esm.sh/v135/json-joy@9.9.1/es6/json-pack/cbor/types.d.ts?exports=CbotUint8Array'
@@ -6,6 +7,7 @@ export enum PROCTYPE {
   PARALLEL = 'parallel',
 }
 export const IO_PATH = '.io.json'
+export type { JSONSchemaType }
 
 export type JsonValue = string | number | boolean | null | JsonValue[] | {
   [key: string]: JsonValue
@@ -34,9 +36,7 @@ export type DispatchFunctions = {
 export type Params = Record<string, unknown>
 
 export type IsolateApiSchema = {
-  [key: string]: {
-    [key: string]: JsonValue
-  }
+  [key: string]: JSONSchemaType<any>
 }
 export type Isolate = {
   api: IsolateApiSchema
@@ -136,4 +136,19 @@ export enum KEYSPACES {
    * execution.
    */
   TAIL = 'TAIL',
+}
+
+export type HelpConfig = {
+  model?: 'gpt-3.5-turbo-1106' | 'gpt-4-turbo-preview'
+  temperature?: number
+}
+export type Help = {
+  description?: string
+  config?: HelpConfig
+  runner?: string
+  commands?: string[]
+  instructions: string[]
+  done?: string
+  examples?: string[]
+  tests?: string[]
 }

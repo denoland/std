@@ -1,5 +1,6 @@
 import * as posix from 'https://deno.land/std@0.213.0/path/posix/mod.ts'
 import { IsolateApi } from '@/artifact/constants.ts'
+import { Help } from '@/artifact/constants.ts'
 
 export const api = {
   load: {
@@ -25,23 +26,21 @@ export const api = {
 
 export const functions = {
   load: async ({ help }: { help: string }, api: IsolateApi) => {
-    const files = await api.ls('helps')
-
-    const js = await api.readJSON(`helps/${help}.json`)
+    const object = await api.readJSON(`helps/${help}.json`) as Help
     // TODO do some format checking
-    return js
+    return object
   },
   loadAll: async (_: object, api: IsolateApi) => {
     // TODO provide a glob as first arg
     const helps = []
     const files = await api.ls('helps')
-    // for (const file of files) {
-    //   if (file.endsWith('.json')) {
-    //     const name = posix.basename(file, posix.extname(file))
-    //     const help = await functions.load({ help: name })
-    //     helps.push({ name, help })
-    //   }
-    // }
-    // return helps
+    for (const file of files) {
+      if (file.endsWith('.json')) {
+        const name = posix.basename(file, posix.extname(file))
+        const help = await functions.load({ help: name }, api)
+        helps.push({ name, help })
+      }
+    }
+    return helps
   },
 }

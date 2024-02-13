@@ -33,7 +33,7 @@ export const functions = {
     assert(typeof help.runner === 'string', `no runner: ${help.runner}`)
     log('found runner:', help.runner)
 
-    const { default: runner } = await import(`../runners/${help.runner}.js`)
+    const { default: runner } = await import(`../runners/${help.runner}.ts`)
 
     return await runner({ help, text }, api)
   },

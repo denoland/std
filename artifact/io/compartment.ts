@@ -30,6 +30,7 @@ export default class Compartment {
   #load(isolate: string) {
     assert(!this.#module, 'module already loaded: ' + isolate)
     log('load isolate:', isolate)
+    assert(isolates[isolate as keyof typeof isolates], `not found: ${isolate}`)
     this.#module = isolates[isolate as keyof typeof isolates] as Isolate
     const { functions, api } = this.#module
     assert(typeof api === 'object', 'api not exported')

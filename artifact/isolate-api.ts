@@ -27,6 +27,10 @@ export default class IsolateApi<T extends object = Default> {
     // TODO but these need to be wrapped in a dispatch call somewhere
     return compartment.functions(this)
   }
+  isolateApiSchema(isolate: string) {
+    const compartment = Compartment.create(isolate)
+    return compartment.api
+  }
   writeJSON(path: string, json: object) {
     isJsonPath(path)
     const file = JSON.stringify(json, null, 2)
@@ -84,7 +88,7 @@ export default class IsolateApi<T extends object = Default> {
     }
   }
   async ls(path: string) {
-    isRelative(path)
+    isDirectory(path)
     // get the git listing
     const walk = await git.walk({
       fs: this.#fs,
@@ -92,35 +96,16 @@ export default class IsolateApi<T extends object = Default> {
       trees: [git.TREE()],
       map: async (filepath: string, [entry]) => {
         log('filepath', filepath)
-        // if (
-        //   // don't skip the root directory
-        //   filepath !== '.' &&
-        //   !path.startsWith(filepath) &&
-        //   posixDirname(filepath) !== path
-        // ) {
-        //   return null
-        // } else {
-        //   return filepath
-        // }
-        // const type = await entry!.type()
-        // if (type === 'tree') {
-        //   return
-        // }
-        // if (filepath.startsWith(path)) {
-        //   return filepath
-        // }
-        // return null
+        if (filepath.startsWith(path)) {
+          return filepath
+          // TODO do not automatically recurse
+        }
       },
     })
-    debugger
-    // but we can't actually deal with directories in git since it doesn't
-    // do dirs
-    const gitFiles = await git.listFiles({ fs: this.#fs, dir: '/' })
-    // then merge with the listing on the actual filesystem, if anything
-
+    log('walk:', walk)
     // TODO handle deletion of files, which should be stored in the index
-    const files = this.#fs.readdirSync('/' + path)
-    return files
+    // TODO check the filesystem hasn't changed
+    return walk
   }
   rm(path: string) {
     isRelative(path)
@@ -153,6 +138,10 @@ const isRelativeFile = (path: string) => {
   const basename = posix.basename(path)
   const test = path.endsWith(basename) && basename !== ''
   assert(test, `path must be a file, not a directory: ${path}`)
+}
+const isDirectory = (path: string) => {
+  isRelative(path)
+  assert(path.endsWith('/'), `path must be a directory: ${path}`)
 }
 class FileNotFoundError extends Error {
   code = 'ENOENT'
