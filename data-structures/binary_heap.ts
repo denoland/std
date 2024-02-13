@@ -32,7 +32,7 @@ function getParentIndex(index: number) {
  *   ascend,
  *   BinaryHeap,
  *   descend,
- * } from "https://deno.land/std@$STD_VERSION/data_structures/mod.ts";
+ * } from "https://deno.land/std@$STD_VERSION/data-structures/mod.ts";
  * import { assertEquals } from "https://deno.land/std@$STD_VERSION/assert/assert_equals.ts";
  *
  * const maxHeap = new BinaryHeap<number>();

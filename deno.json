@@ -33,7 +33,7 @@
     "crypto/_wasm/target",
     "cov",
     "jsonc/testdata",
-    "front_matter/testdata",
+    "front-matter/testdata",
     "coverage",
     "docs"
   ]

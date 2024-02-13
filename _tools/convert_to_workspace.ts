@@ -33,7 +33,7 @@ const toRemove = `1. Do not import symbols with an underscore in the name.
 
    Bad:
    \`\`\`ts
-   import { test } from "https://deno.land/std@$STD_VERSION/front_matter/test.ts";
+   import { test } from "https://deno.land/std@$STD_VERSION/front-matter/test.ts";
    \`\`\`
 `;
 let readme = await Deno.readTextFile("README.md");

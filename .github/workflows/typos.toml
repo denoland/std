@@ -10,7 +10,7 @@ extend-exclude = [
   "*.json",
   "*_test.ts",
   "*.generated.mjs",
-  "media_types/vendor",
+  "media-types/vendor",
   "http/testdata",
   "http/user_agent.ts"
 ]

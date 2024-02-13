@@ -11,7 +11,7 @@ type Format = "yaml" | "toml" | "json" | "unknown";
  * @param formats A list of formats to test for. Defaults to all supported formats.
  *
  * ```ts
- * import { test } from "https://deno.land/std@$STD_VERSION/front_matter/mod.ts";
+ * import { test } from "https://deno.land/std@$STD_VERSION/front-matter/mod.ts";
  * import { assert } from "https://deno.land/std@$STD_VERSION/assert/assert.ts";
  *
  * assert(test("---\ntitle: Three dashes marks the spot\n---\n"));

@@ -38,7 +38,7 @@ import { join } from "../path/join.ts";
 import { relative } from "../path/relative.ts";
 import { resolve } from "../path/resolve.ts";
 import { SEPARATOR_PATTERN } from "../path/constants.ts";
-import { contentType } from "../media_types/content_type.ts";
+import { contentType } from "../media-types/content_type.ts";
 import { calculate, ifNoneMatch } from "./etag.ts";
 import {
   isRedirectStatus,

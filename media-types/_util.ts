@@ -1,6 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-/** Supporting functions for media_types that do not make part of the public
+/** Supporting functions for media-types that do not make part of the public
  * API.
  *
  * @module

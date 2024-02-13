@@ -35,7 +35,7 @@ export type KnownExtensionOrType =
  *
  * Returns `undefined` if unable to resolve the media type.
  *
- * > Note: a side effect of `deno/x/media_types` was that you could pass a file
+ * > Note: a side effect of `deno/x/media-types` was that you could pass a file
  * > name (e.g. `file.json`) and it would return the content type. This behavior
  * > is intentionally not supported here. If you want to get an extension for a
  * > file name, use `extname()` from `std/path/mod.ts` to determine the
@@ -43,7 +43,7 @@ export type KnownExtensionOrType =
  *
  * @example
  * ```ts
- * import { contentType } from "https://deno.land/std@$STD_VERSION/media_types/content_type.ts";
+ * import { contentType } from "https://deno.land/std@$STD_VERSION/media-types/content_type.ts";
  *
  * contentType(".json"); // "application/json; charset=UTF-8"
  * contentType("text/html"); // "text/html; charset=UTF-8"

@@ -44,7 +44,7 @@ async function discoverExports(pkg: string) {
     if (name.includes("/.") || name.includes("/_")) continue; // hidden/internal files
     if (
       (name.endsWith("_test") || name.endsWith("/test")) &&
-      !(name === "/test" && pkg === "front_matter")
+      !(name === "/test" && pkg === "front-matter")
     ) continue; // test files
     if (name.includes("/example/") || name.endsWith("_example")) continue; // example files
     if (name.includes("/testdata/")) continue; // testdata files

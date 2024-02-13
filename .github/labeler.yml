@@ -25,9 +25,9 @@ crypto:
 csv:
   - changed-files:
     - any-glob-to-any-file: csv/**
-data_structures:
+data-structures:
   - changed-files:
-    - any-glob-to-any-file: data_structures/**
+    - any-glob-to-any-file: data-structures/**
 datetime:
   - changed-files:
     - any-glob-to-any-file: datetime/**
@@ -46,9 +46,9 @@ flags:
 fmt:
   - changed-files:
     - any-glob-to-any-file: fmt/**
-front_matter:
+front-matter:
   - changed-files:
-    - any-glob-to-any-file: front_matter/**
+    - any-glob-to-any-file: front-matter/**
 fs:
   - changed-files:
     - any-glob-to-any-file: fs/**
@@ -73,9 +73,9 @@ jsonc:
 log:
   - changed-files:
     - any-glob-to-any-file: log/**
-media_types:
+media-types:
   - changed-files:
-    - any-glob-to-any-file: media_types/**
+    - any-glob-to-any-file: media-types/**
 msgpack:
   - changed-files:
     - any-glob-to-any-file: msgpack/**

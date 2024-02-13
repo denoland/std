@@ -4,7 +4,7 @@ import { assertEquals } from "../assert/mod.ts";
 import { extensionsByType } from "./mod.ts";
 
 Deno.test({
-  name: "media_types - extensionsByType()",
+  name: "media-types - extensionsByType()",
   fn() {
     const fixtures: [string, string[] | undefined][] = [
       ["image/gif", ["gif"]],

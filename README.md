@@ -63,13 +63,13 @@ Check out the documentation [here](https://deno.land/std?doc).
 
    Bad:
    ```ts
-   import { test } from "https://deno.land/std@$STD_VERSION/front_matter/test.ts";
+   import { test } from "https://deno.land/std@$STD_VERSION/front-matter/test.ts";
    ```
 
 ## Stability
 
 | Sub-module      | Status     |
-| --------------- | ---------- |
+|-----------------| ---------- |
 | archive         | Unstable   |
 | assert          | Stable     |
 | async           | Stable     |
@@ -79,14 +79,14 @@ Check out the documentation [here](https://deno.land/std?doc).
 | console         | Unstable   |
 | crypto          | Stable     |
 | csv             | Stable     |
-| data_structures | Unstable   |
+| data-structures | Unstable   |
 | datetime        | Unstable   |
 | dotenv          | Unstable   |
 | encoding        | Unstable   |
 | expect          | Unstable   |
 | flags           | Unstable   |
 | fmt             | Stable     |
-| front_matter    | Unstable   |
+| front-matter    | Unstable   |
 | fs              | Stable     |
 | html            | Unstable   |
 | http            | Unstable   |
@@ -95,7 +95,7 @@ Check out the documentation [here](https://deno.land/std?doc).
 | json            | Stable     |
 | jsonc           | Stable     |
 | log             | Unstable   |
-| media_types     | Stable     |
+| media-types     | Stable     |
 | msgpack         | Unstable   |
 | net             | Unstable   |
 | path            | Unstable   |

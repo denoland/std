@@ -6,7 +6,7 @@
  * This API is inspired by the GoLang {@linkcode https://pkg.go.dev/mime | mime} package
  * and {@link https://github.com/jshttp/mime-types | jshttp/mime-types}, and is
  * designed to integrate and improve the APIs from
- * {@link https://deno.land/x/media_types | x/media_types}.
+ * {@link https://deno.land/x/media-types | x/media-types}.
  *
  * The `vendor` folder contains copy of the
  * {@link https://github.com/jshttp/mime-types | jshttp/mime-db} `db.json` file along

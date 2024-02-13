@@ -79,7 +79,7 @@ deps["collections"] = await check("collections", "ready");
 deps["console"] = await check("console", "not ready");
 deps["crypto"] = await check("crypto", "needs clean up");
 deps["csv"] = await check("csv", "ready");
-deps["data_structures"] = await check("data_structures", "not ready");
+deps["data-structures"] = await check("data-structures", "not ready");
 deps["datetime"] = await check("datetime", "deprecated");
 deps["dotenv"] = await check("dotenv", "not ready");
 deps["encoding"] = await check("encoding", "needs clean up", [
@@ -99,7 +99,7 @@ deps["fmt"] = await check("fmt", "ready", [
   "duration.ts",
   "printf.ts",
 ]);
-deps["front_matter"] = await check("front_matter", "needs clean up");
+deps["front-matter"] = await check("front-matter", "needs clean up");
 deps["fs"] = await check("fs", "ready");
 deps["html"] = await check("html", "not ready");
 deps["http"] = await check("http", "needs clean up");
@@ -107,7 +107,7 @@ deps["io"] = await check("io", "deprecated");
 deps["json"] = await check("json", "ready");
 deps["jsonc"] = await check("jsonc", "ready");
 deps["log"] = await check("log", "not ready");
-deps["media_types"] = await check("media_types", "ready");
+deps["media-types"] = await check("media-types", "ready");
 deps["msgpack"] = await check("msgpack", "not ready");
 deps["path"] = await check("path", "needs clean up");
 deps["permissions"] = await check("permissions", "deprecated");

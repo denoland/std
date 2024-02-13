@@ -44,7 +44,7 @@ function _extract<T>(
  * @param formats A list of formats to recognize. Defaults to all supported formats.
  *
  * ```ts
- * import { recognize } from "https://deno.land/std@$STD_VERSION/front_matter/mod.ts";
+ * import { recognize } from "https://deno.land/std@$STD_VERSION/front-matter/mod.ts";
  * import { assertEquals } from "https://deno.land/std@$STD_VERSION/assert/assert_equals.ts";
  *
  * assertEquals(recognize("---\ntitle: Three dashes marks the spot\n---\n"), "yaml");
@@ -82,7 +82,7 @@ function recognize(str: string, formats?: Format[]): Format {
  * @returns A function that extracts front matter from a string with the given parsers.
  *
  * ```ts
- * import { createExtractor, Parser } from "https://deno.land/std@$STD_VERSION/front_matter/mod.ts";
+ * import { createExtractor, Parser } from "https://deno.land/std@$STD_VERSION/front-matter/mod.ts";
  * import { assertEquals } from "https://deno.land/std@$STD_VERSION/assert/assert_equals.ts";
  * import { parse as parseYAML } from "https://deno.land/std@$STD_VERSION/yaml/parse.ts";
  * import { parse as parseTOML } from "https://deno.land/std@$STD_VERSION/toml/parse.ts";

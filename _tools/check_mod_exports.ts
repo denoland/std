@@ -11,10 +11,10 @@ const EXCLUDED_PATHS = [
   "internal/warn_on_deprecated_api.ts",
   "dotenv/load.ts",
   "path/glob.ts",
-  "front_matter/yaml.ts",
-  "front_matter/json.ts",
-  "front_matter/toml.ts",
-  "front_matter/any.ts",
+  "front-matter/yaml.ts",
+  "front-matter/json.ts",
+  "front-matter/toml.ts",
+  "front-matter/any.ts",
   "yaml/schema.ts",
 ];
 

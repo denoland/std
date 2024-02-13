@@ -19,7 +19,7 @@ import { consumeMediaParam, decode2331Encoding } from "./_util.ts";
  *
  * @example
  * ```ts
- * import { parseMediaType } from "https://deno.land/std@$STD_VERSION/media_types/parse_media_type.ts";
+ * import { parseMediaType } from "https://deno.land/std@$STD_VERSION/media-types/parse_media_type.ts";
  *
  * parseMediaType("application/JSON"); // ["application/json", undefined]
  * parseMediaType("text/html; charset=UTF-8"); // ["text/html", { charset: "UTF-8" }]

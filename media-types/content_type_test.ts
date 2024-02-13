@@ -4,7 +4,7 @@ import { contentType } from "./content_type.ts";
 import { assertEquals } from "../assert/mod.ts";
 
 Deno.test({
-  name: "media_types - contentType()",
+  name: "media-types - contentType()",
   fn() {
     const fixtures = [
       [".json", "application/json; charset=UTF-8"],
@@ -22,7 +22,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "media_types - contentType()",
+  name: "media-types - contentType()",
   fn() {
     let _str: string;
     // For well-known content types, the return type is a string.

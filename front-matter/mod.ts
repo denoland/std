@@ -14,9 +14,9 @@
  *
  * Supported formats:
  *
- * - [`YAML`](./front_matter/yaml.ts)
- * - [`TOML`](./front_matter/toml.ts)
- * - [`JSON`](./front_matter/json.ts)
+ * - [`YAML`](./front-matter/yaml.ts)
+ * - [`TOML`](./front-matter/toml.ts)
+ * - [`JSON`](./front-matter/json.ts)
  *
  * ### Basic usage
  *
@@ -24,7 +24,7 @@
  *
  * ```markdown
  * ---
- * module: front_matter
+ * module: front-matter
  * tags:
  *   - yaml
  *   - toml
@@ -37,8 +37,8 @@
  * example.ts
  *
  * ```ts
- * import { extract } from "https://deno.land/std@$STD_VERSION/front_matter/any.ts";
- * import { test } from "https://deno.land/std@$STD_VERSION/front_matter/test.ts";
+ * import { extract } from "https://deno.land/std@$STD_VERSION/front-matter/any.ts";
+ * import { test } from "https://deno.land/std@$STD_VERSION/front-matter/test.ts";
  *
  * const str = await Deno.readTextFile("./example.md");
  *
@@ -52,9 +52,9 @@
  * ```sh
  * $ deno run ./example.ts
  * {
- *   frontMatter: "module: front_matter\ntags:\n  - yaml\n  - toml\n  - json",
+ *   frontMatter: "module: front-matter\ntags:\n  - yaml\n  - toml\n  - json",
  *   body: "deno is awesome",
- *   attrs: { module: "front_matter", tags: [ "yaml", "toml", "json" ] }
+ *   attrs: { module: "front-matter", tags: [ "yaml", "toml", "json" ] }
  * }
  * ```
  *
@@ -63,16 +63,16 @@
  * [TOML](#toml) parsers will be imported as dependencies.
  *
  * If you need only one specific format then you can import the file named
- * respectively from [here](./front_matter).
+ * respectively from [here](./front-matter).
  *
  * ### Advanced usage
  *
  * ```ts
- * import { test as _test } from "https://deno.land/std@$STD_VERSION/front_matter/test.ts";
+ * import { test as _test } from "https://deno.land/std@$STD_VERSION/front-matter/test.ts";
  * import {
  *   createExtractor,
  *   Parser,
- * } from "https://deno.land/std@$STD_VERSION/front_matter/mod.ts";
+ * } from "https://deno.land/std@$STD_VERSION/front-matter/mod.ts";
  * import { parse } from "https://deno.land/std@$STD_VERSION/toml/parse.ts";
  *
  * const extract = createExtractor({
