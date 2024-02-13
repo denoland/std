@@ -1,6 +1,7 @@
 import { assert } from 'std/assert/mod.ts'
 import debug from '$debug'
 const log = debug('AI:isolates:engage-help')
+import runners from '../runners/index.ts'
 
 const engage = {
   description: 'engage the help',
@@ -31,9 +32,9 @@ export const functions = {
     console.log(help)
 
     assert(typeof help.runner === 'string', `no runner: ${help.runner}`)
-    log('found runner:', help.runner)
-
-    const { default: runner } = await import(`../runners/${help.runner}.ts`)
+    log('found runner string:', help.runner)
+    assert(runners[help.runner], `no runner: ${help.runner}`)
+    const { default: runner } = runners[help.runner]
 
     return await runner({ help, text }, api)
   },
