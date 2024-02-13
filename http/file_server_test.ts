@@ -227,7 +227,7 @@ Deno.test("serveDir() returns a response even if fileinfo is inaccessible", asyn
   // even if the fileInfo for a particular file cannot be obtained.
 
   // Assuming that fileInfo of `test_file.txt` cannot be accessible
-  const denoStatStub = stub(Deno, "stat", (path): Promise<Deno.FileInfo> => {
+  using denoStatStub = stub(Deno, "stat", (path): Promise<Deno.FileInfo> => {
     if (path.toString().includes("test_file.txt")) {
       return Promise.reject(new Error("__stubed_error__"));
     }
@@ -236,7 +236,6 @@ Deno.test("serveDir() returns a response even if fileinfo is inaccessible", asyn
   const req = new Request("http://localhost/");
   const res = await serveDir(req, serveDirOptions);
   const page = await res.text();
-  denoStatStub.restore();
 
   assertEquals(res.status, 200);
   assertStringIncludes(page, "/test_file.txt");
