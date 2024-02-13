@@ -3,6 +3,7 @@
  */
 import { IFs, memfs } from 'https://esm.sh/memfs@4.6.0'
 import * as snapshot from 'https://esm.sh/memfs@4.6.0/lib/snapshot'
+import * as print from 'https://esm.sh/memfs@4.6.0/lib/print'
 import pretty from 'https://esm.sh/pretty-bytes@6.1.1'
 import DB from './db.ts'
 import debug from '$debug'
@@ -28,14 +29,17 @@ export default class FS {
     // TODO cache locally in case we get reused
     const { fs } = memfs()
     // TODO use unionFs to make layers for each branch
-    snapshot.fromBinarySnapshotSync(snapshotData, { fs })
+    snapshot.fromBinarySnapshotSync(snapshotData, { fs, path: '/.git' })
     // log('snapshot loaded', toTreeSync(fs))
     return fs
   }
   async updateIsolateFs(pid: PID, fs: IFs) {
-    const uint8 = snapshot.toBinarySnapshotSync({ fs })
+    const uint8 = snapshot.toBinarySnapshotSync({ fs, path: '/.git' })
     log('updateIsolateFs', pretty(uint8.length))
     await this.#db.updateIsolateFs(pid, uint8)
     return { size: uint8.length, prettySize: pretty(uint8.length) }
+  }
+  printFs(fs: IFs) {
+    return print.toTreeSync(fs)
   }
 }

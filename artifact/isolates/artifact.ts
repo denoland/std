@@ -122,7 +122,10 @@ const directFunctions: IsolateFunctions = {
     const dir = '/'
     const url = `https://github.com/${account}/${repository}.git`
     log('cloning %s', url)
-    await git.clone({ fs, http, dir, url, noCheckout: true })
+    // TODO make an index file without doing a full checkout
+    // https://github.com/dreamcatcher-tech/artifact/issues/28
+    await git.clone({ fs, http, dir, url })
+
     log('cloned')
     const { prettySize: size } = await api.context.fs!.updateIsolateFs(pid, fs)
     log('snapshot size:', size)
@@ -194,7 +197,7 @@ function queueWrap(functions: IsolateFunctions): IsolateFunctions {
 
 async function enqueue(name: string, params: Params, api: IsolateApi<C>) {
   const msg: QMessage = { nonce: ulid(), name, parameters: params }
-  const nonceLog = debug('AI:enqueue:' + msg.nonce.slice(-6))
+  const nonceLog = debug('AI:queue:' + msg.nonce.slice(-6))
   const start = Date.now()
   nonceLog('start', name)
   try {

@@ -1,5 +1,5 @@
 import IsolateApi from './isolate-api.ts'
-
+export { IsolateApi }
 export type { CborUint8Array } from 'https://esm.sh/v135/json-joy@9.9.1/es6/json-pack/cbor/types.d.ts?exports=CbotUint8Array'
 export enum PROCTYPE {
   SERIAL = 'serial',

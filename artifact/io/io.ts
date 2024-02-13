@@ -94,6 +94,7 @@ export default class IO {
     const api = IsolateApi.create(fs)
     const { keys, actions } = await this.#db.getPooledActions(pid)
     const io = await updateIo(api, actions)
+
     await git.add({ fs, dir: '/', filepath: IO_PATH })
     const hash = await git.commit({
       fs,
@@ -159,6 +160,7 @@ const updateIo = async (api: IsolateApi, actions: Poolable[]) => {
     io[PROCTYPE.SERIAL].sequence = checkSequence(priorIo[PROCTYPE.SERIAL])
     io[PROCTYPE.PARALLEL].sequence = checkSequence(priorIo[PROCTYPE.PARALLEL])
   } catch (err) {
+    log('io file not found')
     if (err.code !== 'ENOENT') {
       throw err
     }

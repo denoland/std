@@ -55,7 +55,7 @@ export default class DB {
     return new Promise((resolve, reject) => {
       channel.onmessage = (event) => {
         const outcome = event.data as Outcome
-        log('received outcome on %s', channel.name, outcome)
+        log('received outcome on %s', channel.name)
         channel.close()
         if (outcome.error) {
           reject(deserializeError(outcome.error))
@@ -77,6 +77,7 @@ export default class DB {
     const parameters = { dispatch, sequence }
     const msg: QMessage = { nonce, name: 'serial', parameters }
     const skipOutcome = true // else will deadlock
+    // TODO WARNING this is a detached promise, so the engine can fault here
     await this.enqueueMsg(msg, skipOutcome)
   }
   async awaitTail(pid: PID, sequence: number) {
