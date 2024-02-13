@@ -2,14 +2,7 @@
 import type { Comparator } from "./types.ts";
 import { compare } from "./compare.ts";
 import { testRange } from "./test_range.ts";
-
-function comparatorIsWildcard(c: Comparator): boolean {
-  return (
-    Number.isNaN(c.major) && Number.isNaN(c.minor) && Number.isNaN(c.patch) &&
-    (c.prerelease === undefined || c.prerelease.length === 0) &&
-    (c.build === undefined || c.build.length === 0)
-  );
-}
+import { isWildcardComparator } from "./_shared.ts";
 
 /**
  * Returns true if the range of possible versions intersects with the other comparators set of possible versions
@@ -26,12 +19,12 @@ export function comparatorIntersects(
 
   if (op0 === "" || op0 === undefined) {
     // if c0 is empty comparator, then returns true
-    if (comparatorIsWildcard(c0)) {
+    if (isWildcardComparator(c0)) {
       return true;
     }
     return testRange(c0, [[c1]]);
   } else if (op1 === "" || op1 === undefined) {
-    if (comparatorIsWildcard(c1)) {
+    if (isWildcardComparator(c1)) {
       return true;
     }
     return testRange(c1, [[c0]]);
