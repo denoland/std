@@ -30,7 +30,7 @@ Deno.serve(async (req) => {
     text: 'hello',
   })
 
-  return new Response('reping: ' + JSON.stringify(helpResult, null, 2))
+  return new Response('chat response: ' + JSON.stringify(helpResult, null, 2))
 
   // await artifact.pull('dreamcatcher-tech/HAL')
   // log('pull done')

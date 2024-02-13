@@ -1,16 +1,18 @@
 import equal from 'https://esm.sh/fast-deep-equal'
 import debug from '$debug'
 import runner from './runner-chat.ts'
+import { Help } from '@/artifact/constants.ts'
+import { IsolateApi } from '@/artifact/constants.ts'
 
 const log = debug('AI:runner-injector')
 
-type Args = { help: object; text: string }
-export default async ({ help: injectee, text }: Args) => {
+type Args = { help: Help; text: string }
+export default async ({ help: injectee, text }: Args, api: IsolateApi) => {
   log('injector:', injectee, text)
 
-  const { loadAll } = await hooks.actions('load-help')
-  const allHelps = await loadAll()
-  const helps = allHelps.filter(({ help: Help }) => !equal(help, injectee))
+  const { loadAll } = await api.isolateActions('load-help')
+  const allHelps: Help[] = await loadAll()
+  const helps = allHelps.filter((help) => !equal(help, injectee))
 
   injectee = { ...injectee }
   injectee.instructions = [...injectee.instructions]
@@ -19,5 +21,5 @@ export default async ({ help: injectee, text }: Args) => {
     injectee.instructions.push(JSON.stringify(donor, null, 2))
   }
   log('injectee', injectee)
-  return runner({ help: injectee, text })
+  return runner({ help: injectee, text }, api)
 }

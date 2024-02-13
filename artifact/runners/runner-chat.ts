@@ -43,7 +43,7 @@ export class AI {
   #sysprompt!: string
   #config: HelpConfig = {}
   #tools: OpenAI.ChatCompletionTool[] = []
-  #actions: Record<string, Function> = {}
+  #actions: Record<string, (parameters: object) => unknown> = {}
   #sessionPath = '/chat-1.session.json'
   #api!: IsolateApi
   static #cache = new Map()
@@ -206,20 +206,23 @@ export class AI {
       return
     }
     const { load } = await this.#api.isolateActions('load-help')
-    const result: OpenAI.ChatCompletionTool[] = []
+    const tools: OpenAI.ChatCompletionTool[] = []
     const names = new Set()
-    const actions: Record<string, Function> = {}
     for (const command of commands) {
       log('loading command:', command)
-      let tool, action, name: string
+      let tool: OpenAI.ChatCompletionTool, action, name: string
       if (!command.includes(':')) {
         assert(command.startsWith('helps/'), `invalid help: ${command}`)
         name = posix.basename(command)
         const help = await load({ help: name })
         assert(help.description, `missing description: ${command}`)
+
+        const { engage } = await this.#api.isolateActions('engage-help')
+        //
+
         // const { engage } = await hooks.spawns('engage-help')
-        // action = ({ text }) => engage({ help: name, text })
-        // tool = helpToGptApi(name, help, engage)
+        action = ({ text }: { text: string }) => engage({ help: name, text })
+        tool = helpToGptApi(name, help, engage)
       } else {
         const [isolate, _name] = command.split(':')
         name = _name
@@ -234,12 +237,11 @@ export class AI {
       assert(!names.has(name), `duplicate action: ${command}`)
       names.add(name)
       assert(typeof action === 'function', `invalid action: ${action}`)
-      actions[name] = action
+      this.#actions[name] = action
       assert(typeof tool === 'object', `invalid tool: ${tool}`)
-      result.push(tool)
+      tools.push(tool)
     }
-    this.#actions = actions
-    this.#tools = result
+    this.#tools = tools
   }
 }
 const helpToGptApi = (name: string, help: Help, api: IsolateApiSchema) => {
@@ -252,7 +254,7 @@ const helpToGptApi = (name: string, help: Help, api: IsolateApiSchema) => {
     },
   }
 
-  return {
+  const tool: OpenAI.ChatCompletionTool = {
     type: 'function',
     function: {
       name,
@@ -260,6 +262,7 @@ const helpToGptApi = (name: string, help: Help, api: IsolateApiSchema) => {
       parameters,
     },
   }
+  return tool
 }
 
 const isolateToGptApi = (name: string, api: JSONSchemaType<any>) => {
@@ -268,12 +271,13 @@ const isolateToGptApi = (name: string, api: JSONSchemaType<any>) => {
   const parameters: Record<string, unknown> = { ...api }
   delete parameters.title
   delete parameters.description
-  return {
+  const tool: OpenAI.ChatCompletionTool = {
     type: 'function',
     function: {
       name,
       description: api.description,
       parameters,
     },
-  } as OpenAI.ChatCompletionTool
+  }
+  return tool
 }
