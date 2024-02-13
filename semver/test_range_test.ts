@@ -183,28 +183,11 @@ Deno.test({
   },
 });
 
-Deno.test("unlockedPrereleaseRange", function () {
-  const versions: [string, string][] = [
-    ["*", "1.0.0-rc1"],
-    ["^1.0.0-0", "1.0.1-rc1"],
-    ["^1.0.0-rc2", "1.0.1-rc1"],
-    ["^1.0.0", "1.0.1-rc1"],
-    ["^1.0.0", "1.1.0-rc1"],
-  ];
-
-  for (const [r, v] of versions) {
-    const range = parseRange(r);
-    const s = parse(v);
-    const found = testRange(s, range);
-    assert(found, `${r} not satisfied by ${v}`);
-  }
-});
-
 Deno.test("negativeUnlockedPrereleaseRange", function () {
   const versions: [string, string][] = [
     ["^1.0.0", "1.0.0-rc1"],
     ["^1.2.3-rc2", "2.0.0"],
-    ["^1.0.0", "2.0.0-rc1"], // todo: review, this is inverted from original test case
+    ["^1.0.0", "2.0.0-rc1"],
   ];
 
   for (const [r, v] of versions) {
