@@ -47,6 +47,7 @@ async function check(
     }
   }
   deps.delete(submod);
+  deps.delete("version.ts");
   return { name: submod, set: deps, state };
 }
 
