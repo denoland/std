@@ -1,5 +1,5 @@
-import debug from '$debug'
-const log = debug('AI:io.fixture')
+import { Debug } from '@utils'
+const log = Debug('AI:io.fixture')
 
 export const api = {
   error: {

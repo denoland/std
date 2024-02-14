@@ -1,13 +1,13 @@
 import validator from './validator.ts'
 import { assert } from 'std/assert/mod.ts'
-import debug from '$debug'
+import { Debug } from '@utils'
 import { DispatchFunctions, Isolate, Params } from '@/artifact/constants.ts'
 import IsolateApi from '../isolate-api.ts'
 
 // deno has no dynamic runtime imports, so this is a workaround
 import isolates from '../isolates/index.ts'
 
-const log = debug('AI:compartment')
+const log = Debug('AI:compartment')
 const cache = new Map()
 
 export default class Compartment {

@@ -14,9 +14,9 @@ import {
 import { memfs } from 'https://esm.sh/memfs@4.6.0'
 import IsolateApi from './isolate-api.ts'
 import { assert } from 'std/assert/assert.ts'
-import debug from '$debug'
+import { Debug } from '@utils'
 import { ulid } from 'std/ulid/mod.ts'
-const log = debug('AI:cradle')
+const log = Debug('AI:cradle')
 
 class Cradle {
   #compartment!: Compartment

@@ -2,7 +2,7 @@ import { deserializeError, serializeError } from 'npm:serialize-error'
 import Compartment from './compartment.ts'
 import { assert } from 'std/assert/mod.ts'
 import git from '$git'
-import debug from '$debug'
+import { Debug } from '@utils'
 import IsolateApi from '@/artifact/isolate-api.ts'
 import {
   Dispatch,
@@ -17,7 +17,7 @@ import DB from '@/artifact/db.ts'
 import { IFs } from 'https://esm.sh/v135/memfs@4.6.0/lib/index.js'
 import { Poolable } from '@/artifact/constants.ts'
 import FS from '@/artifact/fs.ts'
-const log = debug('AI:io')
+const log = Debug('AI:io')
 
 export default class IO {
   #db!: DB

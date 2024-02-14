@@ -2,10 +2,10 @@ import Compartment from './io/compartment.ts'
 import { IFs, memfs } from 'https://esm.sh/memfs@4.6.0'
 import { assert } from 'std/assert/mod.ts'
 import * as posix from 'https://deno.land/std@0.213.0/path/posix/mod.ts'
-import debug from '$debug'
+import { Debug } from '@utils'
 import git from '$git'
 
-const log = debug('AI:isolateApi')
+const log = Debug('AI:isolateApi')
 interface Default {
   [key: string]: unknown
 }
@@ -21,7 +21,38 @@ export default class IsolateApi<T extends object = Default> {
     api.#fs = fs
     return api
   }
-  isolateActions(isolate: string) {
+  /**
+   * When any of these functions are called, they will be executed in the same
+   * branch is the caller, and will be executed in the order they were called.
+   * A call to this function will cause two commits to occur on the current
+   * branch - the first to store the function call, and the second to store the
+   * result.
+   * @param isolate The name of the isolate to load the serials for
+   */
+  async serials(isolate: string) {
+  }
+  /**
+   * When any of these functions are called, they will be executed in parallel
+   * in a new branch, with no guarantee of order of execution.  A call to this
+   * function will cause 3 commits to occur, 2 of which may be pooled with other
+   * parallel functions.  The commits are:
+   * 1. The current branch, to declare the function invocation - may be pooled
+   * 2. The new branch, to conclude the function invocation
+   * 3. The curent branch, to merge the result back in - may be pooled
+   * @param isolate The name of the isolate to load the parallels for
+   */
+  parallels(isolate: string) {
+    // typescript made me do it
+    return this.functions(isolate)
+  }
+  /**
+   * Used to call the functions of an isolate purely, without going thru the IO
+   * subsystem which would otherwise cost a commit to the chain.
+   * @param isolate The name of the isolate to load the functions for
+   * @returns An object keyed by API function name, with values being the
+   * function itself.
+   */
+  functions(isolate: string) {
     // TODO these need some kind of PID attached ?
     const compartment = Compartment.create(isolate)
     // TODO but these need to be wrapped in a dispatch call somewhere
@@ -118,6 +149,7 @@ export default class IsolateApi<T extends object = Default> {
     }
   }
   get context() {
+    // TODO at creation, this should flag context capable and reject if not
     return this.#context
   }
   set context(context: Partial<T>) {

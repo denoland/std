@@ -6,10 +6,10 @@ import * as snapshot from 'https://esm.sh/memfs@4.6.0/lib/snapshot'
 import * as print from 'https://esm.sh/memfs@4.6.0/lib/print'
 import pretty from 'https://esm.sh/pretty-bytes@6.1.1'
 import DB from './db.ts'
-import debug from '$debug'
+import { Debug } from '@utils'
 import { CborUint8Array, PID } from '@/artifact/constants.ts'
 
-const log = debug('AI:fs')
+const log = Debug('AI:fs')
 export default class FS {
   #db!: DB
   static create(db: DB) {

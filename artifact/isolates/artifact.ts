@@ -1,4 +1,4 @@
-import debug from '$debug'
+import { Debug } from '@utils'
 import git from 'https://esm.sh/isomorphic-git@1.25.3'
 import http from 'https://esm.sh/isomorphic-git@1.25.3/http/web'
 import { memfs } from 'https://esm.sh/memfs@4.6.0'
@@ -12,14 +12,14 @@ import {
   PID,
   QMessage,
 } from '@/artifact/constants.ts'
-import DB from '../db.ts'
 import { ulid } from 'std/ulid/mod.ts'
 import IsolateApi from '../isolate-api.ts'
 import Compartment from '../io/compartment.ts'
 import IO from '@io/io.ts'
-import Fs from '../fs.ts'
+import DB from '../db.ts'
+import FS from '../fs.ts'
 
-const log = debug('AI:artifact')
+const log = Debug('AI:artifact')
 const repo = {
   type: 'object',
   required: ['repo'],
@@ -93,9 +93,9 @@ export const api = {
 type C = {
   db: DB
   io: IO
-  fs: Fs
+  fs: FS
 }
-const directFunctions: IsolateFunctions = {
+export const directFunctions: IsolateFunctions = {
   ping: (params: Params) => {
     log('ping')
     return params
@@ -104,6 +104,7 @@ const directFunctions: IsolateFunctions = {
     log('reping')
     return enqueue('ping', params, api)
   },
+  // need to split the git functions out to be an isolate
   async clone(params, api: IsolateApi<C>) {
     const start = Date.now()
     const repo = params.repo as string
@@ -162,13 +163,13 @@ export const functions: IsolateFunctions = queueWrap(directFunctions)
 export const lifecycles: IsolateLifecycle = {
   async '@@mount'(api: IsolateApi<C>) {
     const db = await DB.create()
-    db.listenQueue(async ({ nonce, name, parameters }: QMessage) => {
+    db.listenQueue(async ({ nonce, name, params }: QMessage) => {
       log('listenQueue', name, nonce)
-      const nonceLog = debug('AI:queue:' + nonce.slice(-6))
+      const nonceLog = Debug('AI:queue:' + nonce.slice(-6))
       const start = Date.now()
       nonceLog('dequeue start', name)
       try {
-        const outcome = await directFunctions[name](parameters, api)
+        const outcome = await directFunctions[name](params, api)
         nonceLog('dequeue stop', name, time(Date.now() - start))
         return outcome
       } catch (error) {
@@ -177,7 +178,7 @@ export const lifecycles: IsolateLifecycle = {
       }
     })
     const io = IO.create(db)
-    const fs = Fs.create(db)
+    const fs = FS.create(db)
     api.context = { db, io, fs }
   },
   '@@unmount'(api: IsolateApi<C>) {
@@ -196,8 +197,8 @@ function queueWrap(functions: IsolateFunctions): IsolateFunctions {
 }
 
 async function enqueue(name: string, params: Params, api: IsolateApi<C>) {
-  const msg: QMessage = { nonce: ulid(), name, parameters: params }
-  const nonceLog = debug('AI:queue:' + msg.nonce.slice(-6))
+  const msg: QMessage = { nonce: ulid(), name, params: params }
+  const nonceLog = Debug('AI:queue:' + msg.nonce.slice(-6))
   const start = Date.now()
   nonceLog('start', name)
   try {

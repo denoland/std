@@ -1,11 +1,11 @@
-import debug from '$debug'
-import { expect } from 'https://deno.land/std@0.213.0/expect/mod.ts'
+import './shim.ts'
 
-const _log = debug('AI:test')
-export const log = (...args) => {
-  return _log(...args)
-}
-export { expect }
+import 'npm:supports-color'
+import Debug from 'npm:debug'
+export { expect } from 'https://deno.land/std@0.213.0/expect/mod.ts'
+
+export { Debug }
+export const log = Debug('AI:tests')
 
 // export const help = test.extend({
 //   help: async ({ artifact, task }, use) => {

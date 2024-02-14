@@ -103,7 +103,7 @@ export enum QUEUE_TYPES {
   ISOLATE_API = 'ISOLATE_API',
   DISPATCH = 'DISPATCH',
 }
-export type QMessage = { nonce: string; name: string; parameters: Params }
+export type QMessage = { nonce: string; name: string; params: Params }
 export type QCallback = (
   msg: QMessage,
 ) => Promise<unknown> | unknown

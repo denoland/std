@@ -1,6 +1,6 @@
 import { assert } from 'std/assert/mod.ts'
-import debug from '$debug'
-const log = debug('AI:isolates:engage-help')
+import { Debug } from '@utils'
+const log = Debug('AI:isolates:engage-help')
 import runners from '../runners/index.ts'
 
 const engage = {
@@ -27,7 +27,7 @@ export const api = {
 export const functions = {
   engageInBand: async ({ help: path, text }, api) => {
     log('engage:', path)
-    const { load } = await api.isolateActions('load-help')
+    const { load } = await api.functions('load-help')
     const help = await load({ help: path })
     console.log(help)
 

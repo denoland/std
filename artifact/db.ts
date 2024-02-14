@@ -14,16 +14,22 @@ import {
   QueuedDispatch,
 } from '@/artifact/constants.ts'
 import { assert } from 'std/assert/assert.ts'
-import debug from '$debug'
+import { Debug } from '@utils'
 import { deserializeError, serializeError } from 'npm:serialize-error'
 
-const log = debug('AI:db')
-
+const log = Debug('AI:db')
+type Queue = (msg: QMessage) => Promise<void>
 export default class DB {
   #kv!: Deno.Kv
-  static async create() {
+  #queue: Queue = async (msg: QMessage) => {
+    await this.#kv.enqueue(msg)
+  }
+  static async create(queue?: Queue) {
     const db = new DB()
     db.#kv = await openKv()
+    if (queue) {
+      db.#queue = queue
+    }
     return db
   }
   stop() {
@@ -47,8 +53,9 @@ export default class DB {
   }
   async enqueueMsg(msg: QMessage, skipOutcome?: boolean) {
     const channel = new BroadcastChannel('queue-' + msg.nonce)
-    await this.#kv.enqueue(msg)
+    await this.#queue(msg)
     if (skipOutcome) {
+      // TODO WARNING this is a detached promise, so the engine can fault here
       channel.close()
       return
     }
@@ -74,10 +81,9 @@ export default class DB {
 
     // TODO use the api to get the function to call directly
     // so that with the queue disabled, local testing still works
-    const parameters = { dispatch, sequence }
-    const msg: QMessage = { nonce, name: 'serial', parameters }
+    const params = { dispatch, sequence }
+    const msg: QMessage = { nonce, name: 'serial', params }
     const skipOutcome = true // else will deadlock
-    // TODO WARNING this is a detached promise, so the engine can fault here
     await this.enqueueMsg(msg, skipOutcome)
   }
   async awaitTail(pid: PID, sequence: number) {
@@ -149,13 +155,6 @@ export default class DB {
     // must be last, and one event loop later, else message not transmitted
     setTimeout(() => channel.close())
   }
-  /**
-   * Lock process:
-   *  - optimistically try to grab the lock, atomically checking it is blank
-   *  - if it failed, try get the pool item you are working for
-   *  - if this pool item is not there, then you are done
-   *  - loop again to get the lock
-   */
   getHeadLock(pid: PID, action: Poolable) {
     assertPid(pid)
     const key = getHeadLockKey(pid)

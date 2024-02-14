@@ -6,6 +6,22 @@
   "configurations": [
     {
       "request": "launch",
+      "name": "io",
+      "type": "node",
+      "cwd": "${workspaceFolder}",
+      "runtimeExecutable": "~/.deno/bin/deno",
+      "runtimeArgs": [
+        "task",
+        "watch",
+        "--inspect-wait",
+        "artifact/io/io.test.ts"
+      ],
+      "attachSimplePort": 9229,
+      "internalConsoleOptions": "openOnSessionStart",
+      "console": "integratedTerminal"
+    },
+    {
+      "request": "launch",
       "name": "runner-chat",
       "type": "node",
       "cwd": "${workspaceFolder}",
