@@ -99,7 +99,7 @@ Check out the documentation [here](https://deno.land/std?doc).
 | msgpack         | Unstable   |
 | net             | Unstable   |
 | path            | Unstable   |
-| permissions     | Deprecated |
+| permissions     | Unstable   |
 | regexp          | Unstable   |
 | semver          | Unstable   |
 | streams         | Unstable   |
