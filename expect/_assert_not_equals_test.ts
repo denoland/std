@@ -6,7 +6,7 @@ import { assert, AssertionError } from "../assert/mod.ts";
 import { assertEquals } from "./_assert_equals.ts";
 import { assertNotEquals } from "./_assert_not_equals.ts";
 
-Deno.test("NotEquals", function () {
+Deno.test("assertNotEquals() passes when values are not equals", function () {
   const a = { foo: "bar" };
   const b = { bar: "foo" };
   assertNotEquals<unknown>(a, b);

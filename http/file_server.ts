@@ -636,7 +636,7 @@ export async function serveDir(
   if (opts.headers && !isRedirectResponse) {
     for (const header of opts.headers) {
       const headerSplit = header.split(":");
-      const name = headerSplit[0];
+      const name = headerSplit[0]!;
       const value = headerSplit.slice(1).join(":");
       response.headers.append(name, value);
     }

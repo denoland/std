@@ -1,7 +1,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import { assert } from "../assert/mod.ts";
 import { INVALID, MIN } from "./constants.ts";
-import { isComparator } from "./is_comparator.ts";
+import { isComparator } from "./_is_comparator.ts";
 
 Deno.test({
   name: "valid_comparator",
