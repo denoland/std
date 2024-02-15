@@ -1,3 +1,14 @@
+### 0.216.0 / 2024.02.15
+
+- BREAKING(path): remove `path/windows/separator.ts` (#4292)
+- BREAKING(semver): remove `SemVerRange` and `isSemVerRange()` (#4295)
+- BREAKING(semver): remove `eq()`, `gt()`, `gte()`, `lt()`, `lte()` and `neq()`
+  (#4294)
+- BREAKING(semver): remove `outside()` (#4293)
+- feat(datetime): `format()` options (#4285)
+- fix(semver): return new object instance in `comparatorMin()` and
+  `comparatorMax()` (#4314)
+
 ### 0.215.0 / 2024.02.08
 
 - BREAKING(log): remove `WARNING` log level (#4258)
