@@ -8,7 +8,6 @@
 - feat(datetime): `format()` options (#4285)
 - fix(semver): return new object instance in `comparatorMin()` and
   `comparatorMax()` (#4314)
-- fix: ci workflow (#4290)
 
 ### 0.215.0 / 2024.02.08
 
