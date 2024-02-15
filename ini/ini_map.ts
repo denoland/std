@@ -344,6 +344,7 @@ export class IniMap {
       this.#appendOrDeleteLine(lineValue, LineOp.Add);
     } else {
       // For global values, find the line preceding the first section
+      lineValue.num = this.#lines.length + 1;
       for (const [i, line] of this.#lines.entries()) {
         if (line.type === "section") {
           lineValue.num = i + 1;
