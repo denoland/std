@@ -85,13 +85,13 @@ const testCases = [
     "f2fc2319bd29457ccd01e8e194ee9bd7e97298b6610df4ab0f3d5baa0b2d7ccf69829edb74edef",
     "6L6CGGN5FFCXZTIB5DQZJ3U327UXFGFWMEG7JKYPHVN2UCZNPTHWTAU63N2O33Y=",
   ],
-];
+] as const;
 
 Deno.test({
   name: "encodeBase32()",
   fn() {
     for (const [bin, b32] of testCases) {
-      assertEquals(encodeBase32(fromHexString(bin as string)), b32);
+      assertEquals(encodeBase32(fromHexString(bin)), b32);
     }
   },
 });
@@ -100,7 +100,7 @@ Deno.test({
   name: "decodeBase32()",
   fn() {
     for (const [bin, b32] of testCases) {
-      assertEquals(toHexString(decodeBase32(b32 as string)), bin);
+      assertEquals(toHexString(decodeBase32(b32)), bin);
     }
   },
 });

@@ -120,7 +120,7 @@ export function decode32(buf: Uint8Array, offset = 0): [number, number] {
     i <= len;
     i += 1, shift += SHIFT
   ) {
-    const byte = buf[i] as number;
+    const byte = buf[i]!;
     decoded += (byte & REST) * Math.pow(2, shift);
     if (!(byte & MSB)) return [decoded, i + 1];
   }

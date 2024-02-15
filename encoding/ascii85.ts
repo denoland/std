@@ -44,9 +44,9 @@ export interface Ascii85Options {
   delimiter?: boolean;
 }
 const rfc1924 =
-  "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz!#$%&()*+-;<=>?@^_`{|}~";
+  "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz!#$%&()*+-;<=>?@^_`{|}~" as const;
 const Z85 =
-  "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ.-:+=^!/*?&<>()[]{}@%$#";
+  "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ.-:+=^!/*?&<>()[]{}@%$#" as const;
 
 /**
  * Converts data into an ascii58-encoded string.
@@ -114,10 +114,10 @@ export function encodeAscii85(
       }
       break;
     case "RFC 1924":
-      output = output.map((val) => rfc1924[val.charCodeAt(0) - 33]) as string[];
+      output = output.map((val) => rfc1924[val.charCodeAt(0) - 33]!);
       break;
     case "Z85":
-      output = output.map((val) => Z85[val.charCodeAt(0) - 33]) as string[];
+      output = output.map((val) => Z85[val.charCodeAt(0) - 33]!);
       break;
   }
   return output.slice(0, output.length - difference).join("");

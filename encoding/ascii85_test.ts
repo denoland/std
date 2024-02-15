@@ -202,11 +202,11 @@ Deno.test({
       ["<~FCfN8Bl7P~>", "testing"],
       ["<~A7]XsCgh3l~>", "denoland"],
       ["<~@<5pmBfIsm@:X:cAH~>", "ascii85 adobe"],
-    ];
+    ] as const;
 
     for (const [input, expect] of tests) {
       assertEquals(
-        decodeAscii85(input as string),
+        decodeAscii85(input),
         utf8encoder.encode(expect),
       );
     }

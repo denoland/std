@@ -82,7 +82,7 @@ export function encodeBase58(data: ArrayBuffer | Uint8Array | string): string {
   }
 
   b58Encoding.forEach((byteValue) =>
-    strResult.push(base58alphabet[byteValue] as string)
+    strResult.push(base58alphabet[byteValue]!)
   );
 
   return strResult.join("");

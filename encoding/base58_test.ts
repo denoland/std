@@ -26,7 +26,7 @@ const testSetString = [
     ]),
     "HNZata7iMYWmk5RvZRTiAsSDhV8366zq2YGb3tLH5Upf74F",
   ],
-];
+] as const;
 
 const testSetBinary = testSetString.map(([data, b58]) => {
   if (typeof data === "string") {
@@ -41,7 +41,7 @@ const testSetBinary = testSetString.map(([data, b58]) => {
 
 Deno.test("encodeBase58() encodes string", () => {
   for (const [input, output] of testSetString) {
-    assertEquals(encodeBase58(input!), output);
+    assertEquals(encodeBase58(input), output);
   }
 });
 
