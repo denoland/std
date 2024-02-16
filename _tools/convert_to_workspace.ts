@@ -43,9 +43,9 @@ await Deno.writeTextFile("README.md", readme);
 let fileServer = await Deno.readTextFile("http/file_server.ts");
 fileServer = fileServer.replace(
   `import { VERSION } from "../version.ts";`,
-  `import { version } from "./deno.json" with { type: "json" };`,
+  `import denoConfig from "./deno.json" with { type: "json" };`,
 );
-fileServer = fileServer.replaceAll("${VERSION}", "${version}");
+fileServer = fileServer.replaceAll("${VERSION}", "${denoConfig.version}");
 fileServer = fileServer.replace(
   "https://deno.land/std/http/file_server.ts",
   "jsr:@std/http@${version}/file_server",
@@ -55,9 +55,12 @@ await Deno.writeTextFile("http/file_server.ts", fileServer);
 let fileServerTest = await Deno.readTextFile("http/file_server_test.ts");
 fileServerTest = fileServerTest.replace(
   `import { VERSION } from "../version.ts";`,
-  `import { version } from "./deno.json" with { type: "json" };`,
+  `import denoConfig from "./deno.json" with { type: "json" };`,
 );
-fileServerTest = fileServerTest.replaceAll("${VERSION}", "${version}");
+fileServerTest = fileServerTest.replaceAll(
+  "${VERSION}",
+  "${denoConfig.version}",
+);
 await Deno.writeTextFile("http/file_server_test.ts", fileServerTest);
 
 const packages = await discoverPackages();
