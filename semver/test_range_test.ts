@@ -5,7 +5,7 @@ import { parse } from "./parse.ts";
 import { parseRange } from "./parse_range.ts";
 import { testRange } from "./test_range.ts";
 
-Deno.test("range", async (t) => {
+Deno.test("testRange() returns true when the version is in the range", async (t) => {
   const versions: [string, string][] = [
     ["1.0.0 - 2.0.0", "1.2.3"],
     ["^1.2.3+build", "1.2.3"],
@@ -100,7 +100,7 @@ Deno.test("range", async (t) => {
 });
 
 Deno.test({
-  name: "negativeRange",
+  name: "testRange() returns false when the version is not in the range",
   fn: async (t) => {
     const versions: [string, string][] = [
       ["1.0.0 - 2.0.0", "2.2.3"],
@@ -108,6 +108,7 @@ Deno.test({
       ["^1.2.3+build", "2.0.0"],
       ["^1.2.3+build", "1.2.0"],
       ["1.2.3-pre+asdf - 2.4.3-pre+asdf", "2.4.3"],
+      ["1.2.3+asdf - 2.4.3+asdf", "2.4.3-alpha"],
       ["^1.2.3", "1.2.3-pre"],
       ["^1.2", "1.2.0-pre"],
       [">1.2", "1.3.0-beta"],
@@ -166,6 +167,14 @@ Deno.test({
       ["^1.2.3", "2.0.0-alpha"],
       ["^1.2.3", "1.2.2"],
       ["^1.2", "1.1.9"],
+
+      // unsatisfiable patterns with prereleases
+      ["*", "1.0.0-rc1"],
+      ["^1.0.0-0", "1.0.1-rc1"],
+      ["^1.0.0-rc2", "1.0.1-rc1"],
+      ["^1.0.0", "1.0.1-rc1"],
+      ["^1.0.0", "1.1.0-rc1"],
+      ["<=1.2.3", "1.2.3-beta"],
 
       // invalid ranges never satisfied!
       ["blerg", "1.2.3"],
