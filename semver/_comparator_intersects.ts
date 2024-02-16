@@ -1,9 +1,9 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import type { Comparator } from "./types.ts";
-import { greaterOrEqual } from "./greater_or_equal.ts";
-import { lessOrEqual } from "./less_or_equal.ts";
-import { comparatorMin } from "./_comparator_min.ts";
-import { comparatorMax } from "./_comparator_max.ts";
+import { compare } from "./compare.ts";
+import { testRange } from "./test_range.ts";
+import { isWildcardComparator } from "./_shared.ts";
+
 /**
  * Returns true if the range of possible versions intersects with the other comparators set of possible versions
  * @param c0 The left side comparator
@@ -14,41 +14,41 @@ export function comparatorIntersects(
   c0: Comparator,
   c1: Comparator,
 ): boolean {
-  const l0 = comparatorMin(c0);
-  const l1 = comparatorMax(c0);
-  const r0 = comparatorMin(c1);
-  const r1 = comparatorMax(c1);
+  const op0 = c0.operator;
+  const op1 = c1.operator;
 
-  // We calculate the min and max ranges of both comparators.
-  // The minimum min is 0.0.0, the maximum max is ANY.
-  //
-  // Comparators with equality operators have the same min and max.
-  //
-  // We then check to see if the min's of either range falls within the span of the other range.
-  //
-  // A couple of intersection examples:
-  // ```
-  // l0 ---- l1
-  //     r0 ---- r1
-  // ```
-  // ```
-  //     l0 ---- l1
-  // r0 ---- r1
-  // ```
-  // ```
-  // l0 ------ l1
-  //    r0--r1
-  // ```
-  // ```
-  // l0 - l1
-  // r0 - r1
-  // ```
-  //
-  // non-intersection example
-  // ```
-  // l0 -- l1
-  //          r0 -- r1
-  // ```
-  return (greaterOrEqual(l0, r0) && lessOrEqual(l0, r1)) ||
-    (greaterOrEqual(r0, l0) && lessOrEqual(r0, l1));
+  if (op0 === "" || op0 === undefined) {
+    // if c0 is empty comparator, then returns true
+    if (isWildcardComparator(c0)) {
+      return true;
+    }
+    return testRange(c0, [[c1]]);
+  } else if (op1 === "" || op1 === undefined) {
+    if (isWildcardComparator(c1)) {
+      return true;
+    }
+    return testRange(c1, [[c0]]);
+  }
+
+  const cmp = compare(c0, c1);
+
+  const sameDirectionIncreasing = (op0 === ">=" || op0 === ">") &&
+    (op1 === ">=" || op1 === ">");
+  const sameDirectionDecreasing = (op0 === "<=" || op0 === "<") &&
+    (op1 === "<=" || op1 === "<");
+  const sameSemVer = cmp === 0;
+  const differentDirectionsInclusive = (op0 === ">=" || op0 === "<=") &&
+    (op1 === ">=" || op1 === "<=");
+  const oppositeDirectionsLessThan = cmp === -1 &&
+    (op0 === ">=" || op0 === ">") &&
+    (op1 === "<=" || op1 === "<");
+  const oppositeDirectionsGreaterThan = cmp === 1 &&
+    (op0 === "<=" || op0 === "<") &&
+    (op1 === ">=" || op1 === ">");
+
+  return sameDirectionIncreasing ||
+    sameDirectionDecreasing ||
+    (sameSemVer && differentDirectionsInclusive) ||
+    oppositeDirectionsLessThan ||
+    oppositeDirectionsGreaterThan;
 }
