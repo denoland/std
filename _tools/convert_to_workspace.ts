@@ -48,7 +48,7 @@ fileServer = fileServer.replace(
 fileServer = fileServer.replaceAll("${VERSION}", "${denoConfig.version}");
 fileServer = fileServer.replace(
   "https://deno.land/std/http/file_server.ts",
-  "jsr:@std/http@${version}/file_server",
+  "jsr:@std/http@${denoConfig.version}/file_server",
 );
 await Deno.writeTextFile("http/file_server.ts", fileServer);
 
