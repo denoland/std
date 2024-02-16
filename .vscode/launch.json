@@ -17,7 +17,7 @@
         "artifact/io/io.test.ts"
       ],
       "attachSimplePort": 9229,
-      "internalConsoleOptions": "openOnSessionStart",
+      "internalConsoleOptions": "neverOpen",
       "console": "integratedTerminal"
     },
     {
@@ -33,7 +33,7 @@
         "artifact/runners/runner-chat.test.ts"
       ],
       "attachSimplePort": 9229,
-      "internalConsoleOptions": "openOnSessionStart",
+      "internalConsoleOptions": "neverOpen",
       "console": "integratedTerminal"
     },
     {
@@ -44,7 +44,7 @@
       "runtimeExecutable": "~/.deno/bin/deno",
       "runtimeArgs": ["task", "watch", "--inspect-wait", "${relativeFile}"],
       "attachSimplePort": 9229,
-      "internalConsoleOptions": "openOnSessionStart"
+      "internalConsoleOptions": "neverOpen"
     }
   ]
 }

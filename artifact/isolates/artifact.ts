@@ -1,6 +1,6 @@
 import { Debug } from '@utils'
-import git from 'https://esm.sh/isomorphic-git@1.25.3'
-import http from 'https://esm.sh/isomorphic-git@1.25.3/http/web'
+import git from '$git'
+import http from '$git/http/web'
 import { memfs } from 'https://esm.sh/memfs@4.6.0'
 import time from 'https://esm.sh/pretty-ms'
 import {
@@ -30,10 +30,6 @@ const repo = {
     },
   },
 }
-
-// https://github.com/isomorphic-git/isomorphic-git/pull/1864
-globalThis.CompressionStream =
-  undefined as unknown as typeof globalThis.CompressionStream
 
 export const api = {
   ping: {
@@ -105,6 +101,27 @@ export const directFunctions: IsolateFunctions = {
     return enqueue('ping', params, api)
   },
   // need to split the git functions out to be an isolate
+  async init(params, api: IsolateApi<C>) {
+    const start = Date.now()
+    const repo = params.repo as string
+    const [account, repository] = repo.split('/')
+    const pid: PID = {
+      account,
+      repository,
+      branches: [ENTRY_BRANCH],
+    }
+    // TODO handle existing repo
+
+    const { fs } = memfs()
+    const dir = '/'
+    await git.init({ fs, dir, defaultBranch: ENTRY_BRANCH })
+    // // must commit empty so that anything at all can be done
+    // await git.commit({ fs, dir, message: 'init', author: { name: 'AI' } })
+    // log('init', FS.printFs(fs))
+    const { prettySize: size } = await api.context.fs!.updateIsolateFs(pid, fs)
+    log('snapshot size:', size)
+    return { pid, size, elapsed: Date.now() - start }
+  },
   async clone(params, api: IsolateApi<C>) {
     const start = Date.now()
     const repo = params.repo as string
@@ -130,15 +147,12 @@ export const directFunctions: IsolateFunctions = {
     log('cloned')
     const { prettySize: size } = await api.context.fs!.updateIsolateFs(pid, fs)
     log('snapshot size:', size)
-    return { size, elapsed: Date.now() - start }
+    return { pid, size, elapsed: Date.now() - start }
   },
   pull(params, api: IsolateApi<C>) {
     throw new Error('not implemented')
   },
   push(params, api: IsolateApi<C>) {
-    throw new Error('not implemented')
-  },
-  init(params, api: IsolateApi<C>) {
     throw new Error('not implemented')
   },
   apiSchema: (params: Params) => {
@@ -155,6 +169,11 @@ export const directFunctions: IsolateFunctions = {
     const sequence = params.sequence as number
     log('serial', dispatch.nonce)
     return api.context.io!.processSerial(dispatch, sequence)
+  },
+  parallel: (params, api: IsolateApi<C>) => {
+    const dispatch = params.dispatch as Dispatch
+    const sequence = params.sequence as number
+    return api.context.io!.processParallel(dispatch, sequence)
   },
 }
 

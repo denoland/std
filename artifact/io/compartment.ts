@@ -73,7 +73,7 @@ export default class Compartment {
     const actions: DispatchFunctions = {}
     for (const functionName in this.#module.api) {
       actions[functionName] = (parameters?: Params) => {
-        log('dispatch "%o"', functionName)
+        log('dispatch: %o', functionName)
         const schema = this.#module.api[functionName]
         if (parameters === undefined) {
           parameters = {}

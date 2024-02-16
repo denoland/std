@@ -35,9 +35,10 @@ export default class IsolateApi<T extends object = Default> {
    * When any of these functions are called, they will be executed in parallel
    * in a new branch, with no guarantee of order of execution.  A call to this
    * function will cause 3 commits to occur, 2 of which may be pooled with other
-   * parallel functions.  The commits are:
+   * functions.  The commits are:
    * 1. The current branch, to declare the function invocation - may be pooled
-   * 2. The new branch, to conclude the function invocation
+   * 2. The new branch, to conclude the function invocation - may be skippable
+   *    if no fs changes were made
    * 3. The curent branch, to merge the result back in - may be pooled
    * @param isolate The name of the isolate to load the parallels for
    */

@@ -39,7 +39,7 @@ export default class FS {
     await this.#db.updateIsolateFs(pid, uint8)
     return { size: uint8.length, prettySize: pretty(uint8.length) }
   }
-  printFs(fs: IFs) {
+  static printFs(fs: IFs) {
     return print.toTreeSync(fs)
   }
 }

@@ -61,13 +61,14 @@ export const ENTRY_BRANCH = 'main'
 export type PID = {
   account: string
   repository: string
-  branches: [string, ...string[]]
+  branches: string[]
 }
 
 export type Poolable =
   | { type: 'REPLY'; payload: Reply }
   | { type: 'MERGE'; payload: Merge }
   | { type: 'DISPATCH'; payload: Dispatch }
+  | { type: 'ORIGIN'; payload: Dispatch }
 
 export type Reply = {
   pid: PID
@@ -80,6 +81,7 @@ export type Merge = {
   nonce: string
   sequence: number
   source: PID
+  outcome: Outcome
 }
 export type Dispatch = {
   pid: PID
@@ -93,6 +95,12 @@ export type Dispatch = {
    * to be continued during recovery.
    */
   nonce: string
+  /**
+   * Where did this dispatch come from? If this is blank, then it was self
+   * originated, but if it has a value, then the reply gets copied across to
+   * that process branch.
+   */
+  source?: PID
 }
 
 export enum QUEUE_TYPES {
@@ -135,7 +143,7 @@ export enum KEYSPACES {
    * When completed, the key is deleted, which allows the next dispatch to begin
    * execution.
    */
-  TAIL = 'TAIL',
+  SERIAL = 'SERIAL',
 }
 
 export type HelpConfig = {

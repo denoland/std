@@ -22,7 +22,7 @@ type Queue = (msg: QMessage) => Promise<void>
 export default class DB {
   #kv!: Deno.Kv
   #queue: Queue = async (msg: QMessage) => {
-    await this.#kv.enqueue(msg)
+    await this.#kv.enqueue(msg, { backoffSchedule: [] })
   }
   static async create(queue?: Queue) {
     const db = new DB()
@@ -72,12 +72,19 @@ export default class DB {
       }
     })
   }
-
-  async enqueueTail(dispatch: Dispatch, sequence: number) {
+  async enqueueParallel(dispatch: Dispatch, sequence: number) {
+    const { nonce } = dispatch
+    log('enqueueParallel %o', nonce)
+    const params = { dispatch, sequence }
+    const msg: QMessage = { nonce, name: 'parallel', params }
+    const skipOutcome = true // else will deadlock
+    await this.enqueueMsg(msg, skipOutcome)
+  }
+  async enqueueSerial(dispatch: Dispatch, sequence: number) {
     const { nonce } = dispatch
     log('enqueueTail seq: %o nonce: %o', sequence, nonce)
-    const tailKey = getTailKey(dispatch.pid, sequence)
-    await this.#kv.set(tailKey, true)
+    const serialKey = getSerialKey(dispatch.pid, sequence)
+    await this.#kv.set(serialKey, true)
 
     // TODO use the api to get the function to call directly
     // so that with the queue disabled, local testing still works
@@ -90,9 +97,9 @@ export default class DB {
     if (sequence === 0) {
       return
     }
-    const tailKey = getTailKey(pid, sequence - 1)
-    log('awaitPrior %o', tailKey)
-    const stream = this.#kv.watch([tailKey])
+    const serialKey = getSerialKey(pid, sequence - 1)
+    log('awaitPrior %o', serialKey)
+    const stream = this.#kv.watch([serialKey])
     for await (const [event] of stream) {
       log('awaitPrior event %o', event.key[event.key.length - 1])
       if (!event.versionstamp) {
@@ -101,10 +108,10 @@ export default class DB {
       }
     }
   }
-  async tailDone(pid: PID, sequence: number) {
-    const tailKey = getTailKey(pid, sequence)
-    log('tailDone %o', tailKey)
-    await this.#kv.delete(tailKey)
+  async serialDone(pid: PID, sequence: number) {
+    const serialKey = getSerialKey(pid, sequence)
+    log('serialDone %o', serialKey)
+    await this.#kv.delete(serialKey)
   }
   async loadIsolateFs(pid: PID) {
     assertPid(pid)
@@ -240,10 +247,10 @@ const getHeadLockKey = (pid: PID) => {
   const { account, repository, branches } = pid
   return [KEYSPACES.HEADLOCK, account, repository, ...branches]
 }
-const getTailKey = (pid: PID, sequence: number) => {
+const getSerialKey = (pid: PID, sequence: number) => {
   assert(sequence >= 0, 'sequence must be positive')
   const { account, repository, branches } = pid
-  return [KEYSPACES.TAIL, account, repository, ...branches, sequence]
+  return [KEYSPACES.SERIAL, account, repository, ...branches, sequence]
 }
 const isDenoDeploy = Deno.env.get('DENO_DEPLOYMENT_ID') !== undefined
 const openKv = async () => {

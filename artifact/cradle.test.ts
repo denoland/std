@@ -6,17 +6,15 @@ const isolate = 'io-fixture'
 
 Deno.test.only('io', async (t) => {
   const artifact = await Cradle.create()
+  let pid!: PID
   await t.step('clone', async () => {
     const cloneResult = await artifact.clone({ repo: 'dreamcatcher-tech/HAL' })
     log('clone result', cloneResult)
+    pid = cloneResult.pid
     // TODO read the fs and see what the state of the file system is ?
   })
+  expect(pid).toBeDefined()
 
-  const pid: PID = {
-    account: 'dreamcatcher-tech',
-    repository: 'HAL',
-    branches: ['main'],
-  }
   const dispatches = await artifact.dispatches({ isolate, pid })
   await t.step('local', async () => {
     const result = await dispatches.local()

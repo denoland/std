@@ -79,7 +79,8 @@ class Cradle {
 
 interface Cradle {
   ping(params?: Params): Promise<IsolateReturn>
-  clone(params: { repo: string }): Promise<void>
+  init(params: { repo: string }): Promise<{ pid: PID }>
+  clone(params: { repo: string }): Promise<{ pid: PID }>
   apiSchema(params: { isolate: string }): Promise<Record<string, object>>
   dispatch(params: Dispatch): Promise<IsolateReturn>
 }
