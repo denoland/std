@@ -93,7 +93,7 @@ export function unescape(
   }
 
   return str
-    .replaceAll(entityRe, (m) => entityList[m])
+    .replaceAll(entityRe, (m) => entityList[m]!)
     .replaceAll(RX_DEC_ENTITY, (_, dec) => codePointStrToChar(dec, 10))
     .replaceAll(RX_HEX_ENTITY, (_, hex) => codePointStrToChar(hex, 16));
 }
