@@ -164,17 +164,17 @@ export const directFunctions: IsolateFunctions = {
     log('dispatch', params.functionName, params.nonce)
     return api.context.io!.dispatch(params as Dispatch)
   },
-  serial: (params, api: IsolateApi<C>) => {
-    const dispatch = params.dispatch as Dispatch
-    const sequence = params.sequence as number
-    log('serial', dispatch.nonce)
-    return api.context.io!.processSerial(dispatch, sequence)
-  },
-  parallel: (params, api: IsolateApi<C>) => {
-    const dispatch = params.dispatch as Dispatch
-    const sequence = params.sequence as number
-    return api.context.io!.processParallel(dispatch, sequence)
-  },
+  // serial: (params, api: IsolateApi<C>) => {
+  //   const dispatch = params.dispatch as Dispatch
+  //   const sequence = params.sequence as number
+  //   log('serial', dispatch.nonce)
+  //   return api.context.io!.processSerial(dispatch, sequence)
+  // },
+  // parallel: (params, api: IsolateApi<C>) => {
+  //   const dispatch = params.dispatch as Dispatch
+  //   const sequence = params.sequence as number
+  //   return api.context.io!.processParallel(dispatch, sequence)
+  // },
 }
 
 export const functions: IsolateFunctions = queueWrap(directFunctions)

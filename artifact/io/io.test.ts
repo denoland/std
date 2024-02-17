@@ -12,6 +12,7 @@ Deno.test('serial', async (t) => {
   })
   expect(pid).toBeDefined()
   await t.step('parallel', async () => {
+    Debug.enable('*')
     const dispatches = await artifact.dispatches({ isolate: 'io-fixture', pid })
     const result = await dispatches.local({}, PROCTYPE.PARALLEL)
     expect(result).toBe('local reply')
