@@ -8,8 +8,6 @@ export { extensions };
 
 /**
  * Returns the extensions known to be associated with the media type `type`.
- * The returned extensions will each begin with a leading dot, as in `.html`.
- *
  * When `type` has no associated extensions, the function returns `undefined`.
  *
  * Extensions are returned without a leading `.`.
