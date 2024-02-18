@@ -9,6 +9,7 @@ const log = Debug('AI:isolateApi')
 interface Default {
   [key: string]: unknown
 }
+const dir = '/'
 export default class IsolateApi<T extends object = Default> {
   #fs!: IFs
   // TODO assign a mount id for each side effect trail
@@ -119,7 +120,7 @@ export default class IsolateApi<T extends object = Default> {
     const results = await git.walk({
       fs: this.#fs,
       dir: '/',
-      trees: [git.TREE()],
+      trees: [git.STAGE()],
       map: async (filepath: string, [entry]) => {
         // TODO be efficient about tree walking for nested paths
         // TODO check directories are excluded
@@ -156,15 +157,18 @@ export default class IsolateApi<T extends object = Default> {
     // TODO check the filesystem hasn't changed
     return walk
   }
-  rm(path: string) {
-    isRelative(path)
+  async rm(filepath: string) {
+    isRelative(filepath)
     try {
-      this.#fs.unlinkSync(path)
+      this.#fs.unlinkSync(filepath)
     } catch (error) {
       if (error.code !== 'ENOENT') {
         throw error
       }
     }
+    const fs = this.#fs
+    await git.remove({ fs, dir, filepath })
+    // TODO make sure rm and write update the index
   }
   get context() {
     // TODO at creation, this should flag context capable and reject if not

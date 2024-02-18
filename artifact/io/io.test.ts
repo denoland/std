@@ -2,7 +2,6 @@ import { Debug, expect, log } from '../utils.ts'
 import { PID, PROCTYPE } from '@/artifact/constants.ts'
 import Cradle from '../cradle.ts'
 
-Debug.enable('*tests')
 Deno.test('serial', async (t) => {
   const artifact = await Cradle.create()
   let pid!: PID
@@ -12,9 +11,8 @@ Deno.test('serial', async (t) => {
   })
   expect(pid).toBeDefined()
   await t.step('parallel', async () => {
-    Debug.enable('*')
     const dispatches = await artifact.dispatches({ isolate: 'io-fixture', pid })
-    const result = await dispatches.local({}, PROCTYPE.PARALLEL)
+    const result = await dispatches.local({}, PROCTYPE.BRANCH)
     expect(result).toBe('local reply')
   })
   // await t.step('serial', async () => {

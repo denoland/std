@@ -1,7 +1,5 @@
 import { debug, expect, goal } from '../tst-helpers.js'
 
-debug.enable('test *ai-* ')
-
 goal.todo('show me the first customer', async ({ result }) => {
   debug(result)
 

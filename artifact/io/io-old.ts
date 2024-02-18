@@ -89,7 +89,7 @@ export default class IO {
   async #enqueueIo(io: IoStruct) {
     await Promise.all([
       this.#enqueueSerial(io[PROCTYPE.SERIAL]),
-      this.#enqueueParallel(io[PROCTYPE.PARALLEL]),
+      this.#enqueueParallel(io[PROCTYPE.BRANCH]),
     ])
   }
   async #enqueueSerial(serial: IoStruct[PROCTYPE.SERIAL]) {
@@ -130,7 +130,7 @@ export default class IO {
 
     // if this is the origin reply, then we need push one higher
   }
-  async #enqueueParallel(parallel: IoStruct[PROCTYPE.PARALLEL]) {
+  async #enqueueParallel(parallel: IoStruct[PROCTYPE.BRANCH]) {
     log('enqueueParallel %o', Object.keys(parallel.inputs))
     for (const key in parallel.inputs) {
       const dispatch = parallel.inputs[key]
@@ -176,7 +176,6 @@ export default class IO {
     await this.#commitPool(dispatch.target, poolable)
     // TODO want the pooling effect, but want to do it in band without a message
 
-    Debug.enable('*')
     log('processParallel', dispatch.nonce)
     const outcome = await this.processSerial(dispatch, sequence)
 
@@ -214,12 +213,12 @@ const updateIo = async (api: IsolateApi, actions: Poolable[]) => {
   log('updateIo')
   const io: IoStruct = {
     [PROCTYPE.SERIAL]: { sequence: 0, inputs: {}, outputs: {} },
-    [PROCTYPE.PARALLEL]: { sequence: 0, inputs: {}, outputs: {} },
+    [PROCTYPE.BRANCH]: { sequence: 0, inputs: {}, outputs: {} },
   }
   try {
     const priorIo = await api.readJSON(IO_PATH) // TODO check schema
     io[PROCTYPE.SERIAL].sequence = checkSequence(priorIo[PROCTYPE.SERIAL])
-    io[PROCTYPE.PARALLEL].sequence = checkSequence(priorIo[PROCTYPE.PARALLEL])
+    io[PROCTYPE.BRANCH].sequence = checkSequence(priorIo[PROCTYPE.BRANCH])
   } catch (err) {
     log('io file not found')
     if (err.code !== 'ENOENT') {
@@ -245,7 +244,7 @@ const updateIo = async (api: IsolateApi, actions: Poolable[]) => {
         break
       }
       case 'MERGE': {
-        const queue = io[PROCTYPE.PARALLEL]
+        const queue = io[PROCTYPE.BRANCH]
         log('merge', action.payload)
 
         // pass in the commit that is to be merged, rather than head ?
