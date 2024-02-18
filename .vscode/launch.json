@@ -44,7 +44,8 @@
       "runtimeExecutable": "~/.deno/bin/deno",
       "runtimeArgs": ["task", "watch", "--inspect-wait", "${relativeFile}"],
       "attachSimplePort": 9229,
-      "internalConsoleOptions": "neverOpen"
+      "internalConsoleOptions": "neverOpen",
+      "console": "integratedTerminal"
     }
   ]
 }

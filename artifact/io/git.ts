@@ -46,7 +46,7 @@ export const init = async (fs: IFs, repo: string) => {
  * @param fs a memfs instance to update
  */
 export const solidifyPool = async (fs: IFs, pool: Poolable[]) => {
-  const target = checkPool(pool)
+  checkPool(pool)
   const api = IsolateApi.create(fs)
   log('solidifyPool')
   let io: IoStruct = { sequence: 0, inputs: {}, outputs: {} }
@@ -57,6 +57,7 @@ export const solidifyPool = async (fs: IFs, pool: Poolable[]) => {
   }
   const branches: PID[] = []
   const replies: Reply[] = []
+  let parent
   for (const poolable of pool) {
     if (isRequest(poolable)) {
       const sequence = io.sequence++
@@ -72,22 +73,31 @@ export const solidifyPool = async (fs: IFs, pool: Poolable[]) => {
       assert(request, `reply sequence not found: ${sequence}`)
       io.outputs[sequence] = poolable.outcome
       if (!equal(request.source, request.target)) {
-        log('request', request)
         const reply: Reply = { ...poolable, target: request.source }
+        delete reply.commit
+        delete reply.fs
         replies.push(reply)
+      }
+      if (request.proctype === PROCTYPE.BRANCH) {
+        assert(poolable.fs, 'branch reply needs fs: ' + sequence)
+        assert(poolable.commit, 'branch reply needs commit: ' + sequence)
+        // copy in the fs objects into this one
+        // add to the parent array
+        if (!parent) {
+          const head = await git.resolveRef({ fs, dir: '/', ref: 'HEAD' })
+          parent = [head]
+        }
+        copyObjects(poolable.fs, fs)
+        parent.push(poolable.commit)
       }
     }
   }
 
   api.writeJSON('.io.json', io)
   await git.add({ fs, dir: '/', filepath: '.io.json' })
-  const commit = await git.commit({ fs, dir: '/', message: 'pool', author })
+  const commit = await git.commit({ fs, dir, message: 'pool', author, parent })
   log('commitHash', commit)
 
-  // if we are closed, delete this branch
-  await maybeCloseBranch(target, fs, io)
-
-  // return a list of pids that need to be created from this commit
   return { commit, branches, replies }
 }
 
@@ -129,12 +139,17 @@ const isRequest = (poolable: Poolable): poolable is Request => {
 const checkPool = (pool: Poolable[]) => {
   assert(pool.length > 0, 'empty pool')
   const { target } = pool[0]
-  assert(pool.every((p) => equal(p.target, target)), 'pool has mixed targets')
   for (const poolable of pool) {
+    if (!equal(poolable.target, target)) {
+      throw new Error('pool has mixed targets')
+    }
+    // if the reply comes from a different branch, it needs to be a merge
+    // if we had the io input, then we would know if it was a merge without
+    // storing any extra info on the reply object itself.
+
     // check for duplicate items
     // check for out of order serial replies
   }
-  return target
 }
 const branchPid = (pid: PID, sequence: number) => {
   const branches = pid.branches.concat(sequence.toString())
@@ -143,17 +158,25 @@ const branchPid = (pid: PID, sequence: number) => {
 const branchName = (pid: PID) => {
   return pid.branches.join('-')
 }
-const maybeCloseBranch = async (
-  target: PID | Pierce,
-  fs: IFs,
-  io: IoStruct,
-) => {
-  if ('nonce' in target) {
-    return
-  }
-  const isOriginClosed = !!io.outputs[0]
-  if (isOriginClosed) {
-    log('closeBranch', branchName(target))
-    await git.deleteBranch({ fs, dir, ref: branchName(target) })
-  }
+const copyObjects = (from: IFs, to: IFs) => {
+  // TODO read from a specific commit
+  // log(print.toTreeSync(from))
+  // log(print.toTreeSync(to))
+
+  const base = '/.git/objects/'
+  from.readdirSync(base).forEach((dir) => {
+    if (dir === 'pack' || dir === 'info') {
+      return
+    }
+    const files = from.readdirSync(base + dir)
+    files.forEach((file) => {
+      const filepath = base + dir + '/' + file
+      if (to.existsSync(filepath)) {
+        return
+      }
+      const contents = from.readFileSync(filepath)
+      to.mkdirSync('/.git/objects/' + dir, { recursive: true })
+      to.writeFileSync(filepath, contents)
+    })
+  })
 }

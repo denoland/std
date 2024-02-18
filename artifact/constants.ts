@@ -1,3 +1,4 @@
+import { IFs } from 'https://esm.sh/v135/memfs@4.6.0/lib/index.js'
 import { JSONSchemaType } from 'https://esm.sh/ajv@8.12.0'
 import IsolateApi from './isolate-api.ts'
 export { IsolateApi }
@@ -82,6 +83,8 @@ export type Reply = {
   target: PID | Pierce
   sequence: number
   outcome: Outcome
+  fs?: IFs
+  commit?: string
 }
 export type Request = {
   target: PID

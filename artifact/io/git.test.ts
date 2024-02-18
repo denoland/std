@@ -5,6 +5,7 @@ import { Debug, expect, log } from '@utils'
 import * as git from './git.ts'
 import { IoStruct, PID, PROCTYPE, Request } from '@/artifact/constants.ts'
 import { Reply } from '@/artifact/constants.ts'
+import gitCommand from '$git'
 
 Deno.test('serial', async (t) => {
   const { fs } = memfs()
@@ -99,6 +100,8 @@ Deno.test.only('branch', async (t) => {
   }
   await git.init(fs, 'git/test')
 
+  let branchFs: IFs
+  let childPid: PID
   await t.step('branch', async () => {
     const { commit, branches } = await git.solidifyPool(fs, [request])
     const io: IoStruct = readIo(fs)
@@ -106,65 +109,47 @@ Deno.test.only('branch', async (t) => {
     expect(io.inputs[0]).toEqual(request)
     expect(io.inputs[0].proctype).toEqual(PROCTYPE.BRANCH)
 
-    const branchFs = copy(fs)
+    branchFs = copy(fs)
     await git.branch(branchFs, commit, branches[0])
     const branch: IoStruct = readIo(branchFs)
     log('branch', branch)
 
-    const childPid = branches[0]
+    childPid = branches[0]
     expect(childPid.branches).toEqual(['main', '0'])
+  })
+  let originReply: Reply
+  await t.step('branch reply', async () => {
     const branchReply = merge({}, reply, { target: childPid })
-    const { replies } = await git.solidifyPool(branchFs, [branchReply])
-    Debug.enable('AI:git *tests')
+    const solidified = await git.solidifyPool(branchFs, [branchReply])
+    const { commit, replies } = solidified
+
     log('replies', replies[0])
     expect(replies.length).toBe(1)
-    expect(replies[0].outcome).toEqual(reply.outcome)
-    expect(replies[0].target).toEqual(target)
-
-    // copy over the reply to the parent branch
-    // this is the heavy piece - copying raw objects over to the parent branch
-
-    await git.solidifyPool
+    originReply = replies[0]
+    expect(originReply.outcome).toEqual(reply.outcome)
+    expect(originReply.target).toEqual(target)
+    originReply.fs = branchFs
+    originReply.commit = commit
   })
-  await t.step('concurrent branching', async () => {
+  await t.step('merge', async () => {
+    Debug.enable('AI:git *tests')
+    const { replies } = await git.solidifyPool(fs, [originReply])
+    expect(replies).toHaveLength(1)
+    const reply = replies[0]
+    expect(reply.fs).toBeUndefined()
+    expect(reply.commit).toBeUndefined()
+    expect(reply.target).toEqual(request.source)
+    expect(reply.outcome).toEqual(originReply.outcome)
+    const [lastCommit] = await gitCommand.log({ fs, dir: '/', depth: 1 })
+    expect(lastCommit.commit.parent).toHaveLength(2)
   })
-  // await t.step('pierce reply', async () => {
-  //   await git.solidifyPool(fs, [reply])
-  //   const io: IoStruct = JSON.parse(fs.readFileSync('/.io.json').toString())
-  //   log('io', io)
-  //   expect(io.sequence).toBe(1)
-  //   expect(io.outputs[0]).toEqual(reply.outcome)
-  // })
-  // await t.step('second action blanks io', async () => {
-  //   await git.solidifyPool(fs, [request])
-  //   const io: IoStruct = JSON.parse(fs.readFileSync('/.io.json').toString())
-  //   log('io', io)
-  //   expect(io.sequence).toBe(2)
-  //   expect(io.inputs[0]).toBeUndefined()
-  //   expect(io.inputs[1]).toEqual(request)
-  //   expect(io.outputs[0]).toBeUndefined()
-  // })
-  // await t.step('multiple requests', async () => {
-  //   await git.solidifyPool(fs, [request, request])
-  //   const io: IoStruct = JSON.parse(fs.readFileSync('/.io.json').toString())
-  //   expect(io.sequence).toBe(4)
-  //   expect(Object.keys(io.inputs).length).toBe(3)
-  //   expect(io.outputs).toEqual({})
-  // })
-  // await t.step('multiple replies', async () => {
-  //   Debug.enable('AI:git *tests')
-  //   const pool = replies(1, 3)
-  //   await git.solidifyPool(fs, pool)
-  //   const io: IoStruct = JSON.parse(fs.readFileSync('/.io.json').toString())
-  //   expect(io.sequence).toBe(4)
-  //   expect(Object.keys(io.inputs).length).toBe(3)
-  //   expect(Object.keys(io.outputs).length).toEqual(3)
-  // })
 
   // permissioning for inclusion in the pool
   // duplicate items in the pool are reduced to a single item
   // duplicate replies error
 })
+
+// need to test requests coming out of pooling, and isolate execution
 
 const copy = (fs: IFs) => {
   const snapshotData = snapshot.toBinarySnapshotSync({ fs, path: '/.git' })
