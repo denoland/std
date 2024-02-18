@@ -106,18 +106,35 @@ export default class IsolateApi<T extends object = Default> {
     }
     return fs.readFileSync('/' + path, 'utf8').toString()
   }
-  isFile(path: string) {
+  async exists(path: string) {
     isRelative(path)
     try {
       this.#fs.statSync(path)
       return true
     } catch (err) {
-      if (err.code === 'ENOENT') {
-        log('isFile not found:', path)
-        return false
+      if (err.code !== 'ENOENT') {
+        throw err
       }
-      throw err
     }
+    const results = await git.walk({
+      fs: this.#fs,
+      dir: '/',
+      trees: [git.TREE()],
+      map: async (filepath: string, [entry]) => {
+        // TODO be efficient about tree walking for nested paths
+        // TODO check directories are excluded
+        if (filepath === path) {
+          const type = await entry!.type()
+          assert(type === 'blob', 'only blobs are supported: ' + type)
+          return true
+        }
+      },
+    })
+    if (results.length) {
+      assert(results.length === 1, 'multiple files found: ' + path)
+      return true
+    }
+    return false
   }
   async ls(path: string) {
     isDirectory(path)

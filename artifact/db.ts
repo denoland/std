@@ -1,7 +1,6 @@
 import { ulid } from '$std/ulid/mod.ts'
 import { get, set } from 'https://deno.land/x/kv_toolbox@0.6.1/blob.ts'
 import {
-  Dispatch,
   IoStruct,
   KEYSPACES,
   Outcome,
@@ -12,6 +11,7 @@ import {
   QMessage,
   QUEUE_TYPES,
   QueuedDispatch,
+  Request,
 } from '@/artifact/constants.ts'
 import { assert } from 'std/assert/assert.ts'
 import { Debug } from '@utils'
@@ -72,24 +72,22 @@ export default class DB {
       }
     })
   }
-  async enqueueParallel(dispatch: Dispatch, sequence: number) {
-    const { nonce } = dispatch
-    log('enqueueParallel %o', nonce)
+  async enqueueParallel(dispatch: Request, sequence: number) {
+    log('enqueueParallel %o')
     const params = { dispatch, sequence }
-    const msg: QMessage = { nonce, name: 'parallel', params }
+    const msg: QMessage = { nonce: 'TODO', name: 'parallel', params }
     const skipOutcome = true // else will deadlock
     await this.enqueueMsg(msg, skipOutcome)
   }
-  async enqueueSerial(dispatch: Dispatch, sequence: number) {
-    const { nonce } = dispatch
-    log('enqueueTail seq: %o nonce: %o', sequence, nonce)
-    const serialKey = getSerialKey(dispatch.pid, sequence)
+  async enqueueSerial(dispatch: Request, sequence: number) {
+    log('enqueueTail seq: %o nonce: %o', sequence)
+    const serialKey = getSerialKey(dispatch.target, sequence)
     await this.#kv.set(serialKey, true)
 
     // TODO use the api to get the function to call directly
     // so that with the queue disabled, local testing still works
     const params = { dispatch, sequence }
-    const msg: QMessage = { nonce, name: 'serial', params }
+    const msg: QMessage = { nonce: 'TODO', name: 'serial', params }
     const skipOutcome = true // else will deadlock
     await this.enqueueMsg(msg, skipOutcome)
   }
@@ -130,37 +128,37 @@ export default class DB {
     ], uint8)
   }
   async poolAction(action: Poolable) {
-    const { pid, nonce } = action.payload // ? maybe move to meta key ?
-    assertPid(pid)
-    const key = getPoolKey(pid, nonce)
-    log('pooling start %o', nonce)
-    await this.#kv.set(key, action)
-    log('pooling done %o', nonce)
+    // const { pid } = action.payload // ? maybe move to meta key ?
+    // assertPid(pid)
+    // const key = getPoolKey(pid, nonce)
+    // log('pooling start %o', nonce)
+    // await this.#kv.set(key, action)
+    // log('pooling done %o', nonce)
   }
-  awaitOutcome(dispatch: Dispatch): Promise<Outcome> {
-    const { pid, nonce } = dispatch
-    const poolKey = getPoolKey(pid, nonce)
-    log('awaitOutcome %o', nonce)
-    const channelKey = 'outcome-' + poolKey.join(':') // TODO escape : chars
-    const channel = new BroadcastChannel(channelKey)
+  awaitOutcome(dispatch: Request): Promise<Outcome> {
+    // const { target, nonce } = dispatch
+    // const poolKey = getPoolKey(target, nonce)
+    // log('awaitOutcome %o', nonce)
+    // const channelKey = 'outcome-' + poolKey.join(':') // TODO escape : chars
+    // const channel = new BroadcastChannel(channelKey)
     return new Promise((resolve) => {
-      channel.onmessage = (event) => {
-        const outcome = event.data as Outcome
-        log('channel message', outcome)
-        channel.close()
-        resolve(outcome)
-      }
+      // channel.onmessage = (event) => {
+      //   const outcome = event.data as Outcome
+      //   log('channel message', outcome)
+      //   channel.close()
+      //   resolve(outcome)
+      // }
     })
   }
-  announceOutcome(dispatch: Dispatch, outcome: Outcome) {
-    const { pid, nonce } = dispatch
-    const poolKey = getPoolKey(pid, nonce)
-    log('announceOutcome %o', nonce)
-    const channelKey = 'outcome-' + poolKey.join(':') // TODO escape : chars
-    const channel = new BroadcastChannel(channelKey)
-    channel.postMessage(outcome)
-    // must be last, and one event loop later, else message not transmitted
-    setTimeout(() => channel.close())
+  announceOutcome(dispatch: Request, outcome: Outcome) {
+    // const { target, nonce } = dispatch
+    // const poolKey = getPoolKey(target, nonce)
+    // log('announceOutcome %o', nonce)
+    // const channelKey = 'outcome-' + poolKey.join(':') // TODO escape : chars
+    // const channel = new BroadcastChannel(channelKey)
+    // channel.postMessage(outcome)
+    // // must be last, and one event loop later, else message not transmitted
+    // setTimeout(() => channel.close())
   }
   getHeadLock(pid: PID, action: Poolable) {
     assertPid(pid)
@@ -168,7 +166,7 @@ export default class DB {
     log('start getHeadLock %o', key)
 
     const lockId = 'headlock-' + ulid()
-    const poolKey = getPoolKey(pid, action.payload.nonce)
+    const poolKey = getPoolKey(pid, 'TODO')
 
     const headStream = this.#kv.watch([key])[Symbol.asyncIterator]()
 

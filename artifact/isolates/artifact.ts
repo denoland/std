@@ -4,13 +4,13 @@ import http from '$git/http/web'
 import { memfs } from 'https://esm.sh/memfs@4.6.0'
 import time from 'https://esm.sh/pretty-ms'
 import {
-  Dispatch,
   ENTRY_BRANCH,
   IsolateFunctions,
   IsolateLifecycle,
   Params,
   PID,
   QMessage,
+  Request,
 } from '@/artifact/constants.ts'
 import { ulid } from 'std/ulid/mod.ts'
 import IsolateApi from '../isolate-api.ts'
@@ -162,7 +162,7 @@ export const directFunctions: IsolateFunctions = {
   },
   dispatch: (params, api: IsolateApi<C>) => {
     log('dispatch', params.functionName, params.nonce)
-    return api.context.io!.dispatch(params as Dispatch)
+    return api.context.io!.dispatch(params as Request)
   },
   // serial: (params, api: IsolateApi<C>) => {
   //   const dispatch = params.dispatch as Dispatch

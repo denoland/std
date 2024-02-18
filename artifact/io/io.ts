@@ -5,12 +5,12 @@ import git from '$git'
 import { Debug } from '@utils'
 import IsolateApi from '@/artifact/isolate-api.ts'
 import {
-  Dispatch,
   IO_PATH,
   IoStruct,
   Outcome,
   PID,
   PROCTYPE,
+  Request,
 } from '@/artifact/constants.ts'
 import DB from '@/artifact/db.ts'
 import { IFs } from 'https://esm.sh/v135/memfs@4.6.0/lib/index.js'
@@ -27,7 +27,7 @@ export default class IO {
     io.#fs = FS.create(db)
     return io
   }
-  async dispatch(dispatch: Dispatch) {
+  async dispatch(dispatch: Request) {
     log('dispatch with isolate: %O', dispatch)
   }
 }

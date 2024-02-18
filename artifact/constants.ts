@@ -44,14 +44,10 @@ export type Isolate = {
   lifecycles?: IsolateLifecycle
 }
 
-export type IoStruct = {
-  [PROCTYPE.SERIAL]: IoProctypeStruct
-  [PROCTYPE.PARALLEL]: IoProctypeStruct
-}
 export type Outcome = { result?: unknown; error?: Error }
-export type IoProctypeStruct = {
+export type IoStruct = {
   sequence: number
-  inputs: { [key: string]: Dispatch }
+  inputs: { [key: string]: Request }
   outputs: { [key: string]: Outcome }
 }
 export const ENTRY_BRANCH = 'main'
@@ -64,43 +60,40 @@ export type PID = {
   branches: string[]
 }
 
-export type Poolable =
-  | { type: 'REPLY'; payload: Reply }
-  | { type: 'MERGE'; payload: Merge }
-  | { type: 'DISPATCH'; payload: Dispatch }
-  | { type: 'ORIGIN'; payload: Dispatch }
+export enum POOLABLE_TYPES {
+  REPLY = 'REPLY',
+  /**
+   * The first action in a branch is the origin action, which will close the
+   * branch once it is replied to.
+   */
+  DISPATCH = 'DISPATCH',
+  /**
+   * An external excitation.  When a reply is inserted for a pierce action, it
+   * is up to the external watcher to take it from there.  In contrast when a
+   * dispatch reply is received, then the execution layer needs to copy the
+   * reply over to the source branch by way of a merge.
+   */
+  PIERCE = 'PIERCE',
+}
+
+export type Poolable = Request | Reply
 
 export type Reply = {
-  pid: PID
-  nonce: string
-  sequence: number
-  outcome: Outcome
-}
-export type Merge = {
-  pid: PID
-  nonce: string
-  sequence: number
+  target: PID
   source: PID
+  sequence: number
   outcome: Outcome
 }
-export type Dispatch = {
-  pid: PID
+export type Request = {
+  target: PID
+  source: PID | Pierce
   isolate: string
   functionName: string
   params: Params
   proctype: PROCTYPE
-  /**
-   * This should be a globally unique identifier for the dispatch.  It is used
-   * to provide updates to the dispatch as it is processed, and to allow updates
-   * to be continued during recovery.
-   */
+}
+export type Pierce = {
   nonce: string
-  /**
-   * Where did this dispatch come from? If this is blank, then it was self
-   * originated, but if it has a value, then the reply gets copied across to
-   * that process branch.
-   */
-  source?: PID
 }
 
 export enum QUEUE_TYPES {
@@ -119,7 +112,7 @@ export type QCallback = (
 export type QueuedDispatch = {
   type: QUEUE_TYPES.DISPATCH
   payload: {
-    dispatch: Dispatch
+    dispatch: Request
     sequence: number
   }
 }

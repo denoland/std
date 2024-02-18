@@ -4,12 +4,12 @@
 
 import Compartment from './io/compartment.ts'
 import {
-  Dispatch,
   DispatchFunctions,
   IsolateReturn,
   Params,
   PID,
   PROCTYPE,
+  Request,
 } from './constants.ts'
 import { memfs } from 'https://esm.sh/memfs@4.6.0'
 import IsolateApi from './isolate-api.ts'
@@ -51,7 +51,7 @@ class Cradle {
         const nonce = ulid()
         log('dispatch:', functionName, nonce)
         return this.dispatch({
-          pid,
+          target,
           isolate,
           functionName,
           params,
@@ -82,7 +82,7 @@ interface Cradle {
   init(params: { repo: string }): Promise<{ pid: PID }>
   clone(params: { repo: string }): Promise<{ pid: PID }>
   apiSchema(params: { isolate: string }): Promise<Record<string, object>>
-  dispatch(params: Dispatch): Promise<IsolateReturn>
+  dispatch(params: Request): Promise<IsolateReturn>
 }
 
 export default Cradle

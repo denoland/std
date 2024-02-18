@@ -5,12 +5,12 @@ import git from '$git'
 import { Debug } from '@utils'
 import IsolateApi from '@/artifact/isolate-api.ts'
 import {
-  Dispatch,
   IO_PATH,
   IoStruct,
   Outcome,
   PID,
   PROCTYPE,
+  Request,
 } from '@/artifact/constants.ts'
 import DB from '@/artifact/db.ts'
 import { IFs } from 'https://esm.sh/v135/memfs@4.6.0/lib/index.js'
@@ -27,7 +27,7 @@ export default class IO {
     io.#fs = FS.create(db)
     return io
   }
-  async dispatch(payload: Dispatch) {
+  async dispatch(payload: Request) {
     log('dispatch with isolate: %s', payload.isolate)
     const dispatch: Poolable = { type: 'DISPATCH', payload }
 
@@ -41,7 +41,7 @@ export default class IO {
         }
       })
     })
-    await this.#commitPool(payload.pid, dispatch)
+    await this.#commitPool(payload.target, dispatch)
 
     return outcome
   }
@@ -101,10 +101,10 @@ export default class IO {
       await this.#db.enqueueSerial(dispatch, sequence)
     }
   }
-  async processSerial(dispatch: Dispatch, sequence: number) {
-    await this.#db.awaitTail(dispatch.pid, sequence)
+  async processSerial(dispatch: Request, sequence: number) {
+    await this.#db.awaitTail(dispatch.target, sequence)
     const compartment = Compartment.create(dispatch.isolate)
-    const memfs = await this.#fs.isolateFs(dispatch.pid)
+    const memfs = await this.#fs.isolateFs(dispatch.target)
     const api = IsolateApi.create(memfs)
     const functions = compartment.functions(api)
     const outcome: Outcome = {}
@@ -116,8 +116,8 @@ export default class IO {
       outcome.error = serializeError(errorObj)
     }
     // TODO process the IPC actions from the api collector
-    await this.#db.serialDone(dispatch.pid, sequence)
-    await this.#serialReply(dispatch.pid, memfs, outcome, sequence)
+    await this.#db.serialDone(dispatch.target, sequence)
+    await this.#serialReply(dispatch.target, memfs, outcome, sequence)
     this.#db.announceOutcome(dispatch, outcome)
     return outcome
   }
@@ -148,7 +148,7 @@ export default class IO {
       log('enqueueParallel %o', pid)
       const nonce = `para_${sequence}`
       const proctype = PROCTYPE.SERIAL
-      const origin: Dispatch = { ...dispatch, pid, proctype, nonce }
+      const origin: Request = { ...dispatch, target, proctype, nonce }
       await this.#db.enqueueParallel(origin, sequence)
     }
   }
@@ -159,21 +159,21 @@ export default class IO {
    * - engage the serial processing function
    * - when a reply to origin is completed,
    */
-  async processParallel(dispatch: Dispatch, sequence: number) {
+  async processParallel(dispatch: Request, sequence: number) {
     assert(sequence === 0, 'sequence must be 0')
-    assert(dispatch.pid.branches.length > 1, 'branches must be more than 1')
+    assert(dispatch.target.branches.length > 1, 'branches must be more than 1')
     // TODO handle this being a duplicate message delivery
 
-    const branches = dispatch.pid.branches.slice(0, -1)
-    const parent: PID = { ...dispatch.pid, branches }
+    const branches = dispatch.target.branches.slice(0, -1)
+    const parent: PID = { ...dispatch.target, branches }
     const fs = await this.#fs.isolateFs(parent)
-    const ref = dispatch.pid.branches.slice(-1).pop() as string
+    const ref = dispatch.target.branches.slice(-1).pop() as string
     await git.branch({ fs, dir: '/', ref, checkout: true })
-    await this.#fs.updateIsolateFs(dispatch.pid, fs)
+    await this.#fs.updateIsolateFs(dispatch.target, fs)
 
     const poolable: Poolable = { type: 'ORIGIN', payload: dispatch }
     // if we got the headlock before commit, then is safer ?
-    await this.#commitPool(dispatch.pid, poolable)
+    await this.#commitPool(dispatch.target, poolable)
     // TODO want the pooling effect, but want to do it in band without a message
 
     Debug.enable('*')
