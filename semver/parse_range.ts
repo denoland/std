@@ -241,7 +241,7 @@ function handleEqualOperator(groups: RegExpGroups): Comparator[] {
   }
   const prerelease = parsePrerelease(groups.prerelease ?? "");
   const build = parseBuild(groups.build ?? "");
-  return [{ operator: "", major, minor, patch, prerelease, build }];
+  return [{ operator: undefined, major, minor, patch, prerelease, build }];
 }
 
 function parseRangeString(string: string) {

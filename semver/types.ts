@@ -18,6 +18,7 @@ export type ReleaseType =
 
 /**
  * SemVer comparison operators.
+ * @deprecated (will be removed in 0.219.0) `"=="`, `"==="`, `"!=="` and `""` operators are deprecated. Use `"="`, `"!="` or `undefined` instead.
  */
 export type Operator = typeof OPERATORS[number];
 
@@ -26,7 +27,7 @@ export type Operator = typeof OPERATORS[number];
  * @example >=0.0.0
  */
 export interface Comparator extends SemVer {
-  operator: Operator;
+  operator?: Operator;
   /**
    * @deprecated (will be removed after 0.217.0) {@linkcode Comparator} extends {@linkcode SemVer}. Use `major`, `minor`, `patch`, `prerelease`, and `build` properties instead.
    */
