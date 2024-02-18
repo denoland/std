@@ -19,7 +19,7 @@ import type { Reader } from "../io/types.ts";
  * await copy(reader, file);
  * ```
  *
- * @deprecated (will be removed in 0.220.0) Import from {@link https://deno.land/std/io/reader_from_stream_reader.ts} instead.
+ * @deprecated (will be removed in 1.0.0) Import from {@link https://deno.land/std/io/reader_from_stream_reader.ts} instead.
  */
 export function readerFromStreamReader(
   streamReader: ReadableStreamDefaultReader<Uint8Array>,
