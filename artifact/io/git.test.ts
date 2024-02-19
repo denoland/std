@@ -116,7 +116,9 @@ Deno.test('branch', async (t) => {
     expect(io.inputs[0].proctype).toEqual(PROCTYPE.BRANCH)
 
     branchFs = copy(fs)
-    await git.branch(branchFs, commit, branches[0])
+    const { requests } = await git.branch(branchFs, commit, branches[0])
+    expect(requests).toHaveLength(1)
+    expect(requests[0].source).toEqual(request.target)
     const branch: IoStruct = readIo(branchFs)
     log('branch', branch)
 

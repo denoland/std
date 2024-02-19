@@ -126,7 +126,7 @@ export const branch = async (fs: IFs, commit: string, pid: PID) => {
   origin.target = pid
   log('origin', origin)
   await api.rm('.io.json')
-  await solidifyPool(fs, [origin])
+  return await solidifyPool(fs, [origin])
 }
 
 const blankSettledRequests = (io: IoStruct) => {
