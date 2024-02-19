@@ -192,7 +192,7 @@ for await (const entry of walk(cwd)) {
       replacedImports.push([specifier, newSpecifier]);
     } else {
       const newSpecifier = "@std/" +
-        target.replace(/(\.d)?\.ts$/, "").replace(/\/mod$/, "");
+        fixPackagePath(target).replace(/(\.d)?\.ts$/, "").replace(/\/mod$/, "");
       replacedImports.push([specifier, newSpecifier]);
     }
   }
@@ -203,7 +203,7 @@ for await (const entry of walk(cwd)) {
       "",
     );
     const newSpecifier = "@std/" +
-      target.replace(/(\.d)?\.ts$/, "").replace(/\/mod$/, "");
+      fixPackagePath(target).replace(/(\.d)?\.ts$/, "").replace(/\/mod$/, "");
     replacedImports.push([specifier, newSpecifier]);
   }
 
@@ -227,7 +227,7 @@ for (const pkg of packages) {
     exports = Object.fromEntries(exportsList);
   }
   const denoJson = {
-    name: `@std/${pkg}`,
+    name: `@std/${fixPackageName(pkg)}`,
     version: VERSION,
     exports,
   };
@@ -242,12 +242,24 @@ for (const pkg of packages) {
   );
 }
 
+function fixPackageName(pkg: string) {
+  return pkg.replaceAll("_", "-");
+}
+
+function fixPackagePath(path: string) {
+  const packageName = /^[^/]+/.exec(path);
+  if (packageName) {
+    return path.replace(packageName[0], fixPackageName(packageName[0]));
+  }
+  return path;
+}
+
 // Generate `deno.json` file.
 const denoJson = JSON.parse(await Deno.readTextFile("deno.json"));
 denoJson.workspaces = orderedPackages.map((pkg) => `./${pkg}`);
 for (const pkg of packages) {
-  denoJson.imports[`@std/${pkg}`] = `jsr:@std/${pkg}@^${VERSION}`;
-  denoJson.imports[`@std/${pkg}/`] = `jsr:/@std/${pkg}@^${VERSION}/`;
+  const fixedPkg = fixPackageName(pkg);
+  denoJson.imports[`@std/${fixedPkg}`] = `jsr:@std/${fixedPkg}@^${VERSION}`;
 }
 await Deno.writeTextFile(
   "deno.json",
