@@ -24,19 +24,24 @@ Deno.test('serial', async (t) => {
     outcome: { result: 'test-result' },
   }
   await t.step('init', async () => {
-    const _pid = await git.init(fs, 'git/test')
-    expect(_pid).toEqual(target)
+    const pid = await git.init(fs, 'git/test')
+    expect(pid).toEqual(target)
     expect(fs.existsSync('/.git')).toBe(true)
   })
   await t.step('pierce', async () => {
-    await git.solidifyPool(fs, [request])
+    const { requests } = await git.solidifyPool(fs, [request])
+    expect(requests).toHaveLength(1)
+    expect(requests[0]).toEqual(request)
     const io: IoStruct = readIo(fs)
     log('io', io)
     expect(io.sequence).toBe(1)
     expect(io.inputs[0]).toEqual(request)
   })
   await t.step('pierce reply', async () => {
-    await git.solidifyPool(fs, [reply])
+    const { replies, requests } = await git.solidifyPool(fs, [reply])
+    expect(requests).toHaveLength(0)
+    expect(replies).toHaveLength(1)
+    expect(replies[0].target).toEqual(request.source)
     const io: IoStruct = readIo(fs)
     log('io', io)
     expect(io.sequence).toBe(1)
@@ -82,7 +87,8 @@ const replies = (start: number, end: number) => {
   }
   return pool
 }
-Deno.test.only('branch', async (t) => {
+
+Deno.test('branch', async (t) => {
   const { fs } = memfs()
   const target: PID = { account: 'git', repository: 'test', branches: ['main'] }
   const request: Request = {
@@ -132,7 +138,6 @@ Deno.test.only('branch', async (t) => {
     originReply.commit = commit
   })
   await t.step('merge', async () => {
-    Debug.enable('AI:git *tests')
     const { replies } = await git.solidifyPool(fs, [originReply])
     expect(replies).toHaveLength(1)
     const reply = replies[0]
@@ -150,6 +155,9 @@ Deno.test.only('branch', async (t) => {
 })
 
 // need to test requests coming out of pooling, and isolate execution
+
+// should start connecting to other parts of the system
+// try run a runner call in this system
 
 const copy = (fs: IFs) => {
   const snapshotData = snapshot.toBinarySnapshotSync({ fs, path: '/.git' })

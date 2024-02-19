@@ -55,6 +55,7 @@ export const solidifyPool = async (fs: IFs, pool: Poolable[]) => {
     // TODO check format and schema
     blankSettledRequests(io)
   }
+  const requests: Request[] = []
   const branches: PID[] = []
   const replies: Reply[] = []
   let parent
@@ -65,6 +66,8 @@ export const solidifyPool = async (fs: IFs, pool: Poolable[]) => {
       if (poolable.proctype === PROCTYPE.BRANCH) {
         const pid = branchPid(poolable.target, sequence)
         branches.push(pid)
+      } else {
+        requests.push(poolable)
       }
     } else {
       log('reply', poolable.outcome)
@@ -98,11 +101,11 @@ export const solidifyPool = async (fs: IFs, pool: Poolable[]) => {
   const commit = await git.commit({ fs, dir, message: 'pool', author, parent })
   log('commitHash', commit)
 
-  return { commit, branches, replies }
+  return { commit, requests, branches, replies }
 }
 
 /**
- * Is given the fs from the parent branch, and creates a new branch from the
+ * Given the fs from the parent branch, create a new branch from the
  * given commit.  We assume here that PID lock has been acquired already.
  * @param fs a memfs instance to update
  * @param commit hash of the commit to start the branch from
