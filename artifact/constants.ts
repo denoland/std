@@ -31,7 +31,7 @@ export type IsolateLifecycle = {
 export type DispatchFunctions = {
   [key: string]: (
     params?: Params,
-    proctype?: PROCTYPE,
+    options?: { branch?: boolean },
   ) => unknown | Promise<unknown>
 }
 export type Params = Record<string, unknown>
@@ -48,8 +48,8 @@ export type Isolate = {
 export type Outcome = { result?: unknown; error?: Error }
 export type IoStruct = {
   sequence: number
-  inputs: { [key: string]: Request }
-  outputs: { [key: string]: Outcome }
+  requests: { [key: string]: Request }
+  replies: { [key: string]: Outcome }
 }
 export const ENTRY_BRANCH = 'main'
 /**

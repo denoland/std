@@ -12,7 +12,6 @@ import {
   ENTRY_BRANCH,
   IoStruct,
   PID,
-  Pierce,
   Poolable,
   PROCTYPE,
 } from '@/artifact/constants.ts'
@@ -49,7 +48,7 @@ export const solidifyPool = async (fs: IFs, pool: Poolable[]) => {
   checkPool(pool)
   const api = IsolateApi.create(fs)
   log('solidifyPool')
-  let io: IoStruct = { sequence: 0, inputs: {}, outputs: {} }
+  let io: IoStruct = { sequence: 0, requests: {}, replies: {} }
   if (await api.exists('.io.json')) {
     io = await api.readJSON('.io.json') as IoStruct
     // TODO check format and schema
@@ -62,7 +61,7 @@ export const solidifyPool = async (fs: IFs, pool: Poolable[]) => {
   for (const poolable of pool) {
     if (isRequest(poolable)) {
       const sequence = io.sequence++
-      io.inputs[sequence] = poolable
+      io.requests[sequence] = poolable
       if (poolable.proctype === PROCTYPE.BRANCH) {
         const pid = branchPid(poolable.target, sequence)
         branches.push(pid)
@@ -72,9 +71,9 @@ export const solidifyPool = async (fs: IFs, pool: Poolable[]) => {
     } else {
       log('reply', poolable.outcome)
       const { sequence } = poolable
-      const request = io.inputs[sequence]
+      const request = io.requests[sequence]
       assert(request, `reply sequence not found: ${sequence}`)
-      io.outputs[sequence] = poolable.outcome
+      io.replies[sequence] = poolable.outcome
       if (!equal(request.source, request.target)) {
         const reply: Reply = { ...poolable, target: request.source }
         delete reply.commit
@@ -120,7 +119,7 @@ export const branch = async (fs: IFs, commit: string, pid: PID) => {
   const api = IsolateApi.create(fs)
   const io = await api.readJSON('.io.json') as IoStruct
   const sequence = pid.branches.slice(-1)[0]
-  const origin = io.inputs[sequence]
+  const origin = io.requests[sequence]
   origin.proctype = PROCTYPE.SERIAL
   origin.source = origin.target
   origin.target = pid
@@ -130,11 +129,11 @@ export const branch = async (fs: IFs, commit: string, pid: PID) => {
 }
 
 const blankSettledRequests = (io: IoStruct) => {
-  for (const key in io.outputs) {
+  for (const key in io.replies) {
     log('delete', key)
-    delete io.inputs[key]
+    delete io.requests[key]
   }
-  io.outputs = {}
+  io.replies = {}
 }
 const isRequest = (poolable: Poolable): poolable is Request => {
   return (poolable as Request).proctype !== undefined

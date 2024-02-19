@@ -9,6 +9,7 @@ import {
   IoStruct,
   Outcome,
   PID,
+  Pierce,
   PROCTYPE,
   Request,
 } from '@/artifact/constants.ts'
@@ -27,7 +28,11 @@ export default class IO {
     io.#fs = FS.create(db)
     return io
   }
-  async dispatch(dispatch: Request) {
-    log('dispatch with isolate: %O', dispatch)
+  async pierce(request: Request) {
+    log('pierce', request)
+    assert(isPierce(request.source), 'source is not a pierce')
   }
+}
+const isPierce = (source: PID | Pierce): source is Pierce => {
+  return !!(source as Pierce).nonce
 }

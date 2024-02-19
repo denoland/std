@@ -9,10 +9,8 @@ import {
   IsolateLifecycle,
   Params,
   PID,
-  QMessage,
   Request,
 } from '@/artifact/constants.ts'
-import { ulid } from 'std/ulid/mod.ts'
 import IsolateApi from '../isolate-api.ts'
 import Compartment from '../io/compartment.ts'
 import IO from '@io/io.ts'
@@ -50,7 +48,7 @@ export const api = {
       },
     },
   },
-  dispatch: {
+  pierce: {
     type: 'object',
     required: ['isolate'],
     properties: {
@@ -86,19 +84,12 @@ export const api = {
   // requesting a patch would be done with the last known patch as cursor
 }
 
-type C = {
-  db: DB
-  io: IO
-  fs: FS
-}
-export const directFunctions: IsolateFunctions = {
-  ping: (params: Params) => {
-    log('ping')
+export type C = { db: DB; io: IO; fs: FS }
+
+export const functions: IsolateFunctions = {
+  ping: (params?: Params) => {
+    log('ping', params)
     return params
-  },
-  reping: (params, api) => {
-    log('reping')
-    return enqueue('ping', params, api)
   },
   // need to split the git functions out to be an isolate
   async init(params, api: IsolateApi<C>) {
@@ -115,10 +106,7 @@ export const directFunctions: IsolateFunctions = {
     const { fs } = memfs()
     const dir = '/'
     await git.init({ fs, dir, defaultBranch: ENTRY_BRANCH })
-    // // must commit empty so that anything at all can be done
-    // await git.commit({ fs, dir, message: 'init', author: { name: 'AI' } })
-    // log('init', FS.printFs(fs))
-    const { prettySize: size } = await api.context.fs!.updateIsolateFs(pid, fs)
+    const { prettySize: size } = await api.context.fs!.update(pid, fs)
     log('snapshot size:', size)
     return { pid, size, elapsed: Date.now() - start }
   },
@@ -145,7 +133,7 @@ export const directFunctions: IsolateFunctions = {
     await git.clone({ fs, http, dir, url })
 
     log('cloned')
-    const { prettySize: size } = await api.context.fs!.updateIsolateFs(pid, fs)
+    const { prettySize: size } = await api.context.fs!.update(pid, fs)
     log('snapshot size:', size)
     return { pid, size, elapsed: Date.now() - start }
   },
@@ -160,72 +148,21 @@ export const directFunctions: IsolateFunctions = {
     const compartment = Compartment.create(isolate)
     return compartment.api
   },
-  dispatch: (params, api: IsolateApi<C>) => {
-    log('dispatch', params.functionName, params.nonce)
-    return api.context.io!.dispatch(params as Request)
+  pierce: (params, api: IsolateApi<C>) => {
+    log('dispatch', params.functionName)
+    return api.context.io!.pierce(params as Request)
   },
-  // serial: (params, api: IsolateApi<C>) => {
-  //   const dispatch = params.dispatch as Dispatch
-  //   const sequence = params.sequence as number
-  //   log('serial', dispatch.nonce)
-  //   return api.context.io!.processSerial(dispatch, sequence)
-  // },
-  // parallel: (params, api: IsolateApi<C>) => {
-  //   const dispatch = params.dispatch as Dispatch
-  //   const sequence = params.sequence as number
-  //   return api.context.io!.processParallel(dispatch, sequence)
-  // },
 }
-
-export const functions: IsolateFunctions = queueWrap(directFunctions)
 
 export const lifecycles: IsolateLifecycle = {
   async '@@mount'(api: IsolateApi<C>) {
     const db = await DB.create()
-    db.listenQueue(async ({ nonce, name, params }: QMessage) => {
-      log('listenQueue', name, nonce)
-      const nonceLog = Debug('AI:queue:' + nonce.slice(-6))
-      const start = Date.now()
-      nonceLog('dequeue start', name)
-      try {
-        const outcome = await directFunctions[name](params, api)
-        nonceLog('dequeue stop', name, time(Date.now() - start))
-        return outcome
-      } catch (error) {
-        nonceLog('dequeue error', name, time(Date.now() - start))
-        throw error
-      }
-    })
     const io = IO.create(db)
     const fs = FS.create(db)
+    // in testing, alter the context to support ducking the queue
     api.context = { db, io, fs }
   },
   '@@unmount'(api: IsolateApi<C>) {
     return api.context.db!.stop()
   },
-}
-
-function queueWrap(functions: IsolateFunctions): IsolateFunctions {
-  const wrapped: IsolateFunctions = {}
-  for (const name in functions) {
-    wrapped[name] = (params, api) => {
-      return enqueue(name, params, api)
-    }
-  }
-  return wrapped
-}
-
-async function enqueue(name: string, params: Params, api: IsolateApi<C>) {
-  const msg: QMessage = { nonce: ulid(), name, params: params }
-  const nonceLog = Debug('AI:queue:' + msg.nonce.slice(-6))
-  const start = Date.now()
-  nonceLog('start', name)
-  try {
-    const outcome = await api.context.db!.enqueueMsg(msg)
-    nonceLog('stop', name, time(Date.now() - start))
-    return outcome
-  } catch (error) {
-    nonceLog('error', name, time(Date.now() - start))
-    throw error
-  }
 }

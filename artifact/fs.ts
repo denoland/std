@@ -17,7 +17,7 @@ export default class FS {
     fs.#db = db
     return fs
   }
-  async isolateFs(pid: PID) {
+  async load(pid: PID) {
     // TODO require valid headlock to be passed in
     const uint8 = await this.#db.loadIsolateFs(pid)
     if (!uint8) {
@@ -33,13 +33,13 @@ export default class FS {
     // log('snapshot loaded', toTreeSync(fs))
     return fs
   }
-  async updateIsolateFs(pid: PID, fs: IFs) {
+  async update(pid: PID, fs: IFs) {
     const uint8 = snapshot.toBinarySnapshotSync({ fs, path: '/.git' })
     log('updateIsolateFs', pretty(uint8.length))
     await this.#db.updateIsolateFs(pid, uint8)
     return { size: uint8.length, prettySize: pretty(uint8.length) }
   }
-  static printFs(fs: IFs) {
+  static print(fs: IFs) {
     return print.toTreeSync(fs)
   }
 }

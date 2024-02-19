@@ -2,7 +2,7 @@
 // should be able to commit these benchmarks back to gh to publish them
 
 import Cradle from './cradle.ts'
-import { expect, log } from './tst-helpers.js'
+import { expect, log } from '@utils'
 import { JsonValue, PID } from './constants.ts'
 import { delay } from 'https://deno.land/std@0.211.0/async/delay.ts'
 
@@ -18,13 +18,13 @@ Deno.serve(async (req) => {
   const result = await artifact.clone({ repo: 'dreamcatcher-tech/HAL' })
   log('clone:', result)
 
-  const pid: PID = {
+  const target: PID = {
     account: 'dreamcatcher-tech',
     repository: 'HAL',
     branches: ['main'],
   }
   const isolate = 'engage-help'
-  const { engageInBand } = await artifact.dispatches({ isolate, pid })
+  const { engageInBand } = await artifact.dispatches(isolate, target)
   const helpResult = await engageInBand({
     help: 'help.fixture',
     text: 'hello',

@@ -1,95 +1,28 @@
 import { ulid } from '$std/ulid/mod.ts'
 import { get, set } from 'https://deno.land/x/kv_toolbox@0.6.1/blob.ts'
 import {
-  IoStruct,
   KEYSPACES,
   Outcome,
   PID,
   Poolable,
-  PROCTYPE,
-  QCallback,
-  QMessage,
-  QUEUE_TYPES,
-  QueuedDispatch,
   Request,
 } from '@/artifact/constants.ts'
 import { assert } from 'std/assert/assert.ts'
 import { Debug } from '@utils'
-import { deserializeError, serializeError } from 'npm:serialize-error'
 
 const log = Debug('AI:db')
-type Queue = (msg: QMessage) => Promise<void>
 export default class DB {
   #kv!: Deno.Kv
-  #queue: Queue = async (msg: QMessage) => {
-    await this.#kv.enqueue(msg, { backoffSchedule: [] })
+  get kv() {
+    return this.#kv
   }
-  static async create(queue?: Queue) {
+  static async create() {
     const db = new DB()
     db.#kv = await openKv()
-    if (queue) {
-      db.#queue = queue
-    }
     return db
   }
   stop() {
     return this.#kv.close()
-  }
-  listenQueue(callback: QCallback) {
-    return this.#kv.listenQueue(async (msg: QMessage) => {
-      log('listenQueue received', msg.name, msg.nonce)
-      assert(msg.nonce, 'nonce is required')
-      const channel = new BroadcastChannel('queue-' + msg.nonce)
-      const outcome: Outcome = {}
-      try {
-        outcome.result = await callback(msg)
-      } catch (error) {
-        outcome.error = serializeError(error)
-      }
-      log('announcing %s', channel.name)
-      channel.postMessage(outcome)
-      setTimeout(() => channel.close())
-    })
-  }
-  async enqueueMsg(msg: QMessage, skipOutcome?: boolean) {
-    const channel = new BroadcastChannel('queue-' + msg.nonce)
-    await this.#queue(msg)
-    if (skipOutcome) {
-      // TODO WARNING this is a detached promise, so the engine can fault here
-      channel.close()
-      return
-    }
-    return new Promise((resolve, reject) => {
-      channel.onmessage = (event) => {
-        const outcome = event.data as Outcome
-        log('received outcome on %s', channel.name)
-        channel.close()
-        if (outcome.error) {
-          reject(deserializeError(outcome.error))
-        } else {
-          resolve(outcome.result)
-        }
-      }
-    })
-  }
-  async enqueueParallel(dispatch: Request, sequence: number) {
-    log('enqueueParallel %o')
-    const params = { dispatch, sequence }
-    const msg: QMessage = { nonce: 'TODO', name: 'parallel', params }
-    const skipOutcome = true // else will deadlock
-    await this.enqueueMsg(msg, skipOutcome)
-  }
-  async enqueueSerial(dispatch: Request, sequence: number) {
-    log('enqueueTail seq: %o nonce: %o', sequence)
-    const serialKey = getSerialKey(dispatch.target, sequence)
-    await this.#kv.set(serialKey, true)
-
-    // TODO use the api to get the function to call directly
-    // so that with the queue disabled, local testing still works
-    const params = { dispatch, sequence }
-    const msg: QMessage = { nonce: 'TODO', name: 'serial', params }
-    const skipOutcome = true // else will deadlock
-    await this.enqueueMsg(msg, skipOutcome)
   }
   async awaitTail(pid: PID, sequence: number) {
     if (sequence === 0) {

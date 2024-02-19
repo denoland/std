@@ -1,7 +1,3 @@
-/**
- * This thing fires up and begins listening to the queue
- */
-
 import Compartment from './io/compartment.ts'
 import {
   DispatchFunctions,
@@ -16,11 +12,14 @@ import IsolateApi from './isolate-api.ts'
 import { assert } from 'std/assert/assert.ts'
 import { Debug } from '@utils'
 import { ulid } from 'std/ulid/mod.ts'
+import Queue from './queue.ts'
+import { C } from './isolates/artifact.ts'
 const log = Debug('AI:cradle')
 
 class Cradle {
   #compartment!: Compartment
-  #api!: IsolateApi
+  #api!: IsolateApi<C>
+  #queue!: Queue
   static async create() {
     const cradle = new Cradle()
     cradle.#compartment = Compartment.create('artifact')
@@ -28,40 +27,46 @@ class Cradle {
     // TODO pass a dispatch function in so it can call out to other pids
     cradle.#api = IsolateApi.create(fs)
     await cradle.#compartment.mount(cradle.#api)
+    assert(cradle.#api.context.db, 'db not found')
 
     const functions = cradle.#compartment.functions(cradle.#api)
     assert(!functions.stop, 'stop is a reserved action')
     assert(!functions.dispatches, 'dispatches is a reserved action')
-    Object.assign(cradle, functions)
+    cradle.#queue = Queue.create(functions, cradle.#api)
     return cradle
   }
   stop() {
     return this.#compartment.unmount(this.#api)
   }
-  async dispatches({ isolate, pid }: { isolate: string; pid: PID }) {
+  async dispatches(isolate: string, target: PID) {
     // cradle side, since functions cannot be returned from isolate calls
-    // TODO add a cache for this
     const apiSchema = await this.apiSchema({ isolate })
     const dispatches: DispatchFunctions = {}
     for (const functionName of Object.keys(apiSchema)) {
       dispatches[functionName] = (
         params: Params = {},
-        proctype = PROCTYPE.SERIAL,
+        options?: { branch?: boolean },
       ) => {
+        log('dispatch:', functionName)
+        const proctype = options?.branch ? PROCTYPE.BRANCH : PROCTYPE.SERIAL
         const nonce = ulid()
-        log('dispatch:', functionName, nonce)
-        return this.dispatch({
+        const request: Request = {
           target,
+          source: { nonce },
           isolate,
           functionName,
           params,
           proctype,
-          nonce, // TODO this should be formulaic for chain to chain
-        })
+        }
+        return this.pierce(request, this.#api)
       }
     }
     log('dispatches:', isolate, Object.keys(dispatches))
     return dispatches
+  }
+  ping(params?: Params) {
+    params = params || {}
+    return this.#queue.push('ping', params)
   }
 }
 
@@ -82,7 +87,7 @@ interface Cradle {
   init(params: { repo: string }): Promise<{ pid: PID }>
   clone(params: { repo: string }): Promise<{ pid: PID }>
   apiSchema(params: { isolate: string }): Promise<Record<string, object>>
-  dispatch(params: Request): Promise<IsolateReturn>
+  pierce(params: Request, api: IsolateApi): Promise<IsolateReturn>
 }
 
 export default Cradle

@@ -52,7 +52,7 @@ export default class IO {
       log('no lock required')
       return
     }
-    const fs = await this.#fs.isolateFs(pid)
+    const fs = await this.#fs.load(pid)
     if (fsToCommit) {
       // TODO detect written files in the fs
       // TODO copy over files from fsToCommit that are not .io.json
@@ -78,7 +78,7 @@ export default class IO {
     })
     log('commitHash', hash)
 
-    await this.#fs.updateIsolateFs(pid, fs)
+    await this.#fs.update(pid, fs)
     await this.#db.deletePool(keys)
     await this.#enqueueIo(io)
     // TODO enqueue should await until the db had recorded the message, and then
@@ -104,7 +104,7 @@ export default class IO {
   async processSerial(dispatch: Request, sequence: number) {
     await this.#db.awaitTail(dispatch.target, sequence)
     const compartment = Compartment.create(dispatch.isolate)
-    const memfs = await this.#fs.isolateFs(dispatch.target)
+    const memfs = await this.#fs.load(dispatch.target)
     const api = IsolateApi.create(memfs)
     const functions = compartment.functions(api)
     const outcome: Outcome = {}
@@ -166,10 +166,10 @@ export default class IO {
 
     const branches = dispatch.target.branches.slice(0, -1)
     const parent: PID = { ...dispatch.target, branches }
-    const fs = await this.#fs.isolateFs(parent)
+    const fs = await this.#fs.load(parent)
     const ref = dispatch.target.branches.slice(-1).pop() as string
     await git.branch({ fs, dir: '/', ref, checkout: true })
-    await this.#fs.updateIsolateFs(dispatch.target, fs)
+    await this.#fs.update(dispatch.target, fs)
 
     const poolable: Poolable = { type: 'ORIGIN', payload: dispatch }
     // if we got the headlock before commit, then is safer ?
