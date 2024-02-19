@@ -5,7 +5,7 @@ import { OPERATOR_XRANGE_REGEXP, XRANGE } from "./_shared.ts";
 import { parseComparator } from "./_parse_comparator.ts";
 import { parseBuild, parsePrerelease } from "./_shared.ts";
 
-function isWildcard(id: string): boolean {
+function isWildcard(id?: string): boolean {
   return !id || id.toLowerCase() === "x" || id === "*";
 }
 
@@ -50,9 +50,9 @@ function parseHyphenRange(range: string) {
   if (isWildcard(rightGroups.major)) {
     to = "";
   } else if (isWildcard(rightGroups.minor)) {
-    to = `<${+rightGroups.major + 1}.0.0`;
+    to = `<${+rightGroups.major! + 1}.0.0`;
   } else if (isWildcard(rightGroups.patch)) {
-    to = `<${rightGroups.major}.${+rightGroups.minor + 1}.0`;
+    to = `<${rightGroups.major}.${+rightGroups.minor! + 1}.0`;
   } else if (rightGroups.prerelease) {
     to =
       `<=${rightGroups.major}.${rightGroups.minor}.${rightGroups.patch}-${rightGroups.prerelease}`;
