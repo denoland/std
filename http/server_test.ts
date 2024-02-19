@@ -155,7 +155,7 @@ Deno.test(
 
     try {
       assertEquals(server.addrs.length, 3);
-      assertEquals(server.addrs[0].transport, "tcp");
+      assertEquals(server.addrs[0]!.transport, "tcp");
       assertEquals(
         (server.addrs[0] as Deno.NetAddr).hostname,
         listenerOneOptions.hostname,
@@ -164,7 +164,7 @@ Deno.test(
         (server.addrs[0] as Deno.NetAddr).port,
         listenerOneOptions.port,
       );
-      assertEquals(server.addrs[1].transport, "tcp");
+      assertEquals(server.addrs[1]!.transport, "tcp");
       assertEquals(
         (server.addrs[1] as Deno.NetAddr).hostname,
         listenerTwoOptions.hostname,
@@ -173,7 +173,7 @@ Deno.test(
         (server.addrs[1] as Deno.NetAddr).port,
         listenerTwoOptions.port,
       );
-      assertEquals(server.addrs[2].transport, "tcp");
+      assertEquals(server.addrs[2]!.transport, "tcp");
       assertEquals((server.addrs[2] as Deno.NetAddr).hostname, addrHostname);
       assertEquals((server.addrs[2] as Deno.NetAddr).port, addrPort);
     } finally {
@@ -973,14 +973,14 @@ Deno.test(
     // the expected backoff delay.
     for (let i = 0; i < rejectionCount; i++) {
       assertEquals(
-        listener.acceptCallIntervals[i] >= expectedBackoffDelays[i],
+        listener.acceptCallIntervals[i]! >= expectedBackoffDelays[i]!,
         true,
       );
     }
 
     // Assert that the backoff delay has been reset following successfully
     // accepting a connection, i.e. it doesn't remain at 1000ms.
-    assertEquals(listener.acceptCallIntervals[rejectionCount] < 1000, true);
+    assertEquals(listener.acceptCallIntervals[rejectionCount]! < 1000, true);
   },
 );
 

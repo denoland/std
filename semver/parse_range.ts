@@ -1,8 +1,8 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import { ALL } from "./constants.ts";
-import type { Comparator, Range, SemVerRange } from "./types.ts";
+import type { Comparator, Range } from "./types.ts";
 import { OPERATOR_XRANGE_REGEXP, XRANGE } from "./_shared.ts";
-import { parseComparator } from "./parse_comparator.ts";
+import { parseComparator } from "./_parse_comparator.ts";
 import { parseBuild, parsePrerelease } from "./_shared.ts";
 
 function isWildcard(id: string): boolean {
@@ -187,14 +187,12 @@ function handleGreaterThanOperator(groups: RegExpGroups): Comparator[] {
   const patch = +groups.patch;
 
   if (majorIsWildcard) return [{ operator: "<", major: 0, minor: 0, patch: 0 }];
+
   if (minorIsWildcard) {
-    if (patchIsWildcard) {
-      return [{ operator: ">=", major: major + 1, minor: 0, patch: 0 }];
-    }
-    return [{ operator: ">", major: major + 1, minor: 0, patch: 0 }];
+    return [{ operator: ">=", major: major + 1, minor: 0, patch: 0 }];
   }
   if (patchIsWildcard) {
-    return [{ operator: ">", major: major + 1, minor: 0, patch: 0 }];
+    return [{ operator: ">=", major, minor: minor + 1, patch: 0 }];
   }
   const prerelease = parsePrerelease(groups.prerelease ?? "");
   const build = parseBuild(groups.build ?? "");
@@ -243,7 +241,7 @@ function handleEqualOperator(groups: RegExpGroups): Comparator[] {
   }
   const prerelease = parsePrerelease(groups.prerelease ?? "");
   const build = parseBuild(groups.build ?? "");
-  return [{ operator: "", major, minor, patch, prerelease, build }];
+  return [{ operator: undefined, major, minor, patch, prerelease, build }];
 }
 
 function parseRangeString(string: string) {
@@ -273,14 +271,14 @@ function parseRangeString(string: string) {
 }
 
 /**
- * Parses a range string into a SemVerRange object or throws a TypeError.
+ * Parses a range string into a Range object or throws a TypeError.
  * @param range The range set string
  * @returns A valid semantic range
  */
-export function parseRange(range: string): SemVerRange & Range {
+export function parseRange(range: string): Range {
   const ranges = range
     .split(/\s*\|\|\s*/)
     .map((range) => parseHyphenRange(range).flatMap(parseRangeString));
   Object.defineProperty(ranges, "ranges", { value: ranges });
-  return ranges as SemVerRange & Range;
+  return ranges as Range;
 }
