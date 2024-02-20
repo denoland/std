@@ -61,6 +61,21 @@ export type PID = {
   branches: string[]
 }
 
+export type HelpConfig = {
+  model?: 'gpt-3.5-turbo-1106' | 'gpt-4-turbo-preview'
+  temperature?: number
+}
+export type Help = {
+  description?: string
+  config?: HelpConfig
+  runner?: string
+  commands?: string[]
+  instructions: string[]
+  done?: string
+  examples?: string[]
+  tests?: string[]
+}
+
 export type Poolable = Request | Reply
 
 export type Reply = {
@@ -79,19 +94,4 @@ export type Request = {
   proctype: PROCTYPE
   id: string // must provide external id for the pool guid
   // internally the id is the sequence, pierce uses a ulid
-}
-
-export type HelpConfig = {
-  model?: 'gpt-3.5-turbo-1106' | 'gpt-4-turbo-preview'
-  temperature?: number
-}
-export type Help = {
-  description?: string
-  config?: HelpConfig
-  runner?: string
-  commands?: string[]
-  instructions: string[]
-  done?: string
-  examples?: string[]
-  tests?: string[]
 }

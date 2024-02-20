@@ -22,6 +22,7 @@ export default class IsolateApi<T extends object = Default> {
     api.#fs = fs
     return api
   }
+  // OR we could use options to the functions to switch modes
   /**
    * When any of these functions are called, they will be executed in the same
    * branch is the caller, and will be executed in the order they were called.

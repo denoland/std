@@ -127,10 +127,9 @@ export const functions: IsolateFunctions = {
       repository,
       branches: [ENTRY_BRANCH],
     }
-    // TODO acquire lock on the repo in the kv store
     // TODO handle existing repo
 
-    // TODO use the fs option in the context
+    // TODO use the fs option in the context, by loading an asserted blank fs
 
     const { fs } = memfs()
     const dir = '/'

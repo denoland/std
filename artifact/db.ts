@@ -1,6 +1,5 @@
 import * as keys from './keys.ts'
 import { ulid } from '$std/ulid/mod.ts'
-import { get, set } from 'https://deno.land/x/kv_toolbox@0.6.1/blob.ts'
 import { PID, Poolable, Reply, Request } from '@/artifact/constants.ts'
 import { assert, Debug, openKv } from '@utils'
 
@@ -19,7 +18,7 @@ export default class DB {
     return this.#kv.close()
   }
   async watchReply(request: Request) {
-    const key = keys.getPoolKey(request)
+    const key = keys.getReplyKey(request)
     log('watchReply %o', key)
     const stream = this.#kv.watch<Reply[]>([key])
     for await (const [event] of stream) {
@@ -32,46 +31,13 @@ export default class DB {
     }
     throw new Error('watchReply failed')
   }
-  // maybe do need an outcome type, to avoid flickering on replies
-  // so once a reply is pooled, move its keys over to be outcome
-  async loadIsolateFs(pid: PID) {
-    const fsKey = keys.getRepoKey(pid)
-    log('loadSnapshot %o', fsKey)
-    const blobKey = await this.#kv.get<string[]>(fsKey)
-    assert(blobKey.value, 'repo not found: ' + fsKey.join('/'))
-    const uint8 = await get(this.#kv, blobKey.value)
-    return uint8
-  }
-  async updateIsolateFs(pid: PID, uint8: Uint8Array, lockId: string) {
-    // TODO use the versionstamp as the lockId to avoid the key lookup
-    const lockKey = keys.getHeadLockKey(pid)
-    const currentLock = await this.#kv.get(lockKey)
-    if (currentLock.value !== lockId) {
-      throw new Error('lock mismatch: ' + lockKey.join('/') + ' ' + lockId)
-    }
 
-    const fsKey = keys.getRepoKey(pid)
-    const blobKey = [...fsKey, ulid()]
-    await set(this.#kv, blobKey, uint8)
-
-    const result = await this.#kv.atomic().check(currentLock).set(
-      fsKey,
-      blobKey,
-    ).commit()
-    if (!result.ok) {
-      await this.#kv.delete(blobKey)
-      throw new Error('lock mismatch: ' + lockKey.join('/') + ' ' + lockId)
-    }
-  }
   async addToPool(poolable: Poolable) {
     // TODO handle IPCs too
     const key = keys.getPoolKey(poolable)
     log('pooling start %o', poolable.id)
-    await this.#kv.atomic().check({ key, versionstamp: null }).set(
-      key,
-      poolable,
-    )
-      .commit()
+    const empty = { key, versionstamp: null }
+    await this.#kv.atomic().check(empty).set(key, poolable).commit()
     log('pooling done %o', poolable.id)
     return key
   }
@@ -143,14 +109,12 @@ export default class DB {
   }
   async releaseHeadlock(pid: PID, lockId: string) {
     log('releaseHeadlock %s', lockId)
-    const headLockKey = keys.getHeadLockKey(pid)
-    const existing = await this.#kv.get(headLockKey)
+    const lockKey = keys.getHeadLockKey(pid)
+    const existing = await this.#kv.get(lockKey)
     if (existing.value !== lockId) {
-      throw new Error(
-        'Headlock mismatch: ' + headLockKey.join('/') + ' ' + lockId,
-      )
+      throw new Error('Mismatch: ' + lockKey.join('/') + ' ' + lockId)
     }
-    await this.#kv.atomic().check(existing).delete(headLockKey).commit()
+    await this.#kv.atomic().check(existing).delete(lockKey).commit()
   }
   async getPooledActions(pid: PID) {
     const prefix = keys.getPoolKeyPrefix(pid)
@@ -159,10 +123,11 @@ export default class DB {
     const poolKeys = []
     const pool: Poolable[] = []
     for await (const entry of entries) {
-      const value = entry.value
-      // TODO check the length, since deeper branches might be included
+      if (entry.key.length !== prefix.length + 1) {
+        continue
+      }
       poolKeys.push(entry.key)
-      pool.push(value)
+      pool.push(entry.value)
     }
     log('getPooledActions done %o', poolKeys.length)
     return { poolKeys, pool }

@@ -149,12 +149,18 @@ const checkPool = (pool: Poolable[]) => {
     if (!equal(poolable.target, target)) {
       throw new Error('pool has mixed targets')
     }
-    // if the reply comes from a different branch, it needs to be a merge
-    // if we had the io input, then we would know if it was a merge without
-    // storing any extra info on the reply object itself.
-
-    // check for duplicate items
-    // check for out of order serial replies
+    // TODO check for out of order serial replies
+    // this depends on sequence being part of the reply item
+  }
+  for (let i = 0; i < pool.length; i++) {
+    const poolable = pool[i]
+    for (let j = i + 1; j < pool.length; j++) {
+      const next = pool[j]
+      if (equal(poolable, next)) {
+        const msg = 'duplicate pool items: ' + JSON.stringify(poolable, null, 2)
+        throw new Error(msg)
+      }
+    }
   }
 }
 const branchPid = (pid: PID, sequence: number) => {
@@ -165,8 +171,6 @@ const branchName = (pid: PID) => {
   return pid.branches.join('-')
 }
 const copyObjects = (from: IFs, to: IFs) => {
-  // TODO read from a specific commit
-
   const base = '/.git/objects/'
   from.readdirSync(base).forEach((dir) => {
     if (dir === 'pack' || dir === 'info') {

@@ -59,7 +59,7 @@ class Cradle {
           proctype,
           id,
         }
-        return await this.pierce(request, this.#api)
+        return await this.pierce(request)
       }
     }
     log('dispatches:', isolate, Object.keys(dispatches))
@@ -91,7 +91,7 @@ interface Cradle {
   init(params: { repo: string }): Promise<{ pid: PID }>
   clone(params: { repo: string }): Promise<{ pid: PID }>
   apiSchema(params: { isolate: string }): Promise<Record<string, object>>
-  pierce(params: Request, api: IsolateApi): Promise<IsolateReturn>
+  pierce(params: Request): Promise<IsolateReturn>
 }
 
 export default Cradle
