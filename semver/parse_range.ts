@@ -187,14 +187,12 @@ function handleGreaterThanOperator(groups: RegExpGroups): Comparator[] {
   const patch = +groups.patch;
 
   if (majorIsWildcard) return [{ operator: "<", major: 0, minor: 0, patch: 0 }];
+
   if (minorIsWildcard) {
-    if (patchIsWildcard) {
-      return [{ operator: ">=", major: major + 1, minor: 0, patch: 0 }];
-    }
-    return [{ operator: ">", major: major + 1, minor: 0, patch: 0 }];
+    return [{ operator: ">=", major: major + 1, minor: 0, patch: 0 }];
   }
   if (patchIsWildcard) {
-    return [{ operator: ">", major: major + 1, minor: 0, patch: 0 }];
+    return [{ operator: ">=", major, minor: minor + 1, patch: 0 }];
   }
   const prerelease = parsePrerelease(groups.prerelease ?? "");
   const build = parseBuild(groups.build ?? "");
@@ -243,7 +241,7 @@ function handleEqualOperator(groups: RegExpGroups): Comparator[] {
   }
   const prerelease = parsePrerelease(groups.prerelease ?? "");
   const build = parseBuild(groups.build ?? "");
-  return [{ operator: "", major, minor, patch, prerelease, build }];
+  return [{ operator: undefined, major, minor, patch, prerelease, build }];
 }
 
 function parseRangeString(string: string) {

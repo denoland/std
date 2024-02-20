@@ -19,9 +19,10 @@ export function comparatorMax(comparator: Comparator): SemVer {
     case ">=":
       return MAX;
     case "":
-    case "=":
     case "==":
     case "===":
+    case undefined:
+    case "=":
     case "<=":
       return {
         major: semver.major,

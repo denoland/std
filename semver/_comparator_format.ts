@@ -10,5 +10,7 @@ import { format } from "./format.ts";
  */
 export function comparatorFormat(comparator: Comparator): string {
   const { semver, operator } = comparator;
-  return `${operator}${format(semver ?? comparator)}`;
+  return `${operator === undefined ? "" : operator}${
+    format(semver ?? comparator)
+  }`;
 }
