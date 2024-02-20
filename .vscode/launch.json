@@ -38,6 +38,22 @@
     },
     {
       "request": "launch",
+      "name": "cradle",
+      "type": "node",
+      "cwd": "${workspaceFolder}",
+      "runtimeExecutable": "~/.deno/bin/deno",
+      "runtimeArgs": [
+        "task",
+        "watch",
+        "--inspect-wait",
+        "artifact/cradle.test.ts"
+      ],
+      "attachSimplePort": 9229,
+      "internalConsoleOptions": "neverOpen",
+      "console": "integratedTerminal"
+    },
+    {
+      "request": "launch",
       "name": "Launch Program",
       "type": "node",
       "cwd": "${workspaceFolder}",

@@ -1,14 +1,8 @@
+import * as keys from './keys.ts'
 import { ulid } from '$std/ulid/mod.ts'
 import { get, set } from 'https://deno.land/x/kv_toolbox@0.6.1/blob.ts'
-import {
-  KEYSPACES,
-  Outcome,
-  PID,
-  Poolable,
-  Request,
-} from '@/artifact/constants.ts'
-import { assert } from 'std/assert/assert.ts'
-import { Debug } from '@utils'
+import { PID, Poolable, Reply, Request } from '@/artifact/constants.ts'
+import { assert, Debug, openKv } from '@utils'
 
 const log = Debug('AI:db')
 export default class DB {
@@ -24,82 +18,93 @@ export default class DB {
   stop() {
     return this.#kv.close()
   }
-  async awaitTail(pid: PID, sequence: number) {
-    if (sequence === 0) {
-      return
-    }
-    const serialKey = getSerialKey(pid, sequence - 1)
-    log('awaitPrior %o', serialKey)
-    const stream = this.#kv.watch([serialKey])
+  async watchReply(request: Request) {
+    const key = keys.getPoolKey(request)
+    log('watchReply %o', key)
+    const stream = this.#kv.watch<Reply[]>([key])
     for await (const [event] of stream) {
-      log('awaitPrior event %o', event.key[event.key.length - 1])
       if (!event.versionstamp) {
-        log('awaitPrior done')
-        return
+        continue
       }
+      const reply: Reply = event.value
+      log('awaitOutcome done %o', reply)
+      return reply
     }
+    throw new Error('watchReply failed')
   }
-  async serialDone(pid: PID, sequence: number) {
-    const serialKey = getSerialKey(pid, sequence)
-    log('serialDone %o', serialKey)
-    await this.#kv.delete(serialKey)
-  }
+  // maybe do need an outcome type, to avoid flickering on replies
+  // so once a reply is pooled, move its keys over to be outcome
   async loadIsolateFs(pid: PID) {
-    assertPid(pid)
-    const { account, repository, branches } = pid
-    const key = [KEYSPACES.REPO, account, repository, ...branches]
-    log('loadSnapshot %o', key)
-    const uint8 = await get(this.#kv, key)
+    const fsKey = keys.getRepoKey(pid)
+    log('loadSnapshot %o', fsKey)
+    const blobKey = await this.#kv.get<string[]>(fsKey)
+    assert(blobKey.value, 'repo not found: ' + fsKey.join('/'))
+    const uint8 = await get(this.#kv, blobKey.value)
     return uint8
   }
-  async updateIsolateFs(pid: PID, uint8: Uint8Array) {
-    await set(this.#kv, [
-      KEYSPACES.REPO,
-      pid.account,
-      pid.repository,
-      ...pid.branches,
-    ], uint8)
+  async updateIsolateFs(pid: PID, uint8: Uint8Array, lockId: string) {
+    // TODO use the versionstamp as the lockId to avoid the key lookup
+    const lockKey = keys.getHeadLockKey(pid)
+    const currentLock = await this.#kv.get(lockKey)
+    if (currentLock.value !== lockId) {
+      throw new Error('lock mismatch: ' + lockKey.join('/') + ' ' + lockId)
+    }
+
+    const fsKey = keys.getRepoKey(pid)
+    const blobKey = [...fsKey, ulid()]
+    await set(this.#kv, blobKey, uint8)
+
+    const result = await this.#kv.atomic().check(currentLock).set(
+      fsKey,
+      blobKey,
+    ).commit()
+    if (!result.ok) {
+      await this.#kv.delete(blobKey)
+      throw new Error('lock mismatch: ' + lockKey.join('/') + ' ' + lockId)
+    }
   }
-  async poolAction(action: Poolable) {
-    // const { pid } = action.payload // ? maybe move to meta key ?
-    // assertPid(pid)
-    // const key = getPoolKey(pid, nonce)
-    // log('pooling start %o', nonce)
-    // await this.#kv.set(key, action)
-    // log('pooling done %o', nonce)
+  async addToPool(poolable: Poolable) {
+    // TODO handle IPCs too
+    const key = keys.getPoolKey(poolable)
+    log('pooling start %o', poolable.id)
+    await this.#kv.atomic().check({ key, versionstamp: null }).set(
+      key,
+      poolable,
+    )
+      .commit()
+    log('pooling done %o', poolable.id)
+    return key
   }
-  awaitOutcome(dispatch: Request): Promise<Outcome> {
-    // const { target, nonce } = dispatch
-    // const poolKey = getPoolKey(target, nonce)
-    // log('awaitOutcome %o', nonce)
-    // const channelKey = 'outcome-' + poolKey.join(':') // TODO escape : chars
-    // const channel = new BroadcastChannel(channelKey)
-    return new Promise((resolve) => {
-      // channel.onmessage = (event) => {
-      //   const outcome = event.data as Outcome
-      //   log('channel message', outcome)
-      //   channel.close()
-      //   resolve(outcome)
-      // }
-    })
-  }
-  announceOutcome(dispatch: Request, outcome: Outcome) {
-    // const { target, nonce } = dispatch
-    // const poolKey = getPoolKey(target, nonce)
-    // log('announceOutcome %o', nonce)
-    // const channelKey = 'outcome-' + poolKey.join(':') // TODO escape : chars
-    // const channel = new BroadcastChannel(channelKey)
-    // channel.postMessage(outcome)
-    // // must be last, and one event loop later, else message not transmitted
-    // setTimeout(() => channel.close())
-  }
-  getHeadLock(pid: PID, action: Poolable) {
-    assertPid(pid)
-    const key = getHeadLockKey(pid)
+  async getHeadlock(pid: PID) {
+    const key = keys.getHeadLockKey(pid)
     log('start getHeadLock %o', key)
 
     const lockId = 'headlock-' + ulid()
-    const poolKey = getPoolKey(pid, 'TODO')
+    let result = { ok: false }
+    while (!result.ok) {
+      let current = await this.#kv.get(key)
+      if (current.versionstamp) {
+        log('headlock failed, waiting for lock release')
+        for await (const [event] of this.#kv.watch([key])) {
+          if (!event.versionstamp) {
+            current = event
+            break
+          }
+        }
+        log('headlock released')
+      }
+      result = await this.#kv.atomic().check(current).set(key, lockId, {
+        expireIn: 5000,
+      }).commit()
+    }
+    return lockId
+  }
+  getHeadlockMaybe(request: Request) {
+    const key = keys.getHeadLockKey(request.target)
+    log('start getHeadLock %o', key)
+
+    const lockId = 'headlock-' + ulid()
+    const poolKey = keys.getPoolKey(request)
 
     const headStream = this.#kv.watch([key])[Symbol.asyncIterator]()
 
@@ -138,79 +143,33 @@ export default class DB {
   }
   async releaseHeadlock(pid: PID, lockId: string) {
     log('releaseHeadlock %s', lockId)
-    const headLockKey = getHeadLockKey(pid)
+    const headLockKey = keys.getHeadLockKey(pid)
     const existing = await this.#kv.get(headLockKey)
     if (existing.value !== lockId) {
       throw new Error(
         'Headlock mismatch: ' + headLockKey.join('/') + ' ' + lockId,
       )
     }
-    await this.#kv.delete(headLockKey)
+    await this.#kv.atomic().check(existing).delete(headLockKey).commit()
   }
   async getPooledActions(pid: PID) {
-    const prefix = getPoolKeyPrefix(pid)
+    const prefix = keys.getPoolKeyPrefix(pid)
     log('getPooledActions %o', prefix)
     const entries = this.#kv.list<Poolable>({ prefix })
-    const keys = []
-    const actions: Poolable[] = []
+    const poolKeys = []
+    const pool: Poolable[] = []
     for await (const entry of entries) {
       const value = entry.value
-      keys.push(entry.key)
-      actions.push(value)
+      // TODO check the length, since deeper branches might be included
+      poolKeys.push(entry.key)
+      pool.push(value)
     }
-    log('getPooledActions done %o', keys.length)
-    return { keys, actions }
+    log('getPooledActions done %o', poolKeys.length)
+    return { poolKeys, pool }
   }
   async deletePool(keys: Deno.KvKey[]) {
-    const nonces = keys.map((key) => key[key.length - 1])
-    log('deletePool %o', nonces)
+    const ids = keys.map((key) => key[key.length - 1])
+    log('deletePool %o', ids)
     await Promise.all(keys.map((key) => this.#kv.delete(key)))
-  }
-}
-const getPoolKeyPrefix = (pid: PID) => {
-  const { account, repository, branches } = pid
-  return [KEYSPACES.POOL, account, repository, ...branches]
-}
-const getPoolKey = (pid: PID, nonce: string) => {
-  return [...getPoolKeyPrefix(pid), nonce]
-}
-const getHeadLockKey = (pid: PID) => {
-  const { account, repository, branches } = pid
-  return [KEYSPACES.HEADLOCK, account, repository, ...branches]
-}
-const getSerialKey = (pid: PID, sequence: number) => {
-  assert(sequence >= 0, 'sequence must be positive')
-  const { account, repository, branches } = pid
-  return [KEYSPACES.SERIAL, account, repository, ...branches, sequence]
-}
-const isDenoDeploy = Deno.env.get('DENO_DEPLOYMENT_ID') !== undefined
-const openKv = async () => {
-  if (isDenoDeploy) {
-    return Deno.openKv()
-  }
-
-  const KEY = 'DENO_KV_PATH'
-  let path = ':memory:'
-  const permission = await Deno.permissions.query({
-    name: 'env',
-    variable: KEY,
-  })
-  if (permission.state === 'granted') {
-    const env = Deno.env.get(KEY)
-    if (env) {
-      path = env
-    }
-  }
-  log('open kv', path)
-  return Deno.openKv(path)
-}
-const assertPid = (pid: PID) => {
-  assert(pid.account, 'account is required')
-  assert(pid.repository, 'repository is required')
-  assert(pid.branches[0], 'branch is required')
-  const githubRegex = /^[a-z\d](?:[a-z\d]|-(?=[a-z\d])){0,38}$/i
-  if (!githubRegex.test(pid.account) || !githubRegex.test(pid.repository)) {
-    const repo = `${pid.account}/${pid.repository}`
-    throw new Error('Invalid GitHub account or repository name: ' + repo)
   }
 }

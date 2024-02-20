@@ -37,7 +37,7 @@ export type DispatchFunctions = {
 export type Params = Record<string, unknown>
 
 export type IsolateApiSchema = {
-  [key: string]: JSONSchemaType<any>
+  [key: string]: JSONSchemaType<object>
 }
 export type Isolate = {
   api: IsolateApiSchema
@@ -61,84 +61,24 @@ export type PID = {
   branches: string[]
 }
 
-export enum POOLABLE_TYPES {
-  REPLY = 'REPLY',
-  /**
-   * The first action in a branch is the origin action, which will close the
-   * branch once it is replied to.
-   */
-  DISPATCH = 'DISPATCH',
-  /**
-   * An external excitation.  When a reply is inserted for a pierce action, it
-   * is up to the external watcher to take it from there.  In contrast when a
-   * dispatch reply is received, then the execution layer needs to copy the
-   * reply over to the source branch by way of a merge.
-   */
-  PIERCE = 'PIERCE',
-}
-
 export type Poolable = Request | Reply
 
 export type Reply = {
-  target: PID | Pierce
-  sequence: number
+  target?: PID
+  id: string // combined with the target, makes a guid
   outcome: Outcome
   fs?: IFs
   commit?: string
 }
 export type Request = {
   target: PID
-  source: PID | Pierce
+  source?: PID // empty for piercings
   isolate: string
   functionName: string
   params: Params
   proctype: PROCTYPE
-}
-export type Pierce = {
-  nonce: string
-}
-
-export enum QUEUE_TYPES {
-  PULL = 'PULL',
-  PUSH = 'PUSH',
-  CLONE = 'CLONE',
-  INIT = 'INIT',
-  ISOLATE_API = 'ISOLATE_API',
-  DISPATCH = 'DISPATCH',
-}
-export type QMessage = { nonce: string; name: string; params: Params }
-export type QCallback = (
-  msg: QMessage,
-) => Promise<unknown> | unknown
-
-export type QueuedDispatch = {
-  type: QUEUE_TYPES.DISPATCH
-  payload: {
-    dispatch: Request
-    sequence: number
-  }
-}
-
-export type QueuedCommit = {
-  type: 'COMMIT'
-  payload: {
-    pid: PID
-    hash: string
-  }
-}
-export enum KEYSPACES {
-  POOL = 'POOL', // all pending IO actions trying to be committed
-  HEADLOCK = 'HEADLOCK', // the lock on the head of a given process branch
-  REPO = 'REPO', // this is the latest fs snapshot of a given process branch
-  /**
-   * Sequential actions that need to execute in order.  Has the form:
-   *
-   * [KEYSPACES.SERIAL, account, repository, ...branches, sequence] => true
-   *
-   * When completed, the key is deleted, which allows the next dispatch to begin
-   * execution.
-   */
-  SERIAL = 'SERIAL',
+  id: string // must provide external id for the pool guid
+  // internally the id is the sequence, pierce uses a ulid
 }
 
 export type HelpConfig = {

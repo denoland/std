@@ -33,10 +33,10 @@ export default class FS {
     // log('snapshot loaded', toTreeSync(fs))
     return fs
   }
-  async update(pid: PID, fs: IFs) {
+  async update(pid: PID, fs: IFs, lockId: string) {
     const uint8 = snapshot.toBinarySnapshotSync({ fs, path: '/.git' })
     log('updateIsolateFs', pretty(uint8.length))
-    await this.#db.updateIsolateFs(pid, uint8)
+    await this.#db.updateIsolateFs(pid, uint8, lockId)
     return { size: uint8.length, prettySize: pretty(uint8.length) }
   }
   static print(fs: IFs) {

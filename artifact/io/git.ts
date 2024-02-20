@@ -55,6 +55,7 @@ export const solidifyPool = async (fs: IFs, pool: Poolable[]) => {
     blankSettledRequests(io)
   }
   const requests: Request[] = []
+  const priors: (number | undefined)[] = []
   const branches: PID[] = []
   const replies: Reply[] = []
   let parent
@@ -67,13 +68,16 @@ export const solidifyPool = async (fs: IFs, pool: Poolable[]) => {
         branches.push(pid)
       } else {
         requests.push(poolable)
+        const prior = getPrior(sequence, io)
+        priors.push(prior)
       }
     } else {
       log('reply', poolable.outcome)
-      const { sequence } = poolable
-      const request = io.requests[sequence]
-      assert(request, `reply sequence not found: ${sequence}`)
-      io.replies[sequence] = poolable.outcome
+      // BUT the id needs to be a number ?
+      const { id } = poolable
+      const request = io.requests[id]
+      assert(request, `reply sequence not found: ${id}`)
+      io.replies[id] = poolable.outcome
       if (!equal(request.source, request.target)) {
         const reply: Reply = { ...poolable, target: request.source }
         delete reply.commit
@@ -81,8 +85,8 @@ export const solidifyPool = async (fs: IFs, pool: Poolable[]) => {
         replies.push(reply)
       }
       if (request.proctype === PROCTYPE.BRANCH) {
-        assert(poolable.fs, 'branch reply needs fs: ' + sequence)
-        assert(poolable.commit, 'branch reply needs commit: ' + sequence)
+        assert(poolable.fs, 'branch reply needs fs: ' + id)
+        assert(poolable.commit, 'branch reply needs commit: ' + id)
         // copy in the fs objects into this one
         // add to the parent array
         if (!parent) {
@@ -100,7 +104,7 @@ export const solidifyPool = async (fs: IFs, pool: Poolable[]) => {
   const commit = await git.commit({ fs, dir, message: 'pool', author, parent })
   log('commitHash', commit)
 
-  return { commit, requests, branches, replies }
+  return { commit, requests, priors, branches, replies }
 }
 
 /**
@@ -162,8 +166,6 @@ const branchName = (pid: PID) => {
 }
 const copyObjects = (from: IFs, to: IFs) => {
   // TODO read from a specific commit
-  // log(print.toTreeSync(from))
-  // log(print.toTreeSync(to))
 
   const base = '/.git/objects/'
   from.readdirSync(base).forEach((dir) => {
@@ -181,4 +183,17 @@ const copyObjects = (from: IFs, to: IFs) => {
       to.writeFileSync(filepath, contents)
     })
   })
+}
+const getPrior = (sequence: number, io: IoStruct) => {
+  const keys = Object.keys(io.requests).map(Number)
+  keys.sort((a, b) => b - a)
+  for (const key of keys) {
+    assert(key <= sequence, `out of order sequence: ${key}`)
+    if (io.replies[key]) {
+      continue
+    }
+    if (key < sequence) {
+      return key
+    }
+  }
 }

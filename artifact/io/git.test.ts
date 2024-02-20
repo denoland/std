@@ -12,15 +12,15 @@ Deno.test('serial', async (t) => {
   const target: PID = { account: 'git', repository: 'test', branches: ['main'] }
   const request: Request = {
     target,
-    source: { nonce: 'test-nonce' },
     isolate: 'test-isolate',
     functionName: 'test',
     params: {},
     proctype: PROCTYPE.SERIAL,
+    id: 'test-id',
   }
   const reply: Reply = {
     target,
-    sequence: 0,
+    id: '0',
     outcome: { result: 'test-result' },
   }
   await t.step('init', async () => {
@@ -29,9 +29,10 @@ Deno.test('serial', async (t) => {
     expect(fs.existsSync('/.git')).toBe(true)
   })
   await t.step('pierce', async () => {
-    const { requests } = await git.solidifyPool(fs, [request])
+    const { requests, priors } = await git.solidifyPool(fs, [request])
     expect(requests).toHaveLength(1)
     expect(requests[0]).toEqual(request)
+    expect(priors).toEqual([undefined])
     const io: IoStruct = readIo(fs)
     log('io', io)
     expect(io.sequence).toBe(1)
@@ -48,16 +49,19 @@ Deno.test('serial', async (t) => {
     expect(io.replies[0]).toEqual(reply.outcome)
   })
   await t.step('second action blanks io', async () => {
-    await git.solidifyPool(fs, [request])
+    const { priors } = await git.solidifyPool(fs, [request])
     const io: IoStruct = readIo(fs)
     log('io', io)
     expect(io.sequence).toBe(2)
     expect(io.requests[0]).toBeUndefined()
     expect(io.requests[1]).toEqual(request)
     expect(io.replies[0]).toBeUndefined()
+    expect(priors).toEqual([undefined])
   })
   await t.step('multiple requests', async () => {
-    await git.solidifyPool(fs, [request, request])
+    const { priors, requests } = await git.solidifyPool(fs, [request, request])
+    expect(requests).toHaveLength(2)
+    expect(priors).toEqual([1, 2])
     const io: IoStruct = readIo(fs)
     expect(io.sequence).toBe(4)
     expect(Object.keys(io.requests).length).toBe(3)
@@ -81,7 +85,7 @@ const replies = (start: number, end: number) => {
   for (let i = start; i <= end; i++) {
     pool.push({
       target: { account: 'git', repository: 'test', branches: ['main'] },
-      sequence: i,
+      id: i + '',
       outcome: { result: i },
     })
   }
@@ -93,15 +97,15 @@ Deno.test('branch', async (t) => {
   const target: PID = { account: 'git', repository: 'test', branches: ['main'] }
   const request: Request = {
     target,
-    source: { nonce: 'test-nonce' },
     isolate: 'test-isolate',
     functionName: 'test',
     params: {},
     proctype: PROCTYPE.BRANCH,
+    id: 'test-id',
   }
   const reply: Reply = {
     target,
-    sequence: 0,
+    id: '0',
     outcome: { result: 'test-result' },
   }
   await git.init(fs, 'git/test')

@@ -26,6 +26,7 @@ class Cradle {
     const { fs } = memfs()
     // TODO pass a dispatch function in so it can call out to other pids
     cradle.#api = IsolateApi.create(fs)
+    cradle.#api.context.self = cradle
     await cradle.#compartment.mount(cradle.#api)
     assert(cradle.#api.context.db, 'db not found')
 
@@ -43,22 +44,22 @@ class Cradle {
     const apiSchema = await this.apiSchema({ isolate })
     const dispatches: DispatchFunctions = {}
     for (const functionName of Object.keys(apiSchema)) {
-      dispatches[functionName] = (
+      dispatches[functionName] = async (
         params: Params = {},
         options?: { branch?: boolean },
       ) => {
         log('dispatch:', functionName)
         const proctype = options?.branch ? PROCTYPE.BRANCH : PROCTYPE.SERIAL
-        const nonce = ulid()
+        const id = ulid()
         const request: Request = {
           target,
-          source: { nonce },
           isolate,
           functionName,
           params,
           proctype,
+          id,
         }
-        return this.pierce(request, this.#api)
+        return await this.pierce(request, this.#api)
       }
     }
     log('dispatches:', isolate, Object.keys(dispatches))
@@ -68,19 +69,22 @@ class Cradle {
     params = params || {}
     return this.#queue.push('ping', params)
   }
+  init(params: { repo: string }) {
+    return this.#queue.push('init', params)
+  }
+  clone(params: { repo: string }) {
+    return this.#queue.push('clone', params)
+  }
+  apiSchema(params: { isolate: string }) {
+    return this.#queue.push('apiSchema', params)
+  }
+  pierce(params: Request) {
+    return this.#queue.push('pierce', params)
+  }
+  request(params: Request) {
+    return this.#queue.push('request', params)
+  }
 }
-
-// the hono api might need to wrap subscriptions and listen in to the broadcast
-// channel that will be used to send out the patches.
-// subscriptions will be the PID broadcast channel, which updates while someone
-// has headlock and at each commit.
-// detecting headlock means we would expect a message to come down, triggering
-// the splice status to be updated to 'executing'
-// the first thing to do after getting headlock is to broadcast out that you
-// have it.
-// Could broadcast io sequence changes and also file path changes up to a
-// certain size, and indicate consumers need to pull the commit if the change
-// set is too big
 
 interface Cradle {
   ping(params?: Params): Promise<IsolateReturn>

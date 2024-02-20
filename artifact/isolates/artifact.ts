@@ -2,7 +2,6 @@ import { Debug } from '@utils'
 import git from '$git'
 import http from '$git/http/web'
 import { memfs } from 'https://esm.sh/memfs@4.6.0'
-import time from 'https://esm.sh/pretty-ms'
 import {
   ENTRY_BRANCH,
   IsolateFunctions,
@@ -16,6 +15,10 @@ import Compartment from '../io/compartment.ts'
 import IO from '@io/io.ts'
 import DB from '../db.ts'
 import FS from '../fs.ts'
+import Cradle from '@/artifact/cradle.ts'
+import { assert } from 'https://deno.land/std@0.203.0/assert/assert.ts'
+import { Outcome } from '@/artifact/constants.ts'
+import { serializeError } from 'https://esm.sh/serialize-error'
 
 const log = Debug('AI:artifact')
 const repo = {
@@ -25,6 +28,35 @@ const repo = {
     repo: {
       type: 'string',
       pattern: '^[a-zA-Z0-9][a-zA-Z0-9-_]*\/[a-zA-Z0-9][a-zA-Z0-9-_]*$',
+    },
+  },
+}
+const request = {
+  type: 'object',
+  required: ['isolate'],
+  properties: {
+    isolate: {
+      type: 'string',
+    },
+    pid: {
+      type: 'object',
+      required: ['account', 'repository', 'branches'],
+      additionalProperties: false,
+      properties: {
+        account: {
+          type: 'string',
+        },
+        repository: {
+          type: 'string',
+        },
+        branches: {
+          type: 'array',
+          items: {
+            type: 'string',
+          },
+          minItems: 1,
+        },
+      },
     },
   },
 }
@@ -48,35 +80,8 @@ export const api = {
       },
     },
   },
-  pierce: {
-    type: 'object',
-    required: ['isolate'],
-    properties: {
-      isolate: {
-        type: 'string',
-      },
-      pid: {
-        type: 'object',
-        required: ['account', 'repository', 'branches'],
-        additionalProperties: false,
-        properties: {
-          account: {
-            type: 'string',
-          },
-          repository: {
-            type: 'string',
-          },
-          branches: {
-            type: 'array',
-            items: {
-              type: 'string',
-            },
-            minItems: 1,
-          },
-        },
-      },
-    },
-  },
+  pierce: request,
+  request,
   // subscribe to json by filepath and pid
   // subscribe to path in json, so we can subscribe to the output of io.json
   // subscribe to binary by filepath and pid - done by commit watching
@@ -84,7 +89,7 @@ export const api = {
   // requesting a patch would be done with the last known patch as cursor
 }
 
-export type C = { db: DB; io: IO; fs: FS }
+export type C = { db: DB; io: IO; fs: FS; self: Cradle }
 
 export const functions: IsolateFunctions = {
   ping: (params?: Params) => {
@@ -106,7 +111,10 @@ export const functions: IsolateFunctions = {
     const { fs } = memfs()
     const dir = '/'
     await git.init({ fs, dir, defaultBranch: ENTRY_BRANCH })
-    const { prettySize: size } = await api.context.fs!.update(pid, fs)
+
+    const lockId = await api.context.db!.getHeadlock(pid)
+    const { prettySize: size } = await api.context.fs!.update(pid, fs, lockId)
+    await api.context.db!.releaseHeadlock(pid, lockId)
     log('snapshot size:', size)
     return { pid, size, elapsed: Date.now() - start }
   },
@@ -133,7 +141,10 @@ export const functions: IsolateFunctions = {
     await git.clone({ fs, http, dir, url })
 
     log('cloned')
-    const { prettySize: size } = await api.context.fs!.update(pid, fs)
+    const lockId = await api.context.db!.getHeadlock(pid)
+    const { prettySize: size } = await api.context.fs!.update(pid, fs, lockId)
+    await api.context.db!.releaseHeadlock(pid, lockId)
+
     log('snapshot size:', size)
     return { pid, size, elapsed: Date.now() - start }
   },
@@ -149,15 +160,33 @@ export const functions: IsolateFunctions = {
     return compartment.api
   },
   pierce: (params, api: IsolateApi<C>) => {
-    log('dispatch', params.functionName)
+    log('pierce %o %o', params.isolate, params.functionName)
     return api.context.io!.pierce(params as Request)
+  },
+  request: (params, api: IsolateApi<C>) => {
+    log('request %o %o', params.isolate, params.functionName)
+    const request = params as Request
+    // this has come in via queue, and needs to execute
+    // we are fresh on the thread, so how to execute ?
+    const compartment = Compartment.create(request.isolate)
+    const functions = compartment.functions(api)
+    const outcome: Outcome = {}
+    try {
+      outcome.result = functions[request.functionName](request.params)
+      log('self result: %o', outcome.result)
+    } catch (errorObj) {
+      log('self error', errorObj)
+      outcome.error = serializeError(errorObj)
+    }
+    return outcome
   },
 }
 
 export const lifecycles: IsolateLifecycle = {
   async '@@mount'(api: IsolateApi<C>) {
+    assert(api.context.self, 'self not found')
     const db = await DB.create()
-    const io = IO.create(db)
+    const io = IO.create(db, api.context.self)
     const fs = FS.create(db)
     // in testing, alter the context to support ducking the queue
     api.context = { db, io, fs }
