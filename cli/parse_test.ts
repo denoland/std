@@ -1,3 +1,5 @@
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+
 import { assertEquals } from "../assert/assert_equals.ts";
 import { assertThrows } from "../assert/assert_throws.ts";
 import { parse } from "./parse.ts";

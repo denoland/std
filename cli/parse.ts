@@ -1,3 +1,5 @@
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+
 type OptionTypeConstructor<T> = T extends boolean ? BooleanConstructor
   : T extends number ? NumberConstructor
   : T extends string ? StringConstructor
