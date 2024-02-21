@@ -3,6 +3,7 @@
 // This file is copied from `std/assert`.
 
 import { EqualOptions } from "./_types.ts";
+import { Anything } from "./_asymmetric_matchers.ts";
 
 function isKeyedCollection(x: unknown): x is Set<unknown> {
   return [Symbol.iterator, "size"].every((k) => k in (x as Set<unknown>));
@@ -52,6 +53,9 @@ export function equal(c: unknown, d: unknown, options?: EqualOptions): boolean {
     ) {
       return String(a) === String(b);
     }
+    if (b instanceof Anything) {
+      return b.equals(a);
+    }
     if (a instanceof Date && b instanceof Date) {
       const aTime = a.getTime();
       const bTime = b.getTime();
@@ -95,7 +99,7 @@ export function equal(c: unknown, d: unknown, options?: EqualOptions): boolean {
       if (!strictCheck) {
         if (aLen > 0) {
           for (let i = 0; i < aKeys.length; i += 1) {
-            const key = aKeys[i];
+            const key = aKeys[i]!;
             if (
               (key in a) && (a[key as keyof typeof a] === undefined) &&
               !(key in b)
@@ -107,7 +111,7 @@ export function equal(c: unknown, d: unknown, options?: EqualOptions): boolean {
 
         if (bLen > 0) {
           for (let i = 0; i < bKeys.length; i += 1) {
-            const key = bKeys[i];
+            const key = bKeys[i]!;
             if (
               (key in b) && (b[key as keyof typeof b] === undefined) &&
               !(key in a)
