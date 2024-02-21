@@ -59,7 +59,7 @@ export const solidifyPool = async (fs: IFs, pool: Poolable[]) => {
     // TODO check format and schema
     blankSettledRequests(io)
   }
-  const requests: Request[] = []
+  const requests: InternalRequest[] = []
   const priors: (number | undefined)[] = []
   const branches: PID[] = []
   const replies: Reply[] = []
@@ -72,7 +72,8 @@ export const solidifyPool = async (fs: IFs, pool: Poolable[]) => {
         const pid = branchPid(poolable.target, sequence)
         branches.push(pid)
       } else {
-        requests.push(poolable)
+        const request = toInternalRequest(poolable, sequence)
+        requests.push(request)
         const prior = getPrior(sequence, io)
         priors.push(prior)
       }
@@ -92,7 +93,7 @@ export const solidifyPool = async (fs: IFs, pool: Poolable[]) => {
         const reply: PierceReply = { ulid, outcome }
         replies.push(reply)
       } else if (!equal(request.source, request.target)) {
-        const { target } = request
+        const target = request.source
         const reply: InternalReply = { target, sequence, outcome }
         replies.push(reply)
       }
@@ -226,4 +227,9 @@ const getPrior = (sequence: number, io: IoStruct) => {
       return key
     }
   }
+}
+const toInternalRequest = (request: Request, sequence: number) => {
+  const { isolate, functionName, params, proctype, target } = request
+  const source = 'ulid' in request ? target : request.source
+  return { isolate, functionName, params, proctype, source, target, sequence }
 }

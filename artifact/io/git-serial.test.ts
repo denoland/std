@@ -14,16 +14,14 @@ import { InternalReply } from '@/artifact/constants.ts'
 Deno.test('serial', async (t) => {
   const { fs } = memfs()
   const target: PID = { account: 'git', repository: 'test', branches: ['main'] }
-  const pierce = (ulid: string): PierceRequest => {
-    return {
-      target,
-      ulid,
-      isolate: 'test-isolate',
-      functionName: 'test',
-      params: {},
-      proctype: PROCTYPE.SERIAL,
-    }
-  }
+  const pierce = (ulid: string): PierceRequest => ({
+    target,
+    ulid,
+    isolate: 'test-isolate',
+    functionName: 'test',
+    params: {},
+    proctype: PROCTYPE.SERIAL,
+  })
   const reply: Reply = {
     target,
     sequence: 0,
@@ -38,7 +36,7 @@ Deno.test('serial', async (t) => {
   await t.step('pierce', async () => {
     const { requests, priors } = await git.solidifyPool(fs, [request])
     expect(requests).toHaveLength(1)
-    expect(requests[0]).toEqual(request)
+    expect(requests[0]).not.toHaveProperty('ulid')
     expect(priors).toEqual([undefined])
     const io: IoStruct = readIo(fs)
     log('io', io)
@@ -89,10 +87,18 @@ Deno.test('serial', async (t) => {
     expect(Object.keys(io.requests).length).toBe(3)
     expect(Object.keys(io.replies).length).toEqual(3)
   })
-  // cannot reply out of order
-  // permissioning for inclusion in the pool
-  // duplicate items in the pool are reduced to a single item
-  // duplicate replies error
+  await t.step('duplicate pool items rejects', async () => {
+    const msg = 'duplicate pool items: '
+    await expect(git.solidifyPool(fs, [request, request]))
+      .rejects.toThrow(msg)
+    const reply = replies(1, 1)[0]
+    await expect(git.solidifyPool(fs, [reply, reply]))
+      .rejects.toThrow(msg)
+    await expect(git.solidifyPool(fs, [request, request, reply, reply]))
+      .rejects.toThrow(msg)
+  })
+  // TODO cannot reply out of order
+  // TODO permissioning for inclusion in the pool
 })
 const replies = (start: number, end: number) => {
   const pool: InternalReply[] = []
