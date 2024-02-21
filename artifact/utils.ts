@@ -8,6 +8,10 @@ export { Debug }
 export const log = Debug('AI:tests')
 
 const isDenoDeploy = Deno.env.get('DENO_DEPLOYMENT_ID') !== undefined
+let _isTestMode = false
+export const isTestMode = () => {
+  return _isTestMode
+}
 export const openKv = async () => {
   if (isDenoDeploy) {
     return Deno.openKv()
@@ -25,5 +29,6 @@ export const openKv = async () => {
     }
   }
   log('open kv', path)
+  _isTestMode = path === ':memory:'
   return Deno.openKv(path)
 }

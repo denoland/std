@@ -29,6 +29,7 @@ export default class Queue {
   // TODO do tampering, like double message delivery, missed messages, delays
   async push(name: string, params?: Params, detach = false) {
     const id = ulid()
+    log('push %o', { id, name })
     const msg = { id, name, params }
     const key = ['QUEUE', id, name]
     const stream = this.#kv.watch<Outcome[]>([key])
@@ -50,6 +51,8 @@ export default class Queue {
   }
   #listen() {
     this.#kv.listenQueue(async (msg: QFunction) => {
+      log('listenQueue ', msg.id, msg.name)
+      this.#stack.add(msg)
       assert(this.#functions[msg.name], `missing ${msg.name}`)
       const { id, name, params = {} } = msg
       const outcomeKey = ['QUEUE', id, name]
@@ -71,6 +74,31 @@ export default class Queue {
         outcome.error = serializeError(error)
       }
       await this.#kv.set(outcomeKey, outcome, { expireIn: fifteenMinutes })
+      this.#updateStack(msg)
     })
+  }
+  #updateStack(msg: QFunction) {
+    this.#stack.delete(msg)
+    if (this.#stack.size === 0 && this.#quiesce) {
+      this.#quiesce.zero?.()
+      delete this.#quiesce.zero
+      delete this.#quiesce.waitingForZero
+    }
+  }
+  #stack = new Set()
+  #quiesce = {
+    zero: undefined as undefined | (() => void),
+    waitingForZero: undefined as Promise<void> | undefined,
+  }
+  quiesce() {
+    if (this.#stack.size === 0) {
+      return
+    }
+    if (!this.#quiesce.zero) {
+      this.#quiesce.waitingForZero = new Promise<void>((resolve) => {
+        this.#quiesce.zero = resolve
+      })
+    }
+    return this.#quiesce.waitingForZero
   }
 }

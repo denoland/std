@@ -50,12 +50,9 @@ export default class IO {
     }
     // TODO branching
     for (const reply of solids.replies) {
-      // might need to copy them over to other chains
-      // at some point, we need to create a new action to induct things
       log('reply %o', reply)
       await this.#db.settleReply(pid, reply)
     }
-
     await this.#db.releaseHeadlock(pid, lockId)
   }
   async #solidifyPool(pid: PID, fs: IFs) {

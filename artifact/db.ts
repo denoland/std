@@ -8,17 +8,22 @@ import {
   Reply,
   Request,
 } from '@/artifact/constants.ts'
-import { assert, Debug, openKv } from '@utils'
+import { assert, Debug, isTestMode, openKv } from '@utils'
 
 const log = Debug('AI:db')
 export default class DB {
   #kv!: Deno.Kv
+  #isTestMode!: boolean
   get kv() {
     return this.#kv
+  }
+  get isTestMode() {
+    return this.#isTestMode
   }
   static async create() {
     const db = new DB()
     db.#kv = await openKv()
+    db.#isTestMode = isTestMode()
     return db
   }
   stop() {
@@ -33,7 +38,7 @@ export default class DB {
         continue
       }
       const reply: Reply = event.value
-      log('awaitOutcome done %o', reply)
+      log('watchReply done %o', reply)
       return reply
     }
     throw new Error('watchReply failed')

@@ -78,8 +78,13 @@ class Cradle {
   apiSchema(params: { isolate: string }) {
     return this.#queue.push('apiSchema', params)
   }
-  pierce(params: PierceRequest) {
-    return this.#queue.push('pierce', params)
+  async pierce(params: PierceRequest) {
+    const promise = this.#queue.push('pierce', params)
+    // if we are in test mode, queisce the queue before returning
+    if (this.#api.context.db!.isTestMode) {
+      await this.#queue.quiesce()
+    }
+    return promise
   }
   request(params: { request: Request; prior?: number }) {
     const detach = true
