@@ -63,9 +63,9 @@ function validateOption<T>(option: Option<T>, groups: FlagRegExpGroup) {
  * sets value in result.options and calls option.value.fn if defined
  */
 function setOptionValue<T>(
-  result: ParseResult,
   option: Option<T>,
   value: T,
+  result: ParseResult,
 ) {
   if (option.value?.multiple) {
     result.options[option.name] ??= [];
@@ -81,8 +81,8 @@ function setOptionValue<T>(
  */
 function setNextOptionValue<T>(
   entries: IterableIterator<[number, string]>,
-  result: ParseResult,
   option: Option<T>,
+  result: ParseResult,
 ) {
   for (const [_, arg] of entries) {
     if (arg === undefined) {
@@ -92,7 +92,7 @@ function setNextOptionValue<T>(
       return;
     }
     const value = parseValue(option, arg) as T;
-    setOptionValue(result, option, value);
+    setOptionValue(option, value, result);
     if (!option.value?.multiple) break;
   }
 }
@@ -105,9 +105,9 @@ function setNextOptionValue<T>(
  * ```
  */
 function handleCommand<T>(
+  entries: IterableIterator<[number, string]>,
   schema: Schema<T>,
   arg: string,
-  entries: IterableIterator<[number, string]>,
 ) {
   const command = schema.commands?.find((it) => it.name === arg);
   if (!command) throw new Error(`command not defined: ${arg}`);
@@ -124,9 +124,9 @@ function handleCommand<T>(
  */
 function handleDoubleDashOption<T>(
   entries: IterableIterator<[number, string]>,
-  result: ParseResult,
   schema: Schema<T>,
   groups: FlagRegExpGroup,
+  result: ParseResult,
 ) {
   const option = schema.options?.find((it) => it.name === groups.name);
   if (!option) {
@@ -146,11 +146,11 @@ function handleDoubleDashOption<T>(
 
   if (groups.value) {
     const value = parseValue(option, groups.value) as T;
-    setOptionValue(result, option, value);
+    setOptionValue(option, value, result);
     return;
   }
 
-  setNextOptionValue(entries, result, option);
+  setNextOptionValue(entries, option, result);
 }
 /**
  * handles single dash option
@@ -166,9 +166,9 @@ function handleDoubleDashOption<T>(
  */
 function handleSingleDashOption<T>(
   entries: IterableIterator<[number, string]>,
-  result: ParseResult,
   schema: Schema<T>,
   groups: FlagRegExpGroup,
+  result: ParseResult,
 ) {
   for (const char of groups.name) {
     const option = schema.options?.find((it) => it.alias === char);
@@ -182,11 +182,11 @@ function handleSingleDashOption<T>(
 
     if (groups.value) {
       const value = parseValue(option, groups.value) as T;
-      setOptionValue(result, option, value);
+      setOptionValue(option, value, result);
     }
 
     if (option.value) {
-      setNextOptionValue(entries, result, option);
+      setNextOptionValue(entries, option, result);
     }
 
     const value = result.options[option.name] as T;
@@ -277,13 +277,13 @@ function parseWithIterator<T>(
         missingArguments.splice(missingArguments.indexOf(argument), 1);
         continue;
       }
-      handleCommand(schema, arg, entries);
+      handleCommand(entries, schema, arg);
       break;
     }
     if (groups.doubleDash) {
-      handleDoubleDashOption(entries, result, schema, groups);
+      handleDoubleDashOption(entries, schema, groups, result);
     } else {
-      handleSingleDashOption(entries, result, schema, groups);
+      handleSingleDashOption(entries, schema, groups, result);
     }
   }
 
