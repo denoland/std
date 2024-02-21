@@ -29,23 +29,23 @@ Deno.test.only('pierce', async (t) => {
   const isolate = 'io-fixture'
   const artifact = await Cradle.create()
   const { pid: target } = await artifact.init({ repo: 'cradle/pierce' })
-  const dispatches = await artifact.pierces(isolate, target)
+  const pierces = await artifact.pierces(isolate, target)
   await t.step('local', async () => {
     Debug.enable('*')
-    const result = await dispatches.local()
+    const result = await pierces.local()
     log('local result', result)
     expect(result).toBe('local reply')
   })
-  // await t.step('second local', async () => {
-  //   const second = await dispatches.local()
-  //   expect(second).toBe('local reply')
-  // })
-  // await t.step('throws', async () => {
-  //   const message = 'test message'
-  //   await expect(dispatches.error({ message })).rejects.toThrow(message)
-  // })
+  await t.step('second local', async () => {
+    const second = await pierces.local()
+    expect(second).toBe('local reply')
+  })
+  await t.step('throws', async () => {
+    const message = 'test message'
+    await expect(pierces.error({ message })).rejects.toThrow(message)
+  })
   // await t.step('child process', async () => {
-  //   const result = await actions.spawn({ isolate })
+  //   const result = await pierces.spawn({ isolate })
   //   expect(result).toBe('remote pong')
   // })
   await artifact.stop()
