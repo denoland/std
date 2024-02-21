@@ -31,7 +31,6 @@ Deno.test.only('pierce', async (t) => {
   const { pid: target } = await artifact.init({ repo: 'cradle/pierce' })
   const pierces = await artifact.pierces(isolate, target)
   await t.step('local', async () => {
-    Debug.enable('*')
     const result = await pierces.local()
     log('local result', result)
     expect(result).toBe('local reply')
