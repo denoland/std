@@ -1,6 +1,13 @@
 import * as keys from './keys.ts'
 import { ulid } from '$std/ulid/mod.ts'
-import { PID, Poolable, Reply, Request } from '@/artifact/constants.ts'
+import {
+  InternalReply,
+  PID,
+  PierceReply,
+  Poolable,
+  Reply,
+  Request,
+} from '@/artifact/constants.ts'
 import { assert, Debug, openKv } from '@utils'
 
 const log = Debug('AI:db')
@@ -18,7 +25,7 @@ export default class DB {
     return this.#kv.close()
   }
   async watchReply(request: Request) {
-    const key = keys.getReplyKey(request)
+    const key = keys.getReplyKey(request.target, request)
     log('watchReply %o', key)
     const stream = this.#kv.watch<Reply[]>([key])
     for await (const [event] of stream) {
@@ -30,6 +37,11 @@ export default class DB {
       return reply
     }
     throw new Error('watchReply failed')
+  }
+  async settleReply(pid: PID, reply: PierceReply | InternalReply) {
+    const key = keys.getReplyKey(pid, reply)
+    log('settleReply %o', key)
+    await this.#kv.set(key, reply)
   }
 
   async addToPool(poolable: Poolable) {
@@ -65,12 +77,12 @@ export default class DB {
     }
     return lockId
   }
-  getHeadlockMaybe(request: Request) {
-    const key = keys.getHeadLockKey(request.target)
+  getHeadlockMaybe(poolable: Poolable) {
+    const key = keys.getHeadLockKey(poolable.target)
     log('start getHeadLock %o', key)
 
     const lockId = 'headlock-' + ulid()
-    const poolKey = keys.getPoolKey(request)
+    const poolKey = keys.getPoolKey(poolable)
 
     const headStream = this.#kv.watch([key])[Symbol.asyncIterator]()
 

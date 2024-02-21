@@ -6,6 +6,7 @@ import DB from '@/artifact/db.ts'
 import { IFs } from 'https://esm.sh/v135/memfs@4.6.0/lib/index.js'
 import FS from '@/artifact/fs.ts'
 import Cradle from '@/artifact/cradle.ts'
+import { Poolable } from '@/artifact/constants.ts'
 const log = Debug('AI:io.')
 
 export default class IO {
@@ -19,36 +20,43 @@ export default class IO {
     io.#self = self
     return io
   }
-  async pierce(request: Request) {
-    log('pierce %o', request)
-    await this.#db.addToPool(request)
-    const lockId = await this.#db.getHeadlockMaybe(request)
+  async induct(poolable: Poolable) {
+    log('induct %o', poolable)
+    await this.#db.addToPool(poolable)
+    const lockId = await this.#db.getHeadlockMaybe(poolable)
     if (lockId) {
-      await this.#execute(request, lockId)
+      const pid = poolable.target
+      await this.#execute(pid, lockId)
     }
-    const { outcome } = await this.#db.watchReply(request)
+    if (!isRequest(poolable)) {
+      return
+    }
+    const { outcome } = await this.#db.watchReply(poolable)
     if (outcome.error) {
       throw deserializeError(outcome.error)
     }
     return outcome.result
   }
-  async #execute(request: Request, lockId: string) {
-    const fs = await this.#fs.load(request.target)
-    const solids = await this.#solidifyPool(request.target, fs)
+  async #execute(pid: PID, lockId: string) {
+    const fs = await this.#fs.load(pid)
+    const solids = await this.#solidifyPool(pid, fs)
     log('solids %o', solids)
-    await this.#fs.update(request.target, fs, lockId)
+    await this.#fs.update(pid, fs, lockId)
 
     for (const request of solids.requests) {
-      // create queue messages for artifact queue
-      // ? attach the cradle to the api context
-      // TODO WARNING thread has now detached
-      // this should wait until the queue is written into the db
-      await this.#self.request(request)
+      // this detaches from the queue, and relies on watchReply() to complete
+      const prior = solids.priors.pop()
+      await this.#self.request({ request, prior })
+    }
+    // TODO branching
+    for (const reply of solids.replies) {
+      // might need to copy them over to other chains
+      // at some point, we need to create a new action to induct things
+      log('reply %o', reply)
+      await this.#db.settleReply(pid, reply)
     }
 
-    // fire off all the executions
-
-    await this.#db.releaseHeadlock(request.target, lockId)
+    await this.#db.releaseHeadlock(pid, lockId)
   }
   async #solidifyPool(pid: PID, fs: IFs) {
     log('solidifyPool %o', pid)
@@ -57,4 +65,7 @@ export default class IO {
     await this.#db.deletePool(poolKeys)
     return solids
   }
+}
+function isRequest(poolable: Poolable): poolable is Request {
+  return 'isolate' in poolable
 }

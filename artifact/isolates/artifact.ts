@@ -4,6 +4,8 @@ import http from '$git/http/web'
 import { memfs } from 'https://esm.sh/memfs@4.6.0'
 import {
   ENTRY_BRANCH,
+  InternalReply,
+  InternalRequest,
   IsolateFunctions,
   IsolateLifecycle,
   Params,
@@ -81,7 +83,14 @@ export const api = {
     },
   },
   pierce: request,
-  request,
+  request: {
+    type: 'object',
+    required: ['request'],
+    properties: {
+      request,
+      prior: { type: 'number' },
+    },
+  },
   // subscribe to json by filepath and pid
   // subscribe to path in json, so we can subscribe to the output of io.json
   // subscribe to binary by filepath and pid - done by commit watching
@@ -160,24 +169,26 @@ export const functions: IsolateFunctions = {
   },
   pierce: (params, api: IsolateApi<C>) => {
     log('pierce %o %o', params.isolate, params.functionName)
-    return api.context.io!.pierce(params as Request)
+    return api.context.io!.induct(params as Request)
   },
-  request: (params, api: IsolateApi<C>) => {
-    log('request %o %o', params.isolate, params.functionName)
-    const request = params as Request
-    // this has come in via queue, and needs to execute
-    // we are fresh on the thread, so how to execute ?
+  request: async (params, api: IsolateApi<C>) => {
+    const request = params.request as InternalRequest
+    const prior = params.prior as number | undefined
+    // TODO wait for the prior to complete using prior key
+    log('request %o %o', request.isolate, request.functionName)
     const compartment = Compartment.create(request.isolate)
     const functions = compartment.functions(api)
     const outcome: Outcome = {}
     try {
-      outcome.result = functions[request.functionName](request.params)
+      outcome.result = await functions[request.functionName](request.params)
       log('self result: %o', outcome.result)
     } catch (errorObj) {
       log('self error', errorObj)
       outcome.error = serializeError(errorObj)
     }
-    return outcome
+    const { target, sequence } = request
+    const reply: InternalReply = { target, sequence, outcome }
+    await api.context.io!.induct(reply)
   },
 }
 

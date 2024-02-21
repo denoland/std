@@ -1,7 +1,6 @@
 import * as snapshot from 'https://esm.sh/memfs@4.6.0/lib/snapshot'
-import merge from 'npm:lodash.merge'
 import { IFs, memfs } from 'https://esm.sh/memfs@4.6.0'
-import { assert, expect, log } from '@utils'
+import { assert, expect, log, merge } from '@utils'
 import * as git from './git.ts'
 import { IoStruct, PID, PROCTYPE, Reply } from '@/artifact/constants.ts'
 import gitCommand from '$git'

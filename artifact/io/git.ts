@@ -62,7 +62,7 @@ export const solidifyPool = async (fs: IFs, pool: Poolable[]) => {
   const requests: InternalRequest[] = []
   const priors: (number | undefined)[] = []
   const branches: PID[] = []
-  const replies: Reply[] = []
+  const replies: (PierceReply | InternalReply)[] = []
   let parent
   for (const poolable of pool) {
     if (isRequest(poolable)) {
@@ -88,7 +88,7 @@ export const solidifyPool = async (fs: IFs, pool: Poolable[]) => {
       io.replies[sequence] = poolable.outcome
       // if this is a pierce, need to make a reply occur outside
       const { outcome } = poolable
-      if (isPierce(request)) {
+      if (isPierceRequest(request)) {
         const { ulid } = request
         const reply: PierceReply = { ulid, outcome }
         replies.push(reply)
@@ -161,7 +161,7 @@ const blankSettledRequests = (io: IoStruct) => {
 const isRequest = (poolable: Poolable): poolable is Request => {
   return (poolable as Request).proctype !== undefined
 }
-const isPierce = (poolable: Request): poolable is PierceRequest => {
+const isPierceRequest = (poolable: Request): poolable is PierceRequest => {
   return !!(poolable as PierceRequest).ulid
 }
 const isMergeReply = (poolable: Reply): poolable is MergeReply => {

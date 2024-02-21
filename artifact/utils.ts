@@ -1,7 +1,7 @@
 import 'npm:supports-color'
 export { expect } from 'std/expect/mod.ts'
 export { assert } from 'std/assert/assert.ts'
-
+export { default as merge } from 'npm:lodash.merge'
 import Debug from 'npm:debug'
 Debug.enable('')
 export { Debug }

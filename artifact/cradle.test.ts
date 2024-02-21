@@ -1,6 +1,5 @@
 import Cradle from './cradle.ts'
 import { Debug, expect, log } from '@utils'
-import { PID } from './constants.ts'
 
 Deno.test('io', async (t) => {
   const artifact = await Cradle.create()
@@ -13,11 +12,10 @@ Deno.test('io', async (t) => {
     expect(result).toEqual({ test: 'test' })
   })
 
-  let target!: PID
   await t.step('clone', async () => {
     const cloneResult = await artifact.clone({ repo: 'dreamcatcher-tech/HAL' })
     log('clone result', cloneResult)
-    target = cloneResult.pid
+    const target = cloneResult.pid
     // TODO read the fs and see what the state of the file system is ?
     expect(target).toBeDefined()
   })

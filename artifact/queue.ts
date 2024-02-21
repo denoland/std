@@ -11,7 +11,7 @@ import {
 } from 'https://esm.sh/serialize-error'
 import { Params } from '@/artifact/constants.ts'
 const log = Debug('AI:queue')
-type QFunction = { id: string; name: string; params?: Params }
+type QFunction = { id: string; name: string; params?: Params; detach: boolean }
 const fifteenMinutes = 15 * 60 * 1000
 
 export default class Queue {
@@ -27,12 +27,16 @@ export default class Queue {
     return queue
   }
   // TODO do tampering, like double message delivery, missed messages, delays
-  async push(name: string, params?: Params) {
+  async push(name: string, params?: Params, detach = false) {
     const id = ulid()
     const msg = { id, name, params }
     const key = ['QUEUE', id, name]
     const stream = this.#kv.watch<Outcome[]>([key])
     await this.#kv.enqueue(msg, { backoffSchedule: [] })
+    if (detach) {
+      stream.cancel()
+      return
+    }
     for await (const [event] of stream) {
       if (!event.versionstamp) {
         continue
@@ -51,6 +55,7 @@ export default class Queue {
       const outcomeKey = ['QUEUE', id, name]
       const key = [...outcomeKey, 'pending']
       // TODO rely on the artifact functions to handle double delivery
+
       const result = await this.#kv.atomic().check({ key, versionstamp: null })
         .set(key, true, { expireIn: fifteenMinutes }).commit()
       if (!result.ok) {
@@ -62,6 +67,7 @@ export default class Queue {
         // TODO will the queue wait forever ?
         outcome.result = await this.#functions[name](params, this.#api)
       } catch (error) {
+        log('error', error)
         outcome.error = serializeError(error)
       }
       await this.#kv.set(outcomeKey, outcome, { expireIn: fifteenMinutes })

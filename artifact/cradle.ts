@@ -49,7 +49,7 @@ class Cradle {
         params: Params = {},
         options?: { branch?: boolean },
       ) => {
-        log('pierces %s', functionName)
+        log('pierces %o', functionName)
         const proctype = options?.branch ? PROCTYPE.BRANCH : PROCTYPE.SERIAL
         const pierce: PierceRequest = {
           target,
@@ -81,8 +81,9 @@ class Cradle {
   pierce(params: PierceRequest) {
     return this.#queue.push('pierce', params)
   }
-  request(params: Request) {
-    return this.#queue.push('request', params)
+  request(params: { request: Request; prior?: number }) {
+    const detach = true
+    return this.#queue.push('request', params, detach)
   }
 }
 

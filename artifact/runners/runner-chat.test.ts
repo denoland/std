@@ -12,12 +12,12 @@ Deno.test('runner', async (t) => {
     },
     runner: 'runner-chat',
     commands: ['io-fixture:local', 'io-fixture:error'],
-    instructions: ['NEVER reply with more than a SINGLE word'],
+    instructions: ['Only reply with a SINGLE word'],
   }
-  const text = 'say cheese'
   const api = IsolateApi.create()
   await t.step('hello world', async () => {
     const help = merge({}, helpBase, { commands: [] })
+    const text = 'reply with the cheese emoji'
     const result = await runner({ help, text }, api)
     expect(result).toBe('🧀')
     log('result', result)
@@ -41,13 +41,14 @@ Deno.test('runner', async (t) => {
   })
 })
 
-Deno.test.only('artifact', async (t) => {
+Deno.test('artifact', async (t) => {
   const repo = 'dreamcatcher-tech/HAL'
   const artifact = await Cradle.create()
   await artifact.clone({ repo })
 
   await t.step('load help file', async () => {
     // this should only be able to be called relative to a commit
+    // this should use splices
     // const help = await artifact.loadJSON({
     //   repo,
     //   path: 'helps/help.fixture.json',
