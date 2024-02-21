@@ -48,4 +48,5 @@ Deno.test.only('pierce', async (t) => {
   //   const result = await actions.spawn({ isolate })
   //   expect(result).toBe('remote pong')
   // })
+  await artifact.stop()
 })
