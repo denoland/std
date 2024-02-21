@@ -2,11 +2,8 @@
 import { assert, assertEquals, assertInstanceOf, fail } from "../assert/mod.ts";
 import { crypto as stdCrypto } from "./mod.ts";
 import { repeat } from "../bytes/repeat.ts";
-import { dirname, fromFileUrl } from "../path/mod.ts";
 import { DigestAlgorithm, digestAlgorithms } from "./_wasm/mod.ts";
 import { encodeHex } from "../encoding/hex.ts";
-
-const moduleDir = dirname(fromFileUrl(import.meta.url));
 
 const webCrypto = globalThis.crypto;
 
@@ -167,35 +164,9 @@ Deno.test("digest() handles length option", async () => {
 });
 
 Deno.test("digest() keeps memory usage reasonable with large inputs", async () => {
-  const code = `
-    import { crypto as stdCrypto } from "./mod.ts";
-    import { instantiateWithInstance } from "./_wasm/lib/deno_std_wasm_crypto.generated.mjs";
-    import { encodeHex } from "../encoding/hex.ts";
-
-    const { memory } = instantiateWithInstance().instance.exports;
-
-    const heapBytesInitial = memory.buffer.byteLength;
-
-    const smallData = new Uint8Array(64);
-    const smallDigest = encodeHex(stdCrypto.subtle.digestSync("BLAKE3", smallData.buffer));
-    const heapBytesAfterSmall = memory.buffer.byteLength;
-
-    const largeData = new Uint8Array(64_000_000);
-    const largeDigest = encodeHex(stdCrypto.subtle.digestSync("BLAKE3", largeData.buffer));
-    const heapBytesAfterLarge = memory.buffer.byteLength;
-
-    console.log(JSON.stringify({
-      heapBytesInitial,
-      smallDigest,
-      heapBytesAfterSmall,
-      largeDigest,
-      heapBytesAfterLarge,
-    }));
-  `;
-
   const command = new Deno.Command(Deno.execPath(), {
-    args: ["eval", "--no-lock", code],
-    cwd: moduleDir,
+    args: ["run", "--no-lock", "crypto/testdata/digest_large_inputs.ts"],
+    stderr: "inherit",
   });
 
   const { success, stdout } = await command.output();
@@ -249,37 +220,9 @@ Deno.test("digest() keeps memory usage reasonable with large inputs", async () =
 });
 
 Deno.test("digest() keeps memory usage reasonable with many calls", async () => {
-  const code = `
-    import { crypto as stdCrypto } from "./mod.ts";
-    import { instantiateWithInstance } from "./_wasm/lib/deno_std_wasm_crypto.generated.mjs";
-    import { encodeHex } from "../encoding/hex.ts";
-
-    const { memory } = instantiateWithInstance().instance.exports;
-
-    const heapBytesInitial = memory.buffer.byteLength;
-
-    let state = new ArrayBuffer(0);
-
-    for (let i = 0; i < 1_000_000; i++) {
-      state = stdCrypto.subtle.digestSync({
-        name: "BLAKE3"
-      }, state);
-    }
-
-    const heapBytesFinal = memory.buffer.byteLength;
-
-    const stateFinal = encodeHex(state);
-
-    console.log(JSON.stringify({
-      heapBytesInitial,
-      heapBytesFinal,
-      stateFinal,
-    }));
-  `;
-
   const command = new Deno.Command(Deno.execPath(), {
-    args: ["eval", "--no-lock", code],
-    cwd: moduleDir,
+    args: ["run", "--no-lock", "crypto/testdata/digest_many_calls.ts"],
+    stderr: "inherit",
   });
   const { stdout, success } = await command.output();
   const output = new TextDecoder().decode(stdout);
