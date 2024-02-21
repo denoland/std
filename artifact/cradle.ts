@@ -4,6 +4,7 @@ import {
   IsolateReturn,
   Params,
   PID,
+  PierceRequest,
   PROCTYPE,
   Request,
 } from './constants.ts'
@@ -39,31 +40,30 @@ class Cradle {
   stop() {
     return this.#compartment.unmount(this.#api)
   }
-  async dispatches(isolate: string, target: PID) {
+  async pierces(isolate: string, target: PID) {
     // cradle side, since functions cannot be returned from isolate calls
     const apiSchema = await this.apiSchema({ isolate })
-    const dispatches: DispatchFunctions = {}
+    const pierces: DispatchFunctions = {}
     for (const functionName of Object.keys(apiSchema)) {
-      dispatches[functionName] = async (
+      pierces[functionName] = (
         params: Params = {},
         options?: { branch?: boolean },
       ) => {
-        log('dispatch:', functionName)
+        log('pierces %s', functionName)
         const proctype = options?.branch ? PROCTYPE.BRANCH : PROCTYPE.SERIAL
-        const id = ulid()
-        const request: Request = {
+        const pierce: PierceRequest = {
           target,
+          ulid: ulid(),
           isolate,
           functionName,
           params,
           proctype,
-          id,
         }
-        return await this.pierce(request)
+        return this.pierce(pierce)
       }
     }
-    log('dispatches:', isolate, Object.keys(dispatches))
-    return dispatches
+    log('dispatches:', isolate, Object.keys(pierces))
+    return pierces
   }
   ping(params?: Params) {
     params = params || {}
@@ -78,7 +78,7 @@ class Cradle {
   apiSchema(params: { isolate: string }) {
     return this.#queue.push('apiSchema', params)
   }
-  pierce(params: Request) {
+  pierce(params: PierceRequest) {
     return this.#queue.push('pierce', params)
   }
   request(params: Request) {
@@ -91,7 +91,7 @@ interface Cradle {
   init(params: { repo: string }): Promise<{ pid: PID }>
   clone(params: { repo: string }): Promise<{ pid: PID }>
   apiSchema(params: { isolate: string }): Promise<Record<string, object>>
-  pierce(params: Request): Promise<IsolateReturn>
+  pierce(params: PierceRequest): Promise<IsolateReturn>
 }
 
 export default Cradle

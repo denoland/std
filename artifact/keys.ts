@@ -12,27 +12,19 @@ export const assertPid = (pid: PID) => {
     throw new Error('Invalid GitHub account or repository name: ' + repo)
   }
 }
-const isRequest = (poolable: Poolable): poolable is Request => {
-  return 'isolate' in poolable
-}
-
 export const getPoolKeyPrefix = (pid: PID) => {
   const { account, repository, branches } = pid
   return [KEYSPACES.POOL, account, repository, ...branches]
 }
 export const getPoolKey = (poolable: Poolable) => {
   assert(poolable.target, 'target is required')
-  const prefix = isRequest(poolable) ? 'req-' : 'rep-'
-  return [...getPoolKeyPrefix(poolable.target), prefix + poolable.id]
+  const id = getId(poolable)
+  return [...getPoolKeyPrefix(poolable.target), id]
 }
 export const getReplyKey = (request: Request) => {
   const { account, repository, branches } = request.target
-  return [KEYSPACES.REPLY, account, repository, ...branches, request.id]
-
-  // so is a request something different until it gets given a sequence number ?
-  // pierce has a nonce
-  // remove has its origin sequence
-  // an outbound action from another chain is the same as a pierce
+  const id = getId(request)
+  return [KEYSPACES.REPLY, account, repository, ...branches, id]
 }
 export const getHeadLockKey = (pid: PID) => {
   const { account, repository, branches } = pid
@@ -52,4 +44,12 @@ enum KEYSPACES {
   HEADLOCK = 'HEADLOCK', // the lock on the head of a given process branch
   REPO = 'REPO', // this is the latest fs snapshot of a given process branch
   BLOB = 'BLOB', // where the contents of repo snapshots are stored
+}
+
+const getId = (poolable: Poolable) => {
+  if ('ulid' in poolable) {
+    return poolable.ulid
+  } else {
+    return poolable.sequence
+  }
 }

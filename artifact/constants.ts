@@ -76,22 +76,41 @@ export type Help = {
   tests?: string[]
 }
 
-export type Poolable = Request | Reply
-
-export type Reply = {
-  target?: PID
-  id: string // combined with the target, makes a guid
-  outcome: Outcome
-  fs?: IFs
-  commit?: string
-}
-export type Request = {
+export type Poolable = Request | InternalReply | MergeReply
+export type Request = PierceRequest | InternalRequest
+export type Reply = PierceReply | InternalReply | MergeReply
+export type PierceRequest = {
   target: PID
-  source?: PID // empty for piercings
+  ulid: string
+
   isolate: string
   functionName: string
   params: Params
   proctype: PROCTYPE
-  id: string // must provide external id for the pool guid
-  // internally the id is the sequence, pierce uses a ulid
+}
+export type InternalRequest = {
+  target: PID
+  source: PID
+  sequence: number
+
+  isolate: string
+  functionName: string
+  params: Params
+  proctype: PROCTYPE
+}
+export type PierceReply = {
+  ulid: string
+  outcome: Outcome
+}
+export type InternalReply = {
+  target: PID
+  sequence: number
+  outcome: Outcome
+}
+export type MergeReply = {
+  target: PID
+  sequence: number
+  outcome: Outcome
+  fs: IFs
+  commit: string
 }

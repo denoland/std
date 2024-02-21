@@ -1,6 +1,6 @@
 import merge from 'npm:lodash.merge'
 import Cradle from '../cradle.ts'
-import { expect, log } from '../tst-helpers.js'
+import { expect, log } from '@utils'
 import IsolateApi from '../isolate-api.ts'
 import { Help, PID } from '../constants.ts'
 import runner from './runner-chat.ts'
@@ -61,7 +61,7 @@ Deno.test.only('artifact', async (t) => {
       branches: ['main'],
     }
     const isolate = 'engage-help'
-    const { engageInBand } = await artifact.dispatches({ isolate, pid })
+    const { engageInBand } = await artifact.pierces(isolate, pid)
     const result = await engageInBand({
       help: 'help.fixture',
       text: 'hello',

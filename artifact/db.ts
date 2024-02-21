@@ -35,10 +35,10 @@ export default class DB {
   async addToPool(poolable: Poolable) {
     // TODO handle IPCs too
     const key = keys.getPoolKey(poolable)
-    log('pooling start %o', poolable.id)
+    log('pooling start %o', poolable)
     const empty = { key, versionstamp: null }
     await this.#kv.atomic().check(empty).set(key, poolable).commit()
-    log('pooling done %o', poolable.id)
+    log('pooling done %o', poolable)
     return key
   }
   async getHeadlock(pid: PID) {

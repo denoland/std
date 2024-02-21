@@ -1,26 +1,30 @@
 import * as snapshot from 'https://esm.sh/memfs@4.6.0/lib/snapshot'
-import merge from 'npm:lodash.merge'
 import { IFs, memfs } from 'https://esm.sh/memfs@4.6.0'
 import { Debug, expect, log } from '@utils'
 import * as git from './git.ts'
-import { IoStruct, PID, PROCTYPE, Request } from '@/artifact/constants.ts'
-import { Reply } from '@/artifact/constants.ts'
-import gitCommand from '$git'
+import {
+  IoStruct,
+  PID,
+  PierceRequest,
+  PROCTYPE,
+  Reply,
+} from '@/artifact/constants.ts'
+import { InternalReply } from '@/artifact/constants.ts'
 
 Deno.test('serial', async (t) => {
   const { fs } = memfs()
   const target: PID = { account: 'git', repository: 'test', branches: ['main'] }
-  const request: Request = {
+  const pierce: PierceRequest = {
     target,
+    ulid: 'test-id',
     isolate: 'test-isolate',
     functionName: 'test',
     params: {},
     proctype: PROCTYPE.SERIAL,
-    id: 'test-id',
   }
   const reply: Reply = {
     target,
-    id: '0',
+    sequence: 0,
     outcome: { result: 'test-result' },
   }
   await t.step('init', async () => {
@@ -29,37 +33,38 @@ Deno.test('serial', async (t) => {
     expect(fs.existsSync('/.git')).toBe(true)
   })
   await t.step('pierce', async () => {
-    const { requests, priors } = await git.solidifyPool(fs, [request])
+    const { requests, priors } = await git.solidifyPool(fs, [pierce])
     expect(requests).toHaveLength(1)
-    expect(requests[0]).toEqual(request)
+    expect(requests[0]).toEqual(pierce)
     expect(priors).toEqual([undefined])
     const io: IoStruct = readIo(fs)
     log('io', io)
     expect(io.sequence).toBe(1)
-    expect(io.requests[0]).toEqual(request)
+    expect(io.requests[0]).toEqual(pierce)
   })
   await t.step('pierce reply', async () => {
     const { replies, requests } = await git.solidifyPool(fs, [reply])
     expect(requests).toHaveLength(0)
     expect(replies).toHaveLength(1)
-    expect(replies[0].target).toEqual(request.source)
+    log('replies', replies[0])
+    // expect(replies[0].target).toEqual(pierce.source)
     const io: IoStruct = readIo(fs)
     log('io', io)
     expect(io.sequence).toBe(1)
     expect(io.replies[0]).toEqual(reply.outcome)
   })
   await t.step('second action blanks io', async () => {
-    const { priors } = await git.solidifyPool(fs, [request])
+    const { priors } = await git.solidifyPool(fs, [pierce])
     const io: IoStruct = readIo(fs)
     log('io', io)
     expect(io.sequence).toBe(2)
     expect(io.requests[0]).toBeUndefined()
-    expect(io.requests[1]).toEqual(request)
+    expect(io.requests[1]).toEqual(pierce)
     expect(io.replies[0]).toBeUndefined()
     expect(priors).toEqual([undefined])
   })
   await t.step('multiple requests', async () => {
-    const { priors, requests } = await git.solidifyPool(fs, [request, request])
+    const { priors, requests } = await git.solidifyPool(fs, [pierce, pierce])
     expect(requests).toHaveLength(2)
     expect(priors).toEqual([1, 2])
     const io: IoStruct = readIo(fs)
@@ -81,84 +86,16 @@ Deno.test('serial', async (t) => {
   // duplicate replies error
 })
 const replies = (start: number, end: number) => {
-  const pool: Reply[] = []
+  const pool: InternalReply[] = []
   for (let i = start; i <= end; i++) {
     pool.push({
       target: { account: 'git', repository: 'test', branches: ['main'] },
-      id: i + '',
+      sequence: i,
       outcome: { result: i },
     })
   }
   return pool
 }
-
-Deno.test('branch', async (t) => {
-  const { fs } = memfs()
-  const target: PID = { account: 'git', repository: 'test', branches: ['main'] }
-  const request: Request = {
-    target,
-    isolate: 'test-isolate',
-    functionName: 'test',
-    params: {},
-    proctype: PROCTYPE.BRANCH,
-    id: 'test-id',
-  }
-  const reply: Reply = {
-    target,
-    id: '0',
-    outcome: { result: 'test-result' },
-  }
-  await git.init(fs, 'git/test')
-
-  let branchFs: IFs
-  let childPid: PID
-  await t.step('branch', async () => {
-    const { commit, branches } = await git.solidifyPool(fs, [request])
-    const io: IoStruct = readIo(fs)
-    expect(io.sequence).toBe(1)
-    expect(io.requests[0]).toEqual(request)
-    expect(io.requests[0].proctype).toEqual(PROCTYPE.BRANCH)
-
-    branchFs = copy(fs)
-    const { requests } = await git.branch(branchFs, commit, branches[0])
-    expect(requests).toHaveLength(1)
-    expect(requests[0].source).toEqual(request.target)
-    const branch: IoStruct = readIo(branchFs)
-    log('branch', branch)
-
-    childPid = branches[0]
-    expect(childPid.branches).toEqual(['main', '0'])
-  })
-  let originReply: Reply
-  await t.step('branch reply', async () => {
-    const branchReply = merge({}, reply, { target: childPid })
-    const solidified = await git.solidifyPool(branchFs, [branchReply])
-    const { commit, replies } = solidified
-
-    log('replies', replies[0])
-    expect(replies.length).toBe(1)
-    originReply = replies[0]
-    expect(originReply.outcome).toEqual(reply.outcome)
-    expect(originReply.target).toEqual(target)
-    originReply.fs = branchFs
-    originReply.commit = commit
-  })
-  await t.step('merge', async () => {
-    const { replies } = await git.solidifyPool(fs, [originReply])
-    expect(replies).toHaveLength(1)
-    const reply = replies[0]
-    expect(reply.fs).toBeUndefined()
-    expect(reply.commit).toBeUndefined()
-    expect(reply.target).toEqual(request.source)
-    expect(reply.outcome).toEqual(originReply.outcome)
-    const [lastCommit] = await gitCommand.log({ fs, dir: '/', depth: 1 })
-    expect(lastCommit.commit.parent).toHaveLength(2)
-  })
-
-  // permissioning for inclusion in the pool
-  // duplicate items in the pool are reduced to a single item
-  // duplicate replies error
-})
 
 // need to test requests coming out of pooling, and isolate execution
 

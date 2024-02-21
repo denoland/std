@@ -52,6 +52,7 @@ export default class FS {
       throw new Error('lock mismatch: ' + lockKey.join('/') + ' ' + lockId)
     }
     const fsKey = keys.getRepoKey(pid)
+    // TODO change this to use the commit hash so we can know HEAD
     const blobKey = keys.getBlobKey(pid)
     await set(this.#kv, blobKey, uint8)
 

@@ -20,7 +20,7 @@ export default class IO {
     return io
   }
   async pierce(request: Request) {
-    log('pierce %o', request.id)
+    log('pierce %o', request)
     await this.#db.addToPool(request)
     const lockId = await this.#db.getHeadlockMaybe(request)
     if (lockId) {

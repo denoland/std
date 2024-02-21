@@ -31,7 +31,7 @@ Deno.test.only('pierce', async (t) => {
   const isolate = 'io-fixture'
   const artifact = await Cradle.create()
   const { pid: target } = await artifact.init({ repo: 'cradle/pierce' })
-  const dispatches = await artifact.dispatches(isolate, target)
+  const dispatches = await artifact.pierces(isolate, target)
   await t.step('local', async () => {
     Debug.enable('*')
     const result = await dispatches.local()

@@ -10,6 +10,7 @@ import { Debug } from '@utils'
 import git from '$git'
 import {
   ENTRY_BRANCH,
+  InternalReply,
   IoStruct,
   PID,
   Poolable,
@@ -18,6 +19,10 @@ import {
 import { assert } from '$std/assert/assert.ts'
 import IsolateApi from '@/artifact/isolate-api.ts'
 import { Reply, Request } from '@/artifact/constants.ts'
+import { PierceRequest } from '@/artifact/constants.ts'
+import { PierceReply } from '@/artifact/constants.ts'
+import { MergeReply } from '@/artifact/constants.ts'
+import { InternalRequest } from '@/artifact/constants.ts'
 
 const log = Debug('AI:git')
 
@@ -73,22 +78,26 @@ export const solidifyPool = async (fs: IFs, pool: Poolable[]) => {
       }
     } else {
       log('reply', poolable.outcome)
-      // BUT the id needs to be a number ?
-      const { id } = poolable
-      const request = io.requests[id]
-      assert(request, `reply sequence not found: ${id}`)
-      io.replies[id] = poolable.outcome
-      if (!equal(request.source, request.target)) {
-        const reply: Reply = { ...poolable, target: request.source }
-        delete reply.commit
-        delete reply.fs
+      const { sequence } = poolable
+      // TODO move this to checkPool()
+      assert(Number.isInteger(sequence), 'reply needs a sequence number')
+      assert(sequence >= 0, 'reply needs a whole sequence number')
+      const request = io.requests[sequence]
+      assert(request, `reply sequence not found: ${sequence}`)
+      io.replies[sequence] = poolable.outcome
+      // if this is a pierce, need to make a reply occur outside
+      const { outcome } = poolable
+      if (isPierce(request)) {
+        const { ulid } = request
+        const reply: PierceReply = { ulid, outcome }
+        replies.push(reply)
+      } else if (!equal(request.source, request.target)) {
+        const { target } = request
+        const reply: InternalReply = { target, sequence, outcome }
         replies.push(reply)
       }
       if (request.proctype === PROCTYPE.BRANCH) {
-        assert(poolable.fs, 'branch reply needs fs: ' + id)
-        assert(poolable.commit, 'branch reply needs commit: ' + id)
-        // copy in the fs objects into this one
-        // add to the parent array
+        assert(isMergeReply(poolable), 'branch reply needs fs and commit')
         if (!parent) {
           const head = await git.resolveRef({ fs, dir: '/', ref: 'HEAD' })
           parent = [head]
@@ -122,11 +131,20 @@ export const branch = async (fs: IFs, commit: string, pid: PID) => {
 
   const api = IsolateApi.create(fs)
   const io = await api.readJSON('.io.json') as IoStruct
-  const sequence = pid.branches.slice(-1)[0]
-  const origin = io.requests[sequence]
-  origin.proctype = PROCTYPE.SERIAL
-  origin.source = origin.target
-  origin.target = pid
+  const sequence = Number.parseInt(pid.branches.slice(-1)[0])
+
+  const { isolate, functionName, params, target } = io.requests[sequence]
+  const proctype = PROCTYPE.SERIAL
+  const source = target
+  const origin: InternalRequest = {
+    target: pid,
+    source,
+    sequence,
+    isolate,
+    functionName,
+    params,
+    proctype,
+  }
   log('origin', origin)
   await api.rm('.io.json')
   return await solidifyPool(fs, [origin])
@@ -141,6 +159,12 @@ const blankSettledRequests = (io: IoStruct) => {
 }
 const isRequest = (poolable: Poolable): poolable is Request => {
   return (poolable as Request).proctype !== undefined
+}
+const isPierce = (poolable: Request): poolable is PierceRequest => {
+  return !!(poolable as PierceRequest).ulid
+}
+const isMergeReply = (poolable: Reply): poolable is MergeReply => {
+  return !!(poolable as MergeReply).fs && !!(poolable as MergeReply).commit
 }
 const checkPool = (pool: Poolable[]) => {
   assert(pool.length > 0, 'empty pool')
@@ -162,6 +186,7 @@ const checkPool = (pool: Poolable[]) => {
       }
     }
   }
+  // TODO a request and a reply with the same id cannot be in the same pool
 }
 const branchPid = (pid: PID, sequence: number) => {
   const branches = pid.branches.concat(sequence.toString())
