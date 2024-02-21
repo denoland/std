@@ -1,8 +1,8 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import type { Comparator } from "./types.ts";
 import { compare } from "./compare.ts";
-import { testRange } from "./test_range.ts";
 import { isWildcardComparator } from "./_shared.ts";
+import { rangeIncludes } from "./range_includes.ts";
 
 /**
  * Returns true if the range of possible versions intersects with the other comparators set of possible versions
@@ -22,12 +22,12 @@ export function comparatorIntersects(
     if (isWildcardComparator(c0)) {
       return true;
     }
-    return testRange(c0, [[c1]]);
+    return rangeIncludes([[c1]], c0);
   } else if (op1 === "" || op1 === undefined) {
     if (isWildcardComparator(c1)) {
       return true;
     }
-    return testRange(c1, [[c0]]);
+    return rangeIncludes([[c0]], c1);
   }
 
   const cmp = compare(c0, c1);

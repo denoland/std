@@ -3,7 +3,7 @@
 import { assertEquals } from "../assert/mod.ts";
 import { parseRange } from "./parse_range.ts";
 import { parse } from "./parse.ts";
-import { testRange } from "./test_range.ts";
+import { rangeIncludes } from "./range_includes.ts";
 import { parseComparator } from "./_parse_comparator.ts";
 import { comparatorFormat } from "./_comparator_format.ts";
 import { Comparator } from "./types.ts";
@@ -142,7 +142,7 @@ Deno.test({
               name: `${valid} ∋ ${range}`,
               fn: () => {
                 const version = parse(valid);
-                const actual = testRange(version, r);
+                const actual = rangeIncludes(r, version);
                 assertEquals(true, actual);
               },
             });
@@ -151,7 +151,7 @@ Deno.test({
             await t.step({
               name: `${invalid} ∌ ${range}`,
               fn: () => {
-                const actual = testRange(parse(invalid), r);
+                const actual = rangeIncludes(r, parse(invalid));
                 assertEquals(false, actual);
               },
             });

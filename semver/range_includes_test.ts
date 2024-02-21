@@ -3,9 +3,9 @@
 import { assert } from "../assert/mod.ts";
 import { parse } from "./parse.ts";
 import { parseRange } from "./parse_range.ts";
-import { testRange } from "./test_range.ts";
+import { rangeIncludes } from "./range_includes.ts";
 
-Deno.test("testRange() returns true when the version is in the range", async (t) => {
+Deno.test("rangeIncludes() returns true when the version is in the range", async (t) => {
   const versions: [string, string][] = [
     ["1.0.0 - 2.0.0", "1.2.3"],
     ["^1.2.3+build", "1.2.3"],
@@ -94,13 +94,13 @@ Deno.test("testRange() returns true when the version is in the range", async (t)
     await t.step(`${r} ∋ ${v}`, () => {
       const range = parseRange(r);
       const s = parse(v);
-      assert(testRange(s, range));
+      assert(rangeIncludes(range, s));
     });
   }
 });
 
 Deno.test({
-  name: "testRange() returns false when the version is not in the range",
+  name: "rangeIncludes() returns false when the version is not in the range",
   fn: async (t) => {
     const versions: [string, string][] = [
       ["1.0.0 - 2.0.0", "2.2.3"],
@@ -185,7 +185,7 @@ Deno.test({
       await t.step(`${r} ∌ ${v}`, () => {
         const range = parseRange(r);
         const s = parse(v);
-        const found = testRange(s, range);
+        const found = rangeIncludes(range, s);
         assert(!found);
       });
     }
@@ -202,7 +202,7 @@ Deno.test("negativeUnlockedPrereleaseRange", function () {
   for (const [r, v] of versions) {
     const range = parseRange(r);
     const s = parse(v);
-    const found = testRange(s, range);
+    const found = rangeIncludes(range, s);
     assert(!found, `${v} satisfied by ${r} unexpectedly`);
   }
 });
