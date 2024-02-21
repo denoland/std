@@ -181,6 +181,7 @@ const checkPool = (pool: Poolable[]) => {
     for (let j = i + 1; j < pool.length; j++) {
       const next = pool[j]
       if (equal(poolable, next)) {
+        // TODO check against the current io file too
         const msg = 'duplicate pool items: ' + JSON.stringify(poolable, null, 2)
         throw new Error(msg)
       }

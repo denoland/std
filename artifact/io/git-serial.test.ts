@@ -1,10 +1,10 @@
-import * as snapshot from 'https://esm.sh/memfs@4.6.0/lib/snapshot'
 import { IFs, memfs } from 'https://esm.sh/memfs@4.6.0'
 import { Debug, expect, log } from '@utils'
 import * as git from './git.ts'
 import {
   IoStruct,
   PID,
+  PierceReply,
   PierceRequest,
   PROCTYPE,
   Reply,
@@ -14,13 +14,15 @@ import { InternalReply } from '@/artifact/constants.ts'
 Deno.test('serial', async (t) => {
   const { fs } = memfs()
   const target: PID = { account: 'git', repository: 'test', branches: ['main'] }
-  const pierce: PierceRequest = {
-    target,
-    ulid: 'test-id',
-    isolate: 'test-isolate',
-    functionName: 'test',
-    params: {},
-    proctype: PROCTYPE.SERIAL,
+  const pierce = (ulid: string): PierceRequest => {
+    return {
+      target,
+      ulid,
+      isolate: 'test-isolate',
+      functionName: 'test',
+      params: {},
+      proctype: PROCTYPE.SERIAL,
+    }
   }
   const reply: Reply = {
     target,
@@ -32,39 +34,46 @@ Deno.test('serial', async (t) => {
     expect(pid).toEqual(target)
     expect(fs.existsSync('/.git')).toBe(true)
   })
+  const request = pierce('pierce')
   await t.step('pierce', async () => {
-    const { requests, priors } = await git.solidifyPool(fs, [pierce])
+    const { requests, priors } = await git.solidifyPool(fs, [request])
     expect(requests).toHaveLength(1)
-    expect(requests[0]).toEqual(pierce)
+    expect(requests[0]).toEqual(request)
     expect(priors).toEqual([undefined])
     const io: IoStruct = readIo(fs)
     log('io', io)
     expect(io.sequence).toBe(1)
-    expect(io.requests[0]).toEqual(pierce)
+    expect(io.requests[0]).toEqual(request)
   })
   await t.step('pierce reply', async () => {
     const { replies, requests } = await git.solidifyPool(fs, [reply])
     expect(requests).toHaveLength(0)
     expect(replies).toHaveLength(1)
     log('replies', replies[0])
-    // expect(replies[0].target).toEqual(pierce.source)
+    const pierceReply = replies[0] as PierceReply
+    expect(pierceReply.ulid).toEqual(request.ulid)
+    expect(pierceReply.outcome).toEqual(reply.outcome)
+
     const io: IoStruct = readIo(fs)
     log('io', io)
     expect(io.sequence).toBe(1)
-    expect(io.replies[0]).toEqual(reply.outcome)
+    expect(io.replies[0]).toEqual(pierceReply.outcome)
   })
   await t.step('second action blanks io', async () => {
-    const { priors } = await git.solidifyPool(fs, [pierce])
+    const { priors } = await git.solidifyPool(fs, [request])
     const io: IoStruct = readIo(fs)
     log('io', io)
     expect(io.sequence).toBe(2)
     expect(io.requests[0]).toBeUndefined()
-    expect(io.requests[1]).toEqual(pierce)
+    expect(io.requests[1]).toEqual(request)
     expect(io.replies[0]).toBeUndefined()
     expect(priors).toEqual([undefined])
   })
   await t.step('multiple requests', async () => {
-    const { priors, requests } = await git.solidifyPool(fs, [pierce, pierce])
+    const { priors, requests } = await git.solidifyPool(fs, [
+      pierce('a'),
+      pierce('b'),
+    ])
     expect(requests).toHaveLength(2)
     expect(priors).toEqual([1, 2])
     const io: IoStruct = readIo(fs)
@@ -97,24 +106,6 @@ const replies = (start: number, end: number) => {
   return pool
 }
 
-// need to test requests coming out of pooling, and isolate execution
-
-// should start connecting to other parts of the system
-// try run a runner call in this system
-
-const copy = (fs: IFs) => {
-  const snapshotData = snapshot.toBinarySnapshotSync({ fs, path: '/.git' })
-  const { fs: copy } = memfs()
-  snapshot.fromBinarySnapshotSync(snapshotData, { fs: copy, path: '/.git' })
-  return copy
-}
 const readIo = (fs: IFs) => {
   return JSON.parse(fs.readFileSync('/.io.json').toString())
 }
-
-// IPC types
-// process with feedback
-// process with additional actions received within it
-// long running process that doesn't end
-// daemon start
-// daemon handover - like nohup
