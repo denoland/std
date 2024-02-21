@@ -3,7 +3,6 @@
 
 import { parseMediaType } from "./parse_media_type.ts";
 import { extensions } from "./_db.ts";
-import "./_db.ts";
 
 export { extensions };
 
