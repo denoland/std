@@ -12,7 +12,7 @@ function rangesSatisfiable(ranges: Range[]): boolean {
 function comparatorsSatisfiable(comparators: Comparator[]): boolean {
   // Comparators are satisfiable if they all intersect with each other
   for (let i = 0; i < comparators.length - 1; i++) {
-    const c0 = comparators[i];
+    const c0 = comparators[i]!;
     for (const c1 of comparators.slice(i + 1)) {
       if (!comparatorIntersects(c0, c1)) {
         return false;

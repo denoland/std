@@ -33,8 +33,14 @@ export function parseComparator(comparator: string): Comparator {
   const semver = groups.major
     ? {
       major: parseNumber(groups.major, "Invalid major version"),
-      minor: parseNumber(groups.minor, "Invalid minor version"),
-      patch: parseNumber(groups.patch, "Invalid patch version"),
+      minor: parseNumber(
+        groups.minor!,
+        "Invalid minor version",
+      ),
+      patch: parseNumber(
+        groups.patch!,
+        "Invalid patch version",
+      ),
       prerelease: prerelease ? parsePrerelease(prerelease) : [],
       build: buildmetadata ? parseBuild(buildmetadata) : [],
     }
