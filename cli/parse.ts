@@ -1,51 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-type OptionTypeConstructor<T> = T extends boolean ? BooleanConstructor
-  : T extends number ? NumberConstructor
-  : T extends string ? StringConstructor
-  : BooleanConstructor | NumberConstructor | StringConstructor;
-
-interface Option<T> {
-  name: string;
-  alias?: string;
-  description?: string;
-  default?: T;
-  type?: OptionTypeConstructor<T>;
-  negatable?: boolean;
-  value?: {
-    name: string;
-    optional?: boolean;
-    multiple?: boolean;
-    requireEquals?: boolean;
-  };
-  fn?: (value: T) => T | void;
-}
-
-interface Argument<T = unknown> {
-  name: string;
-  description?: string;
-  multiple?: boolean;
-  optional?: boolean;
-  fn?: (value: T) => T | void;
-}
-
-interface Command<T> {
-  name: string;
-  description?: string;
-  options?: ReadonlyArray<Option<T>>;
-  commands?: ReadonlyArray<Command<T>>;
-  arguments?: ReadonlyArray<Argument>;
-  fn?: (result: Result) => void;
-}
-
-interface Program<T> extends Omit<Command<T>, "name"> {
-  name?: string;
-}
-
-export interface Result {
-  options: Record<string, unknown>;
-  arguments: Record<string, unknown>;
-}
+import { Argument, Option, ParseResult, Schema } from "./types.ts";
 
 interface FlagRegExpGroup {
   doubleDash?: "-";
@@ -57,9 +12,9 @@ const FLAG_REGEXP =
   /^(?:-(?:(?<doubleDash>-)(?<negated>no-)?)?)(?<name>.+?)(?:=(?<value>.+?))?$/s;
 const QUOTED_VALUE_REGEXP = /^('|")(?<value>.*)\1$/;
 
-function validateCommand<T>(program: Program<T>) {
-  if (program.options) {
-    for (const option of program.options) {
+function validateCommand<T>(schema: Schema<T>) {
+  if (schema.options) {
+    for (const option of schema.options) {
       if (option.default !== undefined) {
         switch (option.type) {
           case Boolean: {
@@ -89,9 +44,9 @@ function validateOption<T>(option: Option<T>, groups: FlagRegExpGroup) {
   if (!option.value) {
     if (groups.value) {
       throw new Error(
-        `option value is not defined:' ${
-          groups.doubleDash ? "--" : "-"
-        }${groups.name}'`,
+        `option value is not defined: '${
+          groups.doubleDash ? `--${option.name}` : `-${option.alias}`
+        }'`,
       );
     }
   }
@@ -108,7 +63,7 @@ function validateOption<T>(option: Option<T>, groups: FlagRegExpGroup) {
  * sets value in result.options and calls option.value.fn if defined
  */
 function setOptionValue<T>(
-  result: Result,
+  result: ParseResult,
   option: Option<T>,
   value: T,
 ) {
@@ -126,7 +81,7 @@ function setOptionValue<T>(
  */
 function setNextOptionValue<T>(
   entries: IterableIterator<[number, string]>,
-  result: Result,
+  result: ParseResult,
   option: Option<T>,
 ) {
   for (const [_, arg] of entries) {
@@ -146,15 +101,15 @@ function setNextOptionValue<T>(
  * handles command
  * @example
  * ```sh
- * program run
+ * app run
  * ```
  */
 function handleCommand<T>(
-  program: Program<T>,
+  schema: Schema<T>,
   arg: string,
   entries: IterableIterator<[number, string]>,
 ) {
-  const command = program.commands?.find((it) => it.name === arg);
+  const command = schema.commands?.find((it) => it.name === arg);
   if (!command) throw new Error(`command not defined: ${arg}`);
   return parseWithIterator(entries, command);
 }
@@ -169,11 +124,11 @@ function handleCommand<T>(
  */
 function handleDoubleDashOption<T>(
   entries: IterableIterator<[number, string]>,
-  result: Result,
-  program: Program<T>,
+  result: ParseResult,
+  schema: Schema<T>,
   groups: FlagRegExpGroup,
 ) {
-  const option = program.options?.find((it) => it.name === groups.name);
+  const option = schema.options?.find((it) => it.name === groups.name);
   if (!option) {
     throw new Error(
       `option is not defined: '${
@@ -211,12 +166,12 @@ function handleDoubleDashOption<T>(
  */
 function handleSingleDashOption<T>(
   entries: IterableIterator<[number, string]>,
-  result: Result,
-  program: Program<T>,
+  result: ParseResult,
+  schema: Schema<T>,
   groups: FlagRegExpGroup,
 ) {
   for (const char of groups.name) {
-    const option = program.options?.find((it) => it.alias === char);
+    const option = schema.options?.find((it) => it.alias === char);
     if (!option) throw new Error(`option not defined: ${char}`);
 
     // if no value is set already, set default, true, or false if negated or an empty array if is multiple
@@ -238,8 +193,12 @@ function handleSingleDashOption<T>(
     result.options[option.name] = option?.fn?.(value) ?? value;
   }
 }
-
-function handleArgument(argument: Argument, arg: string, result: Result) {
+/**
+ * handles argument that are not part of any option
+ * @example
+ * arg1 arg2 arg3
+ */
+function handleArgument(argument: Argument, arg: string, result: ParseResult) {
   if (argument.multiple) {
     result.arguments[argument.name] ??= [];
     const array = result.arguments[argument.name] as unknown[];
@@ -250,9 +209,14 @@ function handleArgument(argument: Argument, arg: string, result: Result) {
     result.arguments[argument.name] = value;
   }
 }
+/**
+ * handles argument after double dash
+ * @example
+ * -- arg1 arg2 arg3
+ */
 function handleDoubleDashArguments(
   entries: IterableIterator<[number, string]>,
-  result: Result,
+  result: ParseResult,
 ) {
   const array: string[] = result.arguments["--"] = [];
   for (const [_, arg] of entries) array.push(arg);
@@ -287,13 +251,13 @@ function parseValue<T>(option: Option<T>, value: string) {
 
 function parseWithIterator<T>(
   entries: IterableIterator<[number, string]>,
-  program: Program<T>,
-): Result {
-  validateCommand(program);
+  schema: Schema<T>,
+): ParseResult {
+  validateCommand(schema);
 
-  const result = { options: {}, arguments: {} } as Result;
+  const result = { options: {}, arguments: {} } as ParseResult;
 
-  const missingArguments = program.arguments?.filter((it) => !it.optional) ??
+  const missingArguments = schema.arguments?.filter((it) => !it.optional) ??
     [];
 
   let parsedArgumentIndex = 0;
@@ -306,20 +270,20 @@ function parseWithIterator<T>(
 
     const groups = arg.match(FLAG_REGEXP)?.groups as unknown as FlagRegExpGroup;
     if (!groups) {
-      const argument = program.arguments?.at(parsedArgumentIndex);
+      const argument = schema.arguments?.at(parsedArgumentIndex);
       if (argument) {
         handleArgument(argument, arg, result);
         if (!argument.multiple) parsedArgumentIndex += 1;
         missingArguments.splice(missingArguments.indexOf(argument), 1);
         continue;
       }
-      handleCommand(program, arg, entries);
+      handleCommand(schema, arg, entries);
       break;
     }
     if (groups.doubleDash) {
-      handleDoubleDashOption(entries, result, program, groups);
+      handleDoubleDashOption(entries, result, schema, groups);
     } else {
-      handleSingleDashOption(entries, result, program, groups);
+      handleSingleDashOption(entries, result, schema, groups);
     }
   }
 
@@ -329,9 +293,9 @@ function parseWithIterator<T>(
     );
   }
 
-  return program.fn?.(result) ?? result;
+  return schema.fn?.(result) ?? result;
 }
 
-export function parse<T>(args: string[], program: Program<T>) {
-  return parseWithIterator(args.entries(), program);
+export function parse<T>(args: string[], schema: Schema<T>) {
+  return parseWithIterator(args.entries(), schema);
 }
