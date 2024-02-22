@@ -9,7 +9,6 @@ import {
   IsolateFunctions,
   IsolateLifecycle,
   Params,
-  PID,
   Request,
 } from '@/artifact/constants.ts'
 import IsolateApi from '../isolate-api.ts'
