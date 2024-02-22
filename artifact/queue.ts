@@ -30,7 +30,7 @@ export default class Queue {
   async push(name: string, params?: Params, detach = false) {
     const id = ulid()
     log('push %o', { id, name })
-    const msg = { id, name, params }
+    const msg = { id, name, params, detach }
     const key = ['QUEUE', id, name]
     const stream = this.#kv.watch<Outcome[]>([key])
     this.#stack.add(id)
@@ -43,6 +43,7 @@ export default class Queue {
       if (!event.versionstamp) {
         continue
       }
+      this.#updateStack(id)
       const outcome: Outcome = event.value
       if (outcome.error) {
         throw deserializeError(outcome.error)
@@ -54,7 +55,7 @@ export default class Queue {
     this.#kv.listenQueue(async (msg: QFunction) => {
       log('listenQueue ', msg.id, msg.name)
       assert(this.#functions[msg.name], `missing ${msg.name}`)
-      const { id, name, params = {} } = msg
+      const { id, name, params = {}, detach } = msg
       const outcomeKey = ['QUEUE', id, name]
       const key = [...outcomeKey, 'pending']
       // TODO rely on the artifact functions to handle double delivery
@@ -63,7 +64,6 @@ export default class Queue {
         .set(key, true, { expireIn: fifteenMinutes }).commit()
       if (!result.ok) {
         log('already processing', id, name)
-        this.#updateStack(id)
         return
       }
       const outcome: Outcome = {}
@@ -75,15 +75,14 @@ export default class Queue {
         outcome.error = serializeError(error)
       }
       await this.#kv.set(outcomeKey, outcome, { expireIn: fifteenMinutes })
-      this.#updateStack(id)
+      if (detach) {
+        this.#updateStack(id)
+      }
     })
   }
-  async #updateStack(id: string) {
+  #updateStack(id: string) {
     const isDeleted = this.#stack.delete(id)
     log('updateStack', id, isDeleted, this.#stack.size)
-    if (this.#stack.size === 0 && this.#quiesce.zero) {
-      await new Promise((resolve) => setTimeout(resolve, 0))
-    }
     if (this.#stack.size === 0 && this.#quiesce.zero) {
       this.#quiesce.zero()
       delete this.#quiesce.zero
