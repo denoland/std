@@ -41,7 +41,7 @@ export default class IsolateApi<T extends object = Default> {
    * 1. The current branch, to declare the function invocation - may be pooled
    * 2. The new branch, to conclude the function invocation - may be skippable
    *    if no fs changes were made
-   * 3. The curent branch, to merge the result back in - may be pooled
+   * 3. The current branch, to merge the result back in - may be pooled
    * @param isolate The name of the isolate to load the parallels for
    */
   parallels(isolate: string) {

@@ -8,7 +8,7 @@ import { delay } from 'https://deno.land/std@0.211.0/async/delay.ts'
 
 const artifact = await Cradle.create()
 
-// start a hono api server that mimicks the artifact api
+// start a hono api server that mimics the artifact api
 
 Deno.serve(async (req) => {
   if (req.url.endsWith('/favicon.ico')) {

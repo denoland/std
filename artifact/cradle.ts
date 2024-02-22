@@ -84,7 +84,7 @@ class Cradle {
     } catch (error) {
       throw error
     } finally {
-      // if we are in test mode, queisce the queue before returning
+      // if we are in test mode, quiesce the queue before returning
       if (this.#api.context.db!.isTestMode) {
         await this.#queue.quiesce()
       }
