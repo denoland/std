@@ -132,7 +132,7 @@ export const functions: IsolateFunctions = {
 
     const { fs } = memfs()
     const dir = '/'
-    const url = `https://github.com/${account}/${repository}.git`
+    const url = `https://github.com/${pid.account}/${pid.repository}.git`
     log('cloning %s', url)
     // TODO make an index file without doing a full checkout
     // https://github.com/dreamcatcher-tech/artifact/issues/28

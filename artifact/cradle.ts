@@ -37,8 +37,9 @@ class Cradle {
     cradle.#queue = Queue.create(functions, cradle.#api)
     return cradle
   }
-  stop() {
-    return this.#compartment.unmount(this.#api)
+  async stop() {
+    await this.#compartment.unmount(this.#api)
+    await this.#queue.quiesce()
   }
   async pierces(isolate: string, target: PID) {
     // cradle side, since functions cannot be returned from isolate calls
@@ -86,6 +87,7 @@ class Cradle {
     } finally {
       // if we are in test mode, quiesce the queue before returning
       if (this.#api.context.db!.isTestMode) {
+        console.log('quiesce')
         await this.#queue.quiesce()
       }
     }
