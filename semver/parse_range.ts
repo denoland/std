@@ -5,7 +5,7 @@ import { OPERATOR_XRANGE_REGEXP, XRANGE } from "./_shared.ts";
 import { parseComparator } from "./_parse_comparator.ts";
 import { parseBuild, parsePrerelease } from "./_shared.ts";
 
-function isWildcard(id: string): boolean {
+function isWildcard(id?: string): boolean {
   return !id || id.toLowerCase() === "x" || id === "*";
 }
 
@@ -50,9 +50,9 @@ function parseHyphenRange(range: string) {
   if (isWildcard(rightGroups.major)) {
     to = "";
   } else if (isWildcard(rightGroups.minor)) {
-    to = `<${+rightGroups.major + 1}.0.0`;
+    to = `<${+rightGroups.major! + 1}.0.0`;
   } else if (isWildcard(rightGroups.patch)) {
-    to = `<${rightGroups.major}.${+rightGroups.minor + 1}.0`;
+    to = `<${rightGroups.major}.${+rightGroups.minor! + 1}.0`;
   } else if (rightGroups.prerelease) {
     to =
       `<=${rightGroups.major}.${rightGroups.minor}.${rightGroups.patch}-${rightGroups.prerelease}`;
@@ -187,14 +187,12 @@ function handleGreaterThanOperator(groups: RegExpGroups): Comparator[] {
   const patch = +groups.patch;
 
   if (majorIsWildcard) return [{ operator: "<", major: 0, minor: 0, patch: 0 }];
+
   if (minorIsWildcard) {
-    if (patchIsWildcard) {
-      return [{ operator: ">=", major: major + 1, minor: 0, patch: 0 }];
-    }
-    return [{ operator: ">", major: major + 1, minor: 0, patch: 0 }];
+    return [{ operator: ">=", major: major + 1, minor: 0, patch: 0 }];
   }
   if (patchIsWildcard) {
-    return [{ operator: ">", major: major + 1, minor: 0, patch: 0 }];
+    return [{ operator: ">=", major, minor: minor + 1, patch: 0 }];
   }
   const prerelease = parsePrerelease(groups.prerelease ?? "");
   const build = parseBuild(groups.build ?? "");
@@ -243,7 +241,7 @@ function handleEqualOperator(groups: RegExpGroups): Comparator[] {
   }
   const prerelease = parsePrerelease(groups.prerelease ?? "");
   const build = parseBuild(groups.build ?? "");
-  return [{ operator: "", major, minor, patch, prerelease, build }];
+  return [{ operator: undefined, major, minor, patch, prerelease, build }];
 }
 
 function parseRangeString(string: string) {

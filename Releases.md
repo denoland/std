@@ -1,3 +1,16 @@
+### 0.217.0 / 2024.02.22
+
+- deprecation(semver): deprecate `==`, `===`, `!==`, and `""` operators (#4271)
+- doc: fix `std/path/posix` link (#4337)
+- feat(io): `iterateReader[Sync]()` (#4247)
+- feat(io): un-deprecate `readerFromStreamReader()` (#4343)
+- feat(testing): explicit resource management for `spy()` and `stub()` (#4306)
+- fix(http): `version` from `deno.json` import (#4342)
+- fix(media_types): load extensions when directly importing
+  `extensionsByTypes()` (#4351)
+- fix(semver): fix `prerelease` handlings in range utils (#4323)
+- fix(semver): fix parse_range for `>x.y` pattern (#4350)
+
 ### 0.216.0 / 2024.02.15
 
 - BREAKING(path): remove `path/windows/separator.ts` (#4292)

@@ -25,6 +25,7 @@ export function comparatorMin(comparator: Comparator): SemVer {
       // The min(<0.0.0) is MAX
       return greaterThan(semver, MIN) ? MIN : MAX;
     case ">=":
+    case undefined:
     case "":
     case "=":
     case "==":
