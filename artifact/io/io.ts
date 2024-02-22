@@ -42,14 +42,15 @@ export default class IO {
     const solids = await this.#solidifyPool(pid, fs)
     log('solids %o', solids)
     await this.#fs.update(pid, fs, lockId)
+    const { commit, requests, priors, replies } = solids
 
-    for (const request of solids.requests) {
+    for (const request of requests) {
       // this detaches from the queue, and relies on watchReply() to complete
-      const prior = solids.priors.pop()
-      await this.#self.request({ request, prior })
+      const prior = priors.pop()
+      await this.#self.request({ request, prior, commit })
     }
     // TODO branching
-    for (const reply of solids.replies) {
+    for (const reply of replies) {
       log('reply %o', reply)
       await this.#db.settleReply(pid, reply)
     }

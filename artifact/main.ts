@@ -26,7 +26,7 @@ Deno.serve(async (req) => {
   const isolate = 'engage-help'
   const { engageInBand } = await artifact.pierces(isolate, target)
   const helpResult = await engageInBand({
-    help: 'help.fixture',
+    help: 'help-fixture',
     text: 'hello',
   })
 

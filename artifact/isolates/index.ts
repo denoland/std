@@ -3,7 +3,6 @@ import * as fetch from './fetch.js'
 import * as files from './files.js'
 import * as git from './git.js'
 import * as ioFixture from './io-fixture.js'
-import * as io from './io.js'
 import * as loadHelp from './load-help.ts'
 import * as open from './open.js'
 import * as utils from './utils.js'
@@ -15,7 +14,6 @@ export default {
   files,
   git,
   'io-fixture': ioFixture,
-  io,
   'load-help': loadHelp,
   open,
   utils,

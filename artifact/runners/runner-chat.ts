@@ -261,7 +261,6 @@ const helpToGptApi = (name: string, help: Help, api: IsolateApiSchema) => {
   }
   return tool
 }
-
 const isolateToGptApi = (name: string, api: JSONSchemaType<object>) => {
   assert(typeof api === 'object', `api must be an object: ${name}`)
   assert(typeof api.type === 'string', `api.type must be a string: ${name}`)

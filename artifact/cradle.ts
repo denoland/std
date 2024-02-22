@@ -90,7 +90,7 @@ class Cradle {
       }
     }
   }
-  request(params: { request: Request; prior?: number }) {
+  request(params: { request: Request; commit: string; prior?: number }) {
     const detach = true
     return this.#queue.push('request', params, detach)
   }

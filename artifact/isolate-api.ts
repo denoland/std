@@ -1,9 +1,10 @@
 import Compartment from './io/compartment.ts'
-import { IFs, memfs } from 'https://esm.sh/memfs@4.6.0'
+import { IFs } from 'https://esm.sh/memfs@4.6.0'
 import { assert } from 'std/assert/mod.ts'
 import * as posix from 'https://deno.land/std@0.213.0/path/posix/mod.ts'
 import { Debug } from '@utils'
 import git from '$git'
+import FS from '@/artifact/fs.ts'
 
 const log = Debug('AI:isolateApi')
 interface Default {
@@ -12,14 +13,13 @@ interface Default {
 const dir = '/'
 export default class IsolateApi<T extends object = Default> {
   #fs!: IFs
-  // TODO assign a mount id for each side effect trail
+  #commit: string | undefined
+  // TODO assign a mount id for each side effect execution context ?
   #context: Partial<T> = {}
-  static create(fs?: IFs) {
+  static create(fs: IFs, commit?: string) {
     const api = new IsolateApi()
-    if (!fs) {
-      fs = memfs().fs
-    }
     api.#fs = fs
+    api.#commit = commit
     return api
   }
   // OR we could use options to the functions to switch modes
@@ -85,10 +85,11 @@ export default class IsolateApi<T extends object = Default> {
     if (!fs.existsSync('/' + path)) {
       // TODO check if the file was deleted and in staging
       log('git read file', path)
+
       const results = await git.walk({
         fs,
         dir: '/',
-        trees: [git.TREE()],
+        trees: [git.TREE({ ref: this.#commit })],
         map: async (filepath: string, [entry]) => {
           // TODO be efficient about tree walking for nested paths
           if (filepath === path) {
@@ -102,7 +103,8 @@ export default class IsolateApi<T extends object = Default> {
         throw new Error('multiple files found: ' + path)
       }
       if (!results.length) {
-        throw FileNotFoundError.create(path)
+        log(FS.print(fs))
+        throw new FileNotFoundError('file not found: ' + path)
       }
       return new TextDecoder().decode(results[0])
     }
@@ -121,6 +123,7 @@ export default class IsolateApi<T extends object = Default> {
     const results = await git.walk({
       fs: this.#fs,
       dir: '/',
+      // TODO use the commit and also check with stage
       trees: [git.STAGE()],
       map: async (filepath: string, [entry]) => {
         // TODO be efficient about tree walking for nested paths
@@ -139,13 +142,14 @@ export default class IsolateApi<T extends object = Default> {
     return false
   }
   async ls(path: string) {
-    isDirectory(path)
-    // get the git listing
+    path = posix.join(path, '/')
+    isRelative(path)
+
     const walk = await git.walk({
       fs: this.#fs,
       dir: '/',
-      trees: [git.TREE()],
-      map: async (filepath: string, [entry]) => {
+      trees: [git.TREE({ ref: this.#commit })],
+      map: async (filepath: string, [_entry]) => {
         log('filepath', filepath)
         if (filepath.startsWith(path)) {
           return filepath
@@ -194,15 +198,8 @@ const isRelativeFile = (path: string) => {
   const test = path.endsWith(basename) && basename !== ''
   assert(test, `path must be a file, not a directory: ${path}`)
 }
-const isDirectory = (path: string) => {
-  isRelative(path)
-  assert(path.endsWith('/'), `path must be a directory: ${path}`)
-}
 class FileNotFoundError extends Error {
   code = 'ENOENT'
-  static create(path: string) {
-    return new FileNotFoundError('file not found: ' + path)
-  }
   constructor(message: string) {
     super(message)
     this.name = 'FileNotFoundError'

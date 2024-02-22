@@ -173,11 +173,16 @@ export const functions: IsolateFunctions = {
   },
   request: async (params, api: IsolateApi<C>) => {
     const request = params.request as InternalRequest
+    const commit = params.commit as string
     const prior = params.prior as number | undefined
     // TODO wait for the prior to complete using prior key
     log('request %o %o', request.isolate, request.functionName)
     const compartment = Compartment.create(request.isolate)
-    const functions = compartment.functions(api)
+
+    // TODO load up the fs based on the current commit, not latest commit
+    const fs = await api.context.fs!.load(request.target)
+    const isolateApi = IsolateApi.create(fs, commit)
+    const functions = compartment.functions(isolateApi)
     const outcome: Outcome = {}
     try {
       outcome.result = await functions[request.functionName](request.params)

@@ -6,8 +6,8 @@
  * Get to store all invocations of the helps and rate its responses.
  */
 
-import { expect, test } from '../test-context'
+import { expect } from '@utils'
 
-test.todo('create a new stuck directly')
-test.todo('create a new stuck in the background')
-test.todo('e2d create a new stuck then use it')
+Deno.test.ignore('create a new stuck directly', () => {})
+Deno.test.ignore('create a new stuck in the background', () => {})
+Deno.test.ignore('e2d create a new stuck then use it', () => {})

@@ -16,7 +16,7 @@ export default class FS {
     fs.#kv = db.kv
     return fs
   }
-  async load(pid: PID) {
+  async load(pid: PID): Promise<IFs> {
     const uint8 = await this.#loadIsolateFs(pid)
     if (!uint8) {
       const repo = `${pid.account}/${pid.repository}`
@@ -71,7 +71,7 @@ export default class FS {
       }
     }
   }
-  static print(fs: IFs) {
+  static print(fs: IFs): string {
     return print.toTreeSync(fs)
   }
 }
