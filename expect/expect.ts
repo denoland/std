@@ -47,7 +47,7 @@ import {
   toThrow,
 } from "./_matchers.ts";
 import { isPromiseLike } from "./_utils.ts";
-import { anything } from "./_asymmetric_matchers.ts";
+import { any, anything } from "./_asymmetric_matchers.ts";
 
 const matchers: Record<MatcherKey, Matcher> = {
   lastCalledWith: toHaveBeenLastCalledWith,
@@ -170,3 +170,4 @@ export function expect(value: unknown, customMessage?: string): Expected {
 
 expect.addEqualityTesters = addCustomEqualityTesters;
 expect.anything = anything;
+expect.any = any;
