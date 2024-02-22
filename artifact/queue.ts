@@ -33,6 +33,7 @@ export default class Queue {
     const msg = { id, name, params }
     const key = ['QUEUE', id, name]
     const stream = this.#kv.watch<Outcome[]>([key])
+    this.#stack.add(id)
     await this.#kv.enqueue(msg, { backoffSchedule: [] })
     if (detach) {
       stream.cancel()
@@ -52,7 +53,6 @@ export default class Queue {
   #listen() {
     this.#kv.listenQueue(async (msg: QFunction) => {
       log('listenQueue ', msg.id, msg.name)
-      this.#stack.add(msg)
       assert(this.#functions[msg.name], `missing ${msg.name}`)
       const { id, name, params = {} } = msg
       const outcomeKey = ['QUEUE', id, name]
@@ -63,6 +63,7 @@ export default class Queue {
         .set(key, true, { expireIn: fifteenMinutes }).commit()
       if (!result.ok) {
         log('already processing', id, name)
+        this.#updateStack(id)
         return
       }
       const outcome: Outcome = {}
@@ -74,13 +75,17 @@ export default class Queue {
         outcome.error = serializeError(error)
       }
       await this.#kv.set(outcomeKey, outcome, { expireIn: fifteenMinutes })
-      this.#updateStack(msg)
+      this.#updateStack(id)
     })
   }
-  #updateStack(msg: QFunction) {
-    this.#stack.delete(msg)
-    if (this.#stack.size === 0 && this.#quiesce) {
-      this.#quiesce.zero?.()
+  async #updateStack(id: string) {
+    const isDeleted = this.#stack.delete(id)
+    log('updateStack', id, isDeleted, this.#stack.size)
+    if (this.#stack.size === 0 && this.#quiesce.zero) {
+      await new Promise((resolve) => setTimeout(resolve, 0))
+    }
+    if (this.#stack.size === 0 && this.#quiesce.zero) {
+      this.#quiesce.zero()
       delete this.#quiesce.zero
       delete this.#quiesce.waitingForZero
     }
@@ -91,9 +96,10 @@ export default class Queue {
     waitingForZero: undefined as Promise<void> | undefined,
   }
   quiesce() {
-    if (this.#stack.size === 0) {
+    if (this.#stack.size === 0 && !this.#quiesce.waitingForZero) {
       return
     }
+    log('quiesce', this.#stack.size)
     if (!this.#quiesce.zero) {
       this.#quiesce.waitingForZero = new Promise<void>((resolve) => {
         this.#quiesce.zero = resolve
