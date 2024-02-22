@@ -1,3 +1,4 @@
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import { crypto as stdCrypto } from "../crypto.ts";
 import { instantiateWithInstance } from "../_wasm/lib/deno_std_wasm_crypto.generated.mjs";
 import { encodeHex } from "../../encoding/hex.ts";
