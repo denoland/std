@@ -21,6 +21,7 @@ import Cradle from '@/artifact/cradle.ts'
 import { assert } from 'https://deno.land/std@0.203.0/assert/assert.ts'
 import { Outcome } from '@/artifact/constants.ts'
 import { serializeError } from 'https://esm.sh/serialize-error'
+import { pidFromRepo } from '@/artifact/keys.ts'
 
 const log = Debug('AI:artifact')
 const repo = {
@@ -108,13 +109,8 @@ export const functions: IsolateFunctions = {
   // need to split the git functions out to be an isolate
   async init(params, api: IsolateApi<C>) {
     const start = Date.now()
-    const repo = params.repo as string
-    const [account, repository] = repo.split('/')
-    const pid: PID = {
-      account,
-      repository,
-      branches: [ENTRY_BRANCH],
-    }
+    const pid = pidFromRepo(params.repo as string)
+
     // TODO handle existing repo
 
     const { fs } = memfs()
@@ -129,13 +125,7 @@ export const functions: IsolateFunctions = {
   },
   async clone(params, api: IsolateApi<C>) {
     const start = Date.now()
-    const repo = params.repo as string
-    const [account, repository] = repo.split('/')
-    const pid: PID = {
-      account,
-      repository,
-      branches: [ENTRY_BRANCH],
-    }
+    const pid = pidFromRepo(params.repo as string)
     // TODO handle existing repo
 
     // TODO use the fs option in the context, by loading an asserted blank fs

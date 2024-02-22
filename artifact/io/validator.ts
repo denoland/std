@@ -1,4 +1,5 @@
 import Ajv, { ErrorObject } from 'https://esm.sh/ajv@8.12.0'
+import { assert } from '@utils'
 
 export default (schema: object) => {
   const ajv = loadAjv()
@@ -6,9 +7,7 @@ export default (schema: object) => {
 
   return (parameters: object) => {
     if (!validate(parameters)) {
-      if (!validate.errors) {
-        return
-      }
+      assert(validate.errors, 'validate.errors is missing')
       throwIfNotValid(validate.errors)
     }
   }
@@ -22,9 +21,6 @@ const loadAjv = () => {
   return _ajv
 }
 const throwIfNotValid = (ajvErrors: ErrorObject[]) => {
-  if (!ajvErrors) {
-    return
-  }
   const reasons = ajvErrors
     .map((obj) => JSON.stringify(obj, null, '  '))
     .join('\n')

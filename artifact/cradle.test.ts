@@ -43,6 +43,10 @@ Deno.test('pierce', async (t) => {
     const message = 'test message'
     await expect(pierces.error({ message })).rejects.toThrow(message)
   })
+  await t.step('params fails validation', async () => {
+    const msg = 'Parameters Validation Error: '
+    await expect(pierces.local({ invalid: 'parameters' })).rejects.toThrow(msg)
+  })
   // await t.step('child process', async () => {
   //   const result = await pierces.spawn({ isolate })
   //   expect(result).toBe('remote pong')

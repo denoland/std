@@ -1,8 +1,14 @@
-import { PID, Poolable, Reply, Request } from '@/artifact/constants.ts'
+import {
+  ENTRY_BRANCH,
+  PID,
+  Poolable,
+  Reply,
+  Request,
+} from '@/artifact/constants.ts'
 import { assert } from '@utils'
 import { ulid } from 'https://deno.land/std@0.216.0/ulid/mod.ts'
 
-export const assertPid = (pid: PID) => {
+const assertPid = (pid: PID) => {
   assert(pid.account, 'account is required')
   assert(pid.repository, 'repository is required')
   assert(pid.branches[0], 'branch is required')
@@ -52,4 +58,15 @@ const getId = (action: Request | Reply) => {
   } else {
     return action.sequence
   }
+}
+
+export const pidFromRepo = (repo: string): PID => {
+  const [account, repository] = repo.split('/')
+  const pid: PID = {
+    account,
+    repository,
+    branches: [ENTRY_BRANCH],
+  }
+  assertPid(pid)
+  return pid
 }

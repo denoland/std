@@ -27,6 +27,7 @@ export const api = {
     description: 'ping locally',
     type: 'object',
     properties: {},
+    additionalProperties: false,
   },
 }
 export const functions = {
