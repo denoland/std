@@ -21,6 +21,15 @@ jobs:
       - name: Install Deno
         uses: denoland/setup-deno@v1
 
+      - name: Check typos
+        uses: crate-ci/typos@master
+        
+      - name: Check formatting, linting, license headers, types and run tests
+        run: deno task ok
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          DENO_KV_PATH: ':memory:'
+
       - name: Build step
         run: deno task build
 
