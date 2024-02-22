@@ -87,7 +87,6 @@ class Cradle {
     } finally {
       // if we are in test mode, quiesce the queue before returning
       if (this.#api.context.db!.isTestMode) {
-        console.log('quiesce')
         await this.#queue.quiesce()
       }
     }

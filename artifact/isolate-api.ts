@@ -100,9 +100,7 @@ export default class IsolateApi<T extends object = Default> {
           }
         },
       })
-      if (results.length > 1) {
-        throw new Error('multiple files found: ' + path)
-      }
+      assert(results.length <= 1, 'multiple files found: ' + path)
       if (!results.length) {
         log(FS.print(fs))
         throw new FileNotFoundError('file not found: ' + path)
@@ -153,11 +151,9 @@ export default class IsolateApi<T extends object = Default> {
       map: async (filepath: string, [_entry]) => {
         log('filepath', filepath)
         if (filepath.startsWith(path)) {
+          await Promise.resolve() // typescript made me do it
           return filepath
           // TODO do not automatically recurse
-        }
-        if (!_entry) {
-          await Promise.resolve() // typescript made me do it
         }
       },
     })
