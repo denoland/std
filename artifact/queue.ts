@@ -80,7 +80,8 @@ export default class Queue {
       }
     })
   }
-  #updateStack(id: string) {
+  async #updateStack(id: string) {
+    await new Promise((resolve) => setTimeout(resolve, 0))
     const isDeleted = this.#stack.delete(id)
     log('updateStack', id, isDeleted, this.#stack.size)
     if (this.#stack.size === 0 && this.#quiesce.zero) {

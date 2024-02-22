@@ -21,5 +21,16 @@
   "deno.codeLens.referencesAllFunctions": true,
   "deno.codeLens.test": true,
   "deno.testing.args": ["--allow-all", "--no-check", "--unstable-kv"],
-  "deno.codeLens.testArgs": ["--allow-all", "--no-check", "--unstable-kv"]
+  "deno.codeLens.testArgs": ["--allow-all", "--no-check", "--unstable-kv"],
+  "coverage-gutters.coverageFileNames": [
+    "cov.lcov",
+    "lcov.info",
+    "cov.xml",
+    "coverage.xml",
+    "jacoco.xml",
+    "coverage.cobertura.xml"
+  ],
+  "coverage-gutters.showLineCoverage": true,
+  "coverage-gutters.showRulerCoverage": false,
+  "coverage-gutters.showGutterCoverage": false
 }
