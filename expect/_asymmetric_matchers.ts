@@ -1,3 +1,6 @@
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// deno-lint-ignore-file no-explicit-any
+
 abstract class AsymmetricMatcher<T> {
   constructor(
     protected value: T,
@@ -60,4 +63,17 @@ export class Any extends AsymmetricMatcher<any> {
 
 export function any(c: unknown): Any {
   return new Any(c);
+}
+
+export class ArrayContaining extends AsymmetricMatcher<any[]> {
+  constructor(arr: any[]) {
+    super(arr);
+  }
+  equals(other: any[]): boolean {
+    return this.value.every((e) => other.includes(e));
+  }
+}
+
+export function arrayContaining(c: any[]): ArrayContaining {
+  return new ArrayContaining(c);
 }

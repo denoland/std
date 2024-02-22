@@ -3,7 +3,7 @@
 // This file is copied from `std/assert`.
 
 import { EqualOptions } from "./_types.ts";
-import { Any, Anything } from "./_asymmetric_matchers.ts";
+import { Any, Anything, ArrayContaining } from "./_asymmetric_matchers.ts";
 
 function isKeyedCollection(x: unknown): x is Set<unknown> {
   return [Symbol.iterator, "size"].every((k) => k in (x as Set<unknown>));
@@ -57,6 +57,9 @@ export function equal(c: unknown, d: unknown, options?: EqualOptions): boolean {
       return b.equals(a);
     }
     if (b instanceof Any) {
+      return b.equals(a);
+    }
+    if (b instanceof ArrayContaining && a instanceof Array) {
       return b.equals(a);
     }
     if (a instanceof Date && b instanceof Date) {
