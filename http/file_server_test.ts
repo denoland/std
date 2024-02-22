@@ -344,10 +344,11 @@ Deno.test("serveDir() script prints help", async () => {
       "--no-check",
       "--quiet",
       "--no-lock",
-      "file_server.ts",
+      "--config",
+      "deno.json",
+      "http/file_server.ts",
       "--help",
     ],
-    cwd: moduleDir,
   });
   const { stdout } = await command.output();
   const output = new TextDecoder().decode(stdout);
@@ -361,10 +362,11 @@ Deno.test("serveDir() script prints version", async () => {
       "--no-check",
       "--quiet",
       "--no-lock",
-      "file_server.ts",
+      "--config",
+      "deno.json",
+      "http/file_server.ts",
       "--version",
     ],
-    cwd: moduleDir,
   });
   const { stdout } = await command.output();
   const output = new TextDecoder().decode(stdout);
@@ -390,7 +392,9 @@ Deno.test("serveDir() script fails with partial TLS args", async () => {
       "--allow-read",
       "--allow-net",
       "--no-lock",
-      "file_server.ts",
+      "--config",
+      "deno.json",
+      "http/file_server.ts",
       ".",
       "--host",
       "localhost",
@@ -399,7 +403,6 @@ Deno.test("serveDir() script fails with partial TLS args", async () => {
       "-p",
       `4578`,
     ],
-    cwd: moduleDir,
     stderr: "null",
   });
   const { stdout, success } = await command.output();
