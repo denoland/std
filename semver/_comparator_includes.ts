@@ -1,3 +1,5 @@
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+
 import { isWildcardComparator } from "./_shared.ts";
 import { compare } from "./compare.ts";
 import { Comparator, SemVer } from "./types.ts";
