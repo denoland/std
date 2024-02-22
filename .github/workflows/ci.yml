@@ -30,6 +30,8 @@ jobs:
 
       - name: Check formatting, linting, license headers, types and run tests
         run: deno task ok
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
 
       - name: Create lcov file
         run: deno task cov:gen
