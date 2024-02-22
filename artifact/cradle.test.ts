@@ -1,5 +1,5 @@
 import Cradle from './cradle.ts'
-import { Debug, expect, log } from '@utils'
+import { expect, log } from '@utils'
 
 Deno.test('io', async (t) => {
   const artifact = await Cradle.create()
@@ -22,9 +22,9 @@ Deno.test('io', async (t) => {
 
   await artifact.stop()
 })
-Deno.test.ignore('child to self', async (t) => {})
-Deno.test.ignore('child to child', async (t) => {})
-Deno.test.ignore('child to parent', async (t) => {})
+Deno.test.ignore('child to self', async () => {})
+Deno.test.ignore('child to child', async () => {})
+Deno.test.ignore('child to parent', async () => {})
 Deno.test('pierce', async (t) => {
   const isolate = 'io-fixture'
   const artifact = await Cradle.create()

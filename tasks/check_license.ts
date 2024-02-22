@@ -8,6 +8,9 @@ const EXTENSIONS = ['.ts', '.tsx']
 const EXCLUDED_DIRS = [
   'data',
   'static',
+  'artifact',
+  'artifact-migration',
+  'node_modules',
 ]
 
 const ROOT = new URL('../', import.meta.url)
@@ -26,7 +29,7 @@ for await (
   const { path } of walk(ROOT, {
     exts: EXTENSIONS,
     skip: [
-      ...EXCLUDED_DIRS.map((path) => globToRegExp(path)),
+      ...EXCLUDED_DIRS.map((path) => globToRegExp(ROOT.pathname + path)),
       new RegExp('fresh.gen.ts'),
     ],
     includeDirs: false,

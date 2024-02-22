@@ -31,7 +31,8 @@ export default class IsolateApi<T extends object = Default> {
    * result.
    * @param isolate The name of the isolate to load the serials for
    */
-  async serials(isolate: string) {
+  serials(isolate: string) {
+    log('serials', isolate)
   }
   /**
    * When any of these functions are called, they will be executed in parallel
@@ -154,6 +155,9 @@ export default class IsolateApi<T extends object = Default> {
         if (filepath.startsWith(path)) {
           return filepath
           // TODO do not automatically recurse
+        }
+        if (!_entry) {
+          await Promise.resolve() // typescript made me do it
         }
       },
     })

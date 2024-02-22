@@ -1,6 +1,5 @@
-import Input from '@/components/Input.tsx'
 export default function Stories() {
-  return <Input />
+  return <div>test</div>
 }
 
 export const description = `

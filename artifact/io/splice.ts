@@ -1,7 +1,7 @@
 export default class Splice {
 }
 
-const schema = {
+export const schema = {
   type: 'object',
   required: [],
   properties: {

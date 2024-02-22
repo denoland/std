@@ -44,8 +44,8 @@ export const functions = {
     const { engageInBand } = await hooks.spawns('engage-help')
     return await engageInBand({ help, text })
   },
-  continue: async ({ help: path, text, commit }) => {
-    log('continue:', path, commit)
+  continue: ({ help: path, text, commit }) => {
+    log('continue:', path, text, commit)
     // this would continue the help, but in the same branch as a previous run
   },
 }

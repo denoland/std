@@ -1,5 +1,3 @@
-import { expect } from '@utils'
-
 // expect it to be not sure what to do
 // then we want to say "in my customers list, show me the first one"
 // it should be confused and say we dont' have any customers and suggest we

@@ -154,8 +154,8 @@ const Input = ({ preload, presubmit, onTranscription }) => {
         }
       }
     }
-    window.addEventListener('keydown', listener)
-    return () => window.removeEventListener('keydown', listener)
+    globalThis.addEventListener('keydown', listener)
+    return () => globalThis.removeEventListener('keydown', listener)
   }, [start, disabled, isRecording, stopRecording])
 
   const [doPreSubmit, setDoPreSubmit] = useState(presubmit)

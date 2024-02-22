@@ -156,10 +156,10 @@ export const functions: IsolateFunctions = {
     log('snapshot size:', size)
     return { pid, size, elapsed: Date.now() - start }
   },
-  pull(params, api: IsolateApi<C>) {
+  pull() {
     throw new Error('not implemented')
   },
-  push(params, api: IsolateApi<C>) {
+  push() {
     throw new Error('not implemented')
   },
   apiSchema: (params: Params) => {
@@ -176,7 +176,7 @@ export const functions: IsolateFunctions = {
     const commit = params.commit as string
     const prior = params.prior as number | undefined
     // TODO wait for the prior to complete using prior key
-    log('request %o %o', request.isolate, request.functionName)
+    log('request %o %o', request.isolate, request.functionName, prior)
     const compartment = Compartment.create(request.isolate)
 
     // TODO load up the fs based on the current commit, not latest commit

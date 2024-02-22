@@ -6,8 +6,6 @@
  * Get to store all invocations of the helps and rate its responses.
  */
 
-import { expect } from '@utils'
-
 Deno.test.ignore('create a new stuck directly', () => {})
 Deno.test.ignore('create a new stuck in the background', () => {})
 Deno.test.ignore('e2d create a new stuck then use it', () => {})

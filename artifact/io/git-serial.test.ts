@@ -1,5 +1,5 @@
 import { IFs, memfs } from 'https://esm.sh/memfs@4.6.0'
-import { Debug, expect, log } from '@utils'
+import { expect, log } from '@utils'
 import * as git from './git.ts'
 import {
   IoStruct,

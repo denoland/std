@@ -2,9 +2,8 @@
 // should be able to commit these benchmarks back to gh to publish them
 
 import Cradle from './cradle.ts'
-import { expect, log } from '@utils'
-import { JsonValue, PID } from './constants.ts'
-import { delay } from 'https://deno.land/std@0.211.0/async/delay.ts'
+import { log } from '@utils'
+import { PID } from './constants.ts'
 
 const artifact = await Cradle.create()
 
