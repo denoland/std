@@ -42,3 +42,5 @@ jobs:
         with:
           name: ${{ matrix.os }}
           files: cov.lcov
+          token: ${{ secrets.CODECOV_TOKEN }}
+          slug: dreamcatcher-tech/artifact
