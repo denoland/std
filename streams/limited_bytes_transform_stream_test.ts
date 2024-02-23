@@ -3,7 +3,7 @@
 import { assertEquals, assertRejects } from "../assert/mod.ts";
 import { LimitedBytesTransformStream } from "./limited_bytes_transform_stream.ts";
 
-Deno.test("[streams] LimitedBytesTransformStream", async function () {
+Deno.test("LimitedBytesTransformStream()", async function () {
   const r = ReadableStream.from([
     new Uint8Array([1, 2, 3]),
     new Uint8Array([4, 5, 6]),
@@ -17,7 +17,7 @@ Deno.test("[streams] LimitedBytesTransformStream", async function () {
   assertEquals(chunks.length, 2);
 });
 
-Deno.test("[streams] LimitedBytesTransformStream error", async function () {
+Deno.test("LimitedBytesTransformStream() handles error", async function () {
   const r = ReadableStream.from([
     new Uint8Array([1, 2, 3]),
     new Uint8Array([4, 5, 6]),
