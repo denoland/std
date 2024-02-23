@@ -1,6 +1,5 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import { str } from "https://deno.land/std@$STD_VERSION/yaml/_type/str.ts";
 import { parseComparator } from "./_parse_comparator.ts";
 import {
   OPERATOR_XRANGE_REGEXP,
