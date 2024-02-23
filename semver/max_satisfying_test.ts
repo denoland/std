@@ -7,7 +7,7 @@ import { maxSatisfying } from "./max_satisfying.ts";
 import { MAX, MIN } from "./constants.ts";
 
 Deno.test({
-  name: "maxSatisfying",
+  name: "maxSatisfying()",
   fn: async (t) => {
     const versions: [string[], string, string][] = [
       [["1.2.3", "1.2.4"], "1.2", "1.2.4"],
@@ -16,7 +16,7 @@ Deno.test({
     ];
 
     for (const [v, r, e] of versions) {
-      await t.step(`[${v}] ${r} : ${e}`, () => {
+      await t.step(`${r}`, () => {
         const versions = v.map((v) => parse(v));
         const range = parseRange(r);
         const expect = parse(e);
@@ -27,7 +27,7 @@ Deno.test({
   },
 });
 
-Deno.test("badRangesInMaxOrMinSatisfying", function () {
+Deno.test("minSatisfying() handles bad ranges", function () {
   const r = parseRange("some frogs and sneks-v2.5.6");
   assertEquals(maxSatisfying([MIN, MAX], r), undefined);
 });

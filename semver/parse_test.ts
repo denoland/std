@@ -2,7 +2,7 @@
 import { assertEquals, assertThrows } from "../assert/mod.ts";
 import { parse } from "./parse.ts";
 
-Deno.test("major", async (t) => {
+Deno.test("parse() handles major", async (t) => {
   // [range, version]
   // Version should be detectable despite extra characters
   const versions: [string, number][] = [
@@ -23,7 +23,7 @@ Deno.test("major", async (t) => {
   }
 });
 
-Deno.test("minor", async (t) => {
+Deno.test("parse() handles minor", async (t) => {
   // [range, version]
   // Version should be detectable despite extra characters
   const versions: [string, number][] = [
@@ -44,7 +44,7 @@ Deno.test("minor", async (t) => {
   }
 });
 
-Deno.test("patch", async (t) => {
+Deno.test("parse() handles patch", async (t) => {
   // [range, version]
   // Version should be detectable despite extra characters
   const versions: [string, number][] = [
@@ -57,7 +57,7 @@ Deno.test("patch", async (t) => {
     ["\t1.2.13", 13],
   ];
   for (const [v, expected] of versions) {
-    await t.step(``, () => {
+    await t.step(`${v}`, () => {
       const semver = parse(v);
       const actual = semver.patch;
       assertEquals(actual, expected);
@@ -65,7 +65,7 @@ Deno.test("patch", async (t) => {
   }
 });
 
-Deno.test("prerelease", async (t) => {
+Deno.test("parse() handles prerelease", async (t) => {
   // [prereleaseParts, version]
   const versions: [string, (string | number)[]][] = [
     ["1.2.2-alpha.1", ["alpha", 1]],
@@ -90,7 +90,7 @@ Deno.test("prerelease", async (t) => {
 });
 
 Deno.test({
-  name: "badVersions",
+  name: "parse() throws on bad versions",
   fn: async (t) => {
     const versions: [unknown][] = [
       ["1.2." + new Array(256).join("1")], // too long
@@ -115,7 +115,7 @@ Deno.test({
   },
 });
 
-Deno.test("invalidVersion", async (t) => {
+Deno.test("parse() throws on invalid versions", async (t) => {
   const versions = ["1.2.3.4", "NOT VALID", 1.2, null, "Infinity.NaN.Infinity"];
 
   for (const v of versions) {
@@ -130,7 +130,7 @@ Deno.test("invalidVersion", async (t) => {
   }
 });
 
-Deno.test("bigNumericPrerelease", function () {
+Deno.test("parse() handles big numeric prerelease", function () {
   const r = parse(`1.2.3-beta.${Number.MAX_SAFE_INTEGER}0`);
   assertEquals(r.prerelease, ["beta", "90071992547409910"]);
 });
