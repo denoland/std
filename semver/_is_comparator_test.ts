@@ -3,7 +3,7 @@ import { assert } from "../assert/mod.ts";
 import { INVALID, MIN } from "./constants.ts";
 import { isComparator } from "./_is_comparator.ts";
 import { formatComparator } from "./_format_comparator.ts";
-import { Comparator } from "https://deno.land/std@$STD_VERSION/semver/mod.ts";
+import { Comparator } from "./types.ts";
 
 Deno.test({
   name: "isComparator()",
