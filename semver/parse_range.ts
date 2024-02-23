@@ -1,15 +1,56 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-import { ALL } from "./constants.ts";
-import type { Comparator, Range } from "./types.ts";
-import { OPERATOR_XRANGE_REGEXP, XRANGE } from "./_shared.ts";
-import { parseComparator } from "./_parse_comparator.ts";
+import { ALL, ANY, NONE } from "./constants.ts";
+import type { Comparator, Operator, Range } from "./types.ts";
+import {
+  COMPARATOR_REGEXP,
+  OPERATOR_XRANGE_REGEXP,
+  parseNumber,
+  XRANGE,
+} from "./_shared.ts";
 import { parseBuild, parsePrerelease } from "./_shared.ts";
+
+type ComparatorRegExpGroup = {
+  operator: Operator;
+  major: string;
+  minor: string;
+  patch: string;
+  prerelease: string;
+  buildmetadata: string;
+};
+
+function parseComparator(comparator: string): Comparator {
+  const match = comparator.match(COMPARATOR_REGEXP);
+  const groups = match?.groups;
+
+  if (!groups) return NONE;
+
+  const { operator, prerelease, buildmetadata } =
+    groups as ComparatorRegExpGroup;
+
+  const semver = groups.major
+    ? {
+      major: parseNumber(groups.major, "Invalid major version"),
+      minor: parseNumber(
+        groups.minor!,
+        "Invalid minor version",
+      ),
+      patch: parseNumber(
+        groups.patch!,
+        "Invalid patch version",
+      ),
+      prerelease: prerelease ? parsePrerelease(prerelease) : [],
+      build: buildmetadata ? parseBuild(buildmetadata) : [],
+    }
+    : ANY;
+
+  return { operator: operator || undefined, ...semver, semver };
+}
 
 function isWildcard(id?: string): boolean {
   return !id || id.toLowerCase() === "x" || id === "*";
 }
 
-type RegExpGroups = {
+type RangeRegExpGroup = {
   operator: string;
   major: string;
   minor: string;
@@ -62,7 +103,7 @@ function parseHyphenRange(range: string) {
 
   return [from, to];
 }
-function handleCaretOperator(groups: RegExpGroups): Comparator[] {
+function handleCaretOperator(groups: RangeRegExpGroup): Comparator[] {
   const majorIsWildcard = isWildcard(groups.major);
   const minorIsWildcard = isWildcard(groups.minor);
   const patchIsWildcard = isWildcard(groups.patch);
@@ -109,7 +150,7 @@ function handleCaretOperator(groups: RegExpGroups): Comparator[] {
     { operator: "<", major: major + 1, minor: 0, patch: 0 },
   ];
 }
-function handleTildeOperator(groups: RegExpGroups): Comparator[] {
+function handleTildeOperator(groups: RangeRegExpGroup): Comparator[] {
   const majorIsWildcard = isWildcard(groups.major);
   const minorIsWildcard = isWildcard(groups.minor);
   const patchIsWildcard = isWildcard(groups.patch);
@@ -137,7 +178,7 @@ function handleTildeOperator(groups: RegExpGroups): Comparator[] {
     { operator: "<", major, minor: minor + 1, patch: 0 },
   ];
 }
-function handleLessThanOperator(groups: RegExpGroups): Comparator[] {
+function handleLessThanOperator(groups: RangeRegExpGroup): Comparator[] {
   const majorIsWildcard = isWildcard(groups.major);
   const minorIsWildcard = isWildcard(groups.minor);
   const patchIsWildcard = isWildcard(groups.patch);
@@ -156,7 +197,7 @@ function handleLessThanOperator(groups: RegExpGroups): Comparator[] {
   const build = parseBuild(groups.build ?? "");
   return [{ operator: "<", major, minor, patch, prerelease, build }];
 }
-function handleLessThanOrEqualOperator(groups: RegExpGroups): Comparator[] {
+function handleLessThanOrEqualOperator(groups: RangeRegExpGroup): Comparator[] {
   const minorIsWildcard = isWildcard(groups.minor);
   const patchIsWildcard = isWildcard(groups.patch);
 
@@ -177,7 +218,7 @@ function handleLessThanOrEqualOperator(groups: RegExpGroups): Comparator[] {
   const build = parseBuild(groups.build ?? "");
   return [{ operator: "<=", major, minor, patch, prerelease, build }];
 }
-function handleGreaterThanOperator(groups: RegExpGroups): Comparator[] {
+function handleGreaterThanOperator(groups: RangeRegExpGroup): Comparator[] {
   const majorIsWildcard = isWildcard(groups.major);
   const minorIsWildcard = isWildcard(groups.minor);
   const patchIsWildcard = isWildcard(groups.patch);
@@ -198,7 +239,7 @@ function handleGreaterThanOperator(groups: RegExpGroups): Comparator[] {
   const build = parseBuild(groups.build ?? "");
   return [{ operator: ">", major, minor, patch, prerelease, build }];
 }
-function handleGreaterOrEqualOperator(groups: RegExpGroups): Comparator[] {
+function handleGreaterOrEqualOperator(groups: RangeRegExpGroup): Comparator[] {
   const majorIsWildcard = isWildcard(groups.major);
   const minorIsWildcard = isWildcard(groups.minor);
   const patchIsWildcard = isWildcard(groups.patch);
@@ -217,7 +258,7 @@ function handleGreaterOrEqualOperator(groups: RegExpGroups): Comparator[] {
   const build = parseBuild(groups.build ?? "");
   return [{ operator: ">=", major, minor, patch, prerelease, build }];
 }
-function handleEqualOperator(groups: RegExpGroups): Comparator[] {
+function handleEqualOperator(groups: RangeRegExpGroup): Comparator[] {
   const majorIsWildcard = isWildcard(groups.major);
   const minorIsWildcard = isWildcard(groups.minor);
   const patchIsWildcard = isWildcard(groups.patch);
@@ -245,7 +286,8 @@ function handleEqualOperator(groups: RegExpGroups): Comparator[] {
 }
 
 function parseRangeString(string: string) {
-  const groups = string.match(OPERATOR_XRANGE_REGEXP)?.groups as RegExpGroups;
+  const groups = string.match(OPERATOR_XRANGE_REGEXP)
+    ?.groups as RangeRegExpGroup;
   if (!groups) return parseComparator(string);
 
   switch (groups.operator) {
