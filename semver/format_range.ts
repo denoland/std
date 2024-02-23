@@ -9,5 +9,6 @@ import { formatComparator } from "./_format_comparator.ts";
  * @returns A string representation of the range
  */
 export function formatRange(range: Range): string {
-  return range.map((c) => c.map(formatComparator).join(" ")).join("||");
+  return range.map((c) => c.map((c) => formatComparator(c)).join(" "))
+    .join("||");
 }
