@@ -339,10 +339,9 @@ function parseOperatorRanges(string: string) {
  * @returns A valid semantic range
  */
 export function parseRange(range: string): Range {
-  // remove spaces between operator and version
-  range = range.replaceAll(/(?<=<|>|=) +/g, "");
-
-  const ranges = range.split(/\s*\|\|\s*/)
+  return range
+    // remove spaces between operators and versions
+    .replaceAll(/(?<=<|>|=) +/g, "")
+    .split(/\s*\|\|\s*/)
     .map((string) => parseHyphenRange(string) || parseOperatorRanges(string));
-  return ranges;
 }
