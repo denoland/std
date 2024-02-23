@@ -279,5 +279,5 @@ export function parseRange(range: string): Range {
   const ranges = range
     .split(/\s*\|\|\s*/)
     .map((range) => parseHyphenRange(range).flatMap(parseRangeString));
-  return ranges as Range;
+  return ranges;
 }
