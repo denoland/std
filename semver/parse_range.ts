@@ -344,6 +344,5 @@ export function parseRange(range: string): Range {
 
   const ranges = range.split(/\s*\|\|\s*/)
     .map((string) => parseHyphenRange(string) || parseOperatorRanges(string));
-  Object.defineProperty(ranges, "ranges", { value: ranges });
-  return ranges as Range;
+  return ranges
 }
