@@ -1,9 +1,15 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+
+import { str } from "https://deno.land/std@$STD_VERSION/yaml/_type/str.ts";
+import { parseComparator } from "./_parse_comparator.ts";
+import {
+  OPERATOR_XRANGE_REGEXP,
+  parseBuild,
+  parsePrerelease,
+  XRANGE,
+} from "./_shared.ts";
 import { ALL } from "./constants.ts";
 import type { Comparator, Range } from "./types.ts";
-import { OPERATOR_XRANGE_REGEXP, XRANGE } from "./_shared.ts";
-import { parseComparator } from "./_parse_comparator.ts";
-import { parseBuild, parsePrerelease } from "./_shared.ts";
 
 function isWildcard(id?: string): boolean {
   return !id || id.toLowerCase() === "x" || id === "*";
@@ -18,50 +24,105 @@ type RegExpGroups = {
   build?: string;
 };
 
-function parseHyphenRange(range: string) {
-  // remove spaces between comparator and groups
-  range = range.replace(/(?<=<|>|=) +/, "");
-
+function handleLeftHyphenRangeGroups(leftGroup: RegExpGroups) {
+  if (isWildcard(leftGroup.major)) return;
+  if (isWildcard(leftGroup.minor)) {
+    return {
+      operator: ">=",
+      major: +leftGroup.major,
+      minor: 0,
+      patch: 0,
+      prerelease: [],
+      build: [],
+    };
+  }
+  if (isWildcard(leftGroup.patch)) {
+    return {
+      operator: ">=",
+      major: +leftGroup.major,
+      minor: +leftGroup.minor,
+      patch: 0,
+      prerelease: [],
+      build: [],
+    };
+  }
+  return {
+    operator: ">=",
+    major: +leftGroup.major,
+    minor: +leftGroup.minor,
+    patch: +leftGroup.patch,
+    prerelease: leftGroup.prerelease
+      ? parsePrerelease(leftGroup.prerelease)
+      : [],
+    build: [],
+  };
+}
+function handleRightHyphenRangeGroups(rightGroups: RegExpGroups) {
+  if (isWildcard(rightGroups.major)) {
+    return;
+  }
+  if (isWildcard(rightGroups.minor)) {
+    return {
+      operator: "<",
+      major: +rightGroups.major! + 1,
+      minor: 0,
+      patch: 0,
+      prerelease: [],
+      build: [],
+    };
+  }
+  if (isWildcard(rightGroups.patch)) {
+    return {
+      operator: "<",
+      major: +rightGroups.major,
+      minor: +rightGroups.minor! + 1,
+      patch: 0,
+      prerelease: [],
+      build: [],
+    };
+  }
+  if (rightGroups.prerelease) {
+    return {
+      operator: "<=",
+      major: +rightGroups.major,
+      minor: +rightGroups.minor,
+      patch: +rightGroups.patch,
+      prerelease: parsePrerelease(rightGroups.prerelease),
+      build: [],
+    };
+  }
+  return {
+    operator: "<=",
+    major: +rightGroups.major,
+    minor: +rightGroups.minor,
+    patch: +rightGroups.patch,
+    prerelease: rightGroups.prerelease
+      ? parsePrerelease(rightGroups.prerelease)
+      : [],
+    build: [],
+  };
+}
+function parseHyphenRange(range: string): Comparator[] | undefined {
   const leftMatch = range.match(new RegExp(`^${XRANGE}`));
   const leftGroup = leftMatch?.groups;
-  if (!leftGroup) return range.split(/\s+/);
+  if (!leftGroup) return;
   const leftLength = leftMatch[0].length;
+
   const hyphenMatch = range.slice(leftLength).match(/^\s+-\s+/);
-  if (!hyphenMatch) return range.split(/\s+/);
+  if (!hyphenMatch) return;
   const hyphenLength = hyphenMatch[0].length;
+
   const rightMatch = range.slice(leftLength + hyphenLength).match(
     new RegExp(`^${XRANGE}\\s*$`),
   );
   const rightGroups = rightMatch?.groups;
-  if (!rightGroups) return range.split(/\s+/);
-  let from = leftMatch[0];
-  let to = rightMatch[0];
+  if (!rightGroups) return;
 
-  if (isWildcard(leftGroup.major)) {
-    from = "";
-  } else if (isWildcard(leftGroup.minor)) {
-    from = `>=${leftGroup.major}.0.0`;
-  } else if (isWildcard(leftGroup.patch)) {
-    from = `>=${leftGroup.major}.${leftGroup.minor}.0`;
-  } else {
-    from = `>=${from}`;
-  }
-
-  if (isWildcard(rightGroups.major)) {
-    to = "";
-  } else if (isWildcard(rightGroups.minor)) {
-    to = `<${+rightGroups.major! + 1}.0.0`;
-  } else if (isWildcard(rightGroups.patch)) {
-    to = `<${rightGroups.major}.${+rightGroups.minor! + 1}.0`;
-  } else if (rightGroups.prerelease) {
-    to =
-      `<=${rightGroups.major}.${rightGroups.minor}.${rightGroups.patch}-${rightGroups.prerelease}`;
-  } else {
-    to = `<=${to}`;
-  }
-
-  return [from, to];
+  const from = handleLeftHyphenRangeGroups(leftGroup as RegExpGroups);
+  const to = handleRightHyphenRangeGroups(rightGroups as RegExpGroups);
+  return [from, to].filter(Boolean) as Comparator[];
 }
+
 function handleCaretOperator(groups: RegExpGroups): Comparator[] {
   const majorIsWildcard = isWildcard(groups.major);
   const minorIsWildcard = isWildcard(groups.minor);
@@ -244,7 +305,7 @@ function handleEqualOperator(groups: RegExpGroups): Comparator[] {
   return [{ operator: undefined, major, minor, patch, prerelease, build }];
 }
 
-function parseRangeString(string: string) {
+function parseOperatorRange(string: string) {
   const groups = string.match(OPERATOR_XRANGE_REGEXP)?.groups as RegExpGroups;
   if (!groups) return parseComparator(string);
 
@@ -269,6 +330,9 @@ function parseRangeString(string: string) {
       throw new Error(`'${groups.operator}' is not a valid operator.`);
   }
 }
+function parseOperatorRanges(string: string) {
+  return string.split(/\s+/).flatMap(parseOperatorRange);
+}
 
 /**
  * Parses a range string into a Range object or throws a TypeError.
@@ -276,9 +340,11 @@ function parseRangeString(string: string) {
  * @returns A valid semantic range
  */
 export function parseRange(range: string): Range {
-  const ranges = range
-    .split(/\s*\|\|\s*/)
-    .map((range) => parseHyphenRange(range).flatMap(parseRangeString));
+  // remove spaces between operator and version
+  range = range.replaceAll(/(?<=<|>|=) +/g, "");
+
+  const ranges = range.split(/\s*\|\|\s*/)
+    .map((string) => parseHyphenRange(string) || parseOperatorRanges(string));
   Object.defineProperty(ranges, "ranges", { value: ranges });
   return ranges as Range;
 }
