@@ -40,9 +40,9 @@ export function mergeReadableStreams<T>(
               }
               controller.enqueue(data);
             }
-            resolvePromises[index].resolve();
+            resolvePromises[index]!.resolve();
           } catch (error) {
-            resolvePromises[index].reject(error);
+            resolvePromises[index]!.reject(error);
           }
         })();
       }
