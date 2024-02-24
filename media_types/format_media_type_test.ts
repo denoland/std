@@ -4,7 +4,7 @@ import { assertEquals } from "../assert/mod.ts";
 import { formatMediaType } from "./mod.ts";
 
 Deno.test({
-  name: "formatMediaType",
+  name: "formatMediaType()",
   fn() {
     const fixtures = [
       ["noslash", { X: "Y" }, "noslash; x=Y"],
