@@ -116,7 +116,7 @@ export class DelimiterStream extends TransformStream<Uint8Array, Uint8Array> {
             // they are (with concatenation).
             if (bufs.length === 1) {
               // Concat not needed when a single buffer is passed.
-              controller.enqueue(bufs[0]);
+              controller.enqueue(bufs[0]!);
             } else {
               controller.enqueue(concat(bufs));
             }
@@ -134,7 +134,7 @@ export class DelimiterStream extends TransformStream<Uint8Array, Uint8Array> {
           } else if (delimitedChunkEnd < 0 && bufs.length > 0) {
             // Our chunk started by finishing a partial delimiter match.
             const lastIndex = bufs.length - 1;
-            const last = bufs[lastIndex];
+            const last = bufs[lastIndex]!;
             const lastSliceIndex = last.byteLength + delimitedChunkEnd;
             const lastSliced = last.subarray(0, lastSliceIndex);
             if (lastIndex === 0) {
@@ -173,7 +173,7 @@ export class DelimiterStream extends TransformStream<Uint8Array, Uint8Array> {
         // but now got a new 'A', then we'll drop down to having matched
         // just 'A'. The while loop will turn around again and we'll rematch
         // to 'AA' and proceed onwards to try and match on 'B' again.
-        matchIndex = lps[matchIndex - 1];
+        matchIndex = lps[matchIndex - 1]!;
       }
     }
     // Save match index.
@@ -231,7 +231,7 @@ export class DelimiterStream extends TransformStream<Uint8Array, Uint8Array> {
           // they are (with concatenation).
           if (bufs.length === 1) {
             // Concat not needed when a single buffer is passed.
-            controller.enqueue(bufs[0]);
+            controller.enqueue(bufs[0]!);
           } else {
             controller.enqueue(concat(bufs));
           }
@@ -275,7 +275,7 @@ export class DelimiterStream extends TransformStream<Uint8Array, Uint8Array> {
     if (length === 0) {
       controller.enqueue(new Uint8Array());
     } else if (length === 1) {
-      controller.enqueue(bufs[0]);
+      controller.enqueue(bufs[0]!);
     } else {
       controller.enqueue(concat(bufs));
     }
