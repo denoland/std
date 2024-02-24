@@ -91,6 +91,7 @@ export const api = {
       prior: { type: 'number' },
     },
   },
+  logs: repo,
   // subscribe to json by filepath and pid
   // subscribe to path in json, so we can subscribe to the output of io.json
   // subscribe to binary by filepath and pid - done by commit watching
@@ -152,6 +153,7 @@ export const functions: IsolateFunctions = {
     throw new Error('not implemented')
   },
   apiSchema: (params: Params) => {
+    // when it loads from files, will benefit from being close to the db
     const isolate = params.isolate as string
     const compartment = Compartment.create(isolate)
     return compartment.api
@@ -183,6 +185,13 @@ export const functions: IsolateFunctions = {
     const { target, sequence } = request
     const reply: InternalReply = { target, sequence, outcome }
     await api.context.io!.induct(reply)
+  },
+  logs: async (params, api: IsolateApi<C>) => {
+    log('logs')
+    const pid = pidFromRepo(params.repo as string)
+    const fs = await api.context.fs!.load(pid)
+    const logs = await git.log({ fs, dir: '/' })
+    return logs
   },
 }
 

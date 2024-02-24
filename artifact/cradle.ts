@@ -39,7 +39,6 @@ class Cradle {
   }
   async stop() {
     await this.#compartment.unmount(this.#api)
-    await this.#queue.quiesce()
   }
   async pierces(isolate: string, target: PID) {
     // cradle side, since functions cannot be returned from isolate calls
@@ -95,6 +94,9 @@ class Cradle {
     const detach = true
     return this.#queue.push('request', params, detach)
   }
+  logs(params: { repo: string }) {
+    return this.#queue.push('logs', params)
+  }
 }
 
 interface Cradle {
@@ -103,6 +105,7 @@ interface Cradle {
   clone(params: { repo: string }): Promise<{ pid: PID }>
   apiSchema(params: { isolate: string }): Promise<Record<string, object>>
   pierce(params: PierceRequest): Promise<IsolateReturn>
+  logs(params: { repo: string }): Promise<object[]>
 }
 
 export default Cradle

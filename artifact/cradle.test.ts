@@ -39,6 +39,7 @@ Deno.test('pierce', async (t) => {
     const second = await pierces.local()
     expect(second).toBe('local reply')
   })
+
   await t.step('throws', async () => {
     const message = 'test message'
     await expect(pierces.error({ message })).rejects.toThrow(message)
@@ -51,5 +52,26 @@ Deno.test('pierce', async (t) => {
   //   const result = await pierces.spawn({ isolate })
   //   expect(result).toBe('remote pong')
   // })
+  await artifact.stop()
+})
+
+const isolate = 'io-fixture'
+Deno.test('multi local', async () => {
+  const artifact = await Cradle.create()
+  const { pid: target } = await artifact.init({ repo: 'cradle/pierce' })
+  const { local } = await artifact.pierces(isolate, target)
+  const promises = []
+  for (let i = 0; i < 20; i++) {
+    promises.push(local())
+  }
+  log('promises start')
+  const results = await Promise.all(promises)
+  for (const result of results) {
+    expect(result).toBe('local reply')
+  }
+  log('done')
+
+  const logs: unknown[] = await artifact.logs({ repo: 'cradle/pierce' })
+  log('logs', logs.length)
   await artifact.stop()
 })

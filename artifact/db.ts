@@ -108,6 +108,7 @@ export default class DB {
             log('pool item not found, so no headlock needed')
             closeStream()
             resolve()
+            return
           }
           result = await this.#kv.atomic().check({ key, versionstamp: null })
             .set(key, lockId, { expireIn: 5000 }).commit()
@@ -131,7 +132,11 @@ export default class DB {
     if (existing.value !== lockId) {
       throw new Error('Mismatch: ' + lockKey.join('/') + ' ' + lockId)
     }
-    await this.#kv.atomic().check(existing).delete(lockKey).commit()
+    const result = await this.#kv.atomic().check(existing).delete(lockKey)
+      .commit()
+    if (!result.ok) {
+      throw new Error('Release failed: ' + lockKey.join('/') + ' ' + lockId)
+    }
   }
   async getPooledActions(pid: PID) {
     const prefix = keys.getPoolKeyPrefix(pid)
