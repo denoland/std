@@ -3,7 +3,7 @@
 import { assert, assertEquals } from "../assert/mod.ts";
 import { Buffer } from "./buffer.ts";
 
-Deno.test("Buffer() handles write and read", async function () {
+Deno.test("Buffer handles write and read", async function () {
   const buf = new Buffer();
   const writer = buf.writable.getWriter();
   const reader = buf.readable.getReader({ mode: "byob" });
