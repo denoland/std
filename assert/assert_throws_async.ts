@@ -25,7 +25,7 @@ export function assertThrowsAsync(
  *
  * @example
  * ```ts
- * import { assertThrows } from "https://deno.land/std@$STD_VERSION/assert/assert_throws.ts";
+ * import { assertThrowsAsync } from "https://deno.land/std@$STD_VERSION/assert/assert_throws_async.ts";
  *
  * await assertThrowsAsync(async () => { return await new Promise(() => { throw new TypeError("hello world!"); }) }, TypeError); // Doesn't throw
  * await assertThrowsAsync(async () => { return await new Promise(() => { throw new TypeError("hello world!"); }) }, RangeError); // Throws
