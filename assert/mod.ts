@@ -31,6 +31,7 @@ export * from "./assert_rejects.ts";
 export * from "./assert_strict_equals.ts";
 export * from "./assert_string_includes.ts";
 export * from "./assert_throws.ts";
+export * from "./assert_throws_async.ts";
 export * from "./assert.ts";
 export * from "./assertion_error.ts";
 export * from "./equal.ts";
