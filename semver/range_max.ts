@@ -32,17 +32,15 @@ function comparatorMax(comparator: Comparator): SemVer {
       const major = minor >= 0 ? semver.major : semver.major - 1;
       // if you try to do <0.0.0 it will Give you -∞.∞.∞
       // which means no SemVer can compare successfully to it.
-      if (major < 0) {
-        return INVALID;
-      } else {
-        return {
-          major,
-          minor: minor >= 0 ? minor : Number.POSITIVE_INFINITY,
-          patch: patch >= 0 ? patch : Number.POSITIVE_INFINITY,
-          prerelease: [],
-          build: [],
-        };
-      }
+      if (major < 0) return INVALID;
+
+      return {
+        major,
+        minor: minor >= 0 ? minor : Number.POSITIVE_INFINITY,
+        patch: patch >= 0 ? patch : Number.POSITIVE_INFINITY,
+        prerelease: [],
+        build: [],
+      };
     }
   }
 }

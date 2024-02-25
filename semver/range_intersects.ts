@@ -13,14 +13,11 @@ function comparatorIntersects(
 
   if (op0 === "" || op0 === undefined) {
     // if c0 is empty comparator, then returns true
-    if (isWildcardComparator(c0)) {
-      return true;
-    }
+    if (isWildcardComparator(c0)) return true;
     return testRange(c0, [[c1]]);
-  } else if (op1 === "" || op1 === undefined) {
-    if (isWildcardComparator(c1)) {
-      return true;
-    }
+  }
+  if (op1 === "" || op1 === undefined) {
+    if (isWildcardComparator(c1)) return true;
     return testRange(c1, [[c0]]);
   }
 
