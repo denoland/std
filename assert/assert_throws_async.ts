@@ -36,7 +36,7 @@ export function assertThrowsAsync<E extends Error = Error>(
   // deno-lint-ignore no-explicit-any
   ErrorClass: new (...args: any[]) => E,
   msgIncludes?: string,
-  msg?: string
+  msg?: string,
 ): Promise<E>;
 export async function assertThrowsAsync<E extends Error = Error>(
   fn: () => Promise<unknown>,
