@@ -16,7 +16,7 @@ import { AssertionError } from "./assertion_error.ts";
  */
 export function assertThrowsAsync(
   fn: () => Promise<unknown>,
-  msg?: string
+  msg?: string,
 ): Promise<unknown>;
 /**
  * Executes an async function, expecting it to throw. If it does not, then it
@@ -36,15 +36,15 @@ export function assertThrowsAsync<E extends Error = Error>(
   // deno-lint-ignore no-explicit-any
   ErrorClass: new (...args: any[]) => E,
   msgIncludes?: string,
-  msg?: string
+  msg?: string,
 ): Promise<E>;
 
 export async function assertThrowsAsync<E extends Error = Error>(
   fn: () => Promise<unknown>,
   errorClassOrMsg?: // deno-lint-ignore no-explicit-any
-  (new (...args: any[]) => E) | string,
+    (new (...args: any[]) => E) | string,
   msgIncludesOrMsg?: string,
-  msg?: string
+  msg?: string,
 ): Promise<E | Error | unknown> {
   // deno-lint-ignore no-explicit-any
   let ErrorClass: (new (...args: any[]) => E) | undefined = undefined;

@@ -21,13 +21,13 @@ Deno.test(
             });
           },
           TypeError,
-          "Failed assertion: foo"
+          "Failed assertion: foo",
         );
       },
       AssertionError,
-      `Expected error to be instance of "TypeError", but was "AssertionError"`
+      `Expected error to be instance of "TypeError", but was "AssertionError"`,
     );
-  }
+  },
 );
 
 Deno.test("assertThrows() changes its return type by parameter", async () => {
@@ -50,18 +50,18 @@ Deno.test(
             });
           },
           Error,
-          "Panic!"
+          "Panic!",
         );
       },
       AssertionError,
-      "A non-Error object was thrown."
+      "A non-Error object was thrown.",
     );
-  }
+  },
 );
 
 Deno.test("assertThrows() matches thrown non-error value", async () => {
   await await assertThrowsAsync(async () => {
-    return new Promise(() => {
+    return await new Promise(() => {
       throw "Panic!";
     });
   });
@@ -89,9 +89,9 @@ Deno.test(
         });
       },
       Error,
-      "foo"
+      "foo",
     );
-  }
+  },
 );
 
 Deno.test("assertThrows() matches and returns thrown error value", async () => {
@@ -145,6 +145,6 @@ Deno.test("assertThrows() matches subclass of expected error", async () => {
       });
     },
     Error,
-    "Fail!"
+    "Fail!",
   );
 });
