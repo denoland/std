@@ -45,7 +45,8 @@ Check out the documentation [here](https://deno.land/std?doc).
    import * as fs from "https://deno.land/std@$STD_VERSION/fs/mod.ts";
    ```
 
-1. Do not import symbols with an underscore in the name.
+1. Do not import symbols with a name _prefixed_ by an underscore (they're not
+   intended for public use).
 
    Bad:
    ```ts
