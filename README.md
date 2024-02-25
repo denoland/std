@@ -52,11 +52,17 @@ Check out the documentation [here](https://deno.land/std?doc).
    import { _format } from "https://deno.land/std@$STD_VERSION/path/_common/format.ts";
    ```
 
-1. Do not import modules with an underscore in the path.
+1. Do not import modules with a directory or filename _prefixed_ by an
+   underscore (they're not intended for public use).
 
    Bad:
    ```ts
-   import { filterInPlace } from "https://deno.land/std@$STD_VERSION/collections/_utils.ts";
+   import { createLPS } from "https://deno.land/std@$STD_VERSION/streams/_common.ts";
+   ```
+
+   Good:
+   ```ts
+   import { TextLineStream } from "https://deno.land/std@$STD_VERSION/streams/text_line_stream.ts";
    ```
 
 1. Do not import test modules or test data.
