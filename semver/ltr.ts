@@ -5,7 +5,7 @@ import { rangeMin } from "./range_min.ts";
 
 /**
  *  Less than range comparison
- * @deprecated (will be removed after 0.217.0) See
+ * @deprecated (will be removed in 0.219.0) See
  * {@link https://github.com/denoland/deno_std/issues/4273 | deno_std#4273}
  * for details.
  */
