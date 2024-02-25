@@ -81,7 +81,9 @@ export function encodeBase58(data: ArrayBuffer | Uint8Array | string): string {
     strResult.fill("1", 0, zeroes);
   }
 
-  b58Encoding.forEach((byteValue) => strResult.push(base58alphabet[byteValue]));
+  b58Encoding.forEach((byteValue) =>
+    strResult.push(base58alphabet[byteValue]!)
+  );
 
   return strResult.join("");
 }

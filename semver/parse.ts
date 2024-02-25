@@ -27,9 +27,9 @@ export function parse(version: string): SemVer {
   const groups = version.match(FULL_REGEXP)?.groups;
   if (!groups) throw new TypeError(`Invalid Version: ${version}`);
 
-  const major = parseNumber(groups.major, "Invalid major version");
-  const minor = parseNumber(groups.minor, "Invalid minor version");
-  const patch = parseNumber(groups.patch, "Invalid patch version");
+  const major = parseNumber(groups.major!, "Invalid major version");
+  const minor = parseNumber(groups.minor!, "Invalid minor version");
+  const patch = parseNumber(groups.patch!, "Invalid patch version");
 
   const prerelease = groups.prerelease
     ? parsePrerelease(groups.prerelease)
