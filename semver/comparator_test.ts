@@ -134,12 +134,12 @@ Deno.test({
 
     for (const [range, validVersions, invalidVersions] of versions) {
       await t.step({
-        name: `${range}`,
+        name: range,
         fn: async (t) => {
           const r = parseRange(range);
           for (const valid of validVersions) {
             await t.step({
-              name: `${valid}`,
+              name: valid,
               fn: () => {
                 const version = parse(valid);
                 const actual = testRange(version, r);
@@ -149,7 +149,7 @@ Deno.test({
           }
           for (const invalid of invalidVersions) {
             await t.step({
-              name: `${invalid}`,
+              name: invalid,
               fn: () => {
                 const actual = testRange(parse(invalid), r);
                 assertEquals(false, actual);
