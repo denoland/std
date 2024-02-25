@@ -14,7 +14,7 @@ import { AssertionError } from "./assertion_error.ts";
  * assertThrows(() => console.log("hello world!")); // Throws
  * ```
  */
-export function assertThrows(
+export function assertThrowsAsync(
   fn: () => Promise<unknown>,
   msg?: string
 ): Promise<unknown>;
@@ -31,14 +31,15 @@ export function assertThrows(
  * assertThrows(() => { throw new TypeError("hello world!"); }, RangeError); // Throws
  * ```
  */
-export function assertThrows<E extends Error = Error>(
+export function assertThrowsAsync<E extends Error = Error>(
   fn: () => Promise<unknown>,
   // deno-lint-ignore no-explicit-any
   ErrorClass: new (...args: any[]) => E,
   msgIncludes?: string,
   msg?: string
 ): Promise<E>;
-export async function assertThrows<E extends Error = Error>(
+
+export async function assertThrowsAsync<E extends Error = Error>(
   fn: () => Promise<unknown>,
   errorClassOrMsg?: // deno-lint-ignore no-explicit-any
   (new (...args: any[]) => E) | string,
