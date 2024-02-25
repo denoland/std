@@ -3,15 +3,15 @@ import { assertIsError } from "./assert_is_error.ts";
 import { AssertionError } from "./assertion_error.ts";
 
 /**
- * Executes a function, expecting it to throw. If it does not, then it
+ * Executes an async function, expecting it to throw. If it does not, then it
  * throws.
  *
  * @example
  * ```ts
- * import { assertThrows } from "https://deno.land/std@$STD_VERSION/assert/assert_throws.ts";
+ * import { assertThrowsAsync } from "https://deno.land/std@$STD_VERSION/assert/assert_throws_async.ts";
  *
- * assertThrows(() => { throw new TypeError("hello world!"); }); // Doesn't throw
- * assertThrows(() => console.log("hello world!")); // Throws
+ * await assertThrowsAsync(async () => { return await new Promise(() => { throw new TypeError("hello world!"); }) }); // Doesn't throw
+ * await assertThrowsAsync(async () => { return await new Promise(() => console.log("hello world!"))}); // Throws
  * ```
  */
 export function assertThrowsAsync(
@@ -19,7 +19,7 @@ export function assertThrowsAsync(
   msg?: string
 ): Promise<unknown>;
 /**
- * Executes a function, expecting it to throw. If it does not, then it
+ * Executes an async function, expecting it to throw. If it does not, then it
  * throws. An error class and a string that should be included in the
  * error message can also be asserted.
  *
@@ -27,8 +27,8 @@ export function assertThrowsAsync(
  * ```ts
  * import { assertThrows } from "https://deno.land/std@$STD_VERSION/assert/assert_throws.ts";
  *
- * assertThrows(() => { throw new TypeError("hello world!"); }, TypeError); // Doesn't throw
- * assertThrows(() => { throw new TypeError("hello world!"); }, RangeError); // Throws
+ * await assertThrowsAsync(async () => { return await new Promise(() => { throw new TypeError("hello world!"); }) }, TypeError); // Doesn't throw
+ * await assertThrowsAsync(async () => { return await new Promise(() => { throw new TypeError("hello world!"); }) }, RangeError); // Throws
  * ```
  */
 export function assertThrowsAsync<E extends Error = Error>(
