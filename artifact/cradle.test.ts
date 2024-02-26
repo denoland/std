@@ -56,22 +56,37 @@ Deno.test('pierce', async (t) => {
 })
 
 const isolate = 'io-fixture'
-Deno.test('multi local', async () => {
-  const artifact = await Cradle.create()
-  const { pid: target } = await artifact.init({ repo: 'cradle/pierce' })
-  const { local } = await artifact.pierces(isolate, target)
-  const promises = []
-  for (let i = 0; i < 20; i++) {
-    promises.push(local())
-  }
-  log('promises start')
-  const results = await Promise.all(promises)
-  for (const result of results) {
-    expect(result).toBe('local reply')
-  }
-  log('done')
+Deno.test('resource hogging', async (t) => {
+  await t.step('multi local', async () => {
+    const artifact = await Cradle.create()
+    const { pid: target } = await artifact.init({ repo: 'cradle/pierce' })
+    const { local } = await artifact.pierces(isolate, target)
+    const promises = []
+    for (let i = 0; i < 20; i++) {
+      promises.push(local())
+    }
+    log('promises start')
+    const results = await Promise.all(promises)
+    for (const result of results) {
+      expect(result).toBe('local reply')
+    }
+    log('done')
 
-  const logs: unknown[] = await artifact.logs({ repo: 'cradle/pierce' })
-  log('logs', logs.length)
-  await artifact.stop()
+    const logs: unknown[] = await artifact.logs({ repo: 'cradle/pierce' })
+    log('logs', logs.length)
+    await artifact.stop()
+  })
+  // TODO get some branch tests going
+  // await t.step('branch', async () => {
+  //   const artifact = await Cradle.create()
+  //   const { pid: target } = await artifact.init({ repo: 'cradle/pierce' })
+
+  //   // pierce the base branch with a spawn instruction
+  //   // then do a long running spawn that remains open
+
+  //   const { branch } = await artifact.pierces(isolate, target)
+  //   const result = await branch()
+  //   log('branch result', result)
+  //   await artifact.stop()
+  // })
 })

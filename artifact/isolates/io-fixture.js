@@ -10,8 +10,8 @@ export const api = {
       message: { type: 'string' },
     },
   },
-  spawn: {
-    description: 'ping the AI',
+  branch: {
+    description: 'make a new branch',
     type: 'object',
     additionalProperties: false,
     properties: {
@@ -34,8 +34,8 @@ export const functions = {
   error: ({ message }) => {
     throw new Error(message)
   },
-  spawn: async ({ isolate }) => {
-    log('spawn', isolate)
+  branch: async ({ isolate }) => {
+    log('branch', isolate)
     const { pong } = await spawns(isolate)
     const result = await pong()
     return result

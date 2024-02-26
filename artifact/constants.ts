@@ -114,3 +114,14 @@ export type MergeReply = {
   fs: IFs
   commit: string
 }
+export type AudioPierceRequest = {
+  target: PID
+  ulid: string
+
+  isolate: string
+  functionName: string
+  params: Params
+  proctype: PROCTYPE
+  audioKey: string
+  audio: File
+}

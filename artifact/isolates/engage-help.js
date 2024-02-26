@@ -29,7 +29,6 @@ export const functions = {
     log('engage:', path)
     const { load } = await api.functions('load-help')
     const help = await load({ help: path })
-    console.log(help)
 
     assert(typeof help.runner === 'string', `no runner: ${help.runner}`)
     log('found runner string:', help.runner, runners)
@@ -49,5 +48,3 @@ export const functions = {
     // this would continue the help, but in the same branch as a previous run
   },
 }
-
-// because engage help is inside of a runner, it can have any format we like

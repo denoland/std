@@ -277,3 +277,9 @@ const isolateToGptApi = (name: string, api: JSONSchemaType<object>) => {
   }
   return tool
 }
+
+export const transcribe = async (file: File) => {
+  const transcription = await ai.audio.transcriptions
+    .create({ file, model: 'whisper-1' })
+  return transcription.text
+}

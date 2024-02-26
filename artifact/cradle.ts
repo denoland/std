@@ -1,5 +1,6 @@
 import Compartment from './io/compartment.ts'
 import {
+  AudioPierceRequest,
   DispatchFunctions,
   IsolateReturn,
   Params,
@@ -15,6 +16,7 @@ import { Debug } from '@utils'
 import { ulid } from 'std/ulid/mod.ts'
 import Queue from './queue.ts'
 import { C } from './isolates/artifact.ts'
+import { transcribe } from '@/artifact/runners/runner-chat.ts'
 const log = Debug('AI:cradle')
 
 class Cradle {
@@ -39,6 +41,7 @@ class Cradle {
   }
   async stop() {
     await this.#compartment.unmount(this.#api)
+    await this.#queue.quiesce()
   }
   async pierces(isolate: string, target: PID) {
     // cradle side, since functions cannot be returned from isolate calls
@@ -90,6 +93,15 @@ class Cradle {
       }
     }
   }
+  async audioPierce(params: AudioPierceRequest) {
+    const { audioKey, audio, ...rest } = params
+    const text = await transcribe(audio)
+    const request = {
+      ...rest,
+      params: { ...params.params, [audioKey]: text },
+    }
+    return this.pierce(request)
+  }
   request(params: { request: Request; commit: string; prior?: number }) {
     const detach = true
     return this.#queue.push('request', params, detach)
@@ -105,6 +117,7 @@ interface Cradle {
   clone(params: { repo: string }): Promise<{ pid: PID }>
   apiSchema(params: { isolate: string }): Promise<Record<string, object>>
   pierce(params: PierceRequest): Promise<IsolateReturn>
+  audioPierce(params: AudioPierceRequest): Promise<IsolateReturn>
   logs(params: { repo: string }): Promise<object[]>
 }
 
