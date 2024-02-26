@@ -49,7 +49,7 @@ Check out the documentation [here](https://deno.land/std?doc).
    intended for public use).
 
    Bad:
-   ```ts
+   ```ts, ignore
    import { _format } from "https://deno.land/std@$STD_VERSION/path/_common/format.ts";
    ```
 
@@ -57,7 +57,7 @@ Check out the documentation [here](https://deno.land/std?doc).
    underscore (they're not intended for public use).
 
    Bad:
-   ```ts
+   ```ts, ignore
    import { createLPS } from "https://deno.land/std@$STD_VERSION/streams/_common.ts";
    ```
 
