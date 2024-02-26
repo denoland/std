@@ -7,7 +7,7 @@ import { decode, encode } from "./mod.ts";
 const moduleDir = path.dirname(path.fromFileUrl(import.meta.url));
 const testdataDir = path.resolve(moduleDir, "testdata");
 
-Deno.test("testdata", () => {
+Deno.test("encode() handles testdata", () => {
   const one = JSON.parse(
     Deno.readTextFileSync(path.join(testdataDir, "1.json")),
   );
@@ -34,7 +34,7 @@ Deno.test("testdata", () => {
   assertEquals(decode(encode(five)), five);
 });
 
-Deno.test("positive numbers", () => {
+Deno.test("encode() handles positive numbers", () => {
   assertEquals(encode(1), Uint8Array.of(1));
   assertEquals(decode(encode(1)), 1);
 
@@ -54,7 +54,7 @@ Deno.test("positive numbers", () => {
   assertEquals(decode(encode(20000000000)), 20000000000);
 });
 
-Deno.test("negative numbers", () => {
+Deno.test("encode() handles negative numbers", () => {
   assertEquals(encode(-1), Uint8Array.of(255));
   assertEquals(decode(encode(-1)), -1);
 
@@ -74,7 +74,7 @@ Deno.test("negative numbers", () => {
   assertEquals(decode(encode(-600000000000)), -600000000000);
 });
 
-Deno.test("floats", () => {
+Deno.test("encode() handles floats", () => {
   assertEquals(
     encode(0.3),
     Uint8Array.of(0xcb, 63, 211, 51, 51, 51, 51, 51, 51),
@@ -82,7 +82,7 @@ Deno.test("floats", () => {
   assertEquals(decode(encode(0.3)), 0.3);
 });
 
-Deno.test("bigints", () => {
+Deno.test("encode() handles bigints", () => {
   assertEquals(encode(0n), Uint8Array.of(0xcf, 0, 0, 0, 0, 0, 0, 0, 0));
   assertEquals(decode(encode(0n)), 0n);
   assertEquals(
@@ -102,7 +102,7 @@ Deno.test("bigints", () => {
   assertThrows(() => encode(-99999999999999999999999n));
 });
 
-Deno.test("strings", () => {
+Deno.test("encode() handles strings", () => {
   assertEquals(
     encode("hello world"),
     Uint8Array.of(171, 104, 101, 108, 108, 111, 32, 119, 111, 114, 108, 100),
@@ -138,7 +138,7 @@ Deno.test("strings", () => {
   assertEquals(decode(encode(reallyLongString)), reallyLongString);
 });
 
-Deno.test("arrays", () => {
+Deno.test("encode() handles arrays", () => {
   const arr0: never[] = [];
   assertEquals(decode(encode(arr0)), arr0);
 
@@ -152,7 +152,7 @@ Deno.test("arrays", () => {
   assertEquals(decode(encode(nestedArr)), nestedArr);
 });
 
-Deno.test("maps", () => {
+Deno.test("encode() handles maps", () => {
   const map0 = {};
   assertEquals(decode(encode(map0)), map0);
 
@@ -163,7 +163,7 @@ Deno.test("maps", () => {
   assertEquals(decode(encode(nestedMap)), nestedMap);
 });
 
-Deno.test("huge array with 100k objects", () => {
+Deno.test("encode() handles huge array with 100k objects", () => {
   const bigArray = [];
   for (let i = 0; i < 100000; i++) {
     bigArray.push({ a: { i: `${i}` }, i: i });
@@ -173,7 +173,7 @@ Deno.test("huge array with 100k objects", () => {
   assertEquals(decode(encode(bigObject)), bigObject);
 });
 
-Deno.test("huge object with 100k properties", () => {
+Deno.test("encode() handles huge object with 100k properties", () => {
   const bigObject = {};
   for (let i = 0; i < 100000; i++) {
     const _ = Object.defineProperty(bigObject, `prop_${i}`, {
