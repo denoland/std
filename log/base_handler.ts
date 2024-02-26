@@ -11,22 +11,33 @@ export interface BaseHandlerOptions {
 }
 
 export class BaseHandler {
-  level: LogLevel;
+  #logLevel: LevelName;
+  #level: LogLevel;
   formatter: FormatterFunction;
 
   constructor(
     levelName: LevelName,
     { formatter = DEFAULT_FORMATTER }: BaseHandlerOptions = {},
   ) {
-    this.level = getLevelByName(levelName);
+    this.#logLevel = levelName;
+    this.#level = getLevelByName(levelName);
     this.formatter = formatter;
   }
 
-  get levelName() {
-    return getLevelName(this.level);
+  get level() {
+    return this.#level;
   }
-  set levelName(value: LevelName) {
-    this.level = getLevelByName(value);
+  set level(level: LogLevel) {
+    this.#level = level;
+    this.#logLevel = getLevelName(level);
+  }
+
+  get levelName() {
+    return this.#logLevel;
+  }
+  set levelName(levelName: LevelName) {
+    this.#logLevel = levelName;
+    this.#level = getLevelByName(levelName);
   }
 
   handle(logRecord: LogRecord) {
