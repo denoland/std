@@ -29,7 +29,7 @@ const testsetInvalid = [
 
 Deno.test("encodeBase64Url() encodes string", () => {
   for (const [input, output] of testsetString) {
-    assertEquals(encodeBase64Url(input), output);
+    assertEquals(encodeBase64Url(input!), output);
   }
 });
 
