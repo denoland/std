@@ -18,7 +18,7 @@ class TestHandler extends BaseHandler {
   }
 }
 
-Deno.test("simpleHandler", function () {
+Deno.test("BaseHandler() handles default setup", function () {
   const cases = new Map<LogLevel, string[]>([
     [
       LogLevels.DEBUG,
@@ -69,7 +69,7 @@ Deno.test("simpleHandler", function () {
   }
 });
 
-Deno.test("testFormatterWithEmptyMsg", function () {
+Deno.test("BaseHandler() handles formatter with empty msg", function () {
   const handler = new TestHandler("DEBUG", {
     formatter: ({ levelName, msg }) => `test ${levelName} ${msg}`,
   });
@@ -86,7 +86,7 @@ Deno.test("testFormatterWithEmptyMsg", function () {
   assertEquals(handler.messages, ["test DEBUG "]);
 });
 
-Deno.test("testFormatterAsFunction", function () {
+Deno.test("BaseHandler() handles formatter", function () {
   const handler = new TestHandler("DEBUG", {
     formatter: (logRecord): string =>
       `fn formatter ${logRecord.levelName} ${logRecord.msg}`,
