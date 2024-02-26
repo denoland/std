@@ -123,7 +123,7 @@ for (const [standard, tests] of Object.entries(testCasesNoDelimiter)) {
     fn() {
       for (const [bin, b85] of tests) {
         assertEquals(
-          encodeAscii85(bin, {
+          encodeAscii85(bin as string, {
             standard: standard as Ascii85Standard,
           }),
           b85,
@@ -137,7 +137,9 @@ for (const [standard, tests] of Object.entries(testCasesNoDelimiter)) {
     fn() {
       for (const [bin, b85] of tests) {
         assertEquals(
-          decodeAscii85(b85, { standard: standard as Ascii85Standard }),
+          decodeAscii85(b85 as string, {
+            standard: standard as Ascii85Standard,
+          }),
           utf8encoder.encode(bin),
         );
       }
@@ -151,7 +153,7 @@ for (const [standard, tests] of Object.entries(testCasesDelimiter)) {
     fn() {
       for (const [bin, b85] of tests) {
         assertEquals(
-          encodeAscii85(bin, {
+          encodeAscii85(bin as string, {
             standard: standard as Ascii85Standard,
             delimiter: true,
           }),
@@ -166,7 +168,7 @@ for (const [standard, tests] of Object.entries(testCasesDelimiter)) {
     fn() {
       for (const [bin, b85] of tests) {
         assertEquals(
-          decodeAscii85(b85, {
+          decodeAscii85(b85 as string, {
             standard: standard as Ascii85Standard,
             delimiter: true,
           }),
@@ -200,7 +202,7 @@ Deno.test({
       ["<~FCfN8Bl7P~>", "testing"],
       ["<~A7]XsCgh3l~>", "denoland"],
       ["<~@<5pmBfIsm@:X:cAH~>", "ascii85 adobe"],
-    ];
+    ] as const;
 
     for (const [input, expect] of tests) {
       assertEquals(

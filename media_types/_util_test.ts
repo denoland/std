@@ -4,7 +4,7 @@ import { assertEquals } from "../assert/mod.ts";
 import { consumeMediaParam, consumeToken, consumeValue } from "./_util.ts";
 
 Deno.test({
-  name: "media_types::util - consumeToken()",
+  name: "consumeToken()",
   fn() {
     const fixtures = [
       ["foo bar", "foo", " bar"],
@@ -19,7 +19,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "media_types::util - consumeValue()",
+  name: "consumeValue()",
   fn() {
     const fixtures = [
       ["foo bar", "foo", " bar"],
@@ -44,7 +44,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "media_types::util - consumeMediaParam()",
+  name: "consumeMediaParam()",
   fn() {
     const fixtures = [
       [" ; foo=bar", "foo", "bar", ""],
