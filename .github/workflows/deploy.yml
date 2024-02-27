@@ -24,8 +24,11 @@ jobs:
       - name: Check typos
         uses: crate-ci/typos@master
         
-      - name: Check formatting, linting, license headers, types and run tests
+      - name: Check formatting, linting, license headers, types
         run: deno task ok
+
+      - name: Run tests
+        run: deno task test
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           DENO_KV_PATH: ':memory:'
