@@ -16,7 +16,7 @@ Deno.test({
     ];
 
     for (const [v, r, e] of versions) {
-      await t.step(`${r}`, () => {
+      await t.step(r, () => {
         const versions = v.map((v) => parse(v));
         const range = parseRange(r);
         const expect = parse(e);
