@@ -4,6 +4,11 @@
     "useUnknownInCatchVariables": true,
     "noImplicitOverride": true
   },
+  "lint": {
+    "rules": {
+      "include": ["consistent-type-imports"]
+    }
+  },
   "imports": {
     "https://deno.land/std@$STD_VERSION/": "./",
     "deno_graph": "https://deno.land/x/deno_graph@0.60.0/mod.ts",

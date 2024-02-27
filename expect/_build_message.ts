@@ -4,7 +4,7 @@ import { red } from "../fmt/colors.ts";
 import { CAN_NOT_DISPLAY } from "./_constants.ts";
 import { buildMessage, diff, diffstr } from "./_diff.ts";
 import { format } from "./_format.ts";
-import { EqualOptions } from "./_types.ts";
+import type { EqualOptions } from "./_types.ts";
 
 type EqualErrorMessageOptions = Pick<
   EqualOptions,
