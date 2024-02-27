@@ -20,7 +20,8 @@ export function isComparator(value: unknown): value is Comparator {
     typeof value !== "object"
   ) return false;
   if (value === NONE || value === ALL) return true;
-  const { operator, semver } = value as Comparator;
+  const semver = (value as Comparator).semver ?? value;
+  const { operator } = value as Comparator;
   return (
     (operator === undefined ||
       OPERATORS.includes(operator)) &&

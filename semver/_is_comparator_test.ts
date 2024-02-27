@@ -20,6 +20,15 @@ Deno.test({
         min: INVALID,
         max: INVALID,
       },
+      {
+        operator: ">=",
+        major: 0,
+        minor: 0,
+        patch: 0,
+        prerelease: [],
+        build: [],
+      },
+      { operator: "<", ...MIN },
     ];
     for (const c of comparators) {
       await t.step(
