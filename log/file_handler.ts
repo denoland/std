@@ -1,5 +1,5 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-import { LevelName, LogLevels } from "./levels.ts";
+import { type LevelName, LogLevels } from "./levels.ts";
 import type { LogRecord } from "./logger.ts";
 import { BaseHandler, type BaseHandlerOptions } from "./base_handler.ts";
 

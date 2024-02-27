@@ -4,8 +4,8 @@ import * as log from "./mod.ts";
 import {
   getLevelByName,
   getLevelName,
-  LevelName,
-  LogLevel,
+  type LevelName,
+  type LogLevel,
   LogLevelNames,
 } from "./levels.ts";
 

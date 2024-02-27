@@ -11,7 +11,7 @@ import {
   runExtractYAMLTests1,
   runExtractYAMLTests2,
 } from "./_test_utils.ts";
-import { createExtractor, Parser } from "./create_extractor.ts";
+import { createExtractor, type Parser } from "./create_extractor.ts";
 
 const extractYAML = createExtractor({ "yaml": parseYAML as Parser });
 const extractTOML = createExtractor({ "toml": parseTOML as Parser });

@@ -7,7 +7,7 @@ import {
   error,
   getLogger,
   info,
-  LevelName,
+  type LevelName,
   Logger,
   LogLevels,
   setup,

@@ -2,7 +2,7 @@
 import { assertEquals, assertStrictEquals } from "../assert/mod.ts";
 import { RedBlackTree } from "./red_black_tree.ts";
 import { ascend, descend } from "./comparators.ts";
-import { Container, MyMath } from "./_test_utils.ts";
+import { type Container, MyMath } from "./_test_utils.ts";
 
 Deno.test("RedBlackTree works as expected with default ascend comparator", () => {
   const trees = [
