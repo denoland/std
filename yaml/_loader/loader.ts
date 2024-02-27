@@ -7,7 +7,11 @@ import { YAMLError } from "../_error.ts";
 import { Mark } from "../_mark.ts";
 import type { Type } from "../type.ts";
 import * as common from "../_utils.ts";
-import { LoaderState, type LoaderStateOptions, type ResultType } from "./loader_state.ts";
+import {
+  LoaderState,
+  type LoaderStateOptions,
+  type ResultType,
+} from "./loader_state.ts";
 
 type Any = common.Any;
 type ArrayObject<T = Any> = common.ArrayObject<T>;
