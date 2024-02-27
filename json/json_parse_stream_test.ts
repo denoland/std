@@ -7,7 +7,7 @@ import { JsonParseStream } from "./json_parse_stream.ts";
 import { assertInvalidParse, assertValidParse } from "./_test_common.ts";
 
 Deno.test({
-  name: "JsonParseStream()",
+  name: "JsonParseStream",
   async fn() {
     await assertValidParse(
       JsonParseStream,
@@ -18,7 +18,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "JsonParseStream() handles empty line",
+  name: "JsonParseStream handles empty line",
   async fn() {
     await assertValidParse(
       JsonParseStream,
@@ -29,7 +29,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "JsonParseStream() handles special character",
+  name: "JsonParseStream handles special character",
   async fn() {
     await assertValidParse(
       JsonParseStream,
@@ -40,7 +40,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "JsonParseStream() handles expect error",
+  name: "JsonParseStream handles expect error",
   async fn() {
     await assertInvalidParse(
       JsonParseStream,

@@ -4,7 +4,7 @@ import { ConcatenatedJsonParseStream } from "./concatenated_json_parse_stream.ts
 import { assertInvalidParse, assertValidParse } from "./_test_common.ts";
 
 Deno.test({
-  name: "ConcatenatedJsonParseStream()",
+  name: "ConcatenatedJsonParseStream",
   async fn() {
     await assertValidParse(
       ConcatenatedJsonParseStream,
@@ -40,7 +40,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "ConcatenatedJsonParseStream() handles primitive",
+  name: "ConcatenatedJsonParseStream handles primitive",
   async fn() {
     await assertValidParse(
       ConcatenatedJsonParseStream,
@@ -221,7 +221,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "ConcatenatedJsonParseStream() handles chunk",
+  name: "ConcatenatedJsonParseStream handles chunk",
   async fn() {
     await assertValidParse(
       ConcatenatedJsonParseStream,
@@ -272,7 +272,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "ConcatenatedJsonParseStream() handles surrogate pair",
+  name: "ConcatenatedJsonParseStream handles surrogate pair",
   async fn() {
     await assertValidParse(
       ConcatenatedJsonParseStream,
@@ -283,7 +283,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "ConcatenatedJsonParseStream() handles symbol between double quotes",
+  name: "ConcatenatedJsonParseStream handles symbol between double quotes",
   async fn() {
     await assertValidParse(
       ConcatenatedJsonParseStream,
@@ -294,7 +294,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "ConcatenatedJsonParseStream() handles primitives in containers",
+  name: "ConcatenatedJsonParseStream handles primitives in containers",
   async fn() {
     await assertValidParse(
       ConcatenatedJsonParseStream,
@@ -305,7 +305,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "ConcatenatedJsonParseStream() handles halfway chunk",
+  name: "ConcatenatedJsonParseStream handles halfway chunk",
   async fn() {
     await assertInvalidParse(
       ConcatenatedJsonParseStream,
@@ -318,7 +318,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "ConcatenatedJsonParseStream() truncates error message",
+  name: "ConcatenatedJsonParseStream truncates error message",
   async fn() {
     await assertInvalidParse(
       ConcatenatedJsonParseStream,
