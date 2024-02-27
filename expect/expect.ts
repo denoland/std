@@ -3,15 +3,19 @@
 
 import type {
   Expected,
+  ExtendMatchResult,
   Matcher,
   MatcherContext,
   MatcherKey,
+  Matchers,
 } from "./_types.ts";
 import { AssertionError } from "../assert/assertion_error.ts";
 import {
   addCustomEqualityTesters,
   getCustomEqualityTesters,
 } from "./_custom_equality_tester.ts";
+import { equal } from "./_equal.ts";
+import { getExtendMatchers, setExtendMatchers } from "./_extend.ts";
 import {
   toBe,
   toBeCloseTo,
@@ -93,7 +97,7 @@ const matchers: Record<MatcherKey, Matcher> = {
   toThrow,
 };
 
-export function expect(value: unknown, customMessage?: string): Expected {
+export const expect = (value: unknown, customMessage?: string): Expected => {
   let isNot = false;
   let isPromised = false;
   const self: Expected = new Proxy<Expected>(
@@ -131,7 +135,12 @@ export function expect(value: unknown, customMessage?: string): Expected {
           return self;
         }
 
-        const matcher: Matcher = matchers[name as MatcherKey];
+        const extendMatchers: Matchers = getExtendMatchers();
+        const allMatchers = {
+          ...extendMatchers,
+          ...matchers,
+        };
+        const matcher: Matcher = allMatchers[name as MatcherKey];
         if (!matcher) {
           throw new TypeError(
             typeof name === "string"
@@ -144,6 +153,7 @@ export function expect(value: unknown, customMessage?: string): Expected {
           function applyMatcher(value: unknown, args: unknown[]) {
             const context: MatcherContext = {
               value,
+              equal,
               isNot: false,
               customMessage,
               customTesters: getCustomEqualityTesters(),
@@ -151,7 +161,18 @@ export function expect(value: unknown, customMessage?: string): Expected {
             if (isNot) {
               context.isNot = true;
             }
-            matcher(context, ...args);
+            if (name in extendMatchers) {
+              const result = matcher(context, ...args) as ExtendMatchResult;
+              if (context.isNot) {
+                if (result.pass) {
+                  throw new AssertionError(result.message());
+                }
+              } else if (!result.pass) {
+                throw new AssertionError(result.message());
+              }
+            } else {
+              matcher(context, ...args);
+            }
           }
 
           return isPromised
@@ -165,6 +186,8 @@ export function expect(value: unknown, customMessage?: string): Expected {
   );
 
   return self;
-}
+};
 
 expect.addEqualityTesters = addCustomEqualityTesters;
+
+expect.extend = setExtendMatchers;
