@@ -1,3 +1,4 @@
+import { Outcome } from '@/artifact/constants.ts'
 import Server from './server.ts'
 import { expect } from '@utils'
 Deno.test('api', async (t) => {
@@ -8,8 +9,8 @@ Deno.test('api', async (t) => {
       method: 'POST',
       body: JSON.stringify(payload),
     })
-    const reply = await res.json()
-    expect(reply).toEqual(payload)
+    const reply: Outcome = await res.json()
+    expect(reply.result).toEqual(payload)
   })
   await server.stop()
 })
