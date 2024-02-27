@@ -127,7 +127,7 @@ class MockListener implements Deno.Listener {
 }
 
 Deno.test(
-  "Server() exposes the addresses the server is listening on as addrs property",
+  "Server exposes the addresses the server is listening on as addrs property",
   async () => {
     const listenerOneOptions = {
       hostname: "127.0.0.1",
@@ -185,7 +185,7 @@ Deno.test(
   },
 );
 
-Deno.test("Server() exposes whether the server is closed as closed property", () => {
+Deno.test("Server exposes whether the server is closed as closed property", () => {
   const handler = () => new Response();
   const server = new Server({ handler });
   try {
@@ -816,7 +816,7 @@ Deno.test(`Server.listenAndServeTls() handles requests`, async () => {
 });
 
 Deno.test(
-  "Server() does not reject when the listener is closed (though the server will continually try and fail to accept connections on the listener until it is closed)",
+  "Server does not reject when the listener is closed (though the server will continually try and fail to accept connections on the listener until it is closed)",
   async () => {
     using listener = Deno.listen({ port: getPort() });
     const handler = () => new Response();
@@ -835,7 +835,7 @@ Deno.test(
 );
 
 Deno.test(
-  "Server() does not reject when there is a tls handshake with tcp corruption",
+  "Server does not reject when there is a tls handshake with tcp corruption",
   async () => {
     const conn = createMockConn();
     const rejectionError = new Deno.errors.InvalidData(
@@ -858,7 +858,7 @@ Deno.test(
 );
 
 Deno.test(
-  "Server() does not reject when the tls session is aborted",
+  "Server does not reject when the tls session is aborted",
   async () => {
     const conn = createMockConn();
     const rejectionError = new Deno.errors.ConnectionReset(
@@ -880,7 +880,7 @@ Deno.test(
   },
 );
 
-Deno.test("Server() does not reject when the socket is closed", async () => {
+Deno.test("Server does not reject when the socket is closed", async () => {
   const conn = createMockConn();
   const rejectionError = new Deno.errors.NotConnected(
     "test-socket-closed-error",
@@ -901,7 +901,7 @@ Deno.test("Server() does not reject when the socket is closed", async () => {
 });
 
 Deno.test(
-  "Server() does implement a backoff delay when accepting a connection throws an expected error and reset the backoff when successfully accepting a connection again",
+  "Server does implement a backoff delay when accepting a connection throws an expected error and reset the backoff when successfully accepting a connection again",
   async () => {
     // acceptDelay(n) = 5 * 2^n for n=0...7 capped at 1000 afterwards.
     const expectedBackoffDelays = [
@@ -983,7 +983,7 @@ Deno.test(
   },
 );
 
-Deno.test("Server() does not leak async ops when closed", () => {
+Deno.test("Server does not leak async ops when closed", () => {
   const hostname = "127.0.0.1";
   const port = getPort();
   const handler = () => new Response();
@@ -993,7 +993,7 @@ Deno.test("Server() does not leak async ops when closed", () => {
   // Otherwise, the test would fail with: AssertionError: Test case is leaking async ops.
 });
 
-Deno.test("Server() aborts accept backoff delay when closing", async () => {
+Deno.test("Server aborts accept backoff delay when closing", async () => {
   const hostname = "127.0.0.1";
   const port = getPort();
   const handler = () => new Response();
@@ -1021,7 +1021,7 @@ Deno.test("Server() aborts accept backoff delay when closing", async () => {
   server.close();
 });
 
-Deno.test("Server() rejects if the listener throws an unexpected error accepting a connection", async () => {
+Deno.test("Server rejects if the listener throws an unexpected error accepting a connection", async () => {
   const conn = createMockConn();
   const rejectionError = new Error("test-unexpected-error");
   const listener = new MockListener({ conn, rejectionError });
@@ -1035,7 +1035,7 @@ Deno.test("Server() rejects if the listener throws an unexpected error accepting
 });
 
 Deno.test(
-  "Server() rejects if the listener throws an unexpected error accepting a connection",
+  "Server rejects if the listener throws an unexpected error accepting a connection",
   async () => {
     const conn = createMockConn();
     const rejectionError = new Error("test-unexpected-error");
@@ -1051,7 +1051,7 @@ Deno.test(
 );
 
 Deno.test(
-  "Server() does not reject when the connection is closed before the message is complete",
+  "Server does not reject when the connection is closed before the message is complete",
   async () => {
     const listenOptions = {
       hostname: "localhost",
@@ -1090,7 +1090,7 @@ Deno.test(
   },
 );
 
-Deno.test("Server() does not reject when the handler throws", async () => {
+Deno.test("Server does not reject when the handler throws", async () => {
   const listenOptions = {
     hostname: "localhost",
     port: getPort(),
@@ -1119,7 +1119,7 @@ Deno.test("Server() does not reject when the handler throws", async () => {
   await servePromise;
 });
 
-Deno.test("Server() does not close the http2 downstream connection when the response stream throws", async () => {
+Deno.test("Server does not close the http2 downstream connection when the response stream throws", async () => {
   const listenOptions = {
     hostname: "localhost",
     port: getPort(),
@@ -1185,7 +1185,7 @@ Deno.test("Server() does not close the http2 downstream connection when the resp
   await servePromise;
 });
 
-Deno.test("Server() parses IPV6 addresses", async () => {
+Deno.test("Server parses IPV6 addresses", async () => {
   const hostname = "[::1]";
   const port = getPort();
   const url = `http://${hostname}:${port}`;
