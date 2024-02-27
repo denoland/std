@@ -73,7 +73,7 @@ Deno.test("gtr()", async (t) => {
   }
 });
 
-Deno.test("gtr() handles negative", async (t) => {
+Deno.test("gtr() handles negative values", async (t) => {
   const versions: [string, string][] = [
     ["~0.6.1-1", "0.6.1-1"],
     ["1.0.0 - 2.0.0", "1.2.3"],
