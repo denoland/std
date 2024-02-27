@@ -57,7 +57,7 @@ Deno.test("parse() handles patch", async (t) => {
     ["\t1.2.13", 13],
   ];
   for (const [v, expected] of versions) {
-    await t.step(`${v}`, () => {
+    await t.step(v, () => {
       const semver = parse(v);
       const actual = semver.patch;
       assertEquals(actual, expected);
