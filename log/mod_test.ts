@@ -31,7 +31,7 @@ try {
   // Pass
 }
 
-Deno.test("logger is initialized", function () {
+Deno.test("getLogger() initializes logger", function () {
   assert(logger instanceof Logger);
 });
 
@@ -60,7 +60,7 @@ Deno.test("default loggers work as expected", function () {
 });
 
 Deno.test({
-  name: "Logging config works as expected with logger names",
+  name: "setup() logging config works as expected with logger names",
   async fn() {
     const consoleHandler = new TestHandler("DEBUG");
     const anotherConsoleHandler = new TestHandler("DEBUG", {
@@ -94,7 +94,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "Loggers have level and levelName to get/set loglevels",
+  name: "setup() loggers have level and levelName to get and set loglevels",
   async fn() {
     const testHandler = new TestHandler("DEBUG");
     await setup({
@@ -149,7 +149,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "Loggers have loggerName to get logger name",
+  name: "setup() checks loggerName of loggers",
   async fn() {
     const testHandler = new TestHandler("DEBUG");
     await setup({
@@ -177,7 +177,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "Logger has mutable handlers",
+  name: "setup() checks if logger has mutable handlers",
   async fn() {
     const testHandlerA = new TestHandler("DEBUG");
     const testHandlerB = new TestHandler("DEBUG");
