@@ -24,15 +24,16 @@ export class BaseHandler {
     this.formatter = formatter;
   }
 
-  get level() {
+  get level(): LogLevel {
     return this.#level;
   }
+
   set level(level: LogLevel) {
     this.#level = level;
     this.#levelName = getLevelName(level);
   }
 
-  get levelName() {
+  get levelName(): LevelName {
     return this.#levelName;
   }
   set levelName(levelName: LevelName) {
