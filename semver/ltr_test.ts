@@ -77,7 +77,7 @@ Deno.test("ltr()", async (t) => {
   }
 });
 
-Deno.test("ltr() handles negative", async (t) => {
+Deno.test("ltr() handles negative values", async (t) => {
   // [range, version]
   // Version should be greater than range
   const versions: [string, string][] = [
