@@ -12,7 +12,7 @@ const log = (msg: string, args: unknown[] = []) =>
     loggerName: "user-logger",
   });
 
-Deno.test("jsonFormatter handles messages without arguments", function () {
+Deno.test("jsonFormatter() handles messages without arguments", function () {
   using _time = new FakeTime(1);
 
   assertEquals(
@@ -21,7 +21,7 @@ Deno.test("jsonFormatter handles messages without arguments", function () {
   );
 });
 
-Deno.test("jsonFormatter handles messages with one arguments", function () {
+Deno.test("jsonFormatter() handles messages with one arguments", function () {
   using _time = new FakeTime(1);
 
   assertEquals(
@@ -30,7 +30,7 @@ Deno.test("jsonFormatter handles messages with one arguments", function () {
   );
 });
 
-Deno.test("jsonFormatter handles messages with many arguments", function () {
+Deno.test("jsonFormatter() handles messages with many arguments", function () {
   using _time = new FakeTime(1);
 
   assertEquals(

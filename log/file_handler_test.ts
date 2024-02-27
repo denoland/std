@@ -7,7 +7,7 @@ import { LogRecord } from "./logger.ts";
 const LOG_FILE = "./file_handler_test_log.file";
 
 Deno.test({
-  name: "FileHandler() doesn't have broken line",
+  name: "FileHandler doesn't have broken line",
   fn() {
     class TestFileHandler extends FileHandler {
       override flush() {
@@ -44,7 +44,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "FileHandler() wipes existing log file clean with mode 'w'",
+  name: "FileHandler wipes existing log file clean with mode 'w'",
   async fn() {
     const fileHandler = new FileHandler("WARN", {
       filename: LOG_FILE,
@@ -81,7 +81,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "FileHandler() throws if log file already exists with mode 'x'",
+  name: "FileHandler throws if log file already exists with mode 'x'",
   fn() {
     using fileHandler = new FileHandler("WARN", {
       filename: LOG_FILE,
@@ -98,7 +98,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "FileHandler() flushes buffer on unload",
+  name: "FileHandler flushes buffer on unload",
   async fn() {
     const fileHandler = new FileHandler("WARN", {
       filename: LOG_FILE,
@@ -124,7 +124,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "FileHandler() triggers immediate flush on critical logs",
+  name: "FileHandler triggers immediate flush on critical logs",
   async fn() {
     using fileHandler = new FileHandler("WARN", {
       filename: LOG_FILE,

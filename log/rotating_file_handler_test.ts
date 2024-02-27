@@ -14,7 +14,7 @@ const LOG_FILE = "./rotating_file_handler_test_log.file";
 
 Deno.test({
   name:
-    "RotatingFileHandler() wipes existing log file clean and removes others with mode 'w'",
+    "RotatingFileHandler wipes existing log file clean and removes others with mode 'w'",
   async fn() {
     Deno.writeFileSync(LOG_FILE, new TextEncoder().encode("hello world"));
     Deno.writeFileSync(
@@ -50,7 +50,7 @@ Deno.test({
 
 Deno.test({
   name:
-    "RotatingFileHandler() throws if any log file already exists with mode 'x'",
+    "RotatingFileHandler throws if any log file already exists with mode 'x'",
   fn() {
     Deno.writeFileSync(
       LOG_FILE + ".3",
@@ -76,7 +76,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "RotatingFileHandler() handles first rollover, monitor step by step",
+  name: "RotatingFileHandler handles first rollover, monitor step by step",
   async fn() {
     using fileHandler = new RotatingFileHandler("WARN", {
       filename: LOG_FILE,
@@ -125,7 +125,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "RotatingFileHandler() handles first rollover, check all at once",
+  name: "RotatingFileHandler handles first rollover, check all at once",
   async fn() {
     const fileHandler = new RotatingFileHandler("WARN", {
       filename: LOG_FILE,
@@ -171,7 +171,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "RotatingFileHandler() handles all backups rollover",
+  name: "RotatingFileHandler handles all backups rollover",
   fn() {
     Deno.writeFileSync(LOG_FILE, new TextEncoder().encode("original log file"));
     Deno.writeFileSync(
@@ -228,7 +228,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "RotatingFileHandler() handles maxBytes less than 1",
+  name: "RotatingFileHandler handles maxBytes less than 1",
   fn() {
     assertThrows(
       () => {
@@ -266,7 +266,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "RotatingFileHandler() rotates on byte length, not msg length",
+  name: "RotatingFileHandler rotates on byte length, not msg length",
   async fn() {
     const fileHandler = new RotatingFileHandler("WARN", {
       filename: LOG_FILE,
