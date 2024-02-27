@@ -2,7 +2,9 @@
 // This module is browser compatible.
 
 /**
- * Provides tools for working with JSONC (JSON with comments).
+ * Provides tools for working with JSONC (JSON with comments). Currently, this
+ * module only provides a means of parsing JSONC. JSONC serialization is not
+ * yet supported.
  *
  * This module is browser compatible.
  *
