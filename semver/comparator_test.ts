@@ -9,7 +9,7 @@ import { formatComparator } from "./_format_comparator.ts";
 import { Comparator } from "./types.ts";
 
 Deno.test({
-  name: "comparators()",
+  name: "parseComparator() and formatComparator()",
   fn: async (t) => {
     const versions: [string, string[], string[]][] = [
       [
