@@ -3,7 +3,7 @@
 import { assertEquals, assertThrows } from "../assert/mod.ts";
 import { ByteSliceStream } from "./byte_slice_stream.ts";
 
-Deno.test("ByteSliceStream()", async function () {
+Deno.test("ByteSliceStream", async function () {
   function createStream(start = 0, end = Infinity) {
     return ReadableStream.from([
       new Uint8Array([0, 1]),

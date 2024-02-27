@@ -3,7 +3,7 @@
 import { TextDelimiterStream } from "./text_delimiter_stream.ts";
 import { testTransformStream } from "./_test_common.ts";
 
-Deno.test("TextDelimiterStream() handles discard", async () => {
+Deno.test("TextDelimiterStream handles discard", async () => {
   const delimStream = new TextDelimiterStream("foo", {
     disposition: "discard",
   });
@@ -28,7 +28,7 @@ Deno.test("TextDelimiterStream() handles discard", async () => {
   await testTransformStream(delimStream, inputs, outputs);
 });
 
-Deno.test("TextDelimiterStream() handles suffix", async () => {
+Deno.test("TextDelimiterStream handles suffix", async () => {
   const delimStream = new TextDelimiterStream("foo", {
     disposition: "suffix",
   });
@@ -53,7 +53,7 @@ Deno.test("TextDelimiterStream() handles suffix", async () => {
   await testTransformStream(delimStream, inputs, outputs);
 });
 
-Deno.test("TextDelimiterStream() handles prefix", async () => {
+Deno.test("TextDelimiterStream handles prefix", async () => {
   const delimStream = new TextDelimiterStream("foo", {
     disposition: "prefix",
   });
