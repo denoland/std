@@ -17,3 +17,5 @@ Deno.test('api', async (t) => {
 
 // make a client class, wrap it, drop into the grand unified test suite
 // then copy this client class over to the ui and use it there
+
+// then drop using .request() directly, since the client can be used in place
