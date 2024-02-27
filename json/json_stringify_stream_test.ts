@@ -3,7 +3,7 @@
 import { assertEquals, assertRejects } from "../assert/mod.ts";
 import {
   JsonStringifyStream,
-  StringifyStreamOptions,
+  type StringifyStreamOptions,
 } from "./json_stringify_stream.ts";
 
 async function assertValidStringify(

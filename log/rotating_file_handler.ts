@@ -1,5 +1,5 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-import { LevelName } from "./levels.ts";
+import type { LevelName } from "./levels.ts";
 import { existsSync } from "../fs/exists.ts";
 import { FileHandler, type FileHandlerOptions } from "./file_handler.ts";
 

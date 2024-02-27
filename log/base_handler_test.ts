@@ -3,7 +3,7 @@ import { assertEquals } from "../assert/mod.ts";
 import {
   getLevelByName,
   getLevelName,
-  LogLevel,
+  type LogLevel,
   LogLevelNames,
   LogLevels,
 } from "./levels.ts";

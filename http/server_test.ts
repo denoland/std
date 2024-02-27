@@ -1,5 +1,11 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-import { ConnInfo, serve, serveListener, Server, serveTls } from "./server.ts";
+import {
+  type ConnInfo,
+  serve,
+  serveListener,
+  Server,
+  serveTls,
+} from "./server.ts";
 import { mockConn as createMockConn } from "./_mock_conn.ts";
 import { dirname, fromFileUrl, join, resolve } from "../path/mod.ts";
 import { writeAll } from "../io/write_all.ts";
