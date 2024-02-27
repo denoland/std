@@ -19,7 +19,7 @@ import { C } from './isolates/artifact.ts'
 import { transcribe } from '@/artifact/runners/runner-chat.ts'
 const log = Debug('AI:cradle')
 
-class Cradle {
+export class Cradle {
   #compartment!: Compartment
   #api!: IsolateApi<C>
   #queue!: Queue
@@ -111,7 +111,7 @@ class Cradle {
   }
 }
 
-interface Cradle {
+export interface Cradle {
   ping(params?: Params): Promise<IsolateReturn>
   init(params: { repo: string }): Promise<{ pid: PID }>
   clone(params: { repo: string }): Promise<{ pid: PID }>

@@ -6,6 +6,17 @@
   "configurations": [
     {
       "request": "launch",
+      "name": "Serve",
+      "type": "node",
+      "cwd": "${workspaceFolder}",
+      "runtimeExecutable": "~/.deno/bin/deno",
+      "runtimeArgs": ["task", "api", "--inspect-wait"],
+      "attachSimplePort": 9229,
+      "internalConsoleOptions": "neverOpen",
+      "console": "integratedTerminal"
+    },
+    {
+      "request": "launch",
       "name": "io",
       "type": "node",
       "cwd": "${workspaceFolder}",

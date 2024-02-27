@@ -3,6 +3,8 @@ export { expect } from 'std/expect/mod.ts'
 export { assert } from 'std/assert/assert.ts'
 export { default as merge } from 'npm:lodash.merge'
 import Debug from 'npm:debug'
+import { Outcome } from '@/artifact/constants.ts'
+import { serializeError } from 'https://esm.sh/v135/serialize-error@11.0.3/index.js'
 Debug.enable('')
 export { Debug }
 export const log = Debug('AI:tests')
@@ -31,4 +33,13 @@ export const openKv = async () => {
   log('open kv', path)
   _isTestMode = path === ':memory:'
   return Deno.openKv(path)
+}
+export const asOutcome = async (promise: Promise<unknown>) => {
+  const outcome: Outcome = {}
+  try {
+    outcome.result = await promise
+  } catch (error) {
+    outcome.error = serializeError(error)
+  }
+  return outcome
 }
