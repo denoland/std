@@ -6,12 +6,12 @@ import {
   entries,
   hasIterator,
   isA,
-  isImmutableUnorderedSet,
-  isImmutableUnorderedKeyed,
   isImmutableList,
   isImmutableOrderedKeyed,
   isImmutableOrderedSet,
   isImmutableRecord,
+  isImmutableUnorderedKeyed,
+  isImmutableUnorderedSet,
 } from "./_utils.ts";
 
 export function iterableEquality(
