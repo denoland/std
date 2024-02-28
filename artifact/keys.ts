@@ -36,6 +36,10 @@ export const getHeadLockKey = (pid: PID) => {
   const { account, repository, branches } = pid
   return [KEYSPACES.HEADLOCK, account, repository, ...branches]
 }
+export const getHeadKey = (pid: PID) => {
+  const { account, repository, branches } = pid
+  return [KEYSPACES.HEAD, account, repository, ...branches]
+}
 export const getRepoKey = (pid: PID) => {
   const { account, repository, branches } = pid
   return [KEYSPACES.REPO, account, repository, ...branches]
@@ -50,6 +54,7 @@ enum KEYSPACES {
   HEADLOCK = 'HEADLOCK', // the lock on the head of a given process branch
   REPO = 'REPO', // this is the latest fs snapshot of a given process branch
   BLOB = 'BLOB', // where the contents of repo snapshots are stored
+  HEAD = 'HEAD', // the tip commit hash of a given process branch
 }
 
 const getId = (action: Request | Reply) => {

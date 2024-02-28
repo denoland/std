@@ -13,6 +13,9 @@ import { Params } from '@/artifact/constants.ts'
 const log = Debug('AI:queue')
 type QFunction = { id: string; name: string; params?: Params; detach: boolean }
 const twoMinutes = 2 * 60 * 1000
+// TODO put in limits to the operations so we don't go broke
+// const KV_WRITE_LIMIT = 1e6
+// const KV_READ_LIMIT = 1e6
 
 export default class Queue {
   #api!: IsolateApi<C>

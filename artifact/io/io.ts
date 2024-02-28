@@ -41,8 +41,8 @@ export default class IO {
     const fs = await this.#fs.load(pid)
     const solids = await this.#solidifyPool(pid, fs)
     log('solids %o', solids)
-    await this.#fs.update(pid, fs, lockId)
     const { commit, requests, priors, replies } = solids
+    await this.#fs.update(pid, fs, commit, lockId)
 
     for (const request of requests) {
       // this detaches from the queue, and relies on watchReply() to complete

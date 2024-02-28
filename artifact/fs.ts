@@ -30,10 +30,11 @@ export default class FS {
     snapshot.fromBinarySnapshotSync(snapshotData, { fs, path: '/.git' })
     return fs
   }
-  async update(pid: PID, fs: IFs, lockId: string) {
+  async update(pid: PID, fs: IFs, commit: string, lockId: string) {
+    assert(commit, 'commit is required')
     const uint8 = snapshot.toBinarySnapshotSync({ fs, path: '/.git' })
     log('updateIsolateFs', pretty(uint8.length))
-    await this.#updateIsolateFs(pid, uint8, lockId)
+    await this.#update(pid, uint8, commit, lockId)
     return { size: uint8.length, prettySize: pretty(uint8.length) }
   }
   async #loadIsolateFs(pid: PID) {
@@ -44,7 +45,7 @@ export default class FS {
     const uint8 = await get(this.#kv, blobKey.value)
     return uint8
   }
-  async #updateIsolateFs(pid: PID, uint8: Uint8Array, lockId: string) {
+  async #update(pid: PID, uint8: Uint8Array, commit: string, lockId: string) {
     // TODO use the versionstamp as the lockId to avoid the key lookup
     const lockKey = keys.getHeadLockKey(pid)
     const currentLock = await this.#kv.get(lockKey)
@@ -55,9 +56,12 @@ export default class FS {
     // TODO change this to use the commit hash so we can know HEAD
     const blobKey = keys.getBlobKey(pid)
     await set(this.#kv, blobKey, uint8)
-
+    const headKey = keys.getHeadKey(pid)
     const result = await this.#kv.atomic()
-      .check(currentLock).set(fsKey, blobKey).commit()
+      .check(currentLock)
+      .set(fsKey, blobKey)
+      .set(headKey, commit)
+      .commit()
     if (!result.ok) {
       await remove(this.#kv, blobKey)
       throw new Error('lock mismatch: ' + lockKey.join('/') + ' ' + lockId)
