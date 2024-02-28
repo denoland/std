@@ -1,6 +1,6 @@
 import Compartment from './io/compartment.ts'
 import {
-  AudioPierceRequest,
+  Cradle,
   DispatchFunctions,
   IsolateReturn,
   Params,
@@ -19,12 +19,12 @@ import { C } from './isolates/artifact.ts'
 import { transcribe } from '@/artifact/runners/runner-chat.ts'
 const log = Debug('AI:cradle')
 
-export class Cradle {
+export class QueueCradle implements Cradle {
   #compartment!: Compartment
   #api!: IsolateApi<C>
   #queue!: Queue
   static async create() {
-    const cradle = new Cradle()
+    const cradle = new QueueCradle()
     cradle.#compartment = Compartment.create('artifact')
     const { fs } = memfs()
     // TODO pass a dispatch function in so it can call out to other pids
@@ -68,18 +68,22 @@ export class Cradle {
     log('dispatches:', isolate, Object.keys(pierces))
     return pierces
   }
-  ping(params?: Params) {
+  async ping(params?: Params) {
     params = params || {}
-    return this.#queue.push('ping', params)
+    const result = await this.#queue.push('ping', params)
+    return result as IsolateReturn
   }
-  init(params: { repo: string }) {
-    return this.#queue.push('init', params)
+  async init(params: { repo: string }) {
+    const result = await this.#queue.push('init', params)
+    return result as { pid: PID }
   }
-  clone(params: { repo: string }) {
-    return this.#queue.push('clone', params)
+  async clone(params: { repo: string }) {
+    const result = await this.#queue.push('clone', params)
+    return result as { pid: PID }
   }
-  apiSchema(params: { isolate: string }) {
-    return this.#queue.push('apiSchema', params)
+  async apiSchema(params: { isolate: string }) {
+    const result = await this.#queue.push('apiSchema', params)
+    return result as Record<string, object>
   }
   async pierce(params: PierceRequest) {
     try {
@@ -93,32 +97,19 @@ export class Cradle {
       }
     }
   }
-  async audioPierce(params: AudioPierceRequest) {
-    const { audioKey, audio, ...rest } = params
-    const text = await transcribe(audio)
-    const request = {
-      ...rest,
-      params: { ...params.params, [audioKey]: text },
-    }
-    return this.pierce(request)
+  async transcribe(params: { audio: File }) {
+    const text = await transcribe(params.audio)
+    return { text }
   }
   request(params: { request: Request; commit: string; prior?: number }) {
     const detach = true
     return this.#queue.push('request', params, detach)
   }
-  logs(params: { repo: string }) {
-    return this.#queue.push('logs', params)
+  async logs(params: { repo: string }) {
+    const result = await this.#queue.push('logs', params)
+    assert(Array.isArray(result), 'logs not an array')
+    return result
   }
 }
 
-export interface Cradle {
-  ping(params?: Params): Promise<IsolateReturn>
-  init(params: { repo: string }): Promise<{ pid: PID }>
-  clone(params: { repo: string }): Promise<{ pid: PID }>
-  apiSchema(params: { isolate: string }): Promise<Record<string, object>>
-  pierce(params: PierceRequest): Promise<IsolateReturn>
-  audioPierce(params: AudioPierceRequest): Promise<IsolateReturn>
-  logs(params: { repo: string }): Promise<object[]>
-}
-
-export default Cradle
+export default QueueCradle

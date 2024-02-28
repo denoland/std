@@ -4,7 +4,10 @@ export { assert } from 'std/assert/assert.ts'
 export { default as merge } from 'npm:lodash.merge'
 import Debug from 'npm:debug'
 import { Outcome } from '@/artifact/constants.ts'
-import { serializeError } from 'https://esm.sh/v135/serialize-error@11.0.3/index.js'
+import {
+  deserializeError,
+  serializeError,
+} from 'https://esm.sh/v135/serialize-error@11.0.3/index.js'
 Debug.enable('')
 export { Debug }
 export const log = Debug('AI:tests')
@@ -42,4 +45,10 @@ export const asOutcome = async (promise: Promise<unknown>) => {
     outcome.error = serializeError(error)
   }
   return outcome
+}
+export const fromOutcome = (outcome: Outcome) => {
+  if (outcome.error) {
+    throw deserializeError(outcome.error)
+  }
+  return outcome.result
 }

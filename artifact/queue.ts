@@ -12,7 +12,7 @@ import {
 import { Params } from '@/artifact/constants.ts'
 const log = Debug('AI:queue')
 type QFunction = { id: string; name: string; params?: Params; detach: boolean }
-const fifteenMinutes = 15 * 60 * 1000
+const twoMinutes = 2 * 60 * 1000
 
 export default class Queue {
   #api!: IsolateApi<C>
@@ -61,7 +61,7 @@ export default class Queue {
       // TODO rely on the artifact functions to handle double delivery
 
       const result = await this.#kv.atomic().check({ key, versionstamp: null })
-        .set(key, true, { expireIn: fifteenMinutes }).commit()
+        .set(key, true, { expireIn: twoMinutes }).commit()
       if (!result.ok) {
         log('already processing', id, name)
         return
@@ -74,7 +74,7 @@ export default class Queue {
         // console.error('error', error)
         outcome.error = serializeError(error)
       }
-      await this.#kv.set(outcomeKey, outcome, { expireIn: fifteenMinutes })
+      await this.#kv.set(outcomeKey, outcome, { expireIn: twoMinutes })
       if (detach) {
         this.#updateStack(id)
       }

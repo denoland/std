@@ -5,27 +5,47 @@ import {
   poweredBy,
   prettyJSON,
 } from 'https://deno.land/x/hono/middleware.ts'
-import Cradle from '@/artifact/cradle.ts'
-import { asOutcome } from '@/artifact/utils.ts'
+import QueueCradle from '@/artifact/cradle.ts'
+import { asOutcome, assert } from '@/artifact/utils.ts'
+import { Cradle } from '@/artifact/constants.ts'
+import { ulid } from '$std/ulid/mod.ts'
 
 export default class Server {
-  #artifact!: Cradle
+  #artifact!: QueueCradle
   #app!: Hono
   static async create() {
-    const artifact = await Cradle.create()
+    const artifact = await QueueCradle.create()
 
     const app = new Hono().basePath('/api')
     app.use(prettyJSON())
     app.use('*', logger(), poweredBy(), cors())
-    app.post(
-      '/ping',
-      async (c) => {
-        const params = await c.req.json()
-        // send down an outcome
-        const outcome = await asOutcome(artifact.ping(params))
-        return c.json(outcome)
-      },
-    )
+
+    type serverMethods = (keyof Cradle)[]
+    const functions: serverMethods = [
+      'ping',
+      'apiSchema',
+      'pierce',
+      'transcribe',
+      'logs',
+      'init',
+      'clone',
+    ]
+    for (const functionName of functions) {
+      assert(functionName !== 'pierces', 'pierces is not server side')
+      app.post(
+        `/${functionName}`,
+        async (c) => {
+          const params = await c.req.json()
+          if (functionName === 'pierce') {
+            const { ulid } = params
+            assert(ulid === 'calculated-server-side', `ulid incorrect: ${ulid}`)
+            params.ulid = ulid()
+          }
+          const outcome = await asOutcome(artifact[functionName](params))
+          return c.json(outcome)
+        },
+      )
+    }
     const server = new Server()
     server.#artifact = artifact
     server.#app = app
@@ -34,8 +54,8 @@ export default class Server {
   async stop() {
     await this.#artifact.stop()
   }
-  request(...args: Parameters<Hono['request']>) {
-    return this.#app.request(...args)
+  get request() {
+    return this.#app.request
   }
   get fetch() {
     return this.#app.fetch
