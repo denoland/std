@@ -3,7 +3,7 @@
 
 import { assertEquals } from "../assert/mod.ts";
 import * as path from "../path/mod.ts";
-import { getFileInfoType, PathType } from "./_get_file_info_type.ts";
+import { getFileInfoType, type PathType } from "./_get_file_info_type.ts";
 import { ensureFileSync } from "./ensure_file.ts";
 import { ensureDirSync } from "./ensure_dir.ts";
 

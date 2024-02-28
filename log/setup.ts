@@ -1,6 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import { BaseHandler } from "./base_handler.ts";
+import type { BaseHandler } from "./base_handler.ts";
 import { DEFAULT_CONFIG, DEFAULT_LEVEL } from "./_config.ts";
 import { type LogConfig, Logger } from "./logger.ts";
 import { state } from "./_state.ts";

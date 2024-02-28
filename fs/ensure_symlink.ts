@@ -19,6 +19,8 @@ function resolveSymlinkTarget(target: string | URL, linkName: string | URL) {
 /**
  * Ensures that the link exists, and points to a valid file.
  * If the directory structure does not exist, it is created.
+ * If the link already exists, it is not modified but error is thrown if it is not point to the given target.
+ * Requires the `--allow-read` and `--allow-write` flag.
  *
  * @param target the source file path
  * @param linkName the destination link path
@@ -45,12 +47,28 @@ export async function ensureSymlink(
     if (!(error instanceof Deno.errors.AlreadyExists)) {
       throw error;
     }
+    const linkStatInfo = await Deno.lstat(linkName);
+    if (!linkStatInfo.isSymlink) {
+      const type = getFileInfoType(linkStatInfo);
+      throw new Deno.errors.AlreadyExists(
+        `A '${type}' already exists at the path: ${linkName}`,
+      );
+    }
+    const linkPath = await Deno.readLink(linkName);
+    const linkRealPath = resolve(linkPath);
+    if (linkRealPath !== targetRealPath) {
+      throw new Deno.errors.AlreadyExists(
+        `A symlink targeting to an undesired path already exists: ${linkName} -> ${linkRealPath}`,
+      );
+    }
   }
 }
 
 /**
  * Ensures that the link exists, and points to a valid file.
  * If the directory structure does not exist, it is created.
+ * If the link already exists, it is not modified but error is thrown if it is not point to the given target.
+ * Requires the `--allow-read` and `--allow-write` flag.
  *
  * @param target the source file path
  * @param linkName the destination link path
@@ -76,6 +94,20 @@ export function ensureSymlinkSync(
   } catch (error) {
     if (!(error instanceof Deno.errors.AlreadyExists)) {
       throw error;
+    }
+    const linkStatInfo = Deno.lstatSync(linkName);
+    if (!linkStatInfo.isSymlink) {
+      const type = getFileInfoType(linkStatInfo);
+      throw new Deno.errors.AlreadyExists(
+        `A '${type}' already exists at the path: ${linkName}`,
+      );
+    }
+    const linkPath = Deno.readLinkSync(linkName);
+    const linkRealPath = resolve(linkPath);
+    if (linkRealPath !== targetRealPath) {
+      throw new Deno.errors.AlreadyExists(
+        `A symlink targeting to an undesired path already exists: ${linkName} -> ${linkRealPath}`,
+      );
     }
   }
 }

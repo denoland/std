@@ -1,6 +1,10 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import { assertEquals } from "../assert/mod.ts";
-import { Ascii85Standard, decodeAscii85, encodeAscii85 } from "./ascii85.ts";
+import {
+  type Ascii85Standard,
+  decodeAscii85,
+  encodeAscii85,
+} from "./ascii85.ts";
 type TestCases = Partial<{ [index in Ascii85Standard]: string[][] }>;
 const utf8encoder = new TextEncoder();
 const testCasesNoDelimiter: TestCases = {
@@ -123,7 +127,7 @@ for (const [standard, tests] of Object.entries(testCasesNoDelimiter)) {
     fn() {
       for (const [bin, b85] of tests) {
         assertEquals(
-          encodeAscii85(bin, {
+          encodeAscii85(bin as string, {
             standard: standard as Ascii85Standard,
           }),
           b85,
@@ -137,7 +141,9 @@ for (const [standard, tests] of Object.entries(testCasesNoDelimiter)) {
     fn() {
       for (const [bin, b85] of tests) {
         assertEquals(
-          decodeAscii85(b85, { standard: standard as Ascii85Standard }),
+          decodeAscii85(b85 as string, {
+            standard: standard as Ascii85Standard,
+          }),
           utf8encoder.encode(bin),
         );
       }
@@ -151,7 +157,7 @@ for (const [standard, tests] of Object.entries(testCasesDelimiter)) {
     fn() {
       for (const [bin, b85] of tests) {
         assertEquals(
-          encodeAscii85(bin, {
+          encodeAscii85(bin as string, {
             standard: standard as Ascii85Standard,
             delimiter: true,
           }),
@@ -166,7 +172,7 @@ for (const [standard, tests] of Object.entries(testCasesDelimiter)) {
     fn() {
       for (const [bin, b85] of tests) {
         assertEquals(
-          decodeAscii85(b85, {
+          decodeAscii85(b85 as string, {
             standard: standard as Ascii85Standard,
             delimiter: true,
           }),
@@ -200,7 +206,7 @@ Deno.test({
       ["<~FCfN8Bl7P~>", "testing"],
       ["<~A7]XsCgh3l~>", "denoland"],
       ["<~@<5pmBfIsm@:X:cAH~>", "ascii85 adobe"],
-    ];
+    ] as const;
 
     for (const [input, expect] of tests) {
       assertEquals(

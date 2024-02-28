@@ -2,7 +2,7 @@
 
 // This file is copied from `std/assert`.
 
-import { EqualOptions } from "./_types.ts";
+import type { EqualOptions } from "./_types.ts";
 import { Any, Anything, ArrayContaining } from "./_asymmetric_matchers.ts";
 
 function isKeyedCollection(x: unknown): x is Set<unknown> {

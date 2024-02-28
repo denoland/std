@@ -5,8 +5,8 @@ import { parseRange } from "./parse_range.ts";
 import { parse } from "./parse.ts";
 import { testRange } from "./test_range.ts";
 import { parseComparator } from "./_parse_comparator.ts";
-import { comparatorFormat } from "./_comparator_format.ts";
-import { Comparator } from "./types.ts";
+import { formatComparator } from "./_format_comparator.ts";
+import type { Comparator } from "./types.ts";
 
 Deno.test({
   name: "comparators",
@@ -164,11 +164,11 @@ Deno.test({
 
 Deno.test("comparatorFormat() handles semver inheritance", function () {
   assertEquals(
-    comparatorFormat(parseComparator(">= v1.2.3")),
+    formatComparator(parseComparator(">= v1.2.3")),
     ">=1.2.3",
   );
   assertEquals(
-    comparatorFormat(parseComparator(">= v1.2.3-pre.1+b.2")),
+    formatComparator(parseComparator(">= v1.2.3-pre.1+b.2")),
     ">=1.2.3-pre.1+b.2",
   );
 });
@@ -176,7 +176,7 @@ Deno.test("comparatorFormat() handles semver inheritance", function () {
 Deno.test("comparatorFormat() handles deprecated Comparator.semver property", function () {
   const c1 = parseComparator(">= v1.2.3");
   assertEquals(
-    comparatorFormat(
+    formatComparator(
       { operator: c1.operator, semver: c1.semver } as Comparator,
     ),
     ">=1.2.3",
@@ -184,7 +184,7 @@ Deno.test("comparatorFormat() handles deprecated Comparator.semver property", fu
   const c2 = parseComparator(">= v1.2.3-pre.1+b.2");
 
   assertEquals(
-    comparatorFormat(
+    formatComparator(
       { operator: c2.operator, semver: c2.semver } as Comparator,
     ),
     ">=1.2.3-pre.1+b.2",

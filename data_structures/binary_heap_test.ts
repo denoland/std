@@ -2,7 +2,7 @@
 import { assert, assertEquals } from "../assert/mod.ts";
 import { BinaryHeap } from "./binary_heap.ts";
 import { ascend, descend } from "./comparators.ts";
-import { Container, MyMath } from "./_test_utils.ts";
+import { type Container, MyMath } from "./_test_utils.ts";
 
 Deno.test("BinaryHeap works with default descend comparator", () => {
   const maxHeap = new BinaryHeap<number>();

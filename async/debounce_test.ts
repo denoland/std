@@ -1,6 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import { assertEquals, assertStrictEquals } from "../assert/mod.ts";
-import { debounce, DebouncedFunction } from "./debounce.ts";
+import { debounce, type DebouncedFunction } from "./debounce.ts";
 import { delay } from "./delay.ts";
 
 Deno.test("debounce() handles called", async function () {
