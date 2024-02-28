@@ -2,7 +2,6 @@
 
 import { walk } from "../fs/walk.ts";
 import { yellow } from "../fmt/colors.ts";
-
 import ts from "npm:typescript";
 
 const ROOT = new URL("../", import.meta.url);
@@ -12,6 +11,15 @@ const EXCLUDED_PATHS = [".git"];
 const FAIL_FAST = Deno.args.includes("--fail-fast");
 
 let shouldFail = false;
+
+function hasNodeModifier(
+  modifiers: ts.NodeArray<ts.ModifierLike>,
+  modifier: ts.SyntaxKind,
+) {
+  return modifiers.find((moduleSpecifier: ts.ModifierLike) =>
+    moduleSpecifier.kind === modifier
+  );
+}
 
 for await (
   const { path } of walk(ROOT, {
@@ -32,13 +40,43 @@ for await (
     node: ts.FunctionDeclaration,
     tags: readonly ts.JSDocTag[],
   ) => {
-    if (!ts.getJSDocTags(node).length) return;
+    if (!ts.getJSDocTags(node).length) {
+      if (path.match("/_")) {
+        console.warn(
+          "⚠️",
+          yellow(
+            `jsdoc or @return tag for private function '${node.name?.text}()' is missing missing: ${
+              getLocationString(node)
+            }`,
+          ),
+        );
+        return;
+      }
+      if (
+        node.modifiers &&
+        hasNodeModifier(node.modifiers, ts.SyntaxKind.ExportKeyword)
+      ) {
+        console.warn(
+          "⚠️",
+          yellow(
+            `jsdoc or @return and @example tags for public function '${node.name?.text}()' are missing missing: ${
+              getLocationString(node)
+            }`,
+          ),
+        );
+      }
+      return;
+    }
     if (node.type?.getText() !== "void") {
       const returnTag = ts.getJSDocReturnTag(node);
       if (!returnTag) {
         console.warn(
           "⚠️",
-          yellow(`@return tag is missing: ${getLocationString(node)}`),
+          yellow(
+            `@return tag in jsdoc for public function '${node.name?.text}()' is missing: ${
+              getLocationString(node)
+            }`,
+          ),
         );
       }
     }
@@ -47,7 +85,11 @@ for await (
     if (!exampleTag) {
       console.warn(
         "⚠️",
-        yellow(`@example tag is missing: ${getLocationString(node)}`),
+        yellow(
+          `@example tag in jsdoc for public function '${node.name?.text}()' is missing: ${
+            getLocationString(node)
+          }`,
+        ),
       );
     }
   };
@@ -56,6 +98,16 @@ for await (
     for (const tag of tags) {
       const name = tag.tagName.text;
       switch (name) {
+        case "return":
+        case "example":
+        case "module":
+        case "default":
+        case "template":
+        case "deprecated":
+        case "note":
+        case "see":
+          // valid tags
+          break;
         case "returns":
           console.warn(
             "⚠️",
@@ -78,6 +130,16 @@ for await (
           shouldFail = true;
           if (FAIL_FAST) Deno.exit(1);
           break;
+        }
+        default: {
+          console.warn(
+            "⚠️",
+            yellow(
+              `@${name} tag is invalid: ${getLocationString(tag)}`,
+            ),
+          );
+          shouldFail = true;
+          if (FAIL_FAST) Deno.exit(1);
         }
       }
     }
