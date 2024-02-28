@@ -7,7 +7,7 @@ type DbConnection = number;
 
 declare module "./_types.ts" {
   interface Expected {
-    toEqualBook: (expected: unknown) => ExtendMatchResult
+    toEqualBook: (expected: unknown) => ExtendMatchResult;
   }
 }
 
@@ -100,12 +100,14 @@ expect.extend({
     const pass = actual >= floor && actual <= ceiling;
     if (pass) {
       return {
-        message: () => `expected ${actual} not to be within range ${floor} - ${ceiling}`,
+        message: () =>
+          `expected ${actual} not to be within range ${floor} - ${ceiling}`,
         pass: true,
       };
     } else {
       return {
-        message: () => `expected ${actual} to be within range ${floor} - ${ceiling}`,
+        message: () =>
+          `expected ${actual} to be within range ${floor} - ${ceiling}`,
         pass: false,
       };
     }

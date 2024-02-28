@@ -19,13 +19,7 @@ function constructorsEqual(a: object, b: object) {
  * Deep equality comparison used in assertions
  * @param c actual value
  * @param d expected value
- * @param strictCheck check value in strictMode
- *
- * @example
- * ```ts
- * equal({ foo: "bar" }, { foo: "bar" }); // Returns `true`
- * equal({ foo: "bar" }, { foo: "baz" }); // Returns `false
- * ```
+ * @param options for the equality check
  */
 export function equal(c: unknown, d: unknown, options?: EqualOptions): boolean {
   const { customTesters = [], strictCheck } = options || {};
