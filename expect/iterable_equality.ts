@@ -2,87 +2,17 @@
 
 import { equal } from "./_equal.ts";
 import { Tester } from "./_types.ts";
-
-const IteratorSymbol = Symbol.iterator;
-
-// SENTINEL constants are from https://github.com/facebook/immutable-js
-const IS_KEYED_SENTINEL = "@@__IMMUTABLE_KEYED__@@";
-const IS_SET_SENTINEL = "@@__IMMUTABLE_SET__@@";
-const IS_LIST_SENTINEL = "@@__IMMUTABLE_LIST__@@";
-const IS_ORDERED_SENTINEL = "@@__IMMUTABLE_ORDERED__@@";
-const IS_RECORD_SYMBOL = "@@__IMMUTABLE_RECORD__@@";
-
-function isObjectLiteral(source: unknown): source is Record<string, unknown> {
-  return source != null && typeof source === "object" && !Array.isArray(source);
-}
-
-function isImmutableUnorderedKeyed(source: unknown): boolean {
-  return Boolean(
-    source &&
-      isObjectLiteral(source) &&
-      source[IS_KEYED_SENTINEL] &&
-      !source[IS_ORDERED_SENTINEL],
-  );
-}
-
-function isImmutableUnorderedSet(source: unknown): boolean {
-  return Boolean(
-    source &&
-      isObjectLiteral(source) &&
-      source[IS_SET_SENTINEL] &&
-      !source[IS_ORDERED_SENTINEL],
-  );
-}
-
-function isImmutableList(source: unknown): boolean {
-  return Boolean(source && isObjectLiteral(source) && source[IS_LIST_SENTINEL]);
-}
-
-function isImmutableOrderedKeyed(source: unknown): boolean {
-  return Boolean(
-    source &&
-      isObjectLiteral(source) &&
-      source[IS_KEYED_SENTINEL] &&
-      source[IS_ORDERED_SENTINEL],
-  );
-}
-
-function isImmutableOrderedSet(source: unknown): boolean {
-  return Boolean(
-    source &&
-      isObjectLiteral(source) &&
-      source[IS_SET_SENTINEL] &&
-      source[IS_ORDERED_SENTINEL],
-  );
-}
-
-function isImmutableRecord(source: unknown): boolean {
-  return Boolean(source && isObjectLiteral(source) && source[IS_RECORD_SYMBOL]);
-}
-
-// deno-lint-ignore no-explicit-any
-function hasIterator(object: any) {
-  return !!(object != null && object[IteratorSymbol]);
-}
-
-function isA<T>(typeName: string, value: unknown): value is T {
-  return Object.prototype.toString.apply(value) === `[object ${typeName}]`;
-}
-
-function isObject(a: unknown) {
-  return a !== null && typeof a === "object";
-}
-
-// deno-lint-ignore no-explicit-any
-function entries(obj: any) {
-  if (!isObject(obj)) return [];
-
-  const symbolProperties = Object.getOwnPropertySymbols(obj)
-    .filter((key) => key !== Symbol.iterator)
-    .map((key) => [key, obj[key]]);
-
-  return [...symbolProperties, ...Object.entries(obj)];
-}
+import {
+  entries,
+  hasIterator,
+  isA,
+  isImmutableUnorderedSet,
+  isImmutableUnorderedKeyed,
+  isImmutableList,
+  isImmutableOrderedKeyed,
+  isImmutableOrderedSet,
+  isImmutableRecord,
+} from "./_utils.ts";
 
 export function iterableEquality(
   // deno-lint-ignore no-explicit-any
@@ -209,7 +139,7 @@ export function iterableEquality(
     }
   }
 
-  const bIterator = b[IteratorSymbol]();
+  const bIterator = b[Symbol.iterator]();
 
   for (const aValue of a) {
     const nextB = bIterator.next();
