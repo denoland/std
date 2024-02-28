@@ -1,5 +1,5 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-import { walk, WalkError, WalkOptions, walkSync } from "./walk.ts";
+import { walk, WalkError, type WalkOptions, walkSync } from "./walk.ts";
 import {
   assertArrayIncludes,
   assertEquals,

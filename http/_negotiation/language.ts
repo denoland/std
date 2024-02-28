@@ -29,7 +29,7 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { compareSpecs, isQuality, Specificity } from "./common.ts";
+import { compareSpecs, isQuality, type Specificity } from "./common.ts";
 
 interface LanguageSpecificity extends Specificity {
   prefix: string;

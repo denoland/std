@@ -3,8 +3,8 @@
 
 import {
   _globToRegExp,
-  GlobConstants,
-  GlobToRegExpOptions,
+  type GlobConstants,
+  type GlobToRegExpOptions,
 } from "../_common/glob_to_reg_exp.ts";
 
 const constants: GlobConstants = {

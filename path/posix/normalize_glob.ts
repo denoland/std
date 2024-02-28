@@ -1,7 +1,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-import { GlobOptions } from "../_common/glob_to_reg_exp.ts";
+import type { GlobOptions } from "../_common/glob_to_reg_exp.ts";
 import { normalize } from "./normalize.ts";
 import { SEPARATOR_PATTERN } from "./constants.ts";
 

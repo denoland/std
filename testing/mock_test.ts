@@ -13,7 +13,7 @@ import {
   assertSpyCallArgs,
   assertSpyCallAsync,
   assertSpyCalls,
-  MethodSpy,
+  type MethodSpy,
   MockError,
   mockSession,
   mockSessionAsync,
@@ -23,12 +23,12 @@ import {
   returnsArgs,
   returnsNext,
   returnsThis,
-  Spy,
+  type Spy,
   spy,
-  Stub,
+  type Stub,
   stub,
 } from "./mock.ts";
-import { Point, PointWithExtra, stringifyPoint } from "./_test_utils.ts";
+import { Point, type PointWithExtra, stringifyPoint } from "./_test_utils.ts";
 
 Deno.test("spy default", () => {
   const func = spy();
