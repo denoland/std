@@ -5,7 +5,7 @@ import { Tar, type TarMeta } from "./tar.ts";
 import {
   TarEntry,
   type TarHeader,
-  TarMetaWithLinkName,
+  type TarMetaWithLinkName,
   Untar,
 } from "./untar.ts";
 import { Buffer } from "../io/buffer.ts";

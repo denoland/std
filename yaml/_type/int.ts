@@ -4,7 +4,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
 import { Type } from "../type.ts";
-import { Any, isNegativeZero } from "../_utils.ts";
+import { type Any, isNegativeZero } from "../_utils.ts";
 
 function isHexCode(c: number): boolean {
   return (

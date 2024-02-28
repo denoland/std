@@ -34,7 +34,7 @@ import {
   HEADER_LENGTH,
   readBlock,
   type TarMeta,
-  UstarFields,
+  type UstarFields,
   ustarStructure,
 } from "./_common.ts";
 import { readAll } from "../io/read_all.ts";

@@ -12,7 +12,7 @@ function repeat(c: string, bytes: number): Uint8Array {
   return ui8;
 }
 
-Deno.test("[streams] readerFromStreamReader()", async function () {
+Deno.test("readerFromStreamReader()", async function () {
   const chunks: string[] = ["hello", "deno", "land"];
   const expected = chunks.slice();
   const readChunks: Uint8Array[] = [];
@@ -42,7 +42,7 @@ Deno.test("[streams] readerFromStreamReader()", async function () {
   );
 });
 
-Deno.test("[streams] readerFromStreamReader() big chunks", async function () {
+Deno.test("readerFromStreamReader() handles big chunks", async function () {
   const bufSize = 1024;
   const chunkSize = 3 * bufSize;
   const writer = new Buffer();
@@ -66,7 +66,7 @@ Deno.test("[streams] readerFromStreamReader() big chunks", async function () {
   assertEquals(writer.length, expectedWritten);
 });
 
-Deno.test("[streams] readerFromStreamReader() irregular chunks", async function () {
+Deno.test("readerFromStreamReader() handles irregular chunks", async function () {
   const bufSize = 1024;
   const chunkSize = 3 * bufSize;
   const writer = new Buffer();

@@ -9,7 +9,7 @@ import {
 } from "../assert/mod.ts";
 import { FakeTime, TimeError } from "./time.ts";
 import { _internals } from "./_time.ts";
-import { assertSpyCall, spy, SpyCall } from "./mock.ts";
+import { assertSpyCall, spy, type SpyCall } from "./mock.ts";
 
 function fromNow(): () => number {
   const start: number = Date.now();
