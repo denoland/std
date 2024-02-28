@@ -37,8 +37,8 @@ export default class Server {
         async (c) => {
           const params = await c.req.json()
           if (functionName === 'pierce') {
-            const { ulid } = params
-            assert(ulid === 'calculated-server-side', `ulid incorrect: ${ulid}`)
+            const msg = `ulid incorrect: ${params.ulid}`
+            assert(params.ulid === 'calculated-server-side', msg)
             params.ulid = ulid()
           }
           const outcome = await asOutcome(artifact[functionName](params))
