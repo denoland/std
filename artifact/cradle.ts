@@ -2,7 +2,6 @@ import Compartment from './io/compartment.ts'
 import {
   Cradle,
   DispatchFunctions,
-  IsolateReturn,
   Params,
   PID,
   PierceRequest,
