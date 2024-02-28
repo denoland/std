@@ -31,7 +31,7 @@ export default class Queue {
     return queue
   }
   // TODO do tampering, like double message delivery, missed messages, delays
-  async push(name: string, params?: Params, detach = false) {
+  async push<K>(name: string, params?: Params, detach = false) {
     const id = ulid()
     log('push %o', { id, name })
     const msg = { id, name, params, detach }
@@ -52,7 +52,8 @@ export default class Queue {
       if (outcome.error) {
         throw deserializeError(outcome.error)
       }
-      return outcome.result
+
+      return outcome.result as K
     }
   }
   #listen() {

@@ -70,28 +70,41 @@ export class QueueCradle implements Cradle {
   }
   async ping(params?: Params) {
     params = params || {}
-    const result = await this.#queue.push('ping', params)
-    return result as IsolateReturn
+    type K = ReturnType<Cradle['ping']>
+    const result = await this.#queue.push<K>('ping', params)
+    return result
   }
   async probe(params: { repo: string }) {
-    const result = await this.#queue.push('probe', params)
+    type K = ReturnType<Cradle['probe']>
+    const result = await this.#queue.push<K>('probe', params)
     return result as { pid: PID; head: string } | void
   }
   async init(params: { repo: string }) {
-    const result = await this.#queue.push('init', params)
-    return result as { pid: PID }
+    type K = ReturnType<Cradle['init']>
+    const result = await this.#queue.push<K>('init', params)
+    return result as { pid: PID; head: string }
   }
   async clone(params: { repo: string }) {
-    const result = await this.#queue.push('clone', params)
-    return result as { pid: PID }
+    type K = ReturnType<Cradle['clone']>
+    const result = await this.#queue.push<K>('clone', params)
+    assert(result, 'clone result not found')
+    return result
   }
   async apiSchema(params: { isolate: string }) {
-    const result = await this.#queue.push('apiSchema', params)
+    type K = ReturnType<Cradle['apiSchema']>
+    const result = await this.#queue.push<K>('apiSchema', params)
     return result as Record<string, object>
+  }
+  async logs(params: { repo: string }) {
+    type K = ReturnType<Cradle['logs']>
+    const result = await this.#queue.push<K>('logs', params)
+    assert(Array.isArray(result), 'logs not an array')
+    return result
   }
   async pierce(params: PierceRequest) {
     try {
-      return await this.#queue.push('pierce', params)
+      type K = ReturnType<Cradle['pierce']>
+      return await this.#queue.push<K>('pierce', params)
     } catch (error) {
       throw error
     } finally {
@@ -108,11 +121,6 @@ export class QueueCradle implements Cradle {
   request(params: { request: Request; commit: string; prior?: number }) {
     const detach = true
     return this.#queue.push('request', params, detach)
-  }
-  async logs(params: { repo: string }) {
-    const result = await this.#queue.push('logs', params)
-    assert(Array.isArray(result), 'logs not an array')
-    return result
   }
 }
 

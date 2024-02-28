@@ -74,7 +74,7 @@ export interface Cradle {
   pierces(isolate: string, target: PID): Promise<DispatchFunctions>
   stop(): Promise<void> | void
   // TODO should move these git functions elsewhere ?
-  init(params: { repo: string }): Promise<{ pid: PID }>
-  clone(params: { repo: string }): Promise<{ pid: PID }>
+  init(params: { repo: string }): Promise<{ pid: PID; head: string }>
+  clone(params: { repo: string }): Promise<{ pid: PID; head: string }>
   probe(params: { repo: string }): Promise<{ pid: PID; head: string } | void>
 }
