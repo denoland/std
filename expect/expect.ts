@@ -190,4 +190,8 @@ export const expect = (value: unknown, customMessage?: string): Expected => {
 
 expect.addEqualityTesters = addCustomEqualityTesters;
 
-expect.extend = setExtendMatchers;
+expect.not = (value: unknown, customMessage?: string) => expect(value, customMessage).not;
+
+expect.extend = (matchers: Matchers) => {
+  setExtendMatchers(expect, matchers);
+};

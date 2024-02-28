@@ -115,3 +115,12 @@ expect.extend({
 Deno.test("expect().extend() api test case", () => {
   expect(book1).toEqualBook(book1b);
 });
+
+Deno.test("expect().extend() api test case", () => {
+  expect({apples: 6, bananas: 3}).toEqual({
+    // @ts-ignore todo
+    apples: expect.toBeWithinRange(1, 10),
+    // @ts-ignore todo
+    bananas: expect.not.toBeWithinRange(11, 20),
+  });
+});
