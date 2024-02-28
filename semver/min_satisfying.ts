@@ -1,5 +1,5 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-import type { Range, SemVer, SemVerRange } from "./types.ts";
+import type { Range, SemVer } from "./types.ts";
 import { testRange } from "./test_range.ts";
 import { lessThan } from "./less_than.ts";
 
@@ -12,7 +12,7 @@ import { lessThan } from "./less_than.ts";
  */
 export function minSatisfying(
   versions: SemVer[],
-  range: SemVerRange | Range,
+  range: Range,
 ): SemVer | undefined {
   let min;
   for (const version of versions) {

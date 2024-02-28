@@ -70,9 +70,9 @@ export function encodeHex(src: string | Uint8Array | ArrayBuffer): string {
 
   const dst = new Uint8Array(u8.length * 2);
   for (let i = 0; i < dst.length; i++) {
-    const v = u8[i];
-    dst[i * 2] = hexTable[v >> 4];
-    dst[i * 2 + 1] = hexTable[v & 0x0f];
+    const v = u8[i]!;
+    dst[i * 2] = hexTable[v >> 4]!;
+    dst[i * 2 + 1] = hexTable[v & 0x0f]!;
   }
   return textDecoder.decode(dst);
 }
@@ -92,15 +92,15 @@ export function decodeHex(src: string): Uint8Array {
   const u8 = textEncoder.encode(src);
   const dst = new Uint8Array(u8.length / 2);
   for (let i = 0; i < dst.length; i++) {
-    const a = fromHexChar(u8[i * 2]);
-    const b = fromHexChar(u8[i * 2 + 1]);
+    const a = fromHexChar(u8[i * 2]!);
+    const b = fromHexChar(u8[i * 2 + 1]!);
     dst[i] = (a << 4) | b;
   }
 
   if (u8.length % 2 === 1) {
     // Check for invalid char before reporting bad length,
     // since the invalid char (if present) is an earlier problem.
-    fromHexChar(u8[dst.length * 2]);
+    fromHexChar(u8[dst.length * 2]!);
     throw errLength();
   }
 

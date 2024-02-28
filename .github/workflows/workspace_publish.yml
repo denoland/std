@@ -2,9 +2,9 @@ name: workspace publish
 
 on:
   push:
-    branches: [main, workspace_publish]
-    tags:
-      - '[0-9]+.[0-9]+.[0-9]+'
+    branches: [main]
+  release:
+    types: [published]
 
 env:
   DENO_UNSTABLE_WORKSPACES: true
@@ -34,12 +34,12 @@ jobs:
         run: deno fmt
 
       - name: Type check
-        run: deno test --unstable --no-run --doc
+        run: deno test --no-run --doc
 
       - name: Publish (dry run)
-        if: startsWith(github.ref, 'refs/tags/') == false
+        if: github.event_name == 'push'
         run: deno publish --dry-run
 
       - name: Publish (real)
-        if: startsWith(github.ref, 'refs/tags/')
+        if: github.event_name == 'release'
         run: deno publish

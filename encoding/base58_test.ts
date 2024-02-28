@@ -26,7 +26,7 @@ const testSetString = [
     ]),
     "HNZata7iMYWmk5RvZRTiAsSDhV8366zq2YGb3tLH5Upf74F",
   ],
-];
+] as const;
 
 const testSetBinary = testSetString.map(([data, b58]) => {
   if (typeof data === "string") {

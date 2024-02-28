@@ -28,22 +28,23 @@ export function parseComparator(comparator: string): Comparator {
 
   if (!groups) return NONE;
 
-  const {
-    operator = "",
-
-    prerelease,
-    buildmetadata,
-  } = groups as REGEXP_GROUPS;
+  const { operator, prerelease, buildmetadata } = groups as REGEXP_GROUPS;
 
   const semver = groups.major
     ? {
       major: parseNumber(groups.major, "Invalid major version"),
-      minor: parseNumber(groups.minor, "Invalid minor version"),
-      patch: parseNumber(groups.patch, "Invalid patch version"),
+      minor: parseNumber(
+        groups.minor!,
+        "Invalid minor version",
+      ),
+      patch: parseNumber(
+        groups.patch!,
+        "Invalid patch version",
+      ),
       prerelease: prerelease ? parsePrerelease(prerelease) : [],
       build: buildmetadata ? parseBuild(buildmetadata) : [],
     }
     : ANY;
 
-  return { operator, ...semver, semver };
+  return { operator: operator || undefined, ...semver, semver };
 }

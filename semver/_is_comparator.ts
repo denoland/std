@@ -22,7 +22,8 @@ export function isComparator(value: unknown): value is Comparator {
   if (value === NONE || value === ALL) return true;
   const { operator, semver } = value as Comparator;
   return (
-    OPERATORS.includes(operator) &&
+    (operator === undefined ||
+      OPERATORS.includes(operator)) &&
     isSemVer(semver)
   );
 }

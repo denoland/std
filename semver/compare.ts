@@ -9,7 +9,7 @@ import {
 /**
  * Compare two semantic version objects.
  *
- * Returns `0` if `v1 === v2`, or `1` if `v1` is greater, or `-1` if `v2` is
+ * Returns `0` if `s0 === s1`, or `1` if `s0` is greater, or `-1` if `s1` is
  * greater.
  *
  * Sorts in ascending order if passed to `Array.sort()`,

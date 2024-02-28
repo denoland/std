@@ -1,5 +1,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
+import { type Comparator } from "./types.ts";
+
 export function compareNumber(
   a: number,
   b: number,
@@ -187,4 +189,12 @@ export function parseNumber(input: string, errorMessage: string) {
   const number = Number(input);
   if (!isValidNumber(number)) throw new TypeError(errorMessage);
   return number;
+}
+
+export function isWildcardComparator(c: Comparator): boolean {
+  return (
+    Number.isNaN(c.major) && Number.isNaN(c.minor) && Number.isNaN(c.patch) &&
+    (c.prerelease === undefined || c.prerelease.length === 0) &&
+    (c.build === undefined || c.build.length === 0)
+  );
 }
