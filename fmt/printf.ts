@@ -256,7 +256,7 @@ class Printf {
     this.flags = new Flags();
     const flags = this.flags;
     for (; this.i < this.format.length; ++this.i) {
-      const c = this.format[this.i] as string;
+      const c = this.format[this.i]!;
       switch (this.state) {
         case State.PERCENT:
           switch (c) {
@@ -418,7 +418,7 @@ class Printf {
         break;
       }
       positional *= 10;
-      const val = parseInt(format[this.i] as string);
+      const val = parseInt(format[this.i]!, 10);
       if (isNaN(val)) {
         //throw new Error(
         //  `invalid character in positional: ${format}[${format[this.i]}]`
@@ -452,8 +452,8 @@ class Printf {
 
   /** Handle verb */
   handleVerb() {
-    const verb = this.format[this.i] as string;
-    this.verb = verb;
+    const verb = this.format[this.i];
+    this.verb = verb || this.verb;
     if (this.tmpError) {
       this.buf += this.tmpError;
       this.tmpError = undefined;
@@ -691,20 +691,18 @@ class Printf {
     if (!m) {
       throw Error("can't happen, bug");
     }
-    let fractional = m[F.fractional] as string;
     const precision = this.flags.precision !== -1
       ? this.flags.precision
       : DEFAULT_PRECISION;
-    let rounding = false;
-    [fractional, rounding] = this.roundFractionToPrecision(
-      fractional,
+    const [fractional, rounding] = this.roundFractionToPrecision(
+      m[F.fractional] || "",
       precision,
     );
 
-    let e = m[F.exponent] as string;
-    let esign = m[F.esign] as string;
+    let e = m[F.exponent]!;
+    let esign = m[F.esign]!;
     // scientific notation output with exponent padded to minlen 2
-    let mantissa = parseInt(m[F.mantissa] as string);
+    let mantissa = parseInt(m[F.mantissa]!);
     if (rounding) {
       mantissa += 1;
       if (10 <= mantissa) {
@@ -738,7 +736,7 @@ class Printf {
 
       const t = n.toExponential().split("e");
       let m = t[0]!.replace(".", "");
-      const e = parseInt(t[1] as string);
+      const e = parseInt(t[1]!);
       if (e < 0) {
         let nStr = "0.";
         for (let i = 0; i !== Math.abs(e) - 1; ++i) {
@@ -755,9 +753,7 @@ class Printf {
     }
     // avoiding sign makes padding easier
     const val = expandNumber(Math.abs(n)) as string;
-    const arr = val.split(".");
-    let dig = arr[0] as string;
-    let fractional = arr[1] as string;
+    let [dig, fractional] = val.split(".") as [string, string];
 
     const precision = this.flags.precision !== -1
       ? this.flags.precision
@@ -814,7 +810,7 @@ class Printf {
       throw Error("can't happen");
     }
 
-    const X = parseInt(m[F.exponent] as string) * (m[F.esign] === "-" ? -1 : 1);
+    const X = parseInt(m[F.exponent]!) * (m[F.esign] === "-" ? -1 : 1);
     let nStr = "";
     if (P > X && X >= -4) {
       this.flags.precision = P - (X + 1);
