@@ -22,6 +22,7 @@ export default class Queue {
   #functions!: IsolateFunctions
   #kv!: Deno.Kv
   static create(functions: IsolateFunctions, api: IsolateApi<C>) {
+    // TODO include generics in the queue by making it specifically a cradle q
     const queue = new Queue()
     queue.#api = api
     queue.#functions = functions

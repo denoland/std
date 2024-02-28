@@ -96,4 +96,30 @@ export default (cradleMaker: () => Promise<Cradle>) => {
     //   await artifact.stop()
     // })
   })
+  Deno.test('github operations', async (t) => {
+    const artifact = await cradleMaker()
+    const pid = {
+      account: 'dreamcatcher-tech',
+      repository: 'HAL',
+      branches: ['main'],
+    }
+    await t.step('probe empty', async () => {
+      const result = await artifact.probe({ repo: 'dreamcatcher-tech/HAL' })
+      log('probe result', result)
+      expect(result).toBeUndefined()
+    })
+    await t.step('init', async () => {
+      const result = await artifact.init({ repo: 'dreamcatcher-tech/HAL' })
+      log('init result', result)
+      expect(result).toBeDefined()
+    })
+    await t.step('probe', async () => {
+      const result = await artifact.probe({ repo: 'dreamcatcher-tech/HAL' })
+      log('probe result', result)
+      expect(result).toBeDefined()
+      expect(result!.pid).toEqual(pid)
+    })
+
+    await artifact.stop()
+  })
 }

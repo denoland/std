@@ -73,6 +73,9 @@ export default class WebClient implements Cradle {
     }
     return pierces
   }
+  probe(params: { repo: string }) {
+    return this.request('probe', params)
+  }
   init(params: { repo: string }) {
     return this.request('init', params)
   }

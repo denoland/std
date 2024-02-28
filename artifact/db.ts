@@ -159,4 +159,10 @@ export default class DB {
     log('deletePool %o', ids)
     await Promise.all(keys.map((key) => this.#kv.delete(key)))
   }
+  async getHead(pid: PID): Promise<string | undefined> {
+    const key = keys.getHeadKey(pid)
+    log('getHead %o', key)
+    const head = await this.#kv.get<string>(key)
+    return head.value || undefined
+  }
 }

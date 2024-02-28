@@ -27,6 +27,7 @@ export default class Server {
       'pierce',
       'transcribe',
       'logs',
+      'probe',
       'init',
       'clone',
     ]

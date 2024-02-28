@@ -73,6 +73,10 @@ export class QueueCradle implements Cradle {
     const result = await this.#queue.push('ping', params)
     return result as IsolateReturn
   }
+  async probe(params: { repo: string }) {
+    const result = await this.#queue.push('probe', params)
+    return result as { pid: PID; head: string } | void
+  }
   async init(params: { repo: string }) {
     const result = await this.#queue.push('init', params)
     return result as { pid: PID }

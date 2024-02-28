@@ -76,4 +76,5 @@ export interface Cradle {
   // TODO should move these git functions elsewhere ?
   init(params: { repo: string }): Promise<{ pid: PID }>
   clone(params: { repo: string }): Promise<{ pid: PID }>
+  probe(params: { repo: string }): Promise<{ pid: PID; head: string } | void>
 }

@@ -69,10 +69,11 @@ export const api = {
     description: 'Check queue processing system is alive',
     properties: {},
   },
+  probe: repo,
+  init: repo,
   clone: repo,
   pull: repo,
   push: repo,
-  init: repo,
   apiSchema: {
     type: 'object',
     required: ['isolate'],
@@ -105,6 +106,13 @@ export const functions: IsolateFunctions = {
   ping: (params?: Params) => {
     log('ping', params)
     return params
+  },
+  async probe(params, api: IsolateApi<C>) {
+    const pid = pidFromRepo(params.repo as string)
+    const head = await api.context.db!.getHead(pid)
+    if (head) {
+      return { pid, head }
+    }
   },
   // need to split the git functions out to be an isolate
   async init(params, api: IsolateApi<C>) {

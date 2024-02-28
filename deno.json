@@ -57,6 +57,7 @@
   },
   "scopes": {},
   "fmt": {
+    "exclude": ["coverage", "cov", "_fresh"],
     "semiColons": false,
     "singleQuote": true,
     "proseWrap": "always"
