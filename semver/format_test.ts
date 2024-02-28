@@ -4,7 +4,7 @@ import { assertEquals } from "../assert/mod.ts";
 import { format } from "./format.ts";
 import { parse } from "./parse.ts";
 import { INVALID, MAX, MIN } from "./constants.ts";
-import { SemVer } from "./types.ts";
+import type { SemVer } from "./types.ts";
 
 Deno.test("format", async (t) => {
   const versions: [string, string][] = [

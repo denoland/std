@@ -1,6 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import { EqualOptions, EqualOptionUtil } from "./_types.ts";
+import type { EqualOptions, EqualOptionUtil } from "./_types.ts";
 
 export function buildEqualOptions(options: EqualOptionUtil): EqualOptions {
   const { customMessage, customTesters = [], strictCheck } = options || {};

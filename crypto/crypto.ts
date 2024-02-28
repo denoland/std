@@ -109,7 +109,7 @@
  */
 
 import {
-  DigestAlgorithm as WasmDigestAlgorithm,
+  type DigestAlgorithm as WasmDigestAlgorithm,
   digestAlgorithms as wasmDigestAlgorithms,
   instantiateWasm,
 } from "./_wasm/mod.ts";

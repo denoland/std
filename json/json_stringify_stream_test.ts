@@ -3,7 +3,7 @@
 import { assertEquals, assertRejects } from "../assert/mod.ts";
 import {
   JsonStringifyStream,
-  StringifyStreamOptions,
+  type StringifyStreamOptions,
 } from "./json_stringify_stream.ts";
 
 async function assertValidStringify(
@@ -36,7 +36,7 @@ async function assertInvalidStringify(
 }
 
 Deno.test({
-  name: "[json] JsonStringifyStream",
+  name: "JsonStringifyStream",
   async fn() {
     await assertValidStringify(
       JsonStringifyStream,
@@ -47,7 +47,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[json] JsonStringifyStream: throws",
+  name: "JsonStringifyStream throws on error",
   async fn() {
     const cyclic: Record<string, unknown> = {};
     cyclic.cyclic = cyclic;
@@ -62,7 +62,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[json] JsonStringifyStream: prefix and suffix",
+  name: "JsonStringifyStream handles prefix and suffix",
   async fn() {
     await assertValidStringify(
       JsonStringifyStream,

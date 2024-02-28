@@ -1,6 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import { Range } from "./types.ts";
+import type { Range } from "./types.ts";
 import { parseRange } from "./parse_range.ts";
 
 /**

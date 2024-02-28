@@ -14,58 +14,58 @@ import {
 
 // YAML //
 
-Deno.test("[ANY/YAML] test valid input true", () => {
+Deno.test("test() handles valid input", () => {
   runTestValidInputTests("yaml", test);
 });
 
-Deno.test("[ANY/YAML] test invalid input false", () => {
+Deno.test("test() handles invalid input", () => {
   runTestInvalidInputTests("yaml", test);
 });
 
-Deno.test("[ANY/YAML] extract type error on invalid input", () => {
+Deno.test("extract() extracts type error on invalid input", () => {
   runExtractTypeErrorTests("yaml", extract);
 });
 
-Deno.test("[ANY/YAML] parse yaml delineate by `---`", async () => {
+Deno.test("extract() parses yaml delineate by `---`", async () => {
   await runExtractYAMLTests1(extract);
 });
 
-Deno.test("[ANY/YAML] parse yaml delineate by `---yaml`", async () => {
+Deno.test("extract() parses yaml delineate by `---yaml`", async () => {
   await runExtractYAMLTests2(extract);
 });
 
 // JSON //
 
-Deno.test("[ANY/JSON] test valid input true", () => {
+Deno.test("test() handles valid json input", () => {
   runTestValidInputTests("json", test);
 });
 
-Deno.test("[ANY/JSON] test invalid input false", () => {
+Deno.test("test() handles invalid json input", () => {
   runTestInvalidInputTests("json", test);
 });
 
-Deno.test("[ANY/JSON] extract type error on invalid input", () => {
+Deno.test("extract() extracts type error on invalid json input", () => {
   runExtractTypeErrorTests("json", extract);
 });
 
-Deno.test("[ANY/JSON] parse json delineate by ---json", async () => {
+Deno.test("extract() parses json delineate by ---json", async () => {
   await runExtractJSONTests(extract);
 });
 
 // TOML //
 
-Deno.test("[ANY/TOML] test valid input true", () => {
+Deno.test("test() test valid input true", () => {
   runTestValidInputTests("toml", test);
 });
 
-Deno.test("[ANY/TOML] test invalid input false", () => {
+Deno.test("test() handles invalid toml input false", () => {
   runTestInvalidInputTests("toml", test);
 });
 
-Deno.test("[ANY/TOML] extract type error on invalid input", () => {
+Deno.test("extract() extracts type error on invalid toml input", () => {
   runExtractTypeErrorTests("toml", extract);
 });
 
-Deno.test("[ANY/TOML] parse toml delineate by ---toml", async () => {
+Deno.test("extract() parses toml delineate by ---toml", async () => {
   await runExtractTOMLTests(extract);
 });

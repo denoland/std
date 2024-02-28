@@ -2,7 +2,7 @@
 
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import { stringify, StringifyOptions } from "./mod.ts";
+import { stringify, type StringifyOptions } from "./mod.ts";
 import { assertEquals } from "../assert/mod.ts";
 
 function assertValidStringify(

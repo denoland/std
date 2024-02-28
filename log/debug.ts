@@ -1,7 +1,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
 import { getLogger } from "./get_logger.ts";
-import { type GenericFunction } from "./logger.ts";
+import type { GenericFunction } from "./logger.ts";
 
 /** Log with debug level, using default logger. */
 export function debug<T>(msg: () => T, ...args: unknown[]): T | undefined;

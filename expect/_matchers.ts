@@ -14,10 +14,10 @@ import { assertEquals } from "./_assert_equals.ts";
 import { assertNotEquals } from "./_assert_not_equals.ts";
 import { equal } from "./_equal.ts";
 import { format } from "./_format.ts";
+import type { AnyConstructor, MatcherContext, MatchResult } from "./_types.ts";
 import { getMockCalls } from "./_mock_util.ts";
 import { inspectArg, inspectArgs } from "./_inspect_args.ts";
 import { iterableEquality } from "./iterable_equality.ts";
-import { AnyConstructor, MatcherContext, MatchResult } from "./_types.ts";
 import { buildEqualOptions } from "./_utils.ts";
 
 export function toBe(context: MatcherContext, expect: unknown): MatchResult {

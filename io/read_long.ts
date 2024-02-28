@@ -1,6 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import { type BufReader } from "./buf_reader.ts";
+import type { BufReader } from "./buf_reader.ts";
 import { readInt } from "./read_int.ts";
 
 const MAX_SAFE_INTEGER = BigInt(Number.MAX_SAFE_INTEGER);

@@ -6,7 +6,7 @@
 import { YAMLError } from "../_error.ts";
 import type { RepresentFn, StyleVariant, Type } from "../type.ts";
 import * as common from "../_utils.ts";
-import { DumperState, DumperStateOptions } from "./dumper_state.ts";
+import { DumperState, type DumperStateOptions } from "./dumper_state.ts";
 
 type Any = common.Any;
 type ArrayObject<T = Any> = common.ArrayObject<T>;
