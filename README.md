@@ -45,18 +45,25 @@ Check out the documentation [here](https://deno.land/std?doc).
    import * as fs from "https://deno.land/std@$STD_VERSION/fs/mod.ts";
    ```
 
-1. Do not import symbols with an underscore in the name.
+1. Do not import symbols with a name _prefixed_ by an underscore (they're not
+   intended for public use).
 
    Bad:
-   ```ts
+   ```ts, ignore
    import { _format } from "https://deno.land/std@$STD_VERSION/path/_common/format.ts";
    ```
 
-1. Do not import modules with an underscore in the path.
+1. Do not import modules with a directory or filename _prefixed_ by an
+   underscore (they're not intended for public use).
 
    Bad:
+   ```ts, ignore
+   import { createLPS } from "https://deno.land/std@$STD_VERSION/streams/_common.ts";
+   ```
+
+   Good:
    ```ts
-   import { filterInPlace } from "https://deno.land/std@$STD_VERSION/collections/_utils.ts";
+   import { TextLineStream } from "https://deno.land/std@$STD_VERSION/streams/text_line_stream.ts";
    ```
 
 1. Do not import test modules or test data.
@@ -68,42 +75,49 @@ Check out the documentation [here](https://deno.land/std?doc).
 
 ## Stability
 
-| Sub-module   | Status     |
-| ------------ | ---------- |
-| archive      | Unstable   |
-| assert       | Stable     |
-| async        | Stable     |
-| bytes        | Stable     |
-| collections  | Stable     |
-| console      | Unstable   |
-| csv          | Stable     |
-| datetime     | Unstable   |
-| dotenv       | Unstable   |
-| encoding     | Unstable   |
-| flags        | Unstable   |
-| fmt          | Stable     |
-| front_matter | Unstable   |
-| fs           | Stable     |
-| html         | Unstable   |
-| http         | Unstable   |
-| io           | Deprecated |
-| json         | Stable     |
-| jsonc        | Stable     |
-| log          | Unstable   |
-| media_types  | Stable     |
-| msgpack      | Unstable   |
-| path         | Unstable   |
-| permissions  | Deprecated |
-| regexp       | Unstable   |
-| semver       | Unstable   |
-| streams      | Unstable   |
-| testing      | Stable     |
-| toml         | Stable     |
-| ulid         | Unstable   |
-| url          | Unstable   |
-| uuid         | Stable     |
-| webgpu       | Unstable   |
-| yaml         | Stable     |
+| Sub-module      | Status     |
+| --------------- | ---------- |
+| archive         | Unstable   |
+| assert          | Stable     |
+| async           | Stable     |
+| bytes           | Stable     |
+| cli             | Unstable   |
+| collections     | Stable     |
+| console         | Unstable   |
+| crypto          | Stable     |
+| csv             | Stable     |
+| data_structures | Unstable   |
+| datetime        | Unstable   |
+| dotenv          | Unstable   |
+| encoding        | Stable     |
+| expect          | Unstable   |
+| flags           | Unstable   |
+| fmt             | Stable     |
+| front_matter    | Stable     |
+| fs              | Stable     |
+| html            | Unstable   |
+| http            | Unstable   |
+| ini             | Unstable   |
+| io              | Unstable   |
+| json            | Stable     |
+| jsonc           | Stable     |
+| log             | Unstable   |
+| media_types     | Stable     |
+| msgpack         | Unstable   |
+| net             | Unstable   |
+| path            | Stable     |
+| permissions     | Deprecated |
+| regexp          | Unstable   |
+| semver          | Unstable   |
+| streams         | Stable     |
+| testing         | Stable     |
+| text            | Unstable   |
+| toml            | Stable     |
+| ulid            | Unstable   |
+| url             | Unstable   |
+| uuid            | Stable     |
+| webgpu          | Unstable   |
+| yaml            | Stable     |
 
 > For background and discussions regarding the stability of the following
 > sub-modules, see [#3489](https://github.com/denoland/deno_std/issues/3489).

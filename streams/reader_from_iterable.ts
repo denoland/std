@@ -3,7 +3,7 @@
 
 import { Buffer } from "../io/buffer.ts";
 import { writeAll } from "../io/write_all.ts";
-import { Reader } from "../io/types.ts";
+import type { Reader } from "../io/types.ts";
 
 /**
  * Create a {@linkcode Reader} from an iterable of {@linkcode Uint8Array}s.

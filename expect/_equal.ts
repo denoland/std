@@ -2,7 +2,7 @@
 
 // This file is copied from `std/assert`.
 
-import { EqualOptions } from "./_types.ts";
+import type { EqualOptions } from "./_types.ts";
 
 function isKeyedCollection(x: unknown): x is Set<unknown> {
   return [Symbol.iterator, "size"].every((k) => k in (x as Set<unknown>));
