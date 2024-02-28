@@ -1,6 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import { OPERATORS } from "./_constants.ts";
+import type { OPERATORS } from "./_constants.ts";
 
 /**
  * The possible release types are used as an operator for the

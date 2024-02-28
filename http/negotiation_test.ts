@@ -4,7 +4,7 @@ import { assertEquals } from "../assert/mod.ts";
 import { accepts, acceptsEncodings, acceptsLanguages } from "./negotiation.ts";
 
 Deno.test({
-  name: "accepts - no args",
+  name: "accepts() handles no args",
   fn() {
     const req = new Request("https://example.com/", {
       headers: {
@@ -23,7 +23,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "accepts - args",
+  name: "accepts() handles args",
   fn() {
     const req = new Request("https://example.com/", {
       headers: {
@@ -36,7 +36,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "accepts - no match",
+  name: "accepts() handles no match",
   fn() {
     const req = new Request("https://example.com/", {
       headers: {
@@ -48,7 +48,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "accepts - args + no header",
+  name: "accepts() handles args and no header",
   fn() {
     const req = new Request("https://example.com/");
     assertEquals(accepts(req, "text/html", "image/webp"), "text/html");
@@ -56,7 +56,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "accepts - no args + no header",
+  name: "accepts() handles no args and no header",
   fn() {
     const req = new Request("https://example.com/");
     assertEquals(accepts(req), ["*/*"]);
@@ -64,7 +64,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "acceptsEncodings - no args",
+  name: "acceptsEncodings() handles no args",
   fn() {
     const req = new Request("https://example.com/", {
       headers: { "accept-encoding": "deflate, gzip;q=1.0, *;q=0.5" },
@@ -74,7 +74,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "acceptsEncodings - args",
+  name: "acceptsEncodings() handles args",
   fn() {
     const req = new Request("https://example.com/", {
       headers: { "accept-encoding": "deflate, gzip;q=1.0, *;q=0.5" },
@@ -84,7 +84,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "acceptsEncodings - no match",
+  name: "acceptsEncodings() handles no match",
   fn() {
     const req = new Request("https://example.com/", {
       headers: { "accept-encoding": "deflate, gzip" },
@@ -94,7 +94,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "acceptsEncodings - args + no header",
+  name: "acceptsEncodings() handles args and no header",
   fn() {
     const req = new Request("https://example.com/");
     assertEquals(acceptsEncodings(req, "gzip", "identity"), "gzip");
@@ -102,7 +102,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "acceptsEncodings - no args + no header",
+  name: "acceptsEncodings() handles no args and no header",
   fn() {
     const req = new Request("https://example.com/");
     assertEquals(acceptsEncodings(req), ["*"]);
@@ -110,7 +110,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "acceptsLanguages - no args",
+  name: "acceptsLanguages() handles no args",
   fn() {
     const req = new Request("https://example.com/", {
       headers: {
@@ -122,7 +122,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "acceptsLanguages - args",
+  name: "acceptsLanguages() handles args",
   fn() {
     const req = new Request("https://example.com/", {
       headers: {
@@ -134,7 +134,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "acceptsLanguages - no match",
+  name: "acceptsLanguages() handles no match",
   fn() {
     const req = new Request("https://example.com/", {
       headers: { "accept-language": "fr-CH, fr;q=0.9, en;q=0.8, de;q=0.7" },
@@ -144,7 +144,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "acceptsLanguages - args + no header",
+  name: "acceptsLanguages() handles args and no header",
   fn() {
     const req = new Request("https://example.com/");
     assertEquals(acceptsLanguages(req, "en-gb", "en-us", "en"), "en-gb");
@@ -152,7 +152,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "acceptsLanguages - no args + no header",
+  name: "acceptsLanguages() handles no args and no header",
   fn() {
     const req = new Request("https://example.com/");
     assertEquals(acceptsLanguages(req), ["*"]);

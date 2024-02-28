@@ -8,7 +8,7 @@ import {
 import { assert, assertEquals, assertThrows } from "../assert/mod.ts";
 
 Deno.test({
-  name: "Cookie parser",
+  name: "getCookies() parses cookie",
   fn() {
     let headers = new Headers();
     assertEquals(getCookies(headers), {});
@@ -35,7 +35,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "Cookie Name Validation",
+  name: "setCookie() validates names",
   fn() {
     const tokens = [
       '"id"',
@@ -68,7 +68,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "Cookie Value Validation",
+  name: "setCookie() validates value",
   fn() {
     const tokens = [
       "1f\tWa",
@@ -116,7 +116,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "Cookie Path Validation",
+  name: "setCookie() validates path",
   fn() {
     const path = "/;domain=sub.domain.com";
     const headers = new Headers();
@@ -138,7 +138,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "Cookie Domain Validation",
+  name: "setCookie() validates domain",
   fn() {
     const tokens = ["-domain.com", "domain.org.", "domain.org-"];
     const headers = new Headers();
@@ -162,7 +162,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "Cookie Delete",
+  name: "deleteCookie()",
   fn() {
     let headers = new Headers();
     deleteCookie(headers, "deno");
@@ -186,7 +186,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "Cookie Set",
+  name: "setCookie() handles Set-Cookie",
   fn() {
     let headers = new Headers();
     setCookie(headers, { name: "Space", value: "Cat" });
@@ -385,7 +385,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "Set-Cookie parser",
+  name: "setCookie() parses Set-Cookie",
   fn() {
     let headers = new Headers({ "set-cookie": "Space=Cat" });
     assertEquals(getSetCookies(headers), [{
