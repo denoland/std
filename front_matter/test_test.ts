@@ -10,7 +10,7 @@ import { test } from "./test.ts";
 
 // GENERAL TESTS //
 
-Deno.test("[ANY] try to test for unknown format", () => {
+Deno.test("test() tests for unknown format", () => {
   assertThrows(
     () => test("foo", ["unknown"]),
     TypeError,
@@ -20,16 +20,16 @@ Deno.test("[ANY] try to test for unknown format", () => {
 
 // YAML //
 
-Deno.test("[YAML] test valid input true", () => {
+Deno.test("test() handles valid yaml input", () => {
   runTestValidInputTests("yaml", test);
 });
 
-Deno.test("[YAML] test invalid input false", () => {
+Deno.test("test() handles invalid yaml input", () => {
   runTestInvalidInputTests("yaml", test);
 });
 
 Deno.test({
-  name: "[YAML] text between horizontal rules should not be recognized",
+  name: "test() handles yaml text between horizontal rules",
   async fn() {
     const str = await Deno.readTextFile(
       resolveTestDataPath("./horizontal_rules.md"),
@@ -41,20 +41,20 @@ Deno.test({
 
 // JSON //
 
-Deno.test("[JSON] test valid input true", () => {
+Deno.test("test() handles valid json input", () => {
   runTestValidInputTests("json", test);
 });
 
-Deno.test("[JSON] test invalid input false", () => {
+Deno.test("test() handles invalid json input", () => {
   runTestInvalidInputTests("json", test);
 });
 
 // TOML //
 
-Deno.test("[TOML] test valid input true", () => {
+Deno.test("test() handles valid toml input", () => {
   runTestValidInputTests("toml", test);
 });
 
-Deno.test("[TOML] test invalid input false", () => {
+Deno.test("test() handles invalid toml input", () => {
   runTestInvalidInputTests("toml", test);
 });

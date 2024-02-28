@@ -2,7 +2,7 @@
 // This module is browser compatible.
 
 import { CHAR_DOT } from "../_common/constants.ts";
-import { ParsedPath } from "../_interface.ts";
+import type { ParsedPath } from "../_interface.ts";
 import { stripTrailingSeparators } from "../_common/strip_trailing_separators.ts";
 import { assertPath } from "../_common/assert_path.ts";
 import { isPosixPathSeparator } from "./_util.ts";

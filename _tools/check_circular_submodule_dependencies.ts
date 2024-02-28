@@ -1,5 +1,5 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-import { createGraph, ModuleGraphJson, ModuleJson } from "deno_graph";
+import { createGraph, type ModuleGraphJson, type ModuleJson } from "deno_graph";
 
 /**
  * Checks for circular dependencies in the std submodules.

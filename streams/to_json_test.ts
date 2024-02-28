@@ -3,7 +3,7 @@
 import { assertEquals } from "../assert/assert_equals.ts";
 import { toJson } from "./to_json.ts";
 
-Deno.test("[streams] toJson", async () => {
+Deno.test("toJson()", async () => {
   const byteStream = ReadableStream.from(["[", "1, 2, 3, 4", "]"])
     .pipeThrough(new TextEncoderStream());
 

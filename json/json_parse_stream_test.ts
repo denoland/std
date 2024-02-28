@@ -7,7 +7,7 @@ import { JsonParseStream } from "./json_parse_stream.ts";
 import { assertInvalidParse, assertValidParse } from "./_test_common.ts";
 
 Deno.test({
-  name: "[json] JsonParseStream",
+  name: "JsonParseStream",
   async fn() {
     await assertValidParse(
       JsonParseStream,
@@ -18,7 +18,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[json] JsonParseStream: empty line",
+  name: "JsonParseStream handles empty line",
   async fn() {
     await assertValidParse(
       JsonParseStream,
@@ -29,7 +29,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[json] JsonParseStream: special character",
+  name: "JsonParseStream handles special character",
   async fn() {
     await assertValidParse(
       JsonParseStream,
@@ -40,7 +40,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[json] JsonParseStream: expect error",
+  name: "JsonParseStream handles expect error",
   async fn() {
     await assertInvalidParse(
       JsonParseStream,
@@ -53,7 +53,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[json] parse: testdata(jsonl)",
+  name: "parse() handles jsonl testdata",
   async fn() {
     // Read the test data file
     const url = "./testdata/test.jsonl";
@@ -74,7 +74,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[json] parse: testdata(ndjson)",
+  name: "parse() handles ndjson testdata",
   async fn() {
     // Read the test data file
     const url = "./testdata/test.ndjson";
@@ -95,7 +95,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[json] parse: testdata(json-seq)",
+  name: "parse() handles json-seq testdata",
   async fn() {
     // Read the test data file
     const recordSeparator = "\x1E";

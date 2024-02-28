@@ -19,7 +19,7 @@ import {
   RANDOM_LEN,
   TIME_LEN,
   TIME_MAX,
-  ULID,
+  type ULID,
 } from "./_util.ts";
 
 export type { ULID } from "./_util.ts";

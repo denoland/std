@@ -6,7 +6,7 @@ import { parse } from "./parse.ts";
 import { testRange } from "./test_range.ts";
 import { parseComparator } from "./_parse_comparator.ts";
 import { formatComparator } from "./_format_comparator.ts";
-import { Comparator } from "./types.ts";
+import type { Comparator } from "./types.ts";
 
 Deno.test({
   name: "comparators",
