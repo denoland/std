@@ -118,8 +118,10 @@ export const functions: IsolateFunctions = {
   async init(params, api: IsolateApi<C>) {
     const start = Date.now()
     const pid = pidFromRepo(params.repo as string)
-
-    // TODO handle existing repo
+    const probe = await functions.probe(params, api)
+    if (probe) {
+      throw new Error('repo already exists: ' + params.repo)
+    }
 
     const { fs } = memfs()
     const dir = '/'
@@ -135,7 +137,10 @@ export const functions: IsolateFunctions = {
   async clone(params, api: IsolateApi<C>) {
     const start = Date.now()
     const pid = pidFromRepo(params.repo as string)
-    // TODO handle existing repo
+    const probe = await functions.probe(params, api)
+    if (probe) {
+      throw new Error('repo already exists: ' + params.repo)
+    }
 
     // TODO use the fs option in the context, by loading an asserted blank fs
 
