@@ -1,8 +1,8 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import { BaseHandler } from "./base_handler.ts";
+import type { BaseHandler } from "./base_handler.ts";
 import { DEFAULT_CONFIG } from "./_config.ts";
-import { Logger } from "./logger.ts";
+import type { Logger } from "./logger.ts";
 
 export const state = {
   handlers: new Map<string, BaseHandler>(),

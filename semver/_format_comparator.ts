@@ -7,10 +7,10 @@ import { format } from "./format.ts";
  * @example >=0.0.0
  * @param comparator
  * @returns A string representation of the comparator
- *
- * @deprecated (will be removed in 0.215.0) Use {@linkcode SemVerRange} instead of {@linkcode Comparator} and {@linkcode formatRange} for formatting it.
  */
-export function comparatorFormat(comparator: Comparator): string {
+export function formatComparator(comparator: Comparator): string {
   const { semver, operator } = comparator;
-  return `${operator}${format(semver ?? comparator)}`;
+  return `${operator === undefined ? "" : operator}${
+    format(semver ?? comparator)
+  }`;
 }

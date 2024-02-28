@@ -1,13 +1,22 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-import { createGraph, ModuleGraphJson, ModuleJson } from "deno_graph";
+import { createGraph, type ModuleGraphJson, type ModuleJson } from "deno_graph";
 
 /**
  * Checks for circular dependencies in the std submodules.
  *
- * When run with `--graph` it will output a graphviz graph in dot language.
+ * Usage: deno run -A _tools/check_circular_submodule_dependencies.ts
+ *
+ * `--graph` option outputs graphviz diagram. You can convert the output to
+ * a visual graph using tools like https://dreampuf.github.io/GraphvizOnline/
+ *
+ * $ deno run -A _tools/check_circular_submodule_dependencies.ts --graph
+ *
+ * `--table` option outputs a table of submodules and their status.
+ *
+ * $ deno run -A _tools/check_circular_submodule_dependencies.ts --table
  */
 
-type DepState = "ready" | "not ready" | "needs clean up" | "deprecated";
+type DepState = "Stable" | "Unstable" | "Deprecated";
 type Dep = {
   name: string;
   set: Set<string>;
@@ -38,6 +47,7 @@ async function check(
     }
   }
   deps.delete(submod);
+  deps.delete("version.ts");
   return { name: submod, set: deps, state };
 }
 
@@ -71,18 +81,19 @@ function getSubmoduleDepsFromSpecifier(
   return deps;
 }
 
-deps["archive"] = await check("archive", "not ready");
-deps["assert"] = await check("assert", "ready");
-deps["async"] = await check("async", "ready");
-deps["bytes"] = await check("bytes", "ready");
-deps["collections"] = await check("collections", "ready");
-deps["console"] = await check("console", "not ready");
-deps["crypto"] = await check("crypto", "needs clean up");
-deps["csv"] = await check("csv", "ready");
-deps["data_structures"] = await check("data_structures", "not ready");
-deps["datetime"] = await check("datetime", "deprecated");
-deps["dotenv"] = await check("dotenv", "not ready");
-deps["encoding"] = await check("encoding", "needs clean up", [
+deps["archive"] = await check("archive", "Unstable");
+deps["assert"] = await check("assert", "Stable");
+deps["async"] = await check("async", "Stable");
+deps["bytes"] = await check("bytes", "Stable");
+deps["cli"] = await check("cli", "Unstable");
+deps["collections"] = await check("collections", "Stable");
+deps["console"] = await check("console", "Unstable");
+deps["crypto"] = await check("crypto", "Stable");
+deps["csv"] = await check("csv", "Stable");
+deps["data_structures"] = await check("data_structures", "Unstable");
+deps["datetime"] = await check("datetime", "Unstable");
+deps["dotenv"] = await check("dotenv", "Unstable");
+deps["encoding"] = await check("encoding", "Stable", [
   "ascii85.ts",
   "base32.ts",
   "base58.ts",
@@ -92,41 +103,45 @@ deps["encoding"] = await check("encoding", "needs clean up", [
   "hex.ts",
   "varint.ts",
 ]);
-deps["flags"] = await check("flags", "not ready");
-deps["fmt"] = await check("fmt", "ready", [
+deps["expect"] = await check("expect", "Unstable");
+deps["flags"] = await check("flags", "Unstable");
+deps["fmt"] = await check("fmt", "Stable", [
   "bytes.ts",
   "colors.ts",
   "duration.ts",
   "printf.ts",
 ]);
-deps["front_matter"] = await check("front_matter", "needs clean up");
-deps["fs"] = await check("fs", "ready");
-deps["html"] = await check("html", "not ready");
-deps["http"] = await check("http", "needs clean up");
-deps["io"] = await check("io", "deprecated");
-deps["json"] = await check("json", "ready");
-deps["jsonc"] = await check("jsonc", "ready");
-deps["log"] = await check("log", "not ready");
-deps["media_types"] = await check("media_types", "ready");
-deps["msgpack"] = await check("msgpack", "not ready");
-deps["path"] = await check("path", "needs clean up");
-deps["permissions"] = await check("permissions", "deprecated");
-deps["regexp"] = await check("regexp", "not ready");
-deps["semver"] = await check("semver", "not ready");
-deps["streams"] = await check("streams", "needs clean up");
-deps["testing"] = await check("testing", "ready", [
+deps["front_matter"] = await check("front_matter", "Stable");
+deps["fs"] = await check("fs", "Stable");
+deps["html"] = await check("html", "Unstable");
+deps["http"] = await check("http", "Unstable");
+deps["ini"] = await check("ini", "Unstable");
+deps["io"] = await check("io", "Unstable");
+deps["json"] = await check("json", "Stable");
+deps["jsonc"] = await check("jsonc", "Stable");
+deps["log"] = await check("log", "Unstable");
+deps["media_types"] = await check("media_types", "Stable");
+deps["msgpack"] = await check("msgpack", "Unstable");
+deps["net"] = await check("net", "Unstable");
+deps["path"] = await check("path", "Stable");
+deps["permissions"] = await check("permissions", "Deprecated");
+deps["regexp"] = await check("regexp", "Unstable");
+deps["semver"] = await check("semver", "Unstable");
+deps["streams"] = await check("streams", "Stable");
+deps["testing"] = await check("testing", "Stable", [
   "bdd.ts",
   "mock.ts",
   "snapshot.ts",
   "time.ts",
   "types.ts",
 ]);
-deps["toml"] = await check("toml", "ready");
-deps["ulid"] = await check("ulid", "not ready");
-deps["url"] = await check("url", "not ready");
-deps["uuid"] = await check("uuid", "ready");
-deps["webgpu"] = await check("webgpu", "not ready");
-deps["yaml"] = await check("yaml", "ready");
+deps["text"] = await check("text", "Unstable");
+deps["toml"] = await check("toml", "Stable");
+deps["ulid"] = await check("ulid", "Unstable");
+deps["url"] = await check("url", "Unstable");
+deps["uuid"] = await check("uuid", "Stable");
+deps["webgpu"] = await check("webgpu", "Unstable");
+deps["yaml"] = await check("yaml", "Stable");
 
 /** Checks circular deps between sub modules */
 function checkCircularDeps(
@@ -158,14 +173,12 @@ function formatLabel(mod: string) {
 /** Returns node style (in DOT language) for each state */
 function stateToNodeStyle(state: DepState) {
   switch (state) {
-    case "ready":
+    case "Stable":
       return "[shape=doublecircle fixedsize=1 height=1.1]";
-    case "not ready":
+    case "Unstable":
       return "[shape=box style=filled, fillcolor=pink]";
-    case "needs clean up":
-      return "[shape=circle fixedsize=1 height=1.1 style=filled, fillcolor=yellow]";
-    case "deprecated":
-      return "[shape=septagon style=filled, fillcolor=gray]";
+    case "Deprecated":
+      return "[shape=box style=filled, fillcolor=gray]";
   }
 }
 
@@ -179,6 +192,12 @@ if (Deno.args.includes("--graph")) {
     }
   }
   console.log("}");
+} else if (Deno.args.includes("--table")) {
+  console.log("| Sub-module      | Status     |");
+  console.log("| --------------- | ---------- |");
+  for (const [mod, info] of Object.entries(deps)) {
+    console.log(`| ${mod.padEnd(15)} | ${info.state.padEnd(10)} |`);
+  }
 } else {
   console.log(`${Object.keys(deps).length} submodules checked.`);
   for (const mod of Object.keys(deps)) {

@@ -13,8 +13,6 @@ import { ALL, NONE } from "./constants.ts";
  * Adds a type assertion if true.
  * @param value The value to check if its a Comparator
  * @returns True if the object is a Comparator otherwise false
- *
- * @deprecated (will be removed in 0.215.0) Use {@linkcode isSemVerRange} instead.
  */
 export function isComparator(value: unknown): value is Comparator {
   if (
@@ -24,7 +22,8 @@ export function isComparator(value: unknown): value is Comparator {
   if (value === NONE || value === ALL) return true;
   const { operator, semver } = value as Comparator;
   return (
-    OPERATORS.includes(operator) &&
+    (operator === undefined ||
+      OPERATORS.includes(operator)) &&
     isSemVer(semver)
   );
 }

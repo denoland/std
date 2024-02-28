@@ -2,6 +2,9 @@
 
 // This file is copied from `std/assert`.
 
+import type { EqualOptions } from "./_types.ts";
+import { Any, Anything, ArrayContaining } from "./_asymmetric_matchers.ts";
+
 function isKeyedCollection(x: unknown): x is Set<unknown> {
   return [Symbol.iterator, "size"].every((k) => k in (x as Set<unknown>));
 }
@@ -26,9 +29,20 @@ function constructorsEqual(a: object, b: object) {
  * equal({ foo: "bar" }, { foo: "baz" }); // Returns `false
  * ```
  */
-export function equal(c: unknown, d: unknown, strictCheck?: boolean): boolean {
+export function equal(c: unknown, d: unknown, options?: EqualOptions): boolean {
+  const { customTesters = [], strictCheck } = options || {};
   const seen = new Map();
+
   return (function compare(a: unknown, b: unknown): boolean {
+    if (customTesters?.length) {
+      for (const customTester of customTesters) {
+        const pass = customTester.call(undefined, a, b, customTesters);
+        if (pass !== undefined) {
+          return pass;
+        }
+      }
+    }
+
     // Have to render RegExp & Date for string comparison
     // unless it's mistreated as object
     if (
@@ -38,6 +52,15 @@ export function equal(c: unknown, d: unknown, strictCheck?: boolean): boolean {
         (a instanceof URL && b instanceof URL))
     ) {
       return String(a) === String(b);
+    }
+    if (b instanceof Anything) {
+      return b.equals(a);
+    }
+    if (b instanceof Any) {
+      return b.equals(a);
+    }
+    if (b instanceof ArrayContaining && a instanceof Array) {
+      return b.equals(a);
     }
     if (a instanceof Date && b instanceof Date) {
       const aTime = a.getTime();
@@ -82,7 +105,7 @@ export function equal(c: unknown, d: unknown, strictCheck?: boolean): boolean {
       if (!strictCheck) {
         if (aLen > 0) {
           for (let i = 0; i < aKeys.length; i += 1) {
-            const key = aKeys[i];
+            const key = aKeys[i]!;
             if (
               (key in a) && (a[key as keyof typeof a] === undefined) &&
               !(key in b)
@@ -94,7 +117,7 @@ export function equal(c: unknown, d: unknown, strictCheck?: boolean): boolean {
 
         if (bLen > 0) {
           for (let i = 0; i < bKeys.length; i += 1) {
-            const key = bKeys[i];
+            const key = bKeys[i]!;
             if (
               (key in b) && (b[key as keyof typeof b] === undefined) &&
               !(key in a)

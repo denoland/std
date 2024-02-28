@@ -73,7 +73,7 @@ export class TextDelimiterStream extends TransformStream<string, string> {
           this.#inspectIndex++;
           localIndex++;
         } else {
-          this.#matchIndex = this.#delimLPS[this.#matchIndex - 1];
+          this.#matchIndex = this.#delimLPS[this.#matchIndex - 1]!;
         }
       }
     }

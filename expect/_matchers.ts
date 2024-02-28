@@ -14,9 +14,10 @@ import { assertEquals } from "./_assert_equals.ts";
 import { assertNotEquals } from "./_assert_not_equals.ts";
 import { equal } from "./_equal.ts";
 import { format } from "./_format.ts";
-import { AnyConstructor, MatcherContext, MatchResult } from "./_types.ts";
+import type { AnyConstructor, MatcherContext, MatchResult } from "./_types.ts";
 import { getMockCalls } from "./_mock_util.ts";
 import { inspectArg, inspectArgs } from "./_inspect_args.ts";
+import { buildEqualOptions } from "./_utils.ts";
 
 export function toBe(context: MatcherContext, expect: unknown): MatchResult {
   if (context.isNot) {
@@ -32,10 +33,12 @@ export function toEqual(
 ): MatchResult {
   const v = context.value;
   const e = expected;
+  const equalsOptions = buildEqualOptions(context);
+
   if (context.isNot) {
-    assertNotEquals(v, e, { msg: context.customMessage });
+    assertNotEquals(v, e, equalsOptions);
   } else {
-    assertEquals(v, e, { msg: context.customMessage });
+    assertEquals(v, e, equalsOptions);
   }
 }
 
@@ -43,16 +46,15 @@ export function toStrictEqual(
   context: MatcherContext,
   expected: unknown,
 ): MatchResult {
+  const equalsOptions = buildEqualOptions({
+    ...context,
+    strictCheck: true,
+  });
+
   if (context.isNot) {
-    assertNotEquals(context.value, expected, {
-      msg: context.customMessage,
-      strictCheck: true,
-    });
+    assertNotEquals(context.value, expected, equalsOptions);
   } else {
-    assertEquals(context.value, expected, {
-      msg: context.customMessage,
-      strictCheck: true,
-    });
+    assertEquals(context.value, expected, equalsOptions);
   }
 }
 
@@ -233,19 +235,24 @@ export function toBeLessThan(
   }
 }
 export function toBeNaN(context: MatcherContext): MatchResult {
+  const equalsOptions = buildEqualOptions(context);
   if (context.isNot) {
     assertNotEquals(
       isNaN(Number(context.value)),
       true,
       {
-        msg: context.customMessage || `Expected ${context.value} to not be NaN`,
+        ...equalsOptions,
+        msg: equalsOptions.msg || `Expected ${context.value} to not be NaN`,
       },
     );
   } else {
     assertEquals(
       isNaN(Number(context.value)),
       true,
-      { msg: context.customMessage || `Expected ${context.value} to be NaN` },
+      {
+        ...equalsOptions,
+        msg: equalsOptions.msg || `Expected ${context.value} to be NaN`,
+      },
     );
   }
 }
@@ -320,7 +327,7 @@ export function toHaveProperty(
   let hasProperty;
   if (v) {
     hasProperty = current !== undefined && propPath.length === 0 &&
-      equal(current, v);
+      equal(current, v, context);
   } else {
     hasProperty = current !== undefined && propPath.length === 0;
   }
@@ -374,8 +381,9 @@ export function toContainEqual(
   const { value } = context;
   assertIsIterable(value);
   let doesContain = false;
+
   for (const item of value) {
-    if (equal(item, expected)) {
+    if (equal(item, expected, context)) {
       doesContain = true;
       break;
     }

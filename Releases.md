@@ -1,3 +1,42 @@
+### 0.217.0 / 2024.02.22
+
+- deprecation(semver): deprecate `==`, `===`, `!==`, and `""` operators (#4271)
+- doc: fix `std/path/posix` link (#4337)
+- feat(io): `iterateReader[Sync]()` (#4247)
+- feat(io): un-deprecate `readerFromStreamReader()` (#4343)
+- feat(testing): explicit resource management for `spy()` and `stub()` (#4306)
+- fix(http): `version` from `deno.json` import (#4342)
+- fix(media_types): load extensions when directly importing
+  `extensionsByTypes()` (#4351)
+- fix(semver): fix `prerelease` handlings in range utils (#4323)
+- fix(semver): fix parse_range for `>x.y` pattern (#4350)
+
+### 0.216.0 / 2024.02.15
+
+- BREAKING(path): remove `path/windows/separator.ts` (#4292)
+- BREAKING(semver): remove `SemVerRange` and `isSemVerRange()` (#4295)
+- BREAKING(semver): remove `eq()`, `gt()`, `gte()`, `lt()`, `lte()` and `neq()`
+  (#4294)
+- BREAKING(semver): remove `outside()` (#4293)
+- feat(datetime): `format()` options (#4285)
+- fix(semver): return new object instance in `comparatorMin()` and
+  `comparatorMax()` (#4314)
+
+### 0.215.0 / 2024.02.08
+
+- BREAKING(log): remove `WARNING` log level (#4258)
+- BREAKING(path): remove `glob.ts` files (#4259)
+- BREAKING(path): remove `separator.ts` files (#4260)
+- BREAKING(semver): remove `Comparator` functions (#4278)
+- BREAKING(semver): remove `rangeFormat()` (#4265)
+- BREAKING(semver): remove `sort()` (#4264)
+- deprecation(semver): deprecate `ltr()` and `gtr()` (#4228)
+- deprecation(semver): deprecate `reverseSort()` (#4280)
+- feat(expect): add `expect.addEqualityTesters` api. (#4255)
+- fix: version bump workflow (#4288)
+- refactor(dotenv): prepare for `noUncheckedIndexedAccess` (#4261)
+- refatcor(toml): prepare for `noUncheckedIndexedAccess` (#4274)
+
 ### 0.214.0 / 2024.02.01
 
 - BREAKING(io): remove `types.d.ts` (#4237)

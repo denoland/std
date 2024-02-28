@@ -3,11 +3,9 @@
 // This file is copied from `std/assert`.
 
 import { AssertionError } from "../assert/assertion_error.ts";
-import { CAN_NOT_DISPLAY } from "./_constants.ts";
+import { buildNotEqualErrorMessage } from "./_build_message.ts";
 import { equal } from "./_equal.ts";
-import { AssertEqualsOptions } from "./_types.ts";
-
-type AssertNotEqualsOptions = Omit<AssertEqualsOptions, "formatter">;
+import type { EqualOptions } from "./_types.ts";
 
 /**
  * Make an assertion that `actual` and `expected` are not equal, deeply.
@@ -26,26 +24,14 @@ type AssertNotEqualsOptions = Omit<AssertEqualsOptions, "formatter">;
 export function assertNotEquals<T>(
   actual: T,
   expected: T,
-  options: AssertNotEqualsOptions = {},
+  options?: EqualOptions,
 ) {
-  const { msg, strictCheck } = options;
-  if (!equal(actual, expected, strictCheck)) {
+  const { msg } = options || {};
+
+  if (!equal(actual, expected, options)) {
     return;
   }
-  let actualString: string;
-  let expectedString: string;
-  try {
-    actualString = String(actual);
-  } catch {
-    actualString = CAN_NOT_DISPLAY;
-  }
-  try {
-    expectedString = String(expected);
-  } catch {
-    expectedString = CAN_NOT_DISPLAY;
-  }
-  const msgSuffix = msg ? `: ${msg}` : ".";
-  throw new AssertionError(
-    `Expected actual: ${actualString} not to be: ${expectedString}${msgSuffix}`,
-  );
+
+  const message = buildNotEqualErrorMessage(actual, expected, { msg });
+  throw new AssertionError(message);
 }

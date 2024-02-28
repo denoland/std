@@ -1,6 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import { OPERATORS } from "./_constants.ts";
+import type { OPERATORS } from "./_constants.ts";
 
 /**
  * The possible release types are used as an operator for the
@@ -18,6 +18,7 @@ export type ReleaseType =
 
 /**
  * SemVer comparison operators.
+ * @deprecated (will be removed in 0.219.0) `"=="`, `"==="`, `"!=="` and `""` operators are deprecated. Use `"="`, `"!="` or `undefined` instead.
  */
 export type Operator = typeof OPERATORS[number];
 
@@ -26,9 +27,9 @@ export type Operator = typeof OPERATORS[number];
  * @example >=0.0.0
  */
 export interface Comparator extends SemVer {
-  operator: Operator;
+  operator?: Operator;
   /**
-   * @deprecated (will be removed in 0.216.0) {@linkcode Comparator} extends {@linkcode SemVer}. Use `major`, `minor`, `patch`, `prerelease`, and `build` properties instead.
+   * @deprecated (will be removed in 0.219.0) {@linkcode Comparator} extends {@linkcode SemVer}. Use `major`, `minor`, `patch`, `prerelease`, and `build` properties instead.
    */
   semver?: SemVer;
 }
@@ -50,15 +51,3 @@ export interface SemVer {
  * inner array represents AND comparisons.
  */
 export type Range = Comparator[][];
-
-/**
- * A type representing a semantic version range. The ranges consist of
- * a nested array, which represents a set of OR comparisons while the
- * inner array represents AND comparisons.
- *
- * @deprecated (will be removed in 0.216.0) Use {@linkcode Range} instead.
- */
-export interface SemVerRange {
-  // The outer array is OR while each inner array is AND
-  ranges: Comparator[][];
-}

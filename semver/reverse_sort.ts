@@ -2,7 +2,10 @@
 import type { SemVer } from "./types.ts";
 import { compare } from "./compare.ts";
 
-/** Sorts a list of semantic versions in descending order. */
+/**
+ * Sorts a list of semantic versions in descending order.
+ * @deprecated (will be removed in 0.219.0) Use `versions.sort((a, b) => compare(b, a))` instead.
+ */
 export function reverseSort(
   versions: SemVer[],
 ): SemVer[] {

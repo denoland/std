@@ -3,12 +3,9 @@
 // This file is copied from `std/assert`.
 
 import { AssertionError } from "../assert/assertion_error.ts";
-import { red } from "../fmt/colors.ts";
-import { CAN_NOT_DISPLAY } from "./_constants.ts";
-import { buildMessage, diff, diffstr } from "./_diff.ts";
+import { buildEqualErrorMessage } from "./_build_message.ts";
 import { equal } from "./_equal.ts";
-import { format } from "./_format.ts";
-import { AssertEqualsOptions } from "./_types.ts";
+import type { EqualOptions } from "./_types.ts";
 
 /**
  * Make an assertion that `actual` and `expected` are equal, deeply. If not
@@ -30,28 +27,12 @@ import { AssertEqualsOptions } from "./_types.ts";
 export function assertEquals<T>(
   actual: T,
   expected: T,
-  options: AssertEqualsOptions = {},
+  options?: EqualOptions,
 ) {
-  const { formatter = format, msg, strictCheck } = options;
-
-  if (equal(actual, expected, strictCheck)) {
+  if (equal(actual, expected, options)) {
     return;
   }
-  const msgSuffix = msg ? `: ${msg}` : ".";
-  let message = `Values are not equal${msgSuffix}`;
 
-  const actualString = formatter(actual);
-  const expectedString = formatter(expected);
-  try {
-    const stringDiff = (typeof actual === "string") &&
-      (typeof expected === "string");
-    const diffResult = stringDiff
-      ? diffstr(actual as string, expected as string)
-      : diff(actualString.split("\n"), expectedString.split("\n"));
-    const diffMsg = buildMessage(diffResult, { stringDiff }).join("\n");
-    message = `${message}\n${diffMsg}`;
-  } catch {
-    message = `${message}\n${red(CAN_NOT_DISPLAY)} + \n\n`;
-  }
+  const message = buildEqualErrorMessage(actual, expected, options || {});
   throw new AssertionError(message);
 }
