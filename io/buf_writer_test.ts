@@ -9,7 +9,7 @@ import { StringWriter } from "./string_writer.ts";
 import { bufsizes } from "./_test_common.ts";
 import type { Writer, WriterSync } from "./types.ts";
 
-Deno.test("bufioWriter", async function () {
+Deno.test("BufWriter.write() writes different number of bytes", async function () {
   const data = new Uint8Array(8192);
 
   for (let i = 0; i < data.byteLength; i++) {
@@ -42,7 +42,7 @@ Deno.test("bufioWriter", async function () {
   }
 });
 
-Deno.test("bufioWriterSync", function () {
+Deno.test("BufWriter.writeSync()", function () {
   const data = new Uint8Array(8192);
 
   for (let i = 0; i < data.byteLength; i++) {
