@@ -3,8 +3,9 @@
 import { expect, log } from '@utils'
 import { Cradle } from '../api/web-client.types.ts'
 
-export default (cradleMaker: () => Promise<Cradle>) => {
-  Deno.test('io', async (t) => {
+export default (name: string, cradleMaker: () => Promise<Cradle>) => {
+  const prefix = name + ': '
+  Deno.test(prefix + 'io', async (t) => {
     const artifact = await cradleMaker()
     await t.step('ping empty', async () => {
       const empty = await artifact.ping()
@@ -20,17 +21,17 @@ export default (cradleMaker: () => Promise<Cradle>) => {
         repo: 'dreamcatcher-tech/HAL',
       })
       log('clone result', cloneResult)
-      const target = cloneResult.pid
       // TODO read the fs and see what the state of the file system is ?
-      expect(target).toBeDefined()
+      expect(cloneResult.pid).toBeDefined()
+      expect(typeof cloneResult.head).toBe('string')
     })
 
     await artifact.stop()
   })
-  Deno.test.ignore('child to self', async () => {})
-  Deno.test.ignore('child to child', async () => {})
-  Deno.test.ignore('child to parent', async () => {})
-  Deno.test('pierce', async (t) => {
+  Deno.test.ignore(prefix + 'child to self', async () => {})
+  Deno.test.ignore(prefix + 'child to child', async () => {})
+  Deno.test.ignore(prefix + 'child to parent', async () => {})
+  Deno.test(prefix + 'pierce', async (t) => {
     const isolate = 'io-fixture'
     const artifact = await cradleMaker()
     const { pid: target } = await artifact.init({ repo: 'cradle/pierce' })
@@ -62,7 +63,7 @@ export default (cradleMaker: () => Promise<Cradle>) => {
   })
 
   const isolate = 'io-fixture'
-  Deno.test('resource hogging', async (t) => {
+  Deno.test(prefix + 'resource hogging', async (t) => {
     await t.step('multi local', async () => {
       const artifact = await cradleMaker()
       const { pid: target } = await artifact.init({ repo: 'cradle/pierce' })
@@ -96,7 +97,7 @@ export default (cradleMaker: () => Promise<Cradle>) => {
     //   await artifact.stop()
     // })
   })
-  Deno.test('github operations', async (t) => {
+  Deno.test(prefix + 'github operations', async (t) => {
     const artifact = await cradleMaker()
     const pid = {
       account: 'dreamcatcher-tech',
@@ -112,6 +113,8 @@ export default (cradleMaker: () => Promise<Cradle>) => {
       const result = await artifact.init({ repo: 'dreamcatcher-tech/HAL' })
       log('init result', result)
       expect(result).toBeDefined()
+      expect(result!.pid).toEqual(pid)
+      expect(typeof result!.head).toBe('string')
     })
     await t.step('probe', async () => {
       const result = await artifact.probe({ repo: 'dreamcatcher-tech/HAL' })

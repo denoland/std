@@ -27,4 +27,4 @@ const cradleMaker = async () => {
   cradle.stop = () => server.stop()
   return cradle
 }
-guts(cradleMaker)
+guts('Web', cradleMaker)

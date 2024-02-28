@@ -126,10 +126,11 @@ export const functions: IsolateFunctions = {
     await git.init({ fs, dir, defaultBranch: ENTRY_BRANCH })
 
     const lockId = await api.context.db!.getHeadlock(pid)
-    const result = await api.context.fs!.update(pid, fs, 'INIT', lockId)
+    const head = 'INIT'
+    const result = await api.context.fs!.update(pid, fs, head, lockId)
     await api.context.db!.releaseHeadlock(pid, lockId)
     log('snapshot size:', result.prettySize)
-    return { pid, size: result.prettySize, elapsed: Date.now() - start }
+    return { pid, head, size: result.prettySize, elapsed: Date.now() - start }
   },
   async clone(params, api: IsolateApi<C>) {
     const start = Date.now()
@@ -145,14 +146,14 @@ export const functions: IsolateFunctions = {
     // TODO make an index file without doing a full checkout
     // https://github.com/dreamcatcher-tech/artifact/issues/28
     await git.clone({ fs, http, dir, url })
-    const [{ oid: commit }] = await git.log({ fs, dir, depth: 1 })
-    log('cloned', commit)
+    const [{ oid: head }] = await git.log({ fs, dir, depth: 1 })
+    log('cloned', head)
     const lockId = await api.context.db!.getHeadlock(pid)
-    const result = await api.context.fs!.update(pid, fs, commit, lockId)
+    const result = await api.context.fs!.update(pid, fs, head, lockId)
     await api.context.db!.releaseHeadlock(pid, lockId)
 
     log('snapshot size:', result.prettySize)
-    return { pid, size: result.prettySize, elapsed: Date.now() - start }
+    return { pid, head, size: result.prettySize, elapsed: Date.now() - start }
   },
   pull() {
     throw new Error('not implemented')
