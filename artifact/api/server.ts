@@ -36,13 +36,18 @@ export default class Server {
       app.post(
         `/${functionName}`,
         async (c) => {
-          const params = await c.req.json()
-          if (functionName === 'pierce') {
-            const msg = `ulid incorrect: ${params.ulid}`
-            assert(params.ulid === 'calculated-server-side', msg)
-            params.ulid = ulid()
+          let outcome
+          try {
+            const params = await c.req.json()
+            if (functionName === 'pierce') {
+              const msg = `ulid incorrect: ${params.ulid}`
+              assert(params.ulid === 'calculated-server-side', msg)
+              params.ulid = ulid()
+            }
+            outcome = await asOutcome(artifact[functionName](params))
+          } catch (error) {
+            outcome = await asOutcome(Promise.reject(error))
           }
-          const outcome = await asOutcome(artifact[functionName](params))
           return c.json(outcome)
         },
       )
