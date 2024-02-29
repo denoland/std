@@ -5,7 +5,7 @@ import { parse } from "./parse.ts";
 import { parseRange } from "./parse_range.ts";
 import { ltr } from "./ltr.ts";
 
-Deno.test("ltr", async (t) => {
+Deno.test("ltr()", async (t) => {
   // [range, version]
   // Version should be greater than range
   const versions: [string, string][] = [
@@ -77,7 +77,7 @@ Deno.test("ltr", async (t) => {
   }
 });
 
-Deno.test("ltrNegative", async (t) => {
+Deno.test("ltr() handles negative values", async (t) => {
   // [range, version]
   // Version should be greater than range
   const versions: [string, string][] = [

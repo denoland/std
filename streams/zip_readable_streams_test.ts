@@ -3,7 +3,7 @@
 import { assertEquals } from "../assert/mod.ts";
 import { zipReadableStreams } from "./zip_readable_streams.ts";
 
-Deno.test("[streams] zipReadableStreams", async () => {
+Deno.test("zipReadableStreams()", async () => {
   const textStream = ReadableStream.from([
     "qwertzuiopasd",
     "mnbvcxylkjhgfds",
