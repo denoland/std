@@ -41,7 +41,7 @@ import { Buffer } from "../io/buffer.ts";
 import { assert } from "../assert/assert.ts";
 import { HEADER_LENGTH } from "./_common.ts";
 
-export { type TarInfo, type TarMeta, type TarOptions };
+export type { TarInfo, TarMeta, TarOptions };
 
 const USTAR_MAGIC_HEADER = "ustar\u000000";
 
