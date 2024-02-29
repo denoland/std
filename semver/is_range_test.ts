@@ -12,11 +12,17 @@ Deno.test({
       [ALL],
       [{
         operator: ">=",
+        major: 0,
+        minor: 0,
+        patch: 0,
+        prerelease: [],
+        build: [],
         semver: { major: 0, minor: 0, patch: 0, prerelease: [], build: [] },
       }],
       [{
         operator: "<",
         semver: MIN,
+        ...MIN,
       }],
       [{
         operator: ">=",
