@@ -314,9 +314,8 @@ Deno.test({
     fileHandler.log(logOverBufferLimit);
     fileHandler.destroy();
 
-    const decoder = new TextDecoder();
     assertEquals(
-      decoder.decode(Deno.readFileSync(LOG_FILE)),
+      Deno.readTextFileSync(LOG_FILE),
       `${logOverBufferLimit}\n`,
     );
 
