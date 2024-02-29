@@ -2,10 +2,10 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import { assertEquals } from "../assert/mod.ts";
 import { parse } from "./parse.ts";
-import { ReleaseType } from "./types.ts";
+import type { ReleaseType } from "./types.ts";
 import { difference } from "./difference.ts";
 
-Deno.test("diff", async (t) => {
+Deno.test("difference()", async (t) => {
   const versions: [string, string, ReleaseType | undefined][] = [
     ["1.2.3", "0.2.3", "major"],
     ["1.4.5", "0.2.3", "major"],
@@ -22,7 +22,7 @@ Deno.test("diff", async (t) => {
   ];
 
   for (const [v0, v1, expected] of versions) {
-    await t.step(`${v0} ≏ ${v1} : ${expected}`, () => {
+    await t.step(`${v0} ≏ ${v1}`, () => {
       const s0 = parse(v0);
       const s1 = parse(v1);
       const actual = difference(s0, s1);

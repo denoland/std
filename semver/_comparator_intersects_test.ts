@@ -47,7 +47,7 @@ Deno.test("comparatorIntersects()", async (t) => {
     const comparator2 = parseComparator(v[1]);
     const expect = v[2];
     await t.step({
-      name: `${v[0]} ${expect ? "∩" : "∁"} ${v[1]}`,
+      name: `${v[0]} and ${v[1]}`,
       fn: () => {
         const actual1 = comparatorIntersects(comparator1, comparator2);
         const actual2 = comparatorIntersects(comparator2, comparator1);

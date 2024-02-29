@@ -5,7 +5,7 @@ import { gtr } from "./gtr.ts";
 import { parse } from "./parse.ts";
 import { parseRange } from "./parse_range.ts";
 
-Deno.test("gtr", async (t) => {
+Deno.test("gtr()", async (t) => {
   // [range, version]
   // Version should be greater than range
   const versions: [string, string][] = [
@@ -73,7 +73,7 @@ Deno.test("gtr", async (t) => {
   }
 });
 
-Deno.test("gtrNegative", async (t) => {
+Deno.test("gtr() handles negative values", async (t) => {
   const versions: [string, string][] = [
     ["~0.6.1-1", "0.6.1-1"],
     ["1.0.0 - 2.0.0", "1.2.3"],

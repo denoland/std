@@ -4,7 +4,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-import { CbFunction, load, loadAll } from "./_loader/loader.ts";
+import { type CbFunction, load, loadAll } from "./_loader/loader.ts";
 import type { LoaderStateOptions } from "./_loader/loader_state.ts";
 
 export type ParseOptions = LoaderStateOptions;

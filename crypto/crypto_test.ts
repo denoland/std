@@ -2,7 +2,7 @@
 import { assert, assertEquals, assertInstanceOf, fail } from "../assert/mod.ts";
 import { crypto as stdCrypto } from "./mod.ts";
 import { repeat } from "../bytes/repeat.ts";
-import { DigestAlgorithm, digestAlgorithms } from "./_wasm/mod.ts";
+import { type DigestAlgorithm, digestAlgorithms } from "./_wasm/mod.ts";
 import { encodeHex } from "../encoding/hex.ts";
 
 const webCrypto = globalThis.crypto;

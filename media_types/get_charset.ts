@@ -2,7 +2,7 @@
 // This module is browser compatible.
 
 import { parseMediaType } from "./parse_media_type.ts";
-import { type DBEntry } from "./_util.ts";
+import type { DBEntry } from "./_util.ts";
 import { db, type KeyOfDb } from "./_db.ts";
 
 /**

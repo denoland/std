@@ -3,7 +3,7 @@
 
 import { ascend } from "./comparators.ts";
 import { BinarySearchTree } from "./binary_search_tree.ts";
-import { Direction, RedBlackNode } from "./_red_black_node.ts";
+import { type Direction, RedBlackNode } from "./_red_black_node.ts";
 
 /**
  * A red-black tree. This is a kind of self-balancing binary search tree. The

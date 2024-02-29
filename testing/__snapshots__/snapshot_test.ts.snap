@@ -213,9 +213,10 @@ snapshot[`Snapshot Test - Options > mode 1`] = `
 snapshot[`Snapshot Test - Options > mode 2`] = `
 "running 1 test from <tempDir>/test.ts
 snapshot ... ok (--ms)
-------- output -------
+------- post-test output -------
 
  > 1 snapshot updated.
+----- post-test output end -----
 
 ok | 1 passed | 0 failed (--ms)
 
@@ -225,9 +226,10 @@ ok | 1 passed | 0 failed (--ms)
 snapshot[`Snapshot Test - Update - New snapshot 1`] = `
 "running 1 test from <tempDir>/test.ts
 Snapshot Test - Update ... ok (--ms)
-------- output -------
+------- post-test output -------
 
  > 1 snapshot updated.
+----- post-test output end -----
 
 ok | 1 passed | 0 failed (--ms)
 
@@ -270,9 +272,10 @@ snapshot[\`Snapshot Test - Update 1\`] = \`
 snapshot[`Snapshot Test - Update - Existing snapshot - updates 1`] = `
 "running 1 test from <tempDir>/test.ts
 Snapshot Test - Update ... ok (--ms)
-------- output -------
+------- post-test output -------
 
  > 1 snapshot updated.
+----- post-test output end -----
 
 ok | 1 passed | 0 failed (--ms)
 
@@ -297,12 +300,13 @@ snapshot[`Snapshot Test - Update - Existing snapshots - reverse order 1 1`] = `
 "running 2 tests from <tempDir>/test.ts
 Snapshot Test - First ... ok (--ms)
 Snapshot Test - Second ... ok (--ms)
-------- output -------
+------- post-test output -------
 
  > 2 snapshots updated.
 
  > 1 snapshot removed.
    • Snapshot Test - Update 1
+----- post-test output end -----
 
 ok | 2 passed | 0 failed (--ms)
 
@@ -344,9 +348,10 @@ Snapshot Test - Remove - Second ... ok (--ms)
 Snapshot Test - Remove - Third ... ok (--ms)
 Snapshot Test - Remove - Fourth ... ok (--ms)
 Snapshot Test - Remove - Fifth ... ok (--ms)
-------- output -------
+------- post-test output -------
 
  > 5 snapshots updated.
+----- post-test output end -----
 
 ok | 5 passed | 0 failed (--ms)
 
@@ -359,10 +364,11 @@ Snapshot Test - Remove - First ... ok (--ms)
 Snapshot Test - Remove - Second ... ok (--ms)
 Snapshot Test - Remove - Fourth ... ok (--ms)
 Snapshot Test - Remove - Fifth ... ok (--ms)
-------- output -------
+------- post-test output -------
 
  > 1 snapshot removed.
    • Snapshot Test - Remove - Third 1
+----- post-test output end -----
 
 ok | 4 passed | 0 failed (--ms)
 
@@ -372,12 +378,13 @@ ok | 4 passed | 0 failed (--ms)
 snapshot[`Snapshot Test - Remove - Existing snapshot - removed several 1`] = `
 "running 1 test from <tempDir>/test.ts
 Snapshot Test - Remove - First ... ok (--ms)
-------- output -------
+------- post-test output -------
 
  > 3 snapshots removed.
    • Snapshot Test - Remove - Second 1
    • Snapshot Test - Remove - Fourth 1
    • Snapshot Test - Remove - Fifth 1
+----- post-test output end -----
 
 ok | 1 passed | 0 failed (--ms)
 
@@ -388,16 +395,17 @@ snapshot[`Snapshot Test - Different Dir - New snapshot 1`] = `
 "running 2 tests from <tempDir>/test.ts
 Snapshot Test - First ... ok (--ms)
 Snapshot Test - Second ... ok (--ms)
-------- output -------
+------- post-test output -------
 
  > 2 snapshots updated.
+----- post-test output end -----
 running 2 tests from <tempDir>/test.ts
-Snapshot Test - First ...----- output end -----
 Snapshot Test - First ... ok (--ms)
 Snapshot Test - Second ... ok (--ms)
-------- output -------
+------- post-test output -------
 
  > 2 snapshots updated.
+----- post-test output end -----
 
 ok | 4 passed | 0 failed (--ms)
 
@@ -408,16 +416,17 @@ snapshot[`Snapshot Test - Different Dir - Existing snapshot - update 1`] = `
 "running 2 tests from <tempDir>/test.ts
 Snapshot Test - First ... ok (--ms)
 Snapshot Test - Second ... ok (--ms)
-------- output -------
+------- post-test output -------
 
  > 1 snapshot updated.
+----- post-test output end -----
 running 2 tests from <tempDir>/test.ts
-Snapshot Test - First ...----- output end -----
 Snapshot Test - First ... ok (--ms)
 Snapshot Test - Second ... ok (--ms)
-------- output -------
+------- post-test output -------
 
  > 2 snapshots updated.
+----- post-test output end -----
 
 ok | 4 passed | 0 failed (--ms)
 

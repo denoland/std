@@ -6,7 +6,7 @@ import { readerFromIterable } from "./reader_from_iterable.ts";
 import { delay } from "../async/delay.ts";
 import type { Reader, ReaderSync } from "../io/types.ts";
 
-Deno.test("iterateReader", async () => {
+Deno.test("iterateReader()", async () => {
   // ref: https://github.com/denoland/deno/issues/2330
   const encoder = new TextEncoder();
 
@@ -42,7 +42,7 @@ Deno.test("iterateReader", async () => {
   assertEquals(totalSize, 12);
 });
 
-Deno.test("iterateReader works with slow consumer", async () => {
+Deno.test("iterateReader() works with slow consumer", async () => {
   const a = new Uint8Array([97]);
   const b = new Uint8Array([98]);
   const iter = iterateReader(readerFromIterable([a, b]));
@@ -53,7 +53,7 @@ Deno.test("iterateReader works with slow consumer", async () => {
   assertEquals([a, b], await Promise.all(promises));
 });
 
-Deno.test("iterateReaderSync", () => {
+Deno.test("iterateReaderSync()", () => {
   // ref: https://github.com/denoland/deno/issues/2330
   const encoder = new TextEncoder();
 
@@ -88,7 +88,7 @@ Deno.test("iterateReaderSync", () => {
   assertEquals(totalSize, 12);
 });
 
-Deno.test("iterateReaderSync works with slow consumer", async () => {
+Deno.test("iterateReaderSync() works with slow consumer", async () => {
   const a = new Uint8Array([97]);
   const b = new Uint8Array([98]);
   const data = [a, b];
