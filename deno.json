@@ -19,7 +19,8 @@
     "preview": "deno run -A --unstable main.ts",
     "esm:add": "deno run -A https://esm.sh/v135 add",
     "esm:update": "deno run -A https://esm.sh/v135 update",
-    "esm:remove": "deno run -A https://esm.sh/v135 remove"
+    "esm:remove": "deno run -A https://esm.sh/v135 remove",
+    "setup:githook": "ln -s ./pre-commit .git/hooks/pre-commit"
   },
   "compilerOptions": {
     "jsx": "react-jsx",

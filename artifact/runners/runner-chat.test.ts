@@ -15,7 +15,7 @@ Deno.test('runner', async (t) => {
     commands: ['io-fixture:local', 'io-fixture:error'],
     instructions: ['Only reply with a SINGLE word'],
   }
-  const api = IsolateApi.create(memfs().fs)
+  const api = IsolateApi.createFS(memfs().fs)
   await t.step('hello world', async () => {
     const help = merge({}, helpBase, { commands: [] })
     const text = 'reply with the cheese emoji'
