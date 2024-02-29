@@ -14,7 +14,12 @@ import {
 } from "./_io.ts";
 import { assert } from "../assert/assert.ts";
 
-export { ParseError, type ParseResult, type ReadOptions, type RecordWithColumn };
+export {
+  ParseError,
+  type ParseResult,
+  type ReadOptions,
+  type RecordWithColumn,
+};
 
 const BYTE_ORDER_MARK = "\ufeff";
 
