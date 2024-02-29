@@ -342,9 +342,8 @@ Deno.test({
     fileHandler.log(regularLog);
     fileHandler.destroy();
 
-    const decoder = new TextDecoder();
     assertEquals(
-      decoder.decode(Deno.readFileSync(LOG_FILE)),
+      Deno.readTextFileSync(LOG_FILE),
       `${regularLog}\n${veryLargeLog}\n${regularLog}\n`,
     );
 
