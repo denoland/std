@@ -2,11 +2,12 @@
 import { assert } from "../assert/mod.ts";
 import { INVALID, MIN } from "./constants.ts";
 import { isComparator } from "./_is_comparator.ts";
+import { formatComparator } from "./_format_comparator.ts";
+import { Comparator } from "./types.ts";
 
 Deno.test({
-  name: "valid_comparator",
+  name: "isComparator()",
   fn: async (t) => {
-    let i = 0;
     const comparators: unknown[] = [
       {
         operator: ">=",
@@ -32,7 +33,7 @@ Deno.test({
     ];
     for (const c of comparators) {
       await t.step(
-        `valid_comparator_${(i++).toString().padStart(2, "0")}`,
+        `${formatComparator(c as Comparator)}`,
         () => {
           const actual = isComparator(c);
           assert(actual);
