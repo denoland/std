@@ -7,6 +7,7 @@ import * as loadHelp from './load-help.ts'
 import * as open from './open.js'
 import * as utils from './utils.js'
 import * as artifact from './artifact.ts'
+import * as session from './session.ts'
 
 export default {
   'engage-help': engageHelp,
@@ -18,4 +19,5 @@ export default {
   open,
   utils,
   artifact,
+  session,
 }

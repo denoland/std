@@ -60,8 +60,11 @@ enum KEYSPACES {
 const getId = (action: Request | Reply) => {
   if ('ulid' in action) {
     return action.ulid
-  } else {
+  } else if ('sequence' in action) {
     return action.sequence
+  } else {
+    assert('sourceSequence' in action, 'sourceSequence is required')
+    return action.sourceSequence
   }
 }
 

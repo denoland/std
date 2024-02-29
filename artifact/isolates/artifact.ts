@@ -5,11 +5,12 @@ import { memfs } from 'https://esm.sh/memfs@4.6.0'
 import {
   ENTRY_BRANCH,
   InternalReply,
-  InternalRequest,
   IsolateFunctions,
   IsolateLifecycle,
+  IsolatePromise,
   Params,
   Request,
+  SolidRequest,
 } from '@/artifact/constants.ts'
 import IsolateApi from '../isolate-api.ts'
 import Compartment from '../io/compartment.ts'
@@ -166,10 +167,10 @@ export const functions: IsolateFunctions = {
   push() {
     throw new Error('not implemented')
   },
-  apiSchema: (params: Params) => {
+  apiSchema: async (params: Params) => {
     // when it loads from files, will benefit from being close to the db
     const isolate = params.isolate as string
-    const compartment = Compartment.create(isolate)
+    const compartment = await Compartment.create(isolate)
     return compartment.api
   },
   pierce: (params, api: IsolateApi<C>) => {
@@ -177,27 +178,41 @@ export const functions: IsolateFunctions = {
     return api.context.io!.induct(params as Request)
   },
   request: async (params, api: IsolateApi<C>) => {
-    const request = params.request as InternalRequest
+    const request = params.request as SolidRequest
     const commit = params.commit as string
     const prior = params.prior as number | undefined
     // TODO wait for the prior to complete using prior key
     log('request %o %o', request.isolate, request.functionName, prior)
-    const compartment = Compartment.create(request.isolate)
+    const compartment = await Compartment.create(request.isolate)
 
     // TODO load up the fs based on the current commit, not latest commit
     const fs = await api.context.fs!.load(request.target)
-    const isolateApi = IsolateApi.create(fs, commit)
+    const acc: IsolatePromise[] = []
+    const isolateApi = IsolateApi.create(fs, commit, request.target, acc)
     const functions = compartment.functions(isolateApi)
     const outcome: Outcome = {}
     try {
+      // TODO handle long running functions with other outputs
+      // also handle any kind of internal requests
+      // so if return a promise longer than one eventloop,
+      // but if you set up some actions, then we pause the execution.
+      // you must be able to keep running it tho, and
+
       outcome.result = await functions[request.functionName](request.params)
       log('self result: %o', outcome.result)
     } catch (errorObj) {
       log('self error', errorObj)
+      // this will cancel all outstanding requests
+      // and should transmit them to the chains that are running them
       outcome.error = serializeError(errorObj)
     }
+    console.log('acc', acc)
     const { target, sequence } = request
     const reply: InternalReply = { target, sequence, outcome }
+
+    // BUT now we need to induct the collection of other actions that were fired
+    // off during the execution here
+
     await api.context.io!.induct(reply)
   },
   logs: async (params, api: IsolateApi<C>) => {

@@ -5,6 +5,15 @@ import * as posix from 'https://deno.land/std@0.213.0/path/posix/mod.ts'
 import { Debug } from '@utils'
 import git from '$git'
 import FS from '@/artifact/fs.ts'
+import {
+  DispatchFunctions,
+  IsolatePromise,
+  Params,
+  PID,
+  ProcessOptions,
+  PROCTYPE,
+} from '@/artifact/constants.ts'
+import { PoolRequest } from '@/artifact/constants.ts'
 
 const log = Debug('AI:isolateApi')
 interface Default {
@@ -14,40 +23,58 @@ const dir = '/'
 export default class IsolateApi<T extends object = Default> {
   #fs!: IFs
   #commit: string | undefined
+  #pid: PID | undefined
+  #accumulator: IsolatePromise[] | undefined
   // TODO assign a mount id for each side effect execution context ?
   #context: Partial<T> = {}
-  static create(fs: IFs, commit?: string) {
+  static createFS(fs: IFs, atCommit?: string) {
+    const api = new IsolateApi()
+    api.#fs = fs
+    api.#commit = atCommit
+    return api
+  }
+  static create(fs: IFs, commit: string, pid: PID, acc: IsolatePromise[]) {
     const api = new IsolateApi()
     api.#fs = fs
     api.#commit = commit
+    api.#pid = pid
+    api.#accumulator = acc
     return api
   }
-  // OR we could use options to the functions to switch modes
-  /**
-   * When any of these functions are called, they will be executed in the same
-   * branch is the caller, and will be executed in the order they were called.
-   * A call to this function will cause two commits to occur on the current
-   * branch - the first to store the function call, and the second to store the
-   * result.
-   * @param isolate The name of the isolate to load the serials for
-   */
-  serials(isolate: string) {
-    log('serials', isolate)
+  get pid() {
+    assert(this.#pid, 'pid not set')
+    return this.#pid
   }
-  /**
-   * When any of these functions are called, they will be executed in parallel
-   * in a new branch, with no guarantee of order of execution.  A call to this
-   * function will cause 3 commits to occur, 2 of which may be pooled with other
-   * functions.  The commits are:
-   * 1. The current branch, to declare the function invocation - may be pooled
-   * 2. The new branch, to conclude the function invocation - may be skippable
-   *    if no fs changes were made
-   * 3. The current branch, to merge the result back in - may be pooled
-   * @param isolate The name of the isolate to load the parallels for
-   */
-  parallels(isolate: string) {
-    // typescript made me do it
-    return this.functions(isolate)
+  async actions(isolate: string, targetPID?: PID) {
+    log('actions', isolate, targetPID)
+    const schema = await this.isolateApiSchema(isolate)
+    const actions: DispatchFunctions = {}
+    const target = targetPID ? targetPID : this.pid
+
+    for (const functionName of Object.keys(schema)) {
+      actions[functionName] = (params?: Params, options?: ProcessOptions) => {
+        log('actions %o', functionName)
+        const proctype = options?.branch ? PROCTYPE.BRANCH : PROCTYPE.SERIAL
+        const assignedByPostRunCollector = -1
+        const request: PoolRequest = {
+          target,
+          source: target,
+          sourceSequence: assignedByPostRunCollector,
+
+          isolate,
+          functionName,
+          params: params || {},
+          proctype,
+        }
+        const promise = new Promise((resolve, reject) => {
+          assert(this.#accumulator, 'accumulator must be set')
+          this.#accumulator.push({ request, resolve, reject })
+        })
+        return promise
+      }
+    }
+
+    return actions
   }
   /**
    * Used to call the functions of an isolate purely, without going thru the IO
@@ -56,14 +83,14 @@ export default class IsolateApi<T extends object = Default> {
    * @returns An object keyed by API function name, with values being the
    * function itself.
    */
-  functions(isolate: string) {
+  async functions(isolate: string) {
     // TODO these need some kind of PID attached ?
-    const compartment = Compartment.create(isolate)
+    const compartment = await Compartment.create(isolate)
     // TODO but these need to be wrapped in a dispatch call somewhere
     return compartment.functions(this)
   }
-  isolateApiSchema(isolate: string) {
-    const compartment = Compartment.create(isolate)
+  async isolateApiSchema(isolate: string) {
+    const compartment = await Compartment.create(isolate)
     return compartment.api
   }
   writeJSON(path: string, json: object) {

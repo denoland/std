@@ -15,12 +15,13 @@ export default class Compartment {
   #check() {
     assert(this.#module, 'code not loaded')
   }
-  static create(isolate: string) {
+  static async create(isolate: string) {
     if (!cache.has(isolate)) {
       const compartment = new Compartment()
       compartment.#load(isolate)
       cache.set(isolate, compartment)
     }
+    await Promise.resolve() // simulates loading from filesystem
     return cache.get(isolate)
   }
   get api() {

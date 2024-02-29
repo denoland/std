@@ -20,6 +20,7 @@ export default class IO {
     io.#self = self
     return io
   }
+
   async induct(poolable: Poolable) {
     log('induct %o', poolable)
     await this.#db.addToPool(poolable)
@@ -45,7 +46,7 @@ export default class IO {
     await this.#fs.update(pid, fs, commit, lockId)
 
     for (const request of requests) {
-      // this detaches from the queue, and relies on watchReply() to complete
+      // WARNING detaches from queue and relies on watchReply() to complete
       const prior = priors.pop()
       await this.#self.request({ request, prior, commit })
     }

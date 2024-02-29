@@ -1,6 +1,6 @@
 import { IFs } from 'https://esm.sh/v135/memfs@4.6.0/lib/index.js'
 import IsolateApi from './isolate-api.ts'
-export { IsolateApi }
+export type { IsolateApi }
 export type { CborUint8Array } from 'https://esm.sh/v135/json-joy@9.9.1/es6/json-pack/cbor/types.d.ts?exports=CbotUint8Array'
 export const IO_PATH = '.io.json'
 import {
@@ -34,10 +34,26 @@ export type IoStruct = {
   requests: { [key: string]: Request }
   replies: { [key: string]: Outcome }
 }
-export type Request = PierceRequest | InternalRequest
+export type Request = PierceRequest | SolidRequest | PoolRequest
 export type Poolable = Request | InternalReply | MergeReply
 export type Reply = PierceReply | InternalReply | MergeReply
-export type InternalRequest = {
+/**
+ * A request made from inside an isolate, targetting the pool of a branch
+ */
+export type PoolRequest = {
+  target: PID
+  source: PID
+  sourceSequence: number
+
+  isolate: string
+  functionName: string
+  params: Params
+  proctype: PROCTYPE
+}
+/**
+ * A request that has been included in a commit, therefore has a sequence number
+ */
+export type SolidRequest = {
   target: PID
   source: PID
   sequence: number
@@ -62,5 +78,10 @@ export type MergeReply = {
   outcome: Outcome
   fs: IFs
   commit: string
+}
+export type IsolatePromise = {
+  request: PoolRequest
+  resolve: (value: unknown) => void
+  reject: (error: Error) => void
 }
 export * from './api/web-client.types.ts'

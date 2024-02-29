@@ -60,6 +60,8 @@ export default class Queue {
     this.#kv.listenQueue(async (msg: QFunction) => {
       log('listenQueue ', msg.id, msg.name)
       assert(this.#functions[msg.name], `missing ${msg.name}`)
+      // TODO make the queue include types on the params
+      // possibly with strong assertion checking
       const { id, name, params = {}, detach } = msg
       const outcomeKey = ['QUEUE', id, name]
       const key = [...outcomeKey, 'pending']

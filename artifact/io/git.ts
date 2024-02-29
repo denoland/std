@@ -22,7 +22,7 @@ import { Reply, Request } from '@/artifact/constants.ts'
 import { PierceRequest } from '@/artifact/constants.ts'
 import { PierceReply } from '@/artifact/constants.ts'
 import { MergeReply } from '@/artifact/constants.ts'
-import { InternalRequest } from '@/artifact/constants.ts'
+import { SolidRequest } from '@/artifact/constants.ts'
 
 const log = Debug('AI:git')
 
@@ -51,7 +51,7 @@ export const init = async (fs: IFs, repo: string) => {
  */
 export const solidifyPool = async (fs: IFs, pool: Poolable[]) => {
   checkPool(pool)
-  const api = IsolateApi.create(fs)
+  const api = IsolateApi.createFS(fs)
   log('solidifyPool')
   let io: IoStruct = { sequence: 0, requests: {}, replies: {} }
   if (await api.exists('.io.json')) {
@@ -59,7 +59,7 @@ export const solidifyPool = async (fs: IFs, pool: Poolable[]) => {
     // TODO check format and schema
     blankSettledRequests(io)
   }
-  const requests: InternalRequest[] = []
+  const requests: SolidRequest[] = []
   const priors: (number | undefined)[] = []
   const branches: PID[] = []
   const replies: (PierceReply | InternalReply)[] = []
@@ -130,14 +130,14 @@ export const branch = async (fs: IFs, commit: string, pid: PID) => {
   log('branch', pid, ref)
   await git.branch({ fs, dir: '/', ref, checkout: true, object: commit })
 
-  const api = IsolateApi.create(fs)
+  const api = IsolateApi.createFS(fs, commit)
   const io = await api.readJSON('.io.json') as IoStruct
   const sequence = Number.parseInt(pid.branches.slice(-1)[0])
 
   const { isolate, functionName, params, target } = io.requests[sequence]
   const proctype = PROCTYPE.SERIAL
   const source = target
-  const origin: InternalRequest = {
+  const origin: SolidRequest = {
     target: pid,
     source,
     sequence,

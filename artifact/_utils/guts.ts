@@ -2,9 +2,11 @@
 
 import { expect, log } from '@utils'
 import { Cradle } from '../api/web-client.types.ts'
+import testProcessMgmt from './process-mgmt.ts'
 
 export default (name: string, cradleMaker: () => Promise<Cradle>) => {
   const prefix = name + ': '
+
   Deno.test(prefix + 'io', async (t) => {
     const artifact = await cradleMaker()
     await t.step('ping empty', async () => {
@@ -125,4 +127,5 @@ export default (name: string, cradleMaker: () => Promise<Cradle>) => {
 
     await artifact.stop()
   })
+  testProcessMgmt(name, cradleMaker)
 }

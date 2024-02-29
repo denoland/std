@@ -24,10 +24,11 @@ export class QueueCradle implements Cradle {
   #queue!: Queue
   static async create() {
     const cradle = new QueueCradle()
-    cradle.#compartment = Compartment.create('artifact')
+    cradle.#compartment = await Compartment.create('artifact')
     const { fs } = memfs()
     // TODO pass a dispatch function in so it can call out to other pids
-    cradle.#api = IsolateApi.create(fs)
+    // TODO use a super PID as the cradle PID for all system actions
+    cradle.#api = IsolateApi.createFS(fs)
     cradle.#api.context.self = cradle
     await cradle.#compartment.mount(cradle.#api)
     assert(cradle.#api.context.db, 'db not found')
@@ -48,7 +49,7 @@ export class QueueCradle implements Cradle {
     const pierces: DispatchFunctions = {}
     for (const functionName of Object.keys(apiSchema)) {
       pierces[functionName] = (
-        params: Params = {},
+        params?: Params,
         options?: { branch?: boolean },
       ) => {
         log('pierces %o', functionName)
@@ -58,7 +59,8 @@ export class QueueCradle implements Cradle {
           ulid: ulid(),
           isolate,
           functionName,
-          params,
+          params: params || {},
+          // TODO pass the process options straight thru ?
           proctype,
         }
         return this.pierce(pierce)

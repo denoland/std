@@ -17,12 +17,39 @@ export type JsonValue =
     [key: string]: JsonValue
   }
 export type IsolateReturn = JsonValue | void
-
+export type ProcessOptions = {
+  /**
+   * Any function called with this option will be executed in parallel
+   * in a new branch, with no guarantee of order of execution.  A call to this
+   * function will cause 3 commits to occur, 2 of which may be pooled with other
+   * functions.  The commits are:
+   * 1. The current branch, to declare the function invocation - may be pooled
+   * 2. The new branch, to conclude the function invocation - may be skippable
+   *    if no fs changes were made
+   * 3. The current branch, to merge the result back in - may be pooled
+   *
+   * Without this option, the functions will be executed in the same
+   * branch as the caller, and will be executed in the order that any other
+   * similarly called functions were invoked.
+   * A call to this function will cause two commits to occur on the current
+   * branch - the first to store the function call, and the second to store the
+   * result.  Both commits may be shared with other function calls.
+   */
+  branch?: boolean
+  /**
+   * Should the branch be closed after the process is done.
+   * Implies `branch: true`
+   */
+  noClose?: boolean
+  // TODO add prefix option so the branch name can be set
+  // the name must have the sequence suffix so that determinism is in there
+  // also frees us from doing a collision check
+}
 export type DispatchFunctions = {
   [key: string]: (
     params?: Params,
-    options?: { branch?: boolean },
-  ) => unknown | Promise<unknown>
+    options?: ProcessOptions,
+  ) => Promise<unknown> | unknown
 }
 export type Params = Record<string, unknown>
 

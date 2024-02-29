@@ -7,11 +7,7 @@ import { serializeError } from 'npm:serialize-error'
 import { load } from 'https://deno.land/std@0.213.0/dotenv/mod.ts'
 import { Help, IsolateApi } from '@/artifact/constants.ts'
 import { Params } from '@/artifact/constants.ts'
-import {
-  HelpConfig,
-  IsolateApiSchema,
-  JSONSchemaType,
-} from '@/artifact/constants.ts'
+import { HelpConfig, JSONSchemaType } from '@/artifact/constants.ts'
 
 const base = 'AI:runner-chat'
 const log = Debug(base)
@@ -216,10 +212,10 @@ export class AI {
         const { load } = await this.#api.functions('load-help')
         const help = await load({ help: name })
         assert(help.description, `missing description: ${command}`)
-
-        const { engage } = await this.#api.parallels('engage-help')
+        const schemas = await this.#api.isolateApiSchema('engage-help')
+        const { engage } = await this.#api.actions('engage-help')
         action = ({ text }: { text: string }) => engage({ help: name, text })
-        tool = helpToGptApi(name, help, engage)
+        tool = toTool(name, help, schemas.engage)
       } else {
         const [isolate, _name] = command.split(':')
         name = _name
@@ -241,13 +237,13 @@ export class AI {
     this.#tools = tools
   }
 }
-const helpToGptApi = (name: string, help: Help, api: IsolateApiSchema) => {
+const toTool = (name: string, help: Help, schema: JSONSchemaType<object>) => {
   const parameters = {
     type: 'object',
     additionalProperties: false,
     required: ['text'],
     properties: {
-      text: api.properties.text,
+      text: schema.properties.text,
     },
   }
 
