@@ -11,12 +11,12 @@ function comparatorIntersects(
   const op0 = c0.operator;
   const op1 = c1.operator;
 
-  if (op0 === "" || op0 === undefined) {
+  if (op0 === undefined) {
     // if c0 is empty comparator, then returns true
     if (isWildcardComparator(c0)) return true;
     return testRange(c0, [[c1]]);
   }
-  if (op1 === "" || op1 === undefined) {
+  if (op1 === undefined) {
     if (isWildcardComparator(c1)) return true;
     return testRange(c1, [[c0]]);
   }

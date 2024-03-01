@@ -4,11 +4,8 @@
  * @deprecated (will be removed in 0.219.0) `"=="`, `"==="`, `"!=="` and `""` operators are deprecated. Use `"="`, `"!="` or `undefined` instead.
  */
 export const OPERATORS = [
-  "",
+  undefined,
   "=",
-  "==",
-  "===",
-  "!==",
   "!=",
   ">",
   ">=",
