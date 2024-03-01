@@ -3,7 +3,7 @@ import { assert } from "../assert/mod.ts";
 import { ALL, MIN } from "./constants.ts";
 import { formatRange } from "./format_range.ts";
 import { isRange } from "./is_range.ts";
-import { Range } from "./types.ts";
+import type { Range } from "./types.ts";
 
 Deno.test({
   name: "isRange()",
