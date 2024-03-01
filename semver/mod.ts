@@ -285,7 +285,6 @@ export * from "./types.ts";
 export * from "./try_parse_range.ts";
 export * from "./is_range.ts";
 export * from "./can_parse.ts";
-export * from "./reverse_sort.ts";
 export * from "./try_parse.ts";
 export * from "./format_range.ts";
 export * from "./equals.ts";
