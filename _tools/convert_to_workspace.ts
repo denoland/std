@@ -179,7 +179,7 @@ for await (const entry of walk(cwd)) {
     const pkg = target.split("/")[0];
     if (pkg === currentPkg) {
       let newSpecifier = relative(dirname(entry.path), target)
-        .replaceAll( "\\", "/",);
+        .replaceAll("\\", "/");
       if (!newSpecifier.startsWith(".")) {
         newSpecifier = "./" + newSpecifier;
       }
