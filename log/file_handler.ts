@@ -1,7 +1,8 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-import { LevelName, LogLevels } from "./levels.ts";
+import { type LevelName, LogLevels } from "./levels.ts";
 import type { LogRecord } from "./logger.ts";
 import { BaseHandler, type BaseHandlerOptions } from "./base_handler.ts";
+import { writeAllSync } from "../io/write_all.ts";
 
 const PAGE_SIZE = 4096;
 export type LogMode = "a" | "w" | "x";
@@ -76,8 +77,12 @@ export class FileHandler extends BaseHandler {
     if (bytes.byteLength > this._buf.byteLength - this._pointer) {
       this.flush();
     }
-    this._buf.set(bytes, this._pointer);
-    this._pointer += bytes.byteLength;
+    if (bytes.byteLength > this._buf.byteLength) {
+      writeAllSync(this._file!, bytes);
+    } else {
+      this._buf.set(bytes, this._pointer);
+      this._pointer += bytes.byteLength;
+    }
   }
 
   flush() {

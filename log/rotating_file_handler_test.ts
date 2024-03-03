@@ -14,7 +14,7 @@ const LOG_FILE = "./rotating_file_handler_test_log.file";
 
 Deno.test({
   name:
-    "RotatingFileHandler with mode 'w' will wipe clean existing log file and remove others",
+    "RotatingFileHandler wipes existing log file clean and removes others with mode 'w'",
   async fn() {
     Deno.writeFileSync(LOG_FILE, new TextEncoder().encode("hello world"));
     Deno.writeFileSync(
@@ -50,7 +50,7 @@ Deno.test({
 
 Deno.test({
   name:
-    "RotatingFileHandler with mode 'x' will throw if any log file already exists",
+    "RotatingFileHandler throws if any log file already exists with mode 'x'",
   fn() {
     Deno.writeFileSync(
       LOG_FILE + ".3",
@@ -76,7 +76,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "RotatingFileHandler with first rollover, monitor step by step",
+  name: "RotatingFileHandler handles first rollover, monitor step by step",
   async fn() {
     using fileHandler = new RotatingFileHandler("WARN", {
       filename: LOG_FILE,
@@ -125,7 +125,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "RotatingFileHandler with first rollover, check all at once",
+  name: "RotatingFileHandler handles first rollover, check all at once",
   async fn() {
     const fileHandler = new RotatingFileHandler("WARN", {
       filename: LOG_FILE,
@@ -171,7 +171,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "RotatingFileHandler with all backups rollover",
+  name: "RotatingFileHandler handles all backups rollover",
   fn() {
     Deno.writeFileSync(LOG_FILE, new TextEncoder().encode("original log file"));
     Deno.writeFileSync(
@@ -228,7 +228,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "RotatingFileHandler maxBytes cannot be less than 1",
+  name: "RotatingFileHandler handles maxBytes less than 1",
   fn() {
     assertThrows(
       () => {
@@ -247,7 +247,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "RotatingFileHandler maxBackupCount cannot be less than 1",
+  name: "RotatingFileHandler handles maxBackupCount less than 1",
   fn() {
     assertThrows(
       () => {
@@ -266,7 +266,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "RotatingFileHandler: rotate on byte length, not msg length",
+  name: "RotatingFileHandler rotates on byte length, not msg length",
   async fn() {
     const fileHandler = new RotatingFileHandler("WARN", {
       filename: LOG_FILE,
@@ -296,5 +296,56 @@ Deno.test({
 
     Deno.removeSync(LOG_FILE);
     Deno.removeSync(LOG_FILE + ".1");
+  },
+});
+
+Deno.test({
+  name: "RotatingFileHandler handles strings larger than the buffer",
+  fn() {
+    const fileHandler = new RotatingFileHandler("WARN", {
+      filename: LOG_FILE,
+      mode: "w",
+      maxBytes: 4000000,
+      maxBackupCount: 10,
+    });
+    const logOverBufferLimit = "A".repeat(4096);
+    fileHandler.setup();
+
+    fileHandler.log(logOverBufferLimit);
+    fileHandler.destroy();
+
+    assertEquals(
+      Deno.readTextFileSync(LOG_FILE),
+      `${logOverBufferLimit}\n`,
+    );
+
+    Deno.removeSync(LOG_FILE);
+  },
+});
+
+Deno.test({
+  name: "RotatingFileHandler handles a mixture of string sizes",
+  fn() {
+    const fileHandler = new RotatingFileHandler("WARN", {
+      filename: LOG_FILE,
+      mode: "w",
+      maxBytes: 4000000,
+      maxBackupCount: 10,
+    });
+    const veryLargeLog = "A".repeat(10000);
+    const regularLog = "B".repeat(100);
+    fileHandler.setup();
+
+    fileHandler.log(regularLog);
+    fileHandler.log(veryLargeLog);
+    fileHandler.log(regularLog);
+    fileHandler.destroy();
+
+    assertEquals(
+      Deno.readTextFileSync(LOG_FILE),
+      `${regularLog}\n${veryLargeLog}\n${regularLog}\n`,
+    );
+
+    Deno.removeSync(LOG_FILE);
   },
 });

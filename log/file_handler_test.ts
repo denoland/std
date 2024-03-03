@@ -7,7 +7,7 @@ import { LogRecord } from "./logger.ts";
 const LOG_FILE = "./file_handler_test_log.file";
 
 Deno.test({
-  name: "FileHandler Shouldn't Have Broken line",
+  name: "FileHandler doesn't have broken line",
   fn() {
     class TestFileHandler extends FileHandler {
       override flush() {
@@ -44,7 +44,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "FileHandler with mode 'w' will wipe clean existing log file",
+  name: "FileHandler wipes existing log file clean with mode 'w'",
   async fn() {
     const fileHandler = new FileHandler("WARN", {
       filename: LOG_FILE,
@@ -81,7 +81,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "FileHandler with mode 'x' will throw if log file already exists",
+  name: "FileHandler throws if log file already exists with mode 'x'",
   fn() {
     using fileHandler = new FileHandler("WARN", {
       filename: LOG_FILE,
@@ -98,7 +98,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "Window unload flushes buffer",
+  name: "FileHandler flushes buffer on unload",
   async fn() {
     const fileHandler = new FileHandler("WARN", {
       filename: LOG_FILE,
@@ -124,7 +124,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "FileHandler: Critical logs trigger immediate flush",
+  name: "FileHandler triggers immediate flush on critical logs",
   async fn() {
     using fileHandler = new FileHandler("WARN", {
       filename: LOG_FILE,
@@ -158,6 +158,53 @@ Deno.test({
     const fileSize2 = (await Deno.stat(LOG_FILE)).size;
     // ERROR record is 10 bytes, CRITICAL is 13 bytes
     assertEquals(fileSize2, 23);
+
+    Deno.removeSync(LOG_FILE);
+  },
+});
+
+Deno.test({
+  name: "FileHandler handles strings larger than the buffer",
+  fn() {
+    const fileHandler = new FileHandler("WARN", {
+      filename: LOG_FILE,
+      mode: "w",
+    });
+    const logOverBufferLimit = "A".repeat(4096);
+    fileHandler.setup();
+
+    fileHandler.log(logOverBufferLimit);
+    fileHandler.destroy();
+
+    assertEquals(
+      Deno.readTextFileSync(LOG_FILE),
+      `${logOverBufferLimit}\n`,
+    );
+
+    Deno.removeSync(LOG_FILE);
+  },
+});
+
+Deno.test({
+  name: "FileHandler handles a mixture of string sizes",
+  fn() {
+    const fileHandler = new FileHandler("WARN", {
+      filename: LOG_FILE,
+      mode: "w",
+    });
+    const veryLargeLog = "A".repeat(10000);
+    const regularLog = "B".repeat(100);
+    fileHandler.setup();
+
+    fileHandler.log(regularLog);
+    fileHandler.log(veryLargeLog);
+    fileHandler.log(regularLog);
+    fileHandler.destroy();
+
+    assertEquals(
+      Deno.readTextFileSync(LOG_FILE),
+      `${regularLog}\n${veryLargeLog}\n${regularLog}\n`,
+    );
 
     Deno.removeSync(LOG_FILE);
   },

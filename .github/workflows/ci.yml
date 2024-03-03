@@ -17,7 +17,8 @@ jobs:
       fail-fast: false
       matrix:
         deno:
-          - v1.x
+          # TODO(kt3k): Enable this when Deno v1.41.1 released
+          # - v1.x
           - canary
         os:
           - ubuntu-22.04

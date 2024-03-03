@@ -9,7 +9,7 @@ import {
 } from "../path/mod.ts";
 import {
   expandGlob,
-  ExpandGlobOptions,
+  type ExpandGlobOptions,
   expandGlobSync,
 } from "./expand_glob.ts";
 

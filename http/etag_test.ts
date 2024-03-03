@@ -7,7 +7,7 @@ import { calculate, ifMatch, ifNoneMatch } from "./etag.ts";
 const encoder = new TextEncoder();
 
 Deno.test({
-  name: "etag - calculate - string - empty",
+  name: "calculate() handles empty string",
   async fn() {
     const actual = await calculate("");
     assertEquals(actual, `"0-47DEQpj8HBSa+/TImW+5JCeuQeR"`);
@@ -15,7 +15,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "etag - calculate - string",
+  name: "calculate() handles string",
   async fn() {
     const actual = await calculate("hello deno");
     assertEquals(actual, `"a-YdfmHmj2RiwOVqJupcf3PLK9PuJ"`);
@@ -23,7 +23,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "etag - calculate - Uint8Array - empty",
+  name: "calculate() handles empty Uint8Array",
   async fn() {
     const actual = await calculate(new Uint8Array());
     assertEquals(actual, `"0-47DEQpj8HBSa+/TImW+5JCeuQeR"`);
@@ -31,7 +31,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "etag - calculate - Uint8Array",
+  name: "calculate() handles Uint8Array",
   async fn() {
     const actual = await calculate(encoder.encode("hello deno"));
     assertEquals(actual, `"a-YdfmHmj2RiwOVqJupcf3PLK9PuJ"`);
@@ -39,7 +39,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "etag - calculate - Deno.FileInfo",
+  name: "calculate() handles Deno.FileInfo",
   async fn() {
     const fixture: Deno.FileInfo = {
       isFile: true,
@@ -69,7 +69,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "etag - ifMatch",
+  name: "ifMatch()",
   async fn() {
     assert(!ifMatch(`"abcdefg"`, await calculate("hello deno")));
     assert(
@@ -95,7 +95,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "etag - ifNoneMatch",
+  name: "ifNoneMatch()",
   async fn() {
     assert(ifNoneMatch(`"abcdefg"`, await calculate("hello deno")));
     assert(

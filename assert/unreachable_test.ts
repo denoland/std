@@ -12,3 +12,15 @@ Deno.test("AssertsUnreachable", function () {
   }
   assert(didThrow);
 });
+
+Deno.test("unreachable with reason", function () {
+  let didThrow = false;
+  try {
+    unreachable("inconceivable!");
+  } catch (e) {
+    assert(e instanceof AssertionError);
+    assert(e.message === "inconceivable!");
+    didThrow = true;
+  }
+  assert(didThrow);
+});

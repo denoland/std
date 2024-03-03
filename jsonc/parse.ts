@@ -33,11 +33,11 @@ export interface ParseOptions {
  * ```ts
  * import { parse } from "https://deno.land/std@$STD_VERSION/jsonc/mod.ts";
  *
- * console.log(parse('{"foo": "bar", } // comment')); // { foo: "bar" }
- * console.log(parse('{"foo": "bar", } /* comment *\/')); // { foo: "bar" }
- * console.log(parse('{"foo": "bar" } // comment', {
+ * parse('{"foo": "bar", } // comment'); // { foo: "bar" }
+ * parse('{"foo": "bar", } /* comment *\/'); // { foo: "bar" }
+ * parse('{"foo": "bar" } // comment', {
  *   allowTrailingComma: false,
- * })); // { foo: "bar" }
+ * }); // { foo: "bar" }
  * ```
  *
  * @param text A valid JSONC string.
