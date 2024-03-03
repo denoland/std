@@ -1,12 +1,11 @@
 import { IFs, memfs } from 'https://esm.sh/memfs@4.6.0'
-import { Debug, expect, log } from '@utils'
+import { expect, log } from '@utils'
 import * as git from './git.ts'
 import {
   IoStruct,
   PID,
   PierceReply,
   PierceRequest,
-  PoolRequest,
   PROCTYPE,
   Reply,
 } from '@/artifact/constants.ts'
@@ -101,53 +100,53 @@ Deno.test('pierce serial', async (t) => {
   // TODO cannot reply out of order
   // TODO permissioning for inclusion in the pool
 })
-Deno.test.ignore('isolate serial', async (t) => {
+Deno.test.ignore('isolate serial', async () => {
   // when a request is made from within an isolate
 
   // use a fixture to trigger an action that is due somewhere else
   // check the action is inserted correctly into the pool of the next branch
   // process it and get the reply out
 
-  const { fs } = memfs()
-  const source: PID = { account: 'git', repository: 'test', branches: ['main'] }
-  const target: PID = {
-    account: 'git',
-    repository: 'test',
-    branches: ['main', 'child'],
-  }
-  const pool = (accumulation: number): PoolRequest => ({
-    target,
-    source,
-    // but we also need some sense of id from within the accumulator ?
-    accumulation,
-    isolate: 'test-isolate',
-    functionName: 'test',
-    params: {},
-    proctype: PROCTYPE.SERIAL,
-  })
-  const reply: Reply = {
-    target,
-    sequence: 0,
-    outcome: { result: 'test-result' },
-  }
-  await t.step('init', async () => {
-    const pid = await git.init(fs, 'git/test')
-    expect(pid).toEqual(source)
-    expect(fs.existsSync('/.git')).toBe(true)
-  })
-  const request = pool(0)
-  await t.step('request', async () => {
-    const { requests, priors } = await git.solidifyPool(fs, [request])
-    expect(requests).toHaveLength(1)
-    Debug.enable('*')
-    log('requests', requests)
-    expect(requests[0]).toHaveProperty('sourceSequence')
-    expect(priors).toEqual([undefined])
-    const io: IoStruct = readIo(fs)
-    log('io', io)
-    expect(io.sequence).toBe(1)
-    expect(io.requests[0]).toEqual(request)
-  })
+  // const { fs } = memfs()
+  // const source: PID = { account: 'git', repository: 'test', branches: ['main'] }
+  // const target: PID = {
+  //   account: 'git',
+  //   repository: 'test',
+  //   branches: ['main', 'child'],
+  // }
+  // const pool = (accumulation: number): PoolRequest => ({
+  //   target,
+  //   source,
+  //   // but we also need some sense of id from within the accumulator ?
+  //   accumulation,
+  //   isolate: 'test-isolate',
+  //   functionName: 'test',
+  //   params: {},
+  //   proctype: PROCTYPE.SERIAL,
+  // })
+  // const reply: Reply = {
+  //   target,
+  //   sequence: 0,
+  //   outcome: { result: 'test-result' },
+  // }
+  // await t.step('init', async () => {
+  //   const pid = await git.init(fs, 'git/test')
+  //   expect(pid).toEqual(source)
+  //   expect(fs.existsSync('/.git')).toBe(true)
+  // })
+  // const request = pool(0)
+  // await t.step('request', async () => {
+  //   const { requests, priors } = await git.solidifyPool(fs, [request])
+  //   expect(requests).toHaveLength(1)
+  //   Debug.enable('*')
+  //   log('requests', requests)
+  //   expect(requests[0]).toHaveProperty('sourceSequence')
+  //   expect(priors).toEqual([undefined])
+  //   const io: IoStruct = readIo(fs)
+  //   log('io', io)
+  //   expect(io.sequence).toBe(1)
+  //   expect(io.requests[0]).toEqual(request)
+  // })
   // await t.step('pierce reply', async () => {
   //   const { replies, requests } = await git.solidifyPool(fs, [reply])
   //   expect(requests).toHaveLength(0)

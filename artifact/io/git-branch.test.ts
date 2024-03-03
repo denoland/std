@@ -71,9 +71,9 @@ Deno.test('pierce branch', async (t) => {
     expect(lastCommit.commit.parent).toHaveLength(2)
   })
 })
-Deno.test('isolate branch', async (t) => {
+Deno.test('isolate branch', async () => {
   // when a branch is triggered from within an isolate
-  const { fs } = memfs()
+  // const { fs } = memfs()
   // const target: PID = { account: 'git', repository: 'test', branches: ['main'] }
   // const pierce = (ulid: string): PierceRequest => ({
   //   target,

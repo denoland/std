@@ -17,11 +17,11 @@ export const api = {
 }
 
 export const functions = {
-  create: async (_: object, api: IsolateApi) => {
+  create: (_: object, api: IsolateApi) => {
     // spawn something off ?
     log(api)
   },
-  end: async (_: object, api: IsolateApi) => {
+  end: (_: object, api: IsolateApi) => {
     log(api)
   },
 }

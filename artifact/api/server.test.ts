@@ -2,7 +2,7 @@ import { Outcome } from '@/artifact/constants.ts'
 import Server from './server.ts'
 import { expect } from '@utils'
 import WebClient from '@/artifact/api/web-client.ts'
-import guts from '../_utils/guts.ts'
+import guts from '../guts/main.ts'
 import { deserializeError } from 'https://esm.sh/serialize-error'
 
 Deno.test('hono basic', async (t) => {

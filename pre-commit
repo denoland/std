@@ -52,6 +52,7 @@ EOF
 	exit 1
 fi
 
+set -e
 deno task ok
 deno task test
 
