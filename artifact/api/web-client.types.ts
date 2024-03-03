@@ -3,6 +3,7 @@ import { JSONSchemaType } from './web-client.ajv.ts'
 export enum PROCTYPE {
   SERIAL = 'SERIAL',
   BRANCH = 'BRANCH',
+  BRANCH_OPEN = 'BRANCH_OPEN',
 }
 export type { JSONSchemaType }
 

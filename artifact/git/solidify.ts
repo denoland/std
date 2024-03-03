@@ -1,15 +1,8 @@
-/**
- * @module io/git
- * @description
- * Handles all the operations we want to do with git.  Gets passed in the fs
- * that we want to use each time.  Every function call here causes a commit
- */
 import { equal } from 'https://deno.land/x/equal/mod.ts'
 import { IFs } from 'https://esm.sh/v135/memfs@4.6.0/lib/index.js'
 import { Debug } from '@utils'
 import git from '$git'
 import {
-  ENTRY_BRANCH,
   InternalReply,
   IoStruct,
   PID,
@@ -29,15 +22,6 @@ const log = Debug('AI:git')
 const dir = '/'
 const author = { name: 'IO' }
 
-export const init = async (fs: IFs, repo: string) => {
-  const [account, repository] = repo.split('/')
-  const pid: PID = { account, repository, branches: [ENTRY_BRANCH] }
-  assert(!fs.existsSync(dir + '.git'), 'fs already exists')
-
-  await git.init({ fs, dir, defaultBranch: ENTRY_BRANCH })
-  return pid
-}
-
 /**
  * Takes in an unordered collection of operations, and orders them in the
  * .io.json file, then performs a commit.
@@ -49,7 +33,7 @@ export const init = async (fs: IFs, repo: string) => {
  * - reply: a result is being returned from a dispatch after serial execution.
  * @param fs a memfs instance to update
  */
-export const solidifyPool = async (fs: IFs, pool: Poolable[]) => {
+export default async (fs: IFs, pool: Poolable[]) => {
   checkPool(pool)
   const api = IsolateApi.createFS(fs)
   log('solidifyPool')
@@ -68,7 +52,8 @@ export const solidifyPool = async (fs: IFs, pool: Poolable[]) => {
     if (isRequest(poolable)) {
       const sequence = io.sequence++
       io.requests[sequence] = poolable
-      if (poolable.proctype === PROCTYPE.BRANCH) {
+      const { proctype } = poolable
+      if (proctype === PROCTYPE.BRANCH || proctype === PROCTYPE.BRANCH_OPEN) {
         const pid = branchPid(poolable.target, sequence)
         branches.push(pid)
       } else {
@@ -116,41 +101,46 @@ export const solidifyPool = async (fs: IFs, pool: Poolable[]) => {
 
   return { commit, requests, priors, branches, replies }
 }
-
-/**
- * Given the fs from the parent branch, create a new branch from the
- * given commit.  We assume here that PID lock has been acquired already.
- * @param fs a memfs instance to update
- * @param commit hash of the commit to start the branch from
- * @param target the new branch PID
- */
-export const branch = async (fs: IFs, commit: string, target: PID) => {
-  assert(target.branches.length > 1, 'cannot branch into base branch')
-  const ref = branchName(target)
-  log('branch', target, ref)
-  await git.branch({ fs, dir: '/', ref, checkout: true, object: commit })
-
-  const api = IsolateApi.createFS(fs, commit)
-  const io = await api.readJSON('.io.json') as IoStruct
-  const sequence = Number.parseInt(target.branches.slice(-1)[0])
-
-  const { isolate, functionName, params, target: source } =
-    io.requests[sequence]
-  const proctype = PROCTYPE.SERIAL
-  const origin: SolidRequest = {
-    target,
-    source,
-    sequence,
-    isolate,
-    functionName,
-    params,
-    proctype,
-  }
-  log('origin', origin)
-  await api.rm('.io.json')
-  return await solidifyPool(fs, [origin])
+const copyObjects = (from: IFs, to: IFs) => {
+  const base = '/.git/objects/'
+  from.readdirSync(base).forEach((dir) => {
+    if (dir === 'pack' || dir === 'info') {
+      return
+    }
+    const files = from.readdirSync(base + dir)
+    files.forEach((file) => {
+      const filepath = base + dir + '/' + file
+      if (to.existsSync(filepath)) {
+        return
+      }
+      const contents = from.readFileSync(filepath)
+      to.mkdirSync('/.git/objects/' + dir, { recursive: true })
+      to.writeFileSync(filepath, contents)
+    })
+  })
 }
-
+const getPrior = (sequence: number, io: IoStruct) => {
+  const keys = Object.keys(io.requests).map(Number)
+  keys.sort((a, b) => b - a)
+  for (const key of keys) {
+    assert(key <= sequence, `out of order sequence: ${key}`)
+    if (io.replies[key]) {
+      continue
+    }
+    if (key < sequence) {
+      return key
+    }
+  }
+}
+const toInternalRequest = (request: Request, sequence: number) => {
+  const { isolate, functionName, params, proctype, target } = request
+  const source = 'ulid' in request ? target : request.source
+  return { isolate, functionName, params, proctype, source, target, sequence }
+}
+const branchPid = (pid: PID, sequence: number) => {
+  const branches = pid.branches.concat(sequence.toString())
+  return { ...pid, branches }
+}
 const blankSettledRequests = (io: IoStruct) => {
   for (const key in io.replies) {
     log('delete', key)
@@ -189,47 +179,4 @@ const checkPool = (pool: Poolable[]) => {
     }
   }
   // TODO a request and a reply with the same id cannot be in the same pool
-}
-const branchPid = (pid: PID, sequence: number) => {
-  const branches = pid.branches.concat(sequence.toString())
-  return { ...pid, branches }
-}
-const branchName = (pid: PID) => {
-  return pid.branches.join('-')
-}
-const copyObjects = (from: IFs, to: IFs) => {
-  const base = '/.git/objects/'
-  from.readdirSync(base).forEach((dir) => {
-    if (dir === 'pack' || dir === 'info') {
-      return
-    }
-    const files = from.readdirSync(base + dir)
-    files.forEach((file) => {
-      const filepath = base + dir + '/' + file
-      if (to.existsSync(filepath)) {
-        return
-      }
-      const contents = from.readFileSync(filepath)
-      to.mkdirSync('/.git/objects/' + dir, { recursive: true })
-      to.writeFileSync(filepath, contents)
-    })
-  })
-}
-const getPrior = (sequence: number, io: IoStruct) => {
-  const keys = Object.keys(io.requests).map(Number)
-  keys.sort((a, b) => b - a)
-  for (const key of keys) {
-    assert(key <= sequence, `out of order sequence: ${key}`)
-    if (io.replies[key]) {
-      continue
-    }
-    if (key < sequence) {
-      return key
-    }
-  }
-}
-const toInternalRequest = (request: Request, sequence: number) => {
-  const { isolate, functionName, params, proctype, target } = request
-  const source = 'ulid' in request ? target : request.source
-  return { isolate, functionName, params, proctype, source, target, sequence }
 }

@@ -3,15 +3,13 @@ import { Cradle } from '../api/web-client.types.ts'
 
 export default (name: string, cradleMaker: () => Promise<Cradle>) => {
   const prefix = name + ': '
-  Deno.test(prefix + 'branch', async (t) => {
+  Deno.test.only(prefix + 'session', async (t) => {
     const artifact = await cradleMaker()
-    const repo = 'process/branch'
+    const repo = 'process/session'
     const { pid } = await artifact.init({ repo })
-    await t.step('branch', async () => {
+    await t.step('create', async () => {
       // start a new session
       const { create } = await artifact.pierces('session', pid)
-      // TODO make an isolate that can take in the options as params
-      Debug.enable('AI:*')
       const session = await create({}, { noClose: true })
 
       log('session', session)

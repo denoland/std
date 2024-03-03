@@ -1,7 +1,7 @@
 import * as snapshot from 'https://esm.sh/memfs@4.6.0/lib/snapshot'
 import { IFs, memfs } from 'https://esm.sh/memfs@4.6.0'
 import { assert, expect, log, merge } from '@utils'
-import * as git from './git.ts'
+import * as git from './mod.ts'
 import { IoStruct, PID, PROCTYPE, Reply } from '@/artifact/constants.ts'
 import gitCommand from '$git'
 import { PierceRequest } from '@/artifact/constants.ts'
@@ -31,7 +31,7 @@ Deno.test('pierce branch', async (t) => {
   let childPid: PID
   const request = pierce('pierce')
   await t.step('branch', async () => {
-    const { commit, branches } = await git.solidifyPool(fs, [request])
+    const { commit, branches } = await git.solidify(fs, [request])
     const io: IoStruct = readIo(fs)
     expect(io.sequence).toBe(1)
     expect(io.requests[0]).toEqual(request)
@@ -50,7 +50,7 @@ Deno.test('pierce branch', async (t) => {
   let mergeReply: MergeReply
   await t.step('branch reply', async () => {
     const branchReply = merge({}, reply, { target: childPid })
-    const solidified = await git.solidifyPool(branchFs, [branchReply])
+    const solidified = await git.solidify(branchFs, [branchReply])
     const { commit, replies } = solidified
 
     log('replies', replies[0])
@@ -61,7 +61,7 @@ Deno.test('pierce branch', async (t) => {
     mergeReply = { ...originReply, fs: branchFs, commit }
   })
   await t.step('merge', async () => {
-    const { replies } = await git.solidifyPool(fs, [mergeReply])
+    const { replies } = await git.solidify(fs, [mergeReply])
     expect(replies).toHaveLength(1)
     const reply = replies[0]
     assert(isPierceReply(reply), 'not PierceReply')
@@ -94,7 +94,7 @@ Deno.test('isolate branch', async () => {
   // let childPid: PID
   // const request = pierce('pierce')
   // await t.step('branch', async () => {
-  //   const { commit, branches } = await git.solidifyPool(fs, [request])
+  //   const { commit, branches } = await git.solidify(fs, [request])
   //   const io: IoStruct = readIo(fs)
   //   expect(io.sequence).toBe(1)
   //   expect(io.requests[0]).toEqual(request)
@@ -113,7 +113,7 @@ Deno.test('isolate branch', async () => {
   // let mergeReply: MergeReply
   // await t.step('branch reply', async () => {
   //   const branchReply = merge({}, reply, { target: childPid })
-  //   const solidified = await git.solidifyPool(branchFs, [branchReply])
+  //   const solidified = await git.solidify(branchFs, [branchReply])
   //   const { commit, replies } = solidified
 
   //   log('replies', replies[0])
@@ -124,7 +124,7 @@ Deno.test('isolate branch', async () => {
   //   mergeReply = { ...originReply, fs: branchFs, commit }
   // })
   // await t.step('merge', async () => {
-  //   const { replies } = await git.solidifyPool(fs, [mergeReply])
+  //   const { replies } = await git.solidify(fs, [mergeReply])
   //   expect(replies).toHaveLength(1)
   //   const reply = replies[0]
   //   assert(isPierceReply(reply), 'not PierceReply')

@@ -1,5 +1,5 @@
 import { deserializeError } from 'npm:serialize-error'
-import * as git from './git.ts'
+import * as git from '../git/mod.ts'
 import { Debug } from '@utils'
 import { PID, Request } from '@/artifact/constants.ts'
 import DB from '@/artifact/db.ts'
@@ -41,8 +41,9 @@ export default class IO {
   async #execute(pid: PID, lockId: string) {
     const fs = await this.#fs.load(pid)
     const solids = await this.#solidifyPool(pid, fs)
+
     log('solids %o', solids)
-    const { commit, requests, priors, replies } = solids
+    const { commit, requests, branches, priors, replies } = solids
     await this.#fs.update(pid, fs, commit, lockId)
 
     for (const request of requests) {
@@ -50,7 +51,11 @@ export default class IO {
       const prior = priors.pop()
       await this.#self.request({ request, prior, commit })
     }
-    // TODO branching
+    for (const branch of branches) {
+      Debug.enable('AI:*')
+      log('branch %o', branch)
+      // need to get lock on the branch that was given
+    }
     for (const reply of replies) {
       log('reply %o', reply)
       await this.#db.settleReply(pid, reply)
@@ -60,7 +65,7 @@ export default class IO {
   async #solidifyPool(pid: PID, fs: IFs) {
     log('solidifyPool %o', pid)
     const { poolKeys, pool } = await this.#db.getPooledActions(pid)
-    const solids = await git.solidifyPool(fs, pool)
+    const solids = await git.solidify(fs, pool)
     await this.#db.deletePool(poolKeys)
     return solids
   }

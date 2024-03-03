@@ -16,6 +16,7 @@ import { ulid } from 'std/ulid/mod.ts'
 import Queue from './queue.ts'
 import { C } from './isolates/artifact.ts'
 import { transcribe } from '@/artifact/runners/runner-chat.ts'
+import { ProcessOptions } from '@/artifact/constants.ts'
 const log = Debug('AI:cradle')
 
 export class QueueCradle implements Cradle {
@@ -50,10 +51,10 @@ export class QueueCradle implements Cradle {
     for (const functionName of Object.keys(apiSchema)) {
       pierces[functionName] = (
         params?: Params,
-        options?: { branch?: boolean },
+        options?: ProcessOptions,
       ) => {
         log('pierces %o', functionName)
-        const proctype = options?.branch ? PROCTYPE.BRANCH : PROCTYPE.SERIAL
+        const proctype = getProcType(options)
         const pierce: PierceRequest = {
           target,
           ulid: ulid(),
@@ -126,3 +127,16 @@ export class QueueCradle implements Cradle {
 }
 
 export default QueueCradle
+
+const getProcType = (options?: ProcessOptions) => {
+  if (!options) {
+    return PROCTYPE.SERIAL
+  }
+  if (options.noClose) {
+    return PROCTYPE.BRANCH_OPEN
+  }
+  if (options.branch) {
+    return PROCTYPE.BRANCH
+  }
+  return PROCTYPE.SERIAL
+}

@@ -1,6 +1,6 @@
 import { IFs, memfs } from 'https://esm.sh/memfs@4.6.0'
 import { expect, log } from '@utils'
-import * as git from './git.ts'
+import * as git from './mod.ts'
 import {
   IoStruct,
   PID,
@@ -34,7 +34,7 @@ Deno.test('pierce serial', async (t) => {
   })
   const request = pierce('pierce')
   await t.step('pierce', async () => {
-    const { requests, priors } = await git.solidifyPool(fs, [request])
+    const { requests, priors } = await git.solidify(fs, [request])
     expect(requests).toHaveLength(1)
     expect(requests[0]).not.toHaveProperty('ulid')
     expect(priors).toEqual([undefined])
@@ -44,7 +44,7 @@ Deno.test('pierce serial', async (t) => {
     expect(io.requests[0]).toEqual(request)
   })
   await t.step('pierce reply', async () => {
-    const { replies, requests } = await git.solidifyPool(fs, [reply])
+    const { replies, requests } = await git.solidify(fs, [reply])
     expect(requests).toHaveLength(0)
     expect(replies).toHaveLength(1)
     log('replies', replies[0])
@@ -58,7 +58,7 @@ Deno.test('pierce serial', async (t) => {
     expect(io.replies[0]).toEqual(pierceReply.outcome)
   })
   await t.step('second action blanks io', async () => {
-    const { priors } = await git.solidifyPool(fs, [request])
+    const { priors } = await git.solidify(fs, [request])
     const io: IoStruct = readIo(fs)
     log('io', io)
     expect(io.sequence).toBe(2)
@@ -68,7 +68,7 @@ Deno.test('pierce serial', async (t) => {
     expect(priors).toEqual([undefined])
   })
   await t.step('multiple requests', async () => {
-    const { priors, requests } = await git.solidifyPool(fs, [
+    const { priors, requests } = await git.solidify(fs, [
       pierce('a'),
       pierce('b'),
     ])
@@ -81,7 +81,7 @@ Deno.test('pierce serial', async (t) => {
   })
   await t.step('multiple replies', async () => {
     const pool = replies(1, 3)
-    await git.solidifyPool(fs, pool)
+    await git.solidify(fs, pool)
     const io: IoStruct = readIo(fs)
     expect(io.sequence).toBe(4)
     expect(Object.keys(io.requests).length).toBe(3)
@@ -89,12 +89,12 @@ Deno.test('pierce serial', async (t) => {
   })
   await t.step('duplicate pool items rejects', async () => {
     const msg = 'duplicate pool items: '
-    await expect(git.solidifyPool(fs, [request, request]))
+    await expect(git.solidify(fs, [request, request]))
       .rejects.toThrow(msg)
     const reply = replies(1, 1)[0]
-    await expect(git.solidifyPool(fs, [reply, reply]))
+    await expect(git.solidify(fs, [reply, reply]))
       .rejects.toThrow(msg)
-    await expect(git.solidifyPool(fs, [request, request, reply, reply]))
+    await expect(git.solidify(fs, [request, request, reply, reply]))
       .rejects.toThrow(msg)
   })
   // TODO cannot reply out of order
@@ -136,7 +136,7 @@ Deno.test.ignore('isolate serial', async () => {
   // })
   // const request = pool(0)
   // await t.step('request', async () => {
-  //   const { requests, priors } = await git.solidifyPool(fs, [request])
+  //   const { requests, priors } = await git.solidify(fs, [request])
   //   expect(requests).toHaveLength(1)
   //   Debug.enable('*')
   //   log('requests', requests)
@@ -148,7 +148,7 @@ Deno.test.ignore('isolate serial', async () => {
   //   expect(io.requests[0]).toEqual(request)
   // })
   // await t.step('pierce reply', async () => {
-  //   const { replies, requests } = await git.solidifyPool(fs, [reply])
+  //   const { replies, requests } = await git.solidify(fs, [reply])
   //   expect(requests).toHaveLength(0)
   //   expect(replies).toHaveLength(1)
   //   log('replies', replies[0])
@@ -162,7 +162,7 @@ Deno.test.ignore('isolate serial', async () => {
   //   expect(io.replies[0]).toEqual(pierceReply.outcome)
   // })
   // await t.step('second action blanks io', async () => {
-  //   const { priors } = await git.solidifyPool(fs, [request])
+  //   const { priors } = await git.solidify(fs, [request])
   //   const io: IoStruct = readIo(fs)
   //   log('io', io)
   //   expect(io.sequence).toBe(2)
@@ -172,7 +172,7 @@ Deno.test.ignore('isolate serial', async () => {
   //   expect(priors).toEqual([undefined])
   // })
   // await t.step('multiple requests', async () => {
-  //   const { priors, requests } = await git.solidifyPool(fs, [
+  //   const { priors, requests } = await git.solidify(fs, [
   //     pool(),
   //     pool(),
   //   ])
@@ -185,7 +185,7 @@ Deno.test.ignore('isolate serial', async () => {
   // })
   // await t.step('multiple replies', async () => {
   //   const pool = replies(1, 3)
-  //   await git.solidifyPool(fs, pool)
+  //   await git.solidify(fs, pool)
   //   const io: IoStruct = readIo(fs)
   //   expect(io.sequence).toBe(4)
   //   expect(Object.keys(io.requests).length).toBe(3)
@@ -193,12 +193,12 @@ Deno.test.ignore('isolate serial', async () => {
   // })
   // await t.step('duplicate pool items rejects', async () => {
   //   const msg = 'duplicate pool items: '
-  //   await expect(git.solidifyPool(fs, [request, request]))
+  //   await expect(git.solidify(fs, [request, request]))
   //     .rejects.toThrow(msg)
   //   const reply = replies(1, 1)[0]
-  //   await expect(git.solidifyPool(fs, [reply, reply]))
+  //   await expect(git.solidify(fs, [reply, reply]))
   //     .rejects.toThrow(msg)
-  //   await expect(git.solidifyPool(fs, [request, request, reply, reply]))
+  //   await expect(git.solidify(fs, [request, request, reply, reply]))
   //     .rejects.toThrow(msg)
   // })
   // TODO ensure that messages to self reject
