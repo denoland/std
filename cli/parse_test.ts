@@ -4,7 +4,7 @@ import { assertEquals } from "../assert/assert_equals.ts";
 import { assertThrows } from "../assert/assert_throws.ts";
 import { parse } from "./parse.ts";
 
-Deno.test("parse() options", async (t) => {
+Deno.test("parse() handles options", async (t) => {
   await t.step("name", () => {
     const expected = { options: { foo: true }, arguments: {} };
     const actual = parse(["--foo"], { options: [{ name: "foo" }] });
@@ -128,12 +128,17 @@ Deno.test("parse() options", async (t) => {
       });
     });
   });
-  await t.step("name with value", () => {
+  await t.step("name with value property", () => {
     const expected = { options: { foo: "bar" }, arguments: {} };
     const actual = parse(["--foo", "bar"], {
       options: [{ name: "foo", value: { name: "VALUE" } }],
     });
     assertEquals(actual, expected);
+  });
+  await t.step("name without value property but present value", () => {
+    assertThrows(() => {
+      parse(["--foo=bar"], { options: [{ name: "foo" }] });
+    });
   });
   await t.step("name with multiple values", () => {
     const expected = { options: { foo: ["bar", "baz"] }, arguments: {} };
@@ -293,6 +298,26 @@ Deno.test("parse() options", async (t) => {
     });
     assertEquals(actual, expected);
   });
+
+  await t.step("string type value", () => {
+    const expected = { options: { foo: "1" }, arguments: {} };
+    const actual = parse(["--foo=1"], {
+      options: [
+        { name: "foo", type: String, value: { name: "VALUE" } },
+      ],
+    });
+    assertEquals(actual, expected);
+  });
+  await t.step("throws on type string with non-string default value", () => {
+    assertThrows(() => {
+      parse(["--foo"], {
+        options: [
+          { name: "foo", type: String, default: true as unknown as string },
+        ],
+      });
+    });
+  });
+
   await t.step("number type value", () => {
     const expected = { options: { foo: 1 }, arguments: {} };
     const actual = parse(["--foo=1"], {
@@ -302,7 +327,7 @@ Deno.test("parse() options", async (t) => {
     });
     assertEquals(actual, expected);
   });
-  await t.step("invalid number type value", () => {
+  await t.step("throws on type number with non-number value", () => {
     assertThrows(() => {
       parse(["--foo=bar"], {
         options: [
@@ -311,6 +336,16 @@ Deno.test("parse() options", async (t) => {
       });
     });
   });
+  await t.step("throws on type number with non-number default value", () => {
+    assertThrows(() => {
+      parse(["--foo"], {
+        options: [
+          { name: "foo", type: Number, default: "fail" as unknown as number },
+        ],
+      });
+    });
+  });
+
   await t.step("boolean type value", () => {
     const expected = { options: { foo: true }, arguments: {} };
     const actual = parse(["--foo=true"], {
@@ -320,11 +355,20 @@ Deno.test("parse() options", async (t) => {
     });
     assertEquals(actual, expected);
   });
-  await t.step("invalid type boolean value", () => {
+  await t.step("throws on type boolean with non-boolean value", () => {
     assertThrows(() => {
       parse(["--foo=bar"], {
         options: [
           { name: "foo", type: Boolean, value: { name: "VALUE" } },
+        ],
+      });
+    });
+  });
+  await t.step("throws on type boolean with non-boolean default value", () => {
+    assertThrows(() => {
+      parse(["--foo"], {
+        options: [
+          { name: "foo", type: Boolean, default: "fail" as unknown as boolean },
         ],
       });
     });
@@ -368,7 +412,7 @@ Deno.test("parse() options", async (t) => {
   });
 });
 
-Deno.test("parse() arguments", async (t) => {
+Deno.test("parse() handles arguments", async (t) => {
   await t.step("argument", () => {
     const expected = { options: {}, arguments: { VALUE: "foo" } };
     const result = parse(["foo"], {
@@ -573,7 +617,7 @@ Deno.test("parse() arguments", async (t) => {
   });
 });
 
-Deno.test("parse() commands", async (t) => {
+Deno.test("parse() handles commands", async (t) => {
   await t.step("fn() is called", () => {
     let called = false;
     parse(["run", "--foo"], {
@@ -643,7 +687,7 @@ Deno.test("parse() commands", async (t) => {
   });
 });
 
-Deno.test("parse() arguments after --", async (t) => {
+Deno.test("parse() handles arguments after --", async (t) => {
   await t.step("argument", () => {
     const expected = {
       options: { foo: true },
