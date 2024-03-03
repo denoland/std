@@ -1,5 +1,5 @@
 import Cradle from './cradle.ts'
-import guts from './_utils/guts.ts'
+import guts from './guts/main.ts'
 
 const cradleMaker = async () => {
   const cradle = await Cradle.create()

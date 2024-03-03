@@ -59,7 +59,7 @@ export default class IsolateApi<T extends object = Default> {
         const request: PoolRequest = {
           target,
           source: target,
-          sourceSequence: assignedByPostRunCollector,
+          accumulation: assignedByPostRunCollector,
 
           isolate,
           functionName,

@@ -3,7 +3,7 @@ import { Cradle } from '../api/web-client.types.ts'
 
 export default (name: string, cradleMaker: () => Promise<Cradle>) => {
   const prefix = name + ': '
-  Deno.test.only(prefix + 'branch', async (t) => {
+  Deno.test(prefix + 'branch', async (t) => {
     const artifact = await cradleMaker()
     const repo = 'process/branch'
     const { pid } = await artifact.init({ repo })

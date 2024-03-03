@@ -122,23 +122,23 @@ export const solidifyPool = async (fs: IFs, pool: Poolable[]) => {
  * given commit.  We assume here that PID lock has been acquired already.
  * @param fs a memfs instance to update
  * @param commit hash of the commit to start the branch from
- * @param pid the new branch PID
+ * @param target the new branch PID
  */
-export const branch = async (fs: IFs, commit: string, pid: PID) => {
-  assert(pid.branches.length > 1, 'cannot branch into base branch')
-  const ref = branchName(pid)
-  log('branch', pid, ref)
+export const branch = async (fs: IFs, commit: string, target: PID) => {
+  assert(target.branches.length > 1, 'cannot branch into base branch')
+  const ref = branchName(target)
+  log('branch', target, ref)
   await git.branch({ fs, dir: '/', ref, checkout: true, object: commit })
 
   const api = IsolateApi.createFS(fs, commit)
   const io = await api.readJSON('.io.json') as IoStruct
-  const sequence = Number.parseInt(pid.branches.slice(-1)[0])
+  const sequence = Number.parseInt(target.branches.slice(-1)[0])
 
-  const { isolate, functionName, params, target } = io.requests[sequence]
+  const { isolate, functionName, params, target: source } =
+    io.requests[sequence]
   const proctype = PROCTYPE.SERIAL
-  const source = target
   const origin: SolidRequest = {
-    target: pid,
+    target,
     source,
     sequence,
     isolate,

@@ -1,17 +1,18 @@
 import { IFs, memfs } from 'https://esm.sh/memfs@4.6.0'
-import { expect, log } from '@utils'
+import { Debug, expect, log } from '@utils'
 import * as git from './git.ts'
 import {
   IoStruct,
   PID,
   PierceReply,
   PierceRequest,
+  PoolRequest,
   PROCTYPE,
   Reply,
 } from '@/artifact/constants.ts'
 import { InternalReply } from '@/artifact/constants.ts'
 
-Deno.test('serial', async (t) => {
+Deno.test('pierce serial', async (t) => {
   const { fs } = memfs()
   const target: PID = { account: 'git', repository: 'test', branches: ['main'] }
   const pierce = (ulid: string): PierceRequest => ({
@@ -99,6 +100,109 @@ Deno.test('serial', async (t) => {
   })
   // TODO cannot reply out of order
   // TODO permissioning for inclusion in the pool
+})
+Deno.test.ignore('isolate serial', async (t) => {
+  // when a request is made from within an isolate
+
+  // use a fixture to trigger an action that is due somewhere else
+  // check the action is inserted correctly into the pool of the next branch
+  // process it and get the reply out
+
+  const { fs } = memfs()
+  const source: PID = { account: 'git', repository: 'test', branches: ['main'] }
+  const target: PID = {
+    account: 'git',
+    repository: 'test',
+    branches: ['main', 'child'],
+  }
+  const pool = (accumulation: number): PoolRequest => ({
+    target,
+    source,
+    // but we also need some sense of id from within the accumulator ?
+    accumulation,
+    isolate: 'test-isolate',
+    functionName: 'test',
+    params: {},
+    proctype: PROCTYPE.SERIAL,
+  })
+  const reply: Reply = {
+    target,
+    sequence: 0,
+    outcome: { result: 'test-result' },
+  }
+  await t.step('init', async () => {
+    const pid = await git.init(fs, 'git/test')
+    expect(pid).toEqual(source)
+    expect(fs.existsSync('/.git')).toBe(true)
+  })
+  const request = pool(0)
+  await t.step('request', async () => {
+    const { requests, priors } = await git.solidifyPool(fs, [request])
+    expect(requests).toHaveLength(1)
+    Debug.enable('*')
+    log('requests', requests)
+    expect(requests[0]).toHaveProperty('sourceSequence')
+    expect(priors).toEqual([undefined])
+    const io: IoStruct = readIo(fs)
+    log('io', io)
+    expect(io.sequence).toBe(1)
+    expect(io.requests[0]).toEqual(request)
+  })
+  // await t.step('pierce reply', async () => {
+  //   const { replies, requests } = await git.solidifyPool(fs, [reply])
+  //   expect(requests).toHaveLength(0)
+  //   expect(replies).toHaveLength(1)
+  //   log('replies', replies[0])
+  //   const pierceReply = replies[0] as PierceReply
+  //   // expect(pierceReply.ulid).toEqual(request.ulid)
+  //   expect(pierceReply.outcome).toEqual(reply.outcome)
+
+  //   const io: IoStruct = readIo(fs)
+  //   log('io', io)
+  //   expect(io.sequence).toBe(1)
+  //   expect(io.replies[0]).toEqual(pierceReply.outcome)
+  // })
+  // await t.step('second action blanks io', async () => {
+  //   const { priors } = await git.solidifyPool(fs, [request])
+  //   const io: IoStruct = readIo(fs)
+  //   log('io', io)
+  //   expect(io.sequence).toBe(2)
+  //   expect(io.requests[0]).toBeUndefined()
+  //   expect(io.requests[1]).toEqual(request)
+  //   expect(io.replies[0]).toBeUndefined()
+  //   expect(priors).toEqual([undefined])
+  // })
+  // await t.step('multiple requests', async () => {
+  //   const { priors, requests } = await git.solidifyPool(fs, [
+  //     pool(),
+  //     pool(),
+  //   ])
+  //   expect(requests).toHaveLength(2)
+  //   expect(priors).toEqual([1, 2])
+  //   const io: IoStruct = readIo(fs)
+  //   expect(io.sequence).toBe(4)
+  //   expect(Object.keys(io.requests).length).toBe(3)
+  //   expect(io.replies).toEqual({})
+  // })
+  // await t.step('multiple replies', async () => {
+  //   const pool = replies(1, 3)
+  //   await git.solidifyPool(fs, pool)
+  //   const io: IoStruct = readIo(fs)
+  //   expect(io.sequence).toBe(4)
+  //   expect(Object.keys(io.requests).length).toBe(3)
+  //   expect(Object.keys(io.replies).length).toEqual(3)
+  // })
+  // await t.step('duplicate pool items rejects', async () => {
+  //   const msg = 'duplicate pool items: '
+  //   await expect(git.solidifyPool(fs, [request, request]))
+  //     .rejects.toThrow(msg)
+  //   const reply = replies(1, 1)[0]
+  //   await expect(git.solidifyPool(fs, [reply, reply]))
+  //     .rejects.toThrow(msg)
+  //   await expect(git.solidifyPool(fs, [request, request, reply, reply]))
+  //     .rejects.toThrow(msg)
+  // })
+  // TODO ensure that messages to self reject
 })
 const replies = (start: number, end: number) => {
   const pool: InternalReply[] = []

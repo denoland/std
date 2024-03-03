@@ -82,15 +82,15 @@ export type Help = {
   examples?: string[]
   tests?: string[]
 }
-
-export type PierceRequest = {
-  target: PID
-  ulid: string
-
+type Invocation = {
   isolate: string
   functionName: string
   params: Params
   proctype: PROCTYPE
+}
+export type PierceRequest = Invocation & {
+  target: PID
+  ulid: string
 }
 export interface Cradle {
   ping(params?: Params): Promise<IsolateReturn>

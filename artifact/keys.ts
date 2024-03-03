@@ -63,8 +63,8 @@ const getId = (action: Request | Reply) => {
   } else if ('sequence' in action) {
     return action.sequence
   } else {
-    assert('sourceSequence' in action, 'sourceSequence is required')
-    return action.sourceSequence
+    assert('accumulation' in action, 'accumulation is required')
+    return action.accumulation
   }
 }
 

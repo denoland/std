@@ -206,7 +206,6 @@ export const functions: IsolateFunctions = {
       // and should transmit them to the chains that are running them
       outcome.error = serializeError(errorObj)
     }
-    console.log('acc', acc)
     const { target, sequence } = request
     const reply: InternalReply = { target, sequence, outcome }
 

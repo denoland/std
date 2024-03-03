@@ -37,31 +37,31 @@ export type IoStruct = {
 export type Request = PierceRequest | SolidRequest | PoolRequest
 export type Poolable = Request | InternalReply | MergeReply
 export type Reply = PierceReply | InternalReply | MergeReply
-/**
- * A request made from inside an isolate, targetting the pool of a branch
- */
-export type PoolRequest = {
-  target: PID
-  source: PID
-  sourceSequence: number
-
+type Invocation = {
   isolate: string
   functionName: string
   params: Params
   proctype: PROCTYPE
 }
 /**
+ * A request made from inside an isolate, targetting the pool of a branch
+ */
+export type PoolRequest = Invocation & {
+  target: PID
+  source: PID
+  /**
+   * The index of the request in the accumulator for the currently executing
+   * isolate, which caused this PoolRequest to be transmitted.
+   */
+  accumulation: number
+}
+/**
  * A request that has been included in a commit, therefore has a sequence number
  */
-export type SolidRequest = {
+export type SolidRequest = Invocation & {
   target: PID
   source: PID
   sequence: number
-
-  isolate: string
-  functionName: string
-  params: Params
-  proctype: PROCTYPE
 }
 export type PierceReply = {
   ulid: string
