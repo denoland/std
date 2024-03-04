@@ -19,6 +19,8 @@ export function isPromiseLike(value: unknown): value is PromiseLike<unknown> {
   }
 }
 
+// Check of these sentinel values are supported in jest (expect-utils)
+// See https://github.com/jestjs/jest/blob/442c7f692e3a92f14a2fb56c1737b26fc663a0ef/packages/expect-utils/src/immutableUtils.ts#L29
 // SENTINEL constants are from https://github.com/facebook/immutable-js
 const IS_KEYED_SENTINEL = "@@__IMMUTABLE_KEYED__@@";
 const IS_SET_SENTINEL = "@@__IMMUTABLE_SET__@@";
