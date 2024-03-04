@@ -95,4 +95,6 @@ Deno.test("expect.extend() api test case", () => {
 
   expect(book1a).toEqualBook(book1b);
   expect(book1a).not.toEqualBook(book2);
+  expect(book1a).not.toEqualBook(1);
+  expect(book1a).not.toEqualBook(null);
 });
