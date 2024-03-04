@@ -1,6 +1,13 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-import type { Range } from "./types.ts";
-import { formatComparator } from "./_format_comparator.ts";
+import { format } from "./format.ts";
+import type { Comparator, Range } from "./types.ts";
+
+function formatComparator(comparator: Comparator): string {
+  const { semver, operator } = comparator;
+  return `${operator === undefined ? "" : operator}${
+    format(semver ?? comparator)
+  }`;
+}
 
 /**
  * Formats the range into a string
