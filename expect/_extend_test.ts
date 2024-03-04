@@ -114,6 +114,6 @@ expect.extend({
   },
 });
 
-Deno.test("expect().extend() api test case", () => {
+Deno.test("expect.extend() api test case", () => {
   expect(book1).toEqualBook(book1b);
 });
