@@ -348,7 +348,7 @@ function handleEqualOperator(groups: RangeRegExpGroups): Comparator[] {
   return [{ operator: undefined, major, minor, patch, prerelease, build }];
 }
 
-function parseOperatorRange(string: string) {
+function parseOperatorRange(string: string): Comparator | Comparator[] {
   const groups = string.match(OPERATOR_XRANGE_REGEXP)
     ?.groups as RangeRegExpGroups;
   if (!groups) return parseComparator(string);
@@ -374,7 +374,7 @@ function parseOperatorRange(string: string) {
       throw new Error(`'${groups.operator}' is not a valid operator.`);
   }
 }
-function parseOperatorRanges(string: string) {
+function parseOperatorRanges(string: string): Comparator[] {
   return string.split(/\s+/).flatMap(parseOperatorRange);
 }
 
