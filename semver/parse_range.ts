@@ -23,7 +23,7 @@ type RegExpGroups = {
   build?: string;
 };
 
-function handleLeftHyphenRangeGroups(leftGroup: RegExpGroups) {
+function handleLeftHyphenRangeGroups(leftGroup: RegExpGroups): Comparator | undefined {
   if (isWildcard(leftGroup.major)) return;
   if (isWildcard(leftGroup.minor)) {
     return {
