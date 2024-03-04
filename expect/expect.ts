@@ -98,7 +98,7 @@ const matchers: Record<MatcherKey, Matcher> = {
   toThrow,
 };
 
-export const expect = (value: unknown, customMessage?: string): Expected => {
+export function expect(value: unknown, customMessage?: string): Expected {
   let isNot = false;
   let isPromised = false;
   const self: Expected = new Proxy<Expected>(
@@ -187,7 +187,7 @@ export const expect = (value: unknown, customMessage?: string): Expected => {
   );
 
   return self;
-};
+}
 
 expect.addEqualityTesters = addCustomEqualityTesters;
 expect.extend = setExtendMatchers;
