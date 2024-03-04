@@ -1,11 +1,8 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import {
-  createExtractor,
-  type Extractor,
-  type Parser,
-} from "./create_extractor.ts";
+import { extractJson } from "./extract_json.ts";
 
-export const extract: Extractor = createExtractor({
-  json: JSON.parse as Parser,
-});
+/**
+ * @deprecated (will be removed in 0.220.0) Use {@linkcode extractJson} instead.
+ */
+export const extract = extractJson;
