@@ -3,36 +3,27 @@
 import { expect } from "./expect.ts";
 import { MatcherContext, Tester } from "./_types.ts";
 
-type DbConnection = number;
-
 declare module "./_types.ts" {
   interface Expected {
     toEqualBook: (expected: unknown) => ExtendMatchResult;
   }
 }
 
-const CONNECTION_PROP = "__connection";
-let DbConnectionId = 0;
-
 class Author {
   public name: string;
-  public [CONNECTION_PROP]: DbConnection;
 
   constructor(name: string) {
     this.name = name;
-    this[CONNECTION_PROP] = DbConnectionId++;
   }
 }
 
 class Book {
   public name: string;
   public authors: Array<Author>;
-  public [CONNECTION_PROP]: DbConnection;
 
   constructor(name: string, authors: Array<Author>) {
     this.name = name;
     this.authors = authors;
-    this[CONNECTION_PROP] = DbConnectionId++;
   }
 }
 
@@ -68,15 +59,6 @@ const areBooksEqual: Tester = function (
   }
 };
 
-const book1 = new Book("Book 1", [
-  new Author("Author 1"),
-  new Author("Author 2"),
-]);
-const book1b = new Book("Book 1", [
-  new Author("Author 1"),
-  new Author("Author 2"),
-]);
-
 expect.addEqualityTesters([
   areAuthorsEqual,
   areBooksEqual,
@@ -95,25 +77,22 @@ expect.extend({
       pass: result,
     };
   },
-  toBeWithinRange(context, floor: number, ceiling: number) {
-    const actual = context.value as number;
-    const pass = actual >= floor && actual <= ceiling;
-    if (pass) {
-      return {
-        message: () =>
-          `expected ${actual} not to be within range ${floor} - ${ceiling}`,
-        pass: true,
-      };
-    } else {
-      return {
-        message: () =>
-          `expected ${actual} to be within range ${floor} - ${ceiling}`,
-        pass: false,
-      };
-    }
-  },
 });
 
 Deno.test("expect.extend() api test case", () => {
-  expect(book1).toEqualBook(book1b);
+  const book1a = new Book("Book 1", [
+    new Author("Author 1"),
+    new Author("Author 2"),
+  ]);
+  const book1b = new Book("Book 1", [
+    new Author("Author 1"),
+    new Author("Author 2"),
+  ]);
+  const book2 = new Book("Book 2", [
+    new Author("Author 1"),
+    new Author("Author 2"),
+  ]);
+
+  expect(book1a).toEqualBook(book1b);
+  expect(book1a).not.toEqualBook(book2);
 });
