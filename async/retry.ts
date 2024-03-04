@@ -13,7 +13,7 @@ export class RetryError extends Error {
    * Constructs a new {@linkcode RetryError} instance.
    *
    * @example
-   * ```
+   * ```ts
    * import { RetryError } from "https://deno.land/std@$STD_VERSION/async/retry.ts";
    *
    * throw new RetryError({ foo: "bar" }, 3);
