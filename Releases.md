@@ -1,3 +1,12 @@
+### 0.218.0 / 2024.02.29
+
+- feat(assert): optional `reason` param for `unreachable` (#4404) (#4405)
+- feat(collections): add `pick` and `omit` (#4218)
+- feat(expect): add asymmetric matchers (any, anything, arrayContaining) (#4366)
+- feat(uuid): add type predicate return type to validate (v4) (#4301)
+- fix(fs/ensure_symlink): check symlink is pointing the given target (#4371)
+- fix(log): add missing return types (#4401)
+
 ### 0.217.0 / 2024.02.22
 
 - deprecation(semver): deprecate `==`, `===`, `!==`, and `""` operators (#4271)
