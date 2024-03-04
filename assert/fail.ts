@@ -10,6 +10,8 @@ import { assert } from "./assert.ts";
  *
  * fail("Deliberately failed!"); // Throws
  * ```
+ *
+ * @module
  */
 export function fail(msg?: string): never {
   const msgSuffix = msg ? `: ${msg}` : ".";

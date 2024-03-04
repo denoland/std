@@ -18,6 +18,8 @@ import { stripAnsiCode } from "../fmt/colors.ts";
  * assertIsError(new RangeError("Out of range"), SyntaxError, "Out of range"); // Doesn't throw
  * assertIsError(new RangeError("Out of range"), SyntaxError, "Within range"); // Throws
  * ```
+ *
+ * @module
  */
 export function assertIsError<E extends Error = Error>(
   error: unknown,

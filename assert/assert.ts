@@ -11,6 +11,8 @@ import { AssertionError } from "./assertion_error.ts";
  * assert("hello".includes("ello")); // Doesn't throw
  * assert("hello".includes("world")); // Throws
  * ```
+ *
+ * @module
  */
 export function assert(expr: unknown, msg = ""): asserts expr {
   if (!expr) {

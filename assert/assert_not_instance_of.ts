@@ -12,6 +12,8 @@ import { assertFalse } from "./assert_false.ts";
  * assertNotInstanceOf(new Date(), Number); // Doesn't throw
  * assertNotInstanceOf(new Date(), Date); // Throws
  * ```
+ *
+ * @module
  */
 export function assertNotInstanceOf<A, T>(
   actual: A,

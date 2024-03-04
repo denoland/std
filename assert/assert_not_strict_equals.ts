@@ -13,6 +13,8 @@ import { format } from "./_format.ts";
  * assertNotStrictEquals(1, 1); // Doesn't throw
  * assertNotStrictEquals(1, 2); // Throws
  * ```
+ *
+ * @module
  */
 export function assertNotStrictEquals<T>(
   actual: T,

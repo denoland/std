@@ -14,6 +14,8 @@ import { AssertionError } from "./assertion_error.ts";
  * assertLessOrEqual(1, 1); // Doesn't throw
  * assertLessOrEqual(1, 0); // Throws
  * ```
+ *
+ * @module
  */
 export function assertLessOrEqual<T>(
   actual: T,

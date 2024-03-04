@@ -13,6 +13,8 @@ import { AssertionError } from "./assertion_error.ts";
  * assertLess(1, 2); // Doesn't throw
  * assertLess(2, 1); // Throws
  * ```
+ *
+ * @module
  */
 export function assertLess<T>(actual: T, expected: T, msg?: string) {
   if (actual < expected) return;

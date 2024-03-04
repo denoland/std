@@ -12,6 +12,8 @@ import { AssertionError } from "./assertion_error.ts";
  * assertMatch("Raptor", RegExp(/Raptor/)); // Doesn't throw
  * assertMatch("Denosaurus", RegExp(/Raptor/)); // Throws
  * ```
+ *
+ * @module
  */
 export function assertMatch(
   actual: string,

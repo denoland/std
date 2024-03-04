@@ -14,6 +14,8 @@ export type Falsy = false | 0 | 0n | "" | null | undefined;
  * assertFalse(false); // Doesn't throw
  * assertFalse(true); // Throws
  * ```
+ *
+ * @module
  */
 export function assertFalse(expr: unknown, msg = ""): asserts expr is Falsy {
   if (expr) {

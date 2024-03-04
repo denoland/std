@@ -12,6 +12,8 @@ import { assertEquals } from "./assert_equals.ts";
  * assertObjectMatch({ foo: "bar" }, { foo: "bar" }); // Doesn't throw
  * assertObjectMatch({ foo: "bar" }, { foo: "baz" }); // Throws
  * ```
+ *
+ * @module
  */
 export function assertObjectMatch(
   // deno-lint-ignore no-explicit-any

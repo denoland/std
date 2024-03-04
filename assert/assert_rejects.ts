@@ -14,6 +14,8 @@ import { assertIsError } from "./assert_is_error.ts";
  * await assertRejects(async () => Promise.reject(new Error())); // Doesn't throw
  * await assertRejects(async () => console.log("Hello world")); // Throws
  * ```
+ *
+ * @module
  */
 export function assertRejects(
   fn: () => PromiseLike<unknown>,

@@ -10,6 +10,8 @@ import { AssertionError } from "./assertion_error.ts";
  *
  * unimplemented(); // Throws
  * ```
+ *
+ * @module
  */
 export function unimplemented(msg?: string): never {
   const msgSuffix = msg ? `: ${msg}` : ".";

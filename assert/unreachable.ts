@@ -10,6 +10,8 @@ import { AssertionError } from "./assertion_error.ts";
  *
  * unreachable(); // Throws
  * ```
+ *
+ * @module
  */
 export function unreachable(reason?: string): never {
   throw new AssertionError(reason ?? "unreachable");

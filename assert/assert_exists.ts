@@ -12,6 +12,8 @@ import { AssertionError } from "./assertion_error.ts";
  * assertExists("something"); // Doesn't throw
  * assertExists(undefined); // Throws
  * ```
+ *
+ * @module
  */
 export function assertExists<T>(
   actual: T,

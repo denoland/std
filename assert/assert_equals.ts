@@ -22,6 +22,8 @@ import { CAN_NOT_DISPLAY } from "./_constants.ts";
  * ```
  *
  * Note: formatter option is experimental and may be removed in the future.
+ *
+ * @module
  */
 export function assertEquals<T>(
   actual: T,

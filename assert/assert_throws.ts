@@ -36,6 +36,8 @@ export function assertThrows(
  * assertThrows(() => { throw new TypeError("hello world!"); }, TypeError); // Doesn't throw
  * assertThrows(() => { throw new TypeError("hello world!"); }, RangeError); // Throws
  * ```
+ *
+ * @module
  */
 export function assertThrows<E extends Error = Error>(
   fn: () => unknown,

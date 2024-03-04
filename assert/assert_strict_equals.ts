@@ -21,6 +21,7 @@ import { red } from "../fmt/colors.ts";
  * const d = {};
  * assertStrictEquals(c, d); // Throws
  * ```
+ * @module
  */
 export function assertStrictEquals<T>(
   actual: unknown,

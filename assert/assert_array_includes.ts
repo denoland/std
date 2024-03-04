@@ -20,6 +20,8 @@ export type ArrayLikeArg<T> = ArrayLike<T> & object;
  * assertArrayIncludes([1, 2], [2]); // Doesn't throw
  * assertArrayIncludes([1, 2], [3]); // Throws
  * ```
+ *
+ * @module
  */
 export function assertArrayIncludes<T>(
   actual: ArrayLikeArg<T>,

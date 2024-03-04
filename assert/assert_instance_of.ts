@@ -20,6 +20,8 @@ new (...args: any) => infer C ? C
  * assertInstanceOf(new Date(), Date); // Doesn't throw
  * assertInstanceOf(new Date(), Number); // Throws
  * ```
+ *
+ * @module
  */
 export function assertInstanceOf<T extends AnyConstructor>(
   actual: unknown,

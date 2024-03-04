@@ -21,6 +21,8 @@ function constructorsEqual(a: object, b: object) {
  * equal({ foo: "bar" }, { foo: "bar" }); // Returns `true`
  * equal({ foo: "bar" }, { foo: "baz" }); // Returns `false
  * ```
+ *
+ * @module
  */
 export function equal(c: unknown, d: unknown): boolean {
   const seen = new Map();

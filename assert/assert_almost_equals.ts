@@ -16,6 +16,8 @@ import { AssertionError } from "./assertion_error.ts";
  * assertAlmostEquals(0.1 + 0.2, 0.3, 1e-16); // Doesn't throw
  * assertAlmostEquals(0.1 + 0.2, 0.3, 1e-17); // Throws
  * ```
+ *
+ * @module
  */
 export function assertAlmostEquals(
   actual: number,

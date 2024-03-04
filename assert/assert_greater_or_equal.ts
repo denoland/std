@@ -14,6 +14,8 @@ import { AssertionError } from "./assertion_error.ts";
  * assertGreaterOrEqual(1, 1); // Doesn't throw
  * assertGreaterOrEqual(0, 1); // Throws
  * ```
+ *
+ * @module
  */
 export function assertGreaterOrEqual<T>(
   actual: T,

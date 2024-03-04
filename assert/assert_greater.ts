@@ -14,6 +14,8 @@ import { AssertionError } from "./assertion_error.ts";
  * assertGreater(1, 1); // Throws
  * assertGreater(0, 1); // Throws
  * ```
+ *
+ * @module
  */
 export function assertGreater<T>(actual: T, expected: T, msg?: string) {
   if (actual > expected) return;

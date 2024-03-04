@@ -12,6 +12,8 @@ import { AssertionError } from "./assertion_error.ts";
  * assertStringIncludes("Hello", "ello"); // Doesn't throw
  * assertStringIncludes("Hello", "world"); // Throws
  * ```
+ *
+ * @module
  */
 export function assertStringIncludes(
   actual: string,
