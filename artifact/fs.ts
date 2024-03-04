@@ -78,4 +78,22 @@ export default class FS {
   static print(fs: IFs): string {
     return print.toTreeSync(fs)
   }
+  static copyObjects(from: IFs, to: IFs) {
+    const base = '/.git/objects/'
+    from.readdirSync(base).forEach((dir) => {
+      if (dir === 'pack' || dir === 'info') {
+        return
+      }
+      const files = from.readdirSync(base + dir)
+      files.forEach((file) => {
+        const filepath = base + dir + '/' + file
+        if (to.existsSync(filepath)) {
+          return
+        }
+        const contents = from.readFileSync(filepath)
+        to.mkdirSync('/.git/objects/' + dir, { recursive: true })
+        to.writeFileSync(filepath, contents)
+      })
+    })
+  }
 }

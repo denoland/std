@@ -9,6 +9,7 @@ import {
   IsolateLifecycle,
   IsolatePromise,
   Params,
+  PID,
   Request,
   SolidRequest,
 } from '@/artifact/constants.ts'
@@ -34,6 +35,26 @@ const repo = {
     },
   },
 }
+const pid = {
+  type: 'object',
+  required: ['account', 'repository', 'branches'],
+  additionalProperties: false,
+  properties: {
+    account: {
+      type: 'string',
+    },
+    repository: {
+      type: 'string',
+    },
+    branches: {
+      type: 'array',
+      items: {
+        type: 'string',
+      },
+      minItems: 1,
+    },
+  },
+}
 const request = {
   type: 'object',
   required: ['isolate'],
@@ -41,26 +62,7 @@ const request = {
     isolate: {
       type: 'string',
     },
-    pid: {
-      type: 'object',
-      required: ['account', 'repository', 'branches'],
-      additionalProperties: false,
-      properties: {
-        account: {
-          type: 'string',
-        },
-        repository: {
-          type: 'string',
-        },
-        branches: {
-          type: 'array',
-          items: {
-            type: 'string',
-          },
-          minItems: 1,
-        },
-      },
-    },
+    pid,
   },
 }
 
@@ -91,6 +93,14 @@ export const api = {
     properties: {
       request,
       prior: { type: 'number' },
+    },
+  },
+  branch: {
+    type: 'object',
+    required: ['branch', 'commit'],
+    properties: {
+      branch: pid,
+      commit: { type: 'string' },
     },
   },
   logs: repo,
@@ -214,6 +224,10 @@ export const functions: IsolateFunctions = {
 
     await api.context.io!.induct(reply)
   },
+  branch: async (params: Params, api: IsolateApi<C>) => {
+    const { branch, commit } = params as Branch
+    await api.context.io!.branch(branch, commit)
+  },
   logs: async (params, api: IsolateApi<C>) => {
     log('logs')
     const pid = pidFromRepo(params.repo as string)
@@ -222,6 +236,8 @@ export const functions: IsolateFunctions = {
     return logs
   },
 }
+
+type Branch = { branch: PID; commit: string }
 
 export const lifecycles: IsolateLifecycle = {
   async '@@mount'(api: IsolateApi<C>) {

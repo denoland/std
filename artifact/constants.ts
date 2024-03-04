@@ -1,5 +1,6 @@
 import { IFs } from 'https://esm.sh/v135/memfs@4.6.0/lib/index.js'
 import IsolateApi from './isolate-api.ts'
+export type { IFs }
 export type { IsolateApi }
 export type { CborUint8Array } from 'https://esm.sh/v135/json-joy@9.9.1/es6/json-pack/cbor/types.d.ts?exports=CbotUint8Array'
 export const IO_PATH = '.io.json'
@@ -74,9 +75,15 @@ export type InternalReply = {
 }
 export type MergeReply = {
   target: PID
+  /**
+   * Where did this merge reply come from?
+   */
+  source: PID
   sequence: number
   outcome: Outcome
-  fs: IFs
+  /**
+   * What is the commit that solidified this merge reply?
+   */
   commit: string
 }
 export type IsolatePromise = {

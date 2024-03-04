@@ -46,6 +46,7 @@ export default class DB {
   async settleReply(pid: PID, reply: PierceReply | InternalReply) {
     const key = keys.getReplyKey(pid, reply)
     log('settleReply %o', key)
+    // TODO make this be only for pierce watchers, since internally not needed
     await this.#kv.set(key, reply)
   }
 

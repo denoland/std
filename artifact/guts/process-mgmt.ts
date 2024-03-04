@@ -1,4 +1,4 @@
-import { Debug, log } from '@utils'
+import { Debug, expect, log } from '@utils'
 import { Cradle } from '../api/web-client.types.ts'
 
 export default (name: string, cradleMaker: () => Promise<Cradle>) => {
@@ -11,8 +11,7 @@ export default (name: string, cradleMaker: () => Promise<Cradle>) => {
       // start a new session
       const { create } = await artifact.pierces('session', pid)
       const session = await create({}, { noClose: true })
-
-      log('session', session)
+      expect(session).toBeUndefined()
 
       // do some random stuff using io-fixture
       // close the branch

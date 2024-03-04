@@ -18,10 +18,8 @@ export const api = {
 
 // TODO make an isolate that can take in the options as params
 export const functions = {
-  create: (_: object, api: IsolateApi) => {
-    // spawn something off ?
-    log(api)
-    // the session chain just got told to spawn off a new session chain
+  create: (_: object) => {
+    log('new session created')
   },
   end: (_: object, api: IsolateApi) => {
     log(api)

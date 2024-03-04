@@ -26,7 +26,7 @@ export default async (fs: IFs, commit: string, target: PID) => {
 
   const api = IsolateApi.createFS(fs, commit)
   const io = await api.readJSON('.io.json') as IoStruct
-  const sequence = Number.parseInt(last(target.branches))
+  const sequence = getSequence(target.branches)
 
   const { isolate, functionName, params, target: source } =
     io.requests[sequence]
@@ -46,5 +46,14 @@ export default async (fs: IFs, commit: string, target: PID) => {
 }
 
 const branchName = (pid: PID) => {
-  return pid.branches.join('-')
+  return pid.branches.join('_')
+}
+const getSequence = (branches: string[]) => {
+  const lastBranch = last(branches)
+  if (!Number.isInteger(lastBranch)) {
+    // rule is that all branches must end with the sequence number
+    const aliases = lastBranch.split('-')
+    return Number.parseInt(last(aliases))
+  }
+  return Number.parseInt(last(branches))
 }

@@ -45,8 +45,9 @@ export default async (fs: IFs, pool: Poolable[]) => {
   }
   const requests: SolidRequest[] = []
   const priors: (number | undefined)[] = []
+  // TODO include multiple requests to the same branch as a single array
   const branches: PID[] = []
-  const replies: (PierceReply | InternalReply)[] = []
+  const replies: Reply[] = []
   let parent
   for (const poolable of pool) {
     if (isRequest(poolable)) {
@@ -79,17 +80,24 @@ export default async (fs: IFs, pool: Poolable[]) => {
         replies.push(reply)
       } else if (!equal(request.source, request.target)) {
         const target = request.source
-        const reply: InternalReply = { target, sequence, outcome }
+        const source = request.target
+        const commit = ''
+        const reply: MergeReply = { target, source, sequence, outcome, commit }
         replies.push(reply)
       }
-      if (request.proctype === PROCTYPE.BRANCH) {
-        assert(isMergeReply(poolable), 'branch reply needs fs and commit')
+      if (isBranch(request)) {
+        assert(isMergeReply(poolable), 'branch requires merge reply')
+        log('branch reply', poolable.commit)
         if (!parent) {
           const head = await git.resolveRef({ fs, dir: '/', ref: 'HEAD' })
           parent = [head]
         }
-        copyObjects(poolable.fs, fs)
         parent.push(poolable.commit)
+        if (request.proctype === PROCTYPE.BRANCH) {
+          const branchName = request.target.branches.join('_')
+          log('deleteBranch', branchName)
+          await git.deleteBranch({ fs, dir, ref: branchName })
+        }
       }
     }
   }
@@ -98,27 +106,15 @@ export default async (fs: IFs, pool: Poolable[]) => {
   await git.add({ fs, dir: '/', filepath: '.io.json' })
   const commit = await git.commit({ fs, dir, message: 'pool', author, parent })
   log('commitHash', commit)
+  for (const reply of replies) {
+    if (isMergeReply(reply)) {
+      reply.commit = commit
+    }
+  }
 
   return { commit, requests, priors, branches, replies }
 }
-const copyObjects = (from: IFs, to: IFs) => {
-  const base = '/.git/objects/'
-  from.readdirSync(base).forEach((dir) => {
-    if (dir === 'pack' || dir === 'info') {
-      return
-    }
-    const files = from.readdirSync(base + dir)
-    files.forEach((file) => {
-      const filepath = base + dir + '/' + file
-      if (to.existsSync(filepath)) {
-        return
-      }
-      const contents = from.readFileSync(filepath)
-      to.mkdirSync('/.git/objects/' + dir, { recursive: true })
-      to.writeFileSync(filepath, contents)
-    })
-  })
-}
+
 const getPrior = (sequence: number, io: IoStruct) => {
   const keys = Object.keys(io.requests).map(Number)
   keys.sort((a, b) => b - a)
@@ -155,7 +151,7 @@ const isPierceRequest = (poolable: Request): poolable is PierceRequest => {
   return !!(poolable as PierceRequest).ulid
 }
 const isMergeReply = (poolable: Reply): poolable is MergeReply => {
-  return !!(poolable as MergeReply).fs && !!(poolable as MergeReply).commit
+  return 'commit' in poolable
 }
 const checkPool = (pool: Poolable[]) => {
   assert(pool.length > 0, 'empty pool')
@@ -179,4 +175,8 @@ const checkPool = (pool: Poolable[]) => {
     }
   }
   // TODO a request and a reply with the same id cannot be in the same pool
+}
+const isBranch = (request: Request) => {
+  return request.proctype === PROCTYPE.BRANCH ||
+    request.proctype === PROCTYPE.BRANCH_OPEN
 }

@@ -124,6 +124,9 @@ export class QueueCradle implements Cradle {
     const detach = true
     return this.#queue.push('request', params, detach)
   }
+  branch(params: { branch: PID; commit: string }) {
+    return this.#queue.push('branch', params)
+  }
 }
 
 export default QueueCradle
