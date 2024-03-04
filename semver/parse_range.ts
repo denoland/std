@@ -56,7 +56,7 @@ function handleLeftHyphenRangeGroups(leftGroup: RegExpGroups): Comparator | unde
     build: [],
   };
 }
-function handleRightHyphenRangeGroups(rightGroups: RegExpGroups) {
+function handleRightHyphenRangeGroups(rightGroups: RegExpGroups): Comparator | undefined {
   if (isWildcard(rightGroups.major)) {
     return;
   }
