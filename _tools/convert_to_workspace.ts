@@ -233,8 +233,8 @@ for (const pkg of packages) {
     exclude: [
       "**/test.ts",
       "**/test.js",
-      "**/*_test.ts",
-      "**/*_test.js",
+      "**/*_test*.ts",
+      "**/*_test*.js",
       "**/testdata/**",
     ],
   };
