@@ -3,24 +3,24 @@
 
 export function _common(paths: string[], sep: string): string {
   const [first = "", ...remaining] = paths;
-  if (first === "" || remaining.length === 0) {
-    return first.substring(0, first.lastIndexOf(sep) + 1);
-  }
   const parts = first.split(sep);
 
   let endOfPrefix = parts.length;
+  let append = "";
   for (const path of remaining) {
     const compare = path.split(sep);
+    if (compare.length <= endOfPrefix) {
+      endOfPrefix = compare.length;
+      append = "";
+    }
+
     for (let i = 0; i < endOfPrefix; i++) {
       if (compare[i] !== parts[i]) {
         endOfPrefix = i;
+        append = i === 0 ? "" : sep;
+        break;
       }
     }
-
-    if (endOfPrefix === 0) {
-      return "";
-    }
   }
-  const prefix = parts.slice(0, endOfPrefix).join(sep);
-  return prefix.endsWith(sep) ? prefix : `${prefix}${sep}`;
+  return parts.slice(0, endOfPrefix).join(sep) + append;
 }
