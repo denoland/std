@@ -8,7 +8,7 @@ export const api = {
     additionalProperties: false,
     properties: {},
   },
-  end: {
+  close: {
     description: 'End a session branch',
     type: 'object',
     additionalProperties: false,
@@ -18,10 +18,12 @@ export const api = {
 
 // TODO make an isolate that can take in the options as params
 export const functions = {
-  create: (_: object) => {
+  create: (_: object, api: IsolateApi) => {
     log('new session created')
+    return api.pid
   },
-  end: (_: object, api: IsolateApi) => {
+  close: (_: object, api: IsolateApi) => {
     log(api)
+    // message the parent and tell it to close this child
   },
 }
