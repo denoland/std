@@ -36,5 +36,12 @@
     "front_matter/testdata",
     "coverage",
     "docs"
-  ]
+  ],
+  "lint": {
+    "rules": {
+      "include": [
+        "camelcase"
+      ]
+    }
+  }
 }

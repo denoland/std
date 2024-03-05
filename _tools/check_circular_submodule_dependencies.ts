@@ -1,3 +1,4 @@
+// deno-lint-ignore-file camelcase
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import { createGraph, type ModuleGraphJson, type ModuleJson } from "deno_graph";
 
