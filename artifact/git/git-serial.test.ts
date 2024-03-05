@@ -8,6 +8,7 @@ import {
   PierceRequest,
   PROCTYPE,
   Reply,
+  SolidReply,
 } from '@/artifact/constants.ts'
 
 Deno.test('pierce serial', async (t) => {
@@ -203,7 +204,7 @@ Deno.test.ignore('isolate serial', async () => {
   // TODO ensure that messages to self reject
 })
 const replies = (start: number, end: number) => {
-  const pool: InternalReply[] = []
+  const pool: SolidReply[] = []
   for (let i = start; i <= end; i++) {
     pool.push({
       target: { account: 'git', repository: 'test', branches: ['main'] },
