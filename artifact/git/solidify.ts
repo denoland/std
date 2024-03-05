@@ -2,13 +2,7 @@ import { equal } from 'https://deno.land/x/equal/mod.ts'
 import { IFs } from 'https://esm.sh/v135/memfs@4.6.0/lib/index.js'
 import { Debug } from '@utils'
 import git from '$git'
-import {
-  InternalReply,
-  IoStruct,
-  PID,
-  Poolable,
-  PROCTYPE,
-} from '@/artifact/constants.ts'
+import { IoStruct, PID, Poolable, PROCTYPE } from '@/artifact/constants.ts'
 import { assert } from '$std/assert/assert.ts'
 import IsolateApi from '@/artifact/isolate-api.ts'
 import { Reply, Request } from '@/artifact/constants.ts'

@@ -58,7 +58,7 @@ Deno.test('pierce branch', async (t) => {
     const originReply = replies[0] as InternalReply
     expect(originReply.outcome).toEqual(reply.outcome)
     expect(originReply.target).toEqual(target)
-    mergeReply = { ...originReply, fs: branchFs, commit }
+    mergeReply = { ...originReply, commit, source: childPid }
   })
   await t.step('merge', async () => {
     const { replies } = await git.solidify(fs, [mergeReply])
