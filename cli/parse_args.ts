@@ -350,7 +350,7 @@ function setNested(
     object = object[key] as NestedMapping;
   });
 
-  const key = keys[keys.length - 1];
+  const key = keys[keys.length - 1]!;
 
   if (collect) {
     const v = object[key];
@@ -568,14 +568,14 @@ export function parseArgs<
   }
 
   for (let i = 0; i < args.length; i++) {
-    const arg = args[i];
+    const arg = args[i]!;
 
     const groups = arg.match(FLAG_REGEXP)?.groups;
 
     if (groups) {
       const { doubleDash, negated } = groups;
-      let key = groups.key;
-      let value: string | number | boolean = groups.value;
+      let key = groups.key!;
+      let value: string | number | boolean | undefined = groups.value;
 
       if (doubleDash) {
         if (value) {
@@ -609,7 +609,7 @@ export function parseArgs<
           continue;
         }
 
-        if (isBooleanString(next)) {
+        if (next && isBooleanString(next)) {
           value = parseBooleanString(next);
           i++;
           setArgument(key, value, arg, true);
@@ -632,7 +632,7 @@ export function parseArgs<
         }
 
         if (/[A-Za-z]/.test(letter) && /=/.test(next)) {
-          setArgument(letter, next.split(/=(.+)/)[1], arg, true);
+          setArgument(letter, next.split(/=(.+)/)[1]!, arg, true);
           broken = true;
           break;
         }
@@ -646,7 +646,7 @@ export function parseArgs<
           break;
         }
 
-        if (letters[j + 1] && letters[j + 1].match(/\W/)) {
+        if (letters[j + 1] && letters[j + 1]!.match(/\W/)) {
           setArgument(letter, arg.slice(j + 2), arg, true);
           broken = true;
           break;
