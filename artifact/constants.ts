@@ -45,7 +45,7 @@ type Invocation = {
   proctype: PROCTYPE
 }
 /**
- * A request made from inside an isolate, targetting the pool of a branch
+ * A request made from inside an isolate, targeting the pool of a branch
  */
 export type PoolRequest = Invocation & {
   target: PID
