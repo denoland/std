@@ -4,7 +4,7 @@ import { PID } from '@/artifact/constants.ts'
 
 export default (name: string, cradleMaker: () => Promise<Cradle>) => {
   const prefix = name + ': '
-  Deno.test.only(prefix + 'session', async (t) => {
+  Deno.test(prefix + 'session', async (t) => {
     const artifact = await cradleMaker()
     const repo = 'dreamcatcher-tech/HAL'
     const { pid } = await artifact.clone({ repo })

@@ -1,4 +1,4 @@
-import { expect } from '@utils'
+import { Debug, expect } from '@utils'
 import { Cradle } from '../api/web-client.types.ts'
 
 export default (name: string, cradleMaker: () => Promise<Cradle>) => {
@@ -26,6 +26,21 @@ export default (name: string, cradleMaker: () => Promise<Cradle>) => {
       const result = await local()
       expect(result).toEqual('local reply')
     })
+    await artifact.stop()
+  })
+  Deno.test.only(prefix + 'internal requests', async (t) => {
+    const artifact = await cradleMaker()
+    const repo = 'process/session'
+    const { pid } = await artifact.init({ repo })
+
+    await t.step('ping', async () => {
+      const isolate = 'io-fixture'
+      const { branch } = await artifact.pierces(isolate, pid)
+      Debug.enable('AI:isolateApi')
+      const result = await branch({ isolate })
+      expect(result).toEqual('remote pong')
+    })
+
     await artifact.stop()
   })
 }

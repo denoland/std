@@ -1,4 +1,5 @@
 import { Debug } from '@utils'
+import { IsolateApi } from '@/artifact/constants.ts'
 const log = Debug('AI:io.fixture')
 
 export const api = {
@@ -31,13 +32,13 @@ export const api = {
   },
 }
 export const functions = {
-  error: ({ message }) => {
+  error: ({ message }: { message: string }) => {
     throw new Error(message)
   },
-  branch: async ({ isolate }) => {
+  branch: async ({ isolate }: { isolate: string }, api: IsolateApi) => {
     log('branch', isolate)
-    const { pong } = await spawns(isolate)
-    const result = await pong()
+    const { pong } = await api.actions(isolate)
+    const result = await pong({}, { branch: true })
     return result
   },
   pong: () => {
