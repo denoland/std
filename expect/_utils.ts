@@ -1,4 +1,5 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// Copyright (c) Meta Platforms, Inc. and affiliates. All rights reserved. MIT license.
 
 import type { EqualOptions, EqualOptionUtil } from "./_types.ts";
 import type { Tester } from "./_types.ts";
@@ -102,6 +103,7 @@ export function entries(obj: any) {
   return [...symbolProperties, ...Object.entries(obj)];
 }
 
+// Ported from https://github.com/jestjs/jest/blob/442c7f692e3a92f14a2fb56c1737b26fc663a0ef/packages/expect-utils/src/utils.ts#L173
 export function iterableEquality(
   // deno-lint-ignore no-explicit-any
   a: any,
