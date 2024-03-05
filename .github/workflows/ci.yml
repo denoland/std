@@ -8,6 +8,9 @@ on:
 
 jobs:
   ci:
+    permissions:
+      id-token: write
+      contents: read
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -36,6 +39,14 @@ jobs:
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           DENO_KV_PATH: ':memory:'
+
+      - name: Deploy to Deno Deploy
+        if: matrix.os == 'ubuntu-latest'
+        uses: denoland/deployctl@v1
+        with:
+          project: healthy-seal-74 # the name of the project on Deno Deploy
+          entrypoint: artifact/main.ts      
+
 
       - name: Create lcov file
         run: deno task cov:gen
