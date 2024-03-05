@@ -19,6 +19,8 @@ export const api = {
 // TODO make an isolate that can take in the options as params
 export const functions = {
   create: (_: object, api: IsolateApi) => {
+    // TODO this needs to be called inside an isolate
+    // then it can control custom branch names
     log('new session created')
     return api.pid
   },

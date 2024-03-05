@@ -3,10 +3,11 @@
 import {
   Cradle,
   DispatchFunctions,
+  getProcType,
   Params,
   PID,
   PierceRequest,
-  PROCTYPE,
+  ProcessOptions,
 } from './web-client.types.ts'
 
 type toError = (object: object) => Error
@@ -57,9 +58,9 @@ export default class WebClient implements Cradle {
     for (const functionName of Object.keys(apiSchema)) {
       pierces[functionName] = (
         params: Params = {},
-        options?: { branch?: boolean },
+        options?: ProcessOptions,
       ) => {
-        const proctype = options?.branch ? PROCTYPE.BRANCH : PROCTYPE.SERIAL
+        const proctype = getProcType(options)
         const pierce: PierceRequest = {
           target,
           ulid: 'calculated-server-side',

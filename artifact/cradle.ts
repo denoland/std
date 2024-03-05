@@ -5,9 +5,9 @@ import {
   Params,
   PID,
   PierceRequest,
-  PROCTYPE,
   Request,
 } from './constants.ts'
+import { getProcType } from '@/artifact/constants.ts'
 import { memfs } from 'https://esm.sh/memfs@4.6.0'
 import IsolateApi from './isolate-api.ts'
 import { assert } from 'std/assert/assert.ts'
@@ -130,16 +130,3 @@ export class QueueCradle implements Cradle {
 }
 
 export default QueueCradle
-
-const getProcType = (options?: ProcessOptions) => {
-  if (!options) {
-    return PROCTYPE.SERIAL
-  }
-  if (options.noClose) {
-    return PROCTYPE.BRANCH_OPEN
-  }
-  if (options.branch) {
-    return PROCTYPE.BRANCH
-  }
-  return PROCTYPE.SERIAL
-}

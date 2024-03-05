@@ -106,3 +106,17 @@ export interface Cradle {
   clone(params: { repo: string }): Promise<{ pid: PID; head: string }>
   probe(params: { repo: string }): Promise<{ pid: PID; head: string } | void>
 }
+
+// TODO remove this by passing ProcessOptions in with the Request
+export const getProcType = (options?: ProcessOptions) => {
+  if (!options) {
+    return PROCTYPE.SERIAL
+  }
+  if (options.noClose) {
+    return PROCTYPE.BRANCH_OPEN
+  }
+  if (options.branch) {
+    return PROCTYPE.BRANCH
+  }
+  return PROCTYPE.SERIAL
+}
