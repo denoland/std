@@ -54,7 +54,6 @@ export default class IO {
       await this.#self.request({ request, prior, commit })
     }
     for (const branch of branches) {
-      Debug.enable('AI:*')
       log('branch %o', branch)
       await this.#self.branch({ branch, commit })
     }

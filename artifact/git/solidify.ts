@@ -88,9 +88,10 @@ export default async (fs: IFs, pool: Poolable[]) => {
         }
         parent.push(poolable.commit)
         if (request.proctype === PROCTYPE.BRANCH) {
-          const branchName = request.target.branches.join('_')
+          const branchName = poolable.source.branches.join('_')
           log('deleteBranch', branchName)
-          await git.deleteBranch({ fs, dir, ref: branchName })
+          // TODO when kvgit is online this will be a kv delete
+          // await git.deleteBranch({ fs, dir, ref: branchName })
         }
       }
     }

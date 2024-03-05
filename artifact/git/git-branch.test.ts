@@ -5,9 +5,9 @@ import * as git from './mod.ts'
 import { IoStruct, PID, PROCTYPE, Reply } from '@/artifact/constants.ts'
 import gitCommand from '$git'
 import { PierceRequest } from '@/artifact/constants.ts'
-import { InternalReply } from '@/artifact/constants.ts'
 import { MergeReply } from '@/artifact/constants.ts'
 import { PierceReply } from '@/artifact/constants.ts'
+import FS from '@/artifact/fs.ts'
 
 Deno.test('pierce branch', async (t) => {
   const { fs } = memfs()
@@ -51,16 +51,16 @@ Deno.test('pierce branch', async (t) => {
   await t.step('branch reply', async () => {
     const branchReply = merge({}, reply, { target: childPid })
     const solidified = await git.solidify(branchFs, [branchReply])
-    const { commit, replies } = solidified
+    const { replies } = solidified
 
     log('replies', replies[0])
     expect(replies.length).toBe(1)
-    const originReply = replies[0] as InternalReply
-    expect(originReply.outcome).toEqual(reply.outcome)
-    expect(originReply.target).toEqual(target)
-    mergeReply = { ...originReply, commit, source: childPid }
+    mergeReply = replies[0] as MergeReply
+    expect(mergeReply.outcome).toEqual(reply.outcome)
+    expect(mergeReply.target).toEqual(target)
   })
   await t.step('merge', async () => {
+    FS.copyObjects(branchFs, fs)
     const { replies } = await git.solidify(fs, [mergeReply])
     expect(replies).toHaveLength(1)
     const reply = replies[0]
