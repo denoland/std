@@ -13,7 +13,7 @@ const TESTSUITE: [[string | URL, string?], string][] = [
 ];
 
 Deno.test("basename()", function () {
-  for (const [[test_url, suffix], expected] of TESTSUITE) {
-    assertEquals(url.basename(test_url, suffix), expected);
+  for (const [[testUrl, suffix], expected] of TESTSUITE) {
+    assertEquals(url.basename(testUrl, suffix), expected);
   }
 });
