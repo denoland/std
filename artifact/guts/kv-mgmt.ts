@@ -1,4 +1,4 @@
-// run with deno run --unstable-kv -A ./artifact/_utils/kv-mgmt.ts
+// run with deno run --unstable-kv -A ./artifact/guts/kv-mgmt.ts
 
 import { load } from '$std/dotenv/mod.ts'
 const env = await load()

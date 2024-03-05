@@ -4,13 +4,13 @@ import http from '$git/http/web'
 import { memfs } from 'https://esm.sh/memfs@4.6.0'
 import {
   ENTRY_BRANCH,
-  InternalReply,
   IsolateFunctions,
   IsolateLifecycle,
   IsolatePromise,
   Params,
   PID,
   Request,
+  SolidReply,
   SolidRequest,
 } from '@/artifact/constants.ts'
 import IsolateApi from '../isolate-api.ts'
@@ -217,7 +217,7 @@ export const functions: IsolateFunctions = {
       outcome.error = serializeError(errorObj)
     }
     const { target, sequence } = request
-    const reply: InternalReply = { target, sequence, outcome }
+    const reply: SolidReply = { target, sequence, outcome }
 
     // BUT now we need to induct the collection of other actions that were fired
     // off during the execution here

@@ -12,8 +12,8 @@ import {
   PID,
   ProcessOptions,
   PROCTYPE,
+  SolidRequest,
 } from '@/artifact/constants.ts'
-import { PoolRequest } from '@/artifact/constants.ts'
 
 const log = Debug('AI:isolateApi')
 interface Default {
@@ -56,10 +56,11 @@ export default class IsolateApi<T extends object = Default> {
         log('actions %o', functionName)
         const proctype = options?.branch ? PROCTYPE.BRANCH : PROCTYPE.SERIAL
         const assignedByPostRunCollector = -1
-        const request: PoolRequest = {
+        const request: SolidRequest = {
           target,
           source: target,
-          accumulation: assignedByPostRunCollector,
+          // TODO use sequence as internal sequence number
+          sequence: assignedByPostRunCollector,
 
           isolate,
           functionName,

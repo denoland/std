@@ -1,7 +1,6 @@
 import * as keys from './keys.ts'
 import { ulid } from '$std/ulid/mod.ts'
 import {
-  InternalReply,
   PID,
   PierceReply,
   Poolable,
@@ -43,10 +42,9 @@ export default class DB {
     }
     throw new Error('watchReply failed')
   }
-  async settleReply(pid: PID, reply: PierceReply | InternalReply) {
+  async settleReply(pid: PID, reply: PierceReply) {
     const key = keys.getReplyKey(pid, reply)
     log('settleReply %o', key)
-    // TODO make this be only for pierce watchers, since internally not needed
     await this.#kv.set(key, reply)
   }
 

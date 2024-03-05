@@ -35,26 +35,14 @@ export type IoStruct = {
   requests: { [key: string]: Request }
   replies: { [key: string]: Outcome }
 }
-export type Request = PierceRequest | SolidRequest | PoolRequest
-export type Poolable = Request | InternalReply | MergeReply
-export type Reply = PierceReply | InternalReply | MergeReply
+export type Request = PierceRequest | SolidRequest
+export type Poolable = Request | SolidReply | MergeReply
+export type Reply = PierceReply | SolidReply | MergeReply
 type Invocation = {
   isolate: string
   functionName: string
   params: Params
   proctype: PROCTYPE
-}
-/**
- * A request made from inside an isolate, targeting the pool of a branch
- */
-export type PoolRequest = Invocation & {
-  target: PID
-  source: PID
-  /**
-   * The index of the request in the accumulator for the currently executing
-   * isolate, which caused this PoolRequest to be transmitted.
-   */
-  accumulation: number
 }
 /**
  * A request that has been included in a commit, therefore has a sequence number
@@ -68,7 +56,7 @@ export type PierceReply = {
   ulid: string
   outcome: Outcome
 }
-export type InternalReply = {
+export type SolidReply = {
   target: PID
   sequence: number
   outcome: Outcome
@@ -87,7 +75,7 @@ export type MergeReply = {
   commit: string
 }
 export type IsolatePromise = {
-  request: PoolRequest
+  request: SolidRequest
   resolve: (value: unknown) => void
   reject: (error: Error) => void
 }

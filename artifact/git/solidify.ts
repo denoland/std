@@ -76,6 +76,7 @@ export default async (fs: IFs, pool: Poolable[]) => {
         const target = request.source
         const source = request.target
         const commit = ''
+        const sequence = request.sequence
         const reply: MergeReply = { target, source, sequence, outcome, commit }
         replies.push(reply)
       }
