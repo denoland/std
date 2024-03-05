@@ -9,7 +9,6 @@ import {
   PROCTYPE,
   Reply,
 } from '@/artifact/constants.ts'
-import { InternalReply } from '@/artifact/constants.ts'
 
 Deno.test('pierce serial', async (t) => {
   const { fs } = memfs()
