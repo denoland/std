@@ -1,5 +1,6 @@
 // THIS IS SYCNED FROM THE ARTIFACT PROJECT
 // TODO publish to standalone repo
+import { assert } from '@utils'
 import {
   Cradle,
   DispatchFunctions,
@@ -19,6 +20,7 @@ export default class WebClient implements Cradle {
   private readonly url: string
   private readonly toError: toError
   constructor(url: string, toError: toError, fetcher?: typeof fetch) {
+    assert(!url.endsWith('/'), 'url should not end with /')
     this.url = url
     if (fetcher) {
       this.fetcher = fetcher
@@ -84,7 +86,6 @@ export default class WebClient implements Cradle {
     return this.request('clone', params)
   }
   stop() {
-    throw new Error('WebClient does not stop')
   }
   private async request(path: string, params: Params) {
     const response = await this.fetcher(`/api/${path}?pretty`, {

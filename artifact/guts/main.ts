@@ -3,6 +3,7 @@
 import { expect, log } from '@utils'
 import { Cradle } from '../api/web-client.types.ts'
 import testProcessMgmt from './process-mgmt.ts'
+import testAiCalls from './ai-calls.ts'
 
 export default (name: string, cradleMaker: () => Promise<Cradle>) => {
   const prefix = name + ': '
@@ -128,4 +129,5 @@ export default (name: string, cradleMaker: () => Promise<Cradle>) => {
     await artifact.stop()
   })
   testProcessMgmt(name, cradleMaker)
+  testAiCalls(name, cradleMaker)
 }

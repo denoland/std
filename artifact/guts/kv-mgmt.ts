@@ -10,7 +10,9 @@ const db = await Deno.openKv(
 
 const all = db.list({ prefix: [] })
 
+const promises = []
 for await (const { key, value } of all) {
   console.log(key, value)
-  await db.delete(key)
+  promises.push(db.delete(key))
 }
+await Promise.all(promises)
