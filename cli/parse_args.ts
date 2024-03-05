@@ -350,7 +350,7 @@ function setNested(
     object = object[key] as NestedMapping;
   });
 
-  const key = keys[keys.length - 1]!;
+  const key = keys.at(-1)!;
 
   if (collect) {
     const v = object[key];
