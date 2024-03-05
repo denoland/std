@@ -231,7 +231,8 @@ for (const pkg of packages) {
     version: VERSION,
     exports,
     exclude: [
-      "**/*_test.ts",
+      "**/test.{ts,js}",
+      "**/*_test.{ts,js}",
       "**/testdata/**",
     ],
   };
