@@ -85,4 +85,3 @@
  */
 export { expect } from "./expect.ts";
 export { fn } from "./fn.ts";
-export { iterableEquality } from "./iterable_equality.ts";
