@@ -136,6 +136,10 @@ export function generate(
     throw new Error("Can't create more than 10M uuids/sec");
   }
 
+  if (node.length < 6) {
+    throw new Error("Uuid node needs to have at least 6 numbers");
+  }
+
   _lastMSecs = msecs;
   _lastNSecs = nsecs;
   _clockseq = clockseq;
@@ -163,7 +167,7 @@ export function generate(
   b[i++] = clockseq & 0xff;
 
   for (let n = 0; n < 6; ++n) {
-    b[i + n] = node[n];
+    b[i + n] = node[n]!;
   }
 
   return buf ?? bytesToUuid(b);
