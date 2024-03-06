@@ -1,4 +1,3 @@
-import { deserializeError } from 'npm:serialize-error'
 import * as git from '../git/mod.ts'
 import { assert, Debug } from '@utils'
 import { PID, PierceReply, Reply, Request } from '@/artifact/constants.ts'
@@ -30,15 +29,6 @@ export default class IO {
       const pid = poolable.target
       await this.#execute(pid, lockId)
     }
-    if (!isRequest(poolable)) {
-      return
-    }
-    // TODO only watch if this is a pierce
-    const { outcome } = await this.#db.watchReply(poolable)
-    if (outcome.error) {
-      throw deserializeError(outcome.error)
-    }
-    return outcome.result
   }
   async #execute(pid: PID, lockId: string) {
     const fs = await this.#fs.load(pid)

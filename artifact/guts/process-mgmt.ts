@@ -36,7 +36,7 @@ export default (name: string, cradleMaker: () => Promise<Cradle>) => {
     await t.step('ping', async () => {
       const isolate = 'io-fixture'
       const { branch } = await artifact.pierces(isolate, pid)
-      Debug.enable('AI:isolateApi')
+      Debug.enable('AI:isolateApi AI:exe')
       const result = await branch({ isolate })
       expect(result).toEqual('remote pong')
     })

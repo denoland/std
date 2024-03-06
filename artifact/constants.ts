@@ -75,8 +75,12 @@ export type MergeReply = {
   commit: string
 }
 export type IsolatePromise = {
+  outcome?: Outcome
   request: SolidRequest
-  resolve: (value: unknown) => void
-  reject: (error: Error) => void
+  resolve?: (value: unknown) => void
+  reject?: (error: Error) => void
+}
+export const isPierceRequest = (p: Request): p is PierceRequest => {
+  return 'ulid' in p
 }
 export * from './api/web-client.types.ts'

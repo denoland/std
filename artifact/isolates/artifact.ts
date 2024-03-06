@@ -1,4 +1,6 @@
+import { deserializeError } from 'npm:serialize-error'
 import { Debug } from '@utils'
+import { execute } from '../exe/exe.ts'
 import git from '$git'
 import http from '$git/http/web'
 import { memfs } from 'https://esm.sh/memfs@4.6.0'
@@ -6,12 +8,8 @@ import {
   ENTRY_BRANCH,
   IsolateFunctions,
   IsolateLifecycle,
-  IsolatePromise,
   Params,
   PID,
-  Request,
-  SolidReply,
-  SolidRequest,
 } from '@/artifact/constants.ts'
 import IsolateApi from '../isolate-api.ts'
 import Compartment from '../io/compartment.ts'
@@ -20,9 +18,10 @@ import DB from '../db.ts'
 import FS from '../fs.ts'
 import Cradle from '@/artifact/cradle.ts'
 import { assert } from 'https://deno.land/std@0.203.0/assert/assert.ts'
-import { Outcome } from '@/artifact/constants.ts'
-import { serializeError } from 'https://esm.sh/serialize-error'
 import { pidFromRepo } from '@/artifact/keys.ts'
+import { SolidRequest } from '@/artifact/constants.ts'
+import { Poolable } from '@/artifact/constants.ts'
+import { PierceRequest } from '@/artifact/constants.ts'
 
 const log = Debug('AI:artifact')
 const repo = {
@@ -183,46 +182,26 @@ export const functions: IsolateFunctions = {
     const compartment = await Compartment.create(isolate)
     return compartment.api
   },
-  pierce: (params, api: IsolateApi<C>) => {
+  pierce: async (params, api: IsolateApi<C>) => {
     log('pierce %o %o', params.isolate, params.functionName)
-    return api.context.io!.induct(params as Request)
+    const request = params as PierceRequest
+    await api.context.io!.induct(request)
+    const { outcome } = await api.context.db!.watchReply(request)
+    if (outcome.error) {
+      throw deserializeError(outcome.error)
+    }
+    return outcome.result
   },
   request: async (params, api: IsolateApi<C>) => {
-    const request = params.request as SolidRequest
     const commit = params.commit as string
-    const prior = params.prior as number | undefined
-    // TODO wait for the prior to complete using prior key
-    log('request %o %o', request.isolate, request.functionName, prior)
-    const compartment = await Compartment.create(request.isolate)
-
-    // TODO load up the fs based on the current commit, not latest commit
+    const request = params.request as SolidRequest
     const fs = await api.context.fs!.load(request.target)
-    const acc: IsolatePromise[] = []
-    const isolateApi = IsolateApi.create(fs, commit, request.target, acc)
-    const functions = compartment.functions(isolateApi)
-    const outcome: Outcome = {}
-    try {
-      // TODO handle long running functions with other outputs
-      // also handle any kind of internal requests
-      // so if return a promise longer than one eventloop,
-      // but if you set up some actions, then we pause the execution.
-      // you must be able to keep running it tho, and
+    const induct = (poolable: Poolable) => api.context.io!.induct(poolable)
+    const pid = request.target
+    const done = await execute(pid, commit, request, fs, induct)
 
-      outcome.result = await functions[request.functionName](request.params)
-      log('self result: %o', outcome.result)
-    } catch (errorObj) {
-      log('self error', errorObj)
-      // this will cancel all outstanding requests
-      // and should transmit them to the chains that are running them
-      outcome.error = serializeError(errorObj)
-    }
-    const { target, sequence } = request
-    const reply: SolidReply = { target, sequence, outcome }
-
-    // BUT now we need to induct the collection of other actions that were fired
-    // off during the execution here
-
-    await api.context.io!.induct(reply)
+    // if execution finished, then call the next request action
+    // if there isn't one, then commit will handle the restarting
   },
   branch: async (params: Params, api: IsolateApi<C>) => {
     const { branch, commit } = params as Branch

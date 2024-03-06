@@ -1,15 +1,16 @@
-import { equal } from 'https://deno.land/x/equal/mod.ts'
 import { IFs } from 'https://esm.sh/v135/memfs@4.6.0/lib/index.js'
-import { Debug } from '@utils'
+import { assert, Debug, equal } from '@utils'
 import git from '$git'
 import { IoStruct, PID, Poolable, PROCTYPE } from '@/artifact/constants.ts'
-import { assert } from '$std/assert/assert.ts'
 import IsolateApi from '@/artifact/isolate-api.ts'
-import { Reply, Request } from '@/artifact/constants.ts'
-import { PierceRequest } from '@/artifact/constants.ts'
-import { PierceReply } from '@/artifact/constants.ts'
-import { MergeReply } from '@/artifact/constants.ts'
-import { SolidRequest } from '@/artifact/constants.ts'
+import {
+  isPierceRequest,
+  MergeReply,
+  PierceReply,
+  Reply,
+  Request,
+  SolidRequest,
+} from '@/artifact/constants.ts'
 
 const log = Debug('AI:git')
 
@@ -29,8 +30,10 @@ const author = { name: 'IO' }
  */
 export default async (fs: IFs, pool: Poolable[]) => {
   checkPool(pool)
+  // TODO use the head commit to ensure we are reading the right file
   const api = IsolateApi.createFS(fs)
   log('solidifyPool')
+  // TODO change this to use the iofile class
   let io: IoStruct = { sequence: 0, requests: {}, replies: {} }
   if (await api.exists('.io.json')) {
     io = await api.readJSON('.io.json') as IoStruct
@@ -54,6 +57,8 @@ export default async (fs: IFs, pool: Poolable[]) => {
       } else {
         const request = toInternalRequest(poolable, sequence)
         requests.push(request)
+        // TODO dump the prior concept and use an execlock
+        // TODO move getPrior to the iofile class
         const prior = getPrior(sequence, io)
         priors.push(prior)
       }
@@ -142,9 +147,6 @@ const blankSettledRequests = (io: IoStruct) => {
 }
 const isRequest = (poolable: Poolable): poolable is Request => {
   return (poolable as Request).proctype !== undefined
-}
-const isPierceRequest = (poolable: Request): poolable is PierceRequest => {
-  return !!(poolable as PierceRequest).ulid
 }
 const isMergeReply = (poolable: Reply): poolable is MergeReply => {
   return 'commit' in poolable

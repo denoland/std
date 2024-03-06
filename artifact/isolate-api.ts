@@ -2,11 +2,12 @@ import Compartment from './io/compartment.ts'
 import { IFs } from 'https://esm.sh/memfs@4.6.0'
 import { assert } from 'std/assert/mod.ts'
 import * as posix from 'https://deno.land/std@0.213.0/path/posix/mod.ts'
-import { Debug } from '@utils'
+import { Debug, equal, print } from '@utils'
 import git from '$git'
 import FS from '@/artifact/fs.ts'
 import {
   DispatchFunctions,
+  getProcType,
   IsolatePromise,
   Params,
   PID,
@@ -45,22 +46,27 @@ export default class IsolateApi<T extends object = Default> {
     assert(this.#pid, 'pid not set')
     return this.#pid
   }
+  // TODO make targetPID be required, as error to dispatch serially to self
   async actions(isolate: string, targetPID?: PID) {
-    log('actions', isolate, targetPID)
+    const target = targetPID ? targetPID : this.pid
+    log('actions', isolate, print(target))
     const schema = await this.isolateApiSchema(isolate)
     const actions: DispatchFunctions = {}
-    const target = targetPID ? targetPID : this.pid
 
     for (const functionName of Object.keys(schema)) {
       actions[functionName] = (params?: Params, options?: ProcessOptions) => {
         log('actions %o', functionName)
-        const proctype = options?.branch ? PROCTYPE.BRANCH : PROCTYPE.SERIAL
-        const assignedByPostRunCollector = -1
+        // TODO unify how proctype is derived across all cradles
+        const proctype = getProcType(options)
+        assert(this.#accumulator, 'accumulator must be set')
+        if (equal(target, this.pid) && proctype === PROCTYPE.SERIAL) {
+          return Promise.reject(new Error('cannot dispatch to self'))
+        }
         const request: SolidRequest = {
           target,
-          source: target,
+          source: this.pid,
           // TODO use sequence as internal sequence number
-          sequence: assignedByPostRunCollector,
+          sequence: this.#accumulator.length,
 
           isolate,
           functionName,
@@ -68,8 +74,9 @@ export default class IsolateApi<T extends object = Default> {
           proctype,
         }
         const promise = new Promise((resolve, reject) => {
-          assert(this.#accumulator, 'accumulator must be set')
-          this.#accumulator.push({ request, resolve, reject })
+          // TODO if already something on the accumulator verify requests
+          // then resolve the promise with the outcome given
+          this.#accumulator!.push({ request, resolve, reject })
         })
         return promise
       }
@@ -140,7 +147,7 @@ export default class IsolateApi<T extends object = Default> {
   async exists(path: string) {
     isRelative(path)
     try {
-      this.#fs.statSync(path)
+      this.#fs.statSync('/' + path)
       return true
     } catch (err) {
       if (err.code !== 'ENOENT') {

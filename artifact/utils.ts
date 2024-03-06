@@ -1,9 +1,10 @@
+export { equal } from 'https://deno.land/x/equal/mod.ts'
 import 'npm:supports-color'
 export { expect } from 'std/expect/mod.ts'
 export { assert } from 'std/assert/assert.ts'
 export { default as merge } from 'npm:lodash.merge'
 import Debug from 'npm:debug'
-import { Outcome } from '@/artifact/constants.ts'
+import { Outcome, PID } from '@/artifact/constants.ts'
 import {
   deserializeError,
   serializeError,
@@ -51,4 +52,8 @@ export const fromOutcome = (outcome: Outcome) => {
     throw deserializeError(outcome.error)
   }
   return outcome.result
+}
+export const print = (pid: PID) => {
+  const branches = pid.branches.join(':')
+  return `${pid.account}/${pid.repository}:${branches}`
 }

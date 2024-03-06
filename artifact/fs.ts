@@ -17,6 +17,7 @@ export default class FS {
     return fs
   }
   async load(pid: PID): Promise<IFs> {
+    // TODO load up the fs based on the current commit, not latest commit
     const uint8 = await this.#loadIsolateFs(pid)
     if (!uint8) {
       const repo = `${pid.account}/${pid.repository}`
@@ -26,7 +27,6 @@ export default class FS {
     log('reloaded: repo', pretty(uint8.length))
     // TODO cache locally in case we get reused
     const { fs } = memfs()
-    // TODO use unionFs to make layers for each branch
     snapshot.fromBinarySnapshotSync(snapshotData, { fs, path: '/.git' })
     return fs
   }
