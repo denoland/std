@@ -46,6 +46,21 @@ Deno.test('simple', async (t) => {
     expect(reply.outcome).toEqual({ result: 'local reply' })
   })
 })
+Deno.test('loopback', async (t) => {
+  const { inducted, induct, fs, io } = await mocks()
+  const compound = { ...request, functionName: 'compound' }
+  io.addRequest(compound)
+  io.save()
+  const executor = Executor.create()
+  await t.step('loopback request will error', async () => {
+    const done = await executor.execute(pid, commit, compound, fs, induct)
+    expect(done).toBe(true)
+    expect(inducted).toHaveLength(1)
+    const reply = inducted[0] as SolidReply
+    expect(reply.target).toEqual(pid)
+    expect(reply.outcome.error).toBeDefined()
+  })
+})
 
 Deno.test('compound', async (t) => {
   const target = { account: 'exe', repository: 'other', branches: ['other'] }
@@ -104,23 +119,13 @@ Deno.test('compound', async (t) => {
     expect(done).toBeTruthy()
     expect(inducted).toHaveLength(1)
   })
-  //   await t.step('loopback request will error', async () => {
-  //     const compound = { ...request, functionName: 'compound' }
-  //     const done = await execute(commit, compound, fs, induct)
-  //     expect(done).toBe(true)
-  //     expect(inducted).toHaveLength(1)
-  //     const reply = inducted[0] as SolidReply
-  //     expect(reply.target).toEqual(target)
-  //     expect(reply.outcome.error).toBeDefined()
-  //   })
+
   // multiple outstanding requests
   // test that it will not get rerun unless all outstanding are returned
-  // requesting to self should error
   // test rejection
   // dangling requests are awaited until function resolves
-  // BUT a branch request to self is ok
+  // branch request to self is ok
   // test multiple cycles thru requests and replies
-  // test running the same multistep function but dump the execution cache
   // test making different request between two invocations
 })
 const clone = (fs: IFs) => {
