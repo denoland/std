@@ -45,7 +45,8 @@ for await (
       console.log("Copyright header automatically added to " + path);
     }
   } else if (
-    parseInt(match[1]) !== FIRST_YEAR || parseInt(match[2]) !== CURRENT_YEAR
+    (match[1] && parseInt(match[1]) !== FIRST_YEAR) ||
+    (match[2] && parseInt(match[2]) !== CURRENT_YEAR)
   ) {
     if (CHECK) {
       console.error(`Incorrect copyright year: ${path}`);
