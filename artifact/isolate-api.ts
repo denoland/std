@@ -2,7 +2,7 @@ import Compartment from './io/compartment.ts'
 import { IFs } from 'https://esm.sh/memfs@4.6.0'
 import { assert } from 'std/assert/mod.ts'
 import * as posix from 'https://deno.land/std@0.213.0/path/posix/mod.ts'
-import { Debug, equal, print } from '@utils'
+import { Debug, deserializeError, equal, print } from '@utils'
 import git from '$git'
 import FS from '@/artifact/fs.ts'
 import {
@@ -26,6 +26,7 @@ export default class IsolateApi<T extends object = Default> {
   #commit: string | undefined
   #pid: PID | undefined
   #accumulator: IsolatePromise[] | undefined
+  #accumulatorCount = 0
   // TODO assign a mount id for each side effect execution context ?
   #context: Partial<T> = {}
   static createFS(fs: IFs, atCommit?: string) {
@@ -52,7 +53,6 @@ export default class IsolateApi<T extends object = Default> {
     log('actions', isolate, print(target))
     const schema = await this.isolateApiSchema(isolate)
     const actions: DispatchFunctions = {}
-
     for (const functionName of Object.keys(schema)) {
       actions[functionName] = (params?: Params, options?: ProcessOptions) => {
         log('actions %o', functionName)
@@ -65,17 +65,25 @@ export default class IsolateApi<T extends object = Default> {
         const request: SolidRequest = {
           target,
           source: this.pid,
-          // TODO use sequence as internal sequence number
-          sequence: this.#accumulator.length,
+          sequence: this.#accumulatorCount++,
 
           isolate,
           functionName,
           params: params || {},
           proctype,
         }
+        const prior = this.#accumulator[request.sequence]
+        if (prior) {
+          assert(equal(prior.request, request), 'request mismatch')
+          if (prior.outcome) {
+            if (prior.outcome.error) {
+              return Promise.reject(deserializeError(prior.outcome.error))
+            }
+            return Promise.resolve(prior.outcome.result)
+          }
+        }
+
         const promise = new Promise((resolve, reject) => {
-          // TODO if already something on the accumulator verify requests
-          // then resolve the promise with the outcome given
           this.#accumulator!.push({ request, resolve, reject })
         })
         return promise

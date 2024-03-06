@@ -9,6 +9,7 @@ import {
   deserializeError,
   serializeError,
 } from 'https://esm.sh/v135/serialize-error@11.0.3/index.js'
+export { deserializeError }
 Debug.enable('')
 export { Debug }
 export const log = Debug('AI:tests')

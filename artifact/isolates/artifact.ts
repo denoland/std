@@ -1,6 +1,6 @@
 import { deserializeError } from 'npm:serialize-error'
 import { Debug } from '@utils'
-import { execute } from '../exe/exe.ts'
+import Executor from '../exe/exe.ts'
 import git from '$git'
 import http from '$git/http/web'
 import { memfs } from 'https://esm.sh/memfs@4.6.0'
@@ -110,7 +110,7 @@ export const api = {
   // requesting a patch would be done with the last known patch as cursor
 }
 
-export type C = { db: DB; io: IO; fs: FS; self: Cradle }
+export type C = { db: DB; io: IO; fs: FS; exe: Executor; self: Cradle }
 
 export const functions: IsolateFunctions = {
   ping: (params?: Params) => {
@@ -198,9 +198,10 @@ export const functions: IsolateFunctions = {
     const fs = await api.context.fs!.load(request.target)
     const induct = (poolable: Poolable) => api.context.io!.induct(poolable)
     const pid = request.target
-    const done = await execute(pid, commit, request, fs, induct)
+    const exe = api.context.exe!
+    const done = await exe.execute(pid, commit, request, fs, induct)
 
-    // if execution finished, then call the next request action
+    // TODO if execution finished, then call the next request action
     // if there isn't one, then commit will handle the restarting
   },
   branch: async (params: Params, api: IsolateApi<C>) => {
@@ -224,8 +225,9 @@ export const lifecycles: IsolateLifecycle = {
     const db = await DB.create()
     const io = IO.create(db, api.context.self)
     const fs = FS.create(db)
+    const exe = Executor.create()
     // in testing, alter the context to support ducking the queue
-    api.context = { db, io, fs }
+    api.context = { db, io, fs, exe }
   },
   '@@unmount'(api: IsolateApi<C>) {
     return api.context.db!.stop()
