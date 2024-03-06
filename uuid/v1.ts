@@ -137,7 +137,7 @@ export function generate(
   }
 
   if (node.length < 6) {
-    throw new Error("Uuid node needs to have at least 6 numbers");
+    throw new Error("Can't create a uuid with a node of less than 6 numbers");
   }
 
   _lastMSecs = msecs;
