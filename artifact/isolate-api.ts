@@ -206,16 +206,19 @@ export default class IsolateApi<T extends object = Default> {
     return walk
   }
   async rm(filepath: string) {
-    isRelative(filepath)
-    try {
-      this.#fs.unlinkSync(filepath)
-    } catch (error) {
-      if (error.code !== 'ENOENT') {
-        throw error
+    if (await this.exists(filepath)) {
+      try {
+        this.#fs.unlinkSync(filepath)
+      } catch (error) {
+        if (error.code !== 'ENOENT') {
+          throw error
+        }
       }
+      const fs = this.#fs
+      await git.remove({ fs, dir, filepath })
+      return true
     }
-    const fs = this.#fs
-    await git.remove({ fs, dir, filepath })
+    return false
     // TODO make sure rm and write update the index
   }
   get context() {

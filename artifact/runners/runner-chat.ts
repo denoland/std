@@ -6,7 +6,6 @@ import OpenAI from 'npm:openai'
 import { serializeError } from 'npm:serialize-error'
 import { load } from 'https://deno.land/std@0.213.0/dotenv/mod.ts'
 import { Help, IsolateApi } from '@/artifact/constants.ts'
-import { Params } from '@/artifact/constants.ts'
 import { HelpConfig, JSONSchemaType } from '@/artifact/constants.ts'
 
 const base = 'AI:runner-chat'
@@ -27,10 +26,10 @@ if (!env['OPENAI_API_KEY']) {
 }
 const apiKey = env['OPENAI_API_KEY']
 const ai = new OpenAI({ apiKey })
-
-export default async (params: Params, api: IsolateApi) => {
-  const help = params.help as Help
-  const text = params.text as string
+type Args = { text: string; help: Help }
+export default async (params: Args, api: IsolateApi) => {
+  const help = params.help
+  const text = params.text
   const ai = await AI.create(help, api)
   return await ai.prompt(text)
 }
@@ -214,7 +213,10 @@ export class AI {
         assert(help.description, `missing description: ${command}`)
         const schemas = await this.#api.isolateApiSchema('engage-help')
         const { engage } = await this.#api.actions('engage-help')
-        action = ({ text }: { text: string }) => engage({ help: name, text })
+        action = ({ text }: { text: string }) => {
+          log('engage:', name, text)
+          return engage({ help: name, text }, { branch: true })
+        }
         tool = toTool(name, help, schemas.engage)
       } else {
         const [isolate, _name] = command.split(':')

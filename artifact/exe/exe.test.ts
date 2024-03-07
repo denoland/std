@@ -1,5 +1,6 @@
 import { memfs } from 'https://esm.sh/memfs@4.6.0'
-import IOFile from '../io/io-file.ts'
+import IOChannel from '../io/io-channel.ts'
+import FS from '../fs.ts'
 import Executor from './exe.ts'
 import {
   IFs,
@@ -29,7 +30,7 @@ const mocks = async () => {
     return Promise.resolve()
   }
   const { fs } = memfs()
-  const io = await IOFile.load(pid, fs)
+  const io = await IOChannel.load(pid, fs)
   return { inducted, induct, io, fs }
 }
 Deno.test('simple', async (t) => {
@@ -89,14 +90,19 @@ Deno.test('compound', async (t) => {
     expect(request.target).toEqual(target)
     expect(request.source).toEqual(pid)
     expect(request.sequence).toEqual(0)
-    halfFs = clone(fs)
+    halfFs = FS.clone(fs)
   })
   await t.step('reply using function cache', async () => {
     assert(request)
-    io.addRequest(request)
-    const sequence = io.getSequence(request)
+    const sequence = io.addRequest(request)
     expect(sequence).toBe(1)
-    io.addOutcome(sequence, { result: 'compound reply' })
+    const reply = {
+      outcome: { result: 'compound reply' },
+      target: request.source,
+      sequence,
+    }
+    const savedRequest = io.reply(reply)
+    expect(savedRequest).toEqual(request)
     io.save()
 
     inducted.length = 0
@@ -107,11 +113,15 @@ Deno.test('compound', async (t) => {
   await t.step('reply from restart', async () => {
     const noCache = Executor.create()
     assert(request)
-    const io = await IOFile.load(pid, halfFs)
-    io.addRequest(request)
-    const sequence = io.getSequence(request)
+    const io = await IOChannel.load(pid, halfFs)
+    const sequence = io.addRequest(request)
     expect(sequence).toBe(1)
-    io.addOutcome(sequence, { result: 'compound reply' })
+    const reply = {
+      outcome: { result: 'compound reply' },
+      target: request.source,
+      sequence,
+    }
+    io.reply(reply)
     io.save()
 
     inducted.length = 0
@@ -128,9 +138,3 @@ Deno.test('compound', async (t) => {
   // test multiple cycles thru requests and replies
   // test making different request between two invocations
 })
-const clone = (fs: IFs) => {
-  const uint8 = snapshot.toBinarySnapshotSync({ fs, path: '/' })
-  const { fs: clone } = memfs()
-  snapshot.fromBinarySnapshotSync(uint8, { fs: clone, path: '/' })
-  return clone
-}

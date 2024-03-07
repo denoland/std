@@ -4,6 +4,7 @@ export enum PROCTYPE {
   SERIAL = 'SERIAL',
   BRANCH = 'BRANCH',
   BRANCH_OPEN = 'BRANCH_OPEN',
+  // TODO NO_AWAIT = 'NO_AWAIT', // allow fire and forget actions
 }
 export type { JSONSchemaType }
 
@@ -76,7 +77,7 @@ export type HelpConfig = {
 export type Help = {
   description?: string
   config?: HelpConfig
-  runner?: string
+  runner?: RUNNERS
   commands?: string[]
   instructions: string[]
   done?: string
@@ -119,4 +120,8 @@ export const getProcType = (options?: ProcessOptions) => {
     return PROCTYPE.BRANCH
   }
   return PROCTYPE.SERIAL
+}
+export enum RUNNERS {
+  CHAT = 'runner-chat',
+  INJECTOR = 'runner-injector',
 }

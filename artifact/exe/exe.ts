@@ -1,4 +1,4 @@
-import IOFile from '../io/io-file.ts'
+import IOChannel from '../io/io-channel.ts'
 import { getPoolKey } from '@/artifact/keys.ts'
 import {
   IsolatePromise,
@@ -32,16 +32,16 @@ export default class Executor {
    * authority to operate.
    * @returns true if the request was executed, false if it was deferred
    */
-  async execute(pid: PID, commit: string, request: Request, fs: IFs, i: I) {
-    assert(equal(pid, request.target), 'target is not self')
-    const ioFile = await IOFile.load(pid, fs, commit)
-    assert(ioFile.isCallable(request), 'request is not callable')
-    log('request %o %o', request.isolate, request.functionName)
+  async execute(pid: PID, commit: string, req: SolidRequest, fs: IFs, i: I) {
+    assert(equal(pid, req.target), 'target is not self')
+    const ioFile = await IOChannel.load(pid, fs, commit)
+    assert(ioFile.isCallable(req), 'request is not callable')
+    log('request %o %o', req.isolate, req.functionName)
 
     const accumulator = ioFile.getAccumulator()
     log('replies %o', accumulator)
 
-    const exeId = getExeId(request)
+    const exeId = getExeId(req)
     let execution: Execution
     if (this.#functions.has(exeId)) {
       log('running function %o', exeId)
@@ -49,11 +49,11 @@ export default class Executor {
       mergeAccumulators(accumulator, execution.accumulator)
     } else {
       const isolateApi = IsolateApi.create(fs, commit, pid, accumulator)
-      const compartment = await Compartment.create(request.isolate)
+      const compartment = await Compartment.create(req.isolate)
       const functions = compartment.functions(isolateApi)
       execution = {
         function: Promise.resolve().then(() => {
-          return functions[request.functionName](request.params)
+          return functions[req.functionName](req.params)
         }).then((result) => {
           const outcome: Outcome = { result }
           log('self result: %o', outcome.result)
@@ -72,19 +72,28 @@ export default class Executor {
 
     const racecar = Symbol('racecar')
     const racer = new Promise((r) => setTimeout(() => r(racecar), 0))
-    const winner = await Promise.race([execution.function, racer])
+    let winner = await Promise.race([execution.function, racer])
     if (winner === racecar) {
-      // TODO throw if no actions but racecar won
-      for (const accumulation of accumulator) {
-        log('racecar action', accumulation.request)
-        await i(accumulation.request)
+      log('racecar')
+      // TODO handle side effects deliberately
+      if (accumulator.length === 0) {
+        log('assuming side effect')
+        winner = await execution.function
+
+        // wait until the next accumulation occurs, or the function completes
+      } else {
+        for (const accumulation of accumulator) {
+          log('racecar action', accumulation.request)
+          await i(accumulation.request)
+        }
+        return false
       }
-      return false
     }
     assert(isOutcome(winner), 'winner is not an outcome')
-    const sequence = ioFile.getSequence(request)
+    const sequence = ioFile.getSequence(req)
     const reply: SolidReply = { target: pid, sequence, outcome: winner }
     await i(reply)
+    log('exe complete %o', reply)
     return true
   }
 }

@@ -58,10 +58,6 @@ export default (name: string, cradleMaker: () => Promise<Cradle>) => {
       await expect(pierces.local({ invalid: 'parameters' }))
         .rejects.toThrow(msg)
     })
-    // await t.step('child process', async () => {
-    //   const result = await pierces.spawn({ isolate })
-    //   expect(result).toBe('remote pong')
-    // })
     await artifact.stop()
   })
 
@@ -86,19 +82,6 @@ export default (name: string, cradleMaker: () => Promise<Cradle>) => {
       log('logs', logs.length)
       await artifact.stop()
     })
-    // TODO get some branch tests going
-    // await t.step('branch', async () => {
-    //   const artifact = await cradleMaker()
-    //   const { pid: target } = await artifact.init({ repo: 'cradle/pierce' })
-
-    //   // pierce the base branch with a spawn instruction
-    //   // then do a long running spawn that remains open
-
-    //   const { branch } = await artifact.pierces(isolate, target)
-    //   const result = await branch()
-    //   log('branch result', result)
-    //   await artifact.stop()
-    // })
   })
   Deno.test(prefix + 'github operations', async (t) => {
     const artifact = await cradleMaker()

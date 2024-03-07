@@ -1,7 +1,7 @@
 import { Debug } from '@utils'
 import { IsolateApi } from '@/artifact/constants.ts'
 import { PID } from '@/artifact/constants.ts'
-const log = Debug('AI:io.fixture')
+const log = Debug('AI:io-fixture')
 
 export const api = {
   error: {
@@ -16,9 +16,7 @@ export const api = {
     description: 'make a new branch',
     type: 'object',
     additionalProperties: false,
-    properties: {
-      isolate: { type: 'string' },
-    },
+    properties: {},
   },
   compound: {
     description: 'call another function',
@@ -40,25 +38,28 @@ export const api = {
 }
 export const functions = {
   error: ({ message }: { message: string }) => {
+    log('error', message)
     throw new Error(message)
   },
-  branch: async ({ isolate = 'io-fixture' }, api: IsolateApi) => {
-    log('branch', isolate)
-    const { pong } = await api.actions(isolate)
+  branch: async (_: object, api: IsolateApi) => {
+    log('branch')
+    const { pong } = await api.actions('io-fixture')
     const result = await pong({}, { branch: true })
     return result
   },
   compound: async (params: { target?: PID }, api: IsolateApi) => {
-    log('compound')
     const { target } = params
+    log('compound target:', target)
     const { pong } = await api.actions('io-fixture', target)
     const result = await pong({})
     return result
   },
   pong: () => {
+    log('pong')
     return 'remote pong'
   },
   local: () => {
+    log('local')
     return 'local reply'
   },
 }

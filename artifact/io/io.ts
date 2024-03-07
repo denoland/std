@@ -1,13 +1,13 @@
 import * as git from '../git/mod.ts'
 import { assert, Debug } from '@utils'
-import { PID, PierceReply, Reply, Request } from '@/artifact/constants.ts'
+import { PID, PierceReply, Reply } from '@/artifact/constants.ts'
 import DB from '@/artifact/db.ts'
 import { IFs } from 'https://esm.sh/v135/memfs@4.6.0/lib/index.js'
 import FS from '@/artifact/fs.ts'
 import Cradle from '@/artifact/cradle.ts'
 import { Poolable } from '@/artifact/constants.ts'
 import { MergeReply } from '@/artifact/constants.ts'
-const log = Debug('AI:io.')
+const log = Debug('AI:io')
 
 export default class IO {
   #db!: DB
@@ -35,38 +35,36 @@ export default class IO {
     const solids = await this.#solidifyPool(pid, fs)
 
     log('solids %o', solids)
-    const { commit, requests, branches, priors, replies } = solids
+    const { commit, requests, branches, replies } = solids
     await this.#fs.update(pid, fs, commit, lockId)
 
     for (const request of requests) {
       // WARNING detaches from queue and relies on watchReply() to complete
-      const prior = priors.pop()
-      await this.#self.request({ request, prior, commit })
+      await this.#self.request({ request, commit })
     }
     for (const branch of branches) {
       log('branch %o', branch)
       await this.#self.branch({ branch, commit })
     }
     for (const reply of replies) {
-      log('reply %o', reply)
-
       // TODO change this to only be for pierces
       if (isPierceReply(reply)) {
+        log('pierce reply %o', reply)
         await this.#db.settleReply(pid, reply)
       } else {
+        log('solid reply %o', reply)
         await this.induct(reply)
       }
     }
     await this.#db.releaseHeadlock(pid, lockId)
   }
   async #solidifyPool(pid: PID, fs: IFs) {
-    log('solidifyPool %o', pid)
     const { poolKeys, pool } = await this.#db.getPooledActions(pid)
+    log('solidifyPool %o %i', pid, poolKeys.length)
 
     for (const key in pool) {
       const poolable = pool[key]
       if (isMergeReply(poolable)) {
-        // copy in the objects from the fs
         const { source } = poolable
         const from = await this.#fs.load(source)
         FS.copyObjects(from, fs)
@@ -93,9 +91,6 @@ export default class IO {
 
 const isMergeReply = (poolable: Poolable): poolable is MergeReply => {
   return 'commit' in poolable
-}
-const isRequest = (poolable: Poolable): poolable is Request => {
-  return 'isolate' in poolable
 }
 const isPierceReply = (reply: Reply): reply is PierceReply => {
   return 'ulid' in reply

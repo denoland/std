@@ -1,8 +1,14 @@
 import { IFs } from 'https://esm.sh/v135/memfs@4.6.0/lib/index.js'
 import { assert, Debug, equal } from '@utils'
 import git from '$git'
-import { IoStruct, PID, Poolable, PROCTYPE } from '@/artifact/constants.ts'
-import IsolateApi from '@/artifact/isolate-api.ts'
+import {
+  isMergeReply,
+  isRequest,
+  PID,
+  Poolable,
+  PROCTYPE,
+  toRunnableRequest,
+} from '@/artifact/constants.ts'
 import {
   isPierceRequest,
   MergeReply,
@@ -11,11 +17,12 @@ import {
   Request,
   SolidRequest,
 } from '@/artifact/constants.ts'
+import IOChannel from '@io/io-channel.ts'
 
-const log = Debug('AI:git')
+const log = Debug('AI:git:solidify')
 
 const dir = '/'
-const author = { name: 'IO' }
+const author = { name: 'IO Solidify' }
 
 /**
  * Takes in an unordered collection of operations, and orders them in the
@@ -29,61 +36,50 @@ const author = { name: 'IO' }
  * @param fs a memfs instance to update
  */
 export default async (fs: IFs, pool: Poolable[]) => {
-  checkPool(pool)
+  const pid = checkPool(pool)
   // TODO use the head commit to ensure we are reading the right file
-  const api = IsolateApi.createFS(fs)
   log('solidifyPool')
   // TODO change this to use the iofile class
-  let io: IoStruct = { sequence: 0, requests: {}, replies: {} }
-  if (await api.exists('.io.json')) {
-    io = await api.readJSON('.io.json') as IoStruct
-    // TODO check format and schema
-    blankSettledRequests(io)
-  }
+  const io = await IOChannel.load(pid, fs)
   const requests: SolidRequest[] = []
-  const priors: (number | undefined)[] = []
   // TODO include multiple requests to the same branch as a single array
   const branches: PID[] = []
   const replies: Reply[] = []
   let parent
   for (const poolable of pool) {
     if (isRequest(poolable)) {
-      const sequence = io.sequence++
-      io.requests[sequence] = poolable
+      const sequence = io.addRequest(poolable)
       const { proctype } = poolable
       if (proctype === PROCTYPE.BRANCH || proctype === PROCTYPE.BRANCH_OPEN) {
         const pid = branchPid(poolable.target, sequence)
         branches.push(pid)
       } else {
-        const request = toInternalRequest(poolable, sequence)
+        const request = toRunnableRequest(poolable, sequence)
         requests.push(request)
-        // TODO dump the prior concept and use an execlock
-        // TODO move getPrior to the iofile class
-        const prior = getPrior(sequence, io)
-        priors.push(prior)
       }
     } else {
-      log('reply', poolable.outcome)
-      const { sequence } = poolable
+      log('reply', poolable)
       // TODO move this to checkPool()
-      assert(Number.isInteger(sequence), 'reply needs a sequence number')
-      assert(sequence >= 0, 'reply needs a whole sequence number')
-      const request = io.requests[sequence]
-      assert(request, `reply sequence not found: ${sequence}`)
-      io.replies[sequence] = poolable.outcome
-      // if this is a pierce, need to make a reply occur outside
+      const request = io.reply(poolable)
       const { outcome } = poolable
       if (isPierceRequest(request)) {
         const { ulid } = request
         const reply: PierceReply = { ulid, outcome }
         replies.push(reply)
-      } else if (!equal(request.source, request.target)) {
+      } else if (!equal(request.source, pid)) {
         const target = request.source
         const source = request.target
         const commit = ''
         const sequence = request.sequence
         const reply: MergeReply = { target, source, sequence, outcome, commit }
         replies.push(reply)
+      } else {
+        // not a pierce request, and was sourced from this branch.
+        if (!io.isAccumulating()) {
+          const runnable = io.getExecutingRequest()
+          log('reply to', runnable)
+          requests.push(runnable)
+        }
       }
       if (isBranch(request)) {
         assert(isMergeReply(poolable), 'branch requires merge reply')
@@ -97,13 +93,12 @@ export default async (fs: IFs, pool: Poolable[]) => {
           const branchName = poolable.source.branches.join('_')
           log('deleteBranch', branchName)
           // TODO when kvgit is online this will be a kv delete
-          // await git.deleteBranch({ fs, dir, ref: branchName })
         }
       }
     }
   }
 
-  api.writeJSON('.io.json', io)
+  io.save()
   await git.add({ fs, dir: '/', filepath: '.io.json' })
   const commit = await git.commit({ fs, dir, message: 'pool', author, parent })
   log('commitHash', commit)
@@ -112,45 +107,18 @@ export default async (fs: IFs, pool: Poolable[]) => {
       reply.commit = commit
     }
   }
-
-  return { commit, requests, priors, branches, replies }
-}
-
-const getPrior = (sequence: number, io: IoStruct) => {
-  const keys = Object.keys(io.requests).map(Number)
-  keys.sort((a, b) => b - a)
-  for (const key of keys) {
-    assert(key <= sequence, `out of order sequence: ${key}`)
-    if (io.replies[key]) {
-      continue
-    }
-    if (key < sequence) {
-      return key
-    }
+  const solids = { commit, requests, branches, replies }
+  if (!io.isAccumulating()) {
+    assert(isActive(requests, branches, replies), 'no active solids - stalled')
   }
+  return solids
 }
-const toInternalRequest = (request: Request, sequence: number) => {
-  const { isolate, functionName, params, proctype, target } = request
-  const source = 'ulid' in request ? target : request.source
-  return { isolate, functionName, params, proctype, source, target, sequence }
-}
+
 const branchPid = (pid: PID, sequence: number) => {
   const branches = pid.branches.concat(sequence.toString())
   return { ...pid, branches }
 }
-const blankSettledRequests = (io: IoStruct) => {
-  for (const key in io.replies) {
-    log('delete', key)
-    delete io.requests[key]
-  }
-  io.replies = {}
-}
-const isRequest = (poolable: Poolable): poolable is Request => {
-  return (poolable as Request).proctype !== undefined
-}
-const isMergeReply = (poolable: Reply): poolable is MergeReply => {
-  return 'commit' in poolable
-}
+
 const checkPool = (pool: Poolable[]) => {
   assert(pool.length > 0, 'empty pool')
   const { target } = pool[0]
@@ -172,9 +140,17 @@ const checkPool = (pool: Poolable[]) => {
       }
     }
   }
+  return target
   // TODO a request and a reply with the same id cannot be in the same pool
 }
 const isBranch = (request: Request) => {
   return request.proctype === PROCTYPE.BRANCH ||
     request.proctype === PROCTYPE.BRANCH_OPEN
+}
+const isActive = (
+  requests: SolidRequest[],
+  branches: PID[],
+  replies: Reply[],
+) => {
+  return requests.length > 0 || branches.length > 0 || replies.length > 0
 }

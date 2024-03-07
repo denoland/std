@@ -9,15 +9,18 @@ import {
   isPierceRequest,
   PID,
   Request,
+  toRunnableRequest,
 } from '@/artifact/constants.ts'
 import { Debug, equal } from '@utils'
 import { IFs } from '@/artifact/constants.ts'
 import { assert } from '@utils'
 import { PROCTYPE } from '@/artifact/constants.ts'
-import { Outcome } from '@/artifact/constants.ts'
+import { SolidRequest } from '@/artifact/constants.ts'
+import { MergeReply } from '@/artifact/constants.ts'
+import { SolidReply } from '@/artifact/constants.ts'
 const log = Debug('AI:io-file')
 
-export default class IOFile {
+export default class IOChannel {
   #pid: PID
   #api: IsolateApi
   #io: IoStruct
@@ -35,26 +38,49 @@ export default class IOFile {
       check(io)
       blankSettledRequests(io, pid)
     }
-    return new IOFile(pid, api, io)
+    return new IOChannel(pid, api, io)
   }
   save() {
     return this.#api.writeJSON('.io.json', this.#io)
   }
-  isCallable(request: Request) {
+  /**
+   * @returns true if there are any requests that are accumulating, as in they
+   * have no replies yet, but are needed to continue execution
+   */
+  isAccumulating() {
     for (const [key, request] of Object.entries(this.#io.requests)) {
       if (isAccumulation(request, this.#pid)) {
         if (!this.#io.replies[key]) {
-          return false
+          return true
         }
       }
     }
+    return false
+  }
+  isCallable(attempt: SolidRequest) {
+    if (this.isAccumulating()) {
+      return false
+    }
     // TODO assert this is the first serial request to be called
-    const sequence = this.getSequence(request)
+    const sequence = this.getSequence(attempt)
     return this.#io.replies[sequence] === undefined
   }
-  getSequence(request: Request) {
+  getExecutingRequest() {
+    // get the first non accumulation request with no reply yet
+    const openRequests = this.#getOpenRequestIndices()
+    for (const key of openRequests) {
+      const request = this.#io.requests[key]
+      if (!isAccumulation(request, this.#pid)) {
+        const runnable = toRunnableRequest(request, key)
+        return runnable
+      }
+    }
+    throw new Error('no executing request found')
+  }
+  getSequence(request: SolidRequest) {
     for (const [key, value] of Object.entries(this.#io.requests)) {
-      if (equal(value, request)) {
+      const test = toRunnableRequest(value, Number.parseInt(key))
+      if (equal(test, request)) {
         return Number.parseInt(key)
       }
     }
@@ -63,11 +89,18 @@ export default class IOFile {
   addRequest(request: Request) {
     const sequence = this.#io.sequence++
     this.#io.requests[sequence] = request
+    return sequence
   }
-  addOutcome(sequence: number, outcome: Outcome) {
-    assert(this.#io.requests[sequence], 'sequence not found')
+  reply(reply: SolidReply | MergeReply) {
+    const { sequence } = reply
+    assert(Number.isInteger(sequence), 'reply needs a sequence number')
+    assert(sequence >= 0, 'reply needs a whole sequence number')
+
+    const request = this.#io.requests[sequence]
+    assert(request, `reply sequence not found: ${sequence}`)
     assert(!this.#io.replies[sequence], 'sequence already replied')
-    this.#io.replies[sequence] = outcome
+    this.#io.replies[sequence] = reply.outcome
+    return request
   }
   getAccumulator(): IsolatePromise[] {
     const indices: number[] = []
@@ -86,6 +119,25 @@ export default class IOFile {
   }
   print() {
     return JSON.stringify(this.#io, null, 2)
+  }
+  getPrior(sequence: number) {
+    // TODO UNTESTED
+    const keys = Object.keys(this.#io.requests).map(Number)
+    keys.sort((a, b) => b - a)
+    for (const key of keys) {
+      assert(key <= sequence, `out of order sequence: ${key}`)
+      if (this.#io.replies[key]) {
+        continue
+      }
+      if (key < sequence) {
+        return key
+      }
+    }
+  }
+  #getOpenRequestIndices() {
+    const keys = Object.keys(this.#io.requests).map(parseInt)
+    keys.sort((a, b) => a - b)
+    return keys.filter((k) => !this.#io.replies[k])
   }
 }
 const check = (io: IoStruct) => {

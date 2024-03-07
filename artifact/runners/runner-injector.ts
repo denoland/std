@@ -7,14 +7,15 @@ import { IsolateApi } from '@/artifact/constants.ts'
 const log = Debug('AI:runner-injector')
 
 type Args = { help: Help; text: string }
-export default async ({ help: injectee, text }: Args, api: IsolateApi) => {
-  log('injector:', injectee, text)
+export default async (params: Args, api: IsolateApi) => {
+  const { help, text } = params
+  log('injector:', help, text)
 
   const { loadAll } = await api.functions('load-help')
   const allHelps: Help[] = await loadAll()
-  const helps = allHelps.filter((help) => !equal(help, injectee))
+  const helps = allHelps.filter((h) => !equal(h, help))
 
-  injectee = { ...injectee }
+  const injectee = { ...help }
   injectee.instructions = [...injectee.instructions]
   for (const donor of helps) {
     // TODO include the commands api descriptions too

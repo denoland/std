@@ -2,7 +2,7 @@ import merge from 'npm:lodash.merge'
 import Cradle from '../cradle.ts'
 import { expect, log } from '@utils'
 import IsolateApi from '../isolate-api.ts'
-import { Help, PID } from '../constants.ts'
+import { Help, PID, RUNNERS } from '../constants.ts'
 import runner from './runner-chat.ts'
 import { memfs } from 'https://esm.sh/memfs@4.6.0'
 
@@ -11,7 +11,7 @@ Deno.test('runner', async (t) => {
     config: {
       model: 'gpt-3.5-turbo-1106',
     },
-    runner: 'runner-chat',
+    runner: RUNNERS.CHAT,
     commands: ['io-fixture:local', 'io-fixture:error'],
     instructions: ['Only reply with a SINGLE word'],
   }
@@ -63,11 +63,8 @@ Deno.test('artifact', async (t) => {
       branches: ['main'],
     }
     const isolate = 'engage-help'
-    const { engageInBand } = await artifact.pierces(isolate, pid)
-    const result = await engageInBand({
-      help: 'help-fixture',
-      text: 'hello',
-    })
+    const { engage } = await artifact.pierces(isolate, pid)
+    const result = await engage({ help: 'help-fixture', text: 'hello' })
     log('result', result)
   })
   await artifact.stop()

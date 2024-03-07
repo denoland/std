@@ -13,6 +13,7 @@ import {
   PierceRequest,
   PROCTYPE,
 } from './api/web-client.types.ts'
+
 export type IsolateFunction =
   | (() => unknown | Promise<unknown>)
   | ((...args: [Params]) => unknown | Promise<unknown>)
@@ -82,5 +83,30 @@ export type IsolatePromise = {
 }
 export const isPierceRequest = (p: Request): p is PierceRequest => {
   return 'ulid' in p
+}
+export const toRunnableRequest = (request: Request, sequence: number) => {
+  if (!isPierceRequest(request)) {
+    return request
+  }
+  const { isolate, functionName, params, proctype, target } = request
+  const internal: SolidRequest = {
+    isolate,
+    functionName,
+    params,
+    proctype,
+    source: target,
+    target,
+    sequence,
+  }
+  return internal
+}
+export const isRequest = (poolable: Poolable): poolable is Request => {
+  return 'proctype' in poolable
+}
+export const isMergeReply = (poolable: Reply): poolable is MergeReply => {
+  return 'commit' in poolable
+}
+export const isPierceReply = (reply: Reply): reply is PierceReply => {
+  return ('ulid' in reply)
 }
 export * from './api/web-client.types.ts'

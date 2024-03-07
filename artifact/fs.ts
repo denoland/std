@@ -96,4 +96,10 @@ export default class FS {
       })
     })
   }
+  static clone(fs: IFs, path = '/') {
+    const uint8 = snapshot.toBinarySnapshotSync({ fs, path })
+    const { fs: clone } = memfs()
+    snapshot.fromBinarySnapshotSync(uint8, { fs: clone, path })
+    return clone
+  }
 }

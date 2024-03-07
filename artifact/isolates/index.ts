@@ -1,4 +1,4 @@
-import * as engageHelp from './engage-help.js'
+import * as engageHelp from './engage-help.ts'
 import * as fetch from './fetch.js'
 import * as files from './files.js'
 import * as git from './git.js'

@@ -76,7 +76,7 @@ export default class DB {
         log('headlock released')
       }
       result = await this.#kv.atomic().check(current).set(key, lockId, {
-        expireIn: 5000,
+        expireIn: 60000,
       }).commit()
     }
     return lockId

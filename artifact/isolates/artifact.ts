@@ -22,6 +22,7 @@ import { pidFromRepo } from '@/artifact/keys.ts'
 import { SolidRequest } from '@/artifact/constants.ts'
 import { Poolable } from '@/artifact/constants.ts'
 import { PierceRequest } from '@/artifact/constants.ts'
+import { isPierceRequest } from '@/artifact/constants.ts'
 
 const log = Debug('AI:artifact')
 const repo = {
@@ -185,6 +186,7 @@ export const functions: IsolateFunctions = {
   pierce: async (params, api: IsolateApi<C>) => {
     log('pierce %o %o', params.isolate, params.functionName)
     const request = params as PierceRequest
+    assert(isPierceRequest(request), 'invalid pierce request')
     await api.context.io!.induct(request)
     const { outcome } = await api.context.db!.watchReply(request)
     if (outcome.error) {
@@ -195,11 +197,11 @@ export const functions: IsolateFunctions = {
   request: async (params, api: IsolateApi<C>) => {
     const commit = params.commit as string
     const request = params.request as SolidRequest
-    const fs = await api.context.fs!.load(request.target)
-    const induct = (poolable: Poolable) => api.context.io!.induct(poolable)
     const pid = request.target
+    const fs = await api.context.fs!.load(pid)
+    const induct = (poolable: Poolable) => api.context.io!.induct(poolable)
     const exe = api.context.exe!
-    const done = await exe.execute(pid, commit, request, fs, induct)
+    const _done = await exe.execute(pid, commit, request, fs, induct)
 
     // TODO if execution finished, then call the next request action
     // if there isn't one, then commit will handle the restarting
