@@ -74,6 +74,10 @@ export default class IsolateApi<T extends object = Default> {
         }
         const recovered = this.#accumulator.recover(request.sequence)
         if (recovered) {
+          if (!equal(recovered.request, request)) {
+            console.dir('recovered', recovered.request)
+            console.dir('request', request)
+          }
           assert(equal(recovered.request, request), 'request mismatch')
           if (recovered.outcome) {
             if (recovered.outcome.error) {
