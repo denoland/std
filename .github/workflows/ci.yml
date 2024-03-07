@@ -92,7 +92,7 @@ jobs:
       - name: Spell-check
         uses: crate-ci/typos@master
         with:
-          config: ./.github/workflows/typos.toml
+          config: ./.github/typos.toml
 
   wasm:
     name: wasm
