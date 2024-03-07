@@ -136,8 +136,8 @@ export function generate(
     throw new Error("Can't create more than 10M uuids/sec");
   }
 
-  if (node.length < 6) {
-    throw new Error("Can't create a uuid with a node of less than 6 numbers");
+  if (node.length !== 6) {
+    throw new Error("Can't create uuid. The node must be an array of 6 bytes");
   }
 
   _lastMSecs = msecs;

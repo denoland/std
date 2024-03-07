@@ -60,20 +60,22 @@ Deno.test("generate() can fill the UUID into a buffer", () => {
 });
 
 Deno.test("generate() throws when node is passed with less than 6 numbers", () => {
-  const buf: number[] = [];
-  const v1options = {
-    node: [0x01, 0x23, 0x45, 0x67, 0x89],
-    clockseq: 0x1234,
-    msecs: new Date("2011-11-01").getTime(),
-    nsecs: 5678,
-  };
-
   assertThrows(
     () => {
-      generate(v1options, buf, 0);
+      generate({ node: [0x01, 0x23, 0x45, 0x67, 0x89] });
     },
     Error,
-    "Can't create a uuid with a node of less than 6 numbers",
+    "Can't create uuid. The node must be an array of 6 bytes",
+  );
+});
+
+Deno.test("generate() throws when node is passed with more than 6 numbers", () => {
+  assertThrows(
+    () => {
+      generate({ node: [0x01, 0x23, 0x45, 0x67, 0x89, 0x89, 0x89] });
+    },
+    Error,
+    "Can't create uuid. The node must be an array of 6 bytes",
   );
 });
 
