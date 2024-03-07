@@ -45,7 +45,7 @@ jobs:
         uses: denoland/deployctl@v1
         with:
           project: healthy-seal-74 # the name of the project on Deno Deploy
-          entrypoint: artifact/main.ts      
+          entrypoint: main.ts      
 
 
       - name: Create lcov file
