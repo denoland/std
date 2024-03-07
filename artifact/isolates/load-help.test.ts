@@ -1,4 +1,4 @@
-import { Debug, expect } from '@utils'
+import { expect } from '@utils'
 import Cradle from '../cradle.ts'
 import { Help } from '@/artifact/constants.ts'
 Deno.test('loadAll', async (t) => {
