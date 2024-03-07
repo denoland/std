@@ -10,7 +10,6 @@ import {
   serializeError,
 } from 'https://esm.sh/v135/serialize-error@11.0.3/index.js'
 export { deserializeError }
-Debug.enable('')
 export { Debug }
 export const log = Debug('AI:tests')
 
@@ -58,3 +57,13 @@ export const print = (pid: PID) => {
   const branches = pid.branches.join(':')
   return `${pid.account}/${pid.repository}:${branches}`
 }
+const getDebug = () => {
+  if (isDenoDeploy) {
+    const string = Deno.env.get('DEBUG')
+    if (string) {
+      return string
+    }
+  }
+  return ''
+}
+Debug.enable(getDebug())

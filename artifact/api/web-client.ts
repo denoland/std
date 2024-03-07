@@ -19,8 +19,8 @@ export default class WebClient implements Cradle {
   private readonly url: string
   private readonly toError: toError
   constructor(url: string, toError: toError, fetcher?: typeof fetch) {
-    if (!url.endsWith('/')) {
-      throw new Error('url should not end with /')
+    if (url.endsWith('/')) {
+      throw new Error('url should not end with "/": ' + url)
     }
     this.url = url
     if (fetcher) {
