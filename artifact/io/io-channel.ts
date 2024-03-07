@@ -103,21 +103,24 @@ export default class IOChannel {
     return request
   }
   getAccumulator(): Accumulator {
-    // must only get accumulations that came after the current origin ?
     const indices: number[] = []
     for (const [key, request] of Object.entries(this.#io.requests)) {
+      // must only get accumulations that came after the current origin ?
       if (isAccumulation(request, this.#pid)) {
+        // find the lowest sequence that is not an accumulation and has no
+        // pending accumulations.
+
         indices.push(Number.parseInt(key))
       }
     }
     indices.sort((a, b) => a - b)
-    const accumulation = indices.map((key) => {
+    const accumulations = indices.map((key) => {
       const request = this.#io.requests[key]
       assert(!isPierceRequest(request), 'pierce request in accumulator')
       const outcome = this.#io.replies[key]
       return { request, outcome }
     })
-    return Accumulator.create(accumulation)
+    return Accumulator.create(accumulations)
   }
   print() {
     return JSON.stringify(this.#io, null, 2)
