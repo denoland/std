@@ -9,7 +9,6 @@ import {
   SolidRequest,
 } from '@/artifact/constants.ts'
 import { assert, expect, log } from '@utils'
-import * as snapshot from 'https://esm.sh/memfs@4.6.0/lib/snapshot'
 
 const pid = { account: 'exe', repository: 'test', branches: ['main'] }
 const commit = 'test-commit'

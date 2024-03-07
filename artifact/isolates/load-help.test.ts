@@ -7,7 +7,6 @@ Deno.test('loadAll', async (t) => {
   const { loadAll, load } = await artifact.pierces('load-help', pid)
   await t.step('loadAll', async () => {
     expect(loadAll).toBeInstanceOf(Function)
-    Debug.enable('AI:*')
     const helps = await loadAll() as Help[]
     expect(helps.length).toBeGreaterThan(5)
   })

@@ -32,13 +32,13 @@ export const functions = {
   },
   loadAll: async (_: object, api: IsolateApi) => {
     // TODO provide a glob as first arg
-    const helps: Help[] = []
+    const helps: { name: string; help: Help }[] = []
     const files = await api.ls('helps')
     for (const file of files) {
       if (file.endsWith('.json')) {
         const name = posix.basename(file, posix.extname(file))
         const help = await functions.load({ help: name }, api)
-        helps.push(help)
+        helps.push({ name, help })
       }
     }
     return helps

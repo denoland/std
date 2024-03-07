@@ -5,7 +5,6 @@
 import IsolateApi from '@/artifact/isolate-api.ts'
 import {
   IoStruct,
-  IsolatePromise,
   isPierceRequest,
   PID,
   Request,
@@ -18,6 +17,7 @@ import { PROCTYPE } from '@/artifact/constants.ts'
 import { SolidRequest } from '@/artifact/constants.ts'
 import { MergeReply } from '@/artifact/constants.ts'
 import { SolidReply } from '@/artifact/constants.ts'
+import Accumulator from '@/artifact/exe/accumulator.ts'
 const log = Debug('AI:io-file')
 
 export default class IOChannel {
@@ -102,7 +102,7 @@ export default class IOChannel {
     this.#io.replies[sequence] = reply.outcome
     return request
   }
-  getAccumulator(): IsolatePromise[] {
+  getAccumulator(): Accumulator {
     const indices: number[] = []
     for (const [key, request] of Object.entries(this.#io.requests)) {
       if (isAccumulation(request, this.#pid)) {
@@ -110,12 +110,13 @@ export default class IOChannel {
       }
     }
     indices.sort((a, b) => a - b)
-    return indices.map((key) => {
+    const accumulation = indices.map((key) => {
       const request = this.#io.requests[key]
       assert(!isPierceRequest(request), 'pierce request in accumulator')
       const outcome = this.#io.replies[key]
       return { request, outcome }
     })
+    return Accumulator.create(accumulation)
   }
   print() {
     return JSON.stringify(this.#io, null, 2)

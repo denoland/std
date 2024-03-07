@@ -37,7 +37,7 @@ export default async (params: Args, api: IsolateApi) => {
 export class AI {
   #sysprompt!: string
   #config: HelpConfig = {}
-  #tools: OpenAI.ChatCompletionTool[] = []
+  #tools: OpenAI.ChatCompletionTool[] | undefined
   #actions: Record<string, (parameters: object) => unknown> = {}
   #sessionPath = '/chat-1.session.json'
   #api!: IsolateApi
@@ -236,7 +236,9 @@ export class AI {
       assert(typeof tool === 'object', `invalid tool: ${tool}`)
       tools.push(tool)
     }
-    this.#tools = tools
+    if (tools.length) {
+      this.#tools = tools
+    }
   }
 }
 const toTool = (name: string, help: Help, schema: JSONSchemaType<object>) => {

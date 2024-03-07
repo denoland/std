@@ -1,3 +1,4 @@
+import Accumulator from './exe/accumulator.ts'
 import Compartment from './io/compartment.ts'
 import { IFs } from 'https://esm.sh/memfs@4.6.0'
 import { assert } from 'std/assert/mod.ts'
@@ -8,7 +9,6 @@ import FS from '@/artifact/fs.ts'
 import {
   DispatchFunctions,
   getProcType,
-  IsolatePromise,
   Params,
   PID,
   ProcessOptions,
@@ -25,7 +25,7 @@ export default class IsolateApi<T extends object = Default> {
   #fs!: IFs
   #commit: string | undefined
   #pid: PID | undefined
-  #accumulator: IsolatePromise[] | undefined
+  #accumulator: Accumulator | undefined
   #accumulatorCount = 0
   // TODO assign a mount id for each side effect execution context ?
   #context: Partial<T> = {}
@@ -35,7 +35,7 @@ export default class IsolateApi<T extends object = Default> {
     api.#commit = atCommit
     return api
   }
-  static create(fs: IFs, commit: string, pid: PID, acc: IsolatePromise[]) {
+  static create(fs: IFs, commit: string, pid: PID, acc: Accumulator) {
     const api = new IsolateApi()
     api.#fs = fs
     api.#commit = commit
@@ -72,14 +72,14 @@ export default class IsolateApi<T extends object = Default> {
           params: params || {},
           proctype,
         }
-        const prior = this.#accumulator[request.sequence]
-        if (prior) {
-          assert(equal(prior.request, request), 'request mismatch')
-          if (prior.outcome) {
-            if (prior.outcome.error) {
-              return Promise.reject(deserializeError(prior.outcome.error))
+        const recovered = this.#accumulator.recover(request.sequence)
+        if (recovered) {
+          assert(equal(recovered.request, request), 'request mismatch')
+          if (recovered.outcome) {
+            if (recovered.outcome.error) {
+              return Promise.reject(deserializeError(recovered.outcome.error))
             }
-            return Promise.resolve(prior.outcome.result)
+            return Promise.resolve(recovered.outcome.result)
           }
         }
 
