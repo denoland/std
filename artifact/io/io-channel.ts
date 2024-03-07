@@ -103,6 +103,7 @@ export default class IOChannel {
     return request
   }
   getAccumulator(): Accumulator {
+    // must only get accumulations that came after the current origin ?
     const indices: number[] = []
     for (const [key, request] of Object.entries(this.#io.requests)) {
       if (isAccumulation(request, this.#pid)) {

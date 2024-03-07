@@ -10,7 +10,7 @@
       "type": "node",
       "cwd": "${workspaceFolder}",
       "runtimeExecutable": "~/.deno/bin/deno",
-      "runtimeArgs": ["task", "api", "--inspect-wait"],
+      "runtimeArgs": ["task", "api"],
       "attachSimplePort": 9229,
       "internalConsoleOptions": "neverOpen",
       "console": "integratedTerminal"

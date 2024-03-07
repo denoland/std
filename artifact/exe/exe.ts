@@ -72,6 +72,7 @@ export default class Executor {
       const reply: SolidReply = { target: pid, sequence, outcome: winner }
       await i(reply)
       log('exe complete %o', reply)
+      this.#functions.delete(exeId)
       return true
     }
 
