@@ -41,18 +41,14 @@ export class AI {
   #actions: Record<string, (parameters: object) => unknown> = {}
   #sessionPath = '/chat-1.session.json'
   #api!: IsolateApi
-  static #cache = new Map()
   static async create(help: Help, api: IsolateApi) {
-    const key = JSON.stringify(help)
-    if (!AI.#cache.has(key)) {
-      const ai = new AI()
-      ai.#sysprompt = help.instructions.join('\n').trim()
-      ai.#config = help.config || {}
-      ai.#api = api
-      await ai.#loadCommands(help.commands)
-      AI.#cache.set(key, ai)
-    }
-    return AI.#cache.get(key)
+    const ai = new AI()
+    // TODO ensure caching on api calls to generate actions
+    ai.#sysprompt = help.instructions.join('\n').trim()
+    ai.#config = help.config || {}
+    ai.#api = api
+    await ai.#loadCommands(help.commands)
+    return ai
   }
   async prompt(text: string) {
     assert(text.length, 'text must not be empty')

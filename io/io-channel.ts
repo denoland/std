@@ -132,20 +132,6 @@ export default class IOChannel {
   print() {
     return JSON.stringify(this.#io, null, 2)
   }
-  getPrior(sequence: number) {
-    // TODO UNTESTED
-    const keys = Object.keys(this.#io.requests).map(Number)
-    keys.sort((a, b) => b - a)
-    for (const key of keys) {
-      assert(key <= sequence, `out of order sequence: ${key}`)
-      if (this.#io.replies[key]) {
-        continue
-      }
-      if (key < sequence) {
-        return key
-      }
-    }
-  }
   #getOpenRequestIndices() {
     const keys = Object.keys(this.#io.requests).map(parseInt)
     keys.sort((a, b) => a - b)

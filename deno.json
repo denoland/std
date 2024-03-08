@@ -3,7 +3,7 @@
   "tasks": {
     "test": "DENO_KV_PATH=:memory: deno test -A --unstable-kv --coverage",
     "watch": "DENO_KV_PATH=:memory: DEBUG_COLORS=1 deno test -A --unstable-kv --watch",
-    "api": "DENO_KV_PATH=:memory: DEBUG_COLORS=1 deno run --inspect-brk --unstable-kv -A --watch=artifact/ artifact/main.ts",
+    "api": "DENO_KV_PATH=:memory: DEBUG_COLORS=1 deno run --inspect-brk --unstable-kv -A --watch main.ts",
     "check:types": "deno check **/*.ts",
     "ok": "deno fmt --check && deno lint && deno task check:types",
     "cov:gen": "deno coverage coverage --lcov --exclude='.tsx' --output=cov.lcov",

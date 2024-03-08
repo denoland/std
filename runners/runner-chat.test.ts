@@ -9,7 +9,7 @@ import { memfs } from 'https://esm.sh/memfs@4.6.0'
 Deno.test('runner', async (t) => {
   const helpBase: Help = {
     config: {
-      model: 'gpt-3.5-turbo-1106',
+      model: 'gpt-3.5-turbo',
     },
     runner: RUNNERS.CHAT,
     commands: ['io-fixture:local', 'io-fixture:error'],

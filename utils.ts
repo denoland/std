@@ -67,3 +67,4 @@ const getDebug = () => {
   return ''
 }
 Debug.enable(getDebug())
+// Debug.enable('*exe *runner-chat')

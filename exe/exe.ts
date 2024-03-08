@@ -35,8 +35,9 @@ export default class Executor {
 
     const ioAccumulator = io.getAccumulator()
 
-    const exeId = getExeId(req)
+    const exeId: string = getExeId(req)
     if (!this.#functions.has(exeId)) {
+      log('creating function %o', exeId)
       const isolateApi = IsolateApi.create(fs, commit, pid, ioAccumulator)
       const compartment = await Compartment.create(req.isolate)
       const functions = compartment.functions(isolateApi)
@@ -71,7 +72,7 @@ export default class Executor {
       const sequence = io.getSequence(req)
       const reply: SolidReply = { target: pid, sequence, outcome: winner }
       await i(reply)
-      log('exe complete %o', reply)
+      log('exe complete %o', exeId)
       this.#functions.delete(exeId)
       return true
     }

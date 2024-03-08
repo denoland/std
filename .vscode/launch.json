@@ -21,12 +21,7 @@
       "type": "node",
       "cwd": "${workspaceFolder}",
       "runtimeExecutable": "~/.deno/bin/deno",
-      "runtimeArgs": [
-        "task",
-        "watch",
-        "--inspect-wait",
-        "artifact/io/io.test.ts"
-      ],
+      "runtimeArgs": ["task", "watch", "--inspect-wait", "io/io.test.ts"],
       "attachSimplePort": 9229,
       "internalConsoleOptions": "neverOpen",
       "console": "integratedTerminal"
@@ -41,7 +36,7 @@
         "task",
         "watch",
         "--inspect-wait",
-        "artifact/runners/runner-chat.test.ts"
+        "runners/runner-chat.test.ts"
       ],
       "attachSimplePort": 9229,
       "internalConsoleOptions": "neverOpen",
@@ -53,12 +48,7 @@
       "type": "node",
       "cwd": "${workspaceFolder}",
       "runtimeExecutable": "~/.deno/bin/deno",
-      "runtimeArgs": [
-        "task",
-        "watch",
-        "--inspect-wait",
-        "artifact/cradle.test.ts"
-      ],
+      "runtimeArgs": ["task", "watch", "--inspect-wait", "cradle.test.ts"],
       "attachSimplePort": 9229,
       "internalConsoleOptions": "neverOpen",
       "console": "integratedTerminal"

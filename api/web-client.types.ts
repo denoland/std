@@ -71,7 +71,7 @@ export type PID = {
 }
 
 export type HelpConfig = {
-  model?: 'gpt-3.5-turbo-1106' | 'gpt-4-turbo-preview'
+  model?: 'gpt-3.5-turbo' | 'gpt-4-turbo-preview'
   temperature?: number
 }
 export type Help = {
