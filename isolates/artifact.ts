@@ -1,5 +1,4 @@
-import { deserializeError } from 'npm:serialize-error'
-import { Debug } from '@utils'
+import { Debug, fromOutcome } from '@utils'
 import Executor from '../exe/exe.ts'
 import git from '$git'
 import http from '$git/http/web'
@@ -189,10 +188,7 @@ export const functions: IsolateFunctions = {
     assert(isPierceRequest(request), 'invalid pierce request')
     await api.context.io!.induct(request)
     const { outcome } = await api.context.db!.watchReply(request)
-    if (outcome.error) {
-      throw deserializeError(outcome.error)
-    }
-    return outcome.result
+    return fromOutcome(outcome)
   },
   request: async (params, api: IsolateApi<C>) => {
     const commit = params.commit as string

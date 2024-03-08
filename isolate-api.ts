@@ -3,7 +3,7 @@ import Compartment from './io/compartment.ts'
 import { IFs } from 'https://esm.sh/memfs@4.6.0'
 import { assert } from 'std/assert/mod.ts'
 import * as posix from 'https://deno.land/std@0.213.0/path/posix/mod.ts'
-import { Debug, deserializeError, equal, print } from '@utils'
+import { Debug, equal, fromOutcome, print } from '@utils'
 import git from '$git'
 import FS from '@/fs.ts'
 import {
@@ -79,11 +79,9 @@ export default class IsolateApi<T extends object = Default> {
             console.dir('request', request)
           }
           assert(equal(recovered.request, request), 'request mismatch')
-          if (recovered.outcome) {
-            if (recovered.outcome.error) {
-              return Promise.reject(deserializeError(recovered.outcome.error))
-            }
-            return Promise.resolve(recovered.outcome.result)
+          const { outcome } = recovered
+          if (outcome) {
+            return Promise.resolve().then(() => fromOutcome(outcome))
           }
         }
 

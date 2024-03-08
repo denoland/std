@@ -1,14 +1,10 @@
-import { Debug } from '@utils'
+import { Debug, fromOutcome, serializeError } from '@utils'
 import { C } from './isolates/artifact.ts'
 import IsolateApi from './isolate-api.ts'
 import { IsolateFunctions } from './constants.ts'
 import { assert } from '$std/assert/assert.ts'
 import { ulid } from '$std/ulid/mod.ts'
 import { Outcome } from '@/constants.ts'
-import {
-  deserializeError,
-  serializeError,
-} from 'https://esm.sh/serialize-error'
 import { Params } from '@/constants.ts'
 const log = Debug('AI:queue')
 type QFunction = { id: string; name: string; params?: Params; detach: boolean }
@@ -49,11 +45,7 @@ export default class Queue {
       }
       this.#updateStack(id)
       const outcome: Outcome = event.value
-      if (outcome.error) {
-        throw deserializeError(outcome.error)
-      }
-
-      return outcome.result as K
+      return fromOutcome(outcome) as K
     }
   }
   #listen() {
