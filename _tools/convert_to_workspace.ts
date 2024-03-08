@@ -230,11 +230,6 @@ for (const pkg of packages) {
     name: `@std/${fixPackageName(pkg)}`,
     version: VERSION,
     exports,
-    exclude: [
-      "**/*_test*.ts",
-      "**/*_test*.js",
-      "**/testdata/**",
-    ],
   };
   /** @see {@link https://github.com/denoland/deno/issues/22317} */
   if (pkg === "crypto") {
