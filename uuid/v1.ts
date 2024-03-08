@@ -137,7 +137,9 @@ export function generate(
   }
 
   if (node.length !== 6) {
-    throw new Error("Can't create uuid. The node must be an array of 6 bytes");
+    throw new Error(
+      "Cannot create UUID. The node option must be an array of 6 bytes",
+    );
   }
 
   _lastMSecs = msecs;

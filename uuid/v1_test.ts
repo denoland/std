@@ -65,7 +65,7 @@ Deno.test("generate() throws when node is passed with less than 6 numbers", () =
       generate({ node: [0x01, 0x23, 0x45, 0x67, 0x89] });
     },
     Error,
-    "Can't create uuid. The node must be an array of 6 bytes",
+    "Cannot create UUID. The node option must be an array of 6 bytes",
   );
 });
 
@@ -75,7 +75,7 @@ Deno.test("generate() throws when node is passed with more than 6 numbers", () =
       generate({ node: [0x01, 0x23, 0x45, 0x67, 0x89, 0x89, 0x89] });
     },
     Error,
-    "Can't create uuid. The node must be an array of 6 bytes",
+    "Cannot create UUID. The node option must be an array of 6 bytes",
   );
 });
 
