@@ -66,7 +66,6 @@ export default class IOChannel {
     return this.#io.replies[sequence] === undefined
   }
   getExecutingRequest() {
-    // get the first non accumulation request with no reply yet
     const openRequests = this.#getOpenRequestIndices()
     for (const key of openRequests) {
       const request = this.#io.requests[key]
@@ -100,16 +99,24 @@ export default class IOChannel {
     assert(request, `reply sequence not found: ${sequence}`)
     assert(!this.#io.replies[sequence], 'sequence already replied')
     this.#io.replies[sequence] = reply.outcome
+    if (!isAccumulation(request, this.#pid)) {
+      this.#blankAccumulations()
+    }
     return request
+  }
+  #blankAccumulations() {
+    for (const [key, request] of Object.entries(this.#io.requests)) {
+      if (isAccumulation(request, this.#pid)) {
+        assert(this.#io.replies[key], 'accumulation without reply')
+        delete this.#io.requests[key]
+        delete this.#io.replies[key]
+      }
+    }
   }
   getAccumulator(): Accumulator {
     const indices: number[] = []
     for (const [key, request] of Object.entries(this.#io.requests)) {
-      // must only get accumulations that came after the current origin ?
       if (isAccumulation(request, this.#pid)) {
-        // find the lowest sequence that is not an accumulation and has no
-        // pending accumulations.
-
         indices.push(Number.parseInt(key))
       }
     }
@@ -169,7 +176,6 @@ const blankSettledRequests = (io: IoStruct, thisPid: PID) => {
     delete io.replies[key]
     log('deleted', key)
   }
-  // TODO blank accumulations when the origin is resolved
 }
 const isAccumulation = (request: Request, thisPid: PID) => {
   if (isPierceRequest(request)) {

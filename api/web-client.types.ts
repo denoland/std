@@ -3,8 +3,8 @@ import { JSONSchemaType } from './web-client.ajv.ts'
 export enum PROCTYPE {
   SERIAL = 'SERIAL',
   BRANCH = 'BRANCH',
-  BRANCH_OPEN = 'BRANCH_OPEN',
-  // TODO NO_AWAIT = 'NO_AWAIT', // allow fire and forget actions
+  DAEMON = 'DAEMON',
+  // TODO FORGET = 'FORGET', // allow fire and forget actions
 }
 export type { JSONSchemaType }
 
@@ -114,7 +114,7 @@ export const getProcType = (options?: ProcessOptions) => {
     return PROCTYPE.SERIAL
   }
   if (options.noClose) {
-    return PROCTYPE.BRANCH_OPEN
+    return PROCTYPE.DAEMON
   }
   if (options.branch) {
     return PROCTYPE.BRANCH

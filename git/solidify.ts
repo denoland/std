@@ -50,7 +50,7 @@ export default async (fs: IFs, pool: Poolable[]) => {
     if (isRequest(poolable)) {
       const sequence = io.addRequest(poolable)
       const { proctype } = poolable
-      if (proctype === PROCTYPE.BRANCH || proctype === PROCTYPE.BRANCH_OPEN) {
+      if (proctype === PROCTYPE.BRANCH || proctype === PROCTYPE.DAEMON) {
         const pid = branchPid(poolable.target, sequence)
         branches.push(pid)
       } else {
@@ -145,7 +145,7 @@ const checkPool = (pool: Poolable[]) => {
 }
 const isBranch = (request: Request) => {
   return request.proctype === PROCTYPE.BRANCH ||
-    request.proctype === PROCTYPE.BRANCH_OPEN
+    request.proctype === PROCTYPE.DAEMON
 }
 const isActive = (
   requests: SolidRequest[],
