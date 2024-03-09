@@ -21,12 +21,12 @@ function compileStyleMap(
   const keys = Object.keys(map);
   let tag: string, style: StyleVariant;
   for (let index = 0, length = keys.length; index < length; index += 1) {
-    tag = keys[index];
+    tag = keys[index]!;
     style = String(map[tag]) as StyleVariant;
     if (tag.slice(0, 2) === "!!") {
       tag = `tag:yaml.org,2002:${tag.slice(2)}`;
     }
-    type = schema.compiledTypeMap.fallback[tag];
+    type = schema.compiledTypeMap.fallback[tag]!;
 
     if (
       type &&

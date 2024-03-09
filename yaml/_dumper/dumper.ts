@@ -135,7 +135,7 @@ function testImplicitResolving(state: DumperState, str: string): boolean {
     index < length;
     index += 1
   ) {
-    type = state.implicitTypes[index];
+    type = state.implicitTypes[index]!;
 
     if (type.resolve(str)) {
       return true;
@@ -379,7 +379,7 @@ function foldString(string: string, width: number): string {
   // tslint:disable-next-line:no-conditional-assignment
   while ((match = lineRe.exec(string))) {
     const prefix = match[1],
-      line = match[2];
+      line = match[2]!;
     moreIndented = line[0] === " ";
     result += prefix +
       (!prevMoreIndented && !moreIndented && line !== "" ? "\n" : "") +
@@ -582,7 +582,7 @@ function writeFlowMapping(
 
     if (index !== 0) pairBuffer += ", ";
 
-    objectKey = objectKeyList[index];
+    objectKey = objectKeyList[index]!;
     objectValue = object[objectKey];
 
     if (!writeNode(state, level, objectKey, false, false)) {
@@ -646,7 +646,7 @@ function writeBlockMapping(
       pairBuffer += generateNextLine(state, level);
     }
 
-    objectKey = objectKeyList[index];
+    objectKey = objectKeyList[index]!;
     objectValue = object[objectKey];
 
     if (!writeNode(state, level + 1, objectKey, true, true, true)) {
@@ -701,7 +701,7 @@ function detectType(
   let style: StyleVariant;
   let _result: string;
   for (let index = 0, length = typeList.length; index < length; index += 1) {
-    type = typeList[index];
+    type = typeList[index]!;
 
     if (
       (type.instanceOf || type.predicate) &&
@@ -712,12 +712,12 @@ function detectType(
       state.tag = explicit ? type.tag : "?";
 
       if (type.represent) {
-        style = state.styleMap[type.tag] || type.defaultStyle;
+        style = state.styleMap[type.tag]! || type.defaultStyle;
 
         if (_toString.call(type.represent) === "[object Function]") {
           _result = (type.represent as RepresentFn)(object, style);
         } else if (hasOwn(type.represent, style)) {
-          _result = (type.represent as ArrayObject<RepresentFn>)[style](
+          _result = (type.represent as ArrayObject<RepresentFn>)[style]!(
             object,
             style,
           );
@@ -845,14 +845,8 @@ function inspectNode(
           inspectNode(object[idx], objects, duplicatesIndexes);
         }
       } else {
-        const objectKeyList = Object.keys(object);
-
-        for (
-          let idx = 0, length = objectKeyList.length;
-          idx < length;
-          idx += 1
-        ) {
-          inspectNode(object[objectKeyList[idx]], objects, duplicatesIndexes);
+        for (const objectKey of Object.keys(object)) {
+          inspectNode(object[objectKey], objects, duplicatesIndexes);
         }
       }
     }
@@ -868,11 +862,10 @@ function getDuplicateReferences(
 
   inspectNode(object, objects, duplicatesIndexes);
 
-  const length = duplicatesIndexes.length;
-  for (let index = 0; index < length; index += 1) {
-    state.duplicates.push(objects[duplicatesIndexes[index]]);
+  for (const idx of duplicatesIndexes) {
+    state.duplicates.push(objects[idx]);
   }
-  state.usedDuplicates = Array.from({ length });
+  state.usedDuplicates = Array.from({ length: duplicatesIndexes.length });
 }
 
 export function dump(input: Any, options?: DumperStateOptions): string {
