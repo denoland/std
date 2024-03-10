@@ -12,8 +12,8 @@ import { isPosixPathSeparator } from "./_util.ts";
  * ```ts
  * import { dirname } from "https://deno.land/std@$STD_VERSION/path/dirname.ts";
  *
- * console.log(dirname("/home/user/Documents/")); // "Documents"
- * console.log(dirname("/home/user/Documents/image.png")); // "Documents"
+ * console.log(dirname("/home/user/Documents/")); // "/home/user"
+ * console.log(dirname("/home/user/Documents/image.png")); // "/home/user/Documents"
  * ```
  *
  * @param path - path to extract the directory from.
