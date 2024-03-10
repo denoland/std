@@ -94,14 +94,14 @@ for (const { specifier, dependencies } of graph.modules) {
     continue;
   }
   const from = relative(cwd, fromFileUrl(specifier)).replaceAll("\\", "/");
-  const fromPkg = from.split("/")[0];
+  const fromPkg = from.split("/")[0]!;
   for (const dep of dependencies ?? []) {
     if (dep.code) {
       const to = relative(cwd, fromFileUrl(dep.code.specifier)).replaceAll(
         "\\",
         "/",
       );
-      const toPkg = to.split("/")[0];
+      const toPkg = to.split("/")[0]!;
       if (fromPkg !== toPkg) {
         pkgDeps.get(fromPkg)!.add(toPkg);
       }
@@ -111,7 +111,7 @@ for (const { specifier, dependencies } of graph.modules) {
         "\\",
         "/",
       );
-      const toPkg = to.split("/")[0];
+      const toPkg = to.split("/")[0]!;
       if (fromPkg !== toPkg) {
         pkgDeps.get(fromPkg)!.add(toPkg);
       }
@@ -221,7 +221,7 @@ for await (const entry of walk(cwd)) {
 for (const pkg of packages) {
   const exportsList = exportsByPackage.get(pkg)!;
   let exports;
-  if (exportsList.length === 1 && exportsList[0][0] === ".") {
+  if (exportsList.length === 1 && exportsList[0]![0] === ".") {
     exports = "./mod.ts";
   } else {
     exports = Object.fromEntries(exportsList);
@@ -230,11 +230,6 @@ for (const pkg of packages) {
     name: `@std/${fixPackageName(pkg)}`,
     version: VERSION,
     exports,
-    exclude: [
-      "**/*_test*.ts",
-      "**/*_test*.js",
-      "**/testdata/**",
-    ],
   };
   /** @see {@link https://github.com/denoland/deno/issues/22317} */
   if (pkg === "crypto") {

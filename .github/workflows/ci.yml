@@ -17,8 +17,7 @@ jobs:
       fail-fast: false
       matrix:
         deno:
-          # TODO(kt3k): Enable this when Deno v1.41.1 released
-          # - v1.x
+          - v1.x
           - canary
         os:
           - ubuntu-22.04
@@ -92,14 +91,14 @@ jobs:
       - name: Spell-check
         uses: crate-ci/typos@master
         with:
-          config: ./.github/workflows/typos.toml
+          config: ./.github/typos.toml
 
   wasm:
     name: wasm
     runs-on: ubuntu-22.04
     strategy:
       matrix:
-        module: [ crypto/_wasm ]
+        module: [crypto/_wasm]
     steps:
       - name: Clone repository
         uses: actions/checkout@v4
