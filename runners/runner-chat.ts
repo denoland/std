@@ -7,7 +7,7 @@ import { serializeError } from 'npm:serialize-error'
 import { load } from 'https://deno.land/std@0.213.0/dotenv/mod.ts'
 import { Help, IsolateApi } from '@/constants.ts'
 import { HelpConfig, JSONSchemaType } from '@/constants.ts'
-
+type MessageParam = OpenAI.ChatCompletionMessageParam
 const base = 'AI:runner-chat'
 const log = Debug(base)
 const debugResult = Debug(base + ':ai-result-content')
@@ -52,7 +52,7 @@ export class AI {
   }
   async prompt(text: string) {
     assert(text.length, 'text must not be empty')
-    const messages: OpenAI.ChatCompletionMessageParam[] = []
+    const messages: MessageParam[] = []
     // if (await hooks.isFile(this.#sessionPath)) {
     //   messages = await hooks.readJS(this.#sessionPath)
     // }
@@ -72,9 +72,7 @@ export class AI {
     return assistant
   }
 
-  async #execute(
-    messages: OpenAI.ChatCompletionMessageParam[],
-  ): Promise<string> {
+  async #execute(messages: MessageParam[]): Promise<string> {
     const { model = 'gpt-4-turbo-preview', temperature = 0 } = this.#config
     const args: OpenAI.ChatCompletionCreateParamsStreaming = {
       model,
@@ -92,6 +90,7 @@ export class AI {
     // await hooks.writeJS(this.#sessionPath, messages)
 
     log('streamCall started')
+    // TODO insert useEffect() here.
     const streamCall = await ai.chat.completions.create(args)
     log('streamCall placed')
     for await (const part of streamCall) {
@@ -133,9 +132,7 @@ export class AI {
     log('streamCall complete')
     return this.executeTools(messages)
   }
-  async executeTools(
-    messages: OpenAI.ChatCompletionMessageParam[],
-  ): Promise<string> {
+  async executeTools(messages: MessageParam[]): Promise<string> {
     messages = [...messages]
     const assistant =
       messages[messages.length - 1] as OpenAI.ChatCompletionMessage
@@ -192,10 +189,6 @@ export class AI {
     return this.#execute(messages)
   }
   async #loadCommands(commands: string[] = []) {
-    assert(Array.isArray(commands), 'commands must be an array')
-    if (!commands.length) {
-      return
-    }
     const tools: OpenAI.ChatCompletionTool[] = []
     const names = new Set()
     for (const command of commands) {
@@ -275,6 +268,7 @@ const isolateToGptApi = (name: string, api: JSONSchemaType<object>) => {
 }
 
 export const transcribe = async (file: File) => {
+  // TODO useEffect() here
   const transcription = await ai.audio.transcriptions
     .create({ file, model: 'whisper-1' })
   return transcription.text
