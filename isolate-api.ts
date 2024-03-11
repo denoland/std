@@ -47,6 +47,40 @@ export default class IsolateApi<T extends object = Default> {
     assert(this.#pid, 'pid not set')
     return this.#pid
   }
+  // async useEffect(effect: () => Promise<unknown>) {
+  //   // turn the invocation into an action
+  //   // hook into the accumulator with it, this special action
+
+  //   // best to make our own action, rather than shoehorning
+
+  //   const request: SolidRequest = {
+  //     target: this.pid,
+  //     source: this.pid,
+  //     sequence: this.#accumulatorCount++,
+
+  //     isolate,
+  //     functionName,
+  //     params: params || {},
+  //     proctype,
+  //   }
+  //   const recovered = this.#accumulator.recover(request.sequence)
+  //   if (recovered) {
+  //     if (!equal(recovered.request, request)) {
+  //       console.dir('recovered', recovered.request)
+  //       console.dir('request', request)
+  //     }
+  //     assert(equal(recovered.request, request), 'request mismatch')
+  //     const { outcome } = recovered
+  //     if (outcome) {
+  //       return Promise.resolve().then(() => fromOutcome(outcome))
+  //     }
+  //   }
+
+  //   const promise = new Promise((resolve, reject) => {
+  //     this.#accumulator!.push({ request, resolve, reject })
+  //   })
+  //   return promise
+  // }
   // TODO make targetPID be required, as error to dispatch serially to self
   async actions(isolate: string, targetPID?: PID) {
     const target = targetPID ? targetPID : this.pid

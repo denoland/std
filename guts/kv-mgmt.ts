@@ -1,5 +1,3 @@
-// run with deno run --unstable-kv -A ./artifact/guts/kv-mgmt.ts
-
 import { load } from '$std/dotenv/mod.ts'
 const env = await load()
 Deno.env.set('DENO_KV_ACCESS_TOKEN', env.DENO_KV_ACCESS_TOKEN)
@@ -15,8 +13,8 @@ if (!confirm('WARNING: The database will be reset. Continue?')) {
 const all = db.list({ prefix: [] })
 
 const promises = []
-for await (const { key, value } of all) {
-  console.log(key, value)
+for await (const { key } of all) {
+  console.log('deleted: ', key)
   promises.push(db.delete(key))
 }
 await Promise.all(promises)

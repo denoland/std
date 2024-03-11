@@ -86,6 +86,9 @@ export default class WebClient implements Cradle {
   clone(params: { repo: string }) {
     return this.request('clone', params)
   }
+  rm(params: { repo: string }) {
+    return this.request('rm', params)
+  }
   stop() {
   }
   private async request(path: string, params: Params) {
@@ -95,7 +98,11 @@ export default class WebClient implements Cradle {
       body: JSON.stringify(params),
     })
     if (!response.ok) {
-      throw new Error(path + ' ' + response.status + ' ' + response.statusText)
+      response.body?.cancel()
+      throw new Error(
+        path + ' ' + JSON.stringify(params) + ' ' + response.status + ' ' +
+          response.statusText,
+      )
     }
     const outcome = await response.json()
     if (outcome.error) {

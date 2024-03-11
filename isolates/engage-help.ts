@@ -32,6 +32,9 @@ export const functions = {
 
     assert(typeof help.runner === 'string', `no runner: ${help.runner}`)
     log('found runner string:', help.runner)
+    // this should be an isolate, not a new format
+    // it should match a certain format of the API, so we know it can be called
+    // as a runner.
     const runner = runners[help.runner]
     assert(runner, `no runner: ${help.runner}`)
 
@@ -48,5 +51,6 @@ export const functions = {
   ) => {
     log('continue:', path, text, commit)
     // this would continue the help, but in the same branch as a previous run
+    // this should be handled at the process level, not internally
   },
 }

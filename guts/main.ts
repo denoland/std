@@ -20,13 +20,15 @@ export default (name: string, cradleMaker: () => Promise<Cradle>) => {
     })
 
     await t.step('clone', async () => {
-      const cloneResult = await artifact.clone({
-        repo: 'dreamcatcher-tech/HAL',
-      })
-      log('clone result', cloneResult)
+      let result = await artifact.probe({ repo: 'dreamcatcher-tech/HAL' })
+      if (!result) {
+        result = await artifact.clone({ repo: 'dreamcatcher-tech/HAL' })
+      }
+      log('clone result', result)
       // TODO read the fs and see what the state of the file system is ?
-      expect(cloneResult.pid).toBeDefined()
-      expect(typeof cloneResult.head).toBe('string')
+      expect(result.pid).toBeDefined()
+      expect(result.pid.account).toBe('dreamcatcher-tech')
+      expect(typeof result.head).toBe('string')
     })
 
     await artifact.stop()
@@ -58,6 +60,7 @@ export default (name: string, cradleMaker: () => Promise<Cradle>) => {
       await expect(pierces.local({ invalid: 'parameters' }))
         .rejects.toThrow(msg)
     })
+    await artifact.rm({ repo: 'cradle/pierce' })
     await artifact.stop()
   })
 

@@ -53,6 +53,14 @@ export type SolidRequest = Invocation & {
   source: PID
   sequence: number
 }
+export type EffectRequest = {
+  target: PID
+  /**
+   * The hash of the function that was called, to ensure repeatability
+   */
+  fingerprint: string
+  sequence: number
+}
 export type PierceReply = {
   ulid: string
   outcome: Outcome

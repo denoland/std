@@ -76,6 +76,7 @@ export const api = {
   clone: repo,
   pull: repo,
   push: repo,
+  rm: repo,
   apiSchema: {
     type: 'object',
     required: ['isolate'],
@@ -175,6 +176,10 @@ export const functions: IsolateFunctions = {
   },
   push() {
     throw new Error('not implemented')
+  },
+  rm(params, api: IsolateApi<C>) {
+    const pid = pidFromRepo(params.repo as string)
+    return api.context.fs!.rm(pid)
   },
   apiSchema: async (params: Params) => {
     // when it loads from files, will benefit from being close to the db

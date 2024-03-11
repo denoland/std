@@ -90,7 +90,7 @@ export class AI {
     // await hooks.writeJS(this.#sessionPath, messages)
 
     log('streamCall started')
-    // TODO insert useEffect() here.
+    // TODO move this to an isolate call that runs in a branch
     const streamCall = await ai.chat.completions.create(args)
     log('streamCall placed')
     for await (const part of streamCall) {

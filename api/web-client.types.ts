@@ -4,6 +4,7 @@ export enum PROCTYPE {
   SERIAL = 'SERIAL',
   BRANCH = 'BRANCH',
   DAEMON = 'DAEMON',
+  EFFECT = 'EFFECT',
   // TODO FORGET = 'FORGET', // allow fire and forget actions
 }
 export type { JSONSchemaType }
@@ -106,6 +107,7 @@ export interface Cradle {
   init(params: { repo: string }): Promise<{ pid: PID; head: string }>
   clone(params: { repo: string }): Promise<{ pid: PID; head: string }>
   probe(params: { repo: string }): Promise<{ pid: PID; head: string } | void>
+  rm(params: { repo: string }): Promise<void>
 }
 
 // TODO remove this by passing ProcessOptions in with the Request

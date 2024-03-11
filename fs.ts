@@ -37,6 +37,17 @@ export default class FS {
     await this.#update(pid, uint8, commit, lockId)
     return { size: uint8.length, prettySize: pretty(uint8.length) }
   }
+  async rm(pid: PID) {
+    // TODO make atomic and recursive
+    const fsKey = keys.getRepoKey(pid)
+    log('deleting repo %o', fsKey)
+    const blobKey = await this.#kv.get<string[]>(fsKey)
+    await remove(this.#kv, fsKey)
+    if (blobKey.value) {
+      await remove(this.#kv, blobKey.value)
+      await this.#deleteOldBlobs(blobKey.value)
+    }
+  }
   async #loadIsolateFs(pid: PID) {
     const fsKey = keys.getRepoKey(pid)
     log('loadSnapshot %o', fsKey)
@@ -66,6 +77,9 @@ export default class FS {
       await remove(this.#kv, blobKey)
       throw new Error('lock mismatch: ' + lockKey.join('/') + ' ' + lockId)
     }
+    await this.#deleteOldBlobs(blobKey)
+  }
+  async #deleteOldBlobs(blobKey: string[]) {
     const blobPrefixKey = blobKey.slice(0, -1)
     const oldBlobs = this.#kv.list<string[]>({ prefix: blobPrefixKey })
     for await (const entry of oldBlobs) {

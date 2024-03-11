@@ -92,6 +92,11 @@ export class QueueCradle implements Cradle {
     assert(result, 'clone result not found')
     return result
   }
+  async rm(params: { repo: string }) {
+    type K = ReturnType<Cradle['rm']>
+    const result = await this.#queue.push<K>('rm', params)
+    return result
+  }
   async apiSchema(params: { isolate: string }) {
     type K = ReturnType<Cradle['apiSchema']>
     const result = await this.#queue.push<K>('apiSchema', params)

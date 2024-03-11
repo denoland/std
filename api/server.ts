@@ -30,6 +30,7 @@ export default class Server {
       'probe',
       'init',
       'clone',
+      'rm',
     ]
     for (const functionName of functions) {
       assert(functionName !== 'pierces', 'pierces is not server side')
