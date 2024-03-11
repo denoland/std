@@ -1,6 +1,48 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-import { comparatorIntersects } from "./_comparator_intersects.ts";
+import { isWildcardComparator } from "./_shared.ts";
+import { compare } from "./compare.ts";
+import { testRange } from "./test_range.ts";
 import type { Comparator, Range } from "./types.ts";
+
+function comparatorIntersects(
+  c0: Comparator,
+  c1: Comparator,
+): boolean {
+  const op0 = c0.operator;
+  const op1 = c1.operator;
+
+  if (op0 === undefined) {
+    // if c0 is empty comparator, then returns true
+    if (isWildcardComparator(c0)) return true;
+    return testRange(c0, [[c1]]);
+  }
+  if (op1 === undefined) {
+    if (isWildcardComparator(c1)) return true;
+    return testRange(c1, [[c0]]);
+  }
+
+  const cmp = compare(c0, c1);
+
+  const sameDirectionIncreasing = (op0 === ">=" || op0 === ">") &&
+    (op1 === ">=" || op1 === ">");
+  const sameDirectionDecreasing = (op0 === "<=" || op0 === "<") &&
+    (op1 === "<=" || op1 === "<");
+  const sameSemVer = cmp === 0;
+  const differentDirectionsInclusive = (op0 === ">=" || op0 === "<=") &&
+    (op1 === ">=" || op1 === "<=");
+  const oppositeDirectionsLessThan = cmp === -1 &&
+    (op0 === ">=" || op0 === ">") &&
+    (op1 === "<=" || op1 === "<");
+  const oppositeDirectionsGreaterThan = cmp === 1 &&
+    (op0 === "<=" || op0 === "<") &&
+    (op1 === ">=" || op1 === ">");
+
+  return sameDirectionIncreasing ||
+    sameDirectionDecreasing ||
+    (sameSemVer && differentDirectionsInclusive) ||
+    oppositeDirectionsLessThan ||
+    oppositeDirectionsGreaterThan;
+}
 
 function rangesSatisfiable(ranges: Range[]): boolean {
   return ranges.every((r) => {

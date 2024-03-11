@@ -4,6 +4,7 @@
 export interface MatcherContext {
   value: unknown;
   isNot: boolean;
+  equal: (a: unknown, b: unknown, options?: EqualOptions) => boolean;
   customTesters: Tester[];
   customMessage: string | undefined;
 }
@@ -11,12 +12,16 @@ export interface MatcherContext {
 export type Matcher = (
   context: MatcherContext,
   ...args: any[]
-) => MatchResult;
+) => MatchResult | ExtendMatchResult;
 
 export type Matchers = {
   [key: string]: Matcher;
 };
 export type MatchResult = void | Promise<void> | boolean;
+export type ExtendMatchResult = {
+  message: () => string;
+  pass: boolean;
+};
 export type AnyConstructor = new (...args: any[]) => any;
 
 export type Tester = (
@@ -88,6 +93,9 @@ export interface Expected {
   not: Expected;
   resolves: Async<Expected>;
   rejects: Async<Expected>;
+  // This declaration prepares for the `expect.extend` and just only let
+  // compiler pass, the more concrete type definition is defined by user
+  [name: string]: unknown;
 }
 
 export type MatcherKey = keyof Omit<Expected, "not" | "resolves" | "rejects">;

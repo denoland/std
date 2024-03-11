@@ -81,11 +81,11 @@ function checkCodeBlocks(
 
     if (
       ["ts", "js", "typescript", "javascript", ""].includes(
-        language.toLocaleLowerCase(),
+        language!.toLocaleLowerCase(),
       )
     ) {
       checkImportStatements(
-        codeBlock,
+        codeBlock!,
         filePath,
         lineNumber + codeBlockLineNumber,
       );

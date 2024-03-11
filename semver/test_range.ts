@@ -9,15 +9,11 @@ function testComparator(version: SemVer, comparator: Comparator): boolean {
   }
   const cmp = compare(version, comparator.semver ?? comparator);
   switch (comparator.operator) {
-    case "":
     case "=":
-    case "==":
-    case "===":
     case undefined: {
       return cmp === 0;
     }
-    case "!=":
-    case "!==": {
+    case "!=": {
       return cmp !== 0;
     }
     case ">": {

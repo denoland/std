@@ -162,3 +162,50 @@ Deno.test({
     Deno.removeSync(LOG_FILE);
   },
 });
+
+Deno.test({
+  name: "FileHandler handles strings larger than the buffer",
+  fn() {
+    const fileHandler = new FileHandler("WARN", {
+      filename: LOG_FILE,
+      mode: "w",
+    });
+    const logOverBufferLimit = "A".repeat(4096);
+    fileHandler.setup();
+
+    fileHandler.log(logOverBufferLimit);
+    fileHandler.destroy();
+
+    assertEquals(
+      Deno.readTextFileSync(LOG_FILE),
+      `${logOverBufferLimit}\n`,
+    );
+
+    Deno.removeSync(LOG_FILE);
+  },
+});
+
+Deno.test({
+  name: "FileHandler handles a mixture of string sizes",
+  fn() {
+    const fileHandler = new FileHandler("WARN", {
+      filename: LOG_FILE,
+      mode: "w",
+    });
+    const veryLargeLog = "A".repeat(10000);
+    const regularLog = "B".repeat(100);
+    fileHandler.setup();
+
+    fileHandler.log(regularLog);
+    fileHandler.log(veryLargeLog);
+    fileHandler.log(regularLog);
+    fileHandler.destroy();
+
+    assertEquals(
+      Deno.readTextFileSync(LOG_FILE),
+      `${regularLog}\n${veryLargeLog}\n${regularLog}\n`,
+    );
+
+    Deno.removeSync(LOG_FILE);
+  },
+});

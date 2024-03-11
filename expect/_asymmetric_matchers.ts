@@ -29,32 +29,32 @@ export class Any extends AsymmetricMatcher<any> {
     if (typeof other === "object") {
       return other instanceof this.value;
     } else {
-      if (this.value == Number) {
+      if (this.value === Number) {
         return typeof other === "number";
       }
 
-      if (this.value == String) {
-        return typeof other == "string";
+      if (this.value === String) {
+        return typeof other === "string";
       }
 
-      if (this.value == Number) {
-        return typeof other == "number";
+      if (this.value === Number) {
+        return typeof other === "number";
       }
 
-      if (this.value == Function) {
-        return typeof other == "function";
+      if (this.value === Function) {
+        return typeof other === "function";
       }
 
-      if (this.value == Boolean) {
-        return typeof other == "boolean";
+      if (this.value === Boolean) {
+        return typeof other === "boolean";
       }
 
-      if (this.value == BigInt) {
-        return typeof other == "bigint";
+      if (this.value === BigInt) {
+        return typeof other === "bigint";
       }
 
-      if (this.value == Symbol) {
-        return typeof other == "symbol";
+      if (this.value === Symbol) {
+        return typeof other === "symbol";
       }
     }
     return false;

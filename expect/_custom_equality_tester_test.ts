@@ -64,10 +64,9 @@ Deno.test("Basic custom equality test", () => {
   expect(duration1).not.toEqual(duration3);
   expect(duration1).not.toEqual(duration2);
   expect(duration2).not.toBe(duration1);
-  // @todo(cinchen): check iterable check pass
-  // expect(toIterator([duration1, duration2])).not.toEqual(
-  //   toIterator([duration2, duration1]),
-  // );
+  expect(toIterator([duration1, duration2])).not.toEqual(
+    toIterator([duration2, duration1]),
+  );
   expect({ a: duration2, b: undefined }).toStrictEqual({
     a: duration3,
     b: undefined,
