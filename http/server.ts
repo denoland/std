@@ -773,8 +773,10 @@ export async function serveTls(
     once: true,
   });
 
-  const key = options.key || await Deno.readTextFile(options.keyFile!);
-  const cert = options.cert || await Deno.readTextFile(options.certFile!);
+  // deno-lint-ignore no-sync-fn-in-async-fn
+  const key = options.key || Deno.readTextFileSync(options.keyFile!);
+  // deno-lint-ignore no-sync-fn-in-async-fn
+  const cert = options.cert || Deno.readTextFileSync(options.certFile!);
 
   const listener = Deno.listenTls({
     port,
