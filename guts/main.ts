@@ -66,12 +66,26 @@ export default (name: string, cradleMaker: () => Promise<Cradle>) => {
   Deno.test(prefix + 'resource hogging', async (t) => {
     await t.step('multi local', async () => {
       const artifact = await cradleMaker()
-      await artifact.rm({ repo: 'cradle/pierce' })
-      const { pid: target } = await artifact.init({ repo: 'cradle/pierce' })
+      const repo = 'cradle/pierce'
+      await artifact.rm({ repo })
+
+      console.log('init')
+
+      const { pid: target } = await artifact.init({ repo })
       const { local } = await artifact.pierces(isolate, target)
       const promises = []
       for (let i = 0; i < 20; i++) {
-        promises.push(local())
+        const task = async () => {
+          const promise = local() as Promise<string>
+          try {
+            const result = await promise
+            console.log('result', i, result)
+            return result
+          } catch (error) {
+            console.error('error', i, error)
+          }
+        }
+        promises.push(task())
       }
       log('promises start')
       const results = await Promise.all(promises)

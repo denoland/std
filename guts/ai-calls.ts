@@ -7,6 +7,8 @@ export default (name: string, cradleMaker: () => Promise<Cradle>) => {
   Deno.test(prefix + 'session', async (t) => {
     const artifact = await cradleMaker()
     const repo = 'dreamcatcher-tech/HAL'
+    await artifact.rm({ repo })
+
     const { pid } = await artifact.clone({ repo })
     const { create } = await artifact.pierces('session', pid)
     const session = await create({}, { noClose: true }) as PID

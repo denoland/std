@@ -42,11 +42,12 @@ export default class FS {
     const fsKey = keys.getRepoKey(pid)
     log('deleting repo %o', fsKey)
     const blobKey = await this.#kv.get<string[]>(fsKey)
-    await remove(this.#kv, fsKey)
+    await this.#kv.delete(fsKey)
     if (blobKey.value) {
       await remove(this.#kv, blobKey.value)
       await this.#deleteOldBlobs(blobKey.value)
     }
+    log('deleted repo %o', fsKey)
   }
   async #loadIsolateFs(pid: PID) {
     const fsKey = keys.getRepoKey(pid)
@@ -82,12 +83,14 @@ export default class FS {
   async #deleteOldBlobs(blobKey: string[]) {
     const blobPrefixKey = blobKey.slice(0, -1)
     const oldBlobs = this.#kv.list<string[]>({ prefix: blobPrefixKey })
+    const promises = []
     for await (const entry of oldBlobs) {
       if (entry.key !== blobKey && entry.key.length === blobKey.length) {
         log('deleting old blob %o', entry.key)
-        await remove(this.#kv, entry.key)
+        promises.push(remove(this.#kv, entry.key))
       }
     }
+    await Promise.all(promises)
   }
   static print(fs: IFs): string {
     return print.toTreeSync(fs)

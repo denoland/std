@@ -6,6 +6,8 @@ export default (name: string, cradleMaker: () => Promise<Cradle>) => {
   Deno.test(prefix + 'session', async (t) => {
     const artifact = await cradleMaker()
     const repo = 'process/session'
+    await artifact.rm({ repo })
+
     const { pid } = await artifact.init({ repo })
     const sessionPid = { ...pid, branches: [...pid.branches, '0'] }
     const { create } = await artifact.pierces('session', pid)
@@ -31,6 +33,8 @@ export default (name: string, cradleMaker: () => Promise<Cradle>) => {
   Deno.test(prefix + 'internal requests', async (t) => {
     const artifact = await cradleMaker()
     const repo = 'process/session'
+    await artifact.rm({ repo })
+
     const { pid } = await artifact.init({ repo })
 
     await t.step('ping', async () => {
