@@ -20,12 +20,7 @@ function compileList(
   }
 
   for (const currentType of schema[name]) {
-    for (
-      let previousIndex = 0;
-      previousIndex < result.length;
-      previousIndex++
-    ) {
-      const previousType = result[previousIndex];
+    for (const [previousIndex, previousType] of result.entries()) {
       if (
         previousType.tag === currentType.tag &&
         previousType.kind === currentType.kind

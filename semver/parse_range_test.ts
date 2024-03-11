@@ -473,7 +473,7 @@ Deno.test("parseRange() parses ranges with x", () => {
     ["*", [
       [
         {
-          operator: "",
+          operator: undefined,
           major: NaN,
           minor: NaN,
           patch: NaN,
