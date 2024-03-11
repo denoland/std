@@ -814,8 +814,8 @@ function inspectNode(
           inspectNode(object[idx], objects, duplicatesIndexes);
         }
       } else {
-        for (const objectKey of Object.keys(object)) {
-          inspectNode(object[objectKey], objects, duplicatesIndexes);
+        for (const object of Object.values(object)) {
+          inspectNode(object, objects, duplicatesIndexes);
         }
       }
     }
