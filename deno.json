@@ -40,7 +40,8 @@
   "lint": {
     "rules": {
       "include": [
-        "camelcase"
+        "camelcase",
+        "no-sync-fn-in-async-fn"
       ]
     }
   }
