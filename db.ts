@@ -158,4 +158,22 @@ export default class DB {
     const head = await this.#kv.get<string>(key)
     return head.value || undefined
   }
+  async rm(pid: PID) {
+    const prefixes = keys.getPrefixes(pid)
+    log('rm %o', prefixes)
+    const promises = []
+    for (const prefix of prefixes) {
+      const all = this.#kv.list({ prefix })
+      const wipe = async () => {
+        const deletes = []
+        for await (const { key } of all) {
+          log('deleted: ', key)
+          deletes.push(this.#kv.delete(key))
+        }
+        await Promise.all(deletes)
+      }
+      promises.push(wipe())
+    }
+    await Promise.all(promises)
+  }
 }

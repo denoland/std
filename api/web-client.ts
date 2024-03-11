@@ -98,7 +98,7 @@ export default class WebClient implements Cradle {
       body: JSON.stringify(params),
     })
     if (!response.ok) {
-      response.body?.cancel()
+      await response.body?.cancel()
       throw new Error(
         path + ' ' + JSON.stringify(params) + ' ' + response.status + ' ' +
           response.statusText,

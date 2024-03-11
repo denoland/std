@@ -19,18 +19,16 @@ export default (name: string, cradleMaker: () => Promise<Cradle>) => {
       expect(result).toEqual({ test: 'test' })
     })
 
-    await t.step('clone', async () => {
-      let result = await artifact.probe({ repo: 'dreamcatcher-tech/HAL' })
-      if (!result) {
-        result = await artifact.clone({ repo: 'dreamcatcher-tech/HAL' })
-      }
-      log('clone result', result)
-      // TODO read the fs and see what the state of the file system is ?
-      expect(result.pid).toBeDefined()
-      expect(result.pid.account).toBe('dreamcatcher-tech')
-      expect(typeof result.head).toBe('string')
-    })
+    await artifact.rm({ repo: 'dreamcatcher-tech/HAL' })
 
+    await t.step('clone', async () => {
+      const clone = await artifact.clone({ repo: 'dreamcatcher-tech/HAL' })
+      log('clone result', clone)
+      // TODO read the fs and see what the state of the file system is ?
+      expect(clone.pid).toBeDefined()
+      expect(clone.pid.account).toBe('dreamcatcher-tech')
+      expect(typeof clone.head).toBe('string')
+    })
     await artifact.stop()
   })
   Deno.test.ignore(prefix + 'child to self', async () => {})
@@ -39,6 +37,7 @@ export default (name: string, cradleMaker: () => Promise<Cradle>) => {
   Deno.test(prefix + 'pierce', async (t) => {
     const isolate = 'io-fixture'
     const artifact = await cradleMaker()
+    await artifact.rm({ repo: 'cradle/pierce' })
     const { pid: target } = await artifact.init({ repo: 'cradle/pierce' })
     const pierces = await artifact.pierces(isolate, target)
     await t.step('local', async () => {
@@ -60,7 +59,6 @@ export default (name: string, cradleMaker: () => Promise<Cradle>) => {
       await expect(pierces.local({ invalid: 'parameters' }))
         .rejects.toThrow(msg)
     })
-    await artifact.rm({ repo: 'cradle/pierce' })
     await artifact.stop()
   })
 
@@ -68,6 +66,7 @@ export default (name: string, cradleMaker: () => Promise<Cradle>) => {
   Deno.test(prefix + 'resource hogging', async (t) => {
     await t.step('multi local', async () => {
       const artifact = await cradleMaker()
+      await artifact.rm({ repo: 'cradle/pierce' })
       const { pid: target } = await artifact.init({ repo: 'cradle/pierce' })
       const { local } = await artifact.pierces(isolate, target)
       const promises = []
@@ -83,6 +82,7 @@ export default (name: string, cradleMaker: () => Promise<Cradle>) => {
 
       const logs: unknown[] = await artifact.logs({ repo: 'cradle/pierce' })
       log('logs', logs.length)
+
       await artifact.stop()
     })
   })
@@ -93,6 +93,7 @@ export default (name: string, cradleMaker: () => Promise<Cradle>) => {
       repository: 'HAL',
       branches: ['main'],
     }
+    await artifact.rm({ repo: 'dreamcatcher-tech/HAL' })
     await t.step('probe empty', async () => {
       const result = await artifact.probe({ repo: 'dreamcatcher-tech/HAL' })
       log('probe result', result)
@@ -111,7 +112,6 @@ export default (name: string, cradleMaker: () => Promise<Cradle>) => {
       expect(result).toBeDefined()
       expect(result!.pid).toEqual(pid)
     })
-
     await artifact.stop()
   })
   testProcessMgmt(name, cradleMaker)

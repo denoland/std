@@ -42,6 +42,14 @@ export const getBlobKey = (pid: PID) => {
   const { account, repository, branches } = pid
   return [KEYSPACES.BLOB, account, repository, ...branches, 'blob-' + ulid()]
 }
+export const getPrefixes = (pid: PID) => {
+  const { account, repository } = pid
+  const prefixes = []
+  for (const keyspace of Object.values(KEYSPACES)) {
+    prefixes.push([keyspace, account, repository])
+  }
+  return prefixes
+}
 enum KEYSPACES {
   POOL = 'POOL', // all pending requests and replies trying to be committed
   REPLIES = 'REPLIES', // for watching replies

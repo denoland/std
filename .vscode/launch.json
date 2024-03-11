@@ -55,6 +55,17 @@
     },
     {
       "request": "launch",
+      "name": "Cloud",
+      "type": "node",
+      "cwd": "${workspaceFolder}",
+      "runtimeExecutable": "~/.deno/bin/deno",
+      "runtimeArgs": ["task", "test:cloud", "--watch", "--inspect-wait"],
+      "attachSimplePort": 9229,
+      "internalConsoleOptions": "neverOpen",
+      "console": "integratedTerminal"
+    },
+    {
+      "request": "launch",
       "name": "Launch Program",
       "type": "node",
       "cwd": "${workspaceFolder}",
