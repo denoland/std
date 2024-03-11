@@ -32,7 +32,6 @@ import {
   FileTypes,
   type TarInfo,
   type TarMeta,
-  type TarOptions,
   USTAR_STRUCTURE,
 } from "./_common.ts";
 import type { Reader } from "../io/types.ts";
@@ -41,7 +40,26 @@ import { Buffer } from "../io/buffer.ts";
 import { assert } from "../assert/assert.ts";
 import { HEADER_LENGTH } from "./_common.ts";
 
-export type { TarInfo, TarMeta, TarOptions };
+export type { TarInfo, TarMeta };
+
+/** Options for {@linkcode Tar.append}. */
+export interface TarOptions extends TarInfo {
+  /**
+   * Filepath of the file to append to the archive
+   */
+  filePath?: string;
+
+  /**
+   * A Reader of any arbitrary content to append to the archive
+   */
+  reader?: Reader;
+
+  /**
+   * Size of the content to be appended. This is only required
+   * when passing a reader to the archive.
+   */
+  contentSize?: number;
+}
 
 const USTAR_MAGIC_HEADER = "ustar\u000000" as const;
 
@@ -95,28 +113,61 @@ function formatHeader(data: TarData): Uint8Array {
   return buffer;
 }
 
+/** Base interface for {@linkcode TarDataWithSource}. */
 export interface TarData {
+  /** Name of the file, excluding directory names (if any). */
   fileName?: string;
+  /** Directory names preceding the file name (if any). */
   fileNamePrefix?: string;
+  /**
+   * The underlying raw `st_mode` bits that contain the standard Unix
+   * permissions for this file/directory.
+   */
   fileMode?: string;
+  /**
+   * Numeric user ID of the file owner. This is ignored if the operating system
+   * does not support numeric user IDs.
+   */
   uid?: string;
+  /**
+   * Numeric group ID of the file owner. This is ignored if the operating
+   * system does not support numeric group IDs.
+   */
   gid?: string;
+  /**
+   * The size of the file in bytes; for archive members that are symbolic or
+   * hard links to another file, this field is specified as zero.
+   */
   fileSize?: string;
+  /**
+   * Data modification time of the file at the time it was archived. It
+   * represents the integer number of seconds since January 1, 1970, 00:00 UTC.
+   */
   mtime?: string;
+  /** The simple sum of all bytes in the header block */
   checksum?: string;
+  /**
+   * The type of file archived.
+   *
+   * @see {@linkcode FileTypes}
+   */
   type?: string;
+  /** Ustar magic header */
   ustar?: string;
+  /** The name of the file owner. */
   owner?: string;
+  /** The group that the file owner belongs to. */
   group?: string;
 }
 
+/** Tar data interface for {@linkcode Tar.data}. */
 export interface TarDataWithSource extends TarData {
   /**
-   * file to read
+   * Path of the file to read.
    */
   filePath?: string;
   /**
-   * buffer to read
+   * Buffer reader.
    */
   reader?: Reader;
 }
@@ -177,8 +228,10 @@ export interface TarDataWithSource extends TarData {
  * ```
  */
 export class Tar {
+  /** Tar data. */
   data: TarDataWithSource[];
 
+  /** Constructs a new instance. */
   constructor() {
     this.data = [];
   }
@@ -190,11 +243,10 @@ export class Tar {
    * directory's contents.  Directories and subdirectories will be created automatically
    * in the archive as required.
    *
-   * @param filenameInArchive file name of the content in the archive
-   *                 e.g., test.txt; use slash for directory separators
-   * @param source details of the source of the content including the
-   *               reference to the content itself and potentially any
-   *               related metadata.
+   * @param filenameInArchive File name of the content in the archive. E.g.
+   * `test.txt`. Use slash for directory separators.
+   * @param source Details of the source of the content including the
+   * reference to the content itself and potentially any related metadata.
    */
   async append(filenameInArchive: string, source: TarOptions) {
     if (typeof filenameInArchive !== "string") {
@@ -203,7 +255,7 @@ export class Tar {
     let fileName = filenameInArchive;
 
     /**
-     * Ustar format has a limitation of file name length.  Specifically:
+     * Ustar format has a limitation of file name length. Specifically:
      * 1. File names can contain at most 255 bytes.
      * 2. File names longer than 100 bytes must be split at a directory separator in two parts,
      * the first being at most 155 bytes long. So, in most cases file names must be a bit shorter

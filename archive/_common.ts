@@ -3,39 +3,55 @@
 import { PartialReadError } from "../io/buf_reader.ts";
 import type { Reader } from "../io/types.ts";
 
+/** Base interface for {@linkcode TarMeta} */
 export interface TarInfo {
+  /**
+   * The underlying raw `st_mode` bits that contain the standard Unix
+   * permissions for this file/directory.
+   */
   fileMode?: number;
+  /**
+   * Data modification time of the file at the time it was archived. It
+   * represents the integer number of seconds since January 1, 1970, 00:00 UTC.
+   */
   mtime?: number;
+  /**
+   * Numeric user ID of the file owner. This is ignored if the operating system
+   * does not support numeric user IDs.
+   */
   uid?: number;
+  /**
+   * Numeric group ID of the file owner. This is ignored if the operating
+   * system does not support numeric group IDs.
+   */
   gid?: number;
+  /** The name of the file owner. */
   owner?: string;
+  /** The group that the file owner belongs to. */
   group?: string;
+  /**
+   * The type of file archived.
+   *
+   * @see {@linkcode FileTypes}
+   */
   type?: string;
 }
 
-export interface TarOptions extends TarInfo {
-  /**
-   * Filepath of the file to append to the archive
-   */
-  filePath?: string;
-
-  /**
-   * A Reader of any arbitrary content to append to the archive
-   */
-  reader?: Reader;
-
-  /**
-   * Size of the content to be appended.  This is only required
-   * when passing a reader to the archive.
-   */
-  contentSize?: number;
-}
-
+/** Base interface for {@linkcode TarMetaWithLinkName}. */
 export interface TarMeta extends TarInfo {
+  /**
+   * The name of the file, with directory names (if any) preceding the file
+   * name, separated by slashes.
+   */
   fileName: string;
+  /**
+   * The size of the file in bytes; for archive members that are symbolic or
+   * hard links to another file, this field is specified as zero.
+   */
   fileSize?: number;
 }
 
+/** The type of file archived. */
 export enum FileTypes {
   "file" = 0,
   "link" = 1,
@@ -138,6 +154,9 @@ export const USTAR_STRUCTURE = [
   },
 ] as const;
 
+/**
+ * @internal
+ */
 export type UstarFields = (typeof USTAR_STRUCTURE)[number]["field"];
 
 export async function readBlock(
