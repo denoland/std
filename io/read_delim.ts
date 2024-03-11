@@ -2,7 +2,7 @@
 // This module is browser compatible.
 
 import { concat } from "../bytes/concat.ts";
-import type { Reader } from "./types.d.ts";
+import type { Reader } from "./types.ts";
 
 /** Generate longest proper prefix which is also suffix array. */
 function createLPS(pat: Uint8Array): Uint8Array {
@@ -28,7 +28,7 @@ function createLPS(pat: Uint8Array): Uint8Array {
 /**
  * Read delimited bytes from a Reader.
  *
- * @deprecated (will be removed after 1.0.0) Use the [Web Streams API]{@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API} instead.
+ * @deprecated (will be removed after 1.0.0) Use the {@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API | Web Streams API} instead.
  */
 export async function* readDelim(
   reader: Reader,

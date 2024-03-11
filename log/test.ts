@@ -4,12 +4,12 @@ import * as log from "./mod.ts";
 import {
   getLevelByName,
   getLevelName,
-  LevelName,
-  LogLevel,
+  type LevelName,
+  type LogLevel,
   LogLevelNames,
 } from "./levels.ts";
 
-class TestHandler extends log.handlers.BaseHandler {
+class TestHandler extends log.BaseHandler {
   public messages: string[] = [];
 
   override log(msg: string) {
@@ -17,13 +17,13 @@ class TestHandler extends log.handlers.BaseHandler {
   }
 }
 
-Deno.test("defaultHandlers", async function () {
+Deno.test("setup() handles default handlers", async function () {
   const loggers: {
     [key: string]: (msg: string, ...args: unknown[]) => void;
   } = {
     DEBUG: log.debug,
     INFO: log.info,
-    WARNING: log.warning,
+    WARN: log.warn,
     ERROR: log.error,
     CRITICAL: log.critical,
   };
@@ -55,7 +55,7 @@ Deno.test("defaultHandlers", async function () {
   }
 });
 
-Deno.test("getLogger", async function () {
+Deno.test("getLogger()", async function () {
   const handler = new TestHandler("DEBUG");
 
   await log.setup({
@@ -76,7 +76,7 @@ Deno.test("getLogger", async function () {
   assertEquals(logger.handlers, [handler]);
 });
 
-Deno.test("getLoggerWithName", async function () {
+Deno.test("getLogger() handles name", async function () {
   const fooHandler = new TestHandler("DEBUG");
 
   await log.setup({
@@ -97,7 +97,7 @@ Deno.test("getLoggerWithName", async function () {
   assertEquals(logger.handlers, [fooHandler]);
 });
 
-Deno.test("getLoggerUnknown", async function () {
+Deno.test("getLogger() habndles unknown", async function () {
   await log.setup({
     handlers: {},
     loggers: {},
@@ -109,7 +109,7 @@ Deno.test("getLoggerUnknown", async function () {
   assertEquals(logger.handlers, []);
 });
 
-Deno.test("getInvalidLoggerLevels", function () {
+Deno.test("getLogger() handles invalid level", function () {
   assertThrows(() => getLevelByName("FAKE_LOG_LEVEL" as LevelName));
   assertThrows(() => getLevelName(5000 as LogLevel));
 });

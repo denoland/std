@@ -198,7 +198,7 @@ export async function* walk(
   }
 }
 
-/** Same as walk() but uses synchronous ops */
+/** Same as {@linkcode walk} but uses synchronous ops */
 export function* walkSync(
   root: string | URL,
   {

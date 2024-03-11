@@ -4,7 +4,7 @@
 import { isWindows } from "./_os.ts";
 import { format as posixFormat } from "./posix/format.ts";
 import { format as windowsFormat } from "./windows/format.ts";
-import { FormatInputPathObject } from "./_interface.ts";
+import type { FormatInputPathObject } from "./_interface.ts";
 
 /**
  * Generate a path from `FormatInputPathObject` object.

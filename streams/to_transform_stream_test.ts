@@ -4,7 +4,7 @@ import { assertEquals, assertRejects } from "../assert/mod.ts";
 import { toTransformStream } from "./to_transform_stream.ts";
 
 Deno.test({
-  name: "[streams] toTransformStream()",
+  name: "toTransformStream()",
   async fn() {
     const readable = ReadableStream.from([0, 1, 2])
       .pipeThrough(toTransformStream(async function* (src) {
@@ -19,7 +19,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[streams] toTransformStream() Pass iterable instead of asyncIterable",
+  name: "toTransformStream() handles iterable instead of asyncIterable",
   async fn() {
     const readable = ReadableStream.from([0, 1, 2])
       .pipeThrough(toTransformStream(function* (_src) {
@@ -34,7 +34,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[streams] toTransformStream() Propagate the error from readable 1",
+  name: "toTransformStream() propagates the error from readable 1",
   async fn(t) {
     // When data is pipelined in the order of readable1 → generator → readable2,
     // Propagate the error that occurred in readable1 to generator and readable2.
@@ -97,7 +97,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[streams] toTransformStream() Propagate the error from generator",
+  name: "toTransformStream() propagates the error from generator",
   async fn(t) {
     // When data is pipelined in the order of readable1 → generator → readable2,
     // Propagate the error that occurred in generator to readable2 and readable1.
@@ -139,7 +139,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[streams] toTransformStream() Propagate cancellation from readable 2",
+  name: "toTransformStream() propagates cancellation from readable 2",
   async fn(t) {
     // When data is pipelined in the order of readable1 → generator → readable2,
     // Propagate the cancellation that occurred in readable2 to readable1 and generator.
@@ -191,7 +191,7 @@ Deno.test({
 
 Deno.test({
   name:
-    "[streams] toTransformStream() Cancel streams with the correct error message",
+    "toTransformStream() handles streams cancel with the correct error message",
   async fn() {
     const src = ReadableStream.from([0, 1, 2]);
     // deno-lint-ignore require-yield

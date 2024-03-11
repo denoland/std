@@ -24,13 +24,12 @@ Deno.test("testCopyN2", async function () {
 Deno.test("copyNWriteAllData", async function () {
   const tmpDir = await Deno.makeTempDir();
   const filepath = `${tmpDir}/data`;
-  const file = await Deno.open(filepath, { create: true, write: true });
+  using file = await Deno.open(filepath, { create: true, write: true });
 
   const size = 16 * 1024 + 1;
   const data = "a".repeat(32 * 1024);
   const r = new StringReader(data);
   const n = await copyN(r, file, size); // Over max file possible buffer
-  file.close();
   await Deno.remove(filepath);
 
   assertEquals(n, size);

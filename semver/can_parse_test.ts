@@ -2,7 +2,7 @@
 import { assertEquals } from "../assert/mod.ts";
 import { canParse } from "./can_parse.ts";
 
-Deno.test("[semver] canParse", async (t) => {
+Deno.test("canParse()", async (t) => {
   // deno-lint-ignore no-explicit-any
   const versions: [any, boolean][] = [
     ["1.2.3", true],

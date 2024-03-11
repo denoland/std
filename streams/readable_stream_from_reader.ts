@@ -1,22 +1,14 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-import { DEFAULT_CHUNK_SIZE } from "./_common.ts";
-import type { Closer, Reader } from "../io/types.d.ts";
+import { toReadableStream } from "../io/to_readable_stream.ts";
+import type { Closer, Reader } from "../io/types.ts";
 export type { Closer };
-
-function isCloser(value: unknown): value is Closer {
-  return typeof value === "object" && value !== null && value !== undefined &&
-    "close" in value &&
-    // deno-lint-ignore no-explicit-any
-    typeof (value as Record<string, any>)["close"] === "function";
-}
 
 /**
  * Options for {@linkcode readableStreamFromReader}.
  *
- * @deprecated (will be removed after 1.0.0) Use {@linkcode ReadableStream}
- * directly instead.
+ * @deprecated (will be removed after 1.0.0) Use {@linkcode toReadableStream} instead.
  */
 export interface ReadableStreamFromReaderOptions {
   /** If the `reader` is also a `Closer`, automatically close the `reader`
@@ -51,42 +43,11 @@ export interface ReadableStreamFromReaderOptions {
  * const fileStream = readableStreamFromReader(file);
  * ```
  *
- * @deprecated (will be removed after 1.0.0) Use {@linkcode ReadableStream} directly instead.
+ * @deprecated (will be removed after 1.0.0) Use {@linkcode toReadableStream} instead.
  */
 export function readableStreamFromReader(
   reader: Reader | (Reader & Closer),
   options: ReadableStreamFromReaderOptions = {},
 ): ReadableStream<Uint8Array> {
-  const {
-    autoClose = true,
-    chunkSize = DEFAULT_CHUNK_SIZE,
-    strategy,
-  } = options;
-
-  return new ReadableStream({
-    async pull(controller) {
-      const chunk = new Uint8Array(chunkSize);
-      try {
-        const read = await reader.read(chunk);
-        if (read === null) {
-          if (isCloser(reader) && autoClose) {
-            reader.close();
-          }
-          controller.close();
-          return;
-        }
-        controller.enqueue(chunk.subarray(0, read));
-      } catch (e) {
-        controller.error(e);
-        if (isCloser(reader)) {
-          reader.close();
-        }
-      }
-    },
-    cancel() {
-      if (isCloser(reader) && autoClose) {
-        reader.close();
-      }
-    },
-  }, strategy);
+  return toReadableStream(reader, options);
 }

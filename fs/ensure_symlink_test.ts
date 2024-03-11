@@ -80,6 +80,74 @@ Deno.test("ensureSymlinkSync() ensures linkName links to target", function () {
   Deno.removeSync(testDir, { recursive: true });
 });
 
+Deno.test("ensureSymlink() rejects if the linkName path already exist", async function () {
+  const testDir = path.join(testdataDir, "link_file_5");
+  const linkFile = path.join(testDir, "test.txt");
+  const linkDir = path.join(testDir, "test_dir");
+  const linkSymlink = path.join(testDir, "test_symlink");
+  const targetFile = path.join(testDir, "target.txt");
+
+  await Deno.mkdir(testDir, { recursive: true });
+  await Deno.writeTextFile(linkFile, "linkFile");
+  await Deno.mkdir(linkDir);
+  await Deno.symlink("non-existent", linkSymlink, { type: "file" });
+  await Deno.writeTextFile(targetFile, "targetFile");
+
+  await assertRejects(
+    async () => {
+      await ensureSymlink(targetFile, linkFile);
+    },
+  );
+  await assertRejects(
+    async () => {
+      await ensureSymlink(targetFile, linkDir);
+    },
+  );
+  await assertRejects(
+    async () => {
+      await ensureSymlink(targetFile, linkSymlink);
+    },
+  );
+
+  assertEquals(await Deno.readTextFile(linkFile), "linkFile");
+  assertEquals((await Deno.stat(linkDir)).isDirectory, true);
+  assertEquals(await Deno.readLink(linkSymlink), "non-existent");
+  assertEquals(await Deno.readTextFile(targetFile), "targetFile");
+
+  await Deno.remove(testDir, { recursive: true });
+});
+
+Deno.test("ensureSymlinkSync() throws if the linkName path already exist", function () {
+  const testDir = path.join(testdataDir, "link_file_6");
+  const linkFile = path.join(testDir, "test.txt");
+  const linkDir = path.join(testDir, "test_dir");
+  const linkSymlink = path.join(testDir, "test_symlink");
+  const targetFile = path.join(testDir, "target.txt");
+
+  Deno.mkdirSync(testDir, { recursive: true });
+  Deno.writeTextFileSync(linkFile, "linkFile");
+  Deno.mkdirSync(linkDir);
+  Deno.symlinkSync("non-existent", linkSymlink, { type: "file" });
+  Deno.writeTextFileSync(targetFile, "targetFile");
+
+  assertThrows(() => {
+    ensureSymlinkSync(targetFile, linkFile);
+  });
+  assertThrows(() => {
+    ensureSymlinkSync(targetFile, linkDir);
+  });
+  assertThrows(() => {
+    ensureSymlinkSync(targetFile, linkSymlink);
+  });
+
+  assertEquals(Deno.readTextFileSync(linkFile), "linkFile");
+  assertEquals(Deno.statSync(linkDir).isDirectory, true);
+  assertEquals(Deno.readLinkSync(linkSymlink), "non-existent");
+  assertEquals(Deno.readTextFileSync(targetFile), "targetFile");
+
+  Deno.removeSync(testDir, { recursive: true });
+});
+
 Deno.test("ensureSymlink() ensures dir linkName links to dir target", async function () {
   const testDir = path.join(testdataDir, "link_file_origin_3");
   const linkDir = path.join(testdataDir, "link_file_link_3");

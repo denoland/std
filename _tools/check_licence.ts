@@ -10,6 +10,7 @@ const EXCLUDED_DIRS = [
   "**/crypto/_wasm/target",
   "**/crypto/_wasm/lib",
   "**/.git",
+  "**/docs/**",
 ];
 
 const ROOT = new URL("../", import.meta.url);
@@ -19,7 +20,7 @@ const CURRENT_YEAR = new Date().getFullYear();
 const RX_COPYRIGHT = new RegExp(
   `// Copyright ([0-9]{4})-([0-9]{4}) the Deno authors\\. All rights reserved\\. MIT license\\.\n`,
 );
-const COPYRIGHT =
+export const COPYRIGHT =
   `// Copyright ${FIRST_YEAR}-${CURRENT_YEAR} the Deno authors. All rights reserved. MIT license.`;
 
 let failed = false;
@@ -44,7 +45,8 @@ for await (
       console.log("Copyright header automatically added to " + path);
     }
   } else if (
-    parseInt(match[1]) !== FIRST_YEAR || parseInt(match[2]) !== CURRENT_YEAR
+    (match[1] && parseInt(match[1]) !== FIRST_YEAR) ||
+    (match[2] && parseInt(match[2]) !== CURRENT_YEAR)
   ) {
     if (CHECK) {
       console.error(`Incorrect copyright year: ${path}`);

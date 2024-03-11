@@ -5,7 +5,7 @@
 /**
  * The semantic version parser.
  *
- * Adapted directly from [semver](https://github.com/npm/node-semver).
+ * Adapted directly from {@link https://github.com/npm/node-semver | semver}.
  *
  * ## Versions
  *
@@ -90,11 +90,6 @@
  * including a prerelease tag in the range, the user is indicating that they are
  * aware of the risk. However, it is still not appropriate to assume that they have
  * opted into taking a similar risk on the _next_ set of prerelease versions.
- *
- * Note that this behavior can be suppressed (treating all prerelease versions as
- * if they were normal versions, for the purpose of range matching) by setting the
- * `includePrerelease` flag on the options object to any [functions](#functions)
- * that do range matching.
  *
  * #### Prerelease Identifiers
  *
@@ -251,10 +246,9 @@
  * ```ts
  * import {
  *   parse,
- *   parseComparator,
  *   parseRange,
- *   gt,
- *   lt,
+ *   greaterThan,
+ *   lessThan,
  *   format
  * } from "https://deno.land/std@$STD_VERSION/semver/mod.ts";
  *
@@ -263,50 +257,39 @@
  *
  * const s0 = parse("1.2.3");
  * const s1 = parse("9.8.7");
- * gt(s0, s1); // false
- * lt(s0, s1); // true
+ * greaterThan(s0, s1); // false
+ * lessThan(s0, s1); // true
  *
  * format(semver) // "1.2.3"
  * ```
  *
  * @module
  */
-export * from "./cmp.ts";
-export * from "./comparator_format.ts";
-export * from "./comparator_intersects.ts";
-export * from "./comparator_max.ts";
-export * from "./comparator_min.ts";
-export * from "./compare_build.ts";
 export * from "./compare.ts";
 export * from "./constants.ts";
 export * from "./difference.ts";
-export * from "./eq.ts";
 export * from "./format.ts";
-export * from "./gt.ts";
-export * from "./gte.ts";
-export * from "./gtr.ts";
-export * from "./test_comparator.ts";
 export * from "./test_range.ts";
 export * from "./increment.ts";
-export * from "./is_semver_range.ts";
 export * from "./is_semver.ts";
-export * from "./lt.ts";
-export * from "./lte.ts";
-export * from "./ltr.ts";
 export * from "./max_satisfying.ts";
 export * from "./min_satisfying.ts";
-export * from "./neq.ts";
-export * from "./outside.ts";
-export * from "./parse_comparator.ts";
 export * from "./parse_range.ts";
 export * from "./parse.ts";
-export * from "./range_format.ts";
 export * from "./range_intersects.ts";
 export * from "./range_max.ts";
 export * from "./range_min.ts";
-export * from "./rsort.ts";
-export * from "./sort.ts";
 export * from "./types.ts";
-export * from "./lte.ts";
-export * from "./lte.ts";
+export * from "./try_parse_range.ts";
+export * from "./is_range.ts";
+export * from "./can_parse.ts";
+export * from "./try_parse.ts";
+export * from "./format_range.ts";
+export * from "./equals.ts";
+export * from "./not_equals.ts";
+export * from "./greater_than.ts";
+export * from "./greater_or_equal.ts";
+export * from "./less_than.ts";
+export * from "./less_or_equal.ts";
+
 export const SEMVER_SPEC_VERSION = "2.0.0";

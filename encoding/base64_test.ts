@@ -12,7 +12,7 @@ const testsetString = [
   ["foob", "Zm9vYg=="],
   ["fooba", "Zm9vYmE="],
   ["foobar", "Zm9vYmFy"],
-];
+] as const;
 
 const testsetBinary = testsetString.map(([str, b64]) => [
   new TextEncoder().encode(str),

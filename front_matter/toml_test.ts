@@ -10,22 +10,22 @@ import {
   runTestValidInputTests,
 } from "./_test_utils.ts";
 
-Deno.test("[TOML] test valid input true", () => {
+Deno.test("toml() tests valid input true", () => {
   runTestValidInputTests("toml", test);
 });
 
-Deno.test("[TOML] test invalid input false", () => {
+Deno.test("toml() tests invalid input false", () => {
   runTestInvalidInputTests("toml", test);
 });
 
-Deno.test("[TOML] extract type error on invalid input", () => {
+Deno.test("toml() extracts type error on invalid input", () => {
   runExtractTypeErrorTests("toml", extract);
 });
 
-Deno.test("[TOML] parse toml delineate by ---toml", async () => {
+Deno.test("toml() parses toml delineate by ---toml", async () => {
   await runExtractTOMLTests(extract);
 });
 
-Deno.test("[TOML] parse toml delineate by +++", async () => {
+Deno.test("toml() parses toml delineate by +++", async () => {
   await runExtractTOMLTests2(extract);
 });

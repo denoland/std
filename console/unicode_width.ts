@@ -1,16 +1,18 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // Ported from unicode_width rust crate, Copyright (c) 2015 The Rust Project Developers. MIT license.
 
-import data from "./_data.json" assert { type: "json" };
-import { runLengthDecode } from "./_rle.ts";
+import data from "./_data.json" with { type: "json" };
+import { runLengthDecode } from "./_run_length.ts";
 
 let tables: Uint8Array[] | null = null;
 function lookupWidth(cp: number) {
   if (!tables) tables = data.tables.map(runLengthDecode);
 
-  const t1Offset = tables[0][(cp >> 13) & 0xff];
-  const t2Offset = tables[1][128 * t1Offset + ((cp >> 6) & 0x7f)];
-  const packedWidths = tables[2][16 * t2Offset + ((cp >> 2) & 0xf)];
+  const t1Offset = (tables[0] as Uint8Array)[(cp >> 13) & 0xff] as number;
+  const t2Offset =
+    (tables[1] as Uint8Array)[128 * t1Offset + ((cp >> 6) & 0x7f)] as number;
+  const packedWidths =
+    (tables[2] as Uint8Array)[16 * t2Offset + ((cp >> 2) & 0xf)] as number;
 
   const width = (packedWidths >> (2 * (cp & 0b11))) & 0b11;
 

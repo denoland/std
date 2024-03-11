@@ -3,7 +3,7 @@
 
 // JSON version of the full canonical list of named HTML entities
 // https://html.spec.whatwg.org/multipage/named-characters.html
-import entityList from "https://html.spec.whatwg.org/entities.json" assert {
+import entityList from "https://html.spec.whatwg.org/entities.json" with {
   type: "json",
 };
 

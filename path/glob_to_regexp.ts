@@ -2,12 +2,14 @@
 // This module is browser compatible.
 
 import type { GlobOptions } from "./_common/glob_to_reg_exp.ts";
-import { isWindows, OSType } from "./_os.ts";
+import { isWindows, type OSType } from "./_os.ts";
 
 import { globToRegExp as posixGlobToRegExp } from "./posix/glob_to_regexp.ts";
 import {
   globToRegExp as windowsGlobToRegExp,
 } from "./windows/glob_to_regexp.ts";
+
+export type { GlobOptions };
 
 export type GlobToRegExpOptions = GlobOptions & {
   os?: OSType;

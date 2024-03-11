@@ -25,8 +25,7 @@ export interface DelayOptions {
  * // ...
  * ```
  *
- * To allow the process to continue to run as long as the timer exists. Requires
- * `--unstable` flag.
+ * To allow the process to continue to run as long as the timer exists.
  *
  * ```ts
  * import { delay } from "https://deno.land/std@$STD_VERSION/async/delay.ts";

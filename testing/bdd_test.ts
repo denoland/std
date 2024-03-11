@@ -14,7 +14,7 @@ import {
   it,
 } from "./bdd.ts";
 import { TestSuiteInternal } from "./_test_suite.ts";
-import { assertSpyCall, assertSpyCalls, Spy, spy, stub } from "./mock.ts";
+import { assertSpyCall, assertSpyCalls, type Spy, spy, stub } from "./mock.ts";
 
 Deno.test("global", async (t) => {
   class TestContext implements Deno.TestContext {
@@ -118,7 +118,7 @@ Deno.test("global", async (t) => {
   }
 
   await t.step("global hooks", async () => {
-    const test = stub(Deno, "test");
+    using test = stub(Deno, "test");
     const fns = [spy(), spy()] as const;
     const { beforeAllFn, afterAllFn, beforeEachFn, afterEachFn } = hookFns();
 
@@ -148,7 +148,6 @@ Deno.test("global", async (t) => {
       assertSpyCalls(context.spies.step, 2);
     } finally {
       TestSuiteInternal.reset();
-      test.restore();
     }
 
     let fn = fns[0];
@@ -182,7 +181,7 @@ Deno.test("global", async (t) => {
       expectedOptions: Omit<Deno.TestDefinition, "name" | "fn">,
       cb: (fn: Spy) => void,
     ) {
-      const test = stub(Deno, "test");
+      using test = stub(Deno, "test");
       const fn = spy();
       try {
         cb(fn);
@@ -212,7 +211,6 @@ Deno.test("global", async (t) => {
         });
       } finally {
         TestSuiteInternal.reset();
-        test.restore();
       }
     }
 
@@ -685,7 +683,7 @@ Deno.test("global", async (t) => {
       expectedOptions: Omit<Deno.TestDefinition, "name" | "fn">,
       cb: (fns: readonly [Spy, Spy]) => void,
     ) {
-      const test = stub(Deno, "test");
+      using test = stub(Deno, "test");
       const fns = [spy(), spy()] as const;
       try {
         cb(fns);
@@ -727,7 +725,6 @@ Deno.test("global", async (t) => {
         assertSpyCalls(fn, 1);
       } finally {
         TestSuiteInternal.reset();
-        test.restore();
       }
     }
 
@@ -1329,7 +1326,7 @@ Deno.test("global", async (t) => {
       async function assertOnly(
         cb: (fns: readonly [Spy, Spy, Spy]) => void,
       ) {
-        const test = stub(Deno, "test");
+        using test = stub(Deno, "test");
         const fns = [spy(), spy(), spy()] as const;
         try {
           cb(fns);
@@ -1369,7 +1366,6 @@ Deno.test("global", async (t) => {
           assertSpyCalls(fn, 0);
         } finally {
           TestSuiteInternal.reset();
-          test.restore();
         }
       }
 
@@ -1427,7 +1423,7 @@ Deno.test("global", async (t) => {
       async function assertOnly(
         cb: (fns: readonly [Spy, Spy, Spy]) => void,
       ) {
-        const test = stub(Deno, "test");
+        using test = stub(Deno, "test");
         const fns = [spy(), spy(), spy()] as const;
         try {
           cb(fns);
@@ -1466,7 +1462,6 @@ Deno.test("global", async (t) => {
           assertSpyCalls(fn, 0);
         } finally {
           TestSuiteInternal.reset();
-          test.restore();
         }
       }
 
@@ -1535,7 +1530,7 @@ Deno.test("global", async (t) => {
           },
         ) => void,
       ) {
-        const test = stub(Deno, "test");
+        using test = stub(Deno, "test");
         const fns = [spy(), spy()] as const;
         const { beforeAllFn, afterAllFn, beforeEachFn, afterEachFn } =
           hookFns();
@@ -1559,7 +1554,6 @@ Deno.test("global", async (t) => {
           assertSpyCalls(context.spies.step, 2);
         } finally {
           TestSuiteInternal.reset();
-          test.restore();
         }
 
         let fn = fns[0];
@@ -1632,7 +1626,7 @@ Deno.test("global", async (t) => {
       await t.step(
         "nested",
         async () => {
-          const test = stub(Deno, "test");
+          using test = stub(Deno, "test");
           const fns = [spy(), spy()] as const;
           const { beforeAllFn, afterAllFn, beforeEachFn, afterEachFn } =
             hookFns();
@@ -1671,7 +1665,6 @@ Deno.test("global", async (t) => {
             assertSpyCalls(context.steps[0]!.spies.step, 2);
           } finally {
             TestSuiteInternal.reset();
-            test.restore();
           }
 
           let fn = fns[0];
@@ -1707,7 +1700,7 @@ Deno.test("global", async (t) => {
       await t.step(
         "nested with hooks",
         async () => {
-          const test = stub(Deno, "test");
+          using test = stub(Deno, "test");
           const fns = [
             spy(function (this: NestedContext) {
               this.x = 2;
@@ -1789,7 +1782,6 @@ Deno.test("global", async (t) => {
             assertSpyCalls(context.steps[0]!.spies.step, 2);
           } finally {
             TestSuiteInternal.reset();
-            test.restore();
           }
 
           let fn = fns[0];

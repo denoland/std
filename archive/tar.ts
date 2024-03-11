@@ -35,13 +35,13 @@ import {
   type TarOptions,
   ustarStructure,
 } from "./_common.ts";
-import type { Reader } from "../io/types.d.ts";
+import type { Reader } from "../io/types.ts";
 import { MultiReader } from "../io/multi_reader.ts";
 import { Buffer } from "../io/buffer.ts";
 import { assert } from "../assert/assert.ts";
 import { HEADER_LENGTH } from "./_common.ts";
 
-export { type TarInfo, type TarMeta, type TarOptions };
+export type { TarInfo, TarMeta, TarOptions };
 
 const USTAR_MAGIC_HEADER = "ustar\u000000";
 
@@ -151,7 +151,7 @@ export interface TarDataWithSource extends TarData {
  * ```ts
  * import { Tar } from "https://deno.land/std@$STD_VERSION/archive/tar.ts";
  * import { Buffer } from "https://deno.land/std@$STD_VERSION/io/buffer.ts";
- * import { copy } from "https://deno.land/std@$STD_VERSION/streams/copy.ts";
+ * import { copy } from "https://deno.land/std@$STD_VERSION/io/copy.ts";
  *
  * const tar = new Tar();
  *

@@ -8,8 +8,7 @@ import {
   stripAnsiCode,
   yellow,
 } from "../fmt/colors.ts";
-import { assertThrows } from "../assert/assert_throws.ts";
-import { AssertionError } from "../assert/assertion_error.ts";
+import { AssertionError, assertThrows } from "../assert/mod.ts";
 import { expect } from "./expect.ts";
 
 const createHeader = (): string[] => [
@@ -30,7 +29,7 @@ const removed: (s: string) => string = (s: string): string =>
   red(bold(stripAnsiCode(s)));
 
 Deno.test({
-  name: "pass case",
+  name: "expect().toEqual() matches when values are equal",
   fn() {
     expect({ a: 10 }).toEqual({ a: 10 });
     expect(true).toEqual(true);
@@ -42,7 +41,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "failed with number",
+  name: "expect().toEqual() throws when numbers are not equal",
   fn() {
     assertThrows(
       () => expect(1).toEqual(2),
@@ -59,7 +58,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "failed with number vs string",
+  name: "expect().toEqual() throws when compare number with string",
   fn() {
     assertThrows(
       () => expect(1).toEqual("1"),
@@ -75,7 +74,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "failed with array",
+  name: "expect().toEqual() throws when array are not equal",
   fn() {
     assertThrows(
       () => expect([1, "2", 3]).toEqual(["1", "2", 3]),
@@ -92,7 +91,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "failed with object",
+  name: "expect().toEqual() throws when objects are no equal",
   fn() {
     assertThrows(
       () => expect({ a: 1, b: "2", c: 3 }).toEqual({ a: 1, b: 2, c: [3] }),
@@ -112,7 +111,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "failed with date",
+  name: "expect().toEqual() throws when date are not equal",
   fn() {
     assertThrows(
       () =>
@@ -144,7 +143,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "failed with custom msg",
+  name: "expect().toEqual() throws with a custom message",
   fn() {
     assertThrows(
       () => expect(1, "CUSTOM MESSAGE").toEqual(2),
@@ -161,7 +160,7 @@ Deno.test({
 });
 
 Deno.test(
-  "expect().toEqual compares objects structurally if one object's constructor is undefined and the other is Object",
+  "expect().toEqual() compares objects structurally if one object's constructor is undefined and the other is Object",
   () => {
     const a = Object.create(null);
     a.prop = "test";
@@ -174,7 +173,7 @@ Deno.test(
   },
 );
 
-Deno.test("expect().toEqual diff for differently ordered objects", () => {
+Deno.test("expect().toEqual() diff for differently ordered objects", () => {
   assertThrows(
     () => {
       expect({
@@ -200,7 +199,7 @@ Deno.test("expect().toEqual diff for differently ordered objects", () => {
   );
 });
 
-Deno.test("expect().toEqual same Set with object keys", () => {
+Deno.test("expect().toEqual() same Set with object keys", () => {
   const data = [
     {
       id: "_1p7ZED73OF98VbT1SzSkjn",
@@ -222,4 +221,56 @@ Deno.test("expect().toEqual same Set with object keys", () => {
 Deno.test("expect().toEqual() does not throw when a key with undfined value exists in only one of values", () => {
   // bar: undefined is ignored in comparison
   expect({ foo: 1, bar: undefined }).toEqual({ foo: 1 });
+  expect({ foo: 1, bar: undefined }).not.toEqual({ foo: undefined });
+});
+
+// https://github.com/denoland/deno_std/issues/4244
+Deno.test("expect().toEqual() align to jest test cases", () => {
+  function create() {
+    class Person {
+      constructor(public readonly name = "deno") {}
+    }
+    return new Person();
+  }
+
+  expect([create()]).toEqual([create()]);
+  expect(
+    new (class A {
+      #hello = "world";
+    })(),
+  ).toEqual(
+    new (class B {
+      #hello = "world";
+    })(),
+  );
+  expect(
+    new WeakRef({ hello: "world" }),
+  ).toEqual(
+    new (class<T extends object> extends WeakRef<T> {})({ hello: "world" }),
+  );
+
+  expect({ a: undefined, b: undefined }).toEqual({
+    a: undefined,
+    c: undefined,
+  });
+  expect({ a: undefined, b: undefined }).toEqual({ a: undefined });
+
+  class A {}
+  class B {}
+  expect(new A()).toEqual(new B());
+  assertThrows(() => {
+    expect(new A()).not.toEqual(new B());
+  }, AssertionError);
+});
+
+Deno.test("expect().toEqual() matches when Error Objects are equal", () => {
+  function getError() {
+    return new Error("missing param: name");
+  }
+
+  const expectErrObjectWithName = new Error("missing param: name");
+  expect(getError()).toEqual(expectErrObjectWithName);
+
+  const expectErrObjectWithEmail = new Error("missing param: email");
+  expect(getError()).not.toEqual(expectErrObjectWithEmail);
 });

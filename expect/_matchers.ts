@@ -5,18 +5,19 @@ import { assertStrictEquals } from "../assert/assert_strict_equals.ts";
 import { assertInstanceOf } from "../assert/assert_instance_of.ts";
 import { assertIsError } from "../assert/assert_is_error.ts";
 import { assertNotInstanceOf } from "../assert/assert_not_instance_of.ts";
-import { assertNotEquals } from "../assert/assert_not_equals.ts";
-import { assertEquals } from "../assert/assert_equals.ts";
 import { assertMatch } from "../assert/assert_match.ts";
 import { assertObjectMatch } from "../assert/assert_object_match.ts";
 import { assertNotMatch } from "../assert/assert_not_match.ts";
 import { AssertionError } from "../assert/assertion_error.ts";
-import { equal } from "../assert/equal.ts";
-import { format } from "./_format.ts";
 
-import { AnyConstructor, MatcherContext, MatchResult } from "./_types.ts";
+import { assertEquals } from "./_assert_equals.ts";
+import { assertNotEquals } from "./_assert_not_equals.ts";
+import { equal } from "./_equal.ts";
+import { format } from "./_format.ts";
+import type { AnyConstructor, MatcherContext, MatchResult } from "./_types.ts";
 import { getMockCalls } from "./_mock_util.ts";
 import { inspectArg, inspectArgs } from "./_inspect_args.ts";
+import { buildEqualOptions, iterableEquality } from "./_utils.ts";
 
 export function toBe(context: MatcherContext, expect: unknown): MatchResult {
   if (context.isNot) {
@@ -26,37 +27,24 @@ export function toBe(context: MatcherContext, expect: unknown): MatchResult {
   }
 }
 
-// deno-lint-ignore no-explicit-any
-function filterUndefined(obj: any): any {
-  if (typeof obj !== "object") return obj;
-  if (obj instanceof Date) return obj;
-  if (obj instanceof RegExp) return obj;
-  if (ArrayBuffer.isView(obj)) return obj;
-  if (obj === null) return obj;
-  if ("size" in obj) return obj;
-  if (Symbol.iterator in obj) return obj;
-  if (Array.isArray(obj)) return obj.map(filterUndefined);
-
-  // deno-lint-ignore no-explicit-any
-  const result = {} as any;
-  for (const key in obj) {
-    const val = obj[key];
-    if (val === undefined) continue;
-    result[key] = filterUndefined(val);
-  }
-  return result;
-}
-
 export function toEqual(
   context: MatcherContext,
   expected: unknown,
 ): MatchResult {
-  const v = filterUndefined(context.value);
-  const e = filterUndefined(expected);
+  const v = context.value;
+  const e = expected;
+  const equalsOptions = buildEqualOptions({
+    ...context,
+    customTesters: [
+      ...context.customTesters,
+      iterableEquality,
+    ],
+  });
+
   if (context.isNot) {
-    assertNotEquals(v, e, context.customMessage);
+    assertNotEquals(v, e, equalsOptions);
   } else {
-    assertEquals(v, e, context.customMessage);
+    assertEquals(v, e, equalsOptions);
   }
 }
 
@@ -64,10 +52,19 @@ export function toStrictEqual(
   context: MatcherContext,
   expected: unknown,
 ): MatchResult {
+  const equalsOptions = buildEqualOptions({
+    ...context,
+    strictCheck: true,
+    customTesters: [
+      ...context.customTesters,
+      iterableEquality,
+    ],
+  });
+
   if (context.isNot) {
-    assertNotEquals(context.value, expected, context.customMessage);
+    assertNotEquals(context.value, expected, equalsOptions);
   } else {
-    assertEquals(context.value, expected, context.customMessage);
+    assertEquals(context.value, expected, equalsOptions);
   }
 }
 
@@ -248,17 +245,24 @@ export function toBeLessThan(
   }
 }
 export function toBeNaN(context: MatcherContext): MatchResult {
+  const equalsOptions = buildEqualOptions(context);
   if (context.isNot) {
     assertNotEquals(
       isNaN(Number(context.value)),
       true,
-      context.customMessage || `Expected ${context.value} to not be NaN`,
+      {
+        ...equalsOptions,
+        msg: equalsOptions.msg || `Expected ${context.value} to not be NaN`,
+      },
     );
   } else {
     assertEquals(
       isNaN(Number(context.value)),
       true,
-      context.customMessage || `Expected ${context.value} to be NaN`,
+      {
+        ...equalsOptions,
+        msg: equalsOptions.msg || `Expected ${context.value} to be NaN`,
+      },
     );
   }
 }
@@ -333,7 +337,7 @@ export function toHaveProperty(
   let hasProperty;
   if (v) {
     hasProperty = current !== undefined && propPath.length === 0 &&
-      equal(current, v);
+      equal(current, v, context);
   } else {
     hasProperty = current !== undefined && propPath.length === 0;
   }
@@ -387,8 +391,9 @@ export function toContainEqual(
   const { value } = context;
   assertIsIterable(value);
   let doesContain = false;
+
   for (const item of value) {
-    if (equal(item, expected)) {
+    if (equal(item, expected, context)) {
       doesContain = true;
       break;
     }
@@ -432,7 +437,7 @@ export function toMatch(
 
 export function toMatchObject(
   context: MatcherContext,
-  expected: Record<PropertyKey, unknown>,
+  expected: Record<PropertyKey, unknown> | Record<PropertyKey, unknown>[],
 ): MatchResult {
   if (context.isNot) {
     let objectMatch = false;
@@ -440,7 +445,7 @@ export function toMatchObject(
       assertObjectMatch(
         // deno-lint-ignore no-explicit-any
         context.value as Record<PropertyKey, any>,
-        expected,
+        expected as Record<PropertyKey, unknown>,
         context.customMessage,
       );
       objectMatch = true;
@@ -459,7 +464,7 @@ export function toMatchObject(
     assertObjectMatch(
       // deno-lint-ignore no-explicit-any
       context.value as Record<PropertyKey, any>,
-      expected,
+      expected as Record<PropertyKey, unknown>,
       context.customMessage,
     );
   }
@@ -542,7 +547,7 @@ export function toHaveBeenLastCalledWith(
 ): MatchResult {
   const calls = getMockCalls(context.value);
   const hasBeenCalled = calls.length > 0 &&
-    equal(calls[calls.length - 1].args, expected);
+    equal(calls.at(-1)?.args, expected);
 
   if (context.isNot) {
     if (hasBeenCalled) {
@@ -583,7 +588,7 @@ export function toHaveBeenNthCalledWith(
   const calls = getMockCalls(context.value);
   const callIndex = nth - 1;
   const hasBeenCalled = calls.length > callIndex &&
-    equal(calls[callIndex].args, expected);
+    equal(calls[callIndex]?.args, expected);
 
   if (context.isNot) {
     if (hasBeenCalled) {
@@ -596,7 +601,7 @@ export function toHaveBeenNthCalledWith(
   } else {
     if (!hasBeenCalled) {
       const nthCall = calls[callIndex];
-      if (!nth) {
+      if (!nthCall) {
         throw new AssertionError(
           `Expected the n-th call (n=${nth}) of mock function is with ${
             inspectArgs(expected)
@@ -689,7 +694,7 @@ export function toHaveLastReturnedWith(
   const calls = getMockCalls(context.value);
   const returned = calls.filter((call) => call.returns);
   const lastReturnedWithExpected = returned.length > 0 &&
-    equal(returned[returned.length - 1].returned, expected);
+    equal(returned.at(-1)?.returned, expected);
 
   if (context.isNot) {
     if (lastReturnedWithExpected) {

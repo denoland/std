@@ -9,10 +9,10 @@ type LineParseResult = {
 
 type CharactersMap = { [key: string]: string };
 
-const RE_KeyValue =
+const RE_KEY_VALUE =
   /^\s*(?:export\s+)?(?<key>[a-zA-Z_]+[a-zA-Z0-9_]*?)\s*=[\ \t]*('\n?(?<notInterpolated>(.|\n)*?)\n?'|"\n?(?<interpolated>(.|\n)*?)\n?"|(?<unquoted>[^\n#]*)) *#*.*$/gm;
 
-const RE_ExpandValue =
+const RE_EXPAND_VALUE =
   /(\${(?<inBrackets>.+?)(\:-(?<inBracketsDefault>.+))?}|(?<!\\)\$(?<notInBrackets>\w+)(\:-(?<notInBracketsDefault>.+))?)/g;
 
 function expandCharacters(str: string): string {
@@ -24,14 +24,14 @@ function expandCharacters(str: string): string {
 
   return str.replace(
     /\\([nrt])/g,
-    ($1: keyof CharactersMap): string => charactersMap[$1],
+    ($1: keyof CharactersMap): string => charactersMap[$1] || "",
   );
 }
 
 function expand(str: string, variablesMap: { [key: string]: string }): string {
-  if (RE_ExpandValue.test(str)) {
+  if (RE_EXPAND_VALUE.test(str)) {
     return expand(
-      str.replace(RE_ExpandValue, function (...params) {
+      str.replace(RE_EXPAND_VALUE, function (...params) {
         const {
           inBrackets,
           inBracketsDefault,
@@ -54,13 +54,24 @@ function expand(str: string, variablesMap: { [key: string]: string }): string {
   }
 }
 
+/**
+ * Parse `.env` file output in an object.
+ *
+ * @example
+ * ```ts
+ * import { parse } from "https://deno.land/std@$STD_VERSION/dotenv/parse.ts";
+ *
+ * const env = parse("GREETING=hello world");
+ * env.GREETING; // "hello world"
+ * ```
+ */
 export function parse(rawDotenv: string): Record<string, string> {
   const env: Record<string, string> = {};
 
   let match;
   const keysForExpandCheck = [];
 
-  while ((match = RE_KeyValue.exec(rawDotenv)) !== null) {
+  while ((match = RE_KEY_VALUE.exec(rawDotenv)) !== null) {
     const { key, interpolated, notInterpolated, unquoted } = match
       ?.groups as LineParseResult;
 
@@ -78,7 +89,7 @@ export function parse(rawDotenv: string): Record<string, string> {
   //https://github.com/motdotla/dotenv-expand/blob/ed5fea5bf517a09fd743ce2c63150e88c8a5f6d1/lib/main.js#L23
   const variablesMap = { ...env };
   keysForExpandCheck.forEach((key) => {
-    env[key] = expand(env[key], variablesMap);
+    env[key] = expand(env[key]!, variablesMap);
   });
 
   return env;

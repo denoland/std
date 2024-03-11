@@ -1,7 +1,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
 import { PartialReadError } from "../io/buf_reader.ts";
-import type { Reader } from "../io/types.d.ts";
+import type { Reader } from "../io/types.ts";
 
 export interface TarInfo {
   fileMode?: number;
@@ -71,7 +71,7 @@ struct posix_header {           // byte offset
 };
 */
 
-export const ustarStructure: Array<{ field: string; length: number }> = [
+export const ustarStructure = [
   {
     field: "fileName",
     length: 100,
@@ -136,7 +136,9 @@ export const ustarStructure: Array<{ field: string; length: number }> = [
     field: "padding",
     length: 12,
   },
-];
+] as const;
+
+export type UstarFields = (typeof ustarStructure)[number]["field"];
 
 export async function readBlock(
   reader: Reader,

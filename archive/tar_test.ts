@@ -14,8 +14,8 @@ import { resolve } from "../path/mod.ts";
 import { Tar } from "./tar.ts";
 import { Untar } from "./untar.ts";
 import { Buffer } from "../io/buffer.ts";
-import { copy } from "../streams/copy.ts";
-import { readAll } from "../streams/read_all.ts";
+import { copy } from "../io/copy.ts";
+import { readAll } from "../io/read_all.ts";
 import { filePath, testdataDir } from "./_test_common.ts";
 
 Deno.test("createTarArchive", async function () {
@@ -110,17 +110,15 @@ Deno.test("Tar() checks directory entry type", async function () {
   });
 
   const outputFile = resolve(testdataDir, "directory_type_test.tar");
-  const file = await Deno.open(outputFile, { create: true, write: true });
+  using file = await Deno.open(outputFile, { create: true, write: true });
   await copy(tar.getReader(), file);
-  file.close();
 
-  const reader = await Deno.open(outputFile, { read: true });
+  using reader = await Deno.open(outputFile, { read: true });
   const untar = new Untar(reader);
   await Array.fromAsync(
     untar,
     (entry) => assertEquals(entry.type, "directory"),
   );
 
-  reader.close();
   await Deno.remove(outputFile);
 });

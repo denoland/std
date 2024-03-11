@@ -28,7 +28,7 @@ export function assertEquals<T>(
   expected: T,
   msg?: string,
   options: { formatter?: (value: unknown) => string } = {},
-): void {
+) {
   if (equal(actual, expected)) {
     return;
   }

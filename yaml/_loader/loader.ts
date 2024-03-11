@@ -7,7 +7,11 @@ import { YAMLError } from "../_error.ts";
 import { Mark } from "../_mark.ts";
 import type { Type } from "../type.ts";
 import * as common from "../_utils.ts";
-import { LoaderState, LoaderStateOptions, ResultType } from "./loader_state.ts";
+import {
+  LoaderState,
+  type LoaderStateOptions,
+  type ResultType,
+} from "./loader_state.ts";
 
 type Any = common.Any;
 type ArrayObject<T = Any> = common.ArrayObject<T>;
@@ -198,13 +202,13 @@ const directiveHandlers: DirectiveHandlers = {
       return throwError(state, "YAML directive accepts exactly one argument");
     }
 
-    const match = /^([0-9]+)\.([0-9]+)$/.exec(args[0]);
+    const match = /^([0-9]+)\.([0-9]+)$/.exec(args[0]!);
     if (match === null) {
       return throwError(state, "ill-formed argument of the YAML directive");
     }
 
-    const major = parseInt(match[1], 10);
-    const minor = parseInt(match[2], 10);
+    const major = parseInt(match[1]!, 10);
+    const minor = parseInt(match[2]!, 10);
     if (major !== 1) {
       return throwError(state, "unacceptable YAML version of the document");
     }
@@ -221,8 +225,8 @@ const directiveHandlers: DirectiveHandlers = {
       return throwError(state, "TAG directive accepts exactly two arguments");
     }
 
-    const handle = args[0];
-    const prefix = args[1];
+    const handle = args[0]!;
+    const prefix = args[1]!;
 
     if (!PATTERN_TAG_HANDLE.test(handle)) {
       return throwError(
@@ -296,9 +300,7 @@ function mergeMappings(
     );
   }
 
-  const keys = Object.keys(source);
-  for (let i = 0, len = keys.length; i < len; i++) {
-    const key = keys[i];
+  for (const key in Object.keys(source)) {
     if (!hasOwn(destination, key)) {
       Object.defineProperty(destination, key, {
         value: source[key],
@@ -1558,7 +1560,7 @@ function composeNode(
         typeIndex < typeQuantity;
         typeIndex++
       ) {
-        type = state.implicitTypes[typeIndex];
+        type = state.implicitTypes[typeIndex]!;
 
         // Implicit resolving is not allowed for non-scalar types, and '?'
         // non-specific tag is only assigned to plain scalars. So, it isn't
@@ -1577,7 +1579,7 @@ function composeNode(
     } else if (
       hasOwn(state.typeMap[state.kind || "fallback"], state.tag)
     ) {
-      type = state.typeMap[state.kind || "fallback"][state.tag];
+      type = state.typeMap[state.kind || "fallback"][state.tag]!;
 
       if (state.result !== null && type.kind !== state.kind) {
         return throwError(
@@ -1675,7 +1677,7 @@ function readDocument(state: LoaderState) {
     if (ch !== 0) readLineBreak(state);
 
     if (hasOwn(directiveHandlers, directiveName)) {
-      directiveHandlers[directiveName](state, directiveName, ...directiveArgs);
+      directiveHandlers[directiveName]!(state, directiveName, ...directiveArgs);
     } else {
       throwWarning(state, `unknown document directive "${directiveName}"`);
     }

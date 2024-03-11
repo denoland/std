@@ -3,8 +3,8 @@
 // Copyright 2011-2015 by Vitaly Puzrin. All rights reserved. MIT license.
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import { StyleVariant, Type } from "../type.ts";
-import { Any, isNegativeZero } from "../_utils.ts";
+import { type StyleVariant, Type } from "../type.ts";
+import { type Any, isNegativeZero } from "../_utils.ts";
 
 const YAML_FLOAT_PATTERN = new RegExp(
   // 2.5e4, 2.5 and integers
@@ -38,7 +38,7 @@ function constructYamlFloat(data: string): number {
   const sign = value[0] === "-" ? -1 : 1;
   const digits: number[] = [];
 
-  if ("+-".indexOf(value[0]) >= 0) {
+  if (value[0] && "+-".indexOf(value[0]) >= 0) {
     value = value.slice(1);
   }
 

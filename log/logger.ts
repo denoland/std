@@ -1,7 +1,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import { getLevelByName, getLevelName, LogLevels } from "./levels.ts";
 import type { LevelName, LogLevel } from "./levels.ts";
-import type { BaseHandler } from "./handlers.ts";
+import type { BaseHandler } from "./base_handler.ts";
 
 // deno-lint-ignore no-explicit-any
 export type GenericFunction = (...args: any[]) => any;
@@ -9,9 +9,22 @@ export type GenericFunction = (...args: any[]) => any;
 export interface LogRecordOptions {
   msg: string;
   args: unknown[];
-  /* @deprecated (will be changed 0.211.0) Use {@linkcode LogLevel} instead */
-  level: number;
+  level: LogLevel;
   loggerName: string;
+}
+
+export class LoggerConfig {
+  level?: LevelName;
+  handlers?: string[];
+}
+
+export interface LogConfig {
+  handlers?: {
+    [name: string]: BaseHandler;
+  };
+  loggers?: {
+    [name: string]: LoggerConfig;
+  };
 }
 
 /**
@@ -57,29 +70,19 @@ export class Logger {
     options: LoggerOptions = {},
   ) {
     this.#loggerName = loggerName;
-    /* TODO: Remove this unnecessary typecast after 0.211.0 */
-    this.#level = getLevelByName(levelName) as LogLevel;
+    this.#level = getLevelByName(levelName);
     this.handlers = options.handlers || [];
   }
 
-  /**
-   * Use this to retrieve the current numeric log level.
-   *
-   * @returns - Deprecated (will return {@linkcode LogLevel} after 0.211.0)
-   */
-  get level(): number {
+  /** Use this to retrieve the current numeric log level. */
+  get level(): LogLevel {
     return this.#level;
   }
 
-  /**
-   * Use this to set the numeric log level.
-   *
-   * @param level - Deprecated (will accept {@linkcode LogLevel} after 0.211.0)
-   */
-  set level(level: number) {
+  /** Use this to set the numeric log level. */
+  set level(level: LogLevel) {
     try {
-      /* TODO: Remove this unnecessary typecast after 0.211.0 */
-      this.#level = getLevelByName(getLevelName(level)) as LogLevel;
+      this.#level = getLevelByName(getLevelName(level));
     } catch (_) {
       throw new TypeError(`Invalid log level: ${level}`);
     }
@@ -89,8 +92,7 @@ export class Logger {
     return getLevelName(this.#level);
   }
   set levelName(levelName: LevelName) {
-    /* TODO: Remove this unnecessary typecast after 0.211.0 */
-    this.#level = getLevelByName(levelName) as LogLevel;
+    this.#level = getLevelByName(levelName);
   }
 
   get loggerName(): string {
@@ -105,7 +107,7 @@ export class Logger {
    * function, not the function itself, unless the function isn't called, in which
    * case undefined is returned.  All types are coerced to strings for logging.
    */
-  #_log<T>(
+  #log<T>(
     level: LogLevel,
     msg: (T extends GenericFunction ? never : T) | (() => T),
     ...args: unknown[]
@@ -167,7 +169,7 @@ export class Logger {
     msg: (T extends GenericFunction ? never : T) | (() => T),
     ...args: unknown[]
   ): T | undefined {
-    return this.#_log(LogLevels.DEBUG, msg, ...args);
+    return this.#log(LogLevels.DEBUG, msg, ...args);
   }
 
   info<T>(msg: () => T, ...args: unknown[]): T | undefined;
@@ -176,16 +178,16 @@ export class Logger {
     msg: (T extends GenericFunction ? never : T) | (() => T),
     ...args: unknown[]
   ): T | undefined {
-    return this.#_log(LogLevels.INFO, msg, ...args);
+    return this.#log(LogLevels.INFO, msg, ...args);
   }
 
-  warning<T>(msg: () => T, ...args: unknown[]): T | undefined;
-  warning<T>(msg: T extends GenericFunction ? never : T, ...args: unknown[]): T;
-  warning<T>(
+  warn<T>(msg: () => T, ...args: unknown[]): T | undefined;
+  warn<T>(msg: T extends GenericFunction ? never : T, ...args: unknown[]): T;
+  warn<T>(
     msg: (T extends GenericFunction ? never : T) | (() => T),
     ...args: unknown[]
   ): T | undefined {
-    return this.#_log(LogLevels.WARNING, msg, ...args);
+    return this.#log(LogLevels.WARN, msg, ...args);
   }
 
   error<T>(msg: () => T, ...args: unknown[]): T | undefined;
@@ -194,7 +196,7 @@ export class Logger {
     msg: (T extends GenericFunction ? never : T) | (() => T),
     ...args: unknown[]
   ): T | undefined {
-    return this.#_log(LogLevels.ERROR, msg, ...args);
+    return this.#log(LogLevels.ERROR, msg, ...args);
   }
 
   critical<T>(msg: () => T, ...args: unknown[]): T | undefined;
@@ -206,6 +208,6 @@ export class Logger {
     msg: (T extends GenericFunction ? never : T) | (() => T),
     ...args: unknown[]
   ): T | undefined {
-    return this.#_log(LogLevels.CRITICAL, msg, ...args);
+    return this.#log(LogLevels.CRITICAL, msg, ...args);
   }
 }

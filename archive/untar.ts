@@ -34,10 +34,11 @@ import {
   HEADER_LENGTH,
   readBlock,
   type TarMeta,
+  type UstarFields,
   ustarStructure,
 } from "./_common.ts";
-import { readAll } from "../streams/read_all.ts";
-import type { Reader } from "../io/types.d.ts";
+import { readAll } from "../io/read_all.ts";
+import type { Reader } from "../io/types.ts";
 
 /**
  * Extend TarMeta with the `linkName` property so that readers can access
@@ -47,9 +48,9 @@ export interface TarMetaWithLinkName extends TarMeta {
   linkName?: string;
 }
 
-export interface TarHeader {
-  [key: string]: Uint8Array;
-}
+export type TarHeader = {
+  [key in UstarFields]: Uint8Array;
+};
 
 // https://pubs.opengroup.org/onlinepubs/9699919799/utilities/pax.html#tag_20_92_13_06
 // eight checksum bytes taken to be ascii spaces (decimal value 32)
@@ -69,8 +70,8 @@ function trim(buffer: Uint8Array): Uint8Array {
  * Parse file header in a tar archive
  * @param length
  */
-function parseHeader(buffer: Uint8Array): { [key: string]: Uint8Array } {
-  const data: { [key: string]: Uint8Array } = {};
+function parseHeader(buffer: Uint8Array): TarHeader {
+  const data = {} as TarHeader;
   let offset = 0;
   ustarStructure.forEach(function (value) {
     const arr = buffer.subarray(offset, offset + value.length);
@@ -184,9 +185,9 @@ export class TarEntry implements Reader {
  * import { Untar } from "https://deno.land/std@$STD_VERSION/archive/untar.ts";
  * import { ensureFile } from "https://deno.land/std@$STD_VERSION/fs/ensure_file.ts";
  * import { ensureDir } from "https://deno.land/std@$STD_VERSION/fs/ensure_dir.ts";
- * import { copy } from "https://deno.land/std@$STD_VERSION/streams/copy.ts";
+ * import { copy } from "https://deno.land/std@$STD_VERSION/io/copy.ts";
  *
- * const reader = await Deno.open("./out.tar", { read: true });
+ * using reader = await Deno.open("./out.tar", { read: true });
  * const untar = new Untar(reader);
  *
  * for await (const entry of untar) {
@@ -198,11 +199,10 @@ export class TarEntry implements Reader {
  *   }
  *
  *   await ensureFile(entry.fileName);
- *   const file = await Deno.open(entry.fileName, { write: true });
+ *   using file = await Deno.open(entry.fileName, { write: true });
  *   // <entry> is a reader.
  *   await copy(entry, file);
  * }
- * reader.close();
  * ```
  */
 export class Untar {
@@ -222,7 +222,7 @@ export class Untar {
         // Ignore checksum header
         continue;
       }
-      sum += header[i];
+      sum += header[i]!;
     }
     return sum;
   }

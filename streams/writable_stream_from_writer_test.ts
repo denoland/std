@@ -2,7 +2,7 @@
 
 import { assertEquals } from "../assert/mod.ts";
 import { writableStreamFromWriter } from "./writable_stream_from_writer.ts";
-import type { Closer, Writer } from "../io/types.d.ts";
+import type { Closer, Writer } from "../io/types.ts";
 
 class MockWriterCloser implements Writer, Closer {
   chunks: Uint8Array[] = [];
@@ -23,7 +23,7 @@ class MockWriterCloser implements Writer, Closer {
   }
 }
 
-Deno.test("[streams] writableStreamFromWriter()", async function () {
+Deno.test("writableStreamFromWriter()", async function () {
   const written: string[] = [];
   const chunks: string[] = ["hello", "deno", "land"];
   const decoder = new TextDecoder();
@@ -45,7 +45,7 @@ Deno.test("[streams] writableStreamFromWriter()", async function () {
   assertEquals(written, chunks);
 });
 
-Deno.test("[streams] writableStreamFromWriter() - calls close on close", async function () {
+Deno.test("writableStreamFromWriter() calls close on close", async function () {
   const written: string[] = [];
   const chunks: string[] = ["hello", "deno", "land"];
   const decoder = new TextDecoder();
@@ -68,7 +68,7 @@ Deno.test("[streams] writableStreamFromWriter() - calls close on close", async f
   assertEquals(writer.closeCall, 1);
 });
 
-Deno.test("[streams] writableStreamFromWriter() - calls close on abort", async function () {
+Deno.test("writableStreamFromWriter() calls close on abort", async function () {
   const written: string[] = [];
   const chunks: string[] = ["hello", "deno", "land"];
   const decoder = new TextDecoder();
@@ -91,7 +91,7 @@ Deno.test("[streams] writableStreamFromWriter() - calls close on abort", async f
   assertEquals(writer.closeCall, 1);
 });
 
-Deno.test("[streams] writableStreamFromWriter() - doesn't call close with autoClose false", async function () {
+Deno.test("writableStreamFromWriter() doesn't call close with autoClose false", async function () {
   const written: string[] = [];
   const chunks: string[] = ["hello", "deno", "land"];
   const decoder = new TextDecoder();

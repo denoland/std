@@ -1,6 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import type { Reader } from "./types.d.ts";
+import type { Reader } from "./types.ts";
 
 export const MIN_READ_BUFFER_SIZE = 16;
 export const bufsizes: number[] = [
@@ -26,4 +26,15 @@ export class BinaryReader implements Reader {
     this.index += p.byteLength;
     return Promise.resolve(p.byteLength);
   }
+}
+
+// N controls how many iterations of certain checks are performed.
+const N = 100;
+
+export function init(): Uint8Array {
+  const testBytes = new Uint8Array(N);
+  for (let i = 0; i < N; i++) {
+    testBytes[i] = "a".charCodeAt(0) + (i % 26);
+  }
+  return testBytes;
 }

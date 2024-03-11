@@ -16,17 +16,13 @@ function compileStyleMap(
 ): ArrayObject<StyleVariant> {
   if (typeof map === "undefined" || map === null) return {};
 
-  let type: Type;
   const result: ArrayObject<StyleVariant> = {};
-  const keys = Object.keys(map);
-  let tag: string, style: StyleVariant;
-  for (let index = 0, length = keys.length; index < length; index += 1) {
-    tag = keys[index];
-    style = String(map[tag]) as StyleVariant;
+  for (let tag of Object.keys(map)) {
+    let style = String(map[tag]) as StyleVariant;
     if (tag.slice(0, 2) === "!!") {
       tag = `tag:yaml.org,2002:${tag.slice(2)}`;
     }
-    type = schema.compiledTypeMap.fallback[tag];
+    const type = schema.compiledTypeMap.fallback[tag];
 
     if (
       type &&

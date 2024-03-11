@@ -1,6 +1,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-/** A [BDD](https://en.wikipedia.org/wiki/Behavior-driven_development) interface
+/**
+ * A {@link https://en.wikipedia.org/wiki/Behavior-driven_development | BDD} interface
  * to `Deno.test()` API.
  *
  * With the `bdd.ts` module you can write your tests in a familiar format for
@@ -394,10 +395,10 @@
  */
 
 import {
-  DescribeDefinition,
-  HookNames,
-  ItDefinition,
-  TestSuite,
+  type DescribeDefinition,
+  type HookNames,
+  type ItDefinition,
+  type TestSuite,
   TestSuiteInternal,
 } from "./_test_suite.ts";
 export type { DescribeDefinition, ItDefinition, TestSuite };

@@ -33,7 +33,7 @@ function assertInvalidParse(
 }
 
 Deno.test({
-  name: "[jsonc] parse with single line comment",
+  name: "parse() handles single line comment",
   fn() {
     assertValidParse(`"aaa"//comment`, "aaa");
     assertValidParse(`["aaa"//comment\n,"aaa"]`, ["aaa", "aaa"]);
@@ -43,7 +43,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[jsonc] parse with multi line comments",
+  name: "parse() handles multi line comments",
   fn() {
     assertValidParse(`"aaa"/*comment*/`, "aaa");
     assertValidParse(`100/*comment*/`, 100);
@@ -55,7 +55,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[jsonc] parse special character",
+  name: "parse() handles special characters",
   fn() {
     assertValidParse(`"👪"`, "👪");
     assertValidParse(`"🦕"`, "🦕");
@@ -71,7 +71,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[jsonc] JSONCParser.#numberEndToken",
+  name: "parse() handles #numberEndToken correctly",
   fn() {
     // Correctly parses the letters after the numbers (` \t\r\n[]{}:,/`)
     assertValidParse(`{"a":0}`, { a: 0 });
@@ -89,7 +89,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[jsonc] error message",
+  name: "parse() throws error message",
   fn() {
     assertInvalidParse(
       `:::::`,
@@ -115,7 +115,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[jsonc] __proto__",
+  name: "parse() handles __proto__",
   fn() {
     // The result of JSON.parse and the result of JSONC.parse should match
     const json = JSON.parse('{"__proto__": 100}');
@@ -132,7 +132,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[jsonc] duplicate object key",
+  name: "parse() handles duplicate object key",
   fn() {
     // The result of JSON.parse and the result of JSONC.parse should match
     const json = JSON.parse('{"aaa": 0, "aaa": 1}');
@@ -143,7 +143,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[jsonc] parse other than strings",
+  name: "parse() handles non-string input type",
   fn() {
     assertInvalidParse(
       // deno-lint-ignore no-explicit-any
@@ -157,7 +157,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[jsonc] parse consecutive backslash",
+  name: "parse() handles consecutive backslash",
   fn() {
     assertValidParse('"foo\\\\"', "foo\\");
 
@@ -174,7 +174,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[jsonc] use Object.defineProperty when setting object property",
+  name: "parse() uses Object.defineProperty when setting object property",
   async fn() {
     // Tests if the value is set using `Object.defineProperty(target, key, {value})`
     // instead of `target[key] = value` when parsing the object.

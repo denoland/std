@@ -5,7 +5,7 @@ import { readableStreamFromReader } from "./readable_stream_from_reader.ts";
 import { Buffer } from "../io/buffer.ts";
 import { concat } from "../bytes/concat.ts";
 import { copy } from "../bytes/copy.ts";
-import type { Closer, Reader } from "../io/types.d.ts";
+import type { Closer, Reader } from "../io/types.ts";
 
 class MockReaderCloser implements Reader, Closer {
   chunks: Uint8Array[] = [];
@@ -34,7 +34,7 @@ class MockReaderCloser implements Reader, Closer {
   }
 }
 
-Deno.test("[streams] readableStreamFromReader()", async function () {
+Deno.test("readableStreamFromReader()", async function () {
   const encoder = new TextEncoder();
   const reader = new Buffer(encoder.encode("hello deno land"));
   const stream = readableStreamFromReader(reader);
@@ -44,11 +44,11 @@ Deno.test("[streams] readableStreamFromReader()", async function () {
 });
 
 Deno.test({
-  name: "[streams] readableStreamFromReader() auto closes closer",
+  name: "readableStreamFromReader() auto closes closer",
   async fn() {},
 });
 
-Deno.test("[streams] readableStreamFromReader() - calls close", async function () {
+Deno.test("readableStreamFromReader() calls close", async function () {
   const encoder = new TextEncoder();
   const reader = new MockReaderCloser();
   reader.chunks = [
@@ -63,7 +63,7 @@ Deno.test("[streams] readableStreamFromReader() - calls close", async function (
   assertEquals(reader.closeCall, 1);
 });
 
-Deno.test("[streams] readableStreamFromReader() - doesn't call close with autoClose false", async function () {
+Deno.test("readableStreamFromReader() doesn't call close with autoClose false", async function () {
   const encoder = new TextEncoder();
   const reader = new MockReaderCloser();
   reader.chunks = [
@@ -78,7 +78,7 @@ Deno.test("[streams] readableStreamFromReader() - doesn't call close with autoCl
   assertEquals(reader.closeCall, 0);
 });
 
-Deno.test("[streams] readableStreamFromReader() - chunkSize", async function () {
+Deno.test("readableStreamFromReader() handles chunkSize", async function () {
   const encoder = new TextEncoder();
   const reader = new MockReaderCloser();
   reader.chunks = [

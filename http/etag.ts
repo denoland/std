@@ -1,35 +1,47 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-/** Provides functions for dealing with and matching ETags, including
+/**
+ * Provides functions for dealing with and matching ETags, including
  * {@linkcode calculate} to calculate an etag for a given entity,
  * {@linkcode ifMatch} for validating if an ETag matches against a `If-Match`
  * header and {@linkcode ifNoneMatch} for validating an Etag against an
  * `If-None-Match` header.
  *
  * See further information on the `ETag` header on
- * [MDN](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/ETag).
+ * {@link https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/ETag | MDN}.
  *
  * @module
  */
 
 import { encodeBase64 as base64Encode } from "../encoding/base64.ts";
 
-/** Just the part of `Deno.FileInfo` that is required to calculate an `ETag`,
- * so partial or user generated file information can be passed. */
+/**
+ * Just the part of {@linkcode Deno.FileInfo} that is required to calculate an `ETag`,
+ * so partial or user generated file information can be passed.
+ */
 export interface FileInfo {
+  /** The last modification time of the file. This corresponds to the `mtime`
+   * field from `stat` on Linux/Mac OS and `ftLastWriteTime` on Windows. This
+   * may not be available on all platforms. */
   mtime: Date | null;
+  /** The size of the file, in bytes. */
   size: number;
 }
 
-type Entity = string | Uint8Array | FileInfo;
+/** Represents an entity that can be used for generating an ETag. */
+export type Entity = string | Uint8Array | FileInfo;
 
 const encoder = new TextEncoder();
 
 const DEFAULT_ALGORITHM: AlgorithmIdentifier = "SHA-256";
 
+/** Options for {@linkcode calculate}. */
 export interface ETagOptions {
-  /** A digest algorithm to use to calculate the etag. Defaults to
-   * `"FNV32A"`. */
+  /**
+   * A digest algorithm to use to calculate the etag.
+   *
+   * @default {"FNV32A"}
+   */
   algorithm?: AlgorithmIdentifier;
 
   /** Override the default behavior of calculating the `ETag`, either forcing
@@ -77,7 +89,8 @@ async function calcFileInfo(
   }
 }
 
-/** Calculate an ETag for an entity. When the entity is a specific set of data
+/**
+ * Calculate an ETag for an entity. When the entity is a specific set of data
  * it will be fingerprinted as a "strong" tag, otherwise if it is just file
  * information, it will be calculated as a weak tag.
  *
