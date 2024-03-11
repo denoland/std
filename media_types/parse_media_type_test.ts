@@ -4,7 +4,7 @@ import { assertEquals } from "../assert/mod.ts";
 import { parseMediaType } from "./mod.ts";
 
 Deno.test({
-  name: "media_types - parseMediaType()",
+  name: "parseMediaType()",
   fn() {
     const nameFoo = { "name": "foo" };
     const fixtures: [string, string, Record<string, string> | undefined][] = [

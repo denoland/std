@@ -61,7 +61,7 @@ Deno.test({
 
     for (const [r, expected] of versions) {
       await t.step({
-        name: `${r} -> ${expected}`,
+        name: r,
         fn: () => {
           const range = parseRange(r);
           const actual = formatRange(range);

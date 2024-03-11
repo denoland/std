@@ -11,6 +11,6 @@ import { AssertionError } from "./assertion_error.ts";
  * unreachable(); // Throws
  * ```
  */
-export function unreachable(): never {
-  throw new AssertionError("unreachable");
+export function unreachable(reason?: string): never {
+  throw new AssertionError(reason ?? "unreachable");
 }

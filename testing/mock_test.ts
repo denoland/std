@@ -13,6 +13,7 @@ import {
   assertSpyCallArgs,
   assertSpyCallAsync,
   assertSpyCalls,
+  type MethodSpy,
   MockError,
   mockSession,
   mockSessionAsync,
@@ -22,11 +23,12 @@ import {
   returnsArgs,
   returnsNext,
   returnsThis,
-  Spy,
+  type Spy,
   spy,
+  type Stub,
   stub,
 } from "./mock.ts";
-import { Point, PointWithExtra, stringifyPoint } from "./_test_utils.ts";
+import { Point, type PointWithExtra, stringifyPoint } from "./_test_utils.ts";
 
 Deno.test("spy default", () => {
   const func = spy();
@@ -345,6 +347,109 @@ Deno.test("spy instance method property descriptor", () => {
   assertEquals(action.restored, true);
 });
 
+Deno.test("spy explicit resource management", () => {
+  const point = new Point(2, 3);
+  let funcRef: MethodSpy<Point> | null = null;
+  {
+    using func = spy(point, "action");
+    funcRef = func;
+    assertSpyCalls(func, 0);
+
+    assertEquals(func.call(point), undefined);
+    assertSpyCall(func, 0, {
+      self: point,
+      args: [],
+      returned: undefined,
+    });
+    assertSpyCalls(func, 1);
+
+    assertEquals(point.action(), undefined);
+    assertSpyCall(func, 1, { self: point, args: [] });
+    assertSpyCalls(func, 2);
+
+    assertEquals(func.call(point, "x"), "x");
+    assertSpyCall(func, 2, {
+      self: point,
+      args: ["x"],
+      returned: "x",
+    });
+    assertSpyCalls(func, 3);
+
+    assertEquals(point.action("x"), "x");
+    assertSpyCall(func, 3, {
+      self: point,
+      args: ["x"],
+      returned: "x",
+    });
+    assertSpyCalls(func, 4);
+
+    assertEquals(func.call(point, { x: 3 }), { x: 3 });
+    assertSpyCall(func, 4, {
+      self: point,
+      args: [{ x: 3 }],
+      returned: { x: 3 },
+    });
+    assertSpyCalls(func, 5);
+
+    assertEquals(point.action({ x: 3 }), { x: 3 });
+    assertSpyCall(func, 5, {
+      self: point,
+      args: [{ x: 3 }],
+      returned: { x: 3 },
+    });
+    assertSpyCalls(func, 6);
+
+    assertEquals(func.call(point, 3, 5, 7), 3);
+    assertSpyCall(func, 6, {
+      self: point,
+      args: [3, 5, 7],
+      returned: 3,
+    });
+    assertSpyCalls(func, 7);
+
+    assertEquals(point.action(3, 5, 7), 3);
+    assertSpyCall(func, 7, {
+      self: point,
+      args: [3, 5, 7],
+      returned: 3,
+    });
+    assertSpyCalls(func, 8);
+
+    assertEquals(func.call(point, Point, stringifyPoint, point), Point);
+    assertSpyCall(func, 8, {
+      self: point,
+      args: [Point, stringifyPoint, point],
+      returned: Point,
+    });
+    assertSpyCalls(func, 9);
+
+    assertEquals(point.action(Point, stringifyPoint, point), Point);
+    assertSpyCall(func, 9, {
+      self: point,
+      args: [Point, stringifyPoint, point],
+      returned: Point,
+    });
+    assertSpyCalls(func, 10);
+
+    assertNotEquals(func, Point.prototype.action);
+    assertEquals(point.action, func);
+
+    assertEquals(func.restored, false);
+  }
+  if (funcRef) {
+    assertEquals(funcRef.restored, true);
+    assertEquals(point.action, Point.prototype.action);
+    assertThrows(
+      () => {
+        if (funcRef) funcRef.restore();
+      },
+      MockError,
+      "instance method already restored",
+    );
+    assertEquals(funcRef.restored, true);
+  }
+});
+
 Deno.test("spy constructor", () => {
   const PointSpy = spy(Point);
   assertSpyCalls(PointSpy, 0);
@@ -478,6 +583,51 @@ Deno.test("stub function", () => {
     "instance method already restored",
   );
   assertEquals(func.restored, true);
+});
+
+Deno.test("stub explicit resource management", () => {
+  const point = new Point(2, 3);
+  const returns = [1, "b", 2, "d"];
+  let funcRef: Stub<Point> | null = null;
+  {
+    using func = stub(point, "action", () => returns.shift());
+    funcRef = func;
+
+    assertSpyCalls(func, 0);
+
+    assertEquals(func.call(point), 1);
+    assertSpyCall(func, 0, {
+      self: point,
+      args: [],
+      returned: 1,
+    });
+    assertSpyCalls(func, 1);
+
+    assertEquals(point.action(), "b");
+    assertSpyCall(func, 1, {
+      self: point,
+      args: [],
+      returned: "b",
+    });
+    assertSpyCalls(func, 2);
+
+    assertEquals(func.original, Point.prototype.action);
+    assertEquals(point.action, func);
+
+    assertEquals(func.restored, false);
+  }
+  if (funcRef) {
+    assertEquals(funcRef.restored, true);
+    assertEquals(point.action, Point.prototype.action);
+    assertThrows(
+      () => {
+        if (funcRef) funcRef.restore();
+      },
+      MockError,
+      "instance method already restored",
+    );
+    assertEquals(funcRef.restored, true);
+  }
 });
 
 Deno.test("stub non existent function", () => {

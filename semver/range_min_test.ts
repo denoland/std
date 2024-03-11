@@ -1,7 +1,6 @@
 // Copyright Isaac Z. Schlueter and Contributors. All rights reserved. ISC license.
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import { assert } from "../assert/mod.ts";
-import { format } from "./format.ts";
 import { equals } from "./equals.ts";
 import { parse } from "./parse.ts";
 import { parseRange } from "./parse_range.ts";
@@ -55,8 +54,8 @@ Deno.test({
       [">4 || <2", "0.0.0"],
       ["<=2 || >=4", "0.0.0"],
       [">=4 || <=2", "0.0.0"],
-      ["<0.0.0-beta >0.0.0-alpha", INVALID],
-      [">0.0.0-alpha <0.0.0-beta", INVALID],
+      ["<0.0.0-beta >=0.0.0-alpha", "0.0.0-alpha"],
+      [">=0.0.0-alpha <0.0.0-beta", "0.0.0-alpha"],
 
       // Greater than or equal
       [">=1.1.1 <2 || >=2.2.2 <2", "1.1.1"],
@@ -79,7 +78,7 @@ Deno.test({
         const range = parseRange(a);
         const version = typeof b === "string" ? parse(b) : b;
         const min = rangeMin(range);
-        assert(equals(min, version), `${format(min)} != ${format(version)}`);
+        assert(equals(min, version));
       });
     }
   },

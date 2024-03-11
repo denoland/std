@@ -15,7 +15,7 @@ export class DeadlineError extends Error {
    * Constructs a new {@linkcode DeadlineError} instance.
    *
    * @example
-   * ```
+   * ```ts
    * import { DeadlineError } from "https://deno.land/std@$STD_VERSION/async/deadline.ts";
    *
    * throw new DeadlineError();

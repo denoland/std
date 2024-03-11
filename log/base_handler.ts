@@ -1,5 +1,10 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-import { getLevelByName, LevelName } from "./levels.ts";
+import {
+  getLevelByName,
+  getLevelName,
+  type LevelName,
+  type LogLevel,
+} from "./levels.ts";
 import type { LogRecord } from "./logger.ts";
 
 export type FormatterFunction = (logRecord: LogRecord) => string;
@@ -11,14 +16,34 @@ export interface BaseHandlerOptions {
 }
 
 export class BaseHandler {
-  level: number;
-  levelName: LevelName;
+  #levelName: LevelName;
+  #level: LogLevel;
   formatter: FormatterFunction;
 
-  constructor(levelName: LevelName, options: BaseHandlerOptions = {}) {
-    this.level = getLevelByName(levelName);
-    this.levelName = levelName;
-    this.formatter = options.formatter || DEFAULT_FORMATTER;
+  constructor(
+    levelName: LevelName,
+    { formatter = DEFAULT_FORMATTER }: BaseHandlerOptions = {},
+  ) {
+    this.#levelName = levelName;
+    this.#level = getLevelByName(levelName);
+    this.formatter = formatter;
+  }
+
+  get level(): LogLevel {
+    return this.#level;
+  }
+
+  set level(level: LogLevel) {
+    this.#level = level;
+    this.#levelName = getLevelName(level);
+  }
+
+  get levelName(): LevelName {
+    return this.#levelName;
+  }
+  set levelName(levelName: LevelName) {
+    this.#levelName = levelName;
+    this.#level = getLevelByName(levelName);
   }
 
   handle(logRecord: LogRecord) {

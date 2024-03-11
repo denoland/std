@@ -13,7 +13,7 @@ import {
 import { assert, assertEquals } from "../assert/mod.ts";
 
 Deno.test({
-  name: "http/http_status - Status",
+  name: "STATUS_CODE",
   fn() {
     // just spot check a few common codes
     assertEquals(STATUS_CODE.OK, 200);
@@ -24,7 +24,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "http/http_status - STATUS_TEXT",
+  name: "STATUS_TEXT",
   fn() {
     // just spot check a few common codes
     assertEquals(STATUS_TEXT[STATUS_CODE.OK], "OK");
@@ -38,7 +38,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "http/http_status - isInformationalStatus()",
+  name: "isInformationalStatus()",
   fn() {
     assert(isInformationalStatus(STATUS_CODE.Continue));
     assert(!isInformationalStatus(STATUS_CODE.OK));
@@ -48,7 +48,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "http/http_status - isSuccessfulStatus()",
+  name: "isSuccessfulStatus()",
   fn() {
     assert(isSuccessfulStatus(STATUS_CODE.OK));
     assert(!isSuccessfulStatus(STATUS_CODE.NotFound));
@@ -58,7 +58,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "http/http_status - isRedirectStatus()",
+  name: "isRedirectStatus()",
   fn() {
     assert(isRedirectStatus(STATUS_CODE.Found));
     assert(!isRedirectStatus(STATUS_CODE.NotFound));
@@ -68,7 +68,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "http/http_status - isClientErrorStatus()",
+  name: "isClientErrorStatus()",
   fn() {
     assert(isClientErrorStatus(STATUS_CODE.NotFound));
     assert(!isClientErrorStatus(STATUS_CODE.InternalServerError));
@@ -78,7 +78,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "http/http_status - isServerErrorStatus()",
+  name: "isServerErrorStatus()",
   fn() {
     assert(isServerErrorStatus(STATUS_CODE.InternalServerError));
     assert(!isServerErrorStatus(STATUS_CODE.NotFound));
@@ -88,7 +88,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "http/http_status - isErrorStatus()",
+  name: "isErrorStatus()",
   fn() {
     assert(isErrorStatus(STATUS_CODE.InternalServerError));
     assert(isErrorStatus(STATUS_CODE.NotFound));

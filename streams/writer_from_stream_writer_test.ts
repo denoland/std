@@ -3,7 +3,7 @@
 import { assertEquals } from "../assert/mod.ts";
 import { writerFromStreamWriter } from "./writer_from_stream_writer.ts";
 
-Deno.test("[streams] writerFromStreamWriter()", async function () {
+Deno.test("writerFromStreamWriter()", async function () {
   const written: string[] = [];
   const chunks: string[] = ["hello", "deno", "land"];
   const writableStream = new WritableStream({

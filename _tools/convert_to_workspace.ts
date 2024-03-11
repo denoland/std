@@ -43,21 +43,24 @@ await Deno.writeTextFile("README.md", readme);
 let fileServer = await Deno.readTextFile("http/file_server.ts");
 fileServer = fileServer.replace(
   `import { VERSION } from "../version.ts";`,
-  `import { version } from "./deno.json" with { type: "json" };`,
+  `import denoConfig from "./deno.json" with { type: "json" };`,
 );
-fileServer = fileServer.replaceAll("${VERSION}", "${version}");
+fileServer = fileServer.replaceAll("${VERSION}", "${denoConfig.version}");
 fileServer = fileServer.replace(
   "https://deno.land/std/http/file_server.ts",
-  "jsr:@std/http@${version}/file_server",
+  "jsr:@std/http@${denoConfig.version}/file_server",
 );
 await Deno.writeTextFile("http/file_server.ts", fileServer);
 
 let fileServerTest = await Deno.readTextFile("http/file_server_test.ts");
 fileServerTest = fileServerTest.replace(
   `import { VERSION } from "../version.ts";`,
-  `import { version } from "./deno.json" with { type: "json" };`,
+  `import denoConfig from "./deno.json" with { type: "json" };`,
 );
-fileServerTest = fileServerTest.replaceAll("${VERSION}", "${version}");
+fileServerTest = fileServerTest.replaceAll(
+  "${VERSION}",
+  "${denoConfig.version}",
+);
 await Deno.writeTextFile("http/file_server_test.ts", fileServerTest);
 
 const packages = await discoverPackages();
@@ -91,14 +94,14 @@ for (const { specifier, dependencies } of graph.modules) {
     continue;
   }
   const from = relative(cwd, fromFileUrl(specifier)).replaceAll("\\", "/");
-  const fromPkg = from.split("/")[0];
+  const fromPkg = from.split("/")[0]!;
   for (const dep of dependencies ?? []) {
     if (dep.code) {
       const to = relative(cwd, fromFileUrl(dep.code.specifier)).replaceAll(
         "\\",
         "/",
       );
-      const toPkg = to.split("/")[0];
+      const toPkg = to.split("/")[0]!;
       if (fromPkg !== toPkg) {
         pkgDeps.get(fromPkg)!.add(toPkg);
       }
@@ -108,7 +111,7 @@ for (const { specifier, dependencies } of graph.modules) {
         "\\",
         "/",
       );
-      const toPkg = to.split("/")[0];
+      const toPkg = to.split("/")[0]!;
       if (fromPkg !== toPkg) {
         pkgDeps.get(fromPkg)!.add(toPkg);
       }
@@ -189,7 +192,7 @@ for await (const entry of walk(cwd)) {
       replacedImports.push([specifier, newSpecifier]);
     } else {
       const newSpecifier = "@std/" +
-        target.replace(/(\.d)?\.ts$/, "").replace(/\/mod$/, "");
+        fixPackagePath(target).replace(/(\.d)?\.ts$/, "").replace(/\/mod$/, "");
       replacedImports.push([specifier, newSpecifier]);
     }
   }
@@ -200,7 +203,7 @@ for await (const entry of walk(cwd)) {
       "",
     );
     const newSpecifier = "@std/" +
-      target.replace(/(\.d)?\.ts$/, "").replace(/\/mod$/, "");
+      fixPackagePath(target).replace(/(\.d)?\.ts$/, "").replace(/\/mod$/, "");
     replacedImports.push([specifier, newSpecifier]);
   }
 
@@ -218,13 +221,13 @@ for await (const entry of walk(cwd)) {
 for (const pkg of packages) {
   const exportsList = exportsByPackage.get(pkg)!;
   let exports;
-  if (exportsList.length === 1 && exportsList[0][0] === ".") {
+  if (exportsList.length === 1 && exportsList[0]![0] === ".") {
     exports = "./mod.ts";
   } else {
     exports = Object.fromEntries(exportsList);
   }
   const denoJson = {
-    name: `@std/${pkg}`,
+    name: `@std/${fixPackageName(pkg)}`,
     version: VERSION,
     exports,
   };
@@ -239,12 +242,24 @@ for (const pkg of packages) {
   );
 }
 
+function fixPackageName(pkg: string) {
+  return pkg.replaceAll("_", "-");
+}
+
+function fixPackagePath(path: string) {
+  const packageName = /^[^/]+/.exec(path);
+  if (packageName) {
+    return path.replace(packageName[0], fixPackageName(packageName[0]));
+  }
+  return path;
+}
+
 // Generate `deno.json` file.
 const denoJson = JSON.parse(await Deno.readTextFile("deno.json"));
 denoJson.workspaces = orderedPackages.map((pkg) => `./${pkg}`);
 for (const pkg of packages) {
-  denoJson.imports[`@std/${pkg}`] = `jsr:@std/${pkg}@^${VERSION}`;
-  denoJson.imports[`@std/${pkg}/`] = `jsr:/@std/${pkg}@^${VERSION}/`;
+  const fixedPkg = fixPackageName(pkg);
+  denoJson.imports[`@std/${fixedPkg}`] = `jsr:@std/${fixedPkg}@^${VERSION}`;
 }
 await Deno.writeTextFile(
   "deno.json",

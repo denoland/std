@@ -189,11 +189,11 @@ function mapper(
       if (!matchers[j]) {
         break;
       }
-      matches = matchers[j++].exec(ua);
+      matches = matchers[j++]!.exec(ua);
 
       if (matches) {
         for (const processor of processors) {
-          const match = matches[++k];
+          const match = matches[++k]!;
           if (Array.isArray(processor)) {
             if (processor.length === 2) {
               const [prop, value] = processor;

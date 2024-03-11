@@ -1,3 +1,53 @@
+### 0.219.1 / 2024.03.08
+
+- chore: fix for jsr publish (#4449)
+
+### 0.219.0 / 2024.03.08
+
+- [unstable] BREAKING(semver): remove `gtr()` and `ltr()` (#4450)
+- [unstable] BREAKING(semver): remove `reverseSort()` (#4422)
+- [unstable] BREAKING(semver): remove deprecated operators (#4423)
+- feat(expect): support `expect.extend()` api (#4412)
+- fix(expect): fix equality of iterables (#4286)
+- fix(fs): `emptyDir()` test after workspace conversion (#4427)
+- fix(fs): `expandGlob()` test after workspace conversion (#4428)
+- fix(log): don't discard bytes >4096 in `FileHandler` (#4415)
+- fix(path): fix common() results that depend on the order and/or number of
+  input paths (#4414)
+
+### 0.218.0 / 2024.02.29
+
+- feat(assert): optional `reason` param for `unreachable` (#4404) (#4405)
+- feat(collections): add `pick` and `omit` (#4218)
+- feat(expect): add asymmetric matchers (any, anything, arrayContaining) (#4366)
+- feat(uuid): add type predicate return type to validate (v4) (#4301)
+- fix(fs/ensure_symlink): check symlink is pointing the given target (#4371)
+- fix(log): add missing return types (#4401)
+
+### 0.217.0 / 2024.02.22
+
+- deprecation(semver): deprecate `==`, `===`, `!==`, and `""` operators (#4271)
+- doc: fix `std/path/posix` link (#4337)
+- feat(io): `iterateReader[Sync]()` (#4247)
+- feat(io): un-deprecate `readerFromStreamReader()` (#4343)
+- feat(testing): explicit resource management for `spy()` and `stub()` (#4306)
+- fix(http): `version` from `deno.json` import (#4342)
+- fix(media_types): load extensions when directly importing
+  `extensionsByTypes()` (#4351)
+- fix(semver): fix `prerelease` handlings in range utils (#4323)
+- fix(semver): fix parse_range for `>x.y` pattern (#4350)
+
+### 0.216.0 / 2024.02.15
+
+- BREAKING(path): remove `path/windows/separator.ts` (#4292)
+- BREAKING(semver): remove `SemVerRange` and `isSemVerRange()` (#4295)
+- BREAKING(semver): remove `eq()`, `gt()`, `gte()`, `lt()`, `lte()` and `neq()`
+  (#4294)
+- BREAKING(semver): remove `outside()` (#4293)
+- feat(datetime): `format()` options (#4285)
+- fix(semver): return new object instance in `comparatorMin()` and
+  `comparatorMax()` (#4314)
+
 ### 0.215.0 / 2024.02.08
 
 - BREAKING(log): remove `WARNING` log level (#4258)

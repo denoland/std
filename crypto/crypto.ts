@@ -109,7 +109,7 @@
  */
 
 import {
-  DigestAlgorithm as WasmDigestAlgorithm,
+  type DigestAlgorithm as WasmDigestAlgorithm,
   digestAlgorithms as wasmDigestAlgorithms,
   instantiateWasm,
 } from "./_wasm/mod.ts";
@@ -312,8 +312,8 @@ export type FNVAlgorithms = "FNV32" | "FNV32A" | "FNV64" | "FNV64A";
 export type DigestAlgorithmName = WasmDigestAlgorithm | FNVAlgorithms;
 
 /*
- * The largest digest length the current WASM implementation can support. This
- * is the value of `isize::MAX` on 32-bit platforms like WASM, which is the
+ * The largest digest length the current Wasm implementation can support. This
+ * is the value of `isize::MAX` on 32-bit platforms like Wasm, which is the
  * maximum allowed capacity of a Rust `Vec<u8>`.
  */
 const MAX_DIGEST_LENGTH = 0x7FFF_FFFF;

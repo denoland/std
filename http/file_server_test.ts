@@ -8,7 +8,7 @@ import {
   assertStringIncludes,
 } from "../assert/mod.ts";
 import { stub } from "../testing/mock.ts";
-import { serveDir, ServeDirOptions, serveFile } from "./file_server.ts";
+import { serveDir, type ServeDirOptions, serveFile } from "./file_server.ts";
 import { calculate } from "./etag.ts";
 import {
   basename,
@@ -227,7 +227,7 @@ Deno.test("serveDir() returns a response even if fileinfo is inaccessible", asyn
   // even if the fileInfo for a particular file cannot be obtained.
 
   // Assuming that fileInfo of `test_file.txt` cannot be accessible
-  const denoStatStub = stub(Deno, "stat", (path): Promise<Deno.FileInfo> => {
+  using denoStatStub = stub(Deno, "stat", (path): Promise<Deno.FileInfo> => {
     if (path.toString().includes("test_file.txt")) {
       return Promise.reject(new Error("__stubed_error__"));
     }
@@ -236,7 +236,6 @@ Deno.test("serveDir() returns a response even if fileinfo is inaccessible", asyn
   const req = new Request("http://localhost/");
   const res = await serveDir(req, serveDirOptions);
   const page = await res.text();
-  denoStatStub.restore();
 
   assertEquals(res.status, 200);
   assertStringIncludes(page, "/test_file.txt");
@@ -345,10 +344,11 @@ Deno.test("serveDir() script prints help", async () => {
       "--no-check",
       "--quiet",
       "--no-lock",
-      "file_server.ts",
+      "--config",
+      "deno.json",
+      "http/file_server.ts",
       "--help",
     ],
-    cwd: moduleDir,
   });
   const { stdout } = await command.output();
   const output = new TextDecoder().decode(stdout);
@@ -362,10 +362,11 @@ Deno.test("serveDir() script prints version", async () => {
       "--no-check",
       "--quiet",
       "--no-lock",
-      "file_server.ts",
+      "--config",
+      "deno.json",
+      "http/file_server.ts",
       "--version",
     ],
-    cwd: moduleDir,
   });
   const { stdout } = await command.output();
   const output = new TextDecoder().decode(stdout);
@@ -391,7 +392,9 @@ Deno.test("serveDir() script fails with partial TLS args", async () => {
       "--allow-read",
       "--allow-net",
       "--no-lock",
-      "file_server.ts",
+      "--config",
+      "deno.json",
+      "http/file_server.ts",
       ".",
       "--host",
       "localhost",
@@ -400,7 +403,6 @@ Deno.test("serveDir() script fails with partial TLS args", async () => {
       "-p",
       `4578`,
     ],
-    cwd: moduleDir,
     stderr: "null",
   });
   const { stdout, success } = await command.output();

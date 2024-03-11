@@ -395,10 +395,10 @@
  */
 
 import {
-  DescribeDefinition,
-  HookNames,
-  ItDefinition,
-  TestSuite,
+  type DescribeDefinition,
+  type HookNames,
+  type ItDefinition,
+  type TestSuite,
   TestSuiteInternal,
 } from "./_test_suite.ts";
 export type { DescribeDefinition, ItDefinition, TestSuite };

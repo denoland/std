@@ -29,7 +29,7 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { compareSpecs, isQuality, Specificity } from "./common.ts";
+import { compareSpecs, isQuality, type Specificity } from "./common.ts";
 
 interface MediaTypeSpecificity extends Specificity {
   type: string;
@@ -39,55 +39,9 @@ interface MediaTypeSpecificity extends Specificity {
 
 const simpleMediaTypeRegExp = /^\s*([^\s\/;]+)\/([^;\s]+)\s*(?:;(.*))?$/;
 
-function quoteCount(str: string): number {
-  let count = 0;
-  let index = 0;
-
-  while ((index = str.indexOf(`"`, index)) !== -1) {
-    count++;
-    index++;
-  }
-
-  return count;
-}
-
-function splitMediaTypes(accept: string): string[] {
-  const accepts = accept.split(",");
-
-  let j = 0;
-  for (let i = 1; i < accepts.length; i++) {
-    if (quoteCount(accepts[j]) % 2 === 0) {
-      accepts[++j] = accepts[i];
-    } else {
-      accepts[j] += `,${accepts[i]}`;
-    }
-  }
-
-  accepts.length = j + 1;
-
-  return accepts;
-}
-
-function splitParameters(str: string): string[] {
-  const parameters = str.split(";");
-
-  let j = 0;
-  for (let i = 1; i < parameters.length; i++) {
-    if (quoteCount(parameters[j]) % 2 === 0) {
-      parameters[++j] = parameters[i];
-    } else {
-      parameters[j] += `;${parameters[i]}`;
-    }
-  }
-
-  parameters.length = j + 1;
-
-  return parameters.map((p) => p.trim());
-}
-
 function splitKeyValuePair(str: string): [string, string | undefined] {
   const [key, value] = str.split("=");
-  return [key.toLowerCase(), value];
+  return [key!.toLowerCase(), value];
 }
 
 function parseMediaType(
@@ -100,12 +54,17 @@ function parseMediaType(
     return;
   }
 
+  const [, type, subtype, parameters] = match;
+  if (!type || !subtype) {
+    return;
+  }
+
   const params: { [param: string]: string | undefined } = Object.create(null);
   let q = 1;
-  const [, type, subtype, parameters] = match;
-
   if (parameters) {
-    const kvps = splitParameters(parameters).map(splitKeyValuePair);
+    const kvps = parameters.split(";").map((p) => p.trim()).map(
+      splitKeyValuePair,
+    );
 
     for (const [key, val] of kvps) {
       const value = val && val[0] === `"` && val[val.length - 1] === `"`
@@ -125,11 +84,11 @@ function parseMediaType(
 }
 
 function parseAccept(accept: string): MediaTypeSpecificity[] {
-  const accepts = splitMediaTypes(accept);
+  const accepts = accept.split(",").map((p) => p.trim());
 
   const mediaTypes: MediaTypeSpecificity[] = [];
-  for (let i = 0; i < accepts.length; i++) {
-    const mediaType = parseMediaType(accepts[i].trim(), i);
+  for (const [index, accept] of accepts.entries()) {
+    const mediaType = parseMediaType(accept.trim(), index);
 
     if (mediaType) {
       mediaTypes.push(mediaType);
@@ -233,5 +192,5 @@ export function preferredMediaTypes(
   return priorities
     .filter(isQuality)
     .sort(compareSpecs)
-    .map((priority) => provided[priorities.indexOf(priority)]);
+    .map((priority) => provided[priorities.indexOf(priority)]!);
 }
