@@ -45,9 +45,11 @@ import type { Reader } from "../io/types.ts";
  * symbolic link values without polluting the world of archive writers.
  */
 export interface TarMetaWithLinkName extends TarMeta {
+  /** File name of the symbolic link. */
   linkName?: string;
 }
 
+/** Tar header with raw, unprocessed bytes as values. */
 export type TarHeader = {
   [key in UstarFields]: Uint8Array;
 };
@@ -81,9 +83,11 @@ function parseHeader(buffer: Uint8Array): TarHeader {
   return data;
 }
 
+/** Tar entry */
 // deno-lint-ignore no-empty-interface
 export interface TarEntry extends TarMetaWithLinkName {}
 
+/** Contains tar header metadata and a reader to the entry's body. */
 export class TarEntry implements Reader {
   #header: TarHeader;
   #reader: Reader | (Reader & Deno.Seeker);
@@ -91,6 +95,8 @@ export class TarEntry implements Reader {
   #read = 0;
   #consumed = false;
   #entrySize: number;
+
+  /** Constructs a new instance. */
   constructor(
     meta: TarMetaWithLinkName,
     header: TarHeader,
@@ -107,10 +113,19 @@ export class TarEntry implements Reader {
     this.#entrySize = blocks * HEADER_LENGTH;
   }
 
+  /** Returns whether the entry has already been consumed. */
   get consumed(): boolean {
     return this.#consumed;
   }
 
+  /**
+   * Reads up to `p.byteLength` bytes of the tar entry into `p`. It resolves to
+   * the number of bytes read (`0 < n <= p.byteLength`) and rejects if any
+   * error encountered. Even if read() resolves to n < p.byteLength, it may use
+   * all of `p` as scratch space during the call. If some data is available but
+   * not `p.byteLength bytes`, read() conventionally resolves to what is available
+   * instead of waiting for more.
+   */
   async read(p: Uint8Array): Promise<number | null> {
     // Bytes left for entry
     const entryBytesLeft = this.#entrySize - this.#read;
@@ -142,6 +157,7 @@ export class TarEntry implements Reader {
     return offset < 0 ? n - Math.abs(offset) : offset;
   }
 
+  /** Discords the current entry. */
   async discard() {
     // Discard current entry
     if (this.#consumed) return;
@@ -206,10 +222,13 @@ export class TarEntry implements Reader {
  * ```
  */
 export class Untar {
+  /** Internal reader. */
   reader: Reader;
+  /** Internal block. */
   block: Uint8Array;
   #entry: TarEntry | undefined;
 
+  /** Constructs a new instance. */
   constructor(reader: Reader) {
     this.reader = reader;
     this.block = new Uint8Array(HEADER_LENGTH);
