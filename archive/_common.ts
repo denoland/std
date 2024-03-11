@@ -87,7 +87,7 @@ struct posix_header {           // byte offset
 };
 */
 
-export const ustarStructure = [
+export const USTAR_STRUCTURE = [
   {
     field: "fileName",
     length: 100,
@@ -157,7 +157,7 @@ export const ustarStructure = [
 /**
  * @internal
  */
-export type UstarFields = (typeof ustarStructure)[number]["field"];
+export type UstarFields = (typeof USTAR_STRUCTURE)[number]["field"];
 
 export async function readBlock(
   reader: Reader,

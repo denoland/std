@@ -88,7 +88,7 @@ function representYamlBinary(object: Uint8Array): string {
       result += map[bits & 0x3f];
     }
 
-    bits = (bits << 8) + object[idx];
+    bits = (bits << 8) + object[idx]!;
   }
 
   // Dump tail

@@ -34,8 +34,8 @@ import {
   HEADER_LENGTH,
   readBlock,
   type TarMeta,
+  USTAR_STRUCTURE,
   type UstarFields,
-  ustarStructure,
 } from "./_common.ts";
 import { readAll } from "../io/read_all.ts";
 import type { Reader } from "../io/types.ts";
@@ -59,13 +59,15 @@ export type TarHeader = {
 const initialChecksum = 8 * 32;
 
 /**
- * Remove the trailing null codes
- * @param buffer
+ * Trims a Uint8Array by removing any trailing zero bytes.
+ *
+ * @param buffer The Uint8Array to trim.
+ * @returns A new Uint8Array with trailing zero bytes removed, or the original
+ * buffer if no trailing zero bytes are found.
  */
 function trim(buffer: Uint8Array): Uint8Array {
-  const index = buffer.findIndex((v): boolean => v === 0);
-  if (index < 0) return buffer;
-  return buffer.subarray(0, index);
+  const index = buffer.indexOf(0);
+  return index === -1 ? buffer : buffer.subarray(0, index);
 }
 
 /**
@@ -75,7 +77,7 @@ function trim(buffer: Uint8Array): Uint8Array {
 function parseHeader(buffer: Uint8Array): TarHeader {
   const data = {} as TarHeader;
   let offset = 0;
-  ustarStructure.forEach(function (value) {
+  USTAR_STRUCTURE.forEach(function (value) {
     const arr = buffer.subarray(offset, offset + value.length);
     data[value.field] = arr;
     offset += value.length;
@@ -281,22 +283,20 @@ export class Untar {
     if (fileNamePrefix.byteLength > 0) {
       meta.fileName = decoder.decode(fileNamePrefix) + "/" + meta.fileName;
     }
-    (
-      ["fileMode", "mtime", "uid", "gid"] as ["fileMode", "mtime", "uid", "gid"]
-    ).forEach((key) => {
-      const arr = trim(header[key]);
-      if (arr.byteLength > 0) {
-        meta[key] = parseInt(decoder.decode(arr), 8);
-      }
-    });
-    (["owner", "group", "type"] as ["owner", "group", "type"]).forEach(
-      (key) => {
+    (["fileMode", "mtime", "uid", "gid"] as const)
+      .forEach((key) => {
+        const arr = trim(header[key]);
+        if (arr.byteLength > 0) {
+          meta[key] = parseInt(decoder.decode(arr), 8);
+        }
+      });
+    (["owner", "group", "type"] as const)
+      .forEach((key) => {
         const arr = trim(header[key]);
         if (arr.byteLength > 0) {
           meta[key] = decoder.decode(arr);
         }
-      },
-    );
+      });
 
     meta.fileSize = parseInt(decoder.decode(header.fileSize), 8);
     meta.type = FileTypes[parseInt(meta.type!)] ?? meta.type;

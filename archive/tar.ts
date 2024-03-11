@@ -32,7 +32,7 @@ import {
   FileTypes,
   type TarInfo,
   type TarMeta,
-  ustarStructure,
+  USTAR_STRUCTURE,
 } from "./_common.ts";
 import type { Reader } from "../io/types.ts";
 import { MultiReader } from "../io/multi_reader.ts";
@@ -85,31 +85,31 @@ class FileReader implements Reader {
 }
 
 /**
- * Initialize Uint8Array of the specified length filled with 0
- * @param length
+ * Pads a number with leading zeros to a specified number of bytes.
+ *
+ * @param num The number to pad.
+ * @param bytes The number of bytes to pad the number to.
+ * @returns The padded number as a string.
  */
-function clean(length: number): Uint8Array {
-  const buffer = new Uint8Array(length);
-  return buffer;
-}
-
-function pad(num: number, bytes: number, base = 8): string {
-  const numString = num.toString(base);
-  return "000000000000".slice(numString.length + 12 - bytes) + numString;
+function pad(num: number, bytes: number): string {
+  return num.toString(8).padStart(bytes, "0");
 }
 
 /**
- * Create header for a file in a tar archive
+ * Formats the header data for a tar file entry.
+ *
+ * @param data The data object containing the values for the tar header fields.
+ * @returns The formatted header data as a Uint8Array.
  */
 function formatHeader(data: TarData): Uint8Array {
   const encoder = new TextEncoder();
-  const buffer = clean(HEADER_LENGTH);
+  const buffer = new Uint8Array(HEADER_LENGTH);
   let offset = 0;
-  ustarStructure.forEach(function (value) {
-    const entry = encoder.encode(data[value.field as keyof TarData] || "");
+  for (const { field, length } of USTAR_STRUCTURE) {
+    const entry = encoder.encode(data[field as keyof TarData] || "");
     buffer.set(entry, offset);
-    offset += value.length; // space it out with nulls
-  });
+    offset += length;
+  }
   return buffer;
 }
 
@@ -376,7 +376,7 @@ export class Tar {
       assert(tarData.fileSize !== undefined, "fileSize must be set");
       readers.push(
         new Buffer(
-          clean(
+          new Uint8Array(
             HEADER_LENGTH -
               (parseInt(tarData.fileSize, 8) % HEADER_LENGTH || HEADER_LENGTH),
           ),
@@ -385,7 +385,7 @@ export class Tar {
     });
 
     // append 2 empty records
-    readers.push(new Buffer(clean(HEADER_LENGTH * 2)));
+    readers.push(new Buffer(new Uint8Array(HEADER_LENGTH * 2)));
     return new MultiReader(readers);
   }
 }
