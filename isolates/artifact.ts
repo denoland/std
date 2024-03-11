@@ -103,7 +103,6 @@ export const api = {
       commit: { type: 'string' },
     },
   },
-  logs: repo,
   // subscribe to json by filepath and pid
   // subscribe to path in json, so we can subscribe to the output of io.json
   // subscribe to binary by filepath and pid - done by commit watching
@@ -211,13 +210,6 @@ export const functions: IsolateFunctions = {
   branch: async (params: Params, api: IsolateApi<C>) => {
     const { branch, commit } = params as Branch
     await api.context.io!.branch(branch, commit)
-  },
-  logs: async (params, api: IsolateApi<C>) => {
-    log('logs')
-    const pid = pidFromRepo(params.repo as string)
-    const fs = await api.context.fs!.load(pid)
-    const logs = await git.log({ fs, dir: '/' })
-    return logs
   },
 }
 

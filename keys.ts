@@ -50,7 +50,7 @@ export const getPrefixes = (pid: PID) => {
   }
   return prefixes
 }
-enum KEYSPACES {
+export enum KEYSPACES {
   POOL = 'POOL', // all pending requests and replies trying to be committed
   REPLIES = 'REPLIES', // for watching replies
   HEADLOCK = 'HEADLOCK', // the lock on the head of a given process branch

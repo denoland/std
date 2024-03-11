@@ -64,18 +64,17 @@ export default (name: string, cradleMaker: () => Promise<Cradle>) => {
 
   const isolate = 'io-fixture'
   Deno.test(prefix + 'resource hogging', async (t) => {
-    await t.step('multi local', async () => {
+    await t.step('serial', async () => {
       const artifact = await cradleMaker()
       const repo = 'cradle/pierce'
       await artifact.rm({ repo })
 
-      console.log('init')
-
       const { pid: target } = await artifact.init({ repo })
       const { local } = await artifact.pierces(isolate, target)
       const promises = []
-      for (let i = 0; i < 20; i++) {
+      for (let i = 0; i < 20; i++) { // at 20, this fails on cloud
         const task = async () => {
+          // BUT because no execlock, something might be colliding
           const promise = local() as Promise<string>
           try {
             const result = await promise
@@ -96,7 +95,42 @@ export default (name: string, cradleMaker: () => Promise<Cradle>) => {
 
       const logs: unknown[] = await artifact.logs({ repo: 'cradle/pierce' })
       log('logs', logs.length)
+      expect(logs.length).toBeLessThan(10)
+      await artifact.stop()
+    })
+    await t.step('parallel', async () => {
+      const artifact = await cradleMaker()
+      const repo = 'cradle/pierce'
+      await artifact.rm({ repo })
 
+      const { pid: target } = await artifact.init({ repo })
+      const { local } = await artifact.pierces(isolate, target)
+      const promises = []
+      for (let i = 0; i < 10; i++) { // at 20, this fails on cloud
+        const task = async () => {
+          const promise = local({}, { branch: true }) as Promise<string>
+          try {
+            const result = await promise
+            console.log('result', i, result)
+            return result
+          } catch (error) {
+            console.error('error', i, error)
+          }
+        }
+        promises.push(task())
+      }
+      log('promises start')
+      const results = await Promise.all(promises)
+      for (const result of results) {
+        expect(result).toBe('local reply')
+      }
+      log('done')
+
+      const logs: unknown[] = await artifact.logs({ repo: 'cradle/pierce' })
+      log('logs', logs.length)
+      expect(logs.length).toBeLessThan(10)
+      // may need to limit how many merges can be in each commit
+      //  control the pool size to guarantee good thruput and responsiveness
       await artifact.stop()
     })
   })

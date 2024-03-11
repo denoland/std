@@ -12,7 +12,8 @@
     "esm:remove": "deno run -A https://esm.sh/v135 remove",
     "setup:githook": "ln -s ./pre-commit .git/hooks/pre-commit",
     "test:cloud": "DEBUG_COLORS=1 deno test -A ./api/cloud.ts",
-    "db:drop": "DEBUG_COLORS=1 deno run --unstable-kv -A ./guts/kv-mgmt.ts"
+    "db:drop": "DEBUG_COLORS=1 deno run --unstable-kv -A ./guts/kv-mgmt.ts",
+    "db:locks": "DEBUG_COLORS=1 deno run --unstable-kv -A ./api/db-tools.ts"
   },
   "imports": {
     "@/": "./",

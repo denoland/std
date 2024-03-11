@@ -1,4 +1,5 @@
 import Compartment from './io/compartment.ts'
+import git from '$git'
 import {
   Cradle,
   DispatchFunctions,
@@ -7,6 +8,7 @@ import {
   PierceRequest,
   Request,
 } from './constants.ts'
+import { pidFromRepo } from '@/keys.ts'
 import { getProcType } from '@/constants.ts'
 import { memfs } from 'https://esm.sh/memfs@4.6.0'
 import IsolateApi from './isolate-api.ts'
@@ -102,12 +104,6 @@ export class QueueCradle implements Cradle {
     const result = await this.#queue.push<K>('apiSchema', params)
     return result as Record<string, object>
   }
-  async logs(params: { repo: string }) {
-    type K = ReturnType<Cradle['logs']>
-    const result = await this.#queue.push<K>('logs', params)
-    assert(Array.isArray(result), 'logs not an array')
-    return result
-  }
   async pierce(params: PierceRequest) {
     try {
       type K = ReturnType<Cradle['pierce']>
@@ -131,6 +127,13 @@ export class QueueCradle implements Cradle {
   }
   branch(params: { branch: PID; commit: string }) {
     return this.#queue.push('branch', params)
+  }
+  async logs(params: { repo: string }) {
+    log('logs', params.repo)
+    const pid = pidFromRepo(params.repo)
+    const fs = await this.#api.context.fs!.load(pid)
+    const logs = await git.log({ fs, dir: '/' })
+    return logs
   }
 }
 
