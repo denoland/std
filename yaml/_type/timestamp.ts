@@ -67,8 +67,8 @@ function constructYamlTimestamp(data: string): Date {
   // match: [8] tz [9] tz_sign [10] tz_hour [11] tz_minute
 
   let delta = null;
-  if (match[9]) {
-    const tzHour = +match[10]!;
+  if (match[9] && match[10]) {
+    const tzHour = +match[10];
     const tzMinute = +(match[11] || 0);
     delta = (tzHour * 60 + tzMinute) * 60000; // delta in milli-seconds
     if (match[9] === "-") delta = -delta;
