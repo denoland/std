@@ -141,7 +141,7 @@ export function expect(value: unknown, customMessage?: string): Expected {
           ...extendMatchers,
           ...matchers,
         };
-        const matcher: Matcher = allMatchers[name as MatcherKey];
+        const matcher = allMatchers[name as MatcherKey] as Matcher;
         if (!matcher) {
           throw new TypeError(
             typeof name === "string"
