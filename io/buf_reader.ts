@@ -207,7 +207,7 @@ export class BufReader implements Reader {
       if (this.#eof) return null;
       await this.#fill(); // buffer is empty.
     }
-    const c = this.#buf[this.#r];
+    const c = this.#buf[this.#r]!;
     this.#r++;
     // this.lastByte = c;
     return c;
