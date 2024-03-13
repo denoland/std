@@ -29,7 +29,6 @@ export class QueueCradle implements Cradle {
     const cradle = new QueueCradle()
     cradle.#compartment = await Compartment.create('artifact')
     const { fs } = memfs()
-    // TODO pass a dispatch function in so it can call out to other pids
     // TODO use a super PID as the cradle PID for all system actions
     cradle.#api = IsolateApi.createFS(fs)
     cradle.#api.context.self = cradle

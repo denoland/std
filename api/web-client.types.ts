@@ -95,20 +95,6 @@ export type PierceRequest = Invocation & {
   target: PID
   ulid: string
 }
-export interface Cradle {
-  ping(params?: Params): Promise<IsolateReturn>
-  apiSchema(params: { isolate: string }): Promise<Record<string, object>>
-  pierce(params: PierceRequest): Promise<unknown>
-  transcribe(params: { audio: File }): Promise<{ text: string }>
-  logs(params: { repo: string }): Promise<object[]>
-  pierces(isolate: string, target: PID): Promise<DispatchFunctions>
-  stop(): Promise<void> | void
-  // TODO should move these git functions elsewhere ?
-  init(params: { repo: string }): Promise<{ pid: PID; head: string }>
-  clone(params: { repo: string }): Promise<{ pid: PID; head: string }>
-  probe(params: { repo: string }): Promise<{ pid: PID; head: string } | void>
-  rm(params: { repo: string }): Promise<void>
-}
 
 // TODO remove this by passing ProcessOptions in with the Request
 export const getProcType = (options?: ProcessOptions) => {
@@ -126,4 +112,21 @@ export const getProcType = (options?: ProcessOptions) => {
 export enum RUNNERS {
   CHAT = 'runner-chat',
   INJECTOR = 'runner-injector',
+}
+export const toString = (pid: PID) => {
+  return `${pid.account}/${pid.repository}:${pid.branches.join('_')}`
+}
+export interface Cradle {
+  ping(params?: Params): Promise<IsolateReturn>
+  apiSchema(params: { isolate: string }): Promise<Record<string, object>>
+  pierce(params: PierceRequest): Promise<unknown>
+  transcribe(params: { audio: File }): Promise<{ text: string }>
+  logs(params: { repo: string }): Promise<object[]>
+  pierces(isolate: string, target: PID): Promise<DispatchFunctions>
+  stop(): Promise<void> | void
+  // TODO should move these git functions elsewhere ?
+  init(params: { repo: string }): Promise<{ pid: PID; head: string }>
+  clone(params: { repo: string }): Promise<{ pid: PID; head: string }>
+  probe(params: { repo: string }): Promise<{ pid: PID; head: string } | void>
+  rm(params: { repo: string }): Promise<void>
 }

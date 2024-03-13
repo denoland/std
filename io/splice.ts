@@ -13,6 +13,28 @@ export const schema = {
     },
     // a tree of jsonpatch objects
     tree: { type: 'string', description: 'tree object' },
+    path: {
+      type: 'array',
+      description:
+        'path to the file being changed.  If this is blank, it implies the splice is for a commit ?',
+    },
+    status: {
+      description: 'The current patch status',
+      enum: ['pooled', 'committed'],
+    },
+    prior: {
+      type: 'string',
+      description:
+        'prior commit that the current patch is based on, so that on resumption of a subscription you can recover',
+    },
   },
   additionalProperties: false,
 }
+
+// these are always relative to some commit
+// partials are beyond the head commit
+
+// children are given by the io file
+// https://the.site/account/repo/path/to/file?branch=name&start=commit&end=commit
+
+// need to display children
