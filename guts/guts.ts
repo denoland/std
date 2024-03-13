@@ -1,6 +1,6 @@
 // the Grand Unified Test Suite™
 
-import { Debug, expect, log } from '@utils'
+import { expect, log } from '@utils'
 import { Cradle } from '../api/web-client.types.ts'
 import testProcessMgmt from './process-mgmt.ts'
 import testAiCalls from './ai-calls.ts'
