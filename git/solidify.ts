@@ -1,18 +1,16 @@
 import { IFs } from 'https://esm.sh/v135/memfs@4.6.0/lib/index.js'
 import { assert, Debug, equal } from '@utils'
 import git from '$git'
+import { getBranchName } from './branch.ts'
 import {
   isMergeReply,
+  isPierceRequest,
   isRequest,
+  MergeReply,
   PID,
+  PierceReply,
   Poolable,
   PROCTYPE,
-  toRunnableRequest,
-} from '@/constants.ts'
-import {
-  isPierceRequest,
-  MergeReply,
-  PierceReply,
   Reply,
   Request,
   SolidRequest,
@@ -38,10 +36,11 @@ const author = { name: 'IO Solidify' }
 export default async (fs: IFs, pool: Poolable[]) => {
   const pid = checkPool(pool)
   // TODO use the head commit to ensure we are reading the right file
-  log('solidifyPool')
-  // TODO change this to use the iofile class
   const io = await IOChannel.load(pid, fs)
-  const requests: SolidRequest[] = []
+
+  const executingRequest = io.getExecutingRequest()
+  log('solidifyPool executingRequest', executingRequest)
+
   // TODO include multiple requests to the same branch as a single array
   const branches: PID[] = []
   const replies: Reply[] = []
@@ -54,8 +53,8 @@ export default async (fs: IFs, pool: Poolable[]) => {
         const pid = branchPid(poolable.target, sequence)
         branches.push(pid)
       } else {
-        const request = toRunnableRequest(poolable, sequence)
-        requests.push(request)
+        assert(proctype === PROCTYPE.SERIAL, `invalid proctype: ${proctype}`)
+        // TODO error if two serial relies are received in a single poolrush
       }
     } else {
       log('reply', poolable)
@@ -63,6 +62,7 @@ export default async (fs: IFs, pool: Poolable[]) => {
       const request = io.reply(poolable)
       const { outcome } = poolable
       if (isPierceRequest(request)) {
+        log('isPierceRequest')
         const { ulid } = request
         const reply: PierceReply = { ulid, outcome }
         replies.push(reply)
@@ -73,13 +73,6 @@ export default async (fs: IFs, pool: Poolable[]) => {
         const sequence = request.sequence
         const reply: MergeReply = { target, source, sequence, outcome, commit }
         replies.push(reply)
-      } else {
-        // not a pierce request, and was sourced from this branch.
-        if (!io.isAccumulating()) {
-          const runnable = io.getExecutingRequest()
-          log('reply to', runnable)
-          requests.push(runnable)
-        }
       }
       if (isBranch(request)) {
         assert(isMergeReply(poolable), 'branch requires merge reply')
@@ -90,12 +83,19 @@ export default async (fs: IFs, pool: Poolable[]) => {
         }
         parent.push(poolable.commit)
         if (request.proctype === PROCTYPE.BRANCH) {
-          const branchName = poolable.source.branches.join('_')
+          const branchName = getBranchName(poolable.source)
           log('deleteBranch', branchName)
           // TODO when kvgit is online this will be a kv delete
         }
       }
     }
+  }
+
+  let request: SolidRequest | undefined
+  const next = io.getExecutingRequest()
+  if (next && !equal(executingRequest, next)) {
+    log('nextExecutingRequest', next)
+    request = next
   }
 
   io.save()
@@ -107,9 +107,9 @@ export default async (fs: IFs, pool: Poolable[]) => {
       reply.commit = commit
     }
   }
-  const solids = { commit, requests, branches, replies }
-  if (!io.isAccumulating()) {
-    assert(isActive(requests, branches, replies), 'no active solids - stalled')
+  const solids = { commit, request, branches, replies }
+  if (!io.isAccumulating() && !io.getExecutingRequest()) {
+    assert(isActive(branches, replies), 'no active solids - stalled')
   }
   return solids
 }
@@ -147,10 +147,6 @@ const isBranch = (request: Request) => {
   return request.proctype === PROCTYPE.BRANCH ||
     request.proctype === PROCTYPE.DAEMON
 }
-const isActive = (
-  requests: SolidRequest[],
-  branches: PID[],
-  replies: Reply[],
-) => {
-  return requests.length > 0 || branches.length > 0 || replies.length > 0
+const isActive = (branches: PID[], replies: Reply[]) => {
+  return branches.length > 0 || replies.length > 0
 }

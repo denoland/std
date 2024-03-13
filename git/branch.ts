@@ -19,7 +19,7 @@ const log = Debug('AI:git')
  */
 export default async (fs: IFs, commit: string, target: PID) => {
   assert(target.branches.length > 1, 'cannot branch into base branch')
-  const ref = branchName(target)
+  const ref = getBranchName(target)
   log('branch', target, ref)
   // TODO make a shallow checkout by making a custom git tree for commits
   await git.branch({ fs, dir: '/', ref, checkout: true, object: commit })
@@ -45,7 +45,7 @@ export default async (fs: IFs, commit: string, target: PID) => {
   return await solidify(fs, [origin])
 }
 
-const branchName = (pid: PID) => {
+export const getBranchName = (pid: PID) => {
   return pid.branches.join('_')
 }
 const getSequence = (branches: string[]) => {

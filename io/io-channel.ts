@@ -66,15 +66,19 @@ export default class IOChannel {
     return this.#io.replies[sequence] === undefined
   }
   getExecutingRequest() {
+    if (this.isAccumulating()) {
+      return
+    }
     const openRequests = this.#getOpenRequestIndices()
     for (const key of openRequests) {
       const request = this.#io.requests[key]
       if (!isAccumulation(request, this.#pid)) {
-        const runnable = toRunnableRequest(request, key)
-        return runnable
+        if (request.proctype === PROCTYPE.SERIAL) {
+          const runnable = toRunnableRequest(request, key)
+          return runnable
+        }
       }
     }
-    throw new Error('no executing request found')
   }
   getSequence(request: SolidRequest) {
     for (const [key, value] of Object.entries(this.#io.requests)) {
@@ -133,9 +137,26 @@ export default class IOChannel {
     return JSON.stringify(this.#io, null, 2)
   }
   #getOpenRequestIndices() {
-    const keys = Object.keys(this.#io.requests).map(parseInt)
+    const keys = Object.keys(this.#io.requests).map((key) => parseInt(key))
     keys.sort((a, b) => a - b)
     return keys.filter((k) => !this.#io.replies[k])
+  }
+  get isExecuting() {
+    // find a request that is serial and has no corresponding reply
+    for (const [key, request] of Object.entries(this.#io.requests)) {
+      if (!equal(request.target, this.#pid)) {
+        continue
+      }
+      if (request.proctype !== PROCTYPE.SERIAL) {
+        continue
+      }
+      if (this.#io.replies[key]) {
+        continue
+      }
+      return true
+    }
+
+    return false
   }
 }
 const check = (io: IoStruct) => {

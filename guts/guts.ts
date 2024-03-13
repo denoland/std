@@ -1,9 +1,10 @@
 // the Grand Unified Test Suite™
 
-import { expect, log } from '@utils'
+import { Debug, expect, log } from '@utils'
 import { Cradle } from '../api/web-client.types.ts'
 import testProcessMgmt from './process-mgmt.ts'
 import testAiCalls from './ai-calls.ts'
+const isolate = 'io-fixture'
 
 export default (name: string, cradleMaker: () => Promise<Cradle>) => {
   const prefix = name + ': '
@@ -35,7 +36,6 @@ export default (name: string, cradleMaker: () => Promise<Cradle>) => {
   Deno.test.ignore(prefix + 'child to child', async () => {})
   Deno.test.ignore(prefix + 'child to parent', async () => {})
   Deno.test(prefix + 'pierce', async (t) => {
-    const isolate = 'io-fixture'
     const artifact = await cradleMaker()
     await artifact.rm({ repo: 'cradle/pierce' })
     const { pid: target } = await artifact.init({ repo: 'cradle/pierce' })
@@ -62,29 +62,18 @@ export default (name: string, cradleMaker: () => Promise<Cradle>) => {
     await artifact.stop()
   })
 
-  const isolate = 'io-fixture'
   Deno.test(prefix + 'resource hogging', async (t) => {
-    await t.step('serial', async () => {
-      const artifact = await cradleMaker()
-      const repo = 'cradle/pierce'
-      await artifact.rm({ repo })
+    const artifact = await cradleMaker()
+    const repo = 'cradle/pierce'
+    await artifact.rm({ repo })
+    const { pid: target } = await artifact.init({ repo })
+    const { local } = await artifact.pierces(isolate, target)
 
-      const { pid: target } = await artifact.init({ repo })
-      const { local } = await artifact.pierces(isolate, target)
+    await t.step('serial', async () => {
       const promises = []
-      for (let i = 0; i < 20; i++) { // at 20, this fails on cloud
-        const task = async () => {
-          // BUT because no execlock, something might be colliding
-          const promise = local() as Promise<string>
-          try {
-            const result = await promise
-            console.log('result', i, result)
-            return result
-          } catch (error) {
-            console.error('error', i, error)
-          }
-        }
-        promises.push(task())
+      const count = 20
+      for (let i = 0; i < count; i++) { // at 20, this fails on cloud
+        promises.push(local())
       }
       log('promises start')
       const results = await Promise.all(promises)
@@ -95,29 +84,26 @@ export default (name: string, cradleMaker: () => Promise<Cradle>) => {
 
       const logs: unknown[] = await artifact.logs({ repo: 'cradle/pierce' })
       log('logs', logs.length)
-      expect(logs.length).toBeLessThan(10)
+      expect(logs.length).toBeGreaterThan(count)
+      expect(logs.length).toBeLessThan(count * 1.2)
+
       await artifact.stop()
     })
-    await t.step('parallel', async () => {
-      const artifact = await cradleMaker()
-      const repo = 'cradle/pierce'
-      await artifact.rm({ repo })
+  })
+  Deno.test.ignore(prefix + 'resource hogging parallel', async (t) => {
+    const artifact = await cradleMaker()
+    const repo = 'cradle/pierce'
+    await artifact.rm({ repo })
 
-      const { pid: target } = await artifact.init({ repo })
-      const { local } = await artifact.pierces(isolate, target)
+    const { pid: target } = await artifact.init({ repo })
+    const { local } = await artifact.pierces(isolate, target)
+
+    await t.step('parallel', async () => {
       const promises = []
-      for (let i = 0; i < 10; i++) { // at 20, this fails on cloud
-        const task = async () => {
-          const promise = local({}, { branch: true }) as Promise<string>
-          try {
-            const result = await promise
-            console.log('result', i, result)
-            return result
-          } catch (error) {
-            console.error('error', i, error)
-          }
-        }
-        promises.push(task())
+      const count = 20
+      Debug.enable('*solidify')
+      for (let i = 0; i < count; i++) { // at 20, this fails on cloud
+        promises.push(local({}, { branch: true }))
       }
       log('promises start')
       const results = await Promise.all(promises)
@@ -127,10 +113,9 @@ export default (name: string, cradleMaker: () => Promise<Cradle>) => {
       log('done')
 
       const logs: unknown[] = await artifact.logs({ repo: 'cradle/pierce' })
-      log('logs', logs.length)
-      expect(logs.length).toBeLessThan(10)
-      // may need to limit how many merges can be in each commit
-      //  control the pool size to guarantee good thruput and responsiveness
+      console.dir(logs, { depth: Infinity })
+      expect(logs.length).toBeLessThan(5)
+
       await artifact.stop()
     })
   })

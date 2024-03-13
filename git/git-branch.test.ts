@@ -34,17 +34,19 @@ Deno.test('pierce branch', async (t) => {
 
   let branchFs: IFs
   let childPid: PID
-  const request = branchPierce('pierce')
+  const pierce = branchPierce('pierce')
   await t.step('branch', async () => {
-    const { commit, branches } = await git.solidify(fs, [request])
+    const { commit, branches, ...rest } = await git.solidify(fs, [pierce])
+    expect(rest.request).toBeUndefined()
     const io: IoStruct = readIo(fs)
     expect(io.sequence).toBe(1)
-    expect(io.requests[0]).toEqual(request)
+    expect(io.requests[0]).toEqual(pierce)
     expect(io.requests[0].proctype).toEqual(PROCTYPE.BRANCH)
     branchFs = FS.clone(fs, '/.git')
-    const { requests } = await git.branch(branchFs, commit, branches[0])
-    expect(requests).toHaveLength(1)
-    expect(requests[0].source).toEqual(request.target)
+    const { request } = await git.branch(branchFs, commit, branches[0])
+    console.dir(request, { depth: 10 })
+    assert(request)
+    expect(request.source).toEqual(pierce.target)
     const branch: IoStruct = readIo(branchFs)
     log('branch', branch)
 
@@ -70,7 +72,7 @@ Deno.test('pierce branch', async (t) => {
     expect(replies).toHaveLength(1)
     const reply = replies[0]
     assert(isPierceReply(reply), 'not PierceReply')
-    expect(reply.ulid).toEqual(request.ulid)
+    expect(reply.ulid).toEqual(pierce.ulid)
     expect(reply.outcome).toEqual(mergeReply.outcome)
     const [lastCommit] = await gitCommand.log({ fs, dir: '/', depth: 1 })
     expect(lastCommit.commit.parent).toHaveLength(2)

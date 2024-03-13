@@ -1,12 +1,10 @@
 import * as git from '../git/mod.ts'
 import { assert, Debug } from '@utils'
-import { PID, PierceReply, Reply } from '@/constants.ts'
+import { MergeReply, PID, PierceReply, Poolable, Reply } from '@/constants.ts'
 import DB from '@/db.ts'
 import { IFs } from 'https://esm.sh/v135/memfs@4.6.0/lib/index.js'
 import FS from '@/fs.ts'
 import Cradle from '@/cradle.ts'
-import { Poolable } from '@/constants.ts'
-import { MergeReply } from '@/constants.ts'
 const log = Debug('AI:io')
 
 export default class IO {
@@ -35,11 +33,12 @@ export default class IO {
     const solids = await this.#solidifyPool(pid, fs)
 
     log('solids %o', solids)
-    const { commit, requests, branches, replies } = solids
+    const { commit, request, branches, replies } = solids
     await this.#fs.update(pid, fs, commit, lockId)
 
-    for (const request of requests) {
-      // WARNING detaches from queue and relies on watchReply() to complete
+    if (request) {
+      log('request %o', request)
+      // WARNING detaches from queue
       await this.#self.request({ request, commit })
     }
     for (const branch of branches) {
@@ -47,7 +46,6 @@ export default class IO {
       await this.#self.branch({ branch, commit })
     }
     for (const reply of replies) {
-      // TODO change this to only be for pierces
       if (isPierceReply(reply)) {
         log('pierce reply %o', reply)
         await this.#db.settleReply(pid, reply)
@@ -80,10 +78,9 @@ export default class IO {
     const parent = getParent(pid)
     const fs = await this.#fs.load(parent)
 
-    const { commit, requests } = await git.branch(fs, baseCommit, pid)
+    const { commit, request } = await git.branch(fs, baseCommit, pid)
     await this.#fs.update(pid, fs, commit, lockId)
-    assert(requests.length === 1, 'branch must have a single request')
-    const [request] = requests
+    assert(request, 'branch must have a single request')
     await this.#self.request({ request, commit })
     await this.#db.releaseHeadlock(pid, lockId)
   }

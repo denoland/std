@@ -2,7 +2,7 @@ import { Outcome } from '@/constants.ts'
 import Server from './server.ts'
 import { deserializeError, expect } from '@utils'
 import WebClient from '@/api/web-client.ts'
-import guts from '../guts/main.ts'
+import guts from '../guts/guts.ts'
 
 Deno.test('hono basic', async (t) => {
   await t.step('ping', async () => {

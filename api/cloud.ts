@@ -4,7 +4,7 @@
  */
 import { assert, deserializeError } from '@utils'
 import WebClient from '@/api/web-client.ts'
-import guts from '../guts/main.ts'
+import guts from '../guts/guts.ts'
 import { load } from '$std/dotenv/mod.ts'
 const cradleMaker = async () => {
   const env = await load()
