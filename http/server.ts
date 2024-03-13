@@ -246,8 +246,8 @@ export class Server {
     const listener = Deno.listenTls({
       port: this.#port ?? HTTPS_PORT,
       hostname: this.#host ?? "0.0.0.0",
-      certFile,
-      keyFile,
+      cert: Deno.readTextFileSync(certFile),
+      key: Deno.readTextFileSync(keyFile),
       transport: "tcp",
       // ALPN protocol support not yet stable.
       // alpnProtocols: ["h2", "http/1.1"],
