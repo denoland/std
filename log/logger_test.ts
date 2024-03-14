@@ -55,7 +55,7 @@ Deno.test("Logger handles custom handler", () => {
 
   const inlineData: string = logger.debug("foo", 1, 2);
 
-  const record = handler.records[0];
+  const record = handler.records[0]!;
   assertEquals(record.msg, "foo");
   assertEquals(record.args, [1, 2]);
   assertEquals(record.level, LogLevels.DEBUG);
@@ -267,8 +267,8 @@ Deno.test(
     const error = new RangeError("Uh-oh!");
     const data21: RangeError = logger.error(error);
     assertEquals(data21, error);
-    const messages21 = handler.messages[20].split("\n");
-    assertEquals(messages21[0], `ERROR ${error.name}: ${error.message}`);
-    assertMatch(messages21[1], /^\s+at file:.*\d+:\d+$/);
+    const messages21 = handler.messages[20]!.split("\n");
+    assertEquals(messages21[0]!, `ERROR ${error.name}: ${error.message}`);
+    assertMatch(messages21[1]!, /^\s+at file:.*\d+:\d+$/);
   },
 );
