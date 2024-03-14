@@ -1,8 +1,8 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import { extractJson } from "./extract_json.ts";
+import { parseJson } from "./parse_json.ts";
 
 /**
- * @deprecated (will be removed in 0.220.0) Use {@linkcode extractJson} instead.
+ * @deprecated (will be removed in 0.222.0) Use {@linkcode parseJson} instead.
  */
-export const extract = extractJson;
+export const extract = parseJson;

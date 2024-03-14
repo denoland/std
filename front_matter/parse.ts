@@ -8,7 +8,7 @@ import {
 import { parse as parseYAML } from "../yaml/parse.ts";
 import { parse as parseTOML } from "../toml/parse.ts";
 
-export const extract: Extractor = createExtractor({
+export const parse: Extractor = createExtractor({
   yaml: parseYAML as Parser,
   toml: parseTOML as Parser,
   json: JSON.parse as Parser,

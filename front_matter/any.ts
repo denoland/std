@@ -1,8 +1,8 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import { extract as _extract } from "./extract.ts";
+import { parse } from "./parse.ts";
 
 /**
- * @deprecated (will be removed in 0.220.0) Use {@link https://deno.land/std@$STD_VERSION/front_matter/extract.ts} instead.
+ * @deprecated (will be removed in 0.222.0) Use {@linkcode parse} instead.
  */
-export const extract = _extract;
+export const extract = parse;

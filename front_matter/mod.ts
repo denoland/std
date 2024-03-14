@@ -154,7 +154,7 @@
 
 export * from "./create_extractor.ts";
 export * from "./test.ts";
-export * from "./extract.ts";
-export * from "./extract_json.ts";
-export * from "./extract_toml.ts";
-export * from "./extract_yaml.ts";
+export * from "./parse.ts";
+export * from "./parse_json.ts";
+export * from "./parse_toml.ts";
+export * from "./parse_yaml.ts";

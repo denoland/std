@@ -6,6 +6,6 @@ import {
   type Parser,
 } from "./create_extractor.ts";
 
-export const extractJson: Extractor = createExtractor({
+export const parseJson: Extractor = createExtractor({
   json: JSON.parse as Parser,
 });
