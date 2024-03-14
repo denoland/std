@@ -33,7 +33,7 @@ Deno.test("setup() handles default handlers", async function () {
       continue;
     }
 
-    const logger = loggers[levelName];
+    const logger = loggers[levelName]!;
     const handler = new TestHandler(levelName);
 
     await log.setup({
