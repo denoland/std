@@ -12,6 +12,7 @@ import {
 export { deserializeError, serializeError }
 export { Debug }
 export const log = Debug('AI:tests')
+export * as posix from 'https://deno.land/std@0.213.0/path/posix/mod.ts'
 
 const isDenoDeploy = Deno.env.get('DENO_DEPLOYMENT_ID') !== undefined
 let _isTestMode = false

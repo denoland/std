@@ -7,6 +7,7 @@ import pretty from 'https://esm.sh/pretty-bytes@6.1.1'
 import DB from './db.ts'
 import { assert, Debug } from '@utils'
 import { CborUint8Array, PID } from '@/constants.ts'
+import { posix } from '@utils'
 
 const log = Debug('AI:fs')
 export default class FS {
@@ -114,6 +115,7 @@ export default class FS {
     })
   }
   static clone(fs: IFs, path = '/') {
+    assert(posix.isAbsolute(path), 'path must be absolute')
     const uint8 = snapshot.toBinarySnapshotSync({ fs, path })
     const { fs: clone } = memfs()
     snapshot.fromBinarySnapshotSync(uint8, { fs: clone, path })

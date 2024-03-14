@@ -1,4 +1,4 @@
-import { Debug, expect, log } from '@utils'
+import { assert, Debug, expect, log } from '@utils'
 import { Cradle } from '../api/web-client.types.ts'
 
 export default (name: string, cradleMaker: () => Promise<Cradle>) => {
@@ -13,9 +13,18 @@ export default (name: string, cradleMaker: () => Promise<Cradle>) => {
     await t.step('read', async () => {
       Debug.enable('*tests *cradle')
       write({ path: 'test', content: 'hello' })
+      let first
       for await (const splice of artifact.read({ pid, path: 'test' })) {
         log('splice', splice)
+        first = splice
+        break
       }
+      assert(first)
+      expect(first.pid).toEqual(pid)
+      expect(first.path).toEqual('test')
+      expect(first.changes).toHaveLength(1)
+      assert(first.changes)
+      expect(first.changes[0].value).toEqual('hello')
     })
 
     await artifact.stop()

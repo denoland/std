@@ -200,11 +200,22 @@ export const functions: IsolateFunctions = {
     const request = params.request as SolidRequest
     const pid = request.target
     const fs = await api.context.fs!.load(pid)
-    const induct = (poolable: Poolable) => api.context.io!.induct(poolable)
     const exe = api.context.exe!
-    const result = await exe.execute(pid, commit, request, fs, induct)
+    const { settled, pending } = await exe.execute(pid, commit, request, fs)
 
-    // if some files were changed, then we need to force a commit
+    if (settled) {
+      const { upserts, deletes, reply } = settled
+      if (!upserts.length && !deletes.length) {
+        await api.context.io!.induct(reply)
+      } else {
+        await api.context.io!.inductFiles(reply, upserts, deletes, fs)
+      }
+    } else {
+      assert(pending, 'if not settled, must be pending')
+      await Promise.all(
+        pending.requests.map((request) => api.context.io!.induct(request)),
+      )
+    }
   },
   branch: async (params: Params, api: IsolateApi<C>) => {
     const { branch, commit } = params as Branch

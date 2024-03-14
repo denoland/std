@@ -29,10 +29,10 @@ export default class IsolateApi<T extends object = Default> {
   #accumulatorCount = 0
   // TODO assign a mount id for each side effect execution context ?
   #context: Partial<T> = {}
-  static createFS(fs: IFs, atCommit?: string) {
+  static createFS(fs: IFs, commit?: string) {
     const api = new IsolateApi()
     api.#fs = fs
-    api.#commit = atCommit
+    api.#commit = commit
     return api
   }
   static create(fs: IFs, commit: string, pid: PID, acc: Accumulator) {
@@ -119,14 +119,16 @@ export default class IsolateApi<T extends object = Default> {
   }
   writeJSON(path: string, json: object) {
     isJsonPath(path)
-    const file = JSON.stringify(json, null, 2)
-    this.write(path, file)
+    // TODO make this stable
+    const content = JSON.stringify(json, null, 2)
+    this.write(path, content)
   }
-  write(path: string, file: string | Uint8Array) {
+  write(path: string, content: string | Uint8Array) {
     isRelative(path)
-    this.#fs.writeFileSync('/' + path, file)
-    // need to tag / track the file in the localized index
-    // then upon commit, need to track that somehow ?
+    this.#fs.writeFileSync('/' + path, content)
+    if (this.#accumulator) {
+      this.#accumulator.write(path, content)
+    }
   }
   async readJSON(path: string) {
     const string = await this.read(path)

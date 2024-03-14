@@ -2,7 +2,7 @@ import { memfs } from 'https://esm.sh/memfs@4.6.0'
 import IOChannel from '../io/io-channel.ts'
 import FS from '../fs.ts'
 import Executor from './exe.ts'
-import { IFs, PROCTYPE, SolidReply, SolidRequest } from '@/constants.ts'
+import { IFs, PROCTYPE, SolidRequest } from '@/constants.ts'
 import { assert, expect, log } from '@utils'
 
 const pid = { account: 'exe', repository: 'test', branches: ['main'] }
@@ -18,40 +18,69 @@ const request: SolidRequest = {
   sequence: 0,
 }
 const mocks = async () => {
-  const inducted: (SolidRequest | SolidReply)[] = []
-  const induct = (poolable: SolidRequest | SolidReply) => {
-    inducted.push(poolable)
-    return Promise.resolve()
-  }
   const { fs } = memfs()
   const io = await IOChannel.load(pid, fs)
-  return { inducted, induct, io, fs }
+  return { io, fs }
 }
 Deno.test('simple', async (t) => {
-  const { inducted, induct, fs, io } = await mocks()
+  const { fs, io } = await mocks()
   io.addRequest(request)
   io.save()
   const executor = Executor.create()
-  await t.step('no actions', async () => {
-    const done = await executor.execute(pid, commit, request, fs, induct)
-    expect(done).toBe(true)
-    expect(inducted).toHaveLength(1)
-    const reply = inducted[0] as SolidReply
+  await t.step('no accumulations', async () => {
+    const result = await executor.execute(pid, commit, request, fs)
+    const { settled, pending } = result
+    assert(settled)
+    expect(pending).toBeFalsy()
+    const { reply, upserts, deletes } = settled
     expect(reply.target).toEqual(pid)
     expect(reply.outcome).toEqual({ result: 'local reply' })
+    expect(upserts).toHaveLength(0)
+    expect(deletes).toHaveLength(0)
   })
 })
+Deno.test('writes', async (t) => {
+  const { fs, io } = await mocks()
+  const write = {
+    ...request,
+    functionName: 'write',
+    params: { path: 'test.txt', content: 'hello' },
+  }
+  io.addRequest(write)
+  io.save()
+  const executor = Executor.create()
+  await t.step('single file', async () => {
+    const result = await executor.execute(pid, commit, write, fs)
+    const { settled, pending } = result
+    assert(settled)
+    expect(pending).toBeFalsy()
+    const { reply, upserts, deletes } = settled
+    expect(reply.target).toEqual(pid)
+    expect(reply.outcome.result).toBeUndefined()
+    expect(upserts).toEqual(['test.txt'])
+    expect(deletes).toHaveLength(0)
+  })
+  // write, delete, write
+  // write, delete,
+  // delete existing file
+  // multiple writes to the same file
+
+  // check the broadcasting is working
+  // throttle the broadcast updates - thrash to check it works
+})
+
 Deno.test('loopback', async (t) => {
-  const { inducted, induct, fs, io } = await mocks()
+  const { fs, io } = await mocks()
   const compound = { ...request, functionName: 'compound' }
   io.addRequest(compound)
   io.save()
   const executor = Executor.create()
   await t.step('loopback request will error', async () => {
-    const done = await executor.execute(pid, commit, compound, fs, induct)
-    expect(done).toBe(true)
-    expect(inducted).toHaveLength(1)
-    const reply = inducted[0] as SolidReply
+    const result = await executor.execute(pid, commit, compound, fs)
+    const { settled, pending } = result
+    expect(pending).toBeFalsy()
+    assert(settled)
+    const { reply } = settled
     expect(reply.target).toEqual(pid)
     expect(reply.outcome.error).toBeDefined()
   })
@@ -68,18 +97,20 @@ Deno.test('compound', async (t) => {
     functionName: 'compound',
     params: { target },
   }
-  const { inducted, induct, io, fs } = await mocks()
+  const { io, fs } = await mocks()
   io.addRequest(compound)
   io.save()
   let request: SolidRequest
   const executor = Executor.create()
   let halfFs: IFs
   await t.step('half done', async () => {
-    const halfDone = await executor.execute(pid, commit, compound, fs, induct)
-    expect(halfDone).toBeFalsy()
-    expect(inducted).toHaveLength(1)
-    assert('source' in inducted[0], 'did not induct a request')
-    request = inducted[0]
+    const half = await executor.execute(pid, commit, compound, fs)
+    const { settled, pending } = half
+    expect(settled).toBeFalsy()
+    assert(pending)
+    const { requests } = pending
+    expect(requests).toHaveLength(1)
+    request = requests[0]
     log('internalRequest', request)
     expect(request.target).toEqual(target)
     expect(request.source).toEqual(pid)
@@ -99,10 +130,10 @@ Deno.test('compound', async (t) => {
     expect(savedRequest).toEqual(request)
     io.save()
 
-    inducted.length = 0
-    const done = await executor.execute(pid, commit, compound, fs, induct)
-    expect(done).toBeTruthy()
-    expect(inducted).toHaveLength(1)
+    const done = await executor.execute(pid, commit, compound, fs)
+    const { settled, pending } = done
+    expect(pending).toBeFalsy()
+    expect(settled).toBeTruthy()
   })
   await t.step('reply from restart', async () => {
     const noCache = Executor.create()
@@ -118,10 +149,10 @@ Deno.test('compound', async (t) => {
     io.reply(reply)
     io.save()
 
-    inducted.length = 0
-    const done = await noCache.execute(pid, commit, compound, halfFs, induct)
-    expect(done).toBeTruthy()
-    expect(inducted).toHaveLength(1)
+    const done = await noCache.execute(pid, commit, compound, halfFs)
+    const { settled, pending } = done
+    expect(pending).toBeFalsy()
+    expect(settled).toBeTruthy()
   })
 
   // multiple outstanding requests

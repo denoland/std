@@ -7,6 +7,7 @@ export const api = {
   write: {
     description: 'write a file',
     type: 'object',
+    required: ['path', 'content'],
     additionalProperties: false,
     properties: { path: { type: 'string' }, content: { type: 'string' } },
   },

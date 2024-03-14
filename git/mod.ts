@@ -7,3 +7,4 @@
 export { default as init } from './init.ts'
 export { default as solidify } from './solidify.ts'
 export { default as branch } from './branch.ts'
+export { default as stage } from './stage.ts'

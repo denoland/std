@@ -1,6 +1,13 @@
 import * as git from '../git/mod.ts'
 import { assert, Debug } from '@utils'
-import { MergeReply, PID, PierceReply, Poolable, Reply } from '@/constants.ts'
+import {
+  MergeReply,
+  PID,
+  PierceReply,
+  Poolable,
+  Reply,
+  SolidReply,
+} from '@/constants.ts'
 import DB from '@/db.ts'
 import { IFs } from 'https://esm.sh/v135/memfs@4.6.0/lib/index.js'
 import FS from '@/fs.ts'
@@ -25,12 +32,27 @@ export default class IO {
     const lockId = await this.#db.getHeadlockMaybe(poolable)
     if (lockId) {
       const pid = poolable.target
-      await this.#execute(pid, lockId)
+      const fs = await this.#fs.load(pid)
+      await this.#execute(pid, lockId, fs)
+      await this.#db.releaseHeadlock(pid, lockId)
     }
   }
-  async #execute(pid: PID, lockId: string) {
-    const fs = await this.#fs.load(pid)
-    const solids = await this.#solidifyPool(pid, fs)
+  async inductFiles(
+    reply: SolidReply,
+    upserts: string[],
+    deletes: string[],
+    fs: IFs,
+  ) {
+    log('inductFiles %o %o %o', reply, upserts, deletes)
+
+    const pid = reply.target
+    const lockId = await this.#db.getHeadlock(pid)
+    await git.stage(fs, upserts, deletes)
+    await this.#execute(pid, lockId, fs, reply)
+    await this.#db.releaseHeadlock(pid, lockId)
+  }
+  async #execute(pid: PID, lockId: string, fs: IFs, reply?: SolidReply) {
+    const solids = await this.#solidifyPool(pid, fs, reply)
 
     log('solids %o', solids)
     const { commit, request, branches, replies } = solids
@@ -54,19 +76,20 @@ export default class IO {
         await this.induct(reply)
       }
     }
-    await this.#db.releaseHeadlock(pid, lockId)
   }
-  async #solidifyPool(pid: PID, fs: IFs) {
+  async #solidifyPool(pid: PID, fs: IFs, reply?: SolidReply) {
     const { poolKeys, pool } = await this.#db.getPooledActions(pid)
     log('solidifyPool %o %i', pid, poolKeys.length)
 
-    for (const key in pool) {
-      const poolable = pool[key]
+    for (const poolable of pool) {
       if (isMergeReply(poolable)) {
         const { source } = poolable
         const from = await this.#fs.load(source)
         FS.copyObjects(from, fs)
       }
+    }
+    if (reply) {
+      pool.push(reply)
     }
 
     const solids = await git.solidify(fs, pool)

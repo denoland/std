@@ -137,24 +137,6 @@ export class QueueCradle implements Cradle {
     const logs = await git.log({ fs, dir: '/' })
     return logs
   }
-  // export type Splice = {
-  //   pid: PID
-  //   /**
-  //    * Parent commits of the commit this refers to
-  //    */
-  //   parents: string[]
-  //   /**
-  //    * The commit this splice refers to
-  //    */
-  //   commit?: string
-  //   /**
-  //    * The timestamp of the commit, or if transient, the timestamp of the write
-  //    * that caused this update
-  //    */
-  //   timestamp: number
-  //   tree: string
-  //   path: string
-  // }
 
   async *read(params: { pid: PID; path?: string }) {
     // watch the commit head of the given pid
@@ -164,7 +146,7 @@ export class QueueCradle implements Cradle {
     const { pid, path } = params
     assert(!path || !posix.isAbsolute(path), `path must be relative: ${path}`)
 
-    let last = ''
+    let last
     for await (const oid of this.#api.context.db!.watchHead(pid)) {
       log('commit', oid, path)
       if (oid === 'INIT') {
@@ -175,12 +157,17 @@ export class QueueCradle implements Cradle {
       let changes
       if (path) {
         const api = IsolateApi.createFS(fs, oid)
-        if (await api.exists(path)) {
-          const content = await api.read(path)
-          // TODO use json differ for json
-          changes = diffChars(last, content)
-          last = content
+        const exists = await api.exists(path)
+        if (!exists) {
+          continue
         }
+        const content = await api.read(path)
+        if (last !== undefined && last === content) {
+          continue
+        }
+        // TODO use json differ for json
+        changes = diffChars(last || '', content)
+        last = content
       }
       const splice: Splice = {
         pid,

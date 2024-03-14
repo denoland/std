@@ -89,6 +89,20 @@ export type IsolatePromise = {
   resolve?: (value: unknown) => void
   reject?: (error: Error) => void
 }
+export type ExeResult = {
+  settled?: {
+    reply: SolidReply
+    /**
+     * Any paths that were changed on the filesystem in any way
+     */
+    upserts: string[]
+    /**
+     * Any paths that were deleted from the filesystem
+     */
+    deletes: string[]
+  }
+  pending?: { requests: SolidRequest[] }
+}
 export const isPierceRequest = (p: Request): p is PierceRequest => {
   return 'ulid' in p
 }

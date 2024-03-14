@@ -7,7 +7,7 @@ import { IFs, Outcome, Request } from '@/constants.ts'
 import { serializeError } from 'https://esm.sh/serialize-error'
 import { Debug, equal } from '@utils'
 import { assert } from 'https://deno.land/std@0.217.0/assert/assert.ts'
-import { PID } from '@/constants.ts'
+import { ExeResult, PID } from '@/constants.ts'
 import Accumulator from '@/exe/accumulator.ts'
 const log = Debug('AI:exe')
 
@@ -22,12 +22,10 @@ export default class Executor {
     return new Executor()
   }
   /**
-   * We expect the execlock has already been acquired, giving this function
-   * authority to operate.
    * @returns true if the request was run to completion, false if it has some
    * dependent actions that need it is awaiting
    */
-  async execute(pid: PID, commit: string, req: SolidRequest, fs: IFs, i: I) {
+  async execute(pid: PID, commit: string, req: SolidRequest, fs: IFs) {
     assert(equal(pid, req.target), 'target is not self')
     const io = await IOChannel.load(pid, fs, commit)
     assert(io.isCallable(req), 'request is not callable')
@@ -37,7 +35,7 @@ export default class Executor {
 
     const exeId: string = getExeId(req)
     if (!this.#functions.has(exeId)) {
-      log('creating function %o', exeId)
+      log('creating execution %o', exeId)
       const isolateApi = IsolateApi.create(fs, commit, pid, ioAccumulator)
       const compartment = await Compartment.create(req.isolate)
       const functions = compartment.functions(isolateApi)
@@ -60,7 +58,7 @@ export default class Executor {
       }
       this.#functions.set(exeId, execution)
     }
-    log('running function %o', exeId)
+    log('running execution %o', exeId)
     const execution = this.#functions.get(exeId)
     assert(execution, 'execution not found')
     execution.accumulator.absorb(ioAccumulator)
@@ -69,29 +67,23 @@ export default class Executor {
     const winner = await Promise.race([execution.function, accumulatorPromise])
     execution.accumulator.arm()
 
+    const result: ExeResult = {}
     if (isOutcome(winner)) {
-      // read in the changed files from the api.
       const sequence = io.getSequence(req)
-      const reply: SolidReply = { target: pid, sequence, outcome: winner }
-      await i(reply)
       log('exe complete %o', exeId)
       this.#functions.delete(exeId)
-      // pass back the path:content pairs to the fs
-      return true
-      // do not write to fs until the commit, especially for json, to avoid
-      // stringification.
+      const reply = { target: pid, sequence, outcome: winner }
 
-      // write all the accumulations to disk now, since finalizing
+      const { upserts, deletes } = execution.accumulator
+      result.settled = { reply, upserts, deletes }
+    } else {
+      log('accumulator triggered first')
+      const { accumulations } = execution.accumulator
+      assert(accumulations.length > 0, 'no accumulations')
+      const requests = accumulations.map((acc) => acc.request)
+      result.pending = { requests }
     }
-
-    log('accumulator triggered first')
-    const { accumulations } = execution.accumulator
-    assert(accumulations.length > 0, 'no accumulations')
-    for (const accumulation of accumulations) {
-      log('accumulation:', accumulation.request)
-      await i(accumulation.request)
-    }
-    return false
+    return result
   }
 }
 
