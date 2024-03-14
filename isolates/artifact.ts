@@ -202,10 +202,9 @@ export const functions: IsolateFunctions = {
     const fs = await api.context.fs!.load(pid)
     const induct = (poolable: Poolable) => api.context.io!.induct(poolable)
     const exe = api.context.exe!
-    const _done = await exe.execute(pid, commit, request, fs, induct)
+    const result = await exe.execute(pid, commit, request, fs, induct)
 
-    // TODO if execution finished, then call the next request action
-    // if there isn't one, then commit will handle the restarting
+    // if some files were changed, then we need to force a commit
   },
   branch: async (params: Params, api: IsolateApi<C>) => {
     const { branch, commit } = params as Branch

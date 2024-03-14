@@ -4,6 +4,12 @@ import { PID } from '@/constants.ts'
 const log = Debug('AI:io-fixture')
 
 export const api = {
+  write: {
+    description: 'write a file',
+    type: 'object',
+    additionalProperties: false,
+    properties: { path: { type: 'string' }, content: { type: 'string' } },
+  },
   error: {
     description: 'throw an error',
     type: 'object',
@@ -37,6 +43,10 @@ export const api = {
   },
 }
 export const functions = {
+  write: (params: { path: string; content: string }, api: IsolateApi) => {
+    log('write', params)
+    api.write(params.path, params.content)
+  },
   error: ({ message }: { message: string }) => {
     log('error', message)
     throw new Error(message)

@@ -1,4 +1,6 @@
+import { diffChars } from '$diff'
 import Compartment from './io/compartment.ts'
+import * as posix from 'https://deno.land/std@0.213.0/path/posix/mod.ts'
 import git from '$git'
 import {
   Cradle,
@@ -7,6 +9,7 @@ import {
   PID,
   PierceRequest,
   Request,
+  Splice,
 } from './constants.ts'
 import { pidFromRepo } from '@/keys.ts'
 import { getProcType } from '@/constants.ts'
@@ -133,6 +136,61 @@ export class QueueCradle implements Cradle {
     const fs = await this.#api.context.fs!.load(pid)
     const logs = await git.log({ fs, dir: '/' })
     return logs
+  }
+  // export type Splice = {
+  //   pid: PID
+  //   /**
+  //    * Parent commits of the commit this refers to
+  //    */
+  //   parents: string[]
+  //   /**
+  //    * The commit this splice refers to
+  //    */
+  //   commit?: string
+  //   /**
+  //    * The timestamp of the commit, or if transient, the timestamp of the write
+  //    * that caused this update
+  //    */
+  //   timestamp: number
+  //   tree: string
+  //   path: string
+  // }
+
+  async *read(params: { pid: PID; path?: string }) {
+    // watch the commit head of the given pid
+    // if this includes transients, subscribe to the broadcast channel
+    // buffer transients until we get up to the current commit
+    // if we pass the current commit in transients, reset what head is
+    const { pid, path } = params
+    assert(!path || !posix.isAbsolute(path), `path must be relative: ${path}`)
+
+    let last = ''
+    for await (const oid of this.#api.context.db!.watchHead(pid)) {
+      log('commit', oid, path)
+      if (oid === 'INIT') {
+        continue
+      }
+      const fs = await this.#api.context.fs!.load(params.pid)
+      const { commit } = await git.readCommit({ fs, dir: '/', oid })
+      let changes
+      if (path) {
+        const api = IsolateApi.createFS(fs, oid)
+        if (await api.exists(path)) {
+          const content = await api.read(path)
+          // TODO use json differ for json
+          changes = diffChars(last, content)
+          last = content
+        }
+      }
+      const splice: Splice = {
+        pid,
+        commit,
+        timestamp: commit.committer.timestamp * 1000,
+        path,
+        changes,
+      }
+      yield splice
+    }
   }
 }
 

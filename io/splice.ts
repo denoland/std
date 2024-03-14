@@ -35,6 +35,8 @@ export const schema = {
 // partials are beyond the head commit
 
 // children are given by the io file
-// https://the.site/account/repo/path/to/file?branch=name&start=commit&end=commit
+// https://the.site/account/repo/path/to/file?branch=name&start=commit&end=commit&merge&watch
+
+// merge means that a single splice should be returned
 
 // need to display children

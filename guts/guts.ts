@@ -4,6 +4,7 @@ import { expect, log } from '@utils'
 import { Cradle } from '../api/web-client.types.ts'
 import testProcessMgmt from './process-mgmt.ts'
 import testAiCalls from './ai-calls.ts'
+import testRead from './read.ts'
 const isolate = 'io-fixture'
 
 export default (name: string, cradleMaker: () => Promise<Cradle>) => {
@@ -149,4 +150,5 @@ export default (name: string, cradleMaker: () => Promise<Cradle>) => {
   })
   testProcessMgmt(name, cradleMaker)
   testAiCalls(name, cradleMaker)
+  testRead(name, cradleMaker)
 }

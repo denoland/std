@@ -3,7 +3,9 @@ import { assert, deserializeError, equal } from '@utils'
 
 export default class Accumulator {
   #buffer: IsolatePromise[] = []
-  #isArmed = true
+  // TODO store some checking means of knowing the interactions were the same
+  #changedFiles = new Map<string, string | Uint8Array | object>()
+  #isAlarmed = true
   #trigger!: () => void
   static create(buffer: IsolatePromise[] = []) {
     const acc = new Accumulator()
@@ -14,32 +16,32 @@ export default class Accumulator {
     return [...this.#buffer]
   }
   push(request: IsolatePromise) {
-    assert(!this.isArmed, 'Alarm is set')
+    assert(!this.isAlarmed, 'Alarm is set')
     this.#trigger()
     this.#buffer.push(request)
   }
   recover(index: number) {
-    assert(!this.isArmed, 'Alarm is set')
+    assert(!this.isAlarmed, 'Alarm is set')
     return this.#buffer[index]
   }
   await() {
     // a promise that resolves when the accumulator is triggered
-    assert(this.isArmed, 'Alarm is not set')
-    this.#isArmed = false
+    assert(this.isAlarmed, 'Alarm is not set')
+    this.#isAlarmed = false
     return new Promise<void>((resolve) => {
       this.#trigger = resolve
     })
   }
   arm() {
     // any more attempts to accumulate will cause an explosive failure
-    this.#isArmed = true
+    this.#isAlarmed = true
   }
-  get isArmed() {
-    return this.#isArmed
+  get isAlarmed() {
+    return this.#isAlarmed
   }
   absorb(from: Accumulator) {
-    assert(this.isArmed, 'this is not alarmed')
-    assert(from.isArmed, 'from is not alarmed')
+    assert(this.isAlarmed, 'this is not alarmed')
+    assert(from.isAlarmed, 'from is not alarmed')
     assert(this.#buffer.length <= from.#buffer.length, 'this must be shorter')
     let index = 0
     for (const source of from.#buffer) {
@@ -63,5 +65,14 @@ export default class Accumulator {
         }
       }
     }
+  }
+  get files() {
+    // must handle deletes, moves, and other types of fun things
+    return this.#changedFiles
+  }
+  write(path: string, file: string | Uint8Array) {
+    // trigger broadcast channel updates
+  }
+  writeJSON(path: string, json: object) {
   }
 }

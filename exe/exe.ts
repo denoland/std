@@ -56,6 +56,7 @@ export default class Executor {
           return outcome
         }),
         accumulator: ioAccumulator,
+        api: isolateApi,
       }
       this.#functions.set(exeId, execution)
     }
@@ -69,16 +70,23 @@ export default class Executor {
     execution.accumulator.arm()
 
     if (isOutcome(winner)) {
+      // read in the changed files from the api.
       const sequence = io.getSequence(req)
       const reply: SolidReply = { target: pid, sequence, outcome: winner }
       await i(reply)
       log('exe complete %o', exeId)
       this.#functions.delete(exeId)
+      // pass back the path:content pairs to the fs
       return true
+      // do not write to fs until the commit, especially for json, to avoid
+      // stringification.
+
+      // write all the accumulations to disk now, since finalizing
     }
 
     log('accumulator triggered first')
     const { accumulations } = execution.accumulator
+    assert(accumulations.length > 0, 'no accumulations')
     for (const accumulation of accumulations) {
       log('accumulation:', accumulation.request)
       await i(accumulation.request)
@@ -90,6 +98,7 @@ export default class Executor {
 type Execution = {
   function: Promise<Outcome>
   accumulator: Accumulator
+  api: IsolateApi
 }
 const getExeId = (request: Request) => {
   const id = getPoolKey(request)

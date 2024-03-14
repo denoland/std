@@ -116,6 +116,96 @@ export enum RUNNERS {
 export const toString = (pid: PID) => {
   return `${pid.account}/${pid.repository}:${pid.branches.join('_')}`
 }
+type Change = {
+  count?: number | undefined
+  /**
+   * Text content.
+   */
+  value: string
+  /**
+   * `true` if the value was inserted into the new string.
+   */
+  added?: boolean | undefined
+  /**
+   * `true` if the value was removed from the old string.
+   */
+  removed?: boolean | undefined
+}
+export type Splice = {
+  pid: PID
+  /**
+   * The commit this splice refers to
+   */
+  commit: CommitObject
+  /**
+   * The timestamp of the commit, or if transient, the timestamp of the write
+   * that caused this update
+   */
+  timestamp: number
+  path?: string
+  changes?: Change[]
+  /**
+   * If the file requested is binary, it will be returned here
+   */
+  binary?: Uint8Array
+}
+/**
+ * A git commit object.
+ */
+export type CommitObject = {
+  /**
+   * Commit message
+   */
+  message: string
+  /**
+   * SHA-1 object id of corresponding file tree
+   */
+  tree: string
+  /**
+   * an array of zero or more SHA-1 object ids
+   */
+  parent: string[]
+  author: {
+    /**
+     * The author's name
+     */
+    name: string
+    /**
+     * The author's email
+     */
+    email: string
+    /**
+     * UTC Unix timestamp in seconds
+     */
+    timestamp: number
+    /**
+     * Timezone difference from UTC in minutes
+     */
+    timezoneOffset: number
+  }
+  committer: {
+    /**
+     * The committer's name
+     */
+    name: string
+    /**
+     * The committer's email
+     */
+    email: string
+    /**
+     * UTC Unix timestamp in seconds
+     */
+    timestamp: number
+    /**
+     * Timezone difference from UTC in minutes
+     */
+    timezoneOffset: number
+  }
+  /**
+   * PGP signature (if present)
+   */
+  gpgsig?: string
+}
 export interface Cradle {
   ping(params?: Params): Promise<IsolateReturn>
   apiSchema(params: { isolate: string }): Promise<Record<string, object>>
@@ -129,4 +219,5 @@ export interface Cradle {
   clone(params: { repo: string }): Promise<{ pid: PID; head: string }>
   probe(params: { repo: string }): Promise<{ pid: PID; head: string } | void>
   rm(params: { repo: string }): Promise<void>
+  read(params: { pid: PID; path: string }): AsyncIterable<Splice>
 }

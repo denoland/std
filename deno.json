@@ -12,19 +12,21 @@
     "esm:remove": "deno run -A https://esm.sh/v135 remove",
     "setup:githook": "ln -s ./pre-commit .git/hooks/pre-commit",
     "test:cloud": "DEBUG_COLORS=1 deno test -A ./api/cloud.ts",
-    "db:drop": "DEBUG_COLORS=1 deno run --unstable-kv -A ./guts/kv-mgmt.ts",
+    "db:drop": "DEBUG_COLORS=1 deno run --unstable-kv -A ./api/db-drop.ts",
     "db:locks": "DEBUG_COLORS=1 deno run --unstable-kv -A ./api/db-tools.ts"
   },
   "imports": {
     "@/": "./",
     "@io/": "./io/",
+    "@utils": "./utils.ts",
     "$std/": "https://deno.land/std/",
     "std/": "https://deno.land/std/",
     "kv_oauth/": "https://deno.land/x/deno_kv_oauth@v0.9.1/",
     "$gfm": "https://deno.land/x/gfm@0.2.5/mod.ts",
-    "@utils": "./utils.ts",
     "$git": "https://esm.sh/isomorphic-git",
-    "$git/": "https://esm.sh/isomorphic-git/"
+    "$git/": "https://esm.sh/isomorphic-git/",
+    "$diff": "https://esm.sh/v135/diff@5.2.0",
+    "$diff/": "https://esm.sh/v135/diff@5.2.0/"
   },
   "exclude": ["cov/"],
   "lint": {

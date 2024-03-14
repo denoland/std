@@ -125,6 +125,8 @@ export default class IsolateApi<T extends object = Default> {
   write(path: string, file: string | Uint8Array) {
     isRelative(path)
     this.#fs.writeFileSync('/' + path, file)
+    // need to tag / track the file in the localized index
+    // then upon commit, need to track that somehow ?
   }
   async readJSON(path: string) {
     const string = await this.read(path)
