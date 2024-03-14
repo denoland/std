@@ -19,7 +19,7 @@ function createLPS(pat: Uint8Array): Uint8Array {
       lps[i] = 0;
       i++;
     } else {
-      prefixEnd = lps[prefixEnd - 1];
+      prefixEnd = lps[prefixEnd - 1]!;
     }
   }
   return lps;
@@ -76,7 +76,7 @@ export async function* readDelim(
           inspectIndex++;
           localIndex++;
         } else {
-          matchIndex = delimLPS[matchIndex - 1];
+          matchIndex = delimLPS[matchIndex - 1]!;
         }
       }
     }

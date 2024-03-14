@@ -65,10 +65,10 @@ export function encodeAscii85(
   let uint8 = validateBinaryLike(data);
 
   const standard = options?.standard ?? "Adobe";
-  let output: string[] = [],
-    v: number,
-    n = 0,
-    difference = 0;
+  let output: string[] = [];
+  let v: number;
+  let n = 0;
+  let difference = 0;
   if (uint8.length % 4 !== 0) {
     const tmp = uint8;
     difference = 4 - (tmp.length % 4);
@@ -76,13 +76,13 @@ export function encodeAscii85(
     uint8.set(tmp);
   }
   const view = new DataView(uint8.buffer, uint8.byteOffset, uint8.byteLength);
-  for (let i = 0, len = uint8.length; i < len; i += 4) {
+  for (let i = 0; i < uint8.length; i += 4) {
     v = view.getUint32(i);
     // Adobe and btoa standards compress 4 zeroes to single "z" character
     if (
       (standard === "Adobe" || standard === "btoa") &&
       v === 0 &&
-      i < len - difference - 3
+      i < uint8.length - difference - 3
     ) {
       output[n++] = "z";
       continue;
@@ -164,12 +164,12 @@ export function decodeAscii85(
   }
   //remove all invalid characters
   ascii85 = ascii85.replaceAll(/[^!-u]/g, "");
-  const len = ascii85.length,
-    output = new Uint8Array(len + 4 - (len % 4));
+  const len = ascii85.length;
+  const output = new Uint8Array(len + 4 - (len % 4));
   const view = new DataView(output.buffer);
-  let v = 0,
-    n = 0,
-    max = 0;
+  let v = 0;
+  let n = 0;
+  let max = 0;
   for (let i = 0; i < len;) {
     for (max += 5; i < max; i++) {
       v = v * 85 + (i < len ? ascii85.charCodeAt(i) : 117) - 33;

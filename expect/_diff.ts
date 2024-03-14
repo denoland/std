@@ -351,7 +351,8 @@ export function diffstr(A: string, B: string) {
     tokenize(`${unescape(B)}\n`),
   );
 
-  const added = [], removed = [];
+  const added = [];
+  const removed = [];
   for (const result of diffResult) {
     if (result.type === DiffType.added) {
       added.push(result);
@@ -366,8 +367,8 @@ export function diffstr(A: string, B: string) {
   const aLines = hasMoreRemovedLines ? added : removed;
   const bLines = hasMoreRemovedLines ? removed : added;
   for (const a of aLines) {
-    let tokens = [] as Array<DiffResult<string>>,
-      b: undefined | DiffResult<string>;
+    let tokens = [] as Array<DiffResult<string>>;
+    let b: undefined | DiffResult<string>;
     // Search another diff line with at least one common token
     while (bLines.length) {
       b = bLines.shift();
@@ -437,7 +438,8 @@ export function buildMessage(
   diffResult: ReadonlyArray<DiffResult<string>>,
   { stringDiff = false } = {},
 ): string[] {
-  const messages: string[] = [], diffMessages: string[] = [];
+  const messages: string[] = [];
+  const diffMessages: string[] = [];
   messages.push("");
   messages.push("");
   messages.push(

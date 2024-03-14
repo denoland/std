@@ -232,18 +232,28 @@ Deno.test("expandGlobSync() accepts includeDirs option set to false", function (
   assertEquals(expandGlobSyncArray("subdir", options), []);
 });
 
-Deno.test("expandGlob() throws permission error without fs permissions", async function () {
-  const exampleUrl = new URL("testdata/expand_wildcard.js", import.meta.url);
-  const command = new Deno.Command(Deno.execPath(), {
-    args: ["run", "--quiet", "--no-lock", exampleUrl.toString()],
-  });
-  const { code, success, stdout, stderr } = await command.output();
-  const decoder = new TextDecoder();
-  assert(!success);
-  assertEquals(code, 1);
-  assertEquals(decoder.decode(stdout), "");
-  assertStringIncludes(decoder.decode(stderr), "PermissionDenied");
-});
+Deno.test(
+  "expandGlob() throws permission error without fs permissions",
+  async function () {
+    const exampleUrl = new URL("testdata/expand_wildcard.js", import.meta.url);
+    const command = new Deno.Command(Deno.execPath(), {
+      args: [
+        "run",
+        "--quiet",
+        "--no-lock",
+        "--config",
+        "deno.json",
+        exampleUrl.toString(),
+      ],
+    });
+    const { code, success, stdout, stderr } = await command.output();
+    const decoder = new TextDecoder();
+    assert(!success);
+    assertEquals(code, 1);
+    assertEquals(decoder.decode(stdout), "");
+    assertStringIncludes(decoder.decode(stderr), "PermissionDenied");
+  },
+);
 
 Deno.test("expandGlob() returns single entry when root is not glob", async function () {
   const options = { ...EG_OPTIONS, root: join(EG_OPTIONS.root!, "a[b]c") };
