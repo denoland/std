@@ -86,7 +86,7 @@ function repeat(c: string, bytes: number): Uint8Array {
   return ui8;
 }
 
-Deno.test("new Buffer()", () => {
+Deno.test("Buffer", () => {
   init();
   assert(testBytes);
   assert(testString);
