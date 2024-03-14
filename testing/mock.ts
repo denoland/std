@@ -114,6 +114,45 @@
  * function was not modified in any way like the `_internals` object was in the
  * second example.
  *
+ * Method spys are disposable, meaning that you can have them automatically restore
+ * themselves with the `using` keyword. Using this approach is cleaner because you
+ * do not need to wrap your assertions in a try statement to ensure you restore the
+ * methods before the tests finish.
+ *
+ * ```ts
+ * import {
+ *   assertSpyCall,
+ *   assertSpyCalls,
+ *   spy,
+ * } from "https://deno.land/std@$STD_VERSION/testing/mock.ts";
+ * import { assertEquals } from "https://deno.land/std@$STD_VERSION/assert/assert_equals.ts";
+ *
+ * function multiply(a: number, b: number): number {
+ *   return a * b;
+ * }
+ *
+ * function square(value: number): number {
+ *   return _internals.multiply(value, value);
+ * }
+ *
+ * const _internals = { multiply };
+ *
+ * Deno.test("square calls multiply and returns results", () => {
+ *   using multiplySpy = spy(_internals, "multiply");
+ *
+ *   assertEquals(square(5), 25);
+ *
+ *   // asserts that multiplySpy was called at least once and details about the first call.
+ *   assertSpyCall(multiplySpy, 0, {
+ *     args: [5, 5],
+ *     returned: 25,
+ *   });
+ *
+ *   // asserts that multiplySpy was only called once.
+ *   assertSpyCalls(multiplySpy, 1);
+ * });
+ * ```
+ *
  * ## Stubbing
  *
  * Say we have two functions, `randomMultiple` and `randomInt`, if we want to
@@ -170,6 +209,52 @@
  *     // unwraps the randomInt method on the _internals object
  *     randomIntStub.restore();
  *   }
+ *
+ *   // asserts that randomIntStub was called at least once and details about the first call.
+ *   assertSpyCall(randomIntStub, 0, {
+ *     args: [-10, 10],
+ *     returned: -3,
+ *   });
+ *   // asserts that randomIntStub was called at least twice and details about the second call.
+ *   assertSpyCall(randomIntStub, 1, {
+ *     args: [-10, 10],
+ *     returned: 3,
+ *   });
+ *
+ *   // asserts that randomIntStub was only called twice.
+ *   assertSpyCalls(randomIntStub, 2);
+ * });
+ * ```
+ *
+ * Like method spys, stubs are disposable, meaning that you can have them automatically
+ * restore themselves with the `using` keyword. Using this approach is cleaner because
+ * you do not need to wrap your assertions in a try statement to ensure you restore the
+ * methods before the tests finish.
+ *
+ * ```ts
+ * import {
+ *   assertSpyCall,
+ *   assertSpyCalls,
+ *   returnsNext,
+ *   stub,
+ * } from "https://deno.land/std@$STD_VERSION/testing/mock.ts";
+ * import { assertEquals } from "https://deno.land/std@$STD_VERSION/assert/assert_equals.ts";
+ *
+ * function randomInt(lowerBound: number, upperBound: number): number {
+ *   return lowerBound + Math.floor(Math.random() * (upperBound - lowerBound));
+ * }
+ *
+ * function randomMultiple(value: number): number {
+ *   return value * _internals.randomInt(-10, 10);
+ * }
+ *
+ * const _internals = { randomInt };
+ *
+ * Deno.test("randomMultiple uses randomInt to generate random multiples between -10 and 10 times the value", () => {
+ *   using randomIntStub = stub(_internals, "randomInt", returnsNext([-3, 3]));
+ *
+ *   assertEquals(randomMultiple(5), -15);
+ *   assertEquals(randomMultiple(5), 15);
  *
  *   // asserts that randomIntStub was called at least once and details about the first call.
  *   assertSpyCall(randomIntStub, 0, {
@@ -287,6 +372,16 @@ export interface Spy<
   /** If spying on an instance method, this restores the original instance method. */
   restore(): void;
 }
+
+/** An instance method wrapper that records all calls made to it. */
+export interface MethodSpy<
+  // deno-lint-ignore no-explicit-any
+  Self = any,
+  // deno-lint-ignore no-explicit-any
+  Args extends unknown[] = any[],
+  // deno-lint-ignore no-explicit-any
+  Return = any,
+> extends Spy<Self, Args, Return>, Disposable {}
 
 /** Wraps a function with a Spy. */
 function functionSpy<
@@ -437,7 +532,7 @@ function methodSpy<
   Self,
   Args extends unknown[],
   Return,
->(self: Self, property: keyof Self): Spy<Self, Args, Return> {
+>(self: Self, property: keyof Self): MethodSpy<Self, Args, Return> {
   if (typeof self[property] !== "function") {
     throw new MockError("property is not an instance method");
   }
@@ -468,7 +563,7 @@ function methodSpy<
     }
     calls.push(call);
     return call.returned;
-  } as Spy<Self, Args, Return>;
+  } as MethodSpy<Self, Args, Return>;
   Object.defineProperties(spy, {
     original: {
       enumerable: true,
@@ -495,6 +590,11 @@ function methodSpy<
         }
         restored = true;
         unregisterMock(spy);
+      },
+    },
+    [Symbol.dispose]: {
+      value: () => {
+        spy.restore();
       },
     },
   });
@@ -612,7 +712,11 @@ export function spy<
 >(
   self: Self,
   property: Prop,
-): Spy<Self, GetParametersFromProp<Self, Prop>, GetReturnFromProp<Self, Prop>>;
+): MethodSpy<
+  Self,
+  GetParametersFromProp<Self, Prop>,
+  GetReturnFromProp<Self, Prop>
+>;
 export function spy<
   Self,
   Args extends unknown[],
@@ -647,7 +751,7 @@ export interface Stub<
   Args extends unknown[] = any[],
   // deno-lint-ignore no-explicit-any
   Return = any,
-> extends Spy<Self, Args, Return> {
+> extends MethodSpy<Self, Args, Return> {
   /** The function that is used instead of the original. */
   fake: (this: Self, ...args: Args) => Return;
 }
@@ -743,6 +847,11 @@ export function stub<
         }
         restored = true;
         unregisterMock(stub);
+      },
+    },
+    [Symbol.dispose]: {
+      value: () => {
+        stub.restore();
       },
     },
   });

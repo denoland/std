@@ -1,6 +1,22 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-import type { Range } from "./types.ts";
-import { isComparator } from "./_is_comparator.ts";
+import type { Comparator, Range } from "./types.ts";
+import { OPERATORS } from "./_constants.ts";
+import { ALL, NONE } from "./constants.ts";
+import { isSemVer } from "./is_semver.ts";
+
+function isComparator(value: unknown): value is Comparator {
+  if (
+    value === null || value === undefined || Array.isArray(value) ||
+    typeof value !== "object"
+  ) return false;
+  if (value === NONE || value === ALL) return true;
+  const { operator, semver } = value as Comparator;
+  return (
+    (operator === undefined ||
+      OPERATORS.includes(operator)) &&
+    isSemVer(semver)
+  );
+}
 
 /**
  * Does a deep check on the object to determine if its a valid range.

@@ -54,8 +54,8 @@ export async function generate(
   const buffer = await crypto.subtle.digest("MD5", toHash);
   const bytes = new Uint8Array(buffer);
 
-  bytes[6] = (bytes[6] & 0x0f) | 0x30;
-  bytes[8] = (bytes[8] & 0x3f) | 0x80;
+  bytes[6] = (bytes[6]! & 0x0f) | 0x30;
+  bytes[8] = (bytes[8]! & 0x3f) | 0x80;
 
   return bytesToUuid(bytes);
 }

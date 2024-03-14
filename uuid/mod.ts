@@ -76,5 +76,5 @@ export function version(uuid: string): number {
     throw new TypeError("Invalid UUID");
   }
 
-  return parseInt(uuid[14], 16);
+  return parseInt(uuid[14]!, 16);
 }

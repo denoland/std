@@ -1,6 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import { ValueType } from "./encode.ts";
+import type { ValueType } from "./encode.ts";
 
 /**
  * Decode a value from the MessagePack binary format.

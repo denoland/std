@@ -7,6 +7,16 @@
  * supporting additional encryption APIs, but also delegating to the built-in
  * APIs when possible.
  *
+ * ```ts
+ * import { crypto } from "https://deno.land/std@$STD_VERSION/crypto/crypto.ts";
+ *
+ * const message = "Hello, Deno!";
+ * const encoder = new TextEncoder();
+ * const data = encoder.encode(message);
+ *
+ * await crypto.subtle.digest("BLAKE3", data);
+ * ```
+ *
  * @module
  */
 

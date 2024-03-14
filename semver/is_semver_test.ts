@@ -4,9 +4,8 @@ import { MAX, MIN } from "./constants.ts";
 import { isSemVer } from "./is_semver.ts";
 
 Deno.test({
-  name: "invalid_semver",
+  name: "isSemVer() handles invalid input",
   fn: async (t) => {
-    let i = 0;
     const versions: [unknown][] = [
       [null],
       [undefined],
@@ -32,7 +31,7 @@ Deno.test({
       [{ major: 0, minor: 0, patch: 0, build: [], prerelease: [Number.NaN] }],
     ];
     for (const [v] of versions) {
-      await t.step(`invalid_${(i++).toString().padStart(2, "0")}`, () => {
+      await t.step(`${Deno.inspect(v)}`, () => {
         const actual = isSemVer(v);
         assert(!actual);
       });
@@ -41,9 +40,8 @@ Deno.test({
 });
 
 Deno.test({
-  name: "valid_semver",
+  name: "isSemVer()",
   fn: async (t) => {
-    let i = 0;
     const versions: [unknown][] = [
       [{ major: 0, minor: 0, patch: 0 }],
       [{ major: 0, minor: 0, patch: 0, prerelease: [] }],
@@ -66,10 +64,13 @@ Deno.test({
       [MAX],
     ];
     for (const [v] of versions) {
-      await t.step(`valid_${(i++).toString().padStart(2, "0")}`, () => {
-        const actual = isSemVer(v);
-        assert(actual);
-      });
+      await t.step(
+        `${Deno.inspect(v)}`,
+        () => {
+          const actual = isSemVer(v);
+          assert(actual);
+        },
+      );
     }
   },
 });

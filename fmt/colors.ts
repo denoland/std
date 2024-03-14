@@ -134,6 +134,9 @@ export function bold(str: string): string {
 /**
  * The text emits only a small amount of light.
  * @param str text to dim
+ *
+ * Warning: Not all terminal emulators support `dim`.
+ * For compatibility across all terminals, use {@linkcode gray} or {@linkcode brightBlack} instead.
  */
 export function dim(str: string): string {
   return run(str, code([2], 22));

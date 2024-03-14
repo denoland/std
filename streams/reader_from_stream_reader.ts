@@ -1,8 +1,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-import { Buffer } from "../io/buffer.ts";
-import { writeAll } from "../io/write_all.ts";
+import { readerFromStreamReader as _readerFromStreamReader } from "../io/reader_from_stream_reader.ts";
 import type { Reader } from "../io/types.ts";
 
 /**
@@ -20,25 +19,10 @@ import type { Reader } from "../io/types.ts";
  * await copy(reader, file);
  * ```
  *
- * @deprecated (will be removed after 1.0.0) Use {@linkcode ReadableStreamDefaultReader} directly.
+ * @deprecated (will be removed in 1.0.0) Import from {@link https://deno.land/std/io/reader_from_stream_reader.ts} instead.
  */
 export function readerFromStreamReader(
   streamReader: ReadableStreamDefaultReader<Uint8Array>,
 ): Reader {
-  const buffer = new Buffer();
-
-  return {
-    async read(p: Uint8Array): Promise<number | null> {
-      if (buffer.empty()) {
-        const res = await streamReader.read();
-        if (res.done) {
-          return null; // EOF
-        }
-
-        await writeAll(buffer, res.value);
-      }
-
-      return buffer.read(p);
-    },
-  };
+  return _readerFromStreamReader(streamReader);
 }

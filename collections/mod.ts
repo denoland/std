@@ -9,6 +9,14 @@
  * {@link https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/ | Kotlin's Collections}
  * package.
  *
+ * ```ts
+ * import { intersect } from "https://deno.land/std@$STD_VERSION/collections/intersect.ts";
+ *
+ * const lisaInterests = ["Cooking", "Music", "Hiking"];
+ * const kimInterests = ["Music", "Tennis", "Cooking"];
+ * intersect(lisaInterests, kimInterests); // [ "Cooking", "Music" ]
+ * ```
+ *
  * @module
  */
 
@@ -54,3 +62,5 @@ export * from "./drop_last_while.ts";
 export * from "./reduce_groups.ts";
 export * from "./sample.ts";
 export * from "./running_reduce.ts";
+export * from "./pick.ts";
+export * from "./omit.ts";

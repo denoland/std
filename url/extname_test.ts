@@ -13,7 +13,7 @@ const TESTSUITE = [
 ] as const;
 
 Deno.test("extname()", function () {
-  for (const [test_url, expected] of TESTSUITE) {
-    assertEquals(url.extname(test_url), expected);
+  for (const [testUrl, expected] of TESTSUITE) {
+    assertEquals(url.extname(testUrl), expected);
   }
 });

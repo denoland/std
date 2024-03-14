@@ -4,9 +4,9 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
 import { YAMLError } from "../_error.ts";
-import type { RepresentFn, StyleVariant, Type } from "../type.ts";
+import type { RepresentFn } from "../type.ts";
 import * as common from "../_utils.ts";
-import { DumperState, DumperStateOptions } from "./dumper_state.ts";
+import { DumperState, type DumperStateOptions } from "./dumper_state.ts";
 
 type Any = common.Any;
 type ArrayObject<T = Any> = common.ArrayObject<T>;
@@ -129,20 +129,7 @@ function generateNextLine(state: DumperState, level: number): string {
 }
 
 function testImplicitResolving(state: DumperState, str: string): boolean {
-  let type: Type;
-  for (
-    let index = 0, length = state.implicitTypes.length;
-    index < length;
-    index += 1
-  ) {
-    type = state.implicitTypes[index];
-
-    if (type.resolve(str)) {
-      return true;
-    }
-  }
-
-  return false;
+  return state.implicitTypes.some((type) => type.resolve(str));
 }
 
 // [33] s-white ::= s-space | s-tab
@@ -379,7 +366,7 @@ function foldString(string: string, width: number): string {
   // tslint:disable-next-line:no-conditional-assignment
   while ((match = lineRe.exec(string))) {
     const prefix = match[1],
-      line = match[2];
+      line = match[2] || "";
     moreIndented = line[0] === " ";
     result += prefix +
       (!prevMoreIndented && !moreIndented && line !== "" ? "\n" : "") +
@@ -572,18 +559,12 @@ function writeFlowMapping(
   const _tag = state.tag,
     objectKeyList = Object.keys(object);
 
-  let pairBuffer: string, objectKey: string, objectValue: Any;
-  for (
-    let index = 0, length = objectKeyList.length;
-    index < length;
-    index += 1
-  ) {
-    pairBuffer = state.condenseFlow ? '"' : "";
+  for (const [index, objectKey] of objectKeyList.entries()) {
+    let pairBuffer = state.condenseFlow ? '"' : "";
 
     if (index !== 0) pairBuffer += ", ";
 
-    objectKey = objectKeyList[index];
-    objectValue = object[objectKey];
+    const objectValue = object[objectKey];
 
     if (!writeNode(state, level, objectKey, false, false)) {
       continue; // Skip this pair because of invalid key;
@@ -631,29 +612,20 @@ function writeBlockMapping(
     throw new YAMLError("sortKeys must be a boolean or a function");
   }
 
-  let pairBuffer = "",
-    objectKey: string,
-    objectValue: Any,
-    explicitPair: boolean;
-  for (
-    let index = 0, length = objectKeyList.length;
-    index < length;
-    index += 1
-  ) {
-    pairBuffer = "";
+  for (const [index, objectKey] of objectKeyList.entries()) {
+    let pairBuffer = "";
 
     if (!compact || index !== 0) {
       pairBuffer += generateNextLine(state, level);
     }
 
-    objectKey = objectKeyList[index];
-    objectValue = object[objectKey];
+    const objectValue = object[objectKey];
 
     if (!writeNode(state, level + 1, objectKey, true, true, true)) {
       continue; // Skip this pair because of invalid key.
     }
 
-    explicitPair = (state.tag !== null && state.tag !== "?") ||
+    const explicitPair = (state.tag !== null && state.tag !== "?") ||
       (state.dump && state.dump.length > 1024);
 
     if (explicitPair) {
@@ -697,11 +669,8 @@ function detectType(
 ): boolean {
   const typeList = explicit ? state.explicitTypes : state.implicitTypes;
 
-  let type: Type;
-  let style: StyleVariant;
-  let _result: string;
-  for (let index = 0, length = typeList.length; index < length; index += 1) {
-    type = typeList[index];
+  for (const type of typeList) {
+    let _result: string;
 
     if (
       (type.instanceOf || type.predicate) &&
@@ -712,12 +681,12 @@ function detectType(
       state.tag = explicit ? type.tag : "?";
 
       if (type.represent) {
-        style = state.styleMap[type.tag] || type.defaultStyle;
+        const style = state.styleMap[type.tag]! || type.defaultStyle;
 
         if (_toString.call(type.represent) === "[object Function]") {
           _result = (type.represent as RepresentFn)(object, style);
         } else if (hasOwn(type.represent, style)) {
-          _result = (type.represent as ArrayObject<RepresentFn>)[style](
+          _result = (type.represent as ArrayObject<RepresentFn>)[style]!(
             object,
             style,
           );
@@ -845,14 +814,8 @@ function inspectNode(
           inspectNode(object[idx], objects, duplicatesIndexes);
         }
       } else {
-        const objectKeyList = Object.keys(object);
-
-        for (
-          let idx = 0, length = objectKeyList.length;
-          idx < length;
-          idx += 1
-        ) {
-          inspectNode(object[objectKeyList[idx]], objects, duplicatesIndexes);
+        for (const objectKey of Object.keys(object)) {
+          inspectNode(object[objectKey], objects, duplicatesIndexes);
         }
       }
     }
@@ -868,11 +831,10 @@ function getDuplicateReferences(
 
   inspectNode(object, objects, duplicatesIndexes);
 
-  const length = duplicatesIndexes.length;
-  for (let index = 0; index < length; index += 1) {
-    state.duplicates.push(objects[duplicatesIndexes[index]]);
+  for (const idx of duplicatesIndexes) {
+    state.duplicates.push(objects[idx]);
   }
-  state.usedDuplicates = Array.from({ length });
+  state.usedDuplicates = Array.from({ length: duplicatesIndexes.length });
 }
 
 export function dump(input: Any, options?: DumperStateOptions): string {

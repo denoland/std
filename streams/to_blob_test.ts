@@ -4,7 +4,7 @@ import { assert } from "../assert/assert.ts";
 import { assertEquals } from "../assert/assert_equals.ts";
 import { toBlob } from "./to_blob.ts";
 
-Deno.test("[streams] toBlob", async () => {
+Deno.test("toBlob()", async () => {
   const stream = ReadableStream.from([
     new Uint8Array([1, 2, 3, 4, 5]),
     new Uint8Array([6, 7]),
