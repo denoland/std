@@ -98,14 +98,14 @@ Deno.test("Tar() appends file with long name to tar archive", async function ():
 Deno.test("Tar() checks directory entry type", async function () {
   const tar = new Tar();
 
-  tar.append("directory/", {
+  await tar.append("directory/", {
     reader: new Buffer(),
     contentSize: 0,
     type: "directory",
   });
 
   const filePath = resolve(testdataDir);
-  tar.append("archive/testdata/", {
+  await tar.append("archive/testdata/", {
     filePath,
   });
 
