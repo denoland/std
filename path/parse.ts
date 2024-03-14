@@ -7,7 +7,7 @@ import { parse as posixParse } from "./posix/parse.ts";
 import { parse as windowsParse } from "./windows/parse.ts";
 
 /**
- * Return a `ParsedPath` object of the `path`.
+ * Return a `ParsedPath` object of the `path`. Use `format` to reverse the result.
  * @param path to process
  */
 export function parse(path: string): ParsedPath {
