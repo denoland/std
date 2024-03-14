@@ -546,10 +546,10 @@ function methodSpy<
   }
 
   const original = self[property] as unknown as (
-      this: Self,
-      ...args: Args
-    ) => Return,
-    calls: SpyCall<Self, Args, Return>[] = [];
+    this: Self,
+    ...args: Args
+  ) => Return;
+  const calls: SpyCall<Self, Args, Return>[] = [];
   let restored = false;
   const spy = function (this: Self, ...args: Args): Return {
     const call: SpyCall<Self, Args, Return> = { args };
@@ -799,10 +799,10 @@ export function stub<
   const fake = func ?? (() => {}) as (this: Self, ...args: Args) => Return;
 
   const original = self[property] as unknown as (
-      this: Self,
-      ...args: Args
-    ) => Return,
-    calls: SpyCall<Self, Args, Return>[] = [];
+    this: Self,
+    ...args: Args
+  ) => Return;
+  const calls: SpyCall<Self, Args, Return>[] = [];
   let restored = false;
   const stub = function (this: Self, ...args: Args): Return {
     const call: SpyCall<Self, Args, Return> = { args };

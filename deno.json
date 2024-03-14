@@ -42,7 +42,8 @@
     "rules": {
       "include": [
         "camelcase",
-        "no-sync-fn-in-async-fn"
+        "no-sync-fn-in-async-fn",
+        "single-var-declarator"
       ]
     }
   }
