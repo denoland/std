@@ -116,7 +116,7 @@ jobs:
           declare modifications="$(git diff --name-only HEAD~ -- ${{ matrix.module }})"
           declare modified="$([[ "$modifications" ]] && echo true || echo false)"
           echo "modified=$modified" >> $GITHUB_OUTPUT
-          echo "${{ matrix.module }} WASM source modified in this commit? $modified"
+          echo "${{ matrix.module }} Wasm source modified in this commit? $modified"
           echo "$modifications"
 
       - name: Set up Deno

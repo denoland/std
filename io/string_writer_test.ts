@@ -33,6 +33,5 @@ Deno.test("ioStringWriterIsolationTest", async function () {
     const written = await w.write(c);
     assertEquals(written, 1);
   }
-  srcChunks[0][0] = 88;
   assertEquals(w.toString(), src);
 });

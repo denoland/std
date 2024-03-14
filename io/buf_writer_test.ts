@@ -127,7 +127,7 @@ Deno.test({
 
     await bufWriter.flush();
     const buf = new Uint8Array(cache.length);
-    for (let i = 0; i < cache.length; i++) buf.set(cache[i], i);
+    for (const [i, val] of cache.entries()) buf.set(val, i);
 
     assertEquals(data, buf);
   },
@@ -154,7 +154,7 @@ Deno.test({
 
     bufWriter.flush();
     const buf = new Uint8Array(cache.length);
-    for (let i = 0; i < cache.length; i++) buf.set(cache[i], i);
+    for (const [i, val] of cache.entries()) buf.set(val, i);
 
     assertEquals(data, buf);
   },
