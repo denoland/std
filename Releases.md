@@ -1,3 +1,8 @@
+### 0.220.0 / 2024.03.14
+
+- Revert "refactor(cli): cleanup `parse_args.ts` (#4189)" (#4485)
+- add JSR link (#4456)
+
 ### 0.219.1 / 2024.03.08
 
 - chore: fix for jsr publish (#4449)
