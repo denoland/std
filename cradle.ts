@@ -161,6 +161,7 @@ export class QueueCradle implements Cradle {
         if (!exists) {
           continue
         }
+        log('file exists', path, oid)
         const content = await api.read(path)
         if (last !== undefined && last === content) {
           continue

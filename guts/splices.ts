@@ -11,7 +11,6 @@ export default (name: string, cradleMaker: () => Promise<Cradle>) => {
     const { write } = await artifact.pierces('io-fixture', pid)
 
     await t.step('read', async () => {
-      Debug.enable('*tests *cradle')
       write({ path: 'test', content: 'hello' })
       let first
       for await (const splice of artifact.read({ pid, path: 'test' })) {

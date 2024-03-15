@@ -136,36 +136,41 @@ export default class IsolateApi<T extends object = Default> {
   }
   async read(path: string) {
     isRelativeFile(path)
-    const fs = this.#fs
-
-    if (!fs.existsSync('/' + path)) {
-      // TODO check if the file was deleted and in staging
-      log('git read file', path)
-
-      const results = await git.walk({
-        fs,
-        dir: '/',
-        trees: [git.TREE({ ref: this.#commit })],
-        map: async (filepath: string, [entry]) => {
-          // TODO be efficient about tree walking for nested paths
-          if (filepath === path) {
-            const type = await entry!.type()
-            assert(type === 'blob', 'only blobs are supported: ' + type)
-            return await entry?.content()
-          }
-        },
-      })
-      assert(results.length <= 1, 'multiple files found: ' + path)
-      if (!results.length) {
-        log(FS.print(fs))
-        throw new FileNotFoundError('file not found: ' + path)
+    try {
+      return this.#fs.readFileSync('/' + path, 'utf8').toString()
+    } catch (err) {
+      if (err.code !== 'ENOENT') {
+        throw err
       }
-      return new TextDecoder().decode(results[0])
     }
-    return fs.readFileSync('/' + path, 'utf8').toString()
+    // TODO check if the file was deleted and in staging
+    log('git read file', path)
+    const trees = [git.STAGE(), git.TREE({ ref: this.#commit })]
+    const results = await git.walk({
+      fs: this.#fs,
+      dir: '/',
+      trees,
+      map: async (filepath: string, [stage, tree]) => {
+        if (filepath === path) {
+          if (stage) {
+            assert(tree, 'stage must have a tree entry')
+            const type = await tree.type()
+            assert(type === 'blob', 'only blobs are supported: ' + type)
+            return await tree.content()
+          }
+        }
+      },
+    })
+    assert(results.length <= 1, 'multiple files found: ' + path)
+    if (!results.length) {
+      console.log(FS.print(this.#fs))
+      throw new FileNotFoundError('file not found: ' + path)
+    }
+    return new TextDecoder().decode(results[0])
   }
   async exists(path: string) {
     isRelative(path)
+    // TODO merge exists and read
     try {
       this.#fs.statSync('/' + path)
       return true
@@ -174,18 +179,21 @@ export default class IsolateApi<T extends object = Default> {
         throw err
       }
     }
+    const trees = [git.STAGE(), git.TREE({ ref: this.#commit })]
     const results = await git.walk({
       fs: this.#fs,
       dir: '/',
-      // TODO use the commit and also check with stage
-      trees: [git.STAGE()],
-      map: async (filepath: string, [entry]) => {
+      trees,
+      map: async (filepath: string, [stage, tree]) => {
         // TODO be efficient about tree walking for nested paths
         // TODO check directories are excluded
         if (filepath === path) {
-          const type = await entry!.type()
-          assert(type === 'blob', 'only blobs are supported: ' + type)
-          return true
+          if (stage) {
+            assert(tree, 'stage must have a tree entry')
+            const type = await tree.type()
+            assert(type === 'blob', 'only blobs are supported: ' + type)
+            return true
+          }
         }
       },
     })

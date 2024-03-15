@@ -7,9 +7,10 @@ import {
 } from 'https://deno.land/x/hono/middleware.ts'
 import { streamSSE } from 'https://deno.land/x/hono/helper.ts'
 import QueueCradle from '@/cradle.ts'
-import { asOutcome, assert } from '@/utils.ts'
+import { asOutcome, assert, Debug } from '@/utils.ts'
 import { Cradle, EventSourceMessage } from '@/constants.ts'
 import { ulid } from '$std/ulid/mod.ts'
+const log = Debug('AI:server')
 
 export default class Server {
   #artifact!: QueueCradle
@@ -69,6 +70,7 @@ export default class Server {
             event: 'splice',
             id: String(server.#sseId++),
           }
+          log('event', event)
           await stream.writeSSE(event)
         }
       })
