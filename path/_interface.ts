@@ -7,13 +7,13 @@
  * ```ts
  * const parsedPathObj = parse("c:\\path\\dir\\index.html")
  * console.log(parsedPathObj)
- * {
- *   root: "c:\\",
- *   dir: "c:\\path\\dir",
- *   base: "index.html",
- *   ext: ".html",
- *   name: "index"
- * }
+ * // {
+ * //   root: "c:\\",
+ * //   dir: "c:\\path\\dir",
+ * //   base: "index.html",
+ * //   ext: ".html",
+ * //   name: "index"
+ * // }
  * ```
  */
 export interface ParsedPath {
