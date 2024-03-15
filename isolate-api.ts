@@ -6,7 +6,6 @@ import { assert } from 'std/assert/mod.ts'
 import * as posix from 'https://deno.land/std@0.213.0/path/posix/mod.ts'
 import { Debug, equal, fromOutcome, print } from '@utils'
 import git, { WalkerEntry } from '$git'
-import FS from '@/fs.ts'
 import {
   DispatchFunctions,
   getProcType,
