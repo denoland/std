@@ -1,4 +1,4 @@
-import { Debug } from '@utils'
+import { Debug, delay } from '@utils'
 import { IsolateApi } from '@/constants.ts'
 import { PID } from '@/constants.ts'
 const log = Debug('AI:io-fixture')
@@ -10,6 +10,17 @@ export const api = {
     required: ['path', 'content'],
     additionalProperties: false,
     properties: { path: { type: 'string' }, content: { type: 'string' } },
+  },
+  writeSlow: {
+    description: 'write a file one character at a time',
+    type: 'object',
+    required: ['path', 'content'],
+    additionalProperties: false,
+    properties: {
+      path: { type: 'string' },
+      content: { type: 'string' },
+      delay: { type: 'integer', minimum: 0 },
+    },
   },
   error: {
     description: 'throw an error',
@@ -47,6 +58,19 @@ export const functions = {
   write: (params: { path: string; content: string }, api: IsolateApi) => {
     log('write', params)
     api.write(params.path, params.content)
+  },
+  async writeSlow(
+    params: { path: string; content: string; delay: number },
+    api: IsolateApi,
+  ) {
+    log('writeSlow', params)
+    let string = ''
+    for (const char of params.content) {
+      string += char
+      api.write(params.path, string)
+      await delay(10)
+    }
+    // TODO extend to test with large strings so we can check performance impact
   },
   error: ({ message }: { message: string }) => {
     log('error', message)

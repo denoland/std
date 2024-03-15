@@ -3,7 +3,7 @@ import { Cradle } from '../api/web-client.types.ts'
 
 export default (name: string, cradleMaker: () => Promise<Cradle>) => {
   const prefix = name + ': '
-  Deno.test.only(prefix + 'read', async (t) => {
+  Deno.test(prefix + 'files', async (t) => {
     const artifact = await cradleMaker()
     const repo = 'process/session'
     await artifact.rm({ repo })
@@ -26,6 +26,8 @@ export default (name: string, cradleMaker: () => Promise<Cradle>) => {
       assert(first.changes)
       expect(first.changes[0].value).toEqual('hello')
     })
+    // do a writeSlow test to see how broadcast channel behaves
+    // and to test the catchup of the final commit
 
     await artifact.stop()
   })

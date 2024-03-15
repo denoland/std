@@ -1,7 +1,7 @@
 import * as engageHelp from './engage-help.ts'
 import * as fetch from './fetch.js'
 import * as files from './files.js'
-import * as git from './git.js'
+import * as git from './git.ts'
 import * as ioFixture from './io-fixture.ts'
 import * as loadHelp from './load-help.ts'
 import * as utils from './utils.js'

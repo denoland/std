@@ -113,7 +113,6 @@ export default (name: string, cradleMaker: () => Promise<Cradle>) => {
       log('done')
 
       const logs: unknown[] = await artifact.logs({ repo: 'cradle/pierce' })
-      console.dir(logs, { depth: Infinity })
       expect(logs.length).toBeGreaterThan(count * 2)
       expect(logs.length).toBeLessThan(count * 2.3)
 

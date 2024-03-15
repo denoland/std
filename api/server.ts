@@ -5,16 +5,21 @@ import {
   poweredBy,
   prettyJSON,
 } from 'https://deno.land/x/hono/middleware.ts'
+import { streamSSE } from 'https://deno.land/x/hono/helper.ts'
 import QueueCradle from '@/cradle.ts'
 import { asOutcome, assert } from '@/utils.ts'
-import { Cradle } from '@/constants.ts'
+import { Cradle, EventSourceMessage } from '@/constants.ts'
 import { ulid } from '$std/ulid/mod.ts'
 
 export default class Server {
   #artifact!: QueueCradle
   #app!: Hono
+  #sseId = 0
   static async create() {
     const artifact = await QueueCradle.create()
+
+    const server = new Server()
+    server.#artifact = artifact
 
     const app = new Hono().basePath('/api')
     app.use(prettyJSON())
@@ -45,6 +50,7 @@ export default class Server {
               assert(params.ulid === 'calculated-server-side', msg)
               params.ulid = ulid()
             }
+            assert(functionName !== 'read')
             outcome = await asOutcome(artifact[functionName](params))
           } catch (error) {
             outcome = await asOutcome(Promise.reject(error))
@@ -53,8 +59,21 @@ export default class Server {
         },
       )
     }
-    const server = new Server()
-    server.#artifact = artifact
+
+    app.post('/read', (c) => {
+      return streamSSE(c, async (stream) => {
+        const params = await c.req.json()
+        for await (const splice of artifact.read(params)) {
+          const event: EventSourceMessage = {
+            data: JSON.stringify(splice, null, 2),
+            event: 'splice',
+            id: String(server.#sseId++),
+          }
+          await stream.writeSSE(event)
+        }
+      })
+    })
+
     server.#app = app
     return server
   }

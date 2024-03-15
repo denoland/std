@@ -23,8 +23,8 @@
     "std/": "https://deno.land/std/",
     "kv_oauth/": "https://deno.land/x/deno_kv_oauth@v0.9.1/",
     "$gfm": "https://deno.land/x/gfm@0.2.5/mod.ts",
-    "$git": "https://esm.sh/isomorphic-git",
-    "$git/": "https://esm.sh/isomorphic-git/",
+    "$git": "https://esm.sh/isomorphic-git@1.25.6",
+    "$git/": "https://esm.sh/isomorphic-git@1.25.6/",
     "$diff": "https://esm.sh/v135/diff@5.2.0",
     "$diff/": "https://esm.sh/v135/diff@5.2.0/"
   },

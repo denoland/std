@@ -145,9 +145,18 @@ export type Splice = {
   path?: string
   changes?: Change[]
   /**
-   * If the file requested is binary, it will be returned here
+   * True if the file requested is binary.  Use a get request to fetch the file
+   * directly at the specific commit.
    */
-  binary?: Uint8Array
+  binary?: boolean
+}
+export declare interface EventSourceMessage {
+  /** The data received for this message. */
+  data: string
+  /** Event name sent from the server, or `undefined` if none is set for this message. */
+  event?: string
+  /** ID of the message, if any was provided by the server. */
+  id?: string
 }
 /**
  * A git commit object.

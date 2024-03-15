@@ -74,9 +74,11 @@ export default class Accumulator {
   get deletes() {
     return [...this.#deletes]
   }
-  write(path: string, file: string | Uint8Array) {
+  write(path: string, _file: string | Uint8Array) {
     // trigger broadcast channel updates
     assert(!this.isAlarmed, 'Activity is denied')
     this.#upserts.add(path)
+
+    // do the broadcast thru the beacon
   }
 }

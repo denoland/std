@@ -1,3 +1,4 @@
+import stringify from 'npm:safe-stable-stringify'
 import Accumulator from './exe/accumulator.ts'
 import Compartment from './io/compartment.ts'
 import { IFs } from 'https://esm.sh/memfs@4.6.0'
@@ -119,8 +120,7 @@ export default class IsolateApi<T extends object = Default> {
   }
   writeJSON(path: string, json: object) {
     isJsonPath(path)
-    // TODO make this stable
-    const content = JSON.stringify(json, null, 2)
+    const content = stringify(json, null, 2)
     this.write(path, content)
   }
   write(path: string, content: string | Uint8Array) {

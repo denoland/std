@@ -1,9 +1,8 @@
 import { Outcome } from '@/constants.ts'
 import Server from './server.ts'
-import { deserializeError, expect } from '@utils'
+import { deserializeError, expect, toEvents } from '@utils'
 import WebClient from '@/api/web-client.ts'
 import guts from '../guts/guts.ts'
-
 Deno.test('hono basic', async (t) => {
   await t.step('ping', async () => {
     const server = await Server.create()
@@ -22,7 +21,7 @@ const cradleMaker = async () => {
   const server = await Server.create()
   const fetcher = server.request as typeof fetch
 
-  const cradle = new WebClient('mock', deserializeError, fetcher)
+  const cradle = new WebClient('mock', deserializeError, toEvents, fetcher)
   cradle.stop = () => server.stop()
   return cradle
 }

@@ -7,8 +7,11 @@ import {
   ENTRY_BRANCH,
   IsolateFunctions,
   IsolateLifecycle,
+  isPierceRequest,
   Params,
   PID,
+  PierceRequest,
+  SolidRequest,
 } from '@/constants.ts'
 import IsolateApi from '../isolate-api.ts'
 import Compartment from '../io/compartment.ts'
@@ -18,10 +21,6 @@ import FS from '../fs.ts'
 import Cradle from '@/cradle.ts'
 import { assert } from 'https://deno.land/std@0.203.0/assert/assert.ts'
 import { pidFromRepo } from '@/keys.ts'
-import { SolidRequest } from '@/constants.ts'
-import { Poolable } from '@/constants.ts'
-import { PierceRequest } from '@/constants.ts'
-import { isPierceRequest } from '@/constants.ts'
 
 const log = Debug('AI:artifact')
 const repo = {

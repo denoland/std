@@ -1,4 +1,6 @@
+import { EventSourceParserStream } from 'npm:eventsource-parser/stream'
 export { equal } from 'https://deno.land/x/equal/mod.ts'
+export { delay } from '$std/async/mod.ts'
 import 'npm:supports-color'
 export { expect } from 'std/expect/mod.ts'
 export { assert } from 'std/assert/assert.ts'
@@ -68,4 +70,7 @@ const getDebug = () => {
   return ''
 }
 Debug.enable(getDebug())
-// Debug.enable('*exe *runner-chat')
+export const toEvents = (stream: ReadableStream) => {
+  return stream.pipeThrough(new TextDecoderStream())
+    .pipeThrough(new EventSourceParserStream())
+}

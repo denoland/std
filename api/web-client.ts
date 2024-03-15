@@ -3,32 +3,42 @@
 import {
   Cradle,
   DispatchFunctions,
+  EventSourceMessage,
   getProcType,
   Params,
   PID,
   PierceRequest,
   ProcessOptions,
+  Splice,
 } from './web-client.types.ts'
 
-type toError = (object: object) => Error
+type ToError = (object: object) => Error
+type ToEvents = (stream: ReadableStream) => AsyncIterable<EventSourceMessage>
 export default class WebClient implements Cradle {
   private readonly fetcher: (
     input: URL | RequestInfo,
     init?: RequestInit,
   ) => Promise<Response>
+  private readonly toEvents: ToEvents
   private readonly url: string
-  private readonly toError: toError
-  constructor(url: string, toError: toError, fetcher?: typeof fetch) {
+  private readonly toError: ToError
+  constructor(
+    url: string,
+    toError: ToError,
+    toEvents: ToEvents,
+    fetcher?: typeof fetch,
+  ) {
     if (url.endsWith('/')) {
       throw new Error('url should not end with "/": ' + url)
     }
     this.url = url
+    this.toError = toError
+    this.toEvents = toEvents
     if (fetcher) {
       this.fetcher = fetcher
     } else {
       this.fetcher = (path, opts) => fetch(`${url}${path}`, opts)
     }
-    this.toError = toError
   }
   ping(params = {}) {
     return this.request('ping', params)
@@ -91,6 +101,35 @@ export default class WebClient implements Cradle {
   }
   stop() {
   }
+  read(params: { pid: PID; path: string }): AsyncIterable<Splice> {
+    const iterable = {
+      [Symbol.asyncIterator]: () => this.readGenerator(params),
+    }
+    return iterable
+  }
+  private async *readGenerator(params: { pid: PID; path: string }) {
+    // TODO handle reconnect
+    const response = await this.fetcher(`/api/read`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(params),
+    })
+    if (!response.ok) {
+      throw new Error('response not ok')
+    }
+    if (!response.body) {
+      throw new Error('response body is missing')
+    }
+    for await (const event of this.toEvents(response.body)) {
+      if (event.event === 'splice') {
+        const splice: Splice = JSON.parse(event.data)
+        yield splice
+      } else {
+        console.log('event', event)
+      }
+    }
+  }
+
   private async request(path: string, params: Params) {
     const response = await this.fetcher(`/api/${path}?pretty`, {
       method: 'POST',
