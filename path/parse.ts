@@ -10,15 +10,15 @@ import { parse as windowsParse } from "./windows/parse.ts";
  * Return a `ParsedPath` object of the `path`. Use `format` to reverse the result.
  * @example
  * ```ts
- * const parsedPathObj = parse("c:\\path\\dir\\index.html")
- * console.log(parsedPathObj)
- * {
- *   root: "c:\\",
- *   dir: "c:\\path\\dir",
- *   base: "index.html",
- *   ext: ".html",
- *   name: "index"
- * }
+ * const parsedPathObj = parse("/path/to/dir/script.ts");
+ * console.log(parsedPathObj);
+ * // {
+ * //   root: "/",
+ * //   dir: "/path/to/dir",
+ * //   base: "script.ts",
+ * //   ext: ".ts",
+ * //   name: "script"
+ * // }
  * ```
  * @param path to process
  */
