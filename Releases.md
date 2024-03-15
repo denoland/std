@@ -1,3 +1,7 @@
+### 0.220.1 / 2024.03.15
+
+- fix(tar): leak in `Tar() checks directory entry type` test (#4490)
+
 ### 0.220.0 / 2024.03.14
 
 - Revert "refactor(cli): cleanup `parse_args.ts` (#4189)" (#4485)
