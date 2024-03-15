@@ -5,7 +5,7 @@ import { IFs } from 'https://esm.sh/memfs@4.6.0'
 import { assert } from 'std/assert/mod.ts'
 import * as posix from 'https://deno.land/std@0.213.0/path/posix/mod.ts'
 import { Debug, equal, fromOutcome, print } from '@utils'
-import git from '$git'
+import git, { WalkerEntry } from '$git'
 import FS from '@/fs.ts'
 import {
   DispatchFunctions,
@@ -16,7 +16,7 @@ import {
   PROCTYPE,
   SolidRequest,
 } from '@/constants.ts'
-
+type WalkerCallback = (entry: WalkerEntry) => Promise<unknown>
 const log = Debug('AI:isolateApi')
 interface Default {
   [key: string]: unknown
@@ -143,42 +143,17 @@ export default class IsolateApi<T extends object = Default> {
         throw err
       }
     }
-    // TODO check if the file was deleted and in staging
-    log('git read file', path)
-    const trees = [git.STAGE(), git.TREE({ ref: this.#commit })]
-    const results = await git.walk({
-      fs: this.#fs,
-      dir: '/',
-      trees,
-      map: async (filepath: string, [stage, tree]) => {
-        if (filepath === path) {
-          if (stage) {
-            assert(tree, 'stage must have a tree entry')
-            const type = await tree.type()
-            assert(type === 'blob', 'only blobs are supported: ' + type)
-            return await tree.content()
-          }
-        }
-      },
+    const result = await this.#walk(path, async (tree) => {
+      const content = await tree.content()
+      assert(content, 'content must be defined')
+      return new TextDecoder().decode(content)
     })
-    assert(results.length <= 1, 'multiple files found: ' + path)
-    if (!results.length) {
-      console.log(FS.print(this.#fs))
+    if (!result) {
       throw new FileNotFoundError('file not found: ' + path)
     }
-    return new TextDecoder().decode(results[0])
+    return result
   }
-  async exists(path: string) {
-    isRelative(path)
-    // TODO merge exists and read
-    try {
-      this.#fs.statSync('/' + path)
-      return true
-    } catch (err) {
-      if (err.code !== 'ENOENT') {
-        throw err
-      }
-    }
+  async #walk(path: string, callback: WalkerCallback) {
     const trees = [git.STAGE(), git.TREE({ ref: this.#commit })]
     const results = await git.walk({
       fs: this.#fs,
@@ -192,16 +167,28 @@ export default class IsolateApi<T extends object = Default> {
             assert(tree, 'stage must have a tree entry')
             const type = await tree.type()
             assert(type === 'blob', 'only blobs are supported: ' + type)
-            return true
+            return await callback(tree)
           }
         }
       },
     })
     if (results.length) {
       assert(results.length === 1, 'multiple files found: ' + path)
-      return true
+      return results[0]
     }
-    return false
+  }
+  async exists(path: string) {
+    isRelative(path)
+    try {
+      this.#fs.statSync('/' + path)
+      return true
+    } catch (err) {
+      if (err.code !== 'ENOENT') {
+        throw err
+      }
+    }
+    const result = await this.#walk(path, (_tree) => Promise.resolve(true))
+    return !!result
   }
   async ls(path: string) {
     path = posix.join(path, '/')
