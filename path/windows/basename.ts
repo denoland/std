@@ -13,13 +13,14 @@ import { isPathSeparator, isWindowsDeviceRoot } from "./_util.ts";
 /**
  * Return the last portion of a `path`.
  * Trailing directory separators are ignored, and optional suffix is removed.
+ *
  * @example
  * ```ts
  * import { basename } from "https://deno.land/std@$STD_VERSION/path/basename.ts";
  *
- * console.log(basename("C:\\user\\Documents\\")); // "Documents"
- * console.log(basename("C:\\user\\Documents\\image.png")); // "image.png"
- * console.log(basename("C:\\user\\Documents\\image.png", ".png")); // "image"
+ * basename("C:\\user\\Documents\\"); // "Documents"
+ * basename("C:\\user\\Documents\\image.png"); // "image.png"
+ * basename("C:\\user\\Documents\\image.png", ".png"); // "image"
  * ```
  *
  * @param path - path to extract the name from.
