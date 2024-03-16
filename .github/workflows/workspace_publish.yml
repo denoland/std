@@ -42,4 +42,4 @@ jobs:
 
       - name: Publish (real)
         if: github.event_name == 'release'
-        run: deno publish
+        run: deno publish --allow-dirty
