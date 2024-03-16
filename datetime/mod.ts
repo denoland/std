@@ -6,7 +6,7 @@
  *
  * This module is browser compatible.
  *
- * ```
+ * ```ts
  * import { difference } from "https://deno.land/std@$STD_VERSION/datetime/mod.ts";
  *
  * const date0 = new Date("2018-05-14");
