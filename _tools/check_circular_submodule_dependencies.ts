@@ -1,5 +1,6 @@
+// deno-lint-ignore-file camelcase
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-import { createGraph, ModuleGraphJson, ModuleJson } from "deno_graph";
+import { createGraph, type ModuleGraphJson, type ModuleJson } from "deno_graph";
 
 /**
  * Checks for circular dependencies in the std submodules.
@@ -14,6 +15,10 @@ import { createGraph, ModuleGraphJson, ModuleJson } from "deno_graph";
  * `--table` option outputs a table of submodules and their status.
  *
  * $ deno run -A _tools/check_circular_submodule_dependencies.ts --table
+ *
+ * `--all-imports` option outputs script to import all submodules.
+ *
+ * $ deno run -A _tools/check_circular_submodule_dependencies.ts --all-imports
  */
 
 type DepState = "Stable" | "Unstable" | "Deprecated";
@@ -22,12 +27,150 @@ type Dep = {
   set: Set<string>;
   state: DepState;
 };
+type Mod =
+  | "archive"
+  | "assert"
+  | "async"
+  | "bytes"
+  | "cli"
+  | "collections"
+  | "console"
+  | "crypto"
+  | "csv"
+  | "data_structures"
+  | "datetime"
+  | "dotenv"
+  | "encoding"
+  | "expect"
+  | "flags"
+  | "fmt"
+  | "front_matter"
+  | "fs"
+  | "html"
+  | "http"
+  | "ini"
+  | "io"
+  | "json"
+  | "jsonc"
+  | "log"
+  | "media_types"
+  | "msgpack"
+  | "net"
+  | "path"
+  | "permissions"
+  | "regexp"
+  | "semver"
+  | "streams"
+  | "testing"
+  | "text"
+  | "toml"
+  | "ulid"
+  | "url"
+  | "uuid"
+  | "webgpu"
+  | "yaml";
+
+const ENTRYPOINTS: Record<Mod, string[]> = {
+  archive: ["mod.ts"],
+  assert: ["mod.ts"],
+  async: ["mod.ts"],
+  bytes: ["mod.ts"],
+  cli: ["mod.ts"],
+  collections: ["mod.ts"],
+  console: ["mod.ts"],
+  crypto: ["mod.ts"],
+  csv: ["mod.ts"],
+  data_structures: ["mod.ts"],
+  datetime: ["mod.ts"],
+  dotenv: ["mod.ts"],
+  encoding: [
+    "ascii85.ts",
+    "base32.ts",
+    "base58.ts",
+    "base64.ts",
+    "base64url.ts",
+    "hex.ts",
+    "varint.ts",
+  ],
+  expect: ["mod.ts"],
+  flags: ["mod.ts"],
+  fmt: ["bytes.ts", "colors.ts", "duration.ts", "printf.ts"],
+  front_matter: ["mod.ts"],
+  fs: ["mod.ts"],
+  html: ["mod.ts"],
+  http: ["mod.ts"],
+  ini: ["mod.ts"],
+  io: ["mod.ts"],
+  json: ["mod.ts"],
+  jsonc: ["mod.ts"],
+  log: ["mod.ts"],
+  media_types: ["mod.ts"],
+  msgpack: ["mod.ts"],
+  net: ["mod.ts"],
+  path: ["mod.ts"],
+  permissions: ["mod.ts"],
+  regexp: ["mod.ts"],
+  semver: ["mod.ts"],
+  streams: ["mod.ts"],
+  testing: ["bdd.ts", "mock.ts", "snapshot.ts", "time.ts", "types.ts"],
+  text: ["mod.ts"],
+  toml: ["mod.ts"],
+  ulid: ["mod.ts"],
+  url: ["mod.ts"],
+  uuid: ["mod.ts"],
+  webgpu: ["mod.ts"],
+  yaml: ["mod.ts"],
+};
+
+const STABILITY: Record<Mod, DepState> = {
+  archive: "Unstable",
+  assert: "Stable",
+  async: "Stable",
+  bytes: "Stable",
+  cli: "Unstable",
+  collections: "Stable",
+  console: "Unstable",
+  crypto: "Stable",
+  csv: "Stable",
+  data_structures: "Unstable",
+  datetime: "Unstable",
+  dotenv: "Unstable",
+  encoding: "Stable",
+  expect: "Unstable",
+  flags: "Unstable",
+  fmt: "Stable",
+  front_matter: "Stable",
+  fs: "Stable",
+  html: "Unstable",
+  http: "Unstable",
+  ini: "Unstable",
+  io: "Unstable",
+  json: "Stable",
+  jsonc: "Stable",
+  log: "Unstable",
+  media_types: "Stable",
+  msgpack: "Unstable",
+  net: "Unstable",
+  path: "Stable",
+  permissions: "Deprecated",
+  regexp: "Unstable",
+  semver: "Unstable",
+  streams: "Stable",
+  testing: "Stable",
+  text: "Unstable",
+  toml: "Stable",
+  ulid: "Unstable",
+  url: "Unstable",
+  uuid: "Stable",
+  webgpu: "Unstable",
+  yaml: "Stable",
+};
 
 const root = new URL("../", import.meta.url).href;
 const deps: Record<string, Dep> = {};
 
-function getSubmoduleNameFromUrl(url: string) {
-  return url.replace(root, "").split("/")[0];
+function getSubmoduleNameFromUrl(url: string): string {
+  return url.replace(root, "").split("/")[0]!;
 }
 
 async function check(
@@ -81,67 +224,9 @@ function getSubmoduleDepsFromSpecifier(
   return deps;
 }
 
-deps["archive"] = await check("archive", "Unstable");
-deps["assert"] = await check("assert", "Stable");
-deps["async"] = await check("async", "Stable");
-deps["bytes"] = await check("bytes", "Stable");
-deps["cli"] = await check("cli", "Unstable");
-deps["collections"] = await check("collections", "Stable");
-deps["console"] = await check("console", "Unstable");
-deps["crypto"] = await check("crypto", "Stable");
-deps["csv"] = await check("csv", "Stable");
-deps["data_structures"] = await check("data_structures", "Unstable");
-deps["datetime"] = await check("datetime", "Unstable");
-deps["dotenv"] = await check("dotenv", "Unstable");
-deps["encoding"] = await check("encoding", "Stable", [
-  "ascii85.ts",
-  "base32.ts",
-  "base58.ts",
-  "base64.ts",
-  "base64url.ts",
-  "binary.ts",
-  "hex.ts",
-  "varint.ts",
-]);
-deps["expect"] = await check("expect", "Unstable");
-deps["flags"] = await check("flags", "Unstable");
-deps["fmt"] = await check("fmt", "Stable", [
-  "bytes.ts",
-  "colors.ts",
-  "duration.ts",
-  "printf.ts",
-]);
-deps["front_matter"] = await check("front_matter", "Stable");
-deps["fs"] = await check("fs", "Stable");
-deps["html"] = await check("html", "Unstable");
-deps["http"] = await check("http", "Unstable");
-deps["ini"] = await check("ini", "Unstable");
-deps["io"] = await check("io", "Unstable");
-deps["json"] = await check("json", "Stable");
-deps["jsonc"] = await check("jsonc", "Stable");
-deps["log"] = await check("log", "Unstable");
-deps["media_types"] = await check("media_types", "Stable");
-deps["msgpack"] = await check("msgpack", "Unstable");
-deps["net"] = await check("net", "Unstable");
-deps["path"] = await check("path", "Stable");
-deps["permissions"] = await check("permissions", "Deprecated");
-deps["regexp"] = await check("regexp", "Unstable");
-deps["semver"] = await check("semver", "Unstable");
-deps["streams"] = await check("streams", "Stable");
-deps["testing"] = await check("testing", "Stable", [
-  "bdd.ts",
-  "mock.ts",
-  "snapshot.ts",
-  "time.ts",
-  "types.ts",
-]);
-deps["text"] = await check("text", "Unstable");
-deps["toml"] = await check("toml", "Stable");
-deps["ulid"] = await check("ulid", "Unstable");
-deps["url"] = await check("url", "Unstable");
-deps["uuid"] = await check("uuid", "Stable");
-deps["webgpu"] = await check("webgpu", "Unstable");
-deps["yaml"] = await check("yaml", "Stable");
+for (const [mod, entrypoints] of Object.entries(ENTRYPOINTS)) {
+  deps[mod] = await check(mod, STABILITY[mod as Mod], entrypoints);
+}
 
 /** Checks circular deps between sub modules */
 function checkCircularDeps(
@@ -185,9 +270,9 @@ function stateToNodeStyle(state: DepState) {
 if (Deno.args.includes("--graph")) {
   console.log("digraph std_deps {");
   for (const mod of Object.keys(deps)) {
-    const info = deps[mod];
+    const info = deps[mod]!;
     console.log(`  ${formatLabel(mod)} ${stateToNodeStyle(info.state)};`);
-    for (const dep of deps[mod].set) {
+    for (const dep of info.set) {
       console.log(`  ${formatLabel(mod)} -> ${dep};`);
     }
   }
@@ -197,6 +282,12 @@ if (Deno.args.includes("--graph")) {
   console.log("| --------------- | ---------- |");
   for (const [mod, info] of Object.entries(deps)) {
     console.log(`| ${mod.padEnd(15)} | ${info.state.padEnd(10)} |`);
+  }
+} else if (Deno.args.includes("--all-imports")) {
+  for (const [mod, entrypoints] of Object.entries(ENTRYPOINTS)) {
+    for (const path of entrypoints) {
+      console.log(`import "std/${mod}/${path}";`);
+    }
   }
 } else {
   console.log(`${Object.keys(deps).length} submodules checked.`);

@@ -3,7 +3,7 @@
 import { TextLineStream } from "./text_line_stream.ts";
 import { assertEquals } from "../assert/mod.ts";
 
-Deno.test("TextLineStream() parses simple input", async () => {
+Deno.test("TextLineStream parses simple input", async () => {
   const stream = ReadableStream.from([
     "qwertzu",
     "iopasd\r\nmnbvc",
@@ -35,7 +35,7 @@ Deno.test("TextLineStream() parses simple input", async () => {
   ]);
 });
 
-Deno.test("TextLineStream() parses with `allowCR` enabled", async () => {
+Deno.test("TextLineStream parses with `allowCR` enabled", async () => {
   const stream = ReadableStream.from([
     "qwertzu",
     "iopasd\r\nmnbvc",
@@ -70,7 +70,7 @@ Deno.test("TextLineStream() parses with `allowCR` enabled", async () => {
   ]);
 });
 
-Deno.test("TextLineStream() parses large chunks", async () => {
+Deno.test("TextLineStream parses large chunks", async () => {
   const totalLines = 20_000;
   const stream = ReadableStream.from("\n".repeat(totalLines))
     .pipeThrough(new TextLineStream());
@@ -80,7 +80,7 @@ Deno.test("TextLineStream() parses large chunks", async () => {
   assertEquals(lines, Array.from({ length: totalLines }).fill(""));
 });
 
-Deno.test("TextLineStream() parses no final empty chunk with terminal newline", async () => {
+Deno.test("TextLineStream parses no final empty chunk with terminal newline", async () => {
   const stream = ReadableStream.from([
     "abc\n",
     "def\nghi\njk",
@@ -104,7 +104,7 @@ Deno.test("TextLineStream() parses no final empty chunk with terminal newline", 
   ]);
 });
 
-Deno.test("TextLineStream() parses no final empty chunk without terminal newline", async () => {
+Deno.test("TextLineStream parses no final empty chunk without terminal newline", async () => {
   const stream = ReadableStream.from([
     "abc\n",
     "def\nghi\njk",

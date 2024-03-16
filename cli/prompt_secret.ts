@@ -15,6 +15,7 @@ const setRawOptions = Deno.build.os === "windows"
   ? undefined
   : { cbreak: true };
 
+/** Options for {@linkcode promptSecret}. */
 export type PromptSecretOptions = {
   /** A character to print instead of the user's input. */
   mask?: string;

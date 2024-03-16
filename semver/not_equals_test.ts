@@ -43,12 +43,11 @@ Deno.test({
         const eq1 = notEquals(s1, s1);
         const eq2 = notEquals(s0, s1);
         const eq3 = notEquals(s1, s0);
-        const op = expected ? "==" : "!=";
 
         assert(!eq0, `${s0} == ${s0}`);
         assert(!eq1, `${s1} == ${s1}`);
-        assertEquals(eq2, expected, `${s0} ${op} ${s1}`);
-        assertEquals(eq3, expected, `${s0} ${op} ${s1}`);
+        assertEquals(eq2, expected);
+        assertEquals(eq3, expected);
       });
     }
   },

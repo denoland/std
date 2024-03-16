@@ -6,6 +6,9 @@ import { AssertionError } from "./assertion_error.ts";
  * Executes a function, expecting it to throw. If it does not, then it
  * throws.
  *
+ * To assert that an asynchronous function rejects, use
+ * {@linkcode assertRejects}.
+ *
  * @example
  * ```ts
  * import { assertThrows } from "https://deno.land/std@$STD_VERSION/assert/assert_throws.ts";
@@ -22,6 +25,9 @@ export function assertThrows(
  * Executes a function, expecting it to throw. If it does not, then it
  * throws. An error class and a string that should be included in the
  * error message can also be asserted.
+ *
+ * To assert that an asynchronous function rejects, use
+ * {@linkcode assertRejects}.
  *
  * @example
  * ```ts

@@ -1,8 +1,35 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import type { Comparator, Range, SemVer } from "./types.ts";
-
 import { isWildcardComparator } from "./_shared.ts";
-import { comparatorIncludes } from "./_comparator_includes.ts";
+import { compare } from "./compare.ts";
+
+function comparatorIncludes(version: SemVer, comparator: Comparator): boolean {
+  if (isWildcardComparator(comparator)) {
+    return true;
+  }
+  const cmp = compare(version, comparator.semver ?? comparator);
+  switch (comparator.operator) {
+    case "=":
+    case undefined: {
+      return cmp === 0;
+    }
+    case "!=": {
+      return cmp !== 0;
+    }
+    case ">": {
+      return cmp > 0;
+    }
+    case "<": {
+      return cmp < 0;
+    }
+    case ">=": {
+      return cmp >= 0;
+    }
+    case "<=": {
+      return cmp <= 0;
+    }
+  }
+}
 
 function comparatorSetIncludes(
   version: SemVer,

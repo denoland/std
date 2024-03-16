@@ -11,9 +11,7 @@ const _toString = Object.prototype.toString;
 function resolveYamlPairs(data: Any[][]): boolean {
   const result = Array.from({ length: data.length });
 
-  for (let index = 0; index < data.length; index++) {
-    const pair = data[index];
-
+  for (const [index, pair] of data.entries()) {
     if (_toString.call(pair) !== "[object Object]") return false;
 
     const keys = Object.keys(pair);
@@ -32,7 +30,7 @@ function constructYamlPairs(data: string): Any[] {
   const result = Array.from({ length: data.length });
 
   for (let index = 0; index < data.length; index += 1) {
-    const pair = data[index];
+    const pair = data[index]!;
 
     const keys = Object.keys(pair);
 

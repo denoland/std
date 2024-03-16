@@ -5,7 +5,7 @@
 import { AssertionError } from "../assert/assertion_error.ts";
 import { buildEqualErrorMessage } from "./_build_message.ts";
 import { equal } from "./_equal.ts";
-import { EqualOptions } from "./_types.ts";
+import type { EqualOptions } from "./_types.ts";
 
 /**
  * Make an assertion that `actual` and `expected` are equal, deeply. If not

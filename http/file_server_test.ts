@@ -8,7 +8,7 @@ import {
   assertStringIncludes,
 } from "../assert/mod.ts";
 import { stub } from "../testing/mock.ts";
-import { serveDir, ServeDirOptions, serveFile } from "./file_server.ts";
+import { serveDir, type ServeDirOptions, serveFile } from "./file_server.ts";
 import { calculate } from "./etag.ts";
 import {
   basename,
@@ -958,13 +958,15 @@ Deno.test(
     },
   },
   async () => {
-    const tempDir = Deno.makeTempDirSync({ dir: `${moduleDir}/testdata` });
+    const tempDir = await Deno.makeTempDir({
+      dir: `${moduleDir}/testdata`,
+    });
     const req = new Request(`http://localhost/${basename(tempDir)}/`);
     const res = await serveDir(req, serveDirOptions);
     await res.body?.cancel();
 
     assertEquals(res.status, 200);
 
-    Deno.removeSync(tempDir);
+    await Deno.remove(tempDir);
   },
 );

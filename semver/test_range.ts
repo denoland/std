@@ -1,6 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-import type { Range, SemVer } from "./types.ts";
 import { rangeIncludes } from "./range_includes.ts";
+import type { Range, SemVer } from "./types.ts";
 
 /**
  * Test to see if the version satisfies the range.

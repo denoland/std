@@ -1,7 +1,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import { assert, assertEquals, assertMatch } from "../assert/mod.ts";
-import { Logger, LogRecord } from "./logger.ts";
-import { LevelName, LogLevels } from "./levels.ts";
+import { Logger, type LogRecord } from "./logger.ts";
+import { type LevelName, LogLevels } from "./levels.ts";
 import { BaseHandler } from "./base_handler.ts";
 
 class TestHandler extends BaseHandler {
@@ -19,7 +19,7 @@ class TestHandler extends BaseHandler {
 }
 
 Deno.test({
-  name: "Logger names can be output in logs",
+  name: "Logger handles formatter option",
   fn() {
     const handlerNoName = new TestHandler("DEBUG");
     const handlerWithLoggerName = new TestHandler("DEBUG", {
@@ -36,7 +36,7 @@ Deno.test({
   },
 });
 
-Deno.test("simpleLogger", function () {
+Deno.test("Logger handles handlers option", () => {
   const handler = new TestHandler("DEBUG");
   let logger = new Logger("default", "DEBUG");
 
@@ -49,13 +49,13 @@ Deno.test("simpleLogger", function () {
   assertEquals(logger.handlers, [handler]);
 });
 
-Deno.test("customHandler", function () {
+Deno.test("Logger handles custom handler", () => {
   const handler = new TestHandler("DEBUG");
   const logger = new Logger("default", "DEBUG", { handlers: [handler] });
 
   const inlineData: string = logger.debug("foo", 1, 2);
 
-  const record = handler.records[0];
+  const record = handler.records[0]!;
   assertEquals(record.msg, "foo");
   assertEquals(record.args, [1, 2]);
   assertEquals(record.level, LogLevels.DEBUG);
@@ -65,7 +65,7 @@ Deno.test("customHandler", function () {
   assertEquals(inlineData!, "foo");
 });
 
-Deno.test("logFunctions", function () {
+Deno.test("Logger handles log functions", () => {
   const doLog = (level: LevelName): TestHandler => {
     const handler = new TestHandler(level);
     const logger = new Logger("default", level, { handlers: [handler] });
@@ -116,8 +116,8 @@ Deno.test("logFunctions", function () {
 });
 
 Deno.test(
-  "String resolver fn will not execute if msg will not be logged",
-  function () {
+  "Logger handles function argument without resolution",
+  () => {
     const handler = new TestHandler("ERROR");
     const logger = new Logger("default", "ERROR", { handlers: [handler] });
     let called = false;
@@ -137,7 +137,7 @@ Deno.test(
   },
 );
 
-Deno.test("String resolver fn resolves as expected", function () {
+Deno.test("Logger handles function argument with resolution", () => {
   const handler = new TestHandler("ERROR");
   const logger = new Logger("default", "ERROR", { handlers: [handler] });
   const expensiveFunction = (x: number): string => {
@@ -151,8 +151,8 @@ Deno.test("String resolver fn resolves as expected", function () {
 });
 
 Deno.test(
-  "All types map correctly to log strings and are returned as is",
-  function () {
+  "Logger handles log function return types",
+  () => {
     const handler = new TestHandler("DEBUG");
     const logger = new Logger("default", "DEBUG", { handlers: [handler] });
     const sym = Symbol();
@@ -267,8 +267,8 @@ Deno.test(
     const error = new RangeError("Uh-oh!");
     const data21: RangeError = logger.error(error);
     assertEquals(data21, error);
-    const messages21 = handler.messages[20].split("\n");
-    assertEquals(messages21[0], `ERROR ${error.name}: ${error.message}`);
-    assertMatch(messages21[1], /^\s+at file:.*\d+:\d+$/);
+    const messages21 = handler.messages[20]!.split("\n");
+    assertEquals(messages21[0]!, `ERROR ${error.name}: ${error.message}`);
+    assertMatch(messages21[1]!, /^\s+at file:.*\d+:\d+$/);
   },
 );

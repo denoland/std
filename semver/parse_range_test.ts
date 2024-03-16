@@ -374,7 +374,7 @@ Deno.test("parseRange() parse ranges of different kinds", () => {
 
   for (const [r, expected] of ranges) {
     const range = parseRange(r);
-    assertEquals(range, expected, 'call to parseRange("' + r + '") failed');
+    assertEquals(range, expected);
   }
 });
 
@@ -464,7 +464,7 @@ Deno.test("parseRange() parse ranges with hyphens", () => {
 
   for (const [r, expected] of ranges) {
     const range = parseRange(r);
-    assertEquals(range, expected, 'call to parseRange("' + r + '") failed');
+    assertEquals(range, expected);
   }
 });
 
@@ -473,7 +473,7 @@ Deno.test("parseRange() parses ranges with x", () => {
     ["*", [
       [
         {
-          operator: "",
+          operator: undefined,
           major: NaN,
           minor: NaN,
           patch: NaN,
@@ -536,7 +536,7 @@ Deno.test("parseRange() parses ranges with x", () => {
 
   for (const [r, expected] of ranges) {
     const range = parseRange(r);
-    assertEquals(range, expected, 'call to parseRange("' + r + '") failed');
+    assertEquals(range, expected);
   }
 });
 
@@ -594,7 +594,7 @@ Deno.test("parseRanges() parses ranges with tilde", () => {
 
   for (const [r, expected] of ranges) {
     const range = parseRange(r);
-    assertEquals(range, expected, 'call to parseRange("' + r + '") failed');
+    assertEquals(range, expected);
   }
 });
 
@@ -676,6 +676,6 @@ Deno.test("parseRange() parses ranges with caret", () => {
 
   for (const [r, expected] of ranges) {
     const range = parseRange(r);
-    assertEquals(range, expected, 'call to parseRange("' + r + '") failed');
+    assertEquals(range, expected);
   }
 });

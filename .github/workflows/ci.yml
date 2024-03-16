@@ -91,14 +91,14 @@ jobs:
       - name: Spell-check
         uses: crate-ci/typos@master
         with:
-          config: ./.github/workflows/typos.toml
+          config: ./.github/typos.toml
 
   wasm:
     name: wasm
     runs-on: ubuntu-22.04
     strategy:
       matrix:
-        module: [ crypto/_wasm ]
+        module: [crypto/_wasm]
     steps:
       - name: Clone repository
         uses: actions/checkout@v4
@@ -116,7 +116,7 @@ jobs:
           declare modifications="$(git diff --name-only HEAD~ -- ${{ matrix.module }})"
           declare modified="$([[ "$modifications" ]] && echo true || echo false)"
           echo "modified=$modified" >> $GITHUB_OUTPUT
-          echo "${{ matrix.module }} WASM source modified in this commit? $modified"
+          echo "${{ matrix.module }} Wasm source modified in this commit? $modified"
           echo "$modifications"
 
       - name: Set up Deno

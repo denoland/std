@@ -5,6 +5,9 @@
 
 High-quality APIs for [Deno](https://deno.com/) and the web. Use fearlessly.
 
+> **NOTE:** The standard library is also available on JSR - check out the
+> [`@std` scope on JSR here](https://jsr.io/@std).
+
 ## Get Started
 
 ```ts

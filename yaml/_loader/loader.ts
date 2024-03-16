@@ -7,7 +7,11 @@ import { YAMLError } from "../_error.ts";
 import { Mark } from "../_mark.ts";
 import type { Type } from "../type.ts";
 import * as common from "../_utils.ts";
-import { LoaderState, LoaderStateOptions, ResultType } from "./loader_state.ts";
+import {
+  LoaderState,
+  type LoaderStateOptions,
+  type ResultType,
+} from "./loader_state.ts";
 
 type Any = common.Any;
 type ArrayObject<T = Any> = common.ArrayObject<T>;
@@ -198,13 +202,13 @@ const directiveHandlers: DirectiveHandlers = {
       return throwError(state, "YAML directive accepts exactly one argument");
     }
 
-    const match = /^([0-9]+)\.([0-9]+)$/.exec(args[0]);
+    const match = /^([0-9]+)\.([0-9]+)$/.exec(args[0]!);
     if (match === null) {
       return throwError(state, "ill-formed argument of the YAML directive");
     }
 
-    const major = parseInt(match[1], 10);
-    const minor = parseInt(match[2], 10);
+    const major = parseInt(match[1]!, 10);
+    const minor = parseInt(match[2]!, 10);
     if (major !== 1) {
       return throwError(state, "unacceptable YAML version of the document");
     }
@@ -221,8 +225,8 @@ const directiveHandlers: DirectiveHandlers = {
       return throwError(state, "TAG directive accepts exactly two arguments");
     }
 
-    const handle = args[0];
-    const prefix = args[1];
+    const handle = args[0]!;
+    const prefix = args[1]!;
 
     if (!PATTERN_TAG_HANDLE.test(handle)) {
       return throwError(
@@ -264,8 +268,8 @@ function captureSegment(
 
     if (checkJson) {
       for (
-        let position = 0, length = result.length;
-        position < length;
+        let position = 0;
+        position < result.length;
         position++
       ) {
         const character = result.charCodeAt(position);
@@ -296,9 +300,7 @@ function mergeMappings(
     );
   }
 
-  const keys = Object.keys(source);
-  for (let i = 0, len = keys.length; i < len; i++) {
-    const key = keys[i];
+  for (const key in Object.keys(source)) {
     if (!hasOwn(destination, key)) {
       Object.defineProperty(destination, key, {
         value: source[key],
@@ -327,7 +329,7 @@ function storeMappingPair(
   if (Array.isArray(keyNode)) {
     keyNode = Array.prototype.slice.call(keyNode);
 
-    for (let index = 0, quantity = keyNode.length; index < quantity; index++) {
+    for (let index = 0; index < keyNode.length; index++) {
       if (Array.isArray(keyNode[index])) {
         return throwError(state, "nested arrays are not supported inside keys");
       }
@@ -357,8 +359,8 @@ function storeMappingPair(
   if (keyTag === "tag:yaml.org,2002:merge") {
     if (Array.isArray(valueNode)) {
       for (
-        let index = 0, quantity = valueNode.length;
-        index < quantity;
+        let index = 0;
+        index < valueNode.length;
         index++
       ) {
         mergeMappings(state, result, valueNode[index], overridableKeys);
@@ -411,8 +413,8 @@ function skipSeparationSpace(
   allowComments: boolean,
   checkIndent: number,
 ): number {
-  let lineBreaks = 0,
-    ch = state.input.charCodeAt(state.position);
+  let lineBreaks = 0;
+  let ch = state.input.charCodeAt(state.position);
 
   while (ch !== 0) {
     while (isWhiteSpace(ch)) {
@@ -524,8 +526,8 @@ function readPlainScalar(
 
   state.kind = "scalar";
   state.result = "";
-  let captureEnd: number,
-    captureStart = (captureEnd = state.position);
+  let captureEnd = state.position;
+  let captureStart = state.position;
   let hasPendingContent = false;
   let line = 0;
   while (ch !== 0) {
@@ -597,7 +599,9 @@ function readSingleQuotedScalar(
   state: LoaderState,
   nodeIndent: number,
 ): boolean {
-  let ch, captureStart, captureEnd;
+  let ch;
+  let captureStart;
+  let captureEnd;
 
   ch = state.input.charCodeAt(state.position);
 
@@ -659,8 +663,8 @@ function readDoubleQuotedScalar(
   state.kind = "scalar";
   state.result = "";
   state.position++;
-  let captureEnd: number,
-    captureStart = (captureEnd = state.position);
+  let captureEnd = state.position;
+  let captureStart = state.position;
   let tmp: number;
   while ((ch = state.input.charCodeAt(state.position)) !== 0) {
     if (ch === 0x22 /* " */) {
@@ -750,16 +754,16 @@ function readFlowCollection(state: LoaderState, nodeIndent: number): boolean {
 
   ch = state.input.charCodeAt(++state.position);
 
-  const tag = state.tag,
-    anchor = state.anchor;
+  const tag = state.tag;
+  const anchor = state.anchor;
   let readNext = true;
-  let valueNode,
-    keyNode,
-    keyTag: string | null = (keyNode = valueNode = null),
-    isExplicitPair: boolean,
-    isPair = (isExplicitPair = false);
-  let following = 0,
-    line = 0;
+  let valueNode = null;
+  let keyNode = null;
+  let keyTag: string | null = null;
+  let isExplicitPair = false;
+  let isPair = false;
+  let following = 0;
+  let line = 0;
   const overridableKeys: ArrayObject<boolean> = Object.create(null);
   while (ch !== 0) {
     skipSeparationSpace(state, true, nodeIndent);
@@ -850,12 +854,12 @@ function readFlowCollection(state: LoaderState, nodeIndent: number): boolean {
 }
 
 function readBlockScalar(state: LoaderState, nodeIndent: number): boolean {
-  let chomping = CHOMPING_CLIP,
-    didReadContent = false,
-    detectedIndent = false,
-    textIndent = nodeIndent,
-    emptyLines = 0,
-    atMoreIndented = false;
+  let chomping = CHOMPING_CLIP;
+  let didReadContent = false;
+  let detectedIndent = false;
+  let textIndent = nodeIndent;
+  let emptyLines = 0;
+  let atMoreIndented = false;
 
   let ch = state.input.charCodeAt(state.position);
 
@@ -1005,13 +1009,13 @@ function readBlockScalar(state: LoaderState, nodeIndent: number): boolean {
 }
 
 function readBlockSequence(state: LoaderState, nodeIndent: number): boolean {
-  let line: number,
-    following: number,
-    detected = false,
-    ch: number;
-  const tag = state.tag,
-    anchor = state.anchor,
-    result: unknown[] = [];
+  let line: number;
+  let following: number;
+  let detected = false;
+  let ch: number;
+  const tag = state.tag;
+  const anchor = state.anchor;
+  const result: unknown[] = [];
 
   if (
     state.anchor !== null &&
@@ -1074,20 +1078,20 @@ function readBlockMapping(
   nodeIndent: number,
   flowIndent: number,
 ): boolean {
-  const tag = state.tag,
-    anchor = state.anchor,
-    result = {},
-    overridableKeys = Object.create(null);
-  let following: number,
-    allowCompact = false,
-    line: number,
-    pos: number,
-    keyTag = null,
-    keyNode = null,
-    valueNode = null,
-    atExplicitKey = false,
-    detected = false,
-    ch: number;
+  const tag = state.tag;
+  const anchor = state.anchor;
+  const result = {};
+  const overridableKeys = Object.create(null);
+  let following: number;
+  let allowCompact = false;
+  let line: number;
+  let pos: number;
+  let keyTag = null;
+  let keyNode = null;
+  let valueNode = null;
+  let atExplicitKey = false;
+  let detected = false;
+  let ch: number;
 
   if (
     state.anchor !== null &&
@@ -1268,12 +1272,12 @@ function readBlockMapping(
 }
 
 function readTagProperty(state: LoaderState): boolean {
-  let position: number,
-    isVerbatim = false,
-    isNamed = false,
-    tagHandle = "",
-    tagName: string,
-    ch: number;
+  let position: number;
+  let isVerbatim = false;
+  let isNamed = false;
+  let tagHandle = "";
+  let tagName: string;
+  let ch: number;
 
   ch = state.input.charCodeAt(state.position);
 
@@ -1439,14 +1443,14 @@ function composeNode(
   allowToSeek: boolean,
   allowCompact: boolean,
 ): boolean {
-  let allowBlockScalars: boolean,
-    allowBlockCollections: boolean,
-    indentStatus = 1, // 1: this>parent, 0: this=parent, -1: this<parent
-    atNewLine = false,
-    hasContent = false,
-    type: Type,
-    flowIndent: number,
-    blockIndent: number;
+  let allowBlockScalars: boolean;
+  let allowBlockCollections: boolean;
+  let indentStatus = 1; // 1: this>parent, 0: this=parent, -1: this<parent
+  let atNewLine = false;
+  let hasContent = false;
+  let type: Type;
+  let flowIndent: number;
+  let blockIndent: number;
 
   if (state.listener && state.listener !== null) {
     state.listener("open", state);
@@ -1554,11 +1558,11 @@ function composeNode(
   if (state.tag !== null && state.tag !== "!") {
     if (state.tag === "?") {
       for (
-        let typeIndex = 0, typeQuantity = state.implicitTypes.length;
-        typeIndex < typeQuantity;
+        let typeIndex = 0;
+        typeIndex < state.implicitTypes.length;
         typeIndex++
       ) {
-        type = state.implicitTypes[typeIndex];
+        type = state.implicitTypes[typeIndex]!;
 
         // Implicit resolving is not allowed for non-scalar types, and '?'
         // non-specific tag is only assigned to plain scalars. So, it isn't
@@ -1577,7 +1581,7 @@ function composeNode(
     } else if (
       hasOwn(state.typeMap[state.kind || "fallback"], state.tag)
     ) {
-      type = state.typeMap[state.kind || "fallback"][state.tag];
+      type = state.typeMap[state.kind || "fallback"][state.tag]!;
 
       if (state.result !== null && type.kind !== state.kind) {
         return throwError(
@@ -1611,11 +1615,11 @@ function composeNode(
 
 function readDocument(state: LoaderState) {
   const documentStart = state.position;
-  let position: number,
-    directiveName: string,
-    directiveArgs: string[],
-    hasDirectives = false,
-    ch: number;
+  let position: number;
+  let directiveName: string;
+  let directiveArgs: string[];
+  let hasDirectives = false;
+  let ch: number;
 
   state.version = null;
   state.checkLineBreaks = state.legacy;
@@ -1675,7 +1679,7 @@ function readDocument(state: LoaderState) {
     if (ch !== 0) readLineBreak(state);
 
     if (hasOwn(directiveHandlers, directiveName)) {
-      directiveHandlers[directiveName](state, directiveName, ...directiveArgs);
+      directiveHandlers[directiveName]!(state, directiveName, ...directiveArgs);
     } else {
       throwWarning(state, `unknown document directive "${directiveName}"`);
     }
@@ -1777,7 +1781,7 @@ export function loadAll<T extends CbFunction | LoaderStateOptions>(
 
   const documents = loadDocuments(input, options);
   const iterator = iteratorOrOption;
-  for (let index = 0, length = documents.length; index < length; index++) {
+  for (let index = 0; index < documents.length; index++) {
     iterator(documents[index]);
   }
 

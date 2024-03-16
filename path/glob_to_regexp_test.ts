@@ -1,6 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import { assert, assertEquals } from "../assert/mod.ts";
-import { globToRegExp, GlobToRegExpOptions } from "./glob_to_regexp.ts";
+import { globToRegExp, type GlobToRegExpOptions } from "./glob_to_regexp.ts";
 
 function match(
   glob: string,
