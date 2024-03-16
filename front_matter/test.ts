@@ -1,6 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import { MAP_FORMAT_TO_EXTRACTOR_RX } from "./_formats.ts";
+import { EXTRACT_REGEXP_MAP } from "./_formats.ts";
 
 type Format = "yaml" | "toml" | "json" | "unknown";
 
@@ -26,7 +26,7 @@ export function test(
   formats?: ("yaml" | "toml" | "json" | "unknown")[],
 ): boolean {
   if (!formats) {
-    formats = Object.keys(MAP_FORMAT_TO_EXTRACTOR_RX) as Format[];
+    formats = Object.keys(EXTRACT_REGEXP_MAP) as Format[];
   }
 
   for (const format of formats) {
@@ -34,7 +34,7 @@ export function test(
       throw new TypeError("Unable to test for unknown front matter format");
     }
 
-    const match = MAP_FORMAT_TO_EXTRACTOR_RX[format].exec(str);
+    const match = EXTRACT_REGEXP_MAP[format].exec(str);
     if (match?.index === 0) {
       return true;
     }
