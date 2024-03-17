@@ -165,6 +165,8 @@ export default class IsolateApi<T extends object = Default> {
           if (stage) {
             if (!tree) {
               console.error('missing tree', filepath)
+              const logs = await git.log({ fs: this.#fs, dir: '/' })
+              console.dir(logs, { depth: Infinity })
               throw new Error('stage must have a tree entry')
             }
             const type = await tree.type()
