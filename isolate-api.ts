@@ -163,7 +163,10 @@ export default class IsolateApi<T extends object = Default> {
         // TODO check directories are excluded
         if (filepath === path) {
           if (stage) {
-            assert(tree, 'stage must have a tree entry')
+            if (!tree) {
+              console.error('missing tree', filepath)
+              throw new Error('stage must have a tree entry')
+            }
             const type = await tree.type()
             assert(type === 'blob', 'only blobs are supported: ' + type)
             return await callback(tree)

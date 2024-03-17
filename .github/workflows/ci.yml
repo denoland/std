@@ -40,12 +40,12 @@ jobs:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           DENO_KV_PATH: ':memory:'
 
-      - name: Deploy to Deno Deploy
-        if: matrix.os == 'ubuntu-latest'
-        uses: denoland/deployctl@v1
-        with:
-          project: healthy-seal-74 # the name of the project on Deno Deploy
-          entrypoint: main.ts      
+      # - name: Deploy to Deno Deploy
+      #   if: matrix.os == 'ubuntu-latest'
+      #   uses: denoland/deployctl@v1
+      #   with:
+      #     project: healthy-seal-74 # the name of the project on Deno Deploy
+      #     entrypoint: main.ts      
 
 
       - name: Create lcov file
