@@ -101,7 +101,7 @@ export default (name: string, cradleMaker: () => Promise<Cradle>) => {
 
     await t.step('parallel', async () => {
       const promises = []
-      const count = 10
+      const count = 20
       for (let i = 0; i < count; i++) { // at 20, this fails on cloud
         promises.push(local({}, { branch: true }))
       }
