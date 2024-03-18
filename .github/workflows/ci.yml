@@ -69,7 +69,6 @@ jobs:
         run: ./_tools/release/03_release.ts
 
   lint:
-    runs-on: ubuntu-22.04
     steps:
       - name: Clone repository
         uses: actions/checkout@v4
