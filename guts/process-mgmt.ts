@@ -9,10 +9,10 @@ export default (name: string, cradleMaker: () => Promise<Cradle>) => {
     await artifact.rm({ repo })
 
     const { pid } = await artifact.init({ repo })
-    const sessionPid = { ...pid, branches: [...pid.branches, '0'] }
+    const sessionPid = { ...pid, branches: [...pid.branches, '1'] }
     const { create } = await artifact.pierces('session', pid)
     await t.step('create', async () => {
-      const session = await create({}, { noClose: true })
+      const session = await create()
       expect(session).toEqual(sessionPid)
 
       const { local } = await artifact.pierces('io-fixture', sessionPid)
@@ -20,8 +20,8 @@ export default (name: string, cradleMaker: () => Promise<Cradle>) => {
       expect(result).toEqual('local reply')
     })
     await t.step('second session', async () => {
-      const session = await create({}, { noClose: true })
-      const session2Pid = { ...pid, branches: [...pid.branches, '1'] }
+      const session = await create()
+      const session2Pid = { ...pid, branches: [...pid.branches, '3'] }
       expect(session).toEqual(session2Pid)
 
       const { local } = await artifact.pierces('io-fixture', sessionPid)

@@ -146,48 +146,67 @@ export class QueueCradle implements Cradle {
     const { pid, path } = params
     assert(!path || !posix.isAbsolute(path), `path must be relative: ${path}`)
     let done
+    let active = true
     const watcher = new Promise<void>((resolve) => {
       done = () => {
+        active = false
         this.#readStreams.delete(watcher)
         resolve()
       }
     })
     this.#readStreams.add(watcher)
 
-    let last
-    for await (const oid of this.#api.context.db!.watchHead(pid)) {
-      log('commit', oid, path)
-      const fs = await this.#api.context.fs!.load(params.pid)
-      log('fs loaded')
-      const { commit } = await git.readCommit({ fs, dir: '/', oid })
-      let changes
-      if (path) {
-        log('read path', path)
-        const api = IsolateApi.createFS(fs, oid)
-        const exists = await api.exists(path)
-        if (!exists) {
-          continue
+    try {
+      let last
+      for await (const oid of this.#api.context.db!.watchHead(pid)) {
+        log('commit', oid, path)
+        if (!active) {
+          break
         }
-        log('file exists', path, oid)
-        const content = await api.read(path)
-        if (last !== undefined && last === content) {
-          continue
+        const fs = await this.#api.context.fs!.load(params.pid)
+        log('fs loaded')
+        if (!active) {
+          break
         }
-        log('content changed')
-        // TODO use json differ for json
-        changes = diffChars(last || '', content)
-        last = content
+        const { commit } = await git.readCommit({ fs, dir: '/', oid })
+        let changes
+        if (path) {
+          log('read path', path)
+          const api = IsolateApi.createFS(fs, oid)
+          if (!active) {
+            break
+          }
+          const exists = await api.exists(path)
+          if (!exists) {
+            continue
+          }
+          log('file exists', path, oid)
+          if (!active) {
+            break
+          }
+          const content = await api.read(path)
+          if (last !== undefined && last === content) {
+            continue
+          }
+          log('content changed')
+          // TODO use json differ for json
+          changes = diffChars(last || '', content)
+          last = content
+        }
+        const splice: Splice = {
+          pid,
+          commit,
+          timestamp: commit.committer.timestamp * 1000,
+          path,
+          changes,
+        }
+        yield splice
       }
-      const splice: Splice = {
-        pid,
-        commit,
-        timestamp: commit.committer.timestamp * 1000,
-        path,
-        changes,
-      }
-      yield splice
+    } finally {
+      log('done')
+      done!()
+      active = false
     }
-    done!()
   }
 }
 
