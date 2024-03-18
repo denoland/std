@@ -4,6 +4,7 @@ import FS from '../fs.ts'
 import Executor from './exe.ts'
 import { IFs, PROCTYPE, SolidRequest } from '@/constants.ts'
 import { assert, expect, log } from '@utils'
+import { init } from '../git/mod.ts'
 
 const pid = { account: 'exe', repository: 'test', branches: ['main'] }
 const commit = 'test-commit'
@@ -19,7 +20,8 @@ const request: SolidRequest = {
 }
 const mocks = async () => {
   const { fs } = memfs()
-  const io = await IOChannel.load(pid, fs)
+  const { commit } = await init(fs, 'exe/test')
+  const io = await IOChannel.load(pid, fs, commit)
   return { io, fs }
 }
 Deno.test('simple', async (t) => {
@@ -138,7 +140,9 @@ Deno.test('compound', async (t) => {
   await t.step('reply from restart', async () => {
     const noCache = Executor.create()
     assert(request)
-    const io = await IOChannel.load(pid, halfFs)
+    const commit = halfFs.readFileSync('/.git/refs/heads/main').toString()
+      .trim()
+    const io = await IOChannel.load(pid, halfFs, commit)
     const sequence = io.addRequest(request)
     expect(sequence).toBe(1)
     const reply = {

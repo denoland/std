@@ -70,7 +70,7 @@ export default class Queue {
         // TODO will the queue wait forever ?
         outcome.result = await this.#functions[name](params, this.#api)
       } catch (error) {
-        console.error('Queue Error:', error.message)
+        console.error('Queue Error:', error)
         outcome.error = serializeError(error)
       }
       await this.#kv.set(outcomeKey, outcome, { expireIn: twoMinutes })

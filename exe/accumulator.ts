@@ -4,7 +4,7 @@ import { assert, deserializeError, equal } from '@utils'
 export default class Accumulator {
   #buffer: IsolatePromise[] = []
   // TODO store some checking means of knowing the interactions were the same
-  #upserts = new Set<string>()
+  #upserts = new Map<string, string | Uint8Array>()
   #deletes = new Set<string>()
   #isAlarmed = true
   #trigger!: () => void
@@ -69,16 +69,29 @@ export default class Accumulator {
   }
   get upserts() {
     // TODO must handle deletes, moves, and other types of fun things
-    return [...this.#upserts]
+    return [...this.#upserts.keys()]
   }
   get deletes() {
     return [...this.#deletes]
   }
-  write(path: string, _file: string | Uint8Array) {
+  write(path: string, file: string | Uint8Array) {
     // trigger broadcast channel updates
     assert(!this.isAlarmed, 'Activity is denied')
-    this.#upserts.add(path)
+    if (this.#deletes.has(path)) {
+      this.#deletes.delete(path)
+    }
+    this.#upserts.set(path, file)
 
     // do the broadcast thru the beacon
+  }
+  read(path: string) {
+    assert(!this.isAlarmed, 'Activity is denied')
+    assert(this.#upserts.has(path), 'path not found: ' + path)
+    return this.#upserts.get(path)
+  }
+  delete(path: string) {
+    assert(!this.isAlarmed, 'Activity is denied')
+    this.#deletes.add(path)
+    this.#upserts.delete(path)
   }
 }

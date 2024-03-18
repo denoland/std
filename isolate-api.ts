@@ -21,21 +21,27 @@ interface Default {
   [key: string]: unknown
 }
 const dir = '/'
+
 export default class IsolateApi<T extends object = Default> {
-  #fs!: IFs
+  #fs: IFs | undefined
   #commit: string | undefined
   #pid: PID | undefined
   #accumulator: Accumulator | undefined
   #accumulatorCount = 0
   // TODO assign a mount id for each side effect execution context ?
   #context: Partial<T> = {}
-  static createFS(fs: IFs, commit?: string) {
+  static createContext() {
+    return new IsolateApi()
+  }
+  static createFS(fs: IFs, commit: string) {
+    assert(commit.length === 40, 'commit must be 40 characters')
     const api = new IsolateApi()
     api.#fs = fs
     api.#commit = commit
     return api
   }
   static create(fs: IFs, commit: string, pid: PID, acc: Accumulator) {
+    assert(commit.length === 40, 'commit must be 40 characters')
     const api = new IsolateApi()
     api.#fs = fs
     api.#commit = commit
@@ -123,6 +129,8 @@ export default class IsolateApi<T extends object = Default> {
     this.write(path, content)
   }
   write(path: string, content: string | Uint8Array) {
+    assert(this.#fs, 'fs must be set')
+    log('write', path)
     isRelative(path)
     this.#fs.writeFileSync('/' + path, content)
     if (this.#accumulator) {
@@ -134,15 +142,17 @@ export default class IsolateApi<T extends object = Default> {
     return JSON.parse(string)
   }
   async read(path: string) {
+    log('read', path)
     isRelativeFile(path)
-    try {
-      return this.#fs.readFileSync('/' + path, 'utf8').toString()
-    } catch (err) {
-      if (err.code !== 'ENOENT') {
-        throw err
+    if (!this.exists(path)) {
+      throw new FileNotFoundError('file not found: ' + path)
+    }
+    if (this.#accumulator) {
+      if (this.#accumulator.upserts.includes(path)) {
+        return this.#accumulator.read(path)
       }
     }
-    const result = await this.#walk(path, async (tree) => {
+    const result = await this.#walkOne(path, async (tree) => {
       const content = await tree.content()
       assert(content, 'content must be defined')
       return new TextDecoder().decode(content)
@@ -152,49 +162,55 @@ export default class IsolateApi<T extends object = Default> {
     }
     return result
   }
-  async #walk(path: string, callback: WalkerCallback) {
-    const trees = [git.STAGE(), git.TREE({ ref: this.#commit })]
-    const results = await git.walk({
-      fs: this.#fs,
-      dir: '/',
-      trees,
-      map: async (filepath: string, [stage, tree]) => {
-        // TODO be efficient about tree walking for nested paths
-        // TODO check directories are excluded
-        if (filepath === path) {
-          if (stage) {
-            if (!tree) {
-              console.error('missing tree', filepath)
-              const logs = await git.log({ fs: this.#fs, dir: '/' })
-              console.dir(logs, { depth: Infinity })
-              throw new Error('stage must have a tree entry')
-            }
-            const type = await tree.type()
-            assert(type === 'blob', 'only blobs are supported: ' + type)
-            return await callback(tree)
-          }
-        }
-      },
-    })
+  async exists(path: string) {
+    assert(this.#commit, 'commit must be set')
+    log('exists', path)
+    isRelative(path)
+    if (this.#accumulator) {
+      // we are in transient mode
+      if (this.#accumulator.upserts.includes(path)) {
+        return true
+      }
+      if (this.#accumulator.deletes.includes(path)) {
+        return false
+      }
+    }
+    const result = await this.#walkOne(path, (_tree) => Promise.resolve(true))
+    return !!result
+  }
+  async #walkOne(path: string, callback: WalkerCallback) {
+    const results = await this.#walk(path, callback)
     if (results.length) {
       assert(results.length === 1, 'multiple files found: ' + path)
       return results[0]
     }
   }
-  async exists(path: string) {
-    isRelative(path)
-    try {
-      this.#fs.statSync('/' + path)
-      return true
-    } catch (err) {
-      if (err.code !== 'ENOENT') {
-        throw err
-      }
-    }
-    const result = await this.#walk(path, (_tree) => Promise.resolve(true))
-    return !!result
+  async #walk(path: string, callback: WalkerCallback) {
+    assert(this.#commit, 'commit must be set')
+    assert(this.#fs, 'fs must be set')
+    const trees = [git.TREE({ ref: this.#commit })]
+    log('#walk commit', this.#commit)
+    const results = await git.walk({
+      fs: this.#fs,
+      dir: '/',
+      trees,
+      map: async (filepath: string, [tree]) => {
+        // TODO be efficient about tree walking for nested paths
+        // TODO check directories are excluded
+        if (filepath === path) {
+          assert(tree, 'tree must be defined: ' + filepath)
+          const type = await tree.type()
+          assert(type === 'blob', 'only blobs are supported: ' + type)
+          return await callback(tree)
+        }
+      },
+    })
+    return results
   }
+
   async ls(path: string) {
+    assert(this.#commit, 'commit must be set')
+    assert(this.#fs, 'fs must be set')
     path = posix.join(path, '/')
     isRelative(path)
 
@@ -217,6 +233,10 @@ export default class IsolateApi<T extends object = Default> {
     return walk
   }
   async rm(filepath: string) {
+    assert(this.#commit, 'commit must be set')
+    assert(this.#fs, 'fs must be set')
+
+    log('rm', filepath)
     if (await this.exists(filepath)) {
       try {
         this.#fs.unlinkSync(filepath)
@@ -227,6 +247,9 @@ export default class IsolateApi<T extends object = Default> {
       }
       const fs = this.#fs
       await git.remove({ fs, dir, filepath })
+      if (this.#accumulator) {
+        this.#accumulator.delete(filepath)
+      }
       return true
     }
     return false

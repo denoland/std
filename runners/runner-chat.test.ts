@@ -5,6 +5,7 @@ import IsolateApi from '../isolate-api.ts'
 import { Help, PID, RUNNERS } from '../constants.ts'
 import runner from './runner-chat.ts'
 import { memfs } from 'https://esm.sh/memfs@4.6.0'
+import { init } from '../git/mod.ts'
 
 Deno.test('runner', async (t) => {
   const helpBase: Help = {
@@ -15,7 +16,9 @@ Deno.test('runner', async (t) => {
     commands: ['io-fixture:local', 'io-fixture:error'],
     instructions: ['Only reply with a SINGLE word'],
   }
-  const api = IsolateApi.createFS(memfs().fs)
+  const { fs } = memfs()
+  const { commit } = await init(fs, 'runner/test')
+  const api = IsolateApi.createFS(memfs().fs, commit)
   await t.step('hello world', async () => {
     const help = merge({}, helpBase, { commands: [] })
     const text = 'reply with the cheese emoji'

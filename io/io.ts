@@ -91,8 +91,9 @@ export default class IO {
     if (reply) {
       pool.push(reply)
     }
-
-    const solids = await git.solidify(fs, pool)
+    const head = await this.#db.getHead(pid)
+    assert(head, 'head not found: ' + JSON.stringify(pid))
+    const solids = await git.solidify(fs, pool, head)
     await this.#db.deletePool(poolKeys)
     return solids
   }

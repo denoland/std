@@ -1,10 +1,10 @@
 import { Debug, fromOutcome } from '@utils'
 import Executor from '../exe/exe.ts'
-import git from '$git'
-import http from '$git/http/web'
+import { init } from '../git/mod.ts'
+import http from 'npm:isomorphic-git/http/web/index.js'
 import { memfs } from 'https://esm.sh/memfs@4.6.0'
+import git from '$git'
 import {
-  ENTRY_BRANCH,
   IsolateFunctions,
   IsolateLifecycle,
   isPierceRequest,
@@ -126,18 +126,16 @@ export const functions: IsolateFunctions = {
   // need to split the git functions out to be an isolate
   async init(params, api: IsolateApi<C>) {
     const start = Date.now()
-    const pid = pidFromRepo(params.repo as string)
+    assert(typeof params.repo === 'string', 'repo must be a string')
     const probe = await functions.probe(params, api)
     if (probe) {
       throw new Error('repo already exists: ' + params.repo)
     }
 
     const { fs } = memfs()
-    const dir = '/'
-    await git.init({ fs, dir, defaultBranch: ENTRY_BRANCH })
+    const { pid, commit: head } = await init(fs, params.repo)
 
     const lockId = await api.context.db!.getHeadlock(pid)
-    const head = 'INIT'
     const result = await api.context.fs!.update(pid, fs, head, lockId)
     await api.context.db!.releaseHeadlock(pid, lockId)
     log('snapshot size:', result.prettySize)

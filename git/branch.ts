@@ -42,7 +42,7 @@ export default async (fs: IFs, commit: string, target: PID) => {
   }
   log('origin', origin)
   await api.rm('.io.json')
-  return await solidify(fs, [origin])
+  return await solidify(fs, [origin], commit)
 }
 
 export const getBranchName = (pid: PID) => {

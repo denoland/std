@@ -1,7 +1,8 @@
-import { IFs, memfs } from 'https://esm.sh/memfs@4.6.0'
+import { memfs } from 'https://esm.sh/memfs@4.6.0'
 import { expect, log } from '@utils'
 import * as git from './mod.ts'
 import {
+  IFs,
   IoStruct,
   PID,
   PierceReply,
@@ -28,13 +29,14 @@ Deno.test('pierce serial', async (t) => {
     outcome: { result: 'test-result' },
   }
   await t.step('init', async () => {
-    const pid = await git.init(fs, 'git/test')
+    const { pid } = await git.init(fs, 'git/test')
     expect(pid).toEqual(target)
     expect(fs.existsSync('/.git')).toBe(true)
   })
   const pierce = pierceFactory('pierce')
+  const head = () => fs.readFileSync('/.git/refs/heads/main').toString().trim()
   await t.step('pierce', async () => {
-    const { request } = await git.solidify(fs, [pierce])
+    const { request } = await git.solidify(fs, [pierce], head())
     expect(request).not.toHaveProperty('ulid')
     const io: IoStruct = readIo(fs)
     log('io', io)
@@ -42,7 +44,7 @@ Deno.test('pierce serial', async (t) => {
     expect(io.requests[0]).toEqual(pierce)
   })
   await t.step('pierce reply', async () => {
-    const { replies, request } = await git.solidify(fs, [reply])
+    const { replies, request } = await git.solidify(fs, [reply], head())
     expect(request).toBeUndefined()
     expect(replies).toHaveLength(1)
     log('replies', replies[0])
@@ -56,7 +58,7 @@ Deno.test('pierce serial', async (t) => {
     expect(io.replies[0]).toEqual(pierceReply.outcome)
   })
   await t.step('second action blanks io', async () => {
-    const { request } = await git.solidify(fs, [pierce])
+    const { request } = await git.solidify(fs, [pierce], head())
     expect(request).toBeDefined()
     const io: IoStruct = readIo(fs)
     log('io', io)
@@ -69,7 +71,7 @@ Deno.test('pierce serial', async (t) => {
     const { request } = await git.solidify(fs, [
       pierceFactory('a'),
       pierceFactory('b'),
-    ])
+    ], head())
     expect(request).toBeUndefined()
     const io: IoStruct = readIo(fs)
     expect(io.sequence).toBe(4)
@@ -78,7 +80,7 @@ Deno.test('pierce serial', async (t) => {
   })
   await t.step('multiple replies', async () => {
     const pool = replies(1, 3)
-    await git.solidify(fs, pool)
+    await git.solidify(fs, pool, head())
     const io: IoStruct = readIo(fs)
     expect(io.sequence).toBe(4)
     expect(Object.keys(io.requests).length).toBe(3)
@@ -86,12 +88,12 @@ Deno.test('pierce serial', async (t) => {
   })
   await t.step('duplicate pool items rejects', async () => {
     const msg = 'duplicate pool items: '
-    await expect(git.solidify(fs, [pierce, pierce]))
+    await expect(git.solidify(fs, [pierce, pierce], head()))
       .rejects.toThrow(msg)
     const reply = replies(1, 1)[0]
-    await expect(git.solidify(fs, [reply, reply]))
+    await expect(git.solidify(fs, [reply, reply], head()))
       .rejects.toThrow(msg)
-    await expect(git.solidify(fs, [pierce, pierce, reply, reply]))
+    await expect(git.solidify(fs, [pierce, pierce, reply, reply], head()))
       .rejects.toThrow(msg)
   })
   // TODO cannot reply out of order

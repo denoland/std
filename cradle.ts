@@ -13,7 +13,6 @@ import {
 } from './constants.ts'
 import { pidFromRepo } from '@/keys.ts'
 import { getProcType } from '@/constants.ts'
-import { memfs } from 'https://esm.sh/memfs@4.6.0'
 import IsolateApi from './isolate-api.ts'
 import { assert } from 'std/assert/assert.ts'
 import { Debug } from '@utils'
@@ -31,9 +30,8 @@ export class QueueCradle implements Cradle {
   static async create() {
     const cradle = new QueueCradle()
     cradle.#compartment = await Compartment.create('artifact')
-    const { fs } = memfs()
     // TODO use a super PID as the cradle PID for all system actions
-    cradle.#api = IsolateApi.createFS(fs)
+    cradle.#api = IsolateApi.createContext()
     cradle.#api.context.self = cradle
     await cradle.#compartment.mount(cradle.#api)
     assert(cradle.#api.context.db, 'db not found')
@@ -143,6 +141,7 @@ export class QueueCradle implements Cradle {
     // if this includes transients, subscribe to the broadcast channel
     // buffer transients until we get up to the current commit
     // if we pass the current commit in transients, reset what head is
+    // TODO use commit logs to ensure we emit one splice for every commit
     const { pid, path } = params
     assert(!path || !posix.isAbsolute(path), `path must be relative: ${path}`)
 

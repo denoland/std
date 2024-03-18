@@ -35,8 +35,10 @@ Deno.test('pierce branch', async (t) => {
   let branchFs: IFs
   let childPid: PID
   const pierce = branchPierce('pierce')
+  const head = () => fs.readFileSync('/.git/refs/heads/main').toString().trim()
   await t.step('branch', async () => {
-    const { commit, branches, ...rest } = await git.solidify(fs, [pierce])
+    const solids = await git.solidify(fs, [pierce], head())
+    const { commit, branches, ...rest } = solids
     expect(rest.request).toBeUndefined()
     const io: IoStruct = readIo(fs)
     expect(io.sequence).toBe(1)
@@ -56,7 +58,7 @@ Deno.test('pierce branch', async (t) => {
   let mergeReply: MergeReply
   await t.step('branch reply', async () => {
     const branchReply = merge({}, reply, { target: childPid })
-    const solidified = await git.solidify(branchFs, [branchReply])
+    const solidified = await git.solidify(branchFs, [branchReply], head())
     const { replies } = solidified
 
     log('replies', replies[0])
@@ -68,7 +70,7 @@ Deno.test('pierce branch', async (t) => {
   })
   await t.step('merge', async () => {
     FS.copyObjects(branchFs, fs)
-    const { replies } = await git.solidify(fs, [mergeReply])
+    const { replies } = await git.solidify(fs, [mergeReply], head())
     expect(replies).toHaveLength(1)
     const reply = replies[0]
     assert(isPierceReply(reply), 'not PierceReply')

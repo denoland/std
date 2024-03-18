@@ -30,9 +30,10 @@ export default class IOChannel {
     this.#io = io
   }
   // TODO make commit required
-  static async load(pid: PID, fs: IFs, commit?: string) {
+  static async load(pid: PID, fs: IFs, commit: string) {
     const api = IsolateApi.createFS(fs, commit)
     let io: IoStruct = { sequence: 0, requests: {}, replies: {} }
+
     if (await api.exists('.io.json')) {
       io = await api.readJSON('.io.json') as IoStruct
       check(io)
