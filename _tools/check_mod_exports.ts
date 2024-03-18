@@ -40,7 +40,6 @@ for await (
       maxDepth: 1,
       skip: [
         /dotenv(\/|\\)load\.ts$/,
-        /path(\/|\\)glob\.ts$/,
         /front_matter(\/|\\)yaml\.ts$/,
         /front_matter(\/|\\)json\.ts$/,
         /front_matter(\/|\\)toml\.ts$/,
