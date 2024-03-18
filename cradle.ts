@@ -152,9 +152,6 @@ export class QueueCradle implements Cradle {
         continue
       }
       const fs = await this.#api.context.fs!.load(params.pid)
-      console.log('watchHead', oid)
-      const head = fs.readFileSync('/.git/refs/heads/main', 'utf8')
-      console.log('head on fs', head)
       const { commit } = await git.readCommit({ fs, dir: '/', oid })
       let changes
       if (path) {

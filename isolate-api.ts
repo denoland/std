@@ -34,7 +34,7 @@ export default class IsolateApi<T extends object = Default> {
     return new IsolateApi()
   }
   static createFS(fs: IFs, commit: string) {
-    assert(commit.length === 40, 'commit must be 40 characters')
+    assert(commit.length === 40, 'commit must be 40 characters: ' + commit)
     const api = new IsolateApi()
     api.#fs = fs
     api.#commit = commit
@@ -152,6 +152,9 @@ export default class IsolateApi<T extends object = Default> {
         return this.#accumulator.read(path)
       }
     }
+    if (this.#fs?.existsSync('/' + path)) {
+      return this.#fs.readFileSync('/' + path, 'utf8')
+    }
     const result = await this.#walkOne(path, async (tree) => {
       const content = await tree.content()
       assert(content, 'content must be defined')
@@ -164,6 +167,7 @@ export default class IsolateApi<T extends object = Default> {
   }
   async exists(path: string) {
     assert(this.#commit, 'commit must be set')
+    assert(this.#fs)
     log('exists', path)
     isRelative(path)
     if (this.#accumulator) {
@@ -174,6 +178,9 @@ export default class IsolateApi<T extends object = Default> {
       if (this.#accumulator.deletes.includes(path)) {
         return false
       }
+    }
+    if (this.#fs.existsSync('/' + path)) {
+      return true
     }
     const result = await this.#walkOne(path, (_tree) => Promise.resolve(true))
     return !!result

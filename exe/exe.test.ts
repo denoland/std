@@ -7,7 +7,6 @@ import { assert, expect, log } from '@utils'
 import { init } from '../git/mod.ts'
 
 const pid = { account: 'exe', repository: 'test', branches: ['main'] }
-const commit = 'test-commit'
 const source = { ...pid, account: 'higher' }
 const request: SolidRequest = {
   isolate: 'io-fixture',
@@ -22,10 +21,10 @@ const mocks = async () => {
   const { fs } = memfs()
   const { commit } = await init(fs, 'exe/test')
   const io = await IOChannel.load(pid, fs, commit)
-  return { io, fs }
+  return { io, fs, commit }
 }
 Deno.test('simple', async (t) => {
-  const { fs, io } = await mocks()
+  const { fs, io, commit } = await mocks()
   io.addRequest(request)
   io.save()
   const executor = Executor.create()
@@ -42,7 +41,7 @@ Deno.test('simple', async (t) => {
   })
 })
 Deno.test('writes', async (t) => {
-  const { fs, io } = await mocks()
+  const { fs, io, commit } = await mocks()
   const write = {
     ...request,
     functionName: 'write',
@@ -72,7 +71,7 @@ Deno.test('writes', async (t) => {
 })
 
 Deno.test('loopback', async (t) => {
-  const { fs, io } = await mocks()
+  const { fs, io, commit } = await mocks()
   const compound = { ...request, functionName: 'compound' }
   io.addRequest(compound)
   io.save()
@@ -99,7 +98,7 @@ Deno.test('compound', async (t) => {
     functionName: 'compound',
     params: { target },
   }
-  const { io, fs } = await mocks()
+  const { io, fs, commit } = await mocks()
   io.addRequest(compound)
   io.save()
   let request: SolidRequest
