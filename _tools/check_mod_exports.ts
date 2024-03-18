@@ -48,12 +48,13 @@ for await (
         /yaml\/schema\.ts$/,
         /test\.ts$/,
         /\.d\.ts$/,
-        /\/_/,
+        /(\/|\\)_/,
         /mod\.ts$/,
       ],
     })
   ) {
-    const relativeSpecifier = relative(modFilePath, filePath).slice(1);
+    const relativeSpecifier = relative(modFilePath, filePath).slice(1)
+      .replaceAll("\\", "/");
     if (!exportSpecifiers.has(relativeSpecifier)) {
       console.warn(
         `${
