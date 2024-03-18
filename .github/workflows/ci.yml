@@ -69,6 +69,7 @@ jobs:
         run: ./_tools/release/03_release.ts
 
   lint:
+    runs-on: ${{ matrix.os }}
     steps:
       - name: Clone repository
         uses: actions/checkout@v4
