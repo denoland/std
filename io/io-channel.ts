@@ -20,6 +20,8 @@ import { SolidReply } from '@/constants.ts'
 import Accumulator from '@/exe/accumulator.ts'
 const log = Debug('AI:io-file')
 
+const blank = (): IoStruct => ({ sequence: 0, requests: {}, replies: {} })
+
 export default class IOChannel {
   #pid: PID
   #api: IsolateApi
@@ -32,7 +34,7 @@ export default class IOChannel {
   // TODO make commit required
   static async load(pid: PID, fs: IFs, commit: string) {
     const api = IsolateApi.createFS(fs, commit)
-    let io: IoStruct = { sequence: 0, requests: {}, replies: {} }
+    let io = blank()
 
     if (await api.exists('.io.json')) {
       io = await api.readJSON('.io.json') as IoStruct
@@ -40,6 +42,10 @@ export default class IOChannel {
       blankSettledRequests(io, pid)
     }
     return new IOChannel(pid, api, io)
+  }
+  static blank(pid: PID, fs: IFs, commit: string) {
+    const api = IsolateApi.createFS(fs, commit)
+    return new IOChannel(pid, api, blank())
   }
   save() {
     return this.#api.writeJSON('.io.json', this.#io)
@@ -89,6 +95,10 @@ export default class IOChannel {
       }
     }
     throw new Error('request not found')
+  }
+  getRequest(sequence: number) {
+    assert(sequence in this.#io.requests, 'sequence not found')
+    return this.#io.requests[sequence]
   }
   addRequest(request: Request) {
     const sequence = this.#io.sequence++

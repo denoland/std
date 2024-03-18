@@ -33,10 +33,16 @@ const author = { name: 'IO Solidify' }
  * - reply: a result is being returned from a dispatch after serial execution.
  * @param fs a memfs instance to update
  */
-export default async (fs: IFs, pool: Poolable[], baseCommit: string) => {
+export default async (
+  fs: IFs,
+  pool: Poolable[],
+  base: string,
+  io?: IOChannel,
+) => {
   const pid = checkPool(pool)
-  // TODO use the head commit to ensure we are reading the right file
-  const io = await IOChannel.load(pid, fs, baseCommit)
+  if (!io) {
+    io = await IOChannel.load(pid, fs, base)
+  }
 
   const executingRequest = io.getExecutingRequest()
   log('solidifyPool executingRequest', executingRequest)
@@ -78,7 +84,7 @@ export default async (fs: IFs, pool: Poolable[], baseCommit: string) => {
         assert(isMergeReply(poolable), 'branch requires merge reply')
         log('branch reply', poolable.commit)
         if (!parent) {
-          parent = [baseCommit]
+          parent = [base]
         }
         parent.push(poolable.commit)
         if (request.proctype === PROCTYPE.BRANCH) {
@@ -96,8 +102,8 @@ export default async (fs: IFs, pool: Poolable[], baseCommit: string) => {
     log('nextExecutingRequest', next)
     request = next
   }
-
   io.save()
+
   await git.add({ fs, dir: '/', filepath: '.io.json' })
   const commit = await git.commit({ fs, dir, message: 'pool', author, parent })
   log('commitHash', commit)

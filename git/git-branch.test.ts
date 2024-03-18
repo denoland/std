@@ -1,7 +1,8 @@
-import { IFs, memfs } from 'https://esm.sh/memfs@4.6.0'
+import { memfs } from 'https://esm.sh/memfs@4.6.0'
 import { assert, expect, log, merge } from '@utils'
 import * as git from './mod.ts'
 import {
+  IFs,
   IoStruct,
   isMergeReply,
   isPierceReply,
@@ -36,29 +37,32 @@ Deno.test('pierce branch', async (t) => {
   let childPid: PID
   const pierce = branchPierce('pierce')
   const head = () => fs.readFileSync('/.git/refs/heads/main').toString().trim()
+  let commit: string
+  let branches: PID[]
   await t.step('branch', async () => {
     const solids = await git.solidify(fs, [pierce], head())
-    const { commit, branches, ...rest } = solids
-    expect(rest.request).toBeUndefined()
+    commit = solids.commit
+    branches = solids.branches
+    expect(solids.request).toBeUndefined()
     const io: IoStruct = readIo(fs)
     expect(io.sequence).toBe(1)
     expect(io.requests[0]).toEqual(pierce)
     expect(io.requests[0].proctype).toEqual(PROCTYPE.BRANCH)
+  })
+  await t.step('branch relay', async () => {
     branchFs = FS.clone(fs, '/.git')
-    const { request } = await git.branch(branchFs, commit, branches[0])
-    console.dir(request, { depth: 10 })
-    assert(request)
-    expect(request.source).toEqual(pierce.target)
-    const branch: IoStruct = readIo(branchFs)
-    log('branch', branch)
+    const solids = await git.branch(branchFs, head(), branches[0])
+    assert(solids.request)
+    expect(solids.request.source).toEqual(pierce.target)
 
     childPid = branches[0]
     expect(childPid.branches).toEqual(['main', '0'])
+    commit = solids.commit
   })
   let mergeReply: MergeReply
   await t.step('branch reply', async () => {
     const branchReply = merge({}, reply, { target: childPid })
-    const solidified = await git.solidify(branchFs, [branchReply], head())
+    const solidified = await git.solidify(branchFs, [branchReply], commit)
     const { replies } = solidified
 
     log('replies', replies[0])

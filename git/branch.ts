@@ -2,10 +2,10 @@ import last from 'npm:array-last'
 import { IFs } from 'https://esm.sh/v135/memfs@4.6.0/lib/index.js'
 import { Debug } from '@utils'
 import git from '$git'
-import { IoStruct, PID, PROCTYPE } from '@/constants.ts'
+import { PID, PROCTYPE } from '@/constants.ts'
 import { assert } from '$std/assert/assert.ts'
-import IsolateApi from '@/isolate-api.ts'
 import { SolidRequest } from '@/constants.ts'
+import IOChannel from '../io/io-channel.ts'
 import { solidify } from './mod.ts'
 
 const log = Debug('AI:git')
@@ -24,12 +24,12 @@ export default async (fs: IFs, commit: string, target: PID) => {
   // TODO make a shallow checkout by making a custom git tree for commits
   await git.branch({ fs, dir: '/', ref, checkout: true, object: commit })
 
-  const api = IsolateApi.createFS(fs, commit)
-  const io = await api.readJSON('.io.json') as IoStruct
+  const io = await IOChannel.load(target, fs, commit)
   const sequence = getSequence(target.branches)
 
-  const { isolate, functionName, params, target: source } =
-    io.requests[sequence]
+  const { isolate, functionName, params, target: source } = io.getRequest(
+    sequence,
+  )
   const proctype = PROCTYPE.SERIAL
   const origin: SolidRequest = {
     target,
@@ -41,8 +41,9 @@ export default async (fs: IFs, commit: string, target: PID) => {
     proctype,
   }
   log('origin', origin)
-  await api.rm('.io.json')
-  return await solidify(fs, [origin], commit)
+  const blankIo = IOChannel.blank(target, fs, commit)
+
+  return await solidify(fs, [origin], commit, blankIo)
 }
 
 export const getBranchName = (pid: PID) => {
