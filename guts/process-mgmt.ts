@@ -30,7 +30,7 @@ export default (name: string, cradleMaker: () => Promise<Cradle>) => {
     })
     await artifact.stop()
   })
-  Deno.test.only(prefix + 'internal requests', async (t) => {
+  Deno.test(prefix + 'internal requests', async (t) => {
     const artifact = await cradleMaker()
     const repo = 'process/session'
     await artifact.rm({ repo })
