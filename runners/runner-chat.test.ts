@@ -4,7 +4,7 @@ import { expect, log } from '@utils'
 import IsolateApi from '../isolate-api.ts'
 import { Help, PID, RUNNERS } from '../constants.ts'
 import runner from './runner-chat.ts'
-import { memfs } from 'https://esm.sh/memfs@4.6.0'
+import { memfs } from '$memfs'
 import { init } from '../git/mod.ts'
 
 Deno.test('runner', async (t) => {

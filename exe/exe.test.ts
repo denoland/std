@@ -1,4 +1,4 @@
-import { memfs } from 'https://esm.sh/memfs@4.6.0'
+import { memfs } from '$memfs'
 import IOChannel from '../io/io-channel.ts'
 import FS from '../fs.ts'
 import Executor from './exe.ts'

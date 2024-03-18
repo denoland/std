@@ -1,6 +1,7 @@
 import * as git from '../git/mod.ts'
 import { assert, Debug } from '@utils'
 import {
+  IFs,
   MergeReply,
   PID,
   PierceReply,
@@ -9,7 +10,6 @@ import {
   SolidReply,
 } from '@/constants.ts'
 import DB from '@/db.ts'
-import { IFs } from 'https://esm.sh/v135/memfs@4.6.0/lib/index.js'
 import FS from '@/fs.ts'
 import Cradle from '@/cradle.ts'
 const log = Debug('AI:io')

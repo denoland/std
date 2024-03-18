@@ -1,4 +1,4 @@
-import { IFs } from 'https://esm.sh/v135/memfs@4.6.0/lib/index.js'
+import { IFs } from '$memfs'
 import IsolateApi from './isolate-api.ts'
 export type { IFs }
 export type { IsolateApi }

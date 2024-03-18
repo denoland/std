@@ -25,7 +25,8 @@
     "$gfm": "https://deno.land/x/gfm@0.2.5/mod.ts",
     "$git": "npm:isomorphic-git",
     "$diff": "https://esm.sh/v135/diff@5.2.0",
-    "$diff/": "https://esm.sh/v135/diff@5.2.0/"
+    "$diff/": "https://esm.sh/v135/diff@5.2.0/",
+    "$memfs": "npm:memfs"
   },
   "exclude": ["cov/"],
   "lint": {

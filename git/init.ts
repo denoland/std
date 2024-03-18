@@ -1,6 +1,5 @@
-import { IFs } from 'https://esm.sh/v135/memfs@4.6.0/lib/index.js'
 import git from '$git'
-import { ENTRY_BRANCH, PID } from '@/constants.ts'
+import { ENTRY_BRANCH, IFs, PID } from '@/constants.ts'
 import { assert } from '@utils'
 
 const dir = '/'

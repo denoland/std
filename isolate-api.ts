@@ -1,7 +1,6 @@
 import stringify from 'npm:safe-stable-stringify'
 import Accumulator from './exe/accumulator.ts'
 import Compartment from './io/compartment.ts'
-import { IFs } from 'https://esm.sh/memfs@4.6.0'
 import { assert } from 'std/assert/mod.ts'
 import * as posix from 'https://deno.land/std@0.213.0/path/posix/mod.ts'
 import { Debug, equal, fromOutcome, print } from '@utils'
@@ -9,6 +8,7 @@ import git, { WalkerEntry } from '$git'
 import {
   DispatchFunctions,
   getProcType,
+  IFs,
   Params,
   PID,
   ProcessOptions,

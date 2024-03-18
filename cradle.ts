@@ -45,6 +45,7 @@ export class QueueCradle implements Cradle {
   async stop() {
     await this.#compartment.unmount(this.#api)
     await this.#queue.quiesce()
+    await Promise.all([...this.#readStreams])
   }
   async pierces(isolate: string, target: PID) {
     // cradle side, since functions cannot be returned from isolate calls
@@ -135,7 +136,7 @@ export class QueueCradle implements Cradle {
     const logs = await git.log({ fs, dir: '/' })
     return logs
   }
-
+  #readStreams = new Set<Promise<void>>()
   async *read(params: { pid: PID; path?: string }) {
     // watch the commit head of the given pid
     // if this includes transients, subscribe to the broadcast channel
@@ -144,17 +145,24 @@ export class QueueCradle implements Cradle {
     // TODO use commit logs to ensure we emit one splice for every commit
     const { pid, path } = params
     assert(!path || !posix.isAbsolute(path), `path must be relative: ${path}`)
+    let done
+    const watcher = new Promise<void>((resolve) => {
+      done = () => {
+        this.#readStreams.delete(watcher)
+        resolve()
+      }
+    })
+    this.#readStreams.add(watcher)
 
     let last
     for await (const oid of this.#api.context.db!.watchHead(pid)) {
       log('commit', oid, path)
-      if (oid === 'INIT') {
-        continue
-      }
       const fs = await this.#api.context.fs!.load(params.pid)
+      log('fs loaded')
       const { commit } = await git.readCommit({ fs, dir: '/', oid })
       let changes
       if (path) {
+        log('read path', path)
         const api = IsolateApi.createFS(fs, oid)
         const exists = await api.exists(path)
         if (!exists) {
@@ -165,6 +173,7 @@ export class QueueCradle implements Cradle {
         if (last !== undefined && last === content) {
           continue
         }
+        log('content changed')
         // TODO use json differ for json
         changes = diffChars(last || '', content)
         last = content
@@ -178,6 +187,7 @@ export class QueueCradle implements Cradle {
       }
       yield splice
     }
+    done!()
   }
 }
 

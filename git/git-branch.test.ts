@@ -1,4 +1,4 @@
-import { memfs } from 'https://esm.sh/memfs@4.6.0'
+import { memfs } from '$memfs'
 import { assert, expect, log, merge } from '@utils'
 import * as git from './mod.ts'
 import {

@@ -2,7 +2,7 @@ import { Debug, fromOutcome } from '@utils'
 import Executor from '../exe/exe.ts'
 import { init } from '../git/mod.ts'
 import http from 'npm:isomorphic-git/http/web/index.js'
-import { memfs } from 'https://esm.sh/memfs@4.6.0'
+import { memfs } from '$memfs'
 import git from '$git'
 import {
   IsolateFunctions,

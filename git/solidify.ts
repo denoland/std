@@ -1,8 +1,8 @@
-import { IFs } from 'https://esm.sh/v135/memfs@4.6.0/lib/index.js'
 import { assert, Debug, equal } from '@utils'
 import git from '$git'
 import { getBranchName } from './branch.ts'
 import {
+  IFs,
   isMergeReply,
   isPierceRequest,
   isRequest,
