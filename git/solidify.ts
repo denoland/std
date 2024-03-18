@@ -37,12 +37,9 @@ export default async (
   fs: IFs,
   pool: Poolable[],
   base: string,
-  io?: IOChannel,
 ) => {
   const pid = checkPool(pool)
-  if (!io) {
-    io = await IOChannel.load(pid, fs, base)
-  }
+  const io = await IOChannel.load(pid, fs, base)
 
   const executingRequest = io.getExecutingRequest()
   log('solidifyPool executingRequest', executingRequest)

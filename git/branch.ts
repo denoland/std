@@ -22,9 +22,9 @@ export default async (fs: IFs, commit: string, target: PID) => {
   const ref = getBranchName(target)
   log('branch', target, ref)
   // TODO make a shallow checkout by making a custom git tree for commits
+  const io = await IOChannel.load(target, fs, commit)
   await git.branch({ fs, dir: '/', ref, checkout: true, object: commit })
 
-  const io = await IOChannel.load(target, fs, commit)
   const sequence = getSequence(target.branches)
 
   const { isolate, functionName, params, target: source } = io.getRequest(
@@ -41,9 +41,9 @@ export default async (fs: IFs, commit: string, target: PID) => {
     proctype,
   }
   log('origin', origin)
-  const blankIo = IOChannel.blank(target, fs, commit)
+  IOChannel.blank(target, fs, commit)
 
-  return await solidify(fs, [origin], commit, blankIo)
+  return await solidify(fs, [origin], commit)
 }
 
 export const getBranchName = (pid: PID) => {

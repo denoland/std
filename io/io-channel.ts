@@ -45,7 +45,8 @@ export default class IOChannel {
   }
   static blank(pid: PID, fs: IFs, commit: string) {
     const api = IsolateApi.createFS(fs, commit)
-    return new IOChannel(pid, api, blank())
+    const io = new IOChannel(pid, api, blank())
+    io.save()
   }
   save() {
     return this.#api.writeJSON('.io.json', this.#io)
