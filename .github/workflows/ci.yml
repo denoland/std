@@ -101,6 +101,7 @@ jobs:
 
       - name: Spell-check
         uses: crate-ci/typos@master
+        if: matrix.os == 'ubuntu-22.04'
         with:
           config: ./.github/typos.toml
 
