@@ -39,12 +39,11 @@ export default (name: string, cradleMaker: () => Promise<Cradle>) => {
     const { pid } = await artifact.init({ repo })
     const { write } = await artifact.pierces('io-fixture', pid)
 
-    Debug.enable('*tests *cradle')
     const logger = async () => {
       const stream = artifact.read({ pid, path: '.io.json' })
       // make a library that transforms splice streams
       for await (const splice of stream) {
-        log('splice', splice)
+        log('splice', splice.path)
       }
       log('done')
     }
@@ -54,7 +53,6 @@ export default (name: string, cradleMaker: () => Promise<Cradle>) => {
       const promise = write({ path: 'test', content: 'hello' })
       let first
       for await (const splice of artifact.read({ pid, path: 'test' })) {
-        // log('test splice', splice)
         first = splice
         break
       }
@@ -66,7 +64,6 @@ export default (name: string, cradleMaker: () => Promise<Cradle>) => {
       expect(first.changes[0].value).toEqual('hello')
       await promise
     })
-    // ? how should we cancel streams that are in flight ?
     await artifact.stop()
   })
   // do broadcast channel for partial writes occuring

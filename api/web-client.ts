@@ -99,11 +99,16 @@ export default class WebClient implements Cradle {
   rm(params: { repo: string }) {
     return this.request('rm', params)
   }
-  async stop() {
-    // TODO make this alway wait for all queues to be empty
+  stop() {
+    for (const abort of this.#aborts) {
+      abort.abort()
+    }
   }
+  #aborts = new Set<AbortController>()
   read(params: { pid: PID; path: string }): ReadableStream<Splice> {
-    const toEvents = (stream: ReadableStream) => this.toEvents(stream)
+    const abort = new AbortController()
+    this.#aborts.add(abort)
+
     return new ReadableStream<Splice>({
       start: async (controller) => {
         try {
@@ -118,8 +123,9 @@ export default class WebClient implements Cradle {
           if (!response.body) {
             throw new Error('response body is missing')
           }
-          const stream = toEvents(response.body)
-          for await (const event of stream) {
+          const stream = createAbortableStream(response.body, abort.signal)
+
+          for await (const event of this.toEvents(stream)) {
             if (event.event === 'splice') {
               const splice: Splice = JSON.parse(event.data)
               controller.enqueue(splice)
@@ -131,6 +137,7 @@ export default class WebClient implements Cradle {
         } catch (error) {
           controller.error(error)
         }
+        this.#aborts.delete(abort)
       },
     })
   }
@@ -153,4 +160,30 @@ export default class WebClient implements Cradle {
     }
     return outcome.result
   }
+}
+
+function createAbortableStream(src: ReadableStream, abortSignal: AbortSignal) {
+  return new ReadableStream({
+    async start(controller) {
+      const reader = src.getReader()
+
+      abortSignal.addEventListener('abort', () => {
+        reader.cancel()
+      })
+
+      while (true) {
+        try {
+          const { done, value } = await reader.read()
+          if (done || abortSignal.aborted) {
+            controller.close()
+            return
+          }
+          controller.enqueue(value)
+        } catch (error) {
+          controller.error(error)
+          return
+        }
+      }
+    },
+  })
 }
