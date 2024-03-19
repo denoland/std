@@ -66,5 +66,5 @@ export default (name: string, cradleMaker: () => Promise<Cradle>) => {
     })
     await artifact.stop()
   })
-  // do broadcast channel for partial writes occuring
+  // do broadcast channel for partial writes occurring
 }
