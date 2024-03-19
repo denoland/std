@@ -123,17 +123,29 @@ export default class WebClient implements Cradle {
           if (!response.body) {
             throw new Error('response body is missing')
           }
-          const stream = createAbortableStream(response.body, abort.signal)
-
-          for await (const event of this.toEvents(stream)) {
-            if (event.event === 'splice') {
-              const splice: Splice = JSON.parse(event.data)
-              controller.enqueue(splice)
-            } else {
-              console.error('unexpected event', event.event)
+          const splices = this.toEvents(response.body)
+          const reader = splices.getReader()
+          abort.signal.addEventListener('abort', () => {
+            reader.cancel()
+          })
+          while (!abort.signal.aborted) {
+            try {
+              const { done, value } = await reader.read()
+              if (done || abort.signal.aborted) {
+                controller.close()
+                return
+              }
+              if (value.event === 'splice') {
+                const splice: Splice = JSON.parse(value.data)
+                controller.enqueue(splice)
+              } else {
+                console.error('unexpected event', value.event)
+              }
+            } catch (error) {
+              controller.error(error)
+              return
             }
           }
-          controller.close()
         } catch (error) {
           controller.error(error)
         }
@@ -160,30 +172,4 @@ export default class WebClient implements Cradle {
     }
     return outcome.result
   }
-}
-
-function createAbortableStream(src: ReadableStream, abortSignal: AbortSignal) {
-  return new ReadableStream({
-    async start(controller) {
-      const reader = src.getReader()
-
-      abortSignal.addEventListener('abort', () => {
-        reader.cancel()
-      })
-
-      while (true) {
-        try {
-          const { done, value } = await reader.read()
-          if (done || abortSignal.aborted) {
-            controller.close()
-            return
-          }
-          controller.enqueue(value)
-        } catch (error) {
-          controller.error(error)
-          return
-        }
-      }
-    },
-  })
 }
