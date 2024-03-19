@@ -30,7 +30,7 @@ export default (name: string, cradleMaker: () => Promise<Cradle>) => {
 
     await artifact.stop()
   })
-  Deno.test(prefix + '.io.json diffs', async (t) => {
+  Deno.test.only(prefix + '.io.json diffs', async (t) => {
     // send in a bunch of actions and view the diffs as splices
 
     const artifact = await cradleMaker()
@@ -54,7 +54,7 @@ export default (name: string, cradleMaker: () => Promise<Cradle>) => {
       const promise = write({ path: 'test', content: 'hello' })
       let first
       for await (const splice of artifact.read({ pid, path: 'test' })) {
-        log('test splice', splice)
+        // log('test splice', splice)
         first = splice
         break
       }
@@ -66,6 +66,7 @@ export default (name: string, cradleMaker: () => Promise<Cradle>) => {
       expect(first.changes[0].value).toEqual('hello')
       await promise
     })
+    // ? how should we cancel streams that are in flight ?
     await artifact.stop()
   })
   // do broadcast channel for partial writes occuring

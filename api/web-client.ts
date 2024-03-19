@@ -13,7 +13,7 @@ import {
 } from './web-client.types.ts'
 
 type ToError = (object: object) => Error
-type ToEvents = (stream: ReadableStream) => AsyncIterable<EventSourceMessage>
+type ToEvents = (stream: ReadableStream) => ReadableStream<EventSourceMessage>
 export default class WebClient implements Cradle {
   private readonly fetcher: (
     input: URL | RequestInfo,
@@ -99,14 +99,23 @@ export default class WebClient implements Cradle {
   rm(params: { repo: string }) {
     return this.request('rm', params)
   }
-  stop() {
+  async stop() {
+    // TODO make this alway wait for all queues to be empty
+    // when ReadableStream this should be easier to manage
+    await Promise.all(
+      [...this.#streams].map((stream) => {
+        return stream.return?.()
+      }),
+    )
   }
   read(params: { pid: PID; path: string }): AsyncIterable<Splice> {
+    // TODO move to pure ReadableStream so can have cancel
     const iterable = {
       [Symbol.asyncIterator]: () => this.readGenerator(params),
     }
     return iterable
   }
+  #streams = new Set<AsyncIterableIterator<EventSourceMessage>>()
   private async *readGenerator(params: { pid: PID; path: string }) {
     // TODO handle reconnect
     const response = await this.fetcher(`/api/read`, {
@@ -120,14 +129,25 @@ export default class WebClient implements Cradle {
     if (!response.body) {
       throw new Error('response body is missing')
     }
-    for await (const event of this.toEvents(response.body)) {
-      if (event.event === 'splice') {
-        const splice: Splice = JSON.parse(event.data)
-        yield splice
-      } else {
-        console.log('event', event)
+    const stream = this.toEvents(response.body)[Symbol.asyncIterator]()
+    // maybe should be using pure streams
+    this.#streams.add(stream)
+    try {
+      for await (const event of stream) {
+        if (event.event === 'splice') {
+          const splice: Splice = JSON.parse(event.data)
+          yield splice
+        } else {
+          console.log('event', event)
+        }
       }
+      console.log('stream ended')
+    } finally {
+      console.log('finally')
+      await stream.return?.()
+      this.#streams.delete(stream)
     }
+    console.log('ended')
   }
 
   private async request(path: string, params: Params) {
