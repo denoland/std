@@ -44,6 +44,10 @@ export default class Accumulator {
     assert(this.isAlarmed, 'this is not alarmed')
     assert(from.isAlarmed, 'from is not alarmed')
     assert(this.#buffer.length <= from.#buffer.length, 'this must be shorter')
+    if (this.#buffer.length > from.#buffer.length) {
+      console.dir(this.#buffer, { depth: null })
+      console.dir(from.#buffer, { depth: null })
+    }
     let index = 0
     for (const source of from.#buffer) {
       const sink = this.#buffer[index++]
