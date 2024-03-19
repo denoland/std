@@ -99,12 +99,10 @@ export default class WebClient implements Cradle {
   rm(params: { repo: string }) {
     return this.request('rm', params)
   }
-  async stop() {
+  stop() {
     for (const abort of this.#aborts) {
       abort.abort()
     }
-    // try once around the event loop to allow aborts to propagate up streams
-    await new Promise((resolve) => setTimeout(resolve, 200))
   }
   #aborts = new Set<AbortController>()
   read(params: { pid: PID; path: string }): ReadableStream<Splice> {
