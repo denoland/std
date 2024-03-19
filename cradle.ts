@@ -201,7 +201,6 @@ export class QueueCradle implements Cradle {
         }
       },
       cancel() {
-        console.log('cancel')
         active = false
       },
     })
