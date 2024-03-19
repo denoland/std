@@ -3,7 +3,6 @@
 // help(
 //   'login',
 //   async ({ help }) => {
-//     debug.enable('*ai-result*')
 //     const result = await help('login-github')
 //     debug(result)
 //   },

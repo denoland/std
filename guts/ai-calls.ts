@@ -14,7 +14,6 @@ export default (name: string, cradleMaker: () => Promise<Cradle>) => {
     const session = await create() as PID
 
     await t.step('prompt', async () => {
-      Debug.enable('*session *tests *cradle')
       const { engage } = await artifact.pierces('engage-help', session)
       const result = await engage({
         help: 'goalie',
