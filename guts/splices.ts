@@ -47,7 +47,7 @@ export default (name: string, cradleMaker: () => Promise<Cradle>) => {
       }
       log('done')
     }
-    const p = logger()
+    logger()
 
     await t.step('read', async () => {
       const promise = write({ path: 'test', content: 'hello' })
@@ -65,7 +65,6 @@ export default (name: string, cradleMaker: () => Promise<Cradle>) => {
       await promise
     })
     await artifact.stop()
-    await p
   })
   // do broadcast channel for partial writes occurring
 }

@@ -22,7 +22,11 @@ const cradleMaker = async () => {
   const fetcher = server.request as typeof fetch
 
   const cradle = new WebClient('mock', deserializeError, toEvents, fetcher)
-  cradle.stop = () => server.stop()
+  const stop = cradle.stop.bind(cradle)
+  cradle.stop = async () => {
+    await server.stop()
+    stop()
+  }
   return cradle
 }
 guts('Web', cradleMaker)
