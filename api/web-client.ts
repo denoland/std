@@ -148,8 +148,9 @@ export default class WebClient implements Cradle {
           }
         } catch (error) {
           controller.error(error)
+        } finally {
+          this.#aborts.delete(abort)
         }
-        this.#aborts.delete(abort)
       },
     })
   }
