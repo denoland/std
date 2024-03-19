@@ -104,7 +104,7 @@ export default class WebClient implements Cradle {
       abort.abort()
     }
     // try once around the event loop to allow aborts to propagate up streams
-    await new Promise((resolve) => setTimeout(resolve, 0))
+    await new Promise((resolve) => setTimeout(resolve, 200))
   }
   #aborts = new Set<AbortController>()
   read(params: { pid: PID; path: string }): ReadableStream<Splice> {
