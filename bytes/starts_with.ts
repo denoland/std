@@ -14,7 +14,7 @@
  * ```
  */
 export function startsWith(source: Uint8Array, prefix: Uint8Array): boolean {
-  for (let i = 0, max = prefix.length; i < max; i++) {
+  for (let i = 0; i < prefix.length; i++) {
     if (source[i] !== prefix[i]) return false;
   }
   return true;

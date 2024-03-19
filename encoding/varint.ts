@@ -112,12 +112,11 @@ export function decode(buf: Uint8Array, offset = 0): [bigint, number] {
  * from the returned new `offset`.
  */
 export function decode32(buf: Uint8Array, offset = 0): [number, number] {
+  let shift = 0;
+  let decoded = 0;
   for (
-    let i = offset,
-      len = Math.min(buf.length, offset + MaxVarIntLen32),
-      shift = 0,
-      decoded = 0;
-    i <= len;
+    let i = offset;
+    i <= Math.min(buf.length, offset + MaxVarIntLen32);
     i += 1, shift += SHIFT
   ) {
     const byte = buf[i]!;
@@ -148,8 +147,8 @@ export function encode(
   num = BigInt(num);
   if (num < 0n) throw new RangeError("signed input given");
   for (
-    let i = offset, len = Math.min(buf.length, MaxVarIntLen64);
-    i <= len;
+    let i = offset;
+    i <= Math.min(buf.length, MaxVarIntLen64);
     i += 1
   ) {
     if (num < MSBN) {

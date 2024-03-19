@@ -95,8 +95,8 @@ const base64abc = [
 export function encodeBase64(data: ArrayBuffer | Uint8Array | string): string {
   // CREDIT: https://gist.github.com/enepomnyaschih/72c423f727d395eeaa09697058238727
   const uint8 = validateBinaryLike(data);
-  let result = "",
-    i;
+  let result = "";
+  let i;
   const l = uint8.length;
   for (i = 2; i < l; i += 3) {
     result += base64abc[(uint8[i - 2]!) >> 2];

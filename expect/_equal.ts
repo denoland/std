@@ -19,15 +19,7 @@ function constructorsEqual(a: object, b: object) {
  * Deep equality comparison used in assertions
  * @param c actual value
  * @param d expected value
- * @param strictCheck check value in strictMode
- *
- * @example
- * ```ts
- * import { equal } from "https://deno.land/std@$STD_VERSION/assert/equal.ts";
- *
- * equal({ foo: "bar" }, { foo: "bar" }); // Returns `true`
- * equal({ foo: "bar" }, { foo: "baz" }); // Returns `false
- * ```
+ * @param options for the equality check
  */
 export function equal(c: unknown, d: unknown, options?: EqualOptions): boolean {
   const { customTesters = [], strictCheck } = options || {};
@@ -36,7 +28,10 @@ export function equal(c: unknown, d: unknown, options?: EqualOptions): boolean {
   return (function compare(a: unknown, b: unknown): boolean {
     if (customTesters?.length) {
       for (const customTester of customTesters) {
-        const pass = customTester.call(undefined, a, b, customTesters);
+        const testContext = {
+          equal,
+        };
+        const pass = customTester.call(testContext, a, b, customTesters);
         if (pass !== undefined) {
           return pass;
         }

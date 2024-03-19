@@ -63,6 +63,7 @@ export async function signCookie(
  *   Cookie: "location=tokyo.37f7481039762eef5cd46669f93c0a3214dfecba7d0cdc0b0dc40036063fb22e",
  * });
  * const signedCookie = getCookies(headers)["location"];
+ * if (signedCookie === undefined) throw new Error("Cookie not found");
  * await verifyCookie(signedCookie, key);
  * ```
  */
@@ -99,6 +100,7 @@ export async function verifyCookie(
  *   Cookie: "location=tokyo.37f7481039762eef5cd46669f93c0a3214dfecba7d0cdc0b0dc40036063fb22e",
  * });
  * const signedCookie = getCookies(headers)["location"];
+ * if (signedCookie === undefined) throw new Error("Cookie not found");
  * await verifyCookie(signedCookie, key);
  * const cookie = parseSignedCookie(signedCookie);
  * ```

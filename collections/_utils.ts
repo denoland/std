@@ -28,6 +28,6 @@ export function filterInPlace<T>(
 /**
  * Produces a random number between the inclusive `lower` and `upper` bounds.
  */
-export function randomInteger(lower: number, upper: number) {
+export function randomInteger(lower: number, upper: number): number {
   return lower + Math.floor(Math.random() * (upper - lower + 1));
 }

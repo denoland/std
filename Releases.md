@@ -1,3 +1,29 @@
+### 0.220.1 / 2024.03.15
+
+- fix(tar): leak in `Tar() checks directory entry type` test (#4490)
+
+### 0.220.0 / 2024.03.14
+
+- Revert "refactor(cli): cleanup `parse_args.ts` (#4189)" (#4485)
+- add JSR link (#4456)
+
+### 0.219.1 / 2024.03.08
+
+- chore: fix for jsr publish (#4449)
+
+### 0.219.0 / 2024.03.08
+
+- [unstable] BREAKING(semver): remove `gtr()` and `ltr()` (#4450)
+- [unstable] BREAKING(semver): remove `reverseSort()` (#4422)
+- [unstable] BREAKING(semver): remove deprecated operators (#4423)
+- feat(expect): support `expect.extend()` api (#4412)
+- fix(expect): fix equality of iterables (#4286)
+- fix(fs): `emptyDir()` test after workspace conversion (#4427)
+- fix(fs): `expandGlob()` test after workspace conversion (#4428)
+- fix(log): don't discard bytes >4096 in `FileHandler` (#4415)
+- fix(path): fix common() results that depend on the order and/or number of
+  input paths (#4414)
+
 ### 0.218.0 / 2024.02.29
 
 - feat(assert): optional `reason` param for `unreachable` (#4404) (#4405)

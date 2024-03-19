@@ -23,7 +23,7 @@ export interface DebouncedFunction<T extends Array<unknown>> {
  * aborted.
  *
  * @example
- * ```
+ * ```ts
  * import { debounce } from "https://deno.land/std@$STD_VERSION/async/debounce.ts";
  *
  * await Array.fromAsync(
