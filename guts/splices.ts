@@ -1,4 +1,4 @@
-import { assert, Debug, delay, expect, log } from '@utils'
+import { assert, Debug, expect, log } from '@utils'
 import { Cradle } from '../api/web-client.types.ts'
 
 export default (name: string, cradleMaker: () => Promise<Cradle>) => {
@@ -30,7 +30,7 @@ export default (name: string, cradleMaker: () => Promise<Cradle>) => {
 
     await artifact.stop()
   })
-  Deno.test.only(prefix + '.io.json diffs', async (t) => {
+  Deno.test(prefix + '.io.json diffs', async (t) => {
     // send in a bunch of actions and view the diffs as splices
 
     const artifact = await cradleMaker()

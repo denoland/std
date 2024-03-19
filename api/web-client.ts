@@ -101,55 +101,39 @@ export default class WebClient implements Cradle {
   }
   async stop() {
     // TODO make this alway wait for all queues to be empty
-    // when ReadableStream this should be easier to manage
-    await Promise.all(
-      [...this.#streams].map((stream) => {
-        return stream.return?.()
-      }),
-    )
   }
-  read(params: { pid: PID; path: string }): AsyncIterable<Splice> {
-    // TODO move to pure ReadableStream so can have cancel
-    const iterable = {
-      [Symbol.asyncIterator]: () => this.readGenerator(params),
-    }
-    return iterable
-  }
-  #streams = new Set<AsyncIterableIterator<EventSourceMessage>>()
-  private async *readGenerator(params: { pid: PID; path: string }) {
-    // TODO handle reconnect
-    const response = await this.fetcher(`/api/read`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(params),
-    })
-    if (!response.ok) {
-      throw new Error('response not ok')
-    }
-    if (!response.body) {
-      throw new Error('response body is missing')
-    }
-    const stream = this.toEvents(response.body)[Symbol.asyncIterator]()
-    // maybe should be using pure streams
-    this.#streams.add(stream)
-    try {
-      for await (const event of stream) {
-        if (event.event === 'splice') {
-          const splice: Splice = JSON.parse(event.data)
-          yield splice
-        } else {
-          console.log('event', event)
+  read(params: { pid: PID; path: string }): ReadableStream<Splice> {
+    const toEvents = (stream: ReadableStream) => this.toEvents(stream)
+    return new ReadableStream<Splice>({
+      start: async (controller) => {
+        try {
+          const response = await this.fetcher(`/api/read`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(params),
+          })
+          if (!response.ok) {
+            throw new Error('response not ok')
+          }
+          if (!response.body) {
+            throw new Error('response body is missing')
+          }
+          const stream = toEvents(response.body)
+          for await (const event of stream) {
+            if (event.event === 'splice') {
+              const splice: Splice = JSON.parse(event.data)
+              controller.enqueue(splice)
+            } else {
+              console.log('event', event)
+            }
+          }
+          controller.close()
+        } catch (error) {
+          controller.error(error)
         }
-      }
-      console.log('stream ended')
-    } finally {
-      console.log('finally')
-      await stream.return?.()
-      this.#streams.delete(stream)
-    }
-    console.log('ended')
+      },
+    })
   }
-
   private async request(path: string, params: Params) {
     const response = await this.fetcher(`/api/${path}?pretty`, {
       method: 'POST',

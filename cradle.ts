@@ -45,7 +45,6 @@ export class QueueCradle implements Cradle {
   async stop() {
     await this.#compartment.unmount(this.#api)
     await this.#queue.quiesce()
-    await Promise.all([...this.#readStreams])
   }
   async pierces(isolate: string, target: PID) {
     // cradle side, since functions cannot be returned from isolate calls
@@ -136,77 +135,76 @@ export class QueueCradle implements Cradle {
     const logs = await git.log({ fs, dir: '/' })
     return logs
   }
-  #readStreams = new Set<Promise<void>>()
-  async *read(params: { pid: PID; path?: string }) {
+  read(params: { pid: PID; path?: string }) {
     // watch the commit head of the given pid
     // if this includes transients, subscribe to the broadcast channel
     // buffer transients until we get up to the current commit
     // if we pass the current commit in transients, reset what head is
     // TODO use commit logs to ensure we emit one splice for every commit
+
     const { pid, path } = params
     assert(!path || !posix.isAbsolute(path), `path must be relative: ${path}`)
-    let done
-    let active = true
-    const watcher = new Promise<void>((resolve) => {
-      done = () => {
-        active = false
-        this.#readStreams.delete(watcher)
-        resolve()
-      }
-    })
-    this.#readStreams.add(watcher)
 
-    try {
-      let last
-      for await (const oid of this.#api.context.db!.watchHead(pid)) {
-        log('commit', oid, path)
-        if (!active) {
-          break
-        }
-        const fs = await this.#api.context.fs!.load(params.pid)
-        log('fs loaded')
-        if (!active) {
-          break
-        }
-        const { commit } = await git.readCommit({ fs, dir: '/', oid })
-        let changes
-        if (path) {
-          log('read path', path)
-          const api = IsolateApi.createFS(fs, oid)
-          if (!active) {
-            break
+    let active = true
+
+    return new ReadableStream<Splice>({
+      start: async (controller) => {
+        try {
+          let last
+          for await (const oid of this.#api.context.db!.watchHead(pid)) {
+            log('commit', oid, path)
+            if (!active) {
+              break
+            }
+            const fs = await this.#api.context.fs!.load(params.pid)
+            log('fs loaded')
+            if (!active) {
+              break
+            }
+            const { commit } = await git.readCommit({ fs, dir: '/', oid })
+            let changes
+            if (path) {
+              log('read path', path)
+              const api = IsolateApi.createFS(fs, oid)
+              if (!active) {
+                break
+              }
+              const exists = await api.exists(path)
+              if (!exists) {
+                continue
+              }
+              log('file exists', path, oid)
+              if (!active) {
+                break
+              }
+              const content = await api.read(path)
+              if (last !== undefined && last === content) {
+                continue
+              }
+              log('content changed')
+              // TODO use json differ for json
+              changes = diffChars(last || '', content)
+              last = content
+            }
+            const splice: Splice = {
+              pid,
+              commit,
+              timestamp: commit.committer.timestamp * 1000,
+              path,
+              changes,
+            }
+            controller.enqueue(splice)
           }
-          const exists = await api.exists(path)
-          if (!exists) {
-            continue
-          }
-          log('file exists', path, oid)
-          if (!active) {
-            break
-          }
-          const content = await api.read(path)
-          if (last !== undefined && last === content) {
-            continue
-          }
-          log('content changed')
-          // TODO use json differ for json
-          changes = diffChars(last || '', content)
-          last = content
+          controller.close()
+        } catch (error) {
+          controller.error(error)
         }
-        const splice: Splice = {
-          pid,
-          commit,
-          timestamp: commit.committer.timestamp * 1000,
-          path,
-          changes,
-        }
-        yield splice
-      }
-    } finally {
-      log('done')
-      done!()
-      active = false
-    }
+      },
+      cancel() {
+        console.log('cancel')
+        active = false
+      },
+    })
   }
 }
 

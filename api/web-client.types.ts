@@ -228,5 +228,5 @@ export interface Cradle {
   clone(params: { repo: string }): Promise<{ pid: PID; head: string }>
   probe(params: { repo: string }): Promise<{ pid: PID; head: string } | void>
   rm(params: { repo: string }): Promise<void>
-  read(params: { pid: PID; path?: string }): AsyncIterable<Splice>
+  read(params: { pid: PID; path?: string }): ReadableStream<Splice>
 }
