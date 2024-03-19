@@ -69,9 +69,9 @@ const getDebug = () => {
   }
   return ''
 }
+
 Debug.enable(getDebug())
 
-export const toEvents = (stream: ReadableStream) => {
-  return stream.pipeThrough(new TextDecoderStream())
+export const toEvents = (stream: ReadableStream) =>
+  stream.pipeThrough(new TextDecoderStream())
     .pipeThrough(new EventSourceParserStream())
-}
