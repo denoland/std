@@ -48,7 +48,7 @@ binary: !<tag:yaml.org,2002:binary> SGVsbG8=
 Deno.test({
   name: "arrays can be stringified directly",
   fn() {
-    const array = [1, 2, 3]
+    const array = [1, 2, 3];
 
     const expected = "- 1\n- 2\n- 3\n";
 
@@ -59,9 +59,9 @@ Deno.test({
 Deno.test({
   name: "strings can be stringified directly",
   fn() {
-    const string = 'Hello world';
+    const string = "Hello world";
 
-    const expected = 'Hello world\n';
+    const expected = "Hello world\n";
 
     assertEquals(stringify(string), expected);
   },
