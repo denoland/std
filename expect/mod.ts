@@ -48,25 +48,29 @@
  * - `toThrowErrorMatchingSnapShot`
  * - `toThrowErrorMatchingInlineSnapShot`
  *
- * The following asymmetric matchers are not supported yet:
- * - `expect.anything`
- * - `expect.any`
- * - `expect.arrayContaining`
- * - `expect.not.arrayContaining`
- * - `expect.closedTo`
- * - `expect.objectContaining`
- * - `expect.not.objectContaining`
- * - `expect.stringContaining`
- * - `expect.not.stringContaining`
- * - `expect.stringMatching`
- * - `expect.not.stringMatching`
+ * The asymmetric matchers are not fully supported yet:
+ * - Supported:
+ *   - `expect.anything`
+ *   - `expect.any`
+ *   - `expect.arrayContaining`
+ *   - `expect.not.arrayContaining`
+ *   - `expect.closedTo`
+ *   - `expect.stringContaining`
+ *   - `expect.not.stringContaining`
+ *   - `expect.stringMatching`
+ *   - `expect.not.stringMatching`
+ * - Not supported:
+ *   - `expect.objectContaining`
+ *   - `expect.not.objectContaining`
  *
- * The following uitlities are not supported yet:
- * - `expect.assertions`
- * - `expect.hasAssertions`
- * - `expect.addEqualityTester`
- * - `expect.addSnapshotSerializer`
- * - `expect.extend`
+ * The uitlities are not fully supported yet:
+ * - Supported:
+ *   - `expect.addEqualityTester`
+ *   - `expect.extend`
+ * - Not supported:
+ *   - `expect.assertions`
+ *   - `expect.hasAssertions`
+ *   - `expect.addSnapshotSerializer`
  *
  * This module is largely inspired by {@link https://github.com/allain/expect | x/expect} module by Allain Lalonde.
  *
