@@ -57,7 +57,6 @@
  * - `MD4` (collidable and length-extendable)
  * - `MD5` (collidable and length-extendable)
  * - `SHA-1` (collidable and length-extendable)
- * ```
  *
  * @example
  * ```ts
