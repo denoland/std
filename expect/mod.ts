@@ -48,7 +48,7 @@
  * - `toThrowErrorMatchingSnapShot`
  * - `toThrowErrorMatchingInlineSnapShot`
  *
- * The asymmetric matchers are not fully supported yet:
+ * The asymmetric matchers are not yet fully supported:
  * - Supported:
  *   - `expect.anything`
  *   - `expect.any`
@@ -63,7 +63,7 @@
  *   - `expect.objectContaining`
  *   - `expect.not.objectContaining`
  *
- * The uitlities are not fully supported yet:
+ * The uitlities are not yet fully supported:
  * - Supported:
  *   - `expect.addEqualityTester`
  *   - `expect.extend`
