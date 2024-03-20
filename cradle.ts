@@ -188,6 +188,7 @@ export class QueueCradle implements Cradle {
             }
             const splice: Splice = {
               pid,
+              oid,
               commit,
               timestamp: commit.committer.timestamp * 1000,
               path,

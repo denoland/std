@@ -134,6 +134,10 @@ type Change = {
 export type Splice = {
   pid: PID
   /**
+   * The hash of the commit object
+   */
+  oid: string
+  /**
    * The commit this splice refers to
    */
   commit: CommitObject

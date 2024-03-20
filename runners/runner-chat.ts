@@ -25,7 +25,7 @@ if (!env['OPENAI_API_KEY']) {
   env['OPENAI_API_KEY'] = key
 }
 const apiKey = env['OPENAI_API_KEY']
-const ai = new OpenAI({ apiKey })
+const ai = new OpenAI({ apiKey, timeout: 20 * 1000, maxRetries: 5 })
 type Args = { text: string; help: Help }
 export default async (params: Args, api: IsolateApi) => {
   const help = params.help
@@ -140,6 +140,7 @@ export class AI {
       debugResult(assistant.content || '')
       return assistant.content || ''
     }
+    // TODO use the new runTools helper with a parser
     for (const call of assistant.tool_calls) {
       const {
         function: { name, arguments: args },
@@ -250,17 +251,17 @@ const toTool = (name: string, help: Help, schema: JSONSchemaType<object>) => {
   }
   return tool
 }
-const isolateToGptApi = (name: string, api: JSONSchemaType<object>) => {
-  assert(typeof api === 'object', `api must be an object: ${name}`)
-  assert(typeof api.type === 'string', `api.type must be a string: ${name}`)
-  const parameters: Record<string, unknown> = { ...api }
+const isolateToGptApi = (name: string, schema: JSONSchemaType<object>) => {
+  assert(typeof schema === 'object', `api must be an object: ${name}`)
+  assert(typeof schema.type === 'string', `api.type must be a string: ${name}`)
+  const parameters: Record<string, unknown> = { ...schema }
   delete parameters.title
   delete parameters.description
   const tool: OpenAI.ChatCompletionTool = {
     type: 'function',
     function: {
       name,
-      description: api.description,
+      description: schema.description,
       parameters,
     },
   }
