@@ -75,6 +75,14 @@ export default class Executor {
       const reply = { target: pid, sequence, outcome: winner }
 
       const { upserts, deletes } = execution.accumulator
+      for (const upsert of upserts) {
+        const file = execution.accumulator.readOutOfBand(upsert)
+        fs.writeFileSync('/' + upsert, file)
+      }
+      for (const del of deletes) {
+        // TODO fobid altering the .git directory ?
+        fs.unlinkSync('/' + del)
+      }
       result.settled = { reply, upserts, deletes }
     } else {
       log('accumulator triggered first')

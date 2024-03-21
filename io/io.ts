@@ -33,7 +33,7 @@ export default class IO {
     if (lockId) {
       const pid = poolable.target
       const fs = await this.#fs.load(pid)
-      await this.#execute(pid, lockId, fs)
+      await this.#tick(pid, lockId, fs)
       await this.#db.releaseHeadlock(pid, lockId)
     }
   }
@@ -48,10 +48,10 @@ export default class IO {
     const pid = reply.target
     const lockId = await this.#db.getHeadlock(pid)
     await git.stage(fs, upserts, deletes)
-    await this.#execute(pid, lockId, fs, reply)
+    await this.#tick(pid, lockId, fs, reply)
     await this.#db.releaseHeadlock(pid, lockId)
   }
-  async #execute(pid: PID, lockId: string, fs: IFs, reply?: SolidReply) {
+  async #tick(pid: PID, lockId: string, fs: IFs, reply?: SolidReply) {
     const solids = await this.#solidifyPool(pid, fs, reply)
 
     log('solids %o', solids)

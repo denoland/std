@@ -1,6 +1,6 @@
 import merge from 'npm:lodash.merge'
 import Cradle from '../cradle.ts'
-import { Debug, expect, log } from '@utils'
+import { expect, log } from '@utils'
 import IsolateApi from '../isolate-api.ts'
 import { Help, RUNNERS } from '../constants.ts'
 import runner from './runner-chat.ts'

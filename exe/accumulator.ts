@@ -88,10 +88,13 @@ export default class Accumulator {
 
     // do the broadcast thru the beacon
   }
-  read(path: string) {
-    assert(!this.isAlarmed, 'Activity is denied')
+  readOutOfBand(path: string) {
     assert(this.#upserts.has(path), 'path not found: ' + path)
     return this.#upserts.get(path)
+  }
+  read(path: string) {
+    assert(!this.isAlarmed, 'Activity is denied')
+    return this.readOutOfBand(path)
   }
   delete(path: string) {
     assert(!this.isAlarmed, 'Activity is denied')
