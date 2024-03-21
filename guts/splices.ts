@@ -92,11 +92,18 @@ export default (name: string, cradleMaker: () => Promise<Cradle>) => {
     await t.step('write', async () => {
       const { write } = await artifact.pierces('io-fixture', pid)
       await write({ path: 'test.txt', content: 'hello' })
-      await write({ path: 'test.txt', content: 'ell' })
-      for await (const _splice of artifact.read({ pid, path: 'test.txt' })) {
-        break
+      write({ path: 'test.txt', content: 'ell' })
+      let fileCount = 0
+      for await (const splice of artifact.read({ pid, path: 'test.txt' })) {
+        log('file', splice.path, splice.changes)
+        fileCount++
+        if (fileCount === 2) {
+          break
+        }
       }
     })
+    log('spliceCount', spliceCount)
+    log('fileSpliceCount', fileSpliceCount)
     await artifact.stop()
   })
 
