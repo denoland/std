@@ -176,12 +176,17 @@ export default class DB {
     }
     await Promise.all(promises)
   }
-  async *watchHead(pid: PID) {
+  watchHead(pid: PID) {
     const key = keys.getHeadKey(pid)
-    for await (const [event] of this.#kv.watch<string[]>([key])) {
-      if (event.versionstamp) {
-        yield event.value
-      }
-    }
+    const stream = this.#kv.watch<string[]>([key])
+    return stream.pipeThrough(
+      new TransformStream({
+        transform([event], controller) {
+          if (event.versionstamp) {
+            controller.enqueue(event.value)
+          }
+        },
+      }),
+    )
   }
 }

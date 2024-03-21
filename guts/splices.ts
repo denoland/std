@@ -66,5 +66,39 @@ export default (name: string, cradleMaker: () => Promise<Cradle>) => {
     })
     await artifact.stop()
   })
+  Deno.test(prefix + 'file changes', async (t) => {
+    const repo = 'test/files'
+    const artifact = await cradleMaker()
+    await artifact.rm({ repo })
+    const { pid } = await artifact.init({ repo })
+
+    let fileSpliceCount = 0
+    const fileSplices = async () => {
+      for await (const splice of artifact.read({ pid, path: 'test.txt' })) {
+        log('file', splice.path)
+        fileSpliceCount++
+      }
+    }
+    fileSplices()
+    let spliceCount = 0
+    const splices = async () => {
+      for await (const splice of artifact.read({ pid })) {
+        log('splice', splice.oid)
+        spliceCount++
+      }
+    }
+    splices()
+
+    await t.step('write', async () => {
+      const { write } = await artifact.pierces('io-fixture', pid)
+      await write({ path: 'test.txt', content: 'hello' })
+      await write({ path: 'test.txt', content: 'ell' })
+      for await (const _splice of artifact.read({ pid, path: 'test.txt' })) {
+        break
+      }
+    })
+    await artifact.stop()
+  })
+
   // do broadcast channel for partial writes occurring
 }

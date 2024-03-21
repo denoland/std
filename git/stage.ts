@@ -9,9 +9,12 @@ export default async (fs: IFs, upserts: string[], deletes: string[]) => {
   log('stage', upserts, deletes)
   // TODO affirm the head commit is the one we are updating
   for (const filepath of upserts) {
+    log('add', filepath)
+    assert(fs.existsSync('/' + filepath), `file does not exist: ${filepath}`)
     await git.add({ fs, dir: '/', filepath })
   }
   for (const filepath of deletes) {
+    log('remove', filepath)
     await git.remove({ fs, dir: '/', filepath })
   }
 }

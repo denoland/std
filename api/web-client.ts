@@ -110,6 +110,7 @@ export default class WebClient implements Cradle {
     this.#aborts.add(abort)
 
     return new ReadableStream<Splice>({
+      // TODO move this to a transform stream
       start: async (controller) => {
         try {
           const response = await this.fetcher(`/api/read`, {

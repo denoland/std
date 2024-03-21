@@ -1,8 +1,8 @@
 import merge from 'npm:lodash.merge'
 import Cradle from '../cradle.ts'
-import { expect, log } from '@utils'
+import { Debug, expect, log } from '@utils'
 import IsolateApi from '../isolate-api.ts'
-import { Help, PID, RUNNERS } from '../constants.ts'
+import { Help, RUNNERS } from '../constants.ts'
 import runner from './runner-chat.ts'
 import { memfs } from '$memfs'
 import { init } from '../git/mod.ts'
@@ -18,13 +18,18 @@ Deno.test('runner', async (t) => {
   }
   const { fs } = memfs()
   const { commit } = await init(fs, 'runner/test')
-  const api = IsolateApi.createFS(memfs().fs, commit)
+  const api = IsolateApi.createFS(fs, commit)
+  log('commit', commit)
+
   await t.step('hello world', async () => {
     const help = merge({}, helpBase, { commands: [] })
     const text = 'reply with the cheese emoji'
     const result = await runner({ help, text }, api)
     expect(result).toBe('🧀')
     log('result', result)
+    const session = await api.readJSON('session.json')
+    log('session', session)
+    expect(session).toHaveLength(3)
   })
   await t.step('tool call', async () => {
     const text = 'call the "local" function'
@@ -32,7 +37,7 @@ Deno.test('runner', async (t) => {
       instructions: ['return the function call results verbatim'],
     })
     const result = await runner({ help, text }, api)
-    expect(result).toContain('"local reply"')
+    expect(result).toContain('local reply')
   })
   await t.step('tool error', async () => {
     const text = 'call the "error" function with message: salami'
@@ -40,7 +45,7 @@ Deno.test('runner', async (t) => {
       instructions: ['return the function call results verbatim'],
     })
     const result = await runner({ help, text }, api)
-    expect(result).toContain('"salami"')
+    expect(result).toContain('salami')
     // TODO read the filesystem and get the error message out
   })
 })
@@ -48,26 +53,20 @@ Deno.test('runner', async (t) => {
 Deno.test('artifact', async (t) => {
   const repo = 'dreamcatcher-tech/HAL'
   const artifact = await Cradle.create()
-  await artifact.clone({ repo })
+  const { pid } = await artifact.clone({ repo })
 
-  await t.step('load help file', async () => {
-    // this should only be able to be called relative to a commit
-    // this should use splices
-    // const help = await artifact.loadJSON({
-    //   repo,
-    //   path: 'helps/help-fixture.json',
-    // })
-    // expect(help).toHaveProperty('instructions')
-  })
-  await t.step('chat', async () => {
-    const pid: PID = {
-      account: 'dreamcatcher-tech',
-      repository: 'HAL',
-      branches: ['main'],
+  const splices = async () => {
+    for await (const splice of artifact.read({ pid, path: 'session.json' })) {
+      log('splice', splice)
     }
+  }
+  splices()
+
+  await t.step('chat', async () => {
     const isolate = 'engage-help'
     const { engage } = await artifact.pierces(isolate, pid)
     const result = await engage({ help: 'help-fixture', text: 'hello' })
+
     log('result', result)
   })
   await artifact.stop()

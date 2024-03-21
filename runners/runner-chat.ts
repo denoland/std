@@ -39,7 +39,7 @@ export class AI {
   #config: HelpConfig = {}
   #tools: OpenAI.ChatCompletionTool[] | undefined
   #actions: Record<string, (parameters: object) => unknown> = {}
-  #sessionPath = '/chat-1.session.json'
+  #sessionPath = 'session.json'
   #api!: IsolateApi
   static async create(help: Help, api: IsolateApi) {
     const ai = new AI()
@@ -52,10 +52,11 @@ export class AI {
   }
   async prompt(text: string) {
     assert(text.length, 'text must not be empty')
-    const messages: MessageParam[] = []
-    // if (await hooks.isFile(this.#sessionPath)) {
-    //   messages = await hooks.readJS(this.#sessionPath)
-    // }
+    let messages: MessageParam[] = []
+    if (await this.#api.exists(this.#sessionPath)) {
+      log('session exists')
+      messages = await this.#api.readJSON<MessageParam[]>(this.#sessionPath)
+    }
     assert(Array.isArray(messages), 'messages must be an array')
 
     if (this.#sysprompt) {
@@ -87,7 +88,7 @@ export class AI {
       content: null,
     }
     messages.push(assistant)
-    // await hooks.writeJS(this.#sessionPath, messages)
+    this.#api.writeJSON(this.#sessionPath, messages)
 
     log('streamCall started')
     // TODO move this to an isolate call that runs in a branch
@@ -127,7 +128,7 @@ export class AI {
           debugPart(`%o`, assistant.tool_calls[index]?.function)
         }
       }
-      // await hooks.writeJS(this.#sessionPath, messages)
+      this.#api.writeJSON(this.#sessionPath, messages)
     }
     log('streamCall complete')
     return this.executeTools(messages)
@@ -155,7 +156,8 @@ export class AI {
         content: '',
       }
       messages.push(message)
-      // await hooks.writeJS(this.#sessionPath, messages)
+      this.#api.writeJSON(this.#sessionPath, messages)
+
       try {
         const parameters = JSON.parse(args)
         const result = await this.#actions[name](parameters)
@@ -169,7 +171,7 @@ export class AI {
             .findLast(({ role }) => role === 'tool')
           assert(lastToolCall, 'missing last tool call')
           message.content = (lastToolCall.content || '') as string
-          // await hooks.writeJS(this.#sessionPath, messages)
+          this.#api.writeJSON(this.#sessionPath, messages)
 
           return message.content
         }
@@ -186,7 +188,7 @@ export class AI {
       debugToolResult(message.content)
     }
 
-    // await hooks.writeJS(this.#sessionPath, messages)
+    this.#api.writeJSON(this.#sessionPath, messages)
     return this.#execute(messages)
   }
   async #loadCommands(commands: string[] = []) {

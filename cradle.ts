@@ -43,6 +43,10 @@ export class QueueCradle implements Cradle {
     return cradle
   }
   async stop() {
+    for (const abort of this.#reads) {
+      abort.abort()
+    }
+    await Promise.all([...this.#readPromises])
     await this.#compartment.unmount(this.#api)
     await this.#queue.quiesce()
   }
@@ -135,77 +139,77 @@ export class QueueCradle implements Cradle {
     const logs = await git.log({ fs, dir: '/' })
     return logs
   }
+  #reads = new Set<AbortController>()
   read(params: { pid: PID; path?: string }) {
-    // watch the commit head of the given pid
-    // if this includes transients, subscribe to the broadcast channel
     // buffer transients until we get up to the current commit
     // if we pass the current commit in transients, reset what head is
     // TODO use commit logs to ensure we emit one splice for every commit
-
     const { pid, path } = params
     assert(!path || !posix.isAbsolute(path), `path must be relative: ${path}`)
 
-    let active = true
+    const abort = new AbortController()
+    this.#reads.add(abort)
 
-    return new ReadableStream<Splice>({
-      start: async (controller) => {
-        try {
-          let last
-          for await (const oid of this.#api.context.db!.watchHead(pid)) {
-            log('commit', oid, path)
-            if (!active) {
-              break
-            }
-            const fs = await this.#api.context.fs!.load(params.pid)
-            log('fs loaded')
-            if (!active) {
-              break
-            }
-            const { commit } = await git.readCommit({ fs, dir: '/', oid })
-            let changes
-            if (path) {
-              log('read path', path)
-              const api = IsolateApi.createFS(fs, oid)
-              if (!active) {
-                break
-              }
-              const exists = await api.exists(path)
-              if (!exists) {
-                continue
-              }
-              log('file exists', path, oid)
-              if (!active) {
-                break
-              }
-              const content = await api.read(path)
-              if (last !== undefined && last === content) {
-                continue
-              }
-              log('content changed')
-              // TODO use json differ for json
-              changes = diffChars(last || '', content)
-              last = content
-            }
-            const splice: Splice = {
-              pid,
-              oid,
-              commit,
-              timestamp: commit.committer.timestamp * 1000,
-              path,
-              changes,
-            }
-            controller.enqueue(splice)
-          }
-          controller.close()
-        } catch (error) {
-          controller.error(error)
-        }
+    let last: string
+    const commits = this.#api.context.db!.watchHead(pid)
+
+    const toSplices = new TransformStream<string, Splice>({
+      start: (controller) => {
+        abort.signal.addEventListener('abort', () => {
+          log('abort', abort.signal.aborted)
+          controller.terminate()
+        })
       },
-      cancel() {
-        active = false
+      transform: async (oid, controller) => {
+        log('delay complete')
+        log('commit', oid, path)
+        const fs = await this.#api.context.fs!.load(params.pid)
+        log('fs loaded')
+        const { commit } = await git.readCommit({ fs, dir: '/', oid })
+        let changes
+        if (path) {
+          log('read path', path)
+          const api = IsolateApi.createFS(fs, oid)
+          const exists = await api.exists(path)
+          if (!exists) {
+            log('file does not exist', path, oid)
+            return
+          }
+          log('file exists', path, oid)
+          const content = await api.read(path)
+          if (last !== undefined && last === content) {
+            return
+          }
+          log('content changed')
+          // TODO use json differ for json
+          changes = diffChars(last || '', content)
+          last = content
+        }
+        if (abort.signal.aborted) {
+          log('abort signal')
+          return controller.terminate()
+        }
+        const timestamp = commit.committer.timestamp * 1000
+        const splice: Splice = { pid, oid, commit, timestamp, path, changes }
+        controller.enqueue(splice)
       },
     })
+    const streamCompletePromise = commits.pipeTo(toSplices.writable)
+      .then(() => {
+        log('pipeTo done')
+      }).catch((_error) => {
+        // silence as only used during testing
+      })
+      .then(() => {
+        this.#readPromises.delete(streamCompletePromise)
+        this.#reads.delete(abort)
+        log('stream complete')
+      })
+
+    this.#readPromises.add(streamCompletePromise)
+    return toSplices.readable
   }
+  #readPromises = new Set<Promise<void>>()
 }
 
 export default QueueCradle

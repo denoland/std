@@ -137,7 +137,7 @@ export default class IsolateApi<T extends object = Default> {
       this.#accumulator.write(path, content)
     }
   }
-  async readJSON(path: string) {
+  async readJSON<T>(path: string): Promise<T> {
     const string = await this.read(path)
     return JSON.parse(string)
   }
