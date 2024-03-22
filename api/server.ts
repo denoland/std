@@ -1,4 +1,5 @@
 import { Hono } from 'https://deno.land/x/hono/mod.ts'
+
 import {
   cors,
   logger,
@@ -31,7 +32,6 @@ export default class Server {
       'ping',
       'apiSchema',
       'pierce',
-      'transcribe',
       'logs',
       'probe',
       'init',
@@ -74,6 +74,15 @@ export default class Server {
           await stream.writeSSE(event)
         }
       })
+    })
+
+    app.post('/transcribe', async (c) => {
+      const body = await c.req.parseBody()
+      const audio = body['audio'] as File
+      assert(audio, 'audio is required')
+      const { text } = await artifact.transcribe({ audio })
+      log('transcribe text', text)
+      return c.json({ text })
     })
 
     server.#app = app

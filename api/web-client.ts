@@ -50,15 +50,14 @@ export default class WebClient implements Cradle {
     return this.request('pierce', params)
   }
   async transcribe(params: { audio: File }) {
-    // this is a special one that uses a blob arg
-    // if all used formdata, then we don't care the type of the args
+    const formData = new FormData()
+    formData.append('audio', params.audio)
+
     const response = await fetch(`${this.url}/api/transcribe`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(params),
+      body: formData,
     })
+
     return await response.json()
   }
   logs(params: { repo: string }) {
