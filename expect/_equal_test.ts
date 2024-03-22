@@ -243,6 +243,7 @@ Deno.test("equal() does not match with different instances", () => {
 });
 
 Deno.test("equal() does not match with different collection contents", () => {
+  assert(!equal({}, []));
   assert(!equal(new Set([1]), new Set([2])));
   assert(!equal(new Map([[1, 2]]), new Map([[2, 1]])));
   assert(equal(new Map([[1, 2]]), new Map([[1, 2]])));
