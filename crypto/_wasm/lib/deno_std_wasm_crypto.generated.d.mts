@@ -61,35 +61,6 @@ export class DigestContext {
 */
   update(data: Uint8Array): void;
 /**
-* Returns the digest of the input data so far. This may be called repeatedly
-* without side effects.
-*
-* `length` will usually be left `undefined` to use the default length for
-* the algorithm. For algorithms with variable-length output, it can be used
-* to specify a non-negative integer number of bytes.
-*
-* An error will be thrown if `algorithm` is not a supported hash algorithm or
-* `length` is not a supported length for the algorithm.
-* @param {number | undefined} [length]
-* @returns {Uint8Array}
-*/
-  digest(length?: number): Uint8Array;
-/**
-* Returns the digest of the input data so far, and resets this context to
-* its initial state, as though it has not yet been provided with any input
-* data. (It will still use the same algorithm.)
-*
-* `length` will usually be left `undefined` to use the default length for
-* the algorithm. For algorithms with variable-length output, it can be used
-* to specify a non-negative integer number of bytes.
-*
-* An error will be thrown if `algorithm` is not a supported hash algorithm or
-* `length` is not a supported length for the algorithm.
-* @param {number | undefined} [length]
-* @returns {Uint8Array}
-*/
-  digestAndReset(length?: number): Uint8Array;
-/**
 * Returns the digest of the input data so far, and then drops the context
 * from memory on the Wasm side. This context must no longer be used, and any
 * further method calls will result in null pointer errors being thrown.
@@ -105,18 +76,4 @@ export class DigestContext {
 * @returns {Uint8Array}
 */
   digestAndDrop(length?: number): Uint8Array;
-/**
-* Resets this context to its initial state, as though it has not yet been
-* provided with any input data. (It will still use the same algorithm.)
-*/
-  reset(): void;
-/**
-* Returns a new `DigestContext` that is a copy of this one, i.e., using the
-* same algorithm and with a copy of the same internal state.
-*
-* This may be a more efficient option for computing multiple digests that
-* start with a common prefix.
-* @returns {DigestContext}
-*/
-  clone(): DigestContext;
 }
