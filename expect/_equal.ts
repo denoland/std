@@ -73,6 +73,13 @@ export function equal(c: unknown, d: unknown, options?: EqualOptions): boolean {
     if (typeof a === "number" && typeof b === "number") {
       return Number.isNaN(a) && Number.isNaN(b) || a === b;
     }
+    if (a === null || b === null) {
+      return a === b;
+    }
+    const className = Object.prototype.toString.call(a);
+    if (className !== Object.prototype.toString.call(b)) {
+      return false;
+    }
     if (Object.is(a, b)) {
       return true;
     }
