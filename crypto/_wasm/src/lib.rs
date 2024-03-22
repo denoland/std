@@ -91,8 +91,7 @@ impl DigestContext {
   /// the algorithm. For algorithms with variable-length output, it can be used
   /// to specify a non-negative integer number of bytes.
   ///
-  /// An error will be thrown if `algorithm` is not a supported hash algorithm or
-  /// `length` is not a supported length for the algorithm.
+  /// An error will be thrown if `length` is not a supported length for the algorithm.
   #[wasm_bindgen(js_name=digestAndDrop)]
   pub fn digest_and_drop(
     mut self,
