@@ -77,7 +77,7 @@ export function equal(c: unknown, d: unknown, options?: EqualOptions): boolean {
       return a === b;
     }
     const className = Object.prototype.toString.call(a);
-    if (className != Object.prototype.toString.call(b)) {
+    if (className !== Object.prototype.toString.call(b)) {
       return false;
     }
     if (Object.is(a, b)) {
