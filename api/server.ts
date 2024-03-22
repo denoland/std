@@ -89,3 +89,5 @@ export default class Server {
     return this.#app.fetch
   }
 }
+
+Debug.enable('AI:runner-chat')

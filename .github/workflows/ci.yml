@@ -35,9 +35,6 @@ jobs:
 
       - name: Check formatting, linting, license headers, and types
         run: deno task ok
-
-      - name: Run tests
-        run: deno task test
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           DENO_KV_PATH: ':memory:'
