@@ -73,11 +73,14 @@ export function equal(c: unknown, d: unknown, options?: EqualOptions): boolean {
     if (typeof a === "number" && typeof b === "number") {
       return Number.isNaN(a) && Number.isNaN(b) || a === b;
     }
+    if (a === null || b === null) {
+      return a === b;
+    }
     if (Object.is(a, b)) {
       return true;
     }
     if (a && typeof a === "object" && b && typeof b === "object") {
-      if (strictCheck && a && b && !constructorsEqual(a, b)) {
+      if (a && b && !constructorsEqual(a, b)) {
         return false;
       }
       if (a instanceof WeakMap || b instanceof WeakMap) {
