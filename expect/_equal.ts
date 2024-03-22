@@ -76,11 +76,15 @@ export function equal(c: unknown, d: unknown, options?: EqualOptions): boolean {
     if (a === null || b === null) {
       return a === b;
     }
+    const className = Object.prototype.toString.call(a);
+    if (className != Object.prototype.toString.call(b)) {
+      return false;
+    }
     if (Object.is(a, b)) {
       return true;
     }
     if (a && typeof a === "object" && b && typeof b === "object") {
-      if (a && b && !constructorsEqual(a, b)) {
+      if (strictCheck && a && b && !constructorsEqual(a, b)) {
         return false;
       }
       if (a instanceof WeakMap || b instanceof WeakMap) {
