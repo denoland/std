@@ -94,7 +94,7 @@ impl DigestContext {
   /// An error will be thrown if `length` is not a supported length for the algorithm.
   #[wasm_bindgen(js_name=digestAndDrop)]
   pub fn digest_and_drop(
-    mut self,
+    self,
     length: Option<usize>,
   ) -> Result<Box<[u8]>, JsValue> {
     self

@@ -1,8 +1,5 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-use digest::{
-  core_api::BlockSizeUser, Digest, DynDigest, ExtendableOutput,
-  ExtendableOutputReset, Reset, Update,
-};
+use digest::{Digest, DynDigest, ExtendableOutput, Update};
 use typenum::{U16, U20, U28, U32, U48};
 
 /// Enum wrapper over all supported digest implementations.

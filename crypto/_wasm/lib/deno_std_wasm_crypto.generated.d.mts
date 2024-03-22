@@ -70,8 +70,7 @@ export class DigestContext {
 * the algorithm. For algorithms with variable-length output, it can be used
 * to specify a non-negative integer number of bytes.
 *
-* An error will be thrown if `algorithm` is not a supported hash algorithm or
-* `length` is not a supported length for the algorithm.
+* An error will be thrown if `length` is not a supported length for the algorithm.
 * @param {number | undefined} [length]
 * @returns {Uint8Array}
 */
