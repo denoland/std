@@ -70,7 +70,7 @@ function charWidth(ch: string) {
  * ```
  *
  * Use
- * {@linkcode https://jsr.io/@std/fmt/doc/colors/~/stripAnsiCode | stripAnsiCode()}
+ * {@linkcode https://jsr.io/@std/fmt/doc/colors/~/stripAnsiCode | stripAnsiCode}
  * to remove ANSI escape codes from a string before passing it to
  * {@linkcode unicodeWidth}.
  */
