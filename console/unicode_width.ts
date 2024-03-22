@@ -50,7 +50,7 @@ function charWidth(ch: string) {
  * @param str The string to measure.
  * @returns The unicode width of the string.
  *
- * @example Getting the unicode width of a string
+ * @example Calculating the unicode width of a string
  * ```ts
  * import { unicodeWidth } from "https://deno.land/std@$STD_VERSION/console/unicode_width.ts";
  *
@@ -59,7 +59,7 @@ function charWidth(ch: string) {
  * unicodeWidth("ｆｕｌｌｗｉｄｔｈ"); // 18
  * ```
  *
- * @example Getting the unicode width of a color-encoded string
+ * @example Calculating the unicode width of a color-encoded string
  * ```ts
  * import { unicodeWidth } from "https://deno.land/std@$STD_VERSION/console/unicode_width.ts";
  * import { stripAnsiCode } from "https://deno.land/std@$STD_VERSION/fmt/colors.ts";
