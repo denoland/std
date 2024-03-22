@@ -100,7 +100,7 @@ impl DigestContext {
   ) -> Result<Box<[u8]>, JsValue> {
     self
       .0
-      .digest_and_reset(length)
+      .digest_and_drop(length)
       .map_err(|message| JsValue::from(js_sys::TypeError::new(message)))
   }
 }
