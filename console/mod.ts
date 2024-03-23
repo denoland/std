@@ -5,7 +5,8 @@
  *
  * ## Unicode width
  *
- * Calculate the physical width of a string in a TTY-like environment.
+ * {@linkcode unicodeWidth} calculates the physical width of a string in a
+ * TTY-like environment.
  *
  * ```ts
  * import { unicodeWidth } from "https://deno.land/std@$STD_VERSION/console/unicode_width.ts";
