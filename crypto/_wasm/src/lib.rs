@@ -4,6 +4,7 @@ use js_sys::Uint8Array;
 use wasm_bindgen::prelude::*;
 
 mod digest;
+mod fnv;
 
 /// Returns the digest of the given `data` using the given hash `algorithm`.
 ///

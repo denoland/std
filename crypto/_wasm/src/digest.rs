@@ -31,6 +31,10 @@ pub enum Context {
   Shake128(Box<sha3::Shake128>),
   Shake256(Box<sha3::Shake256>),
   Tiger(Box<tiger::Tiger>),
+  Fnv32(Box<crate::fnv::Fnv32>),
+  Fnv32A(Box<crate::fnv::Fnv32A>),
+  Fnv64(Box<crate::fnv::Fnv64>),
+  Fnv64A(Box<crate::fnv::Fnv64A>),
 }
 
 use Context::*;
@@ -65,6 +69,10 @@ impl Context {
       "SHAKE128" => Shake128(Default::default()),
       "SHAKE256" => Shake256(Default::default()),
       "TIGER" => Tiger(Default::default()),
+      "FNV32" => Fnv32(Box::new(crate::fnv::Fnv32::new())),
+      "FNV32A" => Fnv32A(Box::new(crate::fnv::Fnv32A::new())),
+      "FNV64" => Fnv64(Box::new(crate::fnv::Fnv64::new())),
+      "FNV64A" => Fnv64A(Box::new(crate::fnv::Fnv64A::new())),
       _ => return Err("unsupported algorithm"),
     })
   }
@@ -99,6 +107,10 @@ impl Context {
       Sha384(context) => context.output_size(),
       Sha512(context) => context.output_size(),
       Tiger(context) => context.output_size(),
+      Fnv32(_) => 4,
+      Fnv32A(_) => 4,
+      Fnv64(_) => 8,
+      Fnv64A(_) => 8,
 
       // https://doi.org/10.6028/NIST.FIPS.202's Table 4 indicates that in order
       // to reach the target security strength for these algorithms, the output
@@ -144,6 +156,10 @@ impl Context {
       Tiger(context) => Digest::update(&mut **context, data),
       Shake128(context) => (&mut **context).update(data),
       Shake256(context) => (&mut **context).update(data),
+      Fnv32(context) => (&mut **context).update(data),
+      Fnv32A(context) => (&mut **context).update(data),
+      Fnv64(context) => (&mut **context).update(data),
+      Fnv64A(context) => (&mut **context).update(data),
     };
   }
 
@@ -189,6 +205,10 @@ impl Context {
       Tiger(context) => context.finalize(),
       Shake128(context) => context.finalize_boxed(length),
       Shake256(context) => context.finalize_boxed(length),
+      Fnv32(context) => context.digest(),
+      Fnv32A(context) => context.digest(),
+      Fnv64(context) => context.digest(),
+      Fnv64A(context) => context.digest(),
     })
   }
 }
