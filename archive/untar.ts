@@ -86,7 +86,6 @@ function parseHeader(buffer: Uint8Array): TarHeader {
 }
 
 /** Tar entry */
-// deno-lint-ignore no-empty-interface
 export interface TarEntry extends TarMetaWithLinkName {}
 
 /** Contains tar header metadata and a reader to the entry's body. */

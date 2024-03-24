@@ -46,6 +46,50 @@ binary: !<tag:yaml.org,2002:binary> SGVsbG8=
 });
 
 Deno.test({
+  name: "arrays can be stringified directly",
+  fn() {
+    const array = [1, 2, 3];
+
+    const expected = "- 1\n- 2\n- 3\n";
+
+    assertEquals(stringify(array), expected);
+  },
+});
+
+Deno.test({
+  name: "strings can be stringified directly",
+  fn() {
+    const string = "Hello world";
+
+    const expected = "Hello world\n";
+
+    assertEquals(stringify(string), expected);
+  },
+});
+
+Deno.test({
+  name: "numbers can be stringified directly",
+  fn() {
+    const number = 1.01;
+
+    const expected = "1.01\n";
+
+    assertEquals(stringify(number), expected);
+  },
+});
+
+Deno.test({
+  name: "booleans can be stringified directly",
+  fn() {
+    const boolean = true;
+
+    const expected = "true\n";
+
+    assertEquals(stringify(boolean), expected);
+  },
+});
+
+Deno.test({
   name: "stringify() throws with `!!js/*` yaml types with default schemas",
   fn() {
     const object = { undefined: undefined };
