@@ -29,7 +29,8 @@ export const api = {
   },
 }
 export const functions = {
-  delay: async ({ milliseconds }) => {
+  delay: async (params: { milliseconds: number }) => {
+    const { milliseconds } = params
     await new Promise((resolve) => setTimeout(resolve, milliseconds))
     return new Date().toLocaleString()
   },

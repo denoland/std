@@ -1,3 +1,7 @@
+import { Debug } from '@utils'
+import { IsolateApi } from '@/constants.ts'
+const log = Debug('isolates:files')
+
 export const api = {
   write: {
     description:
@@ -60,26 +64,35 @@ export const api = {
 }
 
 export const functions = {
-  write: async ({ path, contents = '' }, api) => {
-    debug('add', path, contents)
-    await api.write(path, contents)
+  write: (params: { path: string; contents?: string }, api: IsolateApi) => {
+    const { path, contents = '' } = params
+    log('add', path, contents)
+    api.write(path, contents)
     return `added ${path} with length: ${contents.length}`
   },
-  ls: async ({ path }, api) => {
-    debug('ls')
+  ls: async (params: { path: string }, api: IsolateApi) => {
+    const { path } = params
+    log('ls', path)
     const result = await api.ls(path)
     return result
   },
-  read: async ({ path }, api) => {
+  read: async (params: { path: string }, api: IsolateApi) => {
+    const { path } = params
     return await api.read(path)
-    // reading should be async, writing should be sync
   },
-  update: async ({ path, regex, replacement }, api) => {
-    debug('update', path, regex, replacement)
+  update: async (params: Update, api: IsolateApi) => {
+    const { path, regex, replacement } = params
+    log('update', path, regex, replacement)
     const contents = await api.read(path)
     const matches = contents.match(new RegExp(regex, 'g')) || []
     const result = contents.replace(new RegExp(regex, 'g'), replacement)
-    await api.write(path, result)
+    api.write(path, result)
     return matches.length
   },
+}
+
+interface Update {
+  path: string
+  regex: string
+  replacement: string
 }

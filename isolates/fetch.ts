@@ -1,3 +1,5 @@
+import { Debug } from '@utils'
+const log = Debug('isolates:fetch')
 export const api = {
   // TODO make a readPage function that returns a summary of a url
   post: {
@@ -33,18 +35,21 @@ export const api = {
   },
 }
 export const functions = {
-  post: ({ url, data }) => {
-    debug('post', url, data)
+  post: async (params: { url: string; data?: object }) => {
+    const { url, data } = params
+    log('post', url, data)
     const requestOptions = {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         Accept: 'application/json',
       },
+      body: undefined as undefined | string,
     }
     if (data) {
       requestOptions.body = JSON.stringify(data)
     }
-    return fetch(url, requestOptions).then((response) => response.json())
+    const response = await fetch(url, requestOptions)
+    return await response.json()
   },
 }
