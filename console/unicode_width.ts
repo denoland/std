@@ -39,25 +39,40 @@ function charWidth(ch: string) {
 }
 
 /**
- * Get the width of a string's constituent characters in columns in TTY-like
- * environments.
+ * Calculate the physical width of a string in a TTY-like environment. This is
+ * useful for cases such as calculating where a line-wrap will occur and
+ * underlining strings.
  *
- * Combine with `stripAnsiCode` from `fmt/colors.ts` to get the expected physical
- * width of a string in the console.
+ * The physical width is given by the number of columns required to display
+ * the string. The number of columns a given unicode character occupies can
+ * vary depending on the character itself.
  *
- * @example
+ * @param str The string to measure.
+ * @returns The unicode width of the string.
+ *
+ * @example Calculating the unicode width of a string
  * ```ts
  * import { unicodeWidth } from "https://deno.land/std@$STD_VERSION/console/unicode_width.ts";
- * import { assertEquals } from "https://deno.land/std@$STD_VERSION/assert/assert_equals.ts";
+ *
+ * unicodeWidth("hello world"); // 11
+ * unicodeWidth("天地玄黃宇宙洪荒"); // 16
+ * unicodeWidth("ｆｕｌｌｗｉｄｔｈ"); // 18
+ * ```
+ *
+ * @example Calculating the unicode width of a color-encoded string
+ * ```ts
+ * import { unicodeWidth } from "https://deno.land/std@$STD_VERSION/console/unicode_width.ts";
  * import { stripAnsiCode } from "https://deno.land/std@$STD_VERSION/fmt/colors.ts";
  *
- * assertEquals(unicodeWidth("hello world"), 11);
- * assertEquals(unicodeWidth("天地玄黃宇宙洪荒"), 16);
- * assertEquals(unicodeWidth("ｆｕｌｌｗｉｄｔｈ"), 18);
- * assertEquals(unicodeWidth(stripAnsiCode("\x1b[36mголубой\x1b[39m")), 7);
- * assertEquals(unicodeWidth(stripAnsiCode("\x1b[31m紅色\x1b[39m")), 4);
- * assertEquals(unicodeWidth(stripAnsiCode("\x1B]8;;https://deno.land\x07🦕\x1B]8;;\x07")), 2);
+ * unicodeWidth(stripAnsiCode("\x1b[36mголубой\x1b[39m")); // 7
+ * unicodeWidth(stripAnsiCode("\x1b[31m紅色\x1b[39m")); // 4
+ * unicodeWidth(stripAnsiCode("\x1B]8;;https://deno.land\x07🦕\x1B]8;;\x07")); // 2
  * ```
+ *
+ * Use
+ * {@linkcode https://jsr.io/@std/fmt/doc/colors/~/stripAnsiCode | stripAnsiCode}
+ * to remove ANSI escape codes from a string before passing it to
+ * {@linkcode unicodeWidth}.
  */
 export function unicodeWidth(str: string): number {
   return [...str].map((ch) => charWidth(ch) ?? 0).reduce((a, b) => a + b, 0);
