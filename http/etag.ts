@@ -40,7 +40,7 @@ export interface ETagOptions {
   /**
    * A digest algorithm to use to calculate the etag.
    *
-   * @default {"FNV32A"}
+   * @default {"SHA-256"}
    */
   algorithm?: AlgorithmIdentifier;
 

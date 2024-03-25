@@ -69,7 +69,15 @@ jobs:
         run: ./_tools/release/03_release.ts
 
   lint:
-    runs-on: ubuntu-22.04
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-22.04
+          - windows-2022
+          - macOS-12
     steps:
       - name: Clone repository
         uses: actions/checkout@v4
@@ -90,6 +98,7 @@ jobs:
 
       - name: Spell-check
         uses: crate-ci/typos@master
+        if: matrix.os == 'ubuntu-22.04'
         with:
           config: ./.github/typos.toml
 
