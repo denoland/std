@@ -25,7 +25,7 @@ const cradleMaker = async () => {
   const stop = cradle.stop.bind(cradle)
   cradle.stop = async () => {
     await server.stop()
-    stop()
+    await stop()
   }
   return cradle
 }

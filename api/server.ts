@@ -26,7 +26,6 @@ export default class Server {
     const app = new Hono().basePath('/api')
     app.use(prettyJSON())
     app.use('*', logger(), poweredBy(), cors())
-
     type serverMethods = (keyof Cradle)[]
     const functions: serverMethods = [
       'ping',
@@ -66,6 +65,7 @@ export default class Server {
         const params = await c.req.json()
         const abort = new AbortController()
         stream.onAbort(() => {
+          console.log('server stream abort')
           abort.abort()
         })
 
@@ -82,13 +82,7 @@ export default class Server {
           }
           log('stream end')
         } catch (error) {
-          log('stream error', error)
-          const errorEvent = {
-            data: error.message,
-            event: 'error',
-            id: String(server.#sseId++),
-          }
-          await stream.writeSSE(errorEvent)
+          console.error('server stream error', error)
         }
       }, async (error, stream) => {
         await Promise.resolve()
@@ -109,6 +103,7 @@ export default class Server {
     return server
   }
   async stop() {
+    // TODO add all the read streams to be stopped too ?
     await this.#artifact.stop()
   }
   get request() {

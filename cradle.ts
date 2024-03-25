@@ -43,7 +43,7 @@ export class QueueCradle implements Cradle {
     return cradle
   }
   async stop() {
-    for (const abort of this.#reads) {
+    for (const abort of this.#aborts) {
       abort.abort()
     }
     await Promise.all([...this.#readPromises])
@@ -138,7 +138,21 @@ export class QueueCradle implements Cradle {
     const logs = await git.log({ fs, dir: '/' })
     return logs
   }
-  #reads = new Set<AbortController>()
+  #aborts = new Set<AbortController>()
+  #readPromises = new Set<Promise<void>>()
+  #waiter(abort: AbortController) {
+    let resolve: () => void
+    const readPromise = new Promise<void>((_resolve) => {
+      resolve = _resolve
+    })
+    this.#readPromises.add(readPromise)
+    this.#aborts.add(abort)
+    return () => {
+      resolve()
+      this.#readPromises.delete(readPromise)
+      this.#aborts.delete(abort)
+    }
+  }
   read(pid: PID, path?: string, signal?: AbortSignal) {
     // buffer transients until we get up to the current commit
     // if we pass the current commit in transients, reset what head is
@@ -146,25 +160,18 @@ export class QueueCradle implements Cradle {
     assert(!path || !posix.isAbsolute(path), `path must be relative: ${path}`)
 
     const abort = new AbortController()
-    this.#reads.add(abort)
     if (signal) {
       signal.addEventListener('abort', () => {
         abort.abort()
       })
     }
+    const finished = this.#waiter(abort)
 
     let last: string
-    const commits = this.#api.context.db!.watchHead(pid)
+    const commits = this.#api.context.db!.watchHead(pid, abort.signal)
 
     const toSplices = new TransformStream<string, Splice>({
-      start: (controller) => {
-        abort.signal.addEventListener('abort', () => {
-          log('abort', abort.signal.aborted)
-          controller.terminate()
-        })
-      },
       transform: async (oid, controller) => {
-        log('delay complete')
         log('commit', oid, path)
         const fs = await this.#api.context.fs!.load(pid)
         log('fs loaded')
@@ -174,45 +181,35 @@ export class QueueCradle implements Cradle {
           log('read path', path)
           const api = IsolateApi.createFS(fs, oid)
           const exists = await api.exists(path)
-          if (!exists) {
-            log('file does not exist', path, oid)
-            return
+          if (exists) {
+            log('file exists', path, oid)
+            const content = await api.read(path)
+            if (last === undefined && last !== content) {
+              log('content changed')
+              // TODO use json differ for json
+              changes = diffChars(last || '', content)
+              last = content
+            }
           }
-          log('file exists', path, oid)
-          const content = await api.read(path)
-          if (last !== undefined && last === content) {
-            return
-          }
-          log('content changed')
-          // TODO use json differ for json
-          changes = diffChars(last || '', content)
-          last = content
         }
-        if (abort.signal.aborted) {
-          log('abort signal')
-          return controller.terminate()
-        }
+
         const timestamp = commit.committer.timestamp * 1000
         const splice: Splice = { pid, oid, commit, timestamp, path, changes }
         controller.enqueue(splice)
       },
     })
-    const streamCompletePromise = commits.pipeTo(toSplices.writable)
+    commits.pipeTo(toSplices.writable)
       .then(() => {
         log('pipeTo done')
       }).catch((_error) => {
         // silence as only used during testing
       })
       .then(() => {
-        this.#readPromises.delete(streamCompletePromise)
-        this.#reads.delete(abort)
+        finished()
         log('stream complete')
       })
-
-    this.#readPromises.add(streamCompletePromise)
     return toSplices.readable
   }
-  #readPromises = new Set<Promise<void>>()
 }
 
 export default QueueCradle

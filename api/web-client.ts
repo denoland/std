@@ -13,7 +13,9 @@ import {
 } from './web-client.types.ts'
 
 type ToError = (object: object) => Error
-type ToEvents = (stream: ReadableStream) => ReadableStream<EventSourceMessage>
+type ToEvents = (
+  stream: ReadableStream<Uint8Array>,
+) => ReadableStream<EventSourceMessage>
 export default class WebClient implements Cradle {
   private readonly fetcher: (
     input: URL | RequestInfo,
@@ -98,88 +100,108 @@ export default class WebClient implements Cradle {
   rm(params: { repo: string }) {
     return this.request('rm', params)
   }
-  stop() {
+  async stop() {
     for (const abort of this.#aborts) {
       abort.abort()
     }
+    await Promise.all([...this.#readPromises])
   }
   #aborts = new Set<AbortController>()
-  read(pid: PID, path?: string, signal?: AbortSignal): ReadableStream<Splice> {
-    const abort = new AbortController()
+  #readPromises = new Set<Promise<void>>()
+  #waiter(abort: AbortController) {
+    let resolve: () => void
+    const readPromise = new Promise<void>((_resolve) => {
+      resolve = _resolve
+    })
+    this.#readPromises.add(readPromise)
     this.#aborts.add(abort)
+    return () => {
+      resolve()
+      this.#readPromises.delete(readPromise)
+      this.#aborts.delete(abort)
+    }
+  }
+  read(pid: PID, path?: string, signal?: AbortSignal) {
+    const abort = new AbortController()
     if (signal) {
       signal.addEventListener('abort', () => {
         abort.abort()
       })
     }
-
-    // TODO retry on fail should be handled here
-    // cache the last response, and skip if receive the exact same object
+    const finished = this.#waiter(abort)
 
     return new ReadableStream<Splice>({
       start: async (controller) => {
-        try {
-          const response = await this.fetcher(`/api/read`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ pid, path }),
-          })
-          if (!response.ok) {
-            throw new Error('response not ok')
+        let repeat = 0
+        while (!abort.signal.aborted && repeat++ < 10) {
+          // TODO cache last response to skip if receive duplicate on resume
+          if (repeat > 1) {
+            await new Promise((r) => setTimeout(r, 500))
+            console.log('repeat', repeat)
           }
-          if (!response.body) {
-            throw new Error('response body is missing')
-          }
-          const splices = this.toEvents(response.body)
-          const reader = splices.getReader()
-          abort.signal.addEventListener('abort', () => {
-            reader.cancel()
-          })
-          while (!abort.signal.aborted) {
-            try {
-              const { done, value } = await reader.read()
-              if (done || abort.signal.aborted) {
-                controller.close()
-                return
-              }
-              if (value.event === 'splice') {
-                const splice: Splice = JSON.parse(value.data)
-                controller.enqueue(splice)
-              } else if (value.event === 'error') {
-                throw new Error(value.data)
-              } else {
-                console.error('unexpected event', value.event, value)
-              }
-            } catch (error) {
-              controller.error(error)
-              return
+          try {
+            const response = await this.fetcher(`/api/read`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ pid, path }),
+              signal: abort.signal,
+            })
+            if (!response.ok) {
+              throw new Error('response not ok')
             }
+            if (!response.body) {
+              throw new Error('response body is missing')
+            }
+            const splices = this.toEvents(response.body)
+            const reader = splices.getReader()
+            while (!abort.signal.aborted) {
+              try {
+                const { done, value } = await reader.read()
+                if (done || abort.signal.aborted) {
+                  break
+                }
+                if (value.event === 'splice') {
+                  const splice: Splice = JSON.parse(value.data)
+                  controller.enqueue(splice)
+                } else {
+                  console.error('unexpected event', value.event, value)
+                }
+              } catch (error) {
+                console.error('inner stream error:', error)
+              }
+            }
+          } catch (error) {
+            console.log('stream error:', error)
           }
-        } catch (error) {
-          controller.error(error)
-        } finally {
-          this.#aborts.delete(abort)
         }
+        finished()
       },
     })
   }
   private async request(path: string, params: Params) {
-    const response = await this.fetcher(`/api/${path}?pretty`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(params),
-    })
-    if (!response.ok) {
-      await response.body?.cancel()
-      throw new Error(
-        path + ' ' + JSON.stringify(params) + ' ' + response.status + ' ' +
-          response.statusText,
-      )
+    const abort = new AbortController()
+    const finished = this.#waiter(abort)
+
+    try {
+      const response = await this.fetcher(`/api/${path}?pretty`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(params),
+        signal: abort.signal,
+      })
+      if (!response.ok) {
+        await response.body?.cancel()
+        const { status, statusText } = response
+        const msg = `${path} ${JSON.stringify(params)} ${status} ${statusText}`
+        throw new Error(msg)
+      }
+      const outcome = await response.json()
+      if (outcome.error) {
+        throw this.toError(outcome.error)
+      }
+      return outcome.result
+    } finally {
+      finished()
     }
-    const outcome = await response.json()
-    if (outcome.error) {
-      throw this.toError(outcome.error)
-    }
-    return outcome.result
   }
 }

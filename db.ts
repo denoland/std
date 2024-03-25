@@ -34,7 +34,7 @@ export default class DB {
       log('watchReply done %o', reply)
       return reply
     }
-    throw new Error('watchReply failed')
+    // TODO remove this function completely
   }
   async settleReply(pid: PID, reply: PierceReply) {
     const key = keys.getReplyKey(pid, reply)
@@ -176,16 +176,19 @@ export default class DB {
     }
     await Promise.all(promises)
   }
-  watchHead(pid: PID) {
+  watchHead(pid: PID, signal: AbortSignal) {
     const key = keys.getHeadKey(pid)
     const stream = this.#kv.watch<string[]>([key])
     return stream.pipeThrough(
       new TransformStream({
+        start(controller) {
+          signal.addEventListener('abort', () => {
+            controller.terminate()
+          })
+        },
         transform([event], controller) {
           if (event.versionstamp) {
             controller.enqueue(event.value)
-          } else {
-            controller.error(new Error('No PID found'))
           }
         },
       }),

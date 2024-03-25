@@ -205,8 +205,12 @@ export const functions: IsolateFunctions = {
     const request = params as PierceRequest
     assert(isPierceRequest(request), 'invalid pierce request')
     await api.context.io!.induct(request)
-    const { outcome } = await api.context.db!.watchReply(request)
-    return fromOutcome(outcome)
+    const reply = await api.context.db!.watchReply(request)
+    // TODO use splices to await the outcome
+    // probably with shortcuts to help say which IO actions had changes
+    if (reply) {
+      return fromOutcome(reply.outcome)
+    }
   },
   request: async (params, api: IsolateApi<C>) => {
     const commit = params.commit as string

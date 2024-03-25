@@ -1,6 +1,5 @@
-import { assert, expect, log } from '@utils'
+import { assert, Debug, expect, log } from '@utils'
 import { Cradle } from '../api/web-client.types.ts'
-import { pidFromRepo } from '@/keys.ts'
 
 export default (name: string, cradleMaker: () => Promise<Cradle>) => {
   const prefix = name + ': '
@@ -16,8 +15,10 @@ export default (name: string, cradleMaker: () => Promise<Cradle>) => {
       let first
       for await (const splice of artifact.read(pid, 'test')) {
         log('splice', splice)
-        first = splice
-        break
+        if (splice.changes) {
+          first = splice
+          break
+        }
       }
       assert(first)
       expect(first.pid).toEqual(pid)
@@ -54,8 +55,10 @@ export default (name: string, cradleMaker: () => Promise<Cradle>) => {
       const promise = write({ path: 'test', content: 'hello' })
       let first
       for await (const splice of artifact.read(pid, 'test')) {
-        first = splice
-        break
+        if (splice.changes) {
+          first = splice
+          break
+        }
       }
       assert(first)
       expect(first.pid).toEqual(pid)
@@ -93,33 +96,19 @@ export default (name: string, cradleMaker: () => Promise<Cradle>) => {
     await t.step('write', async () => {
       const { write } = await artifact.pierces('io-fixture', pid)
       await write({ path: 'test.txt', content: 'hello' })
-      write({ path: 'test.txt', content: 'ell' })
+      const p = write({ path: 'test.txt', content: 'ell' })
       let fileCount = 0
       for await (const splice of artifact.read(pid, 'test.txt')) {
-        log('file', splice.path, splice.changes)
+        console.log('file', splice.path, splice.changes)
         fileCount++
         if (fileCount === 2) {
           break
         }
       }
+      await p
     })
     log('spliceCount', spliceCount)
     log('fileSpliceCount', fileSpliceCount)
-    await artifact.stop()
-  })
-  Deno.test(prefix + 'null splice', async (t) => {
-    const artifact = await cradleMaker()
-    const pid = pidFromRepo('not/real')
-    await t.step('error on missing pid', async () => {
-      try {
-        for await (const splice of artifact.read(pid)) {
-          log('splice', splice)
-        }
-      } catch (error) {
-        log('error', error)
-        expect(error.message).toContain('No PID found')
-      }
-    })
     await artifact.stop()
   })
 
