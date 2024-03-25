@@ -8,4 +8,4 @@
 
 Deno.test.ignore('create a new stuck directly', () => {})
 Deno.test.ignore('create a new stuck in the background', () => {})
-Deno.test.ignore('e2d create a new stuck then use it', () => {})
+Deno.test.ignore('e2e create a new stuck then use it', () => {})

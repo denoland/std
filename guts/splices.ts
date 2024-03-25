@@ -1,5 +1,6 @@
 import { assert, expect, log } from '@utils'
 import { Cradle } from '../api/web-client.types.ts'
+import { pidFromRepo } from '@/keys.ts'
 
 export default (name: string, cradleMaker: () => Promise<Cradle>) => {
   const prefix = name + ': '
@@ -104,6 +105,21 @@ export default (name: string, cradleMaker: () => Promise<Cradle>) => {
     })
     log('spliceCount', spliceCount)
     log('fileSpliceCount', fileSpliceCount)
+    await artifact.stop()
+  })
+  Deno.test(prefix + 'null splice', async (t) => {
+    const artifact = await cradleMaker()
+    const pid = pidFromRepo('not/real')
+    await t.step('error on missing pid', async () => {
+      try {
+        for await (const splice of artifact.read(pid)) {
+          log('splice', splice)
+        }
+      } catch (error) {
+        log('error', error)
+        expect(error.message).toContain('No PID found')
+      }
+    })
     await artifact.stop()
   })
 

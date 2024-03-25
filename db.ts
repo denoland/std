@@ -184,6 +184,8 @@ export default class DB {
         transform([event], controller) {
           if (event.versionstamp) {
             controller.enqueue(event.value)
+          } else {
+            controller.error(new Error('No PID found'))
           }
         },
       }),
