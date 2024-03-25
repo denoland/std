@@ -3,7 +3,7 @@ import { Cradle } from '../api/web-client.types.ts'
 
 export default (name: string, cradleMaker: () => Promise<Cradle>) => {
   const prefix = name + ': '
-  Deno.test(prefix + 'files', async (t) => {
+  Deno.test.only(prefix + 'files', async (t) => {
     const artifact = await cradleMaker()
     const repo = 'process/session'
     await artifact.rm({ repo })
@@ -33,7 +33,7 @@ export default (name: string, cradleMaker: () => Promise<Cradle>) => {
 
     await artifact.stop()
   })
-  Deno.test(prefix + '.io.json diffs', async (t) => {
+  Deno.test.only(prefix + '.io.json diffs', async (t) => {
     // send in a bunch of actions and view the diffs as splices
 
     const artifact = await cradleMaker()
@@ -71,7 +71,7 @@ export default (name: string, cradleMaker: () => Promise<Cradle>) => {
     })
     await artifact.stop()
   })
-  Deno.test(prefix + 'file changes', async (t) => {
+  Deno.test.only(prefix + 'file changes', async (t) => {
     const repo = 'test/files'
     const artifact = await cradleMaker()
     await artifact.rm({ repo })
