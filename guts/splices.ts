@@ -97,8 +97,7 @@ export default (name: string, cradleMaker: () => Promise<Cradle>) => {
       await write({ path: 'test.txt', content: 'hello' })
       write({ path: 'test.txt', content: 'ell' })
       let fileCount = 0
-      for await (const splice of artifact.read(pid, 'test.txt')) {
-        console.log('file', splice.path, splice.changes)
+      for await (const _splice of artifact.read(pid, 'test.txt')) {
         fileCount++
         if (fileCount === 3) {
           break

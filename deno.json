@@ -5,7 +5,7 @@
     "watch": "DENO_KV_PATH=:memory: DEBUG_COLORS=1 deno test -A --unstable-kv --watch",
     "api": "DENO_KV_PATH=:memory: DEBUG_COLORS=1 deno run --inspect-brk --unstable-kv -A --watch main.ts",
     "check:types": "deno check **/*.ts",
-    "ok": "deno fmt --check && deno lint && deno task check:types && deno task test api/server.test.ts",
+    "ok": "deno fmt --check && deno lint && deno task check:types && deno task test",
     "cov:gen": "deno coverage coverage --lcov --exclude='.tsx' --output=cov.lcov",
     "esm:add": "deno run -A https://esm.sh/v135 add",
     "esm:update": "deno run -A https://esm.sh/v135 update",
