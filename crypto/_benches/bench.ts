@@ -91,7 +91,7 @@ for (
       Deno.bench({
         group: `digesting ${humanLength}`,
         name: `${name} from runtime node:crypto digesting ${humanLength}`,
-        async fn() {
+        fn() {
           nodeCrypto.createHash(nodeName).update(buffer).digest();
         },
       });
