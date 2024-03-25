@@ -11,7 +11,7 @@ export default (name: string, cradleMaker: () => Promise<Cradle>) => {
     const { write } = await artifact.pierces('io-fixture', pid)
 
     await t.step('read', async () => {
-      write({ path: 'test', content: 'hello' })
+      const p = write({ path: 'test', content: 'hello' })
       let first
       for await (const splice of artifact.read(pid, 'test')) {
         log('splice', splice)
@@ -26,6 +26,7 @@ export default (name: string, cradleMaker: () => Promise<Cradle>) => {
       expect(first.changes).toHaveLength(1)
       assert(first.changes)
       expect(first.changes[0].value).toEqual('hello')
+      await p
     })
     // do a writeSlow test to see how broadcast channel behaves
     // and to test the catchup of the final commit
@@ -52,7 +53,7 @@ export default (name: string, cradleMaker: () => Promise<Cradle>) => {
     logger()
 
     await t.step('read', async () => {
-      const promise = write({ path: 'test', content: 'hello' })
+      const p = write({ path: 'test', content: 'hello' })
       let first
       for await (const splice of artifact.read(pid, 'test')) {
         if (splice.changes) {
@@ -66,7 +67,7 @@ export default (name: string, cradleMaker: () => Promise<Cradle>) => {
       expect(first.changes).toHaveLength(1)
       assert(first.changes)
       expect(first.changes[0].value).toEqual('hello')
-      await promise
+      await p
     })
     await artifact.stop()
   })
