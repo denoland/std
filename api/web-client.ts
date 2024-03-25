@@ -145,8 +145,10 @@ export default class WebClient implements Cradle {
               if (value.event === 'splice') {
                 const splice: Splice = JSON.parse(value.data)
                 controller.enqueue(splice)
+              } else if (value.event === 'error') {
+                throw new Error(value.data)
               } else {
-                console.error('unexpected event', value.event)
+                console.error('unexpected event', value.event, value)
               }
             } catch (error) {
               controller.error(error)

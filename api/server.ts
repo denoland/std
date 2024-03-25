@@ -70,16 +70,26 @@ export default class Server {
         })
 
         const { pid, path } = params
-        for await (const splice of artifact.read(pid, path, abort.signal)) {
-          const event: EventSourceMessage = {
-            data: JSON.stringify(splice, null, 2),
-            event: 'splice',
+        try {
+          for await (const splice of artifact.read(pid, path, abort.signal)) {
+            const event: EventSourceMessage = {
+              data: JSON.stringify(splice, null, 2),
+              event: 'splice',
+              id: String(server.#sseId++),
+            }
+            log('event', event)
+            await stream.writeSSE(event)
+          }
+          log('stream end')
+        } catch (error) {
+          log('stream error', error)
+          const errorEvent = {
+            data: error.message,
+            event: 'error',
             id: String(server.#sseId++),
           }
-          log('event', event)
-          await stream.writeSSE(event)
+          await stream.writeSSE(errorEvent)
         }
-        log('stream end')
       }, async (error, stream) => {
         await Promise.resolve()
         console.error('error', error, stream)
