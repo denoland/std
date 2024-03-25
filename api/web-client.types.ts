@@ -234,3 +234,15 @@ export interface Cradle {
   rm(params: { repo: string }): Promise<void>
   read(pid: PID, path?: string, signal?: AbortSignal): ReadableStream<Splice>
 }
+export const isPID = (value: unknown): value is PID => {
+  if (typeof value !== 'object' || value === null) {
+    return false
+  }
+  const pid = value as PID
+  return (
+    typeof pid.account === 'string' &&
+    typeof pid.repository === 'string' &&
+    Array.isArray(pid.branches) &&
+    pid.branches.every((branch) => typeof branch === 'string')
+  )
+}

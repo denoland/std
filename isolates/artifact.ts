@@ -7,6 +7,7 @@ import git from '$git'
 import {
   IsolateFunctions,
   IsolateLifecycle,
+  isPID,
   isPierceRequest,
   Params,
   PID,
@@ -117,7 +118,13 @@ export const functions: IsolateFunctions = {
     return params
   },
   async probe(params, api: IsolateApi<C>) {
-    const pid = pidFromRepo(params.repo as string)
+    let pid: PID
+    if (typeof params.repo !== 'string') {
+      assert(isPID(params.pid), 'must provide pid if no repo')
+      pid = params.pid
+    } else {
+      pid = pidFromRepo(params.repo as string)
+    }
     const head = await api.context.db!.getHead(pid)
     if (head) {
       return { pid, head }
