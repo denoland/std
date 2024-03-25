@@ -106,7 +106,7 @@ export class CloseTo extends AsymmetricMatcher<number> {
   }
 }
 
-export function closeTo(num: number, numDigits?: number) {
+export function closeTo(num: number, numDigits?: number): CloseTo {
   return new CloseTo(num, numDigits);
 }
 
@@ -124,7 +124,7 @@ export class StringContaining extends AsymmetricMatcher<string> {
   }
 }
 
-export function stringContaining(str: string) {
+export function stringContaining(str: string): StringContaining {
   return new StringContaining(str);
 }
 
@@ -142,6 +142,6 @@ export class StringMatching extends AsymmetricMatcher<RegExp> {
   }
 }
 
-export function stringMatching(pattern: string | RegExp) {
+export function stringMatching(pattern: string | RegExp): StringMatching {
   return new StringMatching(pattern);
 }
