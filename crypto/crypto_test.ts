@@ -2,8 +2,8 @@
 import { assert, assertEquals, assertInstanceOf, fail } from "../assert/mod.ts";
 import {
   crypto as stdCrypto,
-  DIGEST_ALGORITHM_NAMES,
   type DigestAlgorithmName,
+  wasmDigestAlgorithms as DIGEST_ALGORITHM_NAMES,
 } from "./mod.ts";
 import { repeat } from "../bytes/repeat.ts";
 import { encodeHex } from "../encoding/hex.ts";
@@ -1578,6 +1578,21 @@ for (const algorithm of DIGEST_ALGORITHM_NAMES) {
               name: algorithm,
             }, bytePieces),
           );
+          if (bytePieces.length === 1) {
+            // Verify that the same result is produced if it's not wrapped in an iterable. This will cause the
+            // runtime WebCrypto implementation to be used where supported, checking for implementation consistency.
+            const onePieceActual = encodeHex(
+              await stdCrypto.subtle.digest({
+                ...options,
+                name: algorithm,
+              }, bytePieces[0]!),
+            );
+            assertEquals(
+              actual,
+              onePieceActual,
+              `${algorithm} produced different results for BufferSource input versus single-item iterator of the same BufferSource`,
+            );
+          }
           assertEquals(
             expected,
             actual,

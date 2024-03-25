@@ -1,6 +1,11 @@
 #!/usr/bin/env -S deno bench
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-import { crypto as stdCrypto, DIGEST_ALGORITHM_NAMES } from "../mod.ts";
+import {
+  crypto as stdCrypto,
+  wasmDigestAlgorithms as DIGEST_ALGORITHM_NAMES,
+} from "../mod.ts";
+
+import nodeCrypto from "node:crypto";
 
 import { crypto as oldCrypto } from "https://deno.land/std@0.220.1/crypto/mod.ts";
 
@@ -21,6 +26,17 @@ const WEB_CRYPTO_DIGEST_ALGORITHM_NAMES = [
   "SHA-512",
 ] satisfies (typeof DIGEST_ALGORITHM_NAMES[number])[];
 
+const NODE_CRYPTO_DIGEST_ALGORITHM_NAMES = [
+  "MD4",
+  "MD5",
+  "RIPEMD-160",
+  "SHA-1",
+  "SHA-224",
+  "SHA-256",
+  "SHA-384",
+  "SHA-512",
+] satisfies (typeof DIGEST_ALGORITHM_NAMES[number])[];
+
 for (
   const [length, humanLength] of [
     [64, "64 B"],
@@ -35,36 +51,50 @@ for (
     buffer[i] = (i + (i % 13) + (i % 31)) % 256;
   }
 
-  for (const name of ["FNV32A", "FNV64A"] as const) {
+  for (const name of BENCHMARKED_DIGEST_ALGORITHM_NAMES) {
     Deno.bench({
-      group: `${humanLength} in ${name}`,
-      name: `TypeScript (from v0.220.1) with ${humanLength} in ${name}`,
+      group: `digesting ${humanLength}`,
+      name: `${name} from std/crypto Wasm digesting ${humanLength}`,
       async fn() {
-        await oldCrypto.subtle.digest(name, buffer);
+        await stdCrypto.subtle.digest(name, [buffer]);
       },
     });
-  }
 
-  for (const name of BENCHMARKED_DIGEST_ALGORITHM_NAMES) {
+    if (name.startsWith("FNV")) {
+      Deno.bench({
+        group: `digesting ${humanLength}`,
+        name:
+          `${name} from std/crypto (v0.220.1) TypeScript digesting ${humanLength}`,
+        async fn() {
+          await oldCrypto.subtle.digest(name, buffer);
+        },
+      });
+    }
+
     if (
       (WEB_CRYPTO_DIGEST_ALGORITHM_NAMES as readonly string[]).includes(name)
     ) {
       Deno.bench({
-        group: `${humanLength} in ${name}`,
-        name: `Runtime WebCrypto with ${humanLength} in ${name}`,
+        group: `digesting ${humanLength}`,
+        name: `${name} from runtime WebCrypto digesting ${humanLength}`,
         async fn() {
           await webCrypto.subtle.digest(name, buffer);
         },
       });
     }
 
-    Deno.bench({
-      group: `${humanLength} in ${name}`,
-      name: `Rust/Wasm with ${humanLength} in ${name}`,
-      baseline: true,
-      async fn() {
-        await stdCrypto.subtle.digest(name, [buffer]);
-      },
-    });
+    if (
+      (NODE_CRYPTO_DIGEST_ALGORITHM_NAMES as readonly string[]).includes(name)
+    ) {
+      const nodeName = name.replace("-", "").toLowerCase();
+
+      Deno.bench({
+        group: `digesting ${humanLength}`,
+        name: `${name} from runtime node:crypto digesting ${humanLength}`,
+        async fn() {
+          nodeCrypto.createHash(nodeName).update(buffer).digest();
+        },
+      });
+    }
   }
 }
