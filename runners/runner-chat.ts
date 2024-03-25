@@ -131,6 +131,7 @@ export class AI {
       this.#api.writeJSON(this.#sessionPath, messages)
     }
     log('streamCall complete')
+    // this should be an accumulation action with the messages path as payload
     return this.executeTools(messages)
   }
   async executeTools(messages: MessageParam[]): Promise<string> {

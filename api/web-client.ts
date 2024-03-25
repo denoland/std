@@ -108,6 +108,9 @@ export default class WebClient implements Cradle {
     const abort = new AbortController()
     this.#aborts.add(abort)
 
+    // TODO retry on fail should be handled here
+    // cache the last response, and skip if receive the exact same object
+
     return new ReadableStream<Splice>({
       start: async (controller) => {
         try {

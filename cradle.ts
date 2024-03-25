@@ -103,12 +103,11 @@ export class QueueCradle implements Cradle {
     const result = await this.#queue.push<K>('rm', params)
     return result
   }
-  async apiSchema(params: { isolate: string }) {
-    type K = ReturnType<Cradle['apiSchema']>
-    const result = await this.#queue.push<K>('apiSchema', params)
-    return result as Record<string, object>
+  apiSchema(params: { isolate: string }) {
+    return this.#api.isolateApiSchema(params.isolate)
   }
   async pierce(params: PierceRequest) {
+    // TODO move this to be a splice watching function
     try {
       type K = ReturnType<Cradle['pierce']>
       return await this.#queue.push<K>('pierce', params)

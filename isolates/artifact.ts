@@ -180,6 +180,7 @@ export const functions: IsolateFunctions = {
   },
   apiSchema: async (params: Params) => {
     // when it loads from files, will benefit from being close to the db
+    // BUT if the files were cached on cloudflare should stay near the user
     const isolate = params.isolate as string
     const compartment = await Compartment.create(isolate)
     return compartment.api
