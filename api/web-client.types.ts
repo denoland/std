@@ -230,7 +230,9 @@ export interface Cradle {
   // TODO should move these git functions elsewhere ?
   init(params: { repo: string }): Promise<{ pid: PID; head: string }>
   clone(params: { repo: string }): Promise<{ pid: PID; head: string }>
-  probe(params: { repo: string }): Promise<{ pid: PID; head: string } | void>
+  probe(
+    params: { repo?: string; pid?: PID },
+  ): Promise<{ pid: PID; head: string } | void>
   rm(params: { repo: string }): Promise<void>
   read(pid: PID, path?: string, signal?: AbortSignal): ReadableStream<Splice>
 }

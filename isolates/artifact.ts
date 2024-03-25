@@ -71,7 +71,15 @@ export const api = {
     description: 'Check queue processing system is alive',
     properties: {},
   },
-  probe: repo,
+  probe: {
+    type: 'object',
+    description: 'Check if a repo or PID exists',
+    additionalProperties: false,
+    properties: {
+      repo: repo.properties.repo,
+      pid: pid,
+    },
+  },
   init: repo,
   clone: repo,
   pull: repo,
