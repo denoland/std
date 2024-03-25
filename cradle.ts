@@ -139,15 +139,19 @@ export class QueueCradle implements Cradle {
     return logs
   }
   #reads = new Set<AbortController>()
-  read(params: { pid: PID; path?: string }) {
+  read(pid: PID, path?: string, signal?: AbortSignal) {
     // buffer transients until we get up to the current commit
     // if we pass the current commit in transients, reset what head is
     // TODO use commit logs to ensure we emit one splice for every commit
-    const { pid, path } = params
     assert(!path || !posix.isAbsolute(path), `path must be relative: ${path}`)
 
     const abort = new AbortController()
     this.#reads.add(abort)
+    if (signal) {
+      signal.addEventListener('abort', () => {
+        abort.abort()
+      })
+    }
 
     let last: string
     const commits = this.#api.context.db!.watchHead(pid)
@@ -162,7 +166,7 @@ export class QueueCradle implements Cradle {
       transform: async (oid, controller) => {
         log('delay complete')
         log('commit', oid, path)
-        const fs = await this.#api.context.fs!.load(params.pid)
+        const fs = await this.#api.context.fs!.load(pid)
         log('fs loaded')
         const { commit } = await git.readCommit({ fs, dir: '/', oid })
         let changes

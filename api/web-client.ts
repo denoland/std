@@ -104,9 +104,14 @@ export default class WebClient implements Cradle {
     }
   }
   #aborts = new Set<AbortController>()
-  read(params: { pid: PID; path: string }): ReadableStream<Splice> {
+  read(pid: PID, path?: string, signal?: AbortSignal): ReadableStream<Splice> {
     const abort = new AbortController()
     this.#aborts.add(abort)
+    if (signal) {
+      signal.addEventListener('abort', () => {
+        abort.abort()
+      })
+    }
 
     // TODO retry on fail should be handled here
     // cache the last response, and skip if receive the exact same object
@@ -117,7 +122,7 @@ export default class WebClient implements Cradle {
           const response = await this.fetcher(`/api/read`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(params),
+            body: JSON.stringify({ pid, path }),
           })
           if (!response.ok) {
             throw new Error('response not ok')

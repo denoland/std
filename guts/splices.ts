@@ -13,7 +13,7 @@ export default (name: string, cradleMaker: () => Promise<Cradle>) => {
     await t.step('read', async () => {
       write({ path: 'test', content: 'hello' })
       let first
-      for await (const splice of artifact.read({ pid, path: 'test' })) {
+      for await (const splice of artifact.read(pid, 'test')) {
         log('splice', splice)
         first = splice
         break
@@ -40,7 +40,7 @@ export default (name: string, cradleMaker: () => Promise<Cradle>) => {
     const { write } = await artifact.pierces('io-fixture', pid)
 
     const logger = async () => {
-      const stream = artifact.read({ pid, path: '.io.json' })
+      const stream = artifact.read(pid, '.io.json')
       // make a library that transforms splice streams
       for await (const splice of stream) {
         log('splice', splice.path)
@@ -52,7 +52,7 @@ export default (name: string, cradleMaker: () => Promise<Cradle>) => {
     await t.step('read', async () => {
       const promise = write({ path: 'test', content: 'hello' })
       let first
-      for await (const splice of artifact.read({ pid, path: 'test' })) {
+      for await (const splice of artifact.read(pid, 'test')) {
         first = splice
         break
       }
@@ -74,7 +74,7 @@ export default (name: string, cradleMaker: () => Promise<Cradle>) => {
 
     let fileSpliceCount = 0
     const fileSplices = async () => {
-      for await (const splice of artifact.read({ pid, path: 'test.txt' })) {
+      for await (const splice of artifact.read(pid, 'test.txt')) {
         log('file', splice.path)
         fileSpliceCount++
       }
@@ -82,7 +82,7 @@ export default (name: string, cradleMaker: () => Promise<Cradle>) => {
     fileSplices()
     let spliceCount = 0
     const splices = async () => {
-      for await (const splice of artifact.read({ pid })) {
+      for await (const splice of artifact.read(pid)) {
         log('splice', splice.oid)
         spliceCount++
       }
@@ -94,7 +94,7 @@ export default (name: string, cradleMaker: () => Promise<Cradle>) => {
       await write({ path: 'test.txt', content: 'hello' })
       write({ path: 'test.txt', content: 'ell' })
       let fileCount = 0
-      for await (const splice of artifact.read({ pid, path: 'test.txt' })) {
+      for await (const splice of artifact.read(pid, 'test.txt')) {
         log('file', splice.path, splice.changes)
         fileCount++
         if (fileCount === 2) {

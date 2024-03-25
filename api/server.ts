@@ -64,7 +64,15 @@ export default class Server {
     app.post('/read', (c) => {
       return streamSSE(c, async (stream) => {
         const params = await c.req.json()
-        for await (const splice of artifact.read(params)) {
+        const abort = new AbortController()
+        stream.onAbort(() => {
+          console.log('ABORTED')
+          abort.abort()
+        })
+
+        // firstly, the client is not aborting cleanly on remount
+        const { pid, path } = params
+        for await (const splice of artifact.read(pid, path, abort.signal)) {
           const event: EventSourceMessage = {
             data: JSON.stringify(splice, null, 2),
             event: 'splice',
@@ -73,6 +81,11 @@ export default class Server {
           log('event', event)
           await stream.writeSSE(event)
         }
+        console.log('stream end')
+      }, async (error, stream) => {
+        await Promise.resolve()
+        console.log('error', error)
+        console.log('stream', stream)
       })
     })
 

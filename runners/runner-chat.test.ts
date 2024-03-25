@@ -56,7 +56,7 @@ Deno.test('artifact', async (t) => {
   const { pid } = await artifact.clone({ repo })
 
   const splices = async () => {
-    for await (const splice of artifact.read({ pid, path: 'session.json' })) {
+    for await (const splice of artifact.read(pid, 'session.json')) {
       log('splice', splice)
     }
   }
