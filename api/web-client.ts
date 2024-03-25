@@ -145,6 +145,7 @@ export default class WebClient implements Cradle {
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ pid, path }),
               signal: abort.signal,
+              keepalive: true,
             })
             if (!response.ok) {
               throw new Error('response not ok')
@@ -171,6 +172,7 @@ export default class WebClient implements Cradle {
                 }
               } catch (error) {
                 console.error('inner stream error:', error)
+                break
               }
             }
           } catch (error) {
