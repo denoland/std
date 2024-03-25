@@ -3,71 +3,68 @@
 // This module is browser compatible.
 
 /**
- * This module provides jest compatible expect assertion functionality.
+ * This module provides Jest compatible expect assertion functionality.
  *
- * Currently this module supports the following matchers:
- * - `toBe`
- * - `toEqual`
- * - `toStrictEqual`
- * - `toMatch`
- * - `toMatchObject`
- * - `toBeDefined`
- * - `toBeUndefined`
- * - `toBeNull`
- * - `toBeNaN`
- * - `toBeTruthy`
- * - `toBeFalsy`
- * - `toContain`
- * - `toContainEqual`
- * - `toHaveLength`
- * - `toBeGreaterThan`
- * - `toBeGreaterThanOrEqual`
- * - `toBeLessThan`
- * - `toBeLessThanOrEqual`
- * - `toBeCloseTo`
- * - `toBeInstanceOf`
- * - `toThrow`
- * - `toHaveProperty`
- * - `toHaveLength`
- *
- * Also this module supports the following mock related matchers:
- * - `toHaveBeenCalled`
- * - `toHaveBeenCalledTimes`
- * - `toHaveBeenCalledWith`
- * - `toHaveBeenLastCalledWith`
- * - `toHaveBeenNthCalledWith`
- * - `toHaveReturned`
- * - `toHaveReturnedTimes`
- * - `toHaveReturnedWith`
- * - `toHaveLastReturnedWith`
- * - `toHaveNthReturnedWith`
- *
- * The following matchers are not supported yet:
- * - `toMatchSnapShot`
- * - `toMatchInlineSnapShot`
- * - `toThrowErrorMatchingSnapShot`
- * - `toThrowErrorMatchingInlineSnapShot`
- *
- * The asymmetric matchers are not yet fully supported:
- * - Supported:
+ * Currently this module supports the following functions:
+ * - Common matchers:
+ *   - `toBe`
+ *   - `toEqual`
+ *   - `toStrictEqual`
+ *   - `toMatch`
+ *   - `toMatchObject`
+ *   - `toBeDefined`
+ *   - `toBeUndefined`
+ *   - `toBeNull`
+ *   - `toBeNaN`
+ *   - `toBeTruthy`
+ *   - `toBeFalsy`
+ *   - `toContain`
+ *   - `toContainEqual`
+ *   - `toHaveLength`
+ *   - `toBeGreaterThan`
+ *   - `toBeGreaterThanOrEqual`
+ *   - `toBeLessThan`
+ *   - `toBeLessThanOrEqual`
+ *   - `toBeCloseTo`
+ *   - `toBeInstanceOf`
+ *   - `toThrow`
+ *   - `toHaveProperty`
+ *   - `toHaveLength`
+ * - Mock related matchers:
+ *   - `toHaveBeenCalled`
+ *   - `toHaveBeenCalledTimes`
+ *   - `toHaveBeenCalledWith`
+ *   - `toHaveBeenLastCalledWith`
+ *   - `toHaveBeenNthCalledWith`
+ *   - `toHaveReturned`
+ *   - `toHaveReturnedTimes`
+ *   - `toHaveReturnedWith`
+ *   - `toHaveLastReturnedWith`
+ *   - `toHaveNthReturnedWith`
+ * - Asymmetric matchers:
  *   - `expect.anything`
  *   - `expect.any`
  *   - `expect.arrayContaining`
  *   - `expect.not.arrayContaining`
- *   - `expect.closedTo`
+ *   - `expect.closeTo`
  *   - `expect.stringContaining`
  *   - `expect.not.stringContaining`
  *   - `expect.stringMatching`
  *   - `expect.not.stringMatching`
- * - Not supported:
- *   - `expect.objectContaining`
- *   - `expect.not.objectContaining`
- *
- * The uitlities are not yet fully supported:
- * - Supported:
+ * - Utilities:
  *   - `expect.addEqualityTester`
  *   - `expect.extend`
- * - Not supported:
+ *
+ * Only these functions are still not available:
+ * - Matchers:
+ *   - `toMatchSnapShot`
+ *   - `toMatchInlineSnapShot`
+ *   - `toThrowErrorMatchingSnapShot`
+ *   - `toThrowErrorMatchingInlineSnapShot`
+ * - Asymmetric matchers:
+ *   - `expect.objectContaining`
+ *   - `expect.not.objectContaining`
+ * - Utilities:
  *   - `expect.assertions`
  *   - `expect.hasAssertions`
  *   - `expect.addSnapshotSerializer`
