@@ -11,7 +11,7 @@ export default (name: string, cradleMaker: () => Promise<Cradle>) => {
     const { write } = await artifact.pierces('io-fixture', pid)
 
     await t.step('read', async () => {
-      const p = write({ path: 'test', content: 'hello' })
+      write({ path: 'test', content: 'hello' })
       let first
       for await (const splice of artifact.read(pid, 'test')) {
         log('splice', splice)
@@ -26,7 +26,6 @@ export default (name: string, cradleMaker: () => Promise<Cradle>) => {
       expect(first.changes).toHaveLength(1)
       assert(first.changes)
       expect(first.changes[0].value).toEqual('hello')
-      await p
     })
     // do a writeSlow test to see how broadcast channel behaves
     // and to test the catchup of the final commit
@@ -53,7 +52,7 @@ export default (name: string, cradleMaker: () => Promise<Cradle>) => {
     logger()
 
     await t.step('read', async () => {
-      const p = write({ path: 'test', content: 'hello' })
+      write({ path: 'test', content: 'hello' })
       let first
       for await (const splice of artifact.read(pid, 'test')) {
         if (splice.changes) {
@@ -67,11 +66,10 @@ export default (name: string, cradleMaker: () => Promise<Cradle>) => {
       expect(first.changes).toHaveLength(1)
       assert(first.changes)
       expect(first.changes[0].value).toEqual('hello')
-      await p
     })
     await artifact.stop()
   })
-  Deno.test.only(prefix + 'file changes', async (t) => {
+  Deno.test(prefix + 'file changes', async (t) => {
     const repo = 'test/files'
     const artifact = await cradleMaker()
     await artifact.rm({ repo })
@@ -97,16 +95,15 @@ export default (name: string, cradleMaker: () => Promise<Cradle>) => {
     await t.step('write', async () => {
       const { write } = await artifact.pierces('io-fixture', pid)
       await write({ path: 'test.txt', content: 'hello' })
-      const p = write({ path: 'test.txt', content: 'ell' })
+      write({ path: 'test.txt', content: 'ell' })
       let fileCount = 0
       for await (const splice of artifact.read(pid, 'test.txt')) {
         console.log('file', splice.path, splice.changes)
         fileCount++
-        if (fileCount === 2) {
+        if (fileCount === 3) {
           break
         }
       }
-      await p
     })
     log('spliceCount', spliceCount)
     log('fileSpliceCount', fileSpliceCount)

@@ -22,10 +22,11 @@ const cradleMaker = async () => {
   const fetcher = server.request as typeof fetch
 
   const cradle = new WebClient('mock', deserializeError, toEvents, fetcher)
-  const stop = cradle.stop.bind(cradle)
+  const clientStop = cradle.stop.bind(cradle)
   cradle.stop = async () => {
+    // must stop the client first, else will retry
+    await clientStop()
     await server.stop()
-    await stop()
   }
   return cradle
 }

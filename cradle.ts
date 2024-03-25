@@ -178,13 +178,13 @@ export class QueueCradle implements Cradle {
         const { commit } = await git.readCommit({ fs, dir: '/', oid })
         let changes
         if (path) {
-          log('read path', path)
+          log('read path', path, oid)
           const api = IsolateApi.createFS(fs, oid)
           const exists = await api.exists(path)
           if (exists) {
             log('file exists', path, oid)
             const content = await api.read(path)
-            if (last === undefined && last !== content) {
+            if (last === undefined || last !== content) {
               log('content changed')
               // TODO use json differ for json
               changes = diffChars(last || '', content)

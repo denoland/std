@@ -133,9 +133,9 @@ export default class WebClient implements Cradle {
     return new ReadableStream<Splice>({
       start: async (controller) => {
         let repeat = 0
-        while (!abort.signal.aborted && repeat++ < 10) {
+        while (!abort.signal.aborted) {
           // TODO cache last response to skip if receive duplicate on resume
-          if (repeat > 1) {
+          if (repeat++ > 0) {
             await new Promise((r) => setTimeout(r, 500))
             console.log('repeat', repeat)
           }
@@ -154,6 +154,9 @@ export default class WebClient implements Cradle {
             }
             const splices = this.toEvents(response.body)
             const reader = splices.getReader()
+            abort.signal.addEventListener('abort', () => {
+              reader.cancel()
+            })
             while (!abort.signal.aborted) {
               try {
                 const { done, value } = await reader.read()
@@ -179,29 +182,21 @@ export default class WebClient implements Cradle {
     })
   }
   private async request(path: string, params: Params) {
-    const abort = new AbortController()
-    const finished = this.#waiter(abort)
-
-    try {
-      const response = await this.fetcher(`/api/${path}?pretty`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(params),
-        signal: abort.signal,
-      })
-      if (!response.ok) {
-        await response.body?.cancel()
-        const { status, statusText } = response
-        const msg = `${path} ${JSON.stringify(params)} ${status} ${statusText}`
-        throw new Error(msg)
-      }
-      const outcome = await response.json()
-      if (outcome.error) {
-        throw this.toError(outcome.error)
-      }
-      return outcome.result
-    } finally {
-      finished()
+    const response = await this.fetcher(`/api/${path}?pretty`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(params),
+    })
+    if (!response.ok) {
+      await response.body?.cancel()
+      const { status, statusText } = response
+      const msg = `${path} ${JSON.stringify(params)} ${status} ${statusText}`
+      throw new Error(msg)
     }
+    const outcome = await response.json()
+    if (outcome.error) {
+      throw this.toError(outcome.error)
+    }
+    return outcome.result
   }
 }
