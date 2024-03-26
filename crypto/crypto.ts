@@ -107,12 +107,12 @@
  * @module
  */
 import {
-  DIGEST_ALGORITHM_NAMES as wasmDigestAlgorithms,
-  type DigestAlgorithmName as WasmDigestAlgorithm,
+  DIGEST_ALGORITHM_NAMES,
+  type DigestAlgorithmName,
   instantiateWasm,
 } from "./_wasm/mod.ts";
 
-export { type WasmDigestAlgorithm, wasmDigestAlgorithms };
+export { DIGEST_ALGORITHM_NAMES, type DigestAlgorithmName };
 
 /** Digest algorithms supported by WebCrypto. */
 const WEB_CRYPTO_DIGEST_ALGORITHM_NAMES = [
@@ -219,7 +219,7 @@ const stdCrypto: StdCrypto = ((x) => x)({
         bytes
       ) {
         return webCrypto.subtle.digest(algorithm, bytes);
-      } else if (wasmDigestAlgorithms.includes(name as WasmDigestAlgorithm)) {
+      } else if (DIGEST_ALGORITHM_NAMES.includes(name as DigestAlgorithmName)) {
         if (bytes) {
           // Otherwise, we use our bundled Wasm implementation via digestSync
           // if it supports the algorithm.
@@ -294,11 +294,26 @@ const stdCrypto: StdCrypto = ((x) => x)({
   },
 });
 
-/** FNV (Fowler/Noll/Vo) algorithms names. */
+/**
+ * A FNV (Fowler/Noll/Vo) digest algorithm name supported by std/crypto.
+ *
+ * @deprecated (will be removed in 0.224.0)
+ */
 export type FNVAlgorithms = "FNV32" | "FNV32A" | "FNV64" | "FNV64A";
 
-/** Extended digest algorithm names. */
-export type DigestAlgorithmName = WasmDigestAlgorithm | FNVAlgorithms;
+/**
+ * Digest algorithm names supported by std/crypto with a Wasm implementation.
+ *
+ * @deprecated (will be removed in 0.224.0) Consider using {@linkcode DIGEST_ALGORITHM_NAMES} instead.
+ */
+export const wasmDigestAlgorithms = DIGEST_ALGORITHM_NAMES;
+
+/**
+ * A digest algorithm name supported by std/crypto with a Wasm implementation.
+ *
+ * @deprecated (will be removed in 0.224.0) Consider using {@linkcode DigestAlgorithmName} instead.
+ */
+export type WasmDigestAlgorithm = DigestAlgorithmName;
 
 /*
  * The largest digest length the current Wasm implementation can support. This
