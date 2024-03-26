@@ -1,34 +1,34 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-export type Token = {
+type Token = {
   type: string;
   value: string | number;
   index: number;
   [key: string]: unknown;
 };
 
-export interface ReceiverResult {
+interface ReceiverResult {
   [name: string]: string | number | unknown;
 }
-export type CallbackResult = {
+type CallbackResult = {
   type: string;
   value: string | number;
   [key: string]: unknown;
 };
 type CallbackFunction = (value: unknown) => CallbackResult;
 
-export type TestResult = { value: unknown; length: number } | undefined;
-export type TestFunction = (
+type TestResult = { value: unknown; length: number } | undefined;
+type TestFunction = (
   string: string,
 ) => TestResult | undefined;
 
-export interface Rule {
+interface Rule {
   test: TestFunction;
   fn: CallbackFunction;
 }
 
-export class Tokenizer {
+class Tokenizer {
   rules: Rule[];
 
   constructor(rules: Rule[] = []) {
