@@ -77,7 +77,6 @@ jobs:
         os:
           - ubuntu-22.04
           - windows-2022
-          - macOS-12
     steps:
       - name: Clone repository
         uses: actions/checkout@v4
