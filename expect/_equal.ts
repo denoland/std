@@ -3,7 +3,7 @@
 // This file is copied from `std/assert`.
 
 import type { EqualOptions } from "./_types.ts";
-import { Any, Anything, ArrayContaining } from "./_asymmetric_matchers.ts";
+import { AsymmetricMatcher } from "./_asymmetric_matchers.ts";
 
 function isKeyedCollection(x: unknown): x is Set<unknown> {
   return [Symbol.iterator, "size"].every((k) => k in (x as Set<unknown>));
@@ -13,6 +13,23 @@ function constructorsEqual(a: object, b: object) {
   return a.constructor === b.constructor ||
     a.constructor === Object && !b.constructor ||
     !a.constructor && b.constructor === Object;
+}
+
+function asymmetricEqual(a: unknown, b: unknown) {
+  const asymmetricA = a instanceof AsymmetricMatcher;
+  const asymmetricB = b instanceof AsymmetricMatcher;
+
+  if (asymmetricA && asymmetricB) {
+    return undefined;
+  }
+
+  if (asymmetricA) {
+    return a.equals(b);
+  }
+
+  if (asymmetricB) {
+    return b.equals(a);
+  }
 }
 
 /**
@@ -48,15 +65,12 @@ export function equal(c: unknown, d: unknown, options?: EqualOptions): boolean {
     ) {
       return String(a) === String(b);
     }
-    if (b instanceof Anything) {
-      return b.equals(a);
+
+    const asymmetric = asymmetricEqual(a, b);
+    if (asymmetric !== undefined) {
+      return asymmetric;
     }
-    if (b instanceof Any) {
-      return b.equals(a);
-    }
-    if (b instanceof ArrayContaining && a instanceof Array) {
-      return b.equals(a);
-    }
+
     if (a instanceof Date && b instanceof Date) {
       const aTime = a.getTime();
       const bTime = b.getTime();
