@@ -297,21 +297,21 @@ const stdCrypto: StdCrypto = ((x) => x)({
 /**
  * A FNV (Fowler/Noll/Vo) digest algorithm name supported by std/crypto.
  *
- * @deprecated (will be removed in 0.224.0)
+ * @deprecated (will be removed in 1.0.0)
  */
 export type FNVAlgorithms = "FNV32" | "FNV32A" | "FNV64" | "FNV64A";
 
 /**
  * Digest algorithm names supported by std/crypto with a Wasm implementation.
  *
- * @deprecated (will be removed in 0.224.0) Consider using {@linkcode DIGEST_ALGORITHM_NAMES} instead.
+ * @deprecated (will be removed in 1.0.0) Consider using {@linkcode DIGEST_ALGORITHM_NAMES} instead.
  */
 export const wasmDigestAlgorithms = DIGEST_ALGORITHM_NAMES;
 
 /**
  * A digest algorithm name supported by std/crypto with a Wasm implementation.
  *
- * @deprecated (will be removed in 0.224.0) Consider using {@linkcode DigestAlgorithmName} instead.
+ * @deprecated (will be removed in 1.0.0) Consider using {@linkcode DigestAlgorithmName} instead.
  */
 export type WasmDigestAlgorithm = DigestAlgorithmName;
 
