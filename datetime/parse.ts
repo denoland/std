@@ -1,7 +1,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-import { DateTimeFormatter } from "./_common.ts";
+import { DateTimeFormatter } from "./_date_time_formatter.ts";
 
 /**
  * Parses a date string using the specified format string.
