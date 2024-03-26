@@ -35,7 +35,7 @@ for await (
 
   for await (
     const { path: filePath } of walk(dirname(modFilePath), {
-      exts: ["ts"],
+      exts: [".ts"],
       includeDirs: false,
       maxDepth: 1,
       skip: [
