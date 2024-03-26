@@ -17,27 +17,23 @@
  * ## Supported algorithms
  *
  * Here is a list of supported algorithms. If the algorithm name in WebCrypto
- * and Wasm/Rust is the same, this library prefers to use algorithms that are
- * supported by WebCrypto.
+ * and Wasm/Rust is the same, this library prefers to use the implementation
+ * provided by WebCrypto.
  *
  * WebCrypto:
  * - `SHA-384`
- * - `SHA-256`
- * - `SHA-512` (length-extendable and collidable)
+ * - `SHA-256` (length-extendable)
+ * - `SHA-512` (length-extendable)
  *
  * Wasm/Rust:
+ * - `BLAKE2B`
  * - `BLAKE2B-128`
  * - `BLAKE2B-160`
  * - `BLAKE2B-224`
  * - `BLAKE2B-256`
  * - `BLAKE2B-384`
- * - `BLAKE2B`
  * - `BLAKE2S`
  * - `BLAKE3`
- * - `FNV32` (length-extendable)
- * - `FNV32A` (length-extendable)
- * - `FNV64` (length-extendable)
- * - `FNV64A` (length-extendable)
  * - `KECCAK-224`
  * - `KECCAK-256`
  * - `KECCAK-384`
@@ -54,9 +50,13 @@
  * - `SHA-224` (length-extendable)
  * - `SHA-256` (length-extendable)
  * - `SHA-512` (length-extendable)
- * - `MD4` (collidable and length-extendable)
- * - `MD5` (collidable and length-extendable)
- * - `SHA-1` (collidable and length-extendable)
+ * - `MD4` (length-extendable and collidable)
+ * - `MD5` (length-extendable and collidable)
+ * - `SHA-1` (length-extendable and collidable)
+ * - `FNV32` (non-cryptographic)
+ * - `FNV32A` (non-cryptographic)
+ * - `FNV64` (non-cryptographic)
+ * - `FNV64A` (non-cryptographic)
  *
  * @example
  * ```ts
@@ -106,15 +106,22 @@
  *
  * @module
  */
-
 import {
-  type DigestAlgorithm as WasmDigestAlgorithm,
-  digestAlgorithms as wasmDigestAlgorithms,
+  DIGEST_ALGORITHM_NAMES as wasmDigestAlgorithms,
+  type DigestAlgorithmName as WasmDigestAlgorithm,
   instantiateWasm,
 } from "./_wasm/mod.ts";
-import { fnv } from "./_fnv/mod.ts";
 
 export { type WasmDigestAlgorithm, wasmDigestAlgorithms };
+
+/** Digest algorithms supported by WebCrypto. */
+const WEB_CRYPTO_DIGEST_ALGORITHM_NAMES = [
+  "SHA-384",
+  "SHA-256",
+  "SHA-512",
+  // insecure (length-extendable and collidable):
+  "SHA-1",
+] as const;
 
 /**
  * A copy of the global WebCrypto interface, with methods bound so they're
@@ -202,14 +209,12 @@ const stdCrypto: StdCrypto = ((x) => x)({
 
       const bytes = bufferSourceBytes(data);
 
-      if (FNV_ALGORITHMS.includes(name)) {
-        return fnv(name, bytes);
-      }
-
       // We delegate to WebCrypto whenever possible,
       if (
         // if the algorithm is supported by the WebCrypto standard,
-        (webCryptoDigestAlgorithms as readonly string[]).includes(name) &&
+        (WEB_CRYPTO_DIGEST_ALGORITHM_NAMES as readonly string[]).includes(
+          name,
+        ) &&
         // and the data is a single buffer,
         bytes
       ) {
@@ -266,10 +271,6 @@ const stdCrypto: StdCrypto = ((x) => x)({
 
       const bytes = bufferSourceBytes(data);
 
-      if (FNV_ALGORITHMS.includes(name)) {
-        return fnv(name, bytes);
-      }
-
       const wasmCrypto = instantiateWasm();
       if (bytes) {
         return wasmCrypto.digest(name, bytes, length)
@@ -292,17 +293,6 @@ const stdCrypto: StdCrypto = ((x) => x)({
     },
   },
 });
-
-const FNV_ALGORITHMS = ["FNV32", "FNV32A", "FNV64", "FNV64A"];
-
-/** Digest algorithms supported by WebCrypto. */
-const webCryptoDigestAlgorithms = [
-  "SHA-384",
-  "SHA-256",
-  "SHA-512",
-  // insecure (length-extendable and collidable):
-  "SHA-1",
-] as const;
 
 /** FNV (Fowler/Noll/Vo) algorithms names. */
 export type FNVAlgorithms = "FNV32" | "FNV32A" | "FNV64" | "FNV64A";
