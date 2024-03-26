@@ -22,6 +22,9 @@ const rawToEntity = new Map<string, string>(rawToEntityEntries);
 
 const rawRe = new RegExp(`[${[...rawToEntity.keys()].join("")}]`, "g");
 
+/** Options for {@linkcode escape}. */
+export type EscapeOptions = { form: NormalizationForm };
+
 /**
  * Escapes text for safe interpolation into HTML text content and quoted attributes.
  *
@@ -34,10 +37,18 @@ const rawRe = new RegExp(`[${[...rawToEntity.keys()].join("")}]`, "g");
  * // Characters that don't need to be escaped will be left alone,
  * // even if named HTML entities exist for them.
  * escape("þð"); // "þð"
+ * // You can force non-ASCII chars to be escaped by setting the `form` option to `compatibility`:
+ * escape("þð", { form: "compatibility" }); // "&#xfe;&#xf0;"
  * ```
  */
-export function escape(str: string): string {
-  return str.replaceAll(rawRe, (m) => rawToEntity.get(m)!);
+export function escape(
+  str: string,
+  options: Partial<EscapeOptions> = {},
+): string {
+  const escaped = str.replaceAll(rawRe, (m) => rawToEntity.get(m)!);
+  return options.form === "compatibility"
+    ? escapeAllNonAsciiPrintable(escaped)
+    : escaped;
 }
 
 /** Options for {@linkcode unescape}. */
@@ -102,4 +113,60 @@ function codePointStrToChar(codePointStr: string, radix: number) {
   const codePoint = parseInt(codePointStr, radix);
 
   return codePoint > MAX_CODE_POINT ? "�" : String.fromCodePoint(codePoint);
+}
+
+/**
+ * Normalization form to use for escaping. See {@linkcode normalize} for examples.
+ *
+ * - `readability`: Optimize for human readability and file size.
+ * - `compatibility`: Optimize for compatibility across boundaries that lack
+ *    full Unicode support, are unaware of encoding, or fail to respect
+ *    encoding.
+ */
+export type NormalizationForm =
+  | "readability"
+  | "compatibility";
+
+export type NormalizationOptions = {
+  form: NormalizationForm;
+};
+
+/**
+ * Normalize HTML or XML entities in a string of markup.
+ *
+ * @example
+ * ```ts
+ * normalize("&#x3e;"); // "&gt;"
+ * normalize("&apos;"); // "&#39;"
+ * normalize("&#x4e24;&#x53ea;&#x5c0f;&#x871c;&#x8702;"); // "两只小蜜蜂"
+ *
+ * // specifying a `form` option (default is `readability`):
+ * normalize("两只小蜜蜂", { form: "readability" }); // "两只小蜜蜂"
+ * normalize("两只小蜜蜂", { form: "compatibility" }); // "&#x4e24;&#x53ea;&#x5c0f;&#x871c;&#x8702;"
+ * ```
+ */
+export function normalize(
+  str: string,
+  options: Partial<NormalizationOptions> = { form: "readability" },
+) {
+  return str
+    .split(/([<>'"]+)/)
+    .map((segment, i) => {
+      return i % 2
+        ? segment
+        : escape(unescape(segment), { form: options.form });
+    })
+    .join("");
+}
+
+function escapeAllCharsAsHex(str: string) {
+  return [...str].map((c) => `&#x${c.codePointAt(0)!.toString(16)};`).join("");
+}
+
+function escapeAllNonAsciiPrintable(str: string) {
+  return str.replaceAll(
+    // deno-lint-ignore no-control-regex
+    /[\x00-\x08\x0b\x0c\x0e-\x1F\x7F-\u{10ffff}]+/gu,
+    (m) => escapeAllCharsAsHex(m),
+  );
 }
