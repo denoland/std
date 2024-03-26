@@ -48,7 +48,7 @@ export function escape(
   const escaped = str.replaceAll(rawRe, (m) => rawToEntity.get(m)!);
   return options.form === "compatibility"
     ? escapeAllNonAsciiPrintable(escaped)
-    : escaped;
+    : escapeAllXmlRestricted(escaped);
 }
 
 /** Options for {@linkcode unescape}. */
@@ -136,6 +136,8 @@ export type NormalizationOptions = {
  *
  * @example
  * ```ts
+ * import { normalize } from "https://deno.land/std@$STD_VERSION/html/entities.ts";
+ *
  * normalize("&#x3e;"); // "&gt;"
  * normalize("&apos;"); // "&#39;"
  * normalize("&#x4e24;&#x53ea;&#x5c0f;&#x871c;&#x8702;"); // "两只小蜜蜂"
@@ -159,14 +161,25 @@ export function normalize(
     .join("");
 }
 
-function escapeAllCharsAsHex(str: string) {
-  return [...str].map((c) => `&#x${c.codePointAt(0)!.toString(16)};`).join("");
+/**
+ * See https://en.wikipedia.org/wiki/Valid_characters_in_XML#Non-restricted_characters
+ */
+function escapeAllXmlRestricted(str: string) {
+  return str.replaceAll(
+    // deno-lint-ignore no-control-regex
+    /[^\x09\x0a\x0d\x20-\x7e\x85\xa0-\ud7ff\ue000-\ufdcf\ufdf0-\ufffd\u{10000}-\u{1fffd}\u{20000}-\u{2fffd}\u{30000}-\u{3fffd}\u{40000}-\u{4fffd}\u{50000}-\u{5fffd}\u{60000}-\u{6fffd}\u{70000}-\u{7fffd}\u{80000}-\u{8fffd}\u{90000}-\u{9fffd}\u{a0000}-\u{afffd}\u{b0000}-\u{bfffd}\u{c0000}-\u{cfffd}\u{d0000}-\u{dfffd}\u{e0000}-\u{efffd}\u{f0000}-\u{ffffd}\u{100000}-\u{10fffd}]+/gu,
+    (m) => escapeAllCharsAsHex(m),
+  );
 }
 
 function escapeAllNonAsciiPrintable(str: string) {
   return str.replaceAll(
     // deno-lint-ignore no-control-regex
-    /[\x00-\x08\x0b\x0c\x0e-\x1F\x7F-\u{10ffff}]+/gu,
+    /[^\x09\x0a\x0d\x20-\x7e]+/gu,
     (m) => escapeAllCharsAsHex(m),
   );
+}
+
+function escapeAllCharsAsHex(str: string) {
+  return [...str].map((c) => `&#x${c.codePointAt(0)!.toString(16)};`).join("");
 }
