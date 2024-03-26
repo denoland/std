@@ -11,7 +11,7 @@ import { DAY } from "./constants.ts";
  *
  * @example
  * ```ts
- * import { dayOfYear } from "https://deno.land/std@$STD_VERSION/datetime/mod.ts";
+ * import { dayOfYear } from "https://deno.land/std@$STD_VERSION/datetime/day_of_year.ts";
  *
  * dayOfYear(new Date("2019-03-11T03:24:00")); // 70
  * ```
@@ -37,7 +37,7 @@ export function dayOfYear(date: Date): number {
  *
  * @example
  * ```ts
- * import { dayOfYearUtc } from "https://deno.land/std@$STD_VERSION/datetime/mod.ts";
+ * import { dayOfYearUtc } from "https://deno.land/std@$STD_VERSION/datetime/day_of_year.ts";
  *
  * dayOfYearUtc(new Date("2019-03-11T03:24:00.000Z")) // 70
  * ```
