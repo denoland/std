@@ -7,6 +7,8 @@ const log = Debug('AI:db')
 export default class DB {
   #kv!: Deno.Kv
   #isTestMode!: boolean
+  private constructor() {
+  }
   get kv() {
     return this.#kv
   }

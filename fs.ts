@@ -38,7 +38,7 @@ export default class FS {
     await this.#update(pid, uint8, commit, lockId)
     return { size: uint8.length, prettySize: pretty(uint8.length) }
   }
-  async rm(pid: PID) {
+  async deletePID(pid: PID) {
     // TODO make atomic and recursive
     const fsKey = keys.getRepoKey(pid)
     log('deleting repo %o', fsKey)

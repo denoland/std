@@ -50,6 +50,10 @@ export const getPrefixes = (pid: PID) => {
   }
   return prefixes
 }
+export const getRepoRoot = (pid: PID) => {
+  const { account, repository } = pid
+  return [KEYSPACES.REPO, account, repository]
+}
 export enum KEYSPACES {
   POOL = 'POOL', // all pending requests and replies trying to be committed
   REPLIES = 'REPLIES', // for watching replies

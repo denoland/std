@@ -11,6 +11,10 @@ export default async (fs: IFs, upserts: string[], deletes: string[]) => {
   for (const filepath of upserts) {
     log('add', filepath)
     assert(fs.existsSync('/' + filepath), `file does not exist: ${filepath}`)
+
+    // this is the hardest move in gitkv - building the next tree without a
+    // staging area.
+
     await git.add({ fs, dir: '/', filepath })
   }
   for (const filepath of deletes) {

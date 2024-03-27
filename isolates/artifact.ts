@@ -191,7 +191,10 @@ export const functions: IsolateFunctions = {
   rm(params, api: IsolateApi<C>) {
     // TODO lock the whole repo in case something is running
     const pid = pidFromRepo(params.repo as string)
-    return Promise.all([api.context.fs!.rm(pid), api.context.db!.rm(pid)])
+    return Promise.all([
+      api.context.fs!.deletePID(pid),
+      api.context.db!.rm(pid),
+    ])
   },
   apiSchema: async (params: Params) => {
     // when it loads from files, will benefit from being close to the db

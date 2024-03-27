@@ -11,11 +11,6 @@ import { ExeResult, PID } from '@/constants.ts'
 import Accumulator from '@/exe/accumulator.ts'
 const log = Debug('AI:exe')
 
-/**
- * Induct poolable items into the commit history
- */
-type I = (request: SolidRequest | SolidReply) => Promise<void>
-
 export default class Executor {
   #functions = new Map<string, Execution>()
   static create() {
