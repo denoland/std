@@ -9,6 +9,14 @@
  * {@link https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/ | Kotlin's Collections}
  * package.
  *
+ * ```ts
+ * import { intersect } from "https://deno.land/std@$STD_VERSION/collections/intersect.ts";
+ *
+ * const lisaInterests = ["Cooking", "Music", "Hiking"];
+ * const kimInterests = ["Music", "Tennis", "Cooking"];
+ * intersect(lisaInterests, kimInterests); // [ "Cooking", "Music" ]
+ * ```
+ *
  * @module
  */
 

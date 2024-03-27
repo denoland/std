@@ -137,7 +137,7 @@ Deno.test("ensureLink() rejects if link does not exist", async function () {
     // "Access is denied. (os error 5)" // throw in CI
   );
 
-  Deno.removeSync(testDir, { recursive: true });
+  await Deno.remove(testDir, { recursive: true });
 });
 
 Deno.test("ensureLinkSync() throws if link does not exist", function () {

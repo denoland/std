@@ -147,8 +147,8 @@ type NormalizedColumn = Omit<ColumnDetails, "header" | "prop"> & {
 };
 
 function normalizeColumn(column: Column): NormalizedColumn {
-  let header: NormalizedColumn["header"],
-    prop: NormalizedColumn["prop"];
+  let header: NormalizedColumn["header"];
+  let prop: NormalizedColumn["prop"];
 
   if (typeof column === "object") {
     if (Array.isArray(column)) {

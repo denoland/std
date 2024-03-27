@@ -14,11 +14,9 @@
  * ```
  */
 export function endsWith(source: Uint8Array, suffix: Uint8Array): boolean {
-  for (
-    let srci = source.length - 1, sfxi = suffix.length - 1;
-    sfxi >= 0;
-    srci--, sfxi--
-  ) {
+  let srci = source.length - 1;
+  let sfxi = suffix.length - 1;
+  for (; sfxi >= 0; srci--, sfxi--) {
     if (source[srci] !== suffix[sfxi]) return false;
   }
   return true;

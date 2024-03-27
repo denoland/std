@@ -1915,3 +1915,14 @@ Deno.test("parseArgs() handles types of parse options generic defaults", functio
     >
   >(true);
 });
+
+Deno.test("parseArgs() handles collect with alias", () => {
+  const args = ["--header", "abc", "--header", "def"];
+  const parsed = parseArgs(args, {
+    collect: ["header"],
+    alias: {
+      H: "header",
+    },
+  });
+  assertEquals(parsed.header, ["abc", "def"]);
+});

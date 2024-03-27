@@ -487,8 +487,12 @@ export function parseArgs<
       assert(val !== undefined);
       const aliases = Array.isArray(val) ? val : [val];
       aliasMap.set(key, new Set(aliases));
-      const set = new Set([key, ...aliases]);
-      aliases.forEach((alias) => aliasMap.set(alias, set));
+      aliases.forEach((alias) =>
+        aliasMap.set(
+          alias,
+          new Set([key, ...aliases.filter((it) => it !== alias)]),
+        )
+      );
     }
   }
 
@@ -553,9 +557,9 @@ export function parseArgs<
 
     const collectable = collect && collectSet.has(key);
     setNested(argv, key.split("."), value, collectable);
-    aliasMap.get(key)?.forEach((key) =>
-      setNested(argv, key.split("."), value, collectable)
-    );
+    aliasMap.get(key)?.forEach((key) => {
+      setNested(argv, key.split("."), value, collectable);
+    });
   }
 
   let notFlags: string[] = [];

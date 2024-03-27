@@ -57,8 +57,8 @@ export class Mark {
   }
 
   public toString(compact?: boolean): string {
-    let snippet,
-      where = "";
+    let snippet;
+    let where = "";
 
     if (this.name) {
       where += `in "${this.name}" `;

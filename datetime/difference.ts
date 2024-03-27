@@ -36,21 +36,22 @@ function calculateMonthsDifference(from: Date, to: Date): number {
 }
 
 /**
- * Returns the difference of the 2 given dates in the given units. If the units
+ * Calculates the difference of the 2 given dates in the given units. If the units
  * are omitted, it returns the difference in the all available units.
  *
- * @example
+ * @param from Year to calculate difference from.
+ * @param to Year to calculate difference to.
+ * @param options Options such as units to calculate difference in.
+ *
+ * @example Basic usage
  * ```ts
  * import { difference } from "https://deno.land/std@$STD_VERSION/datetime/difference.ts";
  *
  * const date0 = new Date("2018-05-14");
  * const date1 = new Date("2020-05-13");
  *
- * difference(date0, date1, { units: ["days", "months", "years"] });
- * // => returns { days: 730, months: 23, years: 1 }
- *
  * difference(date0, date1);
- * // => returns {
+ * // {
  * //   milliseconds: 63072000000,
  * //   seconds: 63072000,
  * //   minutes: 1051200,
@@ -63,9 +64,16 @@ function calculateMonthsDifference(from: Date, to: Date): number {
  * // }
  * ```
  *
- * @param from Year to calculate difference
- * @param to Year to calculate difference with
- * @param options Options for determining how to respond
+ * @example Calculate difference in specific units
+ * ```ts
+ * import { difference } from "https://deno.land/std@$STD_VERSION/datetime/difference.ts";
+ *
+ * const date0 = new Date("2018-05-14");
+ * const date1 = new Date("2020-05-13");
+ *
+ * difference(date0, date1, { units: ["days", "months", "years"] });
+ * // { days: 730, months: 23, years: 1 }
+ * ```
  */
 export function difference(
   from: Date,

@@ -99,12 +99,12 @@ function encodeHex(character: number): string {
 
 // Indents every line in a string. Empty lines (\n only) are not indented.
 function indentString(string: string, spaces: number): string {
-  const ind = common.repeat(" ", spaces),
-    length = string.length;
-  let position = 0,
-    next = -1,
-    result = "",
-    line: string;
+  const ind = common.repeat(" ", spaces);
+  const length = string.length;
+  let position = 0;
+  let next = -1;
+  let result = "";
+  let line: string;
 
   while (position < length) {
     next = string.indexOf("\n", position);
@@ -209,11 +209,11 @@ function needIndentIndicator(string: string): boolean {
   return leadingSpaceRe.test(string);
 }
 
-const STYLE_PLAIN = 1,
-  STYLE_SINGLE = 2,
-  STYLE_LITERAL = 3,
-  STYLE_FOLDED = 4,
-  STYLE_DOUBLE = 5;
+const STYLE_PLAIN = 1;
+const STYLE_SINGLE = 2;
+const STYLE_LITERAL = 3;
+const STYLE_FOLDED = 4;
+const STYLE_DOUBLE = 5;
 
 // Determines which scalar styles are possible and returns the preferred style.
 // lineWidth = -1 => no limit.
@@ -230,13 +230,14 @@ function chooseScalarStyle(
   testAmbiguousType: (...args: Any[]) => Any,
 ): number {
   const shouldTrackWidth = lineWidth !== -1;
-  let hasLineBreak = false,
-    hasFoldableLine = false, // only checked if shouldTrackWidth
-    previousLineBreak = -1, // count the first line correctly
-    plain = isPlainSafeFirst(string.charCodeAt(0)) &&
-      !isWhitespace(string.charCodeAt(string.length - 1));
+  let hasLineBreak = false;
+  let hasFoldableLine = false; // only checked if shouldTrackWidth
+  let previousLineBreak = -1; // count the first line correctly
+  let plain = isPlainSafeFirst(string.charCodeAt(0)) &&
+    !isWhitespace(string.charCodeAt(string.length - 1));
 
-  let char: number, i: number;
+  let char: number;
+  let i: number;
   if (singleLineOnly) {
     // Case: no block styles.
     // Check for disallowed characters to rule out plain and single.
@@ -300,10 +301,10 @@ function foldLine(line: string, width: number): string {
   const breakRe = / [^ ]/g; // note: the match index will always be <= length-2.
   let match;
   // start is an inclusive index. end, curr, and next are exclusive.
-  let start = 0,
-    end,
-    curr = 0,
-    next = 0;
+  let start = 0;
+  let end;
+  let curr = 0;
+  let next = 0;
   let result = "";
 
   // Invariants: 0 <= start <= length-1.
@@ -365,8 +366,8 @@ function foldString(string: string, width: number): string {
   let match;
   // tslint:disable-next-line:no-conditional-assignment
   while ((match = lineRe.exec(string))) {
-    const prefix = match[1],
-      line = match[2] || "";
+    const prefix = match[1];
+    const line = match[2] || "";
     moreIndented = line[0] === " ";
     result += prefix +
       (!prevMoreIndented && !moreIndented && line !== "" ? "\n" : "") +
@@ -380,7 +381,8 @@ function foldString(string: string, width: number): string {
 // Escapes a double-quoted string.
 function escapeString(string: string): string {
   let result = "";
-  let char, nextChar;
+  let char;
+  let nextChar;
   let escapeSeq;
 
   for (let i = 0; i < string.length; i++) {
@@ -508,7 +510,7 @@ function writeFlowSequence(
   let _result = "";
   const _tag = state.tag;
 
-  for (let index = 0, length = object.length; index < length; index += 1) {
+  for (let index = 0; index < object.length; index += 1) {
     // Write only valid elements.
     if (writeNode(state, level, object[index], false, false)) {
       if (index !== 0) _result += `,${!state.condenseFlow ? " " : ""}`;
@@ -529,7 +531,7 @@ function writeBlockSequence(
   let _result = "";
   const _tag = state.tag;
 
-  for (let index = 0, length = object.length; index < length; index += 1) {
+  for (let index = 0; index < object.length; index += 1) {
     // Write only valid elements.
     if (writeNode(state, level + 1, object[index], true, true)) {
       if (!compact || index !== 0) {
@@ -556,8 +558,8 @@ function writeFlowMapping(
   object: Any,
 ) {
   let _result = "";
-  const _tag = state.tag,
-    objectKeyList = Object.keys(object);
+  const _tag = state.tag;
+  const objectKeyList = Object.keys(object);
 
   for (const [index, objectKey] of objectKeyList.entries()) {
     let pairBuffer = state.condenseFlow ? '"' : "";
@@ -596,8 +598,8 @@ function writeBlockMapping(
   object: Any,
   compact = false,
 ) {
-  const _tag = state.tag,
-    objectKeyList = Object.keys(object);
+  const _tag = state.tag;
+  const objectKeyList = Object.keys(object);
   let _result = "";
 
   // Allow sorting keys so that the output file is deterministic
@@ -810,7 +812,7 @@ function inspectNode(
       objects.push(object);
 
       if (Array.isArray(object)) {
-        for (let idx = 0, length = object.length; idx < length; idx += 1) {
+        for (let idx = 0; idx < object.length; idx += 1) {
           inspectNode(object[idx], objects, duplicatesIndexes);
         }
       } else {
@@ -826,8 +828,8 @@ function getDuplicateReferences(
   object: Record<string, unknown>,
   state: DumperState,
 ) {
-  const objects: Any[] = [],
-    duplicatesIndexes: number[] = [];
+  const objects: Any[] = [];
+  const duplicatesIndexes: number[] = [];
 
   inspectNode(object, objects, duplicatesIndexes);
 

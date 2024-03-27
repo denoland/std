@@ -246,8 +246,8 @@ export class Server {
     const listener = Deno.listenTls({
       port: this.#port ?? HTTPS_PORT,
       hostname: this.#host ?? "0.0.0.0",
-      certFile,
-      keyFile,
+      cert: Deno.readTextFileSync(certFile),
+      key: Deno.readTextFileSync(keyFile),
       transport: "tcp",
       // ALPN protocol support not yet stable.
       // alpnProtocols: ["h2", "http/1.1"],
@@ -773,7 +773,9 @@ export async function serveTls(
     once: true,
   });
 
+  // deno-lint-ignore no-sync-fn-in-async-fn
   const key = options.key || Deno.readTextFileSync(options.keyFile!);
+  // deno-lint-ignore no-sync-fn-in-async-fn
   const cert = options.cert || Deno.readTextFileSync(options.certFile!);
 
   const listener = Deno.listenTls({

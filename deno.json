@@ -2,7 +2,8 @@
   "compilerOptions": {
     "strict": true,
     "useUnknownInCatchVariables": true,
-    "noImplicitOverride": true
+    "noImplicitOverride": true,
+    "noUncheckedIndexedAccess": true
   },
   "imports": {
     "https://deno.land/std@$STD_VERSION/": "./",
@@ -40,7 +41,9 @@
   "lint": {
     "rules": {
       "include": [
-        "camelcase"
+        "camelcase",
+        "no-sync-fn-in-async-fn",
+        "single-var-declarator"
       ]
     }
   }
