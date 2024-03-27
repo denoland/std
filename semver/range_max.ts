@@ -9,13 +9,9 @@ function comparatorMax(comparator: Comparator): SemVer {
   if (semver === ANY) return MAX;
   switch (comparator.operator) {
     case "!=":
-    case "!==":
     case ">":
     case ">=":
       return MAX;
-    case "":
-    case "==":
-    case "===":
     case undefined:
     case "=":
     case "<=":

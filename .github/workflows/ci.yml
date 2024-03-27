@@ -17,8 +17,7 @@ jobs:
       fail-fast: false
       matrix:
         deno:
-          # TODO(kt3k): Enable this when Deno v1.41.1 released
-          # - v1.x
+          - v1.x
           - canary
         os:
           - ubuntu-22.04
@@ -70,7 +69,14 @@ jobs:
         run: ./_tools/release/03_release.ts
 
   lint:
-    runs-on: ubuntu-22.04
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-22.04
+          - windows-2022
     steps:
       - name: Clone repository
         uses: actions/checkout@v4
@@ -91,15 +97,16 @@ jobs:
 
       - name: Spell-check
         uses: crate-ci/typos@master
+        if: matrix.os == 'ubuntu-22.04'
         with:
-          config: ./.github/workflows/typos.toml
+          config: ./.github/typos.toml
 
   wasm:
     name: wasm
     runs-on: ubuntu-22.04
     strategy:
       matrix:
-        module: [ crypto/_wasm ]
+        module: [crypto/_wasm]
     steps:
       - name: Clone repository
         uses: actions/checkout@v4
@@ -117,7 +124,7 @@ jobs:
           declare modifications="$(git diff --name-only HEAD~ -- ${{ matrix.module }})"
           declare modified="$([[ "$modifications" ]] && echo true || echo false)"
           echo "modified=$modified" >> $GITHUB_OUTPUT
-          echo "${{ matrix.module }} WASM source modified in this commit? $modified"
+          echo "${{ matrix.module }} Wasm source modified in this commit? $modified"
           echo "$modifications"
 
       - name: Set up Deno
@@ -129,7 +136,7 @@ jobs:
         if: success() && steps.source.outputs.modified == 'true'
         with:
           # This must match the version in _wasm/rust-toolchain.toml of the module folder
-          rust-version: 1.75.0
+          rust-version: 1.76.0
           targets: wasm32-unknown-unknown
           components: rustfmt
 

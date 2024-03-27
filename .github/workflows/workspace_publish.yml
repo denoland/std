@@ -34,7 +34,7 @@ jobs:
         run: deno fmt
 
       - name: Type check
-        run: deno test --no-run --doc
+        run: deno task test
 
       - name: Publish (dry run)
         if: github.event_name == 'push'
@@ -42,4 +42,4 @@ jobs:
 
       - name: Publish (real)
         if: github.event_name == 'release'
-        run: deno publish
+        run: deno publish --allow-dirty

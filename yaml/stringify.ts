@@ -10,13 +10,13 @@ import type { DumperStateOptions } from "./_dumper/dumper_state.ts";
 export type DumpOptions = DumperStateOptions;
 
 /**
- * Serializes `object` as a YAML document.
+ * Serializes `data` as a YAML document.
  *
  * You can disable exceptions by setting the skipInvalid option to true.
  */
 export function stringify(
-  obj: Record<string, unknown>,
+  data: unknown,
   options?: DumpOptions,
 ): string {
-  return dump(obj, options);
+  return dump(data, options);
 }

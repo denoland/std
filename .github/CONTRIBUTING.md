@@ -64,10 +64,10 @@ before contributing.
 
 1. Use the following convention for test names:
    ```
-   <symbol>() <criteria>
+   <symbol> <criteria>
    ```
 
    Examples:
    - assertEquals() matches when values are equal
    - ensureDirSync() creates dir if it does not exist
-   - chunk() throws on non-naturals
+   - Server exposes the addresses the server is listening on as addrs property

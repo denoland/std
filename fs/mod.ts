@@ -3,6 +3,15 @@
 /**
  * Helpers for working with the filesystem.
  *
+ * ```ts
+ * import { ensureFile, copy, ensureDir, move } from "https://deno.land/std@$STD_VERSION/fs/mod.ts";
+ *
+ * await ensureFile("example.txt");
+ * await copy("example.txt", "example_copy.txt");
+ * await ensureDir("subdir");
+ * await move("example_copy.txt", "subdir/example_copy.txt");
+ * ```
+ *
  * @module
  */
 

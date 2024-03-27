@@ -38,7 +38,7 @@ function constructYamlFloat(data: string): number {
   const sign = value[0] === "-" ? -1 : 1;
   const digits: number[] = [];
 
-  if ("+-".indexOf(value[0]) >= 0) {
+  if (value[0] && "+-".indexOf(value[0]) >= 0) {
     value = value.slice(1);
   }
 

@@ -4,11 +4,24 @@
 /**
  * Utilities for dealing with {@linkcode Date} objects.
  *
- * This module is browser compatible.
+ * ```ts
+ * import {
+ *   dayOfYear,
+ *   format,
+ *   isLeap,
+ * } from "https://deno.land/std@$STD_VERSION/datetime/mod.ts";
+ *
+ * const date = new Date("2020-07-10T03:24:00");
+ *
+ * dayOfYear(date); // 192
+ *
+ * format(date, "dd-MM-yyyy"); // "10-07-2020"
+ *
+ * isLeap(date); // true
+ * ```
  *
  * @module
  */
-
 export * from "./constants.ts";
 export * from "./day_of_year.ts";
 export * from "./difference.ts";

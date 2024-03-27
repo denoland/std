@@ -1,34 +1,24 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import { exists } from "../fs/exists.ts";
-import { join } from "../path/join.ts";
+import { walk } from "../fs/walk.ts";
+import { relative } from "../path/relative.ts";
+import { dirname } from "../path/dirname.ts";
 import * as colors from "../fmt/colors.ts";
 import ts from "npm:typescript";
 
 const ROOT = new URL("../", import.meta.url);
 const FAIL_FAST = Deno.args.includes("--fail-fast");
-const EXCLUDED_PATHS = [
-  "dotenv/load.ts",
-  "path/glob.ts",
-  "front_matter/yaml.ts",
-  "front_matter/json.ts",
-  "front_matter/toml.ts",
-  "front_matter/any.ts",
-  "yaml/schema.ts",
-];
-
-const MOD_FILENAME = "mod.ts";
 
 let shouldFail = false;
 
-for await (const { name: dirName, isDirectory } of Deno.readDir(ROOT)) {
-  if (!isDirectory || dirName.startsWith(".") || dirName.startsWith("_")) {
-    continue;
-  }
-  const filePath = join(ROOT.pathname, dirName);
-  const modFilePath = join(filePath, MOD_FILENAME);
-  if (!await exists(modFilePath)) continue;
-
+for await (
+  const { path: modFilePath } of walk(ROOT, {
+    includeDirs: true,
+    exts: ["ts"],
+    match: [/mod\.ts$/],
+    maxDepth: 2,
+  })
+) {
   const source = await Deno.readTextFile(modFilePath);
   const sourceFile = ts.createSourceFile(
     modFilePath,
@@ -43,19 +33,27 @@ for await (const { name: dirName, isDirectory } of Deno.readDir(ROOT)) {
     exportSpecifiers.add(node.moduleSpecifier.text);
   });
 
-  for await (const { name } of Deno.readDir(filePath)) {
-    if (
-      name === MOD_FILENAME ||
-      !name.endsWith(".ts") ||
-      name.startsWith(".") ||
-      name.startsWith("_") ||
-      name.endsWith("test.ts") ||
-      name.endsWith(".d.ts")
-    ) continue;
-    const absoluteFilePath = join(dirName, name);
-    if (EXCLUDED_PATHS.includes(absoluteFilePath)) continue;
-
-    const relativeSpecifier = `./${name}`;
+  for await (
+    const { path: filePath } of walk(dirname(modFilePath), {
+      exts: [".ts"],
+      includeDirs: false,
+      maxDepth: 1,
+      skip: [
+        /dotenv(\/|\\)load\.ts$/,
+        /front_matter(\/|\\)yaml\.ts$/,
+        /front_matter(\/|\\)json\.ts$/,
+        /front_matter(\/|\\)toml\.ts$/,
+        /front_matter(\/|\\)any\.ts$/,
+        /yaml(\/|\\)schema\.ts$/,
+        /test\.ts$/,
+        /\.d\.ts$/,
+        /(\/|\\)_/,
+        /mod\.ts$/,
+      ],
+    })
+  ) {
+    const relativeSpecifier = relative(modFilePath, filePath).slice(1)
+      .replaceAll("\\", "/");
     if (!exportSpecifiers.has(relativeSpecifier)) {
       console.warn(
         `${

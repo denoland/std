@@ -2,23 +2,21 @@
 
 type Delimiter = string | [begin: string, end: string];
 
-const { isArray } = Array;
-
 function getBeginToken(delimiter: Delimiter): string {
-  return isArray(delimiter) ? delimiter[0] : delimiter;
+  return Array.isArray(delimiter) ? delimiter[0] : delimiter;
 }
 
 function getEndToken(delimiter: Delimiter): string {
-  return isArray(delimiter) ? delimiter[1] : delimiter;
+  return Array.isArray(delimiter) ? delimiter[1] : delimiter;
 }
 
-function createRegExp(...dv: Delimiter[]): [RegExp, RegExp] {
-  const beginPattern = "(" + dv.map(getBeginToken).join("|") + ")";
+function createRegExps(delimiters: Delimiter[]): [RegExp, RegExp] {
+  const beginPattern = "(" + delimiters.map(getBeginToken).join("|") + ")";
   const pattern = "^(" +
     "\\ufeff?" + // Maybe byte order mark
     beginPattern +
     "$([\\s\\S]+?)" +
-    "^(?:" + dv.map(getEndToken).join("|") + ")\\s*" +
+    "^(?:" + delimiters.map(getEndToken).join("|") + ")\\s*" +
     "$" +
     (globalThis?.Deno?.build?.os === "windows" ? "\\r?" : "") +
     "(?:\\n)?)";
@@ -29,29 +27,35 @@ function createRegExp(...dv: Delimiter[]): [RegExp, RegExp] {
   ];
 }
 
-const [RX_RECOGNIZE_YAML, RX_YAML] = createRegExp(
-  ["---yaml", "---"],
-  "= yaml =",
-  "---",
+const [RECOGNIZE_YAML_REGEXP, EXTRACT_YAML_REGEXP] = createRegExps(
+  [
+    ["---yaml", "---"],
+    "= yaml =",
+    "---",
+  ],
 );
-const [RX_RECOGNIZE_TOML, RX_TOML] = createRegExp(
-  ["---toml", "---"],
-  "\\+\\+\\+",
-  "= toml =",
+const [RECOGNIZE_TOML_REGEXP, EXTRACT_TOML_REGEXP] = createRegExps(
+  [
+    ["---toml", "---"],
+    "\\+\\+\\+",
+    "= toml =",
+  ],
 );
-const [RX_RECOGNIZE_JSON, RX_JSON] = createRegExp(
-  ["---json", "---"],
-  "= json =",
+const [RECOGNIZE_JSON_REGEXP, EXTRACT_JSON_REGEXP] = createRegExps(
+  [
+    ["---json", "---"],
+    "= json =",
+  ],
 );
 
-export const MAP_FORMAT_TO_RECOGNIZER_RX = {
-  yaml: RX_RECOGNIZE_YAML,
-  toml: RX_RECOGNIZE_TOML,
-  json: RX_RECOGNIZE_JSON,
+export const RECOGNIZE_REGEXP_MAP = {
+  yaml: RECOGNIZE_YAML_REGEXP,
+  toml: RECOGNIZE_TOML_REGEXP,
+  json: RECOGNIZE_JSON_REGEXP,
 } as const;
 
-export const MAP_FORMAT_TO_EXTRACTOR_RX = {
-  yaml: RX_YAML,
-  toml: RX_TOML,
-  json: RX_JSON,
+export const EXTRACT_REGEXP_MAP = {
+  yaml: EXTRACT_YAML_REGEXP,
+  toml: EXTRACT_TOML_REGEXP,
+  json: EXTRACT_JSON_REGEXP,
 } as const;

@@ -3,7 +3,7 @@
 // This file is copied from `std/assert`.
 
 import type { EqualOptions } from "./_types.ts";
-import { Any, Anything, ArrayContaining } from "./_asymmetric_matchers.ts";
+import { AsymmetricMatcher } from "./_asymmetric_matchers.ts";
 
 function isKeyedCollection(x: unknown): x is Set<unknown> {
   return [Symbol.iterator, "size"].every((k) => k in (x as Set<unknown>));
@@ -15,19 +15,28 @@ function constructorsEqual(a: object, b: object) {
     !a.constructor && b.constructor === Object;
 }
 
+function asymmetricEqual(a: unknown, b: unknown) {
+  const asymmetricA = a instanceof AsymmetricMatcher;
+  const asymmetricB = b instanceof AsymmetricMatcher;
+
+  if (asymmetricA && asymmetricB) {
+    return undefined;
+  }
+
+  if (asymmetricA) {
+    return a.equals(b);
+  }
+
+  if (asymmetricB) {
+    return b.equals(a);
+  }
+}
+
 /**
  * Deep equality comparison used in assertions
  * @param c actual value
  * @param d expected value
- * @param strictCheck check value in strictMode
- *
- * @example
- * ```ts
- * import { equal } from "https://deno.land/std@$STD_VERSION/assert/equal.ts";
- *
- * equal({ foo: "bar" }, { foo: "bar" }); // Returns `true`
- * equal({ foo: "bar" }, { foo: "baz" }); // Returns `false
- * ```
+ * @param options for the equality check
  */
 export function equal(c: unknown, d: unknown, options?: EqualOptions): boolean {
   const { customTesters = [], strictCheck } = options || {};
@@ -36,7 +45,10 @@ export function equal(c: unknown, d: unknown, options?: EqualOptions): boolean {
   return (function compare(a: unknown, b: unknown): boolean {
     if (customTesters?.length) {
       for (const customTester of customTesters) {
-        const pass = customTester.call(undefined, a, b, customTesters);
+        const testContext = {
+          equal,
+        };
+        const pass = customTester.call(testContext, a, b, customTesters);
         if (pass !== undefined) {
           return pass;
         }
@@ -53,15 +65,12 @@ export function equal(c: unknown, d: unknown, options?: EqualOptions): boolean {
     ) {
       return String(a) === String(b);
     }
-    if (b instanceof Anything) {
-      return b.equals(a);
+
+    const asymmetric = asymmetricEqual(a, b);
+    if (asymmetric !== undefined) {
+      return asymmetric;
     }
-    if (b instanceof Any) {
-      return b.equals(a);
-    }
-    if (b instanceof ArrayContaining && a instanceof Array) {
-      return b.equals(a);
-    }
+
     if (a instanceof Date && b instanceof Date) {
       const aTime = a.getTime();
       const bTime = b.getTime();
@@ -77,6 +86,13 @@ export function equal(c: unknown, d: unknown, options?: EqualOptions): boolean {
     }
     if (typeof a === "number" && typeof b === "number") {
       return Number.isNaN(a) && Number.isNaN(b) || a === b;
+    }
+    if (a === null || b === null) {
+      return a === b;
+    }
+    const className = Object.prototype.toString.call(a);
+    if (className !== Object.prototype.toString.call(b)) {
+      return false;
     }
     if (Object.is(a, b)) {
       return true;

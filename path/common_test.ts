@@ -42,3 +42,45 @@ Deno.test({
     assertEquals(actual, "c:\\deno\\");
   },
 });
+
+Deno.test({
+  name: "common(['', '/'], '/') returns ''",
+  fn() {
+    const actual = common(["", "/"], "/");
+    assertEquals(actual, "");
+  },
+});
+
+Deno.test({
+  name: "common(['/', ''], '/') returns ''",
+  fn() {
+    const actual = common([
+      "/",
+      "",
+    ], "/");
+    assertEquals(actual, "");
+  },
+});
+
+Deno.test({
+  name: "common() returns the first path unmodified when it's the only path",
+  fn() {
+    const actual = common(["./deno/std/path/mod.ts"], "/");
+    assertEquals(actual, "./deno/std/path/mod.ts");
+  },
+});
+
+Deno.test({
+  name: "common() returns the first path unmodified if all paths are equal",
+  fn() {
+    const actual = common(
+      [
+        "./deno/std/path/mod.ts",
+        "./deno/std/path/mod.ts",
+        "./deno/std/path/mod.ts",
+      ],
+      "/",
+    );
+    assertEquals(actual, "./deno/std/path/mod.ts");
+  },
+});

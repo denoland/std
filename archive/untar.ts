@@ -34,8 +34,8 @@ import {
   HEADER_LENGTH,
   readBlock,
   type TarMeta,
+  USTAR_STRUCTURE,
   type UstarFields,
-  ustarStructure,
 } from "./_common.ts";
 import { readAll } from "../io/read_all.ts";
 import type { Reader } from "../io/types.ts";
@@ -45,9 +45,11 @@ import type { Reader } from "../io/types.ts";
  * symbolic link values without polluting the world of archive writers.
  */
 export interface TarMetaWithLinkName extends TarMeta {
+  /** File name of the symbolic link. */
   linkName?: string;
 }
 
+/** Tar header with raw, unprocessed bytes as values. */
 export type TarHeader = {
   [key in UstarFields]: Uint8Array;
 };
@@ -57,13 +59,15 @@ export type TarHeader = {
 const initialChecksum = 8 * 32;
 
 /**
- * Remove the trailing null codes
- * @param buffer
+ * Trims a Uint8Array by removing any trailing zero bytes.
+ *
+ * @param buffer The Uint8Array to trim.
+ * @returns A new Uint8Array with trailing zero bytes removed, or the original
+ * buffer if no trailing zero bytes are found.
  */
 function trim(buffer: Uint8Array): Uint8Array {
-  const index = buffer.findIndex((v): boolean => v === 0);
-  if (index < 0) return buffer;
-  return buffer.subarray(0, index);
+  const index = buffer.indexOf(0);
+  return index === -1 ? buffer : buffer.subarray(0, index);
 }
 
 /**
@@ -73,7 +77,7 @@ function trim(buffer: Uint8Array): Uint8Array {
 function parseHeader(buffer: Uint8Array): TarHeader {
   const data = {} as TarHeader;
   let offset = 0;
-  ustarStructure.forEach(function (value) {
+  USTAR_STRUCTURE.forEach(function (value) {
     const arr = buffer.subarray(offset, offset + value.length);
     data[value.field] = arr;
     offset += value.length;
@@ -81,9 +85,10 @@ function parseHeader(buffer: Uint8Array): TarHeader {
   return data;
 }
 
-// deno-lint-ignore no-empty-interface
+/** Tar entry */
 export interface TarEntry extends TarMetaWithLinkName {}
 
+/** Contains tar header metadata and a reader to the entry's body. */
 export class TarEntry implements Reader {
   #header: TarHeader;
   #reader: Reader | (Reader & Deno.Seeker);
@@ -91,6 +96,8 @@ export class TarEntry implements Reader {
   #read = 0;
   #consumed = false;
   #entrySize: number;
+
+  /** Constructs a new instance. */
   constructor(
     meta: TarMetaWithLinkName,
     header: TarHeader,
@@ -107,10 +114,19 @@ export class TarEntry implements Reader {
     this.#entrySize = blocks * HEADER_LENGTH;
   }
 
+  /** Returns whether the entry has already been consumed. */
   get consumed(): boolean {
     return this.#consumed;
   }
 
+  /**
+   * Reads up to `p.byteLength` bytes of the tar entry into `p`. It resolves to
+   * the number of bytes read (`0 < n <= p.byteLength`) and rejects if any
+   * error encountered. Even if read() resolves to n < p.byteLength, it may use
+   * all of `p` as scratch space during the call. If some data is available but
+   * not `p.byteLength bytes`, read() conventionally resolves to what is available
+   * instead of waiting for more.
+   */
   async read(p: Uint8Array): Promise<number | null> {
     // Bytes left for entry
     const entryBytesLeft = this.#entrySize - this.#read;
@@ -142,6 +158,7 @@ export class TarEntry implements Reader {
     return offset < 0 ? n - Math.abs(offset) : offset;
   }
 
+  /** Discords the current entry. */
   async discard() {
     // Discard current entry
     if (this.#consumed) return;
@@ -206,10 +223,13 @@ export class TarEntry implements Reader {
  * ```
  */
 export class Untar {
+  /** Internal reader. */
   reader: Reader;
+  /** Internal block. */
   block: Uint8Array;
   #entry: TarEntry | undefined;
 
+  /** Constructs a new instance. */
   constructor(reader: Reader) {
     this.reader = reader;
     this.block = new Uint8Array(HEADER_LENGTH);
@@ -262,22 +282,20 @@ export class Untar {
     if (fileNamePrefix.byteLength > 0) {
       meta.fileName = decoder.decode(fileNamePrefix) + "/" + meta.fileName;
     }
-    (
-      ["fileMode", "mtime", "uid", "gid"] as ["fileMode", "mtime", "uid", "gid"]
-    ).forEach((key) => {
-      const arr = trim(header[key]);
-      if (arr.byteLength > 0) {
-        meta[key] = parseInt(decoder.decode(arr), 8);
-      }
-    });
-    (["owner", "group", "type"] as ["owner", "group", "type"]).forEach(
-      (key) => {
+    (["fileMode", "mtime", "uid", "gid"] as const)
+      .forEach((key) => {
+        const arr = trim(header[key]);
+        if (arr.byteLength > 0) {
+          meta[key] = parseInt(decoder.decode(arr), 8);
+        }
+      });
+    (["owner", "group", "type"] as const)
+      .forEach((key) => {
         const arr = trim(header[key]);
         if (arr.byteLength > 0) {
           meta[key] = decoder.decode(arr);
         }
-      },
-    );
+      });
 
     meta.fileSize = parseInt(decoder.decode(header.fileSize), 8);
     meta.type = FileTypes[parseInt(meta.type!)] ?? meta.type;

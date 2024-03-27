@@ -1,3 +1,4 @@
+// deno-lint-ignore-file camelcase
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import { createGraph, type ModuleGraphJson, type ModuleJson } from "deno_graph";
 
@@ -168,8 +169,8 @@ const STABILITY: Record<Mod, DepState> = {
 const root = new URL("../", import.meta.url).href;
 const deps: Record<string, Dep> = {};
 
-function getSubmoduleNameFromUrl(url: string) {
-  return url.replace(root, "").split("/")[0];
+function getSubmoduleNameFromUrl(url: string): string {
+  return url.replace(root, "").split("/")[0]!;
 }
 
 async function check(
@@ -269,9 +270,9 @@ function stateToNodeStyle(state: DepState) {
 if (Deno.args.includes("--graph")) {
   console.log("digraph std_deps {");
   for (const mod of Object.keys(deps)) {
-    const info = deps[mod];
+    const info = deps[mod]!;
     console.log(`  ${formatLabel(mod)} ${stateToNodeStyle(info.state)};`);
-    for (const dep of deps[mod].set) {
+    for (const dep of info.set) {
       console.log(`  ${formatLabel(mod)} -> ${dep};`);
     }
   }

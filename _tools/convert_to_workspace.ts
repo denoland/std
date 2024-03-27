@@ -94,24 +94,20 @@ for (const { specifier, dependencies } of graph.modules) {
     continue;
   }
   const from = relative(cwd, fromFileUrl(specifier)).replaceAll("\\", "/");
-  const fromPkg = from.split("/")[0];
+  const fromPkg = from.split("/")[0]!;
   for (const dep of dependencies ?? []) {
     if (dep.code) {
-      const to = relative(cwd, fromFileUrl(dep.code.specifier)).replaceAll(
-        "\\",
-        "/",
-      );
-      const toPkg = to.split("/")[0];
+      const to = relative(cwd, fromFileUrl(dep.code.specifier))
+        .replaceAll("\\", "/");
+      const toPkg = to.split("/")[0]!;
       if (fromPkg !== toPkg) {
         pkgDeps.get(fromPkg)!.add(toPkg);
       }
     }
     if (dep.types) {
-      const to = relative(cwd, fromFileUrl(dep.types.specifier)).replaceAll(
-        "\\",
-        "/",
-      );
-      const toPkg = to.split("/")[0];
+      const to = relative(cwd, fromFileUrl(dep.types.specifier))
+        .replaceAll("\\", "/");
+      const toPkg = to.split("/")[0]!;
       if (fromPkg !== toPkg) {
         pkgDeps.get(fromPkg)!.add(toPkg);
       }
@@ -182,10 +178,8 @@ for await (const entry of walk(cwd)) {
     const target = relative(cwd, path).replaceAll("\\", "/");
     const pkg = target.split("/")[0];
     if (pkg === currentPkg) {
-      let newSpecifier = relative(dirname(entry.path), target).replaceAll(
-        "\\",
-        "/",
-      );
+      let newSpecifier = relative(dirname(entry.path), target)
+        .replaceAll("\\", "/");
       if (!newSpecifier.startsWith(".")) {
         newSpecifier = "./" + newSpecifier;
       }
@@ -221,7 +215,7 @@ for await (const entry of walk(cwd)) {
 for (const pkg of packages) {
   const exportsList = exportsByPackage.get(pkg)!;
   let exports;
-  if (exportsList.length === 1 && exportsList[0][0] === ".") {
+  if (exportsList.length === 1 && exportsList[0]![0] === ".") {
     exports = "./mod.ts";
   } else {
     exports = Object.fromEntries(exportsList);
@@ -249,9 +243,10 @@ function fixPackageName(pkg: string) {
 function fixPackagePath(path: string) {
   const packageName = /^[^/]+/.exec(path);
   if (packageName) {
-    return path.replace(packageName[0], fixPackageName(packageName[0]));
+    return path.replace(packageName[0], fixPackageName(packageName[0]))
+      .replaceAll("_", "-");
   }
-  return path;
+  return path.replaceAll("_", "-");
 }
 
 // Generate `deno.json` file.

@@ -33,7 +33,7 @@ const relativeTests = {
     ["\\\\foo\\baz", "\\\\foo\\baz-quux", "..\\baz-quux"],
     ["C:\\baz", "\\\\foo\\bar\\baz", "\\\\foo\\bar\\baz"],
     ["\\\\foo\\bar\\baz", "C:\\baz", "C:\\baz"],
-  ],
+  ] as const,
   // arguments          result
   posix: [
     ["/var/lib", "/var", ".."],
@@ -48,7 +48,7 @@ const relativeTests = {
     ["/foo/bar/baz", "/foo/bar/baz-quux", "../baz-quux"],
     ["/baz-quux", "/baz", "../baz"],
     ["/baz", "/baz-quux", "../baz-quux"],
-  ],
+  ] as const,
 };
 
 Deno.test("posix.relative()", function () {

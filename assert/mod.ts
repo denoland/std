@@ -7,6 +7,13 @@
  * This module is browser compatible, but do not rely on good formatting of
  * values for AssertionError messages in browsers.
  *
+ * ```ts
+ * import { assert } from "https://deno.land/std@$STD_VERSION/assert/assert.ts";
+ *
+ * assert("I am truthy"); // Doesn't throw
+ * assert(false); // Throws `AssertionError`
+ * ```
+ *
  * @module
  */
 

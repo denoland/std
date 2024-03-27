@@ -4,6 +4,12 @@
  * Provide help with asynchronous tasks like delays, debouncing, deferring, or
  * pooling.
  *
+ * ```ts
+ * import { delay } from "https://deno.land/std@$STD_VERSION/async/delay.ts";
+ *
+ * await delay(100); // waits for 100 milliseconds
+ * ```
+ *
  * @module
  */
 
