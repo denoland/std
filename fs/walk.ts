@@ -22,7 +22,7 @@ export class WalkError extends Error {
       `${cause instanceof Error ? cause.message : cause} for path "${root}"`,
     );
     this.cause = cause;
-    this.name = "WalkError";
+    this.name = this.constructor.name;
     this.root = root;
   }
 }
