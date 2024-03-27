@@ -14,9 +14,9 @@ import { toPathString } from "./_to_path_string.ts";
  *
  * @example
  * ```ts
- * import { ensureSymlink } from "https://deno.land/std@$STD_VERSION/fs/ensure_link.ts";
+ * import { ensureLink } from "https://deno.land/std@$STD_VERSION/fs/ensure_link.ts";
  *
- * await ensureSymlink("./folder/targetFile.dat", "./folder/targetFile.link.dat");
+ * await ensureLink("./folder/targetFile.dat", "./folder/targetFile.link.dat");
  * ```
  */
 export async function ensureLink(src: string | URL, dest: string | URL) {
