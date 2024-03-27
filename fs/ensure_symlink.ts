@@ -17,13 +17,23 @@ function resolveSymlinkTarget(target: string | URL, linkName: string | URL) {
 }
 
 /**
- * Ensures that the link exists, and points to a valid file.
- * If the directory structure does not exist, it is created.
- * If the link already exists, it is not modified but error is thrown if it is not point to the given target.
+ * Asynchronously ensures that the link exists, and points to a valid file. If
+ * the directory structure does not exist, it is created. If the link already
+ * exists, it is not modified but error is thrown if it is not point to the
+ * given target.
+ *
  * Requires the `--allow-read` and `--allow-write` flag.
  *
- * @param target the source file path
- * @param linkName the destination link path
+ * @param target The source file path as a string or URL.
+ * @param linkName The destination link path as a string or URL.
+ * @returns A void promise that resolves once the link exists.
+ *
+ * @example
+ * ```ts
+ * import { ensureSymlink } from "https://deno.land/std@$STD_VERSION/fs/ensure_symlink.ts";
+ *
+ * await ensureSymlink("./folder/targetFile.dat", "./folder/targetFile.link.dat");
+ * ```
  */
 export async function ensureSymlink(
   target: string | URL,
@@ -65,13 +75,23 @@ export async function ensureSymlink(
 }
 
 /**
- * Ensures that the link exists, and points to a valid file.
- * If the directory structure does not exist, it is created.
- * If the link already exists, it is not modified but error is thrown if it is not point to the given target.
+ * Synchronously ensures that the link exists, and points to a valid file. If
+ * the directory structure does not exist, it is created. If the link already
+ * exists, it is not modified but error is thrown if it is not point to the
+ * given target.
+ *
  * Requires the `--allow-read` and `--allow-write` flag.
  *
- * @param target the source file path
- * @param linkName the destination link path
+ * @param target The source file path as a string or URL.
+ * @param linkName The destination link path as a string or URL.
+ * @returns A void value that returns once the link exists.
+ *
+ * @example
+ * ```ts
+ * import { ensureSymlinkSync } from "https://deno.land/std@$STD_VERSION/fs/ensure_symlink.ts";
+ *
+ * ensureSymlinkSync("./folder/targetFile.dat", "./folder/targetFile.link.dat");
+ * ```
  */
 export function ensureSymlinkSync(
   target: string | URL,
