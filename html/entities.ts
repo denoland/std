@@ -24,6 +24,7 @@ const rawRe = new RegExp(`[${[...rawToEntity.keys()].join("")}]`, "g");
 
 /** Options for {@linkcode escape}. */
 export type EscapeOptions = { form: NormalizationForm };
+const defaultEscapeOptions: EscapeOptions = { form: "readability" };
 
 /**
  * Escapes text for safe interpolation into HTML text content and quoted attributes.
@@ -43,17 +44,17 @@ export type EscapeOptions = { form: NormalizationForm };
  */
 export function escape(
   str: string,
-  options: Partial<EscapeOptions> = {},
+  options?: Partial<EscapeOptions>,
 ): string {
+  const { form } = { ...defaultEscapeOptions, ...options };
   const escaped = str.replaceAll(rawRe, (m) => rawToEntity.get(m)!);
-  return options.form === "compatibility"
-    ? escapeAllNonAsciiPrintable(escaped)
-    : escapeAllXmlRestricted(escaped);
+  return form === "compatibility"
+    ? escapeNonAsciiPrintable(escaped)
+    : escapeXmlRestricted(escaped);
 }
 
 /** Options for {@linkcode unescape}. */
 export type UnescapeOptions = { entityList: EntityList };
-
 const defaultUnescapeOptions: UnescapeOptions = {
   entityList: defaultEntityList,
 };
@@ -84,7 +85,7 @@ const entityListRegexCache = new WeakMap<EntityList, RegExp>();
  */
 export function unescape(
   str: string,
-  options: Partial<UnescapeOptions> = {},
+  options?: Partial<UnescapeOptions>,
 ): string {
   const { entityList } = { ...defaultUnescapeOptions, ...options };
 
@@ -127,8 +128,9 @@ export type NormalizationForm =
   | "readability"
   | "compatibility";
 
-export type NormalizationOptions = {
-  form: NormalizationForm;
+export type NormalizationOptions = { form: NormalizationForm };
+const defaultNormalizationOptions: NormalizationOptions = {
+  form: "readability",
 };
 
 /**
@@ -142,6 +144,9 @@ export type NormalizationOptions = {
  * normalize("&apos;"); // "&#39;"
  * normalize("&#x4e24;&#x53ea;&#x5c0f;&#x871c;&#x8702;"); // "两只小蜜蜂"
  *
+ * // other markup is left untouched
+ * normalize("<p class='foo'>&#x1f308;</p>") // "<p class='foo'>🌈</p>"
+ *
  * // specifying a `form` option (default is `readability`):
  * normalize("两只小蜜蜂", { form: "readability" }); // "两只小蜜蜂"
  * normalize("两只小蜜蜂", { form: "compatibility" }); // "&#x4e24;&#x53ea;&#x5c0f;&#x871c;&#x8702;"
@@ -149,22 +154,19 @@ export type NormalizationOptions = {
  */
 export function normalize(
   str: string,
-  options: Partial<NormalizationOptions> = { form: "readability" },
+  options?: Partial<NormalizationOptions>,
 ) {
+  const { form } = { ...defaultNormalizationOptions, ...options };
   return str
     .split(/([<>'"]+)/)
-    .map((segment, i) => {
-      return i % 2
-        ? segment
-        : escape(unescape(segment), { form: options.form });
-    })
+    .map((segment, i) => i % 2 ? segment : escape(unescape(segment), { form }))
     .join("");
 }
 
 /**
  * See https://en.wikipedia.org/wiki/Valid_characters_in_XML#Non-restricted_characters
  */
-function escapeAllXmlRestricted(str: string) {
+function escapeXmlRestricted(str: string) {
   return str.replaceAll(
     // deno-lint-ignore no-control-regex
     /[^\x09\x0a\x0d\x20-\x7e\x85\xa0-\ud7ff\ue000-\ufdcf\ufdf0-\ufffd\u{10000}-\u{1fffd}\u{20000}-\u{2fffd}\u{30000}-\u{3fffd}\u{40000}-\u{4fffd}\u{50000}-\u{5fffd}\u{60000}-\u{6fffd}\u{70000}-\u{7fffd}\u{80000}-\u{8fffd}\u{90000}-\u{9fffd}\u{a0000}-\u{afffd}\u{b0000}-\u{bfffd}\u{c0000}-\u{cfffd}\u{d0000}-\u{dfffd}\u{e0000}-\u{efffd}\u{f0000}-\u{ffffd}\u{100000}-\u{10fffd}]+/gu,
@@ -172,7 +174,7 @@ function escapeAllXmlRestricted(str: string) {
   );
 }
 
-function escapeAllNonAsciiPrintable(str: string) {
+function escapeNonAsciiPrintable(str: string) {
   return str.replaceAll(
     // deno-lint-ignore no-control-regex
     /[^\x09\x0a\x0d\x20-\x7e]+/gu,
