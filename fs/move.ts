@@ -14,6 +14,7 @@ export class SubdirectoryMoveError extends Error {
     super(
       `Cannot move '${src}' to a subdirectory of itself, '${dest}'.`,
     );
+    this.name = this.constructor.name;
   }
 }
 
