@@ -134,7 +134,7 @@ jobs:
       - name: Set up Rust
         if: success() && steps.source.outputs.modified == 'true'
         uses: dsherret/rust-toolchain-file@v1
-        cwd: crypto/_wasm
+        working-directory: crypto/_wasm
 
       - name: Rebuild Wasm and verify it hasn't changed
         if: success() && steps.source.outputs.modified == 'true'
