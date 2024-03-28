@@ -156,7 +156,7 @@ Deno.test("lessThanRange() checks if the semver is less than the range", async (
     ["^1.0.0-alpha", "1.0.0-beta"],
     ["~1.0.0-alpha", "1.0.0-beta"],
     ["=0.1.0", "1.0.0"],
-    // Note: Mayve worth considering to add support for includePrerelease option
+    // Note: maybe worth considering adding support for `includePrerelease` option
     // [">1.2.3", "1.3.0-alpha", { includePrerelease: true }],
   ] as const;
 
