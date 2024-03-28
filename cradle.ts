@@ -21,12 +21,14 @@ import Queue from './queue.ts'
 import { C } from './isolates/artifact.ts'
 import { transcribe } from '@/runners/runner-chat.ts'
 import { ProcessOptions } from '@/constants.ts'
+import FS from '@/git/fs.ts'
 const log = Debug('AI:cradle')
 
 export class QueueCradle implements Cradle {
   #compartment!: Compartment
   #api!: IsolateApi<C>
   #queue!: Queue
+  private constructor() {}
   static async create() {
     const cradle = new QueueCradle()
     cradle.#compartment = await Compartment.create('artifact')
@@ -128,14 +130,15 @@ export class QueueCradle implements Cradle {
     const detach = true
     return this.#queue.push('request', params, detach)
   }
-  branch(params: { branch: PID; commit: string }) {
+  branch(params: { pid: PID; sequence: number; commit: string }) {
     return this.#queue.push('branch', params)
   }
   async logs(params: { repo: string }) {
     log('logs', params.repo)
     const pid = pidFromRepo(params.repo)
-    const fs = await this.#api.context.fs!.load(pid)
-    const logs = await git.log({ fs, dir: '/' })
+    assert(this.#api.context.db, 'db not found')
+    const fs = await FS.openHead(pid, this.#api.context.db)
+    const logs = await fs.logs()
     return logs
   }
   #aborts = new Set<AbortController>()
@@ -169,21 +172,20 @@ export class QueueCradle implements Cradle {
 
     let last: string
     const commits = this.#api.context.db!.watchHead(pid, abort.signal)
-
+    const db = this.#api.context.db
+    assert(db, 'db not found')
     const toSplices = new TransformStream<string, Splice>({
       transform: async (oid, controller) => {
         log('commit', oid, path)
-        const fs = await this.#api.context.fs!.load(pid)
+        const fs = FS.open(pid, oid, db)
         log('fs loaded')
-        const { commit } = await git.readCommit({ fs, dir: '/', oid })
+        const commit = await fs.getCommit()
         let changes
         if (path) {
           log('read path', path, oid)
-          const api = IsolateApi.createFS(fs, oid)
-          const exists = await api.exists(path)
-          if (exists) {
+          if (await fs.exists(path)) {
             log('file exists', path, oid)
-            const content = await api.read(path)
+            const content = await fs.read(path)
             if (last === undefined || last !== content) {
               log('content changed')
               // TODO use json differ for json

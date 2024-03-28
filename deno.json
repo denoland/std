@@ -26,7 +26,6 @@
     "$git": "npm:isomorphic-git",
     "$diff": "https://esm.sh/v135/diff@5.2.0",
     "$diff/": "https://esm.sh/v135/diff@5.2.0/",
-    "$memfs": "npm:memfs",
     "$kv_toolbox": "https://deno.land/x/kv_toolbox/blob.ts"
   },
   "exclude": ["cov/"],

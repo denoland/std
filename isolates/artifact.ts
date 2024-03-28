@@ -1,9 +1,5 @@
 import { Debug, fromOutcome } from '@utils'
 import Executor from '../exe/exe.ts'
-import { init } from '../git/mod.ts'
-import http from 'npm:isomorphic-git/http/web/index.js'
-import { memfs } from '$memfs'
-import git from '$git'
 import {
   IsolateFunctions,
   IsolateLifecycle,
@@ -18,7 +14,7 @@ import IsolateApi from '../isolate-api.ts'
 import Compartment from '../io/compartment.ts'
 import IO from '@io/io.ts'
 import DB from '../db.ts'
-import FS from '../fs.ts'
+import FS from '../git/fs.ts'
 import Cradle from '@/cradle.ts'
 import { assert } from 'https://deno.land/std@0.203.0/assert/assert.ts'
 import { pidFromRepo } from '@/keys.ts'
@@ -118,7 +114,7 @@ export const api = {
   // requesting a patch would be done with the last known patch as cursor
 }
 
-export type C = { db: DB; io: IO; fs: FS; exe: Executor; self: Cradle }
+export type C = { db: DB; io: IO; exe: Executor; self: Cradle }
 
 export const functions: IsolateFunctions = {
   ping: (params?: Params) => {
@@ -146,41 +142,25 @@ export const functions: IsolateFunctions = {
     if (probe) {
       throw new Error('repo already exists: ' + params.repo)
     }
-
-    const { fs } = memfs()
-    const { pid, commit: head } = await init(fs, params.repo)
-
-    const lockId = await api.context.db!.getHeadlock(pid)
-    const result = await api.context.fs!.update(pid, fs, head, lockId)
-    await api.context.db!.releaseHeadlock(pid, lockId)
-    log('snapshot size:', result.prettySize)
-    return { pid, head, size: result.prettySize, elapsed: Date.now() - start }
+    assert(api.context.db, 'db not found')
+    const fs = await FS.init(params.repo, api.context.db)
+    const { pid, head } = fs
+    return { pid, head, elapsed: Date.now() - start }
   },
   async clone(params, api: IsolateApi<C>) {
     const start = Date.now()
-    const pid = pidFromRepo(params.repo as string)
-    const probe = await functions.probe(params, api)
+    const { repo } = params as { repo: string }
+    const probe = await functions.probe({ repo }, api)
     if (probe) {
       throw new Error('repo already exists: ' + params.repo)
     }
 
-    // TODO use the fs option in the context, by loading an asserted blank fs
-
-    const { fs } = memfs()
-    const dir = '/'
-    const url = `https://github.com/${pid.account}/${pid.repository}.git`
-    log('cloning %s', url)
-    // TODO make an index file without doing a full checkout
-    // https://github.com/dreamcatcher-tech/artifact/issues/28
-    await git.clone({ fs, http, dir, url })
-    const [{ oid: head }] = await git.log({ fs, dir, depth: 1 })
+    log('cloning %s', repo)
+    assert(api.context.db, 'db not found')
+    const fs = await FS.clone(repo, api.context.db)
+    const { pid, head } = fs
     log('cloned', head)
-    const lockId = await api.context.db!.getHeadlock(pid)
-    const result = await api.context.fs!.update(pid, fs, head, lockId)
-    await api.context.db!.releaseHeadlock(pid, lockId)
-
-    log('snapshot size:', result.prettySize)
-    return { pid, head, size: result.prettySize, elapsed: Date.now() - start }
+    return { pid, head, elapsed: Date.now() - start }
   },
   pull() {
     throw new Error('not implemented')
@@ -191,10 +171,11 @@ export const functions: IsolateFunctions = {
   rm(params, api: IsolateApi<C>) {
     // TODO lock the whole repo in case something is running
     const pid = pidFromRepo(params.repo as string)
-    return Promise.all([
-      api.context.fs!.deletePID(pid),
-      api.context.db!.rm(pid),
-    ])
+    // TODO maybe have a top level key indicating if the repo is active or not
+    // which can get included in the atomic checks for all activities
+
+    // remove everything to do with the repo
+    throw new Error('not implemented')
   },
   apiSchema: async (params: Params) => {
     // when it loads from files, will benefit from being close to the db
@@ -219,41 +200,42 @@ export const functions: IsolateFunctions = {
     const commit = params.commit as string
     const request = params.request as SolidRequest
     const pid = request.target
-    const fs = await api.context.fs!.load(pid)
-    const exe = api.context.exe!
-    const { settled, pending } = await exe.execute(pid, commit, request, fs)
+    assert(api.context.db, 'db not found')
+    assert(api.context.exe, 'exe not found')
+    assert(api.context.io, 'io not found')
+    const { db, exe, io } = api.context
+    const baseFs = FS.open(pid, commit, db)
+
+    const { settled, pending } = await exe.execute(request, baseFs)
 
     if (settled) {
-      const { upserts, deletes, reply } = settled
-      if (!upserts.length && !deletes.length) {
-        await api.context.io!.induct(reply)
-      } else {
-        await api.context.io!.inductFiles(reply, upserts, deletes, fs)
-      }
+      const { reply, fs } = settled
+      await io.inductFiles(reply, fs)
     } else {
       assert(pending, 'if not settled, must be pending')
-      await Promise.all(
-        pending.requests.map((request) => api.context.io!.induct(request)),
-      )
+      await Promise.all(pending.requests.map((request) => io.induct(request)))
     }
   },
   branch: async (params: Params, api: IsolateApi<C>) => {
-    const { branch, commit } = params as Branch
-    await api.context.io!.branch(branch, commit)
+    const { pid, sequence, commit } = params as {
+      pid: PID
+      commit: string
+      sequence: number
+    }
+    const { io } = api.context
+    assert(io, 'io not found')
+    await io.branch(pid, commit, sequence)
   },
 }
-
-type Branch = { branch: PID; commit: string }
 
 export const lifecycles: IsolateLifecycle = {
   async '@@mount'(api: IsolateApi<C>) {
     assert(api.context.self, 'self not found')
     const db = await DB.create()
     const io = IO.create(db, api.context.self)
-    const fs = FS.create(db)
     const exe = Executor.create()
     // in testing, alter the context to support ducking the queue
-    api.context = { db, io, fs, exe }
+    api.context = { db, io, exe }
   },
   '@@unmount'(api: IsolateApi<C>) {
     return api.context.db!.stop()

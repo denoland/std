@@ -2,7 +2,6 @@
  * Manages the .io.json file
  */
 
-import IsolateApi from '@/isolate-api.ts'
 import {
   IoStruct,
   isPierceRequest,
@@ -11,45 +10,40 @@ import {
   toRunnableRequest,
 } from '@/constants.ts'
 import { Debug, equal } from '@utils'
-import { IFs } from '@/constants.ts'
 import { assert } from '@utils'
 import { PROCTYPE } from '@/constants.ts'
 import { SolidRequest } from '@/constants.ts'
 import { MergeReply } from '@/constants.ts'
 import { SolidReply } from '@/constants.ts'
 import Accumulator from '@/exe/accumulator.ts'
+import FS from '@/git/fs.ts'
 const log = Debug('AI:io-file')
 
 const blank = (): IoStruct => ({ sequence: 0, requests: {}, replies: {} })
 
 export default class IOChannel {
-  #pid: PID
-  #api: IsolateApi
   #io: IoStruct
-  constructor(pid: PID, api: IsolateApi, io: IoStruct) {
-    this.#pid = pid
-    this.#api = api
+  #fs: FS
+  constructor(io: IoStruct, fs: FS) {
     this.#io = io
+    this.#fs = fs
   }
-  // TODO make commit required
-  static async load(pid: PID, fs: IFs, commit: string) {
-    const api = IsolateApi.createFS(fs, commit)
+  static async load(fs: FS) {
     let io = blank()
 
-    if (await api.exists('.io.json')) {
-      io = await api.readJSON('.io.json') as IoStruct
+    if (await fs.exists('.io.json')) {
+      io = await fs.readJSON('.io.json') as IoStruct
       check(io)
-      blankSettledRequests(io, pid)
+      blankSettledRequests(io, fs.pid)
     }
-    return new IOChannel(pid, api, io)
+    return new IOChannel(io, fs)
   }
-  static blank(pid: PID, fs: IFs, commit: string) {
-    const api = IsolateApi.createFS(fs, commit)
-    const io = new IOChannel(pid, api, blank())
+  static blank(fs: FS) {
+    const io = new IOChannel(blank(), fs)
     io.save()
   }
   save() {
-    return this.#api.writeJSON('.io.json', this.#io)
+    return this.#fs.writeJSON('.io.json', this.#io)
   }
   /**
    * @returns true if there are any requests that are accumulating, as in they
@@ -57,7 +51,7 @@ export default class IOChannel {
    */
   isAccumulating() {
     for (const [key, request] of Object.entries(this.#io.requests)) {
-      if (isAccumulation(request, this.#pid)) {
+      if (isAccumulation(request, this.#fs.pid)) {
         if (!this.#io.replies[key]) {
           return true
         }
@@ -80,7 +74,7 @@ export default class IOChannel {
     const openRequests = this.#getOpenRequestIndices()
     for (const key of openRequests) {
       const request = this.#io.requests[key]
-      if (!isAccumulation(request, this.#pid)) {
+      if (!isAccumulation(request, this.#fs.pid)) {
         if (request.proctype === PROCTYPE.SERIAL) {
           const runnable = toRunnableRequest(request, key)
           return runnable
@@ -115,14 +109,14 @@ export default class IOChannel {
     assert(request, `reply sequence not found: ${sequence}`)
     assert(!this.#io.replies[sequence], 'sequence already replied')
     this.#io.replies[sequence] = reply.outcome
-    if (!isAccumulation(request, this.#pid)) {
+    if (!isAccumulation(request, this.#fs.pid)) {
       this.#blankAccumulations()
     }
     return request
   }
   #blankAccumulations() {
     for (const [key, request] of Object.entries(this.#io.requests)) {
-      if (isAccumulation(request, this.#pid)) {
+      if (isAccumulation(request, this.#fs.pid)) {
         assert(this.#io.replies[key], 'accumulation without reply')
         delete this.#io.requests[key]
         delete this.#io.replies[key]
@@ -132,7 +126,7 @@ export default class IOChannel {
   getAccumulator(): Accumulator {
     const indices: number[] = []
     for (const [key, request] of Object.entries(this.#io.requests)) {
-      if (isAccumulation(request, this.#pid)) {
+      if (isAccumulation(request, this.#fs.pid)) {
         indices.push(Number.parseInt(key))
       }
     }
@@ -156,7 +150,7 @@ export default class IOChannel {
   get isExecuting() {
     // find a request that is serial and has no corresponding reply
     for (const [key, request] of Object.entries(this.#io.requests)) {
-      if (!equal(request.target, this.#pid)) {
+      if (!equal(request.target, this.#fs.pid)) {
         continue
       }
       if (request.proctype !== PROCTYPE.SERIAL) {

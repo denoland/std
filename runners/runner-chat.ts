@@ -7,6 +7,7 @@ import { serializeError } from 'npm:serialize-error'
 import { load } from 'https://deno.land/std@0.213.0/dotenv/mod.ts'
 import { Help, IsolateApi } from '@/constants.ts'
 import { HelpConfig, JSONSchemaType } from '@/constants.ts'
+import { JsonValue } from '@/constants.ts'
 type MessageParam = OpenAI.ChatCompletionMessageParam
 const base = 'AI:runner-chat'
 const log = Debug(base)
@@ -88,7 +89,9 @@ export class AI {
       content: null,
     }
     messages.push(assistant)
-    this.#api.writeJSON(this.#sessionPath, messages)
+    // TODO find why ts types do not overlap
+    const squelched = messages as unknown as JsonValue[]
+    this.#api.writeJSON(this.#sessionPath, squelched)
 
     log('streamCall started')
     // TODO move this to an isolate call that runs in a branch
@@ -128,7 +131,8 @@ export class AI {
           debugPart(`%o`, assistant.tool_calls[index]?.function)
         }
       }
-      this.#api.writeJSON(this.#sessionPath, messages)
+      const squelched = messages as unknown as JsonValue[]
+      this.#api.writeJSON(this.#sessionPath, squelched)
     }
     log('streamCall complete')
     // this should be an accumulation action with the messages path as payload
@@ -157,7 +161,8 @@ export class AI {
         content: '',
       }
       messages.push(message)
-      this.#api.writeJSON(this.#sessionPath, messages)
+      const squelched = messages as unknown as JsonValue[]
+      this.#api.writeJSON(this.#sessionPath, squelched)
 
       try {
         const parameters = JSON.parse(args)
@@ -172,7 +177,8 @@ export class AI {
             .findLast(({ role }) => role === 'tool')
           assert(lastToolCall, 'missing last tool call')
           message.content = (lastToolCall.content || '') as string
-          this.#api.writeJSON(this.#sessionPath, messages)
+          const squelched = messages as unknown as JsonValue[]
+          this.#api.writeJSON(this.#sessionPath, squelched)
 
           return message.content
         }
@@ -189,7 +195,8 @@ export class AI {
       debugToolResult(message.content)
     }
 
-    this.#api.writeJSON(this.#sessionPath, messages)
+    const squelched = messages as unknown as JsonValue[]
+    this.#api.writeJSON(this.#sessionPath, squelched)
     return this.#execute(messages)
   }
   async #loadCommands(commands: string[] = []) {

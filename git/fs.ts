@@ -1,5 +1,7 @@
+import http from 'npm:isomorphic-git/http/web/index.js'
+import stringify from 'npm:safe-stable-stringify'
 import { assert, Debug, posix } from '@utils'
-import { ENTRY_BRANCH, PID } from '@/constants.ts'
+import { ENTRY_BRANCH, JsonValue, PID } from '@/constants.ts'
 import git from '$git'
 import { pidFromRepo } from '@/keys.ts'
 import type DB from '@/db.ts'
@@ -10,11 +12,26 @@ const sha1Regex = /^[0-9a-f]{40}$/i
 
 export default class FS {
   // pass this object around, and set it to be a particular PID
-  #pid: PID
-  #commit: string
-  #gitkv: GitKV
-  #db: DB
-  #cache = {}
+  readonly #pid: PID
+  readonly #commit: string
+  readonly #gitkv: GitKV
+  readonly #db: DB
+  readonly #upserts = new Map<string, string | Uint8Array>()
+  readonly #deletes = new Set<string>()
+  // cache should be per isolate and scoped to the repo name
+  readonly #cache = {}
+  get pid() {
+    return this.#pid
+  }
+  get head() {
+    return this.#commit
+  }
+  get fs() {
+    return { promises: this.#gitkv }
+  }
+  get isChanged() {
+    return this.#upserts.size > 0 || this.#deletes.size > 0
+  }
   private constructor(pid: PID, commit: string, db: DB) {
     assert(sha1Regex.test(commit), 'Commit not SHA-1: ' + commit)
     this.#pid = pid
@@ -25,9 +42,12 @@ export default class FS {
   static open(pid: PID, commit: string, db: DB) {
     return new FS(pid, commit, db)
   }
+  static async openHead(pid: PID, db: DB) {
+    const gitkv = new GitKV(db, pid)
+    const head = await gitkv.readHead()
+    return new FS(pid, head, db)
+  }
   static async init(repo: string, db: DB) {
-    // check this is a base branch, not a nested ?
-    // or that it must be a repo.  Will return an fs object with a commit
     const pid = pidFromRepo(repo)
     const fs = { promises: new GitKV(db, pid) }
     await git.init({ fs, dir, defaultBranch: ENTRY_BRANCH })
@@ -40,16 +60,26 @@ export default class FS {
       message: 'initial commit',
       author,
     })
-    fs.promises.updateTip(commit)
+    await fs.promises.updateHead(commit)
     return new FS(pid, commit, db)
   }
-  get fs() {
-    return { promises: this.#gitkv }
+  static async clone(repo: string, db: DB) {
+    const pid = pidFromRepo(repo)
+    // TODO detect the mainbranch somehow
+    const url = `https://github.com/${pid.account}/${pid.repository}.git`
+    const fs = { promises: new GitKV(db, pid) }
+    await git.clone({ fs, dir, url, http })
+    const commit = await fs.promises.readFile('/.git/HEAD', {
+      encoding: 'utf8',
+    }) as string
+    return new FS(pid, commit, db)
   }
-  #upserts = new Map<string, string | Uint8Array>()
-  #deletes = new Set<string>()
-  async commit(message: string = '') {
-    Debug.enable('AI:git:fs')
+  logs(filepath?: string, depth?: number) {
+    const { fs } = this
+    return git.log({ fs, dir, filepath, depth })
+  }
+
+  async commit(message: string = '', merges: string[] = []) {
     assert(this.#upserts.size > 0 || this.#deletes.size > 0, 'empty commit')
     const tree = await this.#flush()
     this.#upserts.clear()
@@ -64,8 +94,9 @@ export default class FS {
       message,
       author,
       tree,
+      parent: [this.#commit, ...merges],
     })
-    await fs.promises.updateTip(commit)
+    await fs.promises.updateHead(commit)
 
     return new FS(this.#pid, commit, this.#db)
   }
@@ -116,6 +147,33 @@ export default class FS {
 
     return changes.oid
   }
+  async exists(path: string) {
+    assert(!posix.isAbsolute(path), `path must be relative: ${path}`)
+    if (this.#deletes.has(path)) {
+      return false
+    }
+    if (this.#upserts.has(path)) {
+      return true
+    }
+    if (path === '.') {
+      return true
+    }
+
+    const dirname = posix.dirname(path)
+    const filepath = dirname === '.' ? undefined : dirname
+    const oid = await this.#rootOid()
+    const { fs } = this
+    try {
+      const { tree } = await git.readTree({ fs, dir, oid, filepath })
+      const basename = posix.basename(path)
+      return tree.some((entry) => entry.path === basename)
+    } catch (err) {
+      if (err.code === 'NotFoundError') {
+        return false
+      }
+      throw err
+    }
+  }
   delete(path: string) {
     assert(!posix.isAbsolute(path), `path must be relative: ${path}`)
     // TODO delete a whole directory
@@ -124,6 +182,14 @@ export default class FS {
     this.#deletes.add(path)
     this.#upserts.delete(path)
   }
+  writeJSON(path: string, json: JsonValue) {
+    // TODO store json objects specially, only strinify on commit
+    // then broadcast changes as json object purely
+    assert(posix.extname(path) === '.json', `path must be *.json: ${path}`)
+    const string = stringify(json, null, 2)
+    assert(typeof string === 'string', 'stringify failed')
+    return this.write(path, string)
+  }
   write(path: string, data: string | Uint8Array) {
     // buffer it until we are ready to do the commit
     assert(!posix.isAbsolute(path), `path must be relative: ${path}`)
@@ -131,7 +197,11 @@ export default class FS {
     log('write', path, data)
     this.#upserts.set(path, data)
     this.#deletes.delete(path)
-    // TODO store json objects specially, only strinify on commit
+  }
+  async readJSON<T>(path: string): Promise<T> {
+    assert(posix.extname(path) === '.json', `path must be *.json: ${path}`)
+    const data = await this.read(path)
+    return JSON.parse(data)
   }
   async read(path: string) {
     if (this.#upserts.has(path)) {
@@ -156,7 +226,6 @@ export default class FS {
         return new TextEncoder().encode(data)
       }
     }
-
     const oid = await this.#rootOid()
     log('tree', oid)
     const { fs } = this
@@ -164,24 +233,31 @@ export default class FS {
     assert(blob instanceof Uint8Array, 'blob not Uint8Array: ' + typeof blob)
     return blob
   }
+  async ls(path: string) {
+    assert(!posix.isAbsolute(path), `path must be relative: ${path}`)
+    // TODO handle changes in the directory
+    log('ls', path)
+    const oid = await this.#rootOid()
+    const { fs } = this
+    const { tree } = await git.readTree({ fs, dir, oid, filepath: path })
+    return tree.map((entry) => entry.path)
+  }
   async #rootOid() {
+    const commit = await this.getCommit()
+    return commit.tree
+  }
+  async getCommit() {
     const { fs } = this
     const result = await git.readCommit({ fs, dir, oid: this.#commit })
-    const { tree } = result.commit
-    return tree
+    return result.commit
   }
-  // reading a file should use the direct oid walking methods to walk the tree
-  // the isolate-api would be just a proxy for the fs object
-  async createBranch(name: string) {
-    // will make a new branch, write the head to kv
-    // errors if the branch already exists
+  async branch(name: string) {
+    const pid = await this.#gitkv.createBranch(name, this.head)
+    return new FS(pid, this.head, this.#db)
   }
-  async switch(branches: string[]) {
-    // takes advantage of the cache, checks if the branch is in the kv store
+  async deleteBranch(name: string) {
+    await this.#gitkv.deleteBranch(name)
   }
-  // the accumulator, the braodcast of live changes, billing, aborting
-  // should the watcher of changes be in here too ?
-  // it could make child fs items that share the cache
 }
 type Tree = {
   oid?: string
@@ -250,7 +326,6 @@ const retrieveAffectedTrees = async (tree: Tree, fs: { promises: GitKV }) => {
 const bubbleChanges = async (tree: Tree, fs: { promises: GitKV }) => {
   const layers = treeToLayers(tree)
   log('layers', layers)
-  // cound down thru layers backwards
   while (layers.length) {
     const layer = layers.pop()
     for (const item of layer!) {
@@ -267,11 +342,9 @@ const bubbleChanges = async (tree: Tree, fs: { promises: GitKV }) => {
         }
         return true
       })
-      // add any new blobs
       for (const [, entry] of item.upserts) {
         tree.push(entry)
       }
-      // add any new chilren
       for (const [path, child] of item.children) {
         assert(child.oid, 'child oid not found: ' + path)
         const entry: TreeEntry = {

@@ -1,10 +1,9 @@
-import last from 'npm:array-last'
 import { assert, Debug } from '@utils'
-import git from '$git'
-import { IFs, PID, PROCTYPE } from '@/constants.ts'
-import { SolidRequest } from '@/constants.ts'
+import { PROCTYPE } from '@/constants.ts'
+import { isPierceRequest, SolidRequest } from '@/constants.ts'
 import IOChannel from '../io/io-channel.ts'
 import { solidify } from './mod.ts'
+import FS from '@/git/fs.ts'
 
 const log = Debug('AI:git')
 
@@ -15,22 +14,19 @@ const log = Debug('AI:git')
  * @param commit hash of the commit to start the branch from
  * @param target the new branch PID
  */
-export default async (fs: IFs, commit: string, target: PID) => {
-  assert(target.branches.length > 1, 'cannot branch into base branch')
-  const ref = getBranchName(target)
-  log('branch', target, ref)
-  // TODO make a shallow checkout by making a custom git tree for commits
-  const io = await IOChannel.load(target, fs, commit)
-  await git.branch({ fs, dir: '/', ref, checkout: true, object: commit })
+export default async (fs: FS, sequence: number) => {
+  assert(sequence >= 0, 'sequence must be a whole number')
+  log('branch', sequence, fs.commit)
+  const io = await IOChannel.load(fs)
+  const request = io.getRequest(sequence)
+  assert(!isPierceRequest(request), 'cannot branch from pierce request')
+  const { isolate, functionName, params, target: source } = request
 
-  const sequence = getSequence(target.branches)
-
-  const { isolate, functionName, params, target: source } = io.getRequest(
-    sequence,
-  )
+  const name = getBranchName(request, sequence)
+  const branch = await fs.branch(name)
   const proctype = PROCTYPE.SERIAL
   const origin: SolidRequest = {
-    target,
+    target: branch.pid,
     source,
     sequence,
     isolate,
@@ -39,20 +35,20 @@ export default async (fs: IFs, commit: string, target: PID) => {
     proctype,
   }
   log('origin', origin)
-  IOChannel.blank(target, fs, commit)
+  IOChannel.blank(branch)
 
-  return await solidify(fs, [origin], commit)
+  return await solidify(branch, [origin])
 }
 
-export const getBranchName = (pid: PID) => {
-  return pid.branches.join('_')
-}
-const getSequence = (branches: string[]) => {
-  const lastBranch = last(branches)
-  if (!Number.isInteger(lastBranch)) {
-    // rule is that all branches must end with the sequence number
-    const aliases = lastBranch.split('-')
-    return Number.parseInt(last(aliases))
+export const getBranchName = (request: SolidRequest, sequence: number) => {
+  let name = sequence + ''
+  if (request.branch) {
+    assert(!request.branchPrefix, 'cannot have both branch and branchPrefix')
+    name = request.branch
   }
-  return Number.parseInt(last(branches))
+  if (request.branchPrefix) {
+    assert(!request.branch, 'cannot have both branch and branchPrefix')
+    name = request.branchPrefix + '-' + sequence
+  }
+  return name
 }

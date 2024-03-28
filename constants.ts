@@ -1,6 +1,4 @@
-import { IFs } from '$memfs'
 import IsolateApi from './isolate-api.ts'
-export type { IFs }
 export type { IsolateApi }
 export type { CborUint8Array } from 'https://esm.sh/v135/json-joy@9.9.1/es6/json-pack/cbor/types.d.ts?exports=CbotUint8Array'
 export const IO_PATH = '.io.json'
@@ -13,6 +11,7 @@ import {
   PierceRequest,
   PROCTYPE,
 } from './api/web-client.types.ts'
+import FS from '@/git/fs.ts'
 
 export type IsolateFunction =
   | (() => unknown | Promise<unknown>)
@@ -44,6 +43,16 @@ type Invocation = {
   functionName: string
   params: Params
   proctype: PROCTYPE
+  /**
+   * Allow a custom name for the new branch, if this is a branching request
+   */
+  branch?: string
+  /**
+   * If the custom branch name might not be unique, a prefix can be given and
+   * the sequence number will be appended to the branch name, ensuring
+   * uniqueness.
+   */
+  branchPrefix?: string
 }
 /**
  * A request that has been included in a commit, therefore has a sequence number
@@ -89,17 +98,20 @@ export type IsolatePromise = {
   resolve?: (value: unknown) => void
   reject?: (error: Error) => void
 }
+export type Solids = {
+  commit: string
+  request?: SolidRequest
+  branches: number[]
+  replies: Reply[]
+}
 export type ExeResult = {
   settled?: {
     reply: SolidReply
     /**
-     * Any paths that were changed on the filesystem in any way
+     * The last filesystem that was modified during the execution run.  The FS
+     * might have been bumped forwards if accumulations occured.
      */
-    upserts: string[]
-    /**
-     * Any paths that were deleted from the filesystem
-     */
-    deletes: string[]
+    fs: FS
   }
   pending?: { requests: SolidRequest[] }
 }

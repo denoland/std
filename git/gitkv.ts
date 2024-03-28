@@ -1,7 +1,6 @@
 import { get, set } from '$kv_toolbox'
 import { Debug } from '@utils'
 import { getRepoRoot } from '@/keys.ts'
-import { memfs } from '$memfs'
 import type DB from '@/db.ts'
 import { assert, equal } from '@utils'
 import { PID } from '@/constants.ts'
@@ -9,8 +8,7 @@ import { PID } from '@/constants.ts'
 const log = Debug('AI:git:KV')
 const sha1Regex = /^[0-9a-f]{40}$/i
 
-export class GitKV implements Backend {
-  #memfs = memfs().fs.promises
+export class GitKV {
   #allowed = ['config', 'objects']
   #dropWrites = ['HEAD']
   #db: DB
@@ -19,13 +17,43 @@ export class GitKV implements Backend {
     this.#db = db
     this.#pid = pid
   }
-  async updateTip(commit: string) {
+  async updateHead(commit: string) {
     const tipKey = this.#getTipKey()
     log('updateTip', tipKey, commit)
     assert(sha1Regex.test(commit), 'Commit not SHA-1: ' + commit)
     await this.#db.kv.set(tipKey, commit)
   }
-  // if its /.git/HEAD then we intercept it with the PID
+  async createBranch(name: string, commit: string) {
+    log('createBranch', name)
+    const branches = [...this.#pid.branches, name]
+    const pid = { ...this.#pid, branches }
+    const key = getTipKey(pid)
+    const result = await this.#db.kv.atomic().check({ key, versionstamp: null })
+      .set(key, commit).commit()
+    if (!result.ok) {
+      throw new Error('branch already exists: ' + key.join('/'))
+    }
+    return pid
+  }
+  async deleteBranch(name: string) {
+    log('deleteBranch', name)
+    const branches = [...this.#pid.branches, name]
+    const pid = { ...this.#pid, branches }
+    const key = getTipKey(pid)
+    const current = await this.#db.kv.get(key)
+    assert(current.versionstamp, 'branch not found: ' + key.join('/'))
+    const result = await this.#db.kv.atomic().check(current)
+      .delete(key).commit()
+    if (!result.ok) {
+      throw new Error('branch already deleted: ' + key.join('/'))
+    }
+  }
+  async readHead() {
+    const tipKey = this.#getTipKey()
+    const result = await this.#db.kv.get<string>(tipKey)
+    assert(result.versionstamp, 'tip not found')
+    return result.value
+  }
   async readFile(path: string, opts: EncodingOpts) {
     log('readFile', path, opts)
     if (!path && !opts) {
@@ -133,9 +161,8 @@ export class GitKV implements Backend {
   }
   async lstat(path: string) {
     log('lstat', path)
-    const result = await this.#memfs.lstat(path)
-    log('lstat', path, result)
-    return result
+    const message = 'not implemented: ' + path
+    return await Promise.reject(new FileNotFoundError(message))
   }
   async readlink(path: string) {
     log('readlink', path)
@@ -163,69 +190,17 @@ export class GitKV implements Backend {
     assert(this.#allowed.includes(pathKey[0]), 'path not allowed: ' + pathKey)
   }
   #getTipKey() {
-    const prefix = getRepoRoot(this.#pid)
-    return [...prefix, 'refs', 'heads', ...this.#pid.branches]
+    return getTipKey(this.#pid)
   }
 }
-
+const getTipKey = (pid: PID) => {
+  const prefix = getRepoRoot(pid)
+  return [...prefix, 'refs', 'heads', ...pid.branches]
+}
 type EncodingOpts = {
   encoding?: 'utf8'
 }
 
-type StatLike = {
-  type: 'file' | 'dir' | 'symlink'
-  mode: number
-  size: number
-  ino: number | string | bigint
-  mtimeMs: number
-  ctimeMs?: number
-}
-type Backend = {
-  /**
-   * - https://nodejs.org/api/fs.html#fs_fspromises_readfile_path_options
-   */
-  readFile: Function
-  /**
-   * - https://nodejs.org/api/fs.html#fs_fspromises_writefile_file_data_options
-   */
-  writeFile: Function
-  /**
-   * - https://nodejs.org/api/fs.html#fs_fspromises_unlink_path
-   */
-  unlink: Function
-  /**
-   * - https://nodejs.org/api/fs.html#fs_fspromises_readdir_path_options
-   */
-  readdir: Function
-  /**
-   * - https://nodejs.org/api/fs.html#fs_fspromises_mkdir_path_options
-   */
-  mkdir: Function
-  /**
-   * - https://nodejs.org/api/fs.html#fs_fspromises_rmdir_path
-   */
-  rmdir: Function
-  /**
-   * - https://nodejs.org/api/fs.html#fs_fspromises_stat_path_options
-   */
-  stat: Function
-  /**
-   * - https://nodejs.org/api/fs.html#fs_fspromises_lstat_path_options
-   */
-  lstat: Function
-  /**
-   * - https://nodejs.org/api/fs.html#fs_fspromises_readlink_path_options
-   */
-  readlink?: Function
-  /**
-   * - https://nodejs.org/api/fs.html#fs_fspromises_symlink_target_path_type
-   */
-  symlink?: Function
-  /**
-   * - https://nodejs.org/api/fs.html#fs_fspromises_chmod_path_mode
-   */
-  chmod?: Function
-}
 class FileNotFoundError extends Error {
   code = 'ENOENT'
   constructor(message: string) {

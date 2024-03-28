@@ -10,7 +10,6 @@ export enum PROCTYPE {
 export type { JSONSchemaType }
 
 export type JsonValue =
-  | undefined
   | string
   | number
   | boolean
@@ -54,13 +53,17 @@ export type DispatchFunctions = {
     options?: ProcessOptions,
   ) => Promise<unknown> | unknown
 }
-export type Params = Record<string, unknown>
+export type Params = Record<string, JsonValue>
 
 export type IsolateApiSchema = {
   [key: string]: JSONSchemaType<object>
 }
-
-export type Outcome = { result?: unknown; error?: Error }
+type SerializableError = {
+  name: string
+  message: string
+  stack?: string
+}
+export type Outcome = { result?: JsonValue; error?: SerializableError }
 export const ENTRY_BRANCH = 'main'
 /**
  * The Process Identifier used to address a specific process branch.

@@ -48,6 +48,7 @@ export default class Compartment {
    * @returns Promise<void> | void
    */
   mount(api: IsolateApi) {
+    // TODO use exe to ensure that mount stops working arfter invocation
     this.#check()
     if (!this.#module.lifecycles) {
       return

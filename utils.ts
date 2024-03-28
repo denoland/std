@@ -6,7 +6,7 @@ export { expect } from 'std/expect/mod.ts'
 export { assert } from 'std/assert/assert.ts'
 export { default as merge } from 'npm:lodash.merge'
 import Debug from 'npm:debug'
-import { Outcome, PID } from '@/constants.ts'
+import { JsonValue, Outcome, PID } from '@/constants.ts'
 import {
   deserializeError,
   serializeError,
@@ -44,7 +44,9 @@ export const openKv = async () => {
 export const asOutcome = async (promise: Promise<unknown>) => {
   const outcome: Outcome = {}
   try {
-    outcome.result = await promise
+    const result = await promise
+    // TODO do not squelch ts errors
+    outcome.result = result as JsonValue
   } catch (error) {
     outcome.error = serializeError(error)
   }

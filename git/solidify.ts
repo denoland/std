@@ -1,26 +1,22 @@
 import { assert, Debug, equal } from '@utils'
-import git from '$git'
-import { getBranchName } from './branch.ts'
+import { getBranchName } from '@/git/branch.ts'
+import FS from './fs.ts'
 import {
-  IFs,
   isMergeReply,
   isPierceRequest,
   isRequest,
   MergeReply,
-  PID,
   PierceReply,
   Poolable,
   PROCTYPE,
   Reply,
   Request,
   SolidRequest,
+  Solids,
 } from '@/constants.ts'
 import IOChannel from '@io/io-channel.ts'
 
 const log = Debug('AI:git:solidify')
-
-const dir = '/'
-const author = { name: 'IO Solidify' }
 
 /**
  * Takes in an unordered collection of operations, and orders them in the
@@ -33,28 +29,24 @@ const author = { name: 'IO Solidify' }
  * - reply: a result is being returned from a dispatch after serial execution.
  * @param fs a memfs instance to update
  */
-export default async (
-  fs: IFs,
-  pool: Poolable[],
-  base: string,
-) => {
+export default async (fs: FS, pool: Poolable[]) => {
   const pid = checkPool(pool)
-  const io = await IOChannel.load(pid, fs, base)
+  assert(equal(pid, fs.pid), 'pid mismatch')
+  const io = await IOChannel.load(fs)
 
   const executingRequest = io.getExecutingRequest()
   log('solidifyPool executingRequest', executingRequest)
 
   // TODO include multiple requests to the same branch as a single array
-  const branches: PID[] = []
+  const branches: number[] = []
   const replies: Reply[] = []
-  let parent
+  const merges = []
   for (const poolable of pool) {
     if (isRequest(poolable)) {
       const sequence = io.addRequest(poolable)
       const { proctype } = poolable
       if (proctype === PROCTYPE.BRANCH || proctype === PROCTYPE.DAEMON) {
-        const pid = branchPid(poolable.target, sequence)
-        branches.push(pid)
+        branches.push(sequence)
       } else {
         assert(proctype === PROCTYPE.SERIAL, `invalid proctype: ${proctype}`)
         // TODO error if two serial relies are received in a single poolrush
@@ -72,22 +64,21 @@ export default async (
       } else if (!equal(request.source, pid)) {
         const target = request.source
         const source = request.target
-        const commit = ''
         const sequence = request.sequence
+        const commit = 'updated post commit'
         const reply: MergeReply = { target, source, sequence, outcome, commit }
         replies.push(reply)
       }
       if (isBranch(request)) {
         assert(isMergeReply(poolable), 'branch requires merge reply')
         log('branch reply', poolable.commit)
-        if (!parent) {
-          parent = [base]
-        }
-        parent.push(poolable.commit)
+        merges.push(poolable.commit)
         if (request.proctype === PROCTYPE.BRANCH) {
-          const branchName = getBranchName(poolable.source)
-          log('deleteBranch', branchName)
-          // TODO when kvgit is online this will be a kv delete
+          const { sequence } = poolable
+          assert(!isPierceRequest(request), 'cannot merge from pierce request')
+          const name = getBranchName(request, sequence)
+          log('deleteBranch', name)
+          await fs.deleteBranch(name)
         }
       }
     }
@@ -101,24 +92,19 @@ export default async (
   }
   io.save()
 
-  await git.add({ fs, dir: '/', filepath: '.io.json' })
-  const commit = await git.commit({ fs, dir, message: 'pool', author, parent })
-  log('commitHash', commit)
+  const { head: commit } = await fs.commit('pool', merges)
+
+  log('head', commit)
   for (const reply of replies) {
     if (isMergeReply(reply)) {
       reply.commit = commit
     }
   }
-  const solids = { commit, request, branches, replies }
+  const solids: Solids = { commit, request, branches, replies }
   if (!io.isAccumulating() && !io.getExecutingRequest()) {
     assert(isActive(branches, replies), 'no active solids - stalled')
   }
   return solids
-}
-
-const branchPid = (pid: PID, sequence: number) => {
-  const branches = pid.branches.concat(sequence.toString())
-  return { ...pid, branches }
 }
 
 const checkPool = (pool: Poolable[]) => {
@@ -149,6 +135,6 @@ const isBranch = (request: Request) => {
   return request.proctype === PROCTYPE.BRANCH ||
     request.proctype === PROCTYPE.DAEMON
 }
-const isActive = (branches: PID[], replies: Reply[]) => {
+const isActive = (branches: number[], replies: Reply[]) => {
   return branches.length > 0 || replies.length > 0
 }

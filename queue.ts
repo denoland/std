@@ -4,8 +4,7 @@ import IsolateApi from './isolate-api.ts'
 import { IsolateFunctions } from './constants.ts'
 import { assert } from '$std/assert/assert.ts'
 import { ulid } from '$std/ulid/mod.ts'
-import { Outcome } from '@/constants.ts'
-import { Params } from '@/constants.ts'
+import { JsonValue, Outcome, Params } from '@/constants.ts'
 const log = Debug('AI:queue')
 type QFunction = { id: string; name: string; params?: Params; detach: boolean }
 const twoMinutes = 2 * 60 * 1000
@@ -68,7 +67,9 @@ export default class Queue {
       const outcome: Outcome = {}
       try {
         // TODO will the queue wait forever ?
-        outcome.result = await this.#functions[name](params, this.#api)
+        const result = await this.#functions[name](params, this.#api)
+        // TODO do not override ts
+        outcome.result = result as JsonValue | undefined
       } catch (error) {
         console.error('Queue Error:', error)
         outcome.error = serializeError(error)

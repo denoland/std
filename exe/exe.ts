@@ -1,14 +1,12 @@
 import IOChannel from '../io/io-channel.ts'
 import { getPoolKey } from '@/keys.ts'
-import { SolidReply, SolidRequest } from '@/constants.ts'
+import { ExeResult, SolidRequest } from '@/constants.ts'
 import IsolateApi from '../isolate-api.ts'
 import Compartment from '../io/compartment.ts'
-import { IFs, Outcome, Request } from '@/constants.ts'
-import { serializeError } from 'https://esm.sh/serialize-error'
-import { Debug, equal } from '@utils'
-import { assert } from 'https://deno.land/std@0.217.0/assert/assert.ts'
-import { ExeResult, PID } from '@/constants.ts'
+import { Outcome, Request } from '@/constants.ts'
+import { assert, Debug, equal, serializeError } from '@utils'
 import Accumulator from '@/exe/accumulator.ts'
+import FS from '@/git/fs.ts'
 const log = Debug('AI:exe')
 
 export default class Executor {
@@ -16,13 +14,9 @@ export default class Executor {
   static create() {
     return new Executor()
   }
-  /**
-   * @returns true if the request was run to completion, false if it has some
-   * dependent actions that need it is awaiting
-   */
-  async execute(pid: PID, commit: string, req: SolidRequest, fs: IFs) {
-    assert(equal(pid, req.target), 'target is not self')
-    const io = await IOChannel.load(pid, fs, commit)
+  async execute(req: SolidRequest, fs: FS): Promise<ExeResult> {
+    assert(equal(fs.pid, req.target), 'target is not self')
+    const io = await IOChannel.load(fs)
     assert(io.isCallable(req), 'request is not callable')
     log('request %o %o', req.isolate, req.functionName)
 
@@ -31,7 +25,7 @@ export default class Executor {
     const exeId: string = getExeId(req)
     if (!this.#functions.has(exeId)) {
       log('creating execution %o', exeId)
-      const isolateApi = IsolateApi.create(fs, commit, pid, ioAccumulator)
+      const isolateApi = IsolateApi.create(fs, ioAccumulator)
       const compartment = await Compartment.create(req.isolate)
       const functions = compartment.functions(isolateApi)
       const execution = {
@@ -67,18 +61,21 @@ export default class Executor {
       const sequence = io.getSequence(req)
       log('exe complete %o', exeId)
       this.#functions.delete(exeId)
-      const reply = { target: pid, sequence, outcome: winner }
+      const reply = { target: fs.pid, sequence, outcome: winner }
 
+      // TODO remove these by using fs directly inside accumulator
+      // ties in with switching the fs during reply tho
       const { upserts, deletes } = execution.accumulator
       for (const upsert of upserts) {
         const file = execution.accumulator.readOutOfBand(upsert)
-        fs.writeFileSync('/' + upsert, file)
+        assert(file, 'file not found: ' + upsert)
+        fs.write(upsert, file)
       }
       for (const del of deletes) {
-        // TODO fobid altering the .git directory ?
-        fs.unlinkSync('/' + del)
+        fs.delete(del)
       }
-      result.settled = { reply, upserts, deletes }
+      // TODO need to tick the fs forwards when the accumulations occur
+      result.settled = { reply, fs }
     } else {
       log('accumulator triggered first')
       const { accumulations } = execution.accumulator
