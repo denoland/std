@@ -34,14 +34,23 @@ function greaterThanComparator(
   const cmp = compare(semver, comparator);
   switch (comparator.operator) {
     case "=":
-    case undefined:
+    case undefined: {
       return cmp > 0;
-    case "!=":
-    case ">":
-    case ">=":
+    }
+    case "!=": {
       return false;
-    case "<":
-    case "<=":
+    }
+    case ">": {
+      return false;
+    }
+    case "<": {
       return cmp >= 0;
+    }
+    case ">=": {
+      return false;
+    }
+    case "<=": {
+      return cmp > 0;
+    }
   }
 }
