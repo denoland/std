@@ -12,7 +12,7 @@ export function greaterThanRange(semver: SemVer, range: Range): boolean {
   );
 }
 
-export function greaterThanComparatorSet(
+function greaterThanComparatorSet(
   semver: SemVer,
   comparatorSet: Comparator[],
 ): boolean {
