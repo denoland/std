@@ -7,7 +7,7 @@ import { greaterThan } from "./greater_than.ts";
 import { increment } from "./increment.ts";
 
 function comparatorMin(comparator: Comparator): SemVer {
-  const semver = comparator.semver ?? comparator;
+  const semver = comparator;
   if (semver === ANY) return MIN;
   switch (comparator.operator) {
     case ">":

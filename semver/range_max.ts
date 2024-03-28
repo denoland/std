@@ -5,7 +5,7 @@ import { testRange } from "./test_range.ts";
 import { greaterThan } from "./greater_than.ts";
 
 function comparatorMax(comparator: Comparator): SemVer {
-  const semver = comparator.semver ?? comparator;
+  const semver = comparator;
   if (semver === ANY) return MAX;
   switch (comparator.operator) {
     case "!=":
