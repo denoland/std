@@ -13,7 +13,6 @@ Deno.test({
     ], [
       [{
         operator: ">=",
-        semver: { major: 0, minor: 0, patch: 0, prerelease: [], build: [] },
         major: 0,
         minor: 0,
         patch: 0,
@@ -21,7 +20,6 @@ Deno.test({
         build: [],
       }, {
         operator: "<",
-        semver: MIN,
         ...MIN,
       }],
     ]];

@@ -1,12 +1,13 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-import { ANY, INVALID, MAX } from "./constants.ts";
+import { INVALID, MAX } from "./constants.ts";
 import type { Comparator, Range, SemVer } from "./types.ts";
 import { testRange } from "./test_range.ts";
 import { greaterThan } from "./greater_than.ts";
+import { isWildcardComparator } from "./_shared.ts";
 
 function comparatorMax(comparator: Comparator): SemVer {
-  const semver = comparator.semver ?? comparator;
-  if (semver === ANY) return MAX;
+  const semver = comparator;
+  if (isWildcardComparator(comparator)) return MAX;
   switch (comparator.operator) {
     case "!=":
     case ">":

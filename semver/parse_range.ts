@@ -45,7 +45,7 @@ function parseComparator(comparator: string): Comparator {
     }
     : ANY;
 
-  return { operator: operator || undefined, ...semver, semver };
+  return { operator: operator || undefined, ...semver };
 }
 
 function isWildcard(id?: string): boolean {
