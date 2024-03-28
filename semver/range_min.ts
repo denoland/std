@@ -1,14 +1,15 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-import { ANY, INVALID, MAX, MIN } from "./constants.ts";
+import { INVALID, MAX, MIN } from "./constants.ts";
 import type { Comparator, Range, SemVer } from "./types.ts";
 import { testRange } from "./test_range.ts";
 import { lessThan } from "./less_than.ts";
 import { greaterThan } from "./greater_than.ts";
 import { increment } from "./increment.ts";
+import { isWildcardComparator } from "./_shared.ts";
 
 function comparatorMin(comparator: Comparator): SemVer {
   const semver = comparator;
-  if (semver === ANY) return MIN;
+  if (isWildcardComparator(semver)) return MIN;
   switch (comparator.operator) {
     case ">":
       return semver.prerelease && semver.prerelease.length > 0
