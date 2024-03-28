@@ -50,11 +50,8 @@ function testComparatorSet(
       if (isWildcardComparator(comparator)) {
         continue;
       }
-      const { prerelease } = comparator;
+      const { major, minor, patch, prerelease } = comparator;
       if (prerelease && prerelease.length > 0) {
-        const major = comparator.major;
-        const minor = comparator.minor;
-        const patch = comparator.patch;
         if (
           version.major === major && version.minor === minor &&
           version.patch === patch
