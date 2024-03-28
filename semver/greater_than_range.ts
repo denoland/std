@@ -7,21 +7,23 @@ import { compare } from "./compare.ts";
 
 /** Check if the semver is greater than the range. */
 export function greaterThanRange(semver: SemVer, range: Range): boolean {
-  for (const comparatorSet of range) {
-    if (comparatorSet.some((comparator) => isWildcardComparator(comparator))) {
-      return false;
-    }
-    // If the semver satisfies the comparator set, then it's not greater than the range.
-    if (testComparatorSet(semver, comparatorSet)) {
-      return false;
-    }
-    // If the semver is less than any of the comparator set, then it's not greater than the range.
-    if (
-      comparatorSet.some((comparator) => lessThanComparator(semver, comparator))
-    ) {
-      return false;
-    }
-  }
+  return range.every((comparatorSet) =>
+    greaterThanComparatorSet(semver, comparatorSet)
+  );
+}
+
+export function greaterThanComparatorSet(
+  semver: SemVer,
+  comparatorSet: Comparator[],
+): boolean {
+  // If the comparator set constains wildcard, then the semver is not greater than the range.
+  if (comparatorSet.some(isWildcardComparator)) return false;
+  // If the semver satisfies the comparator set, then it's not greater than the range.
+  if (testComparatorSet(semver, comparatorSet)) return false;
+  // If the semver is less than any of the comparator set, then it's not greater than the range.
+  if (
+    comparatorSet.some((comparator) => lessThanComparator(semver, comparator))
+  ) return false;
   return true;
 }
 
