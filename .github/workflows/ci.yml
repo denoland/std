@@ -132,9 +132,13 @@ jobs:
         if: success() && steps.source.outputs.modified == 'true'
 
       - name: Set up Rust
+        uses: hecrj/setup-rust-action@v2
         if: success() && steps.source.outputs.modified == 'true'
-        uses: dsherret/rust-toolchain-file@v1
-        working-directory: crypto/_wasm
+        with:
+          # This must match the version in _wasm/rust-toolchain.toml of the module folder
+          rust-version: 1.76.0
+          targets: wasm32-unknown-unknown
+          components: rustfmt
 
       - name: Rebuild Wasm and verify it hasn't changed
         if: success() && steps.source.outputs.modified == 'true'
