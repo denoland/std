@@ -29,19 +29,23 @@ function lessThanComparator(semver: SemVer, comparator: Comparator): boolean {
   const cmp = compare(semver, comparator);
   switch (comparator.operator) {
     case "=":
-    case undefined:
+    case undefined: {
       return cmp < 0;
-    case "!=":
+    }
+    case "!=": {
       return false;
-    case ">":
+    }
+    case ">": {
       return cmp <= 0;
-    case "<":
+    }
+    case "<": {
       return false;
-    case ">=":
+    }
+    case ">=": {
       return cmp < 0;
-    case "<=":
+    }
+    case "<=": {
       return false;
-    default:
-      return false;
+    }
   }
 }
