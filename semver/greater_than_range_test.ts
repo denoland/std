@@ -2,7 +2,6 @@
 // Copyright Isaac Z. Schlueter and npm contributors. All rights reserved. ISC license.
 
 import { assert, assertFalse } from "../assert/mod.ts";
-import { test } from "https://deno.land/std@$STD_VERSION/front_matter/test.ts";
 import {
   format,
   formatRange,
