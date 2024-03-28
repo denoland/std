@@ -16,7 +16,7 @@ function greaterThanComparatorSet(
   semver: SemVer,
   comparatorSet: Comparator[],
 ): boolean {
-  // If the comparator set constains wildcard, then the semver is not greater than the range.
+  // If the comparator set contains wildcard, then the semver is not greater than the range.
   if (comparatorSet.some(isWildcardComparator)) return false;
   // If the semver satisfies the comparator set, then it's not greater than the range.
   if (testComparatorSet(semver, comparatorSet)) return false;

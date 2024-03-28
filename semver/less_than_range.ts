@@ -13,7 +13,7 @@ export function lessThanRange(semver: SemVer, range: Range): boolean {
 }
 
 function lessThanComparatorSet(semver: SemVer, comparatorSet: Comparator[]) {
-  // If the comparator set constains wildcard, then the semver is not greater than the range.
+  // If the comparator set contains wildcard, then the semver is not greater than the range.
   if (comparatorSet.some(isWildcardComparator)) return false;
   // If the semver satisfies the comparator set, then it's not less than the range.
   if (testComparatorSet(semver, comparatorSet)) return false;
