@@ -86,7 +86,8 @@ export class GitKV {
       // TODO use the head tool on this.#db to ensure consistency
       assert(typeof data === 'string', 'data must be a string')
       const pid = headKeyToPid(pathKey)
-      await this.#db.updateHead(pid, data.trim())
+      // TODO handle pull where this is being updated
+      await this.#db.initHead(pid, data.trim())
     } else {
       if (typeof data === 'string') {
         data = new TextEncoder().encode(data)

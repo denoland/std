@@ -163,11 +163,21 @@ export default class DB {
       return head.value
     }
   }
-  async updateHead(pid: PID, commit: string) {
+  async initHead(pid: PID, commit: string) {
     assert(sha1.test(commit), 'Commit not SHA-1: ' + commit)
     const key = keys.getHeadKey(pid)
     log('updateHead %o', key)
-    await this.#kv.set(key, commit)
+    await this.#kv.atomic().check({ key, versionstamp: null }).set(key, commit)
+      .commit()
+  }
+  async updateHead(pid: PID, fromCommit: string, toCommit: string) {
+    assert(sha1.test(fromCommit), 'Commit not SHA-1: ' + fromCommit)
+    assert(sha1.test(toCommit), 'Commit not SHA-1: ' + toCommit)
+    const key = keys.getHeadKey(pid)
+    log('updateHead %o', key)
+    const from = await this.#kv.get(key)
+    assert(from.value === fromCommit, 'head commit mismatch: ' + fromCommit)
+    await this.#kv.atomic().check(from).set(key, fromCommit).commit()
   }
   async createBranch(pid: PID, commit: string) {
     assert(sha1.test(commit), 'Commit not SHA-1: ' + commit)

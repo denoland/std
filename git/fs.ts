@@ -67,7 +67,7 @@ export default class FS {
       message: 'initial commit',
       author,
     })
-    await db.updateHead(pid, commit)
+    await db.initHead(pid, commit)
     return new FS(pid, commit, db)
   }
   static async clone(repo: string, db: DB) {
@@ -94,7 +94,7 @@ export default class FS {
 
     const { fs } = this
     const author = { name: 'git/commit' }
-    const commit = await git.commit({
+    const nextCommit = await git.commit({
       noUpdateBranch: true,
       fs,
       dir,
@@ -103,9 +103,9 @@ export default class FS {
       tree,
       parent: [this.#commit, ...merges],
     })
-    await this.#db.updateHead(this.#pid, commit)
+    await this.#db.updateHead(this.#pid, this.#commit, nextCommit)
 
-    return new FS(this.#pid, commit, this.#db)
+    return new FS(this.#pid, nextCommit, this.#db)
   }
   async #flush() {
     const oid = await this.#rootOid()
