@@ -8,8 +8,8 @@ import {
 } from 'https://deno.land/x/hono/middleware.ts'
 import { streamSSE } from 'https://deno.land/x/hono/helper.ts'
 import QueueCradle from '@/cradle.ts'
-import { asOutcome, assert, Debug } from '@/utils.ts'
-import { Cradle, EventSourceMessage } from '@/constants.ts'
+import { assert, Debug, serializeError } from '@/utils.ts'
+import { Cradle, EventSourceMessage, SerializableError } from '@/constants.ts'
 import { ulid } from '$std/ulid/mod.ts'
 const log = Debug('AI:server')
 
@@ -42,7 +42,7 @@ export default class Server {
       app.post(
         `/${functionName}`,
         async (c) => {
-          let outcome
+          const outcome: { result?: unknown; error?: SerializableError } = {}
           try {
             const params = await c.req.json()
             if (functionName === 'pierce') {
@@ -51,9 +51,9 @@ export default class Server {
               params.ulid = ulid()
             }
             assert(functionName !== 'read')
-            outcome = await asOutcome(artifact[functionName](params))
+            outcome.result = await artifact[functionName](params)
           } catch (error) {
-            outcome = await asOutcome(Promise.reject(error))
+            outcome.error = serializeError(error)
           }
           return c.json(outcome)
         },

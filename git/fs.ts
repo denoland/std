@@ -1,6 +1,6 @@
 import http from 'npm:isomorphic-git/http/web/index.js'
 import stringify from 'npm:safe-stable-stringify'
-import { assert, Debug, posix } from '@utils'
+import { assert, Debug, posix, sha1 } from '@utils'
 import { ENTRY_BRANCH, JsonValue, PID } from '@/constants.ts'
 import git from '$git'
 import { pidFromRepo } from '@/keys.ts'
@@ -8,7 +8,6 @@ import type DB from '@/db.ts'
 import { GitKV } from './gitkv.ts'
 const log = Debug('AI:git:fs')
 const dir = '/'
-const sha1Regex = /^[0-9a-f]{40}$/i
 
 export default class FS {
   // pass this object around, and set it to be a particular PID
@@ -23,7 +22,7 @@ export default class FS {
   get pid() {
     return this.#pid
   }
-  get head() {
+  get commit() {
     return this.#commit
   }
   get fs() {
@@ -32,8 +31,14 @@ export default class FS {
   get isChanged() {
     return this.#upserts.size > 0 || this.#deletes.size > 0
   }
+  get upserts() {
+    return [...this.#upserts.keys()]
+  }
+  get deletes() {
+    return [...this.#deletes]
+  }
   private constructor(pid: PID, commit: string, db: DB) {
-    assert(sha1Regex.test(commit), 'Commit not SHA-1: ' + commit)
+    assert(sha1.test(commit), 'Commit not SHA-1: ' + commit)
     this.#pid = pid
     this.#commit = commit
     this.#db = db
@@ -68,10 +73,8 @@ export default class FS {
     // TODO detect the mainbranch somehow
     const url = `https://github.com/${pid.account}/${pid.repository}.git`
     const fs = { promises: new GitKV(db, pid) }
-    await git.clone({ fs, dir, url, http })
-    const commit = await fs.promises.readFile('/.git/HEAD', {
-      encoding: 'utf8',
-    }) as string
+    await git.clone({ fs, dir, url, http, noCheckout: true })
+    const commit = await fs.promises.readHead()
     return new FS(pid, commit, db)
   }
   logs(filepath?: string, depth?: number) {
@@ -79,8 +82,9 @@ export default class FS {
     return git.log({ fs, dir, filepath, depth })
   }
 
-  async commit(message: string = '', merges: string[] = []) {
+  async writeCommit(message: string = '', merges: string[] = []) {
     assert(this.#upserts.size > 0 || this.#deletes.size > 0, 'empty commit')
+    assert(merges.every((oid) => sha1.test(oid)), 'Merge not SHA-1')
     const tree = await this.#flush()
     this.#upserts.clear()
     this.#deletes.clear()
@@ -252,8 +256,8 @@ export default class FS {
     return result.commit
   }
   async branch(name: string) {
-    const pid = await this.#gitkv.createBranch(name, this.head)
-    return new FS(pid, this.head, this.#db)
+    const pid = await this.#gitkv.createBranch(name, this.commit)
+    return new FS(pid, this.commit, this.#db)
   }
   async deleteBranch(name: string) {
     await this.#gitkv.deleteBranch(name)

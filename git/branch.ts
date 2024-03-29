@@ -1,6 +1,6 @@
 import { assert, Debug } from '@utils'
-import { PROCTYPE } from '@/constants.ts'
-import { isPierceRequest, SolidRequest } from '@/constants.ts'
+import { Branched, PROCTYPE, Request } from '@/constants.ts'
+import { SolidRequest } from '@/constants.ts'
 import IOChannel from '../io/io-channel.ts'
 import { solidify } from './mod.ts'
 import FS from '@/git/fs.ts'
@@ -14,12 +14,12 @@ const log = Debug('AI:git')
  * @param commit hash of the commit to start the branch from
  * @param target the new branch PID
  */
-export default async (fs: FS, sequence: number) => {
+export default async (fs: FS, sequence: number): Promise<Branched> => {
+  assert(!fs.isChanged, 'fs must not be changed')
   assert(sequence >= 0, 'sequence must be a whole number')
-  log('branch', sequence, fs.commit)
+  log('branch', sequence, fs.writeCommit)
   const io = await IOChannel.load(fs)
   const request = io.getRequest(sequence)
-  assert(!isPierceRequest(request), 'cannot branch from pierce request')
   const { isolate, functionName, params, target: source } = request
 
   const name = getBranchName(request, sequence)
@@ -37,10 +37,14 @@ export default async (fs: FS, sequence: number) => {
   log('origin', origin)
   IOChannel.blank(branch)
 
-  return await solidify(branch, [origin])
+  const solids = await solidify(branch, [origin])
+  assert(solids.request, 'must have a request')
+  assert(solids.branches.length === 0, 'must have no branches')
+  assert(solids.replies.length === 0, 'must have no replies')
+  return { origin: solids.request, commit: solids.commit }
 }
 
-export const getBranchName = (request: SolidRequest, sequence: number) => {
+export const getBranchName = (request: Request, sequence: number) => {
   let name = sequence + ''
   if (request.branch) {
     assert(!request.branchPrefix, 'cannot have both branch and branchPrefix')

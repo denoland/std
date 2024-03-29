@@ -15,10 +15,10 @@ const log = Debug('AI:io')
 
 export default class IO {
   #db: DB
-  #self: Cradle
+  #cradle: Cradle
   private constructor(db: DB, self: Cradle) {
     this.#db = db
-    this.#self = self
+    this.#cradle = self
   }
   static create(db: DB, self: Cradle) {
     return new IO(db, self)
@@ -53,11 +53,11 @@ export default class IO {
     if (request) {
       log('request %o', request)
       // WARNING detaches from queue
-      await this.#self.request({ request, commit })
+      await this.#cradle.request({ request, commit })
     }
     for (const sequence of branches) {
       log('branch %o', sequence)
-      await this.#self.branch({ pid, sequence, commit })
+      await this.#cradle.branch({ pid, sequence, commit })
     }
     for (const reply of replies) {
       if (isPierceReply(reply)) {
@@ -91,10 +91,9 @@ export default class IO {
     // TODO remove the concept of headlock completely
     const lockId = await this.#db.getHeadlock(pid)
     const fs = FS.open(pid, baseCommit, this.#db)
-    const solids: Solids = await git.branch(fs, sequence)
-    const { request, commit } = solids
-    assert(request, 'branch must have a single request')
-    await this.#self.request({ request, commit })
+    const branched = await git.branch(fs, sequence)
+    const { origin, commit } = branched
+    await this.#cradle.request({ request: origin, commit })
     await this.#db.releaseHeadlock(pid, lockId)
   }
 }

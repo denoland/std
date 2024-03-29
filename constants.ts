@@ -3,13 +3,13 @@ export type { IsolateApi }
 export type { CborUint8Array } from 'https://esm.sh/v135/json-joy@9.9.1/es6/json-pack/cbor/types.d.ts?exports=CbotUint8Array'
 export const IO_PATH = '.io.json'
 import {
+  Invocation,
   IsolateApiSchema,
   IsolateReturn,
   Outcome,
   Params,
   PID,
   PierceRequest,
-  PROCTYPE,
 } from './api/web-client.types.ts'
 import FS from '@/git/fs.ts'
 
@@ -38,22 +38,7 @@ export type IoStruct = {
 export type Request = PierceRequest | SolidRequest
 export type Poolable = Request | SolidReply | MergeReply
 export type Reply = PierceReply | SolidReply | MergeReply
-type Invocation = {
-  isolate: string
-  functionName: string
-  params: Params
-  proctype: PROCTYPE
-  /**
-   * Allow a custom name for the new branch, if this is a branching request
-   */
-  branch?: string
-  /**
-   * If the custom branch name might not be unique, a prefix can be given and
-   * the sequence number will be appended to the branch name, ensuring
-   * uniqueness.
-   */
-  branchPrefix?: string
-}
+
 /**
  * A request that has been included in a commit, therefore has a sequence number
  */
@@ -104,12 +89,16 @@ export type Solids = {
   branches: number[]
   replies: Reply[]
 }
+export type Branched = {
+  commit: string
+  origin: SolidRequest
+}
 export type ExeResult = {
   settled?: {
     reply: SolidReply
     /**
      * The last filesystem that was modified during the execution run.  The FS
-     * might have been bumped forwards if accumulations occured.
+     * might have been bumped forwards if accumulations occurred.
      */
     fs: FS
   }

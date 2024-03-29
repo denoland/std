@@ -58,7 +58,7 @@ export type Params = Record<string, JsonValue>
 export type IsolateApiSchema = {
   [key: string]: JSONSchemaType<object>
 }
-type SerializableError = {
+export type SerializableError = {
   name: string
   message: string
   stack?: string
@@ -88,11 +88,21 @@ export type Help = {
   examples?: string[]
   tests?: string[]
 }
-type Invocation = {
+export type Invocation = {
   isolate: string
   functionName: string
   params: Params
   proctype: PROCTYPE
+  /**
+   * Allow a custom name for the new branch, if this is a branching request
+   */
+  branch?: string
+  /**
+   * If the custom branch name might not be unique, a prefix can be given and
+   * the sequence number will be appended to the branch name, ensuring
+   * uniqueness.
+   */
+  branchPrefix?: string
 }
 export type PierceRequest = Invocation & {
   target: PID

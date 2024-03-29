@@ -1,4 +1,5 @@
 import * as keys from './keys.ts'
+import { getHeadKey } from './git/gitkv.ts'
 import { ulid } from '$std/ulid/mod.ts'
 import { PID, PierceReply, Poolable, Reply, Request } from '@/constants.ts'
 import { assert, Debug, isTestMode, openKv } from '@utils'
@@ -155,7 +156,8 @@ export default class DB {
     await Promise.all(keys.map((key) => this.#kv.delete(key)))
   }
   async getHead(pid: PID): Promise<string | undefined> {
-    const key = keys.getHeadKey(pid)
+    // TODO use this function from within gitkv instead of multiple calls
+    const key = getHeadKey(pid)
     log('getHead %o', key)
     const head = await this.#kv.get<string>(key)
     return head.value || undefined
@@ -179,7 +181,7 @@ export default class DB {
     await Promise.all(promises)
   }
   watchHead(pid: PID, signal: AbortSignal) {
-    const key = keys.getHeadKey(pid)
+    const key = getHeadKey(pid)
     const stream = this.#kv.watch<string[]>([key])
     return stream.pipeThrough(
       new TransformStream({

@@ -27,7 +27,7 @@ Deno.test('git/init', async (t) => {
     await expect(fs.exists(path)).resolves.toBeTruthy()
     await expect(fs.read(path)).resolves.toBe(data)
 
-    const next = await fs.commit('write single')
+    const next = await fs.writeCommit('write single')
     const read = await next.read(path)
     expect(read).toBe(data)
     await expect(next.exists(path)).resolves.toBeTruthy()
@@ -49,7 +49,7 @@ Deno.test('git/init', async (t) => {
     await expect(fs.exists(path)).resolves.toBeTruthy()
     await expect(fs.read(path)).resolves.toBe(data)
 
-    const next = await fs.commit('write nested')
+    const next = await fs.writeCommit('write nested')
     await expect(next.exists(path)).resolves.toBeTruthy()
     const read = await next.read(path)
     expect(read).toBe(data)
@@ -65,9 +65,17 @@ Deno.test('git/init', async (t) => {
     const path = 'hello.txt'
     fs.delete(path)
     await expect(fs.read(path)).rejects.toThrow('Could not find file or')
-    const next = await fs.commit('delete')
+    const next = await fs.writeCommit('delete')
     await expect(next.exists(path)).resolves.toBeFalsy()
     await expect(next.read(path)).rejects.toThrow('Could not find file or')
+  })
+  db.stop()
+})
+Deno.test('clone', async (t) => {
+  const db = await DB.create()
+  await t.step('clone HAL', async () => {
+    const fs = await FS.clone('dreamcatcher-tech/HAL', db)
+    expect(fs.commit).toHaveLength(40)
   })
   db.stop()
 })
@@ -75,3 +83,6 @@ Deno.test('git/init', async (t) => {
 // TODO block isolates from accessing .git paths
 
 // check that a nonexistent pid throws
+// TODO test writing a file that hashes to the same as the existing one
+// this should result in no commit being made.  IO always changes, so this
+// should still commit, but there should be no other file changes attempted.

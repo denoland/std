@@ -40,7 +40,7 @@ export default async (fs: FS, pool: Poolable[]) => {
   // TODO include multiple requests to the same branch as a single array
   const branches: number[] = []
   const replies: Reply[] = []
-  const merges = []
+  const parents = []
   for (const poolable of pool) {
     if (isRequest(poolable)) {
       const sequence = io.addRequest(poolable)
@@ -72,10 +72,9 @@ export default async (fs: FS, pool: Poolable[]) => {
       if (isBranch(request)) {
         assert(isMergeReply(poolable), 'branch requires merge reply')
         log('branch reply', poolable.commit)
-        merges.push(poolable.commit)
+        parents.push(poolable.commit)
         if (request.proctype === PROCTYPE.BRANCH) {
           const { sequence } = poolable
-          assert(!isPierceRequest(request), 'cannot merge from pierce request')
           const name = getBranchName(request, sequence)
           log('deleteBranch', name)
           await fs.deleteBranch(name)
@@ -92,7 +91,7 @@ export default async (fs: FS, pool: Poolable[]) => {
   }
   io.save()
 
-  const { head: commit } = await fs.commit('pool', merges)
+  const { commit: commit } = await fs.writeCommit('pool', parents)
 
   log('head', commit)
   for (const reply of replies) {

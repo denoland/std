@@ -1,8 +1,6 @@
-import { memfs } from '$memfs'
 import { assert, expect, log, merge } from '@utils'
 import * as git from './mod.ts'
 import {
-  IFs,
   IoStruct,
   isMergeReply,
   isPierceReply,
@@ -12,11 +10,10 @@ import {
   PROCTYPE,
   Reply,
 } from '@/constants.ts'
-import gitCommand from '$git'
-import FS from '@/fs.ts'
+import FS from '@/git/fs.ts'
+import DB from '@/db.ts'
 
 Deno.test('pierce branch', async (t) => {
-  const { fs } = memfs()
   const target: PID = { account: 'git', repository: 'test', branches: ['main'] }
   const branchPierce = (ulid: string): PierceRequest => ({
     target,
@@ -31,39 +28,43 @@ Deno.test('pierce branch', async (t) => {
     sequence: 0,
     outcome: { result: 'test-result' },
   }
-  await git.init(fs, 'git/test')
-
-  let branchFs: IFs
-  let childPid: PID
+  const db = await DB.create()
+  const baseFs = await FS.init('git/test', db)
   const pierce = branchPierce('pierce')
-  const head = () => fs.readFileSync('/.git/refs/heads/main').toString().trim()
-  let commit: string
-  let branches: PID[]
-  await t.step('branch', async () => {
-    const solids = await git.solidify(fs, [pierce], head())
-    commit = solids.commit
+  let latestCommit: string
+  let branches: number[]
+  let branchPid: PID
+
+  await t.step('parent', async () => {
+    const solids = await git.solidify(baseFs, [pierce])
+    latestCommit = solids.commit
     branches = solids.branches
+    expect(branches).toEqual([0])
     expect(solids.request).toBeUndefined()
-    const io: IoStruct = readIo(fs)
+    const next = await FS.openHead(baseFs.pid, db)
+    expect(next.commit).toEqual(solids.commit)
+    const io = await next.readJSON<IoStruct>('.io.json')
     expect(io.sequence).toBe(1)
     expect(io.requests[0]).toEqual(pierce)
     expect(io.requests[0].proctype).toEqual(PROCTYPE.BRANCH)
   })
-  await t.step('branch relay', async () => {
-    branchFs = FS.clone(fs, '/.git')
-    const solids = await git.branch(branchFs, head(), branches[0])
-    assert(solids.request)
-    expect(solids.request.source).toEqual(pierce.target)
-
-    childPid = branches[0]
-    expect(childPid.branches).toEqual(['main', '0'])
-    commit = solids.commit
+  await t.step('child', async () => {
+    const parentFs = await FS.openHead(baseFs.pid, db)
+    expect(parentFs.commit).toEqual(latestCommit)
+    expect(branches).toEqual([0])
+    const sequence = branches[0]
+    const branched = await git.branch(parentFs, sequence)
+    expect(branched.origin.source).toEqual(pierce.target)
+    latestCommit = branched.commit
+    branchPid = branched.origin.target
   })
   let mergeReply: MergeReply
-  await t.step('branch reply', async () => {
-    const branchReply = merge({}, reply, { target: childPid })
-    const solidified = await git.solidify(branchFs, [branchReply], commit)
-    const { replies } = solidified
+  await t.step('child reply', async () => {
+    const branchReply = merge({}, reply, { target: branchPid })
+    const branchFs = await FS.openHead(branchPid, db)
+    expect(branchFs.commit).toEqual(latestCommit)
+    const solids = await git.solidify(branchFs, [branchReply])
+    const { replies } = solids
 
     log('replies', replies[0])
     expect(replies.length).toBe(1)
@@ -72,19 +73,20 @@ Deno.test('pierce branch', async (t) => {
     expect(mergeReply.outcome).toEqual(reply.outcome)
     expect(mergeReply.target).toEqual(target)
   })
-  await t.step('merge', async () => {
-    FS.copyObjects(branchFs, fs)
-    const { replies } = await git.solidify(fs, [mergeReply], head())
+  await t.step('child merge to parent', async () => {
+    const parentFs = await FS.openHead(baseFs.pid, db)
+    expect(parentFs.commit).not.toEqual(latestCommit)
+    const { replies } = await git.solidify(parentFs, [mergeReply])
     expect(replies).toHaveLength(1)
     const reply = replies[0]
     assert(isPierceReply(reply), 'not PierceReply')
     expect(reply.ulid).toEqual(pierce.ulid)
     expect(reply.outcome).toEqual(mergeReply.outcome)
-    const [lastCommit] = await gitCommand.log({ fs, dir: '/', depth: 1 })
+    const [lastCommit] = await parentFs.logs()
     expect(lastCommit.commit.parent).toHaveLength(2)
   })
+  db.stop()
 })
 
-const readIo = (fs: IFs) => {
-  return JSON.parse(fs.readFileSync('/.io.json').toString())
-}
+// TODO custom names honoured
+// TODO error if name collision

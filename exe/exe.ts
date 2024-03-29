@@ -16,6 +16,7 @@ export default class Executor {
   }
   async execute(req: SolidRequest, fs: FS): Promise<ExeResult> {
     assert(equal(fs.pid, req.target), 'target is not self')
+    assert(!fs.isChanged, 'fs is changed')
     const io = await IOChannel.load(fs)
     assert(io.isCallable(req), 'request is not callable')
     log('request %o %o', req.isolate, req.functionName)

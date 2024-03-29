@@ -1,7 +1,5 @@
 import { diffChars } from '$diff'
 import Compartment from './io/compartment.ts'
-import * as posix from 'https://deno.land/std@0.213.0/path/posix/mod.ts'
-import git from '$git'
 import {
   Cradle,
   DispatchFunctions,
@@ -15,7 +13,7 @@ import { pidFromRepo } from '@/keys.ts'
 import { getProcType } from '@/constants.ts'
 import IsolateApi from './isolate-api.ts'
 import { assert } from 'std/assert/assert.ts'
-import { Debug } from '@utils'
+import { Debug, posix } from '@utils'
 import { ulid } from 'std/ulid/mod.ts'
 import Queue from './queue.ts'
 import { C } from './isolates/artifact.ts'

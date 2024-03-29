@@ -1,6 +1,5 @@
 import { ENTRY_BRANCH, PID, Poolable, Reply, Request } from '@/constants.ts'
 import { assert } from '@utils'
-import { ulid } from 'https://deno.land/std@0.216.0/ulid/mod.ts'
 
 const assertPid = (pid: PID) => {
   assert(pid.account, 'account is required')
@@ -30,17 +29,9 @@ export const getHeadLockKey = (pid: PID) => {
   const { account, repository, branches } = pid
   return [KEYSPACES.HEADLOCK, account, repository, ...branches]
 }
-export const getHeadKey = (pid: PID) => {
-  const { account, repository, branches } = pid
-  return [KEYSPACES.HEAD, account, repository, ...branches]
-}
 export const getRepoKey = (pid: PID) => {
   const { account, repository, branches } = pid
   return [KEYSPACES.REPO, account, repository, ...branches]
-}
-export const getBlobKey = (pid: PID) => {
-  const { account, repository, branches } = pid
-  return [KEYSPACES.BLOB, account, repository, ...branches, 'blob-' + ulid()]
 }
 export const getPrefixes = (pid: PID) => {
   const { account, repository } = pid
@@ -59,8 +50,6 @@ export enum KEYSPACES {
   REPLIES = 'REPLIES', // for watching replies
   HEADLOCK = 'HEADLOCK', // the lock on the head of a given process branch
   REPO = 'REPO', // this is the latest fs snapshot of a given process branch
-  BLOB = 'BLOB', // where the contents of repo snapshots are stored
-  HEAD = 'HEAD', // the tip commit hash of a given process branch
 }
 
 const getId = (action: Request | Reply) => {

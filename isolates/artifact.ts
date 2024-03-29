@@ -1,5 +1,6 @@
 import { Debug, fromOutcome } from '@utils'
 import Executor from '../exe/exe.ts'
+import * as keys from '@/keys.ts'
 import {
   IsolateFunctions,
   IsolateLifecycle,
@@ -101,10 +102,11 @@ export const api = {
   },
   branch: {
     type: 'object',
-    required: ['branch', 'commit'],
+    required: ['pid', 'sequence', 'commit'],
     properties: {
-      branch: pid,
-      commit: { type: 'string' },
+      pid,
+      sequence: { type: 'integer', minimum: 0 },
+      commit: { type: 'string', pattern: '^[0-9a-f]{40}$' },
     },
   },
   // subscribe to json by filepath and pid
@@ -144,7 +146,7 @@ export const functions: IsolateFunctions = {
     }
     assert(api.context.db, 'db not found')
     const fs = await FS.init(params.repo, api.context.db)
-    const { pid, head } = fs
+    const { pid, commit: head } = fs
     return { pid, head, elapsed: Date.now() - start }
   },
   async clone(params, api: IsolateApi<C>) {
@@ -158,7 +160,7 @@ export const functions: IsolateFunctions = {
     log('cloning %s', repo)
     assert(api.context.db, 'db not found')
     const fs = await FS.clone(repo, api.context.db)
-    const { pid, head } = fs
+    const { pid, commit: head } = fs
     log('cloned', head)
     return { pid, head, elapsed: Date.now() - start }
   },
@@ -168,14 +170,23 @@ export const functions: IsolateFunctions = {
   push() {
     throw new Error('not implemented')
   },
-  rm(params, api: IsolateApi<C>) {
+  async rm(params, api: IsolateApi<C>) {
     // TODO lock the whole repo in case something is running
     const pid = pidFromRepo(params.repo as string)
     // TODO maybe have a top level key indicating if the repo is active or not
     // which can get included in the atomic checks for all activities
-
-    // remove everything to do with the repo
-    throw new Error('not implemented')
+    const db = api.context.db
+    assert(db, 'db not found')
+    const prefixes = keys.getPrefixes(pid)
+    const promises = []
+    for (const prefix of prefixes) {
+      const list = db.kv.list({ prefix })
+      for await (const { key } of list) {
+        log('deleted: ', key)
+        promises.push(db.kv.delete(key))
+      }
+    }
+    await Promise.all(promises)
   },
   apiSchema: async (params: Params) => {
     // when it loads from files, will benefit from being close to the db

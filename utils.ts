@@ -3,7 +3,7 @@ export { equal } from 'https://deno.land/x/equal/mod.ts'
 export { delay } from '$std/async/mod.ts'
 import 'npm:supports-color'
 export { expect } from 'std/expect/mod.ts'
-export { assert } from 'std/assert/assert.ts'
+export { assert, AssertionError } from 'std/assert/mod.ts'
 export { default as merge } from 'npm:lodash.merge'
 import Debug from 'npm:debug'
 import { JsonValue, Outcome, PID } from '@/constants.ts'
@@ -15,6 +15,7 @@ export { deserializeError, serializeError }
 export { Debug }
 export const log = Debug('AI:tests')
 export * as posix from 'https://deno.land/std@0.213.0/path/posix/mod.ts'
+export const sha1 = /^[0-9a-f]{40}$/i
 
 const isDenoDeploy = Deno.env.get('DENO_DEPLOYMENT_ID') !== undefined
 let _isTestMode = false

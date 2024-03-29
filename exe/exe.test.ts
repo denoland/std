@@ -1,10 +1,9 @@
-import { memfs } from '$memfs'
 import IOChannel from '../io/io-channel.ts'
-import FS from '../fs.ts'
+import FS from '../git/fs.ts'
 import Executor from './exe.ts'
-import { IFs, PROCTYPE, SolidRequest } from '@/constants.ts'
+import { PROCTYPE, SolidRequest } from '@/constants.ts'
 import { assert, expect, log } from '@utils'
-import { init } from '../git/mod.ts'
+import DB from '@/db.ts'
 
 const pid = { account: 'exe', repository: 'test', branches: ['main'] }
 const source = { ...pid, account: 'higher' }
@@ -17,50 +16,54 @@ const request: SolidRequest = {
   source,
   sequence: 0,
 }
-const mocks = async () => {
-  const { fs } = memfs()
-  const { commit } = await init(fs, 'exe/test')
-  const io = await IOChannel.load(pid, fs, commit)
-  return { io, fs, commit }
+const mocks = async (initialRequest: SolidRequest) => {
+  const db = await DB.create()
+  let fs = await FS.init('exe/test', db)
+  let io = await IOChannel.load(fs)
+  io.addRequest(initialRequest)
+  io.save()
+  fs = await fs.writeCommit()
+  io = await IOChannel.load(fs)
+  const stop = () => db.stop()
+  return { io, fs, db, stop }
 }
 Deno.test('simple', async (t) => {
-  const { fs, io, commit } = await mocks()
-  io.addRequest(request)
-  io.save()
+  const { fs, stop } = await mocks(request)
   const executor = Executor.create()
   await t.step('no accumulations', async () => {
-    const result = await executor.execute(pid, commit, request, fs)
+    const result = await executor.execute(request, fs)
     const { settled, pending } = result
     assert(settled)
     expect(pending).toBeFalsy()
-    const { reply, upserts, deletes } = settled
+    const { reply, fs: settledFs } = settled
     expect(reply.target).toEqual(pid)
     expect(reply.outcome).toEqual({ result: 'local reply' })
-    expect(upserts).toHaveLength(0)
-    expect(deletes).toHaveLength(0)
+    expect(settledFs).toEqual(fs)
+    expect(settledFs.isChanged).toBeFalsy()
   })
+  stop()
 })
 Deno.test('writes', async (t) => {
-  const { fs, io, commit } = await mocks()
   const write = {
     ...request,
     functionName: 'write',
     params: { path: 'test.txt', content: 'hello' },
   }
-  io.addRequest(write)
-  io.save()
+  const { fs, stop } = await mocks(write)
   const executor = Executor.create()
   await t.step('single file', async () => {
-    const result = await executor.execute(pid, commit, write, fs)
+    const result = await executor.execute(write, fs)
     const { settled, pending } = result
     assert(settled)
     expect(pending).toBeFalsy()
-    const { reply, upserts, deletes } = settled
+    const { reply, fs: settledFs } = settled
     expect(reply.target).toEqual(pid)
     expect(reply.outcome.result).toBeUndefined()
-    expect(upserts).toEqual(['test.txt'])
-    expect(deletes).toHaveLength(0)
+    expect(settledFs).toEqual(fs)
+    expect(settledFs.upserts).toEqual(['test.txt'])
+    expect(settledFs.deletes).toHaveLength(0)
   })
+  stop()
   // write, delete, write
   // write, delete,
   // delete existing file
@@ -71,13 +74,12 @@ Deno.test('writes', async (t) => {
 })
 
 Deno.test('loopback', async (t) => {
-  const { fs, io, commit } = await mocks()
   const compound = { ...request, functionName: 'compound' }
-  io.addRequest(compound)
-  io.save()
+  const { fs, stop } = await mocks(compound)
   const executor = Executor.create()
   await t.step('loopback request will error', async () => {
-    const result = await executor.execute(pid, commit, compound, fs)
+    // execute should start with an unchanged fs tho
+    const result = await executor.execute(compound, fs)
     const { settled, pending } = result
     expect(pending).toBeFalsy()
     assert(settled)
@@ -85,6 +87,7 @@ Deno.test('loopback', async (t) => {
     expect(reply.target).toEqual(pid)
     expect(reply.outcome.error).toBeDefined()
   })
+  stop()
 })
 
 Deno.test('compound', async (t) => {
@@ -98,14 +101,12 @@ Deno.test('compound', async (t) => {
     functionName: 'compound',
     params: { target },
   }
-  const { io, fs, commit } = await mocks()
-  io.addRequest(compound)
-  io.save()
+  const { io, fs, db, stop } = await mocks(compound)
   let request: SolidRequest
   const executor = Executor.create()
-  let halfFs: IFs
+  let halfFs: FS
   await t.step('half done', async () => {
-    const half = await executor.execute(pid, commit, compound, fs)
+    const half = await executor.execute(compound, fs)
     const { settled, pending } = half
     expect(settled).toBeFalsy()
     assert(pending)
@@ -116,7 +117,7 @@ Deno.test('compound', async (t) => {
     expect(request.target).toEqual(target)
     expect(request.source).toEqual(pid)
     expect(request.sequence).toEqual(0)
-    halfFs = FS.clone(fs)
+    halfFs = FS.open(fs.pid, fs.commit, db)
   })
   await t.step('reply using function cache', async () => {
     assert(request)
@@ -130,18 +131,17 @@ Deno.test('compound', async (t) => {
     const savedRequest = io.reply(reply)
     expect(savedRequest).toEqual(request)
     io.save()
+    const replyFs = await fs.writeCommit()
 
-    const done = await executor.execute(pid, commit, compound, fs)
+    const done = await executor.execute(compound, replyFs)
     const { settled, pending } = done
     expect(pending).toBeFalsy()
-    expect(settled).toBeTruthy()
+    assert(settled, 'settled')
   })
-  await t.step('reply from restart', async () => {
+  await t.step('reply from replay', async () => {
     const noCache = Executor.create()
     assert(request)
-    const commit = halfFs.readFileSync('/.git/refs/heads/main').toString()
-      .trim()
-    const io = await IOChannel.load(pid, halfFs, commit)
+    const io = await IOChannel.load(halfFs)
     const sequence = io.addRequest(request)
     expect(sequence).toBe(1)
     const reply = {
@@ -151,12 +151,14 @@ Deno.test('compound', async (t) => {
     }
     io.reply(reply)
     io.save()
+    const replyFs = await halfFs.writeCommit()
 
-    const done = await noCache.execute(pid, commit, compound, halfFs)
+    const done = await noCache.execute(compound, replyFs)
     const { settled, pending } = done
     expect(pending).toBeFalsy()
     expect(settled).toBeTruthy()
   })
+  stop()
 
   // multiple outstanding requests
   // test that it will not get rerun unless all outstanding are returned

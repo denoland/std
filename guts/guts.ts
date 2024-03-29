@@ -5,6 +5,7 @@ import { Cradle } from '../api/web-client.types.ts'
 import processMgmt from './process-mgmt.ts'
 import aiCalls from './ai-calls.ts'
 import splices from './splices.ts'
+import { Debug } from '@utils'
 const isolate = 'io-fixture'
 
 export default (name: string, cradleMaker: () => Promise<Cradle>) => {
@@ -90,7 +91,7 @@ export default (name: string, cradleMaker: () => Promise<Cradle>) => {
       await artifact.stop()
     })
   })
-  Deno.test(prefix + 'resource hogging parallel', async (t) => {
+  Deno.test.only(prefix + 'resource hogging parallel', async (t) => {
     const artifact = await cradleMaker()
     const repo = 'cradle/pierce'
     await artifact.rm({ repo })
@@ -101,6 +102,7 @@ export default (name: string, cradleMaker: () => Promise<Cradle>) => {
     await t.step('parallel', async () => {
       const promises = []
       const count = 20
+      Debug.enable('AI:*')
       for (let i = 0; i < count; i++) { // at 20, this fails on cloud
         promises.push(local({}, { branch: true }))
       }

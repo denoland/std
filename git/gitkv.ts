@@ -2,14 +2,14 @@ import { get, set } from '$kv_toolbox'
 import { Debug } from '@utils'
 import { getRepoRoot } from '@/keys.ts'
 import type DB from '@/db.ts'
-import { assert, equal } from '@utils'
+import { assert, AssertionError, equal } from '@utils'
 import { PID } from '@/constants.ts'
 
 const log = Debug('AI:git:KV')
 const sha1Regex = /^[0-9a-f]{40}$/i
 
 export class GitKV {
-  #allowed = ['config', 'objects']
+  #allowed = ['config', 'objects', 'refs']
   #dropWrites = ['HEAD']
   #db: DB
   #pid: PID
@@ -18,20 +18,20 @@ export class GitKV {
     this.#pid = pid
   }
   async updateHead(commit: string) {
-    const tipKey = this.#getTipKey()
-    log('updateTip', tipKey, commit)
+    const headKey = this.#getHeadKey()
+    log('updateHead', headKey, commit)
     assert(sha1Regex.test(commit), 'Commit not SHA-1: ' + commit)
-    await this.#db.kv.set(tipKey, commit)
+    await this.#db.kv.set(headKey, commit)
   }
   async createBranch(name: string, commit: string) {
     log('createBranch', name)
     const branches = [...this.#pid.branches, name]
     const pid = { ...this.#pid, branches }
-    const key = getTipKey(pid)
+    const key = getHeadKey(pid)
     const result = await this.#db.kv.atomic().check({ key, versionstamp: null })
       .set(key, commit).commit()
     if (!result.ok) {
-      throw new Error('branch already exists: ' + key.join('/'))
+      throw new Error('branch already exists: ' + branches.join('/'))
     }
     return pid
   }
@@ -39,17 +39,17 @@ export class GitKV {
     log('deleteBranch', name)
     const branches = [...this.#pid.branches, name]
     const pid = { ...this.#pid, branches }
-    const key = getTipKey(pid)
+    const key = getHeadKey(pid)
     const current = await this.#db.kv.get(key)
-    assert(current.versionstamp, 'branch not found: ' + key.join('/'))
+    assert(current.versionstamp, 'branch not found: ' + branches.join('/'))
     const result = await this.#db.kv.atomic().check(current)
       .delete(key).commit()
     if (!result.ok) {
-      throw new Error('branch already deleted: ' + key.join('/'))
+      throw new Error('branch already deleted: ' + branches.join('/'))
     }
   }
   async readHead() {
-    const tipKey = this.#getTipKey()
+    const tipKey = this.#getHeadKey()
     const result = await this.#db.kv.get<string>(tipKey)
     assert(result.versionstamp, 'tip not found')
     return result.value
@@ -69,14 +69,16 @@ export class GitKV {
       return ref
     }
     if (path.startsWith('/.git/refs/heads/')) {
-      // assert that the rest of the path matches the pid branches array
+      // only allow reading heads from the current branch, else what doing ?
       const rest = path.slice('/.git/refs/heads/'.length)
       const branches = rest.split('/')
       log('readFile refs/heads:', branches)
       assert(equal(branches, this.#pid.branches), 'branches do not match')
-      const tipKey = this.#getTipKey()
-      const result = await this.#db.kv.get(tipKey)
-      assert(result.versionstamp, 'tip not found: ' + path)
+      const headKey = this.#getHeadKey()
+      const result = await this.#db.kv.get(headKey)
+      if (!result.versionstamp) {
+        throw new FileNotFoundError('file not found: ' + path)
+      }
       return result.value
     }
 
@@ -111,7 +113,7 @@ export class GitKV {
     data: ArrayBufferLike | string,
     opts: EncodingOpts,
   ) {
-    log('writeFile', path, opts)
+    log('writeFile', path, data, opts)
     if (opts && opts.encoding && opts.encoding !== 'utf8') {
       throw new Error('only utf8 encoding is supported')
     }
@@ -121,20 +123,46 @@ export class GitKV {
     }
     const pathKey = this.#getAllowedPathKey(path)
 
-    if (typeof data === 'string') {
-      data = new TextEncoder().encode(data)
+    if (path.startsWith('/.git/refs/heads/')) {
+      // TODO use the head tool on this.#db to ensure consistency
+      assert(typeof data === 'string', 'data must be a string')
+      await this.#db.kv.set(pathKey, data.trim())
+    } else {
+      if (typeof data === 'string') {
+        data = new TextEncoder().encode(data)
+      }
+      await set(this.#db.kv, pathKey, data)
     }
-
-    await set(this.#db.kv, pathKey, data)
-    log('writeFile done')
+    log('writeFile done:', pathKey)
   }
   async unlink(path: string) {
     log('unlink', path)
+    if (path === '/.git/shallow') {
+      return
+    }
     return await Promise.reject(new Error('not implemented'))
   }
-  async readdir(path: string) {
+  async readdir(path: string, options?: object) {
     log('readdir', path)
-    return await Promise.reject(new Error('not implemented'))
+    assert(!options, 'options not supported')
+    let pathKey = getRepoRoot(this.#pid)
+    if (path !== '/.git') {
+      pathKey = this.#getAllowedPathKey(path)
+    }
+    log('readdir pathKey', pathKey)
+    // TODO confirm behaviour skips deeply nested paths
+    const start = [...pathKey, `\u0000`]
+    const end = [...pathKey, `\uFFFF`]
+    const results = []
+    const list = this.#db.kv.list({ start, end })
+    // just the pure names of the files in this directory
+    for await (const { key } of list) {
+      assert(key.length === start.length, 'key overlength: ' + key.join('/'))
+      const name = key[key.length - 1]
+      results.push(name)
+    }
+    log('readdir', path, results)
+    return results
   }
   mkdir(path: string) {
     log('mkdir', path)
@@ -150,10 +178,27 @@ export class GitKV {
   async stat(path: string) {
     log('stat', path)
     // generate the key for the path
-    const pathKey = this.#getAllowedPathKey(path)
-    // no need to fetch the whole blob
-    const result = await this.#db.kv.get(pathKey)
-    if (!result.versionstamp) {
+    let pathKey
+    try {
+      pathKey = this.#getAllowedPathKey(path)
+    } catch (error) {
+      if (error instanceof AssertionError) {
+        throw new FileNotFoundError('file not found: ' + path)
+      }
+      throw error
+    }
+    log('stat pathKey', pathKey)
+    let exists = false
+    if (path.startsWith('/.git/refs/heads/')) {
+      // TODO use the this.#db function
+      const result = await this.#db.kv.get(pathKey)
+      exists = !!result.versionstamp
+    } else {
+      // no need to fetch the whole blob
+      const result = await get(this.#db.kv, pathKey)
+      exists = !!result
+    }
+    if (!exists) {
       throw new FileNotFoundError('file not found: ' + path)
     }
     // TODO make this be statlike
@@ -182,18 +227,15 @@ export class GitKV {
     assert(rest, 'path must not be bare')
     const prefix = getRepoRoot(this.#pid)
     const pathKey = rest.split('/')
-    this.#assertAllowed(pathKey)
+    assert(this.#allowed.includes(pathKey[0]), 'path not allowed: ' + pathKey)
 
     return [...prefix, ...pathKey]
   }
-  #assertAllowed(pathKey: string[]) {
-    assert(this.#allowed.includes(pathKey[0]), 'path not allowed: ' + pathKey)
-  }
-  #getTipKey() {
-    return getTipKey(this.#pid)
+  #getHeadKey() {
+    return getHeadKey(this.#pid)
   }
 }
-const getTipKey = (pid: PID) => {
+export const getHeadKey = (pid: PID) => {
   const prefix = getRepoRoot(pid)
   return [...prefix, 'refs', 'heads', ...pid.branches]
 }
