@@ -1,6 +1,5 @@
 import { Debug, fromOutcome } from '@utils'
 import Executor from '../exe/exe.ts'
-import * as keys from '@/keys.ts'
 import {
   IsolateFunctions,
   IsolateLifecycle,
@@ -131,12 +130,13 @@ export const functions: IsolateFunctions = {
     } else {
       pid = pidFromRepo(params.repo as string)
     }
-    const head = await api.context.db!.getHead(pid)
+    const { db } = api.context
+    assert(db, 'db not found')
+    const head = await db.readHead(pid)
     if (head) {
       return { pid, head }
     }
   },
-  // need to split the git functions out to be an isolate
   async init(params, api: IsolateApi<C>) {
     const start = Date.now()
     assert(typeof params.repo === 'string', 'repo must be a string')
@@ -172,21 +172,12 @@ export const functions: IsolateFunctions = {
   },
   async rm(params, api: IsolateApi<C>) {
     // TODO lock the whole repo in case something is running
-    const pid = pidFromRepo(params.repo as string)
     // TODO maybe have a top level key indicating if the repo is active or not
     // which can get included in the atomic checks for all activities
+    const pid = pidFromRepo(params.repo as string)
     const db = api.context.db
     assert(db, 'db not found')
-    const prefixes = keys.getPrefixes(pid)
-    const promises = []
-    for (const prefix of prefixes) {
-      const list = db.kv.list({ prefix })
-      for await (const { key } of list) {
-        log('deleted: ', key)
-        promises.push(db.kv.delete(key))
-      }
-    }
-    await Promise.all(promises)
+    await db.rm(pid)
   },
   apiSchema: async (params: Params) => {
     // when it loads from files, will benefit from being close to the db

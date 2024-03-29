@@ -1,65 +1,33 @@
 import { get, set } from '$kv_toolbox'
 import { Debug } from '@utils'
-import { getRepoRoot } from '@/keys.ts'
+import { getRepoRoot, headKeyToPid } from '@/keys.ts'
 import type DB from '@/db.ts'
 import { assert, AssertionError, equal } from '@utils'
 import { PID } from '@/constants.ts'
 
 const log = Debug('AI:git:KV')
-const sha1Regex = /^[0-9a-f]{40}$/i
 
 export class GitKV {
   #allowed = ['config', 'objects', 'refs']
   #dropWrites = ['HEAD']
   #db: DB
   #pid: PID
-  constructor(db: DB, pid: PID) {
+  private constructor(db: DB, pid: PID) {
     this.#db = db
     this.#pid = pid
   }
-  async updateHead(commit: string) {
-    const headKey = this.#getHeadKey()
-    log('updateHead', headKey, commit)
-    assert(sha1Regex.test(commit), 'Commit not SHA-1: ' + commit)
-    await this.#db.kv.set(headKey, commit)
+  static create(db: DB, pid: PID) {
+    return new GitKV(db, pid)
   }
-  async createBranch(name: string, commit: string) {
-    log('createBranch', name)
-    const branches = [...this.#pid.branches, name]
-    const pid = { ...this.#pid, branches }
-    const key = getHeadKey(pid)
-    const result = await this.#db.kv.atomic().check({ key, versionstamp: null })
-      .set(key, commit).commit()
-    if (!result.ok) {
-      throw new Error('branch already exists: ' + branches.join('/'))
-    }
-    return pid
-  }
-  async deleteBranch(name: string) {
-    log('deleteBranch', name)
-    const branches = [...this.#pid.branches, name]
-    const pid = { ...this.#pid, branches }
-    const key = getHeadKey(pid)
-    const current = await this.#db.kv.get(key)
-    assert(current.versionstamp, 'branch not found: ' + branches.join('/'))
-    const result = await this.#db.kv.atomic().check(current)
-      .delete(key).commit()
-    if (!result.ok) {
-      throw new Error('branch already deleted: ' + branches.join('/'))
-    }
-  }
-  async readHead() {
-    const tipKey = this.#getHeadKey()
-    const result = await this.#db.kv.get<string>(tipKey)
-    assert(result.versionstamp, 'tip not found')
-    return result.value
+  isIgnored(path: string) {
+    const sliced = path.slice('/.git/'.length)
+    return this.#dropWrites.includes(sliced)
   }
   async readFile(path: string, opts: EncodingOpts) {
     log('readFile', path, opts)
     if (!path && !opts) {
       throw new Error('path and opts are required')
     }
-    // if this was a request to HEAD, we need to switch it out
     if (path === '/.git/HEAD') {
       let ref = `ref: refs/heads`
       for (const branch of this.#pid.branches) {
@@ -74,12 +42,11 @@ export class GitKV {
       const branches = rest.split('/')
       log('readFile refs/heads:', branches)
       assert(equal(branches, this.#pid.branches), 'branches do not match')
-      const headKey = this.#getHeadKey()
-      const result = await this.#db.kv.get(headKey)
-      if (!result.versionstamp) {
+      const head = this.#db.readHead(this.#pid)
+      if (!head) {
         throw new FileNotFoundError('file not found: ' + path)
       }
-      return result.value
+      return head
     }
 
     const pathKey = this.#getAllowedPathKey(path)
@@ -99,14 +66,6 @@ export class GitKV {
     }
     log('readFile', path, opts, typeof result, result.byteLength)
     return result
-    // const result = await this.#memfs.readFile(path, opts)
-    // log('readFile', path, opts, result)
-
-    // return result
-  }
-  isIgnored(path: string) {
-    const sliced = path.slice('/.git/'.length)
-    return this.#dropWrites.includes(sliced)
   }
   async writeFile(
     path: string,
@@ -126,7 +85,8 @@ export class GitKV {
     if (path.startsWith('/.git/refs/heads/')) {
       // TODO use the head tool on this.#db to ensure consistency
       assert(typeof data === 'string', 'data must be a string')
-      await this.#db.kv.set(pathKey, data.trim())
+      const pid = headKeyToPid(pathKey)
+      await this.#db.updateHead(pid, data.trim())
     } else {
       if (typeof data === 'string') {
         data = new TextEncoder().encode(data)
@@ -190,18 +150,17 @@ export class GitKV {
     log('stat pathKey', pathKey)
     let exists = false
     if (path.startsWith('/.git/refs/heads/')) {
-      // TODO use the this.#db function
-      const result = await this.#db.kv.get(pathKey)
-      exists = !!result.versionstamp
+      const pid = headKeyToPid(pathKey)
+      const head = await this.#db.readHead(pid)
+      exists = !!head
     } else {
-      // no need to fetch the whole blob
+      // TODO no need to fetch the whole blob
       const result = await get(this.#db.kv, pathKey)
       exists = !!result
     }
     if (!exists) {
       throw new FileNotFoundError('file not found: ' + path)
     }
-    // TODO make this be statlike
     return {}
   }
   async lstat(path: string) {
@@ -231,14 +190,8 @@ export class GitKV {
 
     return [...prefix, ...pathKey]
   }
-  #getHeadKey() {
-    return getHeadKey(this.#pid)
-  }
 }
-export const getHeadKey = (pid: PID) => {
-  const prefix = getRepoRoot(pid)
-  return [...prefix, 'refs', 'heads', ...pid.branches]
-}
+
 type EncodingOpts = {
   encoding?: 'utf8'
 }

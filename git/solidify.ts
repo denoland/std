@@ -77,7 +77,7 @@ export default async (fs: FS, pool: Poolable[]) => {
           const { sequence } = poolable
           const name = getBranchName(request, sequence)
           log('deleteBranch', name)
-          await fs.deleteBranch(name)
+          await fs.deleteBranch(name, poolable.commit)
         }
       }
     }

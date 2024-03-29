@@ -1,8 +1,7 @@
 import * as keys from './keys.ts'
-import { getHeadKey } from './git/gitkv.ts'
 import { ulid } from '$std/ulid/mod.ts'
 import { PID, PierceReply, Poolable, Reply, Request } from '@/constants.ts'
-import { assert, Debug, isTestMode, openKv } from '@utils'
+import { assert, Debug, isTestMode, openKv, sha1 } from '@utils'
 
 const log = Debug('AI:db')
 export default class DB {
@@ -155,12 +154,41 @@ export default class DB {
     log('deletePool %o', ids)
     await Promise.all(keys.map((key) => this.#kv.delete(key)))
   }
-  async getHead(pid: PID): Promise<string | undefined> {
-    // TODO use this function from within gitkv instead of multiple calls
-    const key = getHeadKey(pid)
+  async readHead(pid: PID): Promise<string | undefined> {
+    const key = keys.getHeadKey(pid)
     log('getHead %o', key)
     const head = await this.#kv.get<string>(key)
-    return head.value || undefined
+    if (head.versionstamp) {
+      assert(sha1.test(head.value), 'Invalid head: ' + head.value)
+      return head.value
+    }
+  }
+  async updateHead(pid: PID, commit: string) {
+    assert(sha1.test(commit), 'Commit not SHA-1: ' + commit)
+    const key = keys.getHeadKey(pid)
+    log('updateHead %o', key)
+    await this.#kv.set(key, commit)
+  }
+  async createBranch(pid: PID, commit: string) {
+    assert(sha1.test(commit), 'Commit not SHA-1: ' + commit)
+    const key = keys.getHeadKey(pid)
+    const result = await this.#kv.atomic().check({ key, versionstamp: null })
+      .set(key, commit).commit()
+    if (!result.ok) {
+      throw new Error('branch already exists: ' + pid.branches.join('/'))
+    }
+  }
+  async deleteBranch(pid: PID, commit: string) {
+    assert(sha1.test(commit), 'Commit not SHA-1: ' + commit)
+    const key = keys.getHeadKey(pid)
+    const current = await this.#kv.get(key)
+    assert(current.versionstamp, 'branch not found: ' + pid.branches.join('/'))
+    assert(current.value === commit, 'branch commit mismatch')
+    const result = await this.#kv.atomic().check(current)
+      .delete(key).commit()
+    if (!result.ok) {
+      throw new Error('branch deletion error: ' + pid.branches.join('/'))
+    }
   }
   async rm(pid: PID) {
     const prefixes = keys.getPrefixes(pid)
@@ -181,7 +209,7 @@ export default class DB {
     await Promise.all(promises)
   }
   watchHead(pid: PID, signal: AbortSignal) {
-    const key = getHeadKey(pid)
+    const key = keys.getHeadKey(pid)
     const stream = this.#kv.watch<string[]>([key])
     return stream.pipeThrough(
       new TransformStream({
@@ -192,6 +220,7 @@ export default class DB {
         },
         transform([event], controller) {
           if (event.versionstamp) {
+            assert(sha1.test(event.value), 'Invalid head: ' + event.value)
             controller.enqueue(event.value)
           }
         },

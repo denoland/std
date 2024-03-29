@@ -71,3 +71,14 @@ export const pidFromRepo = (repo: string): PID => {
   assertPid(pid)
   return pid
 }
+export const getHeadKey = (pid: PID) => {
+  const prefix = getRepoRoot(pid)
+  return [...prefix, 'refs', 'heads', ...pid.branches]
+}
+export const headKeyToPid = (headKey: string[]) => {
+  const [repo, account, repository, refs, heads, ...branches] = headKey
+  assert(repo === KEYSPACES.REPO, 'not a repo path')
+  assert(refs === 'refs', 'not a refs path')
+  assert(heads === 'heads', 'not a heads path')
+  return { account, repository, branches }
+}

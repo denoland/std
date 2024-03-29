@@ -23,7 +23,7 @@ export default async (fs: FS, sequence: number): Promise<Branched> => {
   const { isolate, functionName, params, target: source } = request
 
   const name = getBranchName(request, sequence)
-  const branch = await fs.branch(name)
+  const branch = await fs.createBranch(name)
   const proctype = PROCTYPE.SERIAL
   const origin: SolidRequest = {
     target: branch.pid,

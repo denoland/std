@@ -42,19 +42,21 @@ export default class FS {
     this.#pid = pid
     this.#commit = commit
     this.#db = db
-    this.#gitkv = new GitKV(db, pid)
+    this.#gitkv = GitKV.create(db, pid)
   }
   static open(pid: PID, commit: string, db: DB) {
     return new FS(pid, commit, db)
   }
   static async openHead(pid: PID, db: DB) {
-    const gitkv = new GitKV(db, pid)
-    const head = await gitkv.readHead()
+    const head = await db.readHead(pid)
+    if (!head) {
+      throw new Error('HEAD not found: ' + pid.branches.join('/'))
+    }
     return new FS(pid, head, db)
   }
   static async init(repo: string, db: DB) {
     const pid = pidFromRepo(repo)
-    const fs = { promises: new GitKV(db, pid) }
+    const fs = { promises: GitKV.create(db, pid) }
     await git.init({ fs, dir, defaultBranch: ENTRY_BRANCH })
     log('init complete')
     const author = { name: 'git/init' }
@@ -65,16 +67,17 @@ export default class FS {
       message: 'initial commit',
       author,
     })
-    await fs.promises.updateHead(commit)
+    await db.updateHead(pid, commit)
     return new FS(pid, commit, db)
   }
   static async clone(repo: string, db: DB) {
     const pid = pidFromRepo(repo)
     // TODO detect the mainbranch somehow
     const url = `https://github.com/${pid.account}/${pid.repository}.git`
-    const fs = { promises: new GitKV(db, pid) }
+    const fs = { promises: GitKV.create(db, pid) }
     await git.clone({ fs, dir, url, http, noCheckout: true })
-    const commit = await fs.promises.readHead()
+    const commit = await db.readHead(pid)
+    assert(commit, 'HEAD not found: ' + pid.branches.join('/'))
     return new FS(pid, commit, db)
   }
   logs(filepath?: string, depth?: number) {
@@ -100,7 +103,7 @@ export default class FS {
       tree,
       parent: [this.#commit, ...merges],
     })
-    await fs.promises.updateHead(commit)
+    await this.#db.updateHead(this.#pid, commit)
 
     return new FS(this.#pid, commit, this.#db)
   }
@@ -255,12 +258,18 @@ export default class FS {
     const result = await git.readCommit({ fs, dir, oid: this.#commit })
     return result.commit
   }
-  async branch(name: string) {
-    const pid = await this.#gitkv.createBranch(name, this.commit)
+  async createBranch(name: string) {
+    log('createBranch', name)
+    const branches = [...this.#pid.branches, name]
+    const pid = { ...this.#pid, branches }
+    await this.#db.createBranch(pid, this.#commit)
     return new FS(pid, this.commit, this.#db)
   }
-  async deleteBranch(name: string) {
-    await this.#gitkv.deleteBranch(name)
+  async deleteBranch(name: string, commit: string) {
+    log('deleteBranch', name)
+    const branches = [...this.#pid.branches, name]
+    const pid = { ...this.#pid, branches }
+    await this.#db.deleteBranch(pid, commit)
   }
 }
 type Tree = {
