@@ -156,6 +156,7 @@ export class GitKV {
       exists = !!head
     } else {
       // TODO no need to fetch the whole blob
+      // TODO move all blob ops to db
       const result = await get(this.#db.kv, pathKey)
       exists = !!result
     }

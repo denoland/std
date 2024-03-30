@@ -139,6 +139,9 @@ Deno.test('compound', async (t) => {
     assert(settled, 'settled')
   })
   await t.step('reply from replay', async () => {
+    const head = await db.readHead(halfFs.pid)
+    assert(head, 'could not rollback')
+    await db.updateHead(halfFs.pid, head, halfFs.commit)
     const noCache = Executor.create()
     assert(request)
     const io = await IOChannel.load(halfFs)

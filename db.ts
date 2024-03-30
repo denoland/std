@@ -3,6 +3,8 @@ import { ulid } from '$std/ulid/mod.ts'
 import { PID, PierceReply, Poolable, Reply, Request } from '@/constants.ts'
 import { assert, Debug, isTestMode, openKv, sha1 } from '@utils'
 
+const EXPIRE = 5000
+
 const log = Debug('AI:db')
 export default class DB {
   #kv!: Deno.Kv
@@ -49,8 +51,13 @@ export default class DB {
     const key = keys.getPoolKey(poolable)
     log('pooling start %o', poolable)
     const empty = { key, versionstamp: null }
-    await this.#kv.atomic().check(empty).set(key, poolable).commit()
-    log('pooling done %o', poolable)
+    const result = await this.#kv.atomic().check(empty).set(key, poolable)
+      .commit()
+    if (!result.ok) {
+      log('pooling already done %o', poolable)
+    } else {
+      log('pooling done %o', poolable)
+    }
     return key
   }
   async getHeadlock(pid: PID) {
@@ -72,7 +79,7 @@ export default class DB {
         log('headlock released')
       }
       result = await this.#kv.atomic().check(current).set(key, lockId, {
-        expireIn: 60000,
+        expireIn: EXPIRE,
       }).commit()
     }
     return lockId
@@ -106,7 +113,7 @@ export default class DB {
             return
           }
           result = await this.#kv.atomic().check({ key, versionstamp: null })
-            .set(key, lockId, { expireIn: 5000 }).commit()
+            .set(key, lockId, { expireIn: EXPIRE }).commit()
           if (!result.ok) {
             log('headlock failed, waiting for lock release')
             await headStream.next()
@@ -167,8 +174,12 @@ export default class DB {
     assert(sha1.test(commit), 'Commit not SHA-1: ' + commit)
     const key = keys.getHeadKey(pid)
     log('updateHead %o', key)
-    await this.#kv.atomic().check({ key, versionstamp: null }).set(key, commit)
+    const result = await this.#kv.atomic().check({ key, versionstamp: null })
+      .set(key, commit)
       .commit()
+    if (!result.ok) {
+      throw new Error('head already exists: ' + pid.branches.join('/'))
+    }
   }
   async updateHead(pid: PID, fromCommit: string, toCommit: string) {
     assert(sha1.test(fromCommit), 'Commit not SHA-1: ' + fromCommit)
@@ -177,7 +188,11 @@ export default class DB {
     log('updateHead %o', key)
     const from = await this.#kv.get(key)
     assert(from.value === fromCommit, 'head commit mismatch: ' + fromCommit)
-    await this.#kv.atomic().check(from).set(key, fromCommit).commit()
+    const result = await this.#kv.atomic().check(from).set(key, toCommit)
+      .commit()
+    if (!result.ok) {
+      throw new Error('head update failed: ' + pid.branches.join('/'))
+    }
   }
   async createBranch(pid: PID, commit: string) {
     assert(sha1.test(commit), 'Commit not SHA-1: ' + commit)
@@ -199,6 +214,8 @@ export default class DB {
     if (!result.ok) {
       throw new Error('branch deletion error: ' + pid.branches.join('/'))
     }
+    // TODO should this also be tied in to the changing of the head of the
+    // parent at the same time ?  This would ensure the merge had occured.
   }
   async rm(pid: PID) {
     const prefixes = keys.getPrefixes(pid)
