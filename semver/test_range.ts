@@ -7,7 +7,7 @@ function testComparator(version: SemVer, comparator: Comparator): boolean {
   if (isWildcardComparator(comparator)) {
     return true;
   }
-  const cmp = compare(version, comparator.semver ?? comparator);
+  const cmp = compare(version, comparator);
   switch (comparator.operator) {
     case "=":
     case undefined: {
@@ -50,11 +50,8 @@ function testComparatorSet(
       if (isWildcardComparator(comparator)) {
         continue;
       }
-      const { prerelease } = comparator.semver ?? comparator;
+      const { major, minor, patch, prerelease } = comparator;
       if (prerelease && prerelease.length > 0) {
-        const major = comparator.semver?.major ?? comparator.major;
-        const minor = comparator.semver?.minor ?? comparator.minor;
-        const patch = comparator.semver?.patch ?? comparator.patch;
         if (
           version.major === major && version.minor === minor &&
           version.patch === patch
