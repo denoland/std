@@ -112,12 +112,12 @@ export interface EqualOptionUtil extends MatcherContext {
 }
 
 export interface Colors {
-  comment: {close: string; open: string};
-  content: {close: string; open: string};
-  prop: {close: string; open: string};
-  tag: {close: string; open: string};
-  value: {close: string; open: string};
-};
+  comment: { close: string; open: string };
+  content: { close: string; open: string };
+  prop: { close: string; open: string };
+  tag: { close: string; open: string };
+  value: { close: string; open: string };
+}
 type Indent = (arg0: string) => string;
 type Print = (arg0: unknown) => string;
 
@@ -140,7 +140,7 @@ export interface Config {
   printFunctionName: boolean;
   spacingInner: string;
   spacingOuter: string;
-};
+}
 
 export type Printer = (
   val: unknown,
@@ -155,7 +155,7 @@ interface PluginOptions {
   edgeSpacing: string;
   min: boolean;
   spacing: string;
-};
+}
 
 type Test = (arg0: any) => boolean;
 
@@ -169,7 +169,7 @@ export interface NewSnapshotPlugin {
     printer: Printer,
   ) => string;
   test: Test;
-};
+}
 
 export interface OldSnapshotPlugin {
   print: (
@@ -180,7 +180,7 @@ export interface OldSnapshotPlugin {
     colors: Colors,
   ) => string;
   test: Test;
-};
+}
 
 export type SnapshotPlugin = NewSnapshotPlugin | OldSnapshotPlugin;
 
