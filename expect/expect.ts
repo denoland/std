@@ -50,6 +50,7 @@ import {
   toStrictEqual,
   toThrow,
 } from "./_matchers.ts";
+import { addSerializer } from "./_snapshot_serializer.ts";
 import { isPromiseLike } from "./_utils.ts";
 import {
   any,
@@ -197,6 +198,7 @@ export function expect(value: unknown, customMessage?: string): Expected {
 }
 
 expect.addEqualityTesters = addCustomEqualityTesters;
+expect.addSnapshotSerializers = addSerializer;
 expect.extend = setExtendMatchers;
 
 expect.anything = anything;
