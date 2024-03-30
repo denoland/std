@@ -1,3 +1,15 @@
+### 0.221.0 / 2024.03.27
+
+- feat(expect): add `expect.{closeTo, stringContaining, stringMatching}` (#4508)
+- fix(_tools): update `check_deprecation` path exclusion to recognize Windows
+  directory separators (#4519)
+- fix(crypto): move FNV hashes from TypeScript to Rust/Wasm and implement
+  iteration functionality (#4515)
+- fix(expect/assert): missing constructor equality check (#4512)
+- fix(fs): `SubdirectoryMoveError` extends `Error` correctly (#4528)
+- fix(yaml): speciously restrictive type for `stringify()` (#4507)
+- fix: use hyphens for JSR package exports (#4424)
+
 ### 0.220.1 / 2024.03.15
 
 - fix(tar): leak in `Tar() checks directory entry type` test (#4490)

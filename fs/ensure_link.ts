@@ -4,18 +4,20 @@ import { ensureDir, ensureDirSync } from "./ensure_dir.ts";
 import { toPathString } from "./_to_path_string.ts";
 
 /**
- * Ensures that the hard link exists.
- * If the directory structure does not exist, it is created.
+ * Asynchronously ensures that the hard link exists. If the directory structure
+ * does not exist, it is created.
+ *
+ * @param src The source file path as a string or URL. Directory hard links are
+ * not allowed.
+ * @param dest The destination link path as a string or URL.
+ * @returns A void promise that resolves once the hard link exists.
  *
  * @example
  * ```ts
- * import { ensureSymlink } from "https://deno.land/std@$STD_VERSION/fs/mod.ts";
+ * import { ensureLink } from "https://deno.land/std@$STD_VERSION/fs/ensure_link.ts";
  *
- * ensureSymlink("./folder/targetFile.dat", "./folder/targetFile.link.dat"); // returns promise
+ * await ensureLink("./folder/targetFile.dat", "./folder/targetFile.link.dat");
  * ```
- *
- * @param src the source file path. Directory hard links are not allowed.
- * @param dest the destination link path
  */
 export async function ensureLink(src: string | URL, dest: string | URL) {
   dest = toPathString(dest);
@@ -25,18 +27,20 @@ export async function ensureLink(src: string | URL, dest: string | URL) {
 }
 
 /**
- * Ensures that the hard link exists.
- * If the directory structure does not exist, it is created.
+ * Synchronously ensures that the hard link exists. If the directory structure
+ * does not exist, it is created.
+ *
+ * @param src The source file path as a string or URL. Directory hard links are
+ * not allowed.
+ * @param dest The destination link path as a string or URL.
+ * @returns A void value that returns once the hard link exists.
  *
  * @example
  * ```ts
- * import { ensureSymlinkSync } from "https://deno.land/std@$STD_VERSION/fs/mod.ts";
+ * import { ensureLinkSync } from "https://deno.land/std@$STD_VERSION/fs/ensure_link.ts";
  *
- * ensureSymlinkSync("./folder/targetFile.dat", "./folder/targetFile.link.dat"); // void
+ * ensureLinkSync("./folder/targetFile.dat", "./folder/targetFile.link.dat");
  * ```
- *
- * @param src the source file path. Directory hard links are not allowed.
- * @param dest the destination link path
  */
 export function ensureLinkSync(src: string | URL, dest: string | URL) {
   dest = toPathString(dest);

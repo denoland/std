@@ -2,8 +2,8 @@
 import { assert, assertEquals, assertInstanceOf, fail } from "../assert/mod.ts";
 import {
   crypto as stdCrypto,
+  DIGEST_ALGORITHM_NAMES,
   type DigestAlgorithmName,
-  wasmDigestAlgorithms as DIGEST_ALGORITHM_NAMES,
 } from "./mod.ts";
 import { repeat } from "../bytes/repeat.ts";
 import { encodeHex } from "../encoding/hex.ts";
