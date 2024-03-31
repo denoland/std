@@ -35,9 +35,9 @@
  * @param readable is the contents of the file.
  */
 export type TarEntry = {
-	pathname: string,
-	header: TarHeader,
-	readable: ReadableStream<Uint8Array>
+  pathname: string,
+  header: TarHeader,
+  readable: ReadableStream<Uint8Array>
 }
 
 /**
@@ -45,23 +45,23 @@ export type TarEntry = {
  * The `pad` will be larger if the optional properties are missing.
  */
 export type TarHeader = {
-	name: string
-	mode: string
-	uid: string
-	gid: string
-	size: number
-	mtime: string
-	checksum: string
-	typeflag: string
-	linkname: string
-	magic?: string
-	version?: string
-	uname?: string
-	gname?: string
-	devmajor?: number
-	devminor?: number
-	prefix?: string
-	pad: Uint8Array
+  name: string
+  mode: string
+  uid: string
+  gid: string
+  size: number
+  mtime: string
+  checksum: string
+  typeflag: string
+  linkname: string
+  magic?: string
+  version?: string
+  uname?: string
+  gname?: string
+  devmajor?: number
+  devminor?: number
+  prefix?: string
+  pad: Uint8Array
 }
 
 /**
@@ -110,108 +110,108 @@ export type TarHeader = {
  * ```
  */
 export class UnTar extends ReadableStream<TarEntry> {
-	/**
-	 * Constructs a new instance.
-	 */
-	constructor(readable: ReadableStream<Uint8Array>) {
-		const reader = readable.pipeThrough(new TransformStream<Uint8Array, Uint8Array>({
-			push: new Uint8Array(0),
-			transform(chunk, controller) {
-				const x = new Uint8Array(this.push.length + chunk.length)
-				x.set(this.push)
-				x.set(chunk, this.push.length)
-				for (let i = 0; i < x.length; i += 512)
-					controller.enqueue(x.slice(i, i + 512))
-				this.push = x.slice(x.length % 512)
-			},
-			flush(controller) {
-				if (this.push.length) // This should always be zero!
-					controller.enqueue(this.push)
-			}
-		} as Transformer<Uint8Array, Uint8Array> & { push: Uint8Array })).getReader()
+  /**
+   * Constructs a new instance.
+   */
+  constructor(readable: ReadableStream<Uint8Array>) {
+    const reader = readable.pipeThrough(new TransformStream<Uint8Array, Uint8Array>({
+      push: new Uint8Array(0),
+      transform(chunk, controller) {
+        const x = new Uint8Array(this.push.length + chunk.length)
+        x.set(this.push)
+        x.set(chunk, this.push.length)
+        for (let i = 0; i < x.length; i += 512)
+          controller.enqueue(x.slice(i, i + 512))
+        this.push = x.slice(x.length % 512)
+      },
+      flush(controller) {
+        if (this.push.length) // This should always be zero!
+          controller.enqueue(this.push)
+      }
+    } as Transformer<Uint8Array, Uint8Array> & { push: Uint8Array })).getReader()
 
-		let header: TarHeader | undefined
-		super({
-			cancelled: false,
-			async pull(controller) {
-				while (header !== undefined)
-					await new Promise(a => setTimeout(a, 0))
+    let header: TarHeader | undefined
+    super({
+      cancelled: false,
+      async pull(controller) {
+        while (header !== undefined)
+          await new Promise(a => setTimeout(a, 0))
 
-				while (true) {
-					const { done, value } = await reader.read()
-					if (done || value.reduce((x, y) => x + y) === 0)
-						return controller.close()
+        while (true) {
+          const { done, value } = await reader.read()
+          if (done || value.reduce((x, y) => x + y) === 0)
+            return controller.close()
 
-					const decoder = new TextDecoder()
-					header = {
-						name: decoder.decode(value.slice(0, 100)).replaceAll('\0', ''),
-						mode: decoder.decode(value.slice(100, 108 - 2)),
-						uid: decoder.decode(value.slice(108, 116 - 2)),
-						gid: decoder.decode(value.slice(116, 124 - 2)),
-						size: parseInt(decoder.decode(value.slice(124, 136)).trimEnd(), 8), // Support tarballs with files up to 64 GiBs.
-						mtime: decoder.decode(value.slice(136, 148 - 1)),
-						checksum: decoder.decode(value.slice(148, 156 - 2)),
-						typeflag: decoder.decode(value.slice(156, 157)),
-						linkname: decoder.decode(value.slice(157, 257)).replaceAll('\0', ''),
-						pad: value.slice(257)
-					}
-					if ([117, 115, 116, 97, 114, 0, 48, 48].every((byte, i) => value[i + 257] === byte))
-						header = {
-							...header,
-							magic: decoder.decode(value.slice(257, 263)),
-							version: decoder.decode(value.slice(263, 265)),
-							uname: decoder.decode(value.slice(265, 297)).replaceAll('\0', ''),
-							gname: decoder.decode(value.slice(297, 329)).replaceAll('\0', ''),
-							devmajor: value.slice(329, 337).reduce((x, y) => x + y),
-							devminor: value.slice(337, 345).reduce((x, y) => x + y),
-							prefix: decoder.decode(value.slice(345, 500)).replaceAll('\0', ''),
-							pad: value.slice(500)
-						}
-					if (header.typeflag !== '0' && header.typeflag !== '\0')
-						continue
+          const decoder = new TextDecoder()
+          header = {
+            name: decoder.decode(value.slice(0, 100)).replaceAll('\0', ''),
+            mode: decoder.decode(value.slice(100, 108 - 2)),
+            uid: decoder.decode(value.slice(108, 116 - 2)),
+            gid: decoder.decode(value.slice(116, 124 - 2)),
+            size: parseInt(decoder.decode(value.slice(124, 136)).trimEnd(), 8), // Support tarballs with files up to 64 GiBs.
+            mtime: decoder.decode(value.slice(136, 148 - 1)),
+            checksum: decoder.decode(value.slice(148, 156 - 2)),
+            typeflag: decoder.decode(value.slice(156, 157)),
+            linkname: decoder.decode(value.slice(157, 257)).replaceAll('\0', ''),
+            pad: value.slice(257)
+          }
+          if ([117, 115, 116, 97, 114, 0, 48, 48].every((byte, i) => value[i + 257] === byte))
+            header = {
+              ...header,
+              magic: decoder.decode(value.slice(257, 263)),
+              version: decoder.decode(value.slice(263, 265)),
+              uname: decoder.decode(value.slice(265, 297)).replaceAll('\0', ''),
+              gname: decoder.decode(value.slice(297, 329)).replaceAll('\0', ''),
+              devmajor: value.slice(329, 337).reduce((x, y) => x + y),
+              devminor: value.slice(337, 345).reduce((x, y) => x + y),
+              prefix: decoder.decode(value.slice(345, 500)).replaceAll('\0', ''),
+              pad: value.slice(500)
+            }
+          if (header.typeflag !== '0' && header.typeflag !== '\0')
+            continue
 
-					const size = header.size
-					let i = Math.ceil(size / 512)
-					const isCancelled = () => this.cancelled
+          const size = header.size
+          let i = Math.ceil(size / 512)
+          const isCancelled = () => this.cancelled
 
-					controller.enqueue({
-						pathname: (header.prefix ? header.prefix + '/' : '') + header.name,
-						header,
-						readable: new ReadableStream<Uint8Array>({
-							async pull(controller) {
-								if (i > 0) {
-									const { done, value } = await reader.read()
-									if (done) {
-										header = undefined
-										return controller.close()
-									}
-									controller.enqueue(i === 1 ? value.slice(0, size % 512) : value)
-									--i
-								}
-								else {
-									header = undefined
-									if (isCancelled())
-										reader.cancel()
-									controller.close()
-								}
-							},
-							async cancel() {
-								while (i-- > 0) {
-									const { done } = await reader.read()
-									if (done)
-										break
-								}
-								header = undefined
-							}
-						})
-					})
-					break
-				}
-			},
-			cancel() {
-				this.cancelled = true
-			}
-		} as UnderlyingSource & { cancelled: boolean }
-		)
-	}
+          controller.enqueue({
+            pathname: (header.prefix ? header.prefix + '/' : '') + header.name,
+            header,
+            readable: new ReadableStream<Uint8Array>({
+              async pull(controller) {
+                if (i > 0) {
+                  const { done, value } = await reader.read()
+                  if (done) {
+                    header = undefined
+                    return controller.close()
+                  }
+                  controller.enqueue(i === 1 ? value.slice(0, size % 512) : value)
+                  --i
+                }
+                else {
+                  header = undefined
+                  if (isCancelled())
+                    reader.cancel()
+                  controller.close()
+                }
+              },
+              async cancel() {
+                while (i-- > 0) {
+                  const { done } = await reader.read()
+                  if (done)
+                    break
+                }
+                header = undefined
+              }
+            })
+          })
+          break
+        }
+      },
+      cancel() {
+        this.cancelled = true
+      }
+    } as UnderlyingSource & { cancelled: boolean }
+    )
+  }
 }
