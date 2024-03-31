@@ -120,9 +120,9 @@ export class UnTar extends ReadableStream<TarEntry> {
         const x = new Uint8Array(this.push.length + chunk.length)
         x.set(this.push)
         x.set(chunk, this.push.length)
-        for (let i = 0; i < x.length; i += 512)
-          controller.enqueue(x.slice(i, i + 512))
-        this.push = x.slice(x.length % 512)
+        for (let i = 512; i <= x.length; i += 512)
+          controller.enqueue(x.slice(i - 512, i))
+        this.push = x.length % 512 ? x.slice(-x.length % 512) : new Uint8Array(0)
       },
       flush(controller) {
         if (this.push.length) // This should always be zero!
@@ -185,8 +185,7 @@ export class UnTar extends ReadableStream<TarEntry> {
                     header = undefined
                     return controller.close()
                   }
-                  controller.enqueue(i === 1 ? value.slice(0, size % 512) : value)
-                  --i
+                  controller.enqueue(i-- === 1 ? value.slice(0, size % 512) : value)
                 }
                 else {
                   header = undefined
@@ -196,11 +195,12 @@ export class UnTar extends ReadableStream<TarEntry> {
                 }
               },
               async cancel() {
-                while (i-- > 0) {
-                  const { done } = await reader.read()
-                  if (done)
-                    break
-                }
+                if (i !== 1)
+                  while (i-- > 0) {
+                    const { done } = await reader.read()
+                    if (done)
+                      break
+                  }
                 header = undefined
               }
             })
