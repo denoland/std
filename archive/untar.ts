@@ -29,151 +29,39 @@
  * THE SOFTWARE.
  */
 
-import {
-  FileTypes,
-  HEADER_LENGTH,
-  readBlock,
-  type TarMeta,
-  USTAR_STRUCTURE,
-  type UstarFields,
-} from "./_common.ts";
-import { readAll } from "../io/read_all.ts";
-import type { Reader } from "../io/types.ts";
-
 /**
- * Extend TarMeta with the `linkName` property so that readers can access
- * symbolic link values without polluting the world of archive writers.
+ * @param pathname is what the file is called.
+ * @param header is the header of the file.
+ * @param readable is the contents of the file.
  */
-export interface TarMetaWithLinkName extends TarMeta {
-  /** File name of the symbolic link. */
-  linkName?: string;
+export type TarEntry = {
+	pathname: string,
+	header: TarHeader,
+	readable: ReadableStream<Uint8Array>
 }
 
-/** Tar header with raw, unprocessed bytes as values. */
+/**
+ * The header of a file decoded into an object, where `pad` is the remaining bytes of the header.
+ * The `pad` will be larger if the optional properties are missing.
+ */
 export type TarHeader = {
-  [key in UstarFields]: Uint8Array;
-};
-
-// https://pubs.opengroup.org/onlinepubs/9699919799/utilities/pax.html#tag_20_92_13_06
-// eight checksum bytes taken to be ascii spaces (decimal value 32)
-const initialChecksum = 8 * 32;
-
-/**
- * Trims a Uint8Array by removing any trailing zero bytes.
- *
- * @param buffer The Uint8Array to trim.
- * @returns A new Uint8Array with trailing zero bytes removed, or the original
- * buffer if no trailing zero bytes are found.
- */
-function trim(buffer: Uint8Array): Uint8Array {
-  const index = buffer.indexOf(0);
-  return index === -1 ? buffer : buffer.subarray(0, index);
-}
-
-/**
- * Parse file header in a tar archive
- * @param length
- */
-function parseHeader(buffer: Uint8Array): TarHeader {
-  const data = {} as TarHeader;
-  let offset = 0;
-  USTAR_STRUCTURE.forEach(function (value) {
-    const arr = buffer.subarray(offset, offset + value.length);
-    data[value.field] = arr;
-    offset += value.length;
-  });
-  return data;
-}
-
-/** Tar entry */
-export interface TarEntry extends TarMetaWithLinkName {}
-
-/** Contains tar header metadata and a reader to the entry's body. */
-export class TarEntry implements Reader {
-  #header: TarHeader;
-  #reader: Reader | (Reader & Deno.Seeker);
-  #size: number;
-  #read = 0;
-  #consumed = false;
-  #entrySize: number;
-
-  /** Constructs a new instance. */
-  constructor(
-    meta: TarMetaWithLinkName,
-    header: TarHeader,
-    reader: Reader | (Reader & Deno.Seeker),
-  ) {
-    Object.assign(this, meta);
-    this.#header = header;
-    this.#reader = reader;
-
-    // File Size
-    this.#size = this.fileSize || 0;
-    // Entry Size
-    const blocks = Math.ceil(this.#size / HEADER_LENGTH);
-    this.#entrySize = blocks * HEADER_LENGTH;
-  }
-
-  /** Returns whether the entry has already been consumed. */
-  get consumed(): boolean {
-    return this.#consumed;
-  }
-
-  /**
-   * Reads up to `p.byteLength` bytes of the tar entry into `p`. It resolves to
-   * the number of bytes read (`0 < n <= p.byteLength`) and rejects if any
-   * error encountered. Even if read() resolves to n < p.byteLength, it may use
-   * all of `p` as scratch space during the call. If some data is available but
-   * not `p.byteLength bytes`, read() conventionally resolves to what is available
-   * instead of waiting for more.
-   */
-  async read(p: Uint8Array): Promise<number | null> {
-    // Bytes left for entry
-    const entryBytesLeft = this.#entrySize - this.#read;
-    const bufSize = Math.min(
-      // bufSize can't be greater than p.length nor bytes left in the entry
-      p.length,
-      entryBytesLeft,
-    );
-
-    if (entryBytesLeft <= 0) {
-      this.#consumed = true;
-      return null;
-    }
-
-    const block = new Uint8Array(bufSize);
-    const n = await readBlock(this.#reader, block);
-    const bytesLeft = this.#size - this.#read;
-
-    this.#read += n || 0;
-    if (n === null || bytesLeft <= 0) {
-      if (n === null) this.#consumed = true;
-      return null;
-    }
-
-    // Remove zero filled
-    const offset = bytesLeft < n ? bytesLeft : n;
-    p.set(block.subarray(0, offset), 0);
-
-    return offset < 0 ? n - Math.abs(offset) : offset;
-  }
-
-  /** Discords the current entry. */
-  async discard() {
-    // Discard current entry
-    if (this.#consumed) return;
-    this.#consumed = true;
-
-    if (typeof (this.#reader as Deno.Seeker).seek === "function") {
-      await (this.#reader as Deno.Seeker).seek(
-        this.#entrySize - this.#read,
-        Deno.SeekMode.Current,
-      );
-      this.#read = this.#entrySize;
-    } else {
-      await readAll(this);
-    }
-  }
+	name: string
+	mode: string
+	uid: string
+	gid: string
+	size: number
+	mtime: string
+	checksum: string
+	typeflag: string
+	linkname: string
+	magic?: string
+	version?: string
+	uname?: string
+	gname?: string
+	devmajor?: number
+	devminor?: number
+	prefix?: string
+	pad: Uint8Array
 }
 
 /**
@@ -183,167 +71,147 @@ export class TarEntry implements Reader {
  * archives typically have the '.tar' extension.
  *
  * ### Supported file formats
- * Only the ustar file format is supported.  This is the most common format. The
- * pax file format may also be read, but additional features, such as longer
- * filenames may be ignored.
+ * Only the ustar file format is supported.  This is the most common format.
+ * The numeric extension feature of the size to allow up to 64 GiBs is also supported.
  *
  * ### Usage
- * The workflow is to create a Untar instance referencing the source of the tar file.
- * You can then use the untar reference to extract files one at a time. See the worked
- * example below for details.
- *
- * ### Understanding compression
- * A tar archive may be compressed, often identified by the `.tar.gz` extension.
- * This utility does not support decompression which must be done before extracting
- * the files.
+ * The workflow is to create a UnTar instance passing in a ReadableStream of the archive.
+ * You can then iterate over the instance to pull out the entries one by one and decide
+ * if you want to read it or skip over it.  Each entry's readable stream must either be
+ * consumed or the `cancel` method must be called on it. The next entry won't resolve until
+ * either action is done on the ReadableStream.
  *
  * @example
  * ```ts
- * import { Untar } from "https://deno.land/std@$STD_VERSION/archive/untar.ts";
- * import { ensureFile } from "https://deno.land/std@$STD_VERSION/fs/ensure_file.ts";
- * import { ensureDir } from "https://deno.land/std@$STD_VERSION/fs/ensure_dir.ts";
- * import { copy } from "https://deno.land/std@$STD_VERSION/io/copy.ts";
+ * for await (
+ *   const entry of new UnTar((await Deno.open('./out.tar.gz')).readable)
+ * ) {
+ *   console.log(entry.pathname);
+ *   entry.readable.pipeTo((await Deno.create(file.pathname)).writable);
+ * }
+ * ```
  *
- * using reader = await Deno.open("./out.tar", { read: true });
- * const untar = new Untar(reader);
+ * ### Decompression
+ * UnTar does not handle decompression itself. One must first run it through the required
+ * decompression stream before passing the ReadableStream to UnTar.
  *
- * for await (const entry of untar) {
- *   console.log(entry); // metadata
- *
- *   if (entry.type === "directory") {
- *     await ensureDir(entry.fileName);
- *     continue;
- *   }
- *
- *   await ensureFile(entry.fileName);
- *   using file = await Deno.open(entry.fileName, { write: true });
- *   // <entry> is a reader.
- *   await copy(entry, file);
+ * @example
+ * ```ts
+ * for await (
+ *   const entry of new UnTar(
+ *     (await Deno.open('./out.tar.gz'))
+ *       .readable
+ *       .pipeThrough(new DecompressionStream('gzip'))
+ *   )
+ * ) {
+ *   console.log(entry.pathname);
+ *   entry.readable.pipeTo((await Deno.create(file.pathname)).writable);
  * }
  * ```
  */
-export class Untar {
-  /** Internal reader. */
-  reader: Reader;
-  /** Internal block. */
-  block: Uint8Array;
-  #entry: TarEntry | undefined;
+export class UnTar extends ReadableStream<TarEntry> {
+	/**
+	 * Constructs a new instance.
+	 */
+	constructor(readable: ReadableStream<Uint8Array>) {
+		const reader = readable.pipeThrough(new TransformStream<Uint8Array, Uint8Array>({
+			push: new Uint8Array(0),
+			transform(chunk, controller) {
+				const x = new Uint8Array(this.push.length + chunk.length)
+				x.set(this.push)
+				x.set(chunk, this.push.length)
+				for (let i = 0; i < x.length; i += 512)
+					controller.enqueue(x.slice(i, i + 512))
+				this.push = x.slice(x.length % 512)
+			},
+			flush(controller) {
+				if (this.push.length) // This should always be zero!
+					controller.enqueue(this.push)
+			}
+		} as Transformer<Uint8Array, Uint8Array> & { push: Uint8Array })).getReader()
 
-  /** Constructs a new instance. */
-  constructor(reader: Reader) {
-    this.reader = reader;
-    this.block = new Uint8Array(HEADER_LENGTH);
-  }
+		let header: TarHeader | undefined
+		super({
+			cancelled: false,
+			async pull(controller) {
+				while (header !== undefined)
+					await new Promise(a => setTimeout(a, 0))
 
-  #checksum(header: Uint8Array): number {
-    let sum = initialChecksum;
-    for (let i = 0; i < HEADER_LENGTH; i++) {
-      if (i >= 148 && i < 156) {
-        // Ignore checksum header
-        continue;
-      }
-      sum += header[i]!;
-    }
-    return sum;
-  }
+				while (true) {
+					const { done, value } = await reader.read()
+					if (done || value.reduce((x, y) => x + y) === 0)
+						return controller.close()
 
-  async #getAndValidateHeader(): Promise<TarHeader | null> {
-    await readBlock(this.reader, this.block);
-    const header = parseHeader(this.block);
+					const decoder = new TextDecoder()
+					header = {
+						name: decoder.decode(value.slice(0, 100)).replaceAll('\0', ''),
+						mode: decoder.decode(value.slice(100, 108 - 2)),
+						uid: decoder.decode(value.slice(108, 116 - 2)),
+						gid: decoder.decode(value.slice(116, 124 - 2)),
+						size: parseInt(decoder.decode(value.slice(124, 136)).trimEnd(), 8), // Support tarballs with files up to 64 GiBs.
+						mtime: decoder.decode(value.slice(136, 148 - 1)),
+						checksum: decoder.decode(value.slice(148, 156 - 2)),
+						typeflag: decoder.decode(value.slice(156, 157)),
+						linkname: decoder.decode(value.slice(157, 257)).replaceAll('\0', ''),
+						pad: value.slice(257)
+					}
+					if ([117, 115, 116, 97, 114, 0, 48, 48].every((byte, i) => value[i + 257] === byte))
+						header = {
+							...header,
+							magic: decoder.decode(value.slice(257, 263)),
+							version: decoder.decode(value.slice(263, 265)),
+							uname: decoder.decode(value.slice(265, 297)).replaceAll('\0', ''),
+							gname: decoder.decode(value.slice(297, 329)).replaceAll('\0', ''),
+							devmajor: value.slice(329, 337).reduce((x, y) => x + y),
+							devminor: value.slice(337, 345).reduce((x, y) => x + y),
+							prefix: decoder.decode(value.slice(345, 500)).replaceAll('\0', ''),
+							pad: value.slice(500)
+						}
+					if (header.typeflag !== '0' && header.typeflag !== '\0')
+						continue
 
-    // calculate the checksum
-    const decoder = new TextDecoder();
-    const checksum = this.#checksum(this.block);
+					const size = header.size
+					let i = Math.ceil(size / 512)
+					const isCancelled = () => this.cancelled
 
-    if (parseInt(decoder.decode(header.checksum), 8) !== checksum) {
-      if (checksum === initialChecksum) {
-        // EOF
-        return null;
-      }
-      throw new Error("checksum error");
-    }
-
-    const magic = decoder.decode(header.ustar);
-
-    if (magic.indexOf("ustar")) {
-      throw new Error(`unsupported archive format: ${magic}`);
-    }
-
-    return header;
-  }
-
-  #getMetadata(header: TarHeader): TarMetaWithLinkName {
-    const decoder = new TextDecoder();
-    // get meta data
-    const meta: TarMetaWithLinkName = {
-      fileName: decoder.decode(trim(header.fileName)),
-    };
-    const fileNamePrefix = trim(header.fileNamePrefix);
-    if (fileNamePrefix.byteLength > 0) {
-      meta.fileName = decoder.decode(fileNamePrefix) + "/" + meta.fileName;
-    }
-    (["fileMode", "mtime", "uid", "gid"] as const)
-      .forEach((key) => {
-        const arr = trim(header[key]);
-        if (arr.byteLength > 0) {
-          meta[key] = parseInt(decoder.decode(arr), 8);
-        }
-      });
-    (["owner", "group", "type"] as const)
-      .forEach((key) => {
-        const arr = trim(header[key]);
-        if (arr.byteLength > 0) {
-          meta[key] = decoder.decode(arr);
-        }
-      });
-
-    meta.fileSize = parseInt(decoder.decode(header.fileSize), 8);
-    meta.type = FileTypes[parseInt(meta.type!)] ?? meta.type;
-
-    // Only create the `linkName` property for symbolic links to minimize
-    // the effect on existing code that only deals with non-links.
-    if (meta.type === "symlink") {
-      meta.linkName = decoder.decode(trim(header.linkName));
-    }
-
-    return meta;
-  }
-
-  /**
-   * Extract the next entry of the tar archive.
-   *
-   * @returns A TarEntry with header metadata and a reader to the entry's
-   *          body, or null if there are no more entries to extract.
-   */
-  async extract(): Promise<TarEntry | null> {
-    if (this.#entry && !this.#entry.consumed) {
-      // If entry body was not read, discard the body
-      // so we can read the next entry.
-      await this.#entry.discard();
-    }
-
-    const header = await this.#getAndValidateHeader();
-    if (header === null) return null;
-
-    const meta = this.#getMetadata(header);
-
-    this.#entry = new TarEntry(meta, header, this.reader);
-
-    return this.#entry;
-  }
-
-  /**
-   * Iterate over all entries of the tar archive.
-   *
-   * @yields A TarEntry with tar header metadata and a reader to the entry's body.
-   */
-  async *[Symbol.asyncIterator](): AsyncIterableIterator<TarEntry> {
-    while (true) {
-      const entry = await this.extract();
-
-      if (entry === null) return;
-
-      yield entry;
-    }
-  }
+					controller.enqueue({
+						pathname: (header.prefix ? header.prefix + '/' : '') + header.name,
+						header,
+						readable: new ReadableStream<Uint8Array>({
+							async pull(controller) {
+								if (i > 0) {
+									const { done, value } = await reader.read()
+									if (done) {
+										header = undefined
+										return controller.close()
+									}
+									controller.enqueue(i === 1 ? value.slice(0, size % 512) : value)
+									--i
+								}
+								else {
+									header = undefined
+									if (isCancelled())
+										reader.cancel()
+									controller.close()
+								}
+							},
+							async cancel() {
+								while (i-- > 0) {
+									const { done } = await reader.read()
+									if (done)
+										break
+								}
+								header = undefined
+							}
+						})
+					})
+					break
+				}
+			},
+			cancel() {
+				this.cancelled = true
+			}
+		} as UnderlyingSource & { cancelled: boolean }
+		)
+	}
 }
