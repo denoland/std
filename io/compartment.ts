@@ -11,25 +11,11 @@ const log = Debug('AI:compartment')
 const cache = new Map()
 
 export default class Compartment {
-  #module!: Isolate
+  #module: Isolate
   #check() {
     assert(this.#module, 'code not loaded')
   }
-  static async create(isolate: string) {
-    if (!cache.has(isolate)) {
-      const compartment = new Compartment()
-      compartment.#load(isolate)
-      cache.set(isolate, compartment)
-    }
-    await Promise.resolve() // simulates loading from filesystem
-    return cache.get(isolate)
-  }
-  get api() {
-    this.#check()
-    return this.#module.api
-  }
-  #load(isolate: string) {
-    assert(!this.#module, 'module already loaded: ' + isolate)
+  private constructor(isolate: string) {
     log('load isolate:', isolate)
     assert(isolates[isolate as keyof typeof isolates], `not found: ${isolate}`)
     this.#module = isolates[isolate as keyof typeof isolates] as Isolate
@@ -39,6 +25,18 @@ export default class Compartment {
     assert(Object.keys(this.#module.api).length, 'api not exported')
     const missing = Object.keys(api).filter((key) => !functions[key])
     assert(!missing.length, `Missing functions: ${missing.join(', ')}`)
+  }
+  static async create(isolate: string) {
+    if (!cache.has(isolate)) {
+      const compartment = new Compartment(isolate)
+      cache.set(isolate, compartment)
+      await Promise.resolve() // simulates loading from filesystem
+    }
+    return cache.get(isolate)
+  }
+  get api() {
+    this.#check()
+    return this.#module.api
   }
   /**
    * Mount the isolate as a side effect, and give it the chance to initialize

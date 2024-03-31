@@ -76,13 +76,15 @@ export class QueueCradle implements Cradle {
     log('dispatches:', isolate, Object.keys(pierces))
     return pierces
   }
-  async ping(params?: Params) {
+  ping(params?: Params) {
+    log('ping %o', params)
     params = params || {}
-    type K = ReturnType<Cradle['ping']>
-    const result = await this.#queue.push<K>('ping', params)
-    return result
+    const functions = this.#compartment.functions(this.#api)
+    // TODO make ts work correctly here
+    const ping = functions.ping as Cradle['ping']
+    return ping(params)
   }
-  async probe(params: { repo: string }) {
+  async probe(params: { repo?: string; pid?: PID }) {
     type K = ReturnType<Cradle['probe']>
     const result = await this.#queue.push<K>('probe', params)
     return result as { pid: PID; head: string } | void

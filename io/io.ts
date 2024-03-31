@@ -67,6 +67,8 @@ export default class IO {
         log('solid reply %o', reply)
         await this.induct(reply)
       }
+      // so pierce replies would be totally removed, and induct would be as a
+      // batch
     }
   }
   async #solidifyPool(pid: PID, reply?: SolidReply, fs?: FS) {

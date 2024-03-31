@@ -91,7 +91,7 @@ export default async (fs: FS, pool: Poolable[]) => {
   }
   io.save()
 
-  const { commit: commit } = await fs.writeCommit('pool', parents)
+  const { commit } = await fs.writeCommit('pool', parents)
 
   log('head', commit)
   for (const reply of replies) {
