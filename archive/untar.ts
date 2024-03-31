@@ -215,3 +215,47 @@ export class UnTar extends ReadableStream<TarEntry> {
     )
   }
 }
+
+/**
+ * Like the UnTar class, taking in a ReadableStream<Uint8Array> and outputs a ReadableStream<Uint8Array>
+ *
+ * @example
+ * ```ts
+ * await Deno.mkdir('out/')
+ * for await (
+ *   const entry of (await Deno.open('./out.tar.gz'))
+ *     .readable
+ *     .pipeThrough(new DecompressionStream('gzip'))
+ *     .pipeThrough(new UnTarStream())
+ * ) {
+ *   await entry.readable.pipeTo((await Deno.create('out/' + entry.pathname)).writable);
+ * }
+ * ```
+ */
+export class UnTarStream {
+  #readable: ReadableStream<TarEntry>
+  #writable: WritableStream<Uint8Array>
+  /**
+   * Creates an instance.
+   */
+  constructor() {
+    const { readable, writable } = new TransformStream<Uint8Array, Uint8Array>()
+    const unTar = new UnTar(readable)
+    this.#readable = unTar
+    this.#writable = writable
+  }
+
+  /**
+   * Returns a ReadableStream of the files in the archive.
+   */
+  get readable(): ReadableStream<TarEntry> {
+    return this.#readable
+  }
+
+  /**
+   * Returns a WritableStream for the archive to be expanded.
+   */
+  get writable(): WritableStream<Uint8Array> {
+    return this.#writable
+  }
+}

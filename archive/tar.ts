@@ -219,3 +219,58 @@ export class Tar {
     return this.#readable
   }
 }
+
+/**
+ * Like the Tar class, but takes in a ReadableStream<TarFile> and outputs a ReadableStream<Uint8Array>
+ *
+ * @example
+ * ```ts
+ * ReadableStream.from([
+ *   {
+ *     pathname: 'deno.txt',
+ *     size: (await Deno.stat('deno.txt')).size,
+ *     iterable: (await Deno.open('deno.txt')).readable
+ *   },
+ *   {
+ *     pathname: 'filename_in_archive.txt',
+ *     size: (await Deno.stat('filename_in_archive.txt')).size,
+ *     iterable: (await Deno.open('filename_in_archive.txt')).readable
+ *   }
+ * ])
+ *   .pipeThrough(new TarStream())
+ *   .pipeThrough(new CompressionStream('gzip'))
+ *   .pipeTo((await Deno.create('./out.tar.gz')))
+ * ```
+ */
+export class TarStream {
+  #readable: ReadableStream<Uint8Array>
+  #writable: WritableStream<TarFile>
+  /**
+   * Creates an instance.
+   */
+  constructor() {
+    const { readable, writable } = new TransformStream<TarFile, TarFile>()
+    const tar = new Tar()
+    this.#readable = tar.readable
+    this.#writable = writable;
+    (async () => {
+      for await (const tarFile of readable)
+        tar.append(tarFile)
+      tar.close()
+    })()
+  }
+
+  /**
+   * Returns a ReadableStream of the archive.
+   */
+  get readable(): ReadableStream<Uint8Array> {
+    return this.#readable
+  }
+
+  /**
+   * Returns a WritableStream for the files to be archived.
+   */
+  get writable(): WritableStream<TarFile> {
+    return this.#writable
+  }
+}
