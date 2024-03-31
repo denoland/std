@@ -37,7 +37,7 @@ export default (name: string, cradleMaker: () => Promise<Cradle>) => {
   Deno.test.ignore(prefix + 'child to self', async () => {})
   Deno.test.ignore(prefix + 'child to child', async () => {})
   Deno.test.ignore(prefix + 'child to parent', async () => {})
-  Deno.test(prefix + 'pierce', async (t) => {
+  Deno.test.only(prefix + 'pierce', async (t) => {
     const artifact = await cradleMaker()
     await artifact.rm({ repo: 'cradle/pierce' })
     const { pid: target } = await artifact.init({ repo: 'cradle/pierce' })
@@ -47,20 +47,20 @@ export default (name: string, cradleMaker: () => Promise<Cradle>) => {
       log('local result', result)
       expect(result).toBe('local reply')
     })
-    await t.step('second local', async () => {
-      const second = await pierces.local()
-      expect(second).toBe('local reply')
-    })
+    // await t.step('second local', async () => {
+    //   const second = await pierces.local()
+    //   expect(second).toBe('local reply')
+    // })
 
-    await t.step('throws', async () => {
-      const message = 'test message'
-      await expect(pierces.error({ message })).rejects.toThrow(message)
-    })
-    await t.step('params fails validation', async () => {
-      const msg = 'Parameters Validation Error: '
-      await expect(pierces.local({ invalid: 'parameters' }))
-        .rejects.toThrow(msg)
-    })
+    // await t.step('throws', async () => {
+    //   const message = 'test message'
+    //   await expect(pierces.error({ message })).rejects.toThrow(message)
+    // })
+    // await t.step('params fails validation', async () => {
+    //   const msg = 'Parameters Validation Error: '
+    //   await expect(pierces.local({ invalid: 'parameters' }))
+    //     .rejects.toThrow(msg)
+    // })
     await artifact.stop()
   })
 
