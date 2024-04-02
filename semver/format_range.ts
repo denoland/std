@@ -3,10 +3,8 @@ import { format } from "./format.ts";
 import type { Comparator, Range } from "./types.ts";
 
 function formatComparator(comparator: Comparator): string {
-  const { semver, operator } = comparator;
-  return `${operator === undefined ? "" : operator}${
-    format(semver ?? comparator)
-  }`;
+  const { operator } = comparator;
+  return `${operator === undefined ? "" : operator}${format(comparator)}`;
 }
 
 /**
