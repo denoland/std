@@ -5,6 +5,10 @@ check-filename = false
 # variable name used by node-semver
 _fpr = "_fpr"
 
+[default.extend-words]
+ws = "ws"
+
+
 [files]
 extend-exclude = [
   "*.json",
