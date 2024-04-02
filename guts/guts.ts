@@ -1,14 +1,14 @@
 // the Grand Unified Test Suite™
 
 import { expect, log } from '@utils'
-import { Cradle } from '../api/web-client.types.ts'
+import { Artifact } from '../api/web-client.types.ts'
 import processMgmt from './process-mgmt.ts'
 import aiCalls from './ai-calls.ts'
 import splices from './splices.ts'
 import { Debug } from '@utils'
 const isolate = 'io-fixture'
 
-export default (name: string, cradleMaker: () => Promise<Cradle>) => {
+export default (name: string, cradleMaker: () => Promise<Artifact>) => {
   const prefix = name + ': '
 
   Deno.test(prefix + 'io', async (t) => {

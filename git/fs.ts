@@ -67,7 +67,10 @@ export default class FS {
       message: 'initial commit',
       author,
     })
-    await db.initHead(pid, commit)
+    // atomics should really only be called from atomic compliant interfaces
+    const atomic = db.atomic()
+    atomic.createBranch(pid, commit)
+    await atomic.commit()
     return new FS(pid, commit, db)
   }
   static async clone(repo: string, db: DB) {
@@ -80,12 +83,16 @@ export default class FS {
     assert(commit, 'HEAD not found: ' + pid.branches.join('/'))
     return new FS(pid, commit, db)
   }
+  branch(pid: PID) {
+    // TODO check this is the parent of the branch
+    return new FS(pid, this.#commit, this.#db)
+  }
   logs(filepath?: string, depth?: number) {
     const { fs } = this
     return git.log({ fs, dir, filepath, depth })
   }
 
-  async writeCommit(message: string = '', merges: string[] = []) {
+  async writeCommitObject(message = '', merges: string[] = []) {
     assert(this.#upserts.size > 0 || this.#deletes.size > 0, 'empty commit')
     assert(merges.every((oid) => sha1.test(oid)), 'Merge not SHA-1')
     const tree = await this.#flush()
@@ -103,7 +110,6 @@ export default class FS {
       tree,
       parent: [this.#commit, ...merges],
     })
-    await this.#db.updateHead(this.#pid, this.#commit, nextCommit)
 
     return new FS(this.#pid, nextCommit, this.#db)
   }
@@ -242,6 +248,7 @@ export default class FS {
   }
   async ls(path: string) {
     assert(!posix.isAbsolute(path), `path must be relative: ${path}`)
+    // TODO make a streaming version of this for very large dirs
     // TODO handle changes in the directory
     log('ls', path)
     const oid = await this.#rootOid()
@@ -258,18 +265,15 @@ export default class FS {
     const result = await git.readCommit({ fs, dir, oid: this.#commit })
     return result.commit
   }
-  async createBranch(name: string) {
-    log('createBranch', name)
-    const branches = [...this.#pid.branches, name]
-    const pid = { ...this.#pid, branches }
-    await this.#db.createBranch(pid, this.#commit)
-    return new FS(pid, this.commit, this.#db)
-  }
-  async deleteBranch(name: string, commit: string) {
-    log('deleteBranch', name)
-    const branches = [...this.#pid.branches, name]
-    const pid = { ...this.#pid, branches }
-    await this.#db.deleteBranch(pid, commit)
+  copyChanges(from: FS) {
+    assert(!this.isChanged, 'cannot copy changes to a changed FS')
+    assert(this.#pid === from.#pid, 'cannot copy changes from different repo')
+    for (const path of from.#deletes) {
+      this.delete(path)
+    }
+    for (const [path, data] of from.#upserts) {
+      this.write(path, data)
+    }
   }
 }
 type Tree = {

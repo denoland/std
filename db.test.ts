@@ -1,10 +1,10 @@
-import { expect, log } from '@utils'
+import { expect, isKvTestMode, log } from '@utils'
 import DB from '@/db.ts'
 import { PierceRequest, PROCTYPE } from '@/constants.ts'
 
 Deno.test('db', async (t) => {
   const db = await DB.create()
-  expect(db.isTestMode).toBe(true)
+  expect(isKvTestMode()).toBe(true)
   const pid = { account: 'a', repository: 'r', branches: ['b'] }
   await t.step('getHeadlock', async () => {
     const lockId = await db.getHeadlock(pid)

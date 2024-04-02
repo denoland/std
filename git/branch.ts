@@ -1,58 +1,48 @@
 import { assert, Debug } from '@utils'
-import { Branched, PROCTYPE, Request } from '@/constants.ts'
+import { Branched, PROCTYPE } from '@/constants.ts'
 import { SolidRequest } from '@/constants.ts'
 import IOChannel from '../io/io-channel.ts'
 import { solidify } from './mod.ts'
 import FS from '@/git/fs.ts'
+import { Atomic } from '@/atomic.ts'
 
 const log = Debug('AI:git')
 
 /**
  * Given the fs from the parent branch, create a new branch from the
- * given commit.  We assume here that PID lock has been acquired already.
- * @param fs a memfs instance to update
- * @param commit hash of the commit to start the branch from
- * @param target the new branch PID
+ * given commit.
+ * @param fs the parent fs
+ * @param sequence the request sequence number in the parent to branch with
+ * @param atomic the atomic transaction object
  */
-export default async (fs: FS, sequence: number): Promise<Branched> => {
+export default async (fs: FS, sequence: number, atomic: Atomic) => {
   assert(!fs.isChanged, 'fs must not be changed')
   assert(sequence >= 0, 'sequence must be a whole number')
-  log('branch', sequence, fs.writeCommit)
+  log('branch', sequence, fs.commit)
   const io = await IOChannel.load(fs)
-  const request = io.getRequest(sequence)
-  const { isolate, functionName, params, target: source } = request
+  const branchPid = io.getBranchPid(sequence)
+  atomic.createBranch(branchPid, fs.commit)
 
-  const name = getBranchName(request, sequence)
-  const branch = await fs.createBranch(name)
-  const proctype = PROCTYPE.SERIAL
+  const request = io.getRequest(sequence)
+  const { isolate, functionName, params } = request
+
   const origin: SolidRequest = {
-    target: branch.pid,
-    source,
+    target: branchPid,
+    source: fs.pid,
     sequence,
     isolate,
     functionName,
     params,
-    proctype,
+    proctype: PROCTYPE.SERIAL,
   }
   log('origin', origin)
+  const branch = fs.branch(branchPid)
   IOChannel.blank(branch)
 
-  const solids = await solidify(branch, [origin])
+  const solids = await solidify(branch, [origin], atomic)
   assert(solids.request, 'must have a request')
   assert(solids.branches.length === 0, 'must have no branches')
   assert(solids.replies.length === 0, 'must have no replies')
-  return { origin: solids.request, commit: solids.commit }
-}
-
-export const getBranchName = (request: Request, sequence: number) => {
-  let name = sequence + ''
-  if (request.branch) {
-    assert(!request.branchPrefix, 'cannot have both branch and branchPrefix')
-    name = request.branch
-  }
-  if (request.branchPrefix) {
-    assert(!request.branch, 'cannot have both branch and branchPrefix')
-    name = request.branchPrefix + '-' + sequence
-  }
-  return name
+  const branched: Branched = { origin: solids.request, commit: solids.commit }
+  return branched
 }

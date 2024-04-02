@@ -68,7 +68,7 @@ export default class Compartment {
       return this.#module.lifecycles['@@unmount'](api)
     }
   }
-  functions(api: IsolateApi) {
+  functions<T>(api: IsolateApi) {
     this.#check()
     const actions: DispatchFunctions = {}
     for (const functionName in this.#module.api) {
@@ -82,6 +82,6 @@ export default class Compartment {
         return this.#module.functions[functionName](parameters, api)
       }
     }
-    return actions
+    return actions as T
   }
 }

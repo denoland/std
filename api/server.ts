@@ -1,32 +1,37 @@
 import { Hono } from 'https://deno.land/x/hono/mod.ts'
-
+// TODO try out the fast router to improve load times
 import {
   cors,
+  endTime,
   logger,
   poweredBy,
   prettyJSON,
+  setMetric,
+  startTime,
+  timing,
 } from 'https://deno.land/x/hono/middleware.ts'
 import { streamSSE } from 'https://deno.land/x/hono/helper.ts'
-import QueueCradle from '@/cradle.ts'
+import Cradle from '@/cradle.ts'
 import { assert, Debug, serializeError } from '@/utils.ts'
-import { Cradle, EventSourceMessage, SerializableError } from '@/constants.ts'
+import { Artifact, EventSourceMessage, SerializableError } from '@/constants.ts'
 import { ulid } from '$std/ulid/mod.ts'
 const log = Debug('AI:server')
 
 export default class Server {
-  #artifact!: QueueCradle
+  #artifact!: Cradle
   #app!: Hono
   #sseId = 0
   static async create() {
-    const artifact = await QueueCradle.create()
+    const artifact = await Cradle.create()
 
     const server = new Server()
     server.#artifact = artifact
 
     const app = new Hono().basePath('/api')
+    app.use(timing())
     app.use(prettyJSON())
     app.use('*', logger(), poweredBy(), cors())
-    type serverMethods = (keyof Cradle)[]
+    type serverMethods = (keyof Artifact)[]
     const functions: serverMethods = [
       'ping',
       'apiSchema',
@@ -38,10 +43,16 @@ export default class Server {
       'rm',
     ]
     for (const functionName of functions) {
-      assert(functionName !== 'pierces', 'pierces is not server side')
       app.post(
         `/${functionName}`,
         async (c) => {
+          startTime(c, 'function', functionName)
+          setMetric(c, 'region', Deno.env.get('DENO_REGION') || '(unknown)')
+          setMetric(
+            c,
+            'deployment',
+            Deno.env.get('DENO_DEPLOYMENT_ID') || '(unknown)',
+          )
           const outcome: { result?: unknown; error?: SerializableError } = {}
           try {
             const params = await c.req.json()
@@ -50,11 +61,11 @@ export default class Server {
               assert(params.ulid === 'calculated-server-side', msg)
               params.ulid = ulid()
             }
-            assert(functionName !== 'read')
             outcome.result = await artifact[functionName](params)
           } catch (error) {
             outcome.error = serializeError(error)
           }
+          endTime(c, 'function')
           return c.json(outcome)
         },
       )

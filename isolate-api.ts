@@ -37,7 +37,6 @@ export default class IsolateApi<T extends object = Default> {
   get pid() {
     return this.#fs.pid
   }
-  // TODO make targetPID be required, as error to dispatch serially to self
   async actions(isolate: string, targetPID?: PID) {
     const target = targetPID ? targetPID : this.pid
     log('actions', isolate, print(target))
@@ -45,6 +44,7 @@ export default class IsolateApi<T extends object = Default> {
     const actions: DispatchFunctions = {}
     for (const functionName of Object.keys(schema)) {
       actions[functionName] = (params?: Params, options?: ProcessOptions) => {
+        assert(this.#accumulator.isActive, 'Activity is denied')
         log('actions %o', functionName)
         // TODO unify how proctype is derived across all cradles
         if (equal(targetPID, this.pid)) {
@@ -108,48 +108,52 @@ export default class IsolateApi<T extends object = Default> {
     return compartment.api
   }
   writeJSON(path: string, json: JsonValue) {
+    assert(this.#accumulator.isActive, 'Activity is denied')
     log('writeJSON', path)
     this.#fs.writeJSON(path, json)
   }
   write(path: string, content: string | Uint8Array) {
+    assert(this.#accumulator.isActive, 'Activity is denied')
     log('write', path)
     this.#fs.write(path, content)
-    // TODO strip out accumulator usage of writes
-    // only the beacon matters, as accumulation does not apply to writes
-    if (this.#accumulator) {
-      this.#accumulator.write(path, content)
-    }
   }
   readJSON<T>(path: string): Promise<T> {
+    assert(this.#accumulator.isActive, 'Activity is denied')
     log('readJSON', path)
     return this.#fs.readJSON<T>(path)
   }
   read(path: string) {
+    assert(this.#accumulator.isActive, 'Activity is denied')
     log('read', path)
     return this.#fs.read(path)
   }
   readBinary(path: string) {
+    assert(this.#accumulator.isActive, 'Activity is denied')
     log('readBinary', path)
     return this.#fs.readBinary(path)
   }
   exists(path: string) {
+    assert(this.#accumulator.isActive, 'Activity is denied')
     log('exists', path)
     return this.#fs.exists(path)
   }
   ls(path: string) {
-    // TODO make a streaming version of this for very large dirs
+    assert(this.#accumulator.isActive, 'Activity is denied')
     log('ls', path)
     return this.#fs.ls(path)
   }
   delete(filepath: string) {
+    assert(this.#accumulator.isActive, 'Activity is denied')
     log('delete', filepath)
     return this.#fs.delete(filepath)
   }
   get context() {
+    assert(this.#accumulator.isActive, 'Activity is denied')
     // TODO at creation, this should flag context capable and reject if not
     return this.#context
   }
   set context(context: Partial<T>) {
+    assert(this.#accumulator.isActive, 'Activity is denied')
     assert(typeof context === 'object', 'context must be an object')
     assert(context !== null, 'context must not be null')
     this.#context = context

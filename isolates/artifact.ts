@@ -1,23 +1,29 @@
+import { transcribe } from '@/runners/runner-chat.ts'
 import { Debug, fromOutcome } from '@utils'
 import Executor from '../exe/exe.ts'
+import IOChannel from '../io/io-channel.ts'
 import {
-  IsolateFunctions,
+  ExeResult,
   IsolateLifecycle,
   isPID,
   isPierceRequest,
-  Params,
+  isQueueBranch,
+  isQueuePierce,
+  isQueueReply,
+  isQueueRequest,
+  JsonValue,
   PID,
   PierceRequest,
-  SolidRequest,
+  QueueMessage,
 } from '@/constants.ts'
 import IsolateApi from '../isolate-api.ts'
 import Compartment from '../io/compartment.ts'
-import IO from '@io/io.ts'
+import { doAtomicBranch, doAtomicCommit, doAtomicExecution } from '@io/io.ts'
 import DB from '../db.ts'
 import FS from '../git/fs.ts'
-import Cradle from '@/cradle.ts'
 import { assert } from 'https://deno.land/std@0.203.0/assert/assert.ts'
 import { pidFromRepo } from '@/keys.ts'
+import { Artifact } from '@/constants.ts'
 
 const log = Debug('AI:artifact')
 const repo = {
@@ -115,51 +121,81 @@ export const api = {
   // requesting a patch would be done with the last known patch as cursor
 }
 
-export type C = { db: DB; io: IO; exe: Executor; self: Cradle }
+export type C = { db: DB; exe: Executor }
 
-export const functions: IsolateFunctions = {
-  ping: (params?: Params) => {
+/**
+ * Reason to keep artifact with an Isolate interface, is so we can control it
+ * from within an isolate.
+ */
+export const functions: Artifact = {
+  async ping(params?: { data?: JsonValue; pid?: PID }) {
     log('ping', params)
+    // TODO make ping able to do interactions with chains ?
+    await Promise.resolve()
     return params
   },
-  async probe(params, api: IsolateApi<C>) {
-    let pid: PID
-    if (typeof params.repo !== 'string') {
-      assert(isPID(params.pid), 'must provide pid if no repo')
-      pid = params.pid
-    } else {
-      pid = pidFromRepo(params.repo as string)
+  async pierce({ pierce }: { pierce: PierceRequest }, api: IsolateApi<C>) {
+    log('pierce %o %o', pierce.isolate, pierce.functionName)
+    assert(isPierceRequest(pierce), 'invalid pierce request')
+    const { db } = getContext(api)
+
+    const head = await db.readHead(pierce.target)
+    assert(head, 'head not found')
+
+    // not necessary to be atomic, but uses functions on the atomic class
+    const atomic = db.atomic()
+    atomic.addToPool(pierce)
+    atomic.enqueuePierce(pierce)
+    await atomic.commit()
+
+    for await (const commit of db.watchHead(pierce.target)) {
+      if (commit === head) {
+        continue
+      }
+      const fs = FS.open(pierce.target, commit, db)
+      const ioChannel = await IOChannel.read(fs)
+      assert(ioChannel, 'io channel not found')
+      const outcome = ioChannel.getOutcomeFor(pierce)
+      if (outcome) {
+        return fromOutcome(outcome)
+      }
     }
-    const { db } = api.context
-    assert(db, 'db not found')
+  },
+  async probe(params: { repo?: string; pid?: PID }, api: IsolateApi<C>) {
+    let { pid, repo } = params
+    if (repo) {
+      pid = pidFromRepo(repo)
+    }
+    assert(isPID(pid), 'invalid params')
+
+    const { db } = getContext(api)
     const head = await db.readHead(pid)
     if (head) {
       return { pid, head }
     }
   },
-  async init(params, api: IsolateApi<C>) {
+  async init(params: { repo: string }, api: IsolateApi<C>) {
     const start = Date.now()
-    assert(typeof params.repo === 'string', 'repo must be a string')
     const probe = await functions.probe(params, api)
     if (probe) {
       throw new Error('repo already exists: ' + params.repo)
     }
-    assert(api.context.db, 'db not found')
-    const fs = await FS.init(params.repo, api.context.db)
+    const { db } = getContext(api)
+    const fs = await FS.init(params.repo, db)
     const { pid, commit: head } = fs
     return { pid, head, elapsed: Date.now() - start }
   },
-  async clone(params, api: IsolateApi<C>) {
+  async clone(params: { repo: string }, api: IsolateApi<C>) {
     const start = Date.now()
-    const { repo } = params as { repo: string }
+    const { repo } = params
     const probe = await functions.probe({ repo }, api)
     if (probe) {
       throw new Error('repo already exists: ' + params.repo)
     }
 
     log('cloning %s', repo)
-    assert(api.context.db, 'db not found')
-    const fs = await FS.clone(repo, api.context.db)
+    const { db } = getContext(api)
+    const fs = await FS.clone(repo, db)
     const { pid, commit: head } = fs
     log('cloned', head)
     return { pid, head, elapsed: Date.now() - start }
@@ -170,76 +206,113 @@ export const functions: IsolateFunctions = {
   push() {
     throw new Error('not implemented')
   },
-  async rm(params, api: IsolateApi<C>) {
+  async rm(params: { repo: string }, api: IsolateApi<C>) {
     // TODO lock the whole repo in case something is running
     // TODO maybe have a top level key indicating if the repo is active or not
     // which can get included in the atomic checks for all activities
-    const pid = pidFromRepo(params.repo as string)
-    const db = api.context.db
-    assert(db, 'db not found')
+    const pid = pidFromRepo(params.repo)
+    const { db } = getContext(api)
     await db.rm(pid)
   },
-  apiSchema: async (params: Params) => {
-    // when it loads from files, will benefit from being close to the db
-    // BUT if the files were cached on cloudflare should stay near the user
-    const isolate = params.isolate as string
+  async apiSchema(params: { isolate: string }) {
+    const { isolate } = params
     const compartment = await Compartment.create(isolate)
     return compartment.api
   },
-  pierce: async (params, api: IsolateApi<C>) => {
-    log('pierce %o %o', params.isolate, params.functionName)
-    const request = params as PierceRequest
-    assert(isPierceRequest(request), 'invalid pierce request')
-    await api.context.io!.induct(request)
-    const reply = await api.context.db!.watchReply(request)
-    // TODO use splices to await the outcome
-    // probably with shortcuts to help say which IO actions had changes
-    if (reply) {
-      return fromOutcome(reply.outcome)
-    }
+  async transcribe(params: { audio: File }) {
+    const text = await transcribe(params.audio)
+    return { text }
   },
-  request: async (params, api: IsolateApi<C>) => {
-    const commit = params.commit as string
-    const request = params.request as SolidRequest
-    const pid = request.target
-    assert(api.context.db, 'db not found')
-    assert(api.context.exe, 'exe not found')
-    assert(api.context.io, 'io not found')
-    const { db, exe, io } = api.context
-    const baseFs = FS.open(pid, commit, db)
-
-    const { settled, pending } = await exe.execute(request, baseFs)
-
-    if (settled) {
-      const { reply, fs } = settled
-      await io.inductFiles(reply, fs)
-    } else {
-      assert(pending, 'if not settled, must be pending')
-      await Promise.all(pending.requests.map((request) => io.induct(request)))
-    }
-  },
-  branch: async (params: Params, api: IsolateApi<C>) => {
-    const { pid, sequence, commit } = params as {
-      pid: PID
-      commit: string
-      sequence: number
-    }
-    const { io } = api.context
-    assert(io, 'io not found')
-    await io.branch(pid, commit, sequence)
+  async logs(params: { repo: string }, api: IsolateApi<C>) {
+    // TODO convert logs to a splices query
+    log('logs', params.repo)
+    const pid = pidFromRepo(params.repo)
+    const { db } = getContext(api)
+    const fs = await FS.openHead(pid, db)
+    const logs = await fs.logs()
+    return logs
   },
 }
 
 export const lifecycles: IsolateLifecycle = {
   async '@@mount'(api: IsolateApi<C>) {
-    assert(api.context.self, 'self not found')
     const db = await DB.create()
-    const io = IO.create(db, api.context.self)
-    const exe = Executor.create()
-    // in testing, alter the context to support ducking the queue
-    api.context = { db, io, exe }
+    const exe = Executor.createCache()
+    api.context = { db, exe }
+    db.listen(async (message: QueueMessage) => {
+      if (isQueuePierce(message)) {
+        const { pierce } = message
+
+        let tip = await FS.openHead(pierce.target, db)
+        while (await db.hasPoolable(pierce)) {
+          if (await doAtomicCommit(db, tip)) {
+            return
+          }
+          tip = await FS.openHead(pierce.target, db)
+        }
+      }
+      if (isQueueRequest(message)) {
+        const { request, commit } = message
+        const fs = FS.open(request.target, commit, db)
+        const exeResult = await exe.execute(request, fs)
+        // it is impossible to pool atomically at this point
+
+        let tip = await FS.openHead(request.target, db)
+        while (await isExeable(tip, exeResult)) {
+          if (await doAtomicExecution(db, tip, exeResult)) {
+            return
+          }
+          tip = await FS.openHead(request.target, db)
+        }
+      }
+      if (isQueueBranch(message)) {
+        const { parentCommit, parentPid, sequence } = message
+        const parentFs = FS.open(parentPid, parentCommit, db)
+        const io = await IOChannel.read(parentFs)
+        assert(io, 'io not found')
+        const branchPid = io.getBranchPid(sequence)
+
+        let head = await db.readHead(branchPid)
+        while (!head) {
+          if (await doAtomicBranch(db, parentFs, sequence)) {
+            return
+          }
+          head = await db.readHead(branchPid)
+        }
+      }
+      if (isQueueReply(message)) {
+        const { reply } = message
+
+        let tip = await FS.openHead(reply.target, db)
+        while (await db.hasPoolable(reply)) {
+          if (await doAtomicCommit(db, tip)) {
+            return
+          }
+          tip = await FS.openHead(reply.target, db)
+        }
+      }
+    })
   },
   '@@unmount'(api: IsolateApi<C>) {
     return api.context.db!.stop()
   },
 }
+const isExeable = async (fs: FS, exe: ExeResult) => {
+  const io = await IOChannel.read(fs)
+  assert(io, 'io not found')
+  if (exe.settled) {
+    return !io.includes(exe.settled.reply)
+  } else {
+    assert(exe.pending, 'pending not found')
+    return exe.pending.requests.some((r) => !io.includes(r))
+  }
+}
+const getContext = (api: IsolateApi<C>): C => {
+  assert(api.context, 'context not found')
+  const { db, exe } = api.context
+  assert(db instanceof DB, 'db not found')
+  assert(exe, 'exe not found')
+
+  return { db, exe }
+}
+// TODO remove anyone using atomics except for io

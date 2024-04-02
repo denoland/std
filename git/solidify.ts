@@ -1,12 +1,10 @@
 import { assert, Debug, equal } from '@utils'
-import { getBranchName } from '@/git/branch.ts'
 import FS from './fs.ts'
 import {
   isMergeReply,
   isPierceRequest,
   isRequest,
   MergeReply,
-  PierceReply,
   Poolable,
   PROCTYPE,
   Reply,
@@ -15,6 +13,7 @@ import {
   Solids,
 } from '@/constants.ts'
 import IOChannel from '@io/io-channel.ts'
+import { Atomic } from '@/atomic.ts'
 
 const log = Debug('AI:git:solidify')
 
@@ -29,7 +28,7 @@ const log = Debug('AI:git:solidify')
  * - reply: a result is being returned from a dispatch after serial execution.
  * @param fs a memfs instance to update
  */
-export default async (fs: FS, pool: Poolable[]) => {
+export default async (fs: FS, pool: Poolable[], atomic: Atomic) => {
   const pid = checkPool(pool)
   assert(equal(pid, fs.pid), 'pid mismatch')
   const io = await IOChannel.load(fs)
@@ -39,7 +38,7 @@ export default async (fs: FS, pool: Poolable[]) => {
 
   // TODO include multiple requests to the same branch as a single array
   const branches: number[] = []
-  const replies: Reply[] = []
+  const replies: MergeReply[] = []
   const parents = []
   for (const poolable of pool) {
     if (isRequest(poolable)) {
@@ -56,12 +55,7 @@ export default async (fs: FS, pool: Poolable[]) => {
       // TODO move this to checkPool()
       const request = io.reply(poolable)
       const { outcome } = poolable
-      if (isPierceRequest(request)) {
-        log('isPierceRequest')
-        const { ulid } = request
-        const reply: PierceReply = { ulid, outcome }
-        replies.push(reply)
-      } else if (!equal(request.source, pid)) {
+      if (!isPierceRequest(request) && !equal(request.source, pid)) {
         const target = request.source
         const source = request.target
         const sequence = request.sequence
@@ -75,9 +69,8 @@ export default async (fs: FS, pool: Poolable[]) => {
         parents.push(poolable.commit)
         if (request.proctype === PROCTYPE.BRANCH) {
           const { sequence } = poolable
-          const name = getBranchName(request, sequence)
-          log('deleteBranch', name)
-          await fs.deleteBranch(name, poolable.commit)
+          const branchPid = io.getBranchPid(sequence)
+          atomic.deleteBranch(branchPid, poolable.commit)
         }
       }
     }
@@ -91,13 +84,11 @@ export default async (fs: FS, pool: Poolable[]) => {
   }
   io.save()
 
-  const { commit } = await fs.writeCommit('pool', parents)
+  const { commit } = await fs.writeCommitObject('pool', parents)
 
   log('head', commit)
   for (const reply of replies) {
-    if (isMergeReply(reply)) {
-      reply.commit = commit
-    }
+    reply.commit = commit
   }
   const solids: Solids = { commit, request, branches, replies }
   if (!io.isAccumulating() && !io.getExecutingRequest()) {

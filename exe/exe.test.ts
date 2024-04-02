@@ -22,14 +22,14 @@ const mocks = async (initialRequest: SolidRequest) => {
   let io = await IOChannel.load(fs)
   io.addRequest(initialRequest)
   io.save()
-  fs = await fs.writeCommit()
+  fs = await fs.writeCommitObject()
   io = await IOChannel.load(fs)
   const stop = () => db.stop()
   return { io, fs, db, stop }
 }
 Deno.test('simple', async (t) => {
   const { fs, stop } = await mocks(request)
-  const executor = Executor.create()
+  const executor = Executor.createCache()
   await t.step('no accumulations', async () => {
     const result = await executor.execute(request, fs)
     const { settled, pending } = result
@@ -50,7 +50,7 @@ Deno.test('writes', async (t) => {
     params: { path: 'test.txt', content: 'hello' },
   }
   const { fs, stop } = await mocks(write)
-  const executor = Executor.create()
+  const executor = Executor.createCache()
   await t.step('single file', async () => {
     const result = await executor.execute(write, fs)
     const { settled, pending } = result
@@ -76,7 +76,7 @@ Deno.test('writes', async (t) => {
 Deno.test('loopback', async (t) => {
   const compound = { ...request, functionName: 'compound' }
   const { fs, stop } = await mocks(compound)
-  const executor = Executor.create()
+  const executor = Executor.createCache()
   await t.step('loopback request will error', async () => {
     // execute should start with an unchanged fs tho
     const result = await executor.execute(compound, fs)
@@ -103,7 +103,7 @@ Deno.test('compound', async (t) => {
   }
   const { io, fs, db, stop } = await mocks(compound)
   let request: SolidRequest
-  const executor = Executor.create()
+  const executor = Executor.createCache()
   let halfFs: FS
   await t.step('half done', async () => {
     const half = await executor.execute(compound, fs)
@@ -131,7 +131,7 @@ Deno.test('compound', async (t) => {
     const savedRequest = io.reply(reply)
     expect(savedRequest).toEqual(request)
     io.save()
-    const replyFs = await fs.writeCommit()
+    const replyFs = await fs.writeCommitObject()
 
     const done = await executor.execute(compound, replyFs)
     const { settled, pending } = done
@@ -142,7 +142,7 @@ Deno.test('compound', async (t) => {
     const head = await db.readHead(halfFs.pid)
     assert(head, 'could not rollback')
     await db.updateHead(halfFs.pid, head, halfFs.commit)
-    const noCache = Executor.create()
+    const noCache = Executor.createCache()
     assert(request)
     const io = await IOChannel.load(halfFs)
     const sequence = io.addRequest(request)
@@ -154,7 +154,7 @@ Deno.test('compound', async (t) => {
     }
     io.reply(reply)
     io.save()
-    const replyFs = await halfFs.writeCommit()
+    const replyFs = await halfFs.writeCommitObject()
 
     const done = await noCache.execute(compound, replyFs)
     const { settled, pending } = done

@@ -1,58 +1,56 @@
 import { diffChars } from '$diff'
 import Compartment from './io/compartment.ts'
 import {
-  Cradle,
+  Artifact,
+  ArtifactCradle,
   DispatchFunctions,
   Params,
   PID,
   PierceRequest,
-  Request,
+  ProcessOptions,
   Splice,
 } from './constants.ts'
-import { pidFromRepo } from '@/keys.ts'
 import { getProcType } from '@/constants.ts'
 import IsolateApi from './isolate-api.ts'
-import { assert } from 'std/assert/assert.ts'
-import { Debug, posix } from '@utils'
+import { assert, Debug, posix } from '@utils'
 import { ulid } from 'std/ulid/mod.ts'
-import Queue from './queue.ts'
 import { C } from './isolates/artifact.ts'
-import { transcribe } from '@/runners/runner-chat.ts'
-import { ProcessOptions } from '@/constants.ts'
 import FS from '@/git/fs.ts'
 const log = Debug('AI:cradle')
 
-export class QueueCradle implements Cradle {
-  #compartment!: Compartment
-  #api!: IsolateApi<C>
-  #queue!: Queue
-  private constructor() {}
+export class Cradle implements ArtifactCradle {
+  #compartment: Compartment
+  #api: IsolateApi<C>
+  #functions: Artifact
+  #readAborts = new Set<AbortController>()
+  #readPromises = new Set<Promise<void>>()
+  private constructor(compartment: Compartment, api: IsolateApi<C>) {
+    this.#compartment = compartment
+    this.#api = api
+    this.#functions = compartment.functions<Artifact>(api)
+  }
   static async create() {
-    const cradle = new QueueCradle()
-    cradle.#compartment = await Compartment.create('artifact')
+    const compartment = await Compartment.create('artifact')
     // TODO use a super PID as the cradle PID for all system actions
-    cradle.#api = IsolateApi.createContext()
-    cradle.#api.context.self = cradle
-    await cradle.#compartment.mount(cradle.#api)
-    assert(cradle.#api.context.db, 'db not found')
+    const api = IsolateApi.createContext()
+    await compartment.mount(api)
+    assert(api.context.db, 'db not found')
 
-    const functions = cradle.#compartment.functions(cradle.#api)
-    assert(!functions.stop, 'stop is a reserved action')
-    assert(!functions.dispatches, 'dispatches is a reserved action')
-    cradle.#queue = Queue.create(functions, cradle.#api)
-    return cradle
+    const functions = compartment.functions(api)
+    assert(!functions.stop, 'stop is a reserved function')
+    assert(!functions.pierces, 'pierces is a reserved function')
+    return new Cradle(compartment, api)
   }
   async stop() {
-    for (const abort of this.#aborts) {
+    for (const abort of this.#readAborts) {
       abort.abort()
     }
     await Promise.all([...this.#readPromises])
     await this.#compartment.unmount(this.#api)
-    await this.#queue.quiesce()
   }
   async pierces(isolate: string, target: PID) {
     // cradle side, since functions cannot be returned from isolate calls
-    const apiSchema = await this.apiSchema({ isolate })
+    const apiSchema = await this.#functions.apiSchema({ isolate })
     const pierces: DispatchFunctions = {}
     for (const functionName of Object.keys(apiSchema)) {
       pierces[functionName] = (
@@ -63,97 +61,67 @@ export class QueueCradle implements Cradle {
         const proctype = getProcType(options)
         const pierce: PierceRequest = {
           target,
-          ulid: ulid(),
+          ulid: ulid(), // important to be done serverside, not web side
           isolate,
           functionName,
           params: params || {},
           // TODO pass the process options straight thru ?
           proctype,
         }
-        return this.pierce(pierce)
+        return this.pierce({ pierce })
       }
     }
-    log('dispatches:', isolate, Object.keys(pierces))
+    log('pierces:', isolate, Object.keys(pierces))
     return pierces
   }
+
+  // ARTIFACT API DIRECT CALLS
   ping(params?: Params) {
-    log('ping %o', params)
-    params = params || {}
-    const functions = this.#compartment.functions(this.#api)
-    // TODO make ts work correctly here
-    const ping = functions.ping as Cradle['ping']
-    return ping(params)
+    return this.#functions.ping(params)
   }
-  async probe(params: { repo?: string; pid?: PID }) {
-    type K = ReturnType<Cradle['probe']>
-    const result = await this.#queue.push<K>('probe', params)
-    return result as { pid: PID; head: string } | void
+  pierce(params: { pierce: PierceRequest }) {
+    return this.#functions.pierce(params)
   }
-  async init(params: { repo: string }) {
-    type K = ReturnType<Cradle['init']>
-    const result = await this.#queue.push<K>('init', params)
-    return result as { pid: PID; head: string }
+  probe(params: { repo?: string; pid?: PID }) {
+    return this.#functions.probe(params)
   }
-  async clone(params: { repo: string }) {
-    type K = ReturnType<Cradle['clone']>
-    const result = await this.#queue.push<K>('clone', params)
-    assert(result, 'clone result not found')
-    return result
+  init(params: { repo: string }) {
+    return this.#functions.init(params)
   }
-  async rm(params: { repo: string }) {
-    type K = ReturnType<Cradle['rm']>
-    const result = await this.#queue.push<K>('rm', params)
-    return result
+  clone(params: { repo: string }) {
+    return this.#functions.clone(params)
+  }
+  pull(params: { pid: PID }) {
+    return this.#functions.pull(params)
+  }
+  push(params: { pid: PID }) {
+    return this.#functions.push(params)
+  }
+  rm(params: { repo: string }) {
+    return this.#functions.rm(params)
   }
   apiSchema(params: { isolate: string }) {
-    return this.#api.isolateApiSchema(params.isolate)
+    return this.#functions.apiSchema(params)
   }
-  async pierce(params: PierceRequest) {
-    // TODO move this to be a splice watching function
-    try {
-      type K = ReturnType<Cradle['pierce']>
-      return await this.#queue.push<K>('pierce', params)
-    } catch (error) {
-      throw error
-    } finally {
-      // if we are in test mode, quiesce the queue before returning
-      if (this.#api.context.db!.isTestMode) {
-        await this.#queue.quiesce()
-      }
-    }
+  transcribe(params: { audio: File }) {
+    return this.#functions.transcribe(params)
   }
-  async transcribe(params: { audio: File }) {
-    const text = await transcribe(params.audio)
-    return { text }
+  logs(params: { repo: string }) {
+    return this.#functions.logs(params)
   }
-  request(params: { request: Request; commit: string; prior?: number }) {
-    const detach = true
-    return this.#queue.push('request', params, detach)
-  }
-  branch(params: { pid: PID; sequence: number; commit: string }) {
-    return this.#queue.push('branch', params)
-  }
-  async logs(params: { repo: string }) {
-    log('logs', params.repo)
-    const pid = pidFromRepo(params.repo)
-    assert(this.#api.context.db, 'db not found')
-    const fs = await FS.openHead(pid, this.#api.context.db)
-    const logs = await fs.logs()
-    return logs
-  }
-  #aborts = new Set<AbortController>()
-  #readPromises = new Set<Promise<void>>()
+
+  // TODO shunt all read operations out to a separate Query class
   #waiter(abort: AbortController) {
     let resolve: () => void
     const readPromise = new Promise<void>((_resolve) => {
       resolve = _resolve
     })
     this.#readPromises.add(readPromise)
-    this.#aborts.add(abort)
+    this.#readAborts.add(abort)
     return () => {
       resolve()
       this.#readPromises.delete(readPromise)
-      this.#aborts.delete(abort)
+      this.#readAborts.delete(abort)
     }
   }
   read(pid: PID, path?: string, signal?: AbortSignal) {
@@ -214,4 +182,4 @@ export class QueueCradle implements Cradle {
   }
 }
 
-export default QueueCradle
+export default Cradle

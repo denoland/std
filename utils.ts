@@ -19,7 +19,7 @@ export const sha1 = /^[0-9a-f]{40}$/i
 
 const isDenoDeploy = Deno.env.get('DENO_DEPLOYMENT_ID') !== undefined
 let _isTestMode = false
-export const isTestMode = () => {
+export const isKvTestMode = () => {
   return _isTestMode
 }
 export const openKv = async () => {

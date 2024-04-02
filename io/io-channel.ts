@@ -2,24 +2,30 @@
  * Manages the .io.json file
  */
 
+import { assert, Debug, equal } from '@utils'
 import {
   IoStruct,
   isPierceRequest,
+  isRequest,
+  MergeReply,
   PID,
+  PierceRequest,
+  PROCTYPE,
+  Reply,
   Request,
-  toRunnableRequest,
+  SolidReply,
+  SolidRequest,
 } from '@/constants.ts'
-import { Debug, equal } from '@utils'
-import { assert } from '@utils'
-import { PROCTYPE } from '@/constants.ts'
-import { SolidRequest } from '@/constants.ts'
-import { MergeReply } from '@/constants.ts'
-import { SolidReply } from '@/constants.ts'
 import Accumulator from '@/exe/accumulator.ts'
 import FS from '@/git/fs.ts'
 const log = Debug('AI:io-file')
 
-const blank = (): IoStruct => ({ sequence: 0, requests: {}, replies: {} })
+const blank = (): IoStruct => ({
+  sequence: 0,
+  requests: {},
+  replies: {},
+  pendings: {},
+})
 
 export default class IOChannel {
   #io: IoStruct
@@ -27,6 +33,13 @@ export default class IOChannel {
   constructor(io: IoStruct, fs: FS) {
     this.#io = io
     this.#fs = fs
+  }
+  static async read(fs: FS) {
+    if (await fs.exists('.io.json')) {
+      const io = await fs.readJSON<IoStruct>('.io.json')
+      check(io)
+      return new IOChannel(io, fs)
+    }
   }
   static async load(fs: FS) {
     let io = blank()
@@ -97,6 +110,11 @@ export default class IOChannel {
   }
   addRequest(request: Request) {
     const sequence = this.#io.sequence++
+    if ('sequence' in request) {
+      if (equal(request.source, this.#fs.pid)) {
+        assert(request.sequence === sequence, 'sequence mismatch')
+      }
+    }
     this.#io.requests[sequence] = request
     return sequence
   }
@@ -164,7 +182,74 @@ export default class IOChannel {
 
     return false
   }
+  includes(poolable: Reply | SolidRequest) {
+    assert(equal(poolable.target, this.#fs.pid), 'target mismatch')
+    const { sequence } = poolable
+    if (isRequest(poolable)) {
+      if (this.#io.requests[sequence]) {
+        assert(equal(this.#io.requests[sequence], poolable), 'request mismatch')
+        return true
+      }
+      if (this.#io.sequence > sequence) {
+        return true
+      }
+      return false
+    } else {
+      if (this.#io.replies[sequence]) {
+        const check = equal(this.#io.replies[sequence], poolable.outcome)
+        assert(check, 'reply mismatch')
+        return true
+      }
+      if (this.#io.sequence > sequence) {
+        return true
+      }
+      return false
+    }
+  }
+  getOutcomeFor(request: PierceRequest) {
+    for (const [key, value] of Object.entries(this.#io.requests)) {
+      if (isPierceRequest(value)) {
+        if (equal(value, request)) {
+          return this.#io.replies[Number.parseInt(key)]
+        }
+      }
+    }
+  }
+  getBranchPid(sequence: number) {
+    const request = this.getRequest(sequence)
+    const branchTypes = [PROCTYPE.BRANCH, PROCTYPE.DAEMON]
+    assert(branchTypes.includes(request.proctype), 'not a branch request')
+
+    let name = sequence + ''
+    if (request.branch) {
+      assert(!request.branchPrefix, 'cannot have both branch and branchPrefix')
+      name = request.branch
+    }
+    if (request.branchPrefix) {
+      assert(!request.branch, 'cannot have both branch and branchPrefix')
+      name = request.branchPrefix + '-' + sequence
+    }
+    const parentPid = this.#fs.pid
+    const branches = [...parentPid.branches, name]
+    const pid = { ...parentPid, branches }
+    return pid
+  }
+  addPending(commit: string, requests: SolidRequest[]) {
+    for (const request of requests) {
+      this.addRequest(request)
+    }
+    const executing = this.getExecutingRequest()
+    // TODO affirm this is actually the executing request ?
+    assert(executing, 'no executing request')
+    const sequence = this.getSequence(executing)
+    if (!this.#io.pendings[sequence]) {
+      this.#io.pendings[sequence] = []
+    }
+    const sequences = requests.map((r) => r.sequence)
+    this.#io.pendings[sequence].push({ commit, sequences })
+  }
 }
+
 const check = (io: IoStruct) => {
   const requests = Object.values(io.requests)
   requests.every((request, index) =>
@@ -176,7 +261,6 @@ const check = (io: IoStruct) => {
     assert(replyKey in io.requests, 'no reply key in requests')
   }
 }
-
 const blankSettledRequests = (io: IoStruct, thisPid: PID) => {
   const toBlank = []
   for (const key in io.replies) {
@@ -204,4 +288,21 @@ const isAccumulation = (request: Request, thisPid: PID) => {
     }
   }
   return false
+}
+
+const toRunnableRequest = (request: Request, sequence: number) => {
+  if (!isPierceRequest(request)) {
+    return request
+  }
+  const { isolate, functionName, params, proctype, target } = request
+  const internal: SolidRequest = {
+    isolate,
+    functionName,
+    params,
+    proctype,
+    source: target,
+    target,
+    sequence,
+  }
+  return internal
 }

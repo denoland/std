@@ -1,3 +1,5 @@
+import { isPierceRequest } from '@/constants.ts'
+import { isRequest } from '@/constants.ts'
 import { ENTRY_BRANCH, PID, Poolable, Reply, Request } from '@/constants.ts'
 import { assert } from '@utils'
 
@@ -16,18 +18,8 @@ export const getPoolKeyPrefix = (pid: PID) => {
   return [KEYSPACES.POOL, account, repository, ...branches]
 }
 export const getPoolKey = (poolable: Poolable) => {
-  assert(poolable.target, 'target is required')
   const id = getId(poolable)
   return [...getPoolKeyPrefix(poolable.target), id]
-}
-export const getReplyKey = (pid: PID, action: Request | Reply) => {
-  const { account, repository, branches } = pid
-  const id = getId(action)
-  return [KEYSPACES.REPLIES, account, repository, ...branches, id]
-}
-export const getHeadLockKey = (pid: PID) => {
-  const { account, repository, branches } = pid
-  return [KEYSPACES.HEADLOCK, account, repository, ...branches]
 }
 export const getRepoKey = (pid: PID) => {
   const { account, repository, branches } = pid
@@ -47,17 +39,37 @@ export const getRepoRoot = (pid: PID) => {
 }
 export enum KEYSPACES {
   POOL = 'POOL', // all pending requests and replies trying to be committed
-  REPLIES = 'REPLIES', // for watching replies
-  HEADLOCK = 'HEADLOCK', // the lock on the head of a given process branch
   REPO = 'REPO', // this is the latest fs snapshot of a given process branch
+  STATUS = 'STATUS', // the maintenance state of the repo
+  UNDELIVERED = 'UNDELIVERED', // all undelivered queue messages
+}
+export enum STATUS {
+  /**
+   * If the repo is active, then all execution activities are allowed.
+   * The absense of any status means the repo has been deleted and cannot
+   * receive any pooling.
+   */
+  ACTIVE = 'ACTIVE',
+  /**
+   * If the repo is in maintenance, then no execution activities are allowed.
+   * Maintenance includes cloning, pulling, and deleting.
+   */
+  MAINTENANCE = 'MAINTENANCE',
 }
 
 const getId = (action: Request | Reply) => {
-  if ('ulid' in action) {
-    return action.ulid
+  const id = (pid: PID, sequence: number) => {
+    return `${pid.account}/${pid.repository}:${
+      pid.branches.join('/')
+    }:${sequence}`
+  }
+  if (isRequest(action)) {
+    if (isPierceRequest(action)) {
+      return action.ulid
+    }
+    return id(action.source, action.sequence)
   } else {
-    assert('sequence' in action, 'sequence is required')
-    return action.sequence
+    return id(action.target, action.sequence)
   }
 }
 

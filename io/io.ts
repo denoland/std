@@ -1,105 +1,84 @@
 import * as git from '../git/mod.ts'
-import { assert, Debug, equal } from '@utils'
-import {
-  PID,
-  PierceReply,
-  Poolable,
-  Reply,
-  SolidReply,
-  Solids,
-} from '@/constants.ts'
+import { assert, Debug } from '@utils'
+import { PID, SolidReply, Solids } from '@/constants.ts'
 import DB from '@/db.ts'
 import FS from '@/git/fs.ts'
-import Cradle from '@/cradle.ts'
+import IOChannel from '@/io/io-channel.ts'
+import { Atomic } from '@/atomic.ts'
+import { ExeResult } from '@/constants.ts'
 const log = Debug('AI:io')
 
-export default class IO {
-  #db: DB
-  #cradle: Cradle
-  private constructor(db: DB, self: Cradle) {
-    this.#db = db
-    this.#cradle = self
+/**
+ * Inducting is the act of pulling in this poolable and any others that are in
+ * the pool.  If this operation fails due to head mismatch, we can assume that
+ * the poolable has been processed since any competing process would have
+ * gathered all the poolable items.  This is a form of optimistic concurrency.
+ *
+ * If a reply is supplied, then we MUST induct, since we have changed files on
+ * the fs that need to be included in the commit.
+ */
+export const doAtomicCommit = async (db: DB, fs: FS, reply?: SolidReply) => {
+  const atomic = db.atomic()
+  const { poolKeys, pool } = await db.getPooledActions(fs.pid)
+  if (reply) {
+    pool.unshift(reply)
   }
-  static create(db: DB, self: Cradle) {
-    return new IO(db, self)
+  if (!pool.length) {
+    return false
   }
-  async induct(poolable: Poolable) {
-    log('induct %o', poolable)
-    await this.#db.addToPool(poolable)
-    const lockId = await this.#db.getHeadlockMaybe(poolable)
-    // TODO remove headlock and use poollock
-    if (lockId) {
-      const pid = poolable.target
-      const solids = await this.#solidifyPool(pid)
-      await this.#transmit(pid, solids)
-      await this.#db.releaseHeadlock(pid, lockId)
-    }
-  }
-  async inductFiles(reply: SolidReply, fs: FS) {
-    log('inductFiles %o %o', reply, fs.commit)
-    if (!fs.isChanged) {
-      return this.induct(reply)
-    }
-    const pid = reply.target
-    const lockId = await this.#db.getHeadlock(pid)
-    const solids = await this.#solidifyPool(pid, reply, fs)
-    await this.#transmit(pid, solids)
-    await this.#db.releaseHeadlock(pid, lockId)
-  }
-  async #transmit(pid: PID, solids: Solids) {
-    log('solids %o', solids)
-    const { commit, request, branches, replies } = solids
+  const solids = await git.solidify(fs, pool, atomic)
+  atomic.deletePool(poolKeys)
 
-    if (request) {
-      log('request %o', request)
-      // WARNING detaches from queue
-      await this.#cradle.request({ request, commit })
-    }
-    for (const sequence of branches) {
-      log('branch %o', sequence)
-      await this.#cradle.branch({ pid, sequence, commit })
-    }
-    for (const reply of replies) {
-      if (isPierceReply(reply)) {
-        log('pierce reply %o', reply)
-        await this.#db.settleReply(pid, reply)
-      } else {
-        log('solid reply %o', reply)
-        await this.induct(reply)
-      }
-      // so pierce replies would be totally removed, and induct would be as a
-      // batch
-    }
-  }
-  async #solidifyPool(pid: PID, reply?: SolidReply, fs?: FS) {
-    const { poolKeys, pool } = await this.#db.getPooledActions(pid)
-    log('solidifyPool %o %i', pid, poolKeys.length)
+  // the moneyshot
+  atomic.updateHead(fs.pid, fs.commit, solids.commit)
+  transmit(fs.pid, solids, atomic)
+  return await atomic.commit()
+}
 
-    if (reply) {
-      assert(fs, 'fs must be provided with a reply')
-      pool.push(reply)
-    }
-    if (fs) {
-      assert(reply, 'reply must be provided with fs')
-      assert(equal(fs.pid, pid), 'fs pid must match')
-    } else {
-      fs = await FS.openHead(pid, this.#db)
-    }
-    const solids = await git.solidify(fs, pool)
-    await this.#db.deletePool(poolKeys)
-    return solids
+const transmit = (pid: PID, solids: Solids, atomic: Atomic) => {
+  log('solids %o', solids)
+  const { commit, request, branches, replies } = solids
+
+  const transmittedReplies = new Set<PID>()
+  if (request) {
+    log('request %o', request)
+    atomic.enqueueExecution(request, commit)
   }
-  async branch(pid: PID, baseCommit: string, sequence: number) {
-    // TODO remove the concept of headlock completely
-    const lockId = await this.#db.getHeadlock(pid)
-    const fs = FS.open(pid, baseCommit, this.#db)
-    const branched = await git.branch(fs, sequence)
-    const { origin, commit } = branched
-    await this.#cradle.request({ request: origin, commit })
-    await this.#db.releaseHeadlock(pid, lockId)
+  for (const sequence of branches) {
+    log('branch %o', sequence)
+    atomic.enqueueBranch(commit, pid, sequence)
+  }
+  for (const reply of replies) {
+    log('solid reply %o', reply)
+    atomic.addToPool(reply)
+    if (!transmittedReplies.has(reply.target)) {
+      transmittedReplies.add(reply.target)
+      // if one was processed, all were processed ☢️
+      atomic.enqueueReply(reply)
+    }
   }
 }
 
-const isPierceReply = (reply: Reply): reply is PierceReply => {
-  return 'ulid' in reply
+export const doAtomicBranch = async (db: DB, fs: FS, sequence: number) => {
+  const atomic = db.atomic()
+  const { origin, commit } = await git.branch(fs, sequence, atomic)
+  atomic.enqueueExecution(origin, commit)
+  return await atomic.commit()
+}
+
+// TODO move all these types to share a file with their tests for done
+
+export const doAtomicExecution = async (db: DB, tip: FS, exe: ExeResult) => {
+  if (exe.settled) {
+    const { reply, fs } = exe.settled
+    tip.copyChanges(fs)
+    return await doAtomicCommit(db, tip, reply)
+  } else {
+    assert(exe.pending, 'if not settled, must be pending')
+    const { commit, requests } = exe.pending
+    const io = await IOChannel.load(tip)
+    io.addPending(commit, requests)
+    io.save()
+    return await doAtomicCommit(db, tip) // TODO ensure that the pool can be empty if there are file changes
+  }
 }

@@ -1,4 +1,3 @@
-import { get, set } from '$kv_toolbox'
 import { Debug } from '@utils'
 import { getRepoRoot, headKeyToPid } from '@/keys.ts'
 import type DB from '@/db.ts'
@@ -50,7 +49,7 @@ export class GitKV {
     }
 
     const pathKey = this.#getAllowedPathKey(path)
-    const result = await get(this.#db.kv, pathKey)
+    const result = await this.#db.blobGet(pathKey)
 
     if (!result) {
       log('readFile not found', path, opts)
@@ -86,13 +85,16 @@ export class GitKV {
       // TODO use the head tool on this.#db to ensure consistency
       assert(typeof data === 'string', 'data must be a string')
       const pid = headKeyToPid(pathKey)
-      // TODO handle pull where this is being updated
-      await this.#db.initHead(pid, data.trim())
+      // TODO ensure have maintenance while this is being changed
+
+      const atomic = this.#db.atomic()
+      atomic.createBranch(pid, data.trim())
+      await atomic.commit()
     } else {
       if (typeof data === 'string') {
         data = new TextEncoder().encode(data)
       }
-      await set(this.#db.kv, pathKey, data)
+      await this.#db.blobSet(pathKey, data)
     }
     log('writeFile done:', pathKey)
   }
@@ -112,13 +114,11 @@ export class GitKV {
     }
     log('readdir pathKey', pathKey)
     // TODO confirm behaviour skips deeply nested paths
-    const start = [...pathKey, `\u0000`]
-    const end = [...pathKey, `\uFFFF`]
     const results = []
-    const list = this.#db.kv.list({ start, end })
+    const list = this.#db.listImmediateChildren(pathKey)
     // just the pure names of the files in this directory
     for await (const { key } of list) {
-      assert(key.length === start.length, 'key overlength: ' + key.join('/'))
+      assert(key.length === path.length + 1, 'key overlength: ' + key.join('/'))
       const name = key[key.length - 1]
       results.push(name)
     }
@@ -157,7 +157,7 @@ export class GitKV {
     } else {
       // TODO no need to fetch the whole blob
       // TODO move all blob ops to db
-      const result = await get(this.#db.kv, pathKey)
+      const result = await this.#db.blobGet(pathKey)
       exists = !!result
     }
     if (!exists) {

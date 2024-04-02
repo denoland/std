@@ -1,7 +1,7 @@
 // THIS IS SYCNED FROM THE ARTIFACT PROJECT
 // TODO publish to standalone repo
 import {
-  Cradle,
+  Artifact,
   DispatchFunctions,
   EventSourceMessage,
   getProcType,
@@ -16,7 +16,7 @@ type ToError = (object: object) => Error
 type ToEvents = (
   stream: ReadableStream<Uint8Array>,
 ) => ReadableStream<EventSourceMessage>
-export default class WebClient implements Cradle {
+export default class WebClient implements Artifact {
   private readonly fetcher: (
     input: URL | RequestInfo,
     init?: RequestInit,

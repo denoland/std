@@ -18,7 +18,7 @@ export type JsonValue =
   | {
     [key: string]: JsonValue
   }
-export type IsolateReturn = JsonValue | void
+export type IsolateReturn = JsonValue | undefined | void
 export type ProcessOptions = {
   /**
    * Any function called with this option will be executed in parallel
@@ -53,7 +53,7 @@ export type DispatchFunctions = {
     options?: ProcessOptions,
   ) => Promise<unknown> | unknown
 }
-export type Params = Record<string, JsonValue>
+export type Params = { [key: string]: JsonValue }
 
 export type IsolateApiSchema = {
   [key: string]: JSONSchemaType<object>
@@ -232,21 +232,41 @@ export type CommitObject = {
    */
   gpgsig?: string
 }
-export interface Cradle {
-  ping(params?: Params): Promise<IsolateReturn>
-  apiSchema(params: { isolate: string }): Promise<Record<string, object>>
-  pierce(params: PierceRequest): Promise<unknown>
+export interface Artifact {
+  ping(
+    params?: { data?: JsonValue; pid?: PID },
+    api?: unknown,
+  ): Promise<IsolateReturn>
+  pierce(
+    params: { pierce: PierceRequest },
+    api?: unknown,
+  ): Promise<IsolateReturn>
+  probe(
+    params: { repo?: string; pid?: PID },
+    api?: unknown,
+  ): Promise<{ pid: PID; head: string } | void>
+  init(
+    params: { repo: string },
+    api?: unknown,
+  ): Promise<{ pid: PID; head: string }>
+  clone(
+    params: { repo: string },
+    api?: unknown,
+  ): Promise<{ pid: PID; head: string }>
+  pull(params: { pid: PID }, api?: unknown): Promise<{ pid: PID; head: string }>
+  push(params: { pid: PID }, api?: unknown): Promise<void>
+  rm(params: { repo: string }, api?: unknown): Promise<void>
+  apiSchema(
+    params: { isolate: string },
+    api?: unknown,
+  ): Promise<Record<string, JSONSchemaType<object>>>
   transcribe(params: { audio: File }): Promise<{ text: string }>
-  logs(params: { repo: string }): Promise<object[]>
+  logs(params: { repo: string }, api?: unknown): Promise<object[]>
+}
+export interface ArtifactCradle extends Artifact {
   pierces(isolate: string, target: PID): Promise<DispatchFunctions>
   stop(): Promise<void> | void
   // TODO should move these git functions elsewhere ?
-  init(params: { repo: string }): Promise<{ pid: PID; head: string }>
-  clone(params: { repo: string }): Promise<{ pid: PID; head: string }>
-  probe(
-    params: { repo?: string; pid?: PID },
-  ): Promise<{ pid: PID; head: string } | void>
-  rm(params: { repo: string }): Promise<void>
   read(pid: PID, path?: string, signal?: AbortSignal): ReadableStream<Splice>
 }
 export const isPID = (value: unknown): value is PID => {

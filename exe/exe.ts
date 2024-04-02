@@ -11,7 +11,7 @@ const log = Debug('AI:exe')
 
 export default class Executor {
   #functions = new Map<string, Execution>()
-  static create() {
+  static createCache() {
     return new Executor()
   }
   async execute(req: SolidRequest, fs: FS): Promise<ExeResult> {
@@ -45,17 +45,26 @@ export default class Executor {
         }),
         accumulator: ioAccumulator,
         api: isolateApi,
+        commit: fs.commit,
       }
       this.#functions.set(exeId, execution)
     }
     log('running execution %o', exeId)
     const execution = this.#functions.get(exeId)
     assert(execution, 'execution not found')
+    if (execution.commit === fs.commit) {
+      // TODO exe should be idempotent - its cache should just return if its
+      // seen this combination of commit and request before as we don't know if
+      // the queue errored before the result was committed
+      throw new Error('request already executed for commit: ' + fs.commit)
+    }
+    // TODO check exe can handle being called twice without moving the
+    // accumulator
+    execution.commit = fs.commit
     execution.accumulator.absorb(ioAccumulator)
 
     const accumulatorPromise = execution.accumulator.await()
     const winner = await Promise.race([execution.function, accumulatorPromise])
-    execution.accumulator.arm()
 
     const result: ExeResult = {}
     if (isOutcome(winner)) {
@@ -64,17 +73,6 @@ export default class Executor {
       this.#functions.delete(exeId)
       const reply = { target: fs.pid, sequence, outcome: winner }
 
-      // TODO remove these by using fs directly inside accumulator
-      // ties in with switching the fs during reply tho
-      const { upserts, deletes } = execution.accumulator
-      for (const upsert of upserts) {
-        const file = execution.accumulator.readOutOfBand(upsert)
-        assert(file, 'file not found: ' + upsert)
-        fs.write(upsert, file)
-      }
-      for (const del of deletes) {
-        fs.delete(del)
-      }
       // TODO need to tick the fs forwards when the accumulations occur
       result.settled = { reply, fs }
     } else {
@@ -82,7 +80,7 @@ export default class Executor {
       const { accumulations } = execution.accumulator
       assert(accumulations.length > 0, 'no accumulations')
       const requests = accumulations.map((acc) => acc.request)
-      result.pending = { requests }
+      result.pending = { commit: fs.commit, requests }
     }
     return result
   }
@@ -92,6 +90,7 @@ type Execution = {
   function: Promise<Outcome>
   accumulator: Accumulator
   api: IsolateApi
+  commit: string
 }
 const getExeId = (request: Request) => {
   const id = getPoolKey(request)
