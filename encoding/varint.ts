@@ -4,6 +4,16 @@
 /**
  * Functions for encoding typed integers in array buffers.
  *
+ * ```ts
+ * import { encode, decode } from "https://deno.land/std@$STD_VERSION/encoding/varint.ts";
+ *
+ * const buf = new Uint8Array(10);
+ * const [encoded, bytesWritten] = encode(42n, buf);
+ * // [ Uint8Array(1) [ 42 ], 1 ];
+ *
+ * decode(encoded); // [ 42n, 1 ];
+ * ```
+ *
  * @module
  */
 
@@ -37,6 +47,19 @@ const U64_VIEW = new BigUint64Array(AB);
  *
  * To know how many bytes the VarInt took to encode, simply negate `offset`
  * from the returned new `offset`.
+ *
+ * @param buf The buffer to decode from.
+ * @param offset The offset to start decoding from.
+ * @returns A tuple of the decoded varint 64-bit number, and the new offset.
+ *
+ * @example
+ * ```ts
+ * import { decode } from "https://deno.land/std@$STD_VERSION/encoding/varint.ts";
+ *
+ * const buf = new Uint8Array([0x8E, 0x02]);
+ * decode(buf);
+ * // [ 300n, 2 ];
+ * ```
  */
 export function decode(buf: Uint8Array, offset = 0): [bigint, number] {
   // Clear the last result from the Two's complement view
@@ -110,6 +133,19 @@ export function decode(buf: Uint8Array, offset = 0): [bigint, number] {
  *
  * To know how many bytes the VarInt took to encode, simply negate `offset`
  * from the returned new `offset`.
+ *
+ * @param buf The buffer to decode from.
+ * @param offset The offset to start decoding from.
+ * @returns A tuple of the decoded varint 32-bit number, and the new offset.
+ *
+ * @example
+ * ```ts
+ * import { decode32 } from "https://deno.land/std@$STD_VERSION/encoding/varint.ts";
+ *
+ * const buf = new Uint8Array([0x8E, 0x02]);
+ * decode32(buf);
+ * // [ 300, 2 ];
+ * ```
  */
 export function decode32(buf: Uint8Array, offset = 0): [number, number] {
   let shift = 0;
@@ -138,6 +174,19 @@ export function decode32(buf: Uint8Array, offset = 0): [number, number] {
  * If passed `buf` then that will be written into, starting at `offset`. The
  * resulting returned `Uint8Array` will be a slice of `buf`. The resulting
  * returned number is effectively `offset + bytesWritten`.
+ *
+ * @param num The number to encode.
+ * @param buf The buffer to write into.
+ * @param offset The offset to start writing at.
+ * @returns A tuple of the encoded VarInt `Uint8Array` and the new offset.
+ *
+ * @example
+ * ```ts
+ * import { encode } from "https://deno.land/std@$STD_VERSION/encoding/varint.ts";
+ *
+ * const buf = new Uint8Array(10);
+ * encode(42n, buf); // [ Uint8Array(1) [ 42 ], 1 ];
+ * ```
  */
 export function encode(
   num: bigint | number,

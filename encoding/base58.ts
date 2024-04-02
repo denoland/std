@@ -27,9 +27,12 @@ const base58alphabet =
   "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz".split("");
 
 /**
- * Converts data to a base58-encoded string.
+ * Converts data into a base58-encoded string.
  *
  * @see {@link https://datatracker.ietf.org/doc/html/draft-msporny-base58-03#section-3}
+ *
+ * @param data The data to encode.
+ * @returns The base58-encoded string.
  *
  * @example
  * ```ts
@@ -93,11 +96,15 @@ export function encodeBase58(data: ArrayBuffer | Uint8Array | string): string {
  *
  * @see {@link https://datatracker.ietf.org/doc/html/draft-msporny-base58-03#section-4}
  *
+ * @param b58 The base58-encoded string to decode.
+ * @returns The decoded data.
+ *
  * @example
  * ```ts
  * import { decodeBase58 } from "https://deno.land/std@$STD_VERSION/encoding/base58.ts";
  *
- * decodeBase58("2NEpo7TZRRrLZSi2U"); // Uint8Array(12) [ 72, 101, 108, 108, 111, 32,  87, 111, 114, 108, 100, 33 ]
+ * decodeBase58("2NEpo7TZRRrLZSi2U");
+ * // Uint8Array(12) [ 72, 101, 108, 108, 111, 32,  87, 111, 114, 108, 100, 33 ]
  * ```
  */
 export function decodeBase58(b58: string): Uint8Array {
