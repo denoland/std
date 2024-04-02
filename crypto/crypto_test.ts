@@ -1,8 +1,11 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import { assert, assertEquals, assertInstanceOf, fail } from "../assert/mod.ts";
-import { crypto as stdCrypto } from "./mod.ts";
+import {
+  crypto as stdCrypto,
+  DIGEST_ALGORITHM_NAMES,
+  type DigestAlgorithmName,
+} from "./mod.ts";
 import { repeat } from "../bytes/repeat.ts";
-import { type DigestAlgorithm, digestAlgorithms } from "./_wasm/mod.ts";
 import { encodeHex } from "../encoding/hex.ts";
 
 const webCrypto = globalThis.crypto;
@@ -306,6 +309,10 @@ const allErrors = {
   SHAKE128: Error,
   SHAKE256: Error,
   TIGER: Error,
+  FNV32: Error,
+  FNV32A: Error,
+  FNV64: Error,
+  FNV64A: Error,
 } as const;
 
 // Test inputs and expected results for each algorithm.
@@ -319,7 +326,7 @@ const digestCases: [
   { length?: number },
   // The expected digest output for each hash algorithm, or an Error type if the
   // algorithm isn't expected to this input.
-  Record<DigestAlgorithm, string | ErrorConstructor>,
+  Record<DigestAlgorithmName, string | ErrorConstructor>,
 ][] = [
   ["Empty", [[], [""], [new ArrayBuffer(0), new BigInt64Array(0)]], {}, {
     BLAKE2B:
@@ -363,10 +370,14 @@ const digestCases: [
     SHAKE256:
       "46b9dd2b0ba88d13233b3feb743eeb243fcd52ea62b81b82b50c27646ed5762fd75dc4ddd8c0f200cb05019d67b592f6fc821c49479ab48640292eacb3b7c4be",
     TIGER: "3293ac630c13f0245f92bbb1766e16167a4e58492dde73f3",
+    FNV32: "811c9dc5",
+    FNV32A: "811c9dc5",
+    FNV64: "cbf29ce484222325",
+    FNV64A: "cbf29ce484222325",
   }],
 
   [
-    "One zeroed byte",
+    "One zero byte",
     [["\x00"], ["", "\x00", "", ""], [new ArrayBuffer(1)], [
       new Uint8ClampedArray(1),
     ]],
@@ -415,138 +426,425 @@ const digestCases: [
       SHAKE256:
         "b8d01df855f7075882c636f6ddeacf41e5de0bbf30042ef0a86e36f4b8600d546c516501a6a3c821678d3d9943fa9e74b9b99fccd47aecc91dd1f4946b8355b3",
       TIGER: "5d9ed00a030e638bdb753a6a24fb900e5a63b8e73e6c25b6",
+      FNV32: "050c5d1f",
+      FNV32A: "050c5d1f",
+      FNV64: "af63bd4c8601b7df",
+      FNV64A: "af63bd4c8601b7df",
+    },
+  ],
+
+  ['The character "a"', [["a"], ["", "a"]], {}, {
+    BLAKE2B:
+      "333fcb4ee1aa7c115355ec66ceac917c8bfd815bf7587d325aec1864edd24e34d5abe2c6b1b5ee3face62fed78dbef802f2a85cb91d455a8f5249d330853cb3c",
+    "BLAKE2B-128": "27c35e6e9373877f29e562464e46497e",
+    "BLAKE2B-160": "948caa2db61bc4cdb4faf7740cd491f195043914",
+    "BLAKE2B-224": "c05d5ea0257c7a4604122b8e99a0093f89d0797ef06a7f0af65a3560",
+    "BLAKE2B-256":
+      "8928aae63c84d87ea098564d1e03ad813f107add474e56aedd286349c0c03ea4",
+    "BLAKE2B-384":
+      "7d40de16ff771d4595bf70cbda0c4ea0a066a6046fa73d34471cd4d93d827d7c94c29399c50de86983af1ec61d5dcef0",
+    BLAKE2S: "4a0d129873403037c2cd9b9048203687f6233fb6738956e0349bd4320fec3e90",
+    BLAKE3: "17762fddd969a453925d65717ac3eea21320b66b54342fde15128d6caf21215f",
+    "KECCAK-224": "7cf87d912ee7088d30ec23f8e7100d9319bff090618b439d3fe91308",
+    "KECCAK-256":
+      "3ac225168df54212a25c1c01fd35bebfea408fdac2e31ddd6f80a4bbf9a5f1cb",
+    "KECCAK-384":
+      "85e964c0843a7ee32e6b5889d50e130e6485cffc826a30167d1dc2b3a0cc79cba303501a1eeaba39915f13baab5abacf",
+    "KECCAK-512":
+      "9c46dbec5d03f74352cc4a4da354b4e9796887eeb66ac292617692e765dbe400352559b16229f97b27614b51dbfbbb14613f2c10350435a8feaf53f73ba01c7c",
+    MD4: "bde52cb31de33e46245e05fbdbd6fb24",
+    MD5: "0cc175b9c0f1b6a831c399e269772661",
+    "RIPEMD-160": "0bdc9d2d256b3ee9daae347be6f4dc835a467ffe",
+    "SHA-1": "86f7e437faa5a7fce15d1ddcb9eaeaea377667b8",
+    "SHA-224": "abd37534c7d9a2efb9465de931cd7055ffdb8879563ae98078d6d6d5",
+    "SHA-256":
+      "ca978112ca1bbdcafac231b39a23dc4da786eff8147c4e72b9807785afee48bb",
+    "SHA3-224": "9e86ff69557ca95f405f081269685b38e3a819b309ee942f482b6a8b",
+    "SHA3-256":
+      "80084bf2fba02475726feb2cab2d8215eab14bc6bdd8bfb2c8151257032ecd8b",
+    "SHA3-384":
+      "1815f774f320491b48569efec794d249eeb59aae46d22bf77dafe25c5edc28d7ea44f93ee1234aa88f61c91912a4ccd9",
+    "SHA3-512":
+      "697f2d856172cb8309d6b8b97dac4de344b549d4dee61edfb4962d8698b7fa803f4f93ff24393586e28b5b957ac3d1d369420ce53332712f997bd336d09ab02a",
+    "SHA-384":
+      "54a59b9f22b0b80880d8427e548b7c23abd873486e1f035dce9cd697e85175033caa88e6d57bc35efae0b5afd3145f31",
+    "SHA-512":
+      "1f40fc92da241694750979ee6cf582f2d5d7d28e18335de05abc54d0560e0f5302860c652bf08d560252aa5e74210546f369fbbbce8c12cfc7957b2652fe9a75",
+    SHAKE128:
+      "85c8de88d28866bf0868090b3961162bf82392f690d9e4730910f4af7c6ab3ee",
+    SHAKE256:
+      "867e2cb04f5a04dcbd592501a5e8fe9ceaafca50255626ca736c138042530ba436b7b1ec0e06a279bc790733bb0aee6fa802683c7b355063c434e91189b0c651",
+    TIGER: "77befbef2e7ef8ab2ec8f93bf587a7fc613e247f5f247809",
+    FNV32: "050c5d7e",
+    FNV32A: "e40c292c",
+    FNV64: "af63bd4c8601b7be",
+    FNV64A: "af63dc4c8601ec8c",
+  }],
+
+  [
+    'The character "a" followed by a zero byte',
+    [["a\x00"], ["", "a\x00"]],
+    {},
+    {
+      BLAKE2B:
+        "05970b95468b0b1941066ff189091493e73859ce41cde5ad08118e93ea1d81a57a144296a26a9fe7781481bde97b886725e36e30b305d8bd5cce1ae36bf1564a",
+      "BLAKE2B-128": "396660e76c84bb7786f979f10b58fa79",
+      "BLAKE2B-160": "de302e90cb156cb45d58cdf8f5a1a15ed9362c74",
+      "BLAKE2B-224": "7041c42bdd8dc5e46357e4ae3d43ae419fe90e0f7806ad6ba6befe0d",
+      "BLAKE2B-256":
+        "d2373b17cd8a8e19e39f52fa4905a274f93805fbb8bb4c7f3cb4b2cd6708ec8a",
+      "BLAKE2B-384":
+        "637fe31d1e955760ef31043d525d9321826a778ddbe82fcde45a9839424138096675e2f87e36b53ab223a7fd254198fd",
+      BLAKE2S:
+        "ccf69953dbc8db243e506bb559f512cadc5c78ff8414a68891d06e9c22be6a4a",
+      BLAKE3:
+        "7eb5f2760c891ddc18f5a287558fc48767d7a5d5895c51c980a8b7380c26d5a4",
+      "KECCAK-224": "1b914ebf869b542b9d8440e07ca1dfe5da48ebb1c563e928ded523c3",
+      "KECCAK-256":
+        "a3fe1181ce8d13858f6f383445749f49a3ae8b0cab89823918bab81153ca4300",
+      "KECCAK-384":
+        "028bf394389395fe49cda14bee0b5b54333babd65a9861e57c882b9ec7d752800a0a9d7abba9fdfe1c0f7dbe17378bab",
+      "KECCAK-512":
+        "50470286ea9f645134c527432303a7187a2a1451956148a1228d94b33edbf35ba9146301e43ddb84491469ccf1ca72cec501032df5e16958232a24ba90a93fb0",
+      MD4: "186cb09181e2c2ecaac768c47c729904",
+      MD5: "4144e195f46de78a3623da7364d04f11",
+      "RIPEMD-160": "3213d398bb951aa09625539093524fa528848bd0",
+      "SHA-1": "0a04b971b03da607ce6c455184037b660ca89f78",
+      "SHA-224": "3118199937a95dd0dd06a74ac0bf1517e958f08ae87ef9d7e89f139a",
+      "SHA-256":
+        "ffe9aaeaa2a2d5048174df0b80599ef0197ec024c4b051bc9860cff58ef7f9f3",
+      "SHA3-224": "853ee21e10638dd5d5a30ad979d7c0d1b91145fec39c8197637ce9d8",
+      "SHA3-256":
+        "39fdad608c5b60008da2f12414441f5f664472792c8bc1567a9fbae617800604",
+      "SHA3-384":
+        "03f38a5f45cd7742b1529999f875d9896d73030cad2a037b5ba56271cd140c6c4f5997a033e890ecbcf72ce7d5cab512",
+      "SHA3-512":
+        "8d9b65030b4721341fcff7d39811d5acbd65c730500b4a0c58aaa5150b5ec490d3508edda2d3a8a4f32a5428e39c64dc9ebf2b44edfab27863221c8b633d3fc6",
+      "SHA-384":
+        "defb4711c812122ba180a2ece74cfcd86dd959451cd3bc2afb672fa8a815ccc2bee6ccc03816016570d340ec992b0f0c",
+      "SHA-512":
+        "5c2ca3d50f46ece6066c53bd1a490cbe5f72d2738ae9417332e91e5c3f75205c639d71a9a41d67d965fa137dddf439e0ab9443a6ea44915e90d8b5b566d1c076",
+      SHAKE128:
+        "fa08163f906dc8a84cdf845785be46837da40e540b7ceca070dcac22ff0e1656",
+      SHAKE256:
+        "73b228e796a8df50b7730fbc43d9e4a2fe13a5ef27d921b97378dd6ce6a90eaefd2c4365b6adf533ec4873c58201d5075dd3b22f712eeb02aed0fc863a8641d3",
+      TIGER: "5b548919bc71cca542473494052a8fab1b68c62be0f76985",
+      FNV32: "70772d5a",
+      FNV32A: "2b24d044",
+      FNV64: "08326707b4eb37da",
+      FNV64A: "089be207b544f1e4",
+    },
+  ],
+
+  ['The string "ab"', [["ab"], ["a", "b"]], {}, {
+    BLAKE2B:
+      "b32c0573d242b3a987d8f66bd43266b7925cefab3a854950641a81ef6a3f4b97928443850545770f64abac2a75f18475653fa3d9a52c66a840da3b8617ae9607",
+    "BLAKE2B-128": "3dc9ae220222e2e156b2a5abb60d01c7",
+    "BLAKE2B-160": "e389cc624c1a0ef9229b53472c803dfe61d66eb4",
+    "BLAKE2B-224": "2aa7d7118a3db6c9561ca3cde64aaa29f006e7d479aa2897280c741b",
+    "BLAKE2B-256":
+      "f65a5e77ff5e2690ad316b7b9fc28dd90cc5c9a37e617ac3eee1403de3cf9a55",
+    "BLAKE2B-384":
+      "3e07b630c7b43bfcc13733c3eaf42c84e358652bb0f47657aecae88b34eb77b97b59aeb0a8aba859d7e3e6bfa323da13",
+    BLAKE2S: "19c3ebeed2ee90063cb5a8a4dd700ed7e5852dfc6108c84fac85888682a18f0e",
+    BLAKE3: "2dc99999a6aaef3f20349d2ed4057a2b54419545dabb809e6381de1bad8337e2",
+    "KECCAK-224": "54927ada38dd4928ba3bc8d40059dbe1ba68ed7f8e3a6fb3b41492f3",
+    "KECCAK-256":
+      "67fad3bfa1e0321bd021ca805ce14876e50acac8ca8532eda8cbf924da565160",
+    "KECCAK-384":
+      "d1112a0665627802eb0ff3225564b9cf6e99e1d58867a093095d16894e868549091d37e109da5c3bd671b39625e73591",
+    "KECCAK-512":
+      "b4828cc4e3fe9e5bc17013579be02b2a900c7afd7084c1f29450fcb267dcf1bc4def62a2cbefda507735547c203a3699f8a0d972fd13139dd73af0a3c30501e7",
+    MD4: "ec388dd78999dfc7cf4632465693b6bf",
+    MD5: "187ef4436122d1cc2f40dc2b92f0eba0",
+    "RIPEMD-160": "8576c67fcdf6c5d2f648efa58a32856b957f401a",
+    "SHA-1": "da23614e02469a0d7c7bd1bdab5c9c474b1904dc",
+    "SHA-224": "db3cda86d4429a1d39c148989566b38f7bda0156296bd364ba2f878b",
+    "SHA-256":
+      "fb8e20fc2e4c3f248c60c39bd652f3c1347298bb977b8b4d5903b85055620603",
+    "SHA3-224": "09d27a15bcbab5da828d84dbd66062e5d37049f9b165a65dc581e853",
+    "SHA3-256":
+      "5c828b33397f4762922e39a60c35699d2550466a52dd15ed44da37eb0bdc61e6",
+    "SHA3-384":
+      "dc30f83fefe3396fa0bd9709bcad28394386aa4e28ae881dc6617b361b16b969fb6a50a109068f13127b6deffbc82d4b",
+    "SHA3-512":
+      "01c87b5e8f094d8725ed47be35430de40f6ab6bd7c6641a4ecf0d046c55cb468453796bb61724306a5fb3d90fbe3726a970e5630ae6a9cf9f30d2aa062a0175e",
+    "SHA-384":
+      "c7be03ba5bcaa384727076db0018e99248e1a6e8bd1b9ef58a9ec9dd4eeebb3f48b836201221175befa74ddc3d35afdd",
+    "SHA-512":
+      "2d408a0717ec188158278a796c689044361dc6fdde28d6f04973b80896e1823975cdbf12eb63f9e0591328ee235d80e9b5bf1aa6a44f4617ff3caf6400eb172d",
+    SHAKE128:
+      "3590d7cf18ba3fea38f3a8df51ef85c16bb3ded30b3480134e940212ffa31208",
+    SHAKE256:
+      "effb6ac214e5d8dbd7e15272e8ed64565fa4a0feda65f13f2fe38f1c24e11fa8c837e99c2437afc571e9ca38dee96998eb3ffde353b5dad6a49360f5871353c2",
+    TIGER: "c8ba0c91823f24eb1516c30d110c46474c0509a77c7275ef",
+    FNV32: "70772d38",
+    FNV32A: "4d2505ca",
+    FNV64: "08326707b4eb37b8",
+    FNV64A: "089c4407b545986a",
+  }],
+
+  ['The string "abc"', [["abc"], ["ab", "c"]], {}, {
+    BLAKE2B:
+      "ba80a53f981c4d0d6a2797b69f12f6e94c212f14685ac4b74b12bb6fdbffa2d17d87c5392aab792dc252d5de4533cc9518d38aa8dbf1925ab92386edd4009923",
+    "BLAKE2B-128": "cf4ab791c62b8d2b2109c90275287816",
+    "BLAKE2B-160": "384264f676f39536840523f284921cdc68b6846b",
+    "BLAKE2B-224": "9bd237b02a29e43bdd6738afa5b53ff0eee178d6210b618e4511aec8",
+    "BLAKE2B-256":
+      "bddd813c634239723171ef3fee98579b94964e3bb1cb3e427262c8c068d52319",
+    "BLAKE2B-384":
+      "6f56a82c8e7ef526dfe182eb5212f7db9df1317e57815dbda46083fc30f54ee6c66ba83be64b302d7cba6ce15bb556f4",
+    BLAKE2S: "508c5e8c327c14e2e1a72ba34eeb452f37458b209ed63a294d999b4c86675982",
+    BLAKE3: "6437b3ac38465133ffb63b75273a8db548c558465d79db03fd359c6cd5bd9d85",
+    "KECCAK-224": "c30411768506ebe1c2871b1ee2e87d38df342317300a9b97a95ec6a8",
+    "KECCAK-256":
+      "4e03657aea45a94fc7d47ba826c8d667c0d1e6e33a64a036ec44f58fa12d6c45",
+    "KECCAK-384":
+      "f7df1165f033337be098e7d288ad6a2f74409d7a60b49c36642218de161b1f99f8c681e4afaf31a34db29fb763e3c28e",
+    "KECCAK-512":
+      "18587dc2ea106b9a1563e32b3312421ca164c7f1f07bc922a9c83d77cea3a1e5d0c69910739025372dc14ac9642629379540c17e2a65b19d77aa511a9d00bb96",
+    MD4: "a448017aaf21d8525fc10ae87aa6729d",
+    MD5: "900150983cd24fb0d6963f7d28e17f72",
+    "RIPEMD-160": "8eb208f7e05d987a9b044a8e98c6b087f15a0bfc",
+    "SHA-1": "a9993e364706816aba3e25717850c26c9cd0d89d",
+    "SHA-224": "23097d223405d8228642a477bda255b32aadbce4bda0b3f7e36c9da7",
+    "SHA-256":
+      "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad",
+    "SHA3-224": "e642824c3f8cf24ad09234ee7d3c766fc9a3a5168d0c94ad73b46fdf",
+    "SHA3-256":
+      "3a985da74fe225b2045c172d6bd390bd855f086e3e9d525b46bfe24511431532",
+    "SHA3-384":
+      "ec01498288516fc926459f58e2c6ad8df9b473cb0fc08c2596da7cf0e49be4b298d88cea927ac7f539f1edf228376d25",
+    "SHA3-512":
+      "b751850b1a57168a5693cd924b6b096e08f621827444f70d884f5d0240d2712e10e116e9192af3c91a7ec57647e3934057340b4cf408d5a56592f8274eec53f0",
+    "SHA-384":
+      "cb00753f45a35e8bb5a03d699ac65007272c32ab0eded1631a8b605a43ff5bed8086072ba1e7cc2358baeca134c825a7",
+    "SHA-512":
+      "ddaf35a193617abacc417349ae20413112e6fa4e89a97ea20a9eeee64b55d39a2192992a274fc1a836ba3c23a3feebbd454d4423643ce80e2a9ac94fa54ca49f",
+    SHAKE128:
+      "5881092dd818bf5cf8a3ddb793fbcba74097d5c526a6d35f97b83351940f2cc8",
+    SHAKE256:
+      "483366601360a8771c6863080cc4114d8db44530f8f1e1ee4f94ea37e78b5739d5a15bef186a5386c75744c0527e1faa9f8726e462a12a4feb06bd8801e751e4",
+    TIGER: "2aab1484e8c158f2bfb8c5ff41b57a525129131c957b5f93",
+    FNV32: "439c2f4b",
+    FNV32A: "1a47e90b",
+    FNV64: "d8dcca186bafadcb",
+    FNV64A: "e71fa2190541574b",
+  }],
+
+  ['The string "deno"', [["deno"], ["de", "no"]], {}, {
+    BLAKE2B:
+      "4497d020960f2b1af17b2b92c5d4ad3cdae9ad467cae6714d49c25c04bb6a2fd3906cdc9e1b85feafea3a947c979a1c8ebc1d9c3427ba78bde76f688646b74f3",
+    "BLAKE2B-128": "72c12ff54c63ef2cdbb033f3de893057",
+    "BLAKE2B-160": "fa868088559126444713c99bf50cec0c60b25386",
+    "BLAKE2B-224": "50b36844947ae8852458bad0eb1b89ec9c071ad27b98f5534a44646e",
+    "BLAKE2B-256":
+      "66839e9f6d998752d2a9f100629e16691504264d21ad10939ca939e557e75248",
+    "BLAKE2B-384":
+      "e296c0eebafba162e22590da157532d9cb11dfe80cf017bff4e0264b8639f4c1b11a91ee005a4b924aa4329962d61089",
+    BLAKE2S: "75262f749537fd45f227efb42b9f4b5eda79e27e9ba68b87725e840f8c1c1447",
+    BLAKE3: "e5dd810dd67713fab4438e17516c7ea13a35666900ece70a561184ff68de8d79",
+    "KECCAK-224": "eac9e095e9fc33db1134f07955444d7655eed64f96f5de5261e96cca",
+    "KECCAK-256":
+      "a76ec0ee8032c358a9697caa436ee1c2283a4073e48ecb5231f0ddea4f0a3921",
+    "KECCAK-384":
+      "67f6026c3741e241919b19c1ade12b83576239e1738494c43614b1c84c31b3d4b928f135cd0db4189fdbb9d41c0c5fd0",
+    "KECCAK-512":
+      "fddc1dfda24ee1c1ac011bfbc0d8dd3340af4ab49444d3c978114b05b8a5a9240c725c4b37c6681a3286a0f1a4891eb77d5d5ba46b50e9ade42339c200293930",
+    MD4: "594749a3bef632d12ab7067469aa8aed",
+    MD5: "c8772b401bc911da102a5291cc4ec83b",
+    "RIPEMD-160": "dc3c354a2004fc9bf46c64729e9b556eb414b812",
+    "SHA-1": "bb3d8e712d9e7ad4af08d4a38f3f52d9683d58eb",
+    "SHA-224": "c34ee73c656a6a6437b70610e261be4412c650acabdb20e26f11f620",
+    "SHA-256":
+      "e872e7bd2ae6abcf13a4c834029a342c882c1162ebf77b6720968b2000312ffb",
+    "SHA3-224": "4da3f5328887217780db9790d71a978e2ad19927616ba8863d79ce33",
+    "SHA3-256":
+      "74a6286af90f8775d74080f864cf80b11eecf6f14d325c5ef8c9f7ccc8055517",
+    "SHA3-384":
+      "9cb19574077f07a44d980e9e84bc155951f37d97fa527ae6007cb0252274d8b392523110d10101cef1f0bde11fd95dee",
+    "SHA3-512":
+      "9e248199d744a8d810e7fda8207f98f27453bd6cb5a02965b5477d3d07516bbac6831009eedddadc8901d742dbfe3fd4afa770230a84e4d51bf30a0c99efa03c",
+    "SHA-384":
+      "d6a359079da9d9a1c8ecec1d84b85ed9ca198976bfa50953867536d79e8628480f6e63adcb7f6a782de68bf5a1c96349",
+    "SHA-512":
+      "05b6ef7b13673c57c455d968cb7acbdd4fe10e24f25520763d69025d768d14124987b14e3aff8ff1565aaeba1c405fc89cc435938ff46a426f697b0f509e3799",
+    SHAKE128:
+      "3807a9a8ab333a92edcfc1c2ada9c8a03de98ef596ba691ea8473dea94d3371d",
+    SHAKE256:
+      "2badcaf4114cee41f9f0f167114b6e5d53eb5cfc9b986a00a60d50b6d9ef7e857b034e42837c84791b6b76787bf2d12cf672af9b78299f80d472882931452fa0",
+    TIGER: "13ac2596a881dfc66046e235acd4bc6909d73a2c9aa449b9",
+    FNV32: "6ed5a7a9",
+    FNV32A: "8ef64711",
+    FNV64: "14edb27eecdaadc9",
+    FNV64A: "a5d9fb67426e48b1",
+  }],
+
+  ['The string "foobar"', [["foobar"], ["foo", "bar"]], {}, {
+    BLAKE2B:
+      "8df31f60d6aeabd01b7dc83f277d0e24cbe104f7290ff89077a7eb58646068edfe1a83022866c46f65fb91612e516e0ecfa5cb25fc16b37d2c8d73732fe74cb2",
+    "BLAKE2B-128": "13b16eec2597e4d5616a70b1abd318b0",
+    "BLAKE2B-160": "ebcc6b9c81d5f54d139448349d46ec963c9eda7a",
+    "BLAKE2B-224": "e286854b0cce9426a215a21ca5d7acf9ab39e0f7fe5d20782390c8c1",
+    "BLAKE2B-256":
+      "93a0e84a8cdd4166267dbe1263e937f08087723ac24e7dcc35b3d5941775ef47",
+    "BLAKE2B-384":
+      "1168c00db3e3665c2998fe7f39b9be0cd6b2846c7dfe7bcb8f5b6e3510805704df4115214d8c01ccc5154ee5a6b463ac",
+    BLAKE2S: "03a4921c6b0aa0e5bed57228a3b6fd61bec160d46fa610ce6742dd51ab311f43",
+    BLAKE3: "aa51dcd43d5c6c5203ee16906fd6b35db298b9b2e1de3fce81811d4806b76b7d",
+    "KECCAK-224": "f5dd6617f67e2b6a7b5ef75d1931ef36ee63ca35d06bcc714a74a386",
+    "KECCAK-256":
+      "38d18acb67d25c8bb9942764b62f18e17054f66a817bd4295423adf9ed98873e",
+    "KECCAK-384":
+      "e8c02310ada7fbf1c550713cdaa0a3eaf02ee13990f73851e7e5a183f99df541d833424e702e4e22eb4306b7bcbeb965",
+    "KECCAK-512":
+      "927618d193a11374f6072cdcb8c410e2f18e0c433eb35a9f11ce3035b0066811db6c03a723a2855c4a8ee2b1c842e28d4982a1ff312dd4ddaf807b96d4d2ee1b",
+    MD4: "547aefd231dcbaac398625718336f143",
+    MD5: "3858f62230ac3c915f300c664312c63f",
+    "RIPEMD-160": "a06e327ea7388c18e4740e350ed4e60f2e04fc41",
+    "SHA-1": "8843d7f92416211de9ebb963ff4ce28125932878",
+    "SHA-224": "de76c3e567fca9d246f5f8d3b2e704a38c3c5e258988ab525f941db8",
+    "SHA-256":
+      "c3ab8ff13720e8ad9047dd39466b3c8974e592c2fa383d4a3960714caef0c4f2",
+    "SHA3-224": "1ad852ba147a715fe5a3df39a741fad08186c303c7d21cefb7be763b",
+    "SHA3-256":
+      "09234807e4af85f17c66b48ee3bca89dffd1f1233659f9f940a2b17b0b8c6bc5",
+    "SHA3-384":
+      "0fa8abfbdaf924ad307b74dd2ed183b9a4a398891a2f6bac8fd2db7041b77f068580f9c6c66f699b496c2da1cbcc7ed8",
+    "SHA3-512":
+      "ff32a30c3af5012ea395827a3e99a13073c3a8d8410a708568ff7e6eb85968fccfebaea039bc21411e9d43fdb9a851b529b9960ffea8679199781b8f45ca85e2",
+    "SHA-384":
+      "3c9c30d9f665e74d515c842960d4a451c83a0125fd3de7392d7b37231af10c72ea58aedfcdf89a5765bf902af93ecf06",
+    "SHA-512":
+      "0a50261ebd1a390fed2bf326f2673c145582a6342d523204973d0219337f81616a8069b012587cf5635f6925f1b56c360230c19b273500ee013e030601bf2425",
+    SHAKE128:
+      "a2a5933ad57401cfc082ec7db10c730f484bcc65ac1a4dd6c41277a123e26288",
+    SHAKE256:
+      "d9b219853298b92373f90479065636a9d143e024f071ac3f7c84636da948ad69cff430200773b6dd82dead6b5b3f0c582f4564d396e09bf1bf6c152aa61fef96",
+    TIGER: "c8cd4bf6959a162866c37fb6745f372cc919ffaa05560eef",
+    FNV32: "31f0b262",
+    FNV32A: "bf9cf968",
+    FNV64: "340d8765a4dda9c2",
+    FNV64A: "85944171f73967e8",
+  }],
+
+  [
+    'The string "foobar" followed by a zero byte',
+    [["foobar\x00"], ["foo", "bar", "\x00"]],
+    {},
+    {
+      BLAKE2B:
+        "750039a4ee41621ab2f0834f3fbaf4ecb6c4f6997774defc5c8e6833ff542abc479f35ab2eeb006de75bb880b0a08d90a98e322a7db2a612306db17ceca9f028",
+      "BLAKE2B-128": "64f8772077befede884b98c0f9abcc33",
+      "BLAKE2B-160": "bf4ea02cdde4d9eab182294eef5b239b169b4ef9",
+      "BLAKE2B-224": "7134b40fdc51511e22044f1687c97ca885c40c1ff3c5c4aae224d1cf",
+      "BLAKE2B-256":
+        "0a97d23ee6a748c05b0f55fe79d839e78e8277625ef297d0ae58fc7c27c882f9",
+      "BLAKE2B-384":
+        "91befd6e142c7eda8a58864026736cf98e5fa20a532ef7c5939d2971463913e2c9ec5d918290b3290a4baabb84b9f6f0",
+      BLAKE2S:
+        "64bcd3eda796749226f8ada3ea47d490dcfdee8e58ed176ff129e54af069531e",
+      BLAKE3:
+        "1abd166f8ef2c3a091eff0308f773626bfbdda1db93a24a11570625faf84fb02",
+      "KECCAK-224": "2acebde4d64b373dd9c8e65617d5822d58b45ca88d7bbcfbe85c26f5",
+      "KECCAK-256":
+        "48f41321479523f12ae67d2eb63a3d9efd33d30285619100f4f83ae30a11b5f3",
+      "KECCAK-384":
+        "8331e1972f0d8a34175f08d8fdd0244eb0ef66975a04c15f062e7d5c6eaa874ffdf7264d6928bc3538ee7fb3ae6702cc",
+      "KECCAK-512":
+        "84b7697f864ddc40f2d7acbc0b2e7e3009dad7e1d720dee5911ab48c8380c61fb5d505db208c6979860e3ec05758da577e2443d7e2976bdeecf09950d9280db0",
+      MD4: "bb00a8a852c1ba8c0b6e290f2e191b48",
+      MD5: "b4258860eea29e875e2ee4019763b2bb",
+      "RIPEMD-160": "33553915bf71231666f258827f083077b772f8ed",
+      "SHA-1": "09f154eb32d00226cec9f2775c5bbaa5a611533b",
+      "SHA-224": "dbc53a1087f959e5ce1b1df286cd67bdb412a30f477bdacf9b734a80",
+      "SHA-256":
+        "16917ee356726e4f1fa989280750b2f956a8d4e4e0f2ad7e20bd7ed3bb07c063",
+      "SHA3-224": "596dd10599ea64370e43d88bad14987f1eaf0d9ed7ec0bd4347719a4",
+      "SHA3-256":
+        "2bf9bc8593ce457feaca74dfe875003ae9cccabaa762ec10935a35b36b866826",
+      "SHA3-384":
+        "39547ddd5b4ed8b12e71470ea2721df98f9dc28734f72a20e1865ce115660d98d38e21ffc073e597b0a14fa941bfa6ef",
+      "SHA3-512":
+        "d1f01c0c4186b5cd8cb2a10bb55189926ad5ebeb758cfc58dc130fb2051b0ec976f407a669e8c37b6ba4901596950afb2d4dee89386b1a5bfaff31d2e90420d8",
+      "SHA-384":
+        "7b244516e9109a2cfccd16acfa3f1730ebde68531370e54e13cc06cf222e08f314723bfaa7699cc9a526d43ae24b6e0d",
+      "SHA-512":
+        "b75225f303707805c64866dd5f11a754c1722c6912c672f7e46f6726f51a7c8b192ae33f954127f9521f208d80a00dfc77e7e6df6c350c35b8d1a3ddcfdfe6ad",
+      SHAKE128:
+        "3c303690ac39830b68f874ab6ffaa155d9ecfb5a07e14e23ce82721cf96eeff6",
+      SHAKE256:
+        "2218ff244eda40af99d6a72218aac92ff5cfc37c0ae6309df69ecf657bfdb1053273e2653d02df0bc72966bcee691ea410db322361231a11f447437c5f422fe9",
+      TIGER: "ed7653244e5cf81b52589f09e8d4c50decd4514de90931de",
+      FNV32: "ffe8d046",
+      FNV32A: "0c1c9eb8",
+      FNV64: "50a6d3b724a774a6",
+      FNV64A: "34531ca7168b8f38",
     },
   ],
 
   ["Output length: 20", [["", "hello world", ""], ["hello ", "world"]], {
     length: 20,
   }, {
-    BLAKE2B: Error,
-    "BLAKE2B-128": Error,
+    ...allErrors,
     "BLAKE2B-160": "70e8ece5e293e1bda064deef6b080edde357010f",
-    "BLAKE2B-224": Error,
-    "BLAKE2B-256": Error,
-    "BLAKE2B-384": Error,
-    BLAKE2S: Error,
     BLAKE3: "d74981efa70a0c880b8d8c1985d075dbcbf679b9",
-    "KECCAK-224": Error,
-    "KECCAK-256": Error,
-    "KECCAK-384": Error,
-    "KECCAK-512": Error,
-    MD4: Error,
-    MD5: Error,
     "RIPEMD-160": "98c615784ccb5fe5936fbc0cbe9dfdb408d92f0f",
     "SHA-1": "2aae6c35c94fcfb415dbe95f408b9ce91ee846ed",
-    "SHA-224": Error,
-    "SHA-256": Error,
-    "SHA3-224": Error,
-    "SHA3-256": Error,
-    "SHA3-384": Error,
-    "SHA3-512": Error,
-    "SHA-384": Error,
-    "SHA-512": Error,
     SHAKE128: "3a9159f071e4dd1c8c4f968607c30942e120d815",
     SHAKE256: "369771bb2cb9d2b04c1d54cca487e372d9f187f7",
-    TIGER: Error,
   }],
 
   ["Output length: 3", [["hello world"], ["hell", "o w", "orld"]], {
     length: 3,
   }, {
-    BLAKE2B: Error,
-    "BLAKE2B-128": Error,
-    "BLAKE2B-160": Error,
-    "BLAKE2B-224": Error,
-    "BLAKE2B-256": Error,
-    "BLAKE2B-384": Error,
-    BLAKE2S: Error,
+    ...allErrors,
     BLAKE3: "d74981",
-    "KECCAK-224": Error,
-    "KECCAK-256": Error,
-    "KECCAK-384": Error,
-    "KECCAK-512": Error,
-    MD4: Error,
-    MD5: Error,
-    "RIPEMD-160": Error,
-    "SHA-1": Error,
-    "SHA-224": Error,
-    "SHA-256": Error,
-    "SHA3-224": Error,
-    "SHA3-256": Error,
-    "SHA3-384": Error,
-    "SHA3-512": Error,
-    "SHA-384": Error,
-    "SHA-512": Error,
     SHAKE128: "3a9159",
     SHAKE256: "369771",
-    TIGER: Error,
   }],
 
   ["Output length: 123", [["hello world"], ["hell", "o w", "orld"]], {
     length: 123,
   }, {
-    BLAKE2B: Error,
-    "BLAKE2B-128": Error,
-    "BLAKE2B-160": Error,
-    "BLAKE2B-224": Error,
-    "BLAKE2B-256": Error,
-    "BLAKE2B-384": Error,
-    BLAKE2S: Error,
+    ...allErrors,
     BLAKE3:
       "d74981efa70a0c880b8d8c1985d075dbcbf679b99a5f9914e5aaf96b831a9e24a020ed55aed9a6ab2eaf3fd70d2c98c949e142d8f42a10250190b699e02cf9eb68612e1a556fee6cf726bcb0994f7d3e669eda394788f8c80a4f0ea056be3d4dffd8069d7ef9a714a47a4cdef62c5402a25d7994384b07bfcf8479",
-    "KECCAK-224": Error,
-    "KECCAK-256": Error,
-    "KECCAK-384": Error,
-    "KECCAK-512": Error,
-    MD4: Error,
-    MD5: Error,
-    "RIPEMD-160": Error,
-    "SHA-1": Error,
-    "SHA-224": Error,
-    "SHA-256": Error,
-    "SHA3-224": Error,
-    "SHA3-256": Error,
-    "SHA3-384": Error,
-    "SHA3-512": Error,
-    "SHA-384": Error,
-    "SHA-512": Error,
     SHAKE128:
       "3a9159f071e4dd1c8c4f968607c30942e120d8156b8b1e72e0d376e8871cb8b899072665674f26cc494a4bcf027c58267e8ee2da60e942759de86d2670bba1aa47bffd20b48b1d2aa7c3349f8215d1b99ca65bdb1770a220f67456f602436032afce7f24e534e7bfcdab9b35affa0ff891074302c19970d7359a8c",
     SHAKE256:
       "369771bb2cb9d2b04c1d54cca487e372d9f187f73f7ba3f65b95c8ee7798c527f4f3c2d55c2d46a29f2e945d469c3df27853a8735271f5cc2d9e889544357116bb60a24af659151563156eebbf68810dd95c6fcccac0650132ba30bef9bf75b0d483becb935be8688b26ffb294d8284edd64a97325d6be0a423f23",
-    TIGER: Error,
   }],
 
-  ["Output length: 0", [[""]], {
+  ["Output length: 0", [["hello world"]], {
     length: 0,
   }, {
-    BLAKE2B: Error,
-    "BLAKE2B-128": Error,
-    "BLAKE2B-160": Error,
-    "BLAKE2B-224": Error,
-    "BLAKE2B-256": Error,
-    "BLAKE2B-384": Error,
-    BLAKE2S: Error,
+    ...allErrors,
     BLAKE3: "",
-    "KECCAK-224": Error,
-    "KECCAK-256": Error,
-    "KECCAK-384": Error,
-    "KECCAK-512": Error,
-    MD4: Error,
-    MD5: Error,
-    "RIPEMD-160": Error,
-    "SHA-1": Error,
-    "SHA-224": Error,
-    "SHA-256": Error,
-    "SHA3-224": Error,
-    "SHA3-256": Error,
-    "SHA3-384": Error,
-    "SHA3-512": Error,
-    "SHA-384": Error,
-    "SHA-512": Error,
     SHAKE128: "",
     SHAKE256: "",
-    TIGER: Error,
+  }],
+
+  ["Output length: 4", [["hello world"]], {
+    length: 4,
+  }, {
+    ...allErrors,
+    BLAKE3: "d74981ef",
+    SHAKE128: "3a9159f0",
+    SHAKE256: "369771bb",
+    FNV32: "548da96f",
+    FNV32A: "d58b3fa7",
+  }],
+
+  ["Output length: 8", [["hello world"]], {
+    length: 8,
+  }, {
+    ...allErrors,
+    BLAKE3: "d74981efa70a0c88",
+    SHAKE128: "3a9159f071e4dd1c",
+    SHAKE256: "369771bb2cb9d2b0",
+    FNV64: "7dcf62cdb1910e6f",
+    FNV64A: "779a65e7023cd2e7",
   }],
 
   ["Negative length", [[""]], { length: -1 }, allErrors],
@@ -606,6 +904,10 @@ const digestCases: [
     SHAKE256:
       "e39016c524adfa6efd8019d6bc6584bbb912bed38ab896a546a2ef648e120838085103118d3409caab6ed847a67b27085bdce9ffaa6408410431a706625f07bf",
     TIGER: "111764e3c4f512abce83c7ebdf061caca4f9a04177046509",
+    FNV32: "0f6ffa13",
+    FNV32A: "cd8594d3",
+    FNV64: "5e9b65eb61065a13",
+    FNV64A: "ff4a09e55219e213",
   }],
 
   [
@@ -656,6 +958,10 @@ const digestCases: [
       SHAKE256:
         "ad4ffc105a791884afd92917a64af4d9d25b1c9d41a8e06683ad03a62ee5c7166a98fdcb4b60ee55722582c0eb9f103be3b55166efa4c20fdfcc5a4e026330dd",
       TIGER: "affa436814964b03d0ab7d5743fcfdcaee2ad5ecb792e1eb",
+      FNV32: "97a6bfdf",
+      FNV32A: "f32b316f",
+      FNV64: "9b376ead3a102abf",
+      FNV64A: "efb89c849b84c10f",
     },
   ],
 
@@ -715,6 +1021,10 @@ const digestCases: [
       SHAKE256:
         "5eb886f6cfe4460a3bac6e19bae068ea67e2d13507f880b770fe32c57914e9f10b6ffee3154e4bef277499055eb6c59138ecfa74f47c47b63edc451d57606b28",
       TIGER: "198fb3a090bd39a7f084a6296b466f49e47e81112268ec22",
+      FNV32: "de34e87d",
+      FNV32A: "03f3befd",
+      FNV64: "79f053fc79447fdd",
+      FNV64A: "605dc956170c3d5d",
     },
   ],
 
@@ -1248,36 +1558,7 @@ const digestCases: [
   ],
 ];
 
-Deno.test("digest() checks fnv algorithm implementation", () => {
-  const inputString = "deno";
-  const inputBytes = new TextEncoder().encode(inputString);
-
-  const expectedDigest32 = "6ed5a7a9";
-  const expectedDigest32a = "8ef64711";
-
-  const expectedDigest64 = "14edb27eecdaadc9";
-  const expectedDigest64a = "a5d9fb67426e48b1";
-
-  assertEquals(
-    encodeHex(stdCrypto.subtle.digestSync("FNV32", inputBytes)),
-    expectedDigest32,
-  );
-  assertEquals(
-    encodeHex(stdCrypto.subtle.digestSync("FNV32A", inputBytes)),
-    expectedDigest32a,
-  );
-
-  assertEquals(
-    encodeHex(stdCrypto.subtle.digestSync("FNV64", inputBytes)),
-    expectedDigest64,
-  );
-  assertEquals(
-    encodeHex(stdCrypto.subtle.digestSync("FNV64A", inputBytes)),
-    expectedDigest64a,
-  );
-});
-
-for (const algorithm of digestAlgorithms) {
+for (const algorithm of DIGEST_ALGORITHM_NAMES) {
   Deno.test(`digest() checks ${algorithm} vectors`, async () => {
     for (
       const [caption, piecesVariations, options, algorithms] of digestCases
@@ -1297,6 +1578,21 @@ for (const algorithm of digestAlgorithms) {
               name: algorithm,
             }, bytePieces),
           );
+          if (bytePieces.length === 1) {
+            // Verify that the same result is produced if it's not wrapped in an iterable. This will cause the
+            // runtime WebCrypto implementation to be used where supported, checking for implementation consistency.
+            const onePieceActual = encodeHex(
+              await stdCrypto.subtle.digest({
+                ...options,
+                name: algorithm,
+              }, bytePieces[0]!),
+            );
+            assertEquals(
+              actual,
+              onePieceActual,
+              `${algorithm} produced different results for BufferSource input versus single-item iterator of the same BufferSource`,
+            );
+          }
           assertEquals(
             expected,
             actual,

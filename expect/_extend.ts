@@ -1,6 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import { Matchers } from "./_types.ts";
+import type { Matchers } from "./_types.ts";
 
 let extendMatchers = {};
 

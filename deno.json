@@ -24,7 +24,7 @@
     "lint": "deno lint && deno task fmt:licence-headers --check && deno task lint:deprecations && deno task lint:doc-imports && deno task lint:circular && deno task lint:tools-types && deno task lint:mod-exports",
     "typos": "typos -c ./.github/workflows/typos.toml",
     "build:crypto": "deno task --cwd crypto/_wasm wasmbuild",
-    "wasmbuild": "deno run -A jsr:@deno/wasmbuild@0.16.0 --js-ext mjs --sync",
+    "wasmbuild": "deno run -A jsr:@deno/wasmbuild@0.17.1 --js-ext mjs --sync",
     "cov:gen": "deno coverage coverage --lcov --output=cov.lcov",
     "cov:view": "deno coverage --html coverage",
     "ok": "deno task lint && deno fmt --check && deno task test:browser && deno task test"
@@ -43,7 +43,8 @@
       "include": [
         "camelcase",
         "no-sync-fn-in-async-fn",
-        "single-var-declarator"
+        "single-var-declarator",
+        "verbatim-module-syntax"
       ]
     }
   }
