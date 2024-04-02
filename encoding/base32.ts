@@ -11,6 +11,14 @@
  *
  * This module is browser compatible.
  *
+ * ```ts
+ * import { encodeBase32, decodeBase32 } from "https://deno.land/std@$STD_VERSION/encoding/base32.ts";
+ *
+ * const encoded = encodeBase32("foobar"); // "MZXW6YTBOI======"
+ *
+ * decodeBase32(encoded); // Uint8Array(6) [ 102, 111, 111, 98, 97, 114 ]
+ * ```
+ *
  * @module
  */
 

@@ -8,6 +8,15 @@
  *
  * This module is browser compatible.
  *
+ * ```ts
+ * import { encodeBase58, decodeBase58 } from "https://deno.land/std@$STD_VERSION/encoding/base58.ts";
+ *
+ * const encoded = encodeBase58("Hello World!"); // "2NEpo7TZRRrLZSi2U"
+ *
+ * decodeBase58(encoded);
+ * // Uint8Array(12) [ 72, 101, 108, 108, 111, 32,  87, 111, 114, 108, 100, 33 ]
+ * ```
+ *
  * @module
  */
 
