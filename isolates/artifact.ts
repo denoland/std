@@ -23,7 +23,7 @@ import DB from '../db.ts'
 import FS from '../git/fs.ts'
 import { assert } from 'https://deno.land/std@0.203.0/assert/assert.ts'
 import { pidFromRepo } from '@/keys.ts'
-import { Artifact } from '@/constants.ts'
+import { ArtifactCore } from '@/constants.ts'
 
 const log = Debug('AI:artifact')
 const repo = {
@@ -127,7 +127,7 @@ export type C = { db: DB; exe: Executor }
  * Reason to keep artifact with an Isolate interface, is so we can control it
  * from within an isolate.
  */
-export const functions: Artifact = {
+export const functions: ArtifactCore = {
   async ping(params?: { data?: JsonValue; pid?: PID }) {
     log('ping', params)
     // TODO make ping able to do interactions with chains ?

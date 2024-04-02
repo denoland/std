@@ -18,7 +18,7 @@ export default (name: string, cradleMaker: () => Promise<Artifact>) => {
       expect(empty).toEqual({})
     })
     await t.step('ping with params', async () => {
-      const result = await artifact.ping({ test: 'test' })
+      const result = await artifact.ping({ data: { test: 'test' } })
       expect(result).toEqual({ test: 'test' })
     })
 

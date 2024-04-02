@@ -232,7 +232,7 @@ export type CommitObject = {
    */
   gpgsig?: string
 }
-export interface Artifact {
+export interface ArtifactCore {
   ping(
     params?: { data?: JsonValue; pid?: PID },
     api?: unknown,
@@ -263,7 +263,7 @@ export interface Artifact {
   transcribe(params: { audio: File }): Promise<{ text: string }>
   logs(params: { repo: string }, api?: unknown): Promise<object[]>
 }
-export interface ArtifactCradle extends Artifact {
+export interface Artifact extends ArtifactCore {
   pierces(isolate: string, target: PID): Promise<DispatchFunctions>
   stop(): Promise<void> | void
   // TODO should move these git functions elsewhere ?

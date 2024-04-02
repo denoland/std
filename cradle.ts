@@ -2,7 +2,7 @@ import { diffChars } from '$diff'
 import Compartment from './io/compartment.ts'
 import {
   Artifact,
-  ArtifactCradle,
+  ArtifactCore,
   DispatchFunctions,
   Params,
   PID,
@@ -18,16 +18,16 @@ import { C } from './isolates/artifact.ts'
 import FS from '@/git/fs.ts'
 const log = Debug('AI:cradle')
 
-export class Cradle implements ArtifactCradle {
+export class Cradle implements Artifact {
   #compartment: Compartment
   #api: IsolateApi<C>
-  #functions: Artifact
+  #functions: ArtifactCore
   #readAborts = new Set<AbortController>()
   #readPromises = new Set<Promise<void>>()
   private constructor(compartment: Compartment, api: IsolateApi<C>) {
     this.#compartment = compartment
     this.#api = api
-    this.#functions = compartment.functions<Artifact>(api)
+    this.#functions = compartment.functions<ArtifactCore>(api)
   }
   static async create() {
     const compartment = await Compartment.create('artifact')

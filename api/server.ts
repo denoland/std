@@ -13,7 +13,11 @@ import {
 import { streamSSE } from 'https://deno.land/x/hono/helper.ts'
 import Cradle from '@/cradle.ts'
 import { assert, Debug, serializeError } from '@/utils.ts'
-import { Artifact, EventSourceMessage, SerializableError } from '@/constants.ts'
+import {
+  ArtifactCore,
+  EventSourceMessage,
+  SerializableError,
+} from '@/constants.ts'
 import { ulid } from '$std/ulid/mod.ts'
 const log = Debug('AI:server')
 
@@ -31,7 +35,7 @@ export default class Server {
     app.use(timing())
     app.use(prettyJSON())
     app.use('*', logger(), poweredBy(), cors())
-    type serverMethods = (keyof Artifact)[]
+    type serverMethods = (keyof ArtifactCore)[]
     const functions: serverMethods = [
       'ping',
       'apiSchema',
