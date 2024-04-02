@@ -1,5 +1,6 @@
-import * as git from '../git/mod.ts'
 import { assert, Debug } from '@utils'
+import { solidify } from '@/git/solidify.ts'
+import { branch } from '@/git/branch.ts'
 import { PID, SolidReply, Solids } from '@/constants.ts'
 import DB from '@/db.ts'
 import FS from '@/git/fs.ts'
@@ -23,10 +24,10 @@ export const doAtomicCommit = async (db: DB, fs: FS, reply?: SolidReply) => {
   if (reply) {
     pool.unshift(reply)
   }
-  if (!pool.length) {
+  if (!pool.length && !fs.isChanged) {
     return false
   }
-  const solids = await git.solidify(fs, pool, atomic)
+  const solids = await solidify(fs, pool)
   atomic.deletePool(poolKeys)
 
   // the moneyshot
@@ -37,7 +38,7 @@ export const doAtomicCommit = async (db: DB, fs: FS, reply?: SolidReply) => {
 
 const transmit = (pid: PID, solids: Solids, atomic: Atomic) => {
   log('solids %o', solids)
-  const { commit, request, branches, replies } = solids
+  const { commit, request, branches, replies, deletes } = solids
 
   const transmittedReplies = new Set<PID>()
   if (request) {
@@ -57,12 +58,16 @@ const transmit = (pid: PID, solids: Solids, atomic: Atomic) => {
       atomic.enqueueReply(reply)
     }
   }
+  for (const { pid, commit } of deletes) {
+    atomic.deleteBranch(pid, commit)
+  }
 }
 
 export const doAtomicBranch = async (db: DB, fs: FS, sequence: number) => {
   const atomic = db.atomic()
-  const { origin, commit } = await git.branch(fs, sequence, atomic)
-  atomic.enqueueExecution(origin, commit)
+  const { pid, head, origin } = await branch(fs, sequence)
+  atomic.createBranch(pid, head)
+  atomic.enqueueExecution(origin, head)
   return await atomic.commit()
 }
 

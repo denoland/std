@@ -1,6 +1,6 @@
 import http from 'npm:isomorphic-git/http/web/index.js'
 import stringify from 'npm:safe-stable-stringify'
-import { assert, Debug, posix, sha1 } from '@utils'
+import { assert, Debug, equal, posix, sha1 } from '@utils'
 import { ENTRY_BRANCH, JsonValue, PID } from '@/constants.ts'
 import git from '$git'
 import { pidFromRepo } from '@/keys.ts'
@@ -67,10 +67,7 @@ export default class FS {
       message: 'initial commit',
       author,
     })
-    // atomics should really only be called from atomic compliant interfaces
-    const atomic = db.atomic()
-    atomic.createBranch(pid, commit)
-    await atomic.commit()
+    await db.atomic().createBranch(pid, commit).commit()
     return new FS(pid, commit, db)
   }
   static async clone(repo: string, db: DB) {
@@ -83,13 +80,18 @@ export default class FS {
     assert(commit, 'HEAD not found: ' + pid.branches.join('/'))
     return new FS(pid, commit, db)
   }
+  /** @param the new PID to branch into */
   branch(pid: PID) {
-    // TODO check this is the parent of the branch
+    assert(pid.account === this.#pid.account, 'account mismatch')
+    assert(pid.repository === this.#pid.repository, 'repository mismatch')
+    const branches = [...pid.branches]
+    branches.pop()
+    assert(equal(this.#pid.branches, branches), 'branch mismatch')
     return new FS(pid, this.#commit, this.#db)
   }
   logs(filepath?: string, depth?: number) {
     const { fs } = this
-    return git.log({ fs, dir, filepath, depth })
+    return git.log({ fs, dir, filepath, depth, ref: this.#commit })
   }
 
   async writeCommitObject(message = '', merges: string[] = []) {

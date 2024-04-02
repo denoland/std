@@ -2,9 +2,8 @@ import { assert, Debug } from '@utils'
 import { Branched, PROCTYPE } from '@/constants.ts'
 import { SolidRequest } from '@/constants.ts'
 import IOChannel from '../io/io-channel.ts'
-import { solidify } from './mod.ts'
+import { solidify } from './solidify.ts'
 import FS from '@/git/fs.ts'
-import { Atomic } from '@/atomic.ts'
 
 const log = Debug('AI:git')
 
@@ -15,19 +14,18 @@ const log = Debug('AI:git')
  * @param sequence the request sequence number in the parent to branch with
  * @param atomic the atomic transaction object
  */
-export default async (fs: FS, sequence: number, atomic: Atomic) => {
-  assert(!fs.isChanged, 'fs must not be changed')
+export const branch = async (fs: FS, sequence: number) => {
+  assert(!fs.isChanged, 'Cannot branch from a changed fs')
   assert(sequence >= 0, 'sequence must be a whole number')
   log('branch', sequence, fs.commit)
   const io = await IOChannel.load(fs)
-  const branchPid = io.getBranchPid(sequence)
-  atomic.createBranch(branchPid, fs.commit)
+  const pid = io.getBranchPid(sequence)
 
   const request = io.getRequest(sequence)
   const { isolate, functionName, params } = request
 
   const origin: SolidRequest = {
-    target: branchPid,
+    target: pid,
     source: fs.pid,
     sequence,
     isolate,
@@ -36,13 +34,18 @@ export default async (fs: FS, sequence: number, atomic: Atomic) => {
     proctype: PROCTYPE.SERIAL,
   }
   log('origin', origin)
-  const branch = fs.branch(branchPid)
+  const branch = fs.branch(pid)
   IOChannel.blank(branch)
 
-  const solids = await solidify(branch, [origin], atomic)
+  const solids = await solidify(branch, [origin])
   assert(solids.request, 'must have a request')
   assert(solids.branches.length === 0, 'must have no branches')
   assert(solids.replies.length === 0, 'must have no replies')
-  const branched: Branched = { origin: solids.request, commit: solids.commit }
+  assert(solids.deletes.length === 0, 'must have no deletes')
+  const branched: Branched = {
+    origin: solids.request,
+    head: solids.commit,
+    pid,
+  }
   return branched
 }

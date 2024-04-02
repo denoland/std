@@ -7,13 +7,11 @@ import {
   MergeReply,
   Poolable,
   PROCTYPE,
-  Reply,
   Request,
   SolidRequest,
   Solids,
 } from '@/constants.ts'
 import IOChannel from '@io/io-channel.ts'
-import { Atomic } from '@/atomic.ts'
 
 const log = Debug('AI:git:solidify')
 
@@ -21,14 +19,15 @@ const log = Debug('AI:git:solidify')
  * Takes in an unordered collection of operations, and orders them in the
  * .io.json file, then performs a commit.
  * The allowed operations are:
- * - dispatch: an action to be executed serially on this branch.  May be
+ * - execute: an action to be executed serially on this branch.  May be
  *   external or from another branch.
+ * - branch: a new branch is being created with an origin action to be executed.
  * - merge: an async result is returning, or an external action is being
  *   inserted into the branch.
  * - reply: a result is being returned from a dispatch after serial execution.
  * @param fs a memfs instance to update
  */
-export default async (fs: FS, pool: Poolable[], atomic: Atomic) => {
+export const solidify = async (fs: FS, pool: Poolable[]) => {
   const pid = checkPool(pool)
   assert(equal(pid, fs.pid), 'pid mismatch')
   const io = await IOChannel.load(fs)
@@ -40,6 +39,7 @@ export default async (fs: FS, pool: Poolable[], atomic: Atomic) => {
   const branches: number[] = []
   const replies: MergeReply[] = []
   const parents = []
+  const deletes = []
   for (const poolable of pool) {
     if (isRequest(poolable)) {
       const sequence = io.addRequest(poolable)
@@ -70,7 +70,7 @@ export default async (fs: FS, pool: Poolable[], atomic: Atomic) => {
         if (request.proctype === PROCTYPE.BRANCH) {
           const { sequence } = poolable
           const branchPid = io.getBranchPid(sequence)
-          atomic.deleteBranch(branchPid, poolable.commit)
+          deletes.push({ pid: branchPid, commit: poolable.commit })
         }
       }
     }
@@ -90,7 +90,7 @@ export default async (fs: FS, pool: Poolable[], atomic: Atomic) => {
   for (const reply of replies) {
     reply.commit = commit
   }
-  const solids: Solids = { commit, request, branches, replies }
+  const solids: Solids = { commit, request, branches, replies, deletes }
   return solids
 }
 
@@ -121,7 +121,4 @@ const checkPool = (pool: Poolable[]) => {
 const isBranch = (request: Request) => {
   return request.proctype === PROCTYPE.BRANCH ||
     request.proctype === PROCTYPE.DAEMON
-}
-const isActive = (branches: number[], replies: Reply[]) => {
-  return branches.length > 0 || replies.length > 0
 }

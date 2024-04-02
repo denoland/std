@@ -1,5 +1,5 @@
 import { expect, log } from '@utils'
-import * as git from './mod.ts'
+import { solidify } from '@/git/solidify.ts'
 import {
   IoStruct,
   PID,
@@ -36,10 +36,8 @@ Deno.test('pierce serial', async (t) => {
   })
   const pierce = pierceFactory('pierce')
   await t.step('pierce', async () => {
-    const atomic = db.atomic()
-    const { request, commit } = await git.solidify(fs, [pierce], atomic)
+    const { request, commit } = await solidify(fs, [pierce])
     expect(request).not.toHaveProperty('ulid')
-    expect(await atomic.commit()).toBe(true)
 
     fs = FS.open(fs.pid, commit, db)
     const io = await fs.readJSON<IoStruct>('.io.json')
@@ -48,12 +46,10 @@ Deno.test('pierce serial', async (t) => {
     expect(io.requests[0]).toEqual(pierce)
   })
   await t.step('pierce reply', async () => {
-    const atomic = db.atomic()
-    const { commit, replies, request } = await git.solidify(fs, [reply], atomic)
+    const { commit, replies, request } = await solidify(fs, [reply])
     expect(commit).not.toBe(fs.commit)
     expect(request).toBeUndefined()
     expect(replies).toHaveLength(0)
-    expect(await atomic.commit()).toBe(true)
 
     fs = FS.open(fs.pid, commit, db)
     const io = await fs.readJSON<IoStruct>('.io.json')
@@ -62,11 +58,9 @@ Deno.test('pierce serial', async (t) => {
     expect(io.replies[0]).toEqual(reply.outcome)
   })
   await t.step('second action blanks io', async () => {
-    const atomic = db.atomic()
-    const { commit, request } = await git.solidify(fs, [pierce], atomic)
+    const { commit, request } = await solidify(fs, [pierce])
     expect(commit).not.toBe(fs.commit)
     expect(request).toBeDefined()
-    expect(await atomic.commit()).toBe(true)
 
     fs = FS.open(fs.pid, commit, db)
     const io = await fs.readJSON<IoStruct>('.io.json')
@@ -77,14 +71,12 @@ Deno.test('pierce serial', async (t) => {
     expect(io.replies[0]).toBeUndefined()
   })
   await t.step('multiple requests', async () => {
-    const atomic = db.atomic()
-    const { commit, request } = await git.solidify(fs, [
+    const { commit, request } = await solidify(fs, [
       pierceFactory('a'),
       pierceFactory('b'),
-    ], atomic)
+    ])
     expect(commit).not.toBe(fs.commit)
     expect(request).toBeUndefined()
-    expect(await atomic.commit()).toBe(true)
 
     fs = FS.open(fs.pid, commit, db)
     const io = await fs.readJSON<IoStruct>('.io.json')
@@ -94,10 +86,8 @@ Deno.test('pierce serial', async (t) => {
   })
   await t.step('multiple replies', async () => {
     const pool = replies(1, 3)
-    const atomic = db.atomic()
-    const { commit } = await git.solidify(fs, pool, atomic)
+    const { commit } = await solidify(fs, pool)
     expect(commit).not.toBe(fs.commit)
-    expect(await atomic.commit()).toBe(true)
 
     fs = FS.open(fs.pid, commit, db)
     const io = await fs.readJSON<IoStruct>('.io.json')
@@ -107,13 +97,12 @@ Deno.test('pierce serial', async (t) => {
   })
   await t.step('duplicate pool items rejects', async () => {
     const msg = 'duplicate pool items: '
-    const atomic = db.atomic()
-    await expect(git.solidify(fs, [pierce, pierce], atomic))
+    await expect(solidify(fs, [pierce, pierce]))
       .rejects.toThrow(msg)
     const reply = replies(1, 1)[0]
-    await expect(git.solidify(fs, [reply, reply], atomic))
+    await expect(solidify(fs, [reply, reply]))
       .rejects.toThrow(msg)
-    await expect(git.solidify(fs, [pierce, pierce, reply, reply], atomic))
+    await expect(solidify(fs, [pierce, pierce, reply, reply]))
       .rejects.toThrow(msg)
   })
   db.stop()

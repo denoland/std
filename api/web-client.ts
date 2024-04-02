@@ -48,7 +48,7 @@ export default class WebClient implements Artifact {
   apiSchema(params: { isolate: string }) {
     return this.request('apiSchema', params)
   }
-  pierce(params: PierceRequest) {
+  pierce(params: { pierce: PierceRequest }) {
     return this.request('pierce', params)
   }
   async transcribe(params: { audio: File }) {
@@ -83,7 +83,7 @@ export default class WebClient implements Artifact {
           params,
           proctype,
         }
-        return this.pierce(pierce)
+        return this.pierce({ pierce })
       }
     }
     return pierces
@@ -96,6 +96,12 @@ export default class WebClient implements Artifact {
   }
   clone(params: { repo: string }) {
     return this.request('clone', params)
+  }
+  pull(): Promise<{ pid: PID; head: string }> {
+    throw new Error('not implemented')
+  }
+  push() {
+    return Promise.reject(new Error('not implemented'))
   }
   rm(params: { repo: string }) {
     return this.request('rm', params)

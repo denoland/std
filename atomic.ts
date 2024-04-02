@@ -38,7 +38,7 @@ export class Atomic {
     const key = keys.getPoolKey(poolable)
     const empty = { key, versionstamp: null }
     this.#atomic = this.#atomic.check(empty).set(key, poolable)
-    return key
+    return this
   }
   deletePool(keys: Deno.KvKey[]) {
     assert(this.#atomic, 'Atomic not set')
@@ -47,6 +47,7 @@ export class Atomic {
     for (const key of keys) {
       this.#atomic = this.#atomic.delete(key)
     }
+    return this
   }
   async updateHead(pid: PID, fromCommit: string, toCommit: string) {
     assert(this.#atomic, 'Atomic not set')
@@ -57,6 +58,7 @@ export class Atomic {
     const from = await this.#kv.get(key)
     assert(from.value === fromCommit, 'head commit mismatch: ' + fromCommit)
     this.#atomic = this.#atomic.check(from).set(key, toCommit)
+    return this
   }
   createBranch(pid: PID, commit: string) {
     assert(this.#atomic, 'Atomic not set')
@@ -64,7 +66,13 @@ export class Atomic {
     const key = keys.getHeadKey(pid)
     this.#atomic = this.#atomic.check({ key, versionstamp: null })
       .set(key, commit)
+    return this
   }
+  /**
+   * @param pid the branch to delete
+   * @param commit the current branch commit that is being deleted, which is
+   * used to provide safety in case something else has changed the branch
+   */
   async deleteBranch(pid: PID, commit: string) {
     assert(this.#atomic, 'Atomic not set')
     assert(sha1.test(commit), 'Commit not SHA-1: ' + commit)
@@ -74,6 +82,7 @@ export class Atomic {
     assert(current.value === commit, 'branch commit mismatch')
     this.#atomic = this.#atomic.check(current)
       .delete(key)
+    return this
     // TODO ensure this is tied in to the changing of the parent head
   }
   enqueuePierce(pierce: PierceRequest) {

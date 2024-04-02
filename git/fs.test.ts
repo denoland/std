@@ -29,13 +29,15 @@ Deno.test('git/init', async (t) => {
     await expect(fs.exists(path)).resolves.toBeTruthy()
     await expect(fs.read(path)).resolves.toBe(data)
 
+    expect(await db.readHead(fs.pid)).toBe(fs.commit)
     const next = await fs.writeCommitObject('write single')
+    expect(await db.readHead(fs.pid), 'commit changed head').toBe(fs.commit)
+
     const read = await next.read(path)
     expect(read).toBe(data)
     await expect(next.exists(path)).resolves.toBeTruthy()
 
     fs = next
-    expect(await db.readHead(fs.pid)).toBe(fs.commit)
   })
   await t.step('write nested', async () => {
     const path = 'nested/deep/hello.txt'
@@ -52,8 +54,6 @@ Deno.test('git/init', async (t) => {
     await expect(fs.exists(path)).resolves.toBeTruthy()
     await expect(fs.read(path)).resolves.toBe(data)
 
-    expect(await db.readHead(fs.pid)).toBe(fs.commit)
-
     const next = await fs.writeCommitObject('write nested')
     await expect(next.exists(path)).resolves.toBeTruthy()
     const read = await next.read(path)
@@ -62,7 +62,6 @@ Deno.test('git/init', async (t) => {
     expect(oldRead).toBe(data)
 
     fs = next
-    expect(await db.readHead(fs.pid)).toBe(fs.commit)
   })
   await t.step('logs', async () => {
     const logs = await fs.logs()
@@ -77,7 +76,6 @@ Deno.test('git/init', async (t) => {
     await expect(next.read(path)).rejects.toThrow('Could not find file or')
 
     fs = next
-    expect(await db.readHead(fs.pid)).toBe(fs.commit)
   })
   db.stop()
 })

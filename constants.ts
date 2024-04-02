@@ -93,10 +93,15 @@ export type Solids = {
   request?: SolidRequest
   branches: number[]
   replies: MergeReply[]
+  deletes: { pid: PID; commit: string }[]
 }
 export type Branched = {
-  commit: string
+  /** The first request in the new branch */
   origin: SolidRequest
+  /** The branch PID that needs to be created in /.git/refs */
+  pid: PID
+  /** The head of the new branch that needs to be created in /.git/refs */
+  head: string
 }
 export type ExeResult = {
   settled?: {

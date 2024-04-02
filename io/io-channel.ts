@@ -55,14 +55,17 @@ export default class IOChannel {
   }
   static blank(fs: FS) {
     const io = new IOChannel(createBase(), fs)
-    io.save()
+    io.#save()
+  }
+  #save() {
+    return this.#fs.writeJSON('.io.json', this.#io)
   }
   save() {
     if (equal(this.#io, this.#original)) {
       throw new Error('no changes to save')
     }
     this.#original = JSON.parse(JSON.stringify(this.#io))
-    return this.#fs.writeJSON('.io.json', this.#io)
+    return this.#save()
   }
   /**
    * @returns true if there are any requests that are accumulating, as in they
