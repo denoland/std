@@ -597,7 +597,7 @@ it.ignore = function itIgnore<T>(...args: ItArgs<T>) {
 
 it.skip = it.ignore;
 
-/** Alias of {@link it} */
+/** Alias of {@linkcode it} */
 export const test = it;
 
 function addHook<T>(
@@ -626,7 +626,7 @@ export function beforeAll<T>(
   addHook("beforeAll", fn);
 }
 
-/** Alias of {@link beforeAll} */
+/** Alias of {@linkcode beforeAll} */
 export const before = beforeAll;
 
 /** Run some shared teardown after all of the tests in the suite. */
@@ -636,7 +636,7 @@ export function afterAll<T>(
   addHook("afterAll", fn);
 }
 
-/** Alias of {@link afterAll} */
+/** Alias of {@linkcode afterAll} */
 export const after = afterAll;
 
 /** Run some shared setup before each test in the suite. */
