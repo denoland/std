@@ -1,7 +1,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
 import { expect } from "./expect.ts";
-import { MatcherContext, Tester } from "./_types.ts";
+import type { MatcherContext, Tester } from "./_types.ts";
 
 declare module "./_types.ts" {
   interface Expected {

@@ -43,7 +43,8 @@
       "include": [
         "camelcase",
         "no-sync-fn-in-async-fn",
-        "single-var-declarator"
+        "single-var-declarator",
+        "verbatim-module-syntax"
       ]
     }
   }
