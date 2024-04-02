@@ -11,6 +11,14 @@
  *
  * This module is browser compatible.
  *
+ * ```ts
+ * import { encodeBase32, decodeBase32 } from "https://deno.land/std@$STD_VERSION/encoding/base32.ts";
+ *
+ * const encoded = encodeBase32("foobar"); // "MZXW6YTBOI======"
+ *
+ * decodeBase32(encoded); // Uint8Array(6) [ 102, 111, 111, 98, 97, 114 ]
+ * ```
+ *
  * @module
  */
 
@@ -53,11 +61,15 @@ function _byteLength(validLen: number, placeHoldersLen: number): number {
  *
  * @see {@link https://datatracker.ietf.org/doc/html/rfc4648#section-6}
  *
+ * @param b32 The base32-encoded string to decode.
+ * @returns The decoded data.
+ *
  * @example
  * ```ts
  * import { decodeBase32 } from "https://deno.land/std@$STD_VERSION/encoding/base32.ts";
  *
- * decodeBase32("NRQMA==="); // Uint8Array(3) [ 108, 96, 192 ]
+ * decodeBase32("NRQMA===");
+ * // Uint8Array(3) [ 108, 96, 192 ]
  * ```
  */
 export function decodeBase32(b32: string): Uint8Array {
@@ -151,9 +163,12 @@ function encodeChunk(uint8: Uint8Array, start: number, end: number): string {
 }
 
 /**
- * Converts data to a base32-encoded string.
+ * Converts data into a base32-encoded string.
  *
  * @see {@link https://datatracker.ietf.org/doc/html/rfc4648#section-6}
+ *
+ * @param data The data to encode.
+ * @returns The base32-encoded string.
  *
  * @example
  * ```ts
