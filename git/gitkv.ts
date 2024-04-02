@@ -51,7 +51,7 @@ export class GitKV {
     const pathKey = this.#getAllowedPathKey(path)
     const result = await this.#db.blobGet(pathKey)
 
-    if (!result) {
+    if (!result.versionstamp) {
       log('readFile not found', path, opts)
       throw new FileNotFoundError('file not found: ' + path)
     }
@@ -59,16 +59,16 @@ export class GitKV {
       throw new Error('only utf8 encoding is supported')
     }
     if (opts && opts.encoding === 'utf8') {
-      const string = new TextDecoder().decode(result)
+      const string = new TextDecoder().decode(result.value)
       log('readFile', path, opts, string)
       return string
     }
-    log('readFile', path, opts, typeof result, result.byteLength)
-    return result
+    log('readFile', path, opts, typeof result.value, result.value.byteLength)
+    return result.value
   }
   async writeFile(
     path: string,
-    data: ArrayBufferLike | string,
+    data: Uint8Array | string,
     opts: EncodingOpts,
   ) {
     log('writeFile', path, data, opts)
@@ -156,9 +156,8 @@ export class GitKV {
       exists = !!head
     } else {
       // TODO no need to fetch the whole blob
-      // TODO move all blob ops to db
       const result = await this.#db.blobGet(pathKey)
-      exists = !!result
+      exists = !!result.versionstamp
     }
     if (!exists) {
       throw new FileNotFoundError('file not found: ' + path)

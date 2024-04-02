@@ -82,8 +82,8 @@ export default async (fs: FS, pool: Poolable[], atomic: Atomic) => {
     log('nextExecutingRequest', next)
     request = next
   }
-  io.save()
 
+  io.save()
   const { commit } = await fs.writeCommitObject('pool', parents)
 
   log('head', commit)
@@ -91,9 +91,6 @@ export default async (fs: FS, pool: Poolable[], atomic: Atomic) => {
     reply.commit = commit
   }
   const solids: Solids = { commit, request, branches, replies }
-  if (!io.isAccumulating() && !io.getExecutingRequest()) {
-    assert(isActive(branches, replies), 'no active solids - stalled')
-  }
   return solids
 }
 

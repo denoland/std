@@ -20,7 +20,7 @@ import Accumulator from '@/exe/accumulator.ts'
 import FS from '@/git/fs.ts'
 const log = Debug('AI:io-file')
 
-const blank = (): IoStruct => ({
+const createBase = (): IoStruct => ({
   sequence: 0,
   requests: {},
   replies: {},
@@ -28,11 +28,13 @@ const blank = (): IoStruct => ({
 })
 
 export default class IOChannel {
-  #io: IoStruct
-  #fs: FS
-  constructor(io: IoStruct, fs: FS) {
+  readonly #io: IoStruct
+  readonly #fs: FS
+  #original: IoStruct
+  private constructor(io: IoStruct, fs: FS) {
     this.#io = io
     this.#fs = fs
+    this.#original = JSON.parse(JSON.stringify(io))
   }
   static async read(fs: FS) {
     if (await fs.exists('.io.json')) {
@@ -42,7 +44,7 @@ export default class IOChannel {
     }
   }
   static async load(fs: FS) {
-    let io = blank()
+    let io = createBase()
 
     if (await fs.exists('.io.json')) {
       io = await fs.readJSON('.io.json') as IoStruct
@@ -52,10 +54,14 @@ export default class IOChannel {
     return new IOChannel(io, fs)
   }
   static blank(fs: FS) {
-    const io = new IOChannel(blank(), fs)
+    const io = new IOChannel(createBase(), fs)
     io.save()
   }
   save() {
+    if (equal(this.#io, this.#original)) {
+      throw new Error('no changes to save')
+    }
+    this.#original = JSON.parse(JSON.stringify(this.#io))
     return this.#fs.writeJSON('.io.json', this.#io)
   }
   /**
