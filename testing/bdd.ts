@@ -597,6 +597,9 @@ it.ignore = function itIgnore<T>(...args: ItArgs<T>) {
 
 it.skip = it.ignore;
 
+/** Alias of {@link it} */
+export const test = it;
+
 function addHook<T>(
   name: HookNames,
   fn: (this: T) => void | Promise<void>,
@@ -623,12 +626,18 @@ export function beforeAll<T>(
   addHook("beforeAll", fn);
 }
 
+/** Alias of {@link beforeAll} */
+export const before = beforeAll;
+
 /** Run some shared teardown after all of the tests in the suite. */
 export function afterAll<T>(
   fn: (this: T) => void | Promise<void>,
 ) {
   addHook("afterAll", fn);
 }
+
+/** Alias of {@link afterAll} */
+export const after = afterAll;
 
 /** Run some shared setup before each test in the suite. */
 export function beforeEach<T>(
