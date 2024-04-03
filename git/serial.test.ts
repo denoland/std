@@ -1,4 +1,4 @@
-import { expect, log } from '@utils'
+import { assert, expect, log } from '@utils'
 import { solidify } from '@/git/solidify.ts'
 import {
   IoStruct,
@@ -36,8 +36,9 @@ Deno.test('pierce serial', async (t) => {
   })
   const pierce = pierceFactory('pierce')
   await t.step('pierce', async () => {
-    const { request, commit } = await solidify(fs, [pierce])
-    expect(request).not.toHaveProperty('ulid')
+    const { exe, commit } = await solidify(fs, [pierce])
+    assert(exe)
+    expect(exe.request).not.toHaveProperty('ulid')
 
     fs = FS.open(fs.pid, commit, db)
     const io = await fs.readJSON<IoStruct>('.io.json')
@@ -46,9 +47,9 @@ Deno.test('pierce serial', async (t) => {
     expect(io.requests[0]).toEqual(pierce)
   })
   await t.step('pierce reply', async () => {
-    const { commit, replies, request } = await solidify(fs, [reply])
+    const { commit, replies, exe } = await solidify(fs, [reply])
     expect(commit).not.toBe(fs.commit)
-    expect(request).toBeUndefined()
+    expect(exe).toBeUndefined()
     expect(replies).toHaveLength(0)
 
     fs = FS.open(fs.pid, commit, db)
@@ -58,9 +59,9 @@ Deno.test('pierce serial', async (t) => {
     expect(io.replies[0]).toEqual(reply.outcome)
   })
   await t.step('second action blanks io', async () => {
-    const { commit, request } = await solidify(fs, [pierce])
+    const { commit, exe } = await solidify(fs, [pierce])
     expect(commit).not.toBe(fs.commit)
-    expect(request).toBeDefined()
+    expect(exe).toBeDefined()
 
     fs = FS.open(fs.pid, commit, db)
     const io = await fs.readJSON<IoStruct>('.io.json')
@@ -71,12 +72,12 @@ Deno.test('pierce serial', async (t) => {
     expect(io.replies[0]).toBeUndefined()
   })
   await t.step('multiple requests', async () => {
-    const { commit, request } = await solidify(fs, [
+    const { commit, exe } = await solidify(fs, [
       pierceFactory('a'),
       pierceFactory('b'),
     ])
     expect(commit).not.toBe(fs.commit)
-    expect(request).toBeUndefined()
+    expect(exe).toBeUndefined()
 
     fs = FS.open(fs.pid, commit, db)
     const io = await fs.readJSON<IoStruct>('.io.json')

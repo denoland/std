@@ -8,7 +8,6 @@ import {
   Poolable,
   PROCTYPE,
   Request,
-  SolidRequest,
   Solids,
 } from '@/constants.ts'
 import IOChannel from '@io/io-channel.ts'
@@ -76,11 +75,12 @@ export const solidify = async (fs: FS, pool: Poolable[]) => {
     }
   }
 
-  let request: SolidRequest | undefined
+  let exe: Solids['exe']
   const next = io.getExecutingRequest()
   if (next && !equal(executingRequest, next)) {
     log('nextExecutingRequest', next)
-    request = next
+    const sequence = io.getSequence(next)
+    exe = { request: next, sequence }
   }
 
   io.save()
@@ -90,7 +90,7 @@ export const solidify = async (fs: FS, pool: Poolable[]) => {
   for (const reply of replies) {
     reply.commit = commit
   }
-  const solids: Solids = { commit, request, branches, replies, deletes }
+  const solids: Solids = { commit, exe, branches, replies, deletes }
   return solids
 }
 

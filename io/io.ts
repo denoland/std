@@ -38,12 +38,13 @@ export const doAtomicCommit = async (db: DB, fs: FS, reply?: SolidReply) => {
 
 const transmit = (pid: PID, solids: Solids, atomic: Atomic) => {
   log('solids %o', solids)
-  const { commit, request, branches, replies, deletes } = solids
+  const { commit, exe, branches, replies, deletes } = solids
 
   const transmittedReplies = new Set<PID>()
-  if (request) {
-    log('request %o', request)
-    atomic.enqueueExecution(request, commit)
+  if (exe) {
+    log('request %o', exe)
+    const { request, sequence } = exe
+    atomic.enqueueExecution(request, sequence, commit)
   }
   for (const sequence of branches) {
     log('branch %o', sequence)
@@ -67,7 +68,7 @@ export const doAtomicBranch = async (db: DB, fs: FS, sequence: number) => {
   const atomic = db.atomic()
   const { pid, head, origin } = await branch(fs, sequence)
   atomic.createBranch(pid, head)
-  atomic.enqueueExecution(origin, head)
+  atomic.enqueueExecution(origin, sequence, head)
   return await atomic.commit()
 }
 

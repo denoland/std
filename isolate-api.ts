@@ -9,7 +9,7 @@ import {
   PID,
   ProcessOptions,
   PROCTYPE,
-  SolidRequest,
+  UnsequencedRequest,
 } from '@/constants.ts'
 import FS from '@/git/fs.ts'
 const log = Debug('AI:isolateApi')
@@ -57,10 +57,9 @@ export default class IsolateApi<T extends object = Default> {
         if (equal(target, this.pid) && proctype === PROCTYPE.SERIAL) {
           return Promise.reject(new Error('cannot dispatch to self'))
         }
-        const unsequencedRequest: SolidRequest = {
+        const unsequencedRequest: UnsequencedRequest = {
           target,
           source: this.pid,
-          sequence: -1,
           isolate,
           functionName,
           params: params || {},

@@ -89,8 +89,8 @@ export class Atomic {
     return this.#enqueue({ pierce })
   }
   /** Queue up a serial request for execution */
-  enqueueExecution(request: SolidRequest, commit: string) {
-    return this.#enqueue({ request, commit })
+  enqueueExecution(request: SolidRequest, sequence: number, commit: string) {
+    return this.#enqueue({ request, sequence, commit })
   }
   enqueueBranch(parentCommit: string, parentPid: PID, sequence: number) {
     return this.#enqueue({ parentCommit, parentPid, sequence })

@@ -15,9 +15,11 @@ import {
   Request,
   SolidReply,
   SolidRequest,
+  UnsequencedRequest,
 } from '@/constants.ts'
 import Accumulator from '@/exe/accumulator.ts'
 import FS from '@/git/fs.ts'
+import { IsolatePromise } from '@/constants.ts'
 const log = Debug('AI:io-file')
 
 const createBase = (): IoStruct => ({
@@ -117,14 +119,15 @@ export default class IOChannel {
     assert(sequence in this.#io.requests, 'sequence not found')
     return this.#io.requests[sequence]
   }
+  addUnsequenced(request: UnsequencedRequest) {
+    assert(equal(request.source, this.#fs.pid), 'only accumulations allowed')
+    const sequence = this.#io.sequence++
+    const sequenced = { ...request, sequence }
+    this.#io.requests[sequence] = sequenced
+    return sequence
+  }
   addRequest(request: Request) {
     const sequence = this.#io.sequence++
-    if ('sequence' in request) {
-      if (equal(request.source, this.#fs.pid)) {
-        assert(request.sequence === -1, 'accumulation sequenced before adding')
-        request = { ...request, sequence }
-      }
-    }
     this.#io.requests[sequence] = request
     return sequence
   }
@@ -159,12 +162,15 @@ export default class IOChannel {
       }
     }
     indices.sort((a, b) => a - b)
-    const accumulations = indices.map((key) => {
-      const request = this.#io.requests[key]
-      assert(!isPierceRequest(request), 'pierce request in accumulator')
-      const outcome = this.#io.replies[key]
-      return { request, outcome }
-    })
+    const accumulations: IsolatePromise[] = []
+    for (const index of indices) {
+      const saved = this.#io.requests[index]
+      assert(!isPierceRequest(saved), 'pierce request cannot accumulate')
+      const request = toUnsequenced(saved)
+      const outcome = this.#io.replies[index]
+      const result: IsolatePromise = { request, outcome }
+      accumulations.push(result)
+    }
     return Accumulator.create(accumulations)
   }
   print() {
@@ -194,10 +200,10 @@ export default class IOChannel {
   }
   includes(poolable: Reply | SolidRequest) {
     assert(equal(poolable.target, this.#fs.pid), 'target mismatch')
-    const { sequence } = poolable
     if (isRequest(poolable)) {
+      const { sequence } = poolable
       if (this.#io.requests[sequence]) {
-        assert(equal(this.#io.requests[sequence], poolable), 'request mismatch')
+        assert(equal(this.#io.requests[sequence], poolable), 'mismatch')
         return true
       }
       if (this.#io.sequence > sequence) {
@@ -205,6 +211,7 @@ export default class IOChannel {
       }
       return false
     } else {
+      const { sequence } = poolable
       if (this.#io.replies[sequence]) {
         const check = equal(this.#io.replies[sequence], poolable.outcome)
         assert(check, 'reply mismatch')
@@ -225,6 +232,23 @@ export default class IOChannel {
       }
     }
   }
+  isSettled(sequence: number) {
+    assert(this.#io.sequence > sequence, 'sequence not yet invoked')
+    if (!this.#io.requests[sequence]) {
+      return true
+    }
+    if (this.#io.replies[sequence]) {
+      return true
+    }
+    return false
+  }
+  isPendingIncluded(sequence: number, commit: string) {
+    const pendings = this.#io.pendings[sequence]
+    if (!pendings) {
+      return false
+    }
+    return pendings.some((pending) => pending.commit === commit)
+  }
   getBranchPid(sequence: number) {
     const request = this.getRequest(sequence)
     const branchTypes = [PROCTYPE.BRANCH, PROCTYPE.DAEMON]
@@ -244,9 +268,11 @@ export default class IOChannel {
     const pid = { ...parentPid, branches }
     return pid
   }
-  addPending(commit: string, requests: SolidRequest[]) {
+  addPending(commit: string, requests: UnsequencedRequest[]) {
+    const sequences = []
     for (const request of requests) {
-      this.addRequest(request)
+      const sequence = this.addUnsequenced(request)
+      sequences.push(sequence)
     }
     const executing = this.getExecutingRequest()
     // TODO affirm this is actually the executing request ?
@@ -255,7 +281,6 @@ export default class IOChannel {
     if (!this.#io.pendings[sequence]) {
       this.#io.pendings[sequence] = []
     }
-    const sequences = requests.map((r) => r.sequence)
     this.#io.pendings[sequence].push({ commit, sequences })
   }
 }
@@ -315,4 +340,8 @@ const toRunnableRequest = (request: Request, sequence: number) => {
     sequence,
   }
   return internal
+}
+export const toUnsequenced = (request: SolidRequest): UnsequencedRequest => {
+  const { sequence: _, ...unsequenced } = request
+  return unsequenced
 }

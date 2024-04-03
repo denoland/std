@@ -38,12 +38,12 @@ export const branch = async (fs: FS, sequence: number) => {
   IOChannel.blank(branch)
 
   const solids = await solidify(branch, [origin])
-  assert(solids.request, 'must have a request')
+  assert(solids.exe, 'must have an exe')
   assert(solids.branches.length === 0, 'must have no branches')
   assert(solids.replies.length === 0, 'must have no replies')
   assert(solids.deletes.length === 0, 'must have no deletes')
   const branched: Branched = {
-    origin: solids.request,
+    origin: solids.exe.request,
     head: solids.commit,
     pid,
   }

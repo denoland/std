@@ -1,6 +1,6 @@
-import { SolidRequest } from '@/constants.ts'
+import { UnsequencedRequest } from '@/constants.ts'
 import { IsolatePromise } from '@/constants.ts'
-import { assert, deserializeError, equal } from '@utils'
+import { assert, deserializeError, equal, expect } from '@utils'
 
 export default class Accumulator {
   #index = 0
@@ -22,15 +22,12 @@ export default class Accumulator {
     this.#trigger()
     this.#buffer.push(request)
   }
-  recover(unsequencedRequest: SolidRequest) {
+  recover(request: UnsequencedRequest) {
     assert(this.isActive, 'Activity is denied')
-    assert(unsequencedRequest.sequence === -1, 'Sequence is not -1')
     const index = this.#index++
     if (this.#buffer[index]) {
       const recovered = this.#buffer[index]
-      const test = { ...recovered.request }
-      test.sequence = unsequencedRequest.sequence
-      assert(equal(test, unsequencedRequest), 'Requests are not equal')
+      assert(equal(recovered.request, request), 'Requests are not equal')
       return recovered
     }
   }
@@ -62,7 +59,8 @@ export default class Accumulator {
         this.#buffer.push(source)
         continue
       }
-      assert(equalButSequence(source.request, sink.request), 'requests')
+      expect(source.request).toEqual(sink.request)
+      assert(equal(source.request, sink.request), 'requests')
       if (sink.outcome) {
         assert(equal(source.outcome, sink.outcome), 'outcomes are not equal')
       } else {
@@ -78,16 +76,4 @@ export default class Accumulator {
       }
     }
   }
-}
-
-const equalButSequence = (a: SolidRequest, b: SolidRequest) => {
-  for (const key of Object.keys(a) as Array<keyof SolidRequest>) {
-    if (key === 'sequence') {
-      continue
-    }
-    if (!equal(a[key], b[key])) {
-      return false
-    }
-  }
-  return true
 }

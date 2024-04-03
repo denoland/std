@@ -15,6 +15,7 @@ import {
   PID,
   PierceRequest,
   QueueMessage,
+  SolidRequest,
 } from '@/constants.ts'
 import IsolateApi from '../isolate-api.ts'
 import Compartment from '../io/compartment.ts'
@@ -252,13 +253,15 @@ export const lifecycles: IsolateLifecycle = {
         }
       }
       if (isQueueRequest(message)) {
-        const { request, commit } = message
+        const { request, commit, sequence } = message
+        if (await isSettled(request, sequence, db)) {
+          return
+        }
         const fs = FS.open(request.target, commit, db)
         const exeResult = await exe.execute(request, fs)
-        // it is impossible to pool atomically at this point
 
         let tip = await FS.openHead(request.target, db)
-        while (await isExeable(tip, exeResult)) {
+        while (await isExeable(sequence, tip, exeResult)) {
           if (await doAtomicExecution(db, tip, exeResult)) {
             return
           }
@@ -297,15 +300,25 @@ export const lifecycles: IsolateLifecycle = {
     return api.context.db!.stop()
   },
 }
-const isExeable = async (fs: FS, exe: ExeResult) => {
-  const io = await IOChannel.read(fs)
+const isExeable = async (sequence: number, tip: FS, exe: ExeResult) => {
+  const io = await IOChannel.read(tip)
   assert(io, 'io not found')
-  if (exe.settled) {
-    return !io.includes(exe.settled.reply)
-  } else {
-    assert(exe.pending, 'pending not found')
-    return exe.pending.requests.some((r) => !io.includes(r))
+  if (io.isSettled(sequence)) {
+    return false
   }
+  if (exe?.pending) {
+    return !io.isPendingIncluded(sequence, exe.pending.commit)
+  }
+  return true
+}
+const isSettled = async (request: SolidRequest, sequence: number, db: DB) => {
+  const tip = await FS.openHead(request.target, db)
+  const io = await IOChannel.read(tip)
+  assert(io, 'io not found')
+  if (io.isSettled(sequence)) {
+    return true
+  }
+  return false
 }
 const getContext = (api: IsolateApi<C>): C => {
   assert(api.context, 'context not found')

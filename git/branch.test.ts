@@ -42,7 +42,7 @@ Deno.test('pierce branch', async (t) => {
     parentHead = head
     branches = solids.branches
     expect(branches).toEqual([0])
-    expect(solids.request).toBeUndefined()
+    expect(solids.exe).toBeUndefined()
     const next = FS.open(baseFs.pid, head, db)
     expect(next.commit).toEqual(solids.commit)
     const io = await next.readJSON<IoStruct>('.io.json')

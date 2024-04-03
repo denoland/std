@@ -1,9 +1,10 @@
-import IOChannel from '../io/io-channel.ts'
+import IOChannel, { toUnsequenced } from '../io/io-channel.ts'
 import FS from '../git/fs.ts'
 import Executor from './exe.ts'
-import { PROCTYPE, SolidRequest } from '@/constants.ts'
+import { isPierceRequest, PROCTYPE, SolidRequest } from '@/constants.ts'
 import { assert, expect, log } from '@utils'
 import DB from '@/db.ts'
+import { UnsequencedRequest } from '@/constants.ts'
 
 const pid = { account: 'exe', repository: 'test', branches: ['main'] }
 const source = { ...pid, account: 'higher' }
@@ -102,7 +103,7 @@ Deno.test('compound', async (t) => {
     params: { target },
   }
   const { io, fs, stop } = await mocks(compound)
-  let request: SolidRequest
+  let request: UnsequencedRequest
   const executor = Executor.createCacheContext()
   await t.step('half done', async () => {
     const { settled, pending } = await executor.execute(compound, fs)
@@ -114,11 +115,10 @@ Deno.test('compound', async (t) => {
     log('internalRequest', request)
     expect(request.target).toEqual(target)
     expect(request.source).toEqual(pid)
-    expect(request.sequence).toEqual(-1)
   })
   await t.step('reply using function cache', async () => {
     assert(request)
-    const sequence = io.addRequest(request)
+    const sequence = io.addUnsequenced(request)
     expect(sequence).toBe(1)
     const reply = {
       outcome: { result: 'compound reply' },
@@ -126,7 +126,8 @@ Deno.test('compound', async (t) => {
       sequence,
     }
     const savedRequest = io.reply(reply)
-    expect({ ...savedRequest, sequence: -1 }).toEqual(request)
+    assert(!isPierceRequest(savedRequest))
+    expect(toUnsequenced(savedRequest)).toEqual(request)
     io.save()
     const replyFs = await fs.writeCommitObject()
 
@@ -137,7 +138,7 @@ Deno.test('compound', async (t) => {
   await t.step('reply from replay', async () => {
     assert(request)
     const io = await IOChannel.load(fs)
-    const sequence = io.addRequest(request)
+    const sequence = io.addUnsequenced(request)
     expect(sequence).toBe(1)
     const reply = {
       outcome: { result: 'compound reply' },
