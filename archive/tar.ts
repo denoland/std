@@ -29,14 +29,35 @@
  */
 
 /**
- * @param pathname is what you want the file to be called inside the archive.
- * @param iterable is the source of the file in Uint8Array form.
- * @param size is the size of the source in bytes. Providing the wrong size can lead to corrupt data.
+ * @param pathname The pathname of of the file or directory inside the archive.
+ * @param iterable The source of the file for the archive.
+ * @param size The size of the file for the archive.
+ * @param [sizeExtension=false] Whether to increase the size limit for this file from the default 8 GiB to 64 GiB.
+ * @param options: Optional settings you can specify with the file.
  */
-export type TarFile = {
+export type TarEntry = {
   pathname: string;
-  iterable: Iterable<Uint8Array> | AsyncIterable<Uint8Array>;
   size: number;
+  sizeExtension?: boolean;
+  iterable: Iterable<Uint8Array> | AsyncIterable<Uint8Array>;
+  options?: Partial<TarOptions>;
+} | {
+  pathname: string;
+  options?: Partial<TarOptions>;
+};
+
+/**
+ * The Options
+ */
+export type TarOptions = {
+  mode: string;
+  uid: string;
+  gid: string;
+  mtime: number;
+  uname: string;
+  gname: string;
+  devmajor: string;
+  devminor: string;
 };
 
 /**
@@ -54,10 +75,10 @@ export type TarFile = {
  * While this format is compatible with most tar readers,
  * the format has several limitations, including:
  * * File sizes can be at most 8 GiBs.
- * * Filenames (including path) must be shorter than 256 characters.
+ * * Filenames (including path) must be at most 256 characters.
  * * Sparse files are not supported.
  * This implementation does support decoding tarballs with files up to 64 GiBs, and can create them
- * via setting `sizeExtension` to true in the `append` method, but doing so may limit its compatibility
+ * via setting `sizeExtension` to true in `TarEntry` for the `append` method, but doing so may limit its compatibility
  * with older tar implementations.
  *
  * @example
@@ -108,65 +129,95 @@ export type TarFile = {
  * ```
  */
 export class Tar {
-  #files: {
+  #paths: string[] = [];
+  #entries: ({
     prefix: Uint8Array;
     name: Uint8Array;
+    typeflag: string;
+    options: Partial<TarOptions>;
     iterable: Iterable<Uint8Array> | AsyncIterable<Uint8Array>;
     size: number;
     sizeExtension: boolean;
-  }[] = [];
+  } | {
+    prefix: Uint8Array;
+    name: Uint8Array;
+    typeflag: string;
+    options: Partial<TarOptions>;
+    sizeExtension: boolean;
+  })[] = [];
   #readable: ReadableStream<Uint8Array>;
-  #finishedAppending: boolean = false;
+  #finishedAppending = false;
   /**
    * Constructs a new instance.
    */
   constructor() {
     const gen = (async function* (tar) {
       while (
-        (!tar.#finishedAppending || tar.#files.length) &&
+        (
+          !tar.#finishedAppending ||
+          tar.#entries.length
+        ) &&
         await new Promise<true>((a) => setTimeout(() => a(true), 0))
       ) {
-        if (tar.#files.length) {
-          const file = tar.#files.shift()!;
-          const encoder = new TextEncoder();
-          const header = new Uint8Array(512);
+        if (!tar.#entries.length) {
+          continue;
+        }
 
-          header.set(file.name); // name
-          header.set(
-            encoder.encode(
-              "000644 \0" + // mode
-                "000000 \0" + // uid
-                "000000 \0" + // gid
-                file.size.toString(8).padStart(file.sizeExtension ? 12 : 11) +
-                (file.sizeExtension ? "" : " ") + // size
-                "00000000000 " + // mtime
-                "        " + // checksum | Needs to be updated
-                "0" + // typeflag
-                "\0".repeat(100) + // linkname
-                "ustar\0" + // magic
-                "00" + // version
-                "\0".repeat(32 + 32 + 8 + 8), // uname, gname, devmajor, devminor
-            ),
-            100,
-          );
-          header.set(file.prefix, 345); // prefix
+        const entry = tar.#entries.shift()!;
+        const encoder = new TextEncoder();
+        const header = new Uint8Array(512);
 
-          header.set(
-            encoder.encode(
-              header.reduce((x, y) => x + y).toString(8).padStart(6, "0") +
-                "\0",
-            ),
-            148,
-          );
-          yield header;
+        header.set(entry.name); // name
+        header.set(
+          encoder.encode(
+            (entry.options.mode ?? (entry.typeflag === "5" ? "755" : "644"))
+              .padStart(6, "0") +
+              " \0" + // mode
+              (entry.options.uid ?? "").padStart(6, "0") + " \0" + // uid
+              (entry.options.gid ?? "").padStart(6, "0") + " \0" + // gid
+              ("size" in entry ? entry.size.toString(8) : "").padStart(
+                entry.sizeExtension ? 12 : 11,
+                "0",
+              ) + (entry.sizeExtension ? "" : " ") + // size
+              (entry.options.mtime?.toString(8) ?? "").padStart(11, "0") +
+              " " + // mtime
+              " ".repeat(8) + // checksum | Needs to be updated
+              entry.typeflag + // typeflag
+              "\0".repeat(100) + // linkname
+              "ustar\0" + // magic
+              "00" + // version
+              (entry.options.uname ?? "").padEnd(32, "\0") + // uname
+              (entry.options.gname ?? "").padEnd(32, "\0") + // gname
+              (entry.options.devmajor ?? "").padEnd(8, "\0") + // devmajor
+              (entry.options.devminor ?? "").padEnd(8, "\0"), // devminor
+          ),
+          100,
+        );
+        header.set(entry.prefix, 345); // prefix
 
-          for await (const x of file.iterable) {
+        header.set(
+          encoder.encode(
+            header.reduce((x, y) => x + y).toString(8).padStart(6, "0") + "\0",
+          ),
+          148,
+        ); // update checksum
+        yield header;
+
+        if ("size" in entry) {
+          let size = 0;
+          for await (const x of entry.iterable) {
+            size += x.length;
             yield x;
           }
-          yield encoder.encode("\0".repeat(512 - file.size % 512));
+          if (entry.size !== size) {
+            throw new Error(
+              "Invalid Tarball! Provided size did not match bytes read from iterable.",
+            );
+          }
+          yield new Uint8Array(new Array(512 - entry.size % 512).fill(0));
         }
       }
-      yield new TextEncoder().encode("\0".repeat(1024));
+      yield new Uint8Array(new Array(1024).fill(0));
     })(this);
     this.#readable = new ReadableStream({
       async pull(controller) {
@@ -181,39 +232,41 @@ export class Tar {
   }
 
   /**
-   * Append a file to the archive. This method will throw if you provide an incompatible
-   * size or pathname, or have already called the `close` method.
-   * @param file Details of the TarFile being appended to the archive.
-   * @param [sizeExtension=false] Enable up to 64 GiB files in the archive instead of 8 GiBs.
+   * Append a file or directory to the archive.
    */
-  append(file: TarFile, sizeExtension = false): void {
+  append(entry: TarEntry): void {
     if (this.#finishedAppending) {
-      throw new Error("This Tar instance has already be closed.");
+      throw new Error("This Tar Instance has already been closed.");
     }
 
-    // Validate size provided.
-    if (file.size < 0 || Math.pow(8, sizeExtension ? 12 : 11) < file.size) {
+    if (
+      "size" in entry &&
+      (
+        entry.size < 0 ||
+        Math.pow(8, entry.sizeExtension ? 12 : 11) < entry.size ||
+        entry.size.toString() === "NaN"
+      )
+    ) {
       throw new Error(
-        "Invalid File Size: Up to 8 GiBs allowed or 64 GiBs if `sizeExtension` is enabled.",
+        "Invalid Size Provided! Size cannot exceed 8 GiBs by default or 64 GiBs with sizeExtension set to true.",
       );
     }
-
-    file.pathname = file.pathname.split("/").filter((x) => x).join("/");
-    if (file.pathname.startsWith("./")) {
-      file.pathname = file.pathname.slice(2);
+    entry.pathname = entry.pathname.split("/").filter((x) => x).join("/");
+    if (entry.pathname.startsWith("./")) {
+      entry.pathname = entry.pathname.slice(2);
+    }
+    if (!("size" in entry)) {
+      entry.pathname += "/";
     }
 
-    // Validating the path provided.
-    const pathname = new TextEncoder().encode(file.pathname);
+    const pathname = new TextEncoder().encode(entry.pathname);
     if (pathname.length > 256) {
-      throw new Error("Provided pathname is too long. Max 256 bytes.");
+      throw new Error("Invalid Pathname! Pathname cannot exceed 256 bytes.");
     }
 
     let i = Math.max(0, pathname.lastIndexOf(47));
     if (pathname.slice(i).length > 100) {
-      throw new Error(
-        "Filename in pathname is too long. Filename can be at most 100 bytes.",
-      );
+      throw new Error("Invalid Filename! Filename cannot exceed 100 bytes.");
     }
 
     if (pathname.length <= 100) {
@@ -222,7 +275,7 @@ export class Tar {
       for (; i > 0; --i) {
         i = pathname.lastIndexOf(47, i);
         if (pathname.slice(i).length > 100) {
-          i = Math.max(0, pathname.indexOf(47, ++i));
+          i = Math.max(0, pathname.indexOf(47, i + 1));
           break;
         }
       }
@@ -231,27 +284,47 @@ export class Tar {
     const prefix = pathname.slice(0, i++);
     if (prefix.length > 155) {
       throw new Error(
-        "Provided pathname cannot be split into [155, 100] segments along a forward slash separator.",
+        "Invalid Pathname! Pathname needs to be split-able on a forward slash separator into [155, 100] bytes respectively.",
       );
     }
-    this.#files.push({
-      name: prefix.length ? pathname.slice(i) : pathname,
-      prefix,
-      iterable: file.iterable,
-      size: file.size,
-      sizeExtension,
-    });
+    const name = prefix.length ? pathname.slice(i) : pathname;
+
+    if (this.#paths.includes(entry.pathname)) {
+      return;
+    }
+    this.#paths.push(entry.pathname);
+
+    if ("size" in entry) { // File
+      this.#entries.push({
+        prefix,
+        name,
+        typeflag: "0",
+        options: entry.options ?? {},
+        iterable: entry.iterable,
+        size: entry.size,
+        sizeExtension: entry.sizeExtension ?? false,
+      });
+    } // Directory
+    else {
+      this.#entries.push({
+        prefix,
+        name,
+        typeflag: "5",
+        options: entry.options ?? {},
+        sizeExtension: false,
+      });
+    }
   }
 
   /**
-   * Closes the tar archive from accepting more files. Must be called for tar archive to be properly created.
+   * Close the archive once you're end appending.
    */
   close(): void {
     this.#finishedAppending = true;
   }
 
   /**
-   * A Readable Stream of the archive.
+   * Read the archive via a `ReadableStream<Uint8Array>`.
    */
   get readable(): ReadableStream<Uint8Array> {
     return this.#readable;
@@ -259,7 +332,7 @@ export class Tar {
 }
 
 /**
- * Like the Tar class, but takes in a ReadableStream<TarFile> and outputs a ReadableStream<Uint8Array>
+ * Like the Tar class, but takes in a ReadableStream<TarEntry> and outputs a ReadableStream<Uint8Array>
  *
  * @example
  * ```ts
@@ -284,34 +357,41 @@ export class Tar {
  */
 export class TarStream {
   #readable: ReadableStream<Uint8Array>;
-  #writable: WritableStream<TarFile>;
+  #writable: WritableStream<TarEntry>;
   /**
-   * Creates an instance.
+   * Constructs a new instance.
    */
   constructor() {
-    const { readable, writable } = new TransformStream<TarFile, TarFile>();
+    const { readable, writable } = new TransformStream<TarEntry, TarEntry>();
     const tar = new Tar();
     this.#readable = tar.readable;
     this.#writable = writable;
-    (async () => {
-      for await (const tarFile of readable) {
-        tar.append(tarFile);
-      }
-      tar.close();
-    })();
+    readable.pipeTo(
+      new WritableStream({
+        write(chunk) {
+          tar.append(chunk);
+        },
+        close() {
+          tar.close();
+        },
+        abort() {
+          tar.close();
+        },
+      }),
+    );
   }
 
   /**
-   * Returns a ReadableStream of the archive.
+   * Read the archive via a ReadableStream<Uint8Array>
    */
   get readable(): ReadableStream<Uint8Array> {
     return this.#readable;
   }
 
   /**
-   * Returns a WritableStream for the files to be archived.
+   * Write to the archive via a WritableStream<TarEntry>
    */
-  get writable(): WritableStream<TarFile> {
+  get writable(): WritableStream<TarEntry> {
     return this.#writable;
   }
 }
