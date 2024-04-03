@@ -20,7 +20,6 @@ interface Default {
 export default class IsolateApi<T extends object = Default> {
   #fs: FS
   #accumulator: Accumulator
-  #accumulatorCount = 0
   // TODO assign a mount id for each side effect execution context ?
   #context: Partial<T> = {}
   private constructor(fs: FS, accumulator: Accumulator) {
@@ -58,31 +57,28 @@ export default class IsolateApi<T extends object = Default> {
         if (equal(target, this.pid) && proctype === PROCTYPE.SERIAL) {
           return Promise.reject(new Error('cannot dispatch to self'))
         }
-        const request: SolidRequest = {
+        const unsequencedRequest: SolidRequest = {
           target,
           source: this.pid,
-          sequence: this.#accumulatorCount++,
-
+          sequence: -1,
           isolate,
           functionName,
           params: params || {},
           proctype,
         }
-        const recovered = this.#accumulator.recover(request.sequence)
+        const recovered = this.#accumulator.recover(unsequencedRequest)
         if (recovered) {
-          if (!equal(recovered.request, request)) {
-            console.dir('recovered', recovered.request)
-            console.dir('request', request)
-          }
-          assert(equal(recovered.request, request), 'request mismatch')
           const { outcome } = recovered
-          if (outcome) {
-            return Promise.resolve().then(() => fromOutcome(outcome))
-          }
+          assert(outcome, 'outcome must be set')
+          return Promise.resolve().then(() => fromOutcome(outcome))
         }
 
         const promise = new Promise((resolve, reject) => {
-          this.#accumulator!.push({ request, resolve, reject })
+          this.#accumulator.push({
+            request: unsequencedRequest,
+            resolve,
+            reject,
+          })
         })
         return promise
       }

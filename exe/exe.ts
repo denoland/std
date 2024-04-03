@@ -11,7 +11,7 @@ const log = Debug('AI:exe')
 
 export default class Executor {
   #functions = new Map<string, Execution>()
-  static createCache() {
+  static createCacheContext() {
     return new Executor()
   }
   async execute(req: SolidRequest, fs: FS): Promise<ExeResult> {
@@ -48,29 +48,31 @@ export default class Executor {
         commit: fs.commit,
       }
       this.#functions.set(exeId, execution)
+    } else {
+      const execution = this.#functions.get(exeId)
+      assert(execution, 'execution not found')
+      if (execution.commit === fs.commit) {
+        // TODO also detect if was an old commit
+        // TODO exe should be idempotent
+        throw new Error('request already executed for commit: ' + fs.commit)
+      }
     }
     log('running execution %o', exeId)
     const execution = this.#functions.get(exeId)
     assert(execution, 'execution not found')
-    if (execution.commit === fs.commit) {
-      // TODO exe should be idempotent - its cache should just return if its
-      // seen this combination of commit and request before as we don't know if
-      // the queue errored before the result was committed
-      throw new Error('request already executed for commit: ' + fs.commit)
-    }
-    // TODO check exe can handle being called twice without moving the
-    // accumulator
+
     execution.commit = fs.commit
     execution.accumulator.absorb(ioAccumulator)
 
     const accumulatorPromise = execution.accumulator.await()
     const winner = await Promise.race([execution.function, accumulatorPromise])
+    execution.accumulator.deactivate()
 
     const result: ExeResult = {}
     if (isOutcome(winner)) {
-      const sequence = io.getSequence(req)
       log('exe complete %o', exeId)
       this.#functions.delete(exeId)
+      const sequence = io.getSequence(req)
       const reply = { target: fs.pid, sequence, outcome: winner }
 
       // TODO need to tick the fs forwards when the accumulations occur

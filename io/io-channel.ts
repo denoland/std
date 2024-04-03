@@ -121,7 +121,8 @@ export default class IOChannel {
     const sequence = this.#io.sequence++
     if ('sequence' in request) {
       if (equal(request.source, this.#fs.pid)) {
-        assert(request.sequence === sequence, 'sequence mismatch')
+        assert(request.sequence === -1, 'accumulation sequenced before adding')
+        request = { ...request, sequence }
       }
     }
     this.#io.requests[sequence] = request

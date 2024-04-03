@@ -237,7 +237,7 @@ export const functions: ArtifactCore = {
 export const lifecycles: IsolateLifecycle = {
   async '@@mount'(api: IsolateApi<C>) {
     const db = await DB.create()
-    const exe = Executor.createCache()
+    const exe = Executor.createCacheContext()
     api.context = { db, exe }
     db.listen(async (message: QueueMessage) => {
       if (isQueuePierce(message)) {

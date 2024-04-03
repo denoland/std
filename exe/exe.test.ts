@@ -29,7 +29,7 @@ const mocks = async (initialRequest: SolidRequest) => {
 }
 Deno.test('simple', async (t) => {
   const { fs, stop } = await mocks(request)
-  const executor = Executor.createCache()
+  const executor = Executor.createCacheContext()
   await t.step('no accumulations', async () => {
     const result = await executor.execute(request, fs)
     const { settled, pending } = result
@@ -50,7 +50,7 @@ Deno.test('writes', async (t) => {
     params: { path: 'test.txt', content: 'hello' },
   }
   const { fs, stop } = await mocks(write)
-  const executor = Executor.createCache()
+  const executor = Executor.createCacheContext()
   await t.step('single file', async () => {
     const result = await executor.execute(write, fs)
     const { settled, pending } = result
@@ -76,7 +76,7 @@ Deno.test('writes', async (t) => {
 Deno.test('loopback', async (t) => {
   const compound = { ...request, functionName: 'compound' }
   const { fs, stop } = await mocks(compound)
-  const executor = Executor.createCache()
+  const executor = Executor.createCacheContext()
   await t.step('loopback request will error', async () => {
     // execute should start with an unchanged fs tho
     const result = await executor.execute(compound, fs)
@@ -101,13 +101,11 @@ Deno.test('compound', async (t) => {
     functionName: 'compound',
     params: { target },
   }
-  const { io, fs, db, stop } = await mocks(compound)
+  const { io, fs, stop } = await mocks(compound)
   let request: SolidRequest
-  const executor = Executor.createCache()
-  let halfFs: FS
+  const executor = Executor.createCacheContext()
   await t.step('half done', async () => {
-    const half = await executor.execute(compound, fs)
-    const { settled, pending } = half
+    const { settled, pending } = await executor.execute(compound, fs)
     expect(settled).toBeFalsy()
     assert(pending)
     const { requests } = pending
@@ -116,8 +114,7 @@ Deno.test('compound', async (t) => {
     log('internalRequest', request)
     expect(request.target).toEqual(target)
     expect(request.source).toEqual(pid)
-    expect(request.sequence).toEqual(0)
-    halfFs = FS.open(fs.pid, fs.commit, db)
+    expect(request.sequence).toEqual(-1)
   })
   await t.step('reply using function cache', async () => {
     assert(request)
@@ -129,22 +126,17 @@ Deno.test('compound', async (t) => {
       sequence,
     }
     const savedRequest = io.reply(reply)
-    expect(savedRequest).toEqual(request)
+    expect({ ...savedRequest, sequence: -1 }).toEqual(request)
     io.save()
     const replyFs = await fs.writeCommitObject()
 
-    const done = await executor.execute(compound, replyFs)
-    const { settled, pending } = done
+    const { settled, pending } = await executor.execute(compound, replyFs)
     expect(pending).toBeFalsy()
     assert(settled, 'settled')
   })
   await t.step('reply from replay', async () => {
-    const head = await db.readHead(halfFs.pid)
-    assert(head, 'could not rollback')
-    await db.updateHead(halfFs.pid, head, halfFs.commit)
-    const noCache = Executor.createCache()
     assert(request)
-    const io = await IOChannel.load(halfFs)
+    const io = await IOChannel.load(fs)
     const sequence = io.addRequest(request)
     expect(sequence).toBe(1)
     const reply = {
@@ -154,10 +146,10 @@ Deno.test('compound', async (t) => {
     }
     io.reply(reply)
     io.save()
-    const replyFs = await halfFs.writeCommitObject()
+    const replyFs = await fs.writeCommitObject()
 
-    const done = await noCache.execute(compound, replyFs)
-    const { settled, pending } = done
+    const noCache = Executor.createCacheContext()
+    const { settled, pending } = await noCache.execute(compound, replyFs)
     expect(pending).toBeFalsy()
     expect(settled).toBeTruthy()
   })
@@ -171,3 +163,5 @@ Deno.test('compound', async (t) => {
   // test multiple cycles thru requests and replies
   // test making different request between two invocations
 })
+// test repeat calling should not corrupt the cache, and should return the same,
+// even if the commit was several accumulations ago

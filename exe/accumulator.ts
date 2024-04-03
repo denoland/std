@@ -1,7 +1,9 @@
+import { SolidRequest } from '@/constants.ts'
 import { IsolatePromise } from '@/constants.ts'
 import { assert, deserializeError, equal } from '@utils'
 
 export default class Accumulator {
+  #index = 0
   #buffer: IsolatePromise[] = []
   #isActive = false
   #trigger: (() => void) | undefined
@@ -20,9 +22,17 @@ export default class Accumulator {
     this.#trigger()
     this.#buffer.push(request)
   }
-  recover(index: number) {
+  recover(unsequencedRequest: SolidRequest) {
     assert(this.isActive, 'Activity is denied')
-    return this.#buffer[index]
+    assert(unsequencedRequest.sequence === -1, 'Sequence is not -1')
+    const index = this.#index++
+    if (this.#buffer[index]) {
+      const recovered = this.#buffer[index]
+      const test = { ...recovered.request }
+      test.sequence = unsequencedRequest.sequence
+      assert(equal(test, unsequencedRequest), 'Requests are not equal')
+      return recovered
+    }
   }
   await() {
     // a promise that resolves when the accumulator is triggered
@@ -32,6 +42,11 @@ export default class Accumulator {
     return new Promise<void>((resolve) => {
       this.#trigger = resolve
     })
+  }
+  deactivate() {
+    assert(this.isActive, 'Activity is not active')
+    this.#isActive = false
+    this.#trigger = undefined
   }
   get isActive() {
     return this.#isActive
@@ -47,7 +62,7 @@ export default class Accumulator {
         this.#buffer.push(source)
         continue
       }
-      assert(equal(source.request, sink.request), 'requests are not equal')
+      assert(equalButSequence(source.request, sink.request), 'requests')
       if (sink.outcome) {
         assert(equal(source.outcome, sink.outcome), 'outcomes are not equal')
       } else {
@@ -63,4 +78,16 @@ export default class Accumulator {
       }
     }
   }
+}
+
+const equalButSequence = (a: SolidRequest, b: SolidRequest) => {
+  for (const key of Object.keys(a) as Array<keyof SolidRequest>) {
+    if (key === 'sequence') {
+      continue
+    }
+    if (!equal(a[key], b[key])) {
+      return false
+    }
+  }
+  return true
 }
