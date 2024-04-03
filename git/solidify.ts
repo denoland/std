@@ -27,8 +27,8 @@ const log = Debug('AI:git:solidify')
  * @param fs a memfs instance to update
  */
 export const solidify = async (fs: FS, pool: Poolable[]) => {
-  const pid = checkPool(pool)
-  assert(equal(pid, fs.pid), 'pid mismatch')
+  assert(pool.length > 0 || fs.isChanged, 'nothing to solidify')
+  checkPool(pool)
   const io = await IOChannel.load(fs)
 
   const executingRequest = io.getExecutingRequest()
@@ -54,7 +54,7 @@ export const solidify = async (fs: FS, pool: Poolable[]) => {
       // TODO move this to checkPool()
       const request = io.reply(poolable)
       const { outcome } = poolable
-      if (!isPierceRequest(request) && !equal(request.source, pid)) {
+      if (!isPierceRequest(request) && !equal(request.source, fs.pid)) {
         const target = request.source
         const source = request.target
         const sequence = request.sequence
@@ -74,6 +74,9 @@ export const solidify = async (fs: FS, pool: Poolable[]) => {
       }
     }
   }
+  if (pool.length) {
+    io.save()
+  }
 
   let exe: Solids['exe']
   const next = io.getExecutingRequest()
@@ -82,8 +85,6 @@ export const solidify = async (fs: FS, pool: Poolable[]) => {
     const sequence = io.getSequence(next)
     exe = { request: next, sequence }
   }
-
-  io.save()
   const { commit } = await fs.writeCommitObject('pool', parents)
 
   log('head', commit)
@@ -95,7 +96,9 @@ export const solidify = async (fs: FS, pool: Poolable[]) => {
 }
 
 const checkPool = (pool: Poolable[]) => {
-  assert(pool.length > 0, 'empty pool')
+  if (!pool.length) {
+    return
+  }
   const { target } = pool[0]
   for (const poolable of pool) {
     if (!equal(poolable.target, target)) {

@@ -269,15 +269,16 @@ export default class IOChannel {
     return pid
   }
   addPending(commit: string, requests: UnsequencedRequest[]) {
+    const executing = this.getExecutingRequest()
+    // TODO affirm this is actually the executing request ?
+    assert(executing, 'no executing request')
+    const sequence = this.getSequence(executing)
+
     const sequences = []
     for (const request of requests) {
       const sequence = this.addUnsequenced(request)
       sequences.push(sequence)
     }
-    const executing = this.getExecutingRequest()
-    // TODO affirm this is actually the executing request ?
-    assert(executing, 'no executing request')
-    const sequence = this.getSequence(executing)
     if (!this.#io.pendings[sequence]) {
       this.#io.pendings[sequence] = []
     }

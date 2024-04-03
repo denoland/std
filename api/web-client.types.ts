@@ -264,8 +264,8 @@ export interface ArtifactCore {
   logs(params: { repo: string }, api?: unknown): Promise<object[]>
 }
 export interface Artifact extends ArtifactCore {
-  pierces(isolate: string, target: PID): Promise<DispatchFunctions>
   stop(): Promise<void> | void
+  pierces(isolate: string, target: PID): Promise<DispatchFunctions>
   // TODO should move these git functions elsewhere ?
   read(pid: PID, path?: string, signal?: AbortSignal): ReadableStream<Splice>
 }

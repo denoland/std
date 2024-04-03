@@ -7,7 +7,7 @@ import {
   QueueMessage,
   SolidRequest,
 } from '@/constants.ts'
-import { assert, Debug, sha1 } from '@utils'
+import { assert, Debug, isKvTestMode, sha1 } from '@utils'
 import { KEYSPACES } from '@/keys.ts'
 
 const log = Debug('AI:db:atomic')
@@ -54,9 +54,11 @@ export class Atomic {
     assert(sha1.test(fromCommit), 'Commit not SHA-1: ' + fromCommit)
     assert(sha1.test(toCommit), 'Commit not SHA-1: ' + toCommit)
     const key = keys.getHeadKey(pid)
-    log('updateHead %o', key)
+    log('updateHead %o', key, fromCommit, toCommit)
     const from = await this.#kv.get(key)
-    assert(from.value === fromCommit, 'head commit mismatch: ' + fromCommit)
+    if (from.value !== fromCommit) {
+      return false
+    }
     this.#atomic = this.#atomic.check(from).set(key, toCommit)
     return this
   }
@@ -101,8 +103,10 @@ export class Atomic {
   #enqueue(message: QueueMessage) {
     // TODO specify allowed message types as args to artifact functions
     assert(this.#atomic, 'Atomic not set')
+    const backoffSchedule = isKvTestMode() ? [] : undefined
     this.#atomic = this.#atomic.enqueue(message, {
       keysIfUndelivered: [[KEYSPACES.UNDELIVERED]],
+      backoffSchedule,
     })
     return this
   }

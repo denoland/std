@@ -128,7 +128,6 @@ export default class FS {
       children: new Map(),
     }
     for (let [path, blob] of this.#upserts) {
-      log('upsert', path, blob)
       if (typeof blob === 'string') {
         blob = new TextEncoder().encode(blob)
       }

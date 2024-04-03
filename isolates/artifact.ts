@@ -102,6 +102,7 @@ export const api = {
     required: ['pierce'],
     properties: { pierce: request },
   },
+  logs: repo, // TODO use pid
 }
 
 export type C = { db: DB; exe: Executor }
@@ -115,7 +116,7 @@ export const functions: ArtifactCore = {
     log('ping', params)
     // TODO make ping able to do interactions with chains ?
     await Promise.resolve()
-    return params
+    return params?.data
   },
   async pierce({ pierce }: { pierce: PierceRequest }, api: IsolateApi<C>) {
     log('pierce %o %o', pierce.isolate, pierce.functionName)
@@ -223,6 +224,7 @@ export const lifecycles: IsolateLifecycle = {
     const exe = Executor.createCacheContext()
     api.context = { db, exe }
     db.listen(async (message: QueueMessage) => {
+      log('queue %o', message)
       if (isQueuePierce(message)) {
         const { pierce } = message
 
@@ -235,6 +237,12 @@ export const lifecycles: IsolateLifecycle = {
         }
       }
       if (isQueueRequest(message)) {
+        log(
+          'queue request',
+          message.sequence,
+          message.commit,
+          message.request.target,
+        )
         const { request, commit, sequence } = message
         if (await isSettled(request, sequence, db)) {
           return
@@ -295,6 +303,8 @@ const isExeable = async (sequence: number, tip: FS, exe: ExeResult) => {
 }
 const isSettled = async (request: SolidRequest, sequence: number, db: DB) => {
   const tip = await FS.openHead(request.target, db)
+  log('isSettled', sequence, tip.pid, tip.commit)
+  // log('files', await tip.ls('.'))
   const io = await IOChannel.read(tip)
   assert(io, 'io not found')
   if (io.isSettled(sequence)) {

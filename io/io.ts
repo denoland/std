@@ -25,33 +25,36 @@ export const doAtomicCommit = async (db: DB, fs: FS, reply?: SolidReply) => {
     pool.unshift(reply)
   }
   if (!pool.length && !fs.isChanged) {
+    log('no pool or changes')
     return false
   }
   const solids = await solidify(fs, pool)
   atomic.deletePool(poolKeys)
 
   // the moneyshot
-  atomic.updateHead(fs.pid, fs.commit, solids.commit)
+  const headChanged = await atomic.updateHead(fs.pid, fs.commit, solids.commit)
+  if (!headChanged) {
+    log('head changed from %o missed %o', fs.commit, solids.commit)
+    return false
+  }
   transmit(fs.pid, solids, atomic)
-  return await atomic.commit()
+  const success = await atomic.commit()
+  log('commit success %o from %o to %o', success, fs.commit, solids.commit)
+  return success
 }
 
 const transmit = (pid: PID, solids: Solids, atomic: Atomic) => {
-  log('solids %o', solids)
   const { commit, exe, branches, replies, deletes } = solids
 
   const transmittedReplies = new Set<PID>()
   if (exe) {
-    log('request %o', exe)
     const { request, sequence } = exe
     atomic.enqueueExecution(request, sequence, commit)
   }
   for (const sequence of branches) {
-    log('branch %o', sequence)
     atomic.enqueueBranch(commit, pid, sequence)
   }
   for (const reply of replies) {
-    log('solid reply %o', reply)
     atomic.addToPool(reply)
     if (!transmittedReplies.has(reply.target)) {
       transmittedReplies.add(reply.target)
@@ -68,8 +71,11 @@ export const doAtomicBranch = async (db: DB, fs: FS, sequence: number) => {
   const atomic = db.atomic()
   const { pid, head, origin } = await branch(fs, sequence)
   atomic.createBranch(pid, head)
-  atomic.enqueueExecution(origin, sequence, head)
-  return await atomic.commit()
+  const originSequence = 0
+  atomic.enqueueExecution(origin, originSequence, head)
+  const success = await atomic.commit()
+  log('branch success %o from %o to %o', success, fs.commit, head)
+  return success
 }
 
 // TODO move all these types to share a file with their tests for done
