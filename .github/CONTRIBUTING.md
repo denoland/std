@@ -23,20 +23,11 @@ before contributing.
 1. Create a new branch for your changes.
 1. Make your changes and ensure `deno task ok` passes successfully.
 1. Commit your changes with clear messages.
-1. Submit a pull request with a clear title and description of your changes and
-   reference any relevant issues.
-
-   Examples of good titles:
-
+1. Submit a pull request with the sub-module in question, and a clear title and
+   description, as follows:
    - fix(http): fix race condition in server
    - docs(fmt): update docstrings
    - feat(log): handle nested messages
-
-   Examples of bad titles:
-
-   - fix #7123
-   - update docs
-   - fix bugs
 
 ## Deprecations
 
@@ -62,12 +53,42 @@ before contributing.
 
 ## Tests
 
-1. Use the following convention for test names:
-   ```
-   <symbol> <criteria>
-   ```
+### Test names
 
-   Examples:
-   - assertEquals() matches when values are equal
-   - ensureDirSync() creates dir if it does not exist
-   - Server exposes the addresses the server is listening on as addrs property
+Use a test name that includes the symbol in question and the test criteria, in
+plain language, as follows:
+
+- assertEquals() matches when values are equal
+- ensureDirSync() creates dir if it does not exist
+- Server exposes the addresses the server is listening on as addrs property
+
+## Documentation
+
+Documentation must be clear, concise and thorough, and be written in
+[JSDoc](https://jsdoc.app/) syntax. In general, the documentation style should
+be as close to the [MDN Web Docs](https://developer.mozilla.org/) as possible.
+
+### Public symbols
+
+For public symbols, include the following pieces of documentation in the
+following order (if applicable):
+
+1. A description of the symbol, including its purpose, what it performs, and
+   behaviors of various use cases.
+1. If it is a function, method or class, a description of each parameter using
+   the [`@param`](https://jsdoc.app/tags-param) tag.
+1. If it is a function or method, a description of the return value using the
+   [`@returns`](https://jsdoc.app/tags-returns) tag.
+1. At least one minimal example code snippet using the
+   [`@example`](https://jsdoc.app/tags-example) tag for basic usage. The reader
+   should be able to copy and execute the code snippet with the expected values.
+
+See the following examples:
+
+- `copy()` from `std/fs`
+  ([source](https://github.com/denoland/deno_std/blob/main/fs/copy.ts) and
+  [documentation](https://jsr.io/@std/fs/doc/~/copy))
+
+- `weekOfYear()` from `std/datetime`
+  ([source](https://github.com/denoland/deno_std/blob/main/datetime/week_of_year.ts)
+  and [documentation](https://jsr.io/@std/datetime/doc/~/weekOfYear))
