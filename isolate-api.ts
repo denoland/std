@@ -143,12 +143,11 @@ export default class IsolateApi<T extends object = Default> {
     return this.#fs.delete(filepath)
   }
   get context() {
-    assert(this.#accumulator.isActive, 'Activity is denied')
     // TODO at creation, this should flag context capable and reject if not
     return this.#context
   }
   set context(context: Partial<T>) {
-    assert(this.#accumulator.isActive, 'Activity is denied')
+    // TODO reject if any fs operations or actions are attempted
     assert(typeof context === 'object', 'context must be an object')
     assert(context !== null, 'context must not be null')
     this.#context = context

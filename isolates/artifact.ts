@@ -97,29 +97,11 @@ export const api = {
       },
     },
   },
-  pierce: request,
-  request: {
+  pierce: {
     type: 'object',
-    required: ['request'],
-    properties: {
-      request,
-      prior: { type: 'number' },
-    },
+    required: ['pierce'],
+    properties: { pierce: request },
   },
-  branch: {
-    type: 'object',
-    required: ['pid', 'sequence', 'commit'],
-    properties: {
-      pid,
-      sequence: { type: 'integer', minimum: 0 },
-      commit: { type: 'string', pattern: '^[0-9a-f]{40}$' },
-    },
-  },
-  // subscribe to json by filepath and pid
-  // subscribe to path in json, so we can subscribe to the output of io.json
-  // subscribe to binary by filepath and pid - done by commit watching
-
-  // requesting a patch would be done with the last known patch as cursor
 }
 
 export type C = { db: DB; exe: Executor }
