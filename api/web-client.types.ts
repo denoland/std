@@ -281,3 +281,6 @@ export const isPID = (value: unknown): value is PID => {
     pid.branches.every((branch) => typeof branch === 'string')
   )
 }
+export const print = (pid: PID) => {
+  return `${pid.account}/${pid.repository}:${pid.branches.join('/')}`
+}

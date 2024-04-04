@@ -22,15 +22,11 @@ export const branch = async (fs: FS, sequence: number) => {
   const pid = io.getBranchPid(sequence)
 
   const request = io.getRequest(sequence)
-  const { isolate, functionName, params } = request
-
   const origin: SolidRequest = {
+    ...request,
     target: pid,
     source: fs.pid,
     sequence,
-    isolate,
-    functionName,
-    params,
     proctype: PROCTYPE.SERIAL,
   }
   log('origin', origin)

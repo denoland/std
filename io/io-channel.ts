@@ -119,18 +119,6 @@ export default class IOChannel {
     assert(sequence in this.#io.requests, 'sequence not found')
     return this.#io.requests[sequence]
   }
-  addUnsequenced(request: UnsequencedRequest) {
-    assert(equal(request.source, this.#fs.pid), 'only accumulations allowed')
-    const sequence = this.#io.sequence++
-    const sequenced = { ...request, sequence }
-    this.#io.requests[sequence] = sequenced
-    return sequence
-  }
-  addRequest(request: Request) {
-    const sequence = this.#io.sequence++
-    this.#io.requests[sequence] = request
-    return sequence
-  }
   reply(reply: SolidReply | MergeReply) {
     const { sequence } = reply
     assert(Number.isInteger(sequence), 'reply needs a sequence number')
@@ -195,6 +183,7 @@ export default class IOChannel {
       }
       return true
     }
+    // but, need to consider pending slice
 
     return false
   }
@@ -268,6 +257,11 @@ export default class IOChannel {
     const pid = { ...parentPid, branches }
     return pid
   }
+  addRequest(request: Request) {
+    const sequence = this.#io.sequence++
+    this.#io.requests[sequence] = request
+    return sequence
+  }
   addPending(commit: string, requests: UnsequencedRequest[]) {
     const executing = this.getExecutingRequest()
     // TODO affirm this is actually the executing request ?
@@ -275,14 +269,24 @@ export default class IOChannel {
     const sequence = this.getSequence(executing)
 
     const sequences = []
+    const solidRequests: SolidRequest[] = []
     for (const request of requests) {
-      const sequence = this.addUnsequenced(request)
+      const { sequence, sequenced } = this.#addUnsequenced(request)
       sequences.push(sequence)
+      solidRequests.push(sequenced)
     }
     if (!this.#io.pendings[sequence]) {
       this.#io.pendings[sequence] = []
     }
     this.#io.pendings[sequence].push({ commit, sequences })
+    return solidRequests
+  }
+  #addUnsequenced(request: UnsequencedRequest) {
+    assert(equal(request.source, this.#fs.pid), 'only accumulations allowed')
+    const sequence = this.#io.sequence++
+    const sequenced: SolidRequest = { ...request, sequence }
+    this.#io.requests[sequence] = sequenced
+    return { sequence, sequenced }
   }
 }
 
@@ -319,7 +323,6 @@ const isAccumulation = (request: Request, thisPid: PID) => {
     return true
   } else {
     if (equal(thisPid, request.source)) {
-      assert(request.proctype !== PROCTYPE.SERIAL, 'no serial accumulation')
       return true
     }
   }

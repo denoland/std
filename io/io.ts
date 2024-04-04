@@ -1,10 +1,9 @@
-import { assert, Debug } from '@utils'
+import { Debug } from '@utils'
 import { solidify } from '@/git/solidify.ts'
 import { branch } from '@/git/branch.ts'
-import { PID, SolidReply, Solids } from '@/constants.ts'
+import { Pending, PID, Solids } from '@/constants.ts'
 import DB from '@/db.ts'
 import FS from '@/git/fs.ts'
-import IOChannel from '@/io/io-channel.ts'
 import { Atomic } from '@/atomic.ts'
 import { ExeResult } from '@/constants.ts'
 const log = Debug('AI:io')
@@ -18,17 +17,23 @@ const log = Debug('AI:io')
  * If a reply is supplied, then we MUST induct, since we have changed files on
  * the fs that need to be included in the commit.
  */
-export const doAtomicCommit = async (db: DB, fs: FS, reply?: SolidReply) => {
+export const doAtomicCommit = async (db: DB, fs: FS, exe?: ExeResult) => {
   const atomic = db.atomic()
   const { poolKeys, pool } = await db.getPooledActions(fs.pid)
-  if (reply) {
-    pool.unshift(reply)
+  let pending: Pending | undefined
+  if (exe) {
+    if ('settled' in exe) {
+      fs.copyChanges(exe.settled.fs)
+      pool.unshift(exe.settled.reply)
+    } else {
+      pending = exe.pending
+    }
   }
-  if (!pool.length && !fs.isChanged) {
+  if (!pool.length && !fs.isChanged && !pending) {
     log('no pool or changes')
     return false
   }
-  const solids = await solidify(fs, pool)
+  const solids = await solidify(fs, pool, pending)
   atomic.deletePool(poolKeys)
 
   // the moneyshot
@@ -80,17 +85,4 @@ export const doAtomicBranch = async (db: DB, fs: FS, sequence: number) => {
 
 // TODO move all these types to share a file with their tests for done
 
-export const doAtomicExecution = async (db: DB, tip: FS, exe: ExeResult) => {
-  if (exe.settled) {
-    const { reply, fs } = exe.settled
-    tip.copyChanges(fs)
-    return await doAtomicCommit(db, tip, reply)
-  } else {
-    assert(exe.pending, 'if not settled, must be pending')
-    const { commit, requests } = exe.pending
-    const io = await IOChannel.load(tip)
-    io.addPending(commit, requests)
-    io.save()
-    return await doAtomicCommit(db, tip) // TODO ensure that the pool can be empty if there are file changes
-  }
-}
+// basically we need to do a transmit of the new inducted accumulations

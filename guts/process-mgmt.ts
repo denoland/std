@@ -3,7 +3,7 @@ import { Artifact } from '../api/web-client.types.ts'
 
 export default (name: string, cradleMaker: () => Promise<Artifact>) => {
   const prefix = name + ': '
-  Deno.test.only(prefix + 'session', async (t) => {
+  Deno.test(prefix + 'session', async (t) => {
     const artifact = await cradleMaker()
     const repo = 'process/session'
     await artifact.rm({ repo })

@@ -5,6 +5,7 @@ import {
   isPierceRequest,
   isRequest,
   MergeReply,
+  Pending,
   Poolable,
   PROCTYPE,
   Request,
@@ -26,29 +27,31 @@ const log = Debug('AI:git:solidify')
  * - reply: a result is being returned from a dispatch after serial execution.
  * @param fs a memfs instance to update
  */
-export const solidify = async (fs: FS, pool: Poolable[]) => {
-  assert(pool.length > 0 || fs.isChanged, 'nothing to solidify')
+export const solidify = async (fs: FS, pool: Poolable[], pending?: Pending) => {
+  assert(pool.length > 0 || fs.isChanged || pending?.requests.length, 'no-op')
   checkPool(pool)
   const io = await IOChannel.load(fs)
 
   const executingRequest = io.getExecutingRequest()
   log('solidifyPool executingRequest', executingRequest)
 
-  // TODO include multiple requests to the same branch as a single array
   const branches: number[] = []
   const replies: MergeReply[] = []
   const parents = []
   const deletes = []
+
+  if (pending) {
+    assert(pending.requests.length, 'cannot be pending without requests')
+    log('solidifyPool pending', pending)
+    const { commit, requests } = pending
+    const sequenced = io.addPending(commit, requests)
+    sequenced.forEach((r) => collectBranch(r, r.sequence, branches))
+  }
+
   for (const poolable of pool) {
     if (isRequest(poolable)) {
       const sequence = io.addRequest(poolable)
-      const { proctype } = poolable
-      if (proctype === PROCTYPE.BRANCH || proctype === PROCTYPE.DAEMON) {
-        branches.push(sequence)
-      } else {
-        assert(proctype === PROCTYPE.SERIAL, `invalid proctype: ${proctype}`)
-        // TODO error if two serial relies are received in a single poolrush
-      }
+      collectBranch(poolable, sequence, branches)
     } else {
       log('reply', poolable)
       // TODO move this to checkPool()
@@ -74,7 +77,7 @@ export const solidify = async (fs: FS, pool: Poolable[]) => {
       }
     }
   }
-  if (pool.length) {
+  if (pool.length || pending) {
     io.save()
   }
 
@@ -124,4 +127,12 @@ const checkPool = (pool: Poolable[]) => {
 const isBranch = (request: Request) => {
   return request.proctype === PROCTYPE.BRANCH ||
     request.proctype === PROCTYPE.DAEMON
+}
+const collectBranch = (req: Request, sequence: number, branches: number[]) => {
+  const { proctype } = req
+  if (proctype === PROCTYPE.BRANCH || proctype === PROCTYPE.DAEMON) {
+    branches.push(sequence)
+  } else {
+    assert(proctype === PROCTYPE.SERIAL, `invalid proctype: ${proctype}`)
+  }
 }

@@ -14,12 +14,13 @@ import {
   JsonValue,
   PID,
   PierceRequest,
+  print,
   QueueMessage,
   SolidRequest,
 } from '@/constants.ts'
 import IsolateApi from '../isolate-api.ts'
 import Compartment from '../io/compartment.ts'
-import { doAtomicBranch, doAtomicCommit, doAtomicExecution } from '@io/io.ts'
+import { doAtomicBranch, doAtomicCommit } from '@io/io.ts'
 import DB from '../db.ts'
 import FS from '../git/fs.ts'
 import { assert } from 'https://deno.land/std@0.203.0/assert/assert.ts'
@@ -136,6 +137,7 @@ export const functions: ArtifactCore = {
       if (commit === head) {
         continue
       }
+      log('pierce commit %s', commit)
       const fs = FS.open(pierce.target, commit, db)
       const ioChannel = await IOChannel.read(fs)
       assert(ioChannel, 'io channel not found')
@@ -224,10 +226,9 @@ export const lifecycles: IsolateLifecycle = {
     const exe = Executor.createCacheContext()
     api.context = { db, exe }
     db.listen(async (message: QueueMessage) => {
-      log('queue %o', message)
       if (isQueuePierce(message)) {
         const { pierce } = message
-
+        log('Pierce: %o %s', print(pierce.target), pierce.ulid)
         let tip = await FS.openHead(pierce.target, db)
         while (await db.hasPoolable(pierce)) {
           if (await doAtomicCommit(db, tip)) {
@@ -237,13 +238,8 @@ export const lifecycles: IsolateLifecycle = {
         }
       }
       if (isQueueRequest(message)) {
-        log(
-          'queue request',
-          message.sequence,
-          message.commit,
-          message.request.target,
-        )
         const { request, commit, sequence } = message
+        log('Execute: %o', print(request.target), commit, sequence)
         if (await isSettled(request, sequence, db)) {
           return
         }
@@ -252,7 +248,7 @@ export const lifecycles: IsolateLifecycle = {
 
         let tip = await FS.openHead(request.target, db)
         while (await isExeable(sequence, tip, exeResult)) {
-          if (await doAtomicExecution(db, tip, exeResult)) {
+          if (await doAtomicCommit(db, tip, exeResult)) {
             return
           }
           tip = await FS.openHead(request.target, db)
@@ -260,6 +256,7 @@ export const lifecycles: IsolateLifecycle = {
       }
       if (isQueueBranch(message)) {
         const { parentCommit, parentPid, sequence } = message
+        log('Branch: %o %s %i', print(parentPid), parentCommit, sequence)
         const parentFs = FS.open(parentPid, parentCommit, db)
         const io = await IOChannel.read(parentFs)
         assert(io, 'io not found')
@@ -275,7 +272,7 @@ export const lifecycles: IsolateLifecycle = {
       }
       if (isQueueReply(message)) {
         const { reply } = message
-
+        log('MergeReply: %o', print(reply.target), reply.sequence, reply.commit)
         let tip = await FS.openHead(reply.target, db)
         while (await db.hasPoolable(reply)) {
           if (await doAtomicCommit(db, tip)) {
@@ -296,14 +293,14 @@ const isExeable = async (sequence: number, tip: FS, exe: ExeResult) => {
   if (io.isSettled(sequence)) {
     return false
   }
-  if (exe?.pending) {
+  if ('pending' in exe) {
     return !io.isPendingIncluded(sequence, exe.pending.commit)
   }
   return true
 }
 const isSettled = async (request: SolidRequest, sequence: number, db: DB) => {
   const tip = await FS.openHead(request.target, db)
-  log('isSettled', sequence, tip.pid, tip.commit)
+  log('isSettled', print(tip.pid), sequence, tip.commit)
   // log('files', await tip.ls('.'))
   const io = await IOChannel.read(tip)
   assert(io, 'io not found')

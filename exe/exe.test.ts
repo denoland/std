@@ -33,9 +33,8 @@ Deno.test('simple', async (t) => {
   const executor = Executor.createCacheContext()
   await t.step('no accumulations', async () => {
     const result = await executor.execute(request, fs)
-    const { settled, pending } = result
-    assert(settled)
-    expect(pending).toBeFalsy()
+    assert('settled' in result)
+    const { settled } = result
     const { reply, fs: settledFs } = settled
     expect(reply.target).toEqual(pid)
     expect(reply.outcome).toEqual({ result: 'local reply' })
@@ -54,10 +53,8 @@ Deno.test('writes', async (t) => {
   const executor = Executor.createCacheContext()
   await t.step('single file', async () => {
     const result = await executor.execute(write, fs)
-    const { settled, pending } = result
-    assert(settled)
-    expect(pending).toBeFalsy()
-    const { reply, fs: settledFs } = settled
+    assert('settled' in result)
+    const { reply, fs: settledFs } = result.settled
     expect(reply.target).toEqual(pid)
     expect(reply.outcome.result).toBeUndefined()
     expect(settledFs).toEqual(fs)
@@ -81,10 +78,8 @@ Deno.test('loopback', async (t) => {
   await t.step('loopback request will error', async () => {
     // execute should start with an unchanged fs tho
     const result = await executor.execute(compound, fs)
-    const { settled, pending } = result
-    expect(pending).toBeFalsy()
-    assert(settled)
-    const { reply } = settled
+    assert('settled' in result)
+    const { reply } = result.settled
     expect(reply.target).toEqual(pid)
     expect(reply.outcome.error).toBeDefined()
   })
@@ -106,10 +101,9 @@ Deno.test('compound', async (t) => {
   let request: UnsequencedRequest
   const executor = Executor.createCacheContext()
   await t.step('half done', async () => {
-    const { settled, pending } = await executor.execute(compound, fs)
-    expect(settled).toBeFalsy()
-    assert(pending)
-    const { requests } = pending
+    const result = await executor.execute(compound, fs)
+    assert('pending' in result)
+    const { requests } = result.pending
     expect(requests).toHaveLength(1)
     request = requests[0]
     log('internalRequest', request)
@@ -118,12 +112,12 @@ Deno.test('compound', async (t) => {
   })
   await t.step('reply using function cache', async () => {
     assert(request)
-    const sequence = io.addUnsequenced(request)
-    expect(sequence).toBe(1)
+    const sequenced = io.addPending('fakeCommit', [request])
+    expect(sequenced).toHaveLength(1)
     const reply = {
       outcome: { result: 'compound reply' },
       target: request.source,
-      sequence,
+      sequence: sequenced[0].sequence,
     }
     const savedRequest = io.reply(reply)
     assert(!isPierceRequest(savedRequest))
@@ -131,28 +125,26 @@ Deno.test('compound', async (t) => {
     io.save()
     const replyFs = await fs.writeCommitObject()
 
-    const { settled, pending } = await executor.execute(compound, replyFs)
-    expect(pending).toBeFalsy()
-    assert(settled, 'settled')
+    const result = await executor.execute(compound, replyFs)
+    expect('settled' in result).toBeTruthy()
   })
   await t.step('reply from replay', async () => {
     assert(request)
     const io = await IOChannel.load(fs)
-    const sequence = io.addUnsequenced(request)
-    expect(sequence).toBe(1)
+    const sequenced = io.addPending('fakeCommit2', [request])
+    expect(sequenced).toHaveLength(1)
     const reply = {
       outcome: { result: 'compound reply' },
       target: request.source,
-      sequence,
+      sequence: sequenced[0].sequence,
     }
     io.reply(reply)
     io.save()
     const replyFs = await fs.writeCommitObject()
 
     const noCache = Executor.createCacheContext()
-    const { settled, pending } = await noCache.execute(compound, replyFs)
-    expect(pending).toBeFalsy()
-    expect(settled).toBeTruthy()
+    const result = await noCache.execute(compound, replyFs)
+    expect('settled' in result).toBeTruthy()
   })
   stop()
 

@@ -66,6 +66,7 @@ export default class IsolateApi<T extends object = Default> {
           proctype,
         }
         const recovered = this.#accumulator.recover(unsequencedRequest)
+        // at this point, we might need to tick the fs commit forwards
         if (recovered) {
           const { outcome } = recovered
           assert(outcome, 'outcome must be set')

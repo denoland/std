@@ -68,7 +68,7 @@ export default class Executor {
     const winner = await Promise.race([execution.function, accumulatorPromise])
     execution.accumulator.deactivate()
 
-    const result: ExeResult = {}
+    let result: ExeResult
     if (isOutcome(winner)) {
       log('exe complete %o', exeId)
       this.#functions.delete(exeId)
@@ -76,13 +76,13 @@ export default class Executor {
       const reply = { target: fs.pid, sequence, outcome: winner }
 
       // TODO need to tick the fs forwards when the accumulations occur
-      result.settled = { reply, fs }
+      result = { settled: { reply, fs } }
     } else {
       log('accumulator triggered first')
       const { accumulations } = execution.accumulator
       assert(accumulations.length > 0, 'no accumulations')
       const requests = accumulations.map((acc) => acc.request)
-      result.pending = { commit: fs.commit, requests }
+      result = { pending: { commit: fs.commit, requests } }
     }
     return result
   }

@@ -48,6 +48,18 @@ export default class Accumulator {
   get isActive() {
     return this.#isActive
   }
+  /**
+   * Used so that an execution can be paused, then receive replies from
+   * accumulated actions, then continue without restarting the execution.  Makes
+   * it easier to debug these functions, but also can be faster to execute.
+   * This is a nice to have and the operation is equally capable of starting
+   * again, if we find ourselves replaying the operation with no existing cache.
+   *
+   * As new layers of the accumulation process occur, the filesystem object
+   * referenced by the isolate-api object will tick forwards.
+   *
+   * @param from The newer accumulator that should be copied in to the old one
+   */
   absorb(from: Accumulator) {
     assert(!this.isActive, '"this" is already active')
     assert(!from.isActive, '"from" is already active')
