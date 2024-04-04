@@ -107,7 +107,7 @@ const checkPool = (pool: Poolable[]) => {
       throw new Error('pool has mixed targets')
     }
   }
-  // TODO use a hash on poolables to determin uniqueness in the pool
+  // TODO use a hash on poolables to determine uniqueness in the pool
   return target
   // TODO a request and a reply with the same id cannot be in the same pool
 }
