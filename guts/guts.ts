@@ -1,16 +1,19 @@
 // the Grand Unified Test Suite™
 
-import { expect, log } from '@utils'
+import * as utils from '@utils'
 import { Artifact, CommitObject } from '../api/web-client.types.ts'
 import processMgmt from './process-mgmt.ts'
 import aiCalls from './ai-calls.ts'
 import splices from './splices.ts'
+import { Debug } from '@utils'
+
+const { expect, log } = utils
 const ioFixture = 'io-fixture'
 
 export default (name: string, cradleMaker: () => Promise<Artifact>) => {
   const prefix = name + ': '
 
-  Deno.test(prefix + 'io', async (t) => {
+  Deno.test.only(prefix + 'io', async (t) => {
     const artifact = await cradleMaker()
     await t.step('ping empty', async () => {
       const empty = await artifact.ping()
@@ -21,9 +24,9 @@ export default (name: string, cradleMaker: () => Promise<Artifact>) => {
       expect(result).toEqual({ test: 'test' })
     })
 
-    await artifact.rm({ repo: 'dreamcatcher-tech/HAL' })
-
     await t.step('clone', async () => {
+      // Debug.enable('AI:*')
+      await artifact.rm({ repo: 'dreamcatcher-tech/HAL' })
       const clone = await artifact.clone({ repo: 'dreamcatcher-tech/HAL' })
       log('clone result', clone)
       // TODO read the fs and see what the state of the file system is ?
