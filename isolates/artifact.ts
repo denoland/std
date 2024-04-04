@@ -1,4 +1,3 @@
-import { transcribe } from '@/runners/runner-chat.ts'
 import { Debug, fromOutcome } from '@utils'
 import Executor from '../exe/exe.ts'
 import IOChannel from '../io/io-channel.ts'
@@ -133,6 +132,8 @@ export const functions: ArtifactCore = {
     atomic.enqueuePierce(pierce)
     await atomic.commit()
 
+    // TODO make sure only one of these is running per cradle instance and pid
+    // need to jack into the splice system
     for await (const commit of db.watchHead(pierce.target)) {
       if (commit === head) {
         continue
@@ -140,6 +141,12 @@ export const functions: ArtifactCore = {
       log('pierce commit %s', commit)
       const fs = FS.open(pierce.target, commit, db)
       const ioChannel = await IOChannel.read(fs)
+
+      // make a subscription that gives the completed file as json every change
+      // so that the heavy lifting is only done once
+      // or use the splices ?
+      // or make the splices use this single shared view thing
+
       assert(ioChannel, 'io channel not found')
       const outcome = ioChannel.getOutcomeFor(pierce)
       if (outcome) {
@@ -204,10 +211,6 @@ export const functions: ArtifactCore = {
     const { isolate } = params
     const compartment = await Compartment.create(isolate)
     return compartment.api
-  },
-  async transcribe(params: { audio: File }) {
-    const text = await transcribe(params.audio)
-    return { text }
   },
   async logs(params: { repo: string }, api: IsolateApi<C>) {
     // TODO convert logs to a splices query

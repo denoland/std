@@ -260,7 +260,6 @@ export interface ArtifactCore {
     params: { isolate: string },
     api?: unknown,
   ): Promise<Record<string, JSONSchemaType<object>>>
-  transcribe(params: { audio: File }): Promise<{ text: string }>
   logs(params: { repo: string }, api?: unknown): Promise<object[]>
 }
 export interface Artifact extends ArtifactCore {
@@ -268,6 +267,7 @@ export interface Artifact extends ArtifactCore {
   pierces(isolate: string, target: PID): Promise<DispatchFunctions>
   // TODO should move these git functions elsewhere ?
   read(pid: PID, path?: string, signal?: AbortSignal): ReadableStream<Splice>
+  transcribe(params: { audio: File }): Promise<{ text: string }>
 }
 export const isPID = (value: unknown): value is PID => {
   if (typeof value !== 'object' || value === null) {

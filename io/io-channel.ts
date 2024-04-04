@@ -293,11 +293,8 @@ export default class IOChannel {
 }
 
 const check = (io: IoStruct) => {
-  const requests = Object.values(io.requests)
-  requests.every((request, index) =>
-    requests.slice(index + 1).every((item) => !equal(item, request)) ||
-    assert(false, 'duplicate request')
-  )
+  // TODO check format
+  // TODO check key sequences are sane
   // TODO do the same for reply values
   for (const replyKey of Object.keys(io.replies)) {
     assert(replyKey in io.requests, 'no reply key in requests')

@@ -1,3 +1,4 @@
+import { transcribe } from '@/runners/runner-chat.ts'
 import { diffChars } from '$diff'
 import Compartment from './io/compartment.ts'
 import {
@@ -103,8 +104,10 @@ export class Cradle implements Artifact {
   apiSchema(params: { isolate: string }) {
     return this.#functions.apiSchema(params)
   }
-  transcribe(params: { audio: File }) {
-    return this.#functions.transcribe(params)
+  async transcribe(params: { audio: File }) {
+    assert(params.audio instanceof File)
+    const text = await transcribe(params.audio)
+    return { text }
   }
   logs(params: { repo: string }) {
     return this.#functions.logs(params)

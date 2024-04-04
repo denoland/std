@@ -1,5 +1,4 @@
 import http from 'npm:isomorphic-git/http/web/index.js'
-import stringify from 'npm:safe-stable-stringify'
 import { assert, Debug, equal, posix, sha1 } from '@utils'
 import { ENTRY_BRANCH, JsonValue, PID } from '@/constants.ts'
 import git from '$git'
@@ -18,7 +17,7 @@ export default class FS {
   readonly #upserts = new Map<string, string | Uint8Array>()
   readonly #deletes = new Set<string>()
   // cache should be per isolate and scoped to the repo name
-  readonly #cache = {}
+  #cache = {}
   get pid() {
     return this.#pid
   }
@@ -60,15 +59,19 @@ export default class FS {
     await git.init({ fs, dir, defaultBranch: ENTRY_BRANCH })
     log('init complete')
     const author = { name: 'git/init' }
+    const cache = {}
     const commit = await git.commit({
       noUpdateBranch: true,
       fs,
       dir,
       message: 'initial commit',
       author,
+      cache,
     })
     await db.atomic().createBranch(pid, commit).commit()
-    return new FS(pid, commit, db)
+    const init = new FS(pid, commit, db)
+    init.#cache = cache
+    return init
   }
   static async clone(repo: string, db: DB) {
     const pid = pidFromRepo(repo)
@@ -76,10 +79,13 @@ export default class FS {
     const url = `https://github.com/${pid.account}/${pid.repository}.git`
     const fs = { promises: GitKV.create(db, pid) }
     fs.promises.oneAtomicWrite = db.atomic()
-    await git.clone({ fs, dir, url, http, noCheckout: true })
+    const cache = {}
+    await git.clone({ fs, dir, url, http, noCheckout: true, cache })
     const commit = await db.readHead(pid)
     assert(commit, 'HEAD not found: ' + pid.branches.join('/'))
-    return new FS(pid, commit, db)
+    const clone = new FS(pid, commit, db)
+    clone.#cache = cache
+    return clone
   }
   /** @param the new PID to branch into */
   branch(pid: PID) {
@@ -92,7 +98,8 @@ export default class FS {
   }
   logs(filepath?: string, depth?: number) {
     const { fs } = this
-    return git.log({ fs, dir, filepath, depth, ref: this.#commit })
+    const cache = this.#cache
+    return git.log({ fs, dir, filepath, depth, ref: this.#commit, cache })
   }
 
   async writeCommitObject(message = '', merges: string[] = []) {
@@ -112,14 +119,18 @@ export default class FS {
       author,
       tree,
       parent: [this.#commit, ...merges],
+      cache: this.#cache,
     })
 
-    return new FS(this.#pid, nextCommit, this.#db)
+    const next = new FS(this.#pid, nextCommit, this.#db)
+    next.#cache = this.#cache
+    return next
   }
   async #flush() {
     const oid = await this.#rootOid()
     const { fs } = this
-    const { tree: root } = await git.readTree({ fs, dir, oid })
+    const cache = this.#cache
+    const { tree: root } = await git.readTree({ fs, dir, oid, cache })
     log('flush tree', root)
     const changes: Tree = {
       oid,
@@ -156,7 +167,7 @@ export default class FS {
       // TODO should be able to wipe a whole dir with no effort here
     }
 
-    await retrieveAffectedTrees(changes, fs)
+    await retrieveAffectedTrees(changes, fs, this.#cache)
 
     await bubbleChanges(changes, fs)
 
@@ -179,7 +190,8 @@ export default class FS {
     const oid = await this.#rootOid()
     const { fs } = this
     try {
-      const { tree } = await git.readTree({ fs, dir, oid, filepath })
+      const cache = this.#cache
+      const { tree } = await git.readTree({ fs, dir, oid, filepath, cache })
       const basename = posix.basename(path)
       return tree.some((entry) => entry.path === basename)
     } catch (err) {
@@ -201,7 +213,7 @@ export default class FS {
     // TODO store json objects specially, only strinify on commit
     // then broadcast changes as json object purely
     assert(posix.extname(path) === '.json', `path must be *.json: ${path}`)
-    const string = stringify(json, null, 2)
+    const string = JSON.stringify(json, null, 2)
     assert(typeof string === 'string', 'stringify failed')
     return this.write(path, string)
   }
@@ -244,7 +256,8 @@ export default class FS {
     const oid = await this.#rootOid()
     log('tree', oid)
     const { fs } = this
-    const { blob } = await git.readBlob({ dir, fs, oid, filepath: path })
+    const cache = this.#cache
+    const { blob } = await git.readBlob({ dir, fs, oid, filepath: path, cache })
     assert(blob instanceof Uint8Array, 'blob not Uint8Array: ' + typeof blob)
     return blob
   }
@@ -255,7 +268,8 @@ export default class FS {
     log('ls', path)
     const oid = await this.#rootOid()
     const { fs } = this
-    const { tree } = await git.readTree({ fs, dir, oid, filepath: path })
+    const cache = this.#cache
+    const { tree } = await git.readTree({ fs, dir, oid, filepath: path, cache })
     return tree.map((entry) => entry.path)
   }
   async #rootOid() {
@@ -264,7 +278,8 @@ export default class FS {
   }
   async getCommit() {
     const { fs } = this
-    const result = await git.readCommit({ fs, dir, oid: this.#commit })
+    const cache = this.#cache
+    const result = await git.readCommit({ fs, dir, oid: this.#commit, cache })
     return result.commit
   }
   copyChanges(from: FS) {
@@ -323,11 +338,15 @@ const ensurePath = (tree: Tree, path: string) => {
   }
   return parent
 }
-const retrieveAffectedTrees = async (tree: Tree, fs: { promises: GitKV }) => {
+const retrieveAffectedTrees = async (
+  tree: Tree,
+  fs: { promises: GitKV },
+  cache: object,
+) => {
   const promises = []
   if (!tree.tree) {
     assert(tree.oid, 'tree oid not found')
-    const result = await git.readTree({ fs, dir, oid: tree.oid })
+    const result = await git.readTree({ fs, dir, oid: tree.oid, cache })
     tree.tree = result.tree
   }
   for (const entry of tree.tree) {
@@ -336,7 +355,7 @@ const retrieveAffectedTrees = async (tree: Tree, fs: { promises: GitKV }) => {
         const child = tree.children.get(entry.path)
         assert(child, 'child not found: ' + entry.path)
         child.oid = entry.oid
-        promises.push(retrieveAffectedTrees(child, fs))
+        promises.push(retrieveAffectedTrees(child, fs, cache))
       }
     }
   }

@@ -70,6 +70,8 @@ export default class DB {
     await Promise.all(promises)
   }
   watchHead(pid: PID, signal?: AbortSignal) {
+    // TODO this should be unified to have a single one for the whole db
+    // instance
     const abort = new AbortController()
     // TODO may need to add this to a hook in stop()
     // TODO offer a watchCommits function that is every guaranteed commit with

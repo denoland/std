@@ -54,7 +54,6 @@ export const solidify = async (fs: FS, pool: Poolable[], pending?: Pending) => {
       collectBranch(poolable, sequence, branches)
     } else {
       log('reply', poolable)
-      // TODO move this to checkPool()
       const request = io.reply(poolable)
       const { outcome } = poolable
       if (!isPierceRequest(request) && !equal(request.source, fs.pid)) {
@@ -107,20 +106,8 @@ const checkPool = (pool: Poolable[]) => {
     if (!equal(poolable.target, target)) {
       throw new Error('pool has mixed targets')
     }
-    // TODO check for out of order serial replies
-    // this depends on sequence being part of the reply item
   }
-  for (let i = 0; i < pool.length; i++) {
-    const poolable = pool[i]
-    for (let j = i + 1; j < pool.length; j++) {
-      const next = pool[j]
-      if (equal(poolable, next)) {
-        // TODO check against the current io file too
-        const msg = 'duplicate pool items: ' + JSON.stringify(poolable, null, 2)
-        throw new Error(msg)
-      }
-    }
-  }
+  // TODO use a hash on poolables to determin uniqueness in the pool
   return target
   // TODO a request and a reply with the same id cannot be in the same pool
 }
