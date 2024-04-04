@@ -42,13 +42,13 @@ export const doAtomicCommit = async (db: DB, fs: FS, exe?: ExeResult) => {
     log('head changed from %o missed %o', fs.commit, solids.commit)
     return false
   }
-  transmit(fs.pid, solids, atomic)
+  await transmit(fs.pid, solids, atomic)
   const success = await atomic.commit()
   log('commit success %o from %o to %o', success, fs.commit, solids.commit)
   return success
 }
 
-const transmit = (pid: PID, solids: Solids, atomic: Atomic) => {
+const transmit = async (pid: PID, solids: Solids, atomic: Atomic) => {
   const { commit, exe, branches, replies, deletes } = solids
 
   const transmittedReplies = new Set<PID>()
@@ -67,9 +67,11 @@ const transmit = (pid: PID, solids: Solids, atomic: Atomic) => {
       atomic.enqueueReply(reply)
     }
   }
+  const promisedDeletions = []
   for (const { pid, commit } of deletes) {
-    atomic.deleteBranch(pid, commit)
+    promisedDeletions.push(atomic.deleteBranch(pid, commit))
   }
+  await Promise.all(promisedDeletions)
 }
 
 export const doAtomicBranch = async (db: DB, fs: FS, sequence: number) => {

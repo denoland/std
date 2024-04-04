@@ -82,8 +82,7 @@ export class Atomic {
     const current = await this.#kv.get(key)
     assert(current.versionstamp, 'branch not found: ' + pid.branches.join('/'))
     assert(current.value === commit, 'branch commit mismatch')
-    this.#atomic = this.#atomic.check(current)
-      .delete(key)
+    this.#atomic = this.#atomic.check(current).delete(key)
     return this
     // TODO ensure this is tied in to the changing of the parent head
   }
@@ -112,8 +111,9 @@ export class Atomic {
   }
   async commit() {
     assert(this.#atomic, 'Atomic not set')
-    const result = await this.#atomic.commit()
+    const atomic = this.#atomic
     this.#atomic = undefined
+    const result = await atomic.commit()
     if (!result.ok) {
       return false
     }
