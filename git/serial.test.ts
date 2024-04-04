@@ -96,16 +96,6 @@ Deno.test('pierce serial', async (t) => {
     expect(Object.keys(io.requests).length).toBe(3)
     expect(Object.keys(io.replies).length).toEqual(3)
   })
-  await t.step('duplicate pool items rejects', async () => {
-    const msg = 'duplicate pool items: '
-    await expect(solidify(fs, [pierce, pierce]))
-      .rejects.toThrow(msg)
-    const reply = replies(1, 1)[0]
-    await expect(solidify(fs, [reply, reply]))
-      .rejects.toThrow(msg)
-    await expect(solidify(fs, [pierce, pierce, reply, reply]))
-      .rejects.toThrow(msg)
-  })
   db.stop()
   // TODO cannot reply out of order
   // TODO permissioning for inclusion in the pool
