@@ -27,8 +27,8 @@ export class Atomic {
    * Used in two scenarios:
    * 1. When a pierce occurs, and adding to the pool is at the point of ulid
    *    generation, guaranteeing atomicity by way of the ulid
-   * 2. During the atomic transmission process, where it is guarantee to only be
-   *    added if the commit to head is successful
+   * 2. During the atomic transmission process, where it is guaranteed to only
+   *    be added if the commit to head is successful
    * @param poolable
    * @returns
    */

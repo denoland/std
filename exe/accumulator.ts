@@ -31,7 +31,7 @@ export default class Accumulator {
       return recovered
     }
   }
-  await() {
+  activate() {
     // a promise that resolves when the accumulator is triggered
     assert(!this.isActive, 'Activity is already active')
     assert(!this.#trigger, 'Trigger is already set')

@@ -8,9 +8,9 @@ import {
   isPID,
   isPierceRequest,
   isQueueBranch,
+  isQueueExe,
   isQueuePierce,
   isQueueReply,
-  isQueueRequest,
   JsonValue,
   PID,
   PierceRequest,
@@ -237,7 +237,7 @@ export const lifecycles: IsolateLifecycle = {
           tip = await FS.openHead(pierce.target, db)
         }
       }
-      if (isQueueRequest(message)) {
+      if (isQueueExe(message)) {
         const { request, commit, sequence } = message
         log('Execute: %o', print(request.target), commit, sequence)
         if (await isSettled(request, sequence, db)) {

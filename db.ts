@@ -72,7 +72,7 @@ export default class DB {
   watchHead(pid: PID, signal?: AbortSignal) {
     const abort = new AbortController()
     // TODO may need to add this to a hook in stop()
-    // offer a watchCommits function that is every guaranteed commit with
+    // TODO offer a watchCommits function that is every guaranteed commit with
     // no skips in between
     signal?.addEventListener('abort', () => {
       abort.abort()

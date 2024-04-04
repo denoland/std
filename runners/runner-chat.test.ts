@@ -21,7 +21,7 @@ Deno.test('runner', async (t) => {
   const fs = await FS.init('runner/test', db)
   const accumulator = Accumulator.create()
   const api = IsolateApi.create(fs, accumulator)
-  accumulator.await() // arms the accumulator to permit activity to occur
+  accumulator.activate()
 
   await t.step('hello world', async () => {
     const help = merge({}, helpBase, { commands: [] })

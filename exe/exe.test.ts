@@ -76,7 +76,6 @@ Deno.test('loopback', async (t) => {
   const { fs, stop } = await mocks(compound)
   const executor = Executor.createCacheContext()
   await t.step('loopback request will error', async () => {
-    // execute should start with an unchanged fs tho
     const result = await executor.execute(compound, fs)
     assert('settled' in result)
     const { reply } = result.settled

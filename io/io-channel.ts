@@ -332,6 +332,7 @@ const isAccumulation = (request: Request, thisPid: PID) => {
 }
 
 const toRunnableRequest = (request: Request, sequence: number) => {
+  // TODO remove this function completely - translation is bad
   if (!isPierceRequest(request)) {
     return request
   }

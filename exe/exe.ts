@@ -52,7 +52,7 @@ export default class Executor {
       const execution = this.#functions.get(exeId)
       assert(execution, 'execution not found')
       if (execution.commit === fs.commit) {
-        // TODO also detect if was an old commit
+        // TODO also detect if was an old commit using accumulator layers
         // TODO exe should be idempotent
         throw new Error('request already executed for commit: ' + fs.commit)
       }
@@ -64,7 +64,7 @@ export default class Executor {
     execution.commit = fs.commit
     execution.accumulator.absorb(ioAccumulator)
 
-    const accumulatorPromise = execution.accumulator.await()
+    const accumulatorPromise = execution.accumulator.activate()
     const winner = await Promise.race([execution.function, accumulatorPromise])
     execution.accumulator.deactivate()
 

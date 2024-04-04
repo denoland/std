@@ -139,12 +139,12 @@ export const isMergeReply = (poolable: Reply): poolable is MergeReply => {
  * task will continue to retry until it is successful, as long as its check for
  * duplication reassures it to keep trying.
  */
-export type QueueMessage = QueuePierce | QueueRequest | QueueBranch | QueueReply
+export type QueueMessage = QueuePierce | QueueExe | QueueBranch | QueueReply
 
 export type QueuePierce = {
   pierce: PierceRequest
 }
-export type QueueRequest = {
+export type QueueExe = {
   request: SolidRequest
   commit: string
   sequence: number
@@ -160,7 +160,7 @@ export type QueueReply = {
 export const isQueuePierce = (m: QueueMessage): m is QueuePierce => {
   return 'pierce' in m
 }
-export const isQueueRequest = (m: QueueMessage): m is QueueRequest => {
+export const isQueueExe = (m: QueueMessage): m is QueueExe => {
   return 'request' in m
 }
 export const isQueueBranch = (m: QueueMessage): m is QueueBranch => {

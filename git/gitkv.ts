@@ -126,9 +126,6 @@ export class GitKV {
   mkdir(path: string) {
     log('mkdir', path)
     return Promise.resolve()
-    // const result = await this.#memfs.mkdir(path)
-    // log('mkdir', path, result)
-    // return result
   }
   async rmdir(path: string) {
     log('rmdir', path)
