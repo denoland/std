@@ -99,13 +99,24 @@ export default class DB {
     return await get(this.#kv, key)
   }
   async blobSet(key: Deno.KvKey, value: ArrayBufferLike) {
+    // this is atomic, thanks to kv_toolbox batched atomic operations
     return await set(this.#kv, key, value)
   }
-  listImmediateChildren(key: Deno.KvKey) {
-    const start = [...key, `\u0000`]
-    const end = [...key, `\uFFFF`]
-    // TODO untested against deep nesting
-    return this.#kv.list({ start, end })
+  async listImmediateChildren(prefix: Deno.KvKey) {
+    const results = []
+    for await (const item of this.#kv.list({ prefix })) {
+      const end = item.key.slice(prefix.length)
+      if (end.length === 1) {
+        results.push(end[0])
+      }
+      if (end.length === 2) {
+        // TODO see what happens if the keys are named to clash with this
+        if (end[1] === '__kv_toolbox_meta__') {
+          results.push(end[0])
+        }
+      }
+    }
+    return results
   }
   listen(handler: (message: QueueMessage) => Promise<void>) {
     this.#kv.listenQueue(handler)

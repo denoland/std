@@ -75,6 +75,7 @@ export default class FS {
     // TODO detect the mainbranch somehow
     const url = `https://github.com/${pid.account}/${pid.repository}.git`
     const fs = { promises: GitKV.create(db, pid) }
+    fs.promises.oneAtomicWrite = db.atomic()
     await git.clone({ fs, dir, url, http, noCheckout: true })
     const commit = await db.readHead(pid)
     assert(commit, 'HEAD not found: ' + pid.branches.join('/'))

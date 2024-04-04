@@ -81,9 +81,15 @@ Deno.test('git/init', async (t) => {
 })
 Deno.test('clone', async (t) => {
   const db = await DB.create()
+  let fs: FS
   await t.step('clone HAL', async () => {
-    const fs = await FS.clone('dreamcatcher-tech/HAL', db)
+    fs = await FS.clone('dreamcatcher-tech/HAL', db)
     expect(fs.commit).toHaveLength(40)
+  })
+  await t.step('read', async () => {
+    const path = 'README.md'
+    const data = await fs.read(path)
+    expect(data).toContain('HAL')
   })
   db.stop()
 })

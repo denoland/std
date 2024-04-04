@@ -3,6 +3,7 @@ import { getRepoRoot, headKeyToPid } from '@/keys.ts'
 import type DB from '@/db.ts'
 import { assert, AssertionError, equal } from '@utils'
 import { PID } from '@/constants.ts'
+import { Atomic } from '@/atomic.ts'
 
 const log = Debug('AI:git:KV')
 
@@ -81,15 +82,16 @@ export class GitKV {
     }
     const pathKey = this.#getAllowedPathKey(path)
 
+    // TODO skip the remote HEAD writes too ?
     if (path.startsWith('/.git/refs/heads/')) {
       // TODO use the head tool on this.#db to ensure consistency
       assert(typeof data === 'string', 'data must be a string')
       const pid = headKeyToPid(pathKey)
       // TODO ensure have maintenance while this is being changed
-
-      const atomic = this.#db.atomic()
-      atomic.createBranch(pid, data.trim())
-      await atomic.commit()
+      assert(this.#oneAtomicWrite, 'no atomic write provided')
+      const atomic = this.#oneAtomicWrite
+      this.#oneAtomicWrite = undefined
+      await atomic.createBranch(pid, data.trim()).commit()
     } else {
       if (typeof data === 'string') {
         data = new TextEncoder().encode(data)
@@ -97,6 +99,10 @@ export class GitKV {
       await this.#db.blobSet(pathKey, data)
     }
     log('writeFile done:', pathKey)
+  }
+  #oneAtomicWrite: Atomic | undefined
+  set oneAtomicWrite(atomic: Atomic) {
+    this.#oneAtomicWrite = atomic
   }
   async unlink(path: string) {
     log('unlink', path)
@@ -112,17 +118,9 @@ export class GitKV {
     if (path !== '/.git') {
       pathKey = this.#getAllowedPathKey(path)
     }
-    log('readdir pathKey', pathKey)
-    // TODO confirm behaviour skips deeply nested paths
-    const results = []
-    const list = this.#db.listImmediateChildren(pathKey)
-    // just the pure names of the files in this directory
-    for await (const { key } of list) {
-      assert(key.length === path.length + 1, 'key overlength: ' + key.join('/'))
-      const name = key[key.length - 1]
-      results.push(name)
-    }
+    const results = await this.#db.listImmediateChildren(pathKey)
     log('readdir', path, results)
+
     return results
   }
   mkdir(path: string) {

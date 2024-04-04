@@ -134,6 +134,8 @@ export default class IOChannel {
     return request
   }
   #blankAccumulations() {
+    // TODO this must honour multiple requests underway, so scope the blanking
+    // to a specific request that is being ended
     for (const [key, request] of Object.entries(this.#io.requests)) {
       if (isAccumulation(request, this.#fs.pid)) {
         assert(this.#io.replies[key], 'accumulation without reply')
@@ -183,10 +185,10 @@ export default class IOChannel {
       }
       return true
     }
-    // but, need to consider pending slice
-
     return false
   }
+  // TODO clean up pending slice when replies completed
+  // TODO consider pending splice to skip exhausted requests
   includes(poolable: Reply | SolidRequest) {
     assert(equal(poolable.target, this.#fs.pid), 'target mismatch')
     if (isRequest(poolable)) {

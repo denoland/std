@@ -1,4 +1,4 @@
-import { Debug, expect } from '@utils'
+import { expect } from '@utils'
 import { Artifact } from '../api/web-client.types.ts'
 
 export default (name: string, cradleMaker: () => Promise<Artifact>) => {
@@ -12,7 +12,6 @@ export default (name: string, cradleMaker: () => Promise<Artifact>) => {
     const sessionPid = { ...pid, branches: [...pid.branches, '1'] }
     const { create } = await artifact.pierces('session', pid)
     await t.step('create', async () => {
-      Debug.enable('AI:artifact')
       const session = await create()
       expect(session).toEqual(sessionPid)
 

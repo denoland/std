@@ -21,9 +21,12 @@ export const branch = async (fs: FS, sequence: number) => {
   const io = await IOChannel.load(fs)
   const pid = io.getBranchPid(sequence)
 
-  const request = io.getRequest(sequence)
+  const { isolate, functionName, params } = io.getRequest(sequence)
+
   const origin: SolidRequest = {
-    ...request,
+    isolate,
+    functionName,
+    params,
     target: pid,
     source: fs.pid,
     sequence,
