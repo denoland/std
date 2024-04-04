@@ -58,8 +58,9 @@ export default class Server {
             Deno.env.get('DENO_DEPLOYMENT_ID') || '(unknown)',
           )
           const outcome: { result?: unknown; error?: SerializableError } = {}
+          let params
           try {
-            const params = await c.req.json()
+            params = await c.req.json()
             if (functionName === 'pierce') {
               const msg = `ulid incorrect: ${params?.pierce?.ulid}`
               assert(params?.pierce?.ulid === 'calculated-server-side', msg)
@@ -67,7 +68,14 @@ export default class Server {
             }
             outcome.result = await artifact[functionName](params)
           } catch (error) {
-            console.error(error)
+            console.error(
+              'functionName:',
+              functionName,
+              '\n\nparams:',
+              params,
+              '\n\nerror:',
+              error,
+            )
             outcome.error = serializeError(error)
           }
           endTime(c, 'function')

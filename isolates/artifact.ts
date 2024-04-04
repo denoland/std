@@ -147,7 +147,9 @@ export const functions: ArtifactCore = {
       // or use the splices ?
       // or make the splices use this single shared view thing
 
-      assert(ioChannel, 'io channel not found')
+      if (!ioChannel) {
+        continue // not sure how there can be no io channel, but this happens sometimes on deno cloud
+      }
       const outcome = ioChannel.getOutcomeFor(pierce)
       if (outcome) {
         return fromOutcome(outcome)
