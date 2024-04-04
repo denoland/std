@@ -46,7 +46,7 @@ export enum KEYSPACES {
 export enum STATUS {
   /**
    * If the repo is active, then all execution activities are allowed.
-   * The absense of any status means the repo has been deleted and cannot
+   * The absence of any status means the repo has been deleted and cannot
    * receive any pooling.
    */
   ACTIVE = 'ACTIVE',

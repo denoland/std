@@ -67,6 +67,7 @@ export default class Server {
             }
             outcome.result = await artifact[functionName](params)
           } catch (error) {
+            console.error(error)
             outcome.error = serializeError(error)
           }
           endTime(c, 'function')
@@ -80,7 +81,6 @@ export default class Server {
         const params = await c.req.json()
         const abort = new AbortController()
         stream.onAbort(() => {
-          console.log('server stream abort')
           abort.abort()
         })
 

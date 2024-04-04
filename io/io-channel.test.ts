@@ -20,7 +20,7 @@ Deno.test('io-channel', async () => {
 // test writing files then doing some accumulation requests, and ensuring that
 // those files are present accurately
 
-// if multiple requests are elligible, its always the lowest sequence number
+// if multiple requests are eligible, its always the lowest sequence number
 
 // need to remove the runnablerequest function and just run actions raw somehow
 // ?  The transform is bad
