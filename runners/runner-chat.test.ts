@@ -1,6 +1,6 @@
 import merge from 'npm:lodash.merge'
 import Cradle from '../cradle.ts'
-import { Debug, expect, log } from '@utils'
+import { expect, log } from '@utils'
 import IsolateApi from '../isolate-api.ts'
 import { Help, RUNNERS } from '../constants.ts'
 import runner from './runner-chat.ts'
@@ -19,9 +19,10 @@ Deno.test('runner', async (t) => {
   }
   const db = await DB.create()
   const fs = await FS.init('runner/test', db)
-  const api = IsolateApi.create(fs, Accumulator.create())
+  const accumulator = Accumulator.create()
+  const api = IsolateApi.create(fs, accumulator)
+  accumulator.await() // arms the accumulator to permit activity to occur
 
-  Debug.enable('AI:runner*')
   await t.step('hello world', async () => {
     const help = merge({}, helpBase, { commands: [] })
     const text = 'reply with the cheese emoji'
@@ -43,7 +44,7 @@ Deno.test('runner', async (t) => {
   await t.step('tool error', async () => {
     const text = 'call the "error" function with message: salami'
     const help = merge({}, helpBase, {
-      instructions: ['return the function call results verbatim'],
+      instructions: ['return the function call error message'],
     })
     const result = await runner({ help, text }, api)
     expect(result).toContain('salami')

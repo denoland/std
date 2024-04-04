@@ -14,6 +14,7 @@ Deno.test('io-channel', async () => {
   const fs = await FS.init('test/io-channel', db)
 
   const _io = await IOChannel.load(fs)
+  db.stop()
 })
 
 // test writing files then doing some accumulation requests, and ensuring that

@@ -61,9 +61,9 @@ export default class Server {
           try {
             const params = await c.req.json()
             if (functionName === 'pierce') {
-              const msg = `ulid incorrect: ${params.ulid}`
-              assert(params.ulid === 'calculated-server-side', msg)
-              params.ulid = ulid()
+              const msg = `ulid incorrect: ${params.pierce.ulid}`
+              assert(params.pierce.ulid === 'calculated-server-side', msg)
+              params.pierce.ulid = ulid()
             }
             outcome.result = await artifact[functionName](params)
           } catch (error) {
