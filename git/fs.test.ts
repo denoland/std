@@ -14,6 +14,45 @@ Deno.test('git/init', async (t) => {
     )
     expect(await db.readHead(fs.pid)).toBe(fs.commit)
   })
+  await t.step('paths', async () => {
+    const git = 'git paths are forbidden: '
+    const relative = 'path must be relative: '
+    const paths = [
+      '',
+      '/',
+      '.git',
+      '.git/something',
+      '.git/objects/something',
+      '.git/refs',
+      '.git/refs/heads',
+      '.git/refs/heads/main',
+      '/something',
+    ]
+    const trailing = [...paths, ...paths.map((path) => path + '/')]
+    const forwards = [
+      ...trailing,
+      '/something',
+      '/something/deep',
+      '//something',
+      ...trailing.map((path) => '/' + path),
+    ]
+    for (const path of forwards) {
+      const message = path.startsWith('/') || !path ? relative + path : git
+      expect(() => fs.write(path, ''), path).toThrow(message)
+      expect(() => fs.write(path, 'data'), path).toThrow(message)
+      expect(() => fs.writeJSON(path, ''), path).toThrow(message)
+      expect(() => fs.writeJSON(path, 'data'), path).toThrow(message)
+      expect(() => fs.delete(path), path).toThrow(message)
+      await expect(fs.read(path), path).rejects.toThrow(message)
+      await expect(fs.readBinary(path), path).rejects.toThrow(message)
+      await expect(fs.readJSON(path), path).rejects.toThrow(message)
+      await expect(fs.ls(path), path).rejects.toThrow(message)
+      await expect(fs.exists(path), path).rejects.toThrow(message)
+      if (path) {
+        expect(() => fs.logs(path), path).toThrow(message)
+      }
+    }
+  })
   await t.step('write', async () => {
     const path = 'hello.txt'
     const data = 'world'

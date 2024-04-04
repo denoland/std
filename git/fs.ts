@@ -97,6 +97,9 @@ export default class FS {
     return new FS(pid, this.#commit, this.#db)
   }
   logs(filepath?: string, depth?: number) {
+    if (filepath) {
+      assertPath(filepath)
+    }
     const { fs } = this
     const cache = this.#cache
     return git.log({ fs, dir, filepath, depth, ref: this.#commit, cache })
@@ -174,7 +177,7 @@ export default class FS {
     return changes.oid
   }
   async exists(path: string) {
-    assert(!posix.isAbsolute(path), `path must be relative: ${path}`)
+    assertPath(path)
     if (this.#deletes.has(path)) {
       return false
     }
@@ -202,9 +205,8 @@ export default class FS {
     }
   }
   delete(path: string) {
-    assert(!posix.isAbsolute(path), `path must be relative: ${path}`)
+    assertPath(path)
     // TODO delete a whole directory
-    assert(!path.endsWith('/'), 'path must not end with /: ' + path)
     log('delete', path)
     this.#deletes.add(path)
     this.#upserts.delete(path)
@@ -212,25 +214,26 @@ export default class FS {
   writeJSON(path: string, json: JsonValue) {
     // TODO store json objects specially, only strinify on commit
     // then broadcast changes as json object purely
+    assertPath(path)
     assert(posix.extname(path) === '.json', `path must be *.json: ${path}`)
     const string = JSON.stringify(json, null, 2)
     assert(typeof string === 'string', 'stringify failed')
     return this.write(path, string)
   }
   write(path: string, data: string | Uint8Array) {
-    // buffer it until we are ready to do the commit
-    assert(!posix.isAbsolute(path), `path must be relative: ${path}`)
-    assert(!path.endsWith('/'), 'path must not end with /: ' + path)
+    assertPath(path)
     log('write', path, data)
     this.#upserts.set(path, data)
     this.#deletes.delete(path)
   }
   async readJSON<T>(path: string): Promise<T> {
+    assertPath(path)
     assert(posix.extname(path) === '.json', `path must be *.json: ${path}`)
     const data = await this.read(path)
     return JSON.parse(data)
   }
   async read(path: string) {
+    assertPath(path)
     if (this.#upserts.has(path)) {
       const data = this.#upserts.get(path)
       if (typeof data === 'string') {
@@ -241,8 +244,7 @@ export default class FS {
     return new TextDecoder().decode(blob)
   }
   async readBinary(path: string): Promise<Uint8Array> {
-    assert(!posix.isAbsolute(path), `path must be relative: ${path}`)
-    assert(!path.endsWith('/'), 'path must not end with /: ' + path)
+    assertPath(path)
     log('read', path)
     if (this.#deletes.has(path)) {
       throw new Error('Could not find file or directory: ' + path)
@@ -262,7 +264,7 @@ export default class FS {
     return blob
   }
   async ls(path: string) {
-    assert(!posix.isAbsolute(path), `path must be relative: ${path}`)
+    assertPath(path)
     // TODO make a streaming version of this for very large dirs
     // TODO handle changes in the directory
     log('ls', path)
@@ -408,4 +410,11 @@ const treeToLayers = (tree: Tree, layers: Tree[][] = [], level: number = 0) => {
     treeToLayers(child, layers, level + 1)
   }
   return layers
+}
+const assertPath = (path: string) => {
+  assert(path, `path must be relative: ${path}`)
+  assert(!posix.isAbsolute(path), `path must be relative: ${path}`)
+  assert(path !== '.git', '.git paths are forbidden: ' + path)
+  assert(!path.startsWith('.git/'), '.git paths are forbidden: ' + path)
+  assert(!path.endsWith('/'), 'path must not end with /: ' + path)
 }
