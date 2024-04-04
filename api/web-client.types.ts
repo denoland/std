@@ -10,7 +10,6 @@ export enum PROCTYPE {
 export type { JSONSchemaType }
 
 export type JsonValue =
-  | undefined
   | string
   | number
   | boolean
@@ -19,7 +18,7 @@ export type JsonValue =
   | {
     [key: string]: JsonValue
   }
-export type IsolateReturn = JsonValue | void
+export type IsolateReturn = JsonValue | undefined | void
 export type ProcessOptions = {
   /**
    * Any function called with this option will be executed in parallel
@@ -54,13 +53,17 @@ export type DispatchFunctions = {
     options?: ProcessOptions,
   ) => Promise<unknown> | unknown
 }
-export type Params = Record<string, unknown>
+export type Params = { [key: string]: JsonValue }
 
 export type IsolateApiSchema = {
   [key: string]: JSONSchemaType<object>
 }
-
-export type Outcome = { result?: unknown; error?: Error }
+export type SerializableError = {
+  name: string
+  message: string
+  stack?: string
+}
+export type Outcome = { result?: JsonValue; error?: SerializableError }
 export const ENTRY_BRANCH = 'main'
 /**
  * The Process Identifier used to address a specific process branch.
@@ -85,11 +88,21 @@ export type Help = {
   examples?: string[]
   tests?: string[]
 }
-type Invocation = {
+export type Invocation = {
   isolate: string
   functionName: string
   params: Params
   proctype: PROCTYPE
+  /**
+   * Allow a custom name for the new branch, if this is a branching request
+   */
+  branch?: string
+  /**
+   * If the custom branch name might not be unique, a prefix can be given and
+   * the sequence number will be appended to the branch name, ensuring
+   * uniqueness.
+   */
+  branchPrefix?: string
 }
 export type PierceRequest = Invocation & {
   target: PID
@@ -219,21 +232,41 @@ export type CommitObject = {
    */
   gpgsig?: string
 }
-export interface Cradle {
-  ping(params?: Params): Promise<IsolateReturn>
-  apiSchema(params: { isolate: string }): Promise<Record<string, object>>
-  pierce(params: PierceRequest): Promise<unknown>
-  transcribe(params: { audio: File }): Promise<{ text: string }>
-  logs(params: { repo: string }): Promise<object[]>
-  pierces(isolate: string, target: PID): Promise<DispatchFunctions>
-  stop(): Promise<void> | void
-  // TODO should move these git functions elsewhere ?
-  init(params: { repo: string }): Promise<{ pid: PID; head: string }>
-  clone(params: { repo: string }): Promise<{ pid: PID; head: string }>
+export interface ArtifactCore {
+  ping(
+    params?: { data?: JsonValue; pid?: PID },
+    api?: unknown,
+  ): Promise<IsolateReturn>
+  pierce(
+    params: { pierce: PierceRequest },
+    api?: unknown,
+  ): Promise<IsolateReturn>
   probe(
     params: { repo?: string; pid?: PID },
+    api?: unknown,
   ): Promise<{ pid: PID; head: string } | void>
-  rm(params: { repo: string }): Promise<void>
+  init(
+    params: { repo: string },
+    api?: unknown,
+  ): Promise<{ pid: PID; head: string }>
+  clone(
+    params: { repo: string },
+    api?: unknown,
+  ): Promise<{ pid: PID; head: string }>
+  pull(params: { pid: PID }, api?: unknown): Promise<{ pid: PID; head: string }>
+  push(params: { pid: PID }, api?: unknown): Promise<void>
+  rm(params: { repo: string }, api?: unknown): Promise<void>
+  apiSchema(
+    params: { isolate: string },
+    api?: unknown,
+  ): Promise<Record<string, JSONSchemaType<object>>>
+  transcribe(params: { audio: File }): Promise<{ text: string }>
+  logs(params: { repo: string }, api?: unknown): Promise<object[]>
+}
+export interface Artifact extends ArtifactCore {
+  stop(): Promise<void> | void
+  pierces(isolate: string, target: PID): Promise<DispatchFunctions>
+  // TODO should move these git functions elsewhere ?
   read(pid: PID, path?: string, signal?: AbortSignal): ReadableStream<Splice>
 }
 export const isPID = (value: unknown): value is PID => {
@@ -247,4 +280,7 @@ export const isPID = (value: unknown): value is PID => {
     Array.isArray(pid.branches) &&
     pid.branches.every((branch) => typeof branch === 'string')
   )
+}
+export const print = (pid: PID) => {
+  return `${pid.account}/${pid.repository}:${pid.branches.join('/')}`
 }

@@ -1,7 +1,7 @@
 // THIS IS SYCNED FROM THE ARTIFACT PROJECT
 // TODO publish to standalone repo
 import {
-  Cradle,
+  Artifact,
   DispatchFunctions,
   EventSourceMessage,
   getProcType,
@@ -16,7 +16,7 @@ type ToError = (object: object) => Error
 type ToEvents = (
   stream: ReadableStream<Uint8Array>,
 ) => ReadableStream<EventSourceMessage>
-export default class WebClient implements Cradle {
+export default class WebClient implements Artifact {
   private readonly fetcher: (
     input: URL | RequestInfo,
     init?: RequestInit,
@@ -48,7 +48,7 @@ export default class WebClient implements Cradle {
   apiSchema(params: { isolate: string }) {
     return this.request('apiSchema', params)
   }
-  pierce(params: PierceRequest) {
+  pierce(params: { pierce: PierceRequest }) {
     return this.request('pierce', params)
   }
   async transcribe(params: { audio: File }) {
@@ -83,7 +83,7 @@ export default class WebClient implements Cradle {
           params,
           proctype,
         }
-        return this.pierce(pierce)
+        return this.pierce({ pierce })
       }
     }
     return pierces
@@ -96,6 +96,12 @@ export default class WebClient implements Cradle {
   }
   clone(params: { repo: string }) {
     return this.request('clone', params)
+  }
+  pull(): Promise<{ pid: PID; head: string }> {
+    throw new Error('not implemented')
+  }
+  push() {
+    return Promise.reject(new Error('not implemented'))
   }
   rm(params: { repo: string }) {
     return this.request('rm', params)
@@ -145,6 +151,7 @@ export default class WebClient implements Cradle {
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ pid, path }),
               signal: abort.signal,
+              keepalive: true,
             })
             if (!response.ok) {
               throw new Error('response not ok')
@@ -171,6 +178,7 @@ export default class WebClient implements Cradle {
                 }
               } catch (error) {
                 console.error('inner stream error:', error)
+                break
               }
             }
           } catch (error) {

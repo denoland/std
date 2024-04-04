@@ -1,23 +1,23 @@
 // the Grand Unified Test Suite™
 
 import { expect, log } from '@utils'
-import { Cradle } from '../api/web-client.types.ts'
+import { Artifact, CommitObject } from '../api/web-client.types.ts'
 import processMgmt from './process-mgmt.ts'
 import aiCalls from './ai-calls.ts'
 import splices from './splices.ts'
-const isolate = 'io-fixture'
+const ioFixture = 'io-fixture'
 
-export default (name: string, cradleMaker: () => Promise<Cradle>) => {
+export default (name: string, cradleMaker: () => Promise<Artifact>) => {
   const prefix = name + ': '
 
   Deno.test(prefix + 'io', async (t) => {
     const artifact = await cradleMaker()
     await t.step('ping empty', async () => {
       const empty = await artifact.ping()
-      expect(empty).toEqual({})
+      expect(empty).toEqual(undefined)
     })
     await t.step('ping with params', async () => {
-      const result = await artifact.ping({ test: 'test' })
+      const result = await artifact.ping({ data: { test: 'test' } })
       expect(result).toEqual({ test: 'test' })
     })
 
@@ -40,7 +40,7 @@ export default (name: string, cradleMaker: () => Promise<Cradle>) => {
     const artifact = await cradleMaker()
     await artifact.rm({ repo: 'cradle/pierce' })
     const { pid: target } = await artifact.init({ repo: 'cradle/pierce' })
-    const pierces = await artifact.pierces(isolate, target)
+    const pierces = await artifact.pierces(ioFixture, target)
     await t.step('local', async () => {
       const result = await pierces.local()
       log('local result', result)
@@ -68,7 +68,7 @@ export default (name: string, cradleMaker: () => Promise<Cradle>) => {
     const repo = 'cradle/pierce'
     await artifact.rm({ repo })
     const { pid: target } = await artifact.init({ repo })
-    const { local } = await artifact.pierces(isolate, target)
+    const { local } = await artifact.pierces(ioFixture, target)
 
     await t.step('serial', async () => {
       const promises = []
@@ -83,8 +83,17 @@ export default (name: string, cradleMaker: () => Promise<Cradle>) => {
       }
       log('done')
 
-      const logs: unknown[] = await artifact.logs({ repo: 'cradle/pierce' })
-      log('logs', logs.length)
+      const logs = await artifact.logs({ repo: 'cradle/pierce' })
+      log(
+        'logs',
+        logs.map((commit) => {
+          const c = commit as { oid: string; commit: CommitObject }
+          return {
+            oid: c.oid,
+            parent: c.commit.parent,
+          }
+        }).reverse(),
+      )
       expect(logs.length).toBeGreaterThan(count)
 
       await artifact.stop()
@@ -96,12 +105,12 @@ export default (name: string, cradleMaker: () => Promise<Cradle>) => {
     await artifact.rm({ repo })
 
     const { pid: target } = await artifact.init({ repo })
-    const { local } = await artifact.pierces(isolate, target)
+    const { local } = await artifact.pierces(ioFixture, target)
 
     await t.step('parallel', async () => {
       const promises = []
       const count = 20
-      for (let i = 0; i < count; i++) { // at 20, this fails on cloud
+      for (let i = 0; i < count; i++) {
         promises.push(local({}, { branch: true }))
       }
       log('promises start')
@@ -111,8 +120,18 @@ export default (name: string, cradleMaker: () => Promise<Cradle>) => {
       }
       log('done')
 
-      const logs: unknown[] = await artifact.logs({ repo: 'cradle/pierce' })
+      const logs: object[] = await artifact.logs({ repo: 'cradle/pierce' })
       expect(logs.length).toBeGreaterThan(count * 2)
+      log(
+        'logs',
+        logs.map((commit) => {
+          const c = commit as { oid: string; commit: CommitObject }
+          return {
+            oid: c.oid,
+            parent: c.commit.parent,
+          }
+        }).reverse(),
+      )
 
       await artifact.stop()
     })

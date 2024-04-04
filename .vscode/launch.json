@@ -44,6 +44,17 @@
     },
     {
       "request": "launch",
+      "name": "FS",
+      "type": "node",
+      "cwd": "${workspaceFolder}",
+      "runtimeExecutable": "~/.deno/bin/deno",
+      "runtimeArgs": ["task", "watch", "--inspect-wait", "git/fs.test.ts"],
+      "attachSimplePort": 9229,
+      "internalConsoleOptions": "neverOpen",
+      "console": "integratedTerminal"
+    },
+    {
+      "request": "launch",
       "name": "cradle",
       "type": "node",
       "cwd": "${workspaceFolder}",

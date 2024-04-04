@@ -6,13 +6,13 @@ import guts from '../guts/guts.ts'
 Deno.test('hono basic', async (t) => {
   await t.step('ping', async () => {
     const server = await Server.create()
-    const payload = { ping: 'test', extra: 'line' }
+    const payload = { data: { ping: 'test', extra: 'line' } }
     const res = await server.request('/api/ping', {
       method: 'POST',
       body: JSON.stringify(payload),
     })
     const reply: Outcome = await res.json()
-    expect(reply.result).toEqual(payload)
+    expect(reply.result).toEqual(payload.data)
     await server.stop()
   })
 })

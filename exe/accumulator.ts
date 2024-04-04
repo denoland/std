@@ -1,13 +1,13 @@
+import { UnsequencedRequest } from '@/constants.ts'
 import { IsolatePromise } from '@/constants.ts'
-import { assert, deserializeError, equal } from '@utils'
+import { assert, deserializeError, equal, expect } from '@utils'
 
 export default class Accumulator {
+  #index = 0
   #buffer: IsolatePromise[] = []
-  // TODO store some checking means of knowing the interactions were the same
-  #upserts = new Map<string, string | Uint8Array>()
-  #deletes = new Set<string>()
-  #isAlarmed = true
-  #trigger!: () => void
+  #isActive = false
+  #trigger: (() => void) | undefined
+  private constructor() {}
   static create(buffer: IsolatePromise[] = []) {
     const acc = new Accumulator()
     acc.#buffer = buffer
@@ -17,37 +17,53 @@ export default class Accumulator {
     return [...this.#buffer]
   }
   push(request: IsolatePromise) {
-    assert(!this.isAlarmed, 'Activity is denied')
+    assert(this.isActive, 'Activity is denied')
+    assert(typeof this.#trigger === 'function', 'Trigger is not set')
     this.#trigger()
     this.#buffer.push(request)
   }
-  recover(index: number) {
-    assert(!this.isAlarmed, 'Activity is denied')
-    return this.#buffer[index]
+  recover(request: UnsequencedRequest) {
+    assert(this.isActive, 'Activity is denied')
+    const index = this.#index++
+    if (this.#buffer[index]) {
+      const recovered = this.#buffer[index]
+      assert(equal(recovered.request, request), 'Requests are not equal')
+      return recovered
+    }
   }
-  await() {
+  activate() {
     // a promise that resolves when the accumulator is triggered
-    assert(this.isAlarmed, 'Alarm is not set')
-    this.#isAlarmed = false
+    assert(!this.isActive, 'Activity is already active')
+    assert(!this.#trigger, 'Trigger is already set')
+    this.#isActive = true
     return new Promise<void>((resolve) => {
       this.#trigger = resolve
     })
   }
-  arm() {
-    // any more attempts to accumulate will cause an explosive failure
-    this.#isAlarmed = true
+  deactivate() {
+    assert(this.isActive, 'Activity is not active')
+    this.#isActive = false
+    this.#trigger = undefined
   }
-  get isAlarmed() {
-    return this.#isAlarmed
+  get isActive() {
+    return this.#isActive
   }
+  /**
+   * Used so that an execution can be paused, then receive replies from
+   * accumulated actions, then continue without restarting the execution.  Makes
+   * it easier to debug these functions, but also can be faster to execute.
+   * This is a nice to have and the operation is equally capable of starting
+   * again, if we find ourselves replaying the operation with no existing cache.
+   *
+   * As new layers of the accumulation process occur, the filesystem object
+   * referenced by the isolate-api object will tick forwards.
+   *
+   * @param from The newer accumulator that should be copied in to the old one
+   */
   absorb(from: Accumulator) {
-    assert(this.isAlarmed, 'this is not alarmed')
-    assert(from.isAlarmed, 'from is not alarmed')
-    if (this.#buffer.length > from.#buffer.length) {
-      console.dir(this.#buffer, { depth: null })
-      console.dir(from.#buffer, { depth: null })
-    }
-    assert(this.#buffer.length <= from.#buffer.length, 'this must be shorter')
+    assert(!this.isActive, '"this" is already active')
+    assert(!from.isActive, '"from" is already active')
+    assert(this.#buffer.length <= from.#buffer.length, '"this" must be shorter')
     let index = 0
     for (const source of from.#buffer) {
       const sink = this.#buffer[index++]
@@ -55,7 +71,8 @@ export default class Accumulator {
         this.#buffer.push(source)
         continue
       }
-      assert(equal(source.request, sink.request), 'requests are not equal')
+      expect(source.request).toEqual(sink.request)
+      assert(equal(source.request, sink.request), 'requests')
       if (sink.outcome) {
         assert(equal(source.outcome, sink.outcome), 'outcomes are not equal')
       } else {
@@ -70,35 +87,5 @@ export default class Accumulator {
         }
       }
     }
-  }
-  get upserts() {
-    // TODO must handle deletes, moves, and other types of fun things
-    return [...this.#upserts.keys()]
-  }
-  get deletes() {
-    return [...this.#deletes]
-  }
-  write(path: string, file: string | Uint8Array) {
-    // trigger broadcast channel updates
-    assert(!this.isAlarmed, 'Activity is denied')
-    if (this.#deletes.has(path)) {
-      this.#deletes.delete(path)
-    }
-    this.#upserts.set(path, file)
-
-    // do the broadcast thru the beacon
-  }
-  readOutOfBand(path: string) {
-    assert(this.#upserts.has(path), 'path not found: ' + path)
-    return this.#upserts.get(path)
-  }
-  read(path: string) {
-    assert(!this.isAlarmed, 'Activity is denied')
-    return this.readOutOfBand(path)
-  }
-  delete(path: string) {
-    assert(!this.isAlarmed, 'Activity is denied')
-    this.#deletes.add(path)
-    this.#upserts.delete(path)
   }
 }

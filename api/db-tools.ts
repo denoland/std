@@ -4,7 +4,7 @@ await load({ export: true })
 
 const db = await Deno.openKv(Deno.env.get('DENO_KV_URL'))
 
-const all = db.list({ prefix: [KEYSPACES.HEADLOCK] })
+const all = db.list({ prefix: [KEYSPACES.UNDELIVERED] })
 
 for await (const { key } of all) {
   console.log('lock: ', key)

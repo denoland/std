@@ -1,135 +1,28 @@
+import { get, set } from '$kv_toolbox'
 import * as keys from './keys.ts'
-import { ulid } from '$std/ulid/mod.ts'
-import { PID, PierceReply, Poolable, Reply, Request } from '@/constants.ts'
-import { assert, Debug, isTestMode, openKv } from '@utils'
+import { PID, Poolable } from '@/constants.ts'
+import { assert, Debug, openKv, sha1 } from '@utils'
+import { Atomic } from './atomic.ts'
+import { QueueMessage } from '@/constants.ts'
 
 const log = Debug('AI:db')
 export default class DB {
-  #kv!: Deno.Kv
-  #isTestMode!: boolean
-  get kv() {
-    return this.#kv
-  }
-  get isTestMode() {
-    return this.#isTestMode
+  #kv: Deno.Kv
+  private constructor(kv: Deno.Kv) {
+    this.#kv = kv
   }
   static async create() {
-    const db = new DB()
-    db.#kv = await openKv()
-    db.#isTestMode = isTestMode()
+    const kv = await openKv()
+    const db = new DB(kv)
     return db
   }
   stop() {
     return this.#kv.close()
   }
-  async watchReply(request: Request) {
-    const key = keys.getReplyKey(request.target, request)
-    log('watchReply %o', key)
-    const stream = this.#kv.watch<Reply[]>([key])
-    for await (const [event] of stream) {
-      if (!event.versionstamp) {
-        continue
-      }
-      const reply: Reply = event.value
-      log('watchReply done %o', reply)
-      return reply
-    }
-    // TODO remove this function completely
-  }
-  async settleReply(pid: PID, reply: PierceReply) {
-    const key = keys.getReplyKey(pid, reply)
-    log('settleReply %o', key)
-    await this.#kv.set(key, reply)
-  }
-
-  async addToPool(poolable: Poolable) {
-    // TODO handle IPCs too
+  async hasPoolable(poolable: Poolable) {
     const key = keys.getPoolKey(poolable)
-    log('pooling start %o', poolable)
-    const empty = { key, versionstamp: null }
-    await this.#kv.atomic().check(empty).set(key, poolable).commit()
-    log('pooling done %o', poolable)
-    return key
-  }
-  async getHeadlock(pid: PID) {
-    const key = keys.getHeadLockKey(pid)
-    log('start getHeadLock %o', key)
-
-    const lockId = 'headlock-' + ulid()
-    let result = { ok: false }
-    while (!result.ok) {
-      let current = await this.#kv.get(key)
-      if (current.versionstamp) {
-        log('headlock failed, waiting for lock release')
-        for await (const [event] of this.#kv.watch([key])) {
-          if (!event.versionstamp) {
-            current = event
-            break
-          }
-        }
-        log('headlock released')
-      }
-      result = await this.#kv.atomic().check(current).set(key, lockId, {
-        expireIn: 60000,
-      }).commit()
-    }
-    return lockId
-  }
-  getHeadlockMaybe(poolable: Poolable) {
-    const key = keys.getHeadLockKey(poolable.target)
-    log('start getHeadLock %o', key)
-
-    const lockId = 'headlock-' + ulid()
-    const poolKey = keys.getPoolKey(poolable)
-
-    const headStream = this.#kv.watch([key])[Symbol.asyncIterator]()
-
-    const closeStream = () => {
-      assert(headStream.return)
-      headStream.return()
-    }
-
-    return new Promise<string | void>((resolve) => {
-      const loop = async () => {
-        let result = { ok: false }
-        while (!result.ok) {
-          // TODO wasted round trip to get pool on retry, but should check if
-          // the pool item exists as part of atomics.  Trick is to determine
-          // that this was why !result.ok
-          const existing = await this.#kv.get(poolKey)
-          if (!existing.versionstamp) {
-            log('pool item not found, so no headlock needed')
-            closeStream()
-            resolve()
-            return
-          }
-          result = await this.#kv.atomic().check({ key, versionstamp: null })
-            .set(key, lockId, { expireIn: 5000 }).commit()
-          if (!result.ok) {
-            log('headlock failed, waiting for lock release')
-            await headStream.next()
-            log('headlock released')
-          }
-        }
-        log('lock acquired %o', lockId)
-        closeStream()
-        resolve(lockId)
-      }
-      loop()
-    })
-  }
-  async releaseHeadlock(pid: PID, lockId: string) {
-    log('releaseHeadlock %s', lockId)
-    const lockKey = keys.getHeadLockKey(pid)
-    const existing = await this.#kv.get(lockKey)
-    if (existing.value !== lockId) {
-      throw new Error('Mismatch: ' + lockKey.join('/') + ' ' + lockId)
-    }
-    const result = await this.#kv.atomic().check(existing).delete(lockKey)
-      .commit()
-    if (!result.ok) {
-      throw new Error('Release failed: ' + lockKey.join('/') + ' ' + lockId)
-    }
+    const entry = await this.#kv.get(key)
+    return !!entry.versionstamp
   }
   async getPooledActions(pid: PID) {
     const prefix = keys.getPoolKeyPrefix(pid)
@@ -138,6 +31,7 @@ export default class DB {
     const poolKeys = []
     const pool: Poolable[] = []
     for await (const entry of entries) {
+      // TODO test if range would not get deeply nested items
       if (entry.key.length !== prefix.length + 1) {
         continue
       }
@@ -147,18 +41,17 @@ export default class DB {
     log('getPooledActions done %o', poolKeys.length)
     return { poolKeys, pool }
   }
-  async deletePool(keys: Deno.KvKey[]) {
-    const ids = keys.map((key) => key[key.length - 1])
-    log('deletePool %o', ids)
-    await Promise.all(keys.map((key) => this.#kv.delete(key)))
-  }
-  async getHead(pid: PID): Promise<string | undefined> {
+  async readHead(pid: PID): Promise<string | undefined> {
     const key = keys.getHeadKey(pid)
     log('getHead %o', key)
     const head = await this.#kv.get<string>(key)
-    return head.value || undefined
+    if (head.versionstamp) {
+      assert(sha1.test(head.value), 'Invalid head: ' + head.value)
+      return head.value
+    }
   }
   async rm(pid: PID) {
+    // TODO get maintenance lock on the repo first, and quiesce activity
     const prefixes = keys.getPrefixes(pid)
     log('rm %o', prefixes)
     const promises = []
@@ -176,22 +69,59 @@ export default class DB {
     }
     await Promise.all(promises)
   }
-  watchHead(pid: PID, signal: AbortSignal) {
+  watchHead(pid: PID, signal?: AbortSignal) {
+    const abort = new AbortController()
+    // TODO may need to add this to a hook in stop()
+    // TODO offer a watchCommits function that is every guaranteed commit with
+    // no skips in between
+    signal?.addEventListener('abort', () => {
+      abort.abort()
+    })
     const key = keys.getHeadKey(pid)
     const stream = this.#kv.watch<string[]>([key])
     return stream.pipeThrough(
       new TransformStream({
         start(controller) {
-          signal.addEventListener('abort', () => {
+          abort.signal.addEventListener('abort', () => {
             controller.terminate()
           })
         },
         transform([event], controller) {
           if (event.versionstamp) {
+            assert(sha1.test(event.value), 'Invalid head: ' + event.value)
             controller.enqueue(event.value)
           }
         },
       }),
     )
+  }
+  async blobGet(key: Deno.KvKey) {
+    return await get(this.#kv, key)
+  }
+  async blobSet(key: Deno.KvKey, value: ArrayBufferLike) {
+    // this is atomic, thanks to kv_toolbox batched atomic operations
+    return await set(this.#kv, key, value)
+  }
+  async listImmediateChildren(prefix: Deno.KvKey) {
+    const results = []
+    for await (const item of this.#kv.list({ prefix })) {
+      const end = item.key.slice(prefix.length)
+      if (end.length === 1) {
+        results.push(end[0])
+      }
+      if (end.length === 2) {
+        // TODO see what happens if the keys are named to clash with this
+        if (end[1] === '__kv_toolbox_meta__') {
+          results.push(end[0])
+        }
+      }
+    }
+    return results
+  }
+  listen(handler: (message: QueueMessage) => Promise<void>) {
+    this.#kv.listenQueue(handler)
+  }
+  atomic() {
+    return Atomic.create(this.#kv)
   }
 }

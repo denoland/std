@@ -4,8 +4,9 @@ import { expect, log } from '@utils'
 import IsolateApi from '../isolate-api.ts'
 import { Help, RUNNERS } from '../constants.ts'
 import runner from './runner-chat.ts'
-import { memfs } from '$memfs'
-import { init } from '../git/mod.ts'
+import FS from '@/git/fs.ts'
+import DB from '@/db.ts'
+import Accumulator from '@/exe/accumulator.ts'
 
 Deno.test('runner', async (t) => {
   const helpBase: Help = {
@@ -16,10 +17,11 @@ Deno.test('runner', async (t) => {
     commands: ['io-fixture:local', 'io-fixture:error'],
     instructions: ['Only reply with a SINGLE word'],
   }
-  const { fs } = memfs()
-  const { commit } = await init(fs, 'runner/test')
-  const api = IsolateApi.createFS(fs, commit)
-  log('commit', commit)
+  const db = await DB.create()
+  const fs = await FS.init('runner/test', db)
+  const accumulator = Accumulator.create()
+  const api = IsolateApi.create(fs, accumulator)
+  accumulator.activate()
 
   await t.step('hello world', async () => {
     const help = merge({}, helpBase, { commands: [] })
@@ -42,12 +44,13 @@ Deno.test('runner', async (t) => {
   await t.step('tool error', async () => {
     const text = 'call the "error" function with message: salami'
     const help = merge({}, helpBase, {
-      instructions: ['return the function call results verbatim'],
+      instructions: ['return the function call error message'],
     })
     const result = await runner({ help, text }, api)
     expect(result).toContain('salami')
     // TODO read the filesystem and get the error message out
   })
+  db.stop()
 })
 
 Deno.test('artifact', async (t) => {

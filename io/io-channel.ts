@@ -2,54 +2,72 @@
  * Manages the .io.json file
  */
 
-import IsolateApi from '@/isolate-api.ts'
+import { assert, Debug, equal } from '@utils'
 import {
   IoStruct,
   isPierceRequest,
+  isRequest,
+  MergeReply,
   PID,
+  PierceRequest,
+  PROCTYPE,
+  Reply,
   Request,
-  toRunnableRequest,
+  SolidReply,
+  SolidRequest,
+  UnsequencedRequest,
 } from '@/constants.ts'
-import { Debug, equal } from '@utils'
-import { IFs } from '@/constants.ts'
-import { assert } from '@utils'
-import { PROCTYPE } from '@/constants.ts'
-import { SolidRequest } from '@/constants.ts'
-import { MergeReply } from '@/constants.ts'
-import { SolidReply } from '@/constants.ts'
 import Accumulator from '@/exe/accumulator.ts'
+import FS from '@/git/fs.ts'
+import { IsolatePromise } from '@/constants.ts'
 const log = Debug('AI:io-file')
 
-const blank = (): IoStruct => ({ sequence: 0, requests: {}, replies: {} })
+const createBase = (): IoStruct => ({
+  sequence: 0,
+  requests: {},
+  replies: {},
+  pendings: {},
+})
 
 export default class IOChannel {
-  #pid: PID
-  #api: IsolateApi
-  #io: IoStruct
-  constructor(pid: PID, api: IsolateApi, io: IoStruct) {
-    this.#pid = pid
-    this.#api = api
+  readonly #io: IoStruct
+  readonly #fs: FS
+  #original: IoStruct
+  private constructor(io: IoStruct, fs: FS) {
     this.#io = io
+    this.#fs = fs
+    this.#original = JSON.parse(JSON.stringify(io))
   }
-  // TODO make commit required
-  static async load(pid: PID, fs: IFs, commit: string) {
-    const api = IsolateApi.createFS(fs, commit)
-    let io = blank()
-
-    if (await api.exists('.io.json')) {
-      io = await api.readJSON('.io.json') as IoStruct
+  static async read(fs: FS) {
+    if (await fs.exists('.io.json')) {
+      const io = await fs.readJSON<IoStruct>('.io.json')
       check(io)
-      blankSettledRequests(io, pid)
+      return new IOChannel(io, fs)
     }
-    return new IOChannel(pid, api, io)
   }
-  static blank(pid: PID, fs: IFs, commit: string) {
-    const api = IsolateApi.createFS(fs, commit)
-    const io = new IOChannel(pid, api, blank())
-    io.save()
+  static async load(fs: FS) {
+    let io = createBase()
+
+    if (await fs.exists('.io.json')) {
+      io = await fs.readJSON('.io.json') as IoStruct
+      check(io)
+      blankSettledRequests(io, fs.pid)
+    }
+    return new IOChannel(io, fs)
+  }
+  static blank(fs: FS) {
+    const io = new IOChannel(createBase(), fs)
+    io.#save()
+  }
+  #save() {
+    return this.#fs.writeJSON('.io.json', this.#io)
   }
   save() {
-    return this.#api.writeJSON('.io.json', this.#io)
+    if (equal(this.#io, this.#original)) {
+      throw new Error('no changes to save')
+    }
+    this.#original = JSON.parse(JSON.stringify(this.#io))
+    return this.#save()
   }
   /**
    * @returns true if there are any requests that are accumulating, as in they
@@ -57,7 +75,7 @@ export default class IOChannel {
    */
   isAccumulating() {
     for (const [key, request] of Object.entries(this.#io.requests)) {
-      if (isAccumulation(request, this.#pid)) {
+      if (isAccumulation(request, this.#fs.pid)) {
         if (!this.#io.replies[key]) {
           return true
         }
@@ -80,7 +98,7 @@ export default class IOChannel {
     const openRequests = this.#getOpenRequestIndices()
     for (const key of openRequests) {
       const request = this.#io.requests[key]
-      if (!isAccumulation(request, this.#pid)) {
+      if (!isAccumulation(request, this.#fs.pid)) {
         if (request.proctype === PROCTYPE.SERIAL) {
           const runnable = toRunnableRequest(request, key)
           return runnable
@@ -101,11 +119,6 @@ export default class IOChannel {
     assert(sequence in this.#io.requests, 'sequence not found')
     return this.#io.requests[sequence]
   }
-  addRequest(request: Request) {
-    const sequence = this.#io.sequence++
-    this.#io.requests[sequence] = request
-    return sequence
-  }
   reply(reply: SolidReply | MergeReply) {
     const { sequence } = reply
     assert(Number.isInteger(sequence), 'reply needs a sequence number')
@@ -115,14 +128,16 @@ export default class IOChannel {
     assert(request, `reply sequence not found: ${sequence}`)
     assert(!this.#io.replies[sequence], 'sequence already replied')
     this.#io.replies[sequence] = reply.outcome
-    if (!isAccumulation(request, this.#pid)) {
+    if (!isAccumulation(request, this.#fs.pid)) {
       this.#blankAccumulations()
     }
     return request
   }
   #blankAccumulations() {
+    // TODO this must honour multiple requests underway, so scope the blanking
+    // to a specific request that is being ended
     for (const [key, request] of Object.entries(this.#io.requests)) {
-      if (isAccumulation(request, this.#pid)) {
+      if (isAccumulation(request, this.#fs.pid)) {
         assert(this.#io.replies[key], 'accumulation without reply')
         delete this.#io.requests[key]
         delete this.#io.replies[key]
@@ -132,17 +147,20 @@ export default class IOChannel {
   getAccumulator(): Accumulator {
     const indices: number[] = []
     for (const [key, request] of Object.entries(this.#io.requests)) {
-      if (isAccumulation(request, this.#pid)) {
+      if (isAccumulation(request, this.#fs.pid)) {
         indices.push(Number.parseInt(key))
       }
     }
     indices.sort((a, b) => a - b)
-    const accumulations = indices.map((key) => {
-      const request = this.#io.requests[key]
-      assert(!isPierceRequest(request), 'pierce request in accumulator')
-      const outcome = this.#io.replies[key]
-      return { request, outcome }
-    })
+    const accumulations: IsolatePromise[] = []
+    for (const index of indices) {
+      const saved = this.#io.requests[index]
+      assert(!isPierceRequest(saved), 'pierce request cannot accumulate')
+      const request = toUnsequenced(saved)
+      const outcome = this.#io.replies[index]
+      const result: IsolatePromise = { request, outcome }
+      accumulations.push(result)
+    }
     return Accumulator.create(accumulations)
   }
   print() {
@@ -156,7 +174,7 @@ export default class IOChannel {
   get isExecuting() {
     // find a request that is serial and has no corresponding reply
     for (const [key, request] of Object.entries(this.#io.requests)) {
-      if (!equal(request.target, this.#pid)) {
+      if (!equal(request.target, this.#fs.pid)) {
         continue
       }
       if (request.proctype !== PROCTYPE.SERIAL) {
@@ -167,10 +185,113 @@ export default class IOChannel {
       }
       return true
     }
-
     return false
   }
+  // TODO clean up pending slice when replies completed
+  // TODO consider pending splice to skip exhausted requests
+  includes(poolable: Reply | SolidRequest) {
+    assert(equal(poolable.target, this.#fs.pid), 'target mismatch')
+    if (isRequest(poolable)) {
+      const { sequence } = poolable
+      if (this.#io.requests[sequence]) {
+        assert(equal(this.#io.requests[sequence], poolable), 'mismatch')
+        return true
+      }
+      if (this.#io.sequence > sequence) {
+        return true
+      }
+      return false
+    } else {
+      const { sequence } = poolable
+      if (this.#io.replies[sequence]) {
+        const check = equal(this.#io.replies[sequence], poolable.outcome)
+        assert(check, 'reply mismatch')
+        return true
+      }
+      if (this.#io.sequence > sequence) {
+        return true
+      }
+      return false
+    }
+  }
+  getOutcomeFor(request: PierceRequest) {
+    for (const [key, value] of Object.entries(this.#io.requests)) {
+      if (isPierceRequest(value)) {
+        if (equal(value, request)) {
+          return this.#io.replies[Number.parseInt(key)]
+        }
+      }
+    }
+  }
+  isSettled(sequence: number) {
+    assert(this.#io.sequence > sequence, 'sequence not yet invoked')
+    if (!this.#io.requests[sequence]) {
+      return true
+    }
+    if (this.#io.replies[sequence]) {
+      return true
+    }
+    return false
+  }
+  isPendingIncluded(sequence: number, commit: string) {
+    const pendings = this.#io.pendings[sequence]
+    if (!pendings) {
+      return false
+    }
+    return pendings.some((pending) => pending.commit === commit)
+  }
+  getBranchPid(sequence: number) {
+    const request = this.getRequest(sequence)
+    const branchTypes = [PROCTYPE.BRANCH, PROCTYPE.DAEMON]
+    assert(branchTypes.includes(request.proctype), 'not a branch request')
+
+    let name = sequence + ''
+    if (request.branch) {
+      assert(!request.branchPrefix, 'cannot have both branch and branchPrefix')
+      name = request.branch
+    }
+    if (request.branchPrefix) {
+      assert(!request.branch, 'cannot have both branch and branchPrefix')
+      name = request.branchPrefix + '-' + sequence
+    }
+    const parentPid = this.#fs.pid
+    const branches = [...parentPid.branches, name]
+    const pid = { ...parentPid, branches }
+    return pid
+  }
+  addRequest(request: Request) {
+    const sequence = this.#io.sequence++
+    this.#io.requests[sequence] = request
+    return sequence
+  }
+  addPending(commit: string, requests: UnsequencedRequest[]) {
+    const executing = this.getExecutingRequest()
+    // TODO affirm this is actually the executing request ?
+    assert(executing, 'no executing request')
+    const sequence = this.getSequence(executing)
+
+    const sequences = []
+    const solidRequests: SolidRequest[] = []
+    for (const request of requests) {
+      const { sequence, sequenced } = this.#addUnsequenced(request)
+      sequences.push(sequence)
+      solidRequests.push(sequenced)
+    }
+    if (!this.#io.pendings[sequence]) {
+      this.#io.pendings[sequence] = []
+    }
+    this.#io.pendings[sequence].push({ commit, sequences })
+    return solidRequests
+  }
+  #addUnsequenced(request: UnsequencedRequest) {
+    assert(equal(request.source, this.#fs.pid), 'only accumulations allowed')
+    const sequence = this.#io.sequence++
+    const sequenced: SolidRequest = { ...request, sequence }
+    this.#io.requests[sequence] = sequenced
+    return { sequence, sequenced }
+  }
 }
+
 const check = (io: IoStruct) => {
   const requests = Object.values(io.requests)
   requests.every((request, index) =>
@@ -182,7 +303,6 @@ const check = (io: IoStruct) => {
     assert(replyKey in io.requests, 'no reply key in requests')
   }
 }
-
 const blankSettledRequests = (io: IoStruct, thisPid: PID) => {
   const toBlank = []
   for (const key in io.replies) {
@@ -205,9 +325,30 @@ const isAccumulation = (request: Request, thisPid: PID) => {
     return true
   } else {
     if (equal(thisPid, request.source)) {
-      assert(request.proctype !== PROCTYPE.SERIAL, 'no serial accumulation')
       return true
     }
   }
   return false
+}
+
+const toRunnableRequest = (request: Request, sequence: number) => {
+  // TODO remove this function completely - translation is bad
+  if (!isPierceRequest(request)) {
+    return request
+  }
+  const { isolate, functionName, params, proctype, target } = request
+  const internal: SolidRequest = {
+    isolate,
+    functionName,
+    params,
+    proctype,
+    source: target,
+    target,
+    sequence,
+  }
+  return internal
+}
+export const toUnsequenced = (request: SolidRequest): UnsequencedRequest => {
+  const { sequence: _, ...unsequenced } = request
+  return unsequenced
 }

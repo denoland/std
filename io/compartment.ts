@@ -11,25 +11,11 @@ const log = Debug('AI:compartment')
 const cache = new Map()
 
 export default class Compartment {
-  #module!: Isolate
+  #module: Isolate
   #check() {
     assert(this.#module, 'code not loaded')
   }
-  static async create(isolate: string) {
-    if (!cache.has(isolate)) {
-      const compartment = new Compartment()
-      compartment.#load(isolate)
-      cache.set(isolate, compartment)
-    }
-    await Promise.resolve() // simulates loading from filesystem
-    return cache.get(isolate)
-  }
-  get api() {
-    this.#check()
-    return this.#module.api
-  }
-  #load(isolate: string) {
-    assert(!this.#module, 'module already loaded: ' + isolate)
+  private constructor(isolate: string) {
     log('load isolate:', isolate)
     assert(isolates[isolate as keyof typeof isolates], `not found: ${isolate}`)
     this.#module = isolates[isolate as keyof typeof isolates] as Isolate
@@ -40,6 +26,18 @@ export default class Compartment {
     const missing = Object.keys(api).filter((key) => !functions[key])
     assert(!missing.length, `Missing functions: ${missing.join(', ')}`)
   }
+  static async create(isolate: string) {
+    if (!cache.has(isolate)) {
+      const compartment = new Compartment(isolate)
+      cache.set(isolate, compartment)
+      await Promise.resolve() // simulates loading from filesystem
+    }
+    return cache.get(isolate)
+  }
+  get api() {
+    this.#check()
+    return this.#module.api
+  }
   /**
    * Mount the isolate as a side effect, and give it the chance to initialize
    * some context that will get passed between different invocations on the
@@ -48,6 +46,7 @@ export default class Compartment {
    * @returns Promise<void> | void
    */
   mount(api: IsolateApi) {
+    // TODO use exe to ensure that mount stops working arfter invocation
     this.#check()
     if (!this.#module.lifecycles) {
       return
@@ -69,7 +68,7 @@ export default class Compartment {
       return this.#module.lifecycles['@@unmount'](api)
     }
   }
-  functions(api: IsolateApi) {
+  functions<T>(api: IsolateApi) {
     this.#check()
     const actions: DispatchFunctions = {}
     for (const functionName in this.#module.api) {
@@ -83,6 +82,6 @@ export default class Compartment {
         return this.#module.functions[functionName](parameters, api)
       }
     }
-    return actions
+    return actions as T
   }
 }

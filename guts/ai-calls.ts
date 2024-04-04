@@ -1,19 +1,19 @@
 import { log } from '@utils'
-import { Cradle } from '../api/web-client.types.ts'
+import { Artifact } from '../api/web-client.types.ts'
 import { PID } from '@/constants.ts'
 
-export default (name: string, cradleMaker: () => Promise<Cradle>) => {
+export default (name: string, cradleMaker: () => Promise<Artifact>) => {
   const prefix = name + ': '
-  Deno.test(prefix + 'session', async (t) => {
+  Deno.test(prefix + 'ai', async (t) => {
     const artifact = await cradleMaker()
     const repo = 'dreamcatcher-tech/HAL'
     await artifact.rm({ repo })
 
     const { pid } = await artifact.clone({ repo })
     const { create } = await artifact.pierces('session', pid)
-    const session = await create() as PID
 
     await t.step('prompt', async () => {
+      const session = await create() as PID
       const { engage } = await artifact.pierces('engage-help', session)
       const result = await engage({
         help: 'goalie',

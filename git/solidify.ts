@@ -1,128 +1,107 @@
 import { assert, Debug, equal } from '@utils'
-import git from '$git'
-import { getBranchName } from './branch.ts'
+import FS from './fs.ts'
 import {
-  IFs,
   isMergeReply,
   isPierceRequest,
   isRequest,
   MergeReply,
-  PID,
-  PierceReply,
+  Pending,
   Poolable,
   PROCTYPE,
-  Reply,
   Request,
-  SolidRequest,
+  Solids,
 } from '@/constants.ts'
 import IOChannel from '@io/io-channel.ts'
 
 const log = Debug('AI:git:solidify')
 
-const dir = '/'
-const author = { name: 'IO Solidify' }
-
 /**
  * Takes in an unordered collection of operations, and orders them in the
  * .io.json file, then performs a commit.
  * The allowed operations are:
- * - dispatch: an action to be executed serially on this branch.  May be
+ * - execute: an action to be executed serially on this branch.  May be
  *   external or from another branch.
+ * - branch: a new branch is being created with an origin action to be executed.
  * - merge: an async result is returning, or an external action is being
  *   inserted into the branch.
  * - reply: a result is being returned from a dispatch after serial execution.
  * @param fs a memfs instance to update
  */
-export default async (
-  fs: IFs,
-  pool: Poolable[],
-  base: string,
-) => {
-  const pid = checkPool(pool)
-  const io = await IOChannel.load(pid, fs, base)
+export const solidify = async (fs: FS, pool: Poolable[], pending?: Pending) => {
+  assert(pool.length > 0 || fs.isChanged || pending?.requests.length, 'no-op')
+  checkPool(pool)
+  const io = await IOChannel.load(fs)
 
   const executingRequest = io.getExecutingRequest()
   log('solidifyPool executingRequest', executingRequest)
 
-  // TODO include multiple requests to the same branch as a single array
-  const branches: PID[] = []
-  const replies: Reply[] = []
-  let parent
+  const branches: number[] = []
+  const replies: MergeReply[] = []
+  const parents = []
+  const deletes = []
+
+  if (pending) {
+    assert(pending.requests.length, 'cannot be pending without requests')
+    log('solidifyPool pending', pending)
+    const { commit, requests } = pending
+    const sequenced = io.addPending(commit, requests)
+    sequenced.forEach((r) => collectBranch(r, r.sequence, branches))
+  }
+
   for (const poolable of pool) {
     if (isRequest(poolable)) {
       const sequence = io.addRequest(poolable)
-      const { proctype } = poolable
-      if (proctype === PROCTYPE.BRANCH || proctype === PROCTYPE.DAEMON) {
-        const pid = branchPid(poolable.target, sequence)
-        branches.push(pid)
-      } else {
-        assert(proctype === PROCTYPE.SERIAL, `invalid proctype: ${proctype}`)
-        // TODO error if two serial relies are received in a single poolrush
-      }
+      collectBranch(poolable, sequence, branches)
     } else {
       log('reply', poolable)
       // TODO move this to checkPool()
       const request = io.reply(poolable)
       const { outcome } = poolable
-      if (isPierceRequest(request)) {
-        log('isPierceRequest')
-        const { ulid } = request
-        const reply: PierceReply = { ulid, outcome }
-        replies.push(reply)
-      } else if (!equal(request.source, pid)) {
+      if (!isPierceRequest(request) && !equal(request.source, fs.pid)) {
         const target = request.source
         const source = request.target
-        const commit = ''
         const sequence = request.sequence
+        const commit = 'updated post commit'
         const reply: MergeReply = { target, source, sequence, outcome, commit }
         replies.push(reply)
       }
       if (isBranch(request)) {
         assert(isMergeReply(poolable), 'branch requires merge reply')
         log('branch reply', poolable.commit)
-        if (!parent) {
-          parent = [base]
-        }
-        parent.push(poolable.commit)
+        parents.push(poolable.commit)
         if (request.proctype === PROCTYPE.BRANCH) {
-          const branchName = getBranchName(poolable.source)
-          log('deleteBranch', branchName)
-          // TODO when kvgit is online this will be a kv delete
+          const { sequence } = poolable
+          const branchPid = io.getBranchPid(sequence)
+          deletes.push({ pid: branchPid, commit: poolable.commit })
         }
       }
     }
   }
+  if (pool.length || pending) {
+    io.save()
+  }
 
-  let request: SolidRequest | undefined
+  let exe: Solids['exe']
   const next = io.getExecutingRequest()
   if (next && !equal(executingRequest, next)) {
     log('nextExecutingRequest', next)
-    request = next
+    const sequence = io.getSequence(next)
+    exe = { request: next, sequence }
   }
-  io.save()
+  const { commit } = await fs.writeCommitObject('pool', parents)
 
-  await git.add({ fs, dir: '/', filepath: '.io.json' })
-  const commit = await git.commit({ fs, dir, message: 'pool', author, parent })
-  log('commitHash', commit)
+  log('head', commit)
   for (const reply of replies) {
-    if (isMergeReply(reply)) {
-      reply.commit = commit
-    }
+    reply.commit = commit
   }
-  const solids = { commit, request, branches, replies }
-  if (!io.isAccumulating() && !io.getExecutingRequest()) {
-    assert(isActive(branches, replies), 'no active solids - stalled')
-  }
+  const solids: Solids = { commit, exe, branches, replies, deletes }
   return solids
 }
 
-const branchPid = (pid: PID, sequence: number) => {
-  const branches = pid.branches.concat(sequence.toString())
-  return { ...pid, branches }
-}
-
 const checkPool = (pool: Poolable[]) => {
-  assert(pool.length > 0, 'empty pool')
+  if (!pool.length) {
+    return
+  }
   const { target } = pool[0]
   for (const poolable of pool) {
     if (!equal(poolable.target, target)) {
@@ -149,6 +128,11 @@ const isBranch = (request: Request) => {
   return request.proctype === PROCTYPE.BRANCH ||
     request.proctype === PROCTYPE.DAEMON
 }
-const isActive = (branches: PID[], replies: Reply[]) => {
-  return branches.length > 0 || replies.length > 0
+const collectBranch = (req: Request, sequence: number, branches: number[]) => {
+  const { proctype } = req
+  if (proctype === PROCTYPE.BRANCH || proctype === PROCTYPE.DAEMON) {
+    branches.push(sequence)
+  } else {
+    assert(proctype === PROCTYPE.SERIAL, `invalid proctype: ${proctype}`)
+  }
 }
