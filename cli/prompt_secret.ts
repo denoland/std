@@ -1,7 +1,9 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-const input = Deno.stdin;
-const output = Deno.stdout;
+// deno-lint-ignore no-explicit-any
+const { Deno } = globalThis as any;
+const input = Deno?.stdin;
+const output = Deno?.stdout;
 const encoder = new TextEncoder();
 const decoder = new TextDecoder();
 const LF = "\n".charCodeAt(0); // ^J - Enter on Linux
@@ -11,7 +13,7 @@ const DEL = 0x7f; // ^? - Backspace on macOS
 const CLR = encoder.encode("\r\u001b[K"); // Clear the current line
 
 // The `cbreak` option is not supported on Windows
-const setRawOptions = Deno.build.os === "windows"
+const setRawOptions = Deno?.build?.os === "windows"
   ? undefined
   : { cbreak: true };
 
@@ -32,7 +34,7 @@ export function promptSecret(
   message = "Secret ",
   { mask = "*", clear }: PromptSecretOptions = {},
 ): string | null {
-  if (!input.isTerminal()) {
+  if (!input || !input.isTerminal()) {
     return null;
   }
 
