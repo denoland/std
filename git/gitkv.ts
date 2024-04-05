@@ -75,6 +75,7 @@ export class GitKV {
         throw new FileNotFoundError('file not found: ' + path)
       }
       result = dbResult.value
+      GitKV.#cache.set(pathKey.join('/'), result)
     }
     if (opts && opts.encoding && opts.encoding !== 'utf8') {
       throw new Error('only utf8 encoding is supported')
