@@ -10,8 +10,12 @@ for await (const { key, value } of undelivered) {
   console.log('undelivered: ', key, value)
 }
 
-const all = db.list({ prefix: [] })
+const start = Date.now()
+await db.get(['void key'])
+console.log('latency', Date.now() - start)
 
-for await (const { key } of all) {
-  console.log('key: ', key)
-}
+// const all = db.list({ prefix: [] })
+
+// for await (const { key } of all) {
+//   console.log('key: ', key)
+// }

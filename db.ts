@@ -97,12 +97,23 @@ export default class DB {
       }),
     )
   }
+  async blobExists(key: Deno.KvKey) {
+    const result = await this.#kv.get([...key, '__kv_toolbox_meta__'])
+    return !!result.versionstamp
+  }
   async blobGet(key: Deno.KvKey) {
-    return await get(this.#kv, key)
+    const start = Date.now()
+    console.log('blobGet', key.join('/'))
+    const result = await get(this.#kv, key)
+    console.log('blobGet', key.join('/'), Date.now() - start, 'ms')
+    return result
   }
   async blobSet(key: Deno.KvKey, value: ArrayBufferLike) {
     // this is atomic, thanks to kv_toolbox batched atomic operations
-    return await set(this.#kv, key, value)
+    const start = Date.now()
+    const result = await set(this.#kv, key, value)
+    console.log('####Set', key.join('/'), Date.now() - start, 'ms')
+    return result
   }
   async listImmediateChildren(prefix: Deno.KvKey) {
     const results = []
@@ -127,3 +138,5 @@ export default class DB {
     return Atomic.create(this.#kv)
   }
 }
+
+// Test the db with the real KV opened up

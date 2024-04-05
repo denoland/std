@@ -162,8 +162,7 @@ export class GitKV {
         exists = true
       } else {
         // TODO no need to fetch the whole blob
-        const result = await this.#db.blobGet(pathKey)
-        exists = !!result.versionstamp
+        exists = await this.#db.blobExists(pathKey)
       }
     }
     if (!exists) {

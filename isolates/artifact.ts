@@ -118,35 +118,6 @@ export const functions: ArtifactCore = {
     await Promise.resolve()
     return params?.data
   },
-  async pierce({ pierce }: { pierce: PierceRequest }, api: IsolateApi<C>) {
-    log('pierce %o %o', pierce.isolate, pierce.functionName)
-    assert(isPierceRequest(pierce), 'invalid pierce request')
-    const { db } = getContext(api)
-
-    // not necessary to be atomic, but uses functions on the atomic class
-    await db.atomic().addToPool(pierce).enqueuePierce(pierce).commit()
-
-    // TODO make sure only one of these is running per cradle instance and pid
-    // need to jack into the splice system
-    for await (const commit of db.watchHead(pierce.target)) {
-      // watcher should start before the commit to ensure no skip ?
-      log('pierce commit %s', commit)
-      const fs = FS.open(pierce.target, commit, db)
-      const ioChannel = await IOChannel.read(fs)
-      if (!ioChannel) {
-        continue
-      }
-      // make a subscription that gives the completed file as json every change
-      // so that the heavy lifting is only done once
-      // or use the splices ?
-      // or make the splices use this single shared view thing
-
-      const outcome = ioChannel.getOutcomeFor(pierce)
-      if (outcome) {
-        return fromOutcome(outcome)
-      }
-    }
-  },
   async probe(params: { repo?: string; pid?: PID }, api: IsolateApi<C>) {
     let { pid, repo } = params
     if (repo) {
@@ -220,6 +191,35 @@ export const functions: ArtifactCore = {
     const fs = await FS.openHead(pid, db)
     const logs = await fs.logs()
     return logs
+  },
+  async pierce({ pierce }: { pierce: PierceRequest }, api: IsolateApi<C>) {
+    log('pierce %o %o', pierce.isolate, pierce.functionName)
+    assert(isPierceRequest(pierce), 'invalid pierce request')
+    const { db } = getContext(api)
+
+    // not necessary to be atomic, but uses functions on the atomic class
+    await db.atomic().addToPool(pierce).enqueuePierce(pierce).commit()
+
+    // TODO make sure only one of these is running per cradle instance and pid
+    // need to jack into the splice system
+    for await (const commit of db.watchHead(pierce.target)) {
+      // watcher should start before the commit to ensure no skip ?
+      log('pierce commit %s', commit)
+      const fs = FS.open(pierce.target, commit, db)
+      const ioChannel = await IOChannel.read(fs)
+      if (!ioChannel) {
+        continue
+      }
+      // make a subscription that gives the completed file as json every change
+      // so that the heavy lifting is only done once
+      // or use the splices ?
+      // or make the splices use this single shared view thing
+
+      const outcome = ioChannel.getOutcomeFor(pierce)
+      if (outcome) {
+        return fromOutcome(outcome)
+      }
+    }
   },
 }
 

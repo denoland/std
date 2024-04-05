@@ -56,6 +56,8 @@ export default class Server {
           const deployment = Deno.env.get('DENO_DEPLOYMENT_ID') || '(unknown)'
           setMetric(c, 'deployment', 'Deployment: ' + deployment)
 
+          // TODO hook GitKV for write count, read count, and size
+
           const outcome: { result?: unknown; error?: SerializableError } = {}
           let params
           try {
