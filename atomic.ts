@@ -80,8 +80,9 @@ export class Atomic {
     assert(sha1.test(commit), 'Commit not SHA-1: ' + commit)
     const key = keys.getHeadKey(pid)
     const current = await this.#kv.get(key)
-    assert(current.versionstamp, 'branch not found: ' + pid.branches.join('/'))
-    assert(current.value === commit, 'branch commit mismatch')
+    if (!current.versionstamp || current.value !== commit) {
+      return false
+    }
     this.#atomic = this.#atomic.check(current).delete(key)
     return this
     // TODO ensure this is tied in to the changing of the parent head
