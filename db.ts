@@ -98,12 +98,13 @@ export default class DB {
     )
   }
   async blobExists(key: Deno.KvKey) {
+    const start = Date.now()
     const result = await this.#kv.get([...key, '__kv_toolbox_meta__'])
+    console.log(' Exists', key.join('/'), Date.now() - start, 'ms')
     return !!result.versionstamp
   }
   async blobGet(key: Deno.KvKey) {
     const start = Date.now()
-    console.log('blobGet', key.join('/'))
     const result = await get(this.#kv, key)
     console.log('blobGet', key.join('/'), Date.now() - start, 'ms')
     return result

@@ -51,9 +51,11 @@ export class GitKV {
     }
 
     const pathKey = this.#getAllowedPathKey(path)
-    let result
+    let result: Uint8Array
     if (GitKV.#cache.has(pathKey.join('/'))) {
-      result = GitKV.#cache.get(pathKey.join('/'))
+      const cached = GitKV.#cache.get(pathKey.join('/'))
+      assert(cached)
+      result = cached
     } else {
       const dbResult = await this.#db.blobGet(pathKey)
 
