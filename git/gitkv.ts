@@ -12,6 +12,7 @@ export class GitKV {
   #dropWrites = ['HEAD']
   #db: DB
   #pid: PID
+  static #cache = new Map<string, Uint8Array>()
   private constructor(db: DB, pid: PID) {
     this.#db = db
     this.#pid = pid
@@ -50,22 +51,28 @@ export class GitKV {
     }
 
     const pathKey = this.#getAllowedPathKey(path)
-    const result = await this.#db.blobGet(pathKey)
+    let result
+    if (GitKV.#cache.has(pathKey.join('/'))) {
+      result = GitKV.#cache.get(pathKey.join('/'))
+    } else {
+      const dbResult = await this.#db.blobGet(pathKey)
 
-    if (!result.versionstamp) {
-      log('readFile not found', path, opts)
-      throw new FileNotFoundError('file not found: ' + path)
+      if (!dbResult.versionstamp) {
+        log('readFile not found', path, opts)
+        throw new FileNotFoundError('file not found: ' + path)
+      }
+      result = dbResult.value
     }
     if (opts && opts.encoding && opts.encoding !== 'utf8') {
       throw new Error('only utf8 encoding is supported')
     }
     if (opts && opts.encoding === 'utf8') {
-      const string = new TextDecoder().decode(result.value)
+      const string = new TextDecoder().decode(result)
       log('readFile', path, opts, string)
       return string
     }
-    log('readFile', path, opts, typeof result.value, result.value.byteLength)
-    return result.value
+    log('readFile', path, opts, typeof result)
+    return result
   }
   async writeFile(
     path: string,
@@ -96,6 +103,7 @@ export class GitKV {
       if (typeof data === 'string') {
         data = new TextEncoder().encode(data)
       }
+      GitKV.#cache.set(pathKey.join('/'), data)
       await this.#db.blobSet(pathKey, data)
     }
     log('writeFile done:', pathKey)
@@ -150,9 +158,13 @@ export class GitKV {
       const head = await this.#db.readHead(pid)
       exists = !!head
     } else {
-      // TODO no need to fetch the whole blob
-      const result = await this.#db.blobGet(pathKey)
-      exists = !!result.versionstamp
+      if (GitKV.#cache.has(pathKey.join('/'))) {
+        exists = true
+      } else {
+        // TODO no need to fetch the whole blob
+        const result = await this.#db.blobGet(pathKey)
+        exists = !!result.versionstamp
+      }
     }
     if (!exists) {
       throw new FileNotFoundError('file not found: ' + path)

@@ -232,6 +232,9 @@ export type CommitObject = {
    */
   gpgsig?: string
 }
+
+type ApiSchema = Record<string, JSONSchemaType<object>>
+
 export interface ArtifactCore {
   ping(
     params?: { data?: JsonValue; pid?: PID },
@@ -256,16 +259,12 @@ export interface ArtifactCore {
   pull(params: { pid: PID }, api?: unknown): Promise<{ pid: PID; head: string }>
   push(params: { pid: PID }, api?: unknown): Promise<void>
   rm(params: { repo: string }, api?: unknown): Promise<void>
-  apiSchema(
-    params: { isolate: string },
-    api?: unknown,
-  ): Promise<Record<string, JSONSchemaType<object>>>
+  apiSchema(params: { isolate: string }, api?: unknown): Promise<ApiSchema>
   logs(params: { repo: string }, api?: unknown): Promise<object[]>
 }
 export interface Artifact extends ArtifactCore {
   stop(): Promise<void> | void
   pierces(isolate: string, target: PID): Promise<DispatchFunctions>
-  // TODO should move these git functions elsewhere ?
   read(pid: PID, path?: string, signal?: AbortSignal): ReadableStream<Splice>
   transcribe(params: { audio: File }): Promise<{ text: string }>
 }

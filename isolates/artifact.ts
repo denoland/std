@@ -123,33 +123,24 @@ export const functions: ArtifactCore = {
     assert(isPierceRequest(pierce), 'invalid pierce request')
     const { db } = getContext(api)
 
-    const head = await db.readHead(pierce.target)
-    assert(head, 'head not found')
-
     // not necessary to be atomic, but uses functions on the atomic class
-    const atomic = db.atomic()
-    atomic.addToPool(pierce)
-    atomic.enqueuePierce(pierce)
-    await atomic.commit()
+    await db.atomic().addToPool(pierce).enqueuePierce(pierce).commit()
 
     // TODO make sure only one of these is running per cradle instance and pid
     // need to jack into the splice system
     for await (const commit of db.watchHead(pierce.target)) {
-      if (commit === head) {
-        continue
-      }
+      // watcher should start before the commit to ensure no skip ?
       log('pierce commit %s', commit)
       const fs = FS.open(pierce.target, commit, db)
       const ioChannel = await IOChannel.read(fs)
-
+      if (!ioChannel) {
+        continue
+      }
       // make a subscription that gives the completed file as json every change
       // so that the heavy lifting is only done once
       // or use the splices ?
       // or make the splices use this single shared view thing
 
-      if (!ioChannel) {
-        continue // not sure how there can be no io channel, but this happens sometimes on deno cloud
-      }
       const outcome = ioChannel.getOutcomeFor(pierce)
       if (outcome) {
         return fromOutcome(outcome)
@@ -181,6 +172,13 @@ export const functions: ArtifactCore = {
     return { pid, head, elapsed: Date.now() - start }
   },
   async clone(params: { repo: string }, api: IsolateApi<C>) {
+    // this should go into the queue of things to do
+    // there is an atomic queue, but also a job queue to move work closer to the
+    // source
+    // ? could this be a pierce into itself ?
+    // so the cradle would just all pierce with this action ?
+    // if not, how else would we queue the work and then get an outcome back ?
+
     const start = Date.now()
     const { repo } = params
     const probe = await functions.probe({ repo }, api)

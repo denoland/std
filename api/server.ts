@@ -50,13 +50,12 @@ export default class Server {
       app.post(
         `/${functionName}`,
         async (c) => {
-          startTime(c, 'function', functionName)
-          setMetric(c, 'region', Deno.env.get('DENO_REGION') || '(unknown)')
-          setMetric(
-            c,
-            'deployment',
-            Deno.env.get('DENO_DEPLOYMENT_ID') || '(unknown)',
-          )
+          startTime(c, 'function', 'Function: ' + functionName)
+          const region = Deno.env.get('DENO_REGION') || '(unknown)'
+          setMetric(c, 'region', 'Region: ' + region)
+          const deployment = Deno.env.get('DENO_DEPLOYMENT_ID') || '(unknown)'
+          setMetric(c, 'deployment', 'Deployment: ' + deployment)
+
           const outcome: { result?: unknown; error?: SerializableError } = {}
           let params
           try {
@@ -66,6 +65,7 @@ export default class Server {
               assert(params?.pierce?.ulid === 'calculated-server-side', msg)
               params.pierce.ulid = ulid()
             }
+            // but how to pipe everything down the queue lane ?
             outcome.result = await artifact[functionName](params)
           } catch (error) {
             console.error(

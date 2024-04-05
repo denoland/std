@@ -62,7 +62,7 @@ export class Cradle implements Artifact {
         const proctype = getProcType(options)
         const pierce: PierceRequest = {
           target,
-          ulid: ulid(), // important to be done serverside, not web side
+          ulid: ulid(), // must be serverside, not browser side or core side
           isolate,
           functionName,
           params: params || {},
