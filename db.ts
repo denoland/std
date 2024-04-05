@@ -1,4 +1,5 @@
-import { get, set } from '$kv_toolbox'
+import { get } from '@kitsonk/kv-toolbox/blob'
+import { batchedAtomic } from '@kitsonk/kv-toolbox/batched_atomic'
 import * as keys from './keys.ts'
 import { PID, Poolable } from '@/constants.ts'
 import { assert, Debug, openKv, sha1 } from '@utils'
@@ -107,11 +108,12 @@ export default class DB {
     return result
   }
   async blobSet(key: Deno.KvKey, value: ArrayBufferLike) {
-    // this is atomic, thanks to kv_toolbox batched atomic operations
     const start = Date.now()
-    const result = await set(this.#kv, key, value)
+    await batchedAtomic(this.#kv).check({
+      key,
+      versionstamp: null,
+    }).setBlob(key, value).commit()
     console.log('####Set', key.join('/'), Date.now() - start, 'ms')
-    return result
   }
   async listImmediateChildren(prefix: Deno.KvKey) {
     const results = []

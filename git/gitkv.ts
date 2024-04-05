@@ -181,7 +181,10 @@ export class GitKV {
       if (GitKV.#cache.has(pathKey.join('/'))) {
         exists = true
       } else {
-        // TODO no need to fetch the whole blob
+        if (path.startsWith('/.git/objects/')) {
+          // wastes a round trip to the db otherwise
+          throw new FileNotFoundError('file not found: ' + path)
+        }
         exists = await this.#db.blobExists(pathKey)
       }
     }
