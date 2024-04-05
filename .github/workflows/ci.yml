@@ -34,8 +34,11 @@ jobs:
         if: matrix.os == 'ubuntu-latest'
         uses: crate-ci/typos@master
 
-      - name: Check formatting, linting, license headers, and types
-        run: deno task ok
+      - name: Check formatting, linting, and types
+        run: deno task check
+
+      - name: Test
+        run: deno task test
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           DENO_KV_PATH: ':memory:'
