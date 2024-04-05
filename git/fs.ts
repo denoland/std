@@ -41,7 +41,7 @@ export default class FS {
     this.#pid = pid
     this.#commit = commit
     this.#db = db
-    this.#gitkv = GitKV.create(db, pid)
+    this.#gitkv = GitKV.recreate(db, pid)
   }
   static open(pid: PID, commit: string, db: DB) {
     return new FS(pid, commit, db)
@@ -55,7 +55,7 @@ export default class FS {
   }
   static async init(repo: string, db: DB) {
     const pid = pidFromRepo(repo)
-    const fs = { promises: GitKV.create(db, pid) }
+    const fs = { promises: GitKV.createBlank(db, pid) }
     await git.init({ fs, dir, defaultBranch: ENTRY_BRANCH })
     log('init complete')
     const author = { name: 'git/init' }
@@ -77,7 +77,7 @@ export default class FS {
     const pid = pidFromRepo(repo)
     // TODO detect the mainbranch somehow
     const url = `https://github.com/${pid.account}/${pid.repository}.git`
-    const fs = { promises: GitKV.create(db, pid) }
+    const fs = { promises: GitKV.createBlank(db, pid) }
     fs.promises.oneAtomicWrite = db.atomic()
     const cache = {}
     await git.clone({ fs, dir, url, http, noCheckout: true, cache })

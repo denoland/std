@@ -12,13 +12,21 @@ export class GitKV {
   #dropWrites = ['HEAD']
   #db: DB
   #pid: PID
+  #exists: Set<string> | undefined
   static #cache = new Map<string, Uint8Array>()
-  private constructor(db: DB, pid: PID) {
+  private constructor(db: DB, pid: PID, isBlank: boolean = false) {
     this.#db = db
     this.#pid = pid
+    if (isBlank) {
+      this.#exists = new Set()
+    }
   }
-  static create(db: DB, pid: PID) {
+  static recreate(db: DB, pid: PID) {
     return new GitKV(db, pid)
+  }
+  static createBlank(db: DB, pid: PID) {
+    const isBlankDuringInitAndClone = true
+    return new GitKV(db, pid, isBlankDuringInitAndClone)
   }
   isIgnored(path: string) {
     const sliced = path.slice('/.git/'.length)
@@ -37,13 +45,16 @@ export class GitKV {
       log('readFile HEAD ref', ref)
       return ref
     }
+    if (this.#exists && !this.#exists.has(path)) {
+      throw new FileNotFoundError('file not found: ' + path)
+    }
     if (path.startsWith('/.git/refs/heads/')) {
       // only allow reading heads from the current branch, else what doing ?
       const rest = path.slice('/.git/refs/heads/'.length)
       const branches = rest.split('/')
       log('readFile refs/heads:', branches)
       assert(equal(branches, this.#pid.branches), 'branches do not match')
-      const head = this.#db.readHead(this.#pid)
+      const head = await this.#db.readHead(this.#pid)
       if (!head) {
         throw new FileNotFoundError('file not found: ' + path)
       }
@@ -88,6 +99,9 @@ export class GitKV {
     if (this.isIgnored(path)) {
       log('writeFile ignored', path)
       return
+    }
+    if (this.#exists) {
+      this.#exists.add(path)
     }
     const pathKey = this.#getAllowedPathKey(path)
 
@@ -152,6 +166,9 @@ export class GitKV {
         throw new FileNotFoundError('file not found: ' + path)
       }
       throw error
+    }
+    if (this.#exists && !this.#exists.has(path)) {
+      throw new FileNotFoundError('file not found: ' + path)
     }
     log('stat pathKey', pathKey)
     let exists = false

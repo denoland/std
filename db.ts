@@ -54,19 +54,16 @@ export default class DB {
     // TODO get maintenance lock on the repo first, and quiesce activity
     const prefixes = keys.getPrefixes(pid)
     log('rm %o', prefixes)
-    const promises = []
-    for (const prefix of prefixes) {
+    const wipe = async (prefix: Deno.KvKey) => {
       const all = this.#kv.list({ prefix })
-      const wipe = async () => {
-        const deletes = []
-        for await (const { key } of all) {
-          log('deleted: ', key)
-          deletes.push(this.#kv.delete(key))
-        }
-        await Promise.all(deletes)
+      const deletes = []
+      for await (const { key } of all) {
+        log('deleted: ', key)
+        deletes.push(this.#kv.delete(key))
       }
-      promises.push(wipe())
+      await Promise.all(deletes)
     }
+    const promises = prefixes.map(wipe)
     await Promise.all(promises)
   }
   watchHead(pid: PID, signal?: AbortSignal) {
