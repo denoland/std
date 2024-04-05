@@ -176,6 +176,7 @@ export const functions: ArtifactCore = {
     // which can get included in the atomic checks for all activities
     const pid = pidFromRepo(params.repo)
     const { db } = getContext(api)
+    FS.clearCache(pid)
     await db.rm(pid)
   },
   async apiSchema(params: { isolate: string }) {

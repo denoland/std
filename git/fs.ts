@@ -16,8 +16,21 @@ export default class FS {
   readonly #db: DB
   readonly #upserts = new Map<string, string | Uint8Array>()
   readonly #deletes = new Set<string>()
-  // cache should be per isolate and scoped to the repo name
-  #cache = {}
+  static #caches = new Map<string, object>()
+  static getCache(pid: PID) {
+    const key = pid.repository + '/' + pid.account
+    if (!FS.#caches.has(key)) {
+      FS.#caches.set(key, {})
+    }
+    const cache = FS.#caches.get(key)
+    assert(cache)
+    return cache
+  }
+  static clearCache(pid: PID) {
+    const key = pid.repository + '/' + pid.account
+    FS.#caches.delete(key)
+  }
+
   get pid() {
     return this.#pid
   }
@@ -59,7 +72,7 @@ export default class FS {
     await git.init({ fs, dir, defaultBranch: ENTRY_BRANCH })
     log('init complete')
     const author = { name: 'git/init' }
-    const cache = {}
+    const cache = FS.getCache(pid)
     const commit = await git.commit({
       noUpdateBranch: true,
       fs,
@@ -70,7 +83,6 @@ export default class FS {
     })
     await db.atomic().createBranch(pid, commit).commit()
     const init = new FS(pid, commit, db)
-    init.#cache = cache
     return init
   }
   static async clone(repo: string, db: DB) {
@@ -79,12 +91,11 @@ export default class FS {
     const url = `https://github.com/${pid.account}/${pid.repository}.git`
     const fs = { promises: GitKV.createBlank(db, pid) }
     fs.promises.oneAtomicWrite = db.atomic()
-    const cache = {}
+    const cache = FS.getCache(pid)
     await git.clone({ fs, dir, url, http, noCheckout: true, cache })
     const commit = await db.readHead(pid)
     assert(commit, 'HEAD not found: ' + pid.branches.join('/'))
     const clone = new FS(pid, commit, db)
-    clone.#cache = cache
     return clone
   }
   /** @param the new PID to branch into */
@@ -101,7 +112,7 @@ export default class FS {
       assertPath(filepath)
     }
     const { fs } = this
-    const cache = this.#cache
+    const cache = FS.getCache(this.#pid)
     return git.log({ fs, dir, filepath, depth, ref: this.#commit, cache })
   }
 
@@ -122,17 +133,16 @@ export default class FS {
       author,
       tree,
       parent: [this.#commit, ...merges],
-      cache: this.#cache,
+      cache: FS.getCache(this.#pid),
     })
 
     const next = new FS(this.#pid, nextCommit, this.#db)
-    next.#cache = this.#cache
     return next
   }
   async #flush() {
     const oid = await this.#rootOid()
     const { fs } = this
-    const cache = this.#cache
+    const cache = FS.getCache(this.#pid)
     const { tree: root } = await git.readTree({ fs, dir, oid, cache })
     log('flush tree', root)
     const changes: Tree = {
@@ -170,7 +180,7 @@ export default class FS {
       // TODO should be able to wipe a whole dir with no effort here
     }
 
-    await retrieveAffectedTrees(changes, fs, this.#cache)
+    await retrieveAffectedTrees(changes, fs, cache)
 
     await bubbleChanges(changes, fs)
 
@@ -193,7 +203,7 @@ export default class FS {
     const oid = await this.#rootOid()
     const { fs } = this
     try {
-      const cache = this.#cache
+      const cache = FS.getCache(this.#pid)
       const { tree } = await git.readTree({ fs, dir, oid, filepath, cache })
       const basename = posix.basename(path)
       return tree.some((entry) => entry.path === basename)
@@ -258,7 +268,7 @@ export default class FS {
     const oid = await this.#rootOid()
     log('tree', oid)
     const { fs } = this
-    const cache = this.#cache
+    const cache = FS.getCache(this.#pid)
     const { blob } = await git.readBlob({ dir, fs, oid, filepath: path, cache })
     assert(blob instanceof Uint8Array, 'blob not Uint8Array: ' + typeof blob)
     return blob
@@ -270,7 +280,7 @@ export default class FS {
     log('ls', path)
     const oid = await this.#rootOid()
     const { fs } = this
-    const cache = this.#cache
+    const cache = FS.getCache(this.#pid)
     const { tree } = await git.readTree({ fs, dir, oid, filepath: path, cache })
     return tree.map((entry) => entry.path)
   }
@@ -280,7 +290,7 @@ export default class FS {
   }
   async getCommit() {
     const { fs } = this
-    const cache = this.#cache
+    const cache = FS.getCache(this.#pid)
     const result = await git.readCommit({ fs, dir, oid: this.#commit, cache })
     return result.commit
   }
