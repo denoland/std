@@ -80,7 +80,7 @@ export type TarOptions = {
  *   }
  * ])
  *   .pipeThrough(new TarStream())
- *   .pipeTo((await Deno.create('./out.tar)).writable)
+ *   .pipeTo((await Deno.create('./out.tar')).writable)
  * ```
  *
  * ### Compression
@@ -108,7 +108,7 @@ export type TarOptions = {
  * ])
  *   .pipeThrough(new TarStream())
  *   .pipeThrough(new CompressionStream('gzip'))
- *   .pipeTo((await Deno.create('./out.tar.gz)).writable)
+ *   .pipeTo((await Deno.create('./out.tar.gz')).writable)
  * ```
  */
 export class TarStream {
