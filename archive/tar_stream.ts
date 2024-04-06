@@ -62,7 +62,7 @@ export type TarOptions = {
  *
  * @example
  * ```ts
- * import { TarStream } from '@std/archive/tar'
+ * import { TarStream } from 'https://deno.land/std@$STD_VERSION/archive/tar_stream.ts'
  *
  * await ReadableStream.from([
  *   {
@@ -89,7 +89,7 @@ export type TarOptions = {
  *
  * @example
  * ```ts
- * import { TarStream } from '@std/archive/tar'
+ * import { TarStream } from 'https://deno.land/std@$STD_VERSION/archive/tar_stream.ts'
  *
  * await ReadableStream.from([
  *   {

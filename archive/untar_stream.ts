@@ -59,7 +59,7 @@ export type TarHeader = {
  *
  * @example
  * ```ts
- * import { UnTarStream } from '@std/archive/tar'
+ * import { UnTarStream } from 'https://deno.land/std@$STD_VERSION/archive/untar_stream.ts'
  *
  * for await (
  *   const entry of (await Deno.open('./out.tar'))
@@ -68,8 +68,8 @@ export type TarHeader = {
  * ) {
  *   console.log(entry.pathname)
  *   await entry
- *     .readable?
- *     .pipeTo((await Deno.create(entry.pathname)).writable)
+ *     .readable
+ *     ?.pipeTo((await Deno.create(entry.pathname)).writable)
  * }
  * ```
  *
@@ -80,7 +80,7 @@ export type TarHeader = {
  *
  * @example
  * ```ts
- * import { UnTarStream } from '@std/archive/tar'
+ * import { UnTarStream } from 'https://deno.land/std@$STD_VERSION/archive/untar_stream.ts'
  *
  * for await (
  *   const entry of (await Deno.open('./out.tar.gz'))
@@ -90,8 +90,8 @@ export type TarHeader = {
  * ) {
  *   console.log(entry.pathname)
  *   entry
- *     .readable?
- *     .pipeTo((await Deno.create(entry.pathname)).writable)
+ *     .readable
+ *     ?.pipeTo((await Deno.create(entry.pathname)).writable)
  * }
  * ```
  */
