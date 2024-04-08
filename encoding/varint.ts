@@ -60,7 +60,7 @@ const U64_VIEW = new BigUint64Array(AB);
  * decode(buf); // [ 300n, 2 ];
  * ```
  *
- * @deprecated (will be removed in 0.224.0) Use {@linkcode decodeVarint} instead.
+ * @deprecated (will be removed in 1.0.0) Use {@linkcode decodeVarint} instead.
  */
 export function decode(buf: Uint8Array, offset = 0): [bigint, number] {
   return decodeVarint(buf, offset);
@@ -176,7 +176,7 @@ export function decodeVarint(buf: Uint8Array, offset = 0): [bigint, number] {
  * decode32(buf); // [ 300, 2 ];
  * ```
  *
- * @deprecated (will be removed in 0.224.0) Use {@linkcode decodeVarint32}
+ * @deprecated (will be removed in 1.0.0) Use {@linkcode decodeVarint32}
  * instead.
  */
 export function decode32(buf: Uint8Array, offset = 0): [number, number] {
@@ -248,7 +248,7 @@ export function decodeVarint32(buf: Uint8Array, offset = 0): [number, number] {
  * encode(42n, buf); // [ Uint8Array(1) [ 42 ], 1 ];
  * ```
  *
- * @deprecated (will be removed in 0.224.0) Use {@linkcode encodeVarint} instead.
+ * @deprecated (will be removed in 1.0.0) Use {@linkcode encodeVarint} instead.
  */
 export function encode(
   num: bigint | number,
