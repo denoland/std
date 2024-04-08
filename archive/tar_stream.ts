@@ -2,20 +2,20 @@
 /**
  * The type required to provide a file.
  */
-export type TarFile = {
+export type TarStreamFile = {
   pathname: string;
   size: number;
   sizeExtension?: boolean;
   iterable: Iterable<Uint8Array> | AsyncIterable<Uint8Array>;
-  options?: Partial<TarOptions>;
+  options?: Partial<TarStreamOptions>;
 };
 
 /**
  * The type required to provide a directory.
  */
-export type TarDir = {
+export type TarStreamDir = {
   pathname: string;
-  options?: Partial<TarOptions>;
+  options?: Partial<TarStreamOptions>;
 };
 
 /**
@@ -30,7 +30,7 @@ export type TarDir = {
  * @param devmajor The major number for character device.
  * @param devminor The minor number for block device entry.
  */
-export type TarOptions = {
+export type TarStreamOptions = {
   mode: string;
   uid: string;
   gid: string;
@@ -114,14 +114,14 @@ export type TarOptions = {
  */
 export class TarStream {
   #readable: ReadableStream<Uint8Array>;
-  #writable: WritableStream<TarFile | TarDir>;
+  #writable: WritableStream<TarStreamFile | TarStreamDir>;
   /**
    * Constructs a new instance.
    */
   constructor() {
     const { readable, writable } = new TransformStream<
-      TarFile | TarDir,
-      TarFile | TarDir
+      TarStreamFile | TarStreamDir,
+      TarStreamFile | TarStreamDir
     >();
     const gen = (async function* () {
       const paths: string[] = [];
@@ -264,7 +264,7 @@ export class TarStream {
   /**
    * The WritableStream
    */
-  get writable(): WritableStream<TarFile | TarDir> {
+  get writable(): WritableStream<TarStreamFile | TarStreamDir> {
     return this.#writable;
   }
 }

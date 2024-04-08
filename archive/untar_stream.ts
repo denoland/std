@@ -2,16 +2,16 @@
 /**
  * The type extracted from the archive.
  */
-export type TarEntry = {
+export type TarStreamEntry = {
   pathname: string;
-  header: TarHeader;
+  header: TarStreamHeader;
   readable?: ReadableStream<Uint8Array>;
 };
 
 /**
  * The header of an entry in the archive.
  */
-export type TarHeader = {
+export type TarStreamHeader = {
   name: string;
   mode: string;
   uid: string;
@@ -97,7 +97,7 @@ export type TarHeader = {
  * ```
  */
 export class UnTarStream {
-  #readable: ReadableStream<TarEntry>;
+  #readable: ReadableStream<TarStreamEntry>;
   #writable: WritableStream<Uint8Array>;
   /**
    * Constructs a new instance.
@@ -155,8 +155,8 @@ export class UnTarStream {
         ),
       )
       .getReader();
-    let header: TarHeader | undefined;
-    this.#readable = new ReadableStream<TarEntry>(
+    let header: TarStreamHeader | undefined;
+    this.#readable = new ReadableStream<TarStreamEntry>(
       {
         cancelled: false,
         async pull(controller) {
@@ -294,7 +294,7 @@ export class UnTarStream {
         cancel() {
           this.cancelled = true;
         },
-      } as UnderlyingSource<TarEntry> & { cancelled: boolean },
+      } as UnderlyingSource<TarStreamEntry> & { cancelled: boolean },
     );
     this.#writable = writable;
   }
@@ -302,7 +302,7 @@ export class UnTarStream {
   /**
    * The ReadableStream
    */
-  get readable(): ReadableStream<TarEntry> {
+  get readable(): ReadableStream<TarStreamEntry> {
     return this.#readable;
   }
 
