@@ -41,6 +41,8 @@ jobs:
       - name: Run tests (simulate Deno 2)
         if: matrix.deno == 'canary'
         run: deno task test
+        env:
+          DENO_FUTURE: 1
 
       - name: Run timezone-dependent tests
         run: |
