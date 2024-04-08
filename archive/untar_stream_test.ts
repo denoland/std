@@ -1,6 +1,7 @@
-import { TarStream } from "https://deno.land/std@$STD_VERSION/archive/tar_stream.ts";
-import { assertEquals } from "https://deno.land/std@$STD_VERSION/assert/assert_equals.ts";
-import { UnTarStream } from "https://deno.land/std@$STD_VERSION/archive/untar_stream.ts";
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+import { TarStream } from "./tar_stream.ts";
+import { UnTarStream } from "./untar_stream.ts";
+import { assertEquals } from "../assert/mod.ts";
 
 Deno.test("unTarStreamCheckingHeaders", async function () {
   const text = new TextEncoder().encode("Hello World!");
