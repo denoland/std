@@ -7,6 +7,7 @@ Deno.test({
   name: "extensionsByType()",
   fn() {
     const fixtures: [string, string[] | undefined][] = [
+      ["text/plain; charset", undefined],
       ["image/gif", ["gif"]],
       ["application/javascript", ["js", "mjs"]],
       ["text/html; charset=UTF-8", ["html", "htm", "shtml"]],
