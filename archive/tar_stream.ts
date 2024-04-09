@@ -200,7 +200,8 @@ export class TarStream {
                 sizeExtension ? 12 : 11,
                 "0",
               ) + (sizeExtension ? "" : " ") + // size
-              (chunk.options?.mtime?.toString(8) ?? "").padStart(11, "0") +
+              (chunk.options?.mtime?.toString(8) ??
+                (new Date().getTime() / 1000).toFixed(0)).padStart(11, "0") +
               " " + // mtime
               " ".repeat(8) + // checksum | Needs to be updated
               typeflag + // typeflag
