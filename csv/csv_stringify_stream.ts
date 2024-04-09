@@ -1,4 +1,5 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
 import { stringify } from "./stringify.ts";
 
 /** Options for {@linkcode CsvStringifyStream}. */
