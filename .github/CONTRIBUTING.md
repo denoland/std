@@ -1,10 +1,10 @@
 # Contributing Guide
 
-## Code of Conduct and Style Guide
+## Code of Conduct, Style Guide and Architecture Guide
 
-Please read our [code of conduct](./CODE_OF_CONDUCT.md) and
+Please read our [code of conduct](./CODE_OF_CONDUCT.md),
 [style guide](https://docs.deno.com/runtime/manual/references/contributing/style_guide)
-before contributing.
+and [architecture guide](./ARCHITECTURE.md) before contributing.
 
 ## Issues
 
