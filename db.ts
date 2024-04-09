@@ -1,10 +1,11 @@
-import { get } from '@kitsonk/kv-toolbox/blob'
+import { BLOB_META_KEY, get, getMeta } from '@kitsonk/kv-toolbox/blob'
 import { batchedAtomic } from '@kitsonk/kv-toolbox/batched_atomic'
 import * as keys from './keys.ts'
 import { PID, Poolable } from '@/constants.ts'
 import { assert, Debug, openKv, sha1 } from '@utils'
 import { Atomic } from './atomic.ts'
 import { QueueMessage } from '@/constants.ts'
+import { ulid } from '@utils'
 
 const log = Debug('AI:db')
 export default class DB {
@@ -96,24 +97,18 @@ export default class DB {
     )
   }
   async blobExists(key: Deno.KvKey) {
-    const start = Date.now()
-    const result = await this.#kv.get([...key, '__kv_toolbox_meta__'])
-    console.log(' Exists', key.join('/'), Date.now() - start, 'ms')
-    return !!result.versionstamp
+    const meta = await getMeta(this.#kv, key)
+    return !!meta.versionstamp
   }
   async blobGet(key: Deno.KvKey) {
-    const start = Date.now()
     const result = await get(this.#kv, key)
-    console.log('blobGet', key.join('/'), Date.now() - start, 'ms')
     return result
   }
   async blobSet(key: Deno.KvKey, value: ArrayBufferLike) {
-    const start = Date.now()
     await batchedAtomic(this.#kv).check({
       key,
       versionstamp: null,
     }).setBlob(key, value).commit()
-    console.log('####Set', key.join('/'), Date.now() - start, 'ms')
   }
   async listImmediateChildren(prefix: Deno.KvKey) {
     const results = []
@@ -124,7 +119,7 @@ export default class DB {
       }
       if (end.length === 2) {
         // TODO see what happens if the keys are named to clash with this
-        if (end[1] === '__kv_toolbox_meta__') {
+        if (end[1] === BLOB_META_KEY) {
           results.push(end[0])
         }
       }
@@ -136,6 +131,52 @@ export default class DB {
   }
   atomic() {
     return Atomic.create(this.#kv)
+  }
+
+  async lockRepo(pid: PID) {
+    const key = keys.getRepoLockKey(pid)
+    const lockId = ulid()
+    const result = await this.#kv.atomic().check({ key, versionstamp: null })
+      .set(key, lockId)
+      .commit()
+    if (result.ok) {
+      return true
+    }
+    // really just want to know that this process set the lock and is now
+    // releasing it
+    // the release would be part of the atomics, since it needs to be at the
+    // exact same time as the commit is stored, else can fail
+  }
+  async watchSideEffectsLock(pid: PID, abort: AbortController) {
+    // rudely snatch the lock
+    const key = keys.getHeadLockKey(pid)
+    const lockId = ulid()
+    const { versionstamp, ok } = await this.#kv.set(key, lockId)
+    assert(ok, 'Failed to set lock')
+    const stream = this.#kv.watch<string[]>([key])
+    const reader = stream.getReader()
+    abort.signal?.addEventListener('abort', () => {
+      reader.cancel()
+    })
+    const read = async () => {
+      while (stream.locked) {
+        const { value, done } = await reader.read()
+        if (done) {
+          // should this be abort ?
+          return
+        }
+        const lock = value[0]
+        if (!lock.versionstamp) {
+          continue
+        }
+        if (lock.versionstamp === versionstamp) {
+          continue
+        }
+        abort.abort()
+      }
+    }
+    read()
+    return { key, value: lockId, versionstamp }
   }
 }
 

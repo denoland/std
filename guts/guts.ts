@@ -12,7 +12,7 @@ const ioFixture = 'io-fixture'
 export default (name: string, cradleMaker: () => Promise<Artifact>) => {
   const prefix = name + ': '
 
-  Deno.test(prefix + 'io', async (t) => {
+  Deno.test.only(prefix + 'io', async (t) => {
     const artifact = await cradleMaker()
     await t.step('ping empty', async () => {
       const empty = await artifact.ping()
@@ -22,8 +22,8 @@ export default (name: string, cradleMaker: () => Promise<Artifact>) => {
       const result = await artifact.ping({ data: { test: 'test' } })
       expect(result).toEqual({ test: 'test' })
     })
-
     await t.step('clone', async () => {
+      utils.Debug.enable('AI:tests')
       await artifact.rm({ repo: 'dreamcatcher-tech/HAL' })
       const clone = await artifact.clone({ repo: 'dreamcatcher-tech/HAL' })
       log('clone result', clone)

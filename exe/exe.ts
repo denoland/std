@@ -23,6 +23,10 @@ export default class Executor {
 
     const ioAccumulator = io.getAccumulator()
 
+    // if this is a side effect, we need to get the side effect lock
+    // then this check needs to be added into everything that the api does
+    // we need to start watching for changes to the lock value
+
     const exeId: string = getExeId(req)
     if (!this.#functions.has(exeId)) {
       log('creating execution %o', exeId)
@@ -33,8 +37,11 @@ export default class Executor {
         function: Promise.resolve().then(() => {
           return functions[req.functionName](req.params)
         }).then((result) => {
-          const outcome: Outcome = { result }
-          log('self result: %o', outcome.result)
+          const outcome: Outcome = {}
+          if (result !== undefined) {
+            outcome.result = result
+            log('self result: %o', outcome.result)
+          }
           return outcome
         }).catch((error) => {
           // TODO cancel all outstanding requests

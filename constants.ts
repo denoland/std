@@ -12,6 +12,10 @@ import {
   PierceRequest,
 } from './api/web-client.types.ts'
 import FS from '@/git/fs.ts'
+import type DB from '@/db.ts'
+import type Executor from '@/exe/exe.ts'
+
+export type C = { db: DB; exe: Executor }
 
 export type IsolateFunction =
   | (() => unknown | Promise<unknown>)
@@ -114,8 +118,14 @@ type ExeSettled = {
      */
     fs: FS
   }
+  /** If this is a side effect request, this is the lock held by for it */
+  effectsLock?: Deno.KvEntry<string>
 }
-type ExePending = { pending: Pending }
+type ExePending = {
+  pending: Pending
+  /** If this is a side effect request, this is the lock held by for it */
+  effectsLock?: Deno.KvEntry<string>
+}
 export type Pending = {
   /** The commit that caused the requests to be generated */
   commit: string

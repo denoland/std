@@ -28,6 +28,8 @@ export const doAtomicCommit = async (db: DB, fs: FS, exe?: ExeResult) => {
     } else {
       pending = exe.pending
     }
+    // if this request is an internal artifact level request, we need to remove
+    // the repo lock atomically along with doing the commit to say we're done
   }
   if (!pool.length && !fs.isChanged && !pending) {
     log('no pool or changes')

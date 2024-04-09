@@ -12,13 +12,8 @@ import {
 } from 'https://deno.land/x/hono/middleware.ts'
 import { streamSSE } from 'https://deno.land/x/hono/helper.ts'
 import Cradle from '@/cradle.ts'
-import { assert, Debug, serializeError } from '@/utils.ts'
-import {
-  ArtifactCore,
-  EventSourceMessage,
-  SerializableError,
-} from '@/constants.ts'
-import { ulid } from '$std/ulid/mod.ts'
+import { assert, Debug, serializeError, ulid } from '@/utils.ts'
+import { Artifact, EventSourceMessage, SerializableError } from '@/constants.ts'
 const log = Debug('AI:server')
 
 export default class Server {
@@ -26,6 +21,7 @@ export default class Server {
   #app!: Hono
   #sseId = 0
   static async create() {
+    // TODO whilst no system chain, fail with help message
     const artifact = await Cradle.create()
 
     const server = new Server()
@@ -35,7 +31,7 @@ export default class Server {
     app.use(timing())
     app.use(prettyJSON())
     app.use('*', logger(), poweredBy(), cors())
-    type serverMethods = (keyof ArtifactCore)[]
+    type serverMethods = (keyof Artifact)[]
     const functions: serverMethods = [
       'ping',
       'apiSchema',
@@ -68,7 +64,10 @@ export default class Server {
               params.pierce.ulid = ulid()
             }
             // but how to pipe everything down the queue lane ?
-            outcome.result = await artifact[functionName](params)
+            const result = await artifact[functionName](params)
+            if (result !== undefined) {
+              outcome.result = result
+            }
           } catch (error) {
             console.error(
               'functionName:',

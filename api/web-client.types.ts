@@ -103,6 +103,16 @@ export type Invocation = {
    * uniqueness.
    */
   branchPrefix?: string
+  effect?: boolean | {
+    /** does this side effect have access to the network ? */
+    net?: boolean
+    /** does this side effect have access to the files of the repo ? */
+    files?: boolean
+    /** can this side effect make execution requests in artifact ? */
+    artifact?: boolean
+    /** Specify the maximum time to wait for this side effect to complete */
+    timeout?: number
+  }
 }
 export type PierceRequest = Invocation & {
   target: PID
@@ -234,39 +244,32 @@ export type CommitObject = {
 }
 
 type ApiSchema = Record<string, JSONSchemaType<object>>
+type Ulid = string
+type Head = { pid: PID; head: string }
 
-export interface ArtifactCore {
-  ping(
-    params?: { data?: JsonValue; pid?: PID },
-    api?: unknown,
-  ): Promise<IsolateReturn>
-  pierce(
-    params: { pierce: PierceRequest },
-    api?: unknown,
-  ): Promise<IsolateReturn>
-  probe(
-    params: { repo?: string; pid?: PID },
-    api?: unknown,
-  ): Promise<{ pid: PID; head: string } | void>
-  init(
-    params: { repo: string },
-    api?: unknown,
-  ): Promise<{ pid: PID; head: string }>
-  clone(
-    params: { repo: string },
-    api?: unknown,
-  ): Promise<{ pid: PID; head: string }>
-  pull(params: { pid: PID }, api?: unknown): Promise<{ pid: PID; head: string }>
-  push(params: { pid: PID }, api?: unknown): Promise<void>
-  rm(params: { repo: string }, api?: unknown): Promise<void>
-  apiSchema(params: { isolate: string }, api?: unknown): Promise<ApiSchema>
-  logs(params: { repo: string }, api?: unknown): Promise<object[]>
-}
-export interface Artifact extends ArtifactCore {
+/** The client interface to artifact */
+export interface Artifact {
   stop(): Promise<void> | void
+  pierce(params: { pierce: PierceRequest }): Promise<Ulid>
   pierces(isolate: string, target: PID): Promise<DispatchFunctions>
   read(pid: PID, path?: string, signal?: AbortSignal): ReadableStream<Splice>
   transcribe(params: { audio: File }): Promise<{ text: string }>
+  apiSchema(params: { isolate: string }): Promise<ApiSchema>
+  /** @deprecated needs to move to being pure splice reading */
+  logs(params: { repo: string }): Promise<object[]>
+  /** Pings the execution context without going thru the transaction queue.
+   *
+   * Used primarily by web clients to establish base connectivity and get
+   * various diagnostics about the platform they are interacting with */
+  ping(params?: { data?: JsonValue; pid?: PID }): Promise<IsolateReturn>
+
+  /** Calls the repo isolate */
+  probe(params: { repo?: string; pid?: PID }): Promise<Head | void>
+  init(params: { repo: string }): Promise<Head>
+  clone(params: { repo: string }): Promise<Head>
+  pull(params: { pid: PID }): Promise<Head>
+  push(params: { pid: PID }): Promise<void>
+  rm(params: { repo: string }): Promise<void>
 }
 export const isPID = (value: unknown): value is PID => {
   if (typeof value !== 'object' || value === null) {

@@ -39,24 +39,9 @@ export const getRepoRoot = (pid: PID) => {
 }
 export enum KEYSPACES {
   POOL = 'POOL', // all pending requests and replies trying to be committed
-  REPO = 'REPO', // this is the latest fs snapshot of a given process branch
-  STATUS = 'STATUS', // the maintenance state of the repo
+  REPO = 'REPO', // the .git folder of a particular repo
   UNDELIVERED = 'UNDELIVERED', // all undelivered queue messages
 }
-export enum STATUS {
-  /**
-   * If the repo is active, then all execution activities are allowed.
-   * The absence of any status means the repo has been deleted and cannot
-   * receive any pooling.
-   */
-  ACTIVE = 'ACTIVE',
-  /**
-   * If the repo is in maintenance, then no execution activities are allowed.
-   * Maintenance includes cloning, pulling, and deleting.
-   */
-  MAINTENANCE = 'MAINTENANCE',
-}
-
 const getId = (action: Request | Reply) => {
   const id = (pid: PID, sequence: number) => {
     return `${pid.account}/${pid.repository}:${
@@ -86,6 +71,16 @@ export const pidFromRepo = (repo: string): PID => {
 export const getHeadKey = (pid: PID) => {
   const prefix = getRepoRoot(pid)
   return [...prefix, 'refs', 'heads', ...pid.branches]
+}
+export const getHeadLockKey = (pid: PID) => {
+  const prefix = getRepoRoot(pid)
+  const branches = [...pid.branches]
+  const last = branches.pop()
+  return [...prefix, 'refs', 'heads', ...branches, last + '.lock']
+}
+export const getRepoLockKey = (pid: PID) => {
+  const prefix = getRepoRoot(pid)
+  return [...prefix, 'index.lock']
 }
 export const headKeyToPid = (headKey: string[]) => {
   const [repo, account, repository, refs, heads, ...branches] = headKey

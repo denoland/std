@@ -17,13 +17,15 @@ type ToEvents = (
   stream: ReadableStream<Uint8Array>,
 ) => ReadableStream<EventSourceMessage>
 export default class WebClient implements Artifact {
-  private readonly fetcher: (
+  readonly #aborts = new Set<AbortController>()
+  readonly #readPromises = new Set<Promise<void>>()
+  readonly #fetcher: (
     input: URL | RequestInfo,
     init?: RequestInit,
   ) => Promise<Response>
-  private readonly toEvents: ToEvents
-  private readonly url: string
-  private readonly toError: ToError
+  readonly #toEvents: ToEvents
+  readonly #url: string
+  readonly #toError: ToError
   constructor(
     url: string,
     toError: ToError,
@@ -33,29 +35,36 @@ export default class WebClient implements Artifact {
     if (url.endsWith('/')) {
       throw new Error('url should not end with "/": ' + url)
     }
-    this.url = url
-    this.toError = toError
-    this.toEvents = toEvents
+    this.#url = url
+    this.#toError = toError
+    this.#toEvents = toEvents
     if (fetcher) {
-      this.fetcher = fetcher
+      this.#fetcher = fetcher
     } else {
-      this.fetcher = (path, opts) => fetch(`${url}${path}`, opts)
+      this.#fetcher = (path, opts) => fetch(`${url}${path}`, opts)
     }
   }
+  async stop() {
+    for (const abort of this.#aborts) {
+      abort.abort()
+    }
+    await Promise.all([...this.#readPromises])
+  }
   ping(params = {}) {
-    return this.request('ping', params)
+    return this.#request('ping', params)
   }
   apiSchema(params: { isolate: string }) {
-    return this.request('apiSchema', params)
+    // TODO cache this result
+    return this.#request('apiSchema', params)
   }
   pierce(params: { pierce: PierceRequest }) {
-    return this.request('pierce', params)
+    return this.#request('pierce', params)
   }
   async transcribe(params: { audio: File }) {
     const formData = new FormData()
     formData.append('audio', params.audio)
 
-    const response = await fetch(`${this.url}/api/transcribe`, {
+    const response = await fetch(`${this.#url}/api/transcribe`, {
       method: 'POST',
       body: formData,
     })
@@ -63,10 +72,10 @@ export default class WebClient implements Artifact {
     return await response.json()
   }
   logs(params: { repo: string }) {
-    return this.request('logs', params)
+    return this.#request('logs', params)
   }
   async pierces(isolate: string, target: PID) {
-    // cradle side, since functions cannot be returned from isolate calls
+    // client side, since functions cannot be returned from isolate calls
     const apiSchema = await this.apiSchema({ isolate })
     const pierces: DispatchFunctions = {}
     for (const functionName of Object.keys(apiSchema)) {
@@ -88,14 +97,16 @@ export default class WebClient implements Artifact {
     }
     return pierces
   }
+
+  // #region:  Repository tools
   probe(params: { repo: string }) {
-    return this.request('probe', params)
+    return this.#request('probe', params)
   }
   init(params: { repo: string }) {
-    return this.request('init', params)
+    return this.#request('init', params)
   }
   clone(params: { repo: string }) {
-    return this.request('clone', params)
+    return this.#request('clone', params)
   }
   pull(): Promise<{ pid: PID; head: string }> {
     throw new Error('not implemented')
@@ -104,29 +115,10 @@ export default class WebClient implements Artifact {
     return Promise.reject(new Error('not implemented'))
   }
   rm(params: { repo: string }) {
-    return this.request('rm', params)
+    return this.#request('rm', params)
   }
-  async stop() {
-    for (const abort of this.#aborts) {
-      abort.abort()
-    }
-    await Promise.all([...this.#readPromises])
-  }
-  #aborts = new Set<AbortController>()
-  #readPromises = new Set<Promise<void>>()
-  #waiter(abort: AbortController) {
-    let resolve: () => void
-    const readPromise = new Promise<void>((_resolve) => {
-      resolve = _resolve
-    })
-    this.#readPromises.add(readPromise)
-    this.#aborts.add(abort)
-    return () => {
-      resolve()
-      this.#readPromises.delete(readPromise)
-      this.#aborts.delete(abort)
-    }
-  }
+
+  // #region: Splice Reading
   read(pid: PID, path?: string, signal?: AbortSignal) {
     const abort = new AbortController()
     if (signal) {
@@ -146,7 +138,7 @@ export default class WebClient implements Artifact {
             console.log('repeat', repeat)
           }
           try {
-            const response = await this.fetcher(`/api/read`, {
+            const response = await this.#fetcher(`/api/read`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ pid, path }),
@@ -159,7 +151,7 @@ export default class WebClient implements Artifact {
             if (!response.body) {
               throw new Error('response body is missing')
             }
-            const splices = this.toEvents(response.body)
+            const splices = this.#toEvents(response.body)
             const reader = splices.getReader()
             abort.signal.addEventListener('abort', () => {
               reader.cancel()
@@ -189,8 +181,21 @@ export default class WebClient implements Artifact {
       },
     })
   }
-  private async request(path: string, params: Params) {
-    const response = await this.fetcher(`/api/${path}?pretty`, {
+  #waiter(abort: AbortController) {
+    let resolve: () => void
+    const readPromise = new Promise<void>((_resolve) => {
+      resolve = _resolve
+    })
+    this.#readPromises.add(readPromise)
+    this.#aborts.add(abort)
+    return () => {
+      resolve()
+      this.#readPromises.delete(readPromise)
+      this.#aborts.delete(abort)
+    }
+  }
+  async #request(path: string, params: Params) {
+    const response = await this.#fetcher(`/api/${path}?pretty`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(params),
@@ -203,7 +208,7 @@ export default class WebClient implements Artifact {
     }
     const outcome = await response.json()
     if (outcome.error) {
-      throw this.toError(outcome.error)
+      throw this.#toError(outcome.error)
     }
     return outcome.result
   }

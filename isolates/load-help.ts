@@ -23,6 +23,10 @@ export const api = {
     properties: {},
   },
 }
+export interface Api {
+  load: (params: { help: string }) => Promise<Help>
+  loadAll: () => Promise<Help[]>
+}
 
 export const functions = {
   load: async ({ help }: { help: string }, api: IsolateApi) => {

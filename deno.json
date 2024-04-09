@@ -1,4 +1,6 @@
 {
+  "name": "@dreamcatcher-ai/artifact",
+  "version": "0.0.1",
   "lock": false,
   "tasks": {
     "test": "DENO_KV_PATH=:memory: deno test -A --unstable-kv --coverage",
@@ -41,5 +43,6 @@
     "semiColons": false,
     "singleQuote": true,
     "proseWrap": "always"
-  }
+  },
+  "exports": "./main.ts"
 }

@@ -22,6 +22,9 @@ export default class IsolateApi<T extends object = Default> {
   #accumulator: Accumulator
   // TODO assign a mount id for each side effect execution context ?
   #context: Partial<T> = {}
+  #isEffect = false
+  #isEffectRecovered = false
+  #abort = new AbortController()
   private constructor(fs: FS, accumulator: Accumulator) {
     this.#fs = fs
     this.#accumulator = accumulator
@@ -29,12 +32,32 @@ export default class IsolateApi<T extends object = Default> {
   static create(fs: FS, accumulator: Accumulator) {
     return new IsolateApi(fs, accumulator)
   }
-  static createContext() {
+  static createContext<T extends object = Default>() {
     // TODO find a more graceful way to do this for cradle setup
-    return new IsolateApi(null as unknown as FS, null as unknown as Accumulator)
+    return new IsolateApi<T>(
+      null as unknown as FS,
+      null as unknown as Accumulator,
+    )
   }
   get pid() {
     return this.#fs.pid
+  }
+  /** If this execution is side effect capable.  May extend to get permissions
+   * information  */
+  get isEffect() {
+    return this.#isEffect
+  }
+  /** If the side effect lock was broken in order to start this instance.
+   * Implies the previous executing instance was aborted */
+  get isEffectRecovered() {
+    return this.#isEffectRecovered
+  }
+  /** Side effects can listen to this signal to abort their activities */
+  get signal() {
+    assert(this.#accumulator.isActive, 'Activity is denied')
+    // return an abort signal
+    assert(this.isEffect, 'signal only available for side effects')
+    return this.#abort.signal
   }
   async actions(isolate: string, targetPID?: PID) {
     const target = targetPID ? targetPID : this.pid
@@ -93,11 +116,11 @@ export default class IsolateApi<T extends object = Default> {
    * @returns An object keyed by API function name, with values being the
    * function itself.
    */
-  async functions(isolate: string) {
+  async functions<T>(isolate: string): Promise<T> {
     // TODO these need some kind of PID attached ?
     const compartment = await Compartment.create(isolate)
     // TODO but these need to be wrapped in a dispatch call somewhere
-    return compartment.functions(this)
+    return compartment.functions<T>(this)
   }
   async isolateApiSchema(isolate: string) {
     const compartment = await Compartment.create(isolate)
@@ -145,7 +168,7 @@ export default class IsolateApi<T extends object = Default> {
   }
   get context() {
     // TODO at creation, this should flag context capable and reject if not
-    return this.#context
+    return this.#context as T
   }
   set context(context: Partial<T>) {
     // TODO reject if any fs operations or actions are attempted

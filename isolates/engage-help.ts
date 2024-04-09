@@ -3,6 +3,7 @@ const log = Debug('AI:isolates:engage-help')
 import runners from '../runners/index.ts'
 import { IsolateApi } from '@/constants.ts'
 import { Help } from '@/constants.ts'
+import * as loadHelp from '@/isolates/load-help.ts'
 
 export const api = {
   engage: {
@@ -27,7 +28,7 @@ export const functions = {
   engage: async (params: { help: string; text: string }, api: IsolateApi) => {
     const { help: path, text } = params
     log('engage:', path)
-    const { load } = await api.functions('load-help')
+    const { load } = await api.functions<loadHelp.Api>('load-help')
     const help: Help = await load({ help: path })
 
     assert(typeof help.runner === 'string', `no runner: ${help.runner}`)

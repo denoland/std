@@ -87,6 +87,8 @@ export const solidify = async (fs: FS, pool: Poolable[], pending?: Pending) => {
     const sequence = io.getSequence(next)
     exe = { request: next, sequence }
   }
+  // TODO pass in all the db checks to go with this write
+  // possibly the writing of the blobs can be part of the atomics too
   const { commit } = await fs.writeCommitObject('pool', parents)
 
   log('head', commit)
