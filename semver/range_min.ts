@@ -35,7 +35,7 @@ function comparatorMin(comparator: Comparator): SemVer {
 }
 
 /**
- * @deprecated (will be removed in 1.0.0) use greaterThanRange or lessThanRange for comparing ranges and semvers.
+ * @deprecated (will be removed in 1.0.0) use greaterThanRange or lessThanRange for comparing ranges and semvers. The minimum version of a range is often not well defined, and therefore this API shouldn't be used. See https://github.com/denoland/deno_std/issues/4365 for details.
  *
  * The minimum valid SemVer for a given range or INVALID
  * @param range The range to calculate the min for
