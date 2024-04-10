@@ -44,6 +44,8 @@ function comparatorMax(comparator: Comparator): SemVer {
 }
 
 /**
+ * @deprecated (will be removed in 1.0.0) use greaterThanRange or lessThanRange for comparing ranges and semvers.
+ *
  * The maximum valid SemVer for a given range or INVALID
  * @param range The range to calculate the max for
  * @returns A valid SemVer or INVALID
