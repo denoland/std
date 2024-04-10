@@ -1,4 +1,5 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
 import { format } from "./_format.ts";
 import { AssertionError } from "./assertion_error.ts";
 import { buildMessage, diff, diffstr } from "./_diff.ts";

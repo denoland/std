@@ -1,4 +1,5 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
 import { INVALID, MAX, MIN } from "./constants.ts";
 import type { Comparator, Range, SemVer } from "./types.ts";
 import { testRange } from "./test_range.ts";
