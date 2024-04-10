@@ -22,7 +22,7 @@ Deno.test("pooledMap()", async function () {
   assert(diff < 3000);
 });
 
-Deno.test("pooledMap() handles errors", async () => {
+Deno.test("pooledMap() handles errors", async function () {
   async function mapNumber(n: number): Promise<number> {
     if (n <= 2) {
       throw new Error(`Bad number: ${n}`);
@@ -46,7 +46,7 @@ Deno.test("pooledMap() handles errors", async () => {
   assertEquals(mappedNumbers, [3]);
 });
 
-Deno.test("pooledMap() returns ordered items", async () => {
+Deno.test("pooledMap() returns ordered items", async function () {
   function getRandomInt(min: number, max: number): number {
     min = Math.ceil(min);
     max = Math.floor(max);

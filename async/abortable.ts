@@ -1,6 +1,8 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
+import { createAbortError } from "./_util.ts";
+
 /**
  * Make {@linkcode Promise} abortable with the given signal.
  *
@@ -144,13 +146,4 @@ export async function* abortableAsyncIterable<T>(
     }
     yield value;
   }
-}
-
-// This `reason` comes from `AbortSignal` thus must be `any`.
-// deno-lint-ignore no-explicit-any
-function createAbortError(reason?: any): DOMException {
-  return new DOMException(
-    reason ? `Aborted: ${reason}` : "Aborted",
-    "AbortError",
-  );
 }

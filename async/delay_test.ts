@@ -2,10 +2,12 @@
 import { delay } from "./delay.ts";
 import {
   assert,
+  assertEquals,
   assertInstanceOf,
   assertRejects,
   assertStrictEquals,
 } from "../assert/mod.ts";
+import { assertSpyCalls, stub } from "../testing/mock.ts";
 
 // https://dom.spec.whatwg.org/#interface-AbortSignal
 function assertIsDefaultAbortReason(reason: unknown) {
@@ -102,4 +104,36 @@ Deno.test("delay() handles already aborted signal", async function () {
   const diff = new Date().getTime() - start.getTime();
   assert(diff < 100);
   assertIsDefaultAbortReason(cause);
+});
+
+Deno.test("delay() handles persitent option", async function () {
+  using unrefTimer = stub(Deno, "unrefTimer");
+  await delay(100, { persistent: false });
+  assertSpyCalls(unrefTimer, 1);
+});
+
+Deno.test("delay() handles persistent option with reference error", async function () {
+  using unrefTimer = stub(Deno, "unrefTimer", () => {
+    throw new ReferenceError();
+  });
+  await delay(100, { persistent: false });
+  assertSpyCalls(unrefTimer, 1);
+});
+
+Deno.test({
+  name: "delay() handles persistent option with error",
+  fn: async function () {
+    using unrefTimer = stub(Deno, "unrefTimer", () => {
+      throw new Error("Error!");
+    });
+    try {
+      await delay(100, { persistent: false });
+    } catch (e) {
+      assert(e instanceof Error);
+      assertEquals(e.message, "Error!");
+      assertSpyCalls(unrefTimer, 1);
+    }
+  },
+  sanitizeResources: false,
+  sanitizeOps: false,
 });
