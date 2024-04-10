@@ -47,6 +47,7 @@ for await (
       /crypto(\/|\\)_wasm$/,
       /encoding(\/|\\)_yaml$/,
       /encoding(\/|\\)_toml$/,
+      /console$/,
       /_tools$/,
       /_util$/,
       /docs$/,

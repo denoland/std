@@ -1,4 +1,5 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
 import type { Range, SemVer } from "./types.ts";
 import { testRange } from "./test_range.ts";
 import { greaterThan } from "./greater_than.ts";

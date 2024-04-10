@@ -1,4 +1,5 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
 import { levenshteinDistance } from "./levenshtein_distance.ts";
 
 // NOTE: this metric may change in future versions (e.g. better than levenshteinDistance)

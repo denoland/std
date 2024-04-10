@@ -1,4 +1,5 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
 
 /**
  * Functions for console-related tasks such as TTY text layout.
@@ -13,6 +14,10 @@
  *
  * unicodeWidth("天地玄黃宇宙洪荒"); // 16
  * ```
+ *
+ * @deprecated Use {@link https://jsr.io/@std/cli | std/cli} instead. This
+ * module will be removed once the Standard Library migrates to
+ * {@link https://jsr.io/ | JSR}.
  *
  * @module
  */

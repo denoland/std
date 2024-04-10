@@ -35,8 +35,14 @@ jobs:
         with:
           deno-version: ${{ matrix.deno }}
 
-      - name: Run tests canary
+      - name: Run tests
         run: deno task test
+
+      - name: Run tests (simulate Deno 2)
+        if: matrix.deno == 'canary'
+        run: deno task test
+        env:
+          DENO_FUTURE: 1
 
       - name: Run timezone-dependent tests
         run: |

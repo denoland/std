@@ -13,8 +13,7 @@
  * ## Custom message format
  *
  * If you want to override default format of message you can define `formatter`
- * option for handler. It can be either simple string-based format that uses
- * `LogRecord` fields or more complicated function-based one that takes `LogRecord`
+ * option for handler. It can a function that takes `LogRecord`
  * as argument and outputs string.
  *
  * The default log format is `{levelName} {msg}`.

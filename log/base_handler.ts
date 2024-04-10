@@ -1,4 +1,5 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
 import {
   getLevelByName,
   getLevelName,
@@ -50,14 +51,20 @@ export class BaseHandler {
     if (this.level > logRecord.level) return;
 
     const msg = this.format(logRecord);
-    this.log(msg);
+    this.#log(msg);
   }
 
   format(logRecord: LogRecord): string {
     return this.formatter(logRecord);
   }
 
+  /**
+   * @deprecated (will be removed in 0.220.0)
+   */
   log(_msg: string) {}
+  #log(msg: string) {
+    this.log(msg);
+  }
   setup() {}
   destroy() {}
 
