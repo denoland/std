@@ -74,7 +74,7 @@ export default class WebClient implements Artifact {
   logs(params: { repo: string }) {
     return this.#request('logs', params)
   }
-  async pierces(isolate: string, target: PID) {
+  async actions(isolate: string, target: PID) {
     // client side, since functions cannot be returned from isolate calls
     const apiSchema = await this.apiSchema({ isolate })
     const pierces: DispatchFunctions = {}

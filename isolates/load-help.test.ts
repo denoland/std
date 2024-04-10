@@ -1,5 +1,5 @@
 import { expect } from '@utils'
-import Cradle from '../cradle.ts'
+import Cradle from '../engine.ts'
 import { Help } from '@/constants.ts'
 Deno.test('loadAll', async (t) => {
   const artifact = await Cradle.create()

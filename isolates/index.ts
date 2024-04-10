@@ -8,6 +8,7 @@ import * as utils from './utils.ts'
 import * as artifact from './artifact.ts'
 import * as session from './session.ts'
 import * as repo from './repo.ts'
+import * as shell from './shell.ts'
 
 export default {
   'engage-help': engageHelp,
@@ -20,4 +21,5 @@ export default {
   artifact,
   session,
   repo,
+  shell,
 }

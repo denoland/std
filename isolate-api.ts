@@ -8,7 +8,6 @@ import {
   Params,
   PID,
   ProcessOptions,
-  PROCTYPE,
   UnsequencedRequest,
 } from '@/constants.ts'
 import FS from '@/git/fs.ts'
@@ -77,37 +76,33 @@ export default class IsolateApi<T extends object = Default> {
         }
         const proctype = getProcType(options)
         assert(this.#accumulator, 'accumulator must be set')
-        if (equal(target, this.pid) && proctype === PROCTYPE.SERIAL) {
-          return Promise.reject(new Error('cannot dispatch to self'))
-        }
         const unsequencedRequest: UnsequencedRequest = {
           target,
-          source: this.pid,
           isolate,
           functionName,
           params: params || {},
           proctype,
         }
-        const recovered = this.#accumulator.recover(unsequencedRequest)
-        // at this point, we might need to tick the fs commit forwards
-        if (recovered) {
-          const { outcome } = recovered
-          assert(outcome, 'outcome must be set')
-          return Promise.resolve().then(() => fromOutcome(outcome))
-        }
-
-        const promise = new Promise((resolve, reject) => {
-          this.#accumulator.push({
-            request: unsequencedRequest,
-            resolve,
-            reject,
-          })
-        })
-        return promise
+        return this.action(unsequencedRequest)
       }
     }
 
     return actions
+  }
+  async action(request: UnsequencedRequest) {
+    const recovered = this.#accumulator.recover(request)
+    // at this point, we might need to tick the fs commit forwards
+    if (recovered) {
+      const { outcome } = recovered
+      assert(outcome, 'outcome must be set')
+      await Promise.resolve()
+      return fromOutcome(outcome)
+    }
+
+    const promise = new Promise((resolve, reject) => {
+      this.#accumulator.push({ request, resolve, reject })
+    })
+    return promise
   }
   /**
    * Used to call the functions of an isolate purely, without going thru the IO

@@ -71,8 +71,9 @@ export default class Accumulator {
         this.#buffer.push(source)
         continue
       }
-      expect(source.request).toEqual(sink.request)
-      assert(equal(source.request, sink.request), 'requests')
+      if (!equal(source.request, sink.request)) {
+        expect(source.request).toEqual(sink.request)
+      }
       if (sink.outcome) {
         assert(equal(source.outcome, sink.outcome), 'outcomes are not equal')
       } else {

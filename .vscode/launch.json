@@ -55,11 +55,11 @@
     },
     {
       "request": "launch",
-      "name": "cradle",
+      "name": "Engine",
       "type": "node",
       "cwd": "${workspaceFolder}",
       "runtimeExecutable": "~/.deno/bin/deno",
-      "runtimeArgs": ["task", "watch", "--inspect-wait", "cradle.test.ts"],
+      "runtimeArgs": ["task", "watch", "--inspect-wait", "engine.test.ts"],
       "attachSimplePort": 9229,
       "internalConsoleOptions": "neverOpen",
       "console": "integratedTerminal"

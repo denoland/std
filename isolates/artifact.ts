@@ -72,11 +72,15 @@ export const functions = {
   async pierce({ pierce }: { pierce: PierceRequest }, api: IsolateApi<C>) {
     log('pierce %o %o', pierce.isolate, pierce.functionName)
     assert(isPierceRequest(pierce), 'invalid pierce request')
-    const { db } = getContext(api)
+    const { db } = sanitizeContext(api)
     // TODO add ulid in here, but make it be repeatable
 
     // not necessary to be atomic, but uses functions on the atomic class
-    await db.atomic().addToPool(pierce).enqueuePierce(pierce).commit()
+    const result = await db.atomic()
+      .addToPool(pierce)
+      .enqueuePierce(pierce)
+      .commit()
+    assert(result, 'pierce failed')
   },
 }
 
@@ -157,8 +161,7 @@ const execute = async (request: SolidRequest, commit: string, c: C) => {
     const abort = new AbortController()
     effectsLock = await db.watchSideEffectsLock(request.target, abort)
   }
-  const fs = FS.open(request.target, commit, db)
-  const exeResult = await exe.execute(request, fs)
+  const exeResult = await exe.execute(request, commit, c)
   // last instance always owns the lock
   exeResult.effectsLock = effectsLock
   // how do we remove the repo lock as part of atomic commit ?
@@ -198,7 +201,7 @@ const isSettled = async (request: SolidRequest, sequence: number, db: DB) => {
   }
   return false
 }
-const getContext = (api: IsolateApi<C>): C => {
+export const sanitizeContext = (api: IsolateApi<C>): C => {
   assert(api.context, 'context not found')
   const { db, exe } = api.context
   assert(db instanceof DB, 'db not found')

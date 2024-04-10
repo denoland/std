@@ -11,7 +11,7 @@ import {
   timing,
 } from 'https://deno.land/x/hono/middleware.ts'
 import { streamSSE } from 'https://deno.land/x/hono/helper.ts'
-import Cradle from '@/cradle.ts'
+import Cradle from '../engine.ts'
 import { assert, Debug, serializeError, ulid } from '@/utils.ts'
 import { Artifact, EventSourceMessage, SerializableError } from '@/constants.ts'
 const log = Debug('AI:server')
@@ -35,7 +35,6 @@ export default class Server {
     const functions: serverMethods = [
       'ping',
       'apiSchema',
-      'pierce',
       'logs',
       'probe',
       'init',
@@ -58,11 +57,6 @@ export default class Server {
           let params
           try {
             params = await c.req.json()
-            if (functionName === 'pierce') {
-              const msg = `ulid incorrect: ${params?.pierce?.ulid}`
-              assert(params?.pierce?.ulid === 'calculated-server-side', msg)
-              params.pierce.ulid = ulid()
-            }
             // but how to pipe everything down the queue lane ?
             const result = await artifact[functionName](params)
             if (result !== undefined) {

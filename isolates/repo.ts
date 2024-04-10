@@ -1,6 +1,6 @@
 import FS from '@/git/fs.ts'
-import DB from '@/db.ts'
-import { assert, Debug } from '@utils'
+import { sanitizeContext } from '@/isolates/artifact.ts'
+import { assert, Debug, equal } from '@utils'
 import { C, IsolateApi, isPID, PID } from '@/constants.ts'
 import { pidFromRepo } from '@/keys.ts'
 const log = Debug('AI:isolates:repo')
@@ -22,70 +22,72 @@ const repo = {
 
 const pid = {
   type: 'object',
-  required: ['account', 'repository', 'branches'],
   additionalProperties: false,
   properties: {
-    account: {
-      type: 'string',
-    },
-    repository: {
-      type: 'string',
-    },
-    branches: {
-      type: 'array',
-      items: {
-        type: 'string',
+    pid: {
+      type: 'object',
+      required: ['id', 'account', 'repository', 'branches'],
+      additionalProperties: false,
+      properties: {
+        id: {
+          type: 'string',
+        },
+        account: {
+          type: 'string',
+        },
+        repository: {
+          type: 'string',
+        },
+        branches: {
+          type: 'array',
+          items: {
+            type: 'string',
+          },
+          minItems: 1,
+        },
       },
-      minItems: 1,
     },
   },
 }
 export const api = {
-  probe: {
-    type: 'object',
-    description: 'Check if a repo or PID exists',
-    additionalProperties: false,
-    properties: {
-      repo: repo.properties.repo,
-      pid: pid,
-    },
-  },
+  probe: { ...pid, description: 'Check if a repo or PID exists' },
   init: repo,
   clone: repo,
   pull: repo,
   push: repo,
-  rm: repo,
+  rm: { ...pid, description: 'Remove everything about a PID' },
   logs: repo, // TODO use pid
 }
 export type Api = {
-  rm: (params: { repo: string }) => Promise<void>
+  rm: (params: { pid: PID }) => Promise<boolean>
+  init: (params: { pid: PID }) => Promise<{ pid: PID; head: string }>
 }
 export const functions = {
-  async probe(params: { repo?: string; pid?: PID }, api: IsolateApi<C>) {
-    let { pid, repo } = params
-    if (repo) {
-      pid = pidFromRepo(repo)
-    }
+  async probe(params: { pid: PID }, api: IsolateApi<C>) {
+    const { pid } = params
     assert(isPID(pid), 'invalid params')
 
-    const { db } = getContext(api)
+    const { db } = sanitizeContext(api)
     const head = await db.readHead(pid)
     if (head) {
       return { pid, head }
     }
   },
-  async init(params: { repo: string }, api: IsolateApi<C>) {
+  async init(params: { id: string; repo: string }, api: IsolateApi<C>) {
     const start = Date.now()
-    const probe = await functions.probe(params, api)
+    const { id, repo } = params
+    const pid = pidFromRepo(id, repo)
+    const probe = await functions.probe({ pid }, api)
     if (probe) {
       throw new Error('repo already exists: ' + params.repo)
     }
-    const { db } = getContext(api)
-    const fs = await FS.init(params.repo, db)
-    const { pid, commit: head } = fs
+    const { db } = sanitizeContext(api)
+    const fs = await FS.init(pid, db)
+    assert(equal(fs.pid, pid), 'pid mismatch')
+    const { commit: head } = fs
     return { pid, head, elapsed: Date.now() - start }
   },
-  async clone(params: { repo: string }, api: IsolateApi<C>) {
+  async clone(params: { id: string; repo: string }, api: IsolateApi<C>) {
     // this should go into the queue of things to do
     // there is an atomic queue, but also a job queue to move work closer to the
     // source
@@ -102,16 +104,17 @@ export const functions = {
     }
 
     const start = Date.now()
-    const { repo } = params
-    const probe = await functions.probe({ repo }, api)
+    const { id, repo } = params
+    const pid = pidFromRepo(id, repo)
+    const probe = await functions.probe({ pid }, api)
     if (probe) {
       throw new Error('repo already exists: ' + params.repo)
     }
 
     log('cloning %s', repo)
-    const { db } = getContext(api)
-    const fs = await FS.clone(repo, db)
-    const { pid, commit: head } = fs
+    const { db } = sanitizeContext(api)
+    const fs = await FS.clone(pid, db)
+    const { commit: head } = fs
     log('cloned', head)
     return { pid, head, elapsed: Date.now() - start }
   },
@@ -121,14 +124,13 @@ export const functions = {
   push() {
     throw new Error('not implemented')
   },
-  async rm(params: { repo: string }, api: IsolateApi<C>) {
+  async rm(params: { pid: PID }, api: IsolateApi<C>) {
     // TODO lock the whole repo in case something is running
-    // TODO maybe have a top level key indicating if the repo is active or not
-    // which can get included in the atomic checks for all activities
-    const pid = pidFromRepo(params.repo)
-    const { db } = getContext(api)
-    FS.clearCache(pid)
-    await db.rm(pid)
+    // batch atomic the deletes while we have the lock
+    log('rm', params.pid)
+    const { db } = sanitizeContext(api)
+    FS.clearCache(params.pid)
+    return db.rm(params.pid)
   },
   async logs(params: { repo: string }) {
     // TODO convert logs to a splices query
@@ -140,12 +142,4 @@ export const functions = {
     // const logs = await fs.logs()
     // return logs
   },
-}
-const getContext = (api: IsolateApi<C>): C => {
-  assert(api.context, 'context not found')
-  const { db, exe } = api.context
-  assert(db instanceof DB, 'db not found')
-  assert(exe, 'exe not found')
-
-  return { db, exe }
 }

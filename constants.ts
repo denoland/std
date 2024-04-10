@@ -15,6 +15,7 @@ import FS from '@/git/fs.ts'
 import type DB from '@/db.ts'
 import type Executor from '@/exe/exe.ts'
 
+/** Artifact Context, including the db and executor */
 export type C = { db: DB; exe: Executor }
 
 export type IsolateFunction =
@@ -60,7 +61,7 @@ export type SolidRequest = Invocation & {
   source: PID
   sequence: number
 }
-export type UnsequencedRequest = Omit<SolidRequest, 'sequence'>
+export type UnsequencedRequest = Omit<SolidRequest, 'sequence' | 'source'>
 export type EffectRequest = {
   target: PID
   /**

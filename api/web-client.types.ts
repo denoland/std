@@ -69,6 +69,12 @@ export const ENTRY_BRANCH = 'main'
  * The Process Identifier used to address a specific process branch.
  */
 export type PID = {
+  /**
+   * The account within artifact that owns the repository.
+   * Later, this will become the chainId of the controlling account holding the
+   * repository.
+   */
+  id: string
   account: string
   repository: string
   branches: string[]
@@ -244,14 +250,12 @@ export type CommitObject = {
 }
 
 type ApiSchema = Record<string, JSONSchemaType<object>>
-type Ulid = string
 type Head = { pid: PID; head: string }
 
 /** The client interface to artifact */
 export interface Artifact {
   stop(): Promise<void> | void
-  pierce(params: { pierce: PierceRequest }): Promise<Ulid>
-  pierces(isolate: string, target: PID): Promise<DispatchFunctions>
+  actions(isolate: string, target: PID): Promise<DispatchFunctions>
   read(pid: PID, path?: string, signal?: AbortSignal): ReadableStream<Splice>
   transcribe(params: { audio: File }): Promise<{ text: string }>
   apiSchema(params: { isolate: string }): Promise<ApiSchema>
@@ -269,7 +273,7 @@ export interface Artifact {
   clone(params: { repo: string }): Promise<Head>
   pull(params: { pid: PID }): Promise<Head>
   push(params: { pid: PID }): Promise<void>
-  rm(params: { repo: string }): Promise<void>
+  rm(params: { repo: string }): Promise<boolean>
 }
 export const isPID = (value: unknown): value is PID => {
   if (typeof value !== 'object' || value === null) {

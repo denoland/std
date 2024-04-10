@@ -8,7 +8,6 @@ import {
   SolidRequest,
 } from '@/constants.ts'
 import { assert, Debug, isKvTestMode, sha1 } from '@utils'
-import { KEYSPACES } from '@/keys.ts'
 
 const log = Debug('AI:db:atomic')
 
@@ -105,7 +104,7 @@ export class Atomic {
     assert(this.#atomic, 'Atomic not set')
     const backoffSchedule = isKvTestMode() ? [] : undefined
     this.#atomic = this.#atomic.enqueue(message, {
-      keysIfUndelivered: [[KEYSPACES.UNDELIVERED]],
+      keysIfUndelivered: [keys.UNDELIVERED],
       backoffSchedule,
     })
     return this

@@ -2,7 +2,6 @@ import http from 'npm:isomorphic-git/http/web/index.js'
 import { assert, Debug, equal, posix, sha1 } from '@utils'
 import { ENTRY_BRANCH, JsonValue, PID } from '@/constants.ts'
 import git from '$git'
-import { pidFromRepo } from '@/keys.ts'
 import type DB from '@/db.ts'
 import { GitKV } from './gitkv.ts'
 const log = Debug('AI:git:fs')
@@ -18,7 +17,7 @@ export default class FS {
   readonly #deletes = new Set<string>()
   static #caches = new Map<string, object>()
   static getCache(pid: PID) {
-    const key = pid.repository + '/' + pid.account
+    const key = getCacheKey(pid)
     if (!FS.#caches.has(key)) {
       FS.#caches.set(key, {})
     }
@@ -27,7 +26,7 @@ export default class FS {
     return cache
   }
   static clearCache(pid: PID) {
-    const key = pid.repository + '/' + pid.account
+    const key = getCacheKey(pid)
     FS.#caches.delete(key)
   }
 
@@ -66,8 +65,7 @@ export default class FS {
     }
     return new FS(pid, head, db)
   }
-  static async init(repo: string, db: DB) {
-    const pid = pidFromRepo(repo)
+  static async init(pid: PID, db: DB) {
     const fs = { promises: GitKV.createBlank(db, pid) }
     await git.init({ fs, dir, defaultBranch: ENTRY_BRANCH })
     log('init complete')
@@ -85,8 +83,7 @@ export default class FS {
     const init = new FS(pid, commit, db)
     return init
   }
-  static async clone(repo: string, db: DB) {
-    const pid = pidFromRepo(repo)
+  static async clone(pid: PID, db: DB) {
     // TODO detect the mainbranch somehow
     const url = `https://github.com/${pid.account}/${pid.repository}.git`
     const fs = { promises: GitKV.createBlank(db, pid) }
@@ -428,3 +425,5 @@ const assertPath = (path: string) => {
   assert(!path.startsWith('.git/'), '.git paths are forbidden: ' + path)
   assert(!path.endsWith('/'), 'path must not end with /: ' + path)
 }
+const getCacheKey = (pid: PID) =>
+  pid.id + '/' + pid.repository + '/' + pid.account

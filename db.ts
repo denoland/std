@@ -53,20 +53,16 @@ export default class DB {
     }
   }
   async rm(pid: PID) {
-    // TODO get maintenance lock on the repo first, and quiesce activity
-    const prefixes = keys.getPrefixes(pid)
-    log('rm %o', prefixes)
-    const wipe = async (prefix: Deno.KvKey) => {
-      const all = this.#kv.list({ prefix })
-      const deletes = []
-      for await (const { key } of all) {
-        log('deleted: ', key)
-        deletes.push(this.#kv.delete(key))
-      }
-      await Promise.all(deletes)
+    const prefix = keys.getRepoBase(pid)
+    log('rm %o', prefix)
+    const all = this.#kv.list({ prefix })
+    const deletes = []
+    for await (const { key } of all) {
+      log('deleted: ', key)
+      deletes.push(this.#kv.delete(key))
     }
-    const promises = prefixes.map(wipe)
-    await Promise.all(promises)
+    await Promise.all(deletes)
+    return !!deletes.length
   }
   watchHead(pid: PID, signal?: AbortSignal) {
     // TODO this should be unified to have a single one for the whole db
@@ -149,7 +145,7 @@ export default class DB {
   }
   async watchSideEffectsLock(pid: PID, abort: AbortController) {
     // rudely snatch the lock
-    const key = keys.getHeadLockKey(pid)
+    const key = keys.getEffectsLockKey(pid)
     const lockId = ulid()
     const { versionstamp, ok } = await this.#kv.set(key, lockId)
     assert(ok, 'Failed to set lock')

@@ -1,12 +1,13 @@
 import IOChannel from '../io/io-channel.ts'
 import { getPoolKey } from '@/keys.ts'
-import { ExeResult, SolidRequest } from '@/constants.ts'
+import { C, ExeResult, SolidRequest } from '@/constants.ts'
 import IsolateApi from '../isolate-api.ts'
 import Compartment from '../io/compartment.ts'
 import { Outcome, Request } from '@/constants.ts'
 import { assert, Debug, equal, serializeError } from '@utils'
 import Accumulator from '@/exe/accumulator.ts'
 import FS from '@/git/fs.ts'
+import { PID } from '@/api/web-client.types.ts'
 const log = Debug('AI:exe')
 
 export default class Executor {
@@ -14,11 +15,12 @@ export default class Executor {
   static createCacheContext() {
     return new Executor()
   }
-  async execute(req: SolidRequest, fs: FS): Promise<ExeResult> {
+  async execute(req: SolidRequest, commit: string, c: C): Promise<ExeResult> {
+    const fs = FS.open(req.target, commit, c.db)
     assert(equal(fs.pid, req.target), 'target is not self')
     assert(!fs.isChanged, 'fs is changed')
     const io = await IOChannel.load(fs)
-    assert(io.isCallable(req), 'request is not callable')
+    assert(io.isNextSerialRequest(req), 'request is not callable')
     log('request %o %o', req.isolate, req.functionName)
 
     const ioAccumulator = io.getAccumulator()
@@ -30,7 +32,11 @@ export default class Executor {
     const exeId: string = getExeId(req)
     if (!this.#functions.has(exeId)) {
       log('creating execution %o', exeId)
+      // TODO the api needs to be updated with later context and fs
       const isolateApi = IsolateApi.create(fs, ioAccumulator)
+      if (isSystem(fs.pid)) {
+        isolateApi.context = c
+      }
       const compartment = await Compartment.create(req.isolate)
       const functions = compartment.functions(isolateApi)
       const execution = {
@@ -109,4 +115,8 @@ const isOutcome = (value: unknown): value is Outcome => {
   return typeof value === 'object' && value !== null &&
     ('result' in value || 'error' in value) &&
     !('result' in value && 'error' in value)
+}
+const isSystem = (pid: PID) => {
+  const { id, account, repository } = pid
+  return id === '__system' && account === 'system' && repository === 'system'
 }

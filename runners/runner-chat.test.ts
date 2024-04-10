@@ -1,5 +1,5 @@
 import merge from 'npm:lodash.merge'
-import Cradle from '../cradle.ts'
+import Cradle from '../engine.ts'
 import { expect, log } from '@utils'
 import IsolateApi from '../isolate-api.ts'
 import { Help, RUNNERS } from '../constants.ts'

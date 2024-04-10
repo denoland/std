@@ -4,6 +4,7 @@ import { ENTRY_BRANCH, PID, Poolable, Reply, Request } from '@/constants.ts'
 import { assert } from '@utils'
 
 const assertPid = (pid: PID) => {
+  assert(pid.id, 'id is required')
   assert(pid.account, 'account is required')
   assert(pid.repository, 'repository is required')
   assert(pid.branches[0], 'branch is required')
@@ -14,33 +15,20 @@ const assertPid = (pid: PID) => {
   }
 }
 export const getPoolKeyPrefix = (pid: PID) => {
-  const { account, repository, branches } = pid
-  return [KEYSPACES.POOL, account, repository, ...branches]
+  const { id, account, repository, branches } = pid
+  return [id, account, repository, 'pool', ...branches]
 }
 export const getPoolKey = (poolable: Poolable) => {
-  const id = getId(poolable)
-  return [...getPoolKeyPrefix(poolable.target), id]
+  const uid = getId(poolable)
+  return [...getPoolKeyPrefix(poolable.target), uid]
 }
 export const getRepoKey = (pid: PID) => {
-  const { account, repository, branches } = pid
-  return [KEYSPACES.REPO, account, repository, ...branches]
+  const { id, account, repository, branches } = pid
+  return [id, account, repository, ...branches]
 }
-export const getPrefixes = (pid: PID) => {
-  const { account, repository } = pid
-  const prefixes = []
-  for (const keyspace of Object.values(KEYSPACES)) {
-    prefixes.push([keyspace, account, repository])
-  }
-  return prefixes
-}
-export const getRepoRoot = (pid: PID) => {
-  const { account, repository } = pid
-  return [KEYSPACES.REPO, account, repository]
-}
-export enum KEYSPACES {
-  POOL = 'POOL', // all pending requests and replies trying to be committed
-  REPO = 'REPO', // the .git folder of a particular repo
-  UNDELIVERED = 'UNDELIVERED', // all undelivered queue messages
+export const getRepoBase = (pid: PID) => {
+  const { id, account, repository } = pid
+  return [id, account, repository]
 }
 const getId = (action: Request | Reply) => {
   const id = (pid: PID, sequence: number) => {
@@ -58,34 +46,40 @@ const getId = (action: Request | Reply) => {
   }
 }
 
-export const pidFromRepo = (repo: string): PID => {
+export const pidFromRepo = (id: string, repo: string): PID => {
   const [account, repository] = repo.split('/')
   const pid: PID = {
+    id,
     account,
     repository,
     branches: [ENTRY_BRANCH],
   }
   assertPid(pid)
+  Object.freeze(pid)
+  Object.freeze(pid.branches)
   return pid
 }
 export const getHeadKey = (pid: PID) => {
-  const prefix = getRepoRoot(pid)
+  const prefix = getRepoBase(pid)
   return [...prefix, 'refs', 'heads', ...pid.branches]
 }
-export const getHeadLockKey = (pid: PID) => {
-  const prefix = getRepoRoot(pid)
+export const getEffectsLockKey = (pid: PID) => {
+  const prefix = getRepoBase(pid)
   const branches = [...pid.branches]
   const last = branches.pop()
   return [...prefix, 'refs', 'heads', ...branches, last + '.lock']
 }
 export const getRepoLockKey = (pid: PID) => {
-  const prefix = getRepoRoot(pid)
+  const prefix = getRepoBase(pid)
   return [...prefix, 'index.lock']
 }
 export const headKeyToPid = (headKey: string[]) => {
-  const [repo, account, repository, refs, heads, ...branches] = headKey
-  assert(repo === KEYSPACES.REPO, 'not a repo path')
+  const [id, account, repository, refs, heads, ...branches] = headKey
+  assert(id, 'no id')
   assert(refs === 'refs', 'not a refs path')
   assert(heads === 'heads', 'not a heads path')
-  return { account, repository, branches }
+  assert(branches.length > 0, 'no branches')
+  return { id, account, repository, branches }
 }
+
+export const UNDELIVERED = ['__system', 'system', 'system', 'undelivered']

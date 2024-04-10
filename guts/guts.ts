@@ -1,18 +1,17 @@
 // the Grand Unified Test Suite™
 
-import * as utils from '@utils'
+import { expect, log } from '@utils'
 import { Artifact, CommitObject } from '../api/web-client.types.ts'
 import processMgmt from './process-mgmt.ts'
 import aiCalls from './ai-calls.ts'
 import splices from './splices.ts'
 
-const { expect, log } = utils
 const ioFixture = 'io-fixture'
 
 export default (name: string, cradleMaker: () => Promise<Artifact>) => {
   const prefix = name + ': '
 
-  Deno.test.only(prefix + 'io', async (t) => {
+  Deno.test(prefix + 'io', async (t) => {
     const artifact = await cradleMaker()
     await t.step('ping empty', async () => {
       const empty = await artifact.ping()
@@ -23,7 +22,7 @@ export default (name: string, cradleMaker: () => Promise<Artifact>) => {
       expect(result).toEqual({ test: 'test' })
     })
     await t.step('clone', async () => {
-      utils.Debug.enable('AI:tests')
+      log.enable('AI:tests')
       await artifact.rm({ repo: 'dreamcatcher-tech/HAL' })
       const clone = await artifact.clone({ repo: 'dreamcatcher-tech/HAL' })
       log('clone result', clone)
@@ -41,7 +40,7 @@ export default (name: string, cradleMaker: () => Promise<Artifact>) => {
     const artifact = await cradleMaker()
     await artifact.rm({ repo: 'cradle/pierce' })
     const { pid: target } = await artifact.init({ repo: 'cradle/pierce' })
-    const pierces = await artifact.pierces(ioFixture, target)
+    const pierces = await artifact.actions(ioFixture, target)
     await t.step('local', async () => {
       const result = await pierces.local()
       log('local result', result)
@@ -69,7 +68,7 @@ export default (name: string, cradleMaker: () => Promise<Artifact>) => {
     const repo = 'cradle/pierce'
     await artifact.rm({ repo })
     const { pid: target } = await artifact.init({ repo })
-    const { local } = await artifact.pierces(ioFixture, target)
+    const { local } = await artifact.actions(ioFixture, target)
 
     await t.step('serial', async () => {
       const promises = []
@@ -106,7 +105,7 @@ export default (name: string, cradleMaker: () => Promise<Artifact>) => {
     await artifact.rm({ repo })
 
     const { pid: target } = await artifact.init({ repo })
-    const { local } = await artifact.pierces(ioFixture, target)
+    const { local } = await artifact.actions(ioFixture, target)
 
     await t.step('parallel', async () => {
       const promises = []

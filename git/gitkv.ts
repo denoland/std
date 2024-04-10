@@ -1,5 +1,5 @@
 import { Debug } from '@utils'
-import { getRepoRoot, headKeyToPid } from '@/keys.ts'
+import { getRepoBase, headKeyToPid } from '@/keys.ts'
 import type DB from '@/db.ts'
 import { assert, AssertionError, equal } from '@utils'
 import { PID } from '@/constants.ts'
@@ -139,7 +139,7 @@ export class GitKV {
   async readdir(path: string, options?: object) {
     log('readdir', path)
     assert(!options, 'options not supported')
-    let pathKey = getRepoRoot(this.#pid)
+    let pathKey = getRepoBase(this.#pid)
     if (path !== '/.git') {
       pathKey = this.#getAllowedPathKey(path)
     }
@@ -214,7 +214,7 @@ export class GitKV {
     assert(path.startsWith('/.git/'), 'path must start with /.git/')
     const rest = path.slice('/.git/'.length)
     assert(rest, 'path must not be bare')
-    const prefix = getRepoRoot(this.#pid)
+    const prefix = getRepoBase(this.#pid)
     const pathKey = rest.split('/')
     assert(this.#allowed.includes(pathKey[0]), 'path not allowed: ' + pathKey)
 

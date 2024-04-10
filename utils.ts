@@ -15,7 +15,13 @@ import { ulid } from 'std/ulid/mod.ts'
 export { ulid }
 export { deserializeError, serializeError }
 export { Debug }
-export const log = Debug('AI:tests')
+const _log = Debug('AI:tests')
+export const log = (...args: unknown[]) => {
+  _log(...args)
+}
+log.enable = (...args: string[]) => {
+  Debug.enable(...args)
+}
 export * as posix from 'https://deno.land/std@0.213.0/path/posix/mod.ts'
 export const sha1 = /^[0-9a-f]{40}$/i
 
