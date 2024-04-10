@@ -7,8 +7,20 @@
 import { Schema } from "../schema.ts";
 import { map, seq, str } from "../_type/mod.ts";
 
-// Standard YAML's Failsafe schema.
-// http://www.yaml.org/spec/1.2/spec.html#id2802346
-export const failsafe: Schema = new Schema({
+/**
+ * Standard YAML's failsafe schema.
+ *
+ * @see {@link http://www.yaml.org/spec/1.2/spec.html#id2802346}
+ */
+export const FAILSAFE_SCHEMA: Schema = new Schema({
   explicit: [str, seq, map],
 });
+
+/**
+ * Standard YAML's failsafe schema.
+ *
+ * @see {@link http://www.yaml.org/spec/1.2/spec.html#id2802346}
+ *
+ * @deprecated (will be removed in 1.0.0) Use {@link FAILSAFE_SCHEMA} instead.
+ */
+export const failsafe = FAILSAFE_SCHEMA;
