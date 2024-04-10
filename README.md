@@ -125,6 +125,10 @@ Check out the documentation [here](https://deno.land/std?doc).
 > For background and discussions regarding the stability of the following
 > sub-modules, see [#3489](https://github.com/denoland/deno_std/issues/3489).
 
+## Architecture
+
+Check out the architecture guide [here](./.github/ARCHITECTURE.md).
+
 ## Design
 
 ## Minimal Exports
