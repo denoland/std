@@ -9,7 +9,7 @@ import { DAY } from "./constants.ts";
  * @param date Date to get the day of the year of.
  * @return Number of the day in the year in the local time zone.
  *
- * @example
+ * @example Basic usage
  * ```ts
  * import { dayOfYear } from "https://deno.land/std@$STD_VERSION/datetime/day_of_year.ts";
  *
