@@ -51,7 +51,7 @@ export default class IOChannel {
     if (await fs.exists('.io.json')) {
       const io = await fs.readJSON<IoStruct>('.io.json')
       check(io)
-      return new IOChannel(io, fs.pid, fs)
+      return new IOChannel(io, fs.pid)
     }
   }
   static async load(fs: FS) {

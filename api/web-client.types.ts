@@ -354,5 +354,5 @@ export interface EngineInterface {
   read(pid: PID, path?: string, signal?: AbortSignal): ReadableStream<Splice>
   transcribe(audio: File): Promise<{ text: string }>
   apiSchema(isolate: string): Promise<ApiSchema>
-  ping(params?: { data?: JsonValue }): Promise<IsolateReturn>
+  ping(data?: JsonValue): Promise<IsolateReturn>
 }

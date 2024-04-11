@@ -112,7 +112,7 @@ export class Shell implements Artifact {
   }
 
   ping(params?: { data?: JsonValue }) {
-    return this.#engine.ping(params)
+    return this.#engine.ping(params?.data)
     // TODO return some info about the deployment
     // version, deployment location, etc
     // if you want to ping in a chain, use an isolate

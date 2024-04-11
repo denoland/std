@@ -73,15 +73,8 @@ export default class IsolateApi<T extends object = Default> {
     const actions: DispatchFunctions = {}
     for (const functionName of Object.keys(schema)) {
       actions[functionName] = (params?: Params, options?: ProcessOptions) => {
-        assert(this.#accumulator.isActive, 'Activity is denied')
         log('actions %o', functionName)
         // TODO unify how proctype is derived across all cradles
-        if (equal(targetPID, this.pid)) {
-          if (!options) {
-            options = { branch: true }
-          }
-          assert(options.branch || options.noClose, 'no loopback serial')
-        }
         const proctype = getProcType(options)
         assert(this.#accumulator, 'accumulator must be set')
         const unsequencedRequest: UnsequencedRequest = {

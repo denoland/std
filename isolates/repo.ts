@@ -50,10 +50,8 @@ export const pid = {
 }
 export const api = {
   probe: { ...pid, description: 'Check if a repo or PID exists' },
-  init: repo,
+  init: { ...pid, description: 'Initialize a new repo' },
   clone: { ...pid, description: 'Clone a GitHub repo' },
-  pull: repo,
-  push: repo,
   rm: { ...pid, description: 'Remove everything about a PID' },
 }
 export type Api = {

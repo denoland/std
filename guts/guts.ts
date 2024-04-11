@@ -11,7 +11,7 @@ const ioFixture = 'io-fixture'
 export default (name: string, cradleMaker: () => Promise<Artifact>) => {
   const prefix = name + ': '
 
-  Deno.test.only(prefix + 'io', async (t) => {
+  Deno.test(prefix + 'io', async (t) => {
     const artifact = await cradleMaker()
     await t.step('ping empty', async () => {
       const empty = await artifact.ping()
@@ -36,28 +36,28 @@ export default (name: string, cradleMaker: () => Promise<Artifact>) => {
   Deno.test.ignore(prefix + 'child to self', async () => {})
   Deno.test.ignore(prefix + 'child to child', async () => {})
   Deno.test.ignore(prefix + 'child to parent', async () => {})
-  Deno.test(prefix + 'pierce', async (t) => {
+  Deno.test.only(prefix + 'pierce', async (t) => {
     const artifact = await cradleMaker()
     await artifact.rm({ repo: 'cradle/pierce' })
     const { pid: target } = await artifact.init({ repo: 'cradle/pierce' })
-    const pierces = await artifact.actions(ioFixture, target)
+    const actions = await artifact.actions(ioFixture, target)
     await t.step('local', async () => {
-      const result = await pierces.local()
+      const result = await actions.local()
       log('local result', result)
       expect(result).toBe('local reply')
     })
     await t.step('second local', async () => {
-      const second = await pierces.local()
+      const second = await actions.local()
       expect(second).toBe('local reply')
     })
 
     await t.step('throws', async () => {
       const message = 'test message'
-      await expect(pierces.error({ message })).rejects.toThrow(message)
+      await expect(actions.error({ message })).rejects.toThrow(message)
     })
     await t.step('params fails validation', async () => {
       const msg = 'Parameters Validation Error: '
-      await expect(pierces.local({ invalid: 'parameters' }))
+      await expect(actions.local({ invalid: 'parameters' }))
         .rejects.toThrow(msg)
     })
     await artifact.stop()

@@ -1,5 +1,5 @@
 import { Engine } from './engine.ts'
-import { Shell } from './shell.ts'
+import { Shell } from '@/api/web-client.ts'
 import guts from './guts/guts.ts'
 import { expect, log } from '@utils'
 
@@ -10,7 +10,7 @@ const cradleMaker = async () => {
   return shell
 }
 
-Deno.test.only('cradle', async (t) => {
+Deno.test('cradle', async (t) => {
   await t.step('basic', async () => {
     const engine = await Engine.create()
     const system = await engine.initialize()
