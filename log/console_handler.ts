@@ -25,17 +25,12 @@ export class ConsoleHandler extends BaseHandler {
     let msg = super.format(logRecord);
 
     if (this.#useColors) {
-      msg = this.#applyColors(msg, logRecord.level);
+      msg = this.applyColors(msg, logRecord.level);
     }
 
     return msg;
   }
-  #applyColors(msg: string, level: number): string {
-    return this.applyColors(msg, level);
-  }
-  /**
-   * @deprecated (will be removed in 0.220.0)
-   */
+
   applyColors(msg: string, level: number): string {
     switch (level) {
       case LogLevels.INFO:
@@ -57,7 +52,7 @@ export class ConsoleHandler extends BaseHandler {
     return msg;
   }
 
-  override #log(msg: string) {
+  override log(msg: string) {
     console.log(msg);
   }
 }
