@@ -288,5 +288,5 @@ export const isPID = (value: unknown): value is PID => {
   )
 }
 export const print = (pid: PID) => {
-  return `${pid.account}/${pid.repository}:${pid.branches.join('/')}`
+  return `${pid.id}/${pid.account}/${pid.repository}:${pid.branches.join('/')}`
 }

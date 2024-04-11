@@ -1,7 +1,7 @@
 import FS from '@/git/fs.ts'
 import { sanitizeContext } from '@/isolates/artifact.ts'
 import { assert, Debug, equal } from '@utils'
-import { C, IsolateApi, isPID, PID } from '@/constants.ts'
+import { C, IsolateApi, isPID, PID, print } from '@/constants.ts'
 import { pidFromRepo } from '@/keys.ts'
 const log = Debug('AI:isolates:repo')
 /**
@@ -52,7 +52,7 @@ const pid = {
 export const api = {
   probe: { ...pid, description: 'Check if a repo or PID exists' },
   init: repo,
-  clone: repo,
+  clone: { ...pid, description: 'Clone a GitHub repo' },
   pull: repo,
   push: repo,
   rm: { ...pid, description: 'Remove everything about a PID' },
@@ -61,6 +61,9 @@ export const api = {
 export type Api = {
   rm: (params: { pid: PID }) => Promise<boolean>
   init: (params: { pid: PID }) => Promise<{ pid: PID; head: string }>
+  clone: (
+    params: { pid: PID },
+  ) => Promise<{ pid: PID; head: string; elapsed: number }>
 }
 export const functions = {
   async probe(params: { pid: PID }, api: IsolateApi<C>) {
@@ -87,14 +90,7 @@ export const functions = {
     const { commit: head } = fs
     return { pid, head, elapsed: Date.now() - start }
   },
-  async clone(params: { id: string; repo: string }, api: IsolateApi<C>) {
-    // this should go into the queue of things to do
-    // there is an atomic queue, but also a job queue to move work closer to the
-    // source
-    // ? could this be a pierce into itself ?
-    // so the cradle would just all pierce with this action ?
-    // if not, how else would we queue the work and then get an outcome back ?
-
+  async clone(params: { pid: PID }, api: IsolateApi<C>) {
     if (!api.isEffect) {
       throw new Error('Clone requires side effect capabilities')
     }
@@ -104,11 +100,10 @@ export const functions = {
     }
 
     const start = Date.now()
-    const { id, repo } = params
-    const pid = pidFromRepo(id, repo)
+    const { pid } = params
     const probe = await functions.probe({ pid }, api)
     if (probe) {
-      throw new Error('repo already exists: ' + params.repo)
+      throw new Error('repo already exists: ' + print(pid))
     }
 
     log('cloning %s', repo)
@@ -124,9 +119,16 @@ export const functions = {
   push() {
     throw new Error('not implemented')
   },
-  async rm(params: { pid: PID }, api: IsolateApi<C>) {
+  rm(params: { pid: PID }, api: IsolateApi<C>) {
     // TODO lock the whole repo in case something is running
     // batch atomic the deletes while we have the lock
+    if (!api.isEffect) {
+      throw new Error('Clone requires side effect capabilities')
+    }
+    if (api.isEffectRecovered) {
+      // clean up the clone by wiping the repo, but make sure no existing repo
+      // was there before the previous torn clone was started.
+    }
     log('rm', params.pid)
     const { db } = sanitizeContext(api)
     FS.clearCache(params.pid)

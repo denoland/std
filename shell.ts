@@ -37,8 +37,14 @@ export class Shell implements Artifact {
     this.#watchPierces()
   }
   static create(engine: Engine, pid: PID) {
-    // scope to a particular chainid
     return new Shell(engine, pid)
+  }
+  #repo: Promise<repo.Api> | undefined
+  async #repoActions() {
+    if (!this.#repo) {
+      this.#repo = this.actions<repo.Api>('repo', this.#engine.pid)
+    }
+    return await this.#repo
   }
   stop() {
     // start watching the chain you are subscribed to
@@ -54,21 +60,18 @@ export class Shell implements Artifact {
   }
   #abort = new AbortController()
   async #watchPierces() {
-    // there is only action that is alowed to be pierced in.
-    // things might be simpler if pierce was stored separately from other
-    // actions ?
-    // if pierce is coming from only a single source, then easier to do sequence
-    // coordination, like letting the client select the sequence, or the version
-    // counter of the pierce array, or the client sending an ack up.
     const watchIo = this.#engine.read(this.#pid, '.io.json', this.#abort.signal)
 
     let patched = ''
+    let lastSplice
     for await (const splice of watchIo) {
-      console.log(splice.oid)
+      if (lastSplice) {
+        assert(splice.commit.parent[0] === lastSplice.oid, 'parent mismatch')
+      }
+      lastSplice = splice
       if (!splice.changes) {
         continue
       }
-      // TODO assert that the splice parent is the last splice
       let cursor = 0
       for (const diff of splice.changes) {
         if (diff.added) {
@@ -88,7 +91,6 @@ export class Shell implements Artifact {
       this.resolvePierces(io)
     }
   }
-  // when we pierce, we need to wrap everything
   async actions<T>(isolate: string, target: PID) {
     // client side, since functions cannot be returned from isolate calls
     const apiSchema = await this.apiSchema({ isolate })
@@ -163,7 +165,8 @@ export class Shell implements Artifact {
   }
   async clone(params: { repo: string }) {
     const pid = pidFromRepo(this.#pid.id, params.repo)
-    return { pid, head: 'head' }
+    const actions = await this.#repoActions()
+    return actions.clone({ pid })
   }
   async pull(params: { pid: PID }) {
     const { pid } = params
@@ -179,9 +182,9 @@ export class Shell implements Artifact {
     log('rm', params.repo)
     // hit up the system chain to delete some stuff
 
-    const repoActions = await this.actions<repo.Api>('repo', this.#engine.pid)
     const pid = pidFromRepo(this.#pid.id, params.repo)
-    return repoActions.rm({ pid })
+    const actions = await this.#repoActions()
+    return actions.rm({ pid })
   }
   read(pid: PID, path?: string, signal?: AbortSignal) {
     return this.#engine.read(pid, path, signal)

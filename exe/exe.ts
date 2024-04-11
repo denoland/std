@@ -31,9 +31,11 @@ export default class Executor {
 
     const exeId: string = getExeId(req)
     if (!this.#functions.has(exeId)) {
-      log('creating execution %o', exeId)
       // TODO the api needs to be updated with later context and fs
-      const isolateApi = IsolateApi.create(fs, ioAccumulator)
+      log('creating execution %o', exeId)
+      const opts = { isEffect: true, isEffectRecovered: false }
+      // TODO read side effect config from io.json
+      const isolateApi = IsolateApi.create(fs, ioAccumulator, opts)
       if (isSystem(fs.pid)) {
         isolateApi.context = c
       }

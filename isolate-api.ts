@@ -15,7 +15,10 @@ const log = Debug('AI:isolateApi')
 interface Default {
   [key: string]: unknown
 }
-
+type Options = {
+  isEffect: boolean
+  isEffectRecovered: boolean
+}
 export default class IsolateApi<T extends object = Default> {
   #fs: FS
   #accumulator: Accumulator
@@ -28,8 +31,13 @@ export default class IsolateApi<T extends object = Default> {
     this.#fs = fs
     this.#accumulator = accumulator
   }
-  static create(fs: FS, accumulator: Accumulator) {
-    return new IsolateApi(fs, accumulator)
+  static create(fs: FS, accumulator: Accumulator, opts: Options) {
+    const api = new IsolateApi(fs, accumulator)
+    if (opts) {
+      api.#isEffect = opts.isEffect || false
+      api.#isEffectRecovered = opts.isEffectRecovered || false
+    }
+    return api
   }
   static createContext<T extends object = Default>() {
     // TODO find a more graceful way to do this for cradle setup

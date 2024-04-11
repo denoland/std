@@ -20,9 +20,14 @@ Deno.test.only('cradle', async (t) => {
     const result = await shell.ping({ data: 'hello' })
     expect(result).toBe('hello')
 
-    log.enable('AI:* -*KV')
     await shell.rm({ repo: 'test/test' })
-
+    const clone = await shell.clone({ repo: 'dreamcatcher-tech/HAL' })
+    log('clone result', clone)
+    // TODO read the fs and see what the state of the file system is ?
+    expect(clone.pid).toBeDefined()
+    expect(clone.pid.account).toBe('dreamcatcher-tech')
+    expect(typeof clone.head).toBe('string')
+    expect(clone.elapsed).toBeGreaterThan(100)
     await shell.stop()
   })
 })
