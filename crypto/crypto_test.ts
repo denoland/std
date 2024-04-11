@@ -1,5 +1,11 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-import { assert, assertEquals, assertInstanceOf, fail } from "../assert/mod.ts";
+import {
+  assert,
+  assertEquals,
+  assertInstanceOf,
+  assertRejects,
+  fail,
+} from "../assert/mod.ts";
 import {
   crypto as stdCrypto,
   DIGEST_ALGORITHM_NAMES,
@@ -257,6 +263,35 @@ Deno.test("digest() keeps memory usage reasonable with many calls", async () => 
     stateFinal,
     "bad332864a0cd62866c18ac5623585b4b8e4fa029661e909c82ada8c06bc34d6",
     `test subprocess returned wrong hash (${stateFinal})`,
+  );
+});
+
+Deno.test("digest() throws on invalid input", async () => {
+  const inputString = "taking the hobbits to isengard";
+  const inputBytes = new TextEncoder().encode(inputString);
+
+  await assertRejects(
+    () => stdCrypto.subtle.digest("BLAKE2B", {} as Iterable<never>),
+    TypeError,
+    "data must be a BufferSource or [Async]Iterable<BufferSource>",
+  );
+
+  await assertRejects(
+    () =>
+      stdCrypto.subtle.digest(
+        "BLAKE2B",
+        (async function* () {
+          yield undefined;
+        })() as AsyncIterable<BufferSource>,
+      ),
+    TypeError,
+    "data contained chunk of the wrong type",
+  );
+
+  await assertRejects(
+    () => stdCrypto.subtle.digest("BLAK" as DigestAlgorithmName, inputBytes),
+    DOMException,
+    "Unrecognized algorithm name",
   );
 });
 

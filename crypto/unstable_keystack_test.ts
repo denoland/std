@@ -1,8 +1,19 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import { assert, assertEquals } from "../assert/mod.ts";
+import { assert, assertEquals, assertThrows } from "../assert/mod.ts";
 
 import { KeyStack } from "./unstable_keystack.ts";
+
+Deno.test({
+  name: "KeyStack() throws on empty keys",
+  fn() {
+    assertThrows(
+      () => new KeyStack([]),
+      TypeError,
+      "keys must contain at least one value",
+    );
+  },
+});
 
 Deno.test({
   name: "keyStack.sign() handles single key",

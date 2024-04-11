@@ -73,6 +73,26 @@ Deno.test({
 
 Deno.test({
   name:
+    "timingSafeEqual() handles Uint8Array with different byte lengths (a > b)",
+  fn() {
+    const a = new Uint8Array([212, 213]);
+    const b = new Uint8Array([212]);
+    assert(!timingSafeEqual(a, b));
+  },
+});
+
+Deno.test({
+  name:
+    "timingSafeEqual() handles Uint8Array with different byte lengths (a < b)",
+  fn() {
+    const a = new Uint8Array([212]);
+    const b = new Uint8Array([212, 213]);
+    assert(!timingSafeEqual(a, b));
+  },
+});
+
+Deno.test({
+  name:
     "timingSafeEqual() handles Uint8Array with different buffer sizes (a > b)",
   fn() {
     const a = new SharedArrayBuffer(4);
