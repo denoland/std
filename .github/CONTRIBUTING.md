@@ -76,7 +76,7 @@ Documentation for public symbols should contain:
 1. [`@param`](https://jsdoc.app/tags-param) tags for each parameter and a
    [`@returns`](https://jsdoc.app/tags-returns) tag, if the symbol is a
    function.
-1. A least one example code snippet using the
+1. At least one example code snippet using the
    [`@example`](https://jsdoc.app/tags-example) tag and a title. The code
    reproducible when copied and pasted as a script.
 
