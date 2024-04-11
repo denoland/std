@@ -15,7 +15,7 @@ function assertIsDefaultAbortReason(reason: unknown) {
   assertStrictEquals(reason.name, "AbortError");
 }
 
-Deno.test("delay()", async function () {
+Deno.test("delay()", async () => {
   const start = new Date();
   const delayedPromise = delay(100);
   const result = await delayedPromise;
@@ -24,7 +24,7 @@ Deno.test("delay()", async function () {
   assert(diff >= 100);
 });
 
-Deno.test("delay() handles abort", async function () {
+Deno.test("delay() handles abort", async () => {
   const start = new Date();
   const abort = new AbortController();
   const { signal } = abort;
@@ -36,7 +36,7 @@ Deno.test("delay() handles abort", async function () {
   assertIsDefaultAbortReason(cause);
 });
 
-Deno.test("delay() checks abort reason", async function (ctx) {
+Deno.test("delay() checks abort reason", async (ctx) => {
   async function assertRejectsReason(reason: unknown) {
     const start = new Date();
     const abort = new AbortController();
@@ -71,7 +71,7 @@ Deno.test("delay() checks abort reason", async function (ctx) {
   });
 });
 
-Deno.test("delay() handles non-aborted signal", async function () {
+Deno.test("delay() handles non-aborted signal", async () => {
   const start = new Date();
   const abort = new AbortController();
   const { signal } = abort;
@@ -82,7 +82,7 @@ Deno.test("delay() handles non-aborted signal", async function () {
   assert(diff >= 100);
 });
 
-Deno.test("delay() handles aborted signal after delay", async function () {
+Deno.test("delay() handles aborted signal after delay", async () => {
   const start = new Date();
   const abort = new AbortController();
   const { signal } = abort;
@@ -94,7 +94,7 @@ Deno.test("delay() handles aborted signal after delay", async function () {
   assert(diff >= 100);
 });
 
-Deno.test("delay() handles already aborted signal", async function () {
+Deno.test("delay() handles already aborted signal", async () => {
   const start = new Date();
   const abort = new AbortController();
   abort.abort();
@@ -106,13 +106,13 @@ Deno.test("delay() handles already aborted signal", async function () {
   assertIsDefaultAbortReason(cause);
 });
 
-Deno.test("delay() handles persitent option", async function () {
+Deno.test("delay() handles persitent option", async () => {
   using unrefTimer = stub(Deno, "unrefTimer");
   await delay(100, { persistent: false });
   assertSpyCalls(unrefTimer, 1);
 });
 
-Deno.test("delay() handles persistent option with reference error", async function () {
+Deno.test("delay() handles persistent option with reference error", async () => {
   using unrefTimer = stub(Deno, "unrefTimer", () => {
     throw new ReferenceError();
   });
@@ -122,7 +122,7 @@ Deno.test("delay() handles persistent option with reference error", async functi
 
 Deno.test({
   name: "delay() handles persistent option with error",
-  fn: async function () {
+  async fn() {
     using unrefTimer = stub(Deno, "unrefTimer", () => {
       throw new Error("Error!");
     });
