@@ -57,6 +57,7 @@ export const doAtomicCommit = async (db: DB, fs: FS, exe?: ExeResult) => {
 const transmit = (pid: PID, solids: Solids, atomic: Atomic) => {
   const { commit, exe, branches, replies } = solids
 
+  // need to transmit requests going to other chains
   const transmittedReplies = new Set<PID>()
   if (exe) {
     const { request, sequence } = exe
@@ -67,6 +68,8 @@ const transmit = (pid: PID, solids: Solids, atomic: Atomic) => {
   }
   for (const reply of replies) {
     atomic.addToPool(reply)
+    // do the same with requests that need to get pooled too
+    // share the same single trigger
     if (!transmittedReplies.has(reply.target)) {
       transmittedReplies.add(reply.target)
       // if one was processed, all were processed ☢️

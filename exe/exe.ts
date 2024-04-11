@@ -24,6 +24,16 @@ export default class Executor {
     assert(io.isNextSerialRequest(req), 'request is not callable')
     log('request %o %o', req.isolate, req.functionName)
 
+    // transmit needs to land in the pool before executing
+
+    // if we jumped branches, we need to insert the action in io first ?
+    // or, we can know we are the current tip of the spear ?
+    // so we would do a branch jump commit, then do an execution
+    // bx, what if loads of actions came streaming in ?
+    // so transmit to a different branch should do a pooling operation
+    // which is like pierce, and then that would trigger the execution once
+    // solidified
+
     const ioAccumulator = io.getAccumulator()
 
     // if this is a side effect, we need to get the side effect lock

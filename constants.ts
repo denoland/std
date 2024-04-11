@@ -53,14 +53,11 @@ export type SolidReply = {
   sequence: number
   outcome: Outcome
 }
-export type MergeReply = {
-  target: PID
+export type MergeReply = SolidReply & {
   /**
    * Where did this merge reply come from?
    */
   source: PID
-  sequence: number
-  outcome: Outcome
   /**
    * What is the commit that solidified this merge reply?
    */
@@ -125,9 +122,9 @@ export const isMergeReply = (poolable: Reply): poolable is MergeReply => {
  * task will continue to retry until it is successful, as long as its check for
  * duplication reassures it to keep trying.
  */
-export type QueueMessage = QueuePierce | QueueExe | QueueBranch | QueueReply
+export type QueueMessage = QueuePool | QueueExe | QueueBranch | QueueReply
 
-export type QueuePierce = {
+export type QueuePool = {
   pierce: PierceRequest
 }
 export type QueueExe = {
@@ -143,7 +140,7 @@ export type QueueBranch = {
 export type QueueReply = {
   reply: MergeReply
 }
-export const isQueuePierce = (m: QueueMessage): m is QueuePierce => {
+export const isQueuePool = (m: QueueMessage): m is QueuePool => {
   return 'pierce' in m
 }
 export const isQueueExe = (m: QueueMessage): m is QueueExe => {

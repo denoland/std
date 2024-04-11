@@ -8,7 +8,7 @@ import {
   isPierceRequest,
   isQueueBranch,
   isQueueExe,
-  isQueuePierce,
+  isQueuePool,
   isQueueReply,
   PierceRequest,
   print,
@@ -91,7 +91,8 @@ export const lifecycles: IsolateLifecycle = {
     const context: C = { db, exe }
     api.context = context
     db.listen(async (message: QueueMessage) => {
-      if (isQueuePierce(message)) {
+      if (isQueuePool(message)) {
+        // this should be the generate pool including actions from other chains
         const { pierce } = message
         log('Pierce: %o %s', print(pierce.target), pierce.ulid)
         let tip = await FS.openHead(pierce.target, db)
@@ -119,6 +120,8 @@ export const lifecycles: IsolateLifecycle = {
         }
       }
       if (isQueueReply(message)) {
+        // reply, request, and pierce are all the same, actually
+
         const { reply } = message
         log('MergeReply: %o', print(reply.target), reply.sequence, reply.commit)
         let tip = await FS.openHead(reply.target, db)
@@ -131,6 +134,8 @@ export const lifecycles: IsolateLifecycle = {
       }
       if (isQueueExe(message)) {
         const { request, commit, sequence } = message
+        // BUT what if this is crossing a repository ?
+        // The commit is where the request is coming from
         log('Execute: %o', print(request.target), commit, sequence)
         if (await isSettled(request, sequence, db)) {
           return
@@ -195,7 +200,9 @@ const isSettled = async (request: SolidRequest, sequence: number, db: DB) => {
   const tip = await FS.openHead(request.target, db)
   log('isSettled', print(tip.pid), sequence, tip.commit)
   const io = await IOChannel.read(tip)
-  assert(io, 'io not found')
+  if (!io) {
+    return false
+  }
   if (io.isSettled(sequence)) {
     return true
   }
