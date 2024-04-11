@@ -37,10 +37,10 @@
 import * as _windows from "./windows/mod.ts";
 import * as _posix from "./posix/mod.ts";
 
-/** @deprecated (will be removed after 1.0.0) Import from {@link https://deno.land/std/path/windows/mod.ts} instead. */
+/** @deprecated (will be removed in 1.0.0) Import from {@link https://deno.land/std/path/windows/mod.ts} instead. */
 export const win32: typeof _windows = _windows;
 
-/** @deprecated (will be removed after 1.0.0) Import from {@link https://deno.land/std/path/posix/mod.ts} instead. */
+/** @deprecated (will be removed in 1.0.0) Import from {@link https://deno.land/std/path/posix/mod.ts} instead. */
 export const posix: typeof _posix = _posix;
 
 export * from "./basename.ts";

@@ -10,7 +10,7 @@
 import type { Reader } from "./types.ts";
 
 /**
- * @deprecated (will be removed after 1.0.0) Use the {@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API | Web Streams API} instead.
+ * @deprecated (will be removed in 1.0.0) Use the {@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API | Web Streams API} instead.
  */
 export class LimitedReader implements Reader {
   constructor(public reader: Reader, public limit: number) {}

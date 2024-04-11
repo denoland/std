@@ -8,7 +8,7 @@ export type { Closer };
 /**
  * Options for {@linkcode readableStreamFromReader}.
  *
- * @deprecated (will be removed after 1.0.0) Use {@linkcode toReadableStream} instead.
+ * @deprecated (will be removed in 1.0.0) Use {@linkcode toReadableStream} instead.
  */
 export interface ReadableStreamFromReaderOptions {
   /** If the `reader` is also a `Closer`, automatically close the `reader`
@@ -43,7 +43,7 @@ export interface ReadableStreamFromReaderOptions {
  * const fileStream = readableStreamFromReader(file);
  * ```
  *
- * @deprecated (will be removed after 1.0.0) Use {@linkcode toReadableStream} instead.
+ * @deprecated (will be removed in 1.0.0) Use {@linkcode toReadableStream} instead.
  */
 export function readableStreamFromReader(
   reader: Reader | (Reader & Closer),

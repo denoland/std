@@ -12,7 +12,7 @@ const CR = "\r".charCodeAt(0);
 const LF = "\n".charCodeAt(0);
 
 /**
- * @deprecated (will be removed after 1.0.0) Use the {@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API | Web Streams API} instead.
+ * @deprecated (will be removed in 1.0.0) Use the {@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API | Web Streams API} instead.
  */
 export class BufferFullError extends Error {
   override name = "BufferFullError";
@@ -22,7 +22,7 @@ export class BufferFullError extends Error {
 }
 
 /**
- * @deprecated (will be removed after 1.0.0) Use the {@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API | Web Streams API} instead.
+ * @deprecated (will be removed in 1.0.0) Use the {@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API | Web Streams API} instead.
  */
 export class PartialReadError extends Error {
   override name = "PartialReadError";
@@ -35,7 +35,7 @@ export class PartialReadError extends Error {
 /**
  * Result type returned by of BufReader.readLine().
  *
- * @deprecated (will be removed after 1.0.0) Use the {@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API | Web Streams API} instead.
+ * @deprecated (will be removed in 1.0.0) Use the {@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API | Web Streams API} instead.
  */
 export interface ReadLineResult {
   line: Uint8Array;
@@ -43,7 +43,7 @@ export interface ReadLineResult {
 }
 
 /**
- * @deprecated (will be removed after 1.0.0) Use the {@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API | Web Streams API} instead.
+ * @deprecated (will be removed in 1.0.0) Use the {@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API | Web Streams API} instead.
  */
 export class BufReader implements Reader {
   #buf!: Uint8Array;

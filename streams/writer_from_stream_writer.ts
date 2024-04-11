@@ -22,7 +22,7 @@ import type { Writer } from "../io/types.ts";
  * await copy(file, writer);
  * ```
  *
- * @deprecated (will be removed after 1.0.0) Use {@linkcode WritableStreamDefaultWriter} directly.
+ * @deprecated (will be removed in 1.0.0) Use {@linkcode WritableStreamDefaultWriter} directly.
  */
 export function writerFromStreamWriter(
   streamWriter: WritableStreamDefaultWriter<Uint8Array>,

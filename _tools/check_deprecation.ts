@@ -13,8 +13,6 @@ const FAIL_FAST = Deno.args.includes("--fail-fast");
 
 const DEPRECATION_IN_FORMAT_REGEX =
   /^\(will be removed in (?<version>\d+\.\d+\.\d+)\)/;
-const DEPRECATION_AFTER_FORMAT_REGEX =
-  /^\(will be removed after (?<version>\d+\.\d+\.\d+)\)/;
 
 let shouldFail = false;
 
@@ -76,29 +74,10 @@ for await (
               if (FAIL_FAST) Deno.exit(1);
               continue;
             }
-            const { version: afterVersion } =
-              DEPRECATION_AFTER_FORMAT_REGEX.exec(message)?.groups || {};
 
-            if (afterVersion) {
-              if (
-                semver.lessThan(
-                  semver.parse(afterVersion),
-                  semver.parse(VERSION),
-                )
-              ) {
-                console.warn(
-                  colors.yellow("Warn"),
-                  `${
-                    colors.bold("@deprecated")
-                  } tag is expired and export should be removed: ${path}:${d.location.line}`,
-                );
-              }
-              continue;
-            }
-
-            const { version: inVersion } =
+            const { version } =
               DEPRECATION_IN_FORMAT_REGEX.exec(message)?.groups || {};
-            if (!inVersion) {
+            if (!version) {
               console.error(
                 colors.red("Error"),
                 `${
@@ -112,7 +91,7 @@ for await (
 
             if (
               !semver.greaterThan(
-                semver.parse(inVersion),
+                semver.parse(version),
                 semver.parse(VERSION),
               )
             ) {
