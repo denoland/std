@@ -78,7 +78,7 @@ Documentation for public symbols should contain:
    function.
 1. At least one example code snippet using the
    [`@example`](https://jsdoc.app/tags-example) tag and a title. The code
-   reproducible when copied and pasted as a script.
+   is reproducible when copied and pasted as a script.
 
 See the source code within
 [`std/datetime`](https://github.com/denoland/deno_std/tree/main/datetime) for
