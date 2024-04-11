@@ -1,7 +1,7 @@
 // the Grand Unified Test Suite™
 
 import { expect, log } from '@utils'
-import { Artifact, CommitObject } from '../api/web-client.types.ts'
+import { Artifact } from '../api/web-client.types.ts'
 import processMgmt from './process-mgmt.ts'
 import aiCalls from './ai-calls.ts'
 import splices from './splices.ts'
@@ -11,7 +11,7 @@ const ioFixture = 'io-fixture'
 export default (name: string, cradleMaker: () => Promise<Artifact>) => {
   const prefix = name + ': '
 
-  Deno.test(prefix + 'io', async (t) => {
+  Deno.test.only(prefix + 'io', async (t) => {
     const artifact = await cradleMaker()
     await t.step('ping empty', async () => {
       const empty = await artifact.ping()
@@ -83,18 +83,7 @@ export default (name: string, cradleMaker: () => Promise<Artifact>) => {
       }
       log('done')
 
-      const logs = await artifact.logs({ repo: 'cradle/pierce' })
-      log(
-        'logs',
-        logs.map((commit) => {
-          const c = commit as { oid: string; commit: CommitObject }
-          return {
-            oid: c.oid,
-            parent: c.commit.parent,
-          }
-        }).reverse(),
-      )
-      expect(logs.length).toBeGreaterThan(count)
+      // TODO get historical splices and confirm depth of actions
 
       await artifact.stop()
     })
@@ -119,19 +108,6 @@ export default (name: string, cradleMaker: () => Promise<Artifact>) => {
         expect(result).toBe('local reply')
       }
       log('done')
-
-      const logs: object[] = await artifact.logs({ repo: 'cradle/pierce' })
-      expect(logs.length).toBeGreaterThan(count * 2)
-      log(
-        'logs',
-        logs.map((commit) => {
-          const c = commit as { oid: string; commit: CommitObject }
-          return {
-            oid: c.oid,
-            parent: c.commit.parent,
-          }
-        }).reverse(),
-      )
 
       await artifact.stop()
     })

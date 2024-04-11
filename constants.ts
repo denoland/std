@@ -1,15 +1,16 @@
 import IsolateApi from './isolate-api.ts'
 export type { IsolateApi }
-export type { CborUint8Array } from 'https://esm.sh/v135/json-joy@9.9.1/es6/json-pack/cbor/types.d.ts?exports=CbotUint8Array'
 export const IO_PATH = '.io.json'
 import {
-  Invocation,
   IsolateApiSchema,
   IsolateReturn,
   Outcome,
   Params,
   PID,
   PierceRequest,
+  Request,
+  SolidRequest,
+  UnsequencedRequest,
 } from './api/web-client.types.ts'
 import FS from '@/git/fs.ts'
 import type DB from '@/db.ts'
@@ -35,33 +36,10 @@ export type Isolate = {
   functions: IsolateFunctions
   lifecycles?: IsolateLifecycle
 }
-export type IoStruct = {
-  sequence: number
-  requests: { [key: string]: Request }
-  replies: { [key: string]: Outcome }
-  /**
-   * If a request generates child requests, they are tracked here.  The commit
-   * in each entry is the commit that caused the child requests to be generated.
-   * This is used to replay by resetting the fs to that commit and doing a
-   * replay.
-   */
-  pendings: {
-    [key: number]: { commit: string; sequences: number[] }[]
-  }
-}
-export type Request = PierceRequest | SolidRequest
+
 export type Reply = SolidReply | MergeReply
 export type Poolable = Request | Reply
 
-/**
- * A request that has been included in a commit, therefore has a sequence number
- */
-export type SolidRequest = Invocation & {
-  target: PID
-  source: PID
-  sequence: number
-}
-export type UnsequencedRequest = Omit<SolidRequest, 'sequence' | 'source'>
 export type EffectRequest = {
   target: PID
   /**
@@ -134,9 +112,6 @@ export type Pending = {
   requests: UnsequencedRequest[]
 }
 
-export const isPierceRequest = (p: Request): p is PierceRequest => {
-  return 'ulid' in p
-}
 export const isRequest = (poolable: Poolable): poolable is Request => {
   return 'proctype' in poolable
 }

@@ -1,14 +1,22 @@
+import { transcribe } from '@/runners/runner-chat.ts'
 import { diffChars } from '$diff'
-import { pidFromRepo } from '@/keys.ts'
 import Compartment from './io/compartment.ts'
-import { C, PID, PierceRequest, Splice } from './constants.ts'
+import {
+  C,
+  EngineInterface,
+  JsonValue,
+  PID,
+  pidFromRepo,
+  PierceRequest,
+  Splice,
+} from './constants.ts'
 import IsolateApi from './isolate-api.ts'
 import { assert, Debug, posix } from '@utils'
 import FS from '@/git/fs.ts'
 import * as artifact from '@/isolates/artifact.ts'
 const log = Debug('AI:engine')
 
-export class Engine {
+export class Engine implements EngineInterface {
   #compartment: Compartment
   #api: IsolateApi<C>
   #pierce: artifact.Api['pierce']
@@ -64,8 +72,23 @@ export class Engine {
     await Promise.all([...this.#readPromises])
     await this.#compartment.unmount(this.#api)
   }
-  async pierce(params: { pierce: PierceRequest }) {
-    const { pierce } = params
+  ping(data?: JsonValue): Promise<JsonValue | undefined> {
+    log('ping', data)
+    return Promise.resolve(data)
+    // TODO return some info about the deployment
+    // version, deployment location, etc
+    // if you want to ping in a chain, use an isolate
+  }
+  async apiSchema(isolate: string) {
+    const compartment = await Compartment.create(isolate)
+    return compartment.api
+  }
+  async transcribe(audio: File) {
+    assert(audio instanceof File, 'audio must be a File')
+    const text = await transcribe(audio)
+    return { text }
+  }
+  async pierce(pierce: PierceRequest) {
     await this.#pierce({ pierce })
   }
   read(pid: PID, path?: string, signal?: AbortSignal) {

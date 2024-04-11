@@ -20,38 +20,37 @@ import { doAtomicBranch, doAtomicCommit } from '@io/io.ts'
 import DB from '../db.ts'
 import FS from '../git/fs.ts'
 import { assert } from 'https://deno.land/std@0.203.0/assert/assert.ts'
-
+import { pid } from './repo.ts'
 const log = Debug('AI:artifact')
 
-const pid = {
-  type: 'object',
-  required: ['account', 'repository', 'branches'],
-  additionalProperties: false,
-  properties: {
-    account: {
-      type: 'string',
-    },
-    repository: {
-      type: 'string',
-    },
-    branches: {
-      type: 'array',
-      items: {
-        type: 'string',
-      },
-      minItems: 1,
-    },
-  },
-}
 const request = {
   type: 'object',
-  required: ['isolate'],
+  required: ['isolate', 'functionName', 'params', 'proctype', 'target', 'ulid'],
   properties: {
-    isolate: {
-      type: 'string',
+    isolate: { type: 'string' },
+    functionName: { type: 'string' },
+    params: { type: 'object' },
+    proctype: { enum: ['SERIAL', 'DAEMON', 'BRANCH'] },
+    target: pid.properties.pid,
+    ulid: { type: 'string' },
+    branch: { type: 'string' },
+    branchPrefix: { type: 'string' },
+    effect: {
+      oneOf: [
+        { type: 'boolean' },
+        {
+          type: 'object',
+          properties: {
+            net: { type: 'boolean' },
+            files: { type: 'boolean' },
+            artifact: { type: 'boolean' },
+            timeout: { type: 'number' },
+          },
+        },
+      ],
     },
-    pid,
   },
+  additionalProperties: false,
 }
 
 export const api = {
@@ -74,13 +73,14 @@ export const functions = {
     assert(isPierceRequest(pierce), 'invalid pierce request')
     const { db } = sanitizeContext(api)
     // TODO add ulid in here, but make it be repeatable
-
+    // TODO check signatures and permissions here
     // not necessary to be atomic, but uses functions on the atomic class
     const result = await db.atomic()
       .addToPool(pierce)
       .enqueuePierce(pierce)
       .commit()
     assert(result, 'pierce failed')
+    // TODO return back the head commit at the point of pooling
   },
 }
 

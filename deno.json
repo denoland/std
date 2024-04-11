@@ -29,7 +29,10 @@
     "@kitsonk/kv-toolbox": "jsr:@kitsonk/kv-toolbox@^0.16.3",
     "@utils": "./utils.ts",
     "kv_oauth/": "https://deno.land/x/deno_kv_oauth@v0.9.1/",
-    "std/": "https://deno.land/std/"
+    "std/": "https://deno.land/std/",
+    "serialize-error": "npm:serialize-error",
+    "eventsource-parser/stream": "npm:eventsource-parser/stream",
+    "ulid": "npm:ulid"
   },
   "exclude": ["cov/"],
   "lint": {

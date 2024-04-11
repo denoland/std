@@ -1,19 +1,13 @@
-import { isPierceRequest } from '@/constants.ts'
-import { isRequest } from '@/constants.ts'
-import { ENTRY_BRANCH, PID, Poolable, Reply, Request } from '@/constants.ts'
+import {
+  isPierceRequest,
+  isRequest,
+  PID,
+  Poolable,
+  Reply,
+  Request,
+} from '@/constants.ts'
 import { assert } from '@utils'
 
-const assertPid = (pid: PID) => {
-  assert(pid.id, 'id is required')
-  assert(pid.account, 'account is required')
-  assert(pid.repository, 'repository is required')
-  assert(pid.branches[0], 'branch is required')
-  const githubRegex = /^[a-z\d](?:[a-z\d]|-(?=[a-z\d])){0,38}$/i
-  if (!githubRegex.test(pid.account) || !githubRegex.test(pid.repository)) {
-    const repo = `${pid.account}/${pid.repository}`
-    throw new Error('Invalid GitHub account or repository name: ' + repo)
-  }
-}
 export const getPoolKeyPrefix = (pid: PID) => {
   const { id, account, repository, branches } = pid
   return [id, account, repository, 'pool', ...branches]
@@ -46,19 +40,6 @@ const getId = (action: Request | Reply) => {
   }
 }
 
-export const pidFromRepo = (id: string, repo: string): PID => {
-  const [account, repository] = repo.split('/')
-  const pid: PID = {
-    id,
-    account,
-    repository,
-    branches: [ENTRY_BRANCH],
-  }
-  assertPid(pid)
-  Object.freeze(pid)
-  Object.freeze(pid.branches)
-  return pid
-}
 export const getHeadKey = (pid: PID) => {
   const prefix = getRepoBase(pid)
   return [...prefix, 'refs', 'heads', ...pid.branches]

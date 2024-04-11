@@ -47,6 +47,20 @@ export type ProcessOptions = {
   // the name must have the sequence suffix so that determinism is in there
   // also frees us from doing a collision check
 }
+export type IoStruct = {
+  sequence: number
+  requests: { [key: string]: Request }
+  replies: { [key: string]: Outcome }
+  /**
+   * If a request generates child requests, they are tracked here.  The commit
+   * in each entry is the commit that caused the child requests to be generated.
+   * This is used to replay by resetting the fs to that commit and doing a
+   * replay.
+   */
+  pendings: {
+    [key: number]: { commit: string; sequences: number[] }[]
+  }
+}
 export type DispatchFunctions = {
   [key: string]: (
     params?: Params,
@@ -124,6 +138,19 @@ export type PierceRequest = Invocation & {
   target: PID
   ulid: string
 }
+export const isPierceRequest = (p: Request): p is PierceRequest => {
+  return 'ulid' in p
+}
+export type UnsequencedRequest = Omit<SolidRequest, 'sequence' | 'source'>
+/**
+ * A request that has been included in a commit, therefore has a sequence number
+ */
+export type SolidRequest = Invocation & {
+  target: PID
+  source: PID
+  sequence: number
+}
+export type Request = PierceRequest | SolidRequest
 
 // TODO remove this by passing ProcessOptions in with the Request
 export const getProcType = (options?: ProcessOptions) => {
@@ -145,6 +172,7 @@ export enum RUNNERS {
 export const toString = (pid: PID) => {
   return `${pid.account}/${pid.repository}:${pid.branches.join('_')}`
 }
+
 type Change = {
   count?: number | undefined
   /**
@@ -258,7 +286,7 @@ export interface Artifact {
   actions(isolate: string, target: PID): Promise<DispatchFunctions>
   read(pid: PID, path?: string, signal?: AbortSignal): ReadableStream<Splice>
   transcribe(params: { audio: File }): Promise<{ text: string }>
-  apiSchema(params: { isolate: string }): Promise<ApiSchema>
+  apiSchema(isolate: string): Promise<ApiSchema>
   /** Pings the execution context without going thru the transaction queue.
    *
    * Used primarily by web clients to establish base connectivity and get
@@ -287,4 +315,44 @@ export const isPID = (value: unknown): value is PID => {
 }
 export const print = (pid: PID) => {
   return `${pid.id}/${pid.account}/${pid.repository}:${pid.branches.join('/')}`
+}
+export const assertPid = (pid: PID) => {
+  if (!pid.id) {
+    throw new Error('id is required')
+  }
+  if (!pid.account) {
+    throw new Error('account is required')
+  }
+  if (!pid.repository) {
+    throw new Error('repository is required')
+  }
+  if (!pid.branches[0]) {
+    throw new Error('branch is required')
+  }
+  const githubRegex = /^[a-z\d](?:[a-z\d]|-(?=[a-z\d])){0,38}$/i
+  if (!githubRegex.test(pid.account) || !githubRegex.test(pid.repository)) {
+    const repo = `${pid.account}/${pid.repository}`
+    throw new Error('Invalid GitHub account or repository name: ' + repo)
+  }
+}
+export const pidFromRepo = (id: string, repo: string): PID => {
+  const [account, repository] = repo.split('/')
+  const pid: PID = {
+    id,
+    account,
+    repository,
+    branches: [ENTRY_BRANCH],
+  }
+  assertPid(pid)
+  Object.freeze(pid)
+  Object.freeze(pid.branches)
+  return pid
+}
+export interface EngineInterface {
+  stop(): Promise<void> | void
+  pierce(pierce: PierceRequest): Promise<void>
+  read(pid: PID, path?: string, signal?: AbortSignal): ReadableStream<Splice>
+  transcribe(audio: File): Promise<{ text: string }>
+  apiSchema(isolate: string): Promise<ApiSchema>
+  ping(params?: { data?: JsonValue }): Promise<IsolateReturn>
 }

@@ -1,4 +1,3 @@
-import { EventSourceParserStream } from 'npm:eventsource-parser/stream'
 export { equal } from 'https://deno.land/x/equal/mod.ts'
 export { delay } from '$std/async/mod.ts'
 import 'npm:supports-color'
@@ -7,10 +6,7 @@ export { assert, AssertionError } from 'std/assert/mod.ts'
 export { default as merge } from 'npm:lodash.merge'
 import Debug from 'npm:debug'
 import { Outcome, PID } from '@/constants.ts'
-import {
-  deserializeError,
-  serializeError,
-} from 'https://esm.sh/v135/serialize-error@11.0.3/index.js'
+import { deserializeError, serializeError } from 'serialize-error'
 import { ulid } from 'std/ulid/mod.ts'
 export { ulid }
 export { deserializeError, serializeError }
@@ -71,7 +67,3 @@ const getDebug = () => {
 }
 
 Debug.enable(getDebug())
-
-export const toEvents = (stream: ReadableStream) =>
-  stream.pipeThrough(new TextDecoderStream())
-    .pipeThrough(new EventSourceParserStream())

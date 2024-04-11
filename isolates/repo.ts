@@ -19,7 +19,7 @@ const repo = {
   },
 }
 
-const pid = {
+export const pid = {
   type: 'object',
   additionalProperties: false,
   properties: {
@@ -55,7 +55,6 @@ export const api = {
   pull: repo,
   push: repo,
   rm: { ...pid, description: 'Remove everything about a PID' },
-  logs: repo, // TODO use pid
 }
 export type Api = {
   probe: (params: { pid: PID }) => Promise<{ pid: PID; head: string }>

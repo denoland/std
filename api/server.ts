@@ -13,71 +13,66 @@ import {
 import { streamSSE } from 'https://deno.land/x/hono/helper.ts'
 import { Engine } from '../engine.ts'
 import { assert, Debug, serializeError } from '@/utils.ts'
-import { Artifact, EventSourceMessage, SerializableError } from '@/constants.ts'
+import { EventSourceMessage, SerializableError } from '@/constants.ts'
 const log = Debug('AI:server')
 
+let sseId = 0
 export default class Server {
-  #artifact!: Cradle
-  #app!: Hono
-  #sseId = 0
+  #engine: Engine
+  #app: Hono
+  private constructor(engine: Engine, app: Hono) {
+    this.#engine = engine
+    this.#app = app
+  }
+  get engine() {
+    return this.#engine
+  }
   static async create() {
     // TODO whilst no system chain, fail with help message
-    const artifact = await Cradle.create()
-
-    const server = new Server()
-    server.#artifact = artifact
-
+    const engine = await Engine.create()
     const app = new Hono().basePath('/api')
+
     app.use(timing())
     app.use(prettyJSON())
     app.use('*', logger(), poweredBy(), cors())
-    type serverMethods = (keyof Artifact)[]
-    const functions: serverMethods = [
-      'ping',
-      'apiSchema',
-      'logs',
-      'probe',
-      'init',
-      'clone',
-      'rm',
-    ]
-    for (const functionName of functions) {
-      app.post(
-        `/${functionName}`,
-        async (c) => {
-          startTime(c, 'function', 'Function: ' + functionName)
-          const region = Deno.env.get('DENO_REGION') || '(unknown)'
-          setMetric(c, 'region', 'Region: ' + region)
-          const deployment = Deno.env.get('DENO_DEPLOYMENT_ID') || '(unknown)'
-          setMetric(c, 'deployment', 'Deployment: ' + deployment)
+    app.post(`/ping`, async (c) => {
+      const payload = await c.req.json()
+      let data
+      if (payload.data) {
+        data = payload.data
+      }
+      const result: typeof data = await engine.ping(data)
+      return c.json({ result })
+    })
+    app.post(`/pierce`, async (c) => {
+      startTime(c, 'pierce')
+      const region = Deno.env.get('DENO_REGION') || '(unknown)'
+      setMetric(c, 'region', 'Region: ' + region)
+      const deployment = Deno.env.get('DENO_DEPLOYMENT_ID') || '(unknown)'
+      setMetric(c, 'deployment', 'Deployment: ' + deployment)
 
-          // TODO hook GitKV for write count, read count, and size
+      // TODO hook GitKV for write count, read count, and size
 
-          const outcome: { result?: unknown; error?: SerializableError } = {}
-          let params
-          try {
-            params = await c.req.json()
-            // but how to pipe everything down the queue lane ?
-            const result = await artifact[functionName](params)
-            if (result !== undefined) {
-              outcome.result = result
-            }
-          } catch (error) {
-            console.error(
-              'functionName:',
-              functionName,
-              '\n\nparams:',
-              params,
-              '\n\nerror:',
-              error,
-            )
-            outcome.error = serializeError(error)
-          }
-          endTime(c, 'function')
-          return c.json(outcome)
-        },
-      )
-    }
+      let params
+      const outcome: { error?: SerializableError } = {}
+      try {
+        params = await c.req.json()
+        await engine.pierce(params)
+      } catch (error) {
+        console.error('params:', params, '\n\nerror:', error)
+        outcome.error = serializeError(error)
+      }
+      endTime(c, 'pierce')
+      return c.json(outcome)
+    })
+    app.post(`/apiSchema`, async (c) => {
+      const params = await c.req.json()
+      assert(typeof params === 'object', 'params is required')
+      const { isolate } = params
+      assert(typeof isolate === 'string', 'isolate is required')
+      const result = await engine.apiSchema(isolate)
+      return c.json({ result })
+    })
 
     app.post('/read', (c) => {
       return streamSSE(c, async (stream) => {
@@ -89,11 +84,11 @@ export default class Server {
 
         const { pid, path } = params
         try {
-          for await (const splice of artifact.read(pid, path, abort.signal)) {
+          for await (const splice of engine.read(pid, path, abort.signal)) {
             const event: EventSourceMessage = {
               data: JSON.stringify(splice, null, 2),
               event: 'splice',
-              id: String(server.#sseId++),
+              id: String(sseId++),
             }
             log('event', event)
             await stream.writeSSE(event)
@@ -112,17 +107,16 @@ export default class Server {
       const body = await c.req.parseBody()
       const audio = body['audio'] as File
       assert(audio, 'audio is required')
-      const { text } = await artifact.transcribe({ audio })
+      const text = await engine.transcribe(audio)
       log('transcribe text', text)
       return c.json({ text })
     })
 
-    server.#app = app
-    return server
+    return new Server(engine, app)
   }
   async stop() {
     // TODO add all the read streams to be stopped too ?
-    await this.#artifact.stop()
+    await this.#engine.stop()
   }
   get request() {
     return this.#app.request
