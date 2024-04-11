@@ -8,6 +8,7 @@ import { assert, Debug, equal, serializeError } from '@utils'
 import Accumulator from '@/exe/accumulator.ts'
 import FS from '@/git/fs.ts'
 import { PID } from '@/api/web-client.types.ts'
+import { JsonValue } from '@/constants.ts'
 const log = Debug('AI:exe')
 
 export default class Executor {
@@ -47,7 +48,7 @@ export default class Executor {
         }).then((result) => {
           const outcome: Outcome = {}
           if (result !== undefined) {
-            outcome.result = result
+            outcome.result = result as JsonValue // sorry 🤷
             log('self result: %o', outcome.result)
           }
           return outcome

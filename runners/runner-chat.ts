@@ -223,8 +223,7 @@ export class AI {
         const [isolate, _name] = command.split(':')
         name = _name
         const isolateApiSchema = await this.#api.isolateApiSchema(isolate)
-        const functions = await this.#api
-          .functions(isolate) as Record<string, Function>
+        const functions = await this.#api.functions(isolate)
         assert(name in functions, `isolate missing command: ${command}`)
         action = functions[name]
         const api = isolateApiSchema[name]

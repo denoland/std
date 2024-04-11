@@ -1,11 +1,12 @@
 import validator from './validator.ts'
 import { assert } from 'std/assert/mod.ts'
 import { Debug } from '@utils'
-import { Isolate, JsonValue, Params } from '@/constants.ts'
+import { Isolate, Params } from '@/constants.ts'
 import IsolateApi from '../isolate-api.ts'
 
 // deno has no dynamic runtime imports, so this is a workaround
 import isolates from '../isolates/index.ts'
+import { DispatchFunctions } from '@/constants.ts'
 
 const log = Debug('AI:compartment')
 const cache = new Map()
@@ -68,11 +69,13 @@ export default class Compartment {
       return this.#module.lifecycles['@@unmount'](api)
     }
   }
-  functions<T = DefaultPierceTypes>(api: IsolateApi) {
+  functions<T = DispatchFunctions>(api: IsolateApi) {
     this.#check()
-    const actions: DefaultPierceTypes = {}
+    const actions: DispatchFunctions = {}
     for (const functionName in this.#module.api) {
-      actions[functionName] = (parameters?: Params) => {
+      actions[functionName] = (
+        parameters?: Params,
+      ) => {
         log('dispatch: %o', functionName)
         const schema = this.#module.api[functionName]
         if (parameters === undefined) {
@@ -84,9 +87,4 @@ export default class Compartment {
     }
     return actions as T
   }
-}
-interface DefaultPierceTypes {
-  [key: string]: (
-    arg?: Record<string, JsonValue>,
-  ) => Promise<any> | any
 }

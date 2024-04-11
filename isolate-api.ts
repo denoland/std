@@ -119,7 +119,7 @@ export default class IsolateApi<T extends object = Default> {
    * @returns An object keyed by API function name, with values being the
    * function itself.
    */
-  async functions<T>(isolate: string): Promise<T> {
+  async functions<T = DispatchFunctions>(isolate: string): Promise<T> {
     // TODO these need some kind of PID attached ?
     const compartment = await Compartment.create(isolate)
     // TODO but these need to be wrapped in a dispatch call somewhere

@@ -2,7 +2,6 @@ import FS from '@/git/fs.ts'
 import { sanitizeContext } from '@/isolates/artifact.ts'
 import { assert, Debug, equal } from '@utils'
 import { C, IsolateApi, isPID, PID, print } from '@/constants.ts'
-import { pidFromRepo } from '@/keys.ts'
 const log = Debug('AI:isolates:repo')
 /**
  * Isolate that deals with repo related operations.
@@ -59,11 +58,12 @@ export const api = {
   logs: repo, // TODO use pid
 }
 export type Api = {
-  rm: (params: { pid: PID }) => Promise<boolean>
+  probe: (params: { pid: PID }) => Promise<{ pid: PID; head: string }>
   init: (params: { pid: PID }) => Promise<{ pid: PID; head: string }>
   clone: (
     params: { pid: PID },
   ) => Promise<{ pid: PID; head: string; elapsed: number }>
+  rm: (params: { pid: PID }) => Promise<boolean>
 }
 export const functions = {
   async probe(params: { pid: PID }, api: IsolateApi<C>) {
@@ -76,13 +76,12 @@ export const functions = {
       return { pid, head }
     }
   },
-  async init(params: { id: string; repo: string }, api: IsolateApi<C>) {
+  async init(params: { pid: PID }, api: IsolateApi<C>) {
     const start = Date.now()
-    const { id, repo } = params
-    const pid = pidFromRepo(id, repo)
+    const { pid } = params
     const probe = await functions.probe({ pid }, api)
     if (probe) {
-      throw new Error('repo already exists: ' + params.repo)
+      throw new Error('repo already exists: ' + print(pid))
     }
     const { db } = sanitizeContext(api)
     const fs = await FS.init(pid, db)
@@ -133,15 +132,5 @@ export const functions = {
     const { db } = sanitizeContext(api)
     FS.clearCache(params.pid)
     return db.rm(params.pid)
-  },
-  async logs(params: { repo: string }) {
-    // TODO convert logs to a splices query
-    // log('logs', params.repo)
-    // const pid = pidFromRepo(params.repo)
-    // const { db } = this.#api.context
-    // assert(db, 'db not found')
-    // const fs = await FS.openHead(pid, db)
-    // const logs = await fs.logs()
-    // return logs
   },
 }

@@ -259,8 +259,6 @@ export interface Artifact {
   read(pid: PID, path?: string, signal?: AbortSignal): ReadableStream<Splice>
   transcribe(params: { audio: File }): Promise<{ text: string }>
   apiSchema(params: { isolate: string }): Promise<ApiSchema>
-  /** @deprecated needs to move to being pure splice reading */
-  logs(params: { repo: string }): Promise<object[]>
   /** Pings the execution context without going thru the transaction queue.
    *
    * Used primarily by web clients to establish base connectivity and get

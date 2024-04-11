@@ -149,34 +149,27 @@ export class Shell implements Artifact {
     const text = await transcribe(params.audio)
     return { text }
   }
-  async probe(params: { repo?: string; pid?: PID }) {
-    // pierce an action in using the repo isolate
-    // this would be an action pierced in to the session chain ?
-    // or would it be to the root chain ?
-    // pierced into the session chain, relayed into the root chain
-    // ? what is the pid of the root chain ? ulid, account / account
+  async probe({ pid }: { pid: PID }) {
+    const actions = await this.#repoActions()
+    return actions.probe({ pid })
   }
   async init(params: { repo: string }) {
     // take in a string, and use the id that this client holds
     const pid = pidFromRepo(this.#pid.id, params.repo)
     // basically need to simply relay actions around the place
-    const repoActions = await this.actions<repo.Api>('repo', this.#engine.pid)
-    return repoActions.init({ pid })
+    const actions = await this.#repoActions()
+    return actions.init({ pid })
   }
   async clone(params: { repo: string }) {
     const pid = pidFromRepo(this.#pid.id, params.repo)
     const actions = await this.#repoActions()
     return actions.clone({ pid })
   }
-  async pull(params: { pid: PID }) {
+  pull(params: { pid: PID }) {
     const { pid } = params
-    return { pid, head: 'head' }
+    return Promise.resolve({ pid, head: 'head' })
   }
-  async push(params: { pid: PID }) {
-  }
-  async logs(params: { repo: string }) {
-    // TODO convert logs to a splices query
-    return []
+  async push(_params: { pid: PID }) {
   }
   async rm(params: { repo: string }) {
     log('rm', params.repo)
