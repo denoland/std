@@ -1,3 +1,26 @@
+### 0.222.1 / 2024.04.11
+
+- deprecation(semver): deprecate `rangeMax()` and `rangeMin()` (#4561)
+- fix(log): Revert "deprecate(log): deprecate internal utility methods" (#4436)
+  (#4572)
+
+### 0.222.0 / 2024.04.11
+
+- [unstable] BREAKING(semver): remove comparator.semver field (#4533)
+- deprecate(log): deprecate internal utility methods (#4436)
+- deprecation(console): copy `std/console` APIs into `std/cli` and deprecate
+  `std/console` (#4547)
+- deprecation(crypto): rename an export to match style guide, deprecating
+  original and two other obsolete imports (#4525)
+- deprecation(encoding): make exported function names consistent with
+  `std/encoding` (#4555)
+- deprecation(yaml): cleanup schema exports (#4566)
+- feat(expect): support `expect.addSnapshotSerialize()` api (#4537)
+- feat(semver): `greaterThanRange()` and `lessThanRange()` (#4534)
+- feat(testing): add `after`, `before`, `test` aliases (#4541)
+- fix(cli): make the output of `promptSecret()` consistent with `prompt()`
+  (#4549)
+
 ### 0.221.0 / 2024.03.27
 
 - feat(expect): add `expect.{closeTo, stringContaining, stringMatching}` (#4508)

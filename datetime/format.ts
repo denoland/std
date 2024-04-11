@@ -62,6 +62,7 @@ export interface FormatOptions {
  *
  * format(date, "yyyy-MM-dd HH:mm:ss", { utc: true }); // "2019-01-20 05:34:23"
  * ```
+ * Enable UTC formatting by setting the `utc` option to `true`.
  */
 export function format(
   date: Date,

@@ -85,13 +85,6 @@ export class FileHandler extends BaseHandler {
     }
   }
 
-  #flush() {
-    this.#flush();
-  }
-
-  /**
-   * @deprecated (will be removed in 0.220.0)
-   */
   flush() {
     if (this._pointer > 0 && this._file) {
       let written = 0;

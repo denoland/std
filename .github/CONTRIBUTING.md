@@ -64,31 +64,35 @@ plain language, as follows:
 
 ## Documentation
 
-Documentation must be clear, concise and thorough, and be written in
-[JSDoc](https://jsdoc.app/) syntax. In general, the documentation style should
-be as close to the [MDN Web Docs](https://developer.mozilla.org/) as possible.
+Symbols and modules are documented using the [JSDoc](https://jsdoc.app/) syntax.
+It should be written in the same style as the
+[MDN Web Docs](https://developer.mozilla.org/).
 
 ### Public symbols
 
-For public symbols, include the following pieces of documentation in the
-following order (if applicable):
+Documentation for public symbols should contain:
 
-1. A description of the symbol, including its purpose, what it performs, and
-   behaviors of various use cases.
-1. If it is a function, method or class, a description of each parameter using
-   the [`@param`](https://jsdoc.app/tags-param) tag.
-1. If it is a function or method, a description of the return value using the
-   [`@returns`](https://jsdoc.app/tags-returns) tag.
-1. At least one minimal example code snippet using the
-   [`@example`](https://jsdoc.app/tags-example) tag for basic usage. The reader
-   should be able to copy and execute the code snippet with the expected values.
+1. A description, first
+1. [`@param`](https://jsdoc.app/tags-param) tags for each parameter and a
+   [`@returns`](https://jsdoc.app/tags-returns) tag, if the symbol is a
+   function.
+1. At least one example code snippet using the
+   [`@example`](https://jsdoc.app/tags-example) tag and a title. The code is
+   reproducible when copied and pasted as a script.
 
-See the following examples:
+See the source code within
+[`std/datetime`](https://github.com/denoland/deno_std/tree/main/datetime) for
+examples.
 
-- `copy()` from `std/fs`
-  ([source](https://github.com/denoland/deno_std/blob/main/fs/copy.ts) and
-  [documentation](https://jsr.io/@std/fs/doc/~/copy))
+### Module documentation
 
-- `weekOfYear()` from `std/datetime`
-  ([source](https://github.com/denoland/deno_std/blob/main/datetime/week_of_year.ts)
-  and [documentation](https://jsr.io/@std/datetime/doc/~/weekOfYear))
+Module files, or `mod.ts` files, should have the following:
+
+1. A high-level description of the package.
+1. Sections providing brief overviews of the APIs within the package, including
+   minimal example code snippets (without the `@example` tag).
+1. A [`@module`](https://jsdoc.app/tags-module) to denote module documentation.
+
+See the source code for
+[`std/datetime/mod.ts`](https://github.com/denoland/deno_std/blob/main/datetime/mod.ts)
+as an example.
