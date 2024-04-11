@@ -1,3 +1,9 @@
+### 0.222.1 / 2024.04.11
+
+- deprecation(semver): deprecate `rangeMax()` and `rangeMin()` (#4561)
+- fix(log): Revert "deprecate(log): deprecate internal utility methods" (#4436)
+  (#4572)
+
 ### 0.222.0 / 2024.04.11
 
 - [unstable] BREAKING(semver): remove comparator.semver field (#4533)
