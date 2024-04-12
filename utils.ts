@@ -46,12 +46,6 @@ export const openKv = async () => {
   _isTestMode = path === ':memory:'
   return Deno.openKv(path)
 }
-export const fromOutcome = (outcome: Outcome) => {
-  if (outcome.error) {
-    throw deserializeError(outcome.error)
-  }
-  return outcome.result
-}
 export const print = (pid: PID) => {
   const branches = pid.branches.join(':')
   return `${pid.account}/${pid.repository}:${branches}`

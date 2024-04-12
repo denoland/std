@@ -22,7 +22,7 @@ export default (name: string, cradleMaker: () => Promise<Artifact>) => {
       expect(result).toEqual({ test: 'test' })
     })
     await t.step('clone', async () => {
-      log.enable('AI:tests')
+      log.enable('AI:qex*')
       await artifact.rm({ repo: 'dreamcatcher-tech/HAL' })
       const clone = await artifact.clone({ repo: 'dreamcatcher-tech/HAL' })
       log('clone result', clone)
@@ -36,8 +36,7 @@ export default (name: string, cradleMaker: () => Promise<Artifact>) => {
   Deno.test.ignore(prefix + 'child to self', async () => {})
   Deno.test.ignore(prefix + 'child to child', async () => {})
   Deno.test.ignore(prefix + 'child to parent', async () => {})
-  Deno.test.only(prefix + 'pierce', async (t) => {
-    log.enable('AI:qex*')
+  Deno.test(prefix + 'pierce', async (t) => {
     const artifact = await cradleMaker()
     await artifact.rm({ repo: 'cradle/pierce' })
     const { pid: target } = await artifact.init({ repo: 'cradle/pierce' })
@@ -72,9 +71,10 @@ export default (name: string, cradleMaker: () => Promise<Artifact>) => {
     const { local } = await artifact.actions(ioFixture, target)
 
     await t.step('serial', async () => {
+      log.enable('AI:qex*')
       const promises = []
       const count = 20
-      for (let i = 0; i < count; i++) { // at 20, this fails on cloud
+      for (let i = 0; i < count; i++) {
         promises.push(local())
       }
       log('promises start')

@@ -1,9 +1,11 @@
+import { deserializeError } from 'serialize-error'
 import Accumulator from './exe/accumulator.ts'
 import Compartment from './io/compartment.ts'
-import { assert, Debug, equal, fromOutcome, print } from '@utils'
+import { assert, Debug, print } from '@utils'
 import {
   DispatchFunctions,
   getProcType,
+  IsolatePromise,
   JsonValue,
   Params,
   PID,
@@ -76,7 +78,6 @@ export default class IsolateApi<T extends object = Default> {
         log('actions %o', functionName)
         // TODO unify how proctype is derived across all cradles
         const proctype = getProcType(options)
-        assert(this.#accumulator, 'accumulator must be set')
         const unsequencedRequest: UnsequencedRequest = {
           target,
           isolate,
@@ -90,19 +91,23 @@ export default class IsolateApi<T extends object = Default> {
 
     return actions
   }
-  async action(request: UnsequencedRequest) {
+  action(request: UnsequencedRequest) {
     const recovered = this.#accumulator.recover(request)
     // at this point, we might need to tick the fs commit forwards
     if (recovered) {
       const { outcome } = recovered
-      assert(outcome, 'outcome must be set')
-      await Promise.resolve()
-      return fromOutcome(outcome)
+      assert(outcome, 'outcome must be set, else exe should not have run')
+      if (outcome.error) {
+        throw deserializeError(outcome.error)
+      }
+      return Promise.resolve(outcome.result)
     }
-
+    const store: IsolatePromise = { request }
     const promise = new Promise((resolve, reject) => {
-      this.#accumulator.push({ request, resolve, reject })
+      store.resolve = resolve
+      store.reject = reject
     })
+    this.#accumulator.push(store)
     return promise
   }
   /**

@@ -34,7 +34,7 @@ export const solidify = async (fs: FS, pool: Poolable[], pending?: Pending) => {
   checkPool(pool)
   const io = await IOChannel.load(fs)
 
-  const executingRequest = io.getNextSerialRequest()
+  const executingRequest = io.getCurrentSerialRequest()
   log('solidifyPool executingRequest', executingRequest)
 
   const branches: number[] = []
@@ -88,7 +88,7 @@ export const solidify = async (fs: FS, pool: Poolable[], pending?: Pending) => {
   }
 
   let exe: Solids['exe']
-  const next = io.getNextSerialRequest()
+  const next = io.getCurrentSerialRequest()
   if (next && !equal(executingRequest, next)) {
     const sequence = io.getSequence(next)
     exe = { request: next, sequence }

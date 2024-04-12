@@ -34,15 +34,16 @@ export default class IOChannel {
   readonly #pid: PID
   #original: IoStruct
   private constructor(io: IoStruct, pid: PID, fs?: FS) {
-    // TODO remove the fs item completely - handle fs outside
-    this.#io = io
     this.#pid = pid
+    this.#io = io
+    this.#blankSettledRequests()
     if (fs) {
+      // TODO remove the fs item completely - handle fs outside
       assert(equal(pid, fs.pid), 'pid mismatch')
     }
     this.#fs = fs
-    // TODO use immer or similar to avoid this problem
-    this.#original = JSON.parse(JSON.stringify(io))
+    // TODO use immer or similar to avoid this parsing step
+    this.#original = JSON.parse(JSON.stringify(this.#io))
   }
   static readObject(io: IoStruct, pid: PID) {
     check(io, pid)
@@ -63,7 +64,6 @@ export default class IOChannel {
       check(io, fs.pid)
     }
     const channel = new IOChannel(io, fs.pid, fs)
-    channel.#blankSettledRequests(io)
     return channel
   }
   static blank(fs: FS) {
@@ -80,14 +80,15 @@ export default class IOChannel {
     if (equal(this.#io, this.#original)) {
       throw new Error('no changes to save')
     }
+    // TODO make save a one shot thing
     this.#original = JSON.parse(JSON.stringify(this.#io))
     return this.#save()
   }
   isNextSerialRequest(attempt: SolidRequest) {
-    const next = this.getNextSerialRequest()
+    const next = this.getCurrentSerialRequest()
     return equal(next, attempt)
   }
-  getNextSerialRequest() {
+  getCurrentSerialRequest() {
     const unreplied = Object.keys(this.#io.requests)
       .filter((k) => !this.#io.replies[k])
       .map((key) => parseInt(key))
@@ -113,6 +114,8 @@ export default class IOChannel {
   }
   getSequence(request: SolidRequest) {
     for (const [key, value] of Object.entries(this.#io.requests)) {
+      // TODO is it possible to have duplicate entries here ?
+      // ideally this function would never get called
       const test = toRunnableRequest(value, Number.parseInt(key))
       if (equal(test, request)) {
         return Number.parseInt(key)
@@ -133,8 +136,22 @@ export default class IOChannel {
     assert(request, `reply sequence not found: ${sequence}`)
     assert(!this.#io.replies[sequence], 'sequence already replied')
     this.#io.replies[sequence] = reply.outcome
+    const blanks = []
     if (!this.#isAccumulation(request)) {
-      delete this.#io.pendings[sequence]
+      const pendings = this.#io.pendings[sequence]
+      if (pendings) {
+        for (const layer of pendings) {
+          for (const sequence of layer.sequences) {
+            assert(this.isSettled(sequence), 'layer sequence not settled')
+            blanks.push(sequence)
+          }
+        }
+      }
+    }
+    for (const key of blanks) {
+      delete this.#io.requests[key]
+      delete this.#io.replies[key]
+      delete this.#io.pendings[key]
     }
     return request
   }
@@ -142,9 +159,9 @@ export default class IOChannel {
     // TODO needs to be layer aware
 
     const indices: number[] = []
-    const request = this.getNextSerialRequest()
-    assert(request, 'no serial request found')
-    const sequence = this.getSequence(request)
+    const current = this.getCurrentSerialRequest()
+    assert(current, 'no serial request found')
+    const sequence = this.getSequence(current)
     const pendings = this.#io.pendings[sequence]
     if (pendings) {
       for (const layer of pendings) {
@@ -207,7 +224,7 @@ export default class IOChannel {
     return sequence
   }
   addPending(commit: string, requests: UnsequencedRequest[]) {
-    const executing = this.getNextSerialRequest()
+    const executing = this.getCurrentSerialRequest()
     // TODO affirm this is actually the executing request ?
     assert(executing, 'no executing request')
     const sequence = this.getSequence(executing)
@@ -249,17 +266,16 @@ export default class IOChannel {
     }
     return false
   }
-  #blankSettledRequests(io: IoStruct) {
+  #blankSettledRequests() {
     const toBlank = []
-    for (const key in io.replies) {
-      if (!this.#isAccumulation(io.requests[key])) {
-        toBlank.push(key)
+    for (const key in this.#io.replies) {
+      if (!this.#isAccumulation(this.#io.requests[key])) {
+        toBlank.push(parseInt(key))
       }
     }
     for (const key of toBlank) {
-      delete io.requests[key]
-      delete io.replies[key]
-      log('deleted', key)
+      delete this.#io.requests[key]
+      delete this.#io.replies[key]
     }
   }
 }

@@ -20,7 +20,8 @@ export default class Executor {
     const fs = FS.open(req.target, commit, c.db)
     assert(equal(fs.pid, req.target), 'target is not self')
     assert(!fs.isChanged, 'fs is changed')
-    const io = await IOChannel.load(fs)
+    const io = await IOChannel.read(fs)
+    assert(io, 'io not found')
     assert(io.isNextSerialRequest(req), 'request is not callable')
     log('request %o %o', req.isolate, req.functionName)
 
@@ -90,12 +91,20 @@ export default class Executor {
     execution.commit = fs.commit
     execution.accumulator.absorb(ioAccumulator)
 
-    const accumulatorPromise = execution.accumulator.activate()
+    const racecar = Symbol('🏎️')
+    const accumulatorPromise = execution.accumulator.activate(racecar)
     const winner = await Promise.race([execution.function, accumulatorPromise])
     execution.accumulator.deactivate()
 
     let result: ExeResult
-    if (isOutcome(winner)) {
+    if (winner === racecar) {
+      log('accumulator triggered first')
+      const { accumulations } = execution.accumulator
+      assert(accumulations.length > 0, 'no accumulations')
+      const requests = accumulations.map((a) => a.request)
+      result = { pending: { commit: fs.commit, requests } }
+    } else {
+      assert(typeof winner !== 'symbol')
       log('exe complete %o', exeId)
       this.#functions.delete(exeId)
       const sequence = io.getSequence(req)
@@ -103,12 +112,6 @@ export default class Executor {
 
       // TODO need to tick the fs forwards when the accumulations occur
       result = { settled: { reply, fs } }
-    } else {
-      log('accumulator triggered first')
-      const { accumulations } = execution.accumulator
-      assert(accumulations.length > 0, 'no accumulations')
-      const requests = accumulations.map((acc) => acc.request)
-      result = { pending: { commit: fs.commit, requests } }
     }
     return result
   }

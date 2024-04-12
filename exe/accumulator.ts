@@ -5,6 +5,7 @@ import { assert, deserializeError, equal, expect } from '@utils'
 export default class Accumulator {
   #index = 0
   #buffer: IsolatePromise[] = []
+  #new: IsolatePromise[] = []
   #isActive = false
   #trigger: (() => void) | undefined
   private constructor() {}
@@ -14,12 +15,13 @@ export default class Accumulator {
     return acc
   }
   get accumulations() {
-    return [...this.#buffer]
+    return [...this.#new]
   }
   push(request: IsolatePromise) {
     assert(this.isActive, 'Activity is denied')
     assert(typeof this.#trigger === 'function', 'Trigger is not set')
     this.#trigger()
+    this.#new.push(request)
     this.#buffer.push(request)
   }
   recover(request: UnsequencedRequest) {
@@ -31,13 +33,12 @@ export default class Accumulator {
       return recovered
     }
   }
-  activate() {
-    // a promise that resolves when the accumulator is triggered
+  activate(symbol: symbol) {
     assert(!this.isActive, 'Activity is already active')
     assert(!this.#trigger, 'Trigger is already set')
     this.#isActive = true
-    return new Promise<void>((resolve) => {
-      this.#trigger = resolve
+    return new Promise<symbol>((resolve) => {
+      this.#trigger = () => resolve(symbol)
     })
   }
   deactivate() {

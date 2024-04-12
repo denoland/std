@@ -11,7 +11,7 @@ const pid = pidFromRepo('__system', 'system/system')
 Deno.test('io-channel', () => {
   const json = serialAccumulation()
   const io = IOChannel.readObject(json, pid)
-  const executing = io.getNextSerialRequest()
+  const executing = io.getCurrentSerialRequest()
   const outbound = json.requests[1]
   expect(executing).toEqual(outbound)
 })
@@ -19,7 +19,7 @@ Deno.test('remote requests', () => {
   const json = serialAccumulation()
   json.requests[1].target.branches = ['main', 'other']
   const io = IOChannel.readObject(json, pid)
-  const executing = io.getNextSerialRequest()
+  const executing = io.getCurrentSerialRequest()
   expect(executing).toBeUndefined()
 })
 // refuse to run unless all of a pending layer is solved

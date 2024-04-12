@@ -15,6 +15,7 @@ export default class DB {
   }
   static async create() {
     const kv = await openKv()
+    watchUndelivered(kv)
     const db = new DB(kv)
     return db
   }
@@ -176,4 +177,10 @@ export default class DB {
   }
 }
 
-// Test the db with the real KV opened up
+const watchUndelivered = async (kv: Deno.Kv) => {
+  for await (const [undelivered] of kv.watch([keys.UNDELIVERED])) {
+    if (undelivered.versionstamp) {
+      console.error('undelivered', undelivered.key, undelivered.value)
+    }
+  }
+}
