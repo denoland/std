@@ -573,7 +573,7 @@ const ANSI_PATTERN = new RegExp(
  * Remove ANSI escape codes from the string.
  * @param string to remove ANSI escape codes from
  *
- *  @deprecated (will be removed in 1.0.0) Use {@linkcode stripAnsiCode} instead.
+ *  @deprecated This will be removed in 1.0.0. Use {@linkcode stripAnsiCode} instead.
  */
 export function stripColor(string: string): string {
   return stripAnsiCode(string);

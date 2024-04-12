@@ -13,7 +13,7 @@ import { FAILSAFE_SCHEMA } from "./failsafe.ts";
  *
  * @see {@link http://www.yaml.org/spec/1.2/spec.html#id2803231}
  *
- * @deprecated (will be removed in 1.0.0) Use {@link JSON_SCHEMA} instead.
+ * @deprecated This will be removed in 1.0.0. Use {@link JSON_SCHEMA} instead.
  */
 export const JSON_SCHEMA: Schema = new Schema({
   implicit: [nil, bool, int, float],

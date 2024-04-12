@@ -35,7 +35,7 @@ function comparatorMin(comparator: Comparator): SemVer {
 }
 
 /**
- * @deprecated (will be removed in 1.0.0) Use {@linkcode greaterThanRange} or
+ * @deprecated This will be removed in 1.0.0. Use {@linkcode greaterThanRange} or
  * {@linkcode lessThanRange} for comparing ranges and semvers. The minimum
  * version of a range is often not well defined, and therefore this API
  * shouldn't be used. See

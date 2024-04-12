@@ -66,6 +66,6 @@ export const EXTENDED_SCHEMA: Schema = new Schema({
  * );
  * ```
  *
- * @deprecated (will be removed in 1.0.0) Use {@link EXTENDED_SCHEMA} instead.
+ * @deprecated This will be removed in 1.0.0. Use {@link EXTENDED_SCHEMA} instead.
  */
 export const extended = EXTENDED_SCHEMA;
