@@ -10,6 +10,7 @@
 
 import { doc } from "deno_doc";
 import { walk } from "../fs/walk.ts";
+import { toFileUrl } from "../path/to_file_url.ts";
 
 const ROOT = new URL("../", import.meta.url);
 
@@ -26,8 +27,8 @@ const iter = walk(ROOT, {
 });
 
 for await (const entry of iter) {
-  const url = import.meta.resolve(entry.path);
-  const docs = await doc(url);
+  const url = toFileUrl(entry.path);
+  const docs = await doc(url.href);
   for (const document of docs) {
     const tags = document.jsDoc?.tags;
     if (!tags) continue;
