@@ -4,6 +4,7 @@ import { branch } from '@/git/branch.ts'
 import {
   IoStruct,
   isMergeReply,
+  isRequest,
   MergeReply,
   PID,
   PierceRequest,
@@ -14,7 +15,12 @@ import FS from '@/git/fs.ts'
 import DB from '@/db.ts'
 
 Deno.test('pierce branch', async (t) => {
-  const target: PID = { account: 'git', repository: 'test', branches: ['main'] }
+  const target: PID = {
+    id: 't',
+    account: 'git',
+    repository: 'test',
+    branches: ['main'],
+  }
   const branchPierce = (ulid: string): PierceRequest => ({
     target,
     ulid,
@@ -29,7 +35,7 @@ Deno.test('pierce branch', async (t) => {
     outcome: { result: 'test-result' },
   }
   const db = await DB.create()
-  const baseFs = await FS.init('git/test', db)
+  const baseFs = await FS.init(target, db)
   const pierce = branchPierce('pierce')
   let head: string
   let parentHead: string
@@ -67,12 +73,12 @@ Deno.test('pierce branch', async (t) => {
     const branchFs = FS.open(branchPid, head, db)
     expect(branchFs.commit).toEqual(head)
     const solids = await solidify(branchFs, [branchReply])
-    const { replies } = solids
+    const { poolables } = solids
 
-    log('replies', replies[0])
-    expect(replies.length).toBe(1)
-    assert(isMergeReply(replies[0]))
-    mergeReply = replies[0]
+    log('poolables', poolables[0])
+    expect(poolables.length).toBe(1)
+    assert(!isRequest(poolables[0]) && isMergeReply(poolables[0]))
+    mergeReply = poolables[0]
     expect(mergeReply.outcome).toEqual(reply.outcome)
     expect(mergeReply.target).toEqual(target)
   })
@@ -80,8 +86,8 @@ Deno.test('pierce branch', async (t) => {
     const parentFs = FS.open(baseFs.pid, parentHead, db)
     expect(parentFs.commit).not.toEqual(head)
 
-    const { replies, commit } = await solidify(parentFs, [mergeReply])
-    expect(replies).toHaveLength(0)
+    const { poolables, commit } = await solidify(parentFs, [mergeReply])
+    expect(poolables).toHaveLength(0)
     const next = FS.open(parentFs.pid, commit, db)
     const io = await next.readJSON<IoStruct>('.io.json')
     const outcome = io.replies[0]

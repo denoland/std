@@ -3,6 +3,7 @@ import { solidify } from '@/git/solidify.ts'
 import {
   IoStruct,
   PID,
+  pidFromRepo,
   PierceRequest,
   PROCTYPE,
   Reply,
@@ -12,7 +13,12 @@ import FS from './fs.ts'
 import DB from '@/db.ts'
 
 Deno.test('pierce serial', async (t) => {
-  const target: PID = { account: 'git', repository: 'test', branches: ['main'] }
+  const target: PID = {
+    id: 't',
+    account: 'git',
+    repository: 'test',
+    branches: ['main'],
+  }
   const pierceFactory = (ulid: string): PierceRequest => ({
     target,
     ulid,
@@ -29,7 +35,8 @@ Deno.test('pierce serial', async (t) => {
   const db = await DB.create()
   let fs: FS
   await t.step('init', async () => {
-    fs = await FS.init('git/test', db)
+    const pid = pidFromRepo('t', 'git/test')
+    fs = await FS.init(pid, db)
     const logs = await fs.logs()
     expect(logs).toHaveLength(1)
     expect(fs.pid).toEqual(target)
@@ -47,10 +54,10 @@ Deno.test('pierce serial', async (t) => {
     expect(io.requests[0]).toEqual(pierce)
   })
   await t.step('pierce reply', async () => {
-    const { commit, replies, exe } = await solidify(fs, [reply])
+    const { commit, poolables, exe } = await solidify(fs, [reply])
     expect(commit).not.toBe(fs.commit)
     expect(exe).toBeUndefined()
-    expect(replies).toHaveLength(0)
+    expect(poolables).toHaveLength(0)
 
     fs = FS.open(fs.pid, commit, db)
     const io = await fs.readJSON<IoStruct>('.io.json')
@@ -104,7 +111,12 @@ const replies = (start: number, end: number) => {
   const pool: SolidReply[] = []
   for (let i = start; i <= end; i++) {
     pool.push({
-      target: { account: 'git', repository: 'test', branches: ['main'] },
+      target: {
+        id: 't',
+        account: 'git',
+        repository: 'test',
+        branches: ['main'],
+      },
       sequence: i,
       outcome: { result: i },
     })

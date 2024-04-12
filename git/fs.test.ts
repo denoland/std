@@ -1,14 +1,15 @@
 import * as utils from '@utils'
 import DB from '@/db.ts'
 import FS from './fs.ts'
+import { pidFromRepo } from '@/constants.ts'
 const { expect } = utils
 Deno.test('git/init', async (t) => {
   const db = await DB.create()
   let fs: FS
   await t.step('init', async () => {
     const repo = 'account/repo'
-
-    fs = await FS.init(repo, db)
+    const pid = pidFromRepo('t', repo)
+    fs = await FS.init(pid, db)
     await expect(fs.read('hello.txt')).rejects.toThrow(
       'Could not find file or',
     )
@@ -122,7 +123,8 @@ Deno.test('clone', async (t) => {
   const db = await DB.create()
   let fs: FS
   await t.step('clone HAL', async () => {
-    fs = await FS.clone('dreamcatcher-tech/HAL', db)
+    const pid = pidFromRepo('t', 'dreamcatcher-tech/HAL')
+    fs = await FS.clone(pid, db)
     expect(fs.commit).toHaveLength(40)
   })
   await t.step('read', async () => {

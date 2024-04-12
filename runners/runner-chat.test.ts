@@ -1,12 +1,14 @@
 import merge from 'npm:lodash.merge'
-import Cradle from '../engine.ts'
+import { Engine } from '../engine.ts'
+import { Shell } from '@/api/web-client.ts'
 import { expect, log } from '@utils'
 import IsolateApi from '../isolate-api.ts'
-import { Help, RUNNERS } from '../constants.ts'
+import { Help, pidFromRepo, RUNNERS } from '../constants.ts'
 import runner from './runner-chat.ts'
 import FS from '@/git/fs.ts'
 import DB from '@/db.ts'
 import Accumulator from '@/exe/accumulator.ts'
+import { Api } from '@/isolates/engage-help.ts'
 
 Deno.test('runner', async (t) => {
   const helpBase: Help = {
@@ -18,10 +20,11 @@ Deno.test('runner', async (t) => {
     instructions: ['Only reply with a SINGLE word'],
   }
   const db = await DB.create()
-  const fs = await FS.init('runner/test', db)
+  const pid = pidFromRepo('t', 'runner/test')
+  const fs = await FS.init(pid, db)
   const accumulator = Accumulator.create()
   const api = IsolateApi.create(fs, accumulator)
-  accumulator.activate()
+  accumulator.activate(Symbol())
 
   await t.step('hello world', async () => {
     const help = merge({}, helpBase, { commands: [] })
@@ -55,7 +58,10 @@ Deno.test('runner', async (t) => {
 
 Deno.test('artifact', async (t) => {
   const repo = 'dreamcatcher-tech/HAL'
-  const artifact = await Cradle.create()
+  const engine = await Engine.create()
+  const system = await engine.initialize()
+  const artifact = Shell.create(engine, system.pid)
+
   const { pid } = await artifact.clone({ repo })
 
   const splices = async () => {
@@ -67,7 +73,7 @@ Deno.test('artifact', async (t) => {
 
   await t.step('chat', async () => {
     const isolate = 'engage-help'
-    const { engage } = await artifact.pierces(isolate, pid)
+    const { engage } = await artifact.actions<Api>(isolate, pid)
     const result = await engage({ help: 'help-fixture', text: 'hello' })
 
     log('result', result)

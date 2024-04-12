@@ -33,7 +33,7 @@ export default class IsolateApi<T extends object = Default> {
     this.#fs = fs
     this.#accumulator = accumulator
   }
-  static create(fs: FS, accumulator: Accumulator, opts: Options) {
+  static create(fs: FS, accumulator: Accumulator, opts?: Options) {
     const api = new IsolateApi(fs, accumulator)
     if (opts) {
       api.#isEffect = opts.isEffect || false

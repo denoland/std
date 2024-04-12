@@ -23,7 +23,9 @@ export const api = {
     },
   },
 }
-
+export interface Api {
+  engage: (params: { help: string; text: string }) => Promise<unknown>
+}
 export const functions = {
   engage: async (params: { help: string; text: string }, api: IsolateApi) => {
     const { help: path, text } = params
