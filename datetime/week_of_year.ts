@@ -21,7 +21,7 @@ const Day = {
  * @param date Date to get the week number of.
  * @returns The week number of the provided date.
  *
- * @example
+ * @example Basic usage
  * ```ts
  * import { weekOfYear } from "https://deno.land/std@$STD_VERSION/datetime/week_of_year.ts";
  *

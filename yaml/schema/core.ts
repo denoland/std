@@ -5,10 +5,22 @@
 // This module is browser compatible.
 
 import { Schema } from "../schema.ts";
-import { json } from "./json.ts";
+import { JSON_SCHEMA } from "./json.ts";
 
-// Standard YAML's Core schema.
-// http://www.yaml.org/spec/1.2/spec.html#id2804923
-export const core: Schema = new Schema({
-  include: [json],
+/**
+ * Standard YAML's core schema.
+ *
+ * @see {@link http://www.yaml.org/spec/1.2/spec.html#id2804923}
+ */
+export const CORE_SCHEMA: Schema = new Schema({
+  include: [JSON_SCHEMA],
 });
+
+/**
+ * Standard YAML's core schema.
+ *
+ * @see {@link http://www.yaml.org/spec/1.2/spec.html#id2804923}
+ *
+ * @deprecated (will be removed in 1.0.0) Use {@link CORE_SCHEMA} instead.
+ */
+export const core = CORE_SCHEMA;

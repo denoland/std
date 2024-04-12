@@ -1,4 +1,5 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
 
 import type { Comparator, Range, SemVer } from "./types.ts";
 import { testComparatorSet } from "./_test_comparator_set.ts";
