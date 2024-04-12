@@ -37,6 +37,7 @@ export default (name: string, cradleMaker: () => Promise<Artifact>) => {
   Deno.test.ignore(prefix + 'child to child', async () => {})
   Deno.test.ignore(prefix + 'child to parent', async () => {})
   Deno.test.only(prefix + 'pierce', async (t) => {
+    log.enable('AI:qex*')
     const artifact = await cradleMaker()
     await artifact.rm({ repo: 'cradle/pierce' })
     const { pid: target } = await artifact.init({ repo: 'cradle/pierce' })

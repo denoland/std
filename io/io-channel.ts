@@ -5,12 +5,12 @@
 import { assert, Debug, equal } from '@utils'
 import {
   IoStruct,
+  isMergeRequest,
   isPierceRequest,
-  isRequest,
   MergeReply,
+  MergeRequest,
   PID,
   PROCTYPE,
-  Reply,
   Request,
   SolidReply,
   SolidRequest,
@@ -45,12 +45,13 @@ export default class IOChannel {
     this.#original = JSON.parse(JSON.stringify(io))
   }
   static readObject(io: IoStruct, pid: PID) {
+    check(io, pid)
     return new IOChannel(io, pid)
   }
   static async read(fs: FS) {
     if (await fs.exists('.io.json')) {
       const io = await fs.readJSON<IoStruct>('.io.json')
-      check(io)
+      check(io, fs.pid)
       return new IOChannel(io, fs.pid)
     }
   }
@@ -59,7 +60,7 @@ export default class IOChannel {
 
     if (await fs.exists('.io.json')) {
       io = await fs.readJSON('.io.json') as IoStruct
-      check(io)
+      check(io, fs.pid)
     }
     const channel = new IOChannel(io, fs.pid, fs)
     channel.#blankSettledRequests(io)
@@ -95,6 +96,9 @@ export default class IOChannel {
     for (const key of unreplied) {
       const request = this.#io.requests[key]
       if (request.proctype !== PROCTYPE.SERIAL) {
+        continue
+      }
+      if (!equal(request.target, this.#pid)) {
         continue
       }
       if (!this.#io.pendings[key]) {
@@ -209,22 +213,29 @@ export default class IOChannel {
     const sequence = this.getSequence(executing)
 
     const sequences = []
-    const solidRequests: SolidRequest[] = []
+    const solidified: (SolidRequest | MergeRequest)[] = []
     for (const request of requests) {
       const { sequence, sequenced } = this.#addUnsequenced(request)
       sequences.push(sequence)
-      solidRequests.push(sequenced)
+      solidified.push(sequenced)
     }
     if (!this.#io.pendings[sequence]) {
       this.#io.pendings[sequence] = []
     }
     this.#io.pendings[sequence].push({ commit, sequences })
-    return solidRequests
+    return solidified
   }
   #addUnsequenced(request: UnsequencedRequest) {
     const sequence = this.#io.sequence++
     const source = this.#pid
-    const sequenced: SolidRequest = { ...request, sequence, source }
+    let sequenced: SolidRequest | MergeRequest = {
+      ...request,
+      sequence,
+      source,
+    }
+    if (!equal(request.target, source)) {
+      sequenced = { ...sequenced, commit: 'updated post commit' }
+    }
     this.#io.requests[sequence] = sequenced
     return { sequence, sequenced }
   }
@@ -253,12 +264,18 @@ export default class IOChannel {
   }
 }
 
-const check = (io: IoStruct) => {
+const check = (io: IoStruct, pid: PID) => {
   // TODO check format
   // TODO check key sequences are sane
   // TODO do the same for reply values
   for (const replyKey of Object.keys(io.replies)) {
     assert(replyKey in io.requests, 'no reply key in requests')
+  }
+  for (const request of Object.values(io.requests)) {
+    if (!equal(request.target, pid)) {
+      assert(!isPierceRequest(request), 'target pid mismatch')
+      assert(equal(request.source, pid), 'target pid mismatch')
+    }
   }
 }
 
@@ -290,7 +307,13 @@ const toRunnableRequest = (request: Request, sequence: number) => {
   cache.get(request)?.set(sequence, internal)
   return internal
 }
-export const toUnsequenced = (request: SolidRequest): UnsequencedRequest => {
+export const toUnsequenced = (
+  request: SolidRequest | MergeRequest,
+): UnsequencedRequest => {
+  if (isMergeRequest(request)) {
+    const { sequence: _, source: __, commit: ___, ...unsequenced } = request
+    return unsequenced
+  }
   const { sequence: _, source: __, ...unsequenced } = request
   return unsequenced
 }

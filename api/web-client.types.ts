@@ -141,7 +141,10 @@ export type PierceRequest = Invocation & {
 export const isPierceRequest = (p: Request): p is PierceRequest => {
   return 'ulid' in p
 }
-export type UnsequencedRequest = Omit<SolidRequest, 'sequence' | 'source'>
+export type UnsequencedRequest = Omit<
+  MergeRequest,
+  'sequence' | 'source' | 'commit'
+>
 /**
  * A request that has been included in a commit, therefore has a sequence number
  */
@@ -150,7 +153,11 @@ export type SolidRequest = Invocation & {
   source: PID
   sequence: number
 }
-export type Request = PierceRequest | SolidRequest
+/** A request that travels between branches */
+export type MergeRequest = SolidRequest & {
+  commit: string
+}
+export type Request = PierceRequest | SolidRequest | MergeRequest
 
 // TODO remove this by passing ProcessOptions in with the Request
 export const getProcType = (options?: ProcessOptions) => {

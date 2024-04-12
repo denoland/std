@@ -39,7 +39,7 @@ export const branch = async (fs: FS, sequence: number) => {
   const solids = await solidify(branch, [origin])
   assert(solids.exe, 'must have an exe')
   assert(solids.branches.length === 0, 'must have no branches')
-  assert(solids.replies.length === 0, 'must have no replies')
+  assert(solids.poolables.length === 0, 'must have no poolables')
   assert(solids.deletes.length === 0, 'must have no deletes')
   const branched: Branched = {
     origin: solids.exe.request,

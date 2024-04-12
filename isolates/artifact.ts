@@ -9,7 +9,6 @@ import {
   isQueueBranch,
   isQueueExe,
   isQueuePool,
-  isQueueReply,
   PierceRequest,
   print,
   QueueMessage,
@@ -77,7 +76,7 @@ export const functions = {
     // not necessary to be atomic, but uses functions on the atomic class
     const result = await db.atomic()
       .addToPool(pierce)
-      .enqueuePierce(pierce)
+      .enqueuePool(pierce)
       .commit()
     assert(result, 'pierce failed')
     // TODO return back the head commit at the point of pooling
@@ -92,15 +91,13 @@ export const lifecycles: IsolateLifecycle = {
     api.context = context
     db.listen(async (message: QueueMessage) => {
       if (isQueuePool(message)) {
-        // this should be the generate pool including actions from other chains
-        const { pierce } = message
-        log('Pierce: %o %s', print(pierce.target), pierce.ulid)
-        let tip = await FS.openHead(pierce.target, db)
-        while (await db.hasPoolable(pierce)) {
+        const { poolable } = message
+        let tip = await FS.openHead(poolable.target, db)
+        while (await db.hasPoolable(poolable)) {
           if (await doAtomicCommit(db, tip)) {
             return
           }
-          tip = await FS.openHead(pierce.target, db)
+          tip = await FS.openHead(poolable.target, db)
         }
       }
       if (isQueueBranch(message)) {
@@ -119,24 +116,9 @@ export const lifecycles: IsolateLifecycle = {
           head = await db.readHead(branchPid)
         }
       }
-      if (isQueueReply(message)) {
-        // reply, request, and pierce are all the same, actually
-
-        const { reply } = message
-        log('MergeReply: %o', print(reply.target), reply.sequence, reply.commit)
-        let tip = await FS.openHead(reply.target, db)
-        while (await db.hasPoolable(reply)) {
-          if (await doAtomicCommit(db, tip)) {
-            return
-          }
-          tip = await FS.openHead(reply.target, db)
-        }
-      }
       if (isQueueExe(message)) {
         const { request, commit, sequence } = message
-        // BUT what if this is crossing a repository ?
-        // The commit is where the request is coming from
-        log('Execute: %o', print(request.target), commit, sequence)
+        getLoggerFor(request)(commit, sequence, request.functionName)
         if (await isSettled(request, sequence, db)) {
           return
         }
@@ -217,3 +199,14 @@ export const sanitizeContext = (api: IsolateApi<C>): C => {
   return { db, exe }
 }
 // TODO remove anyone using atomics except for io
+const getLoggerFor = (request: SolidRequest) => {
+  const key = print(request.target)
+  if (!loggerCache.has(key)) {
+    const logger = Debug('AI:qex:' + key)
+    loggerCache.set(key, logger)
+  }
+  const logger = loggerCache.get(key)
+  assert(logger, 'logger not found')
+  return logger
+}
+const loggerCache = new Map<string, (...args: unknown[]) => void>()

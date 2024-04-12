@@ -4,6 +4,7 @@ export const IO_PATH = '.io.json'
 import {
   IsolateApiSchema,
   IsolateReturn,
+  MergeRequest,
   Outcome,
   Params,
   PID,
@@ -59,7 +60,9 @@ export type MergeReply = SolidReply & {
    */
   source: PID
   /**
-   * What is the commit that solidified this merge reply?
+   * The commit that solidified this merge reply, which is used as a merge
+   * parent in the recipient branch, so that any changes to the fs can be
+   * accessed and so the provenance of the action is included.
    */
   commit: string
 }
@@ -73,7 +76,7 @@ export type Solids = {
   commit: string
   exe?: { request: SolidRequest; sequence: number }
   branches: number[]
-  replies: MergeReply[]
+  poolables: (MergeReply | MergeRequest)[]
   deletes: { pid: PID; commit: string }[]
 }
 export type Branched = {
@@ -113,19 +116,22 @@ export const isRequest = (poolable: Poolable): poolable is Request => {
   return 'proctype' in poolable
 }
 export const isMergeReply = (poolable: Reply): poolable is MergeReply => {
-  return 'commit' in poolable
+  return 'commit' in poolable && 'outcome' in poolable
+}
+export const isMergeRequest = (poolable: Request): poolable is MergeRequest => {
+  return 'commit' in poolable && 'proctype' in poolable
 }
 /**
- * Messages that go on the queue are one of four types.  Each on is an operation
- * that will result in a new commit, atomically.  Each operation is able to
- * detect when it is a duplicate task due to duplicate message delivery.  Each
- * task will continue to retry until it is successful, as long as its check for
- * duplication reassures it to keep trying.
+ * Messages that go on the queue are one of three types.  Each one is an
+ * operation that will result in a new commit, atomically.  Each operation is
+ * able to detect when it is a duplicate task due to duplicate message delivery.
+ * Each task will continue to retry until it is successful, as long as its check
+ * for duplication reassures it to keep trying.
  */
-export type QueueMessage = QueuePool | QueueExe | QueueBranch | QueueReply
+export type QueueMessage = QueuePool | QueueExe | QueueBranch
 
 export type QueuePool = {
-  pierce: PierceRequest
+  poolable: MergeReply | MergeRequest | PierceRequest
 }
 export type QueueExe = {
   request: SolidRequest
@@ -137,20 +143,14 @@ export type QueueBranch = {
   parentPid: PID
   sequence: number
 }
-export type QueueReply = {
-  reply: MergeReply
-}
 export const isQueuePool = (m: QueueMessage): m is QueuePool => {
-  return 'pierce' in m
+  return 'poolable' in m
 }
 export const isQueueExe = (m: QueueMessage): m is QueueExe => {
   return 'request' in m
 }
 export const isQueueBranch = (m: QueueMessage): m is QueueBranch => {
   return 'parentPid' in m
-}
-export const isQueueReply = (m: QueueMessage): m is QueueReply => {
-  return 'reply' in m
 }
 
 export * from './api/web-client.types.ts'

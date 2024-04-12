@@ -1,3 +1,4 @@
+import { getPoolKeyPrefix } from '@/keys.ts'
 import { Debug } from '@utils'
 import { solidify } from '@/git/solidify.ts'
 import { branch } from '@/git/branch.ts'
@@ -55,10 +56,10 @@ export const doAtomicCommit = async (db: DB, fs: FS, exe?: ExeResult) => {
 }
 
 const transmit = (pid: PID, solids: Solids, atomic: Atomic) => {
-  const { commit, exe, branches, replies } = solids
+  const { commit, exe, branches, poolables } = solids
 
   // need to transmit requests going to other chains
-  const transmittedReplies = new Set<PID>()
+  const transmitted = new Set<string>()
   if (exe) {
     const { request, sequence } = exe
     atomic.enqueueExecution(request, sequence, commit)
@@ -66,14 +67,13 @@ const transmit = (pid: PID, solids: Solids, atomic: Atomic) => {
   for (const sequence of branches) {
     atomic.enqueueBranch(commit, pid, sequence)
   }
-  for (const reply of replies) {
-    atomic.addToPool(reply)
-    // do the same with requests that need to get pooled too
-    // share the same single trigger
-    if (!transmittedReplies.has(reply.target)) {
-      transmittedReplies.add(reply.target)
+  for (const poolable of poolables) {
+    atomic.addToPool(poolable)
+    const key = getPoolKeyPrefix(poolable.target).join('/')
+    if (!transmitted.has(key)) {
+      transmitted.add(key)
       // if one was processed, all were processed ☢️
-      atomic.enqueueReply(reply)
+      atomic.enqueuePool(poolable)
     }
   }
 }
