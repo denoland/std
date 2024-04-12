@@ -20,7 +20,7 @@ const iter = walk(ROOT, {
   exts: [".ts"],
   skip: [
     /.git/,
-    /([\\/]|\/)_/,
+    /(\/|\\)_/,
     /_test.ts$/,
   ],
 });
