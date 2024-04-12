@@ -40,11 +40,8 @@ export class WebClientEngine implements EngineInterface {
     }
     await Promise.all([...this.#readPromises])
   }
-  async ping(params?: { data?: unknown }) {
-    const payload: { data?: JsonValue } = {}
-    if (params && params.data) {
-      payload.data = params.data as JsonValue
-    }
+  async ping(data?: JsonValue) {
+    const payload: { data?: JsonValue } = { data }
     return await this.#request('ping', payload)
   }
   async pierce(pierce: PierceRequest) {

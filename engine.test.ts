@@ -10,7 +10,7 @@ const cradleMaker = async () => {
   return shell
 }
 
-Deno.test.only('cradle', async (t) => {
+Deno.test('cradle', async (t) => {
   await t.step('basic', async () => {
     const engine = await Engine.create()
     log.enable('AI:qex*')

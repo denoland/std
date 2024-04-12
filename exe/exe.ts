@@ -127,11 +127,6 @@ const getExeId = (request: Request) => {
   const id = getPoolKey(request)
   return JSON.stringify(id)
 }
-const isOutcome = (value: unknown): value is Outcome => {
-  return typeof value === 'object' && value !== null &&
-    ('result' in value || 'error' in value) &&
-    !('result' in value && 'error' in value)
-}
 const isSystem = (pid: PID) => {
   const { id, account, repository } = pid
   return id === '__system' && account === 'system' && repository === 'system'

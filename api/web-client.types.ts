@@ -289,6 +289,7 @@ type Head = { pid: PID; head: string }
 
 /** The client interface to artifact */
 export interface Artifact {
+  pid: PID
   stop(): Promise<void> | void
   actions(isolate: string, target: PID): Promise<DispatchFunctions>
   read(pid: PID, path?: string, signal?: AbortSignal): ReadableStream<Splice>
@@ -299,9 +300,8 @@ export interface Artifact {
    * Used primarily by web clients to establish base connectivity and get
    * various diagnostics about the platform they are interacting with */
   ping(params?: { data?: JsonValue; pid?: PID }): Promise<IsolateReturn>
-
   /** Calls the repo isolate */
-  probe(params: { repo?: string; pid?: PID }): Promise<Head | void>
+  probe(params: { pid: PID }): Promise<Head | void>
   init(params: { repo: string }): Promise<Head>
   clone(params: { repo: string }): Promise<Head>
   pull(params: { pid: PID }): Promise<Head>
@@ -323,7 +323,7 @@ export const isPID = (value: unknown): value is PID => {
 export const print = (pid: PID) => {
   return `${pid.id}/${pid.account}/${pid.repository}:${pid.branches.join('/')}`
 }
-export const assertPid = (pid: PID) => {
+export const freezePid = (pid: PID) => {
   if (!pid.id) {
     throw new Error('id is required')
   }
@@ -341,6 +341,8 @@ export const assertPid = (pid: PID) => {
     const repo = `${pid.account}/${pid.repository}`
     throw new Error('Invalid GitHub account or repository name: ' + repo)
   }
+  Object.freeze(pid)
+  Object.freeze(pid.branches)
 }
 export const pidFromRepo = (id: string, repo: string): PID => {
   const [account, repository] = repo.split('/')
@@ -350,9 +352,7 @@ export const pidFromRepo = (id: string, repo: string): PID => {
     repository,
     branches: [ENTRY_BRANCH],
   }
-  assertPid(pid)
-  Object.freeze(pid)
-  Object.freeze(pid.branches)
+  freezePid(pid)
   return pid
 }
 export interface EngineInterface {

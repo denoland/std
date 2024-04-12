@@ -5,7 +5,7 @@ export { expect } from 'std/expect/mod.ts'
 export { assert, AssertionError } from 'std/assert/mod.ts'
 export { default as merge } from 'npm:lodash.merge'
 import Debug from 'npm:debug'
-import { Outcome, PID } from '@/constants.ts'
+import { PID } from '@/constants.ts'
 import { deserializeError, serializeError } from 'serialize-error'
 import { ulid } from 'std/ulid/mod.ts'
 export { ulid }

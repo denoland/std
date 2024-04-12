@@ -2,7 +2,7 @@
  * Manages the .io.json file
  */
 
-import { assert, Debug, equal } from '@utils'
+import { assert, equal } from '@utils'
 import {
   IoStruct,
   isMergeRequest,
@@ -19,7 +19,6 @@ import {
 import Accumulator from '@/exe/accumulator.ts'
 import FS from '@/git/fs.ts'
 import { IsolatePromise } from '@/constants.ts'
-const log = Debug('AI:io-file')
 
 const createBase = (): IoStruct => ({
   sequence: 0,

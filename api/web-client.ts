@@ -4,6 +4,7 @@ import {
   Artifact,
   DispatchFunctions,
   EngineInterface,
+  freezePid,
   getProcType,
   IoStruct,
   isPierceRequest,
@@ -29,15 +30,19 @@ export class Shell implements Artifact {
   readonly #pid: PID
   readonly #pierces = new Map<string, PiercePromise>()
   readonly #abort = new AbortController()
+  #repo: Promise<Repo> | undefined
   private constructor(engine: EngineInterface, pid: PID) {
     this.#engine = engine
     this.#pid = pid
     this.#watchPierces()
   }
   static create(engine: EngineInterface, pid: PID) {
+    freezePid(pid)
     return new Shell(engine, pid)
   }
-  #repo: Promise<Repo> | undefined
+  get pid() {
+    return this.#pid
+  }
   async #repoActions() {
     if (!this.#repo) {
       this.#repo = this.actions<Repo>('repo', this.#pid)

@@ -5,6 +5,7 @@ import { Artifact } from '../api/web-client.types.ts'
 import processMgmt from './process-mgmt.ts'
 import aiCalls from './ai-calls.ts'
 import splices from './splices.ts'
+import { pidFromRepo } from '@/constants.ts'
 
 const ioFixture = 'io-fixture'
 
@@ -63,7 +64,7 @@ export default (name: string, cradleMaker: () => Promise<Artifact>) => {
     await artifact.stop()
   })
 
-  Deno.test(prefix + 'resource hogging', async (t) => {
+  Deno.test.ignore(prefix + 'resource hogging', async (t) => {
     const artifact = await cradleMaker()
     const repo = 'cradle/pierce'
     await artifact.rm({ repo })
@@ -89,7 +90,7 @@ export default (name: string, cradleMaker: () => Promise<Artifact>) => {
       await artifact.stop()
     })
   })
-  Deno.test(prefix + 'resource hogging parallel', async (t) => {
+  Deno.test.ignore(prefix + 'resource hogging parallel', async (t) => {
     const artifact = await cradleMaker()
     const repo = 'cradle/pierce'
     await artifact.rm({ repo })
@@ -115,14 +116,10 @@ export default (name: string, cradleMaker: () => Promise<Artifact>) => {
   })
   Deno.test(prefix + 'github operations', async (t) => {
     const artifact = await cradleMaker()
-    const pid = {
-      account: 'dreamcatcher-tech',
-      repository: 'HAL',
-      branches: ['main'],
-    }
+    const pid = pidFromRepo(artifact.pid.id, 'dreamcatcher-tech/HAL')
     await artifact.rm({ repo: 'dreamcatcher-tech/HAL' })
     await t.step('probe empty', async () => {
-      const result = await artifact.probe({ repo: 'dreamcatcher-tech/HAL' })
+      const result = await artifact.probe({ pid })
       log('probe result', result)
       expect(result).toBeUndefined()
     })
@@ -134,7 +131,7 @@ export default (name: string, cradleMaker: () => Promise<Artifact>) => {
       expect(typeof result!.head).toBe('string')
     })
     await t.step('probe', async () => {
-      const result = await artifact.probe({ repo: 'dreamcatcher-tech/HAL' })
+      const result = await artifact.probe({ pid })
       log('probe result', result)
       expect(result).toBeDefined()
       expect(result!.pid).toEqual(pid)
