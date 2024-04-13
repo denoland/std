@@ -19,12 +19,10 @@ export class WebClientEngine implements EngineInterface {
   ) => Promise<Response>
   readonly #schemas = new Map<string, JSONSchemaType<object>>()
 
-  readonly #url: string
   private constructor(url: string, fetcher?: typeof fetch) {
     if (url.endsWith('/')) {
       throw new Error('url should not end with "/": ' + url)
     }
-    this.#url = url
     if (fetcher) {
       this.#fetcher = fetcher
     } else {
@@ -63,7 +61,7 @@ export class WebClientEngine implements EngineInterface {
     const formData = new FormData()
     formData.append('audio', audio)
 
-    const response = await this.#fetcher(`${this.#url}/api/transcribe`, {
+    const response = await this.#fetcher(`/api/transcribe`, {
       method: 'POST',
       body: formData,
     })

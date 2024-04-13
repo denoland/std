@@ -58,7 +58,13 @@ export class Shell implements Artifact {
 
     let patched = ''
     let lastSplice
-    for await (const splice of watchIo) {
+    const reader = watchIo.getReader()
+    while (watchIo.locked) {
+      const { value: splice, done } = await reader.read()
+      if (done) {
+        console.error('splice stream ended')
+        break
+      }
       if (lastSplice && splice.commit.parent[0] !== lastSplice.oid) {
         throw new Error('parent mismatch: ' + splice.oid)
       }

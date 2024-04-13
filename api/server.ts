@@ -27,9 +27,14 @@ export default class Server {
   get engine() {
     return this.#engine
   }
+
+  // if the env flag is set, we know our system chain
+  // else, check for it, and make it if not there
+
   static async create() {
     // TODO whilst no system chain, fail with help message
     const engine = await Engine.create()
+    await engine.initialize()
     const app = new Hono().basePath('/api')
 
     app.use(timing())
@@ -107,7 +112,7 @@ export default class Server {
       const body = await c.req.parseBody()
       const audio = body['audio'] as File
       assert(audio, 'audio is required')
-      const text = await engine.transcribe(audio)
+      const { text } = await engine.transcribe(audio)
       log('transcribe text', text)
       return c.json({ text })
     })
