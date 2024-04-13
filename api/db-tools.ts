@@ -1,10 +1,10 @@
-import { load } from '$std/dotenv/mod.ts'
-import { KEYSPACES } from '@/keys.ts'
+import { load } from '@std/dotenv'
+import { UNDELIVERED } from '@/keys.ts'
 await load({ export: true })
 
 const db = await Deno.openKv(Deno.env.get('DENO_KV_URL'))
 
-const undelivered = db.list({ prefix: [KEYSPACES.UNDELIVERED] })
+const undelivered = db.list({ prefix: UNDELIVERED })
 
 for await (const { key, value } of undelivered) {
   console.log('undelivered: ', key, value)

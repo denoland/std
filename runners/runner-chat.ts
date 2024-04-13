@@ -1,13 +1,13 @@
-import { assert } from 'std/assert/mod.ts'
-import * as posix from 'https://deno.land/std@0.213.0/path/posix/mod.ts'
-import { Debug } from '@utils'
-import merge from 'npm:lodash.merge'
-import OpenAI from 'npm:openai'
-import { serializeError } from 'npm:serialize-error'
-import { load } from 'https://deno.land/std@0.213.0/dotenv/mod.ts'
+import { assert } from '@std/assert'
+import { Debug, posix } from '@utils'
+import merge from 'lodash.merge'
+import OpenAI from 'openai'
+import { serializeError } from 'serialize-error'
+import { load } from '@std/dotenv'
 import { Help, IsolateApi } from '@/constants.ts'
 import { HelpConfig, JSONSchemaType } from '@/constants.ts'
 import { JsonValue } from '@/constants.ts'
+import * as loadHelp from '@/isolates/load-help.ts'
 type MessageParam = OpenAI.ChatCompletionMessageParam
 const base = 'AI:runner-chat'
 const log = Debug(base)
@@ -208,7 +208,7 @@ export class AI {
       if (!command.includes(':')) {
         assert(command.startsWith('helps/'), `invalid help: ${command}`)
         name = posix.basename(command)
-        const { load } = await this.#api.functions('load-help')
+        const { load } = await this.#api.functions<loadHelp.Api>('load-help')
         const help = await load({ help: name })
         assert(help.description, `missing description: ${command}`)
         const schemas = await this.#api.isolateApiSchema('engage-help')
@@ -221,9 +221,9 @@ export class AI {
       } else {
         const [isolate, _name] = command.split(':')
         name = _name
-        const functions = await this.#api.functions(isolate)
         const isolateApiSchema = await this.#api.isolateApiSchema(isolate)
-        assert(functions[name], `isolate missing command: ${command}`)
+        const functions = await this.#api.functions(isolate)
+        assert(name in functions, `isolate missing command: ${command}`)
         action = functions[name]
         const api = isolateApiSchema[name]
         tool = isolateToGptApi(name, api)
@@ -232,7 +232,7 @@ export class AI {
       assert(!names.has(name), `duplicate action: ${command}`)
       names.add(name)
       assert(typeof action === 'function', `invalid action: ${action}`)
-      this.#actions[name] = action
+      this.#actions[name] = action as (parameters: object) => unknown
       assert(typeof tool === 'object', `invalid tool: ${tool}`)
       tools.push(tool)
     }

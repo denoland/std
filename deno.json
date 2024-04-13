@@ -1,4 +1,6 @@
 {
+  "name": "@dreamcatcher-ai/artifact",
+  "version": "0.0.1",
   "lock": false,
   "tasks": {
     "test": "DENO_KV_PATH=:memory: deno test -A --unstable-kv --coverage",
@@ -8,26 +10,35 @@
     "check": "deno fmt --check && deno lint && deno task check:types",
     "ok": "deno task check && deno task test",
     "cov:gen": "deno coverage coverage --lcov --exclude='.tsx' --output=cov.lcov",
-    "esm:add": "deno run -A https://esm.sh/v135 add",
-    "esm:update": "deno run -A https://esm.sh/v135 update",
-    "esm:remove": "deno run -A https://esm.sh/v135 remove",
-    "setup:githook": "ln -s ./pre-commit .git/hooks/pre-commit",
-    "test:cloud": "DEBUG_COLORS=1 deno test -A ./api/cloud.ts",
+    "tc": "DEBUG_COLORS=1 deno test -A ./api/cloud.ts",
     "db:drop": "DEBUG_COLORS=1 deno run --unstable-kv -A ./api/db-drop.ts",
     "db:tools": "DEBUG_COLORS=1 deno run --unstable-kv -A ./api/db-tools.ts"
   },
   "imports": {
-    "$diff": "https://esm.sh/v135/diff@5.2.0",
-    "$diff/": "https://esm.sh/v135/diff@5.2.0/",
-    "$gfm": "https://deno.land/x/gfm@0.2.5/mod.ts",
+    "diff": "npm:diff",
     "$git": "npm:isomorphic-git",
-    "$std/": "https://deno.land/std/",
+    "@std/async": "jsr:@std/async",
+    "@std/dotenv": "jsr:@std/dotenv",
+    "@std/expect": "jsr:@std/expect",
+    "@std/assert": "jsr:@std/assert",
+    "@std/path": "jsr:@std/path",
+    "openai": "npm:openai",
+    "ajv": "npm:ajv",
+    "fast-deep-equal/es6": "npm:fast-deep-equal/es6/index.js",
+    "lodash.merge": "npm:lodash.merge",
+    "supports-color": "npm:supports-color",
+    "debug": "npm:debug",
+    "ulid": "npm:ulid",
     "@/": "./",
     "@io/": "./io/",
-    "@kitsonk/kv-toolbox": "jsr:@kitsonk/kv-toolbox@^0.16.3",
+    "@kitsonk/kv-toolbox": "jsr:@kitsonk/kv-toolbox@^0.17.0",
     "@utils": "./utils.ts",
     "kv_oauth/": "https://deno.land/x/deno_kv_oauth@v0.9.1/",
-    "std/": "https://deno.land/std/"
+    "serialize-error": "npm:serialize-error",
+    "eventsource-parser/stream": "npm:eventsource-parser/stream",
+    "hono": "https://deno.land/x/hono@v4.2.3/mod.ts",
+    "hono/middleware": "https://deno.land/x/hono@v4.2.3/middleware.ts",
+    "hono/helper": "https://deno.land/x/hono@v4.2.3/helper.ts"
   },
   "exclude": ["cov/"],
   "lint": {
@@ -41,5 +52,6 @@
     "semiColons": false,
     "singleQuote": true,
     "proseWrap": "always"
-  }
+  },
+  "exports": "./main.ts"
 }

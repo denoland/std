@@ -10,12 +10,12 @@ export default (name: string, cradleMaker: () => Promise<Artifact>) => {
 
     const { pid } = await artifact.init({ repo })
     const sessionPid = { ...pid, branches: [...pid.branches, '1'] }
-    const { create } = await artifact.pierces('session', pid)
+    const { create } = await artifact.actions('session', pid)
     await t.step('create', async () => {
       const session = await create()
       expect(session).toEqual(sessionPid)
 
-      const { local } = await artifact.pierces('io-fixture', sessionPid)
+      const { local } = await artifact.actions('io-fixture', sessionPid)
       const result = await local()
       expect(result).toEqual('local reply')
     })
@@ -24,7 +24,7 @@ export default (name: string, cradleMaker: () => Promise<Artifact>) => {
       const session2Pid = { ...pid, branches: [...pid.branches, '3'] }
       expect(session).toEqual(session2Pid)
 
-      const { local } = await artifact.pierces('io-fixture', sessionPid)
+      const { local } = await artifact.actions('io-fixture', sessionPid)
       const result = await local()
       expect(result).toEqual('local reply')
     })
@@ -39,7 +39,7 @@ export default (name: string, cradleMaker: () => Promise<Artifact>) => {
 
     await t.step('ping', async () => {
       const isolate = 'io-fixture'
-      const { branch } = await artifact.pierces(isolate, pid)
+      const { branch } = await artifact.actions(isolate, pid)
       const result = await branch()
       expect(result).toEqual('remote pong')
     })

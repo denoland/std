@@ -2,9 +2,11 @@ import { assert, Debug, equal } from '@utils'
 import FS from './fs.ts'
 import {
   isMergeReply,
+  isMergeRequest,
   isPierceRequest,
   isRequest,
   MergeReply,
+  MergeRequest,
   Pending,
   Poolable,
   PROCTYPE,
@@ -32,11 +34,11 @@ export const solidify = async (fs: FS, pool: Poolable[], pending?: Pending) => {
   checkPool(pool)
   const io = await IOChannel.load(fs)
 
-  const executingRequest = io.getExecutingRequest()
+  const executingRequest = io.getCurrentSerialRequest()
   log('solidifyPool executingRequest', executingRequest)
 
   const branches: number[] = []
-  const replies: MergeReply[] = []
+  const poolables: (MergeReply | MergeRequest)[] = []
   const parents = []
   const deletes = []
 
@@ -45,7 +47,12 @@ export const solidify = async (fs: FS, pool: Poolable[], pending?: Pending) => {
     log('solidifyPool pending', pending)
     const { commit, requests } = pending
     const sequenced = io.addPending(commit, requests)
-    sequenced.forEach((r) => collectBranch(r, r.sequence, branches))
+    sequenced.forEach((r) => {
+      collectBranch(r, r.sequence, branches)
+      if (isMergeRequest(r)) {
+        poolables.push(r)
+      }
+    })
   }
 
   for (const poolable of pool) {
@@ -62,7 +69,7 @@ export const solidify = async (fs: FS, pool: Poolable[], pending?: Pending) => {
         const sequence = request.sequence
         const commit = 'updated post commit'
         const reply: MergeReply = { target, source, sequence, outcome, commit }
-        replies.push(reply)
+        poolables.push(reply)
       }
       if (isBranch(request)) {
         assert(isMergeReply(poolable), 'branch requires merge reply')
@@ -81,19 +88,20 @@ export const solidify = async (fs: FS, pool: Poolable[], pending?: Pending) => {
   }
 
   let exe: Solids['exe']
-  const next = io.getExecutingRequest()
+  const next = io.getCurrentSerialRequest()
   if (next && !equal(executingRequest, next)) {
-    log('nextExecutingRequest', next)
     const sequence = io.getSequence(next)
     exe = { request: next, sequence }
   }
+  // TODO pass in all the db checks to go with this write
+  // TODO write blobs atomically
   const { commit } = await fs.writeCommitObject('pool', parents)
 
   log('head', commit)
-  for (const reply of replies) {
-    reply.commit = commit
+  for (const poolable of poolables) {
+    poolable.commit = commit
   }
-  const solids: Solids = { commit, exe, branches, replies, deletes }
+  const solids: Solids = { commit, exe, branches, poolables, deletes }
   return solids
 }
 

@@ -10,11 +10,11 @@ export default (name: string, cradleMaker: () => Promise<Artifact>) => {
     await artifact.rm({ repo })
 
     const { pid } = await artifact.clone({ repo })
-    const { create } = await artifact.pierces('session', pid)
+    const { create } = await artifact.actions('session', pid)
 
     await t.step('prompt', async () => {
       const session = await create() as PID
-      const { engage } = await artifact.pierces('engage-help', session)
+      const { engage } = await artifact.actions('engage-help', session)
       const result = await engage({
         help: 'goalie',
         text: 'Say a single word',

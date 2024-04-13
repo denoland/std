@@ -1,6 +1,7 @@
 import * as keys from './keys.ts'
 import {
   MergeReply,
+  MergeRequest,
   PID,
   PierceRequest,
   Poolable,
@@ -8,7 +9,6 @@ import {
   SolidRequest,
 } from '@/constants.ts'
 import { assert, Debug, isKvTestMode, sha1 } from '@utils'
-import { KEYSPACES } from '@/keys.ts'
 
 const log = Debug('AI:db:atomic')
 
@@ -87,25 +87,25 @@ export class Atomic {
     return this
     // TODO ensure this is tied in to the changing of the parent head
   }
-  enqueuePierce(pierce: PierceRequest) {
-    return this.#enqueue({ pierce })
-  }
-  /** Queue up a serial request for execution */
+  /** Queue up a serial request for execution
+   * @param commit the commit to provide to the execution environment when the
+   * request is run
+   */
   enqueueExecution(request: SolidRequest, sequence: number, commit: string) {
     return this.#enqueue({ request, sequence, commit })
   }
   enqueueBranch(parentCommit: string, parentPid: PID, sequence: number) {
     return this.#enqueue({ parentCommit, parentPid, sequence })
   }
-  enqueueReply(reply: MergeReply) {
-    return this.#enqueue({ reply })
+  enqueuePool(poolable: MergeReply | MergeRequest | PierceRequest) {
+    return this.#enqueue({ poolable })
   }
   #enqueue(message: QueueMessage) {
     // TODO specify allowed message types as args to artifact functions
     assert(this.#atomic, 'Atomic not set')
     const backoffSchedule = isKvTestMode() ? [] : undefined
     this.#atomic = this.#atomic.enqueue(message, {
-      keysIfUndelivered: [[KEYSPACES.UNDELIVERED]],
+      keysIfUndelivered: [keys.UNDELIVERED],
       backoffSchedule,
     })
     return this

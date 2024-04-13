@@ -1,20 +1,22 @@
-import { EventSourceParserStream } from 'npm:eventsource-parser/stream'
-export { equal } from 'https://deno.land/x/equal/mod.ts'
-export { delay } from '$std/async/mod.ts'
-import 'npm:supports-color'
-export { expect } from 'std/expect/mod.ts'
-export { assert, AssertionError } from 'std/assert/mod.ts'
-export { default as merge } from 'npm:lodash.merge'
-import Debug from 'npm:debug'
-import { Outcome, PID } from '@/constants.ts'
-import {
-  deserializeError,
-  serializeError,
-} from 'https://esm.sh/v135/serialize-error@11.0.3/index.js'
+export { default as equal } from 'fast-deep-equal/es6'
+export { delay } from '@std/async'
+export { expect } from '@std/expect'
+export { assert, AssertionError } from '@std/assert'
+export { default as merge } from 'lodash.merge'
+import 'supports-color'
+import Debug from 'debug'
+import { PID } from '@/constants.ts'
+import { deserializeError, serializeError } from 'serialize-error'
 export { deserializeError, serializeError }
 export { Debug }
-export const log = Debug('AI:tests')
-export * as posix from 'https://deno.land/std@0.213.0/path/posix/mod.ts'
+const _log = Debug('AI:tests')
+export const log = (...args: unknown[]) => {
+  _log(...args)
+}
+log.enable = (...args: string[]) => {
+  Debug.enable(...args)
+}
+export * as posix from '@std/path/posix'
 export const sha1 = /^[0-9a-f]{40}$/i
 
 const isDenoDeploy = Deno.env.get('DENO_DEPLOYMENT_ID') !== undefined
@@ -42,12 +44,6 @@ export const openKv = async () => {
   _isTestMode = path === ':memory:'
   return Deno.openKv(path)
 }
-export const fromOutcome = (outcome: Outcome) => {
-  if (outcome.error) {
-    throw deserializeError(outcome.error)
-  }
-  return outcome.result
-}
 export const print = (pid: PID) => {
   const branches = pid.branches.join(':')
   return `${pid.account}/${pid.repository}:${branches}`
@@ -63,7 +59,3 @@ const getDebug = () => {
 }
 
 Debug.enable(getDebug())
-
-export const toEvents = (stream: ReadableStream) =>
-  stream.pipeThrough(new TextDecoderStream())
-    .pipeThrough(new EventSourceParserStream())

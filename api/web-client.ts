@@ -3,208 +3,208 @@
 import {
   Artifact,
   DispatchFunctions,
-  EventSourceMessage,
+  EngineInterface,
+  freezePid,
   getProcType,
+  IoStruct,
+  isPierceRequest,
+  JsonValue,
   Params,
   PID,
+  pidFromRepo,
   PierceRequest,
   ProcessOptions,
-  Splice,
+  PROCTYPE,
+  UnsequencedRequest,
 } from './web-client.types.ts'
+import { ulid } from 'ulid'
+import { deserializeError } from 'serialize-error'
 
-type ToError = (object: object) => Error
-type ToEvents = (
-  stream: ReadableStream<Uint8Array>,
-) => ReadableStream<EventSourceMessage>
-export default class WebClient implements Artifact {
-  private readonly fetcher: (
-    input: URL | RequestInfo,
-    init?: RequestInit,
-  ) => Promise<Response>
-  private readonly toEvents: ToEvents
-  private readonly url: string
-  private readonly toError: ToError
-  constructor(
-    url: string,
-    toError: ToError,
-    toEvents: ToEvents,
-    fetcher?: typeof fetch,
-  ) {
-    if (url.endsWith('/')) {
-      throw new Error('url should not end with "/": ' + url)
+type PiercePromise = {
+  resolve: (value: unknown) => void
+  reject: (error: Error) => void
+}
+
+export class Shell implements Artifact {
+  readonly #engine: EngineInterface
+  readonly #pid: PID
+  readonly #pierces = new Map<string, PiercePromise>()
+  readonly #abort = new AbortController()
+  #repo: Promise<Repo> | undefined
+  private constructor(engine: EngineInterface, pid: PID) {
+    this.#engine = engine
+    this.#pid = pid
+    this.#watchPierces()
+  }
+  static create(engine: EngineInterface, pid: PID) {
+    freezePid(pid)
+    return new Shell(engine, pid)
+  }
+  get pid() {
+    return this.#pid
+  }
+  async #repoActions() {
+    if (!this.#repo) {
+      this.#repo = this.actions<Repo>('repo', this.#pid)
     }
-    this.url = url
-    this.toError = toError
-    this.toEvents = toEvents
-    if (fetcher) {
-      this.fetcher = fetcher
-    } else {
-      this.fetcher = (path, opts) => fetch(`${url}${path}`, opts)
+    return await this.#repo
+  }
+  stop() {
+    this.#abort.abort()
+    return this.#engine.stop()
+  }
+  async #watchPierces() {
+    const watchIo = this.#engine.read(this.#pid, '.io.json', this.#abort.signal)
+
+    let patched = ''
+    let lastSplice
+    const reader = watchIo.getReader()
+    while (watchIo.locked) {
+      const { value: splice, done } = await reader.read()
+      if (done) {
+        console.error('splice stream ended')
+        break
+      }
+      if (lastSplice && splice.commit.parent[0] !== lastSplice.oid) {
+        throw new Error('parent mismatch: ' + splice.oid)
+      }
+      lastSplice = splice
+      if (!splice.changes) {
+        continue
+      }
+      let cursor = 0
+      for (const diff of splice.changes) {
+        if (diff.added) {
+          patched = patched.substring(0, cursor) + diff.value +
+            patched.substring(cursor)
+          cursor += diff.value.length
+        } else if (diff.removed) {
+          const count = diff.count ?? 0
+          patched = patched.substring(0, cursor) +
+            patched.substring(cursor + count)
+        } else {
+          const count = diff.count ?? 0
+          cursor += count
+        }
+      }
+      const io = JSON.parse(patched)
+      this.#resolvePierces(io)
     }
   }
-  ping(params = {}) {
-    return this.request('ping', params)
-  }
-  apiSchema(params: { isolate: string }) {
-    return this.request('apiSchema', params)
-  }
-  pierce(params: { pierce: PierceRequest }) {
-    return this.request('pierce', params)
-  }
-  async transcribe(params: { audio: File }) {
-    const formData = new FormData()
-    formData.append('audio', params.audio)
-
-    const response = await fetch(`${this.url}/api/transcribe`, {
-      method: 'POST',
-      body: formData,
-    })
-
-    return await response.json()
-  }
-  logs(params: { repo: string }) {
-    return this.request('logs', params)
-  }
-  async pierces(isolate: string, target: PID) {
-    // cradle side, since functions cannot be returned from isolate calls
-    const apiSchema = await this.apiSchema({ isolate })
-    const pierces: DispatchFunctions = {}
+  async actions<T>(isolate: string, target: PID) {
+    // client side, since functions cannot be returned from isolate calls
+    const apiSchema = await this.apiSchema(isolate)
+    const actions: DispatchFunctions = {}
     for (const functionName of Object.keys(apiSchema)) {
-      pierces[functionName] = (
-        params: Params = {},
-        options?: ProcessOptions,
-      ) => {
+      actions[functionName] = (params?: Params, options?: ProcessOptions) => {
         const proctype = getProcType(options)
-        const pierce: PierceRequest = {
+        const request: UnsequencedRequest = {
           target,
-          ulid: 'calculated-server-side',
           isolate,
           functionName,
-          params,
+          params: params || {},
           proctype,
         }
-        return this.pierce({ pierce })
+        const pierce: PierceRequest = {
+          target: this.#pid,
+          ulid: ulid(),
+          isolate: 'shell',
+          functionName: 'pierce',
+          params: { request },
+          proctype: PROCTYPE.SERIAL,
+        }
+        return new Promise((resolve, reject) => {
+          this.#pierces.set(pierce.ulid, { resolve, reject })
+          this.#engine.pierce(pierce)
+        })
       }
     }
-    return pierces
+    return actions as T
   }
-  probe(params: { repo: string }) {
-    return this.request('probe', params)
+
+  ping(params?: { data?: JsonValue }) {
+    return this.#engine.ping(params?.data)
+    // TODO return some info about the deployment
+    // version, deployment location, etc
+    // if you want to ping in a chain, use an isolate
   }
-  init(params: { repo: string }) {
-    return this.request('init', params)
+  apiSchema(isolate: string) {
+    return this.#engine.apiSchema(isolate)
   }
-  clone(params: { repo: string }) {
-    return this.request('clone', params)
-  }
-  pull(): Promise<{ pid: PID; head: string }> {
-    throw new Error('not implemented')
-  }
-  push() {
-    return Promise.reject(new Error('not implemented'))
-  }
-  rm(params: { repo: string }) {
-    return this.request('rm', params)
-  }
-  async stop() {
-    for (const abort of this.#aborts) {
-      abort.abort()
+  async transcribe(params: { audio: File }) {
+    // TODO check account standing to use this feature
+    if (!(params.audio instanceof File)) {
+      throw new Error('audio must be a File')
     }
-    await Promise.all([...this.#readPromises])
+    return await this.#engine.transcribe(params.audio)
   }
-  #aborts = new Set<AbortController>()
-  #readPromises = new Set<Promise<void>>()
-  #waiter(abort: AbortController) {
-    let resolve: () => void
-    const readPromise = new Promise<void>((_resolve) => {
-      resolve = _resolve
-    })
-    this.#readPromises.add(readPromise)
-    this.#aborts.add(abort)
-    return () => {
-      resolve()
-      this.#readPromises.delete(readPromise)
-      this.#aborts.delete(abort)
-    }
+  async probe({ pid }: { pid: PID }) {
+    const actions = await this.#repoActions()
+    return actions.probe({ pid })
+  }
+  async init(params: { repo: string }) {
+    const pid = pidFromRepo(this.#pid.id, params.repo)
+    const actions = await this.#repoActions()
+    return actions.init({ pid })
+  }
+  async clone(params: { repo: string }) {
+    const pid = pidFromRepo(this.#pid.id, params.repo)
+    const actions = await this.#repoActions()
+    return actions.clone({ pid })
+  }
+  pull(params: { pid: PID }) {
+    const { pid } = params
+    return Promise.resolve({ pid, head: 'head' })
+  }
+  push(_params: { pid: PID }) {
+    console.log('push', _params)
+    return Promise.resolve()
+  }
+  async rm(params: { repo: string }) {
+    const pid = pidFromRepo(this.#pid.id, params.repo)
+    const actions = await this.#repoActions()
+    return actions.rm({ pid })
   }
   read(pid: PID, path?: string, signal?: AbortSignal) {
-    const abort = new AbortController()
-    if (signal) {
-      signal.addEventListener('abort', () => {
-        abort.abort()
-      })
-    }
-    const finished = this.#waiter(abort)
-
-    return new ReadableStream<Splice>({
-      start: async (controller) => {
-        let repeat = 0
-        while (!abort.signal.aborted) {
-          // TODO cache last response to skip if receive duplicate on resume
-          if (repeat++ > 0) {
-            await new Promise((r) => setTimeout(r, 500))
-            console.log('repeat', repeat)
-          }
-          try {
-            const response = await this.fetcher(`/api/read`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ pid, path }),
-              signal: abort.signal,
-              keepalive: true,
-            })
-            if (!response.ok) {
-              throw new Error('response not ok')
+    return this.#engine.read(pid, path, signal)
+  }
+  #resolvePierces(io: IoStruct) {
+    for (const [, value] of Object.entries(io.requests)) {
+      if (isPierceRequest(value)) {
+        if (this.#pierces.has(value.ulid)) {
+          const outcome = getOutcomeFor(io, value.ulid)
+          if (outcome) {
+            const promise = this.#pierces.get(value.ulid)
+            this.#pierces.delete(value.ulid)
+            if (!promise) {
+              throw new Error('Promise not found')
             }
-            if (!response.body) {
-              throw new Error('response body is missing')
+            if (outcome.error) {
+              promise.reject(deserializeError(outcome.error))
+            } else {
+              promise.resolve(outcome.result)
             }
-            const splices = this.toEvents(response.body)
-            const reader = splices.getReader()
-            abort.signal.addEventListener('abort', () => {
-              reader.cancel()
-            })
-            while (!abort.signal.aborted) {
-              try {
-                const { done, value } = await reader.read()
-                if (done || abort.signal.aborted) {
-                  break
-                }
-                if (value.event === 'splice') {
-                  const splice: Splice = JSON.parse(value.data)
-                  controller.enqueue(splice)
-                } else {
-                  console.error('unexpected event', value.event, value)
-                }
-              } catch (error) {
-                console.error('inner stream error:', error)
-                break
-              }
-            }
-          } catch (error) {
-            console.log('stream error:', error)
           }
         }
-        finished()
-      },
-    })
-  }
-  private async request(path: string, params: Params) {
-    const response = await this.fetcher(`/api/${path}?pretty`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(params),
-    })
-    if (!response.ok) {
-      await response.body?.cancel()
-      const { status, statusText } = response
-      const msg = `${path} ${JSON.stringify(params)} ${status} ${statusText}`
-      throw new Error(msg)
+      }
     }
-    const outcome = await response.json()
-    if (outcome.error) {
-      throw this.toError(outcome.error)
-    }
-    return outcome.result
   }
+}
+
+const getOutcomeFor = (io: IoStruct, ulid: string) => {
+  for (const [key, value] of Object.entries(io.requests)) {
+    if (isPierceRequest(value)) {
+      if (value.ulid === ulid) {
+        return io.replies[key]
+      }
+    }
+  }
+}
+type Repo = {
+  probe: (params: { pid: PID }) => Promise<{ pid: PID; head: string }>
+  init: (params: { pid: PID }) => Promise<{ pid: PID; head: string }>
+  clone: (
+    params: { pid: PID },
+  ) => Promise<{ pid: PID; head: string; elapsed: number }>
+  rm: (params: { pid: PID }) => Promise<boolean>
 }

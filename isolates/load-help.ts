@@ -1,4 +1,4 @@
-import * as posix from 'https://deno.land/std@0.213.0/path/posix/mod.ts'
+import { posix } from '@utils'
 import { IsolateApi } from '@/constants.ts'
 import { Help } from '@/constants.ts'
 
@@ -22,6 +22,10 @@ export const api = {
     additionalProperties: false,
     properties: {},
   },
+}
+export interface Api {
+  load: (params: { help: string }) => Promise<Help>
+  loadAll: () => Promise<Help[]>
 }
 
 export const functions = {

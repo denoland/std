@@ -1,12 +1,14 @@
 import IOChannel from '../io/io-channel.ts'
 import { getPoolKey } from '@/keys.ts'
-import { ExeResult, SolidRequest } from '@/constants.ts'
+import { C, ExeResult, SolidRequest } from '@/constants.ts'
 import IsolateApi from '../isolate-api.ts'
 import Compartment from '../io/compartment.ts'
 import { Outcome, Request } from '@/constants.ts'
 import { assert, Debug, equal, serializeError } from '@utils'
 import Accumulator from '@/exe/accumulator.ts'
 import FS from '@/git/fs.ts'
+import { PID } from '@/api/web-client.types.ts'
+import { JsonValue } from '@/constants.ts'
 const log = Debug('AI:exe')
 
 export default class Executor {
@@ -14,27 +16,52 @@ export default class Executor {
   static createCacheContext() {
     return new Executor()
   }
-  async execute(req: SolidRequest, fs: FS): Promise<ExeResult> {
+  async execute(req: SolidRequest, commit: string, c: C): Promise<ExeResult> {
+    const fs = FS.open(req.target, commit, c.db)
     assert(equal(fs.pid, req.target), 'target is not self')
     assert(!fs.isChanged, 'fs is changed')
-    const io = await IOChannel.load(fs)
-    assert(io.isCallable(req), 'request is not callable')
+    const io = await IOChannel.read(fs)
+    assert(io, 'io not found')
+    assert(io.isNextSerialRequest(req), 'request is not callable')
     log('request %o %o', req.isolate, req.functionName)
+
+    // transmit needs to land in the pool before executing
+
+    // if we jumped branches, we need to insert the action in io first ?
+    // or, we can know we are the current tip of the spear ?
+    // so we would do a branch jump commit, then do an execution
+    // bx, what if loads of actions came streaming in ?
+    // so transmit to a different branch should do a pooling operation
+    // which is like pierce, and then that would trigger the execution once
+    // solidified
 
     const ioAccumulator = io.getAccumulator()
 
+    // if this is a side effect, we need to get the side effect lock
+    // then this check needs to be added into everything that the api does
+    // we need to start watching for changes to the lock value
+
     const exeId: string = getExeId(req)
     if (!this.#functions.has(exeId)) {
+      // TODO the api needs to be updated with later context and fs
       log('creating execution %o', exeId)
-      const isolateApi = IsolateApi.create(fs, ioAccumulator)
+      const opts = { isEffect: true, isEffectRecovered: false }
+      // TODO read side effect config from io.json
+      const isolateApi = IsolateApi.create(fs, ioAccumulator, opts)
+      if (isSystem(fs.pid)) {
+        isolateApi.context = c
+      }
       const compartment = await Compartment.create(req.isolate)
       const functions = compartment.functions(isolateApi)
       const execution = {
         function: Promise.resolve().then(() => {
           return functions[req.functionName](req.params)
         }).then((result) => {
-          const outcome: Outcome = { result }
-          log('self result: %o', outcome.result)
+          const outcome: Outcome = {}
+          if (result !== undefined) {
+            outcome.result = result as JsonValue // sorry 🤷
+            log('self result: %o', outcome.result)
+          }
           return outcome
         }).catch((error) => {
           // TODO cancel all outstanding requests
@@ -64,12 +91,20 @@ export default class Executor {
     execution.commit = fs.commit
     execution.accumulator.absorb(ioAccumulator)
 
-    const accumulatorPromise = execution.accumulator.activate()
+    const racecar = Symbol('🏎️')
+    const accumulatorPromise = execution.accumulator.activate(racecar)
     const winner = await Promise.race([execution.function, accumulatorPromise])
     execution.accumulator.deactivate()
 
     let result: ExeResult
-    if (isOutcome(winner)) {
+    if (winner === racecar) {
+      log('accumulator triggered first')
+      const { accumulations } = execution.accumulator
+      assert(accumulations.length > 0, 'no accumulations')
+      const requests = accumulations.map((a) => a.request)
+      result = { pending: { commit: fs.commit, requests } }
+    } else {
+      assert(typeof winner !== 'symbol')
       log('exe complete %o', exeId)
       this.#functions.delete(exeId)
       const sequence = io.getSequence(req)
@@ -77,12 +112,6 @@ export default class Executor {
 
       // TODO need to tick the fs forwards when the accumulations occur
       result = { settled: { reply, fs } }
-    } else {
-      log('accumulator triggered first')
-      const { accumulations } = execution.accumulator
-      assert(accumulations.length > 0, 'no accumulations')
-      const requests = accumulations.map((acc) => acc.request)
-      result = { pending: { commit: fs.commit, requests } }
     }
     return result
   }
@@ -98,8 +127,7 @@ const getExeId = (request: Request) => {
   const id = getPoolKey(request)
   return JSON.stringify(id)
 }
-const isOutcome = (value: unknown): value is Outcome => {
-  return typeof value === 'object' && value !== null &&
-    ('result' in value || 'error' in value) &&
-    !('result' in value && 'error' in value)
+const isSystem = (pid: PID) => {
+  const { id, account, repository } = pid
+  return id === '__system' && account === 'system' && repository === 'system'
 }

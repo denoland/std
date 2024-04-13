@@ -1,9 +1,8 @@
-import equal from 'https://esm.sh/fast-deep-equal'
-import { Debug } from '@utils'
+import { Debug, equal } from '@utils'
 import runner from './runner-chat.ts'
 import { Help } from '@/constants.ts'
 import { IsolateApi } from '@/constants.ts'
-
+import * as loadHelp from '@/isolates/load-help.ts'
 const log = Debug('AI:runner-injector')
 
 type Args = { help: Help; text: string }
@@ -11,9 +10,9 @@ export default async (params: Args, api: IsolateApi) => {
   const { help, text } = params
   log('injector:', help, text)
 
-  const { loadAll } = await api.functions('load-help')
-  const allHelps: Help[] = await loadAll()
-  const helps = allHelps.filter((h) => !equal(h, help))
+  const { loadAll } = await api.functions<loadHelp.Api>('load-help')
+  const allHelps = await loadAll()
+  const helps: Help[] = allHelps.filter((h) => !equal(h, help))
 
   const injectee = { ...help }
   injectee.instructions = [...injectee.instructions]

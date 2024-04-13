@@ -1,10 +1,14 @@
 import { expect } from '@utils'
-import Cradle from '../cradle.ts'
+import { Engine } from '../engine.ts'
+import { Shell } from '../api/web-client.ts'
 import { Help } from '@/constants.ts'
+import { Api } from '@/isolates/load-help.ts'
 Deno.test('loadAll', async (t) => {
-  const artifact = await Cradle.create()
+  const engine = await Engine.create()
+  const system = await engine.initialize()
+  const artifact = Shell.create(engine, system.pid)
   const { pid } = await artifact.clone({ repo: 'dreamcatcher-tech/HAL' })
-  const { loadAll, load } = await artifact.pierces('load-help', pid)
+  const { loadAll, load } = await artifact.actions<Api>('load-help', pid)
   await t.step('loadAll', async () => {
     expect(loadAll).toBeInstanceOf(Function)
     const helps = await loadAll() as Help[]

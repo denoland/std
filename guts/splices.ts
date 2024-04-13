@@ -8,7 +8,7 @@ export default (name: string, cradleMaker: () => Promise<Artifact>) => {
     const repo = 'process/session'
     await artifact.rm({ repo })
     const { pid } = await artifact.init({ repo })
-    const { write } = await artifact.pierces('io-fixture', pid)
+    const { write } = await artifact.actions('io-fixture', pid)
 
     await t.step('read', async () => {
       write({ path: 'test', content: 'hello' })
@@ -39,7 +39,7 @@ export default (name: string, cradleMaker: () => Promise<Artifact>) => {
     const repo = 'process/session'
     await artifact.rm({ repo })
     const { pid } = await artifact.init({ repo })
-    const { write } = await artifact.pierces('io-fixture', pid)
+    const { write } = await artifact.actions('io-fixture', pid)
 
     const logger = async () => {
       const stream = artifact.read(pid, '.io.json')
@@ -93,7 +93,7 @@ export default (name: string, cradleMaker: () => Promise<Artifact>) => {
     splices()
 
     await t.step('write', async () => {
-      const { write } = await artifact.pierces('io-fixture', pid)
+      const { write } = await artifact.actions('io-fixture', pid)
       await write({ path: 'test.txt', content: 'hello' })
       write({ path: 'test.txt', content: 'ell' })
       let fileCount = 0
