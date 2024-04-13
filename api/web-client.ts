@@ -156,7 +156,9 @@ export class Shell implements Artifact {
     const { pid } = params
     return Promise.resolve({ pid, head: 'head' })
   }
-  async push(_params: { pid: PID }) {
+  push(_params: { pid: PID }) {
+    console.log('push', _params)
+    return Promise.resolve()
   }
   async rm(params: { repo: string }) {
     const pid = pidFromRepo(this.#pid.id, params.repo)
