@@ -5,7 +5,7 @@ import { PID, Poolable } from '@/constants.ts'
 import { assert, Debug, openKv, sha1 } from '@utils'
 import { Atomic } from './atomic.ts'
 import { QueueMessage } from '@/constants.ts'
-import { ulid } from '@utils'
+import { ulid } from 'ulid'
 
 const log = Debug('AI:db')
 export default class DB {

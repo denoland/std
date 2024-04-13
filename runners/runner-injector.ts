@@ -1,5 +1,4 @@
-import equal from 'https://esm.sh/fast-deep-equal'
-import { Debug } from '@utils'
+import { Debug, equal } from '@utils'
 import runner from './runner-chat.ts'
 import { Help } from '@/constants.ts'
 import { IsolateApi } from '@/constants.ts'

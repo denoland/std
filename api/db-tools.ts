@@ -1,4 +1,4 @@
-import { load } from '$std/dotenv/mod.ts'
+import { load } from '@std/dotenv'
 import { UNDELIVERED } from '@/keys.ts'
 await load({ export: true })
 

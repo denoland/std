@@ -1,4 +1,4 @@
-import * as posix from 'https://deno.land/std@0.213.0/path/posix/mod.ts'
+import { posix } from '@utils'
 import { IsolateApi } from '@/constants.ts'
 import { Help } from '@/constants.ts'
 

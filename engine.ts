@@ -1,5 +1,5 @@
 import { transcribe } from '@/runners/runner-chat.ts'
-import { diffChars } from '$diff'
+import { diffChars } from 'diff'
 import Compartment from './io/compartment.ts'
 import {
   C,

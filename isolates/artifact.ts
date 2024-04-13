@@ -1,4 +1,4 @@
-import { Debug } from '@utils'
+import { assert, Debug } from '@utils'
 import Executor from '../exe/exe.ts'
 import IOChannel from '../io/io-channel.ts'
 import {
@@ -18,7 +18,6 @@ import IsolateApi from '../isolate-api.ts'
 import { doAtomicBranch, doAtomicCommit } from '@io/io.ts'
 import DB from '../db.ts'
 import FS from '../git/fs.ts'
-import { assert } from 'https://deno.land/std@0.203.0/assert/assert.ts'
 import { pid } from './repo.ts'
 const log = Debug('AI:artifact')
 

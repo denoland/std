@@ -1,6 +1,5 @@
 import validator from './validator.ts'
-import { assert } from 'std/assert/mod.ts'
-import { Debug } from '@utils'
+import { assert, Debug } from '@utils'
 import { Isolate, Params } from '@/constants.ts'
 import IsolateApi from '../isolate-api.ts'
 

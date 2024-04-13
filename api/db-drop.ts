@@ -1,4 +1,4 @@
-import { load } from '$std/dotenv/mod.ts'
+import { load } from '@std/dotenv'
 await load({ export: true })
 const db = await Deno.openKv(Deno.env.get('DENO_KV_URL'))
 

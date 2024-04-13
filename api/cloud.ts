@@ -6,7 +6,7 @@ import { assert } from '@utils'
 import { Shell } from '@/api/web-client.ts'
 import { WebClientEngine } from '@/api/web-client-engine.ts'
 import guts from '../guts/guts.ts'
-import { load } from '$std/dotenv/mod.ts'
+import { load } from '@std/dotenv'
 let introDone = false
 const cradleMaker = async () => {
   const env = await load()

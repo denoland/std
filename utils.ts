@@ -1,14 +1,12 @@
-export { equal } from 'https://deno.land/x/equal/mod.ts'
-export { delay } from '$std/async/mod.ts'
-import 'npm:supports-color'
-export { expect } from 'std/expect/mod.ts'
-export { assert, AssertionError } from 'std/assert/mod.ts'
-export { default as merge } from 'npm:lodash.merge'
-import Debug from 'npm:debug'
+export { default as equal } from 'fast-deep-equal/es6'
+export { delay } from '@std/async'
+export { expect } from '@std/expect'
+export { assert, AssertionError } from '@std/assert'
+export { default as merge } from 'lodash.merge'
+import 'supports-color'
+import Debug from 'debug'
 import { PID } from '@/constants.ts'
 import { deserializeError, serializeError } from 'serialize-error'
-import { ulid } from 'std/ulid/mod.ts'
-export { ulid }
 export { deserializeError, serializeError }
 export { Debug }
 const _log = Debug('AI:tests')
@@ -18,7 +16,7 @@ export const log = (...args: unknown[]) => {
 log.enable = (...args: string[]) => {
   Debug.enable(...args)
 }
-export * as posix from 'https://deno.land/std@0.213.0/path/posix/mod.ts'
+export * as posix from '@std/path/posix'
 export const sha1 = /^[0-9a-f]{40}$/i
 
 const isDenoDeploy = Deno.env.get('DENO_DEPLOYMENT_ID') !== undefined

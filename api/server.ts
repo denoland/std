@@ -1,4 +1,4 @@
-import { Hono } from 'https://deno.land/x/hono/mod.ts'
+import { Hono } from 'hono'
 // TODO try out the fast router to improve load times
 import {
   cors,
@@ -9,8 +9,8 @@ import {
   setMetric,
   startTime,
   timing,
-} from 'https://deno.land/x/hono/middleware.ts'
-import { streamSSE } from 'https://deno.land/x/hono/helper.ts'
+} from 'hono/middleware'
+import { streamSSE } from 'hono/helper'
 import { Engine } from '../engine.ts'
 import { assert, Debug, serializeError } from '@/utils.ts'
 import { EventSourceMessage, SerializableError } from '@/constants.ts'
