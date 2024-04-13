@@ -122,7 +122,6 @@ export type StringifyOptions = {
 
 const QUOTE = '"';
 const LF = "\n";
-const CRLF = "\r\n";
 const BYTE_ORDER_MARK = "\ufeff";
 
 function getEscapedString(value: unknown, sep: string): string {
@@ -287,11 +286,10 @@ export function stringify(
   { headers = true, separator: sep = ",", columns = [], bom = false }:
     StringifyOptions = {},
 ): string {
-  if (sep.includes(QUOTE) || sep.includes(CRLF)) {
+  if (sep.includes(QUOTE)) {
     const message = [
       "Separator cannot include the following strings:",
       '  - U+0022: Quotation mark (")',
-      "  - U+000D U+000A: Carriage Return + Line Feed (\\r\\n)",
     ].join("\n");
     throw new StringifyError(message);
   }
@@ -307,7 +305,7 @@ export function stringify(
     output += normalizedColumns
       .map((column) => getEscapedString(column.header, sep))
       .join(sep);
-    output += CRLF;
+    output += LF;
   }
 
   for (const item of data) {
@@ -315,7 +313,7 @@ export function stringify(
     output += values
       .map((value) => getEscapedString(value, sep))
       .join(sep);
-    output += CRLF;
+    output += LF;
   }
 
   return output;
