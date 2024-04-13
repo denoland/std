@@ -26,7 +26,7 @@ export default (name: string, cradleMaker: () => Promise<Artifact>) => {
       log.enable('AI:qex*')
       await artifact.rm({ repo: 'dreamcatcher-tech/HAL' })
       const clone = await artifact.clone({ repo: 'dreamcatcher-tech/HAL' })
-      log('clone result', clone)
+      console.log('clone result', clone)
       // TODO read the fs and see what the state of the file system is ?
       expect(clone.pid).toBeDefined()
       expect(clone.pid.account).toBe('dreamcatcher-tech')

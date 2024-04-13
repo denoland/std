@@ -35,7 +35,7 @@ export default class Server {
     Debug.enable('AI:qex:*')
     // TODO whilst no system chain, fail with help message
     const engine = await Engine.create()
-    await engine.initialize()
+    // await engine.initialize()
     const app = new Hono().basePath('/api')
 
     app.use(timing())
