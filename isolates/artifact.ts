@@ -122,7 +122,7 @@ export const lifecycles: IsolateLifecycle = {
           return
         }
         const exeResult = await execute(request, commit, context)
-        if (!exeResult) { // side effect superceded, so abort
+        if (!exeResult) { // side effect superseded, so abort
           return
         }
 
