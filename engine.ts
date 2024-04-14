@@ -4,6 +4,7 @@ import Compartment from './io/compartment.ts'
 import {
   C,
   EngineInterface,
+  freezePid,
   JsonValue,
   PID,
   pidFromRepo,
@@ -95,6 +96,7 @@ export class Engine implements EngineInterface {
     // buffer transients until we get up to the current commit
     // if we pass the current commit in transients, reset what head is
     // TODO use commit logs to ensure we emit one splice for every commit
+    freezePid(pid)
     assert(!path || !posix.isAbsolute(path), `path must be relative: ${path}`)
 
     const abort = new AbortController()
