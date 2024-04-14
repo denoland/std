@@ -121,7 +121,7 @@ export class Engine implements EngineInterface {
       transform: async (oid, controller) => {
         readlog('commit', oid, path)
         const fs = FS.open(pid, oid, db)
-        const commit = await fs.getCommit()
+        const commitP = await fs.getCommit()
         let changes
         if (path) {
           readlog('read path', path, oid)
@@ -137,6 +137,28 @@ export class Engine implements EngineInterface {
           }
         }
 
+        {
+          readlog('start repeat')
+          const fs = FS.open(pid, oid, db)
+          const commit = await fs.getCommit()
+          let changes
+          if (path) {
+            readlog('read path', path, oid)
+            if (await fs.exists(path)) {
+              readlog('file exists', path, oid)
+              const content = await fs.read(path)
+              if (last === undefined || last !== content) {
+                readlog('content changed')
+                // TODO use json differ for json
+                changes = diffChars(last || '', content)
+                last = content
+              }
+            }
+          }
+          readlog('end repeat')
+        }
+
+        const commit = await commitP
         const timestamp = commit.committer.timestamp * 1000
         const splice: Splice = { pid, oid, commit, timestamp, path, changes }
         controller.enqueue(splice)
