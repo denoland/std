@@ -4,6 +4,7 @@ import IOChannel from '../io/io-channel.ts'
 import {
   C,
   ExeResult,
+  freezePid,
   IsolateLifecycle,
   isPierceRequest,
   isQueueBranch,
@@ -69,6 +70,7 @@ export const functions = {
   async pierce({ pierce }: { pierce: PierceRequest }, api: IsolateApi<C>) {
     log('pierce %o %o', pierce.isolate, pierce.functionName)
     assert(isPierceRequest(pierce), 'invalid pierce request')
+    freezePid(pierce.target)
     const { db } = sanitizeContext(api)
     // TODO add ulid in here, but make it be repeatable
     // TODO check signatures and permissions here
