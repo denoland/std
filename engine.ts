@@ -108,13 +108,6 @@ export class Engine implements EngineInterface {
     let last: string
     const db = this.#api.context.db
     assert(db, 'db not found')
-    const testLatencies = async () => {
-      const rawlog = log.extend('raw')
-      for await (const commit of db.watchHead(pid, abort.signal)) {
-        rawlog('raw commit:', commit)
-      }
-    }
-    testLatencies()
     const commits = db.watchHead(pid, abort.signal)
     const readlog = log.extend('read')
     const buffer: Promise<void>[] = []
@@ -155,6 +148,7 @@ export class Engine implements EngineInterface {
           buffer.shift()
         })
         buffer.push(queuedTask)
+        console.log('buffer size:', buffer.length)
       },
     })
     commits.pipeTo(toSplices.writable)
