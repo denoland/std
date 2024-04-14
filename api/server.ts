@@ -32,7 +32,7 @@ export default class Server {
   // else, check for it, and make it if not there
 
   static async create() {
-    Debug.enable('AI:qex:* AI:engine')
+    Debug.enable('AI:qex:* AI:engine:*')
     // TODO whilst no system chain, fail with help message
     const engine = await Engine.create()
     // await engine.initialize()

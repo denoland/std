@@ -109,26 +109,27 @@ export class Engine implements EngineInterface {
     const db = this.#api.context.db
     assert(db, 'db not found')
     const testLatencies = async () => {
+      const rawlog = log.extend('raw')
       for await (const commit of db.watchHead(pid, abort.signal)) {
-        log('raw commit:', commit)
+        rawlog('raw commit:', commit)
       }
     }
     testLatencies()
     const commits = db.watchHead(pid, abort.signal)
+    const readlog = log.extend('read')
     const toSplices = new TransformStream<string, Splice>({
       transform: async (oid, controller) => {
-        log('commit', oid, path)
+        readlog('commit', oid, path)
         const fs = FS.open(pid, oid, db)
-        log('fs loaded')
         const commit = await fs.getCommit()
         let changes
         if (path) {
-          log('read path', path, oid)
+          readlog('read path', path, oid)
           if (await fs.exists(path)) {
-            log('file exists', path, oid)
+            readlog('file exists', path, oid)
             const content = await fs.read(path)
             if (last === undefined || last !== content) {
-              log('content changed')
+              readlog('content changed')
               // TODO use json differ for json
               changes = diffChars(last || '', content)
               last = content
