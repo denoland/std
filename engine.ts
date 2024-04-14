@@ -148,7 +148,9 @@ export class Engine implements EngineInterface {
         const index = buffer.length
         const priorTask = buffer[index - 1] || Promise.resolve()
         const queuedTask = priorTask.then(() => task).then((splice) => {
-          controller.enqueue(splice)
+          if (!abort.signal.aborted) {
+            controller.enqueue(splice)
+          }
         }).finally(() => {
           buffer.shift()
         })
