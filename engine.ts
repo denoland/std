@@ -117,28 +117,12 @@ export class Engine implements EngineInterface {
     testLatencies()
     const commits = db.watchHead(pid, abort.signal)
     const readlog = log.extend('read')
+    const buffer: Promise<void>[] = []
     const toSplices = new TransformStream<string, Splice>({
-      transform: async (oid, controller) => {
-        readlog('commit', oid, path)
-        const fs = FS.open(pid, oid, db)
-        const commitP = await fs.getCommit()
-        let changes
-        if (path) {
-          readlog('read path', path, oid)
-          if (await fs.exists(path)) {
-            readlog('file exists', path, oid)
-            const content = await fs.read(path)
-            if (last === undefined || last !== content) {
-              readlog('content changed')
-              // TODO use json differ for json
-              changes = diffChars(last || '', content)
-              last = content
-            }
-          }
-        }
-
-        {
-          readlog('start repeat')
+      transform: (oid, controller) => {
+        // TODO check the commits are not interupted
+        const process = async () => {
+          readlog('commit', oid, path)
           const fs = FS.open(pid, oid, db)
           const commit = await fs.getCommit()
           let changes
@@ -155,13 +139,20 @@ export class Engine implements EngineInterface {
               }
             }
           }
-          readlog('end repeat')
-        }
 
-        const commit = await commitP
-        const timestamp = commit.committer.timestamp * 1000
-        const splice: Splice = { pid, oid, commit, timestamp, path, changes }
-        controller.enqueue(splice)
+          const timestamp = commit.committer.timestamp * 1000
+          const splice: Splice = { pid, oid, commit, timestamp, path, changes }
+          return splice
+        }
+        const task = process()
+        const index = buffer.length
+        const priorTask = buffer[index - 1] || Promise.resolve()
+        const queuedTask = priorTask.then(() => task).then((splice) => {
+          controller.enqueue(splice)
+        }).finally(() => {
+          buffer.shift()
+        })
+        buffer.push(queuedTask)
       },
     })
     commits.pipeTo(toSplices.writable)
