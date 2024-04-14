@@ -59,6 +59,7 @@ export class Shell implements Artifact {
     let patched = ''
     let lastSplice
     const reader = watchIo.getReader()
+    let start = Date.now()
     while (watchIo.locked) {
       const { value: splice, done } = await reader.read()
       if (done) {
@@ -89,6 +90,9 @@ export class Shell implements Artifact {
       }
       const io = JSON.parse(patched)
       this.#resolvePierces(io)
+      const end = Date.now()
+      console.log('elapsed', splice.oid, end - start)
+      start = end
     }
   }
   async actions<T>(isolate: string, target: PID) {

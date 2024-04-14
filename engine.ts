@@ -108,6 +108,12 @@ export class Engine implements EngineInterface {
     let last: string
     const db = this.#api.context.db
     assert(db, 'db not found')
+    const testLatencies = async () => {
+      for await (const commit of db.watchHead(pid, abort.signal)) {
+        log('raw commit:', commit)
+      }
+    }
+    testLatencies()
     const commits = db.watchHead(pid, abort.signal)
     const toSplices = new TransformStream<string, Splice>({
       transform: async (oid, controller) => {

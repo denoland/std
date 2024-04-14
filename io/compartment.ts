@@ -8,7 +8,7 @@ import isolates from '../isolates/index.ts'
 import { DispatchFunctions } from '@/constants.ts'
 
 const log = Debug('AI:compartment')
-const cache = new Map()
+const cache = new Map<string, Compartment>()
 
 export default class Compartment {
   #module: Isolate
@@ -32,7 +32,9 @@ export default class Compartment {
       cache.set(isolate, compartment)
       await Promise.resolve() // simulates loading from filesystem
     }
-    return cache.get(isolate) as Compartment
+    const compartment = cache.get(isolate)
+    assert(compartment, 'compartment not found: ' + isolate)
+    return compartment
   }
   get api() {
     this.#check()

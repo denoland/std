@@ -22,6 +22,16 @@ export default (name: string, cradleMaker: () => Promise<Artifact>) => {
       const result = await artifact.ping({ data: { test: 'test' } })
       expect(result).toEqual({ test: 'test' })
     })
+    await artifact.stop()
+  })
+  Deno.test.only(prefix + 'rm', async () => {
+    const artifact = await cradleMaker()
+    await artifact.rm({ repo: 'dreamcatcher-tech/HAL' })
+    await artifact.stop()
+  })
+  Deno.test(prefix + 'clone', async (t) => {
+    const artifact = await cradleMaker()
+
     await t.step('clone', async () => {
       log.enable('AI:qex*')
       await artifact.rm({ repo: 'dreamcatcher-tech/HAL' })

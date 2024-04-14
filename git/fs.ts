@@ -16,7 +16,7 @@ export default class FS {
   readonly #upserts = new Map<string, string | Uint8Array>()
   readonly #deletes = new Set<string>()
   static #caches = new Map<string, object>()
-  static getCache(pid: PID) {
+  static #getGitCache(pid: PID) {
     const key = getCacheKey(pid)
     if (!FS.#caches.has(key)) {
       FS.#caches.set(key, {})
@@ -70,7 +70,7 @@ export default class FS {
     await git.init({ fs, dir, defaultBranch: ENTRY_BRANCH })
     log('init complete')
     const author = { name: 'git/init' }
-    const cache = FS.getCache(pid)
+    const cache = FS.#getGitCache(pid)
     const commit = await git.commit({
       noUpdateBranch: true,
       fs,
@@ -88,7 +88,7 @@ export default class FS {
     const url = `https://github.com/${pid.account}/${pid.repository}.git`
     const fs = { promises: GitKV.createBlank(db, pid) }
     fs.promises.oneAtomicWrite = db.atomic()
-    const cache = FS.getCache(pid)
+    const cache = FS.#getGitCache(pid)
     await git.clone({ fs, dir, url, http, noCheckout: true, cache })
     const commit = await db.readHead(pid)
     assert(commit, 'HEAD not found: ' + pid.branches.join('/'))
@@ -109,7 +109,7 @@ export default class FS {
       assertPath(filepath)
     }
     const { fs } = this
-    const cache = FS.getCache(this.#pid)
+    const cache = FS.#getGitCache(this.#pid)
     return git.log({ fs, dir, filepath, depth, ref: this.#commit, cache })
   }
 
@@ -130,7 +130,7 @@ export default class FS {
       author,
       tree,
       parent: [this.#commit, ...merges],
-      cache: FS.getCache(this.#pid),
+      cache: FS.#getGitCache(this.#pid),
     })
 
     const next = new FS(this.#pid, nextCommit, this.#db)
@@ -139,7 +139,7 @@ export default class FS {
   async #flush() {
     const oid = await this.#rootOid()
     const { fs } = this
-    const cache = FS.getCache(this.#pid)
+    const cache = FS.#getGitCache(this.#pid)
     const { tree: root } = await git.readTree({ fs, dir, oid, cache })
     log('flush tree', root)
     const changes: Tree = {
@@ -200,7 +200,7 @@ export default class FS {
     const oid = await this.#rootOid()
     const { fs } = this
     try {
-      const cache = FS.getCache(this.#pid)
+      const cache = FS.#getGitCache(this.#pid)
       const { tree } = await git.readTree({ fs, dir, oid, filepath, cache })
       const basename = posix.basename(path)
       return tree.some((entry) => entry.path === basename)
@@ -265,7 +265,7 @@ export default class FS {
     const oid = await this.#rootOid()
     log('tree', oid)
     const { fs } = this
-    const cache = FS.getCache(this.#pid)
+    const cache = FS.#getGitCache(this.#pid)
     const { blob } = await git.readBlob({ dir, fs, oid, filepath: path, cache })
     assert(blob instanceof Uint8Array, 'blob not Uint8Array: ' + typeof blob)
     return blob
@@ -277,7 +277,7 @@ export default class FS {
     log('ls', path)
     const oid = await this.#rootOid()
     const { fs } = this
-    const cache = FS.getCache(this.#pid)
+    const cache = FS.#getGitCache(this.#pid)
     const { tree } = await git.readTree({ fs, dir, oid, filepath: path, cache })
     return tree.map((entry) => entry.path)
   }
@@ -287,7 +287,7 @@ export default class FS {
   }
   async getCommit() {
     const { fs } = this
-    const cache = FS.getCache(this.#pid)
+    const cache = FS.#getGitCache(this.#pid)
     const result = await git.readCommit({ fs, dir, oid: this.#commit, cache })
     return result.commit
   }
