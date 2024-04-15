@@ -4,8 +4,8 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-export { core as CORE_SCHEMA } from "./core.ts";
-export { def as DEFAULT_SCHEMA } from "./default.ts";
-export { extended as EXTENDED_SCHEMA } from "./extended.ts";
-export { failsafe as FAILSAFE_SCHEMA } from "./failsafe.ts";
-export { json as JSON_SCHEMA } from "./json.ts";
+export { CORE_SCHEMA } from "./core.ts";
+export { DEFAULT_SCHEMA } from "./default.ts";
+export { EXTENDED_SCHEMA } from "./extended.ts";
+export { FAILSAFE_SCHEMA } from "./failsafe.ts";
+export { JSON_SCHEMA } from "./json.ts";

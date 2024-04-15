@@ -1,4 +1,5 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
 // Copyright 2019 Allain Lalonde. All rights reserved. ISC License.
 
 import type {
@@ -198,7 +199,11 @@ export function expect(value: unknown, customMessage?: string): Expected {
 }
 
 expect.addEqualityTesters = addCustomEqualityTesters;
+/**
+ * @deprecated (will be removed in 0.226.0) Use {@linkcode expect.addSnapshotSerializer} instead.
+ */
 expect.addSnapshotSerializers = addSerializer;
+expect.addSnapshotSerializer = addSerializer;
 expect.extend = setExtendMatchers;
 
 expect.anything = anything;

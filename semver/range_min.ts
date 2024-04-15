@@ -1,4 +1,5 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
 import { INVALID, MAX, MIN } from "./constants.ts";
 import type { Comparator, Range, SemVer } from "./types.ts";
 import { testRange } from "./test_range.ts";
@@ -34,6 +35,12 @@ function comparatorMin(comparator: Comparator): SemVer {
 }
 
 /**
+ * @deprecated (will be removed in 1.0.0) Use {@linkcode greaterThanRange} or
+ * {@linkcode lessThanRange} for comparing ranges and semvers. The minimum
+ * version of a range is often not well defined, and therefore this API
+ * shouldn't be used. See
+ * {@link https://github.com/denoland/deno_std/issues/4365} for details.
+ *
  * The minimum valid SemVer for a given range or INVALID
  * @param range The range to calculate the min for
  * @returns A valid SemVer or INVALID

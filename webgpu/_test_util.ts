@@ -35,8 +35,8 @@ export function cleanUp(device: GPUDevice) {
 
   // TODO(lucacasonato): webgpu spec should add a explicit destroy method for
   // adapters.
-  // deno-lint-ignore no-deprecated-deno-api
-  const resources = Object.keys(Deno.resources());
+  // @ts-ignore Until WebGPU resources cleanup is automatically handled.
+  const resources = Object.keys(Deno[Deno.internal].core.resources());
   // @ts-ignore Until WebGPU resources cleanup is automatically handled.
   Deno[Deno.internal].core.close(Number(resources[resources.length - 1]));
 }
