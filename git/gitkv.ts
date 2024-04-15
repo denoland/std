@@ -13,7 +13,8 @@ export class GitKV {
   #db: DB
   #pid: PID
   #exists: Set<string> | undefined
-  static #cache = new Map<string, Uint8Array>()
+  #cache = Cache.create()
+
   private constructor(db: DB, pid: PID, isBlank: boolean = false) {
     this.#db = db
     this.#pid = pid
@@ -63,8 +64,8 @@ export class GitKV {
 
     const pathKey = this.#getAllowedPathKey(path)
     let result: Uint8Array
-    if (GitKV.#cache.has(pathKey.join('/'))) {
-      const cached = GitKV.#cache.get(pathKey.join('/'))
+    if (await this.#cache.has(pathKey)) {
+      const cached = await this.#cache.get(pathKey)
       assert(cached)
       result = cached
     } else {
@@ -75,7 +76,7 @@ export class GitKV {
         throw new FileNotFoundError('file not found: ' + path)
       }
       result = dbResult.value
-      GitKV.#cache.set(pathKey.join('/'), result)
+      await this.#cache.set(pathKey, result)
     }
     if (opts && opts.encoding && opts.encoding !== 'utf8') {
       throw new Error('only utf8 encoding is supported')
@@ -120,7 +121,7 @@ export class GitKV {
       if (typeof data === 'string') {
         data = new TextEncoder().encode(data)
       }
-      GitKV.#cache.set(pathKey.join('/'), data)
+      await this.#cache.set(pathKey, data)
       await this.#db.blobSet(pathKey, data)
     }
     log('writeFile done:', pathKey)
@@ -178,7 +179,7 @@ export class GitKV {
       const head = await this.#db.readHead(pid)
       exists = !!head
     } else {
-      if (GitKV.#cache.has(pathKey.join('/'))) {
+      if (await this.#cache.has(pathKey)) {
         exists = true
       } else {
         if (path.startsWith('/.git/objects/')) {
@@ -233,3 +234,48 @@ class FileNotFoundError extends Error {
     this.name = 'FileNotFoundError'
   }
 }
+class Cache {
+  static create() {
+    return new Cache()
+  }
+  static #local = new Map<string, Uint8Array>()
+  #big: globalThis.Cache | undefined
+  async #load() {
+    if (!this.#big) {
+      this.#big = await caches.open('hashbucket')
+    }
+  }
+  async has(key: Deno.KvKey) {
+    const url = toUrl(key)
+    if (Cache.#local.has(url)) {
+      return true
+    }
+
+    await this.#load()
+    assert(this.#big, 'no cache')
+    const result = await this.#big.match(url)
+    return !!result
+  }
+  async get(key: Deno.KvKey) {
+    await this.#load()
+    assert(this.#big, 'no cache')
+    const url = toUrl(key)
+    if (Cache.#local.has(url)) {
+      return Cache.#local.get(url)
+    }
+    const cached = await this.#big.match(url)
+    if (cached) {
+      const ab = await cached.arrayBuffer()
+      return new Uint8Array(ab)
+    }
+  }
+  async set(key: Deno.KvKey, value: Uint8Array) {
+    await this.#load()
+    assert(this.#big, 'no cache')
+    const url = toUrl(key)
+    Cache.#local.set(url, value)
+    const request = new Request(url)
+    this.#big.put(request, new Response(value))
+  }
+}
+const toUrl = (pathKey: Deno.KvKey) => 'http://' + pathKey.join('/')
