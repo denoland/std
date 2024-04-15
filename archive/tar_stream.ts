@@ -1,22 +1,22 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 /**
- * The type required to provide a file.
+ * The interface required to provide a file.
  */
-export type TarStreamFile = {
+export interface TarStreamFile {
   pathname: string;
   size: number;
   sizeExtension?: boolean;
   iterable: Iterable<Uint8Array> | AsyncIterable<Uint8Array>;
   options?: Partial<TarStreamOptions>;
-};
+}
 
 /**
- * The type required to provide a directory.
+ * The interface required to provide a directory.
  */
-export type TarStreamDir = {
+export interface TarStreamDir {
   pathname: string;
   options?: Partial<TarStreamOptions>;
-};
+}
 
 /**
  * The options that can go along with a file or directory.
@@ -30,7 +30,7 @@ export type TarStreamDir = {
  * @param devmajor The major number for character device.
  * @param devminor The minor number for block device entry.
  */
-export type TarStreamOptions = {
+export interface TarStreamOptions {
   mode: string;
   uid: string;
   gid: string;
@@ -39,7 +39,7 @@ export type TarStreamOptions = {
   gname: string;
   devmajor: string;
   devminor: string;
-};
+}
 
 /**
  * ### Overview
@@ -60,29 +60,6 @@ export type TarStreamOptions = {
  * TarStream may throw an error for several reasons. A few of those are:
  * - The pathname is invalid.
  * - The size provided does not match that of the iterable's length.
- *
- * @example
- * ```ts
- * import { TarStream } from 'https://deno.land/std@$STD_VERSION/archive/tar_stream.ts'
- *
- * await ReadableStream.from([
- *   {
- *     pathname: 'potato/'
- *   },
- *   {
- *     pathname: 'deno.json',
- *     size: (await Deno.stat('deno.json')).size,
- *     iterable: (await Deno.open('deno.json')).readable
- *   },
- *   {
- *     pathname: 'deno.lock',
- *     size: (await Deno.stat('deno.lock')).size,
- *     iterable: (await Deno.open('deno.lock')).readable
- *   }
- * ])
- *   .pipeThrough(new TarStream())
- *   .pipeTo((await Deno.create('./out.tar')).writable)
- * ```
  *
  * ### Compression
  * Tar archives are not compressed by default.  If you'd like to compress the

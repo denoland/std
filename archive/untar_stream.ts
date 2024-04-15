@@ -1,17 +1,17 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 /**
- * The type extracted from the archive.
+ * The interface extracted from the archive.
  */
-export type TarStreamEntry = {
+export interface TarStreamEntry {
   pathname: string;
   header: TarStreamHeader;
   readable?: ReadableStream<Uint8Array>;
-};
+}
 
 /**
- * The header of an entry in the archive.
+ * The original tar	archive	header format.
  */
-export type TarStreamHeader = {
+export interface OldStyleFormat {
   name: string;
   mode: string;
   uid: string;
@@ -22,7 +22,12 @@ export type TarStreamHeader = {
   typeflag: string;
   linkname: string;
   pad: Uint8Array;
-} | {
+}
+
+/**
+ * The POSIX ustar archive header format.
+ */
+export interface PosixUstarFormat {
   name: string;
   mode: string;
   uid: string;
@@ -40,7 +45,12 @@ export type TarStreamHeader = {
   devminor: string;
   prefix: string;
   pad: Uint8Array;
-};
+}
+
+/**
+ * The header of an entry in the archive.
+ */
+export type TarStreamHeader = OldStyleFormat | PosixUstarFormat;
 
 /**
  * ### Overview
@@ -57,22 +67,6 @@ export type TarStreamHeader = {
  * to either consume the Readable Stream, if present, or cancel it. The next
  * entry won't be resolved until the previous ReadableStream is either consumed
  * or cancelled.
- *
- * @example
- * ```ts
- * import { UnTarStream } from 'https://deno.land/std@$STD_VERSION/archive/untar_stream.ts'
- *
- * for await (
- *   const entry of (await Deno.open('./out.tar'))
- *     .readable
- *     .pipeThrough(new UnTarStream())
- * ) {
- *   console.log(entry.pathname)
- *   await entry
- *     .readable
- *     ?.pipeTo((await Deno.create(entry.pathname)).writable)
- * }
- * ```
  *
  * ### Understanding Compressed
  * A tar archive may be compressed, often identified by an additional file
