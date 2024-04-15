@@ -35,12 +35,15 @@ export default class Server {
     Debug.enable('AI:qex:* AI:engine:*')
     // TODO whilst no system chain, fail with help message
     const engine = await Engine.create()
-    // await engine.initialize()
     const app = new Hono().basePath('/api')
 
     app.use(timing())
     app.use(prettyJSON())
     app.use('*', logger(), poweredBy(), cors())
+    app.post('/', async (c) => {
+      const result = await engine.initialize()
+      return c.json(result)
+    })
     app.post(`/ping`, async (c) => {
       const payload = await c.req.json()
       let data

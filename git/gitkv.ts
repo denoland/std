@@ -66,7 +66,7 @@ export class GitKV {
     let result: Uint8Array
     if (await this.#cache.has(pathKey)) {
       const cached = await this.#cache.get(pathKey)
-      assert(cached)
+      assert(cached, 'cache fail')
       result = cached
     } else {
       const dbResult = await this.#db.blobGet(pathKey)
@@ -268,6 +268,7 @@ class Cache {
       const ab = await cached.arrayBuffer()
       return new Uint8Array(ab)
     }
+    throw new Error('not found: ' + key.join('/'))
   }
   async set(key: Deno.KvKey, value: Uint8Array) {
     await this.#load()

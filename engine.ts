@@ -64,10 +64,16 @@ export class Engine implements EngineInterface {
     // the ulid of the repo is based on who is driving a command
     const systemId = '__system'
     const pid = pidFromRepo(systemId, 'system/system')
+
+    const head = await db.readHead(pid)
+    if (head) {
+      return { pid, head, elapsed: Date.now() - start, existed: true }
+    }
+
     this.#pid = pid
     const fs = await FS.init(pid, db)
-    const { commit: head } = fs
-    return { pid, head, elapsed: Date.now() - start }
+    const { commit } = fs
+    return { pid, head: commit, elapsed: Date.now() - start }
   }
   async stop() {
     await this.#compartment.unmount(this.#api)
