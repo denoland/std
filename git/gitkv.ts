@@ -241,7 +241,7 @@ class Cache {
   static #local = new Map<string, Uint8Array>()
   #big: globalThis.Cache | undefined
   async #load() {
-    if (!this.#big) {
+    if ('caches' in globalThis && !this.#big) {
       this.#big = await caches.open('hashbucket')
     }
   }
@@ -252,31 +252,35 @@ class Cache {
     }
 
     await this.#load()
-    assert(this.#big, 'no cache')
-    const result = await this.#big.match(url)
-    return !!result
+    if (this.#big) {
+      const result = await this.#big.match(url)
+      result?.body?.cancel()
+      return !!result
+    }
   }
   async get(key: Deno.KvKey) {
-    await this.#load()
-    assert(this.#big, 'no cache')
     const url = toUrl(key)
     if (Cache.#local.has(url)) {
       return Cache.#local.get(url)
     }
-    const cached = await this.#big.match(url)
-    if (cached) {
-      const ab = await cached.arrayBuffer()
-      return new Uint8Array(ab)
+    await this.#load()
+    if (this.#big) {
+      const cached = await this.#big.match(url)
+      if (cached) {
+        const ab = await cached.arrayBuffer()
+        return new Uint8Array(ab)
+      }
     }
     throw new Error('not found: ' + key.join('/'))
   }
   async set(key: Deno.KvKey, value: Uint8Array) {
     await this.#load()
-    assert(this.#big, 'no cache')
     const url = toUrl(key)
     Cache.#local.set(url, value)
-    const request = new Request(url)
-    this.#big.put(request, new Response(value))
+    if (this.#big) {
+      const request = new Request(url)
+      this.#big.put(request, new Response(value))
+    }
   }
 }
 const toUrl = (pathKey: Deno.KvKey) => 'http://' + pathKey.join('/')

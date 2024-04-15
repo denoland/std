@@ -42,7 +42,7 @@ export default class IOChannel {
     }
     this.#fs = fs
     // TODO use immer or similar to avoid this parsing step
-    this.#original = JSON.parse(JSON.stringify(this.#io))
+    this.#original = structuredClone(this.#io)
   }
   static readObject(io: IoStruct, pid: PID) {
     check(io, pid)
@@ -80,7 +80,7 @@ export default class IOChannel {
       throw new Error('no changes to save')
     }
     // TODO make save a one shot thing
-    this.#original = JSON.parse(JSON.stringify(this.#io))
+    this.#original = structuredClone(this.#io)
     return this.#save()
   }
   isNextSerialRequest(attempt: SolidRequest) {
