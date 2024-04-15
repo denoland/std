@@ -1,6 +1,6 @@
 import http from 'npm:isomorphic-git/http/web/index.js'
 import { assert, Debug, equal, posix, sha1 } from '@utils'
-import { ENTRY_BRANCH, JsonValue, PID } from '@/constants.ts'
+import { Change, ENTRY_BRANCH, JsonValue, PID } from '@/constants.ts'
 import git from '$git'
 import type DB from '@/db.ts'
 import { GitKV } from './gitkv.ts'
@@ -29,7 +29,6 @@ export default class FS {
     const key = getCacheKey(pid)
     FS.#caches.delete(key)
   }
-
   get pid() {
     return this.#pid
   }
@@ -116,7 +115,7 @@ export default class FS {
   async writeCommitObject(message = '', merges: string[] = []) {
     assert(this.#upserts.size > 0 || this.#deletes.size > 0, 'empty commit')
     assert(merges.every((oid) => sha1.test(oid)), 'Merge not SHA-1')
-    const tree = await this.#flush()
+    const { oid, changes } = await this.#flush()
     this.#upserts.clear()
     this.#deletes.clear()
 
@@ -128,21 +127,22 @@ export default class FS {
       dir,
       message,
       author,
-      tree,
+      tree: oid,
       parent: [this.#commit, ...merges],
       cache: FS.#getGitCache(this.#pid),
     })
 
     const next = new FS(this.#pid, nextCommit, this.#db)
-    return next
+    return { next, changes }
   }
   async #flush() {
+    const changes: { [key: string]: Change } = {}
     const oid = await this.#rootOid()
     const { fs } = this
     const cache = FS.#getGitCache(this.#pid)
     const { tree: root } = await git.readTree({ fs, dir, oid, cache })
     log('flush tree', root)
-    const changes: Tree = {
+    const tree: Tree = {
       oid,
       tree: root,
       upserts: new Map(),
@@ -150,38 +150,42 @@ export default class FS {
       children: new Map(),
     }
     for (let [path, blob] of this.#upserts) {
+      let patch: string | undefined
       if (typeof blob === 'string') {
+        patch = blob
         blob = new TextEncoder().encode(blob)
       }
       // TODO parallelize
-      const hash = await git.writeBlob({ fs, dir, blob })
-      log('hash', hash)
-      const parent = ensurePath(changes, path)
+      const oid = await git.writeBlob({ fs, dir, blob })
+      log('hash', oid)
+      const parent = ensurePath(tree, path)
       const filename = path.split('/').pop()
       assert(filename, 'filename not found: ' + path)
       parent.upserts.set(filename, {
         // https://isomorphic-git.org/docs/en/walk#walkerentry-mode
         mode: '100644',
         path: filename,
-        oid: hash,
+        oid,
         type: 'blob',
       })
+      changes[path] = { oid, patch }
     }
 
     for (const path of this.#deletes) {
       log('delete', path)
-      const parent = ensurePath(changes, path)
+      const parent = ensurePath(tree, path)
       const filename = path.split('/').pop()
       assert(filename, 'filename not found: ' + path)
       parent.deletes.add(filename)
+      changes[path] = {}
       // TODO should be able to wipe a whole dir with no effort here
     }
 
-    await retrieveAffectedTrees(changes, fs, cache)
+    await retrieveAffectedTrees(tree, fs, cache)
 
-    await bubbleChanges(changes, fs)
+    await bubbleChanges(tree, fs)
 
-    return changes.oid
+    return { oid: tree.oid, changes }
   }
   async exists(path: string) {
     assertPath(path)
@@ -262,13 +266,23 @@ export default class FS {
         return new TextEncoder().encode(data)
       }
     }
+    const { blob } = await this.readBlob(path)
+    return blob
+  }
+  async readBlob(path: string) {
     const oid = await this.#rootOid()
     log('tree', oid)
     const { fs } = this
     const cache = FS.#getGitCache(this.#pid)
-    const { blob } = await git.readBlob({ dir, fs, oid, filepath: path, cache })
+    const { blob, oid: blobOid } = await git.readBlob({
+      dir,
+      fs,
+      oid,
+      filepath: path,
+      cache,
+    })
     assert(blob instanceof Uint8Array, 'blob not Uint8Array: ' + typeof blob)
-    return blob
+    return { blob, oid: blobOid }
   }
   async ls(path: string) {
     assertPath(path)

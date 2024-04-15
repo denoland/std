@@ -15,17 +15,15 @@ export default (name: string, cradleMaker: () => Promise<Artifact>) => {
       let first
       for await (const splice of artifact.read(pid, 'test')) {
         log('splice', splice)
-        if (splice.changes) {
+        if (splice.changes['test']) {
           first = splice
           break
         }
       }
       assert(first)
       expect(first.pid).toEqual(pid)
-      expect(first.path).toEqual('test')
-      expect(first.changes).toHaveLength(1)
-      assert(first.changes)
-      expect(first.changes[0].value).toEqual('hello')
+      expect(first.changes.test.patch).toEqual('hello')
+      expect(Object.keys(first.changes)).toHaveLength(1)
     })
     // do a writeSlow test to see how broadcast channel behaves
     // and to test the catchup of the final commit
@@ -45,7 +43,7 @@ export default (name: string, cradleMaker: () => Promise<Artifact>) => {
       const stream = artifact.read(pid, '.io.json')
       // make a library that transforms splice streams
       for await (const splice of stream) {
-        log('splice', splice.path)
+        log('splice', splice.changes)
       }
       log('done')
     }
@@ -62,10 +60,7 @@ export default (name: string, cradleMaker: () => Promise<Artifact>) => {
       }
       assert(first)
       expect(first.pid).toEqual(pid)
-      expect(first.path).toEqual('test')
-      expect(first.changes).toHaveLength(1)
-      assert(first.changes)
-      expect(first.changes[0].value).toEqual('hello')
+      expect(Object.keys(first.changes)).toHaveLength(1)
     })
     await artifact.stop()
   })
@@ -78,7 +73,7 @@ export default (name: string, cradleMaker: () => Promise<Artifact>) => {
     let fileSpliceCount = 0
     const fileSplices = async () => {
       for await (const splice of artifact.read(pid, 'test.txt')) {
-        log('file', splice.path)
+        log('file', splice.changes)
         fileSpliceCount++
       }
     }

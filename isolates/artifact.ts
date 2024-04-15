@@ -3,6 +3,7 @@ import Executor from '../exe/exe.ts'
 import IOChannel from '../io/io-channel.ts'
 import {
   C,
+  Change,
   ExeResult,
   freezePid,
   IsolateLifecycle,
@@ -10,10 +11,13 @@ import {
   isQueueBranch,
   isQueueExe,
   isQueuePool,
+  isQueueSplice,
+  PID,
   PierceRequest,
   print,
   QueueMessage,
   SolidRequest,
+  Splice,
 } from '@/constants.ts'
 import IsolateApi from '../isolate-api.ts'
 import { doAtomicBranch, doAtomicCommit } from '@io/io.ts'
@@ -58,9 +62,30 @@ export const api = {
     required: ['pierce'],
     properties: { pierce: request },
   },
+  requestSplice: {
+    type: 'object',
+    required: ['ulid', 'pid'],
+    properties: {
+      ulid: { type: 'string' },
+      pid: pid.properties.pid,
+      oid: { type: 'string' },
+      path: { type: 'string' },
+    },
+    additionalProperties: false,
+  },
 }
+
 export interface Api {
   pierce: (params: { pierce: PierceRequest }) => Promise<void>
+  requestSplice: (
+    params: { ulid: string; pid: PID; oid?: string; path?: string },
+  ) => Promise<void>
+}
+interface SpliceParams {
+  ulid: string
+  pid: PID
+  oid?: string
+  path?: string
 }
 /**
  * Reason to keep artifact with an Isolate interface, is so we can control it
@@ -81,6 +106,18 @@ export const functions = {
       .commit()
     assert(result, 'pierce failed')
     // TODO return back the head commit at the point of pooling
+  },
+  async requestSplice(
+    { ulid, pid, oid, path }: SpliceParams,
+    api: IsolateApi<C>,
+  ) {
+    freezePid(pid)
+    // if no oid provided, we are using the head of the branch
+    // if no path, just give the commit alone
+    const { db } = sanitizeContext(api)
+    const result = await db.atomic().enqueueSplice(ulid, pid, oid, path)
+      .commit()
+    assert(result, 'requestSplice failed')
   },
 }
 
@@ -135,6 +172,37 @@ export const lifecycles: IsolateLifecycle = {
           }
           tip = await FS.openHead(request.target, db)
         }
+      }
+      if (isQueueSplice(message)) {
+        const { ulid, pid, oid: _oid, path } = message
+        let fs: FS
+        let oid: string
+        if (_oid) {
+          fs = FS.open(pid, _oid, db)
+          oid = _oid
+        } else {
+          fs = await FS.openHead(pid, db)
+          oid = fs.commit
+        }
+        const channel = db.getInitialChannel(ulid)
+        const commit = await fs.getCommit()
+        const changes: { [key: string]: Change } = {}
+        if (path) {
+          if (await fs.exists(path)) {
+            // does a full read, since an active request has nothing already
+            // TODO sniff filetype
+            const content = await fs.read(path)
+            // TODO use json differ for json
+            changes[path].patch = content
+            const { oid } = await fs.readBlob(path)
+            changes[path].oid = oid
+          }
+        }
+
+        const timestamp = commit.committer.timestamp * 1000
+        const splice: Splice = { pid, oid, commit, timestamp, changes }
+        console.log('posting', ulid)
+        channel.postMessage(splice)
       }
     })
   },

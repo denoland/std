@@ -102,8 +102,8 @@ export class WebClientEngine implements EngineInterface {
             if (!response.body) {
               throw new Error('response body is missing')
             }
-            const splices = toEvents(response.body)
-            const reader = splices.getReader()
+            const spliceStream = toEvents(response.body)
+            const reader = spliceStream.getReader()
             abort.signal.addEventListener('abort', () => {
               reader.cancel()
             })

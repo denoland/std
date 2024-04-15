@@ -1,5 +1,6 @@
+import { pushable } from 'it-pushable'
+
 import { transcribe } from '@/runners/runner-chat.ts'
-import { diffChars } from 'diff'
 import Compartment from './io/compartment.ts'
 import {
   C,
@@ -15,20 +16,21 @@ import IsolateApi from './isolate-api.ts'
 import { assert, Debug, posix } from '@utils'
 import FS from '@/git/fs.ts'
 import * as artifact from '@/isolates/artifact.ts'
+import { ulid } from 'ulid'
 const log = Debug('AI:engine')
 
 export class Engine implements EngineInterface {
   #compartment: Compartment
   #api: IsolateApi<C>
   #pierce: artifact.Api['pierce']
-  #readAborts = new Set<AbortController>()
-  #readPromises = new Set<Promise<void>>()
+  #requestSplice: artifact.Api['requestSplice']
   #pid: PID | undefined
   private constructor(compartment: Compartment, api: IsolateApi<C>) {
     this.#compartment = compartment
     this.#api = api
     const functions = compartment.functions<artifact.Api>(api)
     this.#pierce = functions.pierce
+    this.#requestSplice = functions.requestSplice
   }
   static async create() {
     const compartment = await Compartment.create('artifact')
@@ -45,6 +47,7 @@ export class Engine implements EngineInterface {
     return this.#pid
   }
   async initialize() {
+    // TODO make this be a pierced action ?
     // create the system chain - fail without it
     // use the system chain to create the superuser chain
     // return the details of each one
@@ -67,10 +70,6 @@ export class Engine implements EngineInterface {
     return { pid, head, elapsed: Date.now() - start }
   }
   async stop() {
-    for (const abort of this.#readAborts) {
-      abort.abort()
-    }
-    await Promise.all([...this.#readPromises])
     await this.#compartment.unmount(this.#api)
   }
   ping(data?: JsonValue): Promise<JsonValue | undefined> {
@@ -93,89 +92,27 @@ export class Engine implements EngineInterface {
     await this.#pierce({ pierce })
   }
   read(pid: PID, path?: string, signal?: AbortSignal) {
-    // buffer transients until we get up to the current commit
-    // if we pass the current commit in transients, reset what head is
-    // TODO use commit logs to ensure we emit one splice for every commit
     freezePid(pid)
     assert(!path || !posix.isAbsolute(path), `path must be relative: ${path}`)
 
-    const abort = new AbortController()
-    if (signal) {
-      signal.addEventListener('abort', () => {
-        abort.abort()
-      })
-    }
-    const finished = this.#waiter(abort)
-
-    let last: string
     const db = this.#api.context.db
     assert(db, 'db not found')
-    const commits = db.watchHead(pid, abort.signal)
-    const readlog = log.extend('read')
-    const buffer: Promise<void>[] = []
-    const toSplices = new TransformStream<string, Splice>({
-      transform: (oid, controller) => {
-        // TODO check the commits are not interupted
-        const process = async () => {
-          readlog('commit', oid, path)
-          const fs = FS.open(pid, oid, db)
-          const commit = await fs.getCommit()
-          let changes
-          if (path) {
-            readlog('read path', path, oid)
-            if (await fs.exists(path)) {
-              readlog('file exists', path, oid)
-              const content = await fs.read(path)
-              if (last === undefined || last !== content) {
-                readlog('content changed')
-                // TODO use json differ for json
-                changes = diffChars(last || '', content)
-                last = content
-              }
-            }
-          }
 
-          const timestamp = commit.committer.timestamp * 1000
-          const splice: Splice = { pid, oid, commit, timestamp, path, changes }
-          return splice
-        }
-        const task = process()
-        const index = buffer.length
-        const priorTask = buffer[index - 1] || Promise.resolve()
-        const queuedTask = priorTask.then(() => task).then((splice) => {
-          if (!abort.signal.aborted) {
-            controller.enqueue(splice)
-          }
-        }).finally(() => {
-          buffer.shift()
-        })
-        buffer.push(queuedTask)
-        console.log('buffer size:', buffer.length)
-      },
-    })
-    commits.pipeTo(toSplices.writable)
-      .then(() => {
-        log('pipeTo done')
-      }).catch((_error) => {
-        // silence as only used during testing
-      })
-      .then(() => {
-        finished()
-        log('stream complete')
-      })
-    return toSplices.readable
-  }
-  #waiter(abort: AbortController) {
-    let resolve: () => void
-    const readPromise = new Promise<void>((_resolve) => {
-      resolve = _resolve
-    })
-    this.#readPromises.add(readPromise)
-    this.#readAborts.add(abort)
-    return () => {
-      resolve()
-      this.#readPromises.delete(readPromise)
-      this.#readAborts.delete(abort)
+    const source = pushable<Splice>({ objectMode: true })
+    signal?.addEventListener('abort', () => source.return())
+    const pipe = async () => {
+      const id = ulid()
+      const stream = db.watchSplices(id, pid, path, signal)
+
+      await this.#requestSplice({ ulid: id, pid, path })
+        .catch(source.throw)
+
+      for await (const splice of stream) {
+        source.push(splice)
+      }
+      // TODO reconcile this is the first one due to timing errors ?
     }
+    pipe()
+    return source
   }
 }

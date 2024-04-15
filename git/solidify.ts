@@ -88,20 +88,21 @@ export const solidify = async (fs: FS, pool: Poolable[], pending?: Pending) => {
   }
 
   let exe: Solids['exe']
-  const next = io.getCurrentSerialRequest()
-  if (next && !equal(executingRequest, next)) {
-    const sequence = io.getSequence(next)
-    exe = { request: next, sequence }
+  const nextRequest = io.getCurrentSerialRequest()
+  if (nextRequest && !equal(executingRequest, nextRequest)) {
+    const sequence = io.getSequence(nextRequest)
+    exe = { request: nextRequest, sequence }
   }
   // TODO pass in all the db checks to go with this write
   // TODO write blobs atomically
-  const { commit } = await fs.writeCommitObject('pool', parents)
-
+  const { next, changes } = await fs.writeCommitObject('pool', parents)
+  const { commit } = next
   log('head', commit)
   for (const poolable of poolables) {
     poolable.commit = commit
   }
-  const solids: Solids = { commit, exe, branches, poolables, deletes }
+
+  const solids: Solids = { commit, changes, exe, branches, poolables, deletes }
   return solids
 }
 

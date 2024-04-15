@@ -180,20 +180,19 @@ export const toString = (pid: PID) => {
   return `${pid.account}/${pid.repository}:${pid.branches.join('_')}`
 }
 
-type Change = {
-  count?: number | undefined
-  /**
-   * Text content.
+export type Change = {
+  /** If present, represents the unified diff of the file at the given path,
+   * since the last commit.  This is only provided if the file is a string.  If
+   * the changes are too large, this will be mising and an oid will be provided.
    */
-  value: string
+  patch?: string
   /**
-   * `true` if the value was inserted into the new string.
+   * The oid of the object given by path, which can be used to fetch the object
+   * directly. If this file is binary, then patch will be missing, and the file
+   * should be directly retrieved.  If oid is missing, then the change was
+   * fatal.
    */
-  added?: boolean | undefined
-  /**
-   * `true` if the value was removed from the old string.
-   */
-  removed?: boolean | undefined
+  oid?: string
 }
 export type Splice = {
   pid: PID
@@ -210,13 +209,7 @@ export type Splice = {
    * that caused this update
    */
   timestamp: number
-  path?: string
-  changes?: Change[]
-  /**
-   * True if the file requested is binary.  Use a get request to fetch the file
-   * directly at the specific commit.
-   */
-  binary?: boolean
+  changes: { [key: string]: Change }
 }
 export declare interface EventSourceMessage {
   /** The data received for this message. */
@@ -292,7 +285,7 @@ export interface Artifact {
   pid: PID
   stop(): Promise<void> | void
   actions(isolate: string, target: PID): Promise<DispatchFunctions>
-  read(pid: PID, path?: string, signal?: AbortSignal): ReadableStream<Splice>
+  read(pid: PID, path?: string, signal?: AbortSignal): AsyncIterable<Splice>
   transcribe(params: { audio: File }): Promise<{ text: string }>
   apiSchema(isolate: string): Promise<ApiSchema>
   /** Pings the execution context without going thru the transaction queue.
@@ -358,7 +351,7 @@ export const pidFromRepo = (id: string, repo: string): PID => {
 export interface EngineInterface {
   stop(): Promise<void> | void
   pierce(pierce: PierceRequest): Promise<void>
-  read(pid: PID, path?: string, signal?: AbortSignal): ReadableStream<Splice>
+  read(pid: PID, path?: string, signal?: AbortSignal): AsyncIterable<Splice>
   transcribe(audio: File): Promise<{ text: string }>
   apiSchema(isolate: string): Promise<ApiSchema>
   ping(data?: JsonValue): Promise<IsolateReturn>

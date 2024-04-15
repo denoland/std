@@ -1,7 +1,8 @@
+import { pushable } from 'it-pushable'
 import { BLOB_META_KEY, get, getMeta } from '@kitsonk/kv-toolbox/blob'
 import { batchedAtomic } from '@kitsonk/kv-toolbox/batched_atomic'
 import * as keys from './keys.ts'
-import { PID, Poolable } from '@/constants.ts'
+import { PID, Poolable, Splice } from '@/constants.ts'
 import { assert, Debug, openKv, sha1 } from '@utils'
 import { Atomic } from './atomic.ts'
 import { QueueMessage } from '@/constants.ts'
@@ -10,6 +11,8 @@ import { ulid } from 'ulid'
 const log = Debug('AI:db')
 export default class DB {
   #kv: Deno.Kv
+  #channels = new Set<BroadcastChannel>()
+  #broadcastChannels = new Map<string, BroadcastChannel>()
   private constructor(kv: Deno.Kv) {
     this.#kv = kv
   }
@@ -20,6 +23,11 @@ export default class DB {
     return db
   }
   stop() {
+    for (const channel of this.#channels.values()) {
+      channel.close()
+    }
+    this.#channels.clear()
+    this.#broadcastChannels.clear()
     return this.#kv.close()
   }
   async hasPoolable(poolable: Poolable) {
@@ -174,6 +182,79 @@ export default class DB {
     }
     read()
     return { key, value: lockId, versionstamp }
+  }
+  /** A single use broadcast channel used to reply to queries.  Trick seems to
+   * be to open it as early as possible in the isolate lifecycle to give it the
+   * most reliable chance of getting its message out :shrug:
+   *
+   * The channel is held open to allow the transmission to get off machine. */
+  getInitialChannel(name: string) {
+    const channel = new BroadcastChannel(name)
+    this.#channels.add(channel)
+    return channel
+  }
+  /** Used when a new commit is formed to broadcast the diff */
+  getCommitsBroadcast(pid: PID) {
+    const key = keys.getChannelKey(pid)
+    if (!this.#broadcastChannels.has(key)) {
+      const channel = new BroadcastChannel(key)
+      this.#broadcastChannels.set(key, channel)
+      this.#channels.add(channel)
+    }
+    const channel = this.#broadcastChannels.get(key)
+    assert(channel, 'Channel not found')
+    return channel
+  }
+  getCommitsListener(pid: PID) {
+    const key = keys.getChannelKey(pid)
+    const channel = new BroadcastChannel(key)
+    this.#channels.add(channel)
+    return channel
+  }
+  watchSplices(
+    ulid: string,
+    pid: PID,
+    path?: string,
+    signal?: AbortSignal,
+  ) {
+    const initial = new Promise<Splice>((resolve) => {
+      console.log('listin', ulid)
+      const initialChannel = this.getInitialChannel(ulid)
+      initialChannel.addEventListener('message', (event) => {
+        resolve(event.data)
+      }, { once: true })
+    })
+
+    const commitsChannel = this.getCommitsListener(pid)
+    const source = pushable<Splice>({ objectMode: true })
+    const commits = pushable<Splice>({ objectMode: true })
+    const listener = (event: MessageEvent) => {
+      commits.push(event.data)
+    }
+    commitsChannel.addEventListener('message', listener)
+    signal?.addEventListener('abort', () => {
+      commitsChannel.removeEventListener('message', listener)
+      commits.return()
+      source.return()
+    })
+    const pipe = async () => {
+      const firstSplice = await initial
+      if (Object.keys(firstSplice.changes).length) {
+        assert(path, 'Path not found in first splice')
+        assert(firstSplice.changes[path], 'Path not found in first splice')
+      }
+      source.push(firstSplice)
+      for await (const splice of commits) {
+        let scoped = splice
+        if (path && splice.changes[path]) {
+          const { changes } = splice
+          scoped = { ...splice, changes: { [path]: changes[path] } }
+        }
+        source.push(scoped)
+      }
+    }
+    pipe()
+    return source
   }
 }
 

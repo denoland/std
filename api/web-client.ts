@@ -54,45 +54,24 @@ export class Shell implements Artifact {
     return this.#engine.stop()
   }
   async #watchPierces() {
-    const watchIo = this.#engine.read(this.#pid, '.io.json', this.#abort.signal)
-
-    let patched = ''
     let lastSplice
-    const reader = watchIo.getReader()
-    let start = Date.now()
-    while (watchIo.locked) {
-      const { value: splice, done } = await reader.read()
-      if (done) {
-        console.error('splice stream ended')
-        break
-      }
+    const { signal } = this.#abort
+    const splices = this.#engine.read(this.#pid, '.io.json', signal)
+    for await (const splice of splices) {
       if (lastSplice && splice.commit.parent[0] !== lastSplice.oid) {
         throw new Error('parent mismatch: ' + splice.oid)
       }
       lastSplice = splice
-      if (!splice.changes) {
-        continue
-      }
-      let cursor = 0
-      for (const diff of splice.changes) {
-        if (diff.added) {
-          patched = patched.substring(0, cursor) + diff.value +
-            patched.substring(cursor)
-          cursor += diff.value.length
-        } else if (diff.removed) {
-          const count = diff.count ?? 0
-          patched = patched.substring(0, cursor) +
-            patched.substring(cursor + count)
-        } else {
-          const count = diff.count ?? 0
-          cursor += count
+
+      if (splice.changes['.io.json']) {
+        const { patch } = splice.changes['.io.json']
+        // TODO move to unified diff patches
+        if (!patch) {
+          throw new Error('io.json patch not found')
         }
+        const io = JSON.parse(patch)
+        this.#resolvePierces(io)
       }
-      const io = JSON.parse(patched)
-      this.#resolvePierces(io)
-      const end = Date.now()
-      console.log('elapsed', splice.oid, end - start)
-      start = end
     }
   }
   async actions<T>(isolate: string, target: PID) {

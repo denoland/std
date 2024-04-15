@@ -2,7 +2,7 @@ import { getPoolKeyPrefix } from '@/keys.ts'
 import { Debug } from '@utils'
 import { solidify } from '@/git/solidify.ts'
 import { branch } from '@/git/branch.ts'
-import { Pending, PID, Solids } from '@/constants.ts'
+import { Pending, PID, Solids, Splice } from '@/constants.ts'
 import DB from '@/db.ts'
 import FS from '@/git/fs.ts'
 import { Atomic } from '@/atomic.ts'
@@ -19,6 +19,7 @@ const log = Debug('AI:io')
  * the fs that need to be included in the commit.
  */
 export const doAtomicCommit = async (db: DB, fs: FS, exe?: ExeResult) => {
+  const broadcast = db.getCommitsBroadcast(fs.pid)
   const atomic = db.atomic()
   const { poolKeys, pool } = await db.getPooledActions(fs.pid)
   let pending: Pending | undefined
@@ -51,6 +52,9 @@ export const doAtomicCommit = async (db: DB, fs: FS, exe?: ExeResult) => {
     return false
   }
   const success = await atomic.commit()
+  if (success) {
+    broadcastCommit(solids, fs.pid, db, broadcast)
+  }
   log('commit success %o from %o to %o', success, fs.commit, solids.commit)
   return success
 }
@@ -78,6 +82,7 @@ const transmit = (pid: PID, solids: Solids, atomic: Atomic) => {
   }
 }
 const deleteBranches = async (deletes: Solids['deletes'], atomic: Atomic) => {
+  // TODO broadcast deleted splices
   const promises = []
   for (const { pid, commit } of deletes) {
     promises.push(atomic.deleteBranch(pid, commit))
@@ -89,6 +94,7 @@ const deleteBranches = async (deletes: Solids['deletes'], atomic: Atomic) => {
   return true
 }
 export const doAtomicBranch = async (db: DB, fs: FS, sequence: number) => {
+  // TODO broadcast the splice out
   const atomic = db.atomic()
   const { pid, head, origin } = await branch(fs, sequence)
   atomic.createBranch(pid, head)
@@ -97,6 +103,21 @@ export const doAtomicBranch = async (db: DB, fs: FS, sequence: number) => {
   const success = await atomic.commit()
   log('branch success %o from %o to %o', success, fs.commit, head)
   return success
+}
+
+const broadcastCommit = async (
+  solids: Solids,
+  pid: PID,
+  db: DB,
+  broadcast: BroadcastChannel,
+) => {
+  const { commit: oid, changes } = solids
+  const fs = FS.open(pid, oid, db)
+  const commit = await fs.getCommit()
+  const timestamp = commit.committer.timestamp * 1000
+  const splice: Splice = { pid, oid, commit, timestamp, changes }
+
+  broadcast.postMessage(splice)
 }
 
 // TODO move all these types to share a file with their tests for done

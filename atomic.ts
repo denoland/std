@@ -6,6 +6,7 @@ import {
   PierceRequest,
   Poolable,
   QueueMessage,
+  QueueMessageType,
   SolidRequest,
 } from '@/constants.ts'
 import { assert, Debug, isKvTestMode, sha1 } from '@utils'
@@ -92,13 +93,20 @@ export class Atomic {
    * request is run
    */
   enqueueExecution(request: SolidRequest, sequence: number, commit: string) {
-    return this.#enqueue({ request, sequence, commit })
+    const type = QueueMessageType.EXECUTION
+    return this.#enqueue({ type, request, sequence, commit })
   }
   enqueueBranch(parentCommit: string, parentPid: PID, sequence: number) {
-    return this.#enqueue({ parentCommit, parentPid, sequence })
+    const type = QueueMessageType.BRANCH
+    return this.#enqueue({ type, parentCommit, parentPid, sequence })
   }
   enqueuePool(poolable: MergeReply | MergeRequest | PierceRequest) {
-    return this.#enqueue({ poolable })
+    const type = QueueMessageType.POOL
+    return this.#enqueue({ type, poolable })
+  }
+  enqueueSplice(ulid: string, pid: PID, oid?: string, path?: string) {
+    const type = QueueMessageType.SPLICE
+    return this.#enqueue({ type, ulid, pid, oid, path })
   }
   #enqueue(message: QueueMessage) {
     // TODO specify allowed message types as args to artifact functions

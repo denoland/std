@@ -2,6 +2,7 @@ import IsolateApi from './isolate-api.ts'
 export type { IsolateApi }
 export const IO_PATH = '.io.json'
 import {
+  Change,
   IsolateApiSchema,
   IsolateReturn,
   MergeRequest,
@@ -74,6 +75,8 @@ export type IsolatePromise = {
 }
 export type Solids = {
   commit: string
+  /** Changed files in this commit.  Empty change signals deletion. */
+  changes: { [key: string]: Change }
   exe?: { request: SolidRequest; sequence: number }
   branches: number[]
   poolables: (MergeReply | MergeRequest)[]
@@ -128,29 +131,49 @@ export const isMergeRequest = (poolable: Request): poolable is MergeRequest => {
  * Each task will continue to retry until it is successful, as long as its check
  * for duplication reassures it to keep trying.
  */
-export type QueueMessage = QueuePool | QueueExe | QueueBranch
-
+export type QueueMessage = QueuePool | QueueExe | QueueBranch | QueueSplice
+export enum QueueMessageType {
+  POOL = 'pool',
+  EXECUTION = 'exe',
+  BRANCH = 'branch',
+  SPLICE = 'splice',
+}
 export type QueuePool = {
+  type: QueueMessageType.POOL
   poolable: MergeReply | MergeRequest | PierceRequest
 }
 export type QueueExe = {
+  type: QueueMessageType.EXECUTION
   request: SolidRequest
   commit: string
   sequence: number
 }
 export type QueueBranch = {
+  type: QueueMessageType.BRANCH
   parentCommit: string
   parentPid: PID
   sequence: number
 }
+export type QueueSplice = {
+  type: QueueMessageType.SPLICE
+  ulid: string
+  pid: PID
+  /** If not provided, use the head commit */
+  oid?: string
+  path?: string
+}
+
 export const isQueuePool = (m: QueueMessage): m is QueuePool => {
-  return 'poolable' in m
+  return m.type === QueueMessageType.POOL
 }
 export const isQueueExe = (m: QueueMessage): m is QueueExe => {
-  return 'request' in m
+  return m.type === QueueMessageType.EXECUTION
 }
 export const isQueueBranch = (m: QueueMessage): m is QueueBranch => {
-  return 'parentPid' in m
+  return m.type === QueueMessageType.BRANCH
+}
+export const isQueueSplice = (m: QueueMessage): m is QueueSplice => {
+  return m.type === QueueMessageType.SPLICE
 }
 
 export * from './api/web-client.types.ts'

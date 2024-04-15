@@ -61,5 +61,9 @@ export const headKeyToPid = (headKey: string[]) => {
   assert(branches.length > 0, 'no branches')
   return { id, account, repository, branches }
 }
+export const getChannelKey = (pid: PID) => {
+  const key = getHeadKey(pid)
+  return key.join('/')
+}
 
 export const UNDELIVERED = ['__system', 'system', 'system', 'undelivered']
