@@ -107,10 +107,10 @@ export class Engine implements EngineInterface {
     const source = pushable<Splice>({ objectMode: true })
     signal?.addEventListener('abort', () => source.return())
     const pipe = async () => {
-      const id = ulid()
-      const stream = db.watchSplices(id, pid, path, signal)
+      const initialId = ulid()
+      const stream = db.watchSplices(initialId, pid, path, signal)
 
-      await this.#requestSplice({ ulid: id, pid, path })
+      await this.#requestSplice({ ulid: initialId, pid, path })
         .catch(source.throw)
 
       for await (const splice of stream) {

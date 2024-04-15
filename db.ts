@@ -227,12 +227,10 @@ export default class DB {
     const commitsChannel = this.getCommitsListener(pid)
     const source = pushable<Splice>({ objectMode: true })
     const commits = pushable<Splice>({ objectMode: true })
-    const listener = (event: MessageEvent) => {
+    commitsChannel.addEventListener('message', (event: MessageEvent) => {
       commits.push(event.data)
-    }
-    commitsChannel.addEventListener('message', listener)
+    })
     signal?.addEventListener('abort', () => {
-      commitsChannel.removeEventListener('message', listener)
       commits.return()
       source.return()
     })

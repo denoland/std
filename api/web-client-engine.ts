@@ -103,25 +103,13 @@ export class WebClientEngine implements EngineInterface {
               throw new Error('response body is missing')
             }
             const spliceStream = toEvents(response.body)
-            const reader = spliceStream.getReader()
-            abort.signal.addEventListener('abort', () => {
-              reader.cancel()
-            })
-            while (!abort.signal.aborted) {
-              try {
-                const { done, value } = await reader.read()
-                if (done || abort.signal.aborted) {
-                  break
-                }
-                if (value.event === 'splice') {
-                  const splice: Splice = JSON.parse(value.data)
-                  controller.enqueue(splice)
-                } else {
-                  console.error('unexpected event', value.event, value)
-                }
-              } catch (error) {
-                console.error('inner stream error:', error)
-                break
+            for await (const value of toIterable(spliceStream)) {
+              if (value.event === 'splice') {
+                // reconcile these with the last splice
+                const splice: Splice = JSON.parse(value.data)
+                controller.enqueue(splice)
+              } else {
+                console.error('unexpected event', value.event, value)
               }
             }
           } catch (error) {
@@ -167,3 +155,17 @@ export class WebClientEngine implements EngineInterface {
 const toEvents = (stream: ReadableStream) =>
   stream.pipeThrough(new TextDecoderStream())
     .pipeThrough(new EventSourceParserStream())
+
+async function* toIterable(stream: ReadableStream) {
+  const reader = stream.getReader()
+
+  try {
+    while (true) {
+      const { done, value } = await reader.read()
+      if (done) break
+      yield value
+    }
+  } finally {
+    reader.releaseLock()
+  }
+}

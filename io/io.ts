@@ -19,7 +19,7 @@ const log = Debug('AI:io')
  * the fs that need to be included in the commit.
  */
 export const doAtomicCommit = async (db: DB, fs: FS, exe?: ExeResult) => {
-  const broadcast = db.getCommitsBroadcast(fs.pid)
+  db.getCommitsBroadcast(fs.pid) // preload
   const atomic = db.atomic()
   const { poolKeys, pool } = await db.getPooledActions(fs.pid)
   let pending: Pending | undefined
@@ -53,7 +53,7 @@ export const doAtomicCommit = async (db: DB, fs: FS, exe?: ExeResult) => {
   }
   const success = await atomic.commit()
   if (success) {
-    broadcastCommit(solids, fs.pid, db, broadcast)
+    broadcastCommit(solids, fs.pid, db)
   }
   log('commit success %o from %o to %o', success, fs.commit, solids.commit)
   return success
@@ -105,19 +105,16 @@ export const doAtomicBranch = async (db: DB, fs: FS, sequence: number) => {
   return success
 }
 
-const broadcastCommit = async (
-  solids: Solids,
-  pid: PID,
-  db: DB,
-  broadcast: BroadcastChannel,
-) => {
+const broadcastCommit = async (solids: Solids, pid: PID, db: DB) => {
+  const channel = db.getCommitsBroadcast(pid)
   const { commit: oid, changes } = solids
   const fs = FS.open(pid, oid, db)
   const commit = await fs.getCommit()
   const timestamp = commit.committer.timestamp * 1000
   const splice: Splice = { pid, oid, commit, timestamp, changes }
 
-  broadcast.postMessage(splice)
+  console.log('broadcasting', splice.oid)
+  channel.postMessage(splice)
 }
 
 // TODO move all these types to share a file with their tests for done
