@@ -242,7 +242,7 @@ class Cache {
   #big: globalThis.Cache | undefined
   async #load() {
     if (!this.#big) {
-      this.#big = await globalThis.caches.open('hashbucket')
+      this.#big = await caches.open('hashbucket')
     }
   }
   async has(key: Deno.KvKey) {
