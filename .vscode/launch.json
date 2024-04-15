@@ -70,7 +70,7 @@
       "type": "node",
       "cwd": "${workspaceFolder}",
       "runtimeExecutable": "~/.deno/bin/deno",
-      "runtimeArgs": ["task", "test:cloud", "--watch", "--inspect-wait"],
+      "runtimeArgs": ["task", "tc", "--watch", "--inspect-wait"],
       "attachSimplePort": 9229,
       "internalConsoleOptions": "neverOpen",
       "console": "integratedTerminal"

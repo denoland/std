@@ -3,8 +3,16 @@ const Ajv = ajvModule.default
 
 import { assert } from '@utils'
 
+let _ajv: typeof Ajv.prototype | undefined
+const loadAjv = () => {
+  if (!_ajv) {
+    _ajv = new Ajv({ allErrors: true })
+  }
+  return _ajv
+}
+
 export default (schema: object) => {
-  const ajv = new Ajv({ allErrors: true })
+  const ajv = loadAjv()
   const validate = ajv.compile(schema)
 
   return (parameters: object) => {

@@ -244,6 +244,9 @@ export default class DB {
       }
       source.push(firstSplice)
       for await (const splice of commits) {
+        if (splice.oid === firstSplice.oid) {
+          continue
+        }
         let scoped = splice
         if (path && splice.changes[path]) {
           const { changes } = splice

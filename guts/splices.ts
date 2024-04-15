@@ -53,7 +53,7 @@ export default (name: string, cradleMaker: () => Promise<Artifact>) => {
       write({ path: 'test', content: 'hello' })
       let first
       for await (const splice of artifact.read(pid, 'test')) {
-        if (splice.changes) {
+        if (splice.changes['test']) {
           first = splice
           break
         }

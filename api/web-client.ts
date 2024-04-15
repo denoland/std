@@ -59,6 +59,8 @@ export class Shell implements Artifact {
     const splices = this.#engine.read(this.#pid, '.io.json', signal)
     for await (const splice of splices) {
       if (lastSplice && splice.commit.parent[0] !== lastSplice.oid) {
+        console.dir(splice, { depth: Infinity })
+        console.dir(lastSplice, { depth: Infinity })
         throw new Error('parent mismatch: ' + splice.oid)
       }
       lastSplice = splice
