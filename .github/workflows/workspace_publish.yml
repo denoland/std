@@ -26,6 +26,8 @@ jobs:
 
       - name: Set up Deno
         uses: denoland/setup-deno@v1
+        with:
+          deno-version: canary
 
       - name: Convert to workspace
         run: deno run -A ./_tools/convert_to_workspace.ts
