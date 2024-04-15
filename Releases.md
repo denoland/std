@@ -1,3 +1,8 @@
+### 0.222.2 / 2024.04.15
+
+- deprecation(expect): rename `addSnapshotSerializers` to
+  `addSnapshotSerializer` (#4582)
+
 ### 0.222.1 / 2024.04.11
 
 - deprecation(semver): deprecate `rangeMax()` and `rangeMin()` (#4561)
