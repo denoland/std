@@ -191,17 +191,15 @@ export const lifecycles: IsolateLifecycle = {
           if (await fs.exists(path)) {
             // does a full read, since an active request has nothing already
             // TODO sniff filetype
-            const content = await fs.read(path)
+            const patch = await fs.read(path)
             // TODO use json differ for json
-            changes[path].patch = content
             const { oid } = await fs.readBlob(path)
-            changes[path].oid = oid
+            changes[path] = { patch, oid }
           }
         }
 
         const timestamp = commit.committer.timestamp * 1000
         const splice: Splice = { pid, oid, commit, timestamp, changes }
-        console.log('posting', ulid)
         channel.postMessage(splice)
       }
     })

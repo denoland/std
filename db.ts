@@ -218,7 +218,6 @@ export default class DB {
     signal?: AbortSignal,
   ) {
     const initial = new Promise<Splice>((resolve) => {
-      console.log('listin', ulid)
       const initialChannel = this.getInitialChannel(ulid)
       initialChannel.addEventListener('message', (event) => {
         resolve(event.data)

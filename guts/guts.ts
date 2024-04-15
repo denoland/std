@@ -24,7 +24,8 @@ export default (name: string, cradleMaker: () => Promise<Artifact>) => {
     })
     await artifact.stop()
   })
-  Deno.test(prefix + 'rm', async () => {
+  Deno.test.only(prefix + 'rm', async () => {
+    log.enable('AI:qex*')
     const artifact = await cradleMaker()
     await artifact.rm({ repo: 'dreamcatcher-tech/HAL' })
     await artifact.stop()
