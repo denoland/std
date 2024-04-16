@@ -1,13 +1,8 @@
 name: workspace publish
 
 on:
-  push:
-    branches: [main]
   release:
     types: [published]
-
-env:
-  DENO_UNSTABLE_WORKSPACES: true
 
 jobs:
   publish:
@@ -35,13 +30,8 @@ jobs:
       - name: Format
         run: deno fmt
 
-      - name: Type check
+      - name: Test
         run: deno task test
 
-      - name: Publish (dry run)
-        if: github.event_name == 'push'
-        run: deno publish --allow-dirty --dry-run
-
-      - name: Publish (real)
-        if: github.event_name == 'release'
+      - name: Publish to JSR
         run: deno publish --allow-dirty
