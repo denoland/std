@@ -70,7 +70,7 @@ export class WebClientEngine implements EngineInterface {
   }
 
   // #region: Splice Reading
-  read(pid: PID, path?: string, signal?: AbortSignal) {
+  read(pid: PID, path?: string, after?: string, signal?: AbortSignal) {
     const abort = new AbortController()
     if (signal) {
       signal.addEventListener('abort', () => {
@@ -78,6 +78,7 @@ export class WebClientEngine implements EngineInterface {
       })
     }
     const finished = this.#waiter(abort)
+    let lastSplice: Splice | undefined
 
     return new ReadableStream<Splice>({
       start: async (controller) => {
@@ -92,7 +93,11 @@ export class WebClientEngine implements EngineInterface {
             const response = await this.#fetcher(`/api/read`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ pid, path }),
+              body: JSON.stringify({
+                pid,
+                path,
+                after: lastSplice?.oid || after,
+              }),
               signal: abort.signal,
               keepalive: true,
             })
@@ -107,6 +112,7 @@ export class WebClientEngine implements EngineInterface {
               if (value.event === 'splice') {
                 // reconcile these with the last splice
                 const splice: Splice = JSON.parse(value.data)
+                lastSplice = splice
                 controller.enqueue(splice)
               } else {
                 console.error('unexpected event', value.event, value)
@@ -158,7 +164,6 @@ const toEvents = (stream: ReadableStream) =>
 
 async function* toIterable(stream: ReadableStream) {
   const reader = stream.getReader()
-
   try {
     while (true) {
       const { done, value } = await reader.read()

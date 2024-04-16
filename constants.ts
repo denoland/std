@@ -3,6 +3,7 @@ export type { IsolateApi }
 export const IO_PATH = '.io.json'
 import {
   Change,
+  CommitObject,
   IsolateApiSchema,
   IsolateReturn,
   MergeRequest,
@@ -74,7 +75,8 @@ export type IsolatePromise = {
   reject?: (error: Error) => void
 }
 export type Solids = {
-  commit: string
+  oid: string
+  commit: CommitObject
   /** Changed files in this commit.  Empty change signals deletion. */
   changes: { [key: string]: Change }
   exe?: { request: SolidRequest; sequence: number }
@@ -131,12 +133,12 @@ export const isMergeRequest = (poolable: Request): poolable is MergeRequest => {
  * Each task will continue to retry until it is successful, as long as its check
  * for duplication reassures it to keep trying.
  */
-export type QueueMessage = QueuePool | QueueExe | QueueBranch | QueueSplice
+export type QueueMessage = QueuePool | QueueExe | QueueBranch | QueueHeadSplice
 export enum QueueMessageType {
   POOL = 'pool',
   EXECUTION = 'exe',
   BRANCH = 'branch',
-  SPLICE = 'splice',
+  HEAD_SPLICE = 'head-splice',
 }
 export type QueuePool = {
   type: QueueMessageType.POOL
@@ -154,12 +156,10 @@ export type QueueBranch = {
   parentPid: PID
   sequence: number
 }
-export type QueueSplice = {
-  type: QueueMessageType.SPLICE
+export type QueueHeadSplice = {
+  type: QueueMessageType.HEAD_SPLICE
   ulid: string
   pid: PID
-  /** If not provided, use the head commit */
-  oid?: string
   path?: string
 }
 
@@ -172,8 +172,8 @@ export const isQueueExe = (m: QueueMessage): m is QueueExe => {
 export const isQueueBranch = (m: QueueMessage): m is QueueBranch => {
   return m.type === QueueMessageType.BRANCH
 }
-export const isQueueSplice = (m: QueueMessage): m is QueueSplice => {
-  return m.type === QueueMessageType.SPLICE
+export const isQueueSplice = (m: QueueMessage): m is QueueHeadSplice => {
+  return m.type === QueueMessageType.HEAD_SPLICE
 }
 
 export * from './api/web-client.types.ts'

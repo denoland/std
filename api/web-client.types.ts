@@ -285,7 +285,12 @@ export interface Artifact {
   pid: PID
   stop(): Promise<void> | void
   actions(isolate: string, target: PID): Promise<DispatchFunctions>
-  read(pid: PID, path?: string, signal?: AbortSignal): AsyncIterable<Splice>
+  read(
+    pid: PID,
+    path?: string,
+    after?: string,
+    signal?: AbortSignal,
+  ): AsyncIterable<Splice>
   transcribe(params: { audio: File }): Promise<{ text: string }>
   apiSchema(isolate: string): Promise<ApiSchema>
   /** Pings the execution context without going thru the transaction queue.
@@ -351,7 +356,12 @@ export const pidFromRepo = (id: string, repo: string): PID => {
 export interface EngineInterface {
   stop(): Promise<void> | void
   pierce(pierce: PierceRequest): Promise<void>
-  read(pid: PID, path?: string, signal?: AbortSignal): AsyncIterable<Splice>
+  read(
+    pid: PID,
+    path?: string,
+    after?: string,
+    signal?: AbortSignal,
+  ): AsyncIterable<Splice>
   transcribe(audio: File): Promise<{ text: string }>
   apiSchema(isolate: string): Promise<ApiSchema>
   ping(data?: JsonValue): Promise<IsolateReturn>

@@ -104,9 +104,9 @@ export class Atomic {
     const type = QueueMessageType.POOL
     return this.#enqueue({ type, poolable })
   }
-  enqueueSplice(ulid: string, pid: PID, oid?: string, path?: string) {
-    const type = QueueMessageType.SPLICE
-    return this.#enqueue({ type, ulid, pid, oid, path })
+  enqueueHeadSplice(ulid: string, pid: PID, path?: string) {
+    const type = QueueMessageType.HEAD_SPLICE
+    return this.#enqueue({ type, ulid, pid, path })
   }
   #enqueue(message: QueueMessage) {
     // TODO specify allowed message types as args to artifact functions

@@ -1,5 +1,3 @@
-import { pushable } from 'it-pushable'
-
 import { transcribe } from '@/runners/runner-chat.ts'
 import Compartment from './io/compartment.ts'
 import {
@@ -10,27 +8,23 @@ import {
   PID,
   pidFromRepo,
   PierceRequest,
-  Splice,
 } from './constants.ts'
 import IsolateApi from './isolate-api.ts'
 import { assert, Debug, posix } from '@utils'
 import FS from '@/git/fs.ts'
 import * as artifact from '@/isolates/artifact.ts'
-import { ulid } from 'ulid'
 const log = Debug('AI:engine')
 
 export class Engine implements EngineInterface {
   #compartment: Compartment
   #api: IsolateApi<C>
   #pierce: artifact.Api['pierce']
-  #requestSplice: artifact.Api['requestSplice']
   #pid: PID | undefined
   private constructor(compartment: Compartment, api: IsolateApi<C>) {
     this.#compartment = compartment
     this.#api = api
     const functions = compartment.functions<artifact.Api>(api)
     this.#pierce = functions.pierce
-    this.#requestSplice = functions.requestSplice
   }
   static async create() {
     const compartment = await Compartment.create('artifact')
@@ -97,28 +91,12 @@ export class Engine implements EngineInterface {
   async pierce(pierce: PierceRequest) {
     await this.#pierce({ pierce })
   }
-  read(pid: PID, path?: string, signal?: AbortSignal) {
+  read(pid: PID, path?: string, after?: string, signal?: AbortSignal) {
     freezePid(pid)
     assert(!path || !posix.isAbsolute(path), `path must be relative: ${path}`)
 
     const db = this.#api.context.db
     assert(db, 'db not found')
-
-    const source = pushable<Splice>({ objectMode: true })
-    signal?.addEventListener('abort', () => source.return())
-    const pipe = async () => {
-      const initialId = ulid()
-      const stream = db.watchSplices(initialId, pid, path, signal)
-
-      await this.#requestSplice({ ulid: initialId, pid, path })
-        .catch(source.throw)
-
-      for await (const splice of stream) {
-        source.push(splice)
-      }
-      // TODO reconcile this is the first one due to timing errors ?
-    }
-    pipe()
-    return source
+    return db.watchSplices(pid, path, after, signal)
   }
 }

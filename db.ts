@@ -2,8 +2,8 @@ import { pushable } from 'it-pushable'
 import { BLOB_META_KEY, get, getMeta } from '@kitsonk/kv-toolbox/blob'
 import { batchedAtomic } from '@kitsonk/kv-toolbox/batched_atomic'
 import * as keys from './keys.ts'
-import { PID, Poolable, Splice } from '@/constants.ts'
-import { assert, Debug, openKv, sha1 } from '@utils'
+import { freezePid, PID, Poolable, Splice } from '@/constants.ts'
+import { assert, Debug, openKv, posix, sha1 } from '@utils'
 import { Atomic } from './atomic.ts'
 import { QueueMessage } from '@/constants.ts'
 import { ulid } from 'ulid'
@@ -211,14 +211,33 @@ export default class DB {
     this.#channels.add(channel)
     return channel
   }
-  watchSplices(
-    ulid: string,
-    pid: PID,
-    path?: string,
-    signal?: AbortSignal,
-  ) {
-    const initial = new Promise<Splice>((resolve) => {
-      const initialChannel = this.getInitialChannel(ulid)
+  /**
+   * Will return an async iterable of Splices which are in order and do not skip
+   * any intermediaries.  The parent Splice will always immediately precede the
+   * child Splice.
+   *
+   * If after is not provided, then we use the head to start with.  If after is
+   * provided, then everything up to that point will be retrieved.
+   * @param {string} pid - The branch to watch
+   * @param {string} [path] - Optional path of a file to watch
+   * @param {string} [after] - Optional commit to start from
+   * @param {AbortSignal} [signal] - Optional abort signal
+   * @returns
+   */
+  watchSplices(pid: PID, path?: string, after?: string, signal?: AbortSignal) {
+    freezePid(pid)
+    if (after) {
+      assert(sha1.test(after), 'Invalid from: ' + after)
+      throw new Error('not implemented')
+    }
+    if (path) {
+      assert(!posix.isAbsolute(path), `path must be relative: ${path}`)
+    }
+
+    const headRequestId = ulid()
+    const initialChannel = this.getInitialChannel(headRequestId)
+
+    const head = new Promise<Splice>((resolve) => {
       initialChannel.addEventListener('message', (event) => {
         resolve(event.data)
       }, { once: true })
@@ -235,14 +254,17 @@ export default class DB {
       source.return()
     })
     const pipe = async () => {
-      const firstSplice = await initial
+      await this.#requestHead(headRequestId, pid, path)
+      const firstSplice = await head
       if (Object.keys(firstSplice.changes).length) {
         assert(path, 'Path not found in first splice')
         assert(firstSplice.changes[path], 'Path not found in first splice')
       }
       source.push(firstSplice)
+      let last = firstSplice
+      const pool = new Map<string, Splice>()
       for await (const splice of commits) {
-        if (splice.oid === firstSplice.oid) {
+        if (splice.oid === last.oid) {
           continue
         }
         let scoped = splice
@@ -250,11 +272,37 @@ export default class DB {
           const { changes } = splice
           scoped = { ...splice, changes: { [path]: changes[path] } }
         }
+
+        if (scoped.commit.parent[0] !== last.oid) {
+          pool.set(scoped.oid, scoped)
+          // TODO start an abortable process to get the missing parent
+          continue
+        }
+        last = scoped
         source.push(scoped)
+
+        let noHits = true
+        while (noHits && pool.size) {
+          const next = pool.get(last.oid)
+          if (next) {
+            pool.delete(last.oid)
+            last = next
+            source.push(next)
+          } else {
+            noHits = false
+          }
+        }
       }
     }
-    pipe()
+    pipe().catch(source.throw)
     return source
+  }
+  async #requestHead(ulid: string, pid: PID, path?: string) {
+    freezePid(pid)
+    const result = await this.atomic()
+      .enqueueHeadSplice(ulid, pid, path)
+      .commit()
+    assert(result, 'requestSplice failed')
   }
 }
 

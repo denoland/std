@@ -90,10 +90,10 @@ export default class Server {
         stream.onAbort(() => {
           abort.abort()
         })
-
-        const { pid, path } = params
+        const { pid, path, after } = params
         try {
-          for await (const splice of engine.read(pid, path, abort.signal)) {
+          const iterable = engine.read(pid, path, after, abort.signal)
+          for await (const splice of iterable) {
             const event: EventSourceMessage = {
               data: JSON.stringify(splice, null, 2),
               event: 'splice',

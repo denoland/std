@@ -56,8 +56,10 @@ export class Shell implements Artifact {
   async #watchPierces() {
     let lastSplice
     const { signal } = this.#abort
-    const splices = this.#engine.read(this.#pid, '.io.json', signal)
+    const after = undefined
+    const splices = this.#engine.read(this.#pid, '.io.json', after, signal)
     for await (const splice of splices) {
+      // move these checks to the engine side
       if (lastSplice && splice.commit.parent[0] !== lastSplice.oid) {
         console.dir(splice, { depth: Infinity })
         console.dir(lastSplice, { depth: Infinity })
@@ -150,8 +152,11 @@ export class Shell implements Artifact {
     const actions = await this.#repoActions()
     return actions.rm({ pid })
   }
-  read(pid: PID, path?: string, signal?: AbortSignal) {
-    return this.#engine.read(pid, path, signal)
+  read(pid: PID, path?: string, after?: string, signal?: AbortSignal) {
+    if (after) {
+      throw new Error('after not implemented')
+    }
+    return this.#engine.read(pid, path, after, signal)
   }
   #resolvePierces(io: IoStruct) {
     for (const [, value] of Object.entries(io.requests)) {

@@ -95,14 +95,21 @@ export const solidify = async (fs: FS, pool: Poolable[], pending?: Pending) => {
   }
   // TODO pass in all the db checks to go with this write
   // TODO write blobs atomically
-  const { next, changes } = await fs.writeCommitObject('pool', parents)
-  const { commit } = next
+  const { next, changes, commit } = await fs.writeCommitObject('pool', parents)
   log('head', commit)
   for (const poolable of poolables) {
-    poolable.commit = commit
+    poolable.commit = next.commit
   }
 
-  const solids: Solids = { commit, changes, exe, branches, poolables, deletes }
+  const solids: Solids = {
+    oid: next.commit,
+    commit,
+    changes,
+    exe,
+    branches,
+    poolables,
+    deletes,
+  }
   return solids
 }
 

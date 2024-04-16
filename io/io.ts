@@ -41,7 +41,7 @@ export const doAtomicCommit = async (db: DB, fs: FS, exe?: ExeResult) => {
   atomic.deletePool(poolKeys)
 
   // the moneyshot
-  const headChanged = await atomic.updateHead(fs.pid, fs.commit, solids.commit)
+  const headChanged = await atomic.updateHead(fs.pid, fs.commit, solids.oid)
   if (!headChanged) {
     log('head changed from %o missed %o', fs.commit, solids.commit)
     return false
@@ -60,16 +60,16 @@ export const doAtomicCommit = async (db: DB, fs: FS, exe?: ExeResult) => {
 }
 
 const transmit = (pid: PID, solids: Solids, atomic: Atomic) => {
-  const { commit, exe, branches, poolables } = solids
+  const { oid, exe, branches, poolables } = solids
 
   // need to transmit requests going to other chains
   const transmitted = new Set<string>()
   if (exe) {
     const { request, sequence } = exe
-    atomic.enqueueExecution(request, sequence, commit)
+    atomic.enqueueExecution(request, sequence, oid)
   }
   for (const sequence of branches) {
-    atomic.enqueueBranch(commit, pid, sequence)
+    atomic.enqueueBranch(oid, pid, sequence)
   }
   for (const poolable of poolables) {
     atomic.addToPool(poolable)
@@ -105,11 +105,9 @@ export const doAtomicBranch = async (db: DB, fs: FS, sequence: number) => {
   return success
 }
 
-const broadcastCommit = async (solids: Solids, pid: PID, db: DB) => {
+const broadcastCommit = (solids: Solids, pid: PID, db: DB) => {
   const channel = db.getCommitsBroadcast(pid)
-  const { commit: oid, changes } = solids
-  const fs = FS.open(pid, oid, db)
-  const commit = await fs.getCommit()
+  const { oid, changes, commit } = solids
   const timestamp = commit.committer.timestamp * 1000
   const splice: Splice = { pid, oid, commit, timestamp, changes }
 

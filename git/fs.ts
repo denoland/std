@@ -121,6 +121,7 @@ export default class FS {
 
     const { fs } = this
     const author = { name: 'git/commit' }
+    const cache = FS.#getGitCache(this.#pid)
     const nextCommit = await git.commit({
       noUpdateBranch: true,
       fs,
@@ -129,11 +130,12 @@ export default class FS {
       author,
       tree: oid,
       parent: [this.#commit, ...merges],
-      cache: FS.#getGitCache(this.#pid),
+      cache,
     })
+    const { commit } = await git.readCommit({ fs, dir, oid: nextCommit, cache })
 
     const next = new FS(this.#pid, nextCommit, this.#db)
-    return { next, changes }
+    return { next, changes, commit }
   }
   async #flush() {
     const changes: { [key: string]: Change } = {}

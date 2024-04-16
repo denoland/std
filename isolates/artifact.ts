@@ -12,7 +12,6 @@ import {
   isQueueExe,
   isQueuePool,
   isQueueSplice,
-  PID,
   PierceRequest,
   print,
   QueueMessage,
@@ -62,31 +61,12 @@ export const api = {
     required: ['pierce'],
     properties: { pierce: request },
   },
-  requestSplice: {
-    type: 'object',
-    required: ['ulid', 'pid'],
-    properties: {
-      ulid: { type: 'string' },
-      pid: pid.properties.pid,
-      oid: { type: 'string' },
-      path: { type: 'string' },
-    },
-    additionalProperties: false,
-  },
 }
 
 export interface Api {
   pierce: (params: { pierce: PierceRequest }) => Promise<void>
-  requestSplice: (
-    params: { ulid: string; pid: PID; oid?: string; path?: string },
-  ) => Promise<void>
 }
-interface SpliceParams {
-  ulid: string
-  pid: PID
-  oid?: string
-  path?: string
-}
+
 /**
  * Reason to keep artifact with an Isolate interface, is so we can control it
  * from within an isolate.
@@ -106,18 +86,6 @@ export const functions = {
       .commit()
     assert(result, 'pierce failed')
     // TODO return back the head commit at the point of pooling
-  },
-  async requestSplice(
-    { ulid, pid, oid, path }: SpliceParams,
-    api: IsolateApi<C>,
-  ) {
-    freezePid(pid)
-    // if no oid provided, we are using the head of the branch
-    // if no path, just give the commit alone
-    const { db } = sanitizeContext(api)
-    const result = await db.atomic().enqueueSplice(ulid, pid, oid, path)
-      .commit()
-    assert(result, 'requestSplice failed')
   },
 }
 
@@ -174,16 +142,9 @@ export const lifecycles: IsolateLifecycle = {
         }
       }
       if (isQueueSplice(message)) {
-        const { ulid, pid, oid: _oid, path } = message
-        let fs: FS
-        let oid: string
-        if (_oid) {
-          fs = FS.open(pid, _oid, db)
-          oid = _oid
-        } else {
-          fs = await FS.openHead(pid, db)
-          oid = fs.commit
-        }
+        const { ulid, pid, path } = message
+        const fs = await FS.openHead(pid, db)
+        const oid = fs.commit
         const channel = db.getInitialChannel(ulid)
         const commit = await fs.getCommit()
         const changes: { [key: string]: Change } = {}
@@ -218,21 +179,9 @@ const execute = async (request: SolidRequest, commit: string, c: C) => {
   const exeResult = await exe.execute(request, commit, c)
   // last instance always owns the lock
   exeResult.effectsLock = effectsLock
-  // how do we remove the repo lock as part of atomic commit ?
+  // TODO release the repo lock as part of atomic commit
   return exeResult
 }
-// if we are a side effect, then if we are aborted, we should immediately bail
-// on everything, including the atomicCommit attempt.
-
-// might need to write something to indicate what sequence number and pid was
-// used to do this task, so that things like clone can finish and then fail at
-// atomic commit, but the next instance to run doesn't error - should know the
-// effect got to the end.
-// could pass in the atomic object ?
-// would need to be special, just for us, rather than something available to
-// others ?
-// think thats alright since nobody else can mess with repo structures outside
-// of doing commits
 
 const isExeable = async (sequence: number, tip: FS, exe: ExeResult) => {
   const io = await IOChannel.read(tip)

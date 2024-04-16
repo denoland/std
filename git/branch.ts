@@ -43,7 +43,7 @@ export const branch = async (fs: FS, sequence: number) => {
   assert(solids.deletes.length === 0, 'must have no deletes')
   const branched: Branched = {
     origin: solids.exe.request,
-    head: solids.commit,
+    head: solids.oid,
     pid,
   }
   return branched
