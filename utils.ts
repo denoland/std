@@ -5,7 +5,6 @@ export { assert, AssertionError } from '@std/assert'
 export { default as merge } from 'lodash.merge'
 import 'supports-color'
 import Debug from 'debug'
-import { PID } from '@/constants.ts'
 import { deserializeError, serializeError } from 'serialize-error'
 export { deserializeError, serializeError }
 export { Debug }
@@ -43,10 +42,6 @@ export const openKv = async () => {
   log('open kv', path)
   _isTestMode = path === ':memory:'
   return Deno.openKv(path)
-}
-export const print = (pid: PID) => {
-  const branches = pid.branches.join(':')
-  return `${pid.account}/${pid.repository}:${branches}`
 }
 const getDebug = () => {
   if (isDenoDeploy) {

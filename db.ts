@@ -2,8 +2,8 @@ import { pushable } from 'it-pushable'
 import { BLOB_META_KEY, get, getMeta } from '@kitsonk/kv-toolbox/blob'
 import { batchedAtomic } from '@kitsonk/kv-toolbox/batched_atomic'
 import * as keys from './keys.ts'
-import { freezePid, PID, Poolable, Splice } from '@/constants.ts'
-import { assert, Debug, openKv, posix, print, sha1 } from '@utils'
+import { freezePid, PID, Poolable, print, Splice } from '@/constants.ts'
+import { assert, Debug, openKv, posix, sha1 } from '@utils'
 import { Atomic } from './atomic.ts'
 import { QueueMessage } from '@/constants.ts'
 import { ulid } from 'ulid'
@@ -213,7 +213,7 @@ export default class DB {
 
     const head = new Promise<Splice>((resolve) => {
       initialChannel.addEventListener('message', (event): void => {
-        blog('head', print(pid), event.data.oid)
+        qlog('received', print(pid), headRequestId, event.data.oid)
         resolve(event.data)
       }, { once: true })
     })

@@ -1,7 +1,7 @@
 import { deserializeError } from 'serialize-error'
 import Accumulator from './exe/accumulator.ts'
 import Compartment from './io/compartment.ts'
-import { assert, Debug, print } from '@utils'
+import { assert, Debug } from '@utils'
 import {
   DispatchFunctions,
   getProcType,
@@ -9,6 +9,7 @@ import {
   JsonValue,
   Params,
   PID,
+  print,
   ProcessOptions,
   UnsequencedRequest,
 } from '@/constants.ts'
