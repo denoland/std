@@ -23,7 +23,8 @@ const mocks = async (initialRequest: SolidRequest) => {
   let io = await IOChannel.load(fs)
   io.addRequest(initialRequest)
   io.save()
-  fs = await fs.writeCommitObject()
+  const { next } = await fs.writeCommitObject()
+  fs = next
   io = await IOChannel.load(fs)
   const stop = () => db.stop()
   const exe = Executor.createCacheContext()
@@ -114,9 +115,9 @@ Deno.test('compound', async (t) => {
     assert(!isPierceRequest(savedRequest))
     expect(toUnsequenced(savedRequest)).toEqual(request)
     io.save()
-    const replyFs = await fs.writeCommitObject()
+    const { next } = await fs.writeCommitObject()
 
-    const result = await exe.execute(compound, replyFs.commit, context)
+    const result = await exe.execute(compound, next.commit, context)
     expect('settled' in result).toBeTruthy()
   })
   await t.step('reply from replay', async () => {
@@ -131,10 +132,10 @@ Deno.test('compound', async (t) => {
     }
     io.reply(reply)
     io.save()
-    const replyFs = await fs.writeCommitObject()
+    const { next } = await fs.writeCommitObject()
 
     const c = { ...context, exe: Executor.createCacheContext() }
-    const result = await c.exe.execute(compound, replyFs.commit, c)
+    const result = await c.exe.execute(compound, next.commit, c)
     expect('settled' in result).toBeTruthy()
   })
   stop()

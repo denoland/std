@@ -70,7 +70,7 @@ Deno.test('git/init', async (t) => {
     await expect(fs.read(path)).resolves.toBe(data)
 
     expect(await db.readHead(fs.pid)).toBe(fs.commit)
-    const next = await fs.writeCommitObject('write single')
+    const { next } = await fs.writeCommitObject('write single')
     expect(await db.readHead(fs.pid), 'commit changed head').toBe(fs.commit)
 
     const read = await next.read(path)
@@ -94,7 +94,7 @@ Deno.test('git/init', async (t) => {
     await expect(fs.exists(path)).resolves.toBeTruthy()
     await expect(fs.read(path)).resolves.toBe(data)
 
-    const next = await fs.writeCommitObject('write nested')
+    const { next } = await fs.writeCommitObject('write nested')
     await expect(next.exists(path)).resolves.toBeTruthy()
     const read = await next.read(path)
     expect(read).toBe(data)
@@ -111,7 +111,7 @@ Deno.test('git/init', async (t) => {
     const path = 'hello.txt'
     fs.delete(path)
     await expect(fs.read(path)).rejects.toThrow('Could not find file or')
-    const next = await fs.writeCommitObject('delete')
+    const { next } = await fs.writeCommitObject('delete')
     await expect(next.exists(path)).resolves.toBeFalsy()
     await expect(next.read(path)).rejects.toThrow('Could not find file or')
 

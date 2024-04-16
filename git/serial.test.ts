@@ -43,34 +43,34 @@ Deno.test('pierce serial', async (t) => {
   })
   const pierce = pierceFactory('pierce')
   await t.step('pierce', async () => {
-    const { exe, commit } = await solidify(fs, [pierce])
+    const { exe, oid } = await solidify(fs, [pierce])
     assert(exe)
     expect(exe.request).not.toHaveProperty('ulid')
 
-    fs = FS.open(fs.pid, commit, db)
+    fs = FS.open(fs.pid, oid, db)
     const io = await fs.readJSON<IoStruct>('.io.json')
     log('io', io)
     expect(io.sequence).toBe(1)
     expect(io.requests[0]).toEqual(pierce)
   })
   await t.step('pierce reply', async () => {
-    const { commit, poolables, exe } = await solidify(fs, [reply])
-    expect(commit).not.toBe(fs.commit)
+    const { oid, poolables, exe } = await solidify(fs, [reply])
+    expect(oid).not.toBe(fs.commit)
     expect(exe).toBeUndefined()
     expect(poolables).toHaveLength(0)
 
-    fs = FS.open(fs.pid, commit, db)
+    fs = FS.open(fs.pid, oid, db)
     const io = await fs.readJSON<IoStruct>('.io.json')
     log('io', io)
     expect(io.sequence).toBe(1)
     expect(io.replies[0]).toEqual(reply.outcome)
   })
   await t.step('second action blanks io', async () => {
-    const { commit, exe } = await solidify(fs, [pierce])
-    expect(commit).not.toBe(fs.commit)
+    const { oid, exe } = await solidify(fs, [pierce])
+    expect(oid).not.toBe(fs.commit)
     expect(exe).toBeDefined()
 
-    fs = FS.open(fs.pid, commit, db)
+    fs = FS.open(fs.pid, oid, db)
     const io = await fs.readJSON<IoStruct>('.io.json')
     log('io', io)
     expect(io.sequence).toBe(2)
@@ -79,14 +79,14 @@ Deno.test('pierce serial', async (t) => {
     expect(io.replies[0]).toBeUndefined()
   })
   await t.step('multiple requests', async () => {
-    const { commit, exe } = await solidify(fs, [
+    const { oid, exe } = await solidify(fs, [
       pierceFactory('a'),
       pierceFactory('b'),
     ])
-    expect(commit).not.toBe(fs.commit)
+    expect(oid).not.toBe(fs.commit)
     expect(exe).toBeUndefined()
 
-    fs = FS.open(fs.pid, commit, db)
+    fs = FS.open(fs.pid, oid, db)
     const io = await fs.readJSON<IoStruct>('.io.json')
     expect(io.sequence).toBe(4)
     expect(Object.keys(io.requests).length).toBe(3)
@@ -94,10 +94,10 @@ Deno.test('pierce serial', async (t) => {
   })
   await t.step('multiple replies', async () => {
     const pool = replies(1, 3)
-    const { commit } = await solidify(fs, pool)
-    expect(commit).not.toBe(fs.commit)
+    const { oid } = await solidify(fs, pool)
+    expect(oid).not.toBe(fs.commit)
 
-    fs = FS.open(fs.pid, commit, db)
+    fs = FS.open(fs.pid, oid, db)
     const io = await fs.readJSON<IoStruct>('.io.json')
     expect(io.sequence).toBe(4)
     expect(Object.keys(io.requests).length).toBe(3)

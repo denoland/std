@@ -44,13 +44,13 @@ Deno.test('pierce branch', async (t) => {
 
   await t.step('parent', async () => {
     const solids = await solidify(baseFs, [pierce])
-    head = solids.commit
+    head = solids.oid
     parentHead = head
     branches = solids.branches
     expect(branches).toEqual([0])
     expect(solids.exe).toBeUndefined()
     const next = FS.open(baseFs.pid, head, db)
-    expect(next.commit).toEqual(solids.commit)
+    expect(next.commit).toEqual(solids.oid)
     const io = await next.readJSON<IoStruct>('.io.json')
     expect(io.sequence).toBe(1)
     expect(io.requests[0]).toEqual(pierce)
@@ -86,9 +86,9 @@ Deno.test('pierce branch', async (t) => {
     const parentFs = FS.open(baseFs.pid, parentHead, db)
     expect(parentFs.commit).not.toEqual(head)
 
-    const { poolables, commit } = await solidify(parentFs, [mergeReply])
+    const { poolables, oid } = await solidify(parentFs, [mergeReply])
     expect(poolables).toHaveLength(0)
-    const next = FS.open(parentFs.pid, commit, db)
+    const next = FS.open(parentFs.pid, oid, db)
     const io = await next.readJSON<IoStruct>('.io.json')
     const outcome = io.replies[0]
     expect(outcome).toEqual(mergeReply.outcome)

@@ -103,7 +103,7 @@ export class WebClientEngine implements EngineInterface {
             throw new Error('response body is missing')
           }
           const spliceStream = toEvents(response.body)
-          for await (const value of toIterable(spliceStream)) {
+          for await (const value of toIterable(spliceStream, abort.signal)) {
             if (value.event === 'splice') {
               const splice: Splice = JSON.parse(value.data)
               lastSplice = splice
@@ -146,12 +146,15 @@ const toEvents = (stream: ReadableStream) =>
   stream.pipeThrough(new TextDecoderStream())
     .pipeThrough(new EventSourceParserStream())
 
-async function* toIterable(stream: ReadableStream) {
+async function* toIterable(stream: ReadableStream, signal: AbortSignal) {
   const reader = stream.getReader()
+  signal.addEventListener('abort', () => reader.cancel())
   try {
     while (true) {
       const { done, value } = await reader.read()
-      if (done) break
+      if (done) {
+        break
+      }
       yield value
     }
   } finally {
