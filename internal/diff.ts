@@ -260,7 +260,7 @@ export function diff<T>(A: T[], B: T[]): Array<DiffResult<T>> {
  * @param A Actual string
  * @param B Expected string
  */
-export function diffstr(A: string, B: string) {
+export function diffstr(A: string, B: string): DiffResult<string>[] {
   function unescape(string: string): string {
     // unescape invisible characters.
     // ref: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String#escape_sequences
