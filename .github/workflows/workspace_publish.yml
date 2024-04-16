@@ -30,7 +30,7 @@ jobs:
       - name: Format
         run: deno fmt
 
-      - name: Type check
+      - name: Test
         run: deno task test
 
       - name: Publish to JSR
