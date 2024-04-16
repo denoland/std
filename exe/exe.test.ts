@@ -104,7 +104,7 @@ Deno.test('compound', async (t) => {
   })
   await t.step('reply using function cache', async () => {
     assert(request)
-    const sequenced = io.addPending('fakeCommit', [request])
+    const sequenced = io.addPending(0, 'fakeCommit', [request])
     expect(sequenced).toHaveLength(1)
     const reply = {
       outcome: { result: 'compound reply' },
@@ -123,7 +123,7 @@ Deno.test('compound', async (t) => {
   await t.step('reply from replay', async () => {
     assert(request)
     const io = await IOChannel.load(fs)
-    const sequenced = io.addPending('fakeCommit2', [request])
+    const sequenced = io.addPending(0, 'fakeCommit2', [request])
     expect(sequenced).toHaveLength(1)
     const reply = {
       outcome: { result: 'compound reply' },
