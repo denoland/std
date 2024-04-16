@@ -31,7 +31,7 @@ import { strip } from "./_strip.ts";
  * @param suffix - optional suffix to remove from extracted name.
  * @returns the last portion of the URL `path`, or the URL origin if there is no path.
  */
-export function basename(url: string | URL, suffix?: string): string {
+export function basename(url: string | URL, suffix?: string) {
   url = new URL(url);
   strip(url);
   return posixBasename(url.href, suffix);
