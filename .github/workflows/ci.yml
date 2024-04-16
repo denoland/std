@@ -153,8 +153,6 @@ jobs:
   publish-dry-run:
     runs-on: ubuntu-22.04
     timeout-minutes: 30
-    env:
-      DENO_UNSTABLE_WORKSPACES: true
     permissions:
       contents: read
       id-token: write
