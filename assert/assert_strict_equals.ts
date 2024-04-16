@@ -1,8 +1,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
-import { format } from "../internal/format.ts";
+import { buildMessage, diff, diffstr, format } from "../internal/mod.ts";
 import { AssertionError } from "./assertion_error.ts";
-import { buildMessage, diff, diffstr } from "../internal/diff.ts";
 import { CAN_NOT_DISPLAY } from "./_constants.ts";
 import { red } from "../fmt/colors.ts";
 

@@ -1,5 +1,5 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-
+// This module is browser compatible.
 /**
  * Internal utilities for the public API of the Deno Standard Library.
  *
@@ -7,3 +7,5 @@
  *
  * @module
  */
+export * from "./format.ts";
+export * from "./diff.ts";
