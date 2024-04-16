@@ -24,6 +24,7 @@ import DB from '../db.ts'
 import FS from '../git/fs.ts'
 import { pid } from './repo.ts'
 const log = Debug('AI:artifact')
+const qlog = Debug('AI:broadcast:queue')
 
 const request = {
   type: 'object',
@@ -143,6 +144,7 @@ export const lifecycles: IsolateLifecycle = {
       }
       if (isQueueSplice(message)) {
         const { ulid, pid, path } = message
+        qlog('requestHead', print(pid), ulid)
         const fs = await FS.openHead(pid, db)
         const oid = fs.commit
         const channel = db.getInitialChannel(ulid)

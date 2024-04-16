@@ -1,5 +1,5 @@
 import { getPoolKeyPrefix } from '@/keys.ts'
-import { Debug } from '@utils'
+import { Debug, print } from '@utils'
 import { solidify } from '@/git/solidify.ts'
 import { branch } from '@/git/branch.ts'
 import { Pending, PID, Solids, Splice } from '@/constants.ts'
@@ -105,16 +105,13 @@ export const doAtomicBranch = async (db: DB, fs: FS, sequence: number) => {
   return success
 }
 
+const blog = Debug('AI:broadcast:commit')
 const broadcastCommit = (solids: Solids, pid: PID, db: DB) => {
   const channel = db.getCommitsBroadcast(pid)
   const { oid, changes, commit } = solids
   const timestamp = commit.committer.timestamp * 1000
   const splice: Splice = { pid, oid, commit, timestamp, changes }
 
-  console.log('broadcasting', splice.oid)
+  blog('broadcasting', print(pid), splice.oid)
   channel.postMessage(splice)
 }
-
-// TODO move all these types to share a file with their tests for done
-
-// basically we need to do a transmit of the new inducted accumulations

@@ -3,12 +3,14 @@ import { BLOB_META_KEY, get, getMeta } from '@kitsonk/kv-toolbox/blob'
 import { batchedAtomic } from '@kitsonk/kv-toolbox/batched_atomic'
 import * as keys from './keys.ts'
 import { freezePid, PID, Poolable, Splice } from '@/constants.ts'
-import { assert, Debug, openKv, posix, sha1 } from '@utils'
+import { assert, Debug, openKv, posix, print, sha1 } from '@utils'
 import { Atomic } from './atomic.ts'
 import { QueueMessage } from '@/constants.ts'
 import { ulid } from 'ulid'
 
 const log = Debug('AI:db')
+const blog = Debug('AI:broadcast:receive')
+const qlog = Debug('AI:broadcast:queue')
 export default class DB {
   #kv: Deno.Kv
   #channels = new Set<BroadcastChannel>()
@@ -72,34 +74,6 @@ export default class DB {
     }
     await Promise.all(deletes)
     return !!deletes.length
-  }
-  watchHead(pid: PID, signal?: AbortSignal) {
-    // TODO this should be unified to have a single one for the whole db
-    // instance
-    const abort = new AbortController()
-    // TODO may need to add this to a hook in stop()
-    // TODO offer a watchCommits function that is every guaranteed commit with
-    // no skips in between
-    signal?.addEventListener('abort', () => {
-      abort.abort()
-    })
-    const key = keys.getHeadKey(pid)
-    const stream = this.#kv.watch<string[]>([key])
-    return stream.pipeThrough(
-      new TransformStream({
-        start(controller) {
-          abort.signal.addEventListener('abort', () => {
-            controller.terminate()
-          })
-        },
-        transform([event], controller) {
-          if (event.versionstamp) {
-            assert(sha1.test(event.value), 'Invalid head: ' + event.value)
-            controller.enqueue(event.value)
-          }
-        },
-      }),
-    )
   }
   async blobExists(key: Deno.KvKey) {
     const meta = await getMeta(this.#kv, key)
@@ -238,7 +212,8 @@ export default class DB {
     const initialChannel = this.getInitialChannel(headRequestId)
 
     const head = new Promise<Splice>((resolve) => {
-      initialChannel.addEventListener('message', (event) => {
+      initialChannel.addEventListener('message', (event): void => {
+        blog('head', print(pid), event.data.oid)
         resolve(event.data)
       }, { once: true })
     })
@@ -247,6 +222,7 @@ export default class DB {
     const source = pushable<Splice>({ objectMode: true })
     const commits = pushable<Splice>({ objectMode: true })
     commitsChannel.addEventListener('message', (event: MessageEvent) => {
+      blog('commit', print(pid), event.data.oid)
       commits.push(event.data)
     })
     signal?.addEventListener('abort', () => {
@@ -303,6 +279,7 @@ export default class DB {
       .enqueueHeadSplice(ulid, pid, path)
       .commit()
     assert(result, 'requestSplice failed')
+    qlog('requestHead', print(pid), ulid)
   }
 }
 
