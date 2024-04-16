@@ -72,23 +72,23 @@ export default class Executor {
         }),
         accumulator: ioAccumulator,
         api: isolateApi,
-        commit: fs.commit,
+        commit: fs.oid,
       }
       this.#functions.set(exeId, execution)
     } else {
       const execution = this.#functions.get(exeId)
       assert(execution, 'execution not found')
-      if (execution.commit === fs.commit) {
+      if (execution.commit === fs.oid) {
         // TODO also detect if was an old commit using accumulator layers
         // TODO exe should be idempotent
-        throw new Error('request already executed for commit: ' + fs.commit)
+        throw new Error('request already executed for commit: ' + fs.oid)
       }
     }
     log('running execution %o', exeId)
     const execution = this.#functions.get(exeId)
     assert(execution, 'execution not found')
 
-    execution.commit = fs.commit
+    execution.commit = fs.oid
     execution.accumulator.absorb(ioAccumulator)
 
     const racecar = Symbol('🏎️')
@@ -102,7 +102,7 @@ export default class Executor {
       const { accumulations } = execution.accumulator
       assert(accumulations.length > 0, 'no accumulations')
       const requests = accumulations.map((a) => a.request)
-      result = { pending: { commit: fs.commit, requests } }
+      result = { pending: { commit: fs.oid, requests } }
     } else {
       assert(typeof winner !== 'symbol')
       log('exe complete %o', exeId)

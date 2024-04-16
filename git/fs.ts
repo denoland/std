@@ -10,7 +10,7 @@ const dir = '/'
 export default class FS {
   // pass this object around, and set it to be a particular PID
   readonly #pid: PID
-  readonly #commit: string
+  readonly #oid: string
   readonly #gitkv: GitKV
   readonly #db: DB
   readonly #upserts = new Map<string, string | Uint8Array>()
@@ -32,8 +32,8 @@ export default class FS {
   get pid() {
     return this.#pid
   }
-  get commit() {
-    return this.#commit
+  get oid() {
+    return this.#oid
   }
   get fs() {
     return { promises: this.#gitkv }
@@ -47,10 +47,10 @@ export default class FS {
   get deletes() {
     return [...this.#deletes]
   }
-  private constructor(pid: PID, commit: string, db: DB) {
-    assert(sha1.test(commit), 'Commit not SHA-1: ' + commit)
+  private constructor(pid: PID, oid: string, db: DB) {
+    assert(sha1.test(oid), 'Commit not SHA-1: ' + oid)
     this.#pid = pid
-    this.#commit = commit
+    this.#oid = oid
     this.#db = db
     this.#gitkv = GitKV.recreate(db, pid)
   }
@@ -101,7 +101,7 @@ export default class FS {
     const branches = [...pid.branches]
     branches.pop()
     assert(equal(this.#pid.branches, branches), 'branch mismatch')
-    return new FS(pid, this.#commit, this.#db)
+    return new FS(pid, this.#oid, this.#db)
   }
   logs(filepath?: string, depth?: number) {
     if (filepath) {
@@ -109,7 +109,7 @@ export default class FS {
     }
     const { fs } = this
     const cache = FS.#getGitCache(this.#pid)
-    return git.log({ fs, dir, filepath, depth, ref: this.#commit, cache })
+    return git.log({ fs, dir, filepath, depth, ref: this.#oid, cache })
   }
 
   async writeCommitObject(message = '', merges: string[] = []) {
@@ -129,7 +129,7 @@ export default class FS {
       message,
       author,
       tree: oid,
-      parent: [this.#commit, ...merges],
+      parent: [this.#oid, ...merges],
       cache,
     })
     const { commit } = await git.readCommit({ fs, dir, oid: nextCommit, cache })
@@ -304,7 +304,7 @@ export default class FS {
   async getCommit() {
     const { fs } = this
     const cache = FS.#getGitCache(this.#pid)
-    const result = await git.readCommit({ fs, dir, oid: this.#commit, cache })
+    const result = await git.readCommit({ fs, dir, oid: this.#oid, cache })
     return result.commit
   }
   copyChanges(from: FS) {

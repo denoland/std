@@ -66,8 +66,8 @@ export class Engine implements EngineInterface {
 
     this.#pid = pid
     const fs = await FS.init(pid, db)
-    const { commit } = fs
-    return { pid, head: commit, elapsed: Date.now() - start }
+    const { oid } = fs
+    return { pid, head: oid, elapsed: Date.now() - start }
   }
   async stop() {
     await this.#compartment.unmount(this.#api)

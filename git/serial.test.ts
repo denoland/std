@@ -55,7 +55,7 @@ Deno.test('pierce serial', async (t) => {
   })
   await t.step('pierce reply', async () => {
     const { oid, poolables, exe } = await solidify(fs, [reply])
-    expect(oid).not.toBe(fs.commit)
+    expect(oid).not.toBe(fs.oid)
     expect(exe).toBeUndefined()
     expect(poolables).toHaveLength(0)
 
@@ -67,7 +67,7 @@ Deno.test('pierce serial', async (t) => {
   })
   await t.step('second action blanks io', async () => {
     const { oid, exe } = await solidify(fs, [pierce])
-    expect(oid).not.toBe(fs.commit)
+    expect(oid).not.toBe(fs.oid)
     expect(exe).toBeDefined()
 
     fs = FS.open(fs.pid, oid, db)
@@ -83,7 +83,7 @@ Deno.test('pierce serial', async (t) => {
       pierceFactory('a'),
       pierceFactory('b'),
     ])
-    expect(oid).not.toBe(fs.commit)
+    expect(oid).not.toBe(fs.oid)
     expect(exe).toBeUndefined()
 
     fs = FS.open(fs.pid, oid, db)
@@ -95,7 +95,7 @@ Deno.test('pierce serial', async (t) => {
   await t.step('multiple replies', async () => {
     const pool = replies(1, 3)
     const { oid } = await solidify(fs, pool)
-    expect(oid).not.toBe(fs.commit)
+    expect(oid).not.toBe(fs.oid)
 
     fs = FS.open(fs.pid, oid, db)
     const io = await fs.readJSON<IoStruct>('.io.json')

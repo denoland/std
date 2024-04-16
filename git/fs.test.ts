@@ -13,7 +13,7 @@ Deno.test('git/init', async (t) => {
     await expect(fs.read('hello.txt')).rejects.toThrow(
       'Could not find file or',
     )
-    expect(await db.readHead(fs.pid)).toBe(fs.commit)
+    expect(await db.readHead(fs.pid)).toBe(fs.oid)
   })
   await t.step('paths', async () => {
     const git = 'git paths are forbidden: '
@@ -69,9 +69,9 @@ Deno.test('git/init', async (t) => {
     await expect(fs.exists(path)).resolves.toBeTruthy()
     await expect(fs.read(path)).resolves.toBe(data)
 
-    expect(await db.readHead(fs.pid)).toBe(fs.commit)
+    expect(await db.readHead(fs.pid)).toBe(fs.oid)
     const { next } = await fs.writeCommitObject('write single')
-    expect(await db.readHead(fs.pid), 'commit changed head').toBe(fs.commit)
+    expect(await db.readHead(fs.pid), 'commit changed head').toBe(fs.oid)
 
     const read = await next.read(path)
     expect(read).toBe(data)
@@ -125,7 +125,7 @@ Deno.test('clone', async (t) => {
   await t.step('clone HAL', async () => {
     const pid = pidFromRepo('t', 'dreamcatcher-tech/HAL')
     fs = await FS.clone(pid, db)
-    expect(fs.commit).toHaveLength(40)
+    expect(fs.oid).toHaveLength(40)
   })
   await t.step('read', async () => {
     const path = 'README.md'

@@ -98,11 +98,11 @@ export const solidify = async (fs: FS, pool: Poolable[], pending?: Pending) => {
   const { next, changes, commit } = await fs.writeCommitObject('pool', parents)
   log('head', commit)
   for (const poolable of poolables) {
-    poolable.commit = next.commit
+    poolable.commit = next.oid
   }
 
   const solids: Solids = {
-    oid: next.commit,
+    oid: next.oid,
     commit,
     changes,
     exe,

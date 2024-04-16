@@ -146,7 +146,7 @@ export const lifecycles: IsolateLifecycle = {
         const { ulid, pid, path } = message
         qlog('requestHead', print(pid), ulid)
         const fs = await FS.openHead(pid, db)
-        const oid = fs.commit
+        const { oid } = fs
         const channel = db.getInitialChannel(ulid)
         const commit = await fs.getCommit()
         const changes: { [key: string]: Change } = {}
@@ -198,7 +198,7 @@ const isExeable = async (sequence: number, tip: FS, exe: ExeResult) => {
 }
 const isSettled = async (request: SolidRequest, sequence: number, db: DB) => {
   const tip = await FS.openHead(request.target, db)
-  log('isSettled', print(tip.pid), sequence, tip.commit)
+  log('isSettled', print(tip.pid), sequence, tip.oid)
   const io = await IOChannel.read(tip)
   if (!io) {
     return false

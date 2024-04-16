@@ -83,7 +83,7 @@ export const functions = {
     const { db } = sanitizeContext(api)
     const fs = await FS.init(pid, db)
     assert(equal(fs.pid, pid), 'pid mismatch')
-    const { commit: head } = fs
+    const { oid: head } = fs
     return { pid, head, elapsed: Date.now() - start }
   },
   async clone(params: { pid: PID }, api: IsolateApi<C>) {
@@ -105,7 +105,7 @@ export const functions = {
     log('cloning %s', repo)
     const { db } = sanitizeContext(api)
     const fs = await FS.clone(pid, db)
-    const { commit: head } = fs
+    const { oid: head } = fs
     log('cloned', head)
     return { pid, head, elapsed: Date.now() - start }
   },

@@ -41,9 +41,9 @@ export const doAtomicCommit = async (db: DB, fs: FS, exe?: ExeResult) => {
   atomic.deletePool(poolKeys)
 
   // the moneyshot
-  const headChanged = await atomic.updateHead(fs.pid, fs.commit, solids.oid)
+  const headChanged = await atomic.updateHead(fs.pid, fs.oid, solids.oid)
   if (!headChanged) {
-    log('head changed from %o missed %o', fs.commit, solids.commit)
+    log('head changed from %o missed %o', fs.oid, solids.oid)
     return false
   }
   transmit(fs.pid, solids, atomic)
@@ -55,7 +55,7 @@ export const doAtomicCommit = async (db: DB, fs: FS, exe?: ExeResult) => {
   if (success) {
     broadcastCommit(solids, fs.pid, db)
   }
-  log('commit success %o from %o to %o', success, fs.commit, solids.commit)
+  log('commit success %o from %o to %o', success, fs.oid, solids.oid)
   return success
 }
 
@@ -101,7 +101,7 @@ export const doAtomicBranch = async (db: DB, fs: FS, sequence: number) => {
   const originSequence = 0
   atomic.enqueueExecution(origin, originSequence, head)
   const success = await atomic.commit()
-  log('branch success %o from %o to %o', success, fs.commit, head)
+  log('branch success %o from %o to %o', success, fs.oid, head)
   return success
 }
 

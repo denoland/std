@@ -34,7 +34,7 @@ const mocks = async (initialRequest: SolidRequest) => {
 Deno.test('simple', async (t) => {
   const { context, exe, fs, stop } = await mocks(request)
   await t.step('no accumulations', async () => {
-    const result = await exe.execute(request, fs.commit, context)
+    const result = await exe.execute(request, fs.oid, context)
     assert('settled' in result)
     const { settled } = result
     const { reply, fs: settledFs } = settled
@@ -53,7 +53,7 @@ Deno.test('writes', async (t) => {
   }
   const { context, exe, fs, stop } = await mocks(write)
   await t.step('single file', async () => {
-    const result = await exe.execute(write, fs.commit, context)
+    const result = await exe.execute(write, fs.oid, context)
     assert('settled' in result)
     const { reply, fs: settledFs } = result.settled
     expect(reply.target).toEqual(pid)
@@ -75,7 +75,7 @@ Deno.test('writes', async (t) => {
 Deno.test('loopback', async () => {
   const compound = { ...request, functionName: 'compound' }
   const { context, exe, fs, stop } = await mocks(compound)
-  const result = await exe.execute(compound, fs.commit, context)
+  const result = await exe.execute(compound, fs.oid, context)
   expect('pending' in result).toBeTruthy()
   stop()
 })
@@ -94,7 +94,7 @@ Deno.test('compound', async (t) => {
   const { context, exe, io, fs, stop } = await mocks(compound)
   let request: UnsequencedRequest
   await t.step('half done', async () => {
-    const result = await exe.execute(compound, fs.commit, context)
+    const result = await exe.execute(compound, fs.oid, context)
     assert('pending' in result)
     const { requests } = result.pending
     expect(requests).toHaveLength(1)
@@ -117,7 +117,7 @@ Deno.test('compound', async (t) => {
     io.save()
     const { next } = await fs.writeCommitObject()
 
-    const result = await exe.execute(compound, next.commit, context)
+    const result = await exe.execute(compound, next.oid, context)
     expect('settled' in result).toBeTruthy()
   })
   await t.step('reply from replay', async () => {
@@ -135,7 +135,7 @@ Deno.test('compound', async (t) => {
     const { next } = await fs.writeCommitObject()
 
     const c = { ...context, exe: Executor.createCacheContext() }
-    const result = await c.exe.execute(compound, next.commit, c)
+    const result = await c.exe.execute(compound, next.oid, c)
     expect('settled' in result).toBeTruthy()
   })
   stop()

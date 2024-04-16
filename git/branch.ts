@@ -17,7 +17,7 @@ const log = Debug('AI:git')
 export const branch = async (fs: FS, sequence: number) => {
   assert(!fs.isChanged, 'Cannot branch from a changed fs')
   assert(sequence >= 0, 'sequence must be a whole number')
-  log('branch', sequence, fs.commit)
+  log('branch', sequence, fs.oid)
   const io = await IOChannel.load(fs)
   const pid = io.getBranchPid(sequence)
 
