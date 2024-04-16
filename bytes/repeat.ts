@@ -2,17 +2,28 @@
 // This module is browser compatible.
 import { copy } from "./copy.ts";
 
-/** Returns a new Uint8Array composed of `count` repetitions of the `source`
+/**
+ * Returns a new byte slice composed of `count` repetitions of the `source`
  * array.
  *
  * If `count` is negative, a `RangeError` is thrown.
  *
+ * @param source Source array to repeat.
+ * @param count Number of times to repeat the source array.
+ * @returns A new byte slice composed of `count` repetitions of the `source`
+ * array.
+ *
+ * @example Basic usage
  * ```ts
  * import { repeat } from "https://deno.land/std@$STD_VERSION/bytes/repeat.ts";
+ *
  * const source = new Uint8Array([0, 1, 2]);
- * console.log(repeat(source, 3)); // [0, 1, 2, 0, 1, 2, 0, 1, 2]
- * console.log(repeat(source, 0)); // []
- * console.log(repeat(source, -1)); // RangeError
+ *
+ * repeat(source, 3); // Uint8Array(9) [0, 1, 2, 0, 1, 2, 0, 1, 2]
+ *
+ * repeat(source, 0); // Uint8Array(0) []
+ *
+ * repeat(source, -1); // Throws `RangeError`
  * ```
  */
 export function repeat(source: Uint8Array, count: number): Uint8Array {
