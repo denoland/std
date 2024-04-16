@@ -36,5 +36,5 @@ jobs:
       - name: Type check
         run: deno task test
 
-      - name: Publish (real)
+      - name: Publish to JSR
         run: deno publish --allow-dirty
