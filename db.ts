@@ -253,10 +253,12 @@ export default class DB {
           scoped = { ...splice, changes: { [path]: changes[path] } }
         }
 
-        if (scoped.commit.parent[0] !== last.oid) {
-          pool.set(scoped.oid, scoped)
+        const parent = scoped.commit.parent[0]
+        if (parent !== last.oid) {
+          pool.set(parent, scoped)
           // TODO start an abortable process to get the missing parent
           console.log('pooled', scoped.oid, scoped.commit.parent[0])
+
           continue
         }
         last = scoped
