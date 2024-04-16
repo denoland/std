@@ -13,11 +13,11 @@
  * const stream2 = ReadableStream.from(["a", "b", "c"]);
  *
  * // ["2", "c", "a", "b", "3", "1"]
- * await Array.fromAsync(mergeReadableStreams(stream1, stream2));
+ * await Array.fromAsync(mergeReadableStreams([stream1, stream2]));
  * ```
  */
 export function mergeReadableStreams<T>(
-  ...streams: ReadableStream<T>[]
+  streams: ReadableStream<T>[]
 ): ReadableStream<T> {
   const resolvePromises = streams.map(() => Promise.withResolvers<void>());
   return new ReadableStream<T>({

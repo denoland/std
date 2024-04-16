@@ -17,7 +17,7 @@ Deno.test("mergeReadableStreams()", async () => {
   ]);
 
   const buf = await Array.fromAsync(
-    mergeReadableStreams(textStream, textStream2),
+    mergeReadableStreams([textStream, textStream2]),
   );
 
   assertEquals(buf.sort(), [
@@ -37,7 +37,7 @@ Deno.test("mergeReadableStreams() handles errors", async () => {
 
   const buf = [];
   try {
-    for await (const s of mergeReadableStreams(textStream, textStream2)) {
+    for await (const s of mergeReadableStreams([textStream, textStream2])) {
       buf.push(s);
       if (s === "2") {
         throw new Error("error");
