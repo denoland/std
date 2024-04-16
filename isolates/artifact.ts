@@ -144,7 +144,6 @@ export const lifecycles: IsolateLifecycle = {
       }
       if (isQueueSplice(message)) {
         const { ulid, pid, path } = message
-        qlog('requestHead', print(pid), ulid)
         const fs = await FS.openHead(pid, db)
         const { oid } = fs
         const channel = db.getInitialChannel(ulid)
@@ -163,6 +162,7 @@ export const lifecycles: IsolateLifecycle = {
 
         const timestamp = commit.committer.timestamp * 1000
         const splice: Splice = { pid, oid, commit, timestamp, changes }
+        qlog('transmit', print(pid), ulid, splice.oid)
         channel.postMessage(splice)
       }
     })

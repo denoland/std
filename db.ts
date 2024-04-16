@@ -256,6 +256,7 @@ export default class DB {
         if (scoped.commit.parent[0] !== last.oid) {
           pool.set(scoped.oid, scoped)
           // TODO start an abortable process to get the missing parent
+          console.log('pooled', scoped.oid, scoped.commit.parent[0])
           continue
         }
         last = scoped
@@ -283,7 +284,7 @@ export default class DB {
       .enqueueHeadSplice(ulid, pid, path)
       .commit()
     assert(result, 'requestSplice failed')
-    qlog('requestHead', print(pid), ulid)
+    qlog('request', print(pid), ulid)
   }
 }
 
