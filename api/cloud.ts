@@ -12,11 +12,13 @@ const cradleMaker = async () => {
   const env = await load()
   const url = env.CLOUD_URL
   assert(url, 'CLOUD_URL not set')
+  const engine = WebClientEngine.create(url)
   if (!introDone) {
     introDone = true
     console.log('testing:', url)
+    const result = await engine.initialize()
+    console.log('initialization:', result)
   }
-  const engine = WebClientEngine.create(url)
   const superuser = {
     id: '__system',
     account: 'system',

@@ -226,7 +226,11 @@ export default class DB {
       commits.push(event.data)
     })
     signal?.addEventListener('abort', () => {
+      commitsChannel.close()
+      this.#channels.delete(commitsChannel)
       commits.return()
+      initialChannel.close()
+      this.#channels.delete(initialChannel)
       source.return()
     })
     const pipe = async () => {

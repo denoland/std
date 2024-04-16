@@ -32,6 +32,13 @@ export class WebClientEngine implements EngineInterface {
   static create(url: string, fetcher?: typeof fetch) {
     return new WebClientEngine(url, fetcher)
   }
+  async initialize() {
+    const response = await this.#fetcher(`/api`)
+    if (!response.ok) {
+      throw new Error('response not ok')
+    }
+    return await response.json()
+  }
   stop() {
     for (const abort of this.#aborts) {
       abort.abort()
