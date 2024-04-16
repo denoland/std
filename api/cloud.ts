@@ -7,6 +7,7 @@ import { Shell } from '@/api/web-client.ts'
 import { WebClientEngine } from '@/api/web-client-engine.ts'
 import guts from '../guts/guts.ts'
 import { load } from '@std/dotenv'
+import { SUPERUSER } from '@/constants.ts'
 let introDone = false
 const cradleMaker = async () => {
   const env = await load()
@@ -19,13 +20,7 @@ const cradleMaker = async () => {
     const result = await engine.initialize()
     console.log('initialization:', result)
   }
-  const superuser = {
-    id: '__system',
-    account: 'system',
-    repository: 'system',
-    branches: ['main'],
-  }
-  const artifact = Shell.create(engine, superuser)
+  const artifact = Shell.create(engine, SUPERUSER)
   return artifact
 }
 guts('Cloud', cradleMaker)

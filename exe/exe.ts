@@ -1,6 +1,6 @@
 import IOChannel from '../io/io-channel.ts'
 import { getPoolKey } from '@/keys.ts'
-import { C, ExeResult, SolidRequest } from '@/constants.ts'
+import { C, ExeResult, SolidRequest, SUPERUSER } from '@/constants.ts'
 import IsolateApi from '../isolate-api.ts'
 import Compartment from '../io/compartment.ts'
 import { Outcome, Request } from '@/constants.ts'
@@ -118,5 +118,6 @@ const getExeId = (request: Request) => {
 }
 const isSystem = (pid: PID) => {
   const { id, account, repository } = pid
-  return id === '__system' && account === 'system' && repository === 'system'
+  return id === SUPERUSER.id && account === SUPERUSER.account &&
+    repository === SUPERUSER.repository
 }

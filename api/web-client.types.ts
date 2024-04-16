@@ -95,7 +95,7 @@ export type PID = {
 }
 
 export type HelpConfig = {
-  model?: 'gpt-3.5-turbo' | 'gpt-4-turbo-preview'
+  model?: 'gpt-3.5-turbo' | 'gpt-4-turbo'
   temperature?: number
 }
 export type Help = {
@@ -365,4 +365,10 @@ export interface EngineInterface {
   transcribe(audio: File): Promise<{ text: string }>
   apiSchema(isolate: string): Promise<ApiSchema>
   ping(data?: JsonValue): Promise<IsolateReturn>
+}
+export const SUPERUSER = {
+  id: '__system',
+  account: 'system',
+  repository: 'system',
+  branches: ['main'],
 }

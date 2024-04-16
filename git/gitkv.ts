@@ -1,7 +1,7 @@
 import { Debug } from '@utils'
 import { getRepoBase, headKeyToPid } from '@/keys.ts'
 import type DB from '@/db.ts'
-import { assert, AssertionError, equal } from '@utils'
+import { assert, AssertionError, equal, isKvTestMode } from '@utils'
 import { PID } from '@/constants.ts'
 import { Atomic } from '@/atomic.ts'
 
@@ -243,6 +243,9 @@ class Cache {
   async #load() {
     if ('caches' in globalThis && !this.#big) {
       this.#big = await caches.open('hashbucket')
+      if (!isKvTestMode()) {
+        console.log('caching active')
+      }
     }
   }
   async has(key: Deno.KvKey) {

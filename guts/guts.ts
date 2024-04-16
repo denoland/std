@@ -74,7 +74,7 @@ export default (name: string, cradleMaker: () => Promise<Artifact>) => {
     await artifact.stop()
   })
 
-  Deno.test(prefix + 'resource hogging', async (t) => {
+  Deno.test.only(prefix + 'resource hogging', async (t) => {
     const artifact = await cradleMaker()
     const repo = 'cradle/pierce'
     await artifact.rm({ repo })
@@ -84,7 +84,7 @@ export default (name: string, cradleMaker: () => Promise<Artifact>) => {
     await t.step('serial', async () => {
       log.enable('AI:qex*')
       const promises = []
-      const count = 20
+      const count = 200
       for (let i = 0; i < count; i++) {
         promises.push(local())
       }

@@ -6,8 +6,8 @@ import {
   freezePid,
   JsonValue,
   PID,
-  pidFromRepo,
   PierceRequest,
+  SUPERUSER,
 } from './constants.ts'
 import IsolateApi from './isolate-api.ts'
 import { assert, Debug, posix } from '@utils'
@@ -56,8 +56,7 @@ export class Engine implements EngineInterface {
 
     // the ulid should come from context, not the repo itself?
     // the ulid of the repo is based on who is driving a command
-    const systemId = '__system'
-    const pid = pidFromRepo(systemId, 'system/system')
+    const pid = SUPERUSER
 
     const head = await db.readHead(pid)
     if (head) {

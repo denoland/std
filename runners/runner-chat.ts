@@ -75,7 +75,7 @@ export class AI {
   }
 
   async #execute(messages: MessageParam[]): Promise<string> {
-    const { model = 'gpt-4-turbo-preview', temperature = 0 } = this.#config
+    const { model = 'gpt-4-turbo', temperature = 0 } = this.#config
     const args: OpenAI.ChatCompletionCreateParamsStreaming = {
       model,
       temperature,
