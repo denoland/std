@@ -3,8 +3,6 @@ import { green, red, stripAnsiCode } from "../fmt/colors.ts";
 import { assertEquals, assertThrows } from "../assert/mod.ts";
 import { format } from "./format.ts";
 
-// This file been copied to `std/expect`.
-
 Deno.test("format() generates correct diffs for strings", () => {
   assertThrows(
     () => {
