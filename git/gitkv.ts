@@ -279,7 +279,7 @@ class Cache {
     Cache.#local.set(url, value)
     if (this.#big) {
       const request = new Request(url)
-      this.#big.put(request, new Response(value))
+      await this.#big.put(request, new Response(value))
     }
   }
 }
