@@ -183,7 +183,7 @@ export const toString = (pid: PID) => {
 export type Change = {
   /** If present, represents the unified diff of the file at the given path,
    * since the last commit.  This is only provided if the file is a string.  If
-   * the changes are too large, this will be mising and an oid will be provided.
+   * the changes are too large, this will be missing and an oid will be provided.
    */
   patch?: string
   /**
