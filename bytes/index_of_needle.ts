@@ -1,21 +1,44 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-/** Returns the index of the first occurrence of the needle array in the source
+/**
+ * Returns the index of the first occurrence of the needle array in the source
  * array, or -1 if it is not present.
  *
  * A start index can be specified as the third argument that begins the search
  * at that given index. The start index defaults to the start of the array.
  *
- * The complexity of this function is O(source.length * needle.length).
+ * The complexity of this function is `O(source.length * needle.length)`.
  *
+ * @param source Source array to check.
+ * @param needle Needle array to check for.
+ * @param start Start index in the source array to begin the search. Defaults to
+ * 0.
+ *
+ * @example Basic usage
  * ```ts
  * import { indexOfNeedle } from "https://deno.land/std@$STD_VERSION/bytes/index_of_needle.ts";
+ *
  * const source = new Uint8Array([0, 1, 2, 1, 2, 1, 2, 3]);
  * const needle = new Uint8Array([1, 2]);
- * console.log(indexOfNeedle(source, needle)); // 1
- * console.log(indexOfNeedle(source, needle, 2)); // 3
+ * const notNeedle = new Uint8Array([5, 0]);
+ *
+ * indexOfNeedle(source, needle); // 1
+ * indexOfNeedle(source, notNeedle); // -1
  * ```
+ *
+ * @example Start index
+ * ```ts
+ * import { indexOfNeedle } from "https://deno.land/std@$STD_VERSION/bytes/index_of_needle.ts";
+ *
+ * const source = new Uint8Array([0, 1, 2, 1, 2, 1, 2, 3]);
+ * const needle = new Uint8Array([1, 2]);
+ *
+ * indexOfNeedle(source, needle, 2); // 3
+ * indexOfNeedle(source, needle, 6); // -1
+ * ```
+ * Defining a start index will begin the search at the specified index in the
+ * source array.
  */
 export function indexOfNeedle(
   source: Uint8Array,

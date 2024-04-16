@@ -1,38 +1,48 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-/** Copy bytes from the `src` array to the `dst` array. Returns the number of
+/**
+ * Copy bytes from the `src` array to the `dst` array and returns the number of
  * bytes copied.
  *
  * If the `src` array is larger than what the `dst` array can hold, only the
  * amount of bytes that fit in the `dst` array are copied.
  *
- * An offset can be specified as the third argument that begins the copy at
- * that given index in the `dst` array. The offset defaults to the beginning of
- * the array.
+ * @param src Source array to copy from.
+ * @param dst Destination array to copy to.
+ * @param offset Offset in the destination array to start copying to. Defaults
+ * to 0.
  *
+ * @example Basic usage
  * ```ts
  * import { copy } from "https://deno.land/std@$STD_VERSION/bytes/copy.ts";
+ *
  * const src = new Uint8Array([9, 8, 7]);
  * const dst = new Uint8Array([0, 1, 2, 3, 4, 5]);
- * console.log(copy(src, dst)); // 3
- * console.log(dst); // [9, 8, 7, 3, 4, 5]
+ *
+ * copy(src, dst); // 3
+ * dst; // Uint8Array(6) [9, 8, 7, 3, 4, 5]
  * ```
  *
+ * @example Copy with offset
  * ```ts
  * import { copy } from "https://deno.land/std@$STD_VERSION/bytes/copy.ts";
+ *
  * const src = new Uint8Array([1, 1, 1, 1]);
  * const dst = new Uint8Array([0, 0, 0, 0]);
- * console.log(copy(src, dst, 1)); // 3
- * console.log(dst); // [0, 1, 1, 1]
+ *
+ * copy(src, dst, 1); // 3
+ * dst; // Uint8Array(4) [0, 1, 1, 1]
  * ```
+ * Defining an offset will start copying at the specified index in the
+ * destination array.
  */
-export function copy(src: Uint8Array, dst: Uint8Array, off = 0): number {
-  off = Math.max(0, Math.min(off, dst.byteLength));
-  const dstBytesAvailable = dst.byteLength - off;
+export function copy(src: Uint8Array, dst: Uint8Array, offset = 0): number {
+  offset = Math.max(0, Math.min(offset, dst.byteLength));
+  const dstBytesAvailable = dst.byteLength - offset;
   if (src.byteLength > dstBytesAvailable) {
     src = src.subarray(0, dstBytesAvailable);
   }
-  dst.set(src, off);
+  dst.set(src, offset);
   return src.byteLength;
 }
