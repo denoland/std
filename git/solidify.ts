@@ -27,7 +27,6 @@ const log = Debug('AI:git:solidify')
  * - merge: an async result is returning, or an external action is being
  *   inserted into the branch.
  * - reply: a result is being returned from a dispatch after serial execution.
- * @param fs a memfs instance to update
  */
 export const solidify = async (fs: FS, pool: Poolable[], pending?: Pending) => {
   assert(pool.length > 0 || fs.isChanged || pending?.requests.length, 'no-op')
@@ -45,8 +44,8 @@ export const solidify = async (fs: FS, pool: Poolable[], pending?: Pending) => {
   if (pending) {
     assert(pending.requests.length, 'cannot be pending without requests')
     log('solidifyPool pending', pending)
-    const { commit, requests } = pending
-    const sequenced = io.addPending(commit, requests)
+    const { commit, requests, sequence } = pending
+    const sequenced = io.addPending(sequence, commit, requests)
     sequenced.forEach((r) => {
       collectBranch(r, r.sequence, branches)
       if (isMergeRequest(r)) {

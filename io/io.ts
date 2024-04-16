@@ -62,7 +62,6 @@ export const doAtomicCommit = async (db: DB, fs: FS, exe?: ExeResult) => {
 const transmit = (pid: PID, solids: Solids, atomic: Atomic) => {
   const { oid, exe, branches, poolables } = solids
 
-  // need to transmit requests going to other chains
   const transmitted = new Set<string>()
   if (exe) {
     const { request, sequence } = exe

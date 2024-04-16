@@ -222,12 +222,7 @@ export default class IOChannel {
     this.#io.requests[sequence] = request
     return sequence
   }
-  addPending(commit: string, requests: UnsequencedRequest[]) {
-    const executing = this.getCurrentSerialRequest()
-    // TODO affirm this is actually the executing request ?
-    assert(executing, 'no executing request')
-    const sequence = this.getSequence(executing)
-
+  addPending(sequence: number, commit: string, requests: UnsequencedRequest[]) {
     const sequences = []
     const solidified: (SolidRequest | MergeRequest)[] = []
     for (const request of requests) {
@@ -238,7 +233,15 @@ export default class IOChannel {
     if (!this.#io.pendings[sequence]) {
       this.#io.pendings[sequence] = []
     }
-    this.#io.pendings[sequence].push({ commit, sequences })
+    const pendings = this.#io.pendings[sequence]
+    if (pendings.length) {
+      const lastLayer = pendings[pendings.length - 1]
+      const allSettled = lastLayer.sequences
+        .every((sequence) => this.isSettled(sequence))
+      assert(allSettled, 'all sequences must be settled')
+    }
+
+    pendings.push({ commit, sequences })
     return solidified
   }
   #addUnsequenced(request: UnsequencedRequest) {

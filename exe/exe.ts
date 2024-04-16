@@ -19,21 +19,10 @@ export default class Executor {
   async execute(req: SolidRequest, commit: string, c: C): Promise<ExeResult> {
     const fs = FS.open(req.target, commit, c.db)
     assert(equal(fs.pid, req.target), 'target is not self')
-    assert(!fs.isChanged, 'fs is changed')
     const io = await IOChannel.read(fs)
     assert(io, 'io not found')
     assert(io.isNextSerialRequest(req), 'request is not callable')
     log('request %o %o', req.isolate, req.functionName)
-
-    // transmit needs to land in the pool before executing
-
-    // if we jumped branches, we need to insert the action in io first ?
-    // or, we can know we are the current tip of the spear ?
-    // so we would do a branch jump commit, then do an execution
-    // bx, what if loads of actions came streaming in ?
-    // so transmit to a different branch should do a pooling operation
-    // which is like pierce, and then that would trigger the execution once
-    // solidified
 
     const ioAccumulator = io.getAccumulator()
 
@@ -97,17 +86,17 @@ export default class Executor {
     execution.accumulator.deactivate()
 
     let result: ExeResult
+    const sequence = io.getSequence(req)
     if (winner === racecar) {
       log('accumulator triggered first')
       const { accumulations } = execution.accumulator
       assert(accumulations.length > 0, 'no accumulations')
       const requests = accumulations.map((a) => a.request)
-      result = { pending: { commit: fs.oid, requests } }
+      result = { pending: { commit: fs.oid, requests, sequence } }
     } else {
       assert(typeof winner !== 'symbol')
       log('exe complete %o', exeId)
       this.#functions.delete(exeId)
-      const sequence = io.getSequence(req)
       const reply = { target: fs.pid, sequence, outcome: winner }
 
       // TODO need to tick the fs forwards when the accumulations occur
