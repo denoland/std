@@ -1,4 +1,5 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
 import type { Comparator, Range } from "./types.ts";
 import { OPERATORS } from "./_constants.ts";
 import { ALL, NONE } from "./constants.ts";
@@ -10,11 +11,11 @@ function isComparator(value: unknown): value is Comparator {
     typeof value !== "object"
   ) return false;
   if (value === NONE || value === ALL) return true;
-  const { operator, semver } = value as Comparator;
+  const { operator } = value as Comparator;
   return (
     (operator === undefined ||
       OPERATORS.includes(operator)) &&
-    isSemVer(semver)
+    isSemVer(value)
   );
 }
 

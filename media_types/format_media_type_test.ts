@@ -7,6 +7,7 @@ Deno.test({
   name: "formatMediaType()",
   fn() {
     const fixtures = [
+      ["/", undefined, ""],
       ["noslash", { X: "Y" }, "noslash; x=Y"],
       ["foo bar/baz", undefined, ""],
       ["foo/bar baz", undefined, ""],
@@ -58,6 +59,7 @@ Deno.test({
       ],
       ["foo/bar", { "0": "'", "9": "'" }, "foo/bar; 0='; 9='"],
       ["foo", { "bar": "" }, `foo; bar=""`],
+      ["foo/bar", [], "foo/bar"],
     ] as const;
     for (const [type, param, expected] of fixtures) {
       assertEquals(formatMediaType(type, param), expected);

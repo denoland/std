@@ -1,4 +1,5 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
 
 import type { OPERATORS } from "./_constants.ts";
 
@@ -27,10 +28,6 @@ export type Operator = typeof OPERATORS[number];
  */
 export interface Comparator extends SemVer {
   operator?: Operator;
-  /**
-   * @deprecated (will be removed in 0.219.0) {@linkcode Comparator} extends {@linkcode SemVer}. Use `major`, `minor`, `patch`, `prerelease`, and `build` properties instead.
-   */
-  semver?: SemVer;
 }
 
 /**

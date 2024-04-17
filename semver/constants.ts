@@ -1,4 +1,5 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
 import type { Comparator, SemVer } from "./types.ts";
 
 /**
@@ -68,7 +69,6 @@ export const ANY: SemVer = {
 export const ALL: Comparator = {
   operator: undefined,
   ...ANY,
-  semver: ANY,
 };
 
 /**
@@ -77,5 +77,4 @@ export const ALL: Comparator = {
 export const NONE: Comparator = {
   operator: "<",
   ...MIN,
-  semver: MIN,
 };

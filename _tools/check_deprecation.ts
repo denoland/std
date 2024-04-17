@@ -7,22 +7,6 @@ import { doc } from "deno_doc";
 import { walk } from "../fs/walk.ts";
 import { toFileUrl } from "../path/mod.ts";
 
-const EXTENSIONS = [".mjs", ".js", ".ts"];
-const EXCLUDED_PATHS = [
-  ".git",
-  "dotenv/testdata",
-  "fs/testdata",
-  "http/testdata",
-  "http/_negotiation",
-  "crypto/_wasm",
-  "crypto/_fnv",
-  "encoding/_yaml",
-  "encoding/_toml",
-  "_tools",
-  "_util",
-  "docs",
-];
-
 const ROOT = new URL("../", import.meta.url);
 
 const FAIL_FAST = Deno.args.includes("--fail-fast");
@@ -52,8 +36,23 @@ const DEPRECATION_IN_FORMAT =
 for await (
   const { path } of walk(ROOT, {
     includeDirs: false,
-    exts: EXTENSIONS,
-    skip: EXCLUDED_PATHS.map((path) => new RegExp(path + "$")),
+    exts: [".mjs", ".js", ".ts"],
+    skip: [
+      /\.git$/,
+      /dotenv(\/|\\)testdata$/,
+      /fs(\/|\\)testdata$/,
+      /http(\/|\\)testdata$/,
+      /http(\/|\\)_negotiation$/,
+      /crypto(\/|\\)_benches$/,
+      /crypto(\/|\\)_wasm$/,
+      /encoding(\/|\\)_yaml$/,
+      /encoding(\/|\\)_toml$/,
+      /console$/,
+      /_tools$/,
+      /_util$/,
+      /docs$/,
+      /permissions/,
+    ],
   })
 ) {
   // deno_doc only takes urls.

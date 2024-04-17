@@ -29,13 +29,15 @@ export type PromptSecretOptions = {
  * Use an empty `mask` if you don't want to show any character.
  */
 export function promptSecret(
-  message = "Secret ",
+  message = "Secret",
   { mask = "*", clear }: PromptSecretOptions = {},
 ): string | null {
   if (!input.isTerminal()) {
     return null;
   }
 
+  // Make the output consistent with the built-in prompt()
+  message += " ";
   const callback = !mask ? undefined : (n: number) => {
     output.writeSync(CLR);
     output.writeSync(encoder.encode(`${message}${mask.repeat(n)}`));

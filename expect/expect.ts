@@ -1,4 +1,5 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
 // Copyright 2019 Allain Lalonde. All rights reserved. ISC License.
 
 import type {
@@ -50,8 +51,16 @@ import {
   toStrictEqual,
   toThrow,
 } from "./_matchers.ts";
+import { addSerializer } from "./_snapshot_serializer.ts";
 import { isPromiseLike } from "./_utils.ts";
-import { any, anything, arrayContaining } from "./_asymmetric_matchers.ts";
+import {
+  any,
+  anything,
+  arrayContaining,
+  closeTo,
+  stringContaining,
+  stringMatching,
+} from "./_asymmetric_matchers.ts";
 
 const matchers: Record<MatcherKey, Matcher> = {
   lastCalledWith: toHaveBeenLastCalledWith,
@@ -190,7 +199,16 @@ export function expect(value: unknown, customMessage?: string): Expected {
 }
 
 expect.addEqualityTesters = addCustomEqualityTesters;
+/**
+ * @deprecated (will be removed in 0.226.0) Use {@linkcode expect.addSnapshotSerializer} instead.
+ */
+expect.addSnapshotSerializers = addSerializer;
+expect.addSnapshotSerializer = addSerializer;
 expect.extend = setExtendMatchers;
+
 expect.anything = anything;
 expect.any = any;
 expect.arrayContaining = arrayContaining;
+expect.closeTo = closeTo;
+expect.stringContaining = stringContaining;
+expect.stringMatching = stringMatching;

@@ -1,5 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-import { format } from "./_format.ts";
+// This module is browser compatible.
+import { format } from "../internal/format.ts";
 import { AssertionError } from "./assertion_error.ts";
 
 /**

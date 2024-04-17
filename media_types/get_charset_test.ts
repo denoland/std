@@ -7,6 +7,8 @@ Deno.test({
   name: "getCharset()",
   fn() {
     const fixtures = [
+      [";", undefined],
+      ["text/plain; charset", undefined],
       ["text/plain", "UTF-8"],
       ["text/html", "UTF-8"],
       ["application/foo", undefined],

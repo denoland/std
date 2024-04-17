@@ -10,20 +10,15 @@
  *
  * This module is browser compatible.
  *
- * @example
  * ```ts
  * import {
  *   decodeHex,
  *   encodeHex,
  * } from "https://deno.land/std@$STD_VERSION/encoding/hex.ts";
  *
- * const binary = new TextEncoder().encode("abc");
- * const encoded = encodeHex(binary);
- * console.log(encoded);
- * // => "616263"
+ * const encoded = encodeHex("abc"); // "616263"
  *
- * console.log(decodeHex(encoded));
- * // => Uint8Array(3) [ 97, 98, 99 ]
+ * decodeHex(encoded); // Uint8Array(3) [ 97, 98, 99 ]
  * ```
  *
  * @module

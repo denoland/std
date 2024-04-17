@@ -1,4 +1,5 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
 import type { Range, SemVer } from "./types.ts";
 import { rangeIncludes } from "./range_includes.ts";
 import { lessThan } from "./less_than.ts";

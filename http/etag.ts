@@ -1,4 +1,5 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
 
 /**
  * Provides functions for dealing with and matching ETags, including
@@ -40,7 +41,7 @@ export interface ETagOptions {
   /**
    * A digest algorithm to use to calculate the etag.
    *
-   * @default {"FNV32A"}
+   * @default {"SHA-256"}
    */
   algorithm?: AlgorithmIdentifier;
 
