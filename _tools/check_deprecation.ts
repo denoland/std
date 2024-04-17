@@ -51,6 +51,7 @@ for await (
       /_tools$/,
       /_util$/,
       /docs$/,
+      /permissions/,
     ],
   })
 ) {
