@@ -5,7 +5,7 @@ import { copy } from "./copy.ts";
 /**
  * Returns a new byte slice composed of `count` repetitions of the `source`
  * array.
- * *
+ *
  * @param source Source array to repeat.
  * @param count Number of times to repeat the source array.
  * @returns A new byte slice composed of `count` repetitions of the `source`
