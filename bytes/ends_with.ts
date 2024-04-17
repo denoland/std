@@ -23,10 +23,11 @@
  * ```
  */
 export function endsWith(source: Uint8Array, suffix: Uint8Array): boolean {
-  let srci = source.length - 1;
-  let sfxi = suffix.length - 1;
-  for (; sfxi >= 0; srci--, sfxi--) {
-    if (source[srci] !== suffix[sfxi]) return false;
+  const diff = source.length - suffix.length;
+  for (let i = suffix.length - 1; i >= 0; i--) {
+    if (source[diff + i] !== suffix[i]) {
+      return false;
+    }
   }
   return true;
 }

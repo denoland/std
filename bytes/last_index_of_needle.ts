@@ -51,18 +51,16 @@ export function lastIndexOfNeedle(
   const e = needle[needle.length - 1];
   for (let i = start; i >= 0; i--) {
     if (source[i] !== e) continue;
-    const pin = i;
     let matched = 1;
     let j = i;
-    while (matched < needle.length) {
-      j--;
-      if (source[j] !== needle[needle.length - 1 - (pin - j)]) {
-        break;
-      }
+    while (
+      matched < needle.length &&
+      source[--j] === needle[needle.length - 1 - (i - j)]
+    ) {
       matched++;
     }
     if (matched === needle.length) {
-      return pin - needle.length + 1;
+      return i - needle.length + 1;
     }
   }
   return -1;

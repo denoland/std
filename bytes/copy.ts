@@ -2,10 +2,10 @@
 // This module is browser compatible.
 
 /**
- * Copy bytes from the `src` array to the `dst` array and returns the number of
- * bytes copied.
+ * Copy bytes from the source array to the destination array and returns the
+ * number of bytes copied.
  *
- * If the `src` array is larger than what the `dst` array can hold, only the
+ * If the source array is larger than what the `dst` array can hold, only the
  * amount of bytes that fit in the `dst` array are copied.
  *
  * @param src Source array to copy from.
