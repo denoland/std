@@ -44,6 +44,7 @@ export const getHeadKey = (pid: PID) => {
   return [...prefix, 'refs', 'heads', ...pid.branches]
 }
 export const getEffectsLockKey = (pid: PID) => {
+  // TODO check if a branch is named with something.lock
   const prefix = getRepoBase(pid)
   const branches = [...pid.branches]
   const last = branches.pop()

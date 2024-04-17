@@ -58,7 +58,7 @@ export default (name: string, cradleMaker: () => Promise<Artifact>) => {
   })
   Deno.test.only(prefix + 'flare', async (t) => {
     const artifact = await cradleMaker()
-    const repo = 'cradle/pierce'
+    const repo = 't/flare'
     await artifact.rm({ repo })
 
     const { pid: target } = await artifact.init({ repo })
