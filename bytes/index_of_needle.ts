@@ -54,18 +54,14 @@ export function indexOfNeedle(
   const s = needle[0];
   for (let i = start; i < source.length; i++) {
     if (source[i] !== s) continue;
-    const pin = i;
     let matched = 1;
-    let j = i;
-    while (matched < needle.length) {
-      j++;
-      if (source[j] !== needle[j - pin]) {
-        break;
-      }
+    let j = i + 1;
+    while (matched < needle.length && source[j] === needle[j - i]) {
       matched++;
+      j++;
     }
     if (matched === needle.length) {
-      return pin;
+      return i;
     }
   }
   return -1;
