@@ -106,10 +106,13 @@ Deno.test('compound', async (t) => {
     assert(request)
     const sequenced = io.addPending(0, 'fakeCommit', [request])
     expect(sequenced).toHaveLength(1)
+    const target = sequenced[0].source
     const reply = {
+      target,
+      source: target,
       outcome: { result: 'compound reply' },
-      target: sequenced[0].source,
       sequence: sequenced[0].sequence,
+      commit: 'fakeCommit',
     }
     const savedRequest = io.reply(reply)
     assert(!isPierceRequest(savedRequest))
@@ -125,9 +128,12 @@ Deno.test('compound', async (t) => {
     const io = await IOChannel.load(fs)
     const sequenced = io.addPending(0, 'fakeCommit2', [request])
     expect(sequenced).toHaveLength(1)
+    const target = pid
     const reply = {
+      target,
+      source: target,
+      commit: 'fakeCommit',
       outcome: { result: 'compound reply' },
-      target: pid,
       sequence: sequenced[0].sequence,
     }
     io.reply(reply)

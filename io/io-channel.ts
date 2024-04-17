@@ -12,7 +12,6 @@ import {
   PID,
   PROCTYPE,
   Request,
-  SolidReply,
   SolidRequest,
   UnsequencedRequest,
 } from '@/constants.ts'
@@ -126,7 +125,7 @@ export default class IOChannel {
     assert(sequence in this.#io.requests, 'sequence not found')
     return this.#io.requests[sequence]
   }
-  reply(reply: SolidReply | MergeReply) {
+  reply(reply: MergeReply) {
     const { sequence } = reply
     assert(Number.isInteger(sequence), 'reply needs a sequence number')
     assert(sequence >= 0, 'reply needs a whole sequence number')

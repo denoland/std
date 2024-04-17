@@ -2,12 +2,11 @@ import { assert, expect, log } from '@utils'
 import { solidify } from '@/git/solidify.ts'
 import {
   IoStruct,
+  MergeReply,
   PID,
   pidFromRepo,
   PierceRequest,
   PROCTYPE,
-  Reply,
-  SolidReply,
 } from '@/constants.ts'
 import FS from './fs.ts'
 import DB from '@/db.ts'
@@ -27,10 +26,12 @@ Deno.test('pierce serial', async (t) => {
     params: {},
     proctype: PROCTYPE.SERIAL,
   })
-  const reply: Reply = {
+  const reply: MergeReply = {
     target,
     sequence: 0,
     outcome: { result: 'test-result' },
+    source: target,
+    commit: 'test-commit',
   }
   const db = await DB.create()
   let fs: FS
@@ -108,15 +109,18 @@ Deno.test('pierce serial', async (t) => {
   // TODO permissioning for inclusion in the pool
 })
 const replies = (start: number, end: number) => {
-  const pool: SolidReply[] = []
+  const pool: MergeReply[] = []
   for (let i = start; i <= end; i++) {
+    const target = {
+      id: 't',
+      account: 'git',
+      repository: 'test',
+      branches: ['main'],
+    }
     pool.push({
-      target: {
-        id: 't',
-        account: 'git',
-        repository: 'test',
-        branches: ['main'],
-      },
+      target,
+      source: target,
+      commit: 'fake commit',
       sequence: i,
       outcome: { result: i },
     })

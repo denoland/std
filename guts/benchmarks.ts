@@ -31,7 +31,7 @@ export default (name: string, cradleMaker: () => Promise<Artifact>) => {
       await artifact.stop()
     })
   })
-  Deno.test.only(prefix + 'resource hogging parallel', async (t) => {
+  Deno.test.ignore(prefix + 'resource hogging parallel', async (t) => {
     const artifact = await cradleMaker()
     const repo = 'cradle/pierce'
     await artifact.rm({ repo })

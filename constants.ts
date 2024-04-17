@@ -40,8 +40,7 @@ export type Isolate = {
   lifecycles?: IsolateLifecycle
 }
 
-export type Reply = SolidReply | MergeReply
-export type Poolable = Request | Reply
+export type Poolable = MergeReply | MergeRequest | PierceRequest
 
 export type EffectRequest = {
   target: PID
@@ -95,7 +94,7 @@ export type Branched = {
 export type ExeResult = ExeSettled | ExePending
 type ExeSettled = {
   settled: {
-    reply: SolidReply
+    reply: MergeReply
     /**
      * The last filesystem that was modified during the execution run.  The FS
      * might have been bumped forwards if accumulations occurred.
@@ -119,10 +118,7 @@ export type Pending = {
   sequence: number
 }
 
-export const isRequest = (poolable: Poolable): poolable is Request => {
-  return 'proctype' in poolable
-}
-export const isMergeReply = (poolable: Reply): poolable is MergeReply => {
+export const isMergeReply = (poolable: Poolable): poolable is MergeReply => {
   return 'commit' in poolable && 'outcome' in poolable
 }
 export const isMergeRequest = (poolable: Request): poolable is MergeRequest => {

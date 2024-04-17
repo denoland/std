@@ -1,14 +1,19 @@
 import IOChannel from '../io/io-channel.ts'
-import { getPoolKey } from '@/keys.ts'
-import { C, ExeResult, SolidRequest, SUPERUSER } from '@/constants.ts'
+import { getExeId } from '@/keys.ts'
+import {
+  C,
+  ExeResult,
+  JsonValue,
+  Outcome,
+  SolidRequest,
+  SUPERUSER,
+} from '@/constants.ts'
 import IsolateApi from '../isolate-api.ts'
 import Compartment from '../io/compartment.ts'
-import { Outcome, Request } from '@/constants.ts'
 import { assert, Debug, equal, serializeError } from '@utils'
 import Accumulator from '@/exe/accumulator.ts'
 import FS from '@/git/fs.ts'
 import { PID } from '@/api/web-client.types.ts'
-import { JsonValue } from '@/constants.ts'
 const log = Debug('AI:exe')
 
 export default class Executor {
@@ -82,22 +87,23 @@ export default class Executor {
 
     const racecar = Symbol('🏎️')
     const accumulatorPromise = execution.accumulator.activate(racecar)
-    const winner = await Promise.race([execution.function, accumulatorPromise])
+    const outcome = await Promise.race([execution.function, accumulatorPromise])
     execution.accumulator.deactivate()
 
     let result: ExeResult
     const sequence = io.getSequence(req)
-    if (winner === racecar) {
+    if (outcome === racecar) {
       log('accumulator triggered first')
       const { accumulations } = execution.accumulator
       assert(accumulations.length > 0, 'no accumulations')
       const requests = accumulations.map((a) => a.request)
       result = { pending: { commit: fs.oid, requests, sequence } }
     } else {
-      assert(typeof winner !== 'symbol')
+      assert(typeof outcome !== 'symbol')
       log('exe complete %o', exeId)
       this.#functions.delete(exeId)
-      const reply = { target: fs.pid, sequence, outcome: winner }
+      const target = fs.pid, source = fs.pid
+      const reply = { target, source, sequence, outcome, commit }
 
       // TODO need to tick the fs forwards when the accumulations occur
       result = { settled: { reply, fs } }
@@ -111,10 +117,6 @@ type Execution = {
   accumulator: Accumulator
   api: IsolateApi
   commit: string
-}
-const getExeId = (request: Request) => {
-  const id = getPoolKey(request)
-  return JSON.stringify(id)
 }
 const isSystem = (pid: PID) => {
   const { id, account, repository } = pid

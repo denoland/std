@@ -1,10 +1,9 @@
 import {
+  isMergeReply,
   isPierceRequest,
-  isRequest,
   PID,
   Poolable,
-  Reply,
-  Request,
+  SolidRequest,
 } from '@/constants.ts'
 import { assert } from '@utils'
 export const getPoolKeyPrefix = (pid: PID) => {
@@ -23,19 +22,20 @@ export const getRepoBase = (pid: PID) => {
   const { id, account, repository } = pid
   return [id, account, repository]
 }
-const getId = (action: Request | Reply) => {
-  const id = (pid: PID, sequence: number) => {
-    return `${pid.account}/${pid.repository}:${
-      pid.branches.join('/')
-    }:${sequence}`
-  }
-  if (isRequest(action)) {
-    if (isPierceRequest(action)) {
-      return action.ulid
+export const getExeId = (request: SolidRequest) => {
+  return idWithSequence(request.source, request.sequence)
+}
+const idWithSequence = (pid: PID, sequence: number) => {
+  return getPoolKeyPrefix(pid).join('/') + ':' + sequence
+}
+const getId = (poolable: Poolable) => {
+  if (!isMergeReply(poolable)) {
+    if (isPierceRequest(poolable)) {
+      return poolable.ulid
     }
-    return id(action.source, action.sequence)
+    return idWithSequence(poolable.source, poolable.sequence)
   } else {
-    return id(action.target, action.sequence)
+    return idWithSequence(poolable.target, poolable.sequence)
   }
 }
 

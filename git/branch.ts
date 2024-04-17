@@ -1,6 +1,6 @@
 import { assert, Debug } from '@utils'
 import { Branched, PROCTYPE } from '@/constants.ts'
-import { SolidRequest } from '@/constants.ts'
+import { MergeRequest } from '@/constants.ts'
 import IOChannel from '../io/io-channel.ts'
 import { solidify } from './solidify.ts'
 import FS from '@/git/fs.ts'
@@ -23,7 +23,7 @@ export const branch = async (fs: FS, sequence: number) => {
 
   const { isolate, functionName, params } = io.getRequest(sequence)
 
-  const origin: SolidRequest = {
+  const origin: MergeRequest = {
     isolate,
     functionName,
     params,
@@ -31,6 +31,7 @@ export const branch = async (fs: FS, sequence: number) => {
     source: fs.pid,
     sequence,
     proctype: PROCTYPE.SERIAL,
+    commit: fs.oid,
   }
   log('origin', origin)
   const branch = fs.branch(pid)

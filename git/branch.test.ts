@@ -4,12 +4,10 @@ import { branch } from '@/git/branch.ts'
 import {
   IoStruct,
   isMergeReply,
-  isRequest,
   MergeReply,
   PID,
   PierceRequest,
   PROCTYPE,
-  Reply,
 } from '@/constants.ts'
 import FS from '@/git/fs.ts'
 import DB from '@/db.ts'
@@ -29,10 +27,12 @@ Deno.test('pierce branch', async (t) => {
     params: {},
     proctype: PROCTYPE.BRANCH,
   })
-  const reply: Reply = {
+  const reply: MergeReply = {
     target,
     sequence: 0,
     outcome: { result: 'test-result' },
+    commit: 'test-commit',
+    source: target,
   }
   const db = await DB.create()
   const baseFs = await FS.init(target, db)
@@ -77,7 +77,7 @@ Deno.test('pierce branch', async (t) => {
 
     log('poolables', poolables[0])
     expect(poolables.length).toBe(1)
-    assert(!isRequest(poolables[0]) && isMergeReply(poolables[0]))
+    assert(isMergeReply(poolables[0]))
     mergeReply = poolables[0]
     expect(mergeReply.outcome).toEqual(reply.outcome)
     expect(mergeReply.target).toEqual(target)

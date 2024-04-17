@@ -4,7 +4,6 @@ import {
   isMergeReply,
   isMergeRequest,
   isPierceRequest,
-  isRequest,
   MergeReply,
   MergeRequest,
   Pending,
@@ -55,10 +54,7 @@ export const solidify = async (fs: FS, pool: Poolable[], pending?: Pending) => {
   }
 
   for (const poolable of pool) {
-    if (isRequest(poolable)) {
-      const sequence = io.addRequest(poolable)
-      collectBranch(poolable, sequence, branches)
-    } else {
+    if (isMergeReply(poolable)) {
       log('reply', poolable)
       const request = io.reply(poolable)
       const { outcome } = poolable
@@ -80,6 +76,9 @@ export const solidify = async (fs: FS, pool: Poolable[], pending?: Pending) => {
           deletes.push({ pid: branchPid, commit: poolable.commit })
         }
       }
+    } else {
+      const sequence = io.addRequest(poolable)
+      collectBranch(poolable, sequence, branches)
     }
   }
   if (pool.length || pending) {
