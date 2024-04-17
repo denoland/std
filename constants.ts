@@ -6,11 +6,11 @@ import {
   CommitObject,
   IsolateApiSchema,
   IsolateReturn,
-  MergeRequest,
   Outcome,
   Params,
   PID,
   PierceRequest,
+  RemoteRequest,
   Request,
   SolidRequest,
   UnsequencedRequest,
@@ -40,7 +40,7 @@ export type Isolate = {
   lifecycles?: IsolateLifecycle
 }
 
-export type Poolable = MergeReply | MergeRequest | PierceRequest
+export type Poolable = MergeReply | RemoteRequest | PierceRequest
 
 export type EffectRequest = {
   target: PID
@@ -80,7 +80,7 @@ export type Solids = {
   changes: { [key: string]: Change }
   exe?: { request: SolidRequest; sequence: number }
   branches: number[]
-  poolables: (MergeReply | MergeRequest)[]
+  poolables: (MergeReply | RemoteRequest)[]
   deletes: { pid: PID; commit: string }[]
 }
 export type Branched = {
@@ -121,7 +121,9 @@ export type Pending = {
 export const isMergeReply = (poolable: Poolable): poolable is MergeReply => {
   return 'commit' in poolable && 'outcome' in poolable
 }
-export const isMergeRequest = (poolable: Request): poolable is MergeRequest => {
+export const isRemoteRequest = (
+  poolable: Request,
+): poolable is RemoteRequest => {
   return 'commit' in poolable && 'proctype' in poolable
 }
 /**
@@ -140,7 +142,7 @@ export enum QueueMessageType {
 }
 export type QueuePool = {
   type: QueueMessageType.POOL
-  poolable: MergeReply | MergeRequest | PierceRequest
+  poolable: MergeReply | RemoteRequest | PierceRequest
 }
 export type QueueExe = {
   type: QueueMessageType.EXECUTION

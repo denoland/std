@@ -112,9 +112,9 @@ export default class FS {
     return git.log({ fs, dir, filepath, depth, ref: this.#oid, cache })
   }
 
-  async writeCommitObject(message = '', merges: string[] = []) {
+  async writeCommitObject(message = '', parents: string[] = []) {
     assert(this.#upserts.size > 0 || this.#deletes.size > 0, 'empty commit')
-    assert(merges.every((oid) => sha1.test(oid)), 'Merge not SHA-1')
+    assert(parents.every((oid) => sha1.test(oid)), 'Merge not SHA-1')
     const { oid, changes } = await this.#flush()
     this.#upserts.clear()
     this.#deletes.clear()
@@ -129,7 +129,7 @@ export default class FS {
       message,
       author,
       tree: oid,
-      parent: [this.#oid, ...merges],
+      parent: [this.#oid, ...parents],
       cache,
     })
     const { commit } = await git.readCommit({ fs, dir, oid: nextCommit, cache })

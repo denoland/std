@@ -142,7 +142,7 @@ export const isPierceRequest = (p: Request): p is PierceRequest => {
   return 'ulid' in p
 }
 export type UnsequencedRequest = Omit<
-  MergeRequest,
+  RemoteRequest,
   'sequence' | 'source' | 'commit'
 >
 /**
@@ -154,10 +154,10 @@ export type SolidRequest = Invocation & {
   sequence: number
 }
 /** A request that travels between branches */
-export type MergeRequest = SolidRequest & {
+export type RemoteRequest = SolidRequest & {
   commit: string
 }
-export type Request = PierceRequest | SolidRequest | MergeRequest
+export type Request = PierceRequest | SolidRequest | RemoteRequest
 
 // TODO remove this by passing ProcessOptions in with the Request
 export const getProcType = (options?: ProcessOptions) => {

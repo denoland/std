@@ -1,6 +1,6 @@
 import { assert, Debug } from '@utils'
 import { Branched, PROCTYPE } from '@/constants.ts'
-import { MergeRequest } from '@/constants.ts'
+import { RemoteRequest } from '@/constants.ts'
 import IOChannel from '../io/io-channel.ts'
 import { solidify } from './solidify.ts'
 import FS from '@/git/fs.ts'
@@ -23,7 +23,7 @@ export const branch = async (fs: FS, sequence: number) => {
 
   const { isolate, functionName, params } = io.getRequest(sequence)
 
-  const origin: MergeRequest = {
+  const origin: RemoteRequest = {
     isolate,
     functionName,
     params,

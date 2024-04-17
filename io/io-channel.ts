@@ -5,12 +5,12 @@
 import { assert, equal } from '@utils'
 import {
   IoStruct,
-  isMergeRequest,
   isPierceRequest,
+  isRemoteRequest,
   MergeReply,
-  MergeRequest,
   PID,
   PROCTYPE,
+  RemoteRequest,
   Request,
   SolidRequest,
   UnsequencedRequest,
@@ -226,7 +226,7 @@ export default class IOChannel {
     assert(!this.isSettled(sequence), 'sequence already settled')
     assert(!this.isPendingIncluded(sequence, commit), 'commit already included')
     const sequences = []
-    const solidified: (SolidRequest | MergeRequest)[] = []
+    const solidified: (SolidRequest | RemoteRequest)[] = []
     for (const request of requests) {
       const { sequence, sequenced } = this.#addUnsequenced(request)
       sequences.push(sequence)
@@ -249,14 +249,7 @@ export default class IOChannel {
   #addUnsequenced(request: UnsequencedRequest) {
     const sequence = this.#io.sequence++
     const source = this.#pid
-    let sequenced: SolidRequest | MergeRequest = {
-      ...request,
-      sequence,
-      source,
-    }
-    if (!equal(request.target, source)) {
-      sequenced = { ...sequenced, commit: 'updated post commit' }
-    }
+    const sequenced: SolidRequest = { ...request, sequence, source }
     this.#io.requests[sequence] = sequenced
     return { sequence, sequenced }
   }
@@ -328,9 +321,9 @@ const toRunnableRequest = (request: Request, sequence: number) => {
   return internal
 }
 export const toUnsequenced = (
-  request: SolidRequest | MergeRequest,
+  request: SolidRequest | RemoteRequest,
 ): UnsequencedRequest => {
-  if (isMergeRequest(request)) {
+  if (isRemoteRequest(request)) {
     const { sequence: _, source: __, commit: ___, ...unsequenced } = request
     return unsequenced
   }

@@ -64,6 +64,12 @@ export default class Accumulator {
   absorb(from: Accumulator) {
     assert(!this.isActive, '"this" is already active')
     assert(!from.isActive, '"from" is already active')
+    if (!(this.#buffer.length <= from.#buffer.length)) {
+      console.log('this buffer length', this.#buffer.length)
+      console.dir(this.#buffer, { depth: null })
+      console.log('from buffer length', from.#buffer.length)
+      console.dir(from.#buffer, { depth: null })
+    }
     assert(this.#buffer.length <= from.#buffer.length, '"this" must be shorter')
     let index = 0
     for (const source of from.#buffer) {

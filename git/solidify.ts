@@ -2,14 +2,16 @@ import { assert, Debug, equal } from '@utils'
 import FS from './fs.ts'
 import {
   isMergeReply,
-  isMergeRequest,
   isPierceRequest,
   MergeReply,
-  MergeRequest,
   Pending,
+  PID,
+  PierceRequest,
   Poolable,
   PROCTYPE,
+  RemoteRequest,
   Request,
+  SolidRequest,
   Solids,
 } from '@/constants.ts'
 import IOChannel from '@io/io-channel.ts'
@@ -36,7 +38,7 @@ export const solidify = async (fs: FS, pool: Poolable[], pending?: Pending) => {
   log('solidifyPool executingRequest', executingRequest)
 
   const branches: number[] = []
-  const poolables: (MergeReply | MergeRequest)[] = []
+  const poolables: (MergeReply | RemoteRequest)[] = []
   const parents = []
   const deletes = []
 
@@ -46,9 +48,11 @@ export const solidify = async (fs: FS, pool: Poolable[], pending?: Pending) => {
     const { commit, requests, sequence } = pending
     const sequenced = io.addPending(sequence, commit, requests)
     sequenced.forEach((r) => {
-      collectBranch(r, r.sequence, branches)
-      if (isMergeRequest(r)) {
-        poolables.push(r)
+      if (equal(r.target, fs.pid)) {
+        collectBranch(r, r.sequence, branches)
+      } else {
+        const mergeRequest = { ...r, commit: 'updated post commit' }
+        poolables.push(mergeRequest)
       }
     })
   }
@@ -56,20 +60,29 @@ export const solidify = async (fs: FS, pool: Poolable[], pending?: Pending) => {
   for (const poolable of pool) {
     if (isMergeReply(poolable)) {
       log('reply', poolable)
+      parents.push(poolable.commit)
+
       const request = io.reply(poolable)
       const { outcome } = poolable
-      if (!isPierceRequest(request) && !equal(request.source, fs.pid)) {
-        const target = request.source
-        const source = request.target
-        const sequence = request.sequence
-        const commit = 'updated post commit'
-        const reply: MergeReply = { target, source, sequence, outcome, commit }
-        poolables.push(reply)
+      if (!isPierceRequest(request)) {
+        if (!equal(request.source, fs.pid)) {
+          const target = request.source
+          const source = request.target
+          const sequence = request.sequence
+          const commit = 'updated post commit'
+          const reply: MergeReply = {
+            target,
+            source,
+            sequence,
+            outcome,
+            commit,
+          }
+          poolables.push(reply)
+        }
       }
-      if (isBranch(request)) {
+      if (isBranch(request, fs.pid)) {
         assert(isMergeReply(poolable), 'branch requires merge reply')
         log('branch reply', poolable.commit)
-        parents.push(poolable.commit)
         if (request.proctype === PROCTYPE.BRANCH) {
           const { sequence } = poolable
           const branchPid = io.getBranchPid(sequence)
@@ -125,7 +138,12 @@ const checkPool = (pool: Poolable[]) => {
   return target
   // TODO a request and a reply with the same id cannot be in the same pool
 }
-const isBranch = (request: Request) => {
+const isBranch = (request: SolidRequest | PierceRequest, thisPid: PID) => {
+  if (!isPierceRequest(request)) {
+    if (!equal(request.target, thisPid)) {
+      return false
+    }
+  }
   return request.proctype === PROCTYPE.BRANCH ||
     request.proctype === PROCTYPE.DAEMON
 }

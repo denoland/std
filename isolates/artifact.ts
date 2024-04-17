@@ -6,6 +6,7 @@ import {
   Change,
   ExeResult,
   freezePid,
+  isMergeReply,
   IsolateLifecycle,
   isPierceRequest,
   isQueueBranch,
@@ -222,12 +223,12 @@ export const sanitizeContext = (api: IsolateApi<C>): C => {
 }
 // TODO remove anyone using atomics except for io
 const logger = (prefix: string, pid: PID) => {
-  const key = print(pid)
-  if (!loggerCache.has(key)) {
-    const logger = Debug('AI:' + prefix + ':' + key)
-    loggerCache.set(key, logger)
+  const string = 'AI:' + prefix + ':' + print(pid)
+  if (!loggerCache.has(string)) {
+    const logger = Debug(string)
+    loggerCache.set(string, logger)
   }
-  const logger = loggerCache.get(key)
+  const logger = loggerCache.get(string)
   assert(logger, 'logger not found')
   return logger
 }
@@ -236,5 +237,8 @@ const commitish = (poolable: Poolable) => {
   if ('ulid' in poolable) {
     return poolable.ulid
   }
-  return poolable.commit
+  if (isMergeReply(poolable)) {
+    return 'reply ' + poolable.commit
+  }
+  return 'request ' + poolable.commit
 }

@@ -1,12 +1,12 @@
 import * as keys from './keys.ts'
 import {
   MergeReply,
-  MergeRequest,
   PID,
   PierceRequest,
   Poolable,
   QueueMessage,
   QueueMessageType,
+  RemoteRequest,
   SolidRequest,
 } from '@/constants.ts'
 import { assert, Debug, isKvTestMode, sha1 } from '@utils'
@@ -100,7 +100,7 @@ export class Atomic {
     const type = QueueMessageType.BRANCH
     return this.#enqueue({ type, parentCommit, parentPid, sequence })
   }
-  enqueuePool(poolable: MergeReply | MergeRequest | PierceRequest) {
+  enqueuePool(poolable: MergeReply | RemoteRequest | PierceRequest) {
     const type = QueueMessageType.POOL
     return this.#enqueue({ type, poolable })
   }
