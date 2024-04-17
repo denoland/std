@@ -25,7 +25,7 @@ export function getAvailablePort(options?: GetAvailablePortOptions): number {
     try {
       // Check if the preferred port is available
       using listener = Deno.listen({ port: options.preferredPort });
-      return (listener.addr as Deno.NetAddr).port;
+      return listener.addr.port;
     } catch (e) {
       // If the preferred port is not available, fall through and find an available port
       if (!(e instanceof Deno.errors.AddrInUse)) {
@@ -35,5 +35,5 @@ export function getAvailablePort(options?: GetAvailablePortOptions): number {
   }
 
   using listener = Deno.listen({ port: 0 });
-  return (listener.addr as Deno.NetAddr).port;
+  return listener.addr.port;
 }
