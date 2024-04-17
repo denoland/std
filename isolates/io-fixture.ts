@@ -48,6 +48,15 @@ export const api = {
     additionalProperties: false,
     properties: { count: { type: 'integer', minimum: 1 } },
   },
+  squared: {
+    description: 'call parallel in parallel',
+    type: 'object',
+    additionalProperties: false,
+    properties: {
+      count: { type: 'integer', minimum: 1 },
+      multiplier: { type: 'integer', minimum: 1 },
+    },
+  },
   pong: {
     description: 'ping the AI',
     type: 'object',
@@ -100,6 +109,17 @@ export const functions = {
     const promises = []
     for (let i = 0; i < params.count; i++) {
       promises.push(local({}, { branch: true }))
+    }
+    return Promise.all(promises)
+  },
+  squared: async (
+    params: { count: number; multiplier: number },
+    api: IsolateApi,
+  ) => {
+    const { parallel } = await api.actions('io-fixture')
+    const promises = []
+    for (let i = 0; i < params.multiplier; i++) {
+      promises.push(parallel({ count: params.count }))
     }
     return Promise.all(promises)
   },

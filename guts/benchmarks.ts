@@ -53,9 +53,8 @@ export default (name: string, cradleMaker: () => Promise<Artifact>) => {
         expect(result).toBe('local reply')
       }
       log('done')
-
-      await artifact.stop()
     })
+    await artifact.stop()
   })
   Deno.test.only(prefix + 'flare', async (t) => {
     const artifact = await cradleMaker()
@@ -63,22 +62,35 @@ export default (name: string, cradleMaker: () => Promise<Artifact>) => {
     await artifact.rm({ repo })
 
     const { pid: target } = await artifact.init({ repo })
-    const { parallel } = await artifact.actions(ioFixture, target)
+    const { parallel, squared } = await artifact.actions(ioFixture, target)
 
-    await t.step('flare', async () => {
-      log.enable('AI:q* AI:tests')
+    log.enable('AI:q* AI:tests')
+    // await t.step('flare', async () => {
 
-      // send in a single action that will do many parallel actions internally
+    //   const count = 50
+
+    //   const results = await parallel({ count })
+    //   expect(results).toHaveLength(count)
+    //   assert(Array.isArray(results))
+    //   for (const result of results) {
+    //     expect(result).toBe('local reply')
+    //   }
+    // })
+    await t.step('flare squared', async () => {
       const count = 50
+      const multiplier = 50
 
-      const results = await parallel({ count })
-      expect(results).toHaveLength(count)
+      const results = await squared({ count, multiplier })
+      expect(results).toHaveLength(multiplier)
       assert(Array.isArray(results))
       for (const result of results) {
-        expect(result).toBe('local reply')
+        expect(result).toHaveLength(count)
+        assert(Array.isArray(result))
+        for (const subresult of result) {
+          expect(subresult).toBe('local reply')
+        }
       }
-
-      await artifact.stop()
     })
+    await artifact.stop()
   })
 }
