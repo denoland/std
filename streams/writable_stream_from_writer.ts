@@ -7,7 +7,7 @@ import { toWritableStream } from "../io/to_writable_stream.ts";
 /**
  * Options for {@linkcode writableStreamFromWriter}.
  *
- * @deprecated (will be removed after 1.0.0) Use {@linkcode toWritableStream} instead.
+ * @deprecated This will be removed in 1.0.0. Use {@linkcode toWritableStream} instead.
  */
 export interface WritableStreamFromWriterOptions {
   /**
@@ -22,7 +22,7 @@ export interface WritableStreamFromWriterOptions {
 /**
  * Create a {@linkcode WritableStream} from a {@linkcode Writer}.
  *
- * @deprecated (will be removed after 1.0.0) Use {@linkcode toWritableStream} instead.
+ * @deprecated This will be removed in 1.0.0. Use {@linkcode toWritableStream} instead.
  */
 export function writableStreamFromWriter(
   writer: Writer,

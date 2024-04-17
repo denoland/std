@@ -40,7 +40,7 @@ and [architecture guide](./ARCHITECTURE.md) before contributing.
    ```ts
    // /sub/foo.ts
    /**
-    * @deprecated (will be removed in 0.215.0) Use {@linkcode bar} instead.
+    * @deprecated This will be removed in 0.215.0. Use {@linkcode bar} instead.
     */
    export function foo() {}
    ```

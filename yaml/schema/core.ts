@@ -21,6 +21,6 @@ export const CORE_SCHEMA: Schema = new Schema({
  *
  * @see {@link http://www.yaml.org/spec/1.2/spec.html#id2804923}
  *
- * @deprecated (will be removed in 1.0.0) Use {@link CORE_SCHEMA} instead.
+ * @deprecated This will be removed in 1.0.0. Use {@link CORE_SCHEMA} instead.
  */
 export const core = CORE_SCHEMA;
