@@ -5,13 +5,12 @@ import { copy } from "./copy.ts";
 /**
  * Returns a new byte slice composed of `count` repetitions of the `source`
  * array.
- *
- * If `count` is negative, a `RangeError` is thrown.
- *
+ * *
  * @param source Source array to repeat.
  * @param count Number of times to repeat the source array.
  * @returns A new byte slice composed of `count` repetitions of the `source`
  * array.
+ * @throws {RangeError} If `count` is a negative or not an integer.
  *
  * @example Basic usage
  * ```ts
@@ -27,16 +26,8 @@ import { copy } from "./copy.ts";
  * ```
  */
 export function repeat(source: Uint8Array, count: number): Uint8Array {
-  if (count === 0) {
-    return new Uint8Array();
-  }
-
-  if (count < 0) {
-    throw new RangeError("bytes: negative repeat count");
-  }
-
-  if (!Number.isInteger(count)) {
-    throw new Error("bytes: repeat count must be an integer");
+  if (count < 0 || !Number.isInteger(count)) {
+    throw new RangeError("Count must be a non-negative integer");
   }
 
   const nb = new Uint8Array(source.length * count);
