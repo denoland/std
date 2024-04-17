@@ -42,6 +42,12 @@ export const api = {
     additionalProperties: false,
     properties: { target: { type: 'object' } },
   },
+  parallel: {
+    description: 'call local in parallel',
+    type: 'object',
+    additionalProperties: false,
+    properties: { count: { type: 'integer', minimum: 1 } },
+  },
   pong: {
     description: 'ping the AI',
     type: 'object',
@@ -88,6 +94,14 @@ export const functions = {
     const { pong } = await api.actions('io-fixture', target)
     const result = await pong({})
     return result
+  },
+  parallel: async (params: { count: number }, api: IsolateApi) => {
+    const { local } = await api.actions('io-fixture')
+    const promises = []
+    for (let i = 0; i < params.count; i++) {
+      promises.push(local({}, { branch: true }))
+    }
+    return Promise.all(promises)
   },
   pong: () => {
     log('pong')

@@ -1,5 +1,6 @@
 import { expect, log } from '@utils'
 import { Artifact } from '../api/web-client.types.ts'
+import { assert } from '@std/assert'
 
 const ioFixture = 'io-fixture'
 export default (name: string, cradleMaker: () => Promise<Artifact>) => {
@@ -52,6 +53,30 @@ export default (name: string, cradleMaker: () => Promise<Artifact>) => {
         expect(result).toBe('local reply')
       }
       log('done')
+
+      await artifact.stop()
+    })
+  })
+  Deno.test.only(prefix + 'flare', async (t) => {
+    const artifact = await cradleMaker()
+    const repo = 'cradle/pierce'
+    await artifact.rm({ repo })
+
+    const { pid: target } = await artifact.init({ repo })
+    const { parallel } = await artifact.actions(ioFixture, target)
+
+    await t.step('flare', async () => {
+      log.enable('AI:q* AI:tests')
+
+      // send in a single action that will do many parallel actions internally
+      const count = 50
+
+      const results = await parallel({ count })
+      expect(results).toHaveLength(count)
+      assert(Array.isArray(results))
+      for (const result of results) {
+        expect(result).toBe('local reply')
+      }
 
       await artifact.stop()
     })
