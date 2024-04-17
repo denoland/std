@@ -12,7 +12,9 @@ import {
   isQueueExe,
   isQueuePool,
   isQueueSplice,
+  PID,
   PierceRequest,
+  Poolable,
   print,
   QueueMessage,
   SolidRequest,
@@ -99,6 +101,7 @@ export const lifecycles: IsolateLifecycle = {
     db.listen(async (message: QueueMessage) => {
       if (isQueuePool(message)) {
         const { poolable } = message
+        logger('qpl', poolable.target)(commitish(poolable))
         let tip = await FS.openHead(poolable.target, db)
         while (await db.hasPoolable(poolable)) {
           if (await doAtomicCommit(db, tip)) {
@@ -114,6 +117,7 @@ export const lifecycles: IsolateLifecycle = {
         const io = await IOChannel.read(parentFs)
         assert(io, 'io not found')
         const branchPid = io.getBranchPid(sequence)
+        logger('qbr', parentPid)(parentCommit, sequence, print(branchPid))
 
         let head = await db.readHead(branchPid)
         while (!head) {
@@ -125,7 +129,7 @@ export const lifecycles: IsolateLifecycle = {
       }
       if (isQueueExe(message)) {
         const { request, commit, sequence } = message
-        getLoggerFor(request)(commit, sequence, request.functionName)
+        logger('qex', request.target)(commit, sequence, request.functionName)
         if (await isSettled(request, sequence, db)) {
           return
         }
@@ -217,10 +221,10 @@ export const sanitizeContext = (api: IsolateApi<C>): C => {
   return { db, exe }
 }
 // TODO remove anyone using atomics except for io
-const getLoggerFor = (request: SolidRequest) => {
-  const key = print(request.target)
+const logger = (prefix: string, pid: PID) => {
+  const key = print(pid)
   if (!loggerCache.has(key)) {
-    const logger = Debug('AI:qex:' + key)
+    const logger = Debug('AI:' + prefix + ':' + key)
     loggerCache.set(key, logger)
   }
   const logger = loggerCache.get(key)
@@ -228,3 +232,9 @@ const getLoggerFor = (request: SolidRequest) => {
   return logger
 }
 const loggerCache = new Map<string, (...args: unknown[]) => void>()
+const commitish = (poolable: Poolable) => {
+  if ('ulid' in poolable) {
+    return poolable.ulid
+  }
+  return poolable.commit
+}

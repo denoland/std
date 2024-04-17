@@ -130,6 +130,7 @@ export default class IOChannel {
     const { sequence } = reply
     assert(Number.isInteger(sequence), 'reply needs a sequence number')
     assert(sequence >= 0, 'reply needs a whole sequence number')
+    assert(!this.isSettled(sequence), 'sequence already settled: ' + sequence)
 
     const request = this.#io.requests[sequence]
     assert(request, `reply sequence not found: ${sequence}`)
@@ -223,6 +224,8 @@ export default class IOChannel {
     return sequence
   }
   addPending(sequence: number, commit: string, requests: UnsequencedRequest[]) {
+    assert(!this.isSettled(sequence), 'sequence already settled')
+    assert(!this.isPendingIncluded(sequence, commit), 'commit already included')
     const sequences = []
     const solidified: (SolidRequest | MergeRequest)[] = []
     for (const request of requests) {
