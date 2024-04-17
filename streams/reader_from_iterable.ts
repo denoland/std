@@ -23,7 +23,7 @@ import type { Reader } from "../io/types.ts";
  * await copy(reader, file);
  * ```
  *
- * @deprecated (will be removed after 1.0.0) Use {@linkcode ReadableStream.from} instead.
+ * @deprecated This will be removed in 1.0.0. Use {@linkcode ReadableStream.from} instead.
  */
 export function readerFromIterable(
   iterable: Iterable<Uint8Array> | AsyncIterable<Uint8Array>,

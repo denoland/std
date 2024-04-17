@@ -19,7 +19,7 @@ const MAX_ACCEPT_BACKOFF_DELAY = 1000;
 /**
  * Information about the connection a request arrived on.
  *
- * @deprecated (will be removed after 1.0.0) Use {@linkcode Deno.ServeHandlerInfo} instead.
+ * @deprecated This will be removed in 1.0.0. Use {@linkcode Deno.ServeHandlerInfo} instead.
  */
 export interface ConnInfo {
   /** The local address of the connection. */
@@ -36,7 +36,7 @@ export interface ConnInfo {
  * of the error is isolated to the individual request. It will catch the error
  * and close the underlying connection.
  *
- * @deprecated (will be removed after 1.0.0) Use {@linkcode Deno.ServeHandler} instead.
+ * @deprecated This will be removed in 1.0.0. Use {@linkcode Deno.ServeHandler} instead.
  */
 export type Handler = (
   request: Request,
@@ -46,7 +46,7 @@ export type Handler = (
 /**
  * Options for running an HTTP server.
  *
- * @deprecated (will be removed after 1.0.0) Use {@linkcode Deno.ServeInit} instead.
+ * @deprecated This will be removed in 1.0.0. Use {@linkcode Deno.ServeInit} instead.
  */
 export interface ServerInit extends Partial<Deno.ListenOptions> {
   /** The handler to invoke for individual HTTP requests. */
@@ -63,7 +63,7 @@ export interface ServerInit extends Partial<Deno.ListenOptions> {
 /**
  * Used to construct an HTTP server.
  *
- * @deprecated (will be removed after 1.0.0) Use {@linkcode Deno.serve} instead.
+ * @deprecated This will be removed in 1.0.0. Use {@linkcode Deno.serve} instead.
  */
 export class Server {
   #port?: number;
@@ -501,7 +501,7 @@ export class Server {
 /**
  * Additional serve options.
  *
- * @deprecated (will be removed after 1.0.0) Use {@linkcode Deno.ServeInit} instead.
+ * @deprecated This will be removed in 1.0.0. Use {@linkcode Deno.ServeInit} instead.
  */
 export interface ServeInit extends Partial<Deno.ListenOptions> {
   /** An AbortSignal to close the server and all connections. */
@@ -517,7 +517,7 @@ export interface ServeInit extends Partial<Deno.ListenOptions> {
 /**
  * Additional serve listener options.
  *
- * @deprecated (will be removed after 1.0.0) Use {@linkcode Deno.ServeOptions} instead.
+ * @deprecated This will be removed in 1.0.0. Use {@linkcode Deno.ServeOptions} instead.
  */
 export interface ServeListenerOptions {
   /** An AbortSignal to close the server and all connections. */
@@ -554,7 +554,7 @@ export interface ServeListenerOptions {
  * @param handler The handler for individual HTTP requests.
  * @param options Optional serve options.
  *
- * @deprecated (will be removed after 1.0.0) Use {@linkcode Deno.serve} instead.
+ * @deprecated This will be removed in 1.0.0. Use {@linkcode Deno.serve} instead.
  */
 export async function serveListener(
   listener: Deno.Listener,
@@ -622,7 +622,7 @@ function hostnameForDisplay(hostname: string) {
  * @param handler The handler for individual HTTP requests.
  * @param options The options. See `ServeInit` documentation for details.
  *
- * @deprecated (will be removed after 1.0.0) Use {@linkcode Deno.serve} instead.
+ * @deprecated This will be removed in 1.0.0. Use {@linkcode Deno.serve} instead.
  */
 export async function serve(
   handler: Handler,
@@ -667,7 +667,7 @@ export async function serve(
 /**
  * Initialization parameters for {@linkcode serveTls}.
  *
- * @deprecated (will be removed after 1.0.0) Use {@linkcode Deno.ServeTlsOptions} instead.
+ * @deprecated This will be removed in 1.0.0. Use {@linkcode Deno.ServeTlsOptions} instead.
  */
 export interface ServeTlsInit extends ServeInit {
   /** Server private key in PEM format */
@@ -742,7 +742,7 @@ export interface ServeTlsInit extends ServeInit {
  * @param options The options. See `ServeTlsInit` documentation for details.
  * @returns
  *
- * @deprecated (will be removed after 1.0.0) Use {@linkcode Deno.serve} instead.
+ * @deprecated This will be removed in 1.0.0. Use {@linkcode Deno.serve} instead.
  */
 export async function serveTls(
   handler: Handler,
