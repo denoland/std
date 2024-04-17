@@ -39,13 +39,12 @@ export function repeat(source: Uint8Array, count: number): Uint8Array {
     throw new Error("bytes: repeat count must be an integer");
   }
 
-  const nb = new Uint8Array(source.length * count);
+  const repeated = new Uint8Array(source.length * count);
+  let offset = 0;
 
-  let bp = copy(source, nb);
-
-  for (; bp < nb.length; bp *= 2) {
-    copy(nb.slice(0, bp), nb, bp);
+  while (offset < repeated.length) {
+    offset += copy(source, repeated, offset);
   }
 
-  return nb;
+  return repeated;
 }
