@@ -806,10 +806,22 @@ function main() {
 
   const useTls = !!(keyFile && certFile);
 
+  function onListen({ port }: { port: number }) {
+    const networkAddress = getNewtowrkAddress();
+    const protocol = useTls ? "https" : "http";
+    let message =
+      `Serving static files!\nlocal: ${protocol}://localhost:${port}`;
+    if (networkAddress) {
+      message += `\nnetwork: ${protocol}://${networkAddress}:${port}`;
+    }
+    console.log(message);
+  }
+
   if (useTls) {
     Deno.serve({
       port,
       hostname: host,
+      onListen,
       cert: Deno.readTextFileSync(certFile),
       key: Deno.readTextFileSync(keyFile),
     }, handler);
@@ -817,7 +829,21 @@ function main() {
     Deno.serve({
       port,
       hostname: host,
+      onListen,
     }, handler);
+  }
+}
+
+/**
+ * Gets the network address of the machine,
+ * inspired by the util of the same name in `npm:serve`
+ * https://github.com/vercel/serve/blob/1ea55b1b5004f468159b54775e4fb3090fedbb2b/source/utilities/http.ts#L33
+ */
+function getNewtowrkAddress() {
+  for (const { family, address } of Deno.networkInterfaces()) {
+    if (family === "IPv4" && !address.startsWith("127.")) {
+      return address;
+    }
   }
 }
 
