@@ -1,7 +1,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 import type { Range, SemVer } from "./types.ts";
-import { rangeIncludes } from "./range_includes.ts";
+import { satisfies } from "./satisfies.ts";
 import { lessThan } from "./less_than.ts";
 
 /**
@@ -17,7 +17,7 @@ export function minSatisfying(
 ): SemVer | undefined {
   let min;
   for (const version of versions) {
-    if (!rangeIncludes(range, version)) continue;
+    if (!satisfies(version, range)) continue;
     min = min && lessThan(min, version) ? min : version;
   }
   return min;

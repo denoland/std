@@ -3,9 +3,9 @@
 import { assert } from "../assert/mod.ts";
 import { parse } from "./parse.ts";
 import { parseRange } from "./parse_range.ts";
-import { rangeIncludes } from "./range_includes.ts";
+import { satisfies } from "./satisfies.ts";
 
-Deno.test("rangeIncludes() returns true when the version is in the range", async (t) => {
+Deno.test("satisfies() returns true when the version is in the range", async (t) => {
   const versions: [string, string][] = [
     ["1.0.0 - 2.0.0", "1.2.3"],
     ["^1.2.3+build", "1.2.3"],
@@ -186,13 +186,13 @@ Deno.test("rangeIncludes() returns true when the version is in the range", async
     await t.step(`${r} ∋ ${v}`, () => {
       const range = parseRange(r);
       const s = parse(v);
-      assert(rangeIncludes(range, s));
+      assert(satisfies(s, range));
     });
   }
 });
 
 Deno.test({
-  name: "rangeIncludes() returns false when the version is not in the range",
+  name: "satisfies() returns false when the version is not in the range",
   fn: async (t) => {
     const versions: [string, string][] = [
       ["1.0.0 - 2.0.0", "2.2.3"],
@@ -379,14 +379,14 @@ Deno.test({
       await t.step(`${r} ∌ ${v}`, () => {
         const range = parseRange(r);
         const s = parse(v);
-        const found = rangeIncludes(range, s);
+        const found = satisfies(s, range);
         assert(!found);
       });
     }
   },
 });
 
-Deno.test("negativeUnlockedPrereleaseRange", function () {
+Deno.test("satisfies() works with negative unlocked pre-release range", function () {
   const versions: [string, string][] = [
     ["^1.0.0", "1.0.0-rc1"],
     ["^1.2.3-rc2", "2.0.0"],
@@ -396,7 +396,7 @@ Deno.test("negativeUnlockedPrereleaseRange", function () {
   for (const [r, v] of versions) {
     const range = parseRange(r);
     const s = parse(v);
-    const found = rangeIncludes(range, s);
+    const found = satisfies(s, range);
     assert(!found, `${v} satisfied by ${r} unexpectedly`);
   }
 });
