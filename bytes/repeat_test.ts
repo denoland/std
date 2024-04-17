@@ -7,11 +7,11 @@ Deno.test("repeat()", () => {
   const repeatTestCase = [
     ["", "", 0],
     ["", "", 1],
-    ["", "", 1.1, "bytes: repeat count must be an integer"],
+    ["", "", 1.1, "Count must be a non-negative integer"],
     ["", "", 2],
     ["", "", 0],
     ["-", "", 0],
-    ["-", "-", -1, "bytes: negative repeat count"],
+    ["-", "-", -1, "Count must be a non-negative integer"],
     ["-", "----------", 10],
     ["abc ", "abc abc abc ", 3],
   ];
