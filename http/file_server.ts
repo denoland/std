@@ -807,7 +807,7 @@ function main() {
   const useTls = !!(keyFile && certFile);
 
   function onListen({ port }: { port: number }) {
-    const networkAddress = getNewtowrkAddress();
+    const networkAddress = getNetworkAddress();
     const protocol = useTls ? "https" : "http";
     let message =
       `Serving static files!\nlocal: ${protocol}://localhost:${port}`;
@@ -839,7 +839,7 @@ function main() {
  * inspired by the util of the same name in `npm:serve`
  * https://github.com/vercel/serve/blob/1ea55b1b5004f468159b54775e4fb3090fedbb2b/source/utilities/http.ts#L33
  */
-function getNewtowrkAddress() {
+function getNetworkAddress() {
   for (const { family, address } of Deno.networkInterfaces()) {
     if (family === "IPv4" && !address.startsWith("127.")) {
       return address;
