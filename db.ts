@@ -210,12 +210,13 @@ export default class DB {
         }
         const last = lastTransmitted
         this.#getSplice(pid, commit, path).then((splice) => {
-          if (last === lastTransmitted) {
-            lastTransmitted = splice.oid
-            sink.push(splice)
-          } else {
-            console.log('OVERRUN')
-          }
+          // TODO once piece replies are handled directly, this can be enabled
+          // if (last === lastTransmitted) {
+          lastTransmitted = splice.oid
+          sink.push(splice)
+          // } else {
+          // console.log('OVERRUN')
+          // }
         })
       }
     }

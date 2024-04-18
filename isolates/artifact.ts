@@ -24,7 +24,6 @@ import DB from '../db.ts'
 import FS from '../git/fs.ts'
 import { pid } from './repo.ts'
 const log = Debug('AI:artifact')
-const qlog = Debug('AI:broadcast:queue')
 
 const request = {
   type: 'object',
