@@ -806,13 +806,12 @@ function main() {
 
   const useTls = !!(keyFile && certFile);
 
-  function onListen({ port }: { port: number }) {
+  function onListen({ port, hostname }: { port: number; hostname: string }) {
     const networkAddress = getNetworkAddress();
     const protocol = useTls ? "https" : "http";
-    let message =
-      `Serving static files!\nlocal: ${protocol}://localhost:${port}`;
+    let message = `Listening on:\n- local: ${protocol}://${hostname}:${port}`;
     if (networkAddress) {
-      message += `\nnetwork: ${protocol}://${networkAddress}:${port}`;
+      message += `\n- network: ${protocol}://${networkAddress}:${port}`;
     }
     console.log(message);
   }
