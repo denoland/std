@@ -32,7 +32,6 @@ export default class Server {
   // else, check for it, and make it if not there
 
   static async create() {
-    Debug.enable('AI:qex:* AI:engine:* AI:broadcast:*')
     // TODO whilst no system chain, fail with help message
     const engine = await Engine.create()
     const app = new Hono().basePath('/api')
