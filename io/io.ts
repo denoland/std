@@ -19,7 +19,6 @@ const log = Debug('AI:io')
  * the fs that need to be included in the commit.
  */
 export const doAtomicCommit = async (db: DB, fs: FS, exe?: ExeResult) => {
-  db.getCommitsBroadcast(fs.pid) // preload
   const atomic = db.atomic()
   const { poolKeys, pool } = await db.getPooledActions(fs.pid)
   let pending: Pending | undefined
@@ -52,9 +51,6 @@ export const doAtomicCommit = async (db: DB, fs: FS, exe?: ExeResult) => {
     return false
   }
   const success = await atomic.commit()
-  if (success) {
-    broadcastCommit(solids, fs.pid, db)
-  }
   log('commit success %o from %o to %o', success, fs.oid, solids.oid)
   return success
 }
@@ -102,15 +98,4 @@ export const doAtomicBranch = async (db: DB, fs: FS, sequence: number) => {
   const success = await atomic.commit()
   log('branch success %o from %o to %o', success, fs.oid, head)
   return success
-}
-
-const blog = Debug('AI:broadcast:commit')
-const broadcastCommit = (solids: Solids, pid: PID, db: DB) => {
-  const channel = db.getCommitsBroadcast(pid)
-  const { oid, changes, commit } = solids
-  const timestamp = commit.committer.timestamp * 1000
-  const splice: Splice = { pid, oid, commit, timestamp, changes }
-
-  blog('broadcasting', print(pid), splice.oid)
-  channel.postMessage(splice)
 }

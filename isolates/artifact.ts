@@ -3,7 +3,6 @@ import Executor from '../exe/exe.ts'
 import IOChannel from '../io/io-channel.ts'
 import {
   C,
-  Change,
   ExeResult,
   freezePid,
   isMergeReply,
@@ -12,14 +11,12 @@ import {
   isQueueBranch,
   isQueueExe,
   isQueuePool,
-  isQueueSplice,
   PID,
   PierceRequest,
   Poolable,
   print,
   QueueMessage,
   SolidRequest,
-  Splice,
 } from '@/constants.ts'
 import IsolateApi from '../isolate-api.ts'
 import { doAtomicBranch, doAtomicCommit } from '@io/io.ts'
@@ -103,12 +100,11 @@ export const lifecycles: IsolateLifecycle = {
       if (isQueuePool(message)) {
         const { poolable } = message
         logger('qpl', poolable.target)(commitish(poolable))
-        let tip = await FS.openHead(poolable.target, db)
         while (await db.hasPoolable(poolable)) {
+          const tip = await FS.openHead(poolable.target, db)
           if (await doAtomicCommit(db, tip)) {
             return
           }
-          tip = await FS.openHead(poolable.target, db)
         }
       }
       if (isQueueBranch(message)) {
@@ -146,29 +142,6 @@ export const lifecycles: IsolateLifecycle = {
           }
           tip = await FS.openHead(request.target, db)
         }
-      }
-      if (isQueueSplice(message)) {
-        const { ulid, pid, path } = message
-        const fs = await FS.openHead(pid, db)
-        const { oid } = fs
-        const channel = db.getInitialChannel(ulid)
-        const commit = await fs.getCommit()
-        const changes: { [key: string]: Change } = {}
-        if (path) {
-          if (await fs.exists(path)) {
-            // does a full read, since an active request has nothing already
-            // TODO sniff filetype
-            const patch = await fs.read(path)
-            // TODO use json differ for json
-            const { oid } = await fs.readBlob(path)
-            changes[path] = { patch, oid }
-          }
-        }
-
-        const timestamp = commit.committer.timestamp * 1000
-        const splice: Splice = { pid, oid, commit, timestamp, changes }
-        qlog('transmit', print(pid), ulid, splice.oid)
-        channel.postMessage(splice)
       }
     })
   },

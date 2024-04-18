@@ -119,7 +119,7 @@ export const functions = {
     const { parallel } = await api.actions('io-fixture')
     const promises = []
     for (let i = 0; i < params.multiplier; i++) {
-      promises.push(parallel({ count: params.count }))
+      promises.push(parallel({ count: params.count }, { branch: true }))
     }
     return Promise.all(promises)
   },

@@ -2,21 +2,21 @@ import { pushable } from 'it-pushable'
 import { BLOB_META_KEY, get, getMeta } from '@kitsonk/kv-toolbox/blob'
 import { batchedAtomic } from '@kitsonk/kv-toolbox/batched_atomic'
 import * as keys from './keys.ts'
-import { freezePid, PID, Poolable, print, Splice } from '@/constants.ts'
+import { freezePid, PID, Poolable, Splice } from '@/constants.ts'
 import { assert, Debug, openKv, posix, sha1 } from '@utils'
 import { Atomic } from './atomic.ts'
 import { QueueMessage } from '@/constants.ts'
 import { ulid } from 'ulid'
+import FS from '@/git/fs.ts'
 
 const log = Debug('AI:db')
-const blog = Debug('AI:broadcast:receive')
-const qlog = Debug('AI:broadcast:queue')
 export default class DB {
-  #kv: Deno.Kv
-  #channels = new Set<BroadcastChannel>()
-  #broadcastChannels = new Map<string, BroadcastChannel>()
+  #kvStore: Deno.Kv
+  #abort = new AbortController()
+  #aborts = new Set<AbortController>()
+
   private constructor(kv: Deno.Kv) {
-    this.#kv = kv
+    this.#kvStore = kv
   }
   static async create() {
     const kv = await openKv()
@@ -24,13 +24,19 @@ export default class DB {
     const db = new DB(kv)
     return db
   }
-  stop() {
-    for (const channel of this.#channels.values()) {
-      channel.close()
+  get #kv() {
+    if (this.#abort.signal.aborted) {
+      throw new Error('DB is closed')
     }
-    this.#channels.clear()
-    this.#broadcastChannels.clear()
-    return this.#kv.close()
+    return this.#kvStore
+  }
+  stop() {
+    const kv = this.#kv
+    this.#abort.abort()
+    for (const abort of this.#aborts) {
+      abort.abort()
+    }
+    return kv.close()
   }
   async hasPoolable(poolable: Poolable) {
     const key = keys.getPoolKey(poolable)
@@ -157,34 +163,6 @@ export default class DB {
     read()
     return { key, value: lockId, versionstamp }
   }
-  /** A single use broadcast channel used to reply to queries.  Trick seems to
-   * be to open it as early as possible in the isolate lifecycle to give it the
-   * most reliable chance of getting its message out :shrug:
-   *
-   * The channel is held open to allow the transmission to get off machine. */
-  getInitialChannel(name: string) {
-    const channel = new BroadcastChannel(name)
-    this.#channels.add(channel)
-    return channel
-  }
-  /** Used when a new commit is formed to broadcast the diff */
-  getCommitsBroadcast(pid: PID) {
-    const key = keys.getChannelKey(pid)
-    if (!this.#broadcastChannels.has(key)) {
-      const channel = new BroadcastChannel(key)
-      this.#broadcastChannels.set(key, channel)
-      this.#channels.add(channel)
-    }
-    const channel = this.#broadcastChannels.get(key)
-    assert(channel, 'Channel not found')
-    return channel
-  }
-  getCommitsListener(pid: PID) {
-    const key = keys.getChannelKey(pid)
-    const channel = new BroadcastChannel(key)
-    this.#channels.add(channel)
-    return channel
-  }
   /**
    * Will return an async iterable of Splices which are in order and do not skip
    * any intermediaries.  The parent Splice will always immediately precede the
@@ -207,86 +185,56 @@ export default class DB {
     if (path) {
       assert(!posix.isAbsolute(path), `path must be relative: ${path}`)
     }
-
-    const headRequestId = ulid()
-    const initialChannel = this.getInitialChannel(headRequestId)
-
-    const head = new Promise<Splice>((resolve) => {
-      initialChannel.addEventListener('message', (event): void => {
-        qlog('received', print(pid), headRequestId, event.data.oid)
-        resolve(event.data)
-      }, { once: true })
-    })
-
-    const commitsChannel = this.getCommitsListener(pid)
-    const source = pushable<Splice>({ objectMode: true })
-    const commits = pushable<Splice>({ objectMode: true })
-    commitsChannel.addEventListener('message', (event: MessageEvent) => {
-      blog('commit', print(pid), event.data.oid)
-      commits.push(event.data)
-    })
+    const abort = new AbortController()
+    this.#aborts.add(abort)
     signal?.addEventListener('abort', () => {
-      commitsChannel.close()
-      this.#channels.delete(commitsChannel)
-      commits.return()
-      initialChannel.close()
-      this.#channels.delete(initialChannel)
-      source.return()
+      abort.abort()
     })
+    const sink = pushable<Splice>({ objectMode: true })
+    abort.signal.addEventListener('abort', () => {
+      this.#aborts.delete(abort)
+      sink.return()
+    })
+
+    const watch = this.#kv.watch<string[]>([keys.getHeadKey(pid)])
     const pipe = async () => {
-      await this.#requestHead(headRequestId, pid, path)
-      const firstSplice = await head
-      if (Object.keys(firstSplice.changes).length) {
-        assert(path, 'Path not found in first splice')
-        assert(firstSplice.changes[path], 'Path not found in first splice')
-      }
-      source.push(firstSplice)
-      let last = firstSplice
-      const pool = new Map<string, Splice>()
-      for await (const splice of commits) {
-        if (splice.oid === last.oid) {
+      let lastTransmitted: string | undefined
+      for await (const [result] of streamToIt(watch, abort.signal)) {
+        if (!result.versionstamp) {
           continue
         }
-        let scoped = splice
-        if (path && splice.changes[path]) {
-          const { changes } = splice
-          scoped = { ...splice, changes: { [path]: changes[path] } }
-        }
-
-        const parent = scoped.commit.parent[0]
-        if (parent !== last.oid) {
-          pool.set(parent, scoped)
-          // TODO start an abortable process to get the missing parent
-          console.log('pooled', scoped.oid, scoped.commit.parent[0])
-
+        const commit = result.value
+        if (commit === after) {
+          // TODO maybe after is a waste, since head is all that matters ?
           continue
         }
-        last = scoped
-        source.push(scoped)
-
-        let noHits = true
-        while (noHits && pool.size) {
-          const next = pool.get(last.oid)
-          if (next) {
-            pool.delete(last.oid)
-            last = next
-            source.push(next)
+        const last = lastTransmitted
+        this.#getSplice(pid, commit, path).then((splice) => {
+          if (last === lastTransmitted) {
+            lastTransmitted = splice.oid
+            sink.push(splice)
           } else {
-            noHits = false
+            console.log('OVERRUN')
           }
-        }
+        })
       }
     }
-    pipe().catch(source.throw)
-    return source
+    pipe().catch(sink.throw)
+    return sink
   }
-  async #requestHead(ulid: string, pid: PID, path?: string) {
-    freezePid(pid)
-    const result = await this.atomic()
-      .enqueueHeadSplice(ulid, pid, path)
-      .commit()
-    assert(result, 'requestSplice failed')
-    qlog('request', print(pid), ulid)
+  async #getSplice(pid: PID, oid: string, path?: string) {
+    const fs = FS.open(pid, oid, this)
+    const commit = await fs.getCommit()
+    const timestamp = commit.committer.timestamp * 1000
+    const splice: Splice = { pid, oid, commit, timestamp, changes: {} }
+    if (path) {
+      if (await fs.exists(path)) {
+        const { oid } = await fs.readBlob(path)
+        const patch = await fs.read(path) // TODO check caching makes this fast
+        splice.changes[path] = { oid, patch }
+      }
+    }
+    return splice
   }
 }
 
@@ -295,5 +243,34 @@ const watchUndelivered = async (kv: Deno.Kv) => {
     if (undelivered.versionstamp) {
       console.error('undelivered', undelivered.key, undelivered.value)
     }
+  }
+}
+
+const streamToIt = (stream: ReadableStream, signal?: AbortSignal) => {
+  const reader = stream.getReader()
+  return {
+    async *[Symbol.asyncIterator]() {
+      if (signal?.aborted) {
+        reader.releaseLock()
+        return
+      }
+      signal?.addEventListener('abort', () => {
+        reader.cancel()
+        reader.releaseLock()
+        return
+      })
+
+      try {
+        while (stream.locked) {
+          const { done, value } = await reader.read()
+          if (done) {
+            break
+          }
+          yield value
+        }
+      } finally {
+        reader.releaseLock()
+      }
+    },
   }
 }

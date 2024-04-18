@@ -133,12 +133,11 @@ export const isRemoteRequest = (
  * Each task will continue to retry until it is successful, as long as its check
  * for duplication reassures it to keep trying.
  */
-export type QueueMessage = QueuePool | QueueExe | QueueBranch | QueueHeadSplice
+export type QueueMessage = QueuePool | QueueExe | QueueBranch
 export enum QueueMessageType {
   POOL = 'pool',
   EXECUTION = 'exe',
   BRANCH = 'branch',
-  HEAD_SPLICE = 'head-splice',
 }
 export type QueuePool = {
   type: QueueMessageType.POOL
@@ -156,12 +155,6 @@ export type QueueBranch = {
   parentPid: PID
   sequence: number
 }
-export type QueueHeadSplice = {
-  type: QueueMessageType.HEAD_SPLICE
-  ulid: string
-  pid: PID
-  path?: string
-}
 
 export const isQueuePool = (m: QueueMessage): m is QueuePool => {
   return m.type === QueueMessageType.POOL
@@ -171,9 +164,6 @@ export const isQueueExe = (m: QueueMessage): m is QueueExe => {
 }
 export const isQueueBranch = (m: QueueMessage): m is QueueBranch => {
   return m.type === QueueMessageType.BRANCH
-}
-export const isQueueSplice = (m: QueueMessage): m is QueueHeadSplice => {
-  return m.type === QueueMessageType.HEAD_SPLICE
 }
 
 export * from './api/web-client.types.ts'

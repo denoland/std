@@ -65,17 +65,16 @@ export default (name: string, cradleMaker: () => Promise<Artifact>) => {
     const { parallel, squared } = await artifact.actions(ioFixture, target)
 
     log.enable('AI:q* AI:tests')
-    // await t.step('flare', async () => {
+    await t.step('flare', async () => {
+      const count = 50
 
-    //   const count = 50
-
-    //   const results = await parallel({ count })
-    //   expect(results).toHaveLength(count)
-    //   assert(Array.isArray(results))
-    //   for (const result of results) {
-    //     expect(result).toBe('local reply')
-    //   }
-    // })
+      const results = await parallel({ count })
+      expect(results).toHaveLength(count)
+      assert(Array.isArray(results))
+      for (const result of results) {
+        expect(result).toBe('local reply')
+      }
+    })
     await t.step('flare squared', async () => {
       const count = 50
       const multiplier = 50
