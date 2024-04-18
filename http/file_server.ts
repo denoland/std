@@ -809,9 +809,9 @@ function main() {
   function onListen({ port, hostname }: { port: number; hostname: string }) {
     const networkAddress = getNetworkAddress();
     const protocol = useTls ? "https" : "http";
-    let message = `Listening on:\n- local: ${protocol}://${hostname}:${port}`;
+    let message = `Listening on:\n- Local: ${protocol}://${hostname}:${port}`;
     if (networkAddress) {
-      message += `\n- network: ${protocol}://${networkAddress}:${port}`;
+      message += `\n- Network: ${protocol}://${networkAddress}:${port}`;
     }
     console.log(message);
   }
