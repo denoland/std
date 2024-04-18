@@ -99,11 +99,9 @@ export const lifecycles: IsolateLifecycle = {
       if (isQueuePool(message)) {
         const { poolable } = message
         logger('qpl', poolable.target)(commitish(poolable))
-        while (await db.hasPoolable(poolable)) {
+        while (await db.hasPoolables(poolable.target)) {
           const tip = await FS.openHead(poolable.target, db)
-          if (await doAtomicCommit(db, tip)) {
-            return
-          }
+          await doAtomicCommit(db, tip)
         }
       }
       if (isQueueBranch(message)) {

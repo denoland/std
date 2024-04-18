@@ -39,15 +39,16 @@ export class Atomic {
     const key = keys.getPoolKey(poolable)
     const empty = { key, versionstamp: null }
     this.#atomic = this.#atomic.check(empty).set(key, poolable)
-    return this
+    return this.#incrementPool(poolable)
   }
-  deletePool(keys: Deno.KvKey[]) {
+  deletePool(pid: PID, poolKeys: Deno.KvKey[]) {
     assert(this.#atomic, 'Atomic not set')
-    const ids = keys.map((key) => key[key.length - 1])
-    log('deletePool %o', ids)
-    for (const key of keys) {
+    log('deletePool %o', poolKeys.map((key) => key[key.length - 1]))
+    for (const key of poolKeys) {
       this.#atomic = this.#atomic.delete(key)
     }
+    const markerKey = keys.getPoolMarkerKey(pid)
+    this.#atomic = this.#atomic.sum(markerKey, BigInt(poolKeys.length))
     return this
   }
   async updateHead(pid: PID, fromCommit: string, toCommit: string) {
@@ -112,6 +113,13 @@ export class Atomic {
       keysIfUndelivered: [keys.UNDELIVERED],
       backoffSchedule,
     })
+    return this
+  }
+  #incrementPool(poolable: Poolable) {
+    // TODO make these be a single atomic for the whole pool
+    assert(this.#atomic, 'Atomic not set')
+    const counterKey = keys.getPoolCounterKey(poolable.target)
+    this.#atomic = this.#atomic.sum(counterKey, BigInt(1))
     return this
   }
   async commit() {

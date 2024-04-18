@@ -38,10 +38,24 @@ export default class DB {
     }
     return kv.close()
   }
-  async hasPoolable(poolable: Poolable) {
-    const key = keys.getPoolKey(poolable)
-    const entry = await this.#kv.get(key)
-    return !!entry.versionstamp
+  async hasPoolables(pid: PID, mayBeEmpty = false) {
+    const counterKey = keys.getPoolCounterKey(pid)
+    const markerKey = keys.getPoolMarkerKey(pid)
+    const many = [counterKey, markerKey]
+    const [counter, marker] = await this.#kv.getMany<Deno.KvU64[]>(many)
+    if (!counter.versionstamp) {
+      if (!mayBeEmpty) {
+        throw new Error('Pool does not exist: ' + counterKey.join('/'))
+      }
+      return false
+    }
+    if (!marker.versionstamp) {
+      return counter.value.value > 0
+    }
+    if (counter.value.value < marker.value.value) {
+      throw new Error('invalid marker: ' + markerKey.join('/'))
+    }
+    return counter.value.value > marker.value.value
   }
   async getPooledActions(pid: PID) {
     const prefix = keys.getPoolKeyPrefix(pid)
@@ -52,6 +66,10 @@ export default class DB {
     for await (const entry of entries) {
       // TODO test if range would not get deeply nested items
       if (entry.key.length !== prefix.length + 1) {
+        continue
+      }
+      const id = entry.key[entry.key.length - 1]
+      if (id === keys.POOL_COUNTER || id === keys.POOL_MARKER) {
         continue
       }
       poolKeys.push(entry.key)

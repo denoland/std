@@ -56,7 +56,7 @@ export default (name: string, cradleMaker: () => Promise<Artifact>) => {
     })
     await artifact.stop()
   })
-  Deno.test.ignore(prefix + 'flare', async (t) => {
+  Deno.test.only(prefix + 'flare', async (t) => {
     const artifact = await cradleMaker()
     const repo = 't/flare'
     await artifact.rm({ repo })
@@ -64,7 +64,7 @@ export default (name: string, cradleMaker: () => Promise<Artifact>) => {
     const { pid: target } = await artifact.init({ repo })
     const { parallel, squared } = await artifact.actions(ioFixture, target)
 
-    // log.enable('AI:q* AI:tests')
+    log.enable('AI:q* AI:tests')
     await t.step('flare', async () => {
       const count = 50
 

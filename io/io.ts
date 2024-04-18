@@ -2,7 +2,7 @@ import { getPoolKeyPrefix } from '@/keys.ts'
 import { Debug } from '@utils'
 import { solidify } from '@/git/solidify.ts'
 import { branch } from '@/git/branch.ts'
-import { Pending, PID, Solids } from '@/constants.ts'
+import { Pending, PID, Poolable, Solids } from '@/constants.ts'
 import DB from '@/db.ts'
 import FS from '@/git/fs.ts'
 import { Atomic } from '@/atomic.ts'
@@ -37,7 +37,7 @@ export const doAtomicCommit = async (db: DB, fs: FS, exe?: ExeResult) => {
     return false
   }
   const solids = await solidify(fs, pool, pending)
-  atomic.deletePool(poolKeys)
+  atomic.deletePool(fs.pid, poolKeys)
 
   // the moneyshot
   const headChanged = await atomic.updateHead(fs.pid, fs.oid, solids.oid)
@@ -45,7 +45,7 @@ export const doAtomicCommit = async (db: DB, fs: FS, exe?: ExeResult) => {
     log('head changed from %o missed %o', fs.oid, solids.oid)
     return false
   }
-  transmit(fs.pid, solids, atomic)
+  await transmit(fs.pid, solids, atomic, db)
   const deletionsOk = await deleteBranches(solids.deletes, atomic)
   if (!deletionsOk) {
     return false
@@ -55,7 +55,7 @@ export const doAtomicCommit = async (db: DB, fs: FS, exe?: ExeResult) => {
   return success
 }
 
-const transmit = (pid: PID, solids: Solids, atomic: Atomic) => {
+const transmit = async (pid: PID, solids: Solids, atomic: Atomic, db: DB) => {
   const { oid, exe, branches, poolables } = solids
 
   const transmitted = new Set<string>()
@@ -66,14 +66,23 @@ const transmit = (pid: PID, solids: Solids, atomic: Atomic) => {
   for (const sequence of branches) {
     atomic.enqueueBranch(oid, pid, sequence)
   }
+  const promises = []
   for (const poolable of poolables) {
     atomic.addToPool(poolable)
-    const key = getPoolKeyPrefix(poolable.target).join('/')
+    const key = JSON.stringify(getPoolKeyPrefix(poolable.target))
     if (!transmitted.has(key)) {
-      transmitted.add(key)
       // if one was processed, all were processed ☢️
-      atomic.enqueuePool(poolable)
+      transmitted.add(key)
+      promises.push(pooling(poolable, atomic, db))
     }
+  }
+  await Promise.all(promises)
+}
+const pooling = async (poolable: Poolable, atomic: Atomic, db: DB) => {
+  const poolMayBeEmpty = true
+  const hasPoolables = await db.hasPoolables(poolable.target, poolMayBeEmpty)
+  if (!hasPoolables) {
+    atomic.enqueuePool(poolable)
   }
 }
 const deleteBranches = async (deletes: Solids['deletes'], atomic: Atomic) => {
