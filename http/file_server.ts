@@ -810,7 +810,7 @@ function main() {
     const networkAddress = getNetworkAddress();
     const protocol = useTls ? "https" : "http";
     let message = `Listening on:\n- Local: ${protocol}://${hostname}:${port}`;
-    if (networkAddress) {
+    if (networkAddress && !DENO_DEPLOYMENT_ID) {
       message += `\n- Network: ${protocol}://${networkAddress}:${port}`;
     }
     console.log(message);
