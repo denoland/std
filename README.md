@@ -78,49 +78,52 @@ Check out the documentation [here](https://deno.land/std?doc).
 
 ## Stability
 
+Settled status means a package is unlikely to have breaking changes, but has not
+yet achieved v1 status.
+
 | Sub-module      | Status     |
 | --------------- | ---------- |
 | archive         | Unstable   |
-| assert          | Stable     |
-| async           | Stable     |
-| bytes           | Stable     |
+| assert          | Settled    |
+| async           | Settled    |
+| bytes           | Settled    |
 | cli             | Unstable   |
-| collections     | Stable     |
+| collections     | Settled    |
 | console         | Unstable   |
-| crypto          | Stable     |
-| csv             | Stable     |
+| crypto          | Settled    |
+| csv             | Settled    |
 | data_structures | Unstable   |
 | datetime        | Unstable   |
 | dotenv          | Unstable   |
-| encoding        | Stable     |
+| encoding        | Settled    |
 | expect          | Unstable   |
 | flags           | Unstable   |
-| fmt             | Stable     |
-| front_matter    | Stable     |
-| fs              | Stable     |
+| fmt             | Settled    |
+| front_matter    | Settled    |
+| fs              | Settled    |
 | html            | Unstable   |
 | http            | Unstable   |
 | ini             | Unstable   |
 | io              | Unstable   |
-| json            | Stable     |
-| jsonc           | Stable     |
+| json            | Settled    |
+| jsonc           | Settled    |
 | log             | Unstable   |
-| media_types     | Stable     |
+| media_types     | Settled    |
 | msgpack         | Unstable   |
 | net             | Unstable   |
-| path            | Stable     |
+| path            | Settled    |
 | permissions     | Deprecated |
 | regexp          | Unstable   |
 | semver          | Unstable   |
-| streams         | Stable     |
-| testing         | Stable     |
+| streams         | Settled    |
+| testing         | Settled    |
 | text            | Unstable   |
-| toml            | Stable     |
+| toml            | Settled    |
 | ulid            | Unstable   |
 | url             | Unstable   |
-| uuid            | Stable     |
+| uuid            | Settled    |
 | webgpu          | Unstable   |
-| yaml            | Stable     |
+| yaml            | Settled    |
 
 > For background and discussions regarding the stability of the following
 > sub-modules, see [#3489](https://github.com/denoland/deno_std/issues/3489).
