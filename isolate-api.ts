@@ -128,7 +128,7 @@ export default class IsolateApi<T extends object = Default> {
     const compartment = await Compartment.create(isolate)
     return compartment.api
   }
-  writeJSON(path: string, json: JsonValue) {
+  writeJSON(path: string, json: unknown) {
     assert(this.#accumulator.isActive, 'Activity is denied')
     log('writeJSON', path)
     this.#fs.writeJSON(path, json)

@@ -224,7 +224,7 @@ export default class FS {
     this.#deletes.add(path)
     this.#upserts.delete(path)
   }
-  writeJSON(path: string, json: JsonValue) {
+  writeJSON(path: string, json: unknown) {
     // TODO store json objects specially, only strinify on commit
     // then broadcast changes as json object purely
     assertPath(path)

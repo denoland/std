@@ -117,9 +117,8 @@ export const functions = {
   },
   rm(params: { pid: PID }, api: IsolateApi<C>) {
     // TODO lock the whole repo in case something is running
-    // batch atomic the deletes while we have the lock
     if (!api.isEffect) {
-      throw new Error('Clone requires side effect capabilities')
+      throw new Error('rm requires side effect capabilities')
     }
     if (api.isEffectRecovered) {
       // clean up the clone by wiping the repo, but make sure no existing repo

@@ -36,18 +36,21 @@ export default async (params: Args, api: IsolateApi) => {
 }
 
 export class AI {
-  #sysprompt!: string
+  #api: IsolateApi
+  #sysprompt: string
   #config: HelpConfig = {}
   #tools: OpenAI.ChatCompletionTool[] | undefined
   #actions: Record<string, (parameters: object) => unknown> = {}
   #sessionPath = 'session.json'
-  #api!: IsolateApi
+  private constructor(help: Help, api: IsolateApi) {
+    this.#api = api
+    this.#config = help.config || {}
+    const sysprompt = help.instructions.join('\n').trim()
+    this.#sysprompt = sysprompt
+  }
   static async create(help: Help, api: IsolateApi) {
-    const ai = new AI()
     // TODO ensure caching on api calls to generate actions
-    ai.#sysprompt = help.instructions.join('\n').trim()
-    ai.#config = help.config || {}
-    ai.#api = api
+    const ai = new AI(help, api)
     await ai.#loadCommands(help.commands)
     return ai
   }
@@ -89,9 +92,7 @@ export class AI {
       content: null,
     }
     messages.push(assistant)
-    // TODO find why ts types do not overlap
-    const squelched = messages as unknown as JsonValue[]
-    this.#api.writeJSON(this.#sessionPath, squelched)
+    this.#api.writeJSON(this.#sessionPath, messages)
 
     log('streamCall started')
     // TODO move this to an isolate call that runs in a branch
@@ -131,8 +132,7 @@ export class AI {
           debugPart(`%o`, assistant.tool_calls[index]?.function)
         }
       }
-      const squelched = messages as unknown as JsonValue[]
-      this.#api.writeJSON(this.#sessionPath, squelched)
+      this.#api.writeJSON(this.#sessionPath, messages)
     }
     log('streamCall complete')
     // this should be an accumulation action with the messages path as payload
