@@ -23,7 +23,7 @@ and [architecture guide](./ARCHITECTURE.md) before contributing.
 1. Create a new branch for your changes.
 1. Make your changes and ensure `deno task ok` passes successfully.
 1. Commit your changes with clear messages.
-1. Submit a pull request with the sub-module in question, and a clear title and
+1. Submit a pull request with the package in question, and a clear title and
    description, as follows:
    - fix(http): fix race condition in server
    - docs(fmt): update docstrings
