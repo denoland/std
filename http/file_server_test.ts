@@ -983,6 +983,8 @@ Deno.test("file_server prints local and network urls", async () => {
       "--allow-net",
       "--allow-read",
       "--allow-sys=networkInterfaces",
+      "--config",
+      "deno.json",
       "http/file_server.ts",
       "--port",
       `${port}`,
