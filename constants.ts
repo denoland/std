@@ -141,7 +141,7 @@ export enum QueueMessageType {
 }
 export type QueuePool = {
   type: QueueMessageType.POOL
-  poolable: MergeReply | RemoteRequest | PierceRequest
+  pid: PID
 }
 export type QueueExe = {
   type: QueueMessageType.EXECUTION

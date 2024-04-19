@@ -5,7 +5,6 @@ import {
   C,
   ExeResult,
   freezePid,
-  isMergeReply,
   IsolateLifecycle,
   isPierceRequest,
   isQueueBranch,
@@ -13,7 +12,6 @@ import {
   isQueuePool,
   PID,
   PierceRequest,
-  Poolable,
   print,
   QueueMessage,
   SolidRequest,
@@ -80,10 +78,7 @@ export const functions = {
     // TODO add ulid in here, but make it be repeatable
     // TODO check signatures and permissions here
     // not necessary to be atomic, but uses functions on the atomic class
-    const result = await db.atomic()
-      .addToPool(pierce)
-      .enqueuePool(pierce)
-      .commit()
+    const result = await db.atomic().addToPool(pierce).commit()
     assert(result, 'pierce failed')
     // TODO return back the head commit at the point of pooling
   },
@@ -97,12 +92,12 @@ export const lifecycles: IsolateLifecycle = {
     api.context = context
     db.listen(async (message: QueueMessage) => {
       if (isQueuePool(message)) {
-        const { poolable } = message
-        logger('qpl', poolable.target)(commitish(poolable))
-        while (await db.hasPoolables(poolable.target)) {
-          const tip = await FS.openHead(poolable.target, db)
+        const { pid } = message
+        logger('qpl', pid)(print(pid))
+        do {
+          const tip = await FS.openHead(pid, db)
           await doAtomicCommit(db, tip)
-        }
+        } while (await db.hasPoolables(pid))
       }
       if (isQueueBranch(message)) {
         const { parentCommit, parentPid, sequence } = message
@@ -115,6 +110,8 @@ export const lifecycles: IsolateLifecycle = {
 
         let head = await db.readHead(branchPid)
         while (!head) {
+          // TODO should do the atomic branch first, then check the head after
+          // if failed
           if (await doAtomicBranch(db, parentFs, sequence)) {
             return
           }
@@ -203,12 +200,3 @@ const logger = (prefix: string, pid: PID) => {
   return logger
 }
 const loggerCache = new Map<string, (...args: unknown[]) => void>()
-const commitish = (poolable: Poolable) => {
-  if ('ulid' in poolable) {
-    return poolable.ulid
-  }
-  if (isMergeReply(poolable)) {
-    return 'reply ' + poolable.commit
-  }
-  return 'request ' + poolable.commit
-}

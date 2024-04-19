@@ -1,12 +1,10 @@
 import * as keys from './keys.ts'
+import { hasPoolables } from '@/db.ts'
 import {
-  MergeReply,
   PID,
-  PierceRequest,
   Poolable,
   QueueMessage,
   QueueMessageType,
-  RemoteRequest,
   SolidRequest,
 } from '@/constants.ts'
 import { assert, Debug, isKvTestMode, sha1 } from '@utils'
@@ -17,6 +15,7 @@ export class Atomic {
   // TODO handle max pool size creating too large an atomic transaction
   #kv: Deno.Kv
   #atomic: Deno.AtomicOperation | undefined
+  #transmitted = new Map<string, { pid: PID; count: bigint }>()
   private constructor(kv: Deno.Kv) {
     this.#kv = kv
     this.#atomic = kv.atomic()
@@ -39,7 +38,15 @@ export class Atomic {
     const key = keys.getPoolKey(poolable)
     const empty = { key, versionstamp: null }
     this.#atomic = this.#atomic.check(empty).set(key, poolable)
-    return this.#incrementPool(poolable)
+
+    const poolKey = JSON.stringify(keys.getPoolKeyPrefix(poolable.target))
+    if (!this.#transmitted.has(poolKey)) {
+      this.#transmitted.set(poolKey, { pid: poolable.target, count: BigInt(0) })
+    }
+    const buffer = this.#transmitted.get(poolKey)
+    assert(buffer)
+    buffer.count++
+    return this
   }
   deletePool(pid: PID, poolKeys: Deno.KvKey[]) {
     assert(this.#atomic, 'Atomic not set')
@@ -101,12 +108,11 @@ export class Atomic {
     const type = QueueMessageType.BRANCH
     return this.#enqueue({ type, parentCommit, parentPid, sequence })
   }
-  enqueuePool(poolable: MergeReply | RemoteRequest | PierceRequest) {
+  #enqueuePool(pid: PID) {
     const type = QueueMessageType.POOL
-    return this.#enqueue({ type, poolable })
+    return this.#enqueue({ type, pid })
   }
   #enqueue(message: QueueMessage) {
-    // TODO specify allowed message types as args to artifact functions
     assert(this.#atomic, 'Atomic not set')
     const backoffSchedule = isKvTestMode() ? [] : undefined
     this.#atomic = this.#atomic.enqueue(message, {
@@ -115,15 +121,41 @@ export class Atomic {
     })
     return this
   }
-  #incrementPool(poolable: Poolable) {
-    // TODO make these be a single atomic for the whole pool
+  #increasePool(pid: PID, amount: bigint) {
     assert(this.#atomic, 'Atomic not set')
-    const counterKey = keys.getPoolCounterKey(poolable.target)
-    this.#atomic = this.#atomic.sum(counterKey, BigInt(1))
+    const counterKey = keys.getPoolCounterKey(pid)
+    this.#atomic = this.#atomic.sum(counterKey, amount)
+    return this
+  }
+  #checkMarker(marker: Deno.KvEntryMaybe<bigint>) {
+    assert(this.#atomic, 'Atomic not set')
+    this.#atomic = this.#atomic.check(marker)
     return this
   }
   async commit() {
+    // TODO go thru all atomic usage and ensure all async ops are at the end
     assert(this.#atomic, 'Atomic not set')
+
+    const markerCounterKeys = []
+    const transmissions = [...this.#transmitted.values()]
+    for (const { pid, count } of transmissions) {
+      markerCounterKeys.push(keys.getPoolMarkerKey(pid))
+      const counterKey = keys.getPoolCounterKey(pid)
+      markerCounterKeys.push(counterKey)
+      this.#increasePool(pid, count)
+    }
+    const markerCounters = await this.#kv.getMany<bigint[]>(markerCounterKeys)
+    for (let i = 0; i < markerCounters.length; i += 2) {
+      const marker = markerCounters[i]
+      const counter = markerCounters[i + 1]
+
+      this.#checkMarker(marker)
+      const mayBeEmpty = true
+      if (!hasPoolables(counter, marker, mayBeEmpty)) {
+        // if one was processed, all were processed ☢️
+        this.#enqueuePool(transmissions[i].pid)
+      }
+    }
     const atomic = this.#atomic
     this.#atomic = undefined
     const result = await atomic.commit()
@@ -132,5 +164,4 @@ export class Atomic {
     }
     return true
   }
-  // TODO ensure that all gets are atomic, too
 }

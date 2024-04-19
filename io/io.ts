@@ -1,8 +1,7 @@
-import { getPoolKeyPrefix } from '@/keys.ts'
 import { Debug } from '@utils'
 import { solidify } from '@/git/solidify.ts'
 import { branch } from '@/git/branch.ts'
-import { Pending, PID, Poolable, Solids } from '@/constants.ts'
+import { Pending, PID, Solids } from '@/constants.ts'
 import DB from '@/db.ts'
 import FS from '@/git/fs.ts'
 import { Atomic } from '@/atomic.ts'
@@ -45,7 +44,7 @@ export const doAtomicCommit = async (db: DB, fs: FS, exe?: ExeResult) => {
     log('head changed from %o missed %o', fs.oid, solids.oid)
     return false
   }
-  await transmit(fs.pid, solids, atomic, db)
+  transmit(fs.pid, solids, atomic)
   const deletionsOk = await deleteBranches(solids.deletes, atomic)
   if (!deletionsOk) {
     return false
@@ -55,10 +54,9 @@ export const doAtomicCommit = async (db: DB, fs: FS, exe?: ExeResult) => {
   return success
 }
 
-const transmit = async (pid: PID, solids: Solids, atomic: Atomic, db: DB) => {
+const transmit = (pid: PID, solids: Solids, atomic: Atomic) => {
   const { oid, exe, branches, poolables } = solids
 
-  const transmitted = new Set<string>()
   if (exe) {
     const { request, sequence } = exe
     atomic.enqueueExecution(request, sequence, oid)
@@ -66,23 +64,8 @@ const transmit = async (pid: PID, solids: Solids, atomic: Atomic, db: DB) => {
   for (const sequence of branches) {
     atomic.enqueueBranch(oid, pid, sequence)
   }
-  const promises = []
   for (const poolable of poolables) {
     atomic.addToPool(poolable)
-    const key = JSON.stringify(getPoolKeyPrefix(poolable.target))
-    if (!transmitted.has(key)) {
-      // if one was processed, all were processed ☢️
-      transmitted.add(key)
-      promises.push(pooling(poolable, atomic, db))
-    }
-  }
-  await Promise.all(promises)
-}
-const pooling = async (poolable: Poolable, atomic: Atomic, db: DB) => {
-  const poolMayBeEmpty = true
-  const hasPoolables = await db.hasPoolables(poolable.target, poolMayBeEmpty)
-  if (!hasPoolables) {
-    atomic.enqueuePool(poolable)
   }
 }
 const deleteBranches = async (deletes: Solids['deletes'], atomic: Atomic) => {

@@ -31,7 +31,7 @@ Deno.test('pierce branch', async (t) => {
     target,
     sequence: 0,
     outcome: { result: 'test-result' },
-    commit: 'test-commit',
+    commit: '4b825dc642cb6eb9a060e54bf8d69288fbee4904',
     source: target,
   }
   const db = await DB.create()
@@ -92,8 +92,8 @@ Deno.test('pierce branch', async (t) => {
     const io = await next.readJSON<IoStruct>('.io.json')
     const outcome = io.replies[0]
     expect(outcome).toEqual(mergeReply.outcome)
-    const [lastCommit] = await next.logs()
-    expect(lastCommit.commit.parent).toHaveLength(2)
+    const lastCommit = await next.getCommit()
+    expect(lastCommit.parent).toHaveLength(2)
   })
   db.stop()
 })

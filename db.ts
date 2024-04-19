@@ -38,29 +38,17 @@ export default class DB {
     }
     return kv.close()
   }
-  async hasPoolables(pid: PID, mayBeEmpty = false) {
+  async hasPoolables(pid: PID) {
     const counterKey = keys.getPoolCounterKey(pid)
     const markerKey = keys.getPoolMarkerKey(pid)
     const many = [counterKey, markerKey]
-    const [counter, marker] = await this.#kv.getMany<Deno.KvU64[]>(many)
-    if (!counter.versionstamp) {
-      if (!mayBeEmpty) {
-        throw new Error('Pool does not exist: ' + counterKey.join('/'))
-      }
-      return false
-    }
-    if (!marker.versionstamp) {
-      return counter.value.value > 0
-    }
-    if (counter.value.value < marker.value.value) {
-      throw new Error('invalid marker: ' + markerKey.join('/'))
-    }
-    return counter.value.value > marker.value.value
+    const [counter, marker] = await this.#kv.getMany<bigint[]>(many)
+    return hasPoolables(counter, marker)
   }
   async getPooledActions(pid: PID) {
     const prefix = keys.getPoolKeyPrefix(pid)
     log('getPooledActions %o', prefix)
-    const entries = this.#kv.list<Poolable>({ prefix })
+    const entries = this.#kv.list<Poolable>({ prefix }, { batchSize: 1000 })
     const poolKeys = []
     const pool: Poolable[] = []
     for await (const entry of entries) {
@@ -229,12 +217,12 @@ export default class DB {
         const last = lastTransmitted
         this.#getSplice(pid, commit, path).then((splice) => {
           // TODO once piece replies are handled directly, this can be enabled
-          // if (last === lastTransmitted) {
+          if (last !== lastTransmitted) {
+            console.log('OVERRUN')
+          }
+
           lastTransmitted = splice.oid
           sink.push(splice)
-          // } else {
-          // console.log('OVERRUN')
-          // }
         })
       }
     }
@@ -292,4 +280,23 @@ const streamToIt = (stream: ReadableStream, signal?: AbortSignal) => {
       }
     },
   }
+}
+export const hasPoolables = (
+  counter: Deno.KvEntryMaybe<bigint>,
+  marker: Deno.KvEntryMaybe<bigint>,
+  mayBeEmpty = false,
+) => {
+  if (!counter.versionstamp) {
+    if (!mayBeEmpty) {
+      throw new Error('Pool does not exist: ' + counter.key.join('/'))
+    }
+    return false
+  }
+  if (!marker.versionstamp) {
+    return counter.value > 0
+  }
+  if (counter.value < marker.value) {
+    throw new Error('invalid marker: ' + marker.key.join('/'))
+  }
+  return counter.value > marker.value
 }
