@@ -825,7 +825,7 @@ Deno.test({
       type _ = AssertTrue<IsExact<typeof parsed, string[][]>>;
     }
     {
-      const parsed = parse("a\nb", undefined);
+      const parsed = parse("a\nb");
       type _ = AssertTrue<IsExact<typeof parsed, string[][]>>;
     }
     {
