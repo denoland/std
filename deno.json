@@ -16,7 +16,7 @@
     "test": "RUST_BACKTRACE=1 deno test --unstable-http --unstable-webgpu --doc --allow-all --parallel --coverage --trace-leaks",
     "test:browser": "git grep --name-only \"This module is browser compatible.\" | grep -v deno.json | grep -v .github/workflows | grep -v _tools | grep -v encoding/README.md | xargs deno check --config browser-compat.tsconfig.json",
     "fmt:licence-headers": "deno run --allow-read --allow-write ./_tools/check_licence.ts",
-    "lint:docs": "deno doc --lint bytes/mod.ts url/mod.ts",
+    "lint:docs": "deno doc --lint bytes/mod.ts datetime/mod.ts url/mod.ts",
     "lint:deprecations": "deno run --allow-read --allow-net --allow-env ./_tools/check_deprecation.ts",
     "lint:doc-imports": "deno run --allow-env --allow-read ./_tools/check_doc_imports.ts",
     "lint:circular": "deno run --allow-env --allow-read --allow-net=deno.land,jsr.io ./_tools/check_circular_submodule_dependencies.ts",
