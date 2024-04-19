@@ -20,6 +20,8 @@ import {
 } from "../path/mod.ts";
 import { VERSION } from "../version.ts";
 import { MINUTE } from "../datetime/constants.ts";
+import { getAvailablePort } from "../net/get_available_port.ts";
+import { concat } from "../bytes/concat.ts";
 
 const moduleDir = dirname(fromFileUrl(import.meta.url));
 const testdataDir = resolve(moduleDir, "testdata");
@@ -970,3 +972,43 @@ Deno.test(
     await Deno.remove(tempDir);
   },
 );
+
+Deno.test("file_server prints local and network urls", async () => {
+  const port = await getAvailablePort();
+  const cmd = new Deno.Command(Deno.execPath(), {
+    args: [
+      "run",
+      "--no-lock",
+      "--quiet",
+      "--allow-net",
+      "--allow-read",
+      "--allow-sys=networkInterfaces",
+      "http/file_server.ts",
+      "--port",
+      `${port}`,
+    ],
+    stdout: "piped",
+  });
+  const process = cmd.spawn();
+  const reader = process.stdout.getReader();
+  let buf = new Uint8Array(0);
+  const dec = new TextDecoder();
+  while (!dec.decode(buf).includes("Network:")) {
+    const { value } = await reader.read();
+    if (!value) {
+      break;
+    }
+    buf = concat([buf, value]);
+  }
+  const networkAdress = Deno.networkInterfaces().find((i) =>
+    i.family === "IPv4" && !i.address.startsWith("127")
+  )?.address;
+  assertEquals(
+    dec.decode(buf),
+    `Listening on:\n- Local: http://localhost:${port}\n- Network: http://${networkAdress}:${port}\n`,
+  );
+
+  reader.cancel();
+  process.kill();
+  await process.status;
+});
