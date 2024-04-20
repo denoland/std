@@ -32,6 +32,9 @@ export class Engine implements EngineInterface {
     await compartment.mount(api)
     return new Engine(compartment, api)
   }
+  get context() {
+    return this.#api.context
+  }
   get pid() {
     if (!this.#pid) {
       const msg =

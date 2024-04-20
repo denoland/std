@@ -22,20 +22,27 @@ export const doAtomicCommit = async (db: DB, fs: FS, exe?: ExeResult) => {
   const { poolKeys, pool } = await db.getPooledActions(fs.pid)
   let pending: Pending | undefined
   if (exe) {
-    if ('settled' in exe) {
-      fs.copyChanges(exe.settled.fs)
-      pool.unshift(exe.settled.reply)
+    fs.copyChanges(exe.fs)
+    if ('reply' in exe) {
+      pool.unshift(exe.reply)
     } else {
       pending = exe.pending
     }
     // if this request is an internal artifact level request, we need to remove
     // the repo lock atomically along with doing the commit to say we're done
   }
-  if (!pool.length && !fs.isChanged && !pending) {
-    log('no pool or changes')
+  if (!pool.length && !pending) {
+    log('no pool or pending requests')
     return false
   }
   const solids = await solidify(fs, pool, pending)
+  const logger = FS.open(fs.pid, solids.oid, db)
+  if (await logger.exists('test.txt')) {
+    console.log('exists', solids.oid)
+    console.log(await logger.read('test.txt'))
+  } else {
+    console.log('does not exist')
+  }
   atomic.deletePool(fs.pid, poolKeys)
 
   // the moneyshot
@@ -69,7 +76,6 @@ const transmit = (pid: PID, solids: Solids, atomic: Atomic) => {
   }
 }
 const deleteBranches = async (deletes: Solids['deletes'], atomic: Atomic) => {
-  // TODO broadcast deleted splices
   const promises = []
   for (const { pid, commit } of deletes) {
     promises.push(atomic.deleteBranch(pid, commit))
@@ -81,7 +87,6 @@ const deleteBranches = async (deletes: Solids['deletes'], atomic: Atomic) => {
   return true
 }
 export const doAtomicBranch = async (db: DB, fs: FS, sequence: number) => {
-  // TODO broadcast the splice out
   const atomic = db.atomic()
   const { pid, head, origin } = await branch(fs, sequence)
   atomic.createBranch(pid, head)

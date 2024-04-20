@@ -5,6 +5,9 @@ import { C, isPierceRequest, PROCTYPE, SolidRequest } from '@/constants.ts'
 import { assert, expect, log } from '@utils'
 import DB from '@/db.ts'
 import { UnsequencedRequest } from '@/constants.ts'
+import { Engine } from '@/engine.ts'
+import { Shell } from '@/api/web-client.ts'
+import { Api } from '@/isolates/io-fixture.ts'
 
 const pid = { id: 't', account: 'exe', repository: 'test', branches: ['main'] }
 const source = { ...pid, account: 'higher' }
@@ -35,9 +38,8 @@ Deno.test('simple', async (t) => {
   const { context, exe, fs, stop } = await mocks(request)
   await t.step('no accumulations', async () => {
     const result = await exe.execute(request, fs.oid, context)
-    assert('settled' in result)
-    const { settled } = result
-    const { reply, fs: settledFs } = settled
+    assert('reply' in result)
+    const { reply, fs: settledFs } = result
     expect(reply.target).toEqual(pid)
     expect(reply.outcome).toEqual({ result: 'local reply' })
     expect(settledFs).toEqual(fs)
@@ -54,8 +56,8 @@ Deno.test('writes', async (t) => {
   const { context, exe, fs, stop } = await mocks(write)
   await t.step('single file', async () => {
     const result = await exe.execute(write, fs.oid, context)
-    assert('settled' in result)
-    const { reply, fs: settledFs } = result.settled
+    assert('reply' in result)
+    const { reply, fs: settledFs } = result
     expect(reply.target).toEqual(pid)
     expect(reply.outcome.result).toBeUndefined()
     expect(settledFs).toEqual(fs)
@@ -154,5 +156,37 @@ Deno.test('compound', async (t) => {
   // test multiple cycles thru requests and replies
   // test making different request between two invocations
 })
+Deno.test.only('accumulation spanning multiple commits', async (t) => {
+  for (const withFunctionCache of [true, false]) {
+    await t.step(`function cache ${withFunctionCache}`, async () => {
+      const engine = await Engine.create()
+      if (!withFunctionCache) {
+        engine.context.exe?.disableFunctionCache()
+      }
+      log.enable('AI:qex* AI:tests AI:io-fixture AI:isolateApi AI:exe')
+      const system = await engine.initialize()
+      log('system', system)
+      const shell = Shell.create(engine, system.pid)
+      const { pid } = system
+
+      const { fileAccumulation } = await shell.actions<Api>('io-fixture', pid)
+      await fileAccumulation({ path: 'test.txt', content: 'hello', count: 3 })
+
+      let first
+      for await (const splice of shell.read(pid, 'test.txt')) {
+        first = splice
+        break
+      }
+      assert(first)
+      const file = first.changes['test.txt'].patch
+      assert(file)
+      log(file)
+      expect(file.split('\n')).toHaveLength(7)
+
+      await shell.stop()
+    })
+  }
+})
+// verify that pierce cannot interupt a running in band accumulation
 // test repeat calling should not corrupt the cache, and should return the same,
 // even if the commit was several accumulations ago

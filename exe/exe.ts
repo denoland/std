@@ -18,30 +18,41 @@ const log = Debug('AI:exe')
 
 export default class Executor {
   #functions = new Map<string, Execution>()
+  #functionCacheDisabled = false
   static createCacheContext() {
     return new Executor()
   }
+  disableFunctionCache() {
+    this.#functionCacheDisabled = true
+  }
+  /**
+   * @param req
+   * @param commit The commit that caused this invocation, which might be the
+   * commit of the request, or the commit of the most recent accumulation that
+   * allowed this execution to continue.
+   * @param c
+   * @returns
+   */
   async execute(req: SolidRequest, commit: string, c: C): Promise<ExeResult> {
     const fs = FS.open(req.target, commit, c.db)
     assert(equal(fs.pid, req.target), 'target is not self')
     const io = await IOChannel.read(fs)
     assert(io, 'io not found')
     assert(io.isNextSerialRequest(req), 'request is not callable')
-    log('request %o %o', req.isolate, req.functionName)
+    log('request %o %o', req.isolate, req.functionName, commit)
 
-    const ioAccumulator = io.getAccumulator()
+    const ioAccumulator = io.getAccumulator(fs)
 
     // if this is a side effect, we need to get the side effect lock
     // then this check needs to be added into everything that the api does
     // we need to start watching for changes to the lock value
 
     const exeId: string = getExeId(req)
-    if (!this.#functions.has(exeId)) {
-      // TODO the api needs to be updated with later context and fs
+    if (this.#functionCacheDisabled || !this.#functions.has(exeId)) {
       log('creating execution %o', exeId)
       const opts = { isEffect: true, isEffectRecovered: false }
       // TODO read side effect config from io.json
-      const isolateApi = IsolateApi.create(fs, ioAccumulator, opts)
+      const isolateApi = IsolateApi.create(ioAccumulator, opts)
       if (isSystem(fs.pid)) {
         isolateApi.context = c
       }
@@ -66,15 +77,14 @@ export default class Executor {
         }),
         accumulator: ioAccumulator,
         api: isolateApi,
-        commit: fs.oid,
+        commits: [fs.oid],
       }
       this.#functions.set(exeId, execution)
     } else {
       const execution = this.#functions.get(exeId)
       assert(execution, 'execution not found')
-      if (execution.commit === fs.oid) {
-        // TODO also detect if was an old commit using accumulator layers
-        // TODO exe should be idempotent
+      if (execution.commits.includes(fs.oid)) {
+        // TODO exe should be idempotent ?
         throw new Error('request already executed for commit: ' + fs.oid)
       }
     }
@@ -82,7 +92,7 @@ export default class Executor {
     const execution = this.#functions.get(exeId)
     assert(execution, 'execution not found')
 
-    execution.commit = fs.oid
+    execution.commits.push(fs.oid)
     execution.accumulator.absorb(ioAccumulator)
 
     const racecar = Symbol('🏎️')
@@ -97,7 +107,10 @@ export default class Executor {
       const { accumulations } = execution.accumulator
       assert(accumulations.length > 0, 'no accumulations')
       const requests = accumulations.map((a) => a.request)
-      result = { pending: { commit: fs.oid, requests, sequence } }
+      result = {
+        fs: execution.accumulator.fs,
+        pending: { commit: fs.oid, requests, sequence },
+      }
     } else {
       assert(typeof outcome !== 'symbol')
       log('exe complete %o', exeId)
@@ -106,7 +119,7 @@ export default class Executor {
       const reply = { target, source, sequence, outcome, commit }
 
       // TODO need to tick the fs forwards when the accumulations occur
-      result = { settled: { reply, fs } }
+      result = { fs: execution.accumulator.fs, reply }
     }
     return result
   }
@@ -116,7 +129,7 @@ type Execution = {
   function: Promise<Outcome>
   accumulator: Accumulator
   api: IsolateApi
-  commit: string
+  commits: string[]
 }
 const isSystem = (pid: PID) => {
   const { id, account, repository } = pid

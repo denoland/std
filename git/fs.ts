@@ -1,6 +1,6 @@
 import http from 'npm:isomorphic-git/http/web/index.js'
 import { assert, Debug, equal, posix, sha1 } from '@utils'
-import { Change, ENTRY_BRANCH, JsonValue, PID } from '@/constants.ts'
+import { Change, ENTRY_BRANCH, PID } from '@/constants.ts'
 import git from '$git'
 import type DB from '@/db.ts'
 import { GitKV } from './gitkv.ts'
@@ -93,6 +93,9 @@ export default class FS {
     assert(commit, 'HEAD not found: ' + pid.branches.join('/'))
     const clone = new FS(pid, commit, db)
     return clone
+  }
+  tick(commit: string) {
+    return new FS(this.#pid, commit, this.#db)
   }
   /** @param the new PID to branch into */
   branch(pid: PID) {
@@ -309,7 +312,7 @@ export default class FS {
   }
   copyChanges(from: FS) {
     assert(!this.isChanged, 'cannot copy changes to a changed FS')
-    assert(this.#pid === from.#pid, 'cannot copy changes from different repo')
+    assert(equal(this.#pid, from.#pid), 'changes are from different pids')
     for (const path of from.#deletes) {
       this.delete(path)
     }

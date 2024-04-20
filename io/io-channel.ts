@@ -55,6 +55,7 @@ export default class IOChannel {
     }
   }
   static async load(fs: FS) {
+    // TODO ensure this is cached
     let io = createBase()
 
     if (await fs.exists('.io.json')) {
@@ -154,10 +155,10 @@ export default class IOChannel {
     }
     return request
   }
-  getAccumulator(): Accumulator {
-    // TODO needs to be layer aware
-
+  getAccumulator(fs: FS): Accumulator {
     const indices: number[] = []
+    const commits: string[] = []
+
     const current = this.getCurrentSerialRequest()
     assert(current, 'no serial request found')
     const sequence = this.getSequence(current)
@@ -167,6 +168,7 @@ export default class IOChannel {
         for (const sequence of layer.sequences) {
           assert(this.isSettled(sequence), 'layer sequence not settled')
           indices.push(sequence)
+          commits.push(layer.commit)
         }
       }
     }
@@ -176,10 +178,11 @@ export default class IOChannel {
       assert(!isPierceRequest(saved), 'pierce request cannot accumulate')
       const request = toUnsequenced(saved)
       const outcome = this.#io.replies[index]
-      const result: IsolatePromise = { request, outcome }
+      const commit = commits.shift()
+      const result: IsolatePromise = { request, outcome, commit }
       accumulations.push(result)
     }
-    return Accumulator.create(accumulations)
+    return Accumulator.create(accumulations, fs)
   }
   isSettled(sequence: number) {
     assert(this.#io.sequence > sequence, 'sequence not yet invoked')

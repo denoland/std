@@ -1,21 +1,35 @@
-import { UnsequencedRequest } from '@/constants.ts'
+import { SettledIsolatePromise, UnsequencedRequest } from '@/constants.ts'
 import { IsolatePromise } from '@/constants.ts'
 import { assert, deserializeError, equal, expect } from '@utils'
+import FS from '@/git/fs.ts'
 
 export default class Accumulator {
   #index = 0
-  #buffer: IsolatePromise[] = []
+  #buffer: IsolatePromise[]
+  #fs: FS
+  #highestFs: FS
   #new: IsolatePromise[] = []
   #isActive = false
   #trigger: (() => void) | undefined
-  private constructor() {}
-  static create(buffer: IsolatePromise[] = []) {
-    const acc = new Accumulator()
-    acc.#buffer = buffer
+  private constructor(highestFs: FS, buffer: IsolatePromise[]) {
+    this.#highestFs = highestFs
+    this.#fs = highestFs
+    this.#buffer = buffer
+    const [first] = buffer
+    if (first) {
+      assert('commit' in first, 'first accumulation must have a commit')
+      this.#fs = highestFs.tick(first.commit)
+    }
+  }
+  static create(buffer: IsolatePromise[] = [], highestFs: FS) {
+    const acc = new Accumulator(highestFs, buffer)
     return acc
   }
   get accumulations() {
     return [...this.#new]
+  }
+  get fs() {
+    return this.#fs
   }
   push(request: IsolatePromise) {
     assert(this.isActive, 'Activity is denied')
@@ -24,12 +38,26 @@ export default class Accumulator {
     this.#new.push(request)
     this.#buffer.push(request)
   }
+  #tickFs() {
+    const next = this.#buffer[this.#index + 1]
+    if (next && 'commit' in next) {
+      if (this.#fs.oid !== next.commit) {
+        this.#fs = this.#fs.tick(next.commit)
+      }
+    } else if (this.fs.oid !== this.#highestFs.oid) {
+      // we are at the final layer, so use the latest fs
+      this.#fs = this.#fs.tick(this.#highestFs.oid)
+    }
+  }
   recover(request: UnsequencedRequest) {
     assert(this.isActive, 'Activity is denied')
     const index = this.#index++
     if (this.#buffer[index]) {
       const recovered = this.#buffer[index]
       assert(equal(recovered.request, request), 'Requests are not equal')
+      if ('outcome' in recovered) {
+        this.#tickFs()
+      }
       return recovered
     }
   }
@@ -71,6 +99,8 @@ export default class Accumulator {
       console.dir(from.#buffer, { depth: null })
     }
     assert(this.#buffer.length <= from.#buffer.length, '"this" must be shorter')
+    this.#highestFs = from.#highestFs
+
     let index = 0
     for (const source of from.#buffer) {
       const sink = this.#buffer[index++]
@@ -81,18 +111,22 @@ export default class Accumulator {
       if (!equal(source.request, sink.request)) {
         expect(source.request).toEqual(sink.request)
       }
-      if (sink.outcome) {
+      if ('outcome' in sink) {
+        assert('outcome' in source, 'source has no outcome')
         assert(equal(source.outcome, sink.outcome), 'outcomes are not equal')
-      } else {
-        sink.outcome = source.outcome
+        assert(equal(source.commit, sink.commit), 'commits are not equal')
+      } else if ('outcome' in source) {
+        const settledSink = sink as SettledIsolatePromise
+        settledSink.outcome = source.outcome
+        settledSink.commit = source.commit
       }
-      if (sink.outcome && sink.resolve) {
-        assert(sink.reject, 'sink has no reject')
+      if ('outcome' in sink && 'resolve' in sink) {
         if (sink.outcome.error) {
           sink.reject(deserializeError(sink.outcome.error))
         } else {
           sink.resolve(sink.outcome.result)
         }
+        this.#tickFs()
       }
     }
   }

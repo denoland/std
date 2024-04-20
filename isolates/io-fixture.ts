@@ -57,6 +57,17 @@ export const api = {
       multiplier: { type: 'integer', minimum: 1 },
     },
   },
+  fileAccumulation: {
+    description: 'accumulate file writes',
+    type: 'object',
+    required: ['path', 'content', 'count'],
+    additionalProperties: false,
+    properties: {
+      path: { type: 'string' },
+      content: { type: 'string' },
+      count: { type: 'integer', minimum: 1 },
+    },
+  },
   pong: {
     description: 'ping the AI',
     type: 'object',
@@ -68,6 +79,11 @@ export const api = {
     properties: {},
     additionalProperties: false,
   },
+}
+export type Api = {
+  fileAccumulation: (
+    params: { path: string; content: string; count: number },
+  ) => Promise<void>
 }
 export const functions = {
   write: (params: { path: string; content: string }, api: IsolateApi) => {
@@ -122,6 +138,31 @@ export const functions = {
       promises.push(parallel({ count: params.count }, { branch: true }))
     }
     return Promise.all(promises)
+  },
+  fileAccumulation: async (
+    params: { path: string; content: string; count: number },
+    api: IsolateApi,
+  ) => {
+    log('fileAccumulation', params)
+    const { path, content, count } = params
+    const { fileAccumulation } = await api.actions('io-fixture')
+    const nextCount = count - 1
+    let file = ''
+    if (await api.exists(params.path)) {
+      file = await api.read(params.path)
+    }
+    file += `down: ${count} ${content}\n`
+    api.write(path, file)
+    if (nextCount) {
+      await fileAccumulation({ ...params, count: nextCount })
+    } else {
+      log('bottomed out')
+    }
+    file = await api.read(path)
+    log('read:', api.commit, '\n' + file)
+    file += `up: ${count} ${content}\n`
+    api.write(path, file)
+    log('wrote:', '\n' + file)
   },
   pong: () => {
     log('pong')

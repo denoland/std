@@ -51,8 +51,8 @@ export const solidify = async (fs: FS, pool: Poolable[], pending?: Pending) => {
       if (equal(r.target, fs.pid)) {
         collectBranch(r, r.sequence, branches)
       } else {
-        const mergeRequest = { ...r, commit: 'updated post commit' }
-        poolables.push(mergeRequest)
+        const remoteRequest = { ...r, commit: 'updated post commit' }
+        poolables.push(remoteRequest)
       }
     })
   }
@@ -60,9 +60,11 @@ export const solidify = async (fs: FS, pool: Poolable[], pending?: Pending) => {
   for (const poolable of pool) {
     if (isMergeReply(poolable)) {
       log('reply', poolable)
-      parents.push(poolable.commit)
-
       const request = io.reply(poolable)
+      if (!equal(request.target, fs.pid)) {
+        parents.push(poolable.commit)
+      }
+
       const { outcome } = poolable
       if (!isPierceRequest(request)) {
         if (!equal(request.source, fs.pid)) {

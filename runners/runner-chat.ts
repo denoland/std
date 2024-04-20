@@ -49,7 +49,6 @@ export class AI {
     this.#sysprompt = sysprompt
   }
   static async create(help: Help, api: IsolateApi) {
-    // TODO ensure caching on api calls to generate actions
     const ai = new AI(help, api)
     await ai.#loadCommands(help.commands)
     return ai
@@ -161,8 +160,7 @@ export class AI {
         content: '',
       }
       messages.push(message)
-      const squelched = messages as unknown as JsonValue[]
-      this.#api.writeJSON(this.#sessionPath, squelched)
+      this.#api.writeJSON(this.#sessionPath, messages)
 
       try {
         const parameters = JSON.parse(args)
@@ -177,8 +175,7 @@ export class AI {
             .findLast(({ role }) => role === 'tool')
           assert(lastToolCall, 'missing last tool call')
           message.content = (lastToolCall.content || '') as string
-          const squelched = messages as unknown as JsonValue[]
-          this.#api.writeJSON(this.#sessionPath, squelched)
+          this.#api.writeJSON(this.#sessionPath, messages)
 
           return message.content
         }
@@ -195,8 +192,7 @@ export class AI {
       debugToolResult(message.content)
     }
 
-    const squelched = messages as unknown as JsonValue[]
-    this.#api.writeJSON(this.#sessionPath, squelched)
+    this.#api.writeJSON(this.#sessionPath, messages)
     return this.#execute(messages)
   }
   async #loadCommands(commands: string[] = []) {

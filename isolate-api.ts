@@ -6,14 +6,13 @@ import {
   DispatchFunctions,
   getProcType,
   IsolatePromise,
-  JsonValue,
+  isSettledIsolatePromise,
   Params,
   PID,
   print,
   ProcessOptions,
   UnsequencedRequest,
 } from '@/constants.ts'
-import FS from '@/git/fs.ts'
 const log = Debug('AI:isolateApi')
 interface Default {
   [key: string]: unknown
@@ -23,19 +22,17 @@ type Options = {
   isEffectRecovered: boolean
 }
 export default class IsolateApi<T extends object = Default> {
-  #fs: FS
   #accumulator: Accumulator
   // TODO assign a mount id for each side effect execution context ?
   #context: Partial<T> = {}
   #isEffect = false
   #isEffectRecovered = false
   #abort = new AbortController()
-  private constructor(fs: FS, accumulator: Accumulator) {
-    this.#fs = fs
+  private constructor(accumulator: Accumulator) {
     this.#accumulator = accumulator
   }
-  static create(fs: FS, accumulator: Accumulator, opts?: Options) {
-    const api = new IsolateApi(fs, accumulator)
+  static create(accumulator: Accumulator, opts?: Options) {
+    const api = new IsolateApi(accumulator)
     if (opts) {
       api.#isEffect = opts.isEffect || false
       api.#isEffectRecovered = opts.isEffectRecovered || false
@@ -45,12 +42,17 @@ export default class IsolateApi<T extends object = Default> {
   static createContext<T extends object = Default>() {
     // TODO find a more graceful way to do this for cradle setup
     return new IsolateApi<T>(
-      null as unknown as FS,
       null as unknown as Accumulator,
     )
   }
+  get #fs() {
+    return this.#accumulator.fs
+  }
   get pid() {
     return this.#fs.pid
+  }
+  get commit() {
+    return this.#fs.oid
   }
   /** If this execution is side effect capable.  May extend to get permissions
    * information  */
@@ -94,21 +96,18 @@ export default class IsolateApi<T extends object = Default> {
   }
   action(request: UnsequencedRequest) {
     const recovered = this.#accumulator.recover(request)
-    // at this point, we might need to tick the fs commit forwards
     if (recovered) {
+      assert(isSettledIsolatePromise(recovered), 'recovered is not settled')
       const { outcome } = recovered
-      assert(outcome, 'outcome must be set, else exe should not have run')
       if (outcome.error) {
         throw deserializeError(outcome.error)
       }
-      return Promise.resolve(outcome.result)
+      return outcome.result
     }
-    const store: IsolatePromise = { request }
     const promise = new Promise((resolve, reject) => {
-      store.resolve = resolve
-      store.reject = reject
+      const store: IsolatePromise = { request, resolve, reject }
+      this.#accumulator.push(store)
     })
-    this.#accumulator.push(store)
     return promise
   }
   /**

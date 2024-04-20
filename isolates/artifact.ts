@@ -128,7 +128,6 @@ export const lifecycles: IsolateLifecycle = {
         if (!exeResult) { // side effect superseded, so abort
           return
         }
-
         let tip = await FS.openHead(request.target, db)
         while (await isExeable(sequence, tip, exeResult)) {
           if (await doAtomicCommit(db, tip, exeResult)) {

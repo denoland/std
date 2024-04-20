@@ -67,11 +67,29 @@ export type MergeReply = SolidReply & {
    */
   commit: string
 }
-export type IsolatePromise = {
-  outcome?: Outcome
+export type IsolatePromise =
+  | BareIsolatePromise
+  | PromisedIsolatePromise
+  | SettledIsolatePromise
+type BareIsolatePromise = {
   request: UnsequencedRequest
-  resolve?: (value: unknown) => void
-  reject?: (error: Error) => void
+}
+type PromisedIsolatePromise = BareIsolatePromise & {
+  resolve: (value: unknown) => void
+  reject: (error: Error) => void
+}
+export type SettledIsolatePromise =
+  & (BareIsolatePromise | PromisedIsolatePromise)
+  & {
+    outcome: Outcome
+    /** if an outcome is given, there must be a commit assosciated with it, so
+     * that the execution environment can be notched forwards */
+    commit: string
+  }
+export const isSettledIsolatePromise = (
+  p: IsolatePromise,
+): p is SettledIsolatePromise => {
+  return 'outcome' in p
 }
 export type Solids = {
   oid: string
@@ -92,22 +110,20 @@ export type Branched = {
   head: string
 }
 export type ExeResult = ExeSettled | ExePending
-type ExeSettled = {
-  settled: {
-    reply: MergeReply
-    /**
-     * The last filesystem that was modified during the execution run.  The FS
-     * might have been bumped forwards if accumulations occurred.
-     */
-    fs: FS
-  }
+type ExeResultBase = {
+  /**
+   * The last filesystem that was modified during the execution run.  The FS
+   * might have been bumped forwards if accumulations occurred.
+   */
+  fs: FS
   /** If this is a side effect request, this is the lock held by for it */
   effectsLock?: Deno.KvEntry<string>
 }
-type ExePending = {
+type ExeSettled = ExeResultBase & {
+  reply: MergeReply
+}
+type ExePending = ExeResultBase & {
   pending: Pending
-  /** If this is a side effect request, this is the lock held by for it */
-  effectsLock?: Deno.KvEntry<string>
 }
 export type Pending = {
   /** The commit that caused the requests to be generated */
