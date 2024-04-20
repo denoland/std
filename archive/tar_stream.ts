@@ -219,13 +219,47 @@ export class TarStream {
       yield new Uint8Array(new Array(1024).fill(0));
     })();
 
-    this.#readable = new ReadableStream<Uint8Array>({
+    this.#readable = new ReadableStream({
+      type: "bytes",
       async pull(controller) {
-        const { done, value } = await gen.next();
-        if (done) {
-          controller.close();
+        if (controller.byobRequest?.view) {
+          const buffer = new Uint8Array(
+            controller.byobRequest.view.buffer,
+            controller.byobRequest.view.byteOffset,
+            controller.byobRequest.view.byteLength,
+          );
+          let offset = 0;
+
+          while (offset < buffer.length) {
+            const { done, value } = await gen.next();
+            if (done) {
+              if (offset) {
+                controller.byobRequest.respond(offset);
+                controller.close();
+              } else {
+                controller.close();
+                controller.byobRequest.respond(0);
+              }
+              return;
+            }
+            if (value.length <= buffer.length - offset) {
+              buffer.set(value, offset);
+              offset += value.length;
+            } else {
+              buffer.set(value.slice(0, buffer.length - offset), offset);
+              offset = buffer.length - offset;
+              controller.byobRequest.respond(buffer.length);
+              return controller.enqueue(value.slice(offset));
+            }
+          }
+          controller.byobRequest.respond(buffer.length);
         } else {
-          controller.enqueue(value);
+          const { done, value } = await gen.next();
+          if (done) {
+            controller.close();
+          } else {
+            controller.enqueue(value);
+          }
         }
       },
     });

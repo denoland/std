@@ -13,7 +13,7 @@ Deno.test("createTarArchiveViaStream", async function () {
       {
         pathname: "./text.txt",
         size: text.length,
-        iterable: [text],
+        iterable: [text.slice()],
       },
     ])
       .pipeThrough(new TarStream()),
