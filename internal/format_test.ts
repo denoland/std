@@ -1,9 +1,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import { green, red, stripAnsiCode } from "../fmt/colors.ts";
 import { assertEquals, assertThrows } from "../assert/mod.ts";
-import { format } from "./_format.ts";
-
-// This file is copied from `std/assert`.
+import { format } from "./format.ts";
 
 Deno.test("format() generates correct diffs for strings", () => {
   assertThrows(

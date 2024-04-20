@@ -20,6 +20,6 @@ export const DEFAULT_SCHEMA: Schema = new Schema({
 /**
  * Default YAML schema. It is not described in the YAML specification.
  *
- * @deprecated (will be removed in 1.0.0) Use {@link DEFAULT_SCHEMA} instead.
+ * @deprecated This will be removed in 1.0.0. Use {@link DEFAULT_SCHEMA} instead.
  */
 export const def = DEFAULT_SCHEMA;

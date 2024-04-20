@@ -131,7 +131,7 @@ Check out the architecture guide [here](./.github/ARCHITECTURE.md).
 
 ## Design
 
-## Minimal Exports
+### Minimal Exports
 
 Files are structured to minimize the number of dependencies they incur and the
 amount of effort required to manage them, both for the maintainer and the user.

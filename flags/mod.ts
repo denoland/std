@@ -14,7 +14,7 @@
  * console.dir(parse(Deno.args));
  * ```
  *
- * @deprecated (will be removed in 1.0.0) Import from
+ * @deprecated This will be removed in 1.0.0. Import from
  * {@link https://deno.land/std/cli/parse_args.ts} instead.
  *
  * @module
@@ -234,7 +234,7 @@ type ValueOf<TValue> = TValue[keyof TValue];
 /**
  * The value returned from `parse`.
  *
- * @deprecated (will be removed in 1.0.0) Import from
+ * @deprecated This will be removed in 1.0.0. Import from
  * {@link https://deno.land/std/cli/parse_args.ts} instead.
  */
 export type Args<
@@ -261,7 +261,7 @@ type DoubleDash = {
 /**
  * The options for the `parse` call.
  *
- * @deprecated (will be removed in 1.0.0) Import from
+ * @deprecated This will be removed in 1.0.0. Import from
  * {@link https://deno.land/std/cli/parse_args.ts} instead.
  */
 export interface ParseOptions<
@@ -423,7 +423,7 @@ function hasKey(obj: NestedMapping, keys: string[]): boolean {
  * // parsedArgs: { foo: true, bar: "baz", _: ["./quux.txt"] }
  * ```
  *
- * @deprecated (will be removed in 1.0.0) Use
+ * @deprecated This will be removed in 1.0.0. Use
  * {@linkcode https://deno.land/std/cli/parse_args.ts?s=parseArgs | parseArgs}
  * instead.
  */

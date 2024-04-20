@@ -145,7 +145,7 @@ Deno.test({
       path.join(testdataDir, "ensure_file_9"),
       path.join(testdataDir, "ensure_file_9", "test.txt"),
     ],
-    run: ["deno"],
+    run: [Deno.execPath()],
   },
   async fn() {
     const testDir = path.join(testdataDir, "ensure_file_9");
@@ -182,7 +182,7 @@ Deno.test({
       path.join(testdataDir, "ensure_file_10"),
       path.join(testdataDir, "ensure_file_10", "test.txt"),
     ],
-    run: ["deno"],
+    run: [Deno.execPath()],
   },
   fn() {
     const testDir = path.join(testdataDir, "ensure_file_10");
