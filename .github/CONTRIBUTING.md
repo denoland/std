@@ -48,7 +48,7 @@ and [architecture guide](./ARCHITECTURE.md) before contributing.
 1. Submit a pull request starting with the following format:
 
    ```
-   deprecation(sub): `foo()`
+   deprecation(<package>): <symbol>
    ```
 
 ## Tests
