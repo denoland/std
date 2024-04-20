@@ -1,7 +1,7 @@
 import { Debug } from '@utils'
 import { solidify } from '@/git/solidify.ts'
 import { branch } from '@/git/branch.ts'
-import { Pending, PID, Solids } from '@/constants.ts'
+import { Pending, PID, SolidReply, Solids } from '@/constants.ts'
 import DB from '@/db.ts'
 import FS from '@/git/fs.ts'
 import { Atomic } from '@/atomic.ts'
@@ -21,21 +21,22 @@ export const doAtomicCommit = async (db: DB, fs: FS, exe?: ExeResult) => {
   const atomic = db.atomic()
   const { poolKeys, pool } = await db.getPooledActions(fs.pid)
   let pending: Pending | undefined
+  let reply: SolidReply | undefined
   if (exe) {
     fs.copyChanges(exe.fs)
     if ('reply' in exe) {
-      pool.unshift(exe.reply)
+      reply = exe.reply
     } else {
       pending = exe.pending
     }
     // if this request is an internal artifact level request, we need to remove
     // the repo lock atomically along with doing the commit to say we're done
   }
-  if (!pool.length && !pending) {
+  if (!pool.length && !pending && !reply) {
     log('no pool or pending requests')
     return false
   }
-  const solids = await solidify(fs, pool, pending)
+  const solids = await solidify(fs, pool, reply, pending)
   const logger = FS.open(fs.pid, solids.oid, db)
   if (await logger.exists('test.txt')) {
     console.log('exists', solids.oid)

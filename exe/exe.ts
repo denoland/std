@@ -5,6 +5,7 @@ import {
   ExeResult,
   JsonValue,
   Outcome,
+  SolidReply,
   SolidRequest,
   SUPERUSER,
 } from '@/constants.ts'
@@ -115,10 +116,9 @@ export default class Executor {
       assert(typeof outcome !== 'symbol')
       log('exe complete %o', exeId)
       this.#functions.delete(exeId)
-      const target = fs.pid, source = fs.pid
-      const reply = { target, source, sequence, outcome, commit }
+      const target = fs.pid
+      const reply: SolidReply = { target, sequence, outcome }
 
-      // TODO need to tick the fs forwards when the accumulations occur
       result = { fs: execution.accumulator.fs, reply }
     }
     return result

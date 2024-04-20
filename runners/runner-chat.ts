@@ -6,7 +6,6 @@ import { serializeError } from 'serialize-error'
 import { load } from '@std/dotenv'
 import { Help, IsolateApi } from '@/constants.ts'
 import { HelpConfig, JSONSchemaType } from '@/constants.ts'
-import { JsonValue } from '@/constants.ts'
 import * as loadHelp from '@/isolates/load-help.ts'
 type MessageParam = OpenAI.ChatCompletionMessageParam
 const base = 'AI:runner-chat'

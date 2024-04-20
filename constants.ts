@@ -41,7 +41,7 @@ export type Isolate = {
 }
 
 export type Poolable = MergeReply | RemoteRequest | PierceRequest
-
+export type Reply = SolidReply | MergeReply
 export type EffectRequest = {
   target: PID
   /**
@@ -120,7 +120,7 @@ type ExeResultBase = {
   effectsLock?: Deno.KvEntry<string>
 }
 type ExeSettled = ExeResultBase & {
-  reply: MergeReply
+  reply: SolidReply
 }
 type ExePending = ExeResultBase & {
   pending: Pending
@@ -134,8 +134,13 @@ export type Pending = {
   sequence: number
 }
 
-export const isMergeReply = (poolable: Poolable): poolable is MergeReply => {
+export const isMergeReply = (
+  poolable: Poolable | SolidReply,
+): poolable is MergeReply => {
   return 'commit' in poolable && 'outcome' in poolable
+}
+export const isReply = (poolable: Poolable | SolidReply): poolable is Reply => {
+  return 'outcome' in poolable
 }
 export const isRemoteRequest = (
   poolable: Request,

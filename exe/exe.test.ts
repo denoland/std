@@ -106,7 +106,7 @@ Deno.test('compound', async (t) => {
   })
   await t.step('reply using function cache', async () => {
     assert(request)
-    const sequenced = io.addPending(0, 'fakeCommit', [request])
+    const sequenced = io.addPending(0, fs.oid, [request])
     expect(sequenced).toHaveLength(1)
     const target = sequenced[0].source
     const reply = {
@@ -123,12 +123,12 @@ Deno.test('compound', async (t) => {
     const { next } = await fs.writeCommitObject()
 
     const result = await exe.execute(compound, next.oid, context)
-    expect('settled' in result).toBeTruthy()
+    expect('reply' in result).toBeTruthy()
   })
   await t.step('reply from replay', async () => {
     assert(request)
     const io = await IOChannel.load(fs)
-    const sequenced = io.addPending(0, 'fakeCommit2', [request])
+    const sequenced = io.addPending(0, fs.oid, [request])
     expect(sequenced).toHaveLength(1)
     const target = pid
     const reply = {
@@ -144,7 +144,7 @@ Deno.test('compound', async (t) => {
 
     const c = { ...context, exe: Executor.createCacheContext() }
     const result = await c.exe.execute(compound, next.oid, c)
-    expect('settled' in result).toBeTruthy()
+    expect('reply' in result).toBeTruthy()
   })
   stop()
 
@@ -156,7 +156,7 @@ Deno.test('compound', async (t) => {
   // test multiple cycles thru requests and replies
   // test making different request between two invocations
 })
-Deno.test.only('accumulation spanning multiple commits', async (t) => {
+Deno.test('accumulation spanning multiple commits', async (t) => {
   for (const withFunctionCache of [true, false]) {
     await t.step(`function cache ${withFunctionCache}`, async () => {
       const engine = await Engine.create()

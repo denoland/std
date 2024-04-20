@@ -22,8 +22,8 @@ Deno.test('runner', async (t) => {
   const db = await DB.create()
   const pid = pidFromRepo('t', 'runner/test')
   const fs = await FS.init(pid, db)
-  const accumulator = Accumulator.create()
-  const api = IsolateApi.create(fs, accumulator)
+  const accumulator = Accumulator.create([], fs)
+  const api = IsolateApi.create(accumulator)
   accumulator.activate(Symbol())
 
   await t.step('hello world', async () => {

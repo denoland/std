@@ -3,6 +3,8 @@ import FS from './fs.ts'
 import {
   isMergeReply,
   isPierceRequest,
+  isRemoteRequest,
+  isReply,
   MergeReply,
   Pending,
   PID,
@@ -11,6 +13,7 @@ import {
   PROCTYPE,
   RemoteRequest,
   Request,
+  SolidReply,
   SolidRequest,
   Solids,
 } from '@/constants.ts'
@@ -29,8 +32,17 @@ const log = Debug('AI:git:solidify')
  *   inserted into the branch.
  * - reply: a result is being returned from a dispatch after serial execution.
  */
-export const solidify = async (fs: FS, pool: Poolable[], pending?: Pending) => {
-  assert(pool.length > 0 || fs.isChanged || pending?.requests.length, 'no-op')
+export const solidify = async (
+  fs: FS,
+  pool: Poolable[],
+  reply?: SolidReply,
+  pending?: Pending,
+) => {
+  assert(
+    pool.length > 0 || reply || fs.isChanged || pending?.requests.length,
+    'no-op',
+  )
+  assert(!reply || !pending, 'cannot have both reply and pending')
   checkPool(pool)
   const io = await IOChannel.load(fs)
 
@@ -56,14 +68,17 @@ export const solidify = async (fs: FS, pool: Poolable[], pending?: Pending) => {
       }
     })
   }
-
-  for (const poolable of pool) {
-    if (isMergeReply(poolable)) {
+  let poolPlusReply: (Poolable | SolidReply)[] = pool
+  if (reply) {
+    poolPlusReply = [reply, ...pool]
+  }
+  for (const poolable of poolPlusReply) {
+    if (isReply(poolable)) {
       log('reply', poolable)
-      const request = io.reply(poolable)
-      if (!equal(request.target, fs.pid)) {
+      if (isMergeReply(poolable)) {
         parents.push(poolable.commit)
       }
+      const request = io.reply(poolable)
 
       const { outcome } = poolable
       if (!isPierceRequest(request)) {
@@ -86,17 +101,21 @@ export const solidify = async (fs: FS, pool: Poolable[], pending?: Pending) => {
         assert(isMergeReply(poolable), 'branch requires merge reply')
         log('branch reply', poolable.commit)
         if (request.proctype === PROCTYPE.BRANCH) {
+          // TODO only close if the reply is to the origin
           const { sequence } = poolable
           const branchPid = io.getBranchPid(sequence)
           deletes.push({ pid: branchPid, commit: poolable.commit })
         }
       }
     } else {
+      if (isRemoteRequest(poolable)) {
+        parents.push(poolable.commit)
+      }
       const sequence = io.addRequest(poolable)
       collectBranch(poolable, sequence, branches)
     }
   }
-  if (pool.length || pending) {
+  if (pool.length || pending || reply) {
     io.save()
   }
 
