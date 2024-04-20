@@ -37,13 +37,6 @@ export const doAtomicCommit = async (db: DB, fs: FS, exe?: ExeResult) => {
     return false
   }
   const solids = await solidify(fs, pool, reply, pending)
-  const logger = FS.open(fs.pid, solids.oid, db)
-  if (await logger.exists('test.txt')) {
-    console.log('exists', solids.oid)
-    console.log(await logger.read('test.txt'))
-  } else {
-    console.log('does not exist')
-  }
   atomic.deletePool(fs.pid, poolKeys)
 
   // the moneyshot
