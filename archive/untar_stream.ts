@@ -232,20 +232,66 @@ export class UnTarStream {
                 ? header.prefix + "/"
                 : "") + header.name,
               header,
-              readable: new ReadableStream<Uint8Array>({
+              readable: new ReadableStream({
+                type: "bytes",
                 async pull(controller) {
                   if (i > 0) {
                     lock = true;
-                    const { done, value } = await reader.read();
-                    if (done) {
-                      header = undefined;
-                      controller.error("Tarball ended unexpectedly.");
-                    } else {
-                      // Pull is unlocked before enqueue is called because if pull is in the middle of processing a chunk when cancel is called, nothing after enqueue will run.
-                      lock = false;
-                      controller.enqueue(
-                        i-- === 1 ? value.slice(0, size % 512) : value,
+                    if (controller.byobRequest?.view) {
+                      const buffer = new Uint8Array(
+                        controller.byobRequest.view.buffer,
+                        controller.byobRequest.view.byteOffset,
+                        controller.byobRequest.view.byteLength,
                       );
+                      let offset = 0;
+                      while (offset < buffer.length) {
+                        const { done, value } = await (async function () {
+                          const x = await reader.read();
+                          if (!x.done && i-- === 1) {
+                            x.value = x.value.slice(0, size % 512);
+                          }
+                          return x;
+                        })();
+                        if (done) {
+                          header = undefined;
+                          lock = false;
+                          if (offset) {
+                            controller.byobRequest.respond(offset);
+                            controller.close();
+                          } else {
+                            controller.close();
+                            controller.byobRequest.respond(0);
+                          }
+                          return;
+                        }
+                        if (value.length <= buffer.length - offset) {
+                          buffer.set(value, offset);
+                          offset += value.length;
+                        } else {
+                          buffer.set(
+                            value.slice(0, buffer.length - offset),
+                            offset,
+                          );
+                          offset = buffer.length - offset;
+                          lock = false;
+                          controller.byobRequest.respond(buffer.length);
+                          return controller.enqueue(value.slice(offset));
+                        }
+                      }
+                      lock = false;
+                      controller.byobRequest.respond(buffer.length);
+                    } else {
+                      const { done, value } = await reader.read();
+                      if (done) {
+                        header = undefined;
+                        controller.error("Tarball ended unexpectedly.");
+                      } else {
+                        // Pull is unlocked before enqueue is called because if pull is in the middle of processing a chunk when cancel is called, nothing after enqueue will run.
+                        lock = false;
+                        controller.enqueue(
+                          i-- === 1 ? value.slice(0, size % 512) : value,
+                        );
+                      }
                     }
                   } else {
                     header = undefined;
