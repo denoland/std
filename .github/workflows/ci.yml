@@ -20,9 +20,9 @@ jobs:
           - v1.x
           - canary
         os:
-          - ubuntu-22.04
-          - windows-2022
-          - macOS-12
+          - ubuntu-latest
+          - windows-latest
+          - macOS-latest-12
 
     steps:
       - name: Clone repository
@@ -49,7 +49,7 @@ jobs:
           TZ=Australia/Sydney deno test datetime
           TZ=Europe/London deno test datetime
           TZ=America/Toronto deno test datetime
-        if: matrix.os == 'ubuntu-22.04'
+        if: matrix.os == 'ubuntu-latest'
 
       - name: Type check browser compatible modules
         shell: bash
@@ -66,7 +66,7 @@ jobs:
 
       - name: Release if version change
         if: |
-          matrix.os == 'ubuntu-22.04' &&
+          matrix.os == 'ubuntu-latest' &&
           github.repository == 'denoland/deno_std' &&
           github.ref == 'refs/heads/main'
         shell: bash
@@ -81,8 +81,8 @@ jobs:
       fail-fast: false
       matrix:
         os:
-          - ubuntu-22.04
-          - windows-2022
+          - ubuntu-latest
+          - windows-latest
     steps:
       - name: Clone repository
         uses: actions/checkout@v4
@@ -103,13 +103,13 @@ jobs:
 
       - name: Spell-check
         uses: crate-ci/typos@master
-        if: matrix.os == 'ubuntu-22.04'
+        if: matrix.os == 'ubuntu-latest'
         with:
           config: ./.github/typos.toml
 
   wasm:
     name: wasm
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     strategy:
       matrix:
         module: [crypto/_wasm]
@@ -151,7 +151,7 @@ jobs:
         run: deno task --cwd ${{ matrix.module }} wasmbuild --check
 
   publish-dry-run:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     timeout-minutes: 30
     permissions:
       contents: read
