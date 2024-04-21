@@ -78,9 +78,6 @@ Check out the documentation [here](https://deno.land/std?doc).
 
 ## Packages
 
-Settled status means a package is unlikely to have breaking changes, but has not
-yet achieved v1 status.
-
 | Package                                                | Status     | Version                                                                                   |
 | ------------------------------------------------------ | ---------- | ----------------------------------------------------------------------------------------- |
 | [archive](https://jsr.io/@std/archive)                 | Unstable   | [![JSR](https://jsr.io/badges/@std/archive)](https://jsr.io/@std/archive)                 |
@@ -125,8 +122,8 @@ yet achieved v1 status.
 | [webgpu](https://jsr.io/@std/webgpu)                   | Unstable   | [![JSR](https://jsr.io/badges/@std/webgpu)](https://jsr.io/@std/webgpu)                   |
 | [yaml](https://jsr.io/@std/yaml)                       | Settled    | [![JSR](https://jsr.io/badges/@std/yaml)](https://jsr.io/@std/yaml)                       |
 
-> For background and discussions regarding the stability of the following
-> sub-modules, see [#3489](https://github.com/denoland/deno_std/issues/3489).
+> Note: Settled status means a package is unlikely to have breaking changes, but
+> has not yet achieved v1 status.
 
 ## Architecture
 
