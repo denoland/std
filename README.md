@@ -78,7 +78,7 @@ Check out the documentation [here](https://deno.land/std?doc).
 
 ## Packages
 
-| Package                                                | Status     | Version                                                                                   |
+| Package                                                | Status     | Latest version                                                                            |
 | ------------------------------------------------------ | ---------- | ----------------------------------------------------------------------------------------- |
 | [archive](https://jsr.io/@std/archive)                 | Unstable   | [![JSR](https://jsr.io/badges/@std/archive)](https://jsr.io/@std/archive)                 |
 | [assert](https://jsr.io/@std/assert)                   | Settled    | [![JSR](https://jsr.io/badges/@std/assert)](https://jsr.io/@std/assert)                   |
