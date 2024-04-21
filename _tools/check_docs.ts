@@ -104,7 +104,6 @@ async function checkDocs(specifier: string) {
   docs.filter(isExported)
     .forEach((document) => {
       if (isFunctionDoc(document)) {
-        // console.log(document);
         assertFunctionDocs(document);
       }
     });
