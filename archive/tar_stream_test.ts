@@ -2,33 +2,58 @@
 import { TarStream } from "./tar_stream.ts";
 import { assertEquals } from "../assert/mod.ts";
 
-Deno.test("createTarArchiveViaStream", async function () {
+Deno.test("createTarArchiveDefaultStream", async function () {
   const text = new TextEncoder().encode("Hello World!");
 
-  const size = (await reduce(
-    ReadableStream.from([
-      {
-        pathname: "./potato",
-      },
-      {
-        pathname: "./text.txt",
-        size: text.length,
-        iterable: [text.slice()],
-      },
-    ])
-      .pipeThrough(new TarStream()),
-  )).length;
+  const reader = ReadableStream.from([
+    {
+      pathname: "./potato",
+    },
+    {
+      pathname: "./text.txt",
+      size: text.length,
+      iterable: [text.slice()],
+    },
+  ])
+    .pipeThrough(new TarStream())
+    .getReader();
 
+  let size = 0;
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) {
+      break;
+    }
+    size += value.length;
+  }
   assertEquals(size, 512 + 512 + Math.ceil(text.length / 512) * 512 + 1024);
 });
 
-async function reduce(readable: ReadableStream<Uint8Array>) {
-  let y = new Uint8Array(0);
-  for await (const x of readable) {
-    const z = new Uint8Array(x.length + y.length);
-    z.set(y);
-    z.set(x, y.length);
-    y = z;
+Deno.test("createTarArchiveByteStream", async function () {
+  const text = new TextEncoder().encode("Hello World!");
+
+  const reader = ReadableStream.from([
+    {
+      pathname: "./potato",
+    },
+    {
+      pathname: "./text.txt",
+      size: text.length,
+      iterable: [text.slice()],
+    },
+  ])
+    .pipeThrough(new TarStream())
+    .getReader({ mode: "byob" });
+
+  let size = 0;
+  while (true) {
+    const { done, value } = await reader.read(
+      new Uint8Array(Math.floor(Math.random() * 1024)),
+    );
+    if (done) {
+      break;
+    }
+    size += value.length;
   }
-  return y;
-}
+  assertEquals(size, 512 + 512 + Math.ceil(text.length / 512) * 512 + 1024);
+});
