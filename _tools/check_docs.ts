@@ -1,20 +1,31 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
+/**
+ * This script checks that all exported functions have JSDoc comments with
+ * `@param`, `@return`, and `@example` tags, according to the contributing
+ * guidelines.
+ *
+ * @see {@link https://github.com/denoland/deno_std/blob/main/.github/CONTRIBUTING.md#documentation}
+ *
+ * @todo(iuioiua) Add support for classes and methods.
+ */
 import { doc } from "deno_doc/mod.ts";
 import type {
   DocNodeBase,
   DocNodeFunction,
   JsDocTag,
-  Location,
 } from "deno_doc/types.d.ts";
 
 const ENTRY_POINTS = [
   "../bytes/mod.ts",
+  "../datetime/mod.ts",
 ] as const;
 
 class ValidationError extends Error {
-  constructor(message: string, location: Location) {
-    super(`${message} at ${location.filename}:${location.line}`);
+  constructor(message: string, document: DocNodeBase) {
+    super(message, {
+      cause: `${document.location.filename}:${document.location.line}`,
+    });
     this.name = this.constructor.name;
   }
 }
@@ -22,10 +33,10 @@ class ValidationError extends Error {
 function assert(
   condition: boolean,
   message: string,
-  location: Location,
+  document: DocNodeBase,
 ): asserts condition {
   if (!condition) {
-    throw new ValidationError(message, location);
+    throw new ValidationError(message, document);
   }
 }
 
@@ -37,14 +48,33 @@ function isExported(document: DocNodeBase) {
   return document.declarationKind === "export";
 }
 
-function assertHasTag(tags: JsDocTag[], kind: string, location: Location) {
+function assertHasTag(tags: JsDocTag[], kind: string, document: DocNodeBase) {
   const tag = tags.find((tag) => tag.kind === kind);
-  assert(tag !== undefined, `Symbol must have a @${kind} tag`, location);
+  assert(tag !== undefined, `Symbol must have a @${kind} tag`, document);
   assert(
     // @ts-ignore doc is defined
     tag.doc !== undefined,
     `@${kind} tag must have a description`,
-    location,
+    document,
+  );
+}
+
+function assertHasParamTag(
+  tags: JsDocTag[],
+  param: string,
+  document: DocNodeBase,
+) {
+  const tag = tags.find((tag) => tag.kind === "param" && tag.name === param);
+  assert(
+    tag !== undefined,
+    `Symbol must have a @param tag for ${param}`,
+    document,
+  );
+  assert(
+    // @ts-ignore doc is defined
+    tag.doc !== undefined,
+    `@param tag for ${param} must have a description`,
+    document,
   );
 }
 
@@ -52,13 +82,21 @@ function assertFunctionDocs(document: DocNodeFunction) {
   assert(
     document.jsDoc !== undefined,
     "Symbol must have a JSDoc block",
-    document.location,
+    document,
   );
   const { tags } = document.jsDoc;
-  assert(tags !== undefined, "JSDoc block must have tags", document.location);
-  for (const kind of ["param", "return", "example"]) {
-    assertHasTag(tags, kind, document.location);
+  assert(tags !== undefined, "JSDoc block must have tags", document);
+  for (const param of document.functionDef.params) {
+    if (param.kind === "identifier") {
+      assertHasParamTag(tags, param.name, document);
+    }
+    if (param.kind === "assign") {
+      // @ts-ignore Trust me
+      assertHasParamTag(tags, param.left.name, document);
+    }
   }
+  assertHasTag(tags, "return", document);
+  assertHasTag(tags, "example", document);
 }
 
 async function checkDocs(specifier: string) {
@@ -66,6 +104,7 @@ async function checkDocs(specifier: string) {
   docs.filter(isExported)
     .forEach((document) => {
       if (isFunctionDoc(document)) {
+        // console.log(document);
         assertFunctionDocs(document);
       }
     });
