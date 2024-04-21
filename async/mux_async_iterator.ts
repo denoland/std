@@ -82,7 +82,6 @@ export class MuxAsyncIterator<T> implements AsyncIterable<T> {
         for (const e of this.#throws) {
           throw e;
         }
-        this.#throws.length = 0;
       }
       // Clear the `yields` list and reset the `signal` promise.
       this.#yields.length = 0;

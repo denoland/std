@@ -8,7 +8,7 @@ import {
   assertStringIncludes,
 } from "../assert/mod.ts";
 
-Deno.test("pooledMap()", async function () {
+Deno.test("pooledMap()", async () => {
   const start = new Date();
   const results = pooledMap(
     2,
@@ -66,7 +66,7 @@ Deno.test("pooledMap() returns ordered items", async () => {
   assertEquals(returned, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
 });
 
-Deno.test("pooledMap() checks browser compat", async function () {
+Deno.test("pooledMap() checks browser compat", async () => {
   // Simulates the environment where Symbol.asyncIterator is not available
   const asyncIterFunc = ReadableStream.prototype[Symbol.asyncIterator];
   // deno-lint-ignore no-explicit-any

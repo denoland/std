@@ -1,6 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-import { exponentialBackoffWithJitter } from "./_util.ts";
-import { assertEquals } from "../assert/mod.ts";
+import { createAbortError, exponentialBackoffWithJitter } from "./_util.ts";
+import { assertEquals, assertInstanceOf } from "../assert/mod.ts";
 
 // test util to ensure deterministic results during testing of backoff function by polyfilling Math.random
 function prngMulberry32(seed: number) {
@@ -49,4 +49,32 @@ Deno.test("exponentialBackoffWithJitter()", () => {
 
     assertEquals(results as typeof row, row);
   }
+});
+
+Deno.test("createAbortError()", () => {
+  const error = createAbortError();
+  assertInstanceOf(error, DOMException);
+  assertEquals(error.name, "AbortError");
+  assertEquals(error.message, "Aborted");
+});
+
+Deno.test("createAbortError() handles aborted signal with reason", () => {
+  const c = new AbortController();
+  c.abort("Expected Reason");
+  const error = createAbortError(c.signal.reason);
+  assertInstanceOf(error, DOMException);
+  assertEquals(error.name, "AbortError");
+  assertEquals(error.message, "Aborted: Expected Reason");
+});
+
+Deno.test("createAbortError() handles aborted signal without reason", () => {
+  const c = new AbortController();
+  c.abort();
+  const error = createAbortError(c.signal.reason);
+  assertInstanceOf(error, DOMException);
+  assertEquals(error.name, "AbortError");
+  assertEquals(
+    error.message,
+    "Aborted: AbortError: The signal has been aborted",
+  );
 });
