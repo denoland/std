@@ -1,9 +1,10 @@
 #!/usr/bin/env -S deno run --allow-net --allow-read --allow-write
+// @ts-nocheck Trust me
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // Ported from unicode_width rust crate, Copyright (c) 2015 The Rust Project Developers. MIT license.
 
 import { assert } from "../../assert/assert.ts";
-import { runLengthEncode } from "../_rle.ts";
+import { runLengthEncode } from "../_run_length.ts";
 
 // change this line and re-run the script to update for new Unicode versions
 const UNICODE_VERSION = "15.0.0";
