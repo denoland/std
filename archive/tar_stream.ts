@@ -222,45 +222,41 @@ export class TarStream {
     this.#readable = new ReadableStream({
       type: "bytes",
       async pull(controller) {
+        // If Byte Stream
         if (controller.byobRequest?.view) {
           const buffer = new Uint8Array(
             controller.byobRequest.view.buffer,
-            controller.byobRequest.view.byteOffset,
+            controller.byobRequest.view.byteOffset, // Will this ever be anything but zero?
             controller.byobRequest.view.byteLength,
           );
           let offset = 0;
-
           while (offset < buffer.length) {
             const { done, value } = await gen.next();
             if (done) {
               if (offset) {
                 controller.byobRequest.respond(offset);
-                controller.close();
-              } else {
-                controller.close();
-                controller.byobRequest.respond(0);
+                return controller.close();
               }
-              return;
+              controller.close();
+              return controller.byobRequest.respond(0);
             }
-            if (value.length <= buffer.length - offset) {
-              buffer.set(value, offset);
-              offset += value.length;
-            } else {
+            if (value.length > buffer.length - offset) {
               buffer.set(value.slice(0, buffer.length - offset), offset);
               offset = buffer.length - offset;
               controller.byobRequest.respond(buffer.length);
               return controller.enqueue(value.slice(offset));
             }
+            buffer.set(value, offset);
+            offset += value.length;
           }
-          controller.byobRequest.respond(buffer.length);
-        } else {
-          const { done, value } = await gen.next();
-          if (done) {
-            controller.close();
-          } else {
-            controller.enqueue(value);
-          }
+          return controller.byobRequest.respond(buffer.length);
         }
+        // Else Default Stream
+        const { done, value } = await gen.next();
+        if (done) {
+          return controller.close();
+        }
+        controller.enqueue(value);
       },
     });
     this.#writable = writable;

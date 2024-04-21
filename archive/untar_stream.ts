@@ -237,10 +237,11 @@ export class UnTarStream {
                 async pull(controller) {
                   if (i > 0) {
                     lock = true;
+                    // If Byte Stream
                     if (controller.byobRequest?.view) {
                       const buffer = new Uint8Array(
                         controller.byobRequest.view.buffer,
-                        controller.byobRequest.view.byteOffset,
+                        controller.byobRequest.view.byteOffset, // Will this ever be anything but zero?
                         controller.byobRequest.view.byteLength,
                       );
                       let offset = 0;
@@ -257,17 +258,12 @@ export class UnTarStream {
                           lock = false;
                           if (offset) {
                             controller.byobRequest.respond(offset);
-                            controller.close();
-                          } else {
-                            controller.close();
-                            controller.byobRequest.respond(0);
+                            return controller.close();
                           }
-                          return;
+                          controller.close();
+                          return controller.byobRequest.respond(0);
                         }
-                        if (value.length <= buffer.length - offset) {
-                          buffer.set(value, offset);
-                          offset += value.length;
-                        } else {
+                        if (value.length > buffer.length - offset) {
                           buffer.set(
                             value.slice(0, buffer.length - offset),
                             offset,
@@ -277,22 +273,23 @@ export class UnTarStream {
                           controller.byobRequest.respond(buffer.length);
                           return controller.enqueue(value.slice(offset));
                         }
+                        buffer.set(value, offset);
+                        offset += value.length;
                       }
                       lock = false;
-                      controller.byobRequest.respond(buffer.length);
-                    } else {
-                      const { done, value } = await reader.read();
-                      if (done) {
-                        header = undefined;
-                        controller.error("Tarball ended unexpectedly.");
-                      } else {
-                        // Pull is unlocked before enqueue is called because if pull is in the middle of processing a chunk when cancel is called, nothing after enqueue will run.
-                        lock = false;
-                        controller.enqueue(
-                          i-- === 1 ? value.slice(0, size % 512) : value,
-                        );
-                      }
+                      return controller.byobRequest.respond(buffer.length);
                     }
+                    // Else Default Stream
+                    const { done, value } = await reader.read();
+                    if (done) {
+                      header = undefined;
+                      return controller.error("Tarball ended unexpectedly.");
+                    }
+                    // Pull is unlocked before enqueue is called because if pull is in the middle of processing a chunk when cancel is called, nothing after enqueue will run.
+                    lock = false;
+                    controller.enqueue(
+                      i-- === 1 ? value.slice(0, size % 512) : value,
+                    );
                   } else {
                     header = undefined;
                     if (isCancelled()) {
