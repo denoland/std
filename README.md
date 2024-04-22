@@ -78,6 +78,18 @@ Check out the documentation [here](https://deno.land/std?doc).
 
 ## Stability
 
+For a package to reach v1 (aka stable) status, it must meet the following
+requirements:
+
+1. Approved by four members of the internal team. There must be consensus that
+   the API design is satisfactory and unlikely to change in the future.
+1. 100% documented, passing `deno doc --lint` checks and adhering to the
+   [documentation guidelines](https://github.com/denoland/deno_std/blob/main/.github/CONTRIBUTING.md#documentation).
+1. Maximum possible test coverage
+1. No open issues or pull requests that might lead to breaking changes. For
+   example, issues that suggest new non-breaking features are fine to exist at
+   stabilization.
+
 | Package         | Status     |
 | --------------- | ---------- |
 | archive         | Unstable   |

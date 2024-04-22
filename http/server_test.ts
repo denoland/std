@@ -1129,8 +1129,8 @@ Deno.test("Server does not close the http2 downstream connection when the respon
   const listenOptions = {
     hostname: "localhost",
     port: getPort(),
-    certFile: join(testdataDir, "tls/localhost.crt"),
-    keyFile: join(testdataDir, "tls/localhost.key"),
+    cert: await Deno.readTextFile(join(testdataDir, "tls/localhost.crt")),
+    key: await Deno.readTextFile(join(testdataDir, "tls/localhost.key")),
     alpnProtocols: ["h2"],
   };
   const listener = Deno.listenTls(listenOptions);

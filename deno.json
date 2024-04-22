@@ -13,7 +13,8 @@
     "automation/": "https://raw.githubusercontent.com/denoland/automation/0.10.0/"
   },
   "tasks": {
-    "test": "RUST_BACKTRACE=1 deno test --unstable-http --unstable-webgpu --doc --allow-all --parallel --coverage --trace-leaks",
+    "test": "RUST_BACKTRACE=1 deno test --unstable-http --unstable-webgpu --allow-all --parallel --coverage --trace-leaks",
+    "doc-test": "deno task test --doc",
     "test:browser": "git grep --name-only \"This module is browser compatible.\" | grep -v deno.json | grep -v .github/workflows | grep -v _tools | grep -v encoding/README.md | xargs deno check --config browser-compat.tsconfig.json",
     "fmt:licence-headers": "deno run --allow-read --allow-write ./_tools/check_licence.ts",
     "lint:deprecations": "deno run --allow-read --allow-net --allow-env ./_tools/check_deprecation.ts",

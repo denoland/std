@@ -106,7 +106,7 @@ Deno.test({
         fn() {
           const columns: string[] = [];
           const data: string[][] = [];
-          const output = CRLF;
+          const output = "";
           assertEquals(stringify(data, { columns }), output);
         },
       },
@@ -505,7 +505,7 @@ Deno.test({
       name: "Valid data, no columns",
       fn() {
         const data = [[1, 2, 3], [4, 5, 6]];
-        const output = `${CRLF}1,2,3${CRLF}4,5,6${CRLF}`;
+        const output = `1,2,3${CRLF}4,5,6${CRLF}`;
 
         assertEquals(stringify(data), output);
       },

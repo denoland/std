@@ -16,10 +16,6 @@ and [architecture guide](./ARCHITECTURE.md) before contributing.
 
 1. [Install the Deno CLI](https://docs.deno.com/runtime/manual/getting_started/installation).
 1. Fork and clone the repository.
-1. Set up git submodules:
-   ```bash
-   git submodule update --init
-   ```
 1. Create a new branch for your changes.
 1. Make your changes and ensure `deno task ok` passes successfully.
 1. Commit your changes with clear messages.
