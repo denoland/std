@@ -1,6 +1,6 @@
 {
   "config": {},
-  "runner": "runner-chat",
+  "runner": "ai-prompt",
   "commands": [],
   "prerequisites": [],
   "instructions": [

@@ -3,7 +3,7 @@
   "config": {
     "temperature": 0.8
   },
-  "runner": "runner-chat",
+  "runner": "ai-prompt",
   "commands": ["helps/help-finder", "load-help:load", "engage-help:engage"],
   "instructions": [
     "You are an expert at goal detection.  Be as brief as possible.",

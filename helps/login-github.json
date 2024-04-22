@@ -1,7 +1,7 @@
 {
   "description": "Will walk the user thru an oauth loop to log in using github.  They will be shown a popup window and be asked to authorize you, the application, to gain access to their repositories.  Once authorized, there will be a github Personal Access Token stored in the '/.env' secrets file, under the key 'GITHUB_PAT'",
   "config": {},
-  "runner": "runner-chat",
+  "runner": "ai-prompt",
   "commands": ["oauth:authenticate"],
   "prerequisites": [],
   "instructions": [

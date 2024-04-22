@@ -1,6 +1,6 @@
 export default {
   config: {},
-  runner: 'runner-chat',
+  runner: "ai-prompt",
   commands: [],
   requirements: [
     `
@@ -189,7 +189,7 @@ Re: <the name of the customer from the field in the form>
 
 `,
   ],
-  done: '',
+  done: "",
   examples: [],
   tests: [],
-}
+};
