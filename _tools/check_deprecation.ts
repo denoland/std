@@ -8,7 +8,7 @@
  * ```
  */
 
-import { doc } from "deno_doc";
+import { doc } from "deno_doc/mod.ts";
 import { walk } from "../fs/walk.ts";
 import { toFileUrl } from "../path/to_file_url.ts";
 
