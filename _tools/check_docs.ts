@@ -7,7 +7,7 @@
  *
  * @see {@link https://github.com/denoland/deno_std/blob/main/.github/CONTRIBUTING.md#documentation}
  *
- * @todo(iuioiua) Add support for classes and methods.
+ * TODO(iuioiua): Add support for classes and methods.
  */
 import { doc } from "deno_doc/mod.ts";
 import type {
