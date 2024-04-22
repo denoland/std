@@ -119,13 +119,19 @@ export default (name: string, cradleMaker: () => Promise<Artifact>) => {
       log('result', result)
       expect(result).toBe(count + 1)
     })
+    await t.step('update 1', async () => {
+      const path = `cust-${count - 1}.txt`
+      const content = 'this is the new content'
+      const { write, read } = await artifact.actions('files', target)
+      await write({ path, content })
+      const result = await read({ path })
+      log('contents', result)
+      expect(result).toEqual(content)
+    })
 
     await artifact.stop()
 
     // then time how long it takes to write text to those files both at
     // creation, and also afterwards.
-
-    // time how long to alter just one file, as a function of the number of
-    // files
   })
 }

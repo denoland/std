@@ -11,7 +11,7 @@ export const api = {
     required: ['path'],
     properties: {
       path: { type: 'string', description: 'the absolute path to the file' },
-      contents: {
+      content: {
         type: 'string',
         description: 'the contents of the file to be written',
       },
@@ -66,11 +66,11 @@ export const api = {
 
 export const functions = {
   // TODO this should be a full mirror of the IsolateApi functions
-  write: (params: { path: string; contents?: string }, api: IsolateApi) => {
-    const { path, contents = '' } = params
-    log('add', path, contents)
-    api.write(path, contents)
-    return `added ${path} with length: ${contents.length}`
+  write: (params: { path: string; content?: string }, api: IsolateApi) => {
+    const { path, content = '' } = params
+    log('add', path, content)
+    api.write(path, content)
+    return content.length
   },
   ls: async (params: { path: string; count: number }, api: IsolateApi) => {
     const { path, count } = params
