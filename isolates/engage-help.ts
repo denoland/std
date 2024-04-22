@@ -1,9 +1,10 @@
 import { assert, Debug } from '@utils'
 const log = Debug('AI:isolates:engage-help')
-import runners from '../runners/index.ts'
 import { IsolateApi } from '@/constants.ts'
-import { Help } from '@/constants.ts'
+import { Help, RUNNERS } from '@/constants.ts'
 import * as loadHelp from '@/isolates/load-help.ts'
+import * as promptIsolate from '@/isolates/ai-prompt.ts'
+import * as injectorIsolate from '@/isolates/ai-prompt-injector.ts'
 
 export const api = {
   engage: {
@@ -33,15 +34,14 @@ export const functions = {
     const { load } = await api.functions<loadHelp.Api>('load-help')
     const help: Help = await load({ help: path })
 
-    assert(typeof help.runner === 'string', `no runner: ${help.runner}`)
-    log('found runner string:', help.runner)
-    // this should be an isolate, not a new format
-    // it should match a certain format of the API, so we know it can be called
-    // as a runner.
-    const runner = runners[help.runner]
-    assert(runner, `no runner: ${help.runner}`)
+    const { runner = RUNNERS.CHAT } = help
+    const isValid = runner === RUNNERS.CHAT || runner === RUNNERS.INJECTOR
+    assert(isValid, `no runner: ${help.runner}`)
+    log('found runner string:', runner)
 
-    const result = await runner({ help, text }, api)
+    const isolate = runner === RUNNERS.CHAT ? promptIsolate : injectorIsolate
+
+    const result = await isolate.functions.prompt({ help, text }, api)
     log('result:', result)
     return result
   },

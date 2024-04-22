@@ -3,9 +3,9 @@ import merge from 'lodash.merge'
 import OpenAI from 'openai'
 import { load } from '@std/dotenv'
 import { Help, IsolateApi } from '@/constants.ts'
-import { loadTools } from './ai-loadTools.ts'
+import { loadTools } from './ai-load-tools.ts'
 type MessageParam = OpenAI.ChatCompletionMessageParam
-const base = 'AI:runner-chat'
+const base = 'AI:completions'
 const log = Debug(base)
 const debugPart = Debug(base + ':ai-part')
 
@@ -25,7 +25,6 @@ export const api = {
   create: {
     type: 'object',
     // TODO write json schema for helps
-    additionalProperties: false,
   },
 }
 

@@ -10,6 +10,12 @@ import * as session from './session.ts'
 import * as repo from './repo.ts'
 import * as shell from './shell.ts'
 
+import * as completions from './ai-completions.ts'
+import * as executeTools from './ai-execute-tools.ts'
+import * as loadTools from './ai-load-tools.ts'
+import * as promptInjector from './ai-prompt-injector.ts'
+import * as prompt from './ai-prompt.ts'
+
 export default {
   'engage-help': engageHelp,
   fetch,
@@ -22,4 +28,9 @@ export default {
   session,
   repo,
   shell,
+  'ai-completions': completions,
+  'ai-execute-tools': executeTools,
+  'ai-load-tools': loadTools,
+  'ai-prompt-injector': promptInjector,
+  'ai-prompt': prompt,
 }

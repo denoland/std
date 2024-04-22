@@ -1,4 +1,4 @@
-import { transcribe } from './runners/ai-prompt.ts'
+import { transcribe } from './isolates/ai-prompt.ts'
 import Compartment from './io/compartment.ts'
 import {
   C,

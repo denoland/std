@@ -4,11 +4,15 @@ import { Shell } from '@/api/web-client.ts'
 import { expect, log } from '@utils'
 import IsolateApi from '../isolate-api.ts'
 import { Help, pidFromRepo, RUNNERS } from '../constants.ts'
-import runner from '../runners./isolates/ai-prompt.ts'
+import { prepare } from './ai-prompt.ts'
+import * as completions from './ai-completions.ts'
 import FS from '@/git/fs.ts'
 import DB from '@/db.ts'
 import Accumulator from '@/exe/accumulator.ts'
 import { Api } from '@/isolates/engage-help.ts'
+import { assert } from '@std/assert'
+import OpenAI from 'openai'
+type Messages = OpenAI.ChatCompletionMessageParam
 
 Deno.test('runner', async (t) => {
   const helpBase: Help = {
@@ -28,30 +32,48 @@ Deno.test('runner', async (t) => {
 
   await t.step('hello world', async () => {
     const help = merge({}, helpBase, { commands: [] })
-    const text = 'reply with the cheese emoji'
-    const result = await runner({ help, text }, api)
-    expect(result).toBe('🧀')
-    log('result', result)
-    const session = await api.readJSON('session.json')
+    const text = 'cheese emoji'
+    await prepare(help, text, api)
+    await completions.functions.create(help, api)
+    const session = await api.readJSON<Messages[]>('session.json')
     log('session', session)
     expect(session).toHaveLength(3)
+    expect(session[2].content).toBe('🧀')
   })
   await t.step('tool call', async () => {
     const text = 'call the "local" function'
     const help = merge({}, helpBase, {
       instructions: ['return the function call results verbatim'],
     })
-    const result = await runner({ help, text }, api)
-    expect(result).toContain('local reply')
+    api.delete('session.json')
+    await prepare(help, text, api)
+    await completions.functions.create(help, api)
+    const session = await api.readJSON<Messages[]>('session.json')
+    assert('tool_calls' in session[2], 'tool calls missing')
+    log('session', session[2].tool_calls)
+    assert(session[2].tool_calls)
+    expect(session[2].tool_calls).toHaveLength(1)
+    const fn = session[2].tool_calls[0]
+    expect(fn.function).toEqual({ name: 'local', arguments: '{}' })
   })
   await t.step('tool error', async () => {
     const text = 'call the "error" function with message: salami'
     const help = merge({}, helpBase, {
       instructions: ['return the function call error message'],
     })
-    const result = await runner({ help, text }, api)
-    expect(result).toContain('salami')
-    // TODO read the filesystem and get the error message out
+    api.delete('session.json')
+    await prepare(help, text, api)
+    await completions.functions.create(help, api)
+    const session = await api.readJSON<Messages[]>('session.json')
+    assert('tool_calls' in session[2], 'tool calls missing')
+    log('session', session[2].tool_calls)
+    assert(session[2].tool_calls)
+    expect(session[2].tool_calls).toHaveLength(1)
+    const fn = session[2].tool_calls[0]
+    expect(fn.function).toEqual({
+      name: 'error',
+      arguments: '{"message":"salami"}',
+    })
   })
   db.stop()
 })
@@ -64,9 +86,18 @@ Deno.test('artifact', async (t) => {
 
   const { pid } = await artifact.clone({ repo })
 
+  let latest = {}
   const splices = async () => {
     for await (const splice of artifact.read(pid, 'session.json')) {
-      log('splice', splice)
+      if (!Object.keys(splice.changes).length) {
+        continue
+      }
+      if (splice.changes['session.json']) {
+        const { patch } = splice.changes['session.json']
+        assert(patch, 'patch missing')
+        latest = JSON.parse(patch)
+        log('splice', splice.oid, latest)
+      }
     }
   }
   splices()
@@ -74,9 +105,14 @@ Deno.test('artifact', async (t) => {
   await t.step('chat', async () => {
     const isolate = 'engage-help'
     const { engage } = await artifact.actions<Api>(isolate, pid)
-    const result = await engage({ help: 'help-fixture', text: 'hello' })
+    await engage({
+      help: 'help-fixture',
+      text: 'say the word: "hello" without calling any functions',
+    })
 
-    log('result', result)
+    log('result', latest)
+    assert(Array.isArray(latest))
+    expect(latest[2].content).toBe('hello')
   })
   await artifact.stop()
 })

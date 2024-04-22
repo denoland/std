@@ -5,7 +5,7 @@ import { assert, AssertionError, equal, isKvTestMode } from '@utils'
 import { PID } from '@/constants.ts'
 import { Atomic } from '@/atomic.ts'
 
-const log = Debug('AI:git:KV')
+const log = Debug('git:KV')
 
 export class GitKV {
   #allowed = ['config', 'objects', 'refs']

@@ -4,11 +4,9 @@ import OpenAI from 'openai'
 import { serializeError } from 'serialize-error'
 import { Help, IsolateApi } from '@/constants.ts'
 import { SESSION_PATH } from './ai-completions.ts'
-import { loadActions } from './ai-loadTools.ts'
-const base = 'AI:runner-chat'
+import { loadActions } from './ai-load-tools.ts'
+const base = 'AI:execute-tools'
 const log = Debug(base)
-const debugResult = Debug(base + ':ai-result-content')
-const debugPart = Debug(base + ':ai-part')
 const debugToolCall = Debug(base + ':ai-result-tool')
 const debugToolResult = Debug(base + ':ai-tool-result')
 

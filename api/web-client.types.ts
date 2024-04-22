@@ -173,8 +173,8 @@ export const getProcType = (options?: ProcessOptions) => {
   return PROCTYPE.SERIAL
 }
 export enum RUNNERS {
-  CHAT = 'runner-chat',
-  INJECTOR = 'runner-injector',
+  CHAT = 'ai-prompt',
+  INJECTOR = 'ai-prompt-injector',
 }
 export const toString = (pid: PID) => {
   return `${pid.account}/${pid.repository}:${pid.branches.join('_')}`

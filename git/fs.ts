@@ -4,7 +4,7 @@ import { Change, ENTRY_BRANCH, PID } from '@/constants.ts'
 import git from '$git'
 import type DB from '@/db.ts'
 import { GitKV } from './gitkv.ts'
-const log = Debug('AI:git:fs')
+const log = Debug('git:fs')
 const dir = '/'
 
 export default class FS {

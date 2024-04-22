@@ -1,12 +1,8 @@
 import * as loadHelp from '@/isolates/load-help.ts'
 import { assert, Debug, posix } from '@utils'
-import merge from 'lodash.merge'
 import OpenAI from 'openai'
 import { Help, IsolateApi, JSONSchemaType } from '@/constants.ts'
-type MessageParam = OpenAI.ChatCompletionMessageParam
-const base = 'AI:runner-chat'
-const log = Debug(base)
-const debugPart = Debug(base + ':ai-part')
+const log = Debug('AI:load-tools')
 
 export const loadTools = async (commands: string[] = [], api: IsolateApi) => {
   const result = await load(commands, api)
