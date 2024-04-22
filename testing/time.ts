@@ -5,6 +5,7 @@
  *
  * @module
  */
+// comment
 
 import { RedBlackTree } from "../data_structures/red_black_tree.ts";
 import { ascend } from "../data_structures/comparators.ts";
