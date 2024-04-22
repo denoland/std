@@ -22,7 +22,7 @@ import {
   Utils,
   Value,
 } from "./_parser.ts";
-import { parse, stringify } from "./parse.ts";
+import { parse, stringify } from "./mod.ts";
 import { existsSync } from "../fs/exists.ts";
 import * as path from "../path/mod.ts";
 
