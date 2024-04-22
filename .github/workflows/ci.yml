@@ -36,7 +36,9 @@ jobs:
           deno-version: ${{ matrix.deno }}
 
       - name: Run tests
-        run: deno task test
+        # TODO(kt3k): remove doc-test task when the below issue resolved
+        # https://github.com/denoland/deno/issues/23430
+        run: deno task test && deno task doc-test
 
       - name: Run tests (simulate Deno 2)
         if: matrix.deno == 'canary'
@@ -172,7 +174,9 @@ jobs:
         run: deno run -A ./_tools/convert_to_workspace.ts
 
       - name: Test
-        run: deno task test
+        # TODO(kt3k): remove doc-test task when the below issue resolved
+        # https://github.com/denoland/deno/issues/23430
+        run: deno task test && deno task doc-test
 
       - name: Publish (dry run)
         run: deno publish --allow-dirty --dry-run
