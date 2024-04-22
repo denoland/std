@@ -7,22 +7,22 @@ import {
 } from "@deno/graph";
 
 /**
- * Checks for circular dependencies in the std submodules.
+ * Checks for circular dependencies in the std packages.
  *
- * Usage: deno run -A _tools/check_circular_submodule_dependencies.ts
+ * Usage: deno run -A _tools/check_circular_package_dependencies.ts
  *
  * `--graph` option outputs graphviz diagram. You can convert the output to
  * a visual graph using tools like https://dreampuf.github.io/GraphvizOnline/
  *
- * $ deno run -A _tools/check_circular_submodule_dependencies.ts --graph
+ * $ deno run -A _tools/check_circular_package_dependencies.ts --graph
  *
- * `--table` option outputs a table of submodules and their status.
+ * `--table` option outputs a table of packages and their status.
  *
- * $ deno run -A _tools/check_circular_submodule_dependencies.ts --table
+ * $ deno run -A _tools/check_circular_package_dependencies.ts --table
  *
- * `--all-imports` option outputs script to import all submodules.
+ * `--all-imports` option outputs script to import all packages.
  *
- * $ deno run -A _tools/check_circular_submodule_dependencies.ts --all-imports
+ * $ deno run -A _tools/check_circular_package_dependencies.ts --all-imports
  */
 
 type DepState = "Stable" | "Unstable" | "Deprecated";
@@ -173,7 +173,7 @@ const STABILITY: Record<Mod, DepState> = {
 const root = new URL("../", import.meta.url).href;
 const deps: Record<string, Dep> = {};
 
-function getSubmoduleNameFromUrl(url: string): string {
+function getPackageNameFromUrl(url: string): string {
   return url.replace(root, "").split("/")[0]!;
 }
 
@@ -188,7 +188,7 @@ async function check(
     const graph = await createGraph(entrypoint);
 
     for (
-      const dep of new Set(getSubmoduleDepsFromSpecifier(graph, entrypoint))
+      const dep of new Set(getPackageDepsFromSpecifier(graph, entrypoint))
     ) {
       deps.add(dep);
     }
@@ -198,8 +198,8 @@ async function check(
   return { name: submod, set: deps, state };
 }
 
-/** Returns submodule dependencies */
-function getSubmoduleDepsFromSpecifier(
+/** Returns package dependencies */
+function getPackageDepsFromSpecifier(
   graph: ModuleGraphJson,
   specifier: string,
   seen: Set<string> = new Set(),
@@ -207,7 +207,7 @@ function getSubmoduleDepsFromSpecifier(
   const { dependencies } = graph.modules.find((item: ModuleJson) =>
     item.specifier === specifier
   )!;
-  const deps = new Set([getSubmoduleNameFromUrl(specifier)]);
+  const deps = new Set([getPackageNameFromUrl(specifier)]);
   seen.add(specifier);
   if (dependencies) {
     for (const { code, type } of dependencies) {
@@ -215,7 +215,7 @@ function getSubmoduleDepsFromSpecifier(
       if (seen.has(specifier)) {
         continue;
       }
-      const res = getSubmoduleDepsFromSpecifier(
+      const res = getPackageDepsFromSpecifier(
         graph,
         specifier,
         seen,
@@ -282,7 +282,7 @@ if (Deno.args.includes("--graph")) {
   }
   console.log("}");
 } else if (Deno.args.includes("--table")) {
-  console.log("| Sub-module      | Status     |");
+  console.log("| Package         | Status     |");
   console.log("| --------------- | ---------- |");
   for (const [mod, info] of Object.entries(deps)) {
     console.log(`| ${mod.padEnd(15)} | ${info.state.padEnd(10)} |`);
@@ -294,7 +294,7 @@ if (Deno.args.includes("--graph")) {
     }
   }
 } else {
-  console.log(`${Object.keys(deps).length} submodules checked.`);
+  console.log(`${Object.keys(deps).length} packages checked.`);
   for (const mod of Object.keys(deps)) {
     const res = checkCircularDeps(mod);
     if (res) {
