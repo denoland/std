@@ -303,7 +303,7 @@ export function stringify(
     output += BYTE_ORDER_MARK;
   }
 
-  if (headers) {
+  if (headers && normalizedColumns.length > 0) {
     output += normalizedColumns
       .map((column) => getEscapedString(column.header, sep))
       .join(sep);
