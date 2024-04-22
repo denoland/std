@@ -4,6 +4,7 @@ import {
   assertEquals,
   assertInstanceOf,
   assertRejects,
+  assertThrows,
   fail,
 } from "../assert/mod.ts";
 import {
@@ -271,14 +272,14 @@ Deno.test("digest() throws on invalid input", async () => {
   const inputBytes = new TextEncoder().encode(inputString);
 
   await assertRejects(
-    () => stdCrypto.subtle.digest("BLAKE2B", {} as Iterable<never>),
+    async () => await stdCrypto.subtle.digest("BLAKE2B", {} as Iterable<never>),
     TypeError,
     "data must be a BufferSource or [Async]Iterable<BufferSource>",
   );
 
   await assertRejects(
-    () =>
-      stdCrypto.subtle.digest(
+    async () =>
+      await stdCrypto.subtle.digest(
         "BLAKE2B",
         (async function* () {
           yield undefined;
@@ -289,9 +290,40 @@ Deno.test("digest() throws on invalid input", async () => {
   );
 
   await assertRejects(
-    () => stdCrypto.subtle.digest("BLAK" as DigestAlgorithmName, inputBytes),
+    async () =>
+      await stdCrypto.subtle.digest("BLAK" as DigestAlgorithmName, inputBytes),
     DOMException,
     "Unrecognized algorithm name",
+  );
+});
+
+Deno.test("digestSync() throws on invalid input", () => {
+  const inputString = "taking the hobbits to isengard";
+  const inputBytes = new TextEncoder().encode(inputString);
+
+  assertThrows(
+    () => stdCrypto.subtle.digestSync("BLAKE2B", {} as Iterable<never>),
+    TypeError,
+    "data must be a BufferSource or Iterable<BufferSource>",
+  );
+
+  assertThrows(
+    () =>
+      stdCrypto.subtle.digestSync(
+        "BLAKE2B",
+        (function* () {
+          yield undefined;
+        })() as Iterable<BufferSource>,
+      ),
+    TypeError,
+    "data contained chunk of the wrong type",
+  );
+
+  assertThrows(
+    () =>
+      stdCrypto.subtle.digestSync("BLAK" as DigestAlgorithmName, inputBytes),
+    TypeError,
+    "unsupported algorithm",
   );
 });
 

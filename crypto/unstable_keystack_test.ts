@@ -234,10 +234,22 @@ Deno.test({
 });
 
 Deno.test({
-  name: "KeyStack() handles inspection",
+  name: "KeyStack() handles inspection in Deno",
   fn() {
     assertEquals(
       Deno.inspect(new KeyStack(["abcdef"])),
+      `KeyStack { length: 1 }`,
+    );
+  },
+});
+
+Deno.test({
+  name: "KeyStack() handles inspection in Node",
+  async fn() {
+    const { inspect } = await import("node:util");
+
+    assertEquals(
+      inspect(new KeyStack(["abcdef"])),
       `KeyStack { length: 1 }`,
     );
   },
