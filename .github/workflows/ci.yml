@@ -22,7 +22,7 @@ jobs:
         os:
           - ubuntu-latest
           - windows-latest
-          - macOS-latest-12
+          - macOS-latest
 
     steps:
       - name: Clone repository
