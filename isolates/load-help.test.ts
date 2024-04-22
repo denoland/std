@@ -16,7 +16,7 @@ Deno.test('loadAll', async (t) => {
   })
   await t.step('load', async () => {
     const help = await load({ help: 'help-fixture' })
-    expect(help).toHaveProperty('runner', 'runner-chat')
+    expect(help).toHaveProperty('runner', 'ai-prompt')
     expect(help).toHaveProperty('instructions')
   })
   await artifact.stop()

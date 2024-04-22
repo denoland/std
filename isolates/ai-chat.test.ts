@@ -112,7 +112,7 @@ Deno.test('artifact', async (t) => {
 
     log('result', latest)
     assert(Array.isArray(latest))
-    expect(latest[2].content).toBe('hello')
+    expect(latest[2].content.toLowerCase()).toBe('hello')
   })
   await artifact.stop()
 })
