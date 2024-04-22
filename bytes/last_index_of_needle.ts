@@ -11,6 +11,8 @@
  * @param needle Needle array to check for.
  * @param start Start index in the source array to begin the search. Defaults to
  * the end of the array.
+ * @returns Index of the last occurrence of the needle array in the source
+ * array, or -1 if it is not present.
  *
  * @example Basic usage
  * ```ts
