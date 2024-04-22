@@ -90,7 +90,7 @@ requirements:
    example, issues that suggest new non-breaking features are fine to exist at
    stabilization.
 
-| Sub-module      | Status     |
+| Package         | Status     |
 | --------------- | ---------- |
 | archive         | Unstable   |
 | assert          | Stable     |
@@ -135,7 +135,7 @@ requirements:
 | yaml            | Stable     |
 
 > For background and discussions regarding the stability of the following
-> sub-modules, see [#3489](https://github.com/denoland/deno_std/issues/3489).
+> packages, see [#3489](https://github.com/denoland/deno_std/issues/3489).
 
 ## Architecture
 
