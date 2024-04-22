@@ -98,4 +98,30 @@ export default (name: string, cradleMaker: () => Promise<Artifact>) => {
     })
     await artifact.stop()
   })
+  Deno.test.only(prefix + 'touch', async (t) => {
+    const artifact = await cradleMaker()
+    const repo = 't/touch'
+    await artifact.rm({ repo })
+    const { pid: target } = await artifact.init({ repo })
+    const { touch } = await artifact.actions(ioFixture, target)
+    const prefix = 'cust-'
+    const count = 10
+    log('start')
+    await touch({ count, prefix })
+    log('stop after:', count)
+
+    const { ls } = await artifact.actions('files', target)
+    const result = await ls()
+    expect(result).toHaveLength(count)
+
+    log('result', result)
+
+    await artifact.stop()
+
+    // then time how long it takes to write text to those files both at
+    // creation, and also afterwards.
+
+    // time how long to alter just one file, as a function of the number of
+    // files
+  })
 }

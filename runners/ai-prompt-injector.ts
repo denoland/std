@@ -1,5 +1,5 @@
 import { Debug, equal } from '@utils'
-import runner from './runner-chat.ts'
+import runner from './ai-prompt.ts'
 import { Help } from '@/constants.ts'
 import { IsolateApi } from '@/constants.ts'
 import * as loadHelp from '@/isolates/load-help.ts'

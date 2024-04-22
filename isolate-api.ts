@@ -71,7 +71,7 @@ export default class IsolateApi<T extends object = Default> {
     assert(this.isEffect, 'signal only available for side effects')
     return this.#abort.signal
   }
-  async actions(isolate: string, targetPID?: PID) {
+  async actions<T = DispatchFunctions>(isolate: string, targetPID?: PID) {
     const target = targetPID ? targetPID : this.pid
     log('actions', isolate, print(target))
     const schema = await this.isolateApiSchema(isolate)
@@ -92,7 +92,7 @@ export default class IsolateApi<T extends object = Default> {
       }
     }
 
-    return actions
+    return actions as T
   }
   action(request: UnsequencedRequest) {
     const recovered = this.#accumulator.recover(request)
