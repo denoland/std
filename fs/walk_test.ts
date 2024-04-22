@@ -1,5 +1,5 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-import { walk, WalkError, WalkOptions, walkSync } from "./walk.ts";
+import { walk, WalkError, type WalkOptions, walkSync } from "./walk.ts";
 import {
   assertArrayIncludes,
   assertEquals,
@@ -169,11 +169,10 @@ Deno.test({
   async fn() {
     const path = resolve(testdataDir, "socket", "a.sock");
     try {
-      const listener = Deno.listen({ path, transport: "unix" });
+      using _listener = Deno.listen({ path, transport: "unix" });
       await assertWalkPaths("socket", [".", "a.sock", ".gitignore"], {
         followSymlinks: true,
       });
-      listener.close();
     } finally {
       await Deno.remove(path);
     }
@@ -187,11 +186,10 @@ Deno.test({
   async fn() {
     const path = resolve(testdataDir, "socket", "a.sock");
     try {
-      const listener = Deno.listen({ path, transport: "unix" });
+      using _listener = Deno.listen({ path, transport: "unix" });
       assertWalkSyncPaths("socket", [".", "a.sock", ".gitignore"], {
         followSymlinks: true,
       });
-      listener.close();
     } finally {
       await Deno.remove(path);
     }

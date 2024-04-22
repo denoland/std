@@ -1,0 +1,19 @@
+[default]
+check-filename = false
+
+[default.extend-identifiers]
+# variable name used by node-semver
+_fpr = "_fpr"
+
+[default.extend-words]
+ws = "ws"
+
+[files]
+extend-exclude = [
+  "*.json",
+  "*_test.ts",
+  "*.generated.mjs",
+  "media_types/vendor",
+  "http/testdata",
+  "http/user_agent.ts"
+]

@@ -4,6 +4,7 @@
 import { assertEquals } from "../assert/mod.ts";
 import * as posix from "./posix/mod.ts";
 import * as windows from "./windows/mod.ts";
+import { relative } from "./relative.ts";
 
 const relativeTests = {
   // arguments                     result
@@ -32,7 +33,7 @@ const relativeTests = {
     ["\\\\foo\\baz", "\\\\foo\\baz-quux", "..\\baz-quux"],
     ["C:\\baz", "\\\\foo\\bar\\baz", "\\\\foo\\bar\\baz"],
     ["\\\\foo\\bar\\baz", "C:\\baz", "C:\\baz"],
-  ],
+  ] as const,
   // arguments          result
   posix: [
     ["/var/lib", "/var", ".."],
@@ -47,7 +48,7 @@ const relativeTests = {
     ["/foo/bar/baz", "/foo/bar/baz-quux", "../baz-quux"],
     ["/baz-quux", "/baz", "../baz"],
     ["/baz", "/baz-quux", "../baz-quux"],
-  ],
+  ] as const,
 };
 
 Deno.test("posix.relative()", function () {
@@ -64,4 +65,11 @@ Deno.test("windows.relative()", function () {
     const actual = windows.relative(p[0], p[1]);
     assertEquals(actual, expected);
   });
+});
+
+Deno.test("relative() returns current working directory if input is empty", function () {
+  const pwd = Deno.cwd();
+  assertEquals(relative("", pwd), "");
+  assertEquals(relative(pwd, ""), "");
+  assertEquals(relative(pwd, pwd), "");
 });

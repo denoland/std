@@ -1,8 +1,22 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
 // Copyright 2019 Allain Lalonde. All rights reserved. ISC License.
 
-import type { AnyConstructor, Matcher, MatcherContext } from "./_types.ts";
+import type {
+  Expected,
+  ExtendMatchResult,
+  Matcher,
+  MatcherContext,
+  MatcherKey,
+  Matchers,
+} from "./_types.ts";
 import { AssertionError } from "../assert/assertion_error.ts";
+import {
+  addCustomEqualityTesters,
+  getCustomEqualityTesters,
+} from "./_custom_equality_tester.ts";
+import { equal } from "./_equal.ts";
+import { getExtendMatchers, setExtendMatchers } from "./_extend.ts";
 import {
   toBe,
   toBeCloseTo,
@@ -37,58 +51,16 @@ import {
   toStrictEqual,
   toThrow,
 } from "./_matchers.ts";
-export interface Expected {
-  lastCalledWith(...expected: unknown[]): void;
-  lastReturnedWith(expected: unknown): void;
-  nthCalledWith(nth: number, ...expected: unknown[]): void;
-  nthReturnedWith(nth: number, expected: unknown): void;
-  toBeCalled(): void;
-  toBeCalledTimes(expected: number): void;
-  toBeCalledWith(...expected: unknown[]): void;
-  toBeCloseTo(candidate: number, tolerance?: number): void;
-  toBeDefined(): void;
-  toBeFalsy(): void;
-  toBeGreaterThan(expected: number): void;
-  toBeGreaterThanOrEqual(expected: number): void;
-  toBeInstanceOf<T extends AnyConstructor>(expected: T): void;
-  toBeLessThan(expected: number): void;
-  toBeLessThanOrEqual(expected: number): void;
-  toBeNaN(): void;
-  toBeNull(): void;
-  toBeTruthy(): void;
-  toBeUndefined(): void;
-  toBe(expected: unknown): void;
-  toContainEqual(expected: unknown): void;
-  toContain(expected: unknown): void;
-  toEqual(expected: unknown): void;
-  toHaveBeenCalledTimes(expected: number): void;
-  toHaveBeenCalledWith(...expected: unknown[]): void;
-  toHaveBeenCalled(): void;
-  toHaveBeenLastCalledWith(...expected: unknown[]): void;
-  toHaveBeenNthCalledWith(nth: number, ...expected: unknown[]): void;
-  toHaveLength(expected: number): void;
-  toHaveLastReturnedWith(expected: unknown): void;
-  toHaveNthReturnedWith(nth: number, expected: unknown): void;
-  toHaveProperty(propName: string | string[], value?: unknown): void;
-  toHaveReturnedTimes(expected: number): void;
-  toHaveReturnedWith(expected: unknown): void;
-  toHaveReturned(): void;
-  toMatch(expected: RegExp): void;
-  toMatchObject(expected: Record<PropertyKey, unknown>): void;
-  toReturn(): void;
-  toReturnTimes(expected: number): void;
-  toReturnWith(expected: unknown): void;
-  toStrictEqual(candidate: unknown): void;
-  toThrow<E extends Error = Error>(
-    // deno-lint-ignore no-explicit-any
-    expected?: string | RegExp | E | (new (...args: any[]) => E),
-  ): void;
-  not: Expected;
-  resolves: Async<Expected>;
-  rejects: Async<Expected>;
-}
-
-type MatcherKey = keyof Omit<Expected, "not" | "resolves" | "rejects">;
+import { addSerializer } from "./_snapshot_serializer.ts";
+import { isPromiseLike } from "./_utils.ts";
+import {
+  any,
+  anything,
+  arrayContaining,
+  closeTo,
+  stringContaining,
+  stringMatching,
+} from "./_asymmetric_matchers.ts";
 
 const matchers: Record<MatcherKey, Matcher> = {
   lastCalledWith: toHaveBeenLastCalledWith,
@@ -173,7 +145,12 @@ export function expect(value: unknown, customMessage?: string): Expected {
           return self;
         }
 
-        const matcher: Matcher = matchers[name as MatcherKey];
+        const extendMatchers: Matchers = getExtendMatchers();
+        const allMatchers = {
+          ...extendMatchers,
+          ...matchers,
+        };
+        const matcher = allMatchers[name as MatcherKey] as Matcher;
         if (!matcher) {
           throw new TypeError(
             typeof name === "string"
@@ -186,13 +163,26 @@ export function expect(value: unknown, customMessage?: string): Expected {
           function applyMatcher(value: unknown, args: unknown[]) {
             const context: MatcherContext = {
               value,
+              equal,
               isNot: false,
               customMessage,
+              customTesters: getCustomEqualityTesters(),
             };
             if (isNot) {
               context.isNot = true;
             }
-            matcher(context, ...args);
+            if (name in extendMatchers) {
+              const result = matcher(context, ...args) as ExtendMatchResult;
+              if (context.isNot) {
+                if (result.pass) {
+                  throw new AssertionError(result.message());
+                }
+              } else if (!result.pass) {
+                throw new AssertionError(result.message());
+              }
+            } else {
+              matcher(context, ...args);
+            }
           }
 
           return isPromised
@@ -208,22 +198,17 @@ export function expect(value: unknown, customMessage?: string): Expected {
   return self;
 }
 
-// a helper type to match any function. Used so that we only convert functions
-// to return a promise and not properties.
-// deno-lint-ignore no-explicit-any
-type Fn = (...args: any[]) => unknown;
+expect.addEqualityTesters = addCustomEqualityTesters;
+/**
+ * @deprecated (will be removed in 0.226.0) Use {@linkcode expect.addSnapshotSerializer} instead.
+ */
+expect.addSnapshotSerializers = addSerializer;
+expect.addSnapshotSerializer = addSerializer;
+expect.extend = setExtendMatchers;
 
-// converts all the methods in an interface to be async functions
-export type Async<T> = {
-  [K in keyof T]: T[K] extends Fn
-    ? (...args: Parameters<T[K]>) => Promise<ReturnType<T[K]>>
-    : T[K];
-};
-
-function isPromiseLike(value: unknown): value is PromiseLike<unknown> {
-  if (value == null) {
-    return false;
-  } else {
-    return typeof ((value as Record<string, unknown>).then) === "function";
-  }
-}
+expect.anything = anything;
+expect.any = any;
+expect.arrayContaining = arrayContaining;
+expect.closeTo = closeTo;
+expect.stringContaining = stringContaining;
+expect.stringMatching = stringMatching;

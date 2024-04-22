@@ -3,7 +3,7 @@
 
 import { assert } from "../assert/assert.ts";
 import { copy } from "../bytes/copy.ts";
-import type { Reader, ReaderSync } from "./types.ts";
+import type { Reader, ReaderSync, Writer, WriterSync } from "./types.ts";
 
 // MIN_READ is the minimum ArrayBuffer size passed to a read call by
 // buffer.ReadFrom. As long as the Buffer has at least MIN_READ bytes beyond
@@ -25,12 +25,10 @@ const MAX_SIZE = 2 ** 32 - 2;
  * ArrayBuffer is a fixed memory allocation. Buffer is implemented on top of
  * ArrayBuffer.
  *
- * Based on [Go Buffer](https://golang.org/pkg/bytes/#Buffer).
- *
- * @deprecated (will be removed after 1.0.0) Use the [Web Streams API]{@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API} instead.
+ * Based on {@link https://golang.org/pkg/bytes/#Buffer | Go Buffer}.
  */
 
-export class Buffer {
+export class Buffer implements Writer, WriterSync, Reader, ReaderSync {
   #buf: Uint8Array; // contents are the bytes buf[off : len(buf)]
   #off = 0; // read at buf[off], write at buf[buf.byteLength]
 
@@ -181,7 +179,7 @@ export class Buffer {
    * throw. If the buffer can't grow it will throw an error.
    *
    * Based on Go Lang's
-   * [Buffer.Grow](https://golang.org/pkg/bytes/#Buffer.Grow). */
+   * {@link https://golang.org/pkg/bytes/#Buffer.Grow | Buffer.Grow}. */
   grow(n: number) {
     if (n < 0) {
       throw Error("Buffer.grow: negative count");
@@ -195,7 +193,7 @@ export class Buffer {
    * If the buffer becomes too large, `.readFrom()` will reject with an error.
    *
    * Based on Go Lang's
-   * [Buffer.ReadFrom](https://golang.org/pkg/bytes/#Buffer.ReadFrom). */
+   * {@link https://golang.org/pkg/bytes/#Buffer.ReadFrom | Buffer.ReadFrom}. */
   async readFrom(r: Reader): Promise<number> {
     let n = 0;
     const tmp = new Uint8Array(MIN_READ);
@@ -225,7 +223,7 @@ export class Buffer {
    * buffer becomes too large, `.readFromSync()` will throw an error.
    *
    * Based on Go Lang's
-   * [Buffer.ReadFrom](https://golang.org/pkg/bytes/#Buffer.ReadFrom). */
+   * {@link https://golang.org/pkg/bytes/#Buffer.ReadFrom | Buffer.ReadFrom}. */
   readFromSync(r: ReaderSync): number {
     let n = 0;
     const tmp = new Uint8Array(MIN_READ);

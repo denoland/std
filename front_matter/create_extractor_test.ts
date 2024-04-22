@@ -11,7 +11,7 @@ import {
   runExtractYAMLTests1,
   runExtractYAMLTests2,
 } from "./_test_utils.ts";
-import { createExtractor, Parser } from "./create_extractor.ts";
+import { createExtractor, type Parser } from "./create_extractor.ts";
 
 const extractYAML = createExtractor({ "yaml": parseYAML as Parser });
 const extractTOML = createExtractor({ "toml": parseTOML as Parser });
@@ -28,20 +28,21 @@ const extractAny = createExtractor({
 
 // YAML //
 
-Deno.test("[YAML] extract type error on invalid input", () => {
+Deno.test("createExtractor() extracts yaml type error on invalid input", () => {
   runExtractTypeErrorTests("yaml", extractYAML);
 });
 
-Deno.test("[YAML] parse yaml delineate by `---`", async () => {
+Deno.test("createExtractor() parses yaml delineate by `---`", async () => {
   await runExtractYAMLTests1(extractYAML);
 });
 
-Deno.test("[YAML] parse yaml delineate by `---yaml`", async () => {
+Deno.test("createExtractor() parses yaml delineate by `---yaml`", async () => {
   await runExtractYAMLTests2(extractYAML);
 });
 
 Deno.test({
-  name: "[YAML] text between horizontal rules should not be recognized",
+  name:
+    "createExtractor() handles text between horizontal rules should not be recognized",
   async fn() {
     const str = await Deno.readTextFile(
       resolveTestDataPath("./horizontal_rules.md"),
@@ -59,33 +60,33 @@ Deno.test({
 
 // JSON //
 
-Deno.test("[JSON] extract type error on invalid input", () => {
+Deno.test("createExtractor() extracts json type error on invalid input", () => {
   runExtractTypeErrorTests("json", extractJSON);
 });
 
-Deno.test("[JSON] parse json delineate by ---json", async () => {
+Deno.test("createExtractor() parses json delineate by ---json", async () => {
   await runExtractJSONTests(extractJSON);
 });
 
 // TOML //
 
-Deno.test("[TOML] extract type error on invalid input", () => {
+Deno.test("createExtractor() extracts toml type error on invalid input", () => {
   runExtractTypeErrorTests("toml", extractTOML);
 });
 
-Deno.test("[TOML] parse toml delineate by ---toml", async () => {
+Deno.test("createExtractor() parses toml delineate by ---toml", async () => {
   await runExtractTOMLTests(extractTOML);
 });
 
 // MULTIPLE FORMATS //
 
-Deno.test("[YAML or JSON] parse input", async () => {
+Deno.test("createExtractor() parses yaml or json input", async () => {
   await runExtractYAMLTests1(extractYAMLOrJSON);
   await runExtractYAMLTests2(extractYAMLOrJSON);
   await runExtractJSONTests(extractYAMLOrJSON);
 });
 
-Deno.test("[ANY] parse input", async () => {
+Deno.test("createExtractor() parses any input", async () => {
   await runExtractYAMLTests1(extractAny);
   await runExtractYAMLTests2(extractAny);
   await runExtractJSONTests(extractAny);

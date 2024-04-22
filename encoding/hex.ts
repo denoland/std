@@ -3,33 +3,28 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-import { validateBinaryLike } from "./_util.ts";
-
 /**
  * Port of the Go
- * [encoding/hex](https://github.com/golang/go/blob/go1.12.5/src/encoding/hex/hex.go)
+ * {@link https://github.com/golang/go/blob/go1.12.5/src/encoding/hex/hex.go | encoding/hex}
  * library.
  *
  * This module is browser compatible.
  *
- * @example
  * ```ts
  * import {
  *   decodeHex,
  *   encodeHex,
  * } from "https://deno.land/std@$STD_VERSION/encoding/hex.ts";
  *
- * const binary = new TextEncoder().encode("abc");
- * const encoded = encodeHex(binary);
- * console.log(encoded);
- * // => "616263"
+ * const encoded = encodeHex("abc"); // "616263"
  *
- * console.log(decodeHex(encoded));
- * // => Uint8Array(3) [ 97, 98, 99 ]
+ * decodeHex(encoded); // Uint8Array(3) [ 97, 98, 99 ]
  * ```
  *
  * @module
  */
+
+import { validateBinaryLike } from "./_util.ts";
 
 const hexTable = new TextEncoder().encode("0123456789abcdef");
 const textEncoder = new TextEncoder();
@@ -70,9 +65,9 @@ export function encodeHex(src: string | Uint8Array | ArrayBuffer): string {
 
   const dst = new Uint8Array(u8.length * 2);
   for (let i = 0; i < dst.length; i++) {
-    const v = u8[i];
-    dst[i * 2] = hexTable[v >> 4];
-    dst[i * 2 + 1] = hexTable[v & 0x0f];
+    const v = u8[i]!;
+    dst[i * 2] = hexTable[v >> 4]!;
+    dst[i * 2 + 1] = hexTable[v & 0x0f]!;
   }
   return textDecoder.decode(dst);
 }
@@ -92,15 +87,15 @@ export function decodeHex(src: string): Uint8Array {
   const u8 = textEncoder.encode(src);
   const dst = new Uint8Array(u8.length / 2);
   for (let i = 0; i < dst.length; i++) {
-    const a = fromHexChar(u8[i * 2]);
-    const b = fromHexChar(u8[i * 2 + 1]);
+    const a = fromHexChar(u8[i * 2]!);
+    const b = fromHexChar(u8[i * 2 + 1]!);
     dst[i] = (a << 4) | b;
   }
 
   if (u8.length % 2 === 1) {
     // Check for invalid char before reporting bad length,
     // since the invalid char (if present) is an earlier problem.
-    fromHexChar(u8[dst.length * 2]);
+    fromHexChar(u8[dst.length * 2]!);
     throw errLength();
   }
 

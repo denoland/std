@@ -8,8 +8,7 @@ import {
 import * as path from "../path/mod.ts";
 import { emptyDir, emptyDirSync } from "./empty_dir.ts";
 
-const moduleDir = path.dirname(path.fromFileUrl(import.meta.url));
-const testdataDir = path.resolve(moduleDir, "testdata");
+const testdataDir = path.join(import.meta.dirname!, "testdata");
 
 Deno.test("emptyDir() creates a new dir if it does not exist", async function () {
   const testDir = path.join(testdataDir, "empty_dir_test_1");
@@ -203,7 +202,14 @@ for (const s of scenes) {
       );
 
       try {
-        const args = ["run", "--quiet", "--no-prompt"];
+        const args = [
+          "run",
+          "--no-lock",
+          "--quiet",
+          "--no-prompt",
+          "--config",
+          "deno.json",
+        ];
 
         if (s.read) {
           args.push("--allow-read");
@@ -219,10 +225,8 @@ for (const s of scenes) {
             s.async ? "empty_dir.ts" : "empty_dir_sync.ts",
           ),
         );
-        args.push("testfolder");
 
         const command = new Deno.Command(Deno.execPath(), {
-          cwd: testdataDir,
           args,
         });
         const { stdout, stderr } = await command.output();

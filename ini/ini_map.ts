@@ -1,4 +1,5 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
 
 /** Options for providing formatting marks. */
 export interface FormattingOptions {
@@ -58,9 +59,7 @@ export class IniMap {
   #comments: Comments = {
     clear: (): void => {
       this.#lines = this.#lines.filter((line) => line.type !== "comment");
-      const { length } = this.#lines;
-      for (let i = 0; i < length; i += 1) {
-        const line = this.#lines[i];
+      for (const [i, line] of this.#lines.entries()) {
         if (line.type === "section") {
           line.end = line.end - line.num + i + 1;
         }
@@ -346,13 +345,13 @@ export class IniMap {
       this.#appendOrDeleteLine(lineValue, LineOp.Add);
     } else {
       // For global values, find the line preceding the first section
-      let i = 0;
-      for (; i < this.#lines.length; i += 1) {
-        if (this.#lines[i].type === "section") {
+      lineValue.num = this.#lines.length + 1;
+      for (const [i, line] of this.#lines.entries()) {
+        if (line.type === "section") {
+          lineValue.num = i + 1;
           break;
         }
       }
-      lineValue.num = i + 1;
       // Append the line value at the end of all global values
       this.#appendOrDeleteLine(lineValue, LineOp.Add);
     }
@@ -364,12 +363,10 @@ export class IniMap {
     } else {
       this.#lines.splice(input.num - 1, 1);
     }
-    const { length } = this.#lines;
     // If the input is a comment, find the next section if any to update.
     let updateSection = input.type === "comment";
-    let i = op === LineOp.Add ? input.num : input.num - 1;
-    for (; i < length; i += 1) {
-      const line = this.#lines[i];
+    const start = op === LineOp.Add ? input.num : input.num - 1;
+    for (const line of this.#lines.slice(start)) {
       line.num += op;
       if (line.type === "section") {
         line.end += op;
@@ -397,7 +394,7 @@ export class IniMap {
     let line = "";
 
     for (let i = 0; i < length; i += 1) {
-      const char = text[i];
+      const char = text[i]!;
 
       if (lineBreak.includes(char)) {
         yield line;

@@ -50,7 +50,7 @@ const pairs = [
   ["file//", ""],
   ["file./", "."],
   ["file.//", "."],
-];
+] as const;
 
 Deno.test("posix.extname()", function () {
   pairs.forEach(function (p) {

@@ -1,8 +1,9 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
 /**
  * {@linkcode parse} and {@linkcode stringify} for handling
- * [INI](https://en.wikipedia.org/wiki/INI_file) encoded data, such as the
- * [Desktop Entry specification](https://specifications.freedesktop.org/desktop-entry-spec/latest/ar01s03.html).
+ * {@link https://en.wikipedia.org/wiki/INI_file | INI} encoded data, such as the
+ * {@link https://specifications.freedesktop.org/desktop-entry-spec/latest/ar01s03.html | Desktop Entry specification}.
  * Values are parsed as strings by default to preserve data parity from the original.
  * Customization is possible in the form of reviver/replacer functions like those in `JSON.parse` and `JSON.stringify`.
  * Nested sections, repeated key names within a section, and key/value arrays are not supported,

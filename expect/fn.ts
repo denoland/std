@@ -1,8 +1,9 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
 // Copyright 2019 Allain Lalonde. All rights reserved. ISC License.
 // deno-lint-ignore-file no-explicit-any ban-types
 
-import { MOCK_SYMBOL, MockCall } from "./_mock_util.ts";
+import { MOCK_SYMBOL, type MockCall } from "./_mock_util.ts";
 
 export function fn(...stubs: Function[]): Function {
   const calls: MockCall[] = [];

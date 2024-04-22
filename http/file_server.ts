@@ -37,7 +37,7 @@ import { extname } from "../path/extname.ts";
 import { join } from "../path/join.ts";
 import { relative } from "../path/relative.ts";
 import { resolve } from "../path/resolve.ts";
-import { SEP_PATTERN } from "../path/separator.ts";
+import { SEPARATOR_PATTERN } from "../path/constants.ts";
 import { contentType } from "../media_types/content_type.ts";
 import { calculate, ifNoneMatch } from "./etag.ts";
 import {
@@ -309,7 +309,7 @@ async function serveDirIndex(
   const urlRoot = options.urlRoot ? "/" + options.urlRoot : "";
   const dirUrl = `/${
     relative(options.target, dirPath).replaceAll(
-      new RegExp(SEP_PATTERN, "g"),
+      new RegExp(SEPARATOR_PATTERN, "g"),
       "/",
     )
   }`;
@@ -636,7 +636,7 @@ export async function serveDir(
   if (opts.headers && !isRedirectResponse) {
     for (const header of opts.headers) {
       const headerSplit = header.split(":");
-      const name = headerSplit[0];
+      const name = headerSplit[0]!;
       const value = headerSplit.slice(1).join(":");
       response.headers.append(name, value);
     }

@@ -4,9 +4,11 @@ import { assertEquals } from "../assert/mod.ts";
 import { getCharset } from "./mod.ts";
 
 Deno.test({
-  name: "media-types - getCharset()",
+  name: "getCharset()",
   fn() {
     const fixtures = [
+      [";", undefined],
+      ["text/plain; charset", undefined],
       ["text/plain", "UTF-8"],
       ["text/html", "UTF-8"],
       ["application/foo", undefined],

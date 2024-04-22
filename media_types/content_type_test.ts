@@ -4,13 +4,15 @@ import { contentType } from "./content_type.ts";
 import { assertEquals } from "../assert/mod.ts";
 
 Deno.test({
-  name: "media_types - contentType()",
+  name: "contentType()",
   fn() {
     const fixtures = [
+      [" ; charset=UTF-8", undefined],
       [".json", "application/json; charset=UTF-8"],
       ["text/html", "text/html; charset=UTF-8"],
       ["txt", "text/plain; charset=UTF-8"],
       ["text/plain; charset=ISO-8859-1", "text/plain; charset=ISO-8859-1"],
+      ["text/plan; charset", undefined],
       ["foo", undefined],
       ["file.json", undefined],
       ["application/foo", "application/foo"],
@@ -22,7 +24,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "media_types - contentType()",
+  name: "contentType() implies types",
   fn() {
     let _str: string;
     // For well-known content types, the return type is a string.

@@ -1,7 +1,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import { assertEquals } from "../assert/mod.ts";
-import { Args, parseArgs, ParseOptions } from "./parse_args.ts";
-import { assertType, IsExact } from "../testing/types.ts";
+import { type Args, parseArgs, type ParseOptions } from "./parse_args.ts";
+import { assertType, type IsExact } from "../testing/types.ts";
 
 // flag boolean true (default all --args to boolean)
 Deno.test("parseArgs() handles true boolean flag", function () {
@@ -1914,4 +1914,15 @@ Deno.test("parseArgs() handles types of parse options generic defaults", functio
       }
     >
   >(true);
+});
+
+Deno.test("parseArgs() handles collect with alias", () => {
+  const args = ["--header", "abc", "--header", "def"];
+  const parsed = parseArgs(args, {
+    collect: ["header"],
+    alias: {
+      H: "header",
+    },
+  });
+  assertEquals(parsed.header, ["abc", "def"]);
 });

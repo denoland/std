@@ -1,6 +1,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-/** A [BDD](https://en.wikipedia.org/wiki/Behavior-driven_development) interface
+/**
+ * A {@link https://en.wikipedia.org/wiki/Behavior-driven_development | BDD} interface
  * to `Deno.test()` API.
  *
  * With the `bdd.ts` module you can write your tests in a familiar format for
@@ -394,10 +395,10 @@
  */
 
 import {
-  DescribeDefinition,
-  HookNames,
-  ItDefinition,
-  TestSuite,
+  type DescribeDefinition,
+  type HookNames,
+  type ItDefinition,
+  type TestSuite,
   TestSuiteInternal,
 } from "./_test_suite.ts";
 export type { DescribeDefinition, ItDefinition, TestSuite };
@@ -596,6 +597,9 @@ it.ignore = function itIgnore<T>(...args: ItArgs<T>) {
 
 it.skip = it.ignore;
 
+/** Alias of {@linkcode it} */
+export const test = it;
+
 function addHook<T>(
   name: HookNames,
   fn: (this: T) => void | Promise<void>,
@@ -622,12 +626,18 @@ export function beforeAll<T>(
   addHook("beforeAll", fn);
 }
 
+/** Alias of {@linkcode beforeAll} */
+export const before = beforeAll;
+
 /** Run some shared teardown after all of the tests in the suite. */
 export function afterAll<T>(
   fn: (this: T) => void | Promise<void>,
 ) {
   addHook("afterAll", fn);
 }
+
+/** Alias of {@linkcode afterAll} */
+export const after = afterAll;
 
 /** Run some shared setup before each test in the suite. */
 export function beforeEach<T>(

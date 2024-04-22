@@ -1,3 +1,180 @@
+### 0.223.0 / 2024.04.15
+
+- deprecation(expect): rename `addSnapshotSerializers` to
+  `addSnapshotSerializer` (#4582)
+
+### 0.222.1 / 2024.04.11
+
+- deprecation(semver): deprecate `rangeMax()` and `rangeMin()` (#4561)
+- fix(log): Revert "deprecate(log): deprecate internal utility methods" (#4436)
+  (#4572)
+
+### 0.222.0 / 2024.04.11
+
+- [unstable] BREAKING(semver): remove comparator.semver field (#4533)
+- deprecate(log): deprecate internal utility methods (#4436)
+- deprecation(console): copy `std/console` APIs into `std/cli` and deprecate
+  `std/console` (#4547)
+- deprecation(crypto): rename an export to match style guide, deprecating
+  original and two other obsolete imports (#4525)
+- deprecation(encoding): make exported function names consistent with
+  `std/encoding` (#4555)
+- deprecation(yaml): cleanup schema exports (#4566)
+- feat(expect): support `expect.addSnapshotSerialize()` api (#4537)
+- feat(semver): `greaterThanRange()` and `lessThanRange()` (#4534)
+- feat(testing): add `after`, `before`, `test` aliases (#4541)
+- fix(cli): make the output of `promptSecret()` consistent with `prompt()`
+  (#4549)
+
+### 0.221.0 / 2024.03.27
+
+- feat(expect): add `expect.{closeTo, stringContaining, stringMatching}` (#4508)
+- fix(_tools): update `check_deprecation` path exclusion to recognize Windows
+  directory separators (#4519)
+- fix(crypto): move FNV hashes from TypeScript to Rust/Wasm and implement
+  iteration functionality (#4515)
+- fix(expect/assert): missing constructor equality check (#4512)
+- fix(fs): `SubdirectoryMoveError` extends `Error` correctly (#4528)
+- fix(yaml): speciously restrictive type for `stringify()` (#4507)
+- fix: use hyphens for JSR package exports (#4424)
+
+### 0.220.1 / 2024.03.15
+
+- fix(tar): leak in `Tar() checks directory entry type` test (#4490)
+
+### 0.220.0 / 2024.03.14
+
+- Revert "refactor(cli): cleanup `parse_args.ts` (#4189)" (#4485)
+- add JSR link (#4456)
+
+### 0.219.1 / 2024.03.08
+
+- chore: fix for jsr publish (#4449)
+
+### 0.219.0 / 2024.03.08
+
+- [unstable] BREAKING(semver): remove `gtr()` and `ltr()` (#4450)
+- [unstable] BREAKING(semver): remove `reverseSort()` (#4422)
+- [unstable] BREAKING(semver): remove deprecated operators (#4423)
+- feat(expect): support `expect.extend()` api (#4412)
+- fix(expect): fix equality of iterables (#4286)
+- fix(fs): `emptyDir()` test after workspace conversion (#4427)
+- fix(fs): `expandGlob()` test after workspace conversion (#4428)
+- fix(log): don't discard bytes >4096 in `FileHandler` (#4415)
+- fix(path): fix common() results that depend on the order and/or number of
+  input paths (#4414)
+
+### 0.218.0 / 2024.02.29
+
+- feat(assert): optional `reason` param for `unreachable` (#4404) (#4405)
+- feat(collections): add `pick` and `omit` (#4218)
+- feat(expect): add asymmetric matchers (any, anything, arrayContaining) (#4366)
+- feat(uuid): add type predicate return type to validate (v4) (#4301)
+- fix(fs/ensure_symlink): check symlink is pointing the given target (#4371)
+- fix(log): add missing return types (#4401)
+
+### 0.217.0 / 2024.02.22
+
+- deprecation(semver): deprecate `==`, `===`, `!==`, and `""` operators (#4271)
+- doc: fix `std/path/posix` link (#4337)
+- feat(io): `iterateReader[Sync]()` (#4247)
+- feat(io): un-deprecate `readerFromStreamReader()` (#4343)
+- feat(testing): explicit resource management for `spy()` and `stub()` (#4306)
+- fix(http): `version` from `deno.json` import (#4342)
+- fix(media_types): load extensions when directly importing
+  `extensionsByTypes()` (#4351)
+- fix(semver): fix `prerelease` handlings in range utils (#4323)
+- fix(semver): fix parse_range for `>x.y` pattern (#4350)
+
+### 0.216.0 / 2024.02.15
+
+- BREAKING(path): remove `path/windows/separator.ts` (#4292)
+- BREAKING(semver): remove `SemVerRange` and `isSemVerRange()` (#4295)
+- BREAKING(semver): remove `eq()`, `gt()`, `gte()`, `lt()`, `lte()` and `neq()`
+  (#4294)
+- BREAKING(semver): remove `outside()` (#4293)
+- feat(datetime): `format()` options (#4285)
+- fix(semver): return new object instance in `comparatorMin()` and
+  `comparatorMax()` (#4314)
+
+### 0.215.0 / 2024.02.08
+
+- BREAKING(log): remove `WARNING` log level (#4258)
+- BREAKING(path): remove `glob.ts` files (#4259)
+- BREAKING(path): remove `separator.ts` files (#4260)
+- BREAKING(semver): remove `Comparator` functions (#4278)
+- BREAKING(semver): remove `rangeFormat()` (#4265)
+- BREAKING(semver): remove `sort()` (#4264)
+- deprecation(semver): deprecate `ltr()` and `gtr()` (#4228)
+- deprecation(semver): deprecate `reverseSort()` (#4280)
+- feat(expect): add `expect.addEqualityTesters` api. (#4255)
+- fix: version bump workflow (#4288)
+- refactor(dotenv): prepare for `noUncheckedIndexedAccess` (#4261)
+- refatcor(toml): prepare for `noUncheckedIndexedAccess` (#4274)
+
+### 0.214.0 / 2024.02.01
+
+- BREAKING(io): remove `types.d.ts` (#4237)
+- BREAKING(log): remove string formatter (#4239)
+- BREAKING(log): single-export handler files (#4236)
+- BREAKING(streams): remove `readAll()`, `writeAll()` and `copy()` (#4238)
+- feat(tools,log,http,semver): check mod exports, export items consistently from
+  mod.ts (#4229)
+- fix(expect): add Error object equal check. (#4248)
+- fix(expect): align `toEqual` to jest (#4246)
+
+### 0.213.0 / 2024.01.25
+
+- BREAKING(http): remove `CookieMap` (#4179)
+- BREAKING(semver): remove `FormatStyle` (#4182)
+- BREAKING(semver): remove `compareBuild()` (#4181)
+- BREAKING(semver): remove `rsort()` (#4180)
+- deprecation(path): split off all constants into their own files and deprecate
+  old names (#4153)
+- deprecation(semver): deprecate `SemVerRange`, introduce `Range` (#4161)
+- deprecation(semver): deprecate `outside()` (#4185)
+- deprecation(semver): rename `eq()`, `neq()`, `lt()`, `lte()`, `gt()` and
+  `gte()` (#4083)
+- feat(collections): pass `key` to `mapValues()` transformer (#4127)
+- feat(io): un-deprecate `Buffer` (#4184)
+- feat(log): make handlers disposable (#4195)
+- feat: print warning on use of deprecated API (#4200)
+- fix(expect): fix the function signature of `toMatchObject()` (#4202)
+- fix(flags): correct deprecation notices (#4207)
+- fix(fmt): correct `stripColor()` deprecation notice (#4208)
+- fix(log): make `flattenArgs()` private (#4214)
+- fix(toml): `parse()` duplicates the character next to reserved escape
+  sequences (#4192)
+- fix: ignore linting for `Deno.serveHttp()` (#4234)
+- fix: ignore linting rule for `Deno.resources()` (#4233)
+
+### 0.212.0 / 2024.01.12
+
+- BREAKING(encoding): remove `base32.byteLength()` (#4173)
+- BREAKING(log): remove deprecated APIs (#4104)
+- BREAKING(semver): remove `SemVerComparator` (#4109)
+- BREAKING(semver): remove `canParse()` non-string overload (#4108)
+- BREAKING(semver): remove `cmp()` (#4171)
+- BREAKING(semver): remove `isSemVerComparator()` (#4107)
+- BREAKING(semver): remove `parse(semver: string)` overload (#4172)
+- BREAKING(semver): remove `rcompare()` (#4106)
+- BREAKING: remove `std/signal` sub-module (#4105)
+- deprecation(io): move types file (#4133)
+- deprecation(log): deprecate `LogLevels.WARNING` (#4170)
+- deprecation(log): move handlers to single-export files (#4176)
+- deprecation(log): rename `warning()` to `warn()` (#4117)
+- deprecation(semver): deprecate `Comparator` functions (#4131)
+- deprecation(semver): deprecate `sort()` (#4098)
+- deprecation(semver): rename `rangeFormat()` to `formatRange()` (#4090)
+- feat(cli): make `Spinner.color` public (#4092)
+- feat(io): re-introduce IO functions (#4128)
+- feat(net): add `preferredPort` option to `getAvailablePort()` (#4151)
+- feat(text): cases (#4082)
+- fix(fs): reduce perm requirement of `ensureDir()` (#4041)
+- fix(http): punt removal version of `unstable_cookie_map.ts` (#4125)
+- fix: add `--no-lock` to spawned process args in tests (#4168)
+- fix: use `with` keyword for import attributes (#4141)
+
 ### 0.211.0 / 2024.01.04
 
 - BREAKING(collections): remove `groupBy()` (#3923)

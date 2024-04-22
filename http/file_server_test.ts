@@ -8,7 +8,7 @@ import {
   assertStringIncludes,
 } from "../assert/mod.ts";
 import { stub } from "../testing/mock.ts";
-import { serveDir, ServeDirOptions, serveFile } from "./file_server.ts";
+import { serveDir, type ServeDirOptions, serveFile } from "./file_server.ts";
 import { calculate } from "./etag.ts";
 import {
   basename,
@@ -227,7 +227,7 @@ Deno.test("serveDir() returns a response even if fileinfo is inaccessible", asyn
   // even if the fileInfo for a particular file cannot be obtained.
 
   // Assuming that fileInfo of `test_file.txt` cannot be accessible
-  const denoStatStub = stub(Deno, "stat", (path): Promise<Deno.FileInfo> => {
+  using denoStatStub = stub(Deno, "stat", (path): Promise<Deno.FileInfo> => {
     if (path.toString().includes("test_file.txt")) {
       return Promise.reject(new Error("__stubed_error__"));
     }
@@ -236,7 +236,6 @@ Deno.test("serveDir() returns a response even if fileinfo is inaccessible", asyn
   const req = new Request("http://localhost/");
   const res = await serveDir(req, serveDirOptions);
   const page = await res.text();
-  denoStatStub.restore();
 
   assertEquals(res.status, 200);
   assertStringIncludes(page, "/test_file.txt");
@@ -299,8 +298,7 @@ Deno.test("serveDir() traverses encoded URI path", async () => {
 
 Deno.test("serveDir() serves unusual filename", async () => {
   const filePath = join(testdataDir, "%");
-  const file = await Deno.create(filePath);
-  file.close();
+  using _file = await Deno.create(filePath);
 
   const req1 = new Request("http://localhost/%25");
   const res1 = await serveDir(req1, serveDirOptions);
@@ -345,10 +343,12 @@ Deno.test("serveDir() script prints help", async () => {
       "run",
       "--no-check",
       "--quiet",
-      "file_server.ts",
+      "--no-lock",
+      "--config",
+      "deno.json",
+      "http/file_server.ts",
       "--help",
     ],
-    cwd: moduleDir,
   });
   const { stdout } = await command.output();
   const output = new TextDecoder().decode(stdout);
@@ -361,10 +361,12 @@ Deno.test("serveDir() script prints version", async () => {
       "run",
       "--no-check",
       "--quiet",
-      "file_server.ts",
+      "--no-lock",
+      "--config",
+      "deno.json",
+      "http/file_server.ts",
       "--version",
     ],
-    cwd: moduleDir,
   });
   const { stdout } = await command.output();
   const output = new TextDecoder().decode(stdout);
@@ -389,7 +391,10 @@ Deno.test("serveDir() script fails with partial TLS args", async () => {
       "--quiet",
       "--allow-read",
       "--allow-net",
-      "file_server.ts",
+      "--no-lock",
+      "--config",
+      "deno.json",
+      "http/file_server.ts",
       ".",
       "--host",
       "localhost",
@@ -398,7 +403,6 @@ Deno.test("serveDir() script fails with partial TLS args", async () => {
       "-p",
       `4578`,
     ],
-    cwd: moduleDir,
     stderr: "null",
   });
   const { stdout, success } = await command.output();
@@ -801,7 +805,7 @@ Deno.test("serveFile() etag value falls back to DENO_DEPLOYMENT_ID if fileInfo.m
     assertEquals(res.headers.get("etag"), \`${hashedDenoDeploymentId}\`);
   `;
   const command = new Deno.Command(Deno.execPath(), {
-    args: ["eval", code],
+    args: ["eval", "--no-lock", code],
     stdout: "null",
     stderr: "null",
     env: { DENO_DEPLOYMENT_ID },
@@ -954,13 +958,15 @@ Deno.test(
     },
   },
   async () => {
-    const tempDir = Deno.makeTempDirSync({ dir: `${moduleDir}/testdata` });
+    const tempDir = await Deno.makeTempDir({
+      dir: `${moduleDir}/testdata`,
+    });
     const req = new Request(`http://localhost/${basename(tempDir)}/`);
     const res = await serveDir(req, serveDirOptions);
     await res.body?.cancel();
 
     assertEquals(res.status, 200);
 
-    Deno.removeSync(tempDir);
+    await Deno.remove(tempDir);
   },
 );

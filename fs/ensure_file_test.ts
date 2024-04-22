@@ -145,7 +145,7 @@ Deno.test({
       path.join(testdataDir, "ensure_file_9"),
       path.join(testdataDir, "ensure_file_9", "test.txt"),
     ],
-    run: ["deno"],
+    run: [Deno.execPath()],
   },
   async fn() {
     const testDir = path.join(testdataDir, "ensure_file_9");
@@ -165,6 +165,7 @@ Deno.test({
       await new Deno.Command(Deno.execPath(), {
         args: [
           "eval",
+          "--no-lock",
           `Deno.removeSync("${testDir}", { recursive: true });`,
         ],
       }).output();
@@ -181,7 +182,7 @@ Deno.test({
       path.join(testdataDir, "ensure_file_10"),
       path.join(testdataDir, "ensure_file_10", "test.txt"),
     ],
-    run: ["deno"],
+    run: [Deno.execPath()],
   },
   fn() {
     const testDir = path.join(testdataDir, "ensure_file_10");
@@ -201,6 +202,7 @@ Deno.test({
       new Deno.Command(Deno.execPath(), {
         args: [
           "eval",
+          "--no-lock",
           `Deno.removeSync("${testDir}", { recursive: true });`,
         ],
       }).outputSync();

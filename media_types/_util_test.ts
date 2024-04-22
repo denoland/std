@@ -1,10 +1,18 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
 import { assertEquals } from "../assert/mod.ts";
-import { consumeMediaParam, consumeToken, consumeValue } from "./_util.ts";
+import {
+  consumeMediaParam,
+  consumeToken,
+  consumeValue,
+  decode2331Encoding,
+  isIterator,
+  isToken,
+  isTSpecial,
+} from "./_util.ts";
 
 Deno.test({
-  name: "media_types::util - consumeToken()",
+  name: "consumeToken()",
   fn() {
     const fixtures = [
       ["foo bar", "foo", " bar"],
@@ -19,9 +27,13 @@ Deno.test({
 });
 
 Deno.test({
-  name: "media_types::util - consumeValue()",
+  name: "consumeValue()",
   fn() {
     const fixtures = [
+      ["", "", ""],
+      [`"\n"foo`, "", `"\n"foo`],
+      [`"\r"foo`, "", `"\r"foo`],
+      [`"\\\\;"`, "\\;", ""],
       ["foo bar", "foo", " bar"],
       ["bar", "bar", ""],
       [" bar ", "", " bar "],
@@ -44,9 +56,13 @@ Deno.test({
 });
 
 Deno.test({
-  name: "media_types::util - consumeMediaParam()",
+  name: "consumeMediaParam()",
   fn() {
     const fixtures = [
+      ["", "", "", ""],
+      ["foo=bar", "", "", "foo=bar"],
+      [";", "", "", ";"],
+      [";foo", "", "", ";foo"],
       [" ; foo=bar", "foo", "bar", ""],
       ["; foo=bar", "foo", "bar", ""],
       [";foo=bar", "foo", "bar", ""],
@@ -66,6 +82,90 @@ Deno.test({
     ] as const;
     for (const [fixture, key, value, rest] of fixtures) {
       assertEquals(consumeMediaParam(fixture), [key, value, rest]);
+    }
+  },
+});
+
+Deno.test({
+  name: "decode2331Encoding()",
+  fn() {
+    const fixtures = [
+      ["", undefined],
+      ["foo", undefined],
+      [`foo'bar'baz`, undefined],
+      [`us-ascii'en-us'`, undefined],
+      [`us-ascii'en-us'This%20is%20%2A%2A%2Afun%2A%2A%2A`, "This is ***fun***"],
+      [`UTF-8''foo-a%cc%88.html`, "foo-ä.html"],
+    ] as const;
+    for (const [fixture, expected] of fixtures) {
+      assertEquals(decode2331Encoding(fixture), expected);
+    }
+  },
+});
+
+Deno.test({
+  name: "isIterator()",
+  fn() {
+    const fixtures = [
+      [null, false],
+      [undefined, false],
+      [{}, false],
+      ["", true],
+      [[], true],
+      [Object.entries({}), true],
+    ] as const;
+    for (const [fixture, expected] of fixtures) {
+      assertEquals(isIterator(fixture), expected);
+    }
+  },
+});
+
+Deno.test({
+  name: "isToken()",
+  fn() {
+    const fixtures = [
+      ["", false],
+      [";", false],
+      ["\\", false],
+      ["foo", true],
+    ] as const;
+    for (const [fixture, expected] of fixtures) {
+      assertEquals(isToken(fixture), expected);
+    }
+  },
+});
+
+Deno.test({
+  name: "isTSpecial()",
+  fn() {
+    const fixtues = [
+      ["", false],
+      [` ()<>@,;:\\"/[]?=`, false],
+      ["(", true],
+      [")", true],
+      ["<", true],
+      [">", true],
+      ["@", true],
+      [",", true],
+      [";", true],
+      [":", true],
+      ["\\", true],
+      ['"', true],
+      ["/", true],
+      ["[", true],
+      ["]", true],
+      ["?", true],
+      ["=", true],
+      [" ", false],
+      ["\t", false],
+      ["\n", false],
+      ["\r", false],
+      ["\f", false],
+      ["\v", false],
+      ["foo", false],
+    ] as const;
+    for (const [fixture, expected] of fixtues) {
+      assertEquals(isTSpecial(fixture), expected);
     }
   },
 });

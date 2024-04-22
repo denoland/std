@@ -31,8 +31,8 @@ export function encodeTime(now: number, len: number = TIME_LEN): string {
 export function encodeRandom(len: number): string {
   let str = "";
   const randomBytes = crypto.getRandomValues(new Uint8Array(len));
-  for (let i = 0; i < len; i++) {
-    str += ENCODING[randomBytes[i] % ENCODING_LEN];
+  for (const randomByte of randomBytes) {
+    str += ENCODING[randomByte % ENCODING_LEN];
   }
   return str;
 }
@@ -43,16 +43,16 @@ export function incrementBase32(str: string): string {
   let charIndex;
   const maxCharIndex = ENCODING_LEN - 1;
   while (--index >= 0) {
-    char = str[index];
+    char = str[index]!;
     charIndex = ENCODING.indexOf(char);
     if (charIndex === -1) {
       throw new Error("incorrectly encoded string");
     }
     if (charIndex === maxCharIndex) {
-      str = replaceCharAt(str, index, ENCODING[0]);
+      str = replaceCharAt(str, index, ENCODING[0]!);
       continue;
     }
-    return replaceCharAt(str, index, ENCODING[charIndex + 1]);
+    return replaceCharAt(str, index, ENCODING[charIndex + 1]!);
   }
   throw new Error("cannot increment this string");
 }

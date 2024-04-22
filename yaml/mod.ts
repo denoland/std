@@ -4,10 +4,10 @@
 
 /**
  * {@linkcode parse} and {@linkcode stringify} for handling
- * [YAML](https://yaml.org/) encoded data.
+ * {@link https://yaml.org/ | YAML} encoded data.
  *
  * Ported from
- * [js-yaml v3.13.1](https://github.com/nodeca/js-yaml/commit/665aadda42349dcae869f12040d9b10ef18d12da)
+ * {@link https://github.com/nodeca/js-yaml/commit/665aadda42349dcae869f12040d9b10ef18d12da | js-yaml v3.13.1}.
  *
  * If your YAML contains multiple documents in it, you can use {@linkcode parseAll} for
  * handling it.

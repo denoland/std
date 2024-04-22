@@ -1,11 +1,110 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+
+/**
+ * Parses and loads environment variables from a `.env` file into the current
+ * process, or stringify data into a `.env` file format.
+ *
+ * @module
+ */
+
+import { parse } from "./parse.ts";
+
+export * from "./stringify.ts";
+export * from "./parse.ts";
+
+/** Options for {@linkcode load} and {@linkcode loadSync}. */
+export interface LoadOptions {
+  /**
+   * Optional path to `.env` file. To prevent the default value from being
+   * used, set to `null`.
+   *
+   * @default {"./.env"}
+   */
+  envPath?: string | null;
+
+  /**
+   * Set to `true` to export all `.env` variables to the current processes
+   * environment. Variables are then accessible via `Deno.env.get(<key>)`.
+   *
+   * @default {false}
+   */
+  export?: boolean;
+
+  /**
+   * Optional path to `.env.example` file which is used for validation.
+   * To prevent the default value from being used, set to `null`.
+   *
+   * @default {"./.env.example"}
+   */
+  examplePath?: string | null;
+
+  /**
+   * Set to `true` to allow required env variables to be empty. Otherwise, it
+   * will throw an error if any variable is empty.
+   *
+   * @default {false}
+   */
+  allowEmptyValues?: boolean;
+
+  /**
+   * Optional path to `.env.defaults` file which is used to define default
+   * (fallback) values. To prevent the default value from being used,
+   * set to `null`.
+   *
+   * ```sh
+   * # .env.defaults
+   * # Will not be set if GREETING is set in base .env file
+   * GREETING="a secret to everybody"
+   * ```
+   *
+   * @default {"./.env.defaults"}
+   */
+  defaultsPath?: string | null;
+}
+
+/** Works identically to {@linkcode load}, but synchronously. */
+export function loadSync(
+  {
+    envPath = ".env",
+    examplePath = ".env.example",
+    defaultsPath = ".env.defaults",
+    export: _export = false,
+    allowEmptyValues = false,
+  }: LoadOptions = {},
+): Record<string, string> {
+  const conf = envPath ? parseFileSync(envPath) : {};
+
+  if (defaultsPath) {
+    const confDefaults = parseFileSync(defaultsPath);
+    for (const [key, value] of Object.entries(confDefaults)) {
+      if (!(key in conf)) {
+        conf[key] = value;
+      }
+    }
+  }
+
+  if (examplePath) {
+    const confExample = parseFileSync(examplePath);
+    assertSafe(conf, confExample, allowEmptyValues);
+  }
+
+  if (_export) {
+    for (const [key, value] of Object.entries(conf)) {
+      if (Deno.env.get(key) !== undefined) continue;
+      Deno.env.set(key, value);
+    }
+  }
+
+  return conf;
+}
+
 /**
  * Load environment variables from a `.env` file.  Loaded variables are accessible
  * in a configuration object returned by the `load()` function, as well as optionally
  * exporting them to the process environment using the `export` option.
  *
- * Inspired by the node modules [`dotenv`](https://github.com/motdotla/dotenv)
- * and [`dotenv-expand`](https://github.com/motdotla/dotenv-expand).
+ * Inspired by the node modules {@linkcode https://github.com/motdotla/dotenv | dotenv}
+ * and {@linkcode https://github.com/motdotla/dotenv-expand | dotenv-expand}.
  *
  * ## Basic usage
  * ```sh
@@ -153,7 +252,7 @@
  * - inner quotes are maintained (think JSON) (`JSON={"foo": "bar"}` becomes
  *   `{ JSON: "{\"foo\": \"bar\"}" }`)
  * - whitespace is removed from both ends of unquoted values (see more on
- *   [`trim`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/Trim))
+ *   {@linkcode https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/Trim | trim})
  *   (`FOO= some value` becomes `{ FOO: "some value" }`)
  * - whitespace is preserved on both ends of quoted values (`FOO=" some value "`
  *   becomes `{ FOO: " some value " }`)
@@ -170,99 +269,7 @@
  *   `{ KEY: "default" }`. Also there is possible to do this case
  *   `KEY=${NO_SUCH_KEY:-${EXISTING_KEY:-default}}` which becomes
  *   `{ KEY: "<EXISTING_KEY_VALUE_FROM_ENV>" }`)
- *
- * @module
  */
-export * from "./stringify.ts";
-
-import { parse } from "./parse.ts";
-
-export * from "./parse.ts";
-
-export interface LoadOptions {
-  /**
-   * Optional path to `.env` file. To prevent the default value from being
-   * used, set to `null`.
-   *
-   * @default {"./.env"}
-   */
-  envPath?: string | null;
-
-  /**
-   * Set to `true` to export all `.env` variables to the current processes
-   * environment. Variables are then accessible via `Deno.env.get(<key>)`.
-   *
-   * @default {false}
-   */
-  export?: boolean;
-
-  /**
-   * Optional path to `.env.example` file which is used for validation.
-   * To prevent the default value from being used, set to `null`.
-   *
-   * @default {"./.env.example"}
-   */
-  examplePath?: string | null;
-
-  /**
-   * Set to `true` to allow required env variables to be empty. Otherwise, it
-   * will throw an error if any variable is empty.
-   *
-   * @default {false}
-   */
-  allowEmptyValues?: boolean;
-
-  /**
-   * Optional path to `.env.defaults` file which is used to define default
-   * (fallback) values. To prevent the default value from being used,
-   * set to `null`.
-   *
-   * ```sh
-   * # .env.defaults
-   * # Will not be set if GREETING is set in base .env file
-   * GREETING="a secret to everybody"
-   * ```
-   *
-   * @default {"./.env.defaults"}
-   */
-  defaultsPath?: string | null;
-}
-
-export function loadSync(
-  {
-    envPath = ".env",
-    examplePath = ".env.example",
-    defaultsPath = ".env.defaults",
-    export: _export = false,
-    allowEmptyValues = false,
-  }: LoadOptions = {},
-): Record<string, string> {
-  const conf = envPath ? parseFileSync(envPath) : {};
-
-  if (defaultsPath) {
-    const confDefaults = parseFileSync(defaultsPath);
-    for (const key in confDefaults) {
-      if (!(key in conf)) {
-        conf[key] = confDefaults[key];
-      }
-    }
-  }
-
-  if (examplePath) {
-    const confExample = parseFileSync(examplePath);
-    assertSafe(conf, confExample, allowEmptyValues);
-  }
-
-  if (_export) {
-    for (const key in conf) {
-      if (Deno.env.get(key) !== undefined) continue;
-      Deno.env.set(key, conf[key]);
-    }
-  }
-
-  return conf;
-}
-
 export async function load(
   {
     envPath = ".env",
@@ -276,9 +283,9 @@ export async function load(
 
   if (defaultsPath) {
     const confDefaults = await parseFile(defaultsPath);
-    for (const key in confDefaults) {
+    for (const [key, value] of Object.entries(confDefaults)) {
       if (!(key in conf)) {
-        conf[key] = confDefaults[key];
+        conf[key] = value;
       }
     }
   }
@@ -289,9 +296,9 @@ export async function load(
   }
 
   if (_export) {
-    for (const key in conf) {
+    for (const [key, value] of Object.entries(conf)) {
       if (Deno.env.get(key) !== undefined) continue;
-      Deno.env.set(key, conf[key]);
+      Deno.env.set(key, value);
     }
   }
 
@@ -360,8 +367,14 @@ function assertSafe(
   }
 }
 
+/**
+ * Error thrown in {@linkcode load} and {@linkcode loadSync} when required
+ * environment variables are missing.
+ */
 export class MissingEnvVarsError extends Error {
+  /** The keys of the missing environment variables. */
   missing: string[];
+  /** Constructs a new instance. */
   constructor(message: string, missing: string[]) {
     super(message);
     this.name = "MissingEnvVarsError";

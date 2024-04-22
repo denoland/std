@@ -1,30 +1,77 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-import { DateTimeFormatter } from "./_common.ts";
+import { DateTimeFormatter } from "./_date_time_formatter.ts";
+
+/** Options for {@linkcode format}. */
+export interface FormatOptions {
+  /** Whether returns the formatted date in UTC instead of local time. */
+  utc?: boolean;
+}
 
 /**
- * Takes an input `date` and a `formatString` to format to a `string`.
+ * Formats a date to a string with the specified format.
  *
- * @example
+ * The following symbols from
+ * {@link https://www.unicode.org/reports/tr35/tr35-dates.html#Date_Field_Symbol_Table | unicode LDML}
+ * are supported:
+ * - `yyyy` - numeric year
+ * - `yy` - 2-digit year
+ * - `M` - numeric month
+ * - `MM` - 2-digit month
+ * - `d` - numeric day
+ * - `dd` - 2-digit day
+ * - `H` - numeric hour (0-23 hours)
+ * - `HH` - 2-digit hour (00-23 hours)
+ * - `h` - numeric hour (1-12 hours)
+ * - `hh` - 2-digit hour (01-12 hours)
+ * - `m` - numeric minute
+ * - `mm` - 2-digit minute
+ * - `s` - numeric second
+ * - `ss` - 2-digit second
+ * - `S` - 1-digit fractional second
+ * - `SS` - 2-digit fractional second
+ * - `SSS` - 3-digit fractional second
+ * - `a` - dayPeriod, either `AM` or `PM`
+ * - `'foo'` - quoted literal
+ * - `./-` - unquoted literal
+ *
+ * @param date The date to be formatted.
+ * @param formatString The date time string format.
+ * @param options The options to customize the formatting of the date.
+ * @return The formatted date string.
+ *
+ * @example Basic usage
  * ```ts
  * import { format } from "https://deno.land/std@$STD_VERSION/datetime/format.ts";
  *
- * format(new Date(2019, 0, 20), "dd-MM-yyyy"); // output : "20-01-2019"
- * format(new Date(2019, 0, 20), "yyyy-MM-dd"); // output : "2019-01-20"
- * format(new Date(2019, 0, 20), "dd.MM.yyyy"); // output : "20.01.2019"
- * format(new Date(2019, 0, 20, 16, 34), "MM-dd-yyyy HH:mm"); // output : "01-20-2019 16:34"
- * format(new Date(2019, 0, 20, 16, 34), "MM-dd-yyyy hh:mm a"); // output : "01-20-2019 04:34 PM"
- * format(new Date(2019, 0, 20, 16, 34), "HH:mm MM-dd-yyyy"); // output : "16:34 01-20-2019"
- * format(new Date(2019, 0, 20, 16, 34, 23, 123), "MM-dd-yyyy HH:mm:ss.SSS"); // output : "01-20-2019 16:34:23.123"
- * format(new Date(2019, 0, 20), "'today:' yyyy-MM-dd"); // output : "today: 2019-01-20"
+ * const date = new Date(2019, 0, 20, 16, 34, 23, 123);
+ *
+ * format(date, "dd-MM-yyyy"); // "20-01-2019"
+ *
+ * format(date, "MM-dd-yyyy HH:mm:ss.SSS"); // "01-20-2019 16:34:23.123"
+ *
+ * format(date, "'today:' yyyy-MM-dd"); // "today: 2019-01-20"
  * ```
  *
- * @param date Date
- * @param formatString Format string
- * @return formatted date string
+ * @example UTC formatting
+ * ```ts
+ * import { format } from "https://deno.land/std@$STD_VERSION/datetime/format.ts";
+ *
+ * const date = new Date(2019, 0, 20, 16, 34, 23, 123);
+ *
+ * format(date, "yyyy-MM-dd HH:mm:ss", { utc: true }); // "2019-01-20 05:34:23"
+ * ```
+ * Enable UTC formatting by setting the `utc` option to `true`.
  */
-export function format(date: Date, formatString: string): string {
+export function format(
+  date: Date,
+  formatString: string,
+  options: FormatOptions = {},
+): string {
   const formatter = new DateTimeFormatter(formatString);
-  return formatter.format(date);
+  return formatter.format(
+    date,
+    options.utc ? { timeZone: "UTC" } : undefined,
+  );
 }

@@ -28,7 +28,7 @@ const COREUTILS_TESTSUITE = [
   [["fs", "x"], "fs"],
   [["fs", ""], "fs"],
   [["fs/", "s/"], "fs"],
-];
+] as const;
 
 const POSIX_TESTSUITE = [
   [[""], ""],
@@ -58,7 +58,7 @@ const POSIX_TESTSUITE = [
   [["///"], "/"],
   [["///", "bbb"], "/"],
   [["//", "bbb"], "/"],
-];
+] as const;
 
 const WIN32_TESTSUITE = [
   [["\\dir\\basename.ext"], "basename.ext"],
@@ -84,7 +84,7 @@ const WIN32_TESTSUITE = [
   [["C:basename.ext\\\\"], "basename.ext"],
   [["C:foo"], "foo"],
   [["file:stream"], "file:stream"],
-];
+] as const;
 
 Deno.test("posix.basename()", function () {
   for (const [[name, suffix], expected] of COREUTILS_TESTSUITE) {

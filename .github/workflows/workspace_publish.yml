@@ -1,0 +1,37 @@
+name: workspace publish
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  publish:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 30
+
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - name: Clone repository
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - name: Set up Deno
+        uses: denoland/setup-deno@v1
+        with:
+          deno-version: canary
+
+      - name: Convert to workspace
+        run: deno run -A ./_tools/convert_to_workspace.ts
+
+      - name: Format
+        run: deno fmt
+
+      - name: Test
+        run: deno task test
+
+      - name: Publish to JSR
+        run: deno publish --allow-dirty

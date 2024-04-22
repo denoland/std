@@ -15,6 +15,7 @@ const setRawOptions = Deno.build.os === "windows"
   ? undefined
   : { cbreak: true };
 
+/** Options for {@linkcode promptSecret}. */
 export type PromptSecretOptions = {
   /** A character to print instead of the user's input. */
   mask?: string;
@@ -28,13 +29,15 @@ export type PromptSecretOptions = {
  * Use an empty `mask` if you don't want to show any character.
  */
 export function promptSecret(
-  message = "Secret ",
+  message = "Secret",
   { mask = "*", clear }: PromptSecretOptions = {},
 ): string | null {
-  if (!Deno.isatty(input.rid)) {
+  if (!input.isTerminal()) {
     return null;
   }
 
+  // Make the output consistent with the built-in prompt()
+  message += " ";
   const callback = !mask ? undefined : (n: number) => {
     output.writeSync(CLR);
     output.writeSync(encoder.encode(`${message}${mask.repeat(n)}`));

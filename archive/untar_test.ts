@@ -5,12 +5,12 @@ import { Tar, type TarMeta } from "./tar.ts";
 import {
   TarEntry,
   type TarHeader,
-  TarMetaWithLinkName,
+  type TarMetaWithLinkName,
   Untar,
 } from "./untar.ts";
 import { Buffer } from "../io/buffer.ts";
-import { copy } from "../streams/copy.ts";
-import { readAll } from "../streams/read_all.ts";
+import { copy } from "../io/copy.ts";
+import { readAll } from "../io/read_all.ts";
 import { filePath, testdataDir } from "./_test_common.ts";
 
 interface TestEntry {
@@ -120,11 +120,10 @@ Deno.test(
     const outputFile = resolve(testdataDir, "test.tar");
 
     const tar = await createTar(entries);
-    const file = await Deno.open(outputFile, { create: true, write: true });
+    using file = await Deno.open(outputFile, { create: true, write: true });
     await copy(tar.getReader(), file);
-    file.close();
 
-    const reader = await Deno.open(outputFile, { read: true });
+    using reader = await Deno.open(outputFile, { read: true });
     // read data from a tar archive
     const untar = new Untar(reader);
 
@@ -134,7 +133,6 @@ Deno.test(
       assertEquals(expected.name, entry.fileName);
     }
 
-    reader.close();
     await Deno.remove(outputFile);
     assertEquals(entries.length, 0);
   },
@@ -155,11 +153,10 @@ Deno.test("Untar() reads from FileReader", async () => {
   const outputFile = resolve(testdataDir, "test.tar");
 
   const tar = await createTar(entries);
-  const file = await Deno.open(outputFile, { create: true, write: true });
+  using file = await Deno.open(outputFile, { create: true, write: true });
   await copy(tar.getReader(), file);
-  file.close();
 
-  const reader = await Deno.open(outputFile, { read: true });
+  using reader = await Deno.open(outputFile, { read: true });
   // read data from a tar archive
   const untar = new Untar(reader);
 
@@ -176,7 +173,6 @@ Deno.test("Untar() reads from FileReader", async () => {
     assertEquals(expected.name, entry.fileName);
   }
 
-  reader.close();
   await Deno.remove(outputFile);
   assertEquals(entries.length, 0);
 });
@@ -229,7 +225,7 @@ Deno.test(
 
 Deno.test("Untar() works with Linux generated tar", async () => {
   const filePath = resolve(testdataDir, "deno.tar");
-  const file = await Deno.open(filePath, { read: true });
+  using file = await Deno.open(filePath, { read: true });
 
   type ExpectedEntry = TarMeta & { content?: Uint8Array };
 
@@ -319,8 +315,6 @@ Deno.test("Untar() works with Linux generated tar", async () => {
       assertEquals(content, await readAll(entry));
     }
   }
-
-  file.close();
 });
 
 Deno.test({
@@ -369,7 +363,7 @@ Deno.test({
 
 Deno.test("Untar() handles archive with link", async function () {
   const filePath = resolve(testdataDir, "with_link.tar");
-  const file = await Deno.open(filePath, { read: true });
+  using file = await Deno.open(filePath, { read: true });
 
   type ExpectedEntry = TarMetaWithLinkName & { content?: Uint8Array };
 
@@ -414,6 +408,4 @@ Deno.test("Untar() handles archive with link", async function () {
       assertEquals(content, await readAll(entry));
     }
   }
-
-  file.close();
 });

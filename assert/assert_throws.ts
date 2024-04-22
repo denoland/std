@@ -1,10 +1,14 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
 import { assertIsError } from "./assert_is_error.ts";
 import { AssertionError } from "./assertion_error.ts";
 
 /**
  * Executes a function, expecting it to throw. If it does not, then it
  * throws.
+ *
+ * To assert that an asynchronous function rejects, use
+ * {@linkcode assertRejects}.
  *
  * @example
  * ```ts
@@ -22,6 +26,9 @@ export function assertThrows(
  * Executes a function, expecting it to throw. If it does not, then it
  * throws. An error class and a string that should be included in the
  * error message can also be asserted.
+ *
+ * To assert that an asynchronous function rejects, use
+ * {@linkcode assertRejects}.
  *
  * @example
  * ```ts

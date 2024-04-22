@@ -1,6 +1,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
 import { AssertionError } from "./assertion_error.ts";
-import { format } from "./_format.ts";
+import { format } from "../internal/format.ts";
 
 /**
  * Make an assertion that `actual` and `expected` are not strictly equal.

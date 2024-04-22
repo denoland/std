@@ -1,10 +1,12 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-type PropertyAccessor = number | string;
-type ObjectWithStringPropertyKeys = Record<string, unknown>;
+/** Array index or record key corresponding to a value for a data object. */
+export type PropertyAccessor = number | string;
 
 /**
+ * Column information.
+ *
  * @param header Explicit column header name. If omitted,
  * the (final) property accessor is used for this value.
  *
@@ -82,8 +84,9 @@ export type ColumnDetails = {
 export type Column = ColumnDetails | PropertyAccessor | PropertyAccessor[];
 
 /** An object (plain or array) */
-export type DataItem = ObjectWithStringPropertyKeys | unknown[];
+export type DataItem = Record<string, unknown> | unknown[];
 
+/** Options for {@linkcode stringify}. */
 export type StringifyOptions = {
   /** Whether to include the row of headers or not.
    *
@@ -108,7 +111,7 @@ export type StringifyOptions = {
   columns?: Column[];
   /**
    * Whether to add a
-   * [byte-order mark](https://en.wikipedia.org/wiki/Byte_order_mark) to the
+   * {@link https://en.wikipedia.org/wiki/Byte_order_mark | byte-order mark} to the
    * beginning of the file content. Required by software such as MS Excel to
    * properly display Unicode text.
    *
@@ -144,8 +147,8 @@ type NormalizedColumn = Omit<ColumnDetails, "header" | "prop"> & {
 };
 
 function normalizeColumn(column: Column): NormalizedColumn {
-  let header: NormalizedColumn["header"],
-    prop: NormalizedColumn["prop"];
+  let header: NormalizedColumn["header"];
+  let prop: NormalizedColumn["prop"];
 
   if (typeof column === "object") {
     if (Array.isArray(column)) {
@@ -165,8 +168,13 @@ function normalizeColumn(column: Column): NormalizedColumn {
   return { header, prop };
 }
 
+/** Error thrown in {@linkcode stringify}. */
 export class StringifyError extends Error {
-  override readonly name = "StringifyError";
+  /** Construct a new instance. */
+  constructor(message?: string) {
+    super(message);
+    this.name = "StringifyError";
+  }
 }
 
 /**
@@ -193,7 +201,7 @@ function getValuesFromItem(
             );
           }
         } // I think this assertion is safe. Confirm?
-        else value = (value as ObjectWithStringPropertyKeys)[prop];
+        else value = (value as Record<string, unknown>)[prop];
       }
 
       values.push(value);
@@ -273,8 +281,6 @@ function getValuesFromItem(
  * // Rick,70
  * // Morty,14
  * ```
- *
- * @param options Output formatting options
  */
 export function stringify(
   data: DataItem[],

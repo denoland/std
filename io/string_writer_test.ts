@@ -3,7 +3,7 @@ import { assertEquals } from "../assert/mod.ts";
 import { StringWriter } from "./string_writer.ts";
 import { StringReader } from "./string_reader.ts";
 import { copyN } from "./copy_n.ts";
-import { copy } from "../streams/copy.ts";
+import { copy } from "./copy.ts";
 
 Deno.test("ioStringWriter", async function () {
   const w = new StringWriter("base");
@@ -33,6 +33,5 @@ Deno.test("ioStringWriterIsolationTest", async function () {
     const written = await w.write(c);
     assertEquals(written, 1);
   }
-  srcChunks[0][0] = 88;
   assertEquals(w.toString(), src);
 });

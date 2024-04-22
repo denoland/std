@@ -5,7 +5,7 @@
 
 /**
  * Utilities for generating and working with
- * [Universally Unique Lexicographically Sortable Identifiers (ULIDs)]{@link https://github.com/ulid/spec}.
+ * {@link https://github.com/ulid/spec | Universally Unique Lexicographically Sortable Identifiers (ULIDs)}.
  *
  * @module
  */
@@ -19,7 +19,7 @@ import {
   RANDOM_LEN,
   TIME_LEN,
   TIME_MAX,
-  ULID,
+  type ULID,
 } from "./_util.ts";
 
 export type { ULID } from "./_util.ts";

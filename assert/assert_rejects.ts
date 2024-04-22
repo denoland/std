@@ -1,9 +1,12 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
 import { AssertionError } from "./assertion_error.ts";
 import { assertIsError } from "./assert_is_error.ts";
 
 /**
  * Executes a function which returns a promise, expecting it to reject.
+ *
+ * To assert that a synchronous function throws, use {@linkcode assertThrows}.
  *
  * @example
  * ```ts
@@ -21,6 +24,8 @@ export function assertRejects(
  * Executes a function which returns a promise, expecting it to reject.
  * If it does not, then it throws. An error class and a string that should be
  * included in the error message can also be asserted.
+ *
+ * To assert that a synchronous function throws, use {@linkcode assertThrows}.
  *
  * @example
  * ```ts

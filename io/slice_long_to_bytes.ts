@@ -6,7 +6,7 @@
  * @param d The number to be sliced
  * @param dest The sliced array
  *
- * @deprecated (will be removed after 1.0.0) Use the [Web Streams API]{@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API} instead.
+ * @deprecated This will be removed in 1.0.0. Use the {@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API | Web Streams API} instead.
  */
 export function sliceLongToBytes(
   d: number,

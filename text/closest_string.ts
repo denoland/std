@@ -1,4 +1,5 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
 import { levenshteinDistance } from "./levenshtein_distance.ts";
 import { assert } from "../assert/assert.ts";
 
@@ -45,7 +46,7 @@ export function closestString(
     givenWord = givenWord.toLowerCase();
   }
 
-  let nearestWord = possibleWords[0];
+  let nearestWord = possibleWords[0]!;
   let closestStringDistance = Infinity;
   for (const each of possibleWords) {
     const distance = caseSensitive

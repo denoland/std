@@ -39,9 +39,9 @@ function constructYamlTimestamp(data: string): Date {
 
   // match: [1] year [2] month [3] day
 
-  const year = +match[1];
-  const month = +match[2] - 1; // JS month starts with 0
-  const day = +match[3];
+  const year = +match[1]!;
+  const month = +match[2]! - 1; // JS month starts with 0
+  const day = +match[3]!;
 
   if (!match[4]) {
     // no hour
@@ -51,8 +51,8 @@ function constructYamlTimestamp(data: string): Date {
   // match: [4] hour [5] minute [6] second [7] fraction
 
   const hour = +match[4];
-  const minute = +match[5];
-  const second = +match[6];
+  const minute = +match[5]!;
+  const second = +match[6]!;
 
   let fraction = 0;
   if (match[7]) {
@@ -67,7 +67,7 @@ function constructYamlTimestamp(data: string): Date {
   // match: [8] tz [9] tz_sign [10] tz_hour [11] tz_minute
 
   let delta = null;
-  if (match[9]) {
+  if (match[9] && match[10]) {
     const tzHour = +match[10];
     const tzMinute = +(match[11] || 0);
     delta = (tzHour * 60 + tzMinute) * 60000; // delta in milli-seconds

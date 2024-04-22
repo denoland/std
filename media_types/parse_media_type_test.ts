@@ -1,10 +1,10 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import { assertEquals } from "../assert/mod.ts";
+import { assertEquals, assertThrows } from "../assert/mod.ts";
 import { parseMediaType } from "./mod.ts";
 
 Deno.test({
-  name: "media_types - parseMediaType()",
+  name: "parseMediaType()",
   fn() {
     const nameFoo = { "name": "foo" };
     const fixtures: [string, string, Record<string, string> | undefined][] = [
@@ -88,6 +88,43 @@ Deno.test({
 
     for (const [fixture, mediaType, params] of fixtures) {
       assertEquals(parseMediaType(fixture), [mediaType, params]);
+    }
+  },
+});
+
+Deno.test({
+  name: "parseMediaType() throws on invalid media type",
+  fn() {
+    const fixtures = [
+      `form-data; foo`,
+      `form-data; foo="bar"; baz`,
+    ] as const;
+    for (const fixture of fixtures) {
+      assertThrows(
+        () => {
+          parseMediaType(fixture);
+        },
+        TypeError,
+        "Invalid media parameter.",
+      );
+    }
+  },
+});
+
+Deno.test({
+  name: "parseMediaType() throws on duplicate keys",
+  fn() {
+    const fixtures = [
+      `form-data; foo="bar"; foo="baz"`,
+    ] as const;
+    for (const fixture of fixtures) {
+      assertThrows(
+        () => {
+          parseMediaType(fixture);
+        },
+        TypeError,
+        "Duplicate key parsed.",
+      );
     }
   },
 });

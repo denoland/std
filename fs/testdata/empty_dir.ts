@@ -1,9 +1,8 @@
 import { emptyDir } from "../empty_dir.ts";
 
-emptyDir(Deno.args[0])
-  .then(() => {
-    Deno.stdout.write(new TextEncoder().encode("success"));
-  })
-  .catch((err) => {
-    Deno.stdout.write(new TextEncoder().encode(err.message));
-  });
+try {
+  await emptyDir("fs/testdata/testfolder");
+  console.log("success");
+} catch (error) {
+  console.log(error);
+}

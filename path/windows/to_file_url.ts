@@ -20,12 +20,11 @@ export function toFileUrl(path: string): URL {
   if (!isAbsolute(path)) {
     throw new TypeError("Must be an absolute path.");
   }
-
   const [, hostname, pathname] = path.match(
     /^(?:[/\\]{2}([^/\\]+)(?=[/\\](?:[^/\\]|$)))?(.*)/,
   )!;
   const url = new URL("file:///");
-  url.pathname = encodeWhitespace(pathname.replace(/%/g, "%25"));
+  url.pathname = encodeWhitespace(pathname!.replace(/%/g, "%25"));
   if (hostname !== undefined && hostname !== "localhost") {
     url.hostname = hostname;
     if (!url.hostname) {

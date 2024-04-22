@@ -5,7 +5,7 @@ import type { ReleaseType, SemVer } from "./types.ts";
 import { increment } from "./increment.ts";
 import { format } from "./format.ts";
 
-Deno.test("increment", async (t) => {
+Deno.test("increment()", async (t) => {
   //  [version, inc, result, identifier]
   //  increment(version, inc) -> result
   const versions: [
@@ -965,9 +965,7 @@ Deno.test("increment", async (t) => {
 
   for (const [version, op, identifier, metadata, expected] of versions) {
     await t.step({
-      name: `${
-        format(version)
-      } ${op}+(${identifier}, ${metadata}) -> ${expected}`,
+      name: `${op} ${format(version)}`,
       fn: () => {
         const actual = increment(version, op, identifier, metadata);
         assertEquals(format(actual), expected);

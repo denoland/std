@@ -1,22 +1,22 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import {
-  MAP_FORMAT_TO_EXTRACTOR_RX,
-  MAP_FORMAT_TO_RECOGNIZER_RX,
-} from "./_formats.ts";
+import { EXTRACT_REGEXP_MAP, RECOGNIZE_REGEXP_MAP } from "./_formats.ts";
 
 type Format = "yaml" | "toml" | "json" | "unknown";
 
+/** Return type for {@linkcode Extractor}. */
 export type Extract<T> = {
   frontMatter: string;
   body: string;
   attrs: T;
 };
 
+/** Function return type for {@linkcode createExtractor}. */
 export type Extractor = <T = Record<string, unknown>>(
   str: string,
 ) => Extract<T>;
 
+/** Parser function type used alongside {@linkcode createExtractor}. */
 export type Parser = <T = Record<string, unknown>>(str: string) => T;
 
 function _extract<T>(
@@ -53,17 +53,17 @@ function _extract<T>(
  */
 function recognize(str: string, formats?: Format[]): Format {
   if (!formats) {
-    formats = Object.keys(MAP_FORMAT_TO_RECOGNIZER_RX) as Format[];
+    formats = Object.keys(RECOGNIZE_REGEXP_MAP) as Format[];
   }
 
-  const [firstLine] = str.split(/(\r?\n)/);
+  const [firstLine] = str.split(/(\r?\n)/) as [string];
 
   for (const format of formats) {
     if (format === "unknown") {
       continue;
     }
 
-    if (MAP_FORMAT_TO_RECOGNIZER_RX[format].test(firstLine)) {
+    if (RECOGNIZE_REGEXP_MAP[format].test(firstLine)) {
       return format;
     }
   }
@@ -130,6 +130,6 @@ export function createExtractor(
       throw new TypeError(`Unsupported front matter format`);
     }
 
-    return _extract(str, MAP_FORMAT_TO_EXTRACTOR_RX[format], parser);
+    return _extract(str, EXTRACT_REGEXP_MAP[format], parser);
   };
 }

@@ -6,14 +6,15 @@ import { DAY } from "./constants.ts";
 /**
  * Returns the number of the day in the year in the local time zone.
  *
- * @example
+ * @param date Date to get the day of the year of.
+ * @return Number of the day in the year in the local time zone.
+ *
+ * @example Basic usage
  * ```ts
- * import { dayOfYear } from "https://deno.land/std@$STD_VERSION/datetime/mod.ts";
+ * import { dayOfYear } from "https://deno.land/std@$STD_VERSION/datetime/day_of_year.ts";
  *
- * dayOfYear(new Date("2019-03-11T03:24:00")); // output: 70
+ * dayOfYear(new Date("2019-03-11T03:24:00")); // 70
  * ```
- *
- * @return Number of the day in the year in the local time zone
  */
 export function dayOfYear(date: Date): number {
   // Values from 0 to 99 map to the years 1900 to 1999. All other values are the actual year. (https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/Date)
@@ -31,14 +32,15 @@ export function dayOfYear(date: Date): number {
 /**
  * Returns the number of the day in the year in UTC time.
  *
+ * @param date Date to get the day of the year of.
+ * @return Number of the day in the year in UTC time.
+ *
  * @example
  * ```ts
- * import { dayOfYearUtc } from "https://deno.land/std@$STD_VERSION/datetime/mod.ts";
+ * import { dayOfYearUtc } from "https://deno.land/std@$STD_VERSION/datetime/day_of_year.ts";
  *
- * dayOfYearUtc(new Date("2019-03-11T03:24:00.000Z")) // output 70
+ * dayOfYearUtc(new Date("2019-03-11T03:24:00.000Z")) // 70
  * ```
- *
- * @return Number of the day in the year in UTC time
  */
 export function dayOfYearUtc(date: Date): number {
   // Values from 0 to 99 map to the years 1900 to 1999. All other values are the actual year. (https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/Date)

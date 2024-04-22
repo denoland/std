@@ -13,9 +13,6 @@ export interface DBEntry {
   extensions?: string[];
 }
 
-/** A map of extensions for a given media type. */
-export const extensions = new Map<string, string[]>();
-
 export function consumeToken(v: string): [token: string, rest: string] {
   const notPos = indexOf(v, isNotTokenChar);
   if (notPos === -1) {
@@ -134,7 +131,7 @@ function isTokenChar(r: string): boolean {
   return code > 0x20 && code < 0x7f && !isTSpecial(r);
 }
 
-function isTSpecial(r: string): boolean {
+export function isTSpecial(r: string): boolean {
   return r[0] ? `()<>@,;:\\"/[]?=`.includes(r[0]) : false;
 }
 

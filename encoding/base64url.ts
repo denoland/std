@@ -3,7 +3,7 @@
 
 /**
  * Utilities for
- * [base64url]{@link https://datatracker.ietf.org/doc/html/rfc4648#section-5}
+ * {@link https://datatracker.ietf.org/doc/html/rfc4648#section-5 | base64url}
  * encoding and decoding.
  *
  * This module is browser compatible.
@@ -13,9 +13,10 @@
 
 import * as base64 from "./base64.ts";
 
-/*
+/**
  * Some variants allow or require omitting the padding '=' signs:
  * https://en.wikipedia.org/wiki/Base64#The_URL_applications
+ *
  * @param base64url
  */
 function addPaddingToBase64url(base64url: string): string {
@@ -48,11 +49,14 @@ function convertBase64ToBase64url(b64: string) {
  *
  * @see {@link https://datatracker.ietf.org/doc/html/rfc4648#section-5}
  *
+ * @param data The data to encode.
+ * @returns The base64url-encoded string.
+ *
  * @example
  * ```ts
  * import { encodeBase64Url } from "https://deno.land/std@$STD_VERSION/encoding/base64url.ts";
  *
- * encodeBase64Url(new TextEncoder().encode("foobar")); // "Zm9vYmFy"
+ * encodeBase64Url("foobar"); // "Zm9vYmFy"
  * ```
  */
 export function encodeBase64Url(
@@ -65,6 +69,9 @@ export function encodeBase64Url(
  * Decodes a given base64url-encoded string.
  *
  * @see {@link https://datatracker.ietf.org/doc/html/rfc4648#section-5}
+ *
+ * @param b64url The base64url-encoded string to decode.
+ * @returns The decoded data.
  *
  * @example
  * ```ts

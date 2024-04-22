@@ -1,5 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-import { SemVer } from "./types.ts";
+// This module is browser compatible.
+import type { SemVer } from "./types.ts";
 import { parse } from "./parse.ts";
 
 /**

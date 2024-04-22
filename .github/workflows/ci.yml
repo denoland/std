@@ -1,5 +1,8 @@
 name: ci
 
+permissions:
+  contents: write
+
 on:
   push:
     branches: [main]
@@ -32,8 +35,14 @@ jobs:
         with:
           deno-version: ${{ matrix.deno }}
 
-      - name: Run tests canary
+      - name: Run tests
         run: deno task test
+
+      - name: Run tests (simulate Deno 2)
+        if: matrix.deno == 'canary'
+        run: deno task test
+        env:
+          DENO_FUTURE: 1
 
       - name: Run timezone-dependent tests
         run: |
@@ -50,7 +59,7 @@ jobs:
         run: deno task cov:gen
 
       - name: Upload coverage
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v4
         with:
           name: ${{ matrix.os }}-${{ matrix.deno }}
           files: cov.lcov
@@ -66,7 +75,14 @@ jobs:
         run: ./_tools/release/03_release.ts
 
   lint:
-    runs-on: ubuntu-22.04
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-22.04
+          - windows-2022
     steps:
       - name: Clone repository
         uses: actions/checkout@v4
@@ -87,15 +103,16 @@ jobs:
 
       - name: Spell-check
         uses: crate-ci/typos@master
+        if: matrix.os == 'ubuntu-22.04'
         with:
-          config: ./.github/workflows/typos.toml
+          config: ./.github/typos.toml
 
   wasm:
     name: wasm
     runs-on: ubuntu-22.04
     strategy:
       matrix:
-        module: [ crypto/_wasm ]
+        module: [crypto/_wasm]
     steps:
       - name: Clone repository
         uses: actions/checkout@v4
@@ -113,7 +130,7 @@ jobs:
           declare modifications="$(git diff --name-only HEAD~ -- ${{ matrix.module }})"
           declare modified="$([[ "$modifications" ]] && echo true || echo false)"
           echo "modified=$modified" >> $GITHUB_OUTPUT
-          echo "${{ matrix.module }} WASM source modified in this commit? $modified"
+          echo "${{ matrix.module }} Wasm source modified in this commit? $modified"
           echo "$modifications"
 
       - name: Set up Deno
@@ -125,10 +142,37 @@ jobs:
         if: success() && steps.source.outputs.modified == 'true'
         with:
           # This must match the version in _wasm/rust-toolchain.toml of the module folder
-          rust-version: 1.74.0
+          rust-version: 1.77.0
           targets: wasm32-unknown-unknown
           components: rustfmt
 
       - name: Rebuild Wasm and verify it hasn't changed
         if: success() && steps.source.outputs.modified == 'true'
         run: deno task --cwd ${{ matrix.module }} wasmbuild --check
+
+  publish-dry-run:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - name: Clone repository
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - name: Set up Deno
+        uses: denoland/setup-deno@v1
+        with:
+          deno-version: canary
+
+      - name: Convert to workspace
+        run: deno run -A ./_tools/convert_to_workspace.ts
+
+      - name: Test
+        run: deno task test
+
+      - name: Publish (dry run)
+        run: deno publish --allow-dirty --dry-run

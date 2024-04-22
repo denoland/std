@@ -1,4 +1,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
+
+import { CAN_NOT_DISPLAY } from "./_constants.ts";
 import { equal } from "./equal.ts";
 import { AssertionError } from "./assertion_error.ts";
 
@@ -25,12 +28,12 @@ export function assertNotEquals<T>(actual: T, expected: T, msg?: string) {
   try {
     actualString = String(actual);
   } catch {
-    actualString = "[Cannot display]";
+    actualString = CAN_NOT_DISPLAY;
   }
   try {
     expectedString = String(expected);
   } catch {
-    expectedString = "[Cannot display]";
+    expectedString = CAN_NOT_DISPLAY;
   }
   const msgSuffix = msg ? `: ${msg}` : ".";
   throw new AssertionError(

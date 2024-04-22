@@ -10,10 +10,18 @@ const COLOR_RESET = "\u001b[0m";
 const DEFAULT_INTERVAL = 75;
 const DEFAULT_SPINNER = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"];
 
-// This is a hack to allow us to use the same type for both the color name and an ANSI escape code.
-// ref: https://github.com/microsoft/TypeScript/issues/29729#issuecomment-460346421
+/**
+ * This is a hack to allow us to use the same type for both the color name and
+ * an ANSI escape code.
+ *
+ * @see {@link https://github.com/microsoft/TypeScript/issues/29729#issuecomment-460346421}
+ *
+ * @internal
+ */
 // deno-lint-ignore ban-types
 export type Ansi = string & {};
+
+/** Color options for {@linkcode SpinnerOptions.color}. */
 export type Color =
   | "black"
   | "red"
@@ -69,6 +77,7 @@ export interface SpinnerOptions {
  */
 export class Spinner {
   #spinner: string[];
+  /** The message to display next to the spinner. */
   message: string;
   #interval: number;
   #color?: Color;
@@ -99,11 +108,15 @@ export class Spinner {
     this.color = color;
   }
 
+  /**
+   * Set the color of the spinner. This defaults to the default terminal color.
+   * This can be changed while the spinner is active.
+   */
   set color(value: Color | undefined) {
     this.#color = value ? COLORS[value] : undefined;
   }
 
-  get color() {
+  get color(): Color | undefined {
     return this.#color;
   }
 

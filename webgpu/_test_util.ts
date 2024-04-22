@@ -35,6 +35,8 @@ export function cleanUp(device: GPUDevice) {
 
   // TODO(lucacasonato): webgpu spec should add a explicit destroy method for
   // adapters.
-  const resources = Object.keys(Deno.resources());
-  Deno.close(Number(resources[resources.length - 1]));
+  // @ts-ignore Until WebGPU resources cleanup is automatically handled.
+  const resources = Object.keys(Deno[Deno.internal].core.resources());
+  // @ts-ignore Until WebGPU resources cleanup is automatically handled.
+  Deno[Deno.internal].core.close(Number(resources[resources.length - 1]));
 }

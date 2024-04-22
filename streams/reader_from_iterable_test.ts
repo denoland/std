@@ -3,7 +3,7 @@
 import { assertEquals } from "../assert/mod.ts";
 import { readerFromIterable } from "./reader_from_iterable.ts";
 
-Deno.test("[streams] readerFromIterable()", async function () {
+Deno.test("readerFromIterable()", async function () {
   const reader = readerFromIterable((function* () {
     const encoder = new TextEncoder();
     for (const string of ["hello", "deno", "foo"]) {

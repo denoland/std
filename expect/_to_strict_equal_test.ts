@@ -27,4 +27,11 @@ Deno.test("expect().toStrictEqual()", () => {
   assertThrows(() => {
     expect({ a: 1 }).not.toStrictEqual({ a: 1 });
   }, AssertionError);
+
+  class A {}
+  class B {}
+  expect(new A()).not.toStrictEqual(new B());
+  assertThrows(() => {
+    expect(new A()).toStrictEqual(new B());
+  }, AssertionError);
 });

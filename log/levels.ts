@@ -9,7 +9,7 @@ export const LogLevels = {
   NOTSET: 0,
   DEBUG: 10,
   INFO: 20,
-  WARNING: 30,
+  WARN: 30,
   ERROR: 40,
   CRITICAL: 50,
 } as const;
@@ -29,7 +29,7 @@ const byLevel: Record<LogLevel, LevelName> = {
   [LogLevels.NOTSET]: "NOTSET",
   [LogLevels.DEBUG]: "DEBUG",
   [LogLevels.INFO]: "INFO",
-  [LogLevels.WARNING]: "WARNING",
+  [LogLevels.WARN]: "WARN",
   [LogLevels.ERROR]: "ERROR",
   [LogLevels.CRITICAL]: "CRITICAL",
 };
