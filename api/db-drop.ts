@@ -6,7 +6,7 @@ if (!confirm('WARNING: The database will be reset. Continue?')) {
   Deno.exit()
 }
 
-const all = db.list({ prefix: [] })
+const all = db.list({ prefix: [] }, { batchSize: 1000 })
 
 const promises = []
 for await (const { key } of all) {

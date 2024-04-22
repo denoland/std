@@ -197,14 +197,15 @@ export default class DB {
       abort.abort()
     })
     const sink = pushable<Splice>({ objectMode: true })
+    const buffer = pushable<Promise<Splice>>({ objectMode: true })
     abort.signal.addEventListener('abort', () => {
       this.#aborts.delete(abort)
       sink.return()
+      buffer.return()
     })
 
     const watch = this.#kv.watch<string[]>([keys.getHeadKey(pid)])
     const pipe = async () => {
-      let lastTransmitted: string | undefined
       for await (const [result] of streamToIt(watch, abort.signal)) {
         if (!result.versionstamp) {
           continue
@@ -214,19 +215,17 @@ export default class DB {
           // TODO maybe after is a waste, since head is all that matters ?
           continue
         }
-        const last = lastTransmitted
-        this.#getSplice(pid, commit, path).then((splice) => {
-          // TODO once piece replies are handled directly, this can be enabled
-          if (last !== lastTransmitted) {
-            console.log('OVERRUN')
-          }
-
-          lastTransmitted = splice.oid
-          sink.push(splice)
-        })
+        buffer.push(this.#getSplice(pid, commit, path))
       }
     }
-    pipe().catch(sink.throw)
+    pipe().catch(buffer.throw)
+    // TODO once piece replies are tracked directly, this can be removed
+    const drain = async () => {
+      for await (const promise of buffer) {
+        sink.push(await promise)
+      }
+    }
+    drain().catch(sink.throw)
     return sink
   }
   async #getSplice(pid: PID, oid: string, path?: string) {

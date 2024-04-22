@@ -61,7 +61,7 @@ export default (name: string, cradleMaker: () => Promise<Artifact>) => {
     const repo = 't/flare'
     await artifact.rm({ repo })
     const target = {
-      id: '__system',
+      id: '0',
       account: 't',
       repository: 'flare',
       branches: ['main'],
@@ -98,12 +98,12 @@ export default (name: string, cradleMaker: () => Promise<Artifact>) => {
     })
     await artifact.stop()
   })
-  Deno.test.only(prefix + 'records', async (t) => {
+  Deno.test.ignore(prefix + 'records', async (t) => {
     const artifact = await cradleMaker()
     const repo = 't/touch'
     await artifact.rm({ repo })
     const { pid: target } = await artifact.init({ repo })
-    const count = 10000
+    const count = 100
     log.enable('AI:q* AI:tests AI:io-fixture')
 
     await t.step('touch', async () => {

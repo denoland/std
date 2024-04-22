@@ -134,4 +134,4 @@ export default class Server {
   }
 }
 
-Debug.enable('AI:runner-chat')
+Debug.enable('AI:completions AI:q*')

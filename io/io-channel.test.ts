@@ -7,7 +7,7 @@ import IOChannel from '@io/io-channel.ts'
 import { PROCTYPE } from '@/api/web-client.types.ts'
 import { expect } from '@utils'
 
-const pid = pidFromRepo('__system', 'system/system')
+const pid = pidFromRepo('0', 'system/system')
 Deno.test('io-channel', () => {
   const json = serialAccumulation()
   const io = IOChannel.readObject(json, pid)
@@ -34,7 +34,7 @@ const serialAccumulation: () => IoStruct = () => ({
   requests: {
     0: {
       target: {
-        id: '__system',
+        id: '0',
         account: 'system',
         repository: 'system',
         branches: ['main'],
@@ -45,7 +45,7 @@ const serialAccumulation: () => IoStruct = () => ({
       params: {
         request: {
           target: {
-            id: '__system',
+            id: '0',
             account: 'system',
             repository: 'system',
             branches: ['main'],
@@ -60,7 +60,7 @@ const serialAccumulation: () => IoStruct = () => ({
     },
     1: {
       target: {
-        id: '__system',
+        id: '0',
         account: 'system',
         repository: 'system',
         branches: ['main'],
@@ -71,7 +71,7 @@ const serialAccumulation: () => IoStruct = () => ({
       proctype: PROCTYPE.SERIAL,
       sequence: 1,
       source: {
-        id: '__system',
+        id: '0',
         account: 'system',
         repository: 'system',
         branches: ['main'],

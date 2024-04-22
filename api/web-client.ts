@@ -158,6 +158,8 @@ export class Shell implements Artifact {
     }
     return this.#engine.read(pid, path, after, signal)
   }
+  async endSession(): Promise<void> {
+  }
   #resolvePierces(io: IoStruct) {
     for (const [, value] of Object.entries(io.requests)) {
       if (isPierceRequest(value)) {

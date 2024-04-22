@@ -78,7 +78,7 @@ Deno.test('runner', async (t) => {
   db.stop()
 })
 
-Deno.test('artifact', async (t) => {
+Deno.test.only('engage-help', async (t) => {
   const repo = 'dreamcatcher-tech/HAL'
   const engine = await Engine.create()
   const system = await engine.initialize()
@@ -102,7 +102,7 @@ Deno.test('artifact', async (t) => {
   }
   splices()
 
-  await t.step('chat', async () => {
+  await t.step('say the word "hello"', async () => {
     const isolate = 'engage-help'
     const { engage } = await artifact.actions<Api>(isolate, pid)
     await engage({
@@ -114,5 +114,19 @@ Deno.test('artifact', async (t) => {
     assert(Array.isArray(latest))
     expect(latest[2].content.toLowerCase()).toBe('hello')
   })
+
+  await t.step('repeat your last', async () => {
+    const isolate = 'engage-help'
+    const { engage } = await artifact.actions<Api>(isolate, pid)
+    await engage({
+      help: 'help-fixture',
+      text: 'repeat your last, without calling any functions',
+    })
+
+    log('result', latest)
+    assert(Array.isArray(latest))
+    expect(latest[2].content.toLowerCase()).toBe('hello')
+  })
+
   await artifact.stop()
 })

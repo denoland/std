@@ -74,4 +74,4 @@ export const headKeyToPid = (headKey: string[]) => {
   return { id, account, repository, branches }
 }
 
-export const UNDELIVERED = ['__system', 'system', 'system', 'undelivered']
+export const UNDELIVERED = ['0', 'system', 'system', 'undelivered']

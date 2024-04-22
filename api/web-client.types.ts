@@ -280,11 +280,11 @@ export type CommitObject = {
 type ApiSchema = Record<string, JSONSchemaType<object>>
 type Head = { pid: PID; head: string }
 
-/** The client interface to artifact */
+/** The client session interface to artifact */
 export interface Artifact {
   pid: PID
   stop(): Promise<void> | void
-  actions(isolate: string, target: PID): Promise<DispatchFunctions>
+  actions<T = DispatchFunctions>(isolate: string, target: PID): Promise<T>
   read(
     pid: PID,
     path?: string,
@@ -305,6 +305,38 @@ export interface Artifact {
   pull(params: { pid: PID }): Promise<Head>
   push(params: { pid: PID }): Promise<void>
   rm(params: { repo: string }): Promise<boolean>
+  endSession(): Promise<void>
+  /** Remove the account if currently signed in */
+  deleteAccountUnrecoverably(): Promise<void>
+}
+/** The client home interface to Artifact, only able to create new sessions.
+Will handle the generation of signing keys for the session, and authentication
+with github.
+ */
+export interface ArtifactHome {
+  pid: PID
+  stop(): Promise<void> | void
+  /** If you have not signed in, you get a locked down session that allows
+   * limited interactions */
+  createSession(): Promise<Artifact>
+  /** Pings the execution context without going thru the transaction queue.
+   *
+   * Used primarily by web clients to establish base connectivity and get
+   * various diagnostics about the platform they are interacting with */
+  ping(params?: { data?: JsonValue; pid?: PID }): Promise<IsolateReturn>
+}
+export interface EngineInterface {
+  stop(): Promise<void> | void
+  pierce(pierce: PierceRequest): Promise<void>
+  read(
+    pid: PID,
+    path?: string,
+    after?: string,
+    signal?: AbortSignal,
+  ): AsyncIterable<Splice>
+  transcribe(audio: File): Promise<{ text: string }>
+  apiSchema(isolate: string): Promise<ApiSchema>
+  ping(data?: JsonValue): Promise<IsolateReturn>
 }
 export const isPID = (value: unknown): value is PID => {
   if (typeof value !== 'object' || value === null) {
@@ -353,21 +385,9 @@ export const pidFromRepo = (id: string, repo: string): PID => {
   freezePid(pid)
   return pid
 }
-export interface EngineInterface {
-  stop(): Promise<void> | void
-  pierce(pierce: PierceRequest): Promise<void>
-  read(
-    pid: PID,
-    path?: string,
-    after?: string,
-    signal?: AbortSignal,
-  ): AsyncIterable<Splice>
-  transcribe(audio: File): Promise<{ text: string }>
-  apiSchema(isolate: string): Promise<ApiSchema>
-  ping(data?: JsonValue): Promise<IsolateReturn>
-}
+
 export const SUPERUSER = {
-  id: '__system',
+  id: '0',
   account: 'system',
   repository: 'system',
   branches: ['main'],

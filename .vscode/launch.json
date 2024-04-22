@@ -28,22 +28,6 @@
     },
     {
       "request": "launch",
-      "name": "runner-chat",
-      "type": "node",
-      "cwd": "${workspaceFolder}",
-      "runtimeExecutable": "~/.deno/bin/deno",
-      "runtimeArgs": [
-        "task",
-        "watch",
-        "--inspect-wait",
-        "runners/runner-chat.test.ts"
-      ],
-      "attachSimplePort": 9229,
-      "internalConsoleOptions": "neverOpen",
-      "console": "integratedTerminal"
-    },
-    {
-      "request": "launch",
       "name": "FS",
       "type": "node",
       "cwd": "${workspaceFolder}",
