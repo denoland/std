@@ -3,7 +3,8 @@ import { crypto as stdCrypto } from "../crypto.ts";
 import { instantiateWithInstance } from "../_wasm/lib/deno_std_wasm_crypto.generated.mjs";
 import { encodeHex } from "../../encoding/hex.ts";
 
-const { memory } = instantiateWithInstance().instance.exports;
+const memory = instantiateWithInstance().instance.exports
+  .memory as WebAssembly.Memory;
 
 const heapBytesInitial = memory.buffer.byteLength;
 

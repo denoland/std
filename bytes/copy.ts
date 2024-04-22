@@ -12,6 +12,7 @@
  * @param dst Destination array to copy to.
  * @param offset Offset in the destination array to start copying to. Defaults
  * to 0.
+ * @returns Number of bytes copied.
  *
  * @example Basic usage
  * ```ts
