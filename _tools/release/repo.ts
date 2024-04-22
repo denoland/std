@@ -20,7 +20,7 @@ export class VersionFile {
     if (version === null) {
       throw new Error(`Could not find version in text: ${this.#fileText}`);
     } else {
-      return semver.parse(version[1])!;
+      return semver.parse(version[1]!)!;
     }
   }
 
