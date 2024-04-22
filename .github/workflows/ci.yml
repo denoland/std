@@ -27,8 +27,6 @@ jobs:
     steps:
       - name: Clone repository
         uses: actions/checkout@v4
-        with:
-          submodules: true
 
       - name: Set up Deno
         uses: denoland/setup-deno@v1
@@ -89,7 +87,6 @@ jobs:
       - name: Clone repository
         uses: actions/checkout@v4
         with:
-          submodules: false
           persist-credentials: false
 
       - name: Set up Deno
@@ -121,7 +118,6 @@ jobs:
         with:
           # required to check for changes
           fetch-depth: 2
-          submodules: false
           persist-credentials: false
 
       - name: Check for changes
@@ -162,8 +158,6 @@ jobs:
     steps:
       - name: Clone repository
         uses: actions/checkout@v4
-        with:
-          submodules: true
 
       - name: Set up Deno
         uses: denoland/setup-deno@v1
