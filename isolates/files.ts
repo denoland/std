@@ -26,6 +26,7 @@ export const api = {
         type: 'string',
         description: 'the absolute path to the directory you want to list',
       },
+      count: { type: 'boolean', description: 'count the number of files' },
     },
   },
   read: {
@@ -64,16 +65,20 @@ export const api = {
 }
 
 export const functions = {
+  // TODO this should be a full mirror of the IsolateApi functions
   write: (params: { path: string; contents?: string }, api: IsolateApi) => {
     const { path, contents = '' } = params
     log('add', path, contents)
     api.write(path, contents)
     return `added ${path} with length: ${contents.length}`
   },
-  ls: async (params: { path: string }, api: IsolateApi) => {
-    const { path } = params
+  ls: async (params: { path: string; count: number }, api: IsolateApi) => {
+    const { path, count } = params
     log('ls', path)
     const result = await api.ls(path)
+    if (count) {
+      return result.length
+    }
     return result
   },
   read: async (params: { path: string }, api: IsolateApi) => {

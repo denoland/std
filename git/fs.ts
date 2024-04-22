@@ -289,7 +289,7 @@ export default class FS {
     assert(blob instanceof Uint8Array, 'blob not Uint8Array: ' + typeof blob)
     return { blob, oid: blobOid }
   }
-  async ls(path: string) {
+  async ls(path: string = '.') {
     assertPath(path)
     // TODO make a streaming version of this for very large dirs
     // TODO handle changes in the directory
@@ -297,7 +297,8 @@ export default class FS {
     const oid = await this.#rootOid()
     const { fs } = this
     const cache = FS.#getGitCache(this.#pid)
-    const { tree } = await git.readTree({ fs, dir, oid, filepath: path, cache })
+    const filepath = path === '.' ? undefined : path
+    const { tree } = await git.readTree({ fs, dir, oid, filepath, cache })
     return tree.map((entry) => entry.path)
   }
   async #rootOid() {

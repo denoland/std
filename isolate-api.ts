@@ -132,7 +132,7 @@ export default class IsolateApi<T extends object = Default> {
     log('writeJSON', path)
     this.#fs.writeJSON(path, json)
   }
-  write(path: string, content: string | Uint8Array) {
+  write(path: string, content: string | Uint8Array = '') {
     assert(this.#accumulator.isActive, 'Activity is denied')
     log('write', path)
     this.#fs.write(path, content)

@@ -98,24 +98,26 @@ export default (name: string, cradleMaker: () => Promise<Artifact>) => {
     })
     await artifact.stop()
   })
-  Deno.test.ignore(prefix + 'records', async (t) => {
+  Deno.test.only(prefix + 'records', async (t) => {
     const artifact = await cradleMaker()
     const repo = 't/touch'
     await artifact.rm({ repo })
     const { pid: target } = await artifact.init({ repo })
-    const count = 10
+    const count = 10000
+    log.enable('AI:q* AI:tests AI:io-fixture')
+
     await t.step('touch', async () => {
       const { touch } = await artifact.actions(ioFixture, target)
       const prefix = 'cust-'
       log('start')
-      await touch({ count, prefix })
+      await touch({ count, prefix, suffix: '.txt' })
       log('stop after:', count)
     })
     await t.step('ls', async () => {
       const { ls } = await artifact.actions('files', target)
-      const result = await ls()
-      expect(result).toHaveLength(count)
+      const result = await ls({ count: true })
       log('result', result)
+      expect(result).toBe(count + 1)
     })
 
     await artifact.stop()

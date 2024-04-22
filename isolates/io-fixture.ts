@@ -79,6 +79,17 @@ export const api = {
     properties: {},
     additionalProperties: false,
   },
+  touch: {
+    description: 'touch a file in the root directory',
+    type: 'object',
+    properties: {
+      count: { type: 'integer', minimum: 1 },
+      prefix: { type: 'string' },
+      suffix: { type: 'string' },
+    },
+    required: ['count'],
+    additionalProperties: false,
+  },
 }
 export type Api = {
   fileAccumulation: (
@@ -171,5 +182,16 @@ export const functions = {
   local: () => {
     log('local')
     return 'local reply'
+  },
+  touch: (
+    params: { count: number; prefix: string; suffix: string },
+    api: IsolateApi,
+  ) => {
+    const { count, prefix = '', suffix = '' } = params
+    log('touch', params)
+    for (let i = 0; i < count; i++) {
+      const path = `${prefix}${i}${suffix}`
+      api.write(path)
+    }
   },
 }
