@@ -60,9 +60,10 @@ jobs:
 
       - name: Upload coverage
         uses: codecov/codecov-action@v4
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
         with:
           name: ${{ matrix.os }}-${{ matrix.deno }}
-          files: cov.lcov
 
       - name: Release if version change
         if: |
