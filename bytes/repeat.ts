@@ -10,7 +10,6 @@ import { copy } from "./copy.ts";
  * @param count Number of times to repeat the source array.
  * @returns A new byte slice composed of `count` repetitions of the `source`
  * array.
- * @throws {RangeError} If `count` is a negative or not an integer.
  *
  * @example Basic usage
  * ```ts
