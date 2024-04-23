@@ -84,7 +84,7 @@ Deno.test("expandTarArchiveCheckingBodiesByteStream", async function () {
       const reader = item.readable.getReader({ mode: "byob" });
       while (true) {
         const { done, value } = await reader.read(
-          new Uint8Array(Math.floor(Math.random() * 1024)),
+          new Uint8Array(Math.ceil(Math.random() * 1024)),
         );
         if (done) {
           break;

@@ -48,7 +48,7 @@ Deno.test("createTarArchiveByteStream", async function () {
   let size = 0;
   while (true) {
     const { done, value } = await reader.read(
-      new Uint8Array(Math.floor(Math.random() * 1024)),
+      new Uint8Array(Math.ceil(Math.random() * 1024)),
     );
     if (done) {
       break;
