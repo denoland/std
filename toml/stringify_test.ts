@@ -1,6 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-import { assertEquals, assertThrows } from "../assert/mod.ts";
-import { stringify } from "./stringify.ts";
+import { assertEquals, assertThrows } from "../assert/mod.js";
+import { stringify } from "./stringify.js";
 
 // https://github.com/denoland/deno_std/issues/1067#issuecomment-907740319
 Deno.test({
