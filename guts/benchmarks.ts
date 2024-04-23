@@ -14,7 +14,6 @@ export default (name: string, cradleMaker: () => Promise<ArtifactSession>) => {
     const { local } = await artifact.actions(ioFixture, target)
 
     await t.step('serial', async () => {
-      log.enable('AI:qex*')
       const promises = []
       const count = 20
       for (let i = 0; i < count; i++) {
@@ -40,8 +39,6 @@ export default (name: string, cradleMaker: () => Promise<ArtifactSession>) => {
     const { pid: target } = await artifact.init({ repo })
     const { local } = await artifact.actions(ioFixture, target)
     await t.step('parallel', async () => {
-      log.enable('AI:q*')
-
       const promises = []
       const count = 20
       for (let i = 0; i < count; i++) {
@@ -70,7 +67,6 @@ export default (name: string, cradleMaker: () => Promise<ArtifactSession>) => {
     expect(target).toEqual(pid)
     const { parallel, squared } = await artifact.actions(ioFixture, target)
 
-    log.enable('AI:q* AI:tests')
     await t.step('flare', async () => {
       const count = 50
 
@@ -104,7 +100,6 @@ export default (name: string, cradleMaker: () => Promise<ArtifactSession>) => {
     await artifact.rm({ repo })
     const { pid: target } = await artifact.init({ repo })
     const count = 100
-    log.enable('AI:q* AI:tests AI:io-fixture')
 
     await t.step('touch', async () => {
       const { touch } = await artifact.actions(ioFixture, target)

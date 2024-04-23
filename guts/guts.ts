@@ -35,7 +35,6 @@ export default (name: string, cradleMaker: () => Promise<ArtifactSession>) => {
     const artifact = await cradleMaker()
 
     await t.step('clone', async () => {
-      log.enable('AI:qex*')
       await artifact.rm({ repo: 'dreamcatcher-tech/HAL' })
       const clone = await artifact.clone({ repo: 'dreamcatcher-tech/HAL' })
       console.log('clone result', clone)
