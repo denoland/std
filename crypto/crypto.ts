@@ -137,17 +137,16 @@ const webCrypto = ((crypto) => ({
   },
 }))(globalThis.crypto);
 
-const toUint8Array = (data: BufferSource | unknown) => {
-  let bytes: Uint8Array | undefined;
+function toUint8Array(data: unknown): Uint8Array | undefined {
   if (data instanceof Uint8Array) {
-    bytes = data;
+    return data;
   } else if (ArrayBuffer.isView(data)) {
-    bytes = new Uint8Array(data.buffer, data.byteOffset, data.byteLength);
+    return new Uint8Array(data.buffer, data.byteOffset, data.byteLength);
   } else if (data instanceof ArrayBuffer) {
-    bytes = new Uint8Array(data);
+    return new Uint8Array(data);
   }
-  return bytes;
-};
+  return undefined;
+}
 
 /** Extensions to the web standard `SubtleCrypto` interface. */
 export interface StdSubtleCrypto extends SubtleCrypto {
@@ -320,17 +319,7 @@ function normalizeAlgorithm(algorithm: DigestAlgorithm) {
 }
 
 function isBufferSource(obj: unknown): obj is BufferSource {
-  return obj instanceof ArrayBuffer ||
-    obj instanceof DataView ||
-    obj instanceof Int8Array ||
-    obj instanceof Uint8Array ||
-    obj instanceof Uint8ClampedArray ||
-    obj instanceof Int16Array ||
-    obj instanceof Uint16Array ||
-    obj instanceof Int32Array ||
-    obj instanceof Uint32Array ||
-    obj instanceof Float32Array ||
-    obj instanceof Float64Array;
+  return obj instanceof ArrayBuffer || ArrayBuffer.isView(obj);
 }
 
 function isIterable<T>(obj: unknown): obj is Iterable<T> {
