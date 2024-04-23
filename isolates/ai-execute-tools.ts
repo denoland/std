@@ -42,6 +42,7 @@ export const executeTools = async (help: Help, api: IsolateApi) => {
 
     try {
       const parameters = JSON.parse(args)
+      log('executing tool call at commit:', api.commit, name, parameters)
       const result = await actions[name](parameters)
       log('tool call result:', result)
       if (result === '@@ARTIFACT_RELAY@@') {

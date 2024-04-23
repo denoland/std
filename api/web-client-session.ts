@@ -30,29 +30,32 @@ type PiercePromise = {
 export class Session implements ArtifactSession {
   readonly #engine: EngineInterface
   readonly #pid: PID
+  readonly #home: Home
+
   readonly #pierces = new Map<string, PiercePromise>()
   readonly #abort = new AbortController()
   #repo: Promise<Repo> | undefined
-  private constructor(engine: EngineInterface, pid: PID) {
+  private constructor(engine: EngineInterface, pid: PID, home: Home) {
     this.#engine = engine
     this.#pid = pid
+    this.#home = home
     this.#watchPierces()
   }
-  static create(engine: EngineInterface, pid: PID) {
+  static create(engine: EngineInterface, pid: PID, home: Home) {
     freezePid(pid)
     if (pid.branches.length !== 2) {
       const branches = print(pid)
       throw new Error('Session chain not direct child of base: ' + branches)
     }
-    return new Session(engine, pid)
+    return new Session(engine, pid, home)
   }
-  static createHome(engine: EngineInterface, pid: PID) {
+  static createHome(engine: EngineInterface, pid: PID, home: Home) {
     freezePid(pid)
     if (pid.branches.length !== 1) {
       const branches = print(pid)
       throw new Error('Home session must be base: ' + branches)
     }
-    return new Session(engine, pid)
+    return new Session(engine, pid, home)
   }
   get pid() {
     return this.#pid
@@ -68,10 +71,7 @@ export class Session implements ArtifactSession {
     return this.#engine.stop()
   }
   newSession(): Promise<ArtifactSession> {
-    const parent = { ...this.#pid, branches: [...this.#pid.branches] }
-    parent.branches.pop()
-    const home = Home.create(this.#engine, parent)
-    return home.createSession()
+    return this.#home.createSession()
   }
   async #watchPierces() {
     let lastSplice

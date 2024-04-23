@@ -30,7 +30,7 @@ const load = async (commands: string[] = [], api: IsolateApi) => {
       const schemas = await api.isolateApiSchema('engage-help')
       const { engage } = await api.actions('engage-help')
       action = ({ text }: { text: string }) => {
-        log('engage:', name, text)
+        log('engage:', name, text, api.commit)
         return engage({ help: name, text }, { branch: true })
       }
       tool = toTool(name, help, schemas.engage)

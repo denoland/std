@@ -4,7 +4,7 @@ import { assert } from '@std/assert'
 
 export default (name: string, cradleMaker: () => Promise<ArtifactSession>) => {
   const prefix = name + ': '
-  Deno.test.only(prefix + 'session', async (t) => {
+  Deno.test(prefix + 'session', async (t) => {
     const artifact = await cradleMaker()
 
     log('pid', artifact.pid)

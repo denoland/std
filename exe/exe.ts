@@ -96,17 +96,17 @@ export default class Executor {
     execution.commits.push(fs.oid)
     execution.accumulator.absorb(ioAccumulator)
 
-    const racecar = Symbol('🏎️')
-    const accumulatorPromise = execution.accumulator.activate(racecar)
+    const trigger = Symbol('🏎️')
+    const accumulatorPromise = execution.accumulator.activate(trigger)
     const outcome = await Promise.race([execution.function, accumulatorPromise])
     execution.accumulator.deactivate()
 
     let result: ExeResult
     const sequence = io.getSequence(req)
-    if (outcome === racecar) {
-      log('accumulator triggered first')
+    if (outcome === trigger) {
       const { accumulations } = execution.accumulator
       assert(accumulations.length > 0, 'no accumulations')
+      log('accumulator triggered first', accumulations)
       const requests = accumulations.map((a) => a.request)
       result = {
         fs: execution.accumulator.fs,

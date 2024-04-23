@@ -129,5 +129,6 @@ export default class Accumulator {
         this.#tickFs()
       }
     }
+    this.#new = []
   }
 }

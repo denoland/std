@@ -2,7 +2,7 @@ import { assert, Debug } from '@utils'
 import merge from 'lodash.merge'
 import OpenAI from 'openai'
 import { load } from '@std/dotenv'
-import { Help, IsolateApi } from '@/constants.ts'
+import { Help, IsolateApi, print } from '@/constants.ts'
 import { loadTools } from './ai-load-tools.ts'
 type MessageParam = OpenAI.ChatCompletionMessageParam
 const base = 'AI:completions'
@@ -52,7 +52,7 @@ export const functions = {
     messages.push(assistant)
     api.writeJSON(SESSION_PATH, messages)
 
-    log('streamCall started')
+    log('streamCall started', print(api.pid))
     // TODO move this to an isolate call that runs in a branch
     const streamCall = await ai.chat.completions.create(args)
     log('streamCall placed')
@@ -92,6 +92,6 @@ export const functions = {
       }
       api.writeJSON(SESSION_PATH, messages)
     }
-    log('streamCall complete')
+    log('streamCall complete', assistant?.tool_calls || assistant?.content)
   },
 }

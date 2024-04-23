@@ -88,8 +88,13 @@ export default class IsolateApi<T extends object = Default> {
           functionName,
           params: params || {},
           proctype,
-          branchPrefix: options.prefix,
-          branchName: options.branchName,
+        }
+        assert(!options.prefix || !options.branchName, 'failed mutex')
+        if (options.prefix) {
+          unsequencedRequest.branchPrefix = options.prefix
+        }
+        if (options.branchName) {
+          unsequencedRequest.branchName = options.branchName
         }
         return this.action(unsequencedRequest)
       }

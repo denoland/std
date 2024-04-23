@@ -19,8 +19,7 @@ export class Home implements ArtifactHome {
   private constructor(engine: EngineInterface, pid: PID) {
     this.#engine = engine
     this.#pid = pid
-    console.log('home chain', pid)
-    this.#base = Session.createHome(engine, pid)
+    this.#base = Session.createHome(engine, pid, this)
   }
   static create(engine: EngineInterface, pid: PID) {
     if (pid.branches.length > 1) {
@@ -35,10 +34,10 @@ export class Home implements ArtifactHome {
     return this.#base.stop()
   }
   async createSession() {
-    const actions = await this.#base.actions<Api>('session', this.#pid)
     // TODO add some keys to sign with
+    const actions = await this.#base.actions<Api>('session', this.#pid)
     const pid = await actions.create()
-    return Session.create(this.#engine, pid)
+    return Session.create(this.#engine, pid, this)
   }
   ping(params?: { data?: JsonValue }) {
     return this.#engine.ping(params?.data)
