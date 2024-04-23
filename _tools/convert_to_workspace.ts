@@ -252,10 +252,6 @@ function fixPackagePath(path: string) {
 // Generate `deno.json` file.
 const denoJson = JSON.parse(await Deno.readTextFile("deno.json"));
 denoJson.workspaces = orderedPackages.map((pkg) => `./${pkg}`);
-for (const pkg of packages) {
-  const fixedPkg = fixPackageName(pkg);
-  denoJson.imports[`@std/${fixedPkg}`] = `jsr:@std/${fixedPkg}@^${VERSION}`;
-}
 await Deno.writeTextFile(
   "deno.json",
   JSON.stringify(denoJson, null, 2) + "\n",
