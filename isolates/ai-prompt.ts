@@ -57,7 +57,7 @@ export const prepare = async (help: Help, text: string, api: IsolateApi) => {
   if (await api.exists(SESSION_PATH)) {
     log('session exists')
     messages = await api.readJSON<MessageParam[]>(SESSION_PATH)
-    existing = messages
+    existing = [...messages]
     assert(Array.isArray(messages), 'messages must be an array')
   }
 

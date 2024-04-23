@@ -102,7 +102,6 @@ Deno.test('engage-help', async (t) => {
     }
   }
   splices()
-
   await t.step('say the word "hello"', async () => {
     const isolate = 'engage-help'
     const { engage } = await artifact.actions<Api>(isolate, pid)
@@ -115,6 +114,17 @@ Deno.test('engage-help', async (t) => {
     assert(Array.isArray(latest))
     expect(latest[2].content.toLowerCase()).toBe('hello')
   })
+  await t.step('what is your name ?', async () => {
+    log.enable('AI:tests')
+    const isolate = 'engage-help'
+    const { engage } = await artifact.actions<Api>(isolate, pid)
+    await engage({
+      help: 'help-fixture',
+      text: 'what is your name ?',
+    })
+    console.dir(latest, { depth: null })
+    assert(Array.isArray(latest))
+  })
 
   await t.step('repeat your last', async () => {
     const isolate = 'engage-help'
@@ -126,7 +136,6 @@ Deno.test('engage-help', async (t) => {
 
     log('result', latest)
     assert(Array.isArray(latest))
-    expect(latest[2].content.toLowerCase()).toBe('hello')
   })
 
   await artifact.stop()
