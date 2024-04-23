@@ -114,6 +114,15 @@ import {
 
 export { DIGEST_ALGORITHM_NAMES, type DigestAlgorithmName };
 
+/** Digest algorithms supported by WebCrypto. */
+const WEB_CRYPTO_DIGEST_ALGORITHM_NAMES = [
+  "SHA-384",
+  "SHA-256",
+  "SHA-512",
+  // insecure (length-extendable and collidable):
+  "SHA-1",
+] as const;
+
 /**
  * A copy of the global WebCrypto interface, with methods bound so they're
  * safe to re-export.
@@ -194,6 +203,13 @@ const stdCrypto: StdCrypto = ((x) => x)({
       data: BufferSource | AsyncIterable<BufferSource> | Iterable<BufferSource>,
     ): Promise<ArrayBuffer> {
       const { name, length } = normalizeAlgorithm(algorithm);
+      if (
+        (WEB_CRYPTO_DIGEST_ALGORITHM_NAMES as readonly string[]).includes(
+          name,
+        ) && isBufferSource(data)
+      ) {
+        return await webCrypto.subtle.digest(algorithm, data);
+      }
       if (DIGEST_ALGORITHM_NAMES.includes(name as DigestAlgorithmName)) {
         if (isBufferSource(data) || isIterable(data)) {
           // Otherwise, we use our bundled Wasm implementation via digestSync
@@ -219,7 +235,11 @@ const stdCrypto: StdCrypto = ((x) => x)({
           "data must be a BufferSource or [Async]Iterable<BufferSource>",
         );
       }
-      return await webCrypto.subtle.digest(algorithm, data as BufferSource);
+      // Emulates `crypto.subtle.digest()` behavior for unsupported algorithms.
+      throw new DOMException(
+        "Unrecognized algorithm name",
+        "NotSupportedError",
+      );
     },
 
     digestSync(
