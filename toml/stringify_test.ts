@@ -13,8 +13,8 @@ Deno.test({
 
     const actual = stringify(src, { keyAlignment: true });
     const expected = `a            = "a = 1"
-  helloooooooo = 1
-  `;
+helloooooooo = 1
+`;
     assertEquals(actual, expected);
   },
 });
@@ -31,11 +31,11 @@ Deno.test({
     };
     const actual = stringify(src, { keyAlignment: true });
     const expected = `a     = 1
-  aa    = 1
-  aaa   = 1
-  aaaa  = 1
-  aaaaa = 1
-  `;
+aa    = 1
+aaa   = 1
+aaaa  = 1
+aaaaa = 1
+`;
     assertEquals(actual, expected);
   },
 });
@@ -49,10 +49,10 @@ Deno.test({
     };
     const actual = stringify(src);
     const expected = `"" = "a"
-  
-  [b]
-  "" = "c"
-  `;
+
+[b]
+"" = "c"
+`;
     assertEquals(actual, expected);
   },
 });
@@ -66,10 +66,10 @@ Deno.test({
     };
     const actual = stringify(src);
     const expected = `
-  [a]
-  
-  [b.c]
-  `;
+[a]
+
+[b.c]
+`;
     assertEquals(actual, expected);
   },
 });
