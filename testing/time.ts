@@ -84,7 +84,7 @@ function fakeSetTimeout(
   return setTimer(callback, delay, args, false);
 }
 
-function fakeClearTimeout(id?: number) {
+function fakeClearTimeout(id?: unknown) {
   if (!time) throw new TimeError("no fake time");
   if (typeof id === "number" && dueNodes.has(id)) {
     dueNodes.delete(id);
@@ -102,7 +102,7 @@ function fakeSetInterval(
   return setTimer(callback, delay, args, true);
 }
 
-function fakeClearInterval(id?: number) {
+function fakeClearInterval(id?: unknown) {
   if (!time) throw new TimeError("no fake time");
   if (typeof id === "number" && dueNodes.has(id)) {
     dueNodes.delete(id);
