@@ -2,6 +2,7 @@ import * as keys from './keys.ts'
 import { hasPoolables } from '@/db.ts'
 import {
   PID,
+  PierceRequest,
   Poolable,
   QueueMessage,
   QueueMessageType,
@@ -107,6 +108,16 @@ export class Atomic {
   enqueueBranch(parentCommit: string, parentPid: PID, sequence: number) {
     const type = QueueMessageType.BRANCH
     return this.#enqueue({ type, parentCommit, parentPid, sequence })
+  }
+  enqueuePierce(pierce: PierceRequest) {
+    assert(this.#atomic, 'Atomic not set')
+    const key = keys.getPoolKey(pierce)
+    const empty = { key, versionstamp: null }
+    this.#atomic = this.#atomic.set(key, pierce).check(empty)
+    return this.#enqueuePool(pierce.target).#increasePool(
+      pierce.target,
+      BigInt(1),
+    )
   }
   #enqueuePool(pid: PID) {
     const type = QueueMessageType.POOL

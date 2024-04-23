@@ -22,7 +22,6 @@ export const getPoolCounterKey = (pid: PID) => {
 }
 export const getPoolKey = (poolable: Poolable) => {
   const uniqueId = getId(poolable)
-  assert(uniqueId !== POOL_COUNTER, 'pool counter namespace clash')
   return [...getPoolKeyPrefix(poolable.target), uniqueId]
 }
 export const getRepoKey = (pid: PID) => {

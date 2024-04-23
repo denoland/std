@@ -78,18 +78,7 @@ export const functions = {
     // TODO add ulid in here, but make it be repeatable
     // TODO check signatures and permissions here
     // not necessary to be atomic, but uses functions on the atomic class
-    let result = false
-    let count = 0
-    const limit = 100
-    while (!result && count++ < limit) {
-      result = await db.atomic().addToPool(pierce).commit()
-      // TODO hard fail if pool item exists
-      // TODO always enqueue an action, rather than the smart pooling that
-      // happens internally
-    }
-    if (!result) {
-      throw new Error(`pierce failed after ${count} attempts`)
-    }
+    await db.atomic().enqueuePierce(pierce).commit()
     // TODO return back the head commit at the point of pooling
   },
 }
