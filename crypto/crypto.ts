@@ -114,15 +114,6 @@ import {
 
 export { DIGEST_ALGORITHM_NAMES, type DigestAlgorithmName };
 
-/** Digest algorithms supported by WebCrypto. */
-const WEB_CRYPTO_DIGEST_ALGORITHM_NAMES = [
-  "SHA-384",
-  "SHA-256",
-  "SHA-512",
-  // insecure (length-extendable and collidable):
-  "SHA-1",
-] as const;
-
 /**
  * A copy of the global WebCrypto interface, with methods bound so they're
  * safe to re-export.
@@ -146,7 +137,7 @@ const webCrypto = ((crypto) => ({
   },
 }))(globalThis.crypto);
 
-const bufferSourceBytes = (data: BufferSource | unknown) => {
+const toUint8Array = (data: BufferSource | unknown) => {
   let bytes: Uint8Array | undefined;
   if (data instanceof Uint8Array) {
     bytes = data;
@@ -204,61 +195,32 @@ const stdCrypto: StdCrypto = ((x) => x)({
       data: BufferSource | AsyncIterable<BufferSource> | Iterable<BufferSource>,
     ): Promise<ArrayBuffer> {
       const { name, length } = normalizeAlgorithm(algorithm);
-
-      assertValidDigestLength(length);
-
-      const bytes = bufferSourceBytes(data);
-
-      // We delegate to WebCrypto whenever possible,
-      if (
-        // if the algorithm is supported by the WebCrypto standard,
-        (WEB_CRYPTO_DIGEST_ALGORITHM_NAMES as readonly string[]).includes(
-          name,
-        ) &&
-        // and the data is a single buffer,
-        bytes
-      ) {
-        return webCrypto.subtle.digest(algorithm, bytes);
-      } else if (DIGEST_ALGORITHM_NAMES.includes(name as DigestAlgorithmName)) {
-        if (bytes) {
+      if (DIGEST_ALGORITHM_NAMES.includes(name as DigestAlgorithmName)) {
+        if (isBufferSource(data) || isIterable(data)) {
           // Otherwise, we use our bundled Wasm implementation via digestSync
           // if it supports the algorithm.
-          return stdCrypto.subtle.digestSync(algorithm, bytes);
-        } else if ((data as Iterable<BufferSource>)[Symbol.iterator]) {
-          return stdCrypto.subtle.digestSync(
-            algorithm,
-            data as Iterable<BufferSource>,
-          );
-        } else if (
-          (data as AsyncIterable<BufferSource>)[Symbol.asyncIterator]
-        ) {
+          return stdCrypto.subtle.digestSync(algorithm, data);
+        }
+
+        if (isAsyncIterable(data)) {
+          assertValidDigestLength(length);
           const wasmCrypto = instantiateWasm();
           const context = new wasmCrypto.DigestContext(name);
           for await (const chunk of data as AsyncIterable<BufferSource>) {
-            const chunkBytes = bufferSourceBytes(chunk);
+            const chunkBytes = toUint8Array(chunk);
             if (!chunkBytes) {
               throw new TypeError("data contained chunk of the wrong type");
             }
             context.update(chunkBytes);
           }
           return context.digestAndDrop(length).buffer;
-        } else {
-          throw new TypeError(
-            "data must be a BufferSource or [Async]Iterable<BufferSource>",
-          );
         }
-      } else if (webCrypto.subtle?.digest) {
-        // (TypeScript type definitions prohibit this case.) If they're trying
-        // to call an algorithm we don't recognize, pass it along to WebCrypto
-        // in case it's a non-standard algorithm supported by the the runtime
-        // they're using.
-        return webCrypto.subtle.digest(
-          algorithm,
-          (data as unknown) as Uint8Array,
+
+        throw new TypeError(
+          "data must be a BufferSource or [Async]Iterable<BufferSource>",
         );
-      } else {
-        throw new TypeError(`unsupported digest algorithm: ${algorithm}`);
       }
+      return await webCrypto.subtle.digest(algorithm, data as BufferSource);
     },
 
     digestSync(
@@ -266,30 +228,27 @@ const stdCrypto: StdCrypto = ((x) => x)({
       data: BufferSource | Iterable<BufferSource>,
     ): ArrayBuffer {
       const { name, length } = normalizeAlgorithm(algorithm);
-
       assertValidDigestLength(length);
 
-      const bytes = bufferSourceBytes(data);
-
       const wasmCrypto = instantiateWasm();
-      if (bytes) {
-        return wasmCrypto.digest(name, bytes, length)
-          .buffer;
-      } else if ((data as Iterable<BufferSource>)[Symbol.iterator]) {
+      if (isBufferSource(data)) {
+        const bytes = toUint8Array(data)!;
+        return wasmCrypto.digest(name, bytes, length).buffer;
+      }
+      if (isIterable(data)) {
         const context = new wasmCrypto.DigestContext(name);
-        for (const chunk of data as Iterable<BufferSource>) {
-          const chunkBytes = bufferSourceBytes(chunk);
+        for (const chunk of data) {
+          const chunkBytes = toUint8Array(chunk);
           if (!chunkBytes) {
             throw new TypeError("data contained chunk of the wrong type");
           }
           context.update(chunkBytes);
         }
         return context.digestAndDrop(length).buffer;
-      } else {
-        throw new TypeError(
-          "data must be a BufferSource or Iterable<BufferSource>",
-        );
       }
+      throw new TypeError(
+        "data must be a BufferSource or Iterable<BufferSource>",
+      );
     },
   },
 });
@@ -358,6 +317,28 @@ function normalizeAlgorithm(algorithm: DigestAlgorithm) {
       ...algorithm,
       name: algorithm.name.toUpperCase(),
     }) as DigestAlgorithmObject;
+}
+
+function isBufferSource(obj: unknown): obj is BufferSource {
+  return obj instanceof ArrayBuffer ||
+    obj instanceof DataView ||
+    obj instanceof Int8Array ||
+    obj instanceof Uint8Array ||
+    obj instanceof Uint8ClampedArray ||
+    obj instanceof Int16Array ||
+    obj instanceof Uint16Array ||
+    obj instanceof Int32Array ||
+    obj instanceof Uint32Array ||
+    obj instanceof Float32Array ||
+    obj instanceof Float64Array;
+}
+
+function isIterable<T>(obj: unknown): obj is Iterable<T> {
+  return typeof (obj as Iterable<T>)[Symbol.iterator] === "function";
+}
+
+function isAsyncIterable<T>(obj: unknown): obj is AsyncIterable<T> {
+  return typeof (obj as AsyncIterable<T>)[Symbol.asyncIterator] === "function";
 }
 
 export { stdCrypto as crypto };
