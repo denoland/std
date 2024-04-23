@@ -9,7 +9,7 @@ export default (name: string, cradleMaker: () => Promise<ArtifactSession>) => {
     await artifact.rm({ repo })
 
     const { pid } = await artifact.init({ repo })
-    const sessionPid = { ...pid, branches: [...pid.branches, '1'] }
+    const sessionPid = { ...pid, branches: [...pid.branches, 'session-1'] }
     const { create } = await artifact.actions('session', pid)
     await t.step('create', async () => {
       const session = await create()
@@ -21,7 +21,7 @@ export default (name: string, cradleMaker: () => Promise<ArtifactSession>) => {
     })
     await t.step('second session', async () => {
       const session = await create()
-      const session2Pid = { ...pid, branches: [...pid.branches, '3'] }
+      const session2Pid = { ...pid, branches: [...pid.branches, 'session-3'] }
       expect(session).toEqual(session2Pid)
 
       const { local } = await artifact.actions('io-fixture', sessionPid)

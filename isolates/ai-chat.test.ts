@@ -1,6 +1,5 @@
 import merge from 'npm:lodash.merge'
 import { Engine } from '../engine.ts'
-import { Session } from '../api/web-client-session.ts'
 import { expect, log } from '@utils'
 import IsolateApi from '../isolate-api.ts'
 import { Help, pidFromRepo, RUNNERS } from '../constants.ts'
@@ -12,6 +11,7 @@ import Accumulator from '@/exe/accumulator.ts'
 import { Api } from '@/isolates/engage-help.ts'
 import { assert } from '@std/assert'
 import OpenAI from 'openai'
+import { Home } from '@/api/web-client-home.ts'
 type Messages = OpenAI.ChatCompletionMessageParam
 
 Deno.test('runner', async (t) => {
@@ -81,8 +81,9 @@ Deno.test('runner', async (t) => {
 Deno.test('engage-help', async (t) => {
   const repo = 'dreamcatcher-tech/HAL'
   const engine = await Engine.create()
-  const system = await engine.initialize()
-  const artifact = Session.create(engine, system.pid)
+  await engine.initialize()
+  const home = Home.create(engine, engine.pid)
+  const artifact = await home.createSession()
 
   const { pid } = await artifact.clone({ repo })
 

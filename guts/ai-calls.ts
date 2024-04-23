@@ -5,7 +5,7 @@ import { Api } from '@/isolates/engage-help.ts'
 
 export default (name: string, cradleMaker: () => Promise<ArtifactSession>) => {
   const prefix = name + ': '
-  Deno.test.only(prefix + 'ai', async (t) => {
+  Deno.test(prefix + 'ai', async (t) => {
     const artifact = await cradleMaker()
     const repo = 'dreamcatcher-tech/HAL'
     await artifact.rm({ repo })

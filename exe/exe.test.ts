@@ -6,8 +6,8 @@ import { assert, expect, log } from '@utils'
 import DB from '@/db.ts'
 import { UnsequencedRequest } from '@/constants.ts'
 import { Engine } from '@/engine.ts'
-import { Session } from '../api/web-client-session.ts'
 import { Api } from '@/isolates/io-fixture.ts'
+import { Home } from '@/api/web-client-home.ts'
 
 const pid = { id: 't', account: 'exe', repository: 'test', branches: ['main'] }
 const source = { ...pid, account: 'higher' }
@@ -163,11 +163,9 @@ Deno.test('accumulation spanning multiple commits', async (t) => {
       if (!withFunctionCache) {
         engine.context.exe?.disableFunctionCache()
       }
-      log.enable('AI:qex* AI:tests AI:io-fixture AI:isolateApi AI:exe')
-      const system = await engine.initialize()
-      log('system', system)
-      const shell = Session.create(engine, system.pid)
-      const { pid } = system
+      const { pid } = await engine.initialize()
+      const home = Home.create(engine, pid)
+      const shell = await home.createSession()
 
       const { fileAccumulation } = await shell.actions<Api>('io-fixture', pid)
       await fileAccumulation({ path: 'test.txt', content: 'hello', count: 3 })
