@@ -1,6 +1,6 @@
 # Deno Standard Library
 
-[![JSR Score](https://jsr.io/badges/@std)](https://jsr.io/@std)
+[![JSR @std](https://jsr.io/badges/@std)](https://jsr.io/@std)
 [![codecov](https://codecov.io/gh/denoland/deno_std/branch/main/graph/badge.svg?token=w6s3ODtULz)](https://codecov.io/gh/denoland/deno_std)
 [![ci](https://github.com/denoland/deno_std/actions/workflows/ci.yml/badge.svg)](https://github.com/denoland/deno_std/actions/workflows/ci.yml)
 
