@@ -115,14 +115,12 @@ Deno.test('engage-help', async (t) => {
     expect(latest[2].content.toLowerCase()).toBe('hello')
   })
   await t.step('what is your name ?', async () => {
-    log.enable('AI:tests')
     const isolate = 'engage-help'
     const { engage } = await artifact.actions<Api>(isolate, pid)
     await engage({
       help: 'help-fixture',
       text: 'what is your name ?',
     })
-    console.dir(latest, { depth: null })
     assert(Array.isArray(latest))
   })
 

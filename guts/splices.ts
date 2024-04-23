@@ -11,7 +11,7 @@ export default (name: string, cradleMaker: () => Promise<ArtifactSession>) => {
     const { write } = await artifact.actions('io-fixture', pid)
 
     await t.step('read', async () => {
-      write({ path: 'test', content: 'hello' })
+      const p = write({ path: 'test', content: 'hello' })
       let first
       for await (const splice of artifact.read(pid, 'test')) {
         log('splice', splice)
@@ -24,6 +24,7 @@ export default (name: string, cradleMaker: () => Promise<ArtifactSession>) => {
       expect(first.pid).toEqual(pid)
       expect(first.changes.test.patch).toEqual('hello')
       expect(Object.keys(first.changes)).toHaveLength(1)
+      await p
     })
     // do a writeSlow test to see how broadcast channel behaves
     // and to test the catchup of the final commit
@@ -50,7 +51,7 @@ export default (name: string, cradleMaker: () => Promise<ArtifactSession>) => {
     logger()
 
     await t.step('read', async () => {
-      write({ path: 'test', content: 'hello' })
+      const p = write({ path: 'test', content: 'hello' })
       let first
       for await (const splice of artifact.read(pid, 'test')) {
         if (splice.changes['test']) {
@@ -61,6 +62,7 @@ export default (name: string, cradleMaker: () => Promise<ArtifactSession>) => {
       assert(first)
       expect(first.pid).toEqual(pid)
       expect(Object.keys(first.changes)).toHaveLength(1)
+      await p
     })
     await artifact.stop()
   })
@@ -90,7 +92,7 @@ export default (name: string, cradleMaker: () => Promise<ArtifactSession>) => {
     await t.step('write', async () => {
       const { write } = await artifact.actions('io-fixture', pid)
       await write({ path: 'test.txt', content: 'hello' })
-      write({ path: 'test.txt', content: 'ell' })
+      const p = write({ path: 'test.txt', content: 'ell' })
       let fileCount = 0
       for await (const _splice of artifact.read(pid, 'test.txt')) {
         fileCount++
@@ -98,6 +100,7 @@ export default (name: string, cradleMaker: () => Promise<ArtifactSession>) => {
           break
         }
       }
+      await p
     })
     log('spliceCount', spliceCount)
     log('fileSpliceCount', fileSpliceCount)
