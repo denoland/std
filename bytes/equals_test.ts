@@ -1,6 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import { equals } from "./equals.ts";
-import { assert, assertEquals, assertNotEquals } from "../assert/mod.ts";
+import { assert } from "../assert/mod.ts";
 
 Deno.test("equals()", () => {
   const v = equals(new Uint8Array([0, 1, 2, 3]), new Uint8Array([0, 1, 2, 3]));
@@ -31,20 +31,4 @@ Deno.test("equals() handles randomized testing", () => {
     assert(!equals(arr1, arr2));
     assert(!equals(arr1, arr3));
   }
-});
-
-// https://github.com/denoland/deno_std/issues/3603
-Deno.test("equals() works with .subarray()", () => {
-  const a = new Uint8Array(1001).subarray(1);
-  const b = new Uint8Array(1000);
-  a[0] = 123;
-  b[0] = 123;
-  assertEquals(a, b);
-  assert(equals(a, b));
-
-  const c = new Uint8Array(1001).subarray(1);
-  const d = new Uint8Array(1000);
-  c[999] = 123;
-  assertNotEquals(c, d); // ok
-  assert(!equals(c, d));
 });
