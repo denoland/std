@@ -203,22 +203,30 @@ const stdCrypto: StdCrypto = ((x) => x)({
       data: BufferSource | AsyncIterable<BufferSource> | Iterable<BufferSource>,
     ): Promise<ArrayBuffer> {
       const { name, length } = normalizeAlgorithm(algorithm);
+
+      assertValidDigestLength(length);
+
+      // We delegate to WebCrypto whenever possible,
       if (
+        // if the algorithm is supported by the WebCrypto standard,
         (WEB_CRYPTO_DIGEST_ALGORITHM_NAMES as readonly string[]).includes(
           name,
-        ) && isBufferSource(data)
+        ) &&
+        // and the data is a single buffer,
+        isBufferSource(data)
       ) {
         return await webCrypto.subtle.digest(algorithm, data);
-      }
-      if (DIGEST_ALGORITHM_NAMES.includes(name as DigestAlgorithmName)) {
-        if (isBufferSource(data) || isIterable(data)) {
+      } else if (DIGEST_ALGORITHM_NAMES.includes(name as DigestAlgorithmName)) {
+        if (isBufferSource(data)) {
           // Otherwise, we use our bundled Wasm implementation via digestSync
           // if it supports the algorithm.
           return stdCrypto.subtle.digestSync(algorithm, data);
-        }
-
-        if (isAsyncIterable(data)) {
-          assertValidDigestLength(length);
+        } else if (isIterable(data)) {
+          return stdCrypto.subtle.digestSync(
+            algorithm,
+            data as Iterable<BufferSource>,
+          );
+        } else if (isAsyncIterable(data)) {
           const wasmCrypto = instantiateWasm();
           const context = new wasmCrypto.DigestContext(name);
           for await (const chunk of data as AsyncIterable<BufferSource>) {
@@ -229,17 +237,17 @@ const stdCrypto: StdCrypto = ((x) => x)({
             context.update(chunkBytes);
           }
           return context.digestAndDrop(length).buffer;
+        } else {
+          throw new TypeError(
+            "data must be a BufferSource or [Async]Iterable<BufferSource>",
+          );
         }
-
-        throw new TypeError(
-          "data must be a BufferSource or [Async]Iterable<BufferSource>",
-        );
       }
-      // Emulates `crypto.subtle.digest()` behavior for unsupported algorithms.
-      throw new DOMException(
-        "Unrecognized algorithm name",
-        "NotSupportedError",
-      );
+      // (TypeScript type definitions prohibit this case.) If they're trying
+      // to call an algorithm we don't recognize, pass it along to WebCrypto
+      // in case it's a non-standard algorithm supported by the the runtime
+      // they're using.
+      return await webCrypto.subtle.digest(algorithm, data as BufferSource);
     },
 
     digestSync(
