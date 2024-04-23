@@ -28,8 +28,8 @@ function equalsNaive(a: Uint8Array, b: Uint8Array): boolean {
 function equals32Bit(a: Uint8Array, b: Uint8Array): boolean {
   const len = a.length;
   const compressible = Math.floor(len / 4);
-  const compressedA = new Uint32Array(a, 0, compressible);
-  const compressedB = new Uint32Array(b, 0, compressible);
+  const compressedA = new Uint32Array(a.buffer, 0, compressible);
+  const compressedB = new Uint32Array(b.buffer, 0, compressible);
   for (let i = compressible * 4; i < len; i++) {
     if (a[i] !== b[i]) return false;
   }
@@ -62,5 +62,7 @@ export function equals(a: Uint8Array, b: Uint8Array): boolean {
   if (a.length !== b.length) {
     return false;
   }
-  return a.length < 1000 ? equalsNaive(a, b) : equals32Bit(a, b);
+  return (a.length >= 1_000 && (a.byteOffset % 4 === b.byteOffset % 4))
+    ? equals32Bit(a, b)
+    : equalsNaive(a, b);
 }
