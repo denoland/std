@@ -20,12 +20,10 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           types: |
-            # Custom types
             BREAKING
             [unstable] BREAKING
             deprecation
             [unstable] deprecation
-            # Standard types
             feat
             fix
             docs
@@ -80,5 +78,11 @@ jobs:
             uuid
             webgpu
             yaml
+          # Subject cannot start with an uppercase letter
+          subjectPattern: ^(?![A-Z]).+$
+          subjectPatternError: |
+            The subject "{subject}" found in the pull request title "{title}"
+            didn't match the configured pattern. Please ensure that the subject
+            doesn't start with an uppercase character.
           # Prepending PR titles with `[WIP]` will skip checks
           wip: true
