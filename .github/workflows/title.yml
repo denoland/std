@@ -9,6 +9,7 @@ on:
 
 permissions:
   pull-requests: read
+  statuses: write
 
 jobs:
   main:
@@ -78,11 +79,4 @@ jobs:
             uuid
             webgpu
             yaml
-          # Subject cannot start with an uppercase letter
-          subjectPattern: ^(?![A-Z]).+$
-          subjectPatternError: |
-            The subject "{subject}" found in the pull request title "{title}"
-            didn't match the configured pattern. Please ensure that the subject
-            doesn't start with an uppercase character.
-          # Prepending PR titles with `[WIP]` will skip checks
           wip: true
