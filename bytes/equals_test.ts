@@ -11,9 +11,11 @@ Deno.test("equals()", () => {
   assert(!v3);
 });
 
+const THRESHOLD_32_BIT = 160;
+
 Deno.test("equals() handles randomized testing", () => {
   // run tests before and after cutoff
-  for (let len = 995; len <= 1005; len++) {
+  for (let len = THRESHOLD_32_BIT - 10; len <= THRESHOLD_32_BIT + 10; len++) {
     const arr1 = crypto.getRandomValues(new Uint8Array(len));
     const arr2 = crypto.getRandomValues(new Uint8Array(len));
     const arr3 = arr1.slice(0);
@@ -47,4 +49,20 @@ Deno.test("equals() works with .subarray()", () => {
   c[999] = 123;
   assertNotEquals(c, d); // ok
   assert(!equals(c, d));
+
+  // Test every length/offset combination (modulo 4) to ensure that every byte is checked.
+  for (let offsetA = 0; offsetA < 4; offsetA++) {
+    for (let offsetB = 0; offsetB < 4; offsetB++) {
+      for (let len = THRESHOLD_32_BIT; len < THRESHOLD_32_BIT + 4; len++) {
+        const x = new Uint8Array(new ArrayBuffer(len + offsetA), offsetA);
+        const y = new Uint8Array(new ArrayBuffer(len + offsetB), offsetB);
+        for (let i = 0; i < len; i++) {
+          assert(equals(x, y));
+          x[i] = 1;
+          assert(!equals(x, y));
+          y[i] = 1;
+        }
+      }
+    }
+  }
 });
