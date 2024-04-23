@@ -3,7 +3,7 @@
  * Not part of regular testing since can only run after the code is deployed
  */
 import { assert } from '@utils'
-import { Shell } from '@/api/web-client.ts'
+import { Session } from './web-client-session.ts'
 import { WebClientEngine } from '@/api/web-client-engine.ts'
 import guts from '../guts/guts.ts'
 import { load } from '@std/dotenv'
@@ -20,7 +20,7 @@ const cradleMaker = async () => {
     const result = await engine.initialize()
     console.log('initialization:', result)
   }
-  const artifact = Shell.create(engine, SUPERUSER)
+  const artifact = Session.create(engine, SUPERUSER)
   return artifact
 }
 guts('Cloud', cradleMaker)

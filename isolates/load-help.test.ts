@@ -1,12 +1,12 @@
 import { expect } from '@utils'
 import { Engine } from '../engine.ts'
-import { Shell } from '../api/web-client.ts'
+import { Session } from '../api/web-client-session.ts'
 import { Help } from '@/constants.ts'
 import { Api } from '@/isolates/load-help.ts'
 Deno.test('loadAll', async (t) => {
   const engine = await Engine.create()
   const system = await engine.initialize()
-  const artifact = Shell.create(engine, system.pid)
+  const artifact = Session.create(engine, system.pid)
   const { pid } = await artifact.clone({ repo: 'dreamcatcher-tech/HAL' })
   const { loadAll, load } = await artifact.actions<Api>('load-help', pid)
   await t.step('loadAll', async () => {

@@ -1,13 +1,15 @@
 import { Engine } from './engine.ts'
-import { Shell } from '@/api/web-client.ts'
+import { Session } from './api/web-client-session.ts'
+import { Home } from './api/web-client-home.ts'
 import guts from './guts/guts.ts'
 import { expect, log } from '@utils'
 
 const cradleMaker = async () => {
   const engine = await Engine.create()
-  const system = await engine.initialize()
-  const shell = Shell.create(engine, system.pid)
-  return shell
+  const init = await engine.initialize()
+  const home = Home.create(engine, init.pid)
+  const session = await home.createSession()
+  return session
 }
 
 Deno.test('cradle', async (t) => {
@@ -16,7 +18,7 @@ Deno.test('cradle', async (t) => {
     log.enable('AI:qex*')
     const system = await engine.initialize()
     log('system', system)
-    const shell = Shell.create(engine, system.pid)
+    const shell = Session.create(engine, system.pid)
 
     const result = await shell.ping({ data: 'hello' })
     expect(result).toBe('hello')

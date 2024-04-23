@@ -1,9 +1,9 @@
 import { expect, log } from '@utils'
-import { Artifact } from '../api/web-client.types.ts'
+import { ArtifactSession } from '../api/web-client.types.ts'
 import { assert } from '@std/assert'
 
 const ioFixture = 'io-fixture'
-export default (name: string, cradleMaker: () => Promise<Artifact>) => {
+export default (name: string, cradleMaker: () => Promise<ArtifactSession>) => {
   const prefix = name + ': '
 
   Deno.test(prefix + 'resource hogging', async (t) => {

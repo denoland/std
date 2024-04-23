@@ -1,7 +1,7 @@
 // THIS IS SYCNED FROM THE ARTIFACT PROJECT
 // TODO publish to standalone repo
 import {
-  Artifact,
+  ArtifactSession,
   DispatchFunctions,
   EngineInterface,
   freezePid,
@@ -13,19 +13,21 @@ import {
   PID,
   pidFromRepo,
   PierceRequest,
+  print,
   ProcessOptions,
   PROCTYPE,
   UnsequencedRequest,
 } from './web-client.types.ts'
 import { ulid } from 'ulid'
 import { deserializeError } from 'serialize-error'
+import { Home } from './web-client-home.ts'
 
 type PiercePromise = {
   resolve: (value: unknown) => void
   reject: (error: Error) => void
 }
 
-export class Shell implements Artifact {
+export class Session implements ArtifactSession {
   readonly #engine: EngineInterface
   readonly #pid: PID
   readonly #pierces = new Map<string, PiercePromise>()
@@ -38,7 +40,19 @@ export class Shell implements Artifact {
   }
   static create(engine: EngineInterface, pid: PID) {
     freezePid(pid)
-    return new Shell(engine, pid)
+    if (pid.branches.length !== 2) {
+      const branches = print(pid)
+      throw new Error('Session chain not direct child of base: ' + branches)
+    }
+    return new Session(engine, pid)
+  }
+  static createHome(engine: EngineInterface, pid: PID) {
+    freezePid(pid)
+    if (pid.branches.length !== 1) {
+      const branches = print(pid)
+      throw new Error('Home session must be base: ' + branches)
+    }
+    return new Session(engine, pid)
   }
   get pid() {
     return this.#pid
@@ -52,6 +66,12 @@ export class Shell implements Artifact {
   stop() {
     this.#abort.abort()
     return this.#engine.stop()
+  }
+  newSession(): Promise<ArtifactSession> {
+    const parent = { ...this.#pid, branches: [...this.#pid.branches] }
+    parent.branches.pop()
+    const home = Home.create(this.#engine, parent)
+    return home.createSession()
   }
   async #watchPierces() {
     let lastSplice
@@ -159,6 +179,9 @@ export class Shell implements Artifact {
     return this.#engine.read(pid, path, after, signal)
   }
   async endSession(): Promise<void> {
+  }
+  async deleteAccountUnrecoverably(): Promise<void> {
+    // throw new Error('not implemented')
   }
   #resolvePierces(io: IoStruct) {
     for (const [, value] of Object.entries(io.requests)) {

@@ -1,7 +1,7 @@
 import { Outcome } from '@/constants.ts'
 import Server from './server.ts'
 import { expect } from '@utils'
-import { Shell } from '@/api/web-client.ts'
+import { Session } from './web-client-session.ts'
 import { WebClientEngine } from '@/api/web-client-engine.ts'
 import guts from '../guts/guts.ts'
 Deno.test('hono basic', async (t) => {
@@ -26,7 +26,7 @@ const cradleMaker = async () => {
   const system = server.engine.pid
 
   const engine = WebClientEngine.create('mock', fetcher)
-  const shell = Shell.create(engine, system)
+  const shell = Session.create(engine, system)
   const clientStop = shell.stop.bind(shell)
   shell.stop = async () => {
     // must stop the client first, else will retry

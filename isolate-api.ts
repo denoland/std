@@ -81,12 +81,15 @@ export default class IsolateApi<T extends object = Default> {
         log('actions %o', functionName)
         // TODO unify how proctype is derived across all cradles
         const proctype = getProcType(options)
+        options = options || {}
         const unsequencedRequest: UnsequencedRequest = {
           target,
           isolate,
           functionName,
           params: params || {},
           proctype,
+          branchPrefix: options.prefix,
+          branchName: options.branchName,
         }
         return this.action(unsequencedRequest)
       }

@@ -1,7 +1,7 @@
 import { expect } from '@utils'
-import { Artifact } from '../api/web-client.types.ts'
+import { ArtifactSession } from '../api/web-client.types.ts'
 
-export default (name: string, cradleMaker: () => Promise<Artifact>) => {
+export default (name: string, cradleMaker: () => Promise<ArtifactSession>) => {
   const prefix = name + ': '
   Deno.test(prefix + 'session', async (t) => {
     const artifact = await cradleMaker()

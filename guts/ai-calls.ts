@@ -1,12 +1,12 @@
 import { log } from '@utils'
-import { Artifact } from '../api/web-client.types.ts'
+import { ArtifactSession } from '../api/web-client.types.ts'
 import { print } from '@/constants.ts'
 import { Api as SApi } from '@/isolates/session.ts'
 import { Api as EApi } from '@/isolates/engage-help.ts'
 
-export default (name: string, cradleMaker: () => Promise<Artifact>) => {
+export default (name: string, cradleMaker: () => Promise<ArtifactSession>) => {
   const prefix = name + ': '
-  Deno.test.only(prefix + 'ai', async (t) => {
+  Deno.test(prefix + 'ai', async (t) => {
     const artifact = await cradleMaker()
     const repo = 'dreamcatcher-tech/HAL'
     await artifact.rm({ repo })

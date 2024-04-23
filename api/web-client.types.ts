@@ -43,9 +43,10 @@ export type ProcessOptions = {
    * Implies `branch: true`
    */
   noClose?: boolean
-  // TODO add prefix option so the branch name can be set
-  // the name must have the sequence suffix so that determinism is in there
-  // also frees us from doing a collision check
+  /** Set a prefix for the new branch name.  Implies branch = true */
+  prefix?: string
+  /** Set the name of the new branch.  Will error if this exists already */
+  branchName?: string
 }
 export type IoStruct = {
   sequence: number
@@ -123,6 +124,11 @@ export type Invocation = {
    * uniqueness.
    */
   branchPrefix?: string
+  /**
+   * If the request is a branching request, this will be the name of the new
+   * branch.  If the branch already exists, the request will fail.
+   */
+  branchName?: string
   effect?: boolean | {
     /** does this side effect have access to the network ? */
     net?: boolean
@@ -281,7 +287,7 @@ type ApiSchema = Record<string, JSONSchemaType<object>>
 type Head = { pid: PID; head: string }
 
 /** The client session interface to artifact */
-export interface Artifact {
+export interface ArtifactSession {
   pid: PID
   stop(): Promise<void> | void
   actions<T = DispatchFunctions>(isolate: string, target: PID): Promise<T>
@@ -308,6 +314,8 @@ export interface Artifact {
   endSession(): Promise<void>
   /** Remove the account if currently signed in */
   deleteAccountUnrecoverably(): Promise<void>
+  /** Using the current session, create a new session */
+  newSession(): Promise<ArtifactSession>
 }
 /** The client home interface to Artifact, only able to create new sessions.
 Will handle the generation of signing keys for the session, and authentication
@@ -318,7 +326,7 @@ export interface ArtifactHome {
   stop(): Promise<void> | void
   /** If you have not signed in, you get a locked down session that allows
    * limited interactions */
-  createSession(): Promise<Artifact>
+  createSession(): Promise<ArtifactSession>
   /** Pings the execution context without going thru the transaction queue.
    *
    * Used primarily by web clients to establish base connectivity and get
