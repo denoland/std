@@ -13,7 +13,7 @@ export default (name: string, cradleMaker: () => Promise<ArtifactSession>) => {
     const repo = 'process/session'
     await artifact.rm({ repo })
     const target = await artifact.init({ repo })
-    // TODO excercise the ACL blocking some actions to the session chain
+    // TODO exercise the ACL blocking some actions to the session chain
     await t.step('interact', async () => {
       const { local } = await artifact.actions('io-fixture', artifact.pid)
       const result = await local()

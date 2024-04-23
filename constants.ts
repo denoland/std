@@ -82,7 +82,7 @@ export type SettledIsolatePromise =
   & (BareIsolatePromise | PromisedIsolatePromise)
   & {
     outcome: Outcome
-    /** if an outcome is given, there must be a commit assosciated with it, so
+    /** if an outcome is given, there must be a commit associated with it, so
      * that the execution environment can be notched forwards */
     commit: string
   }

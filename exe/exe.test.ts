@@ -185,6 +185,6 @@ Deno.test('accumulation spanning multiple commits', async (t) => {
     })
   }
 })
-// verify that pierce cannot interupt a running in band accumulation
+// verify that pierce cannot interrupt a running in band accumulation
 // test repeat calling should not corrupt the cache, and should return the same,
 // even if the commit was several accumulations ago
