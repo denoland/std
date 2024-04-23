@@ -23,6 +23,8 @@ jobs:
             # Custom types
             BREAKING
             [unstable] BREAKING
+            deprecation
+            [unstable] deprecation
             # Standard types
             feat
             fix
