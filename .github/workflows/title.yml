@@ -19,6 +19,20 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
+          types: |
+            # Custom types
+            BREAKING
+            [unstable] BREAKING
+            # Standard types
+            feat
+            fix
+            docs
+            refactor
+            perf
+            test
+            ci
+            chore
+            revert
           # This should be kept up-to-date with the packages in the Standard
           # Library (except `_tools`).
           scopes: |
