@@ -93,11 +93,14 @@ export default class Accumulator {
     assert(!this.isActive, '"this" is already active')
     assert(!from.isActive, '"from" is already active')
     if (!(this.#buffer.length <= from.#buffer.length)) {
+      console.error('this.#fs:', this.#fs.oid, 'from.#fs', from.#fs.oid)
+      console.error(
+        'this.#highestFs:',
+        this.#highestFs.oid,
+        'from.#highestFs',
+        from.#highestFs.oid,
+      )
       expect(this.#buffer).toEqual(from.#buffer)
-      console.log('this buffer length', this.#buffer.length)
-      console.dir(this.#buffer, { depth: null })
-      console.log('from buffer length', from.#buffer.length)
-      console.dir(from.#buffer, { depth: null })
     }
     assert(this.#buffer.length <= from.#buffer.length, '"this" must be shorter')
     this.#highestFs = from.#highestFs

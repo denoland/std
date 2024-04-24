@@ -31,6 +31,9 @@ export default class DB {
     return this.#kvStore
   }
   stop() {
+    if (this.#abort.signal.aborted) {
+      return
+    }
     const kv = this.#kv
     this.#abort.abort()
     for (const abort of this.#aborts) {
