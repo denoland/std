@@ -61,7 +61,6 @@ type Mod =
   | "msgpack"
   | "net"
   | "path"
-  | "permissions"
   | "regexp"
   | "semver"
   | "streams"
@@ -112,7 +111,6 @@ const ENTRYPOINTS: Record<Mod, string[]> = {
   msgpack: ["mod.ts"],
   net: ["mod.ts"],
   path: ["mod.ts"],
-  permissions: ["mod.ts"],
   regexp: ["mod.ts"],
   semver: ["mod.ts"],
   streams: ["mod.ts"],
@@ -156,7 +154,6 @@ const STABILITY: Record<Mod, DepState> = {
   msgpack: "Unstable",
   net: "Unstable",
   path: "Stable",
-  permissions: "Deprecated",
   regexp: "Unstable",
   semver: "Unstable",
   streams: "Stable",
