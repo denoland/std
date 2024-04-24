@@ -1,4 +1,8 @@
-import { SettledIsolatePromise, UnsequencedRequest } from '@/constants.ts'
+import {
+  IoStruct,
+  SettledIsolatePromise,
+  UnsequencedRequest,
+} from '@/constants.ts'
 import { IsolatePromise } from '@/constants.ts'
 import { assert, deserializeError, equal, expect } from '@utils'
 import FS from '@/git/fs.ts'
@@ -99,6 +103,12 @@ export default class Accumulator {
         this.#highestFs.oid,
         'from.#highestFs',
         from.#highestFs.oid,
+      )
+      this.#fs.readJSON<IoStruct>('.io.json').then((io) =>
+        console.dir(io.pendings, { depth: Infinity })
+      )
+      from.#fs.readJSON<IoStruct>('.io.json').then((io) =>
+        console.dir(io.pendings, { depth: Infinity })
       )
       expect(this.#buffer).toEqual(from.#buffer)
     }
