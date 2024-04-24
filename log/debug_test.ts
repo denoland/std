@@ -3,7 +3,7 @@ import { assertEquals } from "../assert/assert_equals.ts";
 import "./setup.ts";
 import { debug } from "./debug.ts";
 
-Deno.test("default loggers work as expected", () => {
+Deno.test("debug()", () => {
   const debugData: string = debug("foo");
   const debugResolver: string | undefined = debug(() => "foo");
   assertEquals(debugData, "foo");
