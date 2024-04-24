@@ -38,7 +38,6 @@ type Mod =
   | "bytes"
   | "cli"
   | "collections"
-  | "console"
   | "crypto"
   | "csv"
   | "data_structures"
@@ -81,7 +80,6 @@ const ENTRYPOINTS: Record<Mod, string[]> = {
   bytes: ["mod.ts"],
   cli: ["mod.ts"],
   collections: ["mod.ts"],
-  console: ["mod.ts"],
   crypto: ["mod.ts"],
   csv: ["mod.ts"],
   data_structures: ["mod.ts"],
@@ -133,7 +131,6 @@ const STABILITY: Record<Mod, DepState> = {
   bytes: "Stable",
   cli: "Unstable",
   collections: "Stable",
-  console: "Unstable",
   crypto: "Stable",
   csv: "Stable",
   data_structures: "Unstable",

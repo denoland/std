@@ -43,7 +43,6 @@ jobs:
             bytes
             cli
             collections
-            console
             crypto
             csv
             data_structures

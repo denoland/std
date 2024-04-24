@@ -99,7 +99,6 @@ requirements:
 | [bytes](https://jsr.io/@std/bytes)                     | Settled    | [![JSR](https://jsr.io/badges/@std/bytes)](https://jsr.io/@std/bytes)                     |
 | [cli](https://jsr.io/@std/cli)                         | Unstable   | [![JSR](https://jsr.io/badges/@std/cli)](https://jsr.io/@std/cli)                         |
 | [collections](https://jsr.io/@std/collections)         | Settled    | [![JSR](https://jsr.io/badges/@std/collections)](https://jsr.io/@std/collections)         |
-| [console](https://jsr.io/@std/console)                 | Unstable   | [![JSR](https://jsr.io/badges/@std/console)](https://jsr.io/@std/console)                 |
 | [crypto](https://jsr.io/@std/crypto)                   | Settled    | [![JSR](https://jsr.io/badges/@std/crypto)](https://jsr.io/@std/crypto)                   |
 | [csv](https://jsr.io/@std/csv)                         | Settled    | [![JSR](https://jsr.io/badges/@std/csv)](https://jsr.io/@std/csv)                         |
 | [data_structures](https://jsr.io/@std/data_structures) | Unstable   | [![JSR](https://jsr.io/badges/@std/data-structures)](https://jsr.io/@std/data-structures) |
