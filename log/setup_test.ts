@@ -1,62 +1,44 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-import { assert, assertEquals } from "../assert/mod.ts";
-import {
-  BaseHandler,
-  critical,
-  debug,
-  error,
-  getLogger,
-  info,
-  type LevelName,
-  Logger,
-  LogLevels,
-  setup,
-  warn,
-} from "./mod.ts";
+import { assertEquals } from "../assert/assert_equals.ts";
+import * as log from "./mod.ts";
+import { TestHandler } from "./_test_handler.ts";
 
-class TestHandler extends BaseHandler {
-  public messages: string[] = [];
+Deno.test("setup() handles default handlers", async function () {
+  const loggers: {
+    [key: string]: (msg: string, ...args: unknown[]) => void;
+  } = {
+    DEBUG: log.debug,
+    INFO: log.info,
+    WARN: log.warn,
+    ERROR: log.error,
+    CRITICAL: log.critical,
+  };
 
-  public override log(str: string) {
-    this.messages.push(str);
+  for (const levelName of log.LogLevelNames) {
+    if (levelName === "NOTSET") {
+      continue;
+    }
+
+    const logger = loggers[levelName]!;
+    const handler = new TestHandler(levelName);
+
+    await log.setup({
+      handlers: {
+        default: handler,
+      },
+      loggers: {
+        default: {
+          level: levelName as log.LevelName,
+          handlers: ["default"],
+        },
+      },
+    });
+
+    logger("foo");
+    logger("bar", 1, 2);
+
+    assertEquals(handler.messages, [`${levelName} foo`, `${levelName} bar`]);
   }
-}
-
-let logger: Logger | null = null;
-try {
-  // Need to initialize it here
-  // otherwise it will be already initialized on Deno.test
-  logger = getLogger();
-} catch {
-  // Pass
-}
-
-Deno.test("getLogger() initializes logger", function () {
-  assert(logger instanceof Logger);
-});
-
-Deno.test("default loggers work as expected", function () {
-  const sym = Symbol("a");
-  const debugData: string = debug("foo");
-  const debugResolver: string | undefined = debug(() => "foo");
-  const infoData: number = info(456, 1, 2, 3);
-  const infoResolver: boolean | undefined = info(() => true);
-  const warnData: symbol = warn(sym);
-  const warnResolver: null | undefined = warn(() => null);
-  const errorData: undefined = error(undefined, 1, 2, 3);
-  const errorResolver: bigint | undefined = error(() => 5n);
-  const criticalData: string = critical("foo");
-  const criticalResolver: string | undefined = critical(() => "bar");
-  assertEquals(debugData, "foo");
-  assertEquals(debugResolver, undefined);
-  assertEquals(infoData, 456);
-  assertEquals(infoResolver, true);
-  assertEquals(warnData, sym);
-  assertEquals(warnResolver, null);
-  assertEquals(errorData, undefined);
-  assertEquals(errorResolver, 5n);
-  assertEquals(criticalData, "foo");
-  assertEquals(criticalResolver, "bar");
 });
 
 Deno.test({
@@ -67,7 +49,7 @@ Deno.test({
       formatter: ({ loggerName, levelName, msg }) =>
         `[${loggerName}] ${levelName} ${msg}`,
     });
-    await setup({
+    await log.setup({
       handlers: {
         console: consoleHandler,
         anotherConsole: anotherConsoleHandler,
@@ -86,8 +68,8 @@ Deno.test({
         },
       },
     });
-    getLogger().debug("hello");
-    getLogger("tasks").error("world");
+    log.getLogger().debug("hello");
+    log.getLogger("tasks").error("world");
     assertEquals(consoleHandler.messages[0], "DEBUG hello");
     assertEquals(anotherConsoleHandler.messages[0], "[tasks] ERROR world");
   },
@@ -97,7 +79,7 @@ Deno.test({
   name: "setup() loggers have level and levelName to get and set loglevels",
   async fn() {
     const testHandler = new TestHandler("DEBUG");
-    await setup({
+    await log.setup({
       handlers: {
         test: testHandler,
       },
@@ -110,9 +92,9 @@ Deno.test({
         },
       },
     });
-    const logger: Logger = getLogger();
+    const logger: log.Logger = log.getLogger();
     assertEquals(logger.levelName, "DEBUG");
-    assertEquals(logger.level, LogLevels.DEBUG);
+    assertEquals(logger.level, log.LogLevels.DEBUG);
 
     logger.debug("debug");
     logger.error("error");
@@ -123,9 +105,9 @@ Deno.test({
     assertEquals(testHandler.messages[2], "CRITICAL critical");
 
     testHandler.messages = [];
-    logger.level = LogLevels.WARN;
+    logger.level = log.LogLevels.WARN;
     assertEquals(logger.levelName, "WARN");
-    assertEquals(logger.level, LogLevels.WARN);
+    assertEquals(logger.level, log.LogLevels.WARN);
 
     logger.debug("debug2");
     logger.error("error2");
@@ -135,10 +117,10 @@ Deno.test({
     assertEquals(testHandler.messages[1], "CRITICAL critical2");
 
     testHandler.messages = [];
-    const setLevelName: LevelName = "CRITICAL";
+    const setLevelName: log.LevelName = "CRITICAL";
     logger.levelName = setLevelName;
     assertEquals(logger.levelName, "CRITICAL");
-    assertEquals(logger.level, LogLevels.CRITICAL);
+    assertEquals(logger.level, log.LogLevels.CRITICAL);
 
     logger.debug("debug3");
     logger.error("error3");
@@ -149,39 +131,11 @@ Deno.test({
 });
 
 Deno.test({
-  name: "setup() checks loggerName of loggers",
-  async fn() {
-    const testHandler = new TestHandler("DEBUG");
-    await setup({
-      handlers: {
-        test: testHandler,
-      },
-
-      loggers: {
-        namedA: {
-          level: "DEBUG",
-          handlers: ["test"],
-        },
-        namedB: {
-          level: "DEBUG",
-          handlers: ["test"],
-        },
-      },
-    });
-
-    assertEquals(getLogger("namedA").loggerName, "namedA");
-    assertEquals(getLogger("namedB").loggerName, "namedB");
-    assertEquals(getLogger().loggerName, "default");
-    assertEquals(getLogger("nonsetupname").loggerName, "nonsetupname");
-  },
-});
-
-Deno.test({
   name: "setup() checks if logger has mutable handlers",
   async fn() {
     const testHandlerA = new TestHandler("DEBUG");
     const testHandlerB = new TestHandler("DEBUG");
-    await setup({
+    await log.setup({
       handlers: {
         testA: testHandlerA,
         testB: testHandlerB,
@@ -194,7 +148,7 @@ Deno.test({
         },
       },
     });
-    const logger: Logger = getLogger();
+    const logger: log.Logger = log.getLogger();
     logger.info("msg1");
     assertEquals(testHandlerA.messages.length, 1);
     assertEquals(testHandlerA.messages[0], "INFO msg1");
@@ -219,5 +173,33 @@ Deno.test({
     logger.info("msg4");
     assertEquals(testHandlerA.messages.length, 2);
     assertEquals(testHandlerB.messages.length, 2);
+  },
+});
+
+Deno.test({
+  name: "setup() checks loggerName of loggers",
+  async fn() {
+    const testHandler = new TestHandler("DEBUG");
+    await log.setup({
+      handlers: {
+        test: testHandler,
+      },
+
+      loggers: {
+        namedA: {
+          level: "DEBUG",
+          handlers: ["test"],
+        },
+        namedB: {
+          level: "DEBUG",
+          handlers: ["test"],
+        },
+      },
+    });
+
+    assertEquals(log.getLogger("namedA").loggerName, "namedA");
+    assertEquals(log.getLogger("namedB").loggerName, "namedB");
+    assertEquals(log.getLogger().loggerName, "default");
+    assertEquals(log.getLogger("nonsetupname").loggerName, "nonsetupname");
   },
 });
