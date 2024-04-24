@@ -28,6 +28,7 @@ export class Session implements ArtifactSession {
   readonly #engine: EngineInterface
   readonly #pid: PID
   readonly #home: Home
+  #isHomeSession = false
 
   readonly #pierces = new Map<string, PiercePromise>()
   readonly #abort = new AbortController()
@@ -52,7 +53,9 @@ export class Session implements ArtifactSession {
       const branches = print(pid)
       throw new Error('Home session must be base: ' + branches)
     }
-    return new Session(engine, pid, home)
+    const session = new Session(engine, pid, home)
+    session.#isHomeSession = true
+    return session
   }
   get pid() {
     return this.#pid
@@ -63,9 +66,12 @@ export class Session implements ArtifactSession {
     }
     return await this.#repo
   }
-  stop() {
+  stop(): Promise<void> | void {
     this.#abort.abort()
-    return this.#engine.stop()
+    if (this.#isHomeSession) {
+      return this.#engine.stop()
+    }
+    return this.#home.stop()
   }
   createSession(retry?: PID): Promise<ArtifactSession> {
     return this.#home.createSession(retry)
