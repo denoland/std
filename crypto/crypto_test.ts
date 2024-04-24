@@ -1701,6 +1701,15 @@ for (const algorithm of DIGEST_ALGORITHM_NAMES) {
   });
 }
 
+Deno.test("digest() throws on invalid algorithm", async () => {
+  await assertRejects(
+    // @ts-ignore Algorithm name is invalid on purpose
+    async () => await stdCrypto.subtle.digest("invalid", new Uint8Array(0)),
+    DOMException,
+    "Unrecognized algorithm name",
+  );
+});
+
 /**
  * This is one of many methods of `crypto` for which we don't have our own
  * implementation, and just pass calls through to the native implementation.
