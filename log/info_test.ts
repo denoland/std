@@ -2,7 +2,7 @@
 import { assertEquals } from "../assert/assert_equals.ts";
 import { info } from "./info.ts";
 
-Deno.test("default loggers work as expected", () => {
+Deno.test("info()", () => {
   const infoData: number = info(456, 1, 2, 3);
   const infoResolver: boolean | undefined = info(() => true);
   assertEquals(infoData, 456);
