@@ -2,20 +2,17 @@
 // TODO publish to standalone repo
 import {
   ArtifactSession,
-  DispatchFunctions,
   EngineInterface,
   freezePid,
-  getProcType,
   IoStruct,
   isPierceRequest,
   JsonValue,
-  Params,
   PID,
   pidFromRepo,
   PierceRequest,
   print,
-  ProcessOptions,
   PROCTYPE,
+  toActions,
   UnsequencedRequest,
 } from './web-client.types.ts'
 import { ulid } from 'ulid'
@@ -48,6 +45,20 @@ export class Session implements ArtifactSession {
       throw new Error('Session chain not direct child of base: ' + branches)
     }
     return new Session(engine, pid, home)
+  }
+  static resume(engine: EngineInterface, pid: PID, home: Home) {
+    freezePid(pid)
+    if (pid.branches.length !== 2) {
+      const branches = print(pid)
+      throw new Error('Session chain not direct child of base: ' + branches)
+    }
+    // how to validate that this chain is active, and our keys are still valid ?
+
+    // asking the chain directly seems rude, since the chain might not exist
+
+    // also we need to know if we have the right keys on hand still
+
+    // home chain should have a validate function
   }
   static createHome(engine: EngineInterface, pid: PID, home: Home) {
     freezePid(pid)
@@ -98,35 +109,25 @@ export class Session implements ArtifactSession {
       }
     }
   }
-  async actions<T>(isolate: string, target: PID) {
-    // client side, since functions cannot be returned from isolate calls
-    const apiSchema = await this.apiSchema(isolate)
-    const actions: DispatchFunctions = {}
-    for (const functionName of Object.keys(apiSchema)) {
-      actions[functionName] = (params?: Params, options?: ProcessOptions) => {
-        const proctype = getProcType(options)
-        const request: UnsequencedRequest = {
-          target,
-          isolate,
-          functionName,
-          params: params || {},
-          proctype,
-        }
-        const pierce: PierceRequest = {
-          target: this.#pid,
-          ulid: ulid(),
-          isolate: 'shell',
-          functionName: 'pierce',
-          params: { request },
-          proctype: PROCTYPE.SERIAL,
-        }
-        return new Promise((resolve, reject) => {
-          this.#pierces.set(pierce.ulid, { resolve, reject })
-          this.#engine.pierce(pierce)
-        })
-      }
+  async actions<T>(isolate: string, targetPID: PID) {
+    const target = targetPID ? targetPID : this.pid
+    const schema = await this.apiSchema(isolate)
+    const execute = (request: UnsequencedRequest) => this.#action(request)
+    return toActions<T>(target, isolate, schema, execute)
+  }
+  #action(request: UnsequencedRequest) {
+    const pierce: PierceRequest = {
+      target: this.#pid,
+      ulid: ulid(),
+      isolate: 'shell',
+      functionName: 'pierce',
+      params: { request },
+      proctype: PROCTYPE.SERIAL,
     }
-    return actions as T
+    return new Promise((resolve, reject) => {
+      this.#pierces.set(pierce.ulid, { resolve, reject })
+      this.#engine.pierce(pierce)
+    })
   }
 
   ping(params?: { data?: JsonValue }) {

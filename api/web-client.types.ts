@@ -61,7 +61,14 @@ export type IoStruct = {
   pendings: {
     [key: number]: { commit: string; sequences: number[] }[]
   }
+  /** Active branches are stored here.  A branch is a daemon if it is listed
+   * here but its request has been replied to or it is gone from the requests
+   * list */
+  branches: {
+    [sequence: string]: BranchName
+  }
 }
+type BranchName = string
 export type DispatchFunctions = {
   [key: string]: (
     params?: Params,
@@ -399,4 +406,51 @@ export const SUPERUSER = {
   account: 'system',
   repository: 'system',
   branches: ['main'],
+}
+
+export const toActions = <T = DispatchFunctions>(
+  target: PID,
+  isolate: string,
+  schema: IsolateApiSchema,
+  execute: (request: UnsequencedRequest) => Promise<unknown>,
+) => {
+  const actions: DispatchFunctions = {}
+  for (const functionName of Object.keys(schema)) {
+    actions[functionName] = (arg1?: Params, options?: ProcessOptions) => {
+      const proctype = getProcType(options)
+      const params = safeParams(arg1)
+      const unsequencedRequest: UnsequencedRequest = {
+        target,
+        isolate,
+        functionName,
+        params,
+        proctype,
+      }
+      options = options || {}
+      if (options.prefix && options.branchName) {
+        throw new Error('failed mutex: ' + print(target))
+      }
+      if (options.prefix) {
+        unsequencedRequest.branchPrefix = options.prefix
+      }
+      if (options.branchName) {
+        unsequencedRequest.branchName = options.branchName
+      }
+      return execute(unsequencedRequest)
+    }
+  }
+
+  return actions as T
+}
+const safeParams = (params?: Params) => {
+  if (!params) {
+    return {}
+  }
+  const safe = { ...params }
+  for (const key in safe) {
+    if (safe[key] === undefined) {
+      delete safe[key]
+    }
+  }
+  return safe
 }

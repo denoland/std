@@ -27,7 +27,7 @@ const load = async (commands: string[] = [], api: IsolateApi) => {
       const { load } = await api.functions<loadHelp.Api>('load-help')
       const help = await load({ help: name })
       assert(help.description, `missing description: ${command}`)
-      const schemas = await api.isolateApiSchema('engage-help')
+      const schemas = await api.apiSchema('engage-help')
       const { engage } = await api.actions('engage-help')
       action = ({ text }: { text: string }) => {
         log('engage:', name, text, api.commit)
@@ -37,7 +37,7 @@ const load = async (commands: string[] = [], api: IsolateApi) => {
     } else {
       const [isolate, _name] = command.split(':')
       name = _name
-      const isolateApiSchema = await api.isolateApiSchema(isolate)
+      const isolateApiSchema = await api.apiSchema(isolate)
       const functions = await api.functions(isolate)
       assert(name in functions, `isolate missing command: ${command}`)
       action = functions[name]

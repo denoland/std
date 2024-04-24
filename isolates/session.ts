@@ -1,4 +1,4 @@
-import { IsolateApi, PID } from '@/constants.ts'
+import { IsolateApi, PID, print } from '@/constants.ts'
 import { Debug } from '@utils'
 const log = Debug('AI:session')
 export const api = {
@@ -29,14 +29,15 @@ export type Api = {
 
 // TODO make an isolate that can take in the options as params
 export const functions = {
-  async create({ prefix }: { prefix?: string } = {}, api: IsolateApi) {
-    // TODO this needs to be called inside an isolate
-    // then it can control custom branch names
-    log('create new session created')
-    prefix = prefix || 'session'
+  async create({ retry }: { retry?: PID } = {}, api: IsolateApi) {
+    log('create', retry && print(retry))
+    if (retry) {
+      // how to validate a pid ?
+      // every chain should have access to its children
+    }
 
     const { noop } = await api.actions('session')
-    const pid = await noop({}, { noClose: true, prefix })
+    const pid = await noop({}, { noClose: true, prefix: 'session' })
     log('noop pid', pid)
     return pid
   },

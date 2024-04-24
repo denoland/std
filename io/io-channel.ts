@@ -25,6 +25,7 @@ const createBase = (): IoStruct => ({
   requests: {},
   replies: {},
   pendings: {},
+  branches: {},
 })
 
 export default class IOChannel {
@@ -150,6 +151,10 @@ export default class IOChannel {
       }
     }
     for (const key of blanks) {
+      const request = this.#io.requests[key]
+      if (request.proctype !== PROCTYPE.DAEMON) {
+        delete this.#io.branches[key]
+      }
       delete this.#io.requests[key]
       delete this.#io.replies[key]
       delete this.#io.pendings[key]
@@ -221,11 +226,6 @@ export default class IOChannel {
     const pid = { ...parentPid, branches }
     return pid
   }
-  addRequest(request: Request) {
-    const sequence = this.#io.sequence++
-    this.#io.requests[sequence] = request
-    return sequence
-  }
   addPending(sequence: number, commit: string, requests: UnsequencedRequest[]) {
     assert(!this.isSettled(sequence), 'sequence already settled')
     assert(!this.isPendingIncluded(sequence, commit), 'commit already included')
@@ -254,8 +254,23 @@ export default class IOChannel {
     const sequence = this.#io.sequence++
     const source = this.#pid
     const sequenced: SolidRequest = { ...request, sequence, source }
-    this.#io.requests[sequence] = sequenced
+    this.#addRequest(sequenced, sequence)
     return { sequence, sequenced }
+  }
+  addRequest(request: Request) {
+    const sequence = this.#io.sequence++
+    this.#addRequest(request, sequence)
+    return sequence
+  }
+  #addRequest(request: Request, sequence: number) {
+    this.#io.requests[sequence] = request
+    const { proctype } = request
+    if (proctype === PROCTYPE.DAEMON || proctype === PROCTYPE.BRANCH) {
+      if (equal(request.target, this.#pid)) {
+        const pid = this.getBranchPid(sequence)
+        this.#io.branches[sequence] = pid.branches[pid.branches.length - 1]
+      }
+    }
   }
   /** An accumulation is an action sourced from this branch */
   #isAccumulation(request: Request) {

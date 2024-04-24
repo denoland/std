@@ -94,6 +94,7 @@ export default class Executor {
     assert(execution, 'execution not found')
 
     execution.commits.push(fs.oid)
+
     execution.accumulator.absorb(ioAccumulator)
 
     const trigger = Symbol('🏎️')

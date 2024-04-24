@@ -156,8 +156,8 @@ Deno.test('compound', async (t) => {
   // test multiple cycles thru requests and replies
   // test making different request between two invocations
 })
-Deno.test('accumulation spanning multiple commits', async (t) => {
-  for (const withFunctionCache of [true, false]) {
+for (const withFunctionCache of [true, false]) {
+  Deno.test('accumulation spanning multiple commits', async (t) => {
     await t.step(`function cache ${withFunctionCache}`, async () => {
       const engine = await Engine.create()
       if (!withFunctionCache) {
@@ -165,13 +165,13 @@ Deno.test('accumulation spanning multiple commits', async (t) => {
       }
       const { pid } = await engine.initialize()
       const home = Home.create(engine, pid)
-      const shell = await home.createSession()
+      const session = await home.createSession()
 
-      const { fileAccumulation } = await shell.actions<Api>('io-fixture', pid)
+      const { fileAccumulation } = await session.actions<Api>('io-fixture', pid)
       await fileAccumulation({ path: 'test.txt', content: 'hello', count: 3 })
 
       let first
-      for await (const splice of shell.read(pid, 'test.txt')) {
+      for await (const splice of session.read(pid, 'test.txt')) {
         first = splice
         break
       }
@@ -181,10 +181,40 @@ Deno.test('accumulation spanning multiple commits', async (t) => {
       log(file)
       expect(file.split('\n')).toHaveLength(7)
 
-      await shell.stop()
+      await session.stop()
     })
-  }
-})
+  })
+
+  Deno.test.only('looping accumulation', async (t) => {
+    await t.step(`function cache ${withFunctionCache}`, async () => {
+      const engine = await Engine.create()
+      if (!withFunctionCache) {
+        engine.context.exe?.disableFunctionCache()
+      }
+      const { pid } = await engine.initialize()
+      const home = Home.create(engine, pid)
+      const session = await home.createSession()
+
+      const { loopAccumulation } = await session.actions<Api>('io-fixture', pid)
+      log.enable('AI:tests AI:io-fixture')
+      await loopAccumulation({ path: 'test.txt', content: 'hello', count: 3 })
+
+      let first
+      for await (const splice of session.read(pid, 'test.txt')) {
+        first = splice
+        break
+      }
+      assert(first)
+      const file = first.changes['test.txt'].patch
+      assert(file)
+      log(file)
+      expect(file.split('\n')).toHaveLength(9)
+
+      await session.stop()
+    })
+  })
+}
+
 // verify that pierce cannot interrupt a running in band accumulation
 // test repeat calling should not corrupt the cache, and should return the same,
 // even if the commit was several accumulations ago

@@ -4,13 +4,10 @@ import Compartment from './io/compartment.ts'
 import { assert, Debug } from '@utils'
 import {
   DispatchFunctions,
-  getProcType,
   IsolatePromise,
   isSettledIsolatePromise,
-  Params,
   PID,
-  print,
-  ProcessOptions,
+  toActions,
   UnsequencedRequest,
 } from '@/constants.ts'
 const log = Debug('AI:isolateApi')
@@ -71,36 +68,12 @@ export default class IsolateApi<T extends object = Default> {
     assert(this.isEffect, 'signal only available for side effects')
     return this.#abort.signal
   }
+
   async actions<T = DispatchFunctions>(isolate: string, targetPID?: PID) {
     const target = targetPID ? targetPID : this.pid
-    log('actions', isolate, print(target))
-    const schema = await this.isolateApiSchema(isolate)
-    const actions: DispatchFunctions = {}
-    for (const functionName of Object.keys(schema)) {
-      actions[functionName] = (params?: Params, options?: ProcessOptions) => {
-        log('actions %o', functionName)
-        // TODO unify how proctype is derived across all cradles
-        const proctype = getProcType(options)
-        options = options || {}
-        const unsequencedRequest: UnsequencedRequest = {
-          target,
-          isolate,
-          functionName,
-          params: params || {},
-          proctype,
-        }
-        assert(!options.prefix || !options.branchName, 'failed mutex')
-        if (options.prefix) {
-          unsequencedRequest.branchPrefix = options.prefix
-        }
-        if (options.branchName) {
-          unsequencedRequest.branchName = options.branchName
-        }
-        return this.action(unsequencedRequest)
-      }
-    }
-
-    return actions as T
+    const schema = await this.apiSchema(isolate)
+    const execute = (request: UnsequencedRequest) => this.action(request)
+    return toActions<T>(target, isolate, schema, execute)
   }
   action(request: UnsequencedRequest) {
     const recovered = this.#accumulator.recover(request)
@@ -110,7 +83,7 @@ export default class IsolateApi<T extends object = Default> {
       if (outcome.error) {
         throw deserializeError(outcome.error)
       }
-      return outcome.result
+      return Promise.resolve(outcome.result)
     }
     const promise = new Promise((resolve, reject) => {
       const store: IsolatePromise = { request, resolve, reject }
@@ -131,7 +104,7 @@ export default class IsolateApi<T extends object = Default> {
     // TODO but these need to be wrapped in a dispatch call somewhere
     return compartment.functions<T>(this)
   }
-  async isolateApiSchema(isolate: string) {
+  async apiSchema(isolate: string) {
     const compartment = await Compartment.create(isolate)
     return compartment.api
   }
@@ -152,7 +125,6 @@ export default class IsolateApi<T extends object = Default> {
   }
   read(path: string) {
     assert(this.#accumulator.isActive, 'Activity is denied')
-    log('read', path)
     return this.#fs.read(path)
   }
   readBinary(path: string) {
@@ -174,6 +146,29 @@ export default class IsolateApi<T extends object = Default> {
     assert(this.#accumulator.isActive, 'Activity is denied')
     log('delete', filepath)
     return this.#fs.delete(filepath)
+  }
+  readTip(pid: PID) {
+    // try read the pid head ?
+    // is this relative only to what the current commit is ?
+    // ie: should this be fresh, or repeatable ?
+    // IF the io json file i
+    // read the io json file and look for branches that are open
+    // daemon stays open long time ?
+    // should daemon be tracked in iojson ?
+    // in this way, we can walk the whole tree
+
+    // if the daemon moves, it must always update its parent
+
+    // so at this commit, check if the io channel spawned the child in question
+
+    // assert this is a child pid
+
+    // walk arbitrarily deep to verify if it is a child
+
+    // be sure to include branch operations that are transient as well as
+    // daemons
+
+    // for now, throw if tries to go deeper than immediate children
   }
   get context() {
     // TODO at creation, this should flag context capable and reject if not

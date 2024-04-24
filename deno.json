@@ -4,7 +4,7 @@
   "lock": false,
   "tasks": {
     "test": "DENO_KV_PATH=:memory: deno test -A --unstable-kv --unstable-broadcast-channel --coverage",
-    "watch": "DENO_KV_PATH=:memory: DEBUG_COLORS=1 deno test -A --unstable-kv --unstable-broadcast-channel --watch",
+    "watch": "clear && DENO_KV_PATH=:memory: DEBUG_COLORS=1 deno test -A --unstable-kv --unstable-broadcast-channel --watch",
     "api": "DENO_KV_PATH=:memory: DEBUG_COLORS=1 deno run --inspect-brk --unstable-kv --unstable-broadcast-channel -A --watch main.ts",
     "check:types": "deno check **/*.ts",
     "check": "deno fmt --check && deno lint && deno task check:types",

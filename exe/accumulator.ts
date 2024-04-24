@@ -39,11 +39,9 @@ export default class Accumulator {
     this.#buffer.push(request)
   }
   #tickFs() {
-    const next = this.#buffer[this.#index + 1]
+    const next = this.#buffer[this.#index]
     if (next && 'commit' in next) {
-      if (this.#fs.oid !== next.commit) {
-        this.#fs = this.#fs.tick(next.commit)
-      }
+      this.#fs = this.#fs.tick(next.commit)
     } else if (this.fs.oid !== this.#highestFs.oid) {
       // we are at the final layer, so use the latest fs
       this.#fs = this.#fs.tick(this.#highestFs.oid)
@@ -54,7 +52,9 @@ export default class Accumulator {
     const index = this.#index++
     if (this.#buffer[index]) {
       const recovered = this.#buffer[index]
-      assert(equal(recovered.request, request), 'Requests are not equal')
+      if (!equal(recovered.request, request)) {
+        expect(recovered.request, 'Requests are not equal').toEqual(request)
+      }
       if ('outcome' in recovered) {
         this.#tickFs()
       }
@@ -126,9 +126,10 @@ export default class Accumulator {
         } else {
           sink.resolve(sink.outcome.result)
         }
-        this.#tickFs()
       }
     }
+    this.#tickFs()
+    // TODO assert the #new matched the incoming updates exactly
     this.#new = []
   }
 }

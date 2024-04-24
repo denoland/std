@@ -68,6 +68,17 @@ export const api = {
       count: { type: 'integer', minimum: 1 },
     },
   },
+  loopAccumulation: {
+    description: 'loop accumulating file writes',
+    type: 'object',
+    required: ['path', 'content', 'count'],
+    additionalProperties: false,
+    properties: {
+      path: { type: 'string' },
+      content: { type: 'string' },
+      count: { type: 'integer', minimum: 1 },
+    },
+  },
   pong: {
     description: 'ping the AI',
     type: 'object',
@@ -92,9 +103,14 @@ export const api = {
   },
 }
 export type Api = {
+  write: (params: { path: string; content: string }) => Promise<void>
+
   fileAccumulation: (
     params: { path: string; content: string; count: number },
   ) => Promise<void>
+  loopAccumulation: {
+    (params: { path: string; content: string; count: number }): Promise<void>
+  }
 }
 export const functions = {
   write: (params: { path: string; content: string }, api: IsolateApi) => {
@@ -174,6 +190,26 @@ export const functions = {
     file += `up: ${count} ${content}\n`
     api.write(path, file)
     log('wrote:', '\n' + file)
+  },
+  loopAccumulation: async (
+    params: { path: string; content: string; count: number },
+    api: IsolateApi,
+  ) => {
+    log('loopAccumulation', params)
+    log('commit', api.commit)
+    const { path, content: baseContent, count } = params
+    api.write(path)
+
+    const { write } = await api.actions<Api>('io-fixture')
+    let loop = count
+    do {
+      const current = await api.read(path)
+      log('current', current)
+      const content = current + loop + '\n' + baseContent + '\n'
+      log('pre commit', api.commit)
+      await write({ path, content })
+      log('post commit', api.commit)
+    } while (loop--)
   },
   pong: () => {
     log('pong')
