@@ -41,11 +41,8 @@ export default (name: string, cradleMaker: () => Promise<ArtifactSession>) => {
       const { local } = await resumed.actions('io-fixture', target.pid)
       const result = await local()
       expect(result).toEqual('local reply')
-      await resumed.stop()
     })
-    await resumed.stop()
-    await second.stop()
-    await artifact.stop()
+    await Promise.all([resumed.stop(), second.stop(), artifact.stop()])
   })
   Deno.test(prefix + 'internal requests', async (t) => {
     const artifact = await cradleMaker()
