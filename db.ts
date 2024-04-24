@@ -221,8 +221,26 @@ export default class DB {
     pipe().catch(buffer.throw)
     // TODO once piece replies are tracked directly, this can be removed
     const drain = async () => {
+      let last: Splice | undefined
       for await (const promise of buffer) {
-        sink.push(await promise)
+        const splice = await promise
+        if (!last) {
+          sink.push(splice)
+          last = splice
+          continue
+        }
+
+        const splices = [splice]
+        while (splices[0].commit.parent[0] !== last.oid) {
+          const next = await this.#getSplice(
+            pid,
+            splices[0].commit.parent[0],
+            path,
+          )
+          splices.unshift(next)
+        }
+        last = splice
+        splices.map((s) => sink.push(s))
       }
     }
     drain().catch(sink.throw)
