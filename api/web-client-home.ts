@@ -16,12 +16,12 @@ export class Home implements ArtifactHome {
   readonly #engine: EngineInterface
   readonly #pid: PID
   readonly #base: Session
-  #actions: Promise<Api>
+  #sessionActions: Promise<Api>
   private constructor(engine: EngineInterface, pid: PID) {
     this.#engine = engine
     this.#pid = pid
     this.#base = Session.createHome(engine, pid, this)
-    this.#actions = this.#base.actions<Api>('session', this.#pid)
+    this.#sessionActions = this.#base.actions<Api>('session', this.#pid)
   }
   static create(engine: EngineInterface, pid: PID) {
     if (pid.branches.length > 1) {
@@ -36,10 +36,10 @@ export class Home implements ArtifactHome {
     return this.#base.stop()
   }
   /** If the given pid is valid, uses that session, else creates a new one */
-  async createSession(reuse?: PID) {
+  async createSession(retry?: PID) {
     // TODO add some keys to sign with
-    const actions = await this.#actions
-    const pid = await actions.create({ reuse })
+    const sessionActions = await this.#sessionActions
+    const pid = await sessionActions.create({ retry })
     return Session.create(this.#engine, pid, this)
   }
   ping(params?: { data?: JsonValue }) {
@@ -51,6 +51,6 @@ export class Home implements ArtifactHome {
 }
 
 type Api = {
-  create: (params?: { reuse?: PID }) => Promise<PID>
+  create: (params?: { retry?: PID }) => Promise<PID>
   close: () => void
 }

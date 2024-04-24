@@ -6,7 +6,14 @@ export const api = {
     description: 'Creat a new session branch',
     type: 'object',
     additionalProperties: false,
-    properties: {},
+    properties: {
+      retry: {
+        type: 'object',
+        description:
+          'If we have a stored session id, attempt to validate it and resume the existing session, else create a new one',
+        // TODO use the PID json schema here
+      },
+    },
   },
   noop: {
     description: 'a noop that is used to start a long running branch',
@@ -27,13 +34,14 @@ export type Api = {
   close: () => void
 }
 
-// TODO make an isolate that can take in the options as params
 export const functions = {
   async create({ retry }: { retry?: PID } = {}, api: IsolateApi) {
     log('create', retry && print(retry))
     if (retry) {
-      // how to validate a pid ?
-      // every chain should have access to its children
+      if (await api.pidExists(retry)) {
+        // TODO check signing keys for validity too
+        return retry
+      }
     }
 
     const { noop } = await api.actions('session')

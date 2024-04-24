@@ -93,6 +93,7 @@ export default class Accumulator {
     assert(!this.isActive, '"this" is already active')
     assert(!from.isActive, '"from" is already active')
     if (!(this.#buffer.length <= from.#buffer.length)) {
+      expect(this.#buffer).toEqual(from.#buffer)
       console.log('this buffer length', this.#buffer.length)
       console.dir(this.#buffer, { depth: null })
       console.log('from buffer length', from.#buffer.length)

@@ -46,20 +46,6 @@ export class Session implements ArtifactSession {
     }
     return new Session(engine, pid, home)
   }
-  static resume(engine: EngineInterface, pid: PID, home: Home) {
-    freezePid(pid)
-    if (pid.branches.length !== 2) {
-      const branches = print(pid)
-      throw new Error('Session chain not direct child of base: ' + branches)
-    }
-    // how to validate that this chain is active, and our keys are still valid ?
-
-    // asking the chain directly seems rude, since the chain might not exist
-
-    // also we need to know if we have the right keys on hand still
-
-    // home chain should have a validate function
-  }
   static createHome(engine: EngineInterface, pid: PID, home: Home) {
     freezePid(pid)
     if (pid.branches.length !== 1) {
@@ -81,8 +67,8 @@ export class Session implements ArtifactSession {
     this.#abort.abort()
     return this.#engine.stop()
   }
-  newSession(): Promise<ArtifactSession> {
-    return this.#home.createSession()
+  createSession(retry?: PID): Promise<ArtifactSession> {
+    return this.#home.createSession(retry)
   }
   async #watchPierces() {
     let lastSplice

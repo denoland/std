@@ -185,7 +185,7 @@ for (const withFunctionCache of [true, false]) {
     })
   })
 
-  Deno.test.only('looping accumulation', async (t) => {
+  Deno.test('looping accumulation', async (t) => {
     await t.step(`function cache ${withFunctionCache}`, async () => {
       const engine = await Engine.create()
       if (!withFunctionCache) {

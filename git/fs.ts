@@ -1,6 +1,6 @@
 import http from 'npm:isomorphic-git/http/web/index.js'
 import { assert, Debug, equal, posix, sha1 } from '@utils'
-import { Change, ENTRY_BRANCH, PID } from '@/constants.ts'
+import { Change, ENTRY_BRANCH, PID, print } from '@/constants.ts'
 import git from '$git'
 import type DB from '@/db.ts'
 import { GitKV } from './gitkv.ts'
@@ -60,7 +60,7 @@ export default class FS {
   static async openHead(pid: PID, db: DB) {
     const head = await db.readHead(pid)
     if (!head) {
-      throw new Error('HEAD not found: ' + pid.branches.join('/'))
+      throw new Error('HEAD not found: ' + print(pid))
     }
     return new FS(pid, head, db)
   }

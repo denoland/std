@@ -322,7 +322,7 @@ export interface ArtifactSession {
   /** Remove the account if currently signed in */
   deleteAccountUnrecoverably(): Promise<void>
   /** Using the current session, create a new session */
-  newSession(): Promise<ArtifactSession>
+  createSession(retry?: PID): Promise<ArtifactSession>
 }
 /** The client home interface to Artifact, only able to create new sessions.
 Will handle the generation of signing keys for the session, and authentication

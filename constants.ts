@@ -18,6 +18,7 @@ import {
 import FS from '@/git/fs.ts'
 import type DB from '@/db.ts'
 import type Executor from '@/exe/exe.ts'
+import { equal } from '@utils'
 
 /** Artifact Context, including the db and executor */
 export type C = { db: DB; exe: Executor }
@@ -185,6 +186,10 @@ export const isQueueExe = (m: QueueMessage): m is QueueExe => {
 }
 export const isQueueBranch = (m: QueueMessage): m is QueueBranch => {
   return m.type === QueueMessageType.BRANCH
+}
+export const isChildOf = (child: PID, parent: PID) => {
+  const childParent = { ...child, branches: child.branches.slice(0, -1) }
+  return equal(childParent, parent)
 }
 
 export * from './api/web-client.types.ts'

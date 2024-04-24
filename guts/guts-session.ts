@@ -13,13 +13,14 @@ export default (name: string, cradleMaker: () => Promise<ArtifactSession>) => {
     const repo = 'process/session'
     await artifact.rm({ repo })
     const target = await artifact.init({ repo })
+
     // TODO exercise the ACL blocking some actions to the session chain
     await t.step('interact', async () => {
       const { local } = await artifact.actions('io-fixture', artifact.pid)
       const result = await local()
       expect(result).toEqual('local reply')
     })
-    const second = await artifact.newSession()
+    const second = await artifact.createSession()
     await t.step('second session', async () => {
       expect(second.pid.branches).toHaveLength(2)
 
@@ -30,6 +31,13 @@ export default (name: string, cradleMaker: () => Promise<ArtifactSession>) => {
     await t.step('cross session', async () => {
       assert(second)
       const { local } = await second.actions('io-fixture', artifact.pid)
+      const result = await local()
+      expect(result).toEqual('local reply')
+    })
+    await t.step('resume session', async () => {
+      const resumed = await artifact.createSession(artifact.pid)
+      expect(resumed.pid).toEqual(artifact.pid)
+      const { local } = await resumed.actions('io-fixture', target.pid)
       const result = await local()
       expect(result).toEqual('local reply')
     })

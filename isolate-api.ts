@@ -4,9 +4,12 @@ import Compartment from './io/compartment.ts'
 import { assert, Debug } from '@utils'
 import {
   DispatchFunctions,
+  IoStruct,
+  isChildOf,
   IsolatePromise,
   isSettledIsolatePromise,
   PID,
+  print,
   toActions,
   UnsequencedRequest,
 } from '@/constants.ts'
@@ -147,28 +150,22 @@ export default class IsolateApi<T extends object = Default> {
     log('delete', filepath)
     return this.#fs.delete(filepath)
   }
-  readTip(pid: PID) {
-    // try read the pid head ?
-    // is this relative only to what the current commit is ?
-    // ie: should this be fresh, or repeatable ?
-    // IF the io json file i
-    // read the io json file and look for branches that are open
-    // daemon stays open long time ?
-    // should daemon be tracked in iojson ?
-    // in this way, we can walk the whole tree
+  async pidExists(pid: PID) {
+    if (!isChildOf(pid, this.pid)) {
+      throw new Error('not child: ' + print(pid) + ' of ' + print(this.pid))
+      // TODO allow recursive PID walking
+      // TODO allow walking parents and remote repos
+    }
 
-    // if the daemon moves, it must always update its parent
-
-    // so at this commit, check if the io channel spawned the child in question
-
-    // assert this is a child pid
-
-    // walk arbitrarily deep to verify if it is a child
-
-    // be sure to include branch operations that are transient as well as
-    // daemons
-
-    // for now, throw if tries to go deeper than immediate children
+    const obj = await this.readJSON<IoStruct>('.io.json')
+    const child = pid.branches[pid.branches.length - 1]
+    log('readTip', child)
+    for (const branchName of Object.values(obj.branches)) {
+      if (branchName === child) {
+        return true
+      }
+    }
+    return false
   }
   get context() {
     // TODO at creation, this should flag context capable and reject if not

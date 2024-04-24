@@ -33,7 +33,8 @@ export class WebClientEngine implements EngineInterface {
     return new WebClientEngine(url, fetcher)
   }
   async initialize() {
-    const response = await this.#fetcher(`/api`)
+    const createSuperUser = `/api`
+    const response = await this.#fetcher(createSuperUser)
     if (!response.ok) {
       throw new Error('response not ok')
     }
