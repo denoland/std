@@ -14,8 +14,10 @@
  * console.dir(parse(Deno.args));
  * ```
  *
- * @deprecated This will be removed in 1.0.0. Import from
- * {@link https://deno.land/std/cli/parse_args.ts} instead.
+ * @deprecated Use
+ * {@linkcode https://jsr.io/@std/cli/doc/parse-args/~/parseArgs | parseArgs}
+ * instead. This module will be removed once the Standard Library migrates to
+ * {@link https://jsr.io/ | JSR}.
  *
  * @module
  */
@@ -423,9 +425,10 @@ function hasKey(obj: NestedMapping, keys: string[]): boolean {
  * // parsedArgs: { foo: true, bar: "baz", _: ["./quux.txt"] }
  * ```
  *
- * @deprecated This will be removed in 1.0.0. Use
- * {@linkcode https://deno.land/std/cli/parse_args.ts?s=parseArgs | parseArgs}
- * instead.
+ * @deprecated Use
+ * {@linkcode https://jsr.io/@std/cli/doc/parse-args/~/parseArgs | parseArgs}
+ * instead. This module will be removed once the Standard Library migrates to
+ * {@link https://jsr.io/ | JSR}.
  */
 export function parse<
   TArgs extends Values<

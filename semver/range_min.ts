@@ -1,8 +1,8 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 import { INVALID, MAX, MIN } from "./constants.ts";
+import { satisfies } from "./satisfies.ts";
 import type { Comparator, Range, SemVer } from "./types.ts";
-import { testRange } from "./test_range.ts";
 import { lessThan } from "./less_than.ts";
 import { greaterThan } from "./greater_than.ts";
 import { increment } from "./increment.ts";
@@ -50,7 +50,7 @@ export function rangeMin(range: Range): SemVer {
   for (const comparators of range) {
     for (const comparator of comparators) {
       const candidate = comparatorMin(comparator);
-      if (!testRange(candidate, range)) continue;
+      if (!satisfies(candidate, range)) continue;
       min = (min && lessThan(min, candidate)) ? min : candidate;
     }
   }
