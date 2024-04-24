@@ -6,6 +6,8 @@ import type { ParsedPath } from "../_interface.ts";
 import { assertPath } from "../_common/assert_path.ts";
 import { isPathSeparator, isWindowsDeviceRoot } from "./_util.ts";
 
+export type { ParsedPath } from "../_interface.ts";
+
 /**
  * Return a `ParsedPath` object of the `path`.
  * @param path to process
