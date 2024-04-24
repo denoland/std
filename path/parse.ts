@@ -6,6 +6,8 @@ import type { ParsedPath } from "./_interface.ts";
 import { parse as posixParse } from "./posix/parse.ts";
 import { parse as windowsParse } from "./windows/parse.ts";
 
+export type { ParsedPath } from "./_interface.ts";
+
 /**
  * Return a `ParsedPath` object of the `path`. Use `format` to reverse the result.
  *
