@@ -34,13 +34,17 @@ export default (name: string, cradleMaker: () => Promise<ArtifactSession>) => {
       const result = await local()
       expect(result).toEqual('local reply')
     })
+
+    const resumed = await artifact.createSession(artifact.pid)
     await t.step('resume session', async () => {
-      const resumed = await artifact.createSession(artifact.pid)
       expect(resumed.pid).toEqual(artifact.pid)
       const { local } = await resumed.actions('io-fixture', target.pid)
       const result = await local()
       expect(result).toEqual('local reply')
+      await resumed.stop()
     })
+    await resumed.stop()
+    await second.stop()
     await artifact.stop()
   })
   Deno.test(prefix + 'internal requests', async (t) => {
