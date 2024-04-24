@@ -51,6 +51,10 @@ function equals32Bit(a: Uint8Array, b: Uint8Array): boolean {
   return true;
 }
 
+/**
+ * Threshold for when to use 32-bit comparisons. This was chosen based on
+ * benchmark results.
+ */
 const THRESHOLD_32_BIT = 160;
 
 /**
