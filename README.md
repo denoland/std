@@ -107,7 +107,6 @@ requirements:
 | [dotenv](https://jsr.io/@std/dotenv)                   | Unstable   | [![JSR](https://jsr.io/badges/@std/dotenv)](https://jsr.io/@std/dotenv)                   |
 | [encoding](https://jsr.io/@std/encoding)               | Settled    | [![JSR](https://jsr.io/badges/@std/encoding)](https://jsr.io/@std/encoding)               |
 | [expect](https://jsr.io/@std/expect)                   | Unstable   | [![JSR](https://jsr.io/badges/@std/expect)](https://jsr.io/@std/expect)                   |
-| [flags](https://jsr.io/@std/flags)                     | Deprecated | [![JSR](https://jsr.io/badges/@std/flags)](https://jsr.io/@std/flags)                     |
 | [fmt](https://jsr.io/@std/fmt)                         | Settled    | [![JSR](https://jsr.io/badges/@std/fmt)](https://jsr.io/@std/fmt)                         |
 | [front_matter](https://jsr.io/@std/front-matter)       | Settled    | [![JSR](https://jsr.io/badges/@std/front-matter)](https://jsr.io/@std/front-matter)       |
 | [fs](https://jsr.io/@std/fs)                           | Settled    | [![JSR](https://jsr.io/badges/@std/fs)](https://jsr.io/@std/fs)                           |
