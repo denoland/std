@@ -29,8 +29,16 @@ function equals32Bit(a: Uint8Array, b: Uint8Array): boolean {
   const len = a.length;
   const compactOffset = 3 - ((a.byteOffset + 3) % 4);
   const compactLen = Math.floor((len - compactOffset) / 4);
-  const compactA = new Uint32Array(a.buffer, a.byteOffset + compactOffset, compactLen);
-  const compactB = new Uint32Array(b.buffer, b.byteOffset + compactOffset, compactLen);
+  const compactA = new Uint32Array(
+    a.buffer,
+    a.byteOffset + compactOffset,
+    compactLen,
+  );
+  const compactB = new Uint32Array(
+    b.buffer,
+    b.byteOffset + compactOffset,
+    compactLen,
+  );
   for (let i = 0; i < compactOffset; i++) {
     if (a[i] !== b[i]) return false;
   }
@@ -68,7 +76,8 @@ export function equals(a: Uint8Array, b: Uint8Array): boolean {
   if (a.length !== b.length) {
     return false;
   }
-  return a.length >= THRESHOLD_32_BIT && (a.byteOffset % 4) === (b.byteOffset % 4)
+  return a.length >= THRESHOLD_32_BIT &&
+      (a.byteOffset % 4) === (b.byteOffset % 4)
     ? equals32Bit(a, b)
     : equalsNaive(a, b);
 }
