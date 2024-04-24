@@ -196,7 +196,6 @@ for (const withFunctionCache of [true, false]) {
       const session = await home.createSession()
 
       const { loopAccumulation } = await session.actions<Api>('io-fixture', pid)
-      log.enable('AI:tests AI:io-fixture')
       await loopAccumulation({ path: 'test.txt', content: 'hello', count: 3 })
 
       let first
