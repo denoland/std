@@ -8,7 +8,7 @@ import { satisfies } from "./satisfies.ts";
  * @param range The range to check
  * @returns true if the version is in the range
  *
- * @deprecated This will be removed in 0.227.0. Use {@linkcode satisfies}
+ * @deprecated This will be removed in 1.0.0. Use {@linkcode satisfies}
  * instead.
  */
 export function testRange(version: SemVer, range: Range): boolean {
