@@ -16,6 +16,8 @@ import * as loadTools from './ai-load-tools.ts'
 import * as promptInjector from './ai-prompt-injector.ts'
 import * as prompt from './ai-prompt.ts'
 
+import * as hal from './hal.ts'
+
 export default {
   'engage-help': engageHelp,
   fetch,
@@ -33,4 +35,5 @@ export default {
   'ai-load-tools': loadTools,
   'ai-prompt-injector': promptInjector,
   'ai-prompt': prompt,
+  hal,
 }

@@ -42,7 +42,7 @@ export default class Executor {
     assert(io.isNextSerialRequest(req), 'request is not callable')
     log('request %o %o', req.isolate, req.functionName, commit)
 
-    const ioAccumulator = io.getAccumulator(fs)
+    const accumulator = io.getAccumulator(fs)
 
     // if this is a side effect, we need to get the side effect lock
     // then this check needs to be added into everything that the api does
@@ -53,7 +53,7 @@ export default class Executor {
       log('creating execution %o', exeId)
       const opts = { isEffect: true, isEffectRecovered: false }
       // TODO read side effect config from io.json
-      const isolateApi = IsolateApi.create(ioAccumulator, opts)
+      const isolateApi = IsolateApi.create(accumulator, opts)
       if (isSystem(fs.pid)) {
         isolateApi.context = c
       }
@@ -76,7 +76,7 @@ export default class Executor {
           const outcome: Outcome = { error: serializeError(error) }
           return outcome
         }),
-        accumulator: ioAccumulator,
+        accumulator,
         api: isolateApi,
         commits: [fs.oid],
       }
@@ -95,7 +95,7 @@ export default class Executor {
 
     execution.commits.push(fs.oid)
 
-    execution.accumulator.absorb(ioAccumulator)
+    execution.accumulator.absorb(accumulator)
 
     const trigger = Symbol('🏎️')
     const accumulatorPromise = execution.accumulator.activate(trigger)

@@ -163,7 +163,7 @@ for (const withFunctionCache of [true, false]) {
       if (!withFunctionCache) {
         engine.context.exe?.disableFunctionCache()
       }
-      const { pid } = await engine.initialize()
+      const { pid } = await engine.boot()
       const home = Home.create(engine, pid)
       const session = await home.createSession()
 
@@ -191,7 +191,7 @@ for (const withFunctionCache of [true, false]) {
       if (!withFunctionCache) {
         engine.context.exe?.disableFunctionCache()
       }
-      const { pid } = await engine.initialize()
+      const { pid } = await engine.boot()
       const home = Home.create(engine, pid)
       const session = await home.createSession()
 

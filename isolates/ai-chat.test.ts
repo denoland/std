@@ -14,7 +14,7 @@ import OpenAI from 'openai'
 import { Home } from '@/api/web-client-home.ts'
 type Messages = OpenAI.ChatCompletionMessageParam
 
-Deno.test('runner', async (t) => {
+Deno.test('ai-chat', async (t) => {
   const helpBase: Help = {
     config: {
       model: 'gpt-3.5-turbo',
@@ -79,13 +79,12 @@ Deno.test('runner', async (t) => {
 })
 
 Deno.test('engage-help', async (t) => {
-  const repo = 'dreamcatcher-tech/HAL'
   const engine = await Engine.create()
-  await engine.initialize()
+  await engine.boot()
   const home = Home.create(engine, engine.pid)
   const artifact = await home.createSession()
 
-  const { pid } = await artifact.clone({ repo })
+  const { pid } = await artifact.clone({ repo: 'dreamcatcher-tech/HAL' })
 
   let latest = {}
   const splices = async () => {

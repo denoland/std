@@ -1,6 +1,7 @@
 import {
   IoStruct,
   SettledIsolatePromise,
+  SolidRequest,
   UnsequencedRequest,
 } from '@/constants.ts'
 import { IsolatePromise } from '@/constants.ts'
@@ -9,24 +10,30 @@ import FS from '@/git/fs.ts'
 
 export default class Accumulator {
   #index = 0
+  #origin: SolidRequest
   #buffer: IsolatePromise[]
   #fs: FS
   #highestFs: FS
   #new: IsolatePromise[] = []
   #isActive = false
   #trigger: (() => void) | undefined
-  private constructor(highestFs: FS, buffer: IsolatePromise[]) {
+  private constructor(
+    origin: SolidRequest,
+    buffer: IsolatePromise[],
+    highestFs: FS,
+  ) {
+    this.#origin = origin
+    this.#buffer = buffer
     this.#highestFs = highestFs
     this.#fs = highestFs
-    this.#buffer = buffer
     const [first] = buffer
     if (first) {
       assert('commit' in first, 'first accumulation must have a commit')
       this.#fs = highestFs.tick(first.commit)
     }
   }
-  static create(buffer: IsolatePromise[] = [], highestFs: FS) {
-    const acc = new Accumulator(highestFs, buffer)
+  static create(origin: SolidRequest, buffer: IsolatePromise[] = [], hFs: FS) {
+    const acc = new Accumulator(origin, buffer, hFs)
     return acc
   }
   get accumulations() {
@@ -34,6 +41,9 @@ export default class Accumulator {
   }
   get fs() {
     return this.#fs
+  }
+  get origin() {
+    return this.#origin
   }
   push(request: IsolatePromise) {
     assert(this.isActive, 'Activity is denied')

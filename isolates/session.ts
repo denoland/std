@@ -1,5 +1,5 @@
-import { IsolateApi, PID, print } from '@/constants.ts'
-import { Debug } from '@utils'
+import { IsolateApi, PID, ProcessOptions } from '@/constants.ts'
+import { assert, Debug } from '@utils'
 const log = Debug('AI:session')
 export const api = {
   create: {
@@ -12,6 +12,14 @@ export const api = {
         description:
           'If we have a stored session id, attempt to validate it and resume the existing session, else create a new one',
         // TODO use the PID json schema here
+      },
+      name: {
+        type: 'string',
+        description: 'The name of the session to create',
+      },
+      prefix: {
+        type: 'string',
+        description: 'The prefix to use for the session branch',
       },
     },
   },
@@ -30,13 +38,20 @@ export const api = {
 }
 
 export type Api = {
-  create: (arg1?: { prefix?: string }) => Promise<PID>
+  create: (
+    arg1?: { prefix?: string; retry?: PID; name?: string },
+  ) => Promise<PID>
   close: () => void
 }
 
 export const functions = {
-  async create({ retry }: { retry?: PID } = {}, api: IsolateApi) {
-    log('create', retry && print(retry))
+  async create(
+    { retry, name, prefix }: { retry?: PID; name?: string; prefix?: string } =
+      {},
+    api: IsolateApi,
+  ) {
+    assert(isMaxOneOf(retry, name, prefix), 'max one arg is possible')
+    log('create')
     if (retry) {
       if (await api.pidExists(retry)) {
         // TODO check signing keys for validity too
@@ -45,7 +60,17 @@ export const functions = {
     }
 
     const { noop } = await api.actions('session')
-    const pid = await noop({}, { noClose: true, prefix: 'session' })
+    const options: ProcessOptions = { noClose: true }
+    if (prefix) {
+      options.prefix = prefix
+    }
+    if (name) {
+      options.branchName = name
+    }
+    if (!retry && !prefix && !name) {
+      options.prefix = 'session'
+    }
+    const pid = await noop({}, options)
     log('noop pid', pid)
     return pid
   },
@@ -57,4 +82,14 @@ export const functions = {
     log(api)
     // message the parent and tell it to close this child
   },
+}
+
+const isMaxOneOf = (...args: unknown[]) => {
+  let count = 0
+  for (const arg of args) {
+    if (arg !== undefined) {
+      count++
+    }
+  }
+  return count <= 1
 }

@@ -65,6 +65,7 @@ export class Session implements ArtifactSession {
     return this.#home
   }
   async #repoActions() {
+    // TODO this is really a scopeTo call on the base session object
     if (!this.#repo) {
       this.#repo = this.actions<Repo>('repo', this.#pid)
     }
@@ -76,11 +77,6 @@ export class Session implements ArtifactSession {
       return this.#engine.stop()
     }
     return this.#home.stop()
-  }
-  scopeTo<T>(repo: string): Promise<ArtifactScope<T>> {
-    const pid = pidFromRepo(this.#pid.id, repo)
-    this.#home.createSession(pid)
-    throw new Error('not implemented')
   }
   async #watchPierces() {
     let lastSplice
@@ -145,6 +141,7 @@ export class Session implements ArtifactSession {
     return await this.#engine.transcribe(params.audio)
   }
   async probe({ pid }: { pid: PID }) {
+    // TODO make this be pure read, rather than a commitable action
     const actions = await this.#repoActions()
     return actions.probe({ pid })
   }
@@ -176,6 +173,9 @@ export class Session implements ArtifactSession {
       throw new Error('after not implemented')
     }
     return this.#engine.read(pid, path, after, signal)
+  }
+  readJSON<T>(path: string, pid: PID = this.pid) {
+    return this.#engine.readJSON<T>(path, pid)
   }
   async endSession(): Promise<void> {
   }

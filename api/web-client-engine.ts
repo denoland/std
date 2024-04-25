@@ -131,6 +131,8 @@ export class WebClientEngine implements EngineInterface {
     pipe().catch(source.throw)
     return source
   }
+  async readJSON<T>(path: string, pid: PID) {
+  }
   async #request(path: string, params: Params) {
     const response = await this.#fetcher(`/api/${path}?pretty`, {
       method: 'POST',

@@ -75,6 +75,7 @@ export const functions = {
     assert(isPierceRequest(pierce), 'invalid pierce request')
     freezePid(pierce.target)
     const { db } = sanitizeContext(api)
+    // TODO do the pooling here to save a queue round trip
     // TODO add ulid in here, but make it be repeatable
     // TODO check signatures and permissions here
     // not necessary to be atomic, but uses functions on the atomic class

@@ -20,7 +20,7 @@ export default (name: string, cradleMaker: () => Promise<ArtifactSession>) => {
       const result = await local()
       expect(result).toEqual('local reply')
     })
-    const second = await artifact.createSession()
+    const second = await artifact.home.createSession()
     await t.step('second session', async () => {
       expect(second.pid.branches).toHaveLength(2)
 
@@ -35,7 +35,7 @@ export default (name: string, cradleMaker: () => Promise<ArtifactSession>) => {
       expect(result).toEqual('local reply')
     })
 
-    const resumed = await artifact.createSession(artifact.pid)
+    const resumed = await artifact.home.createSession(artifact.pid)
     await t.step('resume session', async () => {
       expect(resumed.pid).toEqual(artifact.pid)
       const { local } = await resumed.actions('io-fixture', target.pid)

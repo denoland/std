@@ -96,4 +96,13 @@ export class Engine implements EngineInterface {
     assert(db, 'db not found')
     return db.watchSplices(pid, path, after, signal)
   }
+  async readJSON<T>(path: string, pid: PID) {
+    freezePid(pid)
+    assert(!posix.isAbsolute(path), `path must be relative: ${path}`)
+
+    const db = this.#api.context.db
+    assert(db, 'db not found')
+    const fs = await FS.openHead(pid, db)
+    return fs.readJSON<T>(path)
+  }
 }

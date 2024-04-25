@@ -82,9 +82,11 @@ export default class FS {
     const init = new FS(pid, commit, db)
     return init
   }
-  static async clone(pid: PID, db: DB) {
+  static async clone(pid: PID, db: DB, url?: string) {
     // TODO detect the mainbranch somehow
-    const url = `https://github.com/${pid.account}/${pid.repository}.git`
+    if (!url) {
+      url = `https://github.com/${pid.account}/${pid.repository}.git`
+    }
     const fs = { promises: GitKV.createBlank(db, pid) }
     fs.promises.oneAtomicWrite = db.atomic()
     const cache = FS.#getGitCache(pid)

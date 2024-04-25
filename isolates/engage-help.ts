@@ -1,10 +1,10 @@
 import { assert, Debug } from '@utils'
-const log = Debug('AI:isolates:engage-help')
 import { IsolateApi } from '@/constants.ts'
 import { Help, RUNNERS } from '@/constants.ts'
 import * as loadHelp from '@/isolates/load-help.ts'
 import * as promptIsolate from '@/isolates/ai-prompt.ts'
 import * as injectorIsolate from '@/isolates/ai-prompt-injector.ts'
+const log = Debug('AI:isolates:engage-help')
 
 export const api = {
   engage: {
@@ -41,9 +41,7 @@ export const functions = {
 
     const isolate = runner === RUNNERS.CHAT ? promptIsolate : injectorIsolate
 
-    const result = await isolate.functions.prompt({ help, text }, api)
-    log('result:', result)
-    return result
+    await isolate.functions.prompt({ help, text }, api)
   },
   continue: (
     { help: path, text, commit }: {

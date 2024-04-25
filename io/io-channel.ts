@@ -165,9 +165,9 @@ export default class IOChannel {
     const indices: number[] = []
     const commits: string[] = []
 
-    const current = this.getCurrentSerialRequest()
-    assert(current, 'no serial request found')
-    const sequence = this.getSequence(current)
+    const origin = this.getCurrentSerialRequest()
+    assert(origin, 'no serial request found')
+    const sequence = this.getSequence(origin)
     const pendings = this.#io.pendings[sequence]
     if (pendings) {
       for (const layer of pendings) {
@@ -188,7 +188,7 @@ export default class IOChannel {
       const result: IsolatePromise = { request, outcome, commit }
       accumulations.push(result)
     }
-    return Accumulator.create(accumulations, fs)
+    return Accumulator.create(origin, accumulations, fs)
   }
   isSettled(sequence: number) {
     assert(this.#io.sequence > sequence, 'sequence not yet invoked')
@@ -213,9 +213,9 @@ export default class IOChannel {
     assert(branchTypes.includes(request.proctype), 'not a branch request')
 
     let name = sequence + ''
-    if (request.branch) {
+    if (request.branchName) {
       assert(!request.branchPrefix, 'cannot have both branch and branchPrefix')
-      name = request.branch
+      name = request.branchName
     }
     if (request.branchPrefix) {
       assert(!request.branch, 'cannot have both branch and branchPrefix')

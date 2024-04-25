@@ -296,6 +296,7 @@ type Head = { pid: PID; head: string }
 /** The client session interface to artifact */
 export interface ArtifactSession {
   pid: PID
+  home: ArtifactHome
   stop(): Promise<void> | void
   actions<T = DispatchFunctions>(isolate: string, target: PID): Promise<T>
   read(
@@ -304,6 +305,7 @@ export interface ArtifactSession {
     after?: string,
     signal?: AbortSignal,
   ): AsyncIterable<Splice>
+  readJSON<T>(path: string, pid: PID): Promise<T>
   transcribe(params: { audio: File }): Promise<{ text: string }>
   apiSchema(isolate: string): Promise<ApiSchema>
   /** Pings the execution context without going thru the transaction queue.
@@ -321,8 +323,6 @@ export interface ArtifactSession {
   endSession(): Promise<void>
   /** Remove the account if currently signed in */
   deleteAccountUnrecoverably(): Promise<void>
-  /** Using the current session, create a new session */
-  createSession(retry?: PID): Promise<ArtifactSession>
 }
 /** The client home interface to Artifact, only able to create new sessions.
 Will handle the generation of signing keys for the session, and authentication
@@ -331,9 +331,8 @@ with github.
 export interface ArtifactHome {
   pid: PID
   stop(): Promise<void> | void
-  /** If you have not signed in, you get a locked down session that allows
-   * limited interactions */
-  createSession(): Promise<ArtifactSession>
+  /** Using the current session, create a new session. */
+  createSession(retry?: PID): Promise<ArtifactSession>
   /** Pings the execution context without going thru the transaction queue.
    *
    * Used primarily by web clients to establish base connectivity and get
@@ -349,6 +348,7 @@ export interface EngineInterface {
     after?: string,
     signal?: AbortSignal,
   ): AsyncIterable<Splice>
+  readJSON<T>(path: string, pid: PID): Promise<T>
   transcribe(audio: File): Promise<{ text: string }>
   apiSchema(isolate: string): Promise<ApiSchema>
   ping(data?: JsonValue): Promise<IsolateReturn>

@@ -51,6 +51,9 @@ export default class IsolateApi<T extends object = Default> {
   get pid() {
     return this.#fs.pid
   }
+  get origin() {
+    return this.#accumulator.origin
+  }
   get commit() {
     return this.#fs.oid
   }
