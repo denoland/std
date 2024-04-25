@@ -1,6 +1,5 @@
-import { expect, log } from '@utils'
+import { assert, expect, log } from '@utils'
 import { ArtifactSession } from '../api/web-client.types.ts'
-import { assert } from '@std/assert'
 
 export default (name: string, cradleMaker: () => Promise<ArtifactSession>) => {
   const prefix = name + ': '

@@ -8,6 +8,7 @@ import splices from './splices.ts'
 import benchmarks from './benchmarks.ts'
 import { pidFromRepo } from '@/constants.ts'
 import session from './guts-session.ts'
+import hal from './guts-hal.ts'
 
 const ioFixture = 'io-fixture'
 
@@ -18,11 +19,11 @@ export default (name: string, cradleMaker: () => Promise<ArtifactSession>) => {
     const artifact = await cradleMaker()
     await t.step('ping empty', async () => {
       const empty = await artifact.ping()
-      expect(empty).toEqual(undefined)
+      expect(empty).toEqual({})
     })
     await t.step('ping with params', async () => {
       const result = await artifact.ping({ data: { test: 'test' } })
-      expect(result).toEqual({ test: 'test' })
+      expect(result).toEqual({ data: { test: 'test' } })
     })
     await artifact.stop()
   })
@@ -104,4 +105,5 @@ export default (name: string, cradleMaker: () => Promise<ArtifactSession>) => {
   aiCalls(name, cradleMaker)
   splices(name, cradleMaker)
   session(name, cradleMaker)
+  hal(name, cradleMaker)
 }

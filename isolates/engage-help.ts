@@ -2,8 +2,8 @@ import { assert, Debug } from '@utils'
 import { IsolateApi } from '@/constants.ts'
 import { Help, RUNNERS } from '@/constants.ts'
 import * as loadHelp from '@/isolates/load-help.ts'
-import * as promptIsolate from '@/isolates/ai-prompt.ts'
-import * as injectorIsolate from '@/isolates/ai-prompt-injector.ts'
+import * as prompt from '@/isolates/ai-prompt.ts'
+import * as promptInjector from '@/isolates/ai-prompt-injector.ts'
 const log = Debug('AI:isolates:engage-help')
 
 export const api = {
@@ -39,7 +39,7 @@ export const functions = {
     assert(isValid, `no runner: ${help.runner}`)
     log('found runner string:', runner)
 
-    const isolate = runner === RUNNERS.CHAT ? promptIsolate : injectorIsolate
+    const isolate = runner === RUNNERS.CHAT ? prompt : promptInjector
 
     await isolate.functions.prompt({ help, text }, api)
   },

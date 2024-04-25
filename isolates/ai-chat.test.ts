@@ -2,7 +2,7 @@ import merge from 'npm:lodash.merge'
 import { Engine } from '../engine.ts'
 import { expect, log } from '@utils'
 import IsolateApi from '../isolate-api.ts'
-import { Help, pidFromRepo, RUNNERS } from '../constants.ts'
+import { Help, pidFromRepo, PROCTYPE, RUNNERS } from '../constants.ts'
 import { prepare } from './ai-prompt.ts'
 import * as completions from './ai-completions.ts'
 import FS from '@/git/fs.ts'
@@ -26,7 +26,7 @@ Deno.test('ai-chat', async (t) => {
   const db = await DB.create()
   const pid = pidFromRepo('t', 'runner/test')
   const fs = await FS.init(pid, db)
-  const accumulator = Accumulator.create([], fs)
+  const accumulator = Accumulator.create(dummyOrigin, [], fs)
   const api = IsolateApi.create(accumulator)
   accumulator.activate(Symbol())
 
@@ -80,7 +80,7 @@ Deno.test('ai-chat', async (t) => {
 
 Deno.test('engage-help', async (t) => {
   const engine = await Engine.create()
-  await engine.boot()
+  await engine.bootSuperUser()
   const home = Home.create(engine, engine.pid)
   const artifact = await home.createSession()
 
@@ -137,3 +137,22 @@ Deno.test('engage-help', async (t) => {
 
   await artifact.stop()
 })
+const dummyOrigin = {
+  target: {
+    id: '0',
+    account: 'system',
+    repository: 'system',
+    branches: ['main'],
+  },
+  isolate: 'repo',
+  functionName: 'rm',
+  params: { repo: 'test/test' },
+  proctype: PROCTYPE.SERIAL,
+  sequence: 1,
+  source: {
+    id: '0',
+    account: 'system',
+    repository: 'system',
+    branches: ['main'],
+  },
+}

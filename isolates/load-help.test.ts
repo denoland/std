@@ -5,7 +5,7 @@ import { Api } from '@/isolates/load-help.ts'
 import { Home } from '@/api/web-client-home.ts'
 Deno.test('loadAll', async (t) => {
   const engine = await Engine.create()
-  const { pid: enginePid } = await engine.boot()
+  const { pid: enginePid } = await engine.bootSuperUser()
   const home = Home.create(engine, enginePid)
   const artifact = await home.createSession()
   const { pid } = await artifact.clone({ repo: 'dreamcatcher-tech/HAL' })

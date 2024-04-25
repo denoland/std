@@ -63,6 +63,7 @@ export const prepare = async (help: Help, text: string, api: IsolateApi) => {
 
   const sysprompt = help.instructions.join('\n').trim()
   if (sysprompt) {
+    log('sysprompt:', sysprompt)
     if (!equal(messages[0], { role: 'system', content: sysprompt })) {
       if (messages[0]?.role === 'system') {
         messages.shift()

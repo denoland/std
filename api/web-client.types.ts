@@ -109,7 +109,7 @@ export type HelpConfig = {
 export type Help = {
   description?: string
   config?: HelpConfig
-  runner?: RUNNERS
+  runner: RUNNERS
   commands?: string[]
   instructions: string[]
   done?: string
@@ -306,6 +306,7 @@ export interface ArtifactSession {
     signal?: AbortSignal,
   ): AsyncIterable<Splice>
   readJSON<T>(path: string, pid: PID): Promise<T>
+  exists(path: string, pid?: PID): Promise<boolean>
   transcribe(params: { audio: File }): Promise<{ text: string }>
   apiSchema(isolate: string): Promise<ApiSchema>
   /** Pings the execution context without going thru the transaction queue.
@@ -349,6 +350,7 @@ export interface EngineInterface {
     signal?: AbortSignal,
   ): AsyncIterable<Splice>
   readJSON<T>(path: string, pid: PID): Promise<T>
+  exists(path: string, pid: PID): Promise<boolean>
   transcribe(audio: File): Promise<{ text: string }>
   apiSchema(isolate: string): Promise<ApiSchema>
   ping(data?: JsonValue): Promise<IsolateReturn>

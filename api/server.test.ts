@@ -13,14 +13,14 @@ Deno.test('hono basic', async (t) => {
       body: JSON.stringify(payload),
     })
     const reply: Outcome = await res.json()
-    expect(reply.result).toEqual(payload.data)
+    expect(reply.result).toEqual(payload)
     await server.stop()
   })
 })
 
 const cradleMaker = async () => {
   const server = await Server.create()
-  const { pid } = await server.engine.boot()
+  const { pid } = await server.engine.bootSuperUser()
 
   const fetcher = server.request as typeof fetch
 

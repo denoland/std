@@ -132,6 +132,12 @@ export class WebClientEngine implements EngineInterface {
     return source
   }
   async readJSON<T>(path: string, pid: PID) {
+    const result = await this.#request('readJSON', { path, pid })
+    return result as T
+  }
+  async exists(path: string, pid: PID) {
+    const result = await this.#request('exists', { path, pid })
+    return result as boolean
   }
   async #request(path: string, params: Params) {
     const response = await this.#fetcher(`/api/${path}?pretty`, {

@@ -5,7 +5,7 @@ import { expect, log } from '@utils'
 
 const cradleMaker = async () => {
   const engine = await Engine.create()
-  const { pid } = await engine.boot()
+  const { pid } = await engine.bootSuperUser()
   const home = Home.create(engine, pid)
   const session = await home.createSession()
   return session
@@ -29,6 +29,6 @@ Deno.test('cradle', async (t) => {
   })
 })
 
-guts('Queue', cradleMaker)
+guts('Direct', cradleMaker)
 
 // confirm cannot delete the system chain ?

@@ -1,7 +1,6 @@
 // THIS IS SYCNED FROM THE ARTIFACT PROJECT
 // TODO publish to standalone repo
 import {
-  ArtifactScope,
   ArtifactSession,
   EngineInterface,
   freezePid,
@@ -176,6 +175,9 @@ export class Session implements ArtifactSession {
   }
   readJSON<T>(path: string, pid: PID = this.pid) {
     return this.#engine.readJSON<T>(path, pid)
+  }
+  exists(path: string, pid: PID = this.pid) {
+    return this.#engine.exists(path, pid)
   }
   async endSession(): Promise<void> {
   }

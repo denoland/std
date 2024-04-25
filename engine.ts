@@ -43,7 +43,7 @@ export class Engine implements EngineInterface {
     }
     return this.#pid
   }
-  async boot() {
+  async bootSuperUser() {
     // the system chains purpose is to:
     // 1. create and remove user accounts
     // 2. create and remove repositories
@@ -98,11 +98,18 @@ export class Engine implements EngineInterface {
   }
   async readJSON<T>(path: string, pid: PID) {
     freezePid(pid)
-    assert(!posix.isAbsolute(path), `path must be relative: ${path}`)
 
     const db = this.#api.context.db
     assert(db, 'db not found')
     const fs = await FS.openHead(pid, db)
     return fs.readJSON<T>(path)
+  }
+  async exists(path: string, pid: PID): Promise<boolean> {
+    freezePid(pid)
+
+    const db = this.#api.context.db
+    assert(db, 'db not found')
+    const fs = await FS.openHead(pid, db)
+    return fs.exists(path)
   }
 }
