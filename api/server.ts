@@ -40,7 +40,7 @@ export default class Server {
     app.use(prettyJSON())
     app.use('*', logger(), poweredBy(), cors())
     app.get('/', async (c) => {
-      const result = await engine.initialize()
+      const result = await engine.boot()
       return c.json(result)
     })
     app.post(`/ping`, async (c) => {

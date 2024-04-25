@@ -43,12 +43,7 @@ export class Engine implements EngineInterface {
     }
     return this.#pid
   }
-  async initialize() {
-    // TODO make this be a pierced action ?
-    // create the system chain - fail without it
-    // use the system chain to create the superuser chain
-    // return the details of each one
-
+  async boot() {
     // the system chains purpose is to:
     // 1. create and remove user accounts
     // 2. create and remove repositories
@@ -67,8 +62,8 @@ export class Engine implements EngineInterface {
     }
 
     this.#pid = pid
-    const fs = await FS.init(pid, db)
-    const { oid } = fs
+
+    const { oid } = await FS.init(pid, db)
     return { pid, head: oid, elapsed: Date.now() - start }
   }
   async stop() {

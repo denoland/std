@@ -20,7 +20,7 @@ Deno.test('hono basic', async (t) => {
 
 const cradleMaker = async () => {
   const server = await Server.create()
-  const { pid } = await server.engine.initialize()
+  const { pid } = await server.engine.boot()
 
   const fetcher = server.request as typeof fetch
 

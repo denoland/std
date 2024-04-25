@@ -5,7 +5,7 @@ import { expect, log } from '@utils'
 
 const cradleMaker = async () => {
   const engine = await Engine.create()
-  const { pid } = await engine.initialize()
+  const { pid } = await engine.boot()
   const home = Home.create(engine, pid)
   const session = await home.createSession()
   return session

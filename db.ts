@@ -2,7 +2,7 @@ import { pushable } from 'it-pushable'
 import { BLOB_META_KEY, get, getMeta } from '@kitsonk/kv-toolbox/blob'
 import { batchedAtomic } from '@kitsonk/kv-toolbox/batched_atomic'
 import * as keys from './keys.ts'
-import { freezePid, PID, Poolable, Splice } from '@/constants.ts'
+import { freezePid, PID, Poolable, print, Splice } from '@/constants.ts'
 import { assert, Debug, openKv, posix, sha1 } from '@utils'
 import { Atomic } from './atomic.ts'
 import { QueueMessage } from '@/constants.ts'
@@ -235,11 +235,9 @@ export default class DB {
 
         const splices = [splice]
         while (splices[0].commit.parent[0] !== last.oid) {
-          const next = await this.#getSplice(
-            pid,
-            splices[0].commit.parent[0],
-            path,
-          )
+          console.log('splice race', print(splice.pid), splices.length)
+          const primeParent = splices[0].commit.parent[0]
+          const next = await this.#getSplice(pid, primeParent, path)
           splices.unshift(next)
         }
         last = splice

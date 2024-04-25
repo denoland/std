@@ -1,6 +1,7 @@
 // THIS IS SYCNED FROM THE ARTIFACT PROJECT
 // TODO publish to standalone repo
 import {
+  ArtifactScope,
   ArtifactSession,
   EngineInterface,
   freezePid,
@@ -60,6 +61,9 @@ export class Session implements ArtifactSession {
   get pid() {
     return this.#pid
   }
+  get home() {
+    return this.#home
+  }
   async #repoActions() {
     if (!this.#repo) {
       this.#repo = this.actions<Repo>('repo', this.#pid)
@@ -73,8 +77,10 @@ export class Session implements ArtifactSession {
     }
     return this.#home.stop()
   }
-  createSession(retry?: PID): Promise<ArtifactSession> {
-    return this.#home.createSession(retry)
+  scopeTo<T>(repo: string): Promise<ArtifactScope<T>> {
+    const pid = pidFromRepo(this.#pid.id, repo)
+    this.#home.createSession(pid)
+    throw new Error('not implemented')
   }
   async #watchPierces() {
     let lastSplice
