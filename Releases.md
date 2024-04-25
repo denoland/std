@@ -1,3 +1,17 @@
+### 0.224.0 / 2024.04.25
+
+- deprecation(permissions): update removal time for `std/permissions` (#4575)
+- deprecation(semver): rename `testRange()` to `satisfies()` (#4364)
+- feat(http): file server prints local network address (#4604)
+- fix(bytes): `equals()` works with subarray (#4630)
+- fix(bytes): improve invalid count error message for `repeat()` (#4603)
+- fix(csv): do not print empty header line when no columns are given in
+  `stringify()` (#4610)
+- fix(csv): remove unused `opt` parameter (#4598)
+- fix(fs/ensure_dir): allow links to directories (#4132)
+- fix(path): export private types used in public API (#4645)
+- perf(bytes): improve performance of `equals()` (#4635)
+
 ### 0.223.0 / 2024.04.15
 
 - deprecation(expect): rename `addSnapshotSerializers` to
