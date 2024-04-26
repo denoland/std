@@ -46,7 +46,6 @@ type Mod =
   | "dotenv"
   | "encoding"
   | "expect"
-  | "flags"
   | "fmt"
   | "front_matter"
   | "fs"
@@ -96,7 +95,6 @@ const ENTRYPOINTS: Record<Mod, string[]> = {
     "varint.ts",
   ],
   expect: ["mod.ts"],
-  flags: ["mod.ts"],
   fmt: ["bytes.ts", "colors.ts", "duration.ts", "printf.ts"],
   front_matter: ["mod.ts"],
   fs: ["mod.ts"],
@@ -139,7 +137,6 @@ const STABILITY: Record<Mod, DepState> = {
   dotenv: "Unstable",
   encoding: "Stable",
   expect: "Unstable",
-  flags: "Unstable",
   fmt: "Stable",
   front_matter: "Stable",
   fs: "Stable",
