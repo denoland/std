@@ -121,7 +121,6 @@ requirements:
 | [msgpack](https://jsr.io/@std/msgpack)                 | Unstable   | [![JSR](https://jsr.io/badges/@std/msgpack)](https://jsr.io/@std/msgpack)                 |
 | [net](https://jsr.io/@std/net)                         | Unstable   | [![JSR](https://jsr.io/badges/@std/net)](https://jsr.io/@std/net)                         |
 | [path](https://jsr.io/@std/path)                       | Settled    | [![JSR](https://jsr.io/badges/@std/path)](https://jsr.io/@std/path)                       |
-| [permissions](https://jsr.io/@std/permissions)         | Deprecated | [![JSR](https://jsr.io/badges/@std/permissions)](https://jsr.io/@std/permissions)         |
 | [regexp](https://jsr.io/@std/regexp)                   | Unstable   | [![JSR](https://jsr.io/badges/@std/regexp)](https://jsr.io/@std/regexp)                   |
 | [semver](https://jsr.io/@std/semver)                   | Unstable   | [![JSR](https://jsr.io/badges/@std/semver)](https://jsr.io/@std/semver)                   |
 | [streams](https://jsr.io/@std/streams)                 | Settled    | [![JSR](https://jsr.io/badges/@std/streams)](https://jsr.io/@std/streams)                 |
