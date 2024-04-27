@@ -45,6 +45,7 @@ function calculateMonthsDifference(from: Date, to: Date): number {
  * @param from Year to calculate difference from.
  * @param to Year to calculate difference to.
  * @param options Options such as units to calculate difference in.
+ * @returns The difference of the 2 given dates in various units.
  *
  * @example Basic usage
  * ```ts

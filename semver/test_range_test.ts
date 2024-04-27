@@ -386,7 +386,7 @@ Deno.test({
   },
 });
 
-Deno.test("negativeUnlockedPrereleaseRange", function () {
+Deno.test("testRange() works with negative unlocked pre-release range", function () {
   const versions: [string, string][] = [
     ["^1.0.0", "1.0.0-rc1"],
     ["^1.2.3-rc2", "2.0.0"],

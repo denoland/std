@@ -16,9 +16,6 @@ cli:
 collections:
   - changed-files:
     - any-glob-to-any-file: collections/**
-console:
-  - changed-files:
-    - any-glob-to-any-file: console/**
 crypto:
   - changed-files:
     - any-glob-to-any-file: crypto/**
@@ -40,9 +37,6 @@ encoding:
 expect:
   - changed-files:
     - any-glob-to-any-file: expect/**
-flags:
-  - changed-files:
-    - any-glob-to-any-file: flags/**
 fmt:
   - changed-files:
     - any-glob-to-any-file: fmt/**
@@ -85,9 +79,6 @@ net:
 path:
   - changed-files:
     - any-glob-to-any-file: path/**
-permissions:
-  - changed-files:
-    - any-glob-to-any-file: permissions/**
 regexp:
   - changed-files:
     - any-glob-to-any-file: regexp/**

@@ -3,7 +3,7 @@
 // Ported from unicode_width rust crate, Copyright (c) 2015 The Rust Project Developers. MIT license.
 
 import { assert } from "../../assert/assert.ts";
-import { runLengthEncode } from "../_rle.ts";
+import { runLengthEncode } from "../_run_length.ts";
 
 // change this line and re-run the script to update for new Unicode versions
 const UNICODE_VERSION = "15.0.0";
@@ -73,10 +73,10 @@ async function loadEastAsianWidths(version: string) {
     let match: RegExpMatchArray | null = null;
     // deno-lint-ignore no-cond-assign
     if (match = line.match(single)) {
-      rawData = [match[1], match[1], match[2]];
+      rawData = [match[1]!, match[1]!, match[2]!];
       // deno-lint-ignore no-cond-assign
     } else if (match = line.match(multiple)) {
-      rawData = [match[1], match[2], match[3]];
+      rawData = [match[1]!, match[2]!, match[3]!];
     } else {
       continue;
     }
@@ -113,17 +113,17 @@ async function loadZeroWidths(version: string) {
       continue;
     }
     const [codepoint, name, catCode] = [
-      parseInt(rawData[0], 16),
+      parseInt(rawData[0]!, 16),
       rawData[1],
       rawData[2],
     ];
 
-    const zeroWidth = ["Cc", "Cf", "Mn", "Me"].includes(catCode);
+    const zeroWidth = ["Cc", "Cf", "Mn", "Me"].includes(catCode!);
 
     assert(current <= codepoint);
 
     while (current <= codepoint) {
-      if (name.endsWith(", Last>") || (current === codepoint)) {
+      if (name!.endsWith(", Last>") || (current === codepoint)) {
         zwMap.push(zeroWidth);
       } else {
         zwMap.push(false);
@@ -157,7 +157,7 @@ class Bucket {
       a.length - b.length
     );
 
-    if (!more.slice(0, less.length).every((v, i) => v === less[i])) {
+    if (!more!.slice(0, less!.length).every((v, i) => v === less![i])) {
       return false;
     }
 
@@ -165,7 +165,7 @@ class Bucket {
       this.entrySet.add(x);
     }
 
-    this.widths = more;
+    this.widths = more!;
 
     return true;
   }
@@ -194,7 +194,7 @@ function makeBuckets(
   const mask = (1 << numBits) - 1;
 
   for (const [codepoint, width] of entries) {
-    buckets[(codepoint >> lowBit) & mask].append(codepoint, width);
+    buckets[(codepoint >> lowBit) & mask]!.append(codepoint, width);
   }
 
   return buckets;
@@ -249,9 +249,9 @@ class Table {
     }
 
     this.entries = this.entries.map((i) => {
-      const width = this.indexed[i].width();
+      const width = this.indexed[i]!.width();
       if (width === null) throw new TypeError("width cannot be null");
-      return width;
+      return width!;
     });
 
     this.indexed = null as unknown as Bucket[];
@@ -271,7 +271,7 @@ class Table {
     for (let i = 0; i < this.entries.length; i += entriesPerByte) {
       let byte = 0;
       for (let j = 0; j < entriesPerByte; ++j) {
-        byte |= this.entries[i + j] << (j * this.offsetType);
+        byte |= this.entries[i + j]! << (j * this.offsetType);
       }
       byteArray.push(byte);
     }
@@ -313,7 +313,7 @@ export async function tables(version: string) {
 
   const tables = makeTables(TABLE_CFGS, [...widthMap.entries()]);
 
-  tables[tables.length - 1].indicesToWidths();
+  tables[tables.length - 1]!.indicesToWidths();
 
   return tables;
 }
