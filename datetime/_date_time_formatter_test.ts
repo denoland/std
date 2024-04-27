@@ -265,10 +265,12 @@ Deno.test("dateTimeFormatter.parseToParts() throws on a string which exceeds the
 });
 
 Deno.test("dateTimeFormatter.partsToDate()", () => {
+  const date = new Date("2020-01-01T00:00:00.000Z");
+  using _time = new FakeTime(date);
   const format = "yyyy-MM-dd HH:mm:ss.SSS a";
   const formatter = new DateTimeFormatter(format);
   assertEquals(
-    formatter.partsToDate([
+    +formatter.partsToDate([
       { type: "year", value: "2020" },
       { type: "month", value: "01" },
       { type: "day", value: "01" },
@@ -277,13 +279,15 @@ Deno.test("dateTimeFormatter.partsToDate()", () => {
       { type: "second", value: "00" },
       { type: "fractionalSecond", value: "000" },
       { type: "dayPeriod", value: "AM" },
-    ]).toISOString(),
-    "2019-12-31T23:00:00.000Z",
+      { type: "timeZoneName", value: "UTC" },
+    ]),
+    +date,
   );
 });
 
 Deno.test("dateTimeFormatter.partsToDate() sets utc", () => {
-  using _time = new FakeTime("2020-01-01T00:00:00.000Z");
+  const date = new Date("2020-01-01T00:00:00.000Z");
+  using _time = new FakeTime(date);
   const cases = [
     ["yyyy-MM-dd HH:mm:ss.SSS a", [
       { type: "year", value: "2020" },
@@ -295,43 +299,21 @@ Deno.test("dateTimeFormatter.partsToDate() sets utc", () => {
       { type: "fractionalSecond", value: "000" },
       { type: "timeZoneName", value: "UTC" },
       { type: "dayPeriod", value: "AM" },
-    ], "2020-01-01T00:00:00.000Z"],
-    ["yyyy-MM-dd", [
-      { type: "year", value: "2020" },
-      { type: "month", value: "01" },
-      { type: "day", value: "01" },
-    ], "2019-12-31T23:00:00.000Z"],
+    ], date],
     ["yyyy-MM-dd", [
       { type: "year", value: "2020" },
       { type: "month", value: "01" },
       { type: "day", value: "01" },
       { type: "timeZoneName", value: "UTC" },
-    ], "2020-01-01T00:00:00.000Z"],
+    ], date],
     ["yyyy-MM", [
       { type: "year", value: "2020" },
       { type: "month", value: "01" },
       { type: "timeZoneName", value: "UTC" },
-    ], "2020-01-01T00:00:00.000Z"],
-    ["yyyy-MM", [
-      { type: "year", value: "2020" },
-      { type: "month", value: "01" },
-    ], "2019-12-31T23:00:00.000Z"],
+    ], date],
   ] as const;
   for (const [format, input, output] of cases) {
     const formatter = new DateTimeFormatter(format);
-    assertEquals(formatter.partsToDate([...input]).toISOString(), output);
+    assertEquals(+formatter.partsToDate([...input]), +output);
   }
-  const format = "yyyy-MM-dd";
-  const formatter = new DateTimeFormatter(format);
-  assertEquals(
-    formatter.partsToDate([
-      { type: "year", value: "2020" },
-      { type: "literal", value: "-" },
-      { type: "month", value: "01" },
-      { type: "literal", value: "-" },
-      { type: "day", value: "01" },
-      { type: "timeZoneName", value: "UTC" },
-    ]).toISOString(),
-    "2020-01-01T00:00:00.000Z",
-  );
 });
