@@ -3,11 +3,7 @@
 // Copyright 2017 Alizain Feerasta. All rights reserved. MIT license.
 
 import { FakeTime } from "@std/testing/time";
-import {
-  assertEquals,
-  assertStrictEquals,
-  assertThrows,
-} from "@std/assert";
+import { assertEquals, assertStrictEquals, assertThrows } from "@std/assert";
 
 import { decodeTime, monotonicUlid, ulid } from "./mod.ts";
 import {
