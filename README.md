@@ -132,7 +132,7 @@ deprecated and removed in favor of `ReadableStream.from` in `v0.195.0`, please
 use the import URL pinned to `v0.194.0`:
 
 ```ts
-import { readableStreamFromIterable } from "jsr:@std/streams@0.194.0/readable-stream-from-iterable";
+import { readableStreamFromIterable } from "https://deno.land/std@0.194.0/streams/readable_stream_from_iterable.ts";
 ```
 
 ## Contributing
