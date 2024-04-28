@@ -3,7 +3,7 @@
  * The interface required to provide a file.
  */
 export interface TarStreamFile {
-  pathname: string;
+  pathname: string | [Uint8Array, Uint8Array];
   size: number;
   sizeExtension?: boolean;
   iterable: Iterable<Uint8Array> | AsyncIterable<Uint8Array>;
@@ -14,7 +14,7 @@ export interface TarStreamFile {
  * The interface required to provide a directory.
  */
 export interface TarStreamDir {
-  pathname: string;
+  pathname: string | [Uint8Array, Uint8Array];
   options?: Partial<TarStreamOptions>;
 }
 
@@ -116,56 +116,34 @@ export class TarStream {
           );
         }
 
-        chunk.pathname = chunk.pathname.split("/").filter((x) => x).join("/");
-        if (chunk.pathname.startsWith("./")) {
-          chunk.pathname = chunk.pathname.slice(2);
-        }
-        if (!("size" in chunk)) {
-          chunk.pathname += "/";
-        }
-
-        const pathname = new TextEncoder().encode(chunk.pathname);
-        if (pathname.length > 256) {
-          throw new Error(
-            "Invalid Pathname! Pathname cannot exceed 256 bytes.",
-          );
-        }
-
-        let i = Math.max(0, pathname.lastIndexOf(47));
-        if (pathname.slice(i + 1).length > 100) {
-          throw new Error(
-            "Invalid Filename! Filename cannot exceed 100 bytes.",
-          );
-        }
-
-        if (pathname.length <= 100) {
-          i = 0;
-        } else {
-          for (; i > 0; --i) {
-            i = pathname.lastIndexOf(47, i);
-            if (pathname.slice(i + 1).length > 100) {
-              i = Math.max(0, pathname.indexOf(47, i + 1));
-              break;
+        const [prefix, name] = typeof chunk.pathname === "string"
+          ? parsePathname(chunk.pathname, !("size" in chunk))
+          : function () {
+            if ("size" in chunk === (chunk.pathname[1].slice(-1)[0] === 47)) {
+              throw new Error(
+                `Pre-parsed pathname for ${
+                  "size" in chunk ? "directory" : "file"
+                } is not suffixed correctly. Directories should end in a forward slash, while files shouldn't.`,
+              );
             }
+            return chunk.pathname;
+          }();
+        {
+          const decoder = new TextDecoder();
+          const pathname = prefix.length
+            ? decoder.decode(prefix) + "/" + decoder.decode(name)
+            : decoder.decode(name);
+          if (paths.includes(pathname)) {
+            continue;
           }
+          paths.push(pathname);
         }
-
-        const prefix = pathname.slice(0, i);
-        if (prefix.length > 155) {
-          throw new Error(
-            "Invalid Pathname! Pathname needs to be split-able on a forward slash separator into [155, 100] bytes respectively.",
-          );
-        }
-        if (paths.includes(chunk.pathname)) {
-          continue;
-        }
-        paths.push(chunk.pathname);
         const typeflag = "size" in chunk ? "0" : "5";
         const sizeExtension = "size" in chunk && chunk.sizeExtension || false;
         const encoder = new TextEncoder();
         const header = new Uint8Array(512);
 
-        header.set(prefix.length ? pathname.slice(i + 1) : pathname); // name
+        header.set(name); // name
         header.set(
           encoder.encode(
             (chunk.options?.mode ?? (typeflag === "5" ? "755" : "644"))
@@ -278,4 +256,54 @@ export class TarStream {
   get writable(): WritableStream<TarStreamFile | TarStreamDir> {
     return this.#writable;
   }
+}
+
+/**
+ * parsePathname is a function that validates the correctness of the pathname
+ * being provided.
+ * Function will throw if invalid pathname is provided.
+ * The result can be provided instead of the string version to TarStream,
+ * or can just be used to check in advance of creating the Tar archive.
+ */
+export function parsePathname(
+  pathname: string,
+  isDirectory = false,
+): [Uint8Array, Uint8Array] {
+  pathname = pathname.split("/").filter((x) => x).join("/");
+  if (pathname.startsWith("./")) {
+    pathname = pathname.slice(2);
+  }
+  if (isDirectory) {
+    pathname += "/";
+  }
+
+  const name = new TextEncoder().encode(pathname);
+  if (name.length <= 100) {
+    return [new Uint8Array(0), name];
+  }
+
+  if (name.length > 256) {
+    throw new Error("Invalid Pathname! Pathname cannot exceed 256 bytes.");
+  }
+
+  let i = Math.max(0, name.lastIndexOf(47));
+  if (pathname.slice(i + 1).length > 100) {
+    throw new Error("Invalid Filename! Filename cannot exceed 100 bytes.");
+  }
+
+  for (; i > 0; --i) {
+    i = name.lastIndexOf(47, i) + 1;
+    if (name.slice(i + 1).length > 100) {
+      i = Math.max(0, name.indexOf(47, i + 1));
+      break;
+    }
+  }
+
+  const prefix = name.slice(0, i);
+  if (prefix.length > 155) {
+    throw new Error(
+      "Invalid Pathname! Pathname needs to be split-able on a forward slash separator into [155, 100] bytes respectively.",
+    );
+  }
+  return [prefix, name.slice(i + 1)];
 }
