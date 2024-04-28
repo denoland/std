@@ -38,7 +38,8 @@ export type { Reader, ReaderSync };
  * }
  * ```
  *
- * @deprecated This will be removed in 1.0.0. Import from {@link https://deno.land/std/io/iterate_reader.ts} instead.
+ * @deprecated This will be removed in 1.0.0. Import from
+ * {@linkhttps://jsr.io/@std/io | @std/io} instead.
  */
 export function iterateReader(
   r: Reader,
@@ -81,7 +82,8 @@ export function iterateReader(
  * responsibility to copy contents of the buffer if needed; otherwise the
  * next iteration will overwrite contents of previously returned chunk.
  *
- * @deprecated This will be removed in 1.0.0. Import from {@link https://deno.land/std/io/iterate_reader.ts} instead.
+ * @deprecated This will be removed in 1.0.0. Import from
+ * {@link https://jsr.io/@std/io | @std/io} instead.
  */
 export function iterateReaderSync(
   r: ReaderSync,

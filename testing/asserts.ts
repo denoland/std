@@ -8,7 +8,8 @@
  * This module is browser compatible, but do not rely on good formatting of
  * values for AssertionError messages in browsers.
  *
- * @deprecated This will be removed in 1.0.0. Import from {@link https://deno.land/std/assert/mod.ts} instead.
+ * @deprecated This will be removed in 1.0.0. Import from
+ * {@link https://jsr.io/@std/assert | @std/assert} instead.
  *
  * @module
  */
@@ -30,7 +31,8 @@ import * as asserts from "@std/assert";
  * assertAlmostEquals(0.1 + 0.2, 0.3, 1e-17); // Throws
  * ```
  *
- * @deprecated This will be removed in 1.0.0. Import from {@link https://deno.land/std/assert/assert_almost_equals.ts} instead.
+ * @deprecated This will be removed in 1.0.0. Import from
+ * {@link https://jsr.io/@std/assert | @std/assert} instead.
  */
 export function assertAlmostEquals(
   actual: number,
@@ -44,7 +46,8 @@ export function assertAlmostEquals(
 /**
  * An array-like object (`Array`, `Uint8Array`, `NodeList`, etc.) that is not a string.
  *
- * @deprecated This will be removed in 1.0.0. Import from {@link https://deno.land/std/assert/assert_array_includes.ts} instead.
+ * @deprecated This will be removed in 1.0.0. Import from
+ * {@link https://jsr.io/@std/assert | @std/assert} instead.
  */
 export type ArrayLikeArg<T> = ArrayLike<T> & object;
 
@@ -63,7 +66,8 @@ export type ArrayLikeArg<T> = ArrayLike<T> & object;
  * assertArrayIncludes([1, 2], [3]); // Throws
  * ```
  *
- * @deprecated This will be removed in 1.0.0. Import from {@link https://deno.land/std/assert/assert_array_includes.ts} instead.
+ * @deprecated This will be removed in 1.0.0. Import from
+ * {@link https://jsr.io/@std/assert | @std/assert} instead.
  */
 export function assertArrayIncludes<T>(
   actual: ArrayLikeArg<T>,
@@ -90,7 +94,8 @@ export function assertArrayIncludes<T>(
  *
  * Note: formatter option is experimental and may be removed in the future.
  *
- * @deprecated This will be removed in 1.0.0. Import from {@link https://deno.land/std/assert/assert_equals.ts} instead.
+ * @deprecated This will be removed in 1.0.0. Import from
+ * {@link https://jsr.io/@std/assert | @std/assert} instead.
  */
 export function assertEquals<T>(
   actual: T,
@@ -113,7 +118,8 @@ export function assertEquals<T>(
  * assertExists(undefined); // Throws
  * ```
  *
- * @deprecated This will be removed in 1.0.0. Import from {@link https://deno.land/std/assert/assert_exists.ts} instead.
+ * @deprecated This will be removed in 1.0.0. Import from
+ * {@link https://jsr.io/@std/assert | @std/assert} instead.
  */
 export function assertExists<T>(
   actual: T,
@@ -125,7 +131,8 @@ export function assertExists<T>(
 /**
  * Assertion condition for {@linkcode assertFalse}.
  *
- * @deprecated This will be removed in 1.0.0. Import from {@link https://deno.land/std/assert/assert_false.ts} instead.
+ * @deprecated This will be removed in 1.0.0. Import from
+ * {@link https://jsr.io/@std/assert | @std/assert} instead.
  */
 export type Falsy = false | 0 | 0n | "" | null | undefined;
 
@@ -140,7 +147,8 @@ export type Falsy = false | 0 | 0n | "" | null | undefined;
  * assertFalse(true); // Throws
  * ```
  *
- * @deprecated This will be removed in 1.0.0. Import from {@link https://deno.land/std/assert/assert_false.ts} instead.
+ * @deprecated This will be removed in 1.0.0. Import from
+ * {@link https://jsr.io/@std/assert | @std/assert} instead.
  */
 export function assertFalse(expr: unknown, msg = ""): asserts expr is Falsy {
   asserts.assertFalse(expr, msg);
@@ -159,7 +167,8 @@ export function assertFalse(expr: unknown, msg = ""): asserts expr is Falsy {
  * assertGreaterOrEqual(0, 1); // Throws
  * ```
  *
- * @deprecated This will be removed in 1.0.0. Import from {@link https://deno.land/std/assert/assert_greater_or_equal.ts} instead.
+ * @deprecated This will be removed in 1.0.0. Import from
+ * {@link https://jsr.io/@std/assert | @std/assert} instead.
  */
 export function assertGreaterOrEqual<T>(
   actual: T,
@@ -182,7 +191,8 @@ export function assertGreaterOrEqual<T>(
  * assertGreater(0, 1); // Throws
  * ```
  *
- * @deprecated This will be removed in 1.0.0. Import from {@link https://deno.land/std/assert/assert_greater.ts} instead.
+ * @deprecated This will be removed in 1.0.0. Import from
+ * {@link https://jsr.io/@std/assert | @std/assert} instead.
  */
 export function assertGreater<T>(actual: T, expected: T, msg?: string) {
   asserts.assertGreater<T>(actual, expected, msg);
@@ -191,13 +201,15 @@ export function assertGreater<T>(actual: T, expected: T, msg?: string) {
 /**
  * Any constructor
  *
- * @deprecated This will be removed in 1.0.0. Import from {@link https://deno.land/std/assert/assert_instance_of.ts} instead.
+ * @deprecated This will be removed in 1.0.0. Import from
+ * {@link https://jsr.io/@std/assert | @std/assert} instead.
  */
 // deno-lint-ignore no-explicit-any
 export type AnyConstructor = new (...args: any[]) => any;
 /** Gets constructor type
  *
- * @deprecated This will be removed in 1.0.0. Import from {@link https://deno.land/std/assert/assert_instance_of.ts} instead.
+ * @deprecated This will be removed in 1.0.0. Import from
+ * {@link https://jsr.io/@std/assert | @std/assert} instead.
  */
 export type GetConstructorType<T extends AnyConstructor> = T extends // deno-lint-ignore no-explicit-any
 new (...args: any) => infer C ? C
@@ -215,7 +227,8 @@ new (...args: any) => infer C ? C
  * assertInstanceOf(new Date(), Number); // Throws
  * ```
  *
- * @deprecated This will be removed in 1.0.0. Import from {@link https://deno.land/std/assert/assert_instance_of.ts} instead.
+ * @deprecated This will be removed in 1.0.0. Import from
+ * {@link https://jsr.io/@std/assert | @std/assert} instead.
  */
 export function assertInstanceOf<T extends AnyConstructor>(
   actual: unknown,
@@ -242,7 +255,8 @@ export function assertInstanceOf<T extends AnyConstructor>(
  * assertIsError(new RangeError("Out of range"), SyntaxError, "Within range"); // Throws
  * ```
  *
- * @deprecated This will be removed in 1.0.0. Import from {@link https://deno.land/std/assert/assert_is_error.ts} instead.
+ * @deprecated This will be removed in 1.0.0. Import from
+ * {@link https://jsr.io/@std/assert | @std/assert} instead.
  */
 export function assertIsError<E extends Error = Error>(
   error: unknown,
@@ -267,7 +281,8 @@ export function assertIsError<E extends Error = Error>(
  * assertLessOrEqual(1, 0); // Throws
  * ```
  *
- * @deprecated This will be removed in 1.0.0. Import from {@link https://deno.land/std/assert/assert_less_or_equal.ts} instead.
+ * @deprecated This will be removed in 1.0.0. Import from
+ * {@link https://jsr.io/@std/assert | @std/assert} instead.
  */
 export function assertLessOrEqual<T>(
   actual: T,
@@ -289,7 +304,8 @@ export function assertLessOrEqual<T>(
  * assertLess(2, 1); // Throws
  * ```
  *
- * @deprecated This will be removed in 1.0.0. Import from {@link https://deno.land/std/assert/assert_less.ts} instead.
+ * @deprecated This will be removed in 1.0.0. Import from
+ * {@link https://jsr.io/@std/assert | @std/assert} instead.
  */
 export function assertLess<T>(actual: T, expected: T, msg?: string) {
   asserts.assertLess<T>(actual, expected, msg);
@@ -307,7 +323,8 @@ export function assertLess<T>(actual: T, expected: T, msg?: string) {
  * assertMatch("Denosaurus", RegExp(/Raptor/)); // Throws
  * ```
  *
- * @deprecated This will be removed in 1.0.0. Import from {@link https://deno.land/std/assert/assert_match.ts} instead.
+ * @deprecated This will be removed in 1.0.0. Import from
+ * {@link https://jsr.io/@std/assert | @std/assert} instead.
  */
 export function assertMatch(
   actual: string,
@@ -331,7 +348,8 @@ export function assertMatch(
  * assertNotEquals(1, 1); // Throws
  * ```
  *
- * @deprecated This will be removed in 1.0.0. Import from {@link https://deno.land/std/assert/assert_not_equals.ts} instead.
+ * @deprecated This will be removed in 1.0.0. Import from
+ * {@link https://jsr.io/@std/assert | @std/assert} instead.
  */
 export function assertNotEquals<T>(actual: T, expected: T, msg?: string) {
   asserts.assertNotEquals<T>(actual, expected, msg);
@@ -349,7 +367,8 @@ export function assertNotEquals<T>(actual: T, expected: T, msg?: string) {
  * assertNotInstanceOf(new Date(), Date); // Throws
  * ```
  *
- * @deprecated This will be removed in 1.0.0. Import from {@link https://deno.land/std/assert/assert_not_instance_of.ts} instead.
+ * @deprecated This will be removed in 1.0.0. Import from
+ * {@link https://jsr.io/@std/assert | @std/assert} instead.
  */
 export function assertNotInstanceOf<A, T>(
   actual: A,
@@ -372,7 +391,8 @@ export function assertNotInstanceOf<A, T>(
  * assertNotMatch("Raptor", RegExp(/Raptor/)); // Throws
  * ```
  *
- * @deprecated This will be removed in 1.0.0. Import from {@link https://deno.land/std/assert/assert_not_match.ts} instead.
+ * @deprecated This will be removed in 1.0.0. Import from
+ * {@link https://jsr.io/@std/assert | @std/assert} instead.
  */
 export function assertNotMatch(
   actual: string,
@@ -394,7 +414,8 @@ export function assertNotMatch(
  * assertNotStrictEquals(1, 2); // Throws
  * ```
  *
- * @deprecated This will be removed in 1.0.0. Import from {@link https://deno.land/std/assert/assert_not_strict_equals.ts} instead.
+ * @deprecated This will be removed in 1.0.0. Import from
+ * {@link https://jsr.io/@std/assert | @std/assert} instead.
  */
 export function assertNotStrictEquals<T>(
   actual: T,
@@ -416,7 +437,8 @@ export function assertNotStrictEquals<T>(
  * assertObjectMatch({ foo: "bar" }, { foo: "baz" }); // Throws
  * ```
  *
- * @deprecated This will be removed in 1.0.0. Import from {@link https://deno.land/std/assert/assert_object_match.ts} instead.
+ * @deprecated This will be removed in 1.0.0. Import from
+ * {@link https://jsr.io/@std/assert | @std/assert} instead.
  */
 export function assertObjectMatch(
   // deno-lint-ignore no-explicit-any
@@ -438,7 +460,8 @@ export function assertObjectMatch(
  * await assertRejects(async () => console.log("Hello world")); // Throws
  * ```
  *
- * @deprecated This will be removed in 1.0.0. Import from {@link https://deno.land/std/assert/assert_rejects.ts} instead.
+ * @deprecated This will be removed in 1.0.0. Import from
+ * {@link https://jsr.io/@std/assert | @std/assert} instead.
  */
 export function assertRejects(
   fn: () => PromiseLike<unknown>,
@@ -457,7 +480,8 @@ export function assertRejects(
  * await assertRejects(async () => Promise.reject(new Error()), SyntaxError); // Throws
  * ```
  *
- * @deprecated This will be removed in 1.0.0. Import from {@link https://deno.land/std/assert/assert_rejects.ts} instead.
+ * @deprecated This will be removed in 1.0.0. Import from
+ * {@link https://jsr.io/@std/assert | @std/assert} instead.
  */
 export function assertRejects<E extends Error = Error>(
   fn: () => PromiseLike<unknown>,
@@ -501,7 +525,8 @@ export async function assertRejects<E extends Error = Error>(
  * assertStrictEquals(c, d); // Throws
  * ```
  *
- * @deprecated This will be removed in 1.0.0. Import from {@link https://deno.land/std/assert/assert_strict_equals.ts} instead.
+ * @deprecated This will be removed in 1.0.0. Import from
+ * {@link https://jsr.io/@std/assert | @std/assert} instead.
  */
 export function assertStrictEquals<T>(
   actual: unknown,
@@ -523,7 +548,8 @@ export function assertStrictEquals<T>(
  * assertStringIncludes("Hello", "world"); // Throws
  * ```
  *
- * @deprecated This will be removed in 1.0.0. Import from {@link https://deno.land/std/assert/assert_string_includes.ts} instead.
+ * @deprecated This will be removed in 1.0.0. Import from
+ * {@link https://jsr.io/@std/assert | @std/assert} instead.
  */
 export function assertStringIncludes(
   actual: string,
@@ -545,7 +571,8 @@ export function assertStringIncludes(
  * assertThrows(() => console.log("hello world!")); // Throws
  * ```
  *
- * @deprecated This will be removed in 1.0.0. Import from {@link https://deno.land/std/assert/assert_throws.ts} instead.
+ * @deprecated This will be removed in 1.0.0. Import from
+ * {@link https://jsr.io/@std/assert | @std/assert} instead.
  */
 export function assertThrows(
   fn: () => unknown,
@@ -564,7 +591,8 @@ export function assertThrows(
  * assertThrows(() => { throw new TypeError("hello world!"); }, RangeError); // Throws
  * ```
  *
- * @deprecated This will be removed in 1.0.0. Import from {@link https://deno.land/std/assert/assert_throws.ts} instead.
+ * @deprecated This will be removed in 1.0.0. Import from
+ * {@link https://jsr.io/@std/assert | @std/assert} instead.
  */
 export function assertThrows<E extends Error = Error>(
   fn: () => unknown,
@@ -602,7 +630,8 @@ export function assertThrows<E extends Error = Error>(
  * assert("hello".includes("world")); // Throws
  * ```
  *
- * @deprecated This will be removed in 1.0.0. Import from {@link https://deno.land/std/assert/assert.ts} instead.
+ * @deprecated This will be removed in 1.0.0. Import from
+ * {@link https://jsr.io/@std/assert | @std/assert} instead.
  */
 export function assert(expr: unknown, msg = ""): asserts expr {
   asserts.assert(expr, msg);
@@ -618,7 +647,8 @@ export function assert(expr: unknown, msg = ""): asserts expr {
  * throw new AssertionError("Assertion failed");
  * ```
  *
- * @deprecated This will be removed in 1.0.0. Import from {@link https://deno.land/std/assert/assertion_error.ts} instead.
+ * @deprecated This will be removed in 1.0.0. Import from
+ * {@link https://jsr.io/@std/assert | @std/assert} instead.
  */
 export class AssertionError extends Error {
   /** Constructs a new instance. */
@@ -641,7 +671,8 @@ export class AssertionError extends Error {
  * equal({ foo: "bar" }, { foo: "baz" }); // Returns `false
  * ```
  *
- * @deprecated This will be removed in 1.0.0. Import from {@link https://deno.land/std/assert/equal.ts} instead.
+ * @deprecated This will be removed in 1.0.0. Import from
+ * {@link https://jsr.io/@std/assert | @std/assert} instead.
  */
 export function equal(c: unknown, d: unknown): boolean {
   return asserts.equal(c, d);
@@ -657,7 +688,8 @@ export function equal(c: unknown, d: unknown): boolean {
  * fail("Deliberately failed!"); // Throws
  * ```
  *
- * @deprecated This will be removed in 1.0.0. Import from {@link https://deno.land/std/assert/fail.ts} instead.
+ * @deprecated This will be removed in 1.0.0. Import from
+ * {@link https://jsr.io/@std/assert | @std/assert} instead.
  */
 export function fail(msg?: string): never {
   asserts.fail(msg);
@@ -673,7 +705,8 @@ export function fail(msg?: string): never {
  * unimplemented(); // Throws
  * ```
  *
- * @deprecated This will be removed in 1.0.0. Import from {@link https://deno.land/std/assert/unimplemented.ts} instead.
+ * @deprecated This will be removed in 1.0.0. Import from
+ * {@link https://jsr.io/@std/assert | @std/assert} instead.
  */
 export function unimplemented(msg?: string): never {
   asserts.unimplemented(msg);
@@ -689,7 +722,8 @@ export function unimplemented(msg?: string): never {
  * unreachable(); // Throws
  * ```
  *
- * @deprecated This will be removed in 1.0.0. Import from {@link https://deno.land/std/assert/unreachable.ts} instead.
+ * @deprecated This will be removed in 1.0.0. Import from
+ * {@link https://jsr.io/@std/assert | @std/assert} instead.
  */
 export function unreachable(): never {
   asserts.unreachable();

@@ -19,10 +19,6 @@ await copy("./foo", "./bar");
 
 See [here](#recommended-usage) for recommended usage patterns.
 
-## Documentation
-
-Check out the documentation [here](https://deno.land/std?doc).
-
 ## Recommended Usage
 
 1. Include the version of the library in the import specifier.
@@ -136,7 +132,7 @@ deprecated and removed in favor of `ReadableStream.from` in `v0.195.0`, please
 use the import URL pinned to `v0.194.0`:
 
 ```ts
-import { readableStreamFromIterable } from "https://deno.land/std@0.194.0/streams/readable_stream_from_iterable.ts";
+import { readableStreamFromIterable } from "jsr:@std/streams@0.194.0/readable-stream-from-iterable";
 ```
 
 ## Contributing
@@ -155,10 +151,10 @@ every new version of the Deno CLI (including patch versions).
 
 ## Badge
 
-[![Built with the Deno Standard Library](./badge.svg)](https://deno.land/std)
+[![Built with the Deno Standard Library](./badge.svg)](https://jsr.io/@std)
 
 ```html
-<a href="https://deno.land/std">
+<a href="https://jsr.io/@std">
   <img
     width="135"
     height="20"
@@ -169,5 +165,5 @@ every new version of the Deno CLI (including patch versions).
 ```
 
 ```md
-[![Built with the Deno Standard Library](https://raw.githubusercontent.com/denoland/deno_std/main/badge.svg)](https://deno.land/std)
+[![Built with the Deno Standard Library](https://raw.githubusercontent.com/denoland/deno_std/main/badge.svg)](https://jsr.io/@std)
 ```

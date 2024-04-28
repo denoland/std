@@ -6,7 +6,6 @@
     "noUncheckedIndexedAccess": true
   },
   "imports": {
-    "https://deno.land/std@$STD_VERSION/": "./",
     "@deno/graph": "jsr:@deno/graph@^0.70",
     "deno_doc/": "https://deno.land/x/deno_doc@0.123.1/",
     "npm:/typescript": "npm:typescript@5.4.4",
