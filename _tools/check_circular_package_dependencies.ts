@@ -7,6 +7,8 @@ import {
 } from "@deno/graph";
 
 /**
+ * TODO(kt3k): This script stopped working after JSR migratoin. Enable this script
+ *
  * Checks for circular dependencies in the std packages.
  *
  * Usage: deno run -A _tools/check_circular_package_dependencies.ts
