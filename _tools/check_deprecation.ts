@@ -1,6 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 /**
- * TODO(kt3k): This stopped working after JSR migration. Enable this check
+ * TODO(kt3k): This stopped working after JSR migration. Enable this check.
  *
  * Checks whether all deprecated tags have a message.
  *

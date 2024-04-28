@@ -7,7 +7,7 @@ import {
 } from "@deno/graph";
 
 /**
- * TODO(kt3k): This script stopped working after JSR migratoin. Enable this script
+ * TODO(kt3k): This script stopped working after JSR migration. Enable this script.
  *
  * Checks for circular dependencies in the std packages.
  *
