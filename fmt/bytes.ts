@@ -61,7 +61,7 @@ export interface FormatOptions {
  *
  * @example
  * ```ts
- * import { format } from "https://deno.land/std@$STD_VERSION/fmt/bytes.ts";
+ * import { format } from "@std/fmt/bytes";
  *
  * format(1337);
  * //=> '1.34 kB'

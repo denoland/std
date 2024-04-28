@@ -16,8 +16,8 @@ export type SortByOptions = {
  *
  * @example
  * ```ts
- * import { sortBy } from "https://deno.land/std@$STD_VERSION/collections/sort_by.ts";
- * import { assertEquals } from "https://deno.land/std@$STD_VERSION/assert/assert_equals.ts";
+ * import { sortBy } from "@std/collections/sort-by";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const people = [
  *   { name: "Anna", age: 34 },
@@ -53,7 +53,7 @@ export function sortBy<T>(
  *
  * @example
  * ```ts
- * import { sortBy } from "https://deno.land/std@$STD_VERSION/collections/sort_by.ts";
+ * import { sortBy } from "@std/collections/sort-by";
  *
  * const people = [
  *   { name: "Anna" },
@@ -74,7 +74,7 @@ export function sortBy<T>(
  *
  * @example
  * ```ts
- * import { sortBy } from "https://deno.land/std@$STD_VERSION/collections/sort_by.ts";
+ * import { sortBy } from "@std/collections/sort-by";
  *
  * const people = [
  *   { name: "Anna", age: 34n },
@@ -97,7 +97,7 @@ export function sortBy<T>(
  *
  * @example
  * ```ts
- * import { sortBy } from "https://deno.land/std@$STD_VERSION/collections/sort_by.ts";
+ * import { sortBy } from "@std/collections/sort-by";
  *
  * const people = [
  *   { name: "Anna", startedAt: new Date("2020-01-01") },

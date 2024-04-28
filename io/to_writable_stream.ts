@@ -21,7 +21,7 @@ export interface toWritableStreamOptions {
  *
  * @example
  * ```ts
- * import { toWritableStream } from "https://deno.land/std@$STD_VERSION/io/to_writable_stream.ts";
+ * import { toWritableStream } from "@std/io/to-writable-stream";
  *
  * const file = await Deno.open("./file.txt", { create: true, write: true });
  * await ReadableStream.from("Hello World")

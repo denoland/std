@@ -1,8 +1,8 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import { red } from "../fmt/colors.ts";
+import { red } from "@std/fmt/colors";
 import { CAN_NOT_DISPLAY } from "./_constants.ts";
-import { buildMessage, diff, diffstr, format } from "../internal/mod.ts";
+import { buildMessage, diff, diffstr, format } from "@std/internal";
 import type { EqualOptions } from "./_types.ts";
 
 type EqualErrorMessageOptions = Pick<

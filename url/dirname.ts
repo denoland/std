@@ -1,7 +1,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-import { dirname as posixDirname } from "../path/posix/dirname.ts";
+import { dirname as posixDirname } from "@std/path/posix/dirname";
 import { strip } from "./_strip.ts";
 
 /**
@@ -18,7 +18,7 @@ import { strip } from "./_strip.ts";
  *
  * @example Basic usage
  * ```ts
- * import { dirname } from "https://deno.land/std@$STD_VERSION/url/dirname.ts";
+ * import { dirname } from "@std/url/dirname";
  *
  * dirname("https://deno.land/std/path/mod.ts?a=b").href; // "https://deno.land/std/path"
  *

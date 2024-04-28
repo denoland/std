@@ -1,7 +1,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-import { join as posixJoin } from "../path/posix/join.ts";
+import { join as posixJoin } from "@std/path/posix/join";
 
 /**
  * Joins a base URL or URL string, and a sequence of path segments together,
@@ -13,7 +13,7 @@ import { join as posixJoin } from "../path/posix/join.ts";
  *
  * @example Basic usage
  * ```ts
- * import { join } from "https://deno.land/std@$STD_VERSION/url/join.ts";
+ * import { join } from "@std/url/join";
  *
  * join("https://deno.land/", "std", "path", "mod.ts").href;
  * // "https://deno.land/std/path/mod.ts"

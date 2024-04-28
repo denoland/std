@@ -16,7 +16,7 @@ import { isPathSeparator, isWindowsDeviceRoot } from "./_util.ts";
  *
  * @example
  * ```ts
- * import { basename } from "https://deno.land/std@$STD_VERSION/path/basename.ts";
+ * import { basename } from "@std/path/basename";
  *
  * basename("C:\\user\\Documents\\"); // "Documents"
  * basename("C:\\user\\Documents\\image.png"); // "image.png"

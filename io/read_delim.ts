@@ -1,7 +1,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-import { concat } from "../bytes/concat.ts";
+import { concat } from "@std/bytes/concat";
 import type { Reader } from "./types.ts";
 
 /** Generate longest proper prefix which is also suffix array. */

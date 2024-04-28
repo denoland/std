@@ -6,8 +6,8 @@ import {
   assertInstanceOf,
   assertRejects,
   assertStrictEquals,
-} from "../assert/mod.ts";
-import { assertSpyCalls, stub } from "../testing/mock.ts";
+} from "@std/assert";
+import { assertSpyCalls, stub } from "@std/testing/mock";
 
 // https://dom.spec.whatwg.org/#interface-AbortSignal
 function assertIsDefaultAbortReason(reason: unknown) {

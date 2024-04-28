@@ -12,16 +12,16 @@
  *
  * ```shell
  * > # start server
- * > deno run --allow-net --allow-read https://deno.land/std@$STD_VERSION/http/file_server.ts
+ * > deno run --allow-net --allow-read @std/http/file-server
  * > # show help
- * > deno run --allow-net --allow-read https://deno.land/std@$STD_VERSION/http/file_server.ts --help
+ * > deno run --allow-net --allow-read @std/http/file-server --help
  * ```
  *
  * If you want to install and run:
  *
  * ```shell
  * > # install
- * > deno install --allow-net --allow-read https://deno.land/std@$STD_VERSION/http/file_server.ts
+ * > deno install --allow-net --allow-read @std/http/file-server
  * > # start server
  * > file_server
  * > # show help
@@ -31,14 +31,14 @@
  * @module
  */
 
-import { join as posixJoin } from "../path/posix/join.ts";
-import { normalize as posixNormalize } from "../path/posix/normalize.ts";
-import { extname } from "../path/extname.ts";
-import { join } from "../path/join.ts";
-import { relative } from "../path/relative.ts";
-import { resolve } from "../path/resolve.ts";
-import { SEPARATOR_PATTERN } from "../path/constants.ts";
-import { contentType } from "../media_types/content_type.ts";
+import { join as posixJoin } from "@std/path/posix/join";
+import { normalize as posixNormalize } from "@std/path/posix/normalize";
+import { extname } from "@std/path/extname";
+import { join } from "@std/path/join";
+import { relative } from "@std/path/relative";
+import { resolve } from "@std/path/resolve";
+import { SEPARATOR_PATTERN } from "@std/path/constants";
+import { contentType } from "@std/media-types/content-type";
 import { calculate, ifNoneMatch } from "./etag.ts";
 import {
   isRedirectStatus,
@@ -46,11 +46,11 @@ import {
   STATUS_TEXT,
   type StatusCode,
 } from "./status.ts";
-import { ByteSliceStream } from "../streams/byte_slice_stream.ts";
-import { parseArgs } from "../cli/parse_args.ts";
-import { red } from "../fmt/colors.ts";
-import { VERSION } from "../version.ts";
-import { format as formatBytes } from "../fmt/bytes.ts";
+import { ByteSliceStream } from "@std/streams/byte-slice-stream";
+import { parseArgs } from "@std/cli/parse-args";
+import { red } from "@std/fmt/colors";
+import denoConfig from "./deno.json" with { type: "json" };
+import { format as formatBytes } from "@std/fmt/bytes";
 
 interface EntryInfo {
   mode: string;
@@ -578,7 +578,7 @@ export interface ServeDirOptions {
  * Serves the files under the given directory root (opts.fsRoot).
  *
  * ```ts
- * import { serveDir } from "https://deno.land/std@$STD_VERSION/http/file_server.ts";
+ * import { serveDir } from "@std/http/file-server";
  *
  * Deno.serve((req) => {
  *   const pathname = new URL(req.url).pathname;
@@ -595,7 +595,7 @@ export interface ServeDirOptions {
  * Optionally you can pass `urlRoot` option. If it's specified that part is stripped from the beginning of the requested pathname.
  *
  * ```ts
- * import { serveDir } from "https://deno.land/std@$STD_VERSION/http/file_server.ts";
+ * import { serveDir } from "@std/http/file-server";
  *
  * // ...
  * serveDir(new Request("http://localhost/static/path/to/file"), {
@@ -778,7 +778,7 @@ function main() {
   }
 
   if (serverArgs.version) {
-    console.log(`Deno File Server ${VERSION}`);
+    console.log(`Deno File Server ${denoConfig.version}`);
     Deno.exit();
   }
 
@@ -847,11 +847,11 @@ function getNetworkAddress() {
 }
 
 function printUsage() {
-  console.log(`Deno File Server ${VERSION}
+  console.log(`Deno File Server ${denoConfig.version}
   Serves a local directory in HTTP.
 
 INSTALL:
-  deno install --allow-net --allow-read https://deno.land/std/http/file_server.ts
+  deno install --allow-net --allow-read jsr:@std/http@${denoConfig.version}/file_server
 
 USAGE:
   file_server [path] [options]

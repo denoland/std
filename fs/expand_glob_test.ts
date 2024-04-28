@@ -1,12 +1,12 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-import { assert, assertEquals, assertStringIncludes } from "../assert/mod.ts";
+import { assert, assertEquals, assertStringIncludes } from "@std/assert";
 import {
   fromFileUrl,
   join,
   joinGlobs,
   normalize,
   relative,
-} from "../path/mod.ts";
+} from "@std/path";
 import {
   expandGlob,
   type ExpandGlobOptions,

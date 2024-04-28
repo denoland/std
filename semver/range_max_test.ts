@@ -4,7 +4,7 @@ import { parseRange } from "./parse_range.ts";
 import { rangeMax } from "./range_max.ts";
 import { INVALID } from "./constants.ts";
 import type { SemVer } from "./types.ts";
-import { assertEquals } from "../assert/assert_equals.ts";
+import { assertEquals } from "@std/assert/assert-equals";
 
 Deno.test({
   name: "rangeMax()",

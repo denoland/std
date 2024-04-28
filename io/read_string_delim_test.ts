@@ -2,7 +2,7 @@
 // This code has been ported almost directly from Go's src/bytes/buffer_test.go
 // Copyright 2009 The Go Authors. All rights reserved. BSD license.
 // https://github.com/golang/go/blob/master/LICENSE
-import { assertEquals } from "../assert/mod.ts";
+import { assertEquals } from "@std/assert";
 import { readStringDelim } from "./read_string_delim.ts";
 import { StringReader } from "./string_reader.ts";
 

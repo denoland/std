@@ -12,7 +12,7 @@
  *
  * @module
  */
-import * as asserts from "../assert/mod.ts";
+import * as asserts from "@std/assert";
 
 /**
  * Make an assertion that `actual` and `expected` are almost equal numbers
@@ -22,7 +22,7 @@ import * as asserts from "../assert/mod.ts";
  *
  * @example
  * ```ts
- * import { assertAlmostEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+ * import { assertAlmostEquals } from "@std/testing/asserts";
  *
  * assertAlmostEquals(0.01, 0.02, 0.1); // Doesn't throw
  * assertAlmostEquals(0.01, 0.02); // Throws
@@ -57,7 +57,7 @@ export type ArrayLikeArg<T> = ArrayLike<T> & object;
  *
  * @example
  * ```ts
- * import { assertArrayIncludes } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+ * import { assertArrayIncludes } from "@std/testing/asserts";
  *
  * assertArrayIncludes([1, 2], [2]); // Doesn't throw
  * assertArrayIncludes([1, 2], [3]); // Throws
@@ -82,7 +82,7 @@ export function assertArrayIncludes<T>(
  *
  * @example
  * ```ts
- * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+ * import { assertEquals } from "@std/testing/asserts";
  *
  * assertEquals("world", "world"); // Doesn't throw
  * assertEquals("hello", "world"); // Throws
@@ -107,7 +107,7 @@ export function assertEquals<T>(
  *
  * @example
  * ```ts
- * import { assertExists } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+ * import { assertExists } from "@std/testing/asserts";
  *
  * assertExists("something"); // Doesn't throw
  * assertExists(undefined); // Throws
@@ -134,7 +134,7 @@ export type Falsy = false | 0 | 0n | "" | null | undefined;
  *
  * @example
  * ```ts
- * import { assertFalse } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+ * import { assertFalse } from "@std/testing/asserts";
  *
  * assertFalse(false); // Doesn't throw
  * assertFalse(true); // Throws
@@ -152,7 +152,7 @@ export function assertFalse(expr: unknown, msg = ""): asserts expr is Falsy {
  *
  * @example
  * ```ts
- * import { assertGreaterOrEqual } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+ * import { assertGreaterOrEqual } from "@std/testing/asserts";
  *
  * assertGreaterOrEqual(2, 1); // Doesn't throw
  * assertGreaterOrEqual(1, 1); // Doesn't throw
@@ -175,7 +175,7 @@ export function assertGreaterOrEqual<T>(
  *
  * @example
  * ```ts
- * import { assertGreater } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+ * import { assertGreater } from "@std/testing/asserts";
  *
  * assertGreater(2, 1); // Doesn't throw
  * assertGreater(1, 1); // Throws
@@ -209,7 +209,7 @@ new (...args: any) => infer C ? C
  *
  * @example
  * ```ts
- * import { assertInstanceOf } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+ * import { assertInstanceOf } from "@std/testing/asserts";
  *
  * assertInstanceOf(new Date(), Date); // Doesn't throw
  * assertInstanceOf(new Date(), Number); // Throws
@@ -233,7 +233,7 @@ export function assertInstanceOf<T extends AnyConstructor>(
  *
  * @example
  * ```ts
- * import { assertIsError } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+ * import { assertIsError } from "@std/testing/asserts";
  *
  * assertIsError(null); // Throws
  * assertIsError(new RangeError("Out of range")); // Doesn't throw
@@ -260,7 +260,7 @@ export function assertIsError<E extends Error = Error>(
  *
  * @example
  * ```ts
- * import { assertLessOrEqual } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+ * import { assertLessOrEqual } from "@std/testing/asserts";
  *
  * assertLessOrEqual(1, 2); // Doesn't throw
  * assertLessOrEqual(1, 1); // Doesn't throw
@@ -283,7 +283,7 @@ export function assertLessOrEqual<T>(
  *
  * @example
  * ```ts
- * import { assertLess } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+ * import { assertLess } from "@std/testing/asserts";
  *
  * assertLess(1, 2); // Doesn't throw
  * assertLess(2, 1); // Throws
@@ -301,7 +301,7 @@ export function assertLess<T>(actual: T, expected: T, msg?: string) {
  *
  * @example
  * ```ts
- * import { assertMatch } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+ * import { assertMatch } from "@std/testing/asserts";
  *
  * assertMatch("Raptor", RegExp(/Raptor/)); // Doesn't throw
  * assertMatch("Denosaurus", RegExp(/Raptor/)); // Throws
@@ -325,7 +325,7 @@ export function assertMatch(
  *
  * @example
  * ```ts
- * import { assertNotEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+ * import { assertNotEquals } from "@std/testing/asserts";
  *
  * assertNotEquals(1, 2); // Doesn't throw
  * assertNotEquals(1, 1); // Throws
@@ -343,7 +343,7 @@ export function assertNotEquals<T>(actual: T, expected: T, msg?: string) {
  *
  * @example
  * ```ts
- * import { assertNotInstanceOf } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+ * import { assertNotInstanceOf } from "@std/testing/asserts";
  *
  * assertNotInstanceOf(new Date(), Number); // Doesn't throw
  * assertNotInstanceOf(new Date(), Date); // Throws
@@ -366,7 +366,7 @@ export function assertNotInstanceOf<A, T>(
  *
  * @example
  * ```ts
- * import { assertNotMatch } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+ * import { assertNotMatch } from "@std/testing/asserts";
  *
  * assertNotMatch("Denosaurus", RegExp(/Raptor/)); // Doesn't throw
  * assertNotMatch("Raptor", RegExp(/Raptor/)); // Throws
@@ -388,7 +388,7 @@ export function assertNotMatch(
  *
  * @example
  * ```ts
- * import { assertNotStrictEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+ * import { assertNotStrictEquals } from "@std/testing/asserts";
  *
  * assertNotStrictEquals(1, 1); // Doesn't throw
  * assertNotStrictEquals(1, 2); // Throws
@@ -410,7 +410,7 @@ export function assertNotStrictEquals<T>(
  *
  * @example
  * ```ts
- * import { assertObjectMatch } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+ * import { assertObjectMatch } from "@std/testing/asserts";
  *
  * assertObjectMatch({ foo: "bar" }, { foo: "bar" }); // Doesn't throw
  * assertObjectMatch({ foo: "bar" }, { foo: "baz" }); // Throws
@@ -432,7 +432,7 @@ export function assertObjectMatch(
  *
  * @example
  * ```ts
- * import { assertRejects } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+ * import { assertRejects } from "@std/testing/asserts";
  *
  * await assertRejects(async () => Promise.reject(new Error())); // Doesn't throw
  * await assertRejects(async () => console.log("Hello world")); // Throws
@@ -451,7 +451,7 @@ export function assertRejects(
  *
  * @example
  * ```ts
- * import { assertRejects } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+ * import { assertRejects } from "@std/testing/asserts";
  *
  * await assertRejects(async () => Promise.reject(new Error()), Error); // Doesn't throw
  * await assertRejects(async () => Promise.reject(new Error()), SyntaxError); // Throws
@@ -490,7 +490,7 @@ export async function assertRejects<E extends Error = Error>(
  *
  * @example
  * ```ts
- * import { assertStrictEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+ * import { assertStrictEquals } from "@std/testing/asserts";
  *
  * const a = {};
  * const b = a;
@@ -517,7 +517,7 @@ export function assertStrictEquals<T>(
  *
  * @example
  * ```ts
- * import { assertStringIncludes } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+ * import { assertStringIncludes } from "@std/testing/asserts";
  *
  * assertStringIncludes("Hello", "ello"); // Doesn't throw
  * assertStringIncludes("Hello", "world"); // Throws
@@ -539,7 +539,7 @@ export function assertStringIncludes(
  *
  * @example
  * ```ts
- * import { assertThrows } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+ * import { assertThrows } from "@std/testing/asserts";
  *
  * assertThrows(() => { throw new TypeError("hello world!"); }); // Doesn't throw
  * assertThrows(() => console.log("hello world!")); // Throws
@@ -558,7 +558,7 @@ export function assertThrows(
  *
  * @example
  * ```ts
- * import { assertThrows } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+ * import { assertThrows } from "@std/testing/asserts";
  *
  * assertThrows(() => { throw new TypeError("hello world!"); }, TypeError); // Doesn't throw
  * assertThrows(() => { throw new TypeError("hello world!"); }, RangeError); // Throws
@@ -596,7 +596,7 @@ export function assertThrows<E extends Error = Error>(
  *
  * @example
  * ```ts
- * import { assert } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+ * import { assert } from "@std/testing/asserts";
  *
  * assert("hello".includes("ello")); // Doesn't throw
  * assert("hello".includes("world")); // Throws
@@ -613,7 +613,7 @@ export function assert(expr: unknown, msg = ""): asserts expr {
  *
  * @example
  * ```ts
- * import { AssertionError } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+ * import { AssertionError } from "@std/testing/asserts";
  *
  * throw new AssertionError("Assertion failed");
  * ```
@@ -635,7 +635,7 @@ export class AssertionError extends Error {
  *
  * @example
  * ```ts
- * import { equal } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+ * import { equal } from "@std/testing/asserts";
  *
  * equal({ foo: "bar" }, { foo: "bar" }); // Returns `true`
  * equal({ foo: "bar" }, { foo: "baz" }); // Returns `false
@@ -652,7 +652,7 @@ export function equal(c: unknown, d: unknown): boolean {
  *
  * @example
  * ```ts
- * import { fail } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+ * import { fail } from "@std/testing/asserts";
  *
  * fail("Deliberately failed!"); // Throws
  * ```
@@ -668,7 +668,7 @@ export function fail(msg?: string): never {
  *
  * @example
  * ```ts
- * import { unimplemented } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+ * import { unimplemented } from "@std/testing/asserts";
  *
  * unimplemented(); // Throws
  * ```
@@ -684,7 +684,7 @@ export function unimplemented(msg?: string): never {
  *
  * @example
  * ```ts
- * import { unreachable } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+ * import { unreachable } from "@std/testing/asserts";
  *
  * unreachable(); // Throws
  * ```

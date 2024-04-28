@@ -6,14 +6,14 @@ import {
   assertRejects,
   assertThrows,
   fail,
-} from "../assert/mod.ts";
+} from "@std/assert";
 import {
   crypto as stdCrypto,
   DIGEST_ALGORITHM_NAMES,
   type DigestAlgorithmName,
 } from "./mod.ts";
-import { repeat } from "../bytes/repeat.ts";
-import { encodeHex } from "../encoding/hex.ts";
+import { repeat } from "@std/bytes/repeat";
+import { encodeHex } from "@std/encoding/hex";
 
 const webCrypto = globalThis.crypto;
 

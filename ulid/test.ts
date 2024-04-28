@@ -2,12 +2,12 @@
 // Copyright 2023 Yoshiya Hinosawa. All rights reserved. MIT license.
 // Copyright 2017 Alizain Feerasta. All rights reserved. MIT license.
 
-import { FakeTime } from "../testing/time.ts";
+import { FakeTime } from "@std/testing/time";
 import {
   assertEquals,
   assertStrictEquals,
   assertThrows,
-} from "../assert/mod.ts";
+} from "@std/assert";
 
 import { decodeTime, monotonicUlid, ulid } from "./mod.ts";
 import {

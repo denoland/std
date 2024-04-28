@@ -12,7 +12,7 @@ High-quality APIs for [Deno](https://deno.com/) and the web. Use fearlessly.
 ## Get Started
 
 ```ts
-import { copy } from "https://deno.land/std@$STD_VERSION/fs/copy.ts";
+import { copy } from "@std/fs/copy";
 
 await copy("./foo", "./bar");
 ```
@@ -29,24 +29,24 @@ Check out the documentation [here](https://deno.land/std?doc).
 
    Good:
    ```ts
-   import { copy } from "https://deno.land/std@$STD_VERSION/fs/copy.ts";
+   import { copy } from "@std/fs/copy";
    ```
 
 1. Only import modules that you require.
 
    Bad (when using only one function):
    ```ts
-   import * as fs from "https://deno.land/std@$STD_VERSION/fs/mod.ts";
+   import * as fs from "@std/fs";
    ```
 
    Good (when using only one function):
    ```ts
-   import { copy } from "https://deno.land/std@$STD_VERSION/fs/copy.ts";
+   import { copy } from "@std/fs/copy";
    ```
 
    Good (when using multiple functions):
    ```ts
-   import * as fs from "https://deno.land/std@$STD_VERSION/fs/mod.ts";
+   import * as fs from "@std/fs";
    ```
 
 1. Do not import symbols with a name _prefixed_ by an underscore (they're not
@@ -54,7 +54,7 @@ Check out the documentation [here](https://deno.land/std?doc).
 
    Bad:
    ```ts, ignore
-   import { _format } from "https://deno.land/std@$STD_VERSION/path/_common/format.ts";
+   import { _format } from "@std/path/-common/format";
    ```
 
 1. Do not import modules with a directory or filename _prefixed_ by an
@@ -62,19 +62,19 @@ Check out the documentation [here](https://deno.land/std?doc).
 
    Bad:
    ```ts, ignore
-   import { createLPS } from "https://deno.land/std@$STD_VERSION/streams/_common.ts";
+   import { createLPS } from "@std/streams/-common";
    ```
 
    Good:
    ```ts
-   import { TextLineStream } from "https://deno.land/std@$STD_VERSION/streams/text_line_stream.ts";
+   import { TextLineStream } from "@std/streams/text-line-stream";
    ```
 
 1. Do not import test modules or test data.
 
    Bad:
    ```ts
-   import { test } from "https://deno.land/std@$STD_VERSION/front_matter/test.ts";
+   import { test } from "@std/front-matter/test";
    ```
 
 ## Packages

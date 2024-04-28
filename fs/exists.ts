@@ -58,7 +58,7 @@ export interface ExistsOptions {
  *
  * @example Basic usage
  * ```ts
- * import { exists } from "https://deno.land/std@$STD_VERSION/fs/exists.ts";
+ * import { exists } from "@std/fs/exists";
  *
  * await exists("./exists"); // true
  * await exists("./does_not_exist"); // false
@@ -66,7 +66,7 @@ export interface ExistsOptions {
  *
  * @example Check if a path is readable
  * ```ts
- * import { exists } from "https://deno.land/std@$STD_VERSION/fs/exists.ts";
+ * import { exists } from "@std/fs/exists";
  *
  * await exists("./readable", { isReadable: true }); // true
  * await exists("./not_readable", { isReadable: true }); // false
@@ -74,7 +74,7 @@ export interface ExistsOptions {
  *
  * @example Check if a path is a directory
  * ```ts
- * import { exists } from "https://deno.land/std@$STD_VERSION/fs/exists.ts";
+ * import { exists } from "@std/fs/exists";
  *
  * await exists("./directory", { isDirectory: true }); // true
  * await exists("./file", { isDirectory: true }); // false
@@ -82,7 +82,7 @@ export interface ExistsOptions {
  *
  * @example Check if a path is a file
  * ```ts
- * import { exists } from "https://deno.land/std@$STD_VERSION/fs/exists.ts";
+ * import { exists } from "@std/fs/exists";
  *
  * await exists("./file", { isFile: true }); // true
  * await exists("./directory", { isFile: true }); // false
@@ -90,7 +90,7 @@ export interface ExistsOptions {
  *
  * @example Check if a path is a readable directory
  * ```ts
- * import { exists } from "https://deno.land/std@$STD_VERSION/fs/exists.ts";
+ * import { exists } from "@std/fs/exists";
  *
  * await exists("./readable_directory", { isReadable: true, isDirectory: true }); // true
  * await exists("./not_readable_directory", { isReadable: true, isDirectory: true }); // false
@@ -98,7 +98,7 @@ export interface ExistsOptions {
  *
  * @example Check if a path is a readable file
  * ```ts
- * import { exists } from "https://deno.land/std@$STD_VERSION/fs/exists.ts";
+ * import { exists } from "@std/fs/exists";
  *
  * await exists("./readable_file", { isReadable: true, isFile: true }); // true
  * await exists("./not_readable_file", { isReadable: true, isFile: true }); // false
@@ -188,7 +188,7 @@ export async function exists(
  *
  * @example Basic usage
  * ```ts
- * import { existsSync } from "https://deno.land/std@$STD_VERSION/fs/exists.ts";
+ * import { existsSync } from "@std/fs/exists";
  *
  * existsSync("./exists"); // true
  * existsSync("./does_not_exist"); // false
@@ -196,7 +196,7 @@ export async function exists(
  *
  * @example Check if a path is readable
  * ```ts
- * import { existsSync } from "https://deno.land/std@$STD_VERSION/fs/exists.ts";
+ * import { existsSync } from "@std/fs/exists";
  *
  * existsSync("./readable", { isReadable: true }); // true
  * existsSync("./not_readable", { isReadable: true }); // false
@@ -204,7 +204,7 @@ export async function exists(
  *
  * @example Check if a path is a directory
  * ```ts
- * import { existsSync } from "https://deno.land/std@$STD_VERSION/fs/exists.ts";
+ * import { existsSync } from "@std/fs/exists";
  *
  * existsSync("./directory", { isDirectory: true }); // true
  * existsSync("./file", { isDirectory: true }); // false
@@ -212,7 +212,7 @@ export async function exists(
  *
  * @example Check if a path is a file
  * ```ts
- * import { existsSync } from "https://deno.land/std@$STD_VERSION/fs/exists.ts";
+ * import { existsSync } from "@std/fs/exists";
  *
  * existsSync("./file", { isFile: true }); // true
  * existsSync("./directory", { isFile: true }); // false
@@ -220,7 +220,7 @@ export async function exists(
  *
  * @example Check if a path is a readable directory
  * ```ts
- * import { existsSync } from "https://deno.land/std@$STD_VERSION/fs/exists.ts";
+ * import { existsSync } from "@std/fs/exists";
  *
  * existsSync("./readable_directory", { isReadable: true, isDirectory: true }); // true
  * existsSync("./not_readable_directory", { isReadable: true, isDirectory: true }); // false
@@ -228,7 +228,7 @@ export async function exists(
  *
  * @example Check if a path is a readable file
  * ```ts
- * import { existsSync } from "https://deno.land/std@$STD_VERSION/fs/exists.ts";
+ * import { existsSync } from "@std/fs/exists";
  *
  * existsSync("./readable_file", { isReadable: true, isFile: true }); // true
  * existsSync("./not_readable_file", { isReadable: true, isFile: true }); // false

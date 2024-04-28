@@ -4,8 +4,8 @@
 import {
   iterateReader as _iterateReader,
   iterateReaderSync as _iterateReaderSync,
-} from "../io/iterate_reader.ts";
-import type { Reader, ReaderSync } from "../io/types.ts";
+} from "@std/io/iterate-reader";
+import type { Reader, ReaderSync } from "@std/io/types";
 
 export type { Reader, ReaderSync };
 
@@ -14,7 +14,7 @@ export type { Reader, ReaderSync };
  *
  * @example
  * ```ts
- * import { iterateReader } from "https://deno.land/std@$STD_VERSION/streams/iterate_reader.ts";
+ * import { iterateReader } from "@std/streams/iterate-reader";
  *
  * using f = await Deno.open("/etc/passwd");
  * for await (const chunk of iterateReader(f)) {
@@ -27,7 +27,7 @@ export type { Reader, ReaderSync };
  *
  * @example
  * ```ts
- * import { iterateReader } from "https://deno.land/std@$STD_VERSION/streams/iterate_reader.ts";
+ * import { iterateReader } from "@std/streams/iterate-reader";
  *
  * using f = await Deno.open("/etc/passwd");
  * const it = iterateReader(f, {
@@ -53,7 +53,7 @@ export function iterateReader(
  * Turns a {@linkcode ReaderSync}, `r`, into an iterator.
  *
  * ```ts
- * import { iterateReaderSync } from "https://deno.land/std@$STD_VERSION/streams/iterate_reader.ts";
+ * import { iterateReaderSync } from "@std/streams/iterate-reader";
  *
  * using f = Deno.openSync("/etc/passwd");
  * for (const chunk of iterateReaderSync(f)) {
@@ -65,7 +65,7 @@ export function iterateReader(
  * Default size of the buffer is 32kB.
  *
  * ```ts
- * import { iterateReaderSync } from "https://deno.land/std@$STD_VERSION/streams/iterate_reader.ts";
+ * import { iterateReaderSync } from "@std/streams/iterate-reader";
 
  * using f = await Deno.open("/etc/passwd");
  * const iter = iterateReaderSync(f, {

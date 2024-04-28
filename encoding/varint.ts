@@ -5,7 +5,7 @@
  * Functions for encoding typed integers in array buffers.
  *
  * ```ts
- * import { encode, decode } from "https://deno.land/std@$STD_VERSION/encoding/varint.ts";
+ * import { encode, decode } from "@std/encoding/varint";
  *
  * const buf = new Uint8Array(10);
  * const [encoded, bytesWritten] = encode(42n, buf);
@@ -54,7 +54,7 @@ const U64_VIEW = new BigUint64Array(AB);
  *
  * @example
  * ```ts
- * import { decode } from "https://deno.land/std@$STD_VERSION/encoding/varint.ts";
+ * import { decode } from "@std/encoding/varint";
  *
  * const buf = new Uint8Array([0x8E, 0x02]);
  * decode(buf); // [ 300n, 2 ];
@@ -86,7 +86,7 @@ export function decode(buf: Uint8Array, offset = 0): [bigint, number] {
  *
  * @example
  * ```ts
- * import { decodeVarint } from "https://deno.land/std@$STD_VERSION/encoding/varint.ts";
+ * import { decodeVarint } from "@std/encoding/varint";
  *
  * const buf = new Uint8Array([0x8E, 0x02]);
  * decodeVarint(buf); // [ 300n, 2 ];
@@ -171,7 +171,7 @@ export function decodeVarint(buf: Uint8Array, offset = 0): [bigint, number] {
  *
  * @example
  * ```ts
- * import { decode32 } from "https://deno.land/std@$STD_VERSION/encoding/varint.ts";
+ * import { decode32 } from "@std/encoding/varint";
  *
  * const buf = new Uint8Array([0x8E, 0x02]);
  * decode32(buf); // [ 300, 2 ];
@@ -202,7 +202,7 @@ export function decode32(buf: Uint8Array, offset = 0): [number, number] {
  *
  * @example
  * ```ts
- * import { decodeVarint32 } from "https://deno.land/std@$STD_VERSION/encoding/varint.ts";
+ * import { decodeVarint32 } from "@std/encoding/varint";
  *
  * const buf = new Uint8Array([0x8E, 0x02]);
  * decodeVarint32(buf); // [ 300, 2 ];
@@ -243,7 +243,7 @@ export function decodeVarint32(buf: Uint8Array, offset = 0): [number, number] {
  *
  * @example
  * ```ts
- * import { encode } from "https://deno.land/std@$STD_VERSION/encoding/varint.ts";
+ * import { encode } from "@std/encoding/varint";
  *
  * const buf = new Uint8Array(10);
  * encode(42n, buf); // [ Uint8Array(1) [ 42 ], 1 ];
@@ -279,7 +279,7 @@ export function encode(
  *
  * @example
  * ```ts
- * import { encodeVarint } from "https://deno.land/std@$STD_VERSION/encoding/varint.ts";
+ * import { encodeVarint } from "@std/encoding/varint";
  *
  * const buf = new Uint8Array(10);
  * encodeVarint(42n, buf); // [ Uint8Array(1) [ 42 ], 1 ];

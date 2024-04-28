@@ -10,7 +10,7 @@ const getWordDistance = levenshteinDistance;
  *
  * @example
  * ```ts
- * import { compareSimilarity } from "https://deno.land/std@$STD_VERSION/text/compare_similarity.ts";
+ * import { compareSimilarity } from "@std/text/compare-similarity";
  * const words = ["hi", "hello", "help"];
  *
  * // words most-similar to "hep" will be at the front

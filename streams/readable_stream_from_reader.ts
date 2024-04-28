@@ -1,8 +1,8 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-import { toReadableStream } from "../io/to_readable_stream.ts";
-import type { Closer, Reader } from "../io/types.ts";
+import { toReadableStream } from "@std/io/to-readable-stream";
+import type { Closer, Reader } from "@std/io/types";
 export type { Closer };
 
 /**
@@ -37,7 +37,7 @@ export interface ReadableStreamFromReaderOptions {
  * An example converting a `Deno.FsFile` into a readable stream:
  *
  * ```ts
- * import { readableStreamFromReader } from "https://deno.land/std@$STD_VERSION/streams/readable_stream_from_reader.ts";
+ * import { readableStreamFromReader } from "@std/streams/readable-stream-from-reader";
  *
  * const file = await Deno.open("./file.txt", { read: true });
  * const fileStream = readableStreamFromReader(file);

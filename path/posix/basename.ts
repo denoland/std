@@ -15,7 +15,7 @@ import { isPosixPathSeparator } from "./_util.ts";
  *
  * @example
  * ```ts
- * import { basename } from "https://deno.land/std@$STD_VERSION/path/basename.ts";
+ * import { basename } from "@std/path/basename";
  *
  * console.log(basename("/home/user/Documents/")); // "Documents"
  * console.log(basename("/home/user/Documents/image.png")); // "image.png"

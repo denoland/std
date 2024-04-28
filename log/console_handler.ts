@@ -2,7 +2,7 @@
 // This module is browser compatible.
 import { type LevelName, LogLevels } from "./levels.ts";
 import type { LogRecord } from "./logger.ts";
-import { blue, bold, red, yellow } from "../fmt/colors.ts";
+import { blue, bold, red, yellow } from "@std/fmt/colors";
 import { BaseHandler, type BaseHandlerOptions } from "./base_handler.ts";
 
 export interface ConsoleHandlerOptions extends BaseHandlerOptions {

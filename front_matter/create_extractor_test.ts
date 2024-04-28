@@ -1,8 +1,8 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import { assertThrows } from "../assert/mod.ts";
-import { parse as parseYAML } from "../yaml/parse.ts";
-import { parse as parseTOML } from "../toml/parse.ts";
+import { assertThrows } from "@std/assert";
+import { parse as parseYAML } from "@std/yaml/parse";
+import { parse as parseTOML } from "@std/toml/parse";
 import {
   resolveTestDataPath,
   runExtractJSONTests,

@@ -53,7 +53,7 @@ function charWidth(ch: string) {
  *
  * @example Calculating the unicode width of a string
  * ```ts
- * import { unicodeWidth } from "https://deno.land/std@$STD_VERSION/cli/unicode_width.ts";
+ * import { unicodeWidth } from "@std/cli/unicode-width";
  *
  * unicodeWidth("hello world"); // 11
  * unicodeWidth("天地玄黃宇宙洪荒"); // 16
@@ -62,8 +62,8 @@ function charWidth(ch: string) {
  *
  * @example Calculating the unicode width of a color-encoded string
  * ```ts
- * import { unicodeWidth } from "https://deno.land/std@$STD_VERSION/cli/unicode_width.ts";
- * import { stripAnsiCode } from "https://deno.land/std@$STD_VERSION/fmt/colors.ts";
+ * import { unicodeWidth } from "@std/cli/unicode-width";
+ * import { stripAnsiCode } from "@std/fmt/colors";
  *
  * unicodeWidth(stripAnsiCode("\x1b[36mголубой\x1b[39m")); // 7
  * unicodeWidth(stripAnsiCode("\x1b[31m紅色\x1b[39m")); // 4

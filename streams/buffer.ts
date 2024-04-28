@@ -1,8 +1,8 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-import { assert } from "../assert/assert.ts";
-import { copy } from "../bytes/copy.ts";
+import { assert } from "@std/assert/assert";
+import { copy } from "@std/bytes/copy";
 
 const MAX_SIZE = 2 ** 32 - 2;
 const DEFAULT_CHUNK_SIZE = 16_640;

@@ -2,7 +2,7 @@
 // This code has been ported almost directly from Go's src/bytes/buffer_test.go
 // Copyright 2009 The Go Authors. All rights reserved. BSD license.
 // https://github.com/golang/go/blob/master/LICENSE
-import { assertEquals } from "../assert/mod.ts";
+import { assertEquals } from "@std/assert";
 import { BufWriter, BufWriterSync } from "./buf_writer.ts";
 import { Buffer } from "./buffer.ts";
 import { StringWriter } from "./string_writer.ts";

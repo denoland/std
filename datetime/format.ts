@@ -43,7 +43,7 @@ export interface FormatOptions {
  *
  * @example Basic usage
  * ```ts
- * import { format } from "https://deno.land/std@$STD_VERSION/datetime/format.ts";
+ * import { format } from "@std/datetime/format";
  *
  * const date = new Date(2019, 0, 20, 16, 34, 23, 123);
  *
@@ -56,7 +56,7 @@ export interface FormatOptions {
  *
  * @example UTC formatting
  * ```ts
- * import { format } from "https://deno.land/std@$STD_VERSION/datetime/format.ts";
+ * import { format } from "@std/datetime/format";
  *
  * const date = new Date(2019, 0, 20, 16, 34, 23, 123);
  *

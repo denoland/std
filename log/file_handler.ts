@@ -2,7 +2,7 @@
 import { type LevelName, LogLevels } from "./levels.ts";
 import type { LogRecord } from "./logger.ts";
 import { BaseHandler, type BaseHandlerOptions } from "./base_handler.ts";
-import { writeAllSync } from "../io/write_all.ts";
+import { writeAllSync } from "@std/io/write-all";
 
 const PAGE_SIZE = 4096;
 export type LogMode = "a" | "w" | "x";

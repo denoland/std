@@ -5,7 +5,7 @@
  * Format milliseconds to time duration.
  *
  * ```ts
- * import { format } from "https://deno.land/std@$STD_VERSION/fmt/duration.ts";
+ * import { format } from "@std/fmt/duration";
  *
  * // "00:00:01:39:674:000:000"
  * format(99674, { style: "digital" });
@@ -96,7 +96,7 @@ export interface PrettyDurationOptions {
  * Format milliseconds to time duration.
  *
  * ```ts
- * import { format } from "https://deno.land/std@$STD_VERSION/fmt/duration.ts";
+ * import { format } from "@std/fmt/duration";
  *
  * format(99674, { style: "digital" }); // "00:00:01:39:674:000:000"
  * format(99674); // "0d 0h 1m 39s 674ms 0µs 0ns"

@@ -19,7 +19,7 @@
  *
  * @example Basic usage
  * ```ts
- * import { indexOfNeedle } from "https://deno.land/std@$STD_VERSION/bytes/index_of_needle.ts";
+ * import { indexOfNeedle } from "@std/bytes/index-of-needle";
  *
  * const source = new Uint8Array([0, 1, 2, 1, 2, 1, 2, 3]);
  * const needle = new Uint8Array([1, 2]);
@@ -31,7 +31,7 @@
  *
  * @example Start index
  * ```ts
- * import { indexOfNeedle } from "https://deno.land/std@$STD_VERSION/bytes/index_of_needle.ts";
+ * import { indexOfNeedle } from "@std/bytes/index-of-needle";
  *
  * const source = new Uint8Array([0, 1, 2, 1, 2, 1, 2, 3]);
  * const needle = new Uint8Array([1, 2]);

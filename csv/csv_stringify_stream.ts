@@ -24,7 +24,7 @@ export interface CsvStringifyStreamOptions {
  *
  * @example
  * ```ts
- * import { CsvStringifyStream } from "https://deno.land/std@$STD_VERSION/csv/csv_stringify_stream.ts";
+ * import { CsvStringifyStream } from "@std/csv/csv-stringify-stream";
  *
  * const file = await Deno.open("data.csv", { create: true, write: true });
  * const readable = ReadableStream.from([

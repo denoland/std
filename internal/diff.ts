@@ -9,7 +9,7 @@ import {
   green,
   red,
   white,
-} from "../fmt/colors.ts";
+} from "@std/fmt/colors";
 
 interface FarthestPoint {
   y: number;

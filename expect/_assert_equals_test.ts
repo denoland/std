@@ -2,7 +2,7 @@
 
 // This file is copied from `std/assert`.
 
-import { AssertionError, assertThrows } from "../assert/mod.ts";
+import { AssertionError, assertThrows } from "@std/assert";
 import {
   bold,
   gray,
@@ -10,7 +10,7 @@ import {
   red,
   stripAnsiCode,
   yellow,
-} from "../fmt/colors.ts";
+} from "@std/fmt/colors";
 import { assertEquals } from "./_assert_equals.ts";
 
 const createHeader = (): string[] => [

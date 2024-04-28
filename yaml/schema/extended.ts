@@ -15,7 +15,7 @@ import { DEFAULT_SCHEMA } from "./default.ts";
  * import {
  *   EXTENDED_SCHEMA,
  *   parse,
- * } from "https://deno.land/std@$STD_VERSION/yaml/mod.ts";
+ * } from "@std/yaml";
  *
  * const data = parse(
  *   `
@@ -48,7 +48,7 @@ export const EXTENDED_SCHEMA: Schema = new Schema({
  * import {
  *   EXTENDED_SCHEMA,
  *   parse,
- * } from "https://deno.land/std@$STD_VERSION/yaml/mod.ts";
+ * } from "@std/yaml";
  *
  * const data = parse(
  *   `

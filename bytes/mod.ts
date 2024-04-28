@@ -11,7 +11,7 @@
  * {@linkcode concat} concatenates an array of byte slices into a single slice.
  *
  * ```ts
- * import { concat } from "https://deno.land/std@$STD_VERSION/bytes/concat.ts";
+ * import { concat } from "@std/bytes/concat";
  *
  * const a = new Uint8Array([0, 1, 2]);
  * const b = new Uint8Array([3, 4, 5]);
@@ -24,7 +24,7 @@
  * returns the number of bytes copied.
  *
  * ```ts
- * import { copy } from "https://deno.land/std@$STD_VERSION/bytes/copy.ts";
+ * import { copy } from "@std/bytes/copy";
  *
  * const src = new Uint8Array([9, 8, 7]);
  * const dst = new Uint8Array([0, 1, 2, 3, 4, 5]);
@@ -39,7 +39,7 @@
  * the source array, `false` otherwise.
  *
  * ```ts
- * import { endsWith } from "https://deno.land/std@$STD_VERSION/bytes/ends_with.ts";
+ * import { endsWith } from "@std/bytes/ends-with";
  *
  * const source = new Uint8Array([0, 1, 2, 1, 2, 1, 2, 3]);
  * const suffix = new Uint8Array([1, 2, 3]);
@@ -52,7 +52,7 @@
  * {@linkcode equals} checks whether byte slices are equal to each other.
  *
  * ```ts
- * import { equals } from "https://deno.land/std@$STD_VERSION/bytes/equals.ts";
+ * import { equals } from "@std/bytes/equals";
  *
  * const a = new Uint8Array([1, 2, 3]);
  * const b = new Uint8Array([1, 2, 3]);
@@ -68,7 +68,7 @@
  * needle array.
  *
  * ```ts
- * import { includesNeedle } from "https://deno.land/std@$STD_VERSION/bytes/includes_needle.ts";
+ * import { includesNeedle } from "@std/bytes/includes-needle";
  *
  * const source = new Uint8Array([0, 1, 2, 1, 2, 1, 2, 3]);
  * const needle = new Uint8Array([1, 2]);
@@ -82,7 +82,7 @@
  * needle array in the source array, or -1 if it is not present.
  *
  * ```ts
- * import { indexOfNeedle } from "https://deno.land/std@$STD_VERSION/bytes/index_of_needle.ts";
+ * import { indexOfNeedle } from "@std/bytes/index-of-needle";
  *
  * const source = new Uint8Array([0, 1, 2, 1, 2, 1, 2, 3]);
  * const needle = new Uint8Array([1, 2]);
@@ -98,7 +98,7 @@
  * needle array in the source array, or -1 if it is not present.
  *
  * ```ts
- * import { lastIndexOfNeedle } from "https://deno.land/std@$STD_VERSION/bytes/last_index_of_needle.ts";
+ * import { lastIndexOfNeedle } from "@std/bytes/last-index-of-needle";
  *
  * const source = new Uint8Array([0, 1, 2, 1, 2, 1, 2, 3]);
  * const needle = new Uint8Array([1, 2]);
@@ -114,7 +114,7 @@
  * of the `source` array.
  *
  * ```ts
- * import { repeat } from "https://deno.land/std@$STD_VERSION/bytes/repeat.ts";
+ * import { repeat } from "@std/bytes/repeat";
  *
  * const source = new Uint8Array([0, 1, 2]);
  *
@@ -131,7 +131,7 @@
  * of the source array, `false` otherwise.
  *
  * ```ts
- * import { startsWith } from "https://deno.land/std@$STD_VERSION/bytes/starts_with.ts";
+ * import { startsWith } from "@std/bytes/starts-with";
  *
  * const source = new Uint8Array([0, 1, 2, 1, 2, 1, 2, 3]);
  * const prefix = new Uint8Array([0, 1, 2]);

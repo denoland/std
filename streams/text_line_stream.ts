@@ -17,7 +17,7 @@ export interface TextLineStreamOptions {
  *
  * @example
  * ```ts
- * import { TextLineStream } from "https://deno.land/std@$STD_VERSION/streams/text_line_stream.ts";
+ * import { TextLineStream } from "@std/streams/text-line-stream";
  *
  * const res = await fetch("https://example.com");
  * const lines = res.body!

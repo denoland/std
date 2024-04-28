@@ -7,7 +7,7 @@
  *
  * @example
  * ```ts
- * import { mergeReadableStreams } from "https://deno.land/std@$STD_VERSION/streams/merge_readable_streams.ts";
+ * import { mergeReadableStreams } from "@std/streams/merge-readable-streams";
  *
  * const stream1 = ReadableStream.from(["1", "2", "3"]);
  * const stream2 = ReadableStream.from(["a", "b", "c"]);

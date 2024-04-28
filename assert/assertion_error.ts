@@ -6,7 +6,7 @@
  *
  * @example
  * ```ts
- * import { AssertionError } from "https://deno.land/std@$STD_VERSION/assert/assertion_error.ts";
+ * import { AssertionError } from "@std/assert/assertion-error";
  *
  * throw new AssertionError("Assertion failed");
  * ```

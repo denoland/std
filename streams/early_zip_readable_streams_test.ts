@@ -1,7 +1,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
 import { earlyZipReadableStreams } from "./early_zip_readable_streams.ts";
-import { assertEquals } from "../assert/mod.ts";
+import { assertEquals } from "@std/assert";
 
 Deno.test("earlyZipReadableStreams() handles short first", async () => {
   const textStream = ReadableStream.from(["1", "2", "3"]);

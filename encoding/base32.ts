@@ -12,7 +12,7 @@
  * This module is browser compatible.
  *
  * ```ts
- * import { encodeBase32, decodeBase32 } from "https://deno.land/std@$STD_VERSION/encoding/base32.ts";
+ * import { encodeBase32, decodeBase32 } from "@std/encoding/base32";
  *
  * const encoded = encodeBase32("foobar"); // "MZXW6YTBOI======"
  *
@@ -66,7 +66,7 @@ function _byteLength(validLen: number, placeHoldersLen: number): number {
  *
  * @example
  * ```ts
- * import { decodeBase32 } from "https://deno.land/std@$STD_VERSION/encoding/base32.ts";
+ * import { decodeBase32 } from "@std/encoding/base32";
  *
  * decodeBase32("NRQMA===");
  * // Uint8Array(3) [ 108, 96, 192 ]
@@ -172,7 +172,7 @@ function encodeChunk(uint8: Uint8Array, start: number, end: number): string {
  *
  * @example
  * ```ts
- * import { encodeBase32 } from "https://deno.land/std@$STD_VERSION/encoding/base32.ts";
+ * import { encodeBase32 } from "@std/encoding/base32";
  *
  * encodeBase32("6c60c0"); // "NRQMA==="
  * ```

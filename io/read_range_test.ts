@@ -1,12 +1,12 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import { copy } from "../bytes/copy.ts";
+import { copy } from "@std/bytes/copy";
 import {
   assert,
   assertEquals,
   assertRejects,
   assertThrows,
-} from "../assert/mod.ts";
+} from "@std/assert";
 import { readRange, readRangeSync } from "./read_range.ts";
 import type { Closer, Reader, ReaderSync } from "./types.ts";
 

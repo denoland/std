@@ -1,0 +1,11 @@
+{
+  "name": "@std/csv",
+  "version": "0.224.0",
+  "exports": {
+    ".": "./mod.ts",
+    "./csv-parse-stream": "./csv_parse_stream.ts",
+    "./csv-stringify-stream": "./csv_stringify_stream.ts",
+    "./parse": "./parse.ts",
+    "./stringify": "./stringify.ts"
+  }
+}

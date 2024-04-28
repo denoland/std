@@ -7,8 +7,8 @@
  *
  * @example
  * ```ts
- * import { maxBy } from "https://deno.land/std@$STD_VERSION/collections/max_by.ts";
- * import { assertEquals } from "https://deno.land/std@$STD_VERSION/assert/assert_equals.ts";
+ * import { maxBy } from "@std/collections/max-by";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const people = [
  *   { name: "Anna", age: 34 },
@@ -31,7 +31,7 @@ export function maxBy<T>(
  *
  * @example
  * ```ts
- * import { maxBy } from "https://deno.land/std@$STD_VERSION/collections/max_by.ts";
+ * import { maxBy } from "@std/collections/max-by";
  *
  * const people = [
  *   { name: "Anna" },
@@ -52,8 +52,8 @@ export function maxBy<T>(
  *
  * @example
  * ```ts
- * import { maxBy } from "https://deno.land/std@$STD_VERSION/collections/max_by.ts";
- * import { assertEquals } from "https://deno.land/std@$STD_VERSION/assert/assert_equals.ts";
+ * import { maxBy } from "@std/collections/max-by";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const people = [
  *   { name: "Anna", age: 34n },
@@ -76,7 +76,7 @@ export function maxBy<T>(
  *
  * @example
  * ```ts
- * import { maxBy } from "https://deno.land/std@$STD_VERSION/collections/max_by.ts";
+ * import { maxBy } from "@std/collections/max-by";
  *
  * const people = [
  *   { name: "Anna", startedAt: new Date("2020-01-01") },

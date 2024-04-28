@@ -13,7 +13,7 @@ import { copy } from "./copy.ts";
  *
  * @example Basic usage
  * ```ts
- * import { repeat } from "https://deno.land/std@$STD_VERSION/bytes/repeat.ts";
+ * import { repeat } from "@std/bytes/repeat";
  *
  * const source = new Uint8Array([0, 1, 2]);
  *

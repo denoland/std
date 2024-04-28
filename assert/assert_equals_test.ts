@@ -7,7 +7,7 @@ import {
   red,
   stripAnsiCode,
   yellow,
-} from "../fmt/colors.ts";
+} from "@std/fmt/colors";
 
 const createHeader = (): string[] => [
   "",

@@ -1,5 +1,5 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-import { assertEquals } from "../assert/mod.ts";
+import { assertEquals } from "@std/assert";
 import { StringWriter } from "./string_writer.ts";
 import { StringReader } from "./string_reader.ts";
 import { copyN } from "./copy_n.ts";

@@ -68,7 +68,7 @@ const THRESHOLD_32_BIT = 160;
  *
  * @example Basic usage
  * ```ts
- * import { equals } from "https://deno.land/std@$STD_VERSION/bytes/equals.ts";
+ * import { equals } from "@std/bytes/equals";
  *
  * const a = new Uint8Array([1, 2, 3]);
  * const b = new Uint8Array([1, 2, 3]);

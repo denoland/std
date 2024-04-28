@@ -8,7 +8,7 @@ import {
   assertEquals,
   assertRejects,
   assertThrows,
-} from "../assert/mod.ts";
+} from "@std/assert";
 import { Buffer } from "./buffer.ts";
 import { writeAllSync } from "./write_all.ts";
 
