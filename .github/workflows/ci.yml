@@ -138,7 +138,7 @@ jobs:
 
       - name: Rebuild Wasm and verify it hasn't changed
         if: success() && steps.source.outputs.modified == 'true'
-        run: deno task --cwd ${{ matrix.module }} wasmbuild --check
+        run: deno task --cwd ${{ matrix.module }} --config deno.json wasmbuild --check
 
   publish-dry-run:
     runs-on: ubuntu-latest
