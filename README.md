@@ -29,7 +29,7 @@ Check out the documentation [here](https://deno.land/std?doc).
 
    Good:
    ```ts
-   import { copy } from "@std/fs/copy";
+   import { copy } from "jsr:@std/fs@0.224.0/copy";
    ```
 
 1. Only import modules that you require.
@@ -47,34 +47,6 @@ Check out the documentation [here](https://deno.land/std?doc).
    Good (when using multiple functions):
    ```ts
    import * as fs from "@std/fs";
-   ```
-
-1. Do not import symbols with a name _prefixed_ by an underscore (they're not
-   intended for public use).
-
-   Bad:
-   ```ts, ignore
-   import { _format } from "@std/path/-common/format";
-   ```
-
-1. Do not import modules with a directory or filename _prefixed_ by an
-   underscore (they're not intended for public use).
-
-   Bad:
-   ```ts, ignore
-   import { createLPS } from "@std/streams/-common";
-   ```
-
-   Good:
-   ```ts
-   import { TextLineStream } from "@std/streams/text-line-stream";
-   ```
-
-1. Do not import test modules or test data.
-
-   Bad:
-   ```ts
-   import { test } from "@std/front-matter/test";
    ```
 
 ## Packages
