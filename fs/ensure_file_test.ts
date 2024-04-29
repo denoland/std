@@ -1,6 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-import { assertRejects, assertThrows } from "../assert/mod.ts";
-import * as path from "../path/mod.ts";
+import { assertRejects, assertThrows } from "@std/assert";
+import * as path from "@std/path";
 import { ensureFile, ensureFileSync } from "./ensure_file.ts";
 
 const moduleDir = path.dirname(path.fromFileUrl(import.meta.url));

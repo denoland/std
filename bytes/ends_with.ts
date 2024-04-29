@@ -14,7 +14,7 @@
  *
  * @example Basic usage
  * ```ts
- * import { endsWith } from "https://deno.land/std@$STD_VERSION/bytes/ends_with.ts";
+ * import { endsWith } from "@std/bytes/ends-with";
  *
  * const source = new Uint8Array([0, 1, 2, 1, 2, 1, 2, 3]);
  * const suffix = new Uint8Array([1, 2, 3]);

@@ -10,7 +10,7 @@ import { assertIsError } from "./assert_is_error.ts";
  *
  * @example
  * ```ts
- * import { assertRejects } from "https://deno.land/std@$STD_VERSION/assert/assert_rejects.ts";
+ * import { assertRejects } from "@std/assert/assert-rejects";
  *
  * await assertRejects(async () => Promise.reject(new Error())); // Doesn't throw
  * await assertRejects(async () => console.log("Hello world")); // Throws
@@ -29,7 +29,7 @@ export function assertRejects(
  *
  * @example
  * ```ts
- * import { assertRejects } from "https://deno.land/std@$STD_VERSION/assert/assert_rejects.ts";
+ * import { assertRejects } from "@std/assert/assert-rejects";
  *
  * await assertRejects(async () => Promise.reject(new Error()), Error); // Doesn't throw
  * await assertRejects(async () => Promise.reject(new Error()), SyntaxError); // Throws

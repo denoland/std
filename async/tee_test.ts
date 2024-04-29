@@ -1,6 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import { tee } from "./tee.ts";
-import { assertEquals } from "../assert/mod.ts";
+import { assertEquals } from "@std/assert";
 
 /** An example async generator */
 const gen = async function* iter() {

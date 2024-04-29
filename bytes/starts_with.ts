@@ -14,7 +14,7 @@
  *
  * @example Basic usage
  * ```ts
- * import { startsWith } from "https://deno.land/std@$STD_VERSION/bytes/starts_with.ts";
+ * import { startsWith } from "@std/bytes/starts-with";
  *
  * const source = new Uint8Array([0, 1, 2, 1, 2, 1, 2, 3]);
  * const prefix = new Uint8Array([0, 1, 2]);

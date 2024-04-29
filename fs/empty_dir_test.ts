@@ -4,8 +4,8 @@ import {
   assertRejects,
   assertStringIncludes,
   assertThrows,
-} from "../assert/mod.ts";
-import * as path from "../path/mod.ts";
+} from "@std/assert";
+import * as path from "@std/path";
 import { emptyDir, emptyDirSync } from "./empty_dir.ts";
 
 const testdataDir = path.join(import.meta.dirname!, "testdata");

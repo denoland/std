@@ -7,8 +7,8 @@
  *
  * @example
  * ```ts
- * import { distinct } from "https://deno.land/std@$STD_VERSION/collections/distinct.ts";
- * import { assertEquals } from "https://deno.land/std@$STD_VERSION/assert/assert_equals.ts";
+ * import { distinct } from "@std/collections/distinct";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const numbers = [3, 2, 5, 2, 5];
  * const distinctNumbers = distinct(numbers);

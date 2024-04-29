@@ -8,8 +8,8 @@
  *
  * @example
  * ```ts
- * import { partition } from "https://deno.land/std@$STD_VERSION/collections/partition.ts";
- * import { assertEquals } from "https://deno.land/std@$STD_VERSION/assert/assert_equals.ts";
+ * import { partition } from "@std/collections/partition";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const numbers = [5, 6, 7, 8, 9];
  * const [even, odd] = partition(numbers, (it) => it % 2 === 0);
@@ -29,8 +29,8 @@ export function partition<T>(
  *
  * @example
  * ```ts
- * import { partition } from "https://deno.land/std@$STD_VERSION/collections/partition.ts";
- * import { assertEquals } from "https://deno.land/std@$STD_VERSION/assert/assert_equals.ts";
+ * import { partition } from "@std/collections/partition";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const numbers = [5, 6, 7, 8, 9];
  * const [even, odd] = partition(numbers, (it) => it % 2 === 0);

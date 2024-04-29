@@ -1,7 +1,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
 import { unicodeWidth } from "./unicode_width.ts";
-import { assertEquals } from "../assert/mod.ts";
+import { assertEquals } from "@std/assert";
 
 Deno.test("unicodeWidth()", async (t) => {
   await t.step("checks ASCII input", () => {

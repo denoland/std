@@ -34,10 +34,10 @@ import {
   type TarMeta,
   USTAR_STRUCTURE,
 } from "./_common.ts";
-import type { Reader } from "../io/types.ts";
-import { MultiReader } from "../io/multi_reader.ts";
-import { Buffer } from "../io/buffer.ts";
-import { assert } from "../assert/assert.ts";
+import type { Reader } from "@std/io/types";
+import { MultiReader } from "@std/io/multi-reader";
+import { Buffer } from "@std/io/buffer";
+import { assert } from "@std/assert/assert";
 import { HEADER_LENGTH } from "./_common.ts";
 
 export type { TarInfo, TarMeta };
@@ -200,9 +200,9 @@ export interface TarDataWithSource extends TarData {
  *
  * @example
  * ```ts
- * import { Tar } from "https://deno.land/std@$STD_VERSION/archive/tar.ts";
- * import { Buffer } from "https://deno.land/std@$STD_VERSION/io/buffer.ts";
- * import { copy } from "https://deno.land/std@$STD_VERSION/io/copy.ts";
+ * import { Tar } from "@std/archive/tar";
+ * import { Buffer } from "@std/io/buffer";
+ * import { copy } from "@std/io/copy";
  *
  * const tar = new Tar();
  *

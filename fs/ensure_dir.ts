@@ -12,7 +12,7 @@ import { getFileInfoType } from "./_get_file_info_type.ts";
  *
  * @example
  * ```ts
- * import { ensureDir } from "https://deno.land/std@$STD_VERSION/fs/ensure_dir.ts";
+ * import { ensureDir } from "@std/fs/ensure-dir";
  *
  * await ensureDir("./bar");
  * ```
@@ -65,7 +65,7 @@ export async function ensureDir(dir: string | URL) {
  *
  * @example
  * ```ts
- * import { ensureDir } from "https://deno.land/std@$STD_VERSION/fs/ensure_dir.ts";
+ * import { ensureDir } from "@std/fs/ensure-dir";
  *
  * await ensureDir("./bar");
  * ```

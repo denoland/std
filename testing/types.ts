@@ -6,7 +6,7 @@
  * @param expectTrue - True if the passed in type argument resolved to true.
  * @example
  * ```typescript, ignore
- * import { assertType, IsExact, IsNullable } from "https://deno.land/std@$STD_VERSION/testing/types.ts";
+ * import { assertType, IsExact, IsNullable } from "@std/testing/types";
  *
  * const result = "some result" as string | number;
  *
@@ -25,7 +25,7 @@ export function assertType<T extends true | false>(_expectTrue: T) {
  *
  * @example
  * ```typescript
- * import { AssertTrue, Has, IsNullable } from "https://deno.land/std@$STD_VERSION/testing/types.ts";
+ * import { AssertTrue, Has, IsNullable } from "@std/testing/types";
  *
  * const result = 1 as string | number | null;
  *
@@ -38,7 +38,7 @@ export type AssertTrue<T extends true> = never;
  * Asserts at compile time that the provided type argument's type resolves to false.
  * @example
  * ```typescript
- * import { AssertFalse, IsNever } from "https://deno.land/std@$STD_VERSION/testing/types.ts";
+ * import { AssertFalse, IsNever } from "@std/testing/types";
  *
  * const result = 1 as string | number | null;
  *
@@ -51,7 +51,7 @@ export type AssertFalse<T extends false> = never;
  * Asserts at compile time that the provided type argument's type resolves to the expected boolean literal type.
  * @example
  * ```typescript
- * import { Assert, Has } from "https://deno.land/std@$STD_VERSION/testing/types.ts";
+ * import { Assert, Has } from "@std/testing/types";
  *
  * const result = 1 as string | number | null;
  *

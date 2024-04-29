@@ -1,16 +1,16 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-import { Buffer } from "../io/buffer.ts";
-import { writeAll } from "../io/write_all.ts";
-import type { Reader } from "../io/types.ts";
+import { Buffer } from "@std/io/buffer";
+import { writeAll } from "@std/io/write-all";
+import type { Reader } from "@std/io/types";
 
 /**
  * Create a {@linkcode Reader} from an iterable of {@linkcode Uint8Array}s.
  *
  * ```ts
- * import { readerFromIterable } from "https://deno.land/std@$STD_VERSION/streams/reader_from_iterable.ts";
- * import { copy } from "https://deno.land/std@$STD_VERSION/io/copy.ts";
+ * import { readerFromIterable } from "@std/streams/reader-from-iterable";
+ * import { copy } from "@std/io/copy";
  *
  * const file = await Deno.open("build.txt", { write: true });
  * const reader = readerFromIterable((async function* () {

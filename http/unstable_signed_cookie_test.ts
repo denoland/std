@@ -4,7 +4,7 @@ import {
   signCookie,
   verifyCookie,
 } from "./unstable_signed_cookie.ts";
-import { assertEquals } from "../assert/assert_equals.ts";
+import { assertEquals } from "@std/assert/assert-equals";
 
 Deno.test("signCookie() and verifyCookie() work circularly", async () => {
   const key = await crypto.subtle.generateKey(

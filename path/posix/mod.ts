@@ -10,7 +10,7 @@
  * on Windows. Use methods under `posix` or `win32` object instead to handle non
  * platform specific path like:
  * ```ts
- * import { posix, win32 } from "https://deno.land/std@$STD_VERSION/path/mod.ts";
+ * import { posix, win32 } from "@std/path";
  * const p1 = posix.fromFileUrl("file:///home/foo");
  * const p2 = win32.fromFileUrl("file:///home/foo");
  * console.log(p1); // "/home/foo"

@@ -6,7 +6,7 @@
  * pooling.
  *
  * ```ts
- * import { delay } from "https://deno.land/std@$STD_VERSION/async/delay.ts";
+ * import { delay } from "@std/async/delay";
  *
  * await delay(100); // waits for 100 milliseconds
  * ```

@@ -1,6 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import { createAbortError, exponentialBackoffWithJitter } from "./_util.ts";
-import { assertEquals, assertInstanceOf } from "../assert/mod.ts";
+import { assertEquals, assertInstanceOf } from "@std/assert";
 
 // test util to ensure deterministic results during testing of backoff function by polyfilling Math.random
 function prngMulberry32(seed: number) {

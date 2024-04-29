@@ -1,0 +1,9 @@
+{
+  "name": "@std/expect",
+  "version": "0.224.0",
+  "exports": {
+    ".": "./mod.ts",
+    "./expect": "./expect.ts",
+    "./fn": "./fn.ts"
+  }
+}

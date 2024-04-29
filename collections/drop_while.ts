@@ -7,8 +7,8 @@
  *
  * @example
  * ```ts
- * import { dropWhile } from "https://deno.land/std@$STD_VERSION/collections/drop_while.ts";
- * import { assertEquals } from "https://deno.land/std@$STD_VERSION/assert/assert_equals.ts";
+ * import { dropWhile } from "@std/collections/drop-while";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const numbers = [3, 2, 5, 2, 5];
  * const dropWhileNumbers = dropWhile(numbers, (i) => i !== 2);

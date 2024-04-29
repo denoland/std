@@ -1,6 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import { assertEquals, assertThrows } from "../assert/mod.ts";
+import { assertEquals, assertThrows } from "@std/assert";
 import { chunk } from "./chunk.ts";
 
 function chunkTest<I>(

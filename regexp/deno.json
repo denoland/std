@@ -1,0 +1,8 @@
+{
+  "name": "@std/regexp",
+  "version": "0.224.0",
+  "exports": {
+    ".": "./mod.ts",
+    "./escape": "./escape.ts"
+  }
+}

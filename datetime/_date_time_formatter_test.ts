@@ -1,7 +1,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-import { assertEquals, assertThrows } from "../assert/mod.ts";
-import { assertSpyCall, spy } from "../testing/mock.ts";
-import { FakeTime } from "../testing/time.ts";
+import { assertEquals, assertThrows } from "@std/assert";
+import { assertSpyCall, spy } from "@std/testing/mock";
+import { FakeTime } from "@std/testing/time";
 import { DateTimeFormatter, Tokenizer } from "./_date_time_formatter.ts";
 
 function createRule(

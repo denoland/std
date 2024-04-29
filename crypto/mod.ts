@@ -8,7 +8,7 @@
  * APIs when possible.
  *
  * ```ts
- * import { crypto } from "https://deno.land/std@$STD_VERSION/crypto/crypto.ts";
+ * import { crypto } from "@std/crypto/crypto";
  *
  * const message = "Hello, Deno!";
  * const encoder = new TextEncoder();

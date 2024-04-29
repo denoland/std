@@ -1,5 +1,5 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-import { assertEquals, assertRejects } from "../assert/mod.ts";
+import { assertEquals, assertRejects } from "@std/assert";
 import type { ConcatenatedJsonParseStream } from "./concatenated_json_parse_stream.ts";
 import type { JsonParseStream } from "./json_parse_stream.ts";
 import type { ParseStreamOptions } from "./common.ts";

@@ -1,6 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import { assert, assertEquals } from "../assert/mod.ts";
+import { assert, assertEquals } from "@std/assert";
 import { readAll, readAllSync } from "./read_all.ts";
 import { Buffer } from "./buffer.ts";
 import { init } from "./_test_common.ts";

@@ -6,8 +6,8 @@
  *
  * @example
  * ```ts
- * import { pick } from "https://deno.land/std@$STD_VERSION/collections/pick.ts";
- * import { assertEquals } from "https://deno.land/std@$STD_VERSION/assert/assert_equals.ts";
+ * import { pick } from "@std/collections/pick";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const obj = { a: 5, b: 6, c: 7, d: 8 };
  * const picked = pick(obj, ["a", "c"]);

@@ -1,7 +1,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-import { assert } from "../assert/assert.ts";
+import { assert } from "@std/assert/assert";
 import type { Reader, Writer } from "./types.ts";
 
 const DEFAULT_BUFFER_SIZE = 32 * 1024;

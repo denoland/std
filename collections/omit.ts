@@ -6,8 +6,8 @@
  *
  * @example
  * ```ts
- * import { omit } from "https://deno.land/std@$STD_VERSION/collections/omit.ts";
- * import { assertEquals } from "https://deno.land/std@$STD_VERSION/assert/assert_equals.ts";
+ * import { omit } from "@std/collections/omit";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const obj = { a: 5, b: 6, c: 7, d: 8 };
  * const omitted = omit(obj, ["a", "c"]);

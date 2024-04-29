@@ -12,7 +12,7 @@
  * import {
  *   encodeBase64,
  *   decodeBase64,
- * } from "https://deno.land/std@$STD_VERSION/encoding/base64.ts";
+ * } from "@std/encoding/base64";
  *
  * const encoded = encodeBase64("foobar"); // "Zm9vYmFy"
  *
@@ -101,7 +101,7 @@ const base64abc = [
  *
  * @example
  * ```ts
- * import { encodeBase64 } from "https://deno.land/std@$STD_VERSION/encoding/base64.ts";
+ * import { encodeBase64 } from "@std/encoding/base64";
  *
  * encodeBase64("foobar"); // "Zm9vYmFy"
  * ```
@@ -153,7 +153,7 @@ export function encodeBase64(data: ArrayBuffer | Uint8Array | string): string {
  *
  * @example
  * ```ts
- * import { decodeBase64 } from "https://deno.land/std@$STD_VERSION/encoding/base64.ts";
+ * import { decodeBase64 } from "@std/encoding/base64";
  *
  * decodeBase64("Zm9vYmFy"); // Uint8Array(6) [ 102, 111, 111, 98, 97, 114 ]
  * ```

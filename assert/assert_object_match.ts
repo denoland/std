@@ -8,7 +8,7 @@ import { assertEquals } from "./assert_equals.ts";
  *
  * @example
  * ```ts
- * import { assertObjectMatch } from "https://deno.land/std@$STD_VERSION/assert/assert_object_match.ts";
+ * import { assertObjectMatch } from "@std/assert/assert-object-match";
  *
  * assertObjectMatch({ foo: "bar" }, { foo: "bar" }); // Doesn't throw
  * assertObjectMatch({ foo: "bar" }, { foo: "baz" }); // Throws

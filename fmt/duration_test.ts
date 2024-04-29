@@ -1,5 +1,5 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-import { assertEquals, assertExists, assertThrows } from "../assert/mod.ts";
+import { assertEquals, assertExists, assertThrows } from "@std/assert";
 import { format } from "./duration.ts";
 
 Deno.test({

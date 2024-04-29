@@ -59,7 +59,7 @@ function expand(str: string, variablesMap: { [key: string]: string }): string {
  *
  * @example
  * ```ts
- * import { parse } from "https://deno.land/std@$STD_VERSION/dotenv/parse.ts";
+ * import { parse } from "@std/dotenv/parse";
  *
  * const env = parse("GREETING=hello world");
  * env.GREETING; // "hello world"

@@ -73,7 +73,7 @@
  *
  * @example
  * ```ts
- * import { expect } from "https://deno.land/std@$STD_VERSION/expect/mod.ts";
+ * import { expect } from "@std/expect";
  *
  * const x = 6 * 7;
  * expect(x).toEqual(42);

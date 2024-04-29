@@ -1,5 +1,5 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-import { assertEquals } from "../assert/assert_equals.ts";
+import { assertEquals } from "@std/assert/assert-equals";
 import { warn } from "./warn.ts";
 
 Deno.test("warn()", () => {

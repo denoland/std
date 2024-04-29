@@ -5,7 +5,7 @@
  *
  * ```ts
  * // $ deno run example.ts --foo --bar=baz ./quux.txt
- * import { parseArgs } from "https://deno.land/std@$STD_VERSION/cli/parse_args.ts";
+ * import { parseArgs } from "@std/cli/parse-args";
  *
  * const parsedArgs = parseArgs(Deno.args);
  * parsedArgs; // { foo: true, bar: "baz", _: ["./quux.txt"] }

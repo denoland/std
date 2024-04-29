@@ -3,12 +3,7 @@
 // This code has been ported almost directly from Go's src/bytes/buffer_test.go
 // Copyright 2009 The Go Authors. All rights reserved. BSD license.
 // https://github.com/golang/go/blob/master/LICENSE
-import {
-  assert,
-  assertEquals,
-  assertRejects,
-  assertThrows,
-} from "../assert/mod.ts";
+import { assert, assertEquals, assertRejects, assertThrows } from "@std/assert";
 import { Buffer } from "./buffer.ts";
 import { writeAllSync } from "./write_all.ts";
 

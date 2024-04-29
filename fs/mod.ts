@@ -4,7 +4,7 @@
  * Helpers for working with the filesystem.
  *
  * ```ts
- * import { ensureFile, copy, ensureDir, move } from "https://deno.land/std@$STD_VERSION/fs/mod.ts";
+ * import { ensureFile, copy, ensureDir, move } from "@std/fs";
  *
  * await ensureFile("example.txt");
  * await copy("example.txt", "example_copy.txt");

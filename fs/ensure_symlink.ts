@@ -1,6 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-import { dirname } from "../path/dirname.ts";
-import { resolve } from "../path/resolve.ts";
+import { dirname } from "@std/path/dirname";
+import { resolve } from "@std/path/resolve";
 import { ensureDir, ensureDirSync } from "./ensure_dir.ts";
 import { getFileInfoType } from "./_get_file_info_type.ts";
 import { toPathString } from "./_to_path_string.ts";
@@ -30,7 +30,7 @@ function resolveSymlinkTarget(target: string | URL, linkName: string | URL) {
  *
  * @example
  * ```ts
- * import { ensureSymlink } from "https://deno.land/std@$STD_VERSION/fs/ensure_symlink.ts";
+ * import { ensureSymlink } from "@std/fs/ensure-symlink";
  *
  * await ensureSymlink("./folder/targetFile.dat", "./folder/targetFile.link.dat");
  * ```
@@ -88,7 +88,7 @@ export async function ensureSymlink(
  *
  * @example
  * ```ts
- * import { ensureSymlinkSync } from "https://deno.land/std@$STD_VERSION/fs/ensure_symlink.ts";
+ * import { ensureSymlinkSync } from "@std/fs/ensure-symlink";
  *
  * ensureSymlinkSync("./folder/targetFile.dat", "./folder/targetFile.link.dat");
  * ```

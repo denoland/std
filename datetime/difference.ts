@@ -49,7 +49,7 @@ function calculateMonthsDifference(from: Date, to: Date): number {
  *
  * @example Basic usage
  * ```ts
- * import { difference } from "https://deno.land/std@$STD_VERSION/datetime/difference.ts";
+ * import { difference } from "@std/datetime/difference";
  *
  * const date0 = new Date("2018-05-14");
  * const date1 = new Date("2020-05-13");
@@ -70,7 +70,7 @@ function calculateMonthsDifference(from: Date, to: Date): number {
  *
  * @example Calculate difference in specific units
  * ```ts
- * import { difference } from "https://deno.land/std@$STD_VERSION/datetime/difference.ts";
+ * import { difference } from "@std/datetime/difference";
  *
  * const date0 = new Date("2018-05-14");
  * const date1 = new Date("2020-05-13");

@@ -1,6 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import { equals } from "./equals.ts";
-import { assert, assertEquals, assertNotEquals } from "../assert/mod.ts";
+import { assert, assertEquals, assertNotEquals } from "@std/assert";
 
 Deno.test("equals()", () => {
   const v = equals(new Uint8Array([0, 1, 2, 3]), new Uint8Array([0, 1, 2, 3]));

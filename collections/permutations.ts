@@ -8,8 +8,8 @@
  *
  * @example
  * ```ts
- * import { permutations } from "https://deno.land/std@$STD_VERSION/collections/permutations.ts";
- * import { assertEquals } from "https://deno.land/std@$STD_VERSION/assert/assert_equals.ts";
+ * import { permutations } from "@std/collections/permutations";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const numbers = [ 1, 2 ];
  * const windows = permutations(numbers);

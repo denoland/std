@@ -15,8 +15,8 @@ const { hasOwn } = Object;
  *
  * @example
  * ```ts
- * import { deepMerge } from "https://deno.land/std@$STD_VERSION/collections/deep_merge.ts";
- * import { assertEquals } from "https://deno.land/std@$STD_VERSION/assert/assert_equals.ts";
+ * import { deepMerge } from "@std/collections/deep-merge";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const a = { foo: true };
  * const b = { foo: { bar: true } };
@@ -41,8 +41,8 @@ export function deepMerge<
  *
  * @example
  * ```ts
- * import { deepMerge } from "https://deno.land/std@$STD_VERSION/collections/deep_merge.ts";
- * import { assertEquals } from "https://deno.land/std@$STD_VERSION/assert/assert_equals.ts";
+ * import { deepMerge } from "@std/collections/deep-merge";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const a = { foo: true };
  * const b = { foo: { bar: true } };

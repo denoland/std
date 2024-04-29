@@ -7,8 +7,8 @@
  *
  * @example
  * ```ts
- * import { takeLastWhile } from "https://deno.land/std@$STD_VERSION/collections/take_last_while.ts";
- * import { assertEquals } from "https://deno.land/std@$STD_VERSION/assert/assert_equals.ts";
+ * import { takeLastWhile } from "@std/collections/take-last-while";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const arr = [1, 2, 3, 4, 5, 6];
  *

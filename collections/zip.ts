@@ -10,8 +10,8 @@ import { minOf } from "./min_of.ts";
  * @template T the type of the tuples produced by this function.
  * @example
  * ```ts
- * import { zip } from "https://deno.land/std@$STD_VERSION/collections/zip.ts";
- * import { assertEquals } from "https://deno.land/std@$STD_VERSION/assert/assert_equals.ts";
+ * import { zip } from "@std/collections/zip";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const numbers = [1, 2, 3, 4];
  * const letters = ["a", "b", "c", "d"];

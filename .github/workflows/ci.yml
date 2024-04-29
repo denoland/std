@@ -17,7 +17,8 @@ jobs:
       fail-fast: false
       matrix:
         deno:
-          - v1.x
+          # TODO(kt3k): Enable this after CLI v1.43.0 released
+          # - v1.x
           - canary
         os:
           - ubuntu-latest
@@ -64,16 +65,6 @@ jobs:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
         with:
           name: ${{ matrix.os }}-${{ matrix.deno }}
-
-      - name: Release if version change
-        if: |
-          matrix.os == 'ubuntu-latest' &&
-          github.repository == 'denoland/deno_std' &&
-          github.ref == 'refs/heads/main'
-        shell: bash
-        env:
-          GITHUB_TOKEN: ${{ secrets.DENOBOT_PAT }}
-        run: ./_tools/release/03_release.ts
 
   lint:
     runs-on: ${{ matrix.os }}
@@ -147,7 +138,7 @@ jobs:
 
       - name: Rebuild Wasm and verify it hasn't changed
         if: success() && steps.source.outputs.modified == 'true'
-        run: deno task --cwd ${{ matrix.module }} wasmbuild --check
+        run: deno task --cwd ${{ matrix.module }} --config deno.json wasmbuild --check
 
   publish-dry-run:
     runs-on: ubuntu-latest
@@ -165,13 +156,5 @@ jobs:
         with:
           deno-version: canary
 
-      - name: Convert to workspace
-        run: deno run -A ./_tools/convert_to_workspace.ts
-
-      - name: Test
-        # TODO(kt3k): remove doc-test task when the below issue resolved
-        # https://github.com/denoland/deno/issues/23430
-        run: deno task test && deno task doc-test
-
       - name: Publish (dry run)
-        run: deno publish --allow-dirty --dry-run
+        run: deno publish --dry-run

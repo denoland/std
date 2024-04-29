@@ -10,7 +10,7 @@
  *
  * @example
  * ```ts
- * import { LimitedTransformStream } from "https://deno.land/std@$STD_VERSION/streams/limited_transform_stream.ts";
+ * import { LimitedTransformStream } from "@std/streams/limited-transform-stream";
  * const res = await fetch("https://example.com");
  * const parts = res.body!.pipeThrough(new LimitedTransformStream(50));
  * ```

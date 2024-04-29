@@ -13,8 +13,8 @@
  *
  * @example
  * ```ts
- * import { slidingWindows } from "https://deno.land/std@$STD_VERSION/collections/sliding_windows.ts";
- * import { assertEquals } from "https://deno.land/std@$STD_VERSION/assert/assert_equals.ts";
+ * import { slidingWindows } from "@std/collections/sliding-windows";
+ * import { assertEquals } from "@std/assert/assert-equals";
  * const numbers = [1, 2, 3, 4, 5];
  *
  * const windows = slidingWindows(numbers, 3);

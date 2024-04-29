@@ -1,6 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import { assert, assertEquals, assertThrows } from "../assert/mod.ts";
+import { assert, assertEquals, assertThrows } from "@std/assert";
 
 import { KeyStack } from "./unstable_keystack.ts";
 

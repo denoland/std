@@ -2,7 +2,7 @@
 // Copyright 2020 Keith Cirkel. All rights reserved. MIT license.
 // This implementation is a port of https://deno.land/x/varint@v2.0.0 by @keithamus
 
-import { assertEquals, assertThrows } from "../assert/mod.ts";
+import { assertEquals, assertThrows } from "@std/assert";
 import {
   decode,
   decode32,

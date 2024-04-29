@@ -7,8 +7,8 @@
  *
  * @example
  * ```ts
- * import { minBy } from "https://deno.land/std@$STD_VERSION/collections/min_by.ts";
- * import { assertEquals } from "https://deno.land/std@$STD_VERSION/assert/assert_equals.ts";
+ * import { minBy } from "@std/collections/min-by";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const people = [
  *   { name: "Anna", age: 34 },
@@ -31,7 +31,7 @@ export function minBy<T>(
  *
  * @example
  * ```ts
- * import { minBy } from "https://deno.land/std@$STD_VERSION/collections/min_by.ts";
+ * import { minBy } from "@std/collections/min-by";
  *
  * const people = [
  *   { name: "Anna" },
@@ -52,8 +52,8 @@ export function minBy<T>(
  *
  * @example
  * ```ts
- * import { minBy } from "https://deno.land/std@$STD_VERSION/collections/min_by.ts";
- * import { assertEquals } from "https://deno.land/std@$STD_VERSION/assert/assert_equals.ts";
+ * import { minBy } from "@std/collections/min-by";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const people = [
  *   { name: "Anna", age: 34n },
@@ -76,7 +76,7 @@ export function minBy<T>(
  *
  * @example
  * ```ts
- * import { minBy } from "https://deno.land/std@$STD_VERSION/collections/min_by.ts";
+ * import { minBy } from "@std/collections/min-by";
  *
  * const people = [
  *   { name: "Anna", startedAt: new Date("2020-01-01") },

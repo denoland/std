@@ -12,16 +12,12 @@ High-quality APIs for [Deno](https://deno.com/) and the web. Use fearlessly.
 ## Get Started
 
 ```ts
-import { copy } from "https://deno.land/std@$STD_VERSION/fs/copy.ts";
+import { copy } from "@std/fs/copy";
 
 await copy("./foo", "./bar");
 ```
 
 See [here](#recommended-usage) for recommended usage patterns.
-
-## Documentation
-
-Check out the documentation [here](https://deno.land/std?doc).
 
 ## Recommended Usage
 
@@ -29,52 +25,24 @@ Check out the documentation [here](https://deno.land/std?doc).
 
    Good:
    ```ts
-   import { copy } from "https://deno.land/std@$STD_VERSION/fs/copy.ts";
+   import { copy } from "jsr:@std/fs@0.224.0/copy";
    ```
 
 1. Only import modules that you require.
 
    Bad (when using only one function):
    ```ts
-   import * as fs from "https://deno.land/std@$STD_VERSION/fs/mod.ts";
+   import * as fs from "@std/fs";
    ```
 
    Good (when using only one function):
    ```ts
-   import { copy } from "https://deno.land/std@$STD_VERSION/fs/copy.ts";
+   import { copy } from "@std/fs/copy";
    ```
 
    Good (when using multiple functions):
    ```ts
-   import * as fs from "https://deno.land/std@$STD_VERSION/fs/mod.ts";
-   ```
-
-1. Do not import symbols with a name _prefixed_ by an underscore (they're not
-   intended for public use).
-
-   Bad:
-   ```ts, ignore
-   import { _format } from "https://deno.land/std@$STD_VERSION/path/_common/format.ts";
-   ```
-
-1. Do not import modules with a directory or filename _prefixed_ by an
-   underscore (they're not intended for public use).
-
-   Bad:
-   ```ts, ignore
-   import { createLPS } from "https://deno.land/std@$STD_VERSION/streams/_common.ts";
-   ```
-
-   Good:
-   ```ts
-   import { TextLineStream } from "https://deno.land/std@$STD_VERSION/streams/text_line_stream.ts";
-   ```
-
-1. Do not import test modules or test data.
-
-   Bad:
-   ```ts
-   import { test } from "https://deno.land/std@$STD_VERSION/front_matter/test.ts";
+   import * as fs from "@std/fs";
    ```
 
 ## Packages
@@ -183,10 +151,10 @@ every new version of the Deno CLI (including patch versions).
 
 ## Badge
 
-[![Built with the Deno Standard Library](./badge.svg)](https://deno.land/std)
+[![Built with the Deno Standard Library](./badge.svg)](https://jsr.io/@std)
 
 ```html
-<a href="https://deno.land/std">
+<a href="https://jsr.io/@std">
   <img
     width="135"
     height="20"
@@ -197,5 +165,5 @@ every new version of the Deno CLI (including patch versions).
 ```
 
 ```md
-[![Built with the Deno Standard Library](https://raw.githubusercontent.com/denoland/deno_std/main/badge.svg)](https://deno.land/std)
+[![Built with the Deno Standard Library](https://raw.githubusercontent.com/denoland/deno_std/main/badge.svg)](https://jsr.io/@std)
 ```

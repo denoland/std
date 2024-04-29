@@ -1,9 +1,9 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 import { equal } from "./equal.ts";
-import { buildMessage, diff, diffstr, format } from "../internal/mod.ts";
+import { buildMessage, diff, diffstr, format } from "@std/internal";
 import { AssertionError } from "./assertion_error.ts";
-import { red } from "../fmt/colors.ts";
+import { red } from "@std/fmt/colors";
 import { CAN_NOT_DISPLAY } from "./_constants.ts";
 
 /**
@@ -15,7 +15,7 @@ import { CAN_NOT_DISPLAY } from "./_constants.ts";
  *
  * @example
  * ```ts
- * import { assertEquals } from "https://deno.land/std@$STD_VERSION/assert/assert_equals.ts";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * assertEquals("world", "world"); // Doesn't throw
  * assertEquals("hello", "world"); // Throws

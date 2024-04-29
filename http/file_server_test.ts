@@ -6,8 +6,8 @@ import {
   assertFalse,
   assertMatch,
   assertStringIncludes,
-} from "../assert/mod.ts";
-import { stub } from "../testing/mock.ts";
+} from "@std/assert";
+import { stub } from "@std/testing/mock";
 import { serveDir, type ServeDirOptions, serveFile } from "./file_server.ts";
 import { calculate } from "./etag.ts";
 import {
@@ -17,11 +17,11 @@ import {
   join,
   resolve,
   toFileUrl,
-} from "../path/mod.ts";
-import { VERSION } from "../version.ts";
-import { MINUTE } from "../datetime/constants.ts";
-import { getAvailablePort } from "../net/get_available_port.ts";
-import { concat } from "../bytes/concat.ts";
+} from "@std/path";
+import denoConfig from "./deno.json" with { type: "json" };
+import { MINUTE } from "@std/datetime/constants";
+import { getAvailablePort } from "@std/net/get-available-port";
+import { concat } from "@std/bytes/concat";
 
 const moduleDir = dirname(fromFileUrl(import.meta.url));
 const testdataDir = resolve(moduleDir, "testdata");
@@ -354,7 +354,7 @@ Deno.test("serveDir() script prints help", async () => {
   });
   const { stdout } = await command.output();
   const output = new TextDecoder().decode(stdout);
-  assert(output.includes(`Deno File Server ${VERSION}`));
+  assert(output.includes(`Deno File Server ${denoConfig.version}`));
 });
 
 Deno.test("serveDir() script prints version", async () => {
@@ -372,7 +372,7 @@ Deno.test("serveDir() script prints version", async () => {
   });
   const { stdout } = await command.output();
   const output = new TextDecoder().decode(stdout);
-  assert(output.includes(`Deno File Server ${VERSION}`));
+  assert(output.includes(`Deno File Server ${denoConfig.version}`));
 });
 
 Deno.test("serveDir() ignores query params", async () => {

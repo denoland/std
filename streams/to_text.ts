@@ -9,7 +9,7 @@ const textDecoder = new TextDecoder();
  *
  * @example
  * ```ts
- * import { toText } from "https://deno.land/std@$STD_VERSION/streams/to_text.ts";
+ * import { toText } from "@std/streams/to-text";
  *
  * const stream = ReadableStream.from(["Hello, ", "world!"]);
  * await toText(stream); // "Hello, world!"

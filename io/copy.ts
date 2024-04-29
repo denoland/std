@@ -11,7 +11,7 @@ import type { Reader, Writer } from "./types.ts";
  *
  * @example
  * ```ts
- * import { copy } from "https://deno.land/std@$STD_VERSION/io/copy.ts";
+ * import { copy } from "@std/io/copy";
  *
  * const source = await Deno.open("my_file.txt");
  * const bytesCopied1 = await copy(source, Deno.stdout);

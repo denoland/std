@@ -13,8 +13,8 @@
  * ### JSON
  *
  * ```ts
- * import { test } from "https://deno.land/std@$STD_VERSION/front_matter/test.ts";
- * import { extract } from "https://deno.land/std@$STD_VERSION/front_matter/json.ts";
+ * import { test } from "@std/front-matter/test";
+ * import { extract } from "@std/front-matter/json";
  *
  * const str = "---json\n{\"and\": \"this\"}\n---\ndeno is awesome";
  * const result = extract(str);
@@ -44,8 +44,8 @@
  * ### TOML
  *
  * ```ts
- * import { test } from "https://deno.land/std@$STD_VERSION/front_matter/test.ts";
- * import { extract } from "https://deno.land/std@$STD_VERSION/front_matter/toml.ts";
+ * import { test } from "@std/front-matter/test";
+ * import { extract } from "@std/front-matter/toml";
  *
  * const str = "---toml\nmodule = 'front_matter'\n---\ndeno is awesome";
  * const result = extract(str);
@@ -81,8 +81,8 @@
  * ### YAML
  *
  * ```ts
- * import { test } from "https://deno.land/std@$STD_VERSION/front_matter/test.ts";
- * import { extract } from "https://deno.land/std@$STD_VERSION/front_matter/yaml.ts";
+ * import { test } from "@std/front-matter/test";
+ * import { extract } from "@std/front-matter/yaml";
  *
  * const str = "---yaml\nmodule: front_matter\n---\ndeno is awesome";
  * const result = extract(str);

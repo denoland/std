@@ -1,6 +1,6 @@
 // Copyright Isaac Z. Schlueter and Contributors. All rights reserved. ISC license.
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-import { assert } from "../assert/mod.ts";
+import { assert } from "@std/assert";
 import { equals } from "./equals.ts";
 import { parse } from "./parse.ts";
 import { parseRange } from "./parse_range.ts";

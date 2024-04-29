@@ -9,7 +9,7 @@
  *
  * @example Basic usage
  * ```ts
- * import { concat } from "https://deno.land/std@$STD_VERSION/bytes/concat.ts";
+ * import { concat } from "@std/bytes/concat";
  *
  * const a = new Uint8Array([0, 1, 2]);
  * const b = new Uint8Array([3, 4, 5]);
