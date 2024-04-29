@@ -6,27 +6,26 @@
 
 High-quality APIs for [Deno](https://deno.com/) and the web. Use fearlessly.
 
-> **NOTE:** The standard library is also available on JSR - check out the
-> [`@std` scope on JSR here](https://jsr.io/@std).
+Note: The newer versions of the standard library are now hosted in [jsr.io](https://jsr.io/@std). If you are looking for the older standard library hosted in `deno.land/std`, see [deno.land/std](https://deno.land/std), which is still supported, but now not actively developed.
 
 ## Get Started
 
+Install the packages to use.
+
+```sh
+deno add @std/fs @std/path
+```
+
 ```ts
 import { copy } from "@std/fs/copy";
+import { join } from "@std/path/join";
 
-await copy("./foo", "./bar");
+await copy("./foo", join("bar", "baz"));
 ```
 
 See [here](#recommended-usage) for recommended usage patterns.
 
 ## Recommended Usage
-
-1. Include the version of the library in the import specifier.
-
-   Good:
-   ```ts
-   import { copy } from "jsr:@std/fs@0.224.0/copy";
-   ```
 
 1. Only import modules that you require.
 
