@@ -7,7 +7,9 @@ import { format as windowsFormat } from "./windows/format.ts";
 import type { FormatInputPathObject } from "./_interface.ts";
 
 /**
- * Generate a path from `FormatInputPathObject` object.
+ * Generate a path from `FormatInputPathObject` object. It does the opposite
+ * of `parse`.
+ *
  * @param pathObject with path
  */
 export function format(pathObject: FormatInputPathObject): string {

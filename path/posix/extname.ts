@@ -10,7 +10,7 @@ import { isPosixPathSeparator } from "./_util.ts";
  *
  * @example
  * ```ts
- * import { extname } from "https://deno.land/std@$STD_VERSION/path/extname.ts";
+ * import { extname } from "@std/path/extname";
  *
  * console.log(extname("/home/user/Documents/")); // ""
  * console.log(extname("/home/user/Documents/image.png")); // ".png"

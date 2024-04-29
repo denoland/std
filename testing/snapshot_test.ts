@@ -1,13 +1,13 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-import { stripAnsiCode } from "../fmt/colors.ts";
-import { dirname, fromFileUrl, join, toFileUrl } from "../path/mod.ts";
+import { stripAnsiCode } from "@std/fmt/colors";
+import { dirname, fromFileUrl, join, toFileUrl } from "@std/path";
 import {
   assert,
   assertInstanceOf,
   AssertionError,
   assertRejects,
   fail,
-} from "../assert/mod.ts";
+} from "@std/assert";
 import { assertSnapshot, createAssertSnapshot, serialize } from "./snapshot.ts";
 
 const SNAPSHOT_MODULE_URL = toFileUrl(join(
@@ -78,7 +78,7 @@ map.set("Hello", "World!");
 map.set(() => "Hello", "World!");
 map.set(1, 2);
 
-Deno.test("Snapshot Test", async (t) => {
+Deno.test("assertSnapshot()", async (t) => {
   await assertSnapshot(t, { a: 1, b: 2 });
   await assertSnapshot(t, new TestClass());
   await assertSnapshot(t, map);
@@ -89,12 +89,12 @@ Deno.test("Snapshot Test", async (t) => {
   await assertSnapshot(t, "hello world");
 });
 
-Deno.test("Snapshot Test - step", async (t) => {
+Deno.test("assertSnapshot() - step", async (t) => {
   await assertSnapshot(t, { a: 1, b: 2 });
-  await t.step("Nested", async (t) => {
+  await t.step("nested", async (t) => {
     await assertSnapshot(t, new TestClass());
     await assertSnapshot(t, map);
-    await t.step("Nested Nested", async (t) => {
+    await t.step("double-nested", async (t) => {
       await assertSnapshot(t, new Set([1, 2, 3]));
       await assertSnapshot(t, { fn() {} });
       await assertSnapshot(t, function fn() {});
@@ -104,15 +104,15 @@ Deno.test("Snapshot Test - step", async (t) => {
   await assertSnapshot(t, "hello world");
 });
 
-Deno.test("Snapshot Test - Adverse String \\ ` ${}", async (t) => {
+Deno.test("assertSnapshot() - adverse string \\ ` ${}", async (t) => {
   await assertSnapshot(t, "\\ ` ${}");
 });
 
-Deno.test("Snapshot Test - Default serializer", async (t) => {
+Deno.test("assertSnapshot() - default serializer", async (t) => {
   await assertSnapshot(t, "a\nb\tc");
 });
 
-Deno.test("Snapshot Test - Multi-Line Strings", async (t) => {
+Deno.test("assertSnapshot() - multi-line strings", async (t) => {
   await t.step("string", async (t) => {
     await assertSnapshot(
       t,
@@ -157,7 +157,7 @@ Deno.test("Snapshot Test - Multi-Line Strings", async (t) => {
 });
 
 Deno.test(
-  "Snapshot Test - Failed Assertion",
+  "assertSnapshot() - failed assertion",
   testFnWithTempDir(async (t, tempDir) => {
     let count = 0;
     async function testFailedAssertion<T>(
@@ -188,19 +188,19 @@ ${serialize(snapshot)}
       }
     }
 
-    await t.step("Object", async (t) => {
+    await t.step("object", async (t) => {
       const error = await testFailedAssertion([1, 2, 3], [1, 2]);
       await assertSnapshot(t, stripAnsiCode(error.message));
     });
 
-    await t.step("String", async (t) => {
+    await t.step("string", async (t) => {
       const error = await testFailedAssertion("Hello World!", "Hello!");
       await assertSnapshot(t, stripAnsiCode(error.message));
     });
   }),
 );
 
-Deno.test("Snapshot Test - Options", async (t) => {
+Deno.test("assertSnapshot() - options", async (t) => {
   const VALUE = [1, 2, 3];
 
   await t.step("dir", async (t) => {
@@ -334,7 +334,7 @@ Deno.test("Snapshot Test - Options", async (t) => {
 });
 
 Deno.test(
-  "Snapshot Test - Update",
+  "assertSnapshot() - update",
   testFnWithTempDir(async (t, tempDir) => {
     const tempTestFileName = "test.ts";
     const tempTestFilePath = join(tempDir, tempTestFileName);
@@ -379,7 +379,7 @@ Deno.test(
       `
       import { assertSnapshot } from "${SNAPSHOT_MODULE_URL}";
 
-      Deno.test("Snapshot Test - Update", async (t) => {
+      Deno.test("assertSnapshot() - update", async (t) => {
         await assertSnapshot(t, [
           1,
           2,
@@ -389,10 +389,10 @@ Deno.test(
 
     assertNoError(result1.error);
     await assertSnapshot(t, formatTestOutput(result1.output), {
-      name: "Snapshot Test - Update - New snapshot",
+      name: "assertSnapshot() - update - New snapshot",
     });
     await assertSnapshot(t, result1.snapshots, {
-      name: "Snapshot Test - Update - New snapshot",
+      name: "assertSnapshot() - update - New snapshot",
     });
 
     /**
@@ -402,7 +402,7 @@ Deno.test(
       `
       import { assertSnapshot } from "${SNAPSHOT_MODULE_URL}";
 
-      Deno.test("Snapshot Test - Update", async (t) => {
+      Deno.test("assertSnapshot() - update", async (t) => {
         await assertSnapshot(t, [
           1,
           2,
@@ -412,10 +412,10 @@ Deno.test(
 
     assertNoError(result2.error);
     await assertSnapshot(t, formatTestOutput(result2.output), {
-      name: "Snapshot Test - Update - Existing snapshot - no changes",
+      name: "assertSnapshot() - update - Existing snapshot - no changes",
     });
     await assertSnapshot(t, result2.snapshots, {
-      name: "Snapshot Test - Update - Existing snapshot - no changes",
+      name: "assertSnapshot() - update - Existing snapshot - no changes",
     });
 
     /**
@@ -424,7 +424,7 @@ Deno.test(
     const result3 = await runTestWithUpdateFlag(`
       import { assertSnapshot } from "${SNAPSHOT_MODULE_URL}";
 
-      Deno.test("Snapshot Test - Update", async (t) => {
+      Deno.test("assertSnapshot() - update", async (t) => {
         await assertSnapshot(t, [
           1,
           2,
@@ -436,10 +436,10 @@ Deno.test(
 
     assertNoError(result3.error);
     await assertSnapshot(t, formatTestOutput(result3.output), {
-      name: "Snapshot Test - Update - Existing snapshot - updates",
+      name: "assertSnapshot() - update - Existing snapshot - updates",
     });
     await assertSnapshot(t, result3.snapshots, {
-      name: "Snapshot Test - Update - Existing snapshot - updates",
+      name: "assertSnapshot() - update - Existing snapshot - updates",
     });
 
     /**
@@ -459,10 +459,10 @@ Deno.test(
 
     assertNoError(result4.error);
     await assertSnapshot(t, formatTestOutput(result4.output), {
-      name: "Snapshot Test - Update - Existing snapshots - reverse order 1",
+      name: "assertSnapshot() - update - Existing snapshots - reverse order 1",
     });
     await assertSnapshot(t, result4.snapshots, {
-      name: "Snapshot Test - Update - Existing snapshots - reverse order 1",
+      name: "assertSnapshot() - update - Existing snapshots - reverse order 1",
     });
 
     /**
@@ -482,16 +482,16 @@ Deno.test(
 
     assertNoError(result5.error);
     await assertSnapshot(t, formatTestOutput(result5.output), {
-      name: "Snapshot Test - Update - Existing snapshots - reverse order 2",
+      name: "assertSnapshot() - update - Existing snapshots - reverse order 2",
     });
     await assertSnapshot(t, result5.snapshots, {
-      name: "Snapshot Test - Update - Existing snapshots - reverse order 2",
+      name: "assertSnapshot() - update - Existing snapshots - reverse order 2",
     });
   }),
 );
 
 Deno.test(
-  "Snapshot Test - Remove",
+  "assertSnapshot() - remove",
   testFnWithTempDir(async (t, tempDir) => {
     const tempTestFileName = "test.ts";
     const tempTestFilePath = join(tempDir, tempTestFileName);
@@ -530,23 +530,23 @@ Deno.test(
       `
       import { assertSnapshot } from "${SNAPSHOT_MODULE_URL}";
 
-      Deno.test("Snapshot Test - Remove - First", async (t) => {
+      Deno.test("assertSnapshot() - remove - First", async (t) => {
         await assertSnapshot(t, { a: 1, b: 2 });
       });
 
-      Deno.test("Snapshot Test - Remove - Second", async (t) => {
+      Deno.test("assertSnapshot() - remove - Second", async (t) => {
         await assertSnapshot(t, { c: 3, d: 4 });
       });
 
-      Deno.test("Snapshot Test - Remove - Third", async (t) => {
+      Deno.test("assertSnapshot() - remove - Third", async (t) => {
         await assertSnapshot(t, { e: 5, f: 6 });
       });
 
-      Deno.test("Snapshot Test - Remove - Fourth", async (t) => {
+      Deno.test("assertSnapshot() - remove - Fourth", async (t) => {
         await assertSnapshot(t, { g: 7, h: 8 });
       });
 
-      Deno.test("Snapshot Test - Remove - Fifth", async (t) => {
+      Deno.test("assertSnapshot() - remove - Fifth", async (t) => {
         await assertSnapshot(t, { i: 9, j: 10 });
       });
       `,
@@ -554,7 +554,7 @@ Deno.test(
 
     assertNoError(result1.error);
     await assertSnapshot(t, formatTestOutput(result1.output), {
-      name: "Snapshot Test - Remove - New snapshot",
+      name: "assertSnapshot() - remove - New snapshot",
     });
 
     /**
@@ -564,19 +564,19 @@ Deno.test(
       `
       import { assertSnapshot } from "${SNAPSHOT_MODULE_URL}";
 
-      Deno.test("Snapshot Test - Remove - First", async (t) => {
+      Deno.test("assertSnapshot() - remove - First", async (t) => {
         await assertSnapshot(t, { a: 1, b: 2 });
       });
 
-      Deno.test("Snapshot Test - Remove - Second", async (t) => {
+      Deno.test("assertSnapshot() - remove - Second", async (t) => {
         await assertSnapshot(t, { c: 3, d: 4 });
       });
 
-      Deno.test("Snapshot Test - Remove - Fourth", async (t) => {
+      Deno.test("assertSnapshot() - remove - Fourth", async (t) => {
         await assertSnapshot(t, { g: 7, h: 8 });
       });
 
-      Deno.test("Snapshot Test - Remove - Fifth", async (t) => {
+      Deno.test("assertSnapshot() - remove - Fifth", async (t) => {
         await assertSnapshot(t, { i: 9, j: 10 });
       });
       `,
@@ -584,7 +584,7 @@ Deno.test(
 
     assertNoError(result2.error);
     await assertSnapshot(t, formatTestOutput(result2.output), {
-      name: "Snapshot Test - Remove - Existing snapshot - removed one",
+      name: "assertSnapshot() - remove - Existing snapshot - removed one",
     });
 
     /**
@@ -594,7 +594,7 @@ Deno.test(
       `
       import { assertSnapshot } from "${SNAPSHOT_MODULE_URL}";
 
-      Deno.test("Snapshot Test - Remove - First", async (t) => {
+      Deno.test("assertSnapshot() - remove - First", async (t) => {
         await assertSnapshot(t, { a: 1, b: 2 });
       });
       `,
@@ -602,13 +602,13 @@ Deno.test(
 
     assertNoError(result3.error);
     await assertSnapshot(t, formatTestOutput(result3.output), {
-      name: "Snapshot Test - Remove - Existing snapshot - removed several",
+      name: "assertSnapshot() - remove - Existing snapshot - removed several",
     });
   }),
 );
 
 Deno.test(
-  "Snapshot Test - Different Dir",
+  "assertSnapshot() - different directory",
   testFnWithDifferentTempDir(async (t, tempDir1, tempDir2) => {
     const tempTestFileName = "test.ts";
     const tempTestFilePath1 = join(tempDir1, tempTestFileName);
@@ -681,7 +681,7 @@ Deno.test(
 
     assertNoError(result1.error);
     await assertSnapshot(t, formatTestOutput(result1.output), {
-      name: "Snapshot Test - Different Dir - New snapshot",
+      name: "assertSnapshot() - different directory - New snapshot",
     });
 
     /**
@@ -721,14 +721,15 @@ Deno.test(
     );
     assertNoError(result2.error);
     await assertSnapshot(t, formatTestOutput(result2.output), {
-      name: "Snapshot Test - Different Dir - Existing snapshot - update",
+      name:
+        "assertSnapshot() - different directory - Existing snapshot - update",
     });
   }),
 );
 
 // Regression test for https://github.com/denoland/deno_std/issues/2140
 // Long strings should not be truncated with ellipsis
-Deno.test("Snapshot Test - Regression #2140", async (t) => {
+Deno.test("assertSnapshot() - regression #2140", async (t) => {
   await assertSnapshot(t, {
     title: "Testing a page",
     content: `
@@ -746,7 +747,7 @@ Deno.test("Snapshot Test - Regression #2140", async (t) => {
 
 // Regression test for https://github.com/denoland/deno_std/issues/2144
 // Empty arrays should be compacted
-Deno.test("Snapshot Test - Regression #2144", async (t) => {
+Deno.test("assertSnapshot() - regression #2144", async (t) => {
   const config = {
     fmt: {
       files: {
@@ -759,34 +760,33 @@ Deno.test("Snapshot Test - Regression #2144", async (t) => {
   await assertSnapshot(t, config);
 });
 
-Deno.test("Snapshot Test - Empty #2245", async (t) => {
+Deno.test("assertSnapshot() - empty #2245", async (t) => {
   await assertSnapshot(t, "", { serializer: (x) => x });
 });
 
-Deno.test("SnapshotTest - createAssertSnapshot", async (t) => {
+Deno.test("createAssertSnapshot()", async (t) => {
   const assertMonochromeSnapshot = createAssertSnapshot<string>({
     serializer: stripAnsiCode,
   });
 
-  await t.step("No Options", async (t) => {
+  await t.step("no options", async (t) => {
     await assertMonochromeSnapshot(
       t,
       "\x1b[32mThis green text has had it's colours stripped\x1b[39m",
     );
   });
 
-  await t.step("Options Object", async (t) => {
+  await t.step("options object", async (t) => {
     await assertMonochromeSnapshot(
       t,
       "\x1b[32mThis green text has had it's colours stripped\x1b[39m",
       {
-        name:
-          "SnapshotTest - createAssertSnapshot - Options Object - Custom Name",
+        name: "createAssertSnapshot() - options object - custom name",
       },
     );
   });
 
-  await t.step("Message", async (t) => {
+  await t.step("message", async (t) => {
     const assertMissingSnapshot = createAssertSnapshot<string>({
       mode: "assert",
       name: "[MISSING SNAPSHOT]",
@@ -803,9 +803,9 @@ Deno.test("SnapshotTest - createAssertSnapshot", async (t) => {
     await assertSnapshot(t, err.message);
   });
 
-  await t.step("Composite", async (t) => {
+  await t.step("composite", async (t) => {
     const assertMonochromeSnapshotComposite = createAssertSnapshot<string>({
-      name: "SnapshotTest - createAssertSnapshot - Composite - Custom Name",
+      name: "createAssertSnapshot() - composite - custom Name",
     }, assertMonochromeSnapshot);
 
     await assertMonochromeSnapshotComposite(

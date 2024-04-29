@@ -21,8 +21,8 @@ export interface CreateCapture {
  *
  * @example
  * ```ts
- * import { createCapture } from "https://deno.land/std@$STD_VERSION/webgpu/create_capture.ts";
- * import { getRowPadding } from "https://deno.land/std@$STD_VERSION/webgpu/row_padding.ts";
+ * import { createCapture } from "@std/webgpu/create-capture";
+ * import { getRowPadding } from "@std/webgpu/row-padding";
  *
  * const adapter = await navigator.gpu.requestAdapter();
  * const device = await adapter?.requestDevice()!;

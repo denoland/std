@@ -2,15 +2,8 @@
 
 // This file is copied from `std/assert`.
 
-import { AssertionError, assertThrows } from "../assert/mod.ts";
-import {
-  bold,
-  gray,
-  green,
-  red,
-  stripAnsiCode,
-  yellow,
-} from "../fmt/colors.ts";
+import { AssertionError, assertThrows } from "@std/assert";
+import { bold, gray, green, red, stripAnsiCode, yellow } from "@std/fmt/colors";
 import { assertEquals } from "./_assert_equals.ts";
 
 const createHeader = (): string[] => [

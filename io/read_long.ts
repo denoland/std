@@ -9,7 +9,7 @@ const MAX_SAFE_INTEGER = BigInt(Number.MAX_SAFE_INTEGER);
  * Read big endian 64bit long from BufReader
  * @param buf
  *
- * @deprecated (will be removed after 1.0.0) Use the {@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API | Web Streams API} instead.
+ * @deprecated This will be removed in 1.0.0. Use the {@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API | Web Streams API} instead.
  */
 export async function readLong(buf: BufReader): Promise<number | null> {
   const high = await readInt(buf);

@@ -1,4 +1,5 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
 import { compare } from "./compare.ts";
 import type { SemVer } from "./types.ts";
 

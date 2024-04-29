@@ -1,9 +1,9 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import { assert, assertEquals } from "../assert/mod.ts";
-import { copy } from "../io/copy.ts";
+import { assert, assertEquals } from "@std/assert";
+import { copy } from "@std/io/copy";
 import { readerFromStreamReader } from "./reader_from_stream_reader.ts";
-import { Buffer } from "../io/buffer.ts";
+import { Buffer } from "@std/io/buffer";
 
 function repeat(c: string, bytes: number): Uint8Array {
   assertEquals(c.length, 1);

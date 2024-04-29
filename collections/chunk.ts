@@ -6,8 +6,8 @@
  *
  * @example
  * ```ts
- * import { chunk } from "https://deno.land/std@$STD_VERSION/collections/chunk.ts";
- * import { assertEquals } from "https://deno.land/std@$STD_VERSION/assert/assert_equals.ts";
+ * import { chunk } from "@std/collections/chunk";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const words = [
  *   "lorem",

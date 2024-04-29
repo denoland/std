@@ -1,7 +1,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import { retry, RetryError } from "./retry.ts";
-import { assertEquals, assertRejects } from "../assert/mod.ts";
-import { FakeTime } from "../testing/time.ts";
+import { assertEquals, assertRejects } from "@std/assert";
+import { FakeTime } from "@std/testing/time";
 
 function generateErroringFunction(errorsBeforeSucceeds: number) {
   let errorCount = 0;
@@ -15,7 +15,7 @@ function generateErroringFunction(errorsBeforeSucceeds: number) {
   };
 }
 
-Deno.test("retry()", async function () {
+Deno.test("retry()", async () => {
   const threeErrors = generateErroringFunction(3);
   const result = await retry(threeErrors, {
     minTimeout: 100,
@@ -23,7 +23,7 @@ Deno.test("retry()", async function () {
   assertEquals(result, 3);
 });
 
-Deno.test("retry() fails after max errors is passed", async function () {
+Deno.test("retry() fails after max errors is passed", async () => {
   const fiveErrors = generateErroringFunction(5);
   await assertRejects(() =>
     retry(fiveErrors, {
@@ -32,7 +32,7 @@ Deno.test("retry() fails after max errors is passed", async function () {
   );
 });
 
-Deno.test("retry() waits four times by default", async function () {
+Deno.test("retry() waits four times by default", async () => {
   let callCount = 0;
   const onlyErrors = function () {
     callCount++;
@@ -56,7 +56,7 @@ Deno.test("retry() waits four times by default", async function () {
 
 Deno.test(
   "retry() throws if minTimeout is less than maxTimeout",
-  async function () {
+  async () => {
     await assertRejects(() =>
       retry(() => {}, {
         minTimeout: 1000,
@@ -68,7 +68,7 @@ Deno.test(
 
 Deno.test(
   "retry() throws if maxTimeout is less than 0",
-  async function () {
+  async () => {
     await assertRejects(() =>
       retry(() => {}, {
         maxTimeout: -1,
@@ -79,7 +79,7 @@ Deno.test(
 
 Deno.test(
   "retry() throws if jitter is bigger than 1",
-  async function () {
+  async () => {
     await assertRejects(() =>
       retry(() => {}, {
         jitter: 2,
@@ -91,7 +91,7 @@ Deno.test(
 Deno.test("retry() checks backoff function timings", async (t) => {
   const originalMathRandom = Math.random;
 
-  await t.step("wait fixed times without jitter", async function () {
+  await t.step("wait fixed times without jitter", async () => {
     using time = new FakeTime();
     let resolved = false;
     const checkResolved = async () => {

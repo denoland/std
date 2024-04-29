@@ -1,6 +1,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
 import { AssertionError } from "./assertion_error.ts";
-import { stripAnsiCode } from "../fmt/colors.ts";
+import { stripAnsiCode } from "@std/fmt/colors";
 
 /**
  * Make an assertion that `error` is an `Error`.
@@ -10,7 +11,7 @@ import { stripAnsiCode } from "../fmt/colors.ts";
  *
  * @example
  * ```ts
- * import { assertIsError } from "https://deno.land/std@$STD_VERSION/assert/assert_is_error.ts";
+ * import { assertIsError } from "@std/assert/assert-is-error";
  *
  * assertIsError(null); // Throws
  * assertIsError(new RangeError("Out of range")); // Doesn't throw

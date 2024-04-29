@@ -1,4 +1,5 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
 import type { SemVer } from "./types.ts";
 import { parseBuild, parseNumber, parsePrerelease } from "./_shared.ts";
 import { FULL_REGEXP, MAX_LENGTH } from "./_shared.ts";

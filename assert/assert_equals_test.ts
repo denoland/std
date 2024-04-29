@@ -1,13 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import { assertEquals, AssertionError, assertThrows } from "./mod.ts";
-import {
-  bold,
-  gray,
-  green,
-  red,
-  stripAnsiCode,
-  yellow,
-} from "../fmt/colors.ts";
+import { bold, gray, green, red, stripAnsiCode, yellow } from "@std/fmt/colors";
 
 const createHeader = (): string[] => [
   "",

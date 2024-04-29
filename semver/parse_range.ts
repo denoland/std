@@ -1,4 +1,5 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
 
 import {
   COMPARATOR_REGEXP,
@@ -45,7 +46,7 @@ function parseComparator(comparator: string): Comparator {
     }
     : ANY;
 
-  return { operator: operator || undefined, ...semver, semver };
+  return { operator: operator || undefined, ...semver };
 }
 
 function isWildcard(id?: string): boolean {

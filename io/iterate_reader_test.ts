@@ -1,9 +1,9 @@
-import { assertEquals } from "../assert/assert_equals.ts";
+import { assertEquals } from "@std/assert/assert-equals";
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
 import { iterateReader, iterateReaderSync } from "./iterate_reader.ts";
-import { readerFromIterable } from "../streams/reader_from_iterable.ts";
-import { delay } from "../async/delay.ts";
+import { readerFromIterable } from "@std/streams/reader-from-iterable";
+import { delay } from "@std/async/delay";
 import type { Reader, ReaderSync } from "./types.ts";
 
 Deno.test("iterateReader()", async () => {

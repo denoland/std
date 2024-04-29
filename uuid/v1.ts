@@ -11,7 +11,7 @@ const UUID_RE =
  *
  * @example
  * ```ts
- * import { validate } from "https://deno.land/std@$STD_VERSION/uuid/v1.ts";
+ * import { validate } from "@std/uuid/v1";
  *
  * validate("ea71fc60-a713-11ee-af61-8349da24f689");  // true
  * validate("fac8c1e0-ad1a-4204-a0d0-8126ae84495d");  // false
@@ -71,7 +71,7 @@ export interface V1Options {
  *
  * @example
  * ```ts
- * import { generate } from "https://deno.land/std@$STD_VERSION/uuid/v1.ts";
+ * import { generate } from "@std/uuid/v1";
  *
  * const options = {
  *   node: [0x01, 0x23, 0x45, 0x67, 0x89, 0xab],
@@ -136,6 +136,12 @@ export function generate(
     throw new Error("Can't create more than 10M uuids/sec");
   }
 
+  if (node.length !== 6) {
+    throw new Error(
+      "Cannot create UUID. The node option must be an array of 6 bytes",
+    );
+  }
+
   _lastMSecs = msecs;
   _lastNSecs = nsecs;
   _clockseq = clockseq;
@@ -163,7 +169,7 @@ export function generate(
   b[i++] = clockseq & 0xff;
 
   for (let n = 0; n < 6; ++n) {
-    b[i + n] = node[n];
+    b[i + n] = node[n]!;
   }
 
   return buf ?? bytesToUuid(b);

@@ -9,6 +9,14 @@
  * {@link https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/ | Kotlin's Collections}
  * package.
  *
+ * ```ts
+ * import { intersect } from "@std/collections/intersect";
+ *
+ * const lisaInterests = ["Cooking", "Music", "Hiking"];
+ * const kimInterests = ["Music", "Tennis", "Cooking"];
+ * intersect(lisaInterests, kimInterests); // [ "Cooking", "Music" ]
+ * ```
+ *
  * @module
  */
 

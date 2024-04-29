@@ -12,6 +12,14 @@
  * {@link https://github.com/jshttp/mime-types | jshttp/mime-db} `db.json` file along
  * with its license.
  *
+ * ```ts
+ * import { extensionsByType } from "@std/media-types/extensions-by-type";
+ *
+ * extensionsByType("application/json"); // ["json", "map"]
+ * extensionsByType("text/html; charset=UTF-8"); // ["html", "htm", "shtml"]
+ * extensionsByType("application/foo"); // undefined
+ * ```
+ *
  * @module
  */
 

@@ -110,3 +110,78 @@ export type EqualOptions = {
 export interface EqualOptionUtil extends MatcherContext {
   strictCheck?: boolean;
 }
+
+export interface Colors {
+  comment: { close: string; open: string };
+  content: { close: string; open: string };
+  prop: { close: string; open: string };
+  tag: { close: string; open: string };
+  value: { close: string; open: string };
+}
+type Indent = (arg0: string) => string;
+type Print = (arg0: unknown) => string;
+
+export type Refs = Array<unknown>;
+
+export type CompareKeys = ((a: string, b: string) => number) | null | undefined;
+
+export interface Config {
+  callToJSON: boolean;
+  compareKeys: CompareKeys;
+  colors: Colors;
+  escapeRegex: boolean;
+  escapeString: boolean;
+  indent: string;
+  maxDepth: number;
+  maxWidth: number;
+  min: boolean;
+  plugins: SnapshotPlugin;
+  printBasicPrototype: boolean;
+  printFunctionName: boolean;
+  spacingInner: string;
+  spacingOuter: string;
+}
+
+export type Printer = (
+  val: unknown,
+  config: Config,
+  indentation: string,
+  depth: number,
+  refs: Refs,
+  hasCalledToJSON?: boolean,
+) => string;
+
+interface PluginOptions {
+  edgeSpacing: string;
+  min: boolean;
+  spacing: string;
+}
+
+type Test = (arg0: any) => boolean;
+
+export interface NewSnapshotPlugin {
+  serialize: (
+    val: any,
+    config: Config,
+    indentation: string,
+    depth: number,
+    refs: Refs,
+    printer: Printer,
+  ) => string;
+  test: Test;
+}
+
+export interface OldSnapshotPlugin {
+  print: (
+    val: unknown,
+    print: Print,
+    indent: Indent,
+    options: PluginOptions,
+    colors: Colors,
+  ) => string;
+  test: Test;
+}
+
+export type SnapshotPlugin = NewSnapshotPlugin | OldSnapshotPlugin;
+
+export type SnapshotPlugins = Array<SnapshotPlugin>;

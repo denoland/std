@@ -9,8 +9,8 @@ const UUID_RE =
  *
  * @example
  * ```ts
- * import { validate } from "https://deno.land/std@$STD_VERSION/uuid/v4.ts";
- * import { generate as generateV1 } from "https://deno.land/std@$STD_VERSION/uuid/v1.ts";
+ * import { validate } from "@std/uuid/v4";
+ * import { generate as generateV1 } from "@std/uuid/v1";
  *
  * validate(crypto.randomUUID()); // true
  * validate(generateV1() as string); // false

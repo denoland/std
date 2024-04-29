@@ -6,8 +6,8 @@ import {
   assertFalse,
   assertMatch,
   assertStringIncludes,
-} from "../assert/mod.ts";
-import { stub } from "../testing/mock.ts";
+} from "@std/assert";
+import { stub } from "@std/testing/mock";
 import { serveDir, type ServeDirOptions, serveFile } from "./file_server.ts";
 import { calculate } from "./etag.ts";
 import {
@@ -17,9 +17,11 @@ import {
   join,
   resolve,
   toFileUrl,
-} from "../path/mod.ts";
-import { VERSION } from "../version.ts";
-import { MINUTE } from "../datetime/constants.ts";
+} from "@std/path";
+import denoConfig from "./deno.json" with { type: "json" };
+import { MINUTE } from "@std/datetime/constants";
+import { getAvailablePort } from "@std/net/get-available-port";
+import { concat } from "@std/bytes/concat";
 
 const moduleDir = dirname(fromFileUrl(import.meta.url));
 const testdataDir = resolve(moduleDir, "testdata");
@@ -352,7 +354,7 @@ Deno.test("serveDir() script prints help", async () => {
   });
   const { stdout } = await command.output();
   const output = new TextDecoder().decode(stdout);
-  assert(output.includes(`Deno File Server ${VERSION}`));
+  assert(output.includes(`Deno File Server ${denoConfig.version}`));
 });
 
 Deno.test("serveDir() script prints version", async () => {
@@ -370,7 +372,7 @@ Deno.test("serveDir() script prints version", async () => {
   });
   const { stdout } = await command.output();
   const output = new TextDecoder().decode(stdout);
-  assert(output.includes(`Deno File Server ${VERSION}`));
+  assert(output.includes(`Deno File Server ${denoConfig.version}`));
 });
 
 Deno.test("serveDir() ignores query params", async () => {
@@ -958,13 +960,102 @@ Deno.test(
     },
   },
   async () => {
-    const tempDir = Deno.makeTempDirSync({ dir: `${moduleDir}/testdata` });
+    const tempDir = await Deno.makeTempDir({
+      dir: `${moduleDir}/testdata`,
+    });
     const req = new Request(`http://localhost/${basename(tempDir)}/`);
     const res = await serveDir(req, serveDirOptions);
     await res.body?.cancel();
 
     assertEquals(res.status, 200);
 
-    Deno.removeSync(tempDir);
+    await Deno.remove(tempDir);
   },
 );
+
+Deno.test("file_server prints local and network urls", async () => {
+  const port = await getAvailablePort();
+  const process = spawnDeno([
+    "--allow-net",
+    "--allow-read",
+    "--allow-sys=networkInterfaces",
+    "http/file_server.ts",
+    "--port",
+    `${port}`,
+  ]);
+  const output = await readUntilMatch(process.stdout, "Network:");
+  const networkAdress = Deno.networkInterfaces().find((i) =>
+    i.family === "IPv4" && !i.address.startsWith("127")
+  )?.address;
+  assertEquals(
+    output,
+    `Listening on:\n- Local: http://localhost:${port}\n- Network: http://${networkAdress}:${port}\n`,
+  );
+  process.stdout.cancel();
+  process.stderr.cancel();
+  process.kill();
+  await process.status;
+});
+
+Deno.test("file_server prints only local address on Deploy", async () => {
+  const port = await getAvailablePort();
+  const process = spawnDeno([
+    "--allow-net",
+    "--allow-read",
+    "--allow-sys=networkInterfaces",
+    "--allow-env=DENO_DEPLOYMENT_ID",
+    "http/file_server.ts",
+    "--port",
+    `${port}`,
+  ], {
+    env: {
+      DENO_DEPLOYMENT_ID: "abcdef",
+    },
+  });
+  const output = await readUntilMatch(process.stdout, "Local:");
+  console.log(output);
+  assertEquals(
+    output,
+    `Listening on:\n- Local: http://localhost:${port}\n`,
+  );
+  process.stdout.cancel();
+  process.stderr.cancel();
+  process.kill();
+  await process.status;
+});
+
+/** Spawn deno child process with the options convenient for testing */
+function spawnDeno(args: string[], opts?: Deno.CommandOptions) {
+  const cmd = new Deno.Command(Deno.execPath(), {
+    args: [
+      "run",
+      "--no-lock",
+      "--quiet",
+      "--config",
+      "deno.json",
+      ...args,
+    ],
+    stdout: "piped",
+    stderr: "piped",
+    ...opts,
+  });
+  return cmd.spawn();
+}
+
+async function readUntilMatch(
+  source: ReadableStream,
+  match: string,
+) {
+  const reader = source.getReader();
+  let buf = new Uint8Array(0);
+  const dec = new TextDecoder();
+  while (!dec.decode(buf).includes(match)) {
+    const { value } = await reader.read();
+    if (!value) {
+      break;
+    }
+    buf = concat([buf, value]);
+  }
+  reader.releaseLock();
+  return dec.decode(buf);
+}

@@ -8,8 +8,8 @@ import { randomInteger } from "./_utils.ts";
  *
  * @example
  * ```ts
- * import { sample } from "https://deno.land/std@$STD_VERSION/collections/sample.ts";
- * import { assert } from "https://deno.land/std@$STD_VERSION/assert/assert.ts";
+ * import { sample } from "@std/collections/sample";
+ * import { assert } from "@std/assert/assert";
  *
  * const numbers = [1, 2, 3, 4];
  * const random = sample(numbers);

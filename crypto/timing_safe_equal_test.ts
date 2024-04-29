@@ -1,6 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import { assert } from "../assert/mod.ts";
+import { assert } from "@std/assert";
 import { timingSafeEqual } from "./timing_safe_equal.ts";
 
 Deno.test({
@@ -67,6 +67,26 @@ Deno.test({
     const encoder = new TextEncoder();
     const a = encoder.encode("hello deno");
     const b = encoder.encode("hello Deno");
+    assert(!timingSafeEqual(a, b));
+  },
+});
+
+Deno.test({
+  name:
+    "timingSafeEqual() handles Uint8Array with different byte lengths (a > b)",
+  fn() {
+    const a = new Uint8Array([212, 213]);
+    const b = new Uint8Array([212]);
+    assert(!timingSafeEqual(a, b));
+  },
+});
+
+Deno.test({
+  name:
+    "timingSafeEqual() handles Uint8Array with different byte lengths (a < b)",
+  fn() {
+    const a = new Uint8Array([212]);
+    const b = new Uint8Array([212, 213]);
     assert(!timingSafeEqual(a, b));
   },
 });

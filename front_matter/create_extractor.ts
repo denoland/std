@@ -1,9 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import {
-  MAP_FORMAT_TO_EXTRACTOR_RX,
-  MAP_FORMAT_TO_RECOGNIZER_RX,
-} from "./_formats.ts";
+import { EXTRACT_REGEXP_MAP, RECOGNIZE_REGEXP_MAP } from "./_formats.ts";
 
 type Format = "yaml" | "toml" | "json" | "unknown";
 
@@ -44,8 +41,8 @@ function _extract<T>(
  * @param formats A list of formats to recognize. Defaults to all supported formats.
  *
  * ```ts
- * import { recognize } from "https://deno.land/std@$STD_VERSION/front_matter/mod.ts";
- * import { assertEquals } from "https://deno.land/std@$STD_VERSION/assert/assert_equals.ts";
+ * import { recognize } from "@std/front-matter";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * assertEquals(recognize("---\ntitle: Three dashes marks the spot\n---\n"), "yaml");
  * assertEquals(recognize("---toml\ntitle = 'Three dashes followed by format marks the spot'\n---\n"), "toml");
@@ -56,7 +53,7 @@ function _extract<T>(
  */
 function recognize(str: string, formats?: Format[]): Format {
   if (!formats) {
-    formats = Object.keys(MAP_FORMAT_TO_RECOGNIZER_RX) as Format[];
+    formats = Object.keys(RECOGNIZE_REGEXP_MAP) as Format[];
   }
 
   const [firstLine] = str.split(/(\r?\n)/) as [string];
@@ -66,7 +63,7 @@ function recognize(str: string, formats?: Format[]): Format {
       continue;
     }
 
-    if (MAP_FORMAT_TO_RECOGNIZER_RX[format].test(firstLine)) {
+    if (RECOGNIZE_REGEXP_MAP[format].test(firstLine)) {
       return format;
     }
   }
@@ -82,10 +79,10 @@ function recognize(str: string, formats?: Format[]): Format {
  * @returns A function that extracts front matter from a string with the given parsers.
  *
  * ```ts
- * import { createExtractor, Parser } from "https://deno.land/std@$STD_VERSION/front_matter/mod.ts";
- * import { assertEquals } from "https://deno.land/std@$STD_VERSION/assert/assert_equals.ts";
- * import { parse as parseYAML } from "https://deno.land/std@$STD_VERSION/yaml/parse.ts";
- * import { parse as parseTOML } from "https://deno.land/std@$STD_VERSION/toml/parse.ts";
+ * import { createExtractor, Parser } from "@std/front-matter";
+ * import { assertEquals } from "@std/assert/assert-equals";
+ * import { parse as parseYAML } from "@std/yaml/parse";
+ * import { parse as parseTOML } from "@std/toml/parse";
  * const extractYAML = createExtractor({ yaml: parseYAML as Parser });
  * const extractTOML = createExtractor({ toml: parseTOML as Parser });
  * const extractJSON = createExtractor({ json: JSON.parse as Parser });
@@ -133,6 +130,6 @@ export function createExtractor(
       throw new TypeError(`Unsupported front matter format`);
     }
 
-    return _extract(str, MAP_FORMAT_TO_EXTRACTOR_RX[format], parser);
+    return _extract(str, EXTRACT_REGEXP_MAP[format], parser);
   };
 }

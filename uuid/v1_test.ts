@@ -1,5 +1,5 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-import { assert, assertEquals, assertThrows } from "../assert/mod.ts";
+import { assert, assertEquals, assertThrows } from "@std/assert";
 import { generate, validate } from "./v1.ts";
 import { uuidToBytes } from "./_common.ts";
 
@@ -57,6 +57,26 @@ Deno.test("generate() can fill the UUID into a buffer", () => {
 
   assertEquals(buf, expect);
   assertEquals(buf, uuid);
+});
+
+Deno.test("generate() throws when node is passed with less than 6 numbers", () => {
+  assertThrows(
+    () => {
+      generate({ node: [0x01, 0x23, 0x45, 0x67, 0x89] });
+    },
+    Error,
+    "Cannot create UUID. The node option must be an array of 6 bytes",
+  );
+});
+
+Deno.test("generate() throws when node is passed with more than 6 numbers", () => {
+  assertThrows(
+    () => {
+      generate({ node: [0x01, 0x23, 0x45, 0x67, 0x89, 0x89, 0x89] });
+    },
+    Error,
+    "Cannot create UUID. The node option must be an array of 6 bytes",
+  );
 });
 
 Deno.test("generate() throws when create more than 10M uuids/sec", () => {

@@ -11,10 +11,10 @@
  * @module
  */
 
-import { assert } from "../assert/assert.ts";
+import { assert } from "@std/assert/assert";
 
-import type { JsonValue } from "../json/common.ts";
-export type { JsonValue } from "../json/common.ts";
+import type { JsonValue } from "@std/json/common";
+export type { JsonValue } from "@std/json/common";
 
 /** Options for {@linkcode parse}. */
 export interface ParseOptions {
@@ -31,7 +31,7 @@ export interface ParseOptions {
  *
  * @example
  * ```ts
- * import { parse } from "https://deno.land/std@$STD_VERSION/jsonc/mod.ts";
+ * import { parse } from "@std/jsonc";
  *
  * parse('{"foo": "bar", } // comment'); // { foo: "bar" }
  * parse('{"foo": "bar", } /* comment *\/'); // { foo: "bar" }

@@ -8,8 +8,8 @@
  *
  * @example
  * ```ts
- * import { firstNotNullishOf } from "https://deno.land/std@$STD_VERSION/collections/first_not_nullish_of.ts";
- * import { assertEquals } from "https://deno.land/std@$STD_VERSION/assert/assert_equals.ts";
+ * import { firstNotNullishOf } from "@std/collections/first-not-nullish-of";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const tables = [
  *   { number: 11, order: null },

@@ -1,6 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import { assert, assertEquals } from "../assert/mod.ts";
+import { assert, assertEquals } from "@std/assert";
 import { cleanUp, ignore } from "./_test_util.ts";
 import { createCapture } from "./create_capture.ts";
 

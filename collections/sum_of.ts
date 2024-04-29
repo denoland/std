@@ -7,8 +7,8 @@
  *
  * @example
  * ```ts
- * import { sumOf } from "https://deno.land/std@$STD_VERSION/collections/sum_of.ts";
- * import { assertEquals } from "https://deno.land/std@$STD_VERSION/assert/assert_equals.ts";
+ * import { sumOf } from "@std/collections/sum-of";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const people = [
  *   { name: "Anna", age: 34 },

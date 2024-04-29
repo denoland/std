@@ -1,5 +1,5 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-import { delay } from "../async/delay.ts";
+import { delay } from "@std/async/delay";
 
 /** Thrown by Server after it has been closed. */
 const ERROR_SERVER_CLOSED = "Server closed";
@@ -19,7 +19,7 @@ const MAX_ACCEPT_BACKOFF_DELAY = 1000;
 /**
  * Information about the connection a request arrived on.
  *
- * @deprecated (will be removed after 1.0.0) Use {@linkcode Deno.ServeHandlerInfo} instead.
+ * @deprecated This will be removed in 1.0.0. Use {@linkcode Deno.ServeHandlerInfo} instead.
  */
 export interface ConnInfo {
   /** The local address of the connection. */
@@ -36,7 +36,7 @@ export interface ConnInfo {
  * of the error is isolated to the individual request. It will catch the error
  * and close the underlying connection.
  *
- * @deprecated (will be removed after 1.0.0) Use {@linkcode Deno.ServeHandler} instead.
+ * @deprecated This will be removed in 1.0.0. Use {@linkcode Deno.ServeHandler} instead.
  */
 export type Handler = (
   request: Request,
@@ -46,7 +46,7 @@ export type Handler = (
 /**
  * Options for running an HTTP server.
  *
- * @deprecated (will be removed after 1.0.0) Use {@linkcode Deno.ServeInit} instead.
+ * @deprecated This will be removed in 1.0.0. Use {@linkcode Deno.ServeInit} instead.
  */
 export interface ServerInit extends Partial<Deno.ListenOptions> {
   /** The handler to invoke for individual HTTP requests. */
@@ -63,7 +63,7 @@ export interface ServerInit extends Partial<Deno.ListenOptions> {
 /**
  * Used to construct an HTTP server.
  *
- * @deprecated (will be removed after 1.0.0) Use {@linkcode Deno.serve} instead.
+ * @deprecated This will be removed in 1.0.0. Use {@linkcode Deno.serve} instead.
  */
 export class Server {
   #port?: number;
@@ -79,7 +79,7 @@ export class Server {
    * Constructs a new HTTP Server instance.
    *
    * ```ts
-   * import { Server } from "https://deno.land/std@$STD_VERSION/http/server.ts";
+   * import { Server } from "@std/http/server";
    *
    * const port = 4505;
    * const handler = (request: Request) => {
@@ -118,7 +118,7 @@ export class Server {
    * Will always close the created listener.
    *
    * ```ts
-   * import { Server } from "https://deno.land/std@$STD_VERSION/http/server.ts";
+   * import { Server } from "@std/http/server";
    *
    * const handler = (request: Request) => {
    *   const body = `Your user-agent is:\n\n${request.headers.get(
@@ -170,7 +170,7 @@ export class Server {
    * Throws a server closed error if the server has been closed.
    *
    * ```ts
-   * import { Server } from "https://deno.land/std@$STD_VERSION/http/server.ts";
+   * import { Server } from "@std/http/server";
    *
    * const port = 4505;
    * const handler = (request: Request) => {
@@ -214,7 +214,7 @@ export class Server {
    * Throws a server closed error if the server has been closed.
    *
    * ```ts
-   * import { Server } from "https://deno.land/std@$STD_VERSION/http/server.ts";
+   * import { Server } from "@std/http/server";
    *
    * const port = 4505;
    * const handler = (request: Request) => {
@@ -246,8 +246,8 @@ export class Server {
     const listener = Deno.listenTls({
       port: this.#port ?? HTTPS_PORT,
       hostname: this.#host ?? "0.0.0.0",
-      certFile,
-      keyFile,
+      cert: Deno.readTextFileSync(certFile),
+      key: Deno.readTextFileSync(keyFile),
       transport: "tcp",
       // ALPN protocol support not yet stable.
       // alpnProtocols: ["h2", "http/1.1"],
@@ -501,7 +501,7 @@ export class Server {
 /**
  * Additional serve options.
  *
- * @deprecated (will be removed after 1.0.0) Use {@linkcode Deno.ServeInit} instead.
+ * @deprecated This will be removed in 1.0.0. Use {@linkcode Deno.ServeInit} instead.
  */
 export interface ServeInit extends Partial<Deno.ListenOptions> {
   /** An AbortSignal to close the server and all connections. */
@@ -517,7 +517,7 @@ export interface ServeInit extends Partial<Deno.ListenOptions> {
 /**
  * Additional serve listener options.
  *
- * @deprecated (will be removed after 1.0.0) Use {@linkcode Deno.ServeOptions} instead.
+ * @deprecated This will be removed in 1.0.0. Use {@linkcode Deno.ServeOptions} instead.
  */
 export interface ServeListenerOptions {
   /** An AbortSignal to close the server and all connections. */
@@ -535,7 +535,7 @@ export interface ServeListenerOptions {
  * handles requests on these connections with the given handler.
  *
  * ```ts
- * import { serveListener } from "https://deno.land/std@$STD_VERSION/http/server.ts";
+ * import { serveListener } from "@std/http/server";
  *
  * const listener = Deno.listen({ port: 4505 });
  *
@@ -554,7 +554,7 @@ export interface ServeListenerOptions {
  * @param handler The handler for individual HTTP requests.
  * @param options Optional serve options.
  *
- * @deprecated (will be removed after 1.0.0) Use {@linkcode Deno.serve} instead.
+ * @deprecated This will be removed in 1.0.0. Use {@linkcode Deno.serve} instead.
  */
 export async function serveListener(
   listener: Deno.Listener,
@@ -586,7 +586,7 @@ function hostnameForDisplay(hostname: string) {
  * The below example serves with the port 8000.
  *
  * ```ts
- * import { serve } from "https://deno.land/std@$STD_VERSION/http/server.ts";
+ * import { serve } from "@std/http/server";
  * serve((_req) => new Response("Hello, world"));
  * ```
  *
@@ -594,7 +594,7 @@ function hostnameForDisplay(hostname: string) {
  * The below example serves with the port 3000.
  *
  * ```ts
- * import { serve } from "https://deno.land/std@$STD_VERSION/http/server.ts";
+ * import { serve } from "@std/http/server";
  * serve((_req) => new Response("Hello, world"), { port: 3000 });
  * ```
  *
@@ -603,7 +603,7 @@ function hostnameForDisplay(hostname: string) {
  * `onListen` option to override it.
  *
  * ```ts
- * import { serve } from "https://deno.land/std@$STD_VERSION/http/server.ts";
+ * import { serve } from "@std/http/server";
  * serve((_req) => new Response("Hello, world"), {
  *   onListen({ port, hostname }) {
  *     console.log(`Server started at http://${hostname}:${port}`);
@@ -615,14 +615,14 @@ function hostnameForDisplay(hostname: string) {
  * You can also specify `undefined` or `null` to stop the logging behavior.
  *
  * ```ts
- * import { serve } from "https://deno.land/std@$STD_VERSION/http/server.ts";
+ * import { serve } from "@std/http/server";
  * serve((_req) => new Response("Hello, world"), { onListen: undefined });
  * ```
  *
  * @param handler The handler for individual HTTP requests.
  * @param options The options. See `ServeInit` documentation for details.
  *
- * @deprecated (will be removed after 1.0.0) Use {@linkcode Deno.serve} instead.
+ * @deprecated This will be removed in 1.0.0. Use {@linkcode Deno.serve} instead.
  */
 export async function serve(
   handler: Handler,
@@ -667,7 +667,7 @@ export async function serve(
 /**
  * Initialization parameters for {@linkcode serveTls}.
  *
- * @deprecated (will be removed after 1.0.0) Use {@linkcode Deno.ServeTlsOptions} instead.
+ * @deprecated This will be removed in 1.0.0. Use {@linkcode Deno.ServeTlsOptions} instead.
  */
 export interface ServeTlsInit extends ServeInit {
   /** Server private key in PEM format */
@@ -694,7 +694,7 @@ export interface ServeTlsInit extends ServeInit {
  * The below example serves with the default port 8443.
  *
  * ```ts
- * import { serveTls } from "https://deno.land/std@$STD_VERSION/http/server.ts";
+ * import { serveTls } from "@std/http/server";
  *
  * const cert = "-----BEGIN CERTIFICATE-----\n...\n-----END CERTIFICATE-----\n";
  * const key = "-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n";
@@ -712,7 +712,7 @@ export interface ServeTlsInit extends ServeInit {
  * `onListen` option to override it.
  *
  * ```ts
- * import { serveTls } from "https://deno.land/std@$STD_VERSION/http/server.ts";
+ * import { serveTls } from "@std/http/server";
  * const certFile = "/path/to/certFile.crt";
  * const keyFile = "/path/to/keyFile.key";
  * serveTls((_req) => new Response("Hello, world"), {
@@ -728,7 +728,7 @@ export interface ServeTlsInit extends ServeInit {
  * You can also specify `undefined` or `null` to stop the logging behavior.
  *
  * ```ts
- * import { serveTls } from "https://deno.land/std@$STD_VERSION/http/server.ts";
+ * import { serveTls } from "@std/http/server";
  * const certFile = "/path/to/certFile.crt";
  * const keyFile = "/path/to/keyFile.key";
  * serveTls((_req) => new Response("Hello, world"), {
@@ -742,7 +742,7 @@ export interface ServeTlsInit extends ServeInit {
  * @param options The options. See `ServeTlsInit` documentation for details.
  * @returns
  *
- * @deprecated (will be removed after 1.0.0) Use {@linkcode Deno.serve} instead.
+ * @deprecated This will be removed in 1.0.0. Use {@linkcode Deno.serve} instead.
  */
 export async function serveTls(
   handler: Handler,
@@ -773,7 +773,9 @@ export async function serveTls(
     once: true,
   });
 
+  // deno-lint-ignore no-sync-fn-in-async-fn
   const key = options.key || Deno.readTextFileSync(options.keyFile!);
+  // deno-lint-ignore no-sync-fn-in-async-fn
   const cert = options.cert || Deno.readTextFileSync(options.certFile!);
 
   const listener = Deno.listenTls({

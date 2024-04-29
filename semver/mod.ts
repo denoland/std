@@ -250,7 +250,7 @@
  *   greaterThan,
  *   lessThan,
  *   format
- * } from "https://deno.land/std@$STD_VERSION/semver/mod.ts";
+ * } from "@std/semver";
  *
  * const semver = parse("1.2.3");
  * const range = parseRange("1.x || >=2.5.0 || 5.0.0 - 7.2.3");
@@ -270,6 +270,7 @@ export * from "./constants.ts";
 export * from "./difference.ts";
 export * from "./format.ts";
 export * from "./test_range.ts";
+export * from "./satisfies.ts";
 export * from "./increment.ts";
 export * from "./is_semver.ts";
 export * from "./max_satisfying.ts";
@@ -288,8 +289,10 @@ export * from "./format_range.ts";
 export * from "./equals.ts";
 export * from "./not_equals.ts";
 export * from "./greater_than.ts";
+export * from "./greater_than_range.ts";
 export * from "./greater_or_equal.ts";
 export * from "./less_than.ts";
+export * from "./less_than_range.ts";
 export * from "./less_or_equal.ts";
 
 export const SEMVER_SPEC_VERSION = "2.0.0";

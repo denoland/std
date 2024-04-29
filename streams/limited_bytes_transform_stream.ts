@@ -11,7 +11,7 @@
  *
  * @example
  * ```ts
- * import { LimitedBytesTransformStream } from "https://deno.land/std@$STD_VERSION/streams/limited_bytes_transform_stream.ts";
+ * import { LimitedBytesTransformStream } from "@std/streams/limited-bytes-transform-stream";
  *
  * const res = await fetch("https://example.com");
  * const parts = res.body!

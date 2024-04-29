@@ -4,7 +4,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
 import { YAMLError } from "../_error.ts";
-import type { RepresentFn, StyleVariant, Type } from "../type.ts";
+import type { RepresentFn } from "../type.ts";
 import * as common from "../_utils.ts";
 import { DumperState, type DumperStateOptions } from "./dumper_state.ts";
 
@@ -99,12 +99,12 @@ function encodeHex(character: number): string {
 
 // Indents every line in a string. Empty lines (\n only) are not indented.
 function indentString(string: string, spaces: number): string {
-  const ind = common.repeat(" ", spaces),
-    length = string.length;
-  let position = 0,
-    next = -1,
-    result = "",
-    line: string;
+  const ind = common.repeat(" ", spaces);
+  const length = string.length;
+  let position = 0;
+  let next = -1;
+  let result = "";
+  let line: string;
 
   while (position < length) {
     next = string.indexOf("\n", position);
@@ -129,20 +129,7 @@ function generateNextLine(state: DumperState, level: number): string {
 }
 
 function testImplicitResolving(state: DumperState, str: string): boolean {
-  let type: Type;
-  for (
-    let index = 0, length = state.implicitTypes.length;
-    index < length;
-    index += 1
-  ) {
-    type = state.implicitTypes[index];
-
-    if (type.resolve(str)) {
-      return true;
-    }
-  }
-
-  return false;
+  return state.implicitTypes.some((type) => type.resolve(str));
 }
 
 // [33] s-white ::= s-space | s-tab
@@ -222,11 +209,11 @@ function needIndentIndicator(string: string): boolean {
   return leadingSpaceRe.test(string);
 }
 
-const STYLE_PLAIN = 1,
-  STYLE_SINGLE = 2,
-  STYLE_LITERAL = 3,
-  STYLE_FOLDED = 4,
-  STYLE_DOUBLE = 5;
+const STYLE_PLAIN = 1;
+const STYLE_SINGLE = 2;
+const STYLE_LITERAL = 3;
+const STYLE_FOLDED = 4;
+const STYLE_DOUBLE = 5;
 
 // Determines which scalar styles are possible and returns the preferred style.
 // lineWidth = -1 => no limit.
@@ -243,13 +230,14 @@ function chooseScalarStyle(
   testAmbiguousType: (...args: Any[]) => Any,
 ): number {
   const shouldTrackWidth = lineWidth !== -1;
-  let hasLineBreak = false,
-    hasFoldableLine = false, // only checked if shouldTrackWidth
-    previousLineBreak = -1, // count the first line correctly
-    plain = isPlainSafeFirst(string.charCodeAt(0)) &&
-      !isWhitespace(string.charCodeAt(string.length - 1));
+  let hasLineBreak = false;
+  let hasFoldableLine = false; // only checked if shouldTrackWidth
+  let previousLineBreak = -1; // count the first line correctly
+  let plain = isPlainSafeFirst(string.charCodeAt(0)) &&
+    !isWhitespace(string.charCodeAt(string.length - 1));
 
-  let char: number, i: number;
+  let char: number;
+  let i: number;
   if (singleLineOnly) {
     // Case: no block styles.
     // Check for disallowed characters to rule out plain and single.
@@ -313,10 +301,10 @@ function foldLine(line: string, width: number): string {
   const breakRe = / [^ ]/g; // note: the match index will always be <= length-2.
   let match;
   // start is an inclusive index. end, curr, and next are exclusive.
-  let start = 0,
-    end,
-    curr = 0,
-    next = 0;
+  let start = 0;
+  let end;
+  let curr = 0;
+  let next = 0;
   let result = "";
 
   // Invariants: 0 <= start <= length-1.
@@ -378,8 +366,8 @@ function foldString(string: string, width: number): string {
   let match;
   // tslint:disable-next-line:no-conditional-assignment
   while ((match = lineRe.exec(string))) {
-    const prefix = match[1],
-      line = match[2];
+    const prefix = match[1];
+    const line = match[2] || "";
     moreIndented = line[0] === " ";
     result += prefix +
       (!prevMoreIndented && !moreIndented && line !== "" ? "\n" : "") +
@@ -393,7 +381,8 @@ function foldString(string: string, width: number): string {
 // Escapes a double-quoted string.
 function escapeString(string: string): string {
   let result = "";
-  let char, nextChar;
+  let char;
+  let nextChar;
   let escapeSeq;
 
   for (let i = 0; i < string.length; i++) {
@@ -521,7 +510,7 @@ function writeFlowSequence(
   let _result = "";
   const _tag = state.tag;
 
-  for (let index = 0, length = object.length; index < length; index += 1) {
+  for (let index = 0; index < object.length; index += 1) {
     // Write only valid elements.
     if (writeNode(state, level, object[index], false, false)) {
       if (index !== 0) _result += `,${!state.condenseFlow ? " " : ""}`;
@@ -542,7 +531,7 @@ function writeBlockSequence(
   let _result = "";
   const _tag = state.tag;
 
-  for (let index = 0, length = object.length; index < length; index += 1) {
+  for (let index = 0; index < object.length; index += 1) {
     // Write only valid elements.
     if (writeNode(state, level + 1, object[index], true, true)) {
       if (!compact || index !== 0) {
@@ -569,21 +558,15 @@ function writeFlowMapping(
   object: Any,
 ) {
   let _result = "";
-  const _tag = state.tag,
-    objectKeyList = Object.keys(object);
+  const _tag = state.tag;
+  const objectKeyList = Object.keys(object);
 
-  let pairBuffer: string, objectKey: string, objectValue: Any;
-  for (
-    let index = 0, length = objectKeyList.length;
-    index < length;
-    index += 1
-  ) {
-    pairBuffer = state.condenseFlow ? '"' : "";
+  for (const [index, objectKey] of objectKeyList.entries()) {
+    let pairBuffer = state.condenseFlow ? '"' : "";
 
     if (index !== 0) pairBuffer += ", ";
 
-    objectKey = objectKeyList[index];
-    objectValue = object[objectKey];
+    const objectValue = object[objectKey];
 
     if (!writeNode(state, level, objectKey, false, false)) {
       continue; // Skip this pair because of invalid key;
@@ -615,8 +598,8 @@ function writeBlockMapping(
   object: Any,
   compact = false,
 ) {
-  const _tag = state.tag,
-    objectKeyList = Object.keys(object);
+  const _tag = state.tag;
+  const objectKeyList = Object.keys(object);
   let _result = "";
 
   // Allow sorting keys so that the output file is deterministic
@@ -631,29 +614,20 @@ function writeBlockMapping(
     throw new YAMLError("sortKeys must be a boolean or a function");
   }
 
-  let pairBuffer = "",
-    objectKey: string,
-    objectValue: Any,
-    explicitPair: boolean;
-  for (
-    let index = 0, length = objectKeyList.length;
-    index < length;
-    index += 1
-  ) {
-    pairBuffer = "";
+  for (const [index, objectKey] of objectKeyList.entries()) {
+    let pairBuffer = "";
 
     if (!compact || index !== 0) {
       pairBuffer += generateNextLine(state, level);
     }
 
-    objectKey = objectKeyList[index];
-    objectValue = object[objectKey];
+    const objectValue = object[objectKey];
 
     if (!writeNode(state, level + 1, objectKey, true, true, true)) {
       continue; // Skip this pair because of invalid key.
     }
 
-    explicitPair = (state.tag !== null && state.tag !== "?") ||
+    const explicitPair = (state.tag !== null && state.tag !== "?") ||
       (state.dump && state.dump.length > 1024);
 
     if (explicitPair) {
@@ -697,11 +671,8 @@ function detectType(
 ): boolean {
   const typeList = explicit ? state.explicitTypes : state.implicitTypes;
 
-  let type: Type;
-  let style: StyleVariant;
-  let _result: string;
-  for (let index = 0, length = typeList.length; index < length; index += 1) {
-    type = typeList[index];
+  for (const type of typeList) {
+    let _result: string;
 
     if (
       (type.instanceOf || type.predicate) &&
@@ -712,12 +683,12 @@ function detectType(
       state.tag = explicit ? type.tag : "?";
 
       if (type.represent) {
-        style = state.styleMap[type.tag] || type.defaultStyle;
+        const style = state.styleMap[type.tag]! || type.defaultStyle;
 
         if (_toString.call(type.represent) === "[object Function]") {
           _result = (type.represent as RepresentFn)(object, style);
         } else if (hasOwn(type.represent, style)) {
-          _result = (type.represent as ArrayObject<RepresentFn>)[style](
+          _result = (type.represent as ArrayObject<RepresentFn>)[style]!(
             object,
             style,
           );
@@ -841,18 +812,12 @@ function inspectNode(
       objects.push(object);
 
       if (Array.isArray(object)) {
-        for (let idx = 0, length = object.length; idx < length; idx += 1) {
+        for (let idx = 0; idx < object.length; idx += 1) {
           inspectNode(object[idx], objects, duplicatesIndexes);
         }
       } else {
-        const objectKeyList = Object.keys(object);
-
-        for (
-          let idx = 0, length = objectKeyList.length;
-          idx < length;
-          idx += 1
-        ) {
-          inspectNode(object[objectKeyList[idx]], objects, duplicatesIndexes);
+        for (const objectKey of Object.keys(object)) {
+          inspectNode(object[objectKey], objects, duplicatesIndexes);
         }
       }
     }
@@ -863,16 +828,15 @@ function getDuplicateReferences(
   object: Record<string, unknown>,
   state: DumperState,
 ) {
-  const objects: Any[] = [],
-    duplicatesIndexes: number[] = [];
+  const objects: Any[] = [];
+  const duplicatesIndexes: number[] = [];
 
   inspectNode(object, objects, duplicatesIndexes);
 
-  const length = duplicatesIndexes.length;
-  for (let index = 0; index < length; index += 1) {
-    state.duplicates.push(objects[duplicatesIndexes[index]]);
+  for (const idx of duplicatesIndexes) {
+    state.duplicates.push(objects[idx]);
   }
-  state.usedDuplicates = Array.from({ length });
+  state.usedDuplicates = Array.from({ length: duplicatesIndexes.length });
 }
 
 export function dump(input: Any, options?: DumperStateOptions): string {

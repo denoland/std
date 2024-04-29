@@ -10,20 +10,15 @@
  *
  * This module is browser compatible.
  *
- * @example
  * ```ts
  * import {
  *   decodeHex,
  *   encodeHex,
- * } from "https://deno.land/std@$STD_VERSION/encoding/hex.ts";
+ * } from "@std/encoding/hex";
  *
- * const binary = new TextEncoder().encode("abc");
- * const encoded = encodeHex(binary);
- * console.log(encoded);
- * // => "616263"
+ * const encoded = encodeHex("abc"); // "616263"
  *
- * console.log(decodeHex(encoded));
- * // => Uint8Array(3) [ 97, 98, 99 ]
+ * decodeHex(encoded); // Uint8Array(3) [ 97, 98, 99 ]
  * ```
  *
  * @module
@@ -60,7 +55,7 @@ function fromHexChar(byte: number): number {
  *
  * @example
  * ```ts
- * import { encodeHex } from "https://deno.land/std@$STD_VERSION/encoding/hex.ts";
+ * import { encodeHex } from "@std/encoding/hex";
  *
  * encodeHex("abc"); // "616263"
  * ```
@@ -83,7 +78,7 @@ export function encodeHex(src: string | Uint8Array | ArrayBuffer): string {
  *
  * @example
  * ```ts
- * import { decodeHex } from "https://deno.land/std@$STD_VERSION/encoding/hex.ts";
+ * import { decodeHex } from "@std/encoding/hex";
  *
  * decodeHex("616263"); // Uint8Array(3) [ 97, 98, 99 ]
  * ```

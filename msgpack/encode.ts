@@ -1,6 +1,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
 
-import { concat } from "../bytes/concat.ts";
+import { concat } from "@std/bytes/concat";
 
 /**
  * Value types that can be encoded to MessagePack.
@@ -43,7 +44,7 @@ const encoder = new TextEncoder();
  *
  * @example
  * ```ts
- * import { encode } from "https://deno.land/std@$STD_VERSION/msgpack/encode.ts";
+ * import { encode } from "@std/msgpack/encode";
  *
  * const obj = {
  *   str: "deno",

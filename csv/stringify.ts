@@ -147,8 +147,8 @@ type NormalizedColumn = Omit<ColumnDetails, "header" | "prop"> & {
 };
 
 function normalizeColumn(column: Column): NormalizedColumn {
-  let header: NormalizedColumn["header"],
-    prop: NormalizedColumn["prop"];
+  let header: NormalizedColumn["header"];
+  let prop: NormalizedColumn["prop"];
 
   if (typeof column === "object") {
     if (Array.isArray(column)) {
@@ -244,7 +244,7 @@ function getValuesFromItem(
  * import {
  *   Column,
  *   stringify,
- * } from "https://deno.land/std@$STD_VERSION/csv/stringify.ts";
+ * } from "@std/csv/stringify";
  *
  * type Character = {
  *   age: number;
@@ -303,7 +303,7 @@ export function stringify(
     output += BYTE_ORDER_MARK;
   }
 
-  if (headers) {
+  if (headers && normalizedColumns.length > 0) {
     output += normalizedColumns
       .map((column) => getEscapedString(column.header, sep))
       .join(sep);

@@ -1,12 +1,12 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-import { type GlobOptions, globToRegExp } from "../path/glob_to_regexp.ts";
-import { joinGlobs } from "../path/join_globs.ts";
-import { isGlob } from "../path/is_glob.ts";
-import { isAbsolute } from "../path/is_absolute.ts";
-import { resolve } from "../path/resolve.ts";
-import { SEPARATOR_PATTERN } from "../path/constants.ts";
+import { type GlobOptions, globToRegExp } from "@std/path/glob-to-regexp";
+import { joinGlobs } from "@std/path/join-globs";
+import { isGlob } from "@std/path/is-glob";
+import { isAbsolute } from "@std/path/is-absolute";
+import { resolve } from "@std/path/resolve";
+import { SEPARATOR_PATTERN } from "@std/path/constants";
 import { walk, walkSync } from "./walk.ts";
-import { assert } from "../assert/assert.ts";
+import { assert } from "@std/assert/assert";
 import { toPathString } from "./_to_path_string.ts";
 import {
   createWalkEntry,
@@ -14,7 +14,7 @@ import {
   type WalkEntry,
 } from "./_create_walk_entry.ts";
 
-export type { GlobOptions };
+export type { GlobOptions, WalkEntry };
 
 const isWindows = Deno.build.os === "windows";
 
@@ -80,18 +80,47 @@ function comparePath(a: WalkEntry, b: WalkEntry): number {
 }
 
 /**
- * Expand the glob string from the specified `root` directory and yield each
- * result as a `WalkEntry` object.
+ * Returns an async iterator that yields each file path matching the given glob
+ * pattern. The file paths are relative to the provided `root` directory.
+ * If `root` is not provided, the current working directory is used.
+ * The `root` directory is not included in the yielded file paths.
  *
- * See [`globToRegExp()`](../path/glob.ts#globToRegExp) for details on supported
- * syntax.
+ * Requires the `--allow-read` flag.
  *
- * @example
+ * @param glob The glob pattern to expand.
+ * @param options Additional options for the expansion.
+ * @returns An async iterator that yields each walk entry matching the glob
+ * pattern.
+ *
+ * @example Basic usage
+ *
+ * File structure:
+ * ```
+ * folder
+ * ├── script.ts
+ * └── foo.ts
+ * ```
+ *
  * ```ts
- * import { expandGlob } from "https://deno.land/std@$STD_VERSION/fs/expand_glob.ts";
- * for await (const file of expandGlob("**\/*.ts")) {
- *   console.log(file);
+ * // script.ts
+ * import { expandGlob } from "@std/fs/expand-glob";
+ *
+ * const entries = [];
+ * for await (const entry of expandGlob("*.ts")) {
+ *   entries.push(entry);
  * }
+ *
+ * entries[0]!.path; // "/Users/user/folder/script.ts"
+ * entries[0]!.name; // "script.ts"
+ * entries[0]!.isFile; // false
+ * entries[0]!.isDirectory; // true
+ * entries[0]!.isSymlink; // false
+ *
+ * entries[1]!.path; // "/Users/user/folder/foo.ts"
+ * entries[1]!.name; // "foo.ts"
+ * entries[1]!.isFile; // true
+ * entries[1]!.isDirectory; // false
+ * entries[1]!.isSymlink; // false
  * ```
  */
 export async function* expandGlob(
@@ -210,14 +239,46 @@ export async function* expandGlob(
 }
 
 /**
- * Synchronous version of `expandGlob()`.
+ * Returns an iterator that yields each file path matching the given glob
+ * pattern. The file paths are relative to the provided `root` directory.
+ * If `root` is not provided, the current working directory is used.
+ * The `root` directory is not included in the yielded file paths.
  *
- * @example
+ * Requires the `--allow-read` flag.
+ *
+ * @param glob The glob pattern to expand.
+ * @param options Additional options for the expansion.
+ * @returns An iterator that yields each walk entry matching the glob pattern.
+ *
+ * @example Basic usage
+ *
+ * File structure:
+ * ```
+ * folder
+ * ├── script.ts
+ * └── foo.ts
+ * ```
+ *
  * ```ts
- * import { expandGlobSync } from "https://deno.land/std@$STD_VERSION/fs/expand_glob.ts";
- * for (const file of expandGlobSync("**\/*.ts")) {
- *   console.log(file);
+ * // script.ts
+ * import { expandGlobSync } from "@std/fs/expand-glob";
+ *
+ * const entries = [];
+ * for (const entry of expandGlobSync("*.ts")) {
+ *   entries.push(entry);
  * }
+ *
+ * entries[0]!.path; // "/Users/user/folder/script.ts"
+ * entries[0]!.name; // "script.ts"
+ * entries[0]!.isFile; // false
+ * entries[0]!.isDirectory; // true
+ * entries[0]!.isSymlink; // false
+ *
+ * entries[1]!.path; // "/Users/user/folder/foo.ts"
+ * entries[1]!.name; // "foo.ts"
+ * entries[1]!.isFile; // true
+ * entries[1]!.isDirectory; // false
+ * entries[1]!.isSymlink; // false
  * ```
  */
 export function* expandGlobSync(

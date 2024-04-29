@@ -131,7 +131,7 @@ function isTokenChar(r: string): boolean {
   return code > 0x20 && code < 0x7f && !isTSpecial(r);
 }
 
-function isTSpecial(r: string): boolean {
+export function isTSpecial(r: string): boolean {
   return r[0] ? `()<>@,;:\\"/[]?=`.includes(r[0]) : false;
 }
 

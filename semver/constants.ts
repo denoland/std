@@ -1,4 +1,5 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
 import type { Comparator, SemVer } from "./types.ts";
 
 /**
@@ -29,9 +30,9 @@ export const MIN: SemVer = {
  * which may be the result of impossible ranges or comparator operations.
  * @example
  * ```ts
- * import { equals } from "https://deno.land/std@$STD_VERSION/semver/equals.ts";
- * import { parse } from "https://deno.land/std@$STD_VERSION/semver/parse.ts";
- * import { INVALID } from "https://deno.land/std@$STD_VERSION/semver/constants.ts"
+ * import { equals } from "@std/semver/equals";
+ * import { parse } from "@std/semver/parse";
+ * import { INVALID } from "@std/semver/constants"
  * equals(parse("1.2.3"), INVALID);
  * ```
  */
@@ -48,9 +49,9 @@ export const INVALID: SemVer = {
  * SemVer object and should not be used directly.
  * @example
  * ```ts
- * import { equals } from "https://deno.land/std@$STD_VERSION/semver/equals.ts";
- * import { parse } from "https://deno.land/std@$STD_VERSION/semver/parse.ts";
- * import { ANY } from "https://deno.land/std@$STD_VERSION/semver/constants.ts"
+ * import { equals } from "@std/semver/equals";
+ * import { parse } from "@std/semver/parse";
+ * import { ANY } from "@std/semver/constants"
  * equals(parse("1.2.3"), ANY); // false
  * ```
  */
@@ -68,7 +69,6 @@ export const ANY: SemVer = {
 export const ALL: Comparator = {
   operator: undefined,
   ...ANY,
-  semver: ANY,
 };
 
 /**
@@ -77,5 +77,4 @@ export const ALL: Comparator = {
 export const NONE: Comparator = {
   operator: "<",
   ...MIN,
-  semver: MIN,
 };

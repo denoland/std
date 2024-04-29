@@ -9,7 +9,7 @@
  */
 
 import { timingSafeEqual } from "./timing_safe_equal.ts";
-import { encodeBase64Url } from "../encoding/base64url.ts";
+import { encodeBase64Url } from "@std/encoding/base64url";
 
 /** Types of data that can be signed cryptographically. */
 export type Data = string | number[] | ArrayBuffer | Uint8Array;
@@ -78,7 +78,7 @@ async function compare(a: Data, b: Data): Promise<boolean> {
  *
  * @example
  * ```ts
- * import { KeyStack } from "https://deno.land/std@$STD_VERSION/crypto/unstable_keystack.ts";
+ * import { KeyStack } from "@std/crypto/unstable-keystack";
  *
  * const keyStack = new KeyStack(["hello", "world"]);
  * const digest = await keyStack.sign("some data");

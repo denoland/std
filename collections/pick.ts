@@ -1,12 +1,13 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
 
 /**
  * Creates a new object by including the specified keys from the provided object.
  *
  * @example
  * ```ts
- * import { pick } from "https://deno.land/std@$STD_VERSION/collections/pick.ts";
- * import { assertEquals } from "https://deno.land/std@$STD_VERSION/assert/assert_equals.ts";
+ * import { pick } from "@std/collections/pick";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const obj = { a: 5, b: 6, c: 7, d: 8 };
  * const picked = pick(obj, ["a", "c"]);

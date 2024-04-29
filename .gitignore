@@ -5,7 +5,7 @@
 **/cov/
 crypto/_wasm/target
 deno.lock
-console/testdata/unicode_width_crate/target
+cli/testdata/unicode_width_crate/target
 html_cov/
 cov.lcov
 http/testdata/%25A.txt

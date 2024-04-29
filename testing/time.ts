@@ -6,9 +6,9 @@
  * @module
  */
 
-import { RedBlackTree } from "../data_structures/red_black_tree.ts";
-import { ascend } from "../data_structures/comparators.ts";
-import type { DelayOptions } from "../async/delay.ts";
+import { RedBlackTree } from "@std/data-structures/red-black-tree";
+import { ascend } from "@std/data-structures/comparators";
+import type { DelayOptions } from "@std/async/delay";
 import { _internals } from "./_time.ts";
 
 /** An error related to faking time. */
@@ -84,7 +84,7 @@ function fakeSetTimeout(
   return setTimer(callback, delay, args, false);
 }
 
-function fakeClearTimeout(id?: number) {
+function fakeClearTimeout(id?: unknown) {
   if (!time) throw new TimeError("no fake time");
   if (typeof id === "number" && dueNodes.has(id)) {
     dueNodes.delete(id);
@@ -102,7 +102,7 @@ function fakeSetInterval(
   return setTimer(callback, delay, args, true);
 }
 
-function fakeClearInterval(id?: number) {
+function fakeClearInterval(id?: unknown) {
   if (!time) throw new TimeError("no fake time");
   if (typeof id === "number" && dueNodes.has(id)) {
     dueNodes.delete(id);
@@ -185,8 +185,8 @@ let dueTree: RedBlackTree<DueNode>;
  * import {
  *   assertSpyCalls,
  *   spy,
- * } from "https://deno.land/std@$STD_VERSION/testing/mock.ts";
- * import { FakeTime } from "https://deno.land/std@$STD_VERSION/testing/time.ts";
+ * } from "@std/testing/mock";
+ * import { FakeTime } from "@std/testing/time";
  *
  * function secondInterval(cb: () => void): number {
  *   return setInterval(cb, 1000);

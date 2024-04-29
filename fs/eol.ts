@@ -11,9 +11,9 @@ export const CRLF = "\r\n" as const;
  *
  * @example
  * ```ts
- * import { EOL } from "https://deno.land/std@$STD_VERSION/fs/eol.ts";
+ * import { EOL } from "@std/fs/eol";
  *
- * EOL; // Returns "\n" on POSIX platforms or "\r\n" on Windows
+ * EOL; // "\n" on POSIX platforms and "\r\n" on Windows
  * ```
  */
 export const EOL: "\n" | "\r\n" = Deno?.build.os === "windows" ? CRLF : LF;
@@ -21,22 +21,20 @@ export const EOL: "\n" | "\r\n" = Deno?.build.os === "windows" ? CRLF : LF;
 const regDetect = /(?:\r?\n)/g;
 
 /**
- * Detect the EOL character for string input.
- * returns null if no newline.
+ * Returns the detected EOL character(s) detected in the input string. If no EOL
+ * character is detected, `null` is returned.
+ *
+ * @param content The input string to detect EOL characters.
+ * @returns The detected EOL character(s) or `null` if no EOL character is detected.
  *
  * @example
  * ```ts
- * import { detect, EOL } from "https://deno.land/std@$STD_VERSION/fs/mod.ts";
+ * import { detect } from "@std/fs/eol";
  *
- * const CRLFinput = "deno\r\nis not\r\nnode";
- * const Mixedinput = "deno\nis not\r\nnode";
- * const LFinput = "deno\nis not\nnode";
- * const NoNLinput = "deno is not node";
- *
- * detect(LFinput); // output EOL.LF
- * detect(CRLFinput); // output EOL.CRLF
- * detect(Mixedinput); // output EOL.CRLF
- * detect(NoNLinput); // output null
+ * detect("deno\r\nis not\r\nnode"); // "\r\n"
+ * detect("deno\nis not\r\nnode"); // "\r\n"
+ * detect("deno\nis not\nnode"); // "\n"
+ * detect("deno is not node"); // null
  * ```
  */
 export function detect(content: string): typeof EOL | null {
@@ -50,15 +48,19 @@ export function detect(content: string): typeof EOL | null {
 }
 
 /**
- * Format the file to the targeted EOL.
+ * Normalize the input string to the targeted EOL.
+ *
+ * @param content The input string to normalize.
+ * @param eol The EOL character(s) to normalize the input string to.
+ * @returns The input string normalized to the targeted EOL.
  *
  * @example
  * ```ts
- * import { LF, format } from "https://deno.land/std@$STD_VERSION/fs/mod.ts";
+ * import { LF, format } from "@std/fs/eol";
  *
  * const CRLFinput = "deno\r\nis not\r\nnode";
  *
- * format(CRLFinput, LF); // output "deno\nis not\nnode"
+ * format(CRLFinput, LF); // "deno\nis not\nnode"
  * ```
  */
 export function format(content: string, eol: typeof EOL): string {

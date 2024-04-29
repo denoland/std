@@ -13,7 +13,7 @@ import type {
  *
  * @example
  * ```ts
- * import { TextDelimiterStream } from "https://deno.land/std@$STD_VERSION/streams/text_delimiter_stream.ts";
+ * import { TextDelimiterStream } from "@std/streams/text-delimiter-stream";
  * const res = await fetch("https://example.com");
  * const parts = res.body!
  *   .pipeThrough(new TextDecoderStream())

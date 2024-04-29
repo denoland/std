@@ -9,13 +9,13 @@
  * **to run this test**
  * deno run --allow-read archive/tar_test.ts
  */
-import { assert, assertEquals } from "../assert/mod.ts";
-import { resolve } from "../path/mod.ts";
+import { assert, assertEquals } from "@std/assert";
+import { resolve } from "@std/path";
 import { Tar } from "./tar.ts";
 import { Untar } from "./untar.ts";
-import { Buffer } from "../io/buffer.ts";
-import { copy } from "../io/copy.ts";
-import { readAll } from "../io/read_all.ts";
+import { Buffer } from "@std/io/buffer";
+import { copy } from "@std/io/copy";
+import { readAll } from "@std/io/read-all";
 import { filePath, testdataDir } from "./_test_common.ts";
 
 Deno.test("createTarArchive", async function () {
@@ -98,14 +98,14 @@ Deno.test("Tar() appends file with long name to tar archive", async function ():
 Deno.test("Tar() checks directory entry type", async function () {
   const tar = new Tar();
 
-  tar.append("directory/", {
+  await tar.append("directory/", {
     reader: new Buffer(),
     contentSize: 0,
     type: "directory",
   });
 
   const filePath = resolve(testdataDir);
-  tar.append("archive/testdata/", {
+  await tar.append("archive/testdata/", {
     filePath,
   });
 

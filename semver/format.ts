@@ -1,6 +1,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-import { ANY } from "./constants.ts";
+// This module is browser compatible.
 import type { SemVer } from "./types.ts";
+import { isWildcardComparator } from "./_shared.ts";
 
 function formatNumber(value: number) {
   if (value === Number.POSITIVE_INFINITY) {
@@ -23,7 +24,7 @@ function formatNumber(value: number) {
  * @returns The string representation of a semantic version.
  */
 export function format(semver: SemVer): string {
-  if (semver === ANY) {
+  if (isWildcardComparator(semver)) {
     return "*";
   }
 

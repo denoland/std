@@ -1,7 +1,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-import { assert } from "../assert/assert.ts";
+import { assert } from "@std/assert/assert";
 
 /**
  * When checking the values of cryptographic hashes are equal, default
@@ -15,8 +15,8 @@ import { assert } from "../assert/assert.ts";
  * that time, `timingSafeEqual()` is provided:
  *
  * ```ts
- * import { timingSafeEqual } from "https://deno.land/std@$STD_VERSION/crypto/timing_safe_equal.ts";
- * import { assert } from "https://deno.land/std@$STD_VERSION/assert/assert.ts";
+ * import { timingSafeEqual } from "@std/crypto/timing-safe-equal";
+ * import { assert } from "@std/assert/assert";
  *
  * const a = await crypto.subtle.digest(
  *   "SHA-384",

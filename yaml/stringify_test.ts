@@ -3,7 +3,7 @@
 // Copyright 2011-2015 by Vitaly Puzrin. All rights reserved. MIT license.
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import { assertEquals, assertThrows } from "../assert/mod.ts";
+import { assertEquals, assertThrows } from "@std/assert";
 import { stringify } from "./stringify.ts";
 import { YAMLError } from "./_error.ts";
 import { DEFAULT_SCHEMA, EXTENDED_SCHEMA } from "./schema/mod.ts";
@@ -42,6 +42,50 @@ binary: !<tag:yaml.org,2002:binary> SGVsbG8=
 `;
 
     assertEquals(stringify(FIXTURE), ASSERTS);
+  },
+});
+
+Deno.test({
+  name: "arrays can be stringified directly",
+  fn() {
+    const array = [1, 2, 3];
+
+    const expected = "- 1\n- 2\n- 3\n";
+
+    assertEquals(stringify(array), expected);
+  },
+});
+
+Deno.test({
+  name: "strings can be stringified directly",
+  fn() {
+    const string = "Hello world";
+
+    const expected = "Hello world\n";
+
+    assertEquals(stringify(string), expected);
+  },
+});
+
+Deno.test({
+  name: "numbers can be stringified directly",
+  fn() {
+    const number = 1.01;
+
+    const expected = "1.01\n";
+
+    assertEquals(stringify(number), expected);
+  },
+});
+
+Deno.test({
+  name: "booleans can be stringified directly",
+  fn() {
+    const boolean = true;
+
+    const expected = "true\n";
+
+    assertEquals(stringify(boolean), expected);
   },
 });
 

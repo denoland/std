@@ -25,8 +25,8 @@
  *   assertSpyCall,
  *   assertSpyCalls,
  *   spy,
- * } from "https://deno.land/std@$STD_VERSION/testing/mock.ts";
- * import { assertEquals } from "https://deno.land/std@$STD_VERSION/assert/assert_equals.ts";
+ * } from "@std/testing/mock";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * function multiply(a: number, b: number): number {
  *   return a * b;
@@ -71,8 +71,8 @@
  *   assertSpyCall,
  *   assertSpyCalls,
  *   spy,
- * } from "https://deno.land/std@$STD_VERSION/testing/mock.ts";
- * import { assertEquals } from "https://deno.land/std@$STD_VERSION/assert/assert_equals.ts";
+ * } from "@std/testing/mock";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * function multiply(a: number, b: number): number {
  *   return a * b;
@@ -124,8 +124,8 @@
  *   assertSpyCall,
  *   assertSpyCalls,
  *   spy,
- * } from "https://deno.land/std@$STD_VERSION/testing/mock.ts";
- * import { assertEquals } from "https://deno.land/std@$STD_VERSION/assert/assert_equals.ts";
+ * } from "@std/testing/mock";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * function multiply(a: number, b: number): number {
  *   return a * b;
@@ -186,8 +186,8 @@
  *   assertSpyCalls,
  *   returnsNext,
  *   stub,
- * } from "https://deno.land/std@$STD_VERSION/testing/mock.ts";
- * import { assertEquals } from "https://deno.land/std@$STD_VERSION/assert/assert_equals.ts";
+ * } from "@std/testing/mock";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * function randomInt(lowerBound: number, upperBound: number): number {
  *   return lowerBound + Math.floor(Math.random() * (upperBound - lowerBound));
@@ -237,8 +237,8 @@
  *   assertSpyCalls,
  *   returnsNext,
  *   stub,
- * } from "https://deno.land/std@$STD_VERSION/testing/mock.ts";
- * import { assertEquals } from "https://deno.land/std@$STD_VERSION/assert/assert_equals.ts";
+ * } from "@std/testing/mock";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * function randomInt(lowerBound: number, upperBound: number): number {
  *   return lowerBound + Math.floor(Math.random() * (upperBound - lowerBound));
@@ -290,8 +290,8 @@
  * import {
  *   assertSpyCalls,
  *   spy,
- * } from "https://deno.land/std@$STD_VERSION/testing/mock.ts";
- * import { FakeTime } from "https://deno.land/std@$STD_VERSION/testing/time.ts";
+ * } from "@std/testing/mock";
+ * import { FakeTime } from "@std/testing/time";
  *
  * function secondInterval(cb: () => void): number {
  *   return setInterval(cb, 1000);
@@ -321,10 +321,10 @@
  * @module
  */
 
-import { assertEquals } from "../assert/assert_equals.ts";
-import { assertIsError } from "../assert/assert_is_error.ts";
-import { assertRejects } from "../assert/assert_rejects.ts";
-import { AssertionError } from "../assert/assertion_error.ts";
+import { assertEquals } from "@std/assert/assert-equals";
+import { assertIsError } from "@std/assert/assert-is-error";
+import { assertRejects } from "@std/assert/assert-rejects";
+import { AssertionError } from "@std/assert/assertion-error";
 
 /** An error related to spying on a function or instance method. */
 export class MockError extends Error {
@@ -546,10 +546,10 @@ function methodSpy<
   }
 
   const original = self[property] as unknown as (
-      this: Self,
-      ...args: Args
-    ) => Return,
-    calls: SpyCall<Self, Args, Return>[] = [];
+    this: Self,
+    ...args: Args
+  ) => Return;
+  const calls: SpyCall<Self, Args, Return>[] = [];
   let restored = false;
   const spy = function (this: Self, ...args: Args): Return {
     const call: SpyCall<Self, Args, Return> = { args };
@@ -799,10 +799,10 @@ export function stub<
   const fake = func ?? (() => {}) as (this: Self, ...args: Args) => Return;
 
   const original = self[property] as unknown as (
-      this: Self,
-      ...args: Args
-    ) => Return,
-    calls: SpyCall<Self, Args, Return>[] = [];
+    this: Self,
+    ...args: Args
+  ) => Return;
+  const calls: SpyCall<Self, Args, Return>[] = [];
   let restored = false;
   const stub = function (this: Self, ...args: Args): Return {
     const call: SpyCall<Self, Args, Return> = { args };

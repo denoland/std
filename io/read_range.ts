@@ -1,13 +1,13 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import { copy as copyBytes } from "../bytes/copy.ts";
-import { assert } from "../assert/assert.ts";
+import { copy as copyBytes } from "@std/bytes/copy";
+import { assert } from "@std/assert/assert";
 import type { Reader, ReaderSync } from "./types.ts";
 
 const DEFAULT_BUFFER_SIZE = 32 * 1024;
 
 /**
- * @deprecated (will be removed after 1.0.0) Use the {@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API | Web Streams API} instead.
+ * @deprecated This will be removed in 1.0.0. Use the {@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API | Web Streams API} instead.
  */
 export interface ByteRange {
   /** The 0 based index of the start byte for a range. */
@@ -23,8 +23,8 @@ export interface ByteRange {
  * range.
  *
  * ```ts
- * import { assertEquals } from "https://deno.land/std@$STD_VERSION/assert/assert_equals.ts";
- * import { readRange } from "https://deno.land/std@$STD_VERSION/io/read_range.ts";
+ * import { assertEquals } from "@std/assert/assert-equals";
+ * import { readRange } from "@std/io/read-range";
  *
  * // Read the first 10 bytes of a file
  * const file = await Deno.open("example.txt", { read: true });
@@ -32,7 +32,7 @@ export interface ByteRange {
  * assertEquals(bytes.length, 10);
  * ```
  *
- * @deprecated (will be removed after 1.0.0) Use the {@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API | Web Streams API} instead.
+ * @deprecated This will be removed in 1.0.0. Use the {@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API | Web Streams API} instead.
  */
 export async function readRange(
   r: Reader & Deno.Seeker,
@@ -63,8 +63,8 @@ export async function readRange(
  * within that range.
  *
  * ```ts
- * import { assertEquals } from "https://deno.land/std@$STD_VERSION/assert/assert_equals.ts";
- * import { readRangeSync } from "https://deno.land/std@$STD_VERSION/io/read_range.ts";
+ * import { assertEquals } from "@std/assert/assert-equals";
+ * import { readRangeSync } from "@std/io/read-range";
  *
  * // Read the first 10 bytes of a file
  * const file = Deno.openSync("example.txt", { read: true });
@@ -72,7 +72,7 @@ export async function readRange(
  * assertEquals(bytes.length, 10);
  * ```
  *
- * @deprecated (will be removed after 1.0.0) Use the {@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API | Web Streams API} instead.
+ * @deprecated This will be removed in 1.0.0. Use the {@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API | Web Streams API} instead.
  */
 export function readRangeSync(
   r: ReaderSync & Deno.SeekerSync,

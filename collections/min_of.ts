@@ -8,8 +8,8 @@
  *
  * @example
  * ```ts
- * import { minOf } from "https://deno.land/std@$STD_VERSION/collections/min_of.ts";
- * import { assertEquals } from "https://deno.land/std@$STD_VERSION/assert/assert_equals.ts";
+ * import { minOf } from "@std/collections/min-of";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const inventory = [
  *   { name: "mustard", count: 2 },
@@ -32,8 +32,8 @@ export function minOf<T>(
  *
  * @example
  * ```ts
- * import { minOf } from "https://deno.land/std@$STD_VERSION/collections/min_of.ts";
- * import { assertEquals } from "https://deno.land/std@$STD_VERSION/assert/assert_equals.ts";
+ * import { minOf } from "@std/collections/min-of";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const inventory = [
  *   { name: "mustard", count: 2n },

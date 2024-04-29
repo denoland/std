@@ -9,8 +9,8 @@ import { readDelim } from "./read_delim.ts";
  *
  * @example
  * ```ts
- * import { readStringDelim } from "https://deno.land/std@$STD_VERSION/io/read_string_delim.ts";
- * import * as path from "https://deno.land/std@$STD_VERSION/path/mod.ts";
+ * import { readStringDelim } from "@std/io/read-string-delim";
+ * import * as path from "@std/path";
  *
  * const filename = path.join(Deno.cwd(), "std/io/README.md");
  * let fileReader = await Deno.open(filename);
@@ -20,7 +20,7 @@ import { readDelim } from "./read_delim.ts";
  * }
  * ```
  *
- * @deprecated (will be removed after 1.0.0) Use the {@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API | Web Streams API} instead.
+ * @deprecated This will be removed in 1.0.0. Use the {@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API | Web Streams API} instead.
  */
 export async function* readStringDelim(
   reader: Reader,

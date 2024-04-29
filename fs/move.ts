@@ -14,6 +14,7 @@ export class SubdirectoryMoveError extends Error {
     super(
       `Cannot move '${src}' to a subdirectory of itself, '${dest}'.`,
     );
+    this.name = this.constructor.name;
   }
 }
 
@@ -28,14 +29,32 @@ export interface MoveOptions {
 }
 
 /**
- * Moves a file or directory.
+ * Asynchronously moves a file or directory.
  *
- * @example
+ * @param src The source file or directory as a string or URL.
+ * @param dest The destination file or directory as a string or URL.
+ * @param options Options for the move operation.
+ * @returns A void promise that resolves once the operation completes.
+ *
+ * @example Basic usage
  * ```ts
- * import { move } from "https://deno.land/std@$STD_VERSION/fs/mod.ts";
+ * import { move } from "@std/fs/move";
  *
- * move("./foo", "./bar"); // returns a promise
+ * await move("./foo", "./bar");
  * ```
+ *
+ * This will move the file or directory at `./foo` to `./bar` without
+ * overwriting.
+ *
+ * @example Overwriting
+ * ```ts
+ * import { move } from "@std/fs/move";
+ *
+ * await move("./foo", "./bar", { overwrite: true });
+ * ```
+ *
+ * This will move the file or directory at `./foo` to `./bar`, overwriting
+ * `./bar` if it already exists.
  */
 export async function move(
   src: string | URL,
@@ -73,14 +92,32 @@ export async function move(
 }
 
 /**
- * Moves a file or directory synchronously.
+ * Synchronously moves a file or directory.
  *
- * @example
+ * @param src The source file or directory as a string or URL.
+ * @param dest The destination file or directory as a string or URL.
+ * @param options Options for the move operation.
+ * @returns A void value that returns once the operation completes.
+ *
+ * @example Basic usage
  * ```ts
- * import { moveSync } from "https://deno.land/std@$STD_VERSION/fs/mod.ts";
+ * import { moveSync } from "@std/fs/move";
  *
- * moveSync("./foo", "./bar"); // void
+ * moveSync("./foo", "./bar");
  * ```
+ *
+ * This will move the file or directory at `./foo` to `./bar` without
+ * overwriting.
+ *
+ * @example Overwriting
+ * ```ts
+ * import { moveSync } from "@std/fs/move";
+ *
+ * moveSync("./foo", "./bar", { overwrite: true });
+ * ```
+ *
+ * This will move the file or directory at `./foo` to `./bar`, overwriting
+ * `./bar` if it already exists.
  */
 export function moveSync(
   src: string | URL,

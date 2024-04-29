@@ -1,6 +1,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
 import { levenshteinDistance } from "./levenshtein_distance.ts";
-import { assert } from "../assert/assert.ts";
+import { assert } from "@std/assert/assert";
 
 // NOTE: this metric may change in future versions (e.g. better than levenshteinDistance)
 const getWordDistance = levenshteinDistance;
@@ -10,7 +11,7 @@ const getWordDistance = levenshteinDistance;
  *
  * @example
  * ```ts
- * import { closestString } from "https://deno.land/std@$STD_VERSION/text/closest_string.ts";
+ * import { closestString } from "@std/text/closest-string";
  *
  * const possibleWords: string[] = ["length", "size", "blah", "help"];
  *

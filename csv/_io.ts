@@ -3,7 +3,7 @@
 // Copyright 2011 The Go Authors. All rights reserved. BSD license.
 // https://github.com/golang/go/blob/master/LICENSE
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-import { assert } from "../assert/assert.ts";
+import { assert } from "@std/assert/assert";
 
 /** Options for {@linkcode parseRecord}. */
 export interface ReadOptions {

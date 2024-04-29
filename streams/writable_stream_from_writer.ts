@@ -1,13 +1,13 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-import type { Writer } from "../io/types.ts";
-import { toWritableStream } from "../io/to_writable_stream.ts";
+import type { Writer } from "@std/io/types";
+import { toWritableStream } from "@std/io/to-writable-stream";
 
 /**
  * Options for {@linkcode writableStreamFromWriter}.
  *
- * @deprecated (will be removed after 1.0.0) Use {@linkcode toWritableStream} instead.
+ * @deprecated This will be removed in 1.0.0. Use {@linkcode toWritableStream} instead.
  */
 export interface WritableStreamFromWriterOptions {
   /**
@@ -22,7 +22,7 @@ export interface WritableStreamFromWriterOptions {
 /**
  * Create a {@linkcode WritableStream} from a {@linkcode Writer}.
  *
- * @deprecated (will be removed after 1.0.0) Use {@linkcode toWritableStream} instead.
+ * @deprecated This will be removed in 1.0.0. Use {@linkcode toWritableStream} instead.
  */
 export function writableStreamFromWriter(
   writer: Writer,

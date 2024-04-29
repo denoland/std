@@ -32,7 +32,7 @@ const allFlags = GPUTextureUsage.COPY_SRC | GPUTextureUsage.COPY_DST |
  *
  * @example
  * ```ts
- * import { describeTextureFormat } from "https://deno.land/std@$STD_VERSION/webgpu/describe_texture_format.ts";
+ * import { describeTextureFormat } from "@std/webgpu/describe-texture-format";
  *
  * describeTextureFormat("rgba8unorm-srgb");
  * ```

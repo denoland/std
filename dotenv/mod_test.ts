@@ -6,14 +6,14 @@ import {
   assertRejects,
   assertStrictEquals,
   assertThrows,
-} from "../assert/mod.ts";
+} from "@std/assert";
 import {
   load,
   type LoadOptions,
   loadSync,
   MissingEnvVarsError,
 } from "./mod.ts";
-import * as path from "../path/mod.ts";
+import * as path from "@std/path";
 
 const moduleDir = path.dirname(path.fromFileUrl(import.meta.url));
 const testdataDir = path.resolve(moduleDir, "testdata");

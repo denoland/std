@@ -1,10 +1,10 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import { basename } from "../path/basename.ts";
-import { join } from "../path/join.ts";
-import { resolve } from "../path/resolve.ts";
+import { basename } from "@std/path/basename";
+import { join } from "@std/path/join";
+import { resolve } from "@std/path/resolve";
 import { ensureDir, ensureDirSync } from "./ensure_dir.ts";
-import { assert } from "../assert/assert.ts";
+import { assert } from "@std/assert/assert";
 import { getFileInfoType } from "./_get_file_info_type.ts";
 import { toPathString } from "./_to_path_string.ts";
 import { isSubdir } from "./_is_subdir.ts";
@@ -14,14 +14,15 @@ const isWindows = Deno.build.os === "windows";
 /** Options for {@linkcode copy} and {@linkcode copySync}. */
 export interface CopyOptions {
   /**
-   * overwrite existing file or directory.
+   * Whether to overwrite existing file or directory.
+   *
    * @default {false}
    */
   overwrite?: boolean;
   /**
-   * When `true`, will set last modification and access times to the ones of the
-   * original source files.
-   * When `false`, timestamp behavior is OS-dependent.
+   * When `true`, will set last modification and access times to the ones of
+   * the original source files. When `false`, timestamp behavior is
+   * OS-dependent.
    *
    * @default {false}
    */
@@ -249,21 +250,49 @@ function copyDirSync(
 }
 
 /**
- * Copy a file or directory. The directory can have contents. Like `cp -r`.
+ * Asynchronously copy a file or directory. The directory can have contents.
+ * Like `cp -r`.
+ *
+ * If `src` is a directory it will copy everything inside of this directory,
+ * not the entire directory itself. If `src` is a file, `dest` cannot be a
+ * directory.
+ *
  * Requires the `--allow-read` and `--allow-write` flag.
  *
- * @example
+ * @param src The source file/directory path as a string or URL.
+ * @param dest The destination file/directory path as a string or URL.
+ * @param options Options for copying.
+ * @returns A promise that resolves once the copy operation completes.
+ *
+ * @example Basic usage
  * ```ts
- * import { copy } from "https://deno.land/std@$STD_VERSION/fs/copy.ts";
- * copy("./foo", "./bar"); // returns a promise
+ * import { copy } from "@std/fs/copy";
+ *
+ * await copy("./foo", "./bar");
  * ```
  *
- * @param src the file/directory path.
- *            Note that if `src` is a directory it will copy everything inside
- *            of this directory, not the entire directory itself
- * @param dest the destination path. Note that if `src` is a file, `dest` cannot
- *             be a directory
- * @param options
+ * This will copy the file or directory at `./foo` to `./bar` without
+ * overwriting.
+ *
+ * @example Overwriting files/directories
+ * ```ts
+ * import { copy } from "@std/fs/copy";
+ *
+ * await copy("./foo", "./bar", { overwrite: true });
+ * ```
+ *
+ * This will copy the file or directory at `./foo` to `./bar` and overwrite
+ * any existing files or directories.
+ *
+ * @example Preserving timestamps
+ * ```ts
+ * import { copy } from "@std/fs/copy";
+ *
+ * await copy("./foo", "./bar", { preserveTimestamps: true });
+ * ```
+ *
+ * This will copy the file or directory at `./foo` to `./bar` and set the
+ * last modification and access times to the ones of the original source files.
  */
 export async function copy(
   src: string | URL,
@@ -295,20 +324,49 @@ export async function copy(
 }
 
 /**
- * Copy a file or directory. The directory can have contents. Like `cp -r`.
+ * Synchronously copy a file or directory. The directory can have contents.
+ * Like `cp -r`.
+ *
+ * If `src` is a directory it will copy everything inside of this directory,
+ * not the entire directory itself. If `src` is a file, `dest` cannot be a
+ * directory.
+ *
  * Requires the `--allow-read` and `--allow-write` flag.
  *
- * @example
+ * @param src The source file/directory path as a string or URL.
+ * @param dest The destination file/directory path as a string or URL.
+ * @param options Options for copying.
+ * @returns A void value that returns once the copy operation completes.
+ *
+ * @example Basic usage
  * ```ts
- * import { copySync } from "https://deno.land/std@$STD_VERSION/fs/copy.ts";
- * copySync("./foo", "./bar"); // void
+ * import { copySync } from "@std/fs/copy";
+ *
+ * copySync("./foo", "./bar");
  * ```
- * @param src the file/directory path.
- *            Note that if `src` is a directory it will copy everything inside
- *            of this directory, not the entire directory itself
- * @param dest the destination path. Note that if `src` is a file, `dest` cannot
- *             be a directory
- * @param options
+ *
+ * This will copy the file or directory at `./foo` to `./bar` without
+ * overwriting.
+ *
+ * @example Overwriting files/directories
+ * ```ts
+ * import { copySync } from "@std/fs/copy";
+ *
+ * copySync("./foo", "./bar", { overwrite: true });
+ * ```
+ *
+ * This will copy the file or directory at `./foo` to `./bar` and overwrite
+ * any existing files or directories.
+ *
+ * @example Preserving timestamps
+ * ```ts
+ * import { copySync } from "@std/fs/copy";
+ *
+ * copySync("./foo", "./bar", { preserveTimestamps: true });
+ * ```
+ *
+ * This will copy the file or directory at `./foo` to `./bar` and set the
+ * last modification and access times to the ones of the original source files.
  */
 export function copySync(
   src: string | URL,

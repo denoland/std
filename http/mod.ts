@@ -8,7 +8,7 @@
  * A small program for serving local files over HTTP.
  *
  * ```sh
- * deno run --allow-net --allow-read https://deno.land/std/http/file_server.ts
+ * deno run --allow-net --allow-read jsr:@std/http/file-server
  * > HTTP server listening on http://localhost:4507/
  * ```
  *
@@ -50,7 +50,7 @@
  * in an http request would look like this:
  *
  * ```ts
- * import { UserAgent } from "https://deno.land/std@$STD_VERSION/http/user_agent.ts";
+ * import { UserAgent } from "@std/http/user-agent";
  *
  * Deno.serve((req) => {
  *   const userAgent = new UserAgent(req.headers.get("user-agent") ?? "");

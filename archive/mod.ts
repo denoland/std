@@ -34,17 +34,33 @@
  * archive file, while untar is the inverse utility to extract the files from an
  * archive.  Files are not compressed, only collected into the archive.
  *
- * ### File format and limitations
+ * ```ts
+ * import { Tar } from "@std/archive/tar";
+ * import { Buffer } from "@std/io/buffer";
+ * import { copy } from "@std/io/copy";
  *
- * The ustar file format is used for creating the archive file.
- * While this format is compatible with most tar readers,
- * the format has several limitations, including:
- * * Files must be smaller than 8GiB
- * * Filenames (including path) must be shorter than 256 characters
- * * Filenames (including path) cannot contain non-ASCII characters
- * * Sparse files are not supported
- * In addition to the ustar format, untar may also read from the pax format.
- * However, additional features, such as longer filenames, may be ignored.
+ * const tar = new Tar();
+ *
+ * // Now that we've created our tar, let's add some files to it:
+ *
+ * const content = new TextEncoder().encode("Some arbitrary content");
+ * await tar.append("deno.txt", {
+ *   reader: new Buffer(content),
+ *   contentSize: content.byteLength,
+ * });
+ *
+ * // This file is sourced from the filesystem (and renamed in the archive)
+ * await tar.append("filename_in_archive.txt", {
+ *   filePath: "./filename_on_filesystem.txt",
+ * });
+ *
+ * // Now let's write the tar (with it's two files) to the filesystem
+ * // use tar.getReader() to read the contents.
+ *
+ * const writer = await Deno.open("./out.tar", { write: true, create: true });
+ * await copy(tar.getReader(), writer);
+ * writer.close();
+ * ```
  *
  * @module
  */

@@ -2,13 +2,13 @@
 // This code has been ported almost directly from Go's src/bytes/buffer_test.go
 // Copyright 2009 The Go Authors. All rights reserved. BSD license.
 // https://github.com/golang/go/blob/master/LICENSE
-import { assert, assertEquals, assertRejects, fail } from "../assert/mod.ts";
+import { assert, assertEquals, assertRejects, fail } from "@std/assert";
 import { BufferFullError, BufReader, PartialReadError } from "./buf_reader.ts";
 import { StringReader } from "./string_reader.ts";
 import { bufsizes, MIN_READ_BUFFER_SIZE } from "./_test_common.ts";
 import { Buffer } from "./buffer.ts";
 import type { Reader } from "./types.ts";
-import { copy } from "../bytes/copy.ts";
+import { copy } from "@std/bytes/copy";
 
 /** OneByteReader returns a Reader that implements
  * each non-empty Read by reading one byte from r.
@@ -104,14 +104,14 @@ const bufreaders: NamedBufReader[] = [
   // { name: "lines", fn: readLines },
 ];
 
-Deno.test("bufioReaderSimple", async function () {
+Deno.test("BufReader.readBytes() reads string from buffer", async function () {
   const data = "hello world";
   const b = new BufReader(new StringReader(data));
   const s = await readBytes(b);
   assertEquals(s, data);
 });
 
-Deno.test("bufioBufReader", async function () {
+Deno.test("BufReader with different readers", async function () {
   const texts = new Array<string>(31);
   let str = "";
   let all = "";
@@ -138,7 +138,7 @@ Deno.test("bufioBufReader", async function () {
   }
 });
 
-Deno.test("bufioBufferFull", async function () {
+Deno.test("BufReader.readSlice() throws when reading with full buffer", async function () {
   const longString =
     "And now, hello, world! It is the time for all good men to come to the" +
     " aid of their party";
@@ -160,7 +160,7 @@ Deno.test("bufioBufferFull", async function () {
   assertEquals(actual, "world!");
 });
 
-Deno.test("bufioReadString", async function () {
+Deno.test("BufReader.readString()", async function () {
   const string = "And now, hello world!";
   const buf = new BufReader(new StringReader(string), MIN_READ_BUFFER_SIZE);
 
@@ -185,7 +185,7 @@ Deno.test("bufioReadString", async function () {
   }
 });
 
-Deno.test("bufReaderReadFull", async function () {
+Deno.test("BufReader.readFull() throws if array length is too big", async function () {
   const enc = new TextEncoder();
   const dec = new TextDecoder();
   const text = "Hello World";
@@ -212,7 +212,7 @@ Deno.test("bufReaderReadFull", async function () {
   }
 });
 
-Deno.test("bufioPeek", async function () {
+Deno.test("BufReader.peek()", async function () {
   const decoder = new TextDecoder();
   const p = new Uint8Array(10);
   // string is 16 (minReadBufferSize) long.
@@ -357,12 +357,12 @@ async function testReadLine(input: Uint8Array) {
   }
 }
 
-Deno.test("bufioReadLine", async function () {
+Deno.test("BufReader.readLine()", async function () {
   await testReadLine(testInput);
   await testReadLine(testInputrn);
 });
 
-Deno.test("bufioReadLineBadResource", async () => {
+Deno.test("BufReader.readLine() throws with BadResource", async () => {
   const file = await Deno.open("README.md");
   const bufReader = new BufReader(file);
   file.close();
@@ -371,7 +371,7 @@ Deno.test("bufioReadLineBadResource", async () => {
   }, Deno.errors.BadResource);
 });
 
-Deno.test("bufioReadLineBufferFullError", async () => {
+Deno.test("BufReader.readLine() fills a full buffer", async () => {
   const input = "@".repeat(5000) + "\n";
   const bufReader = new BufReader(new StringReader(input));
   const r = await bufReader.readLine();

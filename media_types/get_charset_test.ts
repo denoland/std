@@ -1,12 +1,14 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import { assertEquals } from "../assert/mod.ts";
+import { assertEquals } from "@std/assert";
 import { getCharset } from "./mod.ts";
 
 Deno.test({
   name: "getCharset()",
   fn() {
     const fixtures = [
+      [";", undefined],
+      ["text/plain; charset", undefined],
       ["text/plain", "UTF-8"],
       ["text/html", "UTF-8"],
       ["application/foo", undefined],
