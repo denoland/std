@@ -5,5 +5,10 @@
     ".": "./mod.ts",
     "./tar": "./tar.ts",
     "./untar": "./untar.ts"
+  },
+  "publish": {
+    "exclude": [
+      "./testdata"
+    ]
   }
 }

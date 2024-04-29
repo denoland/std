@@ -7,5 +7,10 @@
     "./csv-stringify-stream": "./csv_stringify_stream.ts",
     "./parse": "./parse.ts",
     "./stringify": "./stringify.ts"
+  },
+  "publish": {
+    "exclude": [
+      "./testdata"
+    ]
   }
 }

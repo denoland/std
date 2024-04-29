@@ -7,5 +7,10 @@
     "./concatenated-json-parse-stream": "./concatenated_json_parse_stream.ts",
     "./json-parse-stream": "./json_parse_stream.ts",
     "./json-stringify-stream": "./json_stringify_stream.ts"
+  },
+  "publish": {
+    "exclude": [
+      "./testdata"
+    ]
   }
 }

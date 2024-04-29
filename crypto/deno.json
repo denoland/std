@@ -9,5 +9,10 @@
   },
   "exclude": [
     "_wasm/target"
-  ]
+  ],
+  "publish": {
+    "exclude": [
+      "./testdata"
+    ]
+  }
 }

@@ -9,5 +9,10 @@
     "./test": "./test.ts",
     "./toml": "./toml.ts",
     "./yaml": "./yaml.ts"
+  },
+  "publish": {
+    "exclude": [
+      "./testdata"
+    ]
   }
 }

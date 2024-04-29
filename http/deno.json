@@ -12,5 +12,10 @@
     "./status": "./status.ts",
     "./unstable-signed-cookie": "./unstable_signed_cookie.ts",
     "./user-agent": "./user_agent.ts"
+  },
+  "publish": {
+    "exclude": [
+      "./testdata"
+    ]
   }
 }

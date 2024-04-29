@@ -14,5 +14,10 @@
     "./expand-glob": "./expand_glob.ts",
     "./move": "./move.ts",
     "./walk": "./walk.ts"
+  },
+  "publish": {
+    "exclude": [
+      "./testdata"
+    ]
   }
 }

@@ -5,5 +5,10 @@
     ".": "./mod.ts",
     "./parse": "./parse.ts",
     "./stringify": "./stringify.ts"
+  },
+  "publish": {
+    "exclude": [
+      "./testdata"
+    ]
   }
 }

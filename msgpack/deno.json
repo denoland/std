@@ -5,5 +5,10 @@
     ".": "./mod.ts",
     "./decode": "./decode.ts",
     "./encode": "./encode.ts"
+  },
+  "publish": {
+    "exclude": [
+      "./testdata"
+    ]
   }
 }

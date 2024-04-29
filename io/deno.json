@@ -27,5 +27,10 @@
     "./to-writable-stream": "./to_writable_stream.ts",
     "./types": "./types.ts",
     "./write-all": "./write_all.ts"
+  },
+  "publish": {
+    "exclude": [
+      "./testdata"
+    ]
   }
 }
