@@ -5,6 +5,7 @@ import {
   type ModuleGraphJson,
   type ModuleJson,
 } from "@deno/graph";
+import { resolveWorkspaceSpecifiers } from "./utils.ts";
 
 /**
  * Checks for circular dependencies in the std packages.
@@ -177,15 +178,7 @@ async function check(
   for (const path of paths) {
     const entrypoint = new URL(`../${submod}/${path}`, import.meta.url).href;
     const graph = await createGraph(entrypoint, {
-      resolve(specifier, referrer) {
-        if (specifier.startsWith("../") || specifier.startsWith("./")) {
-          return new URL(specifier, referrer).href;
-        } else if (specifier.startsWith("@std/")) {
-          return new URL(specifier.replace("@std", ".."), import.meta.url).href;
-        } else {
-          return new URL(specifier).href;
-        }
-      },
+      resolve: resolveWorkspaceSpecifiers,
     });
 
     for (
