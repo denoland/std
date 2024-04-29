@@ -7,8 +7,6 @@ import {
 } from "@deno/graph";
 
 /**
- * TODO(kt3k): This script stopped working after JSR migration. Enable this script.
- *
  * Checks for circular dependencies in the std packages.
  *
  * Usage: deno run -A _tools/check_circular_package_dependencies.ts
@@ -178,7 +176,17 @@ async function check(
   const deps = new Set<string>();
   for (const path of paths) {
     const entrypoint = new URL(`../${submod}/${path}`, import.meta.url).href;
-    const graph = await createGraph(entrypoint);
+    const graph = await createGraph(entrypoint, {
+      resolve(specifier, referrer) {
+        if (specifier.startsWith("../") || specifier.startsWith("./")) {
+          return new URL(specifier, referrer).href;
+        } else if (specifier.startsWith("@std/")) {
+          return new URL(specifier.replace("@std", ".."), import.meta.url).href;
+        } else {
+          return new URL(specifier).href;
+        }
+      },
+    });
 
     for (
       const dep of new Set(getPackageDepsFromSpecifier(graph, entrypoint))
