@@ -6,7 +6,7 @@
     "noUncheckedIndexedAccess": true
   },
   "imports": {
-    "@deno/graph": "jsr:@deno/graph@^0.70",
+    "@deno/graph": "jsr:@deno/graph@^0.74",
     "deno_doc/": "https://deno.land/x/deno_doc@0.123.1/",
     "npm:/typescript": "npm:typescript@5.4.4",
     "automation/": "https://raw.githubusercontent.com/denoland/automation/0.10.0/"
@@ -21,7 +21,7 @@
     "lint:mod-exports": "deno run --allow-env --allow-read ./_tools/check_mod_exports.ts",
     "lint:tools-types": "deno check _tools/*.ts",
     "lint:docs": "deno run -A _tools/check_docs.ts && deno doc --lint bytes/mod.ts datetime/mod.ts url/mod.ts",
-    "lint": "deno lint && deno task fmt:licence-headers --check && deno task lint:tools-types && deno task lint:mod-exports && deno task lint:docs",
+    "lint": "deno lint && deno task fmt:licence-headers --check && deno task lint:circular && deno task lint:tools-types && deno task lint:mod-exports && deno task lint:docs",
     "typos": "typos -c ./.github/workflows/typos.toml",
     "build:crypto": "deno task --cwd crypto/_wasm wasmbuild",
     "wasmbuild": "deno run -A jsr:@deno/wasmbuild@0.17.1 --js-ext mjs --sync",
