@@ -6,58 +6,14 @@
 
 High-quality APIs for [Deno](https://deno.com/) and the web. Use fearlessly.
 
-> **NOTE:** The standard library is also available on JSR - check out the
-> [`@std` scope on JSR here](https://jsr.io/@std).
-
-## Get Started
-
-```ts
-import { copy } from "@std/fs/copy";
-
-await copy("./foo", "./bar");
-```
-
-See [here](#recommended-usage) for recommended usage patterns.
-
-## Recommended Usage
-
-1. Include the version of the library in the import specifier.
-
-   Good:
-   ```ts
-   import { copy } from "jsr:@std/fs@0.224.0/copy";
-   ```
-
-1. Only import modules that you require.
-
-   Bad (when using only one function):
-   ```ts
-   import * as fs from "@std/fs";
-   ```
-
-   Good (when using only one function):
-   ```ts
-   import { copy } from "@std/fs/copy";
-   ```
-
-   Good (when using multiple functions):
-   ```ts
-   import * as fs from "@std/fs";
-   ```
+> Note: Newer versions of the Standard Library are now hosted on
+> [JSR](https://jsr.io/@std). Older versions up till 0.224.0 are still available
+> at [deno.land/std](https://deno.land/std).
 
 ## Packages
 
-For a package to reach v1 (aka stable) status, it must meet the following
-requirements:
-
-1. Approved by four members of the internal team. There must be consensus that
-   the API design is satisfactory and unlikely to change in the future.
-1. 100% documented, passing `deno doc --lint` checks and adhering to the
-   [documentation guidelines](https://github.com/denoland/deno_std/blob/main/.github/CONTRIBUTING.md#documentation).
-1. Maximum possible test coverage
-1. No open issues or pull requests that might lead to breaking changes. For
-   example, issues that suggest new non-breaking features are fine to exist at
-   stabilization.
+The following list contains links to the Standard Library's packages and
+documentation:
 
 | Package                                                | Status   | Latest version                                                                            |
 | ------------------------------------------------------ | -------- | ----------------------------------------------------------------------------------------- |
@@ -102,6 +58,20 @@ requirements:
 
 > Note: Settled status means a package is unlikely to have breaking changes, but
 > has not yet achieved v1 status.
+
+## Stabilization
+
+For a package to reach v1 (aka stable) status, it must meet the following
+requirements:
+
+1. Approved by four members of the internal team. There must be consensus that
+   the API design is satisfactory and unlikely to change in the future.
+1. 100% documented, passing `deno doc --lint` checks and adhering to the
+   [documentation guidelines](https://github.com/denoland/deno_std/blob/main/.github/CONTRIBUTING.md#documentation).
+1. Maximum possible test coverage
+1. No open issues or pull requests that might lead to breaking changes. For
+   example, issues that suggest new non-breaking features are fine to exist at
+   stabilization.
 
 ## Architecture
 
