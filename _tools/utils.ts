@@ -1,15 +1,13 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import { join } from "../path/join.ts";
-
 const workspaces = JSON.parse(await Deno.readTextFile("deno.json"))
   .workspaces as string[];
 // deno-lint-ignore no-explicit-any
 const denoConfig = {} as Record<string, any>;
 for (const workspace of workspaces) {
-  const config = JSON.parse(
-    await Deno.readTextFile(join(workspace, "deno.json")),
-  );
+  const { default: config } = await import("../" + workspace + "/deno.json", {
+    with: { type: "json" },
+  });
   denoConfig[config.name.replace("@std/", "")] = config;
 }
 
