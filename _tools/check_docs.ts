@@ -9,12 +9,8 @@
  *
  * TODO(iuioiua): Add support for classes and methods.
  */
-import { doc } from "deno_doc/mod.ts";
-import type {
-  DocNodeBase,
-  DocNodeFunction,
-  JsDocTag,
-} from "deno_doc/types.d.ts";
+import { doc } from "@deno/doc";
+import type { DocNodeBase, DocNodeFunction, JsDocTag } from "@deno/doc/types";
 
 const ENTRY_POINTS = [
   "../bytes/mod.ts",

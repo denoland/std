@@ -10,9 +10,10 @@
  * ```
  */
 
-import { doc } from "deno_doc/mod.ts";
+import { doc } from "@deno/doc";
 import { walk } from "../fs/walk.ts";
 import { toFileUrl } from "../path/to_file_url.ts";
+import { join } from "../path/join.ts";
 
 const ROOT = new URL("../", import.meta.url);
 
@@ -28,9 +29,41 @@ const iter = walk(ROOT, {
   ],
 });
 
+const workspaces = JSON.parse(await Deno.readTextFile("deno.json"))
+  .workspaces as string[];
+// deno-lint-ignore no-explicit-any
+const denoConfig = {} as Record<string, any>;
+for (const workspace of workspaces) {
+  const config = JSON.parse(
+    await Deno.readTextFile(join(workspace, "deno.json")),
+  );
+  denoConfig[config.name.replace("@std/", "")] = config;
+}
+
 for await (const entry of iter) {
   const url = toFileUrl(entry.path);
-  const docs = await doc(url.href);
+  const docs = await doc(url.href, {
+    resolve(specifier, referrer) {
+      if (specifier.startsWith("../") || specifier.startsWith("./")) {
+        return new URL(specifier, referrer).href;
+      } else if (specifier.startsWith("@std/")) {
+        let [_std, pkg, exp] = specifier.split("/");
+        if (exp === undefined) {
+          exp = ".";
+        } else {
+          exp = "./" + exp;
+        }
+        const pkgPath = "../" + pkg!.replaceAll("-", "_") + "/";
+        const config = denoConfig[pkg!];
+        if (typeof config.exports === "string") {
+          return new URL(pkgPath + config.exports, import.meta.url).href;
+        }
+        return new URL(pkgPath + config.exports[exp], import.meta.url).href;
+      } else {
+        return new URL(specifier).href;
+      }
+    },
+  });
   for (const document of docs) {
     const tags = document.jsDoc?.tags;
     if (!tags) continue;
