@@ -4,15 +4,22 @@
 /**
  * Creates a new object by excluding the specified keys from the provided object.
  *
- * @example
+ * @template T The type of the object.
+ * @template K The type of the keys to omit.
+ *
+ * @param obj The object to omit keys from.
+ * @param keys The keys to omit from the object.
+ *
+ * @returns A new object with the specified keys omitted.
+ *
+ * @example Omit keys
  * ```ts
  * import { omit } from "@std/collections/omit";
- * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const obj = { a: 5, b: 6, c: 7, d: 8 };
- * const omitted = omit(obj, ["a", "c"]);
  *
- * assertEquals(omitted, { b: 6, d: 8 });
+ * omit(obj, ["a", "c"]);
+ * // { b: 6, d: 8 }
  * ```
  */
 export function omit<T extends object, K extends keyof T>(

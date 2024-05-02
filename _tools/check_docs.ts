@@ -15,6 +15,7 @@ import type { DocNodeBase, DocNodeFunction, JsDocTag } from "@deno/doc/types";
 const ENTRY_POINTS = [
   "../bytes/mod.ts",
   "../datetime/mod.ts",
+  "../collections/mod.ts",
 ] as const;
 
 class ValidationError extends Error {
@@ -74,6 +75,27 @@ function assertHasParamTag(
   );
 }
 
+function assertHasTemplateTags(
+  tags: JsDocTag[],
+  template: string,
+  document: DocNodeBase,
+) {
+  const tag = tags.find((tag) =>
+    tag.kind === "template" && tag.name === template
+  );
+  assert(
+    tag !== undefined,
+    `Symbol must have a @template tag for ${template}`,
+    document,
+  );
+  assert(
+    // @ts-ignore doc is defined
+    tag.doc !== undefined,
+    `@template tag for ${template} must have a description`,
+    document,
+  );
+}
+
 function assertFunctionDocs(document: DocNodeFunction) {
   assert(
     document.jsDoc !== undefined,
@@ -90,6 +112,9 @@ function assertFunctionDocs(document: DocNodeFunction) {
       // @ts-ignore Trust me
       assertHasParamTag(tags, param.left.name, document);
     }
+  }
+  for (const typeParam of document.functionDef.typeParams) {
+    assertHasTemplateTags(tags, typeParam.name, document);
   }
   assertHasTag(tags, "return", document);
   assertHasTag(tags, "example", document);

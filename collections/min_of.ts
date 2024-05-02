@@ -6,19 +6,25 @@
  * returns the min value of all elements. If an empty array is provided the
  * function will return undefined.
  *
- * @example
+ * @template T The type of the elements in the array.
+ *
+ * @param array The array to find the minimum element in.
+ * @param selector The function to get the value to compare from each element.
+ *
+ * @returns The first element that is the smallest value of the given function
+ * or undefined if there are no elements.
+ *
+ * @example Calculate min count (`number`) of inventory
  * ```ts
  * import { minOf } from "@std/collections/min-of";
- * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const inventory = [
  *   { name: "mustard", count: 2 },
  *   { name: "soy", count: 4 },
  *   { name: "tomato", count: 32 },
  * ];
- * const minCount = minOf(inventory, (i) => i.count);
  *
- * assertEquals(minCount, 2);
+ * minOf(inventory, (item) => item.count); // 2
  * ```
  */
 export function minOf<T>(
@@ -30,19 +36,25 @@ export function minOf<T>(
  * returns the min value of all elements. If an empty array is provided the
  * function will return undefined.
  *
- * @example
+ * @template T The type of the elements in the array.
+ *
+ * @param array The array to find the minimum element in.
+ * @param selector The function to get the value to compare from each element.
+ *
+ * @returns The first element that is the smallest value of the given function
+ * or undefined if there are no elements.
+ *
+ * @example Calculate min count (`bigint`) of inventory
  * ```ts
  * import { minOf } from "@std/collections/min-of";
- * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const inventory = [
  *   { name: "mustard", count: 2n },
  *   { name: "soy", count: 4n },
  *   { name: "tomato", count: 32n },
  * ];
- * const minCount = minOf(inventory, (i) => i.count);
  *
- * assertEquals(minCount, 2n);
+ * minOf(inventory, (item) => i.count); // 2n
  * ```
  */
 export function minOf<T>(

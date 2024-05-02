@@ -3,12 +3,19 @@
 
 /**
  * Returns the first element that is the smallest value of the given function or
- * undefined if there are no elements
+ * undefined if there are no elements.
  *
- * @example
+ * @template T The type of the elements in the array.
+ *
+ * @param array The array to find the minimum element in.
+ * @param selector The function to get the value to compare from each element.
+ *
+ * @returns The first element that is the smallest value of the given function
+ * or undefined if there are no elements.
+ *
+ * @example Calculate youngest person (`number`)
  * ```ts
  * import { minBy } from "@std/collections/min-by";
- * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const people = [
  *   { name: "Anna", age: 34 },
@@ -16,9 +23,8 @@
  *   { name: "John", age: 23 },
  * ];
  *
- * const personWithMinAge = minBy(people, (i) => i.age);
- *
- * assertEquals(personWithMinAge, { name: "John", age: 23 });
+ * minBy(people, (person) => person.age);
+ * // { name: "John", age: 23 }
  * ```
  */
 export function minBy<T>(
@@ -27,9 +33,17 @@ export function minBy<T>(
 ): T | undefined;
 /**
  * Returns the first element that is the smallest value of the given function or
- * undefined if there are no elements
+ * undefined if there are no elements.
  *
- * @example
+ * @template T The type of the elements in the array.
+ *
+ * @param array The array to find the minimum element in.
+ * @param selector The function to get the value to compare from each element.
+ *
+ * @returns The first element that is the smallest value of the given function
+ * or undefined if there are no elements.
+ *
+ * @example Calculate shortest name
  * ```ts
  * import { minBy } from "@std/collections/min-by";
  *
@@ -39,7 +53,8 @@ export function minBy<T>(
  *   { name: "John" },
  * ];
  *
- * const personWithMinName = minBy(people, (i) => i.name);
+ * minBy(people, (person) => person.name);
+ * // { name: "Kim" }
  * ```
  */
 export function minBy<T>(
@@ -48,12 +63,19 @@ export function minBy<T>(
 ): T | undefined;
 /**
  * Returns the first element that is the smallest value of the given function or
- * undefined if there are no elements
+ * undefined if there are no elements.
  *
- * @example
+ * @template T The type of the elements in the array.
+ *
+ * @param array The array to find the minimum element in.
+ * @param selector The function to get the value to compare from each element.
+ *
+ * @returns The first element that is the smallest value of the given function
+ * or undefined if there are no elements.
+ *
+ * @example Calculate youngest person (`bigint`)
  * ```ts
  * import { minBy } from "@std/collections/min-by";
- * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const people = [
  *   { name: "Anna", age: 34n },
@@ -61,9 +83,8 @@ export function minBy<T>(
  *   { name: "John", age: 23n },
  * ];
  *
- * const personWithMinAge = minBy(people, (i) => i.age);
- *
- * assertEquals(personWithMinAge, { name: "John", age: 23n });
+ * minBy(people, (person) => person.age);
+ * // { name: "John", age: 23n }
  * ```
  */
 export function minBy<T>(
@@ -72,9 +93,17 @@ export function minBy<T>(
 ): T | undefined;
 /**
  * Returns the first element that is the smallest value of the given function or
- * undefined if there are no elements
+ * undefined if there are no elements.
  *
- * @example
+ * @template T The type of the elements in the array.
+ *
+ * @param array The array to find the minimum element in.
+ * @param selector The function to get the value to compare from each element.
+ *
+ * @returns The first element that is the smallest value of the given function
+ * or undefined if there are no elements.
+ *
+ * @example Calculate earliest start date
  * ```ts
  * import { minBy } from "@std/collections/min-by";
  *
@@ -84,7 +113,8 @@ export function minBy<T>(
  *   { name: "John", startedAt: new Date("2019-01-01") },
  * ];
  *
- * const personWithMinStartedAt = minBy(people, (i) => i.startedAt);
+ * minBy(people, (person) => person.startedAt);
+ * // { name: "John", startedAt: new Date("2019-01-01") }
  * ```
  */
 export function minBy<T>(
