@@ -5,7 +5,7 @@
  * Concatenate an array of byte slices into a single slice.
  *
  * @param buffers Array of byte slices to concatenate.
- * @returns Hello
+ * @returns A new byte slice containing all the input slices concatenated.
  *
  * @example Basic usage
  * ```ts
