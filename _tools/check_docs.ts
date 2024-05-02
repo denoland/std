@@ -10,12 +10,19 @@
  * TODO(iuioiua): Add support for classes and methods.
  */
 import { doc } from "@deno/doc";
-import type { DocNodeBase, DocNodeFunction, JsDocTag } from "@deno/doc/types";
+import type {
+  DocNodeBase,
+  DocNodeFunction,
+  JsDocTag,
+  JsDocTagDocRequired,
+} from "@deno/doc/types";
 
 const ENTRY_POINTS = [
   "../bytes/mod.ts",
   "../datetime/mod.ts",
 ] as const;
+
+const MD_SNIPPET = /(?<=```ts\n)(\n|.)*(?=\n```)/g;
 
 class ValidationError extends Error {
   constructor(message: string, document: DocNodeBase) {
@@ -74,6 +81,41 @@ function assertHasParamTag(
   );
 }
 
+function assertHasExampleTag(tags: JsDocTag[], document: DocNodeBase) {
+  tags = tags.filter((tag) => tag.kind === "example");
+  if (tags.length === 0) {
+    throw new ValidationError("Symbol must have an @example tag", document);
+  }
+  for (const tag of (tags as JsDocTagDocRequired[])) {
+    assert(
+      tag.doc !== undefined,
+      "@example tag must have a description",
+      document,
+    );
+    const snippets = tag.doc.match(MD_SNIPPET);
+    if (snippets === null) {
+      throw new ValidationError(
+        "@example tag must have a code snippet",
+        document,
+      );
+    }
+    for (const snippet of snippets) {
+      const command = new Deno.Command(Deno.execPath(), {
+        args: [
+          "eval",
+          snippet,
+        ],
+      });
+      const { success } = command.outputSync();
+      assert(
+        success,
+        `Example code snippet failed to execute: \n${snippet}\n`,
+        document,
+      );
+    }
+  }
+}
+
 function assertFunctionDocs(document: DocNodeFunction) {
   assert(
     document.jsDoc !== undefined,
@@ -92,7 +134,7 @@ function assertFunctionDocs(document: DocNodeFunction) {
     }
   }
   assertHasTag(tags, "return", document);
-  assertHasTag(tags, "example", document);
+  assertHasExampleTag(tags, document);
 }
 
 async function checkDocs(specifier: string) {
