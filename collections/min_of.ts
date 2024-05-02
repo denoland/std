@@ -49,14 +49,14 @@ export function minOf<T>(
   array: Iterable<T>,
   selector: (el: T) => bigint,
 ): bigint | undefined;
-export function minOf<T, S extends ((el: T) => number) | ((el: T) => bigint)>(
+export function minOf<T, S extends (number | bigint)>(
   array: Iterable<T>,
-  selector: S,
-): ReturnType<S> | undefined {
-  let minimumValue: ReturnType<S> | undefined = undefined;
+  selector: (el: T) => S,
+): S | undefined {
+  let minimumValue: S | undefined = undefined;
 
   for (const i of array) {
-    const currentValue = selector(i) as ReturnType<S>;
+    const currentValue = selector(i);
 
     if (minimumValue === undefined || currentValue < minimumValue) {
       minimumValue = currentValue;

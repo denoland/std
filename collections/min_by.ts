@@ -91,16 +91,12 @@ export function minBy<T>(
   array: Iterable<T>,
   selector: (el: T) => Date,
 ): T | undefined;
-export function minBy<T>(
+export function minBy<T, S extends (number | string | bigint | Date)>(
   array: Iterable<T>,
-  selector:
-    | ((el: T) => number)
-    | ((el: T) => string)
-    | ((el: T) => bigint)
-    | ((el: T) => Date),
+  selector: (el: T) => S,
 ): T | undefined {
   let min: T | undefined = undefined;
-  let minValue: ReturnType<typeof selector> | undefined = undefined;
+  let minValue: S | undefined = undefined;
 
   for (const current of array) {
     const currentValue = selector(current);

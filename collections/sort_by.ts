@@ -112,18 +112,14 @@ export function sortBy<T>(
   selector: (el: T) => Date,
   options?: SortByOptions,
 ): T[];
-export function sortBy<T>(
+export function sortBy<T, S extends (number | string | bigint | Date)>(
   array: readonly T[],
-  selector:
-    | ((el: T) => number)
-    | ((el: T) => string)
-    | ((el: T) => bigint)
-    | ((el: T) => Date),
+  selector: (el: T) => S,
   options?: SortByOptions,
 ): T[] {
   const len = array.length;
   const indexes = new Array<number>(len);
-  const selectors = new Array<ReturnType<typeof selector> | null>(len);
+  const selectors = new Array<S | null>(len);
   const order = options?.order ?? "asc";
 
   array.forEach((item, idx) => {

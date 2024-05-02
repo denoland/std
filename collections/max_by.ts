@@ -91,13 +91,9 @@ export function maxBy<T>(
   array: Iterable<T>,
   selector: (el: T) => Date,
 ): T | undefined;
-export function maxBy<T>(
+export function maxBy<T, S extends (number | string | bigint | Date)>(
   array: Iterable<T>,
-  selector:
-    | ((el: T) => number)
-    | ((el: T) => string)
-    | ((el: T) => bigint)
-    | ((el: T) => Date),
+  selector: (el: T) => S,
 ): T | undefined {
   let max: T | undefined = undefined;
   let maxValue: ReturnType<typeof selector> | undefined = undefined;

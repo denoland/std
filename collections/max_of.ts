@@ -51,14 +51,14 @@ export function maxOf<T>(
   array: Iterable<T>,
   selector: (el: T) => bigint,
 ): bigint | undefined;
-export function maxOf<T, S extends ((el: T) => number) | ((el: T) => bigint)>(
+export function maxOf<T, S extends (number | bigint)>(
   array: Iterable<T>,
-  selector: S,
-): ReturnType<S> | undefined {
-  let maximumValue: ReturnType<S> | undefined = undefined;
+  selector: (el: T) => S,
+): S | undefined {
+  let maximumValue: S | undefined = undefined;
 
   for (const i of array) {
-    const currentValue = selector(i) as ReturnType<S>;
+    const currentValue = selector(i);
 
     if (maximumValue === undefined || currentValue > maximumValue) {
       maximumValue = currentValue;
