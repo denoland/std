@@ -232,91 +232,102 @@ export class UnTarStream {
                 ? header.prefix + "/"
                 : "") + header.name,
               header,
-              readable: new ReadableStream({
-                type: "bytes",
-                async pull(controller) {
-                  if (i > 0) {
-                    lock = true;
-                    // If Byte Stream
-                    if (controller.byobRequest?.view) {
-                      const buffer = new Uint8Array(
-                        controller.byobRequest.view.buffer,
-                        controller.byobRequest.view.byteOffset, // Will this ever be anything but zero?
-                        controller.byobRequest.view.byteLength,
-                      );
-                      let offset = 0;
-                      while (offset < buffer.length) {
-                        const { done, value } = await (async function () {
-                          const x = await reader.read();
-                          if (!x.done && i-- === 1) {
-                            x.value = x.value.slice(0, size % 512);
-                          }
-                          return x;
-                        })();
-                        if (done) {
-                          header = undefined;
-                          lock = false;
-                          if (offset) {
-                            controller.byobRequest.respond(offset);
-                            return controller.close();
-                          }
-                          controller.close();
-                          return controller.byobRequest.respond(0);
+              readable: new ReadableStream(
+                {
+                  leftover: new Uint8Array(0),
+                  type: "bytes",
+                  async pull(controller) {
+                    if (i > 0) {
+                      lock = true;
+                      // If Byte Stream
+                      if (controller.byobRequest?.view) {
+                        const buffer = new Uint8Array(
+                          controller.byobRequest.view.buffer,
+                        );
+                        if (buffer.length < this.leftover.length) {
+                          buffer.set(this.leftover.slice(0, buffer.length));
+                          this.leftover = this.leftover.slice(buffer.length);
+                          return controller.byobRequest.respond(buffer.length);
                         }
-                        if (value.length > buffer.length - offset) {
-                          buffer.set(
-                            value.slice(0, buffer.length - offset),
-                            offset,
-                          );
-                          offset = buffer.length - offset;
-                          lock = false;
-                          controller.byobRequest.respond(buffer.length);
-                          return controller.enqueue(value.slice(offset));
+                        buffer.set(this.leftover);
+                        let offset = this.leftover.length;
+                        while (offset < buffer.length) {
+                          const { done, value } = await (async function () {
+                            const x = await reader.read();
+                            if (!x.done && i-- === 1) {
+                              x.value = x.value.slice(0, size % 512);
+                            }
+                            return x;
+                          })();
+                          if (done) {
+                            header = undefined;
+                            lock = false;
+                            try {
+                              controller.byobRequest.respond(offset); // Will throw if zero.
+                              controller.close();
+                            } catch {
+                              controller.close();
+                              controller.byobRequest.respond(0); // But still needs to be resolved.
+                            }
+                            return;
+                          }
+                          if (value.length > buffer.length - offset) {
+                            buffer.set(
+                              value.slice(0, buffer.length - offset),
+                              offset,
+                            );
+                            offset = buffer.length - offset;
+                            lock = false;
+                            controller.byobRequest.respond(buffer.length);
+                            this.leftover = value.slice(offset);
+                            return;
+                          }
+                          buffer.set(value, offset);
+                          offset += value.length;
                         }
-                        buffer.set(value, offset);
-                        offset += value.length;
+                        lock = false;
+                        this.leftover = new Uint8Array(0);
+                        return controller.byobRequest.respond(buffer.length);
                       }
+                      // Else Default Stream
+                      const { done, value } = await reader.read();
+                      if (done) {
+                        header = undefined;
+                        return controller.error("Tarball ended unexpectedly.");
+                      }
+                      // Pull is unlocked before enqueue is called because if pull is in the middle of processing a chunk when cancel is called, nothing after enqueue will run.
                       lock = false;
-                      return controller.byobRequest.respond(buffer.length);
-                    }
-                    // Else Default Stream
-                    const { done, value } = await reader.read();
-                    if (done) {
+                      controller.enqueue(
+                        i-- === 1 ? value.slice(0, size % 512) : value,
+                      );
+                    } else {
                       header = undefined;
-                      return controller.error("Tarball ended unexpectedly.");
-                    }
-                    // Pull is unlocked before enqueue is called because if pull is in the middle of processing a chunk when cancel is called, nothing after enqueue will run.
-                    lock = false;
-                    controller.enqueue(
-                      i-- === 1 ? value.slice(0, size % 512) : value,
-                    );
-                  } else {
-                    header = undefined;
-                    if (isCancelled()) {
-                      reader.cancel();
-                    }
-                    controller.close();
-                  }
-                },
-                async cancel() {
-                  while (lock) {
-                    await new Promise((a) =>
-                      setTimeout(a, 0)
-                    );
-                  }
-                  try {
-                    while (i-- > 0) {
-                      if ((await reader.read()).done) {
-                        throw new Error("Tarball ended unexpectedly.");
+                      if (isCancelled()) {
+                        reader.cancel();
                       }
+                      controller.close();
                     }
-                  } catch (error) {
-                    throw error;
-                  } finally {
-                    header = undefined;
-                  }
-                },
-              }),
+                  },
+                  async cancel() {
+                    while (lock) {
+                      await new Promise((a) =>
+                        setTimeout(a, 0)
+                      );
+                    }
+                    try {
+                      while (i-- > 0) {
+                        if ((await reader.read()).done) {
+                          throw new Error("Tarball ended unexpectedly.");
+                        }
+                      }
+                    } catch (error) {
+                      throw error;
+                    } finally {
+                      header = undefined;
+                    }
+                  },
+                } as UnderlyingByteSource & { leftover: Uint8Array },
+              ),
             });
           } else {
             controller.enqueue({

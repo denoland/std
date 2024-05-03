@@ -202,46 +202,57 @@ export class TarStream {
       yield new Uint8Array(new Array(1024).fill(0));
     })();
 
-    this.#readable = new ReadableStream({
-      type: "bytes",
-      async pull(controller) {
-        // If Byte Stream
-        if (controller.byobRequest?.view) {
-          const buffer = new Uint8Array(
-            controller.byobRequest.view.buffer,
-            controller.byobRequest.view.byteOffset, // Will this ever be anything but zero?
-            controller.byobRequest.view.byteLength,
-          );
-          let offset = 0;
-          while (offset < buffer.length) {
-            const { done, value } = await gen.next();
-            if (done) {
-              if (offset) {
-                controller.byobRequest.respond(offset);
-                return controller.close();
+    this.#readable = new ReadableStream(
+      {
+        leftover: new Uint8Array(0),
+        type: "bytes",
+        async pull(controller) {
+          // If Byte Stream
+          if (controller.byobRequest?.view) {
+            const buffer = new Uint8Array(
+              controller.byobRequest.view.buffer,
+            );
+            if (buffer.length < this.leftover.length) {
+              buffer.set(this.leftover.slice(0, buffer.length));
+              this.leftover = this.leftover.slice(buffer.length);
+              return controller.byobRequest.respond(buffer.length);
+            }
+            buffer.set(this.leftover);
+            let offset = this.leftover.length;
+            while (offset < buffer.length) {
+              const { done, value } = await gen.next();
+              if (done) {
+                try {
+                  controller.byobRequest.respond(offset); // Will throw if zero
+                  controller.close();
+                } catch {
+                  controller.close();
+                  controller.byobRequest.respond(0); // But still needs to be resolved.
+                }
+                return;
               }
-              controller.close();
-              return controller.byobRequest.respond(0);
+              if (value.length > buffer.length - offset) {
+                buffer.set(value.slice(0, buffer.length - offset), offset);
+                offset = buffer.length - offset;
+                controller.byobRequest.respond(buffer.length);
+                this.leftover = value.slice(offset);
+                return;
+              }
+              buffer.set(value, offset);
+              offset += value.length;
             }
-            if (value.length > buffer.length - offset) {
-              buffer.set(value.slice(0, buffer.length - offset), offset);
-              offset = buffer.length - offset;
-              controller.byobRequest.respond(buffer.length);
-              return controller.enqueue(value.slice(offset));
-            }
-            buffer.set(value, offset);
-            offset += value.length;
+            this.leftover = new Uint8Array(0);
+            return controller.byobRequest.respond(buffer.length);
           }
-          return controller.byobRequest.respond(buffer.length);
-        }
-        // Else Default Stream
-        const { done, value } = await gen.next();
-        if (done) {
-          return controller.close();
-        }
-        controller.enqueue(value);
-      },
-    });
+          // Else Default Stream
+          const { done, value } = await gen.next();
+          if (done) {
+            return controller.close();
+          }
+          controller.enqueue(value);
+        },
+      } as UnderlyingByteSource & { leftover: Uint8Array },
+    );
     this.#writable = writable;
   }
 
