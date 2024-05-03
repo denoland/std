@@ -194,7 +194,9 @@ export class TarStream {
               "Invalid Tarball! Provided size did not match bytes read from iterable.",
             );
           }
-          yield new Uint8Array(new Array(512 - chunk.size % 512).fill(0));
+          if (chunk.size % 512) {
+            yield new Uint8Array(new Array(512 - chunk.size % 512).fill(0));
+          }
         }
       }
       yield new Uint8Array(new Array(1024).fill(0));
