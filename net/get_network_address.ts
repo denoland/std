@@ -19,9 +19,7 @@
  * assert(address !== undefined);
  * ```
  */
-export function getNetworkAddress(
-  family: Deno.NetworkInterfaceInfo["family"] = "IPv4",
-): string | undefined {
+export function getNetworkAddress(): string | undefined {
   return Deno.networkInterfaces()
-    .find((i) => i.family === family && !i.address.startsWith("127"))?.address;
+    .find((i) => i.family === "IPv4" && !i.address.startsWith("127"))?.address;
 }
