@@ -338,7 +338,7 @@ export function diffstr(A: string, B: string): DiffResult<string>[] {
   }
 
   // Compute multi-line diff
-  const diffResult = diff(
+  const diffResult = _internals.diff(
     tokenize(`${unescape(A)}\n`),
     tokenize(`${unescape(B)}\n`),
   );
@@ -369,7 +369,7 @@ export function diffstr(A: string, B: string): DiffResult<string>[] {
         tokenize(b?.value ?? "", { wordDiff: true }),
       ] as [string[], string[]];
       if (hasMoreRemovedLines) tokenized.reverse();
-      tokens = diff(tokenized[0], tokenized[1]);
+      tokens = _internals.diff(tokenized[0], tokenized[1]);
       if (
         tokens.some(({ type, value }) =>
           type === DiffType.common && value.trim().length
@@ -455,3 +455,5 @@ export function buildMessage(
 
   return messages;
 }
+
+export const _internals = { diff, diffstr };

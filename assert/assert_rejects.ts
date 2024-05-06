@@ -81,6 +81,8 @@ export async function assertRejects<E extends Error = Error>(
     ) {
       isPromiseReturned = true;
       await possiblePromise;
+    } else {
+      throw Error();
     }
   } catch (error) {
     if (!isPromiseReturned) {
@@ -89,7 +91,7 @@ export async function assertRejects<E extends Error = Error>(
       );
     }
     if (ErrorClass) {
-      if (error instanceof Error === false) {
+      if (!(error instanceof Error)) {
         throw new AssertionError(`A non-Error object was rejected${msgSuffix}`);
       }
       assertIsError(

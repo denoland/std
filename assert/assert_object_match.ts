@@ -40,7 +40,7 @@ export function assertObjectMatch(
               a === null ? null : `type ${typeof a}`
             }`,
           );
-        } else throw err;
+        }
       }
       // Filter keys and symbols which are present in both actual and expected
       const filtered = {} as loose;

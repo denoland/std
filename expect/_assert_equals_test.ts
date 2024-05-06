@@ -139,7 +139,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "assertEquals() throws with given custom messages",
+  name: "assertEquals() throws with custom message",
   fn() {
     assertThrows(
       () => assertEquals(1, 2, { msg: "CUSTOM MESSAGE" }),

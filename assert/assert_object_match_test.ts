@@ -1,5 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import { AssertionError, assertObjectMatch, assertThrows } from "./mod.ts";
+import { stub } from "@std/testing/mock";
 
 const sym = Symbol("foo");
 const a = { foo: true, bar: false };
@@ -295,7 +296,7 @@ Deno.test("assertObjectMatch() throws assertion error when in the first argument
   );
 });
 
-Deno.test("assertObjectMatch() throws readable type error for non mapable primative types", () => {
+Deno.test("assertObjectMatch() throws readable type error for non mappable primitive types", () => {
   assertThrows(
     // @ts-expect-error Argument of type 'null' is not assignable to parameter of type 'Record<PropertyKey, any>'
     () => assertObjectMatch(null, { foo: 42 }),
