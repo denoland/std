@@ -1,9 +1,11 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 /**
- * Gets the IPv4 network address of the machine.
+ * Gets the IPv4 or IPv6 network address of the machine.
  *
  * This is inspired by the util of the same name in
  * {@linkcode https://www.npmjs.com/package/serve | npm:serve}.
+ *
+ * For more advanced use, use {@linkcode Deno.networkInterfaces} directly.
  *
  * @see {@link https://github.com/vercel/serve/blob/1ea55b1b5004f468159b54775e4fb3090fedbb2b/source/utilities/http.ts#L33}
  *
