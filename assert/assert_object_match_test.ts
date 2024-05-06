@@ -1,6 +1,5 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import { AssertionError, assertObjectMatch, assertThrows } from "./mod.ts";
-import { stub } from "@std/testing/mock";
 
 const sym = Symbol("foo");
 const a = { foo: true, bar: false };
