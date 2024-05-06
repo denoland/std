@@ -30,9 +30,9 @@
  * const usersById = associateBy(users, (user) => user.id);
  *
  * assertEquals(usersById, {
- *   a2e: { id: "a2e", userName: "Anna" },
- *   5f8: { id: "5f8", userName: "Arnold" },
- *   d2c: { id: "d2c", userName: "Kim" },
+ *   "a2e": { id: "a2e", userName: "Anna" },
+ *   "5f8": { id: "5f8", userName: "Arnold" },
+ *   "d2c": { id: "d2c", userName: "Kim" },
  * });
  * ```
  */
