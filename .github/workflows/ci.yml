@@ -35,9 +35,7 @@ jobs:
           deno-version: ${{ matrix.deno }}
 
       - name: Run tests
-        # TODO(kt3k): remove doc-test task when the below issue resolved
-        # https://github.com/denoland/deno/issues/23430
-        run: deno task test && deno task doc-test
+        run: deno task test
 
       - name: Run tests (simulate Deno 2)
         if: matrix.deno == 'canary'
