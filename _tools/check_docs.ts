@@ -106,6 +106,7 @@ function assertHasExampleTag(tags: JsDocTag[], document: DocNodeBase) {
           snippet,
         ],
       });
+      // TODO(iuioiua): Use `await command.output()`
       const { success } = command.outputSync();
       assert(
         success,
