@@ -14,7 +14,7 @@ import { filterInPlace } from "./_utils.ts";
  * @returns An array of distinct elements that appear at least once in each of
  * the given arrays.
  *
- * @example Find common interests
+ * @example Basic usage
  * ```ts
  * import { intersect } from "@std/collections/intersect";
  * import { assertEquals } from "@std/assert/assert-equals";

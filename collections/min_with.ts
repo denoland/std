@@ -13,7 +13,7 @@
  * @returns The first element that is the smallest value of the given function
  * or undefined if there are no elements.
  *
- * @example Find the shortest name
+ * @example Basic usage
  * ```ts
  * import { minWith } from "@std/collections/min-with";
  * import { assertEquals } from "@std/assert/assert-equals";

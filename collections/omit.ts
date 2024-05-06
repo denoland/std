@@ -12,7 +12,7 @@
  *
  * @returns A new object with the specified keys omitted.
  *
- * @example Omit keys
+ * @example Basic usage
  * ```ts
  * import { omit } from "@std/collections/omit";
  * import { assertEquals } from "@std/assert/assert-equals";

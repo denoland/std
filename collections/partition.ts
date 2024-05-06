@@ -50,7 +50,7 @@ export function partition<T>(
  * @returns A tuple of two arrays. The first array contains all elements that
  * match the predicate, the second contains all elements that do not.
  *
- * @example Separate even and odd numbers
+ * @example Basic usage
  * ```ts
  * import { partition } from "@std/collections/partition";
  * import { assertEquals } from "@std/assert/assert-equals";

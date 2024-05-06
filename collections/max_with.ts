@@ -17,7 +17,7 @@
  * @returns The first element that is the largest value of the given function or
  * undefined if there are no elements.
  *
- * @example Calculate longest name
+ * @example Basic usage
  * ```ts
  * import { maxWith } from "@std/collections/max-with";
  * import { assertEquals } from "@std/assert/assert-equals";
