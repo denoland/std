@@ -37,10 +37,10 @@ export function getNetworkAddress(
     .find((i) =>
       i.family === family &&
       (family === "IPv4"
-        // Cannot be within 127.0.0.0/8
+        // Cannot lie within 127.0.0.0/8
         ? !i.address.startsWith("127")
-        // Cannot be within ::1/128
-        : !i.address.startsWith("::1"))
+        // Cannot lie within ::1/128 or fe80::/10
+        : (!i.address.startsWith("::1")) || !i.address.startsWith("fe80::"))
     )
     ?.address;
 }
