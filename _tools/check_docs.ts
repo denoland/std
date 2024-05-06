@@ -108,6 +108,7 @@ async function assertHasExampleTag(tags: JsDocTag[], document: DocNodeBase) {
             snippet,
           ],
         });
+        console.log(snippet);
         const { success } = await command.output();
         assert(
           success,

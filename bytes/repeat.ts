@@ -32,7 +32,7 @@ import { copy } from "./copy.ts";
  *
  * const result = repeat(source, 0);
  *
- * assertEquals(result), new Uint8Array());
+ * assertEquals(result, new Uint8Array());
  * ```
  */
 export function repeat(source: Uint8Array, count: number): Uint8Array {
