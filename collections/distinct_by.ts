@@ -7,19 +7,22 @@
  *
  * @template T The type of the elements in the input array.
  * @template D The type of the values produced by the selector function.
+ *
  * @param array The array to filter for distinct elements.
  * @param selector The function to extract the value to compare for
  * distinctness.
+ *
  * @returns An array of distinct elements in the input array.
  *
  * @example Basic usage
  * ```ts
  * import { distinctBy } from "@std/collections/distinct-by";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const names = ["Anna", "Kim", "Arnold", "Kate"];
+ * const exampleNamesByFirstLetter = distinctBy(names, (name) => name.charAt(0));
  *
- * distinctBy(names, (it) => it.charAt(0));
- * // ["Anna", "Kim"]
+ * assertEquals(exampleNamesByFirstLetter, ["Anna", "Kim"]);
  * ```
  */
 export function distinctBy<T, D>(

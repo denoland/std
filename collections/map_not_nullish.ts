@@ -8,14 +8,17 @@
  *
  * @template T The type of the elements in the input array.
  * @template O The type of the elements in the output array.
+ *
  * @param array The array to map elements from.
  * @param transformer The function to transform each element.
+ *
  * @returns A new array with all elements transformed by the given transformer,
  * except the ones that were transformed to `null` or `undefined`.
  *
  * @example Basic usage
  * ```ts
  * import { mapNotNullish } from "@std/collections/map-not-nullish";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const people = [
  *   { middleName: null },
@@ -23,9 +26,9 @@
  *   { middleName: undefined },
  *   { middleName: "Martha" },
  * ];
+ * const foundMiddleNames = mapNotNullish(people, (people) => people.middleName);
  *
- * mapNotNullish(people, (it) => it.middleName);
- * // ["William", "Martha"]
+ * assertEquals(foundMiddleNames, ["William", "Martha"]);
  * ```
  */
 export function mapNotNullish<T, O>(

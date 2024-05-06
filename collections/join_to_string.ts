@@ -45,14 +45,17 @@ export type JoinToStringOptions = {
  * the `truncated` string. Returns the resulting string.
  *
  * @template T The type of the elements in the input array.
+ *
  * @param array The array to join elements from.
  * @param selector The function to transform elements to strings.
  * @param options The options to configure the joining.
+ *
  * @returns The resulting string.
  *
  * @example Usage with options
  * ```ts
  * import { joinToString } from "@std/collections/join-to-string";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const users = [
  *   { name: "Kim" },
@@ -60,14 +63,15 @@ export type JoinToStringOptions = {
  *   { name: "Tim" },
  * ];
  *
- * joinToString(users, (it) => it.name, {
+ * const message = joinToString(users, (it) => it.name, {
  *   suffix: " are winners",
  *   prefix: "result: ",
  *   separator: " and ",
  *   limit: 1,
  *   truncated: "others",
  * });
- * // "result: Kim and others are winners"
+ *
+ * assertEquals(message, "result: Kim and others are winners");
  * ```
  */
 export function joinToString<T>(

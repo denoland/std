@@ -17,18 +17,25 @@
  * @example Basic usage
  * ```ts
  * import { partitionEntries } from "@std/collections/partition-entries";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const menu = {
- *   "Salad": 11,
- *   "Soup": 8,
- *   "Pasta": 13,
- * } as const;
+ *   Salad: 11,
+ *   Soup: 8,
+ *   Pasta: 13,
+ * };
+ * const myOptions = partitionEntries(
+ *   menu,
+ *   ([item, price]) => item !== "Pasta" && price < 10,
+ * );
  *
- * partitionEntries(menu, ([item, price]) => item !== "Pasta" && price < 10);
- * // [
- * //   { "Soup": 8 },
- * //   { "Salad": 11, "Pasta": 13 },
- * // ]
+ * assertEquals(
+ *   myOptions,
+ *   [
+ *     { Soup: 8 },
+ *     { Salad: 11, Pasta: 13 },
+ *   ],
+ * );
  * ```
  */
 export function partitionEntries<T>(

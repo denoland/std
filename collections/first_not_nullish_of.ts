@@ -8,14 +8,17 @@
  *
  * @template T The type of the elements in the input array.
  * @template O The type of the value produced by the selector function.
+ *
  * @param array The array to select a value from.
  * @param selector The function to extract a value from an element.
+ *
  * @returns The first non-`null` and non-`undefined` value produced by the
  * selector function, or `undefined` if no such value is produced.
  *
  * @example Basic usage
  * ```ts
  * import { firstNotNullishOf } from "@std/collections/first-not-nullish-of";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const tables = [
  *   { number: 11, order: null },
@@ -23,7 +26,7 @@
  *   { number: 13, order: "Salad" },
  * ];
  *
- * firstNotNullishOf(tables, (it) => it.order); // "Soup"
+ * assertEquals(nextOrder, "Soup");
  * ```
  */
 export function firstNotNullishOf<T, O>(

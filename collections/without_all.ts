@@ -15,8 +15,11 @@
  * @example Basic usage
  * ```ts
  * import { withoutAll } from "@std/collections/without-all";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
- * withoutAll([2, 1, 2, 3], [1, 2]); // [3]
+ * const withoutList = withoutAll([2, 1, 2, 3], [1, 2]);
+ *
+ * assertEquals(withoutList, [3]);
  * ```
  */
 export function withoutAll<T>(array: readonly T[], values: readonly T[]): T[] {

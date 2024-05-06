@@ -40,30 +40,30 @@ export interface SlidingWindowsOptions {
  * @example Usage
  * ```ts
  * import { slidingWindows } from "@std/collections/sliding-windows";
- *
+ * import { assertEquals } from "@std/assert/assert-equals";
  * const numbers = [1, 2, 3, 4, 5];
  *
- * slidingWindows(numbers, 3);
- * // [
- * //   [1, 2, 3],
- * //   [2, 3, 4],
- * //   [3, 4, 5],
- * // ]
+ * const windows = slidingWindows(numbers, 3);
+ * assertEquals(windows, [
+ *   [1, 2, 3],
+ *   [2, 3, 4],
+ *   [3, 4, 5],
+ * ]);
  *
- * slidingWindows(numbers, 3, { step: 2 });
- * // [
- * //   [1, 2, 3],
- * //   [3, 4, 5],
- * // ]
+ * const windowsWithStep = slidingWindows(numbers, 3, { step: 2 });
+ * assertEquals(windowsWithStep, [
+ *   [1, 2, 3],
+ *   [3, 4, 5],
+ * ]);
  *
- * slidingWindows(numbers, 3, { partial: true });
- * // [
- * //   [1, 2, 3],
- * //   [2, 3, 4],
- * //   [3, 4, 5],
- * //   [4, 5],
- * //   [5],
- * // ]
+ * const windowsWithPartial = slidingWindows(numbers, 3, { partial: true });
+ * assertEquals(windowsWithPartial, [
+ *   [1, 2, 3],
+ *   [2, 3, 4],
+ *   [3, 4, 5],
+ *   [4, 5],
+ *   [5],
+ * ]);
  * ```
  */
 export function slidingWindows<T>(

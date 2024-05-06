@@ -7,14 +7,17 @@
  * function will return undefined.
  *
  * @template T The type of the elements in the array.
+ *
  * @param array The array to find the maximum element in.
  * @param selector The function to get the value to compare from each element.
+ *
  * @returns The first element that is the largest value of the given function or
  * undefined if there are no elements.
  *
- * @example Calculate max count (`number`) of inventory
+ * @example Basic usage
  * ```ts
  * import { maxOf } from "@std/collections/max-of";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const inventory = [
  *   { name: "mustard", count: 2 },
@@ -22,7 +25,9 @@
  *   { name: "tomato", count: 32 },
  * ];
  *
- * maxOf(inventory, (item) => item.count); // 32
+ * const maxCount = maxOf(inventory, (item) => item.count);
+ *
+ * assertEquals(maxCount, 32);
  * ```
  */
 export function maxOf<T>(
@@ -35,14 +40,17 @@ export function maxOf<T>(
  * function will return undefined.
  *
  * @template T The type of the elements in the array.
+ *
  * @param array The array to find the maximum element in.
  * @param selector The function to get the value to compare from each element.
+ *
  * @returns The first element that is the largest value of the given function or
  * undefined if there are no elements.
  *
- * @example Calculate max count (`bigint`) of inventory
+ * @example Basic usage
  * ```ts
  * import { maxOf } from "@std/collections/max-of";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const inventory = [
  *   { name: "mustard", count: 2n },
@@ -50,7 +58,9 @@ export function maxOf<T>(
  *   { name: "tomato", count: 32n },
  * ];
  *
- * maxOf(inventory, (item) => item.count); // 32n
+ * const maxCount = maxOf(inventory, (i) => i.count);
+ *
+ * assertEquals(maxCount, 32n);
  * ```
  */
 export function maxOf<T>(

@@ -17,10 +17,13 @@
  * @example Basic usage
  * ```ts
  * import { takeWhile } from "@std/collections/take-while";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const numbers = [1, 2, 3, 4, 5, 6];
  *
- * takeWhile(arr, (i) => i !== 4); // [1, 2, 3]
+ * const result = takeWhile(numbers, (number) => number < 4);
+ *
+ * assertEquals(result, [1, 2, 3]);
  * ```
  */
 export function takeWhile<T>(

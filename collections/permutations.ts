@@ -15,14 +15,15 @@
  * @example Basic usage
  * ```ts
  * import { permutations } from "@std/collections/permutations";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const numbers = [ 1, 2 ];
+ * const windows = permutations(numbers);
  *
- * permutations(numbers);
- * // [
- * //   [ 1, 2 ],
- * //   [ 2, 1 ],
- * // ]
+ * assertEquals(windows, [
+ *   [ 1, 2 ],
+ *   [ 2, 1 ],
+ * ]);
  * ```
  */
 export function permutations<T>(inputArray: Iterable<T>): T[][] {

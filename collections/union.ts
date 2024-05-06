@@ -10,15 +10,17 @@
  *
  * @returns A new array containing all distinct elements from the given arrays.
  *
- * @example
+ * @example Basic usage
  * ```ts
  * import { union } from "@std/collections/union";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const soupIngredients = ["Pepper", "Carrots", "Leek"];
  * const saladIngredients = ["Carrots", "Radicchio", "Pepper"];
  *
- * union(soupIngredients, saladIngredients);
- * // ["Pepper", "Carrots", "Leek", "Radicchio"]
+ * const shoppingList = union(soupIngredients, saladIngredients);
+ *
+ * assertEquals(shoppingList, ["Pepper", "Carrots", "Leek", "Radicchio"]);
  * ```
  */
 export function union<T>(...arrays: Iterable<T>[]): T[] {

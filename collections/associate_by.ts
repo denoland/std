@@ -9,14 +9,17 @@
  * elements, the latest one will be used (overriding the ones before it).
  *
  * @template T Type of the elements in the input array.
+ *
  * @param array The array to transform.
  * @param selector The function to extract the key from each element.
+ *
  * @returns A record with the keys produced by the selector and the elements as
  * values.
  *
  * @example Basic usage
  * ```ts
  * import { associateBy } from "@std/collections/associate-by";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const users = [
  *   { id: "a2e", userName: "Anna" },
@@ -24,12 +27,13 @@
  *   { id: "d2c", userName: "Kim" },
  * ];
  *
- * associateBy(users, (it) => it.id);
- * // {
- * //   a2e: { id: "a2e", userName: "Anna" },
- * //   5f8: { id: "5f8", userName: "Arnold" },
- * //   d2c: { id: "d2c", userName: "Kim" },
- * // }
+ * const usersById = associateBy(users, (user) => user.id);
+ *
+ * assertEquals(usersById, {
+ *   a2e: { id: "a2e", userName: "Anna" },
+ *   5f8: { id: "5f8", userName: "Arnold" },
+ *   d2c: { id: "d2c", userName: "Kim" },
+ * });
  * ```
  */
 export function associateBy<T>(

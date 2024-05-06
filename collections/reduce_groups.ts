@@ -15,20 +15,22 @@ import { mapValues } from "./map_values.ts";
  * @param reducer The reducer function to apply to each group.
  * @param initialValue The initial value of the accumulator.
  *
- * @example Calculate the total votes for each candidate
+ * @example Basic usage
  * ```ts
  * import { reduceGroups } from "@std/collections/reduce-groups";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const votes = {
- *   "Woody": [2, 3, 1, 4],
- *   "Buzz": [5, 9],
+ *   Woody: [2, 3, 1, 4],
+ *   Buzz: [5, 9],
  * };
  *
- * reduceGroups(votes, (sum, it) => sum + it, 0);
- * // {
- * //   "Woody": 10,
- * //   "Buzz": 14,
- * // }
+ * const totalVotes = reduceGroups(votes, (sum, vote) => sum + vote, 0);
+ *
+ * assertEquals(totalVotes, {
+ *   Woody: 10,
+ *   Buzz: 14,
+ * });
  * ```
  */
 export function reduceGroups<T, A>(

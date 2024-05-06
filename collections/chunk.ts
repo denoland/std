@@ -5,13 +5,16 @@
  * Splits the given array into chunks of the given size and returns them.
  *
  * @template T Type of the elements in the input array.
+ *
  * @param array The array to split into chunks.
  * @param size The size of the chunks. This my be a positive integer.
+ *
  * @returns An array of chunks of the given size.
  *
  * @example Basic usage
  * ```ts
  * import { chunk } from "@std/collections/chunk";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const words = [
  *   "lorem",
@@ -22,13 +25,16 @@
  *   "consetetur",
  *   "sadipscing",
  * ];
+ * const chunks = chunk(words, 3);
  *
- * chunk(words, 3);
- * // [
- * //   ["lorem", "ipsum", "dolor"],
- * //   ["sit", "amet", "consetetur"],
- * //   ["sadipscing"],
- * // ]
+ * assertEquals(
+ *   chunks,
+ *   [
+ *     ["lorem", "ipsum", "dolor"],
+ *     ["sit", "amet", "consetetur"],
+ *     ["sadipscing"],
+ *   ],
+ * );
  * ```
  */
 export function chunk<T>(array: readonly T[], size: number): T[][] {

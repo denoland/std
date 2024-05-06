@@ -16,11 +16,12 @@
  * @example Basic usage
  * ```ts
  * import { runningReduce } from "@std/collections/running-reduce";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const numbers = [1, 2, 3, 4, 5];
+ * const sumSteps = runningReduce(numbers, (sum, current) => sum + current, 0);
  *
- * runningReduce(numbers, (sum, number) => sum + number, 0);
- * // [1, 3, 6, 10, 15]
+ * assertEquals(sumSteps, [1, 3, 6, 10, 15]);
  * ```
  */
 export function runningReduce<T, O>(

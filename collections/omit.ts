@@ -15,11 +15,12 @@
  * @example Omit keys
  * ```ts
  * import { omit } from "@std/collections/omit";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const obj = { a: 5, b: 6, c: 7, d: 8 };
+ * const omitted = omit(obj, ["a", "c"]);
  *
- * omit(obj, ["a", "c"]);
- * // { b: 6, d: 8 }
+ * assertEquals(omitted, { b: 6, d: 8 });
  * ```
  */
 export function omit<T extends object, K extends keyof T>(

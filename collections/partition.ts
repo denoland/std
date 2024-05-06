@@ -18,12 +18,13 @@
  * @example Basic usage
  * ```ts
  * import { partition } from "@std/collections/partition";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const numbers = [5, 6, 7, 8, 9];
- * const [even, odd] = partition(numbers, (number) => number % 2 === 0);
+ * const [even, odd] = partition(numbers, (it) => it % 2 === 0);
  *
- * even; // [6, 8]
- * odd; // [5, 7, 9]
+ * assertEquals(even, [6, 8]);
+ * assertEquals(odd, [5, 7, 9]);
  * ```
  */
 export function partition<T>(
@@ -52,12 +53,13 @@ export function partition<T>(
  * @example Separate even and odd numbers
  * ```ts
  * import { partition } from "@std/collections/partition";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const numbers = [5, 6, 7, 8, 9];
- * const [even, odd] = partition(numbers, (number) => number % 2 === 0);
+ * const [even, odd] = partition(numbers, (it) => it % 2 === 0);
  *
- * even; // [6, 8]
- * odd; // [5, 7, 9]
+ * assertEquals(even, [6, 8]);
+ * assertEquals(odd, [5, 7, 9]);
  * ```
  */
 export function partition<T, U extends T>(

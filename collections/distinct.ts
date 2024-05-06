@@ -12,11 +12,12 @@
  * @example Basic usage
  * ```ts
  * import { distinct } from "@std/collections/distinct";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const numbers = [3, 2, 5, 2, 5];
+ * const distinctNumbers = distinct(numbers);
  *
- * distinct(numbers);
- * // [3, 2, 5]
+ * assertEquals(distinctNumbers, [3, 2, 5]);
  * ```
  */
 export function distinct<T>(array: Iterable<T>): T[] {

@@ -10,33 +10,36 @@ import { mapEntries } from "./map_entries.ts";
  * @template T Type of the values in the input record.
  * @template A Type of the accumulator value, which will match the returned
  * record's values.
+ *
  * @param record The grouping to aggregate.
  * @param aggregator The function to apply to each group.
+ *
  * @returns A record with the same keys as the input record, but with the values
  * being the result of applying the aggregator to each group.
+ *
  * @example Basic usage
  * ```ts
  * import { aggregateGroups } from "@std/collections/aggregate-groups";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const foodProperties = {
- *   "Curry": ["spicy", "vegan"],
- *   "Omelette": ["creamy", "vegetarian"],
+ *   Curry: ["spicy", "vegan"],
+ *   Omelette: ["creamy", "vegetarian"],
  * };
  *
- * aggregateGroups(
+ * const descriptions = aggregateGroups(
  *   foodProperties,
- *   (current, key, first, accumulator) => {
- *     if (first) {
- *       return `${key} is ${current}`;
- *     }
- *
- *     return `${accumulator} and ${current}`;
+ *   (current, key, first, acc) => {
+ *     return first
+ *       ? `${key} is ${current}`
+ *       : `${acc} and ${current}`;
  *   },
  * );
- * // {
- * //   Curry: "Curry is spicy and vegan",
- * //   Omelette: "Omelette is creamy and vegetarian"
- * // }
+ *
+ * assertEquals(descriptions, {
+ *   Curry: "Curry is spicy and vegan",
+ *   Omelette: "Omelette is creamy and vegetarian",
+ * });
  * ```
  */
 export function aggregateGroups<T, A>(

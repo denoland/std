@@ -13,9 +13,10 @@
  * @returns The first element that is the smallest value of the given function
  * or undefined if there are no elements.
  *
- * @example Calculate youngest person (`number`)
+ * @example Basic usage
  * ```ts
  * import { minBy } from "@std/collections/min-by";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const people = [
  *   { name: "Anna", age: 34 },
@@ -23,8 +24,9 @@
  *   { name: "John", age: 23 },
  * ];
  *
- * minBy(people, (person) => person.age);
- * // { name: "John", age: 23 }
+ * const personWithMinAge = minBy(people, (i) => i.age);
+ *
+ * assertEquals(personWithMinAge, { name: "John", age: 23 });
  * ```
  */
 export function minBy<T>(
@@ -43,9 +45,10 @@ export function minBy<T>(
  * @returns The first element that is the smallest value of the given function
  * or undefined if there are no elements.
  *
- * @example Calculate shortest name
+ * @example Basic usage
  * ```ts
  * import { minBy } from "@std/collections/min-by";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const people = [
  *   { name: "Anna" },
@@ -53,8 +56,9 @@ export function minBy<T>(
  *   { name: "John" },
  * ];
  *
- * minBy(people, (person) => person.name);
- * // { name: "Kim" }
+ * const personWithMinName = minBy(people, (person) => person.name);
+ *
+ * assertEquals(personWithMinName, { name: "Anna" });
  * ```
  */
 export function minBy<T>(
@@ -73,9 +77,10 @@ export function minBy<T>(
  * @returns The first element that is the smallest value of the given function
  * or undefined if there are no elements.
  *
- * @example Calculate youngest person (`bigint`)
+ * @example Basic usage
  * ```ts
  * import { minBy } from "@std/collections/min-by";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const people = [
  *   { name: "Anna", age: 34n },
@@ -83,8 +88,9 @@ export function minBy<T>(
  *   { name: "John", age: 23n },
  * ];
  *
- * minBy(people, (person) => person.age);
- * // { name: "John", age: 23n }
+ * const personWithMinAge = minBy(people, (i) => i.age);
+ *
+ * assertEquals(personWithMinAge, { name: "John", age: 23n });
  * ```
  */
 export function minBy<T>(
@@ -103,9 +109,10 @@ export function minBy<T>(
  * @returns The first element that is the smallest value of the given function
  * or undefined if there are no elements.
  *
- * @example Calculate earliest start date
+ * @example Basic usage
  * ```ts
  * import { minBy } from "@std/collections/min-by";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const people = [
  *   { name: "Anna", startedAt: new Date("2020-01-01") },
@@ -113,8 +120,7 @@ export function minBy<T>(
  *   { name: "John", startedAt: new Date("2019-01-01") },
  * ];
  *
- * minBy(people, (person) => person.startedAt);
- * // { name: "John", startedAt: new Date("2019-01-01") }
+ * const personWithMinStartedAt = minBy(people, (person) => person.startedAt);
  * ```
  */
 export function minBy<T>(

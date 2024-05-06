@@ -6,14 +6,17 @@
  * undefined if there are no elements.
  *
  * @template T The type of the elements in the array.
+ *
  * @param array The array to find the maximum element in.
  * @param selector The function to get the value to compare from each element.
+ *
  * @returns The first element that is the largest value of the given function or
  * undefined if there are no elements.
  *
  * @example Basic usage
  * ```ts
  * import { maxBy } from "@std/collections/max-by";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const people = [
  *   { name: "Anna", age: 34 },
@@ -21,8 +24,9 @@
  *   { name: "John", age: 23 },
  * ];
  *
- * const personWithMaxAge = maxBy(people, (person) => person.age);
- * // { name: "Kim", age: 42 }
+ * const personWithMaxAge = maxBy(people, (i) => i.age);
+ *
+ * assertEquals(personWithMaxAge, { name: "Kim", age: 42 });
  * ```
  */
 export function maxBy<T>(
@@ -34,14 +38,17 @@ export function maxBy<T>(
  * undefined if there are no elements.
  *
  * @template T The type of the elements in the array.
+ *
  * @param array The array to find the maximum element in.
  * @param selector The function to get the value to compare from each element.
+ *
  * @returns The first element that is the largest value of the given function or
  * undefined if there are no elements.
  *
  * @example Basic usage
  * ```ts
  * import { maxBy } from "@std/collections/max-by";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const people = [
  *   { name: "Anna" },
@@ -50,7 +57,8 @@ export function maxBy<T>(
  * ];
  *
  * const personWithMaxName = maxBy(people, (person) => person.name);
- * // { name: "Kim" }
+ *
+ * assertEquals(personWithMaxName, { name: "Kim" });
  * ```
  */
 export function maxBy<T>(
@@ -62,14 +70,17 @@ export function maxBy<T>(
  * undefined if there are no elements.
  *
  * @template T The type of the elements in the array.
+ *
  * @param array The array to find the maximum element in.
  * @param selector The function to get the value to compare from each element.
+ *
  * @returns The first element that is the largest value of the given function or
  * undefined if there are no elements.
  *
  * @example Basic usage
  * ```ts
  * import { maxBy } from "@std/collections/max-by";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const people = [
  *   { name: "Anna", age: 34n },
@@ -78,7 +89,8 @@ export function maxBy<T>(
  * ];
  *
  * const personWithMaxAge = maxBy(people, (person) => person.age);
- * // { name: "Kim", age: 42n }
+ *
+ * assertEquals(personWithMaxAge, { name: "Kim", age: 42n });
  * ```
  */
 export function maxBy<T>(
@@ -90,14 +102,17 @@ export function maxBy<T>(
  * undefined if there are no elements.
  *
  * @template T The type of the elements in the array.
+ *
  * @param array The array to find the maximum element in.
  * @param selector The function to get the value to compare from each element.
+ *
  * @returns The first element that is the largest value of the given function or
  * undefined if there are no elements.
  *
  * @example Basic usage
  * ```ts
  * import { maxBy } from "@std/collections/max-by";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const people = [
  *   { name: "Anna", startedAt: new Date("2020-01-01") },
@@ -106,7 +121,8 @@ export function maxBy<T>(
  * ];
  *
  * const personWithLastStartedAt = maxBy(people, (person) => person.startedAt);
- * // { name: "Kim", startedAt: new Date("2021-03-01") }
+ *
+ * assertEquals(personWithLastStartedAt, { name: "Kim", startedAt: new Date("2021-03-01") });
  * ```
  */
 export function maxBy<T>(

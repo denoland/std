@@ -9,24 +9,30 @@
  * @template T The type of the values in the input record.
  * @template O The type of the values in the output record.
  * @template K The type of the keys in the input and output records.
+ *
  * @param record The record to map values from.
  * @param transformer The function to transform each value.
+ *
  * @returns A new record with all values transformed by the given transformer.
  *
  * @example Basic usage
  * ```ts
  * import { mapValues } from "@std/collections/map-values";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const usersById = {
- *   "a5ec": { name: "Mischa" },
- *   "de4f": { name: "Kim" },
+ *   a5ec: { name: "Mischa" },
+ *   de4f: { name: "Kim" },
  * };
+ * const namesById = mapValues(usersById, (user) => user.name);
  *
- * mapValues(usersById, (it) => it.name);
- * // {
- * //   "a5ec": "Mischa",
- * //   "de4f": "Kim",
- * // }
+ * assertEquals(
+ *   namesById,
+ *   {
+ *     a5ec: "Mischa",
+ *     de4f: "Kim",
+ *   },
+ * );
  * ```
  */
 export function mapValues<T, O, K extends string>(

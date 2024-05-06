@@ -16,10 +16,12 @@
  * @example Find the shortest name
  * ```ts
  * import { minWith } from "@std/collections/min-with";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const people = ["Kim", "Anna", "John"];
+ * const smallestName = minWith(people, (a, b) => a.length - b.length);
  *
- * minWith(people, (a, b) => a.length - b.length); // "Kim"
+ * assertEquals(smallestName, "Kim");
  * ```
  */
 export function minWith<T>(

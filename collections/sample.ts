@@ -17,10 +17,12 @@ import { randomInteger } from "./_utils.ts";
  * @example Basic usage
  * ```ts
  * import { sample } from "@std/collections/sample";
+ * import { assert } from "@std/assert/assert";
  *
  * const numbers = [1, 2, 3, 4];
+ * const random = sample(numbers);
  *
- * sample(numbers); // Returns a random number from the `numbers` array.
+ * assert(numbers.includes(random!));
  * ```
  */
 export function sample<T>(array: readonly T[]): T | undefined {

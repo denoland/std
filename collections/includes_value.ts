@@ -9,22 +9,23 @@
  * `includesValue({x: {}}, {})` returns false.
  *
  * @template T The type of the values in the input record.
+ *
  * @param record The record to check for the given value.
  * @param value The value to check for in the record.
+ *
  * @returns `true` if the value is part of the record, otherwise `false`.
  *
  * @example Basic usage
  * ```ts
  * import { includesValue } from "@std/collections/includes-value";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const input = {
  *   first: 33,
  *   second: 34,
  * };
  *
- * includesValue(input, 34); // true
- *
- * includesValue(input, 35); // false
+ * assertEquals(includesValue(input, 34), true);
  * ```
  */
 export function includesValue<T>(

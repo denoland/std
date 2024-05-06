@@ -14,9 +14,10 @@
  * @returns The first element that is the smallest value of the given function
  * or undefined if there are no elements.
  *
- * @example Calculate min count (`number`) of inventory
+ * @example Basic usage
  * ```ts
  * import { minOf } from "@std/collections/min-of";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const inventory = [
  *   { name: "mustard", count: 2 },
@@ -24,7 +25,9 @@
  *   { name: "tomato", count: 32 },
  * ];
  *
- * minOf(inventory, (item) => item.count); // 2
+ * const minCount = minOf(inventory, (item) => item.count);
+ *
+ * assertEquals(minCount, 2);
  * ```
  */
 export function minOf<T>(
@@ -44,9 +47,10 @@ export function minOf<T>(
  * @returns The first element that is the smallest value of the given function
  * or undefined if there are no elements.
  *
- * @example Calculate min count (`bigint`) of inventory
+ * @example Basic usage
  * ```ts
  * import { minOf } from "@std/collections/min-of";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const inventory = [
  *   { name: "mustard", count: 2n },
@@ -54,7 +58,9 @@ export function minOf<T>(
  *   { name: "tomato", count: 32n },
  * ];
  *
- * minOf(inventory, (item) => i.count); // 2n
+ * const minCount = minOf(inventory, (item) => item.count);
+ *
+ * assertEquals(minCount, 2n);
  * ```
  */
 export function minOf<T>(

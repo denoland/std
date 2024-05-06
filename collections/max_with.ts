@@ -20,10 +20,12 @@
  * @example Calculate longest name
  * ```ts
  * import { maxWith } from "@std/collections/max-with";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const people = ["Kim", "Anna", "John", "Arthur"];
+ * const largestName = maxWith(people, (a, b) => a.length - b.length);
  *
- * maxWith(people, (a, b) => a.length - b.length); // "Arthur"
+ * assertEquals(largestName, "Arthur");
  * ```
  */
 export function maxWith<T>(

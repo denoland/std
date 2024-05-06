@@ -28,44 +28,31 @@ export type SortByOptions = {
  *
  * @returns A new array containing all elements sorted by the selector.
  *
- * @example Sort from youngest to oldest
+ * @example Usage
  * ```ts
  * import { sortBy } from "@std/collections/sort-by";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const people = [
  *   { name: "Anna", age: 34 },
  *   { name: "Kim", age: 42 },
- *   { name: "Taylor", age: 23 },
+ *   { name: "John", age: 23 },
  * ];
+ * const sortedByAge = sortBy(people, (person) => person.age);
  *
- * sortBy(people, (person) => person.age);
- * // [
- * //   { name: "Taylor", age: 23 },
- * //   { name: "Anna", age: 34 },
- * //   { name: "Kim", age: 42 },
- * // ]
- * ```
- *
- * @example Sort from oldest to youngest
- *
- * Setting the `order` options to `desc` will sort the elements in descending
- * order.
- *
- * ```ts
- * import { sortBy } from "@std/collections/sort-by";
- *
- * const people = [
+ * assertEquals(sortedByAge, [
+ *   { name: "John", age: 23 },
  *   { name: "Anna", age: 34 },
  *   { name: "Kim", age: 42 },
- *   { name: "Taylor", age: 23 },
- * ];
+ * ]);
  *
- * sortBy(people, (person) => person.age, { order: "desc" });
- * // [
- * //   { name: "Kim", age: 42 },
- * //   { name: "Anna", age: 34 },
- * //   { name: "Taylor", age: 23 },
- * // ]
+ * const sortedByAgeDesc = sortBy(people, (person) => person.age, { order: "desc" });
+ *
+ * assertEquals(sortedByAgeDesc, [
+ *   { name: "Kim", age: 42 },
+ *   { name: "Anna", age: 34 },
+ *   { name: "John", age: 23 },
+ * ]);
  * ```
  */
 export function sortBy<T>(
@@ -87,44 +74,16 @@ export function sortBy<T>(
  *
  * @returns A new array containing all elements sorted by the selector.
  *
- * @example Sort from shortest to longest name
+ * @example Usage
  * ```ts
  * import { sortBy } from "@std/collections/sort-by";
  *
  * const people = [
  *   { name: "Anna" },
  *   { name: "Kim" },
- *   { name: "Taylor" },
+ *   { name: "John" },
  * ];
- *
- * sortBy(people, (person) => person.name);
- * // [
- * //   { name: "Kim" },
- * //   { name: "Anna" },
- * //   { name: "Taylor" },
- * // ]
- * ```
- *
- * @example Sort from longest to shortest name
- *
- * Setting the `order` options to `desc` will sort the elements in descending
- * order.
- *
- * ```ts
- * import { sortBy } from "@std/collections/sort-by";
- *
- * const people = [
- *   { name: "Anna" },
- *   { name: "Kim" },
- *   { name: "Taylor" },
- * ];
- *
- * sortBy(people, (person) => person.name);
- * // [
- * //   { name: "Taylor" },
- * //   { name: "Anna" },
- * //   { name: "Kim" },
- * // ]
+ * const sortedByName = sortBy(people, (it) => it.name);
  * ```
  */
 export function sortBy<T>(
@@ -146,46 +105,27 @@ export function sortBy<T>(
  *
  * @returns A new array containing all elements sorted by the selector.
  *
- * @example Sort from youngest to oldest
+ * @example Usage
  * ```ts
  * import { sortBy } from "@std/collections/sort-by";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const people = [
  *   { name: "Anna", age: 34n },
  *   { name: "Kim", age: 42n },
- *   { name: "Taylor", age: 23n },
+ *   { name: "John", age: 23n },
  * ];
  *
- * sortBy(people, (person) => person.age);
- * // [
- * //   { name: "Taylor", age: 23n },
- * //   { name: "Anna", age: 34n },
- * //   { name: "Kim", age: 42n },
- * // ]
- * ```
+ * const sortedByAge = sortBy(people, (person) => person.age);
  *
- * @example Sort from oldest to youngest
- *
- * Setting the `order` options to `desc` will sort the elements in descending
- * order.
- *
- * ```ts
- * import { sortBy } from "@std/collections/sort-by";
- *
- * const people = [
+ * assertEquals(sortedByAge, [
+ *   { name: "John", age: 23n },
  *   { name: "Anna", age: 34n },
  *   { name: "Kim", age: 42n },
- *   { name: "Taylor", age: 23n },
- * ];
- *
- * sortBy(people, (person) => person.age);
- * // [
- * //   { name: "Kim", age: 42n },
- * //   { name: "Anna", age: 34n },
- * //   { name: "Taylor", age: 23n },
- * // ]
+ * ]);
  * ```
  */
+
 export function sortBy<T>(
   array: readonly T[],
   selector: (el: T) => bigint,
@@ -205,9 +145,10 @@ export function sortBy<T>(
  *
  * @returns A new array containing all elements sorted by the selector.
  *
- * @example Sort from earliest to latest start date
+ * @example Usage
  * ```ts
  * import { sortBy } from "@std/collections/sort-by";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const people = [
  *   { name: "Anna", startedAt: new Date("2020-01-01") },
@@ -215,34 +156,13 @@ export function sortBy<T>(
  *   { name: "John", startedAt: new Date("2020-06-01") },
  * ];
  *
- * sortBy(people, (people) => people.startedAt);
- * // [
- * //   { name: "Anna", startedAt: new Date("2020-01-01") },
- * //   { name: "Kim", startedAt: new Date("2020-03-01") },
- * //   { name: "John", startedAt: new Date("2020-06-01") },
- * // ]
- * ```
+ * const sortedByStartedAt = sortBy(people, (people) => people.startedAt);
  *
- * @example Sort from latest to earliest start date
- *
- * Setting the `order` options to `desc` will sort the elements in descending
- * order.
- *
- * ```ts
- * import { sortBy } from "@std/collections/sort-by";
- *
- * const people = [
+ * assertEquals(sortedByStartedAt, [
  *   { name: "Anna", startedAt: new Date("2020-01-01") },
  *   { name: "Kim", startedAt: new Date("2020-03-01") },
  *   { name: "John", startedAt: new Date("2020-06-01") },
- * ];
- *
- * sortBy(people, (people) => people.startedAt, { order: "desc" });
- * // [
- * //   { name: "John", startedAt: new Date("2020-06-01") },
- * //   { name: "Kim", startedAt: new Date("2020-03-01") },
- * //   { name: "Anna", startedAt: new Date("2020-01-01") },
- * // ]
+ * ]);
  * ```
  */
 export function sortBy<T>(

@@ -16,11 +16,12 @@
  * @example Basic usage
  * ```ts
  * import { pick } from "@std/collections/pick";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const obj = { a: 5, b: 6, c: 7, d: 8 };
+ * const picked = pick(obj, ["a", "c"]);
  *
- * pick(obj, ["a", "c"]);
- * // { a: 5, c: 7 }
+ * assertEquals(picked, { a: 5, c: 7 });
  * ```
  */
 export function pick<T extends object, K extends keyof T>(

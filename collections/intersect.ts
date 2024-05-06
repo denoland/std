@@ -8,19 +8,22 @@ import { filterInPlace } from "./_utils.ts";
  * arrays.
  *
  * @template T The type of the elements in the input arrays.
+ *
  * @param arrays The arrays to intersect.
+ *
  * @returns An array of distinct elements that appear at least once in each of
  * the given arrays.
  *
- * @example Basic usage
+ * @example Find common interests
  * ```ts
  * import { intersect } from "@std/collections/intersect";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const lisaInterests = ["Cooking", "Music", "Hiking"];
  * const kimInterests = ["Music", "Tennis", "Cooking"];
+ * const commonInterests = intersect(lisaInterests, kimInterests);
  *
- * intersect(lisaInterests, kimInterests);
- * // ["Cooking", "Music"]
+ * assertEquals(commonInterests, ["Cooking", "Music"]);
  * ```
  */
 export function intersect<T>(...arrays: (readonly T[])[]): T[] {

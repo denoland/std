@@ -17,10 +17,13 @@
  * @example Basic usage
  * ```ts
  * import { takeLastWhile } from "@std/collections/take-last-while";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const numbers = [1, 2, 3, 4, 5, 6];
  *
- * takeLastWhile(numbers, (number) => number > 4); // [5, 6]
+ * const result = takeLastWhile(numbers, (number) => number > 4);
+ *
+ * assertEquals(result, [5, 6]);
  * ```
  */
 export function takeLastWhile<T>(

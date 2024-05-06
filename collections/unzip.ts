@@ -17,6 +17,7 @@
  * @example Basic usage
  * ```ts
  * import { unzip } from "@std/collections/unzip";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const parents = [
  *   ["Maria", "Jeff"],
@@ -26,8 +27,8 @@
  *
  * const [moms, dads] = unzip(parents);
  *
- * moms; // ["Maria", "Anna", "John"]
- * dads; // ["Jeff", "Kim", "Leroy"]
+ * assertEquals(moms, ["Maria", "Anna", "John"]);
+ * assertEquals(dads, ["Jeff", "Kim", "Leroy"]);
  * ```
  */
 export function unzip<T, U>(pairs: readonly [T, U][]): [T[], U[]] {

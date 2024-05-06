@@ -12,9 +12,10 @@
  *
  * @returns The sum of all elements in the collection.
  *
- * @example Calculate the total age of all people
+ * @example Basic usage
  * ```ts
  * import { sumOf } from "@std/collections/sum-of";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const people = [
  *   { name: "Anna", age: 34 },
@@ -22,7 +23,9 @@
  *   { name: "John", age: 23 },
  * ];
  *
- * sumOf(people, (person) => person.age); // 99
+ * const totalAge = sumOf(people, (person) => person.age);
+ *
+ * assertEquals(totalAge, 99);
  * ```
  */
 export function sumOf<T>(
