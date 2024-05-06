@@ -6,16 +6,24 @@
  * the given array that match the given predicate and the second one containing
  * all that do not.
  *
- * @example
+ * @template T The type of the elements in the array.
+ *
+ * @param array The array to partition.
+ * @param predicate The predicate function to determine which array an element
+ * belongs to.
+ *
+ * @returns A tuple of two arrays. The first array contains all elements that
+ * match the predicate, the second contains all elements that do not.
+ *
+ * @example Basic usage
  * ```ts
  * import { partition } from "@std/collections/partition";
- * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const numbers = [5, 6, 7, 8, 9];
- * const [even, odd] = partition(numbers, (it) => it % 2 === 0);
+ * const [even, odd] = partition(numbers, (number) => number % 2 === 0);
  *
- * assertEquals(even, [6, 8]);
- * assertEquals(odd, [5, 7, 9]);
+ * even; // [6, 8]
+ * odd; // [5, 7, 9]
  * ```
  */
 export function partition<T>(
@@ -27,16 +35,28 @@ export function partition<T>(
  * the given array that match the given predicate and the second one containing
  * all that do not.
  *
- * @example
+ * This version of the function is a type-guard version of the function. It
+ * allows you to specify a type-guard predicate function that narrows the type
+ * of the elements in the array.
+ *
+ * @template T The type of the elements in the array.
+ *
+ * @param array The array to partition.
+ * @param predicate The type-guard predicate function to determine which array
+ * an element belongs to.
+ *
+ * @returns A tuple of two arrays. The first array contains all elements that
+ * match the predicate, the second contains all elements that do not.
+ *
+ * @example Separate even and odd numbers
  * ```ts
  * import { partition } from "@std/collections/partition";
- * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const numbers = [5, 6, 7, 8, 9];
- * const [even, odd] = partition(numbers, (it) => it % 2 === 0);
+ * const [even, odd] = partition(numbers, (number) => number % 2 === 0);
  *
- * assertEquals(even, [6, 8]);
- * assertEquals(odd, [5, 7, 9]);
+ * even; // [6, 8]
+ * odd; // [5, 7, 9]
  * ```
  */
 export function partition<T, U extends T>(

@@ -5,19 +5,24 @@
  * Applies the given selector to all elements in the given collection and
  * calculates the sum of the results.
  *
- * @example
+ * @template T The type of the array elements.
+ *
+ * @param array The array to calculate the sum of.
+ * @param selector The selector function to get the value to sum.
+ *
+ * @returns The sum of all elements in the collection.
+ *
+ * @example Calculate the total age of all people
  * ```ts
  * import { sumOf } from "@std/collections/sum-of";
- * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const people = [
  *   { name: "Anna", age: 34 },
  *   { name: "Kim", age: 42 },
  *   { name: "John", age: 23 },
  * ];
- * const totalAge = sumOf(people, (i) => i.age);
  *
- * assertEquals(totalAge, 99);
+ * sumOf(people, (person) => person.age); // 99
  * ```
  */
 export function sumOf<T>(

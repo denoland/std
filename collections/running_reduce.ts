@@ -6,15 +6,21 @@
  * result as the accumulator to the next respective call, starting with the
  * given initialValue. Returns all intermediate accumulator results.
  *
- * @example
+ * @template T The type of the elements in the array.
+ * @template O The type of the accumulator.
+ *
+ * @param array The array to reduce.
+ * @param reducer The reducer function to apply to each element.
+ * @param initialValue The initial value of the accumulator.
+ *
+ * @example Basic usage
  * ```ts
  * import { runningReduce } from "@std/collections/running-reduce";
- * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const numbers = [1, 2, 3, 4, 5];
- * const sumSteps = runningReduce(numbers, (sum, current) => sum + current, 0);
  *
- * assertEquals(sumSteps, [1, 3, 6, 10, 15]);
+ * runningReduce(numbers, (sum, number) => sum + number, 0);
+ * // [1, 3, 6, 10, 15]
  * ```
  */
 export function runningReduce<T, O>(
