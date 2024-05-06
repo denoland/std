@@ -81,7 +81,7 @@ function assertHasParamTag(
   );
 }
 
-async function assertHasExampleTag(tags: JsDocTag[], document: DocNodeBase) {
+function assertHasExampleTag(tags: JsDocTag[], document: DocNodeBase) {
   tags = tags.filter((tag) => tag.kind === "example");
   if (tags.length === 0) {
     throw new ValidationError("Symbol must have an @example tag", document);
@@ -99,25 +99,20 @@ async function assertHasExampleTag(tags: JsDocTag[], document: DocNodeBase) {
         document,
       );
     }
-    const promises = [];
     for (const snippet of snippets) {
-      promises.push(async () => {
-        const command = new Deno.Command(Deno.execPath(), {
-          args: [
-            "eval",
-            snippet,
-          ],
-        });
-        console.log(snippet);
-        const { success } = await command.output();
-        assert(
-          success,
-          `Example code snippet failed to execute: \n${snippet}\n`,
-          document,
-        );
+      const command = new Deno.Command(Deno.execPath(), {
+        args: [
+          "eval",
+          snippet,
+        ],
       });
+      const { success } = command.outputSync();
+      assert(
+        success,
+        `Example code snippet failed to execute: \n${snippet}\n`,
+        document,
+      );
     }
-    await Promise.all(promises);
   }
 }
 
@@ -142,7 +137,7 @@ function assertHasTemplateTags(
   );
 }
 
-async function assertFunctionDocs(document: DocNodeFunction) {
+function assertFunctionDocs(document: DocNodeFunction) {
   assert(
     document.jsDoc !== undefined,
     "Symbol must have a JSDoc block",
@@ -163,18 +158,16 @@ async function assertFunctionDocs(document: DocNodeFunction) {
     assertHasTemplateTags(tags, typeParam.name, document);
   }
   assertHasTag(tags, "return", document);
-  await assertHasExampleTag(tags, document);
+  assertHasExampleTag(tags, document);
 }
 
 async function checkDocs(specifier: string) {
   const docs = await doc(specifier);
-  const promises = [];
   for (const document of docs.filter(isExported)) {
     if (isFunctionDoc(document)) {
-      promises.push(assertFunctionDocs(document));
+      assertFunctionDocs(document);
     }
   }
-  await Promise.all(promises);
 }
 
 const promises = [];
