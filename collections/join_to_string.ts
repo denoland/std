@@ -22,7 +22,8 @@ export type JoinToStringOptions = {
    */
   suffix?: string;
   /**
-   * The maximum number of elements to append.
+   * The maximum number of elements to append. If the value is negative, all
+   * elements will be appended, which is the default.
    *
    * @default {-1}
    */
@@ -42,7 +43,7 @@ export type JoinToStringOptions = {
  *
  * If the array could be huge, you can specify a non-negative value of `limit`,
  * in which case only the first `limit` elements will be appended, followed by
- * the `truncated` string. Returns the resulting string.
+ * the `truncated` string.
  *
  * @template T The type of the elements in the input array.
  *

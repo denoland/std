@@ -11,8 +11,8 @@
  * @param array The array to find the maximum element in.
  * @param selector The function to get the value to compare from each element.
  *
- * @returns The first element that is the largest value of the given function or
- * undefined if there are no elements.
+ * @returns The largest value of the given function or undefined if there are no
+ * elements.
  *
  * @example Basic usage
  * ```ts
