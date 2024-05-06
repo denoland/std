@@ -1,4 +1,5 @@
 // copied from the artifact project
+import { Chalk } from 'chalk'
 import { JSONSchemaType } from './web-client.ajv.ts'
 export enum PROCTYPE {
   SERIAL = 'SERIAL',
@@ -92,15 +93,17 @@ export const ENTRY_BRANCH = 'main'
  */
 export type PID = {
   /**
-   * The account within artifact that owns the repository.
-   * Later, this will become the chainId of the controlling account holding the
-   * repository.
+   * The hash of the genesis commit is used to identify this repo in a
+   * cryptographically secure way.  This repoId is used to reference this repo
+   * unique with strong guarantees that this is the correct repo that
+   * communication was intended with.
    */
-  id: string
+  repoId: string
   account: string
   repository: string
   branches: string[]
 }
+export type PartialPID = Omit<PID, 'repoId'>
 
 export type HelpConfig = {
   model?: 'gpt-3.5-turbo' | 'gpt-4-turbo'
@@ -296,7 +299,6 @@ type Head = { pid: PID; head: string }
 /** The client session interface to artifact */
 export interface ArtifactSession {
   pid: PID
-  home: ArtifactHome
   stop(): Promise<void> | void
   actions<T = DispatchFunctions>(isolate: string, target: PID): Promise<T>
   read(
@@ -329,11 +331,11 @@ export interface ArtifactSession {
 Will handle the generation of signing keys for the session, and authentication
 with github.
  */
-export interface ArtifactHome {
+export interface ArtifactMachine {
   pid: PID
-  stop(): Promise<void> | void
+  machineId: string
   /** Using the current session, create a new session. */
-  createSession(retry?: PID): Promise<ArtifactSession>
+  openSession(retry?: PID): ArtifactSession
   /** Pings the execution context without going thru the transaction queue.
    *
    * Used primarily by web clients to establish base connectivity and get
@@ -341,6 +343,11 @@ export interface ArtifactHome {
   ping(params?: { data?: JsonValue; pid?: PID }): Promise<IsolateReturn>
 }
 export interface EngineInterface {
+  /**
+   * The address in use as basis of identity for this engine.  May be a repo
+   * hosted on external engines, or hosted in cooperation with other engines.
+   */
+  homeAddress: PID
   stop(): Promise<void> | void
   pierce(pierce: PierceRequest): Promise<void>
   read(
@@ -354,6 +361,15 @@ export interface EngineInterface {
   transcribe(audio: File): Promise<{ text: string }>
   apiSchema(isolate: string): Promise<ApiSchema>
   ping(data?: JsonValue): Promise<IsolateReturn>
+  /**
+   * When a new machine is created, it needs to create its actorId and its
+   * machineId needs to be inserted to that actor.  It will immediately start a
+   * session, so this all gets done in one shot.
+   *
+   * Without this function, a new machine has no way to begin piercing into
+   * chainland.
+   */
+  createMachineSession(pid: PID): Promise<void>
 }
 export const isPID = (value: unknown): value is PID => {
   if (typeof value !== 'object' || value === null) {
@@ -367,12 +383,42 @@ export const isPID = (value: unknown): value is PID => {
     pid.branches.every((branch) => typeof branch === 'string')
   )
 }
+const { black, red, green, blue, magenta, cyan, bold } = new Chalk({ level: 1 })
+const colors = [red, green, blue, magenta, cyan, black]
+let colorIndex = 0
+const colorMap = new Map<string, number>()
+const colorize = (string: string) => {
+  const sub = string.substring(0, 7)
+  let index
+  if (colorMap.has(sub)) {
+    index = colorMap.get(sub)!
+  } else {
+    index = colorIndex++
+    if (colorIndex === colors.length) {
+      colorIndex = 0
+    }
+    colorMap.set(sub, index)
+  }
+
+  return colors[index](bold(sub))
+}
 export const print = (pid: PID) => {
-  return `${pid.id}/${pid.account}/${pid.repository}:${pid.branches.join('/')}`
+  const branches = pid.branches.map((segment) => {
+    if (/^[0-7][0-9A-HJKMNP-TV-Z]{9}[0-9A-HJKMNP-TV-Z]{16}$/.test(segment)) {
+      return colorize(segment.slice(-7))
+    }
+    if (segment.length > 12) {
+      return colorize(segment)
+    }
+    return segment
+  })
+  return `${colorize(pid.repoId)}/${pid.account}/${pid.repository}:${
+    branches.join('/')
+  }`
 }
 export const freezePid = (pid: PID) => {
-  if (!pid.id) {
-    throw new Error('id is required')
+  if (!pid.repoId) {
+    throw new Error('repoId is required')
   }
   if (!pid.account) {
     throw new Error('account is required')
@@ -391,10 +437,10 @@ export const freezePid = (pid: PID) => {
   Object.freeze(pid)
   Object.freeze(pid.branches)
 }
-export const pidFromRepo = (id: string, repo: string): PID => {
+export const pidFromRepo = (repoId: string, repo: string): PID => {
   const [account, repository] = repo.split('/')
   const pid: PID = {
-    id,
+    repoId,
     account,
     repository,
     branches: [ENTRY_BRANCH],
@@ -403,13 +449,16 @@ export const pidFromRepo = (id: string, repo: string): PID => {
   return pid
 }
 
-export const SUPERUSER = {
-  id: '0',
+export const ACTORS: Omit<PID, 'repoId'> = {
+  account: 'dreamcatcher-tech',
+  repository: 'identity',
+  branches: ['base'],
+}
+export const SUPERUSER: Omit<PID, 'repoId'> = {
   account: 'system',
   repository: 'system',
   branches: ['main'],
 }
-
 export const toActions = <T = DispatchFunctions>(
   target: PID,
   isolate: string,
@@ -456,3 +505,65 @@ const safeParams = (params?: Params) => {
   }
   return safe
 }
+export type ActorApi = {
+  /**
+   * Creates a new actor using a ulid to create the id.
+   *
+   * @param params
+   * @param params.machineId A secure identifier of the machine that is
+   * sponsoring this request.  In the case of a browser, this is the id of the
+   * browser instance and is the same for ever tab that makes a request.  This
+   * is a public key in secp256k1 format.
+   * @param params.sessionId A secure identifier of the session that is unique
+   * to the session being requested.  In the case of a browser, this is unique
+   * to each tab that is starting a session.  Sessions that already exist can
+   * be resumed.
+   * @returns
+   */
+  create: (params: { machineId: string; sessionId: string }) => Promise<PID>
+
+  /**
+   * Called by an actor, after authorizing, to merge its actorId with the
+   * actorId authorized with the given auth provider.
+   *
+   * For example, in github, the github user id is used to link actorIds
+   * together, and the first actorId to pass auth is the stable actorId for that
+   * user id, so future requests to merge always merge into that actorId.
+   *
+   * The operation leaves a record of what auth provider approved what
+   * unification and at what commit.
+   */
+  surrender: (params: { authProvider: PID }) => Promise<void>
+}
+export const assertValidSession = (pid: PID, identity: PID) => {
+  const { repoId, account, repository, branches } = identity
+  const msg = print(pid)
+  if (pid.repoId !== repoId) {
+    throw new Error('invalid repoId: ' + msg)
+  }
+  if (pid.account !== account) {
+    throw new Error('invalid account: ' + msg)
+  }
+  if (pid.repository !== repository) {
+    throw new Error('invalid repository: ' + msg)
+  }
+  if (pid.branches[0] !== branches[0]) {
+    throw new Error('invalid branch: ' + msg)
+  }
+  if (pid.branches.length !== 4) {
+    throw new Error('invalid initial pid: ' + msg)
+  }
+  if (pid.branches[1] !== pid.branches[2]) {
+    throw new Error('invalid actor: ' + msg)
+  }
+  const [, , machineId, sessionId] = pid.branches
+  if (!machineIdRegex.test(machineId)) {
+    throw new Error('invalid machineId: ' + msg)
+  }
+  if (!sessionIdRegex.test(sessionId)) {
+    throw new Error('invalid sessionId: ' + msg)
+  }
+}
+export const machineIdRegex = /^[0-9a-f]{66}$/
+export const sessionIdRegex =
+  /^[0-7][0-9A-HJKMNP-TV-Z]{9}[0-9A-HJKMNP-TV-Z]{16}$/

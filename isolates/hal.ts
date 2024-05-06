@@ -1,28 +1,65 @@
-import { IsolateApi, PID } from '@/constants.ts'
+import { IsolateApi, PID, print } from '@/constants.ts'
 import * as session from './session.ts'
+import * as repo from './repo.ts'
 import { Debug } from '@utils'
+import { ulid } from 'ulid'
 const log = Debug('AI:hal')
 
 export type HalBase = {
-  /**  */
-  createSession: () => Promise<PID>
-  /** If the user has changed what help is the prompt target, this will reset it
-   * back to the default */
-  resetPromptTarget: () => Promise<void>
-  /** Allows the help that gets called with the text from prompt calls to be
-   * changed, permitting the user to reprogram their instance of HAL.  The
-   * provided help name must be a valid help file */
-  setPromptTarget: (params: { help: string }) => Promise<void>
+  /**
+   * Creates a new actor, or errors if it already exists.  Uses the senders PID
+   * to determine the ActorId to use.
+   */
+  createActor: () => Promise<PID>
+}
+
+export type HalActor = {
+  /**
+   * Based on the incoming machineId, lists the available sessions.   If this is
+   * the anonymous user, we list only the sessions for this machineId, else we
+   * list all the sessions for the authenticated user.
+   */
+  listSessions: () => Promise<PID[]>
+  startSession: () => Promise<PID>
+
+  /**
+   * HAL checks if the machineId is part of the sending authenticated Actor.  If
+   * it is, and if there is an anonymous actor for this machineId, it moves all
+   * the sessions to the authenticated actor then deletes the anonymous actor
+   * branch.
+   *
+   * This should be called after a machine has completed the oauth loop.
+   */
+  surrenderMachine: (params: { machineId: string }) => Promise<void>
 }
 export type HalSession = {
   prompt: (params: { text: string }) => Promise<void>
   resetSession: () => Promise<void>
+
+  /** If the user has changed what help is the prompt target, this will reset it
+   * back to the default */
+  resetPromptTarget: () => Promise<void>
+
+  /** Allows the help that gets called with the text from prompt calls to be
+   * changed, permitting the user to reprogram their instance of HAL.  The
+   * provided help name must be a valid help file */
+  setPromptTarget: (params: { help: string }) => Promise<void>
+
+  /**
+   * Merges the changes made in this branch up to the actor branch so that all
+   * new sessions will start using the commit in this branch.
+   */
+  mergeUpstream: () => Promise<void>
 }
 
-export type Api = HalBase & HalSession
+export type Api = HalBase & HalActor & HalSession
 
 export const api = {
-  createSession: {
+  createActor: {
+    type: 'object',
+    additionalProperties: false,
+  },
+  startSession: {
     type: 'object',
     additionalProperties: false,
   },
@@ -50,6 +87,10 @@ export const api = {
     type: 'object',
     additionalProperties: false,
   },
+  '@@install': {
+    type: 'object',
+    additionalProperties: false,
+  },
 }
 
 export const ENTRY_HELP_FILE = 'entry.json'
@@ -57,21 +98,27 @@ export type EntryHelpFile = {
   help: string
 }
 
+const getActorName = (source: PID) => {
+  const [, actorId] = source.branches
+  return actorId
+}
+
 export const functions = {
-  createSession: async (_: object, api: IsolateApi) => {
-    const session = await api.functions<session.Api>('session')
-
+  createActor: async (_: object, api: IsolateApi) => {
     const { origin } = api
-    // TODO allow nested branch names
+    log('createActor in', print(api.pid))
+    log('createActor from', print(origin.source))
+    const name = getActorName(origin.source)
+    const tools = await api.functions<session.Api>('session')
+    return await tools.create({ name })
+  },
+  startSession: async (_: object, api: IsolateApi) => {
+    log('startSession', print(api.pid))
 
-    // BUT need to name it after the repo base that sent it
-    // then create a new incremented senssion name using a prefix
-    // create the base if it doesn't exist
-
-    const name = id(origin.source)
-    // await api.pidExists()
-    log('api pid', name)
+    const session = await api.functions<session.Api>('session')
+    const name = ulid()
     const pid = await session.create({ name })
+    log('startSession pid', print(pid))
     return pid
   },
   resetPromptTarget: (_: object, api: IsolateApi) => {
@@ -97,7 +144,9 @@ export const functions = {
   resetSession: (_: object, api: IsolateApi) => {
     api.delete('session.json')
   },
+  '@@install': (_: object, _api: IsolateApi) => {
+    log('install')
+    // TODO store a link to the identity chain
+    // TODO set permissions
+  },
 }
-
-const id = (pid: PID) =>
-  `${pid.id}-${pid.account}-${pid.repository}_${pid.branches[0]}`

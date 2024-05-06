@@ -14,7 +14,7 @@ import DB from '@/db.ts'
 
 Deno.test('pierce branch', async (t) => {
   const target: PID = {
-    id: 't',
+    repoId: 't',
     account: 'git',
     repository: 'test',
     branches: ['main'],

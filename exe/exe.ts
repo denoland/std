@@ -7,7 +7,6 @@ import {
   Outcome,
   SolidReply,
   SolidRequest,
-  SUPERUSER,
 } from '@/constants.ts'
 import IsolateApi from '../isolate-api.ts'
 import Compartment from '../io/compartment.ts'
@@ -54,13 +53,14 @@ export default class Executor {
       const opts = { isEffect: true, isEffectRecovered: false }
       // TODO read side effect config from io.json
       const isolateApi = IsolateApi.create(accumulator, opts)
-      if (isSystem(fs.pid)) {
-        isolateApi.context = c
-      }
       const compartment = await Compartment.create(req.isolate)
       const functions = compartment.functions(isolateApi)
       const execution = {
         function: Promise.resolve().then(() => {
+          if (!(req.functionName in functions)) {
+            const msg = `isolate: ${req.isolate} function: ${req.functionName}`
+            throw new Error('function not found: ' + msg)
+          }
           return functions[req.functionName](req.params)
         }).then((result) => {
           const outcome: Outcome = {}
@@ -114,7 +114,7 @@ export default class Executor {
         pending: { commit: fs.oid, requests, sequence },
       }
     } else {
-      assert(typeof outcome !== 'symbol')
+      assert(typeof outcome === 'object')
       log('exe complete %o', exeId)
       this.#functions.delete(exeId)
       const target = fs.pid
@@ -131,9 +131,4 @@ type Execution = {
   accumulator: Accumulator
   api: IsolateApi
   commits: string[]
-}
-const isSystem = (pid: PID) => {
-  const { id, account, repository } = pid
-  return id === SUPERUSER.id && account === SUPERUSER.account &&
-    repository === SUPERUSER.repository
 }

@@ -1,5 +1,5 @@
 import OpenAI from 'openai'
-import { ENTRY_HELP_FILE, HalBase, HalSession } from '@/isolates/hal.ts'
+import { ENTRY_HELP_FILE, HalActor, HalSession } from '@/isolates/hal.ts'
 import { expect, log } from '@utils'
 import { ArtifactSession } from '@/constants.ts'
 type Messages = OpenAI.ChatCompletionMessageParam
@@ -11,9 +11,9 @@ export default (name: string, cradleMaker: () => Promise<ArtifactSession>) => {
     const artifact = await cradleMaker()
     const { pid } = await artifact.clone({ repo })
 
-    const halBase = await artifact.actions<HalBase>('hal', pid)
+    const halBase = await artifact.actions<HalActor>('hal', pid)
     // log.enable('AI:tests AI:hal AI:session AI:isolates:engage-help AI:prompt')
-    const halSessionPid = await halBase.createSession()
+    const halSessionPid = await halBase.startSession()
     const hal = await artifact.actions<HalSession>('hal', halSessionPid)
 
     await t.step('prompt', async () => {
@@ -27,7 +27,7 @@ export default (name: string, cradleMaker: () => Promise<ArtifactSession>) => {
     })
 
     await t.step('redirect HAL', async () => {
-      const sessionBase = await artifact.actions<HalBase>('hal', halSessionPid)
+      const sessionBase = await artifact.actions<HalActor>('hal', halSessionPid)
       await expect(artifact.exists(ENTRY_HELP_FILE, halSessionPid)).resolves
         .toBe(false)
       await sessionBase.setPromptTarget({ help: 'help-fixture' })

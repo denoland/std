@@ -4,6 +4,7 @@ import {
   PID,
   PierceRequest,
   Poolable,
+  print,
   QueueMessage,
   QueueMessageType,
   SolidRequest,
@@ -109,15 +110,21 @@ export class Atomic {
     const type = QueueMessageType.BRANCH
     return this.#enqueue({ type, parentCommit, parentPid, sequence })
   }
-  enqueuePierce(pierce: PierceRequest) {
+  async enqueuePierce(pierce: PierceRequest) {
     assert(this.#atomic, 'Atomic not set')
+    const headKey = keys.getHeadKey(pierce.target)
+    const head = await this.#kv.get<string>(headKey)
+    if (!head.versionstamp) {
+      throw new Error('Head not found for pierce: ' + print(pierce.target))
+    }
     const key = keys.getPoolKey(pierce)
-    const empty = { key, versionstamp: null }
-    this.#atomic = this.#atomic.set(key, pierce).check(empty)
-    return this.#enqueuePool(pierce.target).#increasePool(
+    const emptyPool = { key, versionstamp: null }
+    this.#atomic = this.#atomic.set(key, pierce).check(emptyPool, head)
+    this.#enqueuePool(pierce.target).#increasePool(
       pierce.target,
       BigInt(1),
     )
+    return this.commit()
   }
   #enqueuePool(pid: PID) {
     const type = QueueMessageType.POOL

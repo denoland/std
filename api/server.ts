@@ -1,3 +1,4 @@
+import { createGitHubOAuthConfig, createHelpers } from '@deno/kv-oauth'
 import { Context, Hono } from 'hono'
 // TODO try out the fast router to improve load times
 import {
@@ -15,6 +16,12 @@ import { Engine } from '../engine.ts'
 import { assert, Debug, serializeError } from '@/utils.ts'
 import { EventSourceMessage } from '@/constants.ts'
 const log = Debug('AI:server')
+const {
+  signIn,
+  handleCallback,
+  signOut,
+  getSessionId,
+} = createHelpers(createGitHubOAuthConfig())
 
 let sseId = 0
 export default class Server {
@@ -29,8 +36,9 @@ export default class Server {
   }
   static async create() {
     // TODO whilst no system chain, fail with help message
-    const engine = await Engine.create()
-    const app = new Hono().basePath('/api')
+    const engine = await Engine.start()
+    const base = new Hono()
+    const app = base.basePath('/api')
 
     app.use(timing())
     app.use(prettyJSON())
@@ -96,7 +104,51 @@ export default class Server {
       return execute(c, engine.transcribe(audio), 'transcribe')
     })
 
-    return new Server(engine, app)
+    const auth = base.basePath('/auth')
+    auth.get('/signin', async (c) => {
+      const { machineId, actorId } = c.req.query()
+      if (!machineId) {
+        // TODO check key is valid
+        throw new Error('machineId querystring is required')
+      }
+
+      const response = await signIn(c.req.raw)
+      const cookie = response.headers.get('set-cookie')
+      // acting as the github actor, pierce the github chain to store this info
+
+      return response
+      // c.header('set-cookie', response.headers.get('set-cookie')!)
+      // return c.redirect(response.headers.get('location')!, response.status)
+    })
+
+    auth.get('/callback', async (c) => {
+      const { response, tokens, sessionId } = await handleCallback(c.req.raw)
+      console.log('tokens', tokens) // lol
+      const cookie = response.headers.get('set-cookie')
+      // acting as the github actor, pierce the github chain to store this info
+      // as well as storing the token from github
+      // there should be one PAT per machine id
+
+      // get the userId from github
+      // move the machine branch to be inside the user branch
+      // send the new pid down to the browser
+
+      // make a fetch request to get the userId from github
+      //
+
+      return response
+      // c.header('set-cookie', response.headers.get('set-cookie')!)
+      // return c.redirect(response.headers.get('location')!, response.status)
+    })
+
+    auth.get('/signout', async (c) => {
+      const response = await signOut(c.req.raw)
+      return response
+      // c.header('set-cookie', response.headers.get('set-cookie')!)
+      // return c.redirect(response.headers.get('location')!, response.status)
+    })
+
+    return new Server(engine, base)
   }
   async stop() {
     // TODO add all the read streams to be stopped too ?

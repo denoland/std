@@ -7,7 +7,7 @@ import DB from '@/db.ts'
 import { UnsequencedRequest } from '@/constants.ts'
 import { Engine } from '@/engine.ts'
 import { Api } from '@/isolates/io-fixture.ts'
-import { Home } from '@/api/web-client-home.ts'
+import { Machine } from '@/api/web-client-home.ts'
 
 const pid = { id: 't', account: 'exe', repository: 'test', branches: ['main'] }
 const source = { ...pid, account: 'higher' }
@@ -159,12 +159,12 @@ Deno.test('compound', async (t) => {
 for (const withFunctionCache of [true, false]) {
   Deno.test('accumulation spanning multiple commits', async (t) => {
     await t.step(`function cache ${withFunctionCache}`, async () => {
-      const engine = await Engine.create()
+      const engine = await Engine.start()
       if (!withFunctionCache) {
         engine.context.exe?.disableFunctionCache()
       }
       const { pid } = await engine.bootSuperUser()
-      const home = Home.create(engine, pid)
+      const home = Machine.resumeSession(engine, pid)
       const session = await home.createSession()
 
       const { fileAccumulation } = await session.actions<Api>('io-fixture', pid)
@@ -187,12 +187,12 @@ for (const withFunctionCache of [true, false]) {
 
   Deno.test('looping accumulation', async (t) => {
     await t.step(`function cache ${withFunctionCache}`, async () => {
-      const engine = await Engine.create()
+      const engine = await Engine.start()
       if (!withFunctionCache) {
         engine.context.exe?.disableFunctionCache()
       }
       const { pid } = await engine.bootSuperUser()
-      const home = Home.create(engine, pid)
+      const home = Machine.resumeSession(engine, pid)
       const session = await home.createSession()
 
       const { loopAccumulation } = await session.actions<Api>('io-fixture', pid)

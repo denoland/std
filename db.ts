@@ -245,7 +245,7 @@ export default class DB {
       }
     }
     drain().catch(sink.throw)
-    return sink
+    return sink as AsyncIterable<Splice>
   }
   async #getSplice(pid: PID, oid: string, path?: string) {
     const fs = FS.open(pid, oid, this)

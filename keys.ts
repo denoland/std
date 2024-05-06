@@ -11,8 +11,8 @@ export const POOL_COUNTER = 'counter'
 /** What value the pool has been processed up to */
 export const POOL_MARKER = 'marker'
 export const getPoolKeyPrefix = (pid: PID) => {
-  const { id, account, repository, branches } = pid
-  return [id, account, repository, 'pool', ...branches]
+  const { repoId, account, repository, branches } = pid
+  return [repoId, account, repository, 'pool', ...branches]
 }
 export const getPoolMarkerKey = (pid: PID) => {
   return [...getPoolKeyPrefix(pid), POOL_MARKER]
@@ -25,12 +25,12 @@ export const getPoolKey = (poolable: Poolable) => {
   return [...getPoolKeyPrefix(poolable.target), uniqueId]
 }
 export const getRepoKey = (pid: PID) => {
-  const { id, account, repository, branches } = pid
-  return [id, account, repository, ...branches]
+  const { repoId, account, repository, branches } = pid
+  return [repoId, account, repository, ...branches]
 }
 export const getRepoBase = (pid: PID) => {
-  const { id, account, repository } = pid
-  return [id, account, repository]
+  const { repoId, account, repository } = pid
+  return [repoId, account, repository]
 }
 export const getExeId = (request: SolidRequest) => {
   return idWithSequence(request.source, request.sequence)
@@ -65,12 +65,12 @@ export const getRepoLockKey = (pid: PID) => {
   return [...prefix, 'index.lock']
 }
 export const headKeyToPid = (headKey: string[]) => {
-  const [id, account, repository, refs, heads, ...branches] = headKey
-  assert(id, 'no id')
+  const [repoId, account, repository, refs, heads, ...branches] = headKey
+  assert(repoId, 'no id')
   assert(refs === 'refs', 'not a refs path')
   assert(heads === 'heads', 'not a heads path')
   assert(branches.length > 0, 'no branches')
-  return { id, account, repository, branches }
+  return { repoId, account, repository, branches }
 }
 
 export const UNDELIVERED = ['0', 'system', 'system', 'undelivered']

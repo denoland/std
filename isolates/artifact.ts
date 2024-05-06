@@ -79,8 +79,14 @@ export const functions = {
     // TODO add ulid in here, but make it be repeatable
     // TODO check signatures and permissions here
     // not necessary to be atomic, but uses functions on the atomic class
-    await db.atomic().enqueuePierce(pierce).commit()
+    await db.atomic().enqueuePierce(pierce)
     // TODO return back the head commit at the point of pooling
+    // TODO test if head is deleted between pooling and commit
+    // TODO test caller can handle head not present
+
+    // given that pierce only comes from one location, we can use checks to
+    // guarantee the head is the same when we commit, and just retry a bit until
+    // we get inserted correctly.
   },
 }
 
@@ -95,6 +101,7 @@ export const lifecycles: IsolateLifecycle = {
         const { pid } = message
         logger('qpl', pid)(print(pid))
         do {
+          // TODO catch head not found and reject all poolables to error reply
           const tip = await FS.openHead(pid, db)
           await doAtomicCommit(db, tip)
         } while (await db.hasPoolables(pid))

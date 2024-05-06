@@ -17,6 +17,8 @@ import * as promptInjector from './ai-prompt-injector.ts'
 import * as prompt from './ai-prompt.ts'
 
 import * as hal from './hal.ts'
+import * as github from './github.ts'
+import * as actors from './actors.ts'
 
 export default {
   'engage-help': engageHelp,
@@ -36,4 +38,6 @@ export default {
   'ai-prompt-injector': promptInjector,
   'ai-prompt': prompt,
   hal,
+  github,
+  actors,
 }

@@ -25,10 +25,10 @@ export const pid = {
   properties: {
     pid: {
       type: 'object',
-      required: ['id', 'account', 'repository', 'branches'],
+      required: ['repoId', 'account', 'repository', 'branches'],
       additionalProperties: false,
       properties: {
-        id: {
+        repoId: {
           type: 'string',
         },
         account: {
@@ -86,47 +86,10 @@ export const functions = {
     const { oid: head } = fs
     return { pid, head, elapsed: Date.now() - start }
   },
-  async clone(params: { pid: PID }, api: IsolateApi<C>) {
-    if (!api.isEffect) {
-      throw new Error('Clone requires side effect capabilities')
-    }
-    if (api.isEffectRecovered) {
-      // clean up the clone by wiping the repo, but make sure no existing repo
-      // was there before the previous torn clone was started.
-    }
-
-    const start = Date.now()
-    const { pid } = params
-    const probe = await functions.probe({ pid }, api)
-    if (probe) {
-      throw new Error('repo already exists: ' + print(pid))
-    }
-
-    log('cloning %s', repo)
-    const { db } = sanitizeContext(api)
-    const fs = await FS.clone(pid, db)
-    const { oid: head } = fs
-    log('cloned', head)
-    return { pid, head, elapsed: Date.now() - start }
-  },
   pull() {
     throw new Error('not implemented')
   },
   push() {
     throw new Error('not implemented')
-  },
-  rm(params: { pid: PID }, api: IsolateApi<C>) {
-    // TODO lock the whole repo in case something is running
-    if (!api.isEffect) {
-      throw new Error('rm requires side effect capabilities')
-    }
-    if (api.isEffectRecovered) {
-      // clean up the clone by wiping the repo, but make sure no existing repo
-      // was there before the previous torn clone was started.
-    }
-    log('rm', params.pid)
-    const { db } = sanitizeContext(api)
-    FS.clearCache(params.pid)
-    return db.rm(params.pid)
   },
 }

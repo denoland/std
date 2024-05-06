@@ -2,10 +2,9 @@
 // TODO publish to standalone repo
 import {
   ArtifactSession,
+  assertValidSession,
   EngineInterface,
   freezePid,
-  IoStruct,
-  isPierceRequest,
   JsonValue,
   PID,
   pidFromRepo,
@@ -16,52 +15,61 @@ import {
   UnsequencedRequest,
 } from './web-client.types.ts'
 import { ulid } from 'ulid'
-import { deserializeError } from 'serialize-error'
-import { Home } from './web-client-home.ts'
-
-type PiercePromise = {
-  resolve: (value: unknown) => void
-  reject: (error: Error) => void
-}
+import { PierceWatcher } from './web-client-watcher.ts'
 
 export class Session implements ArtifactSession {
+  #init: Promise<void> | undefined
+  #repo: Promise<Repo> | undefined
+
   readonly #engine: EngineInterface
   readonly #pid: PID
-  readonly #home: Home
-  #isHomeSession = false
-
-  readonly #pierces = new Map<string, PiercePromise>()
   readonly #abort = new AbortController()
-  #repo: Promise<Repo> | undefined
-  private constructor(engine: EngineInterface, pid: PID, home: Home) {
+  readonly #watcher: PierceWatcher
+
+  private constructor(
+    engine: EngineInterface,
+    pid: PID,
+    initializing?: Promise<Session>,
+  ) {
+    assertValidSession(pid, engine.homeAddress)
     this.#engine = engine
     this.#pid = pid
-    this.#home = home
-    this.#watchPierces()
-  }
-  static create(engine: EngineInterface, pid: PID, home: Home) {
-    freezePid(pid)
-    if (pid.branches.length !== 2) {
-      const branches = print(pid)
-      throw new Error('Session chain not direct child of base: ' + branches)
+    this.#watcher = PierceWatcher.create(this.#abort.signal, engine, pid)
+    if (initializing) {
+      this.#init = initializing.then(async (system) => {
+        await system.#initialize(this.sessionId)
+        this.#watcher.watchPierces()
+        this.#init = undefined
+      })
+    } else {
+      this.#watcher.watchPierces()
     }
-    return new Session(engine, pid, home)
   }
-  static createHome(engine: EngineInterface, pid: PID, home: Home) {
+  static create(engine: EngineInterface, pid: PID, system: Promise<Session>) {
     freezePid(pid)
-    if (pid.branches.length !== 1) {
-      const branches = print(pid)
-      throw new Error('Home session must be base: ' + branches)
-    }
-    const session = new Session(engine, pid, home)
-    session.#isHomeSession = true
-    return session
+    return new Session(engine, pid, system)
+  }
+  static createSystem(engine: EngineInterface, pid: PID) {
+    freezePid(pid)
+    return new Session(engine, pid)
   }
   get pid() {
     return this.#pid
   }
-  get home() {
-    return this.#home
+  get sessionId() {
+    return this.#pid.branches[this.#pid.branches.length - 1]
+  }
+  #initialize(sessionId: string) {
+    // we are the system session, and we are being asked to make a new session
+    console.log('initialize', print(this.#pid))
+    const request = {
+      target: this.pid,
+      isolate: 'actors',
+      functionName: 'createSession',
+      params: { sessionId },
+      proctype: PROCTYPE.SERIAL,
+    }
+    return this.#action(request)
   }
   async #repoActions() {
     // TODO this is really a scopeTo call on the base session object
@@ -72,36 +80,8 @@ export class Session implements ArtifactSession {
   }
   stop(): Promise<void> | void {
     this.#abort.abort()
-    if (this.#isHomeSession) {
-      return this.#engine.stop()
-    }
-    return this.#home.stop()
   }
-  async #watchPierces() {
-    let lastSplice
-    const { signal } = this.#abort
-    const after = undefined
-    const splices = this.#engine.read(this.#pid, '.io.json', after, signal)
-    for await (const splice of splices) {
-      // move these checks to the engine side
-      if (lastSplice && splice.commit.parent[0] !== lastSplice.oid) {
-        console.dir(splice, { depth: Infinity })
-        console.dir(lastSplice, { depth: Infinity })
-        throw new Error('parent mismatch: ' + splice.oid)
-      }
-      lastSplice = splice
 
-      if (splice.changes['.io.json']) {
-        const { patch } = splice.changes['.io.json']
-        // TODO move to unified diff patches
-        if (!patch) {
-          throw new Error('io.json patch not found')
-        }
-        const io = JSON.parse(patch)
-        this.#resolvePierces(io)
-      }
-    }
-  }
   async actions<T>(isolate: string, targetPID: PID) {
     const target = targetPID ? targetPID : this.pid
     const schema = await this.apiSchema(isolate)
@@ -118,8 +98,13 @@ export class Session implements ArtifactSession {
       proctype: PROCTYPE.SERIAL,
     }
     return new Promise((resolve, reject) => {
-      this.#pierces.set(pierce.ulid, { resolve, reject })
-      this.#engine.pierce(pierce)
+      this.#watcher.watch(pierce.ulid, { resolve, reject })
+      // TODO handle an error in pierce
+      if (this.#init) {
+        this.#init = this.#init.then(() => this.#engine.pierce(pierce))
+      } else {
+        this.#engine.pierce(pierce)
+      }
     })
   }
 
@@ -145,12 +130,12 @@ export class Session implements ArtifactSession {
     return actions.probe({ pid })
   }
   async init(params: { repo: string }) {
-    const pid = pidFromRepo(this.#pid.id, params.repo)
+    const pid = pidFromRepo(this.#pid.repoId, params.repo)
     const actions = await this.#repoActions()
     return actions.init({ pid })
   }
   async clone(params: { repo: string }) {
-    const pid = pidFromRepo(this.#pid.id, params.repo)
+    const pid = pidFromRepo(this.#pid.repoId, params.repo)
     const actions = await this.#repoActions()
     return actions.clone({ pid })
   }
@@ -163,7 +148,7 @@ export class Session implements ArtifactSession {
     return Promise.resolve()
   }
   async rm(params: { repo: string }) {
-    const pid = pidFromRepo(this.#pid.id, params.repo)
+    const pid = pidFromRepo(this.#pid.repoId, params.repo)
     const actions = await this.#repoActions()
     return actions.rm({ pid })
   }
@@ -184,38 +169,8 @@ export class Session implements ArtifactSession {
   async deleteAccountUnrecoverably(): Promise<void> {
     // throw new Error('not implemented')
   }
-  #resolvePierces(io: IoStruct) {
-    for (const [, value] of Object.entries(io.requests)) {
-      if (isPierceRequest(value)) {
-        if (this.#pierces.has(value.ulid)) {
-          const outcome = getOutcomeFor(io, value.ulid)
-          if (outcome) {
-            const promise = this.#pierces.get(value.ulid)
-            this.#pierces.delete(value.ulid)
-            if (!promise) {
-              throw new Error('Promise not found')
-            }
-            if (outcome.error) {
-              promise.reject(deserializeError(outcome.error))
-            } else {
-              promise.resolve(outcome.result)
-            }
-          }
-        }
-      }
-    }
-  }
 }
 
-const getOutcomeFor = (io: IoStruct, ulid: string) => {
-  for (const [key, value] of Object.entries(io.requests)) {
-    if (isPierceRequest(value)) {
-      if (value.ulid === ulid) {
-        return io.replies[key]
-      }
-    }
-  }
-}
 type Repo = {
   probe: (params: { pid: PID }) => Promise<{ pid: PID; head: string }>
   init: (params: { pid: PID }) => Promise<{ pid: PID; head: string }>

@@ -78,7 +78,7 @@ export default (name: string, cradleMaker: () => Promise<ArtifactSession>) => {
 
   Deno.test(prefix + 'github operations', async (t) => {
     const artifact = await cradleMaker()
-    const pid = pidFromRepo(artifact.pid.id, 'dreamcatcher-tech/HAL')
+    const pid = pidFromRepo(artifact.pid.repoId, 'dreamcatcher-tech/HAL')
     await artifact.rm({ repo: 'dreamcatcher-tech/HAL' })
     await t.step('probe empty', async () => {
       const result = await artifact.probe({ pid })

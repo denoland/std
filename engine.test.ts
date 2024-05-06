@@ -1,12 +1,11 @@
 import { Engine } from './engine.ts'
-import { Home } from './api/web-client-home.ts'
+import { Machine } from './api/web-client-home.ts'
 import guts from './guts/guts.ts'
 import { expect, log } from '@utils'
 
 const cradleMaker = async () => {
-  const engine = await Engine.create()
-  const { pid } = await engine.bootSuperUser()
-  const home = Home.create(engine, pid)
+  const engine = await Engine.start()
+  const home = Machine.resumeSession(engine, pid)
   const session = await home.createSession()
   return session
 }

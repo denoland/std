@@ -1,6 +1,14 @@
 import http from 'npm:isomorphic-git/http/web/index.js'
+import * as secp from '@noble/secp256k1'
 import { assert, Debug, equal, posix, sha1 } from '@utils'
-import { Change, ENTRY_BRANCH, PID, print } from '@/constants.ts'
+import {
+  Change,
+  ENTRY_BRANCH,
+  isBaseRepo,
+  PartialPID,
+  PID,
+  print,
+} from '@/constants.ts'
 import git from '$git'
 import type DB from '@/db.ts'
 import { GitKV } from './gitkv.ts'
@@ -64,12 +72,18 @@ export default class FS {
     }
     return new FS(pid, head, db)
   }
-  static async init(pid: PID, db: DB) {
+  static async init(partial: PartialPID, db: DB, owner?: PID) {
+    const repoId = generateFakeRepoId()
+    const pid = { ...partial, repoId }
     const fs = { promises: GitKV.createBlank(db, pid) }
-    await git.init({ fs, dir, defaultBranch: ENTRY_BRANCH })
+    assert(isBaseRepo(pid), 'not a base repo: ' + print(pid))
+
+    await git.init({ fs, dir, defaultBranch: pid.branches[0] })
     log('init complete')
-    const author = { name: 'git/init' }
+    const author = { name: owner ? print(owner) : 'git/init' }
     const cache = FS.#getGitCache(pid)
+    // TODO insert the .io.json file that includes the consensus config
+    // TODO write owner into config
     const commit = await git.commit({
       noUpdateBranch: true,
       fs,
@@ -82,12 +96,17 @@ export default class FS {
     const init = new FS(pid, commit, db)
     return init
   }
-  static async clone(pid: PID, db: DB, url?: string) {
+  static async clone(repo: string, db: DB) {
+    // TODO lock the whole repo in case something is running
     // TODO detect the mainbranch somehow
-    if (!url) {
-      url = `https://github.com/${pid.account}/${pid.repository}.git`
-    }
+    assert(repo.split('/').length === 2, 'invalid repo: ' + repo)
+    const url = `https://github.com/${repo}.git`
+
+    const repoId = generateFakeRepoId()
+    const [account, repository] = repo.split('/')
+    const pid = { repoId, account, repository, branches: [ENTRY_BRANCH] }
     const fs = { promises: GitKV.createBlank(db, pid) }
+
     fs.promises.oneAtomicWrite = db.atomic()
     const cache = FS.#getGitCache(pid)
     await git.clone({ fs, dir, url, http, noCheckout: true, cache })
@@ -448,4 +467,11 @@ const assertPath = (path: string) => {
   assert(!path.endsWith('/'), 'path must not end with /: ' + path)
 }
 const getCacheKey = (pid: PID) =>
-  pid.id + '/' + pid.repository + '/' + pid.account
+  pid.repoId + '/' + pid.repository + '/' + pid.account
+
+const generateFakeRepoId = () => {
+  // TODO make this genuine based on the genesis commit
+  const privKey = secp.utils.randomPrivateKey()
+  const pubKey = secp.getPublicKey(privKey)
+  return secp.etc.bytesToHex(pubKey)
+}

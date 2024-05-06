@@ -32,7 +32,7 @@ export type IsolateFunctions = {
   [key: string]: IsolateFunction
 }
 export type IsolateLifecycle = {
-  '@@mount': (api: IsolateApi) => Promise<IsolateReturn> | IsolateReturn
+  '@@mount'?: (api: IsolateApi) => Promise<IsolateReturn> | IsolateReturn
   '@@unmount'?: (api: IsolateApi) => Promise<IsolateReturn> | IsolateReturn
 }
 export type Isolate = {
@@ -191,5 +191,6 @@ export const isChildOf = (child: PID, parent: PID) => {
   const childParent = { ...child, branches: child.branches.slice(0, -1) }
   return equal(childParent, parent)
 }
+export const isBaseRepo = (pid: PID) => pid.branches.length === 1
 
 export * from './api/web-client.types.ts'

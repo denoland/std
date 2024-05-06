@@ -7,7 +7,7 @@ import { WebClientEngine } from '@/api/web-client-engine.ts'
 import guts from '../guts/guts.ts'
 import { load } from '@std/dotenv'
 import { SUPERUSER } from '@/constants.ts'
-import { Home } from '@/api/web-client-home.ts'
+import { Machine } from '@/api/web-client-home.ts'
 let introDone = false
 const cradleMaker = async () => {
   const env = await load()
@@ -20,7 +20,7 @@ const cradleMaker = async () => {
     const result = await engine.initialize()
     console.log('initialization:', result)
   }
-  const home = Home.create(engine, SUPERUSER)
+  const home = Machine.resumeSession(engine, SUPERUSER)
   const artifact = await home.createSession()
   return artifact
 }

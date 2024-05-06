@@ -19,12 +19,12 @@ export default class Compartment {
     log('load isolate:', isolate)
     assert(isolates[isolate as keyof typeof isolates], `not found: ${isolate}`)
     this.#module = isolates[isolate as keyof typeof isolates] as Isolate
-    const { functions, api } = this.#module
-    assert(typeof api === 'object', 'api not exported')
-    assert(typeof functions === 'object', 'functions not exported')
-    assert(Object.keys(this.#module.api).length, 'api not exported')
+    const { api, functions } = this.#module
+    assert(typeof functions === 'object', 'functions not exported: ' + isolate)
+    assert(typeof api === 'object', 'api not exported: ' + isolate)
+    assert(Object.keys(this.#module.api).length, 'api not exported: ' + isolate)
     const missing = Object.keys(api).filter((key) => !functions[key])
-    assert(!missing.length, `Missing functions: ${missing.join(', ')}`)
+    assert(!missing.length, `${isolate} Missing: ${missing.join(', ')}`)
   }
   static async create(isolate: string) {
     if (!cache.has(isolate)) {
@@ -74,18 +74,22 @@ export default class Compartment {
     this.#check()
     const actions: DispatchFunctions = {}
     for (const functionName in this.#module.api) {
-      actions[functionName] = (
-        parameters?: Params,
-      ) => {
-        log('dispatch: %o', functionName)
-        const schema = this.#module.api[functionName]
-        if (parameters === undefined) {
-          parameters = {}
-        }
-        validator(schema)(parameters)
-        return this.#module.functions[functionName](parameters, api)
-      }
+      actions[functionName] = this.#toFunction(functionName, api)
     }
     return actions as T
+  }
+  #toFunction(functionName: string, api: IsolateApi) {
+    return (
+      parameters?: Params,
+    ) => {
+      log('dispatch: %o', functionName)
+      if (parameters === undefined) {
+        parameters = {}
+      }
+      // TODO re-enable after perf testing
+      const schema = this.#module.api[functionName]
+      validator(schema)(parameters)
+      return this.#module.functions[functionName](parameters, api)
+    }
   }
 }

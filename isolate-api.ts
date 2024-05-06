@@ -170,6 +170,10 @@ export default class IsolateApi<T extends object = Default> {
     }
     return false
   }
+  async lsChildren() {
+    const obj = await this.readJSON<IoStruct>('.io.json')
+    return Object.values(obj.branches)
+  }
   get context() {
     // TODO at creation, this should flag context capable and reject if not
     return this.#context as T
