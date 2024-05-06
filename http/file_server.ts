@@ -51,6 +51,7 @@ import { parseArgs } from "@std/cli/parse-args";
 import { red } from "@std/fmt/colors";
 import denoConfig from "./deno.json" with { type: "json" };
 import { format as formatBytes } from "@std/fmt/bytes";
+import { getNetworkAddress } from "@std/net/get-network-address";
 
 interface EntryInfo {
   mode: string;
@@ -830,19 +831,6 @@ function main() {
       hostname: host,
       onListen,
     }, handler);
-  }
-}
-
-/**
- * Gets the network address of the machine,
- * inspired by the util of the same name in `npm:serve`
- * https://github.com/vercel/serve/blob/1ea55b1b5004f468159b54775e4fb3090fedbb2b/source/utilities/http.ts#L33
- */
-function getNetworkAddress() {
-  for (const { family, address } of Deno.networkInterfaces()) {
-    if (family === "IPv4" && !address.startsWith("127.")) {
-      return address;
-    }
   }
 }
 
