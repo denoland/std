@@ -6,7 +6,9 @@
  * occurrence.
  *
  * @template T The type of the elements in the input array.
+ *
  * @param array The array to filter for distinct elements.
+ *
  * @returns An array of distinct elements in the input array.
  *
  * @example Basic usage
