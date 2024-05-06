@@ -275,4 +275,4 @@ Deno.test("equal() WeakMap, WeakRef and WeakSet", () => {
   assertFalse(equal(new WeakMap(), { constructor: WeakMap }));
   assertFalse(equal(new WeakSet(), { constructor: WeakSet }));
   assertFalse(equal(new WeakRef({}), { constructor: WeakRef }));
-})
+});
