@@ -38,7 +38,9 @@ function assert(
 }
 
 function isFunctionDoc(document: DocNodeBase): document is DocNodeFunction {
-  return document.kind === "function";
+  return document.kind === "function" &&
+    // Ignores implementation signatures when overload signatures exist
+    (document as DocNodeFunction).functionDef.hasBody !== true;
 }
 
 function isExported(document: DocNodeBase) {

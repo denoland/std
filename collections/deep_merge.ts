@@ -68,6 +68,7 @@ const { hasOwn } = Object;
  * @example Merge sets
  * ```ts
  * import { deepMerge } from "@std/collections/deep-merge";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const a = { foo: new Set([1]) };
  * const b = { foo: new Set([2]) };
@@ -82,6 +83,7 @@ const { hasOwn } = Object;
  * @example Merge with custom options
  * ```ts
  * import { deepMerge } from "@std/collections/deep-merge";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const a = { foo: [1, 2] };
  * const b = { foo: [3, 4] };
@@ -165,6 +167,7 @@ export function deepMerge<
  * @example Merge sets
  * ```ts
  * import { deepMerge } from "@std/collections/deep-merge";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const a = { foo: new Set([1]) };
  * const b = { foo: new Set([2]) };
@@ -179,6 +182,7 @@ export function deepMerge<
  * @example Merge with custom options
  * ```ts
  * import { deepMerge } from "@std/collections/deep-merge";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const a = { foo: [1, 2] };
  * const b = { foo: [3, 4] };

@@ -40,6 +40,7 @@ export function partition<T>(
  * of the elements in the array.
  *
  * @template T The type of the elements in the array.
+ * @template U The type of the elements that match the predicate.
  *
  * @param array The array to partition.
  * @param predicate The type-guard predicate function to determine which array
