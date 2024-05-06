@@ -47,8 +47,10 @@ export function mapValues<T, O, K extends string>(
  * @template T The type of the values in the input record.
  * @template O The type of the values in the output record.
  * @template K The type of the keys in the input and output records.
+ *
  * @param record The record to map values from.
  * @param transformer The function to transform each value.
+ *
  * @returns A new record with all values transformed by the given transformer.
  *
  * @example Basic usage
