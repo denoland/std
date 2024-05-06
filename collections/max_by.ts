@@ -24,7 +24,7 @@
  *   { name: "John", age: 23 },
  * ];
  *
- * const personWithMaxAge = maxBy(people, (i) => i.age);
+ * const personWithMaxAge = maxBy(people, (person) => person.age);
  *
  * assertEquals(personWithMaxAge, { name: "Kim", age: 42 });
  * ```
