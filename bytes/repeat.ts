@@ -20,7 +20,7 @@ import { copy } from "./copy.ts";
  *
  * const result = repeat(source, 3);
  *
- * assertEquals(result, new Uint8Array([0, 1, 2, 0, 1, 2, 0, 1, 3]));
+ * assertEquals(result, new Uint8Array([0, 1, 2, 0, 1, 2, 0, 1, 2]));
  * ```
  *
  * @example Zero count
