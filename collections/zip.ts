@@ -8,7 +8,12 @@ import { minOf } from "./min_of.ts";
  * stopping when the smallest array's end is reached.
  *
  * @template T the type of the tuples produced by this function.
- * @example
+ *
+ * @param arrays The arrays to zip.
+ *
+ * @returns A new array containing N-tuples of elements from the given arrays.
+ *
+ * @example Basic usage
  * ```ts
  * import { zip } from "@std/collections/zip";
  * import { assertEquals } from "@std/assert/assert-equals";

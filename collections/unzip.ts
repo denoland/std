@@ -6,6 +6,15 @@
  * returned array holding all first tuple elements and the second one holding
  * all the second elements.
  *
+ * @template T The type of the first tuple elements.
+ * @template U The type of the second tuple elements.
+ *
+ * @param pairs The array of 2-tuples to unzip.
+ *
+ * @returns A tuple containing two arrays, the first one holding all first tuple
+ * elements and the second one holding all second elements.
+ *
+ * @example Basic usage
  * ```ts
  * import { unzip } from "@std/collections/unzip";
  * import { assertEquals } from "@std/assert/assert-equals";

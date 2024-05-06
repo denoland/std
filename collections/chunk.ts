@@ -4,7 +4,14 @@
 /**
  * Splits the given array into chunks of the given size and returns them.
  *
- * @example
+ * @template T Type of the elements in the input array.
+ *
+ * @param array The array to split into chunks.
+ * @param size The size of the chunks. This my be a positive integer.
+ *
+ * @returns An array of chunks of the given size.
+ *
+ * @example Basic usage
  * ```ts
  * import { chunk } from "@std/collections/chunk";
  * import { assertEquals } from "@std/assert/assert-equals";
