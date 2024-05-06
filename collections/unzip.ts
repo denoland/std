@@ -23,7 +23,7 @@
  *   ["Maria", "Jeff"],
  *   ["Anna", "Kim"],
  *   ["John", "Leroy"],
- * ];
+ * ] as [string, string][];
  *
  * const [moms, dads] = unzip(parents);
  *

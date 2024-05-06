@@ -19,9 +19,9 @@
  * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const usersById = {
- *   a2e: { name: "Kim", age: 22 },
- *   dfe: { name: "Anna", age: 31 },
- *   34b: { name: "Tim", age: 58 },
+ *   "a2e": { name: "Kim", age: 22 },
+ *   "dfe": { name: "Anna", age: 31 },
+ *   "34b": { name: "Tim", age: 58 },
  * };
  *
  * const agesByNames = mapEntries(usersById, ([id, { name, age }]) => [name, age]);
