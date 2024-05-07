@@ -1,4 +1,6 @@
 name: version_bump
+permissions:
+  contents: write
 on: workflow_dispatch
 jobs:
   build:
