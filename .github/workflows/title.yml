@@ -65,7 +65,6 @@ jobs:
             msgpack
             net
             path
-            permissions
             regexp
             semver
             streams

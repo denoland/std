@@ -135,8 +135,8 @@ export function minBy<T>(
     | ((el: T) => bigint)
     | ((el: T) => Date),
 ): T | undefined {
-  let min: T | undefined = undefined;
-  let minValue: ReturnType<typeof selector> | undefined = undefined;
+  let min: T | undefined;
+  let minValue: ReturnType<typeof selector> | undefined;
 
   for (const current of array) {
     const currentValue = selector(current);

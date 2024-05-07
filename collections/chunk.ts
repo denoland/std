@@ -44,20 +44,13 @@ export function chunk<T>(array: readonly T[], size: number): T[][] {
     );
   }
 
-  if (array.length === 0) {
-    return [];
+  const result: T[][] = [];
+  let index = 0;
+
+  while (index < array.length) {
+    result.push(array.slice(index, index + size));
+    index += size;
   }
 
-  const ret = Array.from<T[]>({ length: Math.ceil(array.length / size) });
-  let readIndex = 0;
-  let writeIndex = 0;
-
-  while (readIndex < array.length) {
-    ret[writeIndex] = array.slice(readIndex, readIndex + size);
-
-    writeIndex += 1;
-    readIndex += size;
-  }
-
-  return ret;
+  return result;
 }

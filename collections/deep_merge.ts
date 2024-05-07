@@ -3,8 +3,6 @@
 
 import { filterInPlace } from "./_utils.ts";
 
-const { hasOwn } = Object;
-
 /**
  * Merges the two given records, recursively merging any nested records with the
  * second collection overriding the first in case of conflict.
@@ -254,7 +252,7 @@ function deepMergeInternal<
 
     const a = record[key] as ResultMember;
 
-    if (!hasOwn(other, key)) {
+    if (!Object.hasOwn(other, key)) {
       result[key] = a;
 
       continue;
@@ -356,14 +354,14 @@ function isNonNullObject(
 }
 
 function getKeys<T extends Record<string, unknown>>(record: T): Array<keyof T> {
-  const ret = Object.getOwnPropertySymbols(record) as Array<keyof T>;
+  const result = Object.getOwnPropertySymbols(record) as Array<keyof T>;
   filterInPlace(
-    ret,
+    result,
     (key) => Object.prototype.propertyIsEnumerable.call(record, key),
   );
-  ret.push(...(Object.keys(record) as Array<keyof T>));
+  result.push(...(Object.keys(record) as Array<keyof T>));
 
-  return ret;
+  return result;
 }
 
 /** Merging strategy */
