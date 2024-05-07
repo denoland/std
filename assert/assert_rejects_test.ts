@@ -111,7 +111,7 @@ Deno.test(
 Deno.test("assertRejects() throws when no promise is returned", async () => {
   await assertRejects(
     // @ts-expect-error - testing invalid input
-    () => assertRejects(() => {}),
+    async () => await assertRejects(() => {}),
     AssertionError,
     "Function throws when expected to reject.",
   );
@@ -119,7 +119,7 @@ Deno.test("assertRejects() throws when no promise is returned", async () => {
 
 Deno.test("assertRejects() throws when the promise doesn't reject", async () => {
   await assertRejects(
-    () => assertRejects(() => Promise.resolve(42)),
+    async () => await assertRejects(async () => await Promise.resolve(42)),
     AssertionError,
     "Expected function to reject.",
   );
@@ -127,7 +127,11 @@ Deno.test("assertRejects() throws when the promise doesn't reject", async () => 
 
 Deno.test("assertRejects() throws with custom message", async () => {
   await assertRejects(
-    () => assertRejects(() => Promise.resolve(42), "CUSTOM MESSAGE"),
+    async () =>
+      await assertRejects(
+        async () => await Promise.resolve(42),
+        "CUSTOM MESSAGE",
+      ),
     AssertionError,
     "Expected function to reject: CUSTOM MESSAGE",
   );

@@ -13,7 +13,7 @@ Deno.test("equal() different zero", () => {
   assert(equal({ msg: "hello", array: [0] }, { msg: "hello", array: [-0] }));
 });
 
-Deno.test("equal()", function () {
+Deno.test("equal()", () => {
   assert(equal("world", "world"));
   assert(!equal("hello", "world"));
   assertFalse(equal("hello", "world"));
