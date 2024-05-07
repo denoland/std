@@ -184,10 +184,10 @@ export function sortBy<T>(
   const selectors = new Array<ReturnType<typeof selector> | null>(len);
   const order = options?.order ?? "asc";
 
-  array.forEach((item, idx) => {
-    indexes[idx] = idx;
-    const s = selector(item);
-    selectors[idx] = Number.isNaN(s) ? null : s;
+  array.forEach((element, index) => {
+    indexes[index] = index;
+    const selected = selector(element);
+    selectors[index] = Number.isNaN(selected) ? null : selected;
   });
 
   indexes.sort((ai, bi) => {
@@ -202,7 +202,7 @@ export function sortBy<T>(
   });
 
   for (let i = 0; i < len; i++) {
-    (indexes as unknown as T[])[i] = array[indexes[i] as number] as T;
+    (indexes as unknown as T[])[i] = array[indexes[i]!] as T;
   }
 
   return indexes as unknown as T[];

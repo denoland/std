@@ -35,15 +35,15 @@ export function mapNotNullish<T, O>(
   array: Iterable<T>,
   transformer: (el: T) => O,
 ): NonNullable<O>[] {
-  const ret: NonNullable<O>[] = [];
+  const result: NonNullable<O>[] = [];
 
   for (const element of array) {
     const transformedElement = transformer(element);
 
     if (transformedElement !== undefined && transformedElement !== null) {
-      ret.push(transformedElement as NonNullable<O>);
+      result.push(transformedElement as NonNullable<O>);
     }
   }
 
-  return ret;
+  return result;
 }

@@ -39,13 +39,13 @@ export function filterKeys<T>(
   record: Readonly<Record<string, T>>,
   predicate: (key: string) => boolean,
 ): Record<string, T> {
-  const ret: Record<string, T> = {};
+  const result: Record<string, T> = {};
 
   for (const [key, value] of Object.entries(record)) {
     if (predicate(key)) {
-      ret[key] = value;
+      result[key] = value;
     }
   }
 
-  return ret;
+  return result;
 }
