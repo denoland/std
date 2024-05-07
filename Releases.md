@@ -3,7 +3,6 @@
 #### @std/assert 0.225.1 (minor)
 
 - test(assert): improve test coverage (#4679)
-- chore(assert,fmt,fs,internal,path): skip yanked versions manually (#4683)
 
 #### @std/bytes 1.0.0-rc.1 (prerelease)
 
@@ -21,26 +20,10 @@
 - docs(collections): complete documentation (#4664)
 - refactor(collections): minor cleanups (#4681)
 
-#### @std/fmt 0.225.1 (minor)
-
-- chore(assert,fmt,fs,internal,path): skip yanked versions manually (#4683)
-
-#### @std/fs 0.229.1 (minor)
-
-- chore(assert,fmt,fs,internal,path): skip yanked versions manually (#4683)
-
-#### @std/internal 0.225.1 (minor)
-
-- chore(assert,fmt,fs,internal,path): skip yanked versions manually (#4683)
-
 #### @std/log 0.224.1 (patch)
 
 - feat(log): make `FileHandler` and `RotatingFileHandler` buffer size
   configurable (#4680)
-
-#### @std/path 0.225.1 (minor)
-
-- chore(assert,fmt,fs,internal,path): skip yanked versions manually (#4683)
 
 ### 0.224.0 / 2024.04.25
 
