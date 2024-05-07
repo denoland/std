@@ -387,8 +387,11 @@ const { black, red, green, blue, magenta, cyan, bold } = new Chalk({ level: 1 })
 const colors = [red, green, blue, magenta, cyan, black]
 let colorIndex = 0
 const colorMap = new Map<string, number>()
-const colorize = (string: string) => {
-  const sub = string.substring(0, 7)
+export const colorize = (string: string, noSubstring = false) => {
+  let sub = string
+  if (!noSubstring) {
+    sub = string.substring(0, 7)
+  }
   let index
   if (colorMap.has(sub)) {
     index = colorMap.get(sub)!
@@ -404,13 +407,13 @@ const colorize = (string: string) => {
 }
 export const print = (pid: PID) => {
   const branches = pid.branches.map((segment) => {
-    if (/^[0-7][0-9A-HJKMNP-TV-Z]{9}[0-9A-HJKMNP-TV-Z]{16}$/.test(segment)) {
+    if (sessionIdRegex.test(segment)) {
       return colorize(segment.slice(-7))
     }
-    if (segment.length > 12) {
+    if (machineIdRegex.test(segment)) {
       return colorize(segment)
     }
-    return segment
+    return colorize(segment, true)
   })
   return `${colorize(pid.repoId)}/${pid.account}/${pid.repository}:${
     branches.join('/')
@@ -567,3 +570,21 @@ export const assertValidSession = (pid: PID, identity: PID) => {
 export const machineIdRegex = /^[0-9a-f]{66}$/
 export const sessionIdRegex =
   /^[0-7][0-9A-HJKMNP-TV-Z]{9}[0-9A-HJKMNP-TV-Z]{16}$/
+
+export const getActorId = (source: PID) => {
+  const [, actorId] = source.branches
+  return actorId
+}
+export const getMachineId = (source: PID) => {
+  const [, , machineId] = source.branches
+  return machineId
+}
+export const isSessionPID = (source: PID) => {
+  const [, actorId, machineId, sessionId] = source.branches
+  return (
+    source.branches.length === 4 &&
+    machineIdRegex.test(actorId) &&
+    machineIdRegex.test(machineId) &&
+    sessionIdRegex.test(sessionId)
+  )
+}

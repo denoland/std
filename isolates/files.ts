@@ -1,5 +1,5 @@
 import { Debug } from '@utils'
-import { IsolateApi } from '@/constants.ts'
+import { IsolateApi, ProcessOptions } from '@/constants.ts'
 const log = Debug('isolates:files')
 
 export const api = {
@@ -63,7 +63,15 @@ export const api = {
     },
   },
 }
-
+export type Api = {
+  write: (
+    params: { path: string; content?: string },
+    opts?: ProcessOptions,
+  ) => Promise<number>
+  ls: (params: { path: string; count: number }) => Promise<string[] | number>
+  read: (params: { path: string }) => Promise<string>
+  update: (params: Update) => Promise<number>
+}
 export const functions = {
   // TODO this should be a full mirror of the IsolateApi functions
   write: (params: { path: string; content?: string }, api: IsolateApi) => {

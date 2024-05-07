@@ -53,7 +53,7 @@ export const functions = {
     assert(isMaxOneOf(retry, name, prefix), 'max one arg is possible')
     log('create')
     if (retry) {
-      if (await api.pidExists(retry)) {
+      if (await api.isChild(retry)) {
         // TODO check signing keys for validity too
         return retry
       }

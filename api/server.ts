@@ -134,7 +134,8 @@ export default class Server {
       // send the new pid down to the browser
 
       // make a fetch request to get the userId from github
-      //
+
+      // pass back an id so the browser knows which pats it has
 
       return response
       // c.header('set-cookie', response.headers.get('set-cookie')!)

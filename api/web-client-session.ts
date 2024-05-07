@@ -49,6 +49,11 @@ export class Session implements ArtifactSession {
     freezePid(pid)
     return new Session(engine, pid, system)
   }
+  static resume(engine: EngineInterface, pid: PID) {
+    // TODO check this is still a valid pid using ping or similar
+    freezePid(pid)
+    return new Session(engine, pid)
+  }
   static createSystem(engine: EngineInterface, pid: PID) {
     freezePid(pid)
     return new Session(engine, pid)
@@ -61,7 +66,6 @@ export class Session implements ArtifactSession {
   }
   #initialize(sessionId: string) {
     // we are the system session, and we are being asked to make a new session
-    console.log('initialize', print(this.#pid))
     const request = {
       target: this.pid,
       isolate: 'actors',
@@ -82,8 +86,7 @@ export class Session implements ArtifactSession {
     this.#abort.abort()
   }
 
-  async actions<T>(isolate: string, targetPID: PID) {
-    const target = targetPID ? targetPID : this.pid
+  async actions<T>(isolate: string, target: PID = this.pid) {
     const schema = await this.apiSchema(isolate)
     const execute = (request: UnsequencedRequest) => this.#action(request)
     return toActions<T>(target, isolate, schema, execute)

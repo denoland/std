@@ -1,6 +1,5 @@
-import { IsolateApi, PID, print } from '@/constants.ts'
+import { getActorId, IsolateApi, PID, print } from '@/constants.ts'
 import * as session from './session.ts'
-import * as repo from './repo.ts'
 import { Debug } from '@utils'
 import { ulid } from 'ulid'
 const log = Debug('AI:hal')
@@ -98,17 +97,12 @@ export type EntryHelpFile = {
   help: string
 }
 
-const getActorName = (source: PID) => {
-  const [, actorId] = source.branches
-  return actorId
-}
-
 export const functions = {
   createActor: async (_: object, api: IsolateApi) => {
     const { origin } = api
     log('createActor in', print(api.pid))
     log('createActor from', print(origin.source))
-    const name = getActorName(origin.source)
+    const name = getActorId(origin.source)
     const tools = await api.functions<session.Api>('session')
     return await tools.create({ name })
   },

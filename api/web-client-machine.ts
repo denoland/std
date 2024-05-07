@@ -55,7 +55,10 @@ export class Machine implements ArtifactMachine {
 
   /** If the given pid is valid, uses that session, else creates a new one */
   openSession(retry?: PID) {
-    const pid = retry || this.#createSessionPid()
+    if (retry) {
+      return Session.resume(this.#engine, retry)
+    }
+    const pid = this.#createSessionPid()
     return Session.create(this.#engine, pid, this.#initializing)
   }
   #createSessionPid() {

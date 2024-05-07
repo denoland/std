@@ -1,5 +1,9 @@
-import { PID } from '@/constants.ts'
+import { colorize, isBaseRepo, IsolateApi, PID, print } from '@/constants.ts'
 import type { Tokens } from '@deno/kv-oauth'
+import { Debug } from '@utils'
+import { assert } from '@std/assert'
+import * as files from './files.ts'
+const log = Debug('AI:github')
 
 export type Admin = {
   /**
@@ -49,4 +53,111 @@ export type Selectors = {
   ) => Promise<boolean>
 }
 
-export const functions = {}
+export const api = {
+  registerAttempt: {
+    type: 'object',
+    additionalProperties: false,
+    required: ['actorId', 'authSessionId'],
+    properties: {
+      actorId: { type: 'string' },
+      authSessionId: { type: 'string' },
+    },
+  },
+  authorize: {
+    type: 'object',
+    additionalProperties: false,
+    required: ['authSessionId', 'tokens', 'githubUserId'],
+    properties: {
+      authSessionId: { type: 'string' },
+      tokens: {
+        type: 'object',
+        required: ['accessToken', 'tokenType'],
+        properties: {
+          accessToken: { type: 'string' },
+          tokenType: { type: 'string' },
+        },
+      },
+      githubUserId: { type: 'string' },
+    },
+  },
+}
+
+export const functions = {
+  registerAttempt: async (
+    params: { actorId: string; authSessionId: string },
+    api: IsolateApi,
+  ) => {
+    log('registerAttempt', colorize(params.actorId))
+    assert(isBaseRepo(api.pid), 'not base: ' + print(api.pid))
+
+    // TODO use a branch to store the authsession info
+
+    // should be able to get the api of the remote chain and treat it like local
+    // api
+    // api should be the same inside isolate, as outside artifact, as in a
+    // remote chain
+
+    const filename = 'auth-' + params.authSessionId + '.json'
+    api.writeJSON(filename, params.actorId)
+  },
+  authorize: async (
+    params: { authSessionId: string; tokens: Tokens; githubUserId: string },
+    api: IsolateApi,
+  ) => {
+    assert(isBaseRepo(api.pid), 'not base: ' + print(api.pid))
+    const { authSessionId, tokens, githubUserId } = params
+    log('authorize', authSessionId, githubUserId)
+
+    const authFilename = 'auth-' + authSessionId + '.json'
+    if (!api.exists(authFilename)) {
+      throw new Error('authSessionId not found: ' + authSessionId)
+    }
+    const actorId = await api.readJSON<string>(authFilename)
+    log('actorId', colorize(actorId))
+    api.delete(authFilename)
+
+    const githubPid = {
+      ...api.pid,
+      branches: [...api.pid.branches, githubUserId],
+    }
+    const files = await api.actions<files.Api>('files')
+    const path = 'credentials.json'
+    let credentials: Credentials
+
+    if ((await api.isChild(githubPid))) {
+      const string = await files.read({ path })
+      credentials = JSON.parse(string)
+    } else {
+      credentials = { baseActorId: actorId, githubUserId, tokens: {} }
+      log('create branch', print(githubPid))
+    }
+    credentials.tokens[actorId] = tokens
+
+    await files.write(
+      { path, content: JSON.stringify(credentials) },
+      { noClose: true, branchName: githubUserId },
+    )
+
+    // TODO add some info about the PAT
+    const pointer: ActorPointer = { baseActorId: actorId, githubUserId }
+    const branchName = actorId
+    const actorPid = { ...api.pid, branches: [...api.pid.branches, branchName] }
+    if (await api.isChild(actorPid)) {
+      throw new Error('actorId already exists: ' + print(actorPid))
+    }
+    const filename = 'pointer.json'
+    await files.write(
+      { path: filename, content: JSON.stringify(pointer) },
+      { noClose: true, branchName: actorId },
+    )
+    log('actorPid', print(actorPid))
+  },
+}
+type Credentials = {
+  baseActorId: string
+  githubUserId: string
+  tokens: {
+    [machineId: string]: Tokens
+  }
+}
+type ActorPointer = Omit<Credentials, 'tokens'>

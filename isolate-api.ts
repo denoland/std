@@ -153,7 +153,7 @@ export default class IsolateApi<T extends object = Default> {
     log('delete', filepath)
     return this.#fs.delete(filepath)
   }
-  async pidExists(pid: PID) {
+  async isChild(pid: PID) {
     if (!isChildOf(pid, this.pid)) {
       throw new Error('not child: ' + print(pid) + ' of ' + print(this.pid))
       // TODO allow recursive PID walking
