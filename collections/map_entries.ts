@@ -40,14 +40,14 @@ export function mapEntries<T, O>(
   record: Readonly<Record<string, T>>,
   transformer: (entry: [string, T]) => [string, O],
 ): Record<string, O> {
-  const ret: Record<string, O> = {};
+  const result: Record<string, O> = {};
   const entries = Object.entries(record);
 
   for (const entry of entries) {
     const [mappedKey, mappedValue] = transformer(entry);
 
-    ret[mappedKey] = mappedValue;
+    result[mappedKey] = mappedValue;
   }
 
-  return ret;
+  return result;
 }

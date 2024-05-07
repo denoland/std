@@ -64,7 +64,7 @@ export type JoinToStringOptions = {
  *   { name: "Tim" },
  * ];
  *
- * const message = joinToString(users, (it) => it.name, {
+ * const message = joinToString(users, (user) => user.name, {
  *   suffix: " are winners",
  *   prefix: "result: ",
  *   separator: " and ",
@@ -90,23 +90,20 @@ export function joinToString<T>(
 
   let result = "";
 
-  let index = -1;
+  let index = 0;
   for (const el of array) {
-    index++;
-
     if (index > 0) {
       result += separator;
     }
 
-    if (limit > -1 && index >= limit) {
+    if (limit >= 0 && index >= limit) {
       result += truncated;
       break;
     }
 
     result += selector(el);
+    index++;
   }
 
-  result = prefix + result + suffix;
-
-  return result;
+  return prefix + result + suffix;
 }

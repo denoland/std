@@ -26,7 +26,7 @@
  *   { number: 13, order: "Salad" },
  * ];
  *
- * const nextOrder = firstNotNullishOf(tables, (it) => it.order);
+ * const nextOrder = firstNotNullishOf(tables, (table) => table.order);
  *
  * assertEquals(nextOrder, "Soup");
  * ```

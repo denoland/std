@@ -137,8 +137,8 @@ export function maxBy<T>(
     | ((el: T) => bigint)
     | ((el: T) => Date),
 ): T | undefined {
-  let max: T | undefined = undefined;
-  let maxValue: ReturnType<typeof selector> | undefined = undefined;
+  let max: T | undefined;
+  let maxValue: ReturnType<typeof selector> | undefined;
 
   for (const current of array) {
     const currentValue = selector(current);

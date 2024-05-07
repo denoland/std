@@ -28,8 +28,7 @@ export function omit<T extends object, K extends keyof T>(
   keys: readonly K[],
 ): Omit<T, K> {
   const excludes = new Set(keys);
-  const has = excludes.has.bind(excludes);
   return Object.fromEntries(
-    Object.entries(obj).filter(([k, _]) => !has(k as K)),
+    Object.entries(obj).filter(([k, _]) => !excludes.has(k as K)),
   ) as Omit<T, K>;
 }
