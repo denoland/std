@@ -39,8 +39,8 @@
  */
 export function chunk<T>(array: readonly T[], size: number): T[][] {
   if (size <= 0 || !Number.isInteger(size)) {
-    throw new Error(
-      `Expected size to be a positive integer, but found ${size}`,
+    throw new RangeError(
+      `Expected size to be an integer greater than 0 but found ${size}`,
     );
   }
 
