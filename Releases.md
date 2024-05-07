@@ -1,6 +1,6 @@
 ### 2024.05.07
 
-#### @std/assert 0.225.1 (minor)
+#### @std/assert 0.225.1 (patch)
 
 - test(assert): improve test coverage (#4679)
 
