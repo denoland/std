@@ -12,7 +12,6 @@ Deno.test("getNetworkAddress() works with IPv4", () => {
 Deno.test("getNetworkAddress() works with IPv6", () => {
   const hostname = getNetworkAddress("IPv6");
   assertNotEquals(hostname, undefined);
-  console.log(hostname);
   // Fails if the IPv6 address doesn't belong to the machine
   using _listener = Deno.listen({ hostname, port: 0 });
 });
