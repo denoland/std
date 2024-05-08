@@ -19,3 +19,12 @@
  * endsWith(c, b); // true
  * ```
  */
+export * from "./concat.ts";
+export * from "./copy.ts";
+export * from "./ends_with.ts";
+export * from "./equals.ts";
+export * from "./includes_needle.ts";
+export * from "./index_of_needle.ts";
+export * from "./last_index_of_needle.ts";
+export * from "./repeat.ts";
+export * from "./starts_with.ts";
