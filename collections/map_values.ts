@@ -62,7 +62,7 @@ export function mapValues<T, O, K extends string>(
  *   "a5ec": { name: "Mischa" },
  *   "de4f": { name: "Kim" },
  * };
- * const namesById = mapValues(usersById, (it) => it.name);
+ * const namesById = mapValues(usersById, (user) => user.name);
  *
  * assertEquals(
  *   namesById,
@@ -83,14 +83,14 @@ export function mapValues<T, O, K extends string>(
   // deno-lint-ignore no-explicit-any
 ): any {
   // deno-lint-ignore no-explicit-any
-  const ret: any = {};
+  const result: any = {};
   const entries = Object.entries<T>(record);
 
   for (const [key, value] of entries) {
     const mappedValue = transformer(value, key as K);
 
-    ret[key] = mappedValue;
+    result[key] = mappedValue;
   }
 
-  return ret;
+  return result;
 }

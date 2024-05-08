@@ -41,5 +41,5 @@ export function reduceGroups<T, A>(
   reducer: (accumulator: A, current: T) => A,
   initialValue: A,
 ): Record<string, A> {
-  return mapValues(record, (it) => it.reduce(reducer, initialValue));
+  return mapValues(record, (value) => value.reduce(reducer, initialValue));
 }

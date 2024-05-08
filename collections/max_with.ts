@@ -32,7 +32,7 @@ export function maxWith<T>(
   array: Iterable<T>,
   comparator: (a: T, b: T) => number,
 ): T | undefined {
-  let max: T | undefined = undefined;
+  let max: T | undefined;
   let isFirst = true;
 
   for (const current of array) {

@@ -71,10 +71,10 @@ export function maxOf<T, S extends ((el: T) => number) | ((el: T) => bigint)>(
   array: Iterable<T>,
   selector: S,
 ): ReturnType<S> | undefined {
-  let maximumValue: ReturnType<S> | undefined = undefined;
+  let maximumValue: ReturnType<S> | undefined;
 
-  for (const i of array) {
-    const currentValue = selector(i) as ReturnType<S>;
+  for (const element of array) {
+    const currentValue = selector(element) as ReturnType<S>;
 
     if (maximumValue === undefined || currentValue > maximumValue) {
       maximumValue = currentValue;
