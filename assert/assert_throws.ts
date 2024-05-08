@@ -1,4 +1,5 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
 import { assertIsError } from "./assert_is_error.ts";
 import { AssertionError } from "./assertion_error.ts";
 
@@ -11,7 +12,7 @@ import { AssertionError } from "./assertion_error.ts";
  *
  * @example
  * ```ts
- * import { assertThrows } from "https://deno.land/std@$STD_VERSION/assert/assert_throws.ts";
+ * import { assertThrows } from "@std/assert/assert-throws";
  *
  * assertThrows(() => { throw new TypeError("hello world!"); }); // Doesn't throw
  * assertThrows(() => console.log("hello world!")); // Throws
@@ -31,7 +32,7 @@ export function assertThrows(
  *
  * @example
  * ```ts
- * import { assertThrows } from "https://deno.land/std@$STD_VERSION/assert/assert_throws.ts";
+ * import { assertThrows } from "@std/assert/assert-throws";
  *
  * assertThrows(() => { throw new TypeError("hello world!"); }, TypeError); // Doesn't throw
  * assertThrows(() => { throw new TypeError("hello world!"); }, RangeError); // Throws
@@ -61,8 +62,8 @@ export function assertThrows<E extends Error = Error>(
   if (typeof errorClassOrMsg !== "string") {
     if (
       errorClassOrMsg === undefined ||
-      errorClassOrMsg.prototype instanceof Error ||
-      errorClassOrMsg.prototype === Error.prototype
+      errorClassOrMsg?.prototype instanceof Error ||
+      errorClassOrMsg?.prototype === Error.prototype
     ) {
       // deno-lint-ignore no-explicit-any
       ErrorClass = errorClassOrMsg as new (...args: any[]) => E;

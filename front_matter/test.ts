@@ -11,7 +11,7 @@ export type Format = "yaml" | "toml" | "json" | "unknown";
  * @param formats A list of formats to test for. Defaults to all supported formats.
  *
  * ```ts
- * import { test } from "https://deno.land/std@$STD_VERSION/front_matter/test.ts";
+ * import { test } from "@std/front-matter/test";
  *
  * test("---\ntitle: Three dashes marks the spot\n---\n"); // true
  * test("---toml\ntitle = 'Three dashes followed by format marks the spot'\n---\n"); // true

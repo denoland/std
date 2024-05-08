@@ -89,7 +89,7 @@ export class Spinner {
    *
    * @example
    * ```ts
-   * import { Spinner } from "https://deno.land/std@$STD_VERSION/cli/spinner.ts";
+   * import { Spinner } from "@std/cli/spinner";
    *
    * const spinner = new Spinner({ message: "Loading..." });
    * ```
@@ -125,7 +125,7 @@ export class Spinner {
    *
    * @example
    * ```ts
-   * import { Spinner } from "https://deno.land/std@$STD_VERSION/cli/spinner.ts";
+   * import { Spinner } from "@std/cli/spinner";
    *
    * const spinner = new Spinner({ message: "Loading..." });
    * spinner.start();
@@ -135,12 +135,15 @@ export class Spinner {
     if (this.#active || Deno.stdout.writable.locked) return;
     this.#active = true;
     let i = 0;
+    const noColor = Deno.noColor;
     // Updates the spinner after the given interval.
     const updateFrame = () => {
       const color = this.#color ?? "";
       Deno.stdout.writeSync(LINE_CLEAR);
       const frame = encoder.encode(
-        color + this.#spinner[i] + COLOR_RESET + " " + this.message,
+        noColor
+          ? this.#spinner[i] + " " + this.message
+          : color + this.#spinner[i] + COLOR_RESET + " " + this.message,
       );
       Deno.stdout.writeSync(frame);
       i = (i + 1) % this.#spinner.length;
@@ -152,7 +155,7 @@ export class Spinner {
    *
    * @example
    * ```ts
-   * import { Spinner } from "https://deno.land/std@$STD_VERSION/cli/spinner.ts";
+   * import { Spinner } from "@std/cli/spinner";
    *
    * const spinner = new Spinner({ message: "Loading..." });
    * spinner.start();

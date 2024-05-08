@@ -244,7 +244,7 @@ function getValuesFromItem(
  * import {
  *   Column,
  *   stringify,
- * } from "https://deno.land/std@$STD_VERSION/csv/stringify.ts";
+ * } from "@std/csv/stringify";
  *
  * type Character = {
  *   age: number;
@@ -303,7 +303,7 @@ export function stringify(
     output += BYTE_ORDER_MARK;
   }
 
-  if (headers) {
+  if (headers && normalizedColumns.length > 0) {
     output += normalizedColumns
       .map((column) => getEscapedString(column.header, sep))
       .join(sep);

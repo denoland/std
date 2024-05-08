@@ -1,7 +1,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
 import { TextLineStream } from "./text_line_stream.ts";
-import { assertEquals } from "../assert/mod.ts";
+import { assertEquals } from "@std/assert";
 
 Deno.test("TextLineStream parses simple input", async () => {
   const stream = ReadableStream.from([

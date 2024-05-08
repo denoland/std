@@ -1,7 +1,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-import { assert } from "../assert/assert.ts";
+import { assert } from "@std/assert/assert";
 
 /**
  * A transform stream that only transforms from the zero-indexed `start` and
@@ -9,7 +9,7 @@ import { assert } from "../assert/assert.ts";
  *
  * @example
  * ```ts
- * import { ByteSliceStream } from "https://deno.land/std@$STD_VERSION/streams/byte_slice_stream.ts";
+ * import { ByteSliceStream } from "@std/streams/byte-slice-stream";
  *
  * const response = await fetch("https://example.com");
  * const rangedStream = response.body!

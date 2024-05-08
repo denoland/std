@@ -1,6 +1,6 @@
 // Copyright Isaac Z. Schlueter and Contributors. All rights reserved. ISC license.
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-import { assert } from "../assert/mod.ts";
+import { assert } from "@std/assert";
 import { parse } from "./parse.ts";
 import { parseRange } from "./parse_range.ts";
 import { testRange } from "./test_range.ts";
@@ -386,7 +386,7 @@ Deno.test({
   },
 });
 
-Deno.test("negativeUnlockedPrereleaseRange", function () {
+Deno.test("testRange() works with negative unlocked pre-release range", function () {
   const versions: [string, string][] = [
     ["^1.0.0", "1.0.0-rc1"],
     ["^1.2.3-rc2", "2.0.0"],

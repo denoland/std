@@ -1,4 +1,5 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
 import { AssertionError } from "./assertion_error.ts";
 
 /**
@@ -9,7 +10,7 @@ import { AssertionError } from "./assertion_error.ts";
  *
  * @example
  * ```ts
- * import { assertAlmostEquals } from "https://deno.land/std@$STD_VERSION/assert/mod.ts";
+ * import { assertAlmostEquals } from "@std/assert";
  *
  * assertAlmostEquals(0.01, 0.02, 0.1); // Doesn't throw
  * assertAlmostEquals(0.01, 0.02); // Throws

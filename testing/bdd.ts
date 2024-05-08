@@ -92,7 +92,7 @@
  *   assertEquals,
  *   assertStrictEquals,
  *   assertThrows,
- * } from "https://deno.land/std@$STD_VERSION/assert/mod.ts";
+ * } from "@std/assert";
  *
  * class User {
  *   static users: Map<string, User> = new Map();
@@ -158,13 +158,13 @@
  *   assertEquals,
  *   assertStrictEquals,
  *   assertThrows,
- * } from "https://deno.land/std@$STD_VERSION/assert/mod.ts";
+ * } from "@std/assert";
  * import {
  *   afterEach,
  *   beforeEach,
  *   describe,
  *   it,
- * } from "https://deno.land/std@$STD_VERSION/testing/bdd.ts";
+ * } from "@std/testing/bdd";
  *
  * class User {
  *   static users: Map<string, User> = new Map();
@@ -241,11 +241,11 @@
  *   assertEquals,
  *   assertStrictEquals,
  *   assertThrows,
- * } from "https://deno.land/std@$STD_VERSION/assert/mod.ts";
+ * } from "@std/assert";
  * import {
  *   describe,
  *   it,
- * } from "https://deno.land/std@$STD_VERSION/testing/bdd.ts";
+ * } from "@std/testing/bdd";
  *
  * class User {
  *   static users: Map<string, User> = new Map();
@@ -322,11 +322,11 @@
  *   assertEquals,
  *   assertStrictEquals,
  *   assertThrows,
- * } from "https://deno.land/std@$STD_VERSION/assert/mod.ts";
+ * } from "@std/assert";
  * import {
  *   describe,
  *   it,
- * } from "https://deno.land/std@$STD_VERSION/testing/bdd.ts";
+ * } from "@std/testing/bdd";
  *
  * class User {
  *   static users: Map<string, User> = new Map();
@@ -597,6 +597,9 @@ it.ignore = function itIgnore<T>(...args: ItArgs<T>) {
 
 it.skip = it.ignore;
 
+/** Alias of {@linkcode it} */
+export const test = it;
+
 function addHook<T>(
   name: HookNames,
   fn: (this: T) => void | Promise<void>,
@@ -623,12 +626,18 @@ export function beforeAll<T>(
   addHook("beforeAll", fn);
 }
 
+/** Alias of {@linkcode beforeAll} */
+export const before = beforeAll;
+
 /** Run some shared teardown after all of the tests in the suite. */
 export function afterAll<T>(
   fn: (this: T) => void | Promise<void>,
 ) {
   addHook("afterAll", fn);
 }
+
+/** Alias of {@linkcode afterAll} */
+export const after = afterAll;
 
 /** Run some shared setup before each test in the suite. */
 export function beforeEach<T>(

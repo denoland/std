@@ -1,14 +1,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import {
-  bold,
-  gray,
-  green,
-  red,
-  stripAnsiCode,
-  yellow,
-} from "../fmt/colors.ts";
-import { AssertionError, assertThrows } from "../assert/mod.ts";
+import { bold, gray, green, red, stripAnsiCode, yellow } from "@std/fmt/colors";
+import { AssertionError, assertThrows } from "@std/assert";
 import { expect } from "./expect.ts";
 
 const createHeader = (): string[] => [
@@ -143,7 +136,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "expect().toEqual() throws with a custom message",
+  name: "expect().toEqual() throws with custom message",
   fn() {
     assertThrows(
       () => expect(1, "CUSTOM MESSAGE").toEqual(2),

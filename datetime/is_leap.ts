@@ -19,27 +19,22 @@ function isYearNumberALeapYear(yearNumber: number): boolean {
  * @param year The year in number or `Date` format.
  * @returns `true` if the given year is a leap year; `false` otherwise.
  *
- * @example Passing `Date` objects
+ * @example Basic usage
  * ```ts
- * import { isLeap } from "https://deno.land/std@$STD_VERSION/datetime/is_leap.ts";
+ * import { isLeap } from "@std/datetime/is-leap";
  *
  * isLeap(new Date("1970-01-02")); // false
  *
- * isLeap(new Date("1972-01-02")); // true
- * ```
- *
- * @example Passing number values
- * ```ts
- * import { isLeap } from "https://deno.land/std@$STD_VERSION/datetime/is_leap.ts";
- *
  * isLeap(1970); // false
+ *
+ * isLeap(new Date("1972-01-02")); // true
  *
  * isLeap(1972); // true
  * ```
  *
  * @example Accounting for timezones
  * ```ts
- * import { isLeap } from "https://deno.land/std@$STD_VERSION/datetime/is_leap.ts";
+ * import { isLeap } from "@std/datetime/is-leap";
  *
  * isLeap(new Date("2000-01-01"));
  * // true if the local timezone is GMT+0; false if the local timezone is GMT-1
@@ -63,18 +58,13 @@ export function isLeap(year: Date | number): boolean {
  * @param year The year in number or `Date` format.
  * @returns `true` if the given year is a leap year; `false` otherwise.
  *
- * @example Passing `Date` objects
+ * @example Basic usage
  * ```ts
- * import { isUtcLeap } from "https://deno.land/std@$STD_VERSION/datetime/is_leap.ts";
+ * import { isUtcLeap } from "@std/datetime/is-leap";
  *
  * isUtcLeap(new Date("2000-01-01")); // true
  *
  * isUtcLeap(new Date("December 31, 1999 23:59:59 GMT-01:00")); // true
- * ```
- *
- * @example Passing number values
- * ```ts
- * import { isUtcLeap } from "https://deno.land/std@$STD_VERSION/datetime/is_leap.ts";
  *
  * isUtcLeap(2000); // true
  *

@@ -53,9 +53,9 @@ const Z85 =
  *
  * @example
  * ```ts
- * import { encodeAscii85 } from "https://deno.land/std@$STD_VERSION/encoding/ascii85.ts";
+ * import { encodeAscii85 } from "@std/encoding/ascii85";
  *
- * encodeAscii85("Hello world!"); // => "87cURD]j7BEbo80"
+ * encodeAscii85("Hello world!"); // "87cURD]j7BEbo80"
  * ```
  */
 export function encodeAscii85(
@@ -124,13 +124,18 @@ export function encodeAscii85(
 }
 
 /**
- * Decodes a given ascii85-encoded string.
+ * Decodes a ascii85-encoded string.
+ *
+ * @param ascii85 The ascii85-encoded string to decode.
+ * @param options Options for decoding.
+ * @returns The decoded data.
  *
  * @example
  * ```ts
- * import { decodeAscii85 } from "https://deno.land/std@$STD_VERSION/encoding/ascii85.ts";
+ * import { decodeAscii85 } from "@std/encoding/ascii85";
  *
- * decodeAscii85("87cURD]j7BEbo80"); // => Uint8Array [ 72, 101, 108, 108, 111, 32, 119, 111, 114, 108, 100, 33 ]
+ * decodeAscii85("87cURD]j7BEbo80");
+ * // Uint8Array(12) [ 72, 101, 108, 108, 111, 32, 119, 111, 114, 108, 100, 33 ]
  * ```
  */
 export function decodeAscii85(
@@ -162,7 +167,7 @@ export function decodeAscii85(
       );
       break;
   }
-  //remove all invalid characters
+  // remove all invalid characters
   ascii85 = ascii85.replaceAll(/[^!-u]/g, "");
   const len = ascii85.length;
   const output = new Uint8Array(len + 4 - (len % 4));

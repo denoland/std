@@ -11,7 +11,7 @@
  * @module
  */
 
-import { assert } from "../assert/assert.ts";
+import { assert } from "@std/assert/assert";
 
 const ARCHITECTURE = "architecture";
 const MODEL = "model";
@@ -996,7 +996,7 @@ export class UserAgent {
    *
    * @example
    * ```ts
-   * import { UserAgent } from "https://deno.land/std@$STD_VERSION/http/user_agent.ts";
+   * import { UserAgent } from "@std/http/user-agent";
    *
    * Deno.serve((req) => {
    *   const userAgent = new UserAgent(req.headers.get("user-agent") ?? "");

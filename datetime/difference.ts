@@ -23,6 +23,9 @@ export type DifferenceFormat = Partial<Record<Unit, number>>;
 
 /** Options for {@linkcode difference}. */
 export type DifferenceOptions = {
+  /**
+   * Units to calculate difference in. Defaults to all units.
+   */
   units?: Unit[];
 };
 
@@ -36,16 +39,17 @@ function calculateMonthsDifference(from: Date, to: Date): number {
 }
 
 /**
- * Calculates the difference of the 2 given dates in the given units. If the units
+ * Calculates the difference of the 2 given dates in various units. If the units
  * are omitted, it returns the difference in the all available units.
  *
  * @param from Year to calculate difference from.
  * @param to Year to calculate difference to.
  * @param options Options such as units to calculate difference in.
+ * @returns The difference of the 2 given dates in various units.
  *
  * @example Basic usage
  * ```ts
- * import { difference } from "https://deno.land/std@$STD_VERSION/datetime/difference.ts";
+ * import { difference } from "@std/datetime/difference";
  *
  * const date0 = new Date("2018-05-14");
  * const date1 = new Date("2020-05-13");
@@ -66,7 +70,7 @@ function calculateMonthsDifference(from: Date, to: Date): number {
  *
  * @example Calculate difference in specific units
  * ```ts
- * import { difference } from "https://deno.land/std@$STD_VERSION/datetime/difference.ts";
+ * import { difference } from "@std/datetime/difference";
  *
  * const date0 = new Date("2018-05-14");
  * const date1 = new Date("2020-05-13");
@@ -74,6 +78,7 @@ function calculateMonthsDifference(from: Date, to: Date): number {
  * difference(date0, date1, { units: ["days", "months", "years"] });
  * // { days: 730, months: 23, years: 1 }
  * ```
+ * The `units` option defines which units to calculate the difference in.
  */
 export function difference(
   from: Date,

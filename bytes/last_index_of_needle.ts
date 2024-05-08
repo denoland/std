@@ -1,21 +1,45 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-/** Returns the index of the last occurrence of the needle array in the source
+/**
+ * Returns the index of the last occurrence of the needle array in the source
  * array, or -1 if it is not present.
  *
- * A start index can be specified as the third argument that begins the search
- * at that given index. The start index defaults to the end of the array.
+ * The complexity of this function is `O(source.length * needle.length)`.
  *
- * The complexity of this function is O(source.length * needle.length).
+ * @param source Source array to check.
+ * @param needle Needle array to check for.
+ * @param start Start index in the source array to begin the search. Defaults to
+ * `source.length - 1`.
+ * @returns Index of the last occurrence of the needle array in the source
+ * array, or -1 if it is not present.
  *
+ * @example Basic usage
  * ```ts
- * import { lastIndexOfNeedle } from "https://deno.land/std@$STD_VERSION/bytes/last_index_of_needle.ts";
+ * import { lastIndexOfNeedle } from "@std/bytes/last-index-of-needle";
+ * import { assertEquals } from "@std/assert/assert-equals";
+ *
  * const source = new Uint8Array([0, 1, 2, 1, 2, 1, 2, 3]);
  * const needle = new Uint8Array([1, 2]);
- * console.log(lastIndexOfNeedle(source, needle)); // 5
- * console.log(lastIndexOfNeedle(source, needle, 4)); // 3
+ * const notNeedle = new Uint8Array([5, 0]);
+ *
+ * assertEquals(lastIndexOfNeedle(source, needle), 5);
+ * assertEquals(lastIndexOfNeedle(source, notNeedle), -1);
  * ```
+ *
+ * @example Start index
+ * ```ts
+ * import { lastIndexOfNeedle } from "@std/bytes/last-index-of-needle";
+ * import { assertEquals } from "@std/assert/assert-equals";
+ *
+ * const source = new Uint8Array([0, 1, 2, 1, 2, 1, 2, 3]);
+ * const needle = new Uint8Array([1, 2]);
+ *
+ * assertEquals(lastIndexOfNeedle(source, needle, 2), 1);
+ * assertEquals(lastIndexOfNeedle(source, needle, 6), 5);
+ * ```
+ * Defining a start index will begin the search at the specified index in the
+ * source array.
  */
 export function lastIndexOfNeedle(
   source: Uint8Array,
@@ -31,18 +55,16 @@ export function lastIndexOfNeedle(
   const e = needle[needle.length - 1];
   for (let i = start; i >= 0; i--) {
     if (source[i] !== e) continue;
-    const pin = i;
     let matched = 1;
     let j = i;
-    while (matched < needle.length) {
-      j--;
-      if (source[j] !== needle[needle.length - 1 - (pin - j)]) {
-        break;
-      }
+    while (
+      matched < needle.length &&
+      source[--j] === needle[needle.length - 1 - (i - j)]
+    ) {
       matched++;
     }
     if (matched === needle.length) {
-      return pin - needle.length + 1;
+      return i - needle.length + 1;
     }
   }
   return -1;

@@ -3,20 +3,41 @@
 
 import { indexOfNeedle } from "./index_of_needle.ts";
 
-/** Returns true if the source array contains the needle array, false otherwise.
+/**
+ * Determines whether the source array contains the needle array.
  *
- * A start index can be specified as the third argument that begins the search
- * at that given index. The start index defaults to the beginning of the array.
+ * The complexity of this function is `O(source.length * needle.length)`.
  *
- * The complexity of this function is O(source.length * needle.length).
+ * @param source Source array to check.
+ * @param needle Needle array to check for.
+ * @param start Start index in the source array to begin the search. Defaults to
+ * 0.
+ * @returns `true` if the source array contains the needle array, `false`
+ * otherwise.
  *
+ * @example Basic usage
  * ```ts
- * import { includesNeedle } from "https://deno.land/std@$STD_VERSION/bytes/includes_needle.ts";
+ * import { includesNeedle } from "@std/bytes/includes-needle";
+ * import { assertEquals } from "@std/assert/assert-equals";
+ *
  * const source = new Uint8Array([0, 1, 2, 1, 2, 1, 2, 3]);
  * const needle = new Uint8Array([1, 2]);
- * console.log(includesNeedle(source, needle)); // true
- * console.log(includesNeedle(source, needle, 6)); // false
+ *
+ * assertEquals(includesNeedle(source, needle), true);
  * ```
+ *
+ * @example Start index
+ * ```ts
+ * import { includesNeedle } from "@std/bytes/includes-needle";
+ * import { assertEquals } from "@std/assert/assert-equals";
+ *
+ * const source = new Uint8Array([0, 1, 2, 1, 2, 1, 2, 3]);
+ * const needle = new Uint8Array([1, 2]);
+ *
+ * assertEquals(includesNeedle(source, needle, 3), true);
+ * assertEquals(includesNeedle(source, needle, 6), false);
+ * ```
+ * The search will start at the specified index in the source array.
  */
 export function includesNeedle(
   source: Uint8Array,

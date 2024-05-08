@@ -10,7 +10,7 @@
  *
  * @example
  * ```ts Parsing JSONC
- * import { parse } from "https://deno.land/std@$STD_VERSION/jsonc/mod.ts";
+ * import { parse } from "@std/jsonc";
  *
  * parse('{"foo": "bar", } // comment'); // { foo: "bar" }
  * parse('{"foo": "bar", } /* comment *\/'); // { foo: "bar" }

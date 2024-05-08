@@ -11,7 +11,7 @@ import { basename as windowsBasename } from "./windows/basename.ts";
  *
  * @example
  * ```ts
- * import { basename } from "https://deno.land/std@$STD_VERSION/path/basename.ts";
+ * import { basename } from "@std/path/basename";
  *
  * basename("/home/user/Documents/"); // "Documents"
  * basename("C:\\user\\Documents\\image.png"); // "image.png"

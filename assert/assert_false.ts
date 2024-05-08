@@ -1,4 +1,5 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
 import { AssertionError } from "./assertion_error.ts";
 
 /** Assertion condition for {@linkcode assertFalse}. */
@@ -9,7 +10,7 @@ export type Falsy = false | 0 | 0n | "" | null | undefined;
  *
  * @example
  * ```ts
- * import { assertFalse } from "https://deno.land/std@$STD_VERSION/assert/assert_false.ts";
+ * import { assertFalse } from "@std/assert/assert-false";
  *
  * assertFalse(false); // Doesn't throw
  * assertFalse(true); // Throws

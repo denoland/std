@@ -1,4 +1,5 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
 
 /**
  * Provides functions for dealing with and matching ETags, including
@@ -13,7 +14,7 @@
  * @module
  */
 
-import { encodeBase64 as base64Encode } from "../encoding/base64.ts";
+import { encodeBase64 as base64Encode } from "@std/encoding/base64";
 
 /**
  * Just the part of {@linkcode Deno.FileInfo} that is required to calculate an `ETag`,
@@ -95,8 +96,8 @@ async function calcFileInfo(
  * information, it will be calculated as a weak tag.
  *
  * ```ts
- * import { calculate } from "https://deno.land/std@$STD_VERSION/http/etag.ts";
- * import { assert } from "https://deno.land/std@$STD_VERSION/assert/assert.ts"
+ * import { calculate } from "@std/http/etag";
+ * import { assert } from "@std/assert/assert"
  *
  * const body = "hello deno!";
  *
@@ -130,8 +131,8 @@ export async function calculate(
  * import {
  *   calculate,
  *   ifMatch,
- * } from "https://deno.land/std@$STD_VERSION/http/etag.ts";
- * import { assert } from "https://deno.land/std@$STD_VERSION/assert/assert.ts"
+ * } from "@std/http/etag";
+ * import { assert } from "@std/assert/assert"
  *
  * const body = "hello deno!";
  *
@@ -173,8 +174,8 @@ export function ifMatch(
  * import {
  *   calculate,
  *   ifNoneMatch,
- * } from "https://deno.land/std@$STD_VERSION/http/etag.ts";
- * import { assert } from "https://deno.land/std@$STD_VERSION/assert/assert.ts"
+ * } from "@std/http/etag";
+ * import { assert } from "@std/assert/assert"
  *
  * const body = "hello deno!";
  *

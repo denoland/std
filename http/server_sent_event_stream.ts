@@ -66,7 +66,7 @@ function stringify(message: ServerSentEventMessage): Uint8Array {
  * import {
  *   type ServerSentEventMessage,
  *   ServerSentEventStream,
- * } from "https://deno.land/std@$STD_VERSION/http/server_sent_event_stream.ts";
+ * } from "@std/http/server-sent-event-stream";
  *
  * const stream = ReadableStream.from<ServerSentEventMessage>([
  *   { data: "hello there" }

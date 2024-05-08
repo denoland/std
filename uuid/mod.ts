@@ -32,7 +32,7 @@ export const NIL_UUID = "00000000-0000-0000-0000-000000000000";
  *
  * @example
  * ```ts
- * import { isNil } from "https://deno.land/std@$STD_VERSION/uuid/mod.ts";
+ * import { isNil } from "@std/uuid";
  *
  * isNil("00000000-0000-0000-0000-000000000000"); // true
  * isNil(crypto.randomUUID()); // false
@@ -47,7 +47,7 @@ export function isNil(id: string): boolean {
  *
  * @example
  * ```ts
- * import { validate } from "https://deno.land/std@$STD_VERSION/uuid/mod.ts";
+ * import { validate } from "@std/uuid";
  *
  * validate("not a UUID"); // false
  * validate("6ec0bd7f-11c0-43da-975e-2a8ad9ebae0b"); // true
@@ -65,7 +65,7 @@ export function validate(uuid: string): boolean {
  *
  * @example
  * ```ts
- * import { version } from "https://deno.land/std@$STD_VERSION/uuid/mod.ts";
+ * import { version } from "@std/uuid";
  *
  * version("d9428888-122b-11e1-b85c-61cd3cbb3210"); // 1
  * version("109156be-c4fb-41ea-b1b4-efe1671c5836"); // 4

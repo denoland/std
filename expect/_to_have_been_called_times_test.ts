@@ -2,7 +2,7 @@
 
 import { expect } from "./expect.ts";
 import { fn } from "./fn.ts";
-import { AssertionError, assertThrows } from "../assert/mod.ts";
+import { AssertionError, assertThrows } from "@std/assert";
 
 Deno.test("expect().toHaveBeenCalledTimes()", () => {
   const mockFn = fn();

@@ -26,7 +26,7 @@ export type Request = {
  *
  * @example
  * ```ts
- * import { accepts } from "https://deno.land/std@$STD_VERSION/http/negotiation.ts";
+ * import { accepts } from "@std/http/negotiation";
  *
  * const req = new Request("https://example.com/", {
  *   headers: {
@@ -52,7 +52,7 @@ export function accepts(request: Request): string[];
  *
  *  @example
  * ```ts
- * import { accepts } from "https://deno.land/std@$STD_VERSION/http/negotiation.ts";
+ * import { accepts } from "@std/http/negotiation";
  *
  * const req = new Request("https://example.com/", {
  *   headers: {
@@ -87,7 +87,7 @@ export function accepts(
  *
  * @example
  * ```ts
- * import { acceptsEncodings } from "https://deno.land/std@$STD_VERSION/http/negotiation.ts";
+ * import { acceptsEncodings } from "@std/http/negotiation";
  *
  * const req = new Request("https://example.com/", {
  *   headers: { "accept-encoding": "deflate, gzip;q=1.0, *;q=0.5" },
@@ -108,7 +108,7 @@ export function acceptsEncodings(request: Request): string[];
  *
  * @example
  * ```ts
- * import { acceptsEncodings } from "https://deno.land/std@$STD_VERSION/http/negotiation.ts";
+ * import { acceptsEncodings } from "@std/http/negotiation";
  *
  * const req = new Request("https://example.com/", {
  *   headers: { "accept-encoding": "deflate, gzip;q=1.0, *;q=0.5" },
@@ -142,7 +142,7 @@ export function acceptsEncodings(
  *
  * @example
  * ```ts
- * import { acceptsLanguages } from "https://deno.land/std@$STD_VERSION/http/negotiation.ts";
+ * import { acceptsLanguages } from "@std/http/negotiation";
  *
  * const req = new Request("https://example.com/", {
  *   headers: {
@@ -160,7 +160,7 @@ export function acceptsLanguages(request: Request): string[];
  *
  * @example
  * ```ts
- * import { acceptsLanguages } from "https://deno.land/std@$STD_VERSION/http/negotiation.ts";
+ * import { acceptsLanguages } from "@std/http/negotiation";
  *
  * const req = new Request("https://example.com/", {
  *   headers: {

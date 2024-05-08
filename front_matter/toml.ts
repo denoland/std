@@ -5,7 +5,7 @@ import {
   type Extractor,
   type Parser,
 } from "./create_extractor.ts";
-import { parse } from "../toml/parse.ts";
+import { parse } from "@std/toml/parse";
 
 /**
  * Extracts and parses {@link https://toml.io | TOML} from the metadata of
@@ -13,7 +13,7 @@ import { parse } from "../toml/parse.ts";
  *
  * @example
  * ```ts
- * import { extract } from "https://deno.land/std@$STD_VERSION/front_matter/toml.ts";
+ * import { extract } from "@std/front-matter/toml";
  *
  * const output = `---toml
  * title = "Three dashes marks the spot"

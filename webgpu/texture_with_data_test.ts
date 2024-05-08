@@ -1,6 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import { assert } from "../assert/assert.ts";
+import { assert } from "@std/assert/assert";
 import { createTextureWithData } from "./texture_with_data.ts";
 import { cleanUp, ignore } from "./_test_util.ts";
 

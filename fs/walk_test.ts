@@ -5,8 +5,8 @@ import {
   assertEquals,
   assertRejects,
   assertThrows,
-} from "../assert/mod.ts";
-import { fromFileUrl, resolve } from "../path/mod.ts";
+} from "@std/assert";
+import { fromFileUrl, resolve } from "@std/path";
 
 const testdataDir = resolve(fromFileUrl(import.meta.url), "../testdata/walk");
 

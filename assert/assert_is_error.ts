@@ -1,6 +1,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
 import { AssertionError } from "./assertion_error.ts";
-import { stripAnsiCode } from "../fmt/colors.ts";
+import { stripAnsiCode } from "@std/fmt/colors";
 
 /**
  * Make an assertion that `error` is an `Error`.
@@ -10,7 +11,7 @@ import { stripAnsiCode } from "../fmt/colors.ts";
  *
  * @example
  * ```ts
- * import { assertIsError } from "https://deno.land/std@$STD_VERSION/assert/assert_is_error.ts";
+ * import { assertIsError } from "@std/assert/assert-is-error";
  *
  * assertIsError(null); // Throws
  * assertIsError(new RangeError("Out of range")); // Doesn't throw
@@ -33,9 +34,8 @@ export function assertIsError<E extends Error = Error>(
     );
   }
   if (ErrorClass && !(error instanceof ErrorClass)) {
-    msg = `Expected error to be instance of "${ErrorClass.name}", but was "${
-      typeof error === "object" ? error?.constructor?.name : "[not an object]"
-    }"${msgSuffix}`;
+    msg =
+      `Expected error to be instance of "${ErrorClass.name}", but was "${error?.constructor?.name}"${msgSuffix}`;
     throw new AssertionError(msg);
   }
   let msgCheck;
@@ -53,11 +53,7 @@ export function assertIsError<E extends Error = Error>(
       msgMatches instanceof RegExp
         ? msgMatches.toString()
         : JSON.stringify(msgMatches)
-    }, but got ${
-      error instanceof Error
-        ? JSON.stringify(error.message)
-        : '"[not an Error]"' // TODO(kt3k): show more useful information
-    }${msgSuffix}`;
+    }, but got ${JSON.stringify(error?.message)}${msgSuffix}`;
     throw new AssertionError(msg);
   }
 }

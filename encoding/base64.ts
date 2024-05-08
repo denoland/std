@@ -8,6 +8,17 @@
  *
  * This module is browser compatible.
  *
+ * ```ts
+ * import {
+ *   encodeBase64,
+ *   decodeBase64,
+ * } from "@std/encoding/base64";
+ *
+ * const encoded = encodeBase64("foobar"); // "Zm9vYmFy"
+ *
+ * decodeBase64(encoded); // Uint8Array(6) [ 102, 111, 111, 98, 97, 114 ]
+ * ```
+ *
  * @module
  */
 
@@ -85,9 +96,12 @@ const base64abc = [
  *
  * @see {@link https://datatracker.ietf.org/doc/html/rfc4648#section-4}
  *
+ * @param data The data to encode.
+ * @returns The base64-encoded string.
+ *
  * @example
  * ```ts
- * import { encodeBase64 } from "https://deno.land/std@$STD_VERSION/encoding/base64.ts";
+ * import { encodeBase64 } from "@std/encoding/base64";
  *
  * encodeBase64("foobar"); // "Zm9vYmFy"
  * ```
@@ -134,11 +148,14 @@ export function encodeBase64(data: ArrayBuffer | Uint8Array | string): string {
  *
  * @see {@link https://datatracker.ietf.org/doc/html/rfc4648#section-4}
  *
+ * @param b64 The base64-encoded string to decode.
+ * @returns The decoded data.
+ *
  * @example
  * ```ts
- * import { encodeBase64 } from "https://deno.land/std@$STD_VERSION/encoding/base64.ts";
+ * import { decodeBase64 } from "@std/encoding/base64";
  *
- * encodeBase64("foobar"); // "Zm9vYmFy"
+ * decodeBase64("Zm9vYmFy"); // Uint8Array(6) [ 102, 111, 111, 98, 97, 114 ]
  * ```
  */
 export function decodeBase64(b64: string): Uint8Array {

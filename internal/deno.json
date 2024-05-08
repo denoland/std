@@ -1,0 +1,9 @@
+{
+  "name": "@std/internal",
+  "version": "0.225.0",
+  "exports": {
+    ".": "./mod.ts",
+    "./diff": "./diff.ts",
+    "./format": "./format.ts"
+  }
+}

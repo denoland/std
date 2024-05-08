@@ -6,7 +6,7 @@
  *
  * @example
  * ```ts
- * import { parse } from "https://deno.land/std@$STD_VERSION/path/mod.ts";
+ * import { parse } from "@std/path";
  *
  * const parsedPathObj = parse("c:\\path\\dir\\index.html");
  * parsedPathObj.root; // "c:\\"

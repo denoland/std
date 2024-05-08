@@ -1,8 +1,8 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-import { assert } from "../assert/assert.ts";
-import { copy } from "../bytes/copy.ts";
+import { assert } from "@std/assert/assert";
+import { copy } from "@std/bytes/copy";
 import type { Reader } from "./types.ts";
 
 const DEFAULT_BUF_SIZE = 4096;
@@ -12,7 +12,7 @@ const CR = "\r".charCodeAt(0);
 const LF = "\n".charCodeAt(0);
 
 /**
- * @deprecated (will be removed after 1.0.0) Use the {@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API | Web Streams API} instead.
+ * @deprecated This will be removed in 1.0.0. Use the {@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API | Web Streams API} instead.
  */
 export class BufferFullError extends Error {
   override name = "BufferFullError";
@@ -22,7 +22,7 @@ export class BufferFullError extends Error {
 }
 
 /**
- * @deprecated (will be removed after 1.0.0) Use the {@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API | Web Streams API} instead.
+ * @deprecated This will be removed in 1.0.0. Use the {@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API | Web Streams API} instead.
  */
 export class PartialReadError extends Error {
   override name = "PartialReadError";
@@ -35,7 +35,7 @@ export class PartialReadError extends Error {
 /**
  * Result type returned by of BufReader.readLine().
  *
- * @deprecated (will be removed after 1.0.0) Use the {@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API | Web Streams API} instead.
+ * @deprecated This will be removed in 1.0.0. Use the {@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API | Web Streams API} instead.
  */
 export interface ReadLineResult {
   line: Uint8Array;
@@ -43,7 +43,7 @@ export interface ReadLineResult {
 }
 
 /**
- * @deprecated (will be removed after 1.0.0) Use the {@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API | Web Streams API} instead.
+ * @deprecated This will be removed in 1.0.0. Use the {@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API | Web Streams API} instead.
  */
 export class BufReader implements Reader {
   #buf!: Uint8Array;

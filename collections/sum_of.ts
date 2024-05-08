@@ -5,17 +5,25 @@
  * Applies the given selector to all elements in the given collection and
  * calculates the sum of the results.
  *
- * @example
+ * @template T The type of the array elements.
+ *
+ * @param array The array to calculate the sum of.
+ * @param selector The selector function to get the value to sum.
+ *
+ * @returns The sum of all elements in the collection.
+ *
+ * @example Basic usage
  * ```ts
- * import { sumOf } from "https://deno.land/std@$STD_VERSION/collections/sum_of.ts";
- * import { assertEquals } from "https://deno.land/std@$STD_VERSION/assert/assert_equals.ts";
+ * import { sumOf } from "@std/collections/sum-of";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const people = [
  *   { name: "Anna", age: 34 },
  *   { name: "Kim", age: 42 },
  *   { name: "John", age: 23 },
  * ];
- * const totalAge = sumOf(people, (i) => i.age);
+ *
+ * const totalAge = sumOf(people, (person) => person.age);
  *
  * assertEquals(totalAge, 99);
  * ```

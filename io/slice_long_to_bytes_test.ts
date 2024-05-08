@@ -1,5 +1,5 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-import { assertEquals } from "../assert/mod.ts";
+import { assertEquals } from "@std/assert";
 import { readLong } from "./read_long.ts";
 import { sliceLongToBytes } from "./slice_long_to_bytes.ts";
 import { BufReader } from "./buf_reader.ts";

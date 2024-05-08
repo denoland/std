@@ -127,3 +127,34 @@ Deno.test("assertThrows() matches subclass of expected error", () => {
     "Fail!",
   );
 });
+
+Deno.test("assertThrows() throws when input function does not throw", () => {
+  assertThrows(
+    () => {
+      assertThrows(() => {});
+    },
+    AssertionError,
+    "Expected function to throw.",
+  );
+});
+
+Deno.test("assertThrows() throws with custom message", () => {
+  assertThrows(
+    () => {
+      assertThrows(() => {}, "CUSTOM MESSAGE");
+    },
+    AssertionError,
+    "Expected function to throw: CUSTOM MESSAGE",
+  );
+});
+
+Deno.test("assertThrows() throws with custom message and no error class", () => {
+  assertThrows(
+    () => {
+      // @ts-expect-error testing invalid input
+      assertThrows(() => {}, null, "CUSTOM MESSAGE");
+    },
+    AssertionError,
+    "Expected function to throw: CUSTOM MESSAGE",
+  );
+});

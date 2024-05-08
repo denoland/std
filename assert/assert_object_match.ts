@@ -1,4 +1,5 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
 import { assertEquals } from "./assert_equals.ts";
 
 /**
@@ -7,7 +8,7 @@ import { assertEquals } from "./assert_equals.ts";
  *
  * @example
  * ```ts
- * import { assertObjectMatch } from "https://deno.land/std@$STD_VERSION/assert/assert_object_match.ts";
+ * import { assertObjectMatch } from "@std/assert/assert-object-match";
  *
  * assertObjectMatch({ foo: "bar" }, { foo: "bar" }); // Doesn't throw
  * assertObjectMatch({ foo: "bar" }, { foo: "baz" }); // Throws
@@ -39,7 +40,7 @@ export function assertObjectMatch(
               a === null ? null : `type ${typeof a}`
             }`,
           );
-        } else throw err;
+        }
       }
       // Filter keys and symbols which are present in both actual and expected
       const filtered = {} as loose;

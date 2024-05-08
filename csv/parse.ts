@@ -12,7 +12,7 @@ import {
   type ReadOptions,
   type RecordWithColumn,
 } from "./_io.ts";
-import { assert } from "../assert/assert.ts";
+import { assert } from "@std/assert/assert";
 
 export {
   ParseError,
@@ -306,7 +306,7 @@ export interface ParseOptions extends ReadOptions {
  *
  * @example
  * ```ts
- * import { parse } from "https://deno.land/std@$STD_VERSION/csv/parse.ts";
+ * import { parse } from "@std/csv/parse";
  * const string = "a,b,c\nd,e,f";
  *
  * console.log(
@@ -319,18 +319,17 @@ export interface ParseOptions extends ReadOptions {
  * ```
  *
  * @param input Input to parse.
- * @param opt options of the parser.
  * @returns If you don't provide `opt.skipFirstRow` and `opt.columns`, it returns `string[][]`.
  *   If you provide `opt.skipFirstRow` or `opt.columns`, it returns `Record<string, unknown>[]`.
  */
-export function parse(input: string, opt?: undefined): string[][];
+export function parse(input: string): string[][];
 /**
  * Csv parse helper to manipulate data.
  * Provides an auto/custom mapper for columns.
  *
  * @example
  * ```ts
- * import { parse } from "https://deno.land/std@$STD_VERSION/csv/parse.ts";
+ * import { parse } from "@std/csv/parse";
  * const string = "a,b,c\nd,e,f";
  *
  * console.log(

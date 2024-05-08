@@ -10,7 +10,7 @@
  * package.
  *
  * ```ts
- * import { intersect } from "https://deno.land/std@$STD_VERSION/collections/intersect.ts";
+ * import { intersect } from "@std/collections/intersect";
  *
  * const lisaInterests = ["Cooking", "Music", "Hiking"];
  * const kimInterests = ["Music", "Tennis", "Cooking"];

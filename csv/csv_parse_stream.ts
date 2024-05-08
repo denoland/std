@@ -8,8 +8,8 @@ import {
   parseRecord,
   type ParseResult,
   type ReadOptions,
-} from "../csv/_io.ts";
-import { TextDelimiterStream } from "../streams/text_delimiter_stream.ts";
+} from "./_io.ts";
+import { TextDelimiterStream } from "@std/streams/text-delimiter-stream";
 
 /** Options for {@linkcode CsvParseStream}. */
 export interface CsvParseStreamOptions extends ReadOptions {
@@ -68,7 +68,7 @@ export type RowType<T> = T extends undefined ? string[]
  *
  * @example
  * ```ts
- * import { CsvParseStream } from "https://deno.land/std@$STD_VERSION/csv/csv_parse_stream.ts";
+ * import { CsvParseStream } from "@std/csv/csv-parse-stream";
  * const res = await fetch("https://example.com/data.csv");
  * const parts = res.body!
  *   .pipeThrough(new TextDecoderStream())

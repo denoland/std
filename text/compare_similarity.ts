@@ -1,4 +1,5 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
 import { levenshteinDistance } from "./levenshtein_distance.ts";
 
 // NOTE: this metric may change in future versions (e.g. better than levenshteinDistance)
@@ -9,7 +10,7 @@ const getWordDistance = levenshteinDistance;
  *
  * @example
  * ```ts
- * import { compareSimilarity } from "https://deno.land/std@$STD_VERSION/text/compare_similarity.ts";
+ * import { compareSimilarity } from "@std/text/compare-similarity";
  * const words = ["hi", "hello", "help"];
  *
  * // words most-similar to "hep" will be at the front

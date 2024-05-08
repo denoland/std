@@ -1,4 +1,5 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
 import { compareSimilarity } from "./compare_similarity.ts";
 
 /**
@@ -6,7 +7,7 @@ import { compareSimilarity } from "./compare_similarity.ts";
  *
  * @example
  * ```ts
- * import { wordSimilaritySort } from "https://deno.land/std@$STD_VERSION/text/word_similarity_sort.ts";
+ * import { wordSimilaritySort } from "@std/text/word-similarity-sort";
  *
  * const possibleWords = ["length", "size", "blah", "help"];
  *

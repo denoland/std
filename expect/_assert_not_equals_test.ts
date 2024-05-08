@@ -2,7 +2,7 @@
 
 // This file is copied from `std/assert`.
 
-import { assert, AssertionError } from "../assert/mod.ts";
+import { assert, AssertionError } from "@std/assert";
 import { assertEquals } from "./_assert_equals.ts";
 import { assertNotEquals } from "./_assert_not_equals.ts";
 

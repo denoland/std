@@ -1,7 +1,8 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
 import { isWildcardComparator } from "./_shared.ts";
 import { compare } from "./compare.ts";
-import { testRange } from "./test_range.ts";
+import { satisfies } from "./satisfies.ts";
 import type { Comparator, Range } from "./types.ts";
 
 function comparatorIntersects(
@@ -14,11 +15,11 @@ function comparatorIntersects(
   if (op0 === undefined) {
     // if c0 is empty comparator, then returns true
     if (isWildcardComparator(c0)) return true;
-    return testRange(c0, [[c1]]);
+    return satisfies(c0, [[c1]]);
   }
   if (op1 === undefined) {
     if (isWildcardComparator(c1)) return true;
-    return testRange(c1, [[c0]]);
+    return satisfies(c1, [[c0]]);
   }
 
   const cmp = compare(c0, c1);

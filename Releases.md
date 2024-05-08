@@ -1,3 +1,84 @@
+### 2024.05.07
+
+#### @std/assert 0.225.1 (patch)
+
+- test(assert): improve test coverage (#4679)
+
+#### @std/bytes 1.0.0-rc.1 (prerelease)
+
+- feat(bytes): `@std/bytes@1.0.0-rc.1` (#4651)
+- docs(bytes): fix return type description for `concat()` (#4668)
+- docs(bytes): update API doc of lastIndexOfNeedle (#4665)
+
+#### @std/cli 0.224.1 (patch)
+
+- fix(cli): spinner support NO_COLOR (#4662)
+
+#### @std/collections 0.224.1 (patch)
+
+- fix(collections): correct error class when `chunk()` throws (#4682)
+- docs(collections): complete documentation (#4664)
+- refactor(collections): minor cleanups (#4681)
+
+#### @std/log 0.224.1 (patch)
+
+- feat(log): make `FileHandler` and `RotatingFileHandler` buffer size
+  configurable (#4680)
+
+### 0.224.0 / 2024.04.25
+
+- deprecation(permissions): update removal time for `std/permissions` (#4575)
+- deprecation(semver): rename `testRange()` to `satisfies()` (#4364)
+- feat(http): file server prints local network address (#4604)
+- fix(bytes): `equals()` works with subarray (#4630)
+- fix(bytes): improve invalid count error message for `repeat()` (#4603)
+- fix(csv): do not print empty header line when no columns are given in
+  `stringify()` (#4610)
+- fix(csv): remove unused `opt` parameter (#4598)
+- fix(fs/ensure_dir): allow links to directories (#4132)
+- fix(path): export private types used in public API (#4645)
+- perf(bytes): improve performance of `equals()` (#4635)
+
+### 0.223.0 / 2024.04.15
+
+- deprecation(expect): rename `addSnapshotSerializers` to
+  `addSnapshotSerializer` (#4582)
+
+### 0.222.1 / 2024.04.11
+
+- deprecation(semver): deprecate `rangeMax()` and `rangeMin()` (#4561)
+- fix(log): Revert "deprecate(log): deprecate internal utility methods" (#4436)
+  (#4572)
+
+### 0.222.0 / 2024.04.11
+
+- [unstable] BREAKING(semver): remove comparator.semver field (#4533)
+- deprecate(log): deprecate internal utility methods (#4436)
+- deprecation(console): copy `std/console` APIs into `std/cli` and deprecate
+  `std/console` (#4547)
+- deprecation(crypto): rename an export to match style guide, deprecating
+  original and two other obsolete imports (#4525)
+- deprecation(encoding): make exported function names consistent with
+  `std/encoding` (#4555)
+- deprecation(yaml): cleanup schema exports (#4566)
+- feat(expect): support `expect.addSnapshotSerialize()` api (#4537)
+- feat(semver): `greaterThanRange()` and `lessThanRange()` (#4534)
+- feat(testing): add `after`, `before`, `test` aliases (#4541)
+- fix(cli): make the output of `promptSecret()` consistent with `prompt()`
+  (#4549)
+
+### 0.221.0 / 2024.03.27
+
+- feat(expect): add `expect.{closeTo, stringContaining, stringMatching}` (#4508)
+- fix(_tools): update `check_deprecation` path exclusion to recognize Windows
+  directory separators (#4519)
+- fix(crypto): move FNV hashes from TypeScript to Rust/Wasm and implement
+  iteration functionality (#4515)
+- fix(expect/assert): missing constructor equality check (#4512)
+- fix(fs): `SubdirectoryMoveError` extends `Error` correctly (#4528)
+- fix(yaml): speciously restrictive type for `stringify()` (#4507)
+- fix: use hyphens for JSR package exports (#4424)
+
 ### 0.220.1 / 2024.03.15
 
 - fix(tar): leak in `Tar() checks directory entry type` test (#4490)

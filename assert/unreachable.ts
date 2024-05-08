@@ -1,4 +1,5 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
 import { AssertionError } from "./assertion_error.ts";
 
 /**
@@ -6,7 +7,7 @@ import { AssertionError } from "./assertion_error.ts";
  *
  * @example
  * ```ts
- * import { unreachable } from "https://deno.land/std@$STD_VERSION/assert/unreachable.ts";
+ * import { unreachable } from "@std/assert/unreachable";
  *
  * unreachable(); // Throws
  * ```

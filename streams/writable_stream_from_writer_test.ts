@@ -1,8 +1,8 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import { assertEquals } from "../assert/mod.ts";
+import { assertEquals } from "@std/assert";
 import { writableStreamFromWriter } from "./writable_stream_from_writer.ts";
-import type { Closer, Writer } from "../io/types.ts";
+import type { Closer, Writer } from "@std/io/types";
 
 class MockWriterCloser implements Writer, Closer {
   chunks: Uint8Array[] = [];

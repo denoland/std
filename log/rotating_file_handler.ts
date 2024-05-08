@@ -1,6 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import type { LevelName } from "./levels.ts";
-import { existsSync } from "../fs/exists.ts";
+import { existsSync } from "@std/fs/exists";
 import { FileHandler, type FileHandlerOptions } from "./file_handler.ts";
 
 interface RotatingFileHandlerOptions extends FileHandlerOptions {

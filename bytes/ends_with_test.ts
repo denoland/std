@@ -1,6 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import { assert } from "../assert/mod.ts";
+import { assert } from "@std/assert";
 import { endsWith } from "./ends_with.ts";
 
 Deno.test("endsWith()", () => {
