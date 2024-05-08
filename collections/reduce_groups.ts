@@ -15,6 +15,9 @@ import { mapValues } from "./map_values.ts";
  * @param reducer The reducer function to apply to each group.
  * @param initialValue The initial value of the accumulator.
  *
+ * @returns A record with the same keys as the input grouping, where each value
+ * is the result of applying the reducer to the respective group.
+ *
  * @example Basic usage
  * ```ts
  * import { reduceGroups } from "@std/collections/reduce-groups";

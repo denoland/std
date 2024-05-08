@@ -18,9 +18,7 @@ import { copy } from "./copy.ts";
  *
  * const source = new Uint8Array([0, 1, 2]);
  *
- * const result = repeat(source, 3);
- *
- * assertEquals(result, new Uint8Array([0, 1, 2, 0, 1, 2, 0, 1, 2]));
+ * assertEquals(repeat(source, 3), new Uint8Array([0, 1, 2, 0, 1, 2, 0, 1, 2]));
  * ```
  *
  * @example Zero count
@@ -30,9 +28,7 @@ import { copy } from "./copy.ts";
  *
  * const source = new Uint8Array([0, 1, 2]);
  *
- * const result = repeat(source, 0);
- *
- * assertEquals(result, new Uint8Array());
+ * assertEquals(repeat(source, 0), new Uint8Array());
  * ```
  */
 export function repeat(source: Uint8Array, count: number): Uint8Array {
