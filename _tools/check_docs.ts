@@ -25,7 +25,7 @@ const ENTRY_POINTS = [
 
 const MD_SNIPPET = /(?<=```ts\n)(\n|.)*(?=\n```)/g;
 
-class ValidationError extends Error {
+class DocumentError extends Error {
   constructor(message: string, document: DocNodeBase) {
     super(message, {
       cause: `${document.location.filename}:${document.location.line}`,
@@ -40,14 +40,17 @@ function assert(
   document: DocNodeBase,
 ): asserts condition {
   if (!condition) {
-    throw new ValidationError(message, document);
+    throw new DocumentError(message, document);
   }
 }
 
+/**
+ * We only check functions that have JSDocs. We know that exported functions
+ * have JSDocs thanks to `deno doc --lint`, which is used in the `lint:docs`
+ * task.
+ */
 function isFunctionDoc(document: DocNodeBase): document is DocNodeFunction {
-  return document.kind === "function" &&
-    // Ignores implementation signatures when overload signatures exist
-    (document as DocNodeFunction).functionDef.hasBody !== true;
+  return document.kind === "function" && document.jsDoc !== undefined;
 }
 
 function isExported(document: DocNodeBase) {
@@ -87,7 +90,7 @@ function assertHasParamTag(
 function assertHasExampleTag(tags: JsDocTag[], document: DocNodeBase) {
   tags = tags.filter((tag) => tag.kind === "example");
   if (tags.length === 0) {
-    throw new ValidationError("Symbol must have an @example tag", document);
+    throw new DocumentError("Symbol must have an @example tag", document);
   }
   for (const tag of (tags as JsDocTagDocRequired[])) {
     assert(
@@ -97,7 +100,7 @@ function assertHasExampleTag(tags: JsDocTag[], document: DocNodeBase) {
     );
     const snippets = tag.doc.match(MD_SNIPPET);
     if (snippets === null) {
-      throw new ValidationError(
+      throw new DocumentError(
         "@example tag must have a code snippet",
         document,
       );
@@ -106,14 +109,18 @@ function assertHasExampleTag(tags: JsDocTag[], document: DocNodeBase) {
       const command = new Deno.Command(Deno.execPath(), {
         args: [
           "eval",
+          "--ext=ts",
           snippet,
         ],
+        stderr: "piped",
       });
       // TODO(iuioiua): Use `await command.output()`
-      const { success } = command.outputSync();
+      const { success, stderr } = command.outputSync();
       assert(
         success,
-        `Example code snippet failed to execute: \n${snippet}\n`,
+        `Example code snippet failed to execute: \n${snippet}\n${
+          new TextDecoder().decode(stderr)
+        }`,
         document,
       );
     }

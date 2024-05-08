@@ -13,6 +13,8 @@
  * @param reducer The reducer function to apply to each element.
  * @param initialValue The initial value of the accumulator.
  *
+ * @returns An array of all intermediate accumulator results.
+ *
  * @example Basic usage
  * ```ts
  * import { runningReduce } from "@std/collections/running-reduce";
