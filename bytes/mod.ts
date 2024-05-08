@@ -7,16 +7,19 @@
  * byte slices.
  *
  * ```ts
- * import { concat, equals, endsWith } from "@std/bytes";
+ * import { concat, indexOfNeedle, endsWith } from "@std/bytes";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const a = new Uint8Array([0, 1, 2]);
  * const b = new Uint8Array([3, 4, 5]);
  *
- * const c = concat([a, b]); // Uint8Array(6) [ 0, 1, 2, 3, 4, 5 ]
+ * const c = concat([a, b]);
  *
- * equals(c, new Uint8Array([0, 1, 2, 3, 4, 5])); // true
+ * assertEquals(c, new Uint8Array([0, 1, 2, 3, 4, 5]));
  *
- * endsWith(c, b); // true
+ * assertEquals(indexOfNeedle(c, new Uint8Array([2, 3])), 2);
+ *
+ * assertEquals(endsWith(c, b), true);
  * ```
  */
 export * from "./concat.ts";
