@@ -4,12 +4,17 @@ import type { LogRecord } from "./logger.ts";
 import { BaseHandler, type BaseHandlerOptions } from "./base_handler.ts";
 import { writeAllSync } from "@std/io/write-all";
 
-const PAGE_SIZE = 4096;
 export type LogMode = "a" | "w" | "x";
 
 export interface FileHandlerOptions extends BaseHandlerOptions {
   filename: string;
   mode?: LogMode;
+  /**
+   * Buffer size for writing log messages to file, in bytes.
+   *
+   * @default {4096}
+   */
+  bufferSize?: number;
 }
 
 /**
@@ -32,7 +37,7 @@ export interface FileHandlerOptions extends BaseHandlerOptions {
  */
 export class FileHandler extends BaseHandler {
   protected _file: Deno.FsFile | undefined;
-  protected _buf: Uint8Array = new Uint8Array(PAGE_SIZE);
+  protected _buf: Uint8Array;
   protected _pointer = 0;
   protected _filename: string;
   protected _mode: LogMode;
@@ -54,6 +59,7 @@ export class FileHandler extends BaseHandler {
       truncate: this._mode !== "a",
       write: true,
     };
+    this._buf = new Uint8Array(options.bufferSize ?? 4096);
   }
 
   override setup() {

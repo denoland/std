@@ -27,11 +27,31 @@ Deno.test({
 Deno.test({
   name: "chunk() throws on non naturals",
   fn() {
-    assertThrows(() => chunk([], +.5));
-    assertThrows(() => chunk([], -4.7));
-    assertThrows(() => chunk([], -2));
-    assertThrows(() => chunk([], +0));
-    assertThrows(() => chunk([], -0));
+    assertThrows(
+      () => chunk([], +.5),
+      RangeError,
+      "Expected size to be an integer greater than 0 but found 0.5",
+    );
+    assertThrows(
+      () => chunk([], -4.7),
+      RangeError,
+      "Expected size to be an integer greater than 0 but found -4.7",
+    );
+    assertThrows(
+      () => chunk([], -2),
+      RangeError,
+      "Expected size to be an integer greater than 0 but found -2",
+    );
+    assertThrows(
+      () => chunk([], +0),
+      RangeError,
+      "Expected size to be an integer greater than 0 but found 0",
+    );
+    assertThrows(
+      () => chunk([], -0),
+      RangeError,
+      "Expected size to be an integer greater than 0 but found 0",
+    );
   },
 });
 

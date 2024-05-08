@@ -62,8 +62,8 @@ export function assertThrows<E extends Error = Error>(
   if (typeof errorClassOrMsg !== "string") {
     if (
       errorClassOrMsg === undefined ||
-      errorClassOrMsg.prototype instanceof Error ||
-      errorClassOrMsg.prototype === Error.prototype
+      errorClassOrMsg?.prototype instanceof Error ||
+      errorClassOrMsg?.prototype === Error.prototype
     ) {
       // deno-lint-ignore no-explicit-any
       ErrorClass = errorClassOrMsg as new (...args: any[]) => E;

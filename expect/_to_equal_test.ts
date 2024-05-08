@@ -136,7 +136,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "expect().toEqual() throws with a custom message",
+  name: "expect().toEqual() throws with custom message",
   fn() {
     assertThrows(
       () => expect(1, "CUSTOM MESSAGE").toEqual(2),

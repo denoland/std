@@ -33,9 +33,9 @@ Deno.test({
 
     // Custom message
     assertThrows(
-      () => assertInstanceOf(new Date(), RegExp, "Custom message"),
+      () => assertInstanceOf(new Date(), RegExp, "CUSTOM MESSAGE"),
       AssertionError,
-      "Custom message",
+      "CUSTOM MESSAGE",
     );
 
     // Edge cases
