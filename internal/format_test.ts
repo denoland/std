@@ -1,5 +1,5 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-import { green, red, stripAnsiCode } from "@std/fmt/colors";
+import { green, red, stripAnsiCode } from "@std/cli/styles";
 import { assertEquals, assertThrows } from "@std/assert";
 import { format } from "./format.ts";
 

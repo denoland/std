@@ -1,6 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import { bold, gray, green, red, stripAnsiCode, yellow } from "@std/fmt/colors";
+import { bold, gray, green, red, stripAnsiCode, yellow } from "@std/cli/styles";
 import { AssertionError, assertThrows } from "@std/assert";
 import { expect } from "./expect.ts";
 

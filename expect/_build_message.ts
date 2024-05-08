@@ -1,6 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import { red } from "@std/fmt/colors";
+import { red } from "@std/cli/styles";
 import { CAN_NOT_DISPLAY } from "./_constants.ts";
 import { buildMessage, diff, diffstr, format } from "@std/internal";
 import type { EqualOptions } from "./_types.ts";

@@ -101,7 +101,7 @@
  * ```ts
  * // example_test.ts
  * import { createAssertSnapshot } from "@std/testing/snapshot";
- * import { stripAnsiCode } from "@std/fmt/colors";
+ * import { stripAnsiCode } from "@std/cli/styles";
  *
  * const assertSnapshot = createAssertSnapshot({
  *   dir: ".snaps",
@@ -141,7 +141,7 @@ import { parse } from "@std/path/parse";
 import { resolve } from "@std/path/resolve";
 import { toFileUrl } from "@std/path/to-file-url";
 import { ensureFile, ensureFileSync } from "@std/fs/ensure-file";
-import { bold, green, red } from "@std/fmt/colors";
+import { bold, green, red } from "@std/cli/styles";
 import { assert } from "@std/assert/assert";
 import { AssertionError } from "@std/assert/assertion-error";
 import { equal } from "@std/assert/equal";

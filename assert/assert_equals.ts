@@ -3,7 +3,7 @@
 import { equal } from "./equal.ts";
 import { buildMessage, diff, diffstr, format } from "@std/internal";
 import { AssertionError } from "./assertion_error.ts";
-import { red } from "@std/fmt/colors";
+import { red } from "@std/cli/styles";
 import { CAN_NOT_DISPLAY } from "./_constants.ts";
 
 /**

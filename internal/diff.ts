@@ -1,7 +1,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-import { bgGreen, bgRed, bold, gray, green, red, white } from "@std/fmt/colors";
+import { bgGreen, bgRed, bold, gray, green, red, white } from "@std/cli/styles";
 
 interface FarthestPoint {
   y: number;

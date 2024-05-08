@@ -3,7 +3,7 @@
 import { walk } from "../fs/walk.ts";
 import { relative } from "../path/relative.ts";
 import { dirname } from "../path/dirname.ts";
-import * as colors from "../fmt/colors.ts";
+import * as styles from "../cli/styles.ts";
 import ts from "npm:typescript";
 
 const ROOT = new URL("../", import.meta.url);
@@ -57,7 +57,7 @@ for await (
     if (!exportSpecifiers.has(relativeSpecifier)) {
       console.warn(
         `${
-          colors.yellow("Warn")
+          styles.yellow("Warn")
         } ${modFilePath} does not export '${relativeSpecifier}'.`,
       );
       shouldFail = true;

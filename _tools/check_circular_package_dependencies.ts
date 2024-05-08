@@ -94,7 +94,7 @@ const ENTRYPOINTS: Record<Mod, string[]> = {
     "varint.ts",
   ],
   expect: ["mod.ts"],
-  fmt: ["bytes.ts", "colors.ts", "duration.ts", "printf.ts"],
+  fmt: ["bytes.ts", "duration.ts", "printf.ts"],
   front_matter: ["mod.ts"],
   fs: ["mod.ts"],
   html: ["mod.ts"],

@@ -1,5 +1,5 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-import { stripAnsiCode } from "@std/fmt/colors";
+import { stripAnsiCode } from "@std/cli/styles";
 import { dirname, fromFileUrl, join, toFileUrl } from "@std/path";
 import {
   assert,

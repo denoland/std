@@ -3,7 +3,7 @@
 import { buildMessage, diff, diffstr, format } from "@std/internal";
 import { AssertionError } from "./assertion_error.ts";
 import { CAN_NOT_DISPLAY } from "./_constants.ts";
-import { red } from "@std/fmt/colors";
+import { red } from "@std/cli/styles";
 
 /**
  * Make an assertion that `actual` and `expected` are strictly equal. If

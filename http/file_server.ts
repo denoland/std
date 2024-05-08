@@ -48,7 +48,7 @@ import {
 } from "./status.ts";
 import { ByteSliceStream } from "@std/streams/byte-slice-stream";
 import { parseArgs } from "@std/cli/parse-args";
-import { red } from "@std/fmt/colors";
+import { red } from "@std/cli/styles";
 import denoConfig from "./deno.json" with { type: "json" };
 import { format as formatBytes } from "@std/fmt/bytes";
 
