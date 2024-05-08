@@ -21,6 +21,8 @@
  *
  * assertEquals(endsWith(c, b), true);
  * ```
+ *
+ * @module
  */
 export * from "./concat.ts";
 export * from "./copy.ts";
