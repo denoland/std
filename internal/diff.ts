@@ -231,5 +231,3 @@ export function diff<T>(A: T[], B: T[]): Array<DiffResult<T>> {
     ),
   ];
 }
-
-export const _internals = { diff };
