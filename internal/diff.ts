@@ -87,6 +87,38 @@ function backTrace<T>(
   return result;
 }
 
+function createFp(
+  slide: FarthestPoint | undefined,
+  down: FarthestPoint | undefined,
+  k: number,
+  M: number,
+  routes: Uint32Array,
+  diffTypesPtrOffset: number,
+  ptr: number,
+): FarthestPoint {
+  if (slide && slide.y === -1 && down && down.y === -1) {
+    return { y: 0, id: 0 };
+  }
+  const isAdding = (down?.y === -1) ||
+    k === M ||
+    (slide?.y || 0) > (down?.y || 0) + 1;
+  if (slide && isAdding) {
+    const prev = slide.id;
+    ptr++;
+    routes[ptr] = prev;
+    routes[ptr + diffTypesPtrOffset] = ADDED;
+    return { y: slide.y, id: ptr };
+  }
+  if (down && !isAdding) {
+    const prev = down.id;
+    ptr++;
+    routes[ptr] = prev;
+    routes[ptr + diffTypesPtrOffset] = REMOVED;
+    return { y: down.y + 1, id: ptr };
+  }
+  throw new Error("Unexpected missing FarthestPoint");
+}
+
 /**
  * Renders the differences between the actual and expected values
  * @param A Actual value
@@ -138,35 +170,6 @@ export function diff<T>(A: T[], B: T[]): Array<DiffResult<T>> {
   let ptr = 0;
   let p = -1;
 
-  function createFp(
-    slide: FarthestPoint | undefined,
-    down: FarthestPoint | undefined,
-    k: number,
-    M: number,
-  ): FarthestPoint {
-    if (slide && slide.y === -1 && down && down.y === -1) {
-      return { y: 0, id: 0 };
-    }
-    const isAdding = (down?.y === -1) ||
-      k === M ||
-      (slide?.y || 0) > (down?.y || 0) + 1;
-    if (slide && isAdding) {
-      const prev = slide.id;
-      ptr++;
-      routes[ptr] = prev;
-      routes[ptr + diffTypesPtrOffset] = ADDED;
-      return { y: slide.y, id: ptr };
-    }
-    if (down && !isAdding) {
-      const prev = down.id;
-      ptr++;
-      routes[ptr] = prev;
-      routes[ptr + diffTypesPtrOffset] = REMOVED;
-      return { y: down.y + 1, id: ptr };
-    }
-    throw new Error("Unexpected missing FarthestPoint");
-  }
-
   function snake<T>(
     k: number,
     A: T[],
@@ -177,7 +180,8 @@ export function diff<T>(A: T[], B: T[]): Array<DiffResult<T>> {
     const M = A.length;
     const N = B.length;
     if (k < -N || M < k) return { y: -1, id: -1 };
-    const fp = createFp(slide, down, k, M);
+    const fp = createFp(slide, down, k, M, routes, diffTypesPtrOffset, ptr);
+    ptr = fp.id;
     while (fp.y + k < M && fp.y < N && A[fp.y + k] === B[fp.y]) {
       const prev = fp.id;
       ptr++;
