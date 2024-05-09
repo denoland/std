@@ -38,9 +38,7 @@ const EXT_LATIN_CHARS =
  */
 function tokenize(string: string, wordDiff = false): string[] {
   if (wordDiff) {
-    const tokens = string.split(WHITESPACE_SYMBOLS);
-
-    // Join boundary splits that we do not consider to be boundaries and merge empty strings surrounded by word chars
+    const tokens = string.split(WHITESPACE_SYMBOLS).filter((token) => token);
     for (let i = 0; i < tokens.length - 1; i++) {
       const token = tokens[i];
       const tokenPlusTwo = tokens[i + 2];
@@ -56,18 +54,11 @@ function tokenize(string: string, wordDiff = false): string[] {
         i--;
       }
     }
-    return tokens.filter((token) => token);
+    return tokens;
   }
-  // Split string on new lines symbols
   const tokens: string[] = [];
-  const lines = string.split(/(\n|\r\n)/);
+  const lines = string.split(/(\n|\r\n)/).filter((line) => line);
 
-  // Ignore final empty token when text ends with a newline
-  if (!lines[lines.length - 1]) {
-    lines.pop();
-  }
-
-  // Merge the content and line separators into single tokens
   for (const [i, line] of lines.entries()) {
     if (i % 2) {
       tokens[tokens.length - 1] += line;
