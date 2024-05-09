@@ -77,7 +77,8 @@ const getOutcomeFor = (io: IoStruct, ulid: string) => {
   for (const [key, value] of Object.entries(io.requests)) {
     if (isPierceRequest(value)) {
       if (value.ulid === ulid) {
-        return io.replies[key]
+        const sequence = parseInt(key)
+        return io.replies[sequence]
       }
     }
   }

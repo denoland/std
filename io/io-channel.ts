@@ -23,6 +23,7 @@ import { IsolatePromise } from '@/constants.ts'
 const createBase = (): IoStruct => ({
   sequence: 0,
   requests: {},
+  executed: {},
   replies: {},
   pendings: {},
   branches: {},
@@ -85,33 +86,64 @@ export default class IOChannel {
     this.#original = structuredClone(this.#io)
     return this.#save()
   }
-  isNextSerialRequest(attempt: SolidRequest) {
-    const next = this.getCurrentSerialRequest()
+  isExecution(attempt: SolidRequest) {
+    const next = this.getExecution()
     return equal(next, attempt)
   }
-  getCurrentSerialRequest() {
+  isExecutionAvailable() {
+    if (this.#io.executing !== undefined) {
+      return false
+    }
+    return !!this.#nextExecution()
+  }
+  #nextExecution() {
+    if (this.#io.executing !== undefined) {
+      throw new Error('execution already set')
+    }
     const unreplied = Object.keys(this.#io.requests)
-      .filter((k) => !this.#io.replies[k])
       .map((key) => parseInt(key))
+      .filter((k) => !this.#io.replies[k])
+      .filter((sequence) => !this.#io.executed[sequence])
       .sort((a, b) => a - b)
 
-    for (const key of unreplied) {
-      const request = this.#io.requests[key]
-      if (request.proctype !== PROCTYPE.SERIAL) {
+    for (const sequence of unreplied) {
+      const rawRequest = this.#io.requests[sequence]
+      if (rawRequest.proctype !== PROCTYPE.SERIAL) {
         continue
       }
-      if (!equal(request.target, this.#pid)) {
+      if (!equal(rawRequest.target, this.#pid)) {
         continue
       }
-      if (!this.#io.pendings[key]) {
-        return toRunnableRequest(request, key)
+      if (!this.#io.pendings[sequence]) {
+        const request = toRunnableRequest(rawRequest, sequence)
+        return { request, sequence }
       }
-      const pendings = this.#io.pendings[key]
+      const pendings = this.#io.pendings[sequence]
       const lastLayer = pendings[pendings.length - 1]
       if (lastLayer.sequences.every((sequence) => this.isSettled(sequence))) {
-        return toRunnableRequest(request, key)
+        const request = toRunnableRequest(rawRequest, sequence)
+        return { request, sequence }
       }
     }
+  }
+  setExecution() {
+    const next = this.#nextExecution()
+    if (!next || !next.request || next.sequence === undefined) {
+      throw new Error('no execution action available')
+    }
+    const { request, sequence } = next
+    this.#io.executing = sequence
+    this.#io.executed[sequence] = true
+    return { request, sequence }
+  }
+  getExecution() {
+    if (this.#io.executing === undefined) {
+      throw new Error('no execution action set')
+    }
+    const sequence = this.#io.executing
+    assert(sequence in this.#io.requests, 'execution sequence not found')
+    const request = this.#io.requests[sequence]
+    return toRunnableRequest(request, sequence)
   }
   getSequence(request: SolidRequest) {
     for (const [key, value] of Object.entries(this.#io.requests)) {
@@ -158,14 +190,19 @@ export default class IOChannel {
       delete this.#io.requests[key]
       delete this.#io.replies[key]
       delete this.#io.pendings[key]
+      delete this.#io.executed[key]
     }
+    if (this.#io.executing === sequence) {
+      delete this.#io.executing
+    }
+
     return request
   }
   getAccumulator(fs: FS): Accumulator {
     const indices: number[] = []
     const commits: string[] = []
 
-    const origin = this.getCurrentSerialRequest()
+    const origin = this.getExecution()
     assert(origin, 'no serial request found')
     const sequence = this.getSequence(origin)
     const pendings = this.#io.pendings[sequence]
@@ -229,6 +266,8 @@ export default class IOChannel {
   addPending(sequence: number, commit: string, requests: UnsequencedRequest[]) {
     assert(!this.isSettled(sequence), 'sequence already settled')
     assert(!this.isPendingIncluded(sequence, commit), 'commit already included')
+    assert(this.#io.executing === sequence, 'sequence not executing')
+
     const sequences = []
     const solidified: (SolidRequest | RemoteRequest)[] = []
     for (const request of requests) {
@@ -248,6 +287,8 @@ export default class IOChannel {
     }
 
     pendings.push({ commit, sequences })
+    delete this.#io.executed[sequence]
+    delete this.#io.executing
     return solidified
   }
   #addUnsequenced(request: UnsequencedRequest) {
@@ -292,6 +333,8 @@ export default class IOChannel {
     for (const key of toBlank) {
       delete this.#io.requests[key]
       delete this.#io.replies[key]
+      delete this.#io.pendings[key]
+      delete this.#io.executed[key]
     }
   }
 }

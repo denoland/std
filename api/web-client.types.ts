@@ -52,8 +52,12 @@ export type ProcessOptions = {
 }
 export type IoStruct = {
   sequence: number
-  requests: { [key: string]: Request }
-  replies: { [key: string]: Outcome }
+  /** The current sequence of the request being executed serially */
+  executing?: number
+  /** The sequences of requests that have been executed serially */
+  executed: { [key: number]: boolean }
+  requests: { [key: number]: Request }
+  replies: { [key: number]: Outcome }
   /**
    * If a request generates child requests, they are tracked here.  The commit
    * in each entry is the commit that caused the child requests to be generated.
@@ -67,7 +71,7 @@ export type IoStruct = {
    * here but its request has been replied to or it is gone from the requests
    * list */
   branches: {
-    [sequence: string]: BranchName
+    [sequence: number]: BranchName
   }
 }
 type BranchName = string

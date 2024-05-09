@@ -46,9 +46,6 @@ export const solidify = async (
   checkPool(pool)
   const io = await IOChannel.load(fs)
 
-  const executingRequest = io.getCurrentSerialRequest()
-  log('solidifyPool executingRequest', executingRequest)
-
   const branches: number[] = []
   const poolables: (MergeReply | RemoteRequest)[] = []
   const parents = []
@@ -115,19 +112,14 @@ export const solidify = async (
       collectBranch(poolable, sequence, branches)
     }
   }
-  if (pool.length || pending || reply) {
-    io.save()
-  }
 
   let exe: Solids['exe']
-  const nextRequest = io.getCurrentSerialRequest()
+  if (io.isExecutionAvailable()) {
+    exe = io.setExecution()
+  }
 
-  if (nextRequest && !equal(executingRequest, nextRequest)) {
-    // next request should not return if there is not enough pending to support
-    // it ?
-
-    const sequence = io.getSequence(nextRequest)
-    exe = { request: nextRequest, sequence }
+  if (pool.length || pending || reply) {
+    io.save()
   }
   // TODO pass in all the db checks to go with this write
   // TODO write blobs atomically

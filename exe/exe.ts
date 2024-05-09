@@ -37,7 +37,7 @@ export default class Executor {
     assert(equal(fs.pid, req.target), 'target is not self')
     const io = await IOChannel.read(fs)
     assert(io, 'io not found')
-    assert(io.isNextSerialRequest(req), 'request is not callable')
+    assert(io.isExecution(req), 'request is not callable')
     log('request %o %o', req.isolate, req.functionName, commit)
 
     const accumulator = io.getAccumulator(fs)
@@ -97,22 +97,9 @@ export default class Executor {
     assert(execution, 'execution not found')
 
     execution.commits.push(fs.oid)
-
-    try {
-      execution.accumulator.absorb(accumulator)
-    } catch (error) {
-      debugger
-      const req = io.getCurrentSerialRequest()
-      throw error
-    }
+    execution.accumulator.absorb(accumulator)
 
     const trigger = Symbol('🏎️')
-    // have seen this come thru already activated somehow
-
-    // so the only way that could happen, is if there was already a running
-    // execution, that had not been awaited for, and then a follow up request
-    // was made before we could shut down
-
     const accumulatorPromise = execution.accumulator.activate(trigger)
     const outcome = await Promise.race([execution.function, accumulatorPromise])
     execution.accumulator.deactivate()

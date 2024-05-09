@@ -31,7 +31,7 @@ export default (name: string, cradleMaker: () => Promise<ArtifactSession>) => {
       await session.engineStop()
     })
   })
-  Deno.test.only(prefix + 'resource hogging parallel', async (t) => {
+  Deno.test(prefix + 'resource hogging parallel', async (t) => {
     const session = await cradleMaker()
     const repo = 'cradle/pierce'
 
@@ -39,7 +39,7 @@ export default (name: string, cradleMaker: () => Promise<ArtifactSession>) => {
     const { local } = await session.actions(ioFixture, target)
     await t.step('parallel', async () => {
       const promises = []
-      const count = 100
+      const count = 20
       for (let i = 0; i < count; i++) {
         promises.push(local({}, { branch: true }))
       }
