@@ -3,7 +3,7 @@
   "version": "0.225.0",
   "exports": {
     ".": "./mod.ts",
-    "./diff": "./diff.ts",
+    "./internals": "./internals.ts",
     "./format": "./format.ts"
   }
 }
