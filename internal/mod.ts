@@ -7,7 +7,6 @@
  *
  * @module
  */
-export * from "./_internals.ts";
 export * from "./build_message.ts";
 export * from "./diff.ts";
 export * from "./diff_str.ts";

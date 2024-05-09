@@ -3,6 +3,9 @@
   "version": "0.225.0",
   "exports": {
     ".": "./mod.ts",
+    "./build-message": "./build-message.ts",
+    "./diff-str": "./diff-str.ts",
+    "./diff.ts": "./diff.ts",
     "./format": "./format.ts"
   }
 }

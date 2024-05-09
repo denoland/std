@@ -1,6 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import type { DiffResult } from "./_types.ts";
-import { _internals } from "./_internals.ts";
+import { _internals } from "./diff.ts";
 
 /**
  * Renders the differences between the actual and expected strings
