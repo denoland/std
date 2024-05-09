@@ -3,7 +3,6 @@
   "version": "0.225.0",
   "exports": {
     ".": "./mod.ts",
-    "./internals": "./internals.ts",
     "./format": "./format.ts"
   }
 }
