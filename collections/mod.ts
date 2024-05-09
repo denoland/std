@@ -10,11 +10,19 @@
  * package.
  *
  * ```ts
- * import { intersect } from "@std/collections/intersect";
+ * import { intersect, sample, pick } from "@std/collections";
+ * import { assertEquals, assertArrayIncludes } from "@std/assert";
  *
  * const lisaInterests = ["Cooking", "Music", "Hiking"];
  * const kimInterests = ["Music", "Tennis", "Cooking"];
- * intersect(lisaInterests, kimInterests); // [ "Cooking", "Music" ]
+ *
+ * assertEquals(intersect(lisaInterests, kimInterests), ["Cooking", "Music"]);
+ *
+ * assertArrayIncludes(lisaInterests, [sample(lisaInterests)]);
+ *
+ * const cat = { name: "Lulu", age: 3, breed: "Ragdoll" };
+ *
+ * assertEquals(pick(cat, ["name", "breed"]), { name: "Lulu", breed: "Ragdoll"});
  * ```
  *
  * @module
