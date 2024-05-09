@@ -2,7 +2,6 @@
 // This module is browser compatible.
 import { buildMessage, diff, diffstr, format } from "@std/internal";
 import { AssertionError } from "./assertion_error.ts";
-import { CAN_NOT_DISPLAY } from "./_constants.ts";
 import { red } from "@std/fmt/colors";
 
 /**
@@ -47,17 +46,13 @@ export function assertStrictEquals<T>(
         red(withOffset)
       }\n`;
   } else {
-    try {
-      const stringDiff = (typeof actual === "string") &&
-        (typeof expected === "string");
-      const diffResult = stringDiff
-        ? diffstr(actual as string, expected as string)
-        : diff(actualString.split("\n"), expectedString.split("\n"));
-      const diffMsg = buildMessage(diffResult, { stringDiff }).join("\n");
-      message = `Values are not strictly equal${msgSuffix}\n${diffMsg}`;
-    } catch {
-      message = `\n${red(CAN_NOT_DISPLAY)} + \n\n`;
-    }
+    const stringDiff = (typeof actual === "string") &&
+      (typeof expected === "string");
+    const diffResult = stringDiff
+      ? diffstr(actual as string, expected as string)
+      : diff(actualString.split("\n"), expectedString.split("\n"));
+    const diffMsg = buildMessage(diffResult, { stringDiff }).join("\n");
+    message = `Values are not strictly equal${msgSuffix}\n${diffMsg}`;
   }
 
   throw new AssertionError(message);
