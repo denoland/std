@@ -1,6 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import type { DiffResult } from "./_types.ts";
-import { _internals } from "./diff.ts";
+import { diff } from "./diff.ts";
 
 /**
  * Renders the differences between the actual and expected strings
@@ -93,7 +93,7 @@ export function diffstr(A: string, B: string): DiffResult<string>[] {
   }
 
   // Compute multi-line diff
-  const diffResult = _internals.diff(
+  const diffResult = diff(
     tokenize(`${unescape(A)}\n`),
     tokenize(`${unescape(B)}\n`),
   );
@@ -124,7 +124,7 @@ export function diffstr(A: string, B: string): DiffResult<string>[] {
         tokenize(b?.value ?? "", { wordDiff: true }),
       ] as [string[], string[]];
       if (hasMoreRemovedLines) tokenized.reverse();
-      tokens = _internals.diff(tokenized[0], tokenized[1]);
+      tokens = diff(tokenized[0], tokenized[1]);
       if (
         tokens.some(({ type, value }) =>
           type === "common" && value.trim().length
