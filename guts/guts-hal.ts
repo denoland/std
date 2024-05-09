@@ -1,11 +1,64 @@
 import OpenAI from 'openai'
-import { ENTRY_HELP_FILE, HalActor, HalSession } from '@/isolates/hal.ts'
+import {
+  ENTRY_HELP_FILE,
+  HalActor,
+  HalBase,
+  HalSession,
+} from '@/isolates/hal.ts'
 import { expect, log } from '@utils'
 import { ArtifactSession, print } from '@/constants.ts'
 type Messages = OpenAI.ChatCompletionMessageParam
 
 export default (name: string, cradleMaker: () => Promise<ArtifactSession>) => {
   const prefix = name + ': '
+
+  Deno.test(prefix + 'login loop', async (t) => {
+    // TODO set up concept of a superuser
+    const session = await cradleMaker()
+    const repo = 'dreamcatcher-tech/HAL'
+    const { pid: halAddress } = await session.clone({ repo })
+
+    log.enable('AI:engine AI:actors AI:hal AI:tests AI:completions AI:github')
+
+    const halBase = await session.actions<HalBase>('hal', halAddress)
+    const actorAddress = await halBase.createActor()
+    log('actorAddress', print(actorAddress))
+
+    const halActor = await session.actions<HalActor>('hal', actorAddress)
+
+    const sessionAddress = await halActor.startSession()
+    const hal = await session.actions<HalSession>('hal', sessionAddress)
+
+    await hal.prompt({ text: 'hello' })
+
+    await t.step('second session', async () => {
+      const second = session.newSession()
+      log('second session', print(second.pid))
+      const halActor = await second.actions<HalActor>('hal', actorAddress)
+      const sessionAddress = await halActor.startSession()
+      const hal = await second.actions<HalSession>('hal', sessionAddress)
+      await hal.prompt({ text: 'hello' })
+    })
+
+    await t.step('restart a session', async () => {
+      log('resuming session', print(session.pid))
+      const resumed = session.resumeSession(session.pid)
+      const hal = await resumed.actions<HalSession>('hal', sessionAddress)
+      await hal.prompt({ text: 'hello' })
+    })
+
+    await t.step('invalid session', () => {
+      const branches = session.pid.branches.slice(0, -1)
+      branches.push('invalid ulid')
+      const pid = { ...session.pid, branches }
+      expect(() => session.resumeSession(pid)).toThrow('invalid session')
+    })
+    // TODO test valid format but deleted / nonexistent session
+    // TODO test invalid machine
+
+    session.engineStop()
+  })
+
   Deno.test(prefix + 'hal', async (t) => {
     const session = await cradleMaker()
     const repo = 'dreamcatcher-tech/HAL'
