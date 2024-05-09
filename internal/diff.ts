@@ -1,7 +1,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-import type { DiffResult, DiffType } from "./types.ts";
+import type { DiffResult, DiffType } from "./_types.ts";
 
 interface FarthestPoint {
   y: number;

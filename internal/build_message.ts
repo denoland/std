@@ -2,7 +2,7 @@
 // This module is browser compatible.
 
 import { bgGreen, bgRed, bold, gray, green, red, white } from "@std/fmt/colors";
-import type { DiffResult, DiffType } from "./types.ts";
+import type { DiffResult, DiffType } from "./_types.ts";
 
 /**
  * Colors the output of assertion diffs

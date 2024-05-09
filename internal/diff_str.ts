@@ -1,5 +1,5 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-import type { DiffResult } from "./types.ts";
+import type { DiffResult } from "./_types.ts";
 import { _internals } from "./_internals.ts";
 
 /**
