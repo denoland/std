@@ -83,7 +83,11 @@ export const api = {
 }
 
 export const functions = {
-  registerAttempt: async (
+  '@@install': (params: { homeAddress: PID }, api: IsolateApi) => {
+    log('install', print(params.homeAddress))
+    api.writeJSON('config.json', { homeAddress: params.homeAddress })
+  },
+  registerAttempt: (
     params: { actorId: string; authSessionId: string },
     api: IsolateApi,
   ) => {

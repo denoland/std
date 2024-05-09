@@ -1,3 +1,5 @@
+import * as system from './system.ts'
+
 import * as engageHelp from './engage-help.ts'
 import * as fetch from './fetch.ts'
 import * as files from './files.ts'
@@ -7,7 +9,6 @@ import * as loadHelp from './load-help.ts'
 import * as utils from './utils.ts'
 import * as artifact from './artifact.ts'
 import * as session from './session.ts'
-import * as repo from './repo.ts'
 import * as shell from './shell.ts'
 
 import * as completions from './ai-completions.ts'
@@ -21,6 +22,7 @@ import * as github from './github.ts'
 import * as actors from './actors.ts'
 
 export default {
+  system,
   'engage-help': engageHelp,
   fetch,
   files,
@@ -30,7 +32,6 @@ export default {
   utils,
   artifact,
   session,
-  repo,
   shell,
   'ai-completions': completions,
   'ai-execute-tools': executeTools,

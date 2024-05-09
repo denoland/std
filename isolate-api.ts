@@ -4,6 +4,7 @@ import Compartment from './io/compartment.ts'
 import { assert, Debug } from '@utils'
 import {
   DispatchFunctions,
+  freezePid,
   IoStruct,
   isChildOf,
   IsolatePromise,
@@ -77,6 +78,7 @@ export default class IsolateApi<T extends object = Default> {
 
   async actions<T = DispatchFunctions>(isolate: string, targetPID?: PID) {
     const target = targetPID ? targetPID : this.pid
+    freezePid(target)
     const schema = await this.apiSchema(isolate)
     const execute = (request: UnsequencedRequest) => this.action(request)
     return toActions<T>(target, isolate, schema, execute)

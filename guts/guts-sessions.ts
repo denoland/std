@@ -1,52 +1,47 @@
-import { assert, expect, log } from '@utils'
+import { expect, log } from '@utils'
 import { ArtifactSession } from '../api/web-client.types.ts'
+import { print } from '@/constants.ts'
 
 export default (name: string, cradleMaker: () => Promise<ArtifactSession>) => {
   const prefix = name + ': '
   Deno.test(prefix + 'session', async (t) => {
-    const artifact = await cradleMaker()
-
-    log('pid', artifact.pid)
-    expect(artifact.pid.branches).toHaveLength(2)
+    const session = await cradleMaker()
+    log('pid', print(session.pid))
 
     const repo = 'process/session'
-    await artifact.rm({ repo })
-    const target = await artifact.init({ repo })
+    const target = await session.init({ repo })
 
     // TODO exercise the ACL blocking some actions to the session chain
     await t.step('interact', async () => {
-      const { local } = await artifact.actions('io-fixture', artifact.pid)
+      const { local } = await session.actions('io-fixture', session.pid)
       const result = await local()
       expect(result).toEqual('local reply')
     })
-    const second = await artifact.home.createSession()
+    const second = session.newSession()
     await t.step('second session', async () => {
-      expect(second.pid.branches).toHaveLength(2)
-
       const { local } = await second.actions('io-fixture', target.pid)
       const result = await local()
       expect(result).toEqual('local reply')
     })
     await t.step('cross session', async () => {
-      assert(second)
-      const { local } = await second.actions('io-fixture', artifact.pid)
+      const { local } = await second.actions('io-fixture', session.pid)
       const result = await local()
       expect(result).toEqual('local reply')
     })
 
-    const resumed = await artifact.home.createSession(artifact.pid)
+    const resumed = session.resumeSession(session.pid)
     await t.step('resume session', async () => {
-      expect(resumed.pid).toEqual(artifact.pid)
+      expect(resumed.pid).toEqual(session.pid)
       const { local } = await resumed.actions('io-fixture', target.pid)
       const result = await local()
       expect(result).toEqual('local reply')
     })
-    await Promise.all([resumed.stop(), second.stop(), artifact.stop()])
+    await Promise.all([resumed.stop(), second.stop(), session.stop()])
+    await session.engineStop()
   })
   Deno.test(prefix + 'internal requests', async (t) => {
     const artifact = await cradleMaker()
     const repo = 'session/relay'
-    await artifact.rm({ repo })
 
     const { pid } = await artifact.init({ repo })
 
@@ -56,6 +51,7 @@ export default (name: string, cradleMaker: () => Promise<ArtifactSession>) => {
       expect(result).toEqual('remote pong')
     })
 
-    await artifact.stop()
+    await artifact.rm({ repo })
+    await artifact.engineStop()
   })
 }

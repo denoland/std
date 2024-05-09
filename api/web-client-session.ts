@@ -1,15 +1,15 @@
 // THIS IS SYCNED FROM THE ARTIFACT PROJECT
 // TODO publish to standalone repo
 import {
+  ArtifactMachine,
   ArtifactSession,
   assertValidSession,
   EngineInterface,
   freezePid,
+  getActorPid,
   JsonValue,
   PID,
-  pidFromRepo,
   PierceRequest,
-  print,
   PROCTYPE,
   toActions,
   UnsequencedRequest,
@@ -18,45 +18,39 @@ import { ulid } from 'ulid'
 import { PierceWatcher } from './web-client-watcher.ts'
 
 export class Session implements ArtifactSession {
-  #init: Promise<void> | undefined
-  #repo: Promise<Repo> | undefined
+  #init: Promise<unknown> | undefined
 
   readonly #engine: EngineInterface
+  readonly #machine: ArtifactMachine
   readonly #pid: PID
   readonly #abort = new AbortController()
   readonly #watcher: PierceWatcher
 
   private constructor(
     engine: EngineInterface,
+    machine: ArtifactMachine,
     pid: PID,
-    initializing?: Promise<Session>,
   ) {
     assertValidSession(pid, engine.homeAddress)
     this.#engine = engine
+    this.#machine = machine
     this.#pid = pid
     this.#watcher = PierceWatcher.create(this.#abort.signal, engine, pid)
-    if (initializing) {
-      this.#init = initializing.then(async (system) => {
-        await system.#initialize(this.sessionId)
-        this.#watcher.watchPierces()
-        this.#init = undefined
-      })
-    } else {
-      this.#watcher.watchPierces()
-    }
+    this.#watcher.watchPierces()
   }
-  static create(engine: EngineInterface, pid: PID, system: Promise<Session>) {
+  static create(engine: EngineInterface, machine: ArtifactMachine, pid: PID) {
     freezePid(pid)
-    return new Session(engine, pid, system)
+    const session = new Session(engine, machine, pid)
+    session.#init = machine.rootSessionPromise.then(async (rootSession) => {
+      await rootSession.#initialize(session.sessionId)
+      session.#init = undefined
+    })
+    return session
   }
-  static resume(engine: EngineInterface, pid: PID) {
+  static resume(engine: EngineInterface, machine: ArtifactMachine, pid: PID) {
     // TODO check this is still a valid pid using ping or similar
     freezePid(pid)
-    return new Session(engine, pid)
-  }
-  static createSystem(engine: EngineInterface, pid: PID) {
-    freezePid(pid)
-    return new Session(engine, pid)
+    return new Session(engine, machine, pid)
   }
   get pid() {
     return this.#pid
@@ -75,15 +69,22 @@ export class Session implements ArtifactSession {
     }
     return this.#action(request)
   }
-  async #repoActions() {
-    // TODO this is really a scopeTo call on the base session object
-    if (!this.#repo) {
-      this.#repo = this.actions<Repo>('repo', this.#pid)
-    }
-    return await this.#repo
-  }
-  stop(): Promise<void> | void {
+  stop() {
     this.#abort.abort()
+  }
+  async engineStop() {
+    if (this.#init) {
+      await this.#init
+    }
+    this.stop()
+    await this.#engine.stop()
+  }
+  newSession() {
+    // TODO test rapidly creating two sessions, with queuing happening properly
+    return this.#machine.openSession()
+  }
+  resumeSession(pid: PID) {
+    return this.#machine.openSession(pid)
   }
 
   async actions<T>(isolate: string, target: PID = this.pid) {
@@ -111,7 +112,10 @@ export class Session implements ArtifactSession {
     })
   }
 
-  ping(params?: { data?: JsonValue }) {
+  async ping(params?: { data?: JsonValue }) {
+    if (this.#init) {
+      await this.#init
+    }
     return this.#engine.ping(params?.data)
     // TODO return some info about the deployment
     // version, deployment location, etc
@@ -127,20 +131,13 @@ export class Session implements ArtifactSession {
     }
     return await this.#engine.transcribe(params.audio)
   }
-  async probe({ pid }: { pid: PID }) {
-    // TODO make this be pure read, rather than a commitable action
-    const actions = await this.#repoActions()
-    return actions.probe({ pid })
+  async init({ repo }: { repo: string }) {
+    const actor = await this.#getActor()
+    return actor.init({ repo })
   }
-  async init(params: { repo: string }) {
-    const pid = pidFromRepo(this.#pid.repoId, params.repo)
-    const actions = await this.#repoActions()
-    return actions.init({ pid })
-  }
-  async clone(params: { repo: string }) {
-    const pid = pidFromRepo(this.#pid.repoId, params.repo)
-    const actions = await this.#repoActions()
-    return actions.clone({ pid })
+  async clone({ repo }: { repo: string }) {
+    const actor = await this.#getActor()
+    return actor.clone({ repo })
   }
   pull(params: { pid: PID }) {
     const { pid } = params
@@ -151,9 +148,13 @@ export class Session implements ArtifactSession {
     return Promise.resolve()
   }
   async rm(params: { repo: string }) {
-    const pid = pidFromRepo(this.#pid.repoId, params.repo)
-    const actions = await this.#repoActions()
-    return actions.rm({ pid })
+    const actor = await this.#getActor()
+    return actor.rm({ repo: params.repo })
+  }
+  async #getActor() {
+    const actorPid = getActorPid(this.#pid)
+    const actor = await this.actions<ActorApi>('actors', actorPid)
+    return actor
   }
   read(pid: PID, path?: string, after?: string, signal?: AbortSignal) {
     if (after) {
@@ -168,17 +169,25 @@ export class Session implements ArtifactSession {
     return this.#engine.exists(path, pid)
   }
   async endSession(): Promise<void> {
+    // should delete the session
   }
   async deleteAccountUnrecoverably(): Promise<void> {
     // throw new Error('not implemented')
   }
 }
 
-type Repo = {
-  probe: (params: { pid: PID }) => Promise<{ pid: PID; head: string }>
-  init: (params: { pid: PID }) => Promise<{ pid: PID; head: string }>
-  clone: (
-    params: { pid: PID },
-  ) => Promise<{ pid: PID; head: string; elapsed: number }>
-  rm: (params: { pid: PID }) => Promise<boolean>
+type ActorApi = { // copied from the isolate
+  init: (params: { repo: string }) => Promise<{ pid: PID; head: string }>
+  /** Clones from github, using the github PAT (if any) for the calling machine.
+   * Updates the repo.json file in the actor branch to point to the new PID of
+   * the clone.
+   */
+  clone: (params: { repo: string }) => Promise<{ pid: PID; head: string }>
+
+  rm: (params: { repo: string }) => Promise<boolean>
+
+  /**
+   * List all the repos that this Actor has created.
+   */
+  lsRepos: () => Promise<string[]>
 }

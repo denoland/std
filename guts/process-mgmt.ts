@@ -4,46 +4,49 @@ import { ArtifactSession } from '../api/web-client.types.ts'
 export default (name: string, cradleMaker: () => Promise<ArtifactSession>) => {
   const prefix = name + ': '
   Deno.test(prefix + 'session', async (t) => {
-    const artifact = await cradleMaker()
+    const session = await cradleMaker()
     const repo = 'process/session'
-    await artifact.rm({ repo })
 
-    const { pid } = await artifact.init({ repo })
-    const sessionPid = { ...pid, branches: [...pid.branches, 'session-1'] }
-    const { create } = await artifact.actions('session', pid)
+    const { pid } = await session.init({ repo })
+    const testBranch1Pid = { ...pid, branches: [...pid.branches, 'session-1'] }
+    const { create } = await session.actions('session', pid)
     await t.step('create', async () => {
-      const session = await create()
-      expect(session).toEqual(sessionPid)
+      const branchPid = await create()
+      expect(branchPid).toEqual(testBranch1Pid)
 
-      const { local } = await artifact.actions('io-fixture', sessionPid)
+      const { local } = await session.actions('io-fixture', testBranch1Pid)
       const result = await local()
       expect(result).toEqual('local reply')
     })
     await t.step('second session', async () => {
-      const session = await create()
-      const session2Pid = { ...pid, branches: [...pid.branches, 'session-3'] }
-      expect(session).toEqual(session2Pid)
+      const branchPid = await create()
+      const testBranch3Pid = {
+        ...pid,
+        branches: [...pid.branches, 'session-3'],
+      }
+      expect(branchPid).toEqual(testBranch3Pid)
 
-      const { local } = await artifact.actions('io-fixture', sessionPid)
+      const { local } = await session.actions('io-fixture', testBranch3Pid)
       const result = await local()
       expect(result).toEqual('local reply')
     })
-    await artifact.stop()
+    await session.rm({ repo })
+    await session.engineStop()
   })
   Deno.test(prefix + 'internal requests', async (t) => {
-    const artifact = await cradleMaker()
+    const session = await cradleMaker()
     const repo = 'process/session'
-    await artifact.rm({ repo })
+    await session.rm({ repo })
 
-    const { pid } = await artifact.init({ repo })
+    const { pid } = await session.init({ repo })
 
     await t.step('ping', async () => {
       const isolate = 'io-fixture'
-      const { branch } = await artifact.actions(isolate, pid)
+      const { branch } = await session.actions(isolate, pid)
       const result = await branch()
       expect(result).toEqual('remote pong')
     })
 
-    await artifact.stop()
+    await session.engineStop()
   })
 }

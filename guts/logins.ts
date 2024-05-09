@@ -7,15 +7,16 @@ import { expect, log } from '@utils'
 import { Tokens } from '@deno/kv-oauth'
 import { getActorId, print } from '@/constants.ts'
 
-Deno.test('login loop', async (t) => {
+Deno.test.only('login loop', async (t) => {
   const engine = await Engine.start()
 
   // TODO set up concept of a superuser
-  await engine.installHome()
+  await engine.provision()
 
   const homeAddress = engine.homeAddress
   const repo = 'dreamcatcher-tech/HAL'
   const { pid: halAddress } = await engine.clone(repo, 'hal', { homeAddress })
+  log.enable('AI:engine AI:actors AI:hal AI:tests AI:completions AI:github')
 
   const machine = Machine.load(engine)
   const session = machine.openSession()
@@ -61,10 +62,8 @@ Deno.test('login loop', async (t) => {
 
 Deno.test('login with github', async (t) => {
   const engine = await Engine.start()
-  await engine.installHome()
-
-  const { pid: authProvider } = await engine.install('github')
-
+  await engine.provision()
+  const authProvider = engine.githubAddress
   const machine = Machine.load(engine)
   const session = machine.openSession()
   const github = await session.actions<Github.Api>('github', authProvider)

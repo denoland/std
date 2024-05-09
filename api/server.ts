@@ -43,8 +43,8 @@ export default class Server {
     app.use(timing())
     app.use(prettyJSON())
     app.use('*', logger(), poweredBy(), cors())
-    app.get('/', (c) => {
-      return execute(c, engine.bootSuperUser(), 'bootSuperUser')
+    app.get('/provision', (c) => {
+      return execute(c, engine.provision(), 'provision')
     })
     app.post(`/ping`, async (c) => {
       const params = await c.req.json()

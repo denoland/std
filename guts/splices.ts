@@ -4,16 +4,15 @@ import { ArtifactSession } from '../api/web-client.types.ts'
 export default (name: string, cradleMaker: () => Promise<ArtifactSession>) => {
   const prefix = name + ': '
   Deno.test(prefix + 'files', async (t) => {
-    const artifact = await cradleMaker()
+    const session = await cradleMaker()
     const repo = 'process/session'
-    await artifact.rm({ repo })
-    const { pid } = await artifact.init({ repo })
-    const { write } = await artifact.actions('io-fixture', pid)
+    const { pid } = await session.init({ repo })
+    const { write } = await session.actions('io-fixture', pid)
 
     await t.step('read', async () => {
       const p = write({ path: 'test', content: 'hello' })
       let first
-      for await (const splice of artifact.read(pid, 'test')) {
+      for await (const splice of session.read(pid, 'test')) {
         log('splice', splice)
         if (splice.changes['test']) {
           first = splice
@@ -29,19 +28,20 @@ export default (name: string, cradleMaker: () => Promise<ArtifactSession>) => {
     // do a writeSlow test to see how broadcast channel behaves
     // and to test the catchup of the final commit
 
-    await artifact.stop()
+    await session.rm({ repo })
+    await session.engineStop()
   })
   Deno.test(prefix + '.io.json diffs', async (t) => {
     // send in a bunch of actions and view the diffs as splices
 
-    const artifact = await cradleMaker()
+    const session = await cradleMaker()
     const repo = 'process/session'
-    await artifact.rm({ repo })
-    const { pid } = await artifact.init({ repo })
-    const { write } = await artifact.actions('io-fixture', pid)
+    await session.rm({ repo })
+    const { pid } = await session.init({ repo })
+    const { write } = await session.actions('io-fixture', pid)
 
     const logger = async () => {
-      const stream = artifact.read(pid, '.io.json')
+      const stream = session.read(pid, '.io.json')
       // make a library that transforms splice streams
       for await (const splice of stream) {
         log('splice', splice.changes)
@@ -53,7 +53,7 @@ export default (name: string, cradleMaker: () => Promise<ArtifactSession>) => {
     await t.step('read', async () => {
       const p = write({ path: 'test', content: 'hello' })
       let first
-      for await (const splice of artifact.read(pid, 'test')) {
+      for await (const splice of session.read(pid, 'test')) {
         if (splice.changes['test']) {
           first = splice
           break
@@ -64,17 +64,16 @@ export default (name: string, cradleMaker: () => Promise<ArtifactSession>) => {
       expect(Object.keys(first.changes)).toHaveLength(1)
       await p
     })
-    await artifact.stop()
+    await session.engineStop()
   })
   Deno.test(prefix + 'file changes', async (t) => {
+    const session = await cradleMaker()
     const repo = 'test/files'
-    const artifact = await cradleMaker()
-    await artifact.rm({ repo })
-    const { pid } = await artifact.init({ repo })
+    const { pid } = await session.init({ repo })
 
     let fileSpliceCount = 0
     const fileSplices = async () => {
-      for await (const splice of artifact.read(pid, 'test.txt')) {
+      for await (const splice of session.read(pid, 'test.txt')) {
         log('file', splice.changes)
         fileSpliceCount++
       }
@@ -82,7 +81,7 @@ export default (name: string, cradleMaker: () => Promise<ArtifactSession>) => {
     fileSplices()
     let spliceCount = 0
     const splices = async () => {
-      for await (const splice of artifact.read(pid)) {
+      for await (const splice of session.read(pid)) {
         log('splice', splice.oid)
         spliceCount++
       }
@@ -90,11 +89,11 @@ export default (name: string, cradleMaker: () => Promise<ArtifactSession>) => {
     splices()
 
     await t.step('write', async () => {
-      const { write } = await artifact.actions('io-fixture', pid)
+      const { write } = await session.actions('io-fixture', pid)
       await write({ path: 'test.txt', content: 'hello' })
       const p = write({ path: 'test.txt', content: 'ell' })
       let fileCount = 0
-      for await (const _splice of artifact.read(pid, 'test.txt')) {
+      for await (const _splice of session.read(pid, 'test.txt')) {
         fileCount++
         if (fileCount === 3) {
           break
@@ -104,7 +103,8 @@ export default (name: string, cradleMaker: () => Promise<ArtifactSession>) => {
     })
     log('spliceCount', spliceCount)
     log('fileSpliceCount', fileSpliceCount)
-    await artifact.stop()
+    await session.rm({ repo })
+    await session.engineStop()
   })
 
   // do broadcast channel for partial writes occurring

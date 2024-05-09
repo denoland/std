@@ -11,6 +11,7 @@ import {
   isQueueExe,
   isQueuePool,
   PID,
+  pidSchema,
   PierceRequest,
   print,
   QueueMessage,
@@ -20,7 +21,6 @@ import IsolateApi from '../isolate-api.ts'
 import { doAtomicBranch, doAtomicCommit } from '@io/io.ts'
 import DB from '../db.ts'
 import FS from '../git/fs.ts'
-import { pid } from './repo.ts'
 const log = Debug('AI:artifact')
 
 const request = {
@@ -31,7 +31,7 @@ const request = {
     functionName: { type: 'string' },
     params: { type: 'object' },
     proctype: { enum: ['SERIAL', 'DAEMON', 'BRANCH'] },
-    target: pid.properties.pid,
+    target: pidSchema,
     ulid: { type: 'string' },
     branch: { type: 'string' },
     branchPrefix: { type: 'string' },

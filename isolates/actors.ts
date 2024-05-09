@@ -1,24 +1,50 @@
 import {
-  ActorApi,
   getActorId,
+  getActorPid,
   getMachineId,
   isBaseRepo,
   IsolateApi,
   machineIdRegex,
   Params,
   PID,
+  pidSchema,
   print,
   sessionIdRegex,
 } from '@/constants.ts'
-import { assert, Debug, expect } from '@utils'
+import { assert, Debug, equal, expect } from '@utils'
 import * as session from './session.ts'
 import * as files from './files.ts'
-import { pid } from './repo.ts'
+import * as system from './system.ts'
 
 const log = Debug('AI:actors')
 
-export type { ActorApi }
+export type ActorApi = {
+  /** Clones from github, using the github PAT (if any) for the calling machine.
+   * Updates the repo.json file in the actor branch to point to the new PID of
+   * the clone.
+   */
+  clone: (params: { repo: string }) => Promise<PID>
+
+  init: (params: { repo: string }) => Promise<{ pid: PID; head: string }>
+
+  /**
+   * List all the repos that this Actor has created.
+   */
+  lsRepos: () => Promise<string[]>
+}
 export type Admin = {
+  /**
+   * Called by an actor, after authorizing, to merge its actorId with the
+   * actorId authorized with the given auth provider.
+   *
+   * For example, in github, the github user id is used to link actorIds
+   * together, and the first actorId to pass auth is the stable actorId for that
+   * user id, so future requests to merge always merge into that actorId.
+   *
+   * The operation leaves a record of what auth provider approved what
+   * unification and at what commit.
+   */
+  surrender: (params: { authProvider: PID }) => Promise<void>
   /**
    * Register an auth provider that is allowed to authorize merging actorIds.
    * Can only be called by the installation owner account.
@@ -28,7 +54,34 @@ export type Admin = {
 
 export type Api = Admin & ActorApi
 
+const repo = {
+  type: 'object',
+  additionalProperties: false,
+  required: ['repo'],
+  properties: {
+    repo: { type: 'string' },
+  },
+}
+
 export const api = {
+  init: {
+    type: 'object',
+    additionalProperties: false,
+    required: ['repo'],
+    properties: {
+      repo: { type: 'string' },
+    },
+  },
+  rm: {
+    type: 'object',
+    additionalProperties: false,
+    required: ['repo'],
+    properties: {
+      repo: { type: 'string' },
+      all: { type: 'boolean', description: 'remove all repos for this actor' },
+    },
+  },
+  clone: repo,
   addAuthProvider: {
     type: 'object',
     additionalProperties: false,
@@ -63,14 +116,68 @@ export const api = {
     additionalProperties: false,
     required: ['authProvider'],
     properties: {
-      authProvider: pid.properties.pid,
+      authProvider: pidSchema,
     },
   },
 }
 
 export const functions = {
-  async addAuthProvider({ provider }: { provider: PID }, api: IsolateApi) {
-    log('addAuthProvider', provider)
+  rm: async (
+    { repo, all = false }: { repo: string; all: boolean },
+    api: IsolateApi,
+  ) => {
+    assertIsActorPid(api)
+    const { rm } = await api.actions<system.Api>('system')
+    const repos = await readRepos(api)
+    if (!(repo in repos)) {
+      return false
+    }
+    const pid = repos[repo]
+    log('rm', repo, print(pid))
+
+    await rm({ pid })
+    delete repos[repo]
+    api.writeJSON('repos.json', repos)
+    return true
+  },
+  clone: async (
+    p: { repo: string; isolate?: string; params?: Params },
+    api: IsolateApi,
+  ) => {
+    const { repo, isolate, params } = p
+    assertIsActorPid(api)
+    log('clone', repo, isolate, params)
+
+    const repos = await readRepos(api)
+    if (repo in repos) {
+      throw new Error('Repo already exists: ' + repo)
+    }
+
+    const { clone } = await api.actions<system.Api>('system')
+    const result = await clone({ repo, isolate, params })
+    log('clone result', print(result.pid))
+
+    repos[repo] = result.pid
+    api.writeJSON('repos.json', repos)
+    return result
+  },
+  init: async ({ repo }: { repo: string }, api: IsolateApi) => {
+    assertIsActorPid(api)
+    log('init', repo)
+
+    const repos = await readRepos(api)
+    if (repo in repos) {
+      throw new Error('Repo already exists: ' + repo)
+    }
+
+    const { init } = await api.actions<system.Api>('system')
+    const { pid, head } = await init({ repo })
+    repos[repo] = pid
+    api.writeJSON('repos.json', repos)
+    return { pid, head }
+  },
+  addAuthProvider({ provider }: { provider: PID }, _api: IsolateApi) {
+    log('addAuthProvider', print(provider))
   },
 
   /** Used by system provisioning to create a blank app */
@@ -118,7 +225,7 @@ export const functions = {
     log('origin', print(api.origin.source))
 
     const actorId = getActorId(api.origin.source)
-    const machineId = getMachineId(api.origin.source)
+    const _machineId = getMachineId(api.origin.source)
 
     // ? is this allowed to happen ?
 
@@ -141,4 +248,19 @@ export const functions = {
 
 const addBranch = (pid: PID, branch: string) => {
   return { ...pid, branches: [...pid.branches, branch] }
+}
+type Repos = { [repo: string]: PID }
+
+const assertIsActorPid = (api: IsolateApi) => {
+  const actorPid = getActorPid(api.pid)
+  if (!equal(actorPid, api.pid)) {
+    throw new Error('Must be called from Actor branch: ' + print(api.pid))
+  }
+}
+const readRepos = async (api: IsolateApi) => {
+  let repos: Repos = {}
+  if (await api.exists('repos.json')) {
+    repos = await api.readJSON<Repos>('repos.json')
+  }
+  return repos
 }

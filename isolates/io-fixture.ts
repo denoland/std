@@ -1,5 +1,5 @@
 import { Debug, delay } from '@utils'
-import { IsolateApi } from '@/constants.ts'
+import { IsolateApi, pidSchema } from '@/constants.ts'
 import { PID } from '@/constants.ts'
 const log = Debug('AI:io-fixture')
 
@@ -40,7 +40,7 @@ export const api = {
     description: 'call another function',
     type: 'object',
     additionalProperties: false,
-    properties: { target: { type: 'object' } },
+    properties: { target: pidSchema },
   },
   parallel: {
     description: 'call local in parallel',

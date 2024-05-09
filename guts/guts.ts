@@ -6,8 +6,7 @@ import processMgmt from './process-mgmt.ts'
 import aiCalls from './ai-calls.ts'
 import splices from './splices.ts'
 import benchmarks from './benchmarks.ts'
-import { pidFromRepo } from '@/constants.ts'
-import session from './guts-session.ts'
+import sessions from './guts-sessions.ts'
 import hal from './guts-hal.ts'
 
 const ioFixture = 'io-fixture'
@@ -16,44 +15,66 @@ export default (name: string, cradleMaker: () => Promise<ArtifactSession>) => {
   const prefix = name + ': '
 
   Deno.test(prefix + 'io', async (t) => {
-    const artifact = await cradleMaker()
+    const session = await cradleMaker()
+    log('start')
+    log('session created')
     await t.step('ping empty', async () => {
-      const empty = await artifact.ping()
-      expect(empty).toEqual({})
+      const empty = await session.ping()
+      expect(empty).toEqual(undefined)
     })
+    log('ping done')
     await t.step('ping with params', async () => {
-      const result = await artifact.ping({ data: { test: 'test' } })
-      expect(result).toEqual({ data: { test: 'test' } })
+      const result = await session.ping({ data: { test: 'test' } })
+      expect(result).toEqual({ test: 'test' })
     })
-    await artifact.stop()
+    log('params done')
+    await session.engineStop()
+    log('stop done')
+  })
+  Deno.test(prefix + 'init', async () => {
+    const session = await cradleMaker()
+    const result = await session.init({ repo: 'dreamcatcher-tech/HAL' })
+    log('init result', result)
+    expect(result).toBeDefined()
+    expect(result!.pid).toBeDefined()
+    expect(result!.pid.account).toBe('dreamcatcher-tech')
+    expect(result!.pid.repository).toBe('HAL')
+    expect(typeof result!.head).toBe('string')
+    await session.engineStop()
   })
   Deno.test(prefix + 'rm', async () => {
-    const artifact = await cradleMaker()
-    await artifact.rm({ repo: 'dreamcatcher-tech/HAL' })
-    await artifact.stop()
+    const session = await cradleMaker()
+    const first = await session.rm({ repo: 'dreamcatcher-tech/HAL' })
+    expect(first).toBe(false)
+
+    await session.init({ repo: 'dreamcatcher-tech/HAL' })
+    const second = await session.rm({ repo: 'dreamcatcher-tech/HAL' })
+    expect(second).toBe(true)
+
+    await session.engineStop()
   })
   Deno.test(prefix + 'clone', async (t) => {
-    const artifact = await cradleMaker()
+    const session = await cradleMaker()
 
     await t.step('clone', async () => {
-      await artifact.rm({ repo: 'dreamcatcher-tech/HAL' })
-      const clone = await artifact.clone({ repo: 'dreamcatcher-tech/HAL' })
-      console.log('clone result', clone)
+      await session.rm({ repo: 'dreamcatcher-tech/HAL' })
+      const clone = await session.clone({ repo: 'dreamcatcher-tech/HAL' })
       // TODO read the fs and see what the state of the file system is ?
       expect(clone.pid).toBeDefined()
       expect(clone.pid.account).toBe('dreamcatcher-tech')
+      expect(clone.pid.repository).toBe('HAL')
       expect(typeof clone.head).toBe('string')
     })
-    await artifact.stop()
+    await session.engineStop()
   })
   Deno.test.ignore(prefix + 'child to self', async () => {})
   Deno.test.ignore(prefix + 'child to child', async () => {})
   Deno.test.ignore(prefix + 'child to parent', async () => {})
   Deno.test(prefix + 'pierce', async (t) => {
-    const artifact = await cradleMaker()
-    await artifact.rm({ repo: 'cradle/pierce' })
-    const { pid: target } = await artifact.init({ repo: 'cradle/pierce' })
-    const actions = await artifact.actions(ioFixture, target)
+    const session = await cradleMaker()
+    await session.rm({ repo: 'cradle/pierce' })
+    const { pid: target } = await session.init({ repo: 'cradle/pierce' })
+    const actions = await session.actions(ioFixture, target)
     await t.step('local', async () => {
       const result = await actions.local()
       log('local result', result)
@@ -73,37 +94,13 @@ export default (name: string, cradleMaker: () => Promise<ArtifactSession>) => {
       await expect(actions.local({ invalid: 'parameters' }))
         .rejects.toThrow(msg)
     })
-    await artifact.stop()
+    await session.engineStop()
   })
 
-  Deno.test(prefix + 'github operations', async (t) => {
-    const artifact = await cradleMaker()
-    const pid = pidFromRepo(artifact.pid.repoId, 'dreamcatcher-tech/HAL')
-    await artifact.rm({ repo: 'dreamcatcher-tech/HAL' })
-    await t.step('probe empty', async () => {
-      const result = await artifact.probe({ pid })
-      log('probe result', result)
-      expect(result).toBeUndefined()
-    })
-    await t.step('init', async () => {
-      const result = await artifact.init({ repo: 'dreamcatcher-tech/HAL' })
-      log('init result', result)
-      expect(result).toBeDefined()
-      expect(result!.pid).toEqual(pid)
-      expect(typeof result!.head).toBe('string')
-    })
-    await t.step('probe', async () => {
-      const result = await artifact.probe({ pid })
-      log('probe result', result)
-      expect(result).toBeDefined()
-      expect(result!.pid).toEqual(pid)
-    })
-    await artifact.stop()
-  })
-  benchmarks(name, cradleMaker)
   processMgmt(name, cradleMaker)
+  sessions(name, cradleMaker)
   aiCalls(name, cradleMaker)
   splices(name, cradleMaker)
-  session(name, cradleMaker)
   hal(name, cradleMaker)
+  benchmarks(name, cradleMaker)
 }

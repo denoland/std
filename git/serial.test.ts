@@ -3,8 +3,8 @@ import { solidify } from '@/git/solidify.ts'
 import {
   IoStruct,
   MergeReply,
+  PartialPID,
   PID,
-  pidFromRepo,
   PierceRequest,
   PROCTYPE,
 } from '@/constants.ts'
@@ -12,12 +12,14 @@ import FS from './fs.ts'
 import DB from '@/db.ts'
 
 Deno.test('pierce serial', async (t) => {
-  const target: PID = {
-    repoId: 't',
+  const db = await DB.create()
+  const partial: PartialPID = {
     account: 'git',
     repository: 'test',
     branches: ['main'],
   }
+  let fs = await FS.init(partial, db)
+  const target: PID = fs.pid
   const pierceFactory = (ulid: string): PierceRequest => ({
     target,
     ulid,
@@ -33,11 +35,7 @@ Deno.test('pierce serial', async (t) => {
     source: target,
     commit: '4b825dc642cb6eb9a060e54bf8d69288fbee4904',
   }
-  const db = await DB.create()
-  let fs: FS
   await t.step('init', async () => {
-    const pid = pidFromRepo('t', 'git/test')
-    fs = await FS.init(pid, db)
     const logs = await fs.logs()
     expect(logs).toHaveLength(1)
     expect(fs.pid).toEqual(target)
@@ -112,7 +110,7 @@ const replies = (start: number, end: number) => {
   const pool: MergeReply[] = []
   for (let i = start; i <= end; i++) {
     const target = {
-      id: 't',
+      repoId: 't',
       account: 'git',
       repository: 'test',
       branches: ['main'],

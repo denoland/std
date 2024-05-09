@@ -1,30 +1,42 @@
-import IOChannel, { toUnsequenced } from '../io/io-channel.ts'
+import IOChannel from '../io/io-channel.ts'
 import FS from '../git/fs.ts'
 import Executor from './exe.ts'
-import { C, isPierceRequest, PROCTYPE, SolidRequest } from '@/constants.ts'
+import {
+  C,
+  isPierceRequest,
+  PartialPID,
+  PROCTYPE,
+  SolidRequest,
+} from '@/constants.ts'
 import { assert, expect, log } from '@utils'
 import DB from '@/db.ts'
 import { UnsequencedRequest } from '@/constants.ts'
 import { Engine } from '@/engine.ts'
 import { Api } from '@/isolates/io-fixture.ts'
-import { Machine } from '@/api/web-client-home.ts'
+import { Machine } from '@/api/web-client-machine.ts'
 
-const pid = { id: 't', account: 'exe', repository: 'test', branches: ['main'] }
-const source = { ...pid, account: 'higher' }
-const request: SolidRequest = {
+type PartialRequest = Omit<SolidRequest, 'target'>
+
+const partialPid: PartialPID = {
+  account: 'exe',
+  repository: 'test',
+  branches: ['main'],
+}
+const source = { ...partialPid, repoId: 'other', account: 'higher' }
+const partialRequest: PartialRequest = {
   isolate: 'io-fixture',
   functionName: 'local',
   params: {},
   proctype: PROCTYPE.SERIAL,
-  target: pid,
   source,
   sequence: 0,
 }
-const mocks = async (initialRequest: SolidRequest) => {
+const mocks = async (initialRequest: PartialRequest) => {
   const db = await DB.create()
-  let fs = await FS.init(pid, db)
+  let fs = await FS.init(partialPid, db)
   let io = await IOChannel.load(fs)
-  io.addRequest(initialRequest)
+  const request = { ...initialRequest, target: fs.pid }
+  io.addRequest(request)
   io.save()
   const { next } = await fs.writeCommitObject()
   fs = next
@@ -32,15 +44,15 @@ const mocks = async (initialRequest: SolidRequest) => {
   const stop = () => db.stop()
   const exe = Executor.createCacheContext()
   const context: C = { db, exe }
-  return { context, exe, io, fs, db, stop }
+  return { request, context, exe, io, fs, db, stop }
 }
 Deno.test('simple', async (t) => {
-  const { context, exe, fs, stop } = await mocks(request)
+  const { request, context, exe, fs, stop } = await mocks(partialRequest)
   await t.step('no accumulations', async () => {
     const result = await exe.execute(request, fs.oid, context)
     assert('reply' in result)
     const { reply, fs: settledFs } = result
-    expect(reply.target).toEqual(pid)
+    expect(reply.target).toEqual(fs.pid)
     expect(reply.outcome).toEqual({ result: 'local reply' })
     expect(settledFs).toEqual(fs)
     expect(settledFs.isChanged).toBeFalsy()
@@ -49,16 +61,16 @@ Deno.test('simple', async (t) => {
 })
 Deno.test('writes', async (t) => {
   const write = {
-    ...request,
+    ...partialRequest,
     functionName: 'write',
     params: { path: 'test.txt', content: 'hello' },
   }
-  const { context, exe, fs, stop } = await mocks(write)
+  const { request, context, exe, fs, stop } = await mocks(write)
   await t.step('single file', async () => {
-    const result = await exe.execute(write, fs.oid, context)
+    const result = await exe.execute(request, fs.oid, context)
     assert('reply' in result)
     const { reply, fs: settledFs } = result
-    expect(reply.target).toEqual(pid)
+    expect(reply.target).toEqual(fs.pid)
     expect(reply.outcome.result).toBeUndefined()
     expect(settledFs).toEqual(fs)
     expect(settledFs.upserts).toEqual(['test.txt'])
@@ -75,38 +87,42 @@ Deno.test('writes', async (t) => {
 })
 
 Deno.test('loopback', async () => {
-  const compound = { ...request, functionName: 'compound' }
-  const { context, exe, fs, stop } = await mocks(compound)
-  const result = await exe.execute(compound, fs.oid, context)
+  const compound = { ...partialRequest, functionName: 'compound' }
+  const { request, context, exe, fs, stop } = await mocks(compound)
+  const result = await exe.execute(request, fs.oid, context)
   expect('pending' in result).toBeTruthy()
   stop()
 })
 
 Deno.test('compound', async (t) => {
-  const target = { account: 'exe', repository: 'other', branches: ['other'] }
+  const target = {
+    repoId: 't',
+    account: 'exe',
+    repository: 'other',
+    branches: ['other'],
+  }
   const compound = {
     isolate: 'io-fixture',
     proctype: PROCTYPE.SERIAL,
-    target: pid,
     source,
     sequence: 0,
     functionName: 'compound',
     params: { target },
   }
-  const { context, exe, io, fs, stop } = await mocks(compound)
-  let request: UnsequencedRequest
+  const { request, context, exe, io, fs, stop } = await mocks(compound)
+  let unsequenced: UnsequencedRequest
   await t.step('half done', async () => {
-    const result = await exe.execute(compound, fs.oid, context)
+    const result = await exe.execute(request, fs.oid, context)
+    expect(result).toHaveProperty('pending')
     assert('pending' in result)
     const { requests } = result.pending
     expect(requests).toHaveLength(1)
-    request = requests[0]
-    log('internalRequest', request)
-    expect(request.target).toEqual(target)
+    unsequenced = requests[0]
+    log('internalRequest', unsequenced)
+    expect(unsequenced.target).toEqual(target)
   })
   await t.step('reply using function cache', async () => {
-    assert(request)
-    const sequenced = io.addPending(0, fs.oid, [request])
+    const sequenced = io.addPending(0, fs.oid, [unsequenced])
     expect(sequenced).toHaveLength(1)
     const target = sequenced[0].source
     const reply = {
@@ -118,11 +134,11 @@ Deno.test('compound', async (t) => {
     }
     const savedRequest = io.reply(reply)
     assert(!isPierceRequest(savedRequest))
-    expect(toUnsequenced(savedRequest)).toEqual(request)
+    expect(savedRequest).toEqual(sequenced[0])
     io.save()
     const { next } = await fs.writeCommitObject()
 
-    const result = await exe.execute(compound, next.oid, context)
+    const result = await exe.execute(request, next.oid, context)
     expect('reply' in result).toBeTruthy()
   })
   await t.step('reply from replay', async () => {
@@ -130,7 +146,7 @@ Deno.test('compound', async (t) => {
     const io = await IOChannel.load(fs)
     const sequenced = io.addPending(0, fs.oid, [request])
     expect(sequenced).toHaveLength(1)
-    const target = pid
+    const target = fs.pid
     const reply = {
       target,
       source: target,
@@ -143,7 +159,7 @@ Deno.test('compound', async (t) => {
     const { next } = await fs.writeCommitObject()
 
     const c = { ...context, exe: Executor.createCacheContext() }
-    const result = await c.exe.execute(compound, next.oid, c)
+    const result = await c.exe.execute(request, next.oid, c)
     expect('reply' in result).toBeTruthy()
   })
   stop()
@@ -156,22 +172,22 @@ Deno.test('compound', async (t) => {
   // test multiple cycles thru requests and replies
   // test making different request between two invocations
 })
-for (const withFunctionCache of [true, false]) {
-  Deno.test('accumulation spanning multiple commits', async (t) => {
-    await t.step(`function cache ${withFunctionCache}`, async () => {
+for (const withExeCache of [true, false]) {
+  Deno.test(`commit spanning (cache: ${withExeCache}`, async (t) => {
+    await t.step(`function cache`, async () => {
       const engine = await Engine.start()
-      if (!withFunctionCache) {
+      if (!withExeCache) {
         engine.context.exe?.disableFunctionCache()
       }
-      const { pid } = await engine.bootSuperUser()
-      const home = Machine.resumeSession(engine, pid)
-      const session = await home.createSession()
+      await engine.provision()
+      const machine = Machine.load(engine)
+      const session = machine.openSession()
 
-      const { fileAccumulation } = await session.actions<Api>('io-fixture', pid)
+      const { fileAccumulation } = await session.actions<Api>('io-fixture')
       await fileAccumulation({ path: 'test.txt', content: 'hello', count: 3 })
 
       let first
-      for await (const splice of session.read(pid, 'test.txt')) {
+      for await (const splice of session.read(session.pid, 'test.txt')) {
         first = splice
         break
       }
@@ -180,21 +196,20 @@ for (const withFunctionCache of [true, false]) {
       assert(file)
       log(file)
       expect(file.split('\n')).toHaveLength(7)
-
       await session.stop()
     })
   })
 
-  Deno.test('looping accumulation', async (t) => {
-    await t.step(`function cache ${withFunctionCache}`, async () => {
+  Deno.test(`looping accumulation (cache: ${withExeCache}`, async (t) => {
+    await t.step(`function cache ${withExeCache}`, async () => {
       const engine = await Engine.start()
-      if (!withFunctionCache) {
+      if (!withExeCache) {
         engine.context.exe?.disableFunctionCache()
       }
-      const { pid } = await engine.bootSuperUser()
-      const home = Machine.resumeSession(engine, pid)
-      const session = await home.createSession()
-
+      await engine.provision()
+      const machine = Machine.load(engine)
+      const session = machine.openSession()
+      const { pid } = session
       const { loopAccumulation } = await session.actions<Api>('io-fixture', pid)
       await loopAccumulation({ path: 'test.txt', content: 'hello', count: 3 })
 

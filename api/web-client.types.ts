@@ -1,6 +1,7 @@
 // copied from the artifact project
 import { Chalk } from 'chalk'
 import { JSONSchemaType } from './web-client.ajv.ts'
+import { Session } from '@/api/web-client-session.ts'
 export enum PROCTYPE {
   SERIAL = 'SERIAL',
   BRANCH = 'BRANCH',
@@ -299,7 +300,8 @@ type Head = { pid: PID; head: string }
 /** The client session interface to artifact */
 export interface ArtifactSession {
   pid: PID
-  stop(): Promise<void> | void
+  stop(): void
+  engineStop(): Promise<void>
   actions<T = DispatchFunctions>(isolate: string, target: PID): Promise<T>
   read(
     pid: PID,
@@ -317,7 +319,6 @@ export interface ArtifactSession {
    * various diagnostics about the platform they are interacting with */
   ping(params?: { data?: JsonValue; pid?: PID }): Promise<IsolateReturn>
   /** Calls the repo isolate */
-  probe(params: { pid: PID }): Promise<Head | void>
   init(params: { repo: string }): Promise<Head>
   clone(params: { repo: string }): Promise<Head>
   pull(params: { pid: PID }): Promise<Head>
@@ -326,6 +327,8 @@ export interface ArtifactSession {
   endSession(): Promise<void>
   /** Remove the account if currently signed in */
   deleteAccountUnrecoverably(): Promise<void>
+  newSession(): ArtifactSession
+  resumeSession(pid: PID): ArtifactSession
 }
 /** The client home interface to Artifact, only able to create new sessions.
 Will handle the generation of signing keys for the session, and authentication
@@ -334,6 +337,7 @@ with github.
 export interface ArtifactMachine {
   pid: PID
   machineId: string
+  rootSessionPromise: Promise<Session>
   /** Using the current session, create a new session. */
   openSession(retry?: PID): ArtifactSession
   /** Pings the execution context without going thru the transaction queue.
@@ -454,7 +458,7 @@ export const pidFromRepo = (repoId: string, repo: string): PID => {
 
 export const ACTORS: Omit<PID, 'repoId'> = {
   account: 'dreamcatcher-tech',
-  repository: 'identity',
+  repository: 'actors',
   branches: ['base'],
 }
 export const SUPERUSER: Omit<PID, 'repoId'> = {
@@ -508,36 +512,7 @@ const safeParams = (params?: Params) => {
   }
   return safe
 }
-export type ActorApi = {
-  /**
-   * Creates a new actor using a ulid to create the id.
-   *
-   * @param params
-   * @param params.machineId A secure identifier of the machine that is
-   * sponsoring this request.  In the case of a browser, this is the id of the
-   * browser instance and is the same for ever tab that makes a request.  This
-   * is a public key in secp256k1 format.
-   * @param params.sessionId A secure identifier of the session that is unique
-   * to the session being requested.  In the case of a browser, this is unique
-   * to each tab that is starting a session.  Sessions that already exist can
-   * be resumed.
-   * @returns
-   */
-  create: (params: { machineId: string; sessionId: string }) => Promise<PID>
 
-  /**
-   * Called by an actor, after authorizing, to merge its actorId with the
-   * actorId authorized with the given auth provider.
-   *
-   * For example, in github, the github user id is used to link actorIds
-   * together, and the first actorId to pass auth is the stable actorId for that
-   * user id, so future requests to merge always merge into that actorId.
-   *
-   * The operation leaves a record of what auth provider approved what
-   * unification and at what commit.
-   */
-  surrender: (params: { authProvider: PID }) => Promise<void>
-}
 export const assertValidSession = (pid: PID, identity: PID) => {
   const { repoId, account, repository, branches } = identity
   const msg = print(pid)
@@ -571,6 +546,10 @@ export const machineIdRegex = /^[0-9a-f]{66}$/
 export const sessionIdRegex =
   /^[0-7][0-9A-HJKMNP-TV-Z]{9}[0-9A-HJKMNP-TV-Z]{16}$/
 
+export const getActorPid = (source: PID) => {
+  const branches = source.branches.slice(0, 1)
+  return { ...source, branches }
+}
 export const getActorId = (source: PID) => {
   const [, actorId] = source.branches
   return actorId

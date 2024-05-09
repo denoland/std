@@ -13,11 +13,12 @@ const cradleMaker = async () => {
   const env = await load()
   const url = env.CLOUD_URL
   assert(url, 'CLOUD_URL not set')
-  const engine = WebClientEngine.create(url)
+  // TODO delete all repos that the actor has access to
+  const engine = WebClientEngine.start(url)
   if (!introDone) {
     introDone = true
     console.log('testing:', url)
-    const result = await engine.initialize()
+    const result = await engine.provision()
     console.log('initialization:', result)
   }
   const home = Machine.resumeSession(engine, SUPERUSER)

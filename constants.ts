@@ -193,4 +193,28 @@ export const isChildOf = (child: PID, parent: PID) => {
 }
 export const isBaseRepo = (pid: PID) => pid.branches.length === 1
 
+export const pidSchema = {
+  type: 'object',
+  required: ['repoId', 'account', 'repository', 'branches'],
+  additionalProperties: false,
+  properties: {
+    repoId: {
+      type: 'string',
+    },
+    account: {
+      type: 'string',
+    },
+    repository: {
+      type: 'string',
+    },
+    branches: {
+      type: 'array',
+      items: {
+        type: 'string',
+      },
+      minItems: 1,
+    },
+  },
+}
+
 export * from './api/web-client.types.ts'

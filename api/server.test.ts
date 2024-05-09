@@ -3,7 +3,7 @@ import Server from './server.ts'
 import { expect } from '@utils'
 import { WebClientEngine } from '@/api/web-client-engine.ts'
 import guts from '../guts/guts.ts'
-import { Machine } from '@/api/web-client-home.ts'
+import { Machine } from '@/api/web-client-machine.ts'
 Deno.test('hono basic', async (t) => {
   await t.step('ping', async () => {
     const server = await Server.create()
@@ -20,13 +20,13 @@ Deno.test('hono basic', async (t) => {
 
 const cradleMaker = async () => {
   const server = await Server.create()
-  const { pid } = await server.engine.bootSuperUser()
+  await server.engine.provision()
 
   const fetcher = server.request as typeof fetch
 
-  const engine = WebClientEngine.create('mock', fetcher)
-  const home = Machine.resumeSession(engine, pid)
-  const artifact = await home.createSession()
+  const engine = await WebClientEngine.start('mock', fetcher)
+  const machine = Machine.load(engine)
+  const artifact = machine.openSession()
   const clientStop = artifact.stop.bind(artifact)
   artifact.stop = async () => {
     // must stop the client first, else will retry

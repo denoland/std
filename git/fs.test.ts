@@ -123,8 +123,7 @@ Deno.test('clone', async (t) => {
   const db = await DB.create()
   let fs: FS
   await t.step('clone HAL', async () => {
-    const pid = pidFromRepo('t', 'dreamcatcher-tech/HAL')
-    fs = await FS.clone(pid, db)
+    fs = await FS.clone('dreamcatcher-tech/HAL', db)
     expect(fs.oid).toHaveLength(40)
   })
   await t.step('read', async () => {

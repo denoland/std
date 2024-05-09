@@ -11,7 +11,7 @@ import Accumulator from '@/exe/accumulator.ts'
 import { Api } from '@/isolates/engage-help.ts'
 import { assert } from '@std/assert'
 import OpenAI from 'openai'
-import { Machine } from '@/api/web-client-home.ts'
+import { Machine } from '@/api/web-client-machine.ts'
 type Messages = OpenAI.ChatCompletionMessageParam
 
 Deno.test('ai-chat', async (t) => {
@@ -80,15 +80,15 @@ Deno.test('ai-chat', async (t) => {
 
 Deno.test('engage-help', async (t) => {
   const engine = await Engine.start()
-  await engine.bootSuperUser()
-  const home = Machine.resumeSession(engine, engine.pid)
-  const artifact = await home.createSession()
+  await engine.provision()
+  const machine = Machine.load(engine)
+  const session = machine.openSession()
 
-  const { pid } = await artifact.clone({ repo: 'dreamcatcher-tech/HAL' })
+  const { pid } = await session.clone({ repo: 'dreamcatcher-tech/HAL' })
 
   let latest = {}
   const splices = async () => {
-    for await (const splice of artifact.read(pid, 'session.json')) {
+    for await (const splice of session.read(pid, 'session.json')) {
       if (!Object.keys(splice.changes).length) {
         continue
       }
@@ -103,7 +103,7 @@ Deno.test('engage-help', async (t) => {
   splices()
   await t.step('say the word "hello"', async () => {
     const isolate = 'engage-help'
-    const { engage } = await artifact.actions<Api>(isolate, pid)
+    const { engage } = await session.actions<Api>(isolate, pid)
     await engage({
       help: 'help-fixture',
       text: 'say the word: "hello" without calling any functions',
@@ -115,7 +115,7 @@ Deno.test('engage-help', async (t) => {
   })
   await t.step('what is your name ?', async () => {
     const isolate = 'engage-help'
-    const { engage } = await artifact.actions<Api>(isolate, pid)
+    const { engage } = await session.actions<Api>(isolate, pid)
     await engage({
       help: 'help-fixture',
       text: 'what is your name ?',
@@ -125,7 +125,7 @@ Deno.test('engage-help', async (t) => {
 
   await t.step('repeat your last', async () => {
     const isolate = 'engage-help'
-    const { engage } = await artifact.actions<Api>(isolate, pid)
+    const { engage } = await session.actions<Api>(isolate, pid)
     await engage({
       help: 'help-fixture',
       text: 'repeat your last, without calling any functions',
@@ -135,11 +135,11 @@ Deno.test('engage-help', async (t) => {
     assert(Array.isArray(latest))
   })
 
-  await artifact.stop()
+  await session.engineStop()
 })
 const dummyOrigin = {
   target: {
-    id: '0',
+    repoId: '0',
     account: 'system',
     repository: 'system',
     branches: ['main'],
@@ -150,7 +150,7 @@ const dummyOrigin = {
   proctype: PROCTYPE.SERIAL,
   sequence: 1,
   source: {
-    id: '0',
+    repoId: '0',
     account: 'system',
     repository: 'system',
     branches: ['main'],

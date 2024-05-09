@@ -1,25 +1,24 @@
 import OpenAI from 'openai'
 import { ENTRY_HELP_FILE, HalActor, HalSession } from '@/isolates/hal.ts'
 import { expect, log } from '@utils'
-import { ArtifactSession } from '@/constants.ts'
+import { ArtifactSession, print } from '@/constants.ts'
 type Messages = OpenAI.ChatCompletionMessageParam
 
 export default (name: string, cradleMaker: () => Promise<ArtifactSession>) => {
   const prefix = name + ': '
   Deno.test(prefix + 'hal', async (t) => {
+    const session = await cradleMaker()
     const repo = 'dreamcatcher-tech/HAL'
-    const artifact = await cradleMaker()
-    const { pid } = await artifact.clone({ repo })
+    const { pid } = await session.clone({ repo })
 
-    const halBase = await artifact.actions<HalActor>('hal', pid)
-    // log.enable('AI:tests AI:hal AI:session AI:isolates:engage-help AI:prompt')
+    const halBase = await session.actions<HalActor>('hal', pid)
     const halSessionPid = await halBase.startSession()
-    const hal = await artifact.actions<HalSession>('hal', halSessionPid)
+    const hal = await session.actions<HalSession>('hal', halSessionPid)
 
     await t.step('prompt', async () => {
-      log('pid', halSessionPid)
+      log('pid', print(halSessionPid))
       await hal.prompt({ text: 'hello' })
-      const messages = await artifact.readJSON<Messages[]>(
+      const messages = await session.readJSON<Messages[]>(
         'session.json',
         halSessionPid,
       )
@@ -27,22 +26,25 @@ export default (name: string, cradleMaker: () => Promise<ArtifactSession>) => {
     })
 
     await t.step('redirect HAL', async () => {
-      const sessionBase = await artifact.actions<HalActor>('hal', halSessionPid)
-      await expect(artifact.exists(ENTRY_HELP_FILE, halSessionPid)).resolves
+      const sessionBase = await session.actions<HalSession>(
+        'hal',
+        halSessionPid,
+      )
+      await expect(session.exists(ENTRY_HELP_FILE, halSessionPid)).resolves
         .toBe(false)
       await sessionBase.setPromptTarget({ help: 'help-fixture' })
-      await expect(artifact.exists(ENTRY_HELP_FILE, halSessionPid)).resolves
+      await expect(session.exists(ENTRY_HELP_FILE, halSessionPid)).resolves
         .toBe(true)
 
       await hal.prompt({ text: 'hello again' })
-      const messages = await artifact.readJSON<Messages[]>(
+      const messages = await session.readJSON<Messages[]>(
         'session.json',
         halSessionPid,
       )
       log('messages', messages)
     })
 
-    await artifact.stop()
+    await session.engineStop()
   })
 
   // use HAL to write a new prompt for HAL, and then use that ?

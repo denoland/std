@@ -20,7 +20,7 @@ export class Machine implements ArtifactMachine {
   readonly #privKey: Uint8Array
   readonly #pubKey: Uint8Array
   readonly #machineId: string
-  #initializing: Promise<Session>
+  #rootSessionPromise: Promise<Session>
 
   private constructor(engine: EngineInterface) {
     this.#engine = engine
@@ -33,7 +33,10 @@ export class Machine implements ArtifactMachine {
     const machineId = this.#machineId
     const branches = [...engine.homeAddress.branches, actorId, machineId]
     this.#pid = { ...engine.homeAddress, branches }
-    this.#initializing = this.#connect()
+    this.#rootSessionPromise = this.#connect()
+  }
+  get rootSessionPromise() {
+    return this.#rootSessionPromise
   }
   get pid() {
     return this.#pid
@@ -50,16 +53,16 @@ export class Machine implements ArtifactMachine {
   async #connect() {
     const pid = this.#createSessionPid()
     await this.#engine.createMachineSession(pid)
-    return Session.createSystem(this.#engine, pid)
+    return Session.resume(this.#engine, this, pid)
   }
 
   /** If the given pid is valid, uses that session, else creates a new one */
-  openSession(retry?: PID) {
+  openSession(retry?: PID): Session {
     if (retry) {
-      return Session.resume(this.#engine, retry)
+      return Session.resume(this.#engine, this, retry)
     }
     const pid = this.#createSessionPid()
-    return Session.create(this.#engine, pid, this.#initializing)
+    return Session.create(this.#engine, this, pid)
   }
   #createSessionPid() {
     return { ...this.pid, branches: [...this.pid.branches, ulid()] }

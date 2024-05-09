@@ -25,6 +25,7 @@ export class Engine implements EngineInterface {
   #api: IsolateApi<C>
   #pierce: artifact.Api['pierce']
   #homeAddress: PID | undefined
+  #githubAddress: PID | undefined
 
   private constructor(compartment: Compartment, api: IsolateApi<C>) {
     this.#compartment = compartment
@@ -47,32 +48,29 @@ export class Engine implements EngineInterface {
     }
     return this.#homeAddress
   }
+  get githubAddress() {
+    if (!this.#githubAddress) {
+      throw new Error('github not installed')
+    }
+    return this.#githubAddress
+  }
   async stop() {
     await this.#compartment.unmount(this.#api)
   }
-  async installHome() {
-    // TODO in deploy, need to read this from a special key in the db
-    if (this.#homeAddress) {
-      throw new Error('home already installed: ' + print(this.#homeAddress))
+  get isProvisioned() {
+    return !!this.#homeAddress && !!this.#githubAddress
+  }
+  async provision() {
+    if (!this.#homeAddress) {
+      const { pid } = await this.install('actors')
+      // TODO make this connect up this host as a machine to the superuser
+      this.#homeAddress = pid
     }
-
-    const { db } = artifact.sanitizeContext(this.#api)
-
-    const { pid } = await FS.init(ACTORS, db)
-    this.#homeAddress = pid
-    // this should install home then give itself the superuser account
-    // all subsequent actions should come from the superuser account
-    await this.pierce({
-      isolate: 'actors',
-      functionName: '@@install',
-      params: {},
-      proctype: PROCTYPE.SERIAL,
-      target: pid,
-      ulid: ulid(),
-    })
-    // TODO verify the install was successful
-    const { oid } = await FS.openHead(pid, db)
-    return { pid, head: oid }
+    if (!this.#githubAddress) {
+      const { homeAddress } = this
+      const { pid } = await this.install('github', { homeAddress })
+      this.#githubAddress = pid
+    }
   }
   /**
    * Installs isolates as the superuser account.  Used to provision the engine.
@@ -92,23 +90,26 @@ export class Engine implements EngineInterface {
       target: pid,
       ulid: ulid(),
     })
+    // TODO fire an error if this isolate is not installable
     log('installed', print(pid))
     const { oid } = await FS.openHead(pid, db)
     return { pid, head: oid }
   }
-  async clone(repo: string, isolate: string, params: Params = {}) {
+  async clone(repo: string, isolate?: string, params: Params = {}) {
     log('clone', repo, isolate, params)
     const { db } = artifact.sanitizeContext(this.#api)
 
     const { pid } = await FS.clone(repo, db)
-    await this.pierce({
-      isolate,
-      functionName: '@@install',
-      params,
-      proctype: PROCTYPE.SERIAL,
-      target: pid,
-      ulid: ulid(),
-    })
+    if (isolate) {
+      await this.pierce({
+        isolate,
+        functionName: '@@install',
+        params,
+        proctype: PROCTYPE.SERIAL,
+        target: pid,
+        ulid: ulid(),
+      })
+    }
     log('cloned', print(pid))
     const { oid } = await FS.openHead(pid, db)
     return { pid, head: oid }

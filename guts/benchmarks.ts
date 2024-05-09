@@ -7,11 +7,10 @@ export default (name: string, cradleMaker: () => Promise<ArtifactSession>) => {
   const prefix = name + ': '
 
   Deno.test(prefix + 'resource hogging', async (t) => {
-    const artifact = await cradleMaker()
+    const session = await cradleMaker()
     const repo = 'cradle/pierce'
-    await artifact.rm({ repo })
-    const { pid: target } = await artifact.init({ repo })
-    const { local } = await artifact.actions(ioFixture, target)
+    const { pid: target } = await session.init({ repo })
+    const { local } = await session.actions(ioFixture, target)
 
     await t.step('serial', async () => {
       const promises = []
@@ -28,19 +27,19 @@ export default (name: string, cradleMaker: () => Promise<ArtifactSession>) => {
 
       // TODO get historical splices and confirm depth of actions
 
-      await artifact.stop()
+      await session.rm({ repo })
+      await session.engineStop()
     })
   })
-  Deno.test(prefix + 'resource hogging parallel', async (t) => {
-    const artifact = await cradleMaker()
+  Deno.test.only(prefix + 'resource hogging parallel', async (t) => {
+    const session = await cradleMaker()
     const repo = 'cradle/pierce'
-    await artifact.rm({ repo })
 
-    const { pid: target } = await artifact.init({ repo })
-    const { local } = await artifact.actions(ioFixture, target)
+    const { pid: target } = await session.init({ repo })
+    const { local } = await session.actions(ioFixture, target)
     await t.step('parallel', async () => {
       const promises = []
-      const count = 20
+      const count = 100
       for (let i = 0; i < count; i++) {
         promises.push(local({}, { branch: true }))
       }
@@ -51,14 +50,15 @@ export default (name: string, cradleMaker: () => Promise<ArtifactSession>) => {
       }
       log('done')
     })
-    await artifact.stop()
+    await session.rm({ repo })
+    await session.engineStop()
   })
   Deno.test.ignore(prefix + 'flare', async (t) => {
     const artifact = await cradleMaker()
     const repo = 't/flare'
     await artifact.rm({ repo })
     const target = {
-      id: '0',
+      repoId: '0',
       account: 't',
       repository: 'flare',
       branches: ['main'],

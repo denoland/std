@@ -3,6 +3,7 @@ import { EventSourceParserStream } from 'eventsource-parser/stream'
 import { deserializeError } from 'serialize-error'
 import {
   EngineInterface,
+  freezePid,
   JSONSchemaType,
   JsonValue,
   Params,
@@ -17,28 +18,32 @@ export class WebClientEngine implements EngineInterface {
     input: URL | RequestInfo,
     init?: RequestInit,
   ) => Promise<Response>
+  readonly #homeAddress: PID
   readonly #schemas = new Map<string, JSONSchemaType<object>>()
-
-  private constructor(url: string, fetcher?: typeof fetch) {
+  private constructor(url: string, fetcher: typeof fetch, homeAddress: PID) {
     if (url.endsWith('/')) {
       throw new Error('url should not end with "/": ' + url)
     }
-    if (fetcher) {
-      this.#fetcher = fetcher
-    } else {
-      this.#fetcher = (path, opts) => fetch(`${url}${path}`, opts)
-    }
+    this.#fetcher = fetcher
+    this.#homeAddress = homeAddress
   }
-  static create(url: string, fetcher?: typeof fetch) {
-    return new WebClientEngine(url, fetcher)
-  }
-  async initialize() {
-    const createSuperUser = `/api`
-    const response = await this.#fetcher(createSuperUser)
-    if (!response.ok) {
-      throw new Error('response not ok')
+  static async start(url: string, fetcher?: typeof fetch) {
+    if (!fetcher) {
+      fetcher = (path, opts) => fetch(`${url}${path}`, opts)
     }
-    return await response.json()
+    // get the home address from the server
+    const homeAddress = await request('homeAddress', {}, fetcher)
+    freezePid(homeAddress)
+    return new WebClientEngine(url, fetcher, homeAddress)
+  }
+  get homeAddress() {
+    return this.#homeAddress
+  }
+  async createMachineSession(pid: PID) {
+    // somehow need to get the home address out too
+  }
+  async provision() {
+    return await this.#request('provision', {})
   }
   stop() {
     for (const abort of this.#aborts) {
@@ -139,24 +144,27 @@ export class WebClientEngine implements EngineInterface {
     const result = await this.#request('exists', { path, pid })
     return result as boolean
   }
-  async #request(path: string, params: Params) {
-    const response = await this.#fetcher(`/api/${path}?pretty`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(params),
-    })
-    if (!response.ok) {
-      await response.body?.cancel()
-      const { status, statusText } = response
-      const msg = `${path} ${JSON.stringify(params)} ${status} ${statusText}`
-      throw new Error(msg)
-    }
-    const outcome = await response.json()
-    if (outcome.error) {
-      throw deserializeError(outcome.error)
-    }
-    return outcome.result
+  #request(path: string, params: Params) {
+    return request(path, params, this.#fetcher)
   }
+}
+const request = async (path: string, params: Params, fetcher: typeof fetch) => {
+  const response = await fetcher(`/api/${path}?pretty`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(params),
+  })
+  if (!response.ok) {
+    await response.body?.cancel()
+    const { status, statusText } = response
+    const msg = `${path} ${JSON.stringify(params)} ${status} ${statusText}`
+    throw new Error(msg)
+  }
+  const outcome = await response.json()
+  if (outcome.error) {
+    throw deserializeError(outcome.error)
+  }
+  return outcome.result
 }
 const toEvents = (stream: ReadableStream) =>
   stream.pipeThrough(new TextDecoderStream())

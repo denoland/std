@@ -121,7 +121,11 @@ export const solidify = async (
 
   let exe: Solids['exe']
   const nextRequest = io.getCurrentSerialRequest()
+
   if (nextRequest && !equal(executingRequest, nextRequest)) {
+    // next request should not return if there is not enough pending to support
+    // it ?
+
     const sequence = io.getSequence(nextRequest)
     exe = { request: nextRequest, sequence }
   }

@@ -13,7 +13,6 @@ import Compartment from '../io/compartment.ts'
 import { assert, Debug, equal, serializeError } from '@utils'
 import Accumulator from '@/exe/accumulator.ts'
 import FS from '@/git/fs.ts'
-import { PID } from '@/api/web-client.types.ts'
 const log = Debug('AI:exe')
 
 export default class Executor {
@@ -53,6 +52,10 @@ export default class Executor {
       const opts = { isEffect: true, isEffectRecovered: false }
       // TODO read side effect config from io.json
       const isolateApi = IsolateApi.create(accumulator, opts)
+      if (req.isolate === 'system') {
+        log('system isolate')
+        isolateApi.context = c
+      }
       const compartment = await Compartment.create(req.isolate)
       const functions = compartment.functions(isolateApi)
       const execution = {
@@ -95,9 +98,21 @@ export default class Executor {
 
     execution.commits.push(fs.oid)
 
-    execution.accumulator.absorb(accumulator)
+    try {
+      execution.accumulator.absorb(accumulator)
+    } catch (error) {
+      debugger
+      const req = io.getCurrentSerialRequest()
+      throw error
+    }
 
     const trigger = Symbol('🏎️')
+    // have seen this come thru already activated somehow
+
+    // so the only way that could happen, is if there was already a running
+    // execution, that had not been awaited for, and then a follow up request
+    // was made before we could shut down
+
     const accumulatorPromise = execution.accumulator.activate(trigger)
     const outcome = await Promise.race([execution.function, accumulatorPromise])
     execution.accumulator.deactivate()
