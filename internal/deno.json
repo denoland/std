@@ -5,7 +5,7 @@
     ".": "./mod.ts",
     "./build-message": "./build_message.ts",
     "./diff-str": "./diff_str.ts",
-    "./diff.ts": "./diff.ts",
+    "./diff": "./diff.ts",
     "./format": "./format.ts"
   }
 }
