@@ -138,7 +138,7 @@ export function diff<T>(A: T[], B: T[]): Array<DiffResult<T>> {
   let ptr = 0;
   let p = -1;
 
-  function createFP(
+  function createFp(
     slide: FarthestPoint | undefined,
     down: FarthestPoint | undefined,
     k: number,
@@ -169,15 +169,15 @@ export function diff<T>(A: T[], B: T[]): Array<DiffResult<T>> {
 
   function snake<T>(
     k: number,
-    slide: FarthestPoint | undefined,
-    down: FarthestPoint | undefined,
     A: T[],
     B: T[],
+    slide?: FarthestPoint,
+    down?: FarthestPoint,
   ): FarthestPoint {
     const M = A.length;
     const N = B.length;
     if (k < -N || M < k) return { y: -1, id: -1 };
-    const fp = createFP(slide, down, k, M);
+    const fp = createFp(slide, down, k, M);
     while (fp.y + k < M && fp.y < N && A[fp.y + k] === B[fp.y]) {
       const prev = fp.id;
       ptr++;
@@ -191,26 +191,26 @@ export function diff<T>(A: T[], B: T[]): Array<DiffResult<T>> {
 
   let currentFp = fp[delta + offset];
   assertFp(currentFp);
-  while (currentFp && currentFp.y < N) {
+  while (currentFp.y < N) {
     p = p + 1;
     for (let k = -p; k < delta; ++k) {
       fp[k + offset] = snake(
         k,
-        fp[k - 1 + offset],
-        fp[k + 1 + offset],
         A,
         B,
+        fp[k - 1 + offset],
+        fp[k + 1 + offset],
       );
     }
     for (let k = delta + p; k > delta; --k) {
-      fp[k + offset] = snake(k, fp[k - 1 + offset], fp[k + 1 + offset], A, B);
+      fp[k + offset] = snake(k, A, B, fp[k - 1 + offset], fp[k + 1 + offset]);
     }
     fp[delta + offset] = snake(
       delta,
-      fp[delta - 1 + offset],
-      fp[delta + 1 + offset],
       A,
       B,
+      fp[delta - 1 + offset],
+      fp[delta + 1 + offset],
     );
     currentFp = fp[delta + offset];
     assertFp(currentFp);
