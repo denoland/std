@@ -129,7 +129,7 @@ function createFp(
  *
  * @returns An array of differences between the actual and expected values.
  */
-export function diff<T>(A: T[], B: T[]): Array<DiffResult<T>> {
+export function diff<T>(A: T[], B: T[]): DiffResult<T>[] {
   const prefixCommon = createCommon(A, B);
   const suffixCommon = createCommon(
     A.slice(prefixCommon.length),
