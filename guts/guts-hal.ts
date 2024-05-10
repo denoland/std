@@ -18,8 +18,6 @@ export default (name: string, cradleMaker: () => Promise<ArtifactSession>) => {
     const repo = 'dreamcatcher-tech/HAL'
     const { pid: halAddress } = await session.clone({ repo })
 
-    log.enable('AI:engine AI:actors AI:hal AI:tests AI:completions AI:github')
-
     const halBase = await session.actions<HalBase>('hal', halAddress)
     const actorAddress = await halBase.createActor()
     log('actorAddress', print(actorAddress))

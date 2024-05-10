@@ -33,7 +33,7 @@ export class WebClientEngine implements EngineInterface {
       fetcher = (path, opts) => fetch(`${url}${path}`, opts)
     }
 
-    const homeAddress = await request('homeAddress', {}, fetcher)
+    const homeAddress = await request(fetcher, 'homeAddress', {})
     freezePid(homeAddress)
     return new WebClientEngine(url, fetcher, homeAddress)
   }
@@ -53,8 +53,15 @@ export class WebClientEngine implements EngineInterface {
     }
   }
   async ping(data?: JsonValue) {
-    const payload: { data?: JsonValue } = { data }
-    return await this.#request('ping', payload)
+    // TODO move back to everything being params rather than args
+    let params = {}
+    if (data) {
+      params = { data }
+    }
+    const result = await this.#request('ping', params)
+    if ('data' in result) {
+      return result.data
+    }
   }
   async pierce(pierce: PierceRequest) {
     await this.#request('pierce', pierce)
@@ -150,16 +157,16 @@ export class WebClientEngine implements EngineInterface {
     const abort = new AbortController()
     this.#aborts.add(abort)
     try {
-      return await request(path, params, this.#fetcher, abort.signal)
+      return await request(this.#fetcher, path, params, abort.signal)
     } finally {
       this.#aborts.delete(abort)
     }
   }
 }
 const request = async (
+  fetcher: typeof fetch,
   path: string,
   params: Params,
-  fetcher: typeof fetch,
   signal?: AbortSignal,
 ) => {
   const response = await fetcher(`/api/${path}?pretty`, {

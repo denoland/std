@@ -190,4 +190,4 @@ const execute = async (c: Context, p: Promise<unknown>, name: string) => {
   }
 }
 
-Debug.enable('AI:completions AI:q*')
+// Debug.enable('AI:completions AI:q*')

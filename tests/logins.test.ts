@@ -17,7 +17,6 @@ Deno.test('login with github', async (t) => {
   const githubUserId = 'github-user-id'
 
   await t.step('login with github', async () => {
-    log.enable('AI:engine AI:actors AI:hal AI:tests AI:completions AI:github')
     const { pid } = session
     const actorId = getActorId(pid)
     const authSessionId = 'mock-session-id'

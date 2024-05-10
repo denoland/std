@@ -15,7 +15,6 @@ Deno.test('cradle', async (t) => {
   await t.step('basic', async () => {
     const base = await cradleMaker()
 
-    log.enable('AI:tests')
     const result = await base.ping({ data: 'hello' })
     expect(result).toBe('hello')
 
