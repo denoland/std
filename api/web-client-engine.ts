@@ -2,6 +2,7 @@ import { pushable } from 'it-pushable'
 import { EventSourceParserStream } from 'eventsource-parser/stream'
 import { deserializeError } from 'serialize-error'
 import {
+  assertValidSession,
   EngineInterface,
   freezePid,
   JSONSchemaType,
@@ -31,7 +32,7 @@ export class WebClientEngine implements EngineInterface {
     if (!fetcher) {
       fetcher = (path, opts) => fetch(`${url}${path}`, opts)
     }
-    // get the home address from the server
+
     const homeAddress = await request('homeAddress', {}, fetcher)
     freezePid(homeAddress)
     return new WebClientEngine(url, fetcher, homeAddress)
@@ -39,8 +40,9 @@ export class WebClientEngine implements EngineInterface {
   get homeAddress() {
     return this.#homeAddress
   }
-  async createMachineSession(pid: PID) {
-    // somehow need to get the home address out too
+  createMachineSession(pid: PID) {
+    assertValidSession(pid, this.#homeAddress)
+    return this.#request('createMachineSession', { pid })
   }
   async provision() {
     return await this.#request('provision', {})
@@ -72,10 +74,12 @@ export class WebClientEngine implements EngineInterface {
   async transcribe(audio: File) {
     const formData = new FormData()
     formData.append('audio', audio)
-
+    const abort = new AbortController()
+    this.#aborts.add(abort)
     const response = await this.#fetcher(`/api/transcribe`, {
       method: 'POST',
       body: formData,
+      signal: abort.signal,
     })
 
     return await response.json()
@@ -128,9 +132,7 @@ export class WebClientEngine implements EngineInterface {
         } catch (error) {
           console.log('stream error:', error)
         }
-        if (!abort.signal.aborted) {
-          await new Promise((resolve) => setTimeout(resolve, 1000))
-        }
+        // TODO implement backoff before retrying
       }
     }
     pipe().catch(source.throw)
@@ -144,15 +146,27 @@ export class WebClientEngine implements EngineInterface {
     const result = await this.#request('exists', { path, pid })
     return result as boolean
   }
-  #request(path: string, params: Params) {
-    return request(path, params, this.#fetcher)
+  async #request(path: string, params: Params) {
+    const abort = new AbortController()
+    this.#aborts.add(abort)
+    try {
+      return await request(path, params, this.#fetcher, abort.signal)
+    } finally {
+      this.#aborts.delete(abort)
+    }
   }
 }
-const request = async (path: string, params: Params, fetcher: typeof fetch) => {
+const request = async (
+  path: string,
+  params: Params,
+  fetcher: typeof fetch,
+  signal?: AbortSignal,
+) => {
   const response = await fetcher(`/api/${path}?pretty`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(params),
+    signal,
   })
   if (!response.ok) {
     await response.body?.cancel()

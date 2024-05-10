@@ -26,13 +26,13 @@ const cradleMaker = async () => {
 
   const engine = await WebClientEngine.start('mock', fetcher)
   const machine = Machine.load(engine)
-  const artifact = machine.openSession()
-  const clientStop = artifact.stop.bind(artifact)
-  artifact.stop = async () => {
+  const session = machine.openSession()
+  const clientStop = session.engineStop.bind(session)
+  session.engineStop = async () => {
     // must stop the client first, else will retry
     await clientStop()
     await server.stop()
   }
-  return artifact
+  return session
 }
 guts('Web', cradleMaker)

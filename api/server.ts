@@ -15,6 +15,8 @@ import { streamSSE } from 'hono/helper'
 import { Engine } from '../engine.ts'
 import { assert, Debug, serializeError } from '@/utils.ts'
 import { EventSourceMessage } from '@/constants.ts'
+import '@std/dotenv/load'
+
 const log = Debug('AI:server')
 const {
   signIn,
@@ -49,6 +51,14 @@ export default class Server {
     app.post(`/ping`, async (c) => {
       const params = await c.req.json()
       return execute(c, engine.ping(params), 'ping')
+    })
+    app.post(`/homeAddress`, (c) => {
+      return execute(c, Promise.resolve(engine.homeAddress), 'homeAddress')
+    })
+    app.post(`/createMachineSession`, async (c) => {
+      const params = await c.req.json()
+      const p = engine.createMachineSession(params.pid)
+      return execute(c, p, 'createMachineSession')
     })
     app.post(`/pierce`, async (c) => {
       // TODO hook GitKV for write count, read count, and size
