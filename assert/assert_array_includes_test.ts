@@ -56,6 +56,23 @@ missing: [
   );
 });
 
+Deno.test("assertArrayIncludes() throws with custom message", () => {
+  assertThrows(
+    () => assertArrayIncludes(["a"], ["b"], "CUSTOM MESSAGE"),
+    AssertionError,
+    `
+Expected actual: "[
+  "a",
+]" to include: "[
+  "b",
+]": CUSTOM MESSAGE
+missing: [
+  "b",
+]
+`.trim(),
+  );
+});
+
 // https://github.com/denoland/deno_std/issues/3372
 Deno.test("assertArrayIncludes() type-checks failing cases", () => {
   // @ts-expect-error 2nd arg - 'string' is not assignable to 'ArrayLikeArg<string>'.

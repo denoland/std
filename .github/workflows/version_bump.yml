@@ -1,21 +1,7 @@
 name: version_bump
-
 permissions:
   contents: write
-
-on:
-  workflow_dispatch:
-    inputs:
-      releaseKind:
-        description: 'Kind of version bump'
-        default: 'minor'
-        type: choice
-        options:
-        - patch
-        - minor
-        - major
-        required: true
-
+on: workflow_dispatch
 jobs:
   build:
     name: version bump
@@ -31,14 +17,9 @@ jobs:
 
       - name: Run version bump
         run: |
-          git remote add upstream https://github.com/denoland/deno_std
-          ./_tools/release/01_bump_version.ts --${{github.event.inputs.releaseKind}}
-
-      - name: Create PR
+          git fetch --unshallow origin
+          deno run -A jsr:@deno/bump-workspaces@^0.1/cli
         env:
           GITHUB_TOKEN: ${{ secrets.DENOBOT_PAT }}
-          GH_WORKFLOW_ACTOR: ${{ github.actor }}
-        run: |
-          git config user.email "${{ github.actor }}@users.noreply.github.com"
-          git config user.name "${{ github.actor }}"
-          ./_tools/release/02_create_pr.ts
+          GIT_USER_NAME: ${{ github.actor }}
+          GIT_USER_EMAIL: ${{ github.actor}}@users.noreply.github.com

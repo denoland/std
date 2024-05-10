@@ -4,9 +4,10 @@ import {
   assertEquals,
   AssertionError,
   assertStringIncludes,
+  assertThrows,
 } from "./mod.ts";
 
-Deno.test("AssertStringIncludes", function () {
+Deno.test("assertStringIncludes()", () => {
   assertStringIncludes("Denosaurus", "saur");
   assertStringIncludes("Denosaurus", "Deno");
   assertStringIncludes("Denosaurus", "rus");
@@ -21,17 +22,23 @@ Deno.test("AssertStringIncludes", function () {
   assertEquals(didThrow, true);
 });
 
-Deno.test("AssertStringContainsThrow", function () {
-  let didThrow = false;
-  try {
-    assertStringIncludes("Denosaurus from Jurassic", "Raptor");
-  } catch (e) {
-    assert(e instanceof AssertionError);
-    assert(
-      e.message ===
-        `Expected actual: "Denosaurus from Jurassic" to contain: "Raptor".`,
-    );
-    didThrow = true;
-  }
-  assert(didThrow);
+Deno.test("assertStringIncludes() throws", () => {
+  assertThrows(
+    () => assertStringIncludes("Denosaurus from Jurassic", "Raptor"),
+    AssertionError,
+    `Expected actual: "Denosaurus from Jurassic" to contain: "Raptor".`,
+  );
+});
+
+Deno.test("assertStringIncludes() with custom message", () => {
+  assertThrows(
+    () =>
+      assertStringIncludes(
+        "Denosaurus from Jurassic",
+        "Raptor",
+        "CUSTOM MESSAGE",
+      ),
+    AssertionError,
+    `Expected actual: "Denosaurus from Jurassic" to contain: "Raptor": CUSTOM MESSAGE`,
+  );
 });

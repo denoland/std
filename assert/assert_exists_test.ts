@@ -32,3 +32,11 @@ Deno.test("assertExists() throws when value is null or undefined", () => {
     'Expected actual: "null" to not be null or undefined.',
   );
 });
+
+Deno.test("assertExists() throws with custom message", () => {
+  assertThrows(
+    () => assertExists(undefined, "CUSTOM MESSAGE"),
+    AssertionError,
+    'Expected actual: "undefined" to not be null or undefined: CUSTOM MESSAGE',
+  );
+});

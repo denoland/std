@@ -40,13 +40,11 @@ export function associateBy<T>(
   array: Iterable<T>,
   selector: (el: T) => string,
 ): Record<string, T> {
-  const ret: Record<string, T> = {};
+  const result: Record<string, T> = {};
 
   for (const element of array) {
-    const selectedValue = selector(element);
-
-    ret[selectedValue] = element;
+    result[selector(element)] = element;
   }
 
-  return ret;
+  return result;
 }

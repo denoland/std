@@ -30,16 +30,13 @@ export function distinctBy<T, D>(
   selector: (el: T) => D,
 ): T[] {
   const selectedValues = new Set<D>();
-  const ret: T[] = [];
-
+  const result: T[] = [];
   for (const element of array) {
-    const currentSelectedValue = selector(element);
-
-    if (!selectedValues.has(currentSelectedValue)) {
-      selectedValues.add(currentSelectedValue);
-      ret.push(element);
+    const selected = selector(element);
+    if (!selectedValues.has(selected)) {
+      selectedValues.add(selected);
+      result.push(element);
     }
   }
-
-  return ret;
+  return result;
 }

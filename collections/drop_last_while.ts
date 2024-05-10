@@ -18,11 +18,11 @@
  * import { dropLastWhile } from "@std/collections/drop-last-while";
  * import { assertEquals } from "@std/assert/assert-equals";
  *
- * const numbers = [22, 30, 44];
+ * const numbers = [20, 33, 44];
  *
- * const notFortyFour = dropLastWhile(numbers, (number) => number !== 44);
+ * const notFortyFour = dropLastWhile(numbers, (number) => number > 30);
  *
- * assertEquals(notFortyFour, [22, 30]);
+ * assertEquals(notFortyFour, [20]);
  * ```
  */
 export function dropLastWhile<T>(

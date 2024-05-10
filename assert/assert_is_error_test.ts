@@ -58,3 +58,17 @@ Deno.test("assertIsError() throws when given value doesn't match regex ", () => 
     `Expected error message to include /egg/, but got "Regex test"`,
   );
 });
+
+Deno.test("assertIsError() throws with custom message", () => {
+  assertThrows(
+    () =>
+      assertIsError(
+        new CustomError("failed"),
+        AnotherCustomError,
+        "fail",
+        "CUSTOM MESSAGE",
+      ),
+    AssertionError,
+    'Expected error to be instance of "AnotherCustomError", but was "CustomError": CUSTOM MESSAGE',
+  );
+});

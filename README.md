@@ -6,9 +6,12 @@
 
 High-quality APIs for [Deno](https://deno.com/) and the web. Use fearlessly.
 
-> Note: Newer versions of the Standard Library are now hosted on
+<!--deno-fmt-ignore-start-->
+> [!NOTE]
+> Newer versions of the Standard Library are now hosted on
 > [JSR](https://jsr.io/@std). Older versions up till 0.224.0 are still available
 > at [deno.land/std](https://deno.land/std).
+<!--deno-fmt-ignore-end-->
 
 ## Packages
 

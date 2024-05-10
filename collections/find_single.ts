@@ -34,13 +34,11 @@ export function findSingle<T>(
   array: Iterable<T>,
   predicate: (el: T) => boolean,
 ): T | undefined {
-  let match: T | undefined = undefined;
+  let match: T | undefined;
   let found = false;
   for (const element of array) {
     if (predicate(element)) {
-      if (found) {
-        return undefined;
-      }
+      if (found) return undefined;
       found = true;
       match = element;
     }

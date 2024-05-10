@@ -36,12 +36,12 @@ export function mapKeys<T>(
   record: Readonly<Record<string, T>>,
   transformer: (key: string) => string,
 ): Record<string, T> {
-  const ret: Record<string, T> = {};
+  const result: Record<string, T> = {};
 
   for (const [key, value] of Object.entries(record)) {
     const mappedKey = transformer(key);
-    ret[mappedKey] = value;
+    result[mappedKey] = value;
   }
 
-  return ret;
+  return result;
 }
