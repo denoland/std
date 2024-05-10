@@ -120,9 +120,14 @@ function createFp(
 }
 
 /**
- * Renders the differences between the actual and expected values
+ * Renders the differences between the actual and expected values.
+ *
+ * @template T The type of elements in the arrays.
+ *
  * @param A Actual value
  * @param B Expected value
+ *
+ * @returns An array of differences between the actual and expected values.
  */
 export function diff<T>(A: T[], B: T[]): Array<DiffResult<T>> {
   const prefixCommon = createCommon(A, B);
@@ -139,33 +144,21 @@ export function diff<T>(A: T[], B: T[]): Array<DiffResult<T>> {
   if (!M && !N && !suffixCommon.length && !prefixCommon.length) return [];
   if (!N) {
     return [
-      ...prefixCommon.map(
-        (c): DiffResult<typeof c> => ({ type: "common", value: c }),
-      ),
-      ...A.map(
-        (a): DiffResult<typeof a> => ({
-          type: swapped ? "added" : "removed",
-          value: a,
-        }),
-      ),
-      ...suffixCommon.map(
-        (c): DiffResult<typeof c> => ({ type: "common", value: c }),
-      ),
-    ];
+      ...prefixCommon.map((value) => ({ type: "common", value })),
+      ...A.map((value) => ({ type: swapped ? "added" : "removed", value })),
+      ...suffixCommon.map((value) => ({ type: "common", value })),
+    ] as DiffResult<T>[];
   }
   const offset = N;
   const delta = M - N;
-  const size = M + N + 1;
-  const fp: FarthestPoint[] = Array.from(
-    { length: size },
-    () => ({ y: -1, id: -1 }),
-  );
+  const length = M + N + 1;
+  const fp: FarthestPoint[] = Array.from({ length }, () => ({ y: -1, id: -1 }));
 
   /**
    * Note: this buffer is used to save memory and improve performance. The first
    * half is used to save route and the last half is used to save diff type.
    */
-  const routes = new Uint32Array((M * N + size + 1) * 2);
+  const routes = new Uint32Array((M * N + length + 1) * 2);
   const diffTypesPtrOffset = routes.length / 2;
   let ptr = 0;
   let p = -1;
@@ -198,34 +191,21 @@ export function diff<T>(A: T[], B: T[]): Array<DiffResult<T>> {
   while (currentFp.y < N) {
     p = p + 1;
     for (let k = -p; k < delta; ++k) {
-      fp[k + offset] = snake(
-        k,
-        A,
-        B,
-        fp[k - 1 + offset],
-        fp[k + 1 + offset],
-      );
+      const index = k + offset;
+      fp[index] = snake(k, A, B, fp[index - 1], fp[index + 1]);
     }
     for (let k = delta + p; k > delta; --k) {
-      fp[k + offset] = snake(k, A, B, fp[k - 1 + offset], fp[k + 1 + offset]);
+      const index = k + offset;
+      fp[index] = snake(k, A, B, fp[index - 1], fp[index + 1]);
     }
-    fp[delta + offset] = snake(
-      delta,
-      A,
-      B,
-      fp[delta - 1 + offset],
-      fp[delta + 1 + offset],
-    );
+    const index = delta + offset;
+    fp[delta + offset] = snake(delta, A, B, fp[index - 1], fp[index + 1]);
     currentFp = fp[delta + offset];
     assertFp(currentFp);
   }
   return [
-    ...prefixCommon.map(
-      (c): DiffResult<typeof c> => ({ type: "common", value: c }),
-    ),
+    ...prefixCommon.map((value) => ({ type: "common", value })),
     ...backTrace(A, B, currentFp, swapped, routes, diffTypesPtrOffset),
-    ...suffixCommon.map(
-      (c): DiffResult<typeof c> => ({ type: "common", value: c }),
-    ),
-  ];
+    ...suffixCommon.map((value) => ({ type: "common", value })),
+  ] as DiffResult<T>[];
 }
