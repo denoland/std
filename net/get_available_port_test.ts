@@ -46,7 +46,7 @@ Deno.test("getAvailablePort() falls back to another port if preferred port is in
 });
 
 Deno.test("getAvailablePort() throws if error is not AddrInUse", () => {
-  using _ = stub(Deno, "listen", () => new Error());
+  using _ = stub(Deno, "listen", () => { throw new Error() });
   const preferredPort = 9563;
   assertThrows(() => getAvailablePort({ preferredPort }), Error);
 });
