@@ -197,9 +197,6 @@ export enum RUNNERS {
   CHAT = 'ai-prompt',
   INJECTOR = 'ai-prompt-injector',
 }
-export const toString = (pid: PID) => {
-  return `${pid.account}/${pid.repository}:${pid.branches.join('_')}`
-}
 
 export type Change = {
   /** If present, represents the unified diff of the file at the given path,

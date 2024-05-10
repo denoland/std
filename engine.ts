@@ -62,20 +62,20 @@ export class Engine implements EngineInterface {
   }
   async provision() {
     if (!this.#homeAddress) {
-      const { pid } = await this.install('actors')
+      const { pid } = await this.#install('actors')
       // TODO make this connect up this host as a machine to the superuser
       this.#homeAddress = pid
     }
     if (!this.#githubAddress) {
       const { homeAddress } = this
-      const { pid } = await this.install('github', { homeAddress })
+      const { pid } = await this.#install('github', { homeAddress })
       this.#githubAddress = pid
     }
   }
   /**
    * Installs isolates as the superuser account.  Used to provision the engine.
    */
-  async install(isolate: string, params: Params = {}) {
+  async #install(isolate: string, params: Params = {}) {
     log('install', isolate, params)
     // TODO figure out how to know if this is a duplicate install
     // this should be an action via the superuser home account ?
@@ -92,25 +92,6 @@ export class Engine implements EngineInterface {
     })
     // TODO fire an error if this isolate is not installable
     log('installed', print(pid))
-    const { oid } = await FS.openHead(pid, db)
-    return { pid, head: oid }
-  }
-  async clone(repo: string, isolate?: string, params: Params = {}) {
-    log('clone', repo, isolate, params)
-    const { db } = artifact.sanitizeContext(this.#api)
-
-    const { pid } = await FS.clone(repo, db)
-    if (isolate) {
-      await this.pierce({
-        isolate,
-        functionName: '@@install',
-        params,
-        proctype: PROCTYPE.SERIAL,
-        target: pid,
-        ulid: ulid(),
-      })
-    }
-    log('cloned', print(pid))
     const { oid } = await FS.openHead(pid, db)
     return { pid, head: oid }
   }

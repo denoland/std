@@ -50,11 +50,10 @@ export default class Compartment {
   mount(api: IsolateApi) {
     // TODO use exe to ensure that mount stops working arfter invocation
     this.#check()
-    if (!this.#module.lifecycles) {
-      return
-    }
-    if (typeof this.#module.lifecycles['@@mount'] === 'function') {
-      return this.#module.lifecycles['@@mount'](api)
+    if (this.#module.lifecycles) {
+      if (typeof this.#module.lifecycles['@@mount'] === 'function') {
+        return this.#module.lifecycles['@@mount'](api)
+      }
     }
   }
   /**
@@ -63,11 +62,10 @@ export default class Compartment {
    */
   unmount(api: IsolateApi) {
     this.#check()
-    if (!this.#module.lifecycles) {
-      return
-    }
-    if (typeof this.#module.lifecycles['@@unmount'] === 'function') {
-      return this.#module.lifecycles['@@unmount'](api)
+    if (this.#module.lifecycles) {
+      if (typeof this.#module.lifecycles['@@unmount'] === 'function') {
+        return this.#module.lifecycles['@@unmount'](api)
+      }
     }
   }
   functions<T = DispatchFunctions>(api: IsolateApi) {

@@ -1,7 +1,7 @@
 import { assert, Debug } from '@utils'
 import merge from 'lodash.merge'
 import OpenAI from 'openai'
-import { load } from '@std/dotenv'
+import '@std/dotenv/load'
 import { Help, IsolateApi, print } from '@/constants.ts'
 import { loadTools } from './ai-load-tools.ts'
 type MessageParam = OpenAI.ChatCompletionMessageParam
@@ -9,16 +9,10 @@ const base = 'AI:completions'
 const log = Debug(base)
 const debugPart = Debug(base + ':ai-part')
 
-const env = await load()
-
-if (!env['OPENAI_API_KEY']) {
-  const key = Deno.env.get('OPENAI_API_KEY')
-  if (!key) {
-    throw new Error('missing openai api key: OPENAI_API_KEY')
-  }
-  env['OPENAI_API_KEY'] = key
+const apiKey = Deno.env.get('OPENAI_API_KEY')
+if (!apiKey) {
+  throw new Error('missing openai api key: OPENAI_API_KEY')
 }
-const apiKey = env['OPENAI_API_KEY']
 const ai = new OpenAI({ apiKey, timeout: 20 * 1000, maxRetries: 5 })
 
 export const api = {

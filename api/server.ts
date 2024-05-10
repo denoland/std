@@ -42,7 +42,7 @@ export default class Server {
     app.use(timing())
     app.use(prettyJSON())
     app.use('*', logger(), poweredBy(), cors())
-    app.get('/provision', (c) => {
+    app.post('/provision', (c) => {
       return execute(c, engine.provision(), 'provision')
     })
     app.post(`/ping`, async (c) => {

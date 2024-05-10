@@ -2,7 +2,7 @@ import { assert } from '@std/assert'
 import { executeTools } from './ai-execute-tools.ts'
 import { Debug, equal } from '@utils'
 import OpenAI from 'openai'
-import { load } from '@std/dotenv'
+import '@std/dotenv/load'
 import { Help, IsolateApi } from '@/constants.ts'
 import { Api, SESSION_PATH } from './ai-completions.ts'
 
@@ -11,17 +11,6 @@ const base = 'AI:prompt'
 const log = Debug(base)
 const debugResult = Debug(base + ':ai-result-content')
 
-const env = await load()
-
-if (!env['OPENAI_API_KEY']) {
-  const key = Deno.env.get('OPENAI_API_KEY')
-  if (!key) {
-    throw new Error('missing openai api key: OPENAI_API_KEY')
-  }
-  env['OPENAI_API_KEY'] = key
-}
-const apiKey = env['OPENAI_API_KEY']
-const ai = new OpenAI({ apiKey, timeout: 20 * 1000, maxRetries: 5 })
 type Args = { text: string; help: Help }
 
 export const api = {
@@ -90,8 +79,13 @@ const isDone = async (api: IsolateApi) => {
   return false
 }
 
+const apiKey = Deno.env.get('OPENAI_API_KEY')
+if (!apiKey) {
+  throw new Error('missing openai api key: OPENAI_API_KEY')
+}
+const ai = new OpenAI({ apiKey, timeout: 20 * 1000, maxRetries: 5 })
+
 export const transcribe = async (file: File) => {
-  // TODO useEffect() here ?
   const transcription = await ai.audio.transcriptions
     .create({ file, model: 'whisper-1' })
   return transcription.text

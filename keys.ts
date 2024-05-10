@@ -24,10 +24,6 @@ export const getPoolKey = (poolable: Poolable) => {
   const uniqueId = getId(poolable)
   return [...getPoolKeyPrefix(poolable.target), uniqueId]
 }
-export const getRepoKey = (pid: PID) => {
-  const { repoId, account, repository, branches } = pid
-  return [repoId, account, repository, ...branches]
-}
 export const getRepoBase = (pid: PID) => {
   const { repoId, account, repository } = pid
   return [repoId, account, repository]
