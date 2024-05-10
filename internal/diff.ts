@@ -161,7 +161,6 @@ export function diff<T>(A: T[], B: T[]): Array<DiffResult<T>> {
   const routes = new Uint32Array((M * N + length + 1) * 2);
   const diffTypesPtrOffset = routes.length / 2;
   let ptr = 0;
-  let p = -1;
 
   function snake<T>(
     k: number,
@@ -188,6 +187,7 @@ export function diff<T>(A: T[], B: T[]): Array<DiffResult<T>> {
 
   let currentFp = fp[delta + offset];
   assertFp(currentFp);
+  let p = -1;
   while (currentFp.y < N) {
     p = p + 1;
     for (let k = -p; k < delta; ++k) {
