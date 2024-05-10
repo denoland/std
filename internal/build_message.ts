@@ -31,8 +31,11 @@ function createColor(
 }
 
 /**
- * Prefixes `+` or `-` in diff output
+ * Prefixes `+` or `-` in diff output.
+ *
  * @param diffType Difference type, either added or removed
+ *
+ * @returns A string representing the sign.
  */
 function createSign(diffType: DiffType): string {
   switch (diffType) {
