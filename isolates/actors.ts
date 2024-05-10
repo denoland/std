@@ -133,7 +133,7 @@ export const functions = {
       return false
     }
     const pid = repos[repo]
-    log('rm', repo, print(pid))
+    log('rm', repo, print(pid), all)
 
     await rm({ pid })
     delete repos[repo]

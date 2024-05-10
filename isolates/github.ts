@@ -8,7 +8,7 @@ const log = Debug('AI:github')
 export type Admin = {
   /**
    * Register an attempt to do the oauth loop, so that when the browser comes
-   * back successfuly, we can bind its PAT to the machine public key.
+   * back successfully, we can bind its PAT to the machine public key.
    * Recommended validity period is 10 minutes.
    * The actorId must have only one machine child, and must be unauthenticated
    * with the github provider.

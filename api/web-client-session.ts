@@ -1,4 +1,4 @@
-// THIS IS SYCNED FROM THE ARTIFACT PROJECT
+// THIS IS SYNCED FROM THE ARTIFACT PROJECT
 // TODO publish to standalone repo
 import {
   ArtifactMachine,

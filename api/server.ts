@@ -14,7 +14,7 @@ import {
 import { streamSSE } from 'hono/helper'
 import { Engine } from '../engine.ts'
 import { assert, Debug, serializeError } from '@/utils.ts'
-import { EventSourceMessage } from '@/constants.ts'
+import { EventSourceMessage, machineIdRegex } from '@/constants.ts'
 import '@std/dotenv/load'
 
 const log = Debug('AI:server')
@@ -22,8 +22,10 @@ const {
   signIn,
   handleCallback,
   signOut,
-  getSessionId,
 } = createHelpers(createGitHubOAuthConfig())
+
+// need to make a stable machine so that admin actions can enter the system on
+// the server.
 
 let sseId = 0
 export default class Server {
@@ -116,14 +118,15 @@ export default class Server {
 
     const auth = base.basePath('/auth')
     auth.get('/signin', async (c) => {
-      const { machineId, actorId } = c.req.query()
-      if (!machineId) {
-        // TODO check key is valid
+      const { machineId } = c.req.query()
+      if (!machineIdRegex.test(machineId)) {
+        // TODO check key is valid using signatures
         throw new Error('machineId querystring is required')
       }
 
       const response = await signIn(c.req.raw)
       const cookie = response.headers.get('set-cookie')
+      console.log('cookie', cookie)
       // acting as the github actor, pierce the github chain to store this info
 
       return response
@@ -133,8 +136,7 @@ export default class Server {
 
     auth.get('/callback', async (c) => {
       const { response, tokens, sessionId } = await handleCallback(c.req.raw)
-      console.log('tokens', tokens) // lol
-      const cookie = response.headers.get('set-cookie')
+      console.log('tokens', tokens, sessionId) // lol
       // acting as the github actor, pierce the github chain to store this info
       // as well as storing the token from github
       // there should be one PAT per machine id
@@ -158,6 +160,10 @@ export default class Server {
       // c.header('set-cookie', response.headers.get('set-cookie')!)
       // return c.redirect(response.headers.get('location')!, response.status)
     })
+
+    // TODO set a cookie for the machineId so it doesn't have to prove again
+    // or get a sig on all pierce actions, and only allow correctly signed ones
+    // to enter
 
     return new Server(engine, base)
   }

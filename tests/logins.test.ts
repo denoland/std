@@ -2,7 +2,7 @@ import { Engine } from '@/engine.ts'
 import { Machine } from '@/api/web-client-machine.ts'
 import * as Github from '@/isolates/github.ts'
 import * as Actors from '../isolates/actors.ts'
-import { expect, log } from '@utils'
+import { expect } from '@utils'
 import { Tokens } from '@deno/kv-oauth'
 import { getActorId } from '@/constants.ts'
 

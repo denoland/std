@@ -1,5 +1,4 @@
 import {
-  IoStruct,
   SettledIsolatePromise,
   SolidRequest,
   UnsequencedRequest,
@@ -108,25 +107,6 @@ export default class Accumulator {
     assert(!from.isActive, '"from" is already active')
     if (this === from) {
       return
-    }
-    if (this.#buffer.length > from.#buffer.length) {
-      console.error('this.#fs:', this.#fs.oid, 'from.#fs', from.#fs.oid)
-      console.error(
-        'this.#highestFs:',
-        this.#highestFs.oid,
-        'from.#highestFs',
-        from.#highestFs.oid,
-      )
-      const thisIoP = this.#fs.readJSON<IoStruct>('.io.json')
-      const fromIoP = from.#fs.readJSON<IoStruct>('.io.json')
-      const print = async () => {
-        const thisCp = this
-        const fromCp = from
-        const [thisIo, fromIo] = await Promise.all([thisIoP, fromIoP])
-        expect(fromIo.pendings).toEqual(thisIo.pendings)
-      }
-      print()
-      expect(this.#buffer).toEqual(from.#buffer)
     }
     assert(this.#buffer.length <= from.#buffer.length, '"this" must be shorter')
     this.#highestFs = from.#highestFs
