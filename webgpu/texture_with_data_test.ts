@@ -2,7 +2,7 @@
 
 import { assert } from "@std/assert/assert";
 import { createTextureWithData } from "./texture_with_data.ts";
-import { cleanUp, ignore } from "./_test_util.ts";
+import { ignore } from "./_test_util.ts";
 
 Deno.test({
   ignore,
@@ -22,6 +22,6 @@ Deno.test({
       usage: GPUTextureUsage.COPY_SRC,
     }, new Uint8Array([1, 1, 1, 1, 1, 1, 1]));
 
-    cleanUp(device);
+    device.destroy();
   },
 });

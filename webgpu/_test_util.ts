@@ -29,14 +29,3 @@ const isLinuxOrMacCI =
 const isWsl = await checkIsWsl();
 
 export const ignore = isWsl || isLinuxOrMacCI;
-
-export function cleanUp(device: GPUDevice) {
-  device.destroy();
-
-  // TODO(lucacasonato): webgpu spec should add a explicit destroy method for
-  // adapters.
-  // @ts-ignore Until WebGPU resources cleanup is automatically handled.
-  const resources = Object.keys(Deno[Deno.internal].core.resources());
-  // @ts-ignore Until WebGPU resources cleanup is automatically handled.
-  Deno[Deno.internal].core.close(Number(resources[resources.length - 1]));
-}
