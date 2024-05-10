@@ -40,6 +40,8 @@ export * from "./filter_entries.ts";
 export * from "./filter_keys.ts";
 export * from "./filter_values.ts";
 export * from "./intersect.ts";
+export * from "./invert_by.ts";
+export * from "./invert.ts";
 export * from "./map_entries.ts";
 export * from "./map_keys.ts";
 export * from "./map_not_nullish.ts";
