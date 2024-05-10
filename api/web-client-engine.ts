@@ -37,15 +37,18 @@ export class WebClientEngine implements EngineInterface {
     freezePid(homeAddress)
     return new WebClientEngine(url, fetcher, homeAddress)
   }
+  static provision(url: string, fetcher?: typeof fetch) {
+    if (!fetcher) {
+      fetcher = (path, opts) => fetch(`${url}${path}`, opts)
+    }
+    return request(fetcher, 'provision', {})
+  }
   get homeAddress() {
     return this.#homeAddress
   }
   createMachineSession(pid: PID) {
     assertValidSession(pid, this.#homeAddress)
     return this.#request('createMachineSession', { pid })
-  }
-  async provision() {
-    return await this.#request('provision', {})
   }
   stop() {
     for (const abort of this.#aborts) {
