@@ -22,6 +22,6 @@ Deno.test({
       usage: GPUTextureUsage.COPY_SRC,
     }, new Uint8Array([1, 1, 1, 1, 1, 1, 1]));
 
-    cleanUp(device);
+    device.destroy();
   },
 });
