@@ -5,20 +5,21 @@ import { bgGreen, bgRed, bold, gray, green, red, white } from "@std/fmt/colors";
 import type { DiffResult, DiffType } from "./_types.ts";
 
 /**
- * Colors the output of assertion diffs
+ * Colors the output of assertion diffs.
  *
- * @param diffType Difference type, either added or removed
+ * @param diffType Difference type, either added or removed.
  * @param background If true, colors the background instead of the text.
  *
- * @returns A function that colors the input string
- *
- * TODO(@littledivy): Remove this when we can detect true color terminals. See
- * https://github.com/denoland/deno_std/issues/2575.
+ * @returns A function that colors the input string.
  */
 function createColor(
   diffType: DiffType,
   background = false,
 ): (s: string) => string {
+  /**
+   * TODO(@littledivy): Remove this when we can detect true color terminals. See
+   * https://github.com/denoland/deno_std/issues/2575.
+   */
   background = false;
   switch (diffType) {
     case "added":
