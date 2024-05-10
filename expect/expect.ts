@@ -53,7 +53,7 @@ import {
 } from "./_matchers.ts";
 import { addSerializer } from "./_snapshot_serializer.ts";
 import { isPromiseLike } from "./_utils.ts";
-import * as asymetricMatchers from "./_asymmetric_matchers.ts";
+import * as asymmetricMatchers from "./_asymmetric_matchers.ts";
 
 const matchers: Record<MatcherKey, Matcher> = {
   lastCalledWith: toHaveBeenLastCalledWith,
@@ -199,9 +199,9 @@ expect.addSnapshotSerializers = addSerializer;
 expect.addSnapshotSerializer = addSerializer;
 expect.extend = setExtendMatchers;
 
-expect.anything = asymetricMatchers.anything;
-expect.any = asymetricMatchers.any;
-expect.arrayContaining = asymetricMatchers.arrayContaining;
-expect.closeTo = asymetricMatchers.closeTo;
-expect.stringContaining = asymetricMatchers.stringContaining;
-expect.stringMatching = asymetricMatchers.stringMatching;
+expect.anything = asymmetricMatchers.anything;
+expect.any = asymmetricMatchers.any;
+expect.arrayContaining = asymmetricMatchers.arrayContaining;
+expect.closeTo = asymmetricMatchers.closeTo;
+expect.stringContaining = asymmetricMatchers.stringContaining;
+expect.stringMatching = asymmetricMatchers.stringMatching;
