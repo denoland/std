@@ -88,13 +88,13 @@ function backTrace<T>(
 }
 
 function createFp(
-  slide: FarthestPoint | undefined,
-  down: FarthestPoint | undefined,
   k: number,
   M: number,
   routes: Uint32Array,
   diffTypesPtrOffset: number,
   ptr: number,
+  slide?: FarthestPoint,
+  down?: FarthestPoint,
 ): FarthestPoint {
   if (slide && slide.y === -1 && down && down.y === -1) {
     return { y: 0, id: 0 };
@@ -180,7 +180,7 @@ export function diff<T>(A: T[], B: T[]): Array<DiffResult<T>> {
     const M = A.length;
     const N = B.length;
     if (k < -N || M < k) return { y: -1, id: -1 };
-    const fp = createFp(slide, down, k, M, routes, diffTypesPtrOffset, ptr);
+    const fp = createFp(k, M, routes, diffTypesPtrOffset, ptr, slide, down);
     ptr = fp.id;
     while (fp.y + k < M && fp.y < N && A[fp.y + k] === B[fp.y]) {
       const prev = fp.id;
