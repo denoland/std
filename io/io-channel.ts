@@ -339,7 +339,7 @@ export default class IOChannel {
   }
 }
 
-const check = (io: IoStruct, pid: PID) => {
+const check = (io: IoStruct, thisPid: PID) => {
   // TODO check format
   // TODO check key sequences are sane
   // TODO do the same for reply values
@@ -347,9 +347,9 @@ const check = (io: IoStruct, pid: PID) => {
     assert(replyKey in io.requests, 'no reply key in requests')
   }
   for (const request of Object.values(io.requests)) {
-    if (!equal(request.target, pid)) {
-      assert(!isPierceRequest(request), 'target pid mismatch')
-      assert(equal(request.source, pid), 'target pid mismatch')
+    if (!equal(request.target, thisPid)) {
+      assert(!isPierceRequest(request), 'target pid mismatch - pierce')
+      assert(equal(request.source, thisPid), 'target pid mismatch - acc')
     }
   }
 }

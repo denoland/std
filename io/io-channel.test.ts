@@ -11,16 +11,19 @@ const pid = pidFromRepo('0', 'system/system')
 Deno.test('io-channel', () => {
   const json = serialAccumulation()
   const io = IOChannel.readObject(json, pid)
+  expect(io.isExecutionAvailable()).toBe(true)
+  const { request, sequence } = io.setExecution()
   const executing = io.getExecution()
   const outbound = json.requests[1]
   expect(executing).toEqual(outbound)
+  expect(sequence).toBe(1)
+  expect(request).toEqual(outbound)
 })
 Deno.test('remote requests', () => {
   const json = serialAccumulation()
   json.requests[1].target.branches = ['main', 'other']
   const io = IOChannel.readObject(json, pid)
-  const executing = io.getExecution()
-  expect(executing).toBeUndefined()
+  expect(io.isExecutionAvailable()).toBe(false)
 })
 // refuse to run unless all of a pending layer is solved
 
@@ -30,7 +33,7 @@ Deno.test('remote requests', () => {
 // if multiple requests are eligible, its always the lowest sequence number
 
 const serialAccumulation: () => IoStruct = () => ({
-  executed: [],
+  executed: { 0: true },
   sequence: 2,
   requests: {
     0: {

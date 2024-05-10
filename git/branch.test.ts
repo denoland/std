@@ -5,6 +5,7 @@ import {
   IoStruct,
   isMergeReply,
   MergeReply,
+  PartialPID,
   PID,
   PierceRequest,
   PROCTYPE,
@@ -13,12 +14,14 @@ import FS from '@/git/fs.ts'
 import DB from '@/db.ts'
 
 Deno.test('pierce branch', async (t) => {
-  const target: PID = {
-    repoId: 't',
+  const partial: PartialPID = {
     account: 'git',
     repository: 'test',
     branches: ['main'],
   }
+  const db = await DB.create()
+  const baseFs = await FS.init(partial, db)
+  const target = baseFs.pid
   const branchPierce = (ulid: string): PierceRequest => ({
     target,
     ulid,
@@ -34,8 +37,6 @@ Deno.test('pierce branch', async (t) => {
     commit: '4b825dc642cb6eb9a060e54bf8d69288fbee4904',
     source: target,
   }
-  const db = await DB.create()
-  const baseFs = await FS.init(target, db)
   const pierce = branchPierce('pierce')
   let head: string
   let parentHead: string

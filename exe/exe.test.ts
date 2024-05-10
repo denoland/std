@@ -37,6 +37,7 @@ const mocks = async (initialRequest: PartialRequest) => {
   let io = await IOChannel.load(fs)
   const request = { ...initialRequest, target: fs.pid }
   io.addRequest(request)
+  io.setExecution()
   io.save()
   const { next } = await fs.writeCommitObject()
   fs = next
@@ -135,6 +136,7 @@ Deno.test('compound', async (t) => {
     const savedRequest = io.reply(reply)
     assert(!isPierceRequest(savedRequest))
     expect(savedRequest).toEqual(sequenced[0])
+    io.setExecution()
     io.save()
     const { next } = await fs.writeCommitObject()
 
@@ -155,6 +157,7 @@ Deno.test('compound', async (t) => {
       sequence: sequenced[0].sequence,
     }
     io.reply(reply)
+    io.setExecution()
     io.save()
     const { next } = await fs.writeCommitObject()
 
@@ -196,7 +199,7 @@ for (const withExeCache of [true, false]) {
       assert(file)
       log(file)
       expect(file.split('\n')).toHaveLength(7)
-      await session.stop()
+      await session.engineStop()
     })
   })
 
@@ -224,7 +227,7 @@ for (const withExeCache of [true, false]) {
       log(file)
       expect(file.split('\n')).toHaveLength(9)
 
-      await session.stop()
+      await session.engineStop()
     })
   })
 }
