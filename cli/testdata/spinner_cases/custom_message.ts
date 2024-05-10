@@ -1,6 +1,6 @@
 import { Spinner } from "../../spinner.ts";
 
-const spinner = new Spinner({ color: "gray" });
+const spinner = new Spinner({ message: "Spinning with Deno 🦕" });
 
 spinner.start();
 

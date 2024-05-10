@@ -1,6 +1,6 @@
 import { Spinner } from "../../spinner.ts";
 
-const spinner = new Spinner({color: 'magenta'})
+const spinner = new Spinner({ color: "magenta" });
 
 spinner.start();
 
