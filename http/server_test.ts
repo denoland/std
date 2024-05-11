@@ -7,10 +7,10 @@ import {
   serveTls,
 } from "./server.ts";
 import { mockConn as createMockConn } from "./_mock_conn.ts";
-import { dirname, fromFileUrl, join, resolve } from "../path/mod.ts";
-import { writeAll } from "../io/write_all.ts";
-import { readAll } from "../io/read_all.ts";
-import { delay } from "../async/mod.ts";
+import { dirname, fromFileUrl, join, resolve } from "@std/path";
+import { writeAll } from "@std/io/write-all";
+import { readAll } from "@std/io/read-all";
+import { delay } from "@std/async";
 import {
   assert,
   assertEquals,
@@ -19,7 +19,7 @@ import {
   assertStrictEquals,
   assertThrows,
   unreachable,
-} from "../assert/mod.ts";
+} from "@std/assert";
 
 const moduleDir = dirname(fromFileUrl(import.meta.url));
 const testdataDir = resolve(moduleDir, "testdata");
@@ -1129,8 +1129,8 @@ Deno.test("Server does not close the http2 downstream connection when the respon
   const listenOptions = {
     hostname: "localhost",
     port: getPort(),
-    certFile: join(testdataDir, "tls/localhost.crt"),
-    keyFile: join(testdataDir, "tls/localhost.key"),
+    cert: await Deno.readTextFile(join(testdataDir, "tls/localhost.crt")),
+    key: await Deno.readTextFile(join(testdataDir, "tls/localhost.key")),
     alpnProtocols: ["h2"],
   };
   const listener = Deno.listenTls(listenOptions);

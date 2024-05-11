@@ -1,7 +1,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-import { deepMerge } from "../collections/deep_merge.ts";
+import { deepMerge } from "@std/collections/deep-merge";
 
 // ---------------------------
 // Interfaces and base classes

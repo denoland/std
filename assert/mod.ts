@@ -9,7 +9,7 @@
  * values for AssertionError messages in browsers.
  *
  * ```ts
- * import { assert } from "https://deno.land/std@$STD_VERSION/assert/assert.ts";
+ * import { assert } from "@std/assert/assert";
  *
  * assert("I am truthy"); // Doesn't throw
  * assert(false); // Throws `AssertionError`

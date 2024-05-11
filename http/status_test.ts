@@ -10,7 +10,7 @@ import {
   STATUS_CODE,
   STATUS_TEXT,
 } from "./status.ts";
-import { assert, assertEquals } from "../assert/mod.ts";
+import { assert, assertEquals } from "@std/assert";
 
 Deno.test({
   name: "STATUS_CODE",

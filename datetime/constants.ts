@@ -6,7 +6,7 @@
  *
  * @example
  * ```ts
- * import { SECOND } from "https://deno.land/std@$STD_VERSION/datetime/constants.ts";
+ * import { SECOND } from "@std/datetime/constants";
  *
  * SECOND; // 1_000
  * ```
@@ -17,7 +17,7 @@ export const SECOND = 1e3;
  *
  * @example
  * ```ts
- * import { MINUTE } from "https://deno.land/std@$STD_VERSION/datetime/constants.ts";
+ * import { MINUTE } from "@std/datetime/constants";
  *
  * MINUTE; // 60_000
  * ```
@@ -28,7 +28,7 @@ export const MINUTE: number = SECOND * 60;
  *
  * @example
  * ```ts
- * import { HOUR } from "https://deno.land/std@$STD_VERSION/datetime/constants.ts";
+ * import { HOUR } from "@std/datetime/constants";
  *
  * HOUR; // 3_600_000
  * ```
@@ -39,7 +39,7 @@ export const HOUR: number = MINUTE * 60;
  *
  * @example
  * ```ts
- * import { DAY } from "https://deno.land/std@$STD_VERSION/datetime/constants.ts";
+ * import { DAY } from "@std/datetime/constants";
  *
  * DAY; // 86_400_000
  * ```
@@ -50,7 +50,7 @@ export const DAY: number = HOUR * 24;
  *
  * @example
  * ```ts
- * import { WEEK } from "https://deno.land/std@$STD_VERSION/datetime/constants.ts";
+ * import { WEEK } from "@std/datetime/constants";
  *
  * WEEK; // 604_800_000
  * ```

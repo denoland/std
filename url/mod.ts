@@ -13,7 +13,7 @@
  * removing a suffix.
  *
  * ```ts
- * import { basename } from "https://deno.land/std@$STD_VERSION/url/basename.ts";
+ * import { basename } from "@std/url/basename";
  *
  * basename("https://deno.land/std/assert/mod.ts"); // "mod.ts"
  *
@@ -31,7 +31,7 @@
  * {@linkcode dirname} returns the directory path of a URL or URL string.
  *
  * ```ts
- * import { dirname } from "https://deno.land/std@$STD_VERSION/url/dirname.ts";
+ * import { dirname } from "@std/url/dirname";
  *
  * dirname("https://deno.land/std/path/mod.ts?a=b").href; // "https://deno.land/std/path"
  *
@@ -44,7 +44,7 @@
  * leading period.
  *
  * ```ts
- * import { extname } from "https://deno.land/std@$STD_VERSION/url/extname.ts";
+ * import { extname } from "@std/url/extname";
  *
  * extname("https://deno.land/std/path/mod.ts"); // ".ts"
  *
@@ -61,7 +61,7 @@
  * segments together, then normalizes the resulting URL.
  *
  * ```ts
- * import { join } from "https://deno.land/std@$STD_VERSION/url/join.ts";
+ * import { join } from "@std/url/join";
  *
  * join("https://deno.land/", "std", "path", "mod.ts").href;
  * // "https://deno.land/std/path/mod.ts"
@@ -76,7 +76,7 @@
  * `.` segments. Multiple sequential `/`s are resolved into a single `/`.
  *
  * ```ts
- * import { normalize } from "https://deno.land/std@$STD_VERSION/url/normalize.ts";
+ * import { normalize } from "@std/url/normalize";
  *
  * normalize("https:///deno.land///std//assert//.//mod.ts").href;
  * // "https://deno.land/std/path/mod.ts"

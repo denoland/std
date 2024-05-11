@@ -12,14 +12,14 @@ import { getFileInfoType } from "./_get_file_info_type.ts";
  *
  * @example
  * ```ts
- * import { ensureDir } from "https://deno.land/std@$STD_VERSION/fs/ensure_dir.ts";
+ * import { ensureDir } from "@std/fs/ensure-dir";
  *
  * await ensureDir("./bar");
  * ```
  */
 export async function ensureDir(dir: string | URL) {
   try {
-    const fileInfo = await Deno.lstat(dir);
+    const fileInfo = await Deno.stat(dir);
     if (!fileInfo.isDirectory) {
       throw new Error(
         `Ensure path exists, expected 'dir', got '${
@@ -35,7 +35,7 @@ export async function ensureDir(dir: string | URL) {
   }
 
   // The dir doesn't exist. Create it.
-  // This can be racy. So we catch AlreadyExists and check lstat again.
+  // This can be racy. So we catch AlreadyExists and check stat again.
   try {
     await Deno.mkdir(dir, { recursive: true });
   } catch (err) {
@@ -43,7 +43,7 @@ export async function ensureDir(dir: string | URL) {
       throw err;
     }
 
-    const fileInfo = await Deno.lstat(dir);
+    const fileInfo = await Deno.stat(dir);
     if (!fileInfo.isDirectory) {
       throw new Error(
         `Ensure path exists, expected 'dir', got '${
@@ -65,14 +65,14 @@ export async function ensureDir(dir: string | URL) {
  *
  * @example
  * ```ts
- * import { ensureDir } from "https://deno.land/std@$STD_VERSION/fs/ensure_dir.ts";
+ * import { ensureDir } from "@std/fs/ensure-dir";
  *
  * await ensureDir("./bar");
  * ```
  */
 export function ensureDirSync(dir: string | URL) {
   try {
-    const fileInfo = Deno.lstatSync(dir);
+    const fileInfo = Deno.statSync(dir);
     if (!fileInfo.isDirectory) {
       throw new Error(
         `Ensure path exists, expected 'dir', got '${
@@ -88,7 +88,7 @@ export function ensureDirSync(dir: string | URL) {
   }
 
   // The dir doesn't exist. Create it.
-  // This can be racy. So we catch AlreadyExists and check lstat again.
+  // This can be racy. So we catch AlreadyExists and check stat again.
   try {
     Deno.mkdirSync(dir, { recursive: true });
   } catch (err) {
@@ -96,7 +96,7 @@ export function ensureDirSync(dir: string | URL) {
       throw err;
     }
 
-    const fileInfo = Deno.lstatSync(dir);
+    const fileInfo = Deno.statSync(dir);
     if (!fileInfo.isDirectory) {
       throw new Error(
         `Ensure path exists, expected 'dir', got '${

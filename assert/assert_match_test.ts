@@ -1,21 +1,28 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-import { assert, AssertionError, assertMatch } from "./mod.ts";
+import { assertThrows } from "./assert_throws.ts";
+import { AssertionError, assertMatch } from "./mod.ts";
 
-Deno.test("AssertStringMatching", function () {
+Deno.test("assertMatch()", () => {
   assertMatch("foobar@deno.com", RegExp(/[a-zA-Z]+@[a-zA-Z]+.com/));
 });
 
-Deno.test("AssertStringMatchingThrows", function () {
-  let didThrow = false;
-  try {
-    assertMatch("Denosaurus from Jurassic", RegExp(/Raptor/));
-  } catch (e) {
-    assert(e instanceof AssertionError);
-    assert(
-      e.message ===
-        `Expected actual: "Denosaurus from Jurassic" to match: "/Raptor/".`,
-    );
-    didThrow = true;
-  }
-  assert(didThrow);
+Deno.test("assertMatch() throws", () => {
+  assertThrows(
+    () => assertMatch("Denosaurus from Jurassic", RegExp(/Raptor/)),
+    AssertionError,
+    `Expected actual: "Denosaurus from Jurassic" to match: "/Raptor/".`,
+  );
+});
+
+Deno.test("assertMatch() throws with custom message", () => {
+  assertThrows(
+    () =>
+      assertMatch(
+        "Denosaurus from Jurassic",
+        RegExp(/Raptor/),
+        "CUSTOM MESSAGE",
+      ),
+    AssertionError,
+    `Expected actual: "Denosaurus from Jurassic" to match: "/Raptor/": CUSTOM MESSAGE`,
+  );
 });

@@ -6,7 +6,7 @@ import {
   assertNotEquals,
   assertRejects,
   assertStrictEquals,
-} from "../assert/mod.ts";
+} from "@std/assert";
 import { FakeTime, TimeError } from "./time.ts";
 import { _internals } from "./_time.ts";
 import { assertSpyCall, spy, type SpyCall } from "./mock.ts";

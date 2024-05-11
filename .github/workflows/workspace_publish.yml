@@ -6,7 +6,7 @@ on:
 
 jobs:
   publish:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     timeout-minutes: 30
 
     permissions:
@@ -16,22 +16,17 @@ jobs:
     steps:
       - name: Clone repository
         uses: actions/checkout@v4
-        with:
-          submodules: true
 
       - name: Set up Deno
         uses: denoland/setup-deno@v1
         with:
           deno-version: canary
 
-      - name: Convert to workspace
-        run: deno run -A ./_tools/convert_to_workspace.ts
-
       - name: Format
-        run: deno fmt
+        run: deno fmt --check
 
       - name: Test
         run: deno task test
 
       - name: Publish to JSR
-        run: deno publish --allow-dirty
+        run: deno publish

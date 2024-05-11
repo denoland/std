@@ -17,7 +17,7 @@ function constructorsEqual(a: object, b: object) {
  *
  * @example
  * ```ts
- * import { equal } from "https://deno.land/std@$STD_VERSION/assert/equal.ts";
+ * import { equal } from "@std/assert/equal";
  *
  * equal({ foo: "bar" }, { foo: "bar" }); // Returns `true`
  * equal({ foo: "bar" }, { foo: "baz" }); // Returns `false
@@ -64,10 +64,14 @@ export function equal(c: unknown, d: unknown): boolean {
         if (!(a instanceof WeakSet && b instanceof WeakSet)) return false;
         throw new TypeError("cannot compare WeakSet instances");
       }
+      if (a instanceof WeakRef || b instanceof WeakRef) {
+        if (!(a instanceof WeakRef && b instanceof WeakRef)) return false;
+        return compare(a.deref(), b.deref());
+      }
       if (seen.get(a) === b) {
         return true;
       }
-      if (Object.keys(a || {}).length !== Object.keys(b || {}).length) {
+      if (Object.keys(a).length !== Object.keys(b).length) {
         return false;
       }
       seen.set(a, b);
@@ -108,10 +112,6 @@ export function equal(c: unknown, d: unknown): boolean {
         if (((key in a) && (!(key in b))) || ((key in b) && (!(key in a)))) {
           return false;
         }
-      }
-      if (a instanceof WeakRef || b instanceof WeakRef) {
-        if (!(a instanceof WeakRef && b instanceof WeakRef)) return false;
-        return compare(a.deref(), b.deref());
       }
       return true;
     }

@@ -1,10 +1,8 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 import { equal } from "./equal.ts";
-import { buildMessage, diff, diffstr, format } from "../internal/mod.ts";
+import { buildMessage, diff, diffstr, format } from "@std/internal";
 import { AssertionError } from "./assertion_error.ts";
-import { red } from "../fmt/colors.ts";
-import { CAN_NOT_DISPLAY } from "./_constants.ts";
 
 /**
  * Make an assertion that `actual` and `expected` are equal, deeply. If not
@@ -15,7 +13,7 @@ import { CAN_NOT_DISPLAY } from "./_constants.ts";
  *
  * @example
  * ```ts
- * import { assertEquals } from "https://deno.land/std@$STD_VERSION/assert/assert_equals.ts";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * assertEquals("world", "world"); // Doesn't throw
  * assertEquals("hello", "world"); // Throws
@@ -38,16 +36,12 @@ export function assertEquals<T>(
 
   const actualString = formatter(actual);
   const expectedString = formatter(expected);
-  try {
-    const stringDiff = (typeof actual === "string") &&
-      (typeof expected === "string");
-    const diffResult = stringDiff
-      ? diffstr(actual as string, expected as string)
-      : diff(actualString.split("\n"), expectedString.split("\n"));
-    const diffMsg = buildMessage(diffResult, { stringDiff }).join("\n");
-    message = `${message}\n${diffMsg}`;
-  } catch {
-    message = `${message}\n${red(CAN_NOT_DISPLAY)} + \n\n`;
-  }
+  const stringDiff = (typeof actual === "string") &&
+    (typeof expected === "string");
+  const diffResult = stringDiff
+    ? diffstr(actual as string, expected as string)
+    : diff(actualString.split("\n"), expectedString.split("\n"));
+  const diffMsg = buildMessage(diffResult, { stringDiff }).join("\n");
+  message = `${message}\n${diffMsg}`;
   throw new AssertionError(message);
 }

@@ -12,27 +12,30 @@
  * @param dst Destination array to copy to.
  * @param offset Offset in the destination array to start copying to. Defaults
  * to 0.
+ * @returns Number of bytes copied.
  *
  * @example Basic usage
  * ```ts
- * import { copy } from "https://deno.land/std@$STD_VERSION/bytes/copy.ts";
+ * import { copy } from "@std/bytes/copy";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const src = new Uint8Array([9, 8, 7]);
  * const dst = new Uint8Array([0, 1, 2, 3, 4, 5]);
  *
- * copy(src, dst); // 3
- * dst; // Uint8Array(6) [9, 8, 7, 3, 4, 5]
+ * assertEquals(copy(src, dst), 3);
+ * assertEquals(dst, new Uint8Array([9, 8, 7, 3, 4, 5]));
  * ```
  *
  * @example Copy with offset
  * ```ts
- * import { copy } from "https://deno.land/std@$STD_VERSION/bytes/copy.ts";
+ * import { copy } from "@std/bytes/copy";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const src = new Uint8Array([1, 1, 1, 1]);
  * const dst = new Uint8Array([0, 0, 0, 0]);
  *
- * copy(src, dst, 1); // 3
- * dst; // Uint8Array(4) [0, 1, 1, 1]
+ * assertEquals(copy(src, dst, 1), 3);
+ * assertEquals(dst, new Uint8Array([0, 1, 1, 1]));
  * ```
  * Defining an offset will start copying at the specified index in the
  * destination array.

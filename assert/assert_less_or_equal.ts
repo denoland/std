@@ -1,6 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
-import { format } from "../internal/format.ts";
+import { format } from "@std/internal/format";
 import { AssertionError } from "./assertion_error.ts";
 
 /**
@@ -9,7 +9,7 @@ import { AssertionError } from "./assertion_error.ts";
  *
  * @example
  * ```ts
- * import { assertLessOrEqual } from "https://deno.land/std@$STD_VERSION/assert/assert_less_or_equal.ts";
+ * import { assertLessOrEqual } from "@std/assert/assert-less-or-equal";
  *
  * assertLessOrEqual(1, 2); // Doesn't throw
  * assertLessOrEqual(1, 1); // Doesn't throw

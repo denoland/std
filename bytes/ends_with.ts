@@ -14,12 +14,13 @@
  *
  * @example Basic usage
  * ```ts
- * import { endsWith } from "https://deno.land/std@$STD_VERSION/bytes/ends_with.ts";
+ * import { endsWith } from "@std/bytes/ends-with";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const source = new Uint8Array([0, 1, 2, 1, 2, 1, 2, 3]);
  * const suffix = new Uint8Array([1, 2, 3]);
  *
- * endsWith(source, suffix); // true
+ * assertEquals(endsWith(source, suffix), true);
  * ```
  */
 export function endsWith(source: Uint8Array, suffix: Uint8Array): boolean {

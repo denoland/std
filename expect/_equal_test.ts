@@ -2,7 +2,7 @@
 
 // This file is copied from `std/assert`.
 
-import { assert, assertFalse, assertThrows } from "../assert/mod.ts";
+import { assert, assertFalse, assertThrows } from "@std/assert";
 import { equal } from "./_equal.ts";
 
 Deno.test("equal() matches with different zero", () => {

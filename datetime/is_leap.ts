@@ -21,7 +21,7 @@ function isYearNumberALeapYear(yearNumber: number): boolean {
  *
  * @example Basic usage
  * ```ts
- * import { isLeap } from "https://deno.land/std@$STD_VERSION/datetime/is_leap.ts";
+ * import { isLeap } from "@std/datetime/is-leap";
  *
  * isLeap(new Date("1970-01-02")); // false
  *
@@ -34,7 +34,7 @@ function isYearNumberALeapYear(yearNumber: number): boolean {
  *
  * @example Accounting for timezones
  * ```ts
- * import { isLeap } from "https://deno.land/std@$STD_VERSION/datetime/is_leap.ts";
+ * import { isLeap } from "@std/datetime/is-leap";
  *
  * isLeap(new Date("2000-01-01"));
  * // true if the local timezone is GMT+0; false if the local timezone is GMT-1
@@ -60,7 +60,7 @@ export function isLeap(year: Date | number): boolean {
  *
  * @example Basic usage
  * ```ts
- * import { isUtcLeap } from "https://deno.land/std@$STD_VERSION/datetime/is_leap.ts";
+ * import { isUtcLeap } from "@std/datetime/is-leap";
  *
  * isUtcLeap(new Date("2000-01-01")); // true
  *

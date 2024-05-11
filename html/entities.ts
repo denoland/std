@@ -27,7 +27,7 @@ const rawRe = new RegExp(`[${[...rawToEntity.keys()].join("")}]`, "g");
  *
  * @example
  * ```ts
- * import { escape } from "https://deno.land/std@$STD_VERSION/html/entities.ts";
+ * import { escape } from "@std/html/entities";
  *
  * escape("<>'&AA"); // "&lt;&gt;&#39;&amp;AA"
  *
@@ -59,14 +59,14 @@ const entityListRegexCache = new WeakMap<EntityList, RegExp>();
  *
  * @example
  * ```ts
- * import { unescape } from "https://deno.land/std@$STD_VERSION/html/entities.ts";
+ * import { unescape } from "@std/html/entities";
  *
  * // Default options (only handles &<>'" and numeric entities)
  * unescape("&lt;&gt;&apos;&amp;&#65;&#x41;"); // "<>'&AA"
  * unescape("&thorn;&eth;"); // "&thorn;&eth;"
  *
  * // Using the full named entity list from the HTML spec (~47K un-minified)
- * import entityList from "https://deno.land/std@$STD_VERSION/html/named_entity_list.json" with { type: "json" };
+ * import entityList from "@std/html/named-entity-list.json" with { type: "json" };
  *
  * unescape("&thorn;&eth;", { entityList }); // "þð"
  * ```

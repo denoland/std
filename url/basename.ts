@@ -1,7 +1,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-import { basename as posixBasename } from "../path/posix/basename.ts";
+import { basename as posixBasename } from "@std/path/posix/basename";
 import { strip } from "./_strip.ts";
 
 /**
@@ -15,7 +15,7 @@ import { strip } from "./_strip.ts";
  *
  * @example Basic usage
  * ```ts
- * import { basename } from "https://deno.land/std@$STD_VERSION/url/basename.ts";
+ * import { basename } from "@std/url/basename";
  *
  * basename("https://deno.land/std/assert/mod.ts"); // "mod.ts"
  *
@@ -30,7 +30,7 @@ import { strip } from "./_strip.ts";
  *
  * @example Removing a suffix
  * ```ts
- * import { basename } from "https://deno.land/std@$STD_VERSION/url/basename.ts";
+ * import { basename } from "@std/url/basename";
  *
  * basename("https://deno.land/std/assert/mod.ts", ".ts"); // "mod"
  *

@@ -1,5 +1,5 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-import { dirname } from "../path/dirname.ts";
+import { dirname } from "@std/path/dirname";
 import { ensureDir, ensureDirSync } from "./ensure_dir.ts";
 import { getFileInfoType } from "./_get_file_info_type.ts";
 import { toPathString } from "./_to_path_string.ts";
@@ -16,7 +16,7 @@ import { toPathString } from "./_to_path_string.ts";
  *
  * @example
  * ```ts
- * import { ensureFile } from "https://deno.land/std@$STD_VERSION/fs/ensure_file.ts";
+ * import { ensureFile } from "@std/fs/ensure-file";
  *
  * await ensureFile("./folder/targetFile.dat");
  * ```
@@ -56,7 +56,7 @@ export async function ensureFile(filePath: string | URL): Promise<void> {
  *
  * @example
  * ```ts
- * import { ensureFileSync } from "https://deno.land/std@$STD_VERSION/fs/ensure_file.ts";
+ * import { ensureFileSync } from "@std/fs/ensure-file";
  *
  * ensureFileSync("./folder/targetFile.dat");
  * ```

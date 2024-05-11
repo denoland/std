@@ -1,7 +1,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 import { AssertionError } from "./assertion_error.ts";
-import { format } from "../internal/format.ts";
+import { format } from "@std/internal/format";
 
 /**
  * Make an assertion that `actual` and `expected` are not strictly equal.
@@ -9,7 +9,7 @@ import { format } from "../internal/format.ts";
  *
  * @example
  * ```ts
- * import { assertNotStrictEquals } from "https://deno.land/std@$STD_VERSION/assert/assert_not_strict_equals.ts";
+ * import { assertNotStrictEquals } from "@std/assert/assert-not-strict-equals";
  *
  * assertNotStrictEquals(1, 1); // Doesn't throw
  * assertNotStrictEquals(1, 2); // Throws

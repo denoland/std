@@ -1,7 +1,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 import { equal } from "./equal.ts";
-import { format } from "../internal/format.ts";
+import { format } from "@std/internal/format";
 import { AssertionError } from "./assertion_error.ts";
 
 /** An array-like object (`Array`, `Uint8Array`, `NodeList`, etc.) that is not a string */
@@ -16,7 +16,7 @@ export type ArrayLikeArg<T> = ArrayLike<T> & object;
  *
  * @example
  * ```ts
- * import { assertArrayIncludes } from "https://deno.land/std@$STD_VERSION/assert/assert_array_includes.ts";
+ * import { assertArrayIncludes } from "@std/assert/assert-array-includes";
  *
  * assertArrayIncludes([1, 2], [2]); // Doesn't throw
  * assertArrayIncludes([1, 2], [3]); // Throws

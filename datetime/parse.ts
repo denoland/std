@@ -36,7 +36,7 @@ import { DateTimeFormatter } from "./_date_time_formatter.ts";
  *
  * @example Basic usage
  * ```ts
- * import { parse } from "https://deno.land/std@$STD_VERSION/datetime/parse.ts";
+ * import { parse } from "@std/datetime/parse";
  *
  * parse("20-01-2019", "dd-MM-yyyy"); // 2019-01-19T13:00:00.000Z
  *

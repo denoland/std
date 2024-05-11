@@ -2,9 +2,9 @@
 // This module is browser compatible.
 
 import { bytesToUuid, uuidToBytes } from "./_common.ts";
-import { concat } from "../bytes/concat.ts";
-import { assert } from "../assert/assert.ts";
-import { crypto } from "../crypto/crypto.ts";
+import { concat } from "@std/bytes/concat";
+import { assert } from "@std/assert/assert";
+import { crypto } from "@std/crypto/crypto";
 
 const UUID_RE =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[3][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -14,7 +14,7 @@ const UUID_RE =
  *
  * @example
  * ```ts
- * import { generate, validate } from "https://deno.land/std@$STD_VERSION/uuid/v3.ts";
+ * import { generate, validate } from "@std/uuid/v3";
  *
  * validate(await generate("6ba7b811-9dad-11d1-80b4-00c04fd430c8", new Uint8Array())); // true
  * validate(crypto.randomUUID()); // false
@@ -30,7 +30,7 @@ export function validate(id: string): boolean {
  *
  * @example
  * ```js
- * import { generate } from "https://deno.land/std@$STD_VERSION/uuid/v3.ts";
+ * import { generate } from "@std/uuid/v3";
  *
  * const NAMESPACE_URL = "6ba7b811-9dad-11d1-80b4-00c04fd430c8";
  *

@@ -1,6 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-import { assertEquals } from "../assert/mod.ts";
-import { FakeTime } from "../testing/time.ts";
+import { assertEquals } from "@std/assert";
+import { FakeTime } from "@std/testing/time";
 import { jsonFormatter } from "./formatters.ts";
 import { LogRecord } from "./logger.ts";
 

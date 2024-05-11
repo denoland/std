@@ -17,7 +17,7 @@ export interface DelayOptions {
  *
  * @example
  * ```ts
- * import { delay } from "https://deno.land/std@$STD_VERSION/async/delay.ts";
+ * import { delay } from "@std/async/delay";
  *
  * // ...
  * const delayedPromise = delay(100);
@@ -28,7 +28,7 @@ export interface DelayOptions {
  * To allow the process to continue to run as long as the timer exists.
  *
  * ```ts
- * import { delay } from "https://deno.land/std@$STD_VERSION/async/delay.ts";
+ * import { delay } from "@std/async/delay";
  *
  * // ...
  * await delay(100, { persistent: false });

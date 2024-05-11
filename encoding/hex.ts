@@ -14,7 +14,7 @@
  * import {
  *   decodeHex,
  *   encodeHex,
- * } from "https://deno.land/std@$STD_VERSION/encoding/hex.ts";
+ * } from "@std/encoding/hex";
  *
  * const encoded = encodeHex("abc"); // "616263"
  *
@@ -55,7 +55,7 @@ function fromHexChar(byte: number): number {
  *
  * @example
  * ```ts
- * import { encodeHex } from "https://deno.land/std@$STD_VERSION/encoding/hex.ts";
+ * import { encodeHex } from "@std/encoding/hex";
  *
  * encodeHex("abc"); // "616263"
  * ```
@@ -78,7 +78,7 @@ export function encodeHex(src: string | Uint8Array | ArrayBuffer): string {
  *
  * @example
  * ```ts
- * import { decodeHex } from "https://deno.land/std@$STD_VERSION/encoding/hex.ts";
+ * import { decodeHex } from "@std/encoding/hex";
  *
  * decodeHex("616263"); // Uint8Array(3) [ 97, 98, 99 ]
  * ```

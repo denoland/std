@@ -8,9 +8,10 @@
  * ```
  */
 
-import { doc } from "deno_doc";
+import { doc } from "@deno/doc";
 import { walk } from "../fs/walk.ts";
 import { toFileUrl } from "../path/to_file_url.ts";
+import { resolveWorkspaceSpecifiers } from "./utils.ts";
 
 const ROOT = new URL("../", import.meta.url);
 
@@ -28,7 +29,7 @@ const iter = walk(ROOT, {
 
 for await (const entry of iter) {
   const url = toFileUrl(entry.path);
-  const docs = await doc(url.href);
+  const docs = await doc(url.href, { resolve: resolveWorkspaceSpecifiers });
   for (const document of docs) {
     const tags = document.jsDoc?.tags;
     if (!tags) continue;

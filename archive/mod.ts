@@ -35,9 +35,9 @@
  * archive.  Files are not compressed, only collected into the archive.
  *
  * ```ts
- * import { Tar } from "https://deno.land/std@$STD_VERSION/archive/tar.ts";
- * import { Buffer } from "https://deno.land/std@$STD_VERSION/io/buffer.ts";
- * import { copy } from "https://deno.land/std@$STD_VERSION/io/copy.ts";
+ * import { Tar } from "@std/archive/tar";
+ * import { Buffer } from "@std/io/buffer";
+ * import { copy } from "@std/io/copy";
  *
  * const tar = new Tar();
  *

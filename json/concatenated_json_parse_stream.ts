@@ -1,5 +1,5 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-import { toTransformStream } from "../streams/to_transform_stream.ts";
+import { toTransformStream } from "@std/streams/to-transform-stream";
 import type { JsonValue, ParseStreamOptions } from "./common.ts";
 import { parse } from "./_common.ts";
 
@@ -16,9 +16,9 @@ const primitives = new Map(
  *
  * @example
  * ```ts
- * import { ConcatenatedJsonParseStream } from "https://deno.land/std@$STD_VERSION/json/concatenated_json_parse_stream.ts";
+ * import { ConcatenatedJsonParseStream } from "@std/json/concatenated-json-parse-stream";
  *
- * const url = "https://deno.land/std@$STD_VERSION/json/testdata/test.concatenated-json";
+ * const url = "@std/json/testdata/test.concatenated-json";
  * const { body } = await fetch(url);
  *
  * const readable = body!

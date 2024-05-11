@@ -1,19 +1,19 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import { assertNotStrictEquals } from "../assert/assert_not_strict_equals.ts";
-import { assertStrictEquals } from "../assert/assert_strict_equals.ts";
-import { assertInstanceOf } from "../assert/assert_instance_of.ts";
-import { assertIsError } from "../assert/assert_is_error.ts";
-import { assertNotInstanceOf } from "../assert/assert_not_instance_of.ts";
-import { assertMatch } from "../assert/assert_match.ts";
-import { assertObjectMatch } from "../assert/assert_object_match.ts";
-import { assertNotMatch } from "../assert/assert_not_match.ts";
-import { AssertionError } from "../assert/assertion_error.ts";
+import { assertNotStrictEquals } from "@std/assert/assert-not-strict-equals";
+import { assertStrictEquals } from "@std/assert/assert-strict-equals";
+import { assertInstanceOf } from "@std/assert/assert-instance-of";
+import { assertIsError } from "@std/assert/assert-is-error";
+import { assertNotInstanceOf } from "@std/assert/assert-not-instance-of";
+import { assertMatch } from "@std/assert/assert-match";
+import { assertObjectMatch } from "@std/assert/assert-object-match";
+import { assertNotMatch } from "@std/assert/assert-not-match";
+import { AssertionError } from "@std/assert/assertion-error";
 
 import { assertEquals } from "./_assert_equals.ts";
 import { assertNotEquals } from "./_assert_not_equals.ts";
 import { equal } from "./_equal.ts";
-import { format } from "../internal/format.ts";
+import { format } from "@std/internal/format";
 import type { AnyConstructor, MatcherContext, MatchResult } from "./_types.ts";
 import { getMockCalls } from "./_mock_util.ts";
 import { inspectArg, inspectArgs } from "./_inspect_args.ts";

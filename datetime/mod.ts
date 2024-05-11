@@ -15,7 +15,7 @@
  * timezone. {@linkcode dayOfYearUtc} does the same but in UTC time.
  *
  * ```ts
- * import { dayOfYear } from "https://deno.land/std@$STD_VERSION/datetime/day_of_year.ts";
+ * import { dayOfYear } from "@std/datetime/day-of-year";
  *
  * dayOfYear(new Date("2019-03-11T03:24:00")); // 70
  * ```
@@ -26,7 +26,7 @@
  * various units.
  *
  * ```ts
- * import { difference } from "https://deno.land/std@$STD_VERSION/datetime/difference.ts";
+ * import { difference } from "@std/datetime/difference";
  *
  * const date0 = new Date("2018-05-14");
  * const date1 = new Date("2020-05-13");
@@ -50,7 +50,7 @@
  * {@linkcode format} formats a date to a string with the specified format.
  *
  * ```ts
- * import { format } from "https://deno.land/std@$STD_VERSION/datetime/format.ts";
+ * import { format } from "@std/datetime/format";
  *
  * const date = new Date(2019, 0, 20, 16, 34, 23, 123);
  *
@@ -67,7 +67,7 @@
  * {@linkcode isUtcLeap} does the same but in UTC time.
  *
  * ```ts
- * import { isLeap } from "https://deno.land/std@$STD_VERSION/datetime/is_leap.ts";
+ * import { isLeap } from "@std/datetime/is-leap";
  *
  * isLeap(new Date("1970-01-02")); // false
  *
@@ -83,7 +83,7 @@
  * {@linkcode parse} parses a date string using the specified format string.
  *
  * ```ts
- * import { parse } from "https://deno.land/std@$STD_VERSION/datetime/parse.ts";
+ * import { parse } from "@std/datetime/parse";
  *
  * parse("20-01-2019", "dd-MM-yyyy"); // 2019-01-19T13:00:00.000Z
  *
@@ -98,7 +98,7 @@
  * timezone.
  *
  * ```ts
- * import { weekOfYear } from "https://deno.land/std@$STD_VERSION/datetime/week_of_year.ts";
+ * import { weekOfYear } from "@std/datetime/week-of-year";
  *
  * weekOfYear(new Date("2020-12-28T03:24:00")); // 53
  *

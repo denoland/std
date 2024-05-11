@@ -4,8 +4,8 @@
 import {
   iterateReader as _iterateReader,
   iterateReaderSync as _iterateReaderSync,
-} from "../io/iterate_reader.ts";
-import type { Reader, ReaderSync } from "../io/types.ts";
+} from "@std/io/iterate-reader";
+import type { Reader, ReaderSync } from "@std/io/types";
 
 export type { Reader, ReaderSync };
 
@@ -14,7 +14,7 @@ export type { Reader, ReaderSync };
  *
  * @example
  * ```ts
- * import { iterateReader } from "https://deno.land/std@$STD_VERSION/streams/iterate_reader.ts";
+ * import { iterateReader } from "@std/streams/iterate-reader";
  *
  * using f = await Deno.open("/etc/passwd");
  * for await (const chunk of iterateReader(f)) {
@@ -27,7 +27,7 @@ export type { Reader, ReaderSync };
  *
  * @example
  * ```ts
- * import { iterateReader } from "https://deno.land/std@$STD_VERSION/streams/iterate_reader.ts";
+ * import { iterateReader } from "@std/streams/iterate-reader";
  *
  * using f = await Deno.open("/etc/passwd");
  * const it = iterateReader(f, {
@@ -38,7 +38,8 @@ export type { Reader, ReaderSync };
  * }
  * ```
  *
- * @deprecated This will be removed in 1.0.0. Import from {@link https://deno.land/std/io/iterate_reader.ts} instead.
+ * @deprecated This will be removed in 1.0.0. Import from
+ * {@linkhttps://jsr.io/@std/io | @std/io} instead.
  */
 export function iterateReader(
   r: Reader,
@@ -53,7 +54,7 @@ export function iterateReader(
  * Turns a {@linkcode ReaderSync}, `r`, into an iterator.
  *
  * ```ts
- * import { iterateReaderSync } from "https://deno.land/std@$STD_VERSION/streams/iterate_reader.ts";
+ * import { iterateReaderSync } from "@std/streams/iterate-reader";
  *
  * using f = Deno.openSync("/etc/passwd");
  * for (const chunk of iterateReaderSync(f)) {
@@ -65,7 +66,7 @@ export function iterateReader(
  * Default size of the buffer is 32kB.
  *
  * ```ts
- * import { iterateReaderSync } from "https://deno.land/std@$STD_VERSION/streams/iterate_reader.ts";
+ * import { iterateReaderSync } from "@std/streams/iterate-reader";
 
  * using f = await Deno.open("/etc/passwd");
  * const iter = iterateReaderSync(f, {
@@ -81,7 +82,8 @@ export function iterateReader(
  * responsibility to copy contents of the buffer if needed; otherwise the
  * next iteration will overwrite contents of previously returned chunk.
  *
- * @deprecated This will be removed in 1.0.0. Import from {@link https://deno.land/std/io/iterate_reader.ts} instead.
+ * @deprecated This will be removed in 1.0.0. Import from
+ * {@link https://jsr.io/@std/io | @std/io} instead.
  */
 export function iterateReaderSync(
   r: ReaderSync,

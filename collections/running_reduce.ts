@@ -6,10 +6,19 @@
  * result as the accumulator to the next respective call, starting with the
  * given initialValue. Returns all intermediate accumulator results.
  *
- * @example
+ * @template T The type of the elements in the array.
+ * @template O The type of the accumulator.
+ *
+ * @param array The array to reduce.
+ * @param reducer The reducer function to apply to each element.
+ * @param initialValue The initial value of the accumulator.
+ *
+ * @returns An array of all intermediate accumulator results.
+ *
+ * @example Basic usage
  * ```ts
- * import { runningReduce } from "https://deno.land/std@$STD_VERSION/collections/running_reduce.ts";
- * import { assertEquals } from "https://deno.land/std@$STD_VERSION/assert/assert_equals.ts";
+ * import { runningReduce } from "@std/collections/running-reduce";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const numbers = [1, 2, 3, 4, 5];
  * const sumSteps = runningReduce(numbers, (sum, current) => sum + current, 0);

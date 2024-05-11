@@ -1,3 +1,44 @@
+### 2024.05.07
+
+#### @std/assert 0.225.1 (patch)
+
+- test(assert): improve test coverage (#4679)
+
+#### @std/bytes 1.0.0-rc.1 (prerelease)
+
+- feat(bytes): `@std/bytes@1.0.0-rc.1` (#4651)
+- docs(bytes): fix return type description for `concat()` (#4668)
+- docs(bytes): update API doc of lastIndexOfNeedle (#4665)
+
+#### @std/cli 0.224.1 (patch)
+
+- fix(cli): spinner support NO_COLOR (#4662)
+
+#### @std/collections 0.224.1 (patch)
+
+- fix(collections): correct error class when `chunk()` throws (#4682)
+- docs(collections): complete documentation (#4664)
+- refactor(collections): minor cleanups (#4681)
+
+#### @std/log 0.224.1 (patch)
+
+- feat(log): make `FileHandler` and `RotatingFileHandler` buffer size
+  configurable (#4680)
+
+### 0.224.0 / 2024.04.25
+
+- deprecation(permissions): update removal time for `std/permissions` (#4575)
+- deprecation(semver): rename `testRange()` to `satisfies()` (#4364)
+- feat(http): file server prints local network address (#4604)
+- fix(bytes): `equals()` works with subarray (#4630)
+- fix(bytes): improve invalid count error message for `repeat()` (#4603)
+- fix(csv): do not print empty header line when no columns are given in
+  `stringify()` (#4610)
+- fix(csv): remove unused `opt` parameter (#4598)
+- fix(fs/ensure_dir): allow links to directories (#4132)
+- fix(path): export private types used in public API (#4645)
+- perf(bytes): improve performance of `equals()` (#4635)
+
 ### 0.223.0 / 2024.04.15
 
 - deprecation(expect): rename `addSnapshotSerializers` to

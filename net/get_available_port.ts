@@ -14,7 +14,7 @@ export interface GetAvailablePortOptions {
  *
  * @example
  * ```ts
- * import { getAvailablePort } from "https://deno.land/std@$STD_VERSION/net/get_available_port.ts";
+ * import { getAvailablePort } from "@std/net/get-available-port";
  *
  * const port = getAvailablePort();
  * Deno.serve({ port }, () => new Response("Hello, world!"));

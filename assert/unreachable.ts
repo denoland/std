@@ -7,7 +7,7 @@ import { AssertionError } from "./assertion_error.ts";
  *
  * @example
  * ```ts
- * import { unreachable } from "https://deno.land/std@$STD_VERSION/assert/unreachable.ts";
+ * import { unreachable } from "@std/assert/unreachable";
  *
  * unreachable(); // Throws
  * ```

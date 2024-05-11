@@ -7,7 +7,7 @@
  *
  * @example
  * ```ts
- * import { toBlob } from "https://deno.land/std@$STD_VERSION/streams/to_blob.ts";
+ * import { toBlob } from "@std/streams/to-blob";
  *
  * const stream = ReadableStream.from([new Uint8Array(1), new Uint8Array(2)]);
  * await toBlob(stream); // Blob { size: 3, type: "" }

@@ -10,7 +10,7 @@
  *
  * @example
  * ```ts
- * import { zipReadableStreams } from "https://deno.land/std@$STD_VERSION/streams/zip_readable_streams.ts";
+ * import { zipReadableStreams } from "@std/streams/zip-readable-streams";
  *
  * const stream1 = ReadableStream.from(["1", "2", "3"]);
  * const stream2 = ReadableStream.from(["a", "b", "c"]);

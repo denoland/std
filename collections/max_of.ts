@@ -4,12 +4,20 @@
 /**
  * Applies the given selector to all elements of the provided collection and
  * returns the max value of all elements. If an empty array is provided the
- * function will return undefined
+ * function will return undefined.
  *
- * @example
+ * @template T The type of the elements in the array.
+ *
+ * @param array The array to find the maximum element in.
+ * @param selector The function to get the value to compare from each element.
+ *
+ * @returns The largest value of the given function or undefined if there are no
+ * elements.
+ *
+ * @example Basic usage
  * ```ts
- * import { maxOf } from "https://deno.land/std@$STD_VERSION/collections/max_of.ts";
- * import { assertEquals } from "https://deno.land/std@$STD_VERSION/assert/assert_equals.ts";
+ * import { maxOf } from "@std/collections/max-of";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const inventory = [
  *   { name: "mustard", count: 2 },
@@ -17,7 +25,7 @@
  *   { name: "tomato", count: 32 },
  * ];
  *
- * const maxCount = maxOf(inventory, (i) => i.count);
+ * const maxCount = maxOf(inventory, (item) => item.count);
  *
  * assertEquals(maxCount, 32);
  * ```
@@ -29,12 +37,20 @@ export function maxOf<T>(
 /**
  * Applies the given selector to all elements of the provided collection and
  * returns the max value of all elements. If an empty array is provided the
- * function will return undefined
+ * function will return undefined.
  *
- * @example
+ * @template T The type of the elements in the array.
+ *
+ * @param array The array to find the maximum element in.
+ * @param selector The function to get the value to compare from each element.
+ *
+ * @returns The first element that is the largest value of the given function or
+ * undefined if there are no elements.
+ *
+ * @example Basic usage
  * ```ts
- * import { maxOf } from "https://deno.land/std@$STD_VERSION/collections/max_of.ts";
- * import { assertEquals } from "https://deno.land/std@$STD_VERSION/assert/assert_equals.ts";
+ * import { maxOf } from "@std/collections/max-of";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const inventory = [
  *   { name: "mustard", count: 2n },
@@ -55,10 +71,10 @@ export function maxOf<T, S extends ((el: T) => number) | ((el: T) => bigint)>(
   array: Iterable<T>,
   selector: S,
 ): ReturnType<S> | undefined {
-  let maximumValue: ReturnType<S> | undefined = undefined;
+  let maximumValue: ReturnType<S> | undefined;
 
-  for (const i of array) {
-    const currentValue = selector(i) as ReturnType<S>;
+  for (const element of array) {
+    const currentValue = selector(element) as ReturnType<S>;
 
     if (maximumValue === undefined || currentValue > maximumValue) {
       maximumValue = currentValue;

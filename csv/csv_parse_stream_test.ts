@@ -7,10 +7,10 @@ import {
   assertEquals,
   assertRejects,
   assertStringIncludes,
-} from "../assert/mod.ts";
-import type { AssertTrue, IsExact } from "../testing/types.ts";
-import { fromFileUrl, join } from "../path/mod.ts";
-import { delay } from "../async/delay.ts";
+} from "@std/assert";
+import type { AssertTrue, IsExact } from "@std/testing/types";
+import { fromFileUrl, join } from "@std/path";
+import { delay } from "@std/async/delay";
 
 const testdataDir = join(fromFileUrl(import.meta.url), "../testdata");
 const encoder = new TextEncoder();

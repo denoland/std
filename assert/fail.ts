@@ -7,7 +7,7 @@ import { assert } from "./assert.ts";
  *
  * @example
  * ```ts
- * import { fail } from "https://deno.land/std@$STD_VERSION/assert/fail.ts";
+ * import { fail } from "@std/assert/fail";
  *
  * fail("Deliberately failed!"); // Throws
  * ```

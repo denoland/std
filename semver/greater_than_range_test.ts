@@ -1,7 +1,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // Copyright Isaac Z. Schlueter and npm contributors. All rights reserved. ISC license.
 
-import { assert, assertFalse } from "../assert/mod.ts";
+import { assert, assertFalse } from "@std/assert";
 import {
   format,
   formatRange,

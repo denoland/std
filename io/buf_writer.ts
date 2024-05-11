@@ -1,7 +1,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-import { copy } from "../bytes/copy.ts";
+import { copy } from "@std/bytes/copy";
 import type { Writer, WriterSync } from "./types.ts";
 
 const DEFAULT_BUF_SIZE = 4096;

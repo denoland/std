@@ -6,7 +6,7 @@
  *
  * @example
  * ```ts
- * import { toTransformStream } from "https://deno.land/std@$STD_VERSION/streams/to_transform_stream.ts";
+ * import { toTransformStream } from "@std/streams/to-transform-stream";
  *
  * const readable = ReadableStream.from([0, 1, 2])
  *   .pipeThrough(toTransformStream(async function* (src) {

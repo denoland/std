@@ -1,6 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import { assertExists } from "../assert/assert_exists.ts";
+import { assertExists } from "@std/assert/assert-exists";
 import { describeTextureFormat } from "./describe_texture_format.ts";
 
 function textureDimensionArrayLayerCount(
@@ -85,7 +85,7 @@ function textureMipLevelSize(
  *
  * @example
  * ```ts
- * import { createTextureWithData } from "https://deno.land/std@$STD_VERSION/webgpu/texture_with_data.ts";
+ * import { createTextureWithData } from "@std/webgpu/texture-with-data";
  *
  * const adapter = await navigator.gpu.requestAdapter();
  * const device = await adapter?.requestDevice()!;

@@ -32,7 +32,7 @@ export interface ToReadableStreamOptions {
  *
  * @example
  * ```ts
- * import { toReadableStream } from "https://deno.land/std@$STD_VERSION/io/to_readable_stream.ts";
+ * import { toReadableStream } from "@std/io/to-readable-stream";
  *
  * const file = await Deno.open("./file.txt", { read: true });
  * const fileStream = toReadableStream(file);

@@ -7,10 +7,17 @@ import { filterInPlace } from "./_utils.ts";
  * Returns all distinct elements that appear at least once in each of the given
  * arrays.
  *
- * @example
+ * @template T The type of the elements in the input arrays.
+ *
+ * @param arrays The arrays to intersect.
+ *
+ * @returns An array of distinct elements that appear at least once in each of
+ * the given arrays.
+ *
+ * @example Basic usage
  * ```ts
- * import { intersect } from "https://deno.land/std@$STD_VERSION/collections/intersect.ts";
- * import { assertEquals } from "https://deno.land/std@$STD_VERSION/assert/assert_equals.ts";
+ * import { intersect } from "@std/collections/intersect";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const lisaInterests = ["Cooking", "Music", "Hiking"];
  * const kimInterests = ["Music", "Tennis", "Cooking"];

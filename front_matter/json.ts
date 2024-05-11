@@ -12,7 +12,7 @@ import {
  *
  * @example
  * ```ts
- * import { extract } from "https://deno.land/std@$STD_VERSION/front_matter/json.ts";
+ * import { extract } from "@std/front-matter/json";
  *
  * const output = `---json
  * {

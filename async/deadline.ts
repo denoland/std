@@ -16,7 +16,7 @@ export class DeadlineError extends Error {
    *
    * @example
    * ```ts
-   * import { DeadlineError } from "https://deno.land/std@$STD_VERSION/async/deadline.ts";
+   * import { DeadlineError } from "@std/async/deadline";
    *
    * throw new DeadlineError();
    * ```
@@ -36,8 +36,8 @@ export class DeadlineError extends Error {
  *
  * @example
  * ```ts
- * import { deadline } from "https://deno.land/std@$STD_VERSION/async/deadline.ts";
- * import { delay } from "https://deno.land/std@$STD_VERSION/async/delay.ts";
+ * import { deadline } from "@std/async/deadline";
+ * import { delay } from "@std/async/delay";
  *
  * const delayedPromise = delay(1000);
  * // Below throws `DeadlineError` after 10 ms

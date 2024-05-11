@@ -53,7 +53,7 @@ const Z85 =
  *
  * @example
  * ```ts
- * import { encodeAscii85 } from "https://deno.land/std@$STD_VERSION/encoding/ascii85.ts";
+ * import { encodeAscii85 } from "@std/encoding/ascii85";
  *
  * encodeAscii85("Hello world!"); // "87cURD]j7BEbo80"
  * ```
@@ -132,7 +132,7 @@ export function encodeAscii85(
  *
  * @example
  * ```ts
- * import { decodeAscii85 } from "https://deno.land/std@$STD_VERSION/encoding/ascii85.ts";
+ * import { decodeAscii85 } from "@std/encoding/ascii85";
  *
  * decodeAscii85("87cURD]j7BEbo80");
  * // Uint8Array(12) [ 72, 101, 108, 108, 111, 32, 119, 111, 114, 108, 100, 33 ]

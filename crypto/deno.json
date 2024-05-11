@@ -1,0 +1,13 @@
+{
+  "name": "@std/crypto",
+  "version": "0.224.0",
+  "exports": {
+    ".": "./mod.ts",
+    "./crypto": "./crypto.ts",
+    "./timing-safe-equal": "./timing_safe_equal.ts",
+    "./unstable-keystack": "./unstable_keystack.ts"
+  },
+  "exclude": [
+    "_wasm/target"
+  ]
+}

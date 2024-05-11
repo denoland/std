@@ -18,10 +18,10 @@ function isBrankString(str: string) {
  * @example
  * parse JSON lines or NDJSON
  * ```ts
- * import { TextLineStream } from "https://deno.land/std@$STD_VERSION/streams/text_line_stream.ts";
- * import { JsonParseStream } from "https://deno.land/std@$STD_VERSION/json/json_parse_stream.ts";
+ * import { TextLineStream } from "@std/streams/text-line-stream";
+ * import { JsonParseStream } from "@std/json/json-parse-stream";
  *
- * const url = "https://deno.land/std@$STD_VERSION/json/testdata/test.jsonl";
+ * const url = "@std/json/testdata/test.jsonl";
  * const { body } = await fetch(url);
  *
  * const readable = body!
@@ -37,11 +37,11 @@ function isBrankString(str: string) {
  * @example
  * parse JSON Text Sequences
  * ```ts
- * import { TextDelimiterStream } from "https://deno.land/std@$STD_VERSION/streams/text_delimiter_stream.ts";
- * import { JsonParseStream } from "https://deno.land/std@$STD_VERSION/json/json_parse_stream.ts";
+ * import { TextDelimiterStream } from "@std/streams/text-delimiter-stream";
+ * import { JsonParseStream } from "@std/json/json-parse-stream";
  *
  * const url =
- *   "https://deno.land/std@$STD_VERSION/json/testdata/test.json-seq";
+ *   "@std/json/testdata/test.json-seq";
  * const { body } = await fetch(url);
  *
  * const delimiter = "\x1E";

@@ -8,7 +8,7 @@ import { capitalizeWord, splitToWords } from "./_util.ts";
  *
  * @example
  * ```ts
- * import { toCamelCase } from "https://deno.land/std@$STD_VERSION/text/case.ts";
+ * import { toCamelCase } from "@std/text/case";
  *
  * toCamelCase("deno is awesome"); // "denoIsAwesome"
  * ```
@@ -27,7 +27,7 @@ export function toCamelCase(input: string): string {
  *
  * @example
  * ```ts
- * import { toKebabCase } from "https://deno.land/std@$STD_VERSION/text/case.ts";
+ * import { toKebabCase } from "@std/text/case";
  *
  * toKebabCase("deno is awesome"); // "deno-is-awesome"
  * ```
@@ -45,7 +45,7 @@ export function toKebabCase(input: string): string {
  *
  * @example
  * ```ts
- * import { toPascalCase } from "https://deno.land/std@$STD_VERSION/text/case.ts";
+ * import { toPascalCase } from "@std/text/case";
  *
  * toPascalCase("deno is awesome"); // "DenoIsAwesome"
  * ```
@@ -63,7 +63,7 @@ export function toPascalCase(input: string): string {
  *
  * @example
  * ```ts
- * import { toSnakeCase } from "https://deno.land/std@$STD_VERSION/text/case.ts";
+ * import { toSnakeCase } from "@std/text/case";
  * toSnakeCase("deno is awesome"); // "deno_is_awesome"
  * ```
  *

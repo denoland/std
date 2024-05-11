@@ -2,8 +2,8 @@
 // Documentation and interface for walk were adapted from Go
 // https://golang.org/pkg/path/filepath/#Walk
 // Copyright 2009 The Go Authors. All rights reserved. BSD license.
-import { join } from "../path/join.ts";
-import { normalize } from "../path/normalize.ts";
+import { join } from "@std/path/join";
+import { normalize } from "@std/path/normalize";
 import { toPathString } from "./_to_path_string.ts";
 import {
   createWalkEntry,
@@ -135,7 +135,7 @@ export type { WalkEntry };
  * ```
  *
  * ```ts
- * import { walk } from "https://deno.land/std@$STD_VERSION/fs/walk.ts";
+ * import { walk } from "@std/fs/walk";
  *
  * const entries = [];
  * for await (const entry of walk(".")) {

@@ -16,7 +16,7 @@ new (...args: any) => infer C ? C
  *
  * @example
  * ```ts
- * import { assertInstanceOf } from "https://deno.land/std@$STD_VERSION/assert/assert_instance_of.ts";
+ * import { assertInstanceOf } from "@std/assert/assert-instance-of";
  *
  * assertInstanceOf(new Date(), Date); // Doesn't throw
  * assertInstanceOf(new Date(), Number); // Throws

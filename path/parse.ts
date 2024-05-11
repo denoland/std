@@ -6,12 +6,14 @@ import type { ParsedPath } from "./_interface.ts";
 import { parse as posixParse } from "./posix/parse.ts";
 import { parse as windowsParse } from "./windows/parse.ts";
 
+export type { ParsedPath } from "./_interface.ts";
+
 /**
  * Return a `ParsedPath` object of the `path`. Use `format` to reverse the result.
  *
  * @example
  * ```ts
- * import { parse } from "https://deno.land/std@$STD_VERSION/path/mod.ts";
+ * import { parse } from "@std/path";
  *
  * const parsedPathObj = parse("/path/to/dir/script.ts");
  * parsedPathObj.root; // "/"

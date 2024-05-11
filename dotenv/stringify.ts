@@ -6,7 +6,7 @@
  *
  * @example
  * ```ts
- * import { stringify } from "https://deno.land/std@$STD_VERSION/dotenv/stringify.ts";
+ * import { stringify } from "@std/dotenv/stringify";
  *
  * const object = { GREETING: "hello world" };
  * const string = stringify(object); // GREETING='hello world'

@@ -5,8 +5,8 @@ import {
   type Extractor,
   type Parser,
 } from "./create_extractor.ts";
-import { parse as parseYAML } from "../yaml/parse.ts";
-import { parse as parseTOML } from "../toml/parse.ts";
+import { parse as parseYAML } from "@std/yaml/parse";
+import { parse as parseTOML } from "@std/toml/parse";
 
 /**
  * Extracts and parses {@link https://yaml.org | YAML}, {@link https://toml.io |
@@ -15,7 +15,7 @@ import { parse as parseTOML } from "../toml/parse.ts";
  *
  * @example
  * ```ts
- * import { extract } from "https://deno.land/std@$STD_VERSION/front_matter/any.ts";
+ * import { extract } from "@std/front-matter/any";
  *
  * const output = `---json
  * {

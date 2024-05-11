@@ -4,7 +4,7 @@ import { crypto as stdCrypto, type DIGEST_ALGORITHM_NAMES } from "../mod.ts";
 
 import nodeCrypto from "node:crypto";
 
-import { crypto as oldCrypto } from "https://deno.land/std@0.220.1/crypto/mod.ts";
+import { crypto as oldCrypto } from "jsr:@std/crypto@0.220.1";
 
 const webCrypto = globalThis.crypto;
 

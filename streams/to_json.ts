@@ -10,7 +10,7 @@ import { toText } from "./to_text.ts";
  *
  * @example
  * ```ts
- * import { toJson } from "https://deno.land/std@$STD_VERSION/streams/to_json.ts";
+ * import { toJson } from "@std/streams/to-json";
  *
  * const stream = ReadableStream.from([JSON.stringify({ hello: "world" })]);
  * await toJson(stream); // { hello: "world" }

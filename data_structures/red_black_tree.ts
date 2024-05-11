@@ -29,8 +29,8 @@ import { type Direction, RedBlackNode } from "./_red_black_node.ts";
  *   ascend,
  *   descend,
  *   RedBlackTree,
- * } from "https://deno.land/std@$STD_VERSION/data_structures/mod.ts";
- * import { assertEquals } from "https://deno.land/std@$STD_VERSION/assert/assert_equals.ts";
+ * } from "@std/data-structures";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const values = [3, 10, 13, 4, 6, 7, 1, 14];
  * const tree = new RedBlackTree<number>();

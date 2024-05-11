@@ -8,7 +8,7 @@
  *
  * @example
  * ```ts
- * import { earlyZipReadableStreams } from "https://deno.land/std@$STD_VERSION/streams/early_zip_readable_streams.ts";
+ * import { earlyZipReadableStreams } from "@std/streams/early-zip-readable-streams";
  *
  * const stream1 = ReadableStream.from(["1", "2", "3"]);
  * const stream2 = ReadableStream.from(["a", "b", "c"]);

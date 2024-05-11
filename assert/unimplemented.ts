@@ -7,7 +7,7 @@ import { AssertionError } from "./assertion_error.ts";
  *
  * @example
  * ```ts
- * import { unimplemented } from "https://deno.land/std@$STD_VERSION/assert/unimplemented.ts";
+ * import { unimplemented } from "@std/assert/unimplemented";
  *
  * unimplemented(); // Throws
  * ```

@@ -1,13 +1,13 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-import { stripAnsiCode } from "../fmt/colors.ts";
-import { dirname, fromFileUrl, join, toFileUrl } from "../path/mod.ts";
+import { stripAnsiCode } from "@std/fmt/colors";
+import { dirname, fromFileUrl, join, toFileUrl } from "@std/path";
 import {
   assert,
   assertInstanceOf,
   AssertionError,
   assertRejects,
   fail,
-} from "../assert/mod.ts";
+} from "@std/assert";
 import { assertSnapshot, createAssertSnapshot, serialize } from "./snapshot.ts";
 
 const SNAPSHOT_MODULE_URL = toFileUrl(join(

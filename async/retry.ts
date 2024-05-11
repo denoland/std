@@ -1,7 +1,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-import { assert } from "../assert/assert.ts";
+import { assert } from "@std/assert/assert";
 import { exponentialBackoffWithJitter } from "./_util.ts";
 
 /**
@@ -14,7 +14,7 @@ export class RetryError extends Error {
    *
    * @example
    * ```ts
-   * import { RetryError } from "https://deno.land/std@$STD_VERSION/async/retry.ts";
+   * import { RetryError } from "@std/async/retry";
    *
    * throw new RetryError({ foo: "bar" }, 3);
    * ```
@@ -86,7 +86,7 @@ const defaultRetryOptions: Required<RetryOptions> = {
  *
  * @example
  * ```ts
- * import { retry } from "https://deno.land/std@$STD_VERSION/async/retry.ts";
+ * import { retry } from "@std/async/retry";
  * const req = async () => {
  *  // some function that throws sometimes
  * };
@@ -103,7 +103,7 @@ const defaultRetryOptions: Required<RetryOptions> = {
  *
  * @example
  * ```ts
- * import { retry } from "https://deno.land/std@$STD_VERSION/async/retry.ts";
+ * import { retry } from "@std/async/retry";
  * const req = async () => {
  *  // some function that throws sometimes
  * };

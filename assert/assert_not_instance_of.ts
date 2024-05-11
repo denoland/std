@@ -8,7 +8,7 @@ import { assertFalse } from "./assert_false.ts";
  *
  * @example
  * ```ts
- * import { assertNotInstanceOf } from "https://deno.land/std@$STD_VERSION/assert/assert_not_instance_of.ts";
+ * import { assertNotInstanceOf } from "@std/assert/assert-not-instance-of";
  *
  * assertNotInstanceOf(new Date(), Number); // Doesn't throw
  * assertNotInstanceOf(new Date(), Date); // Throws

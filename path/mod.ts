@@ -16,7 +16,7 @@
  * Example, for `posix`:
  *
  * ```ts
- * import { fromFileUrl } from "https://deno.land/std@$STD_VERSION/path/posix/from_file_url.ts";
+ * import { fromFileUrl } from "@std/path/posix/from-file-url";
  * const p = fromFileUrl("file:///home/foo");
  * console.log(p); // "/home/foo"
  * ```
@@ -24,7 +24,7 @@
  * or, for `windows`:
  *
  * ```ts
- * import { fromFileUrl } from "https://deno.land/std@$STD_VERSION/path/windows/from_file_url.ts";
+ * import { fromFileUrl } from "@std/path/windows/from-file-url";
  * const p = fromFileUrl("file:///home/foo");
  * console.log(p); // "\\home\\foo"
  * ```
@@ -37,10 +37,16 @@
 import * as _windows from "./windows/mod.ts";
 import * as _posix from "./posix/mod.ts";
 
-/** @deprecated This will be removed in 1.0.0. Import from {@link https://deno.land/std/path/windows/mod.ts} instead. */
+/**
+ * @deprecated This will be removed in 1.0.0. Import from
+ * {@link https://jsr.io/@std/path/doc/windows/~ | @std/path/windows} instead.
+ */
 export const win32: typeof _windows = _windows;
 
-/** @deprecated This will be removed in 1.0.0. Import from {@link https://deno.land/std/path/posix/mod.ts} instead. */
+/**
+ * @deprecated This will be removed in 1.0.0. Import from
+ * {@link https://jsr.io/@std/path/doc/posix/~ | @std/path/posix} instead.
+ */
 export const posix: typeof _posix = _posix;
 
 export * from "./basename.ts";

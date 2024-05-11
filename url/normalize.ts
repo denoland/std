@@ -1,7 +1,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-import { normalize as posixNormalize } from "../path/posix/normalize.ts";
+import { normalize as posixNormalize } from "@std/path/posix/normalize";
 
 /**
  * Normalizes the URL or URL string, resolving `..` and `.` segments. Multiple
@@ -12,7 +12,7 @@ import { normalize as posixNormalize } from "../path/posix/normalize.ts";
  *
  * @example
  * ```ts
- * import { normalize } from "https://deno.land/std@$STD_VERSION/url/normalize.ts";
+ * import { normalize } from "@std/url/normalize";
  *
  * normalize("https:///deno.land///std//assert//.//mod.ts").href;
  * // "https://deno.land/std/path/mod.ts"

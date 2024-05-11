@@ -9,7 +9,7 @@
  * This module is browser compatible.
  *
  * ```ts
- * import { encodeBase58, decodeBase58 } from "https://deno.land/std@$STD_VERSION/encoding/base58.ts";
+ * import { encodeBase58, decodeBase58 } from "@std/encoding/base58";
  *
  * const encoded = encodeBase58("Hello World!"); // "2NEpo7TZRRrLZSi2U"
  *
@@ -45,7 +45,7 @@ const base58alphabet =
  *
  * @example
  * ```ts
- * import { encodeBase58 } from "https://deno.land/std@$STD_VERSION/encoding/base58.ts";
+ * import { encodeBase58 } from "@std/encoding/base58";
  *
  * encodeBase58("Hello World!"); // "2NEpo7TZRRrLZSi2U"
  * ```
@@ -110,7 +110,7 @@ export function encodeBase58(data: ArrayBuffer | Uint8Array | string): string {
  *
  * @example
  * ```ts
- * import { decodeBase58 } from "https://deno.land/std@$STD_VERSION/encoding/base58.ts";
+ * import { decodeBase58 } from "@std/encoding/base58";
  *
  * decodeBase58("2NEpo7TZRRrLZSi2U");
  * // Uint8Array(12) [ 72, 101, 108, 108, 111, 32,  87, 111, 114, 108, 100, 33 ]

@@ -11,7 +11,7 @@ import { createAbortError } from "./_util.ts";
  * import {
  *   abortable,
  *   delay,
- * } from "https://deno.land/std@$STD_VERSION/async/mod.ts";
+ * } from "@std/async";
  *
  * const p = delay(1000);
  * const c = new AbortController();
@@ -30,7 +30,7 @@ export function abortable<T>(p: Promise<T>, signal: AbortSignal): Promise<T>;
  * import {
  *   abortable,
  *   delay,
- * } from "https://deno.land/std@$STD_VERSION/async/mod.ts";
+ * } from "@std/async";
  *
  * const p = async function* () {
  *   yield "Hello";
@@ -68,7 +68,7 @@ export function abortable<T>(
  *
  * @example
  * ```ts
- * import { abortablePromise } from "https://deno.land/std@$STD_VERSION/async/abortable.ts";
+ * import { abortablePromise } from "@std/async/abortable";
  *
  * const request = fetch("https://example.com");
  *
@@ -104,7 +104,7 @@ export function abortablePromise<T>(
  * import {
  *   abortableAsyncIterable,
  *   delay,
- * } from "https://deno.land/std@$STD_VERSION/async/mod.ts";
+ * } from "@std/async";
  *
  * const p = async function* () {
  *   yield "Hello";

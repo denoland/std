@@ -28,7 +28,7 @@ interface Rule {
   fn: CallbackFunction;
 }
 
-class Tokenizer {
+export class Tokenizer {
   rules: Rule[];
 
   constructor(rules: Rule[] = []) {
@@ -122,7 +122,7 @@ function createMatchTestFunction(match: RegExp): TestFunction {
 }
 
 // according to unicode symbols (http://www.unicode.org/reports/tr35/tr35-dates.html#Date_Field_Symbol_Table)
-const defaultRules = [
+const DATE_TIME_FORMATTER_DEFAULT_RULES = [
   {
     test: createLiteralTestFunction("yyyy"),
     fn: (): CallbackResult => ({ type: "year", value: "numeric" }),
@@ -131,7 +131,6 @@ const defaultRules = [
     test: createLiteralTestFunction("yy"),
     fn: (): CallbackResult => ({ type: "year", value: "2-digit" }),
   },
-
   {
     test: createLiteralTestFunction("MM"),
     fn: (): CallbackResult => ({ type: "month", value: "2-digit" }),
@@ -148,7 +147,6 @@ const defaultRules = [
     test: createLiteralTestFunction("d"),
     fn: (): CallbackResult => ({ type: "day", value: "numeric" }),
   },
-
   {
     test: createLiteralTestFunction("HH"),
     fn: (): CallbackResult => ({ type: "hour", value: "2-digit" }),
@@ -201,7 +199,6 @@ const defaultRules = [
     test: createLiteralTestFunction("S"),
     fn: (): CallbackResult => ({ type: "fractionalSecond", value: 1 }),
   },
-
   {
     test: createLiteralTestFunction("a"),
     fn: (value: unknown): CallbackResult => ({
@@ -209,7 +206,6 @@ const defaultRules = [
       value: value as string,
     }),
   },
-
   // quoted literal
   {
     test: createMatchTestFunction(/^(')(?<value>\\.|[^\']*)\1/),
@@ -226,7 +222,7 @@ const defaultRules = [
       value: (match as RegExpExecArray)[0],
     }),
   },
-];
+] as const;
 
 type FormatPart = {
   type: DateTimeFormatPartTypes;
@@ -238,7 +234,10 @@ type Format = FormatPart[];
 export class DateTimeFormatter {
   #format: Format;
 
-  constructor(formatString: string, rules: Rule[] = defaultRules) {
+  constructor(
+    formatString: string,
+    rules: Rule[] = [...DATE_TIME_FORMATTER_DEFAULT_RULES],
+  ) {
     const tokenizer = new Tokenizer(rules);
     this.#format = tokenizer.tokenize(
       formatString,
@@ -387,7 +386,7 @@ export class DateTimeFormatter {
           break;
         }
         case "dayPeriod": {
-          string += token.value ? (date.getHours() >= 12 ? "PM" : "AM") : "";
+          string += date.getHours() >= 12 ? "PM" : "AM";
           break;
         }
         case "literal": {
@@ -421,6 +420,10 @@ export class DateTimeFormatter {
               value = /^\d{1,2}/.exec(string)?.[0] as string;
               break;
             }
+            default:
+              throw Error(
+                `ParserError: value "${token.value}" is not supported`,
+              );
           }
           break;
         }

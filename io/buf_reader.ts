@@ -1,8 +1,8 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-import { assert } from "../assert/assert.ts";
-import { copy } from "../bytes/copy.ts";
+import { assert } from "@std/assert/assert";
+import { copy } from "@std/bytes/copy";
 import type { Reader } from "./types.ts";
 
 const DEFAULT_BUF_SIZE = 4096;

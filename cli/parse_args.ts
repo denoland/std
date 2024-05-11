@@ -9,14 +9,14 @@
  *
  * @example
  * ```ts
- * import { parseArgs } from "https://deno.land/std@$STD_VERSION/cli/parse_args.ts";
+ * import { parseArgs } from "@std/cli/parse-args";
  *
  * console.dir(parseArgs(Deno.args));
  * ```
  *
  * @module
  */
-import { assert } from "../assert/assert.ts";
+import { assert } from "@std/assert/assert";
 
 /** Combines recursively all intersection types and returns a new single type. */
 type Id<TRecord> = TRecord extends Record<string, unknown>
@@ -271,7 +271,7 @@ export interface ParseOptions<
    *  @example
    * ```ts
    * // $ deno run example.ts -- a arg1
-   * import { parseArgs } from "https://deno.land/std@$STD_VERSION/cli/parse_args.ts";
+   * import { parseArgs } from "@std/cli/parse-args";
    * console.dir(parseArgs(Deno.args, { "--": false }));
    * // output: { _: [ "a", "arg1" ] }
    * console.dir(parseArgs(Deno.args, { "--": true }));
@@ -422,13 +422,13 @@ const FLAG_REGEXP =
  *
  * @example
  * ```ts
- * import { parseArgs } from "https://deno.land/std@$STD_VERSION/cli/parse_args.ts";
+ * import { parseArgs } from "@std/cli/parse-args";
  * const parsedArgs = parseArgs(Deno.args);
  * ```
  *
  * @example
  * ```ts
- * import { parseArgs } from "https://deno.land/std@$STD_VERSION/cli/parse_args.ts";
+ * import { parseArgs } from "@std/cli/parse-args";
  * const parsedArgs = parseArgs(["--foo", "--bar=baz", "./quux.txt"]);
  * // parsedArgs: { foo: true, bar: "baz", _: ["./quux.txt"] }
  * ```

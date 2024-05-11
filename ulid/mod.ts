@@ -29,7 +29,7 @@ export type { ULID } from "./_util.ts";
  *
  * @example
  * ```ts
- * import { ulid, decodeTime } from "https://deno.land/std@$STD_VERSION/ulid/mod.ts";
+ * import { ulid, decodeTime } from "@std/ulid";
  *
  * const x = ulid(150000);
  * decodeTime(x); // 150000
@@ -62,7 +62,7 @@ export function decodeTime(id: string): number {
  *
  * @example
  * ```ts
- * import { monotonicUlid } from "https://deno.land/std@$STD_VERSION/ulid/mod.ts";
+ * import { monotonicUlid } from "@std/ulid";
  *
  * // Strict ordering for the same timestamp, by incrementing the least-significant random bit by 1
  * monotonicUlid(150000); // 000XAL6S41ACTAV9WEVGEMMVR8
@@ -82,7 +82,7 @@ export const monotonicUlid: ULID = monotonicFactory();
  *
  * @example
  * ```ts
- * import { ulid } from "https://deno.land/std@$STD_VERSION/ulid/mod.ts";
+ * import { ulid } from "@std/ulid";
  * ulid(); // 01ARZ3NDEKTSV4RRFFQ69G5FAV
  *
  * // You can also input a seed time which will consistently give you the same string for the time component
