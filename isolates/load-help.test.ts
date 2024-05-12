@@ -5,7 +5,6 @@ import { Api } from '@/isolates/load-help.ts'
 import { Machine } from '@/api/web-client-machine.ts'
 Deno.test('loadAll', async (t) => {
   const engine = await Engine.start()
-  await engine.provision()
   const machine = Machine.load(engine)
   const session = machine.openSession()
 

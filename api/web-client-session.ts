@@ -8,6 +8,7 @@ import {
   freezePid,
   getActorPid,
   JsonValue,
+  Params,
   PID,
   PierceRequest,
   PROCTYPE,
@@ -58,6 +59,9 @@ export class Session implements ArtifactSession {
   get sessionId() {
     return this.#pid.branches[this.#pid.branches.length - 1]
   }
+  get homeAddress() {
+    return this.#engine.homeAddress
+  }
   #initialize(sessionId: string) {
     // we are the system session, and we are being asked to make a new session
     const request = {
@@ -101,15 +105,14 @@ export class Session implements ArtifactSession {
       params: { request },
       proctype: PROCTYPE.SERIAL,
     }
-    return new Promise((resolve, reject) => {
-      this.#watcher.watch(pierce.ulid, { resolve, reject })
-      // TODO handle an error in pierce
-      if (this.#init) {
-        this.#init = this.#init.then(() => this.#engine.pierce(pierce))
-      } else {
-        this.#engine.pierce(pierce)
-      }
-    })
+    const promise = this.#watcher.watch(pierce.ulid)
+    // TODO handle an error in pierce
+    if (this.#init) {
+      this.#init = this.#init.then(() => this.#engine.pierce(pierce))
+    } else {
+      this.#engine.pierce(pierce)
+    }
+    return promise
   }
 
   async ping(params?: { data?: JsonValue }) {
@@ -131,9 +134,15 @@ export class Session implements ArtifactSession {
     }
     return await this.#engine.transcribe(params.audio)
   }
-  async init({ repo }: { repo: string }) {
+  async init(
+    { repo, isolate, params }: {
+      repo: string
+      isolate?: string
+      params?: Params
+    },
+  ) {
     const actor = await this.#getActor()
-    return actor.init({ repo })
+    return actor.init({ repo, isolate, params })
   }
   async clone({ repo }: { repo: string }) {
     const actor = await this.#getActor()
@@ -177,7 +186,9 @@ export class Session implements ArtifactSession {
 }
 
 type ActorApi = { // copied from the isolate
-  init: (params: { repo: string }) => Promise<{ pid: PID; head: string }>
+  init: (
+    params: { repo: string; isolate?: string; params?: Params },
+  ) => Promise<{ pid: PID; head: string }>
   /** Clones from github, using the github PAT (if any) for the calling machine.
    * Updates the repo.json file in the actor branch to point to the new PID of
    * the clone.

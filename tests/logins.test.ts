@@ -1,3 +1,4 @@
+import * as secp from '@noble/secp256k1'
 import { Engine } from '@/engine.ts'
 import { Machine } from '@/api/web-client-machine.ts'
 import * as Github from '@/isolates/github.ts'
@@ -7,11 +8,20 @@ import { Tokens } from '@deno/kv-oauth'
 import { getActorId } from '@/constants.ts'
 
 Deno.test('login with github', async (t) => {
+  // figure out how to reload a browser session, then decide how to tidy up
+  const raw = secp.utils.randomPrivateKey()
+  const key = secp.etc.bytesToHex(raw)
+  Deno.env.set('MACHINE_PRIVATE_KEY', key)
+
   const engine = await Engine.start()
-  await engine.provision()
-  const authProvider = engine.githubAddress
+
+  // TODO get this from the home installation
   const machine = Machine.load(engine)
   const session = machine.openSession()
+  const home = session.homeAddress
+  const config = await session.readJSON<Actors.Config>('config.json', home)
+  console.log('config', config)
+  const authProvider = config.authProviders.github
   const github = await session.actions<Github.Api>('github', authProvider)
 
   const githubUserId = 'github-user-id'

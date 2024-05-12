@@ -30,6 +30,7 @@ export default class Server {
     this.#engine = engine
     this.#app = app
   }
+
   get engine() {
     return this.#engine
   }
@@ -42,9 +43,6 @@ export default class Server {
     app.use(timing())
     app.use(prettyJSON())
     app.use('*', logger(), poweredBy(), cors())
-    app.post('/provision', (c) => {
-      return execute(c, engine.provision(), 'provision')
-    })
     app.post(`/ping`, async (c) => {
       const params = await c.req.json()
       return execute(c, engine.ping(params), 'ping')

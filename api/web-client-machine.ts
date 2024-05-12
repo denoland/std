@@ -1,4 +1,5 @@
 import * as secp from '@noble/secp256k1'
+import '@std/dotenv/load'
 import {
   ArtifactMachine,
   EngineInterface,
@@ -22,10 +23,16 @@ export class Machine implements ArtifactMachine {
   readonly #machineId: string
   #rootSessionPromise: Promise<Session>
 
-  private constructor(engine: EngineInterface) {
+  private constructor(engine: EngineInterface, privateKey?: string) {
     this.#engine = engine
-
-    this.#privKey = secp.utils.randomPrivateKey()
+    if (privateKey) {
+      if (!secp.utils.isValidPrivateKey(privateKey)) {
+        throw new Error('Invalid private key')
+      }
+      this.#privKey = secp.etc.hexToBytes(privateKey)
+    } else {
+      this.#privKey = secp.utils.randomPrivateKey()
+    }
     this.#pubKey = secp.getPublicKey(this.#privKey)
     this.#machineId = secp.etc.bytesToHex(this.#pubKey)
 
@@ -45,9 +52,23 @@ export class Machine implements ArtifactMachine {
     return this.#machineId
   }
   static load(engine: EngineInterface) {
-    // creating a new session is outside of chainland, as chainland is
-    // deterministic only, and needs external excitation to move
     return new Machine(engine)
+  }
+  static recover(engine: EngineInterface, privateKey: string) {
+    return new Machine(engine, privateKey)
+  }
+  static loadSuperUser(engine: EngineInterface) {
+    const { privateKey } = Machine.loadSuperUserMachineId()
+    return Machine.recover(engine, privateKey)
+  }
+  static loadSuperUserMachineId() {
+    const privateKey = Deno.env.get('MACHINE_PRIVATE_KEY')
+    if (!privateKey) {
+      throw new Error('MACHINE_PRIVATE_KEY not set')
+    }
+    const raw = secp.getPublicKey(privateKey)
+    const publicKey = secp.etc.bytesToHex(raw)
+    return { privateKey, publicKey }
   }
 
   async #connect() {

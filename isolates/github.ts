@@ -1,4 +1,11 @@
-import { colorize, isBaseRepo, IsolateApi, PID, print } from '@/constants.ts'
+import {
+  colorize,
+  isBaseRepo,
+  IsolateApi,
+  PID,
+  pidSchema,
+  print,
+} from '@/constants.ts'
 import type { Tokens } from '@deno/kv-oauth'
 import { Debug } from '@utils'
 import { assert } from '@std/assert'
@@ -54,6 +61,12 @@ export type Selectors = {
 }
 
 export const api = {
+  '@@install': {
+    type: 'object',
+    additionalProperties: false,
+    required: ['homeAddress'],
+    properties: { homeAddress: pidSchema },
+  },
   registerAttempt: {
     type: 'object',
     additionalProperties: false,
@@ -84,7 +97,8 @@ export const api = {
 
 export const functions = {
   '@@install': (params: { homeAddress: PID }, api: IsolateApi) => {
-    log('install', print(params.homeAddress))
+    log('install with homeAddress:', print(params.homeAddress))
+    assert(isBaseRepo(api.pid), 'not base: ' + print(api.pid))
     api.writeJSON('config.json', { homeAddress: params.homeAddress })
   },
   registerAttempt: (

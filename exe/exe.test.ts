@@ -182,7 +182,6 @@ for (const withExeCache of [true, false]) {
       if (!withExeCache) {
         engine.context.exe?.disableFunctionCache()
       }
-      await engine.provision()
       const machine = Machine.load(engine)
       const session = machine.openSession()
 
@@ -209,7 +208,6 @@ for (const withExeCache of [true, false]) {
       if (!withExeCache) {
         engine.context.exe?.disableFunctionCache()
       }
-      await engine.provision()
       const machine = Machine.load(engine)
       const session = machine.openSession()
       const { pid } = session

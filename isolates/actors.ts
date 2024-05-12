@@ -33,6 +33,10 @@ export type ActorApi = {
   lsRepos: () => Promise<string[]>
 }
 export type Admin = {
+  createMachineSession: (
+    params: { machineId: string; sessionId: string },
+  ) => Promise<PID>
+
   /**
    * Called by an actor, after authorizing, to merge its actorId with the
    * actorId authorized with the given auth provider.
@@ -49,7 +53,7 @@ export type Admin = {
    * Register an auth provider that is allowed to authorize merging actorIds.
    * Can only be called by the installation owner account.
    */
-  addAuthProvider: (params: { provider: PID }) => Promise<void>
+  addAuthProvider: (params: { provider: PID; name: string }) => Promise<void>
 }
 
 export type Api = Admin & ActorApi
@@ -70,6 +74,8 @@ export const api = {
     required: ['repo'],
     properties: {
       repo: { type: 'string' },
+      isolate: { type: 'string' },
+      params: { type: 'object' },
     },
   },
   rm: {
@@ -85,14 +91,19 @@ export const api = {
   addAuthProvider: {
     type: 'object',
     additionalProperties: false,
-    required: ['provider'],
+    required: ['provider', 'name'],
     properties: {
-      provider: { $ref: 'PID' },
+      provider: pidSchema,
+      name: { type: 'string' },
     },
   },
   '@@install': {
     type: 'object',
     additionalProperties: false,
+    required: ['superuser'],
+    properties: {
+      superuser: { type: 'string', pattern: machineIdRegex.source },
+    },
   },
   createMachineSession: {
     type: 'object',
@@ -122,6 +133,35 @@ export const api = {
 }
 
 export const functions = {
+  /** Used by system provisioning to create a blank app */
+  async '@@install'({ superuser }: { superuser: string }, api: IsolateApi) {
+    log('@@install', print(api.pid))
+    // TODO set ACL on io.json to only run this isolate
+    assert(isBaseRepo(api.pid), 'not base: ' + print(api.pid))
+    const dir = await api.ls('.')
+    expect(dir, 'repo must be empty').toEqual(['.io.json'])
+    const children = await api.lsChildren()
+    assert(children.length === 0, 'repo must have no child branches')
+
+    const config: Config = { superuser, authProviders: {} }
+    api.writeJSON('config.json', config)
+  },
+  async addAuthProvider(
+    { provider, name }: { provider: PID; name: string },
+    api: IsolateApi,
+  ) {
+    assert(isBaseRepo(provider), 'not base: ' + print(provider))
+    log('addAuthProvider provider', print(provider))
+    log('addAuthProvider in', print(api.pid))
+    const config = await api.readJSON<Config>('config.json')
+    if (!config.authProviders) {
+      if (config.authProviders[name]) {
+        throw new Error('Auth provider already exists: ' + name)
+      }
+    }
+    config.authProviders[name] = provider
+    api.writeJSON('config.json', config)
+  },
   rm: async (
     { repo, all = false }: { repo: string; all: boolean },
     api: IsolateApi,
@@ -161,8 +201,13 @@ export const functions = {
     api.writeJSON('repos.json', repos)
     return result
   },
-  init: async ({ repo }: { repo: string }, api: IsolateApi) => {
+  init: async (
+    p: { repo: string; isolate?: string; params?: Params },
+    api: IsolateApi,
+  ) => {
     assertIsActorPid(api)
+
+    const { repo, isolate, params } = p
     log('init', repo)
 
     const repos = await readRepos(api)
@@ -171,25 +216,10 @@ export const functions = {
     }
 
     const { init } = await api.actions<system.Api>('system')
-    const { pid, head } = await init({ repo })
+    const { pid, head } = await init({ repo, isolate, params })
     repos[repo] = pid
     api.writeJSON('repos.json', repos)
     return { pid, head }
-  },
-  addAuthProvider({ provider }: { provider: PID }, _api: IsolateApi) {
-    log('addAuthProvider', print(provider))
-  },
-
-  /** Used by system provisioning to create a blank app */
-  async '@@install'(_: Params, api: IsolateApi) {
-    // TODO set ACL on io.json
-    // TODO create basic folder structure
-    const dir = await api.ls('.')
-    expect(dir, 'repo must be empty').toEqual(['.io.json'])
-    const children = await api.lsChildren()
-    assert(children.length === 0, 'repo must have no child branches')
-
-    // TODO add some config to lock down this repo to only run this isolate
   },
 
   async createMachineSession(
@@ -263,4 +293,9 @@ const readRepos = async (api: IsolateApi) => {
     repos = await api.readJSON<Repos>('repos.json')
   }
   return repos
+}
+
+export type Config = {
+  superuser: string
+  authProviders: { [name: string]: PID }
 }

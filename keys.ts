@@ -70,3 +70,5 @@ export const headKeyToPid = (headKey: string[]) => {
 }
 
 export const UNDELIVERED = ['0', 'system', 'system', 'undelivered']
+
+export const HOME_ADDRESS = ['HOME_ADDRESS']

@@ -33,6 +33,7 @@ export default (name: string, cradleMaker: () => Promise<ArtifactSession>) => {
   })
   Deno.test(prefix + 'init', async () => {
     const session = await cradleMaker()
+    log('session complete')
     const result = await session.init({ repo: 'test/init' })
     log('init result', result)
     expect(result).toBeDefined()
@@ -90,7 +91,7 @@ export default (name: string, cradleMaker: () => Promise<ArtifactSession>) => {
       await expect(actions.error({ message })).rejects.toThrow(message)
     })
     await t.step('params fails validation', async () => {
-      const msg = 'Parameters Validation Error: '
+      const msg = 'Parameters Validation Error '
       await expect(actions.local({ invalid: 'parameters' }))
         .rejects.toThrow(msg)
     })

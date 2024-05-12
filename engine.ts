@@ -18,6 +18,9 @@ import { assert, Debug, posix } from '@utils'
 import FS from '@/git/fs.ts'
 import * as artifact from '@/isolates/artifact.ts'
 import { ulid } from 'ulid'
+import { Machine } from '@/api/web-client-machine.ts'
+import * as Actor from '@/isolates/actors.ts'
+import { PierceWatcher } from '@/api/web-client-watcher.ts'
 const log = Debug('AI:engine')
 
 export class Engine implements EngineInterface {
@@ -37,22 +40,31 @@ export class Engine implements EngineInterface {
     const compartment = await Compartment.create('artifact')
     const api = IsolateApi.createContext<C>()
     await compartment.mount(api)
-    return new Engine(compartment, api)
+    const engine = new Engine(compartment, api)
+    await engine.ensureHomeAddress()
+    return engine
   }
   get context() {
     return this.#api.context
   }
   get homeAddress() {
     if (!this.#homeAddress) {
-      throw new Error('home not installed')
+      throw new Error('home not provisioned')
     }
     return this.#homeAddress
   }
-  get githubAddress() {
-    if (!this.#githubAddress) {
-      throw new Error('github not installed')
+  async ensureHomeAddress() {
+    if (this.#homeAddress) {
+      return this.#homeAddress
     }
-    return this.#githubAddress
+    const { db } = artifact.sanitizeContext(this.#api)
+    if (await db.hasHomeAddress()) {
+      this.#homeAddress = await db.getHomeAddress()
+    } else {
+      await this.#provision()
+    }
+    assert(this.#homeAddress, 'home not provisioned')
+    return this.#homeAddress
   }
   async stop() {
     await this.#compartment.unmount(this.#api)
@@ -60,18 +72,30 @@ export class Engine implements EngineInterface {
   get isProvisioned() {
     return !!this.#homeAddress && !!this.#githubAddress
   }
-  async provision() {
-    if (!this.#homeAddress) {
-      const { pid } = await this.#install('actors')
-      // TODO make this connect up this host as a machine to the superuser
-      this.#homeAddress = pid
-    }
-    if (!this.#githubAddress) {
-      const { homeAddress } = this
-      const { pid } = await this.#install('github', { homeAddress })
-      this.#githubAddress = pid
-    }
+  async #provision() {
+    const { db } = artifact.sanitizeContext(this.#api)
+    // TODO use the effect lock to ensure atomicity
+
+    const { publicKey: superuser } = Machine.loadSuperUserMachineId()
+    const { pid: homeAddress } = await this.#install('actors', { superuser })
+    await db.setHomeAddress(homeAddress)
+    this.#homeAddress = homeAddress
+
+    const machine = Machine.loadSuperUser(this)
+    const session = await machine.rootSessionPromise
+
+    const { pid } = await session.init({
+      repo: 'dreamcatcher-tech/github',
+      isolate: 'github',
+      params: { homeAddress },
+    })
+    log('github installed', print(pid))
+    this.#githubAddress = pid
+
+    const actor = await session.actions<Actor.Admin>('actors', homeAddress)
+    await actor.addAuthProvider({ name: 'github', provider: pid })
   }
+
   /**
    * Installs isolates as the superuser account.  Used to provision the engine.
    */
@@ -82,14 +106,22 @@ export class Engine implements EngineInterface {
     const partial = { ...ACTORS, repository: isolate }
     const { db } = artifact.sanitizeContext(this.#api)
     const { pid } = await FS.init(partial, db)
-    await this.pierce({
+    const abort = new AbortController()
+    const watcher = PierceWatcher.create(abort.signal, this, pid)
+    watcher.watchPierces()
+    const request = {
       isolate,
       functionName: '@@install',
       params,
       proctype: PROCTYPE.SERIAL,
       target: pid,
       ulid: ulid(),
-    })
+    }
+    const promise = watcher.watch(request.ulid)
+    await this.pierce(request)
+    // TODO reverse the init if the install fails
+    await promise
+    abort.abort() // TODO make this a method on the watcher
     // TODO fire an error if this isolate is not installable
     log('installed', print(pid))
     const { oid } = await FS.openHead(pid, db)
@@ -139,8 +171,8 @@ export class Engine implements EngineInterface {
     return fs.exists(path)
   }
   async createMachineSession(pid: PID) {
-    assert(this.#homeAddress, 'home not connected')
-    assertValidSession(pid, this.#homeAddress)
+    const { homeAddress } = this
+    assertValidSession(pid, homeAddress)
     const [, , machineId, sessionId] = pid.branches
     log('createMachineSession', print(pid))
     const request = {
@@ -148,7 +180,7 @@ export class Engine implements EngineInterface {
       functionName: 'createMachineSession',
       params: { machineId, sessionId },
       proctype: PROCTYPE.SERIAL,
-      target: this.homeAddress,
+      target: homeAddress,
       ulid: ulid(),
     }
 

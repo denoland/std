@@ -27,19 +27,29 @@ export const api = {
     type: 'object',
     required: ['repo'],
     additionalProperties: false,
-    properties: { repo: { type: 'string' } },
+    properties: {
+      repo: { type: 'string' },
+      isolate: { type: 'string' },
+      params: { type: 'object' },
+    },
   },
   init: {
     description: 'initialize a repository',
     type: 'object',
     required: ['repo'],
     additionalProperties: false,
-    properties: { repo: { type: 'string' } },
+    properties: {
+      repo: { type: 'string' },
+      isolate: { type: 'string' },
+      params: { type: 'object' },
+    },
   },
 }
 
 export type Api = {
-  init: (params: { repo: string }) => Promise<{ pid: PID; head: string }>
+  init: (
+    params: { repo: string; isolate?: string; params?: Params },
+  ) => Promise<{ pid: PID; head: string }>
   clone: (
     params: { repo: string; isolate?: string; params?: Params },
   ) => Promise<{ pid: PID; head: string; elapsed: number }>

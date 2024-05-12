@@ -80,7 +80,6 @@ Deno.test('ai-chat', async (t) => {
 
 Deno.test('engage-help', async (t) => {
   const engine = await Engine.start()
-  await engine.provision()
   const machine = Machine.load(engine)
   const session = machine.openSession()
 

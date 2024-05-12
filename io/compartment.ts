@@ -12,6 +12,7 @@ const cache = new Map<string, Compartment>()
 
 export default class Compartment {
   #module: Isolate
+  #isolate: string
   #check() {
     assert(this.#module, 'code not loaded')
   }
@@ -19,6 +20,7 @@ export default class Compartment {
     log('load isolate:', isolate)
     assert(isolates[isolate as keyof typeof isolates], `not found: ${isolate}`)
     this.#module = isolates[isolate as keyof typeof isolates] as Isolate
+    this.#isolate = isolate
     const { api, functions } = this.#module
     assert(typeof functions === 'object', 'functions not exported: ' + isolate)
     assert(typeof api === 'object', 'api not exported: ' + isolate)
@@ -86,7 +88,8 @@ export default class Compartment {
       }
       // TODO re-enable after perf testing
       const schema = this.#module.api[functionName]
-      validator(schema)(parameters)
+      const path = this.#isolate + '/' + functionName
+      validator(schema, path)(parameters)
       return this.#module.functions[functionName](parameters, api)
     }
   }

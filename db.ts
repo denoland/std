@@ -261,6 +261,28 @@ export default class DB {
     }
     return splice
   }
+
+  async hasHomeAddress() {
+    const home = await this.#kv.get(keys.HOME_ADDRESS)
+    return !!home.versionstamp
+  }
+  async setHomeAddress(pid: PID) {
+    const empty = { key: keys.HOME_ADDRESS, versionstamp: null }
+    const result = await this.#kv.atomic().check(empty).set(
+      keys.HOME_ADDRESS,
+      pid,
+    ).commit()
+    if (!result.ok) {
+      throw new Error('Home address already set')
+    }
+  }
+  async getHomeAddress() {
+    const home = await this.#kv.get<PID>(keys.HOME_ADDRESS)
+    if (!home.versionstamp) {
+      throw new Error('Home address not set')
+    }
+    return home.value
+  }
 }
 
 const watchUndelivered = async (kv: Deno.Kv) => {

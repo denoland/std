@@ -21,7 +21,6 @@ Deno.test('hono basic', async (t) => {
 const cradleMaker = async () => {
   const server = await Server.create()
   const fetcher = server.request as typeof fetch
-  await WebClientEngine.provision('mock', fetcher)
 
   const engine = await WebClientEngine.start('mock', fetcher)
   const machine = Machine.load(engine)

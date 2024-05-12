@@ -23,8 +23,10 @@ export class PierceWatcher {
   static create(signal: AbortSignal, engine: EngineInterface, pid: PID) {
     return new PierceWatcher(signal, engine, pid)
   }
-  watch(ulid: string, resolvers: PiercePromise) {
-    this.#pierces.set(ulid, resolvers)
+  watch(ulid: string) {
+    return new Promise((resolve, reject) => {
+      this.#pierces.set(ulid, { resolve, reject })
+    })
   }
   async watchPierces() {
     let lastSplice

@@ -11,22 +11,22 @@ const loadAjv = () => {
   return _ajv
 }
 
-export default (schema: object) => {
+export default (schema: object, functionName: string) => {
   const ajv = loadAjv()
   const validate = ajv.compile(schema)
 
   return (parameters: object) => {
     if (!validate(parameters)) {
       assert(validate.errors, 'validate.errors is missing')
-      throwIfNotValid(validate.errors)
+      throwIfNotValid(validate.errors, functionName)
     }
   }
 }
 
-const throwIfNotValid = (ajvErrors: ErrorObject[]) => {
+const throwIfNotValid = (ajvErrors: ErrorObject[], functionName: string) => {
   const reasons = ajvErrors
     .map((obj) => JSON.stringify(obj, null, '  '))
     .join('\n')
-  const error = new Error(`Parameters Validation Error: ${reasons}`)
-  throw error
+  const msg = `Parameters Validation Error in ${functionName}: ${reasons}`
+  throw new Error(msg)
 }

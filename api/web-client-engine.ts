@@ -37,12 +37,6 @@ export class WebClientEngine implements EngineInterface {
     freezePid(homeAddress)
     return new WebClientEngine(url, fetcher, homeAddress)
   }
-  static provision(url: string, fetcher?: typeof fetch) {
-    if (!fetcher) {
-      fetcher = (path, opts) => fetch(`${url}${path}`, opts)
-    }
-    return request(fetcher, 'provision', {})
-  }
   get homeAddress() {
     return this.#homeAddress
   }
