@@ -12,12 +12,22 @@ const REMOVED = 1;
 const COMMON = 2;
 const ADDED = 3;
 
-function createCommon<T>(A: T[], B: T[], reverse?: boolean): T[] {
+/**
+ * Creates an array of common elements between two arrays.
+ *
+ * @template T The type of elements in the arrays.
+ *
+ * @param A The first array.
+ * @param B The second array.
+ *
+ * @returns An array containing the common elements between the two arrays.
+ */
+function createCommon<T>(A: T[], B: T[]): T[] {
   const common: T[] = [];
   if (A.length === 0 || B.length === 0) return [];
   for (let i = 0; i < Math.min(A.length, B.length); i += 1) {
-    const a = reverse ? A[A.length - i - 1] : A[i];
-    const b = reverse ? B[B.length - i - 1] : B[i];
+    const a = A[i];
+    const b = B[i];
     if (a !== undefined && a === b) {
       common.push(a);
     } else {
@@ -27,31 +37,106 @@ function createCommon<T>(A: T[], B: T[], reverse?: boolean): T[] {
   return common;
 }
 
-function ensureDefined<T>(item?: T): T {
-  if (item === undefined) {
-    throw Error("Unexpected missing FarthestPoint");
+function assertFp(value: unknown): asserts value is FarthestPoint {
+  if (value === undefined) {
+    throw new Error("Unexpected missing FarthestPoint");
   }
-  return item;
+}
+
+function backTrace<T>(
+  A: T[],
+  B: T[],
+  current: FarthestPoint,
+  swapped: boolean,
+  routes: Uint32Array,
+  diffTypesPtrOffset: number,
+): Array<{
+  type: DiffType;
+  value: T;
+}> {
+  const M = A.length;
+  const N = B.length;
+  const result: { type: DiffType; value: T }[] = [];
+  let a = M - 1;
+  let b = N - 1;
+  let j = routes[current.id];
+  let type = routes[current.id + diffTypesPtrOffset];
+  while (true) {
+    if (!j && !type) break;
+    const prev = j!;
+    if (type === REMOVED) {
+      result.unshift({
+        type: swapped ? "removed" : "added",
+        value: B[b]!,
+      });
+      b -= 1;
+    } else if (type === ADDED) {
+      result.unshift({
+        type: swapped ? "added" : "removed",
+        value: A[a]!,
+      });
+      a -= 1;
+    } else {
+      result.unshift({ type: "common", value: A[a]! });
+      a -= 1;
+      b -= 1;
+    }
+    j = routes[prev];
+    type = routes[prev + diffTypesPtrOffset];
+  }
+  return result;
+}
+
+function createFp(
+  k: number,
+  M: number,
+  routes: Uint32Array,
+  diffTypesPtrOffset: number,
+  ptr: number,
+  slide?: FarthestPoint,
+  down?: FarthestPoint,
+): FarthestPoint {
+  if (slide && slide.y === -1 && down && down.y === -1) {
+    return { y: 0, id: 0 };
+  }
+  const isAdding = (down?.y === -1) ||
+    k === M ||
+    (slide?.y || 0) > (down?.y || 0) + 1;
+  if (slide && isAdding) {
+    const prev = slide.id;
+    ptr++;
+    routes[ptr] = prev;
+    routes[ptr + diffTypesPtrOffset] = ADDED;
+    return { y: slide.y, id: ptr };
+  }
+  if (down && !isAdding) {
+    const prev = down.id;
+    ptr++;
+    routes[ptr] = prev;
+    routes[ptr + diffTypesPtrOffset] = REMOVED;
+    return { y: down.y + 1, id: ptr };
+  }
+  throw new Error("Unexpected missing FarthestPoint");
 }
 
 /**
- * Renders the differences between the actual and expected values
+ * Renders the differences between the actual and expected values.
+ *
+ * @template T The type of elements in the arrays.
+ *
  * @param A Actual value
  * @param B Expected value
+ *
+ * @returns An array of differences between the actual and expected values.
  */
-export function diff<T>(A: T[], B: T[]): Array<DiffResult<T>> {
+export function diff<T>(A: T[], B: T[]): DiffResult<T>[] {
   const prefixCommon = createCommon(A, B);
   const suffixCommon = createCommon(
     A.slice(prefixCommon.length),
     B.slice(prefixCommon.length),
-    true,
-  ).reverse();
-  A = suffixCommon.length
-    ? A.slice(prefixCommon.length, -suffixCommon.length)
-    : A.slice(prefixCommon.length);
-  B = suffixCommon.length
-    ? B.slice(prefixCommon.length, -suffixCommon.length)
-    : B.slice(prefixCommon.length);
+  );
+  A = A.slice(prefixCommon.length, -suffixCommon.length || undefined);
+  B = B.slice(prefixCommon.length, -suffixCommon.length || undefined);
   const swapped = B.length > A.length;
   [A, B] = swapped ? [B, A] : [A, B];
   const M = A.length;
@@ -59,124 +144,36 @@ export function diff<T>(A: T[], B: T[]): Array<DiffResult<T>> {
   if (!M && !N && !suffixCommon.length && !prefixCommon.length) return [];
   if (!N) {
     return [
-      ...prefixCommon.map(
-        (c): DiffResult<typeof c> => ({ type: "common", value: c }),
-      ),
-      ...A.map(
-        (a): DiffResult<typeof a> => ({
-          type: swapped ? "added" : "removed",
-          value: a,
-        }),
-      ),
-      ...suffixCommon.map(
-        (c): DiffResult<typeof c> => ({ type: "common", value: c }),
-      ),
-    ];
+      ...prefixCommon.map((value) => ({ type: "common", value })),
+      ...A.map((value) => ({ type: swapped ? "added" : "removed", value })),
+      ...suffixCommon.map((value) => ({ type: "common", value })),
+    ] as DiffResult<T>[];
   }
   const offset = N;
   const delta = M - N;
-  const size = M + N + 1;
-  const fp: FarthestPoint[] = Array.from(
-    { length: size },
-    () => ({ y: -1, id: -1 }),
-  );
+  const length = M + N + 1;
+  const fp: FarthestPoint[] = Array.from({ length }, () => ({ y: -1, id: -1 }));
 
   /**
-   * INFO:
-   * This buffer is used to save memory and improve performance.
-   * The first half is used to save route and last half is used to save diff
-   * type.
-   * This is because, when I kept new uint8array area to save type,performance
-   * worsened.
+   * Note: this buffer is used to save memory and improve performance. The first
+   * half is used to save route and the last half is used to save diff type.
    */
-  const routes = new Uint32Array((M * N + size + 1) * 2);
+  const routes = new Uint32Array((M * N + length + 1) * 2);
   const diffTypesPtrOffset = routes.length / 2;
   let ptr = 0;
-  let p = -1;
-
-  function backTrace<T>(
-    A: T[],
-    B: T[],
-    current: FarthestPoint,
-    swapped: boolean,
-  ): Array<{
-    type: DiffType;
-    value: T;
-  }> {
-    const M = A.length;
-    const N = B.length;
-    const result: { type: DiffType; value: T }[] = [];
-    let a = M - 1;
-    let b = N - 1;
-    let j = routes[current.id];
-    let type = routes[current.id + diffTypesPtrOffset];
-    while (true) {
-      if (!j && !type) break;
-      const prev = j!;
-      if (type === REMOVED) {
-        result.unshift({
-          type: swapped ? "removed" : "added",
-          value: B[b]!,
-        });
-        b -= 1;
-      } else if (type === ADDED) {
-        result.unshift({
-          type: swapped ? "added" : "removed",
-          value: A[a]!,
-        });
-        a -= 1;
-      } else {
-        result.unshift({ type: "common", value: A[a]! });
-        a -= 1;
-        b -= 1;
-      }
-      j = routes[prev];
-      type = routes[prev + diffTypesPtrOffset];
-    }
-    return result;
-  }
-
-  function createFP(
-    slide: FarthestPoint | undefined,
-    down: FarthestPoint | undefined,
-    k: number,
-    M: number,
-  ): FarthestPoint {
-    if (slide && slide.y === -1 && down && down.y === -1) {
-      return { y: 0, id: 0 };
-    }
-    const isAdding = (down?.y === -1) ||
-      k === M ||
-      (slide?.y || 0) > (down?.y || 0) + 1;
-    if (slide && isAdding) {
-      const prev = slide.id;
-      ptr++;
-      routes[ptr] = prev;
-      routes[ptr + diffTypesPtrOffset] = ADDED;
-      return { y: slide.y, id: ptr };
-    } else if (down && !isAdding) {
-      const prev = down.id;
-      ptr++;
-      routes[ptr] = prev;
-      routes[ptr + diffTypesPtrOffset] = REMOVED;
-      return { y: down.y + 1, id: ptr };
-    } else {
-      throw new Error("Unexpected missing FarthestPoint");
-    }
-  }
 
   function snake<T>(
     k: number,
-    slide: FarthestPoint | undefined,
-    down: FarthestPoint | undefined,
-    _offset: number,
     A: T[],
     B: T[],
+    slide?: FarthestPoint,
+    down?: FarthestPoint,
   ): FarthestPoint {
     const M = A.length;
     const N = B.length;
     if (k < -N || M < k) return { y: -1, id: -1 };
-    const fp = createFP(slide, down, k, M);
+    const fp = createFp(k, M, routes, diffTypesPtrOffset, ptr, slide, down);
+    ptr = fp.id;
     while (fp.y + k < M && fp.y < N && A[fp.y + k] === B[fp.y]) {
       const prev = fp.id;
       ptr++;
@@ -188,46 +185,27 @@ export function diff<T>(A: T[], B: T[]): Array<DiffResult<T>> {
     return fp;
   }
 
-  let currentFP = ensureDefined<FarthestPoint>(fp[delta + offset]);
-  while (currentFP && currentFP.y < N) {
+  let currentFp = fp[delta + offset];
+  assertFp(currentFp);
+  let p = -1;
+  while (currentFp.y < N) {
     p = p + 1;
     for (let k = -p; k < delta; ++k) {
-      fp[k + offset] = snake(
-        k,
-        fp[k - 1 + offset],
-        fp[k + 1 + offset],
-        offset,
-        A,
-        B,
-      );
+      const index = k + offset;
+      fp[index] = snake(k, A, B, fp[index - 1], fp[index + 1]);
     }
     for (let k = delta + p; k > delta; --k) {
-      fp[k + offset] = snake(
-        k,
-        fp[k - 1 + offset],
-        fp[k + 1 + offset],
-        offset,
-        A,
-        B,
-      );
+      const index = k + offset;
+      fp[index] = snake(k, A, B, fp[index - 1], fp[index + 1]);
     }
-    fp[delta + offset] = snake(
-      delta,
-      fp[delta - 1 + offset],
-      fp[delta + 1 + offset],
-      offset,
-      A,
-      B,
-    );
-    currentFP = ensureDefined(fp[delta + offset]);
+    const index = delta + offset;
+    fp[delta + offset] = snake(delta, A, B, fp[index - 1], fp[index + 1]);
+    currentFp = fp[delta + offset];
+    assertFp(currentFp);
   }
   return [
-    ...prefixCommon.map(
-      (c): DiffResult<typeof c> => ({ type: "common", value: c }),
-    ),
-    ...backTrace(A, B, currentFP, swapped),
-    ...suffixCommon.map(
-      (c): DiffResult<typeof c> => ({ type: "common", value: c }),
-    ),
-  ];
+    ...prefixCommon.map((value) => ({ type: "common", value })),
+    ...backTrace(A, B, currentFp, swapped, routes, diffTypesPtrOffset),
+    ...suffixCommon.map((value) => ({ type: "common", value })),
+  ] as DiffResult<T>[];
 }
