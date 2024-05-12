@@ -21,7 +21,14 @@ const cradleMaker = async () => {
   if (!introDone) {
     introDone = true
     console.log('testing:', url)
-    await session.rm({ all: true })
+    const repos = await session.lsRepos()
+    if (repos.length) {
+      console.log('deleting repos:', repos)
+      await session.rm({ all: true })
+
+      const postRepos = await session.lsRepos()
+      console.log('postRepos:', postRepos)
+    }
   }
   return session
 }

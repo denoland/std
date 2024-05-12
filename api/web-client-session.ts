@@ -161,6 +161,10 @@ export class Session implements ArtifactSession {
     const { repo, all } = params
     return actor.rm({ repo, all })
   }
+  async lsRepos() {
+    const actor = await this.#getActor()
+    return actor.lsRepos()
+  }
   async #getActor() {
     const actorPid = getActorPid(this.#pid)
     const actor = await this.actions<ActorApi>('actors', actorPid)

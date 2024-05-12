@@ -86,6 +86,12 @@ export const api = {
       all: { type: 'boolean', description: 'remove all repos for this actor' },
     },
   },
+  lsRepos: {
+    description: 'List all the repos that this Actor controls',
+    type: 'object',
+    additionalProperties: false,
+    properties: {},
+  },
   clone: repo,
   addAuthProvider: {
     type: 'object',
@@ -186,6 +192,10 @@ export const functions = {
     delete repos[repo]
     api.writeJSON('repos.json', repos)
     return true
+  },
+  lsRepos: async (_params: Params, api: IsolateApi) => {
+    const repos = await readRepos(api)
+    return Object.keys(repos)
   },
   clone: async (
     p: { repo: string; isolate?: string; params?: Params },
