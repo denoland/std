@@ -1,7 +1,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-/** `ReturnType` for {@linkcode invert} */
+/** Return type for {@linkcode invert}. */
 export type InvertResult<T extends Record<PropertyKey, PropertyKey>> = {
   [P in keyof T as T[P]]: P;
 };
@@ -9,8 +9,9 @@ export type InvertResult<T extends Record<PropertyKey, PropertyKey>> = {
 /**
  * Composes a new record with all keys and values inverted.
  *
- * If the record contains duplicate values, subsequent values overwrite property assignments of previous values.
- * If the record contains values which aren't {@linkcode PropertyKey}s their string representation is used as the key.
+ * If the record contains duplicate values, subsequent values overwrite property
+ * assignments of previous values. If the record contains values which aren't
+ * {@linkcode PropertyKey}s their string representation is used as the key.
  *
  * @template T The type of the input record.
  *

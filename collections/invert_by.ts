@@ -1,7 +1,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-/** `ReturnType` for {@linkcode invertBy} */
+/** Return type for {@linkcode invertBy}. */
 export type InvertByResult<
   T extends Record<PropertyKey, PropertyKey>,
   K extends keyof T,
@@ -10,12 +10,14 @@ export type InvertByResult<
 /**
  * Composes a new record with all keys and values inverted.
  *
- * The new record is generated from the result of running each element of the input record through the given transformer function.
+ * The new record is generated from the result of running each element of the
+ * input record through the given transformer function.
  *
- * The corresponding inverted value of each inverted key is an array of keys responsible for generating the inverted value.
+ * The corresponding inverted value of each inverted key is an array of keys
+ * responsible for generating the inverted value.
  *
  * @template R The type of the input record.
- * @template T The type of the iteratee function.
+ * @template T The type of the iterator function.
  *
  * @param record The record to invert.
  * @param transformer The function to transform keys.
@@ -24,7 +26,7 @@ export type InvertByResult<
  *
  * @example Basic usage
  * ```ts
- * import { invertBy } from "@std/collections/invert_by";
+ * import { invertBy } from "@std/collections/invert-by";
  * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const record = { a: "x", b: "y", c: "z" };
