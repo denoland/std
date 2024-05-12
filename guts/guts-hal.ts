@@ -53,8 +53,8 @@ export default (name: string, cradleMaker: () => Promise<ArtifactSession>) => {
     })
     // TODO test valid format but deleted / nonexistent session
     // TODO test invalid machine
-
-    session.engineStop()
+    await session.rm({ repo })
+    await session.engineStop()
   })
 
   Deno.test(prefix + 'hal', async (t) => {
@@ -94,7 +94,7 @@ export default (name: string, cradleMaker: () => Promise<ArtifactSession>) => {
       )
       log('messages', messages)
     })
-
+    await session.rm({ repo })
     await session.engineStop()
   })
 

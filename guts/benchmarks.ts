@@ -8,7 +8,7 @@ export default (name: string, cradleMaker: () => Promise<ArtifactSession>) => {
 
   Deno.test(prefix + 'resource hogging', async (t) => {
     const session = await cradleMaker()
-    const repo = 'cradle/pierce'
+    const repo = 'benchmark/serial'
     const { pid: target } = await session.init({ repo })
     const { local } = await session.actions(ioFixture, target)
 
@@ -33,7 +33,7 @@ export default (name: string, cradleMaker: () => Promise<ArtifactSession>) => {
   })
   Deno.test(prefix + 'resource hogging parallel', async (t) => {
     const session = await cradleMaker()
-    const repo = 'cradle/pierce'
+    const repo = 'benchmark/parallel'
 
     const { pid: target } = await session.init({ repo })
     const { local } = await session.actions(ioFixture, target)
@@ -55,7 +55,7 @@ export default (name: string, cradleMaker: () => Promise<ArtifactSession>) => {
   })
   Deno.test.ignore(prefix + 'flare', async (t) => {
     const session = await cradleMaker()
-    const repo = 't/flare'
+    const repo = 'benchmark/flare'
     await session.rm({ repo })
     const target = {
       repoId: '0',
@@ -96,7 +96,7 @@ export default (name: string, cradleMaker: () => Promise<ArtifactSession>) => {
   })
   Deno.test.ignore(prefix + 'records', async (t) => {
     const session = await cradleMaker()
-    const repo = 't/touch'
+    const repo = 'benchmark/records'
     await session.rm({ repo })
     const { pid: target } = await session.init({ repo })
     const count = 100

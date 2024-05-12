@@ -156,9 +156,10 @@ export class Session implements ArtifactSession {
     console.log('push', _params)
     return Promise.resolve()
   }
-  async rm(params: { repo: string }) {
+  async rm(params: { repo?: string; all?: boolean }) {
     const actor = await this.#getActor()
-    return actor.rm({ repo: params.repo })
+    const { repo, all } = params
+    return actor.rm({ repo, all })
   }
   async #getActor() {
     const actorPid = getActorPid(this.#pid)
@@ -195,7 +196,7 @@ type ActorApi = { // copied from the isolate
    */
   clone: (params: { repo: string }) => Promise<{ pid: PID; head: string }>
 
-  rm: (params: { repo: string }) => Promise<boolean>
+  rm: (params: { repo?: string; all?: boolean }) => Promise<boolean>
 
   /**
    * List all the repos that this Actor has created.

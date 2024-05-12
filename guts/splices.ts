@@ -5,7 +5,7 @@ export default (name: string, cradleMaker: () => Promise<ArtifactSession>) => {
   const prefix = name + ': '
   Deno.test(prefix + 'files', async (t) => {
     const session = await cradleMaker()
-    const repo = 'process/session'
+    const repo = 'splices/files'
     const { pid } = await session.init({ repo })
     const { write } = await session.actions('io-fixture', pid)
 
@@ -35,7 +35,7 @@ export default (name: string, cradleMaker: () => Promise<ArtifactSession>) => {
     // send in a bunch of actions and view the diffs as splices
 
     const session = await cradleMaker()
-    const repo = 'process/session'
+    const repo = 'splices/diffs'
     await session.rm({ repo })
     const { pid } = await session.init({ repo })
     const { write } = await session.actions('io-fixture', pid)
@@ -68,7 +68,7 @@ export default (name: string, cradleMaker: () => Promise<ArtifactSession>) => {
   })
   Deno.test(prefix + 'file changes', async (t) => {
     const session = await cradleMaker()
-    const repo = 'test/files'
+    const repo = 'splices/changes'
     const { pid } = await session.init({ repo })
 
     let fileSpliceCount = 0
@@ -103,7 +103,6 @@ export default (name: string, cradleMaker: () => Promise<ArtifactSession>) => {
     })
     log('spliceCount', spliceCount)
     log('fileSpliceCount', fileSpliceCount)
-    await session.rm({ repo })
     await session.engineStop()
   })
 

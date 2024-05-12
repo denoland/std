@@ -81,7 +81,6 @@ export const api = {
   rm: {
     type: 'object',
     additionalProperties: false,
-    required: ['repo'],
     properties: {
       repo: { type: 'string' },
       all: { type: 'boolean', description: 'remove all repos for this actor' },
@@ -163,12 +162,20 @@ export const functions = {
     api.writeJSON('config.json', config)
   },
   rm: async (
-    { repo, all = false }: { repo: string; all: boolean },
+    { repo, all = false }: { repo?: string; all?: boolean },
     api: IsolateApi,
   ) => {
     assertIsActorPid(api)
     const { rm } = await api.actions<system.Api>('system')
     const repos = await readRepos(api)
+    if (all) {
+      for (const repo in repos) {
+        await rm({ pid: repos[repo] })
+      }
+      api.writeJSON('repos.json', {})
+      return true
+    }
+    assert(repo, 'must specify repo or all')
     if (!(repo in repos)) {
       return false
     }

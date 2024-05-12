@@ -8,7 +8,7 @@ export default (name: string, cradleMaker: () => Promise<ArtifactSession>) => {
     const session = await cradleMaker()
     log('pid', print(session.pid))
 
-    const repo = 'process/session'
+    const repo = 'sessions/basic'
     const target = await session.init({ repo })
 
     // TODO exercise the ACL blocking some actions to the session chain
@@ -41,7 +41,7 @@ export default (name: string, cradleMaker: () => Promise<ArtifactSession>) => {
   })
   Deno.test(prefix + 'internal requests', async (t) => {
     const artifact = await cradleMaker()
-    const repo = 'session/relay'
+    const repo = 'sessions/relay'
 
     const { pid } = await artifact.init({ repo })
 
@@ -51,7 +51,6 @@ export default (name: string, cradleMaker: () => Promise<ArtifactSession>) => {
       expect(result).toEqual('remote pong')
     })
 
-    await artifact.rm({ repo })
     await artifact.engineStop()
   })
 }
