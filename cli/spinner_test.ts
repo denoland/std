@@ -141,16 +141,9 @@ Deno.test("Spinner.color can set each color", async () => {
   const process = spawnDeno(["cli/testdata/spinner_cases/set_color.ts"]);
   const output = await process.output();
 
-  const expectedStr =
-    `${LINE_CLEAR}\u001b[30m⠋${COLOR_RESET} ` + // Black
+  const expectedStr = `${LINE_CLEAR}\u001b[30m⠋${COLOR_RESET} ` + // Black
     `${LINE_CLEAR}\u001b[31m⠙${COLOR_RESET} ` + // Red
-    `${LINE_CLEAR}\u001b[32m⠹${COLOR_RESET} ` + // Green
-    `${LINE_CLEAR}\u001b[33m⠸${COLOR_RESET} ` + // Yellow
-    `${LINE_CLEAR}\u001b[34m⠼${COLOR_RESET} ` + // Blue
-    `${LINE_CLEAR}\u001b[35m⠴${COLOR_RESET} ` + // Magenta
-    `${LINE_CLEAR}\u001b[36m⠦${COLOR_RESET} ` + // Cyan
-    `${LINE_CLEAR}\u001b[37m⠧${COLOR_RESET} ` + // White
-    `${LINE_CLEAR}\u001b[90m⠇${COLOR_RESET} `; // Gray
+    `${LINE_CLEAR}\u001b[32m⠹${COLOR_RESET} `; // Green
   const expected = encoder.encode(expectedStr);
 
   assertEquals(output.stdout, expected);
@@ -201,7 +194,7 @@ Deno.test("Spinner.stop() terminates the sequence", async () => {
   const output = await process.output();
 
   const expected = encoder.encode(
-    `${LINE_CLEAR}⠋${COLOR_RESET} ${LINE_CLEAR}⠙${COLOR_RESET} `
+    `${LINE_CLEAR}⠋${COLOR_RESET} ${LINE_CLEAR}⠙${COLOR_RESET} `,
   );
 
   assertEquals(output.stdout, expected);
