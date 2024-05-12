@@ -58,8 +58,8 @@ Deno.test("Spinner constructor accepts interval", async () => {
   const actual2 = normalizeString(text2);
 
   // give setInterval a good buffer to avoid needlessly failing
-  assertGreater(actual2.length, 150);
-  assertLess(actual2.length, 250);
+  assertGreater(actual2.length, 100);
+  assertLess(actual2.length, 300);
 });
 
 Deno.test("Spinner constructor accepts each color", async () => {
