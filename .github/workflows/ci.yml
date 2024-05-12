@@ -21,7 +21,7 @@ jobs:
           - macOS-latest
 
     env:
-      DENO_DIR: cross_platform_cache_dir
+      DENO_DIR: ~/cross_platform_cache_dir
 
     steps:
       - name: Setup repo
