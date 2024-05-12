@@ -175,9 +175,11 @@ export const functions = {
     const { rm } = await api.actions<system.Api>('system')
     const repos = await readRepos(api)
     if (all) {
+      const promises = []
       for (const repo in repos) {
-        await rm({ pid: repos[repo] })
+        promises.push(rm({ pid: repos[repo] }))
       }
+      await Promise.all(promises)
       api.writeJSON('repos.json', {})
       return true
     }
