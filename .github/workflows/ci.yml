@@ -20,6 +20,9 @@ jobs:
           - windows-latest
           - macOS-latest
 
+    env:
+      DENO_DIR: cross_platform_cache_dir
+
     steps:
       - name: Setup repo
         uses: actions/checkout@v4
@@ -32,9 +35,7 @@ jobs:
       - name: Cache dependencies
         uses: actions/cache@v4
         with: 
-          path: |
-            ~/.cache
-            ~/.cache/deno
+          path: ${{ env.DENO_DIR }}
           key: ${{ runner.os }}-deno-${{ hashFiles('deno.json') }}
 
       - name: Check typos
