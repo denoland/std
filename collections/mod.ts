@@ -44,6 +44,8 @@ export * from "./find_single.ts";
 export * from "./first_not_nullish_of.ts";
 export * from "./includes_value.ts";
 export * from "./intersect.ts";
+export * from "./invert_by.ts";
+export * from "./invert.ts";
 export * from "./join_to_string.ts";
 export * from "./map_entries.ts";
 export * from "./map_keys.ts";
