@@ -187,10 +187,6 @@ export default class DB {
    */
   watchSplices(pid: PID, path?: string, after?: string, signal?: AbortSignal) {
     freezePid(pid)
-    if (after) {
-      assert(sha1.test(after), 'Invalid from: ' + after)
-      throw new Error('not implemented')
-    }
     if (path) {
       assert(!posix.isAbsolute(path), `path must be relative: ${path}`)
     }
@@ -201,6 +197,10 @@ export default class DB {
     })
     const sink = pushable<Splice>({ objectMode: true })
     const buffer = pushable<Promise<Splice>>({ objectMode: true })
+    if (after) {
+      assert(sha1.test(after), 'Invalid after: ' + after)
+      buffer.push(this.#getSplice(pid, after, path))
+    }
     abort.signal.addEventListener('abort', () => {
       this.#aborts.delete(abort)
       sink.return()
@@ -215,7 +215,6 @@ export default class DB {
         }
         const commit = result.value
         if (commit === after) {
-          // TODO maybe after is a waste, since head is all that matters ?
           continue
         }
         buffer.push(this.#getSplice(pid, commit, path))
@@ -228,7 +227,11 @@ export default class DB {
       for await (const promise of buffer) {
         const splice = await promise
         if (!last) {
-          sink.push(splice)
+          if (after) {
+            assert(after === splice.oid, 'after mismatch')
+          } else {
+            sink.push(splice)
+          }
           last = splice
           continue
         }
