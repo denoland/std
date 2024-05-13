@@ -34,6 +34,7 @@ jobs:
         run: deno task bench | tee output.txt
         env:
           AES_KEY: ${{ secrets.AES_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
 
       - name: Store benchmark result
         uses: benchmark-action/github-action-benchmark@v1
