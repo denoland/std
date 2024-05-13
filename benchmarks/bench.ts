@@ -147,3 +147,5 @@ suite
   .run({ async: false })
 
 // then do a cloud version running on a sacrificial deployment
+// hundred pings outside
+// hundred pings inside

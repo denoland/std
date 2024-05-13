@@ -64,9 +64,9 @@ const checkHelp = (help: Help) => {
     const { config } = help
     if (
       config.model && config.model !== 'gpt-3.5-turbo' &&
-      config.model !== 'gpt-4-turbo'
+      config.model !== 'gpt-4-turbo' && config.model !== 'gpt-4o'
     ) {
-      throw new Error('model must be gpt-3.5-turbo or gpt-4-turbo')
+      throw new Error('model must be gpt-3.5-turbo or gpt-4-turbo or gpt-4o')
     }
     if (
       help.config.temperature &&

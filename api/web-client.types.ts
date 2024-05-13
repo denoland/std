@@ -111,7 +111,7 @@ export type PID = {
 export type PartialPID = Omit<PID, 'repoId'>
 
 export type HelpConfig = {
-  model?: 'gpt-3.5-turbo' | 'gpt-4-turbo'
+  model?: 'gpt-3.5-turbo' | 'gpt-4-turbo' | 'gpt-4o'
   temperature?: number
 }
 export type Help = {
@@ -445,15 +445,13 @@ export const freezePid = (pid: PID) => {
   Object.freeze(pid)
   Object.freeze(pid.branches)
 }
-export const pidFromRepo = (repoId: string, repo: string): PID => {
+export const partialFromRepo = (repo: string) => {
   const [account, repository] = repo.split('/')
-  const pid: PID = {
-    repoId,
+  const pid: PartialPID = {
     account,
     repository,
     branches: [ENTRY_BRANCH],
   }
-  freezePid(pid)
   return pid
 }
 

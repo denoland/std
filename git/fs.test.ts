@@ -1,14 +1,14 @@
 import * as utils from '@utils'
 import DB from '@/db.ts'
 import FS from './fs.ts'
-import { pidFromRepo } from '@/constants.ts'
+import { partialFromRepo } from '@/constants.ts'
 const { expect } = utils
 Deno.test('git/init', async (t) => {
   const db = await DB.create(DB.generateAesKey())
   let fs: FS
   await t.step('init', async () => {
     const repo = 'account/repo'
-    const pid = pidFromRepo('t', repo)
+    const pid = partialFromRepo(repo)
     fs = await FS.init(pid, db)
     await expect(fs.read('hello.txt')).rejects.toThrow(
       'Could not find file or',

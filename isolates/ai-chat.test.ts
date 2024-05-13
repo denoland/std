@@ -2,7 +2,7 @@ import merge from 'npm:lodash.merge'
 import { Engine } from '../engine.ts'
 import { expect, log } from '@utils'
 import IsolateApi from '../isolate-api.ts'
-import { Help, pidFromRepo, PROCTYPE, RUNNERS } from '../constants.ts'
+import { Help, partialFromRepo, PROCTYPE, RUNNERS } from '../constants.ts'
 import { prepare } from './ai-prompt.ts'
 import * as completions from './ai-completions.ts'
 import FS from '@/git/fs.ts'
@@ -16,15 +16,13 @@ type Messages = OpenAI.ChatCompletionMessageParam
 
 Deno.test('ai-chat', async (t) => {
   const helpBase: Help = {
-    config: {
-      model: 'gpt-3.5-turbo',
-    },
+    config: { model: 'gpt-4o' },
     runner: RUNNERS.CHAT,
     commands: ['io-fixture:local', 'io-fixture:error'],
     instructions: ['Only reply with a SINGLE word'],
   }
   const db = await DB.create(DB.generateAesKey())
-  const pid = pidFromRepo('t', 'runner/test')
+  const pid = partialFromRepo('runner/test')
   const fs = await FS.init(pid, db)
   const accumulator = Accumulator.create(dummyOrigin, [], fs)
   const api = IsolateApi.create(accumulator)

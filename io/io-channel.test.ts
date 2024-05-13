@@ -2,12 +2,13 @@
  * Designed to exercise the pending operations.
  */
 
-import { IoStruct, pidFromRepo } from '@/constants.ts'
+import { IoStruct, partialFromRepo } from '@/constants.ts'
 import IOChannel from '@io/io-channel.ts'
 import { PROCTYPE } from '@/api/web-client.types.ts'
 import { expect } from '@utils'
 
-const pid = pidFromRepo('0', 'system/system')
+const partial = partialFromRepo('system/system')
+const pid = { ...partial, repoId: '0' }
 Deno.test('io-channel', () => {
   const json = serialAccumulation()
   const io = IOChannel.readObject(json, pid)
