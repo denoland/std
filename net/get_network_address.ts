@@ -39,7 +39,7 @@ export function getNetworkAddress(
     .find((i) =>
       i.family === family &&
       (family === "IPv4"
-        // Cannot lie within 127.0.0.0/8 subnet
+        // Cannot lie within 127.0.0.0/8
         ? !i.address.startsWith("127")
         // Cannot be loopback or link-local addresses
         : !(i.address === "::1" || i.address === "fe80::1"))
