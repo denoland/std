@@ -10,16 +10,17 @@ import { Machine } from '@/api/web-client-machine.ts'
 
 let introDone = false
 
+const url = Deno.env.get('CLOUD_URL')
+assert(url, 'CLOUD_URL not set')
+const machineKey = Deno.env.get('CLOUD_MACHINE_KEY')
+assert(machineKey, 'CLOUD_MACHINE_KEY not set')
+
+const engine = await WebClientEngine.start(url)
+const machine = Machine.load(engine, machineKey)
+
+const session = machine.openSession()
+
 const cradleMaker = async () => {
-  const url = Deno.env.get('CLOUD_URL')
-  assert(url, 'CLOUD_URL not set')
-  const machineKey = Deno.env.get('CLOUD_MACHINE_KEY')
-  assert(machineKey, 'CLOUD_MACHINE_KEY not set')
-
-  const engine = await WebClientEngine.start(url)
-  const machine = Machine.load(engine, machineKey)
-
-  const session = machine.openSession()
   if (!introDone) {
     introDone = true
     console.log('testing:', url)

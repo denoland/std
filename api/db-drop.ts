@@ -10,7 +10,7 @@ const all = db.list({ prefix: [] }, { batchSize: 1000 })
 
 const promises = []
 for await (const { key } of all) {
-  console.log('deleted: ', key)
+  console.log('deleting: ', key)
   promises.push(db.delete(key))
 }
 await Promise.all(promises)
