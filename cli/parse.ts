@@ -1,6 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import { Argument, Option, ParseResult, Schema } from "./types.ts";
+import type { Argument, Option, ParseResult, Schema } from "./types.ts";
 
 interface FlagRegExpGroup {
   doubleDash?: "-";
