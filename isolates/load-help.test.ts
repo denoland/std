@@ -7,7 +7,7 @@ Deno.test('loadAll', async (t) => {
   const engine = await Engine.start()
   const machine = Machine.load(engine)
   const session = machine.openSession()
-
+  await session.rm({ repo: 'dreamcatcher-tech/HAL' })
   const { pid } = await session.clone({ repo: 'dreamcatcher-tech/HAL' })
   const { loadAll, load } = await session.actions<Api>('load-help', pid)
   await t.step('loadAll', async () => {

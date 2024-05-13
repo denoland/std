@@ -16,17 +16,18 @@ const cradleMaker = async () => {
 
 Deno.test('cradle', async (t) => {
   await t.step('basic', async () => {
-    const base = await cradleMaker()
+    const session = await cradleMaker()
 
-    const result = await base.ping({ data: 'hello' })
+    const result = await session.ping({ data: 'hello' })
     expect(result).toBe('hello')
 
-    const clone = await base.clone({ repo: 'dreamcatcher-tech/HAL' })
+    await session.rm({ repo: 'dreamcatcher-tech/HAL' })
+    const clone = await session.clone({ repo: 'dreamcatcher-tech/HAL' })
     log('clone result', clone)
     expect(clone.pid).toBeDefined()
     expect(clone.pid.account).toBe('dreamcatcher-tech')
     expect(typeof clone.head).toBe('string')
-    await base.engineStop()
+    await session.engineStop()
   })
 })
 

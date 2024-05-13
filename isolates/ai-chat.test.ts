@@ -83,6 +83,7 @@ Deno.test('engage-help', async (t) => {
   const machine = Machine.load(engine)
   const session = machine.openSession()
 
+  await session.rm({ repo: 'dreamcatcher-tech/HAL' })
   const { pid } = await session.clone({ repo: 'dreamcatcher-tech/HAL' })
 
   let latest = {}

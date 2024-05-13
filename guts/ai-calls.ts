@@ -7,12 +7,10 @@ export default (name: string, cradleMaker: () => Promise<ArtifactSession>) => {
   const prefix = name + ': '
   Deno.test(prefix + 'ai', async (t) => {
     const session = await cradleMaker()
-    const repo = 'dreamcatcher-tech/HAL'
-    await session.rm({ repo })
-
     log('pid', print(session.pid))
 
-    const { pid } = await session.clone({ repo })
+    await session.rm({ repo: 'dreamcatcher-tech/HAL' })
+    const { pid } = await session.clone({ repo: 'dreamcatcher-tech/HAL' })
 
     await t.step('prompt', async () => {
       const { engage } = await session.actions<Api>('engage-help', pid)

@@ -15,10 +15,10 @@ export default (name: string, cradleMaker: () => Promise<ArtifactSession>) => {
   Deno.test(prefix + 'login loop', async (t) => {
     // TODO set up concept of a superuser
     const session = await cradleMaker()
-    const repo = 'dreamcatcher-tech/HAL'
-    const { pid: halAddress } = await session.clone({ repo })
+    await session.rm({ repo: 'dreamcatcher-tech/HAL' })
+    const { pid } = await session.clone({ repo: 'dreamcatcher-tech/HAL' })
 
-    const halBase = await session.actions<HalBase>('hal', halAddress)
+    const halBase = await session.actions<HalBase>('hal', pid)
     const actorAddress = await halBase.createActor()
     log('actorAddress', print(actorAddress))
 
@@ -53,14 +53,13 @@ export default (name: string, cradleMaker: () => Promise<ArtifactSession>) => {
     })
     // TODO test valid format but deleted / nonexistent session
     // TODO test invalid machine
-    await session.rm({ repo })
     await session.engineStop()
   })
 
   Deno.test(prefix + 'hal', async (t) => {
     const session = await cradleMaker()
-    const repo = 'dreamcatcher-tech/HAL'
-    const { pid } = await session.clone({ repo })
+    await session.rm({ repo: 'dreamcatcher-tech/HAL' })
+    const { pid } = await session.clone({ repo: 'dreamcatcher-tech/HAL' })
 
     const halBase = await session.actions<HalActor>('hal', pid)
     const halSessionPid = await halBase.startSession()
@@ -94,7 +93,6 @@ export default (name: string, cradleMaker: () => Promise<ArtifactSession>) => {
       )
       log('messages', messages)
     })
-    await session.rm({ repo })
     await session.engineStop()
   })
 
