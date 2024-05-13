@@ -63,8 +63,9 @@ suite
   .add('boot', {
     defer: true,
     fn: async (deferred: Benchmark.deferred) => {
-      await factory()
+      const session = await factory()
       deferred.resolve()
+      await session.engineStop()
     },
   })
   //   .add('cold ping', {
@@ -120,4 +121,4 @@ suite
   .on('cycle', (event: Benchmark.Event) => {
     console.log(String(event.target))
   })
-  .run({ async: true })
+  .run({ async: false })
