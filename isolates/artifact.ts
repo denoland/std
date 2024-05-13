@@ -92,7 +92,7 @@ export const functions = {
 
 export const lifecycles: IsolateLifecycle = {
   async '@@mount'(api: IsolateApi<C>) {
-    const aesKey = Deno.env.get('AES_KEY')
+    const { aesKey } = api.context
     assert(aesKey, 'AES_KEY not found')
     const db = await DB.create(aesKey)
     const exe = Executor.createCacheContext()

@@ -36,9 +36,10 @@ export class Engine implements EngineInterface {
     const functions = compartment.functions<artifact.Api>(api)
     this.#pierce = functions.pierce
   }
-  static async start(superuserKey: string) {
+  static async start(superuserKey: string, aesKey: string) {
     const compartment = await Compartment.create('artifact')
     const api = IsolateApi.createContext<C>()
+    api.context = { aesKey }
     await compartment.mount(api)
     const engine = new Engine(compartment, api)
     await engine.ensureHomeAddress(superuserKey)

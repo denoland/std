@@ -179,7 +179,8 @@ for (const withExeCache of [true, false]) {
   Deno.test(`commit spanning (cache: ${withExeCache}`, async (t) => {
     await t.step(`function cache`, async () => {
       const superuserKey = Machine.generatePrivateKey()
-      const engine = await Engine.start(superuserKey)
+      const aesKey = DB.generateAesKey()
+      const engine = await Engine.start(superuserKey, aesKey)
       if (!withExeCache) {
         engine.context.exe?.disableFunctionCache()
       }
@@ -206,7 +207,8 @@ for (const withExeCache of [true, false]) {
   Deno.test(`looping accumulation (cache: ${withExeCache}`, async (t) => {
     await t.step(`function cache ${withExeCache}`, async () => {
       const superuserKey = Machine.generatePrivateKey()
-      const engine = await Engine.start(superuserKey)
+      const aesKey = DB.generateAesKey()
+      const engine = await Engine.start(superuserKey, aesKey)
       if (!withExeCache) {
         engine.context.exe?.disableFunctionCache()
       }

@@ -21,7 +21,7 @@ import type Executor from '@/exe/exe.ts'
 import { equal } from '@utils'
 
 /** Artifact Context, including the db and executor */
-export type C = { db: DB; exe: Executor }
+export type C = { db: DB; exe: Executor; aesKey?: string }
 
 export type IsolateFunction =
   | (() => unknown | Promise<unknown>)

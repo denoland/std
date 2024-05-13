@@ -4,9 +4,13 @@ import { expect } from '@utils'
 import { WebClientEngine } from '@/api/web-client-engine.ts'
 import guts from '../guts/guts.ts'
 import { Machine } from '@/api/web-client-machine.ts'
+import DB from '@/db.ts'
+
+const superuserPrivateKey = Machine.generatePrivateKey()
+const aesKey = DB.generateAesKey()
 Deno.test('hono basic', async (t) => {
   await t.step('ping', async () => {
-    const server = await Server.create()
+    const server = await Server.create(superuserPrivateKey, aesKey)
     const payload = { data: { ping: 'test', extra: 'line' } }
     const res = await server.request('/api/ping', {
       method: 'POST',
@@ -19,7 +23,7 @@ Deno.test('hono basic', async (t) => {
 })
 
 const cradleMaker = async () => {
-  const server = await Server.create()
+  const server = await Server.create(superuserPrivateKey, aesKey)
   const fetcher = server.request as typeof fetch
 
   const engine = await WebClientEngine.start('mock', fetcher)

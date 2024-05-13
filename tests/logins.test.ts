@@ -5,10 +5,13 @@ import * as Actors from '../isolates/actors.ts'
 import { expect } from '@utils'
 import { Tokens } from '@deno/kv-oauth'
 import { getActorId } from '@/constants.ts'
+import DB from '@/db.ts'
 
 Deno.test('login with github', async (t) => {
   // figure out how to reload a browser session, then decide how to tidy up
-  const engine = await Engine.start(Machine.generatePrivateKey())
+  const superuserKey = Machine.generatePrivateKey()
+  const aesKey = DB.generateAesKey()
+  const engine = await Engine.start(superuserKey, aesKey)
 
   const machine = Machine.load(engine, Machine.generatePrivateKey())
   const session = machine.openSession()

@@ -77,7 +77,9 @@ Deno.test('ai-chat', async (t) => {
 })
 
 Deno.test('engage-help', async (t) => {
-  const engine = await Engine.start(Machine.generatePrivateKey())
+  const superuserKey = Machine.generatePrivateKey()
+  const aesKey = DB.generateAesKey()
+  const engine = await Engine.start(superuserKey, aesKey)
   const machine = Machine.load(engine, Machine.generatePrivateKey())
   const session = machine.openSession()
 

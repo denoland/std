@@ -4,6 +4,7 @@ import { Machine } from '@/api/web-client-machine.ts'
 import { Engine } from '@/engine.ts'
 import { Api } from '@/isolates/io-fixture.ts'
 import { assert } from '@std/assert'
+import DB from '@/db.ts'
 const log = Debug('AI:benchmarks')
 Debug.enable('AI:benchmarks')
 log('starting benchmarks')
@@ -52,9 +53,10 @@ const suite = new Benchmark.Suite()
 // }
 
 const superuserKey = Machine.generatePrivateKey()
+const aesKey = DB.generateAesKey()
 
 const factory = async () => {
-  const engine = await Engine.start(superuserKey)
+  const engine = await Engine.start(superuserKey, aesKey)
   const privateKey = Machine.generatePrivateKey()
   const machine = Machine.load(engine, privateKey)
   const session = machine.openSession()

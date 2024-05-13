@@ -53,12 +53,18 @@ export class Machine implements ArtifactMachine {
     return this.#machineId
   }
   static load(engine: EngineInterface, privateKey: string) {
+    if (!secp.utils.isValidPrivateKey(privateKey)) {
+      throw new Error('Invalid private key')
+    }
     return new Machine(engine, privateKey)
   }
   static generatePrivateKey() {
     return secp.etc.bytesToHex(secp.utils.randomPrivateKey())
   }
   static deriveMachineId(privateKey: string) {
+    if (!secp.utils.isValidPrivateKey(privateKey)) {
+      throw new Error('Invalid private key')
+    }
     const pubKey = secp.getPublicKey(privateKey)
     return secp.etc.bytesToHex(pubKey)
   }

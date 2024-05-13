@@ -3,8 +3,11 @@ import { Engine } from '../engine.ts'
 import { Help } from '@/constants.ts'
 import { Api } from '@/isolates/load-help.ts'
 import { Machine } from '@/api/web-client-machine.ts'
+import DB from '@/db.ts'
 Deno.test('loadAll', async (t) => {
-  const engine = await Engine.start(Machine.generatePrivateKey())
+  const superuserKey = Machine.generatePrivateKey()
+  const aesKey = DB.generateAesKey()
+  const engine = await Engine.start(superuserKey, aesKey)
   const machine = Machine.load(engine, Machine.generatePrivateKey())
   const session = machine.openSession()
   await session.rm({ repo: 'dreamcatcher-tech/HAL' })

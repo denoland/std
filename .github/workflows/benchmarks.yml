@@ -30,11 +30,21 @@ jobs:
             ~/.cache
             ~/.cache/deno
           key: benchmarks-deno-${{ hashFiles('deno.json') }}
-          
+      
+      - name: Check typos
+        uses: crate-ci/typos@master
+
+      - name: Check formatting, linting, and types
+        run: deno task check
+
+      - name: Test
+        run: deno task test
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+            
       - name: Run benchmark
         run: deno task bench | tee output.txt
         env:
-          AES_KEY: ${{ secrets.AES_KEY }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
 
       - name: Store benchmark result

@@ -31,10 +31,8 @@ export default class Server {
   get engine() {
     return this.#engine
   }
-  static async create() {
-    const privateKey = getPrivateKey()
-
-    const engine = await Engine.start(privateKey)
+  static async create(privateKey: string, aesKey: string) {
+    const engine = await Engine.start(privateKey, aesKey)
     const base = new Hono()
     const app = base.basePath('/api')
 
@@ -192,12 +190,4 @@ const execute = async (c: Context, p: Promise<unknown>, name: string) => {
     endTime(c, name)
     return c.json({ error: serializeError(error) })
   }
-}
-
-const getPrivateKey = () => {
-  const privateKey = Deno.env.get('SUPERUSER_PRIVATE_KEY')
-  if (!privateKey) {
-    throw new Error('SUPERUSER_PRIVATE_KEY not set')
-  }
-  return privateKey
 }
