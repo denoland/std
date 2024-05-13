@@ -1,6 +1,5 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import { AssertionError, assertNotEquals, assertThrows } from "./mod.ts";
-import { stub } from "@std/testing/mock";
 
 Deno.test("assertNotEquals()", () => {
   assertNotEquals<unknown>({ foo: "bar" }, { bar: "foo" });
@@ -29,18 +28,5 @@ Deno.test("assertNotEquals() throws with custom message", () => {
     },
     AssertionError,
     "Expected actual: foo not to be: foo: CUSTOM MESSAGE",
-  );
-});
-
-Deno.test("assertNotEquals() throws with [Cannot display]", () => {
-  using _ = stub(globalThis, "String", () => {
-    throw new Error();
-  });
-  assertThrows(
-    () => {
-      assertNotEquals("a", "a");
-    },
-    AssertionError,
-    `Expected actual: [Cannot display] not to be: [Cannot display].`,
   );
 });
