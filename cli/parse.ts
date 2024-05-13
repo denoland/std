@@ -236,7 +236,7 @@ function parseNumberValue(value: string) {
 function parseValue<T>(option: Option<T>, value: string) {
   // strip quotes if value starts and ends with quotes
   const groups = value.match(QUOTED_VALUE_REGEXP)?.groups;
-  if (groups) value = groups.value;
+  if (groups) value = groups.value as string;
 
   switch (option.type) {
     case Boolean:
