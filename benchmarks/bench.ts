@@ -113,7 +113,7 @@ suite
   //     },
   //   })
   //   .add('add customer', {
-  // ignoreing the NL operations, this is adding raw data
+  // ignoring the NL operations, this is adding raw data
   //     defer: true,
   //     fn: async (deferred) => {
   //       await addCustomer()
