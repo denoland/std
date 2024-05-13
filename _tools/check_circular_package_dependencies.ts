@@ -52,6 +52,7 @@ type Mod =
   | "html"
   | "http"
   | "ini"
+  | "internal"
   | "io"
   | "json"
   | "jsonc"
@@ -100,6 +101,7 @@ const ENTRYPOINTS: Record<Mod, string[]> = {
   html: ["mod.ts"],
   http: ["mod.ts"],
   ini: ["mod.ts"],
+  internal: ["mod.ts"],
   io: ["mod.ts"],
   json: ["mod.ts"],
   jsonc: ["mod.ts"],
@@ -141,6 +143,7 @@ const STABILITY: Record<Mod, DepState> = {
   html: "Unstable",
   http: "Unstable",
   ini: "Unstable",
+  internal: "Unstable",
   io: "Unstable",
   json: "Stable",
   jsonc: "Stable",
