@@ -1,7 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import { assertEquals } from "../assert/assert_equals.ts";
-import { assertThrows } from "../assert/assert_throws.ts";
+import { assertEquals, assertThrows } from "@std/assert";
 import { parse } from "./parse.ts";
 
 Deno.test("parse() handles options", async (t) => {
