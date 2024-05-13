@@ -1,7 +1,5 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import { AssertionError, assertStrictEquals, assertThrows } from "./mod.ts";
-import { _internals } from "@std/internal";
-import { stub } from "@std/testing/mock";
 
 Deno.test({
   name: "assertStrictEquals()",
@@ -10,6 +8,7 @@ Deno.test({
     assertStrictEquals(10, 10);
     assertStrictEquals("abc", "abc");
     assertStrictEquals(NaN, NaN);
+    assertStrictEquals(+0, -0);
 
     const xs = [1, false, "foo"];
     const ys = xs;
@@ -90,20 +89,6 @@ Deno.test({
     {
       a: 1,
     }`,
-    );
-  },
-});
-
-Deno.test({
-  name: "assertStrictEquals() throws with [Cannot display] if diffing fails",
-  fn() {
-    using _ = stub(_internals, "diff", () => {
-      throw new Error();
-    });
-    assertThrows(
-      () => assertStrictEquals("1", "2"),
-      AssertionError,
-      "\n[Cannot display] + \n\n",
     );
   },
 });
