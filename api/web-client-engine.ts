@@ -86,7 +86,11 @@ export class WebClientEngine implements EngineInterface {
       signal: abort.signal,
     })
 
-    return await response.json()
+    const outcome = await response.json()
+    if (outcome.error) {
+      throw deserializeError(outcome.error)
+    }
+    return outcome.result
   }
 
   read(pid: PID, path?: string, after?: string, signal?: AbortSignal) {

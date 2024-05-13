@@ -1,6 +1,6 @@
 import { pushable } from 'it-pushable'
-import { BLOB_META_KEY, get, getMeta } from '@kitsonk/kv-toolbox/blob'
-import { batchedAtomic } from '@kitsonk/kv-toolbox/batched_atomic'
+import { BLOB_META_KEY } from '@kitsonk/kv-toolbox/blob'
+import { CryptoKv } from '@kitsonk/kv-toolbox/crypto'
 import * as keys from './keys.ts'
 import { freezePid, PID, Poolable, print, Splice } from '@/constants.ts'
 import { assert, Debug, openKv, posix, sha1 } from '@utils'
@@ -12,16 +12,18 @@ import FS from '@/git/fs.ts'
 const log = Debug('AI:db')
 export default class DB {
   #kvStore: Deno.Kv
+  #cryptoKv: CryptoKv
   #abort = new AbortController()
   #aborts = new Set<AbortController>()
 
-  private constructor(kv: Deno.Kv) {
+  private constructor(kv: Deno.Kv, aesKey: string) {
     this.#kvStore = kv
+    this.#cryptoKv = new CryptoKv(kv, aesKey)
   }
-  static async create() {
+  static async create(aesKey: string) {
     const kv = await openKv()
     watchUndelivered(kv)
-    const db = new DB(kv)
+    const db = new DB(kv, aesKey)
     return db
   }
   get #kv() {
@@ -91,18 +93,15 @@ export default class DB {
     return !!deletes.length
   }
   async blobExists(key: Deno.KvKey) {
-    const meta = await getMeta(this.#kv, key)
+    const meta = await this.#cryptoKv.getBlobMeta(key)
     return !!meta.versionstamp
   }
   async blobGet(key: Deno.KvKey) {
-    const result = await get(this.#kv, key)
+    const result = await this.#cryptoKv.getBlob(key)
     return result
   }
   async blobSet(key: Deno.KvKey, value: ArrayBufferLike) {
-    await batchedAtomic(this.#kv).check({
-      key,
-      versionstamp: null,
-    }).setBlob(key, value).commit()
+    await this.#cryptoKv.setBlob(key, value)
   }
   async listImmediateChildren(prefix: Deno.KvKey) {
     const results = []

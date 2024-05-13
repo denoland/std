@@ -20,7 +20,7 @@
     "@/": "./",
     "@deno/kv-oauth": "jsr:@deno/kv-oauth@^0.11.0",
     "@io/": "./io/",
-    "@kitsonk/kv-toolbox": "jsr:@kitsonk/kv-toolbox@^0.17.0",
+    "@kitsonk/kv-toolbox": "jsr:@kitsonk/kv-toolbox@^0.18.0",
     "@noble/secp256k1": "npm:@noble/secp256k1",
     "@std/assert": "jsr:@std/assert",
     "@std/async": "jsr:@std/async",

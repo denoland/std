@@ -1,5 +1,6 @@
 import { transcribe } from './isolates/ai-prompt.ts'
 import Compartment from './io/compartment.ts'
+import '@std/dotenv/load'
 import {
   ACTORS,
   assertValidSession,
