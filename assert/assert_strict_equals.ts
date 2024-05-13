@@ -26,15 +26,10 @@ export function assertStrictEquals<T>(
   expected: T,
   msg?: string,
 ): asserts actual is T {
-  if (actual === expected) {
+  if (Object.is(actual, expected)) {
     return;
   }
-  if (
-    typeof actual === "number" && typeof expected === "number" &&
-    isNaN(actual) && isNaN(expected)
-  ) {
-    return;
-  }
+
   const msgSuffix = msg ? `: ${msg}` : ".";
   let message: string;
 
