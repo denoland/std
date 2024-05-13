@@ -7,7 +7,6 @@ import {
   EngineInterface,
   freezePid,
   JsonValue,
-  Params,
   PID,
   PierceRequest,
   print,
@@ -36,12 +35,12 @@ export class Engine implements EngineInterface {
     const functions = compartment.functions<artifact.Api>(api)
     this.#pierce = functions.pierce
   }
-  static async start() {
+  static async start(superuserKey: string) {
     const compartment = await Compartment.create('artifact')
     const api = IsolateApi.createContext<C>()
     await compartment.mount(api)
     const engine = new Engine(compartment, api)
-    await engine.ensureHomeAddress()
+    await engine.ensureHomeAddress(superuserKey)
     return engine
   }
   get context() {
@@ -53,7 +52,7 @@ export class Engine implements EngineInterface {
     }
     return this.#homeAddress
   }
-  async ensureHomeAddress() {
+  async ensureHomeAddress(superuserKey: string) {
     if (this.#homeAddress) {
       return this.#homeAddress
     }
@@ -61,7 +60,7 @@ export class Engine implements EngineInterface {
     if (await db.hasHomeAddress()) {
       this.#homeAddress = await db.getHomeAddress()
     } else {
-      await this.#provision()
+      await this.#provision(superuserKey)
     }
     assert(this.#homeAddress, 'home not provisioned')
     return this.#homeAddress
@@ -72,16 +71,15 @@ export class Engine implements EngineInterface {
   get isProvisioned() {
     return !!this.#homeAddress && !!this.#githubAddress
   }
-  async #provision() {
+  async #provision(superuserKey: string) {
     const { db } = artifact.sanitizeContext(this.#api)
     // TODO use the effect lock to ensure atomicity
-
-    const { publicKey: superuser } = Machine.loadSuperUserMachineId()
-    const { pid: homeAddress } = await this.#install('actors', { superuser })
+    const superuser = Machine.deriveMachineId(superuserKey)
+    const { pid: homeAddress } = await this.#installHome(superuser)
     await db.setHomeAddress(homeAddress)
     this.#homeAddress = homeAddress
 
-    const machine = Machine.loadSuperUser(this)
+    const machine = Machine.load(this, superuserKey)
     const session = await machine.rootSessionPromise
 
     const { pid } = await session.init({
@@ -96,23 +94,19 @@ export class Engine implements EngineInterface {
     await actor.addAuthProvider({ name: 'github', provider: pid })
   }
 
-  /**
-   * Installs isolates as the superuser account.  Used to provision the engine.
-   */
-  async #install(isolate: string, params: Params = {}) {
-    log('install', isolate, params)
+  async #installHome(superuser: string) {
+    log('installHome superuser:', superuser)
     // TODO figure out how to know if this is a duplicate install
-    // this should be an action via the superuser home account ?
-    const partial = { ...ACTORS, repository: isolate }
+    const partial = { ...ACTORS, repository: 'actors' }
     const { db } = artifact.sanitizeContext(this.#api)
     const { pid } = await FS.init(partial, db)
     const abort = new AbortController()
     const watcher = PierceWatcher.create(abort.signal, this, pid)
     watcher.watchPierces()
     const request = {
-      isolate,
+      isolate: 'actors',
       functionName: '@@install',
-      params,
+      params: { superuser },
       proctype: PROCTYPE.SERIAL,
       target: pid,
       ulid: ulid(),
@@ -173,6 +167,7 @@ export class Engine implements EngineInterface {
   async createMachineSession(pid: PID) {
     const { homeAddress } = this
     assertValidSession(pid, homeAddress)
+
     const [, , machineId, sessionId] = pid.branches
     log('createMachineSession', print(pid))
     const request = {
@@ -184,6 +179,8 @@ export class Engine implements EngineInterface {
       ulid: ulid(),
     }
 
+    // TODO either use super or check permissions
+    // this would be an api gateway effect pointed at the actors repo
     await this.pierce(request)
     for await (const _splice of this.read(pid)) {
       log('splice received', print(pid))

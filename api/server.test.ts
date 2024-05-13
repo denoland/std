@@ -23,7 +23,8 @@ const cradleMaker = async () => {
   const fetcher = server.request as typeof fetch
 
   const engine = await WebClientEngine.start('mock', fetcher)
-  const machine = Machine.load(engine)
+  const privateKey = Machine.generatePrivateKey()
+  const machine = Machine.load(engine, privateKey)
   const session = machine.openSession()
   const clientStop = session.engineStop.bind(session)
   session.engineStop = async () => {

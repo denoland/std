@@ -13,10 +13,12 @@ let introDone = false
 const cradleMaker = async () => {
   const url = Deno.env.get('CLOUD_URL')
   assert(url, 'CLOUD_URL not set')
-  // TODO delete all repos that the actor has access to
+  const machineKey = Deno.env.get('CLOUD_MACHINE_KEY')
+  assert(machineKey, 'CLOUD_MACHINE_KEY not set')
+
   const engine = await WebClientEngine.start(url)
-  const machine = Machine.load(engine)
-  // TODO use the same keypair
+  const machine = Machine.load(engine, machineKey)
+
   const session = machine.openSession()
   if (!introDone) {
     introDone = true

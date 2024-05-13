@@ -4,8 +4,8 @@ import { Help } from '@/constants.ts'
 import { Api } from '@/isolates/load-help.ts'
 import { Machine } from '@/api/web-client-machine.ts'
 Deno.test('loadAll', async (t) => {
-  const engine = await Engine.start()
-  const machine = Machine.load(engine)
+  const engine = await Engine.start(Machine.generatePrivateKey())
+  const machine = Machine.load(engine, Machine.generatePrivateKey())
   const session = machine.openSession()
   await session.rm({ repo: 'dreamcatcher-tech/HAL' })
   const { pid } = await session.clone({ repo: 'dreamcatcher-tech/HAL' })

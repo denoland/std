@@ -79,8 +79,8 @@ Deno.test('ai-chat', async (t) => {
 })
 
 Deno.test('engage-help', async (t) => {
-  const engine = await Engine.start()
-  const machine = Machine.load(engine)
+  const engine = await Engine.start(Machine.generatePrivateKey())
+  const machine = Machine.load(engine, Machine.generatePrivateKey())
   const session = machine.openSession()
 
   await session.rm({ repo: 'dreamcatcher-tech/HAL' })

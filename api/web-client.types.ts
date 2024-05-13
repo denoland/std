@@ -1,7 +1,7 @@
 // copied from the artifact project
 import { Chalk } from 'chalk'
 import { JSONSchemaType } from './web-client.ajv.ts'
-import { Session } from '@/api/web-client-session.ts'
+import { Session } from './web-client-session.ts'
 export enum PROCTYPE {
   SERIAL = 'SERIAL',
   BRANCH = 'BRANCH',
@@ -462,11 +462,6 @@ export const ACTORS: Omit<PID, 'repoId'> = {
   repository: 'actors',
   branches: ['base'],
 }
-export const SUPERUSER: Omit<PID, 'repoId'> = {
-  account: 'system',
-  repository: 'system',
-  branches: ['main'],
-}
 export const toActions = <T = DispatchFunctions>(
   target: PID,
   isolate: string,
@@ -567,4 +562,29 @@ export const isSessionPID = (source: PID) => {
     machineIdRegex.test(machineId) &&
     sessionIdRegex.test(sessionId)
   )
+}
+export const isEqual = (pid1: PID, pid2: PID) => {
+  if (pid1.repoId !== pid2.repoId) {
+    return false
+  }
+  if (pid1.account !== pid2.account) {
+    return false
+  }
+  if (pid1.repository !== pid2.repository) {
+    return false
+  }
+  if (pid1.branches.length !== pid2.branches.length) {
+    return false
+  }
+  for (let i = 0; i < pid1.branches.length; i++) {
+    if (pid1.branches[i] !== pid2.branches[i]) {
+      return false
+    }
+  }
+  return true
+}
+export const isValidForMachine = (session: PID, machine: PID) => {
+  const branches = session.branches.slice(0, -1)
+  const test = { ...machine, branches }
+  return isEqual(test, machine)
 }

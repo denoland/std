@@ -1,4 +1,3 @@
-import * as secp from '@noble/secp256k1'
 import { Engine } from '@/engine.ts'
 import { Machine } from '@/api/web-client-machine.ts'
 import * as Github from '@/isolates/github.ts'
@@ -9,14 +8,9 @@ import { getActorId } from '@/constants.ts'
 
 Deno.test('login with github', async (t) => {
   // figure out how to reload a browser session, then decide how to tidy up
-  const raw = secp.utils.randomPrivateKey()
-  const key = secp.etc.bytesToHex(raw)
-  Deno.env.set('MACHINE_PRIVATE_KEY', key)
+  const engine = await Engine.start(Machine.generatePrivateKey())
 
-  const engine = await Engine.start()
-
-  // TODO get this from the home installation
-  const machine = Machine.load(engine)
+  const machine = Machine.load(engine, Machine.generatePrivateKey())
   const session = machine.openSession()
   const home = session.homeAddress
   const config = await session.readJSON<Actors.Config>('config.json', home)

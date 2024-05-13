@@ -1,10 +1,11 @@
 import * as secp from '@noble/secp256k1'
-import '@std/dotenv/load'
 import {
   ArtifactMachine,
   EngineInterface,
+  isValidForMachine,
   JsonValue,
   PID,
+  print,
 } from './web-client.types.ts'
 import { Session } from './web-client-session.ts'
 import { ulid } from 'ulid'
@@ -51,26 +52,16 @@ export class Machine implements ArtifactMachine {
   get machineId() {
     return this.#machineId
   }
-  static load(engine: EngineInterface) {
-    return new Machine(engine)
-  }
-  static recover(engine: EngineInterface, privateKey: string) {
+  static load(engine: EngineInterface, privateKey: string) {
     return new Machine(engine, privateKey)
   }
-  static loadSuperUser(engine: EngineInterface) {
-    const { privateKey } = Machine.loadSuperUserMachineId()
-    return Machine.recover(engine, privateKey)
+  static generatePrivateKey() {
+    return secp.etc.bytesToHex(secp.utils.randomPrivateKey())
   }
-  static loadSuperUserMachineId() {
-    const privateKey = Deno.env.get('MACHINE_PRIVATE_KEY')
-    if (!privateKey) {
-      throw new Error('MACHINE_PRIVATE_KEY not set')
-    }
-    const raw = secp.getPublicKey(privateKey)
-    const publicKey = secp.etc.bytesToHex(raw)
-    return { privateKey, publicKey }
+  static deriveMachineId(privateKey: string) {
+    const pubKey = secp.getPublicKey(privateKey)
+    return secp.etc.bytesToHex(pubKey)
   }
-
   async #connect() {
     const pid = this.#createSessionPid()
     await this.#engine.createMachineSession(pid)
@@ -80,6 +71,10 @@ export class Machine implements ArtifactMachine {
   /** If the given pid is valid, uses that session, else creates a new one */
   openSession(retry?: PID): Session {
     if (retry) {
+      if (!isValidForMachine(retry, this.pid)) {
+        // TODO change to be isChildOf
+        throw new Error('Invalid session pid: ' + print(retry))
+      }
       return Session.resume(this.#engine, this, retry)
     }
     const pid = this.#createSessionPid()

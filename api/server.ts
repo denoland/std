@@ -19,9 +19,6 @@ import '@std/dotenv/load'
 
 const log = Debug('AI:server')
 
-// need to make a stable machine so that admin actions can enter the system on
-// the server.
-
 let sseId = 0
 export default class Server {
   #engine: Engine
@@ -35,8 +32,9 @@ export default class Server {
     return this.#engine
   }
   static async create() {
-    // TODO whilst no system chain, fail with help message
-    const engine = await Engine.start()
+    const privateKey = getPrivateKey()
+
+    const engine = await Engine.start(privateKey)
     const base = new Hono()
     const app = base.basePath('/api')
 
@@ -196,4 +194,12 @@ const execute = async (c: Context, p: Promise<unknown>, name: string) => {
   }
 }
 
-// Debug.enable('AI:completions AI:q*')
+const getPrivateKey = () => {
+  const privateKey = Deno.env.get('SUPERUSER_PRIVATE_KEY')
+  if (!privateKey) {
+    throw new Error('SUPERUSER_PRIVATE_KEY not set')
+  }
+  return privateKey
+}
+
+Debug.enable('AI:completions AI:q* AI:engine')

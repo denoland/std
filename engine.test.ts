@@ -2,14 +2,13 @@ import { Engine } from './engine.ts'
 import { Machine } from './api/web-client-machine.ts'
 import guts from './guts/guts.ts'
 import { expect, log } from '@utils'
-import * as secp from '@noble/secp256k1'
+
+const superuserKey = Machine.generatePrivateKey()
 
 const cradleMaker = async () => {
-  const raw = secp.utils.randomPrivateKey()
-  const key = secp.etc.bytesToHex(raw)
-  Deno.env.set('MACHINE_PRIVATE_KEY', key)
-  const engine = await Engine.start()
-  const machine = Machine.load(engine)
+  const engine = await Engine.start(superuserKey)
+  const privateKey = Machine.generatePrivateKey()
+  const machine = Machine.load(engine, privateKey)
   const session = machine.openSession()
   return session
 }

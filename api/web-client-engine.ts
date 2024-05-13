@@ -46,7 +46,7 @@ export class WebClientEngine implements EngineInterface {
   }
   stop() {
     for (const abort of this.#aborts) {
-      abort.abort()
+      abort.abort('Engine stop')
     }
   }
   async ping(data?: JsonValue) {
@@ -89,7 +89,6 @@ export class WebClientEngine implements EngineInterface {
     return await response.json()
   }
 
-  // #region: Splice Reading
   read(pid: PID, path?: string, after?: string, signal?: AbortSignal) {
     const abort = new AbortController()
     this.#aborts.add(abort)
@@ -137,6 +136,9 @@ export class WebClientEngine implements EngineInterface {
           console.log('stream error:', error)
         }
         // TODO implement backoff before retrying
+        if (!abort.signal.aborted) {
+          await new Promise((resolve) => setTimeout(resolve, 1000))
+        }
       }
     }
     pipe().catch(source.throw)

@@ -178,11 +178,12 @@ Deno.test('compound', async (t) => {
 for (const withExeCache of [true, false]) {
   Deno.test(`commit spanning (cache: ${withExeCache}`, async (t) => {
     await t.step(`function cache`, async () => {
-      const engine = await Engine.start()
+      const superuserKey = Machine.generatePrivateKey()
+      const engine = await Engine.start(superuserKey)
       if (!withExeCache) {
         engine.context.exe?.disableFunctionCache()
       }
-      const machine = Machine.load(engine)
+      const machine = Machine.load(engine, Machine.generatePrivateKey())
       const session = machine.openSession()
 
       const { fileAccumulation } = await session.actions<Api>('io-fixture')
@@ -204,11 +205,12 @@ for (const withExeCache of [true, false]) {
 
   Deno.test(`looping accumulation (cache: ${withExeCache}`, async (t) => {
     await t.step(`function cache ${withExeCache}`, async () => {
-      const engine = await Engine.start()
+      const superuserKey = Machine.generatePrivateKey()
+      const engine = await Engine.start(superuserKey)
       if (!withExeCache) {
         engine.context.exe?.disableFunctionCache()
       }
-      const machine = Machine.load(engine)
+      const machine = Machine.load(engine, Machine.generatePrivateKey())
       const session = machine.openSession()
       const { pid } = session
       const { loopAccumulation } = await session.actions<Api>('io-fixture', pid)
