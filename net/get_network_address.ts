@@ -41,9 +41,8 @@ export function getNetworkAddress(
       (family === "IPv4"
         // Cannot lie within 127.0.0.0/8
         ? !i.address.startsWith("127")
-        // Cannot be ::1 (loopback) or lie within fe80::/10 (link-local)
-        : i.address !== "::1" || !i.address.startsWith("fe80::") &&
-            i.scopeid === 0)
+        // Cannot be ::1 (loopback) or fe80::1 (link-local)
+        : !(i.address === "::1" || i.address === "fe80::1"))
     )
     ?.address;
 }

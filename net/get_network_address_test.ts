@@ -1,17 +1,74 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import { getNetworkAddress } from "./get_network_address.ts";
-import { assertNotEquals } from "../assert/assert_not_equals.ts";
+import { stub } from "@std/testing/mock";
+import { assertEquals } from "@std/assert/assert-equals";
+
+const INTERFACES: Deno.NetworkInterfaceInfo[] = [
+  // Network inaccessible
+  {
+    family: "IPv4",
+    name: "lo0",
+    address: "127.0.0.1",
+    netmask: "255.0.0.0",
+    scopeid: null,
+    cidr: "127.0.0.1/8",
+    mac: "00:00:00:00:00:00",
+  },
+  {
+    family: "IPv6",
+    name: "lo0",
+    address: "::1",
+    netmask: "ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff",
+    scopeid: 0,
+    cidr: "::1/128",
+    mac: "00:00:00:00:00:00",
+  },
+  {
+    family: "IPv6",
+    name: "lo0",
+    address: "fe80::1",
+    netmask: "ffff:ffff:ffff:ffff::",
+    scopeid: 1,
+    cidr: "fe80::1/64",
+    mac: "00:00:00:00:00:00",
+  },
+  // Network accessible
+  {
+    family: "IPv4",
+    name: "en0",
+    address: "192.168.0.123",
+    netmask: "255.255.255.0",
+    scopeid: null,
+    cidr: "192.168.0.123/24",
+    mac: "11:11:11:11:11:11",
+  },
+  {
+    family: "IPv6",
+    name: "en0",
+    address: "2001:0000:0000:0000:0000:0000:0000:1234",
+    netmask: "ffff:ffff:ffff:ffff::",
+    scopeid: 0,
+    cidr: "2001:0000:0000:0000:0000:0000:0000:1234/64",
+    mac: "11:11:11:11:11:11",
+  },
+] as const;
 
 Deno.test("getNetworkAddress() works with IPv4", () => {
+  using _networkInterfaces = stub(
+    Deno,
+    "networkInterfaces",
+    () => INTERFACES,
+  );
   const hostname = getNetworkAddress();
-  assertNotEquals(hostname, undefined);
-  // Fails if the IPv4 address doesn't belong to the machine
-  using _listener = Deno.listen({ hostname, port: 0 });
+  assertEquals(hostname, INTERFACES[3]!.address);
 });
 
 Deno.test("getNetworkAddress() works with IPv6", () => {
+  using _networkInterfaces = stub(
+    Deno,
+    "networkInterfaces",
+    () => INTERFACES,
+  );
   const hostname = getNetworkAddress("IPv6");
-  assertNotEquals(hostname, undefined);
-  // Fails if the IPv6 address doesn't belong to the machine
-  using _listener = Deno.listen({ hostname, port: 0 });
+  assertEquals(hostname, INTERFACES[4]!.address);
 });
