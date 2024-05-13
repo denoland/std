@@ -50,6 +50,7 @@ jobs:
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           DENO_KV_PATH: ':memory:'
+          SUPERUSER_PRIVATE_KEY: ${{ secrets.SUPERUSER_PRIVATE_KEY }}
 
       - name: Create lcov file
         run: deno task cov:gen
