@@ -113,6 +113,14 @@ export function green(str: string): string {
 }
 
 /**
+ * Set text color to yellow.
+ * @param str text to make yellow
+ */
+export function yellow(str: string): string {
+  return run(str, code([33], 39));
+}
+
+/**
  * Set text color to white.
  * @param str text to make white
  */
