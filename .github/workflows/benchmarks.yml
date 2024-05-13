@@ -1,0 +1,49 @@
+name: Benchmark
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  # deployments permission to deploy GitHub pages website
+  deployments: write
+  # contents permission to update benchmark contents in gh-pages branch
+  contents: write
+jobs:
+  benchmark:
+    name: Performance regression check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup repo
+        uses: actions/checkout@v4
+
+      - name: Setup Deno
+        uses: denoland/setup-deno@v1
+        with:
+          deno-version: vx.x.x
+
+      - name: Cache dependencies
+        uses: actions/cache@v4
+        with: 
+          path: |
+            ~/.cache
+            ~/.cache/deno
+          key: benchmarks-deno-${{ hashFiles('deno.json') }}
+          
+      - name: Run benchmark
+        run: deno task bench | tee output.txt
+        env:
+          AES_KEY: ${{ secrets.AES_KEY }}
+
+      - name: Store benchmark result
+        uses: benchmark-action/github-action-benchmark@v1
+        with:
+          name: Interpulse Benchmark
+          tool: 'benchmarkjs'
+          output-file-path: output.txt
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          auto-push: true
+          # Show alert with commit comment on detecting possible performance regression
+          alert-threshold: '200%'
+          comment-on-alert: true
+          fail-on-alert: true

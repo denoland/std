@@ -13,7 +13,9 @@
     "tc": "DEBUG_COLORS=1 deno test -A ./api/cloud.ts",
     "db:drop": "DEBUG_COLORS=1 deno run --unstable-kv -A ./api/db-drop.ts",
     "db:tools": "DEBUG_COLORS=1 deno run --unstable-kv -A ./api/db-tools.ts",
-    "keygen": "DEBUG_COLORS=1 deno run ./api/keygen.ts"
+    "keygen": "DEBUG_COLORS=1 deno run ./api/keygen.ts",
+    "bw": "DENO_KV_PATH=:memory: DEBUG_COLORS=1 deno run --unstable-kv -A --watch benchmarks/bench.ts",
+    "bench": "DENO_KV_PATH=:memory: DEBUG_COLORS=1 deno run --unstable-kv -A benchmarks/bench.ts"
   },
   "imports": {
     "$git": "npm:isomorphic-git",
@@ -27,8 +29,10 @@
     "@std/dotenv": "jsr:@std/dotenv",
     "@std/expect": "jsr:@std/expect",
     "@std/path": "jsr:@std/path",
+    "@types/benchmark": "npm:@types/benchmark@^2.1.5",
     "@utils": "./utils.ts",
     "ajv": "npm:ajv",
+    "benchmark": "npm:benchmark@^2.1.4",
     "chalk": "npm:chalk@^5.3.0",
     "debug": "npm:debug",
     "diff": "npm:diff",
