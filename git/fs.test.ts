@@ -4,7 +4,7 @@ import FS from './fs.ts'
 import { pidFromRepo } from '@/constants.ts'
 const { expect } = utils
 Deno.test('git/init', async (t) => {
-  const db = await DB.create()
+  const db = await DB.create(DB.generateAesKey())
   let fs: FS
   await t.step('init', async () => {
     const repo = 'account/repo'
@@ -120,7 +120,7 @@ Deno.test('git/init', async (t) => {
   db.stop()
 })
 Deno.test('clone', async (t) => {
-  const db = await DB.create()
+  const db = await DB.create(DB.generateAesKey())
   let fs: FS
   await t.step('clone HAL', async () => {
     fs = await FS.clone('dreamcatcher-tech/HAL', db)

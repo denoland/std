@@ -12,7 +12,7 @@ import FS from './fs.ts'
 import DB from '@/db.ts'
 
 Deno.test('pierce serial', async (t) => {
-  const db = await DB.create()
+  const db = await DB.create(DB.generateAesKey())
   const partial: PartialPID = {
     account: 'git',
     repository: 'test',

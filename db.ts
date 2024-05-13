@@ -1,6 +1,6 @@
 import { pushable } from 'it-pushable'
 import { BLOB_META_KEY } from '@kitsonk/kv-toolbox/blob'
-import { CryptoKv } from '@kitsonk/kv-toolbox/crypto'
+import { CryptoKv, generateKey } from '@kitsonk/kv-toolbox/crypto'
 import * as keys from './keys.ts'
 import { freezePid, PID, Poolable, print, Splice } from '@/constants.ts'
 import { assert, Debug, openKv, posix, sha1 } from '@utils'
@@ -25,6 +25,9 @@ export default class DB {
     watchUndelivered(kv)
     const db = new DB(kv, aesKey)
     return db
+  }
+  static generateAesKey() {
+    return generateKey()
   }
   get #kv() {
     if (this.#abort.signal.aborted) {

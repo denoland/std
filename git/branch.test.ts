@@ -19,7 +19,7 @@ Deno.test('pierce branch', async (t) => {
     repository: 'test',
     branches: ['main'],
   }
-  const db = await DB.create()
+  const db = await DB.create(DB.generateAesKey())
   const baseFs = await FS.init(partial, db)
   const target = baseFs.pid
   const branchPierce = (ulid: string): PierceRequest => ({

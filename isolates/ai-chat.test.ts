@@ -23,7 +23,7 @@ Deno.test('ai-chat', async (t) => {
     commands: ['io-fixture:local', 'io-fixture:error'],
     instructions: ['Only reply with a SINGLE word'],
   }
-  const db = await DB.create()
+  const db = await DB.create(DB.generateAesKey())
   const pid = pidFromRepo('t', 'runner/test')
   const fs = await FS.init(pid, db)
   const accumulator = Accumulator.create(dummyOrigin, [], fs)

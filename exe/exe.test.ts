@@ -32,7 +32,7 @@ const partialRequest: PartialRequest = {
   sequence: 0,
 }
 const mocks = async (initialRequest: PartialRequest) => {
-  const db = await DB.create()
+  const db = await DB.create(DB.generateAesKey())
   let fs = await FS.init(partialPid, db)
   let io = await IOChannel.load(fs)
   const request = { ...initialRequest, target: fs.pid }

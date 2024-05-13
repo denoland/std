@@ -201,5 +201,3 @@ const getPrivateKey = () => {
   }
   return privateKey
 }
-
-Debug.enable('AI:completions AI:q* AI:engine')

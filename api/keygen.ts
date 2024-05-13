@@ -1,6 +1,6 @@
 import * as secp from '@noble/secp256k1'
-import { generateKey } from '@kitsonk/kv-toolbox/crypto'
 import { assert } from '@std/assert'
+import DB from '@/db.ts'
 
 const privKey = secp.utils.randomPrivateKey()
 
@@ -11,4 +11,4 @@ console.log('private key')
 console.log(key)
 console.log('')
 console.log('encryption key')
-console.log(generateKey())
+console.log(DB.generateAesKey())
