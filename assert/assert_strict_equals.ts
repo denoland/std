@@ -2,7 +2,7 @@
 // This module is browser compatible.
 import { buildMessage, diff, diffstr, format } from "@std/internal";
 import { AssertionError } from "./assertion_error.ts";
-import { red } from "@std/fmt/colors";
+import { red } from "./_red.ts";
 
 /**
  * Make an assertion that `actual` and `expected` are strictly equal. If
