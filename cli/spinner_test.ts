@@ -19,7 +19,6 @@ const normalizeString = (s: string) =>
 
 const COLOR_RESET = "\u001b[0m";
 const LINE_CLEAR = "\r\u001b[K";
-const encoder = new TextEncoder();
 const decoder = new TextDecoder();
 
 Deno.test("Spinner constructor accepts spinner", async () => {
