@@ -3,6 +3,8 @@
 // A module to print ANSI terminal colors. Inspired by chalk, kleur, and colors
 // on npm.
 
+// This code is vendored from `fmt/colors.ts`.
+
 /**
  * String formatters and utilities for dealing with ANSI color codes.
  *
