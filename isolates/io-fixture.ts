@@ -111,6 +111,7 @@ export type Api = {
   loopAccumulation: {
     (params: { path: string; content: string; count: number }): Promise<void>
   }
+  local: () => Promise<string>
 }
 export const functions = {
   write: (params: { path: string; content: string }, api: IsolateApi) => {

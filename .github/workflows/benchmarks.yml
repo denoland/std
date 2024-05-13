@@ -13,6 +13,7 @@ jobs:
   benchmark:
     name: Performance regression check
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - name: Setup repo
         uses: actions/checkout@v4

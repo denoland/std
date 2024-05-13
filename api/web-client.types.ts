@@ -303,7 +303,7 @@ export interface ArtifactSession {
   pid: PID
   stop(): void
   engineStop(): Promise<void>
-  actions<T = DispatchFunctions>(isolate: string, target: PID): Promise<T>
+  actions<T = DispatchFunctions>(isolate: string, target?: PID): Promise<T>
   read(
     pid: PID,
     path?: string,

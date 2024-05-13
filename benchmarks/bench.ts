@@ -2,6 +2,8 @@ import Benchmark from 'benchmark'
 import { Debug } from '@utils'
 import { Machine } from '@/api/web-client-machine.ts'
 import { Engine } from '@/engine.ts'
+import { Api } from '@/isolates/io-fixture.ts'
+import { assert } from '@std/assert'
 const log = Debug('AI:benchmarks')
 Debug.enable('AI:benchmarks')
 log('starting benchmarks')
@@ -59,6 +61,10 @@ const factory = async () => {
   return session
 }
 
+const coldPingSession = await factory()
+const hotPingSession = await factory()
+const hotPingActions = await hotPingSession.actions<Api>('io-fixture')
+
 suite
   .add('boot', {
     defer: true,
@@ -68,21 +74,29 @@ suite
       await session.engineStop()
     },
   })
-  //   .add('cold ping', {
-  //     defer: true,
-  //     fn: async (deferred) => {
-  //       await coldPing()
-  //       deferred.resolve()
-  //     },
-  //   })
-  //   .add('hot ping', {
-  //     defer: true,
-  //     fn: async (deferred) => {
-  //       await hotPing()
-  //       deferred.resolve()
-  //     },
-  //   })
+  .add('cold ping', {
+    // make a new session
+    defer: true,
+    fn: async (deferred: Benchmark.deferred) => {
+      const session = coldPingSession.newSession()
+      const fixture = await session.actions<Api>('io-fixture')
+      const result = await fixture.local()
+      deferred.resolve()
+      assert(result === 'local reply')
+    },
+  })
+  .add('hot ping', {
+    // use an existing session
+    defer: true,
+    fn: async (deferred: Benchmark.deferred) => {
+      const result = await hotPingActions.local()
+      deferred.resolve()
+      assert(result === 'local reply')
+    },
+  })
+  // try get max thruput by not waiting for things to complete ?
   //   .add('publish', {
+  // make a new repo ?
   //     defer: true,
   //     fn: async (deferred) => {
   //       await publish()
@@ -90,6 +104,7 @@ suite
   //     },
   //   })
   //   .add('install', {
+  // clone an existing repo
   //     defer: true,
   //     fn: async (deferred) => {
   //       const engine = await publish()
@@ -98,6 +113,7 @@ suite
   //     },
   //   })
   //   .add('add customer', {
+  // ignoreing the NL operations, this is adding raw data
   //     defer: true,
   //     fn: async (deferred) => {
   //       await addCustomer()
@@ -105,6 +121,7 @@ suite
   //     },
   //   })
   //   .add('block making', {
+  // make a new commit ?
   //     defer: true,
   //     fn: async (deferred) => {
   //       await makePulse()
@@ -112,6 +129,7 @@ suite
   //     },
   //   })
   //   .add('unsigned block making', {
+  // make a new commit without signing it
   //     defer: true,
   //     fn: async (deferred) => {
   //       await makeUnsigned()
@@ -121,4 +139,11 @@ suite
   .on('cycle', (event: Benchmark.Event) => {
     console.log(String(event.target))
   })
+  .on('complete', async function () {
+    console.log('done')
+    await coldPingSession.engineStop()
+    await hotPingSession.engineStop()
+  })
   .run({ async: false })
+
+// then do a cloud version running on a sacrificial deployment
