@@ -75,7 +75,7 @@ export type TarStreamHeader = OldStyleFormat | PosixUstarFormat;
  *
  * @example
  * ```ts
- * import { UnTarStream } from 'https://deno.land/std@$STD_VERSION/archive/untar_stream.ts'
+ * import { UnTarStream } from "@std/archive/untar-stream";
  *
  * for await (
  *   const entry of (await Deno.open('./out.tar.gz'))

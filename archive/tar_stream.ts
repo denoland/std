@@ -67,7 +67,7 @@ export interface TarStreamOptions {
  *
  * @example
  * ```ts
- * import { TarStream } from 'https://deno.land/std@$STD_VERSION/archive/tar_stream.ts'
+ * import { TarStream } from "@std/archive/tar-stream";
  *
  * await ReadableStream.from([
  *   {
