@@ -142,7 +142,6 @@ suite
     console.log(String(event.target))
   })
   .on('complete', async function () {
-    console.log('done')
     await coldPingSession.engineStop()
     await hotPingSession.engineStop()
   })
