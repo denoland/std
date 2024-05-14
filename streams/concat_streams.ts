@@ -1,5 +1,4 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-// This module is browser compatible.
 
 /**
  * A transform stream that concatenates multiple readable streams into a single
@@ -32,7 +31,6 @@ export class ConcatStreams<I = any>
   constructor() {
     super({
       async transform(stream, controller) {
-        // @ts-ignore ReadableStream<I> does have a '[Symbol.asyncIterator]()' method that returns an async iterator.
         for await (const value of stream) {
           controller.enqueue(value);
         }
