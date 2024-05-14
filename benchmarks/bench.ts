@@ -6,12 +6,13 @@ import { Api } from '@/isolates/io-fixture.ts'
 import { assert } from '@std/assert'
 import DB from '@/db.ts'
 const log = Debug('AI:benchmarks')
-Debug.enable('AI:benchmarks ')
+Debug.enable('AI:benchmarks AI:qbr')
 log('starting benchmarks')
 
 const suite = new Benchmark.Suite()
 
-const superuserKey = Machine.generatePrivateKey()
+const superuserKey =
+  'ed7a15e43c8ca247b61b61af438392b31b71fe2e9eb500b58e0773fc5eb99b8b'
 const aesKey = DB.generateAesKey()
 
 const engines: Engine[] = []
@@ -76,7 +77,7 @@ suite
   // write a deeply nested file then return
 
   // read a shallow file
-  // read a deeply nested file externaly
+  // read a deeply nested file externally
   // time delay to a splice
 
   // make a single new daemon branch
