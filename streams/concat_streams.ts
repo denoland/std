@@ -3,7 +3,7 @@
 
 /**
  * A transform stream that concatenates multiple readable streams into a single
- * stream.
+ * stream, in order.
  *
  * @template I Type of the items in the readable streams.
  *
@@ -25,7 +25,9 @@
  * assertEquals(result, [1, 2, 3, 4, 5, 6, 7, 8, 9]);
  * ```
  */
-export class ConcatStreams<I> extends TransformStream<ReadableStream<I>, I> {
+// deno-lint-ignore no-explicit-any
+export class ConcatStreams<I = any>
+  extends TransformStream<ReadableStream<I>, I> {
   /** Constructs a new instance. */
   constructor() {
     super({
