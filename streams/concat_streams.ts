@@ -32,6 +32,7 @@ export class ConcatStreams<I = any>
   constructor() {
     super({
       async transform(stream, controller) {
+        // @ts-ignore ReadableStream<I> does have a '[Symbol.asyncIterator]()' method that returns an async iterator.
         for await (const value of stream) {
           controller.enqueue(value);
         }
