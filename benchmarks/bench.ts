@@ -6,74 +6,89 @@ import { Api } from '@/isolates/io-fixture.ts'
 import { assert } from '@std/assert'
 import DB from '@/db.ts'
 const log = Debug('AI:benchmarks')
-Debug.enable('AI:benchmarks')
+Debug.enable('AI:benchmarks ')
 log('starting benchmarks')
 
 const suite = new Benchmark.Suite()
 
-// const coldPing = async () => {
-//   const engine = await Interpulse.createCI()
-//   const payload = { test: 'ping' }
-//   const reply = await engine.ping('.', payload)
-//   assert(equals(reply, payload))
-// }
-// const engine = await Interpulse.createCI()
-
-// const hotPing = async () => {
-//   const payload = { test: 'ping' }
-//   const reply = await engine.ping('.', payload)
-//   assert(equals(reply, payload))
-// }
-
-// const publish = async () => {
-//   const { crm } = apps
-//   const engine = await Interpulse.createCI({
-//     overloads: { '/dpkgCrm': crm.covenant },
-//   })
-//   const { path } = await engine.publish('dpkgCrm', crm.covenant)
-//   assert.strictEqual(path, '/dpkgCrm')
-//   return engine
-// }
-// const install = async (engine) => {
-//   const covenant = '/dpkgCrm'
-//   await engine.add('crm', { covenant })
-// }
-
-// const crmSetup = async () => {
-//   const engine = await publish()
-//   await install(engine)
-//   const crmActions = await engine.actions('/crm/customers')
-//   return crmActions
-// }
-// const crmActions = await crmSetup()
-// let custNo = 100
-// const addCustomer = async () => {
-//   await crmActions.add({ formData: { custNo, name: `test name ${custNo}` } })
-//   custNo++
-// }
-
 const superuserKey = Machine.generatePrivateKey()
 const aesKey = DB.generateAesKey()
 
+const engines: Engine[] = []
 const factory = async () => {
-  const engine = await Engine.start(superuserKey, aesKey)
+  const engine = await engineFactory()
   const privateKey = Machine.generatePrivateKey()
   const machine = Machine.load(engine, privateKey)
   const session = machine.openSession()
   return session
 }
+const engineFactory = async () => {
+  const engine = await Engine.start(superuserKey, aesKey)
+  engines.push(engine)
+  return engine
+}
+const machineEngine = await engineFactory()
+const remachineEngine = await engineFactory()
+const machineEnginePrivateKey = Machine.generatePrivateKey()
+Machine.load(remachineEngine, machineEnginePrivateKey) // do premul crypto
 
 const coldPingSession = await factory()
 const hotPingSession = await factory()
 const hotPingActions = await hotPingSession.actions<Api>('io-fixture')
+const installSession = await factory()
+let installCounter = 0
+
+log('setup complete')
 
 suite
+  .add('engine cold start', {
+    defer: true,
+    fn: async (deferred: Benchmark.deferred) => {
+      const engine = await Engine.start(superuserKey, aesKey)
+      deferred.resolve()
+      await engine.stop()
+    },
+  })
+  .add('machine root session', {
+    // generate a new machine key and await the root session
+    defer: true,
+    fn: async (deferred: Benchmark.deferred) => {
+      const privateKey = Machine.generatePrivateKey()
+      const machine = Machine.load(machineEngine, privateKey)
+      await machine.rootSessionPromise
+      deferred.resolve()
+    },
+  })
+  .add('machine reload', {
+    defer: true,
+    fn: async (deferred: Benchmark.deferred) => {
+      const machine = Machine.load(machineEngine, machineEnginePrivateKey)
+      await machine.rootSessionPromise
+      deferred.resolve()
+    },
+  })
+  // given a booted engine, how long till a new machine session
+  // given a booted machine, how long until the first browser session ?
+  // given a provisioned engine, how long to set up a new engine ?
+
+  // multihop ping
+  // write one file then return
+  // write a deeply nested file then return
+
+  // read a shallow file
+  // read a deeply nested file externaly
+  // time delay to a splice
+
+  // make a single new daemon branch
+  // make several new daemon branches
+
+  // ? how can we map how long a branch takes to make ?
+
   .add('boot', {
     defer: true,
     fn: async (deferred: Benchmark.deferred) => {
-      const session = await factory()
+      await factory()
       deferred.resolve()
-      await session.engineStop()
     },
   })
   .add('cold ping', {
@@ -105,15 +120,15 @@ suite
   //       deferred.resolve()
   //     },
   //   })
-  //   .add('install', {
-  // clone an existing repo
-  //     defer: true,
-  //     fn: async (deferred) => {
-  //       const engine = await publish()
-  //       await install(engine)
-  //       deferred.resolve()
-  //     },
-  //   })
+  .add('install', {
+    // time how long to install a new multi user app
+    defer: true,
+    fn: async (deferred: Benchmark.deferred) => {
+      const repo = 'install/' + installCounter++
+      await installSession.init({ repo })
+      deferred.resolve()
+    },
+  })
   //   .add('add customer', {
   // ignoring the NL operations, this is adding raw data
   //     defer: true,
@@ -142,8 +157,9 @@ suite
     console.log(String(event.target))
   })
   .on('complete', async function () {
-    await coldPingSession.engineStop()
-    await hotPingSession.engineStop()
+    for (const engine of engines) {
+      await engine.stop()
+    }
   })
   .run({ async: false })
 

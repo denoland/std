@@ -301,6 +301,9 @@ type Head = { pid: PID; head: string }
 /** The client session interface to artifact */
 export interface ArtifactSession {
   pid: PID
+  machine: ArtifactMachine
+  sessionId: string
+  homeAddress: PID
   stop(): void
   engineStop(): Promise<void>
   actions<T = DispatchFunctions>(isolate: string, target?: PID): Promise<T>
@@ -539,7 +542,7 @@ export const assertValidSession = (pid: PID, identity: PID) => {
 export const machineIdRegex = /^[0-9a-f]{66}$/
 export const sessionIdRegex =
   /^[0-7][0-9A-HJKMNP-TV-Z]{9}[0-9A-HJKMNP-TV-Z]{16}$/
-
+export const ROOT_SESSION = '111111111111111R00TSESS10N'
 export const getActorPid = (source: PID) => {
   const branches = source.branches.slice(0, 1)
   return { ...source, branches }

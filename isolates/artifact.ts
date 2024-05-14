@@ -98,6 +98,8 @@ export const lifecycles: IsolateLifecycle = {
     const exe = Executor.createCacheContext()
     const context: C = { db, exe }
     api.context = context
+    assert(!api.context.aesKey, 'AES_KEY leaked')
+
     db.listen(async (message: QueueMessage) => {
       if (isQueuePool(message)) {
         const { pid } = message
@@ -115,7 +117,7 @@ export const lifecycles: IsolateLifecycle = {
         const io = await IOChannel.read(parentFs)
         assert(io, 'io not found')
         const branchPid = io.getBranchPid(sequence)
-        logger('qbr', parentPid)(parentCommit, sequence, print(branchPid))
+        logger('qbr')(print(branchPid), sequence)
 
         let head = await db.readHead(branchPid)
         while (!head) {
@@ -197,8 +199,9 @@ export const sanitizeContext = (api: IsolateApi<C>): C => {
   return { db, exe }
 }
 // TODO remove anyone using atomics except for io
-const logger = (prefix: string, pid: PID) => {
-  const string = 'AI:' + prefix + ':' + print(pid)
+const logger = (prefix: string, pid?: PID) => {
+  const suffix = pid ? ':' + print(pid) : ''
+  const string = 'AI:' + prefix + suffix
   if (!loggerCache.has(string)) {
     const logger = Debug(string)
     loggerCache.set(string, logger)

@@ -172,6 +172,9 @@ export class Engine implements EngineInterface {
 
     const [, , machineId, sessionId] = pid.branches
     log('createMachineSession', print(pid))
+
+    // need to check if this exists first, and just return if it does
+
     const request = {
       isolate: 'actors',
       functionName: 'createMachineSession',

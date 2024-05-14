@@ -6,6 +6,7 @@ import {
   JsonValue,
   PID,
   print,
+  ROOT_SESSION,
 } from './web-client.types.ts'
 import { Session } from './web-client-session.ts'
 import { ulid } from 'ulid'
@@ -24,16 +25,9 @@ export class Machine implements ArtifactMachine {
   readonly #machineId: string
   #rootSessionPromise: Promise<Session>
 
-  private constructor(engine: EngineInterface, privateKey?: string) {
+  private constructor(engine: EngineInterface, privateKey: string) {
     this.#engine = engine
-    if (privateKey) {
-      if (!secp.utils.isValidPrivateKey(privateKey)) {
-        throw new Error('Invalid private key')
-      }
-      this.#privKey = secp.etc.hexToBytes(privateKey)
-    } else {
-      this.#privKey = secp.utils.randomPrivateKey()
-    }
+    this.#privKey = secp.etc.hexToBytes(privateKey)
     this.#pubKey = secp.getPublicKey(this.#privKey)
     this.#machineId = secp.etc.bytesToHex(this.#pubKey)
 
@@ -52,6 +46,9 @@ export class Machine implements ArtifactMachine {
   get machineId() {
     return this.#machineId
   }
+  clone() {
+    return new Machine(this.#engine, secp.etc.bytesToHex(this.#privKey))
+  }
   static load(engine: EngineInterface, privateKey: string) {
     if (!secp.utils.isValidPrivateKey(privateKey)) {
       throw new Error('Invalid private key')
@@ -69,9 +66,12 @@ export class Machine implements ArtifactMachine {
     return secp.etc.bytesToHex(pubKey)
   }
   async #connect() {
-    const pid = this.#createSessionPid()
-    await this.#engine.createMachineSession(pid)
-    return Session.resume(this.#engine, this, pid)
+    const branches = [...this.#pid.branches, ROOT_SESSION]
+    const rootPid = { ...this.pid, branches }
+
+    // a machine that is already created should simply probe the engine
+    await this.#engine.createMachineSession(rootPid)
+    return Session.resume(this.#engine, this, rootPid)
   }
 
   /** If the given pid is valid, uses that session, else creates a new one */
@@ -83,11 +83,8 @@ export class Machine implements ArtifactMachine {
       }
       return Session.resume(this.#engine, this, retry)
     }
-    const pid = this.#createSessionPid()
+    const pid = { ...this.pid, branches: [...this.pid.branches, ulid()] }
     return Session.create(this.#engine, this, pid)
-  }
-  #createSessionPid() {
-    return { ...this.pid, branches: [...this.pid.branches, ulid()] }
   }
   ping(params?: { data?: JsonValue }) {
     return this.#engine.ping(params?.data)

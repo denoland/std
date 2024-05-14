@@ -1,6 +1,7 @@
 import { expect, log } from '@utils'
 import { ArtifactSession } from '../api/web-client.types.ts'
 import { print } from '@/constants.ts'
+import { Machine } from '@/api/web-client-machine.ts'
 
 export default (name: string, cradleMaker: () => Promise<ArtifactSession>) => {
   const prefix = name + ': '
@@ -40,17 +41,29 @@ export default (name: string, cradleMaker: () => Promise<ArtifactSession>) => {
     await session.engineStop()
   })
   Deno.test(prefix + 'internal requests', async (t) => {
-    const artifact = await cradleMaker()
+    const session = await cradleMaker()
     const repo = 'sessions/relay'
 
-    const { pid } = await artifact.init({ repo })
+    const { pid } = await session.init({ repo })
 
     await t.step('ping', async () => {
-      const { branch } = await artifact.actions('io-fixture', pid)
+      const { branch } = await session.actions('io-fixture', pid)
       const result = await branch()
       expect(result).toEqual('remote pong')
     })
 
-    await artifact.engineStop()
+    await session.engineStop()
+  })
+  Deno.test(prefix + 'machine reload', async () => {
+    const session = await cradleMaker()
+    const machine = session.machine as Machine
+    log.enable('AI:qbr AI:engine AI:tests')
+    const next = machine.clone()
+    expect(next.pid).toEqual(machine.pid)
+    log('cloned')
+    const nextRootSession = await next.rootSessionPromise
+    log('starting ping')
+    await nextRootSession.ping()
+    await session.engineStop()
   })
 }

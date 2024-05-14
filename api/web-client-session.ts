@@ -56,6 +56,9 @@ export class Session implements ArtifactSession {
   get pid() {
     return this.#pid
   }
+  get machine() {
+    return this.#machine
+  }
   get sessionId() {
     return this.#pid.branches[this.#pid.branches.length - 1]
   }
@@ -71,6 +74,7 @@ export class Session implements ArtifactSession {
       params: { sessionId },
       proctype: PROCTYPE.SERIAL,
     }
+    // TODO handle probing in case we already exist
     return this.#action(request)
   }
   stop() {
