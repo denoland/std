@@ -191,3 +191,5 @@ const execute = async (c: Context, p: Promise<unknown>, name: string) => {
     return c.json({ error: serializeError(error) })
   }
 }
+
+Debug.enable('AI:completions*')

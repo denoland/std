@@ -151,3 +151,6 @@ suite
 // then do a cloud version running on a sacrificial deployment
 // hundred pings outside
 // hundred pings inside
+// time to restart an existing session
+
+// ? can a GUTS framework be made to run benchmarks in different environments ?
