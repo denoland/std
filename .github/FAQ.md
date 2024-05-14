@@ -48,13 +48,13 @@ range in the import specifier.
 E.g. If the latest major version of a package is 1, it should be imported as
 follows:
 
-```ts
+```ts, ignore
 import { bar } from "jsr:@std/foo@1/bar";
 ```
 
 The same goes if the latest major version of a package is 0:
 
-```ts
+```ts, ignore
 import { bar } from "jsr:@std/foo@0/bar";
 ```
 
@@ -89,7 +89,7 @@ by pinning the package version.
 E.g. Say `bar()` is deprecated in `@std/foo@0` and removed in `@std/foo@1`. Pin
 the import specifier to `@std/foo@0` to continued use:
 
-```ts
+```ts, ignore
 import { bar } from "jsr:@std/foo@0/bar";
 ```
 
