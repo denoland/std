@@ -50,7 +50,7 @@ jobs:
       - name: Store benchmark result
         uses: benchmark-action/github-action-benchmark@v1
         with:
-          name: Interpulse Benchmark
+          name: Artifact Benchmark
           tool: 'benchmarkjs'
           output-file-path: output.txt
           github-token: ${{ secrets.GITHUB_TOKEN }}
