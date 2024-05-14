@@ -5,14 +5,8 @@ import { AssertionError } from "./assertion_error.ts";
 import { red } from "@std/fmt/colors";
 
 /**
- * Make an assertion that `actual` and `expected` are strictly equal. If
- * not then throw.
- *
- * This function copies the behavior of Node's
- * {@linkcode https://nodejs.org/api/assert.html#assertstrictequalactual-expected-message | assert.strictStrictEqual},
- * which uses
- * {@linkcode https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/is | Object.is}
- * for equality comparison.
+ * Make an assertion that `actual` and `expected` are equal using
+ * {@linkcode Object.is} for equality comparison. If not, then throw.
  *
  * @example
  * ```ts
