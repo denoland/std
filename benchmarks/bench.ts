@@ -152,4 +152,4 @@ suite
 // hundred pings inside
 // time to restart an existing session
 
-// ? can a GUTS framework be made to run benchmarks in different environments ?
+// ? can a GUTS framework be made to run benchmarks in different environments
