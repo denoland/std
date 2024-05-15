@@ -579,7 +579,7 @@ export function it<T>(...args: ItArgs<T>) {
   }
 }
 
-it.only = function itOnly<T>(...args: ItArgs<T>) {
+it.only = function itOnly<T>(...args: ItArgs<T>): void {
   const options = itDefinition(...args);
   return it({
     ...options,
@@ -587,7 +587,7 @@ it.only = function itOnly<T>(...args: ItArgs<T>) {
   });
 };
 
-it.ignore = function itIgnore<T>(...args: ItArgs<T>) {
+it.ignore = function itIgnore<T>(...args: ItArgs<T>): void {
   const options = itDefinition(...args);
   return it({
     ...options,

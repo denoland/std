@@ -4,6 +4,7 @@ import { globToRegExp } from "../path/glob_to_regexp.ts";
 
 const EXTENSIONS = [".mjs", ".js", ".ts", ".rs"];
 const EXCLUDED_DIRS = [
+  "**/cli/testdata",
   "**/dotenv/testdata",
   "**/fs/testdata",
   "**/http/testdata",

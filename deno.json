@@ -7,7 +7,7 @@
   },
   "imports": {
     "@deno/graph": "jsr:@deno/graph@^0.74",
-    "@deno/doc": "jsr:@deno/doc@0.128.1",
+    "@deno/doc": "jsr:@deno/doc@0.134",
     "npm:/typescript": "npm:typescript@5.4.4",
     "automation/": "https://raw.githubusercontent.com/denoland/automation/0.10.0/"
   },

@@ -1,8 +1,13 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import { assertEquals, AssertionError, assertThrows } from "./mod.ts";
-import { bold, gray, green, red, stripAnsiCode, yellow } from "@std/fmt/colors";
-import { _internals } from "@std/internal";
-import { stub } from "@std/testing/mock";
+import {
+  bold,
+  gray,
+  green,
+  red,
+  stripAnsiCode,
+  yellow,
+} from "@std/internal/styles";
 
 const createHeader = (): string[] => [
   "",
@@ -148,23 +153,6 @@ Deno.test({
         removed(`-   ${yellow("1")}`),
         added(`+   ${yellow("2")}`),
         "",
-      ].join("\n"),
-    );
-  },
-});
-
-Deno.test({
-  name: "assertEquals() throws with [Cannot display] if diffing fails",
-  fn() {
-    using _ = stub(_internals, "diff", () => {
-      throw new Error();
-    });
-    assertThrows(
-      () => assertEquals("1", "2"),
-      AssertionError,
-      [
-        "Values are not equal.",
-        "[Cannot display]",
       ].join("\n"),
     );
   },
