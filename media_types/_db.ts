@@ -21,7 +21,7 @@ for (const type of Object.keys(db) as KeyOfDb[]) {
     continue;
   }
 
-  // @ts-ignore work around denoland/dnt#148
+  // @ts-ignore Work around https://github.com/denoland/dnt/issues/148
   extensions.set(type, exts);
 
   for (const ext of exts) {
@@ -33,7 +33,7 @@ for (const type of Object.keys(db) as KeyOfDb[]) {
       if (
         current !== "application/octet-stream" &&
         (from > to ||
-          // @ts-ignore work around denoland/dnt#148
+          // @ts-ignore work around https://github.com/denoland/dnt/issues/148
           (from === to && current.startsWith("application/")))
       ) {
         continue;
