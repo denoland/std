@@ -1,6 +1,6 @@
 {
   "name": "@std/media-types",
-  "version": "0.224.0",
+  "version": "1.0.0-rc.1",
   "exports": {
     ".": "./mod.ts",
     "./content-type": "./content_type.ts",
