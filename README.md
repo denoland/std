@@ -80,6 +80,10 @@ requirements:
 
 Check out the architecture guide [here](./.github/ARCHITECTURE.md).
 
+## Frequently Asked Questions
+
+Check out the frequently asked questions page [here](./.github/FAQ.md).
+
 ## Design
 
 ### Minimal Exports
@@ -89,24 +93,6 @@ amount of effort required to manage them, both for the maintainer and the user.
 In most cases, only a single function or class, alongside its related types, are
 exported. In other cases, functions that incur negligible dependency overhead
 will be grouped together in the same file.
-
-## Deprecation Policy
-
-We deprecate the APIs in the Standard Library when they get covered by new
-JavaScript language APIs or new Web Standard APIs. These APIs are usually
-removed after 3 minor versions.
-
-If you still need to use such APIs after the removal for some reason (for
-example, the usage in Fresh island), please use the URL pinned to the version
-where they are still available.
-
-For example, if you want to keep using `readableStreamFromIterable`, which was
-deprecated and removed in favor of `ReadableStream.from` in `v0.195.0`, please
-use the import URL pinned to `v0.194.0`:
-
-```ts
-import { readableStreamFromIterable } from "https://deno.land/std@0.194.0/streams/readable_stream_from_iterable.ts";
-```
 
 ## Contributing
 
