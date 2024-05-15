@@ -1,12 +1,11 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
-import { buildMessage, diff, diffstr, format } from "@std/internal";
+import { buildMessage, diff, diffstr, format, red } from "@std/internal";
 import { AssertionError } from "./assertion_error.ts";
-import { red } from "@std/fmt/colors";
 
 /**
- * Make an assertion that `actual` and `expected` are strictly equal. If
- * not then throw.
+ * Make an assertion that `actual` and `expected` are equal using
+ * {@linkcode Object.is} for equality comparison. If not, then throw.
  *
  * @example
  * ```ts
@@ -26,15 +25,10 @@ export function assertStrictEquals<T>(
   expected: T,
   msg?: string,
 ): asserts actual is T {
-  if (actual === expected) {
+  if (Object.is(actual, expected)) {
     return;
   }
-  if (
-    typeof actual === "number" && typeof expected === "number" &&
-    isNaN(actual) && isNaN(expected)
-  ) {
-    return;
-  }
+
   const msgSuffix = msg ? `: ${msg}` : ".";
   let message: string;
 

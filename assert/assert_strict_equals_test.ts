@@ -8,7 +8,6 @@ Deno.test({
     assertStrictEquals(10, 10);
     assertStrictEquals("abc", "abc");
     assertStrictEquals(NaN, NaN);
-    assertStrictEquals(+0, -0);
 
     const xs = [1, false, "foo"];
     const ys = xs;
