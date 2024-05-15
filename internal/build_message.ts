@@ -1,7 +1,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-import { bgGreen, bgRed, bold, gray, green, red, white } from "@std/fmt/colors";
+import { bgGreen, bgRed, bold, gray, green, red, white } from "./styles.ts";
 import type { DiffResult, DiffType } from "./_types.ts";
 
 /**
