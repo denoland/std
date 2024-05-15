@@ -2,7 +2,7 @@
 // This module is browser compatible.
 
 import { bgGreen, bgRed, bold, gray, green, red, white } from "./styles.ts";
-import type { DiffResult, DiffType } from "./_types.ts";
+import type { DiffResult, DiffType } from "./types.ts";
 
 /**
  * Colors the output of assertion diffs.
@@ -49,19 +49,48 @@ function createSign(diffType: DiffType): string {
   }
 }
 
+/** Options for {@linkcode buildMessage}. */
+export interface BuildMessageOptions {
+  /**
+   * Whether to output the diff as a single string.
+   *
+   * @default {false}
+   */
+  stringDiff?: boolean;
+}
+
 /**
  * Builds a message based on the provided diff result.
  *
  * @param diffResult The diff result array.
  * @param options Optional parameters for customizing the message.
- * @param options.stringDiff Whether to output the diff as a single string.
  *
  * @returns An array of strings representing the built message.
+ *
+ * @example Usage
+ * ```ts
+ * import { diffstr, buildMessage } from "@std/internal";
+ *
+ * const diffResult = diffstr("Hello, world!", "Hello, world");
+ *
+ * console.log(buildMessage(diffResult));
+ * // [
+ * //   "",
+ * //   "",
+ * //   "    [Diff] Actual / Expected",
+ * //   "",
+ * //   "",
+ * //   "-   Hello, world!",
+ * //   "+   Hello, world",
+ * //   "",
+ * // ]
+ * ```
  */
 export function buildMessage(
   diffResult: ReadonlyArray<DiffResult<string>>,
-  { stringDiff = false } = {},
+  options: BuildMessageOptions = {},
 ): string[] {
+  const { stringDiff = false } = options;
   const messages = [
     "",
     "",

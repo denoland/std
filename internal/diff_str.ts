@@ -1,5 +1,5 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-import type { DiffResult } from "./_types.ts";
+import type { DiffResult } from "./types.ts";
 import { diff } from "./diff.ts";
 
 /**
@@ -106,6 +106,32 @@ function createDetails(
  * @param B Expected string
  *
  * @returns Array of diff results.
+ *
+ * @example Usage
+ * ```ts
+ * import { diffstr } from "@std/internal/diff-str";
+ * import { assertEquals } from "@std/assert/assert-equals";
+ *
+ * assertEquals(diffstr("Hello!", "Hello"), [
+ *   {
+ *     type: "removed",
+ *     value: "Hello!\n",
+ *     details: [
+ *       { type: "common", value: "Hello" },
+ *       { type: "removed", value: "!" },
+ *       { type: "common", value: "\n" }
+ *     ]
+ *   },
+ *   {
+ *     type: "added",
+ *     value: "Hello\n",
+ *     details: [
+ *       { type: "common", value: "Hello" },
+ *       { type: "common", value: "\n" }
+ *     ]
+ *   }
+ * ]);
+ * ```
  */
 export function diffstr(A: string, B: string): DiffResult<string>[] {
   // Compute multi-line diff
