@@ -181,6 +181,10 @@ export default class IOChannel {
           }
         }
       }
+      delete this.#io.pendings[sequence]
+      if (request.proctype !== PROCTYPE.DAEMON) {
+        delete this.#io.branches[sequence]
+      }
     }
     for (const key of blanks) {
       const request = this.#io.requests[key]
@@ -195,6 +199,7 @@ export default class IOChannel {
     if (this.#io.executing === sequence) {
       delete this.#io.executing
     }
+    delete this.#io.executed[sequence]
 
     return request
   }
@@ -333,8 +338,6 @@ export default class IOChannel {
     for (const key of toBlank) {
       delete this.#io.requests[key]
       delete this.#io.replies[key]
-      delete this.#io.pendings[key]
-      delete this.#io.executed[key]
     }
   }
 }

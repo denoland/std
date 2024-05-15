@@ -32,11 +32,13 @@ export default (name: string, cradleMaker: () => Promise<ArtifactSession>) => {
 
     const resumed = session.resumeSession(session.pid)
     await t.step('resume session', async () => {
+      // TODO this should check if the session is valid
       expect(resumed.pid).toEqual(session.pid)
       const { local } = await resumed.actions('io-fixture', target.pid)
       const result = await local()
       expect(result).toEqual('local reply')
     })
+    // test a session resume to a non existent PID
     await Promise.all([resumed.stop(), second.stop(), session.stop()])
     await session.engineStop()
   })
@@ -55,6 +57,7 @@ export default (name: string, cradleMaker: () => Promise<ArtifactSession>) => {
     await session.engineStop()
   })
   Deno.test(prefix + 'machine reload', async () => {
+    // TODO this test should not pass - it should not request a new session
     const session = await cradleMaker()
     const machine = session.machine as Machine
     log.enable('AI:qbr AI:engine AI:tests')

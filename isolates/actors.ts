@@ -142,7 +142,7 @@ export const functions = {
   async '@@install'({ superuser }: { superuser: string }, api: IsolateApi) {
     log('@@install', print(api.pid))
     // TODO set ACL on io.json to only run this isolate
-    assert(isBaseRepo(api.pid), 'not base: ' + print(api.pid))
+    assert(isBaseRepo(api.pid), '@@install not base: ' + print(api.pid))
     const dir = await api.ls('.')
     expect(dir, 'repo must be empty').toEqual(['.io.json'])
     const children = await api.lsChildren()
@@ -155,7 +155,7 @@ export const functions = {
     { provider, name }: { provider: PID; name: string },
     api: IsolateApi,
   ) {
-    assert(isBaseRepo(provider), 'not base: ' + print(provider))
+    assert(isBaseRepo(provider), 'addAuthProvider not base: ' + print(provider))
     log('addAuthProvider provider', print(provider))
     log('addAuthProvider in', print(api.pid))
     const config = await api.readJSON<Config>('config.json')
@@ -268,7 +268,7 @@ export const functions = {
     return sessionPid
   },
   surrender: async (params: { authProvider: PID }, api: IsolateApi) => {
-    assert(isBaseRepo(api.pid), 'not base: ' + print(api.pid))
+    assert(isBaseRepo(api.pid), 'surrender not base: ' + print(api.pid))
     log('surrender', print(api.pid))
     log('surrender authProvider', print(params.authProvider))
     log('origin', print(api.origin.source))
@@ -291,7 +291,7 @@ export const functions = {
       return actorId
     }
 
-    // move every machine in this actor to merge with the baseActorId
+    // TODO move every machine in this actor to merge with the baseActorId
   },
 }
 

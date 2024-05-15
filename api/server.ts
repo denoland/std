@@ -14,7 +14,7 @@ import {
 import { streamSSE } from 'hono/helper'
 import { Engine } from '../engine.ts'
 import { assert, Debug, serializeError } from '@/utils.ts'
-import { EventSourceMessage, machineIdRegex } from '@/constants.ts'
+import { EventSourceMessage, machineIdRegex, Provisioner } from '@/constants.ts'
 import '@std/dotenv/load'
 
 const log = Debug('AI:server')
@@ -31,8 +31,8 @@ export default class Server {
   get engine() {
     return this.#engine
   }
-  static async create(privateKey: string, aesKey: string) {
-    const engine = await Engine.start(privateKey, aesKey)
+  static async create(privateKey: string, aesKey: string, init?: Provisioner) {
+    const engine = await Engine.start(privateKey, aesKey, init)
     const base = new Hono()
     const app = base.basePath('/api')
 

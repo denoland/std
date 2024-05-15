@@ -21,6 +21,7 @@ const factory = async () => {
   const privateKey = Machine.generatePrivateKey()
   const machine = Machine.load(engine, privateKey)
   const session = machine.openSession()
+  await session.initializationPromise
   return session
 }
 const engineFactory = async () => {
@@ -33,6 +34,9 @@ const remachineEngine = await engineFactory()
 const machineEnginePrivateKey = Machine.generatePrivateKey()
 Machine.load(remachineEngine, machineEnginePrivateKey) // do premul crypto
 
+const sessionStartSession = await factory()
+const sessionReloadSession = await factory()
+
 const coldPingSession = await factory()
 const hotPingSession = await factory()
 const hotPingActions = await hotPingSession.actions<Api>('io-fixture')
@@ -42,6 +46,7 @@ let installCounter = 0
 log('setup complete')
 
 suite
+  // ENGINE
   .add('engine cold start', {
     defer: true,
     fn: async (deferred: Benchmark.deferred) => {
@@ -50,10 +55,11 @@ suite
       await engine.stop()
     },
   })
+  // MACHINE
   .add('machine root session', {
     // generate a new machine key and await the root session
     defer: true,
-    fn: async (deferred: Benchmark.deferred) => {
+    async fn(deferred: Benchmark.deferred) {
       const privateKey = Machine.generatePrivateKey()
       const machine = Machine.load(machineEngine, privateKey)
       await machine.rootSessionPromise
@@ -68,9 +74,36 @@ suite
       deferred.resolve()
     },
   })
-  // given a booted engine, how long till a new machine session
-  // given a booted machine, how long until the first browser session ?
-  // given a provisioned engine, how long to set up a new engine ?
+  // SESSION
+  .add('boot', {
+    // start an engine and await the first non root session
+    defer: true,
+    fn: async (deferred: Benchmark.deferred) => {
+      const session = await factory()
+      deferred.resolve()
+      await session.engineStop()
+    },
+  })
+  .add('session start', {
+    defer: true,
+    fn: async (deferred: Benchmark.deferred) => {
+      const session = sessionStartSession.newSession()
+      await session.initializationPromise
+      deferred.resolve()
+      session.stop()
+    },
+  })
+  .add('session reload', {
+    defer: true,
+    fn: async (deferred: Benchmark.deferred) => {
+      const { pid } = sessionReloadSession
+      const session = sessionReloadSession.resumeSession(pid)
+      await session.initializationPromise
+      deferred.resolve()
+      session.stop()
+    },
+  })
+  // given an engine that is provisioned, how long to recover the super user ?
 
   // multihop ping
   // write one file then return
@@ -83,15 +116,9 @@ suite
   // make a single new daemon branch
   // make several new daemon branches
 
+  // run a benchmark from inside an isolate, skipping pierce
   // ? how can we map how long a branch takes to make ?
 
-  .add('boot', {
-    defer: true,
-    fn: async (deferred: Benchmark.deferred) => {
-      await factory()
-      deferred.resolve()
-    },
-  })
   .add('cold ping', {
     // make a new session
     defer: true,
@@ -162,7 +189,7 @@ suite
       await engine.stop()
     }
   })
-  .run({ async: false })
+  .run()
 
 // then do a cloud version running on a sacrificial deployment
 // hundred pings outside

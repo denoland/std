@@ -1,6 +1,7 @@
 import { expect, log } from '@utils'
 import { ArtifactSession } from '../api/web-client.types.ts'
 import { assert } from '@std/assert'
+import { IoStruct } from '@/constants.ts'
 
 const ioFixture = 'io-fixture'
 export default (name: string, cradleMaker: () => Promise<ArtifactSession>) => {
@@ -49,6 +50,21 @@ export default (name: string, cradleMaker: () => Promise<ArtifactSession>) => {
         expect(result).toBe('local reply')
       }
       log('done')
+    })
+    await t.step('io.json is blank', async () => {
+      const sessionIo = await session.readJSON<IoStruct>('.io.json')
+      expect(Object.keys(sessionIo.requests)).toHaveLength(1)
+      expect(Object.keys(sessionIo.executed)).toHaveLength(0)
+      expect(Object.keys(sessionIo.replies)).toHaveLength(1)
+      expect(Object.keys(sessionIo.pendings)).toHaveLength(0)
+      expect(Object.keys(sessionIo.branches)).toHaveLength(0)
+
+      const targetIo = await session.readJSON<IoStruct>('.io.json', target)
+
+      expect(Object.keys(targetIo.executed)).toHaveLength(0)
+      expect(Object.keys(targetIo.pendings)).toHaveLength(0)
+      expect(Object.keys(targetIo.branches)).toHaveLength(0)
+      // TODO verify there are no child branches of target remaining
     })
     await session.rm({ repo })
     await session.engineStop()

@@ -1,6 +1,6 @@
 import { Debug } from '@utils'
 import { IsolateApi, ProcessOptions } from '@/constants.ts'
-const log = Debug('isolates:files')
+const log = Debug('AI:files')
 
 export const api = {
   write: {

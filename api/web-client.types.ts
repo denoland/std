@@ -304,6 +304,7 @@ export interface ArtifactSession {
   machine: ArtifactMachine
   sessionId: string
   homeAddress: PID
+  initializationPromise: Promise<void>
   stop(): void
   engineStop(): Promise<void>
   actions<T = DispatchFunctions>(isolate: string, target?: PID): Promise<T>
@@ -313,7 +314,7 @@ export interface ArtifactSession {
     after?: string,
     signal?: AbortSignal,
   ): AsyncIterable<Splice>
-  readJSON<T>(path: string, pid: PID): Promise<T>
+  readJSON<T>(path: string, pid?: PID): Promise<T>
   exists(path: string, pid?: PID): Promise<boolean>
   transcribe(params: { audio: File }): Promise<{ text: string }>
   apiSchema(isolate: string): Promise<ApiSchema>
@@ -323,8 +324,12 @@ export interface ArtifactSession {
    * various diagnostics about the platform they are interacting with */
   ping(params?: { data?: JsonValue; pid?: PID }): Promise<IsolateReturn>
   /** Calls the repo isolate */
-  init(params: { repo: string }): Promise<Head>
-  clone(params: { repo: string }): Promise<Head>
+  init(
+    params: { repo: string; isolate?: string; params?: Params },
+  ): Promise<Head>
+  clone(
+    params: { repo: string; isolate?: string; params?: Params },
+  ): Promise<Head>
   pull(params: { pid: PID }): Promise<Head>
   push(params: { pid: PID }): Promise<void>
   rm(params: { repo: string }): Promise<boolean>

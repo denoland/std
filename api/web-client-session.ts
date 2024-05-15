@@ -19,7 +19,7 @@ import { ulid } from 'ulid'
 import { PierceWatcher } from './web-client-watcher.ts'
 
 export class Session implements ArtifactSession {
-  #init: Promise<unknown> | undefined
+  #init: Promise<void> | undefined
 
   readonly #engine: EngineInterface
   readonly #machine: ArtifactMachine
@@ -50,6 +50,10 @@ export class Session implements ArtifactSession {
   }
   static resume(engine: EngineInterface, machine: ArtifactMachine, pid: PID) {
     // TODO check this is still a valid pid using ping or similar
+
+    // so this should fail if the pid does not exist
+    // does a pid exist seems to be a general question that could be served from
+    // outside the system
     freezePid(pid)
     return new Session(engine, machine, pid)
   }
@@ -64,6 +68,9 @@ export class Session implements ArtifactSession {
   }
   get homeAddress() {
     return this.#engine.homeAddress
+  }
+  get initializationPromise() {
+    return Promise.resolve(this.#init)
   }
   #initialize(sessionId: string) {
     // we are the system session, and we are being asked to make a new session

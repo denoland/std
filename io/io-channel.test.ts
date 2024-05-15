@@ -26,6 +26,7 @@ Deno.test('remote requests', () => {
   const io = IOChannel.readObject(json, pid)
   expect(io.isExecutionAvailable()).toBe(false)
 })
+
 // refuse to run unless all of a pending layer is solved
 
 // test writing files then doing some accumulation requests, and ensuring that

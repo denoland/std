@@ -2,16 +2,29 @@ import { Engine } from '@/engine.ts'
 import { Machine } from '@/api/web-client-machine.ts'
 import * as Github from '@/isolates/github.ts'
 import * as Actors from '../isolates/actors.ts'
-import { expect } from '@utils'
+import { expect, log } from '@utils'
 import { Tokens } from '@deno/kv-oauth'
-import { getActorId } from '@/constants.ts'
+import { ArtifactSession, getActorId, print } from '@/constants.ts'
 import DB from '@/db.ts'
+
+const init = async (session: ArtifactSession) => {
+  const { homeAddress } = session
+  const { pid } = await session.init({
+    repo: 'dreamcatcher-tech/github',
+    isolate: 'github',
+    params: { homeAddress },
+  })
+  log('github installed', print(pid))
+
+  const actor = await session.actions<Actors.Admin>('actors', homeAddress)
+  await actor.addAuthProvider({ name: 'github', provider: pid })
+}
 
 Deno.test('login with github', async (t) => {
   // figure out how to reload a browser session, then decide how to tidy up
   const superuserKey = Machine.generatePrivateKey()
   const aesKey = DB.generateAesKey()
-  const engine = await Engine.start(superuserKey, aesKey)
+  const engine = await Engine.start(superuserKey, aesKey, init)
 
   const machine = Machine.load(engine, Machine.generatePrivateKey())
   const session = machine.openSession()
@@ -40,24 +53,24 @@ Deno.test('login with github', async (t) => {
     const newActorId = await actorAdmin.surrender({ authProvider })
     expect(newActorId).toEqual(actorId)
   })
-  // await t.step('second machine login', async () => {
-  //   const secondMachine = Machine.load(engine)
-  //   const second = secondMachine.openSession()
+  await t.step('second machine login', async () => {
+    const secondMachine = Machine.load(engine, Machine.generatePrivateKey())
+    const second = secondMachine.openSession()
 
-  //   const { pid } = second
-  //   expect(pid).not.toEqual(session.pid)
-  //   const actorId = pid.branches.slice(-3)[0]
-  //   const authSessionId = 'mock-session-id-2'
-  //   await github.registerAttempt({ actorId, authSessionId })
-  //   const tokens: Tokens = { accessToken: 'mock-token-2', tokenType: 'bearer' }
-  //   await github.authorize({ authSessionId, tokens, githubUserId })
+    const { pid: sessionPid } = second
+    expect(sessionPid).not.toEqual(session.pid)
+    const actorId = getActorId(sessionPid)
+    const authSessionId = 'mock-session-id-2'
+    await github.registerAttempt({ actorId, authSessionId })
+    const tokens: Tokens = { accessToken: 'mock-token-2', tokenType: 'bearer' }
+    await github.authorize({ authSessionId, tokens, githubUserId })
 
-  //   const actor = await second.actions<Actors.ActorApi>('home', pid)
-  //   // these should be managed inside the session since it changes the machine
-  //   await actor.surrender({ authProvider })
+    const actor = await second.actions<Actors.Admin>('actors', home)
+    // these should be managed inside the session since it changes the machine
+    await actor.surrender({ authProvider })
 
-  //   // assert that the PID for the session has changed
-  // })
+    // TODO assert that the PID for the session has changed
+  })
   // await t.step('repeat login still succeeds', async () => {
   //   const { pid } = session
   //   const actorId = pid.branches.slice(-3)[0]

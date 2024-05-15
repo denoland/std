@@ -12,6 +12,7 @@ import {
   PierceRequest,
   print,
   PROCTYPE,
+  Provisioner,
 } from './constants.ts'
 import IsolateApi from './isolate-api.ts'
 import { assert, Debug, posix } from '@utils'
@@ -19,7 +20,6 @@ import FS from '@/git/fs.ts'
 import * as artifact from '@/isolates/artifact.ts'
 import { ulid } from 'ulid'
 import { Machine } from '@/api/web-client-machine.ts'
-import * as Actor from '@/isolates/actors.ts'
 import { PierceWatcher } from '@/api/web-client-watcher.ts'
 const log = Debug('AI:engine')
 
@@ -36,13 +36,13 @@ export class Engine implements EngineInterface {
     const functions = compartment.functions<artifact.Api>(api)
     this.#pierce = functions.pierce
   }
-  static async start(superuserKey: string, aesKey: string) {
+  static async start(superuserKey: string, aesKey: string, init?: Provisioner) {
     const compartment = await Compartment.create('artifact')
     const api = IsolateApi.createContext<C>()
     api.context = { aesKey }
     await compartment.mount(api)
     const engine = new Engine(compartment, api)
-    await engine.ensureHomeAddress(superuserKey)
+    await engine.ensureHomeAddress(superuserKey, init)
     return engine
   }
   get context() {
@@ -54,7 +54,7 @@ export class Engine implements EngineInterface {
     }
     return this.#homeAddress
   }
-  async ensureHomeAddress(superuserKey: string) {
+  async ensureHomeAddress(superuserKey: string, init?: Provisioner) {
     if (this.#homeAddress) {
       return this.#homeAddress
     }
@@ -62,7 +62,7 @@ export class Engine implements EngineInterface {
     if (await db.hasHomeAddress()) {
       this.#homeAddress = await db.getHomeAddress()
     } else {
-      await this.#provision(superuserKey)
+      await this.#provision(superuserKey, init)
     }
     assert(this.#homeAddress, 'home not provisioned')
     return this.#homeAddress
@@ -73,27 +73,21 @@ export class Engine implements EngineInterface {
   get isProvisioned() {
     return !!this.#homeAddress && !!this.#githubAddress
   }
-  async #provision(superuserKey: string) {
+  async #provision(superuserPrivateKey: string, init?: Provisioner) {
     const { db } = artifact.sanitizeContext(this.#api)
     // TODO use the effect lock to ensure atomicity
-    const superuser = Machine.deriveMachineId(superuserKey)
+    const superuser = Machine.deriveMachineId(superuserPrivateKey)
     const { pid: homeAddress } = await this.#installHome(superuser)
     await db.setHomeAddress(homeAddress)
     this.#homeAddress = homeAddress
 
-    const machine = Machine.load(this, superuserKey)
+    if (!init) {
+      return
+    }
+
+    const machine = Machine.load(this, superuserPrivateKey)
     const session = await machine.rootSessionPromise
-
-    const { pid } = await session.init({
-      repo: 'dreamcatcher-tech/github',
-      isolate: 'github',
-      params: { homeAddress },
-    })
-    log('github installed', print(pid))
-    this.#githubAddress = pid
-
-    const actor = await session.actions<Actor.Admin>('actors', homeAddress)
-    await actor.addAuthProvider({ name: 'github', provider: pid })
+    await init(session)
   }
 
   async #installHome(superuser: string) {

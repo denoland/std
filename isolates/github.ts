@@ -98,7 +98,7 @@ export const api = {
 export const functions = {
   '@@install': (params: { homeAddress: PID }, api: IsolateApi) => {
     log('install with homeAddress:', print(params.homeAddress))
-    assert(isBaseRepo(api.pid), 'not base: ' + print(api.pid))
+    assert(isBaseRepo(api.pid), '@@install not base: ' + print(api.pid))
     api.writeJSON('config.json', { homeAddress: params.homeAddress })
   },
   registerAttempt: (
@@ -106,7 +106,7 @@ export const functions = {
     api: IsolateApi,
   ) => {
     log('registerAttempt', colorize(params.actorId))
-    assert(isBaseRepo(api.pid), 'not base: ' + print(api.pid))
+    assert(isBaseRepo(api.pid), 'registerAttempt not base: ' + print(api.pid))
 
     // TODO use a branch to store the authsession info
 
@@ -122,7 +122,7 @@ export const functions = {
     params: { authSessionId: string; tokens: Tokens; githubUserId: string },
     api: IsolateApi,
   ) => {
-    assert(isBaseRepo(api.pid), 'not base: ' + print(api.pid))
+    assert(isBaseRepo(api.pid), 'authorize not base: ' + print(api.pid))
     const { authSessionId, tokens, githubUserId } = params
     log('authorize', authSessionId, githubUserId)
 
@@ -142,19 +142,25 @@ export const functions = {
     const path = 'credentials.json'
     let credentials: Credentials
 
-    if ((await api.isChild(githubPid))) {
-      const string = await files.read({ path })
+    if (await api.isChild(githubPid)) {
+      // TODO make the api able to be focused remotely
+      const { read, write } = await api.actions<files.Api>('files', githubPid)
+      const string = await read({ path })
       credentials = JSON.parse(string)
+      credentials.tokens[actorId] = tokens
+      await write({ path, content: JSON.stringify(credentials) })
     } else {
-      credentials = { baseActorId: actorId, githubUserId, tokens: {} }
+      credentials = {
+        baseActorId: actorId,
+        githubUserId,
+        tokens: { [actorId]: tokens },
+      }
       log('create branch', print(githubPid))
+      await files.write(
+        { path, content: JSON.stringify(credentials) },
+        { noClose: true, branchName: githubUserId },
+      )
     }
-    credentials.tokens[actorId] = tokens
-
-    await files.write(
-      { path, content: JSON.stringify(credentials) },
-      { noClose: true, branchName: githubUserId },
-    )
 
     // TODO add some info about the PAT
     const pointer: ActorPointer = { baseActorId: actorId, githubUserId }
