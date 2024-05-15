@@ -9,18 +9,19 @@
  *
  * TODO(iuioiua): Add support for classes and methods.
  */
-import { doc } from "@deno/doc";
-import type {
-  DocNodeBase,
-  DocNodeFunction,
-  JsDocTag,
-  JsDocTagDocRequired,
-} from "@deno/doc/types";
+import {
+  doc,
+  type DocNodeBase,
+  type DocNodeFunction,
+  type JsDocTag,
+  type JsDocTagDocRequired,
+} from "@deno/doc";
 
 const ENTRY_POINTS = [
   "../bytes/mod.ts",
   "../datetime/mod.ts",
   "../collections/mod.ts",
+  "../media_types/mod.ts",
 ] as const;
 
 const MD_SNIPPET = /(?<=```ts\n)(\n|.)*(?=\n```)/g;
