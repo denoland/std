@@ -1,3 +1,4 @@
+// @deno-types="npm:@types/benchmark"
 import Benchmark from 'benchmark'
 import { Debug } from '@utils'
 import { Machine } from '@/api/web-client-machine.ts'
@@ -49,7 +50,7 @@ suite
   // ENGINE
   .add('engine cold start', {
     defer: true,
-    fn: async (deferred: Benchmark.deferred) => {
+    fn: async (deferred: Benchmark.Deferred) => {
       const engine = await Engine.start(superuserKey, aesKey)
       deferred.resolve()
       await engine.stop()
@@ -59,7 +60,7 @@ suite
   .add('machine root session', {
     // generate a new machine key and await the root session
     defer: true,
-    async fn(deferred: Benchmark.deferred) {
+    async fn(deferred: Benchmark.Deferred) {
       const privateKey = Machine.generatePrivateKey()
       const machine = Machine.load(machineEngine, privateKey)
       await machine.rootSessionPromise
@@ -68,7 +69,7 @@ suite
   })
   .add('machine reload', {
     defer: true,
-    fn: async (deferred: Benchmark.deferred) => {
+    fn: async (deferred: Benchmark.Deferred) => {
       const machine = Machine.load(machineEngine, machineEnginePrivateKey)
       await machine.rootSessionPromise
       deferred.resolve()
@@ -78,7 +79,7 @@ suite
   .add('boot', {
     // start an engine and await the first non root session
     defer: true,
-    fn: async (deferred: Benchmark.deferred) => {
+    fn: async (deferred: Benchmark.Deferred) => {
       const session = await factory()
       await session.initializationPromise
       deferred.resolve()
@@ -86,7 +87,7 @@ suite
   })
   .add('session start', {
     defer: true,
-    fn: async (deferred: Benchmark.deferred) => {
+    fn: async (deferred: Benchmark.Deferred) => {
       const session = sessionStartSession.newSession()
       await session.initializationPromise
       deferred.resolve()
@@ -95,7 +96,7 @@ suite
   })
   .add('session reload', {
     defer: true,
-    fn: async (deferred: Benchmark.deferred) => {
+    fn: async (deferred: Benchmark.Deferred) => {
       const { pid } = sessionReloadSession
       const session = sessionReloadSession.resumeSession(pid)
       await session.initializationPromise
@@ -121,7 +122,7 @@ suite
   .add('cold ping', {
     // make a new session
     defer: true,
-    fn: async (deferred: Benchmark.deferred) => {
+    fn: async (deferred: Benchmark.Deferred) => {
       const session = coldPingSession.newSession()
       const fixture = await session.actions<Api>('io-fixture')
       const result = await fixture.local()
@@ -132,7 +133,7 @@ suite
   .add('hot ping', {
     // use an existing session
     defer: true,
-    fn: async (deferred: Benchmark.deferred) => {
+    fn: async (deferred: Benchmark.Deferred) => {
       const result = await hotPingActions.local()
       assert(result === 'local reply')
       deferred.resolve()
@@ -150,7 +151,7 @@ suite
   .add('install', {
     // time how long to install a new multi user app
     defer: true,
-    fn: async (deferred: Benchmark.deferred) => {
+    fn: async (deferred: Benchmark.Deferred) => {
       const repo = 'install/' + installCounter++
       await installSession.init({ repo })
       deferred.resolve()
@@ -184,11 +185,14 @@ suite
     console.log(String(event.target))
   })
   .on('complete', async function () {
+    log('cleaning up')
+    let count = 0
     for (const engine of engines) {
+      log('stopping engine', ++count)
       await engine.stop()
     }
   })
-  .run()
+  .run({ async: false })
 
 // then do a cloud version running on a sacrificial deployment
 // hundred pings outside

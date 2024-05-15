@@ -1,4 +1,4 @@
-import { Outcome } from '@/constants.ts'
+import { Outcome, Provisioner } from '@/constants.ts'
 import Server from './server.ts'
 import { expect } from '@utils'
 import { WebClientEngine } from '@/api/web-client-engine.ts'
@@ -22,8 +22,8 @@ Deno.test('hono basic', async (t) => {
   })
 })
 
-const cradleMaker = async () => {
-  const server = await Server.create(superuserPrivateKey, aesKey)
+const cradleMaker = async (init?: Provisioner) => {
+  const server = await Server.create(superuserPrivateKey, aesKey, init)
   const fetcher = server.request as typeof fetch
 
   const engine = await WebClientEngine.start('mock', fetcher)

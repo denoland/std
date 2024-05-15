@@ -296,7 +296,7 @@ export type CommitObject = {
 }
 
 type ApiSchema = Record<string, JSONSchemaType<object>>
-type Head = { pid: PID; head: string }
+type PidHead = { pid: PID; head: string }
 
 /** The client session interface to artifact */
 export interface ArtifactSession {
@@ -307,6 +307,10 @@ export interface ArtifactSession {
   initializationPromise: Promise<void>
   stop(): void
   engineStop(): Promise<void>
+  /**
+   * This is managed client side, and can be composed any way people like
+   */
+  dns(repo: string): Promise<PID>
   actions<T = DispatchFunctions>(isolate: string, target?: PID): Promise<T>
   read(
     pid: PID,
@@ -326,11 +330,11 @@ export interface ArtifactSession {
   /** Calls the repo isolate */
   init(
     params: { repo: string; isolate?: string; params?: Params },
-  ): Promise<Head>
+  ): Promise<PidHead>
   clone(
     params: { repo: string; isolate?: string; params?: Params },
-  ): Promise<Head>
-  pull(params: { pid: PID }): Promise<Head>
+  ): Promise<PidHead>
+  pull(params: { pid: PID }): Promise<PidHead>
   push(params: { pid: PID }): Promise<void>
   rm(params: { repo: string }): Promise<boolean>
   endSession(): Promise<void>
@@ -549,7 +553,7 @@ export const sessionIdRegex =
   /^[0-7][0-9A-HJKMNP-TV-Z]{9}[0-9A-HJKMNP-TV-Z]{16}$/
 export const ROOT_SESSION = '111111111111111R00TSESS10N'
 export const getActorPid = (source: PID) => {
-  const branches = source.branches.slice(0, 1)
+  const branches = source.branches.slice(0, 2)
   return { ...source, branches }
 }
 export const getActorId = (source: PID) => {

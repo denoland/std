@@ -4,19 +4,18 @@ import {
   HalActor,
   HalBase,
   HalSession,
+  init,
 } from '@/isolates/hal.ts'
 import { expect, log } from '@utils'
-import { ArtifactSession, print } from '@/constants.ts'
+import { CradleMaker, print } from '@/constants.ts'
 type Messages = OpenAI.ChatCompletionMessageParam
 
-export default (name: string, cradleMaker: () => Promise<ArtifactSession>) => {
+export default (name: string, cradleMaker: CradleMaker) => {
   const prefix = name + ': '
 
   Deno.test(prefix + 'login loop', async (t) => {
-    // TODO set up concept of a superuser
-    const session = await cradleMaker()
-    await session.rm({ repo: 'dreamcatcher-tech/HAL' })
-    const { pid } = await session.clone({ repo: 'dreamcatcher-tech/HAL' })
+    const session = await cradleMaker(init)
+    const pid = await session.dns('dreamcatcher-tech/HAL')
 
     const halBase = await session.actions<HalBase>('hal', pid)
     const actorAddress = await halBase.createActor()

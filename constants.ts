@@ -218,4 +218,6 @@ export const pidSchema = {
   },
 }
 export type Provisioner = (superSession: ArtifactSession) => Promise<void>
+export type CradleMaker = (init?: Provisioner) => Promise<ArtifactSession>
+
 export * from './api/web-client.types.ts'

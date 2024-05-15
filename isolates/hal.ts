@@ -1,4 +1,11 @@
-import { getActorId, IsolateApi, PID, print } from '@/constants.ts'
+import {
+  ArtifactSession,
+  getActorId,
+  IsolateApi,
+  PID,
+  print,
+  Provisioner,
+} from '@/constants.ts'
 import * as session from './session.ts'
 import { Debug } from '@utils'
 import { ulid } from 'ulid'
@@ -143,4 +150,9 @@ export const functions = {
     // TODO store a link to the identity chain
     // TODO set permissions
   },
+}
+
+export const init: Provisioner = async (superSession: ArtifactSession) => {
+  const { pid } = await superSession.clone({ repo: 'dreamcatcher-tech/HAL' })
+  log('HAL pid', print(pid))
 }

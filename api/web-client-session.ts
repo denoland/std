@@ -101,7 +101,27 @@ export class Session implements ArtifactSession {
   resumeSession(pid: PID) {
     return this.#machine.openSession(pid)
   }
+  async dns(repo: string) {
+    const [account, repository, ...rest] = repo.split('/')
+    if (rest.length || !account || !repository) {
+      throw new Error('invalid repo: ' + repo)
+    }
+    const root = await this.#machine.rootSessionPromise
+    const home = root.homeAddress
+    type Superuser = { superuser: string }
+    const { superuser } = await root.readJSON<Superuser>('config.json', home)
 
+    const branches = home.branches.concat(superuser)
+    const actor = { ...home, branches }
+
+    type Repos = { [repo: string]: PID }
+    const repos = await root.readJSON<Repos>('repos.json', actor)
+    const pid = repos[repo]
+    if (!pid) {
+      throw new Error('repo not found: ' + repo)
+    }
+    return pid
+  }
   async actions<T>(isolate: string, target: PID = this.pid) {
     const schema = await this.apiSchema(isolate)
     const execute = (request: UnsequencedRequest) => this.#action(request)

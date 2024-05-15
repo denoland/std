@@ -3,11 +3,12 @@ import { Machine } from './api/web-client-machine.ts'
 import guts from './guts/guts.ts'
 import { expect, log } from '@utils'
 import DB from '@/db.ts'
+import { Provisioner } from '@/constants.ts'
 
 const superuserKey = Machine.generatePrivateKey()
 const aesKey = DB.generateAesKey()
-const cradleMaker = async () => {
-  const engine = await Engine.start(superuserKey, aesKey)
+const cradleMaker = async (init?: Provisioner) => {
+  const engine = await Engine.start(superuserKey, aesKey, init)
   const privateKey = Machine.generatePrivateKey()
   const machine = Machine.load(engine, privateKey)
   const session = machine.openSession()

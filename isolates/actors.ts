@@ -196,6 +196,7 @@ export const functions = {
     return true
   },
   lsRepos: async (_params: Params, api: IsolateApi) => {
+    assertIsActorPid(api)
     const repos = await readRepos(api)
     return Object.keys(repos)
   },
@@ -203,8 +204,8 @@ export const functions = {
     p: { repo: string; isolate?: string; params?: Params },
     api: IsolateApi,
   ) => {
-    const { repo, isolate, params } = p
     assertIsActorPid(api)
+    const { repo, isolate, params } = p
     log('clone', repo, isolate, params)
 
     const repos = await readRepos(api)
@@ -298,7 +299,6 @@ export const functions = {
 const addBranch = (pid: PID, branch: string) => {
   return { ...pid, branches: [...pid.branches, branch] }
 }
-type Repos = { [repo: string]: PID }
 
 const assertIsActorPid = (api: IsolateApi) => {
   const actorPid = getActorPid(api.pid)
@@ -314,6 +314,7 @@ const readRepos = async (api: IsolateApi) => {
   return repos
 }
 
+type Repos = { [repo: string]: PID }
 export type Config = {
   superuser: string
   authProviders: { [name: string]: PID }
