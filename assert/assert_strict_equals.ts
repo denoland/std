@@ -5,8 +5,8 @@ import { AssertionError } from "./assertion_error.ts";
 import { red } from "@std/fmt/colors";
 
 /**
- * Make an assertion that `actual` and `expected` are strictly equal. If
- * not then throw.
+ * Make an assertion that `actual` and `expected` are equal using
+ * {@linkcode Object.is} for equality comparison. If not, then throw.
  *
  * @example
  * ```ts
