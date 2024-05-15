@@ -33,7 +33,7 @@ jobs:
             ci
             chore
             revert
-          # This should be kept up-to-date with the packages in the Standard
+          # This should be kept up-to-date with the current packages list
           scopes: |
             archive
             assert
