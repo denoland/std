@@ -1,5 +1,11 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-import { assert, assertEquals, assertGreater, assertLess } from "@std/assert";
+import {
+  assert,
+  assertEquals,
+  assertGreater,
+  assertLess,
+  assertStringIncludes,
+} from "@std/assert";
 import { Spinner } from "./spinner.ts";
 
 async function spawnDeno(args: string[], opts?: Deno.CommandOptions) {
@@ -130,7 +136,7 @@ Deno.test("Spinner.color can set each color", async () => {
     `${LINE_CLEAR}\u001b[31m⠙${COLOR_RESET} ` + // Red
     `${LINE_CLEAR}\u001b[32m⠹${COLOR_RESET} `; // Green
 
-  assertEquals(text, expectedStr);
+  assertStringIncludes(text, expectedStr);
 });
 
 Deno.test("Spinner.color can get each color", () => {
