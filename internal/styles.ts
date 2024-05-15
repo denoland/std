@@ -163,7 +163,7 @@ export function gray(str: string): string {
  * console.log(brightBlack("Hello, world!")); // Prints "Hello, world!" in bright-black
  * ```
  */
-function brightBlack(str: string): string {
+export function brightBlack(str: string): string {
   return run(str, code([90], 39));
 }
 
