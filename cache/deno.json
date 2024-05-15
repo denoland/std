@@ -5,5 +5,6 @@
     ".": "./mod.ts",
     "./lru-cache": "./lru_cache.ts",
     "./memoize": "./memoize.ts"
-  }
+  },
+  "imports": { "@std/assert": "jsr:@std/assert@^0.225.1" }
 }
