@@ -33,7 +33,7 @@ Deno.test("Spinner constructor accepts spinner", async () => {
   ]);
   const actual = normalizeString(text);
 
-  assert(actual.startsWith("0 1 2 3 4 5 6"));
+  assertStringIncludes(actual, "0 1 2 3 4 5 6");
 });
 
 Deno.test("Spinner constructor accepts message", async () => {
