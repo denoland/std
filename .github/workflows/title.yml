@@ -34,24 +34,23 @@ jobs:
             chore
             revert
           # This should be kept up-to-date with the packages in the Standard
-          # Library (except `_tools`).
           scopes: |
-            _tools
             archive
             assert
             async
             bytes
+            cache
             cli
             collections
             crypto
             csv
-            data_structures
+            data-structures
             datetime
             dotenv
             encoding
             expect
             fmt
-            front_matter
+            front-matter
             fs
             html
             http
@@ -61,7 +60,7 @@ jobs:
             json
             jsonc
             log
-            media_types
+            media-types
             msgpack
             net
             path
