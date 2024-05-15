@@ -1,6 +1,5 @@
 .DS_Store
 .idea
-.vscode/settings.json
 .vim
 **/cov/
 crypto/_wasm/target
