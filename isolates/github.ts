@@ -1,4 +1,6 @@
+import * as Actors from '../isolates/actors.ts'
 import {
+  ArtifactSession,
   colorize,
   isBaseRepo,
   IsolateApi,
@@ -185,3 +187,16 @@ type Credentials = {
   }
 }
 type ActorPointer = Omit<Credentials, 'tokens'>
+
+export const init = async (session: ArtifactSession) => {
+  const { homeAddress } = session
+  const { pid } = await session.init({
+    repo: 'dreamcatcher-tech/github',
+    isolate: 'github',
+    params: { homeAddress },
+  })
+  log('github installed', print(pid))
+
+  const actor = await session.actions<Actors.Admin>('actors', homeAddress)
+  await actor.addAuthProvider({ name: 'github', provider: pid })
+}

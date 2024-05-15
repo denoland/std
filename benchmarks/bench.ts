@@ -80,8 +80,8 @@ suite
     defer: true,
     fn: async (deferred: Benchmark.deferred) => {
       const session = await factory()
+      await session.initializationPromise
       deferred.resolve()
-      await session.engineStop()
     },
   })
   .add('session start', {
@@ -100,7 +100,6 @@ suite
       const session = sessionReloadSession.resumeSession(pid)
       await session.initializationPromise
       deferred.resolve()
-      session.stop()
     },
   })
   // given an engine that is provisioned, how long to recover the super user ?
@@ -126,8 +125,8 @@ suite
       const session = coldPingSession.newSession()
       const fixture = await session.actions<Api>('io-fixture')
       const result = await fixture.local()
-      deferred.resolve()
       assert(result === 'local reply')
+      deferred.resolve()
     },
   })
   .add('hot ping', {
@@ -135,8 +134,8 @@ suite
     defer: true,
     fn: async (deferred: Benchmark.deferred) => {
       const result = await hotPingActions.local()
-      deferred.resolve()
       assert(result === 'local reply')
+      deferred.resolve()
     },
   })
   // try get max thruput by not waiting for things to complete ?

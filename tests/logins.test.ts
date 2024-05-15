@@ -7,24 +7,11 @@ import { Tokens } from '@deno/kv-oauth'
 import { ArtifactSession, getActorId, print } from '@/constants.ts'
 import DB from '@/db.ts'
 
-const init = async (session: ArtifactSession) => {
-  const { homeAddress } = session
-  const { pid } = await session.init({
-    repo: 'dreamcatcher-tech/github',
-    isolate: 'github',
-    params: { homeAddress },
-  })
-  log('github installed', print(pid))
-
-  const actor = await session.actions<Actors.Admin>('actors', homeAddress)
-  await actor.addAuthProvider({ name: 'github', provider: pid })
-}
-
 Deno.test('login with github', async (t) => {
   // figure out how to reload a browser session, then decide how to tidy up
   const superuserKey = Machine.generatePrivateKey()
   const aesKey = DB.generateAesKey()
-  const engine = await Engine.start(superuserKey, aesKey, init)
+  const engine = await Engine.start(superuserKey, aesKey, Github.init)
 
   const machine = Machine.load(engine, Machine.generatePrivateKey())
   const session = machine.openSession()
