@@ -51,6 +51,7 @@ jobs:
             encoding
             expect
             fmt
+            foo
             front_matter
             fs
             html
