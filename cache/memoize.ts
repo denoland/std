@@ -1,5 +1,4 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-import { LruCache } from "./lru_cache.ts";
 
 export type MemoizationCache<K, V> = {
   has: (key: K) => boolean;
@@ -53,10 +52,6 @@ export type MemoizationOptions<Fn extends (...args: never[]) => unknown> = {
   cacheRejectedPromises?: boolean;
 };
 
-// used for memoizing the `memoize` function itself to enable on-the-fly usage
-const _cache: LruCache<unknown, ReturnType<typeof memoize>> = new LruCache(100);
-const _getKey: ReturnType<typeof _serializeArgList> = _serializeArgList(_cache);
-
 /**
  * Cache the results of a function based on its arguments.
  *
@@ -76,19 +71,7 @@ const _getKey: ReturnType<typeof _serializeArgList> = _serializeArgList(_cache);
  * assertEquals(fib(100n), 354224848179261915075n);
  * ```
  */
-const memoize_: typeof memoize = memoize(memoize, {
-  cache: _cache,
-  getKey(fn, options) {
-    const optionVals = Object.entries(options ?? {})
-      .sort(([a], [b]) => a > b ? 1 : a < b ? -1 : 0)
-      .map(([, v]) => v);
-    return _getKey(fn, ...optionVals);
-  },
-});
-
-export { memoize_ as memoize };
-
-function memoize<Fn extends (...args: never[]) => unknown>(
+export function memoize<Fn extends (...args: never[]) => unknown>(
   fn: Fn,
   options?: NoInfer<Partial<MemoizationOptions<Fn>>>,
 ): Fn & {
@@ -132,7 +115,15 @@ function memoize<Fn extends (...args: never[]) => unknown>(
   });
 }
 
-/** Default serialization of arguments list for use as cache keys */
+/**
+ * Default serialization of arguments list for use as cache keys. Equivalence
+ * follows [`SameValueZero`](https://tc39.es/ecma262/multipage/abstract-operations.html#sec-samevaluezero)
+ * reference equality, such that `getKey(x, y) === getKey(x, y)` for all values
+ * of `x` and `y`, but `getKey({}) !== getKey({})`.
+ *
+ * @param cache - The cache for which the keys will be used.
+ * @returns `getKey`, the function for getting cache keys.
+ */
 export function _serializeArgList<Return>(
   cache: MemoizationCache<unknown, Return>,
 ): (this: unknown, ...args: unknown[]) => string {
@@ -147,22 +138,25 @@ export function _serializeArgList<Return>(
     weakKeySegmentToKeyCache.delete(keySegment);
   });
 
-  return function (...args) {
+  return function getKey(...args) {
     const weakKeySegments: string[] = [];
     const keySegments = [this, ...args].map((arg) => {
       if (typeof arg === "undefined") return "undefined";
       if (typeof arg === "bigint") return `${arg}n`;
 
+      if (typeof arg === "number") {
+        return String(arg);
+      }
+
       if (
         arg === null ||
-        ["string", "boolean", "number", "record", "tuple"].includes(typeof arg)
+        typeof arg === "string" ||
+        typeof arg === "boolean"
       ) {
-        // null, string, boolean, number, or one of the upcoming
-        // [record/tuple](https://github.com/tc39/proposal-record-tuple)
-        // ECMAScript types
-        try {
-          return JSON.stringify(arg);
-        } catch { /* fallthrough to weak cache */ }
+        // This branch will need to be updated if further types are added to
+        // the language that support value equality,
+        // e.g. https://github.com/tc39/proposal-record-tuple
+        return JSON.stringify(arg);
       }
 
       try {

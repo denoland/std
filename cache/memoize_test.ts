@@ -585,35 +585,6 @@ Deno.test("memoize() preserves function name", () => {
   assertEquals(memoize(obj["!"]).name, "!");
 });
 
-Deno.test("memoize() allows on-the-fly memoization", () => {
-  let numTimesCalled = 0;
-
-  const fn = (arg?: unknown) => {
-    ++numTimesCalled;
-    return arg;
-  };
-
-  memoize(fn)();
-  assertEquals(numTimesCalled, 1);
-  memoize(fn)();
-  assertEquals(numTimesCalled, 1);
-
-  memoize(fn, {})();
-  assertEquals(numTimesCalled, 1);
-
-  memoize(fn, { cache: new Map() })();
-  assertEquals(numTimesCalled, 2);
-
-  memoize(fn, { cache: new Map() })();
-  assertEquals(numTimesCalled, 3);
-
-  const cache = new Map();
-  memoize(fn, { cache })();
-  assertEquals(numTimesCalled, 4);
-  memoize(fn, { cache })();
-  assertEquals(numTimesCalled, 4);
-});
-
 Deno.test("memoize() has correct TS types", async (t) => {
   await t.step("simple types", () => {
     // no need to run, only for type checking

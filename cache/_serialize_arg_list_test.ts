@@ -1,5 +1,5 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-import { assertEquals } from "@std/assert";
+import { assert, assertEquals } from "@std/assert";
 import { _serializeArgList } from "./memoize.ts";
 import { delay } from "@std/async";
 
@@ -13,9 +13,101 @@ Deno.test("_serializeArgList() serializes simple numbers", () => {
 Deno.test("_serializeArgList() serializes primitive types", () => {
   const getKey = _serializeArgList(new Map());
   assertEquals(
-    getKey(1, "2", 3n, null, undefined, true, Symbol.for("xyz")),
-    'undefined,1,"2",3n,null,undefined,true,Symbol.for("xyz")',
+    getKey(
+      1,
+      "2",
+      3n,
+      null,
+      undefined,
+      true,
+      Symbol.for("xyz"),
+      NaN,
+      Infinity,
+      -Infinity,
+      0,
+      -0,
+    ),
+    'undefined,1,"2",3n,null,undefined,true,Symbol.for("xyz"),NaN,Infinity,-Infinity,0,0',
   );
+});
+
+Deno.test("_serializeArgList() implements SameValueZero algorithm", async (t) => {
+  // https://tc39.es/ecma262/multipage/abstract-operations.html#sec-samevaluezero
+
+  const getKey = _serializeArgList(new Map());
+
+  await t.step("1. If Type(x) is not Type(y), return false.", () => {
+    assert(getKey(1) !== getKey("1"));
+    assert(getKey(1) !== getKey(1n));
+    assert(getKey("true") !== getKey(true));
+    assert(getKey(null) !== getKey(undefined));
+  });
+
+  await t.step(
+    "2. If x is a Number, then return Number::sameValueZero(x, y).",
+    async (t) => {
+      // https://tc39.es/ecma262/multipage/ecmascript-data-types-and-values.html#sec-numeric-types-number-sameValueZero
+      await t.step("1. If x is NaN and y is NaN, return true.", () => {
+        assert(getKey(NaN) === getKey(NaN));
+      });
+      await t.step("2. If x is +0𝔽 and y is -0𝔽, return true.", () => {
+        assert(getKey(0) === getKey(-0));
+      });
+      await t.step("3. If x is -0𝔽 and y is +0𝔽, return true.", () => {
+        assert(getKey(-0) === getKey(0));
+      });
+      await t.step("4. If x is y, return true.", () => {
+        assert(getKey(42) === getKey(42));
+      });
+      await t.step("5. Return false.", () => {
+        assert(getKey(42) !== getKey(43));
+      });
+    },
+  );
+
+  await t.step("3. Return SameValueNonNumber(x, y).", async (t) => {
+    // https://tc39.es/ecma262/multipage/abstract-operations.html#sec-samevaluenonnumber
+
+    // 1. Assert: Type(x) is Type(y).
+
+    await t.step("2. If x is either null or undefined, return true.", () => {
+      assert(getKey(null) === getKey(null));
+      assert(getKey(undefined) === getKey(undefined));
+    });
+    await t.step(
+      "3. If x is a BigInt, then return BigInt::equal(x, y).",
+      () => {
+        assert(getKey(42n) === getKey(42n));
+        assert(getKey(42n) !== getKey(43n));
+      },
+    );
+
+    await t.step(
+      "4. If x is a String, then if x and y have the same length and the same code units in the same positions, return true; otherwise, return false.",
+      () => {
+        assert(getKey("a") === getKey("a"));
+        assert(getKey("a") !== getKey("aa"));
+      },
+    );
+
+    await t.step(
+      "5. If x is a Boolean, then if x and y are both true or both false, return true; otherwise, return false.",
+      () => {
+        assert(getKey(true) === getKey(true));
+        assert(getKey(false) === getKey(false));
+        assert(getKey(true) !== getKey(false));
+      },
+    );
+
+    // 6. NOTE: All other ECMAScript language values are compared by identity.
+
+    await t.step("7. If x is y, return true; otherwise, return false.", () => {
+      const obj1 = {};
+      const obj2 = {};
+      assert(getKey(obj1) === getKey(obj1));
+      assert(getKey(obj1) !== getKey(obj2));
+    });
+  });
 });
 
 Deno.test("_serializeArgList() serializes reference types", () => {
