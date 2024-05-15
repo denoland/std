@@ -5,53 +5,6 @@
 
 // This code is vendored from `fmt/colors.ts`.
 
-/**
- * String formatters and utilities for dealing with ANSI color codes.
- *
- * This module is browser compatible.
- *
- * This module supports `NO_COLOR` environmental variable disabling any coloring
- * if `NO_COLOR` is set.
- *
- * @example
- * ```ts
- * import {
- *   bgBlue,
- *   bgRgb24,
- *   bgRgb8,
- *   bold,
- *   italic,
- *   red,
- *   rgb24,
- *   rgb8,
- * } from "@std/fmt/colors";
- *
- * console.log(bgBlue(italic(red(bold("Hello, World!")))));
- *
- * // also supports 8bit colors
- *
- * console.log(rgb8("Hello, World!", 42));
- *
- * console.log(bgRgb8("Hello, World!", 42));
- *
- * // and 24bit rgb
- *
- * console.log(rgb24("Hello, World!", {
- *   r: 41,
- *   g: 42,
- *   b: 43,
- * }));
- *
- * console.log(bgRgb24("Hello, World!", {
- *   r: 41,
- *   g: 42,
- *   b: 43,
- * }));
- * ```
- *
- * @module
- */
-
 // deno-lint-ignore no-explicit-any
 const { Deno } = globalThis as any;
 const noColor = typeof Deno?.noColor === "boolean"
@@ -197,7 +150,7 @@ export function gray(str: string): string {
 }
 
 /**
- * Sets the color of text to be printed to italic.
+ * Sets the color of text to be printed to bright-black.
  *
  * @param str Text to make bright-black
  *
@@ -205,9 +158,9 @@ export function gray(str: string): string {
  *
  * @example Usage
  * ```ts
- * import { italic } from "@std/internal/styles";
+ * import { brightBlack } from "@std/internal/styles";
  *
- * console.log(italic("Hello, world!")); // Prints "Hello, world!" in italic
+ * console.log(brightBlack("Hello, world!")); // Prints "Hello, world!" in bright-black
  * ```
  */
 function brightBlack(str: string): string {
