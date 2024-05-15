@@ -5,11 +5,12 @@ import { consumeMediaParam, decode2331Encoding } from "./_util.ts";
 
 /**
  * Parses the media type and any optional parameters, per
- * {@link https://datatracker.ietf.org/doc/html/rfc1521 | RFC 1521}. Media
- * types are the values in `Content-Type` and `Content-Disposition` headers. On
- * success the function returns a tuple where the first element is the media
- * type and the second element is the optional parameters or `undefined` if
- * there are none.
+ * {@link https://datatracker.ietf.org/doc/html/rfc1521 | RFC 1521}.
+ *
+ * Media types are the values in `Content-Type` and `Content-Disposition`
+ * headers. On success the function returns a tuple where the first element is
+ * the media type and the second element is the optional parameters or
+ * `undefined` if there are none.
  *
  * The function will throw if the parsed value is invalid.
  *
@@ -17,12 +18,18 @@ import { consumeMediaParam, decode2331Encoding } from "./_util.ts";
  * params keys will be normalized to lower case, but preserves the casing of
  * the value.
  *
- * @example
+ * @param v The media type to parse.
+ *
+ * @returns A tuple where the first element is the media type and the second
+ * element is the optional parameters or `undefined` if there are none.
+ *
+ * @example Usage
  * ```ts
  * import { parseMediaType } from "@std/media-types/parse-media-type";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
- * parseMediaType("application/JSON"); // ["application/json", undefined]
- * parseMediaType("text/html; charset=UTF-8"); // ["text/html", { charset: "UTF-8" }]
+ * assertEquals(parseMediaType("application/JSON"), ["application/json", undefined]);
+ * assertEquals(parseMediaType("text/html; charset=UTF-8"), ["text/html", { charset: "UTF-8" }]);
  * ```
  */
 export function parseMediaType(

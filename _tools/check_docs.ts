@@ -21,6 +21,7 @@ const ENTRY_POINTS = [
   "../bytes/mod.ts",
   "../datetime/mod.ts",
   "../collections/mod.ts",
+  "../media_types/mod.ts",
 ] as const;
 
 const MD_SNIPPET = /(?<=```ts\n)(\n|.)*(?=\n```)/g;
