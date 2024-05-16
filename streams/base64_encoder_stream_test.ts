@@ -10,9 +10,7 @@ async function testEncoderStream(
   output: string,
   lineLength?: number,
 ) {
-  const stream = ReadableStream.from([
-    ...input.map((v) => encoder.encode(v)),
-  ])
+  const stream = ReadableStream.from(input.map((v) => encoder.encode(v)))
     .pipeThrough(new Base64EncoderStream({ lineLength }));
 
   const chunks = await Array.fromAsync(stream);
@@ -29,9 +27,9 @@ const testset: [string[], string][] = [
   [["fooba"], "Zm9vYmE="],
   [["foobar"], "Zm9vYmFy"],
   [["deno"], "ZGVubw=="],
+  [["d", "e", "n", "o"], "ZGVubw=="],
   [["hello world"], "aGVsbG8gd29ybGQ="],
   [["hello", " ", "world"], "aGVsbG8gd29ybGQ="],
-  [["d", "e", "n", "o"], "ZGVubw=="],
 ];
 
 Deno.test("Base64EncoderStream encodes a stream of binary data", async () => {
@@ -48,17 +46,19 @@ Deno.test("Base64EncoderStream divides the encoded strings into lines", async ()
   await Promise.all([
     testEncoderStream(["hello world"], "aGVsb\r\nG8gd2\r\n9ybGQ\r\n=", 5),
     testEncoderStream(
-      [`\
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod \
-tempor incididunt ut labore et dolore magna aliqua. Netus et malesuada \
-fames ac turpis egestas maecenas pharetra. In hac habitasse platea \
-dictumst vestibulum rhoncus est pellentesque elit.`],
-      `\
-TG9yZW0gaXBzdW0gZG9sb3Igc2l0IGFtZXQsIGNvbnNlY3RldHVyIGFkaXBpc2NpbmcgZWxpdCwg\r\n\
-c2VkIGRvIGVpdXNtb2QgdGVtcG9yIGluY2lkaWR1bnQgdXQgbGFib3JlIGV0IGRvbG9yZSBtYWdu\r\n\
-YSBhbGlxdWEuIE5ldHVzIGV0IG1hbGVzdWFkYSBmYW1lcyBhYyB0dXJwaXMgZWdlc3RhcyBtYWVj\r\n\
-ZW5hcyBwaGFyZXRyYS4gSW4gaGFjIGhhYml0YXNzZSBwbGF0ZWEgZGljdHVtc3QgdmVzdGlidWx1\r\n\
-bSByaG9uY3VzIGVzdCBwZWxsZW50ZXNxdWUgZWxpdC4=`,
+      [
+        "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod ",
+        "tempor incididunt ut labore et dolore magna aliqua. Netus et malesuada ",
+        "fames ac turpis egestas maecenas pharetra. In hac habitasse platea ",
+        "dictumst vestibulum rhoncus est pellentesque elit.",
+      ],
+      [
+        "TG9yZW0gaXBzdW0gZG9sb3Igc2l0IGFtZXQsIGNvbnNlY3RldHVyIGFkaXBpc2NpbmcgZWxpdCwg",
+        "c2VkIGRvIGVpdXNtb2QgdGVtcG9yIGluY2lkaWR1bnQgdXQgbGFib3JlIGV0IGRvbG9yZSBtYWdu",
+        "YSBhbGlxdWEuIE5ldHVzIGV0IG1hbGVzdWFkYSBmYW1lcyBhYyB0dXJwaXMgZWdlc3RhcyBtYWVj",
+        "ZW5hcyBwaGFyZXRyYS4gSW4gaGFjIGhhYml0YXNzZSBwbGF0ZWEgZGljdHVtc3QgdmVzdGlidWx1",
+        "bSByaG9uY3VzIGVzdCBwZWxsZW50ZXNxdWUgZWxpdC4=",
+      ].join("\r\n"),
       76,
     ),
   ]);
