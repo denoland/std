@@ -8,6 +8,8 @@
  * @module
  */
 
+export * from "./base64_decoder_stream.ts";
+export * from "./base64_encoder_stream.ts";
 export * from "./buffer.ts";
 export * from "./byte_slice_stream.ts";
 export * from "./delimiter_stream.ts";
