@@ -3,6 +3,8 @@
   "version": "0.224.0",
   "exports": {
     ".": "./mod.ts",
+    "./base64-decoder-stream": "./base64_decoder_stream.ts",
+    "./base64-encoder-stream": "./base64_encoder_stream.ts",
     "./buffer": "./buffer.ts",
     "./byte-slice-stream": "./byte_slice_stream.ts",
     "./delimiter-stream": "./delimiter_stream.ts",
