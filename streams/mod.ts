@@ -10,6 +10,7 @@
 
 export * from "./buffer.ts";
 export * from "./byte_slice_stream.ts";
+export * from "./concat_streams.ts";
 export * from "./delimiter_stream.ts";
 export * from "./early_zip_readable_streams.ts";
 export * from "./iterate_reader.ts";
