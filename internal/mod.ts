@@ -6,7 +6,7 @@
  * Note: this module is for internal use only and should not be used directly.
  *
  * ```ts
- * import { diff, diffstr, buildMessage } from "@std/internal";
+ * import { diff, diffStr, buildMessage } from "@std/internal";
  * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const a = [1, 2, 3];
@@ -19,7 +19,7 @@
  *   { type: "added", value: 4 },
  * ]);
  *
- * const diffResult = diffstr("Hello, world!", "Hello, world");
+ * const diffResult = diffStr("Hello, world!", "Hello, world");
  *
  * console.log(buildMessage(diffResult));
  * // [
