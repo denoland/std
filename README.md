@@ -64,11 +64,24 @@ documentation:
 
 ## Stabilization
 
-For a package to reach v1 (aka stable) status, it must meet the following
-requirements:
+The Standard Library is now in the process of stabilizing its packages.
 
-1. Approved by four members of the internal team. There must be consensus that
-   the API design is satisfactory and unlikely to change in the future.
+Each package go through the below steps before the stabilization:
+
+- Published at version 1.0.0-rc.1
+  - To reach 1.0.0-rc.1, a package needs to satisfy the criteria described
+    below.
+- We wait 1 month to get the feedback from the community
+- Handle feedbacks if any
+- If there's no issue remaining after 1 month, then the package becomes
+  stabilized (published at 1.0.0)
+  - If there's unresolved issue remaining, we extend the waiting period 1 month,
+    or cancel the stabilization depending on the situation.
+
+For a package to reach 1.0.0-rc.1, it must meet the following requirements:
+
+1. Approved by at least 2 maintainers. There must be consensus that the API
+   design is satisfactory and unlikely to change in the future.
 1. 100% documented, passing `deno doc --lint` checks and adhering to the
    [documentation guidelines](https://github.com/denoland/deno_std/blob/main/.github/CONTRIBUTING.md#documentation).
 1. Maximum possible test coverage
