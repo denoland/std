@@ -14,7 +14,7 @@ Deno.test("expect().toContainEqual()", () => {
       expect(arr).toContainEqual({ bar: 42 });
     },
     AssertionError,
-    "The value [{foo: 42},{bar: 43},{baz: 44}] doesn't contain the expected item {bar: 42}"
+    "The value [{foo: 42},{bar: 43},{baz: 44}] doesn't contain the expected item {bar: 42}",
   );
 
   assertThrows(
@@ -22,6 +22,6 @@ Deno.test("expect().toContainEqual()", () => {
       expect(arr).not.toContainEqual({ foo: 42 });
     },
     AssertionError,
-    "The value [{foo: 42},{bar: 43},{baz: 44}] contains the expected item {foo: 42}"
+    "The value [{foo: 42},{bar: 43},{baz: 44}] contains the expected item {foo: 42}",
   );
 });
