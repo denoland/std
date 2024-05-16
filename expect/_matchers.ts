@@ -375,11 +375,15 @@ export function toContain(
 
   if (context.isNot) {
     if (doesContain) {
-      throw new AssertionError("The value contains the expected item");
+      throw new AssertionError(
+        `The value "${context.value}" contains the expected item "${expected}"`,
+      );
     }
   } else {
     if (!doesContain) {
-      throw new AssertionError("The value doesn't contain the expected item");
+      throw new AssertionError(
+        `The value "${context.value}" doesn't contain the expected item "${expected}"`,
+      );
     }
   }
 }

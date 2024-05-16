@@ -15,9 +15,20 @@ Deno.test("expect().toContain()", () => {
   assertThrows(() => {
     expect(arr).toContain(4);
   }, AssertionError);
-  assertThrows(() => {
-    expect("foobarbaz").toContain("qux");
-  }, AssertionError);
+  assertThrows(
+    () => {
+      expect("foobarbaz").toContain("qux");
+    },
+    AssertionError,
+    "foobarbaz",
+  );
+  assertThrows(
+    () => {
+      expect("foobarbaz").toContain("qux");
+    },
+    AssertionError,
+    "qux",
+  );
 
   assertThrows(() => {
     expect(arr).not.toContain(2);
