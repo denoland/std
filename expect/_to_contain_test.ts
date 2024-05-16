@@ -20,7 +20,7 @@ Deno.test("expect().toContain()", () => {
       expect("foobarbaz").toContain("qux");
     },
     AssertionError,
-    `The value "foobarbaz" doesn\'t contain the expected item "qux"`,
+    `The value "foobarbaz" doesn't contain the expected item "qux"`
   );
 
   assertThrows(() => {
