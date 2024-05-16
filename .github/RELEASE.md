@@ -17,8 +17,7 @@ To release deno_std, follow the below steps:
   git tag release-YYYY.MM.DD
   git push origin release-YYYY.MM.DD
   ```
-- A maintainer publish the tag from github UI (Re-check the tag is in correct
-  form)
+- Publish the tag from github UI (Re-check the tag is in correct form)
 - Wait for `workspace publish` action to publish the new versions to JSR
 - Message slack #std and discord #dev-std channel "🔓 std is unlocked
   <url_of_release>"
