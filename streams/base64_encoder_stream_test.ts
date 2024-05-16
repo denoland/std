@@ -64,12 +64,20 @@ Deno.test("Base64EncoderStream divides the encoded strings into lines", async ()
   ]);
 });
 
-Deno.test("Base64EncoderStream throws if lineLength is a negative integer", () => {
-  const stream = ReadableStream.from([
+Deno.test("Base64EncoderStream throws if lineLength is not a positive integer", () => {
+  const stream1 = ReadableStream.from([
     new Uint8Array([104, 101, 108, 108, 111, 32, 119, 111, 114, 108, 100]),
   ]);
 
   assertThrows(
-    () => stream.pipeThrough(new Base64EncoderStream({ lineLength: -1 })),
+    () => stream1.pipeThrough(new Base64EncoderStream({ lineLength: -1 })),
+  );
+
+  const stream2 = ReadableStream.from([
+    new Uint8Array([104, 101, 108, 108, 111, 32, 119, 111, 114, 108, 100]),
+  ]);
+
+  assertThrows(
+    () => stream2.pipeThrough(new Base64EncoderStream({ lineLength: 0 })),
   );
 });

@@ -41,12 +41,10 @@ export class Base64EncoderStream extends TransformStream<Uint8Array, string> {
     });
 
     if (
-      options.lineLength &&
-      (!Number.isInteger(options.lineLength) || options.lineLength < 0)
+      typeof options.lineLength === "number" &&
+      (!Number.isInteger(options.lineLength) || options.lineLength <= 0)
     ) {
-      throw new RangeError(
-        `The "lineLength" option cannot be a negative integer.`,
-      );
+      throw new Error(`The "lineLength" option must be a positive integer`);
     }
 
     this.#lineLength = options.lineLength ?? 0;
