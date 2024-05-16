@@ -28,11 +28,11 @@ import { db, type KeyOfDb } from "./_db.ts";
 export function getCharset(type: string): string | undefined {
   try {
     const [mediaType, params] = parseMediaType(type);
-    if (params && params["charset"]) {
-      return params["charset"];
+    if (params?.charset) {
+      return params.charset;
     }
     const entry = db[mediaType as KeyOfDb] as DBEntry;
-    if (entry && entry.charset) {
+    if (entry?.charset) {
       return entry.charset;
     }
     if (mediaType.startsWith("text/")) {

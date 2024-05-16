@@ -38,18 +38,18 @@ export function formatMediaType(
   type: string,
   param?: Record<string, string> | Iterable<[string, string]>,
 ): string {
-  let b = "";
+  let serializedMediaType = "";
   const [major = "", sub] = type.split("/");
   if (!sub) {
     if (!isToken(type)) {
       return "";
     }
-    b += type.toLowerCase();
+    serializedMediaType += type.toLowerCase();
   } else {
     if (!isToken(major) || !isToken(sub)) {
       return "";
     }
-    b += `${major.toLowerCase()}/${sub.toLowerCase()}`;
+    serializedMediaType += `${major.toLowerCase()}/${sub.toLowerCase()}`;
   }
 
   if (param) {
@@ -62,25 +62,25 @@ export function formatMediaType(
         return "";
       }
       const value = param[attribute]!;
-      b += `; ${attribute.toLowerCase()}`;
+      serializedMediaType += `; ${attribute.toLowerCase()}`;
 
       const needEnc = needsEncoding(value);
       if (needEnc) {
-        b += "*";
+        serializedMediaType += "*";
       }
-      b += "=";
+      serializedMediaType += "=";
 
       if (needEnc) {
-        b += `utf-8''${encodeURIComponent(value)}`;
+        serializedMediaType += `utf-8''${encodeURIComponent(value)}`;
         continue;
       }
 
       if (isToken(value)) {
-        b += value;
+        serializedMediaType += value;
         continue;
       }
-      b += `"${value.replace(/["\\]/gi, (m) => `\\${m}`)}"`;
+      serializedMediaType += `"${value.replace(/["\\]/gi, (m) => `\\${m}`)}"`;
     }
   }
-  return b;
+  return serializedMediaType;
 }
