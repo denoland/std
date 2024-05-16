@@ -12,8 +12,12 @@ import { decodeBase64 } from "@std/encoding/base64";
  * ```ts
  * import { Base64DecoderStream } from "@std/streams/base64-decoder-stream";
  *
- * const decodedStream = encodedStream
- *  .pipeThrough(new Base64DecoderStream());
+ * const stream = ReadableStream.from([
+ *   "aGVsbG8gd29ybGQ=",
+ *   "Zm9vYmFy",
+ * ]);
+ *
+ * const decodedStream = stream.pipeThrough(new Base64DecoderStream());
  * ```
  */
 export class Base64DecoderStream extends TransformStream<string, Uint8Array> {
