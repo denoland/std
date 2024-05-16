@@ -26,9 +26,5 @@ import { extensionsByType } from "./extensions_by_type.ts";
  * ```
  */
 export function extension(type: string): string | undefined {
-  const exts = extensionsByType(type);
-  if (exts) {
-    return exts[0];
-  }
-  return undefined;
+  return extensionsByType(type)?.[0];
 }

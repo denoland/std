@@ -18,7 +18,7 @@ import { consumeMediaParam, decode2331Encoding } from "./_util.ts";
  * params keys will be normalized to lower case, but preserves the casing of
  * the value.
  *
- * @param v The media type to parse.
+ * @param type The media type to parse.
  *
  * @returns A tuple where the first element is the media type and the second
  * element is the optional parameters or `undefined` if there are none.
@@ -33,9 +33,9 @@ import { consumeMediaParam, decode2331Encoding } from "./_util.ts";
  * ```
  */
 export function parseMediaType(
-  v: string,
+  type: string,
 ): [mediaType: string, params: Record<string, string> | undefined] {
-  const [base] = v.split(";") as [string];
+  const [base] = type.split(";") as [string];
   const mediaType = base.toLowerCase().trim();
 
   const params: Record<string, string> = {};
@@ -43,13 +43,13 @@ export function parseMediaType(
   // for parameters containing a '*' character.
   const continuation = new Map<string, Record<string, string>>();
 
-  v = v.slice(base.length);
-  while (v.length) {
-    v = v.trimStart();
-    if (v.length === 0) {
+  type = type.slice(base.length);
+  while (type.length) {
+    type = type.trimStart();
+    if (type.length === 0) {
       break;
     }
-    const [key, value, rest] = consumeMediaParam(v);
+    const [key, value, rest] = consumeMediaParam(type);
     if (!key) {
       if (rest.trim() === ";") {
         // ignore trailing semicolons
@@ -70,7 +70,7 @@ export function parseMediaType(
       throw new TypeError("Duplicate key parsed.");
     }
     pmap[key] = value;
-    v = rest;
+    type = rest;
   }
 
   // Stitch together any continuations or things with stars
@@ -78,9 +78,9 @@ export function parseMediaType(
   let str = "";
   for (const [key, pieceMap] of continuation) {
     const singlePartKey = `${key}*`;
-    const v = pieceMap[singlePartKey];
-    if (v) {
-      const decv = decode2331Encoding(v);
+    const type = pieceMap[singlePartKey];
+    if (type) {
+      const decv = decode2331Encoding(type);
       if (decv) {
         params[key] = decv;
       }
@@ -91,25 +91,25 @@ export function parseMediaType(
     let valid = false;
     for (let n = 0;; n++) {
       const simplePart = `${key}*${n}`;
-      let v = pieceMap[simplePart];
-      if (v) {
+      let type = pieceMap[simplePart];
+      if (type) {
         valid = true;
-        str += v;
+        str += type;
         continue;
       }
       const encodedPart = `${simplePart}*`;
-      v = pieceMap[encodedPart];
-      if (!v) {
+      type = pieceMap[encodedPart];
+      if (!type) {
         break;
       }
       valid = true;
       if (n === 0) {
-        const decv = decode2331Encoding(v);
+        const decv = decode2331Encoding(type);
         if (decv) {
           str += decv;
         }
       } else {
-        const decv = decodeURI(v);
+        const decv = decodeURI(type);
         str += decv;
       }
     }
@@ -118,7 +118,5 @@ export function parseMediaType(
     }
   }
 
-  return Object.keys(params).length
-    ? [mediaType, params]
-    : [mediaType, undefined];
+  return [mediaType, Object.keys(params).length ? params : undefined];
 }
