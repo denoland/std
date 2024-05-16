@@ -80,7 +80,7 @@ package must go through the following steps to achieve stabilization:
    feedback from the community.
 1. If there are no remaining issues, publish version 1.0.0. If there are
    remaining issues, extend the waiting period to allow further time for a
-   resolution.
+   resolution. Then, repeat this step.
 
 ## Architecture
 
