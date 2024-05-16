@@ -35,10 +35,7 @@ export function toEqual(
   const e = expected;
   const equalsOptions = buildEqualOptions({
     ...context,
-    customTesters: [
-      ...context.customTesters,
-      iterableEquality,
-    ],
+    customTesters: [...context.customTesters, iterableEquality],
   });
 
   if (context.isNot) {
@@ -55,10 +52,7 @@ export function toStrictEqual(
   const equalsOptions = buildEqualOptions({
     ...context,
     strictCheck: true,
-    customTesters: [
-      ...context.customTesters,
-      iterableEquality,
-    ],
+    customTesters: [...context.customTesters, iterableEquality],
   });
 
   if (context.isNot) {
@@ -108,50 +102,34 @@ export function toBeDefined(context: MatcherContext): MatchResult {
 
 export function toBeUndefined(context: MatcherContext): MatchResult {
   if (context.isNot) {
-    assertNotStrictEquals(
-      context.value,
-      undefined,
-      context.customMessage,
-    );
+    assertNotStrictEquals(context.value, undefined, context.customMessage);
   } else {
     assertStrictEquals(context.value, undefined, context.customMessage);
   }
 }
 
-export function toBeFalsy(
-  context: MatcherContext,
-): MatchResult {
-  const isFalsy = !(context.value);
+export function toBeFalsy(context: MatcherContext): MatchResult {
+  const isFalsy = !context.value;
   if (context.isNot) {
     if (isFalsy) {
-      throw new AssertionError(
-        `Expected ${context.value} to NOT be falsy`,
-      );
+      throw new AssertionError(`Expected ${context.value} to NOT be falsy`);
     }
   } else {
     if (!isFalsy) {
-      throw new AssertionError(
-        `Expected ${context.value} to be falsy`,
-      );
+      throw new AssertionError(`Expected ${context.value} to be falsy`);
     }
   }
 }
 
-export function toBeTruthy(
-  context: MatcherContext,
-): MatchResult {
-  const isTruthy = !!(context.value);
+export function toBeTruthy(context: MatcherContext): MatchResult {
+  const isTruthy = !!context.value;
   if (context.isNot) {
     if (isTruthy) {
-      throw new AssertionError(
-        `Expected ${context.value} to NOT be truthy`,
-      );
+      throw new AssertionError(`Expected ${context.value} to NOT be truthy`);
     }
   } else {
     if (!isTruthy) {
-      throw new AssertionError(
-        `Expected ${context.value} to be truthy`,
-      );
+      throw new AssertionError(`Expected ${context.value} to be truthy`);
     }
   }
 }
@@ -247,23 +225,15 @@ export function toBeLessThan(
 export function toBeNaN(context: MatcherContext): MatchResult {
   const equalsOptions = buildEqualOptions(context);
   if (context.isNot) {
-    assertNotEquals(
-      isNaN(Number(context.value)),
-      true,
-      {
-        ...equalsOptions,
-        msg: equalsOptions.msg || `Expected ${context.value} to not be NaN`,
-      },
-    );
+    assertNotEquals(isNaN(Number(context.value)), true, {
+      ...equalsOptions,
+      msg: equalsOptions.msg || `Expected ${context.value} to not be NaN`,
+    });
   } else {
-    assertEquals(
-      isNaN(Number(context.value)),
-      true,
-      {
-        ...equalsOptions,
-        msg: equalsOptions.msg || `Expected ${context.value} to be NaN`,
-      },
-    );
+    assertEquals(isNaN(Number(context.value)), true, {
+      ...equalsOptions,
+      msg: equalsOptions.msg || `Expected ${context.value} to be NaN`,
+    });
   }
 }
 
@@ -336,7 +306,8 @@ export function toHaveProperty(
 
   let hasProperty;
   if (v) {
-    hasProperty = current !== undefined && propPath.length === 0 &&
+    hasProperty = current !== undefined &&
+      propPath.length === 0 &&
       equal(current, v, context);
   } else {
     hasProperty = current !== undefined && propPath.length === 0;
@@ -351,7 +322,9 @@ export function toHaveProperty(
     if (hasProperty) {
       throw new AssertionError(
         `Expected the value not to have the property ${
-          propPath.join(".")
+          propPath.join(
+            ".",
+          )
         }${ofValue}, but it does.`,
       );
     }
@@ -359,7 +332,9 @@ export function toHaveProperty(
     if (!hasProperty) {
       throw new AssertionError(
         `Expected the value to have the property ${
-          propPath.join(".")
+          propPath.join(
+            ".",
+          )
         }${ofValue}, but it does not.`,
       );
     }
@@ -403,13 +378,30 @@ export function toContainEqual(
     }
   }
 
+  const prettyStringify = (js: unknown) =>
+    JSON.stringify(js, null, "\t")
+      .replace(/\"|\n|\t/g, "")
+      .slice(0, 100);
+
   if (context.isNot) {
     if (doesContain) {
-      throw new AssertionError("The value contains the expected item");
+      throw new AssertionError(
+        `The value ${
+          prettyStringify(
+            context.value,
+          )
+        } contains the expected item ${prettyStringify(expected)}`,
+      );
     }
   } else {
     if (!doesContain) {
-      throw new AssertionError("The value doesn't contain the expected item");
+      throw new AssertionError(
+        `The value ${
+          prettyStringify(
+            context.value,
+          )
+        } doesn't contain the expected item ${prettyStringify(expected)}`,
+      );
     }
   }
 }
@@ -429,11 +421,7 @@ export function toMatch(
   expected: RegExp,
 ): MatchResult {
   if (context.isNot) {
-    assertNotMatch(
-      String(context.value),
-      expected,
-      context.customMessage,
-    );
+    assertNotMatch(String(context.value), expected, context.customMessage);
   } else {
     assertMatch(String(context.value), expected, context.customMessage);
   }
@@ -525,7 +513,9 @@ export function toHaveBeenCalledWith(
     if (hasBeenCalled) {
       throw new AssertionError(
         `Expected mock function not to be called with ${
-          inspectArgs(expected)
+          inspectArgs(
+            expected,
+          )
         }, but it was`,
       );
     }
@@ -534,12 +524,16 @@ export function toHaveBeenCalledWith(
       let otherCalls = "";
       if (calls.length > 0) {
         otherCalls = `\n  Other calls:\n     ${
-          calls.map((call) => inspectArgs(call.args)).join("\n    ")
+          calls
+            .map((call) => inspectArgs(call.args))
+            .join("\n    ")
         }`;
       }
       throw new AssertionError(
         `Expected mock function to be called with ${
-          inspectArgs(expected)
+          inspectArgs(
+            expected,
+          )
         }, but it was not.${otherCalls}`,
       );
     }
@@ -550,14 +544,15 @@ export function toHaveBeenLastCalledWith(
   ...expected: unknown[]
 ): MatchResult {
   const calls = getMockCalls(context.value);
-  const hasBeenCalled = calls.length > 0 &&
-    equal(calls.at(-1)?.args, expected);
+  const hasBeenCalled = calls.length > 0 && equal(calls.at(-1)?.args, expected);
 
   if (context.isNot) {
     if (hasBeenCalled) {
       throw new AssertionError(
         `Expected mock function not to be last called with ${
-          inspectArgs(expected)
+          inspectArgs(
+            expected,
+          )
         }, but it was`,
       );
     }
@@ -567,13 +562,17 @@ export function toHaveBeenLastCalledWith(
       if (!lastCall) {
         throw new AssertionError(
           `Expected mock function to be last called with ${
-            inspectArgs(expected)
+            inspectArgs(
+              expected,
+            )
           }, but it was not.`,
         );
       } else {
         throw new AssertionError(
           `Expected mock function to be last called with ${
-            inspectArgs(expected)
+            inspectArgs(
+              expected,
+            )
           }, but it was last called with ${inspectArgs(lastCall.args)}.`,
         );
       }
@@ -598,7 +597,9 @@ export function toHaveBeenNthCalledWith(
     if (hasBeenCalled) {
       throw new AssertionError(
         `Expected the n-th call (n=${nth}) of mock function is not with ${
-          inspectArgs(expected)
+          inspectArgs(
+            expected,
+          )
         }, but it was`,
       );
     }
@@ -608,13 +609,17 @@ export function toHaveBeenNthCalledWith(
       if (!nthCall) {
         throw new AssertionError(
           `Expected the n-th call (n=${nth}) of mock function is with ${
-            inspectArgs(expected)
+            inspectArgs(
+              expected,
+            )
           }, but the n-th call does not exist.`,
         );
       } else {
         throw new AssertionError(
           `Expected the n-th call (n=${nth}) of mock function is with ${
-            inspectArgs(expected)
+            inspectArgs(
+              expected,
+            )
           }, but it was with ${inspectArgs(nthCall.args)}.`,
         );
       }
@@ -676,7 +681,9 @@ export function toHaveReturnedWith(
     if (returnedWithExpected) {
       throw new AssertionError(
         `Expected the mock function to not have returned with ${
-          inspectArg(expected)
+          inspectArg(
+            expected,
+          )
         }, but it did`,
       );
     }
@@ -684,7 +691,9 @@ export function toHaveReturnedWith(
     if (!returnedWithExpected) {
       throw new AssertionError(
         `Expected the mock function to have returned with ${
-          inspectArg(expected)
+          inspectArg(
+            expected,
+          )
         }, but it did not`,
       );
     }
@@ -704,7 +713,9 @@ export function toHaveLastReturnedWith(
     if (lastReturnedWithExpected) {
       throw new AssertionError(
         `Expected the mock function to not have last returned with ${
-          inspectArg(expected)
+          inspectArg(
+            expected,
+          )
         }, but it did`,
       );
     }
@@ -712,7 +723,9 @@ export function toHaveLastReturnedWith(
     if (!lastReturnedWithExpected) {
       throw new AssertionError(
         `Expected the mock function to have last returned with ${
-          inspectArg(expected)
+          inspectArg(
+            expected,
+          )
         }, but it did not`,
       );
     }
@@ -739,7 +752,9 @@ export function toHaveNthReturnedWith(
     if (nthReturnedWithExpected) {
       throw new AssertionError(
         `Expected the mock function to not have n-th (n=${nth}) returned with ${
-          inspectArg(expected)
+          inspectArg(
+            expected,
+          )
         }, but it did`,
       );
     }
@@ -747,7 +762,9 @@ export function toHaveNthReturnedWith(
     if (!nthReturnedWithExpected) {
       throw new AssertionError(
         `Expected the mock function to have n-th (n=${nth}) returned with ${
-          inspectArg(expected)
+          inspectArg(
+            expected,
+          )
         }, but it did not`,
       );
     }

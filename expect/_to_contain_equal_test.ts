@@ -9,11 +9,19 @@ Deno.test("expect().toContainEqual()", () => {
 
   expect(arr).not.toContainEqual({ bar: 42 });
 
-  assertThrows(() => {
-    expect(arr).toContainEqual({ bar: 42 });
-  }, AssertionError);
+  assertThrows(
+    () => {
+      expect(arr).toContainEqual({ bar: 42 });
+    },
+    AssertionError,
+    "{bar: 42}",
+  );
 
-  assertThrows(() => {
-    expect(arr).not.toContainEqual({ bar: 43 });
-  }, AssertionError);
+  assertThrows(
+    () => {
+      expect(arr).toContainEqual({ bar: 42 });
+    },
+    AssertionError,
+    "{foo: 42},{bar: 43},{baz: 44}",
+  );
 });
