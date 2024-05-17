@@ -5,7 +5,7 @@
  * Associates each string element of an array with a value returned by a selector
  * function.
  *
- * If any of two pairs would have the same value the latest one will be used
+ * If any of two pairs would have the same value, the latest one will be used
  * (overriding the ones before it).
  *
  * @template T The type of the values returned by the selector function.
