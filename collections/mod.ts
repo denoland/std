@@ -5,9 +5,9 @@
  * Pure functions for common tasks around collection types like arrays and
  * objects.
  *
- * Heavily inspired by
+ * Inspired by
  * {@link https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/ | Kotlin's Collections}
- * package.
+ * package and {@link https://lodash.com/ | Lodash}.
  *
  * ```ts
  * import { intersect, sample, pick } from "@std/collections";
