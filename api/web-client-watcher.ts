@@ -12,13 +12,19 @@ type PiercePromise = {
 }
 export class PierceWatcher {
   readonly #pierces = new Map<string, PiercePromise>()
-  readonly #signal: AbortSignal
   readonly #engine: EngineInterface
   readonly #pid: PID
+  readonly #abort = new AbortController()
   constructor(signal: AbortSignal, engine: EngineInterface, pid: PID) {
-    this.#signal = signal
     this.#engine = engine
     this.#pid = pid
+
+    signal.addEventListener('abort', () => {
+      this.#abort.abort()
+    })
+    engine.abortSignal.addEventListener('abort', () => {
+      this.#abort.abort()
+    })
   }
   static create(signal: AbortSignal, engine: EngineInterface, pid: PID) {
     return new PierceWatcher(signal, engine, pid)
@@ -31,7 +37,8 @@ export class PierceWatcher {
   async watchPierces() {
     let lastSplice
     const after = undefined
-    const s = this.#engine.read(this.#pid, '.io.json', after, this.#signal)
+    const { signal } = this.#abort
+    const s = this.#engine.read(this.#pid, '.io.json', after, signal)
     for await (const splice of s) {
       // move these checks to the engine side
       if (lastSplice && splice.commit.parent[0] !== lastSplice.oid) {

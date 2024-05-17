@@ -48,6 +48,11 @@ export class Session implements ArtifactSession {
     this.#pid = pid
     this.#watcher = PierceWatcher.create(this.#abort.signal, engine, pid)
     this.#watcher.watchPierces()
+
+    engine.abortSignal.addEventListener('abort', () => {
+      console.log('ABORT')
+      this.#abort.abort()
+    })
   }
   static create(engine: EngineInterface, machine: ArtifactMachine) {
     const branches = [...machine.pid.branches, ulid()]
@@ -118,6 +123,7 @@ export class Session implements ArtifactSession {
       await this.#init
     }
     this.stop()
+    // TODO stopping the engine should stop all sessions
     await this.#engine.stop()
   }
   newSession() {

@@ -14,6 +14,7 @@ import {
 
 export class WebClientEngine implements EngineInterface {
   readonly #aborts = new Set<AbortController>()
+  readonly #abort = new AbortController()
   readonly #fetcher: (
     input: URL | RequestInfo,
     init?: RequestInit,
@@ -42,7 +43,12 @@ export class WebClientEngine implements EngineInterface {
   ensureMachineTerminal(pid: PID) {
     return this.#request('ensureMachineTerminal', { pid })
   }
+  get abortSignal() {
+    return this.#abort.signal
+  }
+
   stop() {
+    this.#abort.abort()
     for (const abort of this.#aborts) {
       abort.abort('Engine stop')
     }

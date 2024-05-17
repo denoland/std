@@ -365,6 +365,7 @@ export interface EngineInterface {
    * hosted on external engines, or hosted in cooperation with other engines.
    */
   homeAddress: PID
+  abortSignal: AbortSignal
   stop(): Promise<void> | void
   pierce(pierce: PierceRequest): Promise<void>
   read(

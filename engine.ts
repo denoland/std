@@ -34,6 +34,7 @@ export class Engine implements EngineInterface {
   #pierce: artifact.Api['pierce']
   #homeAddress: PID | undefined
   #githubAddress: PID | undefined
+  #abort = new AbortController()
 
   private constructor(
     compartment: Compartment,
@@ -77,8 +78,12 @@ export class Engine implements EngineInterface {
     assert(this.#homeAddress, 'home not provisioned')
     return this.#homeAddress
   }
+  get abortSignal() {
+    return this.#abort.signal
+  }
   async stop() {
     await this.#compartment.unmount(this.#api)
+    this.#abort.abort()
   }
   get isProvisioned() {
     return !!this.#homeAddress && !!this.#githubAddress
@@ -159,7 +164,10 @@ export class Engine implements EngineInterface {
 
     const db = this.#api.context.db
     assert(db, 'db not found')
-    return db.watchSplices(pid, path, after, signal)
+    const abort = new AbortController()
+    signal?.addEventListener('abort', () => abort.abort())
+    this.#abort.signal.addEventListener('abort', () => abort.abort())
+    return db.watchSplices(pid, path, after, abort.signal)
   }
   async readJSON<T>(path: string, pid: PID) {
     freezePid(pid)

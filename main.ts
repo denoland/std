@@ -23,7 +23,6 @@ const init = async (session: ArtifactSession) => {
   await Promise.all([githubInit(session), halInit(session)])
 }
 
+Debug.enable('AI:completions* AI:qbr AI:qex AI:server AI:engine')
 const server = await Server.create(getPrivateKey(), getAesKey(), init)
 Deno.serve(server.fetch)
-
-Debug.enable('AI:completions* AI:qbr AI:qex')
