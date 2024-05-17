@@ -249,7 +249,10 @@ function encodeSlice(object: ValueType, byteParts: Uint8Array[]) {
   }
 
   // If object is a plain object
-  if (Object.getPrototypeOf(object) === Object.prototype) {
+  if (
+    Object.getPrototypeOf(object) === Object.prototype ||
+    Object.getPrototypeOf(object) === null
+  ) {
     const numKeys = Object.keys(object).length;
 
     if (numKeys < FOUR_BITS) { // fixarray

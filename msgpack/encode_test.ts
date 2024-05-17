@@ -155,6 +155,9 @@ Deno.test("encode() handles arrays", () => {
 Deno.test("encode() handles maps", () => {
   const map0 = {};
   assertEquals(decode(encode(map0)), map0);
+  
+  const mapNull = Object.create(null);
+  assertEquals(decode(encode(mapNull)), mapNull);
 
   const map1 = { "a": 0, "b": 2, "c": "three", "d": null };
   assertEquals(decode(encode(map1)), map1);
