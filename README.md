@@ -77,10 +77,10 @@ package must go through the following steps to achieve stabilization:
    1. No open issues or pull requests that might lead to breaking changes. For
       example, issues that suggest new non-breaking features are fine to exist
       at stabilization.
-1. Allow 1 month for 2 other maintainers to review the package and handle any
-   feedback from the community. There must be consensus that the design,
-   documentation and implementation of the package are good and that it is
-   unlikely to undergo breaking changes in the future.
+1. Allow 1 month for the community and the core team to review the package and
+   handle any feedback. There must be consensus that the design, documentation
+   and implementation of the package are good and that it is unlikely to undergo
+   breaking changes in the future.
 1. If there are no remaining issues, publish version 1.0.0. If there are
    remaining issues, extend the waiting period to allow further time for a
    resolution. Then, repeat this step.
