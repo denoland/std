@@ -10,7 +10,7 @@ import {
   pidSchema,
   print,
   ROOT_SESSION,
-  sessionIdRegex,
+  terminalIdRegex,
 } from '@/constants.ts'
 import { assert, Debug, equal, expect } from '@utils'
 import * as session from './session.ts'
@@ -34,9 +34,7 @@ export type ActorApi = {
   lsRepos: () => Promise<string[]>
 }
 export type ActorAdmin = {
-  ensureMachineTerminal: (
-    params: { machineId: string; sessionId: string },
-  ) => Promise<PID>
+  ensureMachineTerminal: (params: { machineId: string }) => Promise<PID>
 
   /**
    * Called by an actor, after authorizing, to merge its actorId with the
@@ -107,18 +105,17 @@ export const api = {
   ensureMachineTerminal: {
     type: 'object',
     additionalProperties: false,
-    required: ['machineId', 'sessionId'],
+    required: ['machineId'],
     properties: {
       machineId: { type: 'string', pattern: machineIdRegex.source },
-      sessionId: { type: 'string', pattern: sessionIdRegex.source },
     },
   },
-  createSession: {
+  ensureTerminal: {
     type: 'object',
     additionalProperties: false,
-    required: ['sessionId'],
+    required: ['terminalId'],
     properties: {
-      sessionId: { type: 'string', pattern: sessionIdRegex.source },
+      terminalId: { type: 'string', pattern: terminalIdRegex.source },
     },
   },
   surrender: {
@@ -147,8 +144,7 @@ export const functions = {
 
     const functions = await api.functions<ActorAdmin>('actors')
     const machineId = superuser
-    const sessionId = ROOT_SESSION
-    await functions.ensureMachineTerminal({ machineId, sessionId })
+    await functions.ensureMachineTerminal({ machineId })
   },
   async addAuthProvider(
     { provider, name }: { provider: PID; name: string },
@@ -245,7 +241,7 @@ export const functions = {
   },
 
   async ensureMachineTerminal(
-    { machineId, sessionId }: { machineId: string; sessionId: string },
+    { machineId }: { machineId: string },
     api: IsolateApi,
   ) {
     if (!isBaseRepo(api.pid)) {
@@ -255,7 +251,11 @@ export const functions = {
     // each stage should check if the the rest of its path exists
 
     const actorId = machineId
+    const branches = [...api.pid.branches, actorId, machineId, ROOT_SESSION]
+    const expectedPid = { ...api.pid, branches }
+    // TODO check if the sessoin pid is available - needs a new api function
 
+    // TODO make this a single function to create the whole tree
     const base = await api.actions<session.Api>('session', api.pid)
 
     const actorPid = await base.create({ name: actorId })
@@ -264,18 +264,26 @@ export const functions = {
     const machinePid = await actor.create({ name: machineId })
     const machine = await api.actions<session.Api>('session', machinePid)
 
-    const sessionPid = await machine.create({ name: sessionId })
-    log('ensureMachineTerminal', print(sessionPid))
-    return sessionPid
+    // TODO create the first user session too, to save RTT
+    const terminalPid = await machine.create({ name: ROOT_SESSION })
+    expect(terminalPid).toEqual(expectedPid)
+    log('ensureMachineTerminal', print(terminalPid))
+    return terminalPid
   },
-  async createSession({ sessionId }: { sessionId: string }, api: IsolateApi) {
+  async ensureTerminal(
+    { terminalId }: { terminalId: string },
+    api: IsolateApi,
+  ) {
     const branches = [...api.pid.branches]
-    branches.pop()
+    const thisSessionId = branches.pop()
+    assert(thisSessionId === ROOT_SESSION, 'not root session')
+
+    // TODO check if the pid exists already
     const machinePid = { ...api.pid, branches }
     const machine = await api.actions<session.Api>('session', machinePid)
-    const sessionPid = await machine.create({ name: sessionId })
-    log('createSession', print(sessionPid))
-    return sessionPid
+    const terminalPid = await machine.create({ name: terminalId })
+    log('ensureTerminal', print(terminalPid))
+    return terminalPid
   },
   surrender: async (params: { authProvider: PID }, api: IsolateApi) => {
     assert(isBaseRepo(api.pid), 'surrender not base: ' + print(api.pid))

@@ -2,14 +2,10 @@ import * as secp from '@noble/secp256k1'
 import {
   ArtifactMachine,
   EngineInterface,
-  isValidForMachine,
   JsonValue,
   PID,
-  print,
-  ROOT_SESSION,
 } from './web-client.types.ts'
 import { Session } from './web-client-session.ts'
-import { ulid } from 'ulid'
 
 /**
  * Create a shell that is targeted at the home chain, to avoid reimplementation
@@ -67,24 +63,16 @@ export class Machine implements ArtifactMachine {
     return new Machine(this.#engine, secp.etc.bytesToHex(this.#privKey))
   }
   async #connect() {
-    const branches = [...this.#pid.branches, ROOT_SESSION]
-    const rootPid = { ...this.pid, branches }
-
-    await this.#engine.ensureMachineTerminal(rootPid)
-    return Session.resume(this.#engine, this, rootPid)
+    await this.#engine.ensureMachineTerminal(this.pid)
+    return Session.openRoot(this.#engine, this)
   }
 
   /** If the given pid is valid, uses that session, else creates a new one */
   openSession(retry?: PID): Session {
     if (retry) {
-      if (!isValidForMachine(retry, this.pid)) {
-        // TODO change to be isChildOf
-        throw new Error('Invalid session pid: ' + print(retry))
-      }
       return Session.resume(this.#engine, this, retry)
     }
-    const pid = { ...this.pid, branches: [...this.pid.branches, ulid()] }
-    return Session.create(this.#engine, this, pid)
+    return Session.create(this.#engine, this)
   }
   ping(params?: { data?: JsonValue }) {
     return this.#engine.ping(params?.data)

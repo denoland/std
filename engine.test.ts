@@ -11,24 +11,24 @@ const cradleMaker = async (init?: Provisioner) => {
   const engine = await Engine.start(superuserKey, aesKey, init)
   const privateKey = Machine.generatePrivateKey()
   const machine = Machine.load(engine, privateKey)
-  const session = machine.openSession()
-  return session
+  const terminal = machine.openSession()
+  return terminal
 }
 
 Deno.test('cradle', async (t) => {
   await t.step('basic', async () => {
-    const session = await cradleMaker()
+    const terminal = await cradleMaker()
 
-    const result = await session.ping({ data: 'hello' })
+    const result = await terminal.ping({ data: 'hello' })
     expect(result).toBe('hello')
 
-    await session.rm({ repo: 'dreamcatcher-tech/HAL' })
-    const clone = await session.clone({ repo: 'dreamcatcher-tech/HAL' })
+    await terminal.rm({ repo: 'dreamcatcher-tech/HAL' })
+    const clone = await terminal.clone({ repo: 'dreamcatcher-tech/HAL' })
     log('clone result', clone)
     expect(clone.pid).toBeDefined()
     expect(clone.pid.account).toBe('dreamcatcher-tech')
     expect(typeof clone.head).toBe('string')
-    await session.engineStop()
+    await terminal.engineStop()
   })
 })
 

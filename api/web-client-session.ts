@@ -7,11 +7,14 @@ import {
   EngineInterface,
   freezePid,
   getActorPid,
+  isValidForMachine,
   JsonValue,
   Params,
   PID,
   PierceRequest,
+  print,
   PROCTYPE,
+  ROOT_SESSION,
   toActions,
   UnsequencedRequest,
 } from './web-client.types.ts'
@@ -46,23 +49,51 @@ export class Session implements ArtifactSession {
     this.#watcher = PierceWatcher.create(this.#abort.signal, engine, pid)
     this.#watcher.watchPierces()
   }
-  static create(engine: EngineInterface, machine: ArtifactMachine, pid: PID) {
-    freezePid(pid)
-    const session = new Session(engine, machine, pid)
-    session.#init = machine.rootTerminalPromise.then(async (rootSession) => {
-      await rootSession.#initialize(session.sessionId)
-      session.#init = undefined
-    })
-    return session
+  static create(engine: EngineInterface, machine: ArtifactMachine) {
+    const branches = [...machine.pid.branches, ulid()]
+    const pid = { ...machine.pid, branches }
+    return Session.resume(engine, machine, pid)
   }
   static resume(engine: EngineInterface, machine: ArtifactMachine, pid: PID) {
-    // TODO check this is still a valid pid using ping or similar
-
-    // so this should fail if the pid does not exist
-    // does a pid exist seems to be a general question that could be served from
-    // outside the system
     freezePid(pid)
-    return new Session(engine, machine, pid)
+    if (!isValidForMachine(pid, machine.pid)) {
+      // TODO change to be isChildOf
+      throw new Error('Invalid session pid: ' + print(pid))
+    }
+    const terminal = new Session(engine, machine, pid)
+    terminal.#init = machine.rootTerminalPromise.then(async (rootSession) => {
+      await rootSession.#initialize(terminal.terminalId)
+      terminal.#init = undefined
+    })
+    return terminal
+  }
+  static openRoot(engine: EngineInterface, machine: ArtifactMachine) {
+    const branches = [...machine.pid.branches, ROOT_SESSION]
+    const terminalPid = { ...machine.pid, branches }
+    freezePid(terminalPid)
+    return new Session(engine, machine, terminalPid)
+  }
+  async #initialize(terminalId: string) {
+    const thisSessionId = this.pid.branches[this.pid.branches.length - 1]
+    if (thisSessionId !== ROOT_SESSION) {
+      throw new Error('only root session can initialize')
+    }
+    if (terminalId === ROOT_SESSION) {
+      throw new Error('cannot initialize root session')
+    }
+    const terminalPid = createTerminalPid(this.pid, terminalId)
+    if (await this.#engine.isTerminalAvailable(terminalPid)) {
+      return
+    }
+
+    const request = {
+      target: this.pid,
+      isolate: 'actors',
+      functionName: 'ensureTerminal',
+      params: { terminalId },
+      proctype: PROCTYPE.SERIAL,
+    }
+    return this.#action(request)
   }
   get pid() {
     return this.#pid
@@ -70,7 +101,7 @@ export class Session implements ArtifactSession {
   get machine() {
     return this.#machine
   }
-  get sessionId() {
+  get terminalId() {
     return this.#pid.branches[this.#pid.branches.length - 1]
   }
   get homeAddress() {
@@ -78,18 +109,6 @@ export class Session implements ArtifactSession {
   }
   get initializationPromise() {
     return Promise.resolve(this.#init)
-  }
-  #initialize(sessionId: string) {
-    // we are the system session, and we are being asked to make a new session
-    const request = {
-      target: this.pid,
-      isolate: 'actors',
-      functionName: 'createSession',
-      params: { sessionId },
-      proctype: PROCTYPE.SERIAL,
-    }
-    // TODO handle probing in case we already exist
-    return this.#action(request)
   }
   stop() {
     this.#abort.abort()
@@ -103,10 +122,10 @@ export class Session implements ArtifactSession {
   }
   newSession() {
     // TODO test rapidly creating two sessions, with queuing happening properly
-    return this.#machine.openSession()
+    return Session.create(this.#engine, this.#machine)
   }
   resumeSession(pid: PID) {
-    return this.#machine.openSession(pid)
+    return Session.resume(this.#engine, this.#machine, pid)
   }
   async dns(repo: string) {
     const [account, repository, ...rest] = repo.split('/')
@@ -162,7 +181,6 @@ export class Session implements ArtifactSession {
     }
     return promise
   }
-
   async ping(params?: { data?: JsonValue }) {
     if (this.#init) {
       await this.#init
@@ -250,4 +268,9 @@ type ActorApi = { // copied from the isolate
    * List all the repos that this Actor has created.
    */
   lsRepos: () => Promise<string[]>
+}
+const createTerminalPid = (pid: PID, terminalId: string) => {
+  const branches = [...pid.branches]
+  branches[branches.length - 1] = terminalId
+  return { ...pid, branches }
 }

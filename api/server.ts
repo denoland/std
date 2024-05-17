@@ -103,10 +103,10 @@ export default class Server {
       const { path, pid } = params
       return execute(c, engine.exists(path, pid), 'exists')
     })
-    app.post(`/isPidAvailable`, async (c) => {
+    app.post(`/isTerminalAvailable`, async (c) => {
       const params = await c.req.json()
       const { pid } = params
-      return execute(c, engine.isPidAvailable(pid), 'isPidAvailable')
+      return execute(c, engine.isTerminalAvailable(pid), 'isTerminalAvailable')
     })
     app.post('/transcribe', async (c) => {
       const body = await c.req.parseBody()

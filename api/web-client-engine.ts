@@ -2,7 +2,6 @@ import { pushable } from 'it-pushable'
 import { EventSourceParserStream } from 'eventsource-parser/stream'
 import { deserializeError } from 'serialize-error'
 import {
-  assertValidSession,
   EngineInterface,
   freezePid,
   JSONSchemaType,
@@ -41,7 +40,6 @@ export class WebClientEngine implements EngineInterface {
     return this.#homeAddress
   }
   ensureMachineTerminal(pid: PID) {
-    assertValidSession(pid, this.#homeAddress)
     return this.#request('ensureMachineTerminal', { pid })
   }
   stop() {
@@ -156,8 +154,8 @@ export class WebClientEngine implements EngineInterface {
     const result = await this.#request('exists', { path, pid })
     return result as boolean
   }
-  async isPidAvailable(pid: PID): Promise<boolean> {
-    const result = await this.#request('isPidAvailable', { pid })
+  async isTerminalAvailable(pid: PID): Promise<boolean> {
+    const result = await this.#request('isTerminalAvailable', { pid })
     return result as boolean
   }
   async #request(path: string, params: Params) {

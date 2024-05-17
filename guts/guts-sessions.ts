@@ -56,7 +56,6 @@ export default (name: string, cradleMaker: CradleMaker) => {
     await session.engineStop()
   })
   Deno.test(prefix + 'machine reload', async () => {
-    // TODO this test should not pass - it should not request a new session
     const session = await cradleMaker()
     await session.initializationPromise
     const root = await session.machine.rootTerminalPromise
@@ -76,5 +75,33 @@ export default (name: string, cradleMaker: CradleMaker) => {
     expect(io).toEqual(nextIo)
 
     await session.engineStop()
+  })
+  Deno.test(prefix + 'session reload', async () => {
+    const terminal = await cradleMaker()
+    log('engine started')
+    await terminal.initializationPromise
+    log('terminal initialized')
+
+    const root = await terminal.machine.rootTerminalPromise
+    log('root session', print(root.pid))
+
+    const io = await terminal.readJSON<IoStruct>('.io.json', root.pid)
+
+    const machine = terminal.machine as Machine
+    const next = machine.clone()
+    expect(next.pid).toEqual(machine.pid)
+    const nextRoot = await next.rootTerminalPromise
+    log('cloned')
+    expect(nextRoot.pid).toEqual(root.pid)
+    log('next root session', print(nextRoot.pid))
+
+    const nextIo = await terminal.readJSON<IoStruct>('.io.json', nextRoot.pid)
+    expect(nextIo).toEqual(io)
+    nextRoot.resumeSession(terminal.pid)
+    log('resumed')
+    const lastIo = await terminal.readJSON<IoStruct>('.io.json', nextRoot.pid)
+    expect(lastIo).toEqual(io)
+
+    await terminal.engineStop()
   })
 }

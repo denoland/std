@@ -302,7 +302,7 @@ type PidHead = { pid: PID; head: string }
 export interface ArtifactSession {
   pid: PID
   machine: ArtifactMachine
-  sessionId: string
+  terminalId: string
   homeAddress: PID
   initializationPromise: Promise<void>
   stop(): void
@@ -386,11 +386,11 @@ export interface EngineInterface {
    * Without this function, a new machine has no way to begin piercing into
    * chainland.
    */
-  ensureMachineTerminal(pid: PID): Promise<void>
+  ensureMachineTerminal(machinePid: PID): Promise<void>
   /** Checks if the provided PID is active and accessible to this machine.  If
    * it is not accessible due to permissions, it will appear as tho it did not
    * exist */
-  isPidAvailable(pid: PID): Promise<boolean>
+  isTerminalAvailable(pid: PID): Promise<boolean>
 }
 export const isPID = (value: unknown): value is PID => {
   if (typeof value !== 'object' || value === null) {
@@ -428,7 +428,7 @@ export const colorize = (string: string, noSubstring = false) => {
 }
 export const print = (pid: PID) => {
   const branches = pid.branches.map((segment) => {
-    if (sessionIdRegex.test(segment)) {
+    if (terminalIdRegex.test(segment)) {
       return colorize(segment.slice(-7))
     }
     if (machineIdRegex.test(segment)) {
@@ -548,12 +548,12 @@ export const assertValidSession = (pid: PID, identity: PID) => {
   if (!machineIdRegex.test(machineId)) {
     throw new Error('invalid machineId: ' + msg)
   }
-  if (!sessionIdRegex.test(sessionId)) {
+  if (!terminalIdRegex.test(sessionId)) {
     throw new Error('invalid sessionId: ' + msg)
   }
 }
 export const machineIdRegex = /^[0-9a-f]{66}$/
-export const sessionIdRegex =
+export const terminalIdRegex =
   /^[0-7][0-9A-HJKMNP-TV-Z]{9}[0-9A-HJKMNP-TV-Z]{16}$/
 export const ROOT_SESSION = '111111111111111R00TSESS10N'
 export const getActorPid = (source: PID) => {
@@ -574,7 +574,7 @@ export const isSessionPID = (source: PID) => {
     source.branches.length === 4 &&
     machineIdRegex.test(actorId) &&
     machineIdRegex.test(machineId) &&
-    sessionIdRegex.test(sessionId)
+    terminalIdRegex.test(sessionId)
   )
 }
 export const isEqual = (pid1: PID, pid2: PID) => {

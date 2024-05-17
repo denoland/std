@@ -15,6 +15,7 @@ import {
   print,
   PROCTYPE,
   Provisioner,
+  ROOT_SESSION,
 } from './constants.ts'
 import IsolateApi from './isolate-api.ts'
 import { assert, Debug, posix } from '@utils'
@@ -176,30 +177,35 @@ export class Engine implements EngineInterface {
     const fs = await FS.openHead(pid, db)
     return fs.exists(path)
   }
-  async ensureMachineTerminal(pid: PID) {
+  async ensureMachineTerminal(machinePid: PID) {
     const { homeAddress } = this
     // TODO require some signature proof from the machine
-    assertValidSession(pid, homeAddress)
+    const rootPid = createRootPid(machinePid)
+    assertValidSession(rootPid, homeAddress)
 
-    log('ensureMachineTerminal', print(pid))
-    const [, , machineId, sessionId] = pid.branches
+    log('ensureMachineTerminal', print(machinePid))
+    const [, , machineId] = machinePid.branches
 
-    if (await this.isPidAvailable(pid)) {
-      log('pid already exists', print(pid))
+    if (await this.isTerminalAvailable(rootPid)) {
+      log('machinePid already exists', print(machinePid))
       return
     }
 
     const su = await this.#su()
     const actions = await su.actions<ActorAdmin>('actors', homeAddress)
-    await actions.ensureMachineTerminal({ machineId, sessionId })
+    await actions.ensureMachineTerminal({ machineId })
   }
-  async isPidAvailable(pid: PID): Promise<boolean> {
-    // TODO handle permissions for the machine - maybe restrict to machine only
-    // as in, only the children of the machine can be probed like this
+  async isTerminalAvailable(pid: PID): Promise<boolean> {
+    // TODO restrict to only be a child of a machine, and the only sender
     freezePid(pid)
     const db = this.#api.context.db
     assert(db, 'db not found')
     const head = await db.readHead(pid)
     return !!head
   }
+}
+
+const createRootPid = (pid: PID) => {
+  const branches = [...pid.branches, ROOT_SESSION]
+  return { ...pid, branches }
 }

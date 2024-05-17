@@ -161,6 +161,7 @@ export default class IsolateApi<T extends object = Default> {
       // TODO allow recursive PID walking
       // TODO allow walking parents and remote repos
     }
+    // TODO use a direct db lookup, relying on the atomic guarantees
 
     const obj = await this.readJSON<IoStruct>('.io.json')
     const child = pid.branches[pid.branches.length - 1]
