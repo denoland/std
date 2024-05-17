@@ -417,13 +417,17 @@ export function toContainEqual(
   if (context.isNot) {
     if (doesContain) {
       throw new AssertionError(
-        `The value ${fmtValue} contains the expected item ${fmtExpected}`,
+        `The value contains the expected item.
+Value: ${fmtValue}
+Expected: ${fmtExpected}`,
       );
     }
   } else {
     if (!doesContain) {
       throw new AssertionError(
-        `The value ${fmtValue} doesn't contain the expected item ${fmtExpected}`,
+        `The value doesn't contain the expected item.
+Value: ${fmtValue}
+Expected: ${fmtExpected}`,
       );
     }
   }
