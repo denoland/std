@@ -6,15 +6,6 @@
 import { concat } from "@std/bytes";
 import { encodeBase64 } from "@std/encoding/base64";
 
-/** Options for {@linkcode Base64EncoderStream}. */
-export interface Base64EncoderStreamOptions {
-  /**
-   * The maximum length of the base64-encoded output lines.
-   * If specified, the output will be split into lines of at most this length.
-   */
-  lineLength?: number;
-}
-
 /**
  * A transform stream that converts a stream of binary data into a base64-encoded stream.
  *
@@ -34,20 +25,25 @@ export class Base64EncoderStream extends TransformStream<Uint8Array, string> {
   #currentLength: number = 0;
   #lineLength: number = 0;
 
-  constructor(options: Base64EncoderStreamOptions = {}) {
+  /**
+   * Constructs a new instance.
+   * @param lineLength The maximum length of the base64-encoded output lines.
+   *                   If specified, the output will be split into lines of at most this length.
+   */
+  constructor(lineLength?: number) {
     super({
       transform: (chunk, controller) => this.#handle(chunk, controller),
       flush: (controller) => this.#flush(controller),
     });
 
     if (
-      typeof options.lineLength === "number" &&
-      (!Number.isInteger(options.lineLength) || options.lineLength <= 0)
+      typeof lineLength === "number" &&
+      (!Number.isInteger(lineLength) || lineLength <= 0)
     ) {
       throw new Error(`The "lineLength" option must be a positive integer`);
     }
 
-    this.#lineLength = options.lineLength ?? 0;
+    this.#lineLength = lineLength ?? 0;
   }
 
   #handle(

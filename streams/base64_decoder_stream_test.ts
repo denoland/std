@@ -6,9 +6,10 @@ import { Base64DecoderStream } from "./base64_decoder_stream.ts";
 async function testDecoderStream(
   input: string[],
   output: string,
+  removeLineBreaks?: boolean,
 ) {
   const stream = ReadableStream.from(input)
-    .pipeThrough(new Base64DecoderStream())
+    .pipeThrough(new Base64DecoderStream(removeLineBreaks))
     .pipeThrough(new TextDecoderStream());
 
   const chunks = await Array.fromAsync(stream);
@@ -25,6 +26,7 @@ const testset: [string[], string][] = [
   [["Zm9vYmE="], "fooba"],
   [["Zm9vYmFy"], "foobar"],
   [["aGVs", "bG8g", "d29y", "bGQ="], "hello world"],
+  [["aG", "VsbG8g", "d29", "ybG", "Q="], "hello world"],
 ];
 
 Deno.test("Base64DecoderStream decodes a base64-encoded stream", async () => {
@@ -39,7 +41,7 @@ Deno.test("Base64DecoderStream decodes a base64-encoded stream", async () => {
 
 Deno.test("Base64DecoderStream decodes a base64-encoded stream that has been split into lines", async () => {
   await Promise.all([
-    testDecoderStream(["aGVsb\r\nG8gd2\r\n9ybGQ\r\n="], "hello world"),
+    testDecoderStream(["aGVsb\r\nG8gd2\r\n9ybGQ\r\n="], "hello world", true),
     testDecoderStream(
       [
         "TG9yZW0gaXBzdW0gZG9sb3Igc2l0IGFtZXQsIGNvbnNlY3RldHVyIGFkaXBpc2NpbmcgZWxpdCwg\r\n",
@@ -54,6 +56,7 @@ Deno.test("Base64DecoderStream decodes a base64-encoded stream that has been spl
         "fames ac turpis egestas maecenas pharetra. In hac habitasse platea ",
         "dictumst vestibulum rhoncus est pellentesque elit.",
       ].join(""),
+      true,
     ),
   ]);
 });

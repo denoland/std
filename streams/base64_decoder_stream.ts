@@ -24,23 +24,30 @@ export class Base64DecoderStream extends TransformStream<string, Uint8Array> {
   /** The remain data from the previous chunk. */
   #remain: string = "";
 
-  constructor() {
+  /**
+   * Constructs a new instance.
+   * @param removeLineBreaks Whether to remove line breaks from stream.
+   */
+  constructor(removeLineBreaks?: boolean) {
     super({
       transform: (chunk, controller) => {
-        chunk = this.#remain + chunk.replaceAll(/(\r\n|\r|\n)/g, "");
+        if (removeLineBreaks) {
+          chunk = chunk.replaceAll(/(\r\n|\r|\n)/g, "");
+        }
+
+        chunk = this.#remain + chunk;
 
         // Decode blocks of 4 characters which represent 3 bytes in base64 encoding.
         const remaining = chunk.length % 4;
 
-        if (remaining) {
-          this.#remain = chunk.slice(chunk.length - remaining);
-          chunk = chunk.slice(0, chunk.length - remaining);
-        }
+        this.#remain = chunk.slice(chunk.length - remaining);
+        chunk = chunk.slice(0, chunk.length - remaining);
 
         const output = decodeBase64(chunk);
         controller.enqueue(output);
       },
 
+      // TODO(babiabeo): Do we need to decode the remining characters?
       flush: (controller) => {
         if (this.#remain) {
           // Decode the remaining characters.

@@ -11,7 +11,7 @@ async function testEncoderStream(
   lineLength?: number,
 ) {
   const stream = ReadableStream.from(input.map((v) => encoder.encode(v)))
-    .pipeThrough(new Base64EncoderStream({ lineLength }));
+    .pipeThrough(new Base64EncoderStream(lineLength));
 
   const chunks = await Array.fromAsync(stream);
   assertEquals(chunks.join(""), output);
@@ -70,7 +70,7 @@ Deno.test("Base64EncoderStream throws if lineLength is not a positive integer", 
   ]);
 
   assertThrows(
-    () => stream1.pipeThrough(new Base64EncoderStream({ lineLength: -1 })),
+    () => stream1.pipeThrough(new Base64EncoderStream(-1)),
   );
 
   const stream2 = ReadableStream.from([
@@ -78,6 +78,6 @@ Deno.test("Base64EncoderStream throws if lineLength is not a positive integer", 
   ]);
 
   assertThrows(
-    () => stream2.pipeThrough(new Base64EncoderStream({ lineLength: 0 })),
+    () => stream2.pipeThrough(new Base64EncoderStream(0)),
   );
 });
