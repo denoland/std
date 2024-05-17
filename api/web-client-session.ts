@@ -17,6 +17,11 @@ import {
 } from './web-client.types.ts'
 import { ulid } from 'ulid'
 import { PierceWatcher } from './web-client-watcher.ts'
+type Init = {
+  repo: string
+  isolate?: string
+  params?: Params
+}
 
 export class Session implements ArtifactSession {
   #init: Promise<void> | undefined
@@ -26,6 +31,8 @@ export class Session implements ArtifactSession {
   readonly #pid: PID
   readonly #abort = new AbortController()
   readonly #watcher: PierceWatcher
+
+  readonly #dnsCache = new Map<string, PID>()
 
   private constructor(
     engine: EngineInterface,
@@ -42,7 +49,7 @@ export class Session implements ArtifactSession {
   static create(engine: EngineInterface, machine: ArtifactMachine, pid: PID) {
     freezePid(pid)
     const session = new Session(engine, machine, pid)
-    session.#init = machine.rootSessionPromise.then(async (rootSession) => {
+    session.#init = machine.rootTerminalPromise.then(async (rootSession) => {
       await rootSession.#initialize(session.sessionId)
       session.#init = undefined
     })
@@ -106,7 +113,16 @@ export class Session implements ArtifactSession {
     if (rest.length || !account || !repository) {
       throw new Error('invalid repo: ' + repo)
     }
-    const root = await this.#machine.rootSessionPromise
+    const root = await this.#machine.rootTerminalPromise
+    if (root.#dnsCache.has(repo)) {
+      const pid = root.#dnsCache.get(repo)
+      if (!pid) {
+        throw new Error('repo not found: ' + repo)
+      }
+      freezePid(pid)
+      return pid
+    }
+
     const home = root.homeAddress
     type Superuser = { superuser: string }
     const { superuser } = await root.readJSON<Superuser>('config.json', home)
@@ -120,6 +136,7 @@ export class Session implements ArtifactSession {
     if (!pid) {
       throw new Error('repo not found: ' + repo)
     }
+    root.#dnsCache.set(repo, pid)
     return pid
   }
   async actions<T>(isolate: string, target: PID = this.pid) {
@@ -165,19 +182,13 @@ export class Session implements ArtifactSession {
     }
     return await this.#engine.transcribe(params.audio)
   }
-  async init(
-    { repo, isolate, params }: {
-      repo: string
-      isolate?: string
-      params?: Params
-    },
-  ) {
+  async init({ repo, isolate, params }: Init) {
     const actor = await this.#getActor()
     return actor.init({ repo, isolate, params })
   }
-  async clone({ repo }: { repo: string }) {
+  async clone({ repo, isolate, params }: Init) {
     const actor = await this.#getActor()
-    return actor.clone({ repo })
+    return actor.clone({ repo, isolate, params })
   }
   pull(params: { pid: PID }) {
     const { pid } = params
@@ -229,7 +240,9 @@ type ActorApi = { // copied from the isolate
    * Updates the repo.json file in the actor branch to point to the new PID of
    * the clone.
    */
-  clone: (params: { repo: string }) => Promise<{ pid: PID; head: string }>
+  clone: (
+    params: { repo: string; isolate?: string; params?: Params },
+  ) => Promise<{ pid: PID; head: string }>
 
   rm: (params: { repo?: string; all?: boolean }) => Promise<boolean>
 

@@ -1,5 +1,5 @@
 import { expect, log } from '@utils'
-import { CradleMaker, print } from '@/constants.ts'
+import { CradleMaker, IoStruct, print } from '@/constants.ts'
 import { Machine } from '@/api/web-client-machine.ts'
 
 export default (name: string, cradleMaker: CradleMaker) => {
@@ -58,14 +58,23 @@ export default (name: string, cradleMaker: CradleMaker) => {
   Deno.test(prefix + 'machine reload', async () => {
     // TODO this test should not pass - it should not request a new session
     const session = await cradleMaker()
+    await session.initializationPromise
+    const root = await session.machine.rootTerminalPromise
+    log('root session', print(root.pid))
+
+    const io = await session.readJSON<IoStruct>('.io.json', root.pid)
+
     const machine = session.machine as Machine
-    log.enable('AI:qbr AI:engine AI:tests')
     const next = machine.clone()
     expect(next.pid).toEqual(machine.pid)
+    const nextRoot = await next.rootTerminalPromise
     log('cloned')
-    const nextRootSession = await next.rootSessionPromise
-    log('starting ping')
-    await nextRootSession.ping()
+    expect(nextRoot.pid).toEqual(root.pid)
+    log('next root session', print(nextRoot.pid))
+
+    const nextIo = await session.readJSON<IoStruct>('.io.json', nextRoot.pid)
+    expect(io).toEqual(nextIo)
+
     await session.engineStop()
   })
 }

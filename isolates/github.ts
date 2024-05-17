@@ -197,6 +197,6 @@ export const init = async (session: ArtifactSession) => {
   })
   log('github installed', print(pid))
 
-  const actor = await session.actions<Actors.Admin>('actors', homeAddress)
+  const actor = await session.actions<Actors.ActorAdmin>('actors', homeAddress)
   await actor.addAuthProvider({ name: 'github', provider: pid })
 }

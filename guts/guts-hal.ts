@@ -6,15 +6,20 @@ import {
   HalSession,
   init,
 } from '@/isolates/hal.ts'
+import { init as githubInit } from '@/isolates/github.ts'
 import { expect, log } from '@utils'
-import { CradleMaker, print } from '@/constants.ts'
+import { ArtifactSession, CradleMaker, print } from '@/constants.ts'
 type Messages = OpenAI.ChatCompletionMessageParam
+
+const combinedInit = async (session: ArtifactSession) => {
+  await Promise.all([githubInit(session), init(session)])
+}
 
 export default (name: string, cradleMaker: CradleMaker) => {
   const prefix = name + ': '
 
   Deno.test(prefix + 'login loop', async (t) => {
-    const session = await cradleMaker(init)
+    const session = await cradleMaker(combinedInit)
     const pid = await session.dns('dreamcatcher-tech/HAL')
 
     const halBase = await session.actions<HalBase>('hal', pid)

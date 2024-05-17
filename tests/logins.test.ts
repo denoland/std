@@ -17,7 +17,6 @@ Deno.test('login with github', async (t) => {
   const session = machine.openSession()
   const home = session.homeAddress
   const config = await session.readJSON<Actors.Config>('config.json', home)
-  console.log('config', config)
   const authProvider = config.authProviders.github
   const github = await session.actions<Github.Api>('github', authProvider)
 
@@ -36,7 +35,7 @@ Deno.test('login with github', async (t) => {
     await github.authorize({ authSessionId, tokens, githubUserId })
 
     const home = engine.homeAddress
-    const actorAdmin = await session.actions<Actors.Admin>('actors', home)
+    const actorAdmin = await session.actions<Actors.ActorAdmin>('actors', home)
     const newActorId = await actorAdmin.surrender({ authProvider })
     expect(newActorId).toEqual(actorId)
   })
@@ -52,7 +51,7 @@ Deno.test('login with github', async (t) => {
     const tokens: Tokens = { accessToken: 'mock-token-2', tokenType: 'bearer' }
     await github.authorize({ authSessionId, tokens, githubUserId })
 
-    const actor = await second.actions<Actors.Admin>('actors', home)
+    const actor = await second.actions<Actors.ActorAdmin>('actors', home)
     // these should be managed inside the session since it changes the machine
     await actor.surrender({ authProvider })
 

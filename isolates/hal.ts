@@ -153,6 +153,10 @@ export const functions = {
 }
 
 export const init: Provisioner = async (superSession: ArtifactSession) => {
-  const { pid } = await superSession.clone({ repo: 'dreamcatcher-tech/HAL' })
+  log('init')
+  const { pid } = await superSession.clone({
+    repo: 'dreamcatcher-tech/HAL',
+    isolate: 'hal',
+  })
   log('HAL pid', print(pid))
 }

@@ -14,7 +14,12 @@ import {
 import { streamSSE } from 'hono/helper'
 import { Engine } from '../engine.ts'
 import { assert, Debug, serializeError } from '@/utils.ts'
-import { EventSourceMessage, machineIdRegex, Provisioner } from '@/constants.ts'
+import {
+  EventSourceMessage,
+  machineIdRegex,
+  print,
+  Provisioner,
+} from '@/constants.ts'
 import '@std/dotenv/load'
 
 const log = Debug('AI:server')
@@ -46,10 +51,10 @@ export default class Server {
     app.post(`/homeAddress`, (c) => {
       return execute(c, Promise.resolve(engine.homeAddress), 'homeAddress')
     })
-    app.post(`/createMachineSession`, async (c) => {
+    app.post(`/ensureMachineTerminal`, async (c) => {
       const params = await c.req.json()
-      const p = engine.createMachineSession(params.pid)
-      return execute(c, p, 'createMachineSession')
+      const p = engine.ensureMachineTerminal(params.pid)
+      return execute(c, p, 'ensureMachineTerminal')
     })
     app.post(`/pierce`, async (c) => {
       // TODO hook GitKV for write count, read count, and size
@@ -76,7 +81,7 @@ export default class Server {
               event: 'splice',
               id: String(sseId++),
             }
-            log('event', event)
+            log('event', print(splice.pid))
             await stream.writeSSE(event)
           }
           log('stream end')
@@ -97,6 +102,11 @@ export default class Server {
       const params = await c.req.json()
       const { path, pid } = params
       return execute(c, engine.exists(path, pid), 'exists')
+    })
+    app.post(`/isPidAvailable`, async (c) => {
+      const params = await c.req.json()
+      const { pid } = params
+      return execute(c, engine.isPidAvailable(pid), 'isPidAvailable')
     })
     app.post('/transcribe', async (c) => {
       const body = await c.req.parseBody()
@@ -182,6 +192,8 @@ const execute = async (c: Context, p: Promise<unknown>, name: string) => {
   const deployment = Deno.env.get('DENO_DEPLOYMENT_ID') || '(unknown)'
   setMetric(c, 'deployment', 'Deployment: ' + deployment)
 
+  log('execute', name, c.req.url)
+
   try {
     const result = await p
     endTime(c, name)
@@ -191,5 +203,3 @@ const execute = async (c: Context, p: Promise<unknown>, name: string) => {
     return c.json({ error: serializeError(error) })
   }
 }
-
-Debug.enable('AI:completions*')

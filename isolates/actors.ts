@@ -9,6 +9,7 @@ import {
   PID,
   pidSchema,
   print,
+  ROOT_SESSION,
   sessionIdRegex,
 } from '@/constants.ts'
 import { assert, Debug, equal, expect } from '@utils'
@@ -32,8 +33,8 @@ export type ActorApi = {
    */
   lsRepos: () => Promise<string[]>
 }
-export type Admin = {
-  createMachineSession: (
+export type ActorAdmin = {
+  ensureMachineTerminal: (
     params: { machineId: string; sessionId: string },
   ) => Promise<PID>
 
@@ -56,28 +57,22 @@ export type Admin = {
   addAuthProvider: (params: { provider: PID; name: string }) => Promise<void>
 }
 
-export type Api = Admin & ActorApi
+export type Api = ActorAdmin & ActorApi
 
-const repo = {
+const init = {
   type: 'object',
   additionalProperties: false,
   required: ['repo'],
   properties: {
     repo: { type: 'string' },
+    isolate: { type: 'string' },
+    params: { type: 'object' },
   },
 }
 
 export const api = {
-  init: {
-    type: 'object',
-    additionalProperties: false,
-    required: ['repo'],
-    properties: {
-      repo: { type: 'string' },
-      isolate: { type: 'string' },
-      params: { type: 'object' },
-    },
-  },
+  init,
+  clone: init,
   rm: {
     type: 'object',
     additionalProperties: false,
@@ -92,7 +87,6 @@ export const api = {
     additionalProperties: false,
     properties: {},
   },
-  clone: repo,
   addAuthProvider: {
     type: 'object',
     additionalProperties: false,
@@ -110,7 +104,7 @@ export const api = {
       superuser: { type: 'string', pattern: machineIdRegex.source },
     },
   },
-  createMachineSession: {
+  ensureMachineTerminal: {
     type: 'object',
     additionalProperties: false,
     required: ['machineId', 'sessionId'],
@@ -150,6 +144,11 @@ export const functions = {
 
     const config: Config = { superuser, authProviders: {} }
     api.writeJSON('config.json', config)
+
+    const functions = await api.functions<ActorAdmin>('actors')
+    const machineId = superuser
+    const sessionId = ROOT_SESSION
+    await functions.ensureMachineTerminal({ machineId, sessionId })
   },
   async addAuthProvider(
     { provider, name }: { provider: PID; name: string },
@@ -180,6 +179,8 @@ export const functions = {
         promises.push(rm({ pid: repos[repo] }))
       }
       await Promise.all(promises)
+      const rerepos = await readRepos(api)
+      assert(equal(repos, rerepos), 'repos changed')
       api.writeJSON('repos.json', {})
       return true
     }
@@ -191,6 +192,8 @@ export const functions = {
     log('rm', repo, print(pid), all)
 
     await rm({ pid })
+    const rerepos = await readRepos(api)
+    assert(equal(repos, rerepos), 'repos changed')
     delete repos[repo]
     api.writeJSON('repos.json', repos)
     return true
@@ -208,17 +211,16 @@ export const functions = {
     const { repo, isolate, params } = p
     log('clone', repo, isolate, params)
 
-    const repos = await readRepos(api)
-    if (repo in repos) {
-      throw new Error('Repo already exists: ' + repo)
-    }
+    let repos = await readRepos(api, repo)
 
     const { clone } = await api.actions<system.Api>('system')
     const result = await clone({ repo, isolate, params })
     log('clone result', print(result.pid))
 
+    repos = await readRepos(api, repo)
     repos[repo] = result.pid
     api.writeJSON('repos.json', repos)
+    log('clone wrote repos:', Object.keys(repos))
     return result
   },
   init: async (
@@ -230,33 +232,40 @@ export const functions = {
     const { repo, isolate, params } = p
     log('init', repo)
 
-    const repos = await readRepos(api)
-    if (repo in repos) {
-      throw new Error('Repo already exists: ' + repo)
-    }
+    let repos = await readRepos(api, repo)
 
     const { init } = await api.actions<system.Api>('system')
     const { pid, head } = await init({ repo, isolate, params })
+
+    repos = await readRepos(api, repo)
     repos[repo] = pid
     api.writeJSON('repos.json', repos)
+    log('init wrote repos:', Object.keys(repos))
     return { pid, head }
   },
 
-  async createMachineSession(
+  async ensureMachineTerminal(
     { machineId, sessionId }: { machineId: string; sessionId: string },
     api: IsolateApi,
   ) {
-    if (api.pid.branches.length > 1) {
-      throw new Error('Actor chain must be a base chain')
+    if (!isBaseRepo(api.pid)) {
+      throw new Error('Actor chain must be a base chain: ' + print(api.pid))
     }
-    const base = await api.actions<session.Api>('session', api.pid)
+    // TODO if this fn is called twice, one invocation should become a no-op as
+    // each stage should check if the the rest of its path exists
+
     const actorId = machineId
+
+    const base = await api.actions<session.Api>('session', api.pid)
+
     const actorPid = await base.create({ name: actorId })
     const actor = await api.actions<session.Api>('session', actorPid)
+
     const machinePid = await actor.create({ name: machineId })
     const machine = await api.actions<session.Api>('session', machinePid)
+
     const sessionPid = await machine.create({ name: sessionId })
-    log('createMachineSession', print(sessionPid))
+    log('ensureMachineTerminal', print(sessionPid))
     return sessionPid
   },
   async createSession({ sessionId }: { sessionId: string }, api: IsolateApi) {
@@ -306,11 +315,15 @@ const assertIsActorPid = (api: IsolateApi) => {
     throw new Error('Must be called from Actor branch: ' + print(api.pid))
   }
 }
-const readRepos = async (api: IsolateApi) => {
+const readRepos = async (api: IsolateApi, checkRepo?: string) => {
   let repos: Repos = {}
   if (await api.exists('repos.json')) {
     repos = await api.readJSON<Repos>('repos.json')
   }
+  if (checkRepo && checkRepo in repos) {
+    throw new Error('Repo already exists: ' + checkRepo)
+  }
+
   return repos
 }
 

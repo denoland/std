@@ -40,9 +40,9 @@ export class WebClientEngine implements EngineInterface {
   get homeAddress() {
     return this.#homeAddress
   }
-  createMachineSession(pid: PID) {
+  ensureMachineTerminal(pid: PID) {
     assertValidSession(pid, this.#homeAddress)
-    return this.#request('createMachineSession', { pid })
+    return this.#request('ensureMachineTerminal', { pid })
   }
   stop() {
     for (const abort of this.#aborts) {
@@ -154,6 +154,10 @@ export class WebClientEngine implements EngineInterface {
   }
   async exists(path: string, pid: PID) {
     const result = await this.#request('exists', { path, pid })
+    return result as boolean
+  }
+  async isPidAvailable(pid: PID): Promise<boolean> {
+    const result = await this.#request('isPidAvailable', { pid })
     return result as boolean
   }
   async #request(path: string, params: Params) {

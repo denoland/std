@@ -25,30 +25,6 @@ export class Machine implements ArtifactMachine {
   readonly #machineId: string
   #rootSessionPromise: Promise<Session>
 
-  private constructor(engine: EngineInterface, privateKey: string) {
-    this.#engine = engine
-    this.#privKey = secp.etc.hexToBytes(privateKey)
-    this.#pubKey = secp.getPublicKey(this.#privKey)
-    this.#machineId = secp.etc.bytesToHex(this.#pubKey)
-
-    const actorId = this.#machineId
-    const machineId = this.#machineId
-    const branches = [...engine.homeAddress.branches, actorId, machineId]
-    this.#pid = { ...engine.homeAddress, branches }
-    this.#rootSessionPromise = this.#connect()
-  }
-  get rootSessionPromise() {
-    return this.#rootSessionPromise
-  }
-  get pid() {
-    return this.#pid
-  }
-  get machineId() {
-    return this.#machineId
-  }
-  clone() {
-    return new Machine(this.#engine, secp.etc.bytesToHex(this.#privKey))
-  }
   static load(engine: EngineInterface, privateKey: string) {
     if (!secp.utils.isValidPrivateKey(privateKey)) {
       throw new Error('Invalid private key')
@@ -65,12 +41,36 @@ export class Machine implements ArtifactMachine {
     const pubKey = secp.getPublicKey(privateKey)
     return secp.etc.bytesToHex(pubKey)
   }
+
+  private constructor(engine: EngineInterface, privateKey: string) {
+    this.#engine = engine
+    this.#privKey = secp.etc.hexToBytes(privateKey)
+    this.#pubKey = secp.getPublicKey(this.#privKey)
+    this.#machineId = secp.etc.bytesToHex(this.#pubKey)
+
+    const actorId = this.#machineId
+    const machineId = this.#machineId
+    const branches = [...engine.homeAddress.branches, actorId, machineId]
+    this.#pid = { ...engine.homeAddress, branches }
+    this.#rootSessionPromise = this.#connect()
+  }
+  get rootTerminalPromise() {
+    return this.#rootSessionPromise
+  }
+  get pid() {
+    return this.#pid
+  }
+  get machineId() {
+    return this.#machineId
+  }
+  clone() {
+    return new Machine(this.#engine, secp.etc.bytesToHex(this.#privKey))
+  }
   async #connect() {
     const branches = [...this.#pid.branches, ROOT_SESSION]
     const rootPid = { ...this.pid, branches }
 
-    // a machine that is already created should simply probe the engine
-    await this.#engine.createMachineSession(rootPid)
+    await this.#engine.ensureMachineTerminal(rootPid)
     return Session.resume(this.#engine, this, rootPid)
   }
 

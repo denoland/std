@@ -1,3 +1,4 @@
+import { Debug } from '@/utils.ts'
 import Server from '@/api/server.ts'
 import { ArtifactSession } from '@/constants.ts'
 import { init as githubInit } from '@/isolates/github.ts'
@@ -24,3 +25,5 @@ const init = async (session: ArtifactSession) => {
 
 const server = await Server.create(getPrivateKey(), getAesKey(), init)
 Deno.serve(server.fetch)
+
+Debug.enable('AI:completions* AI:qbr AI:qex')

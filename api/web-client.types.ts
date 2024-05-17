@@ -350,7 +350,7 @@ with github.
 export interface ArtifactMachine {
   pid: PID
   machineId: string
-  rootSessionPromise: Promise<Session>
+  rootTerminalPromise: Promise<Session>
   /** Using the current session, create a new session. */
   openSession(retry?: PID): ArtifactSession
   /** Pings the execution context without going thru the transaction queue.
@@ -386,7 +386,11 @@ export interface EngineInterface {
    * Without this function, a new machine has no way to begin piercing into
    * chainland.
    */
-  createMachineSession(pid: PID): Promise<void>
+  ensureMachineTerminal(pid: PID): Promise<void>
+  /** Checks if the provided PID is active and accessible to this machine.  If
+   * it is not accessible due to permissions, it will appear as tho it did not
+   * exist */
+  isPidAvailable(pid: PID): Promise<boolean>
 }
 export const isPID = (value: unknown): value is PID => {
   if (typeof value !== 'object' || value === null) {

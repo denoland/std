@@ -3,8 +3,10 @@ import Compartment from './io/compartment.ts'
 import '@std/dotenv/load'
 import {
   ACTORS,
+  ArtifactSession,
   assertValidSession,
   C,
+  colorize,
   EngineInterface,
   freezePid,
   JsonValue,
@@ -21,27 +23,34 @@ import * as artifact from '@/isolates/artifact.ts'
 import { ulid } from 'ulid'
 import { Machine } from '@/api/web-client-machine.ts'
 import { PierceWatcher } from '@/api/web-client-watcher.ts'
+import { ActorAdmin } from '@/isolates/actors.ts'
 const log = Debug('AI:engine')
 
 export class Engine implements EngineInterface {
+  #superuserKey: string
   #compartment: Compartment
   #api: IsolateApi<C>
   #pierce: artifact.Api['pierce']
   #homeAddress: PID | undefined
   #githubAddress: PID | undefined
 
-  private constructor(compartment: Compartment, api: IsolateApi<C>) {
+  private constructor(
+    compartment: Compartment,
+    api: IsolateApi<C>,
+    superuserKey: string,
+  ) {
     this.#compartment = compartment
     this.#api = api
     const functions = compartment.functions<artifact.Api>(api)
     this.#pierce = functions.pierce
+    this.#superuserKey = superuserKey
   }
   static async start(superuserKey: string, aesKey: string, init?: Provisioner) {
     const compartment = await Compartment.create('artifact')
     const api = IsolateApi.createContext<C>()
     api.context = { aesKey }
     await compartment.mount(api)
-    const engine = new Engine(compartment, api)
+    const engine = new Engine(compartment, api, superuserKey)
     await engine.ensureHomeAddress(superuserKey, init)
     return engine
   }
@@ -77,7 +86,7 @@ export class Engine implements EngineInterface {
     const { db } = artifact.sanitizeContext(this.#api)
     // TODO use the effect lock to ensure atomicity
     const superuser = Machine.deriveMachineId(superuserPrivateKey)
-    const { pid: homeAddress } = await this.#installHome(superuser)
+    const homeAddress = await this.#installHome(superuser)
     await db.setHomeAddress(homeAddress)
     this.#homeAddress = homeAddress
 
@@ -85,13 +94,20 @@ export class Engine implements EngineInterface {
       return
     }
 
-    const machine = Machine.load(this, superuserPrivateKey)
-    const session = await machine.rootSessionPromise
-    await init(session)
+    const terminal = await this.#su()
+    await init(terminal)
+  }
+  #superuser: Promise<ArtifactSession> | undefined
+  #su() {
+    if (!this.#superuser) {
+      const machine = Machine.load(this, this.#superuserKey)
+      this.#superuser = machine.rootTerminalPromise
+    }
+    return this.#superuser
   }
 
   async #installHome(superuser: string) {
-    log('installHome superuser:', superuser)
+    log('installHome superuser:', colorize(superuser))
     // TODO figure out how to know if this is a duplicate install
     const partial = { ...ACTORS, repository: 'actors' }
     const { db } = artifact.sanitizeContext(this.#api)
@@ -108,14 +124,14 @@ export class Engine implements EngineInterface {
       ulid: ulid(),
     }
     const promise = watcher.watch(request.ulid)
+
+    // notably, this is the only unauthenticated pierce in the whole system
     await this.pierce(request)
     // TODO reverse the init if the install fails
     await promise
     abort.abort() // TODO make this a method on the watcher
-    // TODO fire an error if this isolate is not installable
     log('installed', print(pid))
-    const { oid } = await FS.openHead(pid, db)
-    return { pid, head: oid }
+    return pid
   }
   ping(data?: JsonValue): Promise<JsonValue | undefined> {
     log('ping', data)
@@ -160,30 +176,30 @@ export class Engine implements EngineInterface {
     const fs = await FS.openHead(pid, db)
     return fs.exists(path)
   }
-  async createMachineSession(pid: PID) {
+  async ensureMachineTerminal(pid: PID) {
     const { homeAddress } = this
+    // TODO require some signature proof from the machine
     assertValidSession(pid, homeAddress)
 
+    log('ensureMachineTerminal', print(pid))
     const [, , machineId, sessionId] = pid.branches
-    log('createMachineSession', print(pid))
 
-    // need to check if this exists first, and just return if it does
-
-    const request = {
-      isolate: 'actors',
-      functionName: 'createMachineSession',
-      params: { machineId, sessionId },
-      proctype: PROCTYPE.SERIAL,
-      target: homeAddress,
-      ulid: ulid(),
-    }
-
-    // TODO either use super or check permissions
-    // this would be an api gateway effect pointed at the actors repo
-    await this.pierce(request)
-    for await (const _splice of this.read(pid)) {
-      log('splice received', print(pid))
+    if (await this.isPidAvailable(pid)) {
+      log('pid already exists', print(pid))
       return
     }
+
+    const su = await this.#su()
+    const actions = await su.actions<ActorAdmin>('actors', homeAddress)
+    await actions.ensureMachineTerminal({ machineId, sessionId })
+  }
+  async isPidAvailable(pid: PID): Promise<boolean> {
+    // TODO handle permissions for the machine - maybe restrict to machine only
+    // as in, only the children of the machine can be probed like this
+    freezePid(pid)
+    const db = this.#api.context.db
+    assert(db, 'db not found')
+    const head = await db.readHead(pid)
+    return !!head
   }
 }

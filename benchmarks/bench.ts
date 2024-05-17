@@ -63,7 +63,7 @@ suite
     async fn(deferred: Benchmark.Deferred) {
       const privateKey = Machine.generatePrivateKey()
       const machine = Machine.load(machineEngine, privateKey)
-      await machine.rootSessionPromise
+      await machine.rootTerminalPromise
       deferred.resolve()
     },
   })
@@ -71,7 +71,7 @@ suite
     defer: true,
     fn: async (deferred: Benchmark.Deferred) => {
       const machine = Machine.load(machineEngine, machineEnginePrivateKey)
-      await machine.rootSessionPromise
+      await machine.rootTerminalPromise
       deferred.resolve()
     },
   })
