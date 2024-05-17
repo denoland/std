@@ -64,8 +64,13 @@ documentation:
 
 ## Stabilization
 
-The Standard Library is now in the process of stabilizing its packages. Each
-package must go through the following steps to achieve stabilization:
+The Standard Library is now in the process of stabilizing its packages. Below is
+the current schedule:
+
+- [ ] [`@std/bytes`](https://jsr.io/@std/bytes) is being stabilized on July 7,
+      2024 ([#4746](https://github.com/denoland/deno_std/pull/4746))
+
+Each package must go through the following steps to achieve stabilization:
 
 1. Publish version 1.0.0-rc.1 once meeting the following requirements:
    1. Approved by at least 2 maintainers. There must be consensus that the
