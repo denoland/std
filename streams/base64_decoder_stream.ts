@@ -47,7 +47,7 @@ export class Base64DecoderStream extends TransformStream<string, Uint8Array> {
         controller.enqueue(output);
       },
 
-      // TODO(babiabeo): Do we need to decode the remining characters?
+      // TODO(babiabeo): Do we need to decode the remaining characters?
       flush: (controller) => {
         if (this.#remain) {
           // Decode the remaining characters.
