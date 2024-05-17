@@ -1,31 +1,10 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
 /**
- * A union of AsyncIterable and Iterable
- */
-export type Iter<T> = AsyncIterable<T> | Iterable<T>;
-
-/**
- * A TransformStream that concatenates multiple streams into a single ReadableStream in order.
- * Works with anything that implements the `Symbol.asyncIterator` or `Symbol.iterator`.
+ * ConcatStreams extends the ReadableStreams class, concatenating any iterable
+ * of ReadableStreams into a single ReadableStream.
  *
- * @template T Type of the chunks in the iterables.
- *
- * @example .pipeThrough Usage
- * ```ts
- * import { ConcatStreams } from "@std/streams/concat-streams"
- *
- * const stream1 = ReadableStream.from([1, 2, 3])
- * const stream2 = ReadableStream.from([4, 5, 6])
- * const stream3 = ReadableStream.from([7, 8, 9])
- *
- * for await (
- *   const x of ReadableStream
- *     .from([stream1, stream2, stream3])
- *     .pipeThrough(new ConcatStreams())
- * )
- *   console.log(x)
- * ```
+ * @template T Type of the chunks in the ReadableStream.
  *
  * @example argument Usage
  * ```ts
@@ -35,61 +14,65 @@ export type Iter<T> = AsyncIterable<T> | Iterable<T>;
  * const stream2 = ReadableStream.from([4, 5, 6])
  * const stream3 = ReadableStream.from([7, 8, 9])
  *
- * for await (const x of new ConcatStreams([stream1, stream2, stream3]).readable)
+ * for await (const x of new ConcatStreams([stream1, stream2, stream3]))
  *   console.log(x)
  * ```
  */
-export class ConcatStreams<T> {
-  #readable: ReadableStream<T>;
-  #writable: WritableStream<Iter<T>>;
-  /**
-   * Constructs a new instance.
-   * @param streams (Optional): If provided then this.writable will be locked.
-   */
-  constructor(streams?: Iter<Iter<T>>) {
-    const { readable, writable } = new TransformStream<Iter<T>, Iter<T>>();
+export class ConcatStreams<T> extends ReadableStream<T> {
+  /** Constructs new instance. */
+  constructor(
+    streams: AsyncIterable<ReadableStream<T>> | Iterable<ReadableStream<T>>,
+  ) {
     const gen = async function* () {
-      for await (const stream of readable) {
-        for await (const chunk of stream) {
-          yield chunk;
+      const iter = Symbol.asyncIterator in streams
+        ? streams[Symbol.asyncIterator]()
+        : streams[Symbol.iterator]();
+      x: while (true) {
+        const { done, value } = await iter.next();
+        if (done) {
+          break;
+        }
+        const reader = value.getReader();
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) {
+            break;
+          }
+          try {
+            yield value;
+          } catch (reason) {
+            const promises = [reader.cancel(reason)];
+            while (true) {
+              const { done, value } = await iter.next();
+              if (done) {
+                break;
+              }
+              promises.push(value.cancel(reason));
+            }
+            await Promise.allSettled(promises);
+            break x;
+          }
         }
       }
     }();
-    this.#readable = new ReadableStream({
+    let lock = false;
+    super({
       async pull(controller) {
+        while (lock) {
+          await new Promise((a) => setTimeout(a, 0));
+        }
+        lock = true;
         const { done, value } = await gen.next();
         if (done) {
-          return controller.close();
+          controller.close();
+        } else {
+          controller.enqueue(value);
         }
-        controller.enqueue(value);
+        lock = false;
+      },
+      async cancel(reason) {
+        await gen.throw(reason).catch(() => {});
       },
     });
-    this.#writable = writable;
-
-    if (streams) {
-      const gen = async function* () {
-        for await (const stream of streams) {
-          yield stream;
-        }
-      }();
-      new ReadableStream<Iter<T>>({
-        async pull(controller) {
-          const { done, value } = await gen.next();
-          if (done) {
-            return controller.close();
-          }
-          controller.enqueue(value);
-        },
-      })
-        .pipeTo(this.#writable);
-    }
-  }
-
-  get readable(): ReadableStream<T> {
-    return this.#readable;
-  }
-
-  get writable(): WritableStream<Iter<T>> {
-    return this.#writable;
   }
 }
