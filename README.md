@@ -89,10 +89,6 @@ package must go through the following steps to achieve stabilization:
 
 Check out the architecture guide [here](./.github/ARCHITECTURE.md).
 
-## Frequently Asked Questions
-
-Check out the frequently asked questions page [here](./.github/FAQ.md).
-
 ## Design
 
 ### Minimal Exports
@@ -135,3 +131,7 @@ every new version of the Deno CLI (including patch versions).
 ```md
 [![Built with the Deno Standard Library](https://raw.githubusercontent.com/denoland/deno_std/main/badge.svg)](https://jsr.io/@std)
 ```
+
+## Frequently Asked Questions
+
+Check out the frequently asked questions page [here](./.github/FAQ.md).
