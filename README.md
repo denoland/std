@@ -64,17 +64,26 @@ documentation:
 
 ## Stabilization
 
-For a package to reach v1 (aka stable) status, it must meet the following
-requirements:
+The Standard Library is now in the process of stabilizing its packages. Each
+package must go through the following steps to achieve stabilization:
 
-1. Approved by four members of the internal team. There must be consensus that
-   the API design is satisfactory and unlikely to change in the future.
-1. 100% documented, passing `deno doc --lint` checks and adhering to the
-   [documentation guidelines](https://github.com/denoland/deno_std/blob/main/.github/CONTRIBUTING.md#documentation).
-1. Maximum possible test coverage
-1. No open issues or pull requests that might lead to breaking changes. For
-   example, issues that suggest new non-breaking features are fine to exist at
-   stabilization.
+1. Publish version 1.0.0-rc.1 once meeting the following requirements:
+   1. Approved by at least 2 maintainers. There must be consensus that the
+      design, documentation and implementation of the package are good and that
+      it is unlikely to undergo breaking changes in the future.
+   1. 100% documented, passing `deno doc --lint` checks and adhering to the
+      [documentation guidelines](https://github.com/denoland/deno_std/blob/main/.github/CONTRIBUTING.md#documentation).
+   1. Maximum possible test coverage
+   1. No open issues or pull requests that might lead to breaking changes. For
+      example, issues that suggest new non-breaking features are fine to exist
+      at stabilization.
+1. Allow 1 month for the community and the core team to review the package and
+   handle any feedback. There must be consensus that the design, documentation
+   and implementation of the package are good and that it is unlikely to undergo
+   breaking changes in the future.
+1. If there are no remaining issues, publish version 1.0.0. If there are
+   remaining issues, extend the waiting period to allow further time for a
+   resolution. Then, repeat this step.
 
 ## Architecture
 
