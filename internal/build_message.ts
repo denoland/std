@@ -69,9 +69,9 @@ export interface BuildMessageOptions {
  *
  * @example Usage
  * ```ts
- * import { diffstr, buildMessage } from "@std/internal";
+ * import { diffStr, buildMessage } from "@std/internal";
  *
- * const diffResult = diffstr("Hello, world!", "Hello, world");
+ * const diffResult = diffStr("Hello, world!", "Hello, world");
  *
  * console.log(buildMessage(diffResult));
  * // [
