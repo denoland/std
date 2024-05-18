@@ -8,13 +8,17 @@ import { decodeBase64 } from "@std/encoding/base64";
 /**
  * A transform stream that decodes a stream of base64-encoded strings.
  *
+ * **Note**: This transform stream does not handle line breaks.
+ *
  * @example
  * ```ts
  * import { Base64DecoderStream } from "@std/streams/base64-decoder-stream";
  *
  * const stream = ReadableStream.from([
- *   "aGVsbG8gd29ybGQ=",
- *   "Zm9vYmFy",
+ *   "aGVs",
+ *   "bG8g",
+ *   "d29y",
+ *   "bGQ=",
  * ]);
  *
  * const decodedStream = stream.pipeThrough(new Base64DecoderStream());
@@ -26,15 +30,10 @@ export class Base64DecoderStream extends TransformStream<string, Uint8Array> {
 
   /**
    * Constructs a new instance.
-   * @param removeLineBreaks Whether to remove line breaks from stream.
    */
-  constructor(removeLineBreaks?: boolean) {
+  constructor() {
     super({
       transform: (chunk, controller) => {
-        if (removeLineBreaks) {
-          chunk = chunk.replaceAll(/(\r\n|\r|\n)/g, "");
-        }
-
         chunk = this.#remain + chunk;
 
         // Decode blocks of 4 characters which represent 3 bytes in base64 encoding.
@@ -47,7 +46,7 @@ export class Base64DecoderStream extends TransformStream<string, Uint8Array> {
         controller.enqueue(output);
       },
 
-      // TODO(babiabeo): Do we need to decode the remaining characters?
+      // TODO(babiabeo): Do we actually need to decode the remaining characters?
       flush: (controller) => {
         if (this.#remain) {
           // Decode the remaining characters.

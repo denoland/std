@@ -6,10 +6,9 @@ import { Base64DecoderStream } from "./base64_decoder_stream.ts";
 async function testDecoderStream(
   input: string[],
   output: string,
-  removeLineBreaks?: boolean,
 ) {
   const stream = ReadableStream.from(input)
-    .pipeThrough(new Base64DecoderStream(removeLineBreaks))
+    .pipeThrough(new Base64DecoderStream())
     .pipeThrough(new TextDecoderStream());
 
   const chunks = await Array.fromAsync(stream);
@@ -37,26 +36,4 @@ Deno.test("Base64DecoderStream decodes a base64-encoded stream", async () => {
   }
 
   await Promise.all(tests);
-});
-
-Deno.test("Base64DecoderStream decodes a base64-encoded stream that has been split into lines", async () => {
-  await Promise.all([
-    testDecoderStream(["aGVsb\r\nG8gd2\r\n9ybGQ\r\n="], "hello world", true),
-    testDecoderStream(
-      [
-        "TG9yZW0gaXBzdW0gZG9sb3Igc2l0IGFtZXQsIGNvbnNlY3RldHVyIGFkaXBpc2NpbmcgZWxpdCwg\r\n",
-        "c2VkIGRvIGVpdXNtb2QgdGVtcG9yIGluY2lkaWR1bnQgdXQgbGFib3JlIGV0IGRvbG9yZSBtYWdu\r\n",
-        "YSBhbGlxdWEuIE5ldHVzIGV0IG1hbGVzdWFkYSBmYW1lcyBhYyB0dXJwaXMgZWdlc3RhcyBtYWVj\r\n",
-        "ZW5hcyBwaGFyZXRyYS4gSW4gaGFjIGhhYml0YXNzZSBwbGF0ZWEgZGljdHVtc3QgdmVzdGlidWx1\r\n",
-        "bSByaG9uY3VzIGVzdCBwZWxsZW50ZXNxdWUgZWxpdC4=",
-      ],
-      [
-        "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod ",
-        "tempor incididunt ut labore et dolore magna aliqua. Netus et malesuada ",
-        "fames ac turpis egestas maecenas pharetra. In hac habitasse platea ",
-        "dictumst vestibulum rhoncus est pellentesque elit.",
-      ].join(""),
-      true,
-    ),
-  ]);
 });
