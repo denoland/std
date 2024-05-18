@@ -109,10 +109,10 @@ function createDetails(
  *
  * @example Usage
  * ```ts
- * import { diffstr } from "@std/internal/diff-str";
+ * import { diffStr } from "@std/internal/diff-str";
  * import { assertEquals } from "@std/assert/assert-equals";
  *
- * assertEquals(diffstr("Hello!", "Hello"), [
+ * assertEquals(diffStr("Hello!", "Hello"), [
  *   {
  *     type: "removed",
  *     value: "Hello!\n",
@@ -133,7 +133,7 @@ function createDetails(
  * ]);
  * ```
  */
-export function diffstr(A: string, B: string): DiffResult<string>[] {
+export function diffStr(A: string, B: string): DiffResult<string>[] {
   // Compute multi-line diff
   const diffResult = diff(
     tokenize(`${unescape(A)}\n`),
