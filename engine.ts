@@ -69,13 +69,16 @@ export class Engine implements EngineInterface {
     if (this.#homeAddress) {
       return this.#homeAddress
     }
+    log('ensureHomeAddress querying db')
     const { db } = artifact.sanitizeContext(this.#api)
     if (await db.hasHomeAddress()) {
       this.#homeAddress = await db.getHomeAddress()
+      log('homeAddress found in db', print(this.#homeAddress))
     } else {
       await this.#provision(superuserKey, init)
+      assert(this.#homeAddress, 'home not provisioned')
+      log('homeAddress provisioned', print(this.#homeAddress))
     }
-    assert(this.#homeAddress, 'home not provisioned')
     return this.#homeAddress
   }
   get abortSignal() {
@@ -101,7 +104,9 @@ export class Engine implements EngineInterface {
     }
 
     const terminal = await this.#su()
+    log('provisioning', print(homeAddress))
     await init(terminal)
+    log('provisioned', print(homeAddress))
   }
   #superuser: Promise<ArtifactSession> | undefined
   #su() {
@@ -175,6 +180,7 @@ export class Engine implements EngineInterface {
     const db = this.#api.context.db
     assert(db, 'db not found')
     const fs = await FS.openHead(pid, db)
+    log('readJSON', path, print(pid))
     return fs.readJSON<T>(path)
   }
   async exists(path: string, pid: PID): Promise<boolean> {
@@ -183,6 +189,7 @@ export class Engine implements EngineInterface {
     const db = this.#api.context.db
     assert(db, 'db not found')
     const fs = await FS.openHead(pid, db)
+    log('exists', path, print(pid))
     return fs.exists(path)
   }
   async ensureMachineTerminal(machinePid: PID) {

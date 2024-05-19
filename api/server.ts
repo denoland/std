@@ -96,7 +96,7 @@ export default class Server {
     app.post(`/readJSON`, async (c) => {
       const params = await c.req.json()
       const { path, pid } = params
-      return execute(c, engine.readJSON(path, pid), 'exists')
+      return execute(c, engine.readJSON(path, pid), 'readJSON')
     })
     app.post(`/exists`, async (c) => {
       const params = await c.req.json()

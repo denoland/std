@@ -1,6 +1,7 @@
 import { expect, log } from '@utils'
-import { CradleMaker, IoStruct, print } from '@/constants.ts'
+import { CradleMaker, IoStruct, PID, print } from '@/constants.ts'
 import { Machine } from '@/api/web-client-machine.ts'
+import { ulid } from 'ulid'
 
 export default (name: string, cradleMaker: CradleMaker) => {
   const prefix = name + ': '
@@ -85,6 +86,8 @@ export default (name: string, cradleMaker: CradleMaker) => {
     const root = await terminal.machine.rootTerminalPromise
     log('root session', print(root.pid))
 
+    const actors = getBase(root.pid)
+    const actorsIo = await terminal.readJSON<IoStruct>('.io.json', actors)
     const io = await terminal.readJSON<IoStruct>('.io.json', root.pid)
 
     const machine = terminal.machine as Machine
@@ -102,6 +105,36 @@ export default (name: string, cradleMaker: CradleMaker) => {
     const lastIo = await terminal.readJSON<IoStruct>('.io.json', nextRoot.pid)
     expect(lastIo).toEqual(io)
 
+    const lastActorsIo = await terminal.readJSON<IoStruct>('.io.json', actors)
+    expect(lastActorsIo).toEqual(actorsIo)
+
     await terminal.engineStop()
   })
+  Deno.test(prefix + 'session reload missing', async (t) => {
+    const terminal = await cradleMaker()
+    await terminal.initializationPromise
+    const missingSessionPid = newTerminalPid(terminal.pid)
+
+    const root = await terminal.machine.rootTerminalPromise
+
+    const { pid } = root.machine
+    const io = await terminal.readJSON<IoStruct>('.io.json', pid)
+    expect(Object.keys(io.branches)).toHaveLength(2)
+
+    const missing = root.resumeSession(missingSessionPid)
+    expect(missing.pid).toEqual(missingSessionPid)
+    await missing.initializationPromise
+    const lastIo = await terminal.readJSON<IoStruct>('.io.json', pid)
+    expect(Object.keys(lastIo.branches)).toHaveLength(3)
+    await terminal.engineStop()
+  })
+}
+const getBase = (pid: PID) => {
+  const branches = [pid.branches[0]]
+  return { ...pid, branches }
+}
+const newTerminalPid = (pid: PID) => {
+  const branches = [...pid.branches]
+  branches[branches.length - 1] = ulid()
+  return { ...pid, branches }
 }

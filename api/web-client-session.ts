@@ -50,7 +50,6 @@ export class Session implements ArtifactSession {
     this.#watcher.watchPierces()
 
     engine.abortSignal.addEventListener('abort', () => {
-      console.log('ABORT')
       this.#abort.abort()
     })
   }

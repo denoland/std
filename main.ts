@@ -1,4 +1,4 @@
-import { Debug } from '@/utils.ts'
+import { Debug, isKvTestMode } from '@/utils.ts'
 import Server from '@/api/server.ts'
 import { ArtifactSession } from '@/constants.ts'
 import { init as githubInit } from '@/isolates/github.ts'
@@ -25,4 +25,12 @@ const init = async (session: ArtifactSession) => {
 
 Debug.enable('AI:completions* AI:qbr AI:qex AI:server AI:engine')
 const server = await Server.create(getPrivateKey(), getAesKey(), init)
-Deno.serve(server.fetch)
+
+const opts: { cert?: string; key?: string } = {}
+if (isKvTestMode()) {
+  opts.cert = Deno.readTextFileSync('tests/ssl/cert.pem')
+  opts.key = Deno.readTextFileSync('tests/ssl/key.pem')
+  console.log('loading test ssl certs')
+}
+
+Deno.serve(opts, server.fetch)
