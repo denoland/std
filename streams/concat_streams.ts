@@ -1,21 +1,25 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
 /**
- * concatStreams is a function that concatenates any iterable of ReadableStreams
- * into a single ReadableStream.
+ * Concatenates multiple `ReadableStream`s into a single ordered `ReadableStream`.
  *
- * @template T Type of the chunks in the ReadableStream.
+ * @template T Type of the chunks in the streams.
  *
- * @example argument Usage
+ * @param streams An iterable of `ReadableStream`s.
+ *
+ * @example Usage
  * ```ts
- * import { concatStreams } from "@std/streams/concat-streams"
+ * import { concatStreams } from "@std/streams/concat-streams";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
- * const stream1 = ReadableStream.from([1, 2, 3])
- * const stream2 = ReadableStream.from([4, 5, 6])
- * const stream3 = ReadableStream.from([7, 8, 9])
+ * const stream1 = ReadableStream.from([1, 2, 3]);
+ * const stream2 = ReadableStream.from([4, 5, 6]);
+ * const stream3 = ReadableStream.from([7, 8, 9]);
  *
- * for await (const x of concatStreams([stream1, stream2, stream3]))
- *   console.log(x)
+ * assertEquals(
+ *   await Array.fromAsync(concatStreams([stream1, stream2, stream3])),
+ *   [1, 2, 3, 4, 5, 6, 7, 8, 9]
+ * );
  * ```
  */
 export function concatStreams<T>(
@@ -53,25 +57,25 @@ export function concatStreams<T>(
       }
     }
   }();
+  let lock = false;
   return new ReadableStream<T>(
     {
-      lock: false,
       async pull(controller) {
-        while (this.lock) {
-          await new Promise((a) => setTimeout(a, 0));
+        while (lock) {
+          await new Promise((resolve) => setTimeout(resolve, 0));
         }
-        this.lock = true;
+        lock = true;
         const { done, value } = await gen.next();
         if (done) {
           controller.close();
         } else {
           controller.enqueue(value);
         }
-        this.lock = false;
+        lock = false;
       },
       async cancel(reason) {
         await gen.throw(reason).catch(() => {});
       },
-    } as UnderlyingSource<T> & { lock: boolean },
+    },
   );
 }

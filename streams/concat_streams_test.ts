@@ -3,7 +3,7 @@
 import { assertEquals, assertRejects } from "../assert/mod.ts";
 import { concatStreams } from "./concat_streams.ts";
 
-Deno.test("concatStreams(streams)", async function () {
+Deno.test("concatStreams()", async () => {
   const readable1 = ReadableStream.from([1, 2, 3]);
   const readable2 = ReadableStream.from([4, 5, 6]);
   const readable3 = ReadableStream.from([7, 8, 9]);
@@ -24,7 +24,7 @@ Deno.test("concatStreams(streams)", async function () {
   );
 });
 
-Deno.test("concatStreams(streams) with empty streams", async function () {
+Deno.test("concatStreams() with empty streams", async () => {
   const readable1 = ReadableStream.from([]);
   const readable2 = ReadableStream.from([]);
   const readable3 = ReadableStream.from([]);
@@ -35,7 +35,7 @@ Deno.test("concatStreams(streams) with empty streams", async function () {
   );
 });
 
-Deno.test("concatStreams(streams) with one empty stream", async function () {
+Deno.test("concatStreams() with one empty stream", async () => {
   const readable1 = ReadableStream.from([1, 2, 3]);
   const readable2 = ReadableStream.from([]);
   const readable3 = ReadableStream.from([7, 8, 9]);
@@ -53,7 +53,7 @@ Deno.test("concatStreams(streams) with one empty stream", async function () {
   );
 });
 
-Deno.test("concatStreams(streams) handles errors", async () => {
+Deno.test("concatStreams() handles errors", async () => {
   const readable1 = ReadableStream.from([1, 2, 3]);
   const readable2 = ReadableStream.from(async function* () {
     yield 4;
