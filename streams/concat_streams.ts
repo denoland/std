@@ -57,21 +57,14 @@ export function concatStreams<T>(
       }
     }
   }();
-  let lock = false;
   return new ReadableStream<T>(
     {
       async pull(controller) {
-        while (lock) {
-          await new Promise((resolve) => setTimeout(resolve, 0));
-        }
-        lock = true;
         const { done, value } = await gen.next();
         if (done) {
-          controller.close();
-        } else {
-          controller.enqueue(value);
+          return controller.close();
         }
-        lock = false;
+        controller.enqueue(value);
       },
       async cancel(reason) {
         await gen.throw(reason).catch(() => {});
