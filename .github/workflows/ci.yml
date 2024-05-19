@@ -10,7 +10,11 @@ jobs:
   ci:
     permissions:
       id-token: write
-      contents: read
+      # contents permission to update benchmark contents in gh-pages branch
+      # without benchmarks, would only need read permission
+      contents: write
+      # deployments permission to deploy GitHub pages website
+      deployments: write
     runs-on: ${{ matrix.os }}
     timeout-minutes: 10
     strategy:
@@ -60,3 +64,23 @@ jobs:
           files: cov.lcov
           token: ${{ secrets.CODECOV_TOKEN }}
           slug: dreamcatcher-tech/artifact
+
+      - name: Run benchmark
+        if: matrix.os == 'ubuntu-latest'
+        run: deno task bench | tee output.txt
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+
+      - name: Store benchmark result
+        if: matrix.os == 'ubuntu-latest'
+        uses: benchmark-action/github-action-benchmark@v1
+        with:
+          name: Artifact Benchmarks
+          tool: 'benchmarkjs'
+          output-file-path: output.txt
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          auto-push: true
+          # Show alert with commit comment on detecting possible performance regression
+          alert-threshold: '200%'
+          comment-on-alert: true
+          fail-on-alert: true

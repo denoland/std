@@ -19,20 +19,20 @@ const cradleMaker = async () => {
   const engine = await WebClientEngine.start(url)
   const machine = Machine.load(engine, machineKey)
 
-  const session = machine.openSession()
+  const terminal = machine.openSession()
   if (!introDone) {
     introDone = true
     console.log('testing:', url)
-    const repos = await session.lsRepos()
+    const repos = await terminal.lsRepos()
     if (repos.length) {
       console.log('deleting repos:', repos)
-      await session.rm({ all: true })
+      await terminal.rm({ all: true })
 
-      const postRepos = await session.lsRepos()
+      const postRepos = await terminal.lsRepos()
       console.log('postRepos:', postRepos)
     }
   }
-  return session
+  return terminal
 }
 guts('Cloud', cradleMaker)
 
