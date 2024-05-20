@@ -87,7 +87,7 @@ See the source code within
 [`@std/bytes`](https://github.com/denoland/deno_std/tree/main/bytes) for
 examples.
 
-One the documentation for a given package is written, add the package's entry
+Once the documentation for a given package is written, add the package's entry
 point(s) (usually just `mod.ts`) to:
 
 1. The `ENTRY_POINTS` array in the
