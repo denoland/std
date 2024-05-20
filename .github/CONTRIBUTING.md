@@ -95,8 +95,8 @@ point(s) (usually just `mod.ts`) to:
 1. The `lint:docs` task in the
    [`deno.json` file](https://github.com/denoland/deno_std/blob/main/deno.json).
 
-Once done, run `deno task lint:docs` to ensure all symbols documentation is
-complete.
+Once done, run `deno task lint:docs` which checks that documentation is complete
+in the given entry points.
 
 ### Module documentation
 
