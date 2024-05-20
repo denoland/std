@@ -5,8 +5,8 @@ import { isIterator, isToken, needsEncoding } from "./_util.ts";
 
 /**
  * Serializes the media type and the optional parameters as a media type
- * conforming to {@link https://www.ietf.org/rfc/rfc2045.txt | RFC 2045} and
- * {@link https://www.ietf.org/rfc/rfc2616.txt | RFC 2616}.
+ * conforming to {@link https://www.rfc-editor.org/rfc/rfc2045.html | RFC 2045} and
+ * {@link https://www.rfc-editor.org/rfc/rfc2616.html | RFC 2616}.
  *
  * The type and parameter names are written in lower-case.
  *
