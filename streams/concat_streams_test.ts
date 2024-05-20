@@ -1,7 +1,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
 import { assertEquals, assertRejects } from "../assert/mod.ts";
-import { concatStreams } from "./concat_streams.ts";
+import { concatReadableStreams } from "./concat_streams.ts";
 
 Deno.test("concatStreams()", async () => {
   const readable1 = ReadableStream.from([1, 2, 3]);
@@ -9,7 +9,9 @@ Deno.test("concatStreams()", async () => {
   const readable3 = ReadableStream.from([7, 8, 9]);
 
   assertEquals(
-    await Array.fromAsync(concatStreams([readable1, readable2, readable3])),
+    await Array.fromAsync(
+      concatReadableStreams(readable1, readable2, readable3),
+    ),
     [
       1,
       2,
@@ -30,7 +32,9 @@ Deno.test("concatStreams() with empty streams", async () => {
   const readable3 = ReadableStream.from([]);
 
   assertEquals(
-    await Array.fromAsync(concatStreams([readable1, readable2, readable3])),
+    await Array.fromAsync(
+      concatReadableStreams(readable1, readable2, readable3),
+    ),
     [],
   );
 });
@@ -41,7 +45,9 @@ Deno.test("concatStreams() with one empty stream", async () => {
   const readable3 = ReadableStream.from([7, 8, 9]);
 
   assertEquals(
-    await Array.fromAsync(concatStreams([readable1, readable2, readable3])),
+    await Array.fromAsync(
+      concatReadableStreams(readable1, readable2, readable3),
+    ),
     [
       1,
       2,
@@ -67,7 +73,7 @@ Deno.test("concatStreams() handles errors", async () => {
   await assertRejects(
     async () => {
       for await (
-        const value of concatStreams([readable1, readable2, readable3])
+        const value of concatReadableStreams(readable1, readable2, readable3)
       ) {
         results.push(value);
       }
