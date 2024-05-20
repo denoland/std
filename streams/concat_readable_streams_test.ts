@@ -1,7 +1,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
 import { assertEquals, assertRejects } from "../assert/mod.ts";
-import { concatReadableStreams } from "./concat_streams.ts";
+import { concatReadableStreams } from "./concat_readable_streams.ts";
 
 Deno.test("concatStreams()", async () => {
   const readable1 = ReadableStream.from([1, 2, 3]);

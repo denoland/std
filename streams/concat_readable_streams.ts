@@ -1,7 +1,10 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
 /**
- * Concatenates multiple `ReadableStream`s into a single ordered `ReadableStream`.
+ * Concatenates multiple `ReadableStream`s into a single ordered
+ * `ReadableStream`.
+ *
+ * Cancelling the resulting stream will cancel all the input streams.
  *
  * @template T Type of the chunks in the streams.
  *
@@ -34,16 +37,13 @@ export function concatReadableStreams<T>(
         if (streams.length === ++i) {
           return controller.close();
         }
-        return this.pull!(controller);
+        return await this.pull!(controller);
       }
       controller.enqueue(value);
       reader.releaseLock();
     },
     async cancel(reason) {
-      const promises: Promise<void>[] = [];
-      for (; i < streams.length; ++i) {
-        promises.push(streams[i]!.cancel(reason));
-      }
+      const promises = streams.map((stream) => stream.cancel(reason));
       await Promise.allSettled(promises);
     },
   });
