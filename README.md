@@ -113,13 +113,10 @@ Check out the contributing guidelines [here](.github/CONTRIBUTING.md).
 
 ## Releases
 
-The Standard Library is versioned independently of the Deno CLI. This will
-change once the Standard Library is stabilized. See
-[here](https://deno.com/versions.json) for the compatibility of different
-versions of the Deno Standard Library and the Deno CLI.
-
-A new minor version of the Standard Library is published at the same time as
-every new version of the Deno CLI (including patch versions).
+The new versions of each package of the Standard Library are published
+periodically once in 1 or 2 weeks. The versions of each package will follow the
+semantic versioning. The packages of the 0.x.y versions will follow the rule of
+[this proposal](https://github.com/semver/semver/pull/923).
 
 ## Badge
 
