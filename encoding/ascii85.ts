@@ -12,7 +12,7 @@
  * and not adding any delimiter. However, there are three more standards
  * supported - btoa (different delimiter and additional compression of 4 bytes
  * equal to 32), {@link https://rfc.zeromq.org/spec/32/ | Z85} and
- * {@link https://tools.ietf.org/html/rfc1924 | RFC 1924}. It's possible to use a
+ * {@link https://www.rfc-editor.org/rfc/rfc1924.html | RFC 1924}. It's possible to use a
  * different encoding by specifying it in `options` object as a second parameter.
  *
  * Similarly, it's possible to make `encode` add a delimiter (`<~` and `~>` for

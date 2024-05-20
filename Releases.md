@@ -1,3 +1,85 @@
+### 2024.05.16
+
+#### @std/assert 0.225.2 (patch)
+
+- fix(assert): handle `assertStrictEquals(-0, +0)` correctly (#4715)
+- fix(assert): don't swallow the original error while creating assertion error
+  (#4701)
+- docs(assert): document `assertStrictEquals()` equality comparison behavior
+  (#4724)
+- refactor(assert): vendor code from `fmt/colors.ts` (#4716)
+- chore(assert): revert "handle `assertStrictEquals(-0, +0)` correctly" (#4718)
+
+#### @std/bytes 1.0.0-rc.2 (prerelease)
+
+- docs(bytes): trim module documentation (#4693)
+- docs(bytes,collections): fix doc checker and documentation (#4691)
+- chore(bytes): release `bytes@1.0.0-rc.2` (#4745)
+
+#### @std/cli 0.224.2 (patch)
+
+- test(cli): reduce flakiness of spinner test (#4738)
+- test(cli): reduce flakiness of spinner test (#4719)
+- test(cli): `Spinner` tests (#4713)
+
+#### @std/collections 0.224.2 (patch)
+
+- feat(collections): add `invert()` and `invertBy()` (#4710)
+- docs(collections): finalize module documentation (#4696)
+- docs(bytes,collections): fix doc checker and documentation (#4691)
+- refactor(collections): sort exports in `mod.ts` (#4712)
+
+#### @std/encoding 0.224.1 (patch)
+
+- test(encoding): improve test coverage (#4742)
+
+#### @std/expect 0.224.1 (patch)
+
+- fix(expect): don't swallow the original error while creating assertion error
+  (#4700)
+- chore(expect): fix future `no-slow-type` lint errors with expando properties
+  (#4711)
+
+#### @std/fmt 0.225.1 (patch)
+
+- chore(fmt,fs,path,internal): skip yanked version manually (#4753)
+
+#### @std/fs 0.229.1 (patch)
+
+- chore(fmt,fs,path,internal): skip yanked version manually (#4753)
+
+#### @std/internal 0.225.1 (patch)
+
+- docs(internal): cleanups and documentation improvements (#4706)
+- refactor(internal): cleanup `buildMessage()` (#4705)
+- refactor(internal): cleanup `diff()` (#4704)
+- refactor(internal): cleanup and restructure `diffstr()` (#4703)
+- refactor(internal): cleanup `_internals` (#4702)
+- refactor(internal): cleanup and restructure (#4698)
+- chore(fmt,fs,path,internal): skip yanked version manually (#4753)
+- chore(internal): release `internal@1.0.0` (#4741)
+
+#### @std/media-types 0.224.1 (patch)
+
+- docs(media-types): polish documentation (#4731)
+- refactor(media-types): minor cleanups (#4743)
+
+#### @std/net 0.224.1 (patch)
+
+- test(net): improve test coverage (#4709)
+
+#### @std/path 0.225.1 (patch)
+
+- chore(fmt,fs,path,internal): skip yanked version manually (#4753)
+
+#### @std/uuid 0.224.1 (patch)
+
+- refactor(uuid): factor out common symbols into `common` module (#4749)
+
+#### @std/webgpu 0.224.1 (patch)
+
+- test(webgpu): remove `Deno.resources()` usage (#4708)
+
 ### 2024.05.07
 
 #### @std/assert 0.225.1 (patch)

@@ -2,13 +2,13 @@
 // This module is browser compatible.
 
 /**
- * Associates each element of an array with a value returned by a selector
+ * Associates each string element of an array with a value returned by a selector
  * function.
  *
- * If any of two pairs would have the same value the latest on will be used
+ * If any of two pairs would have the same value, the latest one will be used
  * (overriding the ones before it).
  *
- * @template T The type of the values returned by the selector function.
+ * @typeParam T The type of the values returned by the selector function.
  *
  * @param array The array of elements to associate with values.
  * @param selector The selector function that returns a value for each element.

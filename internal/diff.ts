@@ -1,7 +1,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-import type { DiffResult, DiffType } from "./_types.ts";
+import type { DiffResult, DiffType } from "./types.ts";
 
 interface FarthestPoint {
   y: number;
@@ -15,7 +15,7 @@ const ADDED = 3;
 /**
  * Creates an array of common elements between two arrays.
  *
- * @template T The type of elements in the arrays.
+ * @typeParam T The type of elements in the arrays.
  *
  * @param A The first array.
  * @param B The second array.
@@ -127,12 +127,28 @@ function createFp(
 /**
  * Renders the differences between the actual and expected values.
  *
- * @template T The type of elements in the arrays.
+ * @typeParam T The type of elements in the arrays.
  *
  * @param A Actual value
  * @param B Expected value
  *
  * @returns An array of differences between the actual and expected values.
+ *
+ * @example Usage
+ * ```ts
+ * import { diff } from "@std/internal/diff";
+ * import { assertEquals } from "@std/assert/assert-equals";
+ *
+ * const a = [1, 2, 3];
+ * const b = [1, 2, 4];
+ *
+ * assertEquals(diff(a, b), [
+ *   { type: "common", value: 1 },
+ *   { type: "common", value: 2 },
+ *   { type: "removed", value: 3 },
+ *   { type: "added", value: 4 },
+ * ]);
+ * ```
  */
 export function diff<T>(A: T[], B: T[]): DiffResult<T>[] {
   const prefixCommon = createCommon(A, B);

@@ -4,7 +4,7 @@
 /**
  * Returns all distinct elements that appear in any of the given arrays.
  *
- * @template T The type of the array elements.
+ * @typeParam T The type of the array elements.
  *
  * @param arrays The arrays to get the union of.
  *

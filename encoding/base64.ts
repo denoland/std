@@ -3,7 +3,7 @@
 
 /**
  * Utilities for
- * {@link https://datatracker.ietf.org/doc/html/rfc4648#section-4 | base64}
+ * {@link https://www.rfc-editor.org/rfc/rfc4648.html#section-4 | base64}
  * encoding and decoding.
  *
  * This module is browser compatible.
@@ -94,7 +94,7 @@ const base64abc = [
 /**
  * Converts data into a base64-encoded string.
  *
- * @see {@link https://datatracker.ietf.org/doc/html/rfc4648#section-4}
+ * @see {@link https://www.rfc-editor.org/rfc/rfc4648.html#section-4}
  *
  * @param data The data to encode.
  * @returns The base64-encoded string.
@@ -146,7 +146,7 @@ export function encodeBase64(data: ArrayBuffer | Uint8Array | string): string {
 /**
  * Decodes a base64-encoded string.
  *
- * @see {@link https://datatracker.ietf.org/doc/html/rfc4648#section-4}
+ * @see {@link https://www.rfc-editor.org/rfc/rfc4648.html#section-4}
  *
  * @param b64 The base64-encoded string to decode.
  * @returns The decoded data.

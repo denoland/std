@@ -9,18 +9,20 @@
  *
  * TODO(iuioiua): Add support for classes and methods.
  */
-import { doc } from "@deno/doc";
-import type {
-  DocNodeBase,
-  DocNodeFunction,
-  JsDocTag,
-  JsDocTagDocRequired,
-} from "@deno/doc/types";
+import {
+  doc,
+  type DocNodeBase,
+  type DocNodeFunction,
+  type JsDocTag,
+  type JsDocTagDocRequired,
+} from "@deno/doc";
 
 const ENTRY_POINTS = [
   "../bytes/mod.ts",
   "../datetime/mod.ts",
   "../collections/mod.ts",
+  "../internal/mod.ts",
+  "../media_types/mod.ts",
 ] as const;
 
 const MD_SNIPPET = /(?<=```ts\n)(\n|.)*(?=\n```)/g;
@@ -127,23 +129,23 @@ function assertHasExampleTag(tags: JsDocTag[], document: DocNodeBase) {
   }
 }
 
-function assertHasTemplateTags(
+function assertHasTypeParamTags(
   tags: JsDocTag[],
-  template: string,
+  typeParamName: string,
   document: DocNodeBase,
 ) {
   const tag = tags.find((tag) =>
-    tag.kind === "template" && tag.name === template
+    tag.kind === "template" && tag.name === typeParamName
   );
   assert(
     tag !== undefined,
-    `Symbol must have a @template tag for ${template}`,
+    `Symbol must have a @typeParam tag for ${typeParamName}`,
     document,
   );
   assert(
     // @ts-ignore doc is defined
     tag.doc !== undefined,
-    `@template tag for ${template} must have a description`,
+    `@typeParam tag for ${typeParamName} must have a description`,
     document,
   );
 }
@@ -166,7 +168,7 @@ function assertFunctionDocs(document: DocNodeFunction) {
     }
   }
   for (const typeParam of document.functionDef.typeParams) {
-    assertHasTemplateTags(tags, typeParam.name, document);
+    assertHasTypeParamTags(tags, typeParam.name, document);
   }
   assertHasTag(tags, "return", document);
   assertHasExampleTag(tags, document);

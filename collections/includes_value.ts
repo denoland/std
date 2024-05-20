@@ -8,7 +8,7 @@
  * Note: this doesn't work with non-primitive values. For example,
  * `includesValue({x: {}}, {})` returns false.
  *
- * @template T The type of the values in the input record.
+ * @typeParam T The type of the values in the input record.
  *
  * @param record The record to check for the given value.
  * @param value The value to check for in the record.

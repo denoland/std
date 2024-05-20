@@ -1,6 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import { _internals, diffstr } from "./diff_str.ts";
+import { _internals, diffStr } from "./diff_str.ts";
 import { assertEquals } from "@std/assert/assert-equals";
 
 const { createDetails, tokenize, unescape } = _internals;
@@ -8,7 +8,7 @@ const { createDetails, tokenize, unescape } = _internals;
 Deno.test({
   name: 'diff() "a" vs "b" (diffstr)',
   fn() {
-    const diffResult = diffstr("a", "b");
+    const diffResult = diffStr("a", "b");
     assertEquals(diffResult, [
       {
         details: [
@@ -31,9 +31,9 @@ Deno.test({
 });
 
 Deno.test({
-  name: 'diff() "a b c d" vs "a b x d e" (diffstr)',
+  name: 'diff() "a b c d" vs "a b x d e" (diffStr)',
   fn() {
-    const diffResult = diffstr(
+    const diffResult = diffStr(
       [..."abcd"].join("\n"),
       [..."abxde"].join("\n"),
     );
@@ -84,9 +84,9 @@ Deno.test({
 });
 
 Deno.test({
-  name: `diff() "3.14" vs "2.71" (diffstr)`,
+  name: `diff() "3.14" vs "2.71" (diffStr)`,
   fn() {
-    const diffResult = diffstr("3.14", "2.71");
+    const diffResult = diffStr("3.14", "2.71");
     assertEquals(diffResult, [
       {
         type: "removed",
@@ -137,9 +137,9 @@ Deno.test({
 });
 
 Deno.test({
-  name: `diff() single line "a b" vs "c d" (diffstr)`,
+  name: `diff() single line "a b" vs "c d" (diffStr)`,
   fn() {
-    const diffResult = diffstr("a b", "c d");
+    const diffResult = diffStr("a b", "c d");
     assertEquals(diffResult, [
       {
         type: "removed",
@@ -166,9 +166,9 @@ Deno.test({
 });
 
 Deno.test({
-  name: `diff() single line, different word length "a bc" vs "cd e" (diffstr)`,
+  name: `diff() single line, different word length "a bc" vs "cd e" (diffStr)`,
   fn() {
-    const diffResult = diffstr("a bc", "cd e");
+    const diffResult = diffStr("a bc", "cd e");
     assertEquals(diffResult, [
       {
         type: "removed",
@@ -195,9 +195,9 @@ Deno.test({
 });
 
 Deno.test({
-  name: `diff() "\\b\\f\\r\\t\\v\\n" vs "\\r\\n" (diffstr)`,
+  name: `diff() "\\b\\f\\r\\t\\v\\n" vs "\\r\\n" (diffStr)`,
   fn() {
-    const diffResult = diffstr("\b\f\r\t\v\n", "\r\n");
+    const diffResult = diffStr("\b\f\r\t\v\n", "\r\n");
     assertEquals(diffResult, [
       {
         type: "removed",
@@ -238,7 +238,7 @@ Deno.test({
 Deno.test({
   name: "diff() multiline with more removed lines",
   fn() {
-    const diffResult = diffstr("a\na", "e");
+    const diffResult = diffStr("a\na", "e");
     assertEquals(diffResult, [
       {
         type: "removed",

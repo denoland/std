@@ -26,8 +26,8 @@ export type KnownExtensionOrType =
   | `.${ContentTypeToExtension[keyof ContentTypeToExtension]}`;
 
 /**
- * Given an extension or media type, return a full `Content-Type` or
- * `Content-Disposition` header value.
+ * Returns the full `Content-Type` or `Content-Disposition` header value for the
+ * given extension or media type.
  *
  * The function will treat the `extensionOrType` as a media type when it
  * contains a `/`, otherwise it will process it as an extension, with or without
@@ -38,19 +38,27 @@ export type KnownExtensionOrType =
  * > Note: a side effect of `deno/x/media_types` was that you could pass a file
  * > name (e.g. `file.json`) and it would return the content type. This behavior
  * > is intentionally not supported here. If you want to get an extension for a
- * > file name, use `extname()` from `std/path/mod.ts` to determine the
- * > extension and pass it here.
+ * > file name, use {@linkcode https://jsr.io/@std/path/doc/~/extname | extname}
+ * > to determine the extension and pass it here.
  *
- * @example
+ * @typeParam T Type of the extension or media type to resolve.
+ *
+ * @param extensionOrType The extension or media type to resolve.
+ *
+ * @returns The full `Content-Type` or `Content-Disposition` header value, or
+ * `undefined` if unable to resolve the media type.
+ *
+ * @example Usage
  * ```ts
  * import { contentType } from "@std/media-types/content-type";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
- * contentType(".json"); // "application/json; charset=UTF-8"
- * contentType("text/html"); // "text/html; charset=UTF-8"
- * contentType("text/html; charset=UTF-8"); // "text/html; charset=UTF-8"
- * contentType("txt"); // "text/plain; charset=UTF-8"
- * contentType("foo"); // undefined
- * contentType("file.json"); // undefined
+ * assertEquals(contentType(".json"), "application/json; charset=UTF-8");
+ * assertEquals(contentType("text/html"), "text/html; charset=UTF-8");
+ * assertEquals(contentType("text/html; charset=UTF-8"), "text/html; charset=UTF-8");
+ * assertEquals(contentType("txt"), "text/plain; charset=UTF-8");
+ * assertEquals(contentType("foo"), undefined);
+ * assertEquals(contentType("file.json"), undefined);
  * ```
  */
 export function contentType<

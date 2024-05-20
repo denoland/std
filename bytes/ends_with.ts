@@ -25,6 +25,9 @@
  */
 export function endsWith(source: Uint8Array, suffix: Uint8Array): boolean {
   const diff = source.length - suffix.length;
+  if (diff < 0) {
+    return false;
+  }
   for (let i = suffix.length - 1; i >= 0; i--) {
     if (source[diff + i] !== suffix[i]) {
       return false;

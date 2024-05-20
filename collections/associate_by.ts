@@ -8,7 +8,7 @@
  * If the selector produces the same key for multiple elements, the latest one
  * will be used (overriding the ones before it).
  *
- * @template T Type of the elements in the input array.
+ * @typeParam T Type of the elements in the input array.
  *
  * @param array The array to transform.
  * @param selector The function to extract the key from each element.
