@@ -12,7 +12,7 @@
  *
  * @example Usage
  * ```ts
- * import { concatReadableStreams } from "@std/streams/concat-streams";
+ * import { concatReadableStreams } from "@std/streams/concat-readable-streams";
  * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const stream1 = ReadableStream.from([1, 2, 3]);

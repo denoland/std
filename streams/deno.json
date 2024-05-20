@@ -5,7 +5,7 @@
     ".": "./mod.ts",
     "./buffer": "./buffer.ts",
     "./byte-slice-stream": "./byte_slice_stream.ts",
-    "./concat-readable-streams": "./concat_readable-streams.ts",
+    "./concat-readable-streams": "./concat_readable_streams.ts",
     "./delimiter-stream": "./delimiter_stream.ts",
     "./early-zip-readable-streams": "./early_zip_readable_streams.ts",
     "./iterate-reader": "./iterate_reader.ts",
