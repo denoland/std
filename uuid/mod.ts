@@ -6,7 +6,8 @@
  *
  * Use {@linkcode crypto.randomUUID} for v4 generating v4 UUIDs.
  *
- * Based on https://github.com/kelektiv/node-uuid -> https://www.ietf.org/rfc/rfc4122.txt
+ * Based on {@linkcode https://www.npmjs.com/package/uuid | npm:uuid}, which is
+ * based on {@link https://www.rfc-editor.org/rfc/rfc4122.html | RFC 4122}.
  *
  * Support for RFC4122 version 1, 3, 4, and 5 UUIDs
  *
