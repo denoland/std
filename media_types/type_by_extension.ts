@@ -4,23 +4,30 @@
 import { types } from "./_db.ts";
 
 /**
- * Returns the media type associated with the file extension. Values are
- * normalized to lower case and matched irrespective of a leading `.`.
+ * Returns the media type associated with the file extension, or `undefined` if
+ * no media type is found.
  *
- * When `extension` has no associated type, the function returns `undefined`.
+ * Values are normalized to lower case and matched irrespective of a leading
+ * `.`.
  *
- * @example
+ * @param extension The file extension to get the media type for.
+ *
+ * @returns The media type associated with the file extension, or `undefined` if
+ * no media type is found.
+ *
+ * @example Usage
  * ```ts
  * import { typeByExtension } from "@std/media-types/type-by-extension";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
- * typeByExtension("js"); // "application/json"
- * typeByExtension(".HTML"); // "text/html"
- * typeByExtension("foo"); // undefined
- * typeByExtension("file.json"); // undefined
+ * assertEquals(typeByExtension("js"), "application/javascript");
+ * assertEquals(typeByExtension(".HTML"), "text/html");
+ * assertEquals(typeByExtension("foo"), undefined);
+ * assertEquals(typeByExtension("file.json"), undefined);
  * ```
  */
 export function typeByExtension(extension: string): string | undefined {
   extension = extension.startsWith(".") ? extension.slice(1) : extension;
-  // @ts-ignore workaround around denoland/dnt#148
+  // @ts-ignore Work around https://github.com/denoland/dnt/issues/148
   return types.get(extension.toLowerCase());
 }

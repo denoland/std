@@ -7,7 +7,7 @@
  * @template T Type of the elements in the input array.
  *
  * @param array The array to split into chunks.
- * @param size The size of the chunks. This my be a positive integer.
+ * @param size The size of the chunks. This must be a positive integer.
  *
  * @returns An array of chunks of the given size.
  *

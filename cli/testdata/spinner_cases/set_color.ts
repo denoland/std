@@ -8,4 +8,4 @@ spinner.color = "black";
 setTimeout(() => spinner.color = "red", 125); // 150
 setTimeout(() => spinner.color = "green", 200); // 225
 
-setTimeout(spinner.stop, 250);
+setTimeout(spinner.stop, 350);
