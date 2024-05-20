@@ -145,7 +145,9 @@ export class WebClientEngine implements EngineInterface {
         }
         // TODO implement backoff before retrying
         if (!abort.signal.aborted) {
-          await new Promise((resolve) => setTimeout(resolve, 1000))
+          const wait = 1000
+          console.log(`retrying read in ${wait}ms`)
+          await new Promise((resolve) => setTimeout(resolve, wait))
         }
       }
     }

@@ -1,6 +1,7 @@
 import { expect, log } from '@utils'
 import { assert } from '@std/assert'
 import { CradleMaker, IoStruct } from '@/constants.ts'
+import 'benchmark' // load these modules into cache for ghactions
 
 const ioFixture = 'io-fixture'
 export default (name: string, cradleMaker: CradleMaker) => {

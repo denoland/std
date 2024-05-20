@@ -131,9 +131,10 @@ export const api = {
 export const functions = {
   /** Used by system provisioning to create a blank app */
   async '@@install'({ superuser }: { superuser: string }, api: IsolateApi) {
-    log('@@install', print(api.pid))
     // TODO set ACL on io.json to only run this isolate
     assert(isBaseRepo(api.pid), '@@install not base: ' + print(api.pid))
+    log('@@install', print(api.pid))
+
     const dir = await api.ls('.')
     expect(dir, 'repo must be empty').toEqual(['.io.json'])
     const children = await api.lsChildren()
