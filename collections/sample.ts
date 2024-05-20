@@ -6,8 +6,8 @@ import { randomInteger } from "./_utils.ts";
 /**
  * Returns a random element from the given array.
  *
- * @template T The type of the elements in the array.
- * @template O The type of the accumulator.
+ * @typeParam T The type of the elements in the array.
+ * @typeParam O The type of the accumulator.
  *
  * @param array The array to sample from.
  *

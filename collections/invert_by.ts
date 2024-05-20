@@ -16,8 +16,8 @@ export type InvertByResult<
  * The corresponding inverted value of each inverted key is an array of keys
  * responsible for generating the inverted value.
  *
- * @template R The type of the input record.
- * @template T The type of the iterator function.
+ * @typeParam R The type of the input record.
+ * @typeParam T The type of the iterator function.
  *
  * @param record The record to invert.
  * @param transformer The function to transform keys.

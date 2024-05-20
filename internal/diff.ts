@@ -15,7 +15,7 @@ const ADDED = 3;
 /**
  * Creates an array of common elements between two arrays.
  *
- * @template T The type of elements in the arrays.
+ * @typeParam T The type of elements in the arrays.
  *
  * @param A The first array.
  * @param B The second array.
@@ -122,7 +122,7 @@ function createFp(
 /**
  * Renders the differences between the actual and expected values.
  *
- * @template T The type of elements in the arrays.
+ * @typeParam T The type of elements in the arrays.
  *
  * @param A Actual value
  * @param B Expected value

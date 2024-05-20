@@ -7,8 +7,8 @@ import { mapValues } from "./map_values.ts";
  * Applies the given reducer to each group in the given grouping, returning the
  * results together with the respective group keys.
  *
- * @template T input type of an item in a group in the given grouping.
- * @template A type of the accumulator value, which will match the returned
+ * @typeParam T input type of an item in a group in the given grouping.
+ * @typeParam A type of the accumulator value, which will match the returned
  * record's values.
  *
  * @param record The grouping to reduce.

@@ -20,7 +20,7 @@ export type SortByOptions = {
  * element. Ascending or descending order can be specified through the `order`
  * option. By default, the elements are sorted in ascending order.
  *
- * @template T The type of the array elements.
+ * @typeParam T The type of the array elements.
  *
  * @param array The array to sort.
  * @param selector The selector function to get the value to sort by.
@@ -66,7 +66,7 @@ export function sortBy<T>(
  * element. Ascending or descending order can be specified through the `order`
  * option. By default, the elements are sorted in ascending order.
  *
- * @template T The type of the array elements.
+ * @typeParam T The type of the array elements.
  *
  * @param array The array to sort.
  * @param selector The selector function to get the value to sort by.
@@ -97,7 +97,7 @@ export function sortBy<T>(
  * element. Ascending or descending order can be specified through the `order`
  * option. By default, the elements are sorted in ascending order.
  *
- * @template T The type of the array elements.
+ * @typeParam T The type of the array elements.
  *
  * @param array The array to sort.
  * @param selector The selector function to get the value to sort by.
@@ -137,7 +137,7 @@ export function sortBy<T>(
  * element. Ascending or descending order can be specified through the `order`
  * option. By default, the elements are sorted in ascending order.
  *
- * @template T The type of the array elements.
+ * @typeParam T The type of the array elements.
  *
  * @param array The array to sort.
  * @param selector The selector function to get the value to sort by.

@@ -4,7 +4,7 @@
 /**
  * Returns an array excluding all given values.
  *
- * @template T The type of the array elements.
+ * @typeParam T The type of the array elements.
  *
  * @param array The array to exclude values from.
  * @param values The values to exclude from the array.

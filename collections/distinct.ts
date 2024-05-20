@@ -5,7 +5,7 @@
  * Returns all distinct elements in the given array, preserving order by first
  * occurrence.
  *
- * @template T The type of the elements in the input array.
+ * @typeParam T The type of the elements in the input array.
  *
  * @param array The array to filter for distinct elements.
  *

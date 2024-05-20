@@ -5,7 +5,7 @@
  * Returns all elements in the given collection until the first element that
  * does not match the given predicate.
  *
- * @template T The type of the array elements.
+ * @typeParam T The type of the array elements.
  *
  * @param array The array to take elements from.
  * @param predicate The predicate function to determine if an element should be
