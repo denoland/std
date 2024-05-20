@@ -84,7 +84,7 @@ Where applicable, documentation for public symbols should contain, in order:
    [Example code snippets](#example-code-snippets) below for further guidance.
 
 See the source code within
-[`@std/datetime`](https://github.com/denoland/deno_std/tree/main/datetime) for
+[`@std/bytes`](https://github.com/denoland/deno_std/tree/main/bytes) for
 examples.
 
 One the documentation for a given package is written, add the package's entry
@@ -110,7 +110,7 @@ Module files, or `mod.ts` files, should have the following:
    documentation.
 
 See the source code for
-[`std/datetime/mod.ts`](https://github.com/denoland/deno_std/blob/main/datetime/mod.ts)
+[`@std/bytes/mod.ts`](https://github.com/denoland/deno_std/blob/main/bytes/mod.ts)
 as an example.
 
 ### Example code snippets
