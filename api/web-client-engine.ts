@@ -204,7 +204,7 @@ const toEvents = (stream: ReadableStream) =>
 
 async function* toIterable(stream: ReadableStream, signal: AbortSignal) {
   const reader = stream.getReader()
-  signal.addEventListener('abort', () => reader.cancel())
+  signal.addEventListener('abort', () => stream.locked && reader.cancel())
   try {
     while (true) {
       const { done, value } = await reader.read()

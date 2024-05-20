@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "lock": false,
   "tasks": {
-    "test": "DENO_KV_PATH=:memory: deno test -A --unstable-kv --unstable-broadcast-channel --coverage --parallel",
+    "test": "DENO_KV_PATH=:memory: deno test -A --unstable-kv --unstable-broadcast-channel --coverage --parallel --trace-leaks",
     "watch": "clear && DENO_KV_PATH=:memory: DEBUG_COLORS=1 deno test -A --unstable-kv --unstable-broadcast-channel --watch",
     "api": "DENO_KV_PATH=:memory: DEBUG_COLORS=1 deno run --unstable-kv --unstable-broadcast-channel -A --watch --inspect-wait main.ts",
     "check:types": "deno check **/*.ts",
