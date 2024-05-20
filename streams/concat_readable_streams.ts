@@ -6,7 +6,7 @@
  *
  * Cancelling the resulting stream will cancel all the input streams.
  *
- * @template T Type of the chunks in the streams.
+ * @typeParam T Type of the chunks in the streams.
  *
  * @param streams An iterable of `ReadableStream`s.
  *
