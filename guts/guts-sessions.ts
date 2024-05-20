@@ -110,7 +110,7 @@ export default (name: string, cradleMaker: CradleMaker) => {
 
     await terminal.engineStop()
   })
-  Deno.test(prefix + 'session reload missing', async (t) => {
+  Deno.test(prefix + 'session reload missing', async () => {
     const terminal = await cradleMaker()
     await terminal.initializationPromise
     const missingSessionPid = newTerminalPid(terminal.pid)
