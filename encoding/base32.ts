@@ -4,7 +4,7 @@
 
 /**
  * Utilities for
- * {@link https://datatracker.ietf.org/doc/html/rfc4648#section-6 | base32}
+ * {@link https://www.rfc-editor.org/rfc/rfc4648.html#section-6 | base32}
  * encoding and decoding.
  *
  * Modified from {@link https://github.com/beatgammit/base64-js}.
@@ -59,7 +59,7 @@ function _byteLength(validLen: number, placeHoldersLen: number): number {
 /**
  * Decodes a base32-encoded string.
  *
- * @see {@link https://datatracker.ietf.org/doc/html/rfc4648#section-6}
+ * @see {@link https://www.rfc-editor.org/rfc/rfc4648.html#section-6}
  *
  * @param b32 The base32-encoded string to decode.
  * @returns The decoded data.
@@ -165,7 +165,7 @@ function encodeChunk(uint8: Uint8Array, start: number, end: number): string {
 /**
  * Converts data into a base32-encoded string.
  *
- * @see {@link https://datatracker.ietf.org/doc/html/rfc4648#section-6}
+ * @see {@link https://www.rfc-editor.org/rfc/rfc4648.html#section-6}
  *
  * @param data The data to encode.
  * @returns The base32-encoded string.

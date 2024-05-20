@@ -5,7 +5,7 @@ import { consumeMediaParam, decode2331Encoding } from "./_util.ts";
 
 /**
  * Parses the media type and any optional parameters, per
- * {@link https://datatracker.ietf.org/doc/html/rfc1521 | RFC 1521}.
+ * {@link https://www.rfc-editor.org/rfc/rfc1521.html | RFC 1521}.
  *
  * Media types are the values in `Content-Type` and `Content-Disposition`
  * headers. On success the function returns a tuple where the first element is
