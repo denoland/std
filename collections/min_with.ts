@@ -5,7 +5,7 @@
  * Returns the first element having the smallest value according to the provided
  * comparator or undefined if there are no elements.
  *
- * @template T The type of the elements in the array.
+ * @typeParam T The type of the elements in the array.
  *
  * @param array The array to find the minimum element in.
  * @param comparator The function to compare elements.

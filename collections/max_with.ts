@@ -9,7 +9,7 @@
  * which means that `comparator(a, b)` should return a negative number if
  * `a < b`, a positive number if `a > b` and `0` if `a === b`.
  *
- * @template T The type of the elements in the array.
+ * @typeParam T The type of the elements in the array.
  *
  * @param array The array to find the maximum element in.
  * @param comparator The function to compare elements.

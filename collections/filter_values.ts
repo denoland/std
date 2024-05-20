@@ -5,7 +5,7 @@
  * Returns a new record with all entries of the given record except the ones
  * that have a value that does not match the given predicate.
  *
- * @template T The type of the values in the input record.
+ * @typeParam T The type of the values in the input record.
  *
  * @param record The record to filter values from.
  * @param predicate The function to test each value for a condition.

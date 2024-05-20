@@ -129,23 +129,23 @@ function assertHasExampleTag(tags: JsDocTag[], document: DocNodeBase) {
   }
 }
 
-function assertHasTemplateTags(
+function assertHasTypeParamTags(
   tags: JsDocTag[],
-  template: string,
+  typeParamName: string,
   document: DocNodeBase,
 ) {
   const tag = tags.find((tag) =>
-    tag.kind === "template" && tag.name === template
+    tag.kind === "template" && tag.name === typeParamName
   );
   assert(
     tag !== undefined,
-    `Symbol must have a @template tag for ${template}`,
+    `Symbol must have a @typeParam tag for ${typeParamName}`,
     document,
   );
   assert(
     // @ts-ignore doc is defined
     tag.doc !== undefined,
-    `@template tag for ${template} must have a description`,
+    `@typeParam tag for ${typeParamName} must have a description`,
     document,
   );
 }
@@ -168,7 +168,7 @@ function assertFunctionDocs(document: DocNodeFunction) {
     }
   }
   for (const typeParam of document.functionDef.typeParams) {
-    assertHasTemplateTags(tags, typeParam.name, document);
+    assertHasTypeParamTags(tags, typeParam.name, document);
   }
   assertHasTag(tags, "return", document);
   assertHasExampleTag(tags, document);
