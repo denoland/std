@@ -113,7 +113,9 @@ Check out the contributing guidelines [here](.github/CONTRIBUTING.md).
 
 ## Releases
 
-New versions of packages are published every 1 or 2 weeks. Package versions >=1.0.0 follow [Semantic Versioning](https://semver.org/), and package versions <1.0.0 follow [this proposal](https://github.com/semver/semver/pull/923).
+New versions of packages are published every 1 or 2 weeks. Package versions
+>=1.0.0 follow [Semantic Versioning](https://semver.org/), and package versions
+<1.0.0 follow [this proposal](https://github.com/semver/semver/pull/923).
 
 ## Badge
 
