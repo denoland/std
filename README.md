@@ -113,10 +113,7 @@ Check out the contributing guidelines [here](.github/CONTRIBUTING.md).
 
 ## Releases
 
-The new versions of each package of the Standard Library are published
-periodically once in 1 or 2 weeks. The versions of each package will follow the
-semantic versioning. The packages of the 0.x.y versions will follow the rule of
-[this proposal](https://github.com/semver/semver/pull/923).
+New versions of packages are published every 1 or 2 weeks. Package versions >=1.0.0 follow [Semantic Versioning](https://semver.org/), and package versions <1.0.0 follow [this proposal](https://github.com/semver/semver/pull/923).
 
 ## Badge
 
