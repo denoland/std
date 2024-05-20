@@ -14,13 +14,12 @@ import type { DiffResult, DiffType } from "./_types.ts";
  */
 function createColor(
   diffType: DiffType,
-  background = false,
-): (s: string) => string {
   /**
    * TODO(@littledivy): Remove this when we can detect true color terminals. See
    * https://github.com/denoland/deno_std/issues/2575.
    */
-  background = false;
+  background = false,
+): (s: string) => string {
   switch (diffType) {
     case "added":
       return (s) => background ? bgGreen(white(s)) : green(bold(s));
@@ -83,3 +82,9 @@ export function buildMessage(
   messages.push(...(stringDiff ? [diffMessages.join("")] : diffMessages), "");
   return messages;
 }
+
+/** Used internally for testing. */
+export const _internals = {
+  createColor,
+  createSign,
+};

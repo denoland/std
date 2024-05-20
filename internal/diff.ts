@@ -38,7 +38,12 @@ function createCommon<T>(A: T[], B: T[]): T[] {
 }
 
 function assertFp(value: unknown): asserts value is FarthestPoint {
-  if (value === undefined) {
+  if (
+    value == null ||
+    typeof value !== "object" ||
+    typeof (value as FarthestPoint)?.y !== "number" ||
+    typeof (value as FarthestPoint)?.id !== "number"
+  ) {
     throw new Error("Unexpected missing FarthestPoint");
   }
 }
@@ -131,22 +136,17 @@ function createFp(
  */
 export function diff<T>(A: T[], B: T[]): DiffResult<T>[] {
   const prefixCommon = createCommon(A, B);
-  const suffixCommon = createCommon(
-    A.slice(prefixCommon.length),
-    B.slice(prefixCommon.length),
-  );
-  A = A.slice(prefixCommon.length, -suffixCommon.length || undefined);
-  B = B.slice(prefixCommon.length, -suffixCommon.length || undefined);
+  A = A.slice(prefixCommon.length);
+  B = B.slice(prefixCommon.length);
   const swapped = B.length > A.length;
   [A, B] = swapped ? [B, A] : [A, B];
   const M = A.length;
   const N = B.length;
-  if (!M && !N && !suffixCommon.length && !prefixCommon.length) return [];
+  if (!M && !N && !prefixCommon.length) return [];
   if (!N) {
     return [
       ...prefixCommon.map((value) => ({ type: "common", value })),
       ...A.map((value) => ({ type: swapped ? "added" : "removed", value })),
-      ...suffixCommon.map((value) => ({ type: "common", value })),
     ] as DiffResult<T>[];
   }
   const offset = N;
@@ -171,7 +171,6 @@ export function diff<T>(A: T[], B: T[]): DiffResult<T>[] {
   ): FarthestPoint {
     const M = A.length;
     const N = B.length;
-    if (k < -N || M < k) return { y: -1, id: -1 };
     const fp = createFp(k, M, routes, diffTypesPtrOffset, ptr, slide, down);
     ptr = fp.id;
     while (fp.y + k < M && fp.y < N && A[fp.y + k] === B[fp.y]) {
@@ -206,6 +205,13 @@ export function diff<T>(A: T[], B: T[]): DiffResult<T>[] {
   return [
     ...prefixCommon.map((value) => ({ type: "common", value })),
     ...backTrace(A, B, currentFp, swapped, routes, diffTypesPtrOffset),
-    ...suffixCommon.map((value) => ({ type: "common", value })),
   ] as DiffResult<T>[];
 }
+
+/** Used internally for testing */
+export const _internals = {
+  assertFp,
+  backTrace,
+  createCommon,
+  createFp,
+};
