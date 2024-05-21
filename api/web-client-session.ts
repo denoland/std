@@ -7,6 +7,7 @@ import {
   EngineInterface,
   freezePid,
   getActorPid,
+  isPidEqual,
   isValidForMachine,
   JsonValue,
   Params,
@@ -275,7 +276,10 @@ export class Terminal implements ArtifactSession {
     const actuallyPierced = this.#watcher.watch(pierce.ulid)
     const branchEnsured = async () => {
       // special in that it *might* not actually pierce
-      for await (const _splice of this.read(branch)) {
+      for await (const splice of this.read(branch)) {
+        if (!isPidEqual(splice.pid, branch)) {
+          throw new Error('ensureBranch failed')
+        }
         return branch
       }
       throw new Error('ensureBranch failed')

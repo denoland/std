@@ -430,7 +430,10 @@ export const colorize = (string: string, noSubstring = false) => {
 
   return colors[index](bold(sub))
 }
-export const print = (pid: PID) => {
+export const print = (pid?: PID) => {
+  if (!pid) {
+    return '(no pid)'
+  }
   const branches = pid.branches.map((segment) => {
     if (terminalIdRegex.test(segment)) {
       return colorize(segment.slice(-7))

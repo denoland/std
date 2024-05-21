@@ -109,6 +109,7 @@ export class Engine implements EngineInterface {
     log('provisioning', print(homeAddress))
     await init(terminal)
     log('provisioned', print(homeAddress))
+    log('superuser is', colorize(superuser))
   }
   #superuser: Promise<ArtifactSession> | undefined
   #su() {

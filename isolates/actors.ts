@@ -272,6 +272,7 @@ export const functions = {
     // TODO make this a single function to create the whole tree
     const base = await api.actions<session.Api>('session', api.pid)
 
+    // TODO handle the branch already existing
     const actorPid = await base.create({ name: actorId })
     const actor = await api.actions<session.Api>('session', actorPid)
 
