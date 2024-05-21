@@ -3,24 +3,22 @@
 
 import { delay } from "./delay.ts";
 
-/** Options for {@linkcode Deadline}. */
+/** Options for {@linkcode deadline}. */
 export interface DeadlineOptions {
   /** Signal used to abort the deadline. */
   signal?: AbortSignal;
 }
 
-/** Error thrown when {@linkcode Deadline} times out. */
+/**
+ * Error thrown when {@linkcode deadline} times out.
+ *
+ * @example
+ * ```ts
+ * import { DeadlineError } from "@std/async/deadline";
+ * const error = new DeadlineError();
+ * ```
+ */
 export class DeadlineError extends Error {
-  /**
-   * Constructs a new {@linkcode DeadlineError} instance.
-   *
-   * @example
-   * ```ts
-   * import { DeadlineError } from "@std/async/deadline";
-   *
-   * throw new DeadlineError();
-   * ```
-   */
   constructor() {
     super("Deadline");
     this.name = this.constructor.name;
@@ -34,6 +32,12 @@ export class DeadlineError extends Error {
  * Note: Prefer to use {@linkcode AbortSignal.timeout} instead for the APIs
  * that accept {@linkcode AbortSignal}.
  *
+ * @typeParam T The type of the provided and returned promise.
+ * @param p The promise to make rejectable.
+ * @param ms Duration in milliseconds for when the promise should time out.
+ * @param options Additional options.
+ * @returns A promise that will reject if the provided duration runs out before resolving.
+ *
  * @example
  * ```ts
  * import { deadline } from "@std/async/deadline";
@@ -41,7 +45,11 @@ export class DeadlineError extends Error {
  *
  * const delayedPromise = delay(1000);
  * // Below throws `DeadlineError` after 10 ms
- * const result = await deadline(delayedPromise, 10);
+ * try {
+ *   const result = await deadline(delayedPromise, 10);
+ * } catch (e) {
+ *   console.error(e);
+ * }
  * ```
  */
 export function deadline<T>(

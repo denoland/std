@@ -7,17 +7,20 @@ import { exponentialBackoffWithJitter } from "./_util.ts";
 /**
  * Error thrown in {@linkcode retry} once the maximum number of failed attempts
  * has been reached.
+ *
+ * @example
+ * ```ts
+ * import { RetryError } from "@std/async/retry";
+ *
+ * throw new RetryError({ foo: "bar" }, 3);
+ * ```
  */
 export class RetryError extends Error {
   /**
    * Constructs a new {@linkcode RetryError} instance.
    *
-   * @example
-   * ```ts
-   * import { RetryError } from "@std/async/retry";
-   *
-   * throw new RetryError({ foo: "bar" }, 3);
-   * ```
+   * @param cause the cause for this error.
+   * @param attempts the number of retry attempts made.
    */
   constructor(cause: unknown, attempts: number) {
     super(`Retrying exceeded the maxAttempts (${attempts}).`);
@@ -117,6 +120,10 @@ const defaultRetryOptions: Required<RetryOptions> = {
  *  jitter: 0.5,
  * });
  * ```
+ *
+ * @typeParam T The return type of the function to retry and returned promise.
+ * @param fn The function to retry.
+ * @param opts Additional options.
  */
 export async function retry<T>(
   fn: (() => Promise<T>) | (() => T),

@@ -34,8 +34,10 @@ interface TaggedYieldedValue<T> {
  * for await (const value of mux) {
  *   // ...
  * }
- * // ..
+ * // ...
  * ```
+ *
+ * @typeParam T The type of the provided async iterables and generated async iterable.
  */
 export class MuxAsyncIterator<T> implements AsyncIterable<T> {
   #iteratorCount = 0;
@@ -44,7 +46,23 @@ export class MuxAsyncIterator<T> implements AsyncIterable<T> {
   #throws: any[] = [];
   #signal = Promise.withResolvers<void>();
 
-  /** Add an async iterable to the stream. */
+  /**
+   * Add an async iterable to the stream.
+   *
+   * @param iterable The async iterable to add.
+   *
+   * @example
+   * ```
+   * async function* gen123(): AsyncIterableIterator<number> {
+   *   yield 1;
+   *   yield 2;
+   *   yield 3;
+   * }
+   *
+   * const mux = new MuxAsyncIterator<number>();
+   * mux.add(gen123());
+   * ```
+   */
   add(iterable: AsyncIterable<T>) {
     ++this.#iteratorCount;
     this.#callIteratorNext(iterable[Symbol.asyncIterator]());

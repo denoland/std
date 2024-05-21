@@ -71,6 +71,11 @@ class Queue<T> {
  *   console.log(n); // => 1, 2, 3
  * }
  * ```
+ *
+ * @typeParam T The type of the provided async iterable and the returned async iterables.
+ * @typeParam N The amount of branches to tee into.
+ * @param iterable The iterable to tee.
+ * @param n The amount of branches to tee into.
  */
 export function tee<T, N extends number = 2>(
   iterable: AsyncIterable<T>,

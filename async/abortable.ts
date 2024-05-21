@@ -4,7 +4,12 @@
 import { createAbortError } from "./_util.ts";
 
 /**
- * Make {@linkcode Promise} abortable with the given signal.
+ * Make a {@linkcode Promise} abortable with the given signal.
+ *
+ * @typeParam T The type of the provided and returned promise.
+ * @param p The promise to make abortable.
+ * @param signal The signal to abort the promise with.
+ * @returns A promise that can be aborted.
  *
  * @example
  * ```ts
@@ -18,12 +23,21 @@ import { createAbortError } from "./_util.ts";
  * setTimeout(() => c.abort(), 100);
  *
  * // Below throws `DOMException` after 100 ms
- * await abortable(p, c.signal);
+ * try {
+ *   await abortable(p, c.signal);
+ * } catch(e) {
+ *   console.error(e);
+ * }
  * ```
  */
 export function abortable<T>(p: Promise<T>, signal: AbortSignal): Promise<T>;
 /**
- * Make {@linkcode AsyncIterable} abortable with the given signal.
+ * Make an {@linkcode AsyncIterable} abortable with the given signal.
+ *
+ * @typeParam T The type of the provided and returned async iterable.
+ * @param p The async iterable to make abortable.
+ * @param signal The signal to abort the promise with.
+ * @returns An async iterable that can be aborted.
  *
  * @example
  * ```ts
@@ -43,8 +57,12 @@ export function abortable<T>(p: Promise<T>, signal: AbortSignal): Promise<T>;
  * // Below throws `DOMException` after 100 ms
  * // and items become `["Hello"]`
  * const items: string[] = [];
- * for await (const item of abortable(p(), c.signal)) {
- *   items.push(item);
+ * try {
+ *   for await (const item of abortable(p(), c.signal)) {
+ *     items.push(item);
+ *   }
+ * } catch (e) {
+ *   console.error(e);
  * }
  * ```
  */
@@ -64,7 +82,12 @@ export function abortable<T>(
 }
 
 /**
- * Make Promise abortable with the given signal.
+ * Make a {@linkcode Promise} abortable with the given signal.
+ *
+ * @typeParam T The type of the provided and returned promise.
+ * @param p The promise to make abortable.
+ * @param signal The signal to abort the promise with.
+ * @returns A promise that can be aborted.
  *
  * @example
  * ```ts
@@ -78,7 +101,11 @@ export function abortable<T>(
  * const p = abortablePromise(request, c.signal);
  *
  * // The below throws if the request didn't resolve in 100ms
- * await p;
+ * try {
+ *   await p;
+ * } catch (e) {
+ *   console.error(e);
+ * }
  * ```
  */
 export function abortablePromise<T>(
@@ -97,7 +124,12 @@ export function abortablePromise<T>(
 }
 
 /**
- * Make AsyncIterable abortable with the given signal.
+ * Make an {@linkcode AsyncIterable} abortable with the given signal.
+ *
+ * @typeParam T The type of the provided and returned async iterable.
+ * @param p The async iterable to make abortable.
+ * @param signal The signal to abort the promise with.
+ * @returns An async iterable that can be aborted.
  *
  * @example
  * ```ts
@@ -117,8 +149,12 @@ export function abortablePromise<T>(
  * // Below throws `DOMException` after 100 ms
  * // and items become `["Hello"]`
  * const items: string[] = [];
- * for await (const item of abortableAsyncIterable(p(), c.signal)) {
- *   items.push(item);
+ * try {
+ *   for await (const item of abortableAsyncIterable(p(), c.signal)) {
+ *     items.push(item);
+ *   }
+ * } catch (e) {
+ *   console.error(e);
  * }
  * ```
  */
