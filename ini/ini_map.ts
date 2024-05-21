@@ -172,6 +172,9 @@ export class IniMap {
   };
   #formatting: Formatting;
 
+  /** Constructs a new `IniMap`.
+   * @param formatting - Optional formatting options when printing an INI file.
+   */
   constructor(formatting?: FormattingOptions) {
     this.#formatting = this.#cleanFormatting(formatting);
   }
@@ -211,9 +214,13 @@ export class IniMap {
     }
   }
 
-  /** Delete a global key in the INI. */
+  /** Delete a global key in the INI.
+   * @returns `true` if the key was deleted, `false` if not found.
+   */
   delete(key: string): boolean;
-  /** Delete a section key in the INI. */
+  /** Delete a section key in the INI.
+   * @returns `true` if the section was deleted, `false` if not found.
+   */
   delete(section: string, key: string): boolean;
   delete(keyOrSection: string, noneOrKey?: string): boolean {
     const exists = this.#getValue(keyOrSection, noneOrKey);
@@ -648,24 +655,41 @@ export class IniMap {
   }
 }
 
+/** Manages comments within the INI file. */
 export interface Comments {
   /** Clear all comments in the INI. */
   clear(): void;
-  /** Delete a comment at a specific line in the INI. */
+  /** Delete a comment at a specific line in the INI.
+   * @returns `true` if a comment was deleted, otherwise `false`.
+   */
   deleteAtLine(line: number): boolean;
-  /** Delete a comment before a global key in the INI. */
+  /** Delete a comment before a global key in the INI.
+   * @returns `true` if a comment was deleted, otherwise `false`.
+   */
   deleteAtKey(key: string): boolean;
-  /** Delete a comment before a section key in the INI. */
+  /** Delete a comment before a section key in the INI.
+   * @returns `true` if a comment was deleted, otherwise `false`.
+   */
   deleteAtKey(section: string, key: string): boolean;
-  /** Delete a comment before a section line in the INI. */
+  /** Delete a comment before a section line in the INI.
+   * @returns `true` if a comment was deleted, otherwise `false`.
+   */
   deleteAtSection(section: string): boolean;
-  /** Get a comment at a specific line in the INI. */
+  /** Get the comment text at a specific line in the INI.
+   * @returns The comment text at the line or `undefined` if not found.
+   */
   getAtLine(line: number): string | undefined;
-  /** Get a comment before a global key in the INI. */
+  /** Get the comment text before a global key in the INI.
+   * @returns The comment text at the provided key or `undefined` if not found.
+   */
   getAtKey(key: string): string | undefined;
-  /** Get a comment before a section key in the INI. */
+  /** Get the comment text before a section key in the INI.
+   * @returns The comment text at the provided section or `undefined` if not found.
+   */
   getAtKey(section: string, key: string): string | undefined;
-  /** Get a comment before a section line in the INI. */
+  /** Get the comment text before a section line in the INI.
+   * @returns The comment text at the provided section or `undefined` if not found.
+   */
   getAtSection(section: string): string | undefined;
   /** Set a comment at a specific line in the INI. */
   setAtLine(line: number, text: string): Comments;
