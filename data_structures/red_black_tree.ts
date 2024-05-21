@@ -167,9 +167,12 @@ export class RedBlackTree<T> extends BinarySearchTree<T> {
    * const tree = RedBlackTree.from<number>([3, 10, 13, 4, 6, 7, 1, 14], {
    *  compare: descend,
    * });
+   * ```
    *
+   * @typeparam T The type of the values being stored in the tree.
    * @param collection An array like, an iterable, or existing red-black tree.
    * @param options An optional options object to customize the comparison function.
+   * @returns A new red-black tree with the values from the passed collection.
    */
   static override from<T>(
     collection: ArrayLike<T> | Iterable<T> | RedBlackTree<T>,
@@ -198,9 +201,14 @@ export class RedBlackTree<T> extends BinarySearchTree<T> {
    * const tree = RedBlackTree.from<number, string>([3, 10, 13, 4, 6, 7, 1, 14], {
    *   map: (value) => value.toString(),
    * });
-   *
+   * ```
+
+   * @typeparam T The type of the values in the passed collection.
+   * @typeparam U The type of the values being stored in the red-black tree.
+   * @typeparam V The type of the `this` context in the mapping function. Defaults to `undefined`.
    * @param collection An array like, an iterable, or existing red-black tree.
    * @param options The options object to customize the mapping and comparison functions. The `thisArg` property can be used to set the `this` value when calling the mapping function.
+   * @returns A new red-black tree with the mapped values from the passed collection.
    */
   static override from<T, U, V = undefined>(
     collection: ArrayLike<T> | Iterable<T> | RedBlackTree<T>,

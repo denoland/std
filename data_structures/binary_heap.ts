@@ -142,6 +142,7 @@ export class BinaryHeap<T> implements Iterable<T> {
    * @typeparam T The type of the values stored in the binary heap.
    * @param collection An array like, an iterable object, or an existing binary heap.
    * @param options An optional options object to customize the comparison function.
+   * @returns A new binary heap containing the values from the passed collection.
    */
   static from<T>(
     collection: ArrayLike<T> | Iterable<T> | BinaryHeap<T>,
@@ -173,6 +174,7 @@ export class BinaryHeap<T> implements Iterable<T> {
    * @typeparam V The type of the `this` value when calling the mapping function. Defaults to `undefined`.
    * @param collection An array like, an iterable object, or an existing binary heap.
    * @param options The options object to customize the mapping and comparison functions. The `thisArg` property can be used to set the `this` value when calling the mapping function.
+   * @returns A new binary heap containing the mapped values from the passed collection.
    */
   static from<T, U, V = undefined>(
     collection: ArrayLike<T> | Iterable<T> | BinaryHeap<T>,
@@ -218,6 +220,13 @@ export class BinaryHeap<T> implements Iterable<T> {
    * The count of values stored in the binary heap.
    *
    * The complexity of this operation is O(1).
+   * 
+   * @example Getting the length of the binary heap
+   * ```ts
+   * import { BinaryHeap } from "@std/data-structures";
+   * const heap = BinaryHeap.from([4, 1, 3, 5, 2]);
+   * heap.length; // 5
+   * ```
    *
    * @returns The count of values stored in the binary heap.
    */

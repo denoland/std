@@ -200,6 +200,7 @@ export class BinarySearchTree<T> implements Iterable<T> {
    * @typeparam T The type of the values stored in the binary search tree.
    * @param collection An array like, an iterable, or existing binary search tree.
    * @param options An optional options object to customize the comparison function.
+   * @returns A new binary search tree created from the passed collection.
    */
   static from<T>(
     collection: ArrayLike<T> | Iterable<T> | BinarySearchTree<T>,
@@ -236,6 +237,7 @@ export class BinarySearchTree<T> implements Iterable<T> {
    * @typeparam V The type of the `this` value when calling the mapping function. Defaults to `undefined`.
    * @param collection An array like, an iterable, or existing binary search tree.
    * @param options The options object to customize the mapping and comparison functions. The `thisArg` property can be used to set the `this` value when calling the mapping function.
+   * @returns A new binary search tree containing the mapped values from the passed collection.
    */
   static from<T, U, V = undefined>(
     collection: ArrayLike<T> | Iterable<T> | BinarySearchTree<T>,
@@ -306,6 +308,13 @@ export class BinarySearchTree<T> implements Iterable<T> {
    * The count of values stored in the binary search tree.
    *
    * The complexity of this operation is O(1).
+   * 
+   * @example Getting the size of the tree
+   * ```ts
+   * import { BinarySearchTree } from "@std/data-structures";
+   * const tree = BinarySearchTree.from<number>([42, 43, 41]);
+   * tree.size; // 3
+   * ```
    *
    * @returns The count of values stored in the binary search tree.
    */
@@ -699,6 +708,8 @@ export class BinarySearchTree<T> implements Iterable<T> {
    * ```
    *
    * See {@link BinarySearchTree#lnrValues}.
+   * 
+   * @returns An iterator that traverses the tree in-order (LNR).
    */
   *[Symbol.iterator](): IterableIterator<T> {
     yield* this.lnrValues();
