@@ -99,6 +99,11 @@ function textureMipLevelSize(
  *   usage: GPUTextureUsage.COPY_SRC,
  * }, new Uint8Array([1, 1, 1, 1, 1, 1, 1]));
  * ```
+ *
+ * @param device The device to create the texture with.
+ * @param descriptor The texture descriptor to create the texture with.
+ * @param data The data to write to the texture.
+ * @returns The newly created texture.
  */
 export function createTextureWithData(
   device: GPUDevice,
