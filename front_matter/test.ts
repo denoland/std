@@ -12,6 +12,7 @@ export type Format = "yaml" | "toml" | "json" | "unknown";
  *
  * @param str String to test.
  * @param formats A list of formats to test for. Defaults to all supported formats.
+ * @returns `true` if the string has valid front matter, otherwise `false`.
  *
  * @example
  * ```ts
