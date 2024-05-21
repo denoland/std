@@ -12,13 +12,33 @@ export type Format = "yaml" | "toml" | "json" | "unknown";
  * @param str String to test.
  * @param formats A list of formats to test for. Defaults to all supported formats.
  *
+ * @example
  * ```ts
  * import { test } from "@std/front-matter/test";
  *
- * test("---\ntitle: Three dashes marks the spot\n---\n"); // true
- * test("---toml\ntitle = 'Three dashes followed by format marks the spot'\n---\n"); // true
- * test("---json\n{\"title\": \"Three dashes followed by format marks the spot\"}\n---\n"); // true
- * test("---json\n{\"title\": \"Three dashes followed by format marks the spot\"}\n---\n", ["yaml"]); // false
+ * test(
+ * `---
+ * title: Three dashes marks the spot
+ * ---
+ * `); // true
+ *
+ * test(
+ * `---toml
+ * title = 'Three dashes followed by format marks the spot'
+ * ---
+ * `); // true
+ *
+ * test(
+ * `---json
+ * {"title": "Three dashes followed by format marks the spot"}
+ * ---
+ * `); // true
+ *
+ * test(
+ * `---json
+ * {"title": "Three dashes followed by format marks the spot"}
+ * ---
+ * `, ["yaml"]); // false
  * ```
  */
 export function test(
