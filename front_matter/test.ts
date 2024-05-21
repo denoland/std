@@ -5,7 +5,9 @@ import { EXTRACT_REGEXP_MAP } from "./_formats.ts";
 export type Format = "yaml" | "toml" | "json" | "unknown";
 
 /**
- * Tests if a string has valid front matter. Supports YAML, TOML and JSON.
+ * Tests if a string has valid front matter.
+ * Supports {@link https://yaml.org | YAML}, {@link https://toml.io | TOML} and
+ * {@link https://www.json.org/ | JSON}.
  *
  * @param str String to test.
  * @param formats A list of formats to test for. Defaults to all supported formats.
