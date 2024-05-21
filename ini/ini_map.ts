@@ -22,16 +22,8 @@ type Formatting = Omit<FormattingOptions, "lineBreak" | "commentChar"> & {
 
 /** Options for parsing INI strings. */
 export interface ParseOptions {
-  /** The character used to assign a value to a key; defaults to '='. */
-  assignment?: FormattingOptions["assignment"];
   /** Provide custom parsing of the value in a key/value pair. */
   reviver?: ReviverFunction;
-}
-
-/** Options for constructing INI strings. */
-export interface StringifyOptions extends FormattingOptions {
-  /** Provide custom string conversion for the value in a key/value pair. */
-  replacer?: ReplacerFunction;
 }
 
 /** Function for replacing JavaScript values with INI string values. */
@@ -88,25 +80,25 @@ export class IniMap {
       }
       return false;
     },
-    getAtLine: (line: number): string | undefined => {
+    getTextAtLine: (line: number): string | undefined => {
       return this.#getComment(line)?.val;
     },
-    getAtKey: (
+    getTextAtKey: (
       keyOrSection: string,
       noneOrKey?: string,
     ): string | undefined => {
       const lineValue = this.#getValue(keyOrSection, noneOrKey);
       if (lineValue) {
-        return this.comments.getAtLine(lineValue.num - 1);
+        return this.comments.getTextAtLine(lineValue.num - 1);
       }
     },
-    getAtSection: (sectionName: string): string | undefined => {
+    getTextAtSection: (sectionName: string): string | undefined => {
       const section = this.#sections.get(sectionName);
       if (section) {
-        return this.comments.getAtLine(section.num - 1);
+        return this.comments.getTextAtLine(section.num - 1);
       }
     },
-    setAtLine: (line: number, text: string): Comments => {
+    setTextAtLine: (line: number, text: string) => {
       const comment = this.#getComment(line);
       const mark = this.#formatting.commentChar ?? "#";
       const formatted = text.startsWith(mark) || text === ""
@@ -130,48 +122,48 @@ export class IniMap {
           val: formatted,
         }, LineOp.Add);
       }
-      return this.comments;
     },
-    setAtKey: (
+    setTextAtKey: (
       keyOrSection: string,
       textOrKey: string,
       noneOrText?: string,
-    ): Comments => {
+    ) => {
       if (noneOrText !== undefined) {
         const lineValue = this.#getValue(keyOrSection, textOrKey);
         if (lineValue) {
           if (this.#getComment(lineValue.num - 1)) {
-            this.comments.setAtLine(lineValue.num - 1, noneOrText);
+            this.comments.setTextAtLine(lineValue.num - 1, noneOrText);
           } else {
-            this.comments.setAtLine(lineValue.num, noneOrText);
+            this.comments.setTextAtLine(lineValue.num, noneOrText);
           }
         }
       } else {
         const lineValue = this.#getValue(keyOrSection);
         if (lineValue) {
           if (this.#getComment(lineValue.num - 1)) {
-            this.comments.setAtLine(lineValue.num - 1, textOrKey);
+            this.comments.setTextAtLine(lineValue.num - 1, textOrKey);
           } else {
-            this.comments.setAtLine(lineValue.num, textOrKey);
+            this.comments.setTextAtLine(lineValue.num, textOrKey);
           }
         }
       }
-      return this.comments;
     },
-    setAtSection: (sectionName: string, text: string): Comments => {
+    setTextAtSection: (sectionName: string, text: string) => {
       const section = this.#sections.get(sectionName);
       if (section) {
         if (this.#getComment(section.num - 1)) {
-          this.comments.setAtLine(section.num - 1, text);
+          this.comments.setTextAtLine(section.num - 1, text);
         } else {
-          this.comments.setAtLine(section.num, text);
+          this.comments.setTextAtLine(section.num, text);
         }
       }
-      return this.comments;
     },
   };
   #formatting: Formatting;
 
+  /** Constructs a new `IniMap`.
+   * @param formatting - Optional formatting options when printing an INI file.
+   */
   constructor(formatting?: FormattingOptions) {
     this.#formatting = this.#cleanFormatting(formatting);
   }
@@ -207,9 +199,13 @@ export class IniMap {
     }
   }
 
-  /** Delete a global key in the INI. */
+  /** Delete a global key in the INI.
+   * @returns `true` if the key was deleted, `false` if not found.
+   */
   delete(key: string): boolean;
-  /** Delete a section key in the INI. */
+  /** Delete a section key in the INI.
+   * @returns `true` if the section was deleted, `false` if not found.
+   */
   delete(section: string, key: string): boolean;
   delete(keyOrSection: string, noneOrKey?: string): boolean {
     const exists = this.#getValue(keyOrSection, noneOrKey);
@@ -633,33 +629,50 @@ export class IniMap {
   }
 }
 
+/** Manages comments within the INI file. */
 export interface Comments {
   /** Clear all comments in the INI. */
   clear(): void;
-  /** Delete a comment at a specific line in the INI. */
+  /** Delete a comment at a specific line in the INI.
+   * @returns `true` if a comment was deleted, otherwise `false`.
+   */
   deleteAtLine(line: number): boolean;
-  /** Delete a comment before a global key in the INI. */
+  /** Delete a comment before a global key in the INI.
+   * @returns `true` if a comment was deleted, otherwise `false`.
+   */
   deleteAtKey(key: string): boolean;
-  /** Delete a comment before a section key in the INI. */
+  /** Delete a comment before a section key in the INI.
+   * @returns `true` if a comment was deleted, otherwise `false`.
+   */
   deleteAtKey(section: string, key: string): boolean;
-  /** Delete a comment before a section line in the INI. */
+  /** Delete a comment before a section line in the INI.
+   * @returns `true` if a comment was deleted, otherwise `false`.
+   */
   deleteAtSection(section: string): boolean;
-  /** Get a comment at a specific line in the INI. */
-  getAtLine(line: number): string | undefined;
-  /** Get a comment before a global key in the INI. */
-  getAtKey(key: string): string | undefined;
-  /** Get a comment before a section key in the INI. */
-  getAtKey(section: string, key: string): string | undefined;
-  /** Get a comment before a section line in the INI. */
-  getAtSection(section: string): string | undefined;
-  /** Set a comment at a specific line in the INI. */
-  setAtLine(line: number, text: string): Comments;
-  /** Set a comment before a global key in the INI. */
-  setAtKey(key: string, text: string): Comments;
-  /** Set a comment before a section key in the INI. */
-  setAtKey(section: string, key: string, text: string): Comments;
-  /** Set a comment before a section line in the INI. */
-  setAtSection(section: string, text: string): Comments;
+  /** Get the comment text at a specific line in the INI.
+   * @returns The comment text at the line or `undefined` if not found.
+   */
+  getTextAtLine(line: number): string | undefined;
+  /** Get the comment text before a global key in the INI.
+   * @returns The comment text at the provided key or `undefined` if not found.
+   */
+  getTextAtKey(key: string): string | undefined;
+  /** Get the comment text before a section key in the INI.
+   * @returns The comment text at the provided section or `undefined` if not found.
+   */
+  getTextAtKey(section: string, key: string): string | undefined;
+  /** Get the comment text before a section line in the INI.
+   * @returns The comment text at the provided section or `undefined` if not found.
+   */
+  getTextAtSection(section: string): string | undefined;
+  /** Set the comment text at a specific line in the INI. */
+  setTextAtLine(line: number, text: string): void;
+  /** Set a comment text before a global key in the INI. */
+  setTextAtKey(key: string, text: string): void;
+  /** Set a comment text before a section key in the INI. */
+  setTextAtKey(section: string, key: string, text: string): void;
+  /** Set a comment text before a section line in the INI. */
+  setTextAtSection(section: string, text: string): void;
 }
 
 /** Detect supported comment styles. */

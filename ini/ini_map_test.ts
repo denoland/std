@@ -171,61 +171,41 @@ Deno.test({
         await step({
           name: "set comments",
           fn() {
-            assertEquals(
-              ini.comments.setAtLine(4, "# set comment 1"),
-              ini.comments,
+            ini.comments.setTextAtLine(4, "# set comment 1");
+            ini.comments.setTextAtLine(6, "without formatting mark");
+            ini.comments.setTextAtKey("keyA", "# set comment 2");
+            ini.comments.setTextAtKey("section1", "keyA", "# set comment 3");
+            ini.comments.setTextAtSection("section1", "# set comment 4");
+            ini.comments.setTextAtLine(7, "# modified comment 1");
+            ini.comments.setTextAtKey("keyA", "# modified comment 2");
+            ini.comments.setTextAtKey(
+              "section1",
+              "keyA",
+              "# modified comment 3",
             );
-            assertEquals(
-              ini.comments.setAtLine(6, "without formatting mark"),
-              ini.comments,
-            );
-            assertEquals(
-              ini.comments.setAtKey("keyA", "# set comment 2"),
-              ini.comments,
-            );
-            assertEquals(
-              ini.comments.setAtKey("section1", "keyA", "# set comment 3"),
-              ini.comments,
-            );
-            assertEquals(
-              ini.comments.setAtSection("section1", "# set comment 4"),
-              ini.comments,
-            );
-            assertEquals(
-              ini.comments.setAtLine(7, "# modified comment 1"),
-              ini.comments,
-            );
-            assertEquals(
-              ini.comments.setAtKey("keyA", "# modified comment 2"),
-              ini.comments,
-            );
-            assertEquals(
-              ini.comments.setAtKey("section1", "keyA", "# modified comment 3"),
-              ini.comments,
-            );
-            assertEquals(
-              ini.comments.setAtSection("section1", "# modified comment 4"),
-              ini.comments,
-            );
+            ini.comments.setTextAtSection("section1", "# modified comment 4");
           },
         });
 
         await step({
           name: "get comments",
           fn() {
-            assertEquals(ini.comments.getAtLine(7), "# modified comment 1");
-            assertEquals(ini.comments.getAtLine(8), "");
+            assertEquals(ini.comments.getTextAtLine(7), "# modified comment 1");
+            assertEquals(ini.comments.getTextAtLine(8), "");
             assertEquals(
-              ini.comments.getAtLine(9),
+              ini.comments.getTextAtLine(9),
               "# without formatting mark",
             );
-            assertEquals(ini.comments.getAtKey("keyA"), "# modified comment 2");
             assertEquals(
-              ini.comments.getAtKey("section1", "keyA"),
+              ini.comments.getTextAtKey("keyA"),
+              "# modified comment 2",
+            );
+            assertEquals(
+              ini.comments.getTextAtKey("section1", "keyA"),
               "# modified comment 3",
             );
             assertEquals(
-              ini.comments.getAtSection("section1"),
+              ini.comments.getTextAtSection("section1"),
               "# modified comment 4",
             );
           },
@@ -234,7 +214,7 @@ Deno.test({
         await step({
           name: "delete comments",
           fn() {
-            ini.comments.setAtLine(1, "# set comment 1");
+            ini.comments.setTextAtLine(1, "# set comment 1");
             assertEquals(ini.comments.deleteAtLine(9), true);
             assertEquals(ini.comments.deleteAtLine(8), true);
             assertEquals(ini.comments.deleteAtLine(7), true);
@@ -255,9 +235,9 @@ Deno.test({
         await step({
           name: "clear comments",
           fn() {
-            ini.comments.setAtLine(1, "# set comment 1");
-            ini.comments.setAtKey("section1", "keyA", "# set comment 2");
-            ini.comments.setAtSection("section1", "# set comment 3");
+            ini.comments.setTextAtLine(1, "# set comment 1");
+            ini.comments.setTextAtKey("section1", "keyA", "# set comment 2");
+            ini.comments.setTextAtSection("section1", "# set comment 3");
             assertEquals(
               ini.toString(),
               "# set comment 1\nkeyA=1977-05-25\n# set comment 3\n[section1]\n# set comment 2\nkeyA=100",
