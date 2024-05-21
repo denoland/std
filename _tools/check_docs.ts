@@ -1,11 +1,8 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
 /**
- * This script checks that all exported functions have JSDoc comments with
- * `@param`, `@return`, and `@example` tags, according to the contributing
- * guidelines.
- *
- * @see {@link https://github.com/denoland/deno_std/blob/main/.github/CONTRIBUTING.md#documentation}
+ * This script checks that all public symbols documentation aligns with the
+ * {@link ./CONTRIBUTING.md#documentation | documentation guidelines}.
  *
  * TODO(iuioiua): Add support for classes and methods.
  */
@@ -50,11 +47,6 @@ function isExported(document: DocNodeBase) {
   return document.declarationKind === "export";
 }
 
-/**
- * We only check functions that have JSDocs. We know that exported functions
- * have JSDocs thanks to `deno doc --lint`, which is used in the `lint:docs`
- * task.
- */
 function isFunctionDoc(document: DocNodeBase): document is DocNodeFunction {
   return document.kind === "function" && document.jsDoc !== undefined;
 }
