@@ -41,6 +41,7 @@ export interface ParseOptions {
  * ```
  *
  * @param text A valid JSONC string.
+ * @returns The parsed JsonValue from the JSONC string.
  */
 export function parse(
   text: string,
