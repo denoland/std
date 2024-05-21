@@ -33,25 +33,6 @@ function _extract<T>(
   return { frontMatter, body, attrs };
 }
 
-/**
- * Recognizes the format of the front matter in a string. Supports YAML, TOML and JSON.
- *
- * @param str String to recognize.
- * @param formats A list of formats to recognize. Defaults to all supported formats.
- *
- * @example
- * ```ts
- * import { recognize } from "@std/front-matter";
- * import { assertEquals } from "@std/assert/assert-equals";
- *
- * assertEquals(recognize("---\ntitle: Three dashes marks the spot\n---\n"), "yaml");
- * assertEquals(recognize("---toml\ntitle = 'Three dashes followed by format marks the spot'\n---\n"), "toml");
- * assertEquals(recognize("---json\n{\"title\": \"Three dashes followed by format marks the spot\"}\n---\n"), "json");
- * assertEquals(recognize("---xml\n<title>Three dashes marks the spot</title>\n---\n"), "unknown");
- *
- * assertEquals(recognize("---json\n<title>Three dashes marks the spot</title>\n---\n", ["yaml"]), "unknown");
- * ```
- */
 function recognize(str: string, formats?: Format[]): Format {
   if (!formats) {
     formats = Object.keys(RECOGNIZE_REGEXP_MAP) as Format[];
