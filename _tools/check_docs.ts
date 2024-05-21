@@ -22,6 +22,7 @@ const ENTRY_POINTS = [
   "../bytes/mod.ts",
   "../datetime/mod.ts",
   "../collections/mod.ts",
+  "../crypto/mod.ts",
   "../internal/mod.ts",
   "../media_types/mod.ts",
 ] as const;

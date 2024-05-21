@@ -293,7 +293,7 @@ export type FNVAlgorithms = "FNV32" | "FNV32A" | "FNV64" | "FNV64A";
  * @deprecated This will be removed in 1.0.0. Use
  * {@linkcode DIGEST_ALGORITHM_NAMES} instead.
  */
-export const wasmDigestAlgorithms = DIGEST_ALGORITHM_NAMES;
+export const wasmDigestAlgorithms: WasmDigestAlgorithm = DIGEST_ALGORITHM_NAMES;
 
 /**
  * A digest algorithm name supported by std/crypto with a Wasm implementation.

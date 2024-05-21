@@ -14,6 +14,7 @@ import { assert } from "@std/assert/assert";
  * {@link https://github.com/w3c/webcrypto/issues/270 | w3c/webcrypto#270}), but until
  * that time, `timingSafeEqual()` is provided:
  *
+ * @example
  * ```ts
  * import { timingSafeEqual } from "@std/crypto/timing-safe-equal";
  * import { assert } from "@std/assert/assert";
@@ -29,6 +30,9 @@ import { assert } from "@std/assert/assert";
  *
  * assert(timingSafeEqual(a, b));
  * ```
+ * @param a - actual buffer
+ * @param b - expected buffer
+ * @returns `true` if buffers are equal, `false` otherwise
  */
 export function timingSafeEqual(
   a: ArrayBufferView | ArrayBufferLike | DataView,
