@@ -76,6 +76,7 @@ class Queue<T> {
  * @typeParam N The amount of branches to tee into.
  * @param iterable The iterable to tee.
  * @param n The amount of branches to tee into.
+ * @returns The tuple where each element is an async iterable.
  */
 export function tee<T, N extends number = 2>(
   iterable: AsyncIterable<T>,

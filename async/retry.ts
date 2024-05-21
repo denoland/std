@@ -12,7 +12,7 @@ import { exponentialBackoffWithJitter } from "./_util.ts";
  * ```ts
  * import { RetryError } from "@std/async/retry";
  *
- * throw new RetryError({ foo: "bar" }, 3);
+ * const error = new RetryError({ foo: "bar" }, 3);
  * ```
  */
 export class RetryError extends Error {
@@ -21,6 +21,13 @@ export class RetryError extends Error {
    *
    * @param cause the cause for this error.
    * @param attempts the number of retry attempts made.
+   *
+   * @example
+   * ```ts
+   * import { RetryError } from "@std/async/retry";
+   *
+   * const error = new RetryError({ foo: "bar" }, 3);
+   * ```
    */
   constructor(cause: unknown, attempts: number) {
     super(`Retrying exceeded the maxAttempts (${attempts}).`);
@@ -124,6 +131,7 @@ const defaultRetryOptions: Required<RetryOptions> = {
  * @typeParam T The return type of the function to retry and returned promise.
  * @param fn The function to retry.
  * @param opts Additional options.
+ * @returns The promise that resolves with the value returned by the function to retry.
  */
 export async function retry<T>(
   fn: (() => Promise<T>) | (() => T),

@@ -52,7 +52,9 @@ export class MuxAsyncIterator<T> implements AsyncIterable<T> {
    * @param iterable The async iterable to add.
    *
    * @example
-   * ```
+   * ```ts
+   * import { MuxAsyncIterator } from "@std/async/mux-async-iterator";
+   *
    * async function* gen123(): AsyncIterableIterator<number> {
    *   yield 1;
    *   yield 2;
@@ -84,7 +86,28 @@ export class MuxAsyncIterator<T> implements AsyncIterable<T> {
     this.#signal.resolve();
   }
 
-  /** Returns an async iterator of the stream. */
+  /**
+   * Returns an async iterator of the stream.
+   * @returns the async iterator for all the added async iterables.
+   *
+   * @example
+   * ```ts
+   * import { MuxAsyncIterator } from "@std/async/mux-async-iterator";
+   *
+   * async function* gen123(): AsyncIterableIterator<number> {
+   *   yield 1;
+   *   yield 2;
+   *   yield 3;
+   * }
+   *
+   * const mux = new MuxAsyncIterator<number>();
+   * mux.add(gen123());
+   *
+   * for await (const value of mux) {
+   *   // ...
+   * }
+   * ```
+   */
   async *iterate(): AsyncIterableIterator<T> {
     while (this.#iteratorCount > 0) {
       // Sleep until any of the wrapped iterators yields.
@@ -107,7 +130,28 @@ export class MuxAsyncIterator<T> implements AsyncIterable<T> {
     }
   }
 
-  /** Implements an async iterator for the stream. */
+  /**
+   * Implements an async iterator for the stream.
+   * @returns the async iterator for all the added async iterables.
+   *
+   * @example
+   * ```ts
+   * import { MuxAsyncIterator } from "@std/async/mux-async-iterator";
+   *
+   * async function* gen123(): AsyncIterableIterator<number> {
+   *   yield 1;
+   *   yield 2;
+   *   yield 3;
+   * }
+   *
+   * const mux = new MuxAsyncIterator<number>();
+   * mux.add(gen123());
+   *
+   * for await (const value of mux) {
+   *   // ...
+   * }
+   * ```
+   */
   [Symbol.asyncIterator](): AsyncIterator<T> {
     return this.iterate();
   }
