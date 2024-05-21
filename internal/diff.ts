@@ -3,8 +3,11 @@
 
 import type { DiffResult, DiffType } from "./types.ts";
 
-interface FarthestPoint {
+/** Represents the farthest point in the diff algorithm. */
+export interface FarthestPoint {
+  /** The y-coordinate of the point. */
   y: number;
+  /** The id of the point. */
   id: number;
 }
 
@@ -21,8 +24,19 @@ const ADDED = 3;
  * @param B The second array.
  *
  * @returns An array containing the common elements between the two arrays.
+ *
+ * @example Usage
+ * ```ts
+ * import { createCommon } from "@std/internal/diff";
+ * import { assertEquals } from "@std/assert/assert-equals";
+ *
+ * const a = [1, 2, 3];
+ * const b = [1, 2, 4];
+ *
+ * assertEquals(createCommon(a, b), [1, 2]);
+ * ```
  */
-function createCommon<T>(A: T[], B: T[]): T[] {
+export function createCommon<T>(A: T[], B: T[]): T[] {
   const common: T[] = [];
   if (A.length === 0 || B.length === 0) return [];
   for (let i = 0; i < Math.min(A.length, B.length); i += 1) {
@@ -37,13 +51,62 @@ function createCommon<T>(A: T[], B: T[]): T[] {
   return common;
 }
 
-function assertFp(value: unknown): asserts value is FarthestPoint {
-  if (value === undefined) {
+/**
+ * Asserts that the value is a {@linkcode FarthestPoint}.
+ * If not, an error is thrown.
+ *
+ * @param value The value to check.
+ *
+ * @returns A void value that returns once the assertion completes.
+ *
+ * @example Usage
+ * ```ts
+ * import { assertFp } from "@std/internal/diff";
+ * import { assertThrows } from "@std/assert/assert-throws";
+ *
+ * assertFp({ y: 0, id: 0 });
+ * assertThrows(() => assertFp({ id: 0 }));
+ * assertThrows(() => assertFp({ y: 0 }));
+ * assertThrows(() => assertFp(undefined));
+ * ```
+ */
+export function assertFp(value: unknown): asserts value is FarthestPoint {
+  if (
+    value == null ||
+    typeof value !== "object" ||
+    typeof (value as FarthestPoint)?.y !== "number" ||
+    typeof (value as FarthestPoint)?.id !== "number"
+  ) {
     throw new Error("Unexpected missing FarthestPoint");
   }
 }
 
-function backTrace<T>(
+/**
+ * Creates an array of backtraced differences.
+ *
+ * @typeParam T The type of elements in the arrays.
+ *
+ * @param A The first array.
+ * @param B The second array.
+ * @param current The current {@linkcode FarthestPoint}.
+ * @param swapped Boolean indicating if the arrays are swapped.
+ * @param routes The routes array.
+ * @param diffTypesPtrOffset The offset of the diff types in the routes array.
+ *
+ * @returns An array of backtraced differences.
+ *
+ * @example Usage
+ * ```ts
+ * import { backTrace } from "@std/internal/diff";
+ * import { assertEquals } from "@std/assert/assert-equals";
+ *
+ * assertEquals(
+ *   backTrace([], [], { y: 0, id: 0 }, false, new Uint32Array(0), 0),
+ *   [],
+ * );
+ * ```
+ */
+export function backTrace<T>(
   A: T[],
   B: T[],
   current: FarthestPoint,
@@ -87,7 +150,39 @@ function backTrace<T>(
   return result;
 }
 
-function createFp(
+/**
+ * Creates a {@linkcode FarthestPoint}.
+ *
+ * @param k The current index.
+ * @param M The length of the first array.
+ * @param routes The routes array.
+ * @param diffTypesPtrOffset The offset of the diff types in the routes array.
+ * @param ptr The current pointer.
+ * @param slide The slide {@linkcode FarthestPoint}.
+ * @param down The down {@linkcode FarthestPoint}.
+ *
+ * @returns A {@linkcode FarthestPoint}.
+ *
+ * @example Usage
+ * ```ts
+ * import { createFp } from "@std/internal/diff";
+ * import { assertEquals } from "@std/assert/assert-equals";
+ *
+ * assertEquals(
+ *   createFp(
+ *     0,
+ *     0,
+ *     new Uint32Array(0),
+ *     0,
+ *     0,
+ *     { y: -1, id: 0 },
+ *     { y: 0, id: 0 },
+ *   ),
+ *   { y: -1, id: 1 },
+ * );
+ * ```
+ */
+export function createFp(
   k: number,
   M: number,
   routes: Uint32Array,
@@ -147,22 +242,17 @@ function createFp(
  */
 export function diff<T>(A: T[], B: T[]): DiffResult<T>[] {
   const prefixCommon = createCommon(A, B);
-  const suffixCommon = createCommon(
-    A.slice(prefixCommon.length),
-    B.slice(prefixCommon.length),
-  );
-  A = A.slice(prefixCommon.length, -suffixCommon.length || undefined);
-  B = B.slice(prefixCommon.length, -suffixCommon.length || undefined);
+  A = A.slice(prefixCommon.length);
+  B = B.slice(prefixCommon.length);
   const swapped = B.length > A.length;
   [A, B] = swapped ? [B, A] : [A, B];
   const M = A.length;
   const N = B.length;
-  if (!M && !N && !suffixCommon.length && !prefixCommon.length) return [];
+  if (!M && !N && !prefixCommon.length) return [];
   if (!N) {
     return [
       ...prefixCommon.map((value) => ({ type: "common", value })),
       ...A.map((value) => ({ type: swapped ? "added" : "removed", value })),
-      ...suffixCommon.map((value) => ({ type: "common", value })),
     ] as DiffResult<T>[];
   }
   const offset = N;
@@ -187,7 +277,6 @@ export function diff<T>(A: T[], B: T[]): DiffResult<T>[] {
   ): FarthestPoint {
     const M = A.length;
     const N = B.length;
-    if (k < -N || M < k) return { y: -1, id: -1 };
     const fp = createFp(k, M, routes, diffTypesPtrOffset, ptr, slide, down);
     ptr = fp.id;
     while (fp.y + k < M && fp.y < N && A[fp.y + k] === B[fp.y]) {
@@ -222,6 +311,5 @@ export function diff<T>(A: T[], B: T[]): DiffResult<T>[] {
   return [
     ...prefixCommon.map((value) => ({ type: "common", value })),
     ...backTrace(A, B, currentFp, swapped, routes, diffTypesPtrOffset),
-    ...suffixCommon.map((value) => ({ type: "common", value })),
   ] as DiffResult<T>[];
 }

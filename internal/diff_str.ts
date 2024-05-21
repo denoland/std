@@ -10,8 +10,16 @@ import { diff } from "./diff.ts";
  * @param string String to unescape.
  *
  * @returns Unescaped string.
+ *
+ * @example Usage
+ * ```ts
+ * import { unescape } from "@std/internal/diff-str";
+ * import { assertEquals } from "@std/assert/assert-equals";
+ *
+ * assertEquals(unescape("Hello\nWorld"), "Hello\\n\nWorld");
+ * ```
  */
-function unescape(string: string): string {
+export function unescape(string: string): string {
   return string
     .replaceAll("\b", "\\b")
     .replaceAll("\f", "\\f")
@@ -25,8 +33,6 @@ function unescape(string: string): string {
 }
 
 const WHITESPACE_SYMBOLS = /([^\S\r\n]+|[()[\]{}'"\r\n]|\b)/;
-const EXT_LATIN_CHARS =
-  /^[a-zA-Z\u{C0}-\u{FF}\u{D8}-\u{F6}\u{F8}-\u{2C6}\u{2C8}-\u{2D7}\u{2DE}-\u{2FF}\u{1E00}-\u{1EFF}]+$/u;
 
 /**
  * Tokenizes a string into an array of tokens.
@@ -35,26 +41,20 @@ const EXT_LATIN_CHARS =
  * @param wordDiff If true, performs word-based tokenization. Default is false.
  *
  * @returns An array of tokens.
+ *
+ * @example Usage
+ * ```ts
+ * import { tokenize } from "@std/internal/diff-str";
+ * import { assertEquals } from "@std/assert/assert-equals";
+ *
+ * assertEquals(tokenize("Hello\nWorld"), ["Hello\n", "World"]);
+ * ```
  */
-function tokenize(string: string, wordDiff = false): string[] {
+export function tokenize(string: string, wordDiff = false): string[] {
   if (wordDiff) {
-    const tokens = string.split(WHITESPACE_SYMBOLS).filter((token) => token);
-    for (let i = 0; i < tokens.length - 1; i++) {
-      const token = tokens[i];
-      const tokenPlusTwo = tokens[i + 2];
-      if (
-        !tokens[i + 1] &&
-        token &&
-        tokenPlusTwo &&
-        EXT_LATIN_CHARS.test(token) &&
-        EXT_LATIN_CHARS.test(tokenPlusTwo)
-      ) {
-        tokens[i] += tokenPlusTwo;
-        tokens.splice(i + 1, 2);
-        i--;
-      }
-    }
-    return tokens;
+    return string
+      .split(WHITESPACE_SYMBOLS)
+      .filter((token) => token);
   }
   const tokens: string[] = [];
   const lines = string.split(/(\n|\r\n)/).filter((line) => line);
@@ -77,11 +77,27 @@ function tokenize(string: string, wordDiff = false): string[] {
  * @param tokens Word-diff tokens
  *
  * @returns Array of diff results.
+ *
+ * @example Usage
+ * ```ts
+ * import { createDetails } from "@std/internal/diff-str";
+ * import { assertEquals } from "@std/assert/assert-equals";
+ *
+ * const tokens = [
+ *   { type: "added", value: "a" },
+ *   { type: "removed", value: "b" },
+ *   { type: "common", value: "c" },
+ * ] as const;
+ * assertEquals(
+ *   createDetails({ type: "added", value: "a" }, [...tokens]),
+ *   [{ type: "added", value: "a" }, { type: "common", value: "c" }]
+ * );
+ * ```
  */
-function createDetails(
+export function createDetails(
   line: DiffResult<string>,
-  tokens: Array<DiffResult<string>>,
-) {
+  tokens: DiffResult<string>[],
+): DiffResult<string>[] {
   return tokens.filter(({ type }) => type === line.type || type === "common")
     .map((result, i, t) => {
       const token = t[i - 1];
@@ -163,7 +179,7 @@ export function diffStr(A: string, B: string): DiffResult<string>[] {
       b = bLines.shift();
       const tokenized = [
         tokenize(a.value, true),
-        tokenize(b?.value ?? "", true),
+        tokenize(b!.value, true),
       ] as [string[], string[]];
       if (hasMoreRemovedLines) tokenized.reverse();
       tokens = diff(tokenized[0], tokenized[1]);
