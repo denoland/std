@@ -97,8 +97,29 @@ const {
  *   "helicopter",
  * ]);
  * ```
+ *
+ * @typeparam T The type of the values being stored in the tree.
  */
 export class RedBlackTree<T> extends BinarySearchTree<T> {
+  /**
+   * Construct an empty red-black tree.
+   *
+   * @example Creating an empty red-black tree
+   * ```ts
+   * import { RedBlackTree } from "@std/data-structures";
+   * const tree = new RedBlackTree<number>();
+   * ```
+   *
+   * @example Creating a red-black tree with a custom comparison function
+   * ```ts
+   * import { RedBlackTree, ascend } from "@std/data-structures";
+   * const tree = new RedBlackTree<{ price: number, name: string }>(
+   *   (a, b) => ascend(a.price, b.price) || ascend(a.name, b.name)
+   * );
+   * ```
+   *
+   * @param compare A custom comparison function for the values. The default comparison function sorts by ascending order.
+   */
   constructor(compare: (a: T, b: T) => number = ascend) {
     if (typeof compare !== "function") {
       throw new TypeError(
@@ -108,14 +129,80 @@ export class RedBlackTree<T> extends BinarySearchTree<T> {
     super(compare);
   }
 
-  /** Creates a new red-black tree from an array like or iterable object. */
+  /**
+   * Create a new red-black tree from an array like, an iterable object, or
+   * an existing red-black tree.
+   *
+   * A custom comparison function can be provided to sort the values in a
+   * specific order. By default, the values are sorted in ascending order,
+   * unless a {@link RedBlackTree} is passed, in which case the comparison
+   * function is copied from the input tree.
+   *
+   * @example Creating a red-black tree from an array like
+   * ```ts
+   * import { RedBlackTree } from "@std/data-structures";
+   * const tree = RedBlackTree.from<number>([3, 10, 13, 4, 6, 7, 1, 14]);
+   * ```
+   *
+   * @example Creating a red-black tree from an iterable object
+   * ```ts
+   * import { RedBlackTree } from "@std/data-structures";
+   * const tree = RedBlackTree.from<number>((function*() {
+   *   yield 3;
+   *   yield 10;
+   *   yield 13;
+   * })());
+   * ```
+   *
+   * @example Creating a red-black tree from an existing red-black tree
+   * ```ts
+   * import { RedBlackTree } from "@std/data-structures";
+   * const tree = RedBlackTree.from<number>([3, 10, 13, 4, 6, 7, 1, 14]);
+   * const copy = RedBlackTree.from(tree);
+   * ```
+   *
+   * @example Creating a red-black tree from an array like with a custom comparison function
+   * ```ts
+   * import { RedBlackTree, descend } from "@std/data-structures";
+   * const tree = RedBlackTree.from<number>([3, 10, 13, 4, 6, 7, 1, 14], {
+   *  compare: descend,
+   * });
+   *
+   * @param collection An array like, an iterable, or existing red-black tree.
+   * @param options An optional options object to customize the comparison function.
+   */
   static override from<T>(
     collection: ArrayLike<T> | Iterable<T> | RedBlackTree<T>,
     options?: {
       compare?: (a: T, b: T) => number;
     },
   ): RedBlackTree<T>;
-  static override from<T, U, V>(
+  /**
+   * Create a new red-black tree from an array like, an iterable object, or
+   * an existing red-black tree.
+   *
+   * A custom mapping function can be provided to transform the values before
+   * inserting them into the tree.
+   *
+   * A custom comparison function can be provided to sort the values in a
+   * specific order. A custom mapping function can be provided to transform the
+   * values before inserting them into the tree. By default, the values are
+   * sorted in ascending order, unless a {@link RedBlackTree} is passed, in
+   * which case the comparison function is copied from the input tree. The
+   * comparison operator is used to sort the values in the tree after mapping
+   * the values.
+   *
+   * @example Creating a red-black tree from an array like with a custom mapping function
+   * ```ts
+   * import { RedBlackTree } from "@std/data-structures";
+   * const tree = RedBlackTree.from<number, string>([3, 10, 13, 4, 6, 7, 1, 14], {
+   *   map: (value) => value.toString(),
+   * });
+   *
+   * @param collection An array like, an iterable, or existing red-black tree.
+   * @param options The options object to customize the mapping and comparison functions. The `thisArg` property can be used to set the `this` value when calling the mapping function.
+   */
+  static override from<T, U, V = undefined>(
     collection: ArrayLike<T> | Iterable<T> | RedBlackTree<T>,
     options: {
       compare?: (a: U, b: U) => number;
@@ -221,8 +308,21 @@ export class RedBlackTree<T> extends BinarySearchTree<T> {
   }
 
   /**
-   * Adds the value to the binary search tree if it does not already exist in it.
-   * Returns true if successful.
+   * Add a value to the red-black tree if it does not already exist in the tree.
+   *
+   * The complexity of this operation is on average and at worst O(log n), where
+   * n is the number of values in the tree.
+   *
+   * @example Inserting a value into the tree
+   * ```ts
+   * import { RedBlackTree } from "@std/data-structures";
+   * const tree = new RedBlackTree<number>();
+   * tree.insert(42); // true
+   * tree.insert(42); // false
+   * ```
+   *
+   * @param value The value to insert into the tree.
+   * @returns `true` if the value was inserted, `false` if the value already exists in the tree.
    */
   override insert(value: T): boolean {
     let node = insertNode(
@@ -262,8 +362,21 @@ export class RedBlackTree<T> extends BinarySearchTree<T> {
   }
 
   /**
-   * Removes node value from the binary search tree if found.
-   * Returns true if found and removed.
+   * Remove a value from the red-black tree if it exists in the tree.
+   *
+   * The complexity of this operation is on average and at worst O(log n), where
+   * n is the number of values in the tree.
+   *
+   * @example Removing values from the tree
+   * ```ts
+   * import { RedBlackTree } from "@std/data-structures";
+   * const tree = RedBlackTree.from<number>([42]);
+   * tree.remove(42); // true
+   * tree.remove(42); // false
+   * ```
+   *
+   * @param value The value to remove from the tree.
+   * @returns `true` if the value was found and removed, `false` if the value was not found in the tree.
    */
   override remove(value: T): boolean {
     const node = findNode(this, value) as (RedBlackNode<T> | null);

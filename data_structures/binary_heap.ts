@@ -56,11 +56,30 @@ function getParentIndex(index: number) {
  * assertEquals([...words], ["truck", "tank", "car"]);
  * assertEquals([...words], []);
  * ```
+ *
+ * @typeparam T The type of the values stored in the binary heap.
  */
 export class BinaryHeap<T> implements Iterable<T> {
   #data: T[] = [];
   #compare: (a: T, b: T) => number;
 
+  /**
+   * Construct an empty binary heap.
+   *
+   * @example Creating an empty binary heap
+   * ```ts
+   * import { BinaryHeap } from "@std/data-structures";
+   * const heap = new BinaryHeap<number>();
+   * ```
+   *
+   * @example Creating a binary heap with a custom comparison function
+   * ```ts
+   * import { BinaryHeap, ascend } from "@std/data-structures";
+   * const heap = new BinaryHeap(ascend);
+   * ```
+   *
+   * @param compare A custom comparison function to sort the values in the heap. By default, the values are sorted in descending order.
+   */
   constructor(compare: (a: T, b: T) => number = descend) {
     if (typeof compare !== "function") {
       throw new TypeError(
@@ -70,16 +89,91 @@ export class BinaryHeap<T> implements Iterable<T> {
     this.#compare = compare;
   }
 
+  /**
+   * Returns the underlying cloned array in arbitrary order without sorting.
+   *
+   * @example Getting the underlying array
+   * ```ts
+   * import { BinaryHeap } from "@std/data-structures";
+   * const heap = BinaryHeap.from([4, 1, 3, 5, 2]);
+   * heap.toArray(); // [ 5, 4, 3, 1, 2 ]
+   * ```
+   *
+   * @returns An array containing the values in the binary heap.
+   */
   toArray(): T[] {
     return Array.from(this.#data);
   }
-  /** Creates a new binary heap from an array like or iterable object. */
+
+  /**
+   * Creates a new binary heap from an array like, an iterable object, or an
+   * existing binary heap.
+   *
+   * A custom comparison function can be provided to sort the values in a
+   * specific order. By default, the values are sorted in descending order,
+   * unless a {@link BinaryHeap} is passed, in which case the comparison
+   * function is copied from the input heap.
+   *
+   * @example Creating a binary heap from an array like
+   * ```ts
+   * import { BinaryHeap } from "@std/data-structures";
+   * const heap = BinaryHeap.from([4, 1, 3, 5, 2]);
+   * ```
+   *
+   * @example Creating a binary heap from an iterable object
+   * ```ts
+   * import { BinaryHeap } from "@std/data-structures";
+   * const heap = BinaryHeap.from((function*() { yield* [4, 1, 3, 5, 2]; })());
+   * ```
+   *
+   * @example Creating a binary heap from an existing binary heap
+   * ```ts
+   * import { BinaryHeap } from "@std/data-structures";
+   * const heap = BinaryHeap.from([4, 1, 3, 5, 2]);
+   * const copy = BinaryHeap.from(heap);
+   * ```
+   *
+   * @example Creating a binary heap from an array like with a custom comparison function
+   * ```ts
+   * import { BinaryHeap, ascend } from "@std/data-structures";
+   * const heap = BinaryHeap.from([4, 1, 3, 5, 2], { compare: ascend });
+   * ```
+   *
+   * @typeparam T The type of the values stored in the binary heap.
+   * @param collection An array like, an iterable object, or an existing binary heap.
+   * @param options An optional options object to customize the comparison function.
+   */
   static from<T>(
     collection: ArrayLike<T> | Iterable<T> | BinaryHeap<T>,
     options?: {
       compare?: (a: T, b: T) => number;
     },
   ): BinaryHeap<T>;
+  /**
+   * Creates a new binary heap from an array like, an iterable object, or an
+   * existing binary heap.
+   *
+   * A custom mapping function can be provided to transform the values before
+   * inserting them into the heap.
+   *
+   * A custom comparison function can be provided to sort the values in a
+   * specific order. By default, the values are sorted in descending order,
+   * unless a {@link BinaryHeap} is passed, in which case the comparison
+   * function is copied from the input heap. The comparison operator is used to
+   * sort the values in the heap after mapping the values.
+   *
+   * @example Creating a binary heap from an array like with a custom mapping function
+   * ```ts
+   * import { BinaryHeap } from "@std/data-structures";
+   * const heap = BinaryHeap.from([4, 1, 3, 5, 2], { map: (value) => value * 2 });
+   * ```
+   *
+   * @typeparam T The type of the values in the passed collection.
+   * @typeparam U The type of the values stored in the binary heap.
+   * @typeparam V The type of the `this` value when calling the mapping function. Defaults to `undefined`.
+   * @param collection An array like, an iterable object, or an existing binary heap.
+   * @param options The options object to customize the mapping and comparison functions. The `thisArg` property can be used to set the `this` value when calling the mapping function.
+   */
   static from<T, U, V = undefined>(
     collection: ArrayLike<T> | Iterable<T> | BinaryHeap<T>,
     options: {
@@ -120,17 +214,67 @@ export class BinaryHeap<T> implements Iterable<T> {
     return result;
   }
 
-  /** The amount of values stored in the binary heap. */
+  /**
+   * The count of values stored in the binary heap.
+   *
+   * The complexity of this operation is O(1).
+   *
+   * @returns The count of values stored in the binary heap.
+   */
   get length(): number {
     return this.#data.length;
   }
 
-  /** Returns the greatest value in the binary heap, or undefined if it is empty. */
+  /**
+   * Get the greatest value from the binary heap without removing it, or
+   * undefined if the heap is empty.
+   *
+   * The complexity of this operation is O(1).
+   *
+   * @example Getting the greatest value from the binary heap
+   * ```ts
+   * import { BinaryHeap } from "@std/data-structures";
+   * const heap = BinaryHeap.from([4, 1, 3, 5, 2]);
+   * heap.peek(); // 5
+   * ```
+   *
+   * @example Getting the greatest value from an empty binary heap
+   * ```ts
+   * import { BinaryHeap } from "@std/data-structures";
+   * const heap = new BinaryHeap<number>();
+   * heap.peek(); // undefined
+   * ```
+   *
+   * @returns The greatest value from the binary heap, or undefined if it is empty.
+   */
   peek(): T | undefined {
     return this.#data[0];
   }
 
-  /** Removes the greatest value from the binary heap and returns it, or null if it is empty. */
+  /**
+   * Remove the greatest value from the binary heap and return it, or return
+   * undefined if the heap is empty.
+   *
+   * @example Removing the greatest value from the binary heap
+   * ```ts
+   * import { BinaryHeap } from "@std/data-structures";
+   * const heap = BinaryHeap.from([4, 1, 3, 5, 2]);
+   * heap.pop(); // 5
+   * [...heap]; // [ 4, 3, 2, 1 ]
+   * ```
+   *
+   * The complexity of this operation is on average and worst case O(log n),
+   * where n is the count of values stored in the binary heap.
+   *
+   * @example Removing the greatest value from an empty binary heap
+   * ```ts
+   * import { BinaryHeap } from "@std/data-structures";
+   * const heap = new BinaryHeap<number>();
+   * heap.pop(); // undefined
+   * ```
+   *
+   * @returns The greatest value from the binary heap, or undefined if the heap is empty.
+   */
   pop(): T | undefined {
     const size: number = this.#data.length - 1;
     swap(this.#data, 0, size);
@@ -154,7 +298,24 @@ export class BinaryHeap<T> implements Iterable<T> {
     return this.#data.pop();
   }
 
-  /** Adds values to the binary heap. */
+  /**
+   * Add one or more values to the binary heap, returning the new length of the
+   * heap.
+   *
+   * The complexity of this operation is O(1) on average and O(log n) in the
+   * worst case, where n is the count of values stored in the binary heap.
+   *
+   * @example Adding values to the binary heap
+   * ```ts
+   * import { BinaryHeap } from "@std/data-structures";
+   * const heap = BinaryHeap.from([4, 1, 3, 2]);
+   * heap.push(5);
+   * [...heap]; // [ 5, 4, 3, 1, 2 ]
+   * ```
+   *
+   * @param values The values to add to the binary heap.
+   * @returns The new length of the binary heap.
+   */
   push(...values: T[]): number {
     for (const value of values) {
       let index: number = this.#data.length;
@@ -172,23 +333,78 @@ export class BinaryHeap<T> implements Iterable<T> {
     return this.#data.length;
   }
 
-  /** Removes all values from the binary heap. */
+  /**
+   * Remove all values from the binary heap.
+   *
+   * @example Clearing the binary heap
+   * ```ts
+   * import { BinaryHeap } from "@std/data-structures";
+   * const heap = BinaryHeap.from([4, 1, 3, 5, 2]);
+   * heap.clear();
+   * [...heap]; // []
+   * ```
+   */
   clear() {
     this.#data = [];
   }
 
-  /** Checks if the binary heap is empty. */
+  /**
+   * Check if the binary heap is empty.
+   *
+   * @example Checking if the binary heap is empty
+   * ```ts
+   * import { BinaryHeap } from "@std/data-structures";
+   * const heap = new BinaryHeap<number>();
+   * heap.isEmpty(); // true
+   * heap.push(42);
+   * heap.isEmpty(); // false
+   * ```
+   *
+   * @returns true if the binary heap is empty, otherwise false.
+   */
   isEmpty(): boolean {
     return this.#data.length === 0;
   }
 
-  /** Returns an iterator for retrieving and removing values from the binary heap. */
+  /**
+   * Create an iterator that retrieves values from the binary heap in order
+   * from greatest to least. The binary heap is drained in the process.
+   *
+   * To avoid draining the binary heap, create a copy using
+   * {@link BinaryHeap.from} and then call {@link BinaryHeap#drain} on the copy.
+   *
+   * @example Draining the binary heap
+   * ```ts
+   * import { BinaryHeap } from "@std/data-structures";
+   * const heap = BinaryHeap.from([4, 1, 3, 5, 2]);
+   * [...heap.drain()]; // [ 5, 4, 3, 2, 1 ]
+   * [...heap.drain()]; // []
+   * ```
+   *
+   * @returns An iterator for retrieving and removing values from the binary heap.
+   */
   *drain(): IterableIterator<T> {
     while (!this.isEmpty()) {
       yield this.pop() as T;
     }
   }
 
+  /**
+   * Create an iterator that retrieves values from the binary heap in order
+   * from greatest to least. The binary heap is drained in the process.
+   *
+   * See {@link BinaryHeap#values}.
+   *
+   * @example Getting an iterator for the binary heap
+   * ```ts
+   * import { BinaryHeap } from "@std/data-structures";
+   * const heap = BinaryHeap.from([4, 1, 3, 5, 2]);
+   * [...heap]; // [ 5, 4, 3, 2, 1 ]
+   * [...heap]; // []
+   * ```
+   *
+   * @returns An iterator for retrieving and removing values from the binary heap.
+   */
   *[Symbol.iterator](): IterableIterator<T> {
     yield* this.drain();
   }
