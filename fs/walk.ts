@@ -11,12 +11,41 @@ import {
   type WalkEntry,
 } from "./_create_walk_entry.ts";
 
-/** Error thrown in {@linkcode walk} or {@linkcode walkSync} during iteration. */
+/**
+ * Error thrown in {@linkcode walk} or {@linkcode walkSync} during iteration.
+ *
+ * @example Usage
+ * ```ts
+ * import { walk, WalkError } from "@std/fs/walk";
+ *
+ * try {
+ *   for await (const entry of walk("./non_existent_root")) {
+ *     console.log(entry.path);
+ *   }
+ * } catch (error) {
+ *   if (error instanceof WalkError) {
+ *     console.error(error.message);
+ *   }
+ * }
+ * ```
+ */
 export class WalkError extends Error {
   /** File path of the root that's being walked. */
   root: string;
 
-  /** Constructs a new instance. */
+  /**
+   * Constructs a new instance.
+   *
+   * @param cause The cause of the error.
+   * @param root The root directory that's being walked.
+   *
+   * @example Usage
+   * ```ts
+   * import { WalkError } from "@std/fs/walk";
+   *
+   * throw new WalkError("error message", "./foo");
+   * ```
+   */
   constructor(cause: unknown, root: string) {
     super(
       `${cause instanceof Error ? cause.message : cause} for path "${root}"`,
@@ -123,6 +152,7 @@ export type { WalkEntry };
  *
  * @param root The root directory to start the walk from, as a string or URL.
  * @param options The options for the walk.
+ *
  * @returns An async iterable iterator that yields `WalkEntry` objects.
  *
  * @example Basic usage

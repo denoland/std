@@ -250,18 +250,20 @@ function copyDirSync(
 }
 
 /**
- * Asynchronously copy a file or directory. The directory can have contents.
- * Like `cp -r`.
+ * Asynchronously copy a file or directory (along with its contents), like
+ * {@linkcode https://www.ibm.com/docs/en/aix/7.3?topic=c-cp-command#cp__cp_flagr | cp -r}.
  *
- * If `src` is a directory it will copy everything inside of this directory,
- * not the entire directory itself. If `src` is a file, `dest` cannot be a
- * directory.
+ * Both `src` and `dest` must both be a file or directory.
  *
- * Requires the `--allow-read` and `--allow-write` flag.
+ * Requires `--allow-read` and `--allow-write` permissions.
+ *
+ * @see {@link https://docs.deno.com/runtime/manual/basics/permissions#file-system-access}
+ * for more information on Deno's permissions system.
  *
  * @param src The source file/directory path as a string or URL.
  * @param dest The destination file/directory path as a string or URL.
  * @param options Options for copying.
+ *
  * @returns A promise that resolves once the copy operation completes.
  *
  * @example Basic usage
@@ -324,18 +326,20 @@ export async function copy(
 }
 
 /**
- * Synchronously copy a file or directory. The directory can have contents.
- * Like `cp -r`.
+ * Synchronously copy a file or directory (along with its contents), like
+ * {@linkcode https://www.ibm.com/docs/en/aix/7.3?topic=c-cp-command#cp__cp_flagr | cp -r}.
  *
- * If `src` is a directory it will copy everything inside of this directory,
- * not the entire directory itself. If `src` is a file, `dest` cannot be a
- * directory.
+ * Both `src` and `dest` must both be a file or directory.
  *
- * Requires the `--allow-read` and `--allow-write` flag.
+ * Requires `--allow-read` and `--allow-write` permissions.
+ *
+ * @see {@link https://docs.deno.com/runtime/manual/basics/permissions#file-system-access}
+ * for more information on Deno's permissions system.
  *
  * @param src The source file/directory path as a string or URL.
  * @param dest The destination file/directory path as a string or URL.
  * @param options Options for copying.
+ *
  * @returns A void value that returns once the copy operation completes.
  *
  * @example Basic usage

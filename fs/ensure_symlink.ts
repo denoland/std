@@ -17,18 +17,24 @@ function resolveSymlinkTarget(target: string | URL, linkName: string | URL) {
 }
 
 /**
- * Asynchronously ensures that the link exists, and points to a valid file. If
- * the directory structure does not exist, it is created. If the link already
- * exists, it is not modified but error is thrown if it is not point to the
- * given target.
+ * Asynchronously ensures that the link exists, and points to a valid file.
  *
- * Requires the `--allow-read` and `--allow-write` flag.
+ * If the parent directories for the link do not exist, they are created. If the
+ * link already exists, and it is not modified, this function does nothing. If
+ * the link already exists, and it does not point to the given target, an error
+ * is thrown.
+ *
+ * Requires `--allow-read` and `--allow-write` permissions.
+ *
+ * @see {@link https://docs.deno.com/runtime/manual/basics/permissions#file-system-access}
+ * for more information on Deno's permissions system.
  *
  * @param target The source file path as a string or URL.
  * @param linkName The destination link path as a string or URL.
+ *
  * @returns A void promise that resolves once the link exists.
  *
- * @example
+ * @example Usage
  * ```ts
  * import { ensureSymlink } from "@std/fs/ensure-symlink";
  *
@@ -75,12 +81,17 @@ export async function ensureSymlink(
 }
 
 /**
- * Synchronously ensures that the link exists, and points to a valid file. If
- * the directory structure does not exist, it is created. If the link already
- * exists, it is not modified but error is thrown if it is not point to the
- * given target.
+ * Synchronously ensures that the link exists, and points to a valid file.
  *
- * Requires the `--allow-read` and `--allow-write` flag.
+ * If the parent directories for the link do not exist, they are created. If the
+ * link already exists, and it is not modified, this function does nothing. If
+ * the link already exists, and it does not point to the given target, an error
+ * is thrown.
+ *
+ * Requires `--allow-read` and `--allow-write` permissions.
+ *
+ * @see {@link https://docs.deno.com/runtime/manual/basics/permissions#file-system-access}
+ * for more information on Deno's permissions system.
  *
  * @param target The source file path as a string or URL.
  * @param linkName The destination link path as a string or URL.

@@ -81,18 +81,24 @@ function comparePath(a: WalkEntry, b: WalkEntry): number {
 
 /**
  * Returns an async iterator that yields each file path matching the given glob
- * pattern. The file paths are relative to the provided `root` directory.
- * If `root` is not provided, the current working directory is used.
- * The `root` directory is not included in the yielded file paths.
+ * pattern.
  *
- * Requires the `--allow-read` flag.
+ * The file paths are relative to the provided `root` directory. If `root` is
+ * not provided, the current working directory is used. The `root` directory is
+ * not included in the yielded file paths.
+ *
+ * Requires `--allow-read` permission.
+ *
+ * @see {@link https://docs.deno.com/runtime/manual/basics/permissions#file-system-access}
+ * for more information on Deno's permissions system.
  *
  * @param glob The glob pattern to expand.
  * @param options Additional options for the expansion.
+ *
  * @returns An async iterator that yields each walk entry matching the glob
  * pattern.
  *
- * @example Basic usage
+ * @example Usage
  *
  * File structure:
  * ```
@@ -246,11 +252,15 @@ export async function* expandGlob(
  *
  * Requires the `--allow-read` flag.
  *
+ * @see {@link https://docs.deno.com/runtime/manual/basics/permissions#file-system-access}
+ * for more information on Deno's permissions system.
+ *
  * @param glob The glob pattern to expand.
  * @param options Additional options for the expansion.
+ *
  * @returns An iterator that yields each walk entry matching the glob pattern.
  *
- * @example Basic usage
+ * @example Usage
  *
  * File structure:
  * ```
