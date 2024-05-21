@@ -3,6 +3,19 @@
 
 /**
  * This module contains functions to escape strings for use in regular expressions.
+ *
+ * @example
+ * ```ts
+ * import { escape } from "@std/regexp/escape";
+ * import { assertEquals, assertMatch, assertNotMatch } from "@std/assert";
+ *
+ * const re = new RegExp(`^${escape(".")}$`, "u");
+ *
+ * assertEquals("^\\.$", re.source);
+ * assertMatch(".", re);
+ * assertNotMatch("a", re);
+ * ```
+ *
  * @module
  */
 
@@ -32,7 +45,7 @@ const reservedCharMap = {
   "&": "\\x26",
   "!": "\\x21",
   "#": "\\x23",
-  "$": "\\$",
+  $: "\\$",
   "%": "\\x25",
   "*": "\\*",
   "+": "\\+",
