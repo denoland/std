@@ -40,6 +40,7 @@ function _extract<T>(
  * @param str String to recognize.
  * @param formats A list of formats to recognize. Defaults to all supported formats.
  *
+ * @example
  * ```ts
  * import { recognize } from "@std/front-matter";
  * import { assertEquals } from "@std/assert/assert-equals";
@@ -50,6 +51,7 @@ function _extract<T>(
  * assertEquals(recognize("---xml\n<title>Three dashes marks the spot</title>\n---\n"), "unknown");
  *
  * assertEquals(recognize("---json\n<title>Three dashes marks the spot</title>\n---\n", ["yaml"]), "unknown");
+ * ```
  */
 function recognize(str: string, formats?: Format[]): Format {
   if (!formats) {
