@@ -2,6 +2,7 @@
 
 import { EXTRACT_REGEXP_MAP } from "./_formats.ts";
 
+/** Supported format for front matter. `"unknown"` is used when auto format detection logic fails. */
 export type Format = "yaml" | "toml" | "json" | "unknown";
 
 /**
