@@ -1,8 +1,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
 import { EXTRACT_REGEXP_MAP, RECOGNIZE_REGEXP_MAP } from "./_formats.ts";
-
-type Format = "yaml" | "toml" | "json" | "unknown";
+import type { Format } from "./test.ts";
 
 /** Return type for {@linkcode Extractor}. */
 export type Extract<T> = {
@@ -162,7 +161,7 @@ function recognize(str: string, formats?: Format[]): Format {
  * ```
  */
 export function createExtractor(
-  formats: Partial<Record<"yaml" | "toml" | "json" | "unknown", Parser>>,
+  formats: Partial<Record<Format, Parser>>,
 ): Extractor {
   const formatKeys = Object.keys(formats) as Format[];
 
