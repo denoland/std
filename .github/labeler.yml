@@ -22,7 +22,7 @@ crypto:
 csv:
   - changed-files:
     - any-glob-to-any-file: csv/**
-data_structures:
+data-structures:
   - changed-files:
     - any-glob-to-any-file: data_structures/**
 datetime:
@@ -40,7 +40,7 @@ expect:
 fmt:
   - changed-files:
     - any-glob-to-any-file: fmt/**
-front_matter:
+front-matter:
   - changed-files:
     - any-glob-to-any-file: front_matter/**
 fs:
@@ -55,6 +55,9 @@ http:
 ini:
   - changed-files:
     - any-glob-to-any-file: ini/**
+internal:
+  - changed-files:
+    - any-glob-to-any-file: internal/**
 io:
   - changed-files:
     - any-glob-to-any-file: io/**
@@ -67,7 +70,7 @@ jsonc:
 log:
   - changed-files:
     - any-glob-to-any-file: log/**
-media_types:
+media-types:
   - changed-files:
     - any-glob-to-any-file: media_types/**
 msgpack:
@@ -85,9 +88,6 @@ regexp:
 semver:
   - changed-files:
     - any-glob-to-any-file: semver/**
-signal:
-  - changed-files:
-    - any-glob-to-any-file: signal/**
 streams:
   - changed-files:
     - any-glob-to-any-file: streams/**
@@ -109,6 +109,9 @@ url:
 uuid:
   - changed-files:
     - any-glob-to-any-file: uuid/**
+webgpu:
+  - changed-files:
+    - any-glob-to-any-file: webgpu/**
 yaml:
   - changed-files:
     - any-glob-to-any-file: yaml/**
