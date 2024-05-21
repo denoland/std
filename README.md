@@ -72,6 +72,9 @@ the current schedule:
 - [ ] [`@std/collections`](https://jsr.io/@std/collections) is being stabilized
       on June 20, 2024
       ([#4773](https://github.com/denoland/deno_std/pull/4773)).
+- [ ] [`@std/media-types`](https://jsr.io/@std/media-types) is being stabilized
+      on June 21, 2024
+      ([#4780](https://github.com/denoland/deno_std/pull/4780)).
 
 Each package must go through the following steps to achieve stabilization:
 
