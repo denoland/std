@@ -37,8 +37,8 @@
  * @module
  */
 export * from "./build_message.ts";
-export { diff } from "./diff.ts";
-export { diffStr } from "./diff_str.ts";
+export * from "./diff.ts";
+export * from "./diff_str.ts";
 export * from "./format.ts";
 export * from "./styles.ts";
 export * from "./types.ts";

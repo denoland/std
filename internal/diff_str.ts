@@ -10,8 +10,16 @@ import { diff } from "./diff.ts";
  * @param string String to unescape.
  *
  * @returns Unescaped string.
+ *
+ * @example Usage
+ * ```ts
+ * import { unescape } from "@std/internal/diff-str";
+ * import { assertEquals } from "@std/assert/assert-equals";
+ *
+ * assertEquals(unescape("Hello\nWorld"), "Hello\\n\nWorld");
+ * ```
  */
-function unescape(string: string): string {
+export function unescape(string: string): string {
   return string
     .replaceAll("\b", "\\b")
     .replaceAll("\f", "\\f")
@@ -33,13 +41,20 @@ const WHITESPACE_SYMBOLS = /([^\S\r\n]+|[()[\]{}'"\r\n]|\b)/;
  * @param wordDiff If true, performs word-based tokenization. Default is false.
  *
  * @returns An array of tokens.
+ *
+ * @example Usage
+ * ```ts
+ * import { tokenize } from "@std/internal/diff-str";
+ * import { assertEquals } from "@std/assert/assert-equals";
+ *
+ * assertEquals(tokenize("Hello\nWorld"), ["Hello\n", "World"]);
+ * ```
  */
-function tokenize(string: string, wordDiff = false): string[] {
+export function tokenize(string: string, wordDiff = false): string[] {
   if (wordDiff) {
-    const tokens = string
+    return string
       .split(WHITESPACE_SYMBOLS)
       .filter((token) => token);
-    return tokens;
   }
   const tokens: string[] = [];
   const lines = string.split(/(\n|\r\n)/).filter((line) => line);
@@ -62,8 +77,24 @@ function tokenize(string: string, wordDiff = false): string[] {
  * @param tokens Word-diff tokens
  *
  * @returns Array of diff results.
+ *
+ * @example Usage
+ * ```ts
+ * import { createDetails } from "@std/internal/diff-str";
+ * import { assertEquals } from "@std/assert/assert-equals";
+ *
+ * const tokens = [
+ *   { type: "added", value: "a" },
+ *   { type: "removed", value: "b" },
+ *   { type: "common", value: "c" },
+ * ] as const;
+ * assertEquals(
+ *   createDetails({ type: "added", value: "a" }, [...tokens]),
+ *   [{ type: "added", value: "a" }, { type: "common", value: "c" }]
+ * );
+ * ```
  */
-function createDetails(
+export function createDetails(
   line: DiffResult<string>,
   tokens: DiffResult<string>[],
 ): DiffResult<string>[] {
@@ -169,10 +200,3 @@ export function diffStr(A: string, B: string): DiffResult<string>[] {
 
   return diffResult;
 }
-
-/** Used internally for testing */
-export const _internals = {
-  createDetails,
-  tokenize,
-  unescape,
-};

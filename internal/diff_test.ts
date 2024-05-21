@@ -1,9 +1,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import { _internals, diff } from "./diff.ts";
+import { assertFp, backTrace, createCommon, createFp, diff } from "./diff.ts";
 import { assertEquals, assertThrows } from "@std/assert";
-
-const { assertFp, backTrace, createCommon, createFp } = _internals;
 
 Deno.test({
   name: "diff() with empty values",

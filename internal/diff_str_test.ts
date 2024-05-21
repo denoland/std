@@ -1,9 +1,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import { _internals, diffStr } from "./diff_str.ts";
+import { createDetails, diffStr, tokenize, unescape } from "./diff_str.ts";
 import { assertEquals } from "@std/assert/assert-equals";
-
-const { createDetails, tokenize, unescape } = _internals;
 
 Deno.test({
   name: 'diff() "a" vs "b" (diffstr)',
@@ -297,6 +295,7 @@ Deno.test({
 Deno.test({
   name: "unescape()",
   fn() {
+    assertEquals(unescape("Hello\nWorld"), "Hello\\n\nWorld");
     assertEquals(unescape("a\b"), "a\\b");
     assertEquals(unescape("a\f"), "a\\f");
     assertEquals(unescape("a\t"), "a\\t");
