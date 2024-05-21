@@ -185,10 +185,6 @@ export class IniMap {
     return size;
   }
 
-  get formatting(): Formatting {
-    return this.#formatting;
-  }
-
   /** Manage comments in the INI. */
   get comments(): Comments {
     return this.#comments;
@@ -388,34 +384,23 @@ export class IniMap {
   }
 
   *#readTextLines(text: string): Generator<string> {
-    const lineBreak = "\r\n";
     const { length } = text;
-    let lineBreakLength = -1;
     let line = "";
 
     for (let i = 0; i < length; i += 1) {
       const char = text[i]!;
 
-      if (lineBreak.includes(char)) {
+      if (char === "\n" || char === "\r") {
         yield line;
         line = "";
-        if (lineBreakLength === -1) {
-          const ahead = text[i + 1];
-          if (
-            ahead !== undefined && ahead !== char && lineBreak.includes(ahead)
-          ) {
-            if (!this.#formatting.lineBreak) {
-              this.#formatting.lineBreak = char + ahead;
-            }
-            lineBreakLength = 1;
-          } else {
-            if (!this.#formatting.lineBreak) {
-              this.#formatting.lineBreak = char;
-            }
-            lineBreakLength = 0;
+        if (char === "\r" && text[i + 1] === "\n") {
+          i++;
+          if (!this.#formatting.lineBreak) {
+            this.#formatting.lineBreak = "\r\n";
           }
+        } else if (!this.#formatting.lineBreak) {
+          this.#formatting.lineBreak = char;
         }
-        i += lineBreakLength;
       } else {
         line += char;
       }
