@@ -26,7 +26,8 @@ const ENTRY_POINTS = [
   "../media_types/mod.ts",
 ] as const;
 
-const MD_SNIPPET = /(?<=```ts\n)(\n|.)*(?=\n```)/g;
+const TS_SNIPPET = /```ts[\s\S]*?```/g;
+const NEWLINE = "\n";
 
 class DocumentError extends Error {
   constructor(message: string, document: DocNodeBase) {
@@ -99,14 +100,17 @@ function assertHasExampleTag(document: DocNodeWithJsDoc) {
       "@example tag must have a description",
       document,
     );
-    const snippets = tag.doc.match(MD_SNIPPET);
+    const snippets = tag.doc.match(TS_SNIPPET);
     if (snippets === null) {
       throw new DocumentError(
-        "@example tag must have a code snippet",
+        "@example tag must have a TypeScript code snippet",
         document,
       );
     }
-    for (const snippet of snippets) {
+    for (let snippet of snippets) {
+      if (snippet.split(NEWLINE)[0]?.includes("no-eval")) continue;
+      // Trim the code block delimiters
+      snippet = snippet.split(NEWLINE).slice(1, -1).join(NEWLINE);
       const command = new Deno.Command(Deno.execPath(), {
         args: [
           "eval",
