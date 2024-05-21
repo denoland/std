@@ -27,6 +27,8 @@ export type PromptSecretOptions = {
  * Shows the given message and waits for the user's input. Returns the user's input as string.
  * This is similar to `prompt()` but it print user's input as `*` to prevent password from being shown.
  * Use an empty `mask` if you don't want to show any character.
+ *
+ * @returns The string that was entered or `null` if stdin is not a TTY.
  */
 export function promptSecret(
   message = "Secret",
