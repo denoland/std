@@ -79,43 +79,84 @@ function recognize(str: string, formats?: Format[]): Format {
  * @param formats A descriptor containing Format-parser pairs to use for each format.
  * @returns A function that extracts front matter from a string with the given parsers.
  *
+ * @example
  * ```ts
  * import { createExtractor, Parser } from "@std/front-matter";
  * import { assertEquals } from "@std/assert/assert-equals";
  * import { parse as parseYAML } from "@std/yaml/parse";
- * import { parse as parseTOML } from "@std/toml/parse";
- * const extractYAML = createExtractor({ yaml: parseYAML as Parser });
- * const extractTOML = createExtractor({ toml: parseTOML as Parser });
- * const extractJSON = createExtractor({ json: JSON.parse as Parser });
- * const extractYAMLOrJSON = createExtractor({
- *     yaml: parseYAML as Parser,
- *     json: JSON.parse as Parser,
- * });
  *
- * let { attrs, body, frontMatter } = extractYAML<{ title: string }>("---\ntitle: Three dashes marks the spot\n---\nferret");
+ * const extractYAML = createExtractor({ yaml: parseYAML as Parser });
+ * const { attrs, body, frontMatter } = extractYAML<{ title: string }>(
+ * `---
+ * title: Three dashes marks the spot
+ * ---
+ * ferret`);
  * assertEquals(attrs.title, "Three dashes marks the spot");
  * assertEquals(body, "ferret");
  * assertEquals(frontMatter, "title: Three dashes marks the spot");
+ * ```
  *
- * ({ attrs, body, frontMatter } = extractTOML<{ title: string }>("---toml\ntitle = 'Three dashes followed by format marks the spot'\n---\n"));
+ * @example
+ * ```ts
+ * import { createExtractor, Parser } from "@std/front-matter";
+ * import { assertEquals } from "@std/assert/assert-equals";
+ * import { parse as parseTOML } from "@std/toml/parse";
+ *
+ * const extractTOML = createExtractor({ toml: parseTOML as Parser });
+ * const { attrs, body, frontMatter } = extractTOML<{ title: string }>(
+ * `---toml
+ * title = 'Three dashes followed by format marks the spot'
+ * ---
+ * `);
  * assertEquals(attrs.title, "Three dashes followed by format marks the spot");
  * assertEquals(body, "");
  * assertEquals(frontMatter, "title = 'Three dashes followed by format marks the spot'");
+ * ```
  *
- * ({ attrs, body, frontMatter } = extractJSON<{ title: string }>("---json\n{\"title\": \"Three dashes followed by format marks the spot\"}\n---\ngoat"));
+ * @example
+ * ```ts
+ * import { createExtractor, Parser } from "@std/front-matter";
+ * import { assertEquals } from "@std/assert/assert-equals";
+ *
+ * const extractJSON = createExtractor({ json: JSON.parse as Parser });
+ * const { attrs, body, frontMatter } = extractJSON<{ title: string }>(
+ * `---json
+ * {"title": "Three dashes followed by format marks the spot"}
+ * ---
+ * goat`);
  * assertEquals(attrs.title, "Three dashes followed by format marks the spot");
  * assertEquals(body, "goat");
- * assertEquals(frontMatter, "{\"title\": \"Three dashes followed by format marks the spot\"}");
+ * assertEquals(frontMatter, `{"title": "Three dashes followed by format marks the spot"}`);
+ * ```
  *
- * ({ attrs, body, frontMatter } = extractYAMLOrJSON<{ title: string }>("---\ntitle: Three dashes marks the spot\n---\nferret"));
+ * @example
+ * ```ts
+ * import { createExtractor, Parser } from "@std/front-matter";
+ * import { assertEquals } from "@std/assert/assert-equals";
+ * import { parse as parseYAML } from "@std/yaml/parse";
+ *
+ * const extractYAMLOrJSON = createExtractor({
+ *   yaml: parseYAML as Parser,
+ *   json: JSON.parse as Parser,
+ * });
+ *
+ * let { attrs, body, frontMatter } = extractYAMLOrJSON<{ title: string }>(
+ * `---
+ * title: Three dashes marks the spot
+ * ---
+ * ferret`);
  * assertEquals(attrs.title, "Three dashes marks the spot");
  * assertEquals(body, "ferret");
  * assertEquals(frontMatter, "title: Three dashes marks the spot");
  *
- * ({ attrs, body, frontMatter } = extractYAMLOrJSON<{ title: string }>("---json\n{\"title\": \"Three dashes followed by format marks the spot\"}\n---\ngoat"));
+ * ({ attrs, body, frontMatter } = extractYAMLOrJSON<{ title: string }>(
+ * `---json
+ * {"title": "Three dashes followed by format marks the spot"}
+ * ---
+ * goat`));
  * assertEquals(attrs.title, "Three dashes followed by format marks the spot");
  * assertEquals(body, "goat");
- * assertEquals(frontMatter, "{\"title\": \"Three dashes followed by format marks the spot\"}");
+ * assertEquals(frontMatter, `{"title": "Three dashes followed by format marks the spot"}`);
  * ```
  */
 export function createExtractor(
