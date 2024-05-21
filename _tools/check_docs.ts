@@ -13,7 +13,7 @@ import {
   doc,
   type DocNodeBase,
   type DocNodeFunction,
-  type JsDocTag,
+  type DocNodeVariable,
   type JsDocTagDocRequired,
 } from "@deno/doc";
 
@@ -46,6 +46,10 @@ function assert(
   }
 }
 
+function isExported(document: DocNodeBase) {
+  return document.declarationKind === "export";
+}
+
 /**
  * We only check functions that have JSDocs. We know that exported functions
  * have JSDocs thanks to `deno doc --lint`, which is used in the `lint:docs`
@@ -55,12 +59,12 @@ function isFunctionDoc(document: DocNodeBase): document is DocNodeFunction {
   return document.kind === "function" && document.jsDoc !== undefined;
 }
 
-function isExported(document: DocNodeBase) {
-  return document.declarationKind === "export";
+function isVariableDoc(document: DocNodeBase): document is DocNodeVariable {
+  return document.kind === "variable" && document.jsDoc !== undefined;
 }
 
-function assertHasTag(tags: JsDocTag[], kind: string, document: DocNodeBase) {
-  const tag = tags.find((tag) => tag.kind === kind);
+function assertHasTag(document: DocNodeBase, kind: string) {
+  const tag = document.jsDoc!.tags?.find((tag) => tag.kind === kind);
   assert(tag !== undefined, `Symbol must have a @${kind} tag`, document);
   assert(
     // @ts-ignore doc is defined
@@ -71,11 +75,12 @@ function assertHasTag(tags: JsDocTag[], kind: string, document: DocNodeBase) {
 }
 
 function assertHasParamTag(
-  tags: JsDocTag[],
-  param: string,
   document: DocNodeBase,
+  param: string,
 ) {
-  const tag = tags.find((tag) => tag.kind === "param" && tag.name === param);
+  const tag = document.jsDoc!.tags?.find((tag) =>
+    tag.kind === "param" && tag.name === param
+  );
   assert(
     tag !== undefined,
     `Symbol must have a @param tag for ${param}`,
@@ -89,9 +94,9 @@ function assertHasParamTag(
   );
 }
 
-function assertHasExampleTag(tags: JsDocTag[], document: DocNodeBase) {
-  tags = tags.filter((tag) => tag.kind === "example");
-  if (tags.length === 0) {
+function assertHasExampleTag(document: DocNodeBase) {
+  const tags = document.jsDoc?.tags?.filter((tag) => tag.kind === "example");
+  if (tags === undefined || tags.length === 0) {
     throw new DocumentError("Symbol must have an @example tag", document);
   }
   for (const tag of (tags as JsDocTagDocRequired[])) {
@@ -130,11 +135,10 @@ function assertHasExampleTag(tags: JsDocTag[], document: DocNodeBase) {
 }
 
 function assertHasTypeParamTags(
-  tags: JsDocTag[],
-  typeParamName: string,
   document: DocNodeBase,
+  typeParamName: string,
 ) {
-  const tag = tags.find((tag) =>
+  const tag = document.jsDoc!.tags?.find((tag) =>
     tag.kind === "template" && tag.name === typeParamName
   );
   assert(
@@ -151,27 +155,24 @@ function assertHasTypeParamTags(
 }
 
 function assertFunctionDocs(document: DocNodeFunction) {
-  assert(
-    document.jsDoc !== undefined,
-    "Symbol must have a JSDoc block",
-    document,
-  );
-  const { tags } = document.jsDoc;
-  assert(tags !== undefined, "JSDoc block must have tags", document);
   for (const param of document.functionDef.params) {
     if (param.kind === "identifier") {
-      assertHasParamTag(tags, param.name, document);
+      assertHasParamTag(document, param.name);
     }
     if (param.kind === "assign") {
       // @ts-ignore Trust me
-      assertHasParamTag(tags, param.left.name, document);
+      assertHasParamTag(document, param.left.name);
     }
   }
   for (const typeParam of document.functionDef.typeParams) {
-    assertHasTypeParamTags(tags, typeParam.name, document);
+    assertHasTypeParamTags(document, typeParam.name);
   }
-  assertHasTag(tags, "return", document);
-  assertHasExampleTag(tags, document);
+  assertHasTag(document, "return");
+  assertHasExampleTag(document);
+}
+
+function assertVariableDocs(document: DocNodeVariable) {
+  assertHasExampleTag(document);
 }
 
 async function checkDocs(specifier: string) {
@@ -179,6 +180,9 @@ async function checkDocs(specifier: string) {
   for (const document of docs.filter(isExported)) {
     if (isFunctionDoc(document)) {
       assertFunctionDocs(document);
+    }
+    if (isVariableDoc(document)) {
+      assertVariableDocs(document);
     }
   }
 }
