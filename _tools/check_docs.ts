@@ -24,6 +24,7 @@ const ENTRY_POINTS = [
   "../collections/mod.ts",
   "../internal/mod.ts",
   "../media_types/mod.ts",
+  "../toml/mod.ts",
 ] as const;
 
 const TS_SNIPPET = /```ts[\s\S]*?```/g;
