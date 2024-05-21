@@ -16,30 +16,35 @@ export type Format = "yaml" | "toml" | "json" | "unknown";
  * @example
  * ```ts
  * import { test } from "@std/front-matter/test";
+ * import { assert } from "@std/assert/assert";
  *
- * test(
+ * const yamlValid = test(
  * `---
  * title: Three dashes marks the spot
  * ---
- * `); // true
+ * `);
+ * assert(yamlValid);
  *
- * test(
+ * const tomlValid = test(
  * `---toml
  * title = 'Three dashes followed by format marks the spot'
  * ---
- * `); // true
+ * `);
+ * assert(tomlValid);
  *
- * test(
+ * const jsonValid = test(
  * `---json
  * {"title": "Three dashes followed by format marks the spot"}
  * ---
- * `); // true
+ * `);
+ * assert(jsonValid);
  *
- * test(
+ * const parseJsonFrontMatterWithYamlFormat = test(
  * `---json
  * {"title": "Three dashes followed by format marks the spot"}
  * ---
- * `, ["yaml"]); // false
+ * `, ["yaml"]);
+ * assert(!parseJsonFrontMatterWithYamlFormat);
  * ```
  */
 export function test(
