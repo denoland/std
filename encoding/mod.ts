@@ -9,8 +9,9 @@
  * import { encodeBase64, decodeBase64 } from "@std/encoding";
  * import { assertEquals } from "@std/assert/assert-equals";
  *
- * assertEquals(encodeBase64("foobar"), "Zm9vYmFy");
- * assertEquals(decodeBase64("Zm9vYmFy"), "foobar");
+ * const foobar = new TextEncoder().encode("foobar");
+ * assertEquals(encodeBase64(foobar), "Zm9vYmFy");
+ * assertEquals(decodeBase64("Zm9vYmFy"), foobar);
  * ```
  *
  * @module
