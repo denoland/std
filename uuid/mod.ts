@@ -12,8 +12,8 @@
  *
  * This module is browser compatible.
  *
- * @example
- * ```js
+ * @example Usage
+ * ```ts
  * import { generate } from "@std/uuid/v5";
  *
  * const NAMESPACE_URL = "6ba7b811-9dad-11d1-80b4-00c04fd430c8";
