@@ -2,7 +2,9 @@
 // Copyright 2020 Keith Cirkel. All rights reserved. MIT license.
 // Copyright 2023 Skye "MierenManz". All rights reserved. MIT license.
 /**
- * Functions for encoding typed integers in array buffers.
+ * Utilities for {@link https://protobuf.dev/programming-guides/encoding/#varints VarInt} encoding
+ * of typed integers. VarInt encoding represents integers using a variable number of bytes, with
+ * smaller values requiring fewer bytes.
  *
  * ```ts
  * import { encode, decode } from "@std/encoding/varint";
@@ -20,8 +22,19 @@
 // This implementation is a port of https://deno.land/x/varint@v2.0.0 by @keithamus
 // This module is browser compatible.
 
+/**
+ * The maximum value of an unsigned 64-bit integer.
+ * Equivalent to `2n**64n - 1n`
+ */
 export const MaxUInt64 = 18446744073709551615n;
+
+/**
+ * The maximum length, in bytes, of a VarInt encoded 64-bit integer.
+ */
 export const MaxVarIntLen64 = 10;
+/**
+ * The maximum length, in bytes, of a VarInt encoded 32-bit integer.
+ */
 export const MaxVarIntLen32 = 5;
 
 const MSB = 0x80;
