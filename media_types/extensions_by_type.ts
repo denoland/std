@@ -4,8 +4,6 @@
 import { parseMediaType } from "./parse_media_type.ts";
 import { extensions } from "./_db.ts";
 
-export { extensions };
-
 /**
  * Returns the extensions known to be associated with the media type `type`, or
  * `undefined` if no extensions are found.
