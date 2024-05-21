@@ -4,7 +4,7 @@
  * This script checks that all public symbols documentation aligns with the
  * {@link ./CONTRIBUTING.md#documentation | documentation guidelines}.
  *
- * TODO(iuioiua): Add support for classes and methods.
+ * TODO(lucacasonato): Add support for variables, interfaces, namespaces, and type aliases.
  */
 import {
   type ClassConstructorDef,
