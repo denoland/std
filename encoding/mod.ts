@@ -6,6 +6,7 @@ export * from "./base58.ts";
 export * from "./base64.ts";
 export * from "./base64url.ts";
 export * from "./hex.ts";
+// TODO: change to * after varint decode/encode functions are removed
 export {
   decodeVarint,
   decodeVarint32,
