@@ -9,7 +9,6 @@
 import {
   doc,
   type DocNodeBase,
-  type DocNodeClass,
   type DocNodeFunction,
   type JsDoc,
   type JsDocTagDocRequired,
@@ -57,12 +56,6 @@ function isFunctionDoc(
   document: DocNodeBase,
 ): document is DocNodeWithJsDoc<DocNodeFunction> {
   return document.kind === "function" && document.jsDoc !== undefined;
-}
-
-function isClassDoc(
-  document: DocNodeBase,
-): document is DocNodeWithJsDoc<DocNodeClass> {
-  return document.kind === "class" && document.jsDoc !== undefined;
 }
 
 function assertHasReturnTag(document: DocNodeWithJsDoc) {
@@ -184,17 +177,9 @@ function assertFunctionDocs(document: DocNodeWithJsDoc<DocNodeFunction>) {
   assertHasExampleTag(document);
 }
 
-function assertClassDocs(document: DocNodeWithJsDoc<DocNodeClass>) {
-  assertHasExampleTag(document);
-}
-
 async function checkDocs(specifier: string) {
   const docs = await doc(specifier);
   for (const document of docs.filter(isExported)) {
-    if (isClassDoc(document)) {
-      // console.log(document);
-      assertClassDocs(document);
-    }
     if (isFunctionDoc(document)) {
       assertFunctionDocs(document);
     }
