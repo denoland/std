@@ -30,8 +30,8 @@ import { assert } from "@std/assert/assert";
  *
  * assert(timingSafeEqual(a, b));
  * ```
- * @param a - actual buffer
- * @param b - expected buffer
+ * @param a The actual buffer
+ * @param b The expected buffer
  * @returns `true` if buffers are equal, `false` otherwise
  */
 export function timingSafeEqual(
