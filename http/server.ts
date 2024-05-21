@@ -64,6 +64,21 @@ export interface ServerInit extends Partial<Deno.ListenOptions> {
  * Used to construct an HTTP server.
  *
  * @deprecated This will be removed in 1.0.0. Use {@linkcode Deno.serve} instead.
+ * @example
+ * ```ts
+ * import { Server } from "@std/http/server";
+ *
+ * const port = 4505;
+ * const handler = (request: Request) => {
+ *   const body = `Your user-agent is:\n\n${request.headers.get(
+ *    "user-agent",
+ *   ) ?? "Unknown"}`;
+ *
+ *   return new Response(body, { status: 200 });
+ * };
+ *
+ * const server = new Server({ port, handler });
+ * ```
  */
 export class Server {
   #port?: number;
@@ -78,7 +93,8 @@ export class Server {
   /**
    * Constructs a new HTTP Server instance.
    *
-   * ```ts
+   * @example
+   * ```ts, no-eval
    * import { Server } from "@std/http/server";
    *
    * const port = 4505;
@@ -117,7 +133,8 @@ export class Server {
    *
    * Will always close the created listener.
    *
-   * ```ts
+   * @example
+   * ```ts, no-eval
    * import { Server } from "@std/http/server";
    *
    * const handler = (request: Request) => {
@@ -169,7 +186,8 @@ export class Server {
    *
    * Throws a server closed error if the server has been closed.
    *
-   * ```ts
+   * @example
+   * ```ts, no-eval
    * import { Server } from "@std/http/server";
    *
    * const port = 4505;
@@ -213,7 +231,8 @@ export class Server {
    *
    * Throws a server closed error if the server has been closed.
    *
-   * ```ts
+   * @example
+   * ```ts, no-eval
    * import { Server } from "@std/http/server";
    *
    * const port = 4505;
@@ -260,6 +279,30 @@ export class Server {
    * Immediately close the server listeners and associated HTTP connections.
    *
    * Throws a server closed error if called after the server has been closed.
+   *
+   * @example
+   * ```ts
+   * import { Server } from "@std/http/server";
+   *
+   * const handler = (request: Request) => {
+   *   const body = `Your user-agent is:\n\n${request.headers.get(
+   *    "user-agent",
+   *   ) ?? "Unknown"}`;
+   *
+   *   return new Response(body, { status: 200 });
+   * };
+   *
+   * const server = new Server({ handler });
+   * const listener = Deno.listen({ port: 4505 });
+   *
+   * console.log("server listening on http://localhost:4505");
+   *
+   * const serve = server.serve(listener);
+   * setTimeout(() => {
+   *   server.close();
+   * }, 1000);
+   * await serve;
+   * ```
    */
   close() {
     if (this.#closed) {
@@ -287,12 +330,69 @@ export class Server {
     this.#httpConnections.clear();
   }
 
-  /** Get whether the server is closed. */
+  /**
+   * Get whether the server is closed.
+   *
+   * @example
+   * ```ts
+   * import { Server } from "@std/http/server";
+   *
+   * const handler = (request: Request) => {
+   *   const body = `Your user-agent is:\n\n${request.headers.get(
+   *    "user-agent",
+   *   ) ?? "Unknown"}`;
+   *
+   *   return new Response(body, { status: 200 });
+   * };
+   *
+   * const server = new Server({ handler });
+   * const listener = Deno.listen({ port: 4505 });
+   *
+   * console.log("server listening on http://localhost:4505");
+   *
+   * const serve = server.serve(listener);
+   * setTimeout(() => {
+   *   server.close();
+   * }, 1000);
+   * await serve;
+   * console.log(server.closed); // returns true
+   * ```
+   *
+   * @returns Whether its closed or not.
+   */
   get closed(): boolean {
     return this.#closed;
   }
 
-  /** Get the list of network addresses the server is listening on. */
+  /**
+   * Get the list of network addresses the server is listening on.
+   *
+   * @example
+   * ```tsm no-eval
+   * import { Server } from "@std/http/server";
+   *
+   * const handler = (request: Request) => {
+   *   const body = `Your user-agent is:\n\n${request.headers.get(
+   *    "user-agent",
+   *   ) ?? "Unknown"}`;
+   *
+   *   return new Response(body, { status: 200 });
+   * };
+   *
+   * const server = new Server({ handler });
+   * const listener = Deno.listen({ port: 4505 });
+   *
+   * console.log("server listening on http://localhost:4505");
+   *
+   * const serve = server.serve(listener);
+   * setTimeout(() => {
+   *   console.log(server.addrs);
+   * }, 1000);
+   * await serve;
+   * ```
+   *
+   * @returns List of addresses.
+   */
   get addrs(): Deno.Addr[] {
     return Array.from(this.#listeners).map((listener) => listener.addr);
   }
@@ -534,7 +634,8 @@ export interface ServeListenerOptions {
  * Constructs a server, accepts incoming connections on the given listener, and
  * handles requests on these connections with the given handler.
  *
- * ```ts
+ * @example
+ * ```ts, no-eval
  * import { serveListener } from "@std/http/server";
  *
  * const listener = Deno.listen({ port: 4505 });
@@ -583,26 +684,25 @@ function hostnameForDisplay(hostname: string) {
  * You can specify an object with a port and hostname option, which is the
  * address to listen on. The default is port 8000 on hostname "0.0.0.0".
  *
- * The below example serves with the port 8000.
- *
- * ```ts
+ * @example The below example serves with the port 8000.
+ * ```ts, no-eval
  * import { serve } from "@std/http/server";
  * serve((_req) => new Response("Hello, world"));
  * ```
  *
- * You can change the listening address by the `hostname` and `port` options.
+ * @example You can change the listening address by the `hostname` and `port` options.
  * The below example serves with the port 3000.
  *
- * ```ts
+ * ```ts, no-eval
  * import { serve } from "@std/http/server";
  * serve((_req) => new Response("Hello, world"), { port: 3000 });
  * ```
  *
- * `serve` function prints the message `Listening on http://<hostname>:<port>/`
+ * @example `serve` function prints the message `Listening on http://<hostname>:<port>/`
  * on start-up by default. If you like to change this message, you can specify
  * `onListen` option to override it.
  *
- * ```ts
+ * ```ts, no-eval
  * import { serve } from "@std/http/server";
  * serve((_req) => new Response("Hello, world"), {
  *   onListen({ port, hostname }) {
@@ -612,9 +712,9 @@ function hostnameForDisplay(hostname: string) {
  * });
  * ```
  *
- * You can also specify `undefined` or `null` to stop the logging behavior.
+ * @example You can also specify `undefined` or `null` to stop the logging behavior.
  *
- * ```ts
+ * ```ts, no-eval
  * import { serve } from "@std/http/server";
  * serve((_req) => new Response("Hello, world"), { onListen: undefined });
  * ```
@@ -691,9 +791,9 @@ export interface ServeTlsInit extends ServeInit {
  * You can specify an object with a port and hostname option, which is the
  * address to listen on. The default is port 8443 on hostname "0.0.0.0".
  *
- * The below example serves with the default port 8443.
+ * @example The below example serves with the default port 8443.
  *
- * ```ts
+ * ```ts, no-eval
  * import { serveTls } from "@std/http/server";
  *
  * const cert = "-----BEGIN CERTIFICATE-----\n...\n-----END CERTIFICATE-----\n";
@@ -707,11 +807,11 @@ export interface ServeTlsInit extends ServeInit {
  * serveTls((_req) => new Response("Hello, world"), { certFile, keyFile });
  * ```
  *
- * `serveTls` function prints the message `Listening on https://<hostname>:<port>/`
+ * @example `serveTls` function prints the message `Listening on https://<hostname>:<port>/`
  * on start-up by default. If you like to change this message, you can specify
  * `onListen` option to override it.
  *
- * ```ts
+ * ```ts, no-eval
  * import { serveTls } from "@std/http/server";
  * const certFile = "/path/to/certFile.crt";
  * const keyFile = "/path/to/keyFile.key";
@@ -725,9 +825,9 @@ export interface ServeTlsInit extends ServeInit {
  * });
  * ```
  *
- * You can also specify `undefined` or `null` to stop the logging behavior.
+ * @example You can also specify `undefined` or `null` to stop the logging behavior.
  *
- * ```ts
+ * ```ts, no-eval
  * import { serveTls } from "@std/http/server";
  * const certFile = "/path/to/certFile.crt";
  * const keyFile = "/path/to/keyFile.key";

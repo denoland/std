@@ -313,45 +313,129 @@ export type ServerErrorStatus =
 /** An HTTP status that is an error (4XX and 5XX). */
 export type ErrorStatus = ClientErrorStatus | ServerErrorStatus;
 
-/** Returns whether the provided number is a valid HTTP status code. */
+/**
+ * Returns whether the provided number is a valid HTTP status code.
+ *
+ * @example
+ * ```ts
+ * import { isStatus } from "@std/http/status";
+ *
+ * console.log(isStatus(404)); // Returns true
+ * ```
+ *
+ * @param status The status to assert against.
+ * @returns Whether or not the provided status is a valid status code.
+ */
 export function isStatus(status: number): status is StatusCode {
   return Object.values(STATUS_CODE).includes(status as StatusCode);
 }
 
-/** A type guard that determines if the status code is informational. */
+/**
+ * A type guard that determines if the status code is informational.
+ *
+ * @example
+ * ```ts
+ * import { isInformationalStatus } from "@std/http/status";
+ *
+ * console.log(isInformationalStatus(404)); // Returns false
+ * ```
+ *
+ * @param status The status to assert against.
+ * @returns Whether or not the provided status is an informational status code.
+ */
 export function isInformationalStatus(
   status: number,
 ): status is InformationalStatus {
   return isStatus(status) && status >= 100 && status < 200;
 }
 
-/** A type guard that determines if the status code is successful. */
+/**
+ * A type guard that determines if the status code is successful.
+ *
+ * @example
+ * ```ts
+ * import { isSuccessfulStatus } from "@std/http/status";
+ *
+ * console.log(isSuccessfulStatus(404)); // Returns false
+ * ```
+ *
+ * @param status The status to assert against.
+ * @returns Whether or not the provided status is a successful status code.
+ */
 export function isSuccessfulStatus(
   status: number,
 ): status is SuccessfulStatus {
   return isStatus(status) && status >= 200 && status < 300;
 }
 
-/** A type guard that determines if the status code is a redirection. */
+/**
+ * A type guard that determines if the status code is a redirection.
+ *
+ * @example
+ * ```ts
+ * import { isRedirectStatus } from "@std/http/status";
+ *
+ * console.log(isRedirectStatus(302)); // Returns true
+ * ```
+ *
+ * @param status The status to assert against.
+ * @returns Whether or not the provided status is a redirect status code.
+ */
 export function isRedirectStatus(status: number): status is RedirectStatus {
   return isStatus(status) && status >= 300 && status < 400;
 }
 
-/** A type guard that determines if the status code is a client error. */
+/**
+ * A type guard that determines if the status code is a client error.
+ *
+ * @example
+ * ```ts
+ * import { isClientErrorStatus } from "@std/http/status";
+ *
+ * console.log(isClientErrorStatus(404)); // Returns true
+ * ```
+ *
+ * @param status The status to assert against.
+ * @returns Whether or not the provided status is a client error status code.
+ */
 export function isClientErrorStatus(
   status: number,
 ): status is ClientErrorStatus {
   return isStatus(status) && status >= 400 && status < 500;
 }
 
-/** A type guard that determines if the status code is a server error. */
+/**
+ * A type guard that determines if the status code is a server error.
+ *
+ * @example
+ * ```ts
+ * import { isServerErrorStatus } from "@std/http/status";
+ *
+ * console.log(isServerErrorStatus(502)); // Returns true
+ * ```
+ *
+ * @param status The status to assert against.
+ * @returns Whether or not the provided status is a server error status code.
+ */
 export function isServerErrorStatus(
   status: number,
 ): status is ServerErrorStatus {
   return isStatus(status) && status >= 500 && status < 600;
 }
 
-/** A type guard that determines if the status code is an error. */
+/**
+ * A type guard that determines if the status code is an error.
+ *
+ * @example
+ * ```ts
+ * import { isErrorStatus } from "@std/http/status";
+ *
+ * console.log(isErrorStatus(502)); // Returns true
+ * ```
+ *
+ * @param status The status to assert against.
+ * @returns Whether or not the provided status is an error status code.
+ */
 export function isErrorStatus(status: number): status is ErrorStatus {
   return isStatus(status) && status >= 400 && status < 600;
 }

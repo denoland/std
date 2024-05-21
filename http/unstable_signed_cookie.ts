@@ -35,6 +35,10 @@ function splitByLast(value: string, separator: string): [string, string] {
  *
  * const cookieHeader = headers.get("set-cookie");
  * ```
+ *
+ * @param value The cookie value to sign.
+ * @param key The cryptographic key to sign the cookie with.
+ * @returns The signed cookie.
  */
 export async function signCookie(
   value: string,
@@ -67,6 +71,10 @@ export async function signCookie(
  * if (signedCookie === undefined) throw new Error("Cookie not found");
  * await verifyCookie(signedCookie, key);
  * ```
+ *
+ * @param signedCookie The signed cookie to verify.
+ * @param key The cryptographic key to verify the cookie with.
+ * @returns Whether or not the cookie is valid.
  */
 export async function verifyCookie(
   signedCookie: string,
@@ -105,6 +113,9 @@ export async function verifyCookie(
  * await verifyCookie(signedCookie, key);
  * const cookie = parseSignedCookie(signedCookie);
  * ```
+ *
+ * @param signedCookie The signed cookie to parse the value from.
+ * @returns The parsed cookie.
  */
 export function parseSignedCookie(signedCookie: string): string {
   return splitByLast(signedCookie, ".")[0];

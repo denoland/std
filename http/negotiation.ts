@@ -44,6 +44,9 @@ export type Request = {
  * //   "*\/*",
  * // ]
  * ```
+ *
+ * @param request The request to get the acceptable media types for.
+ * @returns An array of acceptable media types.
  */
 export function accepts(request: Request): string[];
 /**
@@ -63,6 +66,10 @@ export function accepts(request: Request): string[];
  *
  * accepts(req, "text/html", "image/webp"); // "text/html";
  * ```
+ *
+ * @param request The request to get the acceptable media types for.
+ * @param types An array of media types to find the best matching one from.
+ * @returns The best matching media type, if any match.
  */
 export function accepts(
   request: Request,
@@ -95,6 +102,9 @@ export function accepts(
  *
  * acceptsEncodings(req); // ["deflate", "gzip", "*"]
  * ```
+ *
+ * @param request The request to get the acceptable content encodings for.
+ * @returns An array of content encodings this request accepts.
  */
 export function acceptsEncodings(request: Request): string[];
 /**
@@ -116,6 +126,10 @@ export function acceptsEncodings(request: Request): string[];
  *
  * acceptsEncodings(req, "gzip", "identity"); // "gzip"
  * ```
+ *
+ * @param request The request to get the acceptable content encodings for.
+ * @param encodings An array of encodings to find the best matching one from.
+ * @returns The best matching encoding, if any match.
  */
 export function acceptsEncodings(
   request: Request,
@@ -152,6 +166,9 @@ export function acceptsEncodings(
  *
  * acceptsLanguages(req); // ["fr-CH", "fr", "en", "de", "*"]
  * ```
+ *
+ * @param request The request to get the acceptable languages for.
+ * @returns An array of languages this request accepts.
  */
 export function acceptsLanguages(request: Request): string[];
 /**
@@ -170,6 +187,10 @@ export function acceptsLanguages(request: Request): string[];
  *
  * acceptsLanguages(req, "en-gb", "en-us", "en"); // "en"
  * ```
+ *
+ * @param request The request to get the acceptable language for.
+ * @param langs An array of languages to find the best matching one from.
+ * @returns The best matching language, if any match.
  */
 export function acceptsLanguages(
   request: Request,
