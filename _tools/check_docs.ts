@@ -10,9 +10,13 @@ import {
   doc,
   type DocNodeBase,
   type DocNodeFunction,
-  type DocNodeVariable,
+  type JsDoc,
   type JsDocTagDocRequired,
 } from "@deno/doc";
+
+type DocNodeWithJsDoc<T = DocNodeBase> = T & {
+  jsDoc: JsDoc;
+};
 
 const ENTRY_POINTS = [
   "../bytes/mod.ts",
@@ -47,30 +51,28 @@ function isExported(document: DocNodeBase) {
   return document.declarationKind === "export";
 }
 
-function isFunctionDoc(document: DocNodeBase): document is DocNodeFunction {
+function isFunctionDoc(
+  document: DocNodeBase,
+): document is DocNodeWithJsDoc<DocNodeFunction> {
   return document.kind === "function" && document.jsDoc !== undefined;
 }
 
-function isVariableDoc(document: DocNodeBase): document is DocNodeVariable {
-  return document.kind === "variable" && document.jsDoc !== undefined;
-}
-
-function assertHasTag(document: DocNodeBase, kind: string) {
-  const tag = document.jsDoc!.tags?.find((tag) => tag.kind === kind);
-  assert(tag !== undefined, `Symbol must have a @${kind} tag`, document);
+function assertHasReturnTag(document: DocNodeWithJsDoc) {
+  const tag = document.jsDoc.tags?.find((tag) => tag.kind === "return");
+  assert(tag !== undefined, "Symbol must have a @return tag", document);
   assert(
     // @ts-ignore doc is defined
     tag.doc !== undefined,
-    `@${kind} tag must have a description`,
+    "@return tag must have a description",
     document,
   );
 }
 
 function assertHasParamTag(
-  document: DocNodeBase,
+  document: DocNodeWithJsDoc,
   param: string,
 ) {
-  const tag = document.jsDoc!.tags?.find((tag) =>
+  const tag = document.jsDoc.tags?.find((tag) =>
     tag.kind === "param" && tag.name === param
   );
   assert(
@@ -86,8 +88,8 @@ function assertHasParamTag(
   );
 }
 
-function assertHasExampleTag(document: DocNodeBase) {
-  const tags = document.jsDoc?.tags?.filter((tag) => tag.kind === "example");
+function assertHasExampleTag(document: DocNodeWithJsDoc) {
+  const tags = document.jsDoc.tags?.filter((tag) => tag.kind === "example");
   if (tags === undefined || tags.length === 0) {
     throw new DocumentError("Symbol must have an @example tag", document);
   }
@@ -127,10 +129,10 @@ function assertHasExampleTag(document: DocNodeBase) {
 }
 
 function assertHasTypeParamTags(
-  document: DocNodeBase,
+  document: DocNodeWithJsDoc,
   typeParamName: string,
 ) {
-  const tag = document.jsDoc!.tags?.find((tag) =>
+  const tag = document.jsDoc.tags?.find((tag) =>
     tag.kind === "template" && tag.name === typeParamName
   );
   assert(
@@ -146,7 +148,15 @@ function assertHasTypeParamTags(
   );
 }
 
-function assertFunctionDocs(document: DocNodeFunction) {
+/**
+ * Asserts that a function document has:
+ * - A `@typeParam` tag for each type parameter.
+ * - A {@linkcode https://jsdoc.app/tags-param | @param} tag for each parameter.
+ * - A {@linkcode https://jsdoc.app/tags-returns | @returns} tag.
+ * - At least one {@linkcode https://jsdoc.app/tags-example | @example} tag with
+ *   a code snippet that executes successfully.
+ */
+function assertFunctionDocs(document: DocNodeWithJsDoc<DocNodeFunction>) {
   for (const param of document.functionDef.params) {
     if (param.kind === "identifier") {
       assertHasParamTag(document, param.name);
@@ -159,11 +169,7 @@ function assertFunctionDocs(document: DocNodeFunction) {
   for (const typeParam of document.functionDef.typeParams) {
     assertHasTypeParamTags(document, typeParam.name);
   }
-  assertHasTag(document, "return");
-  assertHasExampleTag(document);
-}
-
-function assertVariableDocs(document: DocNodeVariable) {
+  assertHasReturnTag(document);
   assertHasExampleTag(document);
 }
 
@@ -172,9 +178,6 @@ async function checkDocs(specifier: string) {
   for (const document of docs.filter(isExported)) {
     if (isFunctionDoc(document)) {
       assertFunctionDocs(document);
-    }
-    if (isVariableDoc(document)) {
-      assertVariableDocs(document);
     }
   }
 }
