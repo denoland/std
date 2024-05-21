@@ -1,9 +1,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import { assertEquals } from "@std/assert";
 import { bgGreen, bgRed, bold, gray, green, red, white } from "@std/fmt/colors";
-import { _internals, buildMessage } from "./build_message.ts";
-
-const { createColor, createSign } = _internals;
+import { buildMessage, createColor, createSign } from "./build_message.ts";
 
 Deno.test("buildMessage()", () => {
   const messages = [

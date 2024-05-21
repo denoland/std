@@ -88,7 +88,7 @@ export function assertFp(value: unknown): asserts value is FarthestPoint {
  *
  * @param A The first array.
  * @param B The second array.
- * @param current The current {@linkcode FarthestPoint}y.
+ * @param current The current {@linkcode FarthestPoint}.
  * @param swapped Boolean indicating if the arrays are swapped.
  * @param routes The routes array.
  * @param diffTypesPtrOffset The offset of the diff types in the routes array.
