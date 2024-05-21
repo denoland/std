@@ -342,6 +342,9 @@ export default class FS {
       this.write(path, data)
     }
   }
+  async isPidExists(pid: PID) {
+    return !!await this.#db.readHead(pid)
+  }
 }
 type Tree = {
   oid?: string

@@ -1,14 +1,15 @@
 import OpenAI from 'openai'
-import {
-  ENTRY_HELP_FILE,
-  HalActor,
-  HalBase,
-  HalSession,
-  init,
-} from '@/isolates/hal.ts'
+import { Api, ENTRY_HELP_FILE, init } from '@/isolates/hal.ts'
 import { init as githubInit } from '@/isolates/github.ts'
 import { expect, log } from '@utils'
-import { ArtifactSession, CradleMaker, print } from '@/constants.ts'
+import {
+  ArtifactSession,
+  CradleMaker,
+  getActorId,
+  PID,
+  print,
+} from '@/constants.ts'
+import { ulid } from 'ulid'
 type Messages = OpenAI.ChatCompletionMessageParam
 
 const combinedInit = async (session: ArtifactSession) => {
@@ -18,82 +19,76 @@ const combinedInit = async (session: ArtifactSession) => {
 export default (name: string, cradleMaker: CradleMaker) => {
   const prefix = name + ': '
 
-  Deno.test.only(prefix + 'login loop', async (t) => {
+  Deno.test(prefix + 'session management', async (t) => {
     const terminal = await cradleMaker(combinedInit)
-    const pid = await terminal.dns('dreamcatcher-tech/HAL')
+    const halPid = await terminal.dns('dreamcatcher-tech/HAL')
 
-    const halBase = await terminal.actions<HalBase>('hal', pid)
-    const actorAddress = await halBase.createActor()
-    log('actorAddress', print(actorAddress))
+    const session = createHalSessionPid(terminal.pid, halPid)
+    log('HAL session request', print(session))
 
-    const halActor = await terminal.actions<HalActor>('hal', actorAddress)
+    await terminal.ensureBranch(session, halPid)
+    const hal = await terminal.actions<Api>('hal', session)
 
-    const sessionAddress = await halActor.startSession()
-    const hal = await terminal.actions<HalSession>('hal', sessionAddress)
-
+    log('prompting')
     await hal.prompt({ text: 'hello' })
 
     await t.step('second session', async () => {
-      const second = terminal.newSession()
+      const second = terminal.newTerminal()
       log('second session', print(second.pid))
-      const halActor = await second.actions<HalActor>('hal', actorAddress)
-      const sessionAddress = await halActor.startSession()
-      const hal = await second.actions<HalSession>('hal', sessionAddress)
+      expect(second.pid).not.toEqual(terminal.pid)
+      const session2 = createHalSessionPid(second.pid, halPid)
+      log('HAL session request', print(session2))
+      expect(session2).not.toEqual(session)
+      await second.ensureBranch(session2, halPid)
+      log('prompting')
+      const hal = await second.actions<Api>('hal', session2)
       await hal.prompt({ text: 'hello' })
     })
 
     await t.step('restart a session', async () => {
       log('resuming session', print(terminal.pid))
-      const resumed = terminal.resumeSession(terminal.pid)
-      const hal = await resumed.actions<HalSession>('hal', sessionAddress)
+      const resumed = terminal.resumeTerminal(terminal.pid)
+      const hal = await resumed.actions<Api>('hal', session)
       await hal.prompt({ text: 'hello' })
     })
 
-    await t.step('invalid session', () => {
-      const branches = terminal.pid.branches.slice(0, -1)
-      branches.push('invalid ulid')
-      const pid = { ...terminal.pid, branches }
-      expect(() => terminal.resumeSession(pid)).toThrow('invalid session')
-    })
     // TODO test valid format but deleted / nonexistent session
     // TODO test invalid machine
     await terminal.engineStop()
   })
 
-  Deno.test(prefix + 'hal', async (t) => {
+  Deno.test(prefix + 'HAL prompt redirection', async (t) => {
     const terminal = await cradleMaker()
-    await terminal.rm({ repo: 'dreamcatcher-tech/HAL' })
     const { pid } = await terminal.clone({ repo: 'dreamcatcher-tech/HAL' })
-
-    const halBase = await terminal.actions<HalActor>('hal', pid)
-    const halSessionPid = await halBase.startSession()
-    const hal = await terminal.actions<HalSession>('hal', halSessionPid)
+    const session = createHalSessionPid(terminal.pid, pid)
+    await terminal.ensureBranch(session, pid)
+    const hal = await terminal.actions<Api>('hal', session)
 
     await t.step('prompt', async () => {
-      log('pid', print(halSessionPid))
+      log('pid', print(session))
       await hal.prompt({ text: 'hello' })
       const messages = await terminal.readJSON<Messages[]>(
         'session.json',
-        halSessionPid,
+        session,
       )
       log('messages', messages)
     })
 
     await t.step('redirect HAL', async () => {
-      const sessionBase = await terminal.actions<HalSession>(
+      const sessionBase = await terminal.actions<Api>(
         'hal',
-        halSessionPid,
+        session,
       )
-      await expect(terminal.exists(ENTRY_HELP_FILE, halSessionPid)).resolves
+      await expect(terminal.exists(ENTRY_HELP_FILE, session)).resolves
         .toBe(false)
       await sessionBase.setPromptTarget({ help: 'help-fixture' })
-      await expect(terminal.exists(ENTRY_HELP_FILE, halSessionPid)).resolves
+      await expect(terminal.exists(ENTRY_HELP_FILE, session)).resolves
         .toBe(true)
 
       await hal.prompt({ text: 'hello again' })
       const messages = await terminal.readJSON<Messages[]>(
         'session.json',
-        halSessionPid,
+        session,
       )
       log('messages', messages)
     })
@@ -108,4 +103,9 @@ export default (name: string, cradleMaker: CradleMaker) => {
   // really want to work on a branch of HAL from a safe place, where it is doing
   // writes and reads to a fork, and testing things out in safety before changing
   // its own programming.
+}
+const createHalSessionPid = (terminal: PID, halBase: PID) => {
+  const actorId = getActorId(terminal)
+  const branches = [...halBase.branches, actorId, ulid()]
+  return { ...halBase, branches }
 }

@@ -187,4 +187,8 @@ export default class IsolateApi<T extends object = Default> {
     assert(context !== null, 'context must not be null')
     this.#context = context
   }
+  isPidExists(pid: PID) {
+    // TODO push a self responding action to the accumulator for repeatability
+    return this.#fs.isPidExists(pid)
+  }
 }

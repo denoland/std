@@ -4,11 +4,12 @@ import '@std/dotenv/load'
 import {
   ACTORS,
   ArtifactSession,
-  assertValidSession,
+  assertValidTerminal,
   C,
   colorize,
   EngineInterface,
   freezePid,
+  isPID,
   JsonValue,
   PID,
   PierceRequest,
@@ -16,9 +17,10 @@ import {
   PROCTYPE,
   Provisioner,
   ROOT_SESSION,
+  UnsequencedRequest,
 } from './constants.ts'
 import IsolateApi from './isolate-api.ts'
-import { assert, Debug, posix } from '@utils'
+import { assert, Debug, equal, posix } from '@utils'
 import FS from '@/git/fs.ts'
 import * as artifact from '@/isolates/artifact.ts'
 import { ulid } from 'ulid'
@@ -126,18 +128,26 @@ export class Engine implements EngineInterface {
     const abort = new AbortController()
     const watcher = PierceWatcher.create(abort.signal, this, pid)
     watcher.watchPierces()
-    const request = {
+    // TODO move this to be dedicated artifact isolate function
+    const request: UnsequencedRequest = {
       isolate: 'actors',
       functionName: '@@install',
       params: { superuser },
       proctype: PROCTYPE.SERIAL,
       target: pid,
-      ulid: ulid(),
     }
-    const promise = watcher.watch(request.ulid)
+    const pierce: PierceRequest = {
+      target: pid,
+      ulid: ulid(),
+      isolate: 'shell',
+      functionName: 'pierce',
+      params: { request },
+      proctype: PROCTYPE.SERIAL,
+    }
+    const promise = watcher.watch(pierce.ulid)
 
     // notably, this is the only unauthenticated pierce in the whole system
-    await this.pierce(request)
+    await this.pierce(pierce)
     // TODO reverse the init if the install fails
     await promise
     abort.abort() // TODO make this a method on the watcher
@@ -196,7 +206,7 @@ export class Engine implements EngineInterface {
     const { homeAddress } = this
     // TODO require some signature proof from the machine
     const rootPid = createRootPid(machinePid)
-    assertValidSession(rootPid, homeAddress)
+    assertValidTerminal(rootPid, homeAddress)
 
     log('ensureMachineTerminal', print(machinePid))
     const [, , machineId] = machinePid.branches
@@ -217,6 +227,26 @@ export class Engine implements EngineInterface {
     assert(db, 'db not found')
     const head = await db.readHead(pid)
     return !!head
+  }
+  async ensureBranch(pierce: PierceRequest) {
+    const { request } = pierce.params
+    assert(request.isolate === 'actors', 'only actors can ensureBranch')
+    assert(equal(request.target, pierce.target), 'target mismatch')
+    const { branch, ancestor } = request.params
+    assert(isPID(branch), 'branch must be a PID')
+    assert(isPID(ancestor), 'ancestor must be a PID')
+    // TODO assert this is an ensure request
+    // TODO verify that the branch is a child of the ancestor
+
+    log('ensureBranch branch', print(branch))
+    log('ensureBranch ancestor', print(ancestor))
+    const { db } = artifact.sanitizeContext(this.#api)
+    const head = await db.readHead(branch)
+    if (!head) {
+      log('branch not found', print(branch))
+      await this.pierce(pierce)
+    }
+    log('pierce done')
   }
 }
 

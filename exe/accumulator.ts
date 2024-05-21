@@ -1,4 +1,5 @@
 import {
+  PID,
   SettledIsolatePromise,
   SolidRequest,
   UnsequencedRequest,
@@ -141,5 +142,9 @@ export default class Accumulator {
     this.#tickFs()
     // TODO assert the #new matched the incoming updates exactly
     this.#new = []
+  }
+  isPidExists(pid: PID) {
+    // TODO log this action in the buffer and make it replayable
+    return this.fs.isPidExists(pid)
   }
 }

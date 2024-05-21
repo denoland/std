@@ -1,7 +1,7 @@
 // copied from the artifact project
 import { Chalk } from 'chalk'
 import { JSONSchemaType } from './web-client.ajv.ts'
-import { Session } from './web-client-session.ts'
+import { Terminal } from './web-client-session.ts'
 export enum PROCTYPE {
   SERIAL = 'SERIAL',
   BRANCH = 'BRANCH',
@@ -158,6 +158,7 @@ export type Invocation = {
 export type PierceRequest = Invocation & {
   target: PID
   ulid: string
+  params: { request: UnsequencedRequest }
 }
 export const isPierceRequest = (p: Request): p is PierceRequest => {
   return 'ulid' in p
@@ -340,8 +341,9 @@ export interface ArtifactSession {
   endSession(): Promise<void>
   /** Remove the account if currently signed in */
   deleteAccountUnrecoverably(): Promise<void>
-  newSession(): ArtifactSession
-  resumeSession(pid: PID): ArtifactSession
+  newTerminal(): ArtifactSession
+  resumeTerminal(pid: PID): ArtifactSession
+  ensureBranch(branch: PID, ancestor: PID): Promise<PID>
 }
 /** The client home interface to Artifact, only able to create new sessions.
 Will handle the generation of signing keys for the session, and authentication
@@ -350,7 +352,7 @@ with github.
 export interface ArtifactMachine {
   pid: PID
   machineId: string
-  rootTerminalPromise: Promise<Session>
+  rootTerminalPromise: Promise<Terminal>
   /** Using the current session, create a new session. */
   openSession(retry?: PID): ArtifactSession
   /** Pings the execution context without going thru the transaction queue.
@@ -392,6 +394,7 @@ export interface EngineInterface {
    * it is not accessible due to permissions, it will appear as tho it did not
    * exist */
   isTerminalAvailable(pid: PID): Promise<boolean>
+  ensureBranch(pierce: PierceRequest): Promise<void>
 }
 export const isPID = (value: unknown): value is PID => {
   if (typeof value !== 'object' || value === null) {
@@ -524,7 +527,7 @@ const safeParams = (params?: Params) => {
   return safe
 }
 
-export const assertValidSession = (pid: PID, identity: PID) => {
+export const assertValidTerminal = (pid: PID, identity: PID) => {
   const { repoId, account, repository, branches } = identity
   const msg = print(pid)
   if (pid.repoId !== repoId) {
@@ -550,7 +553,7 @@ export const assertValidSession = (pid: PID, identity: PID) => {
     throw new Error('invalid machineId: ' + msg)
   }
   if (!terminalIdRegex.test(sessionId)) {
-    throw new Error('invalid sessionId: ' + msg)
+    throw new Error('invalid terminalId: ' + msg)
   }
 }
 export const machineIdRegex = /^[0-9a-f]{66}$/
@@ -569,16 +572,16 @@ export const getMachineId = (source: PID) => {
   const [, , machineId] = source.branches
   return machineId
 }
-export const isSessionPID = (source: PID) => {
-  const [, actorId, machineId, sessionId] = source.branches
+export const isTerminalPID = (source: PID) => {
+  const [, actorId, machineId, terminalId] = source.branches
   return (
     source.branches.length === 4 &&
     machineIdRegex.test(actorId) &&
     machineIdRegex.test(machineId) &&
-    terminalIdRegex.test(sessionId)
+    terminalIdRegex.test(terminalId)
   )
 }
-export const isEqual = (pid1: PID, pid2: PID) => {
+export const isPidEqual = (pid1: PID, pid2: PID) => {
   if (pid1.repoId !== pid2.repoId) {
     return false
   }
@@ -598,8 +601,8 @@ export const isEqual = (pid1: PID, pid2: PID) => {
   }
   return true
 }
-export const isValidForMachine = (session: PID, machine: PID) => {
-  const branches = session.branches.slice(0, -1)
+export const isValidForMachine = (terminal: PID, machine: PID) => {
+  const branches = terminal.branches.slice(0, -1)
   const test = { ...machine, branches }
-  return isEqual(test, machine)
+  return isPidEqual(test, machine)
 }

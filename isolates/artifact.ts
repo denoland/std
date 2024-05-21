@@ -112,7 +112,7 @@ export const lifecycles: IsolateLifecycle = {
       }
       if (isQueueBranch(message)) {
         const { parentCommit, parentPid, sequence } = message
-        log('Branch: %o %s %i', print(parentPid), parentCommit, sequence)
+        log('Branch: %s %s %i', print(parentPid), parentCommit, sequence)
         const parentFs = FS.open(parentPid, parentCommit, db)
         const io = await IOChannel.read(parentFs)
         assert(io, 'io not found')
@@ -120,6 +120,7 @@ export const lifecycles: IsolateLifecycle = {
         logger('qbr')(print(branchPid), sequence)
 
         let head = await db.readHead(branchPid)
+        // TODO if head already exists and we did not create it, error
         while (!head) {
           // TODO should do the atomic branch first, then check the head after
           // if failed

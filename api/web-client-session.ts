@@ -3,7 +3,7 @@
 import {
   ArtifactMachine,
   ArtifactSession,
-  assertValidSession,
+  assertValidTerminal,
   EngineInterface,
   freezePid,
   getActorPid,
@@ -26,7 +26,7 @@ type Init = {
   params?: Params
 }
 
-export class Session implements ArtifactSession {
+export class Terminal implements ArtifactSession {
   #init: Promise<void> | undefined
 
   readonly #engine: EngineInterface
@@ -42,7 +42,7 @@ export class Session implements ArtifactSession {
     machine: ArtifactMachine,
     pid: PID,
   ) {
-    assertValidSession(pid, engine.homeAddress)
+    assertValidTerminal(pid, engine.homeAddress)
     this.#engine = engine
     this.#machine = machine
     this.#pid = pid
@@ -56,7 +56,7 @@ export class Session implements ArtifactSession {
   static create(engine: EngineInterface, machine: ArtifactMachine) {
     const branches = [...machine.pid.branches, ulid()]
     const pid = { ...machine.pid, branches }
-    return Session.resume(engine, machine, pid)
+    return Terminal.resume(engine, machine, pid)
   }
   static resume(engine: EngineInterface, machine: ArtifactMachine, pid: PID) {
     freezePid(pid)
@@ -64,7 +64,7 @@ export class Session implements ArtifactSession {
       // TODO change to be isChildOf
       throw new Error('Invalid session pid: ' + print(pid))
     }
-    const terminal = new Session(engine, machine, pid)
+    const terminal = new Terminal(engine, machine, pid)
     terminal.#init = machine.rootTerminalPromise.then(async (rootSession) => {
       await rootSession.#initialize(terminal.terminalId)
       terminal.#init = undefined
@@ -75,7 +75,7 @@ export class Session implements ArtifactSession {
     const branches = [...machine.pid.branches, ROOT_SESSION]
     const terminalPid = { ...machine.pid, branches }
     freezePid(terminalPid)
-    return new Session(engine, machine, terminalPid)
+    return new Terminal(engine, machine, terminalPid)
   }
   async #initialize(terminalId: string) {
     const thisSessionId = this.pid.branches[this.pid.branches.length - 1]
@@ -125,12 +125,12 @@ export class Session implements ArtifactSession {
     // TODO stopping the engine should stop all sessions
     await this.#engine.stop()
   }
-  newSession() {
+  newTerminal() {
     // TODO test rapidly creating two sessions, with queuing happening properly
-    return Session.create(this.#engine, this.#machine)
+    return Terminal.create(this.#engine, this.#machine)
   }
-  resumeSession(pid: PID) {
-    return Session.resume(this.#engine, this.#machine, pid)
+  resumeTerminal(pid: PID) {
+    return Terminal.resume(this.#engine, this.#machine, pid)
   }
   async dns(repo: string) {
     const [account, repository, ...rest] = repo.split('/')
@@ -252,6 +252,36 @@ export class Session implements ArtifactSession {
   }
   async deleteAccountUnrecoverably(): Promise<void> {
     // throw new Error('not implemented')
+  }
+  async ensureBranch(branch: PID, ancestor: PID) {
+    const request: UnsequencedRequest = {
+      isolate: 'actors',
+      functionName: 'ensureBranch',
+      params: { branch, ancestor },
+      target: this.#pid,
+      proctype: PROCTYPE.SERIAL,
+    }
+    const pierce: PierceRequest = {
+      target: this.#pid,
+      ulid: ulid(),
+      isolate: 'shell',
+      functionName: 'pierce',
+      params: { request },
+      proctype: PROCTYPE.SERIAL,
+    }
+    await this.#init
+    this.#engine.ensureBranch(pierce)
+
+    const actuallyPierced = this.#watcher.watch(pierce.ulid)
+    const branchEnsured = async () => {
+      // special in that it *might* not actually pierce
+      for await (const _splice of this.read(branch)) {
+        return branch
+      }
+      throw new Error('ensureBranch failed')
+    }
+    await Promise.race([actuallyPierced, branchEnsured()])
+    return branch
   }
 }
 

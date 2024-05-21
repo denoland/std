@@ -166,6 +166,9 @@ export class WebClientEngine implements EngineInterface {
     const result = await this.#request('isTerminalAvailable', { pid })
     return result as boolean
   }
+  async ensureBranch(pierce: PierceRequest): Promise<void> {
+    await this.#request('ensureBranch', pierce)
+  }
   async #request(path: string, params: Params) {
     const abort = new AbortController()
     this.#aborts.add(abort)

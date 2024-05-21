@@ -51,7 +51,7 @@ const serialAccumulation: () => IoStruct = () => ({
       params: {
         request: {
           target: {
-            id: '0',
+            repoId: '0',
             account: 'system',
             repository: 'system',
             branches: ['main'],
@@ -59,7 +59,7 @@ const serialAccumulation: () => IoStruct = () => ({
           isolate: 'repo',
           functionName: 'rm',
           params: { repo: 'test/test' },
-          proctype: 'SERIAL',
+          proctype: PROCTYPE.SERIAL,
         },
       },
       proctype: PROCTYPE.SERIAL,

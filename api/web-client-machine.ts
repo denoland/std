@@ -5,7 +5,7 @@ import {
   JsonValue,
   PID,
 } from './web-client.types.ts'
-import { Session } from './web-client-session.ts'
+import { Terminal } from './web-client-session.ts'
 
 /**
  * Create a shell that is targeted at the home chain, to avoid reimplementation
@@ -19,7 +19,7 @@ export class Machine implements ArtifactMachine {
   readonly #privKey: Uint8Array
   readonly #pubKey: Uint8Array
   readonly #machineId: string
-  #rootSessionPromise: Promise<Session>
+  #rootSessionPromise: Promise<Terminal>
 
   static load(engine: EngineInterface, privateKey: string) {
     if (!secp.utils.isValidPrivateKey(privateKey)) {
@@ -64,15 +64,15 @@ export class Machine implements ArtifactMachine {
   }
   async #connect() {
     await this.#engine.ensureMachineTerminal(this.pid)
-    return Session.openRoot(this.#engine, this)
+    return Terminal.openRoot(this.#engine, this)
   }
 
   /** If the given pid is valid, uses that session, else creates a new one */
-  openSession(retry?: PID): Session {
+  openSession(retry?: PID): Terminal {
     if (retry) {
-      return Session.resume(this.#engine, this, retry)
+      return Terminal.resume(this.#engine, this, retry)
     }
-    return Session.create(this.#engine, this)
+    return Terminal.create(this.#engine, this)
   }
   ping(params?: { data?: JsonValue }) {
     return this.#engine.ping(params?.data)

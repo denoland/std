@@ -1,46 +1,16 @@
 import {
   ArtifactSession,
-  getActorId,
   isBaseRepo,
   IsolateApi,
   PID,
   print,
   Provisioner,
 } from '@/constants.ts'
-import * as session from './session.ts'
 import { Debug } from '@utils'
-import { ulid } from 'ulid'
 import { assert } from '@std/assert'
 const log = Debug('AI:hal')
 
-export type HalBase = {
-  /**
-   * Creates a new actor, or errors if it already exists.  Uses the senders PID
-   * to determine the ActorId to use.
-   */
-  createActor: () => Promise<PID>
-}
-
-export type HalActor = {
-  /**
-   * Based on the incoming machineId, lists the available sessions.   If this is
-   * the anonymous user, we list only the sessions for this machineId, else we
-   * list all the sessions for the authenticated user.
-   */
-  listSessions: () => Promise<PID[]>
-  startSession: () => Promise<PID>
-
-  /**
-   * HAL checks if the machineId is part of the sending authenticated Actor.  If
-   * it is, and if there is an anonymous actor for this machineId, it moves all
-   * the sessions to the authenticated actor then deletes the anonymous actor
-   * branch.
-   *
-   * This should be called after a machine has completed the oauth loop.
-   */
-  surrenderMachine: (params: { machineId: string }) => Promise<void>
-}
-export type HalSession = {
+export type Api = {
   prompt: (params: { text: string }) => Promise<void>
   resetSession: () => Promise<void>
 
@@ -58,19 +28,25 @@ export type HalSession = {
    * new sessions will start using the commit in this branch.
    */
   mergeUpstream: () => Promise<void>
+  /**
+   * Based on the incoming machineId, lists the available sessions.   If this is
+   * the anonymous user, we list only the sessions for this machineId, else we
+   * list all the sessions for the authenticated user.
+   */
+  listSessions: () => Promise<PID[]>
+
+  /**
+   * HAL checks if the machineId is part of the sending authenticated Actor.  If
+   * it is, and if there is an anonymous actor for this machineId, it moves all
+   * the sessions to the authenticated actor then deletes the anonymous actor
+   * branch.
+   *
+   * This should be called after a machine has completed the oauth loop.
+   */
+  surrenderMachine: (params: { machineId: string }) => Promise<void>
 }
 
-export type Api = HalBase & HalActor & HalSession
-
 export const api = {
-  createActor: {
-    type: 'object',
-    additionalProperties: false,
-  },
-  startSession: {
-    type: 'object',
-    additionalProperties: false,
-  },
   resetPromptTarget: {
     type: 'object',
     additionalProperties: false,
@@ -107,23 +83,6 @@ export type EntryHelpFile = {
 }
 
 export const functions = {
-  createActor: async (_: object, api: IsolateApi) => {
-    const { origin } = api
-    log('createActor in', print(api.pid))
-    log('createActor from', print(origin.source))
-    const name = getActorId(origin.source)
-    const tools = await api.functions<session.Api>('session')
-    return await tools.create({ name })
-  },
-  startSession: async (_: object, api: IsolateApi) => {
-    log('startSession', print(api.pid))
-
-    const session = await api.functions<session.Api>('session')
-    const name = ulid()
-    const pid = await session.create({ name })
-    log('startSession pid', print(pid))
-    return pid
-  },
   resetPromptTarget: (_: object, api: IsolateApi) => {
     api.delete(ENTRY_HELP_FILE)
   },

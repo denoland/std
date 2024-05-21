@@ -5,7 +5,7 @@ import IOChannel from '../io/io-channel.ts'
 import { solidify } from './solidify.ts'
 import FS from '@/git/fs.ts'
 
-const log = Debug('AI:git')
+const log = Debug('AI:git:branch')
 
 /**
  * Given the fs from the parent branch, create a new branch from the
@@ -36,6 +36,7 @@ export const branch = async (fs: FS, sequence: number) => {
   log('origin', origin)
   const branch = fs.branch(pid)
   IOChannel.blank(branch)
+  // TODO handle branch exists with an error reply
 
   const solids = await solidify(branch, [origin])
   assert(solids.exe, 'must have an exe')

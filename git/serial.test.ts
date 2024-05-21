@@ -7,6 +7,7 @@ import {
   PID,
   PierceRequest,
   PROCTYPE,
+  UnsequencedRequest,
 } from '@/constants.ts'
 import FS from './fs.ts'
 import DB from '@/db.ts'
@@ -20,12 +21,20 @@ Deno.test('pierce serial', async (t) => {
   }
   let fs = await FS.init(partial, db)
   const target: PID = fs.pid
+  const mockRequest: UnsequencedRequest = {
+    target,
+    isolate: 'mock',
+    functionName: 'mock',
+    params: {},
+    proctype: PROCTYPE.SERIAL,
+  }
+  // TODO move away from using pierces to test these functions
   const pierceFactory = (ulid: string): PierceRequest => ({
     target,
     ulid,
     isolate: 'test-isolate',
     functionName: 'test',
-    params: {},
+    params: { request: mockRequest },
     proctype: PROCTYPE.SERIAL,
   })
   const reply: MergeReply = {

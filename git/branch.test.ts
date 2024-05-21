@@ -9,6 +9,7 @@ import {
   PID,
   PierceRequest,
   PROCTYPE,
+  UnsequencedRequest,
 } from '@/constants.ts'
 import FS from '@/git/fs.ts'
 import DB from '@/db.ts'
@@ -22,12 +23,19 @@ Deno.test('pierce branch', async (t) => {
   const db = await DB.create(DB.generateAesKey())
   const baseFs = await FS.init(partial, db)
   const target = baseFs.pid
+  const mockRequest: UnsequencedRequest = {
+    target,
+    isolate: 'mock',
+    functionName: 'mock',
+    params: {},
+    proctype: PROCTYPE.SERIAL,
+  }
   const branchPierce = (ulid: string): PierceRequest => ({
     target,
     ulid,
     isolate: 'test-isolate',
     functionName: 'test',
-    params: {},
+    params: { request: mockRequest },
     proctype: PROCTYPE.BRANCH,
   })
   const reply: MergeReply = {

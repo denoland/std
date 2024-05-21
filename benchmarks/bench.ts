@@ -88,7 +88,7 @@ suite
   .add('session start', {
     defer: true,
     fn: async (deferred: Benchmark.Deferred) => {
-      const session = sessionStartSession.newSession()
+      const session = sessionStartSession.newTerminal()
       await session.initializationPromise
       deferred.resolve()
       session.stop()
@@ -98,7 +98,7 @@ suite
     defer: true,
     fn: async (deferred: Benchmark.Deferred) => {
       const { pid } = sessionReloadSession
-      const session = sessionReloadSession.resumeSession(pid)
+      const session = sessionReloadSession.resumeTerminal(pid)
       await session.initializationPromise
       deferred.resolve()
     },
@@ -123,7 +123,7 @@ suite
     // make a new session
     defer: true,
     fn: async (deferred: Benchmark.Deferred) => {
-      const session = coldPingSession.newSession()
+      const session = coldPingSession.newTerminal()
       const fixture = await session.actions<Api>('io-fixture')
       const result = await fixture.local()
       assert(result === 'local reply')

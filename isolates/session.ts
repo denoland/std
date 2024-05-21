@@ -1,4 +1,4 @@
-import { IsolateApi, PID, ProcessOptions } from '@/constants.ts'
+import { IsolateApi, PID, print, ProcessOptions } from '@/constants.ts'
 import { assert, Debug } from '@utils'
 const log = Debug('AI:session')
 export const api = {
@@ -51,7 +51,7 @@ export const functions = {
     api: IsolateApi,
   ) {
     assert(isMaxOneOf(retry, name, prefix), 'max one arg is possible')
-    log('create')
+    log('create %o', { retry, name, prefix })
     if (retry) {
       if (await api.isChild(retry)) {
         // TODO check signing keys for validity too
@@ -70,12 +70,13 @@ export const functions = {
     if (!retry && !prefix && !name) {
       options.prefix = 'session'
     }
-    const pid = await noop({}, options)
-    log('noop pid', pid)
+    const pid = await noop({}, options) as PID
+    assert(pid, 'no pid returned')
+    log('noop pid returned', print(pid))
     return pid
   },
   noop(_: object, api: IsolateApi) {
-    log('noop', api.pid)
+    log('noop', print(api.pid))
     return api.pid
   },
   close: (_: object, api: IsolateApi) => {

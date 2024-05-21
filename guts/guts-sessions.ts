@@ -6,41 +6,47 @@ import { ulid } from 'ulid'
 export default (name: string, cradleMaker: CradleMaker) => {
   const prefix = name + ': '
   Deno.test(prefix + 'session', async (t) => {
-    const session = await cradleMaker()
-    log('pid', print(session.pid))
+    const terminal = await cradleMaker()
+    log('pid', print(terminal.pid))
 
     const repo = 'sessions/basic'
-    const target = await session.init({ repo })
+    const target = await terminal.init({ repo })
 
     // TODO exercise the ACL blocking some actions to the session chain
     await t.step('interact', async () => {
-      const { local } = await session.actions('io-fixture', session.pid)
+      const { local } = await terminal.actions('io-fixture', terminal.pid)
       const result = await local()
       expect(result).toEqual('local reply')
     })
-    const second = session.newSession()
+    const second = terminal.newTerminal()
     await t.step('second session', async () => {
       const { local } = await second.actions('io-fixture', target.pid)
       const result = await local()
       expect(result).toEqual('local reply')
     })
     await t.step('cross session', async () => {
-      const { local } = await second.actions('io-fixture', session.pid)
+      const { local } = await second.actions('io-fixture', terminal.pid)
       const result = await local()
       expect(result).toEqual('local reply')
     })
 
-    const resumed = session.resumeSession(session.pid)
+    const resumed = terminal.resumeTerminal(terminal.pid)
     await t.step('resume session', async () => {
       // TODO this should check if the session is valid
-      expect(resumed.pid).toEqual(session.pid)
+      expect(resumed.pid).toEqual(terminal.pid)
       const { local } = await resumed.actions('io-fixture', target.pid)
       const result = await local()
       expect(result).toEqual('local reply')
     })
+    await t.step('invalid session', () => {
+      const branches = terminal.pid.branches.slice(0, -1)
+      branches.push('invalid ulid')
+      const pid = { ...terminal.pid, branches }
+      expect(() => terminal.resumeTerminal(pid)).toThrow('invalid terminal')
+    })
     // test a session resume to a non existent PID
-    await Promise.all([resumed.stop(), second.stop(), session.stop()])
-    await session.engineStop()
+    await Promise.all([resumed.stop(), second.stop(), terminal.stop()])
+    await terminal.engineStop()
   })
   Deno.test(prefix + 'internal requests', async (t) => {
     const session = await cradleMaker()
@@ -57,14 +63,14 @@ export default (name: string, cradleMaker: CradleMaker) => {
     await session.engineStop()
   })
   Deno.test(prefix + 'machine reload', async () => {
-    const session = await cradleMaker()
-    await session.initializationPromise
-    const root = await session.machine.rootTerminalPromise
+    const terminal = await cradleMaker()
+    await terminal.initializationPromise
+    const root = await terminal.machine.rootTerminalPromise
     log('root session', print(root.pid))
 
-    const io = await session.readJSON<IoStruct>('.io.json', root.pid)
+    const io = await terminal.readJSON<IoStruct>('.io.json', root.pid)
 
-    const machine = session.machine as Machine
+    const machine = terminal.machine as Machine
     const next = machine.clone()
     expect(next.pid).toEqual(machine.pid)
     const nextRoot = await next.rootTerminalPromise
@@ -72,10 +78,10 @@ export default (name: string, cradleMaker: CradleMaker) => {
     expect(nextRoot.pid).toEqual(root.pid)
     log('next root session', print(nextRoot.pid))
 
-    const nextIo = await session.readJSON<IoStruct>('.io.json', nextRoot.pid)
+    const nextIo = await terminal.readJSON<IoStruct>('.io.json', nextRoot.pid)
     expect(io).toEqual(nextIo)
 
-    await session.engineStop()
+    await terminal.engineStop()
   })
   Deno.test(prefix + 'session reload', async () => {
     const terminal = await cradleMaker()
@@ -100,7 +106,7 @@ export default (name: string, cradleMaker: CradleMaker) => {
 
     const nextIo = await terminal.readJSON<IoStruct>('.io.json', nextRoot.pid)
     expect(nextIo).toEqual(io)
-    nextRoot.resumeSession(terminal.pid)
+    nextRoot.resumeTerminal(terminal.pid)
     log('resumed')
     const lastIo = await terminal.readJSON<IoStruct>('.io.json', nextRoot.pid)
     expect(lastIo).toEqual(io)
@@ -121,7 +127,7 @@ export default (name: string, cradleMaker: CradleMaker) => {
     const io = await terminal.readJSON<IoStruct>('.io.json', pid)
     expect(Object.keys(io.branches)).toHaveLength(2)
 
-    const missing = root.resumeSession(missingSessionPid)
+    const missing = root.resumeTerminal(missingSessionPid)
     expect(missing.pid).toEqual(missingSessionPid)
     await missing.initializationPromise
     const lastIo = await terminal.readJSON<IoStruct>('.io.json', pid)

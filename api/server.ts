@@ -108,6 +108,10 @@ export default class Server {
       const { pid } = params
       return execute(c, engine.isTerminalAvailable(pid), 'isTerminalAvailable')
     })
+    app.post(`/ensureBranch`, async (c) => {
+      const pierce = await c.req.json()
+      return execute(c, engine.ensureBranch(pierce), 'ensureBranch')
+    })
     app.post('/transcribe', async (c) => {
       const body = await c.req.parseBody()
       const audio = body['audio'] as File

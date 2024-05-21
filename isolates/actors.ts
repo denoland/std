@@ -32,6 +32,11 @@ export type ActorApi = {
    * List all the repos that this Actor has created.
    */
   lsRepos: () => Promise<string[]>
+
+  /**
+   * Ensure that the given branch exists with as few moves as possible
+   */
+  ensureBranch: (params: { branch: PID; ancestor: PID }) => Promise<PID>
 }
 export type ActorAdmin = {
   ensureMachineTerminal: (params: { machineId: string }) => Promise<PID>
@@ -124,6 +129,15 @@ export const api = {
     required: ['authProvider'],
     properties: {
       authProvider: pidSchema,
+    },
+  },
+  ensureBranch: {
+    type: 'object',
+    additionalProperties: false,
+    required: ['branch', 'ancestor'],
+    properties: {
+      branch: pidSchema,
+      ancestor: pidSchema,
     },
   },
 }
@@ -240,7 +254,6 @@ export const functions = {
     log('init wrote repos:', Object.keys(repos))
     return { pid, head }
   },
-
   async ensureMachineTerminal(
     { machineId }: { machineId: string },
     api: IsolateApi,
@@ -312,6 +325,31 @@ export const functions = {
 
     // TODO move every machine in this actor to merge with the baseActorId
   },
+  ensureBranch: async (
+    { branch, ancestor }: { branch: PID; ancestor: PID },
+    api: IsolateApi,
+  ) => {
+    log('ensureBranch branch', print(branch))
+    log('ensureBranch ancestor', print(ancestor))
+    assertIsTerminal(api)
+    // TODO add api call to probe pid existence
+    // TODO gracefully walk the tree to call in as low as possible
+    const actorId = branch.branches[branch.branches.length - 2]
+    const sessionId = branch.branches[branch.branches.length - 1]
+    const base = await api.actions<session.Api>('session', ancestor)
+
+    const actorPid = getParent(branch)
+    if (!await api.isPidExists(actorPid)) {
+      const createdActorPid = await base.create({ name: actorId })
+      expect(createdActorPid).toEqual(actorPid)
+    }
+
+    const actor = await api.actions<session.Api>('session', actorPid)
+    if (!await api.isPidExists(branch)) {
+      const branchPid = await actor.create({ name: sessionId })
+      expect(branchPid).toEqual(branch)
+    }
+  },
 }
 
 const addBranch = (pid: PID, branch: string) => {
@@ -322,6 +360,13 @@ const assertIsActorPid = (api: IsolateApi) => {
   const actorPid = getActorPid(api.pid)
   if (!equal(actorPid, api.pid)) {
     throw new Error('Must be called from Actor branch: ' + print(api.pid))
+  }
+}
+const assertIsTerminal = (api: IsolateApi) => {
+  const actorPid = getActorPid(api.pid)
+  if (api.pid.branches.length !== actorPid.branches.length + 2) {
+    // TODO use regex to test if genuine terminal
+    throw new Error('Must be called from Terminal branch: ' + print(api.pid))
   }
 }
 const readRepos = async (api: IsolateApi, checkRepo?: string) => {
@@ -340,4 +385,12 @@ type Repos = { [repo: string]: PID }
 export type Config = {
   superuser: string
   authProviders: { [name: string]: PID }
+}
+const getParent = (pid: PID) => {
+  const branches = [...pid.branches]
+  branches.pop()
+  if (!branches.length) {
+    throw new Error('Cannot get parent of root pid: ' + print(pid))
+  }
+  return { ...pid, branches }
 }
