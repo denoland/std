@@ -10,11 +10,13 @@
  *
  * ```ts
  * import { encodeBase58, decodeBase58 } from "@std/encoding/base58";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
- * const encoded = encodeBase58("Hello World!"); // "2NEpo7TZRRrLZSi2U"
+ * const hello = new TextEncoder().encode("Hello World!");
  *
- * decodeBase58(encoded);
- * // Uint8Array(12) [ 72, 101, 108, 108, 111, 32,  87, 111, 114, 108, 100, 33 ]
+ * assertEquals(encodeBase58(hello), "2NEpo7TZRRrLZSi2U");
+ *
+ * assertEquals(decodeBase58("2NEpo7TZRRrLZSi2U"), hello);
  * ```
  *
  * @module
@@ -46,8 +48,9 @@ const base58alphabet =
  * @example
  * ```ts
  * import { encodeBase58 } from "@std/encoding/base58";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
- * encodeBase58("Hello World!"); // "2NEpo7TZRRrLZSi2U"
+ * assertEquals(encodeBase58("Hello World!"), "2NEpo7TZRRrLZSi2U");
  * ```
  */
 export function encodeBase58(data: ArrayBuffer | Uint8Array | string): string {
@@ -111,9 +114,12 @@ export function encodeBase58(data: ArrayBuffer | Uint8Array | string): string {
  * @example
  * ```ts
  * import { decodeBase58 } from "@std/encoding/base58";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
- * decodeBase58("2NEpo7TZRRrLZSi2U");
- * // Uint8Array(12) [ 72, 101, 108, 108, 111, 32,  87, 111, 114, 108, 100, 33 ]
+ * assertEquals(
+ *   decodeBase58("2NEpo7TZRRrLZSi2U"),
+ *   new TextEncoder().encode("Hello World!")
+ * );
  * ```
  */
 export function decodeBase58(b58: string): Uint8Array {

@@ -55,8 +55,9 @@ function convertBase64ToBase64url(b64: string) {
  * @example
  * ```ts
  * import { encodeBase64Url } from "@std/encoding/base64url";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
- * encodeBase64Url("foobar"); // "Zm9vYmFy"
+ * assertEquals(encodeBase64Url("foobar"), "Zm9vYmFy");
  * ```
  */
 export function encodeBase64Url(
@@ -76,8 +77,12 @@ export function encodeBase64Url(
  * @example
  * ```ts
  * import { decodeBase64Url } from "@std/encoding/base64url";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
- * decodeBase64Url("Zm9vYmFy"); // Uint8Array(6) [ 102, 111, 111, 98, 97, 114 ]
+ * assertEquals(
+ *   decodeBase64Url("Zm9vYmFy"),
+ *   new TextEncoder().encode("foobar")
+ * );
  * ```
  */
 export function decodeBase64Url(b64url: string): Uint8Array {

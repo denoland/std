@@ -54,8 +54,9 @@ const Z85 =
  * @example
  * ```ts
  * import { encodeAscii85 } from "@std/encoding/ascii85";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
- * encodeAscii85("Hello world!"); // "87cURD]j7BEbo80"
+ * assertEquals(encodeAscii85("Hello world!"), "87cURD]j7BEbo80");
  * ```
  */
 export function encodeAscii85(
@@ -133,9 +134,12 @@ export function encodeAscii85(
  * @example
  * ```ts
  * import { decodeAscii85 } from "@std/encoding/ascii85";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
- * decodeAscii85("87cURD]j7BEbo80");
- * // Uint8Array(12) [ 72, 101, 108, 108, 111, 32, 119, 111, 114, 108, 100, 33 ]
+ * assertEquals(
+ *   decodeAscii85("87cURD]j7BEbo80"),
+ *   new TextEncoder().encode("Hello world!"),
+ * );
  * ```
  */
 export function decodeAscii85(

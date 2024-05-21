@@ -7,13 +7,19 @@
  * smaller values requiring fewer bytes.
  *
  * ```ts
- * import { encode, decode } from "@std/encoding/varint";
+ * import { encodeVarint, decodeVarint } from "@std/encoding/varint";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const buf = new Uint8Array(10);
- * const [encoded, bytesWritten] = encode(42n, buf);
- * // [ Uint8Array(1) [ 42 ], 1 ];
+ * assertEquals(
+ *   encodeVarint(42n, buf),
+ *   [new Uint8Array([42]), 1]
+ * );
  *
- * decode(encoded); // [ 42n, 1 ];
+ * assertEquals(
+ *   decodeVarint(new Uint8Array([42])),
+ *   [ 42n, 1 ]
+ * );
  * ```
  *
  * @module
@@ -68,9 +74,10 @@ const U64_VIEW = new BigUint64Array(AB);
  * @example
  * ```ts
  * import { decode } from "@std/encoding/varint";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const buf = new Uint8Array([0x8E, 0x02]);
- * decode(buf); // [ 300n, 2 ];
+ * assertEquals(decode(buf), [ 300n, 2 ]);
  * ```
  *
  * @deprecated This will be removed in 1.0.0. Use {@linkcode decodeVarint}
@@ -100,9 +107,10 @@ export function decode(buf: Uint8Array, offset = 0): [bigint, number] {
  * @example
  * ```ts
  * import { decodeVarint } from "@std/encoding/varint";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const buf = new Uint8Array([0x8E, 0x02]);
- * decodeVarint(buf); // [ 300n, 2 ];
+ * assertEquals(decodeVarint(buf), [300n, 2]);
  * ```
  */
 export function decodeVarint(buf: Uint8Array, offset = 0): [bigint, number] {
@@ -185,9 +193,10 @@ export function decodeVarint(buf: Uint8Array, offset = 0): [bigint, number] {
  * @example
  * ```ts
  * import { decode32 } from "@std/encoding/varint";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const buf = new Uint8Array([0x8E, 0x02]);
- * decode32(buf); // [ 300, 2 ];
+ * assertEquals(decode32(buf), [ 300, 2 ]);
  * ```
  *
  * @deprecated This will be removed in 1.0.0. Use {@linkcode decodeVarint32}
@@ -216,9 +225,10 @@ export function decode32(buf: Uint8Array, offset = 0): [number, number] {
  * @example
  * ```ts
  * import { decodeVarint32 } from "@std/encoding/varint";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const buf = new Uint8Array([0x8E, 0x02]);
- * decodeVarint32(buf); // [ 300, 2 ];
+ * assertEquals(decodeVarint32(buf), [300, 2]);
  * ```
  */
 export function decodeVarint32(buf: Uint8Array, offset = 0): [number, number] {
@@ -257,9 +267,10 @@ export function decodeVarint32(buf: Uint8Array, offset = 0): [number, number] {
  * @example
  * ```ts
  * import { encode } from "@std/encoding/varint";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const buf = new Uint8Array(10);
- * encode(42n, buf); // [ Uint8Array(1) [ 42 ], 1 ];
+ * assertEquals(encode(42n, buf), [new Uint8Array([42]), 1]);
  * ```
  *
  * @deprecated This will be removed in 1.0.0. Use {@linkcode encodeVarint} instead.
@@ -293,9 +304,10 @@ export function encode(
  * @example
  * ```ts
  * import { encodeVarint } from "@std/encoding/varint";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const buf = new Uint8Array(10);
- * encodeVarint(42n, buf); // [ Uint8Array(1) [ 42 ], 1 ];
+ * assertEquals(encodeVarint(42n, buf), [new Uint8Array([42]), 1]);
  * ```
  */
 export function encodeVarint(

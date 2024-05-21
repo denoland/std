@@ -13,10 +13,12 @@
  *   encodeBase64,
  *   decodeBase64,
  * } from "@std/encoding/base64";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
- * const encoded = encodeBase64("foobar"); // "Zm9vYmFy"
+ * const foobar = new TextEncoder().encode("foobar");
  *
- * decodeBase64(encoded); // Uint8Array(6) [ 102, 111, 111, 98, 97, 114 ]
+ * assertEquals(encodeBase64(foobar), "Zm9vYmFy");
+ * assertEquals(decodeBase64("Zm9vYmFy"), foobar);
  * ```
  *
  * @module
@@ -102,8 +104,9 @@ const base64abc = [
  * @example
  * ```ts
  * import { encodeBase64 } from "@std/encoding/base64";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
- * encodeBase64("foobar"); // "Zm9vYmFy"
+ * assertEquals(encodeBase64("foobar"), "Zm9vYmFy");
  * ```
  */
 export function encodeBase64(data: ArrayBuffer | Uint8Array | string): string {
@@ -154,8 +157,12 @@ export function encodeBase64(data: ArrayBuffer | Uint8Array | string): string {
  * @example
  * ```ts
  * import { decodeBase64 } from "@std/encoding/base64";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
- * decodeBase64("Zm9vYmFy"); // Uint8Array(6) [ 102, 111, 111, 98, 97, 114 ]
+ * assertEquals(
+ *   decodeBase64("Zm9vYmFy"),
+ *   new TextEncoder().encode("foobar")
+ * );
  * ```
  */
 export function decodeBase64(b64: string): Uint8Array {
