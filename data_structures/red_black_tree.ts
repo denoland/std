@@ -4,17 +4,6 @@
 import { ascend } from "./comparators.ts";
 import { BinarySearchTree } from "./binary_search_tree.ts";
 import { type Direction, RedBlackNode } from "./_red_black_node.ts";
-import { internals } from "./_binary_search_tree_internals.ts";
-
-const {
-  getRoot,
-  setRoot,
-  getCompare,
-  findNode,
-  rotateNode,
-  insertNode,
-  removeNode,
-} = internals;
 
 /**
  * A red-black tree. This is a kind of self-balancing binary search tree. The
@@ -99,19 +88,22 @@ const {
  * ```
  */
 export class RedBlackTree<T> extends BinarySearchTree<T> {
-  constructor(compare: (a: T, b: T) => number = ascend) {
-    if (typeof compare !== "function") {
-      throw new TypeError(
-        "compare must be a function, did you mean to call RedBlackTree.from?",
-      );
-    }
+  declare protected root: RedBlackNode<T> | null;
+
+  constructor(
+    compare: (a: T, b: T) => number = ascend,
+  ) {
     super(compare);
   }
 
   /** Creates a new red-black tree from an array like or iterable object. */
   static override from<T>(
     collection: ArrayLike<T> | Iterable<T> | RedBlackTree<T>,
-    options?: {
+  ): RedBlackTree<T>;
+  static override from<T>(
+    collection: ArrayLike<T> | Iterable<T> | RedBlackTree<T>,
+    options: {
+      Node?: typeof RedBlackNode;
       compare?: (a: T, b: T) => number;
     },
   ): RedBlackTree<T>;
@@ -119,7 +111,7 @@ export class RedBlackTree<T> extends BinarySearchTree<T> {
     collection: ArrayLike<T> | Iterable<T> | RedBlackTree<T>,
     options: {
       compare?: (a: U, b: U) => number;
-      map: (this: V, value: T, index: number) => U;
+      map: (value: T, index: number) => U;
       thisArg?: V;
     },
   ): RedBlackTree<U>;
@@ -135,17 +127,17 @@ export class RedBlackTree<T> extends BinarySearchTree<T> {
     let unmappedValues: ArrayLike<T> | Iterable<T> = [];
     if (collection instanceof RedBlackTree) {
       result = new RedBlackTree(
-        options?.compare ??
-          getCompare(collection as unknown as RedBlackTree<U>),
+        options?.compare ?? (collection as unknown as RedBlackTree<U>).compare,
       );
       if (options?.compare || options?.map) {
         unmappedValues = collection;
       } else {
         const nodes: RedBlackNode<U>[] = [];
-        const root = getRoot(collection);
-        if (root) {
-          setRoot(result, root as unknown as RedBlackNode<U>);
-          nodes.push(root as unknown as RedBlackNode<U>);
+        if (collection.root) {
+          result.root = RedBlackNode.from(
+            collection.root as unknown as RedBlackNode<U>,
+          );
+          nodes.push(result.root);
         }
         while (nodes.length) {
           const node: RedBlackNode<U> = nodes.pop()!;
@@ -179,7 +171,7 @@ export class RedBlackTree<T> extends BinarySearchTree<T> {
     return result;
   }
 
-  #removeFixup(
+  protected removeFixup(
     parent: RedBlackNode<T> | null,
     current: RedBlackNode<T> | null,
   ) {
@@ -193,7 +185,7 @@ export class RedBlackTree<T> extends BinarySearchTree<T> {
       if (sibling?.red) {
         sibling.red = false;
         parent.red = true;
-        rotateNode(this, parent, direction);
+        this.rotateNode(parent, direction);
         sibling = parent[siblingDirection];
       }
       if (sibling) {
@@ -205,14 +197,14 @@ export class RedBlackTree<T> extends BinarySearchTree<T> {
           if (!sibling[siblingDirection]?.red) {
             sibling[direction]!.red = false;
             sibling.red = true;
-            rotateNode(this, sibling, siblingDirection);
+            this.rotateNode(sibling, siblingDirection);
             sibling = parent[siblingDirection!];
           }
           sibling!.red = parent.red;
           parent.red = false;
           sibling![siblingDirection]!.red = false;
-          rotateNode(this, parent, direction);
-          current = getRoot(this) as RedBlackNode<T>;
+          this.rotateNode(parent, direction);
+          current = this.root;
           parent = null;
         }
       }
@@ -225,11 +217,7 @@ export class RedBlackTree<T> extends BinarySearchTree<T> {
    * Returns true if successful.
    */
   override insert(value: T): boolean {
-    let node = insertNode(
-      this,
-      RedBlackNode,
-      value,
-    ) as (RedBlackNode<T> | null);
+    let node = this.insertNode(RedBlackNode, value) as (RedBlackNode<T> | null);
     if (node) {
       while (node.parent?.red) {
         let parent: RedBlackNode<T> = node.parent!;
@@ -248,15 +236,15 @@ export class RedBlackTree<T> extends BinarySearchTree<T> {
         } else {
           if (node === parent[uncleDirection]) {
             node = parent;
-            rotateNode(this, node, parentDirection);
+            this.rotateNode(node, parentDirection);
             parent = node.parent!;
           }
           parent.red = false;
           parent.parent!.red = true;
-          rotateNode(this, parent.parent!, uncleDirection);
+          this.rotateNode(parent.parent!, uncleDirection);
         }
       }
-      (getRoot(this) as RedBlackNode<T>).red = false;
+      this.root!.red = false;
     }
     return !!node;
   }
@@ -266,19 +254,19 @@ export class RedBlackTree<T> extends BinarySearchTree<T> {
    * Returns true if found and removed.
    */
   override remove(value: T): boolean {
-    const node = findNode(this, value) as (RedBlackNode<T> | null);
+    const node = this.findNode(value) as (RedBlackNode<T> | null);
 
     if (!node) {
       return false;
     }
 
-    const removedNode = removeNode(this, node) as (
+    const removedNode = this.removeNode(node) as (
       | RedBlackNode<T>
       | null
     );
 
     if (removedNode && !removedNode.red) {
-      this.#removeFixup(
+      this.removeFixup(
         removedNode.parent,
         removedNode.left ?? removedNode.right,
       );
