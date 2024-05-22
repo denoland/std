@@ -11,7 +11,10 @@ export type { ParsedPath } from "./_interface.ts";
 /**
  * Return a `ParsedPath` object of the `path`. Use `format` to reverse the result.
  *
- * @example
+ * @param path to process
+ * @returns A `ParsedPath` object
+ * 
+ * @example Usage
  * ```ts
  * import { parse } from "@std/path";
  *
@@ -22,7 +25,6 @@ export type { ParsedPath } from "./_interface.ts";
  * parsedPathObj.ext; // ".ts"
  * parsedPathObj.name; // "script"
  * ```
- * @param path to process
  */
 export function parse(path: string): ParsedPath {
   return isWindows ? windowsParse(path) : posixParse(path);

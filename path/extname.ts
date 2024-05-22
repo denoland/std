@@ -8,6 +8,14 @@ import { extname as windowsExtname } from "./windows/extname.ts";
  * Return the extension of the `path` with leading period.
  * @param path with extension
  * @returns extension (ex. for `file.ts` returns `.ts`)
+ * 
+ * @example Usage
+ * ```ts
+ * import { extname } from "@std/path/extname";
+ * 
+ * extname("/home/user/Documents/image.png"); // ".png"
+ * extname("C:\\user\\Documents\\image.png"); // ".png"
+ * ```
  */
 export function extname(path: string): string {
   return isWindows ? windowsExtname(path) : posixExtname(path);

@@ -6,8 +6,19 @@ import { toNamespacedPath as posixToNamespacedPath } from "./posix/to_namespaced
 import { toNamespacedPath as windowsToNamespacedPath } from "./windows/to_namespaced_path.ts";
 
 /**
- * Resolves path to a namespace path
+ * Resolves path to a namespace path.  This is a no-op on
+ * non-windows systems.
+ * 
  * @param path to resolve to namespace
+ * @returns resolved namespace path
+ * 
+ * 
+ * @example Usage
+ * ```ts
+ * import { toNamespacedPath } from "@std/path/to-namespaced-path";
+ * 
+ * toNamespacedPath("C:\\foo\\bar"); // " \\?\C:\\foo\\bar"
+ * ```
  */
 export function toNamespacedPath(path: string): string {
   return isWindows

@@ -8,6 +8,16 @@ import { dirname as windowsDirname } from "./windows/dirname.ts";
 /**
  * Return the directory path of a `path`.
  * @param path - path to extract the directory from.
+ * @returns directory path
+ * 
+ * @example Usage
+ * ```ts
+ * import { dirname } from "@std/path/dirname";
+ * 
+ * dirname("/home/user/Documents/image.png"); // "/home/user/Documents"
+ * dirname("C:\\user\\Documents\\image.png"); // "C:\\user\\Documents"
+ * dirname("image.png"); // "."
+ * ```
  */
 export function dirname(path: string): string {
   return isWindows ? windowsDirname(path) : posixDirname(path);

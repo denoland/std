@@ -10,7 +10,23 @@ import {
 
 export type { GlobOptions };
 
-/** Like normalize(), but doesn't collapse "**\/.." when `globstar` is true. */
+/**
+ * Normalizes a glob string.
+ * 
+ * Behaves like normalize(), but doesn't collapse "**\/.." when `globstar` is true.
+ *
+ * @param glob - glob string to normalize
+ * @param options - glob options
+ * @returns normalized glob string
+ * 
+ * @example Usage
+ * ```ts
+ * import { normalizeGlob } from "https://deno.land/std/path/mod.ts";
+ * 
+ * normalizeGlob("foo/bar/../baz"); // "foo/baz"
+ * normalizeGlob("foo/**\/../bar/../baz", { globstar: true }); // "foo/**\/../baz"
+ * ```
+ */
 export function normalizeGlob(
   glob: string,
   options: GlobOptions = {},

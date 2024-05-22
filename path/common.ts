@@ -7,6 +7,11 @@ import { SEPARATOR } from "./constants.ts";
 /** Determines the common path from a set of paths, using an optional separator,
  * which defaults to the OS default separator.
  *
+ * @param paths - paths to search for common path
+ * @param sep - path separator to use
+ * @returns common path
+ * 
+ * @example Usage
  * ```ts
  *       import { common } from "@std/path";
  *       const p = common([

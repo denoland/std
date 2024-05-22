@@ -7,7 +7,22 @@ import { resolve as windowsResolve } from "./windows/resolve.ts";
 
 /**
  * Resolves path segments into a `path`
+ * 
  * @param pathSegments to process to path
+ * @returns resolved path
+ * 
+ * @example Usage
+ * ```ts
+ * import { resolve } from "@std/path/resolve";
+ * 
+ * // posix
+ * resolve("/foo", "bar", "baz"); // "/foo/bar/baz"
+ * resolve("/foo", "/bar", "baz"); // "/bar/baz"
+ * 
+ * // win32
+ * resolve("C:\\foo", "bar", "baz"); // "C:\\foo\\bar\\baz"
+ * resolve("C:\\foo", "C:\\bar", "baz"); // "C:\\bar\\baz"
+ * ```
  */
 export function resolve(...pathSegments: string[]): string {
   return isWindows

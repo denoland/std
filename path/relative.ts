@@ -8,13 +8,20 @@ import { relative as windowsRelative } from "./windows/relative.ts";
 /**
  * Return the relative path from `from` to `to` based on current working directory.
  *
- * An example in windws, for instance:
- *  from = 'C:\\orandea\\test\\aaa'
- *  to = 'C:\\orandea\\impl\\bbb'
- * The output of the function should be: '..\\..\\impl\\bbb'
- *
  * @param from path in current working directory
  * @param to path in current working directory
+ * @returns relative path from `from` to `to`
+ * 
+ * @example Usage
+ * ```ts
+ * import { relative } from "@std/path/relative";
+ * 
+ * // posix
+ * relative("/data/orandea/test/aaa", "/data/orandea/impl/bbb"); // "../../impl/bbb"
+ * 
+ * // win32
+ * relative("C:\\orandea\\test\\aaa", "C:\\orandea\\impl\\bbb"); // "..\\..\\impl\\bbb"
+ * ```
  */
 export function relative(from: string, to: string): string {
   return isWindows ? windowsRelative(from, to) : posixRelative(from, to);

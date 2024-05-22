@@ -8,6 +8,7 @@ import { fromFileUrl as windowsFromFileUrl } from "./windows/from_file_url.ts";
 /**
  * Converts a file URL to a path string.
  *
+ * @example Usage
  * ```ts
  * import { fromFileUrl } from "@std/path/from-file-url";
  *
@@ -20,6 +21,7 @@ import { fromFileUrl as windowsFromFileUrl } from "./windows/from_file_url.ts";
  * fromFileUrl("file://localhost/home/foo"); // "\\\\localhost\\home\\foo"
  * ```
  * @param url of a file URL
+ * @returns path string
  */
 export function fromFileUrl(url: string | URL): string {
   return isWindows ? windowsFromFileUrl(url) : posixFromFileUrl(url);
