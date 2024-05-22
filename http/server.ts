@@ -66,7 +66,7 @@ export interface ServerInit extends Partial<Deno.ListenOptions> {
  * @deprecated This will be removed in 1.0.0. Use {@linkcode Deno.serve} instead.
  *
  * @example Usage
- * ```ts
+ * ```ts no-eval
  * import { Server } from "@std/http/server";
  *
  * const port = 4505;
@@ -282,7 +282,7 @@ export class Server {
    * Throws a server closed error if called after the server has been closed.
    *
    * @example Usage
-   * ```ts
+   * ```ts no-eval
    * import { Server } from "@std/http/server";
    *
    * const handler = (request: Request) => {
