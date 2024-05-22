@@ -133,7 +133,7 @@ export async function calculate(
  * article for more information on how to use this function.
  *
  * @example
- * ```ts, no-eval
+ * ```ts no-eval
  * import {
  *   calculate,
  *   ifMatch,
@@ -181,7 +181,7 @@ export function ifMatch(
  * article for more information on how to use this function.
  *
  * @example
- * ```ts, no-eval
+ * ```ts no-eval
  * import {
  *   calculate,
  *   ifNoneMatch,

@@ -984,7 +984,7 @@ const matchers: Matchers = {
  * determined lazily.
  *
  * @example
- * ```ts, no-eval
+ * ```ts no-eval
  * import { UserAgent } from "@std/http/user-agent";
  *
  * Deno.serve((req) => {
@@ -1006,7 +1006,7 @@ export class UserAgent {
    * Constructs a new instance.
    *
    * @example
-   * ```ts, no-eval
+   * ```ts no-eval
    * import { UserAgent } from "@std/http/user-agent";
    *
    * Deno.serve((req) => {
@@ -1027,7 +1027,7 @@ export class UserAgent {
    * string.
    *
    * @example
-   * ```ts, no-eval
+   * ```ts no-eval
    * import { UserAgent } from "@std/http/user-agent";
    *
    * Deno.serve((req) => {
@@ -1053,7 +1053,7 @@ export class UserAgent {
    * The architecture of the CPU extracted from the user agent string.
    *
    * @example
-   * ```ts, no-eval
+   * ```ts no-eval
    * import { UserAgent } from "@std/http/user-agent";
    *
    * Deno.serve((req) => {
@@ -1078,7 +1078,7 @@ export class UserAgent {
    * string.
    *
    * @example
-   * ```ts, no-eval
+   * ```ts no-eval
    * import { UserAgent } from "@std/http/user-agent";
    *
    * Deno.serve((req) => {
@@ -1102,7 +1102,7 @@ export class UserAgent {
    * The name and version of the browser engine in a user agent string.
    *
    * @example
-   * ```ts, no-eval
+   * ```ts no-eval
    * import { UserAgent } from "@std/http/user-agent";
    *
    * Deno.serve((req) => {
@@ -1126,7 +1126,7 @@ export class UserAgent {
    * The name and version of the operating system in a user agent string.
    *
    * @example
-   * ```ts, no-eval
+   * ```ts no-eval
    * import { UserAgent } from "@std/http/user-agent";
    *
    * Deno.serve((req) => {
@@ -1150,7 +1150,7 @@ export class UserAgent {
    * A read only version of the user agent string related to the instance.
    *
    * @example
-   * ```ts, no-eval
+   * ```ts no-eval
    * import { UserAgent } from "@std/http/user-agent";
    *
    * Deno.serve((req) => {
@@ -1169,7 +1169,7 @@ export class UserAgent {
    * Converts the current instance to a JSON representation.
    *
    * @example
-   * ```ts, no-eval
+   * ```ts no-eval
    * import { UserAgent } from "@std/http/user-agent";
    *
    * Deno.serve((req) => {
@@ -1196,7 +1196,7 @@ export class UserAgent {
    * Converts the current instance to a string.
    *
    * @example
-   * ```ts, no-eval
+   * ```ts no-eval
    * import { UserAgent } from "@std/http/user-agent";
    *
    * Deno.serve((req) => {
@@ -1215,7 +1215,7 @@ export class UserAgent {
    * Custom output for {@linkcode Deno.inspect}.
    *
    * @example
-   * ```ts, no-eval
+   * ```ts no-eval
    * import { UserAgent } from "@std/http/user-agent";
    *
    * Deno.serve((req) => {
@@ -1243,7 +1243,7 @@ export class UserAgent {
    * {@linkcode https://nodejs.org/api/util.html#utilinspectobject-options | util.inspect}.
    *
    * @example
-   * ```ts, no-eval
+   * ```ts no-eval
    * import { UserAgent } from "@std/http/user-agent";
    * import { inspect } from "node:util";
    *

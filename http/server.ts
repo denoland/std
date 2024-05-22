@@ -94,7 +94,7 @@ export class Server {
    * Constructs a new HTTP Server instance.
    *
    * @example
-   * ```ts, no-eval
+   * ```ts no-eval
    * import { Server } from "@std/http/server";
    *
    * const port = 4505;
@@ -134,7 +134,7 @@ export class Server {
    * Will always close the created listener.
    *
    * @example
-   * ```ts, no-eval
+   * ```ts no-eval
    * import { Server } from "@std/http/server";
    *
    * const handler = (request: Request) => {
@@ -187,7 +187,7 @@ export class Server {
    * Throws a server closed error if the server has been closed.
    *
    * @example
-   * ```ts, no-eval
+   * ```ts no-eval
    * import { Server } from "@std/http/server";
    *
    * const port = 4505;
@@ -232,7 +232,7 @@ export class Server {
    * Throws a server closed error if the server has been closed.
    *
    * @example
-   * ```ts, no-eval
+   * ```ts no-eval
    * import { Server } from "@std/http/server";
    *
    * const port = 4505;
@@ -635,7 +635,7 @@ export interface ServeListenerOptions {
  * handles requests on these connections with the given handler.
  *
  * @example
- * ```ts, no-eval
+ * ```ts no-eval
  * import { serveListener } from "@std/http/server";
  *
  * const listener = Deno.listen({ port: 4505 });
@@ -685,7 +685,7 @@ function hostnameForDisplay(hostname: string) {
  * address to listen on. The default is port 8000 on hostname "0.0.0.0".
  *
  * @example The below example serves with the port 8000.
- * ```ts, no-eval
+ * ```ts no-eval
  * import { serve } from "@std/http/server";
  * serve((_req) => new Response("Hello, world"));
  * ```
@@ -693,7 +693,7 @@ function hostnameForDisplay(hostname: string) {
  * @example You can change the listening address by the `hostname` and `port` options.
  * The below example serves with the port 3000.
  *
- * ```ts, no-eval
+ * ```ts no-eval
  * import { serve } from "@std/http/server";
  * serve((_req) => new Response("Hello, world"), { port: 3000 });
  * ```
@@ -702,7 +702,7 @@ function hostnameForDisplay(hostname: string) {
  * on start-up by default. If you like to change this message, you can specify
  * `onListen` option to override it.
  *
- * ```ts, no-eval
+ * ```ts no-eval
  * import { serve } from "@std/http/server";
  * serve((_req) => new Response("Hello, world"), {
  *   onListen({ port, hostname }) {
@@ -714,7 +714,7 @@ function hostnameForDisplay(hostname: string) {
  *
  * @example You can also specify `undefined` or `null` to stop the logging behavior.
  *
- * ```ts, no-eval
+ * ```ts no-eval
  * import { serve } from "@std/http/server";
  * serve((_req) => new Response("Hello, world"), { onListen: undefined });
  * ```
@@ -793,7 +793,7 @@ export interface ServeTlsInit extends ServeInit {
  *
  * @example The below example serves with the default port 8443.
  *
- * ```ts, no-eval
+ * ```ts no-eval
  * import { serveTls } from "@std/http/server";
  *
  * const cert = "-----BEGIN CERTIFICATE-----\n...\n-----END CERTIFICATE-----\n";
@@ -811,7 +811,7 @@ export interface ServeTlsInit extends ServeInit {
  * on start-up by default. If you like to change this message, you can specify
  * `onListen` option to override it.
  *
- * ```ts, no-eval
+ * ```ts no-eval
  * import { serveTls } from "@std/http/server";
  * const certFile = "/path/to/certFile.crt";
  * const keyFile = "/path/to/keyFile.key";
@@ -827,7 +827,7 @@ export interface ServeTlsInit extends ServeInit {
  *
  * @example You can also specify `undefined` or `null` to stop the logging behavior.
  *
- * ```ts, no-eval
+ * ```ts no-eval
  * import { serveTls } from "@std/http/server";
  * const certFile = "/path/to/certFile.crt";
  * const keyFile = "/path/to/keyFile.key";

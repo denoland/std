@@ -150,7 +150,7 @@ export interface ServeFileOptions {
  * Returns an HTTP Response with the requested file as the body.
  *
  * @example
- * ```ts, no-eval
+ * ```ts no-eval
  * import { serveFile } from "@std/http/file-server";
  *
  * Deno.serve((req) => {
@@ -589,7 +589,7 @@ export interface ServeDirOptions {
  * Serves the files under the given directory root (opts.fsRoot).
  *
  * @example
- * ```ts, no-eval
+ * ```ts no-eval
  * import { serveDir } from "@std/http/file-server";
  *
  * Deno.serve((req) => {
@@ -606,7 +606,7 @@ export interface ServeDirOptions {
  *
  * @example Optionally you can pass `urlRoot` option. If it's specified that part is stripped from the beginning of the requested pathname.
  *
- * ```ts, no-eval
+ * ```ts no-eval
  * import { serveDir } from "@std/http/file-server";
  *
  * // ...
