@@ -318,7 +318,7 @@ async function assertConstructorDocs(
 ) {
   for (const param of constructor.params) {
     assert(
-      param.accessibility !== undefined,
+      param.accessibility === undefined,
       "Do not use `public`, `protected`, or `private` parameters in constructors",
       constructor,
     );
