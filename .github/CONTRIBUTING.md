@@ -88,12 +88,8 @@ See the source code within
 examples.
 
 Once the documentation for a given package is written, add the package's entry
-point(s) (usually just `mod.ts`) to:
-
-1. The `ENTRY_POINTS` array in the
-   [documentation checker tool](../_tools/check_docs.ts).
-1. The `lint:docs` task in the
-   [`deno.json` file](https://github.com/denoland/deno_std/blob/main/deno.json).
+point(s) (usually just `mod.ts`) to the `ENTRY_POINTS` array in the
+[documentation checker tool](../_tools/check_docs.ts).
 
 Once done, run `deno task lint:docs` which checks that documentation is complete
 in the given entry points.
