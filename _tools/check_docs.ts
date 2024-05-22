@@ -26,13 +26,14 @@ type DocNodeWithJsDoc<T = DocNodeBase> = T & {
 };
 
 const ENTRY_POINTS = [
-  "../bytes/mod.ts",
   "../async/mod.ts",
-  "../datetime/mod.ts",
+  "../bytes/mod.ts",
   "../collections/mod.ts",
-  "../jsonc/mod.ts",
+  "../datetime/mod.ts",
   "../internal/mod.ts",
+  "../jsonc/mod.ts",
   "../media_types/mod.ts",
+  "../ulid/mod.ts",
   "../webgpu/mod.ts",
 ] as const;
 
@@ -313,10 +314,28 @@ async function checkDocs(specifier: string) {
   }
 }
 
+const ENTRY_POINT_URLS = ENTRY_POINTS.map((entry) =>
+  new URL(entry, import.meta.url).href
+);
+
+const lintStatus = await new Deno.Command(Deno.execPath(), {
+  args: ["doc", "--lint", ...ENTRY_POINT_URLS],
+  stdin: "inherit",
+  stdout: "inherit",
+  stderr: "inherit",
+}).output();
+if (!lintStatus.success) {
+  console.error(
+    `%c[error] %c'deno doc --lint' failed`,
+    "color: red",
+    "",
+  );
+  Deno.exit(1);
+}
+
 const promises = [];
-for (const entry of ENTRY_POINTS) {
-  const { href } = new URL(entry, import.meta.url);
-  promises.push(checkDocs(href));
+for (const url of ENTRY_POINT_URLS) {
+  promises.push(checkDocs(url));
 }
 
 try {
