@@ -74,7 +74,7 @@ function _byteLength(validLen: number, placeHoldersLen: number): number {
  * import { assertEquals } from "@std/assert/assert-equals";
  *
  * assertEquals(
- *   decodeBase32("NRQMA==="),
+ *   decodeBase32("GZRTMMDDGA======"),
  *   new TextEncoder().encode("6c60c0"),
  * );
  * ```
@@ -182,7 +182,7 @@ function encodeChunk(uint8: Uint8Array, start: number, end: number): string {
  * import { encodeBase32 } from "@std/encoding/base32";
  * import { assertEquals } from "@std/assert/assert-equals";
  *
- * assertEquals(encodeBase32("6c60c0"), "NRQMA===");
+ * assertEquals(encodeBase32("6c60c0"), "GZRTMMDDGA======");
  * ```
  */
 export function encodeBase32(data: ArrayBuffer | Uint8Array | string): string {

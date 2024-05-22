@@ -110,7 +110,7 @@ export function decode(buf: Uint8Array, offset = 0): [bigint, number] {
  * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const buf = new Uint8Array([0x8E, 0x02]);
- * assertEquals(decodeVarint(buf), [300n, 2]);
+ * assertEquals(decodeVarint(buf), [270n, 2]);
  * ```
  */
 export function decodeVarint(buf: Uint8Array, offset = 0): [bigint, number] {
@@ -228,7 +228,7 @@ export function decode32(buf: Uint8Array, offset = 0): [number, number] {
  * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const buf = new Uint8Array([0x8E, 0x02]);
- * assertEquals(decodeVarint32(buf), [300, 2]);
+ * assertEquals(decodeVarint32(buf), [270, 2]);
  * ```
  */
 export function decodeVarint32(buf: Uint8Array, offset = 0): [number, number] {
