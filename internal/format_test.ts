@@ -96,3 +96,16 @@ Deno.test("format() doesn't truncate long strings in object", () => {
 }`,
   );
 });
+
+Deno.test("format() has fallback to String if Deno.inspect is not available", () => {
+  // Simulates the environment where Deno.inspect is not available
+  const inspect = Deno.inspect;
+  // deno-lint-ignore no-explicit-any
+  delete (Deno as any).inspect;
+  try {
+    assertEquals(format([..."abcd"]), `"a,b,c,d"`);
+    assertEquals(format({ a: 1, b: 2 }), `"[object Object]"`);
+  } finally {
+    Deno.inspect = inspect;
+  }
+});

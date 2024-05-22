@@ -61,7 +61,6 @@ function getParentIndex(index: number) {
  */
 export class BinaryHeap<T> implements Iterable<T> {
   #data: T[] = [];
-  #compare: (a: T, b: T) => number;
 
   /**
    * Construct an empty binary heap.
@@ -80,14 +79,7 @@ export class BinaryHeap<T> implements Iterable<T> {
    *
    * @param compare A custom comparison function to sort the values in the heap. By default, the values are sorted in descending order.
    */
-  constructor(compare: (a: T, b: T) => number = descend) {
-    if (typeof compare !== "function") {
-      throw new TypeError(
-        "compare must be a function, did you mean to use BinaryHeap.from?",
-      );
-    }
-    this.#compare = compare;
-  }
+  constructor(private compare: (a: T, b: T) => number = descend) {}
 
   /**
    * Returns the underlying cloned array in arbitrary order without sorting.
@@ -146,7 +138,7 @@ export class BinaryHeap<T> implements Iterable<T> {
    */
   static from<T>(
     collection: ArrayLike<T> | Iterable<T> | BinaryHeap<T>,
-    options?: {
+    options: {
       compare?: (a: T, b: T) => number;
     },
   ): BinaryHeap<T>;
@@ -196,7 +188,7 @@ export class BinaryHeap<T> implements Iterable<T> {
     let unmappedValues: ArrayLike<T> | Iterable<T> = [];
     if (collection instanceof BinaryHeap) {
       result = new BinaryHeap(
-        options?.compare ?? (collection as unknown as BinaryHeap<U>).#compare,
+        options?.compare ?? (collection as unknown as BinaryHeap<U>).compare,
       );
       if (options?.compare || options?.map) {
         unmappedValues = collection.#data;
@@ -220,7 +212,7 @@ export class BinaryHeap<T> implements Iterable<T> {
    * The count of values stored in the binary heap.
    *
    * The complexity of this operation is O(1).
-   * 
+   *
    * @example Getting the length of the binary heap
    * ```ts
    * import { BinaryHeap } from "@std/data-structures";
@@ -292,10 +284,10 @@ export class BinaryHeap<T> implements Iterable<T> {
     let left: number = right - 1;
     while (left < size) {
       const greatestChild = right === size ||
-          this.#compare(this.#data[left]!, this.#data[right]!) <= 0
+          this.compare(this.#data[left]!, this.#data[right]!) <= 0
         ? left
         : right;
-      if (this.#compare(this.#data[greatestChild]!, this.#data[parent]!) < 0) {
+      if (this.compare(this.#data[greatestChild]!, this.#data[parent]!) < 0) {
         swap(this.#data, parent, greatestChild);
         parent = greatestChild;
       } else {
@@ -331,8 +323,7 @@ export class BinaryHeap<T> implements Iterable<T> {
       let parent: number = getParentIndex(index);
       this.#data.push(value);
       while (
-        index !== 0 &&
-        this.#compare(this.#data[index]!, this.#data[parent]!) < 0
+        index !== 0 && this.compare(this.#data[index]!, this.#data[parent]!) < 0
       ) {
         swap(this.#data, parent, index);
         index = parent;

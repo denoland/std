@@ -19,7 +19,7 @@
     "lint:circular": "deno run --allow-env --allow-read --allow-net=deno.land,jsr.io ./_tools/check_circular_package_dependencies.ts",
     "lint:mod-exports": "deno run --allow-env --allow-read ./_tools/check_mod_exports.ts",
     "lint:tools-types": "deno check _tools/*.ts",
-    "lint:docs": "deno doc --lint collections/mod.ts data_structures/mod.ts bytes/mod.ts datetime/mod.ts internal/mod.ts media_types/mod.ts url/mod.ts && deno run -A _tools/check_docs.ts",
+    "lint:docs": "deno doc --lint async/mod.ts collections/mod.ts bytes/mod.ts data_structures/mod.ts datetime/mod.ts internal/mod.ts media_types/mod.ts url/mod.ts webgpu/mod.ts && deno run -A _tools/check_docs.ts",
     "lint": "deno lint && deno task fmt:licence-headers --check && deno task lint:circular && deno task lint:deprecations && deno task lint:tools-types && deno task lint:mod-exports && deno task lint:docs",
     "typos": "typos -c ./.github/workflows/typos.toml",
     "build:crypto": "deno task --cwd crypto/_wasm wasmbuild",
