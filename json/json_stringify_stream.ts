@@ -34,7 +34,7 @@ export interface StringifyStreamOptions {
  *
  * This can be used to stringify {@link https://jsonlines.org/ | JSON lines},
  * {@link https://ndjson.org/ | NDJSON},
- * {@link https://datatracker.ietf.org/doc/html/rfc7464 | JSON Text Sequences},
+ * {@link https://www.rfc-editor.org/rfc/rfc7464.html | JSON Text Sequences},
  * and {@link https://en.wikipedia.org/wiki/JSON_streaming#Concatenated_JSON | Concatenated JSON}.
  *
  * You can optionally specify a prefix and suffix for each chunk. The default prefix is `""` and the default suffix is `"\n"`.
@@ -53,7 +53,7 @@ export interface StringifyStreamOptions {
  * ```
  *
  * @example
- * To convert to [JSON Text Sequences](https://datatracker.ietf.org/doc/html/rfc7464), set the
+ * To convert to [JSON Text Sequences](https://www.rfc-editor.org/rfc/rfc7464.html), set the
  * prefix to the delimiter "\x1E" as options.
  * ```ts
  * import { JsonStringifyStream } from "@std/json/json-stringify-stream";

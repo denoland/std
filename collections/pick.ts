@@ -5,8 +5,8 @@
  * Creates a new object by including the specified keys from the provided
  * object.
  *
- * @template T The type of the object.
- * @template K The type of the keys.
+ * @typeParam T The type of the object.
+ * @typeParam K The type of the keys.
  *
  * @param obj The object to pick keys from.
  * @param keys The keys to include in the new object.

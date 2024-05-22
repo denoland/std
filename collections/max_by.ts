@@ -5,7 +5,7 @@
  * Returns the first element that is the largest value of the given function or
  * undefined if there are no elements.
  *
- * @template T The type of the elements in the array.
+ * @typeParam T The type of the elements in the array.
  *
  * @param array The array to find the maximum element in.
  * @param selector The function to get the value to compare from each element.
@@ -37,7 +37,7 @@ export function maxBy<T>(
  * Returns the first element that is the largest value of the given function or
  * undefined if there are no elements.
  *
- * @template T The type of the elements in the array.
+ * @typeParam T The type of the elements in the array.
  *
  * @param array The array to find the maximum element in.
  * @param selector The function to get the value to compare from each element.
@@ -69,7 +69,7 @@ export function maxBy<T>(
  * Returns the first element that is the largest value of the given function or
  * undefined if there are no elements.
  *
- * @template T The type of the elements in the array.
+ * @typeParam T The type of the elements in the array.
  *
  * @param array The array to find the maximum element in.
  * @param selector The function to get the value to compare from each element.
@@ -101,7 +101,7 @@ export function maxBy<T>(
  * Returns the first element that is the largest value of the given function or
  * undefined if there are no elements.
  *
- * @template T The type of the elements in the array.
+ * @typeParam T The type of the elements in the array.
  *
  * @param array The array to find the maximum element in.
  * @param selector The function to get the value to compare from each element.

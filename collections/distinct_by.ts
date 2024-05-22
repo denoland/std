@@ -5,8 +5,8 @@
  * Returns all elements in the given array that produce a distinct value using
  * the given selector, preserving order by first occurrence.
  *
- * @template T The type of the elements in the input array.
- * @template D The type of the values produced by the selector function.
+ * @typeParam T The type of the elements in the input array.
+ * @typeParam D The type of the values produced by the selector function.
  *
  * @param array The array to filter for distinct elements.
  * @param selector The function to extract the value to compare for

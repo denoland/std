@@ -49,11 +49,11 @@ export function indexOfNeedle(
   needle: Uint8Array,
   start = 0,
 ): number {
-  if (start >= source.length) {
-    return -1;
-  }
   if (start < 0) {
     start = Math.max(0, source.length + start);
+  }
+  if (needle.length > source.length - start) {
+    return -1;
   }
   const s = needle[0];
   for (let i = start; i < source.length; i++) {

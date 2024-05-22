@@ -11,16 +11,26 @@ import type { DiffResult, DiffType } from "./types.ts";
  * @param background If true, colors the background instead of the text.
  *
  * @returns A function that colors the input string.
+ *
+ * @example Usage
+ * ```ts
+ * import { createColor } from "@std/internal";
+ * import { assertEquals } from "@std/assert/assert-equals";
+ * import { bold, green, red, white } from "@std/fmt/colors";
+ *
+ * assertEquals(createColor("added")("foo"), green(bold("foo")));
+ * assertEquals(createColor("removed")("foo"), red(bold("foo")));
+ * assertEquals(createColor("common")("foo"), white("foo"));
+ * ```
  */
-function createColor(
+export function createColor(
   diffType: DiffType,
-  background = false,
-): (s: string) => string {
   /**
    * TODO(@littledivy): Remove this when we can detect true color terminals. See
    * https://github.com/denoland/deno_std/issues/2575.
    */
-  background = false;
+  background = false,
+): (s: string) => string {
   switch (diffType) {
     case "added":
       return (s) => background ? bgGreen(white(s)) : green(bold(s));
@@ -37,8 +47,18 @@ function createColor(
  * @param diffType Difference type, either added or removed
  *
  * @returns A string representing the sign.
+ *
+ * @example Usage
+ * ```ts
+ * import { createSign } from "@std/internal";
+ * import { assertEquals } from "@std/assert/assert-equals";
+ *
+ * assertEquals(createSign("added"), "+   ");
+ * assertEquals(createSign("removed"), "-   ");
+ * assertEquals(createSign("common"), "    ");
+ * ```
  */
-function createSign(diffType: DiffType): string {
+export function createSign(diffType: DiffType): string {
   switch (diffType) {
     case "added":
       return "+   ";
@@ -69,9 +89,9 @@ export interface BuildMessageOptions {
  *
  * @example Usage
  * ```ts
- * import { diffstr, buildMessage } from "@std/internal";
+ * import { diffStr, buildMessage } from "@std/internal";
  *
- * const diffResult = diffstr("Hello, world!", "Hello, world");
+ * const diffResult = diffStr("Hello, world!", "Hello, world");
  *
  * console.log(buildMessage(diffResult));
  * // [

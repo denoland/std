@@ -28,6 +28,6 @@ import { types } from "./_db.ts";
  */
 export function typeByExtension(extension: string): string | undefined {
   extension = extension.startsWith(".") ? extension.slice(1) : extension;
-  // @ts-ignore Workaround around for https://github.com/denoland/dnt/issues/148
+  // @ts-ignore Work around https://github.com/denoland/dnt/issues/148
   return types.get(extension.toLowerCase());
 }

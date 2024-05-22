@@ -1,12 +1,37 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import { diffstr } from "./diff_str.ts";
+import { createDetails, diffStr, tokenize, unescape } from "./diff_str.ts";
 import { assertEquals } from "@std/assert/assert-equals";
 
 Deno.test({
-  name: 'diff() "a b c d" vs "a b x d e" (diffstr)',
+  name: 'diff() "a" vs "b" (diffstr)',
   fn() {
-    const diffResult = diffstr(
+    const diffResult = diffStr("a", "b");
+    assertEquals(diffResult, [
+      {
+        details: [
+          { type: "removed", value: "a" },
+          { type: "common", value: "\n" },
+        ],
+        type: "removed",
+        value: "a\n",
+      },
+      {
+        details: [
+          { type: "added", value: "b" },
+          { type: "common", value: "\n" },
+        ],
+        type: "added",
+        value: "b\n",
+      },
+    ]);
+  },
+});
+
+Deno.test({
+  name: 'diff() "a b c d" vs "a b x d e" (diffStr)',
+  fn() {
+    const diffResult = diffStr(
       [..."abcd"].join("\n"),
       [..."abxde"].join("\n"),
     );
@@ -57,9 +82,9 @@ Deno.test({
 });
 
 Deno.test({
-  name: `diff() "3.14" vs "2.71" (diffstr)`,
+  name: `diff() "3.14" vs "2.71" (diffStr)`,
   fn() {
-    const diffResult = diffstr("3.14", "2.71");
+    const diffResult = diffStr("3.14", "2.71");
     assertEquals(diffResult, [
       {
         type: "removed",
@@ -110,9 +135,9 @@ Deno.test({
 });
 
 Deno.test({
-  name: `diff() single line "a b" vs "c d" (diffstr)`,
+  name: `diff() single line "a b" vs "c d" (diffStr)`,
   fn() {
-    const diffResult = diffstr("a b", "c d");
+    const diffResult = diffStr("a b", "c d");
     assertEquals(diffResult, [
       {
         type: "removed",
@@ -139,9 +164,9 @@ Deno.test({
 });
 
 Deno.test({
-  name: `diff() single line, different word length "a bc" vs "cd e" (diffstr)`,
+  name: `diff() single line, different word length "a bc" vs "cd e" (diffStr)`,
   fn() {
-    const diffResult = diffstr("a bc", "cd e");
+    const diffResult = diffStr("a bc", "cd e");
     assertEquals(diffResult, [
       {
         type: "removed",
@@ -168,9 +193,9 @@ Deno.test({
 });
 
 Deno.test({
-  name: `diff() "\\b\\f\\r\\t\\v\\n" vs "\\r\\n" (diffstr)`,
+  name: `diff() "\\b\\f\\r\\t\\v\\n" vs "\\r\\n" (diffStr)`,
   fn() {
-    const diffResult = diffstr("\b\f\r\t\v\n", "\r\n");
+    const diffResult = diffStr("\b\f\r\t\v\n", "\r\n");
     assertEquals(diffResult, [
       {
         type: "removed",
@@ -211,7 +236,7 @@ Deno.test({
 Deno.test({
   name: "diff() multiline with more removed lines",
   fn() {
-    const diffResult = diffstr("a\na", "e");
+    const diffResult = diffStr("a\na", "e");
     assertEquals(diffResult, [
       {
         type: "removed",
@@ -234,5 +259,49 @@ Deno.test({
         ],
       },
     ]);
+  },
+});
+
+Deno.test({
+  name: "createDetails()",
+  fn() {
+    const tokens = [
+      { type: "added", value: "a" },
+      { type: "removed", value: "b" },
+      { type: "common", value: "c" },
+    ] as const;
+    for (const token of tokens) {
+      assertEquals(
+        createDetails(token, [...tokens]),
+        tokens.filter(({ type }) => type === token.type || type === "common"),
+      );
+    }
+  },
+});
+
+Deno.test({
+  name: "tokenize()",
+  fn() {
+    assertEquals(tokenize("a\nb"), ["a\n", "b"]);
+    assertEquals(tokenize("a\r\nb"), ["a\r\n", "b"]);
+    assertEquals(tokenize("a\nb\n"), ["a\n", "b\n"]);
+    assertEquals(tokenize("a b"), ["a b"]);
+    assertEquals(tokenize("a b", true), ["a", " ", "b"]);
+    assertEquals(tokenize("abc bcd", true), ["abc", " ", "bcd"]);
+    assertEquals(tokenize("abc ", true), ["abc", " "]);
+  },
+});
+
+Deno.test({
+  name: "unescape()",
+  fn() {
+    assertEquals(unescape("Hello\nWorld"), "Hello\\n\nWorld");
+    assertEquals(unescape("a\b"), "a\\b");
+    assertEquals(unescape("a\f"), "a\\f");
+    assertEquals(unescape("a\t"), "a\\t");
+    assertEquals(unescape("a\v"), "a\\v");
+    assertEquals(unescape("a\r"), "a\\r");
+    assertEquals(unescape("a\n"), "a\\n\n");
+    assertEquals(unescape("a\r\n"), "a\\r\\n\r\n");
   },
 });

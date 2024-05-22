@@ -5,8 +5,8 @@
  * Applies the given transformer to all entries in the given record and returns
  * a new record containing the results.
  *
- * @template T The type of the values in the input record.
- * @template O The type of the values in the output record.
+ * @typeParam T The type of the values in the input record.
+ * @typeParam O The type of the values in the output record.
  *
  * @param record The record to map entries from.
  * @param transformer The function to transform each entry.

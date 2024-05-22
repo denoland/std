@@ -3,7 +3,7 @@
 
 /**
  * Utilities for
- * {@link https://datatracker.ietf.org/doc/html/rfc4648#section-5 | base64url}
+ * {@link https://www.rfc-editor.org/rfc/rfc4648.html#section-5 | base64url}
  * encoding and decoding.
  *
  * This module is browser compatible.
@@ -47,7 +47,7 @@ function convertBase64ToBase64url(b64: string) {
 /**
  * Convert data into a base64url-encoded string.
  *
- * @see {@link https://datatracker.ietf.org/doc/html/rfc4648#section-5}
+ * @see {@link https://www.rfc-editor.org/rfc/rfc4648.html#section-5}
  *
  * @param data The data to encode.
  * @returns The base64url-encoded string.
@@ -68,7 +68,7 @@ export function encodeBase64Url(
 /**
  * Decodes a given base64url-encoded string.
  *
- * @see {@link https://datatracker.ietf.org/doc/html/rfc4648#section-5}
+ * @see {@link https://www.rfc-editor.org/rfc/rfc4648.html#section-5}
  *
  * @param b64url The base64url-encoded string to decode.
  * @returns The decoded data.
