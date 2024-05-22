@@ -12,7 +12,7 @@ interface TaggedYieldedValue<T> {
  * yielded from the iterator) does not matter; if there is any result, it is
  * discarded.
  *
- * @example
+ * @example Usage
  * ```ts
  * import { MuxAsyncIterator } from "@std/async/mux-async-iterator";
  *
@@ -51,7 +51,7 @@ export class MuxAsyncIterator<T> implements AsyncIterable<T> {
    *
    * @param iterable The async iterable to add.
    *
-   * @example
+   * @example Usage
    * ```ts
    * import { MuxAsyncIterator } from "@std/async/mux-async-iterator";
    *
@@ -90,7 +90,7 @@ export class MuxAsyncIterator<T> implements AsyncIterable<T> {
    * Returns an async iterator of the stream.
    * @returns the async iterator for all the added async iterables.
    *
-   * @example
+   * @example Usage
    * ```ts
    * import { MuxAsyncIterator } from "@std/async/mux-async-iterator";
    *
@@ -134,7 +134,7 @@ export class MuxAsyncIterator<T> implements AsyncIterable<T> {
    * Implements an async iterator for the stream.
    * @returns the async iterator for all the added async iterables.
    *
-   * @example
+   * @example Usage
    * ```ts
    * import { MuxAsyncIterator } from "@std/async/mux-async-iterator";
    *

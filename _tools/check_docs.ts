@@ -30,6 +30,7 @@ const ENTRY_POINTS = [
   "../async/mod.ts",
   "../datetime/mod.ts",
   "../collections/mod.ts",
+  "../jsonc/mod.ts",
   "../internal/mod.ts",
   "../media_types/mod.ts",
   "../webgpu/mod.ts",
@@ -115,7 +116,16 @@ function assertHasExampleTag(document: { jsDoc: JsDoc; location: Location }) {
   for (const tag of (tags as JsDocTagDocRequired[])) {
     assert(
       tag.doc !== undefined,
-      "@example tag must have a description",
+      "@example tag must have a title and TypeScript code snippet",
+      document,
+    );
+    /**
+     * Otherwise, if the example title is undefined, it is given the title
+     * "Example #" by default.
+     */
+    assert(
+      !tag.doc.startsWith("```ts"),
+      "@example tag must have a title",
       document,
     );
     const snippets = tag.doc.match(TS_SNIPPET);
