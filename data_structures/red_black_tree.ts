@@ -111,9 +111,12 @@ export class RedBlackTree<T> extends BinarySearchTree<T> {
    *
    * @param compare A custom comparison function for the values. The default comparison function sorts by ascending order.
    */
-  constructor(
-    compare: (a: T, b: T) => number = ascend,
-  ) {
+  constructor(compare: (a: T, b: T) => number = ascend) {
+    if (typeof compare !== "function") {
+      throw new TypeError(
+        "compare must be a function, did you mean to call RedBlackTree.from?",
+      );
+    }
     super(compare);
   }
 
@@ -219,7 +222,7 @@ export class RedBlackTree<T> extends BinarySearchTree<T> {
     let unmappedValues: ArrayLike<T> | Iterable<T> = [];
     if (collection instanceof RedBlackTree) {
       result = new RedBlackTree(
-        options?.compare ?? (collection as unknown as RedBlackTree<U>).compare,
+        options?.compare ?? (collection as unknown as RedBlackTree<U>).#compare,
       );
       if (options?.compare || options?.map) {
         unmappedValues = collection;
