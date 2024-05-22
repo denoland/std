@@ -282,7 +282,7 @@ export class Server {
    * Throws a server closed error if called after the server has been closed.
    *
    * @example Usage
-   * ```ts
+   * ```ts no-eval
    * import { Server } from "@std/http/server";
    *
    * const handler = (request: Request) => {
@@ -335,7 +335,7 @@ export class Server {
    * Get whether the server is closed.
    *
    * @example Usage
-   * ```ts
+   * ```ts no-eval
    * import { Server } from "@std/http/server";
    *
    * const handler = (request: Request) => {
