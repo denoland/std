@@ -30,7 +30,7 @@ export interface DelayOptions {
  *
  * @example Disable persistence
  *
- * Setting `peristent` to `false` will allow the process to continue to run as
+ * Setting `persistent` to `false` will allow the process to continue to run as
  * long as the timer exists.
  *
  * ```ts
