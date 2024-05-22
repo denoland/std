@@ -916,11 +916,23 @@ class Printf {
 }
 
 /**
- * Converts and format a variable number of `args` as is specified by `format`.
+ * Converts and formats a variable number of `args` as is specified by `format`.
  * `sprintf` returns the formatted string.
  *
- * @param format
- * @param args
+ * @example Usage
+ * ```ts
+ * import { sprintf } from "@std/fmt/printf";
+ * import { assertEquals } from "@std/assert"
+ *
+ * assertEquals(sprintf("%d", 9), "9");
+ * assertEquals(sprintf("%o", 9), "11");
+ * assertEquals(sprintf("%f", 4), "4.000000");
+ * assertEquals(sprintf("%.3f", 0.9999), "1.000");
+ * ```
+ *
+ * @param format The format string to use
+ * @param args The arguments to format
+ * @returns formatted string
  */
 export function sprintf(format: string, ...args: unknown[]): string {
   const printf = new Printf(format, ...args);
@@ -930,8 +942,19 @@ export function sprintf(format: string, ...args: unknown[]): string {
 /**
  * Converts and format a variable number of `args` as is specified by `format`.
  * `printf` writes the formatted string to standard output.
- * @param format
- * @param args
+ *
+ * @example Usage
+ * ```ts
+ * import { printf } from "@std/fmt/printf";
+ *
+ * printf("%d", 9); // prints "9"
+ * printf("%o", 9); // prints "11"
+ * printf("%f", 4); // prints "4.000000"
+ * printf("%.3f", 0.9999); // prints "1.000"
+ * ```
+ *
+ * @param format The format string to use
+ * @param args The arguments to format
  */
 export function printf(format: string, ...args: unknown[]) {
   const s = sprintf(format, ...args);
