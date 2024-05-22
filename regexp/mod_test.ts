@@ -1,6 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import { escape } from "./escape.ts";
+import { escape } from "./mod.ts";
 import { assertEquals, assertMatch, assertNotMatch } from "@std/assert";
 
 const ALL_ASCII =
