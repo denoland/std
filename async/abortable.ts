@@ -11,7 +11,7 @@ import { createAbortError } from "./_util.ts";
  * @param signal The signal to abort the promise with.
  * @returns A promise that can be aborted.
  *
- * @example
+ * @example Usage
  * ```ts no-eval
  * import {
  *   abortable,
@@ -35,7 +35,7 @@ export function abortable<T>(p: Promise<T>, signal: AbortSignal): Promise<T>;
  * @param signal The signal to abort the promise with.
  * @returns An async iterable that can be aborted.
  *
- * @example
+ * @example Usage
  * ```ts no-eval
  * import {
  *   abortable,
@@ -81,7 +81,7 @@ export function abortable<T>(
  * @param signal The signal to abort the promise with.
  * @returns A promise that can be aborted.
  *
- * @example
+ * @example Usage
  * ```ts no-eval
  * import { abortablePromise } from "@std/async/abortable";
  *
@@ -119,7 +119,7 @@ export function abortablePromise<T>(
  * @param signal The signal to abort the promise with.
  * @returns An async iterable that can be aborted.
  *
- * @example
+ * @example Usage
  * ```ts no-eval
  * import {
  *   abortableAsyncIterable,
