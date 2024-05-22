@@ -287,7 +287,11 @@ if (Deno.args.includes("--graph")) {
 } else if (Deno.args.includes("--all-imports")) {
   for (const [mod, entrypoints] of Object.entries(ENTRYPOINTS)) {
     for (const path of entrypoints) {
-      console.log(`import "std/${mod}/${path}";`);
+      if (path === "mod.ts") {
+        console.log(`import "jsr:@std/${mod.replaceAll("_", "-")}";`);
+      } else {
+        console.log(`import "jsr:@std/${mod.replaceAll("_", "-")}/${path.replace(".ts", "").replaceAll("_", "-")}";`);
+      }
     }
   }
 } else {
