@@ -261,7 +261,7 @@ class Dumper {
 /**
  * Stringify dumps source object into TOML string and returns it.
  *
- * @example
+ * @example Stringify an object
  * ```ts
  * import { stringify } from "@std/toml";
  *

@@ -6,7 +6,7 @@ import { ParserFactory, Toml } from "./_parser.ts";
 /**
  * Parse parses TOML string into an object.
  *
- * @example
+ * @example Decode TOML string
  * ```ts
  * import { parse } from "./mod.ts";
  * const tomlString = `title = "TOML Example"
