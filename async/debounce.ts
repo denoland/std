@@ -23,7 +23,7 @@ export interface DebouncedFunction<T extends Array<unknown>> {
  * aborted.
  *
  * @example
- * ```ts
+ * ```ts no-eval
  * import { debounce } from "@std/async/debounce";
  *
  * await Array.fromAsync(
@@ -36,8 +36,10 @@ export interface DebouncedFunction<T extends Array<unknown>> {
  * // output: Function debounced after 200ms with baz
  * ```
  *
+ * @typeParam T The arguments of the provided function.
  * @param fn    The function to debounce.
  * @param wait  The time in milliseconds to delay the function.
+ * @returns     The debounced function.
  */
 // deno-lint-ignore no-explicit-any
 export function debounce<T extends Array<any>>(
