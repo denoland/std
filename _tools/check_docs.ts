@@ -30,6 +30,7 @@ const ENTRY_POINTS = [
   "../async/mod.ts",
   "../datetime/mod.ts",
   "../collections/mod.ts",
+  "../jsonc/mod.ts",
   "../internal/mod.ts",
   "../media_types/mod.ts",
   "../webgpu/mod.ts",
