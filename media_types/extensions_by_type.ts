@@ -15,7 +15,7 @@ import { extensions } from "./_db.ts";
  * @returns The extensions for the given media type, or `undefined` if no
  * extensions are found.
  *
- * @example
+ * @example Usage
  * ```ts
  * import { extensionsByType } from "@std/media-types/extensions-by-type";
  * import { assertEquals } from "@std/assert/assert-equals";
