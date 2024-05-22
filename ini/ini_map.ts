@@ -173,7 +173,7 @@ export class IniMap {
   #formatting: Formatting;
 
   /** Constructs a new `IniMap`.
-   * @param formatting - Optional formatting options when printing an INI file.
+   * @param formatting Optional formatting options when printing an INI file.
    */
   constructor(formatting?: FormattingOptions) {
     this.#formatting = this.#cleanFormatting(formatting);
