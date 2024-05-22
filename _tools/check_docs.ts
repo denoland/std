@@ -40,6 +40,7 @@ const ENTRY_POINTS = [
 const TS_SNIPPET = /```ts[\s\S]*?```/g;
 const NEWLINE = "\n";
 const diagnostics: DocumentError[] = [];
+const snippetPromises: Promise<void>[] = [];
 
 class DocumentError extends Error {
   constructor(
@@ -116,7 +117,7 @@ function assertHasParamTag(
   }
 }
 
-async function assertHasExampleTag(
+function assertHasExampleTag(
   document: { jsDoc: JsDoc; location: Location },
 ) {
   const tags = document.jsDoc.tags?.filter((tag) => tag.kind === "example");
@@ -164,22 +165,24 @@ async function assertHasExampleTag(
         ],
         stderr: "piped",
       });
-      const timeoutId = setTimeout(() => {
-        console.log("Snippet has been running for more than 10 seconds...");
-        console.log(snippet);
-      }, 10_000);
-      try {
-        const { success, stderr } = await command.output();
-        assert(
-          success,
-          `Example code snippet failed to execute: \n${snippet}\n${
-            new TextDecoder().decode(stderr)
-          }`,
-          document,
-        );
-      } finally {
-        clearTimeout(timeoutId);
-      }
+      snippetPromises.push((async () => {
+        const timeoutId = setTimeout(() => {
+          console.log("Snippet has been running for more than 10 seconds...");
+          console.log(snippet);
+        }, 10_000);
+        try {
+          const { success, stderr } = await command.output();
+          assert(
+            success,
+            `Example code snippet failed to execute: \n${snippet}\n${
+              new TextDecoder().decode(stderr)
+            }`,
+            document,
+          );
+        } finally {
+          clearTimeout(timeoutId);
+        }
+      })());
     }
   }
 }
@@ -216,7 +219,7 @@ function assertHasTypeParamTags(
  * - At least one {@linkcode https://jsdoc.app/tags-example | @example} tag with
  *   a code snippet that executes successfully.
  */
-async function assertFunctionDocs(
+function assertFunctionDocs(
   document: DocNodeWithJsDoc<DocNodeFunction | ClassMethodDef>,
 ) {
   for (const param of document.functionDef.params) {
@@ -236,7 +239,7 @@ async function assertFunctionDocs(
   ) {
     assertHasReturnTag(document);
   }
-  await assertHasExampleTag(document);
+  assertHasExampleTag(document);
 }
 
 /**
@@ -246,11 +249,11 @@ async function assertFunctionDocs(
  *   a code snippet that executes successfully.
  * - Documentation on all properties, methods, and constructors.
  */
-async function assertClassDocs(document: DocNodeWithJsDoc<DocNodeClass>) {
+function assertClassDocs(document: DocNodeWithJsDoc<DocNodeClass>) {
   for (const typeParam of document.classDef.typeParams) {
     assertHasTypeParamTags(document, typeParam.name);
   }
-  await assertHasExampleTag(document);
+  assertHasExampleTag(document);
 
   for (const property of document.classDef.properties) {
     if (property.jsDoc === undefined) continue; // this is caught by `deno doc --lint`
@@ -263,7 +266,7 @@ async function assertClassDocs(document: DocNodeWithJsDoc<DocNodeClass>) {
       );
       continue;
     }
-    await assertClassPropertyDocs(
+    assertClassPropertyDocs(
       property as DocNodeWithJsDoc<ClassPropertyDef>,
     );
   }
@@ -289,7 +292,7 @@ async function assertClassDocs(document: DocNodeWithJsDoc<DocNodeClass>) {
         ),
       );
     }
-    await assertConstructorDocs(
+    assertConstructorDocs(
       constructor as DocNodeWithJsDoc<ClassConstructorDef>,
     );
   }
@@ -300,10 +303,10 @@ async function assertClassDocs(document: DocNodeWithJsDoc<DocNodeClass>) {
  * - At least one {@linkcode https://jsdoc.app/tags-example | @example} tag with
  *   a code snippet that executes successfully.
  */
-async function assertClassPropertyDocs(
+function assertClassPropertyDocs(
   property: DocNodeWithJsDoc<ClassPropertyDef>,
 ) {
-  await assertHasExampleTag(property);
+  assertHasExampleTag(property);
 }
 
 /**
@@ -313,7 +316,7 @@ async function assertClassPropertyDocs(
  * - At least one {@linkcode https://jsdoc.app/tags-example | @example} tag with
  *   a code snippet that executes successfully.
  */
-async function assertConstructorDocs(
+function assertConstructorDocs(
   constructor: DocNodeWithJsDoc<ClassConstructorDef>,
 ) {
   for (const param of constructor.params) {
@@ -329,7 +332,7 @@ async function assertConstructorDocs(
       assertHasParamTag(constructor, param.left.name);
     }
   }
-  await assertHasExampleTag(constructor);
+  assertHasExampleTag(constructor);
 }
 
 async function checkDocs(specifier: string) {
@@ -339,11 +342,11 @@ async function checkDocs(specifier: string) {
     const document = d as DocNodeWithJsDoc<DocNode>;
     switch (document.kind) {
       case "function": {
-        await assertFunctionDocs(document);
+        assertFunctionDocs(document);
         break;
       }
       case "class": {
-        await assertClassDocs(document);
+        assertClassDocs(document);
         break;
       }
     }
@@ -375,6 +378,7 @@ for (const url of ENTRY_POINT_URLS) {
 }
 
 await Promise.all(promises);
+await Promise.all(snippetPromises);
 if (diagnostics.length > 0) {
   for (const error of diagnostics) {
     console.error(
