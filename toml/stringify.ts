@@ -260,9 +260,25 @@ class Dumper {
 
 /**
  * Stringify dumps source object into TOML string and returns it.
- * @param srcObj
+ *
+ * @example
+ * ```ts
+ * import { stringify } from "@std/toml";
+ *
+ * const obj = {
+ *  title: "TOML Example",
+ *  owner: {
+ *    name: "Bob",
+ *    bio: "Bob is a cool guy",
+ *  }
+ * };
+ * const tomlString = stringify(obj);
+ * console.log(tomlString);
+ * ```
+ * @param srcObj source object
  * @param [fmtOptions] format options
  * @param [fmtOptions.keyAlignment] whether to align keys
+ * @returns TOML string
  */
 export function stringify(
   srcObj: Record<string, unknown>,
