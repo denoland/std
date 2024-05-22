@@ -1,3 +1,97 @@
+### 2024.05.22
+
+#### @std/assert 0.225.3 (patch)
+
+- refactor(assert,internal): rename `diffstr()` to `diffStr()` (#4758)
+
+#### @std/async 0.224.1 (patch)
+
+- docs(async): improve docs for stabilization (#4803)
+
+#### @std/bytes 1.0.0-rc.3 (prerelease)
+
+- perf(bytes): skip doing extra work in some scenarios (#4767)
+- test(bytes): add test for negative `start` index for `indexOfNeedle()` (#4768)
+
+#### @std/cli 0.224.3 (patch)
+
+- chore(cli): remove outdated todo comment (#4787)
+
+#### @std/collections 1.0.0-rc.1 (prerelease)
+
+- feat(collections): `collections@1.0.0-rc.1` (#4697)
+- docs(collections,internal,media-types): use `@typeParam` tag instead of
+  `@template` (#4772)
+- docs(collections): fix typos and improve example (#4763)
+- docs(collections): update module doc (#4765)
+
+#### @std/csv 0.224.1 (patch)
+
+- docs(csv,encoding,http,json,media-types,uuid): use `rfc-editor.org` for RFC
+  links (#4777)
+
+#### @std/data-structures 0.225.0 (minor)
+
+- BREAKING(data-structures): hide private internals (#4794)
+- docs(data-structures): improve documentation (#4793)
+
+#### @std/encoding 0.224.2 (patch)
+
+- docs(csv,encoding,http,json,media-types,uuid): use `rfc-editor.org` for RFC
+  links (#4777)
+
+#### @std/expect 0.224.2 (patch)
+
+- fix(expect): updated error message for toContain (#4750)
+
+#### @std/http 0.224.1 (patch)
+
+- docs(csv,encoding,http,json,media-types,uuid): use `rfc-editor.org` for RFC
+  links (#4777)
+
+#### @std/internal 1.0.0 (major)
+
+- docs(collections,internal,media-types): use `@typeParam` tag instead of
+  `@template` (#4772)
+- docs(internal): add module docs (#4757)
+- refactor(assert,internal): rename `diffstr()` to `diffStr()` (#4758)
+- test(internal): improve test coverage (#4779)
+
+#### @std/json 0.224.1 (patch)
+
+- docs(csv,encoding,http,json,media-types,uuid): use `rfc-editor.org` for RFC
+  links (#4777)
+
+#### @std/media-types 1.0.0-rc.1 (prerelease)
+
+- fix(media-types): do not expose vendored json file as public API (#4776)
+- docs(collections,internal,media-types): use `@typeParam` tag instead of
+  `@template` (#4772)
+- docs(csv,encoding,http,json,media-types,uuid): use `rfc-editor.org` for RFC
+  links (#4777)
+- chore(media-types): `media-types@1.0.0-rc.1` (#4744)
+
+#### @std/msgpack 0.224.1 (patch)
+
+- fix(msgpack): encode maps with null prototype (#4764)
+
+#### @std/regexp 0.224.1 (patch)
+
+- docs(regexp): update module example to get full jsr score (#4796)
+
+#### @std/streams 0.224.1 (patch)
+
+- feat(streams): `concatReadableStreams()` (#4747)
+
+#### @std/uuid 0.224.2 (patch)
+
+- docs(csv,encoding,http,json,media-types,uuid): use `rfc-editor.org` for RFC
+  links (#4777)
+
+#### @std/webgpu 0.224.2 (patch)
+
+- docs(webgpu): improve docs for stabilization (#4811)
+
 ### 2024.05.16
 
 #### @std/assert 0.225.2 (patch)
