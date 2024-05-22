@@ -30,9 +30,8 @@
 - docs(csv,encoding,http,json,media-types,uuid): use `rfc-editor.org` for RFC
   links (#4777)
 
-#### @std/data-structures 0.225.0 (minor)
+#### @std/data-structures 0.224.1 (patch)
 
-- BREAKING(data-structures): hide private internals (#4794)
 - docs(data-structures): improve documentation (#4793)
 
 #### @std/encoding 0.224.2 (patch)
