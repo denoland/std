@@ -11,7 +11,6 @@
 #### @std/bytes 1.0.0-rc.3 (prerelease)
 
 - perf(bytes): skip doing extra work in some scenarios (#4767)
-- test(bytes): add test for negative `start` index for `indexOfNeedle()` (#4768)
 
 #### @std/cli 0.224.3 (patch)
 
@@ -54,7 +53,6 @@
   `@template` (#4772)
 - docs(internal): add module docs (#4757)
 - refactor(assert,internal): rename `diffstr()` to `diffStr()` (#4758)
-- test(internal): improve test coverage (#4779)
 
 #### @std/json 0.224.1 (patch)
 
