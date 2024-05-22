@@ -23,7 +23,7 @@ export interface DebouncedFunction<T extends Array<unknown>> {
  * aborted.
  *
  * @example
- * ```ts, no-eval
+ * ```ts no-eval
  * import { debounce } from "@std/async/debounce";
  *
  * await Array.fromAsync(
