@@ -83,8 +83,8 @@ function textureMipLevelSize(
 /**
  * Create a {@linkcode GPUTexture} with data.
  *
- * @example
- * ```ts, no-eval
+ * @example Usage
+ * ```ts no-eval
  * import { createTextureWithData } from "@std/webgpu/texture-with-data";
  *
  * const adapter = await navigator.gpu.requestAdapter();

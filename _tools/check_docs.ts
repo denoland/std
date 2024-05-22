@@ -26,11 +26,15 @@ type DocNodeWithJsDoc<T = DocNodeBase> = T & {
 };
 
 const ENTRY_POINTS = [
+  "../async/mod.ts",
   "../bytes/mod.ts",
-  "../datetime/mod.ts",
+  "../cli/mod.ts",
   "../collections/mod.ts",
+  "../datetime/mod.ts",
   "../internal/mod.ts",
+  "../jsonc/mod.ts",
   "../media_types/mod.ts",
+  "../ulid/mod.ts",
   "../webgpu/mod.ts",
 ] as const;
 
@@ -114,7 +118,16 @@ function assertHasExampleTag(document: { jsDoc: JsDoc; location: Location }) {
   for (const tag of (tags as JsDocTagDocRequired[])) {
     assert(
       tag.doc !== undefined,
-      "@example tag must have a description",
+      "@example tag must have a title and TypeScript code snippet",
+      document,
+    );
+    /**
+     * Otherwise, if the example title is undefined, it is given the title
+     * "Example #" by default.
+     */
+    assert(
+      !tag.doc.startsWith("```ts"),
+      "@example tag must have a title",
       document,
     );
     const snippets = tag.doc.match(TS_SNIPPET);
@@ -302,10 +315,28 @@ async function checkDocs(specifier: string) {
   }
 }
 
+const ENTRY_POINT_URLS = ENTRY_POINTS.map((entry) =>
+  new URL(entry, import.meta.url).href
+);
+
+const lintStatus = await new Deno.Command(Deno.execPath(), {
+  args: ["doc", "--lint", ...ENTRY_POINT_URLS],
+  stdin: "inherit",
+  stdout: "inherit",
+  stderr: "inherit",
+}).output();
+if (!lintStatus.success) {
+  console.error(
+    `%c[error] %c'deno doc --lint' failed`,
+    "color: red",
+    "",
+  );
+  Deno.exit(1);
+}
+
 const promises = [];
-for (const entry of ENTRY_POINTS) {
-  const { href } = new URL(entry, import.meta.url);
-  promises.push(checkDocs(href));
+for (const url of ENTRY_POINT_URLS) {
+  promises.push(checkDocs(url));
 }
 
 try {

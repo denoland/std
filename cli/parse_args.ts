@@ -433,6 +433,8 @@ const FLAG_REGEXP =
  * Numeric-looking arguments will be returned as numbers unless `options.string`
  * or `options.boolean` is set for that argument name.
  *
+ * @param args An array of command line arguments.
+ *
  * @example
  * ```ts
  * import { parseArgs } from "@std/cli/parse-args";
