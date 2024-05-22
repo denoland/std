@@ -10,7 +10,7 @@ import { SEPARATOR } from "./constants.ts";
  * @param paths - paths to search for common path
  * @param sep - path separator to use
  * @returns common path
- * 
+ *
  * @example Usage
  * ```ts
  *       import { common } from "@std/path";

@@ -78,16 +78,16 @@ export type GlobToRegExpOptions = GlobOptions & {
  *   fail to match `foobar.js`, even though `foobar` is not `foo`. Effectively,
  *   `!(foo|bar)` is treated like `!(@(foo|bar)*)`. This will work correctly if
  *   the group occurs not nested at the end of the segment.
- * 
+ *
  * @param glob - glob string to convert
  * @param options - conversion options
  * @returns regular expression equivalent to the glob
- * 
+ *
  * @example Usage
  * ```ts
  * import { globToRegExp } from "@std/path/glob-to-regexp";
  * import { assertEquals } from "@std/assert/assert-equals";
- * 
+ *
  * globToRegExp("*.js"); // /^[^/]*\.js\/*$/;
  * ```
  */

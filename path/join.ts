@@ -9,14 +9,14 @@ import { join as windowsJoin } from "./windows/join.ts";
  * Join all given a sequence of `paths`,then normalizes the resulting path.
  * @param paths to be joined and normalized
  * @returns joined and normalized path
- * 
+ *
  * @example Usage
  * ```ts
  * import { join } from "@std/path/join";
- * 
+ *
  * // posix
  * join("/foo", "bar", "baz/quux", "garply", ".."); // "/foo/bar/baz/quux"
- * 
+ *
  * // win32
  * join("C:\\foo", "bar", "baz\\quux", "garply", ".."); // "C:\\foo\\bar\\baz\\quux"
  * ```

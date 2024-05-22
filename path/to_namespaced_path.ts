@@ -8,15 +8,14 @@ import { toNamespacedPath as windowsToNamespacedPath } from "./windows/to_namesp
 /**
  * Resolves path to a namespace path.  This is a no-op on
  * non-windows systems.
- * 
+ *
  * @param path to resolve to namespace
  * @returns resolved namespace path
- * 
- * 
+ *
  * @example Usage
  * ```ts
  * import { toNamespacedPath } from "@std/path/to-namespaced-path";
- * 
+ *
  * toNamespacedPath("C:\\foo\\bar"); // " \\?\C:\\foo\\bar"
  * ```
  */

@@ -8,23 +8,23 @@ import { joinGlobs as windowsJoinGlobs } from "./windows/join_globs.ts";
 
 export type { GlobOptions };
 
-/** 
+/**
  * Joins a sequence of `globs`, then normalizes the resulting glob.
- * 
+ *
  * Behaves like join(), but doesn't collapse "**\/.." when `globstar` is true.
- * 
+ *
  * @param globs - globs to be joined and normalized
  * @param options - glob options
  * @returns joined and normalized glob string
- * 
+ *
  * @example Usage
  * ```ts
  * import { joinGlobs } from "@std/path/join-globs";
- * 
+ *
  * joinGlobs(["foo", "bar", "..", "baz"]); // "foo/baz"
  * joinGlobs(["foo", "**\/..", "bar", "..", "baz"], { globstar: true }); // "foo/**\/../baz"
  * ```
- * */
+ */
 export function joinGlobs(
   globs: string[],
   options: GlobOptions = {},

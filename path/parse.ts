@@ -13,7 +13,7 @@ export type { ParsedPath } from "./_interface.ts";
  *
  * @param path to process
  * @returns A `ParsedPath` object
- * 
+ *
  * @example Usage
  * ```ts
  * import { parse } from "@std/path";
