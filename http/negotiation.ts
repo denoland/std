@@ -24,7 +24,7 @@ export type Request = {
  * preference. If there are no media types supplied in the request, then any
  * media type selector will be returned.
  *
- * @example
+ * @example Usage
  * ```ts
  * import { accepts } from "@std/http/negotiation";
  *
@@ -44,13 +44,16 @@ export type Request = {
  * //   "*\/*",
  * // ]
  * ```
+ *
+ * @param request The request to get the acceptable media types for.
+ * @returns An array of acceptable media types.
  */
 export function accepts(request: Request): string[];
 /**
  * For a given set of media types, return the best match accepted in the
  * request. If no media type matches, then the function returns `undefined`.
  *
- *  @example
+ *  @example Usage
  * ```ts
  * import { accepts } from "@std/http/negotiation";
  *
@@ -63,6 +66,10 @@ export function accepts(request: Request): string[];
  *
  * accepts(req, "text/html", "image/webp"); // "text/html";
  * ```
+ *
+ * @param request The request to get the acceptable media types for.
+ * @param types An array of media types to find the best matching one from.
+ * @returns The best matching media type, if any match.
  */
 export function accepts(
   request: Request,
@@ -85,7 +92,7 @@ export function accepts(
  * preference. If there are no encoding supplied in the request, then `["*"]`
  * is returned, implying any encoding is accepted.
  *
- * @example
+ * @example Usage
  * ```ts
  * import { acceptsEncodings } from "@std/http/negotiation";
  *
@@ -95,6 +102,9 @@ export function accepts(
  *
  * acceptsEncodings(req); // ["deflate", "gzip", "*"]
  * ```
+ *
+ * @param request The request to get the acceptable content encodings for.
+ * @returns An array of content encodings this request accepts.
  */
 export function acceptsEncodings(request: Request): string[];
 /**
@@ -106,7 +116,7 @@ export function acceptsEncodings(request: Request): string[];
  * to ensure that there is a match when the `Accept-Encoding` header is part
  * of the request.
  *
- * @example
+ * @example Usage
  * ```ts
  * import { acceptsEncodings } from "@std/http/negotiation";
  *
@@ -116,6 +126,10 @@ export function acceptsEncodings(request: Request): string[];
  *
  * acceptsEncodings(req, "gzip", "identity"); // "gzip"
  * ```
+ *
+ * @param request The request to get the acceptable content encodings for.
+ * @param encodings An array of encodings to find the best matching one from.
+ * @returns The best matching encoding, if any match.
  */
 export function acceptsEncodings(
   request: Request,
@@ -140,7 +154,7 @@ export function acceptsEncodings(
  * preference. If there are no languages supplied in the request, then `["*"]`
  * is returned, imply any language is accepted.
  *
- * @example
+ * @example Usage
  * ```ts
  * import { acceptsLanguages } from "@std/http/negotiation";
  *
@@ -152,13 +166,16 @@ export function acceptsEncodings(
  *
  * acceptsLanguages(req); // ["fr-CH", "fr", "en", "de", "*"]
  * ```
+ *
+ * @param request The request to get the acceptable languages for.
+ * @returns An array of languages this request accepts.
  */
 export function acceptsLanguages(request: Request): string[];
 /**
  * For a given set of languages, return the best match accepted in the request.
  * If no languages match, then the function returns `undefined`.
  *
- * @example
+ * @example Usage
  * ```ts
  * import { acceptsLanguages } from "@std/http/negotiation";
  *
@@ -170,6 +187,10 @@ export function acceptsLanguages(request: Request): string[];
  *
  * acceptsLanguages(req, "en-gb", "en-us", "en"); // "en"
  * ```
+ *
+ * @param request The request to get the acceptable language for.
+ * @param langs An array of languages to find the best matching one from.
+ * @returns The best matching language, if any match.
  */
 export function acceptsLanguages(
   request: Request,
