@@ -24,7 +24,7 @@ export type Request = {
  * preference. If there are no media types supplied in the request, then any
  * media type selector will be returned.
  *
- * @example
+ * @example Usage
  * ```ts
  * import { accepts } from "@std/http/negotiation";
  *
@@ -53,7 +53,7 @@ export function accepts(request: Request): string[];
  * For a given set of media types, return the best match accepted in the
  * request. If no media type matches, then the function returns `undefined`.
  *
- *  @example
+ *  @example Usage
  * ```ts
  * import { accepts } from "@std/http/negotiation";
  *
@@ -92,7 +92,7 @@ export function accepts(
  * preference. If there are no encoding supplied in the request, then `["*"]`
  * is returned, implying any encoding is accepted.
  *
- * @example
+ * @example Usage
  * ```ts
  * import { acceptsEncodings } from "@std/http/negotiation";
  *
@@ -116,7 +116,7 @@ export function acceptsEncodings(request: Request): string[];
  * to ensure that there is a match when the `Accept-Encoding` header is part
  * of the request.
  *
- * @example
+ * @example Usage
  * ```ts
  * import { acceptsEncodings } from "@std/http/negotiation";
  *
@@ -154,7 +154,7 @@ export function acceptsEncodings(
  * preference. If there are no languages supplied in the request, then `["*"]`
  * is returned, imply any language is accepted.
  *
- * @example
+ * @example Usage
  * ```ts
  * import { acceptsLanguages } from "@std/http/negotiation";
  *
@@ -175,7 +175,7 @@ export function acceptsLanguages(request: Request): string[];
  * For a given set of languages, return the best match accepted in the request.
  * If no languages match, then the function returns `undefined`.
  *
- * @example
+ * @example Usage
  * ```ts
  * import { acceptsLanguages } from "@std/http/negotiation";
  *

@@ -149,7 +149,7 @@ export interface ServeFileOptions {
 /**
  * Returns an HTTP Response with the requested file as the body.
  *
- * @example
+ * @example Usage
  * ```ts no-eval
  * import { serveFile } from "@std/http/file-server";
  *
@@ -588,7 +588,7 @@ export interface ServeDirOptions {
 /**
  * Serves the files under the given directory root (opts.fsRoot).
  *
- * @example
+ * @example Usage
  * ```ts no-eval
  * import { serveDir } from "@std/http/file-server";
  *

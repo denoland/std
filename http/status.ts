@@ -6,7 +6,7 @@
  * status codes and provides several type guards for handling status codes
  * with type safety.
  *
- * @example
+ * @example The status code and status text
  * ```ts
  * import {
  *   STATUS_CODE,
@@ -17,7 +17,7 @@
  * console.log(STATUS_TEXT[STATUS_CODE.NotFound]); // Returns "Not Found"
  * ```
  *
- * @example
+ * @example Checking the status code type
  * ```ts
  * import { isErrorStatus } from "@std/http/status";
  *
@@ -316,7 +316,7 @@ export type ErrorStatus = ClientErrorStatus | ServerErrorStatus;
 /**
  * Returns whether the provided number is a valid HTTP status code.
  *
- * @example
+ * @example Usage
  * ```ts
  * import { isStatus } from "@std/http/status";
  *
@@ -333,7 +333,7 @@ export function isStatus(status: number): status is StatusCode {
 /**
  * A type guard that determines if the status code is informational.
  *
- * @example
+ * @example Usage
  * ```ts
  * import { isInformationalStatus } from "@std/http/status";
  *
@@ -352,7 +352,7 @@ export function isInformationalStatus(
 /**
  * A type guard that determines if the status code is successful.
  *
- * @example
+ * @example Usage
  * ```ts
  * import { isSuccessfulStatus } from "@std/http/status";
  *
@@ -371,7 +371,7 @@ export function isSuccessfulStatus(
 /**
  * A type guard that determines if the status code is a redirection.
  *
- * @example
+ * @example Usage
  * ```ts
  * import { isRedirectStatus } from "@std/http/status";
  *
@@ -388,7 +388,7 @@ export function isRedirectStatus(status: number): status is RedirectStatus {
 /**
  * A type guard that determines if the status code is a client error.
  *
- * @example
+ * @example Usage
  * ```ts
  * import { isClientErrorStatus } from "@std/http/status";
  *
@@ -407,7 +407,7 @@ export function isClientErrorStatus(
 /**
  * A type guard that determines if the status code is a server error.
  *
- * @example
+ * @example Usage
  * ```ts
  * import { isServerErrorStatus } from "@std/http/status";
  *
@@ -426,7 +426,7 @@ export function isServerErrorStatus(
 /**
  * A type guard that determines if the status code is an error.
  *
- * @example
+ * @example Usage
  * ```ts
  * import { isErrorStatus } from "@std/http/status";
  *

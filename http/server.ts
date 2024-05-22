@@ -64,7 +64,8 @@ export interface ServerInit extends Partial<Deno.ListenOptions> {
  * Used to construct an HTTP server.
  *
  * @deprecated This will be removed in 1.0.0. Use {@linkcode Deno.serve} instead.
- * @example
+ *
+ * @example Usage
  * ```ts
  * import { Server } from "@std/http/server";
  *
@@ -93,7 +94,7 @@ export class Server {
   /**
    * Constructs a new HTTP Server instance.
    *
-   * @example
+   * @example Usage
    * ```ts no-eval
    * import { Server } from "@std/http/server";
    *
@@ -133,7 +134,7 @@ export class Server {
    *
    * Will always close the created listener.
    *
-   * @example
+   * @example Usage
    * ```ts no-eval
    * import { Server } from "@std/http/server";
    *
@@ -186,7 +187,7 @@ export class Server {
    *
    * Throws a server closed error if the server has been closed.
    *
-   * @example
+   * @example Usage
    * ```ts no-eval
    * import { Server } from "@std/http/server";
    *
@@ -231,7 +232,7 @@ export class Server {
    *
    * Throws a server closed error if the server has been closed.
    *
-   * @example
+   * @example Usage
    * ```ts no-eval
    * import { Server } from "@std/http/server";
    *
@@ -280,7 +281,7 @@ export class Server {
    *
    * Throws a server closed error if called after the server has been closed.
    *
-   * @example
+   * @example Usage
    * ```ts
    * import { Server } from "@std/http/server";
    *
@@ -333,7 +334,7 @@ export class Server {
   /**
    * Get whether the server is closed.
    *
-   * @example
+   * @example Usage
    * ```ts
    * import { Server } from "@std/http/server";
    *
@@ -367,7 +368,7 @@ export class Server {
   /**
    * Get the list of network addresses the server is listening on.
    *
-   * @example
+   * @example Usage
    * ```tsm no-eval
    * import { Server } from "@std/http/server";
    *
@@ -634,7 +635,7 @@ export interface ServeListenerOptions {
  * Constructs a server, accepts incoming connections on the given listener, and
  * handles requests on these connections with the given handler.
  *
- * @example
+ * @example Usage
  * ```ts no-eval
  * import { serveListener } from "@std/http/server";
  *

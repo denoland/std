@@ -15,7 +15,7 @@ function splitByLast(value: string, separator: string): [string, string] {
  * Returns a promise with the signed cookie value from the given cryptographic
  * key.
  *
- * @example
+ * @example Usage
  * ```ts
  * import { signCookie } from "@std/http/unstable-signed-cookie";
  * import { setCookie } from "@std/http/cookie";
@@ -53,7 +53,7 @@ export async function signCookie(
 /**
  * Returns a promise of a boolean indicating whether the signed cookie is valid.
  *
- * @example
+ * @example Usage
  * ```ts
  * import { verifyCookie } from "@std/http/unstable-signed-cookie";
  * import { getCookies } from "@std/http/cookie";
@@ -94,7 +94,7 @@ export async function verifyCookie(
  *
  * Important: always verify the cookie using {@linkcode verifyCookie} first.
  *
- * @example
+ * @example Usage
  * ```ts
  * import { verifyCookie, parseSignedCookie } from "@std/http/unstable-signed-cookie";
  * import { getCookies } from "@std/http/cookie";
