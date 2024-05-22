@@ -164,10 +164,7 @@ export class RedBlackTree<T> extends BinarySearchTree<T> {
    */
   static override from<T>(
     collection: ArrayLike<T> | Iterable<T> | RedBlackTree<T>,
-  ): RedBlackTree<T>;
-  static override from<T>(
-    collection: ArrayLike<T> | Iterable<T> | RedBlackTree<T>,
-    options: {
+    options?: {
       Node?: typeof RedBlackNode;
       compare?: (a: T, b: T) => number;
     },

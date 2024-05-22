@@ -168,7 +168,7 @@ export class BinarySearchTree<T> implements Iterable<T> {
    */
   static from<T>(
     collection: ArrayLike<T> | Iterable<T> | BinarySearchTree<T>,
-    options: {
+    options?: {
       compare?: (a: T, b: T) => number;
     },
   ): BinarySearchTree<T>;

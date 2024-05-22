@@ -138,7 +138,7 @@ export class BinaryHeap<T> implements Iterable<T> {
    */
   static from<T>(
     collection: ArrayLike<T> | Iterable<T> | BinaryHeap<T>,
-    options: {
+    options?: {
       compare?: (a: T, b: T) => number;
     },
   ): BinaryHeap<T>;
