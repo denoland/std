@@ -29,9 +29,12 @@ export const ERROR_WHILE_MAPPING_MESSAGE = "Threw while mapping.";
  * }
  * ```
  *
+ * @typeParam T the input type.
+ * @typeParam R the output type.
  * @param poolLimit The maximum count of items being processed concurrently.
  * @param array The input array for mapping.
  * @param iteratorFn The function to call for every item of the array.
+ * @returns The async iterator with the transformed values.
  */
 export function pooledMap<T, R>(
   poolLimit: number,

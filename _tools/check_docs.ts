@@ -27,10 +27,12 @@ type DocNodeWithJsDoc<T = DocNodeBase> = T & {
 
 const ENTRY_POINTS = [
   "../bytes/mod.ts",
+  "../async/mod.ts",
   "../datetime/mod.ts",
   "../collections/mod.ts",
   "../internal/mod.ts",
   "../media_types/mod.ts",
+  "../webgpu/mod.ts",
   "../http/mod.ts",
 ] as const;
 
@@ -132,6 +134,7 @@ function assertHasExampleTag(document: { jsDoc: JsDoc; location: Location }) {
         args: [
           "eval",
           "--ext=ts",
+          "--unstable-webgpu",
           snippet,
         ],
         stderr: "piped",
