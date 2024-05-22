@@ -32,7 +32,7 @@
  * timestamp from a ULID using the {@linkcode decodeTime} function.
  *
  * ```ts
- * import { decodeTime } from "@std/ulid";
+ * import { decodeTime, ulid } from "@std/ulid";
  *
  * const x = ulid(150000);
  * decodeTime(x); // 150000
