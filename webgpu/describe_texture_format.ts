@@ -36,6 +36,9 @@ const allFlags = GPUTextureUsage.COPY_SRC | GPUTextureUsage.COPY_DST |
  *
  * describeTextureFormat("rgba8unorm-srgb");
  * ```
+ *
+ * @param format The format to get the information about.
+ * @returns An object describing various properties for the provided format.
  */
 export function describeTextureFormat(
   format: GPUTextureFormat,

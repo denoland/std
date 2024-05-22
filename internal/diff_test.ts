@@ -1,7 +1,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import { diff } from "./diff.ts";
-import { assertEquals } from "@std/assert/assert-equals";
+import { assertFp, backTrace, createCommon, createFp, diff } from "./diff.ts";
+import { assertEquals, assertThrows } from "@std/assert";
 
 Deno.test({
   name: "diff() with empty values",
@@ -47,6 +47,18 @@ Deno.test({
     assertEquals(diff(["a"], ["a", "b"]), [
       { type: "common", value: "a" },
       { type: "added", value: "b" },
+    ]);
+  },
+});
+
+Deno.test({
+  name: 'diff() "a, x, c" vs "a, b, c"',
+  fn() {
+    assertEquals(diff(["a", "x", "c"], ["a", "b", "c"]), [
+      { type: "common", value: "a" },
+      { type: "removed", value: "x" },
+      { type: "added", value: "b" },
+      { type: "common", value: "c" },
     ]);
   },
 });
@@ -108,5 +120,115 @@ Deno.test({
       { type: "added", value: "bcd" },
       { type: "common", value: "c" },
     ]);
+  },
+});
+
+Deno.test({
+  name: "assertFp()",
+  fn() {
+    const fp = { y: 0, id: 0 };
+    assertEquals(assertFp(fp), undefined);
+  },
+});
+
+Deno.test({
+  name: "assertFp() throws",
+  fn() {
+    const error = "Unexpected missing FarthestPoint";
+    assertThrows(() => assertFp({ id: 0 }), Error, error);
+    assertThrows(() => assertFp({ y: 0 }), Error, error);
+    assertThrows(() => assertFp(undefined), Error, error);
+    assertThrows(() => assertFp(null), Error, error);
+  },
+});
+
+Deno.test({
+  name: "backTrace()",
+  fn() {
+    assertEquals(
+      backTrace([], [], { y: 0, id: 0 }, false, new Uint32Array(0), 0),
+      [],
+    );
+    assertEquals(
+      backTrace(["a"], ["b"], { y: 1, id: 3 }, false, new Uint32Array(10), 5),
+      [],
+    );
+  },
+});
+
+Deno.test({
+  name: "createCommon()",
+  fn() {
+    assertEquals(createCommon([], []), []);
+    assertEquals(createCommon([1], []), []);
+    assertEquals(createCommon([], [1]), []);
+    assertEquals(createCommon([1], [1]), [1]);
+    assertEquals(createCommon([1, 2], [1]), [1]);
+    assertEquals(createCommon([1], [1, 2]), [1]);
+  },
+});
+
+Deno.test({
+  name: "createFp()",
+  fn() {
+    assertEquals(
+      createFp(
+        0,
+        0,
+        new Uint32Array(0),
+        0,
+        0,
+        { y: -1, id: 0 },
+        { y: -1, id: 0 },
+      ),
+      { y: 0, id: 0 },
+    );
+  },
+});
+
+Deno.test({
+  name: 'createFp() "isAdding"',
+  fn() {
+    assertEquals(
+      createFp(
+        0,
+        0,
+        new Uint32Array(0),
+        0,
+        0,
+        { y: 0, id: 0 },
+        { y: -1, id: 0 },
+      ),
+      { y: 0, id: 1 },
+    );
+  },
+});
+
+Deno.test({
+  name: 'createFp() "!isAdding"',
+  fn() {
+    assertEquals(
+      createFp(
+        0,
+        0,
+        new Uint32Array(0),
+        0,
+        0,
+        { y: -1, id: 0 },
+        { y: 0, id: 0 },
+      ),
+      { y: -1, id: 1 },
+    );
+  },
+});
+
+Deno.test({
+  name: "createFp() throws",
+  fn() {
+    assertThrows(
+      () => createFp(0, 0, new Uint32Array(0), 0, 0),
+      Error,
+      "Unexpected missing FarthestPoint",
+    );
   },
 });
