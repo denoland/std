@@ -232,6 +232,8 @@ export function expect(value: unknown, customMessage?: string): Expected {
  *
  * @example
  * ```ts
+ * import { expect } from "@std/expect";
+ *
  * class Volume {
  *   public amount: number;
  *   public unit: "L" | "mL";
@@ -315,6 +317,7 @@ expect.anything = asymmetricMatchers.anything;
  * ```ts
  * import { expect } from "@std/expect";
  *
+ * class Cat {}
  * Deno.test("expect.any()", () => {
  *   expect(new Cat()).toEqual(expect.any(Cat));
  *   expect("Hello").toEqual(expect.any(String));
