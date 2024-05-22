@@ -116,7 +116,8 @@ export class BinarySearchTree<T> implements Iterable<T> {
    * To create a binary search tree from an array like, an iterable object, or an
    * existing binary search tree, use the {@link BinarySearchTree.from} method.
    *
-   * @param compare A custom comparison function to sort the values in the tree. By default, the values are sorted in ascending order.
+   * @param compare A custom comparison function to sort the values in the tree.
+   * By default, the values are sorted in ascending order.
    */
   constructor(compare: (a: T, b: T) => number = ascend) {
     if (typeof compare !== "function") {
