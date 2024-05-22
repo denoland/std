@@ -71,11 +71,42 @@ export interface SpinnerOptions {
 
 /**
  * A spinner that can be used to indicate that something is loading.
+ *
+ * @example Usage
+ * ```ts no-eval
+ * import { Spinner } from "@std/cli/spinner";
+ *
+ * const spinner = new Spinner({ message: "Loading...", color: "yellow" });
+ * spinner.start();
+ *
+ * setTimeout(() => {
+ *  spinner.stop();
+ *  console.log("Finished loading!");
+ * }, 3_000);
+ * ```
  */
 export class Spinner {
   #spinner: string[];
-  /** The message to display next to the spinner. */
+
+  /**
+   * The message to display next to the spinner.
+   * ```ts
+   * import { Spinner } from "@std/cli/spinner";
+   *
+   * const loadingText = "Loading...";
+   * const startTime = new Date();
+   * const spinner = new Spinner({ message: loadingText, color: "yellow" });
+   * spinner.start();
+   *
+   * setInterval(() => {
+   *   const durationMs = new Date().getTime() - startTime.getTime();
+   *   const durationSec = Math.round(durationMs / 1_000);
+   *   spinner.message = `${loadingText} (${durationSec}s)`;
+   * }, 1_000);
+   * ```
+   */
   message: string;
+
   #interval: number;
   #color?: Color;
   #intervalId: number | undefined;
@@ -84,7 +115,7 @@ export class Spinner {
   /**
    * Creates a new spinner.
    *
-   * @example
+   * @example Usage
    * ```ts
    * import { Spinner } from "@std/cli/spinner";
    *
@@ -121,7 +152,7 @@ export class Spinner {
    * Starts the spinner.
    *
    * @example
-   * ```ts
+   * ```ts no-eval
    * import { Spinner } from "@std/cli/spinner";
    *
    * const spinner = new Spinner({ message: "Loading..." });
@@ -150,8 +181,8 @@ export class Spinner {
   /**
    * Stops the spinner.
    *
-   * @example
-   * ```ts
+   * @example Usage
+   * ```ts no-eval
    * import { Spinner } from "@std/cli/spinner";
    *
    * const spinner = new Spinner({ message: "Loading..." });
@@ -160,7 +191,7 @@ export class Spinner {
    * setTimeout(() => {
    *  spinner.stop();
    *  console.log("Finished loading!");
-   * }, 3000);
+   * }, 3_000);
    * ```
    */
   stop() {
