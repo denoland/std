@@ -9,7 +9,7 @@
  * This module contains a function to mock functions for testing and assertions.
  *
  * ```ts
- * import { fn, expect } from "@std/expect/mod.ts";
+ * import { fn, expect } from "@std/expect";
  *
  * Deno.test("example", () => {
  *   const mockFn = fn((a: number, b: number) => a + b);
@@ -32,7 +32,7 @@ import { MOCK_SYMBOL, type MockCall } from "./_mock_util.ts";
  * @example
  *
  * ```ts
- * import { fn, expect } from "./expect/mod.ts";
+ * import { fn, expect } from "@std/expect";
  *
  * Deno.test("example", () => {
  *   const mockFn = fn(

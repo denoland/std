@@ -136,7 +136,7 @@ const matchers: Record<MatcherKey, Matcher> = {
 export function expect(value: unknown, customMessage?: string): Expected {
   let isNot = false;
   let isPromised = false;
-  const self: Expected = new Proxy<Expected>(<Expected>{}, {
+  const self: Expected = new Proxy<Expected>(<Expected> {}, {
     get(_, name) {
       if (name === "not") {
         isNot = !isNot;
@@ -160,10 +160,10 @@ export function expect(value: unknown, customMessage?: string): Expected {
         value = value.then(
           (value) => {
             throw new AssertionError(
-              `Promise did not reject. resolved to ${value}`
+              `Promise did not reject. resolved to ${value}`,
             );
           },
-          (err) => err
+          (err) => err,
         );
         isPromised = true;
         return self;
@@ -179,7 +179,7 @@ export function expect(value: unknown, customMessage?: string): Expected {
         throw new TypeError(
           typeof name === "string"
             ? `matcher not found: ${name}`
-            : "matcher not found"
+            : "matcher not found",
         );
       }
 
@@ -211,8 +211,8 @@ export function expect(value: unknown, customMessage?: string): Expected {
 
         return isPromised
           ? (value as Promise<unknown>).then((value: unknown) =>
-              applyMatcher(value, args)
-            )
+            applyMatcher(value, args)
+          )
           : applyMatcher(value, args);
       };
     },
