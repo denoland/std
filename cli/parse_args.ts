@@ -435,13 +435,26 @@ const FLAG_REGEXP =
  *
  * @param args An array of command line arguments.
  *
- * @example
+ * @typeParam TArgs Type of result.
+ * @typeParam TDoubleDash Used by `TArgs` for the result.
+ * @typeParam TBooleans Used by `TArgs` for the result.
+ * @typeParam TStrings Used by `TArgs` for the result.
+ * @typeParam TCollectable Used by `TArgs` for the result.
+ * @typeParam TNegatable Used by `TArgs` for the result.
+ * @typeParam TDefaults Used by `TArgs` for the result.
+ * @typeParam TAliases Used by `TArgs` for the result.
+ * @typeParam TAliasArgNames Used by `TArgs` for the result.
+ * @typeParam TAliasNames Used by `TArgs` for the result.
+ *
+ * @return The parsed arguments.
+ *
+ * @example Usage
  * ```ts
  * import { parseArgs } from "@std/cli/parse-args";
  * const parsedArgs = parseArgs(Deno.args);
  * ```
  *
- * @example
+ * @example Usage
  * ```ts
  * import { parseArgs } from "@std/cli/parse-args";
  * const parsedArgs = parseArgs(["--foo", "--bar=baz", "./quux.txt"]);
