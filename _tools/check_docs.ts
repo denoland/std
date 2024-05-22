@@ -27,6 +27,7 @@ type DocNodeWithJsDoc<T = DocNodeBase> = T & {
 
 const ENTRY_POINTS = [
   "../bytes/mod.ts",
+  "../async/mod.ts",
   "../datetime/mod.ts",
   "../collections/mod.ts",
   "../internal/mod.ts",

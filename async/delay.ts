@@ -15,6 +15,9 @@ export interface DelayOptions {
 /**
  * Resolve a {@linkcode Promise} after a given amount of milliseconds.
  *
+ * @param ms Duration in milliseconds for how long the delay should last.
+ * @param options Additional options.
+ *
  * @example
  * ```ts
  * import { delay } from "@std/async/delay";
