@@ -33,6 +33,8 @@ export type PromptSecretOptions = {
  *
  * @example Usage
  * ```ts no-eval
+ * import { promptSecret } from "@std/cli/prompt-secret";
+ *
  * const password = promptSecret("Please provide the password:");
  * if (password !== "some-password") {
  *   throw new Error("Access denied.");
