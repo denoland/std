@@ -3,6 +3,7 @@
 
 import { ascend } from "./comparators.ts";
 import { BinarySearchNode } from "./_binary_search_node.ts";
+import { internals } from "./_binary_search_tree_internals.ts";
 
 type Direction = "left" | "right";
 
@@ -118,7 +119,41 @@ export class BinarySearchTree<T> implements Iterable<T> {
    * @param compare A custom comparison function to sort the values in the tree. By default, the values are sorted in ascending order.
    */
   constructor(compare: (a: T, b: T) => number = ascend) {
+    if (typeof compare !== "function") {
+      throw new TypeError(
+        "compare must be a function, did you mean to call BinarySearchTree.from?",
+      );
+    }
     this.#compare = compare;
+  }
+
+  static {
+    internals.getRoot = <T>(tree: BinarySearchTree<T>) => tree.#root;
+    internals.setRoot = <T>(
+      tree: BinarySearchTree<T>,
+      node: BinarySearchNode<T> | null,
+    ) => {
+      tree.#root = node;
+    };
+    internals.getCompare = <T>(tree: BinarySearchTree<T>) => tree.#compare;
+    internals.findNode = <T>(
+      tree: BinarySearchTree<T>,
+      value: T,
+    ): BinarySearchNode<T> | null => tree.#findNode(value);
+    internals.rotateNode = <T>(
+      tree: BinarySearchTree<T>,
+      node: BinarySearchNode<T>,
+      direction: Direction,
+    ) => tree.#rotateNode(node, direction);
+    internals.insertNode = <T>(
+      tree: BinarySearchTree<T>,
+      Node: typeof BinarySearchNode,
+      value: T,
+    ): BinarySearchNode<T> | null => tree.#insertNode(Node, value);
+    internals.removeNode = <T>(
+      tree: BinarySearchTree<T>,
+      node: BinarySearchNode<T>,
+    ): BinarySearchNode<T> | null => tree.#removeNode(node);
   }
 
   /**
@@ -287,7 +322,7 @@ export class BinarySearchTree<T> implements Iterable<T> {
     return this.#size;
   }
 
-  protected findNode(value: T): BinarySearchNode<T> | null {
+  #findNode(value: T): BinarySearchNode<T> | null {
     let node: BinarySearchNode<T> | null = this.#root;
     while (node) {
       const order: number = this.#compare(value as T, node.value);
@@ -298,7 +333,7 @@ export class BinarySearchTree<T> implements Iterable<T> {
     return node;
   }
 
-  protected rotateNode(node: BinarySearchNode<T>, direction: Direction) {
+  #rotateNode(node: BinarySearchNode<T>, direction: Direction) {
     const replacementDirection: Direction = direction === "left"
       ? "right"
       : "left";
@@ -323,7 +358,7 @@ export class BinarySearchTree<T> implements Iterable<T> {
     node.parent = replacement;
   }
 
-  protected insertNode(
+  #insertNode(
     Node: typeof BinarySearchNode,
     value: T,
   ): BinarySearchNode<T> | null {
@@ -350,7 +385,7 @@ export class BinarySearchTree<T> implements Iterable<T> {
   }
 
   /** Removes the given node, and returns the node that was physically removed from the tree. */
-  protected removeNode(
+  #removeNode(
     node: BinarySearchNode<T>,
   ): BinarySearchNode<T> | null {
     /**
@@ -400,7 +435,7 @@ export class BinarySearchTree<T> implements Iterable<T> {
    * @returns `true` if the value was inserted, `false` if the value already exists in the tree.
    */
   insert(value: T): boolean {
-    return !!this.insertNode(BinarySearchNode, value);
+    return !!this.#insertNode(BinarySearchNode, value);
   }
 
   /**
@@ -421,8 +456,8 @@ export class BinarySearchTree<T> implements Iterable<T> {
    * @returns `true` if the value was found and removed, `false` if the value was not found in the tree.
    */
   remove(value: T): boolean {
-    const node: BinarySearchNode<T> | null = this.findNode(value);
-    if (node) this.removeNode(node);
+    const node: BinarySearchNode<T> | null = this.#findNode(value);
+    if (node) this.#removeNode(node);
     return node !== null;
   }
 
@@ -444,7 +479,7 @@ export class BinarySearchTree<T> implements Iterable<T> {
    * @returns The value if it was found, or null if not found.
    */
   find(value: T): T | null {
-    return this.findNode(value)?.value ?? null;
+    return this.#findNode(value)?.value ?? null;
   }
 
   /**

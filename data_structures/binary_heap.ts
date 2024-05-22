@@ -81,6 +81,11 @@ export class BinaryHeap<T> implements Iterable<T> {
    * @param compare A custom comparison function to sort the values in the heap. By default, the values are sorted in descending order.
    */
   constructor(compare: (a: T, b: T) => number = descend) {
+    if (typeof compare !== "function") {
+      throw new TypeError(
+        "compare must be a function, did you mean to use BinaryHeap.from?",
+      );
+    }
     this.#compare = compare;
   }
 
