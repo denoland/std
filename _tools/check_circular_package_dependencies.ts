@@ -290,7 +290,11 @@ if (Deno.args.includes("--graph")) {
       if (path === "mod.ts") {
         console.log(`import "jsr:@std/${mod.replaceAll("_", "-")}";`);
       } else {
-        console.log(`import "jsr:@std/${mod.replaceAll("_", "-")}/${path.replace(".ts", "").replaceAll("_", "-")}";`);
+        console.log(
+          `import "jsr:@std/${mod.replaceAll("_", "-")}/${
+            path.replace(".ts", "").replaceAll("_", "-")
+          }";`,
+        );
       }
     }
   }
