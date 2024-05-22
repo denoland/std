@@ -14,11 +14,11 @@ const primitives = new Map(
 /**
  * Stream to parse {@link https://en.wikipedia.org/wiki/JSON_streaming#Concatenated_JSON|Concatenated JSON}.
  *
- * @example
+ * @example Parse a concatenated JSON from stream
  * ```ts
  * import { ConcatenatedJsonParseStream } from "@std/json/concatenated-json-parse-stream";
  *
- * const url = "@std/json/testdata/test.concatenated-json";
+ * const url = new URL("json/testdata/test.concatenated-json", import.meta.url);
  * const { body } = await fetch(url);
  *
  * const readable = body!
