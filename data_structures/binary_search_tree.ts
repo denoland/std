@@ -241,7 +241,7 @@ export class BinarySearchTree<T> implements Iterable<T> {
    */
   static from<T, U, V = undefined>(
     collection: ArrayLike<T> | Iterable<T> | BinarySearchTree<T>,
-    options?: {
+    options: {
       compare?: (a: U, b: U) => number;
       map: (value: T, index: number) => U;
       thisArg?: V;
