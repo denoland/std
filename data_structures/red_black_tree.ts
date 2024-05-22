@@ -112,11 +112,6 @@ export class RedBlackTree<T> extends BinarySearchTree<T> {
    * @param compare A custom comparison function for the values. The default comparison function sorts by ascending order.
    */
   constructor(compare: (a: T, b: T) => number = ascend) {
-    if (typeof compare !== "function") {
-      throw new TypeError(
-        "compare must be a function, did you mean to call RedBlackTree.from?",
-      );
-    }
     super(compare);
   }
 
