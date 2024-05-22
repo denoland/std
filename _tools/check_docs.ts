@@ -39,6 +39,7 @@ const ENTRY_POINTS = [
 
 const TS_SNIPPET = /```ts[\s\S]*?```/g;
 const NEWLINE = "\n";
+const diagnostics: DocumentError[] = [];
 
 class DocumentError extends Error {
   constructor(
@@ -56,9 +57,9 @@ function assert(
   condition: boolean,
   message: string,
   document: { location: Location },
-): asserts condition {
+) {
   if (!condition) {
-    throw new DocumentError(message, document);
+    diagnostics.push(new DocumentError(message, document));
   }
 }
 
@@ -80,13 +81,18 @@ function isVoid(returnType: TsTypeDef) {
 
 function assertHasReturnTag(document: { jsDoc: JsDoc; location: Location }) {
   const tag = document.jsDoc.tags?.find((tag) => tag.kind === "return");
-  assert(tag !== undefined, "Symbol must have a @return tag", document);
-  assert(
-    // @ts-ignore doc is defined
-    tag.doc !== undefined,
-    "@return tag must have a description",
-    document,
-  );
+  if (tag === undefined) {
+    diagnostics.push(
+      new DocumentError("Symbol must have a @return tag", document),
+    );
+  } else {
+    assert(
+      // @ts-ignore doc is defined
+      tag.doc !== undefined,
+      "@return tag must have a description",
+      document,
+    );
+  }
 }
 
 function assertHasParamTag(
@@ -96,23 +102,29 @@ function assertHasParamTag(
   const tag = document.jsDoc.tags?.find((tag) =>
     tag.kind === "param" && tag.name === param
   );
-  assert(
-    tag !== undefined,
-    `Symbol must have a @param tag for ${param}`,
-    document,
-  );
-  assert(
-    // @ts-ignore doc is defined
-    tag.doc !== undefined,
-    `@param tag for ${param} must have a description`,
-    document,
-  );
+  if (!tag) {
+    diagnostics.push(
+      new DocumentError(`Symbol must have a @param tag for ${param}`, document),
+    );
+  } else {
+    assert(
+      // @ts-ignore doc is defined
+      tag.doc !== undefined,
+      `@param tag for ${param} must have a description`,
+      document,
+    );
+  }
 }
 
-function assertHasExampleTag(document: { jsDoc: JsDoc; location: Location }) {
+async function assertHasExampleTag(
+  document: { jsDoc: JsDoc; location: Location },
+) {
   const tags = document.jsDoc.tags?.filter((tag) => tag.kind === "example");
   if (tags === undefined || tags.length === 0) {
-    throw new DocumentError("Symbol must have an @example tag", document);
+    diagnostics.push(
+      new DocumentError("Symbol must have an @example tag", document),
+    );
+    return;
   }
   for (const tag of (tags as JsDocTagDocRequired[])) {
     assert(
@@ -131,10 +143,13 @@ function assertHasExampleTag(document: { jsDoc: JsDoc; location: Location }) {
     );
     const snippets = tag.doc.match(TS_SNIPPET);
     if (snippets === null) {
-      throw new DocumentError(
-        "@example tag must have a TypeScript code snippet",
-        document,
+      diagnostics.push(
+        new DocumentError(
+          "@example tag must have a TypeScript code snippet",
+          document,
+        ),
       );
+      continue;
     }
     for (let snippet of snippets) {
       if (snippet.split(NEWLINE)[0]?.includes("no-eval")) continue;
@@ -149,15 +164,22 @@ function assertHasExampleTag(document: { jsDoc: JsDoc; location: Location }) {
         ],
         stderr: "piped",
       });
-      // TODO(iuioiua): Use `await command.output()`
-      const { success, stderr } = command.outputSync();
-      assert(
-        success,
-        `Example code snippet failed to execute: \n${snippet}\n${
-          new TextDecoder().decode(stderr)
-        }`,
-        document,
-      );
+      const timeoutId = setTimeout(() => {
+        console.log("Snippet has been running for more than 10 seconds...");
+        console.log(snippet);
+      }, 10_000);
+      try {
+        const { success, stderr } = await command.output();
+        assert(
+          success,
+          `Example code snippet failed to execute: \n${snippet}\n${
+            new TextDecoder().decode(stderr)
+          }`,
+          document,
+        );
+      } finally {
+        clearTimeout(timeoutId);
+      }
     }
   }
 }
@@ -169,17 +191,21 @@ function assertHasTypeParamTags(
   const tag = document.jsDoc.tags?.find((tag) =>
     tag.kind === "template" && tag.name === typeParamName
   );
-  assert(
-    tag !== undefined,
-    `Symbol must have a @typeParam tag for ${typeParamName}`,
-    document,
-  );
-  assert(
-    // @ts-ignore doc is defined
-    tag.doc !== undefined,
-    `@typeParam tag for ${typeParamName} must have a description`,
-    document,
-  );
+  if (tag === undefined) {
+    diagnostics.push(
+      new DocumentError(
+        `Symbol must have a @typeParam tag for ${typeParamName}`,
+        document,
+      ),
+    );
+  } else {
+    assert(
+      // @ts-ignore doc is defined
+      tag.doc !== undefined,
+      `@typeParam tag for ${typeParamName} must have a description`,
+      document,
+    );
+  }
 }
 
 /**
@@ -190,7 +216,7 @@ function assertHasTypeParamTags(
  * - At least one {@linkcode https://jsdoc.app/tags-example | @example} tag with
  *   a code snippet that executes successfully.
  */
-function assertFunctionDocs(
+async function assertFunctionDocs(
   document: DocNodeWithJsDoc<DocNodeFunction | ClassMethodDef>,
 ) {
   for (const param of document.functionDef.params) {
@@ -210,7 +236,7 @@ function assertFunctionDocs(
   ) {
     assertHasReturnTag(document);
   }
-  assertHasExampleTag(document);
+  await assertHasExampleTag(document);
 }
 
 /**
@@ -220,28 +246,35 @@ function assertFunctionDocs(
  *   a code snippet that executes successfully.
  * - Documentation on all properties, methods, and constructors.
  */
-function assertClassDocs(document: DocNodeWithJsDoc<DocNodeClass>) {
+async function assertClassDocs(document: DocNodeWithJsDoc<DocNodeClass>) {
   for (const typeParam of document.classDef.typeParams) {
     assertHasTypeParamTags(document, typeParam.name);
   }
-  assertHasExampleTag(document);
+  await assertHasExampleTag(document);
 
   for (const property of document.classDef.properties) {
     if (property.jsDoc === undefined) continue; // this is caught by `deno doc --lint`
     if (property.accessibility !== undefined) {
-      throw new DocumentError(
-        "Do not use `public`, `protected`, or `private` fields in classes",
-        property,
+      diagnostics.push(
+        new DocumentError(
+          "Do not use `public`, `protected`, or `private` fields in classes",
+          property,
+        ),
       );
+      continue;
     }
-    assertClassPropertyDocs(property as DocNodeWithJsDoc<ClassPropertyDef>);
+    await assertClassPropertyDocs(
+      property as DocNodeWithJsDoc<ClassPropertyDef>,
+    );
   }
   for (const method of document.classDef.methods) {
     if (method.jsDoc === undefined) continue; // this is caught by `deno doc --lint`
     if (method.accessibility !== undefined) {
-      throw new DocumentError(
-        "Do not use `public`, `protected`, or `private` methods in classes",
-        method,
+      diagnostics.push(
+        new DocumentError(
+          "Do not use `public`, `protected`, or `private` methods in classes",
+          method,
+        ),
       );
     }
     assertFunctionDocs(method as DocNodeWithJsDoc<ClassMethodDef>);
@@ -249,12 +282,14 @@ function assertClassDocs(document: DocNodeWithJsDoc<DocNodeClass>) {
   for (const constructor of document.classDef.constructors) {
     if (constructor.jsDoc === undefined) continue; // this is caught by `deno doc --lint`
     if (constructor.accessibility !== undefined) {
-      throw new DocumentError(
-        "Do not use `public`, `protected`, or `private` constructors in classes",
-        constructor,
+      diagnostics.push(
+        new DocumentError(
+          "Do not use `public`, `protected`, or `private` constructors in classes",
+          constructor,
+        ),
       );
     }
-    assertConstructorDocs(
+    await assertConstructorDocs(
       constructor as DocNodeWithJsDoc<ClassConstructorDef>,
     );
   }
@@ -265,8 +300,10 @@ function assertClassDocs(document: DocNodeWithJsDoc<DocNodeClass>) {
  * - At least one {@linkcode https://jsdoc.app/tags-example | @example} tag with
  *   a code snippet that executes successfully.
  */
-function assertClassPropertyDocs(property: DocNodeWithJsDoc<ClassPropertyDef>) {
-  assertHasExampleTag(property);
+async function assertClassPropertyDocs(
+  property: DocNodeWithJsDoc<ClassPropertyDef>,
+) {
+  await assertHasExampleTag(property);
 }
 
 /**
@@ -276,16 +313,15 @@ function assertClassPropertyDocs(property: DocNodeWithJsDoc<ClassPropertyDef>) {
  * - At least one {@linkcode https://jsdoc.app/tags-example | @example} tag with
  *   a code snippet that executes successfully.
  */
-function assertConstructorDocs(
+async function assertConstructorDocs(
   constructor: DocNodeWithJsDoc<ClassConstructorDef>,
 ) {
   for (const param of constructor.params) {
-    if (param.accessibility !== undefined) {
-      throw new DocumentError(
-        "Do not use `public`, `protected`, or `private` parameters in constructors",
-        constructor,
-      );
-    }
+    assert(
+      param.accessibility !== undefined,
+      "Do not use `public`, `protected`, or `private` parameters in constructors",
+      constructor,
+    );
     if (param.kind === "identifier") {
       assertHasParamTag(constructor, param.name);
     }
@@ -293,7 +329,7 @@ function assertConstructorDocs(
       assertHasParamTag(constructor, param.left.name);
     }
   }
-  assertHasExampleTag(constructor);
+  await assertHasExampleTag(constructor);
 }
 
 async function checkDocs(specifier: string) {
@@ -303,11 +339,11 @@ async function checkDocs(specifier: string) {
     const document = d as DocNodeWithJsDoc<DocNode>;
     switch (document.kind) {
       case "function": {
-        assertFunctionDocs(document);
+        await assertFunctionDocs(document);
         break;
       }
       case "class": {
-        assertClassDocs(document);
+        await assertClassDocs(document);
         break;
       }
     }
@@ -338,17 +374,15 @@ for (const url of ENTRY_POINT_URLS) {
   promises.push(checkDocs(url));
 }
 
-try {
-  await Promise.all(promises);
-} catch (error) {
-  if (error instanceof DocumentError) {
+await Promise.all(promises);
+if (diagnostics.length > 0) {
+  for (const error of diagnostics) {
     console.error(
       `%c[error] %c${error.message} %cat ${error.cause}`,
       "color: red",
       "",
       "color: gray",
     );
-    Deno.exit(1);
   }
-  throw error;
+  Deno.exit(1);
 }
