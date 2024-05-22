@@ -6,14 +6,19 @@ import type { ValueType } from "./encode.ts";
 /**
  * Decode a value from the MessagePack binary format.
  *
- * @example
+ * If the input is not in valid message pack format, an error will be thrown.
+ *
+ * @example Decode a value from the MessagePack binary format
  * ```ts
  * import { decode } from "@std/msgpack/decode";
  *
- * const encoded = Uint8Array.of(1, 2, 3)
+ * const encoded = new Uint8Array([1, 2, 3])
  *
  * console.log(decode(encoded))
  * ```
+ *
+ * @param uint8 Uint8Array containing the MessagePack binary data.
+ * @returns Decoded value from the MessagePack binary data.
  */
 export function decode(uint8: Uint8Array): ValueType {
   const pointer = { consumed: 0 };
