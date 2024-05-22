@@ -39,17 +39,13 @@ export class DeadlineError extends Error {
  * @returns A promise that will reject if the provided duration runs out before resolving.
  *
  * @example
- * ```ts
+ * ```ts no-eval
  * import { deadline } from "@std/async/deadline";
  * import { delay } from "@std/async/delay";
  *
  * const delayedPromise = delay(1000);
  * // Below throws `DeadlineError` after 10 ms
- * try {
- *   const result = await deadline(delayedPromise, 10);
- * } catch (e) {
- *   console.error(e);
- * }
+ * const result = await deadline(delayedPromise, 10);
  * ```
  */
 export function deadline<T>(
