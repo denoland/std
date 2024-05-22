@@ -50,10 +50,10 @@ const Z85 =
 
 /**
  * Converts data into an ascii58-encoded string.
- * 
+ *
  * @param data The data to encode.
  * @param options Options for encoding.
- * 
+ *
  * @returns The ascii85-encoded string.
  *
  * @example Usage
