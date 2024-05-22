@@ -5,7 +5,21 @@ import { ParserFactory, Toml } from "./_parser.ts";
 
 /**
  * Parse parses TOML string into an object.
- * @param tomlString
+ *
+ * @example
+ * ```ts
+ * import { parse } from "./mod.ts";
+ * const tomlString = `title = "TOML Example"
+ * [owner]
+ * name = "Alice"
+ * bio = "Alice is a programmer."`;
+ *
+ * const obj = parse(tomlString);
+ * console.log(obj);
+ * // { title: "TOML Example", owner: { name: "Alice", bio: "Alice is a programmer." } }
+ * ```
+ * @param tomlString TOML string to be parsed.
+ * @returns The parsed JS object.
  */
 export const parse: (tomlString: string) => Record<string, unknown> =
   ParserFactory(Toml);
