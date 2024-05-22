@@ -9,9 +9,17 @@ import {
   globToRegExp as windowsGlobToRegExp,
 } from "./windows/glob_to_regexp.ts";
 
-export type { GlobOptions };
+export type { GlobOptions, OSType };
 
+/**
+ * Options for `globToRegExp`.
+ */
 export type GlobToRegExpOptions = GlobOptions & {
+  /**
+   * The operating system to interpret paths as.
+   * If unset, it defaults to the current
+   * operating system.
+   */
   os?: OSType;
 };
 
