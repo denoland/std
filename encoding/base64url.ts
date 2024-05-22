@@ -52,7 +52,7 @@ function convertBase64ToBase64url(b64: string) {
  * @param data The data to encode.
  * @returns The base64url-encoded string.
  *
- * @example
+ * @example Usage
  * ```ts
  * import { encodeBase64Url } from "@std/encoding/base64url";
  * import { assertEquals } from "@std/assert/assert-equals";
@@ -74,7 +74,7 @@ export function encodeBase64Url(
  * @param b64url The base64url-encoded string to decode.
  * @returns The decoded data.
  *
- * @example
+ * @example Usage
  * ```ts
  * import { decodeBase64Url } from "@std/encoding/base64url";
  * import { assertEquals } from "@std/assert/assert-equals";

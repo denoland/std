@@ -50,8 +50,13 @@ const Z85 =
 
 /**
  * Converts data into an ascii58-encoded string.
+ * 
+ * @param data The data to encode.
+ * @param options Options for encoding.
+ * 
+ * @returns The ascii85-encoded string.
  *
- * @example
+ * @example Usage
  * ```ts
  * import { encodeAscii85 } from "@std/encoding/ascii85";
  * import { assertEquals } from "@std/assert/assert-equals";
@@ -131,7 +136,7 @@ export function encodeAscii85(
  * @param options Options for decoding.
  * @returns The decoded data.
  *
- * @example
+ * @example Usage
  * ```ts
  * import { decodeAscii85 } from "@std/encoding/ascii85";
  * import { assertEquals } from "@std/assert/assert-equals";

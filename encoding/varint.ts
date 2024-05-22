@@ -104,7 +104,7 @@ export function decode(buf: Uint8Array, offset = 0): [bigint, number] {
  * @param offset The offset to start decoding from.
  * @returns A tuple of the decoded varint 64-bit number, and the new offset.
  *
- * @example
+ * @example Usage
  * ```ts
  * import { decodeVarint } from "@std/encoding/varint";
  * import { assertEquals } from "@std/assert/assert-equals";
@@ -222,7 +222,7 @@ export function decode32(buf: Uint8Array, offset = 0): [number, number] {
  * @param offset The offset to start decoding from.
  * @returns A tuple of the decoded varint 32-bit number, and the new offset.
  *
- * @example
+ * @example Usage
  * ```ts
  * import { decodeVarint32 } from "@std/encoding/varint";
  * import { assertEquals } from "@std/assert/assert-equals";
@@ -301,7 +301,7 @@ export function encode(
  * @param offset The offset to start writing at.
  * @returns A tuple of the encoded VarInt `Uint8Array` and the new offset.
  *
- * @example
+ * @example Usage
  * ```ts
  * import { encodeVarint } from "@std/encoding/varint";
  * import { assertEquals } from "@std/assert/assert-equals";
