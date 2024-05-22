@@ -194,7 +194,7 @@ function validateDomain(domain: string) {
 /**
  * Parse cookies of a header
  *
- * @example
+ * @example Usage
  * ```ts
  * import { getCookies } from "@std/http/cookie";
  *
@@ -227,7 +227,7 @@ export function getCookies(headers: Headers): Record<string, string> {
 /**
  * Set the cookie header properly in the headers
  *
- * @example
+ * @example Usage
  * ```ts
  * import {
  *   Cookie,
@@ -260,7 +260,7 @@ export function setCookie(headers: Headers, cookie: Cookie) {
  * > Note: Deleting a `Cookie` will set its expiration date before now. Forcing
  * > the browser to delete it.
  *
- * @example
+ * @example Usage
  * ```ts
  * import { deleteCookie } from "@std/http/cookie";
  *
@@ -376,7 +376,7 @@ function parseSetCookie(value: string): Cookie | null {
 /**
  * Parse set-cookies of a header
  *
- * @example
+ * @example Usage
  * ```ts
  * import { getSetCookies } from "@std/http/cookie";
  *

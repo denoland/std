@@ -14,7 +14,7 @@ export const ERROR_WHILE_MAPPING_MESSAGE = "Threw while mapping.";
  * yielded on success. After that, the rejections among them are gathered and
  * thrown by the iterator in an `AggregateError`.
  *
- * @example
+ * @example Usage
  * ```ts
  * import { pooledMap } from "@std/async/pool";
  *
