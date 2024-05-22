@@ -7,16 +7,26 @@ import { exponentialBackoffWithJitter } from "./_util.ts";
 /**
  * Error thrown in {@linkcode retry} once the maximum number of failed attempts
  * has been reached.
+ *
+ * @example Usage
+ * ```ts
+ * import { RetryError } from "@std/async/retry";
+ *
+ * const error = new RetryError({ foo: "bar" }, 3);
+ * ```
  */
 export class RetryError extends Error {
   /**
    * Constructs a new {@linkcode RetryError} instance.
    *
-   * @example
+   * @param cause the cause for this error.
+   * @param attempts the number of retry attempts made.
+   *
+   * @example Usage
    * ```ts
    * import { RetryError } from "@std/async/retry";
    *
-   * throw new RetryError({ foo: "bar" }, 3);
+   * const error = new RetryError({ foo: "bar" }, 3);
    * ```
    */
   constructor(cause: unknown, attempts: number) {
@@ -84,7 +94,7 @@ const defaultRetryOptions: Required<RetryOptions> = {
  *
  * When `jitter` is `0`, waits the full backoff time.
  *
- * @example
+ * @example Example configuration 1
  * ```ts
  * import { retry } from "@std/async/retry";
  * const req = async () => {
@@ -101,7 +111,7 @@ const defaultRetryOptions: Required<RetryOptions> = {
  * });
  * ```
  *
- * @example
+ * @example Example configuration 2
  * ```ts
  * import { retry } from "@std/async/retry";
  * const req = async () => {
@@ -117,6 +127,11 @@ const defaultRetryOptions: Required<RetryOptions> = {
  *  jitter: 0.5,
  * });
  * ```
+ *
+ * @typeParam T The return type of the function to retry and returned promise.
+ * @param fn The function to retry.
+ * @param opts Additional options.
+ * @returns The promise that resolves with the value returned by the function to retry.
  */
 export async function retry<T>(
   fn: (() => Promise<T>) | (() => T),

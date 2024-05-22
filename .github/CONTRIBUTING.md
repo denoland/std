@@ -125,3 +125,14 @@ Example code snippets must:
    [`deno eval`](https://docs.deno.com/runtime/manual/tools/eval) in the
    [documentation checker tool](../_tools/check_docs.ts) and are flagged when
    they throw an error.
+
+Note: To skip running a specific code snippet, add `no-eval` to the starting
+delimiter. E.g.
+
+````ts
+/**
+ * ```ts no-eval
+ * (code snippet will not be run)
+ * ```
+ */
+````

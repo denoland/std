@@ -29,7 +29,7 @@ export interface ParseOptions {
  * Converts a JSON with Comments (JSONC) string into an object.
  * If a syntax error is found, throw a {@linkcode SyntaxError}.
  *
- * @example
+ * @example Usage
  * ```ts
  * import { parse } from "@std/jsonc";
  *
@@ -41,6 +41,7 @@ export interface ParseOptions {
  * ```
  *
  * @param text A valid JSONC string.
+ * @returns The parsed JsonValue from the JSONC string.
  */
 export function parse(
   text: string,
