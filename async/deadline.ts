@@ -12,7 +12,7 @@ export interface DeadlineOptions {
 /**
  * Error thrown when {@linkcode deadline} times out.
  *
- * @example
+ * @example Usage
  * ```ts
  * import { DeadlineError } from "@std/async/deadline";
  * const error = new DeadlineError();
@@ -38,7 +38,7 @@ export class DeadlineError extends Error {
  * @param options Additional options.
  * @returns A promise that will reject if the provided duration runs out before resolving.
  *
- * @example
+ * @example Usage
  * ```ts no-eval
  * import { deadline } from "@std/async/deadline";
  * import { delay } from "@std/async/delay";

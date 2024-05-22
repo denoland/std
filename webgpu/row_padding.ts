@@ -20,7 +20,7 @@ export const BYTES_PER_PIXEL = 4;
  *
  * Ref: https://en.wikipedia.org/wiki/Data_structure_alignment#Computing_padding
  *
- * @example
+ * @example Usage
  * ```ts
  * import { getRowPadding } from "@std/webgpu/row-padding";
  *
@@ -52,7 +52,7 @@ export function getRowPadding(width: number): Padding {
  * Creates a new buffer while removing any unnecessary empty bytes.
  * Useful for when wanting to save an image as a specific format.
  *
- * @example
+ * @example Usage
  * ```ts
  * import { resliceBufferWithPadding } from "@std/webgpu/row-padding";
  *
