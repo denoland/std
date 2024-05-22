@@ -30,6 +30,7 @@ const ENTRY_POINTS = [
   "../bytes/mod.ts",
   "../collections/mod.ts",
   "../datetime/mod.ts",
+  "../encoding/mod.ts",
   "../internal/mod.ts",
   "../jsonc/mod.ts",
   "../media_types/mod.ts",
