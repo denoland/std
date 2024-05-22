@@ -167,8 +167,8 @@ function assertHasExampleTag(
       });
       snippetPromises.push((async () => {
         const timeoutId = setTimeout(() => {
-          console.log("Snippet has been running for more than 10 seconds...");
-          console.log(snippet);
+          console.warn("Snippet has been running for more than 10 seconds...");
+          console.warn(snippet);
         }, 10_000);
         try {
           const { success, stderr } = await command.output();
