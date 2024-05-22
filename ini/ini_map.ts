@@ -28,12 +28,6 @@ export interface ParseOptions {
   reviver?: ReviverFunction;
 }
 
-/** Options for constructing INI strings. */
-export interface StringifyOptions extends FormattingOptions {
-  /** Provide custom string conversion for the value in a key/value pair. */
-  replacer?: ReplacerFunction;
-}
-
 /** Function for replacing JavaScript values with INI string values. */
 export type ReplacerFunction = (
   key: string,
