@@ -136,13 +136,16 @@ export class Spinner {
     // Updates the spinner after the given interval.
     const updateFrame = () => {
       const color = this.#color ?? "";
-      Deno.stdout.writeSync(LINE_CLEAR);
       const frame = encoder.encode(
         noColor
           ? this.#spinner[i] + " " + this.message
           : color + this.#spinner[i] + COLOR_RESET + " " + this.message,
       );
-      Deno.stdout.writeSync(frame);
+      // batch the writeSync call to reduce flickering
+      const batch = new Uint8Array(LINE_CLEAR.length + frame.length);
+      batch.set(LINE_CLEAR);
+      batch.set(frame, LINE_CLEAR.length);
+      Deno.stdout.writeSync(batch);
       i = (i + 1) % this.#spinner.length;
     };
     this.#intervalId = setInterval(updateFrame, this.#interval);
