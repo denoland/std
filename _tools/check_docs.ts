@@ -36,6 +36,7 @@ const ENTRY_POINTS = [
   "../media_types/mod.ts",
   "../ulid/mod.ts",
   "../webgpu/mod.ts",
+  "../http/mod.ts",
 ] as const;
 
 const TS_SNIPPET = /```ts[\s\S]*?```/g;
