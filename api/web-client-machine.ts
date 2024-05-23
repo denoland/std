@@ -68,7 +68,7 @@ export class Machine implements ArtifactMachine {
   }
 
   /** If the given pid is valid, uses that session, else creates a new one */
-  openSession(retry?: PID): Terminal {
+  openTerminal(retry?: PID): Terminal {
     if (retry) {
       return Terminal.resume(this.#engine, this, retry)
     }

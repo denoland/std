@@ -29,7 +29,7 @@ const cradleMaker = async (init?: Provisioner) => {
   const engine = await WebClientEngine.start('mock', fetcher)
   const privateKey = Machine.generatePrivateKey()
   const machine = Machine.load(engine, privateKey)
-  const session = machine.openSession()
+  const session = machine.openTerminal()
   const clientStop = session.engineStop.bind(session)
   session.engineStop = async () => {
     // must stop the client first, else will retry

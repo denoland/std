@@ -36,6 +36,11 @@ export type Api = {
   listSessions: () => Promise<PID[]>
 
   /**
+   * List all the actors that currently have sessions with HAL
+   */
+  listActors: () => Promise<PID[]>
+
+  /**
    * HAL checks if the machineId is part of the sending authenticated Actor.  If
    * it is, and if there is an anonymous actor for this machineId, it moves all
    * the sessions to the authenticated actor then deletes the anonymous actor
@@ -101,7 +106,7 @@ export const functions = {
       log('found entry file', help)
     }
     const functions = await api.functions('engage-help')
-    return functions.engage({ text, help })
+    return functions.engage({ help, text })
   },
   resetSession: (_: object, api: IsolateApi) => {
     api.delete('session.json')

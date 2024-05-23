@@ -46,7 +46,8 @@
     "openai": "npm:openai",
     "serialize-error": "npm:serialize-error",
     "supports-color": "npm:supports-color",
-    "ulid": "npm:ulid"
+    "ulid": "npm:ulid",
+    "vfile-matter": "npm:vfile-matter@^5.0.0"
   },
   "exclude": ["cov/"],
   "lint": {

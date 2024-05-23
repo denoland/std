@@ -9,8 +9,7 @@ Deno.test('loadAll', async (t) => {
   const aesKey = DB.generateAesKey()
   const engine = await Engine.start(superuserKey, aesKey)
   const machine = Machine.load(engine, Machine.generatePrivateKey())
-  const session = machine.openSession()
-  await session.rm({ repo: 'dreamcatcher-tech/HAL' })
+  const session = machine.openTerminal()
   const { pid } = await session.clone({ repo: 'dreamcatcher-tech/HAL' })
   const { loadAll, load } = await session.actions<Api>('load-help', pid)
   await t.step('loadAll', async () => {

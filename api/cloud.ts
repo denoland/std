@@ -19,7 +19,7 @@ const cradleMaker = async () => {
   const engine = await WebClientEngine.start(url)
   const machine = Machine.load(engine, machineKey)
 
-  const terminal = machine.openSession()
+  const terminal = machine.openTerminal()
   if (!introDone) {
     introDone = true
     console.log('testing:', url)

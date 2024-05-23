@@ -11,7 +11,7 @@ const cradleMaker = async (init?: Provisioner) => {
   const engine = await Engine.start(superuserKey, aesKey, init)
   const privateKey = Machine.generatePrivateKey()
   const machine = Machine.load(engine, privateKey)
-  const terminal = machine.openSession()
+  const terminal = machine.openTerminal()
   return terminal
 }
 

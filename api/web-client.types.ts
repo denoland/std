@@ -354,7 +354,7 @@ export interface ArtifactMachine {
   machineId: string
   rootTerminalPromise: Promise<Terminal>
   /** Using the current session, create a new session. */
-  openSession(retry?: PID): ArtifactSession
+  openTerminal(retry?: PID): ArtifactSession
   /** Pings the execution context without going thru the transaction queue.
    *
    * Used primarily by web clients to establish base connectivity and get

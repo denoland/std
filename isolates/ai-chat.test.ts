@@ -81,7 +81,7 @@ Deno.test('engage-help', async (t) => {
   const aesKey = DB.generateAesKey()
   const engine = await Engine.start(superuserKey, aesKey)
   const machine = Machine.load(engine, Machine.generatePrivateKey())
-  const session = machine.openSession()
+  const session = machine.openTerminal()
 
   await session.rm({ repo: 'dreamcatcher-tech/HAL' })
   const { pid } = await session.clone({ repo: 'dreamcatcher-tech/HAL' })

@@ -21,7 +21,7 @@ const factory = async () => {
   const engine = await engineFactory()
   const privateKey = Machine.generatePrivateKey()
   const machine = Machine.load(engine, privateKey)
-  const session = machine.openSession()
+  const session = machine.openTerminal()
   await session.initializationPromise
   return session
 }

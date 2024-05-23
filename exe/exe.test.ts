@@ -185,7 +185,7 @@ for (const withExeCache of [true, false]) {
         engine.context.exe?.disableFunctionCache()
       }
       const machine = Machine.load(engine, Machine.generatePrivateKey())
-      const session = machine.openSession()
+      const session = machine.openTerminal()
 
       const { fileAccumulation } = await session.actions<Api>('io-fixture')
       await fileAccumulation({ path: 'test.txt', content: 'hello', count: 3 })
@@ -213,7 +213,7 @@ for (const withExeCache of [true, false]) {
         engine.context.exe?.disableFunctionCache()
       }
       const machine = Machine.load(engine, Machine.generatePrivateKey())
-      const session = machine.openSession()
+      const session = machine.openTerminal()
       const { pid } = session
       const { loopAccumulation } = await session.actions<Api>('io-fixture', pid)
       await loopAccumulation({ path: 'test.txt', content: 'hello', count: 3 })

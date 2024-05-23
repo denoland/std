@@ -14,7 +14,7 @@ Deno.test('login with github', async (t) => {
   const engine = await Engine.start(superuserKey, aesKey, Github.init)
 
   const machine = Machine.load(engine, Machine.generatePrivateKey())
-  const session = machine.openSession()
+  const session = machine.openTerminal()
   const home = session.homeAddress
   const config = await session.readJSON<Actors.Config>('config.json', home)
   const authProvider = config.authProviders.github
@@ -41,7 +41,7 @@ Deno.test('login with github', async (t) => {
   })
   await t.step('second machine login', async () => {
     const secondMachine = Machine.load(engine, Machine.generatePrivateKey())
-    const second = secondMachine.openSession()
+    const second = secondMachine.openTerminal()
 
     const { pid: sessionPid } = second
     expect(sessionPid).not.toEqual(session.pid)
