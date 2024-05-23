@@ -99,7 +99,7 @@ export const functions = {
   },
   prompt: async ({ text }: { text: string }, api: IsolateApi) => {
     log('prompt', text)
-    let help = 'goalie'
+    let help = 'hal-v0.2'
     if (await api.exists(ENTRY_HELP_FILE)) {
       const redirect = await api.readJSON<EntryHelpFile>(ENTRY_HELP_FILE)
       help = redirect.help
