@@ -153,7 +153,7 @@ export type { WalkEntry };
  * @param root The root directory to start the walk from, as a string or URL.
  * @param options The options for the walk.
  *
- * @returns An async iterable iterator that yields `WalkEntry` objects.
+ * @returns An async iterable iterator that yields the walk entry objects.
  *
  * @example Basic usage
  *
@@ -164,30 +164,175 @@ export type { WalkEntry };
  * └── foo.ts
  * ```
  *
- * ```ts
+ * ```ts no-eval
  * import { walk } from "@std/fs/walk";
  *
- * const entries = [];
- * for await (const entry of walk(".")) {
- *   entries.push(entry);
- * }
+ * await Array.fromAsync(walk("."));
+ * // [
+ * //   {
+ * //     path: "/folder",
+ * //     name: "folder",
+ * //     isFile: false,
+ * //     isDirectory: true,
+ * //     isSymlink: false
+ * //   },
+ * //   {
+ * //     path: "/folder/script.ts",
+ * //     name: "script.ts",
+ * //     isFile: true,
+ * //     isDirectory: false,
+ * //     isSymlink: false
+ * //   },
+ * //   {
+ * //     path: "/folder/foo.ts",
+ * //     name: "foo.ts",
+ * //     isFile: true,
+ * //     isDirectory: false,
+ * //     isSymlink: false
+ * //   },
+ * // ]
+ * ```
  *
- * entries[0]!.path; // "folder"
- * entries[0]!.name; // "folder"
- * entries[0]!.isFile; // false
- * entries[0]!.isDirectory; // true
- * entries[0]!.isSymlink; // false
+ * @example Maximum file depth
  *
- * entries[1]!.path; // "folder/script.ts"
- * entries[1]!.name; // "script.ts"
- * entries[1]!.isFile; // true
- * entries[1]!.isDirectory; // false
- * entries[1]!.isSymlink; // false
+ * Setting the `maxDepth` option to `1` will only include the root directory and
+ * its immediate children.
+ *
+ * File structure:
+ * ```
+ * folder
+ * ├── script.ts
+ * └── foo
+ *     └── bar.ts
+ * ```
+ *
+ * ```ts no-eval
+ * import { walk } from "@std/fs/walk";
+ *
+ * await Array.fromAsync(walk(".", { maxDepth: 1 }));
+ * // [
+ * //   {
+ * //     path: "/folder",
+ * //     name: "folder",
+ * //     isFile: false,
+ * //     isDirectory: true,
+ * //     isSymlink: false
+ * //   },
+ * //   {
+ * //     path: "/folder/script.ts",
+ * //     name: "script.ts",
+ * //     isFile: true,
+ * //     isDirectory: false,
+ * //     isSymlink: false
+ * //   },
+ * //   {
+ * //     path: "/folder/foo",
+ * //     name: "foo",
+ * //     isFile: false,
+ * //     isDirectory: true,
+ * //     isSymlink: false
+ * //   },
+ * // ]
+ * ```
+ *
+ * @example Exclude files
+ *
+ * Setting the `includeFiles` option to `false` will exclude files.
+ *
+ * File structure:
+ * ```
+ * folder
+ * ├── script.ts
+ * └── foo
+ * ```
+ *
+ * ```ts no-eval
+ * import { walk } from "@std/fs/walk";
+ *
+ * await Array.fromAsync(walk(".", { includeFiles: false }));
+ * // [
+ * //   {
+ * //     path: "/folder",
+ * //     name: "folder",
+ * //     isFile: false,
+ * //     isDirectory: true,
+ * //     isSymlink: false
+ * //   },
+ * //   {
+ * //     path: "/folder/foo",
+ * //     name: "foo",
+ * //     isFile: false,
+ * //     isDirectory: true,
+ * //     isSymlink: false,
+ * //   },
+ * // ]
+ * ```
+ *
+ * @example Exclude directories
+ *
+ * Setting the `includeDirs` option to `false` will exclude directories.
+ *
+ * File structure:
+ * ```
+ * folder
+ * ├── script.ts
+ * └── foo
+ * ```
+ *
+ * ```ts no-eval
+ * import { walk } from "@std/fs/walk";
+ *
+ * await Array.fromAsync(walk(".", { includeDirs: false }));
+ * // [
+ * //   {
+ * //     path: "/folder/script.ts",
+ * //     name: "script.ts",
+ * //     isFile: true,
+ * //     isDirectory: false,
+ * //     isSymlink: false
+ * //   },
+ * // ]
+ * ```
+ *
+ * @example Exclude symbolic links
+ *
+ * Setting the `includeSymlinks` option to `false` will exclude symbolic links.
+ *
+ * File structure:
+ * ```
+ * folder
+ * ├── script.ts
+ * ├── foo
+ * └── link -> script.ts (symbolic link)
+ * ```
+ *
+ * ```ts no-eval
+ * import { walk } from "@std/fs/walk";
+ *
+ * await Array.fromAsync(walk(".", { includeSymlinks: false }));
+ * // [
+ * //   {
+ * //     path: "/folder",
+ * //     name: "folder",
+ * //     isFile: false,
+ * //     isDirectory: true,
+ * //     isSymlink: false
+ * //   },
+ * //   {
+ * //     path: "/folder/script.ts",
+ * //     name: "script.ts",
+ * //     isFile: true,
+ * //     isDirectory: false,
+ * //     isSymlink: false
+ * //   },
+ * // ]
  * ```
  */
 export async function* walk(
   root: string | URL,
-  {
+  options: WalkOptions = {},
+): AsyncIterableIterator<WalkEntry> {
+  const {
     maxDepth = Infinity,
     includeFiles = true,
     includeDirs = true,
@@ -197,8 +342,8 @@ export async function* walk(
     exts = undefined,
     match = undefined,
     skip = undefined,
-  }: WalkOptions = {},
-): AsyncIterableIterator<WalkEntry> {
+  } = options;
+
   if (maxDepth < 0) {
     return;
   }
