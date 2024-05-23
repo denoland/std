@@ -140,90 +140,94 @@ const matchers: Record<MatcherKey, Matcher> = {
 export function expect(value: unknown, customMessage?: string): Expected {
   let isNot = false;
   let isPromised = false;
-  const self: Expected = new Proxy<Expected>(<Expected>{}, {
-    get(_, name) {
-      if (name === "not") {
-        isNot = !isNot;
-        return self;
-      }
-
-      if (name === "resolves") {
-        if (!isPromiseLike(value)) {
-          throw new AssertionError("expected value must be Promiselike");
+  const self: Expected = new Proxy<Expected>(
+    <Expected> {},
+    {
+      get(_, name) {
+        if (name === "not") {
+          isNot = !isNot;
+          return self;
         }
 
-        isPromised = true;
-        return self;
-      }
-
-      if (name === "rejects") {
-        if (!isPromiseLike(value)) {
-          throw new AssertionError("expected value must be a PromiseLike");
-        }
-
-        value = value.then(
-          (value) => {
-            throw new AssertionError(
-              `Promise did not reject. resolved to ${value}`
-            );
-          },
-          (err) => err
-        );
-        isPromised = true;
-        return self;
-      }
-
-      const extendMatchers: Matchers = getExtendMatchers();
-      const allMatchers = {
-        ...extendMatchers,
-        ...matchers,
-      };
-      const matcher = allMatchers[name as MatcherKey] as Matcher;
-      if (!matcher) {
-        throw new TypeError(
-          typeof name === "string"
-            ? `matcher not found: ${name}`
-            : "matcher not found"
-        );
-      }
-
-      return (...args: unknown[]) => {
-        function applyMatcher(value: unknown, args: unknown[]) {
-          const context: MatcherContext = {
-            value,
-            equal,
-            isNot: false,
-            customMessage,
-            customTesters: getCustomEqualityTesters(),
-          };
-          if (isNot) {
-            context.isNot = true;
+        if (name === "resolves") {
+          if (!isPromiseLike(value)) {
+            throw new AssertionError("expected value must be Promiselike");
           }
-          if (name in extendMatchers) {
-            const result = matcher(context, ...args) as ExtendMatchResult;
-            if (context.isNot) {
-              if (result.pass) {
+
+          isPromised = true;
+          return self;
+        }
+
+        if (name === "rejects") {
+          if (!isPromiseLike(value)) {
+            throw new AssertionError("expected value must be a PromiseLike");
+          }
+
+          value = value.then(
+            (value) => {
+              throw new AssertionError(
+                `Promise did not reject. resolved to ${value}`,
+              );
+            },
+            (err) => err,
+          );
+          isPromised = true;
+          return self;
+        }
+
+        const extendMatchers: Matchers = getExtendMatchers();
+        const allMatchers = {
+          ...extendMatchers,
+          ...matchers,
+        };
+        const matcher = allMatchers[name as MatcherKey] as Matcher;
+        if (!matcher) {
+          throw new TypeError(
+            typeof name === "string"
+              ? `matcher not found: ${name}`
+              : "matcher not found",
+          );
+        }
+
+        return (...args: unknown[]) => {
+          function applyMatcher(value: unknown, args: unknown[]) {
+            const context: MatcherContext = {
+              value,
+              equal,
+              isNot: false,
+              customMessage,
+              customTesters: getCustomEqualityTesters(),
+            };
+            if (isNot) {
+              context.isNot = true;
+            }
+            if (name in extendMatchers) {
+              const result = matcher(context, ...args) as ExtendMatchResult;
+              if (context.isNot) {
+                if (result.pass) {
+                  throw new AssertionError(result.message());
+                }
+              } else if (!result.pass) {
                 throw new AssertionError(result.message());
               }
-            } else if (!result.pass) {
-              throw new AssertionError(result.message());
+            } else {
+              matcher(context, ...args);
             }
-          } else {
-            matcher(context, ...args);
           }
-        }
 
-        return isPromised
-          ? (value as Promise<unknown>).then((value: unknown) =>
+          return isPromised
+            ? (value as Promise<unknown>).then((value: unknown) =>
               applyMatcher(value, args)
             )
-          : applyMatcher(value, args);
-      };
+            : applyMatcher(value, args);
+        };
+      },
     },
-  });
+  );
 
   return self;
 }
+
 
 /**
  * You can use `expect.addEqualityTesters` to add your own methods to test if two
