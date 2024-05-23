@@ -69,21 +69,22 @@ export class Engine implements EngineInterface {
   }
   async ensureHomeAddress(superuserKey: string, init?: Provisioner) {
     if (this.#homeAddress) {
-      return this.#homeAddress
+      return
     }
     log('ensureHomeAddress querying db')
     const { db } = artifact.sanitizeContext(this.#api)
-    if (await db.hasHomeAddress()) {
-      this.#homeAddress = await db.getHomeAddress()
-      log('homeAddress found in db', print(this.#homeAddress))
-    } else {
-      await this.#provision(superuserKey, init)
-      assert(this.#homeAddress, 'home not provisioned')
-      log('homeAddress provisioned', print(this.#homeAddress))
+    if (!await db.hasHomeAddress()) {
+      const lockId = await db.lockDB()
+      if (lockId) {
+        await this.#provision(superuserKey, init)
+        assert(this.#homeAddress, 'home not provisioned')
+        log('homeAddress provisioned', print(this.#homeAddress))
+        await db.unlockDB(lockId)
+        return
+      }
     }
-    const su = await this.#su()
-    log('superuser', print(su.pid))
-    return this.#homeAddress
+    this.#homeAddress = await db.getHomeAddress()
+    log('homeAddress found in db', print(this.#homeAddress))
   }
   get abortSignal() {
     return this.#abort.signal
@@ -95,9 +96,7 @@ export class Engine implements EngineInterface {
   get isProvisioned() {
     return !!this.#homeAddress && !!this.#githubAddress
   }
-  // maybe dropping the db should be done inside a deployment id ?
-  // so happens on first start ?
-  // or at least lock the db while it is being provisioned ?
+
   async #provision(superuserPrivateKey: string, init?: Provisioner) {
     const { db } = artifact.sanitizeContext(this.#api)
     // TODO use the effect lock to ensure atomicity

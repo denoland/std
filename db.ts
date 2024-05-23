@@ -129,22 +129,14 @@ export default class DB {
     return Atomic.create(this.#kv)
   }
 
-  async lockRepo(pid: PID) {
-    const key = keys.getRepoLockKey(pid)
-    const lockId = ulid()
-    const result = await this.#kv.atomic().check({ key, versionstamp: null })
-      .set(key, lockId)
-      .commit()
-    if (result.ok) {
-      return true
-    }
-    // really just want to know that this process set the lock and is now
-    // releasing it
-    // the release would be part of the atomics, since it needs to be at the
-    // exact same time as the commit is stored, else can fail
-  }
+  /**
+   * @param pid The branch to watch the effects lock for
+   * @param abort Trigger this abort if the lock is lost
+   * @returns
+   */
   async watchSideEffectsLock(pid: PID, abort: AbortController) {
     // rudely snatch the lock
+    // TODO ensure that releasing the lock is part of atomics
     const key = keys.getEffectsLockKey(pid)
     const lockId = ulid()
     const { versionstamp, ok } = await this.#kv.set(key, lockId)
@@ -284,9 +276,41 @@ export default class DB {
   async getHomeAddress() {
     const home = await this.#kv.get<PID>(keys.HOME_ADDRESS)
     if (!home.versionstamp) {
-      throw new Error('Home address not set')
+      const watch = this.#kv.watch([keys.HOME_ADDRESS])
+      for await (const [result] of streamToIt(watch, this.#abort.signal)) {
+        if (result.versionstamp) {
+          return result.value
+        }
+      }
+      if (!this.#abort.signal.aborted) {
+        throw new Error('Home address error')
+      }
     }
     return home.value
+  }
+  async lockDB() {
+    const lockId = ulid()
+    const key = keys.DB_LOCK
+    const result = await this.#kv.atomic().check({ key, versionstamp: null })
+      .set(key, lockId)
+      .commit()
+    if (result.ok) {
+      return lockId
+    }
+  }
+  async unlockDB(lockId: string) {
+    const key = keys.DB_LOCK
+    const entry = await this.#kv.get<string>(key)
+    if (entry.value !== lockId) {
+      console.error(`lock was taken from ${lockId} to ${entry.value}`)
+      return
+    }
+    const result = await this.#kv.atomic().check(entry)
+      .delete(key)
+      .commit()
+    if (!result.ok) {
+      console.error('unlockDB failed', lockId)
+    }
   }
 }
 
