@@ -39,7 +39,7 @@ export type { Reader, ReaderSync };
  * ```
  *
  * @deprecated This will be removed in 1.0.0. Import from
- * {@linkhttps://jsr.io/@std/io | @std/io} instead.
+ * {@link https://jsr.io/@std/io | @std/io} instead.
  */
 export function iterateReader(
   r: Reader,
