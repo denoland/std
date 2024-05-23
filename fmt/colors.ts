@@ -75,7 +75,7 @@ export interface Rgb {
 let enabled = !noColor;
 
 /**
- * Set text color enable or disable.
+ * Enable or disable text color when styling.
  *
  * `@std/fmt/colors` automatically detects NO_COLOR environmental variable
  * and disables text color. Use this API only when the automatic detection
@@ -109,7 +109,7 @@ export function setColorEnabled(value: boolean) {
  * ```ts
  * import { getColorEnabled } from "@std/fmt/colors";
  *
- * console.log(getColorEnabled());
+ * console.log(getColorEnabled()); // true if enabled, false if disabled
  * ```
  * @returns `true` if text color is enabled, `false` otherwise
  */
