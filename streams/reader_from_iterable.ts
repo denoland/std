@@ -6,13 +6,14 @@ import { writeAll } from "@std/io/write-all";
 import type { Reader } from "@std/io/types";
 
 /**
- * Create a {@linkcode Reader} from an iterable of {@linkcode Uint8Array}s.
+ * Create a {@linkcode https://jsr.io/@std/io/doc/types/~/Reader | Reader} from an iterable of {@linkcode Uint8Array}s.
  *
+ * @example Periodically write `Deno.build` information to `build.txt`
  * ```ts
  * import { readerFromIterable } from "@std/streams/reader-from-iterable";
  * import { copy } from "@std/io/copy";
  *
- * const file = await Deno.open("build.txt", { write: true });
+ * using file = await Deno.open("build.txt", { write: true });
  * const reader = readerFromIterable((async function* () {
  *   while (true) {
  *     await new Promise((r) => setTimeout(r, 1000));
