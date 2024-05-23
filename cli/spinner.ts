@@ -142,7 +142,10 @@ export class Spinner {
           : color + this.#spinner[i] + COLOR_RESET + " " + this.message,
       );
       // call writeSync once to reduce flickering
-      Deno.stdout.writeSync(concat([LINE_CLEAR, frame]));
+      const writeData = new Uint8Array(LINE_CLEAR.length + frame.length);
+      writeData.set(LINE_CLEAR);
+      writeData.set(frame, LINE_CLEAR.length);
+      Deno.stdout.writeSync(writeData);
       i = (i + 1) % this.#spinner.length;
     };
     this.#intervalId = setInterval(updateFrame, this.#interval);
