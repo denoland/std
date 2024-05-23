@@ -57,6 +57,10 @@ import {
 import { addSerializer } from "./_snapshot_serializer.ts";
 import { isPromiseLike } from "./_utils.ts";
 import * as asymmetricMatchers from "./_asymmetric_matchers.ts";
+import type { Tester } from "./_types.ts";
+import type { SnapshotPlugin } from "./_types.ts";
+
+export type { AnyConstructor, Async, Expected } from "./_types.ts";
 
 const matchers: Record<MatcherKey, Matcher> = {
   lastCalledWith: toHaveBeenLastCalledWith,
@@ -110,8 +114,8 @@ const matchers: Record<MatcherKey, Matcher> = {
  * The `expect` function is used to test a value. You will use `expect` along with a
  * "matcher" function to assert something about a value.
  *
- * @example
- * ```js
+ * @example basic usage
+ * ```ts
  * import { expect } from "@std/expect";
  *
  * Deno.test("the best flavor is grapefruit", () => {
@@ -136,90 +140,87 @@ const matchers: Record<MatcherKey, Matcher> = {
 export function expect(value: unknown, customMessage?: string): Expected {
   let isNot = false;
   let isPromised = false;
-  const self: Expected = new Proxy<Expected>(
-    <Expected> {},
-    {
-      get(_, name) {
-        if (name === "not") {
-          isNot = !isNot;
-          return self;
+  const self: Expected = new Proxy<Expected>(<Expected>{}, {
+    get(_, name) {
+      if (name === "not") {
+        isNot = !isNot;
+        return self;
+      }
+
+      if (name === "resolves") {
+        if (!isPromiseLike(value)) {
+          throw new AssertionError("expected value must be Promiselike");
         }
 
-        if (name === "resolves") {
-          if (!isPromiseLike(value)) {
-            throw new AssertionError("expected value must be Promiselike");
+        isPromised = true;
+        return self;
+      }
+
+      if (name === "rejects") {
+        if (!isPromiseLike(value)) {
+          throw new AssertionError("expected value must be a PromiseLike");
+        }
+
+        value = value.then(
+          (value) => {
+            throw new AssertionError(
+              `Promise did not reject. resolved to ${value}`
+            );
+          },
+          (err) => err
+        );
+        isPromised = true;
+        return self;
+      }
+
+      const extendMatchers: Matchers = getExtendMatchers();
+      const allMatchers = {
+        ...extendMatchers,
+        ...matchers,
+      };
+      const matcher = allMatchers[name as MatcherKey] as Matcher;
+      if (!matcher) {
+        throw new TypeError(
+          typeof name === "string"
+            ? `matcher not found: ${name}`
+            : "matcher not found"
+        );
+      }
+
+      return (...args: unknown[]) => {
+        function applyMatcher(value: unknown, args: unknown[]) {
+          const context: MatcherContext = {
+            value,
+            equal,
+            isNot: false,
+            customMessage,
+            customTesters: getCustomEqualityTesters(),
+          };
+          if (isNot) {
+            context.isNot = true;
           }
-
-          isPromised = true;
-          return self;
-        }
-
-        if (name === "rejects") {
-          if (!isPromiseLike(value)) {
-            throw new AssertionError("expected value must be a PromiseLike");
-          }
-
-          value = value.then(
-            (value) => {
-              throw new AssertionError(
-                `Promise did not reject. resolved to ${value}`,
-              );
-            },
-            (err) => err,
-          );
-          isPromised = true;
-          return self;
-        }
-
-        const extendMatchers: Matchers = getExtendMatchers();
-        const allMatchers = {
-          ...extendMatchers,
-          ...matchers,
-        };
-        const matcher = allMatchers[name as MatcherKey] as Matcher;
-        if (!matcher) {
-          throw new TypeError(
-            typeof name === "string"
-              ? `matcher not found: ${name}`
-              : "matcher not found",
-          );
-        }
-
-        return (...args: unknown[]) => {
-          function applyMatcher(value: unknown, args: unknown[]) {
-            const context: MatcherContext = {
-              value,
-              equal,
-              isNot: false,
-              customMessage,
-              customTesters: getCustomEqualityTesters(),
-            };
-            if (isNot) {
-              context.isNot = true;
-            }
-            if (name in extendMatchers) {
-              const result = matcher(context, ...args) as ExtendMatchResult;
-              if (context.isNot) {
-                if (result.pass) {
-                  throw new AssertionError(result.message());
-                }
-              } else if (!result.pass) {
+          if (name in extendMatchers) {
+            const result = matcher(context, ...args) as ExtendMatchResult;
+            if (context.isNot) {
+              if (result.pass) {
                 throw new AssertionError(result.message());
               }
-            } else {
-              matcher(context, ...args);
+            } else if (!result.pass) {
+              throw new AssertionError(result.message());
             }
+          } else {
+            matcher(context, ...args);
           }
+        }
 
-          return isPromised
-            ? (value as Promise<unknown>).then((value: unknown) =>
+        return isPromised
+          ? (value as Promise<unknown>).then((value: unknown) =>
               applyMatcher(value, args)
             )
-            : applyMatcher(value, args);
-        };
-      },
+          : applyMatcher(value, args);
+      };
     },
-  );
+  });
 
   return self;
 }
@@ -280,21 +281,31 @@ export function expect(value: unknown, customMessage?: string): Expected {
  * });
  * ```
  */
-expect.addEqualityTesters = addCustomEqualityTesters;
+expect.addEqualityTesters = addCustomEqualityTesters as (
+  newTesters: Tester[]
+) => void;
 /**
+ * It will be removed in 0.226.0. Use `expect.addEqualityTesters` instead.
+ *
  * @deprecated (will be removed in 0.226.0) Use {@linkcode expect.addSnapshotSerializer} instead.
  */
-expect.addSnapshotSerializers = addSerializer;
+expect.addSnapshotSerializers = addSerializer as (
+  plugin: SnapshotPlugin
+) => void;
 
 /**
  * This is a no-op right now. Don't use it.
  * Todo: support serialize plugin
+ *
+ * @ts-
  */
-expect.addSnapshotSerializer = addSerializer;
+expect.addSnapshotSerializer = addSerializer as (
+  plugin: SnapshotPlugin
+) => void;
 /**
  * TODO: export appropriate types to define custom matchers.
  */
-expect.extend = setExtendMatchers;
+expect.extend = setExtendMatchers as (newExtendMatchers: Matchers) => void;
 /**
  * `expect.anything()` matches anything but `null` or `undefined`. You can use it
  * inside `toEqual` or `toHaveBeenCalledWith` instead of a literal value.
@@ -310,7 +321,9 @@ expect.extend = setExtendMatchers;
  * });
 ```
  */
-expect.anything = asymmetricMatchers.anything;
+expect.anything = asymmetricMatchers.anything as () => ReturnType<
+  typeof asymmetricMatchers.anything
+>;
 /**
  * `expect.any(constructor)` matches anything that was created with the given
  * constructor or if it's a primitive that is of the passed type. You can use it
@@ -332,7 +345,9 @@ expect.anything = asymmetricMatchers.anything;
  * });
  * ```
  */
-expect.any = asymmetricMatchers.any;
+expect.any = asymmetricMatchers.any as (
+  c: unknown
+) => ReturnType<typeof asymmetricMatchers.any>;
 /**
  * `expect.arrayContaining(array)` matches a received array which contains all of
  * the elements in the expected array. That is, the expected array is a **subset**
@@ -356,7 +371,10 @@ expect.any = asymmetricMatchers.any;
  * });
  * ```
  */
-expect.arrayContaining = asymmetricMatchers.arrayContaining;
+expect.arrayContaining = asymmetricMatchers.arrayContaining as (
+  // deno-lint-ignore no-explicit-any
+  c: any[]
+) => ReturnType<typeof asymmetricMatchers.arrayContaining>;
 /**
  * `expect.closeTo(number, numDigits?)` is useful when comparing floating point
  * numbers in object properties or array item. If you need to compare a number,
@@ -381,7 +399,10 @@ expect.arrayContaining = asymmetricMatchers.arrayContaining;
  * });
  * ```
  */
-expect.closeTo = asymmetricMatchers.closeTo;
+expect.closeTo = asymmetricMatchers.closeTo as (
+  num: number,
+  numDigits?: number
+) => ReturnType<typeof asymmetricMatchers.closeTo>;
 /**
  * `expect.stringContaining(string)` matches the received value if it is a string
  * that contains the exact expected string.
@@ -399,7 +420,9 @@ expect.closeTo = asymmetricMatchers.closeTo;
  * });
  * ```
  */
-expect.stringContaining = asymmetricMatchers.stringContaining;
+expect.stringContaining = asymmetricMatchers.stringContaining as (
+  str: string
+) => ReturnType<typeof asymmetricMatchers.stringContaining>;
 /**
  * `expect.stringMatching(string | regexp)` matches the received value if it is a
  * string that matches the expected string or regular expression.
@@ -422,4 +445,6 @@ expect.stringContaining = asymmetricMatchers.stringContaining;
  * });
  * ```
  */
-expect.stringMatching = asymmetricMatchers.stringMatching;
+expect.stringMatching = asymmetricMatchers.stringMatching as (
+  pattern: string | RegExp
+) => ReturnType<typeof asymmetricMatchers.stringMatching>;

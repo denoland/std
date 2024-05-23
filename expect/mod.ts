@@ -85,4 +85,5 @@
  * @module
  */
 export { expect } from "./expect.ts";
+export type { Expected, Async, AnyConstructor } from "./expect.ts";
 export { fn } from "./fn.ts";

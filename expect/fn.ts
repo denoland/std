@@ -29,8 +29,7 @@ import { MOCK_SYMBOL, type MockCall } from "./_mock_util.ts";
  * @param stubs - functions to be used as stubs for different calls.
  * @returns A mock function that keeps track of calls and returns values based on the provided stubs.
  *
- * @example
- *
+ * @example basic usage
  * ```ts
  * import { fn, expect } from "@std/expect";
  *
@@ -55,11 +54,12 @@ export function fn(...stubs: Function[]): Function {
   const calls: MockCall[] = [];
 
   const f = (...args: any[]) => {
-    const stub = stubs.length === 1
-      // keep reusing the first
-      ? stubs[0]
-      // pick the exact mock for the current call
-      : stubs[calls.length];
+    const stub =
+      stubs.length === 1
+        ? // keep reusing the first
+          stubs[0]
+        : // pick the exact mock for the current call
+          stubs[calls.length];
 
     try {
       const returned = stub ? stub(...args) : undefined;
