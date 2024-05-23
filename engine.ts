@@ -81,6 +81,8 @@ export class Engine implements EngineInterface {
       assert(this.#homeAddress, 'home not provisioned')
       log('homeAddress provisioned', print(this.#homeAddress))
     }
+    const su = await this.#su()
+    log('superuser', print(su.pid))
     return this.#homeAddress
   }
   get abortSignal() {
@@ -102,6 +104,7 @@ export class Engine implements EngineInterface {
     this.#homeAddress = homeAddress
 
     if (!init) {
+      log('no init function - returning')
       return
     }
 

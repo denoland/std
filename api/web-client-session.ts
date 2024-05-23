@@ -36,7 +36,7 @@ export class Terminal implements ArtifactSession {
   readonly #abort = new AbortController()
   readonly #watcher: PierceWatcher
 
-  readonly #dnsCache = new Map<string, PID>()
+  readonly #dnsCache = new Map<string, Promise<PID>>()
 
   private constructor(
     engine: EngineInterface,
@@ -139,30 +139,34 @@ export class Terminal implements ArtifactSession {
       throw new Error('invalid repo: ' + repo)
     }
     const root = await this.#machine.rootTerminalPromise
+    // TODO move to a function that only calls on root
     if (root.#dnsCache.has(repo)) {
-      const pid = root.#dnsCache.get(repo)
+      const pid = await root.#dnsCache.get(repo)
       if (!pid) {
-        throw new Error('repo not found: ' + repo)
+        throw new Error('repo cache error: ' + repo)
       }
       freezePid(pid)
       return pid
     }
+    const promise = Promise.resolve().then(async () => {
+      // stop rapid concurrent calls both expending resources
+      const home = root.homeAddress
+      type Superuser = { superuser: string }
+      const { superuser } = await root.readJSON<Superuser>('config.json', home)
 
-    const home = root.homeAddress
-    type Superuser = { superuser: string }
-    const { superuser } = await root.readJSON<Superuser>('config.json', home)
+      const branches = home.branches.concat(superuser)
+      const actor = { ...home, branches }
 
-    const branches = home.branches.concat(superuser)
-    const actor = { ...home, branches }
-
-    type Repos = { [repo: string]: PID }
-    const repos = await root.readJSON<Repos>('repos.json', actor)
-    const pid = repos[repo]
-    if (!pid) {
-      throw new Error('repo not found: ' + repo)
-    }
-    root.#dnsCache.set(repo, pid)
-    return pid
+      type Repos = { [repo: string]: PID }
+      const repos = await root.readJSON<Repos>('repos.json', actor)
+      const pid = repos[repo]
+      if (!pid) {
+        throw new Error('repo not found: ' + repo)
+      }
+      return pid
+    })
+    root.#dnsCache.set(repo, promise)
+    return promise
   }
   async actions<T>(isolate: string, target: PID = this.pid) {
     const schema = await this.apiSchema(isolate)
