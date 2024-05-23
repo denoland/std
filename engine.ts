@@ -142,6 +142,7 @@ export class Engine implements EngineInterface {
     const partial = { ...ACTORS, repository: 'actors' }
     const { db } = artifact.sanitizeContext(this.#api)
     const { pid } = await FS.init(partial, db)
+    log('initialized home', print(pid))
     const abort = new AbortController()
     const watcher = PierceWatcher.create(abort.signal, this, pid)
     watcher.watchPierces()
@@ -165,6 +166,7 @@ export class Engine implements EngineInterface {
 
     // notably, this is the only unauthenticated pierce in the whole system
     await this.pierce(pierce)
+    log('pierced', print(pid))
     // TODO reverse the init if the install fails
     await promise
     abort.abort() // TODO make this a method on the watcher
