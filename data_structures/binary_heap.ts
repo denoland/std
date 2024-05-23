@@ -26,7 +26,7 @@ function getParentIndex(index: number) {
  * | pop()       | O(log n)     | O(log n)   |
  * | push(value) | O(1)         | O(log n)   |
  *
- * @example
+ * @example Usage
  * ```ts
  * import {
  *   ascend,

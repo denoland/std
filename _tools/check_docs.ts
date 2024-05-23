@@ -29,6 +29,7 @@ const ENTRY_POINTS = [
   "../async/mod.ts",
   "../bytes/mod.ts",
   "../collections/mod.ts",
+  "../data_structures/mod.ts",
   "../datetime/mod.ts",
   "../internal/mod.ts",
   "../jsonc/mod.ts",
