@@ -300,8 +300,6 @@ expect.addSnapshotSerializers = addSerializer as (
 /**
  * This is a no-op right now. Don't use it.
  * Todo: support serialize plugin
- *
- * @ts-
  */
 expect.addSnapshotSerializer = addSerializer as (
   plugin: SnapshotPlugin,
