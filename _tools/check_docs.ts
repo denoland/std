@@ -34,6 +34,7 @@ const ENTRY_POINTS = [
   "../internal/mod.ts",
   "../jsonc/mod.ts",
   "../media_types/mod.ts",
+  "../text/mod.ts",
   "../ulid/mod.ts",
   "../webgpu/mod.ts",
   "../http/mod.ts",
@@ -87,7 +88,7 @@ function assertHasReturnTag(document: { jsDoc: JsDoc; location: Location }) {
   const tag = document.jsDoc.tags?.find((tag) => tag.kind === "return");
   if (tag === undefined) {
     diagnostics.push(
-      new DocumentError("Symbol must have a @return tag", document),
+      new DocumentError("Symbol must have a @return or @returns tag", document),
     );
   } else {
     assert(
