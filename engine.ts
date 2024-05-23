@@ -95,6 +95,9 @@ export class Engine implements EngineInterface {
   get isProvisioned() {
     return !!this.#homeAddress && !!this.#githubAddress
   }
+  // maybe dropping the db should be done inside a deployment id ?
+  // so happens on first start ?
+  // or at least lock the db while it is being provisioned ?
   async #provision(superuserPrivateKey: string, init?: Provisioner) {
     const { db } = artifact.sanitizeContext(this.#api)
     // TODO use the effect lock to ensure atomicity
