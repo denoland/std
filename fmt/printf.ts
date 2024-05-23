@@ -919,6 +919,8 @@ class Printf {
  * Converts and formats a variable number of `args` as is specified by `format`.
  * `sprintf` returns the formatted string.
  *
+ * See the module documentation for the available format strings.
+ *
  * @example Usage
  * ```ts
  * import { sprintf } from "@std/fmt/printf";
@@ -942,6 +944,8 @@ export function sprintf(format: string, ...args: unknown[]): string {
 /**
  * Converts and format a variable number of `args` as is specified by `format`.
  * `printf` writes the formatted string to standard output.
+ *
+ * See the module documentation for the available format strings.
  *
  * @example Usage
  * ```ts
