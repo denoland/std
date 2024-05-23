@@ -69,11 +69,11 @@ export class Engine implements EngineInterface {
   }
   async ensureHomeAddress(superuserKey: string, init?: Provisioner) {
     if (this.#homeAddress) {
-      const toDelete = Deno.env.get('DROP_HOME')
-      if (this.homeAddress.repoId !== toDelete) {
+      if (this.#isDropping) {
+        this.#homeAddress = undefined
+      } else {
         return
       }
-      this.#dropDB()
     }
     log('ensureHomeAddress querying db')
     const { db } = artifact.sanitizeContext(this.#api)
@@ -88,7 +88,16 @@ export class Engine implements EngineInterface {
       }
     }
     this.#homeAddress = await db.getHomeAddress()
+
     log('homeAddress found in db', print(this.#homeAddress))
+    if (this.#isDropping) {
+      await this.#dropDB()
+    }
+    this.ensureHomeAddress(superuserKey, init)
+  }
+  get #isDropping() {
+    const toDelete = Deno.env.get('DROP_HOME')
+    return toDelete === this.homeAddress.repoId
   }
   get abortSignal() {
     return this.#abort.signal
