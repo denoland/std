@@ -27,25 +27,33 @@ export interface DelimiterStreamOptions {
  * Divide a CSV stream by commas, discarding the commas:
  * ```ts
  * import { DelimiterStream } from "@std/streams/delimiter-stream";
- * const res = await fetch("https://example.com/data.csv");
- * const parts = res.body!
+ * import { assertEquals } from "@std/assert/assert-equals";
+ *
+ * const inputStream = ReadableStream.from(["foo,bar", ",baz"]);
+ *
+ * const transformed = inputStream.pipeThrough(new TextEncoderStream())
  *   .pipeThrough(new DelimiterStream(new TextEncoder().encode(",")))
  *   .pipeThrough(new TextDecoderStream());
+ *
+ * assertEquals(await Array.fromAsync(transformed), ["foo", "bar", "baz"]);
  * ```
  *
  * @example
  * Divide a stream after semi-colons, keeping the semi-colons in the output:
  * ```ts
  * import { DelimiterStream } from "@std/streams/delimiter-stream";
- * const res = await fetch("https://example.com/file.js");
- * const parts = res.body!
+ * import { assertEquals } from "@std/assert/assert-equals";
+ *
+ * const inputStream = ReadableStream.from(["foo;", "bar;ba", "z;"]);
+ *
+ * const transformed = inputStream.pipeThrough(new TextEncoderStream())
  *   .pipeThrough(
- *     new DelimiterStream(
- *       new TextEncoder().encode(";"),
- *       { disposition: "suffix" },
- *     )
- *   )
- *   .pipeThrough(new TextDecoderStream());
+ *     new DelimiterStream(new TextEncoder().encode(";"), {
+ *       disposition: "suffix",
+ *     }),
+ *   ).pipeThrough(new TextDecoderStream());
+ *
+ * assertEquals(await Array.fromAsync(transformed), ["foo;", "bar;", "baz;"]);
  * ```
  */
 export class DelimiterStream extends TransformStream<Uint8Array, Uint8Array> {
