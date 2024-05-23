@@ -98,7 +98,7 @@ export class Spinner {
    * }
    *
    * spinner.stop();
-   * spinner.message = "Done!";
+   * console.log("Done!");
    * ```
    */
   message: string = "";
