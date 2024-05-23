@@ -1,6 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import { parse, type ParseOptions } from "./parse.ts";
+import { parse, type ParseOptions } from "./mod.ts";
 import {
   assert,
   assertEquals,
@@ -188,7 +188,7 @@ Deno.test({
           throw new Error("Don't try to set the value directly to the key __proto__.")
         }
       });
-      import { parse } from "${import.meta.resolve("./parse.ts")}";
+      import { parse } from "${import.meta.resolve("./mod.ts")}";
       parse('{"__proto__": {"isAdmin": true}}');
     `;
     const command = new Deno.Command(Deno.execPath(), {

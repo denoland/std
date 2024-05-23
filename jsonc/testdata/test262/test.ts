@@ -9,7 +9,7 @@ const assert = await Deno.readTextFile(new URL("./assert.js", import.meta.url));
 const propertyHelper = await Deno.readTextFile(
   new URL("./propertyHelper.js", import.meta.url),
 );
-const jsoncModule = new URL("../../parse.ts", import.meta.url);
+const jsoncModule = new URL("../../mod.ts", import.meta.url);
 for await (
   const dirEntry of walk(fromFileUrl(new URL("./JSON/", import.meta.url)))
 ) {
