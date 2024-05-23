@@ -74,6 +74,7 @@ const init = {
 }
 
 export const api = {
+  '@@install': { type: 'object', additionalProperties: false, properties: {} },
   init,
   clone: init,
   rm: {
@@ -97,14 +98,6 @@ export const api = {
     properties: {
       provider: pidSchema,
       name: { type: 'string' },
-    },
-  },
-  '@@install': {
-    type: 'object',
-    additionalProperties: false,
-    required: ['superuser'],
-    properties: {
-      superuser: { type: 'string', pattern: machineIdRegex.source },
     },
   },
   ensureMachineTerminal: {
@@ -144,20 +137,22 @@ export const api = {
 
 export const functions = {
   /** Used by system provisioning to create a blank app */
-  async '@@install'({ superuser }: { superuser: string }, api: IsolateApi) {
+  async '@@install'(_params: Params, api: IsolateApi) {
     // TODO set ACL on io.json to only run this isolate
     assert(isBaseRepo(api.pid), '@@install not base: ' + print(api.pid))
     log('@@install', print(api.pid))
 
     const dir = await api.ls('.')
-    expect(dir, 'repo must be empty').toEqual(['.io.json'])
+    expect(dir, 'repo must be empty').toEqual(['.io.json', 'config.json'])
     const children = await api.lsChildren()
     assert(children.length === 0, 'repo must have no child branches')
 
-    const config: Config = { superuser, authProviders: {} }
-    api.writeJSON('config.json', config)
-
     const functions = await api.functions<ActorAdmin>('actors')
+    const { superuser, authProviders, ...rest } = await api
+      .readJSON<Config>('config.json')
+    expect(authProviders).toEqual({})
+    expect(superuser).toMatch(machineIdRegex)
+    expect(rest).toEqual({})
     const machineId = superuser
     await functions.ensureMachineTerminal({ machineId })
   },

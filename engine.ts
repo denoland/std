@@ -2,13 +2,13 @@ import { transcribe } from './isolates/ai-prompt.ts'
 import Compartment from './io/compartment.ts'
 import '@std/dotenv/load'
 import {
-  ACTORS,
   ArtifactSession,
   assertValidTerminal,
   C,
   colorize,
   EngineInterface,
   freezePid,
+  getActorId,
   isPID,
   JsonValue,
   PID,
@@ -34,6 +34,7 @@ export class Engine implements EngineInterface {
   #compartment: Compartment
   #api: IsolateApi<C>
   #pierce: artifact.Api['pierce']
+  #initHome: artifact.Api['initHome']
   #homeAddress: PID | undefined
   #githubAddress: PID | undefined
   #abort = new AbortController()
@@ -47,6 +48,7 @@ export class Engine implements EngineInterface {
     this.#api = api
     const functions = compartment.functions<artifact.Api>(api)
     this.#pierce = functions.pierce
+    this.#initHome = functions.initHome
     this.#superuserKey = superuserKey
   }
   static async start(superuserKey: string, aesKey: string, init?: Provisioner) {
@@ -78,10 +80,14 @@ export class Engine implements EngineInterface {
       const lockId = await db.lockDB()
       if (lockId) {
         log('locked db', lockId)
-        await this.#provision(superuserKey, init)
-        assert(this.#homeAddress, 'home not provisioned')
-        log('homeAddress provisioned', print(this.#homeAddress))
+        const superuser = Machine.deriveMachineId(superuserKey)
+        this.#homeAddress = await this.#initHome({ superuser })
+        await db.setHomeAddress(this.#homeAddress)
+        log('homeAddress initalized to:', print(this.#homeAddress))
+
+        await this.#provision(init)
         await db.unlockDB(lockId)
+        log('unlocked db', lockId)
         return
       }
     }
@@ -91,7 +97,7 @@ export class Engine implements EngineInterface {
     if (this.#isDropping) {
       await this.#dropDB()
     }
-    this.ensureHomeAddress(superuserKey, init)
+    await this.ensureHomeAddress(superuserKey, init)
   }
   get #isDropping() {
     const toDelete = Deno.env.get('DROP_HOME')
@@ -108,13 +114,37 @@ export class Engine implements EngineInterface {
     return !!this.#homeAddress && !!this.#githubAddress
   }
 
-  async #provision(superuserPrivateKey: string, init?: Provisioner) {
-    const { db } = artifact.sanitizeContext(this.#api)
-    // TODO use the effect lock to ensure atomicity
-    const superuser = Machine.deriveMachineId(superuserPrivateKey)
-    const homeAddress = await this.#installHome(superuser)
-    await db.setHomeAddress(homeAddress)
-    this.#homeAddress = homeAddress
+  async #provision(init?: Provisioner) {
+    const abort = new AbortController()
+
+    const watcher = PierceWatcher.create(abort.signal, this, this.homeAddress)
+    watcher.watchPierces()
+
+    const request: UnsequencedRequest = {
+      target: this.homeAddress,
+      isolate: 'actors',
+      functionName: '@@install',
+      params: {},
+      proctype: PROCTYPE.SERIAL,
+    }
+    const pierce: PierceRequest = {
+      target: this.homeAddress,
+      ulid: ulid(),
+      isolate: 'shell',
+      functionName: 'pierce',
+      params: { request },
+      proctype: PROCTYPE.SERIAL,
+    }
+    const promise = watcher.watch(pierce.ulid)
+
+    // notably, this is the only non terminal pierce in the whole system
+    await this.pierce(pierce)
+    // TODO sign the pierce since superuser is already present
+    log('pierced', print(this.homeAddress))
+    // TODO reverse the init if the install fails
+    await promise
+    abort.abort() // TODO make this a method on the watcher
+    log('installed')
 
     if (!init) {
       log('no init function - returning')
@@ -122,10 +152,10 @@ export class Engine implements EngineInterface {
     }
 
     const terminal = await this.#su()
-    log('provisioning', print(homeAddress))
+    log('provisioning')
     await init(terminal)
-    log('provisioned', print(homeAddress))
-    log('superuser is', colorize(superuser))
+    log('provisioned')
+    log('superuser is', colorize(getActorId(terminal.pid)))
   }
   #superuser: Promise<ArtifactSession> | undefined
   #su() {
@@ -136,43 +166,6 @@ export class Engine implements EngineInterface {
     return this.#superuser
   }
 
-  async #installHome(superuser: string) {
-    log('installHome superuser:', colorize(superuser))
-    // TODO figure out how to know if this is a duplicate install
-    const partial = { ...ACTORS, repository: 'actors' }
-    const { db } = artifact.sanitizeContext(this.#api)
-    const { pid } = await FS.init(partial, db)
-    log('initialized home', print(pid))
-    const abort = new AbortController()
-    const watcher = PierceWatcher.create(abort.signal, this, pid)
-    watcher.watchPierces()
-    // TODO move this to be dedicated artifact isolate function
-    const request: UnsequencedRequest = {
-      isolate: 'actors',
-      functionName: '@@install',
-      params: { superuser },
-      proctype: PROCTYPE.SERIAL,
-      target: pid,
-    }
-    const pierce: PierceRequest = {
-      target: pid,
-      ulid: ulid(),
-      isolate: 'shell',
-      functionName: 'pierce',
-      params: { request },
-      proctype: PROCTYPE.SERIAL,
-    }
-    const promise = watcher.watch(pierce.ulid)
-
-    // notably, this is the only unauthenticated pierce in the whole system
-    await this.pierce(pierce)
-    log('pierced', print(pid))
-    // TODO reverse the init if the install fails
-    await promise
-    abort.abort() // TODO make this a method on the watcher
-    log('installed', print(pid))
-    return pid
-  }
   ping(data?: JsonValue): Promise<JsonValue | undefined> {
     log('ping', data)
     return Promise.resolve(data)
@@ -224,13 +217,13 @@ export class Engine implements EngineInterface {
   async ensureMachineTerminal(machinePid: PID) {
     const { homeAddress } = this
     // TODO require some signature proof from the machine
-    const rootPid = createRootPid(machinePid)
-    assertValidTerminal(rootPid, homeAddress)
+    const rootTerminalPid = createRootSessionPid(machinePid)
+    assertValidTerminal(rootTerminalPid, homeAddress)
 
     log('ensureMachineTerminal', print(machinePid))
     const [, , machineId] = machinePid.branches
 
-    if (await this.isTerminalAvailable(rootPid)) {
+    if (await this.isTerminalAvailable(rootTerminalPid)) {
       log('machinePid already exists', print(machinePid))
       return
     }
@@ -276,7 +269,7 @@ export class Engine implements EngineInterface {
   }
 }
 
-const createRootPid = (pid: PID) => {
+const createRootSessionPid = (pid: PID) => {
   const branches = [...pid.branches, ROOT_SESSION]
   return { ...pid, branches }
 }

@@ -2,7 +2,9 @@ import { assert, Debug } from '@utils'
 import Executor from '../exe/exe.ts'
 import IOChannel from '../io/io-channel.ts'
 import {
+  ACTORS,
   C,
+  colorize,
   ExeResult,
   freezePid,
   IsolateLifecycle,
@@ -17,6 +19,7 @@ import {
   QueueMessage,
   SolidRequest,
 } from '@/constants.ts'
+import { Config } from '@/isolates/actors.ts'
 import IsolateApi from '../isolate-api.ts'
 import { doAtomicBranch, doAtomicCommit } from '@io/io.ts'
 import DB from '../db.ts'
@@ -59,10 +62,21 @@ export const api = {
     required: ['pierce'],
     properties: { pierce: request },
   },
+  initHome: {
+    type: 'object',
+    required: ['superuser'],
+    properties: { superuser: { type: 'string' } },
+  },
 }
 
 export interface Api {
   pierce: (params: { pierce: PierceRequest }) => Promise<void>
+  /**
+   * Set the first repo and the public key of the superuser account.
+   * Has to be done separately since the queue processing cannot begin without a
+   * home address repo set.
+   */
+  initHome: (params: { superuser: string }) => Promise<PID>
 }
 
 /**
@@ -78,7 +92,6 @@ export const functions = {
     // TODO do the pooling here to save a queue round trip
     // TODO add ulid in here, but make it be repeatable
     // TODO check signatures and permissions here
-    // not necessary to be atomic, but uses functions on the atomic class
     await db.atomic().enqueuePierce(pierce)
     // TODO return back the head commit at the point of pooling
     // TODO test if head is deleted between pooling and commit
@@ -87,6 +100,21 @@ export const functions = {
     // given that pierce only comes from one location, we can use checks to
     // guarantee the head is the same when we commit, and just retry a bit until
     // we get inserted correctly.
+  },
+
+  async initHome({ superuser }: { superuser: string }, api: IsolateApi<C>) {
+    log('installHome superuser:', colorize(superuser))
+    const { db } = sanitizeContext(api)
+    const fs = await FS.init(ACTORS, db)
+    const config: Config = { superuser, authProviders: {} }
+    fs.writeJSON('config.json', config)
+    const { next } = await fs.writeCommitObject('System Provisioning')
+    const atomic = await db.atomic().updateHead(fs.pid, fs.oid, next.oid)
+    assert(atomic, 'atomic failed')
+    await atomic.commit()
+
+    log('initialized home', print(fs.pid))
+    return fs.pid
   },
 }
 
