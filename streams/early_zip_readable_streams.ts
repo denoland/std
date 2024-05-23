@@ -6,15 +6,50 @@
  * will wait for a chunk to enqueue before the next stream can append another chunk.
  * If a stream ends before other ones, the others will be cancelled.
  *
- * @example
+ * @example Zip 2 streams with the same length
  * ```ts
  * import { earlyZipReadableStreams } from "@std/streams/early-zip-readable-streams";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const stream1 = ReadableStream.from(["1", "2", "3"]);
  * const stream2 = ReadableStream.from(["a", "b", "c"]);
  * const zippedStream = earlyZipReadableStreams(stream1, stream2);
  *
- * await Array.fromAsync(zippedStream); // ["1", "a", "2", "b", "3", "c"];
+ * assertEquals(
+ *   await Array.fromAsync(zippedStream),
+ *   ["1", "a", "2", "b", "3", "c"],
+ * );
+ * ```
+ *
+ * @example Zip 2 streams with differen length
+ * ```ts
+ * import { earlyZipReadableStreams } from "@std/streams/early-zip-readable-streams";
+ * import { assertEquals } from "@std/assert/assert-equals";
+ *
+ * const stream1 = ReadableStream.from(["1", "2"]);
+ * const stream2 = ReadableStream.from(["a", "b", "c"]);
+ * const zippedStream = earlyZipReadableStreams(stream1, stream2);
+ *
+ * assertEquals(
+ *   await Array.fromAsync(zippedStream),
+ *   ["1", "a", "2", "b"],
+ * );
+ * ```
+ *
+ * @example Zip 3 streams with differen length
+ * ```ts
+ * import { earlyZipReadableStreams } from "@std/streams/early-zip-readable-streams";
+ * import { assertEquals } from "@std/assert/assert-equals";
+ *
+ * const stream1 = ReadableStream.from(["1"]);
+ * const stream2 = ReadableStream.from(["a", "b"]);
+ * const stream3 = ReadableStream.from(["A", "B", "C"]);
+ * const zippedStream = earlyZipReadableStreams(stream1, stream2, stream3);
+ *
+ * assertEquals(
+ *   await Array.fromAsync(zippedStream),
+ *   ["1", "a", "A"],
+ * );
  * ```
  */
 export function earlyZipReadableStreams<T>(
