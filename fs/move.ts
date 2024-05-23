@@ -9,7 +9,7 @@ const EXISTS_ERROR = new Deno.errors.AlreadyExists("dest already exists.");
  * is a subdirectory of the source.
  *
  * @example Usage
- * ```ts
+ * ```ts no-eval
  * import { move, SubdirectoryMoveError } from "@std/fs/move";
  *
  * try {
@@ -29,7 +29,7 @@ export class SubdirectoryMoveError extends Error {
    * @param dest The destination file or directory as a string or URL.
    *
    * @example Usage
-   * ```ts
+   * ```ts no-eval
    * import { SubdirectoryMoveError } from "@std/fs/move";
    *
    * throw new SubdirectoryMoveError("./foo", "./foo/bar");
@@ -71,7 +71,7 @@ export interface MoveOptions {
  * @returns A void promise that resolves once the operation completes.
  *
  * @example Basic usage
- * ```ts
+ * ```ts no-eval
  * import { move } from "@std/fs/move";
  *
  * await move("./foo", "./bar");
@@ -81,7 +81,7 @@ export interface MoveOptions {
  * overwriting.
  *
  * @example Overwriting
- * ```ts
+ * ```ts no-eval
  * import { move } from "@std/fs/move";
  *
  * await move("./foo", "./bar", { overwrite: true });
@@ -143,7 +143,7 @@ export async function move(
  * @returns A void value that returns once the operation completes.
  *
  * @example Basic usage
- * ```ts
+ * ```ts no-eval
  * import { moveSync } from "@std/fs/move";
  *
  * moveSync("./foo", "./bar");
@@ -153,7 +153,7 @@ export async function move(
  * overwriting.
  *
  * @example Overwriting
- * ```ts
+ * ```ts no-eval
  * import { moveSync } from "@std/fs/move";
  *
  * moveSync("./foo", "./bar", { overwrite: true });

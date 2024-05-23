@@ -107,7 +107,7 @@ function comparePath(a: WalkEntry, b: WalkEntry): number {
  * └── foo.ts
  * ```
  *
- * ```ts
+ * ```ts no-eval
  * // script.ts
  * import { expandGlob } from "@std/fs/expand-glob";
  *
@@ -269,7 +269,7 @@ export async function* expandGlob(
  * └── foo.ts
  * ```
  *
- * ```ts
+ * ```ts no-eval
  * // script.ts
  * import { expandGlobSync } from "@std/fs/expand-glob";
  *

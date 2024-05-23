@@ -20,7 +20,7 @@ import { toPathString } from "./_to_path_string.ts";
  * @returns A void promise that resolves once the file exists.
  *
  * @example Usage
- * ```ts
+ * ```ts no-eval
  * import { ensureFile } from "@std/fs/ensure-file";
  *
  * await ensureFile("./folder/targetFile.dat");
@@ -65,7 +65,7 @@ export async function ensureFile(filePath: string | URL): Promise<void> {
  * @returns A void value that returns once the file exists.
  *
  * @example Usage
- * ```ts
+ * ```ts no-eval
  * import { ensureFileSync } from "@std/fs/ensure-file";
  *
  * ensureFileSync("./folder/targetFile.dat");

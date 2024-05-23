@@ -15,7 +15,7 @@ import {
  * Error thrown in {@linkcode walk} or {@linkcode walkSync} during iteration.
  *
  * @example Usage
- * ```ts
+ * ```ts no-eval
  * import { walk, WalkError } from "@std/fs/walk";
  *
  * try {
@@ -40,7 +40,7 @@ export class WalkError extends Error {
    * @param root The root directory that's being walked.
    *
    * @example Usage
-   * ```ts
+   * ```ts no-eval
    * import { WalkError } from "@std/fs/walk";
    *
    * throw new WalkError("error message", "./foo");

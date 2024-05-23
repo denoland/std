@@ -3,7 +3,7 @@
 /**
  * Helpers for working with the filesystem.
  *
- * ```ts
+ * ```ts no-eval
  * import { ensureFile, copy, ensureDir, move } from "@std/fs";
  *
  * await ensureFile("example.txt");

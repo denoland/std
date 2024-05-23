@@ -267,7 +267,7 @@ function copyDirSync(
  * @returns A promise that resolves once the copy operation completes.
  *
  * @example Basic usage
- * ```ts
+ * ```ts no-eval
  * import { copy } from "@std/fs/copy";
  *
  * await copy("./foo", "./bar");
@@ -277,7 +277,7 @@ function copyDirSync(
  * overwriting.
  *
  * @example Overwriting files/directories
- * ```ts
+ * ```ts no-eval
  * import { copy } from "@std/fs/copy";
  *
  * await copy("./foo", "./bar", { overwrite: true });
@@ -287,7 +287,7 @@ function copyDirSync(
  * any existing files or directories.
  *
  * @example Preserving timestamps
- * ```ts
+ * ```ts no-eval
  * import { copy } from "@std/fs/copy";
  *
  * await copy("./foo", "./bar", { preserveTimestamps: true });
@@ -343,7 +343,7 @@ export async function copy(
  * @returns A void value that returns once the copy operation completes.
  *
  * @example Basic usage
- * ```ts
+ * ```ts no-eval
  * import { copySync } from "@std/fs/copy";
  *
  * copySync("./foo", "./bar");
@@ -353,7 +353,7 @@ export async function copy(
  * overwriting.
  *
  * @example Overwriting files/directories
- * ```ts
+ * ```ts no-eval
  * import { copySync } from "@std/fs/copy";
  *
  * copySync("./foo", "./bar", { overwrite: true });
@@ -363,7 +363,7 @@ export async function copy(
  * any existing files or directories.
  *
  * @example Preserving timestamps
- * ```ts
+ * ```ts no-eval
  * import { copySync } from "@std/fs/copy";
  *
  * copySync("./foo", "./bar", { preserveTimestamps: true });
