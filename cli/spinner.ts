@@ -71,20 +71,29 @@ export interface SpinnerOptions {
 
 /**
  * A spinner that can be used to indicate that something is loading.
+ *
+ * @example Usage
+ * ```ts no-eval
+ * import { Spinner } from "@std/cli/spinner";
+ *
+ * const spinner = new Spinner({ message: "Loading...", color: "yellow" });
+ * spinner.start();
+ *
+ * setTimeout(() => {
+ *  spinner.stop();
+ *  console.log("Finished loading!");
+ * }, 3_000);
+ * ```
  */
 export class Spinner {
   #spinner: string[];
-  #interval: number;
-  #color?: Color;
-  #intervalId: number | undefined;
-  #active = false;
 
   /**
    * The message to display next to the spinner.
    * This can be changed while the spinner is active.
    *
-   * @example
-   * ```ts
+   * @example Usage
+   * ```ts no-eval
    * import { Spinner } from "@std/cli/spinner";
    *
    * const spinner = new Spinner({ message: "Working..." });
@@ -101,12 +110,17 @@ export class Spinner {
    * console.log("Done!");
    * ```
    */
-  message: string = "";
+  message: string;
+
+  #interval: number;
+  #color?: Color;
+  #intervalId: number | undefined;
+  #active = false;
 
   /**
    * Creates a new spinner.
    *
-   * @example
+   * @example Usage
    * ```ts
    * import { Spinner } from "@std/cli/spinner";
    *
@@ -130,8 +144,12 @@ export class Spinner {
    * Set the color of the spinner. This defaults to the default terminal color.
    * This can be changed while the spinner is active.
    *
-   * @example
-   * ```ts
+   * Providing `undefined` will use the default terminal color.
+   *
+   * @param value Color to set.
+   *
+   * @example Usage
+   * ```ts no-eval
    * import { Spinner } from "@std/cli/spinner";
    *
    * const spinner = new Spinner({ message: "Loading...", color: "yellow" });
@@ -149,6 +167,15 @@ export class Spinner {
 
   /**
    * Get the current color of the spinner.
+   *
+   * @example Usage
+   * ```ts
+   * import { Spinner } from "@std/cli/spinner";
+   *
+   * const spinner = new Spinner({ message: "Loading", color: "blue" });
+   * console.log(spinner.color); // "blue"
+   * ```
+   * @returns The color of the spinner or `undefined` if it's using the terminal default.
    */
   get color(): Color | undefined {
     return this.#color;
@@ -157,8 +184,8 @@ export class Spinner {
   /**
    * Starts the spinner.
    *
-   * @example
-   * ```ts
+   * @example Usage
+   * ```ts no-eval
    * import { Spinner } from "@std/cli/spinner";
    *
    * const spinner = new Spinner({ message: "Loading..." });
@@ -193,8 +220,8 @@ export class Spinner {
   /**
    * Stops the spinner.
    *
-   * @example
-   * ```ts
+   * @example Usage
+   * ```ts no-eval
    * import { Spinner } from "@std/cli/spinner";
    *
    * const spinner = new Spinner({ message: "Loading..." });
@@ -203,7 +230,7 @@ export class Spinner {
    * setTimeout(() => {
    *  spinner.stop();
    *  console.log("Finished loading!");
-   * }, 3000);
+   * }, 3_000);
    * ```
    */
   stop() {
