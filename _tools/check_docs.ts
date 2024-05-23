@@ -28,6 +28,7 @@ type DocNodeWithJsDoc<T = DocNodeBase> = T & {
 const ENTRY_POINTS = [
   "../async/mod.ts",
   "../bytes/mod.ts",
+  "../cli/mod.ts",
   "../collections/mod.ts",
   "../datetime/mod.ts",
   "../internal/mod.ts",
@@ -36,6 +37,8 @@ const ENTRY_POINTS = [
   "../text/mod.ts",
   "../ulid/mod.ts",
   "../webgpu/mod.ts",
+  "../http/mod.ts",
+  "../expect/mod.ts",
 ] as const;
 
 const TS_SNIPPET = /```ts[\s\S]*?```/g;

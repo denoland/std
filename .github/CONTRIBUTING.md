@@ -80,7 +80,8 @@ Where applicable, documentation for public symbols should contain, in order:
 1. A [`@param`](https://jsdoc.app/tags-param) tag for each parameter.
 1. A [`@returns`](https://jsdoc.app/tags-returns) tag for the return value.
 1. At least one example code snippet using the
-   [`@example`](https://jsdoc.app/tags-example) tag and a title. See
+   [`@example`](https://jsdoc.app/tags-example) tag and a title. For simple
+   examples which don't need a description, "Usage" is an acceptable title. See
    [Example code snippets](#example-code-snippets) below for further guidance.
 
 See the source code within
