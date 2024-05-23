@@ -85,15 +85,7 @@ const ENTRYPOINTS: Record<Mod, string[]> = {
   data_structures: ["mod.ts"],
   datetime: ["mod.ts"],
   dotenv: ["mod.ts"],
-  encoding: [
-    "ascii85.ts",
-    "base32.ts",
-    "base58.ts",
-    "base64.ts",
-    "base64url.ts",
-    "hex.ts",
-    "varint.ts",
-  ],
+  encoding: ["mod.ts"],
   expect: ["mod.ts"],
   fmt: ["bytes.ts", "colors.ts", "duration.ts", "printf.ts"],
   front_matter: ["mod.ts"],
@@ -287,7 +279,15 @@ if (Deno.args.includes("--graph")) {
 } else if (Deno.args.includes("--all-imports")) {
   for (const [mod, entrypoints] of Object.entries(ENTRYPOINTS)) {
     for (const path of entrypoints) {
-      console.log(`import "std/${mod}/${path}";`);
+      if (path === "mod.ts") {
+        console.log(`import "jsr:@std/${mod.replaceAll("_", "-")}";`);
+      } else {
+        console.log(
+          `import "jsr:@std/${mod.replaceAll("_", "-")}/${
+            path.replace(".ts", "").replaceAll("_", "-")
+          }";`,
+        );
+      }
     }
   }
 } else {
