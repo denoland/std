@@ -68,18 +68,16 @@ export class Engine implements EngineInterface {
     return this.#homeAddress
   }
   async ensureHomeAddress(superuserKey: string, init?: Provisioner) {
-    if (this.#homeAddress) {
-      if (this.#isDropping) {
-        this.#homeAddress = undefined
-      } else {
-        return
-      }
+    if (this.#homeAddress && !this.#isDropping) {
+      return
     }
     log('ensureHomeAddress querying db')
     const { db } = artifact.sanitizeContext(this.#api)
     if (!await db.hasHomeAddress()) {
+      log('homeAddress not found in db')
       const lockId = await db.lockDB()
       if (lockId) {
+        log('locked db', lockId)
         await this.#provision(superuserKey, init)
         assert(this.#homeAddress, 'home not provisioned')
         log('homeAddress provisioned', print(this.#homeAddress))

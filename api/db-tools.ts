@@ -1,10 +1,20 @@
 import { load } from '@std/dotenv'
-import { UNDELIVERED } from '@/keys.ts'
+import { DB_LOCK, HOME_ADDRESS, UNDELIVERED } from '@/keys.ts'
+import { PID, print } from '@/constants.ts'
 await load({ export: true })
 
 const db = await Deno.openKv(Deno.env.get('DENO_KV_URL'))
 
 const undelivered = db.list({ prefix: UNDELIVERED })
+
+const homeAddress = await db.get<PID>(HOME_ADDRESS)
+console.log('homeAddress', homeAddress.value)
+if (homeAddress.value) {
+  console.log('homeAddress', print(homeAddress.value))
+}
+
+const dbLock = await db.get<string>(DB_LOCK)
+console.log('dbLock', dbLock.value)
 
 for await (const { key, value } of undelivered) {
   console.log('undelivered: ', key, value)
