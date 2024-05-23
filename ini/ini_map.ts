@@ -22,8 +22,6 @@ type Formatting = Omit<FormattingOptions, "lineBreak" | "commentChar"> & {
 
 /** Options for parsing INI strings. */
 export interface ParseOptions {
-  /** The character used to assign a value to a key; defaults to '='. */
-  assignment?: FormattingOptions["assignment"];
   /** Provide custom parsing of the value in a key/value pair. */
   reviver?: ReviverFunction;
 }
