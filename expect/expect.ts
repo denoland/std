@@ -228,7 +228,6 @@ export function expect(value: unknown, customMessage?: string): Expected {
   return self;
 }
 
-
 /**
  * You can use `expect.addEqualityTesters` to add your own methods to test if two
  * objects are equal. For example, let's say you have a class in your code that
@@ -286,7 +285,7 @@ export function expect(value: unknown, customMessage?: string): Expected {
  * ```
  */
 expect.addEqualityTesters = addCustomEqualityTesters as (
-  newTesters: Tester[]
+  newTesters: Tester[],
 ) => void;
 /**
  * It will be removed in 0.226.0. Use `expect.addEqualityTesters` instead.
@@ -294,7 +293,7 @@ expect.addEqualityTesters = addCustomEqualityTesters as (
  * @deprecated (will be removed in 0.226.0) Use {@linkcode expect.addSnapshotSerializer} instead.
  */
 expect.addSnapshotSerializers = addSerializer as (
-  plugin: SnapshotPlugin
+  plugin: SnapshotPlugin,
 ) => void;
 
 /**
@@ -304,7 +303,7 @@ expect.addSnapshotSerializers = addSerializer as (
  * @ts-
  */
 expect.addSnapshotSerializer = addSerializer as (
-  plugin: SnapshotPlugin
+  plugin: SnapshotPlugin,
 ) => void;
 /**
  * TODO: export appropriate types to define custom matchers.
@@ -350,7 +349,7 @@ expect.anything = asymmetricMatchers.anything as () => ReturnType<
  * ```
  */
 expect.any = asymmetricMatchers.any as (
-  c: unknown
+  c: unknown,
 ) => ReturnType<typeof asymmetricMatchers.any>;
 /**
  * `expect.arrayContaining(array)` matches a received array which contains all of
@@ -377,7 +376,7 @@ expect.any = asymmetricMatchers.any as (
  */
 expect.arrayContaining = asymmetricMatchers.arrayContaining as (
   // deno-lint-ignore no-explicit-any
-  c: any[]
+  c: any[],
 ) => ReturnType<typeof asymmetricMatchers.arrayContaining>;
 /**
  * `expect.closeTo(number, numDigits?)` is useful when comparing floating point
@@ -405,7 +404,7 @@ expect.arrayContaining = asymmetricMatchers.arrayContaining as (
  */
 expect.closeTo = asymmetricMatchers.closeTo as (
   num: number,
-  numDigits?: number
+  numDigits?: number,
 ) => ReturnType<typeof asymmetricMatchers.closeTo>;
 /**
  * `expect.stringContaining(string)` matches the received value if it is a string
@@ -425,7 +424,7 @@ expect.closeTo = asymmetricMatchers.closeTo as (
  * ```
  */
 expect.stringContaining = asymmetricMatchers.stringContaining as (
-  str: string
+  str: string,
 ) => ReturnType<typeof asymmetricMatchers.stringContaining>;
 /**
  * `expect.stringMatching(string | regexp)` matches the received value if it is a
@@ -450,5 +449,5 @@ expect.stringContaining = asymmetricMatchers.stringContaining as (
  * ```
  */
 expect.stringMatching = asymmetricMatchers.stringMatching as (
-  pattern: string | RegExp
+  pattern: string | RegExp,
 ) => ReturnType<typeof asymmetricMatchers.stringMatching>;

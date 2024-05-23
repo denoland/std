@@ -257,7 +257,7 @@ export interface Expected {
    * @param expected The expected object or array of objects.
    */
   toMatchObject(
-    expected: Record<PropertyKey, unknown> | Record<PropertyKey, unknown>[]
+    expected: Record<PropertyKey, unknown> | Record<PropertyKey, unknown>[],
   ): void;
 
   /**
@@ -288,7 +288,7 @@ export interface Expected {
    * @param expected The expected error message, regular expression, or error constructor.
    */
   toThrow<E extends Error = Error>(
-    expected?: string | RegExp | E | (new (...args: any[]) => E)
+    expected?: string | RegExp | E | (new (...args: any[]) => E),
   ): void;
 
   /**
@@ -362,7 +362,7 @@ export type Printer = (
   indentation: string,
   depth: number,
   refs: Refs,
-  hasCalledToJSON?: boolean
+  hasCalledToJSON?: boolean,
 ) => string;
 
 interface PluginOptions {
@@ -380,7 +380,7 @@ export interface NewSnapshotPlugin {
     indentation: string,
     depth: number,
     refs: Refs,
-    printer: Printer
+    printer: Printer,
   ) => string;
   test: Test;
 }
@@ -391,7 +391,7 @@ export interface OldSnapshotPlugin {
     print: Print,
     indent: Indent,
     options: PluginOptions,
-    colors: Colors
+    colors: Colors,
   ) => string;
   test: Test;
 }

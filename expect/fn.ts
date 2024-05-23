@@ -54,12 +54,11 @@ export function fn(...stubs: Function[]): Function {
   const calls: MockCall[] = [];
 
   const f = (...args: any[]) => {
-    const stub =
-      stubs.length === 1
-        ? // keep reusing the first
-          stubs[0]
-        : // pick the exact mock for the current call
-          stubs[calls.length];
+    const stub = stubs.length === 1
+      // keep reusing the first
+      ? stubs[0]
+      // pick the exact mock for the current call
+      : stubs[calls.length];
 
     try {
       const returned = stub ? stub(...args) : undefined;
