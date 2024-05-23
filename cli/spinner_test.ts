@@ -188,3 +188,16 @@ Deno.test("Spinner.message can be updated", async () => {
   assertStringIncludes(actual, "One dino 🦕");
   assertStringIncludes(actual, "Two dinos 🦕🦕");
 });
+
+Deno.test("Spinner.message returns the current value when updated", () => {
+  const spinner = new Spinner();
+
+  spinner.message = "Step 1";
+  assertEquals(spinner.message, "Step 1");
+
+  spinner.message = "Step 2";
+  assertEquals(spinner.message, "Step 2");
+
+  spinner.message = "Step 3";
+  assertEquals(spinner.message, "Step 3");
+});

@@ -74,12 +74,34 @@ export interface SpinnerOptions {
  */
 export class Spinner {
   #spinner: string[];
-  /** The message to display next to the spinner. */
-  message: string;
   #interval: number;
   #color?: Color;
   #intervalId: number | undefined;
   #active = false;
+
+  /**
+   * The message to display next to the spinner.
+   * This can be changed while the spinner is active.
+   *
+   * @example
+   * ```ts
+   * import { Spinner } from "@std/cli/spinner";
+   *
+   * const spinner = new Spinner({ message: "Working..." });
+   * spinner.start();
+   *
+   * for (let step = 0; step < 5; step++) {
+   *   // do some work
+   *   await new Promise((resolve) => setTimeout(resolve, 1000));
+   *
+   *   spinner.message = `Finished Step #${step}`;
+   * }
+   *
+   * spinner.stop();
+   * spinner.message = "Done!";
+   * ```
+   */
+  message: string = "";
 
   /**
    * Creates a new spinner.
@@ -89,16 +111,15 @@ export class Spinner {
    * import { Spinner } from "@std/cli/spinner";
    *
    * const spinner = new Spinner({ message: "Loading..." });
+   * spinner.stop();
    * ```
    */
-  constructor(
-    {
-      spinner = DEFAULT_SPINNER,
-      message = "",
-      interval = DEFAULT_INTERVAL,
-      color,
-    }: SpinnerOptions = {},
-  ) {
+  constructor({
+    spinner = DEFAULT_SPINNER,
+    message = "",
+    interval = DEFAULT_INTERVAL,
+    color,
+  }: SpinnerOptions = {}) {
     this.#spinner = spinner;
     this.message = message;
     this.#interval = interval;
@@ -108,11 +129,27 @@ export class Spinner {
   /**
    * Set the color of the spinner. This defaults to the default terminal color.
    * This can be changed while the spinner is active.
+   *
+   * @example
+   * ```ts
+   * import { Spinner } from "@std/cli/spinner";
+   *
+   * const spinner = new Spinner({ message: "Loading...", color: "yellow" });
+   * spinner.start();
+   *
+   * // do some work
+   * await new Promise((resolve) => setTimeout(resolve, 1000));
+   *
+   * spinner.color = "magenta";
+   * ```
    */
   set color(value: Color | undefined) {
     this.#color = value ? COLORS[value] : undefined;
   }
 
+  /**
+   * Get the current color of the spinner.
+   */
   get color(): Color | undefined {
     return this.#color;
   }
@@ -129,10 +166,14 @@ export class Spinner {
    * ```
    */
   start() {
-    if (this.#active || Deno.stdout.writable.locked) return;
+    if (this.#active || Deno.stdout.writable.locked) {
+      return;
+    }
+
     this.#active = true;
     let i = 0;
     const noColor = Deno.noColor;
+
     // Updates the spinner after the given interval.
     const updateFrame = () => {
       const color = this.#color ?? "";
@@ -145,8 +186,10 @@ export class Spinner {
       Deno.stdout.writeSync(frame);
       i = (i + 1) % this.#spinner.length;
     };
+
     this.#intervalId = setInterval(updateFrame, this.#interval);
   }
+
   /**
    * Stops the spinner.
    *
