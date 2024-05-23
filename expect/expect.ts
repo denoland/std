@@ -144,7 +144,7 @@ const matchers: Record<MatcherKey, Matcher> = {
 export function expect(value: unknown, customMessage?: string): Expected {
   let isNot = false;
   let isPromised = false;
-  const self: Expected = new Proxy<Expected>(<Expected>{}, {
+  const self: Expected = new Proxy<Expected>(<Expected> {}, {
     get(_, name) {
       if (name === "not") {
         isNot = !isNot;
@@ -168,10 +168,10 @@ export function expect(value: unknown, customMessage?: string): Expected {
         value = value.then(
           (value) => {
             throw new AssertionError(
-              `Promise did not reject. resolved to ${value}`
+              `Promise did not reject. resolved to ${value}`,
             );
           },
-          (err) => err
+          (err) => err,
         );
         isPromised = true;
         return self;
@@ -187,7 +187,7 @@ export function expect(value: unknown, customMessage?: string): Expected {
         throw new TypeError(
           typeof name === "string"
             ? `matcher not found: ${name}`
-            : "matcher not found"
+            : "matcher not found",
         );
       }
 
@@ -219,8 +219,8 @@ export function expect(value: unknown, customMessage?: string): Expected {
 
         return isPromised
           ? (value as Promise<unknown>).then((value: unknown) =>
-              applyMatcher(value, args)
-            )
+            applyMatcher(value, args)
+          )
           : applyMatcher(value, args);
       };
     },
@@ -286,7 +286,7 @@ export function expect(value: unknown, customMessage?: string): Expected {
  * ```
  */
 expect.addEqualityTesters = addCustomEqualityTesters as (
-  newTesters: Tester[]
+  newTesters: Tester[],
 ) => void;
 /**
  * It will be removed in 0.226.0. Use `expect.addEqualityTesters` instead.
@@ -294,7 +294,7 @@ expect.addEqualityTesters = addCustomEqualityTesters as (
  * @deprecated (will be removed in 0.226.0) Use {@linkcode expect.addSnapshotSerializer} instead.
  */
 expect.addSnapshotSerializers = addSerializer as (
-  plugin: SnapshotPlugin
+  plugin: SnapshotPlugin,
 ) => void;
 
 /**
@@ -304,7 +304,7 @@ expect.addSnapshotSerializers = addSerializer as (
  * @ts-
  */
 expect.addSnapshotSerializer = addSerializer as (
-  plugin: SnapshotPlugin
+  plugin: SnapshotPlugin,
 ) => void;
 /**
  * TODO: export appropriate types to define custom matchers.
@@ -350,7 +350,7 @@ expect.anything = asymmetricMatchers.anything as () => ReturnType<
  * ```
  */
 expect.any = asymmetricMatchers.any as (
-  c: unknown
+  c: unknown,
 ) => ReturnType<typeof asymmetricMatchers.any>;
 /**
  * `expect.arrayContaining(array)` matches a received array which contains all of
@@ -377,7 +377,7 @@ expect.any = asymmetricMatchers.any as (
  */
 expect.arrayContaining = asymmetricMatchers.arrayContaining as (
   // deno-lint-ignore no-explicit-any
-  c: any[]
+  c: any[],
 ) => ReturnType<typeof asymmetricMatchers.arrayContaining>;
 /**
  * `expect.closeTo(number, numDigits?)` is useful when comparing floating point
@@ -405,7 +405,7 @@ expect.arrayContaining = asymmetricMatchers.arrayContaining as (
  */
 expect.closeTo = asymmetricMatchers.closeTo as (
   num: number,
-  numDigits?: number
+  numDigits?: number,
 ) => ReturnType<typeof asymmetricMatchers.closeTo>;
 /**
  * `expect.stringContaining(string)` matches the received value if it is a string
@@ -425,7 +425,7 @@ expect.closeTo = asymmetricMatchers.closeTo as (
  * ```
  */
 expect.stringContaining = asymmetricMatchers.stringContaining as (
-  str: string
+  str: string,
 ) => ReturnType<typeof asymmetricMatchers.stringContaining>;
 /**
  * `expect.stringMatching(string | regexp)` matches the received value if it is a
@@ -450,5 +450,5 @@ expect.stringContaining = asymmetricMatchers.stringContaining as (
  * ```
  */
 expect.stringMatching = asymmetricMatchers.stringMatching as (
-  pattern: string | RegExp
+  pattern: string | RegExp,
 ) => ReturnType<typeof asymmetricMatchers.stringMatching>;
