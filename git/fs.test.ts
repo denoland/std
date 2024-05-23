@@ -129,7 +129,7 @@ Deno.test('clone', async (t) => {
   await t.step('read', async () => {
     const path = 'README.md'
     const data = await fs.read(path)
-    expect(data).toContain('HAL')
+    expect(data).toContain('AI')
   })
   db.stop()
 })

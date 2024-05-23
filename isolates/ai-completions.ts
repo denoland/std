@@ -30,7 +30,7 @@ export const functions = {
   async create(help: Help, api: IsolateApi): Promise<void> {
     const tools = await loadTools(help.commands, api)
     const { model = 'gpt-4o', temperature = 0 } = help.config || {}
-    const messages: MessageParam[] = await api.readJSON(SESSION_PATH)
+    const messages = await api.readJSON<MessageParam[]>(SESSION_PATH)
     const args: OpenAI.ChatCompletionCreateParamsStreaming = {
       model,
       temperature,

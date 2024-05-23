@@ -1,8 +1,7 @@
-import merge from 'npm:lodash.merge'
 import { Engine } from '../engine.ts'
 import { expect, log } from '@utils'
 import IsolateApi from '../isolate-api.ts'
-import { Help, partialFromRepo, PROCTYPE, RUNNERS } from '../constants.ts'
+import { Help, partialFromRepo, RUNNERS } from '../constants.ts'
 import { prepare } from './ai-prompt.ts'
 import * as completions from './ai-completions.ts'
 import FS from '@/git/fs.ts'
@@ -19,17 +18,17 @@ Deno.test('ai-chat', async (t) => {
     config: { model: 'gpt-4o' },
     runner: RUNNERS.CHAT,
     commands: ['io-fixture:local', 'io-fixture:error'],
-    instructions: ['Only reply with a SINGLE word'],
+    instructions: 'Only reply with a SINGLE word',
   }
   const db = await DB.create(DB.generateAesKey())
   const pid = partialFromRepo('runner/test')
   const fs = await FS.init(pid, db)
-  const accumulator = Accumulator.create(dummyOrigin, [], fs)
+  const accumulator = Accumulator.create(fs)
   const api = IsolateApi.create(accumulator)
   accumulator.activate(Symbol())
 
   await t.step('hello world', async () => {
-    const help = merge({}, helpBase, { commands: [] })
+    const help = { ...helpBase, commands: [] }
     const text = 'cheese emoji'
     await prepare(help, text, api)
     await completions.functions.create(help, api)
@@ -40,9 +39,10 @@ Deno.test('ai-chat', async (t) => {
   })
   await t.step('tool call', async () => {
     const text = 'call the "local" function'
-    const help = merge({}, helpBase, {
-      instructions: ['return the function call results verbatim'],
-    })
+    const help = {
+      ...helpBase,
+      instructions: 'return the function call results verbatim',
+    }
     api.delete('session.json')
     await prepare(help, text, api)
     await completions.functions.create(help, api)
@@ -56,9 +56,10 @@ Deno.test('ai-chat', async (t) => {
   })
   await t.step('tool error', async () => {
     const text = 'call the "error" function with message: salami'
-    const help = merge({}, helpBase, {
-      instructions: ['return the function call error message'],
-    })
+    const help = {
+      ...helpBase,
+      instructions: 'return the function call error message',
+    }
     api.delete('session.json')
     await prepare(help, text, api)
     await completions.functions.create(help, api)
@@ -137,22 +138,3 @@ Deno.test('engage-help', async (t) => {
 
   await session.engineStop()
 })
-const dummyOrigin = {
-  target: {
-    repoId: '0',
-    account: 'system',
-    repository: 'system',
-    branches: ['main'],
-  },
-  isolate: 'repo',
-  functionName: 'rm',
-  params: { repo: 'test/test' },
-  proctype: PROCTYPE.SERIAL,
-  sequence: 1,
-  source: {
-    repoId: '0',
-    account: 'system',
-    repository: 'system',
-    branches: ['main'],
-  },
-}

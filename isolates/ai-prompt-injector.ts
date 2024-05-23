@@ -19,10 +19,9 @@ export const functions = {
     const helps: Help[] = allHelps.filter((h) => !equal(h, help))
 
     const injectee = { ...help }
-    injectee.instructions = [...injectee.instructions]
     for (const donor of helps) {
       // TODO include the commands api descriptions too
-      injectee.instructions.push(JSON.stringify(donor, null, 2))
+      injectee.instructions += '\n' + JSON.stringify(donor, null, 2)
     }
     log('injectee', injectee)
     return base.prompt({ help: injectee, text }, api)

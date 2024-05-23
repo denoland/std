@@ -230,7 +230,7 @@ export default class IOChannel {
       const result: IsolatePromise = { request, outcome, commit }
       accumulations.push(result)
     }
-    return Accumulator.create(origin, accumulations, fs)
+    return Accumulator.create(fs, accumulations)
   }
   isSettled(sequence: number) {
     assert(this.#io.sequence > sequence, 'sequence not yet invoked')

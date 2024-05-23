@@ -1,11 +1,13 @@
 import { posix } from '@utils'
 import { IsolateApi, RUNNERS } from '@/constants.ts'
-import { Help } from '@/constants.ts'
+import { type Help } from '@/constants.ts'
+import matter from 'gray-matter'
+import { assert } from '@std/assert'
 
 export const api = {
   load: {
     description:
-      'load the help by name.  Will convert the help to a path using `/helps/${name}.json`, and then will return the json object from loading and parsing this file',
+      'load the help by name.  Will convert the help to a path using `/helps/${name}.md`, and then will return the Help object from loading and parsing this file',
     type: 'object',
     additionalProperties: false,
     required: ['help'],
@@ -30,7 +32,15 @@ export interface Api {
 
 export const functions = {
   load: async ({ help }: { help: string }, api: IsolateApi) => {
-    const loaded = await api.readJSON<Help>(`helps/${help}.json`)
+    const string = await api.read(`helps/${help}.md`)
+    const { data, content } = matter(string.trim())
+    assert(content, 'content missing')
+    const defaults = {
+      runner: RUNNERS.CHAT,
+      instructions: [],
+    }
+    const loaded = { ...defaults, ...data, instructions: content.trim() }
+
     checkHelp(loaded)
     return loaded
   },
@@ -39,7 +49,7 @@ export const functions = {
     const helps: { name: string; help: Help }[] = []
     const files = await api.ls('helps')
     for (const file of files) {
-      if (file.endsWith('.json')) {
+      if (file.endsWith('.md')) {
         const name = posix.basename(file, posix.extname(file))
         const help = await functions.load({ help: name }, api)
         helps.push({ name, help })
@@ -50,7 +60,7 @@ export const functions = {
 }
 
 const checkHelp = (help: Help) => {
-  if (!Array.isArray(help.instructions)) {
+  if (!(typeof help.instructions === 'string')) {
     throw new Error('instructions must be an array')
   }
   const { runner } = help

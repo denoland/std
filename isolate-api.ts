@@ -11,6 +11,7 @@ import {
   isSettledIsolatePromise,
   PID,
   print,
+  SolidRequest,
   toActions,
   UnsequencedRequest,
 } from '@/constants.ts'
@@ -24,16 +25,22 @@ type Options = {
 }
 export default class IsolateApi<T extends object = Default> {
   #accumulator: Accumulator
+  #origin: SolidRequest | undefined
   // TODO assign a mount id for each side effect execution context ?
   #context: Partial<T> = {}
   #isEffect = false
   #isEffectRecovered = false
   #abort = new AbortController()
-  private constructor(accumulator: Accumulator) {
+  private constructor(accumulator: Accumulator, origin?: SolidRequest) {
     this.#accumulator = accumulator
+    this.#origin = origin
   }
-  static create(accumulator: Accumulator, opts?: Options) {
-    const api = new IsolateApi(accumulator)
+  static create(
+    accumulator: Accumulator,
+    origin?: SolidRequest,
+    opts?: Options,
+  ) {
+    const api = new IsolateApi(accumulator, origin)
     if (opts) {
       api.#isEffect = opts.isEffect || false
       api.#isEffectRecovered = opts.isEffectRecovered || false
@@ -53,7 +60,10 @@ export default class IsolateApi<T extends object = Default> {
     return this.#fs.pid
   }
   get origin() {
-    return this.#accumulator.origin
+    if (!this.#origin) {
+      throw new Error('origin not set')
+    }
+    return this.#origin
   }
   get commit() {
     return this.#fs.oid

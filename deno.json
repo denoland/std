@@ -38,6 +38,7 @@
     "diff": "npm:diff",
     "eventsource-parser/stream": "npm:eventsource-parser/stream",
     "fast-deep-equal/es6": "npm:fast-deep-equal/es6/index.js",
+    "gray-matter": "npm:gray-matter@^4.0.3",
     "hono": "https://deno.land/x/hono@v4.3.7/mod.ts",
     "hono/helper": "https://deno.land/x/hono@v4.3.7/helper.ts",
     "hono/middleware": "https://deno.land/x/hono@v4.3.7/middleware.ts",
@@ -46,8 +47,7 @@
     "openai": "npm:openai",
     "serialize-error": "npm:serialize-error",
     "supports-color": "npm:supports-color",
-    "ulid": "npm:ulid",
-    "vfile-matter": "npm:vfile-matter@^5.0.0"
+    "ulid": "npm:ulid"
   },
   "exclude": ["cov/"],
   "lint": {

@@ -119,7 +119,7 @@ export type Help = {
   config?: HelpConfig
   runner: RUNNERS
   commands?: string[]
-  instructions: string[]
+  instructions: string
   done?: string
   examples?: string[]
   tests?: string[]

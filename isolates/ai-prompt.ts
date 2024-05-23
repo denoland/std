@@ -50,14 +50,14 @@ export const prepare = async (help: Help, text: string, api: IsolateApi) => {
     assert(Array.isArray(messages), 'messages must be an array')
   }
 
-  const sysprompt = help.instructions.join('\n').trim()
-  if (sysprompt) {
-    log('sysprompt:', sysprompt)
-    if (!equal(messages[0], { role: 'system', content: sysprompt })) {
+  const content = help.instructions
+  if (content) {
+    log('sysprompt:', content)
+    if (!equal(messages[0], { role: 'system', content })) {
       if (messages[0]?.role === 'system') {
         messages.shift()
       }
-      messages.unshift({ role: 'system', content: sysprompt })
+      messages.unshift({ role: 'system', content })
     }
   }
   if (text) {
