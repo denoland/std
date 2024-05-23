@@ -7,7 +7,9 @@ import { copy } from "@std/bytes/copy";
 const MAX_SIZE = 2 ** 32 - 2;
 const DEFAULT_CHUNK_SIZE = 16_640;
 
-/** A variable-sized buffer of bytes with `read()` and `write()` methods.
+/**
+ * A variable-sized buffer of bytes with `readable` and `writable` getters that
+ * allows you to work with {@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API | Web Streams API}.
  *
  * Buffer is almost always used with some I/O like files and sockets. It allows
  * one to buffer up a download from a socket. Buffer grows and shrinks as
@@ -20,7 +22,32 @@ const DEFAULT_CHUNK_SIZE = 16_640;
  * ArrayBuffer is a fixed memory allocation. Buffer is implemented on top of
  * ArrayBuffer.
  *
- * Based on {@link https://golang.org/pkg/bytes/#Buffer | Go Buffer}. */
+ * Based on {@link https://golang.org/pkg/bytes/#Buffer | Go Buffer}.
+ *
+ * @example Copy a file to another file via a buffer
+ * ```ts
+ * // File copy can be done with various ways. This example aims to demonstrate
+ * // how to use Buffer with other ReadableStream and WritableStream.
+ *
+ * import { assert } from "@std/assert/assert";
+ * import { assertEquals } from "@std/assert/assert-equals";
+ * import { Buffer } from "@std/streams/buffer";
+ *
+ * const buf = new Buffer();
+ * assertEquals(buf.capacity, 0);
+ * assertEquals(buf.length, 0);
+ *
+ * using input = await Deno.open("input.txt");
+ * using output = await Deno.open("output.txt", { write: true, create: true });
+ *
+ * await input.readable.pipeTo(buf.writable);
+ * assert(buf.capacity > 0);
+ * assert(buf.length > 0);
+ *
+ * await buf.readable.pipeTo(output.writable);
+ * assert(buf.empty());
+ * ```
+ */
 export class Buffer {
   #buf: Uint8Array; // contents are the bytes buf[off : len(buf)]
   #off = 0; // read at buf[off], write at buf[buf.byteLength]
@@ -42,7 +69,17 @@ export class Buffer {
     autoAllocateChunkSize: DEFAULT_CHUNK_SIZE,
   });
 
-  /** Getter returning the instance's {@linkcode ReadableStream}. */
+  /**
+   * Getter returning the instance's {@linkcode ReadableStream}.
+   *
+   * @example Read the content out of the buffer to stdout
+   * ```ts
+   * import { Buffer } from "@std/streams/buffer";
+   *
+   * const buf = new Buffer();
+   * await buf.readable.pipeTo(Deno.stdout.writable);
+   * ```
+   */
   get readable(): ReadableStream<Uint8Array> {
     return this.#readable;
   }
@@ -54,41 +91,190 @@ export class Buffer {
     },
   });
 
-  /** Getter returning the instance's {@linkcode WritableStream}. */
+  /**
+   * Getter returning the instance's {@linkcode WritableStream}.
+   *
+   * @example Write the data from stdin to the buffer
+   * ```ts
+   * import { Buffer } from "@std/streams/buffer";
+   *
+   * const buf = new Buffer();
+   * await Deno.stdin.readable.pipeTo(buf.writable);
+   * ```
+   */
   get writable(): WritableStream<Uint8Array> {
     return this.#writable;
   }
 
-  /** Constructs a new instance. */
+  /**
+   * Constructs a new instance.
+   *
+   * @example No initial buffer provided
+   * ```ts
+   * import { Buffer } from "@std/streams/buffer";
+   *
+   * const buf = new Buffer();
+   * ```
+   *
+   * @example With a pre-allocated buffer
+   * ```ts
+   * import { Buffer } from "@std/streams/buffer";
+   *
+   * const arrayBuffer = new ArrayBuffer(8);
+   * const buf = new Buffer(arrayBuffer);
+   * ```
+   *
+   * @example From Uint8Array
+   * ```ts
+   * import { Buffer } from "@std/streams/buffer";
+   *
+   * const array = new Uint8Array([0, 1, 2]);
+   * const buf = new Buffer(array.buffer);
+   * ```
+   */
   constructor(ab?: ArrayBufferLike | ArrayLike<number>) {
     this.#buf = ab === undefined ? new Uint8Array(0) : new Uint8Array(ab);
   }
 
-  /** Returns a slice holding the unread portion of the buffer.
+  /**
+   * Returns a slice holding the unread portion of the buffer.
    *
    * The slice is valid for use only until the next buffer modification (that
-   * is, only until the next call to a method like `read()`, `write()`,
-   * `reset()`, or `truncate()`). If `options.copy` is false the slice aliases
-   * the buffer content at least until the next buffer modification, so
-   * immediate changes to the slice will affect the result of future reads.
+   * is, only until the next call to a method that mutates or consumes the
+   * buffer, like reading data out via `readable`, `reset()`, or `truncate()`).
+   *
+   * If `options.copy` is false the slice aliases the buffer content at least
+   * until the next buffer modification, so immediate changes to the slice will
+   * affect the result of future reads. If `options` is not provided,
+   * `options.copy` defaults to `true`.
+   *
+   * @example Copy the buffer
+   * ```ts
+   * import { assertEquals } from "@std/assert/assert-equals";
+   * import { assertNotEquals } from "@std/assert/assert-not-equals";
+   * import { Buffer } from "@std/streams/buffer";
+   *
+   * const array = new Uint8Array([0, 1, 2]);
+   * const buf = new Buffer(array.buffer);
+   * const copied = buf.bytes();
+   * assertEquals(copied.length, array.length);
+   *
+   * // Modify an element in the original array
+   * array[1] = 99;
+   * assertEquals(copied[0], array[0]);
+   * // The copied buffer is not affected by the modification
+   * assertNotEquals(copied[1], array[1]);
+   * assertEquals(copied[2], array[2]);
+   * ```
+   *
+   * @example Get a slice to the buffer
+   * ```ts
+   * import { assertEquals } from "@std/assert/assert-equals";
+   * import { Buffer } from "@std/streams/buffer";
+   *
+   * const array = new Uint8Array([0, 1, 2]);
+   * const buf = new Buffer(array.buffer);
+   * const slice = buf.bytes({ copy: false });
+   * assertEquals(slice.length, array.length);
+   *
+   * // Modify an element in the original array
+   * array[1] = 99;
+   * assertEquals(slice[0], array[0]);
+   * // The slice _is_ affected by the modification
+   * assertEquals(slice[1], array[1]);
+   * assertEquals(slice[2], array[2]);
+   * ```
    */
   bytes(options = { copy: true }): Uint8Array {
     if (options.copy === false) return this.#buf.subarray(this.#off);
     return this.#buf.slice(this.#off);
   }
 
-  /** Returns whether the unread portion of the buffer is empty. */
+  /**
+   * Returns whether the unread portion of the buffer is empty.
+   *
+   * @example Empty buffer
+   * ```ts
+   * import { assert } from "@std/assert/assert";
+   * import { Buffer } from "@std/streams/buffer";
+   *
+   * const buf = new Buffer();
+   * assert(buf.empty());
+   * ```
+   *
+   * @example Non-empty buffer
+   * ```ts
+   * import { assert } from "@std/assert/assert";
+   * import { Buffer } from "@std/streams/buffer";
+   *
+   * const array = new Uint8Array([42]);
+   * const buf = new Buffer(array.buffer);
+   * assert(!buf.empty());
+   * ```
+   *
+   * @example Non-empty, but the content was already read
+   * ```ts
+   * import { assert } from "@std/assert/assert";
+   * import { Buffer } from "@std/streams/buffer";
+   *
+   * const array = new Uint8Array([42]);
+   * const buf = new Buffer(array.buffer);
+   * assert(!buf.empty());
+   * // Read the content out of the buffer
+   * await buf.readable.pipeTo(Deno.stdout.writable);
+   * // The buffer is now empty
+   * assert(buf.empty());
+   * ```
+   */
   empty(): boolean {
     return this.#buf.byteLength <= this.#off;
   }
 
-  /** A read only number of bytes of the unread portion of the buffer. */
+  /**
+   * A read only number of bytes of the unread portion of the buffer.
+   *
+   * @example Basic usage
+   * ```ts
+   * import { assertEquals } from "@std/assert/assert-equals";
+   * import { Buffer } from "@std/streams/buffer";
+   *
+   * const array = new Uint8Array([0, 1, 2]);
+   * const buf = new Buffer(array.buffer);
+   * assertEquals(buf.length, 3);
+   * ```
+   *
+   * @example Length becomes 0 after the content is read
+   * ```ts
+   * import { assertEquals } from "@std/assert/assert-equals";
+   * import { Buffer } from "@std/streams/buffer";
+   *
+   * const array = new Uint8Array([42]);
+   * const buf = new Buffer(array.buffer);
+   * assertEquals(buf.length, 1);
+   * // Read the content out of the buffer
+   * await buf.readable.pipeTo(Deno.stdout.writable);
+   * // The length is now 0
+   * assertEquals(buf.length, 0);
+   * ```
+   */
   get length(): number {
     return this.#buf.byteLength - this.#off;
   }
 
-  /** The read only capacity of the buffer's underlying byte slice, that is,
-   * the total space allocated for the buffer's data. */
+  /**
+   * The read only capacity of the buffer's underlying byte slice, that is,
+   * the total space allocated for the buffer's data.
+   *
+   * @example Basic usage
+   * ```ts
+   * import { assertEquals } from "@std/assert/assert-equals";
+   * import { Buffer } from "@std/streams/buffer";
+   *
+   * const arrayBuffer = new ArrayBuffer(256);
+   * const buf = new Buffer(arrayBuffer);
+   * assertEquals(buf.capacity, 256);
+   * ```
+   */
   get capacity(): number {
     return this.#buf.buffer.byteLength;
   }
@@ -97,6 +283,20 @@ export class Buffer {
    * Discards all but the first `n` unread bytes from the buffer but
    * continues to use the same allocated storage. It throws if `n` is
    * negative or greater than the length of the buffer.
+   *
+   * @example Basic usage
+   * ```ts
+   * import { assertEquals } from "@std/assert/assert-equals";
+   * import { Buffer } from "@std/streams/buffer";
+   *
+   * const array = new Uint8Array([0, 1, 2]);
+   * const buf = new Buffer(array.buffer);
+   * assertEquals(buf.bytes(), array);
+   *
+   * // Discard all but the first 2 bytes
+   * buf.truncate(2);
+   * assertEquals(buf.bytes(), array.slice(0, 2));
+   * ```
    */
   truncate(n: number): void {
     if (n === 0) {
@@ -109,7 +309,23 @@ export class Buffer {
     this.#reslice(this.#off + n);
   }
 
-  /** Resets to an empty buffer. */
+  /**
+   * Resets to an empty buffer.
+   *
+   * @example Basic usage
+   * ```ts
+   * import { assert } from "@std/assert/assert";
+   * import { Buffer } from "@std/streams/buffer";
+   *
+   * const array = new Uint8Array([0, 1, 2]);
+   * const buf = new Buffer(array.buffer);
+   * assert(!buf.empty());
+   *
+   * // Reset
+   * buf.reset();
+   * assert(buf.empty());
+   * ```
+   */
   reset() {
     this.#reslice(0);
     this.#off = 0;
@@ -161,13 +377,28 @@ export class Buffer {
     return m;
   }
 
-  /** Grows the buffer's capacity, if necessary, to guarantee space for
+  /**
+   * Grows the buffer's capacity, if necessary, to guarantee space for
    * another `n` bytes. After `.grow(n)`, at least `n` bytes can be written to
    * the buffer without another allocation. If `n` is negative, `.grow()` will
    * throw. If the buffer can't grow it will throw an error.
    *
    * Based on Go Lang's
-   * {@link https://golang.org/pkg/bytes/#Buffer.Grow | Buffer.Grow}. */
+   * {@link https://golang.org/pkg/bytes/#Buffer.Grow | Buffer.Grow}.
+   *
+   * @example Basic usage
+   * ```ts
+   * import { assert } from "@std/assert/assert";
+   * import { assertEquals } from "@std/assert/assert-equals";
+   * import { Buffer } from "@std/streams/buffer";
+   *
+   * const buf = new Buffer();
+   * assertEquals(buf.capacity, 0);
+   *
+   * buf.grow(200);
+   * assert(buf.capacity >= 200);
+   * ```
+   */
   grow(n: number) {
     if (n < 0) {
       throw Error("Buffer.grow: negative count");
