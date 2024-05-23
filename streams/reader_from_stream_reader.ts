@@ -5,9 +5,9 @@ import { readerFromStreamReader as _readerFromStreamReader } from "@std/io/reade
 import type { Reader } from "@std/io/types";
 
 /**
- * Create a {@linkcode Reader} from a {@linkcode ReadableStreamDefaultReader}.
+ * Create a {@linkcode https://jsr.io/@std/io/doc/types/~/Reader | Reader} from a {@linkcode ReadableStreamDefaultReader}.
  *
- * @example
+ * @example Copy the response body of a fetch request to a file
  * ```ts
  * import { copy } from "@std/io/copy";
  * import { readerFromStreamReader } from "@std/streams/reader-from-stream-reader";
