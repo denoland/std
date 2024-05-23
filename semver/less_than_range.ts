@@ -6,7 +6,25 @@ import { testComparatorSet } from "./_test_comparator_set.ts";
 import { isWildcardComparator } from "./_shared.ts";
 import { compare } from "./compare.ts";
 
-/** Check if the semver is less than the range. */
+/**
+ * Check if the semver is less than the range.
+ *
+ * @example Usage
+ * ```ts
+ * import { parse, parseRange, lessThanRange } from "@std/semver";
+ * import { assert, assertFalse } from "@std/assert";
+ *
+ * const v0 = parse("1.2.3");
+ * const v1 = parse("1.0.0");
+ * const range = parseRange(">=1.2.3 <1.2.4");
+ * assertFalse(lessThanRange(v0, range));
+ * assert(lessThanRange(v1, range));
+ * ```
+ *
+ * @param semver The version to check.
+ * @param range The range to check against.
+ * @returns `true` if the semver is less than the range, `false` otherwise.
+ */
 export function lessThanRange(semver: SemVer, range: Range): boolean {
   return range.every((comparatorSet) =>
     lessThanComparatorSet(semver, comparatorSet)
