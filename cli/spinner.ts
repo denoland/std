@@ -90,36 +90,10 @@ export class Spinner {
 
   /**
    * The message to display next to the spinner.
+   * This can be changed while the spinner is active.
    *
    * @example Usage
    * ```ts no-eval
-   * import { Spinner } from "@std/cli/spinner";
-   *
-   * const loadingText = "Loading...";
-   * const startTime = new Date().getTime();
-   * const spinner = new Spinner({ message: loadingText, color: "yellow" });
-   * spinner.start();
-   *
-   * setInterval(() => {
-   *   const durationMs = new Date().getTime() - startTime;
-   *   const durationSec = Math.round(durationMs / 1_000);
-   *   spinner.message = `${loadingText} (${durationSec}s)`;
-   * }, 1_000);
-   * ```
-   */
-  message: string;
-
-  #interval: number;
-  #color?: Color;
-  #intervalId: number | undefined;
-  #active = false;
-
-  /**
-   * The message to display next to the spinner.
-   * This can be changed while the spinner is active.
-   *
-   * @example
-   * ```ts
    * import { Spinner } from "@std/cli/spinner";
    *
    * const spinner = new Spinner({ message: "Working..." });
@@ -136,7 +110,12 @@ export class Spinner {
    * console.log("Done!");
    * ```
    */
-  message: string = "";
+  message: string;
+
+  #interval: number;
+  #color?: Color;
+  #intervalId: number | undefined;
+  #active = false;
 
   /**
    * Creates a new spinner.
@@ -167,12 +146,10 @@ export class Spinner {
    *
    * Providing `undefined` will use the default terminal color.
    *
-   *
-   * @example
-   * ```ts
    * @param value Color to set.
    *
    * @example Usage
+   * ```ts no-eval
    * import { Spinner } from "@std/cli/spinner";
    *
    * const spinner = new Spinner({ message: "Loading...", color: "yellow" });
