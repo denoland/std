@@ -69,7 +69,7 @@ export interface StringifyStreamOptions {
  *
  * @example
  * If you want to stream [JSON lines](https://jsonlines.org/) from the server:
- * ```ts
+ * ```ts no-eval
  * import { JsonStringifyStream } from "@std/json/json-stringify-stream";
  *
  * // A server that streams one line of JSON every second

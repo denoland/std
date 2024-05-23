@@ -19,7 +19,7 @@ function isBrankString(str: string) {
  *
  * @example
  * parse JSON lines or NDJSON
- * ```ts
+ * ```ts no-eval
  * import { TextLineStream } from "@std/streams/text-line-stream";
  * import { JsonParseStream } from "@std/json/json-parse-stream";
  *
@@ -38,7 +38,7 @@ function isBrankString(str: string) {
  *
  * @example
  * parse JSON Text Sequences
- * ```ts
+ * ```ts no-eval
  * import { TextDelimiterStream } from "@std/streams/text-delimiter-stream";
  * import { JsonParseStream } from "@std/json/json-parse-stream";
  *
