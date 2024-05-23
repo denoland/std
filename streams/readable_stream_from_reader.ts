@@ -8,7 +8,7 @@ export type { Closer };
 /**
  * Options for {@linkcode readableStreamFromReader}.
  *
- * @deprecated This will be removed in 1.0.0. Use {@linkcode toReadableStream} instead.
+ * @deprecated This will be removed in 1.0.0. Use {@linkcode https://jsr.io/@std/io/doc/~/toReadableStream | toReadableStream} instead.
  */
 export interface ReadableStreamFromReaderOptions {
   /** If the `reader` is also a `Closer`, automatically close the `reader`
@@ -28,22 +28,21 @@ export interface ReadableStreamFromReaderOptions {
 
 /**
  * Create a {@linkcode ReadableStream} of {@linkcode Uint8Array}s from a
- * {@linkcode Reader}.
+ * {@linkcode https://jsr.io/@std/io/doc/types/~/Reader | Reader}.
  *
  * When the pull algorithm is called on the stream, a chunk from the reader
  * will be read.  When `null` is returned from the reader, the stream will be
- * closed along with the reader (if it is also a `Closer`).
+ * closed along with the reader (if it is also a {@linkcode https://jsr.io/@std/io/doc/types/~/Closer | Closer}).
  *
- * An example converting a `Deno.FsFile` into a readable stream:
- *
+ * @example Convert a `Deno.FsFile` into a readable stream:
  * ```ts
  * import { readableStreamFromReader } from "@std/streams/readable-stream-from-reader";
  *
- * const file = await Deno.open("./file.txt", { read: true });
+ * using file = await Deno.open("./file.txt", { read: true });
  * const fileStream = readableStreamFromReader(file);
  * ```
  *
- * @deprecated This will be removed in 1.0.0. Use {@linkcode toReadableStream} instead.
+ * @deprecated This will be removed in 1.0.0. Use {@linkcode https://jsr.io/@std/io/doc/~/toReadableStream | toReadableStream} instead.
  */
 export function readableStreamFromReader(
   reader: Reader | (Reader & Closer),
