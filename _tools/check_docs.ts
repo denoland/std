@@ -85,7 +85,7 @@ function assertHasReturnTag(document: { jsDoc: JsDoc; location: Location }) {
   const tag = document.jsDoc.tags?.find((tag) => tag.kind === "return");
   if (tag === undefined) {
     diagnostics.push(
-      new DocumentError("Symbol must have a @returns tag", document),
+      new DocumentError("Symbol must have a @return or @returns tag", document),
     );
   } else {
     assert(
