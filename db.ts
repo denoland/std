@@ -312,6 +312,14 @@ export default class DB {
       console.error('unlockDB failed', lockId)
     }
   }
+  async drop() {
+    const all = this.#kv.list({ prefix: [] }, { batchSize: 1000 })
+    const promises = []
+    for await (const { key } of all) {
+      promises.push(this.#kv.delete(key))
+    }
+    await Promise.all(promises)
+  }
 }
 
 const watchUndelivered = async (kv: Deno.Kv) => {

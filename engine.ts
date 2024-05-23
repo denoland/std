@@ -69,7 +69,11 @@ export class Engine implements EngineInterface {
   }
   async ensureHomeAddress(superuserKey: string, init?: Provisioner) {
     if (this.#homeAddress) {
-      return
+      const toDelete = Deno.env.get('DROP_HOME')
+      if (this.homeAddress.repoId !== toDelete) {
+        return
+      }
+      this.#dropDB()
     }
     log('ensureHomeAddress querying db')
     const { db } = artifact.sanitizeContext(this.#api)
@@ -253,6 +257,13 @@ export class Engine implements EngineInterface {
       await this.pierce(pierce)
     }
     log('pierce done')
+  }
+  async #dropDB() {
+    log('dropping homeAddress', print(this.#homeAddress))
+    const { db } = artifact.sanitizeContext(this.#api)
+    await db.drop()
+    this.#homeAddress = undefined
+    await db.drop()
   }
 }
 
