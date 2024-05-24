@@ -33,7 +33,7 @@ import { assert } from "@std/assert/assert";
  * const rangedStream = response.body!
  *   .pipeThrough(new ByteSliceStream(3, 8));
  * const collected = await Array.fromAsync(rangedStream);
- * assertEquals(collected[0].length, 6);
+ * assertEquals(collected[0]?.length, 6);
  * ```
  */
 export class ByteSliceStream extends TransformStream<Uint8Array, Uint8Array> {
