@@ -242,6 +242,37 @@ Deno.test({
 });
 
 Deno.test({
+  name: "parse() handles float types",
+  fn() {
+    const yaml = `
+      - 3.14
+      - -3.14
+      - .inf
+      - -.inf
+      - .nan
+      - 12e03
+      - 1:15
+      - 1:15:20
+      - -1:15:20
+      - !!float 12000
+    `;
+
+    assertEquals(parse(yaml), [
+      3.14,
+      -3.14,
+      Infinity,
+      -Infinity,
+      NaN,
+      12000,
+      75,
+      4520,
+      -4520,
+      12000,
+    ]);
+  },
+});
+
+Deno.test({
   name: "parse() handles omap type",
   fn() {
     const yaml = `--- !!omap
@@ -280,5 +311,5 @@ Deno.test({
       YAMLError,
       "cannot resolve a node with !<tag:yaml.org,2002:omap> explicit tag",
     );
-  },
+  }
 });
