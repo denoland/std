@@ -29,7 +29,7 @@ function isComparator(value: unknown): value is Comparator {
  *
  * @example Usage
  * ```ts
- * import { isRange } from "@std/semver";
+ * import { isRange } from "@std/semver/is-range";
  * import { assert, assertFalse } from "@std/assert";
  *
  * const range = [[{ major: 1, minor: 2, patch: 3 }]];
