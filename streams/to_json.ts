@@ -8,12 +8,18 @@ import { toText } from "./to_text.ts";
  * {@linkcode Uint8Array}s to an object. Works the same as
  * {@linkcode Response.json}.
  *
- * @example
+ * @example Basic usage
  * ```ts
  * import { toJson } from "@std/streams/to-json";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
- * const stream = ReadableStream.from([JSON.stringify({ hello: "world" })]);
- * await toJson(stream); // { hello: "world" }
+ * const stream = ReadableStream.from([
+ *   "[1, true",
+ *   ', [], {}, "hel',
+ *   'lo", null]',
+ * ]);
+ * const json = await toJson(stream);
+ * assertEquals(json, [1, true, [], {}, "hello", null]);
  * ```
  */
 export function toJson(
