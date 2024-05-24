@@ -1,7 +1,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
 import { EXTRACT_REGEXP_MAP, RECOGNIZE_REGEXP_MAP } from "./_formats.ts";
-import type { Format } from "./test.ts";
+import type { Format } from "./_types.ts";
 
 /** Return type for {@linkcode Extractor}. */
 export type Extract<T> = {

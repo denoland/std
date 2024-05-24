@@ -1,9 +1,9 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
 import { EXTRACT_REGEXP_MAP } from "./_formats.ts";
+import type { Format } from "./_types.ts";
 
-/** Supported format for front matter. `"unknown"` is used when auto format detection logic fails. */
-export type Format = "yaml" | "toml" | "json" | "unknown";
+export type { Format };
 
 /**
  * Tests if a string has valid front matter.
