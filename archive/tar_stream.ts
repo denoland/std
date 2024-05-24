@@ -19,6 +19,12 @@ export interface TarStreamDir {
 }
 
 /**
+ * A union type merging all the TarStream interfaces that can be piped into the
+ * TarStream class.
+ */
+export type TarStreamInput = TarStreamFile | TarStreamDir;
+
+/**
  * The options that can go along with a file or directory.
  * @param mode An octal number in ASCII.
  * @param uid An octal number in ASCII.
@@ -92,7 +98,7 @@ export interface TarStreamOptions {
  */
 export class TarStream {
   #readable: ReadableStream<Uint8Array>;
-  #writable: WritableStream<TarStreamFile | TarStreamDir>;
+  #writable: WritableStream<TarStreamInput>;
   /**
    * Constructs a new instance.
    */
