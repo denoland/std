@@ -104,6 +104,10 @@ export class TarStream {
     const gen = (async function* () {
       const paths: string[] = [];
       for await (const chunk of readable) {
+        if (chunk.options && !validTarStreamOptions(chunk.options)) {
+          throw new Error("Invalid Options Provided!");
+        }
+
         if (
           "size" in chunk &&
           (
@@ -320,4 +324,22 @@ export function parsePathname(
     );
   }
   return [prefix, name.slice(i + 1)];
+}
+/**
+ * validTarStreamOptions is a function that returns a true if all of the options
+ * provided are in the correct format, otherwise returns false.
+ */
+export function validTarStreamOptions(
+  options: Partial<TarStreamOptions>,
+): boolean {
+  return !!(options.mode && !/^[0-7+$]/.test(options.mode) ||
+    options.uid && !/^[0-7+$]/.test(options.uid) ||
+    options.gid && !/^[0-7+$]/.test(options.gid) ||
+    options.mtime && options.mtime.toString() === "NaN" ||
+    // deno-lint-ignore no-control-regex
+    options.uname && /^[\x00-\x7F]*$/.test(options.uname) ||
+    // deno-lint-ignore no-control-regex
+    options.gname && /^[\x00-\x7F]*$/.test(options.gname) ||
+    options.devmajor && !/^ [0 - 7 + $] /.test(options.devmajor) ||
+    options.devminor && !/^[0-7+$]/.test(options.devminor));
 }
