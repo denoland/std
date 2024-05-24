@@ -6,7 +6,7 @@ export interface FormattingOptions {
   /** The character used to assign a value to a key; defaults to '='. */
   assignment?: string;
   /** Character(s) used to break lines in the config file; defaults to '\n'. Ignored on parse. */
-  lineBreak?: "\n" | "\r\n";
+  lineBreak?: "\n" | "\r\n" | "\r";
   /** Mark to use for setting comments; expects '#', ';', '//', defaults to '#' unless another mark is found. */
   commentChar?: "#" | ";" | "//";
   /** Use a plain assignment char or pad with spaces; defaults to false. Ignored on parse. */
@@ -15,23 +15,10 @@ export interface FormattingOptions {
   deduplicate?: boolean;
 }
 
-type Formatting = Omit<FormattingOptions, "lineBreak" | "commentChar"> & {
-  lineBreak?: string;
-  commentChar?: string;
-};
-
 /** Options for parsing INI strings. */
 export interface ParseOptions {
-  /** The character used to assign a value to a key; defaults to '='. */
-  assignment?: FormattingOptions["assignment"];
   /** Provide custom parsing of the value in a key/value pair. */
   reviver?: ReviverFunction;
-}
-
-/** Options for constructing INI strings. */
-export interface StringifyOptions extends FormattingOptions {
-  /** Provide custom string conversion for the value in a key/value pair. */
-  replacer?: ReplacerFunction;
 }
 
 /** Function for replacing JavaScript values with INI string values. */
@@ -170,8 +157,11 @@ export class IniMap {
       return this.comments;
     },
   };
-  #formatting: Formatting;
+  #formatting: FormattingOptions;
 
+  /** Constructs a new `IniMap`.
+   * @param formatting Optional formatting options when printing an INI file.
+   */
   constructor(formatting?: FormattingOptions) {
     this.#formatting = this.#cleanFormatting(formatting);
   }
@@ -185,7 +175,7 @@ export class IniMap {
     return size;
   }
 
-  get formatting(): Formatting {
+  get formatting(): FormattingOptions {
     return this.#formatting;
   }
 
@@ -211,9 +201,13 @@ export class IniMap {
     }
   }
 
-  /** Delete a global key in the INI. */
+  /** Delete a global key in the INI.
+   * @returns `true` if the key was deleted, `false` if not found.
+   */
   delete(key: string): boolean;
-  /** Delete a section key in the INI. */
+  /** Delete a section key in the INI.
+   * @returns `true` if the section was deleted, `false` if not found.
+   */
   delete(section: string, key: string): boolean;
   delete(keyOrSection: string, noneOrKey?: string): boolean {
     const exists = this.#getValue(keyOrSection, noneOrKey);
@@ -388,34 +382,23 @@ export class IniMap {
   }
 
   *#readTextLines(text: string): Generator<string> {
-    const lineBreak = "\r\n";
     const { length } = text;
-    let lineBreakLength = -1;
     let line = "";
 
     for (let i = 0; i < length; i += 1) {
       const char = text[i]!;
 
-      if (lineBreak.includes(char)) {
+      if (char === "\n" || char === "\r") {
         yield line;
         line = "";
-        if (lineBreakLength === -1) {
-          const ahead = text[i + 1];
-          if (
-            ahead !== undefined && ahead !== char && lineBreak.includes(ahead)
-          ) {
-            if (!this.#formatting.lineBreak) {
-              this.#formatting.lineBreak = char + ahead;
-            }
-            lineBreakLength = 1;
-          } else {
-            if (!this.#formatting.lineBreak) {
-              this.#formatting.lineBreak = char;
-            }
-            lineBreakLength = 0;
+        if (char === "\r" && text[i + 1] === "\n") {
+          i++;
+          if (!this.#formatting.lineBreak) {
+            this.#formatting.lineBreak = "\r\n";
           }
+        } else if (!this.#formatting.lineBreak) {
+          this.#formatting.lineBreak = char;
         }
-        i += lineBreakLength;
       } else {
         line += char;
       }
@@ -524,7 +507,9 @@ export class IniMap {
           const mark = trimmed[0];
           if (mark) {
             // if mark is truthy, use the character.
-            this.#formatting.commentChar = mark === "/" ? "//" : mark;
+            this.#formatting.commentChar = mark === "/"
+              ? "//"
+              : mark as "#" | ";";
           }
         }
         this.#lines.push({
@@ -648,24 +633,41 @@ export class IniMap {
   }
 }
 
+/** Manages comments within the INI file. */
 export interface Comments {
   /** Clear all comments in the INI. */
   clear(): void;
-  /** Delete a comment at a specific line in the INI. */
+  /** Delete a comment at a specific line in the INI.
+   * @returns `true` if a comment was deleted, otherwise `false`.
+   */
   deleteAtLine(line: number): boolean;
-  /** Delete a comment before a global key in the INI. */
+  /** Delete a comment before a global key in the INI.
+   * @returns `true` if a comment was deleted, otherwise `false`.
+   */
   deleteAtKey(key: string): boolean;
-  /** Delete a comment before a section key in the INI. */
+  /** Delete a comment before a section key in the INI.
+   * @returns `true` if a comment was deleted, otherwise `false`.
+   */
   deleteAtKey(section: string, key: string): boolean;
-  /** Delete a comment before a section line in the INI. */
+  /** Delete a comment before a section line in the INI.
+   * @returns `true` if a comment was deleted, otherwise `false`.
+   */
   deleteAtSection(section: string): boolean;
-  /** Get a comment at a specific line in the INI. */
+  /** Get the comment text at a specific line in the INI.
+   * @returns The comment text at the line or `undefined` if not found.
+   */
   getAtLine(line: number): string | undefined;
-  /** Get a comment before a global key in the INI. */
+  /** Get the comment text before a global key in the INI.
+   * @returns The comment text at the provided key or `undefined` if not found.
+   */
   getAtKey(key: string): string | undefined;
-  /** Get a comment before a section key in the INI. */
+  /** Get the comment text before a section key in the INI.
+   * @returns The comment text at the provided section or `undefined` if not found.
+   */
   getAtKey(section: string, key: string): string | undefined;
-  /** Get a comment before a section line in the INI. */
+  /** Get the comment text before a section line in the INI.
+   * @returns The comment text at the provided section or `undefined` if not found.
+   */
   getAtSection(section: string): string | undefined;
   /** Set a comment at a specific line in the INI. */
   setAtLine(line: number, text: string): Comments;

@@ -4,7 +4,7 @@
 /**
  * Calculates the Levenshtein distance between two strings.
  *
- * @example
+ * @example Usage
  * ```ts
  * import { levenshteinDistance } from "@std/text/levenshtein-distance";
  * levenshteinDistance("aa", "bb"); // 2

@@ -15,5 +15,6 @@ extend-exclude = [
   "*.generated.mjs",
   "media_types/vendor",
   "http/testdata",
-  "http/user_agent.ts"
+  "http/user_agent.ts",
+  "ulid/mod.ts"
 ]
