@@ -9,15 +9,32 @@ import type {
 } from "./delimiter_stream.ts";
 
 /**
- * Transform a stream into a stream where each chunk is divided by a given delimiter.
+ * Transform a stream `string` into a stream where each chunk is divided by a
+ * given delimiter.
  *
- * @example
+ * @example JSON Lines
  * ```ts
- * import { TextDelimiterStream } from "@std/streams/text-delimiter-stream";
- * const res = await fetch("https://example.com");
- * const parts = res.body!
- *   .pipeThrough(new TextDecoderStream())
- *   .pipeThrough(new TextDelimiterStream("foo"));
+ * const stream = ReadableStream.from([
+ *   '{"name": "Alice", "age": ',
+ *   '30}\n{"name": "Bob", "age"',
+ *   ": 25}\n",
+ * ]);
+ *
+ * // Split the stream by newline and parse each line as a JSON object
+ * const jsonStream = stream.pipeThrough(new TextDelimiterStream("\n"))
+ *   .pipeThrough(toTransformStream<string, unknown>(async function* (src) {
+ *     for await (const chunk of src) {
+ *       if (chunk.trim().length === 0) {
+ *         continue;
+ *       }
+ *       yield JSON.parse(chunk);
+ *     }
+ *   }));
+ *
+ * assertEquals(
+ *   await Array.fromAsync(jsonStream),
+ *   [{ "name": "Alice", "age": 30 }, { "name": "Bob", "age": 25 }],
+ * );
  * ```
  */
 export class TextDelimiterStream extends TransformStream<string, string> {
