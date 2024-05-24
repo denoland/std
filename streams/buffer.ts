@@ -84,6 +84,8 @@ export class Buffer {
   /**
    * Getter returning the instance's {@linkcode ReadableStream}.
    *
+   * @returns The readable stream of the buffer.
+   *
    * @example Read the content out of the buffer to stdout
    * ```ts
    * import { Buffer } from "@std/streams/buffer";
@@ -106,6 +108,8 @@ export class Buffer {
   /**
    * Getter returning the instance's {@linkcode WritableStream}.
    *
+   * @returns The writable stream of the buffer.
+   *
    * @example Write the data from stdin to the buffer
    * ```ts
    * import { Buffer } from "@std/streams/buffer";
@@ -120,6 +124,8 @@ export class Buffer {
 
   /**
    * Constructs a new instance.
+   *
+   * @param ab An optional buffer to use as the initial buffer.
    *
    * @example No initial buffer provided
    * ```ts
@@ -159,6 +165,9 @@ export class Buffer {
    * until the next buffer modification, so immediate changes to the slice will
    * affect the result of future reads. If `options` is not provided,
    * `options.copy` defaults to `true`.
+   *
+   * @param options Options for the bytes method.
+   * @returns A copy or a slice of the buffer.
    *
    * @example Copy the buffer
    * ```ts
@@ -205,6 +214,8 @@ export class Buffer {
   /**
    * Returns whether the unread portion of the buffer is empty.
    *
+   * @returns Whether the buffer is empty.
+   *
    * @example Empty buffer
    * ```ts
    * import { assert } from "@std/assert/assert";
@@ -245,6 +256,8 @@ export class Buffer {
   /**
    * A read only number of bytes of the unread portion of the buffer.
    *
+   * @returns The number of bytes in the unread portion of the buffer.
+   *
    * @example Basic usage
    * ```ts
    * import { assertEquals } from "@std/assert/assert-equals";
@@ -277,6 +290,8 @@ export class Buffer {
    * The read only capacity of the buffer's underlying byte slice, that is,
    * the total space allocated for the buffer's data.
    *
+   * @returns The number of allocated bytes for the buffer.
+   *
    * @example Basic usage
    * ```ts
    * import { assertEquals } from "@std/assert/assert-equals";
@@ -295,6 +310,8 @@ export class Buffer {
    * Discards all but the first `n` unread bytes from the buffer but
    * continues to use the same allocated storage. It throws if `n` is
    * negative or greater than the length of the buffer.
+   *
+   * @param n The number of bytes to keep.
    *
    * @example Basic usage
    * ```ts
@@ -394,6 +411,8 @@ export class Buffer {
    * another `n` bytes. After `.grow(n)`, at least `n` bytes can be written to
    * the buffer without another allocation. If `n` is negative, `.grow()` will
    * throw. If the buffer can't grow it will throw an error.
+   *
+   * @param n The number of bytes to grow the buffer by.
    *
    * Based on Go Lang's
    * {@link https://golang.org/pkg/bytes/#Buffer.Grow | Buffer.Grow}.
