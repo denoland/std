@@ -69,9 +69,7 @@ export default class Server {
       return streamSSE(c, async (stream) => {
         const params = await c.req.json()
         const abort = new AbortController()
-        stream.onAbort(() => {
-          abort.abort()
-        })
+        stream.onAbort(() => abort.abort())
         const { pid, path, after } = params
         try {
           const iterable = engine.read(pid, path, after, abort.signal)
@@ -89,6 +87,7 @@ export default class Server {
           console.error('server stream error', error)
         }
         // if an error occured, stall the stream to stop the clients thrashing
+        log('stalling stream indefinitely')
         await delay(Infinity)
       })
     })
