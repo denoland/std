@@ -1,5 +1,8 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
+// deno-lint-ignore no-unused-vars
+import type { LruCache } from "./lru_cache.ts";
+
 export type MemoizationCache<K, V> = {
   has: (key: K) => boolean;
   get: (key: K) => V | undefined;
@@ -7,12 +10,20 @@ export type MemoizationCache<K, V> = {
   delete: (key: K) => unknown;
 };
 
-export type MemoizationOptions<Fn extends (...args: never[]) => unknown> = {
+export type MemoizationOptions<
+  Fn extends (...args: never[]) => unknown,
+  Key,
+  Cache extends MemoizationCache<Key, ReturnType<Fn>>,
+> = {
   /**
    * Provide a custom cache for getting previous results. By default, a new
-   * `Map` object is instantiated upon memoization and used as a cache.
+   * `Map` object is instantiated upon memoization and used as a cache, with no
+   * limit on the number of results to be cached.
+   *
+   * Alternatively, you can supply a {@linkcode LruCache} with a specified max
+   * size to limit memory usage.
    */
-  cache?: MemoizationCache<unknown, ReturnType<Fn>>;
+  cache?: Cache;
   /**
    * Function to get a unique cache key from the function's arguments. By
    * default, a composite key is created from all the arguments plus the `this`
@@ -32,7 +43,7 @@ export type MemoizationOptions<Fn extends (...args: never[]) => unknown> = {
    * assertEquals(fn({ cacheKey: 2, value: 99 }), 99);
    * ```
    */
-  getKey?: (this: ThisParameterType<Fn>, ...args: Parameters<Fn>) => unknown;
+  getKey?: (this: ThisParameterType<Fn>, ...args: Parameters<Fn>) => Key;
   /**
    * Only use args as cache keys up to the `length` property of the function.
    * Useful for passing unary functions as array callbacks, but should be
@@ -69,17 +80,33 @@ export type MemoizationOptions<Fn extends (...args: never[]) => unknown> = {
  * });
  *
  * assertEquals(fib(100n), 354224848179261915075n);
+ *
+ * // you can also introspect cached values using the `cache` and `getKey`
+ * // properties of the memoized function
+ * assertEquals(fib.cache.get(fib.getKey.call(undefined, 30n)), 832040n);
  * ```
  */
-export function memoize<Fn extends (...args: never[]) => unknown>(
+export function memoize<
+  Fn extends (...args: never[]) => unknown,
+  Key = string,
+  Cache extends MemoizationCache<Key, ReturnType<Fn>> = Map<
+    Key,
+    ReturnType<Fn>
+  >,
+>(
   fn: Fn,
-  options?: NoInfer<Partial<MemoizationOptions<Fn>>>,
+  options?: MemoizationOptions<Fn, Key, Cache>,
 ): Fn & {
-  cache: MemoizationCache<unknown, ReturnType<Fn>>;
-  getKey: (this: ThisParameterType<Fn>, ...args: Parameters<Fn>) => unknown;
+  cache: Cache;
+  getKey: (this: ThisParameterType<Fn>, ...args: Parameters<Fn>) => Key;
 } {
   const cache = options?.cache ?? new Map();
-  const getKey = options?.getKey ?? _serializeArgList(cache);
+  const getKey = options?.getKey ??
+    _serializeArgList(
+      cache as MemoizationCache<unknown, unknown>,
+    ) as unknown as (
+      (this: ThisParameterType<Fn>, ...args: Parameters<Fn>) => Key
+    );
   const truncateArgs = options?.truncateArgs ?? false;
   const cacheRejectedPromises = options?.cacheRejectedPromises ?? false;
 
@@ -89,7 +116,7 @@ export function memoize<Fn extends (...args: never[]) => unknown>(
   ): ReturnType<Fn> {
     if (truncateArgs) args = args.slice(0, fn.length) as Parameters<Fn>;
 
-    const key = getKey.apply(this, args);
+    const key = getKey.apply(this, args) as Key;
 
     if (cache.has(key)) {
       return cache.get(key)!;
@@ -109,10 +136,13 @@ export function memoize<Fn extends (...args: never[]) => unknown>(
     return val;
   } as Fn;
 
-  return Object.defineProperties(Object.assign(memoized, { cache, getKey }), {
-    length: { value: fn.length },
-    name: { value: fn.name },
-  });
+  return Object.defineProperties(
+    Object.assign(memoized, { cache: cache as Cache, getKey }),
+    {
+      length: { value: fn.length },
+      name: { value: fn.name },
+    },
+  );
 }
 
 /**
