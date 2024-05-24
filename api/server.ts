@@ -85,7 +85,7 @@ export default class Server {
           log('stream end')
         } catch (error) {
           console.error('server stream error', error)
-          // if an error occured, stall the stream to stop the clients thrashing
+          // if an error occurred, stall the stream to slow the clients
           if (abort.signal.aborted) {
             return
           }

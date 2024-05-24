@@ -81,13 +81,13 @@ export class Engine implements EngineInterface {
     }
 
     if (!this.#homeAddress || this.#isDropping) {
-      log('homeAddress not found in db - initializing')
       const lockId = await db.lockDB()
       if (lockId) {
         log('locked db', lockId)
         if (this.#homeAddress && this.#isDropping) {
           log('dropping db')
           await this.#dropDB()
+          log('db drop complete')
         }
         log('initializing homeAddress')
         const superuser = Machine.deriveMachineId(superuserKey)
@@ -102,8 +102,8 @@ export class Engine implements EngineInterface {
     }
   }
   get #isDropping() {
-    const toDelete = Deno.env.get('DROP_HOME')
-    const isDropping = toDelete === this.homeAddress.repoId
+    const toDelete = Deno.env.get('DROP_HOME') || ''
+    const isDropping = toDelete.trim() === this.homeAddress.repoId
     log('isDropping', isDropping)
     return isDropping
   }
@@ -267,8 +267,6 @@ export class Engine implements EngineInterface {
   async #dropDB() {
     log('dropping homeAddress', print(this.#homeAddress))
     const { db } = artifact.sanitizeContext(this.#api)
-    await db.drop()
-    this.#homeAddress = undefined
     await db.drop()
   }
 }

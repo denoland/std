@@ -155,6 +155,7 @@ export const functions = {
     expect(rest).toEqual({})
     const machineId = superuser
     await functions.ensureMachineTerminal({ machineId })
+    log('@@install complete')
   },
   async addAuthProvider(
     { provider, name }: { provider: PID; name: string },
