@@ -38,6 +38,7 @@ export default class Server {
   }
   static async create(privateKey: string, aesKey: string, init?: Provisioner) {
     const engine = await Engine.boot(privateKey, aesKey)
+    const ensurance = engine.ensureHomeAddress(init) // kick the engine
     const base = new Hono()
     const app = base.basePath('/api')
 
@@ -45,7 +46,7 @@ export default class Server {
     app.use(prettyJSON())
     app.use('*', logger(), poweredBy(), cors())
     app.use(async (_, next) => {
-      await engine.ensureHomeAddress(init)
+      await ensurance
       await next()
     })
 
