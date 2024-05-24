@@ -18,8 +18,8 @@ import { toText } from "./to_text.ts";
  *
  * const stream = ReadableStream.from([
  *   "[1, true",
- *   ', [], {}, "hel',
- *   'lo", null]',
+ *   ', [], {}, "hello',
+ *   '", null]',
  * ]);
  * const json = await toJson(stream);
  * assertEquals(json, [1, true, [], {}, "hello", null]);

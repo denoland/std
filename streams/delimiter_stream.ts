@@ -50,7 +50,7 @@ export interface DelimiterStreamOptions {
  * import { DelimiterStream } from "@std/streams/delimiter-stream";
  * import { assertEquals } from "@std/assert/assert-equals";
  *
- * const inputStream = ReadableStream.from(["foo;", "bar;ba", "z;"]);
+ * const inputStream = ReadableStream.from(["foo;", "bar;baz", ";"]);
  *
  * const transformed = inputStream.pipeThrough(new TextEncoderStream())
  *   .pipeThrough(
