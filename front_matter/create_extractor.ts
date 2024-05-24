@@ -65,10 +65,10 @@ function recognize(str: string, formats?: Format[]): Format {
  * ```ts
  * import { createExtractor, Parser } from "@std/front-matter";
  * import { assertEquals } from "@std/assert/assert-equals";
- * import { parse as parseYAML } from "@std/yaml/parse";
+ * import { parse as parseYaml } from "@std/yaml/parse";
  *
- * const extractYAML = createExtractor({ yaml: parseYAML as Parser });
- * const { attrs, body, frontMatter } = extractYAML<{ title: string }>(
+ * const extractYaml = createExtractor({ yaml: parseYaml as Parser });
+ * const { attrs, body, frontMatter } = extractYaml<{ title: string }>(
  * `---
  * title: Three dashes marks the spot
  * ---
@@ -82,10 +82,10 @@ function recognize(str: string, formats?: Format[]): Format {
  * ```ts
  * import { createExtractor, Parser } from "@std/front-matter";
  * import { assertEquals } from "@std/assert/assert-equals";
- * import { parse as parseTOML } from "@std/toml/parse";
+ * import { parse as parseToml } from "@std/toml/parse";
  *
- * const extractTOML = createExtractor({ toml: parseTOML as Parser });
- * const { attrs, body, frontMatter } = extractTOML<{ title: string }>(
+ * const extractToml = createExtractor({ toml: parseToml as Parser });
+ * const { attrs, body, frontMatter } = extractToml<{ title: string }>(
  * `---toml
  * title = 'Three dashes followed by format marks the spot'
  * ---
@@ -100,8 +100,8 @@ function recognize(str: string, formats?: Format[]): Format {
  * import { createExtractor, Parser } from "@std/front-matter";
  * import { assertEquals } from "@std/assert/assert-equals";
  *
- * const extractJSON = createExtractor({ json: JSON.parse as Parser });
- * const { attrs, body, frontMatter } = extractJSON<{ title: string }>(
+ * const extractJson = createExtractor({ json: JSON.parse as Parser });
+ * const { attrs, body, frontMatter } = extractJson<{ title: string }>(
  * `---json
  * {"title": "Three dashes followed by format marks the spot"}
  * ---
@@ -115,14 +115,14 @@ function recognize(str: string, formats?: Format[]): Format {
  * ```ts
  * import { createExtractor, Parser } from "@std/front-matter";
  * import { assertEquals } from "@std/assert/assert-equals";
- * import { parse as parseYAML } from "@std/yaml/parse";
+ * import { parse as parseYaml } from "@std/yaml/parse";
  *
- * const extractYAMLOrJSON = createExtractor({
- *   yaml: parseYAML as Parser,
+ * const extractYamlOrJson = createExtractor({
+ *   yaml: parseYaml as Parser,
  *   json: JSON.parse as Parser,
  * });
  *
- * let { attrs, body, frontMatter } = extractYAMLOrJSON<{ title: string }>(
+ * let { attrs, body, frontMatter } = extractYamlOrJson<{ title: string }>(
  * `---
  * title: Three dashes marks the spot
  * ---
@@ -131,7 +131,7 @@ function recognize(str: string, formats?: Format[]): Format {
  * assertEquals(body, "ferret");
  * assertEquals(frontMatter, "title: Three dashes marks the spot");
  *
- * ({ attrs, body, frontMatter } = extractYAMLOrJSON<{ title: string }>(
+ * ({ attrs, body, frontMatter } = extractYamlOrJson<{ title: string }>(
  * `---json
  * {"title": "Three dashes followed by format marks the spot"}
  * ---
