@@ -8,6 +8,9 @@ import { toText } from "./to_text.ts";
  * {@linkcode Uint8Array}s to an object. Works the same as
  * {@linkcode Response.json}.
  *
+ * @param readableStream A `ReadableStream` whose chunks compose a JSON.
+ * @returns A promise that resolves to the parsed JSON.
+ *
  * @example Basic usage
  * ```ts
  * import { toJson } from "@std/streams/to-json";

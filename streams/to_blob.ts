@@ -5,6 +5,9 @@
  * Converts a {@linkcode ReadableStream} of {@linkcode Uint8Array}s to a
  * {@linkcode Blob}. Works the same as {@linkcode Response.blob}.
  *
+ * @param stream A `ReadableStream` of `Uint8Array`s to convert into a `Blob`.
+ * @returns A `Promise` that resolves to the `Blob`.
+ *
  * @example Basic usage
  * ```ts
  * import { toBlob } from "@std/streams/to-blob";

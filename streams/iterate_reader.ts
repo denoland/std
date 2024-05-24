@@ -10,9 +10,13 @@ import type { Reader, ReaderSync } from "@std/io/types";
 export type { Reader, ReaderSync };
 
 /**
- * Turns a {@linkcode Reader}, `r`, into an async iterator.
+ * Turns a {@linkcode https://jsr.io/@std/io/doc/types/~/Reader | Reader}, `r`, into an async iterator.
  *
- * @example
+ * @param r A reader to turn into an async iterator.
+ * @param options Options for the iterateReader function.
+ * @returns An async iterator that yields Uint8Array.
+ *
+ * @example Convert a `Deno.FsFile` into an async iterator and iterate over it
  * ```ts
  * import { iterateReader } from "@std/streams/iterate-reader";
  *
@@ -22,10 +26,7 @@ export type { Reader, ReaderSync };
  * }
  * ```
  *
- * Second argument can be used to tune size of a buffer.
- * Default size of the buffer is 32kB.
- *
- * @example
+ * @example Specify a buffer size of 1MiB
  * ```ts
  * import { iterateReader } from "@std/streams/iterate-reader";
  *
@@ -51,8 +52,13 @@ export function iterateReader(
 }
 
 /**
- * Turns a {@linkcode ReaderSync}, `r`, into an iterator.
+ * Turns a {@linkcode https://jsr.io/@std/io/doc/types/~/ReaderSync | ReaderSync}, `r`, into an iterator.
  *
+ * @param r A reader to turn into an iterator.
+ * @param options Options for the iterateReaderSync function.
+ * @returns An iterator that yields Uint8Array.
+ *
+ * @example Convert a `Deno.FsFile` into an iterator and iterate over it
  * ```ts
  * import { iterateReaderSync } from "@std/streams/iterate-reader";
  *
@@ -62,12 +68,10 @@ export function iterateReader(
  * }
  * ```
  *
- * Second argument can be used to tune size of a buffer.
- * Default size of the buffer is 32kB.
- *
+ * @example Specify a buffer size of 1MiB
  * ```ts
  * import { iterateReaderSync } from "@std/streams/iterate-reader";
-
+ *
  * using f = await Deno.open("/etc/passwd");
  * const iter = iterateReaderSync(f, {
  *   bufSize: 1024 * 1024

@@ -4,6 +4,13 @@
 /**
  * Convert the generator function into a {@linkcode TransformStream}.
  *
+ * @typeparam I The type of the chunks in the source stream.
+ * @typeparam O The type of the chunks in the transformed stream.
+ * @param transformer A function to transform.
+ * @param writableStrategy An object that optionally defines a queuing strategy for the stream.
+ * @param readableStrategy An object that optionally defines a queuing strategy for the stream.
+ * @returns A {@linkcode TransformStream} that transforms the source stream as defined by the provided transformer.
+ *
  * @example Build a transform stream that multiplies each value by 100
  * ```ts
  * import { toTransformStream } from "@std/streams/to-transform-stream";
@@ -52,10 +59,6 @@
  *   [{ "name": "Alice", "age": 30 }, { "name": "Bob", "age": 25 }],
  * );
  * ```
- *
- * @param transformer A function to transform.
- * @param writableStrategy An object that optionally defines a queuing strategy for the stream.
- * @param readableStrategy An object that optionally defines a queuing strategy for the stream.
  */
 export function toTransformStream<I, O>(
   transformer: (src: ReadableStream<I>) => Iterable<O> | AsyncIterable<O>,

@@ -7,6 +7,9 @@ const textDecoder = new TextDecoder();
  * Converts a {@linkcode ReadableSteam} of strings or {@linkcode Uint8Array}s
  * to a single string. Works the same as {@linkcode Response.text}.
  *
+ * @param readableStream A `ReadableStream` to convert into a `string`.
+ * @returns A `Promise` that resolves to the `string`.
+ *
  * @example Basic usage
  * ```ts
  * import { toText } from "@std/streams/to-text";

@@ -3,15 +3,20 @@
 
 import type { Writer } from "@std/io/types";
 
+export type { Writer };
+
 /**
  * Create a {@linkcode https://jsr.io/@std/io/doc/types/~/Writer | Writer} from a {@linkcode WritableStreamDefaultWriter}.
+ *
+ * @param streamWriter A `WritableStreamDefaultWriter` to convert into a `Writer`.
+ * @returns A `Writer` that writes to the `WritableStreamDefaultWriter`.
  *
  * @example Read from a file and write to stdout using a writable stream
  * ```ts
  * import { copy } from "@std/io/copy";
  * import { writerFromStreamWriter } from "@std/streams/writer-from-stream-writer";
  *
- * using file = await Deno.open("./deno.land.html", { read: true });
+ * using file = await Deno.open("./README.md", { read: true });
  *
  * const writableStream = new WritableStream({
  *   write(chunk): void {

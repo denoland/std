@@ -27,6 +27,8 @@ export interface DelimiterStreamOptions {
 /**
  * Divide a stream into chunks delimited by a given byte sequence.
  *
+ * If you are working with a stream of `string`, consider using {@linkcode TextDelimiterStream}.
+ *
  * @example
  * Divide a CSV stream by commas, discarding the commas:
  * ```ts
@@ -43,7 +45,7 @@ export interface DelimiterStreamOptions {
  * ```
  *
  * @example
- * Divide a stream after semi-colons, keeping the semi-colons in the output:
+ * Divide a stream after semi-colons, keeping the semicolons in the output:
  * ```ts
  * import { DelimiterStream } from "@std/streams/delimiter-stream";
  * import { assertEquals } from "@std/assert/assert-equals";
@@ -67,7 +69,28 @@ export class DelimiterStream extends TransformStream<Uint8Array, Uint8Array> {
   #delimLPS: Uint8Array | null;
   #disp: DelimiterDisposition;
 
-  /** Constructs a new instance. */
+  /**
+   * Constructs a new instance.
+   *
+   * @param delimiter A delimiter to split the stream by.
+   * @param options Options for the delimiter stream.
+   *
+   * @example comma as a delimiter
+   * ```ts
+   * import { DelimiterStream } from "@std/streams/delimiter-stream";
+   *
+   * const delimiterStream = new DelimiterStream(new TextEncoder().encode(","));
+   * ```
+   *
+   * @example semicolon as a delimiter, and disposition set to `"suffix"`
+   * ```ts
+   * import { DelimiterStream } from "@std/streams/delimiter-stream";
+   *
+   * const delimiterStream = new DelimiterStream(new TextEncoder().encode(";"), {
+   *   disposition: "suffix",
+   * });
+   * ```
+   */
   constructor(
     delimiter: Uint8Array,
     options: DelimiterStreamOptions = { disposition: "discard" },

@@ -34,11 +34,15 @@ export interface ReadableStreamFromReaderOptions {
  * will be read.  When `null` is returned from the reader, the stream will be
  * closed along with the reader (if it is also a {@linkcode https://jsr.io/@std/io/doc/types/~/Closer | Closer}).
  *
+ * @param reader A reader to convert into a `ReadableStream`.
+ * @param options Options for the `readableStreamFromReader` function.
+ * @returns A `ReadableStream` of `Uint8Array`s.
+ *
  * @example Convert a `Deno.FsFile` into a readable stream:
  * ```ts
  * import { readableStreamFromReader } from "@std/streams/readable-stream-from-reader";
  *
- * using file = await Deno.open("./file.txt", { read: true });
+ * using file = await Deno.open("./README.md", { read: true });
  * const fileStream = readableStreamFromReader(file);
  * ```
  *

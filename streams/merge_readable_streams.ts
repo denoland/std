@@ -5,6 +5,10 @@
  * If a stream ends before other ones, the other will continue adding data,
  * and the finished one will not add any more data.
  *
+ * @typeparam T The type of the chunks in the input/output streams.
+ * @param streams An iterable of `ReadableStream`s to merge.
+ * @returns A `ReadableStream` that will emit the merged chunks.
+ *
  * @example Merge 2 streams
  * ```ts
  * import { mergeReadableStreams } from "@std/streams/merge-readable-streams";

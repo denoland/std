@@ -69,7 +69,25 @@ export interface TextLineStreamOptions {
 export class TextLineStream extends TransformStream<string, string> {
   #currentLine = "";
 
-  /** Constructs a new instance. */
+  /**
+   * Constructs a new instance.
+   *
+   * @param options Options for the stream.
+   *
+   * @example No parameters
+   * ```ts
+   * import { TextLineStream } from "@std/streams/text-line-stream";
+   *
+   * const textLineStream = new TextLineStream();
+   * ```
+   *
+   * @example allowCR = true
+   * ```ts
+   * import { TextLineStream } from "@std/streams/text-line-stream";
+   *
+   * const textLineStream = new TextLineStream({ allowCR: true });
+   * ```
+   */
   constructor(options: TextLineStreamOptions = { allowCR: false }) {
     super({
       transform: (chars, controller) => {

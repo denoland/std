@@ -20,6 +20,8 @@ export interface LimitedTransformStreamOptions {
  * a {@linkcode RangeError} will be thrown when the total number of enqueued
  * chunks is about to exceed the specified size.
  *
+ * @typeparam T The type the chunks in the stream.
+ *
  * @example `size` is equal to the total number of chunks
  * ```ts
  * import { LimitedTransformStream } from "@std/streams/limited-transform-stream";
@@ -72,7 +74,26 @@ export interface LimitedTransformStreamOptions {
 export class LimitedTransformStream<T> extends TransformStream<T, T> {
   #read = 0;
 
-  /** Constructs a new instance. */
+  /**
+   * Constructs a new instance.
+   *
+   * @param size The maximum number of chunks to read.
+   * @param options Options for the stream.
+   *
+   * @example size = 42
+   * ```ts
+   * import { LimitedTransformStream } from "@std/streams/limited-transform-stream";
+   *
+   * const limitedTransformStream = new LimitedTransformStream(42);
+   * ```
+   *
+   * @example size = 42, error = true
+   * ```ts
+   * import { LimitedTransformStream } from "@std/streams/limited-transform-stream";
+   *
+   * const limitedTransformStream = new LimitedTransformStream(42, { error: true });
+   * ```
+   */
   constructor(
     size: number,
     options: LimitedTransformStreamOptions = { error: false },

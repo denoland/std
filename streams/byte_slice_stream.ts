@@ -40,7 +40,26 @@ export class ByteSliceStream extends TransformStream<Uint8Array, Uint8Array> {
   #offsetStart = 0;
   #offsetEnd = 0;
 
-  /** Constructs a new instance. */
+  /**
+   * Constructs a new instance.
+   *
+   * @param start The zero-indexed byte index to start reading from.
+   * @param end The zero-indexed byte index to stop reading at. Inclusive.
+   *
+   * @example No parameters
+   * ```ts
+   * import { ByteSliceStream } from "@std/streams/byte-slice-stream";
+   *
+   * const byteSliceStream = new ByteSliceStream();
+   * ```
+   *
+   * @example start = 4, end = 11
+   * ```ts
+   * import { ByteSliceStream } from "@std/streams/byte-slice-stream";
+   *
+   * const byteSliceStream = new ByteSliceStream(4, 11);
+   * ```
+   */
   constructor(start = 0, end: number = Infinity) {
     super({
       start: () => {

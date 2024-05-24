@@ -36,27 +36,33 @@ export interface BufferBytesOptions {
  *
  * Based on {@link https://golang.org/pkg/bytes/#Buffer | Go Buffer}.
  *
- * @example Copy a file to another file via a buffer
+ * @example Buffer input bytes and convert it to a string
  * ```ts
- * // File copy can be done with various ways. This example aims to demonstrate
- * // how to use Buffer with other ReadableStream and WritableStream.
- *
+ * import { Buffer } from "@std/streams/buffer";
+ * import { toText } from "@std/streams/to-text";
  * import { assert } from "@std/assert/assert";
  * import { assertEquals } from "@std/assert/assert-equals";
- * import { Buffer } from "@std/streams/buffer";
  *
+ * // Create a new buffer
  * const buf = new Buffer();
  * assertEquals(buf.capacity, 0);
  * assertEquals(buf.length, 0);
  *
- * using input = await Deno.open("input.txt");
- * using output = await Deno.open("output.txt", { write: true, create: true });
+ * // Dummy input stream
+ * const inputStream = ReadableStream.from([
+ *   "hello, ",
+ *   "world",
+ *   "!",
+ * ]);
  *
- * await input.readable.pipeTo(buf.writable);
+ * // Pipe the input stream to the buffer
+ * await inputStream.pipeThrough(new TextEncoderStream()).pipeTo(buf.writable);
  * assert(buf.capacity > 0);
  * assert(buf.length > 0);
  *
- * await buf.readable.pipeTo(output.writable);
+ * // Convert the buffered bytes to a string
+ * const result = await toText(buf.readable);
+ * assertEquals(result, "hello, world!");
  * assert(buf.empty());
  * ```
  */
@@ -84,7 +90,7 @@ export class Buffer {
   /**
    * Getter returning the instance's {@linkcode ReadableStream}.
    *
-   * @returns The readable stream of the buffer.
+   * @returns A `ReadableStream` of the buffer.
    *
    * @example Read the content out of the buffer to stdout
    * ```ts
@@ -108,7 +114,7 @@ export class Buffer {
   /**
    * Getter returning the instance's {@linkcode WritableStream}.
    *
-   * @returns The writable stream of the buffer.
+   * @returns A `WritableStream` of the buffer.
    *
    * @example Write the data from stdin to the buffer
    * ```ts

@@ -12,6 +12,8 @@ import type {
  * Transform a stream `string` into a stream where each chunk is divided by a
  * given delimiter.
  *
+ * If you are working with a stream of `Uint8Array`, consider using {@linkcode DelimiterStream}.
+ *
  * If you want to split by a newline, consider using {@linkcode TextLineStream}.
  *
  * @example Comma-separated values
@@ -60,7 +62,28 @@ export class TextDelimiterStream extends TransformStream<string, string> {
   #delimLPS: Uint8Array;
   #disp: DelimiterDisposition;
 
-  /** Constructs a new instance. */
+  /**
+   * Constructs a new instance.
+   *
+   * @param delimiter A delimiter to split the stream by.
+   * @param options Options for the stream.
+   *
+   * @example comma as a delimiter
+   * ```ts
+   * import { TextDelimiterStream } from "@std/streams/text-delimiter-stream";
+   *
+   * const delimiterStream = new TextDelimiterStream(",");
+   * ```
+   *
+   * @example semicolon as a delimiter, and disposition set to `"suffix"`
+   * ```ts
+   * import { TextDelimiterStream } from "@std/streams/text-delimiter-stream";
+   *
+   * const delimiterStream = new TextDelimiterStream(",", {
+   *   disposition: "suffix",
+   * });
+   * ```
+   */
   constructor(
     delimiter: string,
     options: DelimiterStreamOptions = { disposition: "discard" },

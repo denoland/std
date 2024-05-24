@@ -80,7 +80,7 @@ export interface LimitedBytesTransformStreamOptions {
  *
  * const stream = ReadableStream.from(["1234", "5678"]);
  * const transformed = stream.pipeThrough(new TextEncoderStream()).pipeThrough(
- *   new LimitedBytesTransformStream(5),
+ *   new LimitedBytesTransformStream(5, { error: true }),
  * ).pipeThrough(new TextDecoderStream());
  *
  * await assertRejects(async () => {
@@ -92,7 +92,26 @@ export class LimitedBytesTransformStream
   extends TransformStream<Uint8Array, Uint8Array> {
   #read = 0;
 
-  /** Constructs a new instance. */
+  /**
+   * Constructs a new instance.
+   *
+   * @param size A size limit in bytes.
+   * @param options Options for the stream.
+   *
+   * @example size = 42
+   * ```ts
+   * import { LimitedBytesTransformStream } from "@std/streams/limited-bytes-transform-stream";
+   *
+   * const limitedBytesTransformStream = new LimitedBytesTransformStream(42);
+   * ```
+   *
+   * @example size = 42, error = true
+   * ```ts
+   * import { LimitedBytesTransformStream } from "@std/streams/limited-bytes-transform-stream";
+   *
+   * const limitedBytesTransformStream = new LimitedBytesTransformStream(42, { error: true });
+   * ```
+   */
   constructor(
     size: number,
     options: LimitedBytesTransformStreamOptions = { error: false },

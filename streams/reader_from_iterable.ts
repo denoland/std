@@ -8,20 +8,25 @@ import type { Reader } from "@std/io/types";
 /**
  * Create a {@linkcode https://jsr.io/@std/io/doc/types/~/Reader | Reader} from an iterable of {@linkcode Uint8Array}s.
  *
- * @example Periodically write `Deno.build` information to `build.txt`
+ * @param iterable An iterable or async iterable of `Uint8Array`s to convert into a `Reader`.
+ * @returns A `Reader` that reads from the iterable.
+ *
+ * @example Write `Deno.build` information to `/dev/null` 3 times every second
  * ```ts
  * import { readerFromIterable } from "@std/streams/reader-from-iterable";
  * import { copy } from "@std/io/copy";
+ * import { delay } from "@std/async/delay";
  *
- * using file = await Deno.open("build.txt", { write: true });
  * const reader = readerFromIterable((async function* () {
- *   while (true) {
- *     await new Promise((r) => setTimeout(r, 1000));
+ *   for (let i = 0; i < 3; i++) {
+ *     await delay(1000);
  *     const message = `data: ${JSON.stringify(Deno.build)}\n\n`;
  *     yield new TextEncoder().encode(message);
  *   }
  * })());
- * await copy(reader, file);
+ *
+ * using blackhole = await Deno.open("/dev/null", { write: true });
+ * await copy(reader, blackhole);
  * ```
  *
  * @deprecated This will be removed in 1.0.0. Use {@linkcode ReadableStream.from} instead.

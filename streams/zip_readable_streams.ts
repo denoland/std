@@ -10,6 +10,9 @@
  * order, and the finished one will not add any more data. If you want to cancel
  * the other streams when one of them ends, use {@linkcode earlyZipReadableStreams}.
  *
+ * @typeparam T The type of the chunks in the input/output streams.
+ * @returns A `ReadableStream` that will emit the zipped chunks.
+ *
  * @example Zip 2 streams with the same length
  * ```ts
  * import { zipReadableStreams } from "@std/streams/zip-readable-streams";
@@ -17,7 +20,7 @@
  *
  * const stream1 = ReadableStream.from(["1", "2", "3"]);
  * const stream2 = ReadableStream.from(["a", "b", "c"]);
- * const zippedStream = earlyZipReadableStreams(stream1, stream2);
+ * const zippedStream = zipReadableStreams(stream1, stream2);
  *
  * assertEquals(
  *   await Array.fromAsync(zippedStream),

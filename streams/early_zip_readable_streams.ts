@@ -11,6 +11,9 @@
  * compresensible information. If you want to continue reading the other streams
  * even after one of them ends, use {@linkcode zipReadableStreams}.
  *
+ * @typeparam T The type of the chunks in the input streams.
+ * @returns A `ReadableStream` that will emit the zipped chunks
+ *
  * @example Zip 2 streams with the same length
  * ```ts
  * import { earlyZipReadableStreams } from "@std/streams/early-zip-readable-streams";
