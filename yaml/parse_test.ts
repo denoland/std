@@ -311,5 +311,5 @@ Deno.test({
       YAMLError,
       "cannot resolve a node with !<tag:yaml.org,2002:omap> explicit tag",
     );
-  }
+  },
 });
