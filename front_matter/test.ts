@@ -14,7 +14,7 @@ export type { Format };
  * @param formats A list of formats to test for. Defaults to all supported formats.
  * @returns `true` if the string has valid front matter, otherwise `false`.
  *
- * @example
+ * @example Test for valid YAML front matter
  * ```ts
  * import { test } from "@std/front-matter/test";
  * import { assert } from "@std/assert/assert";
@@ -25,6 +25,12 @@ export type { Format };
  * ---
  * `);
  * assert(yamlValid);
+ * ```
+ *
+ * @example Test for valid TOML front matter
+ * ```ts
+ * import { test } from "@std/front-matter/test";
+ * import { assert } from "@std/assert/assert";
  *
  * const tomlValid = test(
  * `---toml
@@ -32,6 +38,12 @@ export type { Format };
  * ---
  * `);
  * assert(tomlValid);
+ * ```
+ *
+ * @example Test for valid JSON front matter
+ * ```ts
+ * import { test } from "@std/front-matter/test";
+ * import { assert } from "@std/assert/assert";
  *
  * const jsonValid = test(
  * `---json
@@ -39,13 +51,19 @@ export type { Format };
  * ---
  * `);
  * assert(jsonValid);
+ * ```
+ *
+ * @example JSON front matter is not valid as YAML
+ * ```ts
+ * import { test } from "@std/front-matter/test";
+ * import { assertFalse } from "@std/assert/assert-false";
  *
  * const parseJsonFrontMatterWithYamlFormat = test(
  * `---json
  * {"title": "Three dashes followed by format marks the spot"}
  * ---
  * `, ["yaml"]);
- * assert(!parseJsonFrontMatterWithYamlFormat);
+ * assertFalse(parseJsonFrontMatterWithYamlFormat);
  * ```
  */
 export function test(
