@@ -111,6 +111,7 @@ export class WebClientEngine implements EngineInterface {
 
     const pipe = async () => {
       let lastSplice: Splice | undefined
+      let retryCount = 0
       while (!abort.signal.aborted) {
         try {
           const response = await this.#fetcher(`/api/read`, {
@@ -139,13 +140,14 @@ export class WebClientEngine implements EngineInterface {
             } else {
               console.error('unexpected event', value.event, value)
             }
+            retryCount = 0
           }
         } catch (error) {
           console.log('stream error:', error)
         }
-        // TODO implement backoff before retrying
         if (!abort.signal.aborted) {
-          const wait = 1000
+          retryCount++
+          const wait = Math.min(1000 * 2 ** retryCount, 30000)
           console.log(`retrying read in ${wait}ms`)
           await new Promise((resolve) => setTimeout(resolve, wait))
         }

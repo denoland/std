@@ -13,7 +13,7 @@ import {
 } from 'hono/middleware'
 import { streamSSE } from 'hono/helper'
 import { Engine } from '../engine.ts'
-import { assert, Debug, serializeError } from '@/utils.ts'
+import { assert, Debug, delay, serializeError } from '@/utils.ts'
 import {
   EventSourceMessage,
   machineIdRegex,
@@ -88,9 +88,8 @@ export default class Server {
         } catch (error) {
           console.error('server stream error', error)
         }
-      }, async (error, stream) => {
-        await Promise.resolve()
-        console.error('error', error, stream)
+        // if an error occured, stall the stream to stop the clients thrashing
+        await delay(Infinity)
       })
     })
     app.post(`/readJSON`, async (c) => {
