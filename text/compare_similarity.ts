@@ -8,7 +8,14 @@ const getWordDistance = levenshteinDistance;
 /**
  * Sort based on word similarity
  *
- * @example
+ * @param givenWord The string to measure distance against.
+ * @param options An options bag containing a `caseSensitive` flag indicating
+ * whether the distance should include case. Default is false.
+ * @returns The difference in distance. This will be a negative number if `a`
+ * is more similar to `givenWord` than `b`, a positive number if `b` is more
+ * similar, or `0` if they are equally similar.
+ *
+ * @example Usage
  * ```ts
  * import { compareSimilarity } from "@std/text/compare-similarity";
  * const words = ["hi", "hello", "help"];
