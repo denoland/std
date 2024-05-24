@@ -36,7 +36,7 @@ function resolveYamlOmap(data: Any): boolean {
 }
 
 function constructYamlOmap(data: Any): Any {
-  return data !== null ? data : [];
+  return data;
 }
 
 export const omap = new Type("tag:yaml.org,2002:omap", {
