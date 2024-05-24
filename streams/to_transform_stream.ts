@@ -4,21 +4,53 @@
 /**
  * Convert the generator function into a {@linkcode TransformStream}.
  *
- * @example
+ * @example Build a transform stream that multiplies each value by 100
  * ```ts
  * import { toTransformStream } from "@std/streams/to-transform-stream";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
- * const readable = ReadableStream.from([0, 1, 2])
+ * const stream = ReadableStream.from([0, 1, 2])
  *   .pipeThrough(toTransformStream(async function* (src) {
  *     for await (const chunk of src) {
  *       yield chunk * 100;
  *     }
  *   }));
  *
- * for await (const chunk of readable) {
- *   console.log(chunk);
- * }
- * // output: 0, 100, 200
+ * assertEquals(
+ *   await Array.fromAsync(stream),
+ *   [0, 100, 200],
+ * );
+ * ```
+ *
+ * @example JSON Lines
+ * ```ts
+ * import { TextLineStream } from "@std/streams/text-line-stream";
+ * import { toTransformStream } from "@std/streams/to-transform-stream";
+ * import { assertEquals } from "@std/assert/assert-equals";
+ *
+ * const stream = ReadableStream.from([
+ *   '{"name": "Alice", "age": ',
+ *   '30}\n{"name": "Bob", "age"',
+ *   ": 25}\n",
+ * ]);
+ *
+ * type Person = { name: string; age: number };
+ *
+ * // Split the stream by newline and parse each line as a JSON object
+ * const jsonStream = stream.pipeThrough(new TextLineStream())
+ *   .pipeThrough(toTransformStream(async function* (src) {
+ *     for await (const chunk of src) {
+ *       if (chunk.trim().length === 0) {
+ *         continue;
+ *       }
+ *       yield JSON.parse(chunk) as Person;
+ *     }
+ *   }));
+ *
+ * assertEquals(
+ *   await Array.fromAsync(jsonStream),
+ *   [{ "name": "Alice", "age": 30 }, { "name": "Bob", "age": 25 }],
+ * );
  * ```
  *
  * @param transformer A function to transform.
