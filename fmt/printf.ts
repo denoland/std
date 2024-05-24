@@ -934,7 +934,7 @@ class Printf {
  *
  * @param format The format string to use
  * @param args The arguments to format
- * @returns formatted string
+ * @returns The formatted string
  */
 export function sprintf(format: string, ...args: unknown[]): string {
   const printf = new Printf(format, ...args);
