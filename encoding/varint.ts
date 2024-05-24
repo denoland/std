@@ -2,16 +2,24 @@
 // Copyright 2020 Keith Cirkel. All rights reserved. MIT license.
 // Copyright 2023 Skye "MierenManz". All rights reserved. MIT license.
 /**
- * Functions for encoding typed integers in array buffers.
+ * Utilities for {@link https://protobuf.dev/programming-guides/encoding/#varints VarInt} encoding
+ * of typed integers. VarInt encoding represents integers using a variable number of bytes, with
+ * smaller values requiring fewer bytes.
  *
  * ```ts
- * import { encode, decode } from "@std/encoding/varint";
+ * import { encodeVarint, decodeVarint } from "@std/encoding/varint";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const buf = new Uint8Array(10);
- * const [encoded, bytesWritten] = encode(42n, buf);
- * // [ Uint8Array(1) [ 42 ], 1 ];
+ * assertEquals(
+ *   encodeVarint(42n, buf),
+ *   [new Uint8Array([42]), 1]
+ * );
  *
- * decode(encoded); // [ 42n, 1 ];
+ * assertEquals(
+ *   decodeVarint(new Uint8Array([42])),
+ *   [ 42n, 1 ]
+ * );
  * ```
  *
  * @module
@@ -20,8 +28,19 @@
 // This implementation is a port of https://deno.land/x/varint@v2.0.0 by @keithamus
 // This module is browser compatible.
 
+/**
+ * The maximum value of an unsigned 64-bit integer.
+ * Equivalent to `2n**64n - 1n`
+ */
 export const MaxUInt64 = 18446744073709551615n;
+
+/**
+ * The maximum length, in bytes, of a VarInt encoded 64-bit integer.
+ */
 export const MaxVarIntLen64 = 10;
+/**
+ * The maximum length, in bytes, of a VarInt encoded 32-bit integer.
+ */
 export const MaxVarIntLen32 = 5;
 
 const MSB = 0x80;
@@ -55,9 +74,10 @@ const U64_VIEW = new BigUint64Array(AB);
  * @example
  * ```ts
  * import { decode } from "@std/encoding/varint";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const buf = new Uint8Array([0x8E, 0x02]);
- * decode(buf); // [ 300n, 2 ];
+ * assertEquals(decode(buf), [ 300n, 2 ]);
  * ```
  *
  * @deprecated This will be removed in 1.0.0. Use {@linkcode decodeVarint}
@@ -84,12 +104,13 @@ export function decode(buf: Uint8Array, offset = 0): [bigint, number] {
  * @param offset The offset to start decoding from.
  * @returns A tuple of the decoded varint 64-bit number, and the new offset.
  *
- * @example
+ * @example Usage
  * ```ts
  * import { decodeVarint } from "@std/encoding/varint";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const buf = new Uint8Array([0x8E, 0x02]);
- * decodeVarint(buf); // [ 300n, 2 ];
+ * assertEquals(decodeVarint(buf), [270n, 2]);
  * ```
  */
 export function decodeVarint(buf: Uint8Array, offset = 0): [bigint, number] {
@@ -172,9 +193,10 @@ export function decodeVarint(buf: Uint8Array, offset = 0): [bigint, number] {
  * @example
  * ```ts
  * import { decode32 } from "@std/encoding/varint";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const buf = new Uint8Array([0x8E, 0x02]);
- * decode32(buf); // [ 300, 2 ];
+ * assertEquals(decode32(buf), [ 300, 2 ]);
  * ```
  *
  * @deprecated This will be removed in 1.0.0. Use {@linkcode decodeVarint32}
@@ -200,12 +222,13 @@ export function decode32(buf: Uint8Array, offset = 0): [number, number] {
  * @param offset The offset to start decoding from.
  * @returns A tuple of the decoded varint 32-bit number, and the new offset.
  *
- * @example
+ * @example Usage
  * ```ts
  * import { decodeVarint32 } from "@std/encoding/varint";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const buf = new Uint8Array([0x8E, 0x02]);
- * decodeVarint32(buf); // [ 300, 2 ];
+ * assertEquals(decodeVarint32(buf), [270, 2]);
  * ```
  */
 export function decodeVarint32(buf: Uint8Array, offset = 0): [number, number] {
@@ -244,9 +267,10 @@ export function decodeVarint32(buf: Uint8Array, offset = 0): [number, number] {
  * @example
  * ```ts
  * import { encode } from "@std/encoding/varint";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const buf = new Uint8Array(10);
- * encode(42n, buf); // [ Uint8Array(1) [ 42 ], 1 ];
+ * assertEquals(encode(42n, buf), [new Uint8Array([42]), 1]);
  * ```
  *
  * @deprecated This will be removed in 1.0.0. Use {@linkcode encodeVarint} instead.
@@ -277,12 +301,13 @@ export function encode(
  * @param offset The offset to start writing at.
  * @returns A tuple of the encoded VarInt `Uint8Array` and the new offset.
  *
- * @example
+ * @example Usage
  * ```ts
  * import { encodeVarint } from "@std/encoding/varint";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const buf = new Uint8Array(10);
- * encodeVarint(42n, buf); // [ Uint8Array(1) [ 42 ], 1 ];
+ * assertEquals(encodeVarint(42n, buf), [new Uint8Array([42]), 1]);
  * ```
  */
 export function encodeVarint(
