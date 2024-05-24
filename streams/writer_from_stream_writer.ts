@@ -4,9 +4,9 @@
 import type { Writer } from "@std/io/types";
 
 /**
- * Create a {@linkcode Writer} from a {@linkcode WritableStreamDefaultWriter}.
+ * Create a {@linkcode https://jsr.io/@std/io/doc/types/~/Writer | Writer} from a {@linkcode WritableStreamDefaultWriter}.
  *
- * @example
+ * @example Read from a file and write to stdout using a writable stream
  * ```ts
  * import { copy } from "@std/io/copy";
  * import { writerFromStreamWriter } from "@std/streams/writer-from-stream-writer";
