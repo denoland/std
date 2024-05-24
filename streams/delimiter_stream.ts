@@ -16,7 +16,11 @@ export type DelimiterDisposition =
 
 /** Options for {@linkcode DelimiterStream}. */
 export interface DelimiterStreamOptions {
-  /** Disposition of the delimiter. */
+  /**
+   * Disposition of the delimiter.
+   *
+   * @default {"discard"}
+   */
   disposition?: DelimiterDisposition;
 }
 
@@ -66,7 +70,7 @@ export class DelimiterStream extends TransformStream<Uint8Array, Uint8Array> {
   /** Constructs a new instance. */
   constructor(
     delimiter: Uint8Array,
-    options?: DelimiterStreamOptions,
+    options: DelimiterStreamOptions = { disposition: "discard" },
   ) {
     super({
       transform: (chunk, controller) =>
@@ -78,7 +82,7 @@ export class DelimiterStream extends TransformStream<Uint8Array, Uint8Array> {
 
     this.#delimiter = delimiter;
     this.#delimLPS = delimiter.length > 1 ? createLPS(delimiter) : null;
-    this.#disp = options?.disposition ?? "discard";
+    this.#disp = options.disposition ?? "discard";
   }
 
   #handle(

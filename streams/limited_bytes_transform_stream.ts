@@ -1,6 +1,17 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
+/** Options for {@linkcode LimitedBytesTransformStream}. */
+export interface LimitedBytesTransformStreamOptions {
+  /**
+   * If true, a {@linkcode RangeError} is thrown when queueing the current chunk
+   * would exceed the specified size limit.
+   *
+   * @default {false}
+   */
+  error?: boolean;
+}
+
 /**
  * A {@linkcode TransformStream} that will only read & enqueue chunks until the
  * total amount of enqueued data exceeds `size`. The last chunk that would
@@ -82,7 +93,10 @@ export class LimitedBytesTransformStream
   #read = 0;
 
   /** Constructs a new instance. */
-  constructor(size: number, options: { error?: boolean } = {}) {
+  constructor(
+    size: number,
+    options: LimitedBytesTransformStreamOptions = { error: false },
+  ) {
     super({
       transform: (chunk, controller) => {
         if ((this.#read + chunk.byteLength) > size) {

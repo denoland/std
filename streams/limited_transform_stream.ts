@@ -1,6 +1,17 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
+/** Options for {@linkcode LimitedTransformStream} */
+export interface LimitedTransformStreamOptions {
+  /**
+   * If true, a {@linkcode RangeError} is thrown when the total number of
+   * enqueued chunks is about to exceed the specified limit.
+   *
+   * @default {false}
+   */
+  error?: boolean;
+}
+
 /**
  * A {@linkcode TransformStream} that will only read & enqueue `size` amount of
  * chunks.
@@ -62,7 +73,10 @@ export class LimitedTransformStream<T> extends TransformStream<T, T> {
   #read = 0;
 
   /** Constructs a new instance. */
-  constructor(size: number, options: { error?: boolean } = {}) {
+  constructor(
+    size: number,
+    options: LimitedTransformStreamOptions = { error: false },
+  ) {
     super({
       transform: (chunk, controller) => {
         if ((this.#read + 1) > size) {

@@ -61,7 +61,10 @@ export class TextDelimiterStream extends TransformStream<string, string> {
   #disp: DelimiterDisposition;
 
   /** Constructs a new instance. */
-  constructor(delimiter: string, options?: DelimiterStreamOptions) {
+  constructor(
+    delimiter: string,
+    options: DelimiterStreamOptions = { disposition: "discard" },
+  ) {
     super({
       transform: (chunk, controller) => {
         this.#handle(chunk, controller);
@@ -73,7 +76,7 @@ export class TextDelimiterStream extends TransformStream<string, string> {
 
     this.#delimiter = delimiter;
     this.#delimLPS = createLPS(new TextEncoder().encode(delimiter));
-    this.#disp = options?.disposition ?? "discard";
+    this.#disp = options.disposition ?? "discard";
   }
 
   #handle(

@@ -7,6 +7,18 @@ import { copy } from "@std/bytes/copy";
 const MAX_SIZE = 2 ** 32 - 2;
 const DEFAULT_CHUNK_SIZE = 16_640;
 
+/** Options for {@linkcode Buffer.bytes}. */
+export interface BufferBytesOptions {
+  /**
+   * If true, {@linkcode Buffer.bytes} will return a copy of the buffered data.
+   *
+   * If false, it will return a slice to the buffer's data.
+   *
+   * @default {true}
+   */
+  copy?: boolean;
+}
+
 /**
  * A variable-sized buffer of bytes with `readable` and `writable` getters that
  * allows you to work with {@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API | Web Streams API}.
@@ -185,7 +197,7 @@ export class Buffer {
    * assertEquals(slice[2], array[2]);
    * ```
    */
-  bytes(options = { copy: true }): Uint8Array {
+  bytes(options: BufferBytesOptions = { copy: true }): Uint8Array {
     if (options.copy === false) return this.#buf.subarray(this.#off);
     return this.#buf.slice(this.#off);
   }
