@@ -8,7 +8,7 @@ import { Provisioner } from '@/constants.ts'
 const superuserKey = Machine.generatePrivateKey()
 const aesKey = DB.generateAesKey()
 const cradleMaker = async (init?: Provisioner) => {
-  const engine = await Engine.start(superuserKey, aesKey, init)
+  const engine = await Engine.provision(superuserKey, aesKey, init)
   const privateKey = Machine.generatePrivateKey()
   const machine = Machine.load(engine, privateKey)
   const terminal = machine.openTerminal()

@@ -26,7 +26,7 @@ const factory = async () => {
   return session
 }
 const engineFactory = async () => {
-  const engine = await Engine.start(superuserKey, aesKey)
+  const engine = await Engine.provision(superuserKey, aesKey)
   engines.push(engine)
   return engine
 }
@@ -51,7 +51,7 @@ suite
   .add('engine cold start', {
     defer: true,
     fn: async (deferred: Benchmark.Deferred) => {
-      const engine = await Engine.start(superuserKey, aesKey)
+      const engine = await Engine.provision(superuserKey, aesKey)
       deferred.resolve()
       await engine.stop()
     },

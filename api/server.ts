@@ -37,13 +37,18 @@ export default class Server {
     return this.#engine
   }
   static async create(privateKey: string, aesKey: string, init?: Provisioner) {
-    const engine = await Engine.start(privateKey, aesKey, init)
+    const engine = await Engine.boot(privateKey, aesKey)
     const base = new Hono()
     const app = base.basePath('/api')
 
     app.use(timing())
     app.use(prettyJSON())
     app.use('*', logger(), poweredBy(), cors())
+    app.use(async (_, next) => {
+      await engine.ensureHomeAddress(init)
+      await next()
+    })
+
     app.post(`/ping`, async (c) => {
       const params = await c.req.json()
       return execute(c, engine.ping(params), 'ping')

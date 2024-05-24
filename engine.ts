@@ -38,6 +38,7 @@ export class Engine implements EngineInterface {
   #homeAddress: PID | undefined
   #githubAddress: PID | undefined
   #abort = new AbortController()
+  #suTerminal: Promise<ArtifactSession> | undefined
 
   private constructor(
     compartment: Compartment,
@@ -51,13 +52,21 @@ export class Engine implements EngineInterface {
     this.#initHome = functions.initHome
     this.#superuserKey = superuserKey
   }
-  static async start(superuserKey: string, aesKey: string, init?: Provisioner) {
+  static async boot(superuserKey: string, aesKey: string) {
     const compartment = await Compartment.create('artifact')
     const api = IsolateApi.createContext<C>()
     api.context = { aesKey }
     await compartment.mount(api)
     const engine = new Engine(compartment, api, superuserKey)
-    await engine.ensureHomeAddress(superuserKey, init)
+    return engine
+  }
+  static async provision(
+    superuserKey: string,
+    aesKey: string,
+    init?: Provisioner,
+  ) {
+    const engine = await Engine.boot(superuserKey, aesKey)
+    await engine.ensureHomeAddress(init)
     return engine
   }
   get context() {
@@ -69,7 +78,7 @@ export class Engine implements EngineInterface {
     }
     return this.#homeAddress
   }
-  async ensureHomeAddress(superuserKey: string, init?: Provisioner) {
+  async ensureHomeAddress(init?: Provisioner) {
     if (this.#homeAddress && !this.#isDropping) {
       return
     }
@@ -90,7 +99,7 @@ export class Engine implements EngineInterface {
           log('db drop complete')
         }
         log('initializing homeAddress')
-        const superuser = Machine.deriveMachineId(superuserKey)
+        const superuser = Machine.deriveMachineId(this.#superuserKey)
         this.#homeAddress = await this.#initHome({ superuser })
         await db.setHomeAddress(this.#homeAddress)
         log('homeAddress initialized to:', print(this.#homeAddress))
@@ -161,13 +170,12 @@ export class Engine implements EngineInterface {
     log('provisioned')
     log('superuser is', colorize(getActorId(terminal.pid)))
   }
-  #superuser: Promise<ArtifactSession> | undefined
   #su() {
-    if (!this.#superuser) {
+    if (!this.#suTerminal) {
       const machine = Machine.load(this, this.#superuserKey)
-      this.#superuser = machine.rootTerminalPromise
+      this.#suTerminal = machine.rootTerminalPromise
     }
-    return this.#superuser
+    return this.#suTerminal
   }
 
   ping(data?: JsonValue): Promise<JsonValue | undefined> {

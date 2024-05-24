@@ -11,7 +11,7 @@ Deno.test('login with github', async (t) => {
   // figure out how to reload a browser session, then decide how to tidy up
   const superuserKey = Machine.generatePrivateKey()
   const aesKey = DB.generateAesKey()
-  const engine = await Engine.start(superuserKey, aesKey, Github.init)
+  const engine = await Engine.provision(superuserKey, aesKey, Github.init)
 
   const machine = Machine.load(engine, Machine.generatePrivateKey())
   const session = machine.openTerminal()

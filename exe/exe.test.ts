@@ -180,7 +180,7 @@ for (const withExeCache of [true, false]) {
     await t.step(`function cache`, async () => {
       const superuserKey = Machine.generatePrivateKey()
       const aesKey = DB.generateAesKey()
-      const engine = await Engine.start(superuserKey, aesKey)
+      const engine = await Engine.provision(superuserKey, aesKey)
       if (!withExeCache) {
         engine.context.exe?.disableFunctionCache()
       }
@@ -208,7 +208,7 @@ for (const withExeCache of [true, false]) {
     await t.step(`function cache ${withExeCache}`, async () => {
       const superuserKey = Machine.generatePrivateKey()
       const aesKey = DB.generateAesKey()
-      const engine = await Engine.start(superuserKey, aesKey)
+      const engine = await Engine.provision(superuserKey, aesKey)
       if (!withExeCache) {
         engine.context.exe?.disableFunctionCache()
       }

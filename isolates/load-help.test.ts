@@ -12,7 +12,7 @@ import { assert } from '@std/assert'
 Deno.test('loadAll', async (t) => {
   const superuserKey = Machine.generatePrivateKey()
   const aesKey = DB.generateAesKey()
-  const engine = await Engine.start(superuserKey, aesKey)
+  const engine = await Engine.provision(superuserKey, aesKey)
   const machine = Machine.load(engine, Machine.generatePrivateKey())
   const terminal = machine.openTerminal()
   const { pid } = await terminal.clone({ repo: 'dreamcatcher-tech/HAL' })
