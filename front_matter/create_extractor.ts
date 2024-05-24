@@ -68,7 +68,7 @@ function recognize(str: string, formats?: Format[]): Format {
  * @param formats A descriptor containing Format-parser pairs to use for each format.
  * @returns A function that extracts front matter from a string with the given parsers.
  *
- * @example Parse YAML front matter
+ * @example Extract YAML front matter
  * ```ts
  * import { createExtractor, Parser } from "@std/front-matter";
  * import { assertEquals } from "@std/assert/assert-equals";
@@ -85,7 +85,7 @@ function recognize(str: string, formats?: Format[]): Format {
  * assertEquals(frontMatter, "title: Three dashes marks the spot");
  * ```
  *
- * @example Parse TOML front matter
+ * @example Extract TOML front matter
  * ```ts
  * import { createExtractor, Parser } from "@std/front-matter";
  * import { assertEquals } from "@std/assert/assert-equals";
@@ -102,7 +102,7 @@ function recognize(str: string, formats?: Format[]): Format {
  * assertEquals(frontMatter, "title = 'Three dashes followed by format marks the spot'");
  * ```
  *
- * @example Parse JSON front matter
+ * @example Extract JSON front matter
  * ```ts
  * import { createExtractor, Parser } from "@std/front-matter";
  * import { assertEquals } from "@std/assert/assert-equals";
@@ -118,7 +118,7 @@ function recognize(str: string, formats?: Format[]): Format {
  * assertEquals(frontMatter, `{"title": "Three dashes followed by format marks the spot"}`);
  * ```
  *
- * @example Parse YAML or JSON front matter
+ * @example Extract YAML or JSON front matter
  * ```ts
  * import { createExtractor, Parser } from "@std/front-matter";
  * import { assertEquals } from "@std/assert/assert-equals";
