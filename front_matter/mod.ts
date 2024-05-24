@@ -115,9 +115,11 @@
  *
  * @module
  */
-import type { extract as extractJson } from "./json.ts";
-import type { extract as extractToml } from "./toml.ts";
-import type { extract as extractYaml } from "./yaml.ts";
+import { extract as extractJson } from "./json.ts";
+import { extract as extractToml } from "./toml.ts";
+import { extract as extractYaml } from "./yaml.ts";
 
 export * from "./create_extractor.ts";
 export * from "./test.ts";
+
+export { extractJson, extractToml, extractYaml };
