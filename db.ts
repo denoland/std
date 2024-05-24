@@ -3,7 +3,7 @@ import { BLOB_META_KEY } from '@kitsonk/kv-toolbox/blob'
 import { CryptoKv, generateKey } from '@kitsonk/kv-toolbox/crypto'
 import * as keys from './keys.ts'
 import { freezePid, PID, Poolable, print, Splice } from '@/constants.ts'
-import { assert, Debug, openKv, posix, sha1 } from '@utils'
+import { assert, Debug, equal, openKv, posix, sha1 } from '@utils'
 import { Atomic } from './atomic.ts'
 import { QueueMessage } from '@/constants.ts'
 import { ulid } from 'ulid'
@@ -275,18 +275,18 @@ export default class DB {
   }
   async getHomeAddress() {
     const home = await this.#kv.get<PID>(keys.HOME_ADDRESS)
-    if (!home.versionstamp) {
-      const watch = this.#kv.watch([keys.HOME_ADDRESS])
-      for await (const [result] of streamToIt(watch, this.#abort.signal)) {
-        if (result.versionstamp) {
-          return result.value
-        }
-      }
-      if (!this.#abort.signal.aborted) {
-        throw new Error('Home address error')
+    if (home.versionstamp) {
+      return home.value
+    }
+    const watch = this.#kv.watch([keys.HOME_ADDRESS])
+    for await (const [result] of streamToIt(watch, this.#abort.signal)) {
+      if (result.versionstamp) {
+        return result.value
       }
     }
-    return home.value
+    if (!this.#abort.signal.aborted) {
+      throw new Error('Home address error')
+    }
   }
   async lockDB() {
     const lockId = ulid()
@@ -305,7 +305,8 @@ export default class DB {
       console.error(`lock was taken from ${lockId} to ${entry.value}`)
       return
     }
-    const result = await this.#kv.atomic().check(entry)
+    const result = await this.#kv.atomic()
+      .check(entry)
       .delete(key)
       .commit()
     if (!result.ok) {
@@ -316,7 +317,11 @@ export default class DB {
     const all = this.#kv.list({ prefix: [] }, { batchSize: 1000 })
     const promises = []
     for await (const { key } of all) {
-      promises.push(this.#kv.delete(key))
+      if (!equal(key, keys.DB_LOCK)) {
+        promises.push(this.#kv.delete(key))
+      } else {
+        console.log('SKIPPING DB_LOCK DURING DROP')
+      }
     }
     await Promise.all(promises)
   }
