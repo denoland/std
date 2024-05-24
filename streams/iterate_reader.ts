@@ -20,7 +20,7 @@ export type { Reader, ReaderSync };
  * ```ts
  * import { iterateReader } from "@std/streams/iterate-reader";
  *
- * using f = await Deno.open("/etc/passwd");
+ * using f = await Deno.open("./README.md");
  * for await (const chunk of iterateReader(f)) {
  *   console.log(chunk);
  * }
@@ -30,7 +30,7 @@ export type { Reader, ReaderSync };
  * ```ts
  * import { iterateReader } from "@std/streams/iterate-reader";
  *
- * using f = await Deno.open("/etc/passwd");
+ * using f = await Deno.open("./README.md");
  * const it = iterateReader(f, {
  *   bufSize: 1024 * 1024
  * });

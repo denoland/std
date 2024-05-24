@@ -11,11 +11,12 @@ import type { Reader } from "@std/io/types";
  * @param iterable An iterable or async iterable of `Uint8Array`s to convert into a `Reader`.
  * @returns A `Reader` that reads from the iterable.
  *
- * @example Write `Deno.build` information to `/dev/null` 3 times every second
+ * @example Write `Deno.build` information to the blackhole 3 times every second
  * ```ts
  * import { readerFromIterable } from "@std/streams/reader-from-iterable";
  * import { copy } from "@std/io/copy";
  * import { delay } from "@std/async/delay";
+ * import { devNull } from "node:os";
  *
  * const reader = readerFromIterable((async function* () {
  *   for (let i = 0; i < 3; i++) {
@@ -25,7 +26,7 @@ import type { Reader } from "@std/io/types";
  *   }
  * })());
  *
- * using blackhole = await Deno.open("/dev/null", { write: true });
+ * using blackhole = await Deno.open(devNull, { write: true });
  * await copy(reader, blackhole);
  * ```
  *

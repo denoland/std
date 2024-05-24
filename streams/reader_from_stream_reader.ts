@@ -10,13 +10,14 @@ import type { Reader } from "@std/io/types";
  * @param streamReader A `ReadableStreamDefaultReader` to convert into a `Reader`.
  * @returns A `Reader` that reads from the `streamReader`.
  *
- * @example Copy the response body of a fetch request to `/dev/null`
+ * @example Copy the response body of a fetch request to the blackhole
  * ```ts
  * import { copy } from "@std/io/copy";
  * import { readerFromStreamReader } from "@std/streams/reader-from-stream-reader";
+ * import { devNull } from "node:os";
  *
  * const res = await fetch("https://deno.land");
- * using blackhole = await Deno.open("/dev/null", { write: true });
+ * using blackhole = await Deno.open(devNull, { write: true });
  *
  * const reader = readerFromStreamReader(res.body!.getReader());
  * await copy(reader, blackhole);
