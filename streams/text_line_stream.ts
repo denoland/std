@@ -15,6 +15,8 @@ export interface TextLineStreamOptions {
  * Transform a stream into a stream where each chunk is divided by a newline,
  * be it `\n` or `\r\n`. `\r` can be enabled via the `allowCR` option.
  *
+ * If you want to split by a custom delimiter, consider using {@linkcode TextDelimiterStream}.
+ *
  * @example JSON Lines
  * ```ts
  * import { TextLineStream } from "@std/streams/text-line-stream";

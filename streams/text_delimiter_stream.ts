@@ -12,28 +12,43 @@ import type {
  * Transform a stream `string` into a stream where each chunk is divided by a
  * given delimiter.
  *
- * @example JSON Lines
+ * If you want to split by a newline, consider using {@linkcode TextLineStream}.
+ *
+ * @example Comma-separated values
  * ```ts
+ * import { TextDelimiterStream } from "@std/streams/text-delimiter-stream";
+ * import { assertEquals } from "@std/assert/assert-equals";
+ *
  * const stream = ReadableStream.from([
- *   '{"name": "Alice", "age": ',
- *   '30}\n{"name": "Bob", "age"',
- *   ": 25}\n",
+ *   "alice,20,",
+ *   ",US,",
  * ]);
  *
- * // Split the stream by newline and parse each line as a JSON object
- * const jsonStream = stream.pipeThrough(new TextDelimiterStream("\n"))
- *   .pipeThrough(toTransformStream<string, unknown>(async function* (src) {
- *     for await (const chunk of src) {
- *       if (chunk.trim().length === 0) {
- *         continue;
- *       }
- *       yield JSON.parse(chunk);
- *     }
- *   }));
+ * const valueStream = stream.pipeThrough(new TextDelimiterStream(","));
  *
  * assertEquals(
- *   await Array.fromAsync(jsonStream),
- *   [{ "name": "Alice", "age": 30 }, { "name": "Bob", "age": 25 }],
+ *   await Array.fromAsync(valueStream),
+ *   ["alice", "20", "", "US", ""],
+ * );
+ * ```
+ *
+ * @example Semicolon-separated values with suffix disposition
+ * ```ts
+ * import { TextDelimiterStream } from "@std/streams/text-delimiter-stream";
+ * import { assertEquals } from "@std/assert/assert-equals";
+ *
+ * const stream = ReadableStream.from([
+ *   "const a = 42;;let b =",
+ *   " true;",
+ * ]);
+ *
+ * const valueStream = stream.pipeThrough(
+ *   new TextDelimiterStream(";", { disposition: "suffix" }),
+ * );
+ *
+ * assertEquals(
+ *   await Array.fromAsync(valueStream),
+ *   ["const a = 42;", ";", "let b = true;", ""],
  * );
  * ```
  */
