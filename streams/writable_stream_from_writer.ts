@@ -7,7 +7,7 @@ import { toWritableStream } from "@std/io/to-writable-stream";
 /**
  * Options for {@linkcode writableStreamFromWriter}.
  *
- * @deprecated This will be removed in 1.0.0. Use {@linkcode toWritableStream} instead.
+ * @deprecated This will be removed in 1.0.0. Use {@linkcode https://jsr.io/@std/io/doc/~/toWritableStream | toWritableStream} instead.
  */
 export interface WritableStreamFromWriterOptions {
   /**
@@ -20,9 +20,9 @@ export interface WritableStreamFromWriterOptions {
 }
 
 /**
- * Create a {@linkcode WritableStream} from a {@linkcode Writer}.
+ * Create a {@linkcode WritableStream} from a {@linkcode https://jsr.io/@std/io/doc/types/~/Writer | Writer}.
  *
- * @deprecated This will be removed in 1.0.0. Use {@linkcode toWritableStream} instead.
+ * @deprecated This will be removed in 1.0.0. Use {@linkcode https://jsr.io/@std/io/doc/~/toWritableStream | toWritableStream} instead.
  */
 export function writableStreamFromWriter(
   writer: Writer,
