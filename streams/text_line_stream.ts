@@ -29,14 +29,16 @@ export interface TextLineStreamOptions {
  *   ": 25}\n",
  * ]);
  *
+ * type Person = { name: string; age: number };
+ *
  * // Split the stream by newline and parse each line as a JSON object
  * const jsonStream = stream.pipeThrough(new TextLineStream())
- *   .pipeThrough(toTransformStream<string, unknown>(async function* (src) {
+ *   .pipeThrough(toTransformStream(async function* (src) {
  *     for await (const chunk of src) {
  *       if (chunk.trim().length === 0) {
  *         continue;
  *       }
- *       yield JSON.parse(chunk);
+ *       yield JSON.parse(chunk) as Person;
  *     }
  *   }));
  *
