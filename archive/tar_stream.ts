@@ -45,7 +45,8 @@ export interface TarStreamOptions {
  * ### Overview
  * A TransformStream to create a tar archive.  Tar archives allow for storing
  * multiple files in a single file (called an archive, or sometimes a tarball).
- *   These archives typically have a singe '.tar' extension.
+ *   These archives typically have a singe '.tar' extension.  This
+ * implementation follows the [FreeBSD 15.0](https://man.freebsd.org/cgi/man.cgi?query=tar&sektion=5&apropos=0&manpath=FreeBSD+15.0-CURRENT) spec.
  *
  * ### File Format & Limitations
  * The ustar file format is used for creating the tar archive.  While this

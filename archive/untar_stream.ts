@@ -56,7 +56,8 @@ export type TarStreamHeader = OldStyleFormat | PosixUstarFormat;
  * ### Overview
  * A TransformStream to expand a tar archive.  Tar archives allow for storing
  * multiple files in a single file (called an archive, or sometimes a tarball).
- *   These archives typically have a single '.tar' extension.
+ *   These archives typically have a single '.tar' extension.  This
+ * implementation follows the [FreeBSD 15.0](https://man.freebsd.org/cgi/man.cgi?query=tar&sektion=5&apropos=0&manpath=FreeBSD+15.0-CURRENT) spec.
  *
  * ### Supported File Formats
  * Only the ustar file format is supported.  This is the most common format.
