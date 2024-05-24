@@ -1,7 +1,17 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-import { IniMap, type StringifyOptions } from "./ini_map.ts";
+import {
+  type FormattingOptions,
+  IniMap,
+  type ReplacerFunction,
+} from "./ini_map.ts";
+
+/** Options for constructing INI strings. */
+export interface StringifyOptions extends FormattingOptions {
+  /** Provide custom string conversion for the value in a key/value pair. */
+  replacer?: ReplacerFunction;
+}
 
 /** Compile an object into an INI config string. Provide formatting options to modify the output. */
 export function stringify(

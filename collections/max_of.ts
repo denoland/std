@@ -6,7 +6,7 @@
  * returns the max value of all elements. If an empty array is provided the
  * function will return undefined.
  *
- * @template T The type of the elements in the array.
+ * @typeParam T The type of the elements in the array.
  *
  * @param array The array to find the maximum element in.
  * @param selector The function to get the value to compare from each element.
@@ -39,7 +39,7 @@ export function maxOf<T>(
  * returns the max value of all elements. If an empty array is provided the
  * function will return undefined.
  *
- * @template T The type of the elements in the array.
+ * @typeParam T The type of the elements in the array.
  *
  * @param array The array to find the maximum element in.
  * @param selector The function to get the value to compare from each element.

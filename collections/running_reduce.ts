@@ -6,8 +6,8 @@
  * result as the accumulator to the next respective call, starting with the
  * given initialValue. Returns all intermediate accumulator results.
  *
- * @template T The type of the elements in the array.
- * @template O The type of the accumulator.
+ * @typeParam T The type of the elements in the array.
+ * @typeParam O The type of the accumulator.
  *
  * @param array The array to reduce.
  * @param reducer The reducer function to apply to each element.

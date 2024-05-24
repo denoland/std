@@ -4,7 +4,7 @@
 
 /**
  * Utilities for
- * {@link https://datatracker.ietf.org/doc/html/rfc4648#section-6 | base32}
+ * {@link https://www.rfc-editor.org/rfc/rfc4648.html#section-6 | base32}
  * encoding and decoding.
  *
  * Modified from {@link https://github.com/beatgammit/base64-js}.
@@ -13,10 +13,14 @@
  *
  * ```ts
  * import { encodeBase32, decodeBase32 } from "@std/encoding/base32";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
- * const encoded = encodeBase32("foobar"); // "MZXW6YTBOI======"
+ * assertEquals(encodeBase32("foobar"), "MZXW6YTBOI======");
  *
- * decodeBase32(encoded); // Uint8Array(6) [ 102, 111, 111, 98, 97, 114 ]
+ * assertEquals(
+ *   decodeBase32("MZXW6YTBOI======"),
+ *   new TextEncoder().encode("foobar")
+ * );
  * ```
  *
  * @module
@@ -59,17 +63,20 @@ function _byteLength(validLen: number, placeHoldersLen: number): number {
 /**
  * Decodes a base32-encoded string.
  *
- * @see {@link https://datatracker.ietf.org/doc/html/rfc4648#section-6}
+ * @see {@link https://www.rfc-editor.org/rfc/rfc4648.html#section-6}
  *
  * @param b32 The base32-encoded string to decode.
  * @returns The decoded data.
  *
- * @example
+ * @example Usage
  * ```ts
  * import { decodeBase32 } from "@std/encoding/base32";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
- * decodeBase32("NRQMA===");
- * // Uint8Array(3) [ 108, 96, 192 ]
+ * assertEquals(
+ *   decodeBase32("GZRTMMDDGA======"),
+ *   new TextEncoder().encode("6c60c0"),
+ * );
  * ```
  */
 export function decodeBase32(b32: string): Uint8Array {
@@ -165,16 +172,17 @@ function encodeChunk(uint8: Uint8Array, start: number, end: number): string {
 /**
  * Converts data into a base32-encoded string.
  *
- * @see {@link https://datatracker.ietf.org/doc/html/rfc4648#section-6}
+ * @see {@link https://www.rfc-editor.org/rfc/rfc4648.html#section-6}
  *
  * @param data The data to encode.
  * @returns The base32-encoded string.
  *
- * @example
+ * @example Usage
  * ```ts
  * import { encodeBase32 } from "@std/encoding/base32";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
- * encodeBase32("6c60c0"); // "NRQMA==="
+ * assertEquals(encodeBase32("6c60c0"), "GZRTMMDDGA======");
  * ```
  */
 export function encodeBase32(data: ArrayBuffer | Uint8Array | string): string {

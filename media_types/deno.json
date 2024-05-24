@@ -1,6 +1,6 @@
 {
   "name": "@std/media-types",
-  "version": "0.224.0",
+  "version": "1.0.0-rc.1",
   "exports": {
     ".": "./mod.ts",
     "./content-type": "./content_type.ts",
@@ -9,7 +9,6 @@
     "./format-media-type": "./format_media_type.ts",
     "./get-charset": "./get_charset.ts",
     "./parse-media-type": "./parse_media_type.ts",
-    "./type-by-extension": "./type_by_extension.ts",
-    "./vendor/mime-db.v1.52.0": "./vendor/mime-db.v1.52.0.ts"
+    "./type-by-extension": "./type_by_extension.ts"
   }
 }

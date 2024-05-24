@@ -64,7 +64,7 @@ export type RowType<T> = T extends undefined ? string[]
  * for columns.
  *
  * A `CsvParseStream` expects input conforming to
- * {@link https://tools.ietf.org/html/rfc4180 | RFC 4180}.
+ * {@link https://www.rfc-editor.org/rfc/rfc4180.html | RFC 4180}.
  *
  * @example
  * ```ts
