@@ -51,3 +51,30 @@ Deno.test("stripAnsiCode()", function () {
     "foofoo",
   );
 });
+
+Deno.test("noColor", async function () {
+  const fixtures = [
+    ["true", "foo bar\n"],
+    ["1", "foo bar\n"],
+    ["", "[31mfoo bar[39m\n"],
+  ] as const;
+
+  const code = `
+    import * as c from "${import.meta.resolve("./styles.ts")}";
+    console.log(c.red("foo bar"));
+  `;
+
+  for await (const [fixture, expected] of fixtures) {
+    const command = new Deno.Command(Deno.execPath(), {
+      args: ["eval", "--no-lock", code],
+      clearEnv: true,
+      env: {
+        NO_COLOR: fixture,
+      },
+    });
+    const { stdout } = await command.output();
+    const decoder = new TextDecoder();
+    const output = decoder.decode(stdout);
+    assertEquals(output, expected);
+  }
+});

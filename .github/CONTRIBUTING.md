@@ -80,7 +80,8 @@ Where applicable, documentation for public symbols should contain, in order:
 1. A [`@param`](https://jsdoc.app/tags-param) tag for each parameter.
 1. A [`@returns`](https://jsdoc.app/tags-returns) tag for the return value.
 1. At least one example code snippet using the
-   [`@example`](https://jsdoc.app/tags-example) tag and a title. See
+   [`@example`](https://jsdoc.app/tags-example) tag and a title. For simple
+   examples which don't need a description, "Usage" is an acceptable title. See
    [Example code snippets](#example-code-snippets) below for further guidance.
 
 See the source code within
@@ -88,12 +89,8 @@ See the source code within
 examples.
 
 Once the documentation for a given package is written, add the package's entry
-point(s) (usually just `mod.ts`) to:
-
-1. The `ENTRY_POINTS` array in the
-   [documentation checker tool](../_tools/check_docs.ts).
-1. The `lint:docs` task in the
-   [`deno.json` file](https://github.com/denoland/deno_std/blob/main/deno.json).
+point(s) (usually just `mod.ts`) to the `ENTRY_POINTS` array in the
+[documentation checker tool](../_tools/check_docs.ts).
 
 Once done, run `deno task lint:docs` which checks that documentation is complete
 in the given entry points.
@@ -125,3 +122,14 @@ Example code snippets must:
    [`deno eval`](https://docs.deno.com/runtime/manual/tools/eval) in the
    [documentation checker tool](../_tools/check_docs.ts) and are flagged when
    they throw an error.
+
+Note: To skip running a specific code snippet, add `no-eval` to the starting
+delimiter. E.g.
+
+````ts
+/**
+ * ```ts no-eval
+ * (code snippet will not be run)
+ * ```
+ */
+````
