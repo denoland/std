@@ -85,10 +85,13 @@ export default class Server {
           log('stream end')
         } catch (error) {
           console.error('server stream error', error)
+          // if an error occured, stall the stream to stop the clients thrashing
+          if (abort.signal.aborted) {
+            return
+          }
+          log('stalling stream indefinitely')
+          await delay(3600000, abort)
         }
-        // if an error occured, stall the stream to stop the clients thrashing
-        log('stalling stream indefinitely')
-        await delay(Infinity)
       })
     })
     app.post(`/readJSON`, async (c) => {
