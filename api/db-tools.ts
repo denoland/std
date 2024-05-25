@@ -16,8 +16,8 @@ if (homeAddress.value) {
 const dbLock = await db.get<string>(DB_LOCK)
 console.log('dbLock', dbLock.value)
 
-// console.log('deleting dblock')
-// await db.delete(DB_LOCK)
+console.log('deleting dblock')
+await db.delete(DB_LOCK)
 
 for await (const { key, value } of undelivered) {
   console.log('undelivered: ', key, value)

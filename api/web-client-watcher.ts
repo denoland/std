@@ -47,7 +47,7 @@ export class PierceWatcher {
         throw new Error('parent mismatch: ' + splice.oid)
       }
       lastSplice = splice
-
+      console.log('splice', splice.oid, splice.changes['.io.json'])
       if (splice.changes['.io.json']) {
         const { patch } = splice.changes['.io.json']
         // TODO move to unified diff patches
