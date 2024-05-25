@@ -79,25 +79,24 @@ export class Engine implements EngineInterface {
     return this.#homeAddress
   }
   async ensureHomeAddress(init?: Provisioner) {
-    if (this.#homeAddress && !this.#isDropping) {
+    if (this.#homeAddress) {
       return
     }
+
     log('ensureHomeAddress querying db')
     const { db } = artifact.sanitizeContext(this.#api)
     if (await db.hasHomeAddress()) {
-      this.#homeAddress = await db.getHomeAddress()
+      this.#homeAddress = await db.awaitHomeAddress()
       log('homeAddress found in db', print(this.#homeAddress))
     }
 
     if (!this.#homeAddress || this.#isDropping) {
-      const lockId = await db.lockDB()
+      const lockId = await db.lockDbProvisioning()
       if (lockId) {
-        log('locked db', lockId)
-        if (this.#homeAddress && this.#isDropping) {
-          log('dropping db')
-          await this.#dropDB()
-          log('db drop complete')
-        }
+        log('dropping db')
+        await this.#dropDB()
+        log('db drop complete')
+
         log('initializing homeAddress')
         const superuser = Machine.deriveMachineId(this.#superuserKey)
         this.#homeAddress = await this.#initHome({ superuser })
@@ -105,15 +104,19 @@ export class Engine implements EngineInterface {
         log('homeAddress initialized to:', print(this.#homeAddress))
 
         await this.#provision(init)
-        await db.unlockDB(lockId)
+        await db.unlockDbProvisioning(lockId)
         log('unlocked db', lockId)
       }
     }
+    // subtly, blocks only web requests, not queue processing
+    await db.awaitDbProvisioning()
+    this.#homeAddress = await db.awaitHomeAddress()
+    log('db unlocked - home address:', print(this.#homeAddress))
   }
   get #isDropping() {
     const toDelete = Deno.env.get('DROP_HOME') || ''
     const isDropping = toDelete.trim() === this.homeAddress.repoId
-    log('isDropping', isDropping)
+    isDropping && log('isDropping', isDropping)
     return isDropping
   }
   get abortSignal() {
@@ -154,7 +157,6 @@ export class Engine implements EngineInterface {
     await this.pierce(pierce)
     // TODO sign the pierce since superuser is already present
     log('pierced', print(this.homeAddress))
-    // TODO reverse the init if the install fails
     await promise
     abort.abort() // TODO make this a method on the watcher
     log('installed')

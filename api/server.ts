@@ -32,9 +32,6 @@ export default class Server {
     this.#engine = engine
     this.#app = app
   }
-  get engine() {
-    return this.#engine
-  }
   static async create(privateKey: string, aesKey: string, init?: Provisioner) {
     const engine = await Engine.boot(privateKey, aesKey)
     const base = new Hono()
@@ -45,8 +42,13 @@ export default class Server {
     app.use(timing())
     app.use(prettyJSON())
     app.use('*', logger(), poweredBy(), cors())
+
+    let provisioning: Promise<void>
     app.use(async (_, next) => {
-      await engine.ensureHomeAddress(init)
+      if (!provisioning) {
+        provisioning = engine.ensureHomeAddress(init)
+      }
+      await provisioning
       await next()
     })
 

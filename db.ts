@@ -273,7 +273,7 @@ export default class DB {
       throw new Error('Home address already set')
     }
   }
-  async getHomeAddress() {
+  async awaitHomeAddress() {
     const home = await this.#kv.get<PID>(keys.HOME_ADDRESS)
     if (home.versionstamp) {
       return home.value
@@ -288,7 +288,7 @@ export default class DB {
       throw new Error('Home address error')
     }
   }
-  async lockDB() {
+  async lockDbProvisioning() {
     const lockId = ulid()
     const key = keys.DB_LOCK
     const result = await this.#kv.atomic().check({ key, versionstamp: null })
@@ -298,7 +298,7 @@ export default class DB {
       return lockId
     }
   }
-  async unlockDB(lockId: string) {
+  async unlockDbProvisioning(lockId: string) {
     const key = keys.DB_LOCK
     const entry = await this.#kv.get<string>(key)
     if (entry.value !== lockId) {
@@ -313,14 +313,21 @@ export default class DB {
       console.error('unlockDB failed', lockId)
     }
   }
+  async awaitDbProvisioning() {
+    const key = keys.DB_LOCK
+    const watch = this.#kv.watch([key])
+    for await (const [entry] of streamToIt(watch, this.#abort.signal)) {
+      if (!entry.versionstamp) {
+        return
+      }
+    }
+  }
   async drop() {
     const all = this.#kv.list({ prefix: [] }, { batchSize: 1000 })
     const promises = []
     for await (const { key } of all) {
       if (!equal(key, keys.DB_LOCK)) {
         promises.push(this.#kv.delete(key))
-      } else {
-        console.log('SKIPPING DB_LOCK DURING DROP')
       }
     }
     await Promise.all(promises)
@@ -344,8 +351,8 @@ const streamToIt = (stream: ReadableStream, signal?: AbortSignal) => {
         return
       }
       signal?.addEventListener('abort', () => {
-        reader.cancel()
         reader.releaseLock()
+        stream.cancel()
         return
       })
 
