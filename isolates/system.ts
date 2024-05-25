@@ -63,7 +63,7 @@ export const api = {
 export type Api = {
   init: (
     params: { repo: string; isolate?: string; params?: Params },
-  ) => Promise<{ pid: PID }>
+  ) => Promise<{ pid: PID; head: string }>
   clone: (
     params: { repo: string; isolate?: string; params?: Params },
   ) => Promise<{ pid: PID; head: string; elapsed: number }>
@@ -84,7 +84,7 @@ export const functions = {
     // TODO lock so only the actor branch can call this function
 
     const actions = await api.actions<Api>('system')
-    const { pid } = await actions.sideEffectInit({ repo })
+    const { pid, head } = await actions.sideEffectInit({ repo })
     if (isolate) {
       await api.action({
         isolate,
@@ -96,7 +96,7 @@ export const functions = {
       })
       log('installed', print(pid))
     }
-    return { pid }
+    return { pid, head }
   },
   rm: async (params: { pid: PID }, api: IsolateApi<C>) => {
     const { pid } = params
@@ -115,7 +115,7 @@ export const functions = {
     log('clone', repo, isolate, params)
 
     const actions = await api.actions<Api>('system')
-    const { pid, elapsed } = await actions.sideEffectClone({ repo })
+    const { pid, head, elapsed } = await actions.sideEffectClone({ repo })
     if (isolate) {
       await api.action({
         isolate,
@@ -126,7 +126,7 @@ export const functions = {
       })
     }
     log('cloned %s in %ims', print(pid), elapsed)
-    return { pid, elapsed }
+    return { pid, head, elapsed }
   },
   sideEffectClone: async ({ repo }: { repo: string }, api: IsolateApi<C>) => {
     // TODO assert we got called by ourselves
