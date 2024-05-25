@@ -23,7 +23,9 @@ const init = async (session: ArtifactSession) => {
   await Promise.all([githubInit(session), halInit(session)])
 }
 
-Debug.enable('AI:completions* AI:qbr AI:qex AI:server AI:engine')
+Debug.enable(
+  'AI:completions* AI:qbr AI:qex AI:server AI:engine AI:actors AI:hal',
+)
 const server = await Server.create(getPrivateKey(), getAesKey(), init)
 
 const opts: { cert?: string; key?: string } = {}
@@ -34,5 +36,3 @@ if (isKvTestMode()) {
 }
 
 Deno.serve(opts, server.fetch)
-
-await server.provisioning

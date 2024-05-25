@@ -28,23 +28,17 @@ let sseId = 0
 export default class Server {
   #engine: Engine
   #app: Hono
-  #provisioning: Promise<void>
-  private constructor(engine: Engine, app: Hono, provisioning: Promise<void>) {
+  private constructor(engine: Engine, app: Hono) {
     this.#engine = engine
     this.#app = app
-    this.#provisioning = provisioning
-  }
-  get provisioning() {
-    return this.#provisioning
   }
   get engine() {
     return this.#engine
   }
   static async create(privateKey: string, aesKey: string, init?: Provisioner) {
     const engine = await Engine.boot(privateKey, aesKey)
-    const provisioning = engine.ensureHomeAddress(init)
     const base = new Hono()
-    const server = new Server(engine, base, provisioning)
+    const server = new Server(engine, base)
 
     const app = base.basePath('/api')
 
@@ -52,7 +46,7 @@ export default class Server {
     app.use(prettyJSON())
     app.use('*', logger(), poweredBy(), cors())
     app.use(async (_, next) => {
-      await server.provisioning
+      await engine.ensureHomeAddress(init)
       await next()
     })
 
