@@ -44,16 +44,36 @@ export const api = {
       params: { type: 'object' },
     },
   },
+  sideEffectClone: {
+    description: 'clone a repository as a side effect',
+    type: 'object',
+    required: ['repo'],
+    additionalProperties: false,
+    properties: { repo: { type: 'string' } },
+  },
+  sideEffectInit: {
+    description: 'initialize a repository as a side effect',
+    type: 'object',
+    required: ['repo'],
+    additionalProperties: false,
+    properties: { repo: { type: 'string' } },
+  },
 }
 
 export type Api = {
   init: (
     params: { repo: string; isolate?: string; params?: Params },
-  ) => Promise<{ pid: PID; head: string }>
+  ) => Promise<{ pid: PID }>
   clone: (
     params: { repo: string; isolate?: string; params?: Params },
   ) => Promise<{ pid: PID; head: string; elapsed: number }>
-  rm: (params: { pid: PID }) => Promise<boolean>
+  rm: (params: { pid: PID }) => Promise<void>
+  sideEffectClone: (
+    params: { repo: string },
+  ) => Promise<{ pid: PID; head: string; elapsed: number }>
+  sideEffectInit: (
+    params: { repo: string },
+  ) => Promise<{ pid: PID; head: string }>
 }
 export const functions = {
   init: async (
@@ -61,13 +81,10 @@ export const functions = {
     api: IsolateApi<C>,
   ) => {
     const { repo, isolate, params = {} } = p
-    const [account, repository] = repo.split('/')
     // TODO lock so only the actor branch can call this function
 
-    const { db } = api.context
-    assert(db, 'db not found')
-    const partial = { account, repository, branches: [ENTRY_BRANCH] }
-    const { pid } = await FS.init(partial, db)
+    const actions = await api.actions<Api>('system')
+    const { pid } = await actions.sideEffectInit({ repo })
     if (isolate) {
       await api.action({
         isolate,
@@ -79,17 +96,16 @@ export const functions = {
       })
       log('installed', print(pid))
     }
-    const { oid } = await FS.openHead(pid, db)
-    return { pid, head: oid }
+    return { pid }
   },
-  rm: (params: { pid: PID }, api: IsolateApi<C>) => {
+  rm: async (params: { pid: PID }, api: IsolateApi<C>) => {
     const { pid } = params
     assert(isPID(pid), 'invalid pid')
     assert(isBaseRepo(pid), 'cannot remove a non-base repository')
     log('rm', print(pid))
     const { db } = api.context
     assert(db, 'db not found')
-    return db.rm(pid)
+    await db.rm(pid)
   },
   clone: async (
     p: { repo: string; isolate?: string; params: Params },
@@ -97,14 +113,9 @@ export const functions = {
   ) => {
     const { repo, isolate, params = {} } = p
     log('clone', repo, isolate, params)
-    const { db } = api.context
-    assert(db, 'db not found')
 
-    const start = Date.now()
-
-    // WARNING clone is random, but we need this to be a side effect
-
-    const { pid } = await FS.clone(repo, db)
+    const actions = await api.actions<Api>('system')
+    const { pid, elapsed } = await actions.sideEffectClone({ repo })
     if (isolate) {
       await api.action({
         isolate,
@@ -114,8 +125,27 @@ export const functions = {
         target: pid,
       })
     }
-    log('cloned', print(pid))
-    const { oid } = await FS.openHead(pid, db)
-    return { pid, head: oid, elapsed: Date.now() - start }
+    log('cloned %s in %ims', print(pid), elapsed)
+    return { pid, elapsed }
+  },
+  sideEffectClone: async ({ repo }: { repo: string }, api: IsolateApi<C>) => {
+    // TODO assert we got called by ourselves
+    const { db } = api.context
+    assert(db, 'db not found')
+    const start = Date.now()
+    const { pid, oid } = await FS.clone(repo, db)
+    const elapsed = Date.now() - start
+    return { pid, head: oid, elapsed }
+  },
+  sideEffectInit: async ({ repo }: { repo: string }, api: IsolateApi<C>) => {
+    // TODO assert we got called by ourselves
+    const { db } = api.context
+    assert(db, 'db not found')
+
+    const [account, repository] = repo.split('/')
+    const partial = { account, repository, branches: [ENTRY_BRANCH] }
+
+    const { pid, oid } = await FS.init(partial, db)
+    return { pid, head: oid }
   },
 }
