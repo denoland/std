@@ -34,3 +34,5 @@ if (isKvTestMode()) {
 }
 
 Deno.serve(opts, server.fetch)
+
+await server.provisioning

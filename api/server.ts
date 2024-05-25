@@ -28,25 +28,31 @@ let sseId = 0
 export default class Server {
   #engine: Engine
   #app: Hono
-  private constructor(engine: Engine, app: Hono) {
+  #provisioning: Promise<void>
+  private constructor(engine: Engine, app: Hono, provisioning: Promise<void>) {
     this.#engine = engine
     this.#app = app
+    this.#provisioning = provisioning
   }
-
+  get provisioning() {
+    return this.#provisioning
+  }
   get engine() {
     return this.#engine
   }
   static async create(privateKey: string, aesKey: string, init?: Provisioner) {
     const engine = await Engine.boot(privateKey, aesKey)
-    const ensurance = engine.ensureHomeAddress(init) // kick the engine
+    const provisioning = engine.ensureHomeAddress(init)
     const base = new Hono()
+    const server = new Server(engine, base, provisioning)
+
     const app = base.basePath('/api')
 
     app.use(timing())
     app.use(prettyJSON())
     app.use('*', logger(), poweredBy(), cors())
     app.use(async (_, next) => {
-      await ensurance
+      await server.provisioning
       await next()
     })
 
@@ -182,7 +188,7 @@ export default class Server {
     // or get a sig on all pierce actions, and only allow correctly signed ones
     // to enter
 
-    return new Server(engine, base)
+    return server
   }
   async stop() {
     // TODO add all the read streams to be stopped too ?
