@@ -159,7 +159,7 @@ export class Engine implements EngineInterface {
     log('pierced', print(this.homeAddress))
     await promise
     abort.abort() // TODO make this a method on the watcher
-    log('installed')
+    log('home installed installed')
 
     if (!init) {
       log('no init function - returning')
