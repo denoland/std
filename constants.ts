@@ -2,7 +2,7 @@ import IsolateApi from './isolate-api.ts'
 export type { IsolateApi }
 export const IO_PATH = '.io.json'
 import {
-  ArtifactSession,
+  ArtifactTerminal,
   Change,
   CommitObject,
   IsolateApiSchema,
@@ -217,7 +217,7 @@ export const pidSchema = {
     },
   },
 }
-export type Provisioner = (superSession: ArtifactSession) => Promise<void>
-export type CradleMaker = (init?: Provisioner) => Promise<ArtifactSession>
+export type Provisioner = (superSession: ArtifactTerminal) => Promise<void>
+export type CradleMaker = (init?: Provisioner) => Promise<ArtifactTerminal>
 
 export * from './api/web-client.types.ts'

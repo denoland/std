@@ -1,6 +1,6 @@
 import * as Actors from '../isolates/actors.ts'
 import {
-  ArtifactSession,
+  ArtifactTerminal,
   colorize,
   isBaseRepo,
   IsolateApi,
@@ -188,7 +188,7 @@ type Credentials = {
 }
 type ActorPointer = Omit<Credentials, 'tokens'>
 
-export const init = async (session: ArtifactSession) => {
+export const init = async (session: ArtifactTerminal) => {
   const { homeAddress } = session
   const { pid } = await session.init({
     repo: 'dreamcatcher-tech/github',

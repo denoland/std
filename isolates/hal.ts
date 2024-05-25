@@ -1,5 +1,5 @@
 import {
-  ArtifactSession,
+  ArtifactTerminal,
   isBaseRepo,
   IsolateApi,
   PID,
@@ -119,9 +119,9 @@ export const functions = {
   },
 }
 
-export const init: Provisioner = async (superSession: ArtifactSession) => {
-  log('init')
-  const { pid } = await superSession.clone({
+export const init: Provisioner = async (superTerminal: ArtifactTerminal) => {
+  log('init terminal pid', print(superTerminal.pid))
+  const { pid } = await superTerminal.clone({
     repo: 'dreamcatcher-tech/HAL',
     isolate: 'hal',
   })

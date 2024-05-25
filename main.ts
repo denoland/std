@@ -1,6 +1,6 @@
 import { Debug, isKvTestMode } from '@/utils.ts'
 import Server from '@/api/server.ts'
-import { ArtifactSession } from '@/constants.ts'
+import { ArtifactTerminal } from '@/constants.ts'
 import { init as githubInit } from '@/isolates/github.ts'
 import { init as halInit } from '@/isolates/hal.ts'
 
@@ -19,12 +19,12 @@ const getAesKey = () => {
   return aesKey
 }
 
-const init = async (session: ArtifactSession) => {
+const init = async (session: ArtifactTerminal) => {
   await Promise.all([githubInit(session), halInit(session)])
 }
 
 Debug.enable(
-  'AI:completions* AI:qbr AI:qex AI:server AI:engine AI:actors AI:hal AI:github',
+  'AI:completions* AI:qbr AI:qex AI:server AI:engine AI:actors AI:hal AI:github AI:system',
 )
 const server = await Server.create(getPrivateKey(), getAesKey(), init)
 

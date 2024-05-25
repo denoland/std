@@ -3,7 +3,7 @@ import { Api, ENTRY_HELP_FILE, init } from '@/isolates/hal.ts'
 import { init as githubInit } from '@/isolates/github.ts'
 import { expect, log } from '@utils'
 import {
-  ArtifactSession,
+  ArtifactTerminal,
   CradleMaker,
   getActorId,
   PID,
@@ -12,7 +12,7 @@ import {
 import { ulid } from 'ulid'
 type Messages = OpenAI.ChatCompletionMessageParam
 
-const combinedInit = async (session: ArtifactSession) => {
+const combinedInit = async (session: ArtifactTerminal) => {
   await Promise.all([githubInit(session), init(session)])
 }
 

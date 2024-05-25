@@ -101,6 +101,9 @@ export const functions = {
     assert(db, 'db not found')
 
     const start = Date.now()
+
+    // WARNING clone is random, but we need this to be a side effect
+
     const { pid } = await FS.clone(repo, db)
     if (isolate) {
       await api.action({

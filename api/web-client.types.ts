@@ -300,7 +300,7 @@ type ApiSchema = Record<string, JSONSchemaType<object>>
 type PidHead = { pid: PID; head: string }
 
 /** The client session interface to artifact */
-export interface ArtifactSession {
+export interface ArtifactTerminal {
   pid: PID
   machine: ArtifactMachine
   terminalId: string
@@ -341,8 +341,8 @@ export interface ArtifactSession {
   endSession(): Promise<void>
   /** Remove the account if currently signed in */
   deleteAccountUnrecoverably(): Promise<void>
-  newTerminal(): ArtifactSession
-  resumeTerminal(pid: PID): ArtifactSession
+  newTerminal(): ArtifactTerminal
+  resumeTerminal(pid: PID): ArtifactTerminal
   ensureBranch(branch: PID, ancestor: PID): Promise<PID>
 }
 /** The client home interface to Artifact, only able to create new sessions.
@@ -354,7 +354,7 @@ export interface ArtifactMachine {
   machineId: string
   rootTerminalPromise: Promise<Terminal>
   /** Using the current session, create a new session. */
-  openTerminal(retry?: PID): ArtifactSession
+  openTerminal(retry?: PID): ArtifactTerminal
   /** Pings the execution context without going thru the transaction queue.
    *
    * Used primarily by web clients to establish base connectivity and get

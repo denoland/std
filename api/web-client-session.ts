@@ -2,7 +2,7 @@
 // TODO publish to standalone repo
 import {
   ArtifactMachine,
-  ArtifactSession,
+  ArtifactTerminal,
   assertValidTerminal,
   EngineInterface,
   freezePid,
@@ -27,7 +27,7 @@ type Init = {
   params?: Params
 }
 
-export class Terminal implements ArtifactSession {
+export class Terminal implements ArtifactTerminal {
   #init: Promise<void> | undefined
 
   readonly #engine: EngineInterface

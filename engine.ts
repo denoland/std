@@ -2,7 +2,7 @@ import { transcribe } from './isolates/ai-prompt.ts'
 import Compartment from './io/compartment.ts'
 import '@std/dotenv/load'
 import {
-  ArtifactSession,
+  ArtifactTerminal,
   assertValidTerminal,
   C,
   colorize,
@@ -38,7 +38,7 @@ export class Engine implements EngineInterface {
   #homeAddress: PID | undefined
   #githubAddress: PID | undefined
   #abort = new AbortController()
-  #suTerminal: Promise<ArtifactSession> | undefined
+  #suTerminal: Promise<ArtifactTerminal> | undefined
 
   private constructor(
     compartment: Compartment,
@@ -159,7 +159,7 @@ export class Engine implements EngineInterface {
     log('pierced', print(this.homeAddress))
     await promise
     abort.abort() // TODO make this a method on the watcher
-    log('home installed installed')
+    log('home installed')
 
     if (!init) {
       log('no init function - returning')

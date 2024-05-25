@@ -216,7 +216,7 @@ export const functions = {
   ) => {
     assertIsActorPid(api)
     const { repo, isolate, params } = p
-    log('clone', repo, isolate, params)
+    log('clone', p)
 
     let repos = await readRepos(api, repo)
 
