@@ -8,6 +8,7 @@ import benchmarks from './benchmarks.ts'
 import sessions from './guts-sessions.ts'
 import hal from './guts-hal.ts'
 import { CradleMaker } from '@/constants.ts'
+import { assert } from '@std/assert'
 
 const ioFixture = 'io-fixture'
 
@@ -36,11 +37,11 @@ export default (name: string, cradleMaker: CradleMaker) => {
     log('session complete')
     const result = await session.init({ repo: 'test/init' })
     log('init result', result)
-    expect(result).toBeDefined()
-    expect(result!.pid).toBeDefined()
-    expect(result!.pid.account).toBe('test')
-    expect(result!.pid.repository).toBe('init')
-    expect(typeof result!.head).toBe('string')
+    assert(result)
+    expect(result.pid).toBeDefined()
+    expect(result.pid.account).toBe('test')
+    expect(result.pid.repository).toBe('init')
+    expect(typeof result.head).toBe('string')
     await session.engineStop()
   })
   Deno.test(prefix + 'rm', async () => {

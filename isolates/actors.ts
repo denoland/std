@@ -242,13 +242,13 @@ export const functions = {
     let repos = await readRepos(api, repo)
 
     const { init } = await api.actions<system.Api>('system')
-    const { pid } = await init({ repo, isolate, params })
+    const { pid, head } = await init({ repo, isolate, params })
 
     repos = await readRepos(api, repo)
     repos[repo] = pid
     api.writeJSON('repos.json', repos)
     log('init wrote repos:', Object.keys(repos))
-    return { pid }
+    return { pid, head }
   },
   async ensureMachineTerminal(
     { machineId }: { machineId: string },
