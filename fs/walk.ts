@@ -327,6 +327,170 @@ export type { WalkEntry };
  * //   },
  * // ]
  * ```
+ *
+ * @example Follow symbolic links
+ *
+ * Setting the `followSymlinks` option to `true` will follow symbolic links,
+ * affecting the `path` property of the walk entry.
+ *
+ * File structure:
+ * ```
+ * folder
+ * ├── script.ts
+ * └── link -> script.ts (symbolic link)
+ * ```
+ *
+ * ```ts no-eval
+ * import { walk } from "@std/fs/walk";
+ *
+ * await Array.fromAsync(walk(".", { followSymlinks: true }));
+ * // [
+ * //   {
+ * //     path: "/folder",
+ * //     name: "folder",
+ * //     isFile: false,
+ * //     isDirectory: true,
+ * //     isSymlink: false
+ * //   },
+ * //   {
+ * //     path: "/folder/script.ts",
+ * //     name: "script.ts",
+ * //     isFile: true,
+ * //     isDirectory: false,
+ * //     isSymlink: false
+ * //   },
+ * //   {
+ * //     path: "/folder/script.ts",
+ * //     name: "link",
+ * //     isFile: true,
+ * //     isDirectory: false,
+ * //     isSymlink: true
+ * //   },
+ * // ]
+ * ```
+ *
+ * @example Canonicalize symbolic links
+ *
+ * Setting the `canonicalize` option to `false` will canonicalize the path of
+ * the followed symbolic link. Meaning, the `path` property of the walk entry
+ * will be the path of the symbolic link itself.
+ *
+ * File structure:
+ * ```
+ * folder
+ * ├── script.ts
+ * └── link -> script.ts (symbolic link)
+ * ```
+ *
+ * ```ts no-eval
+ * import { walk } from "@std/fs/walk";
+ *
+ * await Array.fromAsync(walk(".", { followSymlinks: true, canonicalize: true }));
+ * // [
+ * //   {
+ * //     path: "/folder",
+ * //     name: "folder",
+ * //     isFile: false,
+ * //     isDirectory: true,
+ * //     isSymlink: false
+ * //   },
+ * //   {
+ * //     path: "/folder/script.ts",
+ * //     name: "script.ts",
+ * //     isFile: true,
+ * //     isDirectory: false,
+ * //     isSymlink: false
+ * //   },
+ * //   {
+ * //     path: "/folder/link",
+ * //     name: "link",
+ * //     isFile: true,
+ * //     isDirectory: false,
+ * //     isSymlink: true
+ * //   },
+ * // ]
+ * ```
+ *
+ * @example Filter by file extensions
+ *
+ * Setting the `exts` option to `[".ts"]` will only include entries with the
+ * `.ts` file extension.
+ *
+ * File structure:
+ * ```
+ * folder
+ * ├── script.ts
+ * └── foo.js
+ * ```
+ *
+ * ```ts no-eval
+ * import { walk } from "@std/fs/walk";
+ *
+ * await Array.fromAsync(walk(".", { exts: [".ts"] }));
+ * // [
+ * //   {
+ * //     path: "/folder/script.ts",
+ * //     name: "script.ts",
+ * //     isFile: true,
+ * //     isDirectory: false,
+ * //     isSymlink: false
+ * //   },
+ * // ]
+ * ```
+ *
+ * @example Filter by regular expressions
+ *
+ * Setting the `match` option to `[/.s/]` will only include entries with the
+ * letter `s` in their name.
+ *
+ * File structure:
+ * ```
+ * folder
+ * ├── script.ts
+ * └── README.md
+ * ```
+ *
+ * ```ts no-eval
+ * import { walk } from "@std/fs/walk";
+ *
+ * await Array.fromAsync(walk(".", { match: [/s/] }));
+ * // [
+ * //   {
+ * //     path: "/folder/script.ts",
+ * //     name: "script.ts",
+ * //     isFile: true,
+ * //     isDirectory: false,
+ * //     isSymlink: false
+ * //   },
+ * // ]
+ * ```
+ *
+ * @example Exclude by regular expressions
+ *
+ * Setting the `skip` option to `[/.s/]` will exclude entries with the letter
+ * `s` in their name.
+ *
+ * File structure:
+ * ```
+ * folder
+ * ├── script.ts
+ * └── README.md
+ * ```
+ *
+ * ```ts no-eval
+ * import { walk } from "@std/fs/walk";
+ *
+ * await Array.fromAsync(walk(".", { skip: [/s/] }));
+ * // [
+ * //   {
+ * //     path: "/folder/README.md",
+ * //     name: "README.md",
+ * //     isFile: true,
+ * //     isDirectory: false,
+ * //     isSymlink: false
+ * //   },
+ * // ]
+ * ```
  */
 export async function* walk(
   root: string | URL,
@@ -397,7 +561,352 @@ export async function* walk(
   }
 }
 
-/** Same as {@linkcode walk} but uses synchronous ops */
+/**
+ * Recursively walks through a directory and yields information about each file
+ * and directory encountered.
+ *
+ * @param root The root directory to start the walk from, as a string or URL.
+ * @param options The options for the walk.
+ *
+ * @returns A synchronous iterable iterator that yields the walk entry objects.
+ *
+ * @example Basic usage
+ *
+ * File structure:
+ * ```
+ * folder
+ * ├── script.ts
+ * └── foo.ts
+ * ```
+ *
+ * ```ts no-eval
+ * import { walkSync } from "@std/fs/walk";
+ *
+ * Array.from(walkSync("."));
+ * // [
+ * //   {
+ * //     path: "/folder",
+ * //     name: "folder",
+ * //     isFile: false,
+ * //     isDirectory: true,
+ * //     isSymlink: false
+ * //   },
+ * //   {
+ * //     path: "/folder/script.ts",
+ * //     name: "script.ts",
+ * //     isFile: true,
+ * //     isDirectory: false,
+ * //     isSymlink: false
+ * //   },
+ * //   {
+ * //     path: "/folder/foo.ts",
+ * //     name: "foo.ts",
+ * //     isFile: true,
+ * //     isDirectory: false,
+ * //     isSymlink: false
+ * //   },
+ * // ]
+ * ```
+ *
+ * @example Maximum file depth
+ *
+ * Setting the `maxDepth` option to `1` will only include the root directory and
+ * its immediate children.
+ *
+ * File structure:
+ * ```
+ * folder
+ * ├── script.ts
+ * └── foo
+ *     └── bar.ts
+ * ```
+ *
+ * ```ts no-eval
+ * import { walkSync } from "@std/fs/walk";
+ *
+ * Array.from(walkSync(".", { maxDepth: 1 }));
+ * // [
+ * //   {
+ * //     path: "/folder",
+ * //     name: "folder",
+ * //     isFile: false,
+ * //     isDirectory: true,
+ * //     isSymlink: false
+ * //   },
+ * //   {
+ * //     path: "/folder/script.ts",
+ * //     name: "script.ts",
+ * //     isFile: true,
+ * //     isDirectory: false,
+ * //     isSymlink: false
+ * //   },
+ * //   {
+ * //     path: "/folder/foo",
+ * //     name: "foo",
+ * //     isFile: false,
+ * //     isDirectory: true,
+ * //     isSymlink: false
+ * //   },
+ * // ]
+ * ```
+ *
+ * @example Exclude files
+ *
+ * Setting the `includeFiles` option to `false` will exclude files.
+ *
+ * File structure:
+ * ```
+ * folder
+ * ├── script.ts
+ * └── foo
+ * ```
+ *
+ * ```ts no-eval
+ * import { walkSync } from "@std/fs/walk";
+ *
+ * Array.from(walkSync(".", { includeFiles: false }));
+ * // [
+ * //   {
+ * //     path: "/folder",
+ * //     name: "folder",
+ * //     isFile: false,
+ * //     isDirectory: true,
+ * //     isSymlink: false
+ * //   },
+ * //   {
+ * //     path: "/folder/foo",
+ * //     name: "foo",
+ * //     isFile: false,
+ * //     isDirectory: true,
+ * //     isSymlink: false,
+ * //   },
+ * // ]
+ * ```
+ *
+ * @example Exclude directories
+ *
+ * Setting the `includeDirs` option to `false` will exclude directories.
+ *
+ * File structure:
+ * ```
+ * folder
+ * ├── script.ts
+ * └── foo
+ * ```
+ *
+ * ```ts no-eval
+ * import { walkSync } from "@std/fs/walk";
+ *
+ * Array.from(walkSync(".", { includeDirs: false }));
+ * // [
+ * //   {
+ * //     path: "/folder/script.ts",
+ * //     name: "script.ts",
+ * //     isFile: true,
+ * //     isDirectory: false,
+ * //     isSymlink: false
+ * //   },
+ * // ]
+ * ```
+ *
+ * @example Exclude symbolic links
+ *
+ * Setting the `includeSymlinks` option to `false` will exclude symbolic links.
+ *
+ * File structure:
+ * ```
+ * folder
+ * ├── script.ts
+ * ├── foo
+ * └── link -> script.ts (symbolic link)
+ * ```
+ *
+ * ```ts no-eval
+ * import { walkSync } from "@std/fs/walk";
+ *
+ * Array.from(walkSync(".", { includeSymlinks: false }));
+ * // [
+ * //   {
+ * //     path: "/folder",
+ * //     name: "folder",
+ * //     isFile: false,
+ * //     isDirectory: true,
+ * //     isSymlink: false
+ * //   },
+ * //   {
+ * //     path: "/folder/script.ts",
+ * //     name: "script.ts",
+ * //     isFile: true,
+ * //     isDirectory: false,
+ * //     isSymlink: false
+ * //   },
+ * // ]
+ * ```
+ *
+ * @example Follow symbolic links
+ *
+ * Setting the `followSymlinks` option to `true` will follow symbolic links,
+ * affecting the `path` property of the walk entry.
+ *
+ * File structure:
+ * ```
+ * folder
+ * ├── script.ts
+ * └── link -> script.ts (symbolic link)
+ * ```
+ *
+ * ```ts no-eval
+ * import { walkSync } from "@std/fs/walk";
+ *
+ * Array.from(walkSync(".", { followSymlinks: true }));
+ * // [
+ * //   {
+ * //     path: "/folder",
+ * //     name: "folder",
+ * //     isFile: false,
+ * //     isDirectory: true,
+ * //     isSymlink: false
+ * //   },
+ * //   {
+ * //     path: "/folder/script.ts",
+ * //     name: "script.ts",
+ * //     isFile: true,
+ * //     isDirectory: false,
+ * //     isSymlink: false
+ * //   },
+ * //   {
+ * //     path: "/folder/script.ts",
+ * //     name: "link",
+ * //     isFile: true,
+ * //     isDirectory: false,
+ * //     isSymlink: true
+ * //   },
+ * // ]
+ * ```
+ *
+ * @example Canonicalize symbolic links
+ *
+ * Setting the `canonicalize` option to `false` will canonicalize the path of
+ * the followed symbolic link. Meaning, the `path` property of the walk entry
+ * will be the path of the symbolic link itself.
+ *
+ * File structure:
+ * ```
+ * folder
+ * ├── script.ts
+ * └── link -> script.ts (symbolic link)
+ * ```
+ *
+ * ```ts no-eval
+ * import { walkSync } from "@std/fs/walk";
+ *
+ * Array.from(walkSync(".", { followSymlinks: true, canonicalize: true }));
+ * // [
+ * //   {
+ * //     path: "/folder",
+ * //     name: "folder",
+ * //     isFile: false,
+ * //     isDirectory: true,
+ * //     isSymlink: false
+ * //   },
+ * //   {
+ * //     path: "/folder/script.ts",
+ * //     name: "script.ts",
+ * //     isFile: true,
+ * //     isDirectory: false,
+ * //     isSymlink: false
+ * //   },
+ * //   {
+ * //     path: "/folder/link",
+ * //     name: "link",
+ * //     isFile: true,
+ * //     isDirectory: false,
+ * //     isSymlink: true
+ * //   },
+ * // ]
+ * ```
+ *
+ * @example Filter by file extensions
+ *
+ * Setting the `exts` option to `[".ts"]` will only include entries with the
+ * `.ts` file extension.
+ *
+ * File structure:
+ * ```
+ * folder
+ * ├── script.ts
+ * └── foo.js
+ * ```
+ *
+ * ```ts no-eval
+ * import { walkSync } from "@std/fs/walk";
+ *
+ * Array.from(walkSync(".", { exts: [".ts"] }));
+ * // [
+ * //   {
+ * //     path: "/folder/script.ts",
+ * //     name: "script.ts",
+ * //     isFile: true,
+ * //     isDirectory: false,
+ * //     isSymlink: false
+ * //   },
+ * // ]
+ * ```
+ *
+ * @example Filter by regular expressions
+ *
+ * Setting the `match` option to `[/.s/]` will only include entries with the
+ * letter `s` in their name.
+ *
+ * File structure:
+ * ```
+ * folder
+ * ├── script.ts
+ * └── README.md
+ * ```
+ *
+ * ```ts no-eval
+ * import { walkSync } from "@std/fs/walk";
+ *
+ * Array.from(walkSync(".", { match: [/s/] }));
+ * // [
+ * //   {
+ * //     path: "/folder/script.ts",
+ * //     name: "script.ts",
+ * //     isFile: true,
+ * //     isDirectory: false,
+ * //     isSymlink: false
+ * //   },
+ * // ]
+ * ```
+ *
+ * @example Exclude by regular expressions
+ *
+ * Setting the `skip` option to `[/.s/]` will exclude entries with the letter
+ * `s` in their name.
+ *
+ * File structure:
+ * ```
+ * folder
+ * ├── script.ts
+ * └── README.md
+ * ```
+ *
+ * ```ts no-eval
+ * import { walkSync } from "@std/fs/walk";
+ *
+ * Array.from(walkSync(".", { skip: [/s/] }));
+ * // [
+ * //   {
+ * //     path: "/folder/README.md",
+ * //     name: "README.md",
+ * //     isFile: true,
+ * //     isDirectory: false,
+ * //     isSymlink: false
+ * //   },
+ * // ]
+ * ```
+ */
 export function* walkSync(
   root: string | URL,
   {
