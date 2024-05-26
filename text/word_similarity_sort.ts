@@ -5,7 +5,7 @@ import { compareSimilarity } from "./compare_similarity.ts";
 /**
  * Sorts a string-array by similarity to a given string
  *
- * @example
+ * @example Usage
  * ```ts
  * import { wordSimilaritySort } from "@std/text/word-similarity-sort";
  *
@@ -20,7 +20,8 @@ import { compareSimilarity } from "./compare_similarity.ts";
  *
  * @param givenWord - The string to measure distance against
  * @param possibleWords - The string-array that will be sorted
- * @param options.caseSensitive - Flag indicating whether the distance should include case. Default is false.
+ * @param options An options bag containing a `caseSensitive` flag indicating
+ * whether the distance should include case. Default is false.
  * @returns {string[]} A sorted copy of possibleWords
  */
 export function wordSimilaritySort(

@@ -20,12 +20,15 @@ export const BYTES_PER_PIXEL = 4;
  *
  * Ref: https://en.wikipedia.org/wiki/Data_structure_alignment#Computing_padding
  *
- * @example
+ * @example Usage
  * ```ts
  * import { getRowPadding } from "@std/webgpu/row-padding";
  *
  * getRowPadding(2); // { unpadded: 8, padded: 256 }
  * ```
+ *
+ * @param width The width to get the padding for
+ * @returns The padded and unpadded values
  */
 export function getRowPadding(width: number): Padding {
   // It is a WebGPU requirement that
@@ -49,13 +52,18 @@ export function getRowPadding(width: number): Padding {
  * Creates a new buffer while removing any unnecessary empty bytes.
  * Useful for when wanting to save an image as a specific format.
  *
- * @example
+ * @example Usage
  * ```ts
  * import { resliceBufferWithPadding } from "@std/webgpu/row-padding";
  *
  * const input = new Uint8Array([0, 255, 0, 255, 120, 120, 120]);
  * resliceBufferWithPadding(input, 1, 1); // Uint8Array(4) [ 0, 255, 0, 255 ]
  * ```
+ *
+ * @param buffer The buffer to reslice.
+ * @param width The width of the output buffer.
+ * @param height The height of the output buffer.
+ * @returns The resliced buffer.
  */
 export function resliceBufferWithPadding(
   buffer: Uint8Array,

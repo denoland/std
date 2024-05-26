@@ -15,7 +15,10 @@ export interface DelayOptions {
 /**
  * Resolve a {@linkcode Promise} after a given amount of milliseconds.
  *
- * @example
+ * @param ms Duration in milliseconds for how long the delay should last.
+ * @param options Additional options.
+ *
+ * @example Basic usage
  * ```ts
  * import { delay } from "@std/async/delay";
  *
@@ -25,7 +28,10 @@ export interface DelayOptions {
  * // ...
  * ```
  *
- * To allow the process to continue to run as long as the timer exists.
+ * @example Disable persistence
+ *
+ * Setting `persistent` to `false` will allow the process to continue to run as
+ * long as the timer exists.
  *
  * ```ts
  * import { delay } from "@std/async/delay";

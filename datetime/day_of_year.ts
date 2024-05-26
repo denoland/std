@@ -35,7 +35,7 @@ export function dayOfYear(date: Date): number {
  * @param date Date to get the day of the year of.
  * @return Number of the day in the year in UTC time.
  *
- * @example
+ * @example Usage
  * ```ts
  * import { dayOfYearUtc } from "@std/datetime/day-of-year";
  *
