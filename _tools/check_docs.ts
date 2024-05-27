@@ -20,6 +20,7 @@ import {
   type Location,
   type TsTypeDef,
 } from "@deno/doc";
+import { deadline } from "../async/deadline.ts";
 
 type DocNodeWithJsDoc<T = DocNodeBase> = T & {
   jsDoc: JsDoc;
@@ -122,17 +123,55 @@ function assertHasParamTag(
   }
 }
 
+async function assertSnippetEvals(
+  snippet: string,
+  document: { jsDoc: JsDoc; location: Location },
+) {
+  const command = new Deno.Command(Deno.execPath(), {
+    args: [
+      "eval",
+      "--ext=ts",
+      "--unstable-webgpu",
+      snippet,
+    ],
+    stderr: "piped",
+  });
+  const { success, stderr } = await deadline(command.output(), 10_000);
+  const error = new TextDecoder().decode(stderr);
+  assert(
+    success,
+    `Failed to execute snippet: \n${snippet}\n${error}`,
+    document,
+  );
+}
+
+function assertSnippetsWork(
+  doc: string,
+  document: { jsDoc: JsDoc; location: Location },
+) {
+  const snippets = doc.match(TS_SNIPPET);
+  if (snippets === null) return;
+  for (let snippet of snippets) {
+    if (snippet.split(NEWLINE)[0]?.includes("no-eval")) continue;
+    // Trim the code block delimiters
+    snippet = snippet.split(NEWLINE).slice(1, -1).join(NEWLINE);
+    snippetPromises.push(assertSnippetEvals(snippet, document));
+  }
+}
+
 function assertHasExampleTag(
   document: { jsDoc: JsDoc; location: Location },
 ) {
-  const tags = document.jsDoc.tags?.filter((tag) => tag.kind === "example");
+  const tags = document.jsDoc.tags?.filter((tag) =>
+    tag.kind === "example"
+  ) as JsDocTagDocRequired[];
   if (tags === undefined || tags.length === 0) {
     diagnostics.push(
       new DocumentError("Symbol must have an @example tag", document),
     );
     return;
   }
-  for (const tag of (tags as JsDocTagDocRequired[])) {
+  for (const tag of tags) {
     assert(
       tag.doc !== undefined,
       "@example tag must have a title and TypeScript code snippet",
@@ -157,38 +196,7 @@ function assertHasExampleTag(
       );
       continue;
     }
-    for (let snippet of snippets) {
-      if (snippet.split(NEWLINE)[0]?.includes("no-eval")) continue;
-      // Trim the code block delimiters
-      snippet = snippet.split(NEWLINE).slice(1, -1).join(NEWLINE);
-      const command = new Deno.Command(Deno.execPath(), {
-        args: [
-          "eval",
-          "--ext=ts",
-          "--unstable-webgpu",
-          snippet,
-        ],
-        stderr: "piped",
-      });
-      snippetPromises.push((async () => {
-        const timeoutId = setTimeout(() => {
-          console.warn("Snippet has been running for more than 10 seconds...");
-          console.warn(snippet);
-        }, 10_000);
-        try {
-          const { success, stderr } = await command.output();
-          assert(
-            success,
-            `Example code snippet failed to execute: \n${snippet}\n${
-              new TextDecoder().decode(stderr)
-            }`,
-            document,
-          );
-        } finally {
-          clearTimeout(timeoutId);
-        }
-      })());
-    }
+    assertSnippetsWork(tag.doc, document);
   }
 }
 
