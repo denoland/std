@@ -16,6 +16,22 @@ import { isValidNumber, isValidString } from "./_shared.ts";
  * considered SemVer objects and this will return true.
  *
  * A type assertion is added to the value.
+ *
+ * @example Usage
+ * ```ts
+ * import { isSemVer } from "@std/semver/is-semver";
+ * import { assert, assertFalse } from "@std/assert";
+ *
+ * const value = {
+ *   major: 1,
+ *   minor: 2,
+ *   patch: 3,
+ * };
+ *
+ * assert(isSemVer(value));
+ * assertFalse(isSemVer({ major: 1, minor: 2 }));
+ * ```
+ *
  * @param value The value to check to see if its a valid SemVer object
  * @returns True if value is a valid SemVer otherwise false
  */

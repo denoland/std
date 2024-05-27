@@ -30,16 +30,18 @@ const ENTRY_POINTS = [
   "../bytes/mod.ts",
   "../cli/mod.ts",
   "../collections/mod.ts",
+  "../data_structures/mod.ts",
   "../datetime/mod.ts",
   "../encoding/mod.ts",
+  "../expect/mod.ts",
+  "../http/mod.ts",
   "../internal/mod.ts",
   "../jsonc/mod.ts",
   "../media_types/mod.ts",
+  "../semver/mod.ts",
   "../text/mod.ts",
   "../ulid/mod.ts",
   "../webgpu/mod.ts",
-  "../http/mod.ts",
-  "../expect/mod.ts",
 ] as const;
 
 const TS_SNIPPET = /```ts[\s\S]*?```/g;
