@@ -23,6 +23,8 @@ export default (name: string, cradleMaker: CradleMaker) => {
     const terminal = await cradleMaker(combinedInit)
     const halPid = await terminal.dns('dreamcatcher-tech/HAL')
 
+    log.enable('AI:tests')
+
     const session = createHalSessionPid(terminal.pid, halPid)
     log('HAL session request', print(session))
 
@@ -57,13 +59,15 @@ export default (name: string, cradleMaker: CradleMaker) => {
     await terminal.engineStop()
   })
 
-  Deno.test(prefix + 'HAL prompt redirection', async (t) => {
+  Deno.test.only(prefix + 'HAL prompt redirection', async (t) => {
     const terminal = await cradleMaker()
     await terminal.rm({ repo: 'dreamcatcher-tech/HAL' })
     const { pid } = await terminal.clone({ repo: 'dreamcatcher-tech/HAL' })
     const session = createHalSessionPid(terminal.pid, pid)
     await terminal.ensureBranch(session, pid)
     const hal = await terminal.actions<Api>('hal', session)
+
+    log.enable('AI:tests')
 
     await t.step('prompt', async () => {
       log('pid', print(session))

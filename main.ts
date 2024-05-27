@@ -24,7 +24,7 @@ const init = async (session: ArtifactTerminal) => {
 }
 
 Debug.enable(
-  'AI:completions* AI:qbr AI:qex AI:server AI:engine AI:actors AI:hal AI:github AI:system',
+  'AI:completions* AI:qbr AI:qex AI:server AI:engine AI:actors AI:hal AI:github AI:system AI:artifact',
 )
 const server = await Server.create(getPrivateKey(), getAesKey(), init)
 

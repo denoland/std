@@ -85,14 +85,18 @@ export interface Api {
  */
 export const functions = {
   async pierce({ pierce }: { pierce: PierceRequest }, api: IsolateApi<C>) {
-    log('pierce %o %o', pierce.isolate, pierce.functionName)
     assert(isPierceRequest(pierce), 'invalid pierce request')
+    log('pierce %o %o', pierce.isolate, pierce.functionName)
+    log('target', print(pierce.target))
     freezePid(pierce.target)
     const { db } = sanitizeContext(api)
     // TODO do the pooling here to save a queue round trip
     // TODO add ulid in here, but make it be repeatable
     // TODO check signatures and permissions here
-    await db.atomic().enqueuePierce(pierce)
+    const success = await db.atomic().enqueuePierce(pierce)
+    if (!success) {
+      console.error('enqueue pierce failed')
+    }
     // TODO return back the head commit at the point of pooling
     // TODO test if head is deleted between pooling and commit
     // TODO test caller can handle head not present
