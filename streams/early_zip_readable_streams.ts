@@ -7,7 +7,7 @@
  * another chunk.
  *
  * If a stream ends before other ones, the others will be cancelled after the
- * last chunk of said straem is read. See the examples below for more
+ * last chunk of said stream is read. See the examples below for more
  * compresensible information. If you want to continue reading the other streams
  * even after one of them ends, use {@linkcode zipReadableStreams}.
  *
