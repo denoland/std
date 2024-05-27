@@ -24,7 +24,7 @@ type Direction = "left" | "right";
  * | min()         | O(log n)     | O(n)       |
  * | max()         | O(log n)     | O(n)       |
  *
- * @example
+ * @example Usage
  * ```ts
  * import {
  *   BinarySearchTree,
