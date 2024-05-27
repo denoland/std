@@ -24,7 +24,8 @@
  * result.attrs; // { and: "this" }
  * ```
  *
- * {@linkcode extractJson | extract} and {@linkcode test} support the following delimiters.
+ * {@linkcode extractJson | extract} and {@linkcode test} support the following
+ * delimiters.
  *
  * ```markdown
  * ---json
@@ -55,7 +56,8 @@
  * result.attrs; // { module: "front_matter" }
  * ```
  *
- * {@linkcode extractToml | extract} and {@linkcode test} support the following delimiters.
+ * {@linkcode extractToml | extract} and {@linkcode test} support the following
+ * delimiters.
  *
  * ```markdown
  * ---toml
@@ -92,7 +94,8 @@
  * result.attrs; // { module: "front_matter" }
  * ```
  *
- * {@linkcode extractYaml | extract} and {@linkcode test} support the following delimiters.
+ * {@linkcode extractYaml | extract} and {@linkcode test} support the following
+ * delimiters.
  *
  * ```front_matter
  * ---

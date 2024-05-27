@@ -19,12 +19,12 @@ export type { Format };
  * import { test } from "@std/front-matter/test";
  * import { assert } from "@std/assert/assert";
  *
- * const yamlValid = test(
+ * const result = test(
  * `---
  * title: Three dashes marks the spot
  * ---
  * `);
- * assert(yamlValid);
+ * assert(result);
  * ```
  *
  * @example Test for valid TOML front matter
@@ -32,12 +32,12 @@ export type { Format };
  * import { test } from "@std/front-matter/test";
  * import { assert } from "@std/assert/assert";
  *
- * const tomlValid = test(
+ * const result = test(
  * `---toml
  * title = 'Three dashes followed by format marks the spot'
  * ---
  * `);
- * assert(tomlValid);
+ * assert(result);
  * ```
  *
  * @example Test for valid JSON front matter
@@ -45,12 +45,12 @@ export type { Format };
  * import { test } from "@std/front-matter/test";
  * import { assert } from "@std/assert/assert";
  *
- * const jsonValid = test(
+ * const result = test(
  * `---json
  * {"title": "Three dashes followed by format marks the spot"}
  * ---
  * `);
- * assert(jsonValid);
+ * assert(result);
  * ```
  *
  * @example JSON front matter is not valid as YAML
@@ -58,12 +58,12 @@ export type { Format };
  * import { test } from "@std/front-matter/test";
  * import { assertFalse } from "@std/assert/assert-false";
  *
- * const parseJsonFrontMatterWithYamlFormat = test(
+ * const result = test(
  * `---json
  * {"title": "Three dashes followed by format marks the spot"}
  * ---
  * `, ["yaml"]);
- * assertFalse(parseJsonFrontMatterWithYamlFormat);
+ * assertFalse(result);
  * ```
  */
 export function test(

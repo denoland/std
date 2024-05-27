@@ -62,16 +62,16 @@ function recognize(str: string, formats?: Format[]): Format {
 }
 
 /**
- * Factory that creates a function that extracts front matter from a string with the given parsers.
- * Supports {@link https://yaml.org | YAML}, {@link https://toml.io | TOML} and
- * {@link https://www.json.org/ | JSON}.
+ * Factory that creates a function that extracts front matter from a string with
+ * the given parsers. Supports {@link https://yaml.org | YAML},
+ * {@link https://toml.io | TOML} and {@link https://www.json.org/ | JSON}.
  *
  * For simple use cases where you know which format to parse in advance, use the
  * pre-built extractors:
  *
- * - {@linkcode extractYaml}
- * - {@linkcode extractToml}
- * - {@linkcode extractJson}
+ * - {@linkcode https://jsr.io/@std/front-matter/doc/yaml/~/extract | extractYaml}
+ * - {@linkcode https://jsr.io/@std/front-matter/doc/toml/~/extract | extractToml}
+ * - {@linkcode https://jsr.io/@std/front-matter/doc/json/~/extract | extractJson}
  *
  * @param formats A descriptor containing Format-parser pairs to use for each format.
  * @returns A function that extracts front matter from a string with the given parsers.
