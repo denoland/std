@@ -90,14 +90,17 @@ export const functions = {
     log('target', print(pierce.target))
     freezePid(pierce.target)
     const { db } = sanitizeContext(api)
-    // TODO do the pooling here to save a queue round trip
+    // TODO do the pool commit here to save a queue round trip
     // TODO add ulid in here, but make it be repeatable
     // TODO check signatures and permissions here
-    const success = await db.atomic().enqueuePierce(pierce)
+    let retryCount = 0
+    let success = false
+    do {
+      success = await db.atomic().enqueuePierce(pierce)
+    } while (!success && retryCount++ < 10)
     if (!success) {
-      console.error('enqueue pierce failed')
+      throw new Error('Enqueue pierce failed: ' + retryCount)
     }
-    // TODO return back the head commit at the point of pooling
     // TODO test if head is deleted between pooling and commit
     // TODO test caller can handle head not present
   },
