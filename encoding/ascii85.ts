@@ -91,11 +91,12 @@ const Z85 =
  */
 export function encodeAscii85(
   data: ArrayBuffer | Uint8Array | string,
-  options?: EncodeAscii85Options,
+  options: EncodeAscii85Options = {},
 ): string {
   let uint8 = validateBinaryLike(data);
 
-  const standard = options?.standard ?? "Adobe";
+  const { standard = "Adobe" } = options;
+
   let output: string[] = [];
   let v: number;
   let n = 0;
