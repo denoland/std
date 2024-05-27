@@ -26,7 +26,7 @@
  * @module
  */
 
-import { validateBinaryLike } from "./_util.ts";
+import { validateBinaryLike } from "./_validate_binary_like.ts";
 
 const lookup: string[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567".split("");
 const revLookup: number[] = [];
