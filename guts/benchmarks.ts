@@ -8,10 +8,10 @@ export default (name: string, cradleMaker: CradleMaker) => {
   const prefix = name + ': '
 
   Deno.test(prefix + 'resource hogging', async (t) => {
-    const session = await cradleMaker()
+    const terminal = await cradleMaker()
     const repo = 'benchmark/serial'
-    const { pid: target } = await session.init({ repo })
-    const { local } = await session.actions(ioFixture, target)
+    const { pid: target } = await terminal.init({ repo })
+    const { local } = await terminal.actions(ioFixture, target)
 
     await t.step('serial', async () => {
       const promises = []
@@ -27,17 +27,16 @@ export default (name: string, cradleMaker: CradleMaker) => {
       log('done')
 
       // TODO get historical splices and confirm depth of actions
-
-      await session.rm({ repo })
-      await session.engineStop()
     })
+    await terminal.rm({ repo })
+    await terminal.engineStop()
   })
   Deno.test(prefix + 'resource hogging parallel', async (t) => {
-    const session = await cradleMaker()
+    const terminal = await cradleMaker()
     const repo = 'benchmark/parallel'
 
-    const { pid: target } = await session.init({ repo })
-    const { local } = await session.actions(ioFixture, target)
+    const { pid: target } = await terminal.init({ repo })
+    const { local } = await terminal.actions(ioFixture, target)
     await t.step('parallel', async () => {
       const promises = []
       const count = 20
@@ -52,22 +51,22 @@ export default (name: string, cradleMaker: CradleMaker) => {
       log('done')
     })
     await t.step('io.json is blank', async () => {
-      const sessionIo = await session.readJSON<IoStruct>('.io.json')
+      const sessionIo = await terminal.readJSON<IoStruct>('.io.json')
       expect(Object.keys(sessionIo.requests)).toHaveLength(1)
       expect(Object.keys(sessionIo.executed)).toHaveLength(0)
       expect(Object.keys(sessionIo.replies)).toHaveLength(1)
       expect(Object.keys(sessionIo.pendings)).toHaveLength(0)
       expect(Object.keys(sessionIo.branches)).toHaveLength(0)
 
-      const targetIo = await session.readJSON<IoStruct>('.io.json', target)
+      const targetIo = await terminal.readJSON<IoStruct>('.io.json', target)
 
       expect(Object.keys(targetIo.executed)).toHaveLength(0)
       expect(Object.keys(targetIo.pendings)).toHaveLength(0)
       expect(Object.keys(targetIo.branches)).toHaveLength(0)
       // TODO verify there are no child branches of target remaining
     })
-    await session.rm({ repo })
-    await session.engineStop()
+    await terminal.rm({ repo })
+    await terminal.engineStop()
   })
   Deno.test.ignore(prefix + 'flare', async (t) => {
     const session = await cradleMaker()

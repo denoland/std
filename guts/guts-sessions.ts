@@ -1,5 +1,11 @@
 import { expect, log } from '@utils'
-import { CradleMaker, IoStruct, PID, print } from '@/constants.ts'
+import {
+  CradleMaker,
+  getTerminalId,
+  IoStruct,
+  PID,
+  print,
+} from '@/constants.ts'
 import { Machine } from '@/api/web-client-machine.ts'
 import { ulid } from 'ulid'
 
@@ -119,19 +125,20 @@ export default (name: string, cradleMaker: CradleMaker) => {
   Deno.test(prefix + 'session reload missing', async () => {
     const terminal = await cradleMaker()
     await terminal.initializationPromise
-    const missingSessionPid = newTerminalPid(terminal.pid)
+    const missingTerminalPid = newTerminalPid(terminal.pid)
 
     const root = await terminal.machine.rootTerminalPromise
 
     const { pid } = root.machine
     const io = await terminal.readJSON<IoStruct>('.io.json', pid)
-    expect(Object.keys(io.branches)).toHaveLength(2)
+    const terminalId = getTerminalId(missingTerminalPid)
+    expect(Object.values(io.branches)).not.toContain(terminalId)
 
-    const missing = root.resumeTerminal(missingSessionPid)
-    expect(missing.pid).toEqual(missingSessionPid)
+    const missing = root.resumeTerminal(missingTerminalPid)
+    expect(missing.pid).toEqual(missingTerminalPid)
     await missing.initializationPromise
     const lastIo = await terminal.readJSON<IoStruct>('.io.json', pid)
-    expect(Object.keys(lastIo.branches)).toHaveLength(3)
+    expect(Object.values(lastIo.branches)).toContain(terminalId)
     await terminal.engineStop()
   })
 }

@@ -10,7 +10,7 @@
     "check": "deno fmt --check && deno lint && deno task check:types",
     "ok": "deno task check && deno task test",
     "cov:gen": "deno coverage coverage --lcov --exclude='.tsx' --output=cov.lcov",
-    "tc": "DEBUG_COLORS=1 deno test -A ./api/cloud.ts",
+    "tc": "DEBUG_COLORS=1 deno test -A --unsafely-ignore-certificate-errors --trace-leaks ./api/cloud.ts",
     "db:drop": "DEBUG_COLORS=1 deno run --unstable-kv -A ./api/db-drop.ts",
     "db:tools": "DEBUG_COLORS=1 deno run --unstable-kv -A ./api/db-tools.ts",
     "keygen": "DEBUG_COLORS=1 deno run ./api/keygen.ts",

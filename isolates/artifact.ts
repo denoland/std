@@ -96,10 +96,6 @@ export const functions = {
     // TODO return back the head commit at the point of pooling
     // TODO test if head is deleted between pooling and commit
     // TODO test caller can handle head not present
-
-    // given that pierce only comes from one location, we can use checks to
-    // guarantee the head is the same when we commit, and just retry a bit until
-    // we get inserted correctly.
   },
 
   async initHome({ superuser }: { superuser: string }, api: IsolateApi<C>) {

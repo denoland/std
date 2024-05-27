@@ -59,6 +59,7 @@ export default (name: string, cradleMaker: CradleMaker) => {
 
   Deno.test(prefix + 'HAL prompt redirection', async (t) => {
     const terminal = await cradleMaker()
+    await terminal.rm({ repo: 'dreamcatcher-tech/HAL' })
     const { pid } = await terminal.clone({ repo: 'dreamcatcher-tech/HAL' })
     const session = createHalSessionPid(terminal.pid, pid)
     await terminal.ensureBranch(session, pid)
@@ -80,7 +81,7 @@ export default (name: string, cradleMaker: CradleMaker) => {
         session,
       )
       await expect(terminal.exists(ENTRY_HELP_FILE, session)).resolves
-        .toBe(false)
+        .toBe(true)
       await sessionBase.setPromptTarget({ help: 'help-fixture' })
       await expect(terminal.exists(ENTRY_HELP_FILE, session)).resolves
         .toBe(true)

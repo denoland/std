@@ -14,12 +14,7 @@ import {
 import { streamSSE } from 'hono/helper'
 import { Engine } from '../engine.ts'
 import { assert, Debug, delay, serializeError } from '@/utils.ts'
-import {
-  EventSourceMessage,
-  machineIdRegex,
-  print,
-  Provisioner,
-} from '@/constants.ts'
+import { EventSourceMessage, machineIdRegex, Provisioner } from '@/constants.ts'
 import '@std/dotenv/load'
 
 const log = Debug('AI:server')
@@ -87,7 +82,6 @@ export default class Server {
               event: 'splice',
               id: String(sseId++),
             }
-            log('event', print(splice.pid))
             await stream.writeSSE(event)
           }
           log('stream end')

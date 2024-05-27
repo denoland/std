@@ -18,7 +18,7 @@ export const api = {
         type: 'string',
       },
       text: {
-        description: 'the text to pass to the help runner',
+        description: 'the text to pass to the help runner as the prompt',
         type: 'string',
       },
     },

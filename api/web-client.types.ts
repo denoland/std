@@ -575,6 +575,10 @@ export const getMachineId = (source: PID) => {
   const [, , machineId] = source.branches
   return machineId
 }
+export const getTerminalId = (source: PID) => {
+  const [, , , terminalId] = source.branches
+  return terminalId
+}
 export const isTerminalPID = (source: PID) => {
   const [, actorId, machineId, terminalId] = source.branches
   return (
