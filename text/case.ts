@@ -6,7 +6,7 @@ import { capitalizeWord, splitToWords } from "./_util.ts";
 /**
  * Converts a string into camelCase.
  *
- * @example
+ * @example Usage
  * ```ts
  * import { toCamelCase } from "@std/text/case";
  *
@@ -25,7 +25,7 @@ export function toCamelCase(input: string): string {
 /**
  * Converts a string into kebab-case.
  *
- * @example
+ * @example Usage
  * ```ts
  * import { toKebabCase } from "@std/text/case";
  *
@@ -43,7 +43,7 @@ export function toKebabCase(input: string): string {
 /**
  * Converts a string into PascalCase.
  *
- * @example
+ * @example Usage
  * ```ts
  * import { toPascalCase } from "@std/text/case";
  *
@@ -61,7 +61,7 @@ export function toPascalCase(input: string): string {
 /**
  * Converts a string into snake_case.
  *
- * @example
+ * @example Usage
  * ```ts
  * import { toSnakeCase } from "@std/text/case";
  * toSnakeCase("deno is awesome"); // "deno_is_awesome"

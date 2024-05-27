@@ -28,8 +28,10 @@ type DocNodeWithJsDoc<T = DocNodeBase> = T & {
 const ENTRY_POINTS = [
   "../async/mod.ts",
   "../bytes/mod.ts",
+  "../cli/mod.ts",
   "../collections/mod.ts",
   "../datetime/mod.ts",
+  "../encoding/mod.ts",
   "../fmt/bytes.ts",
   "../fmt/colors.ts",
   "../fmt/duration.ts",
@@ -37,9 +39,11 @@ const ENTRY_POINTS = [
   "../internal/mod.ts",
   "../jsonc/mod.ts",
   "../media_types/mod.ts",
+  "../text/mod.ts",
   "../ulid/mod.ts",
   "../webgpu/mod.ts",
   "../http/mod.ts",
+  "../expect/mod.ts",
 ] as const;
 
 const TS_SNIPPET = /```ts[\s\S]*?```/g;
@@ -89,7 +93,7 @@ function assertHasReturnTag(document: { jsDoc: JsDoc; location: Location }) {
   const tag = document.jsDoc.tags?.find((tag) => tag.kind === "return");
   if (tag === undefined) {
     diagnostics.push(
-      new DocumentError("Symbol must have a @return tag", document),
+      new DocumentError("Symbol must have a @return or @returns tag", document),
     );
   } else {
     assert(
