@@ -48,7 +48,12 @@ function comparatorMax(comparator: Comparator): SemVer {
  *
  * @example Usage
  * ```ts
- * // This API is deprecated
+ * import { parseRange } from "@std/semver/parse-range";
+ * import { rangeMax } from "@std/semver/range-max";
+ * import { equals } from "@std/semver/equals";
+ * import { assert } from "@std/assert/assert";
+ *
+ * assert(equals(rangeMax(parseRange(">1.0.0 <=2.0.0")), { major: 2, minor: 0, patch: 0 }));
  * ```
  *
  * @param range The range to calculate the max for

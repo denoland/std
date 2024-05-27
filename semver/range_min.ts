@@ -39,7 +39,12 @@ function comparatorMin(comparator: Comparator): SemVer {
  *
  * @example Usage
  * ```ts
- * // This API is deprecated
+ * import { parseRange } from "@std/semver/parse-range";
+ * import { rangeMin } from "@std/semver/range-min";
+ * import { equals } from "@std/semver/equals";
+ * import { assert } from "@std/assert/assert";
+ *
+ * assert(equals(rangeMin(parseRange(">=1.0.0 <2.0.0")), { major: 1, minor: 0, patch: 0 }));
  * ```
  *
  * @param range The range to calculate the min for
