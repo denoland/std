@@ -49,7 +49,7 @@ const Z85 =
   "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ.-:+=^!/*?&<>()[]{}@%$#" as const;
 
 /**
- * Converts data into an ascii58-encoded string.
+ * Converts data into an ascii85-encoded string.
  *
  * @param data The data to encode.
  * @param options Options for encoding.
