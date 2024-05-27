@@ -3,7 +3,7 @@
 import { parse } from "./parse.ts";
 
 /**
- * Returns true if the string can be parsed as semver.
+ * Returns true if the string can be parsed as SemVer.
  *
  * @example Usage
  * ```ts
@@ -15,7 +15,7 @@ import { parse } from "./parse.ts";
  * ```
  *
  * @param version The version string to check
- * @returns `true` if the string can be parsed as semver, `false` otherwise
+ * @returns `true` if the string can be parsed as SemVer, `false` otherwise
  */
 export function canParse(version: string): boolean {
   try {

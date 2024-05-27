@@ -33,7 +33,7 @@ function formatNumber(value: number) {
  * assertEquals(format(semver), "1.2.3");
  * ```
  *
- * @param semver The semantic version to format
+ * @param semver The SemVer to format
  * @returns The string representation of a semantic version.
  */
 export function format(semver: SemVer): string {

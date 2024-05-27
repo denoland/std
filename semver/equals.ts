@@ -20,8 +20,8 @@ import type { SemVer } from "./types.ts";
  * assertFalse(equals(s0, parse("1.2.4")));
  * ```
  *
- * @param s0 The first version to compare
- * @param s1 The second version to compare
+ * @param s0 The first SemVer to compare
+ * @param s1 The second SemVer to compare
  * @returns `true` if `s0` is equal to `s1`, `false` otherwise
  */
 export function equals(s0: SemVer, s1: SemVer): boolean {

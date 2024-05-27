@@ -7,7 +7,7 @@ import { isWildcardComparator } from "./_shared.ts";
 import { compare } from "./compare.ts";
 
 /**
- * Check if the semver is greater than the range.
+ * Check if the SemVer is greater than the range.
  *
  * @example Usage
  * ```ts
