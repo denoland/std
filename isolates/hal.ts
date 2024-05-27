@@ -105,12 +105,15 @@ export const functions = {
   },
   prompt: async ({ text }: { text: string }, api: IsolateApi) => {
     log('prompt', text)
+    if (!await api.exists(ENTRY_HELP_FILE)) {
+      await functions.resetPromptTarget({}, api)
+    }
     const entry = await api.readJSON<EntryHelpFile>(ENTRY_HELP_FILE)
     const help = entry.help
     log('found entry file', help)
 
-    const functions = await api.functions('engage-help')
-    return functions.engage({ help, text })
+    const { engage } = await api.functions('engage-help')
+    return engage({ help, text })
   },
   resetSession: (_: object, api: IsolateApi) => {
     api.delete('session.json')
