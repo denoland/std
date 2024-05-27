@@ -93,14 +93,7 @@ export const functions = {
     // TODO do the pool commit here to save a queue round trip
     // TODO add ulid in here, but make it be repeatable
     // TODO check signatures and permissions here
-    let retryCount = 0
-    let success = false
-    do {
-      success = await db.atomic().enqueuePierce(pierce)
-    } while (!success && retryCount++ < 10)
-    if (!success) {
-      throw new Error('Enqueue pierce failed: ' + retryCount)
-    }
+    await db.atomic().enqueuePierce(pierce)
     // TODO test if head is deleted between pooling and commit
     // TODO test caller can handle head not present
   },

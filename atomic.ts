@@ -113,18 +113,26 @@ export class Atomic {
   async enqueuePierce(pierce: PierceRequest) {
     assert(this.#atomic, 'Atomic not set')
     const headKey = keys.getHeadKey(pierce.target)
-    const head = await this.#kv.get<string>(headKey)
-    if (!head.versionstamp) {
+    const preHead = await this.#kv.get<string>(headKey)
+    if (!preHead.versionstamp) {
       throw new Error('Head not found for pierce: ' + print(pierce.target))
     }
     const key = keys.getPoolKey(pierce)
     const emptyPool = { key, versionstamp: null }
-    this.#atomic = this.#atomic.set(key, pierce).check(emptyPool, head)
+    this.#atomic = this.#atomic.set(key, pierce).check(emptyPool)
     this.#enqueuePool(pierce.target).#increasePool(
       pierce.target,
       BigInt(1),
     )
-    return this.commit()
+    const success = this.commit()
+    if (!success) {
+      throw new Error('Pierce enqueue failed')
+    }
+    const postHead = await this.#kv.get<string>(headKey)
+    if (!postHead.versionstamp) {
+      // TODO clean up the pool and counters nicely
+      throw new Error('Head not found for pierce: ' + print(pierce.target))
+    }
   }
   #enqueuePool(pid: PID) {
     const type = QueueMessageType.POOL
