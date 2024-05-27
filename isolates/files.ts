@@ -10,7 +10,7 @@ export const api = {
     additionalProperties: false,
     required: ['path'],
     properties: {
-      path: { type: 'string', description: 'the absolute path to the file' },
+      path: { type: 'string', description: 'the relative path to the file' },
       content: {
         type: 'string',
         description: 'the contents of the file to be written',
@@ -24,7 +24,7 @@ export const api = {
     properties: {
       path: {
         type: 'string',
-        description: 'the absolute path to the directory you want to list',
+        description: 'the relative path to the directory you want to list',
       },
       count: { type: 'boolean', description: 'count the number of files' },
     },
@@ -37,7 +37,7 @@ export const api = {
     properties: {
       path: {
         type: 'string',
-        description: 'the absolute path to the file you want to read',
+        description: 'the relative path to the file you want to read',
       },
     },
   },
@@ -50,7 +50,7 @@ export const api = {
     properties: {
       path: {
         type: 'string',
-        description: 'the absolute path to the file you want to update',
+        description: 'the relative path to the file you want to update',
       },
       regex: {
         type: 'string',

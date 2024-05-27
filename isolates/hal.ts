@@ -87,35 +87,40 @@ export type EntryHelpFile = {
   help: string
 }
 
+const DEFAULT_HELP = 'hal-v0.2'
+
 export const functions = {
   resetPromptTarget: (_: object, api: IsolateApi) => {
-    api.delete(ENTRY_HELP_FILE)
+    return functions.setPromptTarget({ help: DEFAULT_HELP }, api)
   },
   setPromptTarget: async ({ help }: { help: string }, api: IsolateApi) => {
-    const { load } = await api.functions('load-help')
-    await load({ help })
+    try {
+      const { load } = await api.functions('load-help')
+      await load({ help })
+    } catch (_) {
+      throw new Error('Invalid help file: ' + help)
+    }
     api.writeJSON(ENTRY_HELP_FILE, { help })
     log('setPromptTarget', help)
   },
   prompt: async ({ text }: { text: string }, api: IsolateApi) => {
     log('prompt', text)
-    let help = 'hal-v0.2'
-    if (await api.exists(ENTRY_HELP_FILE)) {
-      const redirect = await api.readJSON<EntryHelpFile>(ENTRY_HELP_FILE)
-      help = redirect.help
-      log('found entry file', help)
-    }
+    const entry = await api.readJSON<EntryHelpFile>(ENTRY_HELP_FILE)
+    const help = entry.help
+    log('found entry file', help)
+
     const functions = await api.functions('engage-help')
     return functions.engage({ help, text })
   },
   resetSession: (_: object, api: IsolateApi) => {
     api.delete('session.json')
   },
-  '@@install': (_: object, api: IsolateApi) => {
+  '@@install': async (_: object, api: IsolateApi) => {
     assert(isBaseRepo(api.pid), '@@install not base: ' + print(api.pid))
     log('install')
     // TODO store a link to the identity chain
     // TODO set permissions
+    await functions.resetPromptTarget({}, api)
   },
 }
 
