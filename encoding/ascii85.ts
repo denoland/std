@@ -25,10 +25,18 @@
 
 import { validateBinaryLike } from "./_util.ts";
 
-/** Supported ascii85 standards for {@linkcode Ascii85Options}. */
+/**
+ * Supported ascii85 standards for {@linkcode EncodeAscii85Options} and
+ * {@linkcode DecodeAscii85Options}.
+ */
 export type Ascii85Standard = "Adobe" | "btoa" | "RFC 1924" | "Z85";
 
-/** Options for {@linkcode encodeAscii85} and {@linkcode decodeAscii85}. */
+/**
+ * Options for {@linkcode encodeAscii85}.
+ *
+ * @deprecated This will be removed in 1.0.0. Use
+ * {@linkcode EncodeAscii85Options} instead.
+ */
 export interface Ascii85Options {
   /**
    * Character set and delimiter (if supported and used).
@@ -43,6 +51,23 @@ export interface Ascii85Options {
    */
   delimiter?: boolean;
 }
+
+/** Options for {@linkcode encodeAscii85}. */
+export interface EncodeAscii85Options {
+  /**
+   * Character set and delimiter (if supported and used).
+   *
+   * @default {"Adobe"}
+   */
+  standard?: Ascii85Standard;
+  /**
+   * Whether to use a delimiter (if supported).
+   *
+   * @default {false}
+   */
+  delimiter?: boolean;
+}
+
 const rfc1924 =
   "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz!#$%&()*+-;<=>?@^_`{|}~" as const;
 const Z85 =
@@ -66,7 +91,7 @@ const Z85 =
  */
 export function encodeAscii85(
   data: ArrayBuffer | Uint8Array | string,
-  options?: Ascii85Options,
+  options?: EncodeAscii85Options,
 ): string {
   let uint8 = validateBinaryLike(data);
 
@@ -129,6 +154,9 @@ export function encodeAscii85(
   return output.slice(0, output.length - difference).join("");
 }
 
+/** Options for {@linkcode decodeAscii85}. */
+export type DecodeAscii85Options = Omit<EncodeAscii85Options, "delimiter">;
+
 /**
  * Decodes a ascii85-encoded string.
  *
@@ -149,11 +177,12 @@ export function encodeAscii85(
  */
 export function decodeAscii85(
   ascii85: string,
-  options?: Ascii85Options,
+  options: DecodeAscii85Options = {},
 ): Uint8Array {
-  const encoding = options?.standard ?? "Adobe";
+  const { standard = "Adobe" } = options;
+
   // translate all encodings to most basic adobe/btoa one and decompress some special characters ("z" and "y")
-  switch (encoding) {
+  switch (standard) {
     case "Adobe":
       ascii85 = ascii85.replaceAll(/(<~|~>)/g, "").replaceAll("z", "!!!!!");
       break;
