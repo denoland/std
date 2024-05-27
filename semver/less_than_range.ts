@@ -7,7 +7,7 @@ import { isWildcardComparator } from "./_shared.ts";
 import { compare } from "./compare.ts";
 
 /**
- * Check if the semver is less than the range.
+ * Check if the SemVer is less than the range.
  *
  * @example Usage
  * ```ts
@@ -23,7 +23,7 @@ import { compare } from "./compare.ts";
  *
  * @param semver The version to check.
  * @param range The range to check against.
- * @returns `true` if the semver is less than the range, `false` otherwise.
+ * @returns `true` if the SemVer is less than the range, `false` otherwise.
  */
 export function lessThanRange(semver: SemVer, range: Range): boolean {
   return range.every((comparatorSet) =>
@@ -34,9 +34,9 @@ export function lessThanRange(semver: SemVer, range: Range): boolean {
 function lessThanComparatorSet(semver: SemVer, comparatorSet: Comparator[]) {
   // If the comparator set contains wildcard, then the semver is not greater than the range.
   if (comparatorSet.some(isWildcardComparator)) return false;
-  // If the semver satisfies the comparator set, then it's not less than the range.
+  // If the SemVer satisfies the comparator set, then it's not less than the range.
   if (testComparatorSet(semver, comparatorSet)) return false;
-  // If the semver is greater than any of the comparator set, then it's not less than the range.
+  // If the SemVer is greater than any of the comparator set, then it's not less than the range.
   if (
     comparatorSet.some((comparator) =>
       greaterThanComparator(semver, comparator)
