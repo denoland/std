@@ -150,6 +150,14 @@ export type { WalkEntry };
  * Recursively walks through a directory and yields information about each file
  * and directory encountered.
  *
+ * The file paths are absolute paths. The root directory is included in the
+ * yielded entries.
+ *
+ * Requires `--allow-read` permission.
+ *
+ * @see {@link https://docs.deno.com/runtime/manual/basics/permissions#file-system-access}
+ * for more information on Deno's permissions system.
+ *
  * @param root The root directory to start the walk from, as a string or URL.
  * @param options The options for the walk.
  *
@@ -170,21 +178,21 @@ export type { WalkEntry };
  * await Array.fromAsync(walk("."));
  * // [
  * //   {
- * //     path: "/folder",
+ * //     path: "/Users/user/folder",
  * //     name: "folder",
  * //     isFile: false,
  * //     isDirectory: true,
  * //     isSymlink: false
  * //   },
  * //   {
- * //     path: "/folder/script.ts",
+ * //     path: "/Users/user/folder/script.ts",
  * //     name: "script.ts",
  * //     isFile: true,
  * //     isDirectory: false,
  * //     isSymlink: false
  * //   },
  * //   {
- * //     path: "/folder/foo.ts",
+ * //     path: "/Users/user/folder/foo.ts",
  * //     name: "foo.ts",
  * //     isFile: true,
  * //     isDirectory: false,
@@ -212,21 +220,21 @@ export type { WalkEntry };
  * await Array.fromAsync(walk(".", { maxDepth: 1 }));
  * // [
  * //   {
- * //     path: "/folder",
+ * //     path: "/Users/user/folder",
  * //     name: "folder",
  * //     isFile: false,
  * //     isDirectory: true,
  * //     isSymlink: false
  * //   },
  * //   {
- * //     path: "/folder/script.ts",
+ * //     path: "/Users/user/folder/script.ts",
  * //     name: "script.ts",
  * //     isFile: true,
  * //     isDirectory: false,
  * //     isSymlink: false
  * //   },
  * //   {
- * //     path: "/folder/foo",
+ * //     path: "/Users/user/folder/foo",
  * //     name: "foo",
  * //     isFile: false,
  * //     isDirectory: true,
@@ -252,14 +260,14 @@ export type { WalkEntry };
  * await Array.fromAsync(walk(".", { includeFiles: false }));
  * // [
  * //   {
- * //     path: "/folder",
+ * //     path: "/Users/user/folder",
  * //     name: "folder",
  * //     isFile: false,
  * //     isDirectory: true,
  * //     isSymlink: false
  * //   },
  * //   {
- * //     path: "/folder/foo",
+ * //     path: "/Users/user/folder/foo",
  * //     name: "foo",
  * //     isFile: false,
  * //     isDirectory: true,
@@ -285,7 +293,7 @@ export type { WalkEntry };
  * await Array.fromAsync(walk(".", { includeDirs: false }));
  * // [
  * //   {
- * //     path: "/folder/script.ts",
+ * //     path: "/Users/user/folder/script.ts",
  * //     name: "script.ts",
  * //     isFile: true,
  * //     isDirectory: false,
@@ -312,14 +320,14 @@ export type { WalkEntry };
  * await Array.fromAsync(walk(".", { includeSymlinks: false }));
  * // [
  * //   {
- * //     path: "/folder",
+ * //     path: "/Users/user/folder",
  * //     name: "folder",
  * //     isFile: false,
  * //     isDirectory: true,
  * //     isSymlink: false
  * //   },
  * //   {
- * //     path: "/folder/script.ts",
+ * //     path: "/Users/user/folder/script.ts",
  * //     name: "script.ts",
  * //     isFile: true,
  * //     isDirectory: false,
@@ -346,21 +354,21 @@ export type { WalkEntry };
  * await Array.fromAsync(walk(".", { followSymlinks: true }));
  * // [
  * //   {
- * //     path: "/folder",
+ * //     path: "/Users/user/folder",
  * //     name: "folder",
  * //     isFile: false,
  * //     isDirectory: true,
  * //     isSymlink: false
  * //   },
  * //   {
- * //     path: "/folder/script.ts",
+ * //     path: "/Users/user/folder/script.ts",
  * //     name: "script.ts",
  * //     isFile: true,
  * //     isDirectory: false,
  * //     isSymlink: false
  * //   },
  * //   {
- * //     path: "/folder/script.ts",
+ * //     path: "/Users/user/folder/script.ts",
  * //     name: "link",
  * //     isFile: true,
  * //     isDirectory: false,
@@ -388,21 +396,21 @@ export type { WalkEntry };
  * await Array.fromAsync(walk(".", { followSymlinks: true, canonicalize: true }));
  * // [
  * //   {
- * //     path: "/folder",
+ * //     path: "/Users/user/folder",
  * //     name: "folder",
  * //     isFile: false,
  * //     isDirectory: true,
  * //     isSymlink: false
  * //   },
  * //   {
- * //     path: "/folder/script.ts",
+ * //     path: "/Users/user/folder/script.ts",
  * //     name: "script.ts",
  * //     isFile: true,
  * //     isDirectory: false,
  * //     isSymlink: false
  * //   },
  * //   {
- * //     path: "/folder/link",
+ * //     path: "/Users/user/folder/link",
  * //     name: "link",
  * //     isFile: true,
  * //     isDirectory: false,
@@ -429,7 +437,7 @@ export type { WalkEntry };
  * await Array.fromAsync(walk(".", { exts: [".ts"] }));
  * // [
  * //   {
- * //     path: "/folder/script.ts",
+ * //     path: "/Users/user/folder/script.ts",
  * //     name: "script.ts",
  * //     isFile: true,
  * //     isDirectory: false,
@@ -456,7 +464,7 @@ export type { WalkEntry };
  * await Array.fromAsync(walk(".", { match: [/s/] }));
  * // [
  * //   {
- * //     path: "/folder/script.ts",
+ * //     path: "/Users/user/folder/script.ts",
  * //     name: "script.ts",
  * //     isFile: true,
  * //     isDirectory: false,
@@ -483,7 +491,7 @@ export type { WalkEntry };
  * await Array.fromAsync(walk(".", { skip: [/s/] }));
  * // [
  * //   {
- * //     path: "/folder/README.md",
+ * //     path: "/Users/user/folder/README.md",
  * //     name: "README.md",
  * //     isFile: true,
  * //     isDirectory: false,
@@ -565,6 +573,14 @@ export async function* walk(
  * Recursively walks through a directory and yields information about each file
  * and directory encountered.
  *
+ * The file paths are absolute paths. The root directory is included in the
+ * yielded entries.
+ *
+ * Requires `--allow-read` permission.
+ *
+ * @see {@link https://docs.deno.com/runtime/manual/basics/permissions#file-system-access}
+ * for more information on Deno's permissions system.
+ *
  * @param root The root directory to start the walk from, as a string or URL.
  * @param options The options for the walk.
  *
@@ -585,21 +601,21 @@ export async function* walk(
  * Array.from(walkSync("."));
  * // [
  * //   {
- * //     path: "/folder",
+ * //     path: "/Users/user/folder",
  * //     name: "folder",
  * //     isFile: false,
  * //     isDirectory: true,
  * //     isSymlink: false
  * //   },
  * //   {
- * //     path: "/folder/script.ts",
+ * //     path: "/Users/user/folder/script.ts",
  * //     name: "script.ts",
  * //     isFile: true,
  * //     isDirectory: false,
  * //     isSymlink: false
  * //   },
  * //   {
- * //     path: "/folder/foo.ts",
+ * //     path: "/Users/user/folder/foo.ts",
  * //     name: "foo.ts",
  * //     isFile: true,
  * //     isDirectory: false,
@@ -627,21 +643,21 @@ export async function* walk(
  * Array.from(walkSync(".", { maxDepth: 1 }));
  * // [
  * //   {
- * //     path: "/folder",
+ * //     path: "/Users/user/folder",
  * //     name: "folder",
  * //     isFile: false,
  * //     isDirectory: true,
  * //     isSymlink: false
  * //   },
  * //   {
- * //     path: "/folder/script.ts",
+ * //     path: "/Users/user/folder/script.ts",
  * //     name: "script.ts",
  * //     isFile: true,
  * //     isDirectory: false,
  * //     isSymlink: false
  * //   },
  * //   {
- * //     path: "/folder/foo",
+ * //     path: "/Users/user/folder/foo",
  * //     name: "foo",
  * //     isFile: false,
  * //     isDirectory: true,
@@ -667,14 +683,14 @@ export async function* walk(
  * Array.from(walkSync(".", { includeFiles: false }));
  * // [
  * //   {
- * //     path: "/folder",
+ * //     path: "/Users/user/folder",
  * //     name: "folder",
  * //     isFile: false,
  * //     isDirectory: true,
  * //     isSymlink: false
  * //   },
  * //   {
- * //     path: "/folder/foo",
+ * //     path: "/Users/user/folder/foo",
  * //     name: "foo",
  * //     isFile: false,
  * //     isDirectory: true,
@@ -700,7 +716,7 @@ export async function* walk(
  * Array.from(walkSync(".", { includeDirs: false }));
  * // [
  * //   {
- * //     path: "/folder/script.ts",
+ * //     path: "/Users/user/folder/script.ts",
  * //     name: "script.ts",
  * //     isFile: true,
  * //     isDirectory: false,
@@ -727,14 +743,14 @@ export async function* walk(
  * Array.from(walkSync(".", { includeSymlinks: false }));
  * // [
  * //   {
- * //     path: "/folder",
+ * //     path: "/Users/user/folder",
  * //     name: "folder",
  * //     isFile: false,
  * //     isDirectory: true,
  * //     isSymlink: false
  * //   },
  * //   {
- * //     path: "/folder/script.ts",
+ * //     path: "/Users/user/folder/script.ts",
  * //     name: "script.ts",
  * //     isFile: true,
  * //     isDirectory: false,
@@ -761,21 +777,21 @@ export async function* walk(
  * Array.from(walkSync(".", { followSymlinks: true }));
  * // [
  * //   {
- * //     path: "/folder",
+ * //     path: "/Users/user/folder",
  * //     name: "folder",
  * //     isFile: false,
  * //     isDirectory: true,
  * //     isSymlink: false
  * //   },
  * //   {
- * //     path: "/folder/script.ts",
+ * //     path: "/Users/user/folder/script.ts",
  * //     name: "script.ts",
  * //     isFile: true,
  * //     isDirectory: false,
  * //     isSymlink: false
  * //   },
  * //   {
- * //     path: "/folder/script.ts",
+ * //     path: "/Users/user/folder/script.ts",
  * //     name: "link",
  * //     isFile: true,
  * //     isDirectory: false,
@@ -803,21 +819,21 @@ export async function* walk(
  * Array.from(walkSync(".", { followSymlinks: true, canonicalize: true }));
  * // [
  * //   {
- * //     path: "/folder",
+ * //     path: "/Users/user/folder",
  * //     name: "folder",
  * //     isFile: false,
  * //     isDirectory: true,
  * //     isSymlink: false
  * //   },
  * //   {
- * //     path: "/folder/script.ts",
+ * //     path: "/Users/user/folder/script.ts",
  * //     name: "script.ts",
  * //     isFile: true,
  * //     isDirectory: false,
  * //     isSymlink: false
  * //   },
  * //   {
- * //     path: "/folder/link",
+ * //     path: "/Users/user/folder/link",
  * //     name: "link",
  * //     isFile: true,
  * //     isDirectory: false,
@@ -844,7 +860,7 @@ export async function* walk(
  * Array.from(walkSync(".", { exts: [".ts"] }));
  * // [
  * //   {
- * //     path: "/folder/script.ts",
+ * //     path: "/Users/user/folder/script.ts",
  * //     name: "script.ts",
  * //     isFile: true,
  * //     isDirectory: false,
@@ -871,7 +887,7 @@ export async function* walk(
  * Array.from(walkSync(".", { match: [/s/] }));
  * // [
  * //   {
- * //     path: "/folder/script.ts",
+ * //     path: "/Users/user/folder/script.ts",
  * //     name: "script.ts",
  * //     isFile: true,
  * //     isDirectory: false,
@@ -898,7 +914,7 @@ export async function* walk(
  * Array.from(walkSync(".", { skip: [/s/] }));
  * // [
  * //   {
- * //     path: "/folder/README.md",
+ * //     path: "/Users/user/folder/README.md",
  * //     name: "README.md",
  * //     isFile: true,
  * //     isDirectory: false,
