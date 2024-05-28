@@ -1,4 +1,3 @@
-// deno-lint-ignore-file no-unused-vars
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // Copyright (c) Jason Campbell. MIT license
 
@@ -25,7 +24,8 @@
  * result.attrs; // { and: "this" }
  * ```
  *
- * {@linkcode extractJson | extract} and {@linkcode test} support the following delimiters.
+ * {@linkcode extractJson | extract} and {@linkcode test} support the following
+ * delimiters.
  *
  * ```markdown
  * ---json
@@ -56,7 +56,8 @@
  * result.attrs; // { module: "front_matter" }
  * ```
  *
- * {@linkcode extractToml | extract} and {@linkcode test} support the following delimiters.
+ * {@linkcode extractToml | extract} and {@linkcode test} support the following
+ * delimiters.
  *
  * ```markdown
  * ---toml
@@ -93,7 +94,8 @@
  * result.attrs; // { module: "front_matter" }
  * ```
  *
- * {@linkcode extractYaml | extract} and {@linkcode test} support the following delimiters.
+ * {@linkcode extractYaml | extract} and {@linkcode test} support the following
+ * delimiters.
  *
  * ```front_matter
  * ---
@@ -115,9 +117,11 @@
  *
  * @module
  */
-import type { extract as extractJson } from "./json.ts";
-import type { extract as extractToml } from "./toml.ts";
-import type { extract as extractYaml } from "./yaml.ts";
+import { extract as extractJson } from "./json.ts";
+import { extract as extractToml } from "./toml.ts";
+import { extract as extractYaml } from "./yaml.ts";
 
 export * from "./create_extractor.ts";
 export * from "./test.ts";
+
+export { extractJson, extractToml, extractYaml };
