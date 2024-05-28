@@ -77,3 +77,21 @@ Deno.test("TextDelimiterStream handles prefix", async () => {
 
   await testTransformStream(delimStream, inputs, outputs);
 });
+
+Deno.test("TextDelimiterStream handles JSONL with an empty line in the middle and trailing newline", async () => {
+  const delimStream = new TextDelimiterStream("\n");
+
+  const inputs = [
+    '{"a": 1}\n',
+    '\n{"a',
+    '": 2, "b": true}\n',
+  ];
+  const outputs = [
+    '{"a": 1}',
+    "",
+    '{"a": 2, "b": true}',
+    "",
+  ];
+
+  await testTransformStream(delimStream, inputs, outputs);
+});

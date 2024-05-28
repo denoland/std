@@ -40,6 +40,7 @@ const ENTRY_POINTS = [
   "../jsonc/mod.ts",
   "../media_types/mod.ts",
   "../semver/mod.ts",
+  "../streams/mod.ts",
   "../text/mod.ts",
   "../ulid/mod.ts",
   "../webgpu/mod.ts",
