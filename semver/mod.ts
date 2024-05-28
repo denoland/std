@@ -105,8 +105,8 @@
  *
  * Build metadata is `.` delimited alpha-numeric string.
  * When parsing a version it is retained on the `build: string[]` field
- * of the semver instance. When incrementing there is an additional parameter that
- * can set the build metadata on the semver instance.
+ * of the SemVer instance. When incrementing there is an additional parameter that
+ * can set the build metadata on the SemVer instance.
  *
  * ### Advanced Range Syntax
  *
@@ -295,4 +295,5 @@ export * from "./less_than.ts";
 export * from "./less_than_range.ts";
 export * from "./less_or_equal.ts";
 
+/** The SemVer spec version */
 export const SEMVER_SPEC_VERSION = "2.0.0";

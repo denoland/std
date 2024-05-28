@@ -1,43 +1,43 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
 import { assertThrows } from "@std/assert";
-import { parse as parseYAML } from "@std/yaml/parse";
-import { parse as parseTOML } from "@std/toml/parse";
+import { parse as parseYaml } from "@std/yaml/parse";
+import { parse as parseToml } from "@std/toml/parse";
 import {
   resolveTestDataPath,
-  runExtractJSONTests,
-  runExtractTOMLTests,
+  runExtractJsonTests,
+  runExtractTomlTests,
   runExtractTypeErrorTests,
-  runExtractYAMLTests1,
-  runExtractYAMLTests2,
+  runExtractYamlTests1,
+  runExtractYamlTests2,
 } from "./_test_utils.ts";
 import { createExtractor, type Parser } from "./create_extractor.ts";
 
-const extractYAML = createExtractor({ "yaml": parseYAML as Parser });
-const extractTOML = createExtractor({ "toml": parseTOML as Parser });
-const extractJSON = createExtractor({ "json": JSON.parse as Parser });
-const extractYAMLOrJSON = createExtractor({
-  "yaml": parseYAML as Parser,
+const extractYaml = createExtractor({ "yaml": parseYaml as Parser });
+const extractToml = createExtractor({ "toml": parseToml as Parser });
+const extractJson = createExtractor({ "json": JSON.parse as Parser });
+const extractYamlOrJson = createExtractor({
+  "yaml": parseYaml as Parser,
   "json": JSON.parse as Parser,
 });
 const extractAny = createExtractor({
-  "yaml": parseYAML as Parser,
+  "yaml": parseYaml as Parser,
   "json": JSON.parse as Parser,
-  "toml": parseTOML as Parser,
+  "toml": parseToml as Parser,
 });
 
 // YAML //
 
 Deno.test("createExtractor() extracts yaml type error on invalid input", () => {
-  runExtractTypeErrorTests("yaml", extractYAML);
+  runExtractTypeErrorTests("yaml", extractYaml);
 });
 
 Deno.test("createExtractor() parses yaml delineate by `---`", async () => {
-  await runExtractYAMLTests1(extractYAML);
+  await runExtractYamlTests1(extractYaml);
 });
 
 Deno.test("createExtractor() parses yaml delineate by `---yaml`", async () => {
-  await runExtractYAMLTests2(extractYAML);
+  await runExtractYamlTests2(extractYaml);
 });
 
 Deno.test({
@@ -61,34 +61,34 @@ Deno.test({
 // JSON //
 
 Deno.test("createExtractor() extracts json type error on invalid input", () => {
-  runExtractTypeErrorTests("json", extractJSON);
+  runExtractTypeErrorTests("json", extractJson);
 });
 
 Deno.test("createExtractor() parses json delineate by ---json", async () => {
-  await runExtractJSONTests(extractJSON);
+  await runExtractJsonTests(extractJson);
 });
 
 // TOML //
 
 Deno.test("createExtractor() extracts toml type error on invalid input", () => {
-  runExtractTypeErrorTests("toml", extractTOML);
+  runExtractTypeErrorTests("toml", extractToml);
 });
 
 Deno.test("createExtractor() parses toml delineate by ---toml", async () => {
-  await runExtractTOMLTests(extractTOML);
+  await runExtractTomlTests(extractToml);
 });
 
 // MULTIPLE FORMATS //
 
 Deno.test("createExtractor() parses yaml or json input", async () => {
-  await runExtractYAMLTests1(extractYAMLOrJSON);
-  await runExtractYAMLTests2(extractYAMLOrJSON);
-  await runExtractJSONTests(extractYAMLOrJSON);
+  await runExtractYamlTests1(extractYamlOrJson);
+  await runExtractYamlTests2(extractYamlOrJson);
+  await runExtractJsonTests(extractYamlOrJson);
 });
 
 Deno.test("createExtractor() parses any input", async () => {
-  await runExtractYAMLTests1(extractAny);
-  await runExtractYAMLTests2(extractAny);
-  await runExtractJSONTests(extractAny);
-  await runExtractTOMLTests(extractAny);
+  await runExtractYamlTests1(extractAny);
+  await runExtractYamlTests2(extractAny);
+  await runExtractJsonTests(extractAny);
+  await runExtractTomlTests(extractAny);
 });

@@ -22,7 +22,7 @@
  * @module
  */
 
-import { validateBinaryLike } from "./_util.ts";
+import { validateBinaryLike } from "./_validate_binary_like.ts";
 
 // deno-fmt-ignore
 const mapBase58: Record<string, number> = {

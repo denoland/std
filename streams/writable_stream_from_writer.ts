@@ -7,7 +7,7 @@ import { toWritableStream } from "@std/io/to-writable-stream";
 /**
  * Options for {@linkcode writableStreamFromWriter}.
  *
- * @deprecated This will be removed in 1.0.0. Use {@linkcode toWritableStream} instead.
+ * @deprecated This will be removed in 1.0.0. Use {@linkcode https://jsr.io/@std/io/doc/~/toWritableStream | toWritableStream} instead.
  */
 export interface WritableStreamFromWriterOptions {
   /**
@@ -20,9 +20,24 @@ export interface WritableStreamFromWriterOptions {
 }
 
 /**
- * Create a {@linkcode WritableStream} from a {@linkcode Writer}.
+ * Create a {@linkcode WritableStream} from a {@linkcode https://jsr.io/@std/io/doc/types/~/Writer | Writer}.
  *
- * @deprecated This will be removed in 1.0.0. Use {@linkcode toWritableStream} instead.
+ * @param writer A `Writer` to convert into a `WritableStream`.
+ * @param options Options for the `writableStreamFromWriter` function.
+ * @returns A `WritableStream` of `Uint8Array`s.
+ *
+ * @example Convert `Deno.stdout` into a writable stream
+ * ```ts
+ * // Note that you can directly get the writer from `Deno.stdout` by
+ * // `Deno.stdout.writable`. This example is just for demonstration purposes;
+ * // definitely not a recommended way.
+ *
+ * import { writableStreamFromWriter } from "@std/streams/writable-stream-from-writer";
+ *
+ * const stdoutStream = writableStreamFromWriter(Deno.stdout);
+ * ```
+ *
+ * @deprecated This will be removed in 1.0.0. Use {@linkcode https://jsr.io/@std/io/doc/~/toWritableStream | toWritableStream} instead.
  */
 export function writableStreamFromWriter(
   writer: Writer,
