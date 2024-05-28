@@ -34,6 +34,7 @@ const ENTRY_POINTS = [
   "../datetime/mod.ts",
   "../encoding/mod.ts",
   "../expect/mod.ts",
+  "../front_matter/mod.ts",
   "../http/mod.ts",
   "../internal/mod.ts",
   "../jsonc/mod.ts",

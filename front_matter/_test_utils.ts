@@ -77,7 +77,7 @@ export function runExtractTypeErrorTests(
   });
 }
 
-export async function runExtractJSONTests(
+export async function runExtractJsonTests(
   extractFn: ExtractFn,
 ) {
   const str = await Deno.readTextFile(resolveTestDataPath("json.md"));
@@ -110,7 +110,7 @@ export async function runExtractJSONTests(
   );
 }
 
-export async function runExtractYAMLTests1(
+export async function runExtractYamlTests1(
   extractFn: ExtractFn,
 ) {
   const str = await Deno.readTextFile(resolveTestDataPath("yaml1.md"));
@@ -138,7 +138,7 @@ expanded-description: with some --- crazy stuff in it`,
   );
 }
 
-export async function runExtractYAMLTests2(
+export async function runExtractYamlTests2(
   extractFn: ExtractFn,
 ) {
   const str = await Deno.readTextFile(resolveTestDataPath("yaml2.md"));
@@ -166,7 +166,7 @@ expanded-description: with some --- crazy stuff in it`,
   );
 }
 
-export async function runExtractTOMLTests(
+export async function runExtractTomlTests(
   extractFn: ExtractFn,
 ) {
   const str = await Deno.readTextFile(resolveTestDataPath("toml.md"));
@@ -194,7 +194,7 @@ tags = ['toml', 'front-matter']
   );
 }
 
-export async function runExtractTOMLTests2(
+export async function runExtractTomlTests2(
   extractFn: ExtractFn,
 ) {
   const str = await Deno.readTextFile(resolveTestDataPath("toml2.md"));
