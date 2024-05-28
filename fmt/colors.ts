@@ -92,7 +92,7 @@ let enabled = !noColor;
  * setColorEnabled(true);
  * ```
  *
- * @param value boolean value to enable or disable text color
+ * @param value The boolean value to enable or disable text color
  */
 export function setColorEnabled(value: boolean) {
   if (Deno?.noColor) {
@@ -132,8 +132,8 @@ function code(open: number[], close: number): Code {
 
 /**
  * Applies color and background based on color code and its associated text
- * @param str text to apply color settings to
- * @param code color code to apply
+ * @param str The text to apply color settings to
+ * @param code The color code to apply
  */
 function run(str: string, code: Code): string {
   return enabled
@@ -151,8 +151,8 @@ function run(str: string, code: Code): string {
  * console.log(reset("Hello, world!"));
  * ```
  *
- * @param str text to reset
- * @returns text with reset color
+ * @param str The text to reset
+ * @returns The text with reset color
  */
 export function reset(str: string): string {
   return run(str, code([0], 0));
@@ -168,8 +168,8 @@ export function reset(str: string): string {
  * console.log(bold("Hello, world!"));
  * ```
  *
- * @param str text to make bold
- * @returns bold text
+ * @param str The text to make bold
+ * @returns The bold text
  */
 export function bold(str: string): string {
   return run(str, code([1], 22));
@@ -185,8 +185,8 @@ export function bold(str: string): string {
  * console.log(dim("Hello, world!"));
  * ```
  *
- * @param str text to dim
- * @returns dimmed text
+ * @param str The text to dim
+ * @returns The dimmed text
  *
  * Warning: Not all terminal emulators support `dim`.
  * For compatibility across all terminals, use {@linkcode gray} or {@linkcode brightBlack} instead.
@@ -205,8 +205,8 @@ export function dim(str: string): string {
  * console.log(italic("Hello, world!"));
  * ```
  *
- * @param str text to make italic
- * @returns italic text
+ * @param str The text to make italic
+ * @returns The italic text
  */
 export function italic(str: string): string {
   return run(str, code([3], 23));
@@ -222,8 +222,8 @@ export function italic(str: string): string {
  * console.log(underline("Hello, world!"));
  * ```
  *
- * @param str text to underline
- * @returns underlined text
+ * @param str The text to underline
+ * @returns The underlined text
  */
 export function underline(str: string): string {
   return run(str, code([4], 24));
@@ -239,8 +239,8 @@ export function underline(str: string): string {
  * console.log(inverse("Hello, world!"));
  * ```
  *
- * @param str text to invert its color
- * @returns inverted text
+ * @param str The text to invert its color
+ * @returns The inverted text
  */
 export function inverse(str: string): string {
   return run(str, code([7], 27));
@@ -256,8 +256,8 @@ export function inverse(str: string): string {
  * console.log(hidden("Hello, world!"));
  * ```
  *
- * @param str text to hide
- * @returns hidden text
+ * @param str The text to hide
+ * @returns The hidden text
  */
 export function hidden(str: string): string {
   return run(str, code([8], 28));
@@ -273,8 +273,8 @@ export function hidden(str: string): string {
  * console.log(strikethrough("Hello, world!"));
  * ```
  *
- * @param str text to strike through
- * @returns text with horizontal line through the center
+ * @param str The text to strike through
+ * @returns The text with horizontal line through the center
  */
 export function strikethrough(str: string): string {
   return run(str, code([9], 29));
@@ -290,8 +290,8 @@ export function strikethrough(str: string): string {
  * console.log(black("Hello, world!"));
  * ```
  *
- * @param str text to make black
- * @returns black text
+ * @param str The text to make black
+ * @returns The black text
  */
 export function black(str: string): string {
   return run(str, code([30], 39));
@@ -307,8 +307,8 @@ export function black(str: string): string {
  * console.log(red("Hello, world!"));
  * ```
  *
- * @param str text to make red
- * @returns red text
+ * @param str The text to make red
+ * @returns The red text
  */
 export function red(str: string): string {
   return run(str, code([31], 39));
@@ -324,8 +324,8 @@ export function red(str: string): string {
  * console.log(green("Hello, world!"));
  * ```
  *
- * @param str text to make green
- * @returns green text
+ * @param str The text to make green
+ * @returns The green text
  */
 export function green(str: string): string {
   return run(str, code([32], 39));
@@ -341,8 +341,8 @@ export function green(str: string): string {
  * console.log(yellow("Hello, world!"));
  * ```
  *
- * @param str text to make yellow
- * @returns yellow text
+ * @param str The text to make yellow
+ * @returns The yellow text
  */
 export function yellow(str: string): string {
   return run(str, code([33], 39));
@@ -358,8 +358,8 @@ export function yellow(str: string): string {
  * console.log(blue("Hello, world!"));
  * ```
  *
- * @param str text to make blue
- * @returns blue text
+ * @param str The text to make blue
+ * @returns The blue text
  */
 export function blue(str: string): string {
   return run(str, code([34], 39));
@@ -375,8 +375,8 @@ export function blue(str: string): string {
  * console.log(magenta("Hello, world!"));
  * ```
  *
- * @param str text to make magenta
- * @returns magenta text
+ * @param str The text to make magenta
+ * @returns The magenta text
  */
 export function magenta(str: string): string {
   return run(str, code([35], 39));
@@ -392,8 +392,8 @@ export function magenta(str: string): string {
  * console.log(cyan("Hello, world!"));
  * ```
  *
- * @param str text to make cyan
- * @returns cyan text
+ * @param str The text to make cyan
+ * @returns The cyan text
  */
 export function cyan(str: string): string {
   return run(str, code([36], 39));
@@ -409,8 +409,8 @@ export function cyan(str: string): string {
  * console.log(white("Hello, world!"));
  * ```
  *
- * @param str text to make white
- * @returns white text
+ * @param str The text to make white
+ * @returns The white text
  */
 export function white(str: string): string {
   return run(str, code([37], 39));
@@ -426,8 +426,8 @@ export function white(str: string): string {
  * console.log(gray("Hello, world!"));
  * ```
  *
- * @param str text to make gray
- * @returns gray text
+ * @param str The text to make gray
+ * @returns The gray text
  */
 export function gray(str: string): string {
   return brightBlack(str);
@@ -443,8 +443,8 @@ export function gray(str: string): string {
  * console.log(brightBlack("Hello, world!"));
  * ```
  *
- * @param str text to make bright black
- * @returns bright black text
+ * @param str The text to make bright black
+ * @returns The bright black text
  */
 export function brightBlack(str: string): string {
   return run(str, code([90], 39));
@@ -460,8 +460,8 @@ export function brightBlack(str: string): string {
  * console.log(brightRed("Hello, world!"));
  * ```
  *
- * @param str text to make bright red
- * @returns bright red text
+ * @param str The text to make bright red
+ * @returns The bright red text
  */
 export function brightRed(str: string): string {
   return run(str, code([91], 39));
@@ -477,8 +477,8 @@ export function brightRed(str: string): string {
  * console.log(brightGreen("Hello, world!"));
  * ```
  *
- * @param str text to make bright green
- * @returns bright green text
+ * @param str The text to make bright green
+ * @returns The bright green text
  */
 export function brightGreen(str: string): string {
   return run(str, code([92], 39));
@@ -494,8 +494,8 @@ export function brightGreen(str: string): string {
  * console.log(brightYellow("Hello, world!"));
  * ```
  *
- * @param str text to make bright yellow
- * @returns bright yellow text
+ * @param str The text to make bright yellow
+ * @returns The bright yellow text
  */
 export function brightYellow(str: string): string {
   return run(str, code([93], 39));
@@ -511,8 +511,8 @@ export function brightYellow(str: string): string {
  * console.log(brightBlue("Hello, world!"));
  * ```
  *
- * @param str text to make bright blue
- * @returns bright blue text
+ * @param str The text to make bright blue
+ * @returns The bright blue text
  */
 export function brightBlue(str: string): string {
   return run(str, code([94], 39));
@@ -528,8 +528,8 @@ export function brightBlue(str: string): string {
  * console.log(brightMagenta("Hello, world!"));
  * ```
  *
- * @param str text to make bright magenta
- * @returns bright magenta text
+ * @param str The text to make bright magenta
+ * @returns The bright magenta text
  */
 export function brightMagenta(str: string): string {
   return run(str, code([95], 39));
@@ -545,8 +545,8 @@ export function brightMagenta(str: string): string {
  * console.log(brightCyan("Hello, world!"));
  * ```
  *
- * @param str text to make bright cyan
- * @returns bright cyan text
+ * @param str The text to make bright cyan
+ * @returns The bright cyan text
  */
 export function brightCyan(str: string): string {
   return run(str, code([96], 39));
@@ -562,8 +562,8 @@ export function brightCyan(str: string): string {
  * console.log(brightWhite("Hello, world!"));
  * ```
  *
- * @param str text to make bright white
- * @returns bright white text
+ * @param str The text to make bright white
+ * @returns The bright white text
  */
 export function brightWhite(str: string): string {
   return run(str, code([97], 39));
@@ -579,8 +579,8 @@ export function brightWhite(str: string): string {
  * console.log(bgBlack("Hello, world!"));
  * ```
  *
- * @param str text to make its background black
- * @returns text with black background
+ * @param str The text to make its background black
+ * @returns The text with black background
  */
 export function bgBlack(str: string): string {
   return run(str, code([40], 49));
@@ -596,8 +596,8 @@ export function bgBlack(str: string): string {
  * console.log(bgRed("Hello, world!"));
  * ```
  *
- * @param str text to make its background red
- * @returns text with red background
+ * @param str The text to make its background red
+ * @returns The text with red background
  */
 export function bgRed(str: string): string {
   return run(str, code([41], 49));
@@ -613,8 +613,8 @@ export function bgRed(str: string): string {
  * console.log(bgGreen("Hello, world!"));
  * ```
  *
- * @param str text to make its background green
- * @returns text with green background
+ * @param str The text to make its background green
+ * @returns The text with green background
  */
 export function bgGreen(str: string): string {
   return run(str, code([42], 49));
@@ -630,8 +630,8 @@ export function bgGreen(str: string): string {
  * console.log(bgYellow("Hello, world!"));
  * ```
  *
- * @param str text to make its background yellow
- * @returns text with yellow background
+ * @param str The text to make its background yellow
+ * @returns The text with yellow background
  */
 export function bgYellow(str: string): string {
   return run(str, code([43], 49));
@@ -647,8 +647,8 @@ export function bgYellow(str: string): string {
  * console.log(bgBlue("Hello, world!"));
  * ```
  *
- * @param str text to make its background blue
- * @returns text with blue background
+ * @param str The text to make its background blue
+ * @returns The text with blue background
  */
 export function bgBlue(str: string): string {
   return run(str, code([44], 49));
@@ -664,8 +664,8 @@ export function bgBlue(str: string): string {
  * console.log(bgMagenta("Hello, world!"));
  * ```
  *
- * @param str text to make its background magenta
- * @returns text with magenta background
+ * @param str The text to make its background magenta
+ * @returns The text with magenta background
  */
 export function bgMagenta(str: string): string {
   return run(str, code([45], 49));
@@ -681,8 +681,8 @@ export function bgMagenta(str: string): string {
  * console.log(bgCyan("Hello, world!"));
  * ```
  *
- * @param str text to make its background cyan
- * @returns text with cyan background
+ * @param str The text to make its background cyan
+ * @returns The text with cyan background
  */
 export function bgCyan(str: string): string {
   return run(str, code([46], 49));
@@ -698,8 +698,8 @@ export function bgCyan(str: string): string {
  * console.log(bgWhite("Hello, world!"));
  * ```
  *
- * @param str text to make its background white
- * @returns text with white background
+ * @param str The text to make its background white
+ * @returns The text with white background
  */
 export function bgWhite(str: string): string {
   return run(str, code([47], 49));
@@ -715,8 +715,8 @@ export function bgWhite(str: string): string {
  * console.log(bgBrightBlack("Hello, world!"));
  * ```
  *
- * @param str text to make its background bright black
- * @returns text with bright black background
+ * @param str The text to make its background bright black
+ * @returns The text with bright black background
  */
 export function bgBrightBlack(str: string): string {
   return run(str, code([100], 49));
@@ -732,8 +732,8 @@ export function bgBrightBlack(str: string): string {
  * console.log(bgBrightRed("Hello, world!"));
  * ```
  *
- * @param str text to make its background bright red
- * @returns text with bright red background
+ * @param str The text to make its background bright red
+ * @returns The text with bright red background
  */
 export function bgBrightRed(str: string): string {
   return run(str, code([101], 49));
@@ -749,8 +749,8 @@ export function bgBrightRed(str: string): string {
  * console.log(bgBrightGreen("Hello, world!"));
  * ```
  *
- * @param str text to make its background bright green
- * @returns text with bright green background
+ * @param str The text to make its background bright green
+ * @returns The text with bright green background
  */
 export function bgBrightGreen(str: string): string {
   return run(str, code([102], 49));
@@ -766,8 +766,8 @@ export function bgBrightGreen(str: string): string {
  * console.log(bgBrightYellow("Hello, world!"));
  * ```
  *
- * @param str text to make its background bright yellow
- * @returns text with bright yellow background
+ * @param str The text to make its background bright yellow
+ * @returns The text with bright yellow background
  */
 export function bgBrightYellow(str: string): string {
   return run(str, code([103], 49));
@@ -783,8 +783,8 @@ export function bgBrightYellow(str: string): string {
  * console.log(bgBrightBlue("Hello, world!"));
  * ```
  *
- * @param str text to make its background bright blue
- * @returns text with bright blue background
+ * @param str The text to make its background bright blue
+ * @returns The text with bright blue background
  */
 export function bgBrightBlue(str: string): string {
   return run(str, code([104], 49));
@@ -800,8 +800,8 @@ export function bgBrightBlue(str: string): string {
  * console.log(bgBrightMagenta("Hello, world!"));
  * ```
  *
- * @param str text to make its background bright magenta
- * @returns text with bright magenta background
+ * @param str The text to make its background bright magenta
+ * @returns The text with bright magenta background
  */
 export function bgBrightMagenta(str: string): string {
   return run(str, code([105], 49));
@@ -817,8 +817,8 @@ export function bgBrightMagenta(str: string): string {
  * console.log(bgBrightCyan("Hello, world!"));
  * ```
  *
- * @param str text to make its background bright cyan
- * @returns text with bright cyan background
+ * @param str The text to make its background bright cyan
+ * @returns The text with bright cyan background
  */
 export function bgBrightCyan(str: string): string {
   return run(str, code([106], 49));
@@ -834,8 +834,8 @@ export function bgBrightCyan(str: string): string {
  * console.log(bgBrightWhite("Hello, world!"));
  * ```
  *
- * @param str text to make its background bright white
- * @returns text with bright white background
+ * @param str The text to make its background bright white
+ * @returns The text with bright white background
  */
 export function bgBrightWhite(str: string): string {
   return run(str, code([107], 49));
@@ -845,9 +845,9 @@ export function bgBrightWhite(str: string): string {
 
 /**
  * Clam and truncate color codes
- * @param n
- * @param max number to truncate to
- * @param min number to truncate from
+ * @param n The input number
+ * @param max The number to truncate to
+ * @param min The number to truncate from
  */
 function clampAndTruncate(n: number, max = 255, min = 0): number {
   return Math.trunc(Math.max(Math.min(n, max), min));
@@ -864,9 +864,9 @@ function clampAndTruncate(n: number, max = 255, min = 0): number {
  * console.log(rgb8("Hello, world!", 42));
  * ```
  *
- * @param str text color to apply paletted 8bit colors to
- * @param color code
- * @returns text with paletted 8bit color
+ * @param str The text color to apply paletted 8bit colors to
+ * @param color The color code
+ * @returns The text with paletted 8bit color
  */
 export function rgb8(str: string, color: number): string {
   return run(str, code([38, 5, clampAndTruncate(color)], 39));
@@ -883,9 +883,9 @@ export function rgb8(str: string, color: number): string {
  * console.log(bgRgb8("Hello, world!", 42));
  * ```
  *
- * @param str text color to apply paletted 8bit background colors to
+ * @param str The text color to apply paletted 8bit background colors to
  * @param color code
- * @returns text with paletted 8bit background color
+ * @returns The text with paletted 8bit background color
  */
 export function bgRgb8(str: string, color: number): string {
   return run(str, code([48, 5, clampAndTruncate(color)], 49));
@@ -903,9 +903,9 @@ export function bgRgb8(str: string, color: number): string {
  * rgb24("foo", 0xff00ff);
  * rgb24("foo", {r: 255, g: 0, b: 255});
  * ```
- * @param str text color to apply 24bit rgb to
- * @param color code
- * @returns text with 24bit rgb color
+ * @param str The text color to apply 24bit rgb to
+ * @param color The color code
+ * @returns The text with 24bit rgb color
  */
 export function rgb24(str: string, color: number | Rgb): string {
   if (typeof color === "number") {
@@ -944,9 +944,9 @@ export function rgb24(str: string, color: number | Rgb): string {
  * bgRgb24("foo", 0xff00ff);
  * bgRgb24("foo", {r: 255, g: 0, b: 255});
  * ```
- * @param str text color to apply 24bit rgb to
- * @param color code
- * @returns text with 24bit rgb color
+ * @param str The text color to apply 24bit rgb to
+ * @param color The color code
+ * @returns The text with 24bit rgb color
  */
 export function bgRgb24(str: string, color: number | Rgb): string {
   if (typeof color === "number") {
@@ -992,8 +992,8 @@ const ANSI_PATTERN = new RegExp(
  * console.log(stripColor(red("Hello, world!")));
  * ```
  *
- * @param string to remove ANSI escape codes from
- * @returns string without ANSI escape codes
+ * @param string The text to remove ANSI escape codes from
+ * @returns The text without ANSI escape codes
  *
  * @deprecated This will be removed in 1.0.0. Use {@linkcode stripAnsiCode} instead.
  */
@@ -1011,8 +1011,8 @@ export function stripColor(string: string): string {
  * console.log(stripAnsiCode(red("Hello, world!")));
  * ```
  *
- * @param string to remove ANSI escape codes from
- * @returns string without ANSI escape codes
+ * @param string The text to remove ANSI escape codes from
+ * @returns The text without ANSI escape codes
  */
 export function stripAnsiCode(string: string): string {
   return string.replace(ANSI_PATTERN, "");
