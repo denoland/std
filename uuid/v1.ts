@@ -7,17 +7,21 @@ const UUID_RE =
   /^[0-9a-f]{8}-[0-9a-f]{4}-1[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 /**
- * Validates the UUID v1.
- *
- * @example
- * ```ts
- * import { validate } from "@std/uuid/v1";
- *
- * validate("ea71fc60-a713-11ee-af61-8349da24f689");  // true
- * validate("fac8c1e0-ad1a-4204-a0d0-8126ae84495d");  // false
- * ```
+ * Validates a UUIDv1, according to
+ * {@link https://www.rfc-editor.org/rfc/rfc9562.html#section-5.1 | RFC 9562}.
  *
  * @param id UUID value.
+ *
+ * @returns Returns `true` if the UUID is valid, otherwise `false`.
+ *
+ * @example Usage
+ * ```ts
+ * import { validate } from "@std/uuid/v1";
+ * import { assert, assertFalse } from "@std/assert";
+ *
+ * assert(validate("ea71fc60-a713-11ee-af61-8349da24f689"));
+ * assertFalse(validate("fac8c1e0-ad1a-4204-a0d0-8126ae84495d"));
+ * ```
  */
 export function validate(id: string): boolean {
   return UUID_RE.test(id);
@@ -67,9 +71,16 @@ export interface V1Options {
 }
 
 /**
- * Generates a RFC4122 v1 UUID (time-based).
+ * Generates a UUIDv1, according to
+ * {@link https://www.rfc-editor.org/rfc/rfc9562.html#section-5.1 | RFC 9562}.
  *
- * @example
+ * @param options Can use RFC time sequence values as overwrites.
+ * @param buf Can allow the UUID to be written in byte-form starting at the offset.
+ * @param offset Index to start writing on the UUID bytes in buffer.
+ *
+ * @returns Returns a UUIDv1 string or an array of 16 bytes.
+ *
+ * @example Usage
  * ```ts
  * import { generate } from "@std/uuid/v1";
  *
@@ -82,10 +93,6 @@ export interface V1Options {
  *
  * generate(options); // "710b962e-041c-11e1-9234-0123456789ab"
  * ```
- *
- * @param options Can use RFC time sequence values as overwrites.
- * @param buf Can allow the UUID to be written in byte-form starting at the offset.
- * @param offset Index to start writing on the UUID bytes in buffer.
  */
 export function generate(
   options?: V1Options | null,

@@ -10,11 +10,17 @@ const UUID_RE =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[3][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 /**
- * Validate that the passed UUID is an RFC4122 v3 UUID.
+ * Validates a UUIDv3, according to
+ * {@link https://www.rfc-editor.org/rfc/rfc9562.html#section-5.3 | UUIDv3}
  *
- * @example
+ * @param id UUID value.
+ *
+ * @returns `true` if the UUID is valid, otherwise `false`.
+ *
+ * @example Usage
  * ```ts
- * import { generate, validate } from "@std/uuid/v3";
+ * import { validate } from "@std/uuid/v3";
+ * import { assert, assertFalse } from "@std/assert";
  *
  * validate(await generate("6ba7b811-9dad-11d1-80b4-00c04fd430c8", new Uint8Array())); // true
  * validate(crypto.randomUUID()); // false

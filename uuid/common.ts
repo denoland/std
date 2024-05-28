@@ -6,12 +6,13 @@ import { NIL_UUID } from "./constants.ts";
 /**
  * Check if the passed UUID is the nil UUID.
  *
- * @example
+ * @example Usage
  * ```ts
  * import { isNil } from "@std/uuid";
+ * import { assert, assertFalse } from "@std/testing";
  *
- * isNil("00000000-0000-0000-0000-000000000000"); // true
- * isNil(crypto.randomUUID()); // false
+ * assert(isNil("00000000-0000-0000-0000-000000000000"));
+ * assertFalse(isNil(crypto.randomUUID()));
  * ```
  */
 export function isNil(id: string): boolean {
@@ -21,12 +22,13 @@ export function isNil(id: string): boolean {
 /**
  * Test a string to see if it is a valid UUID.
  *
- * @example
+ * @example Usage
  * ```ts
  * import { validate } from "@std/uuid";
+ * import { assert, assertFalse } from "@std/assert";
  *
- * validate("not a UUID"); // false
- * validate("6ec0bd7f-11c0-43da-975e-2a8ad9ebae0b"); // true
+ * assert(validate("6ec0bd7f-11c0-43da-975e-2a8ad9ebae0b"));
+ * assertFalse(validate("not a UUID"));
  * ```
  */
 export function validate(uuid: string): boolean {
@@ -39,12 +41,13 @@ export function validate(uuid: string): boolean {
 /**
  * Detect RFC version of a UUID.
  *
- * @example
+ * @example Usage
  * ```ts
  * import { version } from "@std/uuid";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
- * version("d9428888-122b-11e1-b85c-61cd3cbb3210"); // 1
- * version("109156be-c4fb-41ea-b1b4-efe1671c5836"); // 4
+ * assertEquals(version("d9428888-122b-11e1-b85c-61cd3cbb3210"), 1);
+ * assertEquals(version("6ec0bd7f-11c0-43da-975e-2a8ad9ebae0b"), 4);
  * ```
  */
 export function version(uuid: string): number {
