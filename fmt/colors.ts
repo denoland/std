@@ -147,6 +147,7 @@ function run(str: string, code: Code): string {
  * @example Usage
  * ```ts
  * import { reset } from "@std/fmt/colors";
+ *
  * console.log(reset("Hello, world!"));
  * ```
  *
@@ -163,6 +164,7 @@ export function reset(str: string): string {
  * @example Usage
  * ```ts
  * import { bold } from "@std/fmt/colors";
+ *
  * console.log(bold("Hello, world!"));
  * ```
  *
@@ -179,6 +181,7 @@ export function bold(str: string): string {
  * @example Usage
  * ```ts
  * import { dim } from "@std/fmt/colors";
+ *
  * console.log(dim("Hello, world!"));
  * ```
  *
@@ -198,6 +201,7 @@ export function dim(str: string): string {
  * @example Usage
  * ```ts
  * import { italic } from "@std/fmt/colors";
+ *
  * console.log(italic("Hello, world!"));
  * ```
  *
@@ -214,6 +218,7 @@ export function italic(str: string): string {
  * @example Usage
  * ```ts
  * import { underline } from "@std/fmt/colors";
+ *
  * console.log(underline("Hello, world!"));
  * ```
  *
@@ -230,6 +235,7 @@ export function underline(str: string): string {
  * @example Usage
  * ```ts
  * import { inverse } from "@std/fmt/colors";
+ *
  * console.log(inverse("Hello, world!"));
  * ```
  *
@@ -246,6 +252,7 @@ export function inverse(str: string): string {
  * @example Usage
  * ```ts
  * import { hidden } from "@std/fmt/colors";
+ *
  * console.log(hidden("Hello, world!"));
  * ```
  *
@@ -262,6 +269,7 @@ export function hidden(str: string): string {
  * @example Usage
  * ```ts
  * import { strikethrough } from "@std/fmt/colors";
+ *
  * console.log(strikethrough("Hello, world!"));
  * ```
  *
@@ -278,6 +286,7 @@ export function strikethrough(str: string): string {
  * @example Usage
  * ```ts
  * import { black } from "@std/fmt/colors";
+ *
  * console.log(black("Hello, world!"));
  * ```
  *
@@ -294,6 +303,7 @@ export function black(str: string): string {
  * @example Usage
  * ```ts
  * import { red } from "@std/fmt/colors";
+ *
  * console.log(red("Hello, world!"));
  * ```
  *
@@ -310,6 +320,7 @@ export function red(str: string): string {
  * @example Usage
  * ```ts
  * import { green } from "@std/fmt/colors";
+ *
  * console.log(green("Hello, world!"));
  * ```
  *
@@ -326,6 +337,7 @@ export function green(str: string): string {
  * @example Usage
  * ```ts
  * import { yellow } from "@std/fmt/colors";
+ *
  * console.log(yellow("Hello, world!"));
  * ```
  *
@@ -342,6 +354,7 @@ export function yellow(str: string): string {
  * @example Usage
  * ```ts
  * import { blue } from "@std/fmt/colors";
+ *
  * console.log(blue("Hello, world!"));
  * ```
  *
@@ -358,6 +371,7 @@ export function blue(str: string): string {
  * @example Usage
  * ```ts
  * import { magenta } from "@std/fmt/colors";
+ *
  * console.log(magenta("Hello, world!"));
  * ```
  *
@@ -374,6 +388,7 @@ export function magenta(str: string): string {
  * @example Usage
  * ```ts
  * import { cyan } from "@std/fmt/colors";
+ *
  * console.log(cyan("Hello, world!"));
  * ```
  *
@@ -390,6 +405,7 @@ export function cyan(str: string): string {
  * @example Usage
  * ```ts
  * import { white } from "@std/fmt/colors";
+ *
  * console.log(white("Hello, world!"));
  * ```
  *
@@ -406,6 +422,7 @@ export function white(str: string): string {
  * @example Usage
  * ```ts
  * import { gray } from "@std/fmt/colors";
+ *
  * console.log(gray("Hello, world!"));
  * ```
  *
@@ -422,6 +439,7 @@ export function gray(str: string): string {
  * @example Usage
  * ```ts
  * import { brightBlack } from "@std/fmt/colors";
+ *
  * console.log(brightBlack("Hello, world!"));
  * ```
  *
@@ -438,6 +456,7 @@ export function brightBlack(str: string): string {
  * @example Usage
  * ```ts
  * import { brightRed } from "@std/fmt/colors";
+ *
  * console.log(brightRed("Hello, world!"));
  * ```
  *
@@ -454,6 +473,7 @@ export function brightRed(str: string): string {
  * @example Usage
  * ```ts
  * import { brightGreen } from "@std/fmt/colors";
+ *
  * console.log(brightGreen("Hello, world!"));
  * ```
  *
@@ -470,6 +490,7 @@ export function brightGreen(str: string): string {
  * @example Usage
  * ```ts
  * import { brightYellow } from "@std/fmt/colors";
+ *
  * console.log(brightYellow("Hello, world!"));
  * ```
  *
@@ -486,6 +507,7 @@ export function brightYellow(str: string): string {
  * @example Usage
  * ```ts
  * import { brightBlue } from "@std/fmt/colors";
+ *
  * console.log(brightBlue("Hello, world!"));
  * ```
  *
@@ -502,6 +524,7 @@ export function brightBlue(str: string): string {
  * @example Usage
  * ```ts
  * import { brightMagenta } from "@std/fmt/colors";
+ *
  * console.log(brightMagenta("Hello, world!"));
  * ```
  *
@@ -518,6 +541,7 @@ export function brightMagenta(str: string): string {
  * @example Usage
  * ```ts
  * import { brightCyan } from "@std/fmt/colors";
+ *
  * console.log(brightCyan("Hello, world!"));
  * ```
  *
@@ -534,6 +558,7 @@ export function brightCyan(str: string): string {
  * @example Usage
  * ```ts
  * import { brightWhite } from "@std/fmt/colors";
+ *
  * console.log(brightWhite("Hello, world!"));
  * ```
  *
@@ -550,6 +575,7 @@ export function brightWhite(str: string): string {
  * @example Usage
  * ```ts
  * import { bgBlack } from "@std/fmt/colors";
+ *
  * console.log(bgBlack("Hello, world!"));
  * ```
  *
@@ -566,6 +592,7 @@ export function bgBlack(str: string): string {
  * @example Usage
  * ```ts
  * import { bgRed } from "@std/fmt/colors";
+ *
  * console.log(bgRed("Hello, world!"));
  * ```
  *
@@ -582,6 +609,7 @@ export function bgRed(str: string): string {
  * @example Usage
  * ```ts
  * import { bgGreen } from "@std/fmt/colors";
+ *
  * console.log(bgGreen("Hello, world!"));
  * ```
  *
@@ -598,6 +626,7 @@ export function bgGreen(str: string): string {
  * @example Usage
  * ```ts
  * import { bgYellow } from "@std/fmt/colors";
+ *
  * console.log(bgYellow("Hello, world!"));
  * ```
  *
@@ -614,6 +643,7 @@ export function bgYellow(str: string): string {
  * @example Usage
  * ```ts
  * import { bgBlue } from "@std/fmt/colors";
+ *
  * console.log(bgBlue("Hello, world!"));
  * ```
  *
@@ -630,6 +660,7 @@ export function bgBlue(str: string): string {
  * @example Usage
  * ```ts
  * import { bgMagenta } from "@std/fmt/colors";
+ *
  * console.log(bgMagenta("Hello, world!"));
  * ```
  *
@@ -646,6 +677,7 @@ export function bgMagenta(str: string): string {
  * @example Usage
  * ```ts
  * import { bgCyan } from "@std/fmt/colors";
+ *
  * console.log(bgCyan("Hello, world!"));
  * ```
  *
@@ -662,6 +694,7 @@ export function bgCyan(str: string): string {
  * @example Usage
  * ```ts
  * import { bgWhite } from "@std/fmt/colors";
+ *
  * console.log(bgWhite("Hello, world!"));
  * ```
  *
@@ -678,6 +711,7 @@ export function bgWhite(str: string): string {
  * @example Usage
  * ```ts
  * import { bgBrightBlack } from "@std/fmt/colors";
+ *
  * console.log(bgBrightBlack("Hello, world!"));
  * ```
  *
@@ -694,6 +728,7 @@ export function bgBrightBlack(str: string): string {
  * @example Usage
  * ```ts
  * import { bgBrightRed } from "@std/fmt/colors";
+ *
  * console.log(bgBrightRed("Hello, world!"));
  * ```
  *
@@ -710,6 +745,7 @@ export function bgBrightRed(str: string): string {
  * @example Usage
  * ```ts
  * import { bgBrightGreen } from "@std/fmt/colors";
+ *
  * console.log(bgBrightGreen("Hello, world!"));
  * ```
  *
@@ -726,6 +762,7 @@ export function bgBrightGreen(str: string): string {
  * @example Usage
  * ```ts
  * import { bgBrightYellow } from "@std/fmt/colors";
+ *
  * console.log(bgBrightYellow("Hello, world!"));
  * ```
  *
@@ -742,6 +779,7 @@ export function bgBrightYellow(str: string): string {
  * @example Usage
  * ```ts
  * import { bgBrightBlue } from "@std/fmt/colors";
+ *
  * console.log(bgBrightBlue("Hello, world!"));
  * ```
  *
@@ -758,6 +796,7 @@ export function bgBrightBlue(str: string): string {
  * @example Usage
  * ```ts
  * import { bgBrightMagenta } from "@std/fmt/colors";
+ *
  * console.log(bgBrightMagenta("Hello, world!"));
  * ```
  *
@@ -774,6 +813,7 @@ export function bgBrightMagenta(str: string): string {
  * @example Usage
  * ```ts
  * import { bgBrightCyan } from "@std/fmt/colors";
+ *
  * console.log(bgBrightCyan("Hello, world!"));
  * ```
  *
@@ -790,6 +830,7 @@ export function bgBrightCyan(str: string): string {
  * @example Usage
  * ```ts
  * import { bgBrightWhite } from "@std/fmt/colors";
+ *
  * console.log(bgBrightWhite("Hello, world!"));
  * ```
  *
@@ -819,6 +860,7 @@ function clampAndTruncate(n: number, max = 255, min = 0): number {
  * @example Usage
  * ```ts
  * import { rgb8 } from "@std/fmt/colors";
+ *
  * console.log(rgb8("Hello, world!", 42));
  * ```
  *
@@ -837,6 +879,7 @@ export function rgb8(str: string, color: number): string {
  * @example Usage
  * ```ts
  * import { bgRgb8 } from "@std/fmt/colors";
+ *
  * console.log(bgRgb8("Hello, world!", 42));
  * ```
  *
@@ -945,6 +988,7 @@ const ANSI_PATTERN = new RegExp(
  * @example Usage
  * ```ts
  * import { stripColor, red } from "@std/fmt/colors";
+ *
  * console.log(stripColor(red("Hello, world!")));
  * ```
  *
@@ -963,6 +1007,7 @@ export function stripColor(string: string): string {
  * @example Usage
  * ```ts
  * import { stripAnsiCode, red } from "@std/fmt/colors";
+ *
  * console.log(stripAnsiCode(red("Hello, world!")));
  * ```
  *
