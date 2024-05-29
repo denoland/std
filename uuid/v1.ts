@@ -39,41 +39,7 @@ let _lastNSecs = 0;
  * @deprecated This will be removed in 1.0.0. Use {@linkcode GenerateOptions}
  * instead.
  */
-export interface V1Options {
-  /**
-   * An array of 6 bytes that represents a 48-bit IEEE 802 MAC address.
-   *
-   * @see {@link https://www.rfc-editor.org/rfc/rfc4122#section-4.1.6}
-   */
-  node?: number[];
-  /**
-   * A 14-bit value used to avoid duplicates that could arise when the clock is
-   * set backwards in time or if the node ID changes (0 - 16383).
-   *
-   * @see {@link https://www.rfc-editor.org/rfc/rfc4122#section-4.1.5}
-   */
-  clockseq?: number;
-  /**
-   * The number of milliseconds since the Unix epoch (January 1, 1970).
-   *
-   * @see {@link https://www.rfc-editor.org/rfc/rfc4122#section-4.1.4}
-   */
-  msecs?: number;
-  /**
-   * The number of nanoseconds to add to {@linkcode V1Options.msecs}
-   * (0 - 10,000).
-   *
-   * @see {@link https://www.rfc-editor.org/rfc/rfc4122#section-4.1.4}
-   */
-  nsecs?: number;
-  /** An array of 16 random bytes (0 - 255). */
-  random?: number[];
-  /**
-   * A function that returns an array of 16 random bytes (0 - 255).
-   * Alternative to {@linkcode V1Options.random}.
-   */
-  rng?: () => number[];
-}
+export interface V1Options extends GenerateOptions {}
 
 /** Options for {@linkcode generate}. */
 export interface GenerateOptions {
