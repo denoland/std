@@ -3,8 +3,8 @@
 
 import { bytesToUuid, uuidToBytes } from "./_common.ts";
 import { concat } from "@std/bytes/concat";
-import { assert } from "@std/assert/assert";
 import { crypto } from "@std/crypto/crypto";
+import { validate as validateCommon } from "./common.ts";
 
 const UUID_RE =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[3][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -55,12 +55,11 @@ export async function generate(
   namespace: string,
   data: Uint8Array,
 ): Promise<string> {
-  // TODO(lino-levan): validate that `namespace` is a valid UUID.
-
-  const space = uuidToBytes(namespace);
-  assert(space.length === 16, "namespace must be a valid UUID");
-
-  const toHash = concat([new Uint8Array(space), data]);
+  if (!validateCommon(namespace)) {
+    throw new TypeError("Invalid namespace UUID");
+  }
+  const namespaceBytes = uuidToBytes(namespace);
+  const toHash = concat([new Uint8Array(namespaceBytes), data]);
   const buffer = await crypto.subtle.digest("MD5", toHash);
   const bytes = new Uint8Array(buffer);
 

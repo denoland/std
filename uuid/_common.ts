@@ -2,8 +2,11 @@
 // This module is browser compatible.
 
 /**
- * Converts the byte array to a UUID string
- * @param bytes Used to convert Byte to Hex
+ * Converts a hex byte array to a UUID string.
+ *
+ * @param bytes Byte array of the UUID.
+ *
+ * @returns UUID string.
  */
 export function bytesToUuid(bytes: number[] | Uint8Array): string {
   const bits = [...bytes].map((bit) => {
@@ -24,16 +27,15 @@ export function bytesToUuid(bytes: number[] | Uint8Array): string {
 }
 
 /**
- * Converts a string to a byte array by converting the hex value to a number.
+ * Converts a UUID string to a hex byte array.
+ *
  * @param uuid Value that gets converted.
+ *
+ * @returns Byte array of the UUID.
  */
 export function uuidToBytes(uuid: string): number[] {
-  const bytes: number[] = [];
-
-  uuid.replace(/[a-fA-F0-9]{2}/g, (hex: string): string => {
-    bytes.push(parseInt(hex, 16));
-    return "";
-  });
-
-  return bytes;
+  return uuid
+    .replace("-", "")
+    .match(/[a-fA-F0-9]{2}/g)!
+    .map((byte) => parseInt(byte, 16));
 }
