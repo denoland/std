@@ -8,8 +8,9 @@
  * A small program for serving local files over HTTP.
  *
  * ```sh
- * deno run --allow-net --allow-read jsr:@std/http/file-server
- * > HTTP server listening on http://localhost:4507/
+ * deno run --allow-net --allow-read --allow-sys jsr:@std/http/file-server
+ * Listening on:
+ * - Local: http://localhost:8000
  * ```
  *
  * ## HTTP Status Code and Status Text

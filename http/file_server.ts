@@ -51,6 +51,7 @@ import { parseArgs } from "@std/cli/parse-args";
 import { red } from "@std/fmt/colors";
 import denoConfig from "./deno.json" with { type: "json" };
 import { format as formatBytes } from "@std/fmt/bytes";
+import { serve } from "./server.ts";
 
 interface EntryInfo {
   mode: string;
@@ -766,7 +767,7 @@ function main() {
       verbose: false,
       version: false,
       host: "0.0.0.0",
-      port: "4507",
+      port: undefined,
       cert: "",
       key: "",
     },
@@ -780,7 +781,7 @@ function main() {
       H: "header",
     },
   });
-  const port = Number(serverArgs.port);
+  const port = serverArgs.port ? Number(serverArgs.port) : serverArgs.port;
   const headers = serverArgs.header || [];
   const host = serverArgs.host;
   const certFile = serverArgs.cert;
@@ -865,14 +866,14 @@ function printUsage() {
   Serves a local directory in HTTP.
 
 INSTALL:
-  deno install --allow-net --allow-read jsr:@std/http@${denoConfig.version}/file_server
+  deno install --allow-net --allow-read --allow-sys jsr:@std/http@${denoConfig.version}/file-server
 
 USAGE:
   file_server [path] [options]
 
 OPTIONS:
   -h, --help            Prints help information
-  -p, --port <PORT>     Set port
+  -p, --port <PORT>     Set port (default is 8000)
   --cors                Enable CORS via the "Access-Control-Allow-Origin" header
   --host     <HOST>     Hostname (default is 0.0.0.0)
   -c, --cert <FILE>     TLS certificate file (enables TLS)
