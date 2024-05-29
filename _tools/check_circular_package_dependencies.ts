@@ -6,6 +6,7 @@ import {
   type ModuleJson,
 } from "@deno/graph";
 import { resolveWorkspaceSpecifiers } from "./utils.ts";
+import graphviz from "npm:node-graphviz";
 
 /**
  * Checks for circular dependencies in the std packages.
@@ -261,15 +262,21 @@ function stateToNodeStyle(state: DepState) {
 }
 
 if (Deno.args.includes("--graph")) {
-  console.log("digraph std_deps {");
+  const lines = [];
+  lines.push("digraph std_deps {");
   for (const mod of Object.keys(deps)) {
     const info = deps[mod]!;
-    console.log(`  ${formatLabel(mod)} ${stateToNodeStyle(info.state)};`);
+    lines.push(`  ${formatLabel(mod)} ${stateToNodeStyle(info.state)};`);
     for (const dep of info.set) {
-      console.log(`  ${formatLabel(mod)} -> ${dep};`);
+      lines.push(`  ${formatLabel(mod)} -> ${dep};`);
     }
   }
-  console.log("}");
+  lines.push("}");
+  const graph = lines.join("\n");
+  // Compile the graph to SVG using the `dot` layout algorithm
+  const svg = await graphviz.graphviz.dot(graph, "svg");
+  console.log("Writing dependency graph image to .github/dependency_graph.svg");
+  await Deno.writeTextFile(".github/dependency_graph.svg", svg);
 } else if (Deno.args.includes("--table")) {
   console.log("| Package         | Status     |");
   console.log("| --------------- | ---------- |");
