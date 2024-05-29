@@ -90,6 +90,11 @@ function isVoidOrPromiseVoid(returnType: TsTypeDef) {
       isVoid(returnType.typeRef.typeParams[0]!));
 }
 
+function isTypeAsserts(returnType: TsTypeDef) {
+  return returnType.kind === "typePredicate" &&
+    returnType.typePredicate.asserts;
+}
+
 function isVoid(returnType: TsTypeDef) {
   return returnType.kind === "keyword" && returnType.keyword === "void";
 }
@@ -249,7 +254,8 @@ function assertFunctionDocs(
   }
   if (
     document.functionDef.returnType !== undefined &&
-    !isVoidOrPromiseVoid(document.functionDef.returnType)
+    !isVoidOrPromiseVoid(document.functionDef.returnType) &&
+    !isTypeAsserts(document.functionDef.returnType)
   ) {
     assertHasReturnTag(document);
   }
