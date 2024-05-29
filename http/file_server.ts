@@ -781,7 +781,7 @@ function main() {
       H: "header",
     },
   });
-  const port = serverArgs.port ? Number(serverArgs.port) : serverArgs.port;
+  const port = serverArgs.port ? Number(serverArgs.port) : undefined;
   const headers = serverArgs.header || [];
   const host = serverArgs.host;
   const certFile = serverArgs.cert;
