@@ -8,15 +8,16 @@ import { ParserFactory, Toml } from "./_parser.ts";
  *
  * @example Decode TOML string
  * ```ts
- * import { parse } from "./mod.ts";
+ * import { parse } from "@std/toml/parse";
+ * import { assertEquals } from "@std/assert/assert-equals"
+ *
  * const tomlString = `title = "TOML Example"
  * [owner]
  * name = "Alice"
  * bio = "Alice is a programmer."`;
  *
  * const obj = parse(tomlString);
- * console.log(obj);
- * // { title: "TOML Example", owner: { name: "Alice", bio: "Alice is a programmer." } }
+ * assertEquals(obj, { title: "TOML Example", owner: { name: "Alice", bio: "Alice is a programmer." } });
  * ```
  * @param tomlString TOML string to be parsed.
  * @returns The parsed JS object.
