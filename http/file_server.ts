@@ -51,7 +51,6 @@ import { parseArgs } from "@std/cli/parse-args";
 import { red } from "@std/fmt/colors";
 import denoConfig from "./deno.json" with { type: "json" };
 import { format as formatBytes } from "@std/fmt/bytes";
-import { serve } from "./server.ts";
 
 interface EntryInfo {
   mode: string;
