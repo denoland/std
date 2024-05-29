@@ -33,8 +33,16 @@ let _clockseq: number;
 let _lastMSecs = 0;
 let _lastNSecs = 0;
 
+/**
+ * Options for {@linkcode generate}.
+ *
+ * @deprecated This will be removed in 1.0.0. Use {@linkcode GenerateOptions}
+ * instead.
+ */
+export interface V1Options extends GenerateOptions {}
+
 /** Options for {@linkcode generate}. */
-export interface V1Options {
+export interface GenerateOptions {
   /**
    * An array of 6 bytes that represents a 48-bit IEEE 802 MAC address.
    *
@@ -97,14 +105,13 @@ export interface V1Options {
  * ```
  */
 export function generate(
-  options?: V1Options | null,
+  options: GenerateOptions = {},
   buf?: number[],
   offset?: number,
 ): string | number[] {
   let i = (buf && offset) || 0;
   const b = buf ?? [];
 
-  options ??= {};
   let { node = _nodeId, clockseq = _clockseq } = options;
 
   if (node === undefined || clockseq === undefined) {
