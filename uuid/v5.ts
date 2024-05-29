@@ -38,6 +38,8 @@ export function validate(id: string): boolean {
  *
  * @returns A UUIDv5 string.
  *
+ * @throws {TypeError} If the namespace is not a valid UUID.
+ *
  * @example Usage
  * ```ts
  * import { NAMESPACE_URL } from "@std/uuid/constants";
