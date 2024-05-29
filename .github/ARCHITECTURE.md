@@ -48,3 +48,7 @@ This is the
 [configuration file](https://docs.deno.com/runtime/manual/getting_started/configuration_file)
 for this codebase. It contains settings and tasks that apply to the codebase as
 a whole.
+
+## Dependency Graph
+
+<img src="./dependency_graph.svg">
