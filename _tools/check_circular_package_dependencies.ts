@@ -176,6 +176,7 @@ async function check(
     const graph = await createGraph(entrypoint, {
       resolve: resolveWorkspaceSpecifiers,
     });
+
     for (
       const dep of new Set(
         getPackageDepsFromSpecifier(submod, graph, entrypoint),
