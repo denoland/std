@@ -17,9 +17,10 @@
  * import { v5, NAMESPACE_DNS, NIL_UUID } from "@std/uuid";
  * import { assert, assertFalse } from "@std/assert/assert";
  *
- * const uuid = await v5.generate(NAMESPACE_DNS, new TextEncoder().encode("deno.land"));
- * assert(v5.validate(uuid));
+ * const data = new TextEncoder().encode("deno.land");
+ * const uuid = await v5.generate(NAMESPACE_DNS, data);
  *
+ * assert(v5.validate(uuid));
  * assertFalse(v5.validate(NIL_UUID));
  * ```
  *

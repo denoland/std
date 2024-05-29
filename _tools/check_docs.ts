@@ -42,6 +42,9 @@ const ENTRY_POINTS = [
   "../text/mod.ts",
   "../ulid/mod.ts",
   "../uuid/v1.ts",
+  "../uuid/v3.ts",
+  "../uuid/v4.ts",
+  "../uuid/v5.ts",
   "../webgpu/mod.ts",
 ] as const;
 
@@ -343,8 +346,15 @@ function assertConstructorDocs(
   assertHasExampleTag(constructor);
 }
 
+function resolve(specifier: string, referrer: string): string {
+  if (specifier.startsWith("@std/") && specifier.split("/").length > 2) {
+    specifier = specifier.replace("@std/", "../").replaceAll("-", "_") + ".ts";
+  }
+  return new URL(specifier, referrer).href;
+}
+
 async function checkDocs(specifier: string) {
-  const docs = await doc(specifier);
+  const docs = await doc(specifier, { resolve });
   for (const d of docs.filter(isExported)) {
     if (d.jsDoc === undefined) continue; // this is caught by other checks
     const document = d as DocNodeWithJsDoc<DocNode>;

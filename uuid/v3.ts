@@ -11,7 +11,7 @@ const UUID_RE =
 
 /**
  * Validates a UUIDv3, according to
- * {@link https://www.rfc-editor.org/rfc/rfc9562.html#section-5.3 | UUIDv3}
+ * {@link https://www.rfc-editor.org/rfc/rfc9562.html#section-5.3 | RFC 9562}.
  *
  * @param id UUID value.
  *
@@ -22,9 +22,8 @@ const UUID_RE =
  * import { validate } from "@std/uuid/v3";
  * import { assert, assertFalse } from "@std/assert";
  *
- * validate(await generate("6ba7b811-9dad-11d1-80b4-00c04fd430c8", new Uint8Array())); // true
- * validate(crypto.randomUUID()); // false
- * validate("this-is-not-a-uuid"); // false
+ * assert(validate("22fe6191-c161-3d86-a432-a81f343eda08"));
+ * assertFalse(validate("this-is-not-a-uuid"));
  * ```
  */
 export function validate(id: string): boolean {
@@ -32,20 +31,25 @@ export function validate(id: string): boolean {
 }
 
 /**
- * Generate a RFC4122 v3 UUID (MD5 namespace).
- *
- * @example
- * ```js
- * import { generate } from "@std/uuid/v3";
- *
- * const NAMESPACE_URL = "6ba7b811-9dad-11d1-80b4-00c04fd430c8";
- *
- * const uuid = await generate(NAMESPACE_URL, new TextEncoder().encode("python.org"));
- * uuid === "22fe6191-c161-3d86-a432-a81f343eda08" // true
- * ```
+ * Generate a UUIDv3, according to
+ * {@link https://www.rfc-editor.org/rfc/rfc9562.html#section-5.3 | RFC 9562}.
  *
  * @param namespace The namespace to use, encoded as a UUID.
  * @param data The data to hash to calculate the MD5 digest for the UUID.
+ *
+ * @returns A UUIDv3 string.
+ *
+ * @example Usage
+ * ```ts
+ * import { NAMESPACE_URL } from "@std/uuid/constants";
+ * import { generate, validate } from "@std/uuid/v3";
+ * import { assert } from "@std/assert";
+ *
+ * const data = new TextEncoder().encode("python.org");
+ * const uuid = await generate(NAMESPACE_URL, data);
+ *
+ * assert(validate(uuid));
+ * ```
  */
 export async function generate(
   namespace: string,
