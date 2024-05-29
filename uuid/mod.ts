@@ -3,7 +3,7 @@
 
 /**
  * Generators and validators for
- * {@link https://www.rfc-editor.org/rfc/rfc4122.html | RFC4122} UUIDs for
+ * {@link https://www.rfc-editor.org/rfc/rfc9562.html | RFC 9562} UUIDs for
  * versions v1, v3, v4 and v5.
  *
  * Use the built-in
