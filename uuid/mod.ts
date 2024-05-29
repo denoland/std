@@ -28,6 +28,12 @@
 
 export * from "./common.ts";
 export * from "./constants.ts";
+
+import { generate as generateV1, validate as validateV1 } from "./v1.ts";
+import { generate as generateV3, validate as validateV3 } from "./v3.ts";
+import { validate as validateV4 } from "./v4.ts";
+import { generate as generateV5, validate as validateV5 } from "./v5.ts";
+
 /**
  * Generator and validator for
  * {@link https://www.rfc-editor.org/rfc/rfc9562.html#section-5.1 | UUIDv1}.
@@ -41,7 +47,11 @@ export * from "./constants.ts";
  * assert(v1.validate(uuid as string));
  * ```
  */
-export * as v1 from "./v1.ts";
+export const v1 = {
+  generate: generateV1,
+  validate: validateV1,
+};
+
 /**
  * Generator and validator for
  * {@link https://www.rfc-editor.org/rfc/rfc9562.html#section-5.3 | UUIDv3}.
@@ -56,7 +66,11 @@ export * as v1 from "./v1.ts";
  * assert(v3.validate(uuid));
  * ```
  */
-export * as v3 from "./v3.ts";
+export const v3 = {
+  generate: generateV3,
+  validate: validateV3,
+};
+
 /**
  * Validator for
  * {@link https://www.rfc-editor.org/rfc/rfc9562.html#section-5.4 | UUIDv4}.
@@ -70,7 +84,10 @@ export * as v3 from "./v3.ts";
  * assert(v4.validate(uuid));
  * ```
  */
-export * as v4 from "./v4.ts";
+export const v4 = {
+  validate: validateV4,
+};
+
 /**
  * Generator and validator for
  * {@link https://www.rfc-editor.org/rfc/rfc9562.html#section-5.5 | UUIDv5}.
@@ -85,4 +102,7 @@ export * as v4 from "./v4.ts";
  * assert(v5.validate(uuid));
  * ```
  */
-export * as v5 from "./v5.ts";
+export const v5 = {
+  generate: generateV5,
+  validate: validateV5,
+};
