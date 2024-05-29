@@ -1,5 +1,10 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-import { assert, assertEquals } from "@std/assert";
+import {
+  assert,
+  assertEquals,
+  AssertionError,
+  assertRejects,
+} from "@std/assert";
 import { generate, validate } from "./v5.ts";
 
 const NAMESPACE = "1b671a64-40d5-491e-99b0-da01ff1f3341";
@@ -36,4 +41,12 @@ Deno.test("validate() checks if a string is a valid v5 UUID", async () => {
   assert(validate(u), `generated ${u} should be valid`);
   assert(validate(t), `${t} should be valid`);
   assert(!validate(n), `${n} should not be valid`);
+});
+
+Deno.test("generate() throws on invalid namespace", async () => {
+  await assertRejects(
+    async () => await generate("invalid-uuid", new Uint8Array()),
+    AssertionError,
+    "namespace must be a valid UUID",
+  );
 });
