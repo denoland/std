@@ -45,6 +45,7 @@ const ENTRY_POINTS = [
   "../media_types/mod.ts",
   "../semver/mod.ts",
   "../streams/mod.ts",
+  "../toml/mod.ts",
   "../text/mod.ts",
   "../ulid/mod.ts",
   "../uuid/mod.ts",

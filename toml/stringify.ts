@@ -260,9 +260,24 @@ class Dumper {
 
 /**
  * Stringify dumps source object into TOML string and returns it.
- * @param srcObj
- * @param [fmtOptions] format options
- * @param [fmtOptions.keyAlignment] whether to align keys
+ *
+ * @example Usage
+ * ```ts
+ * import { stringify } from "@std/toml/stringify";
+ * import { assertEquals } from "@std/assert/assert-equals"
+ *
+ * const obj = {
+ *   name: "Tom",
+ *   age: 42,
+ *   "has-pets": true,
+ * };
+ *
+ * assertEquals(stringify(obj), "name = \"Tom\"\nage = 42\nhas-pets = true\n");
+ * ```
+ *
+ * @param srcObj The object to stringify.
+ * @param fmtOptions The options.
+ * @returns The TOML string.
  */
 export function stringify(
   srcObj: Record<string, unknown>,
