@@ -7,13 +7,18 @@ import { format } from "@std/internal/format";
  * Make an assertion that `actual` and `expected` are not strictly equal.
  * If the values are strictly equal then throw.
  *
- * @example
- * ```ts
+ * @example Usage
+ * ```ts no-eval
  * import { assertNotStrictEquals } from "@std/assert/assert-not-strict-equals";
  *
  * assertNotStrictEquals(1, 1); // Doesn't throw
  * assertNotStrictEquals(1, 2); // Throws
  * ```
+ *
+ * @typeParam T The type of the values to compare.
+ * @param actual The actual value to compare.
+ * @param expected The expected value to compare.
+ * @param msg The optional message to display if the assertion fails.
  */
 export function assertNotStrictEquals<T>(
   actual: T,

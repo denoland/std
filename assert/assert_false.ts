@@ -8,13 +8,16 @@ export type Falsy = false | 0 | 0n | "" | null | undefined;
 /**
  * Make an assertion, error will be thrown if `expr` have truthy value.
  *
- * @example
- * ```ts
+ * @example Usage
+ * ```ts no-eval
  * import { assertFalse } from "@std/assert/assert-false";
  *
  * assertFalse(false); // Doesn't throw
  * assertFalse(true); // Throws
  * ```
+ *
+ * @param expr The expression to test.
+ * @param msg The optional message to display if the assertion fails.
  */
 export function assertFalse(expr: unknown, msg = ""): asserts expr is Falsy {
   if (expr) {
