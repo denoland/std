@@ -9,7 +9,7 @@ import { NIL_UUID } from "./constants.ts";
  * @example Usage
  * ```ts
  * import { isNil } from "@std/uuid";
- * import { assert, assertFalse } from "@std/testing";
+ * import { assert, assertFalse } from "@std/assert";
  *
  * assert(isNil("00000000-0000-0000-0000-000000000000"));
  * assertFalse(isNil(crypto.randomUUID()));
