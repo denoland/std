@@ -409,5 +409,7 @@ if (diagnostics.length > 0) {
       "color: gray",
     );
   }
+
+  console.log(`%c${diagnostics.length} errors found`, "color: red");
   Deno.exit(1);
 }
