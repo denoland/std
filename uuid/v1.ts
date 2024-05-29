@@ -100,17 +100,13 @@ export interface GenerateOptions {
  *   nsecs: 5678,
  * };
  *
- * const uuid = generate(options) as string;
+ * const uuid = generate(options);
  * assert(validate(uuid));
  * ```
  */
-export function generate(
-  options: GenerateOptions = {},
-  buf?: number[],
-  offset?: number,
-): string | number[] {
-  let i = (buf && offset) || 0;
-  const b = buf ?? [];
+export function generate(options: GenerateOptions = {}): string {
+  let i = 0;
+  const b = [];
 
   let { node = _nodeId, clockseq = _clockseq } = options;
 
@@ -188,5 +184,5 @@ export function generate(
     b[i + n] = node[n]!;
   }
 
-  return buf ?? bytesToUuid(b);
+  return bytesToUuid(b);
 }
