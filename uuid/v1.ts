@@ -92,7 +92,7 @@ export interface V1Options {
  *   nsecs: 5678,
  * };
  *
- * const uuid = generate(options);
+ * const uuid = generate(options) as string;
  * assert(validate(uuid));
  * ```
  */
