@@ -275,9 +275,8 @@ class Dumper {
  * const tomlString = stringify(obj);
  * console.log(tomlString);
  * ```
- * @param srcObj source object
- * @param [fmtOptions] format options
- * @param [fmtOptions.keyAlignment] whether to align keys
+ * @param srcObj Source object
+ * @param fmtOptions format options
  * @returns TOML string
  */
 export function stringify(
