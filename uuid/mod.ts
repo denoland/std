@@ -2,16 +2,15 @@
 // This module is browser compatible.
 
 /**
- * Generators and validators for [RFC4122](https://www.rfc-editor.org/rfc/rfc4122.html)
- * UUIDs for versions v1, v3, v4 and v5.
+ * Generators and validators for
+ * {@link https://www.rfc-editor.org/rfc/rfc4122.html | RFC4122} UUIDs for
+ * versions v1, v3, v4 and v5.
  *
  * Use the built-in
  * {@linkcode https://developer.mozilla.org/en-US/docs/Web/API/Crypto/randomUUID | crypto.randomUUID()}
  * function instead of this package, if you only need to generate v4 UUIDs.
  *
  * Based on {@linkcode https://www.npmjs.com/package/uuid | npm:uuid}.
- *
- * This module is browser compatible.
  *
  * ```ts
  * import { v5, NAMESPACE_DNS, NIL_UUID } from "@std/uuid";
