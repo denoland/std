@@ -136,7 +136,7 @@ const STABILITY: Record<Mod, DepState> = {
   html: "Unstable",
   http: "Unstable",
   ini: "Unstable",
-  internal: "Unstable",
+  internal: "Stable",
   io: "Unstable",
   json: "Stable",
   jsonc: "Stable",
