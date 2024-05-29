@@ -7,12 +7,12 @@ const UUID_RE =
   /^[0-9a-f]{8}-[0-9a-f]{4}-1[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 /**
- * Validates a UUIDv1, according to
- * {@link https://www.rfc-editor.org/rfc/rfc9562.html#section-5.1 | RFC 9562}.
+ * Determines whether a string is a valid
+ * {@link https://www.rfc-editor.org/rfc/rfc9562.html#section-5.1 | UUIDv1}.
  *
  * @param id UUID value.
  *
- * @returns Returns `true` if the UUID is valid, otherwise `false`.
+ * @returns `true` if the string is a valid UUIDv1, otherwise `false`.
  *
  * @example Usage
  * ```ts
@@ -33,7 +33,7 @@ let _clockseq: number;
 let _lastMSecs = 0;
 let _lastNSecs = 0;
 
-/** The options used for generating a v1 UUID in {@linkcode generate}. */
+/** Options for {@linkcode generate}. */
 export interface V1Options {
   /**
    * An array of 6 bytes that represents a 48-bit IEEE 802 MAC address.
@@ -71,8 +71,8 @@ export interface V1Options {
 }
 
 /**
- * Generates a UUIDv1, according to
- * {@link https://www.rfc-editor.org/rfc/rfc9562.html#section-5.1 | RFC 9562}.
+ * Generates a
+ * {@link https://www.rfc-editor.org/rfc/rfc9562.html#section-5.1 | UUIDv1}.
  *
  * @param options Can use RFC time sequence values as overwrites.
  * @param buf Can allow the UUID to be written in byte-form starting at the offset.
@@ -82,7 +82,8 @@ export interface V1Options {
  *
  * @example Usage
  * ```ts
- * import { generate } from "@std/uuid/v1";
+ * import { generate, validate } from "@std/uuid/v1";
+ * import { assert } from "@std/assert/assert";
  *
  * const options = {
  *   node: [0x01, 0x23, 0x45, 0x67, 0x89, 0xab],
@@ -91,7 +92,8 @@ export interface V1Options {
  *   nsecs: 5678,
  * };
  *
- * generate(options); // "710b962e-041c-11e1-9234-0123456789ab"
+ * const uuid = generate(options);
+ * assert(validate(uuid));
  * ```
  */
 export function generate(

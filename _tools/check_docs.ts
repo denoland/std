@@ -41,6 +41,8 @@ const ENTRY_POINTS = [
   "../semver/mod.ts",
   "../text/mod.ts",
   "../ulid/mod.ts",
+  "../uuid/common.ts",
+  "../uuid/constants.ts",
   "../uuid/v1.ts",
   "../uuid/v3.ts",
   "../uuid/v4.ts",

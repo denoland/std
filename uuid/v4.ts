@@ -5,8 +5,8 @@ const UUID_RE =
   /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 /**
- * Validate a UUIDv4, according to
- * {@link https://www.rfc-editor.org/rfc/rfc9562.html#section-5.4 | RFC 9562}.
+ * Determines whether a string is a valid
+ * {@link https://www.rfc-editor.org/rfc/rfc9562.html#section-5.4 | UUIDv4}.
  *
  * @param id UUID value.
  *

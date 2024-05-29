@@ -9,12 +9,12 @@ const UUID_RE =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 /**
- * Validates a UUIDv5, according to
- * {@link https://www.rfc-editor.org/rfc/rfc9562.html#section-5.5 | RFC 9562}.
+ * Determines whether a string is a valid
+ * {@link https://www.rfc-editor.org/rfc/rfc9562.html#section-5.5 | UUIDv5}.
  *
  * @param id UUID value.
  *
- * @returns `true` if the UUID is valid, otherwise `false`.
+ * @returns `true` if the string is a valid UUIDv5, otherwise `false`.
  *
  * @example Usage
  * ```ts
@@ -30,8 +30,8 @@ export function validate(id: string): boolean {
 }
 
 /**
- * Generate a UUIDv5, according to
- * {@link https://www.rfc-editor.org/rfc/rfc9562.html#section-5.5 | RFC 9562}.
+ * Generates a
+ * {@link https://www.rfc-editor.org/rfc/rfc9562.html#section-5.5 | UUIDv5}.
  *
  * @param namespace The namespace to use, encoded as a UUID.
  * @param data The data to hash to calculate the SHA-1 digest for the UUID.

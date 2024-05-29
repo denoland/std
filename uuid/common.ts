@@ -4,7 +4,12 @@
 import { NIL_UUID } from "./constants.ts";
 
 /**
- * Check if the passed UUID is the nil UUID.
+ * Determines whether the UUID is the
+ * {@link https://www.rfc-editor.org/rfc/rfc4122#section-4.1.7 | nil UUID}.
+ *
+ * @param id UUID value.
+ *
+ * @returns `true` if the UUID is the nil UUID, otherwise `false`.
  *
  * @example Usage
  * ```ts
@@ -20,7 +25,11 @@ export function isNil(id: string): boolean {
 }
 
 /**
- * Test a string to see if it is a valid UUID.
+ * Determines whether a string is a valid UUID.
+ *
+ * @param uuid UUID value.
+ *
+ * @returns `true` if the string is a valid UUID, otherwise `false`.
  *
  * @example Usage
  * ```ts
@@ -40,6 +49,10 @@ export function validate(uuid: string): boolean {
 
 /**
  * Detect RFC version of a UUID.
+ *
+ * @param uuid UUID value.
+ *
+ * @returns The RFC version of the UUID.
  *
  * @example Usage
  * ```ts
