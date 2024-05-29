@@ -178,18 +178,20 @@ async function check(
     });
 
     for (
-      const dep of new Set(getPackageDepsFromSpecifier(graph, entrypoint))
+      const dep of new Set(
+        getPackageDepsFromSpecifier(submod, graph, entrypoint),
+      )
     ) {
       deps.add(dep);
     }
   }
   deps.delete(submod);
-  deps.delete("version.ts");
   return { name: submod, set: deps, state };
 }
 
 /** Returns package dependencies */
 function getPackageDepsFromSpecifier(
+  base: string,
   graph: ModuleGraphJson,
   specifier: string,
   seen: Set<string> = new Set(),
@@ -197,15 +199,19 @@ function getPackageDepsFromSpecifier(
   const { dependencies } = graph.modules.find((item: ModuleJson) =>
     item.specifier === specifier
   )!;
-  const deps = new Set([getPackageNameFromUrl(specifier)]);
+  const pkg = getPackageNameFromUrl(specifier);
+  const deps = new Set([pkg]);
   seen.add(specifier);
-  if (dependencies) {
+  // Captures only direct dependencies of the base package
+  // i.e. Does not capture transitive dependencies
+  if (dependencies && pkg === base) {
     for (const { code, type } of dependencies) {
       const specifier = code?.specifier ?? type?.specifier!;
       if (seen.has(specifier)) {
         continue;
       }
       const res = getPackageDepsFromSpecifier(
+        base,
         graph,
         specifier,
         seen,
