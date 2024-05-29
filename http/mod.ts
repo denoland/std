@@ -11,6 +11,7 @@
  * deno run --allow-net --allow-read --allow-sys jsr:@std/http/file-server
  * Listening on:
  * - Local: http://localhost:8000
+
  * ```
  *
  * ## HTTP Status Code and Status Text
