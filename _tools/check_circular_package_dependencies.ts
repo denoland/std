@@ -6,7 +6,7 @@ import {
   type ModuleJson,
 } from "@deno/graph";
 import { resolveWorkspaceSpecifiers } from "./utils.ts";
-import graphviz from "npm:node-graphviz";
+import graphviz from "graphviz";
 
 /**
  * Checks for circular dependencies in the std packages.
