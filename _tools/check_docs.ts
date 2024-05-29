@@ -92,7 +92,7 @@ function isVoidOrPromiseVoid(returnType: TsTypeDef) {
 
 function isTypeAsserts(returnType: TsTypeDef) {
   return returnType.kind === "typePredicate" &&
-    returnType.typePredicate.asserts === true;
+    returnType.typePredicate.asserts;
 }
 
 function isVoid(returnType: TsTypeDef) {
