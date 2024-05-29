@@ -11,9 +11,10 @@ import { parse } from "@std/toml/parse";
  * Extracts and parses {@link https://toml.io | TOML} from the metadata of
  * front matter content.
  *
- * @example
+ * @example Extract TOML front matter
  * ```ts
  * import { extract } from "@std/front-matter/toml";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const output = `---toml
  * title = "Three dashes marks the spot"
@@ -21,9 +22,11 @@ import { parse } from "@std/toml/parse";
  * Hello, world!`;
  * const result = extract(output);
  *
- * result.frontMatter; // 'title = "Three dashes marks the spot"'
- * result.body; // "Hello, world!"
- * result.attrs; // { title: "Three dashes marks the spot" }
+ * assertEquals(result, {
+ *   frontMatter: 'title = "Three dashes marks the spot"',
+ *   body: "Hello, world!",
+ *   attrs: { title: "Three dashes marks the spot" },
+ * });
  * ```
  */
 export const extract: Extractor = createExtractor({

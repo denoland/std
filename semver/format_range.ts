@@ -10,7 +10,15 @@ function formatComparator(comparator: Comparator): string {
 
 /**
  * Formats the range into a string
- * @example >=0.0.0 || <1.0.0
+ * @example Usage
+ * ```ts
+ * import { formatRange, parseRange } from "@std/semver";
+ * import { assertEquals } from "@std/assert";
+ *
+ * const range = parseRange(">=1.2.3 <1.2.4");
+ * assertEquals(formatRange(range), ">=1.2.3 <1.2.4");
+ * ```
+ *
  * @param range The range to format
  * @returns A string representation of the range
  */

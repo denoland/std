@@ -158,7 +158,7 @@ Deno.test({
         });
         assertObjectMatch(IniMap.from("# comment\n\ra =b").formatting, {
           commentChar: "#",
-          lineBreak: "\n\r",
+          lineBreak: "\n",
           pretty: false,
         });
       },
