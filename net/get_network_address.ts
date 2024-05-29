@@ -42,7 +42,7 @@ export function getNetworkAddress(
         // Cannot lie within 127.0.0.0/8
         ? !i.address.startsWith("127")
         // Cannot be loopback or link-local addresses
-        : !(i.address === "::1" || i.address === "fe80::1"))
+        : !(i.address === "::1" || i.address === "fe80::1") && i.scopeid === 0)
     )
     ?.address;
 }
