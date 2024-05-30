@@ -74,7 +74,7 @@ Deno.test("getNetworkAddress() works with IPv4", () => {
 
 Deno.test("getNetworkAddress() returns listenable IPv4 address", () => {
   const hostname = getNetworkAddress();
-  // Only do this test if the network is accessible
+  // Only do this test if listenable network interfaces exist
   if (hostname !== undefined) {
     using _listener = Deno.listen({ hostname, port: 0 });
   }
@@ -92,7 +92,7 @@ Deno.test("getNetworkAddress() works with IPv6", () => {
 
 Deno.test("getNetworkAddress() returns listenable IPv6 address", () => {
   const hostname = getNetworkAddress("IPv6");
-  // Only do this test if the network is accessible
+  // Only do this test if listenable network interfaces exist
   if (hostname !== undefined) {
     using _listener = Deno.listen({ hostname, port: 0 });
   }
