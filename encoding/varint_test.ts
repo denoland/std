@@ -8,11 +8,11 @@ import {
   decode32,
   encode,
   MaxUInt64,
-  MaxVarIntLen64,
+  MaxVarintLen64,
 } from "./varint.ts";
 
 function encodeDecode(i: number | bigint) {
-  const [buf, n] = encode(i, new Uint8Array(MaxVarIntLen64));
+  const [buf, n] = encode(i, new Uint8Array(MaxVarintLen64));
   const fn = (typeof i === "bigint") ? decode : decode32;
   const [j, m] = fn(buf);
   assertEquals(i, j, `${fn.name}(encode(${i})): ${i} !== ${j}`);
@@ -108,7 +108,7 @@ Deno.test("encode() encodes with offset", () => {
     [Uint8Array.of(172, 2), 3],
   );
   assertEquals(uint, Uint8Array.of(0, 172, 2));
-  uint = new Uint8Array(MaxVarIntLen64);
+  uint = new Uint8Array(MaxVarintLen64);
   uint[0] = uint[1] = uint[2] = 12;
   assertEquals(
     encode(4294967295, uint, 3),

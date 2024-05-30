@@ -37,11 +37,11 @@ export const MaxUInt64 = 18446744073709551615n;
 /**
  * The maximum length, in bytes, of a VarInt encoded 64-bit integer.
  */
-export const MaxVarIntLen64 = 10;
+export const MaxVarintLen64 = 10;
 /**
  * The maximum length, in bytes, of a VarInt encoded 32-bit integer.
  */
-export const MaxVarIntLen32 = 5;
+export const MaxVarintLen32 = 5;
 
 const MSB = 0x80;
 const REST = 0x7f;
@@ -236,7 +236,7 @@ export function decodeVarint32(buf: Uint8Array, offset = 0): [number, number] {
   let decoded = 0;
   for (
     let i = offset;
-    i <= Math.min(buf.length, offset + MaxVarIntLen32);
+    i <= Math.min(buf.length, offset + MaxVarintLen32);
     i += 1, shift += SHIFT
   ) {
     const byte = buf[i]!;
@@ -277,7 +277,7 @@ export function decodeVarint32(buf: Uint8Array, offset = 0): [number, number] {
  */
 export function encode(
   num: bigint | number,
-  buf: Uint8Array = new Uint8Array(MaxVarIntLen64),
+  buf: Uint8Array = new Uint8Array(MaxVarintLen64),
   offset = 0,
 ): [Uint8Array, number] {
   return encodeVarint(num, buf, offset);
@@ -312,14 +312,14 @@ export function encode(
  */
 export function encodeVarint(
   num: bigint | number,
-  buf: Uint8Array = new Uint8Array(MaxVarIntLen64),
+  buf: Uint8Array = new Uint8Array(MaxVarintLen64),
   offset = 0,
 ): [Uint8Array, number] {
   num = BigInt(num);
   if (num < 0n) throw new RangeError("signed input given");
   for (
     let i = offset;
-    i <= Math.min(buf.length, MaxVarIntLen64);
+    i <= Math.min(buf.length, MaxVarintLen64);
     i += 1
   ) {
     if (num < MSBN) {
