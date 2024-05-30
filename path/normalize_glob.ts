@@ -13,11 +13,14 @@ export type { GlobOptions };
 /**
  * Normalizes a glob string.
  *
- * Behaves like normalize(), but doesn't collapse "**\/.." when `globstar` is true.
+ * Behaves like
+ * {@linkcode https://jsr.io/@std/path/doc/~/normalize | normalize()}, but
+ * doesn't collapse "**\/.." when `globstar` is true.
  *
- * @param glob - glob string to normalize
- * @param options - glob options
- * @returns normalized glob string
+ * @param glob Glob string to normalize.
+ * @param options Glob options.
+ *
+ * @returns The normalized glob string.
  *
  * @example Usage
  * ```ts

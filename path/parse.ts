@@ -9,10 +9,13 @@ import { parse as windowsParse } from "./windows/parse.ts";
 export type { ParsedPath } from "./_interface.ts";
 
 /**
- * Return a `ParsedPath` object of the `path`. Use `format` to reverse the result.
+ * Return an object containing the parsed components of the path.
  *
- * @param path to process
- * @returns A `ParsedPath` object
+ * Use {@linkcode https://jsr.io/@std/path/doc/~/format | format()} to reverse
+ * the result.
+ *
+ * @param path Path to process
+ * @returns An object with the parsed path components.
  *
  * @example Usage
  * ```ts

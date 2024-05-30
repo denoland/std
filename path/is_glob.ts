@@ -2,9 +2,10 @@
 // This module is browser compatible.
 
 /**
- * Test whether the given string is a glob
+ * Test whether the given string is a glob.
  *
- * @param str - string to test
+ * @param str String to test.
+ *
  * @returns `true` if the given string is a glob, otherwise `false`
  *
  * @example Usage

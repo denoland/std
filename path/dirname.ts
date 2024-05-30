@@ -6,9 +6,11 @@ import { dirname as posixDirname } from "./posix/dirname.ts";
 import { dirname as windowsDirname } from "./windows/dirname.ts";
 
 /**
- * Return the directory path of a `path`.
- * @param path - path to extract the directory from.
- * @returns directory path
+ * Return the directory path of a pauth.
+ *
+ * @param path Path to extract the directory from.
+ *
+ * @returns The directory path.
  *
  * @example Usage
  * ```ts

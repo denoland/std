@@ -11,19 +11,18 @@ import {
 
 export type { GlobOptions, OSType };
 
-/**
- * Options for `globToRegExp`.
- */
+/** Options for {@linkcode globToRegExp}. */
 export type GlobToRegExpOptions = GlobOptions & {
   /**
    * The operating system to interpret paths as.
-   * If unset, it defaults to the current
-   * operating system.
+   *
+   * If unset, it defaults to the current operating system.
    */
   os?: OSType;
 };
 
-/** Convert a glob string to a regular expression.
+/**
+ * Converts a glob string to a regular expression.
  *
  * Tries to match bash glob expansion as closely as possible.
  *
@@ -79,14 +78,13 @@ export type GlobToRegExpOptions = GlobOptions & {
  *   `!(foo|bar)` is treated like `!(@(foo|bar)*)`. This will work correctly if
  *   the group occurs not nested at the end of the segment.
  *
- * @param glob - glob string to convert
- * @param options - conversion options
- * @returns regular expression equivalent to the glob
+ * @param glob Glob string to convert.
+ * @param options Conversion options.
+ * @returns The regular expression equivalent to the glob.
  *
  * @example Usage
  * ```ts
  * import { globToRegExp } from "@std/path/glob-to-regexp";
- * import { assertEquals } from "@std/assert/assert-equals";
  *
  * globToRegExp("*.js"); // /^[^/]*\.js\/*$/;
  * ```

@@ -4,21 +4,22 @@
 import { _common } from "./_common/common.ts";
 import { SEPARATOR } from "./constants.ts";
 
-/** Determines the common path from a set of paths, using an optional separator,
+/**
+ * Determines the common path from a set of paths, using an optional separator,
  * which defaults to the OS default separator.
  *
- * @param paths - paths to search for common path
- * @param sep - path separator to use
- * @returns common path
+ * @param paths Paths to search for common path.
+ * @param sep Path separator to use.
+ * @returns The common path.
  *
  * @example Usage
  * ```ts
- *       import { common } from "@std/path";
- *       const p = common([
- *         "./deno/std/path/mod.ts",
- *         "./deno/std/fs/mod.ts",
- *       ]);
- *       console.log(p); // "./deno/std/"
+ * import { common } from "@std/path";
+ *
+ * common([
+ *   "./deno/std/path/mod.ts",
+ *   "./deno/std/fs/mod.ts"
+ * ]); // "./deno/std/"
  * ```
  */
 export function common(

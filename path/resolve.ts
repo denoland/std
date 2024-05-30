@@ -6,10 +6,11 @@ import { resolve as posixResolve } from "./posix/resolve.ts";
 import { resolve as windowsResolve } from "./windows/resolve.ts";
 
 /**
- * Resolves path segments into a `path`
+ * Resolves path segments into a path.
  *
- * @param pathSegments to process to path
- * @returns resolved path
+ * @param pathSegments Path segments to process to path.
+ *
+ * @returns The resolved path.
  *
  * @example Usage
  * ```ts

@@ -6,9 +6,10 @@ import { isAbsolute as posixIsAbsolute } from "./posix/is_absolute.ts";
 import { isAbsolute as windowsIsAbsolute } from "./windows/is_absolute.ts";
 
 /**
- * Verifies whether provided path is absolute
+ * Verifies whether provided path is absolute.
  *
- * @param path to be verified as absolute
+ * @param path Path to be verified as absolute.
+ *
  * @returns `true` if path is absolute, `false` otherwise
  *
  * @example Usage

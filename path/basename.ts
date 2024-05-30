@@ -6,8 +6,10 @@ import { basename as posixBasename } from "./posix/basename.ts";
 import { basename as windowsBasename } from "./windows/basename.ts";
 
 /**
- * Return the last portion of a `path`.
- * Trailing directory separators are ignored, and optional suffix is removed.
+ * Return the last portion of a path.
+ *
+ * The trailing directory separators are ignored, and optional suffix is
+ * removed.
  *
  * @example Usage
  * ```ts
@@ -19,7 +21,8 @@ import { basename as windowsBasename } from "./windows/basename.ts";
  * ```
  *
  * @param path Path to extract the name from.
- * @param suffice Suffix to remove from extracted name.
+ * @param suffix Suffix to remove from extracted name.
+ *
  * @returns The basename of the path.
  */
 export function basename(path: string, suffix = ""): string {

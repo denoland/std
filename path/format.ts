@@ -7,11 +7,11 @@ import { format as windowsFormat } from "./windows/format.ts";
 import type { FormatInputPathObject } from "./_interface.ts";
 
 /**
- * Generate a path from `FormatInputPathObject` object. It does the opposite
- * of `parse`.
+ * Generate a path from a {@linkcode FormatInputPathObject} object. It does the
+ * opposite of {@linkcode https://jsr.io/@std/path/doc/~/parse | parse()}.
  *
- * @param pathObject with path
- * @returns formatted path
+ * @param pathObject Object with path components.
+ * @returns The formatted path.
  *
  * @example Usage
  * ```ts

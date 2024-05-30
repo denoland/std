@@ -8,11 +8,11 @@ import { toFileUrl as windowsToFileUrl } from "./windows/to_file_url.ts";
 /**
  * Converts a path string to a file URL.
  *
- * @param path to convert to file URL
- * @returns file URL equivalent to the path
+ * @param path Path to convert to file URL.
+ * @returns The file URL equivalent to the path.
  *
  * @example Usage
- * ```ts, no-eval
+ * ```ts no-eval
  * import { toFileUrl } from "@std/path/to-file-url";
  *
  * // posix

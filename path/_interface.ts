@@ -40,6 +40,6 @@ export interface ParsedPath {
 }
 
 /**
- * A parsed path object to be consumed by path.format().
+ * A parsed path object to be consumed by `path.format()`.
  */
 export type FormatInputPathObject = Partial<ParsedPath>;

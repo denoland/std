@@ -6,11 +6,13 @@ import { relative as posixRelative } from "./posix/relative.ts";
 import { relative as windowsRelative } from "./windows/relative.ts";
 
 /**
- * Return the relative path from `from` to `to` based on current working directory.
+ * Return the relative path from `from` to `to` based on current working
+ * directory.
  *
- * @param from path in current working directory
- * @param to path in current working directory
- * @returns relative path from `from` to `to`
+ * @param from Path in current working directory.
+ * @param to Path in current working directory.
+ *
+ * @returns The relative path from `from` to `to`.
  *
  * @example Usage
  * ```ts

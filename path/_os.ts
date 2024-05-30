@@ -3,7 +3,8 @@
 
 // Keep this up-to-date with Deno.build.os
 /**
- * Operating system type, equivalent to the type of `Deno.build.os`.
+ * Operating system type, equivalent to the type of
+ * {@linkcode https://deno.land/api?s=Deno.build | Deno.build.os}.
  */
 export type OSType =
   | "darwin"

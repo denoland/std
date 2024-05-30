@@ -9,13 +9,15 @@ import { joinGlobs as windowsJoinGlobs } from "./windows/join_globs.ts";
 export type { GlobOptions };
 
 /**
- * Joins a sequence of `globs`, then normalizes the resulting glob.
+ * Joins a sequence of globs, then normalizes the resulting glob.
  *
- * Behaves like join(), but doesn't collapse "**\/.." when `globstar` is true.
+ * Behaves like {@linkcode https://jsr.io/@std/path/doc/~/join | join()}, but
+ * doesn't collapse `**\/..` when `globstar` is true.
  *
- * @param globs - globs to be joined and normalized
- * @param options - glob options
- * @returns joined and normalized glob string
+ * @param globs Globs to be joined and normalized.
+ * @param options Glob options.
+ *
+ * @returns The joined and normalized glob string.
  *
  * @example Usage
  * ```ts
