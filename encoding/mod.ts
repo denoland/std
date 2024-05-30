@@ -28,7 +28,7 @@ export {
   decodeVarint,
   decodeVarint32,
   encodeVarint,
-  MaxUInt64,
+  MaxUint64,
   MaxVarIntLen32,
   MaxVarIntLen64,
 } from "./varint.ts";

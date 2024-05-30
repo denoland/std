@@ -7,7 +7,7 @@ import {
   decode,
   decode32,
   encode,
-  MaxUInt64,
+  MaxUint64,
   MaxVarIntLen64,
 } from "./varint.ts";
 
@@ -139,7 +139,7 @@ Deno.test("encodeDecode() handles BigInt", () => {
   ) {
     encodeDecode(i);
   }
-  for (let i = 0x7n; i < MaxUInt64; i <<= 1n) {
+  for (let i = 0x7n; i < MaxUint64; i <<= 1n) {
     encodeDecode(i);
   }
 });
