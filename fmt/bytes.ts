@@ -59,7 +59,7 @@ export interface FormatOptions {
  *
  * This module is browser compatible.
  *
- * @example
+ * @example Usage
  * ```ts
  * import { format } from "@std/fmt/bytes";
  *
@@ -81,6 +81,10 @@ export interface FormatOptions {
  * format(1337, { locale: "de" });
  * //=> '1,34 kB'
  * ```
+ *
+ * @param num The bytes value to format
+ * @param options The options for formatting
+ * @returns The formatted string
  */
 export function format(
   num: number,

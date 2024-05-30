@@ -23,7 +23,7 @@
  * @module
  */
 
-import { validateBinaryLike } from "./_util.ts";
+import { validateBinaryLike } from "./_validate_binary_like.ts";
 
 /**
  * Supported ascii85 standards for {@linkcode EncodeAscii85Options} and

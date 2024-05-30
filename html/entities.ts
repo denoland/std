@@ -25,7 +25,7 @@ const rawRe = new RegExp(`[${[...rawToEntity.keys()].join("")}]`, "g");
 /**
  * Escapes text for safe interpolation into HTML text content and quoted attributes.
  *
- * @example
+ * @example Usage
  * ```ts
  * import { escape } from "@std/html/entities";
  *
@@ -35,6 +35,9 @@ const rawRe = new RegExp(`[${[...rawToEntity.keys()].join("")}]`, "g");
  * // even if named HTML entities exist for them.
  * escape("þð"); // "þð"
  * ```
+ *
+ * @param str The string to escape.
+ * @returns The escaped string.
  */
 export function escape(str: string): string {
   return str.replaceAll(rawRe, (m) => rawToEntity.get(m)!);
@@ -57,7 +60,7 @@ const entityListRegexCache = new WeakMap<EntityList, RegExp>();
 /**
  * Unescapes HTML entities in text.
  *
- * @example
+ * @example Usage
  * ```ts
  * import { unescape } from "@std/html/entities";
  *
@@ -70,6 +73,10 @@ const entityListRegexCache = new WeakMap<EntityList, RegExp>();
  *
  * unescape("&thorn;&eth;", { entityList }); // "þð"
  * ```
+ *
+ * @param str The string to unescape.
+ * @param options Options for unescaping.
+ * @returns The unescaped string.
  */
 export function unescape(
   str: string,
