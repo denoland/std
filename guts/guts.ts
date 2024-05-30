@@ -47,11 +47,11 @@ export default (name: string, cradleMaker: CradleMaker) => {
   Deno.test(prefix + 'rm', async () => {
     const session = await cradleMaker()
     const first = await session.rm({ repo: 'dreamcatcher-tech/HAL' })
-    expect(first).toBe(false)
+    expect(first).toBeFalsy()
 
     await session.init({ repo: 'dreamcatcher-tech/HAL' })
     const second = await session.rm({ repo: 'dreamcatcher-tech/HAL' })
-    expect(second).toBe(true)
+    expect(second).toBeTruthy()
 
     await session.engineStop()
   })

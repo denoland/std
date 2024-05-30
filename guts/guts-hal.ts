@@ -81,10 +81,10 @@ export default (name: string, cradleMaker: CradleMaker) => {
         session,
       )
       await expect(terminal.exists(ENTRY_HELP_FILE, session)).resolves
-        .toBe(true)
+        .toBeTruthy()
       await sessionBase.setPromptTarget({ help: 'help-fixture' })
       await expect(terminal.exists(ENTRY_HELP_FILE, session)).resolves
-        .toBe(true)
+        .toBeTruthy()
 
       await hal.prompt({ text: 'hello again' })
       const messages = await terminal.readJSON<Messages[]>(

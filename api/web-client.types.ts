@@ -441,7 +441,8 @@ export const print = (pid?: PID) => {
     if (machineIdRegex.test(segment)) {
       return colorize(segment)
     }
-    return colorize(segment, true)
+    const noSubstring = true
+    return colorize(segment, noSubstring)
   })
   return `${colorize(pid.repoId)}/${pid.account}/${pid.repository}:${
     branches.join('/')

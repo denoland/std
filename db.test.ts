@@ -3,6 +3,6 @@ import DB from '@/db.ts'
 
 Deno.test('db', async () => {
   const db = await DB.create(DB.generateAesKey())
-  expect(isKvTestMode()).toBe(true)
+  expect(isKvTestMode()).toBeTruthy()
   db.stop()
 })

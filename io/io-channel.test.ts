@@ -12,7 +12,7 @@ const pid = { ...partial, repoId: '0' }
 Deno.test('io-channel', () => {
   const json = serialAccumulation()
   const io = IOChannel.readObject(json, pid)
-  expect(io.isExecutionAvailable()).toBe(true)
+  expect(io.isExecutionAvailable()).toBeTruthy()
   const { request, sequence } = io.setExecution()
   const executing = io.getExecution()
   const outbound = json.requests[1]
@@ -24,7 +24,7 @@ Deno.test('remote requests', () => {
   const json = serialAccumulation()
   json.requests[1].target.branches = ['main', 'other']
   const io = IOChannel.readObject(json, pid)
-  expect(io.isExecutionAvailable()).toBe(false)
+  expect(io.isExecutionAvailable()).toBeFalsy()
 })
 
 // refuse to run unless all of a pending layer is solved
