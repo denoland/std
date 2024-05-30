@@ -26,6 +26,7 @@ type DocNodeWithJsDoc<T = DocNodeBase> = T & {
 };
 
 const ENTRY_POINTS = [
+  "../assert/mod.ts",
   "../async/mod.ts",
   "../bytes/mod.ts",
   "../cli/mod.ts",
