@@ -32,6 +32,15 @@ const INTERFACES: Deno.NetworkInterfaceInfo[] = [
     cidr: "fe80::1/64",
     mac: "00:00:00:00:00:00",
   },
+  {
+    family: "IPv6",
+    name: "utun2",
+    address: "fe80::7c00:d02e:f1ae:3980",
+    netmask: "ffff:ffff:ffff:ffff::",
+    scopeid: 17,
+    cidr: "fe80::7c00:d02e:f1ae:3980/64",
+    mac: "00:00:00:00:00:00"
+  },
   // Network accessible
   {
     family: "IPv4",
@@ -60,7 +69,15 @@ Deno.test("getNetworkAddress() works with IPv4", () => {
     () => INTERFACES,
   );
   const hostname = getNetworkAddress();
-  assertEquals(hostname, INTERFACES[3]!.address);
+  assertEquals(hostname, INTERFACES[4]!.address);
+});
+
+Deno.test("getNetworkAddress() returns listenable IPv4 address", () => {
+  const hostname = getNetworkAddress();
+  // Only do this test if listenable network interfaces exist
+  if (hostname !== undefined) {
+    using _listener = Deno.listen({ hostname, port: 0 });
+  }
 });
 
 Deno.test("getNetworkAddress() works with IPv6", () => {
@@ -70,5 +87,13 @@ Deno.test("getNetworkAddress() works with IPv6", () => {
     () => INTERFACES,
   );
   const hostname = getNetworkAddress("IPv6");
-  assertEquals(hostname, INTERFACES[4]!.address);
+  assertEquals(hostname, INTERFACES[5]!.address);
+});
+
+Deno.test("getNetworkAddress() returns listenable IPv6 address", () => {
+  const hostname = getNetworkAddress("IPv6");
+  // Only do this test if listenable network interfaces exist
+  if (hostname !== undefined) {
+    using _listener = Deno.listen({ hostname, port: 0 });
+  }
 });
