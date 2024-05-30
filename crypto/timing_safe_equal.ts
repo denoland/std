@@ -1,7 +1,16 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-import { assert } from "@std/assert/assert";
+function toDataView(
+  value: ArrayBufferView | ArrayBufferLike | DataView,
+): DataView {
+  if (value instanceof DataView) {
+    return value;
+  }
+  return ArrayBuffer.isView(value)
+    ? new DataView(value.buffer, value.byteOffset, value.byteLength)
+    : new DataView(value);
+}
 
 /**
  * When checking the values of cryptographic hashes are equal, default
@@ -39,26 +48,14 @@ export function timingSafeEqual(
   a: ArrayBufferView | ArrayBufferLike | DataView,
   b: ArrayBufferView | ArrayBufferLike | DataView,
 ): boolean {
-  if (a.byteLength !== b.byteLength) {
-    return false;
-  }
-  if (!(a instanceof DataView)) {
-    a = ArrayBuffer.isView(a)
-      ? new DataView(a.buffer, a.byteOffset, a.byteLength)
-      : new DataView(a);
-  }
-  if (!(b instanceof DataView)) {
-    b = ArrayBuffer.isView(b)
-      ? new DataView(b.buffer, b.byteOffset, b.byteLength)
-      : new DataView(b);
-  }
-  assert(a instanceof DataView);
-  assert(b instanceof DataView);
+  if (a.byteLength !== b.byteLength) return false;
+  const dataViewA = toDataView(a);
+  const dataViewB = toDataView(b);
   const length = a.byteLength;
   let out = 0;
   let i = -1;
   while (++i < length) {
-    out |= a.getUint8(i) ^ b.getUint8(i);
+    out |= dataViewA.getUint8(i) ^ dataViewB.getUint8(i);
   }
   return out === 0;
 }

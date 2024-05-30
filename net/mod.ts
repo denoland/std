@@ -7,3 +7,4 @@
  */
 
 export * from "./get_available_port.ts";
+export * from "./get_network_address.ts";

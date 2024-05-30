@@ -1,6 +1,8 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import { assertEquals } from "@std/assert";
 import { common } from "./mod.ts";
+import * as posix from "./posix/mod.ts";
+import * as windows from "./windows/mod.ts";
 
 Deno.test({
   name: "common() returns shared path",
@@ -82,5 +84,35 @@ Deno.test({
       "/",
     );
     assertEquals(actual, "./deno/std/path/mod.ts");
+  },
+});
+
+Deno.test({
+  name: "windows.common() returns shared path",
+  fn() {
+    const actual = windows.common(
+      [
+        "file://deno/cli/js/deno.ts",
+        "file://deno/std/path/mod.ts",
+        "file://deno/cli/js/main.ts",
+      ],
+      "/",
+    );
+    assertEquals(actual, "file://deno/");
+  },
+});
+
+Deno.test({
+  name: "posix.common() returns shared path",
+  fn() {
+    const actual = posix.common(
+      [
+        "file://deno/cli/js/deno.ts",
+        "file://deno/std/path/mod.ts",
+        "file://deno/cli/js/main.ts",
+      ],
+      "/",
+    );
+    assertEquals(actual, "file://deno/");
   },
 });
