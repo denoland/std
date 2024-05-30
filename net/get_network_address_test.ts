@@ -39,7 +39,7 @@ const INTERFACES: Deno.NetworkInterfaceInfo[] = [
     netmask: "ffff:ffff:ffff:ffff::",
     scopeid: 17,
     cidr: "fe80::7c00:d02e:f1ae:3980/64",
-    mac: "00:00:00:00:00:00"
+    mac: "00:00:00:00:00:00",
   },
   // Network accessible
   {
