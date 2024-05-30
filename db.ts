@@ -264,7 +264,6 @@ export default class DB {
       }
     }
     pipe().catch(buffer.throw)
-    // TODO once piece replies are tracked directly, this can be removed
     const drain = async () => {
       let last: Splice | undefined
       for await (const promise of buffer) {
@@ -281,7 +280,9 @@ export default class DB {
 
         const splices = [splice]
         while (splices[0].commit.parent[0] !== last.oid) {
-          console.log('splice race', print(splice.pid), splices.length)
+          // TODO once piece replies are tracked directly, this can be removed
+          // catch up should be the responsibility of the client, not the server
+          console.error('splice race', print(splice.pid), splices.length)
           const primeParent = splices[0].commit.parent[0]
           const next = await this.#getSplice(pid, primeParent, path)
           splices.unshift(next)
