@@ -18,9 +18,9 @@ import { basename as windowsBasename } from "./windows/basename.ts";
  * basename("/home/user/Documents/image.png", ".png"); // "image"
  * ```
  *
- * @param path - path to extract the name from.
- * @param [suffix] - suffix to remove from extracted name.
- * @returns basename of the path.
+ * @param path Path to extract the name from.
+ * @param suffice Suffix to remove from extracted name.
+ * @returns The basename of the path.
  */
 export function basename(path: string, suffix = ""): string {
   return isWindows
