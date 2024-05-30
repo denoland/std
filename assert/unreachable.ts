@@ -5,12 +5,15 @@ import { AssertionError } from "./assertion_error.ts";
 /**
  * Use this to assert unreachable code.
  *
- * @example
- * ```ts
+ * @example Usage
+ * ```ts no-eval
  * import { unreachable } from "@std/assert/unreachable";
  *
  * unreachable(); // Throws
  * ```
+ *
+ * @param reason The reason why the code should be unreachable.
+ * @returns Never returns, always throws.
  */
 export function unreachable(reason?: string): never {
   throw new AssertionError(reason ?? "unreachable");

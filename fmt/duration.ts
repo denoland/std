@@ -95,6 +95,7 @@ export interface PrettyDurationOptions {
 /**
  * Format milliseconds to time duration.
  *
+ * @example Usage
  * ```ts
  * import { format } from "@std/fmt/duration";
  *
@@ -103,6 +104,10 @@ export interface PrettyDurationOptions {
  * format(99674, { ignoreZero: true }); // "1m 39s 674ms"
  * format(99674, { style: "full", ignoreZero: true }); // "1 minutes, 39 seconds, 674 milliseconds"
  * ```
+ *
+ * @param ms The milliseconds value to format
+ * @param options The options for formatting
+ * @returns The formatted string
  */
 export function format(
   ms: number,

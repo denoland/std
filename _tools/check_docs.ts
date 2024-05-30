@@ -26,6 +26,7 @@ type DocNodeWithJsDoc<T = DocNodeBase> = T & {
 };
 
 const ENTRY_POINTS = [
+  "../assert/mod.ts",
   "../async/mod.ts",
   "../bytes/mod.ts",
   "../cli/mod.ts",
@@ -34,13 +35,22 @@ const ENTRY_POINTS = [
   "../datetime/mod.ts",
   "../encoding/mod.ts",
   "../expect/mod.ts",
+  "../fmt/bytes.ts",
+  "../fmt/colors.ts",
+  "../fmt/duration.ts",
+  "../fmt/printf.ts",
+  "../front_matter/mod.ts",
+  "../html/mod.ts",
   "../http/mod.ts",
   "../internal/mod.ts",
   "../jsonc/mod.ts",
   "../media_types/mod.ts",
   "../semver/mod.ts",
+  "../streams/mod.ts",
   "../text/mod.ts",
+  "../toml/mod.ts",
   "../ulid/mod.ts",
+  "../uuid/mod.ts",
   "../webgpu/mod.ts",
 ] as const;
 
@@ -81,6 +91,11 @@ function isVoidOrPromiseVoid(returnType: TsTypeDef) {
       returnType.typeRef.typeName === "Promise" &&
       returnType.typeRef.typeParams?.length === 1 &&
       isVoid(returnType.typeRef.typeParams[0]!));
+}
+
+function isTypeAsserts(returnType: TsTypeDef) {
+  return returnType.kind === "typePredicate" &&
+    returnType.typePredicate.asserts;
 }
 
 function isVoid(returnType: TsTypeDef) {
@@ -242,7 +257,8 @@ function assertFunctionDocs(
   }
   if (
     document.functionDef.returnType !== undefined &&
-    !isVoidOrPromiseVoid(document.functionDef.returnType)
+    !isVoidOrPromiseVoid(document.functionDef.returnType) &&
+    !isTypeAsserts(document.functionDef.returnType)
   ) {
     assertHasReturnTag(document);
   }
@@ -342,8 +358,15 @@ function assertConstructorDocs(
   assertHasExampleTag(constructor);
 }
 
+function resolve(specifier: string, referrer: string): string {
+  if (specifier.startsWith("@std/") && specifier.split("/").length > 2) {
+    specifier = specifier.replace("@std/", "../").replaceAll("-", "_") + ".ts";
+  }
+  return new URL(specifier, referrer).href;
+}
+
 async function checkDocs(specifier: string) {
-  const docs = await doc(specifier);
+  const docs = await doc(specifier, { resolve });
   for (const d of docs.filter(isExported)) {
     if (d.jsDoc === undefined) continue; // this is caught by other checks
     const document = d as DocNodeWithJsDoc<DocNode>;
@@ -395,5 +418,7 @@ if (diagnostics.length > 0) {
       "color: gray",
     );
   }
+
+  console.log(`%c${diagnostics.length} errors found`, "color: red");
   Deno.exit(1);
 }
