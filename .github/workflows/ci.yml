@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches: [main, next]
   pull_request:
     branches: [main]
 
@@ -54,22 +54,18 @@ jobs:
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
 
-      - name: Create lcov file
-        run: deno task cov:gen
-
-      - name: Upload coverage
-        uses: codecov/codecov-action@v4
-        with:
-          name: ${{ matrix.os }}
-          files: cov.lcov
-          token: ${{ secrets.CODECOV_TOKEN }}
-          slug: dreamcatcher-tech/artifact
-
       - name: Run benchmark
         if: matrix.os == 'ubuntu-latest'
         run: deno task bench | tee output.txt
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+
+      - name: Check branch
+        run: |
+          if [[ "${{ github.ref }}" != "refs/heads/main" ]]; then
+            echo "This is not the main branch. Exiting..."
+            exit 1
+          fi
 
       - name: Store benchmark result
         if: matrix.os == 'ubuntu-latest'
@@ -84,3 +80,14 @@ jobs:
           alert-threshold: '200%'
           comment-on-alert: true
           fail-on-alert: true
+
+      - name: Create lcov file  
+        run: deno task cov:gen
+  
+      - name: Upload coverage
+        uses: codecov/codecov-action@v4
+        with:
+          name: ${{ matrix.os }}
+          files: cov.lcov
+          token: ${{ secrets.CODECOV_TOKEN }}
+          slug: dreamcatcher-tech/artifact
