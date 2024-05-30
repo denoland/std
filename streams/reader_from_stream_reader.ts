@@ -5,18 +5,22 @@ import { readerFromStreamReader as _readerFromStreamReader } from "@std/io/reade
 import type { Reader } from "@std/io/types";
 
 /**
- * Create a {@linkcode Reader} from a {@linkcode ReadableStreamDefaultReader}.
+ * Create a {@linkcode https://jsr.io/@std/io/doc/types/~/Reader | Reader} from a {@linkcode ReadableStreamDefaultReader}.
  *
- * @example
+ * @param streamReader A `ReadableStreamDefaultReader` to convert into a `Reader`.
+ * @returns A `Reader` that reads from the `streamReader`.
+ *
+ * @example Copy the response body of a fetch request to the blackhole
  * ```ts
  * import { copy } from "@std/io/copy";
  * import { readerFromStreamReader } from "@std/streams/reader-from-stream-reader";
+ * import { devNull } from "node:os";
  *
  * const res = await fetch("https://deno.land");
- * using file = await Deno.open("./deno.land.html", { create: true, write: true });
+ * using blackhole = await Deno.open(devNull, { write: true });
  *
  * const reader = readerFromStreamReader(res.body!.getReader());
- * await copy(reader, file);
+ * await copy(reader, blackhole);
  * ```
  *
  * @deprecated This will be removed in 1.0.0. Import from

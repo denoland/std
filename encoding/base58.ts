@@ -22,7 +22,7 @@
  * @module
  */
 
-import { validateBinaryLike } from "./_util.ts";
+import { validateBinaryLike } from "./_validate_binary_like.ts";
 
 // deno-fmt-ignore
 const mapBase58: Record<string, number> = {
@@ -145,7 +145,9 @@ export function decodeBase58(b58: string): Uint8Array {
     let i = 0;
 
     if (carry === undefined) {
-      throw new Error(`Invalid base58 char at index ${idx} with value ${char}`);
+      throw new TypeError(
+        `Invalid base58 char at index ${idx} with value ${char}`,
+      );
     }
 
     for (

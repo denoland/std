@@ -24,7 +24,7 @@
  * @module
  */
 
-import { validateBinaryLike } from "./_util.ts";
+import { validateBinaryLike } from "./_validate_binary_like.ts";
 
 const base64abc = [
   "A",

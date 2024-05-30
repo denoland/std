@@ -6,13 +6,17 @@ import { AssertionError } from "./assertion_error.ts";
  * Make an assertion that `actual` not match RegExp `expected`. If match
  * then throw.
  *
- * @example
- * ```ts
+ * @example Usage
+ * ```ts no-eval
  * import { assertNotMatch } from "@std/assert/assert-not-match";
  *
  * assertNotMatch("Denosaurus", RegExp(/Raptor/)); // Doesn't throw
  * assertNotMatch("Raptor", RegExp(/Raptor/)); // Throws
  * ```
+ *
+ * @param actual The actual value to match.
+ * @param expected The expected value to not match.
+ * @param msg The optional message to display if the assertion fails.
  */
 export function assertNotMatch(
   actual: string,

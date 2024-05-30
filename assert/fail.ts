@@ -5,12 +5,15 @@ import { assert } from "./assert.ts";
 /**
  * Forcefully throws a failed assertion.
  *
- * @example
- * ```ts
+ * @example Usage
+ * ```ts no-eval
  * import { fail } from "@std/assert/fail";
  *
  * fail("Deliberately failed!"); // Throws
  * ```
+ *
+ * @param msg Optional message to include in the error.
+ * @returns Never returns, always throws.
  */
 export function fail(msg?: string): never {
   const msgSuffix = msg ? `: ${msg}` : ".";

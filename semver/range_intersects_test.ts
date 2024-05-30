@@ -96,7 +96,7 @@ Deno.test({
       ["<=1.2.0", "<1.3.0", true],
       ["<1.2.0", "<=1.3.0", true],
 
-      // Different directions, same semver and inclusive operator
+      // Different directions, same SemVer and inclusive operator
       [">=1.3.0", "<=1.3.0", true],
       [">=v1.3.0", "<=1.3.0", true],
       [">=1.3.0", ">=1.3.0", true],
