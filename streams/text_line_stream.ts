@@ -15,20 +15,79 @@ export interface TextLineStreamOptions {
  * Transform a stream into a stream where each chunk is divided by a newline,
  * be it `\n` or `\r\n`. `\r` can be enabled via the `allowCR` option.
  *
- * @example
+ * If you want to split by a custom delimiter, consider using {@linkcode TextDelimiterStream}.
+ *
+ * @example JSON Lines
  * ```ts
  * import { TextLineStream } from "@std/streams/text-line-stream";
+ * import { toTransformStream } from "@std/streams/to-transform-stream";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
- * const res = await fetch("https://example.com");
- * const lines = res.body!
- *   .pipeThrough(new TextDecoderStream())
- *   .pipeThrough(new TextLineStream());
+ * const stream = ReadableStream.from([
+ *   '{"name": "Alice", "age": ',
+ *   '30}\n{"name": "Bob", "age"',
+ *   ": 25}\n",
+ * ]);
+ *
+ * type Person = { name: string; age: number };
+ *
+ * // Split the stream by newline and parse each line as a JSON object
+ * const jsonStream = stream.pipeThrough(new TextLineStream())
+ *   .pipeThrough(toTransformStream(async function* (src) {
+ *     for await (const chunk of src) {
+ *       if (chunk.trim().length === 0) {
+ *         continue;
+ *       }
+ *       yield JSON.parse(chunk) as Person;
+ *     }
+ *   }));
+ *
+ * assertEquals(
+ *   await Array.fromAsync(jsonStream),
+ *   [{ "name": "Alice", "age": 30 }, { "name": "Bob", "age": 25 }],
+ * );
+ * ```
+ *
+ * @example allowCR: true
+ * ```ts
+ * import { TextLineStream } from "@std/streams/text-line-stream";
+ * import { assertEquals } from "@std/assert/assert-equals";
+ *
+ * const stream = ReadableStream.from([
+ *   "CR\rLF",
+ *   "\nCRLF\r\ndone",
+ * ]);
+ *
+ * const lineStream = stream.pipeThrough(new TextLineStream({ allowCR: true }));
+ *
+ * assertEquals(
+ *   await Array.fromAsync(lineStream),
+ *   ["CR", "LF", "CRLF", "done"],
+ * );
  * ```
  */
 export class TextLineStream extends TransformStream<string, string> {
   #currentLine = "";
 
-  /** Constructs a new instance. */
+  /**
+   * Constructs a new instance.
+   *
+   * @param options Options for the stream.
+   *
+   * @example No parameters
+   * ```ts
+   * import { TextLineStream } from "@std/streams/text-line-stream";
+   *
+   * const textLineStream = new TextLineStream();
+   * ```
+   *
+   * @example allowCR = true
+   * ```ts
+   * import { TextLineStream } from "@std/streams/text-line-stream";
+   *
+   * const textLineStream = new TextLineStream({ allowCR: true });
+   * ```
+   */
   constructor(options: TextLineStreamOptions = { allowCR: false }) {
     super({
       transform: (chars, controller) => {

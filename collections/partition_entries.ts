@@ -6,7 +6,7 @@
  * the given record that match the given predicate and the second one containing
  * all that do not.
  *
- * @template T The type of the values in the record.
+ * @typeParam T The type of the values in the record.
  *
  * @param record The record to partition.
  * @param predicate The predicate function to determine which entries go where.

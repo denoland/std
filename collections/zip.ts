@@ -7,7 +7,7 @@ import { minOf } from "./min_of.ts";
  * Builds N-tuples of elements from the given N arrays with matching indices,
  * stopping when the smallest array's end is reached.
  *
- * @template T the type of the tuples produced by this function.
+ * @typeParam T the type of the tuples produced by this function.
  *
  * @param arrays The arrays to zip.
  *

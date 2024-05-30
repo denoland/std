@@ -149,8 +149,19 @@ export interface ServeFileOptions {
 
 /**
  * Returns an HTTP Response with the requested file as the body.
+ *
+ * @example Usage
+ * ```ts no-eval
+ * import { serveFile } from "@std/http/file-server";
+ *
+ * Deno.serve((req) => {
+ *   return serveFile(req, "README.md");
+ * });
+ * ```
+ *
  * @param req The server request context used to cleanup the file handle.
  * @param filePath Path of the file to serve.
+ * @returns A response for the request.
  */
 export async function serveFile(
   req: Request,
@@ -578,7 +589,8 @@ export interface ServeDirOptions {
 /**
  * Serves the files under the given directory root (opts.fsRoot).
  *
- * ```ts
+ * @example Usage
+ * ```ts no-eval
  * import { serveDir } from "@std/http/file-server";
  *
  * Deno.serve((req) => {
@@ -593,9 +605,9 @@ export interface ServeDirOptions {
  * });
  * ```
  *
- * Optionally you can pass `urlRoot` option. If it's specified that part is stripped from the beginning of the requested pathname.
+ * @example Optionally you can pass `urlRoot` option. If it's specified that part is stripped from the beginning of the requested pathname.
  *
- * ```ts
+ * ```ts no-eval
  * import { serveDir } from "@std/http/file-server";
  *
  * // ...
@@ -608,6 +620,8 @@ export interface ServeDirOptions {
  * The above example serves `./public/path/to/file` for the request to `/static/path/to/file`.
  *
  * @param req The request to handle
+ * @param opts Additional options.
+ * @returns A response for the request.
  */
 export async function serveDir(
   req: Request,

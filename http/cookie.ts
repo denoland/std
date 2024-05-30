@@ -8,7 +8,7 @@ import { assert } from "@std/assert/assert";
 /**
  * Represents an HTTP Cookie.
  *
- * @see {@link https://tools.ietf.org/html/rfc6265#section-4.1.1}
+ * @see {@link https://www.rfc-editor.org/rfc/rfc6265.html#section-4.2.1}
  */
 export interface Cookie {
   /** Name of the cookie. */
@@ -72,7 +72,7 @@ function toString(cookie: Cookie): string {
   out.push(`${cookie.name}=${cookie.value}`);
 
   // Fallback for invalid Set-Cookie
-  // ref: https://tools.ietf.org/html/draft-ietf-httpbis-cookie-prefixes-00#section-3.1
+  // ref: https://www.rfc-editor.org/rfc/rfc6265.html#section-3.1
   if (cookie.name.startsWith("__Secure")) {
     cookie.secure = true;
   }
@@ -129,7 +129,7 @@ function validateName(name: string | undefined | null) {
 
 /**
  * Validate Path Value.
- * See {@link https://tools.ietf.org/html/rfc6265#section-4.1.2.4}.
+ * See {@link https://www.rfc-editor.org/rfc/rfc6265.html#section-4.1.2.4}.
  * @param path Path value.
  */
 function validatePath(path: string | null) {
@@ -151,7 +151,7 @@ function validatePath(path: string | null) {
 
 /**
  * Validate Cookie Value.
- * See {@link https://tools.ietf.org/html/rfc6265#section-4.1}.
+ * See {@link https://www.rfc-editor.org/rfc/rfc6265.html#section-4.1}.
  * @param value Cookie value.
  */
 function validateValue(name: string, value: string | null) {
@@ -178,7 +178,7 @@ function validateValue(name: string, value: string | null) {
 
 /**
  * Validate Cookie Domain.
- * See {@link https://datatracker.ietf.org/doc/html/rfc6265#section-4.1.2.3}.
+ * See {@link https://www.rfc-editor.org/rfc/rfc6265.html#section-4.1.2.3}.
  * @param domain Cookie domain.
  */
 function validateDomain(domain: string) {
@@ -194,7 +194,7 @@ function validateDomain(domain: string) {
 /**
  * Parse cookies of a header
  *
- * @example
+ * @example Usage
  * ```ts
  * import { getCookies } from "@std/http/cookie";
  *
@@ -227,7 +227,7 @@ export function getCookies(headers: Headers): Record<string, string> {
 /**
  * Set the cookie header properly in the headers
  *
- * @example
+ * @example Usage
  * ```ts
  * import {
  *   Cookie,
@@ -247,7 +247,7 @@ export function getCookies(headers: Headers): Record<string, string> {
  */
 export function setCookie(headers: Headers, cookie: Cookie) {
   // Parsing cookie headers to make consistent set-cookie header
-  // ref: https://tools.ietf.org/html/rfc6265#section-4.1.1
+  // ref: https://www.rfc-editor.org/rfc/rfc6265.html#section-4.1.1
   const v = toString(cookie);
   if (v) {
     headers.append("Set-Cookie", v);
@@ -260,7 +260,7 @@ export function setCookie(headers: Headers, cookie: Cookie) {
  * > Note: Deleting a `Cookie` will set its expiration date before now. Forcing
  * > the browser to delete it.
  *
- * @example
+ * @example Usage
  * ```ts
  * import { deleteCookie } from "@std/http/cookie";
  *
@@ -376,7 +376,7 @@ function parseSetCookie(value: string): Cookie | null {
 /**
  * Parse set-cookies of a header
  *
- * @example
+ * @example Usage
  * ```ts
  * import { getSetCookies } from "@std/http/cookie";
  *

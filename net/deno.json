@@ -1,6 +1,6 @@
 {
   "name": "@std/net",
-  "version": "0.224.0",
+  "version": "0.224.1",
   "exports": {
     ".": "./mod.ts",
     "./get-available-port": "./get_available_port.ts",

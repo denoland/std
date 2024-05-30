@@ -373,13 +373,20 @@ export function toContain(
   // deno-lint-ignore no-explicit-any
   const doesContain = (context.value as any)?.includes?.(expected);
 
+  const fmtValue = format(context.value);
+  const fmtExpected = format(expected);
+
   if (context.isNot) {
     if (doesContain) {
-      throw new AssertionError("The value contains the expected item");
+      throw new AssertionError(
+        `The value ${fmtValue} contains the expected item ${fmtExpected}`,
+      );
     }
   } else {
     if (!doesContain) {
-      throw new AssertionError("The value doesn't contain the expected item");
+      throw new AssertionError(
+        `The value ${fmtValue} doesn't contain the expected item ${fmtExpected}`,
+      );
     }
   }
 }
@@ -399,13 +406,29 @@ export function toContainEqual(
     }
   }
 
+  const prettyStringify = (js: unknown) =>
+    JSON.stringify(js, null, "\t")
+      .replace(/\"|\n|\t/g, "")
+      .slice(0, 100);
+
+  const fmtValue = prettyStringify(context.value);
+  const fmtExpected = prettyStringify(expected);
+
   if (context.isNot) {
     if (doesContain) {
-      throw new AssertionError("The value contains the expected item");
+      throw new AssertionError(
+        `The value contains the expected item.
+Value: ${fmtValue}
+Expected: ${fmtExpected}`,
+      );
     }
   } else {
     if (!doesContain) {
-      throw new AssertionError("The value doesn't contain the expected item");
+      throw new AssertionError(
+        `The value doesn't contain the expected item.
+Value: ${fmtValue}
+Expected: ${fmtExpected}`,
+      );
     }
   }
 }

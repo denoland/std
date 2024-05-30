@@ -4,8 +4,8 @@
 /**
  * Creates a new object by excluding the specified keys from the provided object.
  *
- * @template T The type of the object.
- * @template K The type of the keys to omit.
+ * @typeParam T The type of the object.
+ * @typeParam K The type of the keys to omit.
  *
  * @param obj The object to omit keys from.
  * @param keys The keys to omit from the object.

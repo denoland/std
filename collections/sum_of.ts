@@ -5,7 +5,7 @@
  * Applies the given selector to all elements in the given collection and
  * calculates the sum of the results.
  *
- * @template T The type of the array elements.
+ * @typeParam T The type of the array elements.
  *
  * @param array The array to calculate the sum of.
  * @param selector The selector function to get the value to sum.

@@ -1,8 +1,16 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-import { assert, assertEquals } from "@std/assert";
+import { assert, assertEquals, assertThrows } from "@std/assert";
 import { BinaryHeap } from "./binary_heap.ts";
 import { ascend, descend } from "./comparators.ts";
 import { type Container, MyMath } from "./_test_utils.ts";
+
+Deno.test("BinaryHeap throws if compare is not a function", () => {
+  assertThrows(
+    () => new BinaryHeap({} as (a: number, b: number) => number),
+    TypeError,
+    "compare must be a function",
+  );
+});
 
 Deno.test("BinaryHeap works with default descend comparator", () => {
   const maxHeap = new BinaryHeap<number>();
@@ -337,6 +345,25 @@ Deno.test("BinaryHeap.toArray()", () => {
   const maxHeap = new BinaryHeap<number>();
   maxHeap.push(...values);
   assert(maxHeap.toArray().every((value) => values.includes(value)));
+});
+
+Deno.test("BinaryHeap.drain()", () => {
+  const values = [2, 4, 3, 5, 1];
+  const expected = [5, 4, 3, 2, 1];
+  const heap = new BinaryHeap<number>();
+  heap.push(...values);
+  assertEquals([...heap.drain()], expected);
+  assertEquals(heap.length, 0);
+});
+
+Deno.test("BinaryHeap drain copy", () => {
+  const values = [2, 4, 3, 5, 1];
+  const expected = [5, 4, 3, 2, 1];
+  const heap = new BinaryHeap<number>();
+  heap.push(...values);
+  const copy = BinaryHeap.from(heap);
+  assertEquals([...copy.drain()], expected);
+  assertEquals(heap.length, 5);
 });
 
 Deno.test("BinaryHeap.clear()", () => {

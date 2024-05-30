@@ -12,7 +12,7 @@
  * and not adding any delimiter. However, there are three more standards
  * supported - btoa (different delimiter and additional compression of 4 bytes
  * equal to 32), {@link https://rfc.zeromq.org/spec/32/ | Z85} and
- * {@link https://tools.ietf.org/html/rfc1924 | RFC 1924}. It's possible to use a
+ * {@link https://www.rfc-editor.org/rfc/rfc1924.html | RFC 1924}. It's possible to use a
  * different encoding by specifying it in `options` object as a second parameter.
  *
  * Similarly, it's possible to make `encode` add a delimiter (`<~` and `~>` for
@@ -23,7 +23,7 @@
  * @module
  */
 
-import { validateBinaryLike } from "./_util.ts";
+import { validateBinaryLike } from "./_validate_binary_like.ts";
 
 /** Supported ascii85 standards for {@linkcode Ascii85Options}. */
 export type Ascii85Standard = "Adobe" | "btoa" | "RFC 1924" | "Z85";
@@ -49,13 +49,19 @@ const Z85 =
   "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ.-:+=^!/*?&<>()[]{}@%$#" as const;
 
 /**
- * Converts data into an ascii58-encoded string.
+ * Converts data into an ascii85-encoded string.
  *
- * @example
+ * @param data The data to encode.
+ * @param options Options for encoding.
+ *
+ * @returns The ascii85-encoded string.
+ *
+ * @example Usage
  * ```ts
  * import { encodeAscii85 } from "@std/encoding/ascii85";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
- * encodeAscii85("Hello world!"); // "87cURD]j7BEbo80"
+ * assertEquals(encodeAscii85("Hello world!"), "87cURD]j7BEbo80");
  * ```
  */
 export function encodeAscii85(
@@ -130,12 +136,15 @@ export function encodeAscii85(
  * @param options Options for decoding.
  * @returns The decoded data.
  *
- * @example
+ * @example Usage
  * ```ts
  * import { decodeAscii85 } from "@std/encoding/ascii85";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
- * decodeAscii85("87cURD]j7BEbo80");
- * // Uint8Array(12) [ 72, 101, 108, 108, 111, 32, 119, 111, 114, 108, 100, 33 ]
+ * assertEquals(
+ *   decodeAscii85("87cURD]j7BEbo80"),
+ *   new TextEncoder().encode("Hello world!"),
+ * );
  * ```
  */
 export function decodeAscii85(

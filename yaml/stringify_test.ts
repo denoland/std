@@ -171,3 +171,51 @@ Deno.test({
     assertEquals(stringify(object, { schema: SPACE_SCHEMA }), expected);
   },
 });
+
+Deno.test({
+  name: "stringify() handles float types",
+  fn() {
+    const floats = [
+      4.1,
+      -1.473,
+      6.82e-5,
+      6.82e-12,
+      5e-12,
+      0,
+      -0,
+    ];
+    assertEquals(
+      stringify(floats),
+      `- 4.1
+- -1.473
+- 0.0000682
+- 6.82e-12
+- 5.e-12
+- 0
+- -0.0
+`,
+    );
+    const infNaN = [Infinity, -Infinity, NaN];
+    assertEquals(
+      stringify(infNaN),
+      `- .inf
+- -.inf
+- .nan
+`,
+    );
+    assertEquals(
+      stringify(infNaN, { styles: { "tag:yaml.org,2002:float": "uppercase" } }),
+      `- .INF
+- -.INF
+- .NAN
+`,
+    );
+    assertEquals(
+      stringify(infNaN, { styles: { "tag:yaml.org,2002:float": "camelcase" } }),
+      `- .Inf
+- -.Inf
+- .NaN
+`,
+    );
+  },
+});

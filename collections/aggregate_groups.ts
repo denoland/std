@@ -7,8 +7,8 @@ import { mapEntries } from "./map_entries.ts";
  * Applies the given aggregator to each group in the given grouping, returning the
  * results together with the respective group keys
  *
- * @template T Type of the values in the input record.
- * @template A Type of the accumulator value, which will match the returned
+ * @typeParam T Type of the values in the input record.
+ * @typeParam A Type of the accumulator value, which will match the returned
  * record's values.
  *
  * @param record The grouping to aggregate.
