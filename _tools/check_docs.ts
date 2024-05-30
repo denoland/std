@@ -48,6 +48,7 @@ const ENTRY_POINTS = [
   "../semver/mod.ts",
   "../streams/mod.ts",
   "../text/mod.ts",
+  "../toml/mod.ts",
   "../ulid/mod.ts",
   "../uuid/mod.ts",
   "../webgpu/mod.ts",
