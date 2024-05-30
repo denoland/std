@@ -156,6 +156,10 @@ export const functions = {
     assert(db, 'db not found')
     const fs = FS.open(pid, api.commit, db)
     const oid = await fs.merge(fetchHead)
+    if (api.commit === oid) {
+      log('no changes')
+      return
+    }
 
     const atomic = await db.atomic().updateHead(pid, api.commit, oid)
     assert(atomic, 'update head failed')

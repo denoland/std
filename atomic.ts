@@ -64,6 +64,7 @@ export class Atomic {
     assert(this.#atomic, 'Atomic not set')
     assert(sha1.test(fromCommit), 'Commit not SHA-1: ' + fromCommit)
     assert(sha1.test(toCommit), 'Commit not SHA-1: ' + toCommit)
+    assert(fromCommit !== toCommit, 'Commits are the same')
     const key = keys.getHeadKey(pid)
     log('updateHead %o', key, fromCommit, toCommit)
     const from = await this.#kv.get(key)
