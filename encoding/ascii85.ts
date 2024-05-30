@@ -37,20 +37,7 @@ export type Ascii85Standard = "Adobe" | "btoa" | "RFC 1924" | "Z85";
  * @deprecated This will be removed in 1.0.0. Use
  * {@linkcode EncodeAscii85Options} or {@linkcode DecodeAscii85Options} instead.
  */
-export interface Ascii85Options {
-  /**
-   * Character set and delimiter (if supported and used).
-   *
-   * @default {"Adobe"}
-   */
-  standard?: Ascii85Standard;
-  /**
-   * Whether to use a delimiter (if supported).
-   *
-   * @default {false}
-   */
-  delimiter?: boolean;
-}
+export interface Ascii85Options extends EncodeAscii85Options {}
 
 /** Options for {@linkcode encodeAscii85}. */
 export interface EncodeAscii85Options {
