@@ -2,7 +2,7 @@ import * as loadHelp from '@/isolates/load-help.ts'
 import { assert, Debug, posix } from '@utils'
 import OpenAI from 'openai'
 import { Help, IsolateApi, JSONSchemaType } from '@/constants.ts'
-const log = Debug('AI:load-tools')
+const log = Debug('AI:tools:load-tools')
 
 export const loadTools = async (commands: string[] = [], api: IsolateApi) => {
   const result = await load(commands, api)
@@ -38,7 +38,7 @@ const load = async (commands: string[] = [], api: IsolateApi) => {
       const [isolate, _name] = command.split(':')
       name = _name
       const isolateApiSchema = await api.apiSchema(isolate)
-      const functions = await api.functions(isolate)
+      const functions = await api.actions(isolate)
       assert(name in functions, `isolate missing command: ${command}`)
       action = functions[name]
       tool = isolateToGptApi(name, isolateApiSchema[name])

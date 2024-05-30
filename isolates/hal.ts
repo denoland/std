@@ -52,6 +52,10 @@ export type Api = {
 }
 
 export const api = {
+  '@@install': {
+    type: 'object',
+    additionalProperties: false,
+  },
   resetPromptTarget: {
     type: 'object',
     additionalProperties: false,
@@ -76,10 +80,6 @@ export const api = {
     type: 'object',
     additionalProperties: false,
   },
-  '@@install': {
-    type: 'object',
-    additionalProperties: false,
-  },
 }
 
 export const ENTRY_HELP_FILE = 'entry.json'
@@ -90,6 +90,13 @@ export type EntryHelpFile = {
 const DEFAULT_HELP = 'hal-v0.2'
 
 export const functions = {
+  '@@install': async (_: object, api: IsolateApi) => {
+    assert(isBaseRepo(api.pid), '@@install not base: ' + print(api.pid))
+    log('install')
+    // TODO store a link to the identity chain
+    // TODO set permissions
+    await functions.resetPromptTarget({}, api)
+  },
   resetPromptTarget: (_: object, api: IsolateApi) => {
     return functions.setPromptTarget({ help: DEFAULT_HELP }, api)
   },
@@ -117,13 +124,6 @@ export const functions = {
   },
   resetSession: (_: object, api: IsolateApi) => {
     api.delete('session.json')
-  },
-  '@@install': async (_: object, api: IsolateApi) => {
-    assert(isBaseRepo(api.pid), '@@install not base: ' + print(api.pid))
-    log('install')
-    // TODO store a link to the identity chain
-    // TODO set permissions
-    await functions.resetPromptTarget({}, api)
   },
 }
 

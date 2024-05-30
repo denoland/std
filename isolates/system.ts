@@ -44,6 +44,13 @@ export const api = {
       params: { type: 'object' },
     },
   },
+  pull: {
+    description: 'pull a repository',
+    type: 'object',
+    required: ['repo'],
+    additionalProperties: false,
+    properties: { repo: { type: 'string' } },
+  },
   sideEffectClone: {
     description: 'clone a repository as a side effect',
     type: 'object',
@@ -57,6 +64,13 @@ export const api = {
     required: ['repo'],
     additionalProperties: false,
     properties: { repo: { type: 'string' } },
+  },
+  sideEffectFetch: {
+    description: 'fetch a repository as a side effect',
+    type: 'object',
+    required: ['pid', 'repo'],
+    additionalProperties: false,
+    properties: { repo: { type: 'string' }, pid: pidSchema },
   },
 }
 
@@ -74,6 +88,7 @@ export type Api = {
   sideEffectInit: (
     params: { repo: string },
   ) => Promise<{ pid: PID; head: string }>
+  sideEffectFetch: (params: { pid: PID; repo: string }) => Promise<string>
 }
 export const functions = {
   init: async (
@@ -128,6 +143,27 @@ export const functions = {
     log('cloned %s in %ims', print(pid), elapsed)
     return { pid, head, elapsed }
   },
+  pull: async (params: { repo: string }, api: IsolateApi<C>) => {
+    log('pull', params, print(api.pid))
+    const actions = await api.actions<Api>('system')
+    const { pid } = api
+    const { repo } = params
+    log('commit is', api.commit)
+    const fetchHead = await actions.sideEffectFetch({ pid, repo })
+    log('fetched', fetchHead)
+
+    const { db } = api.context
+    assert(db, 'db not found')
+    const fs = FS.open(pid, api.commit, db)
+    const oid = await fs.merge(fetchHead)
+
+    const atomic = await db.atomic().updateHead(pid, api.commit, oid)
+    assert(atomic, 'update head failed')
+    if (!await atomic.commit()) {
+      throw new Error('failed to commit: ' + repo)
+    }
+  },
+
   sideEffectClone: async ({ repo }: { repo: string }, api: IsolateApi<C>) => {
     // TODO assert we got called by ourselves
     const { db } = api.context
@@ -147,5 +183,13 @@ export const functions = {
 
     const { pid, oid } = await FS.init(partial, db)
     return { pid, head: oid }
+  },
+  sideEffectFetch: async (
+    { pid, repo }: { pid: PID; repo: string },
+    api: IsolateApi<C>,
+  ) => {
+    const { db } = api.context
+    assert(db, 'db not found')
+    return await FS.fetch(repo, pid, db)
   },
 }

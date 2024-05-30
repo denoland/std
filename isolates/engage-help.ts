@@ -39,6 +39,9 @@ export const functions = {
     assert(isValid, `no runner: ${help.runner}`)
     log('found runner string:', runner)
 
+    // this needs to be out of band, in a branch
+    // but HAL should call its base help directly, in band
+
     const isolate = runner === RUNNERS.CHAT ? prompt : promptInjector
 
     await isolate.functions.prompt({ help, text }, api)

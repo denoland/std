@@ -36,6 +36,7 @@
     "chalk": "npm:chalk@^5.3.0",
     "debug": "npm:debug",
     "diff": "npm:diff",
+    "diff3": "npm:diff3@^0.0.4",
     "eventsource-parser/stream": "npm:eventsource-parser/stream",
     "fast-deep-equal/es6": "npm:fast-deep-equal/es6/index.js",
     "gray-matter": "npm:gray-matter@^4.0.3",

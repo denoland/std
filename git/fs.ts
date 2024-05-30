@@ -1,15 +1,17 @@
-import http from 'npm:isomorphic-git/http/web/index.js'
+import diff3Merge from 'diff3'
+import http from '$git/http/web/index.js'
 import * as secp from '@noble/secp256k1'
 import { assert, Debug, equal, posix, sha1 } from '@utils'
 import {
   Change,
   ENTRY_BRANCH,
+  IO_PATH,
   isBaseRepo,
   PartialPID,
   PID,
   print,
 } from '@/constants.ts'
-import git from '$git'
+import git, { type MergeDriverCallback } from '$git'
 import type DB from '@/db.ts'
 import { GitKV } from './gitkv.ts'
 const log = Debug('git:fs')
@@ -25,17 +27,15 @@ export default class FS {
   readonly #deletes = new Set<string>()
   static #caches = new Map<string, object>()
   static #getGitCache(pid: PID) {
-    const key = getCacheKey(pid)
-    if (!FS.#caches.has(key)) {
-      FS.#caches.set(key, {})
+    if (!FS.#caches.has(pid.repoId)) {
+      FS.#caches.set(pid.repoId, {})
     }
-    const cache = FS.#caches.get(key)
+    const cache = FS.#caches.get(pid.repoId)
     assert(cache)
     return cache
   }
   static clearCache(pid: PID) {
-    const key = getCacheKey(pid)
-    FS.#caches.delete(key)
+    FS.#caches.delete(pid.repoId)
   }
   get pid() {
     return this.#pid
@@ -98,7 +98,7 @@ export default class FS {
   }
   static async clone(repo: string, db: DB) {
     // TODO lock the whole repo in case something is running
-    // TODO detect the mainbranch somehow
+    // TODO detect the main branch from remote/HEAD
     assert(repo.split('/').length === 2, 'invalid repo: ' + repo)
     const url = `https://github.com/${repo}.git`
 
@@ -115,6 +115,38 @@ export default class FS {
     const clone = new FS(pid, commit, db)
     return clone
   }
+  static async fetch(repo: string, pid: PID, db: DB) {
+    assert(repo.split('/').length === 2, 'invalid repo: ' + repo)
+    const url = `https://github.com/${repo}.git`
+
+    const lockId = await db.lockRepo(pid)
+    try {
+      const { fs } = await FS.openHead(pid, db)
+      const cache = FS.#getGitCache(pid)
+      const result = await git.fetch({ fs, http, dir, url, cache })
+      const { fetchHead } = result
+      assert(fetchHead, 'fetchHead not found')
+
+      // TODO make release be atomic
+      return fetchHead
+    } finally {
+      await db.releaseRepoLock(pid, lockId)
+    }
+  }
+  static async push(repo: string, pid: PID, db: DB) {
+    assert(repo.split('/').length === 2, 'invalid repo: ' + repo)
+    const url = `https://github.com/${repo}.git`
+    assert(isBaseRepo(pid), 'not a base repo: ' + print(pid))
+    const { fs } = await FS.openHead(pid, db)
+    const cache = FS.#getGitCache(pid)
+    const result = await git.push({ fs, http, dir, url, cache })
+    console.log('push result', result)
+    const { ok } = result
+    if (!ok) {
+      throw new Error('push failed')
+    }
+  }
+
   tick(commit: string) {
     return new FS(this.#pid, commit, this.#db)
   }
@@ -160,6 +192,23 @@ export default class FS {
 
     const next = new FS(this.#pid, nextCommit, this.#db)
     return { next, changes, commit }
+  }
+  async merge(commit: string) {
+    assert(!this.isChanged, 'cannot merge with changes')
+    const { fs } = this
+    const cache = FS.#getGitCache(this.#pid)
+    const result = await git.merge({
+      fs,
+      dir,
+      noUpdateBranch: true,
+      cache,
+      mergeDriver,
+      ours: this.#oid,
+      theirs: commit,
+      author: { name: 'git/merge' },
+    })
+    assert(result.oid, 'merge failed')
+    return result.oid
   }
   async #flush() {
     const changes: { [key: string]: Change } = {}
@@ -469,12 +518,36 @@ const assertPath = (path: string) => {
   assert(!path.startsWith('.git/'), '.git paths are forbidden: ' + path)
   assert(!path.endsWith('/'), 'path must not end with /: ' + path)
 }
-const getCacheKey = (pid: PID) =>
-  pid.repoId + '/' + pid.repository + '/' + pid.account
 
 const generateFakeRepoId = () => {
   // TODO make this genuine based on the genesis commit
   const privKey = secp.utils.randomPrivateKey()
   const pubKey = secp.getPublicKey(privKey)
   return secp.etc.bytesToHex(pubKey)
+}
+
+const mergeDriver: MergeDriverCallback = ({ contents, path }) => {
+  const baseContent = contents[0]
+  const ourContent = contents[1]
+  const theirContent = contents[2]
+
+  if (path === IO_PATH) {
+    return { cleanMerge: true, mergedText: ourContent }
+  }
+
+  const LINEBREAKS = /^.*(\r?\n|$)/gm
+  const ours = ourContent.match(LINEBREAKS)
+  const base = baseContent.match(LINEBREAKS)
+  const theirs = theirContent.match(LINEBREAKS)
+  const result = diff3Merge(ours, base, theirs)
+  let mergedText = ''
+  for (const item of result) {
+    if (item.ok) {
+      mergedText += item.ok.join('')
+    }
+    if (item.conflict) {
+      mergedText += item.conflict.a.join('')
+    }
+  }
+  return { cleanMerge: true, mergedText }
 }

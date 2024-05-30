@@ -119,7 +119,7 @@ Deno.test('git/init', async (t) => {
   })
   db.stop()
 })
-Deno.test('clone', async (t) => {
+Deno.test('clone and pull', async (t) => {
   const db = await DB.create(DB.generateAesKey())
   let fs: FS
   await t.step('clone HAL', async () => {
@@ -131,6 +131,19 @@ Deno.test('clone', async (t) => {
     const data = await fs.read(path)
     expect(data).toContain('AI')
   })
+  await t.step('pull', async () => {
+    const oid = await FS.fetch('dreamcatcher-tech/HAL', fs.pid, db)
+    expect(oid).toEqual(fs.oid)
+  })
+
+  // pull should let you pull into any pid you like
+
+  // insert the PAT into the github repo
+  // do a push, using this auth method
+
+  // make a new branch
+  // push this up to the git repo for testing
+
   db.stop()
 })
 

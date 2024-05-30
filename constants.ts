@@ -21,6 +21,8 @@ import type DB from '@/db.ts'
 import type Executor from '@/exe/exe.ts'
 import { equal } from '@utils'
 
+export const REPO_LOCK_TIMEOUT_MS = 5000
+
 /** Artifact Context, including the db and executor */
 export type C = { db: DB; exe: Executor; aesKey?: string }
 

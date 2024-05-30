@@ -3,8 +3,10 @@ import { DB_LOCK, HOME_ADDRESS, UNDELIVERED } from '@/keys.ts'
 import { PID, print } from '@/constants.ts'
 await load({ export: true })
 
-const db = await Deno.openKv(Deno.env.get('DENO_KV_URL'))
+console.log('url:', Deno.env.get('CLOUD_URL'))
+console.log('db', Deno.env.get('DENO_KV_URL'))
 
+const db = await Deno.openKv(Deno.env.get('DENO_KV_URL'))
 const undelivered = db.list({ prefix: UNDELIVERED })
 
 const homeAddress = await db.get<PID>(HOME_ADDRESS)

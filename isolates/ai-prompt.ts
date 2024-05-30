@@ -35,7 +35,7 @@ export const functions = {
         return
       }
       await executeTools(help, api)
-    } while (!(await isDone(api)))
+    } while (!await isDone(api))
   },
 }
 
@@ -70,13 +70,18 @@ export const prepare = async (help: Help, text: string, api: IsolateApi) => {
 
 const isDone = async (api: IsolateApi) => {
   const messages = await api.readJSON<MessageParam[]>(SESSION_PATH)
-  const assistant =
-    messages[messages.length - 1] as OpenAI.ChatCompletionMessage
-  if (!assistant.tool_calls) {
-    debugResult(assistant.content || '')
-    return true
+  const assistant = messages[messages.length - 1]
+  if (!assistant) {
+    return false
   }
-  return false
+  if ('tool_calls' in assistant) {
+    return false
+  }
+  if ('tool_call_id' in assistant) {
+    return false
+  }
+  debugResult(assistant.content || '')
+  return true
 }
 
 const apiKey = Deno.env.get('OPENAI_API_KEY')

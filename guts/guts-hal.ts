@@ -95,7 +95,32 @@ export default (name: string, cradleMaker: CradleMaker) => {
     })
     await terminal.engineStop()
   })
+  Deno.test(prefix + 'update from github', async (t) => {
+    const terminal = await cradleMaker()
+    await terminal.rm({ repo: 'dreamcatcher-tech/HAL' })
+    const { pid } = await terminal.clone({ repo: 'dreamcatcher-tech/HAL' })
+    const session = createHalSessionPid(terminal.pid, pid)
+    await terminal.ensureBranch(session, pid)
+    const hal = await terminal.actions<Api>('hal', session)
 
+    await t.step('update', async () => {
+      // log.enable(
+      // 'AI:completions AI:tools:* *:ai-result-content AI:qbr* AI:system',
+      // )
+      await hal.prompt({
+        text:
+          'Update HAL to the latest version by using the engage-help function with "hal-system" as the help name and "Update HAL" as the prompt.  Dont ask me any questions, just do it using your best guess.',
+      })
+
+      // const messages = await terminal.readJSON<Messages[]>(
+      //   'session.json',
+      //   session,
+      // )
+      // console.dir(messages, { depth: Infinity })
+    })
+
+    await terminal.engineStop()
+  })
   // use HAL to write a new prompt for HAL, and then use that ?
   // use HAL to improve the goalie.json file, so next time it gets used as default
   // PR the changed files against the users base defaults

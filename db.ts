@@ -2,11 +2,18 @@ import { pushable } from 'it-pushable'
 import { BLOB_META_KEY } from '@kitsonk/kv-toolbox/blob'
 import { CryptoKv, generateKey } from '@kitsonk/kv-toolbox/crypto'
 import * as keys from './keys.ts'
-import { freezePid, PID, Poolable, print, Splice } from '@/constants.ts'
+import {
+  freezePid,
+  PID,
+  Poolable,
+  print,
+  REPO_LOCK_TIMEOUT_MS,
+  Splice,
+} from '@/constants.ts'
 import { assert, Debug, equal, openKv, posix, sha1 } from '@utils'
 import { Atomic } from './atomic.ts'
 import { QueueMessage } from '@/constants.ts'
-import { ulid } from 'ulid'
+import { decodeTime, ulid } from 'ulid'
 import FS from '@/git/fs.ts'
 
 const log = Debug('AI:db')
@@ -83,7 +90,49 @@ export default class DB {
       return head.value
     }
   }
+  async lockRepo(pid: PID) {
+    const key = keys.getRepoLockKey(pid)
+    let lockId
+    do {
+      lockId = ulid()
+      const result = await this.#kv.atomic().check({ key, versionstamp: null })
+        .set(key, lockId).commit()
+      if (result.ok) {
+        // TODO use keepalives to keep re-upping the key
+        break
+      }
+
+      for await (const [lock] of this.#kv.watch<[string]>([key])) {
+        if (!lock.versionstamp) {
+          break
+        }
+        // TODO await the sooner of a new value or a timeout
+        const time = decodeTime(lock.value)
+        const remainingMs = REPO_LOCK_TIMEOUT_MS - (Date.now() - time)
+        if (remainingMs <= 0) {
+          const { ok } = await this.#kv.atomic().check(lock).delete(key)
+            .commit()
+          if (ok) {
+            console.error('OVERWROTE STALE REPO LOCK: ' + print(pid))
+            break
+          }
+        }
+      }
+    } while (!this.#abort.signal.aborted)
+    return lockId
+  }
+  async releaseRepoLock(pid: PID, lockId: string) {
+    const key = keys.getRepoLockKey(pid)
+    const current = await this.#kv.get<string>(key)
+    if (current.value === lockId) {
+      const { ok } = await this.#kv.atomic().check(current).delete(key).commit()
+      // TODO loop until confirmed as could error for non check reasons
+      return ok
+    }
+    return false
+  }
   async rm(pid: PID) {
+    // TODO lock the repo and delete the lock last
     const prefix = keys.getRepoBase(pid)
     log('rm %o', prefix)
     const all = this.#kv.list({ prefix })
