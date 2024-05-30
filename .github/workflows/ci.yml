@@ -60,15 +60,8 @@ jobs:
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
 
-      - name: Check branch
-        run: |
-          if [[ "${{ github.ref }}" != "refs/heads/main" ]]; then
-            echo "This is not the main branch. Exiting..."
-            exit 1
-          fi
-
       - name: Store benchmark result
-        if: matrix.os == 'ubuntu-latest'
+        if: github.ref == 'refs/heads/main' && matrix.os == 'ubuntu-latest'
         uses: benchmark-action/github-action-benchmark@v1
         with:
           name: Artifact Benchmarks
@@ -82,9 +75,11 @@ jobs:
           fail-on-alert: true
 
       - name: Create lcov file  
+        if: github.ref == 'refs/heads/main'
         run: deno task cov:gen
   
       - name: Upload coverage
+        if: github.ref == 'refs/heads/main'
         uses: codecov/codecov-action@v4
         with:
           name: ${{ matrix.os }}
