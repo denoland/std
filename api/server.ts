@@ -1,17 +1,12 @@
 import { createGitHubOAuthConfig, createHelpers } from '@deno/kv-oauth'
 import { Context, Hono } from 'hono'
 // TODO try out the fast router to improve load times
-import {
-  cors,
-  endTime,
-  logger,
-  poweredBy,
-  prettyJSON,
-  setMetric,
-  startTime,
-  timing,
-} from 'hono/middleware'
-import { streamSSE } from 'hono/helper'
+import { cors } from 'hono/cors'
+import { endTime, setMetric, startTime, timing } from 'hono/timing'
+import { logger } from 'hono/logger'
+import { poweredBy } from 'hono/powered-by'
+import { prettyJSON } from 'hono/pretty-json'
+import { streamSSE } from 'hono/streaming'
 import { Engine } from '../engine.ts'
 import { assert, Debug, delay, serializeError } from '@/utils.ts'
 import { EventSourceMessage, machineIdRegex, Provisioner } from '@/constants.ts'
