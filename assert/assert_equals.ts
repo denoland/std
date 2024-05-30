@@ -4,15 +4,6 @@ import { equal } from "./equal.ts";
 import { buildMessage, diff, diffStr, format } from "@std/internal";
 import { AssertionError } from "./assertion_error.ts";
 
-/** Options for {@linkcode assertEquals}. */
-export type AssertEqualsOption = {
-  /** The option for formatting the values.
-   *
-   * Note: This option is experimental and may be removed in the future.
-   */
-  formatter?: (value: unknown) => string;
-};
-
 /**
  * Make an assertion that `actual` and `expected` are equal, deeply. If not
  * deeply equal, then throw.
@@ -40,17 +31,15 @@ export function assertEquals<T>(
   actual: T,
   expected: T,
   msg?: string,
-  options: AssertEqualsOption = {},
 ) {
   if (equal(actual, expected)) {
     return;
   }
-  const { formatter = format } = options;
   const msgSuffix = msg ? `: ${msg}` : ".";
   let message = `Values are not equal${msgSuffix}`;
 
-  const actualString = formatter(actual);
-  const expectedString = formatter(expected);
+  const actualString = format(actual);
+  const expectedString = format(expected);
   const stringDiff = (typeof actual === "string") &&
     (typeof expected === "string");
   const diffResult = stringDiff

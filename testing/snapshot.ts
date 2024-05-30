@@ -574,9 +574,7 @@ export async function assertSnapshot(
     try {
       const usesMultilineDiff = _actual.includes("\n");
       if (usesMultilineDiff) {
-        assertEquals(true, false, undefined, {
-          formatter: (v) => v ? _actual : snapshot,
-        });
+        assertEquals(true, false, undefined);
       } else {
         assertEquals(_actual, snapshot);
       }
