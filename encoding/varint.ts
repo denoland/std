@@ -2,8 +2,8 @@
 // Copyright 2020 Keith Cirkel. All rights reserved. MIT license.
 // Copyright 2023 Skye "MierenManz". All rights reserved. MIT license.
 /**
- * Utilities for {@link https://protobuf.dev/programming-guides/encoding/#varints VarInt} encoding
- * of typed integers. VarInt encoding represents integers using a variable number of bytes, with
+ * Utilities for {@link https://protobuf.dev/programming-guides/encoding/#varints Varint} encoding
+ * of typed integers. Varint encoding represents integers using a variable number of bytes, with
  * smaller values requiring fewer bytes.
  *
  * ```ts
@@ -35,11 +35,11 @@
 export const MaxUInt64 = 18446744073709551615n;
 
 /**
- * The maximum length, in bytes, of a VarInt encoded 64-bit integer.
+ * The maximum length, in bytes, of a Varint encoded 64-bit integer.
  */
 export const MaxVarintLen64 = 10;
 /**
- * The maximum length, in bytes, of a VarInt encoded 32-bit integer.
+ * The maximum length, in bytes, of a Varint encoded 32-bit integer.
  */
 export const MaxVarintLen32 = 5;
 
@@ -56,7 +56,7 @@ const U64_VIEW = new BigUint64Array(AB);
 
 /**
  * Given a non empty `buf`, starting at `offset` (default: 0), begin decoding bytes as
- * VarInt encoded bytes, for a maximum of 10 bytes (offset + 10). The returned
+ * Varint encoded bytes, for a maximum of 10 bytes (offset + 10). The returned
  * tuple is of the decoded varint 32-bit number, and the new offset with which
  * to continue decoding other data.
  *
@@ -64,7 +64,7 @@ const U64_VIEW = new BigUint64Array(AB);
  * `number`, but this should only be used in cases where the varint is
  * _assured_ to be 32-bits. If in doubt, use `decode()`.
  *
- * To know how many bytes the VarInt took to encode, simply negate `offset`
+ * To know how many bytes the Varint took to encode, simply negate `offset`
  * from the returned new `offset`.
  *
  * @param buf The buffer to decode from.
@@ -89,7 +89,7 @@ export function decode(buf: Uint8Array, offset = 0): [bigint, number] {
 
 /**
  * Given a non empty `buf`, starting at `offset` (default: 0), begin decoding bytes as
- * VarInt encoded bytes, for a maximum of 10 bytes (offset + 10). The returned
+ * Varint encoded bytes, for a maximum of 10 bytes (offset + 10). The returned
  * tuple is of the decoded varint 32-bit number, and the new offset with which
  * to continue decoding other data.
  *
@@ -97,7 +97,7 @@ export function decode(buf: Uint8Array, offset = 0): [bigint, number] {
  * `number`, but this should only be used in cases where the varint is
  * _assured_ to be 32-bits. If in doubt, use `decode()`.
  *
- * To know how many bytes the VarInt took to encode, simply negate `offset`
+ * To know how many bytes the Varint took to encode, simply negate `offset`
  * from the returned new `offset`.
  *
  * @param buf The buffer to decode from.
@@ -176,14 +176,14 @@ export function decodeVarint(buf: Uint8Array, offset = 0): [bigint, number] {
 
 /**
  * Given a `buf`, starting at `offset` (default: 0), begin decoding bytes as
- * VarInt encoded bytes, for a maximum of 5 bytes (offset + 5). The returned
+ * Varint encoded bytes, for a maximum of 5 bytes (offset + 5). The returned
  * tuple is of the decoded varint 32-bit number, and the new offset with which
  * to continue decoding other data.
  *
- * VarInts are _not 32-bit by default_ so this should only be used in cases
+ * Varints are _not 32-bit by default_ so this should only be used in cases
  * where the varint is _assured_ to be 32-bits. If in doubt, use `decode()`.
  *
- * To know how many bytes the VarInt took to encode, simply negate `offset`
+ * To know how many bytes the Varint took to encode, simply negate `offset`
  * from the returned new `offset`.
  *
  * @param buf The buffer to decode from.
@@ -208,14 +208,14 @@ export function decode32(buf: Uint8Array, offset = 0): [number, number] {
 
 /**
  * Given a `buf`, starting at `offset` (default: 0), begin decoding bytes as
- * VarInt encoded bytes, for a maximum of 5 bytes (offset + 5). The returned
+ * Varint encoded bytes, for a maximum of 5 bytes (offset + 5). The returned
  * tuple is of the decoded varint 32-bit number, and the new offset with which
  * to continue decoding other data.
  *
- * VarInts are _not 32-bit by default_ so this should only be used in cases
+ * Varints are _not 32-bit by default_ so this should only be used in cases
  * where the varint is _assured_ to be 32-bits. If in doubt, use `decode()`.
  *
- * To know how many bytes the VarInt took to encode, simply negate `offset`
+ * To know how many bytes the Varint took to encode, simply negate `offset`
  * from the returned new `offset`.
  *
  * @param buf The buffer to decode from.
@@ -247,9 +247,9 @@ export function decodeVarint32(buf: Uint8Array, offset = 0): [number, number] {
 }
 
 /**
- * Takes unsigned number `num` and converts it into a VarInt encoded
+ * Takes unsigned number `num` and converts it into a Varint encoded
  * `Uint8Array`, returning a tuple consisting of a `Uint8Array` slice of the
- * encoded VarInt, and an offset where the VarInt encoded bytes end within the
+ * encoded Varint, and an offset where the Varint encoded bytes end within the
  * `Uint8Array`.
  *
  * If `buf` is not given then a Uint8Array will be created.
@@ -262,7 +262,7 @@ export function decodeVarint32(buf: Uint8Array, offset = 0): [number, number] {
  * @param num The number to encode.
  * @param buf The buffer to write into.
  * @param offset The offset to start writing at.
- * @returns A tuple of the encoded VarInt `Uint8Array` and the new offset.
+ * @returns A tuple of the encoded Varint `Uint8Array` and the new offset.
  *
  * @example
  * ```ts
@@ -284,9 +284,9 @@ export function encode(
 }
 
 /**
- * Takes unsigned number `num` and converts it into a VarInt encoded
+ * Takes unsigned number `num` and converts it into a Varint encoded
  * `Uint8Array`, returning a tuple consisting of a `Uint8Array` slice of the
- * encoded VarInt, and an offset where the VarInt encoded bytes end within the
+ * encoded Varint, and an offset where the Varint encoded bytes end within the
  * `Uint8Array`.
  *
  * If `buf` is not given then a Uint8Array will be created.
@@ -299,7 +299,7 @@ export function encode(
  * @param num The number to encode.
  * @param buf The buffer to write into.
  * @param offset The offset to start writing at.
- * @returns A tuple of the encoded VarInt `Uint8Array` and the new offset.
+ * @returns A tuple of the encoded Varint `Uint8Array` and the new offset.
  *
  * @example Usage
  * ```ts
