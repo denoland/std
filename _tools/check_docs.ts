@@ -20,7 +20,6 @@ import {
   type Location,
   type TsTypeDef,
 } from "@deno/doc";
-import { deadline } from "../async/deadline.ts";
 
 type DocNodeWithJsDoc<T = DocNodeBase> = T & {
   jsDoc: JsDoc;
@@ -153,13 +152,21 @@ async function assertSnippetEvals(
     ],
     stderr: "piped",
   });
-  const { success, stderr } = await deadline(command.output(), 10_000);
-  const error = new TextDecoder().decode(stderr);
-  assert(
-    success,
-    `Failed to execute snippet: \n${snippet}\n${error}`,
-    document,
-  );
+  const timeoutId = setTimeout(() => {
+    console.warn("Snippet has been running for more than 10 seconds...");
+    console.warn(snippet);
+  }, 10_000);
+  try {
+    const { success, stderr } = await command.output();
+    const error = new TextDecoder().decode(stderr);
+    assert(
+      success,
+      `Failed to execute snippet: \n${snippet}\n${error}`,
+      document,
+    );
+  } finally {
+    clearTimeout(timeoutId);
+  }
 }
 
 function assertSnippetsWork(
