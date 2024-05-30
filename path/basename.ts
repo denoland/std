@@ -14,10 +14,13 @@ import { basename as windowsBasename } from "./windows/basename.ts";
  * @example Usage
  * ```ts
  * import { basename } from "@std/path/basename";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
- * basename("/home/user/Documents/"); // "Documents"
- * basename("C:\\user\\Documents\\image.png"); // "image.png"
- * basename("/home/user/Documents/image.png", ".png"); // "image"
+ * if (Deno.build.os === "windows") {
+ *   assertEquals(basename("C:\\user\\Documents\\image.png"), "image.png");
+ * } else {
+ *   assertEquals(basename("/home/user/Documents/image.png"), "image.png");
+ * }
  * ```
  *
  * @param path Path to extract the name from.
