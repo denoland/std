@@ -79,12 +79,13 @@ async function compare(a: Data, b: Data): Promise<boolean> {
  * @example Usage
  * ```ts
  * import { KeyStack } from "@std/crypto/unstable-keystack";
+ * import { assert } from "@std/assert/assert";
  *
  * const keyStack = new KeyStack(["hello", "world"]);
  * const digest = await keyStack.sign("some data");
  *
  * const rotatedStack = new KeyStack(["deno", "says", "hello", "world"]);
- * await rotatedStack.verify("some data", digest); // true
+ * assert(await rotatedStack.verify("some data", digest));
  * ```
  */
 export class KeyStack {
@@ -98,7 +99,8 @@ export class KeyStack {
     return this.#cryptoKeys.get(key)!;
   }
 
-  /** Number of keys
+  /**
+   * Number of keys
    *
    * @example Usage
    * ```ts
@@ -116,23 +118,19 @@ export class KeyStack {
   }
 
   /**
-   * A class which accepts an array of keys that are used to sign and verify
-   * data and allows easy key rotation without invalidation of previously signed
-   * data.
+   * Constructs a new instance.
    *
    * @example Usage
    * ```ts
    * import { KeyStack } from "@std/crypto/unstable-keystack";
+   * import { assertInstanceOf } from "@std/assert/assert-instance-of";
    *
    * const keyStack = new KeyStack(["hello", "world"]);
-   * const digest = await keyStack.sign("some data");
-   *
-   * const rotatedStack = new KeyStack(["deno", "says", "hello", "world"]);
-   * await rotatedStack.verify("some data", digest); // true
+   * assertInstanceOf(keyStack, KeyStack);
    * ```
    *
    * @param keys An iterable of keys, of which the index 0 will be used to sign
-   *             data, but verification can happen against any key.
+   * data, but verification can happen against any key.
    */
   constructor(keys: Iterable<Key>) {
     const values = Array.isArray(keys) ? keys : [...keys];
@@ -150,12 +148,13 @@ export class KeyStack {
    * @example Usage
    * ```ts
    * import { KeyStack } from "@std/crypto/unstable-keystack";
+   * import { assert } from "@std/assert/assert";
    *
    * const keyStack = new KeyStack(["hello", "world"]);
    * const digest = await keyStack.sign("some data");
    *
    * const rotatedStack = new KeyStack(["deno", "says", "hello", "world"]);
-   * await rotatedStack.verify("some data", digest); // true
+   * assert(await rotatedStack.verify("some data", digest));
    * ```
    *
    * @param data The data to sign.
@@ -174,12 +173,13 @@ export class KeyStack {
    * @example Usage
    * ```ts
    * import { KeyStack } from "@std/crypto/unstable-keystack";
+   * import { assert } from "@std/assert/assert";
    *
    * const keyStack = new KeyStack(["hello", "world"]);
    * const digest = await keyStack.sign("some data");
    *
    * const rotatedStack = new KeyStack(["deno", "says", "hello", "world"]);
-   * await rotatedStack.verify("some data", digest); // true
+   * assert(await rotatedStack.verify("some data", digest));
    * ```
    *
    * @param data The data to verify.
@@ -198,12 +198,13 @@ export class KeyStack {
    * @example Usage
    * ```ts
    * import { KeyStack } from "@std/crypto/unstable-keystack";
+   * import { assertEquals } from "@std/assert/assert-equals";
    *
    * const keyStack = new KeyStack(["hello", "world"]);
    * const digest = await keyStack.sign("some data");
    *
    * const rotatedStack = new KeyStack(["deno", "says", "hello", "world"]);
-   * await rotatedStack.indexOf("some data", digest);
+   * assertEquals(await rotatedStack.indexOf("some data", digest), 2);
    * ```
    *
    * @param data The data to verify.
