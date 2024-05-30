@@ -74,7 +74,8 @@ async function compare(a: Data, b: Data): Promise<boolean> {
  *
  * Data is signed as SHA256 HMAC.
  *
- * This was inspired by {@link https://github.com/crypto-utils/keygrip/ | keygrip}.
+ * This was inspired by
+ * {@linkcode https://www.npmjs.com/package/keygrip | npm:keygrip}.
  *
  * @example Usage
  * ```ts
@@ -246,7 +247,8 @@ export class KeyStack {
   }
 
   /**
-   * Custom output for Node's {@linkcode https://nodejs.org/api/util.html#utilinspectobject-options|util.inspect}.
+   * Custom output for Node's
+   * {@linkcode https://nodejs.org/api/util.html#utilinspectobject-options | util.inspect}.
    *
    * @example Usage
    * ```ts
