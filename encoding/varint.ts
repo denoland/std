@@ -32,7 +32,7 @@
  * The maximum value of an unsigned 64-bit integer.
  * Equivalent to `2n**64n - 1n`
  */
-export const MaxUInt64 = 18446744073709551615n;
+export const MaxUint64 = 18446744073709551615n;
 
 /**
  * The maximum length, in bytes, of a VarInt encoded 64-bit integer.
