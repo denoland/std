@@ -379,6 +379,9 @@ export default class DB {
       if (!equal(key, keys.DB_LOCK)) {
         promises.push(this.#kv.delete(key))
       }
+      if (promises.length % 1000 === 0) {
+        console.log('db drop progress:', promises.length)
+      }
     }
     await Promise.all(promises)
   }
