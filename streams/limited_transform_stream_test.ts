@@ -14,7 +14,11 @@ Deno.test("LimitedTransformStream", async function () {
   ]).pipeThrough(new LimitedTransformStream(3));
 
   const chunks = await Array.fromAsync(r);
-  assertEquals(chunks.length, 3);
+  assertEquals(chunks, [
+    "foo",
+    "foo",
+    "foo",
+  ]);
 });
 
 Deno.test("LimitedTransformStream handles error", async function () {
