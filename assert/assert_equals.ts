@@ -4,7 +4,7 @@ import { equal } from "./equal.ts";
 import { buildMessage, diff, diffStr, format } from "@std/internal";
 import { AssertionError } from "./assertion_error.ts";
 
-/** The option object for {@linkcode assertEquals}. */
+/** Options for {@linkcode assertEquals}. */
 export type AssertEqualsOption = {
   /** The option for formatting the values.
    *
