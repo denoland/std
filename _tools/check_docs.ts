@@ -150,6 +150,7 @@ async function assertSnippetEvals(
       "eval",
       "--ext=ts",
       "--unstable-webgpu",
+      "--no-lock",
       snippet,
     ],
     stderr: "piped",
