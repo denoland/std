@@ -12,16 +12,17 @@
  * ### JSON
  *
  * ```ts
- * import { test } from "@std/front-matter/test";
- * import { extract } from "@std/front-matter/json";
+ * import { test, extractJson } from "@std/front-matter";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const str = "---json\n{\"and\": \"this\"}\n---\ndeno is awesome";
- * const result = extract(str);
  *
- * test(str); // true
- * result.frontMatter; // "{\"and\": \"this\"}"
- * result.body; // "deno is awesome"
- * result.attrs; // { and: "this" }
+ * assertEquals(test(str), true);
+ * assertEquals(extractJson(str), {
+ *   frontMatter: "{\"and\": \"this\"}",
+ *   body: "deno is awesome",
+ *   attrs: { and: "this" }
+ * });
  * ```
  *
  * {@linkcode extractJson | extract} and {@linkcode test} support the following
@@ -44,16 +45,17 @@
  * ### TOML
  *
  * ```ts
- * import { test } from "@std/front-matter/test";
- * import { extract } from "@std/front-matter/toml";
+ * import { test, extractToml } from "@std/front-matter";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const str = "---toml\nmodule = 'front_matter'\n---\ndeno is awesome";
- * const result = extract(str);
  *
- * test(str); // true
- * result.frontMatter; // "module = 'front_matter'"
- * result.body; // "deno is awesome"
- * result.attrs; // { module: "front_matter" }
+ * assertEquals(test(str), true);
+ * assertEquals(extractToml(str), {
+ *   frontMatter: "module = 'front_matter'",
+ *   body: "deno is awesome",
+ *   attrs: { module: "front_matter" }
+ * });
  * ```
  *
  * {@linkcode extractToml | extract} and {@linkcode test} support the following
@@ -82,16 +84,17 @@
  * ### YAML
  *
  * ```ts
- * import { test } from "@std/front-matter/test";
- * import { extract } from "@std/front-matter/yaml";
+ * import { test, extractYaml } from "@std/front-matter";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const str = "---yaml\nmodule: front_matter\n---\ndeno is awesome";
- * const result = extract(str);
  *
- * test(str); // true
- * result.frontMatter; // "module: front_matter"
- * result.body; // "deno is awesome"
- * result.attrs; // { module: "front_matter" }
+ * assertEquals(test(str), true);
+ * assertEquals(extractYaml(str), {
+ *   frontMatter: "module: front_matter",
+ *   body: "deno is awesome",
+ *   attrs: { module: "front_matter" }
+ * });
  * ```
  *
  * {@linkcode extractYaml | extract} and {@linkcode test} support the following

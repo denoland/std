@@ -4,6 +4,16 @@
  * {@linkcode sprintf} and {@linkcode printf} for printing formatted strings to
  * stdout.
  *
+ * ```ts
+ * import { sprintf } from "@std/fmt/printf";
+ * import { assertEquals } from "@std/assert/assert-equals";
+ *
+ * assertEquals(sprintf("%d", 9), "9");
+ * assertEquals(sprintf("%o", 9), "11");
+ * assertEquals(sprintf("%f", 4), "4.000000");
+ * assertEquals(sprintf("%.3f", 0.9999), "1.000");
+ * ```
+ *
  * This implementation is inspired by POSIX and Golang but does not port
  * implementation code.
  *
