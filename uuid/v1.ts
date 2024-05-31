@@ -33,14 +33,6 @@ let _clockseq: number;
 let _lastMSecs = 0;
 let _lastNSecs = 0;
 
-/**
- * Options for {@linkcode generate}.
- *
- * @deprecated This will be removed in 1.0.0. Use {@linkcode GenerateOptions}
- * instead.
- */
-export interface V1Options extends GenerateOptions {}
-
 /** Options for {@linkcode generate}. */
 export interface GenerateOptions {
   /**
