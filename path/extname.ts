@@ -10,9 +10,13 @@ import { extname as windowsExtname } from "./windows/extname.ts";
  * @example Usage
  * ```ts
  * import { extname } from "@std/path/extname";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
- * extname("/home/user/Documents/image.png"); // ".png"
- * extname("C:\\user\\Documents\\image.png"); // ".png"
+ * if (Deno.build.os === "windows") {
+ *   assertEquals(extname("C:\\home\\user\\Documents\\image.png"), ".png");
+ * } else {
+ *   assertEquals(extname("/home/user/Documents/image.png"), ".png");
+ * }
  * ```
  *
  * @param path Path with extension.

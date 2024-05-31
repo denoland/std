@@ -11,10 +11,13 @@ import { dirname as windowsDirname } from "./windows/dirname.ts";
  * @example Usage
  * ```ts
  * import { dirname } from "@std/path/dirname";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
- * dirname("/home/user/Documents/image.png"); // "/home/user/Documents"
- * dirname("C:\\user\\Documents\\image.png"); // "C:\\user\\Documents"
- * dirname("image.png"); // "."
+ * if (Deno.build.os === "windows") {
+ *   assertEquals(dirname("C:\\home\\user\\Documents\\image.png"), "C:\\home\\user\\Documents");
+ * } else {
+ *   assertEquals(dirname("/home/user/Documents/image.png"), "/home/user/Documents");
+ * }
  * ```
  *
  * @param path Path to extract the directory from.

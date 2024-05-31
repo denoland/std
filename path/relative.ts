@@ -12,12 +12,15 @@ import { relative as windowsRelative } from "./windows/relative.ts";
  * @example Usage
  * ```ts
  * import { relative } from "@std/path/relative";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
- * // posix
- * relative("/data/orandea/test/aaa", "/data/orandea/impl/bbb"); // "../../impl/bbb"
- *
- * // win32
- * relative("C:\\orandea\\test\\aaa", "C:\\orandea\\impl\\bbb"); // "..\\..\\impl\\bbb"
+ * if (Deno.build.os === "windows") {
+ *   const path = relative("C:\\foobar\\test\\aaa", "C:\\foobar\\impl\\bbb");
+ *   assertEquals(path, "..\\..\\impl\\bbb");
+ * } else {
+ *   const path = relative("/data/foobar/test/aaa", "/data/foobar/impl/bbb");
+ *   assertEquals(path, "../../impl/bbb");
+ * }
  * ```
  *
  * @param from Path in current working directory.

@@ -81,8 +81,13 @@ export type GlobToRegExpOptions = GlobOptions & {
  * @example Usage
  * ```ts
  * import { globToRegExp } from "@std/path/glob-to-regexp";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
- * globToRegExp("*.js"); // /^[^/]*\.js\/*$/;
+ * if (Deno.build.os === "windows") {
+ *   assertEquals(globToRegExp("*.js"), /^[^\\]*\.js\/*$/);
+ * } else {
+ *   assertEquals(globToRegExp("*.js"), /^[^/]*\.js\/*$/);
+ * }
  * ```
  *
  * @param glob Glob string to convert.

@@ -11,14 +11,15 @@ import { fromFileUrl as windowsFromFileUrl } from "./windows/from_file_url.ts";
  * @example Usage
  * ```ts
  * import { fromFileUrl } from "@std/path/from-file-url";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
- * // posix
- * fromFileUrl("file:///home/foo"); // "/home/foo"
- *
- * // win32
- * fromFileUrl("file:///home/foo"); // "\\home\\foo"
- * fromFileUrl("file:///C:/Users/foo"); // "C:\\Users\\foo"
- * fromFileUrl("file://localhost/home/foo"); // "\\\\localhost\\home\\foo"
+ * if (Deno.build.os === "windows") {
+ *   assertEquals(fromFileUrl("file:///home/foo"), "\\home\\foo");
+ *   assertEquals(fromFileUrl("file:///C:/Users/foo"), "C:\\Users\\foo");
+ *   assertEquals(fromFileUrl("file://localhost/home/foo"), "\\home\\foo");
+ * } else {
+ *   assertEquals(fromFileUrl("file:///home/foo"), "/home/foo");
+ * }
  * ```
  *
  * @param url The file URL to convert to a path.

@@ -11,14 +11,15 @@ import { isAbsolute as windowsIsAbsolute } from "./windows/is_absolute.ts";
  * @example Usage
  * ```ts
  * import { isAbsolute } from "@std/path/is-absolute";
+ * import { assert, assertFalse } from "@std/assert";
  *
- * // posix
- * isAbsolute("/home/foo"); // true
- * isAbsolute("home/foo"); // false
- *
- * // win32
- * isAbsolute("C:\\home\\foo"); // true
- * isAbsolute("home\\foo"); // false
+ * if (Deno.build.os === "windows") {
+ *   assert(isAbsolute("C:\\home\\foo"));
+ *   assertFalse(isAbsolute("home\\foo"));
+ * } else {
+ *   assert(isAbsolute("/home/foo"));
+ *   assertFalse(isAbsolute("home/foo"));
+ * }
  * ```
  *
  * @param path Path to be verified as absolute.

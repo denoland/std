@@ -13,9 +13,13 @@ import type { FormatInputPathObject } from "./_interface.ts";
  * @example Usage
  * ```ts
  * import { format } from "@std/path/format";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
- * format({ dir: "/path/to/dir", base: "script.ts" }); // "/path/to/dir/script.ts"
- * format({ root: "/", name: "script", ext: ".ts" }); // "/script.ts"
+ * if (Deno.build.os === "windows") {
+ *   assertEquals(format({ dir: "C:\\path\\to", base: "script.ts" }), "C:\\path\\to\\script.ts");
+ * } else {
+ *   assertEquals(format({ dir: "/path/to/dir", base: "script.ts" }), "/path/to/dir/script.ts");
+ * }
  * ```
  *
  * @param pathObject Object with path components.

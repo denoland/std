@@ -17,9 +17,15 @@ export type { GlobOptions };
  * @example Usage
  * ```ts
  * import { joinGlobs } from "@std/path/join-globs";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
- * joinGlobs(["foo", "bar", "..", "baz"]); // "foo/baz"
- * joinGlobs(["foo", "**\/..", "bar", "..", "baz"], { globstar: true }); // "foo/**\/../baz"
+ * if (Deno.build.os === "windows") {
+ *   assertEquals(joinGlobs(["foo", "bar", "..", "baz"]), "foo\\baz");
+ *   assertEquals(joinGlobs(["foo", "**", "bar", "..", "baz"], { globstar: true }), "foo\\**\\baz");
+ * } else {
+ *   assertEquals(joinGlobs(["foo", "bar", "..", "baz"]), "foo/baz");
+ *   assertEquals(joinGlobs(["foo", "**", "bar", "..", "baz"], { globstar: true }), "foo/**\/baz");
+ * }
  * ```
  *
  * @param globs Globs to be joined and normalized.

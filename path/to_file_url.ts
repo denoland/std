@@ -9,16 +9,17 @@ import { toFileUrl as windowsToFileUrl } from "./windows/to_file_url.ts";
  * Converts a path string to a file URL.
  *
  * @example Usage
- * ```ts no-eval
+ * ```ts
  * import { toFileUrl } from "@std/path/to-file-url";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
- * // posix
- * toFileUrl("/home/foo"); // new URL("file:///home/foo")
- *
- * // win32
- * toFileUrl("\\home\\foo"); // new URL("file:///home/foo")
- * toFileUrl("C:\\Users\\foo"); // new URL("file:///C:/Users/foo")
- * toFileUrl("\\\\127.0.0.1\\home\\foo"); // new URL("file://127.0.0.1/home/foo")
+ * if (Deno.build.os === "windows") {
+ *   assertEquals(toFileUrl("\\home\\foo"), new URL("file:///home/foo"));
+ *   assertEquals(toFileUrl("C:\\Users\\foo"), new URL("file:///C:/Users/foo"));
+ *   assertEquals(toFileUrl("\\\\127.0.0.1\\home\\foo"), new URL("file://127.0.0.1/home/foo"));
+ * } else {
+ *   assertEquals(toFileUrl("/home/foo"), new URL("file:///home/foo"));
+ * }
  * ```
  *
  * @param path Path to convert to file URL.

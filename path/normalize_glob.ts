@@ -19,10 +19,16 @@ export type { GlobOptions };
  *
  * @example Usage
  * ```ts
- * import { normalizeGlob } from "https://deno.land/std/path/mod.ts";
+ * import { normalizeGlob } from "@std/path/normalize-glob";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
- * normalizeGlob("foo/bar/../baz"); // "foo/baz"
- * normalizeGlob("foo/**\/../bar/../baz", { globstar: true }); // "foo/**\/../baz"
+ * if (Deno.build.os === "windows") {
+ *   assertEquals(normalizeGlob("foo\\bar\\..\\baz"), "foo\\baz");
+ *   assertEquals(normalizeGlob("foo\\**\\..\\bar\\..\\baz", { globstar: true }), "foo\\**\\..\\bar\\..\\baz");
+ * } else {
+ *   assertEquals(normalizeGlob("foo/bar/../baz"), "foo/baz");
+ *   assertEquals(normalizeGlob("foo/**\/../bar/../baz", { globstar: true }), "foo/**\/../baz");
+ * }
  * ```
  *
  * @param glob Glob string to normalize.

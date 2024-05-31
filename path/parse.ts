@@ -16,14 +16,24 @@ export type { ParsedPath } from "./_interface.ts";
  *
  * @example Usage
  * ```ts
- * import { parse } from "@std/path";
+ * import { parse } from "@std/path/parse";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
- * const parsedPathObj = parse("/path/to/dir/script.ts");
- * parsedPathObj.root; // "/"
- * parsedPathObj.dir; // "/path/to/dir"
- * parsedPathObj.base; // "script.ts"
- * parsedPathObj.ext; // ".ts"
- * parsedPathObj.name; // "script"
+ * if (Deno.build.os === "windows") {
+ *   const parsedPathObj = parse("C:\\path\\to\\script.ts");
+ *   assertEquals(parsedPathObj.root, "C:\\");
+ *   assertEquals(parsedPathObj.dir, "C:\\path\\to");
+ *   assertEquals(parsedPathObj.base, "script.ts");
+ *   assertEquals(parsedPathObj.ext, ".ts");
+ *   assertEquals(parsedPathObj.name, "script");
+ * } else {
+ *   const parsedPathObj = parse("/path/to/dir/script.ts");
+ *   parsedPathObj.root; // "/"
+ *   parsedPathObj.dir; // "/path/to/dir"
+ *   parsedPathObj.base; // "script.ts"
+ *   parsedPathObj.ext; // ".ts"
+ *   parsedPathObj.name; // "script"
+ * }
  * ```
  *
  * @param path Path to process
