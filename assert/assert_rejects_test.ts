@@ -1,13 +1,13 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import { assert, assertEquals, AssertionError, assertRejects } from "./mod.ts";
 
-Deno.test("assertRejects with return type", async () => {
+Deno.test("assertRejects() with return type", async () => {
   await assertRejects(() => {
     return Promise.reject(new Error());
   });
 });
 
-Deno.test("assertRejects with synchronous function that throws", async () => {
+Deno.test("assertRejects() with synchronous function that throws", async () => {
   await assertRejects(() =>
     assertRejects(() => {
       throw new Error();
@@ -23,7 +23,7 @@ Deno.test("assertRejects with synchronous function that throws", async () => {
   );
 });
 
-Deno.test("assertRejects with PromiseLike", async () => {
+Deno.test("assertRejects() with PromiseLike", async () => {
   await assertRejects(
     () => ({
       then() {
@@ -35,7 +35,7 @@ Deno.test("assertRejects with PromiseLike", async () => {
   );
 });
 
-Deno.test("assertRejects with non-error value rejected and error class", async () => {
+Deno.test("assertRejects() with non-error value rejected and error class", async () => {
   await assertRejects(
     () => {
       return assertRejects(
@@ -51,7 +51,7 @@ Deno.test("assertRejects with non-error value rejected and error class", async (
   );
 });
 
-Deno.test("assertRejects with non-error value rejected", async () => {
+Deno.test("assertRejects() with non-error value rejected", async () => {
   await assertRejects(() => {
     return Promise.reject(null);
   });
@@ -60,7 +60,7 @@ Deno.test("assertRejects with non-error value rejected", async () => {
   });
 });
 
-Deno.test("assertRejects with error class", async () => {
+Deno.test("assertRejects() with error class", async () => {
   await assertRejects(
     () => {
       return Promise.reject(new Error("foo"));
@@ -70,7 +70,7 @@ Deno.test("assertRejects with error class", async () => {
   );
 });
 
-Deno.test("assertRejects resolves with caught error", async () => {
+Deno.test("assertRejects() resolves with caught error", async () => {
   const error = await assertRejects(
     () => {
       return Promise.reject(new Error("foo"));
@@ -80,7 +80,7 @@ Deno.test("assertRejects resolves with caught error", async () => {
   assertEquals(error.message, "foo");
 });
 
-Deno.test("Assert Throws Async Parent Error", async () => {
+Deno.test("assertRejects() throws async parent error ", async () => {
   await assertRejects(
     () => {
       return Promise.reject(new AssertionError("Fail!"));
@@ -91,7 +91,7 @@ Deno.test("Assert Throws Async Parent Error", async () => {
 });
 
 Deno.test(
-  "Assert Throws Async promise rejected with custom Error",
+  "assertRejects() throws with custom Error",
   async () => {
     class CustomError extends Error {}
     class AnotherCustomError extends Error {}
@@ -107,3 +107,32 @@ Deno.test(
     );
   },
 );
+
+Deno.test("assertRejects() throws when no promise is returned", async () => {
+  await assertRejects(
+    // @ts-expect-error - testing invalid input
+    async () => await assertRejects(() => {}),
+    AssertionError,
+    "Function throws when expected to reject.",
+  );
+});
+
+Deno.test("assertRejects() throws when the promise doesn't reject", async () => {
+  await assertRejects(
+    async () => await assertRejects(async () => await Promise.resolve(42)),
+    AssertionError,
+    "Expected function to reject.",
+  );
+});
+
+Deno.test("assertRejects() throws with custom message", async () => {
+  await assertRejects(
+    async () =>
+      await assertRejects(
+        async () => await Promise.resolve(42),
+        "CUSTOM MESSAGE",
+      ),
+    AssertionError,
+    "Expected function to reject: CUSTOM MESSAGE",
+  );
+});

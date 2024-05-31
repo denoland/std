@@ -2,7 +2,25 @@
 import { AssertionError, assertStrictEquals, assertThrows } from "./mod.ts";
 
 Deno.test({
-  name: "strict types test",
+  name: "assertStrictEquals()",
+  fn() {
+    assertStrictEquals(true, true);
+    assertStrictEquals(10, 10);
+    assertStrictEquals("abc", "abc");
+    assertStrictEquals(NaN, NaN);
+
+    const xs = [1, false, "foo"];
+    const ys = xs;
+    assertStrictEquals(xs, ys);
+
+    const x = { a: 1 };
+    const y = x;
+    assertStrictEquals(x, y);
+  },
+});
+
+Deno.test({
+  name: "assertStrictEquals() types test",
   fn() {
     const x = { number: 2 };
 
@@ -26,25 +44,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "strict pass case",
-  fn() {
-    assertStrictEquals(true, true);
-    assertStrictEquals(10, 10);
-    assertStrictEquals("abc", "abc");
-    assertStrictEquals(NaN, NaN);
-
-    const xs = [1, false, "foo"];
-    const ys = xs;
-    assertStrictEquals(xs, ys);
-
-    const x = { a: 1 };
-    const y = x;
-    assertStrictEquals(x, y);
-  },
-});
-
-Deno.test({
-  name: "strict failed with structure diff",
+  name: "assertStrictEquals() throws with structure diff",
   fn() {
     assertThrows(
       () => assertStrictEquals({ a: 1, b: 2 }, { a: 1, c: [3] }),
@@ -62,7 +62,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "strict failed with reference diff",
+  name: "assertStrictEquals() throws with reference diff",
   fn() {
     assertThrows(
       () => assertStrictEquals({ a: 1, b: 2 }, { a: 1, b: 2 }),
@@ -78,7 +78,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "strict failed with custom msg",
+  name: "assertStrictEquals() throws with custom message",
   fn() {
     assertThrows(
       () => assertStrictEquals({ a: 1 }, { a: 1 }, "CUSTOM MESSAGE"),

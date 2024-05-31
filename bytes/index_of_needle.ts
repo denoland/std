@@ -20,24 +20,26 @@
  * @example Basic usage
  * ```ts
  * import { indexOfNeedle } from "@std/bytes/index-of-needle";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const source = new Uint8Array([0, 1, 2, 1, 2, 1, 2, 3]);
  * const needle = new Uint8Array([1, 2]);
  * const notNeedle = new Uint8Array([5, 0]);
  *
- * indexOfNeedle(source, needle); // 1
- * indexOfNeedle(source, notNeedle); // -1
+ * assertEquals(indexOfNeedle(source, needle), 1);
+ * assertEquals(indexOfNeedle(source, notNeedle), -1);
  * ```
  *
  * @example Start index
  * ```ts
  * import { indexOfNeedle } from "@std/bytes/index-of-needle";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const source = new Uint8Array([0, 1, 2, 1, 2, 1, 2, 3]);
  * const needle = new Uint8Array([1, 2]);
  *
- * indexOfNeedle(source, needle, 2); // 3
- * indexOfNeedle(source, needle, 6); // -1
+ * assertEquals(indexOfNeedle(source, needle, 2), 3);
+ * assertEquals(indexOfNeedle(source, needle, 6), -1);
  * ```
  * Defining a start index will begin the search at the specified index in the
  * source array.
@@ -47,11 +49,11 @@ export function indexOfNeedle(
   needle: Uint8Array,
   start = 0,
 ): number {
-  if (start >= source.length) {
-    return -1;
-  }
   if (start < 0) {
     start = Math.max(0, source.length + start);
+  }
+  if (needle.length > source.length - start) {
+    return -1;
   }
   const s = needle[0];
   for (let i = start; i < source.length; i++) {

@@ -4,10 +4,15 @@
 import { createAbortError } from "./_util.ts";
 
 /**
- * Make {@linkcode Promise} abortable with the given signal.
+ * Make a {@linkcode Promise} abortable with the given signal.
  *
- * @example
- * ```ts
+ * @typeParam T The type of the provided and returned promise.
+ * @param p The promise to make abortable.
+ * @param signal The signal to abort the promise with.
+ * @returns A promise that can be aborted.
+ *
+ * @example Usage
+ * ```ts no-eval
  * import {
  *   abortable,
  *   delay,
@@ -23,10 +28,15 @@ import { createAbortError } from "./_util.ts";
  */
 export function abortable<T>(p: Promise<T>, signal: AbortSignal): Promise<T>;
 /**
- * Make {@linkcode AsyncIterable} abortable with the given signal.
+ * Make an {@linkcode AsyncIterable} abortable with the given signal.
  *
- * @example
- * ```ts
+ * @typeParam T The type of the provided and returned async iterable.
+ * @param p The async iterable to make abortable.
+ * @param signal The signal to abort the promise with.
+ * @returns An async iterable that can be aborted.
+ *
+ * @example Usage
+ * ```ts no-eval
  * import {
  *   abortable,
  *   delay,
@@ -64,10 +74,15 @@ export function abortable<T>(
 }
 
 /**
- * Make Promise abortable with the given signal.
+ * Make a {@linkcode Promise} abortable with the given signal.
  *
- * @example
- * ```ts
+ * @typeParam T The type of the provided and returned promise.
+ * @param p The promise to make abortable.
+ * @param signal The signal to abort the promise with.
+ * @returns A promise that can be aborted.
+ *
+ * @example Usage
+ * ```ts no-eval
  * import { abortablePromise } from "@std/async/abortable";
  *
  * const request = fetch("https://example.com");
@@ -97,10 +112,15 @@ export function abortablePromise<T>(
 }
 
 /**
- * Make AsyncIterable abortable with the given signal.
+ * Make an {@linkcode AsyncIterable} abortable with the given signal.
  *
- * @example
- * ```ts
+ * @typeParam T The type of the provided and returned async iterable.
+ * @param p The async iterable to make abortable.
+ * @param signal The signal to abort the promise with.
+ * @returns An async iterable that can be aborted.
+ *
+ * @example Usage
+ * ```ts no-eval
  * import {
  *   abortableAsyncIterable,
  *   delay,

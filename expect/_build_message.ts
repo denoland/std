@@ -1,14 +1,16 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import { red } from "@std/fmt/colors";
-import { CAN_NOT_DISPLAY } from "./_constants.ts";
-import { buildMessage, diff, diffstr, format } from "@std/internal";
+import { buildMessage, diff, diffStr, format } from "@std/internal";
 import type { EqualOptions } from "./_types.ts";
 
 type EqualErrorMessageOptions = Pick<
   EqualOptions,
   "formatter" | "msg"
 >;
+
+function isString(value: unknown): value is string {
+  return typeof value === "string";
+}
 
 export function buildEqualErrorMessage<T>(
   actual: T,
@@ -22,17 +24,12 @@ export function buildEqualErrorMessage<T>(
 
   let message = `Values are not equal${msgSuffix}`;
 
-  try {
-    const stringDiff = (typeof actual === "string") &&
-      (typeof expected === "string");
-    const diffResult = stringDiff
-      ? diffstr(actual as string, expected as string)
-      : diff(actualString.split("\n"), expectedString.split("\n"));
-    const diffMsg = buildMessage(diffResult, { stringDiff }).join("\n");
-    message = `${message}\n${diffMsg}`;
-  } catch {
-    message = `${message}\n${red(CAN_NOT_DISPLAY)} + \n\n`;
-  }
+  const stringDiff = isString(actual) && isString(expected);
+  const diffResult = stringDiff
+    ? diffStr(actual, expected)
+    : diff(actualString.split("\n"), expectedString.split("\n"));
+  const diffMsg = buildMessage(diffResult, { stringDiff }).join("\n");
+  message = `${message}\n${diffMsg}`;
 
   return message;
 }
@@ -43,19 +40,8 @@ export function buildNotEqualErrorMessage<T>(
   options: EqualErrorMessageOptions,
 ): string {
   const { msg } = options || {};
-  let actualString: string;
-  let expectedString: string;
-
-  try {
-    actualString = String(actual);
-  } catch {
-    actualString = CAN_NOT_DISPLAY;
-  }
-  try {
-    expectedString = String(expected);
-  } catch {
-    expectedString = CAN_NOT_DISPLAY;
-  }
+  const actualString = String(actual);
+  const expectedString = String(expected);
 
   const msgSuffix = msg ? `: ${msg}` : ".";
   return `Expected actual: ${actualString} not to be: ${expectedString}${msgSuffix}`;

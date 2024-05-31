@@ -5,19 +5,24 @@
  * Returns a new array that drops all elements in the given collection until the
  * last element that does not match the given predicate.
  *
- * @example
+ * @typeParam T The type of the elements in the input array.
+ *
+ * @param array The array to drop elements from.
+ * @param predicate The function to test each element for a condition.
+ *
+ * @returns A new array that drops all elements until the last element that does
+ * not match the given predicate.
+ *
+ * @example Basic usage
  * ```ts
  * import { dropLastWhile } from "@std/collections/drop-last-while";
  * import { assertEquals } from "@std/assert/assert-equals";
  *
- * const numbers = [22, 30, 44];
+ * const numbers = [11, 42, 55, 20, 33, 44];
  *
- * const notFortyFour = dropLastWhile(numbers, (i) => i !== 44);
+ * const notFortyFour = dropLastWhile(numbers, (number) => number > 30);
  *
- * assertEquals(
- *   notFortyFour,
- *   [22, 30],
- * );
+ * assertEquals(notFortyFour, [11, 42, 55, 20]);
  * ```
  */
 export function dropLastWhile<T>(

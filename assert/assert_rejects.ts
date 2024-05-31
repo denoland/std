@@ -8,13 +8,17 @@ import { assertIsError } from "./assert_is_error.ts";
  *
  * To assert that a synchronous function throws, use {@linkcode assertThrows}.
  *
- * @example
- * ```ts
+ * @example Usage
+ * ```ts no-eval
  * import { assertRejects } from "@std/assert/assert-rejects";
  *
  * await assertRejects(async () => Promise.reject(new Error())); // Doesn't throw
  * await assertRejects(async () => console.log("Hello world")); // Throws
  * ```
+ *
+ * @param fn The function to execute.
+ * @param msg The optional message to display if the assertion fails.
+ * @returns The promise which resolves to the thrown error.
  */
 export function assertRejects(
   fn: () => PromiseLike<unknown>,
@@ -27,13 +31,20 @@ export function assertRejects(
  *
  * To assert that a synchronous function throws, use {@linkcode assertThrows}.
  *
- * @example
- * ```ts
+ * @example Usage
+ * ```ts no-eval
  * import { assertRejects } from "@std/assert/assert-rejects";
  *
  * await assertRejects(async () => Promise.reject(new Error()), Error); // Doesn't throw
  * await assertRejects(async () => Promise.reject(new Error()), SyntaxError); // Throws
  * ```
+ *
+ * @typeParam E The error class to assert.
+ * @param fn The function to execute.
+ * @param ErrorClass The error class to assert.
+ * @param msgIncludes The string that should be included in the error message.
+ * @param msg The optional message to display if the assertion fails.
+ * @returns The promise which resolves to the thrown error.
  */
 export function assertRejects<E extends Error = Error>(
   fn: () => PromiseLike<unknown>,
@@ -81,6 +92,8 @@ export async function assertRejects<E extends Error = Error>(
     ) {
       isPromiseReturned = true;
       await possiblePromise;
+    } else {
+      throw Error();
     }
   } catch (error) {
     if (!isPromiseReturned) {
@@ -89,7 +102,7 @@ export async function assertRejects<E extends Error = Error>(
       );
     }
     if (ErrorClass) {
-      if (error instanceof Error === false) {
+      if (!(error instanceof Error)) {
         throw new AssertionError(`A non-Error object was rejected${msgSuffix}`);
       }
       assertIsError(

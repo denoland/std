@@ -6,7 +6,16 @@
  * result as the accumulator to the next respective call, starting with the
  * given initialValue. Returns all intermediate accumulator results.
  *
- * @example
+ * @typeParam T The type of the elements in the array.
+ * @typeParam O The type of the accumulator.
+ *
+ * @param array The array to reduce.
+ * @param reducer The reducer function to apply to each element.
+ * @param initialValue The initial value of the accumulator.
+ *
+ * @returns An array of all intermediate accumulator results.
+ *
+ * @example Basic usage
  * ```ts
  * import { runningReduce } from "@std/collections/running-reduce";
  * import { assertEquals } from "@std/assert/assert-equals";

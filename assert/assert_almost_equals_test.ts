@@ -56,3 +56,11 @@ Deno.test("assertAlmostEquals() throws when special numbers do not match", () =>
     'Expected actual: "Infinity" to be close to "NaN"',
   );
 });
+
+Deno.test("assertAlmostEquals() throws with custom message", () => {
+  assertThrows(
+    () => assertAlmostEquals(-Infinity, +Infinity, 1e-17, "CUSTOM MESSAGE"),
+    AssertionError,
+    `Expected actual: "-Infinity" to be close to "Infinity": delta "Infinity" is greater than "1e-17": CUSTOM MESSAGE`,
+  );
+});

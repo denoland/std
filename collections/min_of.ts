@@ -6,7 +6,15 @@
  * returns the min value of all elements. If an empty array is provided the
  * function will return undefined.
  *
- * @example
+ * @typeParam T The type of the elements in the array.
+ *
+ * @param array The array to find the minimum element in.
+ * @param selector The function to get the value to compare from each element.
+ *
+ * @returns The smallest value of the given function or undefined if there are
+ * no elements.
+ *
+ * @example Basic usage
  * ```ts
  * import { minOf } from "@std/collections/min-of";
  * import { assertEquals } from "@std/assert/assert-equals";
@@ -16,7 +24,8 @@
  *   { name: "soy", count: 4 },
  *   { name: "tomato", count: 32 },
  * ];
- * const minCount = minOf(inventory, (i) => i.count);
+ *
+ * const minCount = minOf(inventory, (item) => item.count);
  *
  * assertEquals(minCount, 2);
  * ```
@@ -30,7 +39,15 @@ export function minOf<T>(
  * returns the min value of all elements. If an empty array is provided the
  * function will return undefined.
  *
- * @example
+ * @typeParam T The type of the elements in the array.
+ *
+ * @param array The array to find the minimum element in.
+ * @param selector The function to get the value to compare from each element.
+ *
+ * @returns The first element that is the smallest value of the given function
+ * or undefined if there are no elements.
+ *
+ * @example Basic usage
  * ```ts
  * import { minOf } from "@std/collections/min-of";
  * import { assertEquals } from "@std/assert/assert-equals";
@@ -40,7 +57,8 @@ export function minOf<T>(
  *   { name: "soy", count: 4n },
  *   { name: "tomato", count: 32n },
  * ];
- * const minCount = minOf(inventory, (i) => i.count);
+ *
+ * const minCount = minOf(inventory, (item) => item.count);
  *
  * assertEquals(minCount, 2n);
  * ```
@@ -53,10 +71,10 @@ export function minOf<T, S extends ((el: T) => number) | ((el: T) => bigint)>(
   array: Iterable<T>,
   selector: S,
 ): ReturnType<S> | undefined {
-  let minimumValue: ReturnType<S> | undefined = undefined;
+  let minimumValue: ReturnType<S> | undefined;
 
-  for (const i of array) {
-    const currentValue = selector(i) as ReturnType<S>;
+  for (const element of array) {
+    const currentValue = selector(element) as ReturnType<S>;
 
     if (minimumValue === undefined || currentValue < minimumValue) {
       minimumValue = currentValue;

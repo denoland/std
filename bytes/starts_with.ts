@@ -15,14 +15,19 @@
  * @example Basic usage
  * ```ts
  * import { startsWith } from "@std/bytes/starts-with";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const source = new Uint8Array([0, 1, 2, 1, 2, 1, 2, 3]);
  * const prefix = new Uint8Array([0, 1, 2]);
  *
- * startsWith(source, prefix); // true
+ * assertEquals(startsWith(source, prefix), true);
  * ```
  */
 export function startsWith(source: Uint8Array, prefix: Uint8Array): boolean {
+  if (prefix.length > source.length) {
+    return false;
+  }
+
   for (let i = 0; i < prefix.length; i++) {
     if (source[i] !== prefix[i]) return false;
   }

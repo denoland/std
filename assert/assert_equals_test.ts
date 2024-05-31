@@ -1,6 +1,13 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import { assertEquals, AssertionError, assertThrows } from "./mod.ts";
-import { bold, gray, green, red, stripAnsiCode, yellow } from "@std/fmt/colors";
+import {
+  bold,
+  gray,
+  green,
+  red,
+  stripAnsiCode,
+  yellow,
+} from "@std/internal/styles";
 
 const createHeader = (): string[] => [
   "",
@@ -151,9 +158,10 @@ Deno.test({
   },
 });
 
-Deno.test(
-  "assertEquals() compares objects structurally if one object's constructor is undefined and the other is Object",
-  () => {
+Deno.test({
+  name:
+    "assertEquals() compares objects structurally if one object's constructor is undefined and the other is Object",
+  fn() {
     const a = Object.create(null);
     a.prop = "test";
     const b = {
@@ -163,50 +171,56 @@ Deno.test(
     assertEquals(a, b);
     assertEquals(b, a);
   },
-);
+});
 
-Deno.test("assertEquals() orders diff for differently ordered objects", () => {
-  assertThrows(
-    () => {
-      assertEquals(
-        {
-          aaaaaaaaaaaaaaaaaaaaaaaa: 0,
-          bbbbbbbbbbbbbbbbbbbbbbbb: 0,
-          ccccccccccccccccccccccc: 0,
-        },
-        {
-          ccccccccccccccccccccccc: 1,
-          aaaaaaaaaaaaaaaaaaaaaaaa: 0,
-          bbbbbbbbbbbbbbbbbbbbbbbb: 0,
-        },
-      );
-    },
-    AssertionError,
-    `
+Deno.test({
+  name: "assertEquals() orders diff for differently ordered objects",
+  fn() {
+    assertThrows(
+      () => {
+        assertEquals(
+          {
+            aaaaaaaaaaaaaaaaaaaaaaaa: 0,
+            bbbbbbbbbbbbbbbbbbbbbbbb: 0,
+            ccccccccccccccccccccccc: 0,
+          },
+          {
+            ccccccccccccccccccccccc: 1,
+            aaaaaaaaaaaaaaaaaaaaaaaa: 0,
+            bbbbbbbbbbbbbbbbbbbbbbbb: 0,
+          },
+        );
+      },
+      AssertionError,
+      `
     {
       aaaaaaaaaaaaaaaaaaaaaaaa: 0,
       bbbbbbbbbbbbbbbbbbbbbbbb: 0,
 -     ccccccccccccccccccccccc: 0,
 +     ccccccccccccccccccccccc: 1,
     }`,
-  );
+    );
+  },
 });
 
-Deno.test("assertEquals() matches same Set with object keys", () => {
-  const data = [
-    {
-      id: "_1p7ZED73OF98VbT1SzSkjn",
-      type: { id: "_ETGENUS" },
-      name: "Thuja",
-      friendlyId: "g-thuja",
-    },
-    {
-      id: "_567qzghxZmeQ9pw3q09bd3",
-      type: { id: "_ETGENUS" },
-      name: "Pinus",
-      friendlyId: "g-pinus",
-    },
-  ];
-  assertEquals(data, data);
-  assertEquals(new Set(data), new Set(data));
+Deno.test({
+  name: "assertEquals() matches same Set with object keys",
+  fn() {
+    const data = [
+      {
+        id: "_1p7ZED73OF98VbT1SzSkjn",
+        type: { id: "_ETGENUS" },
+        name: "Thuja",
+        friendlyId: "g-thuja",
+      },
+      {
+        id: "_567qzghxZmeQ9pw3q09bd3",
+        type: { id: "_ETGENUS" },
+        name: "Pinus",
+        friendlyId: "g-pinus",
+      },
+    ];
+    assertEquals(data, data);
+    assertEquals(new Set(data), new Set(data));
+  },
 });

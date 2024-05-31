@@ -1,37 +1,47 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-import { bgGreen, bgRed, bold, gray, green, red, white } from "@std/fmt/colors";
+import type { DiffResult, DiffType } from "./types.ts";
 
-interface FarthestPoint {
+/** Represents the farthest point in the diff algorithm. */
+export interface FarthestPoint {
+  /** The y-coordinate of the point. */
   y: number;
+  /** The id of the point. */
   id: number;
-}
-
-export const DiffType = {
-  removed: "removed",
-  common: "common",
-  added: "added",
-} as const;
-
-export type DiffType = keyof typeof DiffType;
-
-export interface DiffResult<T> {
-  type: DiffType;
-  value: T;
-  details?: Array<DiffResult<T>>;
 }
 
 const REMOVED = 1;
 const COMMON = 2;
 const ADDED = 3;
 
-function createCommon<T>(A: T[], B: T[], reverse?: boolean): T[] {
+/**
+ * Creates an array of common elements between two arrays.
+ *
+ * @typeParam T The type of elements in the arrays.
+ *
+ * @param A The first array.
+ * @param B The second array.
+ *
+ * @returns An array containing the common elements between the two arrays.
+ *
+ * @example Usage
+ * ```ts
+ * import { createCommon } from "@std/internal/diff";
+ * import { assertEquals } from "@std/assert/assert-equals";
+ *
+ * const a = [1, 2, 3];
+ * const b = [1, 2, 4];
+ *
+ * assertEquals(createCommon(a, b), [1, 2]);
+ * ```
+ */
+export function createCommon<T>(A: T[], B: T[]): T[] {
   const common: T[] = [];
   if (A.length === 0 || B.length === 0) return [];
   for (let i = 0; i < Math.min(A.length, B.length); i += 1) {
-    const a = reverse ? A[A.length - i - 1] : A[i];
-    const b = reverse ? B[B.length - i - 1] : B[i];
+    const a = A[i];
+    const b = B[i];
     if (a !== undefined && a === b) {
       common.push(a);
     } else {
@@ -41,156 +51,234 @@ function createCommon<T>(A: T[], B: T[], reverse?: boolean): T[] {
   return common;
 }
 
-function ensureDefined<T>(item?: T): T {
-  if (item === undefined) {
-    throw Error("Unexpected missing FarthestPoint");
+/**
+ * Asserts that the value is a {@linkcode FarthestPoint}.
+ * If not, an error is thrown.
+ *
+ * @param value The value to check.
+ *
+ * @returns A void value that returns once the assertion completes.
+ *
+ * @example Usage
+ * ```ts
+ * import { assertFp } from "@std/internal/diff";
+ * import { assertThrows } from "@std/assert/assert-throws";
+ *
+ * assertFp({ y: 0, id: 0 });
+ * assertThrows(() => assertFp({ id: 0 }));
+ * assertThrows(() => assertFp({ y: 0 }));
+ * assertThrows(() => assertFp(undefined));
+ * ```
+ */
+export function assertFp(value: unknown): asserts value is FarthestPoint {
+  if (
+    value == null ||
+    typeof value !== "object" ||
+    typeof (value as FarthestPoint)?.y !== "number" ||
+    typeof (value as FarthestPoint)?.id !== "number"
+  ) {
+    throw new Error("Unexpected missing FarthestPoint");
   }
-  return item;
 }
 
 /**
- * Renders the differences between the actual and expected values
+ * Creates an array of backtraced differences.
+ *
+ * @typeParam T The type of elements in the arrays.
+ *
+ * @param A The first array.
+ * @param B The second array.
+ * @param current The current {@linkcode FarthestPoint}.
+ * @param swapped Boolean indicating if the arrays are swapped.
+ * @param routes The routes array.
+ * @param diffTypesPtrOffset The offset of the diff types in the routes array.
+ *
+ * @returns An array of backtraced differences.
+ *
+ * @example Usage
+ * ```ts
+ * import { backTrace } from "@std/internal/diff";
+ * import { assertEquals } from "@std/assert/assert-equals";
+ *
+ * assertEquals(
+ *   backTrace([], [], { y: 0, id: 0 }, false, new Uint32Array(0), 0),
+ *   [],
+ * );
+ * ```
+ */
+export function backTrace<T>(
+  A: T[],
+  B: T[],
+  current: FarthestPoint,
+  swapped: boolean,
+  routes: Uint32Array,
+  diffTypesPtrOffset: number,
+): Array<{
+  type: DiffType;
+  value: T;
+}> {
+  const M = A.length;
+  const N = B.length;
+  const result: { type: DiffType; value: T }[] = [];
+  let a = M - 1;
+  let b = N - 1;
+  let j = routes[current.id];
+  let type = routes[current.id + diffTypesPtrOffset];
+  while (true) {
+    if (!j && !type) break;
+    const prev = j!;
+    if (type === REMOVED) {
+      result.unshift({
+        type: swapped ? "removed" : "added",
+        value: B[b]!,
+      });
+      b -= 1;
+    } else if (type === ADDED) {
+      result.unshift({
+        type: swapped ? "added" : "removed",
+        value: A[a]!,
+      });
+      a -= 1;
+    } else {
+      result.unshift({ type: "common", value: A[a]! });
+      a -= 1;
+      b -= 1;
+    }
+    j = routes[prev];
+    type = routes[prev + diffTypesPtrOffset];
+  }
+  return result;
+}
+
+/**
+ * Creates a {@linkcode FarthestPoint}.
+ *
+ * @param k The current index.
+ * @param M The length of the first array.
+ * @param routes The routes array.
+ * @param diffTypesPtrOffset The offset of the diff types in the routes array.
+ * @param ptr The current pointer.
+ * @param slide The slide {@linkcode FarthestPoint}.
+ * @param down The down {@linkcode FarthestPoint}.
+ *
+ * @returns A {@linkcode FarthestPoint}.
+ *
+ * @example Usage
+ * ```ts
+ * import { createFp } from "@std/internal/diff";
+ * import { assertEquals } from "@std/assert/assert-equals";
+ *
+ * assertEquals(
+ *   createFp(
+ *     0,
+ *     0,
+ *     new Uint32Array(0),
+ *     0,
+ *     0,
+ *     { y: -1, id: 0 },
+ *     { y: 0, id: 0 },
+ *   ),
+ *   { y: -1, id: 1 },
+ * );
+ * ```
+ */
+export function createFp(
+  k: number,
+  M: number,
+  routes: Uint32Array,
+  diffTypesPtrOffset: number,
+  ptr: number,
+  slide?: FarthestPoint,
+  down?: FarthestPoint,
+): FarthestPoint {
+  if (slide && slide.y === -1 && down && down.y === -1) {
+    return { y: 0, id: 0 };
+  }
+  const isAdding = (down?.y === -1) ||
+    k === M ||
+    (slide?.y || 0) > (down?.y || 0) + 1;
+  if (slide && isAdding) {
+    const prev = slide.id;
+    ptr++;
+    routes[ptr] = prev;
+    routes[ptr + diffTypesPtrOffset] = ADDED;
+    return { y: slide.y, id: ptr };
+  }
+  if (down && !isAdding) {
+    const prev = down.id;
+    ptr++;
+    routes[ptr] = prev;
+    routes[ptr + diffTypesPtrOffset] = REMOVED;
+    return { y: down.y + 1, id: ptr };
+  }
+  throw new Error("Unexpected missing FarthestPoint");
+}
+
+/**
+ * Renders the differences between the actual and expected values.
+ *
+ * @typeParam T The type of elements in the arrays.
+ *
  * @param A Actual value
  * @param B Expected value
+ *
+ * @returns An array of differences between the actual and expected values.
+ *
+ * @example Usage
+ * ```ts
+ * import { diff } from "@std/internal/diff";
+ * import { assertEquals } from "@std/assert/assert-equals";
+ *
+ * const a = [1, 2, 3];
+ * const b = [1, 2, 4];
+ *
+ * assertEquals(diff(a, b), [
+ *   { type: "common", value: 1 },
+ *   { type: "common", value: 2 },
+ *   { type: "removed", value: 3 },
+ *   { type: "added", value: 4 },
+ * ]);
+ * ```
  */
-export function diff<T>(A: T[], B: T[]): Array<DiffResult<T>> {
+export function diff<T>(A: T[], B: T[]): DiffResult<T>[] {
   const prefixCommon = createCommon(A, B);
-  const suffixCommon = createCommon(
-    A.slice(prefixCommon.length),
-    B.slice(prefixCommon.length),
-    true,
-  ).reverse();
-  A = suffixCommon.length
-    ? A.slice(prefixCommon.length, -suffixCommon.length)
-    : A.slice(prefixCommon.length);
-  B = suffixCommon.length
-    ? B.slice(prefixCommon.length, -suffixCommon.length)
-    : B.slice(prefixCommon.length);
+  A = A.slice(prefixCommon.length);
+  B = B.slice(prefixCommon.length);
   const swapped = B.length > A.length;
   [A, B] = swapped ? [B, A] : [A, B];
   const M = A.length;
   const N = B.length;
-  if (!M && !N && !suffixCommon.length && !prefixCommon.length) return [];
+  if (!M && !N && !prefixCommon.length) return [];
   if (!N) {
     return [
-      ...prefixCommon.map(
-        (c): DiffResult<typeof c> => ({ type: DiffType.common, value: c }),
-      ),
-      ...A.map(
-        (a): DiffResult<typeof a> => ({
-          type: swapped ? DiffType.added : DiffType.removed,
-          value: a,
-        }),
-      ),
-      ...suffixCommon.map(
-        (c): DiffResult<typeof c> => ({ type: DiffType.common, value: c }),
-      ),
-    ];
+      ...prefixCommon.map((value) => ({ type: "common", value })),
+      ...A.map((value) => ({ type: swapped ? "added" : "removed", value })),
+    ] as DiffResult<T>[];
   }
   const offset = N;
   const delta = M - N;
-  const size = M + N + 1;
-  const fp: FarthestPoint[] = Array.from(
-    { length: size },
-    () => ({ y: -1, id: -1 }),
-  );
+  const length = M + N + 1;
+  const fp: FarthestPoint[] = Array.from({ length }, () => ({ y: -1, id: -1 }));
 
   /**
-   * INFO:
-   * This buffer is used to save memory and improve performance.
-   * The first half is used to save route and last half is used to save diff
-   * type.
-   * This is because, when I kept new uint8array area to save type,performance
-   * worsened.
+   * Note: this buffer is used to save memory and improve performance. The first
+   * half is used to save route and the last half is used to save diff type.
    */
-  const routes = new Uint32Array((M * N + size + 1) * 2);
+  const routes = new Uint32Array((M * N + length + 1) * 2);
   const diffTypesPtrOffset = routes.length / 2;
   let ptr = 0;
-  let p = -1;
-
-  function backTrace<T>(
-    A: T[],
-    B: T[],
-    current: FarthestPoint,
-    swapped: boolean,
-  ): Array<{
-    type: DiffType;
-    value: T;
-  }> {
-    const M = A.length;
-    const N = B.length;
-    const result: { type: DiffType; value: T }[] = [];
-    let a = M - 1;
-    let b = N - 1;
-    let j = routes[current.id];
-    let type = routes[current.id + diffTypesPtrOffset];
-    while (true) {
-      if (!j && !type) break;
-      const prev = j!;
-      if (type === REMOVED) {
-        result.unshift({
-          type: swapped ? DiffType.removed : DiffType.added,
-          value: B[b]!,
-        });
-        b -= 1;
-      } else if (type === ADDED) {
-        result.unshift({
-          type: swapped ? DiffType.added : DiffType.removed,
-          value: A[a]!,
-        });
-        a -= 1;
-      } else {
-        result.unshift({ type: DiffType.common, value: A[a]! });
-        a -= 1;
-        b -= 1;
-      }
-      j = routes[prev];
-      type = routes[prev + diffTypesPtrOffset];
-    }
-    return result;
-  }
-
-  function createFP(
-    slide: FarthestPoint | undefined,
-    down: FarthestPoint | undefined,
-    k: number,
-    M: number,
-  ): FarthestPoint {
-    if (slide && slide.y === -1 && down && down.y === -1) {
-      return { y: 0, id: 0 };
-    }
-    const isAdding = (down?.y === -1) ||
-      k === M ||
-      (slide?.y || 0) > (down?.y || 0) + 1;
-    if (slide && isAdding) {
-      const prev = slide.id;
-      ptr++;
-      routes[ptr] = prev;
-      routes[ptr + diffTypesPtrOffset] = ADDED;
-      return { y: slide.y, id: ptr };
-    } else if (down && !isAdding) {
-      const prev = down.id;
-      ptr++;
-      routes[ptr] = prev;
-      routes[ptr + diffTypesPtrOffset] = REMOVED;
-      return { y: down.y + 1, id: ptr };
-    } else {
-      throw new Error("Unexpected missing FarthestPoint");
-    }
-  }
 
   function snake<T>(
     k: number,
-    slide: FarthestPoint | undefined,
-    down: FarthestPoint | undefined,
-    _offset: number,
     A: T[],
     B: T[],
+    slide?: FarthestPoint,
+    down?: FarthestPoint,
   ): FarthestPoint {
     const M = A.length;
     const N = B.length;
-    if (k < -N || M < k) return { y: -1, id: -1 };
-    const fp = createFP(slide, down, k, M);
+    const fp = createFp(k, M, routes, diffTypesPtrOffset, ptr, slide, down);
+    ptr = fp.id;
     while (fp.y + k < M && fp.y < N && A[fp.y + k] === B[fp.y]) {
       const prev = fp.id;
       ptr++;
@@ -202,256 +290,26 @@ export function diff<T>(A: T[], B: T[]): Array<DiffResult<T>> {
     return fp;
   }
 
-  let currentFP = ensureDefined<FarthestPoint>(fp[delta + offset]);
-  while (currentFP && currentFP.y < N) {
+  let currentFp = fp[delta + offset];
+  assertFp(currentFp);
+  let p = -1;
+  while (currentFp.y < N) {
     p = p + 1;
     for (let k = -p; k < delta; ++k) {
-      fp[k + offset] = snake(
-        k,
-        fp[k - 1 + offset],
-        fp[k + 1 + offset],
-        offset,
-        A,
-        B,
-      );
+      const index = k + offset;
+      fp[index] = snake(k, A, B, fp[index - 1], fp[index + 1]);
     }
     for (let k = delta + p; k > delta; --k) {
-      fp[k + offset] = snake(
-        k,
-        fp[k - 1 + offset],
-        fp[k + 1 + offset],
-        offset,
-        A,
-        B,
-      );
+      const index = k + offset;
+      fp[index] = snake(k, A, B, fp[index - 1], fp[index + 1]);
     }
-    fp[delta + offset] = snake(
-      delta,
-      fp[delta - 1 + offset],
-      fp[delta + 1 + offset],
-      offset,
-      A,
-      B,
-    );
-    currentFP = ensureDefined(fp[delta + offset]);
+    const index = delta + offset;
+    fp[delta + offset] = snake(delta, A, B, fp[index - 1], fp[index + 1]);
+    currentFp = fp[delta + offset];
+    assertFp(currentFp);
   }
   return [
-    ...prefixCommon.map(
-      (c): DiffResult<typeof c> => ({ type: DiffType.common, value: c }),
-    ),
-    ...backTrace(A, B, currentFP, swapped),
-    ...suffixCommon.map(
-      (c): DiffResult<typeof c> => ({ type: DiffType.common, value: c }),
-    ),
-  ];
-}
-
-/**
- * Renders the differences between the actual and expected strings
- * Partially inspired from https://github.com/kpdecker/jsdiff
- * @param A Actual string
- * @param B Expected string
- */
-export function diffstr(A: string, B: string): DiffResult<string>[] {
-  function unescape(string: string): string {
-    // unescape invisible characters.
-    // ref: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String#escape_sequences
-    return string
-      .replaceAll("\b", "\\b")
-      .replaceAll("\f", "\\f")
-      .replaceAll("\t", "\\t")
-      .replaceAll("\v", "\\v")
-      .replaceAll( // does not remove line breaks
-        /\r\n|\r|\n/g,
-        (str) => str === "\r" ? "\\r" : str === "\n" ? "\\n\n" : "\\r\\n\r\n",
-      );
-  }
-
-  function tokenize(string: string, { wordDiff = false } = {}): string[] {
-    if (wordDiff) {
-      // Split string on whitespace symbols
-      const tokens = string.split(/([^\S\r\n]+|[()[\]{}'"\r\n]|\b)/);
-      // Extended Latin character set
-      const words =
-        /^[a-zA-Z\u{C0}-\u{FF}\u{D8}-\u{F6}\u{F8}-\u{2C6}\u{2C8}-\u{2D7}\u{2DE}-\u{2FF}\u{1E00}-\u{1EFF}]+$/u;
-
-      // Join boundary splits that we do not consider to be boundaries and merge empty strings surrounded by word chars
-      for (let i = 0; i < tokens.length - 1; i++) {
-        const token = tokens[i];
-        const tokenPlusTwo = tokens[i + 2];
-        if (
-          !tokens[i + 1] &&
-          token &&
-          tokenPlusTwo &&
-          words.test(token) &&
-          words.test(tokenPlusTwo)
-        ) {
-          tokens[i] += tokenPlusTwo;
-          tokens.splice(i + 1, 2);
-          i--;
-        }
-      }
-      return tokens.filter((token) => token);
-    } else {
-      // Split string on new lines symbols
-      const tokens: string[] = [];
-      const lines = string.split(/(\n|\r\n)/);
-
-      // Ignore final empty token when text ends with a newline
-      if (!lines[lines.length - 1]) {
-        lines.pop();
-      }
-
-      // Merge the content and line separators into single tokens
-      for (const [i, line] of lines.entries()) {
-        if (i % 2) {
-          tokens[tokens.length - 1] += line;
-        } else {
-          tokens.push(line);
-        }
-      }
-      return tokens;
-    }
-  }
-
-  // Create details by filtering relevant word-diff for current line
-  // and merge "space-diff" if surrounded by word-diff for cleaner displays
-  function createDetails(
-    line: DiffResult<string>,
-    tokens: Array<DiffResult<string>>,
-  ) {
-    return tokens.filter(({ type }) =>
-      type === line.type || type === DiffType.common
-    ).map((result, i, t) => {
-      const token = t[i - 1];
-      if (
-        (result.type === DiffType.common) && token &&
-        (token.type === t[i + 1]?.type) && /\s+/.test(result.value)
-      ) {
-        return {
-          ...result,
-          type: token.type,
-        };
-      }
-      return result;
-    });
-  }
-
-  // Compute multi-line diff
-  const diffResult = diff(
-    tokenize(`${unescape(A)}\n`),
-    tokenize(`${unescape(B)}\n`),
-  );
-
-  const added = [];
-  const removed = [];
-  for (const result of diffResult) {
-    if (result.type === DiffType.added) {
-      added.push(result);
-    }
-    if (result.type === DiffType.removed) {
-      removed.push(result);
-    }
-  }
-
-  // Compute word-diff
-  const hasMoreRemovedLines = added.length < removed.length;
-  const aLines = hasMoreRemovedLines ? added : removed;
-  const bLines = hasMoreRemovedLines ? removed : added;
-  for (const a of aLines) {
-    let tokens = [] as Array<DiffResult<string>>;
-    let b: undefined | DiffResult<string>;
-    // Search another diff line with at least one common token
-    while (bLines.length) {
-      b = bLines.shift();
-      const tokenized = [
-        tokenize(a.value, { wordDiff: true }),
-        tokenize(b?.value ?? "", { wordDiff: true }),
-      ] as [string[], string[]];
-      if (hasMoreRemovedLines) tokenized.reverse();
-      tokens = diff(tokenized[0], tokenized[1]);
-      if (
-        tokens.some(({ type, value }) =>
-          type === DiffType.common && value.trim().length
-        )
-      ) {
-        break;
-      }
-    }
-    // Register word-diff details
-    a.details = createDetails(a, tokens);
-    if (b) {
-      b.details = createDetails(b, tokens);
-    }
-  }
-
-  return diffResult;
-}
-
-/**
- * Colors the output of assertion diffs
- * @param diffType Difference type, either added or removed
- */
-function createColor(
-  diffType: DiffType,
-  { background = false } = {},
-): (s: string) => string {
-  // TODO(@littledivy): Remove this when we can detect
-  // true color terminals.
-  // https://github.com/denoland/deno_std/issues/2575
-  background = false;
-  switch (diffType) {
-    case DiffType.added:
-      return (s: string): string =>
-        background ? bgGreen(white(s)) : green(bold(s));
-    case DiffType.removed:
-      return (s: string): string => background ? bgRed(white(s)) : red(bold(s));
-    default:
-      return white;
-  }
-}
-
-/**
- * Prefixes `+` or `-` in diff output
- * @param diffType Difference type, either added or removed
- */
-function createSign(diffType: DiffType): string {
-  switch (diffType) {
-    case DiffType.added:
-      return "+   ";
-    case DiffType.removed:
-      return "-   ";
-    default:
-      return "    ";
-  }
-}
-
-export function buildMessage(
-  diffResult: ReadonlyArray<DiffResult<string>>,
-  { stringDiff = false } = {},
-): string[] {
-  const messages: string[] = [];
-  const diffMessages: string[] = [];
-  messages.push("");
-  messages.push("");
-  messages.push(
-    `    ${gray(bold("[Diff]"))} ${red(bold("Actual"))} / ${
-      green(bold("Expected"))
-    }`,
-  );
-  messages.push("");
-  messages.push("");
-  diffResult.forEach((result: DiffResult<string>) => {
-    const c = createColor(result.type);
-    const line = result.details?.map((detail) =>
-      detail.type !== DiffType.common
-        ? createColor(detail.type, { background: true })(detail.value)
-        : detail.value
-    ).join("") ?? result.value;
-    diffMessages.push(c(`${createSign(result.type)}${line}`));
-  });
-  messages.push(...(stringDiff ? [diffMessages.join("")] : diffMessages));
-  messages.push("");
-
-  return messages;
+    ...prefixCommon.map((value) => ({ type: "common", value })),
+    ...backTrace(A, B, currentFp, swapped, routes, diffTypesPtrOffset),
+  ] as DiffResult<T>[];
 }

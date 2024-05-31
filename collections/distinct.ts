@@ -5,7 +5,13 @@
  * Returns all distinct elements in the given array, preserving order by first
  * occurrence.
  *
- * @example
+ * @typeParam T The type of the elements in the input array.
+ *
+ * @param array The array to filter for distinct elements.
+ *
+ * @returns An array of distinct elements in the input array.
+ *
+ * @example Basic usage
  * ```ts
  * import { distinct } from "@std/collections/distinct";
  * import { assertEquals } from "@std/assert/assert-equals";

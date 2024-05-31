@@ -11,8 +11,8 @@ import { AssertionError } from "./assertion_error.ts";
  * The default tolerance is one hundred thousandth of a percent of the
  * expected value.
  *
- * @example
- * ```ts
+ * @example Usage
+ * ```ts no-eval
  * import { assertAlmostEquals } from "@std/assert";
  *
  * assertAlmostEquals(0.01, 0.02); // Throws
@@ -22,6 +22,11 @@ import { AssertionError } from "./assertion_error.ts";
  * assertAlmostEquals(0.1 + 0.2, 0.3, 1e-16); // Doesn't throw
  * assertAlmostEquals(0.1 + 0.2, 0.3, 1e-17); // Throws
  * ```
+ *
+ * @param actual The actual value to compare.
+ * @param expected The expected value to compare.
+ * @param tolerance The tolerance to consider the values almost equal. The default is one hundred thousandth of a percent of the expected value.
+ * @param msg The optional message to include in the error.
  */
 export function assertAlmostEquals(
   actual: number,

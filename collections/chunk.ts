@@ -4,7 +4,14 @@
 /**
  * Splits the given array into chunks of the given size and returns them.
  *
- * @example
+ * @typeParam T Type of the elements in the input array.
+ *
+ * @param array The array to split into chunks.
+ * @param size The size of the chunks. This must be a positive integer.
+ *
+ * @returns An array of chunks of the given size.
+ *
+ * @example Basic usage
  * ```ts
  * import { chunk } from "@std/collections/chunk";
  * import { assertEquals } from "@std/assert/assert-equals";
@@ -32,25 +39,18 @@
  */
 export function chunk<T>(array: readonly T[], size: number): T[][] {
   if (size <= 0 || !Number.isInteger(size)) {
-    throw new Error(
+    throw new RangeError(
       `Expected size to be an integer greater than 0 but found ${size}`,
     );
   }
 
-  if (array.length === 0) {
-    return [];
+  const result: T[][] = [];
+  let index = 0;
+
+  while (index < array.length) {
+    result.push(array.slice(index, index + size));
+    index += size;
   }
 
-  const ret = Array.from<T[]>({ length: Math.ceil(array.length / size) });
-  let readIndex = 0;
-  let writeIndex = 0;
-
-  while (readIndex < array.length) {
-    ret[writeIndex] = array.slice(readIndex, readIndex + size);
-
-    writeIndex += 1;
-    readIndex += size;
-  }
-
-  return ret;
+  return result;
 }

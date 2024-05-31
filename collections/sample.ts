@@ -6,15 +6,23 @@ import { randomInteger } from "./_utils.ts";
 /**
  * Returns a random element from the given array.
  *
- * @example
+ * @typeParam T The type of the elements in the array.
+ * @typeParam O The type of the accumulator.
+ *
+ * @param array The array to sample from.
+ *
+ * @returns A random element from the given array, or `undefined` if the array
+ * is empty.
+ *
+ * @example Basic usage
  * ```ts
  * import { sample } from "@std/collections/sample";
- * import { assert } from "@std/assert/assert";
+ * import { assertArrayIncludes } from "@std/assert/assert-array-includes";
  *
  * const numbers = [1, 2, 3, 4];
  * const random = sample(numbers);
  *
- * assert(numbers.includes(random as number));
+ * assertArrayIncludes(numbers, [random]);
  * ```
  */
 export function sample<T>(array: readonly T[]): T | undefined {

@@ -8,7 +8,14 @@
  * If the transformed entries contain the same key multiple times, only the last
  * one will appear in the returned record.
  *
- * @example
+ * @typeParam T The type of the values in the input record.
+ *
+ * @param record The record to map keys from.
+ * @param transformer The function to transform each key.
+ *
+ * @returns A new record with all keys transformed by the given transformer.
+ *
+ * @example Basic usage
  * ```ts
  * import { mapKeys } from "@std/collections/map-keys";
  * import { assertEquals } from "@std/assert/assert-equals";
@@ -16,7 +23,7 @@
  * const counts = { a: 5, b: 3, c: 8 };
  *
  * assertEquals(
- *   mapKeys(counts, (it) => it.toUpperCase()),
+ *   mapKeys(counts, (key) => key.toUpperCase()),
  *   {
  *     A: 5,
  *     B: 3,
@@ -29,12 +36,12 @@ export function mapKeys<T>(
   record: Readonly<Record<string, T>>,
   transformer: (key: string) => string,
 ): Record<string, T> {
-  const ret: Record<string, T> = {};
+  const result: Record<string, T> = {};
 
   for (const [key, value] of Object.entries(record)) {
     const mappedKey = transformer(key);
-    ret[mappedKey] = value;
+    result[mappedKey] = value;
   }
 
-  return ret;
+  return result;
 }

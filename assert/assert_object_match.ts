@@ -6,13 +6,17 @@ import { assertEquals } from "./assert_equals.ts";
  * Make an assertion that `actual` object is a subset of `expected` object,
  * deeply. If not, then throw.
  *
- * @example
- * ```ts
+ * @example Usage
+ * ```ts no-eval
  * import { assertObjectMatch } from "@std/assert/assert-object-match";
  *
  * assertObjectMatch({ foo: "bar" }, { foo: "bar" }); // Doesn't throw
  * assertObjectMatch({ foo: "bar" }, { foo: "baz" }); // Throws
  * ```
+ *
+ * @param actual The actual value to be matched.
+ * @param expected The expected value to match.
+ * @param msg The optional message to display if the assertion fails.
  */
 export function assertObjectMatch(
   // deno-lint-ignore no-explicit-any
@@ -40,7 +44,7 @@ export function assertObjectMatch(
               a === null ? null : `type ${typeof a}`
             }`,
           );
-        } else throw err;
+        }
       }
       // Filter keys and symbols which are present in both actual and expected
       const filtered = {} as loose;

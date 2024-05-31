@@ -15,15 +15,19 @@
  * @example Basic usage
  * ```ts
  * import { endsWith } from "@std/bytes/ends-with";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const source = new Uint8Array([0, 1, 2, 1, 2, 1, 2, 3]);
  * const suffix = new Uint8Array([1, 2, 3]);
  *
- * endsWith(source, suffix); // true
+ * assertEquals(endsWith(source, suffix), true);
  * ```
  */
 export function endsWith(source: Uint8Array, suffix: Uint8Array): boolean {
   const diff = source.length - suffix.length;
+  if (diff < 0) {
+    return false;
+  }
   for (let i = suffix.length - 1; i >= 0; i--) {
     if (source[diff + i] !== suffix[i]) {
       return false;

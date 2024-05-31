@@ -10,13 +10,17 @@ import { AssertionError } from "./assertion_error.ts";
  * To assert that an asynchronous function rejects, use
  * {@linkcode assertRejects}.
  *
- * @example
- * ```ts
+ * @example Usage
+ * ```ts no-eval
  * import { assertThrows } from "@std/assert/assert-throws";
  *
  * assertThrows(() => { throw new TypeError("hello world!"); }); // Doesn't throw
  * assertThrows(() => console.log("hello world!")); // Throws
  * ```
+ *
+ * @param fn The function to execute.
+ * @param msg The optional message to display if the assertion fails.
+ * @returns The error that was thrown.
  */
 export function assertThrows(
   fn: () => unknown,
@@ -30,13 +34,20 @@ export function assertThrows(
  * To assert that an asynchronous function rejects, use
  * {@linkcode assertRejects}.
  *
- * @example
- * ```ts
+ * @example Usage
+ * ```ts no-eval
  * import { assertThrows } from "@std/assert/assert-throws";
  *
  * assertThrows(() => { throw new TypeError("hello world!"); }, TypeError); // Doesn't throw
  * assertThrows(() => { throw new TypeError("hello world!"); }, RangeError); // Throws
  * ```
+ *
+ * @typeParam E The error class to assert.
+ * @param fn The function to execute.
+ * @param ErrorClass The error class to assert.
+ * @param msgIncludes The string that should be included in the error message.
+ * @param msg The optional message to display if the assertion fails.
+ * @returns The error that was thrown.
  */
 export function assertThrows<E extends Error = Error>(
   fn: () => unknown,
@@ -62,8 +73,8 @@ export function assertThrows<E extends Error = Error>(
   if (typeof errorClassOrMsg !== "string") {
     if (
       errorClassOrMsg === undefined ||
-      errorClassOrMsg.prototype instanceof Error ||
-      errorClassOrMsg.prototype === Error.prototype
+      errorClassOrMsg?.prototype instanceof Error ||
+      errorClassOrMsg?.prototype === Error.prototype
     ) {
       // deno-lint-ignore no-explicit-any
       ErrorClass = errorClassOrMsg as new (...args: any[]) => E;

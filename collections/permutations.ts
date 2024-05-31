@@ -6,7 +6,13 @@
  * Ignores equality of elements, meaning this will always return the same
  * number of permutations for a given length of input.
  *
- * @example
+ * @typeParam T The type of the elements in the array.
+ *
+ * @param inputArray The array to build permutations from.
+ *
+ * @returns An array of all possible permutations of the given array.
+ *
+ * @example Basic usage
  * ```ts
  * import { permutations } from "@std/collections/permutations";
  * import { assertEquals } from "@std/assert/assert-equals";
@@ -21,20 +27,20 @@
  * ```
  */
 export function permutations<T>(inputArray: Iterable<T>): T[][] {
-  const ret: T[][] = [];
+  const result: T[][] = [];
 
   const array = [...inputArray];
 
   const k = array.length;
 
   if (k === 0) {
-    return ret;
+    return result;
   }
 
   // Heap's Algorithm
   const c = new Array<number>(k).fill(0);
 
-  ret.push([...array]);
+  result.push([...array]);
 
   let i = 1;
 
@@ -46,7 +52,7 @@ export function permutations<T>(inputArray: Iterable<T>): T[][] {
         [array[c[i]!], array[i]] = [array[i], array[c[i]!]] as [T, T];
       }
 
-      ret.push([...array]);
+      result.push([...array]);
 
       c[i] += 1;
       i = 1;
@@ -56,5 +62,5 @@ export function permutations<T>(inputArray: Iterable<T>): T[][] {
     }
   }
 
-  return ret;
+  return result;
 }

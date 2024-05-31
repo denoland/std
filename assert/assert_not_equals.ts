@@ -1,7 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-import { CAN_NOT_DISPLAY } from "./_constants.ts";
 import { equal } from "./equal.ts";
 import { AssertionError } from "./assertion_error.ts";
 
@@ -11,30 +10,25 @@ import { AssertionError } from "./assertion_error.ts";
  *
  * Type parameter can be specified to ensure values under comparison have the same type.
  *
- * @example
- * ```ts
+ * @example Usage
+ * ```ts no-eval
  * import { assertNotEquals } from "@std/assert/assert-not-equals";
  *
  * assertNotEquals(1, 2); // Doesn't throw
  * assertNotEquals(1, 1); // Throws
  * ```
+ *
+ * @typeParam T The type of the values to compare.
+ * @param actual The actual value to compare.
+ * @param expected The expected value to compare.
+ * @param msg The optional message to display if the assertion fails.
  */
 export function assertNotEquals<T>(actual: T, expected: T, msg?: string) {
   if (!equal(actual, expected)) {
     return;
   }
-  let actualString: string;
-  let expectedString: string;
-  try {
-    actualString = String(actual);
-  } catch {
-    actualString = CAN_NOT_DISPLAY;
-  }
-  try {
-    expectedString = String(expected);
-  } catch {
-    expectedString = CAN_NOT_DISPLAY;
-  }
+  const actualString = String(actual);
+  const expectedString = String(expected);
   const msgSuffix = msg ? `: ${msg}` : ".";
   throw new AssertionError(
     `Expected actual: ${actualString} not to be: ${expectedString}${msgSuffix}`,

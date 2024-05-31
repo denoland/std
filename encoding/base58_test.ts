@@ -67,6 +67,7 @@ Deno.test("decodeBase58() decodes binary", () => {
 Deno.test("decodeBase58() throws on invalid input", () => {
   assertThrows(
     () => decodeBase58("+2NEpo7TZRRrLZSi2U"),
+    TypeError,
     `Invalid base58 char at index 0 with value +`,
   );
 });

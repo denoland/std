@@ -2,17 +2,28 @@
 // This module is browser compatible.
 
 /**
- * Builds a new Record using the given array as keys and choosing a value for
- * each key using the given selector. If any of two pairs would have the same
- * value the latest on will be used (overriding the ones before it).
+ * Associates each string element of an array with a value returned by a selector
+ * function.
  *
- * @example
+ * If any of two pairs would have the same value, the latest one will be used
+ * (overriding the ones before it).
+ *
+ * @typeParam T The type of the values returned by the selector function.
+ *
+ * @param array The array of elements to associate with values.
+ * @param selector The selector function that returns a value for each element.
+ *
+ * @returns An object where each element of the array is associated with a value
+ * returned by the selector function.
+ *
+ * @example Basic usage
  * ```ts
  * import { associateWith } from "@std/collections/associate-with";
  * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const names = ["Kim", "Lara", "Jonathan"];
- * const namesToLength = associateWith(names, (it) => it.length);
+ *
+ * const namesToLength = associateWith(names, (person) => person.length);
  *
  * assertEquals(namesToLength, {
  *   "Kim": 3,
@@ -25,13 +36,11 @@ export function associateWith<T>(
   array: Iterable<string>,
   selector: (key: string) => T,
 ): Record<string, T> {
-  const ret: Record<string, T> = {};
+  const result: Record<string, T> = {};
 
   for (const element of array) {
-    const selectedValue = selector(element);
-
-    ret[element] = selectedValue;
+    result[element] = selector(element);
   }
 
-  return ret;
+  return result;
 }

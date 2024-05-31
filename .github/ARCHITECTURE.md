@@ -7,13 +7,19 @@ This guide aims to explain how this codebase is organized.
 ### `_tools`
 
 This folder contains internal tools that are used in CI and development for
-checking code and performing codebase transformations, such as preparing the
-codebase for JSR.
+checking code and documentation.
 
 ### `<package>`
 
 Each package is encapsulated as a top-level folder, without the prepended
 underscore in the name.
+
+### `<package>/deno.json`
+
+This is the
+[package configuration file](https://jsr.io/docs/publishing-packages#package-config-file).
+It contains package settings such as name, version and exports of the given
+package.
 
 ### `<package>/mod.ts`
 
@@ -42,3 +48,7 @@ This is the
 [configuration file](https://docs.deno.com/runtime/manual/getting_started/configuration_file)
 for this codebase. It contains settings and tasks that apply to the codebase as
 a whole.
+
+## Dependency Graph
+
+<img src="./dependency_graph.svg">

@@ -5,13 +5,22 @@
  * Returns all elements in the given array that produce a distinct value using
  * the given selector, preserving order by first occurrence.
  *
- * @example
+ * @typeParam T The type of the elements in the input array.
+ * @typeParam D The type of the values produced by the selector function.
+ *
+ * @param array The array to filter for distinct elements.
+ * @param selector The function to extract the value to compare for
+ * distinctness.
+ *
+ * @returns An array of distinct elements in the input array.
+ *
+ * @example Basic usage
  * ```ts
  * import { distinctBy } from "@std/collections/distinct-by";
  * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const names = ["Anna", "Kim", "Arnold", "Kate"];
- * const exampleNamesByFirstLetter = distinctBy(names, (it) => it.charAt(0));
+ * const exampleNamesByFirstLetter = distinctBy(names, (name) => name.charAt(0));
  *
  * assertEquals(exampleNamesByFirstLetter, ["Anna", "Kim"]);
  * ```
@@ -21,16 +30,13 @@ export function distinctBy<T, D>(
   selector: (el: T) => D,
 ): T[] {
   const selectedValues = new Set<D>();
-  const ret: T[] = [];
-
+  const result: T[] = [];
   for (const element of array) {
-    const currentSelectedValue = selector(element);
-
-    if (!selectedValues.has(currentSelectedValue)) {
-      selectedValues.add(currentSelectedValue);
-      ret.push(element);
+    const selected = selector(element);
+    if (!selectedValues.has(selected)) {
+      selectedValues.add(selected);
+      result.push(element);
     }
   }
-
-  return ret;
+  return result;
 }

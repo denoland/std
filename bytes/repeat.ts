@@ -14,14 +14,21 @@ import { copy } from "./copy.ts";
  * @example Basic usage
  * ```ts
  * import { repeat } from "@std/bytes/repeat";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const source = new Uint8Array([0, 1, 2]);
  *
- * repeat(source, 3); // Uint8Array(9) [0, 1, 2, 0, 1, 2, 0, 1, 2]
+ * assertEquals(repeat(source, 3), new Uint8Array([0, 1, 2, 0, 1, 2, 0, 1, 2]));
+ * ```
  *
- * repeat(source, 0); // Uint8Array(0) []
+ * @example Zero count
+ * ```ts
+ * import { repeat } from "@std/bytes/repeat";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
- * repeat(source, -1); // Throws `RangeError`
+ * const source = new Uint8Array([0, 1, 2]);
+ *
+ * assertEquals(repeat(source, 0), new Uint8Array());
  * ```
  */
 export function repeat(source: Uint8Array, count: number): Uint8Array {

@@ -1,7 +1,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 import { AssertionError } from "./assertion_error.ts";
-import { stripAnsiCode } from "@std/fmt/colors";
+import { stripAnsiCode } from "@std/internal/styles";
 
 /**
  * Make an assertion that `error` is an `Error`.
@@ -9,8 +9,8 @@ import { stripAnsiCode } from "@std/fmt/colors";
  * An error class and a string that should be included in the
  * error message can also be asserted.
  *
- * @example
- * ```ts
+ * @example Usage
+ * ```ts no-eval
  * import { assertIsError } from "@std/assert/assert-is-error";
  *
  * assertIsError(null); // Throws
@@ -19,6 +19,12 @@ import { stripAnsiCode } from "@std/fmt/colors";
  * assertIsError(new RangeError("Out of range"), SyntaxError, "Out of range"); // Doesn't throw
  * assertIsError(new RangeError("Out of range"), SyntaxError, "Within range"); // Throws
  * ```
+ *
+ * @typeParam E The type of the error to assert.
+ * @param error The error to assert.
+ * @param ErrorClass The optional error class to assert.
+ * @param msgMatches The optional string or RegExp to assert in the error message.
+ * @param msg The optional message to display if the assertion fails.
  */
 export function assertIsError<E extends Error = Error>(
   error: unknown,
@@ -34,9 +40,8 @@ export function assertIsError<E extends Error = Error>(
     );
   }
   if (ErrorClass && !(error instanceof ErrorClass)) {
-    msg = `Expected error to be instance of "${ErrorClass.name}", but was "${
-      typeof error === "object" ? error?.constructor?.name : "[not an object]"
-    }"${msgSuffix}`;
+    msg =
+      `Expected error to be instance of "${ErrorClass.name}", but was "${error?.constructor?.name}"${msgSuffix}`;
     throw new AssertionError(msg);
   }
   let msgCheck;
@@ -54,11 +59,7 @@ export function assertIsError<E extends Error = Error>(
       msgMatches instanceof RegExp
         ? msgMatches.toString()
         : JSON.stringify(msgMatches)
-    }, but got ${
-      error instanceof Error
-        ? JSON.stringify(error.message)
-        : '"[not an Error]"' // TODO(kt3k): show more useful information
-    }${msgSuffix}`;
+    }, but got ${JSON.stringify(error?.message)}${msgSuffix}`;
     throw new AssertionError(msg);
   }
 }

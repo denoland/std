@@ -1,7 +1,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import { diff, diffstr, DiffType } from "./diff.ts";
-import { assertEquals } from "@std/assert/assert-equals";
+import { assertFp, backTrace, createCommon, createFp, diff } from "./diff.ts";
+import { assertEquals, assertThrows } from "@std/assert";
 
 Deno.test({
   name: "diff() with empty values",
@@ -14,8 +14,8 @@ Deno.test({
   name: 'diff() "a" vs "b"',
   fn() {
     assertEquals(diff(["a"], ["b"]), [
-      { type: DiffType.removed, value: "a" },
-      { type: DiffType.added, value: "b" },
+      { type: "removed", value: "a" },
+      { type: "added", value: "b" },
     ]);
   },
 });
@@ -23,21 +23,21 @@ Deno.test({
 Deno.test({
   name: 'diff() "a" vs "a"',
   fn() {
-    assertEquals(diff(["a"], ["a"]), [{ type: DiffType.common, value: "a" }]);
+    assertEquals(diff(["a"], ["a"]), [{ type: "common", value: "a" }]);
   },
 });
 
 Deno.test({
   name: 'diff() "a" vs ""',
   fn() {
-    assertEquals(diff(["a"], []), [{ type: DiffType.removed, value: "a" }]);
+    assertEquals(diff(["a"], []), [{ type: "removed", value: "a" }]);
   },
 });
 
 Deno.test({
   name: 'diff() "" vs "a"',
   fn() {
-    assertEquals(diff([], ["a"]), [{ type: DiffType.added, value: "a" }]);
+    assertEquals(diff([], ["a"]), [{ type: "added", value: "a" }]);
   },
 });
 
@@ -45,8 +45,20 @@ Deno.test({
   name: 'diff() "a" vs "a, b"',
   fn() {
     assertEquals(diff(["a"], ["a", "b"]), [
-      { type: DiffType.common, value: "a" },
-      { type: DiffType.added, value: "b" },
+      { type: "common", value: "a" },
+      { type: "added", value: "b" },
+    ]);
+  },
+});
+
+Deno.test({
+  name: 'diff() "a, x, c" vs "a, b, c"',
+  fn() {
+    assertEquals(diff(["a", "x", "c"], ["a", "b", "c"]), [
+      { type: "common", value: "a" },
+      { type: "removed", value: "x" },
+      { type: "added", value: "b" },
+      { type: "common", value: "c" },
     ]);
   },
 });
@@ -55,15 +67,15 @@ Deno.test({
   name: 'diff() "strength" vs "string"',
   fn() {
     assertEquals(diff(Array.from("strength"), Array.from("string")), [
-      { type: DiffType.common, value: "s" },
-      { type: DiffType.common, value: "t" },
-      { type: DiffType.common, value: "r" },
-      { type: DiffType.removed, value: "e" },
-      { type: DiffType.added, value: "i" },
-      { type: DiffType.common, value: "n" },
-      { type: DiffType.common, value: "g" },
-      { type: DiffType.removed, value: "t" },
-      { type: DiffType.removed, value: "h" },
+      { type: "common", value: "s" },
+      { type: "common", value: "t" },
+      { type: "common", value: "r" },
+      { type: "removed", value: "e" },
+      { type: "added", value: "i" },
+      { type: "common", value: "n" },
+      { type: "common", value: "g" },
+      { type: "removed", value: "t" },
+      { type: "removed", value: "h" },
     ]);
   },
 });
@@ -72,14 +84,14 @@ Deno.test({
   name: 'diff() "strength" vs ""',
   fn() {
     assertEquals(diff(Array.from("strength"), Array.from("")), [
-      { type: DiffType.removed, value: "s" },
-      { type: DiffType.removed, value: "t" },
-      { type: DiffType.removed, value: "r" },
-      { type: DiffType.removed, value: "e" },
-      { type: DiffType.removed, value: "n" },
-      { type: DiffType.removed, value: "g" },
-      { type: DiffType.removed, value: "t" },
-      { type: DiffType.removed, value: "h" },
+      { type: "removed", value: "s" },
+      { type: "removed", value: "t" },
+      { type: "removed", value: "r" },
+      { type: "removed", value: "e" },
+      { type: "removed", value: "n" },
+      { type: "removed", value: "g" },
+      { type: "removed", value: "t" },
+      { type: "removed", value: "h" },
     ]);
   },
 });
@@ -88,14 +100,14 @@ Deno.test({
   name: 'diff() "" vs "strength"',
   fn() {
     assertEquals(diff(Array.from(""), Array.from("strength")), [
-      { type: DiffType.added, value: "s" },
-      { type: DiffType.added, value: "t" },
-      { type: DiffType.added, value: "r" },
-      { type: DiffType.added, value: "e" },
-      { type: DiffType.added, value: "n" },
-      { type: DiffType.added, value: "g" },
-      { type: DiffType.added, value: "t" },
-      { type: DiffType.added, value: "h" },
+      { type: "added", value: "s" },
+      { type: "added", value: "t" },
+      { type: "added", value: "r" },
+      { type: "added", value: "e" },
+      { type: "added", value: "n" },
+      { type: "added", value: "g" },
+      { type: "added", value: "t" },
+      { type: "added", value: "h" },
     ]);
   },
 });
@@ -104,243 +116,119 @@ Deno.test({
   name: 'diff() "abc", "c" vs "abc", "bcd", "c"',
   fn() {
     assertEquals(diff(["abc", "c"], ["abc", "bcd", "c"]), [
-      { type: DiffType.common, value: "abc" },
-      { type: DiffType.added, value: "bcd" },
-      { type: DiffType.common, value: "c" },
+      { type: "common", value: "abc" },
+      { type: "added", value: "bcd" },
+      { type: "common", value: "c" },
     ]);
   },
 });
 
 Deno.test({
-  name: 'diff() "a b c d" vs "a b x d e" (diffstr)',
+  name: "assertFp()",
   fn() {
-    const diffResult = diffstr(
-      [..."abcd"].join("\n"),
-      [..."abxde"].join("\n"),
+    const fp = { y: 0, id: 0 };
+    assertEquals(assertFp(fp), undefined);
+  },
+});
+
+Deno.test({
+  name: "assertFp() throws",
+  fn() {
+    const error = "Unexpected missing FarthestPoint";
+    assertThrows(() => assertFp({ id: 0 }), Error, error);
+    assertThrows(() => assertFp({ y: 0 }), Error, error);
+    assertThrows(() => assertFp(undefined), Error, error);
+    assertThrows(() => assertFp(null), Error, error);
+  },
+});
+
+Deno.test({
+  name: "backTrace()",
+  fn() {
+    assertEquals(
+      backTrace([], [], { y: 0, id: 0 }, false, new Uint32Array(0), 0),
+      [],
     );
-    assertEquals(diffResult, [
-      { type: DiffType.common, value: "a\\n\n" },
-      { type: DiffType.common, value: "b\\n\n" },
-      {
-        type: DiffType.added,
-        value: "x\\n\n",
-        details: [
-          { type: DiffType.added, value: "x" },
-          { type: DiffType.common, value: "\\" },
-          { type: DiffType.common, value: "n" },
-          { type: DiffType.common, value: "\n" },
-        ],
-      },
-      {
-        type: DiffType.added,
-        value: "d\\n\n",
-        details: [
-          { type: DiffType.common, value: "d" },
-          { type: DiffType.added, value: "\\" },
-          { type: DiffType.added, value: "n" },
-          { type: DiffType.common, value: "\n" },
-        ],
-      },
-      { type: DiffType.added, value: "e\n" },
-      {
-        type: DiffType.removed,
-        value: "c\\n\n",
-        details: [
-          { type: DiffType.removed, value: "c" },
-          { type: DiffType.common, value: "\\" },
-          { type: DiffType.common, value: "n" },
-          { type: DiffType.common, value: "\n" },
-        ],
-      },
-      {
-        type: DiffType.removed,
-        value: "d\n",
-        details: [
-          { type: DiffType.common, value: "d" },
-          { type: DiffType.common, value: "\n" },
-        ],
-      },
-    ]);
+    assertEquals(
+      backTrace(["a"], ["b"], { y: 1, id: 3 }, false, new Uint32Array(10), 5),
+      [],
+    );
   },
 });
 
 Deno.test({
-  name: `diff() "3.14" vs "2.71" (diffstr)`,
+  name: "createCommon()",
   fn() {
-    const diffResult = diffstr("3.14", "2.71");
-    assertEquals(diffResult, [
-      {
-        type: DiffType.removed,
-        value: "3.14\n",
-        details: [
-          {
-            type: DiffType.removed,
-            value: "3",
-          },
-          {
-            type: DiffType.common,
-            value: ".",
-          },
-          {
-            type: DiffType.removed,
-            value: "14",
-          },
-          {
-            type: DiffType.common,
-            value: "\n",
-          },
-        ],
-      },
-      {
-        type: DiffType.added,
-        value: "2.71\n",
-        details: [
-          {
-            type: DiffType.added,
-            value: "2",
-          },
-          {
-            type: DiffType.common,
-            value: ".",
-          },
-          {
-            type: DiffType.added,
-            value: "71",
-          },
-          {
-            type: DiffType.common,
-            value: "\n",
-          },
-        ],
-      },
-    ]);
+    assertEquals(createCommon([], []), []);
+    assertEquals(createCommon([1], []), []);
+    assertEquals(createCommon([], [1]), []);
+    assertEquals(createCommon([1], [1]), [1]);
+    assertEquals(createCommon([1, 2], [1]), [1]);
+    assertEquals(createCommon([1], [1, 2]), [1]);
   },
 });
 
 Deno.test({
-  name: `diff() single line "a b" vs "c d" (diffstr)`,
+  name: "createFp()",
   fn() {
-    const diffResult = diffstr("a b", "c d");
-    assertEquals(diffResult, [
-      {
-        type: DiffType.removed,
-        value: "a b\n",
-        details: [
-          { type: DiffType.removed, value: "a" },
-          { type: DiffType.removed, value: " " },
-          { type: DiffType.removed, value: "b" },
-          { type: DiffType.common, value: "\n" },
-        ],
-      },
-      {
-        type: DiffType.added,
-        value: "c d\n",
-        details: [
-          { type: DiffType.added, value: "c" },
-          { type: DiffType.added, value: " " },
-          { type: DiffType.added, value: "d" },
-          { type: DiffType.common, value: "\n" },
-        ],
-      },
-    ]);
+    assertEquals(
+      createFp(
+        0,
+        0,
+        new Uint32Array(0),
+        0,
+        0,
+        { y: -1, id: 0 },
+        { y: -1, id: 0 },
+      ),
+      { y: 0, id: 0 },
+    );
   },
 });
 
 Deno.test({
-  name: `diff() single line, different word length "a bc" vs "cd e" (diffstr)`,
+  name: 'createFp() "isAdding"',
   fn() {
-    const diffResult = diffstr("a bc", "cd e");
-    assertEquals(diffResult, [
-      {
-        type: DiffType.removed,
-        value: "a bc\n",
-        details: [
-          { type: DiffType.removed, value: "a" },
-          { type: DiffType.removed, value: " " },
-          { type: DiffType.removed, value: "bc" },
-          { type: DiffType.common, value: "\n" },
-        ],
-      },
-      {
-        type: DiffType.added,
-        value: "cd e\n",
-        details: [
-          { type: DiffType.added, value: "cd" },
-          { type: DiffType.added, value: " " },
-          { type: DiffType.added, value: "e" },
-          { type: DiffType.common, value: "\n" },
-        ],
-      },
-    ]);
+    assertEquals(
+      createFp(
+        0,
+        0,
+        new Uint32Array(0),
+        0,
+        0,
+        { y: 0, id: 0 },
+        { y: -1, id: 0 },
+      ),
+      { y: 0, id: 1 },
+    );
   },
 });
 
 Deno.test({
-  name: `diff() "\\b\\f\\r\\t\\v\\n" vs "\\r\\n" (diffstr)`,
+  name: 'createFp() "!isAdding"',
   fn() {
-    const diffResult = diffstr("\b\f\r\t\v\n", "\r\n");
-    assertEquals(diffResult, [
-      {
-        type: DiffType.removed,
-        value: "\\b\\f\\r\\t\\v\\n\n",
-        details: [
-          { type: DiffType.common, value: "\\" },
-          { type: DiffType.removed, value: "b" },
-          { type: DiffType.removed, value: "\\" },
-          { type: DiffType.removed, value: "f" },
-          { type: DiffType.removed, value: "\\" },
-          { type: DiffType.common, value: "r" },
-          { type: DiffType.common, value: "\\" },
-          { type: DiffType.removed, value: "t" },
-          { type: DiffType.removed, value: "\\" },
-          { type: DiffType.removed, value: "v" },
-          { type: DiffType.removed, value: "\\" },
-          { type: DiffType.common, value: "n" },
-          { type: DiffType.common, value: "\n" },
-        ],
-      },
-      {
-        type: DiffType.added,
-        value: "\\r\\n\r\n",
-        details: [
-          { type: DiffType.common, value: "\\" },
-          { type: DiffType.common, value: "r" },
-          { type: DiffType.common, value: "\\" },
-          { type: DiffType.common, value: "n" },
-          { type: DiffType.added, value: "\r" },
-          { type: DiffType.common, value: "\n" },
-        ],
-      },
-      { type: DiffType.common, value: "\n" },
-    ]);
+    assertEquals(
+      createFp(
+        0,
+        0,
+        new Uint32Array(0),
+        0,
+        0,
+        { y: -1, id: 0 },
+        { y: 0, id: 0 },
+      ),
+      { y: -1, id: 1 },
+    );
   },
 });
 
 Deno.test({
-  name: "diff() multiline with more removed lines",
+  name: "createFp() throws",
   fn() {
-    const diffResult = diffstr("a\na", "e");
-    assertEquals(diffResult, [
-      {
-        type: DiffType.removed,
-        value: "a\\n\n",
-      },
-      {
-        type: DiffType.removed,
-        value: "a\n",
-        details: [
-          { type: DiffType.removed, value: "a" },
-          { type: DiffType.common, value: "\n" },
-        ],
-      },
-      {
-        type: DiffType.added,
-        value: "e\n",
-        details: [
-          { type: DiffType.added, value: "e" },
-          { type: DiffType.common, value: "\n" },
-        ],
-      },
-    ]);
+    assertThrows(
+      () => createFp(0, 0, new Uint32Array(0), 0, 0),
+      Error,
+      "Unexpected missing FarthestPoint",
+    );
   },
 });

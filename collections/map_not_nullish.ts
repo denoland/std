@@ -6,7 +6,16 @@
  * using the given transformer, except the ones that were transformed to `null`
  * or `undefined`.
  *
- * @example
+ * @typeParam T The type of the elements in the input array.
+ * @typeParam O The type of the elements in the output array.
+ *
+ * @param array The array to map elements from.
+ * @param transformer The function to transform each element.
+ *
+ * @returns A new array with all elements transformed by the given transformer,
+ * except the ones that were transformed to `null` or `undefined`.
+ *
+ * @example Basic usage
  * ```ts
  * import { mapNotNullish } from "@std/collections/map-not-nullish";
  * import { assertEquals } from "@std/assert/assert-equals";
@@ -17,7 +26,7 @@
  *   { middleName: undefined },
  *   { middleName: "Martha" },
  * ];
- * const foundMiddleNames = mapNotNullish(people, (it) => it.middleName);
+ * const foundMiddleNames = mapNotNullish(people, (people) => people.middleName);
  *
  * assertEquals(foundMiddleNames, ["William", "Martha"]);
  * ```
@@ -26,15 +35,15 @@ export function mapNotNullish<T, O>(
   array: Iterable<T>,
   transformer: (el: T) => O,
 ): NonNullable<O>[] {
-  const ret: NonNullable<O>[] = [];
+  const result: NonNullable<O>[] = [];
 
   for (const element of array) {
     const transformedElement = transformer(element);
 
     if (transformedElement !== undefined && transformedElement !== null) {
-      ret.push(transformedElement as NonNullable<O>);
+      result.push(transformedElement as NonNullable<O>);
     }
   }
 
-  return ret;
+  return result;
 }

@@ -5,6 +5,8 @@ import {
   type ModuleGraphJson,
   type ModuleJson,
 } from "@deno/graph";
+import { resolveWorkspaceSpecifiers } from "./utils.ts";
+import graphviz from "graphviz";
 
 /**
  * Checks for circular dependencies in the std packages.
@@ -51,6 +53,7 @@ type Mod =
   | "html"
   | "http"
   | "ini"
+  | "internal"
   | "io"
   | "json"
   | "jsonc"
@@ -83,15 +86,7 @@ const ENTRYPOINTS: Record<Mod, string[]> = {
   data_structures: ["mod.ts"],
   datetime: ["mod.ts"],
   dotenv: ["mod.ts"],
-  encoding: [
-    "ascii85.ts",
-    "base32.ts",
-    "base58.ts",
-    "base64.ts",
-    "base64url.ts",
-    "hex.ts",
-    "varint.ts",
-  ],
+  encoding: ["mod.ts"],
   expect: ["mod.ts"],
   fmt: ["bytes.ts", "colors.ts", "duration.ts", "printf.ts"],
   front_matter: ["mod.ts"],
@@ -99,6 +94,7 @@ const ENTRYPOINTS: Record<Mod, string[]> = {
   html: ["mod.ts"],
   http: ["mod.ts"],
   ini: ["mod.ts"],
+  internal: ["mod.ts"],
   io: ["mod.ts"],
   json: ["mod.ts"],
   jsonc: ["mod.ts"],
@@ -140,6 +136,7 @@ const STABILITY: Record<Mod, DepState> = {
   html: "Unstable",
   http: "Unstable",
   ini: "Unstable",
+  internal: "Stable",
   io: "Unstable",
   json: "Stable",
   jsonc: "Stable",
@@ -177,30 +174,24 @@ async function check(
   for (const path of paths) {
     const entrypoint = new URL(`../${submod}/${path}`, import.meta.url).href;
     const graph = await createGraph(entrypoint, {
-      resolve(specifier, referrer) {
-        if (specifier.startsWith("../") || specifier.startsWith("./")) {
-          return new URL(specifier, referrer).href;
-        } else if (specifier.startsWith("@std/")) {
-          return new URL(specifier.replace("@std", ".."), import.meta.url).href;
-        } else {
-          return new URL(specifier).href;
-        }
-      },
+      resolve: resolveWorkspaceSpecifiers,
     });
 
     for (
-      const dep of new Set(getPackageDepsFromSpecifier(graph, entrypoint))
+      const dep of new Set(
+        getPackageDepsFromSpecifier(submod, graph, entrypoint),
+      )
     ) {
       deps.add(dep);
     }
   }
   deps.delete(submod);
-  deps.delete("version.ts");
   return { name: submod, set: deps, state };
 }
 
 /** Returns package dependencies */
 function getPackageDepsFromSpecifier(
+  base: string,
   graph: ModuleGraphJson,
   specifier: string,
   seen: Set<string> = new Set(),
@@ -208,15 +199,19 @@ function getPackageDepsFromSpecifier(
   const { dependencies } = graph.modules.find((item: ModuleJson) =>
     item.specifier === specifier
   )!;
-  const deps = new Set([getPackageNameFromUrl(specifier)]);
+  const pkg = getPackageNameFromUrl(specifier);
+  const deps = new Set([pkg]);
   seen.add(specifier);
-  if (dependencies) {
+  // Captures only direct dependencies of the base package
+  // i.e. Does not capture transitive dependencies
+  if (dependencies && pkg === base) {
     for (const { code, type } of dependencies) {
       const specifier = code?.specifier ?? type?.specifier!;
       if (seen.has(specifier)) {
         continue;
       }
       const res = getPackageDepsFromSpecifier(
+        base,
         graph,
         specifier,
         seen,
@@ -273,15 +268,21 @@ function stateToNodeStyle(state: DepState) {
 }
 
 if (Deno.args.includes("--graph")) {
-  console.log("digraph std_deps {");
+  const lines = [];
+  lines.push("digraph std_deps {");
   for (const mod of Object.keys(deps)) {
     const info = deps[mod]!;
-    console.log(`  ${formatLabel(mod)} ${stateToNodeStyle(info.state)};`);
+    lines.push(`  ${formatLabel(mod)} ${stateToNodeStyle(info.state)};`);
     for (const dep of info.set) {
-      console.log(`  ${formatLabel(mod)} -> ${dep};`);
+      lines.push(`  ${formatLabel(mod)} -> ${dep};`);
     }
   }
-  console.log("}");
+  lines.push("}");
+  const graph = lines.join("\n");
+  // Compile the graph to SVG using the `dot` layout algorithm
+  const svg = await graphviz.graphviz.dot(graph, "svg");
+  console.log("Writing dependency graph image to .github/dependency_graph.svg");
+  await Deno.writeTextFile(".github/dependency_graph.svg", svg);
 } else if (Deno.args.includes("--table")) {
   console.log("| Package         | Status     |");
   console.log("| --------------- | ---------- |");
@@ -291,7 +292,15 @@ if (Deno.args.includes("--graph")) {
 } else if (Deno.args.includes("--all-imports")) {
   for (const [mod, entrypoints] of Object.entries(ENTRYPOINTS)) {
     for (const path of entrypoints) {
-      console.log(`import "std/${mod}/${path}";`);
+      if (path === "mod.ts") {
+        console.log(`import "jsr:@std/${mod.replaceAll("_", "-")}";`);
+      } else {
+        console.log(
+          `import "jsr:@std/${mod.replaceAll("_", "-")}/${
+            path.replace(".ts", "").replaceAll("_", "-")
+          }";`,
+        );
+      }
     }
   }
 } else {

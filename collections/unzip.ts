@@ -6,6 +6,15 @@
  * returned array holding all first tuple elements and the second one holding
  * all the second elements.
  *
+ * @typeParam T The type of the first tuple elements.
+ * @typeParam U The type of the second tuple elements.
+ *
+ * @param pairs The array of 2-tuples to unzip.
+ *
+ * @returns A tuple containing two arrays, the first one holding all first tuple
+ * elements and the second one holding all second elements.
+ *
+ * @example Basic usage
  * ```ts
  * import { unzip } from "@std/collections/unzip";
  * import { assertEquals } from "@std/assert/assert-equals";
@@ -24,15 +33,15 @@
  */
 export function unzip<T, U>(pairs: readonly [T, U][]): [T[], U[]] {
   const { length } = pairs;
-  const ret: [T[], U[]] = [
+  const result: [T[], U[]] = [
     Array<T>(length),
     Array<U>(length),
   ];
 
   pairs.forEach(([first, second], index) => {
-    ret[0][index] = first;
-    ret[1][index] = second;
+    result[0][index] = first;
+    result[1][index] = second;
   });
 
-  return ret;
+  return result;
 }

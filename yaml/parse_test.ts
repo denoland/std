@@ -240,3 +240,76 @@ Deno.test({
     });
   },
 });
+
+Deno.test({
+  name: "parse() handles float types",
+  fn() {
+    const yaml = `
+      - 3.14
+      - -3.14
+      - .inf
+      - -.inf
+      - .nan
+      - 12e03
+      - 1:15
+      - 1:15:20
+      - -1:15:20
+      - !!float 12000
+    `;
+
+    assertEquals(parse(yaml), [
+      3.14,
+      -3.14,
+      Infinity,
+      -Infinity,
+      NaN,
+      12000,
+      75,
+      4520,
+      -4520,
+      12000,
+    ]);
+  },
+});
+
+Deno.test({
+  name: "parse() handles omap type",
+  fn() {
+    const yaml = `--- !!omap
+- Mark McGwire: 65
+- Sammy Sosa: 63
+- Ken Griffey: 58
+`;
+    assertEquals(parse(yaml), [
+      { "Mark McGwire": 65 },
+      { "Sammy Sosa": 63 },
+      { "Ken Griffey": 58 },
+    ]);
+
+    // Invalid omap
+    // map entry is not an object
+    assertThrows(
+      () => parse("--- !!omap\n- 1"),
+      YAMLError,
+      "cannot resolve a node with !<tag:yaml.org,2002:omap> explicit tag",
+    );
+    // map entry is empty object
+    assertThrows(
+      () => parse("--- !!omap\n- {}"),
+      YAMLError,
+      "cannot resolve a node with !<tag:yaml.org,2002:omap> explicit tag",
+    );
+    // map entry is an object with multiple keys
+    assertThrows(
+      () => parse("--- !!omap\n- foo: 1\n  bar: 2"),
+      YAMLError,
+      "cannot resolve a node with !<tag:yaml.org,2002:omap> explicit tag",
+    );
+    // 2 map entries have the same key
+    assertThrows(
+      () => parse("--- !!omap\n- foo: 1\n- foo: 2"),
+      YAMLError,
+      "cannot resolve a node with !<tag:yaml.org,2002:omap> explicit tag",
+    );
+  },
+});

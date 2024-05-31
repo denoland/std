@@ -3,17 +3,22 @@
 
 import { filterInPlace } from "./_utils.ts";
 
-const { hasOwn } = Object;
-
 /**
- * Merges the two given Records, recursively merging any nested Records with the
- * second collection overriding the first in case of conflict
+ * Merges the two given records, recursively merging any nested records with the
+ * second collection overriding the first in case of conflict.
  *
  * For arrays, maps and sets, a merging strategy can be specified to either
- * `replace` values, or `merge` them instead. Use `includeNonEnumerable` option
- * to include non-enumerable properties too.
+ * `replace` values, or `merge` them instead.
  *
- * @example
+ * @typeParam T Type of the first record
+ *
+ * @param record First record to merge.
+ * @param other Second record to merge.
+ * @param options Merging options.
+ *
+ * @returns A new record with the merged values.
+ *
+ * @example Merge objects
  * ```ts
  * import { deepMerge } from "@std/collections/deep-merge";
  * import { assertEquals } from "@std/assert/assert-equals";
@@ -21,7 +26,71 @@ const { hasOwn } = Object;
  * const a = { foo: true };
  * const b = { foo: { bar: true } };
  *
- * assertEquals(deepMerge(a, b), { foo: { bar: true } });
+ * const result = deepMerge(a, b);
+ *
+ * const expected = { foo: { bar: true } };
+ *
+ * assertEquals(result, expected);
+ * ```
+ *
+ * @example Merge arrays
+ * ```ts
+ * import { deepMerge } from "@std/collections/deep-merge";
+ * import { assertEquals } from "@std/assert/assert-equals";
+ *
+ * const a = { foo: [1, 2] };
+ * const b = { foo: [3, 4] };
+ *
+ * const result = deepMerge(a, b);
+ *
+ * const expected = { foo: [1, 2, 3, 4] };
+ *
+ * assertEquals(result, expected);
+ * ```
+ *
+ * @example Merge maps
+ * ```ts
+ * import { deepMerge } from "@std/collections/deep-merge";
+ * import { assertEquals } from "@std/assert/assert-equals";
+ *
+ * const a = { foo: new Map([["a", 1]]) };
+ * const b = { foo: new Map([["b", 2]]) };
+ *
+ * const result = deepMerge(a, b);
+ *
+ * const expected = { foo: new Map([["a", 1], ["b", 2]]) };
+ *
+ * assertEquals(result, expected);
+ * ```
+ *
+ * @example Merge sets
+ * ```ts
+ * import { deepMerge } from "@std/collections/deep-merge";
+ * import { assertEquals } from "@std/assert/assert-equals";
+ *
+ * const a = { foo: new Set([1]) };
+ * const b = { foo: new Set([2]) };
+ *
+ * const result = deepMerge(a, b);
+ *
+ * const expected = { foo: new Set([1, 2]) };
+ *
+ * assertEquals(result, expected);
+ * ```
+ *
+ * @example Merge with custom options
+ * ```ts
+ * import { deepMerge } from "@std/collections/deep-merge";
+ * import { assertEquals } from "@std/assert/assert-equals";
+ *
+ * const a = { foo: [1, 2] };
+ * const b = { foo: [3, 4] };
+ *
+ * const result = deepMerge(a, b, { arrays: "replace" });
+ *
+ * const expected = { foo: [3, 4] };
+ *
+ * assertEquals(result, expected);
  * ```
  */
 export function deepMerge<
@@ -32,14 +101,23 @@ export function deepMerge<
   options?: Readonly<DeepMergeOptions>,
 ): T;
 /**
- * Merges the two given Records, recursively merging any nested Records with the
- * second collection overriding the first in case of conflict
+ * Merges the two given records, recursively merging any nested records with the
+ * second collection overriding the first in case of conflict.
  *
  * For arrays, maps and sets, a merging strategy can be specified to either
- * `replace` values, or `merge` them instead. Use `includeNonEnumerable` option
- * to include non-enumerable properties too.
+ * `replace` values, or `merge` them instead.
  *
- * @example
+ * @typeParam T Type of the first record
+ * @typeParam U Type of the second record
+ * @typeParam Options Merging options
+ *
+ * @param record First record to merge.
+ * @param other Second record to merge.
+ * @param options Merging options.
+ *
+ * @returns A new record with the merged values.
+ *
+ * @example Merge objects
  * ```ts
  * import { deepMerge } from "@std/collections/deep-merge";
  * import { assertEquals } from "@std/assert/assert-equals";
@@ -47,7 +125,71 @@ export function deepMerge<
  * const a = { foo: true };
  * const b = { foo: { bar: true } };
  *
- * assertEquals(deepMerge(a, b), { foo: { bar: true } });
+ * const result = deepMerge(a, b);
+ *
+ * const expected = { foo: { bar: true } };
+ *
+ * assertEquals(result, expected);
+ * ```
+ *
+ * @example Merge arrays
+ * ```ts
+ * import { deepMerge } from "@std/collections/deep-merge";
+ * import { assertEquals } from "@std/assert/assert-equals";
+ *
+ * const a = { foo: [1, 2] };
+ * const b = { foo: [3, 4] };
+ *
+ * const result = deepMerge(a, b);
+ *
+ * const expected = { foo: [1, 2, 3, 4] };
+ *
+ * assertEquals(result, expected);
+ * ```
+ *
+ * @example Merge maps
+ * ```ts
+ * import { deepMerge } from "@std/collections/deep-merge";
+ * import { assertEquals } from "@std/assert/assert-equals";
+ *
+ * const a = { foo: new Map([["a", 1]]) };
+ * const b = { foo: new Map([["b", 2]]) };
+ *
+ * const result = deepMerge(a, b);
+ *
+ * const expected = { foo: new Map([["a", 1], ["b", 2]]) };
+ *
+ * assertEquals(result, expected);
+ * ```
+ *
+ * @example Merge sets
+ * ```ts
+ * import { deepMerge } from "@std/collections/deep-merge";
+ * import { assertEquals } from "@std/assert/assert-equals";
+ *
+ * const a = { foo: new Set([1]) };
+ * const b = { foo: new Set([2]) };
+ *
+ * const result = deepMerge(a, b);
+ *
+ * const expected = { foo: new Set([1, 2]) };
+ *
+ * assertEquals(result, expected);
+ * ```
+ *
+ * @example Merge with custom options
+ * ```ts
+ * import { deepMerge } from "@std/collections/deep-merge";
+ * import { assertEquals } from "@std/assert/assert-equals";
+ *
+ * const a = { foo: [1, 2] };
+ * const b = { foo: [3, 4] };
+ *
+ * const result = deepMerge(a, b, { arrays: "replace" });
+ *
+ * const expected = { foo: [3, 4] };
+ *
+ * assertEquals(result, expected);
  * ```
  */
 export function deepMerge<
@@ -59,7 +201,6 @@ export function deepMerge<
   other: Readonly<U>,
   options?: Readonly<Options>,
 ): DeepMerge<T, U, Options>;
-
 export function deepMerge<
   T extends Record<PropertyKey, unknown>,
   U extends Record<PropertyKey, unknown>,
@@ -111,7 +252,7 @@ function deepMergeInternal<
 
     const a = record[key] as ResultMember;
 
-    if (!hasOwn(other, key)) {
+    if (!Object.hasOwn(other, key)) {
       result[key] = a;
 
       continue;
@@ -213,26 +354,38 @@ function isNonNullObject(
 }
 
 function getKeys<T extends Record<string, unknown>>(record: T): Array<keyof T> {
-  const ret = Object.getOwnPropertySymbols(record) as Array<keyof T>;
+  const result = Object.getOwnPropertySymbols(record) as Array<keyof T>;
   filterInPlace(
-    ret,
+    result,
     (key) => Object.prototype.propertyIsEnumerable.call(record, key),
   );
-  ret.push(...(Object.keys(record) as Array<keyof T>));
+  result.push(...(Object.keys(record) as Array<keyof T>));
 
-  return ret;
+  return result;
 }
 
 /** Merging strategy */
 export type MergingStrategy = "replace" | "merge";
 
-/** Deep merge options */
+/** Options for {@linkcode deepMerge}. */
 export type DeepMergeOptions = {
-  /** Merging strategy for arrays */
+  /**
+   * Merging strategy for arrays
+   *
+   * @default {"merge"}
+   */
   arrays?: MergingStrategy;
-  /** Merging strategy for Maps */
+  /**
+   * Merging strategy for maps.
+   *
+   * @default {"merge"}
+   */
   maps?: MergingStrategy;
-  /** Merging strategy for Sets */
+  /**
+   * Merging strategy for sets.
+   *
+   * @default {"merge"}
+   */
   sets?: MergingStrategy;
 };
 

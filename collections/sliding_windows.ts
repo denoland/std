@@ -1,6 +1,24 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
+/** Options for {@linkcode slidingWindows}. */
+export interface SlidingWindowsOptions {
+  /**
+   * If step is set, each window will start that many elements after the last
+   * window's start.
+   *
+   * @default {1}
+   */
+  step?: number;
+  /**
+   * If partial is set, windows will be generated for the last elements of the
+   * collection, resulting in some undefined values if size is greater than 1.
+   *
+   * @default {false}
+   */
+  partial?: boolean;
+}
+
 /**
  * Generates sliding views of the given array of the given size and returns a
  * new array containing all of them.
@@ -11,7 +29,15 @@
  * If partial is set, windows will be generated for the last elements of the
  * collection, resulting in some undefined values if size is greater than 1.
  *
- * @example
+ * @typeParam T The type of the array elements.
+ *
+ * @param array The array to generate sliding windows from.
+ * @param size The size of the sliding windows.
+ * @param options The options for generating sliding windows.
+ *
+ * @returns A new array containing all sliding windows of the given size.
+ *
+ * @example Usage
  * ```ts
  * import { slidingWindows } from "@std/collections/sliding-windows";
  * import { assertEquals } from "@std/assert/assert-equals";
@@ -43,35 +69,18 @@
 export function slidingWindows<T>(
   array: readonly T[],
   size: number,
-  { step = 1, partial = false }: {
-    /**
-     * If step is set, each window will start that many elements after the last
-     * window's start.
-     *
-     * @default {1}
-     */
-    step?: number;
-    /**
-     * If partial is set, windows will be generated for the last elements of the
-     * collection, resulting in some undefined values if size is greater than 1.
-     *
-     * @default {false}
-     */
-    partial?: boolean;
-  } = {},
+  options: SlidingWindowsOptions = {},
 ): T[][] {
+  const { step = 1, partial = false } = options;
+
   if (
     !Number.isInteger(size) || !Number.isInteger(step) || size <= 0 || step <= 0
   ) {
     throw new RangeError("Both size and step must be positive integer.");
   }
 
-  /** length of the return array */
-  const length = Math.floor((array.length - (partial ? 1 : size)) / step + 1);
-
-  const result = [];
-  for (let i = 0; i < length; i++) {
-    result.push(array.slice(i * step, i * step + size));
-  }
-  return result;
+  return Array.from(
+    { length: Math.floor((array.length - (partial ? 1 : size)) / step + 1) },
+    (_, i) => array.slice(i * step, i * step + size),
+  );
 }

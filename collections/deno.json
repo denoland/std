@@ -1,6 +1,6 @@
 {
   "name": "@std/collections",
-  "version": "0.224.0",
+  "version": "1.0.0-rc.1",
   "exports": {
     ".": "./mod.ts",
     "./aggregate-groups": "./aggregate_groups.ts",
@@ -19,6 +19,8 @@
     "./first-not-nullish-of": "./first_not_nullish_of.ts",
     "./includes-value": "./includes_value.ts",
     "./intersect": "./intersect.ts",
+    "./invert-by": "./invert_by.ts",
+    "./invert": "./invert.ts",
     "./join-to-string": "./join_to_string.ts",
     "./map-entries": "./map_entries.ts",
     "./map-keys": "./map_keys.ts",

@@ -3,9 +3,17 @@
 
 /**
  * Returns the first element that is the smallest value of the given function or
- * undefined if there are no elements
+ * undefined if there are no elements.
  *
- * @example
+ * @typeParam T The type of the elements in the array.
+ *
+ * @param array The array to find the minimum element in.
+ * @param selector The function to get the value to compare from each element.
+ *
+ * @returns The first element that is the smallest value of the given function
+ * or undefined if there are no elements.
+ *
+ * @example Basic usage
  * ```ts
  * import { minBy } from "@std/collections/min-by";
  * import { assertEquals } from "@std/assert/assert-equals";
@@ -27,11 +35,20 @@ export function minBy<T>(
 ): T | undefined;
 /**
  * Returns the first element that is the smallest value of the given function or
- * undefined if there are no elements
+ * undefined if there are no elements.
  *
- * @example
+ * @typeParam T The type of the elements in the array.
+ *
+ * @param array The array to find the minimum element in.
+ * @param selector The function to get the value to compare from each element.
+ *
+ * @returns The first element that is the smallest value of the given function
+ * or undefined if there are no elements.
+ *
+ * @example Basic usage
  * ```ts
  * import { minBy } from "@std/collections/min-by";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const people = [
  *   { name: "Anna" },
@@ -39,7 +56,9 @@ export function minBy<T>(
  *   { name: "John" },
  * ];
  *
- * const personWithMinName = minBy(people, (i) => i.name);
+ * const personWithMinName = minBy(people, (person) => person.name);
+ *
+ * assertEquals(personWithMinName, { name: "Anna" });
  * ```
  */
 export function minBy<T>(
@@ -48,9 +67,17 @@ export function minBy<T>(
 ): T | undefined;
 /**
  * Returns the first element that is the smallest value of the given function or
- * undefined if there are no elements
+ * undefined if there are no elements.
  *
- * @example
+ * @typeParam T The type of the elements in the array.
+ *
+ * @param array The array to find the minimum element in.
+ * @param selector The function to get the value to compare from each element.
+ *
+ * @returns The first element that is the smallest value of the given function
+ * or undefined if there are no elements.
+ *
+ * @example Basic usage
  * ```ts
  * import { minBy } from "@std/collections/min-by";
  * import { assertEquals } from "@std/assert/assert-equals";
@@ -72,11 +99,20 @@ export function minBy<T>(
 ): T | undefined;
 /**
  * Returns the first element that is the smallest value of the given function or
- * undefined if there are no elements
+ * undefined if there are no elements.
  *
- * @example
+ * @typeParam T The type of the elements in the array.
+ *
+ * @param array The array to find the minimum element in.
+ * @param selector The function to get the value to compare from each element.
+ *
+ * @returns The first element that is the smallest value of the given function
+ * or undefined if there are no elements.
+ *
+ * @example Basic usage
  * ```ts
  * import { minBy } from "@std/collections/min-by";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const people = [
  *   { name: "Anna", startedAt: new Date("2020-01-01") },
@@ -84,7 +120,7 @@ export function minBy<T>(
  *   { name: "John", startedAt: new Date("2019-01-01") },
  * ];
  *
- * const personWithMinStartedAt = minBy(people, (i) => i.startedAt);
+ * const personWithMinStartedAt = minBy(people, (person) => person.startedAt);
  * ```
  */
 export function minBy<T>(
@@ -99,8 +135,8 @@ export function minBy<T>(
     | ((el: T) => bigint)
     | ((el: T) => Date),
 ): T | undefined {
-  let min: T | undefined = undefined;
-  let minValue: ReturnType<typeof selector> | undefined = undefined;
+  let min: T | undefined;
+  let minValue: ReturnType<typeof selector> | undefined;
 
   for (const current of array) {
     const currentValue = selector(current);
