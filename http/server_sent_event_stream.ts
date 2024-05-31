@@ -62,7 +62,7 @@ function stringify(message: ServerSentEventMessage): Uint8Array {
  * @see {@link https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events/Using_server-sent_events}
  *
  * @example Usage
- * ```ts
+ * ```ts no-assert
  * import {
  *   type ServerSentEventMessage,
  *   ServerSentEventStream,

@@ -98,6 +98,7 @@ export async function verifyCookie(
  * ```ts
  * import { verifyCookie, parseSignedCookie } from "@std/http/unstable-signed-cookie";
  * import { getCookies } from "@std/http/cookie";
+ * import { assertEquals, assertNotEquals } from "@std/assert";
  *
  * const key = await crypto.subtle.generateKey(
  *   { name: "HMAC", hash: "SHA-256" },
@@ -109,9 +110,12 @@ export async function verifyCookie(
  *   Cookie: "location=tokyo.37f7481039762eef5cd46669f93c0a3214dfecba7d0cdc0b0dc40036063fb22e",
  * });
  * const signedCookie = getCookies(headers)["location"];
- * if (signedCookie === undefined) throw new Error("Cookie not found");
- * await verifyCookie(signedCookie, key);
- * const cookie = parseSignedCookie(signedCookie);
+ *
+ * assertNotEquals(signedCookie, undefined);
+ *
+ * await verifyCookie(signedCookie!, key);
+ *
+ * assertEquals(parseSignedCookie(signedCookie!), "tokyo");
  * ```
  *
  * @param signedCookie The signed cookie to parse the value from.

@@ -56,6 +56,7 @@ const ENTRY_POINTS = [
 ] as const;
 
 const TS_SNIPPET = /```ts[\s\S]*?```/g;
+const ASSERTION_IMPORT = /import \{.*\} from "@std\/assert(?:\/.*)?";/gm;
 const NEWLINE = "\n";
 const diagnostics: DocumentError[] = [];
 const snippetPromises: Promise<void>[] = [];
@@ -192,9 +193,17 @@ function assertSnippetsWork(
     }
   }
   for (let snippet of snippets) {
-    if (snippet.split(NEWLINE)[0]?.includes("no-eval")) continue;
+    const delim = snippet.split(NEWLINE)[0];
+    if (delim?.includes("no-eval")) continue;
     // Trim the code block delimiters
     snippet = snippet.split(NEWLINE).slice(1, -1).join(NEWLINE);
+    if (!delim?.includes("no-assert")) {
+      assert(
+        snippet.match(ASSERTION_IMPORT) !== null,
+        "Snippet must contain assertion from '@std/assert'",
+        document,
+      );
+    }
     snippetPromises.push(assertSnippetEvals(snippet, document));
   }
 }
