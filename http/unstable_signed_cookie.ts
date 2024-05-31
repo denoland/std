@@ -19,6 +19,7 @@ function splitByLast(value: string, separator: string): [string, string] {
  * ```ts
  * import { signCookie } from "@std/http/unstable-signed-cookie";
  * import { setCookie } from "@std/http/cookie";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const key = await crypto.subtle.generateKey(
  *   { name: "HMAC", hash: "SHA-256" },
@@ -33,7 +34,7 @@ function splitByLast(value: string, separator: string): [string, string] {
  *   value,
  * });
  *
- * const cookieHeader = headers.get("set-cookie");
+ * assertEquals(headers.get("set-cookie"), value);
  * ```
  *
  * @param value The cookie value to sign.
@@ -57,6 +58,7 @@ export async function signCookie(
  * ```ts
  * import { verifyCookie } from "@std/http/unstable-signed-cookie";
  * import { getCookies } from "@std/http/cookie";
+ * import { assertEquals, assertNotEquals } from "@std/assert";
  *
  * const key = await crypto.subtle.generateKey(
  *   { name: "HMAC", hash: "SHA-256" },
@@ -68,8 +70,10 @@ export async function signCookie(
  *   Cookie: "location=tokyo.37f7481039762eef5cd46669f93c0a3214dfecba7d0cdc0b0dc40036063fb22e",
  * });
  * const signedCookie = getCookies(headers)["location"];
- * if (signedCookie === undefined) throw new Error("Cookie not found");
- * await verifyCookie(signedCookie, key);
+ *
+ * assertNotEquals(signedCookie, undefined);
+ *
+ * assertEquals(await verifyCookie(signedCookie!, key), true);
  * ```
  *
  * @param signedCookie The signed cookie to verify.
@@ -113,7 +117,7 @@ export async function verifyCookie(
  *
  * assertNotEquals(signedCookie, undefined);
  *
- * await verifyCookie(signedCookie!, key);
+ * assertEquals(await verifyCookie(signedCookie!, key), true);
  *
  * assertEquals(parseSignedCookie(signedCookie!), "tokyo");
  * ```

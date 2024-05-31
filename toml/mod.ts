@@ -103,7 +103,8 @@
  * };
  *
  * const tomlString = stringify(obj);
- * assertEquals(tomlString, `[[bin]]
+ * assertEquals(tomlString, `
+ * [[bin]]
  * name = "deno"
  * path = "cli/main.rs"
  *
