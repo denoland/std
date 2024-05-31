@@ -4,10 +4,6 @@
 /**
  * Test whether the given string is a glob.
  *
- * @param str String to test.
- *
- * @returns `true` if the given string is a glob, otherwise `false`
- *
  * @example Usage
  * ```ts
  * import { isGlob } from "@std/path/is-glob";
@@ -16,6 +12,9 @@
  * assert(!isGlob("foo/bar/../baz"));
  * assert(isGlob("foo/*ar/../baz"));
  * ```
+ *
+ * @param str String to test.
+ * @returns `true` if the given string is a glob, otherwise `false`
  */
 export function isGlob(str: string): boolean {
   const chars: Record<string, string> = { "{": "}", "(": ")", "[": "]" };

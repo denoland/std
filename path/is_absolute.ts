@@ -8,10 +8,6 @@ import { isAbsolute as windowsIsAbsolute } from "./windows/is_absolute.ts";
 /**
  * Verifies whether provided path is absolute.
  *
- * @param path Path to be verified as absolute.
- *
- * @returns `true` if path is absolute, `false` otherwise
- *
  * @example Usage
  * ```ts
  * import { isAbsolute } from "@std/path/is-absolute";
@@ -24,6 +20,9 @@ import { isAbsolute as windowsIsAbsolute } from "./windows/is_absolute.ts";
  * isAbsolute("C:\\home\\foo"); // true
  * isAbsolute("home\\foo"); // false
  * ```
+ *
+ * @param path Path to be verified as absolute.
+ * @returns `true` if path is absolute, `false` otherwise
  */
 export function isAbsolute(path: string): boolean {
   return isWindows ? windowsIsAbsolute(path) : posixIsAbsolute(path);

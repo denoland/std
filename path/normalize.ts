@@ -11,10 +11,6 @@ import { normalize as windowsNormalize } from "./windows/normalize.ts";
  * eliminated. A `'..'` at the top-level will be preserved, and an empty path is
  * canonically `'.'`.
  *
- * @param path Path to be normalized
- *
- * @returns The normalized path.
- *
  * @example Usage
  * ```ts
  * import { normalize } from "@std/path/normalize";
@@ -25,6 +21,9 @@ import { normalize as windowsNormalize } from "./windows/normalize.ts";
  * // win32
  * normalize("C:\\foo\\bar\\.\\baz\\..\\.\\quux"); // "C:\\foo\\bar\\quux"
  * ```
+ *
+ * @param path Path to be normalized
+ * @returns The normalized path.
  */
 export function normalize(path: string): string {
   return isWindows ? windowsNormalize(path) : posixNormalize(path);

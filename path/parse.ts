@@ -14,9 +14,6 @@ export type { ParsedPath } from "./_interface.ts";
  * Use {@linkcode https://jsr.io/@std/path/doc/~/format | format()} to reverse
  * the result.
  *
- * @param path Path to process
- * @returns An object with the parsed path components.
- *
  * @example Usage
  * ```ts
  * import { parse } from "@std/path";
@@ -28,6 +25,9 @@ export type { ParsedPath } from "./_interface.ts";
  * parsedPathObj.ext; // ".ts"
  * parsedPathObj.name; // "script"
  * ```
+ *
+ * @param path Path to process
+ * @returns An object with the parsed path components.
  */
 export function parse(path: string): ParsedPath {
   return isWindows ? windowsParse(path) : posixParse(path);

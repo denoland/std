@@ -14,11 +14,6 @@ export type { GlobOptions };
  * Behaves like {@linkcode https://jsr.io/@std/path/doc/~/join | join()}, but
  * doesn't collapse `**\/..` when `globstar` is true.
  *
- * @param globs Globs to be joined and normalized.
- * @param options Glob options.
- *
- * @returns The joined and normalized glob string.
- *
  * @example Usage
  * ```ts
  * import { joinGlobs } from "@std/path/join-globs";
@@ -26,6 +21,10 @@ export type { GlobOptions };
  * joinGlobs(["foo", "bar", "..", "baz"]); // "foo/baz"
  * joinGlobs(["foo", "**\/..", "bar", "..", "baz"], { globstar: true }); // "foo/**\/../baz"
  * ```
+ *
+ * @param globs Globs to be joined and normalized.
+ * @param options Glob options.
+ * @returns The joined and normalized glob string.
  */
 export function joinGlobs(
   globs: string[],

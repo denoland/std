@@ -10,9 +10,6 @@ import type { FormatInputPathObject } from "./_interface.ts";
  * Generate a path from a {@linkcode FormatInputPathObject} object. It does the
  * opposite of {@linkcode https://jsr.io/@std/path/doc/~/parse | parse()}.
  *
- * @param pathObject Object with path components.
- * @returns The formatted path.
- *
  * @example Usage
  * ```ts
  * import { format } from "@std/path/format";
@@ -20,6 +17,9 @@ import type { FormatInputPathObject } from "./_interface.ts";
  * format({ dir: "/path/to/dir", base: "script.ts" }); // "/path/to/dir/script.ts"
  * format({ root: "/", name: "script", ext: ".ts" }); // "/script.ts"
  * ```
+ *
+ * @param pathObject Object with path components.
+ * @returns The formatted path.
  */
 export function format(pathObject: FormatInputPathObject): string {
   return isWindows ? windowsFormat(pathObject) : posixFormat(pathObject);

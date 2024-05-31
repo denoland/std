@@ -8,10 +8,6 @@ import { resolve as windowsResolve } from "./windows/resolve.ts";
 /**
  * Resolves path segments into a path.
  *
- * @param pathSegments Path segments to process to path.
- *
- * @returns The resolved path.
- *
  * @example Usage
  * ```ts
  * import { resolve } from "@std/path/resolve";
@@ -24,6 +20,9 @@ import { resolve as windowsResolve } from "./windows/resolve.ts";
  * resolve("C:\\foo", "bar", "baz"); // "C:\\foo\\bar\\baz"
  * resolve("C:\\foo", "C:\\bar", "baz"); // "C:\\bar\\baz"
  * ```
+ *
+ * @param pathSegments Path segments to process to path.
+ * @returns The resolved path.
  */
 export function resolve(...pathSegments: string[]): string {
   return isWindows

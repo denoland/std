@@ -8,9 +8,6 @@ import { toFileUrl as windowsToFileUrl } from "./windows/to_file_url.ts";
 /**
  * Converts a path string to a file URL.
  *
- * @param path Path to convert to file URL.
- * @returns The file URL equivalent to the path.
- *
  * @example Usage
  * ```ts no-eval
  * import { toFileUrl } from "@std/path/to-file-url";
@@ -23,6 +20,9 @@ import { toFileUrl as windowsToFileUrl } from "./windows/to_file_url.ts";
  * toFileUrl("C:\\Users\\foo"); // new URL("file:///C:/Users/foo")
  * toFileUrl("\\\\127.0.0.1\\home\\foo"); // new URL("file://127.0.0.1/home/foo")
  * ```
+ *
+ * @param path Path to convert to file URL.
+ * @returns The file URL equivalent to the path.
  */
 export function toFileUrl(path: string): URL {
   return isWindows ? windowsToFileUrl(path) : posixToFileUrl(path);

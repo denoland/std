@@ -8,10 +8,6 @@ import { dirname as windowsDirname } from "./windows/dirname.ts";
 /**
  * Return the directory path of a pauth.
  *
- * @param path Path to extract the directory from.
- *
- * @returns The directory path.
- *
  * @example Usage
  * ```ts
  * import { dirname } from "@std/path/dirname";
@@ -20,6 +16,9 @@ import { dirname as windowsDirname } from "./windows/dirname.ts";
  * dirname("C:\\user\\Documents\\image.png"); // "C:\\user\\Documents"
  * dirname("image.png"); // "."
  * ```
+ *
+ * @param path Path to extract the directory from.
+ * @returns The directory path.
  */
 export function dirname(path: string): string {
   return isWindows ? windowsDirname(path) : posixDirname(path);
