@@ -46,6 +46,8 @@ const ENTRY_POINTS = [
   "../jsonc/mod.ts",
   "../media_types/mod.ts",
   "../path/mod.ts",
+  "../path/posix/mod.ts",
+  "../path/windows/mod.ts",
   "../semver/mod.ts",
   "../streams/mod.ts",
   "../text/mod.ts",
