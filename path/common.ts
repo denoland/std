@@ -14,12 +14,22 @@ import { SEPARATOR } from "./constants.ts";
  *
  * @example Usage
  * ```ts
- * import { common } from "@std/path";
+ * import { common } from "@std/path/common";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
- * common([
- *   "./deno/std/path/mod.ts",
- *   "./deno/std/fs/mod.ts"
- * ]); // "./deno/std/"
+ * if (Deno.build.os === "windows") {
+ *   const path = common([
+ *     "C:\\deno\\std\\path\\mod.ts",
+ *     "C:\\deno\\std\\fs\\mod.ts"
+ *   ]);
+ *   assertEquals(path, "C:\\deno\\std\\");
+ * } else {
+ *   const path = common([
+ *     "./deno/std/path/mod.ts",
+ *     "./deno/std/fs/mod.ts"
+ *   ]);
+ *   assertEquals(path, "./deno/std/");
+ * }
  * ```
  */
 export function common(
