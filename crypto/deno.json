@@ -4,8 +4,7 @@
   "exports": {
     ".": "./mod.ts",
     "./crypto": "./crypto.ts",
-    "./timing-safe-equal": "./timing_safe_equal.ts",
-    "./unstable-keystack": "./unstable_keystack.ts"
+    "./timing-safe-equal": "./timing_safe_equal.ts"
   },
   "exclude": [
     "_wasm/target"
