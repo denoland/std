@@ -44,7 +44,7 @@ import { generate as generateV5, validate as validateV5 } from "./v5.ts";
  * import { assert } from "@std/assert/assert";
  *
  * const uuid = v1.generate();
- * assert(v1.validate(uuid as string));
+ * assert(v1.validate(uuid));
  * ```
  */
 export const v1 = {
