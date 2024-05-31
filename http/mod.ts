@@ -49,7 +49,7 @@
  * For example to integrate the user agent provided in the header `User-Agent`
  * in an http request would look like this:
  *
- * ```ts
+ * ```ts no-eval
  * import { UserAgent } from "@std/http/user-agent";
  *
  * Deno.serve((req) => {

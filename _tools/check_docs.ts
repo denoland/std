@@ -15,6 +15,7 @@ import {
   type DocNodeBase,
   type DocNodeClass,
   type DocNodeFunction,
+  type DocNodeModuleDoc,
   type JsDoc,
   type JsDocTagDocRequired,
   type Location,
@@ -153,7 +154,9 @@ async function assertSnippetEvals(
     stderr: "piped",
   });
   const timeoutId = setTimeout(() => {
-    console.warn("Snippet has been running for more than 10 seconds...");
+    console.warn(
+      `Snippet at ${document.location.filename}:${document.location.line} has been running for more than 10 seconds...`,
+    );
     console.warn(snippet);
   }, 10_000);
   try {
@@ -172,9 +175,22 @@ async function assertSnippetEvals(
 function assertSnippetsWork(
   doc: string,
   document: { jsDoc: JsDoc; location: Location },
+  required = true,
 ) {
   const snippets = doc.match(TS_SNIPPET);
-  if (snippets === null) return;
+  if (snippets === null) {
+    if (required) {
+      diagnostics.push(
+        new DocumentError(
+          "@example tag must have a TypeScript code snippet",
+          document,
+        ),
+      );
+      return;
+    } else {
+      return;
+    }
+  }
   for (let snippet of snippets) {
     if (snippet.split(NEWLINE)[0]?.includes("no-eval")) continue;
     // Trim the code block delimiters
@@ -210,16 +226,6 @@ function assertHasExampleTag(
       "@example tag must have a title",
       document,
     );
-    const snippets = tag.doc.match(TS_SNIPPET);
-    if (snippets === null) {
-      diagnostics.push(
-        new DocumentError(
-          "@example tag must have a TypeScript code snippet",
-          document,
-        ),
-      );
-      continue;
-    }
     assertSnippetsWork(tag.doc, document);
   }
 }
@@ -259,6 +265,7 @@ function assertHasTypeParamTags(
 function assertFunctionDocs(
   document: DocNodeWithJsDoc<DocNodeFunction | ClassMethodDef>,
 ) {
+  assertSnippetsWork(document.jsDoc.doc!, document, false);
   for (const param of document.functionDef.params) {
     if (param.kind === "identifier") {
       assertHasParamTag(document, param.name);
@@ -288,6 +295,7 @@ function assertFunctionDocs(
  * - Documentation on all properties, methods, and constructors.
  */
 function assertClassDocs(document: DocNodeWithJsDoc<DocNodeClass>) {
+  assertSnippetsWork(document.jsDoc.doc!, document, false);
   for (const typeParam of document.classDef.typeParams) {
     assertHasTypeParamTags(document, typeParam.name);
   }
@@ -373,6 +381,14 @@ function assertConstructorDocs(
   assertHasExampleTag(constructor);
 }
 
+/**
+ * Checks a module document for:
+ * - Code snippets that execute successfully.
+ */
+function assertModuleDoc(document: DocNodeWithJsDoc<DocNodeModuleDoc>) {
+  assertSnippetsWork(document.jsDoc.doc!, document);
+}
+
 function resolve(specifier: string, referrer: string): string {
   if (specifier.startsWith("@std/") && specifier.split("/").length > 2) {
     specifier = specifier.replace("@std/", "../").replaceAll("-", "_") + ".ts";
@@ -386,6 +402,10 @@ async function checkDocs(specifier: string) {
     if (d.jsDoc === undefined) continue; // this is caught by other checks
     const document = d as DocNodeWithJsDoc<DocNode>;
     switch (document.kind) {
+      case "moduleDoc": {
+        assertModuleDoc(document);
+        break;
+      }
       case "function": {
         assertFunctionDocs(document);
         break;

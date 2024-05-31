@@ -3,9 +3,29 @@
 // This module is browser compatible.
 
 /**
- * The semantic version parser.
+ * The Semantic Version parser.
  *
  * Adapted directly from {@link https://github.com/npm/node-semver | semver}.
+ *
+ * ```ts
+ * import {
+ *   parse,
+ *   parseRange,
+ *   greaterThan,
+ *   lessThan,
+ *   format
+ * } from "@std/semver";
+ *
+ * const semver = parse("1.2.3");
+ * const range = parseRange("1.x || >=2.5.0 || 5.0.0 - 7.2.3");
+ *
+ * const s0 = parse("1.2.3");
+ * const s1 = parse("9.8.7");
+ * greaterThan(s0, s1); // false
+ * lessThan(s0, s1); // true
+ *
+ * format(semver) // "1.2.3"
+ * ```
  *
  * ## Versions
  *
@@ -242,26 +262,7 @@
  *
  * This module is browser compatible.
  *
- * @example
- * ```ts
- * import {
- *   parse,
- *   parseRange,
- *   greaterThan,
- *   lessThan,
- *   format
- * } from "@std/semver";
- *
- * const semver = parse("1.2.3");
- * const range = parseRange("1.x || >=2.5.0 || 5.0.0 - 7.2.3");
- *
- * const s0 = parse("1.2.3");
- * const s1 = parse("9.8.7");
- * greaterThan(s0, s1); // false
- * lessThan(s0, s1); // true
- *
- * format(semver) // "1.2.3"
- * ```
+
  *
  * @module
  */
