@@ -16,7 +16,6 @@ export function joinGlobs(
   if (!globstar || globs.length === 0) {
     return join(...globs);
   }
-  if (globs.length === 0) return ".";
   let joined: string | undefined;
   for (const glob of globs) {
     const path = glob;

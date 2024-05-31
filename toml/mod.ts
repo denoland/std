@@ -90,7 +90,6 @@
  *
  * This module is browser compatible.
  *
- * @example
  * ```ts
  * import {
  *   parse,
