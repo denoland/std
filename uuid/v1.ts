@@ -33,14 +33,6 @@ let _clockseq: number;
 let _lastMSecs = 0;
 let _lastNSecs = 0;
 
-/**
- * Options for {@linkcode generate}.
- *
- * @deprecated This will be removed in 1.0.0. Use {@linkcode GenerateOptions}
- * instead.
- */
-export interface V1Options extends GenerateOptions {}
-
 /** Options for {@linkcode generate}. */
 export interface GenerateOptions {
   /**
@@ -100,51 +92,13 @@ export interface GenerateOptions {
  *   nsecs: 5678,
  * };
  *
- * const uuid = generate(options) as string;
- * assert(validate(uuid));
- * ```
- *
- * @deprecated This will be removed in 1.0.0. Use the other overload instead.
- */
-export function generate(
-  options?: GenerateOptions,
-  buf?: number[],
-  offset?: number,
-): string | number[];
-/**
- * Generates a
- * {@link https://www.rfc-editor.org/rfc/rfc9562.html#section-5.1 | UUIDv1}.
- *
- * @param options Can use RFC time sequence values as overwrites.
- * @param buf Can allow the UUID to be written in byte-form starting at the offset.
- * @param offset Index to start writing on the UUID bytes in buffer.
- *
- * @returns Returns a UUIDv1 string or an array of 16 bytes.
- *
- * @example Usage
- * ```ts
- * import { generate, validate } from "@std/uuid/v1";
- * import { assert } from "@std/assert/assert";
- *
- * const options = {
- *   node: [0x01, 0x23, 0x45, 0x67, 0x89, 0xab],
- *   clockseq: 0x1234,
- *   msecs: new Date("2011-11-01").getTime(),
- *   nsecs: 5678,
- * };
- *
- * const uuid = generate(options) as string;
+ * const uuid = generate(options);
  * assert(validate(uuid));
  * ```
  */
-export function generate(options?: GenerateOptions): string;
-export function generate(
-  options: GenerateOptions = {},
-  buf?: number[],
-  offset?: number,
-): string | number[] {
-  let i = (buf && offset) || 0;
-  const b = buf ?? [];
+export function generate(options: GenerateOptions = {}): string {
+  let i = 0;
+  const b = [];
 
   let { node = _nodeId, clockseq = _clockseq } = options;
 
@@ -222,5 +176,5 @@ export function generate(
     b[i + n] = node[n]!;
   }
 
-  return buf ?? bytesToUuid(b);
+  return bytesToUuid(b);
 }
