@@ -15,7 +15,7 @@ import { toNamespacedPath as windowsToNamespacedPath } from "./windows/to_namesp
  * import { assertEquals } from "@std/assert/assert-equals";
  *
  * if (Deno.build.os === "windows") {
- *   assertEquals(toNamespacedPath("C:\\foo\\bar"), " \\\\?\\C:\\foo\\bar");
+ *   assertEquals(toNamespacedPath("C:\\foo\\bar"), "\\\\?\\C:\\foo\\bar");
  * } else {
  *   assertEquals(toNamespacedPath("/foo/bar"), "/foo/bar");
  * }
