@@ -7,6 +7,8 @@ import {
   type GlobToRegExpOptions,
 } from "../_common/glob_to_reg_exp.ts";
 
+export type { GlobToRegExpOptions };
+
 const constants: GlobConstants = {
   sep: "/+",
   sepMaybe: "/*",

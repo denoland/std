@@ -20,6 +20,7 @@ export interface GlobOptions {
   caseInsensitive?: boolean;
 }
 
+/** Options for {@linkcode globToRegExp}. */
 export type GlobToRegExpOptions = GlobOptions;
 
 const regExpEscapeChars = [
