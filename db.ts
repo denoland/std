@@ -381,6 +381,8 @@ export default class DB {
       }
       if (promises.length % 1000 === 0) {
         console.log('db drop progress:', promises.length)
+        await Promise.all(promises)
+        promises.length = 0
       }
     }
     await Promise.all(promises)
