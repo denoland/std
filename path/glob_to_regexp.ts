@@ -84,7 +84,7 @@ export type GlobToRegExpOptions = GlobOptions & {
  * import { assertEquals } from "@std/assert/assert-equals";
  *
  * if (Deno.build.os === "windows") {
- *   assertEquals(globToRegExp("*.js"), /^[^\\]*\.js\/*$/);
+ *   assertEquals(globToRegExp("*.js"), /^[^\\/]*\.js(?:\\|\/)*$/);
  * } else {
  *   assertEquals(globToRegExp("*.js"), /^[^/]*\.js\/*$/);
  * }

@@ -24,7 +24,7 @@ export type { GlobOptions };
  *
  * if (Deno.build.os === "windows") {
  *   assertEquals(normalizeGlob("foo\\bar\\..\\baz"), "foo\\baz");
- *   assertEquals(normalizeGlob("foo\\**\\..\\bar\\..\\baz", { globstar: true }), "foo\\**\\..\\bar\\..\\baz");
+ *   assertEquals(normalizeGlob("foo\\**\\..\\bar\\..\\baz", { globstar: true }), "foo\\**\\..\\baz");
  * } else {
  *   assertEquals(normalizeGlob("foo/bar/../baz"), "foo/baz");
  *   assertEquals(normalizeGlob("foo/**\/../bar/../baz", { globstar: true }), "foo/**\/../baz");
