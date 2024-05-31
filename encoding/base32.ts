@@ -26,14 +26,15 @@
  * @module
  */
 
-import { validateBinaryLike } from "./_util.ts";
+import { validateBinaryLike } from "./_validate_binary_like.ts";
 
 const lookup: string[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567".split("");
 const revLookup: number[] = [];
 lookup.forEach((c, i) => revLookup[c.charCodeAt(0)] = i);
 
 const placeHolderPadLookup = [0, 1, , 2, 3, , 4];
-function _getPadLen(placeHoldersLen: number): number {
+
+function getPadLength(placeHoldersLen: number): number {
   const maybeLen = placeHolderPadLookup[placeHoldersLen];
   if (typeof maybeLen !== "number") {
     throw new Error("Invalid pad length");
@@ -56,8 +57,8 @@ function getLens(b32: string): [number, number] {
   return [validLen, placeHoldersLen];
 }
 
-function _byteLength(validLen: number, placeHoldersLen: number): number {
-  return ((validLen + placeHoldersLen) * 5) / 8 - _getPadLen(placeHoldersLen);
+function getByteLength(validLen: number, placeHoldersLen: number): number {
+  return ((validLen + placeHoldersLen) * 5) / 8 - getPadLength(placeHoldersLen);
 }
 
 /**
@@ -83,7 +84,7 @@ export function decodeBase32(b32: string): Uint8Array {
   let tmp: number;
   const [validLen, placeHoldersLen] = getLens(b32);
 
-  const arr = new Uint8Array(_byteLength(validLen, placeHoldersLen));
+  const arr = new Uint8Array(getByteLength(validLen, placeHoldersLen));
 
   let curByte = 0;
 

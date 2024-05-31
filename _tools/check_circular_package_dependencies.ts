@@ -6,6 +6,7 @@ import {
   type ModuleJson,
 } from "@deno/graph";
 import { resolveWorkspaceSpecifiers } from "./utils.ts";
+import graphviz from "graphviz";
 
 /**
  * Checks for circular dependencies in the std packages.
@@ -135,7 +136,7 @@ const STABILITY: Record<Mod, DepState> = {
   html: "Unstable",
   http: "Unstable",
   ini: "Unstable",
-  internal: "Unstable",
+  internal: "Stable",
   io: "Unstable",
   json: "Stable",
   jsonc: "Stable",
@@ -177,18 +178,20 @@ async function check(
     });
 
     for (
-      const dep of new Set(getPackageDepsFromSpecifier(graph, entrypoint))
+      const dep of new Set(
+        getPackageDepsFromSpecifier(submod, graph, entrypoint),
+      )
     ) {
       deps.add(dep);
     }
   }
   deps.delete(submod);
-  deps.delete("version.ts");
   return { name: submod, set: deps, state };
 }
 
 /** Returns package dependencies */
 function getPackageDepsFromSpecifier(
+  base: string,
   graph: ModuleGraphJson,
   specifier: string,
   seen: Set<string> = new Set(),
@@ -196,15 +199,19 @@ function getPackageDepsFromSpecifier(
   const { dependencies } = graph.modules.find((item: ModuleJson) =>
     item.specifier === specifier
   )!;
-  const deps = new Set([getPackageNameFromUrl(specifier)]);
+  const pkg = getPackageNameFromUrl(specifier);
+  const deps = new Set([pkg]);
   seen.add(specifier);
-  if (dependencies) {
+  // Captures only direct dependencies of the base package
+  // i.e. Does not capture transitive dependencies
+  if (dependencies && pkg === base) {
     for (const { code, type } of dependencies) {
       const specifier = code?.specifier ?? type?.specifier!;
       if (seen.has(specifier)) {
         continue;
       }
       const res = getPackageDepsFromSpecifier(
+        base,
         graph,
         specifier,
         seen,
@@ -261,15 +268,21 @@ function stateToNodeStyle(state: DepState) {
 }
 
 if (Deno.args.includes("--graph")) {
-  console.log("digraph std_deps {");
+  const lines = [];
+  lines.push("digraph std_deps {");
   for (const mod of Object.keys(deps)) {
     const info = deps[mod]!;
-    console.log(`  ${formatLabel(mod)} ${stateToNodeStyle(info.state)};`);
+    lines.push(`  ${formatLabel(mod)} ${stateToNodeStyle(info.state)};`);
     for (const dep of info.set) {
-      console.log(`  ${formatLabel(mod)} -> ${dep};`);
+      lines.push(`  ${formatLabel(mod)} -> ${dep};`);
     }
   }
-  console.log("}");
+  lines.push("}");
+  const graph = lines.join("\n");
+  // Compile the graph to SVG using the `dot` layout algorithm
+  const svg = await graphviz.graphviz.dot(graph, "svg");
+  console.log("Writing dependency graph image to .github/dependency_graph.svg");
+  await Deno.writeTextFile(".github/dependency_graph.svg", svg);
 } else if (Deno.args.includes("--table")) {
   console.log("| Package         | Status     |");
   console.log("| --------------- | ---------- |");

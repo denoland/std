@@ -14,13 +14,18 @@ export type ArrayLikeArg<T> = ArrayLike<T> & object;
  * Type parameter can be specified to ensure values under comparison have the
  * same type.
  *
- * @example
- * ```ts
+ * @example Usage
+ * ```ts no-eval
  * import { assertArrayIncludes } from "@std/assert/assert-array-includes";
  *
  * assertArrayIncludes([1, 2], [2]); // Doesn't throw
  * assertArrayIncludes([1, 2], [3]); // Throws
  * ```
+ *
+ * @typeParam T The type of the elements in the array to compare.
+ * @param actual The array-like object to check for.
+ * @param expected The array-like object to check for.
+ * @param msg The optional message to display if the assertion fails.
  */
 export function assertArrayIncludes<T>(
   actual: ArrayLikeArg<T>,

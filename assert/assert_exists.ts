@@ -6,13 +6,17 @@ import { AssertionError } from "./assertion_error.ts";
  * Make an assertion that actual is not null or undefined.
  * If not then throw.
  *
- * @example
- * ```ts
+ * @example Usage
+ * ```ts no-eval
  * import { assertExists } from "@std/assert/assert-exists";
  *
  * assertExists("something"); // Doesn't throw
  * assertExists(undefined); // Throws
  * ```
+ *
+ * @typeParam T The type of the actual value.
+ * @param actual The actual value to check.
+ * @param msg The optional message to include in the error if the assertion fails.
  */
 export function assertExists<T>(
   actual: T,

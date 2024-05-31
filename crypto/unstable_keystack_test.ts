@@ -248,9 +248,25 @@ Deno.test({
   async fn() {
     const { inspect } = await import("node:util");
 
+    const keyStack = new KeyStack(["abcdef"]);
+
+    // Needs to overwrite Deno.customInspect symbol to enable Node's inspect
+    // deno-lint-ignore no-explicit-any
+    (keyStack as any)[Symbol.for("Deno.customInspect")] = undefined;
+
     assertEquals(
-      inspect(new KeyStack(["abcdef"])),
+      inspect(keyStack),
       `KeyStack { length: 1 }`,
+    );
+    // Check the short form
+    assertEquals(
+      inspect({ stack: [[keyStack]] }),
+      `{ stack: [ [ [KeyStack] ] ] }`,
+    );
+    // Check the case when depth is null
+    assertEquals(
+      inspect({ stack: [[keyStack]] }, { depth: null }),
+      `{ stack: [ [ KeyStack { length: 1 } ] ] }`,
     );
   },
 });

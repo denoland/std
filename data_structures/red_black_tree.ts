@@ -34,7 +34,7 @@ const {
  * | min()         | O(log n)     | O(log n)   |
  * | max()         | O(log n)     | O(log n)   |
  *
- * @example
+ * @example Usage
  * ```ts
  * import {
  *   ascend,
@@ -101,8 +101,6 @@ const {
  * @typeparam T The type of the values being stored in the tree.
  */
 export class RedBlackTree<T> extends BinarySearchTree<T> {
-  declare protected root: RedBlackNode<T> | null;
-
   /**
    * Construct an empty red-black tree.
    *

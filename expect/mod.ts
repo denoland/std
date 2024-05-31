@@ -69,9 +69,9 @@
  *   - `expect.hasAssertions`
  *   - `expect.addSnapshotSerializer`
  *
- * This module is largely inspired by {@link https://github.com/allain/expect | x/expect} module by Allain Lalonde.
+ * This module is largely inspired by
+ * {@link https://github.com/allain/expect | x/expect} module by Allain Lalonde.
  *
- * @example
  * ```ts
  * import { expect } from "@std/expect";
  *
