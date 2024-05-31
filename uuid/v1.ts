@@ -93,7 +93,7 @@ export interface GenerateOptions {
  * };
  *
  * const uuid = generate(options);
- * assert(validate(uuid));
+ * assert(validate(uuid as string));
  * ```
  */
 export function generate(options: GenerateOptions = {}): string {
