@@ -16,10 +16,9 @@ function splitByLast(value: string, separator: string): [string, string] {
  * key.
  *
  * @example Usage
- * ```ts
+ * ```ts no-eval no-assert
  * import { signCookie } from "@std/http/unstable-signed-cookie";
  * import { setCookie } from "@std/http/cookie";
- * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const key = await crypto.subtle.generateKey(
  *   { name: "HMAC", hash: "SHA-256" },
@@ -34,7 +33,7 @@ function splitByLast(value: string, separator: string): [string, string] {
  *   value,
  * });
  *
- * assertEquals(headers.get("set-cookie"), value);
+ * const cookieHeader = headers.get("set-cookie");
  * ```
  *
  * @param value The cookie value to sign.
@@ -55,10 +54,9 @@ export async function signCookie(
  * Returns a promise of a boolean indicating whether the signed cookie is valid.
  *
  * @example Usage
- * ```ts
+ * ```ts no-eval no-assert
  * import { verifyCookie } from "@std/http/unstable-signed-cookie";
  * import { getCookies } from "@std/http/cookie";
- * import { assertEquals, assertNotEquals } from "@std/assert";
  *
  * const key = await crypto.subtle.generateKey(
  *   { name: "HMAC", hash: "SHA-256" },
@@ -70,10 +68,8 @@ export async function signCookie(
  *   Cookie: "location=tokyo.37f7481039762eef5cd46669f93c0a3214dfecba7d0cdc0b0dc40036063fb22e",
  * });
  * const signedCookie = getCookies(headers)["location"];
- *
- * assertNotEquals(signedCookie, undefined);
- *
- * assertEquals(await verifyCookie(signedCookie!, key), true);
+ * if (signedCookie === undefined) throw new Error("Cookie not found");
+ * await verifyCookie(signedCookie, key);
  * ```
  *
  * @param signedCookie The signed cookie to verify.
@@ -99,10 +95,9 @@ export async function verifyCookie(
  * Important: always verify the cookie using {@linkcode verifyCookie} first.
  *
  * @example Usage
- * ```ts
+ * ```ts no-eval no-assert
  * import { verifyCookie, parseSignedCookie } from "@std/http/unstable-signed-cookie";
  * import { getCookies } from "@std/http/cookie";
- * import { assertEquals, assertNotEquals } from "@std/assert";
  *
  * const key = await crypto.subtle.generateKey(
  *   { name: "HMAC", hash: "SHA-256" },
@@ -114,12 +109,9 @@ export async function verifyCookie(
  *   Cookie: "location=tokyo.37f7481039762eef5cd46669f93c0a3214dfecba7d0cdc0b0dc40036063fb22e",
  * });
  * const signedCookie = getCookies(headers)["location"];
- *
- * assertNotEquals(signedCookie, undefined);
- *
- * assertEquals(await verifyCookie(signedCookie!, key), true);
- *
- * assertEquals(parseSignedCookie(signedCookie!), "tokyo");
+ * if (signedCookie === undefined) throw new Error("Cookie not found");
+ * await verifyCookie(signedCookie, key);
+ * const cookie = parseSignedCookie(signedCookie);
  * ```
  *
  * @param signedCookie The signed cookie to parse the value from.

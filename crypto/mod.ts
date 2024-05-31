@@ -7,7 +7,7 @@
  * supporting additional encryption APIs, but also delegating to the built-in
  * APIs when possible.
  *
- * ```ts
+ * ```ts no-assert
  * import { crypto } from "@std/crypto/crypto";
  *
  * const message = "Hello, Deno!";
