@@ -215,16 +215,94 @@ function runeCount(s: string): number {
 /**
  * A ParseError is returned for parsing errors.
  * Line numbers are 1-indexed and columns are 0-indexed.
+ *
+ * @example Usage
+ * ```ts
+ * import { parse, ParseError } from "@std/csv/parse";
+ *
+ * try {
+ *   parse(`a "word","b"`);
+ * } catch (error) {
+ *   if (error instanceof ParseError) {
+ *     console.error(error.message);
+ *   }
+ * }
+ * ```
  */
 export class ParseError extends SyntaxError {
-  /** Line where the record starts*/
+  /**
+   * Line where the record starts.
+   *
+   * @example Usage
+   * ```ts
+   * import { parse, ParseError } from "@std/csv/parse";
+   *
+   * try {
+   *   parse(`a "word","b"`);
+   * } catch (error) {
+   *   if (error instanceof ParseError) {
+   *     console.error(error.startLine);
+   *   }
+   * }
+   * ```
+   */
   startLine: number;
-  /** Line where the error occurred */
+  /**
+   * Line where the error occurred.
+   *
+   * @example Usage
+   * ```ts
+   * import { parse, ParseError } from "@std/csv/parse";
+   *
+   * try {
+   *   parse(`a "word","b"`);
+   * } catch (error) {
+   *   if (error instanceof ParseError) {
+   *     console.error(error.line);
+   *   }
+   * }
+   * ```
+   */
   line: number;
-  /** Column (rune index) where the error occurred */
+  /**
+   * Column (rune index) where the error occurred.
+   *
+   * @example Usage
+   * ```ts
+   * import { parse, ParseError } from "@std/csv/parse";
+   *
+   * try {
+   *   parse(`a "word","b"`);
+   * } catch (error) {
+   *   if (error instanceof ParseError) {
+   *     console.error(error.column);
+   *   }
+   * }
+   * ```
+   */
   column: number | null;
 
-  /** Constructs a new instance. */
+  /**
+   * Constructs a new instance.
+   *
+   * @example Usage
+   * ```ts
+   * import { parse, ParseError } from "@std/csv/parse";
+   *
+   * try {
+   *   parse(`a "word","b"`);
+   * } catch (error) {
+   *   if (error instanceof ParseError) {
+   *     console.error(error.message);
+   *   }
+   * }
+   * ```
+   *
+   * @param start Line where the record starts
+   * @param line Line where the error occurred
+   * @param column Column The index where the error occurred
+   * @param message Error message
+   */
   constructor(
     start: number,
     line: number,
