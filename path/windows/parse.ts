@@ -24,6 +24,7 @@ export type { ParsedPath } from "../_interface.ts";
  *   ext: ".ext",
  *   name: "baz",
  * });
+ * ```
  *
  * @param path The path to parse.
  * @returns The `ParsedPath` object.
