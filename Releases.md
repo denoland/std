@@ -1,3 +1,91 @@
+### 2024.05.29
+
+#### @std/cli 0.224.4 (patch)
+
+- fix(cli): reduce flicker in spinner render function (#4835)
+- docs(cli): make check_docs pass (#4815)
+- docs(cli): improve spinner.message document (#4785)
+- test(cli): reduce the flakiness of `Spinner` test cases (#4844)
+
+#### @std/data-structures 0.225.0 (minor)
+
+- BREAKING(data-structures): hide private internals (#4827)
+- docs(data-structures): enables doc lint of data-structures (#4847)
+
+#### @std/encoding 0.224.3 (patch)
+
+- docs(encoding): fix typo in `ascii85.ts` (#4854)
+- docs(encoding): Cleanup and fix doc lints (#4838)
+- refactor(encoding): remove unnecessary prefixes from private functions (#4862)
+- refactor(encoding): rename `_util.ts` (#4860)
+- test(encoding): use own `encodeHex()` and `decodeHex()` (#4863)
+
+#### @std/expect 0.224.3 (patch)
+
+- docs(expect): document methods and add examples (#4836)
+
+#### @std/fmt 0.225.2 (patch)
+
+- docs(fmt): improve API docs (#4829)
+
+#### @std/front-matter 0.224.1 (patch)
+
+- docs(front-matter): improve docs for stabilization (#4789)
+
+#### @std/html 0.224.1 (patch)
+
+- docs(html): improve API docs (#4878)
+
+#### @std/http 0.224.2 (patch)
+
+- docs(http): don't run some examples in doc checker (#4840)
+- docs(http): improve docs for stabilization (#4813)
+
+#### @std/ini 0.225.0 (minor)
+
+- BREAKING(ini): remove internal `Formatting` type (#4818)
+- fix(ini): remove unused `ParseOptions.assignment` property (#4816)
+- docs(ini): add missing doc comments (#4819)
+- refactor(ini): move StringifyOptions to stringify.ts (#4817)
+
+#### @std/msgpack 0.224.2 (patch)
+
+- fix(msgpack): error on early end of data (#4831)
+- docs(msgpack): complete documentation of the package (#4832)
+
+#### @std/semver 0.224.1 (patch)
+
+- docs(semver): improve docs (#4846)
+
+#### @std/streams 0.224.2 (patch)
+
+- docs(streams): improve docs for stabilization (#4852)
+
+#### @std/text 0.224.1 (patch)
+
+- docs(text): pass docs check (#4837)
+- docs(text): add module doc (#4812)
+
+#### @std/ulid 0.224.1 (patch)
+
+- docs(ulid): finish documentation (#4825)
+
+#### @std/uuid 0.224.3 (patch)
+
+- deprecation(uuid): deprecate `v1.generate()` signature with `buf` and `offset`
+  parameters (#4880)
+- deprecation(uuid): rename `V1Options` to `GenerateOptions` (#4872)
+- fix(uuid): validate namespace UUIDs in `v3.generate()` and `v5.generate()`
+  (#4874)
+- docs(uuid): update module docs (#4790)
+- test(uuid): add tests for invalid namespace UUID (#4875)
+
+#### @std/yaml 0.224.1 (patch)
+
+- refactor(yaml): remove dead code (#4849)
+- test(yaml): test handling of omap (#4851)
+- test(yaml): test float handling (#4850)
+
 ### 2024.05.22
 
 #### @std/assert 0.225.3 (patch)

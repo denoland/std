@@ -4,11 +4,12 @@
  * Tools for creating interactive command line tools.
  *
  * ```ts
- * // $ deno run example.ts --foo --bar=baz ./quux.txt
  * import { parseArgs } from "@std/cli/parse-args";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
- * const parsedArgs = parseArgs(Deno.args);
- * parsedArgs; // { foo: true, bar: "baz", _: ["./quux.txt"] }
+ * // Same as running `deno run example.ts --foo --bar=baz ./quux.txt`
+ * const args = parseArgs(["--foo", "--bar=baz", "./quux.txt"]);
+ * assertEquals(args, { foo: true, bar: "baz", _: ["./quux.txt"] });
  * ```
  *
  * @module

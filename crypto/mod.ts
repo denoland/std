@@ -21,5 +21,4 @@
  */
 
 export * from "./crypto.ts";
-export * from "./unstable_keystack.ts";
 export * from "./timing_safe_equal.ts";

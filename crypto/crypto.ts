@@ -280,29 +280,6 @@ const stdCrypto: StdCrypto = ((x) => x)({
   },
 });
 
-/**
- * A FNV (Fowler/Noll/Vo) digest algorithm name supported by std/crypto.
- *
- * @deprecated This will be removed in 1.0.0.
- */
-export type FNVAlgorithms = "FNV32" | "FNV32A" | "FNV64" | "FNV64A";
-
-/**
- * Digest algorithm names supported by std/crypto with a Wasm implementation.
- *
- * @deprecated This will be removed in 1.0.0. Use
- * {@linkcode DIGEST_ALGORITHM_NAMES} instead.
- */
-export const wasmDigestAlgorithms = DIGEST_ALGORITHM_NAMES;
-
-/**
- * A digest algorithm name supported by std/crypto with a Wasm implementation.
- *
- * @deprecated This will be removed in 1.0.0. Use
- * {@linkcode DigestAlgorithmName} instead.
- */
-export type WasmDigestAlgorithm = DigestAlgorithmName;
-
 /*
  * The largest digest length the current Wasm implementation can support. This
  * is the value of `isize::MAX` on 32-bit platforms like Wasm, which is the

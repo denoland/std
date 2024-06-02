@@ -8,8 +8,7 @@
  *
  * This module is browser compatible.
  *
- * @example
- * ```ts Parsing JSONC
+ * ```ts
  * import { parse } from "@std/jsonc";
  *
  * parse('{"foo": "bar", } // comment'); // { foo: "bar" }
