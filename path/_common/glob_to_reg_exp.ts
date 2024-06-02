@@ -16,7 +16,11 @@ export interface GlobOptions {
    * @default {true}
    */
   globstar?: boolean;
-  /** Whether globstar should be case-insensitive. */
+  /**
+   * Whether globstar should be case-insensitive.
+   *
+   * @default {false}
+   */
   caseInsensitive?: boolean;
 }
 
