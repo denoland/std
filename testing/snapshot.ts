@@ -145,7 +145,9 @@ import { bold, green, red } from "@std/fmt/colors";
 import { assert } from "@std/assert/assert";
 import { AssertionError } from "@std/assert/assertion-error";
 import { equal } from "@std/assert/equal";
-import { assertEquals } from "@std/assert/assert-equals";
+import { diff } from "@std/internal/diff";
+import { diffStr } from "@std/internal/diff-str";
+import { buildMessage } from "@std/internal/build-message";
 
 const SNAPSHOT_DIR = "__snapshots__";
 const SNAPSHOT_EXT = "snap";
@@ -570,24 +572,12 @@ export async function assertSnapshot(
     if (equal(_actual, snapshot)) {
       return;
     }
-    let message = "";
-    try {
-      const usesMultilineDiff = _actual.includes("\n");
-      if (usesMultilineDiff) {
-        assertEquals(true, false, undefined, {
-          formatter: (v) => v ? _actual : snapshot,
-        });
-      } else {
-        assertEquals(_actual, snapshot);
-      }
-    } catch (e) {
-      if (e instanceof AssertionError) {
-        message = e.message.replace(
-          "Values are not equal.",
-          "Snapshot does not match:",
-        );
-      }
-    }
+    const stringDiff = !_actual.includes("\n");
+    const diffResult = stringDiff
+      ? diffStr(_actual, snapshot)
+      : diff(_actual.split("\n"), snapshot.split("\n"));
+    const diffMsg = buildMessage(diffResult, { stringDiff }).join("\n");
+    const message = `Snapshot does not match:\n${diffMsg}`;
     throw new AssertionError(
       getErrorMessage(message, options),
     );

@@ -60,8 +60,8 @@ export async function generate(
     throw new TypeError("Invalid namespace UUID");
   }
 
-  const space = uuidToBytes(namespace);
-  const toHash = concat([new Uint8Array(space), data]);
+  const namespaceBytes = uuidToBytes(namespace);
+  const toHash = concat([namespaceBytes, data]);
   const buffer = await crypto.subtle.digest("sha-1", toHash);
   const bytes = new Uint8Array(buffer);
 
