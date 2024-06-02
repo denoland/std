@@ -4,7 +4,7 @@ import { Help, RUNNERS } from '@/constants.ts'
 import * as loadHelp from '@/isolates/load-help.ts'
 import * as prompt from '@/isolates/ai-prompt.ts'
 import * as promptInjector from '@/isolates/ai-prompt-injector.ts'
-const log = Debug('AI:isolates:engage-help')
+const log = Debug('AI:engage-help')
 
 export const api = {
   engage: {

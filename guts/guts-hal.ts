@@ -1,6 +1,7 @@
 import OpenAI from 'openai'
 import { Api, ENTRY_HELP_FILE, init } from '@/isolates/hal.ts'
 import { init as githubInit } from '@/isolates/github.ts'
+import * as engageHelp from '@/isolates/engage-help.ts'
 import { expect, log } from '@utils'
 import {
   ArtifactTerminal,
@@ -121,6 +122,36 @@ export default (name: string, cradleMaker: CradleMaker) => {
 
     await terminal.engineStop()
   })
+
+  Deno.test('double tool call with responses', async () => {
+    const terminal = await cradleMaker()
+    const { pid } = await terminal.init({ repo: 'test/doubleToolCall' })
+    const help = `
+---
+config:
+  model: gpt-4o
+commands:
+  - io-fixture:ping
+---
+
+`
+    await terminal.write('helps/double-test.md', help, pid)
+    const isolate = 'engage-help'
+    const { engage } = await terminal.actions<engageHelp.Api>(isolate, pid)
+    const text =
+      'call the provided "ping" tool twice with the message being the integer "1" for the first one and the integer "2" for the second'
+    log.enable(
+      'AI:tests AI:io-fixture AI:prompt AI:io-fixture AI:completions AI:engage-help AI:tools:load-tools AI:tools:execute-tools',
+    )
+    const result = await engage({ help: 'double-test', text })
+    log('result', result)
+
+    const session = await terminal.readJSON<Messages[]>('session.json', pid)
+    log('session', session)
+    console.dir(session, { depth: Infinity })
+    await terminal.engineStop()
+  })
+
   // use HAL to write a new prompt for HAL, and then use that ?
   // use HAL to improve the goalie.json file, so next time it gets used as default
   // PR the changed files against the users base defaults

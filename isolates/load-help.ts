@@ -34,10 +34,10 @@ export const functions = {
   load: async ({ help }: { help: string }, api: IsolateApi) => {
     const string = await api.read(`helps/${help}.md`)
     const { data, content } = matter(string.trim())
-    assert(content, 'content missing')
+    assert(typeof content === 'string', 'content missing')
     const defaults = {
       runner: RUNNERS.CHAT,
-      instructions: [],
+      instructions: '',
     }
     const loaded = { ...defaults, ...data, instructions: content.trim() }
 
