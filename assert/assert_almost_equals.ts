@@ -27,7 +27,7 @@ export function assertAlmostEquals(
   actual: number,
   expected: number,
   tolerance = 1e-7,
-  msg?: string,
+  msg?: string
 ) {
   if (Object.is(actual, expected)) {
     return;
@@ -38,9 +38,9 @@ export function assertAlmostEquals(
   }
 
   const msgSuffix = msg ? `: ${msg}` : ".";
-  const f = (n: number) => Number.isInteger(n) ? n : n.toExponential();
+  const f = (n: number) => (Number.isInteger(n) ? n : n.toExponential());
   throw new AssertionError(
     `Expected actual: "${f(actual)}" to be close to "${f(expected)}": \
-delta "${f(delta)}" is greater than "${f(tolerance)}"${msgSuffix}`,
+delta "${f(delta)}" is greater than "${f(tolerance)}"${msgSuffix}`
   );
 }
