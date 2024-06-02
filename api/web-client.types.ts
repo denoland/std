@@ -321,6 +321,8 @@ export interface ArtifactTerminal {
   ): AsyncIterable<Splice>
   readJSON<T>(path: string, pid?: PID): Promise<T>
   exists(path: string, pid?: PID): Promise<boolean>
+  writeJSON(path: string, content?: JsonValue, pid?: PID): Promise<number>
+  write(path: string, content?: JsonValue, pid?: PID): Promise<number>
   transcribe(params: { audio: File }): Promise<{ text: string }>
   apiSchema(isolate: string): Promise<ApiSchema>
   /** Pings the execution context without going thru the transaction queue.

@@ -21,6 +21,7 @@ import {
 } from './web-client.types.ts'
 import { ulid } from 'ulid'
 import { PierceWatcher } from './web-client-watcher.ts'
+import { ProcessOptions } from '@/api/web-client.types.ts'
 type Init = {
   repo: string
   isolate?: string
@@ -252,6 +253,13 @@ export class Terminal implements ArtifactTerminal {
   exists(path: string, pid: PID = this.pid) {
     return this.#engine.exists(path, pid)
   }
+  writeJSON(path: string, content?: JsonValue, pid: PID = this.pid) {
+    return this.write(path, JSON.stringify(content), pid)
+  }
+  async write(path: string, content?: string, pid: PID = this.pid) {
+    const actions = await this.actions<Files>('files', pid)
+    return actions.write({ path, content })
+  }
   async endSession(): Promise<void> {
     // should delete the session
   }
@@ -316,4 +324,19 @@ const createTerminalPid = (pid: PID, terminalId: string) => {
   const branches = [...pid.branches]
   branches[branches.length - 1] = terminalId
   return { ...pid, branches }
+}
+type Files = {
+  write: (
+    params: { path: string; content?: string },
+    opts?: ProcessOptions,
+  ) => Promise<number>
+  ls: (params: { path: string; count: number }) => Promise<string[] | number>
+  read: (params: { path: string }) => Promise<string>
+  update: (params: Update) => Promise<number>
+}
+
+interface Update {
+  path: string
+  regex: string
+  replacement: string
 }

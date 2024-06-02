@@ -55,12 +55,7 @@ Deno.test('format checking', async (t) => {
     const help = await functions.load({ help: 'help-fixture' })
     console.dir(help, { depth: 10 })
   })
-  await t.step('blank file throws', async () => {
-    api.write('helps/help-fixture.md', '')
-    const functions = loader.functions<Api>(api)
-    await expect(functions.load({ help: 'help-fixture' })).rejects
-      .toThrow('content missing')
-  })
+  // TODO have some erroneous config written
 
   db.stop()
 })

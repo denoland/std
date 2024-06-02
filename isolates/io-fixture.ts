@@ -90,6 +90,12 @@ export const api = {
     properties: {},
     additionalProperties: false,
   },
+  ping: {
+    description: 'ping with a message, where the message will be returned',
+    type: 'object',
+    properties: { message: { type: 'string' } },
+    additionalProperties: false,
+  },
   touch: {
     description: 'touch a file in the root directory',
     type: 'object',
@@ -219,6 +225,10 @@ export const functions = {
   local: () => {
     log('local')
     return 'local reply'
+  },
+  ping: (params: { message?: string }) => {
+    log('ping', params)
+    return params.message
   },
   touch: (
     params: { count: number; prefix: string; suffix: string },

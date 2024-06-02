@@ -74,6 +74,37 @@ Deno.test('ai-chat', async (t) => {
       arguments: '{"message":"salami"}',
     })
   })
+  await t.step('double tool call', async () => {
+    log.enable('AI:io-fixture AI:tests')
+    const text =
+      'call the "ping" function twice with the message being the integer "1" for the first one and the integer "2" for the second'
+    const help = {
+      ...helpBase,
+      commands: ['io-fixture:ping'],
+      instructions: '',
+    }
+    api.delete('session.json')
+    await prepare(help, text, api)
+    await completions.functions.create(help, api)
+    const session = await api.readJSON<Messages[]>('session.json')
+
+    log('session', session)
+    const [, assistant] = session
+    assert('tool_calls' in assistant, 'tool calls missing')
+    assert(Array.isArray(assistant.tool_calls), 'tool calls not an array')
+
+    expect(assistant.tool_calls).toHaveLength(2)
+    const fn0 = assistant.tool_calls[0]
+    const fn1 = assistant.tool_calls[1]
+    expect(fn0.function).toEqual({
+      name: 'ping',
+      arguments: '{"message": "1"}',
+    })
+    expect(fn1.function).toEqual({
+      name: 'ping',
+      arguments: '{"message": "2"}',
+    })
+  })
   db.stop()
 })
 
