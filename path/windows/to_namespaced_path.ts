@@ -12,7 +12,18 @@ import { resolve } from "./resolve.ts";
 
 /**
  * Resolves path to a namespace path
- * @param path to resolve to namespace
+ *
+ * @example Usage
+ * ```ts
+ * import { toNamespacedPath } from "@std/path/windows/to-namespaced-path";
+ * import { assertEquals } from "@std/assert/assert-equals";
+ *
+ * const namespaced = toNamespacedPath("C:\\foo\\bar");
+ * assertEquals(namespaced, "\\\\?\\C:\\foo\\bar");
+ * ```
+ *
+ * @param path The path to resolve to namespaced path
+ * @returns The resolved namespaced path
  */
 export function toNamespacedPath(path: string): string {
   // Note: this will *probably* throw somewhere.

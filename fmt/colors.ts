@@ -11,7 +11,6 @@
  * This module supports `NO_COLOR` environmental variable disabling any coloring
  * if `NO_COLOR` is set.
  *
- * @example
  * ```ts
  * import {
  *   bgBlue,

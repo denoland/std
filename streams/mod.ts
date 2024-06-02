@@ -5,6 +5,16 @@
  *
  * Includes buffering and conversion.
  *
+ * ```ts
+ * import { toText } from "@std/streams";
+ * import { assertEquals } from "@std/assert/assert-equals";
+ *
+ * const stream = ReadableStream.from("Hello, world!");
+ * const text = await toText(stream);
+ *
+ * assertEquals(text, "Hello, world!");
+ * ```
+ *
  * @module
  */
 

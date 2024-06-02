@@ -1,6 +1,6 @@
 {
   "name": "@std/encoding",
-  "version": "0.224.3",
+  "version": "1.0.0-rc.1",
   "exports": {
     ".": "./mod.ts",
     "./ascii85": "./ascii85.ts",
