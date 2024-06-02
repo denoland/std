@@ -1,7 +1,21 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-/** Test whether the given string is a glob */
+/**
+ * Test whether the given string is a glob.
+ *
+ * @example Usage
+ * ```ts
+ * import { isGlob } from "@std/path/is-glob";
+ * import { assert } from "@std/assert/assert";
+ *
+ * assert(!isGlob("foo/bar/../baz"));
+ * assert(isGlob("foo/*ar/../baz"));
+ * ```
+ *
+ * @param str String to test.
+ * @returns `true` if the given string is a glob, otherwise `false`
+ */
 export function isGlob(str: string): boolean {
   const chars: Record<string, string> = { "{": "}", "(": ")", "[": "]" };
   const regex =
