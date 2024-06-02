@@ -1,3 +1,7 @@
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// Copyright (c) 2014 Jameson Little. MIT License.
+// This module is browser compatible.
+
 /**
  * common code for base32 and base32hex encodings.
  */

@@ -2,7 +2,7 @@
 // Copyright (c) 2014 Jameson Little. MIT License.
 // This module is browser compatible.
 
-import { decode, encode } from "./utils.ts";
+import { decode, encode } from "./_utils.ts";
 
 /**
  * Utilities for
@@ -20,7 +20,7 @@ import { decode, encode } from "./utils.ts";
  * assertEquals(encodeBase32Hex("foobar"), "CPNMUOJ1E8======");
  *
  * assertEquals(
- *   decodeBase32("CPNMUOJ1E8======"),
+ *   decodeBase32Hex("CPNMUOJ1E8======"),
  *   new TextEncoder().encode("foobar")
  * );
  * ```
@@ -42,11 +42,11 @@ lookup.forEach((c, i) => (revLookup[c.charCodeAt(0)] = i));
  *
  * @example Usage
  * ```ts
- * import { decodeBase32hex } from "@std/encoding/base32hex";
+ * import { decodeBase32Hex } from "@std/encoding/base32hex";
  * import { assertEquals } from "@std/assert/assert-equals";
  *
  * assertEquals(
- *   decodeBase32("GZRTMMDDGA======"),
+ *   decodeBase32Hex("GZRTMMDDGA======"),
  *   new TextEncoder().encode("6c60c0"),
  * );
  * ```
@@ -65,10 +65,10 @@ export function decodeBase32Hex(b32: string): Uint8Array {
  *
  * @example Usage
  * ```ts
- * import { encodeBase32hex } from "@std/encoding/base32hex";
+ * import { encodeBase32Hex } from "@std/encoding/base32hex";
  * import { assertEquals } from "@std/assert/assert-equals";
  *
- * assertEquals(encodeBase32hex("6c60c0"), "GZRTMMDDGA======");
+ * assertEquals(encodeBase32Hex("6c60c0"), "GZRTMMDDGA======");
  * ```
  */
 export function encodeBase32Hex(
