@@ -2,7 +2,7 @@
 // This module is browser compatible.
 
 import type { GlobOptions } from "./_common/glob_to_reg_exp.ts";
-import { isWindows, type OSType } from "./_os.ts";
+import { isWindows } from "./_os.ts";
 
 import { globToRegExp as posixGlobToRegExp } from "./posix/glob_to_regexp.ts";
 import {
@@ -11,9 +11,7 @@ import {
 
 export type { GlobOptions };
 
-export type GlobToRegExpOptions = GlobOptions & {
-  os?: OSType;
-};
+export type GlobToRegExpOptions = GlobOptions;
 
 /** Convert a glob string to a regular expression.
  *
@@ -74,7 +72,7 @@ export function globToRegExp(
   glob: string,
   options: GlobToRegExpOptions = {},
 ): RegExp {
-  return options.os === "windows" || (!options.os && isWindows)
+  return isWindows
     ? windowsGlobToRegExp(glob, options)
     : posixGlobToRegExp(glob, options);
 }
