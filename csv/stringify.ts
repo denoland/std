@@ -189,16 +189,10 @@ export class StringifyError extends Error {
    * Construct a new instance.
    *
    * @example Usage
-   * ```ts
-   * import { stringify, StringifyError } from "@std/csv/stringify";
+   * ```ts no-eval
+   * import { StringifyError } from "@std/csv/stringify";
    *
-   * try {
-   *   stringify([{ a: 1 }, { a: 2 }], { separator: "\r\n" });
-   * } catch (error) {
-   *   if (error instanceof StringifyError) {
-   *     console.error(error.message);
-   *   }
-   * }
+   * throw new StringifyError("An error occurred");
    * ```
    *
    * @param message The error message.

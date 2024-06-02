@@ -286,16 +286,10 @@ export class ParseError extends SyntaxError {
    * Constructs a new instance.
    *
    * @example Usage
-   * ```ts
-   * import { parse, ParseError } from "@std/csv/parse";
+   * ```ts no-eval
+   * import { ParseError } from "@std/csv/parse";
    *
-   * try {
-   *   parse(`a "word","b"`);
-   * } catch (error) {
-   *   if (error instanceof ParseError) {
-   *     console.error(error.message);
-   *   }
-   * }
+   * throw new ParseError(1, 2, 3, "error message");
    * ```
    *
    * @param start Line where the record starts
