@@ -107,7 +107,7 @@ Deno.test({
     assertThrows(
       () => decodeBase32("OOOO=="),
       Error,
-      "Invalid string. Length must be a multiple of 8"
+      "Invalid string. Length must be a multiple of 8",
     );
   },
 });
@@ -118,7 +118,7 @@ Deno.test({
     assertThrows(
       () => decodeBase32("5HXR334AQYAAAA=="),
       Error,
-      "Invalid pad length"
+      "Invalid pad length",
     );
   },
 });

@@ -13,7 +13,7 @@ import { decode, encode } from "./_utils.ts";
  *
  * This module is browser compatible.
  *
- * ```ts no-eval
+ * ```ts
  * import { encodeBase32Hex, decodeBase32Hex } from "@std/encoding/base32hex";
  * import { assertEquals } from "@std/assert/assert-equals";
  *
@@ -41,7 +41,7 @@ lookup.forEach((c, i) => (revLookup[c.charCodeAt(0)] = i));
  * @returns The decoded data.
  *
  * @example Usage
- * ```ts no-eval
+ * ```ts
  * import { decodeBase32Hex } from "@std/encoding/base32hex";
  * import { assertEquals } from "@std/assert/assert-equals";
  *
@@ -72,7 +72,7 @@ export function decodeBase32Hex(b32: string): Uint8Array {
  * ```
  */
 export function encodeBase32Hex(
-  data: ArrayBuffer | Uint8Array | string
+  data: ArrayBuffer | Uint8Array | string,
 ): string {
   return encode(data, lookup);
 }
