@@ -6,7 +6,7 @@ import { levenshteinDistance } from "./levenshtein_distance.ts";
 const getWordDistance = levenshteinDistance;
 
 /**
- * Sort based on word similarity
+ * Sort based on word similarity.
  *
  * @param givenWord The string to measure distance against.
  * @param options An options bag containing a `caseSensitive` flag indicating
@@ -16,12 +16,17 @@ const getWordDistance = levenshteinDistance;
  * similar, or `0` if they are equally similar.
  *
  * @example Usage
+ *
+ * Most-similar words will be at the start of the array.
+ *
  * ```ts
  * import { compareSimilarity } from "@std/text/compare-similarity";
- * const words = ["hi", "hello", "help"];
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
- * // words most-similar to "hep" will be at the front
- * words.sort(compareSimilarity("hep"));
+ * const words = ["hi", "hello", "help"];
+ * const sortedWords = words.sort(compareSimilarity("hep"));
+ *
+ * assertEquals(sortedWords, ["help", "hi", "hello"]);
  * ```
  * @note
  * the ordering of words may change with version-updates

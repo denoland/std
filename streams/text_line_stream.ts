@@ -48,22 +48,20 @@ export interface TextLineStreamOptions {
  * );
  * ```
  *
- * @example allowCR: true
+ * @example Allow splitting by `\r`
+ *
  * ```ts
  * import { TextLineStream } from "@std/streams/text-line-stream";
  * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const stream = ReadableStream.from([
- *   "CR\rLF",
- *   "\nCRLF\r\ndone",
- * ]);
+ *  "CR\rLF",
+ *  "\nCRLF\r\ndone",
+ * ]).pipeThrough(new TextLineStream({ allowCR: true }));
  *
- * const lineStream = stream.pipeThrough(new TextLineStream({ allowCR: true }));
+ * const lines = await Array.fromAsync(stream);
  *
- * assertEquals(
- *   await Array.fromAsync(lineStream),
- *   ["CR", "LF", "CRLF", "done"],
- * );
+ * assertEquals(lines, ["CR", "LF", "CRLF", "done"]);
  * ```
  */
 export class TextLineStream extends TransformStream<string, string> {
@@ -77,15 +75,32 @@ export class TextLineStream extends TransformStream<string, string> {
    * @example No parameters
    * ```ts
    * import { TextLineStream } from "@std/streams/text-line-stream";
+   * import { assertEquals } from "@std/assert/assert-equals";
    *
-   * const textLineStream = new TextLineStream();
+   * const stream = ReadableStream.from([
+   *  "Hello,\n",
+   *   "world!\n",
+   * ]).pipeThrough(new TextLineStream());
+   *
+   * const lines = await Array.fromAsync(stream);
+   *
+   * assertEquals(lines, ["Hello,", "world!"]);
    * ```
    *
-   * @example allowCR = true
+   * @example Allow splitting by `\r`
+   *
    * ```ts
    * import { TextLineStream } from "@std/streams/text-line-stream";
+   * import { assertEquals } from "@std/assert/assert-equals";
    *
-   * const textLineStream = new TextLineStream({ allowCR: true });
+   * const stream = ReadableStream.from([
+   *  "CR\rLF",
+   *  "\nCRLF\r\ndone",
+   * ]).pipeThrough(new TextLineStream({ allowCR: true }));
+   *
+   * const lines = await Array.fromAsync(stream);
+   *
+   * assertEquals(lines, ["CR", "LF", "CRLF", "done"]);
    * ```
    */
   constructor(options: TextLineStreamOptions = { allowCR: false }) {
