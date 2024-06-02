@@ -9,11 +9,13 @@ import {
   globToRegExp as windowsGlobToRegExp,
 } from "./windows/glob_to_regexp.ts";
 
-export type { GlobOptions };
+export type { GlobOptions, OSType };
 
+/** Options for {@linkcode globToRegExp}. */
 export type GlobToRegExpOptions = GlobOptions;
 
-/** Convert a glob string to a regular expression.
+/**
+ * Converts a glob string to a regular expression.
  *
  * Tries to match bash glob expansion as closely as possible.
  *
@@ -67,7 +69,24 @@ export type GlobToRegExpOptions = GlobOptions;
  *   look-ahead followed by a wildcard. This means that `!(foo).js` will wrongly
  *   fail to match `foobar.js`, even though `foobar` is not `foo`. Effectively,
  *   `!(foo|bar)` is treated like `!(@(foo|bar)*)`. This will work correctly if
- *   the group occurs not nested at the end of the segment. */
+ *   the group occurs not nested at the end of the segment.
+ *
+ * @example Usage
+ * ```ts
+ * import { globToRegExp } from "@std/path/glob-to-regexp";
+ * import { assertEquals } from "@std/assert/assert-equals";
+ *
+ * if (Deno.build.os === "windows") {
+ *   assertEquals(globToRegExp("*.js"), /^[^\\/]*\.js(?:\\|\/)*$/);
+ * } else {
+ *   assertEquals(globToRegExp("*.js"), /^[^/]*\.js\/*$/);
+ * }
+ * ```
+ *
+ * @param glob Glob string to convert.
+ * @param options Conversion options.
+ * @returns The regular expression equivalent to the glob.
+ */
 export function globToRegExp(
   glob: string,
   options: GlobToRegExpOptions = {},

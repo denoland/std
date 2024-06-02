@@ -12,7 +12,18 @@ import {
 
 /**
  * Return the directory path of a `path`.
- * @param path - path to extract the directory from.
+ *
+ * @example Usage
+ * ```ts
+ * import { dirname } from "@std/path/windows/dirname";
+ * import { assertEquals } from "@std/assert/assert-equals";
+ *
+ * const dir = dirname("C:\\foo\\bar\\baz.ext");
+ * assertEquals(dir, "C:\\foo\\bar");
+ * ```
+ *
+ * @param path The path to get the directory from.
+ * @returns The directory path.
  */
 export function dirname(path: string): string {
   assertArg(path);

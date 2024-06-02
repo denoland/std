@@ -38,12 +38,16 @@ import * as _windows from "./windows/mod.ts";
 import * as _posix from "./posix/mod.ts";
 
 /**
+ * Module for working with Windows file paths.
+ *
  * @deprecated This will be removed in 1.0.0. Import from
  * {@link https://jsr.io/@std/path/doc/windows/~ | @std/path/windows} instead.
  */
 export const win32: typeof _windows = _windows;
 
 /**
+ * Module for working with POSIX file paths.
+ *
  * @deprecated This will be removed in 1.0.0. Import from
  * {@link https://jsr.io/@std/path/doc/posix/~ | @std/path/posix} instead.
  */
