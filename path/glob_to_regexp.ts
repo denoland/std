@@ -9,7 +9,7 @@ import {
   globToRegExp as windowsGlobToRegExp,
 } from "./windows/glob_to_regexp.ts";
 
-export type { GlobOptions, OSType };
+export type { GlobOptions };
 
 /** Options for {@linkcode globToRegExp}. */
 export type GlobToRegExpOptions = GlobOptions;
