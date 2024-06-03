@@ -304,45 +304,39 @@ export interface ParseOptions extends ReadOptions {
  * Csv parse helper to manipulate data.
  * Provides an auto/custom mapper for columns.
  *
- * @example
+ * @example Usage
  * ```ts
  * import { parse } from "@std/csv/parse";
+ * import { assertEquals } from "@std/assert/assert-equals";
+ *
  * const string = "a,b,c\nd,e,f";
  *
- * console.log(
- *   await parse(string, {
- *     skipFirstRow: false,
- *   }),
- * );
- * // output:
- * // [["a", "b", "c"], ["d", "e", "f"]]
+ * assertEquals(parse(string), [["a", "b", "c"], ["d", "e", "f"]]);
  * ```
  *
- * @param input Input to parse.
- * @returns If you don't provide `opt.skipFirstRow` and `opt.columns`, it returns `string[][]`.
- *   If you provide `opt.skipFirstRow` or `opt.columns`, it returns `Record<string, unknown>[]`.
+ * @param input The input to parse.
+ * @returns The parsed data.
  */
 export function parse(input: string): string[][];
 /**
  * Csv parse helper to manipulate data.
  * Provides an auto/custom mapper for columns.
  *
- * @example
+ * @example Usage
  * ```ts
  * import { parse } from "@std/csv/parse";
+ * import { assertEquals } from "@std/assert/assert-equals";
+ *
  * const string = "a,b,c\nd,e,f";
  *
- * console.log(
- *   await parse(string, {
- *     skipFirstRow: false,
- *   }),
- * );
- * // output:
- * // [["a", "b", "c"], ["d", "e", "f"]]
+ * assertEquals(parse(string, { skipFirstRow: false }), [["a", "b", "c"], ["d", "e", "f"]]);
+ * assertEquals(parse(string, { skipFirstRow: true }), [{ a: "d", b: "e", c: "f" }]);
+ * assertEquals(parse(string, { columns: ["x", "y", "z"] }), [{ x: "a", y: "b", z: "c" }, { x: "d", y: "e", z: "f" }]);
  * ```
  *
- * @param input Input to parse.
- * @param opt options of the parser.
+ * @typeParam T The options' type for parsing.
+ * @param input The input to parse.
+ * @param opt The options for parsing.
  * @returns If you don't provide `opt.skipFirstRow` and `opt.columns`, it returns `string[][]`.
  *   If you provide `opt.skipFirstRow` or `opt.columns`, it returns `Record<string, unknown>[]`.
  */

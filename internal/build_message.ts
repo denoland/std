@@ -88,7 +88,7 @@ export interface BuildMessageOptions {
  * @returns An array of strings representing the built message.
  *
  * @example Usage
- * ```ts
+ * ```ts no-assert
  * import { diffStr, buildMessage } from "@std/internal";
  *
  * const diffResult = diffStr("Hello, world!", "Hello, world");

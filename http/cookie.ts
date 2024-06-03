@@ -197,12 +197,13 @@ function validateDomain(domain: string) {
  * @example Usage
  * ```ts
  * import { getCookies } from "@std/http/cookie";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const headers = new Headers();
  * headers.set("Cookie", "full=of; tasty=chocolate");
  *
  * const cookies = getCookies(headers);
- * console.log(cookies); // { full: "of", tasty: "chocolate" }
+ * assertEquals(cookies, { full: "of", tasty: "chocolate" });
  * ```
  *
  * @param headers The headers instance to get cookies from
@@ -229,17 +230,16 @@ export function getCookies(headers: Headers): Record<string, string> {
  *
  * @example Usage
  * ```ts
- * import {
- *   Cookie,
- *   setCookie,
- * } from "@std/http/cookie";
+ * import { Cookie, setCookie } from "@std/http/cookie";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const headers = new Headers();
  * const cookie: Cookie = { name: "Space", value: "Cat" };
  * setCookie(headers, cookie);
  *
  * const cookieHeader = headers.get("set-cookie");
- * console.log(cookieHeader); // Space=Cat
+ *
+ * assertEquals(cookieHeader, "Space=Cat");
  * ```
  *
  * @param headers The headers instance to set the cookie to
@@ -263,12 +263,14 @@ export function setCookie(headers: Headers, cookie: Cookie) {
  * @example Usage
  * ```ts
  * import { deleteCookie } from "@std/http/cookie";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const headers = new Headers();
  * deleteCookie(headers, "deno");
  *
  * const cookieHeader = headers.get("set-cookie");
- * console.log(cookieHeader); // deno=; Expires=Thus, 01 Jan 1970 00:00:00 GMT
+ *
+ * assertEquals(cookieHeader, "deno=; Expires=Thu, 01 Jan 1970 00:00:00 GMT");
  * ```
  *
  * @param headers The headers instance to delete the cookie from
@@ -379,6 +381,7 @@ function parseSetCookie(value: string): Cookie | null {
  * @example Usage
  * ```ts
  * import { getSetCookies } from "@std/http/cookie";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const headers = new Headers([
  *   ["Set-Cookie", "lulu=meow; Secure; Max-Age=3600"],
@@ -386,7 +389,13 @@ function parseSetCookie(value: string): Cookie | null {
  * ]);
  *
  * const cookies = getSetCookies(headers);
- * console.log(cookies); // [{ name: "lulu", value: "meow", secure: true, maxAge: 3600 }, { name: "booya", value: "kahsa", httpOnly: true, path: "/ }]
+ *
+ * assertEquals(cookies[0], {
+ *   name: "lulu",
+ *   value: "meow",
+ *   secure: true,
+ *   maxAge: 3600
+ * });
  * ```
  *
  * @param headers The headers instance to get set-cookies from

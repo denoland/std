@@ -14,7 +14,7 @@
  * {@linkcode dayOfYear} returns the number of the day in the year in the local
  * timezone. {@linkcode dayOfYearUtc} does the same but in UTC time.
  *
- * ```ts
+ * ```ts no-assert
  * import { dayOfYear } from "@std/datetime/day-of-year";
  *
  * dayOfYear(new Date("2019-03-11T03:24:00")); // 70
@@ -25,7 +25,7 @@
  * {@linkcode difference} calculates the difference of the 2 given dates in
  * various units.
  *
- * ```ts
+ * ```ts no-assert
  * import { difference } from "@std/datetime/difference";
  *
  * const date0 = new Date("2018-05-14");
@@ -49,7 +49,7 @@
  *
  * {@linkcode format} formats a date to a string with the specified format.
  *
- * ```ts
+ * ```ts no-assert
  * import { format } from "@std/datetime/format";
  *
  * const date = new Date(2019, 0, 20, 16, 34, 23, 123);
@@ -66,7 +66,7 @@
  * {@linkcode isLeap} returns whether the given year is a leap year.
  * {@linkcode isUtcLeap} does the same but in UTC time.
  *
- * ```ts
+ * ```ts no-assert
  * import { isLeap } from "@std/datetime/is-leap";
  *
  * isLeap(new Date("1970-01-02")); // false
@@ -82,7 +82,7 @@
  *
  * {@linkcode parse} parses a date string using the specified format string.
  *
- * ```ts
+ * ```ts no-assert
  * import { parse } from "@std/datetime/parse";
  *
  * parse("20-01-2019", "dd-MM-yyyy"); // 2019-01-19T13:00:00.000Z
@@ -97,7 +97,7 @@
  * {@linkcode weekOfYear} returns the number of the week in the year in the local
  * timezone.
  *
- * ```ts
+ * ```ts no-assert
  * import { weekOfYear } from "@std/datetime/week-of-year";
  *
  * weekOfYear(new Date("2020-12-28T03:24:00")); // 53

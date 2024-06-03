@@ -33,6 +33,7 @@ const ENTRY_POINTS = [
   "../cli/mod.ts",
   "../crypto/mod.ts",
   "../collections/mod.ts",
+  "../csv/mod.ts",
   "../data_structures/mod.ts",
   "../datetime/mod.ts",
   "../encoding/mod.ts",
@@ -47,6 +48,9 @@ const ENTRY_POINTS = [
   "../internal/mod.ts",
   "../jsonc/mod.ts",
   "../media_types/mod.ts",
+  "../path/mod.ts",
+  "../path/posix/mod.ts",
+  "../path/windows/mod.ts",
   "../semver/mod.ts",
   "../streams/mod.ts",
   "../text/mod.ts",
@@ -57,6 +61,7 @@ const ENTRY_POINTS = [
 ] as const;
 
 const TS_SNIPPET = /```ts[\s\S]*?```/g;
+const ASSERTION_IMPORT = /import \{.*\} from "@std\/assert(?:\/.*)?";/gm;
 const NEWLINE = "\n";
 const diagnostics: DocumentError[] = [];
 const snippetPromises: Promise<void>[] = [];
@@ -194,9 +199,17 @@ function assertSnippetsWork(
     }
   }
   for (let snippet of snippets) {
-    if (snippet.split(NEWLINE)[0]?.includes("no-eval")) continue;
+    const delim = snippet.split(NEWLINE)[0];
+    if (delim?.includes("no-eval")) continue;
     // Trim the code block delimiters
     snippet = snippet.split(NEWLINE).slice(1, -1).join(NEWLINE);
+    if (!delim?.includes("no-assert")) {
+      assert(
+        snippet.match(ASSERTION_IMPORT) !== null,
+        "Snippet must contain assertion from '@std/assert'",
+        document,
+      );
+    }
     snippetPromises.push(assertSnippetEvals(snippet, document));
   }
 }

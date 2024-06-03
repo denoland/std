@@ -27,7 +27,7 @@ export interface WritableStreamFromWriterOptions {
  * @returns A `WritableStream` of `Uint8Array`s.
  *
  * @example Convert `Deno.stdout` into a writable stream
- * ```ts
+ * ```ts no-eval no-assert
  * // Note that you can directly get the writer from `Deno.stdout` by
  * // `Deno.stdout.writable`. This example is just for demonstration purposes;
  * // definitely not a recommended way.

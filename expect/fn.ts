@@ -29,8 +29,8 @@ import { MOCK_SYMBOL, type MockCall } from "./_mock_util.ts";
  * @param stubs - functions to be used as stubs for different calls.
  * @returns A mock function that keeps track of calls and returns values based on the provided stubs.
  *
- * @example basic usage
- * ```ts
+ * @example Usage
+ * ```ts no-assert
  * import { fn, expect } from "@std/expect";
  *
  * Deno.test("example", () => {

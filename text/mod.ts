@@ -8,8 +8,9 @@
  *
  * ```ts
  * import { toCamelCase } from "@std/text/case";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
- * console.log(toCamelCase("snake_case")); // "snakeCase"
+ * assertEquals(toCamelCase("snake_case"), "snakeCase");
  * ```
  *
  * Or for comparing strings:

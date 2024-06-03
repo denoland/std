@@ -22,25 +22,27 @@ function isYearNumberALeapYear(yearNumber: number): boolean {
  * @example Basic usage
  * ```ts
  * import { isLeap } from "@std/datetime/is-leap";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
- * isLeap(new Date("1970-01-02")); // false
+ * assertEquals(isLeap(new Date("1970-01-02")), false);
  *
- * isLeap(1970); // false
+ * assertEquals(isLeap(1970), false);
  *
- * isLeap(new Date("1972-01-02")); // true
+ * assertEquals(isLeap(new Date("1972-01-02")), true);
  *
- * isLeap(1972); // true
+ * assertEquals(isLeap(1972), true);
  * ```
  *
  * @example Accounting for timezones
- * ```ts
+ * ```ts no-assert
  * import { isLeap } from "@std/datetime/is-leap";
  *
+ *  // True if the local timezone is GMT+0; false if the local timezone is GMT-1
  * isLeap(new Date("2000-01-01"));
- * // true if the local timezone is GMT+0; false if the local timezone is GMT-1
  *
+ * // True regardless of the local timezone
  * isLeap(2000);
- * // true regardless of the local timezone
+ *
  * ```
  */
 export function isLeap(year: Date | number): boolean {
@@ -61,14 +63,15 @@ export function isLeap(year: Date | number): boolean {
  * @example Basic usage
  * ```ts
  * import { isUtcLeap } from "@std/datetime/is-leap";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
- * isUtcLeap(new Date("2000-01-01")); // true
+ * assertEquals(isUtcLeap(new Date("2000-01-01")), true);
  *
- * isUtcLeap(new Date("December 31, 1999 23:59:59 GMT-01:00")); // true
+ * assertEquals(isUtcLeap(new Date("December 31, 1999 23:59:59 GMT-01:00")), true);
  *
- * isUtcLeap(2000); // true
+ * assertEquals(isUtcLeap(2000), true);
  *
- * isUtcLeap(1999); // false
+ * assertEquals(isUtcLeap(1999), false);
  * ```
  */
 export function isUtcLeap(year: Date | number): boolean {

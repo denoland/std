@@ -7,16 +7,17 @@ import { assert } from "@std/assert/assert";
 const getWordDistance = levenshteinDistance;
 
 /**
- * get most-similar word
+ * The the most similar string from an array of strings.
  *
  * @example Usage
  * ```ts
  * import { closestString } from "@std/text/closest-string";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
- * const possibleWords: string[] = ["length", "size", "blah", "help"];
+ * const possibleWords = ["length", "size", "blah", "help"];
+ * const suggestion = closestString("hep", possibleWords);
  *
- * // case-insensitive by default
- * const word = closestString("hep", possibleWords);
+ * assertEquals(suggestion, "help");
  * ```
  *
  * @param givenWord The string to measure distance against

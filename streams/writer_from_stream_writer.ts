@@ -12,7 +12,7 @@ export type { Writer };
  * @returns A `Writer` that writes to the `WritableStreamDefaultWriter`.
  *
  * @example Read from a file and write to stdout using a writable stream
- * ```ts
+ * ```ts no-eval no-assert
  * import { copy } from "@std/io/copy";
  * import { writerFromStreamWriter } from "@std/streams/writer-from-stream-writer";
  *
