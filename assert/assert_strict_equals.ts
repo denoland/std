@@ -4,7 +4,7 @@ import { buildMessage, diff, diffStr, format, red } from "@std/internal";
 import { AssertionError } from "./assertion_error.ts";
 
 /**
- * Make an assertion that `actual` and `expected` are equal using
+ * Make an assertion that `actual` and `expected` are strictly equal, using
  * {@linkcode Object.is} for equality comparison. If not, then throw.
  *
  * @example Usage
