@@ -23,7 +23,7 @@ export interface CsvStringifyStreamOptions {
  * Convert each chunk to a CSV record.
  *
  * @example Usage
- * ```ts
+ * ```ts no-assert no-eval
  * import { CsvStringifyStream } from "@std/csv/csv-stringify-stream";
  *
  * const path = await Deno.makeTempFile();
@@ -53,7 +53,7 @@ export class CsvStringifyStream<TOptions extends CsvStringifyStreamOptions>
    * Construct a new instance.
    *
    * @example Usage
-   * ```ts
+   * ```ts no-eval no-assert
    * import { CsvStringifyStream } from "@std/csv/csv-stringify-stream";
    *
    * const path = await Deno.makeTempFile();

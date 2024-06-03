@@ -219,12 +219,13 @@ function runeCount(s: string): number {
  * @example Usage
  * ```ts
  * import { parse, ParseError } from "@std/csv/parse";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * try {
  *   parse(`a "word","b"`);
  * } catch (error) {
  *   if (error instanceof ParseError) {
- *     console.error(error.message);
+ *     assertEquals(error.message, `parse error on line 1, column 2: bare " in non-quoted-field`);
  *   }
  * }
  * ```
@@ -234,14 +235,15 @@ export class ParseError extends SyntaxError {
    * Line where the record starts.
    *
    * @example Usage
-   * ```ts
+   * ```ts no-assert
    * import { parse, ParseError } from "@std/csv/parse";
+   * import { assertEquals } from "@std/assert/assert-equals";
    *
    * try {
    *   parse(`a "word","b"`);
    * } catch (error) {
    *   if (error instanceof ParseError) {
-   *     console.error(error.startLine);
+   *     assertEquals(error.startLine, 1);
    *   }
    * }
    * ```
@@ -253,12 +255,13 @@ export class ParseError extends SyntaxError {
    * @example Usage
    * ```ts
    * import { parse, ParseError } from "@std/csv/parse";
+   * import { assertEquals } from "@std/assert/assert-equals";
    *
    * try {
    *   parse(`a "word","b"`);
    * } catch (error) {
    *   if (error instanceof ParseError) {
-   *     console.error(error.line);
+   *     assertEquals(error.line, 1);
    *   }
    * }
    * ```
@@ -268,14 +271,15 @@ export class ParseError extends SyntaxError {
    * Column (rune index) where the error occurred.
    *
    * @example Usage
-   * ```ts
+   * ```ts no-assert
    * import { parse, ParseError } from "@std/csv/parse";
+   * import { assertEquals } from "@std/assert/assert-equals";
    *
    * try {
    *   parse(`a "word","b"`);
    * } catch (error) {
    *   if (error instanceof ParseError) {
-   *     console.error(error.column);
+   *     assertEquals(error.column, 2);
    *   }
    * }
    * ```
@@ -286,10 +290,17 @@ export class ParseError extends SyntaxError {
    * Constructs a new instance.
    *
    * @example Usage
-   * ```ts no-eval
-   * import { ParseError } from "@std/csv/parse";
+   * ```ts
+   * import { parse, ParseError } from "@std/csv/parse";
+   * import { assertEquals } from "@std/assert/assert-equals";
    *
-   * throw new ParseError(1, 2, 3, "error message");
+   * try {
+   *   parse(`a "word","b"`);
+   * } catch (error) {
+   *   if (error instanceof ParseError) {
+   *     assertEquals(error.message, `parse error on line 1, column 2: bare " in non-quoted-field`);
+   *   }
+   * }
    * ```
    *
    * @param start Line where the record starts

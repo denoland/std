@@ -67,7 +67,7 @@ export type RowType<T> = T extends undefined ? string[]
  * {@link https://www.rfc-editor.org/rfc/rfc4180.html | RFC 4180}.
  *
  * @example Usage
- * ```ts
+ * ```ts no-assert
  * import { CsvParseStream } from "@std/csv/csv-parse-stream";
  *
  * const source = ReadableStream.from([
@@ -98,7 +98,7 @@ export class CsvParseStream<
   /** Construct a new instance.
    *
    * @example Usage
-   * ```ts
+   * ```ts no-assert
    * import { CsvParseStream } from "@std/csv/csv-parse-stream";
    *
    * const source = ReadableStream.from([
@@ -196,7 +196,7 @@ export class CsvParseStream<
    * The instance's {@linkcode ReadableStream}.
    *
    * @example Usage
-   * ```ts
+   * ```ts no-assert
    * import { CsvParseStream } from "@std/csv/csv-parse-stream";
    *
    * const source = ReadableStream.from([
@@ -222,7 +222,7 @@ export class CsvParseStream<
    * The instance's {@linkcode WritableStream}.
    *
    * @example Usage
-   * ```ts
+   * ```ts no-assert
    * import { CsvParseStream } from "@std/csv/csv-parse-stream";
    *
    * const source = ReadableStream.from([

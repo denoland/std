@@ -32,7 +32,7 @@
  *
  * results in the fields
  *
- * ```ts
+ * ```ts no-assert
  * [`normal string`, `quoted-field`]
  * ```
  *
@@ -55,7 +55,7 @@
  *
  * results in
  *
- * ```ts
+ * ```ts no-assert
  * [`Multi-line
  * field`, `comma is ,`]
  * ```

@@ -172,7 +172,7 @@ function normalizeColumn(column: Column): NormalizedColumn {
  * Error thrown in {@linkcode stringify}.
  *
  * @example Usage
- * ```ts
+ * ```ts no-assert
  * import { stringify, StringifyError } from "@std/csv/stringify";
  *
  * try {
