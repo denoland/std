@@ -338,14 +338,37 @@ export function parsePathname(
 export function validTarStreamOptions(
   options: Partial<TarStreamOptions>,
 ): boolean {
-  return !!(options.mode && !/^[0-7+$]/.test(options.mode) ||
-    options.uid && !/^[0-7+$]/.test(options.uid) ||
-    options.gid && !/^[0-7+$]/.test(options.gid) ||
-    options.mtime && options.mtime.toString() === "NaN" ||
+  if (
+    options.mode && (options.mode.length > 6 || !/^[0-7]*$/.test(options.mode))
+  ) return false;
+  if (
+    options.uid && (options.uid.length > 6 || !/^[0-7]*$/.test(options.uid))
+  ) return false;
+  if (
+    options.gid && (options.gid.length > 6 || !/^[0-7]*$/.test(options.gid))
+  ) return false;
+  if (
+    options.mtime != undefined &&
+    (options.mtime.toString(8).length > 11 ||
+      options.mtime.toString() === "NaN")
+  ) return false;
+  if (
+    options.uname &&
     // deno-lint-ignore no-control-regex
-    options.uname && /^[\x00-\x7F]*$/.test(options.uname) ||
+    (options.uname.length > 32 || !/^[\x00-\x7F]*$/.test(options.uname))
+  ) return false;
+  if (
+    options.gname &&
     // deno-lint-ignore no-control-regex
-    options.gname && /^[\x00-\x7F]*$/.test(options.gname) ||
-    options.devmajor && !/^ [0 - 7 + $] /.test(options.devmajor) ||
-    options.devminor && !/^[0-7+$]/.test(options.devminor));
+    (options.gname.length > 32 || !/^[\x00-\x7F]*$/.test(options.gname))
+  ) return false;
+  if (
+    options.devmajor &&
+    (options.devmajor.length > 8 || !/^[0-7]*$/.test(options.devmajor))
+  ) return false;
+  if (
+    options.devminor &&
+    (options.devminor.length > 8 || !/^[0-7]*$/.test(options.devminor))
+  ) return false;
+  return true;
 }
