@@ -451,14 +451,14 @@ const FLAG_REGEXP =
  * @example Usage
  * ```ts
  * import { parseArgs } from "@std/cli/parse-args";
- * const parsedArgs = parseArgs(Deno.args);
- * ```
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
- * @example Usage
- * ```ts
- * import { parseArgs } from "@std/cli/parse-args";
- * const parsedArgs = parseArgs(["--foo", "--bar=baz", "./quux.txt"]);
- * // parsedArgs: { foo: true, bar: "baz", _: ["./quux.txt"] }
+ * // For proper use, one should use `parseArgs(Deno.args)`
+ * assertEquals(parseArgs(["--foo", "--bar=baz", "./quux.txt"]), {
+ *   foo: true,
+ *   bar: "baz",
+ *   _: ["./quux.txt"],
+ * });
  * ```
  */
 export function parseArgs<

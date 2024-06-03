@@ -9,10 +9,10 @@ import { exponentialBackoffWithJitter } from "./_util.ts";
  * has been reached.
  *
  * @example Usage
- * ```ts
+ * ```ts no-assert no-eval
  * import { RetryError } from "@std/async/retry";
  *
- * const error = new RetryError({ foo: "bar" }, 3);
+ * throw new RetryError({ foo: "bar" }, 3);
  * ```
  */
 export class RetryError extends Error {
@@ -23,10 +23,10 @@ export class RetryError extends Error {
    * @param attempts the number of retry attempts made.
    *
    * @example Usage
-   * ```ts
+   * ```ts no-assert no-eval
    * import { RetryError } from "@std/async/retry";
    *
-   * const error = new RetryError({ foo: "bar" }, 3);
+   * throw new RetryError({ foo: "bar" }, 3);
    * ```
    */
   constructor(cause: unknown, attempts: number) {
@@ -95,7 +95,7 @@ const defaultRetryOptions: Required<RetryOptions> = {
  * When `jitter` is `0`, waits the full backoff time.
  *
  * @example Example configuration 1
- * ```ts
+ * ```ts no-assert
  * import { retry } from "@std/async/retry";
  * const req = async () => {
  *  // some function that throws sometimes
@@ -112,7 +112,7 @@ const defaultRetryOptions: Required<RetryOptions> = {
  * ```
  *
  * @example Example configuration 2
- * ```ts
+ * ```ts no-assert
  * import { retry } from "@std/async/retry";
  * const req = async () => {
  *  // some function that throws sometimes

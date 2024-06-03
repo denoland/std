@@ -13,20 +13,22 @@
  * To use functions for a specific path style regardless of the current OS
  * import the modules from the platform sub directory instead.
  *
- * Example, for `posix`:
+ * Example, for POSIX:
  *
  * ```ts
  * import { fromFileUrl } from "@std/path/posix/from-file-url";
- * const p = fromFileUrl("file:///home/foo");
- * console.log(p); // "/home/foo"
+ * import { assertEquals } from "@std/assert/assert-equals";
+ *
+ * assertEquals(fromFileUrl("file:///home/foo"), "/home/foo");
  * ```
  *
- * or, for `windows`:
+ * Or, for Windows:
  *
  * ```ts
  * import { fromFileUrl } from "@std/path/windows/from-file-url";
- * const p = fromFileUrl("file:///home/foo");
- * console.log(p); // "\\home\\foo"
+ * import { assertEquals } from "@std/assert/assert-equals";
+ *
+ * assertEquals(fromFileUrl("file:///home/foo"), "\\home\\foo");
  * ```
  *
  * This module is browser compatible.

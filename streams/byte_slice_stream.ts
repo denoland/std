@@ -47,14 +47,14 @@ export class ByteSliceStream extends TransformStream<Uint8Array, Uint8Array> {
    * @param end The zero-indexed byte index to stop reading at. Inclusive.
    *
    * @example No parameters
-   * ```ts
+   * ```ts no-assert
    * import { ByteSliceStream } from "@std/streams/byte-slice-stream";
    *
    * const byteSliceStream = new ByteSliceStream();
    * ```
    *
    * @example start = 4, end = 11
-   * ```ts
+   * ```ts no-assert
    * import { ByteSliceStream } from "@std/streams/byte-slice-stream";
    *
    * const byteSliceStream = new ByteSliceStream(4, 11);
