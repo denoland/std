@@ -2,10 +2,10 @@
 import { AssertionError, assertThrows, unreachable } from "./mod.ts";
 
 Deno.test("unreachable()", () => {
-  assertThrows(() => unreachable(), AssertionError, "unreachable");
+  assertThrows(() => unreachable(), AssertionError, "Unreachable.");
   assertThrows(
     () => unreachable("custom message"),
     AssertionError,
-    "custom message",
+    "Unreachable: custom message",
   );
 });
