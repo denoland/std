@@ -1,5 +1,9 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-import { TarStream, type TarStreamInput } from "./tar_stream.ts";
+import {
+  TarStream,
+  type TarStreamInput,
+  validTarStreamOptions,
+} from "./tar_stream.ts";
 import { assertEquals, assertRejects } from "../assert/mod.ts";
 
 Deno.test("TarStream() with default stream", async () => {
@@ -159,4 +163,51 @@ Deno.test("TarStream() with NaN size", async () => {
     Error,
     "Invalid Size Provided! Size cannot exceed 8 GiBs by default or 64 GiBs with sizeExtension set to true.",
   );
+});
+
+Deno.test("validTarStreamOptions()", () => {
+  assertEquals(validTarStreamOptions({}), true);
+
+  assertEquals(validTarStreamOptions({ mode: "" }), true);
+  assertEquals(validTarStreamOptions({ mode: "000" }), true);
+  assertEquals(validTarStreamOptions({ mode: "008" }), false);
+  assertEquals(validTarStreamOptions({ mode: "0000000" }), false);
+
+  assertEquals(validTarStreamOptions({ uid: "" }), true);
+  assertEquals(validTarStreamOptions({ uid: "000" }), true);
+  assertEquals(validTarStreamOptions({ uid: "008" }), false);
+  assertEquals(validTarStreamOptions({ uid: "0000000" }), false);
+
+  assertEquals(validTarStreamOptions({ gid: "" }), true);
+  assertEquals(validTarStreamOptions({ gid: "000" }), true);
+  assertEquals(validTarStreamOptions({ gid: "008" }), false);
+  assertEquals(validTarStreamOptions({ gid: "0000000" }), false);
+
+  assertEquals(validTarStreamOptions({ mtime: 0 }), true);
+  assertEquals(validTarStreamOptions({ mtime: NaN }), false);
+  assertEquals(
+    validTarStreamOptions({ mtime: Math.floor(new Date().getTime() / 1000) }),
+    true,
+  );
+  assertEquals(validTarStreamOptions({ mtime: new Date().getTime() }), false);
+
+  assertEquals(validTarStreamOptions({ uname: "" }), true);
+  assertEquals(validTarStreamOptions({ uname: "abcdef" }), true);
+  assertEquals(validTarStreamOptions({ uname: "å-abcdef" }), false);
+  assertEquals(validTarStreamOptions({ uname: "a".repeat(100) }), false);
+
+  assertEquals(validTarStreamOptions({ gname: "" }), true);
+  assertEquals(validTarStreamOptions({ gname: "abcdef" }), true);
+  assertEquals(validTarStreamOptions({ gname: "å-abcdef" }), false);
+  assertEquals(validTarStreamOptions({ gname: "a".repeat(100) }), false);
+
+  assertEquals(validTarStreamOptions({ devmajor: "" }), true);
+  assertEquals(validTarStreamOptions({ devmajor: "000" }), true);
+  assertEquals(validTarStreamOptions({ devmajor: "008" }), false);
+  assertEquals(validTarStreamOptions({ devmajor: "000000000" }), false);
+
+  assertEquals(validTarStreamOptions({ devminor: "" }), true);
+  assertEquals(validTarStreamOptions({ devminor: "000" }), true);
+  assertEquals(validTarStreamOptions({ devminor: "008" }), false);
+  assertEquals(validTarStreamOptions({ devminor: "000000000" }), false);
 });
