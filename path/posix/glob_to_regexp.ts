@@ -76,7 +76,7 @@ const constants: GlobConstants = {
  *
  * @example Usage
  * ```ts
- * import { globToRegExp } from "@std/path/glob-to-regexp";
+ * import { globToRegExp } from "@std/path/posix/glob-to-regexp";
  * import { assertEquals } from "@std/assert/assert-equals";
  *
  * assertEquals(globToRegExp("*.js"), /^[^/]*\.js\/*$/);
