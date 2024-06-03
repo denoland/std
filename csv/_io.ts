@@ -235,7 +235,7 @@ export class ParseError extends SyntaxError {
    * Line where the record starts.
    *
    * @example Usage
-   * ```ts no-assert
+   * ```ts
    * import { parse, ParseError } from "@std/csv/parse";
    * import { assertEquals } from "@std/assert/assert-equals";
    *
@@ -271,7 +271,7 @@ export class ParseError extends SyntaxError {
    * Column (rune index) where the error occurred.
    *
    * @example Usage
-   * ```ts no-assert
+   * ```ts
    * import { parse, ParseError } from "@std/csv/parse";
    * import { assertEquals } from "@std/assert/assert-equals";
    *
