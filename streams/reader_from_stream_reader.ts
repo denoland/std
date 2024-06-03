@@ -11,7 +11,7 @@ import type { Reader } from "@std/io/types";
  * @returns A `Reader` that reads from the `streamReader`.
  *
  * @example Copy the response body of a fetch request to the blackhole
- * ```ts
+ * ```ts no-eval no-assert
  * import { copy } from "@std/io/copy";
  * import { readerFromStreamReader } from "@std/streams/reader-from-stream-reader";
  * import { devNull } from "node:os";

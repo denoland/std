@@ -93,7 +93,7 @@ export class Buffer {
    * @returns A `ReadableStream` of the buffer.
    *
    * @example Read the content out of the buffer to stdout
-   * ```ts
+   * ```ts no-assert
    * import { Buffer } from "@std/streams/buffer";
    *
    * const buf = new Buffer();
@@ -117,7 +117,7 @@ export class Buffer {
    * @returns A `WritableStream` of the buffer.
    *
    * @example Write the data from stdin to the buffer
-   * ```ts
+   * ```ts no-assert
    * import { Buffer } from "@std/streams/buffer";
    *
    * const buf = new Buffer();
@@ -134,14 +134,14 @@ export class Buffer {
    * @param ab An optional buffer to use as the initial buffer.
    *
    * @example No initial buffer provided
-   * ```ts
+   * ```ts no-assert
    * import { Buffer } from "@std/streams/buffer";
    *
    * const buf = new Buffer();
    * ```
    *
    * @example With a pre-allocated buffer
-   * ```ts
+   * ```ts no-assert
    * import { Buffer } from "@std/streams/buffer";
    *
    * const arrayBuffer = new ArrayBuffer(8);
@@ -149,7 +149,7 @@ export class Buffer {
    * ```
    *
    * @example From Uint8Array
-   * ```ts
+   * ```ts no-assert
    * import { Buffer } from "@std/streams/buffer";
    *
    * const array = new Uint8Array([0, 1, 2]);
