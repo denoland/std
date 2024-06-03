@@ -4,8 +4,9 @@ import { AssertionError } from "./assertion_error.ts";
 import { format } from "@std/internal/format";
 
 /**
- * Make an assertion that `actual` and `expected` are not strictly equal.
- * If the values are strictly equal then throw.
+ * Make an assertion that `actual` and `expected` are not strictly equal, using
+ * {@linkcode Object.is} for equality comparison. If the values are strictly
+ * equal then throw.
  *
  * @example Usage
  * ```ts no-eval
