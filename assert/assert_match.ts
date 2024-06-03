@@ -1,6 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
-import { AssertionError } from "./assertion_error.ts";
+import { assert } from "./assert.ts";
 
 /**
  * Make an assertion that `actual` match RegExp `expected`. If not
@@ -23,9 +23,7 @@ export function assertMatch(
   expected: RegExp,
   msg?: string,
 ) {
-  if (!expected.test(actual)) {
-    const msgSuffix = msg ? `: ${msg}` : ".";
-    msg = `Expected actual: "${actual}" to match: "${expected}"${msgSuffix}`;
-    throw new AssertionError(msg);
-  }
+  const msgSuffix = msg ? `: ${msg}` : ".";
+  msg = `Expected actual: "${actual}" to match: "${expected}"${msgSuffix}`;
+  assert(expected.test(actual), msg);
 }

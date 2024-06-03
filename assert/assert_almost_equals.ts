@@ -25,7 +25,8 @@ import { AssertionError } from "./assertion_error.ts";
  *
  * @param actual The actual value to compare.
  * @param expected The expected value to compare.
- * @param tolerance The tolerance to consider the values almost equal. The default is one hundred thousandth of a percent of the expected value.
+ * @param tolerance The tolerance to consider the values almost equal. The
+ * default is one hundred thousandth of a percent of the expected value.
  * @param msg The optional message to include in the error.
  */
 export function assertAlmostEquals(
