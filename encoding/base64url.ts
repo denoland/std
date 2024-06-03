@@ -6,8 +6,6 @@
  * {@link https://www.rfc-editor.org/rfc/rfc4648.html#section-5 | base64url}
  * encoding and decoding.
  *
- * This module is browser compatible.
- *
  * @module
  */
 

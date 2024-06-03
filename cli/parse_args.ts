@@ -5,8 +5,6 @@
  * Command line arguments parser based on
  * {@link https://github.com/minimistjs/minimist | minimist}.
  *
- * This module is browser compatible.
- *
  * @example
  * ```ts
  * import { parseArgs } from "@std/cli/parse-args";
