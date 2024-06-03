@@ -23,10 +23,8 @@ export function assertNotMatch(
   expected: RegExp,
   msg?: string,
 ) {
-  if (expected.test(actual)) {
-    const msgSuffix = msg ? `: ${msg}` : ".";
-    msg =
-      `Expected actual: "${actual}" to not match: "${expected}"${msgSuffix}`;
-    throw new AssertionError(msg);
-  }
+  if (!expected.test(actual)) return;
+  const msgSuffix = msg ? `: ${msg}` : ".";
+  msg = `Expected actual: "${actual}" to not match: "${expected}"${msgSuffix}`;
+  throw new AssertionError(msg);
 }
