@@ -122,17 +122,11 @@ export function normalize(path: string): string {
     if (isAbsolute) {
       if (tail.length > 0) return `\\${tail}`;
       else return "\\";
-    } else if (tail.length > 0) {
-      return tail;
-    } else {
-      return "";
     }
+    return tail;
   } else if (isAbsolute) {
     if (tail.length > 0) return `${device}\\${tail}`;
     else return `${device}\\`;
-  } else if (tail.length > 0) {
-    return device + tail;
-  } else {
-    return device;
   }
+  return device + tail;
 }
