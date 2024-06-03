@@ -1,6 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
-import { assert } from "./assert.ts";
+import { AssertionError } from "./assertion_error.ts";
 
 /**
  * Make an assertion that actual includes expected. If not
@@ -23,7 +23,8 @@ export function assertStringIncludes(
   expected: string,
   msg?: string,
 ) {
+  if (actual.includes(expected)) return;
   const msgSuffix = msg ? `: ${msg}` : ".";
   msg = `Expected actual: "${actual}" to contain: "${expected}"${msgSuffix}`;
-  assert(actual.includes(expected), msg);
+  throw new AssertionError(msg);
 }

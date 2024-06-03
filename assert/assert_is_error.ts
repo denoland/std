@@ -22,14 +22,14 @@ import { stripAnsiCode } from "@std/internal/styles";
  *
  * @typeParam E The type of the error to assert.
  * @param error The error to assert.
- * @param errorClass The optional error class to assert.
+ * @param ErrorClass The optional error class to assert.
  * @param msgMatches The optional string or RegExp to assert in the error message.
  * @param msg The optional message to display if the assertion fails.
  */
 export function assertIsError<E extends Error = Error>(
   error: unknown,
   // deno-lint-ignore no-explicit-any
-  errorClass?: new (...args: any[]) => E,
+  ErrorClass?: new (...args: any[]) => E,
   msgMatches?: string | RegExp,
   msg?: string,
 ): asserts error is E {
@@ -39,9 +39,9 @@ export function assertIsError<E extends Error = Error>(
       `Expected "error" to be an Error object${msgSuffix}}`,
     );
   }
-  if (errorClass && !(error instanceof errorClass)) {
+  if (ErrorClass && !(error instanceof ErrorClass)) {
     msg =
-      `Expected error to be instance of "${errorClass.name}", but was "${error?.constructor?.name}"${msgSuffix}`;
+      `Expected error to be instance of "${ErrorClass.name}", but was "${error?.constructor?.name}"${msgSuffix}`;
     throw new AssertionError(msg);
   }
   let msgCheck;
