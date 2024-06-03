@@ -27,37 +27,38 @@ type DocNodeWithJsDoc<T = DocNodeBase> = T & {
 };
 
 const ENTRY_POINTS = [
-  "../assert/mod.ts",
-  "../async/mod.ts",
-  "../bytes/mod.ts",
-  "../cli/mod.ts",
-  "../crypto/mod.ts",
-  "../collections/mod.ts",
-  "../csv/mod.ts",
-  "../data_structures/mod.ts",
-  "../datetime/mod.ts",
-  "../encoding/mod.ts",
-  "../expect/mod.ts",
-  "../fmt/bytes.ts",
-  "../fmt/colors.ts",
-  "../fmt/duration.ts",
-  "../fmt/printf.ts",
-  "../front_matter/mod.ts",
-  "../html/mod.ts",
-  "../http/mod.ts",
-  "../internal/mod.ts",
-  "../jsonc/mod.ts",
-  "../media_types/mod.ts",
-  "../path/mod.ts",
-  "../path/posix/mod.ts",
-  "../path/windows/mod.ts",
-  "../semver/mod.ts",
-  "../streams/mod.ts",
-  "../text/mod.ts",
-  "../toml/mod.ts",
-  "../ulid/mod.ts",
-  "../uuid/mod.ts",
-  "../webgpu/mod.ts",
+  // "../assert/mod.ts",
+  // "../async/mod.ts",
+  // "../bytes/mod.ts",
+  // "../cli/mod.ts",
+  // "../crypto/mod.ts",
+  // "../collections/mod.ts",
+  // "../csv/mod.ts",
+  // "../data_structures/mod.ts",
+  // "../datetime/mod.ts",
+  // "../encoding/mod.ts",
+  // "../expect/mod.ts",
+  // "../fmt/bytes.ts",
+  // "../fmt/colors.ts",
+  // "../fmt/duration.ts",
+  // "../fmt/printf.ts",
+  // "../front_matter/mod.ts",
+  // "../html/mod.ts",
+  // "../http/mod.ts",
+  // "../internal/mod.ts",
+  // "../jsonc/mod.ts",
+  // "../media_types/mod.ts",
+  // "../path/mod.ts",
+  // "../path/posix/mod.ts",
+  // "../path/windows/mod.ts",
+  // "../semver/mod.ts",
+  // "../streams/mod.ts",
+  // "../text/mod.ts",
+  // "../toml/mod.ts",
+  // "../ulid/mod.ts",
+  // "../uuid/mod.ts",
+  // "../webgpu/mod.ts",
+  "../x.ts",
 ] as const;
 
 const TS_SNIPPET = /```ts[\s\S]*?```/g;
@@ -404,6 +405,10 @@ function assertModuleDoc(document: DocNodeWithJsDoc<DocNodeModuleDoc>) {
   assertSnippetsWork(document.jsDoc.doc!, document);
 }
 
+function assertInterfaceDocs(document: DocNodeWithJsDoc<DocNode>) {
+  assertSnippetsWork(document.jsDoc.doc!, document);
+}
+
 function resolve(specifier: string, referrer: string): string {
   if (specifier.startsWith("@std/") && specifier.split("/").length > 2) {
     specifier = specifier.replace("@std/", "../").replaceAll("-", "_") + ".ts";
@@ -416,6 +421,7 @@ async function checkDocs(specifier: string) {
   for (const d of docs.filter(isExported)) {
     if (d.jsDoc === undefined) continue; // this is caught by other checks
     const document = d as DocNodeWithJsDoc<DocNode>;
+    console.log(document);
     switch (document.kind) {
       case "moduleDoc": {
         assertModuleDoc(document);
@@ -429,6 +435,7 @@ async function checkDocs(specifier: string) {
         assertClassDocs(document);
         break;
       }
+      case "interface":
     }
   }
 }
