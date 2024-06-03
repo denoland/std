@@ -19,13 +19,10 @@ import { AssertionError } from "./assertion_error.ts";
  * assertEquals("hello", "world"); // Throws
  * ```
  *
- * Note: formatter option is experimental and may be removed in the future.
- *
  * @typeParam T The type of the values to compare. This is usually inferred.
  * @param actual The actual value to compare.
  * @param expected The expected value to compare.
  * @param msg The optional message to display if the assertion fails.
- * @param options The optional object for the assertion.
  */
 export function assertEquals<T>(
   actual: T,
