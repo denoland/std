@@ -57,11 +57,14 @@ Deno.test("retry() waits four times by default", async () => {
 Deno.test(
   "retry() throws if minTimeout is less than maxTimeout",
   async () => {
-    await assertRejects(() =>
-      retry(() => {}, {
-        minTimeout: 1000,
-        maxTimeout: 100,
-      })
+    await assertRejects(
+      () =>
+        retry(() => {}, {
+          minTimeout: 1000,
+          maxTimeout: 100,
+        }),
+      TypeError,
+      "minTimeout is greater than maxTimeout",
     );
   },
 );
@@ -69,10 +72,13 @@ Deno.test(
 Deno.test(
   "retry() throws if maxTimeout is less than 0",
   async () => {
-    await assertRejects(() =>
-      retry(() => {}, {
-        maxTimeout: -1,
-      })
+    await assertRejects(
+      () =>
+        retry(() => {}, {
+          maxTimeout: -1,
+        }),
+      TypeError,
+      "maxTimeout is less than 0",
     );
   },
 );
@@ -80,10 +86,13 @@ Deno.test(
 Deno.test(
   "retry() throws if jitter is bigger than 1",
   async () => {
-    await assertRejects(() =>
-      retry(() => {}, {
-        jitter: 2,
-      })
+    await assertRejects(
+      () =>
+        retry(() => {}, {
+          jitter: 2,
+        }),
+      TypeError,
+      "jitter is greater than 1",
     );
   },
 );
