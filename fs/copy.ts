@@ -4,7 +4,6 @@ import { basename } from "@std/path/basename";
 import { join } from "@std/path/join";
 import { resolve } from "@std/path/resolve";
 import { ensureDir, ensureDirSync } from "./ensure_dir.ts";
-import { assert } from "@std/assert/assert";
 import { getFileInfoType } from "./_get_file_info_type.ts";
 import { toPathString } from "./_to_path_string.ts";
 import { isSubdir } from "./_is_subdir.ts";
@@ -32,6 +31,12 @@ export interface CopyOptions {
 interface InternalCopyOptions extends CopyOptions {
   /** @default {false} */
   isFolder?: boolean;
+}
+
+function assertIsDate(date: Date | null, name: string): asserts date is Date {
+  if (date === null) {
+    throw new ReferenceError(`${name} is unavailable`);
+  }
 }
 
 async function ensureValidCopy(
@@ -99,8 +104,8 @@ async function copyFile(
   await Deno.copyFile(src, dest);
   if (options.preserveTimestamps) {
     const statInfo = await Deno.stat(src);
-    assert(statInfo.atime instanceof Date, `statInfo.atime is unavailable`);
-    assert(statInfo.mtime instanceof Date, `statInfo.mtime is unavailable`);
+    assertIsDate(statInfo.atime, "statInfo.atime");
+    assertIsDate(statInfo.mtime, "statInfo.mtime");
     await Deno.utime(dest, statInfo.atime, statInfo.mtime);
   }
 }
@@ -114,8 +119,8 @@ function copyFileSync(
   Deno.copyFileSync(src, dest);
   if (options.preserveTimestamps) {
     const statInfo = Deno.statSync(src);
-    assert(statInfo.atime instanceof Date, `statInfo.atime is unavailable`);
-    assert(statInfo.mtime instanceof Date, `statInfo.mtime is unavailable`);
+    assertIsDate(statInfo.atime, "statInfo.atime");
+    assertIsDate(statInfo.mtime, "statInfo.mtime");
     Deno.utimeSync(dest, statInfo.atime, statInfo.mtime);
   }
 }
@@ -138,8 +143,8 @@ async function copySymLink(
   }
   if (options.preserveTimestamps) {
     const statInfo = await Deno.lstat(src);
-    assert(statInfo.atime instanceof Date, `statInfo.atime is unavailable`);
-    assert(statInfo.mtime instanceof Date, `statInfo.mtime is unavailable`);
+    assertIsDate(statInfo.atime, "statInfo.atime");
+    assertIsDate(statInfo.mtime, "statInfo.mtime");
     await Deno.utime(dest, statInfo.atime, statInfo.mtime);
   }
 }
@@ -163,8 +168,8 @@ function copySymlinkSync(
 
   if (options.preserveTimestamps) {
     const statInfo = Deno.lstatSync(src);
-    assert(statInfo.atime instanceof Date, `statInfo.atime is unavailable`);
-    assert(statInfo.mtime instanceof Date, `statInfo.mtime is unavailable`);
+    assertIsDate(statInfo.atime, "statInfo.atime");
+    assertIsDate(statInfo.mtime, "statInfo.mtime");
     Deno.utimeSync(dest, statInfo.atime, statInfo.mtime);
   }
 }
@@ -186,8 +191,8 @@ async function copyDir(
 
   if (options.preserveTimestamps) {
     const srcStatInfo = await Deno.stat(src);
-    assert(srcStatInfo.atime instanceof Date, `statInfo.atime is unavailable`);
-    assert(srcStatInfo.mtime instanceof Date, `statInfo.mtime is unavailable`);
+    assertIsDate(srcStatInfo.atime, "statInfo.atime");
+    assertIsDate(srcStatInfo.mtime, "statInfo.mtime");
     await Deno.utime(dest, srcStatInfo.atime, srcStatInfo.mtime);
   }
 
@@ -228,8 +233,8 @@ function copyDirSync(
 
   if (options.preserveTimestamps) {
     const srcStatInfo = Deno.statSync(src);
-    assert(srcStatInfo.atime instanceof Date, `statInfo.atime is unavailable`);
-    assert(srcStatInfo.mtime instanceof Date, `statInfo.mtime is unavailable`);
+    assertIsDate(srcStatInfo.atime, "statInfo.atime");
+    assertIsDate(srcStatInfo.mtime, "statInfo.mtime");
     Deno.utimeSync(dest, srcStatInfo.atime, srcStatInfo.mtime);
   }
 

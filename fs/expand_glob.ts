@@ -6,7 +6,6 @@ import { isAbsolute } from "@std/path/is-absolute";
 import { resolve } from "@std/path/resolve";
 import { SEPARATOR_PATTERN } from "@std/path/constants";
 import { walk, walkSync } from "./walk.ts";
-import { assert } from "@std/assert/assert";
 import { toPathString } from "./_to_path_string.ts";
 import {
   createWalkEntry,
@@ -158,7 +157,9 @@ export async function* expandGlob(
     : absRoot;
   while (segments.length > 0 && !isGlob(segments[0]!)) {
     const seg = segments.shift();
-    assert(seg !== undefined);
+    if (seg === undefined) {
+      throw new ReferenceError("Unexpected undefined segment");
+    }
     fixedRoot = joinGlobs([fixedRoot, seg], globOptions);
   }
 
@@ -316,7 +317,9 @@ export function* expandGlobSync(
     : absRoot;
   while (segments.length > 0 && !isGlob(segments[0]!)) {
     const seg = segments.shift();
-    assert(seg !== undefined);
+    if (seg === undefined) {
+      throw new ReferenceError("Unexpected undefined segment");
+    }
     fixedRoot = joinGlobs([fixedRoot, seg], globOptions);
   }
 
