@@ -270,7 +270,7 @@
  * If you want to know if a version satisfies or does not satisfy a range, use the
  * {@linkcode satisfies} function.
  *
- * This module is browser compatible.
+ *
  *
 
  *

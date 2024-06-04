@@ -25,8 +25,6 @@
  * assertEquals(words.sort(compareSimilarity("hep")), ["help", "hi", "hello"]);
  * ```
  *
- * This module is browser compatible.
- *
  * @module
  */
 

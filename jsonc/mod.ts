@@ -6,8 +6,6 @@
  * module only provides a means of parsing JSONC. JSONC serialization is not
  * yet supported.
  *
- * This module is browser compatible.
- *
  * ```ts
  * import { parse } from "@std/jsonc";
  * import { assertEquals } from "@std/assert/assert-equals";

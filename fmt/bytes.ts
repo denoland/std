@@ -57,8 +57,6 @@ export interface FormatOptions {
  * Based on {@link https://github.com/sindresorhus/pretty-bytes | pretty-bytes}.
  * A utility for displaying file sizes for humans.
  *
- * This module is browser compatible.
- *
  * @param num The bytes value to format
  * @param options The options for formatting
  * @returns The formatted string

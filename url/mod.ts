@@ -5,8 +5,6 @@
  * Utilities for working with
  * {@linkcode https://developer.mozilla.org/en-US/docs/Web/API/URL | URL}s.
  *
- * This module is browser compatible.
- *
  * ## Get basename
  *
  * {@linkcode basename} returns the base name of a URL or URL string, optionally
