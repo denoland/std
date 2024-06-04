@@ -35,7 +35,7 @@ export function join(...paths: string[]): string {
   // have at least 2 components, so we don't filter for that here.
   // This means that the user can use join to construct UNC paths from
   // a server name and a share name; for example:
-  //   path.join('//server', 'share') -> '\\\\server\\share\\')
+  //   path.join('//server', 'share') -> '\\\\server\\share\\'
   let needsReplace = true;
   let slashCount = 0;
   const firstPart = paths[0]!;
