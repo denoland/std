@@ -6,7 +6,7 @@ import { join as posixJoin } from "./posix/join.ts";
 import { join as windowsJoin } from "./windows/join.ts";
 
 /**
- * Join all given a sequence of paths, then normalizes the resulting path.
+ * Joins a sequence of paths, then normalizes the resulting path.
  *
  * @example Usage
  * ```ts
