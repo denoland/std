@@ -2,11 +2,9 @@
 
 import { assertEquals } from "@std/assert/assert-equals";
 import * as windows from "./windows/mod.ts";
-import * as posix from "./posix/mod.ts";
 
 Deno.test("windows.parse() parses UNC root only path", () => {
   const parsed = windows.parse("\\\\server\\share");
-  console.log(parsed);
   assertEquals<unknown>(parsed, {
     base: "\\",
     dir: "\\\\server\\share",
