@@ -19,6 +19,7 @@ import { normalize } from "./normalize.ts";
  * @returns The joined path.
  */
 export function join(...paths: string[]): string {
+  if (paths.length === 0) return ".";
   const joined = paths.filter((path) => path.length > 0).join("/");
   return joined === "" ? "." : normalize(joined);
 }
