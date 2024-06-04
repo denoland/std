@@ -1,7 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-import { assert } from "@std/assert/assert";
 import { assertPath } from "../_common/assert_path.ts";
 import { isPathSeparator } from "./_util.ts";
 import { normalize } from "./normalize.ts";
@@ -52,7 +51,9 @@ export function join(...paths: string[]): string {
   //   path.join('//server', 'share') -> '\\\\server\\share\\')
   let needsReplace = true;
   let slashCount = 0;
-  assert(firstPart !== null);
+  if (firstPart === null) {
+    throw new TypeError("First part of the path is null");
+  }
   if (isPathSeparator(firstPart.charCodeAt(0))) {
     ++slashCount;
     const firstLen = firstPart.length;
