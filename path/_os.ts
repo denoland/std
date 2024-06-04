@@ -6,7 +6,7 @@
  * Operating system type, equivalent to the type of
  * {@linkcode https://deno.land/api?s=Deno.build | Deno.build.os}.
  */
-export type OSType =
+type OSType =
   | "darwin"
   | "linux"
   | "windows"
@@ -16,7 +16,7 @@ export type OSType =
   | "solaris"
   | "illumos";
 
-export const osType: OSType = (() => {
+const osType: OSType = (() => {
   // deno-lint-ignore no-explicit-any
   const { Deno } = globalThis as any;
   if (typeof Deno?.build?.os === "string") {

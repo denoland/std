@@ -57,7 +57,7 @@
     "test:browser": "git grep --name-only \"This module is browser compatible.\" | grep -v deno.json | grep -v .github/workflows | grep -v _tools | grep -v encoding/README.md | xargs deno check --config browser-compat.tsconfig.json",
     "fmt:licence-headers": "deno run --allow-read --allow-write ./_tools/check_licence.ts",
     "lint:deprecations": "deno run --allow-read --allow-net --allow-env ./_tools/check_deprecation.ts",
-    "lint:circular": "deno run --allow-env --allow-read --allow-net=deno.land,jsr.io ./_tools/check_circular_package_dependencies.ts",
+    "lint:circular": "deno run --allow-env --allow-read --allow-write --allow-net=deno.land,jsr.io ./_tools/check_circular_package_dependencies.ts",
     "lint:mod-exports": "deno run --allow-env --allow-read ./_tools/check_mod_exports.ts",
     "lint:tools-types": "deno check _tools/*.ts",
     "lint:docs": "deno run -A _tools/check_docs.ts",
