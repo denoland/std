@@ -438,7 +438,8 @@ class AssertSnapshotContext {
    */
   public registerTeardown() {
     if (!this.#teardownRegistered) {
-      globalThis.addEventListener("unload", this.#teardown);
+      // deno-lint-ignore no-explicit-any
+      (globalThis as any).addEventListener("unload", this.#teardown);
       this.#teardownRegistered = true;
     }
   }
