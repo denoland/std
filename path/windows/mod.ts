@@ -17,8 +17,6 @@
  * assertEquals(fromFileUrl("file:///home/foo"), "\\home\\foo");
  * ```
  *
- * This module is browser compatible.
- *
  * @module
  */
 export * from "./basename.ts";

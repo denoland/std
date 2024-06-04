@@ -6,8 +6,6 @@
 /**
  * String formatters and utilities for dealing with ANSI color codes.
  *
- * This module is browser compatible.
- *
  * This module supports `NO_COLOR` environmental variable disabling any coloring
  * if `NO_COLOR` is set.
  *
