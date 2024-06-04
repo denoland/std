@@ -1,7 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-import { assertPath } from "../_common/assert_path.ts";
 import { isPathSeparator } from "./_util.ts";
 import { normalize } from "./normalize.ts";
 
@@ -21,20 +20,8 @@ import { normalize } from "./normalize.ts";
  * @returns The joined path.
  */
 export function join(...paths: string[]): string {
+  paths = paths.filter((path) => path.length > 0);
   if (paths.length === 0) return ".";
-
-  let joined: string | undefined;
-  let firstPart: string | null = null;
-  for (let i = 0; i < paths.length; ++i) {
-    const path = paths[i]!;
-    assertPath(path);
-    if (path.length > 0) {
-      if (joined === undefined) joined = firstPart = path;
-      else joined += `\\${path}`;
-    }
-  }
-
-  if (joined === undefined) return ".";
 
   // Make sure that the joined path doesn't start with two slashes, because
   // normalize() will mistake it for an UNC path then.
@@ -51,9 +38,7 @@ export function join(...paths: string[]): string {
   //   path.join('//server', 'share') -> '\\\\server\\share\\')
   let needsReplace = true;
   let slashCount = 0;
-  if (firstPart === null) {
-    throw new TypeError("First part of the path is null");
-  }
+  const firstPart = paths[0]!;
   if (isPathSeparator(firstPart.charCodeAt(0))) {
     ++slashCount;
     const firstLen = firstPart.length;
@@ -70,6 +55,7 @@ export function join(...paths: string[]): string {
       }
     }
   }
+  let joined = paths.join("\\");
   if (needsReplace) {
     // Find any more consecutive slashes we need to replace
     for (; slashCount < joined.length; ++slashCount) {
