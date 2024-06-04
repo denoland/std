@@ -37,12 +37,11 @@ import { DateTimeFormatter } from "./_date_time_formatter.ts";
  * @example Basic usage
  * ```ts
  * import { parse } from "@std/datetime/parse";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
- * parse("20-01-2019", "dd-MM-yyyy"); // 2019-01-19T13:00:00.000Z
+ * assertEquals(parse("01-03-2019 16:30", "MM-dd-yyyy HH:mm"), new Date(2019, 0, 3, 16, 30));
  *
- * parse("01-20-2019 04:34 PM", "MM-dd-yyyy hh:mm a"); // 2019-01-20T05:34:00.000Z
- *
- * parse("01-20-2019 16:34:23.123", "MM-dd-yyyy HH:mm:ss.SSS"); // 2019-01-20T05:34:23.123Z
+ * assertEquals(parse("01-03-2019 16:33:23.123", "MM-dd-yyyy HH:mm:ss.SSS"), new Date(2019, 0, 3, 16, 33, 23, 123));
  * ```
  */
 export function parse(dateString: string, formatString: string): Date {

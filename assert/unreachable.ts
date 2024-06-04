@@ -12,9 +12,10 @@ import { AssertionError } from "./assertion_error.ts";
  * unreachable(); // Throws
  * ```
  *
- * @param reason The reason why the code should be unreachable.
+ * @param msg Optional message to include in the error.
  * @returns Never returns, always throws.
  */
-export function unreachable(reason?: string): never {
-  throw new AssertionError(reason ?? "unreachable");
+export function unreachable(msg?: string): never {
+  const msgSuffix = msg ? `: ${msg}` : ".";
+  throw new AssertionError(`Unreachable${msgSuffix}`);
 }

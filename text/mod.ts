@@ -8,8 +8,9 @@
  *
  * ```ts
  * import { toCamelCase } from "@std/text/case";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
- * console.log(toCamelCase("snake_case")); // "snakeCase"
+ * assertEquals(toCamelCase("snake_case"), "snakeCase");
  * ```
  *
  * Or for comparing strings:
@@ -23,8 +24,6 @@
  * // Words most similar to "hep" will be at the front
  * assertEquals(words.sort(compareSimilarity("hep")), ["help", "hi", "hello"]);
  * ```
- *
- * This module is browser compatible.
  *
  * @module
  */

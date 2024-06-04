@@ -319,8 +319,9 @@ export type ErrorStatus = ClientErrorStatus | ServerErrorStatus;
  * @example Usage
  * ```ts
  * import { isStatus } from "@std/http/status";
+ * import { assert } from "@std/assert/assert";
  *
- * console.log(isStatus(404)); // Returns true
+ * assert(isStatus(404));
  * ```
  *
  * @param status The status to assert against.
@@ -336,8 +337,9 @@ export function isStatus(status: number): status is StatusCode {
  * @example Usage
  * ```ts
  * import { isInformationalStatus } from "@std/http/status";
+ * import { assert } from "@std/assert/assert";
  *
- * console.log(isInformationalStatus(404)); // Returns false
+ * assert(isInformationalStatus(100));
  * ```
  *
  * @param status The status to assert against.
@@ -355,8 +357,9 @@ export function isInformationalStatus(
  * @example Usage
  * ```ts
  * import { isSuccessfulStatus } from "@std/http/status";
+ * import { assert } from "@std/assert/assert";
  *
- * console.log(isSuccessfulStatus(404)); // Returns false
+ * assert(isSuccessfulStatus(200));
  * ```
  *
  * @param status The status to assert against.
@@ -374,8 +377,9 @@ export function isSuccessfulStatus(
  * @example Usage
  * ```ts
  * import { isRedirectStatus } from "@std/http/status";
+ * import { assert } from "@std/assert/assert";
  *
- * console.log(isRedirectStatus(302)); // Returns true
+ * assert(isRedirectStatus(302));
  * ```
  *
  * @param status The status to assert against.
@@ -391,8 +395,9 @@ export function isRedirectStatus(status: number): status is RedirectStatus {
  * @example Usage
  * ```ts
  * import { isClientErrorStatus } from "@std/http/status";
+ * import { assert } from "@std/assert/assert";
  *
- * console.log(isClientErrorStatus(404)); // Returns true
+ * assert(isClientErrorStatus(404));
  * ```
  *
  * @param status The status to assert against.
@@ -410,8 +415,9 @@ export function isClientErrorStatus(
  * @example Usage
  * ```ts
  * import { isServerErrorStatus } from "@std/http/status";
+ * import { assert } from "@std/assert/assert";
  *
- * console.log(isServerErrorStatus(502)); // Returns true
+ * assert(isServerErrorStatus(502));
  * ```
  *
  * @param status The status to assert against.
@@ -429,8 +435,9 @@ export function isServerErrorStatus(
  * @example Usage
  * ```ts
  * import { isErrorStatus } from "@std/http/status";
+ * import { assert } from "@std/assert/assert";
  *
- * console.log(isErrorStatus(502)); // Returns true
+ * assert(isErrorStatus(502));
  * ```
  *
  * @param status The status to assert against.

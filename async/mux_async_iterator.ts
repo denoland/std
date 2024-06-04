@@ -15,6 +15,7 @@ interface TaggedYieldedValue<T> {
  * @example Usage
  * ```ts
  * import { MuxAsyncIterator } from "@std/async/mux-async-iterator";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * async function* gen123(): AsyncIterableIterator<number> {
  *   yield 1;
@@ -31,10 +32,10 @@ interface TaggedYieldedValue<T> {
  * const mux = new MuxAsyncIterator<number>();
  * mux.add(gen123());
  * mux.add(gen456());
- * for await (const value of mux) {
- *   // ...
- * }
- * // ...
+ *
+ * const result = await Array.fromAsync(mux);
+ *
+ * assertEquals(result, [1, 4, 2, 5, 3, 6]);
  * ```
  *
  * @typeParam T The type of the provided async iterables and generated async iterable.
@@ -54,6 +55,7 @@ export class MuxAsyncIterator<T> implements AsyncIterable<T> {
    * @example Usage
    * ```ts
    * import { MuxAsyncIterator } from "@std/async/mux-async-iterator";
+   * import { assertEquals } from "@std/assert/assert-equals";
    *
    * async function* gen123(): AsyncIterableIterator<number> {
    *   yield 1;
@@ -63,6 +65,10 @@ export class MuxAsyncIterator<T> implements AsyncIterable<T> {
    *
    * const mux = new MuxAsyncIterator<number>();
    * mux.add(gen123());
+   *
+   * const result = await Array.fromAsync(mux.iterate());
+   *
+   * assertEquals(result, [1, 2, 3]);
    * ```
    */
   add(iterable: AsyncIterable<T>) {
@@ -93,6 +99,7 @@ export class MuxAsyncIterator<T> implements AsyncIterable<T> {
    * @example Usage
    * ```ts
    * import { MuxAsyncIterator } from "@std/async/mux-async-iterator";
+   * import { assertEquals } from "@std/assert/assert-equals";
    *
    * async function* gen123(): AsyncIterableIterator<number> {
    *   yield 1;
@@ -103,9 +110,9 @@ export class MuxAsyncIterator<T> implements AsyncIterable<T> {
    * const mux = new MuxAsyncIterator<number>();
    * mux.add(gen123());
    *
-   * for await (const value of mux) {
-   *   // ...
-   * }
+   * const result = await Array.fromAsync(mux.iterate());
+   *
+   * assertEquals(result, [1, 2, 3]);
    * ```
    */
   async *iterate(): AsyncIterableIterator<T> {
@@ -137,6 +144,7 @@ export class MuxAsyncIterator<T> implements AsyncIterable<T> {
    * @example Usage
    * ```ts
    * import { MuxAsyncIterator } from "@std/async/mux-async-iterator";
+   * import { assertEquals } from "@std/assert/assert-equals";
    *
    * async function* gen123(): AsyncIterableIterator<number> {
    *   yield 1;
@@ -147,9 +155,9 @@ export class MuxAsyncIterator<T> implements AsyncIterable<T> {
    * const mux = new MuxAsyncIterator<number>();
    * mux.add(gen123());
    *
-   * for await (const value of mux) {
-   *   // ...
-   * }
+   * const result = await Array.fromAsync(mux);
+   *
+   * assertEquals(result, [1, 2, 3]);
    * ```
    */
   [Symbol.asyncIterator](): AsyncIterator<T> {

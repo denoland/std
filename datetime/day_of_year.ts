@@ -12,8 +12,9 @@ import { DAY } from "./constants.ts";
  * @example Basic usage
  * ```ts
  * import { dayOfYear } from "@std/datetime/day-of-year";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
- * dayOfYear(new Date("2019-03-11T03:24:00")); // 70
+ * assertEquals(dayOfYear(new Date("2019-03-11T03:24:00")), 70);
  * ```
  */
 export function dayOfYear(date: Date): number {
@@ -38,8 +39,9 @@ export function dayOfYear(date: Date): number {
  * @example Usage
  * ```ts
  * import { dayOfYearUtc } from "@std/datetime/day-of-year";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
- * dayOfYearUtc(new Date("2019-03-11T03:24:00.000Z")) // 70
+ * assertEquals(dayOfYearUtc(new Date("2019-03-11T03:24:00.000Z")), 70);
  * ```
  */
 export function dayOfYearUtc(date: Date): number {

@@ -6,8 +6,6 @@
  * {@link https://code.visualstudio.com/docs/languages/json#_json-with-comments | JSONC}
  * (JSON with Comments) strings.
  *
- * This module is browser compatible.
- *
  * @module
  */
 
@@ -32,12 +30,12 @@ export interface ParseOptions {
  * @example Usage
  * ```ts
  * import { parse } from "@std/jsonc";
+ * import { assertEquals } from "@std/assert";
  *
- * parse('{"foo": "bar", } // comment'); // { foo: "bar" }
- * parse('{"foo": "bar", } /* comment *\/'); // { foo: "bar" }
- * parse('{"foo": "bar" } // comment', {
- *   allowTrailingComma: false,
- * }); // { foo: "bar" }
+ * assertEquals(parse('{"foo": "bar"}'), { foo: "bar" });
+ * assertEquals(parse('{"foo": "bar", }'), { foo: "bar" });
+ * assertEquals(parse('{"foo": "bar", } /* comment *\/'), { foo: "bar" });
+ * assertEquals(parse('{"foo": "bar" } // comment', { allowTrailingComma: false }), { foo: "bar" });
  * ```
  *
  * @param text A valid JSONC string.

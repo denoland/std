@@ -8,9 +8,11 @@
  * @example Comparing numbers
  * ```ts
  * import { ascend } from "@std/data-structures";
- * ascend(1, 2); // -1
- * ascend(2, 1); // 1
- * ascend(1, 1); // 0
+ * import { assertEquals } from "@std/assert/assert-equals";
+ *
+ * assertEquals(ascend(1, 2), -1);
+ * assertEquals(ascend(2, 1), 1);
+ * assertEquals(ascend(1, 1), 0);
  * ```
  *
  * @typeparam T The type of the values being compared.
@@ -29,9 +31,11 @@ export function ascend<T>(a: T, b: T): -1 | 0 | 1 {
  * @example Comparing numbers
  * ```ts
  * import { descend } from "@std/data-structures";
- * descend(1, 2); // 1
- * descend(2, 1); // -1
- * descend(1, 1); // 0
+ * import { assertEquals } from "@std/assert/assert-equals";
+ *
+ * assertEquals(descend(1, 2), 1);
+ * assertEquals(descend(2, 1), -1);
+ * assertEquals(descend(1, 1), 0);
  * ```
  *
  * @typeparam T The type of the values being compared.
