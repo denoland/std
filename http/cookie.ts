@@ -3,8 +3,6 @@
 // https://github.com/golang/go/blob/master/src/net/http/cookie.go
 // This module is browser compatible.
 
-import { assert } from "@std/assert/assert";
-
 /**
  * Represents an HTTP Cookie.
  *
@@ -89,10 +87,11 @@ function toString(cookie: Cookie): string {
     out.push("HttpOnly");
   }
   if (typeof cookie.maxAge === "number" && Number.isInteger(cookie.maxAge)) {
-    assert(
-      cookie.maxAge >= 0,
-      "Max-Age must be an integer superior or equal to 0",
-    );
+    if (cookie.maxAge < 0) {
+      throw new RangeError(
+        "Max-Age must be an integer superior or equal to 0. Cookie ignored.",
+      );
+    }
     out.push(`Max-Age=${cookie.maxAge}`);
   }
   if (cookie.domain) {
@@ -216,7 +215,9 @@ export function getCookies(headers: Headers): Record<string, string> {
     const c = cookie.split(";");
     for (const kv of c) {
       const [cookieKey, ...cookieVal] = kv.split("=");
-      assert(cookieKey !== undefined);
+      if (cookieKey === undefined) {
+        throw new TypeError("Cookie cannot start with '='");
+      }
       const key = cookieKey.trim();
       out[key] = cookieVal.join("=");
     }

@@ -14,7 +14,6 @@
  *
  * @module
  */
-import { assert } from "@std/assert/assert";
 
 /** Combines recursively all intersection types and returns a new single type.
  * @internal
@@ -510,7 +509,7 @@ export function parseArgs<
   if (alias) {
     for (const key in alias) {
       const val = (alias as Record<string, unknown>)[key];
-      assert(val !== undefined);
+      if (val === undefined) throw new TypeError("Alias value must be defined");
       const aliases = Array.isArray(val) ? val : [val];
       aliasMap.set(key, new Set(aliases));
       aliases.forEach((alias) =>

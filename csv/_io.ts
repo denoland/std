@@ -3,7 +3,6 @@
 // Copyright 2011 The Go Authors. All rights reserved. BSD license.
 // https://github.com/golang/go/blob/master/LICENSE
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-import { assert } from "@std/assert/assert";
 
 /** Options for {@linkcode parseRecord}. */
 export interface ReadOptions {
@@ -71,7 +70,7 @@ export async function parseRecord(
     return [];
   }
 
-  assert(opt.separator !== undefined);
+  if (opt.separator === undefined) throw new TypeError("Separator is required");
 
   let fullLine = line;
   let quoteError: ParseError | null = null;
