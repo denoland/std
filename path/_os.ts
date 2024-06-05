@@ -14,7 +14,8 @@ function getIsWindows(): boolean | undefined {
  * in a deno runtime, undefined if not a deno runtime.
  */
 function getIsWindowsOnDeno(): boolean | undefined {
-  const { Deno } = globalThis;
+  // deno-lint-ignore no-explicit-any
+  const { Deno } = globalThis as any;
   if (typeof Deno?.build?.os === "string") {
     return Deno.build.os === "windows";
   }
@@ -25,7 +26,8 @@ function getIsWindowsOnDeno(): boolean | undefined {
  * in a web browser, undefined if not a web browser
  */
 function getIsWindowsOnBrowser(): boolean | undefined {
-  const { navigator } = globalThis;
+  // deno-lint-ignore no-explicit-any
+  const { navigator } = globalThis as any;
 
   return containsWindows(navigator?.userAgent);
 }
