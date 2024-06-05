@@ -280,13 +280,13 @@ class Dumper {
  * const tomlString = stringify(obj);
  * assertEquals(tomlString, `title = "TOML Example"\n\n[owner]\nname = "Bob"\nbio = "Bob is a cool guy"\n`);
  * ```
- * @param obj Source object
+ * @param srcObj Source object
  * @param fmtOptions format options
  * @returns TOML string
  */
 export function stringify(
-  obj: Record<string, unknown>,
+  srcObj: Record<string, unknown>,
   options?: StringifyOptions,
 ): string {
-  return new Dumper(obj).dump(options).join("\n");
+  return new Dumper(srcObj).dump(options).join("\n");
 }
