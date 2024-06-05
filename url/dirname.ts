@@ -18,8 +18,8 @@ import { strip } from "./_strip.ts";
  * import { dirname } from "@std/url/dirname";
  * import { assertEquals } from "@std/assert/assert-equals";
  *
- * assertEquals(dirname("https://deno.land/std/path/mod.ts").href, "https://deno.land/std/path");
- * assertEquals(dirname(new URL("https://deno.land/std/path/mod.ts")).href, "https://deno.land/std/path");
+ * assertEquals(dirname("https://deno.land/std/path/mod.ts"), new URL("https://deno.land/std/path"));
+ * assertEquals(dirname(new URL("https://deno.land/std/path/mod.ts")), new URL("https://deno.land/std/path"));
  * ```
  */
 
