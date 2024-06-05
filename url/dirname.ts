@@ -5,24 +5,21 @@ import { dirname as posixDirname } from "@std/path/posix/dirname";
 import { strip } from "./_strip.ts";
 
 /**
- * Returns the directory path of a URL or URL string.
+ * Returns the directory path URL of a URL or URL string.
  *
  * The directory path is the portion of a URL up to but excluding the final path
- * segment.
- *
- * The final path segment, along with any query or hash values are
- * removed. If there is no path segment then the URL origin is returned.
+ * segment. URL queries and hashes are ignored.
  *
  * @param url URL to extract the directory from.
- * @returns The directory path of the URL.
+ * @returns The directory path URL of the URL.
  *
- * @example Basic usage
+ * @example Usage
  * ```ts
  * import { dirname } from "@std/url/dirname";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
- * dirname("https://deno.land/std/path/mod.ts?a=b").href; // "https://deno.land/std/path"
- *
- * dirname("https://deno.land/").href; // "https://deno.land"
+ * assertEquals(dirname("https://deno.land/std/path/mod.ts"), new URL("https://deno.land/std/path"));
+ * assertEquals(dirname(new URL("https://deno.land/std/path/mod.ts")), new URL("https://deno.land/std/path"));
  * ```
  */
 
