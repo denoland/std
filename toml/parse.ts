@@ -4,9 +4,9 @@
 import { ParserFactory, Toml } from "./_parser.ts";
 
 /**
- * Parse parses TOML string into an object.
+ * Parses a {@link https://toml.io | TOML} string into an object.
  *
- * @example Decode TOML string
+ * @example Usage
  * ```ts
  * import { parse } from "@std/toml/parse";
  * import { assertEquals } from "@std/assert/assert-equals"
@@ -22,5 +22,6 @@ import { ParserFactory, Toml } from "./_parser.ts";
  * @param tomlString TOML string to be parsed.
  * @returns The parsed JS object.
  */
-export const parse: (tomlString: string) => Record<string, unknown> =
-  ParserFactory(Toml);
+export function parse(tomlString: string): Record<string, unknown> {
+  return ParserFactory(Toml)(tomlString);
+}
