@@ -23,4 +23,4 @@ function getOsType(): OSType {
     (navigator.userAgent.includes("Win") ? "windows" : "linux");
 }
 
-export const isWindows = getOsType() === "windows";
+export const isWindows: boolean = getOsType() === "windows";
