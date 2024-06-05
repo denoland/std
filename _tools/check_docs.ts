@@ -56,6 +56,7 @@ const ENTRY_POINTS = [
   "../text/mod.ts",
   "../toml/mod.ts",
   "../ulid/mod.ts",
+  "../url/mod.ts",
   "../uuid/mod.ts",
   "../webgpu/mod.ts",
 ] as const;

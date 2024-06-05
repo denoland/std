@@ -11,15 +11,14 @@ import { join as posixJoin } from "@std/path/posix/join";
  * @param paths Array of path segments to be joined to the base URL.
  * @returns A complete URL containing the base URL joined with the paths.
  *
- * @example Basic usage
+ * @example Usage
+ *
  * ```ts
  * import { join } from "@std/url/join";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
- * join("https://deno.land/", "std", "path", "mod.ts").href;
- * // "https://deno.land/std/path/mod.ts"
- *
- * join("https://deno.land", "//std", "path/", "/mod.ts").href;
- * // "https://deno.land/path/mod.ts"
+ * assertEquals(join("https://deno.land/", "std", "path", "mod.ts").href, "https://deno.land/std/path/mod.ts");
+ * assertEquals(join("https://deno.land", "//std", "path/", "/mod.ts").href, "https://deno.land/std/path/mod.ts");
  * ```
  */
 export function join(url: string | URL, ...paths: string[]): URL {
