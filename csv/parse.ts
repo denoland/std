@@ -12,7 +12,6 @@ import {
   type ReadOptions,
   type RecordWithColumn,
 } from "./_io.ts";
-import { assert } from "@std/assert/assert";
 
 export {
   ParseError,
@@ -356,7 +355,7 @@ export function parse<const T extends ParseOptions>(
 
     if (opt.skipFirstRow) {
       const head = r.shift();
-      assert(head !== undefined);
+      if (head === undefined) throw new TypeError("Headers must be defined");
       headers = head;
     }
 
