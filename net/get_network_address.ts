@@ -13,19 +13,21 @@
  * @returns The IPv4 network address of the machine.
  *
  * @example Get the IPv4 network address (default)
- * ```ts
+ * ```ts no-assert no-eval
  * import { getNetworkAddress } from "@std/net/get-network-address";
- * import { assertNotEquals } from "@std/assert/assert-not-equals";
  *
- * assertNotEquals(getNetworkAddress(), undefined);
+ * const hostname = getNetworkAddress();
+ *
+ * Deno.serve({ port: 0, hostname }, () => new Response("Hello, world!"));
  * ```
  *
  * @example Get the IPv6 network address
- * ```ts
+ * ```ts no-assert no-eval
  * import { getNetworkAddress } from "@std/net/get-network-address";
- * import { assertNotEquals } from "@std/assert/assert-not-equals";
  *
- * assertNotEquals(getNetworkAddress("IPv6"), undefined);
+ * const hostname = getNetworkAddress("IPv6");
+ *
+ * Deno.serve({ port: 0, hostname }, () => new Response("Hello, world!"));
  * ```
  */
 export function getNetworkAddress(

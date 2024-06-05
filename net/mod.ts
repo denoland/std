@@ -3,11 +3,13 @@
 /**
  * Network utilities.
  *
- * ```ts
- * import { getNetworkAddress } from "@std/net";
- * import { assertNotEquals } from "@std/assert/assert-not-equals";
+ * ```ts no-assert no-eval
+ * import { getNetworkAddress, getAvailablePort } from "@std/net";
  *
- * assertNotEquals(getNetworkAddress(), undefined);
+ * const port = getAvailablePort();
+ * const hostname = getNetworkAddress();
+ *
+ * Deno.serve({ port, hostname }, () => new Response("Hello, world!"));
  * ```
  *
  * @module
