@@ -1,6 +1,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
+import { assertPath } from "../_common/assert_path.ts";
 import { isPathSeparator } from "./_util.ts";
 import { normalize } from "./normalize.ts";
 
@@ -20,6 +21,7 @@ import { normalize } from "./normalize.ts";
  * @returns The joined path.
  */
 export function join(...paths: string[]): string {
+  paths.forEach((path) => assertPath(path));
   paths = paths.filter((path) => path.length > 0);
   if (paths.length === 0) return ".";
 
