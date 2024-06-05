@@ -17,48 +17,44 @@ function isBrankString(str: string) {
  * {@link https://www.rfc-editor.org/rfc/rfc7464.html | JSON Text Sequences}.
  * Chunks consisting of spaces, tab characters, or newline characters will be ignored.
  *
- * @example
- * parse JSON lines or NDJSON
- * ```ts no-eval
- * import { TextLineStream } from "@std/streams/text-line-stream";
+ * @example Basic usage
+ *
+ * ```ts
  * import { JsonParseStream } from "@std/json/json-parse-stream";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
- * const url = "@std/json/testdata/test.jsonl";
- * const { body } = await fetch(url);
+ * const stream = ReadableStream.from([
+ *   `{"foo":"bar"}\n`,
+ *   `{"baz":100}\n`
+ * ]).pipeThrough(new JsonParseStream());
  *
- * const readable = body!
- *   .pipeThrough(new TextDecoderStream())  // convert Uint8Array to string
- *   .pipeThrough(new TextLineStream()) // transform into a stream where each chunk is divided by a newline
- *   .pipeThrough(new JsonParseStream()); // parse each chunk as JSON
- *
- * for await (const data of readable) {
- *   console.log(data);
- * }
- * ```
- *
- * @example
- * parse JSON Text Sequences
- * ```ts no-eval
- * import { TextDelimiterStream } from "@std/streams/text-delimiter-stream";
- * import { JsonParseStream } from "@std/json/json-parse-stream";
- *
- * const url =
- *   "@std/json/testdata/test.json-seq";
- * const { body } = await fetch(url);
- *
- * const delimiter = "\x1E";
- * const readable = body!
- *   .pipeThrough(new TextDecoderStream())
- *   .pipeThrough(new TextDelimiterStream(delimiter)) // transform into a stream where each chunk is divided by a delimiter
- *   .pipeThrough(new JsonParseStream());
- *
- * for await (const data of readable) {
- *   console.log(data);
- * }
+ * assertEquals(await Array.fromAsync(stream), [
+ *   { foo: "bar" },
+ *   { baz: 100 }
+ * ]);
  * ```
  */
 export class JsonParseStream extends TransformStream<string, JsonValue> {
-  /** Constructs new instance. */
+  /**
+   * Constructs new instance.
+   *
+   * @example Basic usage
+   *
+   * ```ts
+   * import { JsonParseStream } from "@std/json/json-parse-stream";
+   * import { assertEquals } from "@std/assert/assert-equals";
+   *
+   * const stream = ReadableStream.from([
+   *   `{"foo":"bar"}`,
+   *   `{"baz":100}`,
+   * ]).pipeThrough(new JsonParseStream());
+   *
+   * assertEquals(await Array.fromAsync(stream), [
+   *   { foo: "bar" },
+   *   { baz: 100 },
+   * ]);
+   * ```
+   */
   constructor({ writableStrategy, readableStrategy }: ParseStreamOptions = {}) {
     super(
       {
