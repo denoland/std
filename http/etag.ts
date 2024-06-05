@@ -98,7 +98,7 @@ async function calcFileInfo(
  * @example Usage
  * ```ts
  * import { calculate } from "@std/http/etag";
- * import { assert } from "@std/assert/assert"
+ * import { assert } from "@std/assert/assert";
  *
  * const body = "hello deno!";
  *

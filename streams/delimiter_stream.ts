@@ -76,14 +76,14 @@ export class DelimiterStream extends TransformStream<Uint8Array, Uint8Array> {
    * @param options Options for the delimiter stream.
    *
    * @example comma as a delimiter
-   * ```ts
+   * ```ts no-assert
    * import { DelimiterStream } from "@std/streams/delimiter-stream";
    *
    * const delimiterStream = new DelimiterStream(new TextEncoder().encode(","));
    * ```
    *
    * @example semicolon as a delimiter, and disposition set to `"suffix"`
-   * ```ts
+   * ```ts no-assert
    * import { DelimiterStream } from "@std/streams/delimiter-stream";
    *
    * const delimiterStream = new DelimiterStream(new TextEncoder().encode(";"), {

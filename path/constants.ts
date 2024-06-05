@@ -2,6 +2,17 @@
 // This module is browser compatible.
 import { isWindows } from "./_os.ts";
 
+/**
+ * The character used to separate entries in the PATH environment variable.
+ * On Windows, this is `;`. On all other platforms, this is `:`.
+ */
 export const DELIMITER = isWindows ? ";" as const : ":" as const;
+/**
+ * The character used to separate components of a file path.
+ * On Windows, this is `\`. On all other platforms, this is `/`.
+ */
 export const SEPARATOR = isWindows ? "\\" as const : "/" as const;
+/**
+ * A regular expression that matches one or more path separators.
+ */
 export const SEPARATOR_PATTERN = isWindows ? /[\\/]+/ : /\/+/;

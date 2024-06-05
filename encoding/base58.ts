@@ -6,8 +6,6 @@
  * {@link https://datatracker.ietf.org/doc/html/draft-msporny-base58-03 | base58}
  * encoding and decoding.
  *
- * This module is browser compatible.
- *
  * ```ts
  * import { encodeBase58, decodeBase58 } from "@std/encoding/base58";
  * import { assertEquals } from "@std/assert/assert-equals";

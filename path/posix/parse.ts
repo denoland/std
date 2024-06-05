@@ -11,7 +11,24 @@ export type { ParsedPath } from "../_interface.ts";
 
 /**
  * Return a `ParsedPath` object of the `path`.
- * @param path to process
+ *
+ * @example Usage
+ * ```ts
+ * import { parse } from "@std/path/posix/parse";
+ * import { assertEquals } from "@std/assert/assert-equals";
+ *
+ * const path = parse("/home/user/file.txt");
+ * assertEquals(path, {
+ *   root: "/",
+ *   dir: "/home/user",
+ *   base: "file.txt",
+ *   ext: ".txt",
+ *   name: "file"
+ * });
+ * ```
+ *
+ * @param path The path to parse.
+ * @returns The parsed path object.
  */
 export function parse(path: string): ParsedPath {
   assertPath(path);

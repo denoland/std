@@ -4,8 +4,6 @@
 /**
  * Utilities for working with {@link https://en.wikipedia.org/wiki/Ascii85 | ascii85} encoding.
  *
- * This module is browser compatible.
- *
  * ## Specifying a standard and delimiter
  *
  * By default, all functions are using the most popular Adobe version of ascii85

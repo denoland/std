@@ -6,8 +6,19 @@ import { assertPath } from "../_common/assert_path.ts";
 import { isPathSeparator, isWindowsDeviceRoot } from "./_util.ts";
 
 /**
- * Verifies whether provided path is absolute
- * @param path to be verified as absolute
+ * Verifies whether provided path is absolute.
+ *
+ * @example Usage
+ * ```ts
+ * import { isAbsolute } from "@std/path/windows/is-absolute";
+ * import { assert, assertFalse } from "@std/assert";
+ *
+ * assert(isAbsolute("C:\\foo\\bar"));
+ * assertFalse(isAbsolute("..\\baz"));
+ * ```
+ *
+ * @param path The path to verify.
+ * @returns `true` if the path is absolute, `false` otherwise.
  */
 export function isAbsolute(path: string): boolean {
   assertPath(path);

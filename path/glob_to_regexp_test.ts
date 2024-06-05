@@ -1,43 +1,33 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import { assert, assertEquals } from "@std/assert";
-import { globToRegExp, type GlobToRegExpOptions } from "./glob_to_regexp.ts";
+import { type GlobOptions, globToRegExp } from "./glob_to_regexp.ts";
+import { globToRegExp as posixGlobToRegExp } from "./posix/glob_to_regexp.ts";
+import { globToRegExp as windowsGlobToRegExp } from "./windows/glob_to_regexp.ts";
 
-function match(
-  glob: string,
-  path: string,
-  opts: GlobToRegExpOptions = {},
-): boolean {
-  if (opts.os === undefined) {
-    const matchDarwin = path.match(
-      globToRegExp(glob, { ...opts, os: "darwin" }),
-    );
-    if (matchDarwin) {
-      assertEquals(matchDarwin.length, 1);
-    }
-    const matchLinux = path.match(globToRegExp(glob, { ...opts, os: "linux" }));
-    if (matchLinux) {
-      assertEquals(matchLinux.length, 1);
-    }
-    const matchWindows = path.match(
-      globToRegExp(glob, { ...opts, os: "windows" }),
-    );
-    if (matchWindows) {
-      assertEquals(matchWindows.length, 1);
-    }
-    return !!matchDarwin && !!matchLinux && !!matchWindows;
-  } else {
-    const match = path.match(globToRegExp(glob, opts));
-    if (match) {
-      assertEquals(match.length, 1);
-    }
-    return !!match;
+function posixMatch(glob: string, path: string, options?: GlobOptions) {
+  const match = path.match(posixGlobToRegExp(glob, options));
+  if (match) {
+    assertEquals(match.length, 1);
   }
+  return !!match;
+}
+
+function windowsMatch(glob: string, path: string, options?: GlobOptions) {
+  const match = path.match(windowsGlobToRegExp(glob, options));
+  if (match) {
+    assertEquals(match.length, 1);
+  }
+  return !!match;
+}
+
+function match(glob: string, path: string, options?: GlobOptions) {
+  return posixMatch(glob, path, options) && windowsMatch(glob, path, options);
 }
 
 Deno.test({
   name: "globToRegExp() returns RegExp from a glob",
   fn() {
-    assertEquals(globToRegExp("*.js", { os: "linux" }), /^[^/]*\.js\/*$/);
+    assertEquals(posixGlobToRegExp("*.js"), /^[^/]*\.js\/*$/);
   },
 });
 
@@ -45,7 +35,7 @@ Deno.test({
   name: "globToRegExp() returns RegExp from an empty glob",
   fn() {
     assertEquals(globToRegExp(""), /(?!)/);
-    assertEquals(globToRegExp("*.js", { os: "linux" }), /^[^/]*\.js\/*$/);
+    assertEquals(posixGlobToRegExp("*.js"), /^[^/]*\.js\/*$/);
   },
 });
 
@@ -365,8 +355,8 @@ Deno.test({
 Deno.test({
   name: "globToRegExp() matches special extended characters in range",
   fn() {
-    assertEquals(globToRegExp("[?*+@!|]", { os: "linux" }), /^[?*+@!|]\/*$/);
-    assertEquals(globToRegExp("[!?*+@!|]", { os: "linux" }), /^[^?*+@!|]\/*$/);
+    assertEquals(posixGlobToRegExp("[?*+@!|]"), /^[?*+@!|]\/*$/);
+    assertEquals(posixGlobToRegExp("[!?*+@!|]"), /^[^?*+@!|]\/*$/);
   },
 });
 
@@ -374,12 +364,9 @@ Deno.test({
   name: "globToRegExp() matches special RegExp characters in range",
   fn() {
     // Excluding characters checked in the previous test.
-    assertEquals(globToRegExp("[\\\\$^.=]", { os: "linux" }), /^[\\$^.=]\/*$/);
-    assertEquals(
-      globToRegExp("[!\\\\$^.=]", { os: "linux" }),
-      /^[^\\$^.=]\/*$/,
-    );
-    assertEquals(globToRegExp("[^^]", { os: "linux" }), /^[\^^]\/*$/);
+    assertEquals(posixGlobToRegExp("[\\\\$^.=]"), /^[\\$^.=]\/*$/);
+    assertEquals(posixGlobToRegExp("[!\\\\$^.=]"), /^[^\\$^.=]\/*$/);
+    assertEquals(posixGlobToRegExp("[^^]"), /^[\^^]\/*$/);
   },
 });
 
@@ -410,12 +397,12 @@ Deno.test({
 Deno.test({
   name: "globToRegExp() checks backslashes on Windows",
   fn() {
-    assert(match("foo/bar", "foo\\bar", { os: "windows" }));
-    assert(match("foo\\bar", "foo/bar", { os: "windows" }));
-    assert(match("foo\\bar", "foo\\bar", { os: "windows" }));
-    assert(match("**/bar", "foo\\bar", { os: "windows" }));
-    assert(match("**\\bar", "foo/bar", { os: "windows" }));
-    assert(match("**\\bar", "foo\\bar", { os: "windows" }));
+    assert(windowsMatch("foo/bar", "foo\\bar"));
+    assert(windowsMatch("foo\\bar", "foo/bar"));
+    assert(windowsMatch("foo\\bar", "foo\\bar"));
+    assert(windowsMatch("**/bar", "foo\\bar"));
+    assert(windowsMatch("**\\bar", "foo/bar"));
+    assert(windowsMatch("**\\bar", "foo\\bar"));
   },
 });
 
@@ -437,32 +424,32 @@ Deno.test({
 Deno.test({
   name: "globToRegExp() escapes glob characters",
   fn() {
-    assert(match("\\[ab]", "[ab]", { os: "linux" }));
-    assert(match("`[ab]", "[ab]", { os: "windows" }));
-    assert(match("\\{foo,bar}", "{foo,bar}", { os: "linux" }));
-    assert(match("`{foo,bar}", "{foo,bar}", { os: "windows" }));
-    assert(match("\\?(foo|bar)", "?(foo|bar)", { os: "linux" }));
-    assert(match("`?(foo|bar)", "?(foo|bar)", { os: "windows" }));
-    assert(match("\\@(foo|bar)", "@(foo|bar)", { os: "linux" }));
-    assert(match("`@(foo|bar)", "@(foo|bar)", { os: "windows" }));
-    assert(match("\\*(foo|bar)", "*(foo|bar)", { os: "linux" }));
-    assert(match("`*(foo|bar)", "*(foo|bar)", { os: "windows" }));
-    assert(match("\\+(foo|bar)", "+(foo|bar)", { os: "linux" }));
-    assert(match("`+(foo|bar)", "+(foo|bar)", { os: "windows" }));
-    assert(match("\\!(foo|bar)", "!(foo|bar)", { os: "linux" }));
-    assert(match("`!(foo|bar)", "!(foo|bar)", { os: "windows" }));
-    assert(match("@\\(foo|bar)", "@(foo|bar)", { os: "linux" }));
-    assert(match("@`(foo|bar)", "@(foo|bar)", { os: "windows" }));
-    assert(match("{foo,bar}/[ab]\\", "foo/[ab]\\", { os: "linux" }));
-    assert(match("{foo,bar}/[ab]`", "foo/[ab]`", { os: "windows" }));
+    assert(posixMatch("\\[ab]", "[ab]"));
+    assert(windowsMatch("`[ab]", "[ab]"));
+    assert(posixMatch("\\{foo,bar}", "{foo,bar}"));
+    assert(windowsMatch("`{foo,bar}", "{foo,bar}"));
+    assert(posixMatch("\\?(foo|bar)", "?(foo|bar)"));
+    assert(windowsMatch("`?(foo|bar)", "?(foo|bar)"));
+    assert(posixMatch("\\@(foo|bar)", "@(foo|bar)"));
+    assert(windowsMatch("`@(foo|bar)", "@(foo|bar)"));
+    assert(posixMatch("\\*(foo|bar)", "*(foo|bar)"));
+    assert(windowsMatch("`*(foo|bar)", "*(foo|bar)"));
+    assert(posixMatch("\\+(foo|bar)", "+(foo|bar)"));
+    assert(windowsMatch("`+(foo|bar)", "+(foo|bar)"));
+    assert(posixMatch("\\!(foo|bar)", "!(foo|bar)"));
+    assert(windowsMatch("`!(foo|bar)", "!(foo|bar)"));
+    assert(posixMatch("@\\(foo|bar)", "@(foo|bar)"));
+    assert(windowsMatch("@`(foo|bar)", "@(foo|bar)"));
+    assert(posixMatch("{foo,bar}/[ab]\\", "foo/[ab]\\"));
+    assert(windowsMatch("{foo,bar}/[ab]`", "foo/[ab]`"));
   },
 });
 
 Deno.test({
   name: "globToRegExp() checks dangling escape prefix",
   fn() {
-    assert(match("{foo,bar}/[ab]\\", "foo/[ab]\\", { os: "linux" }));
-    assert(match("{foo,bar}/[ab]`", "foo/[ab]`", { os: "windows" }));
+    assert(posixMatch("{foo,bar}/[ab]\\", "foo/[ab]\\"));
+    assert(windowsMatch("{foo,bar}/[ab]`", "foo/[ab]`"));
   },
 });
 
@@ -504,18 +491,5 @@ Deno.test({
     const pattern2 = globToRegExp("foo/bar", { caseInsensitive: true });
     assertEquals("foo/bar".match(pattern2)?.[0], "foo/bar");
     assertEquals("Foo/Bar".match(pattern2)?.[0], "Foo/Bar");
-  },
-});
-
-Deno.test({
-  name: "globToRegExp() checks options.os",
-  fn() {
-    const pattern1 = globToRegExp("foo/bar", { os: "linux" });
-    assertEquals("foo/bar".match(pattern1)?.[0], "foo/bar");
-    assertEquals("foo\\bar".match(pattern1)?.[0], undefined);
-
-    const pattern2 = globToRegExp("foo/bar", { os: "windows" });
-    assertEquals("foo/bar".match(pattern2)?.[0], "foo/bar");
-    assertEquals("foo\\bar".match(pattern2)?.[0], "foo\\bar");
   },
 });

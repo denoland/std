@@ -22,11 +22,13 @@ export interface CsvStringifyStreamOptions {
 /**
  * Convert each chunk to a CSV record.
  *
- * @example
- * ```ts
+ * @example Usage
+ * ```ts no-assert
  * import { CsvStringifyStream } from "@std/csv/csv-stringify-stream";
  *
- * const file = await Deno.open("data.csv", { create: true, write: true });
+ * const path = await Deno.makeTempFile();
+ *
+ * const file = await Deno.open(path, { create: true, write: true });
  * const readable = ReadableStream.from([
  *   { id: 1, name: "one" },
  *   { id: 2, name: "two" },
@@ -37,7 +39,9 @@ export interface CsvStringifyStreamOptions {
  *   .pipeThrough(new CsvStringifyStream({ columns: ["id", "name"] }))
  *   .pipeThrough(new TextEncoderStream())
  *   .pipeTo(file.writable);
- * ````
+ * ```
+ *
+ * @typeParam TOptions The type of options for the stream.
  */
 export class CsvStringifyStream<TOptions extends CsvStringifyStreamOptions>
   extends TransformStream<
@@ -45,7 +49,30 @@ export class CsvStringifyStream<TOptions extends CsvStringifyStreamOptions>
       : Array<unknown>,
     string
   > {
-  /** Construct a new instance. */
+  /**
+   * Construct a new instance.
+   *
+   * @example Usage
+   * ```ts no-assert
+   * import { CsvStringifyStream } from "@std/csv/csv-stringify-stream";
+   *
+   * const path = await Deno.makeTempFile();
+   *
+   * const file = await Deno.open(path, { create: true, write: true });
+   * const readable = ReadableStream.from([
+   *   { id: 1, name: "one" },
+   *   { id: 2, name: "two" },
+   *   { id: 3, name: "three" },
+   * ]);
+   *
+   * await readable
+   *   .pipeThrough(new CsvStringifyStream({ columns: ["id", "name"] }))
+   *   .pipeThrough(new TextEncoderStream())
+   *   .pipeTo(file.writable);
+   * ```
+   *
+   * @param options Options for the stream.
+   */
   constructor(options?: TOptions) {
     const {
       separator,
