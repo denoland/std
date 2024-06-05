@@ -21,10 +21,14 @@ type ArrayType =
   | "MIXED";
 
 /**
- * Formatting Options for {@linkcode stringify}
+ * Options for {@linkcode stringify}.
  */
-export interface FormatOptions {
-  /** Define if the keys should be aligned or not */
+export interface StringifyOptions {
+  /**
+   * Define if the keys should be aligned or not.
+   *
+   * @default {false}
+   */
   keyAlignment?: boolean;
 }
 
@@ -36,7 +40,7 @@ class Dumper {
   constructor(srcObjc: Record<string, unknown>) {
     this.srcObject = srcObjc;
   }
-  dump(fmtOptions: FormatOptions = {}): string[] {
+  dump(fmtOptions: StringifyOptions = {}): string[] {
     // deno-lint-ignore no-explicit-any
     this.output = this.#printObject(this.srcObject as any);
     this.output = this.#format(fmtOptions);
@@ -216,7 +220,7 @@ class Dumper {
   #dateDeclaration(keys: string[], value: Date): string {
     return `${this.#declaration(keys)}${this.#printDate(value)}`;
   }
-  #format(options: FormatOptions = {}): string[] {
+  #format(options: StringifyOptions = {}): string[] {
     const { keyAlignment = false } = options;
     const rDeclaration = /^(\".*\"|[^=]*)\s=/;
     const out = [];
@@ -277,12 +281,12 @@ class Dumper {
  * assertEquals(tomlString, `title = "TOML Example"\n\n[owner]\nname = "Bob"\nbio = "Bob is a cool guy"\n`);
  * ```
  * @param obj Source object
- * @param fmtOptions format options
+ * @param options Options for stringifying.
  * @returns TOML string
  */
 export function stringify(
   obj: Record<string, unknown>,
-  fmtOptions?: FormatOptions,
+  options?: StringifyOptions,
 ): string {
-  return new Dumper(obj).dump(fmtOptions).join("\n");
+  return new Dumper(obj).dump(options).join("\n");
 }
