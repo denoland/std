@@ -10,15 +10,14 @@ import { normalize as posixNormalize } from "@std/path/posix/normalize";
  * @param url URL to be normalized.
  * @returns Normalized URL.
  *
- * @example
+ * @example Usage
+ *
  * ```ts
  * import { normalize } from "@std/url/normalize";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
- * normalize("https:///deno.land///std//assert//.//mod.ts").href;
- * // "https://deno.land/std/path/mod.ts"
- *
- * normalize("https://deno.land/std/assert/../async/retry.ts").href;
- * // "https://deno.land/std/async/retry.ts"
+ * assertEquals(normalize("https:///deno.land///std//assert//.//mod.ts").href, "https://deno.land/std/assert/mod.ts");
+ * assertEquals(normalize("https://deno.land/std/assert/../async/retry.ts").href, "https://deno.land/std/async/retry.ts");
  * ```
  */
 export function normalize(url: string | URL): URL {
