@@ -7,6 +7,7 @@ import {
 } from "@deno/graph";
 import { resolveWorkspaceSpecifiers } from "./utils.ts";
 import graphviz from "graphviz";
+import { parse } from "../semver/parse.ts";
 
 /**
  * Checks for circular dependencies in the std packages.
@@ -27,7 +28,7 @@ import graphviz from "graphviz";
  * $ deno run -A _tools/check_circular_package_dependencies.ts --all-imports
  */
 
-type DepState = "Stable" | "Unstable" | "Deprecated";
+type DepState = "Stable" | "Unstable";
 type Dep = {
   name: string;
   set: Set<string>;
@@ -116,48 +117,6 @@ const ENTRYPOINTS: Record<Mod, string[]> = {
   yaml: ["mod.ts"],
 };
 
-const STABILITY: Record<Mod, DepState> = {
-  archive: "Unstable",
-  assert: "Stable",
-  async: "Stable",
-  bytes: "Stable",
-  cli: "Unstable",
-  collections: "Stable",
-  crypto: "Stable",
-  csv: "Stable",
-  data_structures: "Unstable",
-  datetime: "Unstable",
-  dotenv: "Unstable",
-  encoding: "Stable",
-  expect: "Unstable",
-  fmt: "Stable",
-  front_matter: "Stable",
-  fs: "Stable",
-  html: "Unstable",
-  http: "Unstable",
-  ini: "Unstable",
-  internal: "Stable",
-  io: "Unstable",
-  json: "Stable",
-  jsonc: "Stable",
-  log: "Unstable",
-  media_types: "Stable",
-  msgpack: "Unstable",
-  net: "Unstable",
-  path: "Stable",
-  regexp: "Unstable",
-  semver: "Unstable",
-  streams: "Stable",
-  testing: "Stable",
-  text: "Unstable",
-  toml: "Stable",
-  ulid: "Unstable",
-  url: "Unstable",
-  uuid: "Stable",
-  webgpu: "Unstable",
-  yaml: "Stable",
-};
-
 const root = new URL("../", import.meta.url).href;
 const deps: Record<string, Dep> = {};
 
@@ -165,28 +124,35 @@ function getPackageNameFromUrl(url: string): string {
   return url.replace(root, "").split("/")[0]!;
 }
 
+async function getStability(pkg: string): Promise<DepState> {
+  const config = await import(`../${pkg}/deno.json`, {
+    with: { type: "json" },
+  });
+  const version = parse(config.default.version);
+  return version.major > 0 ? "Stable" : "Unstable";
+}
+
 async function check(
-  submod: string,
-  state: DepState,
+  pkg: string,
   paths: string[] = ["mod.ts"],
 ): Promise<Dep> {
   const deps = new Set<string>();
   for (const path of paths) {
-    const entrypoint = new URL(`../${submod}/${path}`, import.meta.url).href;
+    const entrypoint = new URL(`../${pkg}/${path}`, import.meta.url).href;
     const graph = await createGraph(entrypoint, {
       resolve: resolveWorkspaceSpecifiers,
     });
 
     for (
       const dep of new Set(
-        getPackageDepsFromSpecifier(submod, graph, entrypoint),
+        getPackageDepsFromSpecifier(pkg, graph, entrypoint),
       )
     ) {
       deps.add(dep);
     }
   }
-  deps.delete(submod);
-  return { name: submod, set: deps, state };
+  deps.delete(pkg);
+  return { name: pkg, set: deps, state: await getStability(pkg) };
 }
 
 /** Returns package dependencies */
@@ -225,20 +191,20 @@ function getPackageDepsFromSpecifier(
 }
 
 for (const [mod, entrypoints] of Object.entries(ENTRYPOINTS)) {
-  deps[mod] = await check(mod, STABILITY[mod as Mod], entrypoints);
+  deps[mod] = await check(mod, entrypoints);
 }
 
 /** Checks circular deps between sub modules */
 function checkCircularDeps(
-  submod: string,
+  pkg: string,
   ancestors: string[] = [],
   seen: Set<string> = new Set(),
 ): string[] | undefined {
-  const currentDeps = [...ancestors, submod];
-  if (ancestors.includes(submod)) {
+  const currentDeps = [...ancestors, pkg];
+  if (ancestors.includes(pkg)) {
     return currentDeps;
   }
-  const d = deps[submod];
+  const d = deps[pkg];
   if (!d) {
     return;
   }
@@ -259,11 +225,9 @@ function formatLabel(mod: string) {
 function stateToNodeStyle(state: DepState) {
   switch (state) {
     case "Stable":
-      return "[shape=doublecircle fixedsize=1 height=1.1]";
+      return "[shape=circle fixedsize=1 height=1 style=filled fillcolor=lightgreen]";
     case "Unstable":
-      return "[shape=box style=filled, fillcolor=pink]";
-    case "Deprecated":
-      return "[shape=box style=filled, fillcolor=gray]";
+      return "[shape=circle fixedsize=1 height=1]";
   }
 }
 
