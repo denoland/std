@@ -11,8 +11,6 @@
  * @module
  */
 
-import { assert } from "@std/assert/assert";
-
 const ARCHITECTURE = "architecture";
 const MODEL = "model";
 const NAME = "name";
@@ -210,7 +208,9 @@ function mapper(
               target[prop] = match ? match.replace(re, value) : undefined;
             } else {
               const [prop, re, value, fn] = processor;
-              assert(fn);
+              if (!fn) {
+                throw new TypeError("Function must be defined in processor");
+              }
               target[prop] = match
                 ? fn.call(prop, match.replace(re, value))
                 : undefined;
