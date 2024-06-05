@@ -9,7 +9,7 @@ import { ParserFactory, Toml } from "./_parser.ts";
  * @example Usage
  * ```ts
  * import { parse } from "@std/toml/parse";
- * import { assertEquals } from "@std/assert/assert-equals"
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const tomlString = `title = "TOML Example"
  * [owner]
