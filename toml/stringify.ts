@@ -259,9 +259,9 @@ class Dumper {
 }
 
 /**
- * Stringify dumps source object into TOML string and returns it.
+ * Converts an object to a {@link https://toml.io | TOML} string.
  *
- * @example Stringify an object
+ * @example Usage
  * ```ts
  * import { stringify } from "@std/toml/stringify";
  * import { assertEquals } from "@std/assert/assert-equals";
@@ -276,13 +276,13 @@ class Dumper {
  * const tomlString = stringify(obj);
  * assertEquals(tomlString, `title = "TOML Example"\n\n[owner]\nname = "Bob"\nbio = "Bob is a cool guy"\n`);
  * ```
- * @param srcObj Source object
+ * @param obj Source object
  * @param fmtOptions format options
  * @returns TOML string
  */
 export function stringify(
-  srcObj: Record<string, unknown>,
+  obj: Record<string, unknown>,
   fmtOptions?: FormatOptions,
 ): string {
-  return new Dumper(srcObj).dump(fmtOptions).join("\n");
+  return new Dumper(obj).dump(fmtOptions).join("\n");
 }
