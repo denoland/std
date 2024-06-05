@@ -281,7 +281,7 @@ class Dumper {
  * assertEquals(tomlString, `title = "TOML Example"\n\n[owner]\nname = "Bob"\nbio = "Bob is a cool guy"\n`);
  * ```
  * @param srcObj Source object
- * @param fmtOptions format options
+ * @param options Options for stringifying.
  * @returns TOML string
  */
 export function stringify(
