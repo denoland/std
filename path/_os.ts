@@ -14,22 +14,13 @@ type OSType =
   | "netbsd"
   | "aix"
   | "solaris"
-  | "illumos";
+  | "illumos"
+  | "android";
 
-const osType: OSType = (() => {
+function getOsType(): OSType {
   // deno-lint-ignore no-explicit-any
-  const { Deno } = globalThis as any;
-  if (typeof Deno?.build?.os === "string") {
-    return Deno.build.os;
-  }
+  return (globalThis as any).Deno?.build.os ||
+    (navigator.userAgent.includes("Win") ? "windows" : "linux");
+}
 
-  // deno-lint-ignore no-explicit-any
-  const { navigator } = globalThis as any;
-  if (navigator?.appVersion?.includes?.("Win")) {
-    return "windows";
-  }
-
-  return "linux";
-})();
-
-export const isWindows = osType === "windows";
+export const isWindows = getOsType() === "windows";
