@@ -3,6 +3,13 @@
 /**
  * Network utilities.
  *
+ * ```ts
+ * import { getNetworkAddress } from "@std/net";
+ * import { assertNotEquals } from "@std/assert/assert-not-equals";
+ *
+ * assertNotEquals(getNetworkAddress(), undefined);
+ * ```
+ *
  * @module
  */
 

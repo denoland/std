@@ -15,21 +15,17 @@
  * @example Get the IPv4 network address (default)
  * ```ts
  * import { getNetworkAddress } from "@std/net/get-network-address";
- * import { assert } from "@std/assert/assert";
+ * import { assertNotEquals } from "@std/assert/assert-not-equals";
  *
- * const address = getNetworkAddress();
- *
- * assert(address !== undefined);
+ * assertNotEquals(getNetworkAddress(), undefined);
  * ```
  *
  * @example Get the IPv6 network address
  * ```ts
  * import { getNetworkAddress } from "@std/net/get-network-address";
- * import { assert } from "@std/assert/assert";
+ * import { assertNotEquals } from "@std/assert/assert-not-equals";
  *
- * const address = getNetworkAddress("IPv6");
- *
- * assert(address !== undefined);
+ * assertNotEquals(getNetworkAddress("IPv6"), undefined);
  * ```
  */
 export function getNetworkAddress(
