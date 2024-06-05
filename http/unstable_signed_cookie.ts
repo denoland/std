@@ -16,7 +16,7 @@ function splitByLast(value: string, separator: string): [string, string] {
  * key.
  *
  * @example Usage
- * ```ts
+ * ```ts no-eval no-assert
  * import { signCookie } from "@std/http/unstable-signed-cookie";
  * import { setCookie } from "@std/http/cookie";
  *
@@ -54,7 +54,7 @@ export async function signCookie(
  * Returns a promise of a boolean indicating whether the signed cookie is valid.
  *
  * @example Usage
- * ```ts
+ * ```ts no-eval no-assert
  * import { verifyCookie } from "@std/http/unstable-signed-cookie";
  * import { getCookies } from "@std/http/cookie";
  *
@@ -95,7 +95,7 @@ export async function verifyCookie(
  * Important: always verify the cookie using {@linkcode verifyCookie} first.
  *
  * @example Usage
- * ```ts
+ * ```ts no-eval no-assert
  * import { verifyCookie, parseSignedCookie } from "@std/http/unstable-signed-cookie";
  * import { getCookies } from "@std/http/cookie";
  *

@@ -4,14 +4,20 @@
 import { NIL_UUID } from "./constants.ts";
 
 /**
- * Check if the passed UUID is the nil UUID.
+ * Determines whether the UUID is the
+ * {@link https://www.rfc-editor.org/rfc/rfc4122#section-4.1.7 | nil UUID}.
  *
- * @example
+ * @param id UUID value.
+ *
+ * @returns `true` if the UUID is the nil UUID, otherwise `false`.
+ *
+ * @example Usage
  * ```ts
  * import { isNil } from "@std/uuid";
+ * import { assert, assertFalse } from "@std/assert";
  *
- * isNil("00000000-0000-0000-0000-000000000000"); // true
- * isNil(crypto.randomUUID()); // false
+ * assert(isNil("00000000-0000-0000-0000-000000000000"));
+ * assertFalse(isNil(crypto.randomUUID()));
  * ```
  */
 export function isNil(id: string): boolean {
@@ -19,14 +25,19 @@ export function isNil(id: string): boolean {
 }
 
 /**
- * Test a string to see if it is a valid UUID.
+ * Determines whether a string is a valid UUID.
  *
- * @example
+ * @param uuid UUID value.
+ *
+ * @returns `true` if the string is a valid UUID, otherwise `false`.
+ *
+ * @example Usage
  * ```ts
  * import { validate } from "@std/uuid";
+ * import { assert, assertFalse } from "@std/assert";
  *
- * validate("not a UUID"); // false
- * validate("6ec0bd7f-11c0-43da-975e-2a8ad9ebae0b"); // true
+ * assert(validate("6ec0bd7f-11c0-43da-975e-2a8ad9ebae0b"));
+ * assertFalse(validate("not a UUID"));
  * ```
  */
 export function validate(uuid: string): boolean {
@@ -39,12 +50,17 @@ export function validate(uuid: string): boolean {
 /**
  * Detect RFC version of a UUID.
  *
- * @example
+ * @param uuid UUID value.
+ *
+ * @returns The RFC version of the UUID.
+ *
+ * @example Usage
  * ```ts
  * import { version } from "@std/uuid";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
- * version("d9428888-122b-11e1-b85c-61cd3cbb3210"); // 1
- * version("109156be-c4fb-41ea-b1b4-efe1671c5836"); // 4
+ * assertEquals(version("d9428888-122b-11e1-b85c-61cd3cbb3210"), 1);
+ * assertEquals(version("6ec0bd7f-11c0-43da-975e-2a8ad9ebae0b"), 4);
  * ```
  */
 export function version(uuid: string): number {

@@ -10,26 +10,27 @@ import type { Reader, ReaderSync } from "@std/io/types";
 export type { Reader, ReaderSync };
 
 /**
- * Turns a {@linkcode Reader}, `r`, into an async iterator.
+ * Turns a {@linkcode https://jsr.io/@std/io/doc/types/~/Reader | Reader}, `r`, into an async iterator.
  *
- * @example
- * ```ts
+ * @param r A reader to turn into an async iterator.
+ * @param options Options for the iterateReader function.
+ * @returns An async iterator that yields Uint8Array.
+ *
+ * @example Convert a `Deno.FsFile` into an async iterator and iterate over it
+ * ```ts no-assert no-eval
  * import { iterateReader } from "@std/streams/iterate-reader";
  *
- * using f = await Deno.open("/etc/passwd");
+ * using f = await Deno.open("./README.md");
  * for await (const chunk of iterateReader(f)) {
  *   console.log(chunk);
  * }
  * ```
  *
- * Second argument can be used to tune size of a buffer.
- * Default size of the buffer is 32kB.
- *
- * @example
- * ```ts
+ * @example Specify a buffer size of 1MiB
+ * ```ts no-assert no-eval
  * import { iterateReader } from "@std/streams/iterate-reader";
  *
- * using f = await Deno.open("/etc/passwd");
+ * using f = await Deno.open("./README.md");
  * const it = iterateReader(f, {
  *   bufSize: 1024 * 1024
  * });
@@ -39,7 +40,7 @@ export type { Reader, ReaderSync };
  * ```
  *
  * @deprecated This will be removed in 1.0.0. Import from
- * {@linkhttps://jsr.io/@std/io | @std/io} instead.
+ * {@link https://jsr.io/@std/io | @std/io} instead.
  */
 export function iterateReader(
   r: Reader,
@@ -51,24 +52,27 @@ export function iterateReader(
 }
 
 /**
- * Turns a {@linkcode ReaderSync}, `r`, into an iterator.
+ * Turns a {@linkcode https://jsr.io/@std/io/doc/types/~/ReaderSync | ReaderSync}, `r`, into an iterator.
  *
- * ```ts
+ * @param r A reader to turn into an iterator.
+ * @param options Options for the iterateReaderSync function.
+ * @returns An iterator that yields Uint8Array.
+ *
+ * @example Convert a `Deno.FsFile` into an iterator and iterate over it
+ * ```ts no-eval no-assert
  * import { iterateReaderSync } from "@std/streams/iterate-reader";
  *
- * using f = Deno.openSync("/etc/passwd");
+ * using f = Deno.openSync("./README.md");
  * for (const chunk of iterateReaderSync(f)) {
  *   console.log(chunk);
  * }
  * ```
  *
- * Second argument can be used to tune size of a buffer.
- * Default size of the buffer is 32kB.
- *
- * ```ts
+ * @example Specify a buffer size of 1MiB
+ * ```ts no-eval no-assert
  * import { iterateReaderSync } from "@std/streams/iterate-reader";
-
- * using f = await Deno.open("/etc/passwd");
+ *
+ * using f = await Deno.open("./README.md");
  * const iter = iterateReaderSync(f, {
  *   bufSize: 1024 * 1024
  * });

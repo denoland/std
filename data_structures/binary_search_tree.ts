@@ -24,7 +24,7 @@ type Direction = "left" | "right";
  * | min()         | O(log n)     | O(n)       |
  * | max()         | O(log n)     | O(n)       |
  *
- * @example
+ * @example Usage
  * ```ts
  * import {
  *   BinarySearchTree,
@@ -99,13 +99,14 @@ export class BinarySearchTree<T> implements Iterable<T> {
    * Construct an empty binary search tree.
    *
    * @example Creating an empty binary search tree
-   * ```ts
+   * ```ts no-assert
    * import { BinarySearchTree } from "@std/data-structures";
+   *
    * const tree = new BinarySearchTree<number>();
    * ```
    *
    * @example Creating a binary search tree with a custom comparison function
-   * ```ts
+   * ```ts no-assert
    * import { BinarySearchTree, ascend } from "@std/data-structures";
    *
    * const tree = new BinarySearchTree<{ price: number, name: string }>(
@@ -167,14 +168,16 @@ export class BinarySearchTree<T> implements Iterable<T> {
    * function is copied from the input tree.
    *
    * @example Creating a binary search tree from an array like
-   * ```ts
+   * ```ts no-assert
    * import { BinarySearchTree } from "@std/data-structures";
+   *
    * const tree = BinarySearchTree.from<number>([42, 43, 41]);
    * ```
    *
    * @example Creating a binary search tree from an iterable object
-   * ```ts
+   * ```ts no-assert
    * import { BinarySearchTree } from "@std/data-structures";
+   *
    * const tree = BinarySearchTree.from<number>((function*() {
    *   yield 42;
    *   yield 43;
@@ -183,15 +186,17 @@ export class BinarySearchTree<T> implements Iterable<T> {
    * ```
    *
    * @example Creating a binary search tree from an existing binary search tree
-   * ```ts
+   * ```ts no-assert
    * import { BinarySearchTree } from "@std/data-structures";
+   *
    * const tree = BinarySearchTree.from<number>([42, 43, 41]);
    * const copy = BinarySearchTree.from(tree);
    * ```
    *
    * @example Creating a binary search tree from an array like with a custom comparison function
-   * ```ts
+   * ```ts no-assert
    * import { BinarySearchTree, descend } from "@std/data-structures";
+   *
    * const tree = BinarySearchTree.from<number>(
    *   [42, 43, 41],
    *   { compare: descend }
@@ -225,8 +230,9 @@ export class BinarySearchTree<T> implements Iterable<T> {
    * the values.
    *
    * @example Creating a binary search tree from an array like with a custom mapping function
-   * ```ts
+   * ```ts no-assert
    * import { BinarySearchTree } from "@std/data-structures";
+   *
    * const tree = BinarySearchTree.from<number, string>(
    *   [42, 43, 41],
    *   { map: (value) => value.toString() }
@@ -311,10 +317,13 @@ export class BinarySearchTree<T> implements Iterable<T> {
    * The complexity of this operation is O(1).
    *
    * @example Getting the size of the tree
-   * ```ts
+   * ```ts no-assert
    * import { BinarySearchTree } from "@std/data-structures";
+   * import { assertEquals } from "@std/assert/assert-equals";
+   *
    * const tree = BinarySearchTree.from<number>([42, 43, 41]);
-   * tree.size; // 3
+   *
+   * assertEquals(tree.size, 3);
    * ```
    *
    * @returns The count of values stored in the binary search tree.
@@ -427,9 +436,12 @@ export class BinarySearchTree<T> implements Iterable<T> {
    * @example Inserting values into the tree
    * ```ts
    * import { BinarySearchTree } from "@std/data-structures";
+   * import { assertEquals } from "@std/assert/assert-equals";
+   *
    * const tree = new BinarySearchTree<number>();
-   * tree.insert(42); // true
-   * tree.insert(42); // false
+   *
+   * assertEquals(tree.insert(42), true);
+   * assertEquals(tree.insert(42), false);
    * ```
    *
    * @param value The value to insert into the binary search tree.
@@ -448,9 +460,12 @@ export class BinarySearchTree<T> implements Iterable<T> {
    * @example Removing values from the tree
    * ```ts
    * import { BinarySearchTree } from "@std/data-structures";
+   * import { assertEquals } from "@std/assert/assert-equals";
+   *
    * const tree = BinarySearchTree.from<number>([42]);
-   * tree.remove(42); // true
-   * tree.remove(42); // false
+   *
+   * assertEquals(tree.remove(42), true);
+   * assertEquals(tree.remove(42), false);
    * ```
    *
    * @param value The value to remove from the binary search tree.
@@ -471,9 +486,12 @@ export class BinarySearchTree<T> implements Iterable<T> {
    * @example Finding values in the tree
    * ```ts
    * import { BinarySearchTree } from "@std/data-structures";
+   * import { assertEquals } from "@std/assert/assert-equals";
+   *
    * const tree = BinarySearchTree.from<number>([42]);
-   * tree.find(42); // 42
-   * tree.find(43); // null
+   *
+   * assertEquals(tree.find(42), 42);
+   * assertEquals(tree.find(43), null);
    * ```
    *
    * @param value The value to search for in the binary search tree.
@@ -493,8 +511,11 @@ export class BinarySearchTree<T> implements Iterable<T> {
    * @example Finding the minimum value in the tree
    * ```ts
    * import { BinarySearchTree } from "@std/data-structures";
+   * import { assertEquals } from "@std/assert/assert-equals";
+   *
    * const tree = BinarySearchTree.from<number>([42, 43, 41]);
-   * tree.min(); // 41
+   *
+   * assertEquals(tree.min(), 41);
    * ```
    *
    * @returns The minimum value in the binary search tree, or null if the tree is empty.
@@ -513,8 +534,11 @@ export class BinarySearchTree<T> implements Iterable<T> {
    * @example Finding the maximum value in the tree
    * ```ts
    * import { BinarySearchTree } from "@std/data-structures";
+   * import { assertEquals } from "@std/assert/assert-equals";
+   *
    * const tree = BinarySearchTree.from<number>([42, 43, 41]);
-   * tree.max(); // 43
+   *
+   * assertEquals(tree.max(), 43);
    * ```
    *
    * @returns The maximum value in the binary search tree, or null if the tree is empty.
@@ -531,10 +555,13 @@ export class BinarySearchTree<T> implements Iterable<T> {
    * @example Clearing the tree
    * ```ts
    * import { BinarySearchTree } from "@std/data-structures";
+   * import { assertEquals } from "@std/assert/assert-equals";
+   *
    * const tree = BinarySearchTree.from<number>([42, 43, 41]);
    * tree.clear();
-   * tree.size; // 0
-   * tree.find(42); // null
+   *
+   * assertEquals(tree.size, 0);
+   * assertEquals(tree.find(42), null);
    * ```
    */
   clear() {
@@ -550,10 +577,15 @@ export class BinarySearchTree<T> implements Iterable<T> {
    * @example Checking if the tree is empty
    * ```ts
    * import { BinarySearchTree } from "@std/data-structures";
+   * import { assertEquals } from "@std/assert/assert-equals";
+   *
    * const tree = new BinarySearchTree<number>();
-   * tree.isEmpty(); // true
+   *
+   * assertEquals(tree.isEmpty(), true);
+   *
    * tree.insert(42);
-   * tree.isEmpty(); // false
+   *
+   * assertEquals(tree.isEmpty(), false);
    * ```
    *
    * @returns `true` if the binary search tree is empty, `false` otherwise.
@@ -569,8 +601,11 @@ export class BinarySearchTree<T> implements Iterable<T> {
    * @example Using the in-order LNR iterator
    * ```ts
    * import { BinarySearchTree } from "@std/data-structures";
+   * import { assertEquals } from "@std/assert/assert-equals";
+   *
    * const tree = BinarySearchTree.from([4, 1, 2, 5, 3]);
-   * [...tree.lnrValues()] // 1, 2, 3, 4, 5
+   *
+   * assertEquals([...tree.lnrValues()], [1, 2, 3, 4, 5]);
    * ```
    *
    * @returns An iterator that traverses the tree in-order (LNR).
@@ -597,6 +632,8 @@ export class BinarySearchTree<T> implements Iterable<T> {
    * @example Using the reverse in-order RNL iterator
    * ```ts
    * import { BinarySearchTree } from "@std/data-structures";
+   * import { assertEquals } from "@std/assert/assert-equals";
+   *
    * const tree = BinarySearchTree.from([4, 1, 2, 5, 3]);
    * [...tree.rnlValues()] // 5, 4, 3, 2, 1
    * ```
@@ -625,8 +662,11 @@ export class BinarySearchTree<T> implements Iterable<T> {
    * @example Using the pre-order NLR iterator
    * ```ts
    * import { BinarySearchTree } from "@std/data-structures";
+   * import { assertEquals } from "@std/assert/assert-equals";
+   *
    * const tree = BinarySearchTree.from([4, 1, 2, 5, 3]);
-   * [...tree.nlrValues()] // 4, 1, 2, 3, 5
+   *
+   * assertEquals([...tree.nlrValues()], [4, 1, 2, 3, 5]);
    * ```
    *
    * @returns An iterator that traverses the tree in pre-order (NLR).
@@ -649,8 +689,11 @@ export class BinarySearchTree<T> implements Iterable<T> {
    * @example Using the post-order LRN iterator
    * ```ts
    * import { BinarySearchTree } from "@std/data-structures";
+   * import { assertEquals } from "@std/assert/assert-equals";
+   *
    * const tree = BinarySearchTree.from([4, 1, 2, 5, 3]);
-   * [...tree.lrnValues()] // 3, 2, 1, 5, 4
+   *
+   * assertEquals([...tree.lrnValues()], [3, 2, 1, 5, 4]);
    * ```
    *
    * @returns An iterator that traverses the tree in post-order (LRN).
@@ -682,8 +725,11 @@ export class BinarySearchTree<T> implements Iterable<T> {
    * @example Using the level-order BFS iterator
    * ```ts
    * import { BinarySearchTree } from "@std/data-structures";
+   * import { assertEquals } from "@std/assert/assert-equals";
+   *
    * const tree = BinarySearchTree.from([4, 1, 2, 5, 3]);
-   * [...tree.lvlValues()] // 4, 1, 5, 2, 3
+   *
+   * assertEquals([...tree.lvlValues()], [4, 1, 5, 2, 3]);
    * ```
    *
    * @returns An iterator that traverses the tree in level-order (BFS).
@@ -706,8 +752,11 @@ export class BinarySearchTree<T> implements Iterable<T> {
    * @example Using the in-order iterator
    * ```ts
    * import { BinarySearchTree } from "@std/data-structures";
+   * import { assertEquals } from "@std/assert/assert-equals";
+   *
    * const tree = BinarySearchTree.from([4, 1, 2, 5, 3]);
-   * [...tree] // 1, 2, 3, 4, 5
+   *
+   * assertEquals([...tree], [1, 2, 3, 4, 5]);
    * ```
    *
    * See {@link BinarySearchTree#lnrValues}.

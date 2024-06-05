@@ -4,10 +4,12 @@
 /**
  * Calculates the Levenshtein distance between two strings.
  *
- * @example
+ * @example Usage
  * ```ts
  * import { levenshteinDistance } from "@std/text/levenshtein-distance";
- * levenshteinDistance("aa", "bb"); // 2
+ * import { assertEquals } from "@std/assert/assert-equals";
+ *
+ * assertEquals(levenshteinDistance("aa", "bb"), 2);
  * ```
  * @param str1 - The first string.
  * @param str2 - The second string.

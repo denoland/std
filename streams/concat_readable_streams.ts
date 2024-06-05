@@ -6,9 +6,9 @@
  *
  * Cancelling the resulting stream will cancel all the input streams.
  *
- * @typeParam T Type of the chunks in the streams.
- *
- * @param streams An iterable of `ReadableStream`s.
+ * @typeParam T The type of the chunks in the streams.
+ * @param streams An iterable of `ReadableStream`s to concat.
+ * @returns A `ReadableStream` that will emit the concatenated chunks.
  *
  * @example Usage
  * ```ts

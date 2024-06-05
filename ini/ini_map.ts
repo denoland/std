@@ -6,7 +6,7 @@ export interface FormattingOptions {
   /** The character used to assign a value to a key; defaults to '='. */
   assignment?: string;
   /** Character(s) used to break lines in the config file; defaults to '\n'. Ignored on parse. */
-  lineBreak?: "\n" | "\r\n";
+  lineBreak?: "\n" | "\r\n" | "\r";
   /** Mark to use for setting comments; expects '#', ';', '//', defaults to '#' unless another mark is found. */
   commentChar?: "#" | ";" | "//";
   /** Use a plain assignment char or pad with spaces; defaults to false. Ignored on parse. */
@@ -15,15 +15,8 @@ export interface FormattingOptions {
   deduplicate?: boolean;
 }
 
-type Formatting = Omit<FormattingOptions, "lineBreak" | "commentChar"> & {
-  lineBreak?: string;
-  commentChar?: string;
-};
-
 /** Options for parsing INI strings. */
 export interface ParseOptions {
-  /** The character used to assign a value to a key; defaults to '='. */
-  assignment?: FormattingOptions["assignment"];
   /** Provide custom parsing of the value in a key/value pair. */
   reviver?: ReviverFunction;
 }
@@ -164,7 +157,7 @@ export class IniMap {
       return this.comments;
     },
   };
-  #formatting: Formatting;
+  #formatting: FormattingOptions;
 
   /** Constructs a new `IniMap`.
    * @param formatting Optional formatting options when printing an INI file.
@@ -182,7 +175,7 @@ export class IniMap {
     return size;
   }
 
-  get formatting(): Formatting {
+  get formatting(): FormattingOptions {
     return this.#formatting;
   }
 
@@ -389,34 +382,23 @@ export class IniMap {
   }
 
   *#readTextLines(text: string): Generator<string> {
-    const lineBreak = "\r\n";
     const { length } = text;
-    let lineBreakLength = -1;
     let line = "";
 
     for (let i = 0; i < length; i += 1) {
       const char = text[i]!;
 
-      if (lineBreak.includes(char)) {
+      if (char === "\n" || char === "\r") {
         yield line;
         line = "";
-        if (lineBreakLength === -1) {
-          const ahead = text[i + 1];
-          if (
-            ahead !== undefined && ahead !== char && lineBreak.includes(ahead)
-          ) {
-            if (!this.#formatting.lineBreak) {
-              this.#formatting.lineBreak = char + ahead;
-            }
-            lineBreakLength = 1;
-          } else {
-            if (!this.#formatting.lineBreak) {
-              this.#formatting.lineBreak = char;
-            }
-            lineBreakLength = 0;
+        if (char === "\r" && text[i + 1] === "\n") {
+          i++;
+          if (!this.#formatting.lineBreak) {
+            this.#formatting.lineBreak = "\r\n";
           }
+        } else if (!this.#formatting.lineBreak) {
+          this.#formatting.lineBreak = char;
         }
-        i += lineBreakLength;
       } else {
         line += char;
       }
@@ -525,7 +507,9 @@ export class IniMap {
           const mark = trimmed[0];
           if (mark) {
             // if mark is truthy, use the character.
-            this.#formatting.commentChar = mark === "/" ? "//" : mark;
+            this.#formatting.commentChar = mark === "/"
+              ? "//"
+              : mark as "#" | ";";
           }
         }
         this.#lines.push({

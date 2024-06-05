@@ -4,6 +4,16 @@
  * {@linkcode sprintf} and {@linkcode printf} for printing formatted strings to
  * stdout.
  *
+ * ```ts
+ * import { sprintf } from "@std/fmt/printf";
+ * import { assertEquals } from "@std/assert/assert-equals";
+ *
+ * assertEquals(sprintf("%d", 9), "9");
+ * assertEquals(sprintf("%o", 9), "11");
+ * assertEquals(sprintf("%f", 4), "4.000000");
+ * assertEquals(sprintf("%.3f", 0.9999), "1.000");
+ * ```
+ *
  * This implementation is inspired by POSIX and Golang but does not port
  * implementation code.
  *
@@ -916,11 +926,28 @@ class Printf {
 }
 
 /**
- * Converts and format a variable number of `args` as is specified by `format`.
+ * Converts and formats a variable number of `args` as is specified by `format`.
  * `sprintf` returns the formatted string.
  *
- * @param format
- * @param args
+ * See the module documentation for the available format strings.
+ *
+ * @example Usage
+ * ```ts
+ * import { sprintf } from "@std/fmt/printf";
+ * import { assertEquals } from "@std/assert";
+ *
+ * assertEquals(sprintf("%d", 9), "9");
+ *
+ * assertEquals(sprintf("%o", 9), "11");
+ *
+ * assertEquals(sprintf("%f", 4), "4.000000");
+ *
+ * assertEquals(sprintf("%.3f", 0.9999), "1.000");
+ * ```
+ *
+ * @param format The format string to use
+ * @param args The arguments to format
+ * @returns The formatted string
  */
 export function sprintf(format: string, ...args: unknown[]): string {
   const printf = new Printf(format, ...args);
@@ -930,8 +957,24 @@ export function sprintf(format: string, ...args: unknown[]): string {
 /**
  * Converts and format a variable number of `args` as is specified by `format`.
  * `printf` writes the formatted string to standard output.
- * @param format
- * @param args
+ *
+ * See the module documentation for the available format strings.
+ *
+ * @example Usage
+ * ```ts no-assert
+ * import { printf } from "@std/fmt/printf";
+ *
+ * printf("%d", 9); // Prints "9"
+ *
+ * printf("%o", 9); // Prints "11"
+ *
+ * printf("%f", 4); // Prints "4.000000"
+ *
+ * printf("%.3f", 0.9999); // Prints "1.000"
+ * ```
+ *
+ * @param format The format string to use
+ * @param args The arguments to format
  */
 export function printf(format: string, ...args: unknown[]) {
   const s = sprintf(format, ...args);

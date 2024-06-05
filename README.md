@@ -64,17 +64,8 @@ documentation:
 
 ## Stabilization
 
-The Standard Library is now in the process of stabilizing its packages. Below is
-the current schedule:
-
-- [ ] [`@std/bytes`](https://jsr.io/@std/bytes) is being stabilized on June 7,
-      2024 ([#4746](https://github.com/denoland/deno_std/pull/4746)).
-- [ ] [`@std/collections`](https://jsr.io/@std/collections) is being stabilized
-      on June 20, 2024
-      ([#4773](https://github.com/denoland/deno_std/pull/4773)).
-- [ ] [`@std/media-types`](https://jsr.io/@std/media-types) is being stabilized
-      on June 21, 2024
-      ([#4780](https://github.com/denoland/deno_std/pull/4780)).
+The Standard Library is now in the process of stabilizing its packages. See
+#4600 for the release schedule.
 
 Each package must go through the following steps to achieve stabilization:
 

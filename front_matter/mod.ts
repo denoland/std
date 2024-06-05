@@ -1,4 +1,3 @@
-// deno-lint-ignore-file no-unused-vars
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // Copyright (c) Jason Campbell. MIT license
 
@@ -13,19 +12,21 @@
  * ### JSON
  *
  * ```ts
- * import { test } from "@std/front-matter/test";
- * import { extract } from "@std/front-matter/json";
+ * import { test, extractJson } from "@std/front-matter";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const str = "---json\n{\"and\": \"this\"}\n---\ndeno is awesome";
- * const result = extract(str);
  *
- * test(str); // true
- * result.frontMatter; // "{\"and\": \"this\"}"
- * result.body; // "deno is awesome"
- * result.attrs; // { and: "this" }
+ * assertEquals(test(str), true);
+ * assertEquals(extractJson(str), {
+ *   frontMatter: "{\"and\": \"this\"}",
+ *   body: "deno is awesome",
+ *   attrs: { and: "this" }
+ * });
  * ```
  *
- * {@linkcode extractJson | extract} and {@linkcode test} support the following delimiters.
+ * {@linkcode extractJson | extract} and {@linkcode test} support the following
+ * delimiters.
  *
  * ```markdown
  * ---json
@@ -44,19 +45,21 @@
  * ### TOML
  *
  * ```ts
- * import { test } from "@std/front-matter/test";
- * import { extract } from "@std/front-matter/toml";
+ * import { test, extractToml } from "@std/front-matter";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const str = "---toml\nmodule = 'front_matter'\n---\ndeno is awesome";
- * const result = extract(str);
  *
- * test(str); // true
- * result.frontMatter; // "module = 'front_matter'"
- * result.body; // "deno is awesome"
- * result.attrs; // { module: "front_matter" }
+ * assertEquals(test(str), true);
+ * assertEquals(extractToml(str), {
+ *   frontMatter: "module = 'front_matter'",
+ *   body: "deno is awesome",
+ *   attrs: { module: "front_matter" }
+ * });
  * ```
  *
- * {@linkcode extractToml | extract} and {@linkcode test} support the following delimiters.
+ * {@linkcode extractToml | extract} and {@linkcode test} support the following
+ * delimiters.
  *
  * ```markdown
  * ---toml
@@ -81,19 +84,21 @@
  * ### YAML
  *
  * ```ts
- * import { test } from "@std/front-matter/test";
- * import { extract } from "@std/front-matter/yaml";
+ * import { test, extractYaml } from "@std/front-matter";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const str = "---yaml\nmodule: front_matter\n---\ndeno is awesome";
- * const result = extract(str);
  *
- * test(str); // true
- * result.frontMatter; // "module: front_matter"
- * result.body; // "deno is awesome"
- * result.attrs; // { module: "front_matter" }
+ * assertEquals(test(str), true);
+ * assertEquals(extractYaml(str), {
+ *   frontMatter: "module: front_matter",
+ *   body: "deno is awesome",
+ *   attrs: { module: "front_matter" }
+ * });
  * ```
  *
- * {@linkcode extractYaml | extract} and {@linkcode test} support the following delimiters.
+ * {@linkcode extractYaml | extract} and {@linkcode test} support the following
+ * delimiters.
  *
  * ```front_matter
  * ---
@@ -115,9 +120,11 @@
  *
  * @module
  */
-import type { extract as extractJson } from "./json.ts";
-import type { extract as extractToml } from "./toml.ts";
-import type { extract as extractYaml } from "./yaml.ts";
+import { extract as extractJson } from "./json.ts";
+import { extract as extractToml } from "./toml.ts";
+import { extract as extractYaml } from "./yaml.ts";
 
 export * from "./create_extractor.ts";
 export * from "./test.ts";
+
+export { extractJson, extractToml, extractYaml };

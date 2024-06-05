@@ -168,9 +168,35 @@ function normalizeColumn(column: Column): NormalizedColumn {
   return { header, prop };
 }
 
-/** Error thrown in {@linkcode stringify}. */
+/**
+ * Error thrown in {@linkcode stringify}.
+ *
+ * @example Usage
+ * ```ts no-assert
+ * import { stringify, StringifyError } from "@std/csv/stringify";
+ *
+ * try {
+ *   stringify([{ a: 1 }, { a: 2 }], { separator: "\r\n" });
+ * } catch (error) {
+ *   if (error instanceof StringifyError) {
+ *     console.error(error.message);
+ *   }
+ * }
+ * ```
+ */
 export class StringifyError extends Error {
-  /** Construct a new instance. */
+  /**
+   * Construct a new instance.
+   *
+   * @example Usage
+   * ```ts no-eval
+   * import { StringifyError } from "@std/csv/stringify";
+   *
+   * throw new StringifyError("An error occurred");
+   * ```
+   *
+   * @param message The error message.
+   */
   constructor(message?: string) {
     super(message);
     this.name = "StringifyError";
@@ -222,29 +248,15 @@ function getValuesFromItem(
 }
 
 /**
- * Write data using CSV encoding.
+ * Converts an array of objects into a CSV string.
  *
- * @param data The source data to stringify. It's an array of items which are
- * plain objects or arrays.
- *
- * `DataItem: Record<string, unknown> | unknown[]`
- *
- * ```ts
- * const data = [
- *   {
- *     name: "Deno",
- *     repo: { org: "denoland", name: "deno" },
- *     runsOn: ["Rust", "TypeScript"],
- *   },
- * ];
- * ```
- *
- * @example
+ * @example Usage
  * ```ts
  * import {
  *   Column,
  *   stringify,
  * } from "@std/csv/stringify";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * type Character = {
  *   age: number;
@@ -276,11 +288,12 @@ function getValuesFromItem(
  *   "age",
  * ];
  *
- * console.log(stringify(data, { columns }));
- * // first,age
- * // Rick,70
- * // Morty,14
+ * assertEquals(stringify(data, { columns }), `first,age\r\nRick,70\r\nMorty,14\r\n`);
  * ```
+ *
+ * @param data The source data to stringify. It's an array of items which are
+ * plain objects or arrays.
+ * @returns A CSV string.
  */
 export function stringify(
   data: DataItem[],

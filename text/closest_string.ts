@@ -1,27 +1,28 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 import { levenshteinDistance } from "./levenshtein_distance.ts";
-import { assert } from "@std/assert/assert";
 
 // NOTE: this metric may change in future versions (e.g. better than levenshteinDistance)
 const getWordDistance = levenshteinDistance;
 
 /**
- * get most-similar word
+ * The the most similar string from an array of strings.
  *
- * @example
+ * @example Usage
  * ```ts
  * import { closestString } from "@std/text/closest-string";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
- * const possibleWords: string[] = ["length", "size", "blah", "help"];
+ * const possibleWords = ["length", "size", "blah", "help"];
+ * const suggestion = closestString("hep", possibleWords);
  *
- * // case-insensitive by default
- * const word = closestString("hep", possibleWords);
+ * assertEquals(suggestion, "help");
  * ```
  *
- * @param givenWord - The string to measure distance against
- * @param possibleWords - The string-array that will be sorted
- * @param options.caseSensitive - Flag indicating whether the distance should include case. Default is false.
+ * @param givenWord The string to measure distance against
+ * @param possibleWords The string-array that will be sorted
+ * @param options An options bag containing a `caseSensitive` flag indicating
+ * whether the distance should include case. Default is false.
  * @returns A sorted copy of possibleWords
  * @note
  * the ordering of words may change with version-updates
@@ -36,10 +37,11 @@ export function closestString(
     caseSensitive?: boolean;
   },
 ): string {
-  assert(
-    possibleWords.length > 0,
-    `When using closestString(), the possibleWords array must contain at least one word`,
-  );
+  if (possibleWords.length === 0) {
+    throw new TypeError(
+      "When using closestString(), the possibleWords array must contain at least one word",
+    );
+  }
   const { caseSensitive } = { ...options };
 
   if (!caseSensitive) {
