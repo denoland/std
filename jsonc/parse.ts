@@ -324,7 +324,7 @@ class JSONCParser {
       throw new SyntaxError(buildErrorMessage(value));
     }
     if (typeof parsed !== "string") {
-      throw new SyntaxError(`Parsed value is not a string: ${parsed}`);
+      throw new TypeError(`Parsed value is not a string: ${parsed}`);
     }
     return parsed;
   }
@@ -350,7 +350,7 @@ class JSONCParser {
       throw new SyntaxError(buildErrorMessage(value));
     }
     if (typeof parsed !== "number") {
-      throw new SyntaxError(`Parsed value is not a number: ${parsed}`);
+      throw new TypeError(`Parsed value is not a number: ${parsed}`);
     }
     return parsed;
   }
