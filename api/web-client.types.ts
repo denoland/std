@@ -189,7 +189,7 @@ export const getProcType = (options?: ProcessOptions) => {
   if (options.noClose) {
     return PROCTYPE.DAEMON
   }
-  if (options.branch) {
+  if (options.branch || options.branchName || options.prefix) {
     return PROCTYPE.BRANCH
   }
   return PROCTYPE.SERIAL
@@ -346,6 +346,7 @@ export interface ArtifactTerminal {
   newTerminal(): ArtifactTerminal
   resumeTerminal(pid: PID): ArtifactTerminal
   ensureBranch(branch: PID, ancestor: PID): Promise<PID>
+  lsChildren(pid: PID): Promise<string[]>
 }
 /** The client home interface to Artifact, only able to create new sessions.
 Will handle the generation of signing keys for the session, and authentication

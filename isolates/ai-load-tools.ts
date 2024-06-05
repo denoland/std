@@ -1,4 +1,5 @@
 import * as loadHelp from '@/isolates/load-help.ts'
+import * as engage from '@/isolates/engage-help.ts'
 import { assert, Debug, posix } from '@utils'
 import OpenAI from 'openai'
 import { Help, IsolateApi, JSONSchemaType } from '@/constants.ts'
@@ -17,34 +18,34 @@ const load = async (commands: string[] = [], api: IsolateApi) => {
   const tools: OpenAI.ChatCompletionTool[] = []
   const names = new Set()
   const actions: Record<string, (parameters: object) => unknown> = {}
-  for (const command of commands) {
-    log('loading command:', command)
+  for (const cmd of commands) {
+    log('loading command:', cmd)
     let tool: OpenAI.ChatCompletionTool, action, name: string
-    if (!command.includes(':')) {
-      assert(command.startsWith('helps/'), `invalid help: ${command}`)
-      name = posix.basename(command)
+    if (!cmd.includes(':')) {
+      assert(cmd.startsWith('helps/'), `invalid help: ${cmd}`)
+      name = posix.basename(cmd)
       // TODO cache and parallelize
       const { load } = await api.functions<loadHelp.Api>('load-help')
       const help = await load({ help: name })
-      assert(help.description, `missing description: ${command}`)
+      assert(help.description, `missing description: ${cmd}`)
       const schemas = await api.apiSchema('engage-help')
-      const { engage } = await api.actions('engage-help')
+      const { command } = await api.actions<engage.Api>('engage-help')
       action = ({ text }: { text: string }) => {
-        log('engage:', name, text, api.commit)
-        return engage({ help: name, text }, { branch: true })
+        log('help command:', name, text, api.commit)
+        return command({ help: name, text })
       }
       tool = toTool(name, help, schemas.engage)
     } else {
-      const [isolate, _name] = command.split(':')
+      const [isolate, _name] = cmd.split(':')
       name = _name
       const isolateApiSchema = await api.apiSchema(isolate)
       const functions = await api.actions(isolate)
-      assert(name in functions, `isolate missing command: ${command}`)
+      assert(name in functions, `isolate missing command: ${cmd}`)
       action = functions[name]
       tool = isolateToGptApi(name, isolateApiSchema[name])
     }
-    assert(action, `missing action: ${command}`)
-    assert(!names.has(name), `duplicate action: ${command}`)
+    assert(action, `missing action: ${cmd}`)
+    assert(!names.has(name), `duplicate action: ${cmd}`)
     names.add(name)
     assert(typeof action === 'function', `invalid action: ${action}`)
     actions[name] = action as (parameters: object) => unknown

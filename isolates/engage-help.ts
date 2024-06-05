@@ -4,32 +4,53 @@ import { Help, RUNNERS } from '@/constants.ts'
 import * as loadHelp from '@/isolates/load-help.ts'
 import * as prompt from '@/isolates/ai-prompt.ts'
 import * as promptInjector from '@/isolates/ai-prompt-injector.ts'
+import { SESSION_PATH } from '@/isolates/ai-completions.ts'
 const log = Debug('AI:engage-help')
 
-export const api = {
-  engage: {
-    description: 'engage the help',
-    type: 'object',
-    additionalProperties: false,
-    required: ['help', 'text'],
-    properties: {
-      help: {
-        description: 'the name of the help',
-        type: 'string',
-      },
-      text: {
-        description: 'the text to pass to the help runner as the prompt',
-        type: 'string',
-      },
+const engage = {
+  description: 'engage the help',
+  type: 'object',
+  additionalProperties: false,
+  required: ['help', 'text'],
+  properties: {
+    help: {
+      description: 'the name of the help',
+      type: 'string',
     },
+    text: {
+      description: 'the text to pass to the help runner as the prompt',
+      type: 'string',
+    },
+  },
+}
+export const api = {
+  engage,
+  engageNew: { ...engage, description: 'Blank the session file on start' },
+  command: {
+    ...engage,
+    description:
+      'Branch and engage, without interacting with the user, returning the result to the caller once finished',
+  },
+  help: {
+    ...engage,
+    description:
+      'Branch and engage, interacting with the user, returning the result to the caller once finished',
+  },
+  agent: {
+    ...engage,
+    description:
+      'Branch and engage, interacting with the user, never finishing and never returning unless explicitly told to',
   },
 }
 export interface Api {
   engage: (params: { help: string; text: string }) => Promise<unknown>
+  command: (params: { help: string; text: string }) => Promise<unknown>
+  help: (params: { help: string; text: string }) => Promise<unknown>
+  agent: (params: { help: string; text: string }) => Promise<unknown>
 }
 export const functions = {
-  engage: async (params: { help: string; text: string }, api: IsolateApi) => {
-    const { help: path, text } = params
+  engage: async (p: { help: string; text: string }, api: IsolateApi) => {
+    const { help: path, text } = p
     log('engage:', path)
     const { load } = await api.functions<loadHelp.Api>('load-help')
     const help: Help = await load({ help: path })
@@ -39,22 +60,31 @@ export const functions = {
     assert(isValid, `no runner: ${help.runner}`)
     log('found runner string:', runner)
 
-    // this needs to be out of band, in a branch
-    // but HAL should call its base help directly, in band
-
     const isolate = runner === RUNNERS.CHAT ? prompt : promptInjector
 
-    await isolate.functions.prompt({ help, text }, api)
+    return await isolate.functions.prompt({ help, text }, api)
   },
-  continue: (
-    { help: path, text, commit }: {
-      help: string
-      text: string
-      commit: string
-    },
-  ) => {
-    log('continue:', path, text, commit)
-    // this would continue the help, but in the same branch as a previous run
-    // this should be handled at the process level, not internally
+  engageNew: (p: { help: string; text: string }, api: IsolateApi) => {
+    api.delete(SESSION_PATH)
+    return functions.engage(p, api)
+  },
+  async command(p: { help: string; text: string }, api: IsolateApi) {
+    const { engageNew } = await api.actions('engage-help')
+    const prefix = `command_${p.help}`
+    const result = await engageNew(p, { prefix })
+    log('command result', result)
+    return result
+  },
+  async help(p: { help: string; text: string }, api: IsolateApi) {
+    // TODO make this end only with a specific tool call
+    // else it is meant to be a discussion with the user
+    const { engageNew } = await api.actions('engage-help')
+    const prefix = `help_${p.help}`
+    await engageNew(p, { prefix, noClose: true })
+  },
+  async agent(p: { help: string; text: string }, api: IsolateApi) {
+    const { engageNew } = await api.actions('engage-help')
+    const prefix = `agent_${p.help}`
+    await engageNew(p, { prefix, noClose: true })
   },
 }

@@ -128,8 +128,6 @@ export default (name: string, cradleMaker: CradleMaker) => {
     const { pid } = await terminal.init({ repo: 'test/doubleToolCall' })
     const help = `
 ---
-config:
-  model: gpt-4o
 commands:
   - io-fixture:ping
 ---
@@ -149,6 +147,31 @@ commands:
     const session = await terminal.readJSON<Messages[]>('session.json', pid)
     log('session', session)
     console.dir(session, { depth: Infinity })
+    await terminal.engineStop()
+  })
+  Deno.test('help in branch', async () => {
+    const terminal = await cradleMaker()
+    const { pid } = await terminal.init({ repo: 'test/helpInBranch' })
+    const help = `
+---
+commands:
+  - helps/help-in-branch
+description: A test help used for exercising the system   
+---`
+    await terminal.write('helps/help-in-branch.md', help, pid)
+    const isolate = 'engage-help'
+    const { engage } = await terminal.actions<engageHelp.Api>(isolate, pid)
+    const text =
+      'call the "help-in-branch" function with: "Just say the number: 1"'
+    log.enable(
+      'AI:tests AI:io-fixture AI:prompt AI:io-fixture AI:completions AI:engage-help AI:tools:load-tools AI:tools:execute-tools *qbr*',
+    )
+    const result = await engage({ help: 'help-in-branch', text })
+    log('resultL %s', result)
+
+    const session = await terminal.readJSON<Messages[]>('session.json', pid)
+    log('session', session)
+
     await terminal.engineStop()
   })
 
