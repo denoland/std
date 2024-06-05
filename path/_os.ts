@@ -12,7 +12,7 @@ function getIsWindows(): boolean {
 
   // deno-lint-ignore no-explicit-any
   const { navigator } = globalThis as any;
-  if (navigator?.appVersion?.includes?.("Win")) {
+  if (navigator?.userAgent?.includes?.("Windows")) {
     return true;
   }
 
