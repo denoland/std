@@ -45,7 +45,7 @@
     "@std/streams": "jsr:@std/streams@^0.224.3",
     "@std/testing": "jsr:@std/testing@^0.225.0",
     "@std/text": "jsr:@std/text@^0.224.2",
-    "@std/toml": "jsr:@std/toml@^0.224.1",
+    "@std/toml": "jsr:@std/toml@^1.0.0-rc.1",
     "@std/ulid": "jsr:@std/ulid@^0.224.1",
     "@std/url": "jsr:@std/url@^0.224.0",
     "@std/uuid": "jsr:@std/uuid@1.0.0-rc.1",
