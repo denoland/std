@@ -257,7 +257,7 @@ export class BufReader implements Reader {
       let partial;
       if (err instanceof PartialReadError) {
         partial = err.partial;
-        if (partial === undefined) {
+        if (!(partial instanceof Uint8Array)) {
           throw new TypeError(
             "bufio: caught error from `readSlice()` without `partial` property",
           );
