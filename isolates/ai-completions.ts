@@ -27,7 +27,7 @@ export type Api = {
   create: (help: Help) => Promise<void>
 }
 export const functions = {
-  async create(help: Help, api: IsolateApi): Promise<void> {
+  async create(help: Help, api: IsolateApi): Promise<string | void> {
     const tools = await loadTools(help.commands, api)
     const { model = 'gpt-4o', temperature = 0 } = help.config || {}
     const messages = await api.readJSON<MessageParam[]>(SESSION_PATH)
@@ -47,7 +47,6 @@ export const functions = {
     api.writeJSON(SESSION_PATH, messages)
 
     log('streamCall started', print(api.pid))
-    // TODO move this to an isolate call that runs in a branch
     const streamCall = await ai.chat.completions.create(args)
     log('streamCall placed')
     for await (const part of streamCall) {
@@ -86,6 +85,9 @@ export const functions = {
       }
       api.writeJSON(SESSION_PATH, messages)
     }
-    log('streamCall complete', assistant?.tool_calls || assistant?.content)
+    log('streamCall complete', assistant)
+    if (assistant.content) {
+      return assistant.content
+    }
   },
 }

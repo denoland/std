@@ -29,13 +29,15 @@ export const functions = {
   prompt: async ({ help, text }: Args, api: IsolateApi) => {
     await prepare(help, text, api)
     const { create } = await api.actions<Api>('ai-completions')
+    let result
     do {
-      await create(help)
+      result = await create(help)
       if (await isDone(api)) {
-        return
+        return result
       }
       await executeTools(help, api)
     } while (!await isDone(api))
+    console.error('loop completed with no result')
   },
 }
 

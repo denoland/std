@@ -69,17 +69,10 @@ export const api = {
   prompt: {
     type: 'object',
     required: ['text'],
-    properties: {
-      text: {
-        type: 'string',
-      },
-    },
+    properties: { text: { type: 'string' } },
     additionalProperties: false,
   },
-  resetSession: {
-    type: 'object',
-    additionalProperties: false,
-  },
+  resetSession: { type: 'object', additionalProperties: false },
 }
 
 export const ENTRY_HELP_FILE = 'entry.json'

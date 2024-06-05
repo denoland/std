@@ -7,6 +7,7 @@ import {
   EngineInterface,
   freezePid,
   getActorPid,
+  IoStruct,
   isPidEqual,
   isValidForMachine,
   JsonValue,
@@ -298,6 +299,10 @@ export class Terminal implements ArtifactTerminal {
     }
     await Promise.race([actuallyPierced, branchEnsured()])
     return branch
+  }
+  async lsChildren() {
+    const obj = await this.readJSON<IoStruct>('.io.json')
+    return Object.values(obj.branches)
   }
 }
 
