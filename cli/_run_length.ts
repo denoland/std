@@ -1,7 +1,5 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import { assert } from "@std/assert/assert";
-
 export function runLengthEncode(arr: number[]) {
   const data: number[] = [];
   const runLengths: number[] = [];
@@ -18,7 +16,11 @@ export function runLengthEncode(arr: number[]) {
     }
   }
 
-  assert(runLengths.every((r) => r < 0x100));
+  for (const r of runLengths) {
+    if (r >= 0x100) {
+      throw new Error(`Run length too long: ${r}`);
+    }
+  }
 
   return {
     d: btoa(String.fromCharCode(...data)),
