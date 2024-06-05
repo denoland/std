@@ -1,7 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-import { assert } from "@std/assert/assert";
 import { exponentialBackoffWithJitter } from "./_util.ts";
 
 /**
@@ -142,12 +141,11 @@ export async function retry<T>(
     ...opts,
   };
 
-  assert(options.maxTimeout >= 0, "maxTimeout is less than 0");
-  assert(
-    options.minTimeout <= options.maxTimeout,
-    "minTimeout is greater than maxTimeout",
-  );
-  assert(options.jitter <= 1, "jitter is greater than 1");
+  if (options.maxTimeout <= 0) throw new TypeError("maxTimeout is less than 0");
+  if (options.minTimeout > options.maxTimeout) {
+    throw new TypeError("minTimeout is greater than maxTimeout");
+  }
+  if (options.jitter > 1) throw new TypeError("jitter is greater than 1");
 
   let attempt = 0;
   while (true) {
