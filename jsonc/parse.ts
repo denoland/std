@@ -8,9 +8,6 @@
  *
  * @module
  */
-
-import { assert } from "@std/assert/assert";
-
 import type { JsonValue } from "@std/json/common";
 export type { JsonValue } from "@std/json/common";
 
@@ -77,8 +74,6 @@ type Token = {
   sourceText: string;
   position: number;
 };
-
-const originalJSONParse = globalThis.JSON.parse;
 
 // First tokenize and then parse the token.
 class JSONCParser {
@@ -324,11 +319,13 @@ class JSONCParser {
     let parsed;
     try {
       // Use JSON.parse to handle `\u0000` etc. correctly.
-      parsed = originalJSONParse(value.sourceText);
+      parsed = JSON.parse(value.sourceText);
     } catch {
       throw new SyntaxError(buildErrorMessage(value));
     }
-    assert(typeof parsed === "string");
+    if (typeof parsed !== "string") {
+      throw new SyntaxError(`Parsed value is not a string: ${parsed}`);
+    }
     return parsed;
   }
   #parseNullOrTrueOrFalseOrNumber(value: {
@@ -348,11 +345,13 @@ class JSONCParser {
     let parsed;
     try {
       // Use JSON.parse to handle `+100`, `Infinity` etc. correctly.
-      parsed = originalJSONParse(value.sourceText);
+      parsed = JSON.parse(value.sourceText);
     } catch {
       throw new SyntaxError(buildErrorMessage(value));
     }
-    assert(typeof parsed === "number");
+    if (typeof parsed !== "number") {
+      throw new SyntaxError(`Parsed value is not a number: ${parsed}`);
+    }
     return parsed;
   }
 }
