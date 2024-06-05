@@ -30,7 +30,19 @@ import {
  * ```
  */
 export class WalkError extends Error {
-  /** File path of the root that's being walked. */
+  /**
+   * File path of the root that's being walked.
+   *
+   * @example Usage
+   * ```ts
+   * import { WalkError } from "@std/fs/walk";
+   * import { assertEquals } from "@std/assert/assert-equals";
+   *
+   * const error = new WalkError("error message", "./foo");
+   *
+   * assertEquals(error.root, "./foo");
+   * ```
+   */
   root: string;
 
   /**

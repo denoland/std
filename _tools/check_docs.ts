@@ -43,6 +43,7 @@ const ENTRY_POINTS = [
   "../fmt/duration.ts",
   "../fmt/printf.ts",
   "../front_matter/mod.ts",
+  "../fs/mod.ts",
   "../html/mod.ts",
   "../http/mod.ts",
   "../internal/mod.ts",
