@@ -1,7 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-import { assert } from "@std/assert/assert";
 import { copy } from "@std/bytes/copy";
 
 const MAX_SIZE = 2 ** 32 - 2;
@@ -376,7 +375,9 @@ export class Buffer {
   }
 
   #reslice(len: number) {
-    assert(len <= this.#buf.buffer.byteLength);
+    if (len > this.#buf.buffer.byteLength) {
+      throw new RangeError("Length is greater than buffer capacity");
+    }
     this.#buf = new Uint8Array(this.#buf.buffer, 0, len);
   }
 
