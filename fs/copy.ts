@@ -35,7 +35,7 @@ interface InternalCopyOptions extends CopyOptions {
 
 function assertIsDate(date: Date | null, name: string): asserts date is Date {
   if (date === null) {
-    throw new ReferenceError(`${name} is unavailable`);
+    throw new Error(`${name} is unavailable`);
   }
 }
 

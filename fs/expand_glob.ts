@@ -158,7 +158,7 @@ export async function* expandGlob(
   while (segments.length > 0 && !isGlob(segments[0]!)) {
     const seg = segments.shift();
     if (seg === undefined) {
-      throw new ReferenceError("Unexpected undefined segment");
+      throw new TypeError("Unexpected undefined segment");
     }
     fixedRoot = joinGlobs([fixedRoot, seg], globOptions);
   }
@@ -318,7 +318,7 @@ export function* expandGlobSync(
   while (segments.length > 0 && !isGlob(segments[0]!)) {
     const seg = segments.shift();
     if (seg === undefined) {
-      throw new ReferenceError("Unexpected undefined segment");
+      throw new TypeError("Unexpected undefined segment");
     }
     fixedRoot = joinGlobs([fixedRoot, seg], globOptions);
   }
