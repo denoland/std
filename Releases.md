@@ -1,3 +1,136 @@
+### 2024.06.06
+
+#### @std/archive 0.224.1 (patch)
+
+- refactor(archive): cleanup use of `@std/assert` (#4975)
+
+#### @std/assert 1.0.0-rc.1 (prerelease)
+
+- BREAKING(assert): make `unreachable()` consistent with `@std/assert` (#4943)
+- BREAKING(assert): `assertAlmostEquals()` sets useful tolerance automatically
+  (#4460)
+- docs(assert): remove outdated API docs (#4937)
+- refactor(assert): minor cleanups (#4941)
+- chore(assert): release `assert@1.0.0-rc.1` (#4934)
+
+#### @std/async 0.224.2 (patch)
+
+- refactor(async): cleanup use of `@std/assert` (#4950)
+
+#### @std/bytes 1.0.0 (major)
+
+- chore(bytes): release `bytes@1.0.0` (#4746)
+
+#### @std/cli 0.224.6 (patch)
+
+- docs(cli,encoding,fmt,jsonc,path,semver,testing,text,toml,url): remove "This
+  module is browser compatible" note (#4945)
+- refactor(cli): cleanup use of `@std/assert` (#4966)
+
+#### @std/csv 0.224.3 (patch)
+
+- refactor(csv): cleanup use of `@std/assert` (#4976)
+
+#### @std/data-structures 0.225.2 (patch)
+
+- refactor(data-structures): remove use of `public` keyword (#4983)
+
+#### @std/datetime 0.224.1 (patch)
+
+- docs(datetime): trim module documentation (#4971)
+
+#### @std/encoding 1.0.0-rc.2 (prerelease)
+
+- docs(cli,encoding,fmt,jsonc,path,semver,testing,text,toml,url): remove "This
+  module is browser compatible" note (#4945)
+
+#### @std/fmt 0.225.4 (patch)
+
+- docs(cli,encoding,fmt,jsonc,path,semver,testing,text,toml,url): remove "This
+  module is browser compatible" note (#4945)
+
+#### @std/fs 0.229.2 (patch)
+
+- refactor(fs): cleanup use of `@std/assert` (#4948)
+
+#### @std/html 1.0.0-rc.1 (prerelease)
+
+- chore(html): release `html@1.0.0-rc.1` (#4962)
+
+#### @std/http 0.224.4 (patch)
+
+- refactor(http): cleanup use of `@std/assert` (#4974)
+
+#### @std/io 0.224.1 (patch)
+
+- refactor(io): cleanup use of `@std/assert` (#4979)
+
+#### @std/jsonc 0.224.2 (patch)
+
+- docs(cli,encoding,fmt,jsonc,path,semver,testing,text,toml,url): remove "This
+  module is browser compatible" note (#4945)
+- refactor(jsonc): cleanup use of `@std/assert` (#4968)
+
+#### @std/log 0.224.2 (patch)
+
+- refactor(log): cleanup use of `@std/assert` (#4973)
+
+#### @std/path 1.0.0-rc.1 (prerelease)
+
+- BREAKING(path): remove `path.posix` and `path.win32` (#4953)
+- BREAKING(path): remove separator argument from `common()` (#4947)
+- BREAKING(path): remove `GlobToRegExpOptions.os` and `OSType` export (#4928)
+- docs(path): fix typo in `normalize` doc (#4959)
+- docs(path): improve `join` jsdoc (#4958)
+- docs(path): fix typo (#4956)
+- docs(cli,encoding,fmt,jsonc,path,semver,testing,text,toml,url): remove "This
+  module is browser compatible" note (#4945)
+- refactor(path): clean `isWindows` logic (#4972)
+- refactor(path): cleanup `join()` implementations (#4946)
+- test(path): improve `windows.parse()` test (#4952)
+- test(path): improve `normalizeGlob()` test coverage (#4940)
+- test(path): improve `normalize()` coverage (#4939)
+- chore(path): release `path@1.0.0-rc.1` (#4951)
+- chore(path): use `assertPath()` in `windows.join()` (#4960)
+
+#### @std/semver 0.224.3 (patch)
+
+- docs(cli,encoding,fmt,jsonc,path,semver,testing,text,toml,url): remove "This
+  module is browser compatible" note (#4945)
+
+#### @std/streams 0.224.4 (patch)
+
+- refactor(streams): cleanup use of `@std/assert` (#4980)
+
+#### @std/testing 0.225.1 (patch)
+
+- docs(cli,encoding,fmt,jsonc,path,semver,testing,text,toml,url): remove "This
+  module is browser compatible" note (#4945)
+
+#### @std/text 0.224.3 (patch)
+
+- docs(cli,encoding,fmt,jsonc,path,semver,testing,text,toml,url): remove "This
+  module is browser compatible" note (#4945)
+- refactor(text): cleanup use of `@std/assert` (#4977)
+
+#### @std/toml 1.0.0-rc.1 (prerelease)
+
+- BREAKING(toml): rename `FormatOptions` to `StringifyOptions` (#4963)
+- docs(cli,encoding,fmt,jsonc,path,semver,testing,text,toml,url): remove "This
+  module is browser compatible" note (#4945)
+- chore(toml): release `toml@1.0.0-rc.1` (#4969)
+- chore(toml): minor cleanup (#4964)
+
+#### @std/url 0.224.1 (patch)
+
+- docs(url): complete documentation (#4965)
+- docs(cli,encoding,fmt,jsonc,path,semver,testing,text,toml,url): remove "This
+  module is browser compatible" note (#4945)
+
+#### @std/webgpu 0.224.4 (patch)
+
+- refactor(webgpu): cleanup use of `@std/assert` (#4978)
+
 ### 2024.06.03
 
 #### @std/assert 0.226.0 (minor)
