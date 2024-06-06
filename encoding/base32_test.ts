@@ -3,12 +3,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import { assertThrows } from "@std/assert/assert-throws";
 import { assertEquals, assertExists } from "@std/assert";
-import {
-  Base32DecoderStream,
-  Base32EncoderStream,
-  decodeBase32,
-  encodeBase32,
-} from "./base32.ts";
+import { decodeBase32, encodeBase32 } from "./base32.ts";
 
 // Lifted from https://stackoverflow.com/questions/38987784
 const fromHexString = (hexString: string): Uint8Array =>
@@ -138,47 +133,4 @@ Deno.test({
     const data = "a".repeat(16400);
     assertExists(encodeBase32(data));
   },
-});
-
-Deno.test("Base32EncoderStream() encodes stream", async () => {
-  const readable = (await Deno.open("./deno.lock"))
-    .readable
-    .pipeThrough(
-      new TransformStream({
-        transform(chunk, controller) {
-          const i = Math.floor(Math.random() * chunk.length);
-          controller.enqueue(chunk.slice(0, i));
-          controller.enqueue(chunk.slice(i));
-        },
-      }),
-    )
-    .pipeThrough(new Base32EncoderStream());
-
-  assertEquals(
-    (await Array.fromAsync(readable)).join(""),
-    encodeBase32(await Deno.readFile("./deno.lock")),
-  );
-});
-
-Deno.test("Base32DecoderStream() decodes stream", async () => {
-  const readable = (await Deno.open("./deno.lock"))
-    .readable
-    .pipeThrough(new Base32EncoderStream())
-    .pipeThrough(
-      new TransformStream({
-        transform(chunk, controller) {
-          const i = Math.floor(Math.random() * chunk.length);
-          controller.enqueue(chunk.slice(0, i));
-          controller.enqueue(chunk.slice(i));
-        },
-      }),
-    )
-    .pipeThrough(new Base32DecoderStream());
-
-  assertEquals(
-    Uint8Array.from(
-      (await Array.fromAsync(readable)).map((x) => [...x]).flat(),
-    ),
-    await Deno.readFile("./deno.lock"),
-  );
 });
