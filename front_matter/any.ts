@@ -5,8 +5,8 @@ import {
   type Extractor,
   type Parser,
 } from "./create_extractor.ts";
-import { parse as parseYAML } from "@std/yaml/parse";
-import { parse as parseTOML } from "@std/toml/parse";
+import { parse as parseYaml } from "@std/yaml/parse";
+import { parse as parseToml } from "@std/toml/parse";
 
 /**
  * Extracts and parses {@link https://yaml.org | YAML}, {@link https://toml.io |
@@ -31,7 +31,7 @@ import { parse as parseTOML } from "@std/toml/parse";
  * ```
  */
 export const extract: Extractor = createExtractor({
-  yaml: parseYAML as Parser,
-  toml: parseTOML as Parser,
+  yaml: parseYaml as Parser,
+  toml: parseToml as Parser,
   json: JSON.parse as Parser,
 });

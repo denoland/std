@@ -17,6 +17,7 @@ export const ERROR_WHILE_MAPPING_MESSAGE = "Threw while mapping.";
  * @example Usage
  * ```ts
  * import { pooledMap } from "@std/async/pool";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const results = pooledMap(
  *   2,
@@ -24,9 +25,7 @@ export const ERROR_WHILE_MAPPING_MESSAGE = "Threw while mapping.";
  *   (i) => new Promise((r) => setTimeout(() => r(i), 1000)),
  * );
  *
- * for await (const value of results) {
- *   // ...
- * }
+ * assertEquals(await Array.fromAsync(results), [1, 2, 3]);
  * ```
  *
  * @typeParam T the input type.

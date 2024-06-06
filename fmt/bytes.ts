@@ -57,29 +57,45 @@ export interface FormatOptions {
  * Based on {@link https://github.com/sindresorhus/pretty-bytes | pretty-bytes}.
  * A utility for displaying file sizes for humans.
  *
- * This module is browser compatible.
+ * @param num The bytes value to format
+ * @param options The options for formatting
+ * @returns The formatted string
  *
- * @example
+ * @example Basic usage
  * ```ts
  * import { format } from "@std/fmt/bytes";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
- * format(1337);
- * //=> '1.34 kB'
+ * assertEquals(format(1337), "1.34 kB");
+ * assertEquals(format(100), "100 B");
+ * ```
  *
- * format(100);
- * //=> '100 B'
+ * @example Include bits representation
  *
- * // Display with units of bits
- * format(1337, { bits: true });
- * //=> '1.34 kbit'
+ * ```ts
+ * import { format } from "@std/fmt/bytes";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
- * // Display file size differences
- * format(42, { signed: true });
- * //=> '+42 B'
+ * assertEquals(format(1337, { bits: true }), "1.34 kbit");
+ * ```
  *
- * // Localized output using German locale
- * format(1337, { locale: "de" });
- * //=> '1,34 kB'
+ * @example Include sign
+ *
+ * ```ts
+ * import { format } from "@std/fmt/bytes";
+ * import { assertEquals } from "@std/assert/assert-equals";
+ *
+ * assertEquals(format(42, { signed: true }), "+42 B");
+ * assertEquals(format(-42, { signed: true }), "-42 B");
+ * ```
+ *
+ * @example Change locale
+ *
+ * ```ts
+ * import { format } from "@std/fmt/bytes";
+ * import { assertEquals } from "@std/assert/assert-equals";
+ *
+ * assertEquals(format(1337, { locale: "de" }), "1,34 kB");
  * ```
  */
 export function format(

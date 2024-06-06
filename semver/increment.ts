@@ -55,11 +55,27 @@ function bumpPrerelease(
  * If the input version has build metadata it will be preserved on the resulting version
  * unless a new build parameter is specified. Specifying `""` will unset existing build
  * metadata.
+ *
+ * @example Usage
+ * ```ts
+ * import { increment, parse } from "@std/semver";
+ * import { assertEquals } from "@std/assert/assert-equals";
+ *
+ * const version = parse("1.2.3");
+ * assertEquals(increment(version, "major"), parse("2.0.0"));
+ * assertEquals(increment(version, "minor"), parse("1.3.0"));
+ * assertEquals(increment(version, "patch"), parse("1.2.4"));
+ * assertEquals(increment(version, "prerelease"), parse("1.2.4-0"));
+ *
+ * const prerelease = parse("1.2.3-beta.0");
+ * assertEquals(increment(prerelease, "prerelease"), parse("1.2.3-beta.1"));
+ * ```
+ *
  * @param version The version to increment
  * @param release The type of increment to perform
  * @param prerelease The pre-release metadata of the new version
- * @param build The build metadata of the new version
- * @returns
+ * @param buildmetadata The build metadata of the new version
+ * @returns The new version
  */
 export function increment(
   version: SemVer,

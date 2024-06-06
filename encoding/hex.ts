@@ -8,8 +8,6 @@
  * {@link https://github.com/golang/go/blob/go1.12.5/src/encoding/hex/hex.go | encoding/hex}
  * library.
  *
- * This module is browser compatible.
- *
  * ```ts
  * import {
  *   decodeHex,
@@ -28,7 +26,7 @@
  * @module
  */
 
-import { validateBinaryLike } from "./_util.ts";
+import { validateBinaryLike } from "./_validate_binary_like.ts";
 
 const hexTable = new TextEncoder().encode("0123456789abcdef");
 const textEncoder = new TextEncoder();

@@ -6,8 +6,6 @@
  * {@link https://www.rfc-editor.org/rfc/rfc4648.html#section-4 | base64}
  * encoding and decoding.
  *
- * This module is browser compatible.
- *
  * ```ts
  * import {
  *   encodeBase64,
@@ -24,7 +22,7 @@
  * @module
  */
 
-import { validateBinaryLike } from "./_util.ts";
+import { validateBinaryLike } from "./_validate_binary_like.ts";
 
 const base64abc = [
   "A",

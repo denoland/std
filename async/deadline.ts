@@ -13,8 +13,9 @@ export interface DeadlineOptions {
  * Error thrown when {@linkcode deadline} times out.
  *
  * @example Usage
- * ```ts
+ * ```ts no-assert
  * import { DeadlineError } from "@std/async/deadline";
+ *
  * const error = new DeadlineError();
  * ```
  */

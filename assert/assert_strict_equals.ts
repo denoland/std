@@ -4,11 +4,11 @@ import { buildMessage, diff, diffStr, format, red } from "@std/internal";
 import { AssertionError } from "./assertion_error.ts";
 
 /**
- * Make an assertion that `actual` and `expected` are equal using
+ * Make an assertion that `actual` and `expected` are strictly equal, using
  * {@linkcode Object.is} for equality comparison. If not, then throw.
  *
- * @example
- * ```ts
+ * @example Usage
+ * ```ts no-eval
  * import { assertStrictEquals } from "@std/assert/assert-strict-equals";
  *
  * const a = {};
@@ -19,6 +19,11 @@ import { AssertionError } from "./assertion_error.ts";
  * const d = {};
  * assertStrictEquals(c, d); // Throws
  * ```
+ *
+ * @typeParam T The type of the expected value.
+ * @param actual The actual value to compare.
+ * @param expected The expected value to compare.
+ * @param msg The optional message to display if the assertion fails.
  */
 export function assertStrictEquals<T>(
   actual: unknown,

@@ -121,7 +121,7 @@ export class Spinner {
    * Creates a new spinner.
    *
    * @example Usage
-   * ```ts
+   * ```ts no-assert
    * import { Spinner } from "@std/cli/spinner";
    *
    * const spinner = new Spinner({ message: "Loading..." });
@@ -169,11 +169,12 @@ export class Spinner {
    * Get the current color of the spinner.
    *
    * @example Usage
-   * ```ts
+   * ```ts no-assert
    * import { Spinner } from "@std/cli/spinner";
    *
    * const spinner = new Spinner({ message: "Loading", color: "blue" });
-   * console.log(spinner.color); // "blue"
+   *
+   * spinner.color; // Blue ANSI escape sequence
    * ```
    * @returns The color of the spinner or `undefined` if it's using the terminal default.
    */

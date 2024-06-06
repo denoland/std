@@ -14,6 +14,7 @@ Deno.test("posix.isAbsolute()", function () {
 });
 
 Deno.test("windows.isAbsolute()", function () {
+  assertEquals(windows.isAbsolute(""), false);
   assertEquals(windows.isAbsolute("/"), true);
   assertEquals(windows.isAbsolute("//"), true);
   assertEquals(windows.isAbsolute("//server"), true);

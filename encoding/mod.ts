@@ -3,8 +3,6 @@
 /**
  * Utilities for encoding and decoding common formats like hex, base64, and varint.
  *
- * This module is browser compatible.
- *
  * ```ts
  * import { encodeBase64, decodeBase64 } from "@std/encoding";
  * import { assertEquals } from "@std/assert/assert-equals";
@@ -27,12 +25,4 @@ export * from "./base64url.ts";
 export * from "./base64url_stream.ts";
 export * from "./hex.ts";
 export * from "./hex_stream.ts";
-// TODO: change to * after varint decode/encode functions are removed
-export {
-  decodeVarint,
-  decodeVarint32,
-  encodeVarint,
-  MaxUInt64,
-  MaxVarIntLen32,
-  MaxVarIntLen64,
-} from "./varint.ts";
+export * from "./varint.ts";

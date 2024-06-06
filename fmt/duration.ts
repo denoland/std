@@ -6,18 +6,15 @@
  *
  * ```ts
  * import { format } from "@std/fmt/duration";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
- * // "00:00:01:39:674:000:000"
- * format(99674, { style: "digital" });
+ * assertEquals(format(99674, { style: "digital" }), "00:00:01:39:674:000:000");
  *
- * // "0d 0h 1m 39s 674ms 0µs 0ns"
- * format(99674);
+ * assertEquals(format(99674), "0d 0h 1m 39s 674ms 0µs 0ns");
  *
- * // "1m 39s 674ms"
- * format(99674, { ignoreZero: true });
+ * assertEquals(format(99674, { ignoreZero: true }), "1m 39s 674ms");
  *
- * // "1 minutes, 39 seconds, 674 milliseconds"
- * format(99674, { style: "full", ignoreZero: true });
+ * assertEquals(format(99674, { style: "full", ignoreZero: true }), "1 minutes, 39 seconds, 674 milliseconds");
  * ```
  * @module
  */
@@ -95,14 +92,23 @@ export interface PrettyDurationOptions {
 /**
  * Format milliseconds to time duration.
  *
+ * @example Usage
  * ```ts
  * import { format } from "@std/fmt/duration";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
- * format(99674, { style: "digital" }); // "00:00:01:39:674:000:000"
- * format(99674); // "0d 0h 1m 39s 674ms 0µs 0ns"
- * format(99674, { ignoreZero: true }); // "1m 39s 674ms"
- * format(99674, { style: "full", ignoreZero: true }); // "1 minutes, 39 seconds, 674 milliseconds"
+ * assertEquals(format(99674, { style: "digital" }), "00:00:01:39:674:000:000");
+ *
+ * assertEquals(format(99674), "0d 0h 1m 39s 674ms 0µs 0ns");
+ *
+ * assertEquals(format(99674, { ignoreZero: true }), "1m 39s 674ms");
+ *
+ * assertEquals(format(99674, { style: "full", ignoreZero: true }), "1 minutes, 39 seconds, 674 milliseconds");
  * ```
+ *
+ * @param ms The milliseconds value to format
+ * @param options The options for formatting
+ * @returns The formatted string
  */
 export function format(
   ms: number,
