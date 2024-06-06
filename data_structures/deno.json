@@ -1,6 +1,6 @@
 {
   "name": "@std/data-structures",
-  "version": "0.225.1",
+  "version": "0.225.2",
   "exports": {
     ".": "./mod.ts",
     "./binary-heap": "./binary_heap.ts",
