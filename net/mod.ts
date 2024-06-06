@@ -6,10 +6,9 @@
  * ```ts no-assert no-eval
  * import { getNetworkAddress, getAvailablePort } from "@std/net";
  *
- * const port = getAvailablePort();
- * const hostname = getNetworkAddress();
+ * console.log(`My network IP address is ${getNetworkAddress()}`);
  *
- * Deno.serve({ port, hostname }, () => new Response("Hello, world!"));
+ * Deno.serve({ port: getAvailablePort() }, () => new Response("Hello, world!"));
  * ```
  *
  * @module
