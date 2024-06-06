@@ -15,13 +15,18 @@ import { decodeBase32, encodeBase32 } from "./base32.ts";
  *
  * @example Usage
  * ```ts
+ * import { assertEquals } from "@std/assert";
+ * import { encodeBase32 } from "@std/encoding/base32";
  * import { Base32EncoderStream } from "@std/encoding/base32-stream";
  *
- * await (await Deno.open('./deno.json'))
- *   .readable
- *   .pipeThrough(new Base32EncoderStream())
- *   .pipeThrough(new TextEncoderStream())
- *   .pipeTo(Deno.stdout.writable, { preventClose: true });
+ * assertEquals(
+ *   (await Array.fromAsync(
+ *     (await Deno.open("./deno.json"))
+ *       .readable
+ *       .pipeThrough(new Base32EncoderStream()),
+ *   )).join(""),
+ *   encodeBase32(await Deno.readFile("./deno.json")),
+ * );
  * ```
  */
 export class Base32EncoderStream extends TransformStream<Uint8Array, string> {
@@ -55,13 +60,19 @@ export class Base32EncoderStream extends TransformStream<Uint8Array, string> {
  *
  * @example Usage
  * ```ts
+ * import { assertEquals } from "@std/assert";
  * import { Base32DecoderStream, Base32EncoderStream } from "@std/encoding/base32-stream";
  *
- * await (await Deno.open('./deno.json'))
+ * const readable = (await Deno.open("./deno.json"))
  *   .readable
- *   .pipeThrough(new Base32EncoderStream())
- *   .pipeThrough(new Base32DecoderStream())
- *   .pipeTo(Deno.stdout.writable, { preventClose: true });
+ *   .pipeThrough(new Base32EncoderStream());
+ *
+ * assertEquals(
+ *   Uint8Array.from((await Array.fromAsync(
+ *     readable.pipeThrough(new Base32DecoderStream()),
+ *   )).map(x => [...x]).flat()),
+ *   await Deno.readFile("./deno.json"),
+ * );
  * ```
  */
 export class Base32DecoderStream extends TransformStream<string, Uint8Array> {

@@ -15,13 +15,18 @@ import { decodeBase64, encodeBase64 } from "./base64.ts";
  *
  * @example Usage
  * ```ts
+ * import { assertEquals } from "@std/assert";
+ * import { encodeBase64 } from "@std/encoding/base64";
  * import { Base64EncoderStream } from "@std/encoding/base64-stream";
  *
- * await (await Deno.open('./deno.json'))
- *   .readable
- *   .pipeThrough(new Base64EncoderStream())
- *   .pipeThrough(new TextEncoderStream())
- *   .pipeTo(Deno.stdout.writable, { preventClose: true });
+ * assertEquals(
+ *   (await Array.fromAsync(
+ *     (await Deno.open("./deno.json"))
+ *       .readable
+ *       .pipeThrough(new Base64EncoderStream()),
+ *   )).join(""),
+ *   encodeBase64(await Deno.readFile("./deno.json")),
+ * );
  * ```
  */
 export class Base64EncoderStream extends TransformStream<Uint8Array, string> {
@@ -55,13 +60,19 @@ export class Base64EncoderStream extends TransformStream<Uint8Array, string> {
  *
  * @example Usage
  * ```ts
+ * import { assertEquals } from "@std/assert";
  * import { Base64DecoderStream, Base64EncoderStream } from "@std/encoding/base64-stream";
  *
- * await (await Deno.open('./deno.json'))
+ * const readable = (await Deno.open("./deno.json"))
  *   .readable
- *   .pipeThrough(new Base64EncoderStream())
- *   .pipeThrough(new Base64DecoderStream())
- *   .pipeTo(Deno.stdout.writable, { preventClose: true });
+ *   .pipeThrough(new Base64EncoderStream());
+ *
+ * assertEquals(
+ *   Uint8Array.from((await Array.fromAsync(
+ *     readable.pipeThrough(new Base64DecoderStream()),
+ *   )).map(x => [...x]).flat()),
+ *   await Deno.readFile("./deno.json"),
+ * );
  * ```
  */
 export class Base64DecoderStream extends TransformStream<string, Uint8Array> {

@@ -15,13 +15,18 @@ import { decodeBase64Url, encodeBase64Url } from "./base64url.ts";
  *
  * @example Usage
  * ```ts
+ * import { assertEquals } from "@std/assert";
+ * import { encodeBase64Url } from "@std/encoding/base64url";
  * import { Base64UrlEncoderStream } from "@std/encoding/base64url-stream";
  *
- * await (await Deno.open('./deno.json'))
- *   .readable
- *   .pipeThrough(new Base64UrlEncoderStream())
- *   .pipeThrough(new TextEncoderStream())
- *   .pipeTo(Deno.stdout.writable, { preventClose: true });
+ * assertEquals(
+ *   (await Array.fromAsync(
+ *     (await Deno.open("./deno.json"))
+ *       .readable
+ *       .pipeThrough(new Base64UrlEncoderStream()),
+ *   )).join(""),
+ *   encodeBase64Url(await Deno.readFile("./deno.json")),
+ * );
  * ```
  */
 export class Base64UrlEncoderStream
@@ -56,13 +61,19 @@ export class Base64UrlEncoderStream
  *
  * @example Usage
  * ```ts
+ * import { assertEquals } from "@std/assert";
  * import { Base64UrlDecoderStream, Base64UrlEncoderStream } from "@std/encoding/base64url-stream";
  *
- * await (await Deno.open('./deno.json'))
+ * const readable = (await Deno.open("./deno.json"))
  *   .readable
- *   .pipeThrough(new Base64UrlEncoderStream())
- *   .pipeThrough(new Base64UrlDecoderStream())
- *   .pipeTo(Deno.stdout.writable, { preventClose: true });
+ *   .pipeThrough(new Base64UrlEncoderStream());
+ *
+ * assertEquals(
+ *   Uint8Array.from((await Array.fromAsync(
+ *     readable.pipeThrough(new Base64UrlDecoderStream()),
+ *   )).map(x => [...x]).flat()),
+ *   await Deno.readFile("./deno.json"),
+ * );
  * ```
  */
 export class Base64UrlDecoderStream

@@ -15,13 +15,18 @@ import { decodeHex, encodeHex } from "./hex.ts";
  *
  * @example Usage
  * ```ts
+ * import { assertEquals } from "@std/assert";
+ * import { encodeHex } from "@std/encoding/hex";
  * import { HexEncoderStream } from "@std/encoding/hex-stream";
  *
- * await (await Deno.open('./deno.json'))
- *   .readable
- *   .pipeThrough(new HexEncoderStream())
- *   .pipeThrough(new TextEncoderStream())
- *   .pipeTo(Deno.stdout.writable, { preventClose: true });
+ * assertEquals(
+ *   (await Array.fromAsync(
+ *     (await Deno.open("./deno.json"))
+ *       .readable
+ *       .pipeThrough(new HexEncoderStream()),
+ *   )).join(""),
+ *   encodeHex(await Deno.readFile("./deno.json")),
+ * );
  * ```
  */
 export class HexEncoderStream extends TransformStream<Uint8Array, string> {
@@ -41,13 +46,19 @@ export class HexEncoderStream extends TransformStream<Uint8Array, string> {
  *
  * @example Usage
  * ```ts
+ * import { assertEquals } from "@std/assert";
  * import { HexDecoderStream, HexEncoderStream } from "@std/encoding/hex-stream";
  *
- * await (await Deno.open('./deno.json'))
+ * const readable = (await Deno.open("./deno.json"))
  *   .readable
- *   .pipeThrough(new HexEncoderStream())
- *   .pipeThrough(new HexDecoderStream())
- *   .pipeTo(Deno.stdout.writable, { preventClose: true });
+ *   .pipeThrough(new HexEncoderStream());
+ *
+ * assertEquals(
+ *   Uint8Array.from((await Array.fromAsync(
+ *     readable.pipeThrough(new HexDecoderStream()),
+ *   )).map(x => [...x]).flat()),
+ *   await Deno.readFile("./deno.json"),
+ * );
  * ```
  */
 export class HexDecoderStream extends TransformStream<string, Uint8Array> {
