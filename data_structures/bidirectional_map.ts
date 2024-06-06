@@ -1,3 +1,4 @@
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 /**
  * Represents a bidirectional map, which is a map that allows both key-value and
  * value-key lookups.
