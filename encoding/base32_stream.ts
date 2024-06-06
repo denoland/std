@@ -80,10 +80,12 @@ export class Base32DecoderStream extends TransformStream<string, Uint8Array> {
     let push = "";
     super({
       transform(chunk, controller) {
-        const remainder = -(push.length + chunk.length) % 8;
-        controller.enqueue(
-          decodeBase32(push + chunk.slice(0, remainder || undefined)),
-        );
+        push += chunk;
+        if (push.length < 8) {
+          return;
+        }
+        const remainder = -push.length % 8;
+        controller.enqueue(decodeBase32(push.slice(0, remainder || undefined)));
         push = remainder ? chunk.slice(remainder) : "";
       },
       flush(controller) {

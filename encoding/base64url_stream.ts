@@ -82,11 +82,15 @@ export class Base64UrlDecoderStream
     let push = "";
     super({
       transform(chunk, controller) {
-        const remainder = -(push.length + chunk.length) % 4;
+        push += chunk;
+        if (push.length < 4) {
+          return;
+        }
+        const remainder = -push.length % 4;
         controller.enqueue(
-          decodeBase64Url(push + chunk.slice(0, remainder || undefined)),
+          decodeBase64Url(push.slice(0, remainder || undefined)),
         );
-        push = remainder ? chunk.slice(remainder) : "";
+        push = remainder ? push.slice(remainder) : "";
       },
       flush(controller) {
         if (push.length) {

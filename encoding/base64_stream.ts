@@ -80,11 +80,13 @@ export class Base64DecoderStream extends TransformStream<string, Uint8Array> {
     let push = "";
     super({
       transform(chunk, controller) {
-        const remainder = -(push.length + chunk.length) % 4;
-        controller.enqueue(
-          decodeBase64(push + chunk.slice(0, remainder || undefined)),
-        );
-        push = remainder ? chunk.slice(remainder) : "";
+        push += chunk;
+        if (push.length < 4) {
+          return;
+        }
+        const remainder = -push.length % 4;
+        controller.enqueue(decodeBase64(push.slice(0, remainder || undefined)));
+        push = remainder ? push.slice(remainder) : "";
       },
       flush(controller) {
         if (push.length) {

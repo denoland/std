@@ -66,11 +66,13 @@ export class HexDecoderStream extends TransformStream<string, Uint8Array> {
     let push = "";
     super({
       transform(chunk, controller) {
-        const remainder = -(push.length + chunk.length) % 2;
-        controller.enqueue(
-          decodeHex(push + chunk.slice(0, remainder || undefined)),
-        );
-        push = remainder ? chunk.slice(remainder) : "";
+        push += chunk;
+        if (push.length < 2) {
+          return;
+        }
+        const remainder = -push.length % 2;
+        controller.enqueue(decodeHex(push.slice(0, remainder || undefined)));
+        push = remainder ? push.slice(remainder) : "";
       },
       flush(controller) {
         if (push.length) {
