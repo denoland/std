@@ -1,8 +1,16 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-import { assertEquals, assertStrictEquals } from "@std/assert";
+import { assertEquals, assertStrictEquals, assertThrows } from "@std/assert";
 import { RedBlackTree } from "./red_black_tree.ts";
 import { ascend, descend } from "./comparators.ts";
 import { type Container, MyMath } from "./_test_utils.ts";
+
+Deno.test("RedBlackTree throws if compare is not a function", () => {
+  assertThrows(
+    () => new RedBlackTree({} as (a: number, b: number) => number),
+    TypeError,
+    "compare must be a function",
+  );
+});
 
 Deno.test("RedBlackTree works as expected with default ascend comparator", () => {
   const trees = [

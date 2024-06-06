@@ -6,7 +6,7 @@
  * the given array that match the given predicate and the second one containing
  * all that do not.
  *
- * @template T The type of the elements in the array.
+ * @typeParam T The type of the elements in the array.
  *
  * @param array The array to partition.
  * @param predicate The predicate function to determine which array an element
@@ -40,8 +40,8 @@ export function partition<T>(
  * allows you to specify a type-guard predicate function that narrows the type
  * of the elements in the array.
  *
- * @template T The type of the elements in the array.
- * @template U The type of the elements that match the predicate.
+ * @typeParam T The type of the elements in the array.
+ * @typeParam U The type of the elements that match the predicate.
  *
  * @param array The array to partition.
  * @param predicate The type-guard predicate function to determine which array

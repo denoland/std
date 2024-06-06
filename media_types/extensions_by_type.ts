@@ -4,8 +4,6 @@
 import { parseMediaType } from "./parse_media_type.ts";
 import { extensions } from "./_db.ts";
 
-export { extensions };
-
 /**
  * Returns the extensions known to be associated with the media type `type`, or
  * `undefined` if no extensions are found.
@@ -17,7 +15,7 @@ export { extensions };
  * @returns The extensions for the given media type, or `undefined` if no
  * extensions are found.
  *
- * @example
+ * @example Usage
  * ```ts
  * import { extensionsByType } from "@std/media-types/extensions-by-type";
  * import { assertEquals } from "@std/assert/assert-equals";

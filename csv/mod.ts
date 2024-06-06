@@ -4,7 +4,7 @@
 /** Reads and writes comma-separated values (CSV) files.
  *
  * There are many kinds of CSV files; this module supports the format described
- * in {@link https://tools.ietf.org/html/rfc4180 | RFC 4180}.
+ * in {@link https://www.rfc-editor.org/rfc/rfc4180.html | RFC 4180}.
  *
  * A csv file contains zero or more records of one or more fields per record.
  * Each record is separated by the newline character. The final record may
@@ -32,7 +32,7 @@
  *
  * results in the fields
  *
- * ```ts
+ * ```ts no-assert
  * [`normal string`, `quoted-field`]
  * ```
  *
@@ -55,7 +55,7 @@
  *
  * results in
  *
- * ```ts
+ * ```ts no-assert
  * [`Multi-line
  * field`, `comma is ,`]
  * ```

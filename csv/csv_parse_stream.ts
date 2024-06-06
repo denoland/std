@@ -64,16 +64,22 @@ export type RowType<T> = T extends undefined ? string[]
  * for columns.
  *
  * A `CsvParseStream` expects input conforming to
- * {@link https://tools.ietf.org/html/rfc4180 | RFC 4180}.
+ * {@link https://www.rfc-editor.org/rfc/rfc4180.html | RFC 4180}.
  *
- * @example
- * ```ts
+ * @example Usage
+ * ```ts no-assert
  * import { CsvParseStream } from "@std/csv/csv-parse-stream";
- * const res = await fetch("https://example.com/data.csv");
- * const parts = res.body!
- *   .pipeThrough(new TextDecoderStream())
- *   .pipeThrough(new CsvParseStream());
+ *
+ * const source = ReadableStream.from([
+ *   "name,age",
+ *   "Alice,34",
+ *   "Bob,24",
+ *   "Charlie,45",
+ * ]);
+ * const parts = source.pipeThrough(new CsvParseStream());
  * ```
+ *
+ * @typeParam T The type of options for the stream.
  */
 export class CsvParseStream<
   const T extends CsvParseStreamOptions | undefined = undefined,
@@ -89,7 +95,23 @@ export class CsvParseStream<
 
   #headers: readonly string[] = [];
 
-  /** Construct a new instance. */
+  /** Construct a new instance.
+   *
+   * @example Usage
+   * ```ts no-assert
+   * import { CsvParseStream } from "@std/csv/csv-parse-stream";
+   *
+   * const source = ReadableStream.from([
+   *   "name,age",
+   *   "Alice,34",
+   *   "Bob,24",
+   *   "Charlie,45",
+   * ]);
+   * const parts = source.pipeThrough(new CsvParseStream());
+   * ```
+   *
+   * @param options Options for the stream.
+   */
   constructor(options?: T) {
     this.#options = {
       ...defaultReadOptions,
@@ -170,12 +192,54 @@ export class CsvParseStream<
     }
   }
 
-  /** The instance's {@linkcode ReadableStream}. */
+  /**
+   * The instance's {@linkcode ReadableStream}.
+   *
+   * @example Usage
+   * ```ts no-assert
+   * import { CsvParseStream } from "@std/csv/csv-parse-stream";
+   *
+   * const source = ReadableStream.from([
+   *   "name,age",
+   *   "Alice,34",
+   *   "Bob,24",
+   *   "Charlie,45",
+   * ]);
+   * const parseStream = new CsvParseStream();
+   * const parts = source.pipeTo(parseStream.writable);
+   * for await (const part of parseStream.readable) {
+   *   console.log(part);
+   * }
+   * ```
+   *
+   * @returns The instance's {@linkcode ReadableStream}.
+   */
   get readable(): ReadableStream<RowType<T>> {
     return this.#readable as ReadableStream<RowType<T>>;
   }
 
-  /** The instance's {@linkcode WritableStream}. */
+  /**
+   * The instance's {@linkcode WritableStream}.
+   *
+   * @example Usage
+   * ```ts no-assert
+   * import { CsvParseStream } from "@std/csv/csv-parse-stream";
+   *
+   * const source = ReadableStream.from([
+   *   "name,age",
+   *   "Alice,34",
+   *   "Bob,24",
+   *   "Charlie,45",
+   * ]);
+   * const parseStream = new CsvParseStream();
+   * const parts = source.pipeTo(parseStream.writable);
+   * for await (const part of parseStream.readable) {
+   *   console.log(part);
+   * }
+   * ```
+   *
+   * @returns The instance's {@linkcode WritableStream}.
+   */
   get writable(): WritableStream<string> {
     return this.#lines.writable;
   }

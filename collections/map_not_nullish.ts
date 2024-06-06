@@ -6,8 +6,8 @@
  * using the given transformer, except the ones that were transformed to `null`
  * or `undefined`.
  *
- * @template T The type of the elements in the input array.
- * @template O The type of the elements in the output array.
+ * @typeParam T The type of the elements in the input array.
+ * @typeParam O The type of the elements in the output array.
  *
  * @param array The array to map elements from.
  * @param transformer The function to transform each element.

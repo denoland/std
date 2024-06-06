@@ -316,8 +316,6 @@
  * });
  * ```
  *
- * This module is browser compatible.
- *
  * @module
  */
 

@@ -5,7 +5,7 @@
  * Returns an element if and only if that element is the only one matching the
  * given condition. Returns `undefined` otherwise.
  *
- * @template T The type of the elements in the input array.
+ * @typeParam T The type of the elements in the input array.
  *
  * @param array The array to find a single element in.
  * @param predicate The function to test each element for a condition.

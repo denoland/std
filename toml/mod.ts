@@ -3,9 +3,10 @@
 
 /**
  * {@linkcode parse} and {@linkcode stringify} for handling
- * {@link https://toml.io/en/latest | TOML} encoded data. Be sure to read the supported
- * types as not every spec is supported at the moment and the handling in
- * TypeScript side is a bit different.
+ * {@link https://toml.io | TOML} encoded data.
+ *
+ * Be sure to read the supported types as not every spec is supported at the
+ * moment and the handling in TypeScript side is a bit different.
  *
  * ## Supported types and handling
  *
@@ -30,8 +31,8 @@
  *
  * #### String
  *
- * - Regex: Due to the spec, there is no flag to detect regex properly in a TOML
- *   declaration. So the regex is stored as string.
+ * Due to the spec, there is no flag to detect regex properly in a TOML
+ * declaration. So the regex is stored as string.
  *
  * #### Integer
  *
@@ -42,21 +43,6 @@
  *
  * Because local time does not exist in JavaScript, the local time is stored as a
  * string.
- *
- * #### Inline Table
- *
- * Inline tables are supported. See below:
- *
- * ```toml
- * animal = { type = { name = "pug" } }
- * ## Output { animal: { type: { name: "pug" } } }
- * animal = { type.name = "pug" }
- * ## Output { animal: { type : { name : "pug" } }
- * animal.as.leaders = "tosin"
- * ## Output { animal: { as: { leaders: "tosin" } } }
- * "tosin.abasi" = "guitarist"
- * ## Output { tosin.abasi: "guitarist" }
- * ```
  *
  * #### Array of Tables
  *
@@ -88,14 +74,10 @@
  * }
  * ```
  *
- * This module is browser compatible.
- *
- * @example
  * ```ts
- * import {
- *   parse,
- *   stringify,
- * } from "@std/toml";
+ * import { parse, stringify } from "@std/toml";
+ * import { assertEquals } from "@std/assert/assert-equals";
+ *
  * const obj = {
  *   bin: [
  *     { name: "deno", path: "cli/main.rs" },
@@ -103,33 +85,24 @@
  *   ],
  *   nib: [{ name: "node", path: "not_found" }],
  * };
+ *
  * const tomlString = stringify(obj);
- * console.log(tomlString);
+ * assertEquals(tomlString, `
+ * [[bin]]
+ * name = "deno"
+ * path = "cli/main.rs"
  *
- * // =>
- * // [[bin]]
- * // name = "deno"
- * // path = "cli/main.rs"
+ * [[bin]]
+ * name = "deno_core"
+ * path = "src/foo.rs"
  *
- * // [[bin]]
- * // name = "deno_core"
- * // path = "src/foo.rs"
- *
- * // [[nib]]
- * // name = "node"
- * // path = "not_found"
+ * [[nib]]
+ * name = "node"
+ * path = "not_found"
+ * `);
  *
  * const tomlObject = parse(tomlString);
- * console.log(tomlObject);
- *
- * // =>
- * // {
- * //   bin: [
- * //     { name: "deno", path: "cli/main.rs" },
- * //     { name: "deno_core", path: "src/foo.rs" }
- * //   ],
- * //   nib: [ { name: "node", path: "not_found" } ]
- * // }
+ * assertEquals(tomlObject, obj);
  * ```
  *
  * @module

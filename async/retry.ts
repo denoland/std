@@ -1,19 +1,28 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-import { assert } from "@std/assert/assert";
 import { exponentialBackoffWithJitter } from "./_util.ts";
 
 /**
  * Error thrown in {@linkcode retry} once the maximum number of failed attempts
  * has been reached.
+ *
+ * @example Usage
+ * ```ts no-assert no-eval
+ * import { RetryError } from "@std/async/retry";
+ *
+ * throw new RetryError({ foo: "bar" }, 3);
+ * ```
  */
 export class RetryError extends Error {
   /**
    * Constructs a new {@linkcode RetryError} instance.
    *
-   * @example
-   * ```ts
+   * @param cause the cause for this error.
+   * @param attempts the number of retry attempts made.
+   *
+   * @example Usage
+   * ```ts no-assert no-eval
    * import { RetryError } from "@std/async/retry";
    *
    * throw new RetryError({ foo: "bar" }, 3);
@@ -84,8 +93,8 @@ const defaultRetryOptions: Required<RetryOptions> = {
  *
  * When `jitter` is `0`, waits the full backoff time.
  *
- * @example
- * ```ts
+ * @example Example configuration 1
+ * ```ts no-assert
  * import { retry } from "@std/async/retry";
  * const req = async () => {
  *  // some function that throws sometimes
@@ -101,8 +110,8 @@ const defaultRetryOptions: Required<RetryOptions> = {
  * });
  * ```
  *
- * @example
- * ```ts
+ * @example Example configuration 2
+ * ```ts no-assert
  * import { retry } from "@std/async/retry";
  * const req = async () => {
  *  // some function that throws sometimes
@@ -117,6 +126,11 @@ const defaultRetryOptions: Required<RetryOptions> = {
  *  jitter: 0.5,
  * });
  * ```
+ *
+ * @typeParam T The return type of the function to retry and returned promise.
+ * @param fn The function to retry.
+ * @param opts Additional options.
+ * @returns The promise that resolves with the value returned by the function to retry.
  */
 export async function retry<T>(
   fn: (() => Promise<T>) | (() => T),
@@ -127,12 +141,11 @@ export async function retry<T>(
     ...opts,
   };
 
-  assert(options.maxTimeout >= 0, "maxTimeout is less than 0");
-  assert(
-    options.minTimeout <= options.maxTimeout,
-    "minTimeout is greater than maxTimeout",
-  );
-  assert(options.jitter <= 1, "jitter is greater than 1");
+  if (options.maxTimeout <= 0) throw new TypeError("maxTimeout is less than 0");
+  if (options.minTimeout > options.maxTimeout) {
+    throw new TypeError("minTimeout is greater than maxTimeout");
+  }
+  if (options.jitter > 1) throw new TypeError("jitter is greater than 1");
 
   let attempt = 0;
   while (true) {

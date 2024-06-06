@@ -45,7 +45,7 @@ export type JoinToStringOptions = {
  * in which case only the first `limit` elements will be appended, followed by
  * the `truncated` string.
  *
- * @template T The type of the elements in the input array.
+ * @typeParam T The type of the elements in the input array.
  *
  * @param array The array to join elements from.
  * @param selector The function to transform elements to strings.

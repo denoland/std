@@ -6,8 +6,8 @@
  * produced that is neither `null` nor `undefined` and returns that value.
  * Returns `undefined` if no such value is produced.
  *
- * @template T The type of the elements in the input array.
- * @template O The type of the value produced by the selector function.
+ * @typeParam T The type of the elements in the input array.
+ * @typeParam O The type of the value produced by the selector function.
  *
  * @param array The array to select a value from.
  * @param selector The function to extract a value from an element.

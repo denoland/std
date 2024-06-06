@@ -6,9 +6,9 @@
  * new record containing the resulting keys associated to the last value that
  * produced them.
  *
- * @template T The type of the values in the input record.
- * @template O The type of the values in the output record.
- * @template K The type of the keys in the input and output records.
+ * @typeParam T The type of the values in the input record.
+ * @typeParam O The type of the values in the output record.
+ * @typeParam K The type of the keys in the input and output records.
  *
  * @param record The record to map values from.
  * @param transformer The function to transform each value.
@@ -44,9 +44,9 @@ export function mapValues<T, O, K extends string>(
  * new record containing the resulting keys associated to the last value that
  * produced them.
  *
- * @template T The type of the values in the input record.
- * @template O The type of the values in the output record.
- * @template K The type of the keys in the input and output records.
+ * @typeParam T The type of the values in the input record.
+ * @typeParam O The type of the values in the output record.
+ * @typeParam K The type of the keys in the input and output records.
  *
  * @param record The record to map values from.
  * @param transformer The function to transform each value.

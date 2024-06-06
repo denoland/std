@@ -1,3 +1,389 @@
+### 2024.06.03
+
+#### @std/assert 0.226.0 (minor)
+
+- BREAKING(assert,testing): remove `formatter` option from `assertEquals()`
+  (#4893)
+- docs(assert,cli,data-structures,expect,fmt,front-matter,html,http,jsonc,semver,streams,text,toml,webgpu):
+  add snippet checks in module, function and class docs to doc checker (#4855)
+- docs(assert): improve docs (#4876)
+
+#### @std/cli 0.224.5 (patch)
+
+- docs(assert,cli,data-structures,expect,fmt,front-matter,html,http,jsonc,semver,streams,text,toml,webgpu):
+  add snippet checks in module, function and class docs to doc checker (#4855)
+
+#### @std/crypto 1.0.0-rc.1 (prerelease)
+
+- BREAKING(crypto): remove deprecated APIs (#4919)
+- BREAKING(crypto): remove KeyStack (#4916)
+- docs(crypto): improve docs (#4884)
+- refactor(crypto): cleanup redundant assertion in `timingSafeEqual()` (#4907)
+- test(crypto): test node.js custom inspection of `KeyStack` (#4887)
+- chore(crypto): release `crypto@1.0.0-rc.1` (#4912)
+
+#### @std/csv 0.224.2 (patch)
+
+- docs(csv): use assertions in example code snippets (#4932)
+- docs(csv): improve API docs (#4920)
+
+#### @std/data-structures 0.225.1 (patch)
+
+- docs(assert,cli,data-structures,expect,fmt,front-matter,html,http,jsonc,semver,streams,text,toml,webgpu):
+  add snippet checks in module, function and class docs to doc checker (#4855)
+
+#### @std/encoding 1.0.0-rc.1 (prerelease)
+
+- BREAKING(encoding): replace `Ascii85Options` with `EncodeAscii85Options` and
+  `DecodeAscii85Options` (#4861)
+- BREAKING(encoding): rename `MaxVarInt` to `MaxVarint` (#4896)
+- BREAKING(encoding): rename `MaxUInt64` to `MaxUint64` (#4897)
+- BREAKING(encoding): remove deprecated VarInt APIs (#4864)
+- fix(encoding): throw `TypeError` on invalid input (#4901)
+- chore(encoding): release `encoding@1.0.0-rc.1` (#4858)
+
+#### @std/expect 0.224.4 (patch)
+
+- docs(assert,cli,data-structures,expect,fmt,front-matter,html,http,jsonc,semver,streams,text,toml,webgpu):
+  add snippet checks in module, function and class docs to doc checker (#4855)
+
+#### @std/fmt 0.225.3 (patch)
+
+- docs(assert,cli,data-structures,expect,fmt,front-matter,html,http,jsonc,semver,streams,text,toml,webgpu):
+  add snippet checks in module, function and class docs to doc checker (#4855)
+
+#### @std/front-matter 0.224.2 (patch)
+
+- docs(assert,cli,data-structures,expect,fmt,front-matter,html,http,jsonc,semver,streams,text,toml,webgpu):
+  add snippet checks in module, function and class docs to doc checker (#4855)
+
+#### @std/html 0.224.2 (patch)
+
+- docs(assert,cli,data-structures,expect,fmt,front-matter,html,http,jsonc,semver,streams,text,toml,webgpu):
+  add snippet checks in module, function and class docs to doc checker (#4855)
+
+#### @std/http 0.224.3 (patch)
+
+- docs(assert,cli,data-structures,expect,fmt,front-matter,html,http,jsonc,semver,streams,text,toml,webgpu):
+  add snippet checks in module, function and class docs to doc checker (#4855)
+- docs(http): added `--allow-sys` to file server example (#4890)
+
+#### @std/jsonc 0.224.1 (patch)
+
+- docs(assert,cli,data-structures,expect,fmt,front-matter,html,http,jsonc,semver,streams,text,toml,webgpu):
+  add snippet checks in module, function and class docs to doc checker (#4855)
+
+#### @std/net 0.224.2 (patch)
+
+- feat(net): `getNetworkAddress()` (#4677)
+
+#### @std/path 0.225.2 (patch)
+
+- docs(path): improve API docs (#4900)
+- test(path): add test cases of `isAbsolute()`, `joinGlobs()`, and `common()`
+  (#4904)
+- test(path): test `toNamespacedPath()` (#4902)
+
+#### @std/semver 0.224.2 (patch)
+
+- docs(assert,cli,data-structures,expect,fmt,front-matter,html,http,jsonc,semver,streams,text,toml,webgpu):
+  add snippet checks in module, function and class docs to doc checker (#4855)
+
+#### @std/streams 0.224.3 (patch)
+
+- docs(assert,cli,data-structures,expect,fmt,front-matter,html,http,jsonc,semver,streams,text,toml,webgpu):
+  add snippet checks in module, function and class docs to doc checker (#4855)
+
+#### @std/testing 0.225.0 (minor)
+
+- BREAKING(assert,testing): remove `formatter` option from `assertEquals()`
+  (#4893)
+- refactor(testing): do not use assertEquals in snapshot.ts (#4930)
+
+#### @std/text 0.224.2 (patch)
+
+- docs(assert,cli,data-structures,expect,fmt,front-matter,html,http,jsonc,semver,streams,text,toml,webgpu):
+  add snippet checks in module, function and class docs to doc checker (#4855)
+
+#### @std/toml 0.224.1 (patch)
+
+- docs(assert,cli,data-structures,expect,fmt,front-matter,html,http,jsonc,semver,streams,text,toml,webgpu):
+  add snippet checks in module, function and class docs to doc checker (#4855)
+- docs(toml): lint `@std/toml` docs (#4799)
+
+#### @std/uuid 1.0.0-rc.1 (prerelease)
+
+- BREAKING(uuid): remove `V1Options` in favor of `GenerateOptions` (#4925)
+- BREAKING(uuid): remove `v1.generate()` signature with `buf` and `offset`
+  parameters and `number[]` return type (#4877)
+- chore(uuid): release `uuid@1.0.0-rc.1` (#4867)
+
+#### @std/webgpu 0.224.3 (patch)
+
+- docs(assert,cli,data-structures,expect,fmt,front-matter,html,http,jsonc,semver,streams,text,toml,webgpu):
+  add snippet checks in module, function and class docs to doc checker (#4855)
+
+### 2024.05.29
+
+#### @std/cli 0.224.4 (patch)
+
+- fix(cli): reduce flicker in spinner render function (#4835)
+- docs(cli): make check_docs pass (#4815)
+- docs(cli): improve spinner.message document (#4785)
+- test(cli): reduce the flakiness of `Spinner` test cases (#4844)
+
+#### @std/data-structures 0.225.0 (minor)
+
+- BREAKING(data-structures): hide private internals (#4827)
+- docs(data-structures): enables doc lint of data-structures (#4847)
+
+#### @std/encoding 0.224.3 (patch)
+
+- docs(encoding): fix typo in `ascii85.ts` (#4854)
+- docs(encoding): Cleanup and fix doc lints (#4838)
+- refactor(encoding): remove unnecessary prefixes from private functions (#4862)
+- refactor(encoding): rename `_util.ts` (#4860)
+- test(encoding): use own `encodeHex()` and `decodeHex()` (#4863)
+
+#### @std/expect 0.224.3 (patch)
+
+- docs(expect): document methods and add examples (#4836)
+
+#### @std/fmt 0.225.2 (patch)
+
+- docs(fmt): improve API docs (#4829)
+
+#### @std/front-matter 0.224.1 (patch)
+
+- docs(front-matter): improve docs for stabilization (#4789)
+
+#### @std/html 0.224.1 (patch)
+
+- docs(html): improve API docs (#4878)
+
+#### @std/http 0.224.2 (patch)
+
+- docs(http): don't run some examples in doc checker (#4840)
+- docs(http): improve docs for stabilization (#4813)
+
+#### @std/ini 0.225.0 (minor)
+
+- BREAKING(ini): remove internal `Formatting` type (#4818)
+- fix(ini): remove unused `ParseOptions.assignment` property (#4816)
+- docs(ini): add missing doc comments (#4819)
+- refactor(ini): move StringifyOptions to stringify.ts (#4817)
+
+#### @std/msgpack 0.224.2 (patch)
+
+- fix(msgpack): error on early end of data (#4831)
+- docs(msgpack): complete documentation of the package (#4832)
+
+#### @std/semver 0.224.1 (patch)
+
+- docs(semver): improve docs (#4846)
+
+#### @std/streams 0.224.2 (patch)
+
+- docs(streams): improve docs for stabilization (#4852)
+
+#### @std/text 0.224.1 (patch)
+
+- docs(text): pass docs check (#4837)
+- docs(text): add module doc (#4812)
+
+#### @std/ulid 0.224.1 (patch)
+
+- docs(ulid): finish documentation (#4825)
+
+#### @std/uuid 0.224.3 (patch)
+
+- deprecation(uuid): deprecate `v1.generate()` signature with `buf` and `offset`
+  parameters (#4880)
+- deprecation(uuid): rename `V1Options` to `GenerateOptions` (#4872)
+- fix(uuid): validate namespace UUIDs in `v3.generate()` and `v5.generate()`
+  (#4874)
+- docs(uuid): update module docs (#4790)
+- test(uuid): add tests for invalid namespace UUID (#4875)
+
+#### @std/yaml 0.224.1 (patch)
+
+- refactor(yaml): remove dead code (#4849)
+- test(yaml): test handling of omap (#4851)
+- test(yaml): test float handling (#4850)
+
+### 2024.05.22
+
+#### @std/assert 0.225.3 (patch)
+
+- refactor(assert,internal): rename `diffstr()` to `diffStr()` (#4758)
+
+#### @std/async 0.224.1 (patch)
+
+- docs(async): improve docs for stabilization (#4803)
+
+#### @std/bytes 1.0.0-rc.3 (prerelease)
+
+- perf(bytes): skip doing extra work in some scenarios (#4767)
+
+#### @std/cli 0.224.3 (patch)
+
+- chore(cli): remove outdated todo comment (#4787)
+
+#### @std/collections 1.0.0-rc.1 (prerelease)
+
+- feat(collections): `collections@1.0.0-rc.1` (#4697)
+- docs(collections,internal,media-types): use `@typeParam` tag instead of
+  `@template` (#4772)
+- docs(collections): fix typos and improve example (#4763)
+- docs(collections): update module doc (#4765)
+
+#### @std/csv 0.224.1 (patch)
+
+- docs(csv,encoding,http,json,media-types,uuid): use `rfc-editor.org` for RFC
+  links (#4777)
+
+#### @std/data-structures 0.224.1 (patch)
+
+- docs(data-structures): improve documentation (#4793)
+
+#### @std/encoding 0.224.2 (patch)
+
+- docs(csv,encoding,http,json,media-types,uuid): use `rfc-editor.org` for RFC
+  links (#4777)
+
+#### @std/expect 0.224.2 (patch)
+
+- fix(expect): updated error message for toContain (#4750)
+
+#### @std/http 0.224.1 (patch)
+
+- docs(csv,encoding,http,json,media-types,uuid): use `rfc-editor.org` for RFC
+  links (#4777)
+
+#### @std/internal 1.0.0 (major)
+
+- docs(collections,internal,media-types): use `@typeParam` tag instead of
+  `@template` (#4772)
+- docs(internal): add module docs (#4757)
+- refactor(assert,internal): rename `diffstr()` to `diffStr()` (#4758)
+
+#### @std/json 0.224.1 (patch)
+
+- docs(csv,encoding,http,json,media-types,uuid): use `rfc-editor.org` for RFC
+  links (#4777)
+
+#### @std/media-types 1.0.0-rc.1 (prerelease)
+
+- fix(media-types): do not expose vendored json file as public API (#4776)
+- docs(collections,internal,media-types): use `@typeParam` tag instead of
+  `@template` (#4772)
+- docs(csv,encoding,http,json,media-types,uuid): use `rfc-editor.org` for RFC
+  links (#4777)
+- chore(media-types): `media-types@1.0.0-rc.1` (#4744)
+
+#### @std/msgpack 0.224.1 (patch)
+
+- fix(msgpack): encode maps with null prototype (#4764)
+
+#### @std/regexp 0.224.1 (patch)
+
+- docs(regexp): update module example to get full jsr score (#4796)
+
+#### @std/streams 0.224.1 (patch)
+
+- feat(streams): `concatReadableStreams()` (#4747)
+
+#### @std/uuid 0.224.2 (patch)
+
+- docs(csv,encoding,http,json,media-types,uuid): use `rfc-editor.org` for RFC
+  links (#4777)
+
+#### @std/webgpu 0.224.2 (patch)
+
+- docs(webgpu): improve docs for stabilization (#4811)
+
+### 2024.05.16
+
+#### @std/assert 0.225.2 (patch)
+
+- fix(assert): handle `assertStrictEquals(-0, +0)` correctly (#4715)
+- fix(assert): don't swallow the original error while creating assertion error
+  (#4701)
+- docs(assert): document `assertStrictEquals()` equality comparison behavior
+  (#4724)
+- refactor(assert): vendor code from `fmt/colors.ts` (#4716)
+- chore(assert): revert "handle `assertStrictEquals(-0, +0)` correctly" (#4718)
+
+#### @std/bytes 1.0.0-rc.2 (prerelease)
+
+- docs(bytes): trim module documentation (#4693)
+- docs(bytes,collections): fix doc checker and documentation (#4691)
+- chore(bytes): release `bytes@1.0.0-rc.2` (#4745)
+
+#### @std/cli 0.224.2 (patch)
+
+- test(cli): reduce flakiness of spinner test (#4738)
+- test(cli): reduce flakiness of spinner test (#4719)
+- test(cli): `Spinner` tests (#4713)
+
+#### @std/collections 0.224.2 (patch)
+
+- feat(collections): add `invert()` and `invertBy()` (#4710)
+- docs(collections): finalize module documentation (#4696)
+- docs(bytes,collections): fix doc checker and documentation (#4691)
+- refactor(collections): sort exports in `mod.ts` (#4712)
+
+#### @std/encoding 0.224.1 (patch)
+
+- test(encoding): improve test coverage (#4742)
+
+#### @std/expect 0.224.1 (patch)
+
+- fix(expect): don't swallow the original error while creating assertion error
+  (#4700)
+- chore(expect): fix future `no-slow-type` lint errors with expando properties
+  (#4711)
+
+#### @std/fmt 0.225.1 (patch)
+
+- chore(fmt,fs,path,internal): skip yanked version manually (#4753)
+
+#### @std/fs 0.229.1 (patch)
+
+- chore(fmt,fs,path,internal): skip yanked version manually (#4753)
+
+#### @std/internal 0.225.1 (patch)
+
+- docs(internal): cleanups and documentation improvements (#4706)
+- refactor(internal): cleanup `buildMessage()` (#4705)
+- refactor(internal): cleanup `diff()` (#4704)
+- refactor(internal): cleanup and restructure `diffstr()` (#4703)
+- refactor(internal): cleanup `_internals` (#4702)
+- refactor(internal): cleanup and restructure (#4698)
+- chore(fmt,fs,path,internal): skip yanked version manually (#4753)
+- chore(internal): release `internal@1.0.0` (#4741)
+
+#### @std/media-types 0.224.1 (patch)
+
+- docs(media-types): polish documentation (#4731)
+- refactor(media-types): minor cleanups (#4743)
+
+#### @std/net 0.224.1 (patch)
+
+- test(net): improve test coverage (#4709)
+
+#### @std/path 0.225.1 (patch)
+
+- chore(fmt,fs,path,internal): skip yanked version manually (#4753)
+
+#### @std/uuid 0.224.1 (patch)
+
+- refactor(uuid): factor out common symbols into `common` module (#4749)
+
+#### @std/webgpu 0.224.1 (patch)
+
+- test(webgpu): remove `Deno.resources()` usage (#4708)
+
 ### 2024.05.07
 
 #### @std/assert 0.225.1 (patch)

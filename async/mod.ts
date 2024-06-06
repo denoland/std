@@ -5,7 +5,7 @@
  * Provide help with asynchronous tasks like delays, debouncing, deferring, or
  * pooling.
  *
- * ```ts
+ * ```ts no-assert
  * import { delay } from "@std/async/delay";
  *
  * await delay(100); // waits for 100 milliseconds

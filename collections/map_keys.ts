@@ -8,7 +8,7 @@
  * If the transformed entries contain the same key multiple times, only the last
  * one will appear in the returned record.
  *
- * @template T The type of the values in the input record.
+ * @typeParam T The type of the values in the input record.
  *
  * @param record The record to map keys from.
  * @param transformer The function to transform each key.

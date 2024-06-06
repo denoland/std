@@ -20,9 +20,6 @@ export type ValueType =
  * Value map that can be encoded to MessagePack.
  */
 export interface ValueMap {
-  /**
-   * Value types that can be encoded to MessagePack.
-   */
   [index: string | number]: ValueType;
 }
 
@@ -42,7 +39,7 @@ const encoder = new TextEncoder();
 /**
  * Encode a value to MessagePack binary format.
  *
- * @example
+ * @example Encode a value to MessagePack binary format
  * ```ts
  * import { encode } from "@std/msgpack/encode";
  *
@@ -56,6 +53,9 @@ const encoder = new TextEncoder();
  *
  * console.log(encode(obj))
  * ```
+ *
+ * @param object Value to encode to MessagePack binary format.
+ * @returns Encoded MessagePack binary data.
  */
 export function encode(object: ValueType): Uint8Array {
   const byteParts: Uint8Array[] = [];
@@ -249,7 +249,9 @@ function encodeSlice(object: ValueType, byteParts: Uint8Array[]) {
   }
 
   // If object is a plain object
-  if (Object.getPrototypeOf(object) === Object.prototype) {
+  const prototype = Object.getPrototypeOf(object);
+
+  if (prototype === null || prototype === Object.prototype) {
     const numKeys = Object.keys(object).length;
 
     if (numKeys < FOUR_BITS) { // fixarray

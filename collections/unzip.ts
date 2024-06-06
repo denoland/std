@@ -6,8 +6,8 @@
  * returned array holding all first tuple elements and the second one holding
  * all the second elements.
  *
- * @template T The type of the first tuple elements.
- * @template U The type of the second tuple elements.
+ * @typeParam T The type of the first tuple elements.
+ * @typeParam U The type of the second tuple elements.
  *
  * @param pairs The array of 2-tuples to unzip.
  *

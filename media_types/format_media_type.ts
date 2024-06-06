@@ -5,8 +5,8 @@ import { isIterator, isToken, needsEncoding } from "./_util.ts";
 
 /**
  * Serializes the media type and the optional parameters as a media type
- * conforming to {@link https://www.ietf.org/rfc/rfc2045.txt | RFC 2045} and
- * {@link https://www.ietf.org/rfc/rfc2616.txt | RFC 2616}.
+ * conforming to {@link https://www.rfc-editor.org/rfc/rfc2045.html | RFC 2045} and
+ * {@link https://www.rfc-editor.org/rfc/rfc2616.html | RFC 2616}.
  *
  * The type and parameter names are written in lower-case.
  *
@@ -38,18 +38,18 @@ export function formatMediaType(
   type: string,
   param?: Record<string, string> | Iterable<[string, string]>,
 ): string {
-  let b = "";
+  let serializedMediaType = "";
   const [major = "", sub] = type.split("/");
   if (!sub) {
     if (!isToken(type)) {
       return "";
     }
-    b += type.toLowerCase();
+    serializedMediaType += type.toLowerCase();
   } else {
     if (!isToken(major) || !isToken(sub)) {
       return "";
     }
-    b += `${major.toLowerCase()}/${sub.toLowerCase()}`;
+    serializedMediaType += `${major.toLowerCase()}/${sub.toLowerCase()}`;
   }
 
   if (param) {
@@ -62,25 +62,25 @@ export function formatMediaType(
         return "";
       }
       const value = param[attribute]!;
-      b += `; ${attribute.toLowerCase()}`;
+      serializedMediaType += `; ${attribute.toLowerCase()}`;
 
       const needEnc = needsEncoding(value);
       if (needEnc) {
-        b += "*";
+        serializedMediaType += "*";
       }
-      b += "=";
+      serializedMediaType += "=";
 
       if (needEnc) {
-        b += `utf-8''${encodeURIComponent(value)}`;
+        serializedMediaType += `utf-8''${encodeURIComponent(value)}`;
         continue;
       }
 
       if (isToken(value)) {
-        b += value;
+        serializedMediaType += value;
         continue;
       }
-      b += `"${value.replace(/["\\]/gi, (m) => `\\${m}`)}"`;
+      serializedMediaType += `"${value.replace(/["\\]/gi, (m) => `\\${m}`)}"`;
     }
   }
-  return b;
+  return serializedMediaType;
 }

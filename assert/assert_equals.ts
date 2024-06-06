@@ -1,7 +1,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 import { equal } from "./equal.ts";
-import { buildMessage, diff, diffstr, format } from "@std/internal";
+import { buildMessage, diff, diffStr, format } from "@std/internal";
 import { AssertionError } from "./assertion_error.ts";
 
 /**
@@ -11,35 +11,36 @@ import { AssertionError } from "./assertion_error.ts";
  * Type parameter can be specified to ensure values under comparison have the
  * same type.
  *
- * @example
- * ```ts
+ * @example Usage
+ * ```ts no-eval
  * import { assertEquals } from "@std/assert/assert-equals";
  *
  * assertEquals("world", "world"); // Doesn't throw
  * assertEquals("hello", "world"); // Throws
  * ```
  *
- * Note: formatter option is experimental and may be removed in the future.
+ * @typeParam T The type of the values to compare. This is usually inferred.
+ * @param actual The actual value to compare.
+ * @param expected The expected value to compare.
+ * @param msg The optional message to display if the assertion fails.
  */
 export function assertEquals<T>(
   actual: T,
   expected: T,
   msg?: string,
-  options: { formatter?: (value: unknown) => string } = {},
 ) {
   if (equal(actual, expected)) {
     return;
   }
-  const { formatter = format } = options;
   const msgSuffix = msg ? `: ${msg}` : ".";
   let message = `Values are not equal${msgSuffix}`;
 
-  const actualString = formatter(actual);
-  const expectedString = formatter(expected);
+  const actualString = format(actual);
+  const expectedString = format(expected);
   const stringDiff = (typeof actual === "string") &&
     (typeof expected === "string");
   const diffResult = stringDiff
-    ? diffstr(actual as string, expected as string)
+    ? diffStr(actual as string, expected as string)
     : diff(actualString.split("\n"), expectedString.split("\n"));
   const diffMsg = buildMessage(diffResult, { stringDiff }).join("\n");
   message = `${message}\n${diffMsg}`;
