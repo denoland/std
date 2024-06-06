@@ -205,7 +205,7 @@ function comparePath(a: WalkEntry, b: WalkEntry): number {
  * // script.ts
  * import { expandGlob } from "@std/fs/expand-glob";
  *
- * await Array.fromAsync(expandGlob("*.ts", { includeDirs: false }));
+ * await Array.fromAsync(expandGlob("*", { includeDirs: false }));
  * // [
  * //   {
  * //     path: "/Users/user/folder/script.ts",

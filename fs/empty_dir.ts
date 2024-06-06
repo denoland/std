@@ -3,8 +3,7 @@ import { join } from "@std/path/join";
 import { toPathString } from "./_to_path_string.ts";
 
 /**
- * Asynchronously ensures that a directory is empty deletes the directory
- * contents it is not empty.
+ * Asynchronously ensures that a directory is empty.
  *
  * If the directory does not exist, it is created. The directory itself is not
  * deleted.
