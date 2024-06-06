@@ -81,14 +81,14 @@ export class LimitedTransformStream<T> extends TransformStream<T, T> {
    * @param options Options for the stream.
    *
    * @example size = 42
-   * ```ts
+   * ```ts no-assert
    * import { LimitedTransformStream } from "@std/streams/limited-transform-stream";
    *
    * const limitedTransformStream = new LimitedTransformStream(42);
    * ```
    *
    * @example size = 42, error = true
-   * ```ts
+   * ```ts no-assert
    * import { LimitedTransformStream } from "@std/streams/limited-transform-stream";
    *
    * const limitedTransformStream = new LimitedTransformStream(42, { error: true });

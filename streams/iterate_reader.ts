@@ -17,7 +17,7 @@ export type { Reader, ReaderSync };
  * @returns An async iterator that yields Uint8Array.
  *
  * @example Convert a `Deno.FsFile` into an async iterator and iterate over it
- * ```ts
+ * ```ts no-assert no-eval
  * import { iterateReader } from "@std/streams/iterate-reader";
  *
  * using f = await Deno.open("./README.md");
@@ -27,7 +27,7 @@ export type { Reader, ReaderSync };
  * ```
  *
  * @example Specify a buffer size of 1MiB
- * ```ts
+ * ```ts no-assert no-eval
  * import { iterateReader } from "@std/streams/iterate-reader";
  *
  * using f = await Deno.open("./README.md");
@@ -59,7 +59,7 @@ export function iterateReader(
  * @returns An iterator that yields Uint8Array.
  *
  * @example Convert a `Deno.FsFile` into an iterator and iterate over it
- * ```ts
+ * ```ts no-eval no-assert
  * import { iterateReaderSync } from "@std/streams/iterate-reader";
  *
  * using f = Deno.openSync("./README.md");
@@ -69,7 +69,7 @@ export function iterateReader(
  * ```
  *
  * @example Specify a buffer size of 1MiB
- * ```ts
+ * ```ts no-eval no-assert
  * import { iterateReaderSync } from "@std/streams/iterate-reader";
  *
  * using f = await Deno.open("./README.md");

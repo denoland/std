@@ -39,7 +39,7 @@ export interface ReadableStreamFromReaderOptions {
  * @returns A `ReadableStream` of `Uint8Array`s.
  *
  * @example Convert a `Deno.FsFile` into a readable stream:
- * ```ts
+ * ```ts no-eval no-assert
  * import { readableStreamFromReader } from "@std/streams/readable-stream-from-reader";
  *
  * using file = await Deno.open("./README.md", { read: true });

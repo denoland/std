@@ -1,8 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-import { assert } from "@std/assert/assert";
-
 /**
  * A transform stream that only transforms from the zero-indexed `start` and
  * `end` bytes (both inclusive).
@@ -47,14 +45,14 @@ export class ByteSliceStream extends TransformStream<Uint8Array, Uint8Array> {
    * @param end The zero-indexed byte index to stop reading at. Inclusive.
    *
    * @example No parameters
-   * ```ts
+   * ```ts no-assert
    * import { ByteSliceStream } from "@std/streams/byte-slice-stream";
    *
    * const byteSliceStream = new ByteSliceStream();
    * ```
    *
    * @example start = 4, end = 11
-   * ```ts
+   * ```ts no-assert
    * import { ByteSliceStream } from "@std/streams/byte-slice-stream";
    *
    * const byteSliceStream = new ByteSliceStream(4, 11);
@@ -63,7 +61,9 @@ export class ByteSliceStream extends TransformStream<Uint8Array, Uint8Array> {
   constructor(start = 0, end: number = Infinity) {
     super({
       start: () => {
-        assert(start >= 0, "`start` must be greater than 0");
+        if (start < 0) {
+          throw new RangeError("`start` must be greater than 0");
+        }
         end += 1;
       },
       transform: (chunk, controller) => {

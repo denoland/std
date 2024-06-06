@@ -1,6 +1,6 @@
 {
   "name": "@std/jsonc",
-  "version": "0.224.0",
+  "version": "0.224.2",
   "exports": {
     ".": "./mod.ts",
     "./parse": "./parse.ts"

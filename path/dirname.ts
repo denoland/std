@@ -6,7 +6,7 @@ import { dirname as posixDirname } from "./posix/dirname.ts";
 import { dirname as windowsDirname } from "./windows/dirname.ts";
 
 /**
- * Return the directory path of a pauth.
+ * Return the directory path of a path.
  *
  * @example Usage
  * ```ts

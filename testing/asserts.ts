@@ -92,8 +92,6 @@ export function assertArrayIncludes<T>(
  * assertEquals("hello", "world"); // Throws
  * ```
  *
- * Note: formatter option is experimental and may be removed in the future.
- *
  * @deprecated This will be removed in 1.0.0. Import from
  * {@link https://jsr.io/@std/assert | @std/assert} instead.
  */
@@ -101,9 +99,8 @@ export function assertEquals<T>(
   actual: T,
   expected: T,
   msg?: string,
-  options: { formatter?: (value: unknown) => string } = {},
 ) {
-  asserts.assertEquals<T>(actual, expected, msg, options);
+  asserts.assertEquals<T>(actual, expected, msg);
 }
 
 /**

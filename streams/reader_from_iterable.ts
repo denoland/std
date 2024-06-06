@@ -12,7 +12,7 @@ import type { Reader } from "@std/io/types";
  * @returns A `Reader` that reads from the iterable.
  *
  * @example Write `Deno.build` information to the blackhole 3 times every second
- * ```ts
+ * ```ts no-eval no-assert
  * import { readerFromIterable } from "@std/streams/reader-from-iterable";
  * import { copy } from "@std/io/copy";
  * import { delay } from "@std/async/delay";

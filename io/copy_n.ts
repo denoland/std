@@ -1,7 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-import { assert } from "@std/assert/assert";
 import type { Reader, Writer } from "./types.ts";
 
 const DEFAULT_BUFFER_SIZE = 32 * 1024;
@@ -33,7 +32,9 @@ export async function copyN(
       while (n < nread) {
         n += await dest.write(buf.slice(n, nread));
       }
-      assert(n === nread, "could not write");
+      if (n !== nread) {
+        throw new Error("could not write");
+      }
     }
     if (result === null) {
       break;

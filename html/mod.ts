@@ -5,13 +5,11 @@
  * Functions for HTML tasks such as escaping or unescaping HTML entities.
  *
  * ```ts
- * import { escape } from "@std/html/entities";
+ * import { unescape } from "@std/html/entities";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
- * escape("<>'&AA"); // "&lt;&gt;&#39;&amp;AA"
- *
- * // Characters that don't need to be escaped will be left alone,
- * // even if named HTML entities exist for them.
- * escape("þð"); // "þð"
+ * assertEquals(unescape("&lt;&gt;&#39;&amp;AA"), "<>'&AA");
+ * assertEquals(unescape("&thorn;&eth;"), "&thorn;&eth;");
  * ```
  *
  * @module
