@@ -32,6 +32,8 @@ function getIsWindowsOnBrowser(): boolean | undefined {
   return containsWindows(navigator?.userAgent);
 }
 
+declare const process: { platform?: string } | undefined;
+
 /**
  * according to documentation node's os module is implemented
  * in bun as well.
@@ -40,31 +42,10 @@ function getIsWindowsOnBrowser(): boolean | undefined {
  * @returns whether the os is windows or undefined if not running
  * on node or bun runtime
  */
-function getIsWindowsOnNodeOrBun() {
-  const os = tryGettingNodeOsModule();
-
-  return containsWindows(os?.version());
-}
-
-type OsModule = {
-  version(): string;
-};
-
-// deno-lint-ignore no-explicit-any
-declare const require: any;
-
-function tryGettingNodeOsModule(): OsModule | undefined {
+function getIsWindowsOnNodeOrBun(): boolean | undefined {
   try {
-    return getNodeOsModule();
+    return process?.platform === "win32";
   } catch {
-    return undefined;
-  }
-}
-
-function getNodeOsModule(): OsModule | undefined {
-  if (require !== undefined) {
-    return require("os");
-  } else {
     return undefined;
   }
 }
