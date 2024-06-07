@@ -33,15 +33,22 @@ export interface ExistsOptions {
  * file operation directly. This function is not recommended for this use case.
  * See the recommended method below.
  *
- * @see https://en.wikipedia.org/wiki/Time-of-check_to_time-of-use
+ * @see {@link https://en.wikipedia.org/wiki/Time-of-check_to_time-of-use} for
+ * more information on the time-of-check to time-of-use bug.
+ *
+ * Requires `--allow-read` and `--allow-sys` permissions.
+ *
+ * @see {@link https://docs.deno.com/runtime/manual/basics/permissions#file-system-access}
+ * for more information on Deno's permissions system.
  *
  * @param path The path to the file or directory, as a string or URL.
  * @param options Additional options for the check.
+ *
  * @returns A promise that resolves with `true` if the path exists, `false`
  * otherwise.
  *
  * @example Recommended method
- * ```ts
+ * ```ts no-eval
  * // Notice no use of exists
  * try {
  *   await Deno.remove("./foo", { recursive: true });
@@ -54,10 +61,10 @@ export interface ExistsOptions {
  * ```
  *
  * Notice that `exists()` is not used in the above example. Doing so avoids a
- * possible race condition. See the above section for details.
+ * possible race condition. See the above note for details.
  *
  * @example Basic usage
- * ```ts
+ * ```ts no-eval
  * import { exists } from "@std/fs/exists";
  *
  * await exists("./exists"); // true
@@ -65,7 +72,7 @@ export interface ExistsOptions {
  * ```
  *
  * @example Check if a path is readable
- * ```ts
+ * ```ts no-eval
  * import { exists } from "@std/fs/exists";
  *
  * await exists("./readable", { isReadable: true }); // true
@@ -73,7 +80,7 @@ export interface ExistsOptions {
  * ```
  *
  * @example Check if a path is a directory
- * ```ts
+ * ```ts no-eval
  * import { exists } from "@std/fs/exists";
  *
  * await exists("./directory", { isDirectory: true }); // true
@@ -81,7 +88,7 @@ export interface ExistsOptions {
  * ```
  *
  * @example Check if a path is a file
- * ```ts
+ * ```ts no-eval
  * import { exists } from "@std/fs/exists";
  *
  * await exists("./file", { isFile: true }); // true
@@ -89,7 +96,7 @@ export interface ExistsOptions {
  * ```
  *
  * @example Check if a path is a readable directory
- * ```ts
+ * ```ts no-eval
  * import { exists } from "@std/fs/exists";
  *
  * await exists("./readable_directory", { isReadable: true, isDirectory: true }); // true
@@ -97,7 +104,7 @@ export interface ExistsOptions {
  * ```
  *
  * @example Check if a path is a readable file
- * ```ts
+ * ```ts no-eval
  * import { exists } from "@std/fs/exists";
  *
  * await exists("./readable_file", { isReadable: true, isFile: true }); // true
@@ -164,14 +171,21 @@ export async function exists(
  * file operation directly. This function is not recommended for this use case.
  * See the recommended method below.
  *
- * @see https://en.wikipedia.org/wiki/Time-of-check_to_time-of-use
+ * @see {@link https://en.wikipedia.org/wiki/Time-of-check_to_time-of-use} for
+ * more information on the time-of-check to time-of-use bug.
+ *
+ * Requires `--allow-read` and `--allow-sys` permissions.
+ *
+ * @see {@link https://docs.deno.com/runtime/manual/basics/permissions#file-system-access}
+ * for more information on Deno's permissions system.
  *
  * @param path The path to the file or directory, as a string or URL.
  * @param options Additional options for the check.
+ *
  * @returns `true` if the path exists, `false` otherwise.
  *
  * @example Recommended method
- * ```ts
+ * ```ts no-eval
  * // Notice no use of exists
  * try {
  *   Deno.removeSync("./foo", { recursive: true });
@@ -184,10 +198,10 @@ export async function exists(
  * ```
  *
  * Notice that `existsSync()` is not used in the above example. Doing so avoids
- * a possible race condition. See the above section for details.
+ * a possible race condition. See the above note for details.
  *
  * @example Basic usage
- * ```ts
+ * ```ts no-eval
  * import { existsSync } from "@std/fs/exists";
  *
  * existsSync("./exists"); // true
@@ -195,7 +209,7 @@ export async function exists(
  * ```
  *
  * @example Check if a path is readable
- * ```ts
+ * ```ts no-eval
  * import { existsSync } from "@std/fs/exists";
  *
  * existsSync("./readable", { isReadable: true }); // true
@@ -203,7 +217,7 @@ export async function exists(
  * ```
  *
  * @example Check if a path is a directory
- * ```ts
+ * ```ts no-eval
  * import { existsSync } from "@std/fs/exists";
  *
  * existsSync("./directory", { isDirectory: true }); // true
@@ -211,7 +225,7 @@ export async function exists(
  * ```
  *
  * @example Check if a path is a file
- * ```ts
+ * ```ts no-eval
  * import { existsSync } from "@std/fs/exists";
  *
  * existsSync("./file", { isFile: true }); // true
@@ -219,7 +233,7 @@ export async function exists(
  * ```
  *
  * @example Check if a path is a readable directory
- * ```ts
+ * ```ts no-eval
  * import { existsSync } from "@std/fs/exists";
  *
  * existsSync("./readable_directory", { isReadable: true, isDirectory: true }); // true
@@ -227,7 +241,7 @@ export async function exists(
  * ```
  *
  * @example Check if a path is a readable file
- * ```ts
+ * ```ts no-eval
  * import { existsSync } from "@std/fs/exists";
  *
  * existsSync("./readable_file", { isReadable: true, isFile: true }); // true
