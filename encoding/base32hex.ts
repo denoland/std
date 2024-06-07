@@ -46,7 +46,7 @@ lookup.forEach((c, i) => (revLookup[c.charCodeAt(0)] = i));
  * import { assertEquals } from "@std/assert/assert-equals";
  *
  * assertEquals(
- *   decodeBase32Hex("GZRTMMDDGA======"),
+ *   decodeBase32Hex("6PHJCC3360======"),
  *   new TextEncoder().encode("6c60c0"),
  * );
  * ```
@@ -68,7 +68,7 @@ export function decodeBase32Hex(b32: string): Uint8Array {
  * import { encodeBase32Hex } from "@std/encoding/base32hex";
  * import { assertEquals } from "@std/assert/assert-equals";
  *
- * assertEquals(encodeBase32Hex("6c60c0"), "GZRTMMDDGA======");
+ * assertEquals(encodeBase32Hex("6c60c0"), "6PHJCC3360======");
  * ```
  */
 export function encodeBase32Hex(
