@@ -15,6 +15,7 @@
     "./readable-stream-from-reader": "./readable_stream_from_reader.ts",
     "./reader-from-iterable": "./reader_from_iterable.ts",
     "./reader-from-stream-reader": "./reader_from_stream_reader.ts",
+    "./resize-stream": "./resize_stream.ts",
     "./text-delimiter-stream": "./text_delimiter_stream.ts",
     "./text-line-stream": "./text_line_stream.ts",
     "./to-array-buffer": "./to_array_buffer.ts",
