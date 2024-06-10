@@ -12,7 +12,9 @@ function isBrankString(str: string) {
 /**
  * Parse each chunk as JSON.
  *
- * This can be used to parse {@link https://jsonlines.org/ | JSON lines}, {@link http://ndjson.org/ | NDJSON} and {@link https://datatracker.ietf.org/doc/html/rfc7464 | JSON Text Sequences}.
+ * This can be used to parse {@link https://jsonlines.org/ | JSON lines},
+ * {@link http://ndjson.org/ | NDJSON} and
+ * {@link https://www.rfc-editor.org/rfc/rfc7464.html | JSON Text Sequences}.
  * Chunks consisting of spaces, tab characters, or newline characters will be ignored.
  *
  * @example

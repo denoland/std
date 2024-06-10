@@ -5,11 +5,22 @@
  *
  * Includes buffering and conversion.
  *
+ * ```ts
+ * import { toText } from "@std/streams";
+ * import { assertEquals } from "@std/assert/assert-equals";
+ *
+ * const stream = ReadableStream.from("Hello, world!");
+ * const text = await toText(stream);
+ *
+ * assertEquals(text, "Hello, world!");
+ * ```
+ *
  * @module
  */
 
 export * from "./buffer.ts";
 export * from "./byte_slice_stream.ts";
+export * from "./concat_readable_streams.ts";
 export * from "./delimiter_stream.ts";
 export * from "./early_zip_readable_streams.ts";
 export * from "./iterate_reader.ts";

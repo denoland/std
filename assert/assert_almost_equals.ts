@@ -8,26 +8,40 @@ import { AssertionError } from "./assertion_error.ts";
  * double-precision floating-point representation limitations. If the values
  * are not almost equal then throw.
  *
- * @example
- * ```ts
+ * The default tolerance is one hundred thousandth of a percent of the
+ * expected value.
+ *
+ * @example Usage
+ * ```ts no-eval
  * import { assertAlmostEquals } from "@std/assert";
  *
- * assertAlmostEquals(0.01, 0.02, 0.1); // Doesn't throw
  * assertAlmostEquals(0.01, 0.02); // Throws
+ * assertAlmostEquals(1e-8, 1e-9); // Throws
+ * assertAlmostEquals(1.000000001e-8, 1.000000002e-8); // Doesn't throw
+ * assertAlmostEquals(0.01, 0.02, 0.1); // Doesn't throw
  * assertAlmostEquals(0.1 + 0.2, 0.3, 1e-16); // Doesn't throw
  * assertAlmostEquals(0.1 + 0.2, 0.3, 1e-17); // Throws
  * ```
+ *
+ * @param actual The actual value to compare.
+ * @param expected The expected value to compare.
+ * @param tolerance The tolerance to consider the values almost equal. The
+ * default is one hundred thousandth of a percent of the expected value.
+ * @param msg The optional message to include in the error.
  */
 export function assertAlmostEquals(
   actual: number,
   expected: number,
-  tolerance = 1e-7,
+  tolerance?: number,
   msg?: string,
 ) {
   if (Object.is(actual, expected)) {
     return;
   }
   const delta = Math.abs(expected - actual);
+  if (tolerance === undefined) {
+    tolerance = isFinite(expected) ? Math.abs(expected * 1e-7) : 1e-7;
+  }
   if (delta <= tolerance) {
     return;
   }

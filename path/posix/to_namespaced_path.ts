@@ -2,8 +2,18 @@
 // This module is browser compatible.
 
 /**
- * Resolves path to a namespace path
- * @param path to resolve to namespace
+ * Converts a path to a namespaced path. This function returns the path as is on posix.
+ *
+ * @example Usage
+ * ```ts
+ * import { toNamespacedPath } from "@std/path/posix/to-namespaced-path";
+ * import { assertEquals } from "@std/assert/assert-equals";
+ *
+ * assertEquals(toNamespacedPath("/home/foo"), "/home/foo");
+ * ```
+ *
+ * @param path The path.
+ * @returns The namespaced path.
  */
 export function toNamespacedPath(path: string): string {
   // Non-op on posix systems

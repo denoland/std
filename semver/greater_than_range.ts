@@ -6,7 +6,25 @@ import { testComparatorSet } from "./_test_comparator_set.ts";
 import { isWildcardComparator } from "./_shared.ts";
 import { compare } from "./compare.ts";
 
-/** Check if the semver is greater than the range. */
+/**
+ * Check if the SemVer is greater than the range.
+ *
+ * @example Usage
+ * ```ts
+ * import { parse, parseRange, greaterThanRange } from "@std/semver";
+ * import { assert, assertFalse } from "@std/assert";
+ *
+ * const v0 = parse("1.2.3");
+ * const v1 = parse("1.2.4");
+ * const range = parseRange(">=1.2.3 <1.2.4");
+ * assertFalse(greaterThanRange(v0, range));
+ * assert(greaterThanRange(v1, range));
+ * ```
+ *
+ * @param semver The version to check.
+ * @param range The range to check against.
+ * @returns `true` if the semver is greater than the range, `false` otherwise.
+ */
 export function greaterThanRange(semver: SemVer, range: Range): boolean {
   return range.every((comparatorSet) =>
     greaterThanComparatorSet(semver, comparatorSet)

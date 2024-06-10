@@ -5,10 +5,14 @@ import { SEPARATOR } from "@std/path/constants";
 import { toPathString } from "./_to_path_string.ts";
 
 /**
- * Test whether or not `dest` is a sub-directory of `src`
- * @param src src file path
- * @param dest dest file path
- * @param sep path separator
+ * Checks whether `src` is a sub-directory of `dest`.
+ *
+ * @param src Source file path as a string or URL.
+ * @param dest Destination file path as a string or URL.
+ * @param sep Path separator. Defaults to `\\` for Windows and `/` for other
+ * platforms.
+ *
+ * @returns `true` if `src` is a sub-directory of `dest`, `false` otherwise.
  */
 export function isSubdir(
   src: string | URL,

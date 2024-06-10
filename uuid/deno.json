@@ -1,8 +1,9 @@
 {
   "name": "@std/uuid",
-  "version": "0.224.0",
+  "version": "1.0.0-rc.1",
   "exports": {
     ".": "./mod.ts",
+    "./common": "./common.ts",
     "./constants": "./constants.ts",
     "./v1": "./v1.ts",
     "./v3": "./v3.ts",

@@ -1,7 +1,8 @@
 {
   "name": "@std/encoding",
-  "version": "0.224.0",
+  "version": "1.0.0-rc.2",
   "exports": {
+    ".": "./mod.ts",
     "./ascii85": "./ascii85.ts",
     "./base32": "./base32.ts",
     "./base58": "./base58.ts",

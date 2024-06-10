@@ -6,8 +6,19 @@ import { assertPath } from "../_common/assert_path.ts";
 import { isPosixPathSeparator } from "./_util.ts";
 
 /**
- * Resolves path segments into a `path`
- * @param pathSegments to process to path
+ * Resolves path segments into a `path`.
+ *
+ * @example Usage
+ * ```ts
+ * import { resolve } from "@std/path/posix/resolve";
+ * import { assertEquals } from "@std/assert/assert-equals";
+ *
+ * const path = resolve("/foo", "bar", "baz/asdf", "quux", "..");
+ * assertEquals(path, "/foo/bar/baz/asdf");
+ * ```
+ *
+ * @param pathSegments The path segments to resolve.
+ * @returns The resolved path.
  */
 export function resolve(...pathSegments: string[]): string {
   let resolvedPath = "";

@@ -64,17 +64,28 @@ documentation:
 
 ## Stabilization
 
-For a package to reach v1 (aka stable) status, it must meet the following
-requirements:
+The Standard Library is now in the process of stabilizing its packages. See
+#4600 for the release schedule.
 
-1. Approved by four members of the internal team. There must be consensus that
-   the API design is satisfactory and unlikely to change in the future.
-1. 100% documented, passing `deno doc --lint` checks and adhering to the
-   [documentation guidelines](https://github.com/denoland/deno_std/blob/main/.github/CONTRIBUTING.md#documentation).
-1. Maximum possible test coverage
-1. No open issues or pull requests that might lead to breaking changes. For
-   example, issues that suggest new non-breaking features are fine to exist at
-   stabilization.
+Each package must go through the following steps to achieve stabilization:
+
+1. Publish version 1.0.0-rc.1 once meeting the following requirements:
+   1. Approved by at least 2 maintainers. There must be consensus that the
+      design, documentation and implementation of the package are good and that
+      it is unlikely to undergo breaking changes in the future.
+   1. 100% documented, passing `deno doc --lint` checks and adhering to the
+      [documentation guidelines](https://github.com/denoland/deno_std/blob/main/.github/CONTRIBUTING.md#documentation).
+   1. Maximum possible test coverage
+   1. No open issues or pull requests that might lead to breaking changes. For
+      example, issues that suggest new non-breaking features are fine to exist
+      at stabilization.
+1. Allow 1 month for the community and the core team to review the package and
+   handle any feedback. There must be consensus that the design, documentation
+   and implementation of the package are good and that it is unlikely to undergo
+   breaking changes in the future.
+1. If there are no remaining issues, publish version 1.0.0. If there are
+   remaining issues, extend the waiting period to allow further time for a
+   resolution. Then, repeat this step.
 
 ## Architecture
 
@@ -90,37 +101,15 @@ In most cases, only a single function or class, alongside its related types, are
 exported. In other cases, functions that incur negligible dependency overhead
 will be grouped together in the same file.
 
-## Deprecation Policy
-
-We deprecate the APIs in the Standard Library when they get covered by new
-JavaScript language APIs or new Web Standard APIs. These APIs are usually
-removed after 3 minor versions.
-
-If you still need to use such APIs after the removal for some reason (for
-example, the usage in Fresh island), please use the URL pinned to the version
-where they are still available.
-
-For example, if you want to keep using `readableStreamFromIterable`, which was
-deprecated and removed in favor of `ReadableStream.from` in `v0.195.0`, please
-use the import URL pinned to `v0.194.0`:
-
-```ts
-import { readableStreamFromIterable } from "https://deno.land/std@0.194.0/streams/readable_stream_from_iterable.ts";
-```
-
 ## Contributing
 
 Check out the contributing guidelines [here](.github/CONTRIBUTING.md).
 
 ## Releases
 
-The Standard Library is versioned independently of the Deno CLI. This will
-change once the Standard Library is stabilized. See
-[here](https://deno.com/versions.json) for the compatibility of different
-versions of the Deno Standard Library and the Deno CLI.
-
-A new minor version of the Standard Library is published at the same time as
-every new version of the Deno CLI (including patch versions).
+New versions of packages are published every 1 or 2 weeks. Package versions
+>=1.0.0 follow [Semantic Versioning](https://semver.org/), and package versions
+<1.0.0 follow [this proposal](https://github.com/semver/semver/pull/923).
 
 ## Badge
 
@@ -140,3 +129,7 @@ every new version of the Deno CLI (including patch versions).
 ```md
 [![Built with the Deno Standard Library](https://raw.githubusercontent.com/denoland/deno_std/main/badge.svg)](https://jsr.io/@std)
 ```
+
+## Frequently Asked Questions
+
+Check out the frequently asked questions page [here](./.github/FAQ.md).

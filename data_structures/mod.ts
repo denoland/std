@@ -6,19 +6,20 @@
  *
  * ```ts
  * import { BinarySearchTree } from "@std/data-structures";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const values = [3, 10, 13, 4, 6, 7, 1, 14];
  * const tree = new BinarySearchTree<number>();
  * values.forEach((value) => tree.insert(value));
  *
- * [...tree]; // [ 1, 3, 4, 6, 7, 10, 13, 14 ]
- * tree.min(); // 1
- * tree.max(); // 14
- * tree.find(42); // null
- * tree.find(7); // 7
- * tree.remove(42); // false
- * tree.remove(7); // true
- * [...tree]; // [ 1, 3, 4, 6, 10, 13, 14 ]
+ * assertEquals([...tree], [1, 3, 4, 6, 7, 10, 13, 14]);
+ * assertEquals(tree.min(), 1);
+ * assertEquals(tree.max(), 14);
+ * assertEquals(tree.find(42), null);
+ * assertEquals(tree.find(7), 7);
+ * assertEquals(tree.remove(42), false);
+ * assertEquals(tree.remove(7), true);
+ * assertEquals([...tree], [1, 3, 4, 6, 10, 13, 14]);
  * ```
  *
  * @module

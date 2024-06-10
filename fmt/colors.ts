@@ -6,13 +6,10 @@
 /**
  * String formatters and utilities for dealing with ANSI color codes.
  *
- * This module is browser compatible.
- *
  * This module supports `NO_COLOR` environmental variable disabling any coloring
  * if `NO_COLOR` is set.
  *
- * @example
- * ```ts
+ * ```ts no-assert
  * import {
  *   bgBlue,
  *   bgRgb24,
@@ -75,8 +72,24 @@ export interface Rgb {
 let enabled = !noColor;
 
 /**
- * Set changing text color to enabled or disabled
- * @param value
+ * Enable or disable text color when styling.
+ *
+ * `@std/fmt/colors` automatically detects NO_COLOR environmental variable
+ * and disables text color. Use this API only when the automatic detection
+ * doesn't work.
+ *
+ * @example Usage
+ * ```ts no-assert
+ * import { setColorEnabled } from "@std/fmt/colors";
+ *
+ * // Disable text color
+ * setColorEnabled(false);
+ *
+ * // Enable text color
+ * setColorEnabled(true);
+ * ```
+ *
+ * @param value The boolean value to enable or disable text color
  */
 export function setColorEnabled(value: boolean) {
   if (Deno?.noColor) {
@@ -86,7 +99,17 @@ export function setColorEnabled(value: boolean) {
   enabled = value;
 }
 
-/** Get whether text color change is enabled or disabled. */
+/**
+ * Get whether text color change is enabled or disabled.
+ *
+ * @example Usage
+ * ```ts no-assert
+ * import { getColorEnabled } from "@std/fmt/colors";
+ *
+ * console.log(getColorEnabled()); // true if enabled, false if disabled
+ * ```
+ * @returns `true` if text color is enabled, `false` otherwise
+ */
 export function getColorEnabled(): boolean {
   return enabled;
 }
@@ -106,8 +129,8 @@ function code(open: number[], close: number): Code {
 
 /**
  * Applies color and background based on color code and its associated text
- * @param str text to apply color settings to
- * @param code color code to apply
+ * @param str The text to apply color settings to
+ * @param code The color code to apply
  */
 function run(str: string, code: Code): string {
   return enabled
@@ -117,7 +140,16 @@ function run(str: string, code: Code): string {
 
 /**
  * Reset the text modified.
- * @param str text to reset
+ *
+ * @example Usage
+ * ```ts no-assert
+ * import { reset } from "@std/fmt/colors";
+ *
+ * console.log(reset("Hello, world!"));
+ * ```
+ *
+ * @param str The text to reset
+ * @returns The text with reset color
  */
 export function reset(str: string): string {
   return run(str, code([0], 0));
@@ -125,7 +157,16 @@ export function reset(str: string): string {
 
 /**
  * Make the text bold.
- * @param str text to make bold
+ *
+ * @example Usage
+ * ```ts no-assert
+ * import { bold } from "@std/fmt/colors";
+ *
+ * console.log(bold("Hello, world!"));
+ * ```
+ *
+ * @param str The text to make bold
+ * @returns The bold text
  */
 export function bold(str: string): string {
   return run(str, code([1], 22));
@@ -133,7 +174,16 @@ export function bold(str: string): string {
 
 /**
  * The text emits only a small amount of light.
- * @param str text to dim
+ *
+ * @example Usage
+ * ```ts no-assert
+ * import { dim } from "@std/fmt/colors";
+ *
+ * console.log(dim("Hello, world!"));
+ * ```
+ *
+ * @param str The text to dim
+ * @returns The dimmed text
  *
  * Warning: Not all terminal emulators support `dim`.
  * For compatibility across all terminals, use {@linkcode gray} or {@linkcode brightBlack} instead.
@@ -144,7 +194,16 @@ export function dim(str: string): string {
 
 /**
  * Make the text italic.
- * @param str text to make italic
+ *
+ * @example Usage
+ * ```ts no-assert
+ * import { italic } from "@std/fmt/colors";
+ *
+ * console.log(italic("Hello, world!"));
+ * ```
+ *
+ * @param str The text to make italic
+ * @returns The italic text
  */
 export function italic(str: string): string {
   return run(str, code([3], 23));
@@ -152,7 +211,16 @@ export function italic(str: string): string {
 
 /**
  * Make the text underline.
- * @param str text to underline
+ *
+ * @example Usage
+ * ```ts no-assert
+ * import { underline } from "@std/fmt/colors";
+ *
+ * console.log(underline("Hello, world!"));
+ * ```
+ *
+ * @param str The text to underline
+ * @returns The underlined text
  */
 export function underline(str: string): string {
   return run(str, code([4], 24));
@@ -160,7 +228,16 @@ export function underline(str: string): string {
 
 /**
  * Invert background color and text color.
- * @param str text to invert its color
+ *
+ * @example Usage
+ * ```ts no-assert
+ * import { inverse } from "@std/fmt/colors";
+ *
+ * console.log(inverse("Hello, world!"));
+ * ```
+ *
+ * @param str The text to invert its color
+ * @returns The inverted text
  */
 export function inverse(str: string): string {
   return run(str, code([7], 27));
@@ -168,7 +245,16 @@ export function inverse(str: string): string {
 
 /**
  * Make the text hidden.
- * @param str text to hide
+ *
+ * @example Usage
+ * ```ts no-assert
+ * import { hidden } from "@std/fmt/colors";
+ *
+ * console.log(hidden("Hello, world!"));
+ * ```
+ *
+ * @param str The text to hide
+ * @returns The hidden text
  */
 export function hidden(str: string): string {
   return run(str, code([8], 28));
@@ -176,7 +262,16 @@ export function hidden(str: string): string {
 
 /**
  * Put horizontal line through the center of the text.
- * @param str text to strike through
+ *
+ * @example Usage
+ * ```ts no-assert
+ * import { strikethrough } from "@std/fmt/colors";
+ *
+ * console.log(strikethrough("Hello, world!"));
+ * ```
+ *
+ * @param str The text to strike through
+ * @returns The text with horizontal line through the center
  */
 export function strikethrough(str: string): string {
   return run(str, code([9], 29));
@@ -184,7 +279,16 @@ export function strikethrough(str: string): string {
 
 /**
  * Set text color to black.
- * @param str text to make black
+ *
+ * @example Usage
+ * ```ts no-assert
+ * import { black } from "@std/fmt/colors";
+ *
+ * console.log(black("Hello, world!"));
+ * ```
+ *
+ * @param str The text to make black
+ * @returns The black text
  */
 export function black(str: string): string {
   return run(str, code([30], 39));
@@ -192,7 +296,16 @@ export function black(str: string): string {
 
 /**
  * Set text color to red.
- * @param str text to make red
+ *
+ * @example Usage
+ * ```ts no-assert
+ * import { red } from "@std/fmt/colors";
+ *
+ * console.log(red("Hello, world!"));
+ * ```
+ *
+ * @param str The text to make red
+ * @returns The red text
  */
 export function red(str: string): string {
   return run(str, code([31], 39));
@@ -200,7 +313,16 @@ export function red(str: string): string {
 
 /**
  * Set text color to green.
- * @param str text to make green
+ *
+ * @example Usage
+ * ```ts no-assert
+ * import { green } from "@std/fmt/colors";
+ *
+ * console.log(green("Hello, world!"));
+ * ```
+ *
+ * @param str The text to make green
+ * @returns The green text
  */
 export function green(str: string): string {
   return run(str, code([32], 39));
@@ -208,7 +330,16 @@ export function green(str: string): string {
 
 /**
  * Set text color to yellow.
- * @param str text to make yellow
+ *
+ * @example Usage
+ * ```ts no-assert
+ * import { yellow } from "@std/fmt/colors";
+ *
+ * console.log(yellow("Hello, world!"));
+ * ```
+ *
+ * @param str The text to make yellow
+ * @returns The yellow text
  */
 export function yellow(str: string): string {
   return run(str, code([33], 39));
@@ -216,7 +347,16 @@ export function yellow(str: string): string {
 
 /**
  * Set text color to blue.
- * @param str text to make blue
+ *
+ * @example Usage
+ * ```ts no-assert
+ * import { blue } from "@std/fmt/colors";
+ *
+ * console.log(blue("Hello, world!"));
+ * ```
+ *
+ * @param str The text to make blue
+ * @returns The blue text
  */
 export function blue(str: string): string {
   return run(str, code([34], 39));
@@ -224,7 +364,16 @@ export function blue(str: string): string {
 
 /**
  * Set text color to magenta.
- * @param str text to make magenta
+ *
+ * @example Usage
+ * ```ts no-assert
+ * import { magenta } from "@std/fmt/colors";
+ *
+ * console.log(magenta("Hello, world!"));
+ * ```
+ *
+ * @param str The text to make magenta
+ * @returns The magenta text
  */
 export function magenta(str: string): string {
   return run(str, code([35], 39));
@@ -232,7 +381,16 @@ export function magenta(str: string): string {
 
 /**
  * Set text color to cyan.
- * @param str text to make cyan
+ *
+ * @example Usage
+ * ```ts no-assert
+ * import { cyan } from "@std/fmt/colors";
+ *
+ * console.log(cyan("Hello, world!"));
+ * ```
+ *
+ * @param str The text to make cyan
+ * @returns The cyan text
  */
 export function cyan(str: string): string {
   return run(str, code([36], 39));
@@ -240,7 +398,16 @@ export function cyan(str: string): string {
 
 /**
  * Set text color to white.
- * @param str text to make white
+ *
+ * @example Usage
+ * ```ts no-assert
+ * import { white } from "@std/fmt/colors";
+ *
+ * console.log(white("Hello, world!"));
+ * ```
+ *
+ * @param str The text to make white
+ * @returns The white text
  */
 export function white(str: string): string {
   return run(str, code([37], 39));
@@ -248,7 +415,16 @@ export function white(str: string): string {
 
 /**
  * Set text color to gray.
- * @param str text to make gray
+ *
+ * @example Usage
+ * ```ts no-assert
+ * import { gray } from "@std/fmt/colors";
+ *
+ * console.log(gray("Hello, world!"));
+ * ```
+ *
+ * @param str The text to make gray
+ * @returns The gray text
  */
 export function gray(str: string): string {
   return brightBlack(str);
@@ -256,7 +432,16 @@ export function gray(str: string): string {
 
 /**
  * Set text color to bright black.
- * @param str text to make bright-black
+ *
+ * @example Usage
+ * ```ts no-assert
+ * import { brightBlack } from "@std/fmt/colors";
+ *
+ * console.log(brightBlack("Hello, world!"));
+ * ```
+ *
+ * @param str The text to make bright black
+ * @returns The bright black text
  */
 export function brightBlack(str: string): string {
   return run(str, code([90], 39));
@@ -264,7 +449,16 @@ export function brightBlack(str: string): string {
 
 /**
  * Set text color to bright red.
- * @param str text to make bright-red
+ *
+ * @example Usage
+ * ```ts no-assert
+ * import { brightRed } from "@std/fmt/colors";
+ *
+ * console.log(brightRed("Hello, world!"));
+ * ```
+ *
+ * @param str The text to make bright red
+ * @returns The bright red text
  */
 export function brightRed(str: string): string {
   return run(str, code([91], 39));
@@ -272,7 +466,16 @@ export function brightRed(str: string): string {
 
 /**
  * Set text color to bright green.
- * @param str text to make bright-green
+ *
+ * @example Usage
+ * ```ts no-assert
+ * import { brightGreen } from "@std/fmt/colors";
+ *
+ * console.log(brightGreen("Hello, world!"));
+ * ```
+ *
+ * @param str The text to make bright green
+ * @returns The bright green text
  */
 export function brightGreen(str: string): string {
   return run(str, code([92], 39));
@@ -280,7 +483,16 @@ export function brightGreen(str: string): string {
 
 /**
  * Set text color to bright yellow.
- * @param str text to make bright-yellow
+ *
+ * @example Usage
+ * ```ts no-assert
+ * import { brightYellow } from "@std/fmt/colors";
+ *
+ * console.log(brightYellow("Hello, world!"));
+ * ```
+ *
+ * @param str The text to make bright yellow
+ * @returns The bright yellow text
  */
 export function brightYellow(str: string): string {
   return run(str, code([93], 39));
@@ -288,7 +500,16 @@ export function brightYellow(str: string): string {
 
 /**
  * Set text color to bright blue.
- * @param str text to make bright-blue
+ *
+ * @example Usage
+ * ```ts no-assert
+ * import { brightBlue } from "@std/fmt/colors";
+ *
+ * console.log(brightBlue("Hello, world!"));
+ * ```
+ *
+ * @param str The text to make bright blue
+ * @returns The bright blue text
  */
 export function brightBlue(str: string): string {
   return run(str, code([94], 39));
@@ -296,7 +517,16 @@ export function brightBlue(str: string): string {
 
 /**
  * Set text color to bright magenta.
- * @param str text to make bright-magenta
+ *
+ * @example Usage
+ * ```ts no-assert
+ * import { brightMagenta } from "@std/fmt/colors";
+ *
+ * console.log(brightMagenta("Hello, world!"));
+ * ```
+ *
+ * @param str The text to make bright magenta
+ * @returns The bright magenta text
  */
 export function brightMagenta(str: string): string {
   return run(str, code([95], 39));
@@ -304,7 +534,16 @@ export function brightMagenta(str: string): string {
 
 /**
  * Set text color to bright cyan.
- * @param str text to make bright-cyan
+ *
+ * @example Usage
+ * ```ts no-assert
+ * import { brightCyan } from "@std/fmt/colors";
+ *
+ * console.log(brightCyan("Hello, world!"));
+ * ```
+ *
+ * @param str The text to make bright cyan
+ * @returns The bright cyan text
  */
 export function brightCyan(str: string): string {
   return run(str, code([96], 39));
@@ -312,7 +551,16 @@ export function brightCyan(str: string): string {
 
 /**
  * Set text color to bright white.
- * @param str text to make bright-white
+ *
+ * @example Usage
+ * ```ts no-assert
+ * import { brightWhite } from "@std/fmt/colors";
+ *
+ * console.log(brightWhite("Hello, world!"));
+ * ```
+ *
+ * @param str The text to make bright white
+ * @returns The bright white text
  */
 export function brightWhite(str: string): string {
   return run(str, code([97], 39));
@@ -320,7 +568,16 @@ export function brightWhite(str: string): string {
 
 /**
  * Set background color to black.
- * @param str text to make its background black
+ *
+ * @example Usage
+ * ```ts no-assert
+ * import { bgBlack } from "@std/fmt/colors";
+ *
+ * console.log(bgBlack("Hello, world!"));
+ * ```
+ *
+ * @param str The text to make its background black
+ * @returns The text with black background
  */
 export function bgBlack(str: string): string {
   return run(str, code([40], 49));
@@ -328,7 +585,16 @@ export function bgBlack(str: string): string {
 
 /**
  * Set background color to red.
- * @param str text to make its background red
+ *
+ * @example Usage
+ * ```ts no-assert
+ * import { bgRed } from "@std/fmt/colors";
+ *
+ * console.log(bgRed("Hello, world!"));
+ * ```
+ *
+ * @param str The text to make its background red
+ * @returns The text with red background
  */
 export function bgRed(str: string): string {
   return run(str, code([41], 49));
@@ -336,7 +602,16 @@ export function bgRed(str: string): string {
 
 /**
  * Set background color to green.
- * @param str text to make its background green
+ *
+ * @example Usage
+ * ```ts no-assert
+ * import { bgGreen } from "@std/fmt/colors";
+ *
+ * console.log(bgGreen("Hello, world!"));
+ * ```
+ *
+ * @param str The text to make its background green
+ * @returns The text with green background
  */
 export function bgGreen(str: string): string {
   return run(str, code([42], 49));
@@ -344,7 +619,16 @@ export function bgGreen(str: string): string {
 
 /**
  * Set background color to yellow.
- * @param str text to make its background yellow
+ *
+ * @example Usage
+ * ```ts no-assert
+ * import { bgYellow } from "@std/fmt/colors";
+ *
+ * console.log(bgYellow("Hello, world!"));
+ * ```
+ *
+ * @param str The text to make its background yellow
+ * @returns The text with yellow background
  */
 export function bgYellow(str: string): string {
   return run(str, code([43], 49));
@@ -352,7 +636,16 @@ export function bgYellow(str: string): string {
 
 /**
  * Set background color to blue.
- * @param str text to make its background blue
+ *
+ * @example Usage
+ * ```ts no-assert
+ * import { bgBlue } from "@std/fmt/colors";
+ *
+ * console.log(bgBlue("Hello, world!"));
+ * ```
+ *
+ * @param str The text to make its background blue
+ * @returns The text with blue background
  */
 export function bgBlue(str: string): string {
   return run(str, code([44], 49));
@@ -360,7 +653,16 @@ export function bgBlue(str: string): string {
 
 /**
  *  Set background color to magenta.
- * @param str text to make its background magenta
+ *
+ * @example Usage
+ * ```ts no-assert
+ * import { bgMagenta } from "@std/fmt/colors";
+ *
+ * console.log(bgMagenta("Hello, world!"));
+ * ```
+ *
+ * @param str The text to make its background magenta
+ * @returns The text with magenta background
  */
 export function bgMagenta(str: string): string {
   return run(str, code([45], 49));
@@ -368,7 +670,16 @@ export function bgMagenta(str: string): string {
 
 /**
  * Set background color to cyan.
- * @param str text to make its background cyan
+ *
+ * @example Usage
+ * ```ts no-assert
+ * import { bgCyan } from "@std/fmt/colors";
+ *
+ * console.log(bgCyan("Hello, world!"));
+ * ```
+ *
+ * @param str The text to make its background cyan
+ * @returns The text with cyan background
  */
 export function bgCyan(str: string): string {
   return run(str, code([46], 49));
@@ -376,7 +687,16 @@ export function bgCyan(str: string): string {
 
 /**
  * Set background color to white.
- * @param str text to make its background white
+ *
+ * @example Usage
+ * ```ts no-assert
+ * import { bgWhite } from "@std/fmt/colors";
+ *
+ * console.log(bgWhite("Hello, world!"));
+ * ```
+ *
+ * @param str The text to make its background white
+ * @returns The text with white background
  */
 export function bgWhite(str: string): string {
   return run(str, code([47], 49));
@@ -384,7 +704,16 @@ export function bgWhite(str: string): string {
 
 /**
  * Set background color to bright black.
- * @param str text to make its background bright-black
+ *
+ * @example Usage
+ * ```ts no-assert
+ * import { bgBrightBlack } from "@std/fmt/colors";
+ *
+ * console.log(bgBrightBlack("Hello, world!"));
+ * ```
+ *
+ * @param str The text to make its background bright black
+ * @returns The text with bright black background
  */
 export function bgBrightBlack(str: string): string {
   return run(str, code([100], 49));
@@ -392,7 +721,16 @@ export function bgBrightBlack(str: string): string {
 
 /**
  * Set background color to bright red.
- * @param str text to make its background bright-red
+ *
+ * @example Usage
+ * ```ts no-assert
+ * import { bgBrightRed } from "@std/fmt/colors";
+ *
+ * console.log(bgBrightRed("Hello, world!"));
+ * ```
+ *
+ * @param str The text to make its background bright red
+ * @returns The text with bright red background
  */
 export function bgBrightRed(str: string): string {
   return run(str, code([101], 49));
@@ -400,7 +738,16 @@ export function bgBrightRed(str: string): string {
 
 /**
  * Set background color to bright green.
- * @param str text to make its background bright-green
+ *
+ * @example Usage
+ * ```ts no-assert
+ * import { bgBrightGreen } from "@std/fmt/colors";
+ *
+ * console.log(bgBrightGreen("Hello, world!"));
+ * ```
+ *
+ * @param str The text to make its background bright green
+ * @returns The text with bright green background
  */
 export function bgBrightGreen(str: string): string {
   return run(str, code([102], 49));
@@ -408,7 +755,16 @@ export function bgBrightGreen(str: string): string {
 
 /**
  * Set background color to bright yellow.
- * @param str text to make its background bright-yellow
+ *
+ * @example Usage
+ * ```ts no-assert
+ * import { bgBrightYellow } from "@std/fmt/colors";
+ *
+ * console.log(bgBrightYellow("Hello, world!"));
+ * ```
+ *
+ * @param str The text to make its background bright yellow
+ * @returns The text with bright yellow background
  */
 export function bgBrightYellow(str: string): string {
   return run(str, code([103], 49));
@@ -416,7 +772,16 @@ export function bgBrightYellow(str: string): string {
 
 /**
  * Set background color to bright blue.
- * @param str text to make its background bright-blue
+ *
+ * @example Usage
+ * ```ts no-assert
+ * import { bgBrightBlue } from "@std/fmt/colors";
+ *
+ * console.log(bgBrightBlue("Hello, world!"));
+ * ```
+ *
+ * @param str The text to make its background bright blue
+ * @returns The text with bright blue background
  */
 export function bgBrightBlue(str: string): string {
   return run(str, code([104], 49));
@@ -424,7 +789,16 @@ export function bgBrightBlue(str: string): string {
 
 /**
  * Set background color to bright magenta.
- * @param str text to make its background bright-magenta
+ *
+ * @example Usage
+ * ```ts no-assert
+ * import { bgBrightMagenta } from "@std/fmt/colors";
+ *
+ * console.log(bgBrightMagenta("Hello, world!"));
+ * ```
+ *
+ * @param str The text to make its background bright magenta
+ * @returns The text with bright magenta background
  */
 export function bgBrightMagenta(str: string): string {
   return run(str, code([105], 49));
@@ -432,7 +806,16 @@ export function bgBrightMagenta(str: string): string {
 
 /**
  * Set background color to bright cyan.
- * @param str text to make its background bright-cyan
+ *
+ * @example Usage
+ * ```ts no-assert
+ * import { bgBrightCyan } from "@std/fmt/colors";
+ *
+ * console.log(bgBrightCyan("Hello, world!"));
+ * ```
+ *
+ * @param str The text to make its background bright cyan
+ * @returns The text with bright cyan background
  */
 export function bgBrightCyan(str: string): string {
   return run(str, code([106], 49));
@@ -440,7 +823,16 @@ export function bgBrightCyan(str: string): string {
 
 /**
  * Set background color to bright white.
- * @param str text to make its background bright-white
+ *
+ * @example Usage
+ * ```ts no-assert
+ * import { bgBrightWhite } from "@std/fmt/colors";
+ *
+ * console.log(bgBrightWhite("Hello, world!"));
+ * ```
+ *
+ * @param str The text to make its background bright white
+ * @returns The text with bright white background
  */
 export function bgBrightWhite(str: string): string {
   return run(str, code([107], 49));
@@ -450,9 +842,9 @@ export function bgBrightWhite(str: string): string {
 
 /**
  * Clam and truncate color codes
- * @param n
- * @param max number to truncate to
- * @param min number to truncate from
+ * @param n The input number
+ * @param max The number to truncate to
+ * @param min The number to truncate from
  */
 function clampAndTruncate(n: number, max = 255, min = 0): number {
   return Math.trunc(Math.max(Math.min(n, max), min));
@@ -461,8 +853,17 @@ function clampAndTruncate(n: number, max = 255, min = 0): number {
 /**
  * Set text color using paletted 8bit colors.
  * https://en.wikipedia.org/wiki/ANSI_escape_code#8-bit
- * @param str text color to apply paletted 8bit colors to
- * @param color code
+ *
+ * @example Usage
+ * ```ts no-assert
+ * import { rgb8 } from "@std/fmt/colors";
+ *
+ * console.log(rgb8("Hello, world!", 42));
+ * ```
+ *
+ * @param str The text color to apply paletted 8bit colors to
+ * @param color The color code
+ * @returns The text with paletted 8bit color
  */
 export function rgb8(str: string, color: number): string {
   return run(str, code([38, 5, clampAndTruncate(color)], 39));
@@ -471,8 +872,17 @@ export function rgb8(str: string, color: number): string {
 /**
  * Set background color using paletted 8bit colors.
  * https://en.wikipedia.org/wiki/ANSI_escape_code#8-bit
- * @param str text color to apply paletted 8bit background colors to
+ *
+ * @example Usage
+ * ```ts no-assert
+ * import { bgRgb8 } from "@std/fmt/colors";
+ *
+ * console.log(bgRgb8("Hello, world!", 42));
+ * ```
+ *
+ * @param str The text color to apply paletted 8bit background colors to
  * @param color code
+ * @returns The text with paletted 8bit background color
  */
 export function bgRgb8(str: string, color: number): string {
   return run(str, code([48, 5, clampAndTruncate(color)], 49));
@@ -483,16 +893,16 @@ export function bgRgb8(str: string, color: number): string {
  * `color` can be a number in range `0x000000` to `0xffffff` or
  * an `Rgb`.
  *
- * To produce the color magenta:
- *
- * ```ts
+ * @example To produce the color magenta:
+ * ```ts no-assert
  * import { rgb24 } from "@std/fmt/colors";
  *
  * rgb24("foo", 0xff00ff);
  * rgb24("foo", {r: 255, g: 0, b: 255});
  * ```
- * @param str text color to apply 24bit rgb to
- * @param color code
+ * @param str The text color to apply 24bit rgb to
+ * @param color The color code
+ * @returns The text with 24bit rgb color
  */
 export function rgb24(str: string, color: number | Rgb): string {
   if (typeof color === "number") {
@@ -524,16 +934,16 @@ export function rgb24(str: string, color: number | Rgb): string {
  * `color` can be a number in range `0x000000` to `0xffffff` or
  * an `Rgb`.
  *
- * To produce the color magenta:
- *
- * ```ts
+ * @example To produce the color magenta:
+ * ```ts no-assert
  * import { bgRgb24 } from "@std/fmt/colors";
  *
  * bgRgb24("foo", 0xff00ff);
  * bgRgb24("foo", {r: 255, g: 0, b: 255});
  * ```
- * @param str text color to apply 24bit rgb to
- * @param color code
+ * @param str The text color to apply 24bit rgb to
+ * @param color The color code
+ * @returns The text with 24bit rgb color
  */
 export function bgRgb24(str: string, color: number | Rgb): string {
   if (typeof color === "number") {
@@ -571,9 +981,18 @@ const ANSI_PATTERN = new RegExp(
 
 /**
  * Remove ANSI escape codes from the string.
- * @param string to remove ANSI escape codes from
  *
- *  @deprecated This will be removed in 1.0.0. Use {@linkcode stripAnsiCode} instead.
+ * @example Usage
+ * ```ts no-assert
+ * import { stripColor, red } from "@std/fmt/colors";
+ *
+ * console.log(stripColor(red("Hello, world!")));
+ * ```
+ *
+ * @param string The text to remove ANSI escape codes from
+ * @returns The text without ANSI escape codes
+ *
+ * @deprecated This will be removed in 1.0.0. Use {@linkcode stripAnsiCode} instead.
  */
 export function stripColor(string: string): string {
   return stripAnsiCode(string);
@@ -582,7 +1001,15 @@ export function stripColor(string: string): string {
 /**
  * Remove ANSI escape codes from the string.
  *
- * @param string to remove ANSI escape codes from
+ * @example Usage
+ * ```ts no-assert
+ * import { stripAnsiCode, red } from "@std/fmt/colors";
+ *
+ * console.log(stripAnsiCode(red("Hello, world!")));
+ * ```
+ *
+ * @param string The text to remove ANSI escape codes from
+ * @returns The text without ANSI escape codes
  */
 export function stripAnsiCode(string: string): string {
   return string.replace(ANSI_PATTERN, "");

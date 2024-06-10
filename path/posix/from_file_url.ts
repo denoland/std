@@ -6,12 +6,16 @@ import { assertArg } from "../_common/from_file_url.ts";
 /**
  * Converts a file URL to a path string.
  *
+ * @example Usage
  * ```ts
  * import { fromFileUrl } from "@std/path/posix/from-file-url";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
- * fromFileUrl("file:///home/foo"); // "/home/foo"
+ * assertEquals(fromFileUrl(new URL("file:///home/foo")), "/home/foo");
  * ```
- * @param url of a file URL
+ *
+ * @param url The file URL to convert.
+ * @returns The path string.
  */
 export function fromFileUrl(url: URL | string): string {
   url = assertArg(url);

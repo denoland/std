@@ -6,8 +6,22 @@ import { dirname as posixDirname } from "./posix/dirname.ts";
 import { dirname as windowsDirname } from "./windows/dirname.ts";
 
 /**
- * Return the directory path of a `path`.
- * @param path - path to extract the directory from.
+ * Return the directory path of a path.
+ *
+ * @example Usage
+ * ```ts
+ * import { dirname } from "@std/path/dirname";
+ * import { assertEquals } from "@std/assert/assert-equals";
+ *
+ * if (Deno.build.os === "windows") {
+ *   assertEquals(dirname("C:\\home\\user\\Documents\\image.png"), "C:\\home\\user\\Documents");
+ * } else {
+ *   assertEquals(dirname("/home/user/Documents/image.png"), "/home/user/Documents");
+ * }
+ * ```
+ *
+ * @param path Path to extract the directory from.
+ * @returns The directory path.
  */
 export function dirname(path: string): string {
   return isWindows ? windowsDirname(path) : posixDirname(path);

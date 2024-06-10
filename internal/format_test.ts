@@ -1,5 +1,5 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-import { green, red, stripAnsiCode } from "@std/fmt/colors";
+import { green, red, stripAnsiCode } from "./styles.ts";
 import { assertEquals, assertThrows } from "@std/assert";
 import { format } from "./format.ts";
 
@@ -95,4 +95,17 @@ Deno.test("format() doesn't truncate long strings in object", () => {
   foo: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
 }`,
   );
+});
+
+Deno.test("format() has fallback to String if Deno.inspect is not available", () => {
+  // Simulates the environment where Deno.inspect is not available
+  const inspect = Deno.inspect;
+  // deno-lint-ignore no-explicit-any
+  delete (Deno as any).inspect;
+  try {
+    assertEquals(format([..."abcd"]), `"a,b,c,d"`);
+    assertEquals(format({ a: 1, b: 2 }), `"[object Object]"`);
+  } finally {
+    Deno.inspect = inspect;
+  }
 });

@@ -30,12 +30,23 @@ const allFlags = GPUTextureUsage.COPY_SRC | GPUTextureUsage.COPY_DST |
 /**
  * Get various information about a specific {@linkcode GPUTextureFormat}.
  *
- * @example
+ * @example Basic usage
  * ```ts
  * import { describeTextureFormat } from "@std/webgpu/describe-texture-format";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
- * describeTextureFormat("rgba8unorm-srgb");
+ * assertEquals(describeTextureFormat("rgba8unorm"), {
+ *   requiredFeature: undefined,
+ *   sampleType: "float",
+ *   allowedUsages: 31,
+ *   blockDimensions: [1, 1],
+ *   blockSize: 4,
+ *   components: 4,
+ * });
  * ```
+ *
+ * @param format The format to get the information about.
+ * @returns An object describing various properties for the provided format.
  */
 export function describeTextureFormat(
   format: GPUTextureFormat,

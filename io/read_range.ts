@@ -1,7 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
 import { copy as copyBytes } from "@std/bytes/copy";
-import { assert } from "@std/assert/assert";
 import type { Reader, ReaderSync } from "./types.ts";
 
 const DEFAULT_BUFFER_SIZE = 32 * 1024;
@@ -40,19 +39,25 @@ export async function readRange(
 ): Promise<Uint8Array> {
   // byte ranges are inclusive, so we have to add one to the end
   let length = range.end - range.start + 1;
-  assert(length > 0, "Invalid byte range was passed.");
+  if (length <= 0) throw new RangeError("Invalid byte range was passed.");
   await r.seek(range.start, Deno.SeekMode.Start);
   const result = new Uint8Array(length);
   let off = 0;
   while (length) {
     const p = new Uint8Array(Math.min(length, DEFAULT_BUFFER_SIZE));
     const nread = await r.read(p);
-    assert(nread !== null, "Unexpected EOF reach while reading a range.");
-    assert(nread > 0, "Unexpected read of 0 bytes while reading a range.");
+    if (nread === null) {
+      throw new Error("Unexpected EOF reach while reading a range.");
+    }
+    if (nread === 0) {
+      throw new Error("Unexpected read of 0 bytes while reading a range.");
+    }
     copyBytes(p, result, off);
     off += nread;
     length -= nread;
-    assert(length >= 0, "Unexpected length remaining after reading range.");
+    if (length < 0) {
+      throw new Error("Unexpected length remaining after reading range.");
+    }
   }
   return result;
 }
@@ -80,19 +85,25 @@ export function readRangeSync(
 ): Uint8Array {
   // byte ranges are inclusive, so we have to add one to the end
   let length = range.end - range.start + 1;
-  assert(length > 0, "Invalid byte range was passed.");
+  if (length <= 0) throw new RangeError("Invalid byte range was passed.");
   r.seekSync(range.start, Deno.SeekMode.Start);
   const result = new Uint8Array(length);
   let off = 0;
   while (length) {
     const p = new Uint8Array(Math.min(length, DEFAULT_BUFFER_SIZE));
     const nread = r.readSync(p);
-    assert(nread !== null, "Unexpected EOF reach while reading a range.");
-    assert(nread > 0, "Unexpected read of 0 bytes while reading a range.");
+    if (nread === null) {
+      throw new Error("Unexpected EOF reach while reading a range.");
+    }
+    if (nread === 0) {
+      throw new Error("Unexpected read of 0 bytes while reading a range.");
+    }
     copyBytes(p, result, off);
     off += nread;
     length -= nread;
-    assert(length >= 0, "Unexpected length remaining after reading range.");
+    if (length < 0) {
+      throw new Error("Unexpected length remaining after reading range.");
+    }
   }
   return result;
 }

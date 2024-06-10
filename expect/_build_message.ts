@@ -1,6 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import { buildMessage, diff, diffstr, format } from "@std/internal";
+import { buildMessage, diff, diffStr, format } from "@std/internal";
 import type { EqualOptions } from "./_types.ts";
 
 type EqualErrorMessageOptions = Pick<
@@ -26,7 +26,7 @@ export function buildEqualErrorMessage<T>(
 
   const stringDiff = isString(actual) && isString(expected);
   const diffResult = stringDiff
-    ? diffstr(actual, expected)
+    ? diffStr(actual, expected)
     : diff(actualString.split("\n"), expectedString.split("\n"));
   const diffMsg = buildMessage(diffResult, { stringDiff }).join("\n");
   message = `${message}\n${diffMsg}`;
