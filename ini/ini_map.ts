@@ -653,6 +653,29 @@ export class IniMap {
   /**
    * Iterate over each entry in the INI to retrieve key, value, and section.
    *
+   * @example Usage
+   * ```ts
+   * import { IniMap } from "@std/ini/ini-map";
+   * import { assertEquals } from "@std/assert/assert-equals";
+   *
+   * const iniMap = IniMap.from(`
+   * key0 = value0
+   * key1 = value1
+   *
+   * [section 1]
+   * foo = Spam
+   * bar = Ham
+   * baz = Egg`);
+   *
+   * assertEquals([...iniMap.entries()], [
+   *   ["key0", "value0"],
+   *   ["key1", "value1"],
+   *   ["foo", "Spam", "section 1"],
+   *   ["bar", "Ham", "section 1"],
+   *   ["baz", "Egg", "section 1"]
+   * ]);
+   * ```
+   *
    * @returns The iterator of entries
    */
   *entries(): Generator<
@@ -793,6 +816,31 @@ export class IniMap {
   /**
    * Convert this `IniMap` to a plain object.
    *
+   * @example Usage
+   * ```ts
+   * import { IniMap } from "@std/ini/ini-map";
+   * import { assertEquals } from "@std/assert/assert-equals";
+   *
+   * const iniMap = IniMap.from(`
+   * key0 = value0
+   * key1 = value1
+   *
+   * [section 1]
+   * foo = Spam
+   * bar = Ham
+   * baz = Egg`);
+   *
+   * assertEquals(iniMap.toObject(), {
+   *   key0: "value0",
+   *   key1: "value1",
+   *   "section 1": {
+   *     foo: "Spam",
+   *     bar: "Ham",
+   *     baz: "Egg",
+   *   },
+   * });
+   * ```
+   *
    * @returns The object equivalent to this {@code IniMap}
    */
   toObject(): Record<string, unknown | Record<string, unknown>> {
@@ -830,6 +878,31 @@ export class IniMap {
   /**
    * Convenience method for `JSON.stringify`.
    *
+   * @example Usage
+   * ```ts
+   * import { IniMap } from "@std/ini/ini-map";
+   * import { assertEquals } from "@std/assert/assert-equals";
+   *
+   * const iniMap = IniMap.from(`
+   * key0 = value0
+   * key1 = value1
+   *
+   * [section 1]
+   * foo = Spam
+   * bar = Ham
+   * baz = Egg`);
+   *
+   * assertEquals(iniMap.toJSON(), {
+   *   key0: "value0",
+   *   key1: "value1",
+   *   "section 1": {
+   *     foo: "Spam",
+   *     bar: "Ham",
+   *     baz: "Egg",
+   *   },
+   * });
+   * ```
+   *
    * @returns The object equivalent to this {@code IniMap}
    */
   toJSON(): Record<string, unknown | Record<string, unknown>> {
@@ -839,6 +912,33 @@ export class IniMap {
   /**
    * Convert this `IniMap` to an INI string.
    *
+   * @example Usage
+   * ```ts
+   * import { IniMap } from "@std/ini/ini-map";
+   * import { assertEquals } from "@std/assert/assert-equals";
+   *
+   * const iniMap = IniMap.from(`
+   * // Hey
+   * key0 = value0
+   * key1 = value1
+   * // Hello
+   * [section 1]
+   * foo = Spam
+   * bar = Ham
+   * baz = Egg`);
+   *
+   * iniMap.set("section 1", "foo", "Bacon");
+   *
+   * assertEquals(iniMap.toString(), `
+   * // Hey
+   * key0 = value0
+   * key1 = value1
+   * // Hello
+   * [section 1]
+   * foo = Bacon
+   * bar = Ham
+   * baz = Egg`)
+   * ```
    * @param replacer The replacer
    * @returns Ini string
    */
@@ -877,6 +977,33 @@ export class IniMap {
 
   /**
    * Parse an INI string in this `IniMap`.
+   *
+   * @example Usage
+   * ```ts
+   * import { IniMap } from "@std/ini/ini-map";
+   * import { assertEquals } from "@std/assert/assert-equals";
+   *
+   * const iniMap = new IniMap();
+   *
+   * iniMap.parse(`
+   * key0 = value0
+   * key1 = value1
+   *
+   * [section 1]
+   * foo = Spam
+   * bar = Ham
+   * baz = Egg`);
+   *
+   * assertEquals(iniMap.toObject(), {
+   *   key0: "value0",
+   *   key1: "value1",
+   *   "section 1": {
+   *     foo: "Spam",
+   *     bar: "Ham",
+   *     baz: "Egg",
+   *   },
+   * });
+   * ```
    *
    * @param text The text to parse
    * @param reviver The reviver function
@@ -986,6 +1113,31 @@ export class IniMap {
   /**
    * Create an `IniMap` from an INI string.
    *
+   * @example Usage
+   * ```ts
+   * import { IniMap } from "@std/ini/ini-map";
+   * import { assertEquals } from "@std/assert/assert-equals";
+   *
+   * const iniMap = IniMap.from(`
+   * key0 = value0
+   * key1 = value1
+   *
+   * [section 1]
+   * foo = Spam
+   * bar = Ham
+   * baz = Egg`);
+   *
+   * assertEquals(iniMap.toObject(), {
+   *   key0: "value0",
+   *   key1: "value1",
+   *   "section 1": {
+   *     foo: "Spam",
+   *     bar: "Ham",
+   *     baz: "Egg",
+   *   },
+   * });
+   * ```
+   *
    * @param input The input string
    * @param options The options to use
    * @returns The parsed {@code IniMap}
@@ -997,6 +1149,28 @@ export class IniMap {
   /**
    * Create an `IniMap` from a plain object.
    *
+   * @example Usage
+   * ```ts
+   * import { IniMap } from "@std/ini/ini-map";
+   * import { assertEquals } from "@std/assert/assert-equals";
+   *
+   * const iniMap = IniMap.from({
+   *   key0: "value0",
+   *   key1: "value1",
+   *   "section 1": {
+   *     foo: "Spam",
+   *     bar: "Ham",
+   *     baz: "Egg",
+   *   },
+   * });
+   *
+   * assertEquals(iniMap.toString(), `key0=value0
+   * key1=value1
+   * [section 1]
+   * foo=Spam
+   * bar=Ham
+   * baz=Egg`);
+   * ```
    * @param input The input string
    * @param formatting The options to use
    * @returns The parsed {@code IniMap}
