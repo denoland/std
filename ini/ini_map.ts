@@ -210,6 +210,26 @@ export class IniMap {
   /**
    * Gets the count of key/value pairs.
    *
+   * @example Usage
+   * ```ts
+   * import { IniMap } from "@std/ini/ini-map";
+   * import { assertEquals } from "@std/assert/assert-equals";
+   *
+   * const iniMap = IniMap.from(`
+   * key0 = value0
+   * key1 = value1
+   *
+   * [section 1]
+   * foo = Spam
+   * bar = Ham
+   * baz = Egg
+   *
+   * [section 2]
+   * name = John`);
+   *
+   * assertEquals(iniMap.size, 6); // It has 6 keys in total
+   * ```
+   *
    * @returns The number of key/value pairs.
    */
   get size(): number {
@@ -223,6 +243,18 @@ export class IniMap {
   /**
    * Gets the formatting options.
    *
+   * @example Usage
+   * ```ts
+   * import { IniMap } from "@std/ini/ini-map";
+   * import { assertEquals } from "@std/assert/assert-equals";
+   *
+   * const iniMap = IniMap.from(`
+   * key0 = value0
+   * key1 = value1`);
+   *
+   * assertEquals(iniMap.formatting.pretty, true);
+   * ```
+   *
    * @returns The formatting options
    */
   get formatting(): FormattingOptions {
@@ -230,6 +262,26 @@ export class IniMap {
   }
 
   /** Returns the comments in the INI.
+   *
+   * @example Usage
+   * ```ts
+   * import { IniMap } from "@std/ini/ini-map";
+   * import { assertEquals } from "@std/assert/assert-equals";
+   *
+   * const iniMap = IniMap.from(`
+   * // Hey
+   * key0 = value0
+   * key1 = value1
+   * // Hello
+   * [section 1]
+   * foo = Spam
+   * bar = Ham
+   * baz = Egg`);
+   *
+   * assertEquals(iniMap.comments.getAtLine(2), "// Hey")
+   * assertEquals(iniMap.comments.getAtLine(5), "// Hello")
+   * assertEquals(iniMap.comments.getAtSection("section 1"), "// Hello")
+   * ```
    *
    * @returns The comments
    */
@@ -239,6 +291,38 @@ export class IniMap {
 
   /**
    * Clears a single section or the entire INI.
+   *
+   * @example Usage
+   * ```ts
+   * import { IniMap } from "@std/ini/ini-map";
+   * import { assertEquals } from "@std/assert/assert-equals";
+   *
+   * const iniMap = IniMap.from(`
+   * key0 = value0
+   * key1 = value1
+   *
+   * [section 1]
+   * foo = Spam
+   * bar = Ham
+   * baz = Egg
+   *
+   * [section 2]
+   * name = John`);
+   *
+   * iniMap.clear("section 1");
+   *
+   * assertEquals(iniMap.toObject(), {
+   *   key0: "value0",
+   *   key1: "value1",
+   *   "section 2": {
+   *     name: "John",
+   *   },
+   * });
+   *
+   * iniMap.clear(); // Clears all
+   *
+   * assertEquals(iniMap.toObject(), {});
+   * ```
    *
    * @param sectionName The section name to clear
    */
@@ -261,12 +345,70 @@ export class IniMap {
   /**
    * Deletes a global key in the INI.
    *
+   * @example Usage
+   * ```ts
+   * import { IniMap } from "@std/ini/ini-map";
+   * import { assertEquals } from "@std/assert/assert-equals";
+   *
+   * const iniMap = IniMap.from(`
+   * key0 = value0
+   * key1 = value1
+   *
+   * [section 1]
+   * foo = Spam
+   * bar = Ham
+   * baz = Egg`);
+   *
+   * iniMap.delete("key0");
+   *
+   * assertEquals(iniMap.toObject(), {
+   *   key1: "value1",
+   *   "section 1": {
+   *     foo: "Spam",
+   *     bar: "Ham",
+   *     baz: "Egg",
+   *   },
+   * });
+   * ```
+   *
    * @param key The key to delete
    * @returns `true` if the key was deleted, `false` if not found.
    */
   delete(key: string): boolean;
   /**
    * Deletes a section key in the INI.
+   *
+   * @example Usage
+   * ```ts
+   * import { IniMap } from "@std/ini/ini-map";
+   * import { assertEquals } from "@std/assert/assert-equals";
+   *
+   * const iniMap = IniMap.from(`
+   * key0 = value0
+   * key1 = value1
+   *
+   * [section 1]
+   * foo = Spam
+   * bar = Ham
+   * baz = Egg
+   *
+   * [section 2]
+   * name = John`);
+   *
+   * iniMap.delete("section 1", "foo");
+   * iniMap.delete("section 2", "name");
+   *
+   * assertEquals(iniMap.toObject(), {
+   *   key0: "value0",
+   *   key1: "value1",
+   *   "section 1": {
+   *     bar: "Ham",
+   *     baz: "Egg",
+   *   },
+   *   "section 2": {
+   *   },
+   * });
+   * ```
    *
    * @param section The section
    * @param key The key to delete
@@ -290,11 +432,48 @@ export class IniMap {
   /**
    * Gets a value from a global key in the INI.
    *
+   * @example Usage
+   * ```ts
+   * import { IniMap } from "@std/ini/ini-map";
+   * import { assertEquals } from "@std/assert/assert-equals";
+   *
+   * const iniMap = IniMap.from(`
+   * key0 = value0
+   * key1 = value1
+   *
+   * [section 1]
+   * foo = Spam
+   * bar = Ham
+   * baz = Egg`);
+   *
+   * assertEquals(iniMap.get("key0", "value0"));
+   * assertEquals(iniMap.get("key1", "value1"));
+   * ```
+   *
    * @param key The key to get
    * @returns The value for the key, or undefined if the key doesn't have a value
    */
   get(key: string): unknown;
   /** Get a value from a section key in the INI.
+   *
+   * @example Usage
+   * ```ts
+   * import { IniMap } from "@std/ini/ini-map";
+   * import { assertEquals } from "@std/assert/assert-equals";
+   *
+   * const iniMap = IniMap.from(`
+   * key0 = value0
+   * key1 = value1
+   *
+   * [section 1]
+   * foo = Spam
+   * bar = Ham
+   * baz = Egg`);
+   *
+   * assertEquals(iniMap.get("section 1", "foo"), "Spam");
+   * assertEquals(iniMap.get("section 1", "bar"), "Ham");
+   * assertEquals(iniMap.get("section 1", "baz"), "Egg");
+   * ```
    *
    * @param section The section
    * @param key The key to get
@@ -308,12 +487,49 @@ export class IniMap {
   /**
    * Check if a global key exists in the INI.
    *
+   * @example Usage
+   * ```ts
+   * import { IniMap } from "@std/ini/ini-map";
+   * import { assert, assertFalse } from "@std/assert";
+   *
+   * const iniMap = IniMap.from(`
+   * key0 = value0
+   * key1 = value1
+   *
+   * [section 1]
+   * foo = Spam
+   * bar = Ham
+   * baz = Egg`);
+   *
+   * assert(iniMap.has("key0"));
+   * assert(iniMap.has("key1"));
+   * assertFalse(iniMap.has("key2"));
+   * ```
+   *
    * @param key The key to check
    * @returns `true` if the key has the value, `false` otherwise
    */
   has(key: string): boolean;
   /** Check if a section key exists in the INI.
    *
+   * @example Usage
+   * ```ts
+   * import { IniMap } from "@std/ini/ini-map";
+   * import { assert, assertFalse } from "@std/assert";
+   *
+   * const iniMap = IniMap.from(`
+   * key0 = value0
+   * key1 = value1
+   *
+   * [section 1]
+   * foo = Spam
+   * bar = Ham
+   * baz = Egg`);
+   *
+   * assert(iniMap.has("section 1", "foo"));
+   * assert(iniMap.has("section 1", "bar"));
+   * assertFalse(iniMap.has("section 1", "hello"));
+   * ```
    * @param section The section
    * @param key The key to check
    * @returns `true` if the key has the value in the given section, `false` otherwise
@@ -326,6 +542,35 @@ export class IniMap {
   /**
    * Set the value of a global key in the INI.
    *
+   * @example Usage
+   * ```ts
+   * import { IniMap } from "@std/ini/ini-map";
+   * import { assertEquals } from "@std/assert/assert-equals";
+   *
+   * const iniMap = IniMap.from(`
+   * key0 = value0
+   * key1 = value1
+   *
+   * [section 1]
+   * foo = Spam
+   * bar = Ham
+   * baz = Egg`);
+   *
+   * iniMap.set("key1", "hello");
+   * iniMap.set("hi", "hey");
+   *
+   * assertEquals(iniMap.toObject(), {
+   *   key0: "value0",
+   *   key1: "hello",
+   *   hi: "hey",
+   *   "section 1": {
+   *     foo: "Spam",
+   *     bar: "Ham",
+   *     baz: "Egg",
+   *   },
+   * });
+   * ```
+   *
    * @param key The key to set the value
    * @param value The value to set
    * @returns The map object itself
@@ -333,6 +578,37 @@ export class IniMap {
   set(key: string, value: unknown): this;
   /**
    * Set the value of a section key in the INI.
+   *
+   * @example Usage
+   * ```ts
+   * import { IniMap } from "@std/ini/ini-map";
+   * import { assertEquals } from "@std/assert/assert-equals";
+   *
+   * const iniMap = IniMap.from(`
+   * key0 = value0
+   * key1 = value1
+   *
+   * [section 1]
+   * foo = Spam
+   * bar = Ham
+   * baz = Egg`);
+   *
+   * iniMap.set("section 1", "foo", "World");
+   * iniMap.set("section X", "name", "John");
+   *
+   * assertEquals(iniMap.toObject(), {
+   *   key0: "value0",
+   *   key1: "value1",
+   *   "section 1": {
+   *     foo: "World",
+   *     bar: "Ham",
+   *     baz: "Egg",
+   *   },
+   *   "section X": {
+   *     name: "John",
+   *   }
+   * });
+   * ```
    *
    * @param section The section
    * @param key The key to set
