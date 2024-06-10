@@ -446,8 +446,8 @@ export class IniMap {
    * bar = Ham
    * baz = Egg`);
    *
-   * assertEquals(iniMap.get("key0", "value0"));
-   * assertEquals(iniMap.get("key1", "value1"));
+   * assertEquals(iniMap.get("key0"), "value0");
+   * assertEquals(iniMap.get("key1"), "value1");
    * ```
    *
    * @param key The key to get
