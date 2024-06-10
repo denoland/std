@@ -1,11 +1,11 @@
 ---
-  description: Figures out what goal the user wants to do and returns the path to a help file that can be executed to achieve the goal.
-  config:  
-    temperature: 0.8
-  commands: 
-    - helps/help-finder
-    - load-help:load
-    - engage-help:engage
+description: Figures out what goal the user wants to do and returns the path to a help file that can be executed to achieve the goal.
+config:
+  temperature: 0.8
+commands:
+  - helps/help-finder
+  - load-help:load
+  - engage-help:engage
 ---
 
 You are an expert at goal detection. Be as brief as possible.
