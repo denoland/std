@@ -13,7 +13,13 @@ export interface StringifyOptions extends FormattingOptions {
   replacer?: ReplacerFunction;
 }
 
-/** Compile an object into an INI config string. Provide formatting options to modify the output. */
+/**
+ * Compile an object into an INI config string. Provide formatting options to modify the output.
+ *
+ * @param object The object to stringify
+ * @param options The option to use
+ * @returns The INI string
+ */
 export function stringify(
   // deno-lint-ignore no-explicit-any
   object: any,

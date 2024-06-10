@@ -1,5 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
+
 /**
  * {@linkcode parse} and {@linkcode stringify} for handling
  * {@link https://en.wikipedia.org/wiki/INI_file | INI} encoded data, such as the
@@ -10,8 +11,7 @@
  * but will be preserved when using {@linkcode IniMap}. Multi-line values are not supported and will throw a syntax error.
  * White space padding and lines starting with '#', ';', or '//' will be treated as comments.
  *
- * @example
- * ```ts
+ * ```ts no-assert
  * import * as ini from "@std/ini";
  * const iniFile = `# Example configuration file
  * Global Key=Some data here
@@ -57,8 +57,7 @@
  * Optionally, {@linkcode IniMap} may be used for finer INI handling. Using this class will permit preserving
  * comments, accessing values like a map, iterating over key/value/section entries, and more.
  *
- * @example
- * ```ts
+ * ```ts no-assert
  * import { IniMap } from "@std/ini";
  * const ini = new IniMap();
  * ini.set("section1", "keyA", 100)
@@ -83,8 +82,7 @@
  * The reviver and replacer APIs can be used to extend the behavior of IniMap, such as adding support
  * for duplicate keys as if they were arrays of values.
  *
- * @example
- * ```ts
+ * ```ts no-assert
  * import { IniMap } from "@std/ini";
  * const iniFile = `# Example of key/value arrays
  * [section1]

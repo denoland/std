@@ -38,7 +38,28 @@ export type ReviverFunction = (
   // deno-lint-ignore no-explicit-any
 ) => any;
 
-/** Class implementation for fine control of INI data structures. */
+/**
+ * Class implementation for fine control of INI data structures.
+ *
+ * @example Usage
+ * ```ts
+ * import { IniMap } from "@std/ini";
+ * import { assertEquals } from "@std/assert/assert-equals";
+ *
+ * const ini = new IniMap();
+ * ini.set("section1", "keyA", 100)
+ * assertEquals(ini.toString(), `[section1]
+ * keyA=100`)
+ *
+ * ini.set('keyA', 25)
+ * assertEquals(ini.toObject(), {
+ *   keyA: 25,
+ *   section1: {
+ *     keyA: 100,
+ *   },
+ * });
+ * ```
+ */
 export class IniMap {
   #global = new Map<string, LineValue>();
   #sections = new Map<string, LineSection>();
@@ -160,13 +181,37 @@ export class IniMap {
   #formatting: FormattingOptions;
 
   /** Constructs a new `IniMap`.
+   *
+   * @example Usage
+   * ```ts
+   * import { IniMap } from "@std/ini";
+   * import { assertEquals } from "@std/assert/assert-equals";
+   *
+   * const ini = new IniMap();
+   * ini.set("section1", "keyA", 100)
+   * assertEquals(ini.toString(), `[section1]
+   * keyA=100`)
+   *
+   * ini.set('keyA', 25)
+   * assertEquals(ini.toObject(), {
+   *   keyA: 25,
+   *   section1: {
+   *     keyA: 100,
+   *   },
+   * });
+   * ```
+   *
    * @param formatting Optional formatting options when printing an INI file.
    */
   constructor(formatting?: FormattingOptions) {
     this.#formatting = this.#cleanFormatting(formatting);
   }
 
-  /** Get the count of key/value pairs. */
+  /**
+   * Gets the count of key/value pairs.
+   *
+   * @returns The number of key/value pairs.
+   */
   get size(): number {
     let size = this.#global.size;
     for (const { map } of this.#sections.values()) {
@@ -175,16 +220,28 @@ export class IniMap {
     return size;
   }
 
+  /**
+   * Gets the formatting options.
+   *
+   * @returns The formatting options
+   */
   get formatting(): FormattingOptions {
     return this.#formatting;
   }
 
-  /** Manage comments in the INI. */
+  /** Returns the comments in the INI.
+   *
+   * @returns The comments
+   */
   get comments(): Comments {
     return this.#comments;
   }
 
-  /** Clear a single section or the entire INI. */
+  /**
+   * Clears a single section or the entire INI.
+   *
+   * @param sectionName The section name to clear
+   */
   clear(sectionName?: string): void {
     if (sectionName) {
       const section = this.#sections.get(sectionName);
@@ -201,11 +258,18 @@ export class IniMap {
     }
   }
 
-  /** Delete a global key in the INI.
+  /**
+   * Deletes a global key in the INI.
+   *
+   * @param key The key to delete
    * @returns `true` if the key was deleted, `false` if not found.
    */
   delete(key: string): boolean;
-  /** Delete a section key in the INI.
+  /**
+   * Deletes a section key in the INI.
+   *
+   * @param section The section
+   * @param key The key to delete
    * @returns `true` if the section was deleted, `false` if not found.
    */
   delete(section: string, key: string): boolean;
@@ -223,28 +287,59 @@ export class IniMap {
     return false;
   }
 
-  /** Get a value from a global key in the INI. */
+  /**
+   * Gets a value from a global key in the INI.
+   *
+   * @param key The key to get
+   * @returns The value for the key, or undefined if the key doesn't have a value
+   */
   get(key: string): unknown;
-  /** Get a value from a section key in the INI. */
+  /** Get a value from a section key in the INI.
+   *
+   * @param section The section
+   * @param key The key to get
+   * @returns The value for the key, or undefined if the key doesn't have a value
+   */
   get(section: string, key: string): unknown;
   get(keyOrSection: string, noneOrKey?: string): unknown {
     return this.#getValue(keyOrSection, noneOrKey)?.val;
   }
 
-  /** Check if a global key exists in the INI. */
+  /**
+   * Check if a global key exists in the INI.
+   *
+   * @param key The key to check
+   * @returns `true` if the key has the value, `false` otherwise
+   */
   has(key: string): boolean;
-  /** Check if a section key exists in the INI. */
+  /** Check if a section key exists in the INI.
+   *
+   * @param section The section
+   * @param key The key to check
+   * @returns `true` if the key has the value in the given section, `false` otherwise
+   */
   has(section: string, key: string): boolean;
   has(keyOrSection: string, noneOrKey?: string): boolean {
     return this.#getValue(keyOrSection, noneOrKey) !== undefined;
   }
 
-  /** Set the value of a global key in the INI. */
-  // deno-lint-ignore no-explicit-any
-  set(key: string, value: any): this;
-  /** Set the value of a section key in the INI. */
-  // deno-lint-ignore no-explicit-any
-  set(section: string, key: string, value: any): this;
+  /**
+   * Set the value of a global key in the INI.
+   *
+   * @param key The key to set the value
+   * @param value The value to set
+   * @returns The map object itself
+   */
+  set(key: string, value: unknown): this;
+  /**
+   * Set the value of a section key in the INI.
+   *
+   * @param section The section
+   * @param key The key to set
+   * @param value The value to set
+   * @return The map object itself
+   */
+  set(section: string, key: string, value: unknown): this;
   // deno-lint-ignore no-explicit-any
   set(keyOrSection: string, valueOrKey: any, value?: any): this {
     if (typeof valueOrKey === "string" && value !== undefined) {
@@ -279,7 +374,11 @@ export class IniMap {
     return this;
   }
 
-  /** Iterate over each entry in the INI to retrieve key, value, and section. */
+  /**
+   * Iterate over each entry in the INI to retrieve key, value, and section.
+   *
+   * @returns The iterator of entries
+   */
   *entries(): Generator<
     [key: string, value: unknown, section?: string | undefined]
   > {
@@ -415,7 +514,11 @@ export class IniMap {
     );
   }
 
-  /** Convert this `IniMap` to a plain object. */
+  /**
+   * Convert this `IniMap` to a plain object.
+   *
+   * @returns The object equivalent to this {@code IniMap}
+   */
   toObject(): Record<string, unknown | Record<string, unknown>> {
     const obj: Record<string, unknown | Record<string, unknown>> = {};
 
@@ -448,12 +551,21 @@ export class IniMap {
     return obj;
   }
 
-  /** Convenience method for `JSON.stringify`. */
+  /**
+   * Convenience method for `JSON.stringify`.
+   *
+   * @returns The object equivalent to this {@code IniMap}
+   */
   toJSON(): Record<string, unknown | Record<string, unknown>> {
     return this.toObject();
   }
 
-  /** Convert this `IniMap` to an INI string. */
+  /**
+   * Convert this `IniMap` to an INI string.
+   *
+   * @param replacer The replacer
+   * @returns Ini string
+   */
   toString(replacer?: ReplacerFunction): string {
     const replacerFunc: ReplacerFunction = typeof replacer === "function"
       ? replacer
@@ -487,7 +599,13 @@ export class IniMap {
     }).join(this.#formatting?.lineBreak ?? "\n");
   }
 
-  /** Parse an INI string in this `IniMap`. */
+  /**
+   * Parse an INI string in this `IniMap`.
+   *
+   * @param text The text to parse
+   * @param reviver The reviver function
+   * @returns This {@code IniMap} object
+   */
   parse(text: string, reviver?: ReviverFunction): this {
     if (typeof text !== "string") {
       throw new SyntaxError(`Unexpected token ${text} in INI at line 0`);
@@ -589,15 +707,26 @@ export class IniMap {
     return this;
   }
 
-  /** Create an `IniMap` from an INI string. */
+  /**
+   * Create an `IniMap` from an INI string.
+   *
+   * @param input The input string
+   * @param options The options to use
+   * @returns The parsed {@code IniMap}
+   */
   static from(
     input: string,
     options?: ParseOptions & FormattingOptions,
   ): IniMap;
-  /** Create an `IniMap` from a plain object. */
+  /**
+   * Create an `IniMap` from a plain object.
+   *
+   * @param input The input string
+   * @param formatting The options to use
+   * @returns The parsed {@code IniMap}
+   */
   static from(
-    // deno-lint-ignore no-explicit-any
-    input: Record<string, any>,
+    input: Record<string, unknown>,
     formatting?: FormattingOptions,
   ): IniMap;
   static from(
@@ -635,47 +764,100 @@ export class IniMap {
 
 /** Manages comments within the INI file. */
 export interface Comments {
-  /** Clear all comments in the INI. */
+  /**
+   * Clear all comments in the INI.
+   */
   clear(): void;
-  /** Delete a comment at a specific line in the INI.
+  /**
+   * Delete a comment at a specific line in the INI.
+   *
+   * @param line The line to delete the comment at
    * @returns `true` if a comment was deleted, otherwise `false`.
    */
   deleteAtLine(line: number): boolean;
-  /** Delete a comment before a global key in the INI.
+  /**
+   * Delete a comment before a global key in the INI.
+   *
+   * @param key The key to delete the comment at
    * @returns `true` if a comment was deleted, otherwise `false`.
    */
   deleteAtKey(key: string): boolean;
-  /** Delete a comment before a section key in the INI.
+  /**
+   * Delete a comment before a section key in the INI.
+   *
+   * @param section The section
+   * @param key The key to delete the comment at
    * @returns `true` if a comment was deleted, otherwise `false`.
    */
   deleteAtKey(section: string, key: string): boolean;
-  /** Delete a comment before a section line in the INI.
+  /**
+   * Delete a comment before a section line in the INI.
+   *
+   * @param section The section to delete the comment at
    * @returns `true` if a comment was deleted, otherwise `false`.
    */
   deleteAtSection(section: string): boolean;
-  /** Get the comment text at a specific line in the INI.
+  /**
+   * Get the comment text at a specific line in the INI.
+   *
+   * @param line The line to get the comment at
    * @returns The comment text at the line or `undefined` if not found.
    */
   getAtLine(line: number): string | undefined;
-  /** Get the comment text before a global key in the INI.
+  /**
+   * Get the comment text before a global key in the INI.
+   *
+   * @param key The key to get the comment at
    * @returns The comment text at the provided key or `undefined` if not found.
    */
   getAtKey(key: string): string | undefined;
-  /** Get the comment text before a section key in the INI.
+  /**
+   * Get the comment text before a section key in the INI.
+   *
+   * @param section The section
+   * @param key The key to get the comment at
    * @returns The comment text at the provided section or `undefined` if not found.
    */
   getAtKey(section: string, key: string): string | undefined;
-  /** Get the comment text before a section line in the INI.
+  /**
+   * Get the comment text before a section line in the INI.
+   *
+   * @param section The section to get the comment at
    * @returns The comment text at the provided section or `undefined` if not found.
    */
   getAtSection(section: string): string | undefined;
-  /** Set a comment at a specific line in the INI. */
+  /**
+   * Set a comment at a specific line in the INI.
+   *
+   * @param line The line to set the comment at
+   * @param text The comment to set
+   * @returns The comments object itself
+   */
   setAtLine(line: number, text: string): Comments;
-  /** Set a comment before a global key in the INI. */
+  /**
+   * Set a comment before a global key in the INI.
+   *
+   * @param key The key to set the text at
+   * @param text The comment to set
+   * @returns The comments object itself
+   */
   setAtKey(key: string, text: string): Comments;
-  /** Set a comment before a section key in the INI. */
+  /**
+   * Set a comment before a section key in the INI.
+   *
+   * @param section The section
+   * @param key The key to set the text at
+   * @param text The comment to set
+   * @returns The comments object itself
+   */
   setAtKey(section: string, key: string, text: string): Comments;
-  /** Set a comment before a section line in the INI. */
+  /**
+   * Set a comment before a section line in the INI.
+   *
+   * @param section The section to set the comment at
+   * @param text The comment to set
+   * @returns The comments object itself
+   */
   setAtSection(section: string, text: string): Comments;
 }
 

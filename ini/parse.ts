@@ -2,7 +2,18 @@
 // This module is browser compatible.
 
 import { IniMap, type ParseOptions } from "./ini_map.ts";
-/** Parse an INI config string into an object. Provide formatting options to override the default assignment operator. */
+/**
+ * Parse an INI config string into an object. Provide formatting options to override the default assignment operator.
+ *
+ * @example Usage
+ * ```ts
+ * // TODO
+ * ```
+ *
+ * @param text The text to parse
+ * @param options The options to use
+ * @return The parsed object
+ */
 export function parse(
   text: string,
   options?: ParseOptions,
