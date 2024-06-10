@@ -7,7 +7,48 @@ import { IniMap, type ParseOptions } from "./ini_map.ts";
  *
  * @example Usage
  * ```ts
- * // TODO
+ * import { parse } from "@std/ini/parse";
+ * import { assertEquals } from "@std/assert/assert-equals";
+ *
+ * const parsed = parse(`
+ * key = value
+ *
+ * [section 1]
+ * foo = Hello
+ * baz = World
+ * `);
+ *
+ * assertEquals(parsed, { key: "value", "section 1": { foo: "Hello", baz: "World" } })
+ * ```
+ *
+ * @example Using custom reviver
+ * ```ts
+ * import { parse } from "@std/ini/parse";
+ * import { assertEquals } from "@std/assert/assert-equals";
+ *
+ * const parsed = parse(`
+ * [section Foo]
+ * date = 2012-10-10
+ * amount = 12345
+ * `, {
+ *   reviver(key, value, section) {
+ *     if (section === "section Foo") {
+ *       if (key === "date") {
+ *         return new Date(value);
+ *       } else if (key === "amount") {
+ *         return +value;
+ *       }
+ *     }
+ *     return value;
+ *   }
+ * });
+ *
+ * assertEquals(parsed, {
+ *   "section Foo": {
+ *     date: new Date("2012-10-10"),
+ *     amount: 12345,
+ *   }
+ * })
  * ```
  *
  * @param text The text to parse

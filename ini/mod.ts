@@ -21,7 +21,7 @@
  * Section Date=1977-05-25
  * `;
  * const parsed = ini.parse(iniFile, {
- *   reviver: (key, value, section) => {
+ *   reviver(key, value, section) {
  *     if (section === "Section #1") {
  *       if (key === "Section Value") return Number(value);
  *       if (key === "Section Date") return new Date(value);
@@ -38,7 +38,7 @@
  * // }
  *
  * const text = ini.stringify(parsed, {
- *   replacer: (key, value, section) => {
+ *   replacer(key, value, section) {
  *     if (section === "Section #1" && key === "Section Date") {
  *       return (value as Date).toISOString().split("T")[0];
  *     }
