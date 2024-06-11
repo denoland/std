@@ -47,7 +47,7 @@ export interface StringifyOptions extends FormattingOptions {
  *
  * const str = stringify({
  *   "section X": {
- *     date: new Date(),
+ *     date: new Date("2024-06-10"),
  *   },
  *   "section Y": {
  *     name: "John"
