@@ -375,14 +375,16 @@ export default class DB {
   async drop() {
     const all = this.#kv.list({ prefix: [] }, { batchSize: 1000 })
     const promises = []
+    let count = 0
     for await (const { key } of all) {
       if (!equal(key, keys.DB_LOCK)) {
         promises.push(this.#kv.delete(key))
       }
       if (promises.length % 1000 === 0) {
-        console.log('db drop progress:', promises.length)
+        count += promises.length
         await Promise.all(promises)
         promises.length = 0
+        console.log('db drop progress:', count)
       }
     }
     await Promise.all(promises)
