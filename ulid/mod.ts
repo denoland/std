@@ -53,6 +53,7 @@ import {
   RANDOM_LEN,
   TIME_LEN,
   TIME_MAX,
+  ULID_LEN,
 } from "./_util.ts";
 
 /**
@@ -74,8 +75,8 @@ import {
  * @returns The number of milliseconds since the Unix epoch that had passed when the ULID was generated.
  */
 export function decodeTime(ulid: string): number {
-  if (ulid.length !== TIME_LEN + RANDOM_LEN) {
-    throw new Error("malformed ulid");
+  if (ulid.length !== ULID_LEN) {
+    throw new Error(`ULID must be exactly ${ULID_LEN} characters long`);
   }
   const time = ulid
     .substring(0, TIME_LEN)
@@ -84,12 +85,14 @@ export function decodeTime(ulid: string): number {
     .reduce((carry, char, index) => {
       const encodingIndex = ENCODING.indexOf(char);
       if (encodingIndex === -1) {
-        throw new Error("invalid character found: " + char);
+        throw new Error(`Invalid ULID character found: ${char}`);
       }
       return (carry += encodingIndex * Math.pow(ENCODING_LEN, index));
     }, 0);
   if (time > TIME_MAX) {
-    throw new Error("malformed ulid, timestamp too large");
+    throw new RangeError(
+      `ULID timestamp component exceeds maximum value of ${TIME_MAX}`,
+    );
   }
   return time;
 }
