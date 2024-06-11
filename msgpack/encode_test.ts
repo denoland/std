@@ -3,7 +3,6 @@
 import { assertEquals, assertThrows } from "@std/assert";
 import * as path from "@std/path";
 import { decode, encode } from "./mod.ts";
-import { assert } from "../assert/assert.ts";
 
 const moduleDir = path.dirname(path.fromFileUrl(import.meta.url));
 const testdataDir = path.resolve(moduleDir, "testdata");
