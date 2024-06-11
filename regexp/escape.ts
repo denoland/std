@@ -82,7 +82,7 @@ const RX_REGEXP_ESCAPE = new RegExp(
  * Escapes arbitrary text for interpolation into a regexp, such that it will
  * match exactly that text and nothing else.
  *
- * @example
+ * @example Usage
  * ```ts
  * import { escape } from "@std/regexp";
  * import { assertEquals, assertMatch, assertNotMatch } from "@std/assert";
@@ -93,6 +93,9 @@ const RX_REGEXP_ESCAPE = new RegExp(
  * assertMatch(".", re);
  * assertNotMatch("a", re);
  * ```
+ *
+ * @param str The string to escape.
+ * @returns The escaped string.
  */
 export function escape(str: string): string {
   return str.replaceAll(
