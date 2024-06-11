@@ -3,6 +3,7 @@
 import { assertEquals, assertThrows } from "@std/assert";
 import * as path from "@std/path";
 import { decode, encode } from "./mod.ts";
+import { assert } from "../assert/assert.ts";
 
 const moduleDir = path.dirname(path.fromFileUrl(import.meta.url));
 const testdataDir = path.resolve(moduleDir, "testdata");
@@ -138,6 +139,21 @@ Deno.test("encode() handles strings", () => {
   assertEquals(decode(encode(reallyLongString)), reallyLongString);
 });
 
+Deno.test("encode() handles Uint8Arrays", () => {
+  assertEquals(
+    encode(Uint8Array.of(0, 1, 2, 3)),
+    Uint8Array.of(0xc4, 4, 0, 1, 2, 3),
+  );
+  assertEquals(
+    encode(new Uint8Array(256)),
+    Uint8Array.of(0xc5, 1, 0, ...new Uint8Array(256)),
+  );
+  assertEquals(
+    encode(new Uint8Array(65536)),
+    Uint8Array.of(0xc6, 0, 1, 0, 0, ...new Uint8Array(65536)),
+  );
+});
+
 Deno.test("encode() handles arrays", () => {
   const arr0: never[] = [];
   assertEquals(decode(encode(arr0)), arr0);
@@ -185,4 +201,17 @@ Deno.test("encode() handles huge object with 100k properties", () => {
     });
   }
   assertEquals(decode(encode(bigObject)), bigObject);
+});
+
+Deno.test("encode() throws when the object is an instance of a custom class", () => {
+  class Foo {
+    a = 1;
+  }
+  // deno-lint-ignore no-explicit-any
+  const foo = new Foo() as any;
+  assertThrows(
+    () => encode(foo),
+    Error,
+    "Cannot safely encode value into messagepack",
+  );
 });
