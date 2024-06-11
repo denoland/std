@@ -10,6 +10,7 @@ export const ENCODING_LEN = ENCODING.length;
 export const TIME_MAX = Math.pow(2, 48) - 1;
 export const TIME_LEN = 10;
 export const RANDOM_LEN = 16;
+export const ULID_LEN = TIME_LEN + RANDOM_LEN;
 
 function replaceCharAt(str: string, index: number, char: string) {
   return str.substring(0, index) + char + str.substring(index + 1);
@@ -17,7 +18,9 @@ function replaceCharAt(str: string, index: number, char: string) {
 
 export function encodeTime(now: number, len: number = TIME_LEN): string {
   if (!Number.isInteger(now) || now < 0 || now > TIME_MAX) {
-    throw new Error("Time must be a positive integer less than " + TIME_MAX);
+    throw new RangeError(
+      "Time must be a positive integer less than " + TIME_MAX,
+    );
   }
   let str = "";
   for (; len > 0; len--) {
@@ -46,7 +49,7 @@ export function incrementBase32(str: string): string {
     char = str[index]!;
     charIndex = ENCODING.indexOf(char);
     if (charIndex === -1) {
-      throw new Error("incorrectly encoded string");
+      throw new TypeError("Incorrectly encoded string");
     }
     if (charIndex === maxCharIndex) {
       str = replaceCharAt(str, index, ENCODING[0]!);
@@ -54,7 +57,7 @@ export function incrementBase32(str: string): string {
     }
     return replaceCharAt(str, index, ENCODING[charIndex + 1]!);
   }
-  throw new Error("cannot increment this string");
+  throw new Error("Cannot increment this string");
 }
 
 /** Generates a monotonically increasing ULID. */
