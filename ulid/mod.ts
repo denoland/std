@@ -85,7 +85,7 @@ export function decodeTime(ulid: string): number {
     .reduce((carry, char, index) => {
       const encodingIndex = ENCODING.indexOf(char);
       if (encodingIndex === -1) {
-        throw new SyntaxError(`Invalid ULID character found: ${char}`);
+        throw new Error(`Invalid ULID character found: ${char}`);
       }
       return (carry += encodingIndex * Math.pow(ENCODING_LEN, index));
     }, 0);
