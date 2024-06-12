@@ -1,3 +1,50 @@
+### 2024.06.12
+
+#### @std/assert 1.0.0-rc.2 (prerelease)
+
+- fix(assert): fix tolerance calculation when comparing negative values (#5019)
+
+#### @std/data-structures 1.0.0-rc.1 (prerelease)
+
+- chore(data-structures): release `data-structures@1.0.0-rc.1` (#4987)
+
+#### @std/fs 0.229.3 (patch)
+
+- docs(fs): improve documentation (#4788)
+
+#### @std/ini 0.225.1 (patch)
+
+- docs(ini): improve ini docs (#5020)
+
+#### @std/msgpack 0.224.3 (patch)
+
+- docs(msgpack): complete documentation (#5029)
+- test(msgpack): add test cases for `encode()` (#5028)
+- test(msgpack): add `decode()` test cases (#5027)
+
+#### @std/net 0.224.3 (patch)
+
+- docs(net): complete documentation (#4982)
+
+#### @std/regexp 1.0.0-rc.1 (prerelease)
+
+- docs(regexp): complete documentation (#5023)
+- chore(regexp): release `regexp@1.0.0-rc.1` (#5024)
+
+#### @std/text 1.0.0-rc.1 (prerelease)
+
+- refactor(text): minor cleanups and improvements (#5025)
+- chore(text): release `text@1.0.0-rc.1` (#5026)
+
+#### @std/ulid 1.0.0-rc.1 (prerelease)
+
+- refactor(ulid): improve error types and messages (#5022)
+- chore(ulid): release `ulid@1.0.0-rc.1` (#4997)
+
+#### @std/url 1.0.0-rc.1 (prerelease)
+
+- chore(url): release `url@1.0.0-rc.1` (#4981)
+
 ### 2024.06.06
 
 #### @std/archive 0.224.1 (patch)
