@@ -6,7 +6,7 @@
  * to a reference snapshot, which is stored alongside the test file in the
  * `__snapshots__` directory.
  *
- * ```ts
+ * ```ts no-assert
  * // example_test.ts
  * import { assertSnapshot } from "@std/testing/snapshot";
  *
@@ -64,7 +64,7 @@
  *
  * The `assertSnapshot` function optionally accepts an options object.
  *
- * ```ts
+ * ```ts no-assert
  * // example_test.ts
  * import { assertSnapshot } from "@std/testing/snapshot";
  *
@@ -81,7 +81,7 @@
  *
  * You can also configure default options for `assertSnapshot`.
  *
- * ```ts
+ * ```ts no-assert
  * // example_test.ts
  * import { createAssertSnapshot } from "@std/testing/snapshot";
  *
@@ -98,7 +98,7 @@
  * It is possible to "extend" an `assertSnapshot` function which has been
  * configured with default options.
  *
- * ```ts
+ * ```ts no-assert
  * // example_test.ts
  * import { createAssertSnapshot } from "@std/testing/snapshot";
  * import { stripAnsiCode } from "@std/fmt/colors";
@@ -203,6 +203,7 @@ function getErrorMessage(message: string, options: SnapshotOptions) {
  * Default serializer for `assertSnapshot`.
  *
  * @param actual The value to serialize
+ * @returns The serialized string
  */
 export function serialize(actual: unknown): string {
   return Deno.inspect(actual, {
@@ -518,13 +519,17 @@ class AssertSnapshotContext {
  * Type parameter can be specified to ensure values under comparison have the same type.
  *
  * @example Usage
- * ```ts
+ * ```ts no-assert
  * import { assertSnapshot } from "@std/testing/snapshot";
  *
  * Deno.test("snapshot", async (t) => {
- *  await assertSnapshot<number>(t, 2);
+ *   await assertSnapshot<number>(t, 2);
  * });
  * ```
+ * @typeParam T The type of the snapshot
+ * @param context The test context
+ * @param actual The actual value to compare
+ * @param options The options
  */
 export async function assertSnapshot<T>(
   context: Deno.TestContext,
@@ -538,13 +543,18 @@ export async function assertSnapshot<T>(
  * Type parameter can be specified to ensure values under comparison have the same type.
  *
  * @example Usage
- * ```ts
+ * ```ts no-assert
  * import { assertSnapshot } from "@std/testing/snapshot";
  *
  * Deno.test("snapshot", async (t) => {
- *  await assertSnapshot<number>(t, 2);
+ *   await assertSnapshot<number>(t, 2);
  * });
  * ```
+ *
+ * @typeParam T The type of the snapshot
+ * @param context The test context
+ * @param actual The actual value to compare
+ * @param message The optional assertion messagge
  */
 export async function assertSnapshot<T>(
   context: Deno.TestContext,
@@ -622,7 +632,16 @@ export async function assertSnapshot(
   }
 }
 
-/** Create {@linkcode assertSnapshot} function with the given options. */
+/**
+ * Create {@linkcode assertSnapshot} function with the given options.
+ *
+ * The specified option becomes the default for returned {@linkcode assertSnapshot}
+ *
+ * @typeParam T The type of the snapshot
+ * @param options The options
+ * @param baseAssertSnapshot {@linkcode assertSnapshot} function implementation. Default to the original {@linkcode assertSnapshot}
+ * @returns {@linkcode assertSnapshot} function with the given default options.
+ */
 export function createAssertSnapshot<T>(
   options: SnapshotOptions<T>,
   baseAssertSnapshot: typeof assertSnapshot = assertSnapshot,

@@ -1267,7 +1267,15 @@ export function returnsNext<
   };
 }
 
-/** Creates a function that resolves the awaited iterable values. Any awaited iterable values that are errors will be thrown. */
+/**
+ * Creates a function that resolves the awaited iterable values. Any awaited iterable values that are errors will be thrown.
+ *
+ * @typeParam Return The type of each item of the iterable
+ * @typeParam Self The self type of the returned function
+ * @typeParam Args The type of arguments of the returned function
+ * @param iterable The iterable to use
+ * @returns A function that resolves the awaited iterable values
+ */
 export function resolvesNext<
   Return,
   // deno-lint-ignore no-explicit-any

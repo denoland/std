@@ -3,6 +3,36 @@
 /**
  * Utilities for mocking time while testing.
  *
+ * ```ts no-assert
+ * import {
+ *   assertSpyCalls,
+ *   spy,
+ * } from "@std/testing/mock";
+ * import { FakeTime } from "@std/testing/time";
+ *
+ * function secondInterval(cb: () => void): number {
+ *   return setInterval(cb, 1000);
+ * }
+ *
+ * Deno.test("secondInterval calls callback every second and stops after being cleared", () => {
+ *   using time = new FakeTime();
+ *
+ *   const cb = spy();
+ *   const intervalId = secondInterval(cb);
+ *   assertSpyCalls(cb, 0);
+ *   time.tick(500);
+ *   assertSpyCalls(cb, 0);
+ *   time.tick(500);
+ *   assertSpyCalls(cb, 1);
+ *   time.tick(3500);
+ *   assertSpyCalls(cb, 4);
+ *
+ *   clearInterval(intervalId);
+ *   time.tick(1000);
+ *   assertSpyCalls(cb, 4);
+ * });
+ * ```
+ *
  * @module
  */
 
@@ -13,7 +43,10 @@ import { _internals } from "./_time.ts";
 
 /** An error related to faking time. */
 export class TimeError extends Error {
-  /** Construct {@code TimeError}. */
+  /** Construct {@code TimeError}.
+   *
+   * @param message The error message
+   */
   constructor(message: string) {
     super(message);
     this.name = "TimeError";
@@ -184,7 +217,7 @@ let dueTree: RedBlackTree<DueNode>;
  * controlled through the fake time instance.
  *
  * @example Usage
- * ```ts
+ * ```ts no-assert
  * import {
  *   assertSpyCalls,
  *   spy,
@@ -220,7 +253,7 @@ export class FakeTime {
    * controlled through the fake time instance.
    *
    * @example Usage
-   * ```ts
+   * ```ts no-assert
    * import {
    *   assertSpyCalls,
    *   spy,
@@ -306,6 +339,11 @@ export class FakeTime {
 
   /**
    * Restores real time temporarily until callback returns and resolves.
+   *
+   * @typeParam T The returned value type of the callback
+   * @param callback The callback to be called while FakeTime being restored
+   * @param args The arguments to pass to the callback
+   * @returns The returned value from the callback
    */
   static restoreFor<T>(
     // deno-lint-ignore no-explicit-any
@@ -331,12 +369,18 @@ export class FakeTime {
 
   /**
    * The amount of milliseconds elapsed since January 1, 1970 00:00:00 UTC for the fake time.
-   * When set, it will call any functions waiting to be called between the current and new fake time.
-   * If the timer callback throws, time will stop advancing forward beyond that timer.
+   *
+   * @returns The amount of milliseconds elapsed since January 1, 1970 00:00:00 UTC for the fake time
    */
   get now(): number {
     return now;
   }
+  /**
+   * Set the current time. It will call any functions waiting to be called between the current and new fake time.
+   * If the timer callback throws, time will stop advancing forward beyond that timer.
+   *
+   * @param value The current time (in milliseconds)
+   */
   set now(value: number) {
     if (value < now) throw new Error("time cannot go backwards");
     let dueNode: DueNode | null = dueTree.min();
@@ -365,15 +409,27 @@ export class FakeTime {
     now = value;
   }
 
-  /** The initial amount of milliseconds elapsed since January 1, 1970 00:00:00 UTC for the fake time. */
+  /**
+   * The initial amount of milliseconds elapsed since January 1, 1970 00:00:00 UTC for the fake time.
+   *
+   * @returns The initial amount of milliseconds elapsed since January 1, 1970 00:00:00 UTC for the fake time.
+   */
   get start(): number {
     return startedAt;
   }
+  /** You can't set this property.
+   * @param value The value to set
+   */
   set start(value: number) {
     throw new Error("cannot change start time after initialization");
   }
 
-  /** Resolves after the given number of milliseconds using real time. */
+  /**
+   * Resolves after the given number of milliseconds using real time.
+   *
+   * @param ms The milliseconds to delay
+   * @param options The options
+   */
   async delay(ms: number, options: DelayOptions = {}): Promise<void> {
     const { signal } = options;
     if (signal?.aborted) {
@@ -409,6 +465,8 @@ export class FakeTime {
   /**
    * Adds the specified number of milliseconds to the fake time.
    * This will call any functions waiting to be called between the current and new fake time.
+   *
+   * @param ms The milliseconds to advance
    */
   tick(ms = 0) {
     this.now += ms;
@@ -417,6 +475,8 @@ export class FakeTime {
   /**
    * Runs all pending microtasks then adds the specified number of milliseconds to the fake time.
    * This will call any functions waiting to be called between the current and new fake time.
+   *
+   * @param ms The milliseconds to advance
    */
   async tickAsync(ms = 0) {
     await this.runMicrotasks();
@@ -426,7 +486,8 @@ export class FakeTime {
   /**
    * Advances time to when the next scheduled timer is due.
    * If there are no pending timers, time will not be changed.
-   * Returns true when there is a scheduled timer and false when there is not.
+   *
+   * @returns `true` when there is a scheduled timer and `false` when there is not.
    */
   next(): boolean {
     const next = nextDueNode();
@@ -437,6 +498,8 @@ export class FakeTime {
   /**
    * Runs all pending microtasks then advances time to when the next scheduled timer is due.
    * If there are no pending timers, time will not be changed.
+   *
+   * @returns `true` if the pending timers existed and the time advanced, `false` if there was no pending timer and the time didn't advance.
    */
   async nextAsync(): Promise<boolean> {
     await this.runMicrotasks();
