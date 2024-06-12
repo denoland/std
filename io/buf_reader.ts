@@ -11,7 +11,7 @@ const CR = "\r".charCodeAt(0);
 const LF = "\n".charCodeAt(0);
 
 /**
- * @deprecated This will be removed in 1.0.0. Use the {@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API | Web Streams API} instead.
+ * BufferFullError is thrown when the buffer is full.
  */
 export class BufferFullError extends Error {
   override name = "BufferFullError";
@@ -21,7 +21,7 @@ export class BufferFullError extends Error {
 }
 
 /**
- * @deprecated This will be removed in 1.0.0. Use the {@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API | Web Streams API} instead.
+ * PartialReadError is thrown when the data is partially read.
  */
 export class PartialReadError extends Error {
   override name = "PartialReadError";
@@ -33,8 +33,6 @@ export class PartialReadError extends Error {
 
 /**
  * Result type returned by of BufReader.readLine().
- *
- * @deprecated This will be removed in 1.0.0. Use the {@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API | Web Streams API} instead.
  */
 export interface ReadLineResult {
   line: Uint8Array;
@@ -42,7 +40,7 @@ export interface ReadLineResult {
 }
 
 /**
- * @deprecated This will be removed in 1.0.0. Use the {@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API | Web Streams API} instead.
+ * {@code BufReader} implements buffering for {@linkcode Reader}.
  */
 export class BufReader implements Reader {
   #buf!: Uint8Array;
