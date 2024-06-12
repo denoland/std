@@ -4,32 +4,33 @@
 import type { ValueType } from "./encode.ts";
 
 /**
- * Decode a value from the MessagePack binary format.
+ * Decode a value from the {@link https://msgpack.org/ | MessagePack} binary format.
  *
  * If the input is not in valid message pack format, an error will be thrown.
  *
- * @example Decode a value from the MessagePack binary format
+ * @example Usage
  * ```ts
  * import { decode } from "@std/msgpack/decode";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
- * const encoded = new Uint8Array([1, 2, 3])
+ * const encoded = new Uint8Array([163, 72, 105, 33]);
  *
- * console.log(decode(encoded))
+ * assertEquals(decode(encoded), "Hi!");
  * ```
  *
- * @param uint8 Uint8Array containing the MessagePack binary data.
+ * @param data MessagePack binary data.
  * @returns Decoded value from the MessagePack binary data.
  */
-export function decode(uint8: Uint8Array): ValueType {
+export function decode(data: Uint8Array): ValueType {
   const pointer = { consumed: 0 };
   const dataView = new DataView(
-    uint8.buffer,
-    uint8.byteOffset,
-    uint8.byteLength,
+    data.buffer,
+    data.byteOffset,
+    data.byteLength,
   );
-  const value = decodeSlice(uint8, dataView, pointer);
+  const value = decodeSlice(data, dataView, pointer);
 
-  if (pointer.consumed < uint8.length) {
+  if (pointer.consumed < data.length) {
     throw new EvalError("Messagepack decode did not consume whole array");
   }
 
