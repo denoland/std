@@ -13,6 +13,7 @@ import { _internals } from "./_time.ts";
 
 /** An error related to faking time. */
 export class TimeError extends Error {
+  /** Construct {@code TimeError}. */
   constructor(message: string) {
     super(message);
     this.name = "TimeError";
@@ -52,6 +53,7 @@ interface Timer {
   repeat: boolean;
 }
 
+/** The option for {@linkcode FakeTime} */
 export interface FakeTimeOptions {
   /**
    * The rate relative to real time at which fake time is updated.
@@ -181,6 +183,7 @@ let dueTree: RedBlackTree<DueNode>;
  * Overrides the real Date object and timer functions with fake ones that can be
  * controlled through the fake time instance.
  *
+ * @example Usage
  * ```ts
  * import {
  *   assertSpyCalls,
@@ -212,6 +215,44 @@ let dueTree: RedBlackTree<DueNode>;
  * ```
  */
 export class FakeTime {
+  /**
+   * Construct a {@code FakeTime} object. This overrides the real Date object and timer functions with fake ones that can be
+   * controlled through the fake time instance.
+   *
+   * @example Usage
+   * ```ts
+   * import {
+   *   assertSpyCalls,
+   *   spy,
+   * } from "@std/testing/mock";
+   * import { FakeTime } from "@std/testing/time";
+   *
+   * function secondInterval(cb: () => void): number {
+   *   return setInterval(cb, 1000);
+   * }
+   *
+   * Deno.test("secondInterval calls callback every second and stops after being cleared", () => {
+   *   using time = new FakeTime();
+   *
+   *   const cb = spy();
+   *   const intervalId = secondInterval(cb);
+   *   assertSpyCalls(cb, 0);
+   *   time.tick(500);
+   *   assertSpyCalls(cb, 0);
+   *   time.tick(500);
+   *   assertSpyCalls(cb, 1);
+   *   time.tick(3500);
+   *   assertSpyCalls(cb, 4);
+   *
+   *   clearInterval(intervalId);
+   *   time.tick(1000);
+   *   assertSpyCalls(cb, 4);
+   * });
+   * ```
+   *
+   * @param start The time to simulate. The default is the current time..
+   * @param options The options
+   */
   constructor(
     start?: number | string | Date | null,
     options?: FakeTimeOptions,
@@ -252,6 +293,7 @@ export class FakeTime {
       : undefined;
   }
 
+  /** Restores real time. */
   [Symbol.dispose]() {
     this.restore();
   }

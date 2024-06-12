@@ -5,7 +5,7 @@
  * Asserts at compile time that the provided type argument's type resolves to the expected boolean literal type.
  * @param expectTrue - True if the passed in type argument resolved to true.
  * @example
- * ```typescript, ignore
+ * ```ts ignore
  * import { assertType, IsExact, IsNullable } from "@std/testing/types";
  *
  * const result = "some result" as string | number;
@@ -23,8 +23,8 @@ export function assertType<T extends true | false>(_expectTrue: T) {
 /**
  * Asserts at compile time that the provided type argument's type resolves to true.
  *
- * @example
- * ```typescript
+ * @example Usage
+ * ```ts
  * import { AssertTrue, Has, IsNullable } from "@std/testing/types";
  *
  * const result = 1 as string | number | null;
@@ -89,13 +89,15 @@ export type IsExact<T, U> = TupleMatches<AnyToBrand<T>, AnyToBrand<U>> extends
   : false
   : false;
 
-type DeepPrepareIsExact<T, VisitedTypes = never> = {
+/** @internal */
+export type DeepPrepareIsExact<T, VisitedTypes = never> = {
   // make optional properties required
   [P in keyof T]-?: IsAny<T[P]> extends true ? AnyBrand
     : DeepPrepareIsExactProp<T[P], T, VisitedTypes>;
 };
 
-type DeepPrepareIsExactProp<Prop, Parent, VisitedTypes> = Prop extends
+/** @internal */
+export type DeepPrepareIsExactProp<Prop, Parent, VisitedTypes> = Prop extends
   VisitedTypes
   // recursive, bail
   ? Prop
@@ -120,8 +122,30 @@ export type IsUnknown<T> = unknown extends T
   ? ([T] extends [null] ? false : true)
   : false;
 
-type TupleMatches<T, U> = Matches<[T], [U]>;
-type Matches<T, U> = T extends U ? U extends T ? true : false : false;
+/**
+ * The internal utility type to match the given types as tuples.
+ *
+ * @internal
+ */
+export type TupleMatches<T, U> = Matches<[T], [U]>;
 
-type AnyToBrand<T> = IsAny<T> extends true ? AnyBrand : T;
-type AnyBrand = { __conditionalTypeChecksAny__: undefined };
+/**
+ * The internal utility type to match the given types.
+ *
+ * @internal
+ */
+export type Matches<T, U> = T extends U ? U extends T ? true : false : false;
+
+/**
+ * The utility type to convert any to {@linkcode AnyBrand}.
+ *
+ * @internal
+ */
+export type AnyToBrand<T> = IsAny<T> extends true ? AnyBrand : T;
+
+/**
+ * The utility type to represent any type.
+ *
+ * @internal
+ */
+export type AnyBrand = { __conditionalTypeChecksAny__: undefined };

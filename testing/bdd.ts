@@ -579,6 +579,7 @@ export function it<T>(...args: ItArgs<T>) {
   }
 }
 
+/** Only execute this test case. */
 it.only = function itOnly<T>(...args: ItArgs<T>): void {
   const options = itDefinition(...args);
   return it({
@@ -587,6 +588,7 @@ it.only = function itOnly<T>(...args: ItArgs<T>): void {
   });
 };
 
+/** Ignore this test case. */
 it.ignore = function itIgnore<T>(...args: ItArgs<T>): void {
   const options = itDefinition(...args);
   return it({
@@ -595,10 +597,15 @@ it.ignore = function itIgnore<T>(...args: ItArgs<T>): void {
   });
 };
 
-it.skip = it.ignore;
+/** Skip this test case. */
+it.skip = function itSkip<T>(...args: ItArgs<T>): void {
+  it.ignore(...args);
+};
 
 /** Alias of {@linkcode it} */
-export const test = it;
+export function test<T>(...args: ItArgs<T>) {
+  it(...args);
+}
 
 function addHook<T>(
   name: HookNames,
@@ -626,8 +633,16 @@ export function beforeAll<T>(
   addHook("beforeAll", fn);
 }
 
-/** Alias of {@linkcode beforeAll} */
-export const before = beforeAll;
+/**
+ * Alias of {@linkcode beforeAll}
+ *
+ * Run some shared setup before all of the tests in the suite.
+ */
+export function before<T>(
+  fn: (this: T) => void | Promise<void>,
+) {
+  beforeAll(fn);
+}
 
 /** Run some shared teardown after all of the tests in the suite. */
 export function afterAll<T>(
@@ -636,8 +651,16 @@ export function afterAll<T>(
   addHook("afterAll", fn);
 }
 
-/** Alias of {@linkcode afterAll} */
-export const after = afterAll;
+/**
+ * Alias of {@linkcode afterAll}.
+ *
+ * Run some shared teardown after all of the tests in the suite.
+ */
+export function after<T>(
+  fn: (this: T) => void | Promise<void>,
+) {
+  afterAll(fn);
+}
 
 /** Run some shared setup before each test in the suite. */
 export function beforeEach<T>(
@@ -806,6 +829,7 @@ export function describe<T>(
   return { symbol };
 }
 
+/** Only execute this test suite */
 describe.only = function describeOnly<T>(
   ...args: DescribeArgs<T>
 ): TestSuite<T> {
@@ -816,6 +840,7 @@ describe.only = function describeOnly<T>(
   });
 };
 
+/** Ignore the test suite */
 describe.ignore = function describeIgnore<T>(
   ...args: DescribeArgs<T>
 ): TestSuite<T> {
@@ -826,4 +851,9 @@ describe.ignore = function describeIgnore<T>(
   });
 };
 
-describe.skip = describe.ignore;
+/** Skip the test suite */
+describe.skip = function describeSkip<T>(
+  ...args: DescribeArgs<T>
+): TestSuite<T> {
+  return describe.ignore(...args);
+};

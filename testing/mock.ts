@@ -326,6 +326,7 @@ import { AssertionError } from "@std/assert/assertion-error";
 
 /** An error related to spying on a function or instance method. */
 export class MockError extends Error {
+  /** Construct {@code MockError} */
   constructor(message: string) {
     super(message);
     this.name = "MockError";
@@ -460,6 +461,10 @@ function unregisterMock(spy: Spy<any, any[], any>) {
  * If a callback is provided, it restores all mocks created within it.
  */
 export function mockSession(): number;
+/**
+ * Creates a session that tracks all mocks created before it's restored.
+ * If a callback is provided, it restores all mocks created within it.
+ */
 export function mockSession<
   Self,
   Args extends unknown[],
@@ -615,6 +620,7 @@ export interface ConstructorSpy<
   // deno-lint-ignore no-explicit-any
   Args extends unknown[] = any[],
 > {
+  /** Construct an instance. */
   new (...args: Args): Self;
   /** The function that is being spied on. */
   original: new (...args: Args) => Self;
@@ -660,22 +666,31 @@ function constructorSpy<
   return spy;
 }
 
-/** Utility for extracting the arguments type from a property */
-type GetParametersFromProp<
+/**
+ * Utility for extracting the arguments type from a property
+ *
+ * @internal
+ */
+export type GetParametersFromProp<
   Self,
   Prop extends keyof Self,
 > = Self[Prop] extends (...args: infer Args) => unknown ? Args
   : unknown[];
 
-/** Utility for extracting the return type from a property */
-type GetReturnFromProp<
+/**
+ * Utility for extracting the return type from a property
+ *
+ * @internal
+ */
+export type GetReturnFromProp<
   Self,
   Prop extends keyof Self,
 > // deno-lint-ignore no-explicit-any
  = Self[Prop] extends (...args: any[]) => infer Return ? Return
   : unknown;
 
-type SpyLike<
+/** SpyLink object type. */
+export type SpyLike<
   // deno-lint-ignore no-explicit-any
   Self = any,
   // deno-lint-ignore no-explicit-any
@@ -692,11 +707,13 @@ export function spy<
   Args extends unknown[] = any[],
   Return = undefined,
 >(): Spy<Self, Args, Return>;
+/** Wraps a function or instance method with a Spy. */
 export function spy<
   Self,
   Args extends unknown[],
   Return,
 >(func: (this: Self, ...args: Args) => Return): Spy<Self, Args, Return>;
+/** Wraps a function or instance method with a Spy. */
 export function spy<
   Self,
   Args extends unknown[],
@@ -704,6 +721,7 @@ export function spy<
 >(
   constructor: new (...args: Args) => Self,
 ): ConstructorSpy<Self, Args>;
+/** Wraps a function or instance method with a Spy. */
 export function spy<
   Self,
   Prop extends keyof Self,
@@ -762,6 +780,7 @@ export function stub<
   self: Self,
   property: Prop,
 ): Stub<Self, GetParametersFromProp<Self, Prop>, GetReturnFromProp<Self, Prop>>;
+/** Replaces an instance method with a Stub. */
 export function stub<
   Self,
   Prop extends keyof Self,
@@ -906,6 +925,7 @@ export interface ExpectedSpyCall<
    * If you expect a promise to reject, expect error instead.
    */
   returned?: Return;
+  /** The expected thrown error. */
   error?: {
     /** The class for the error that was thrown by a function. */
     // deno-lint-ignore no-explicit-any
@@ -1120,6 +1140,12 @@ export function assertSpyCallArgs<
   callIndex: number,
   expected: ExpectedArgs,
 ): ExpectedArgs;
+/**
+ * Asserts that an spy is called with a specific range of args as expected.
+ * If a start and end index is not provided, the expected will be compared against all args.
+ * If a start is provided without an end index, the expected will be compared against all args from the start index to the end.
+ * The end index is not included in the range of args that are compared.
+ */
 export function assertSpyCallArgs<
   Self,
   Args extends unknown[],
@@ -1131,6 +1157,12 @@ export function assertSpyCallArgs<
   argsStart: number,
   expected: ExpectedArgs,
 ): ExpectedArgs;
+/**
+ * Asserts that an spy is called with a specific range of args as expected.
+ * If a start and end index is not provided, the expected will be compared against all args.
+ * If a start is provided without an end index, the expected will be compared against all args from the start index to the end.
+ * The end index is not included in the range of args that are compared.
+ */
 export function assertSpyCallArgs<
   Self,
   Args extends unknown[],

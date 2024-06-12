@@ -152,8 +152,10 @@ import { buildMessage } from "@std/internal/build-message";
 const SNAPSHOT_DIR = "__snapshots__";
 const SNAPSHOT_EXT = "snap";
 
+/** The mode of snapshot testing. "assert" or "update". */
 export type SnapshotMode = "assert" | "update";
 
+/** The options for {@linkcode assertSnapshot}. */
 export type SnapshotOptions<T = unknown> = {
   /**
    * Snapshot output directory. Snapshot files will be written to this directory.
@@ -199,9 +201,9 @@ function getErrorMessage(message: string, options: SnapshotOptions) {
 
 /**
  * Default serializer for `assertSnapshot`.
+ *
+ * @param actual The value to serialize
  */
-export function serialize(actual: unknown): string;
-export function serialize<T>(actual: T): string;
 export function serialize(actual: unknown): string {
   return Deno.inspect(actual, {
     depth: Infinity,
@@ -515,12 +517,12 @@ class AssertSnapshotContext {
  *
  * Type parameter can be specified to ensure values under comparison have the same type.
  *
- * @example
+ * @example Usage
  * ```ts
  * import { assertSnapshot } from "@std/testing/snapshot";
  *
- * Deno.test("snapshot", async (test) => {
- *  await assertSnapshot<number>(test, 2);
+ * Deno.test("snapshot", async (t) => {
+ *  await assertSnapshot<number>(t, 2);
  * });
  * ```
  */
@@ -529,6 +531,21 @@ export async function assertSnapshot<T>(
   actual: T,
   options: SnapshotOptions<T>,
 ): Promise<void>;
+/**
+ * Make an assertion that `actual` matches a snapshot. If the snapshot and `actual` do
+ * not a match, then throw.
+ *
+ * Type parameter can be specified to ensure values under comparison have the same type.
+ *
+ * @example Usage
+ * ```ts
+ * import { assertSnapshot } from "@std/testing/snapshot";
+ *
+ * Deno.test("snapshot", async (t) => {
+ *  await assertSnapshot<number>(t, 2);
+ * });
+ * ```
+ */
 export async function assertSnapshot<T>(
   context: Deno.TestContext,
   actual: T,
@@ -605,6 +622,7 @@ export async function assertSnapshot(
   }
 }
 
+/** Create {@linkcode assertSnapshot} function with the given options. */
 export function createAssertSnapshot<T>(
   options: SnapshotOptions<T>,
   baseAssertSnapshot: typeof assertSnapshot = assertSnapshot,
