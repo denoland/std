@@ -333,7 +333,7 @@ import { AssertionError } from "@std/assert/assertion-error";
  * import { assertThrows } from "@std/assert/assert-throws";
  *
  * assertThrows(() => {
- *   spy({}, "no-such-method");
+ *   spy({} as any, "no-such-method");
  * }, MockError);
  * ```
  */
@@ -347,7 +347,7 @@ export class MockError extends Error {
    * import { assertThrows } from "@std/assert/assert-throws";
    *
    * assertThrows(() => {
-   *   spy({}, "no-such-method");
+   *   spy({} as any, "no-such-method");
    * }, MockError);
    * ```
    *
@@ -862,7 +862,7 @@ export function spy<
  *   spy,
  * } from "@std/testing/mock";
  *
- * const func = spy((a, b) => a + b);
+ * const func = spy((a: number, b: number) => a + b);
  *
  * func(3, 4);
  * func(5, 6);
@@ -1016,7 +1016,7 @@ export interface Stub<
  * import { stub, assertSpyCalls } from "@std/testing/mock";
  *
  * const obj = {
- *   method(): number {
+ *   method() {
  *     // some inconventient feature for testing
  *   },
  * };
@@ -1262,7 +1262,7 @@ function getSpyCall<
  * ```ts
  * import { assertSpyCall, spy } from "@std/testing/mock";
  *
- * const func = spy((a, b) => a + b);
+ * const func = spy((a: number, b: number) => a + b);
  *
  * func(3, 4);
  * func(5, 6);
@@ -1359,7 +1359,7 @@ export function assertSpyCall<
  * ```ts
  * import { assertSpyCallAsync, spy } from "@std/testing/mock";
  *
- * const func = spy((a, b) => new Promise((resolve) => {
+ * const func = spy((a: number, b: number) => new Promise((resolve) => {
  *   setTimeout(() => resolve(a + b), 100)
  * }));
  *
@@ -1462,7 +1462,7 @@ export async function assertSpyCallAsync<
  * ```ts
  * import { assertSpyCallArg, spy } from "@std/testing/mock";
  *
- * const func = spy((a, b) => a + b);
+ * const func = spy((a: number, b: number) => a + b);
  *
  * func(3, 4);
  * func(5, 6);
@@ -1511,7 +1511,7 @@ export function assertSpyCallArg<
  * ```ts
  * import { assertSpyCallArgs, spy } from "@std/testing/mock";
  *
- * const func = spy((a, b) => a + b);
+ * const func = spy((a: number, b: number) => a + b);
  *
  * func(3, 4);
  * func(5, 6);
