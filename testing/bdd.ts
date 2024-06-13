@@ -4,7 +4,7 @@
  * A {@link https://en.wikipedia.org/wiki/Behavior-driven_development | BDD} interface
  * to `Deno.test()` API.
  *
- * With the `bdd.ts` module you can write your tests in a familiar format for
+ * With `@std/testing/bdd` module you can write your tests in a familiar format for
  * grouping tests and adding setup/teardown hooks used by other JavaScript testing
  * frameworks like Jasmine, Jest, and Mocha.
  *
@@ -534,8 +534,21 @@ export interface it {
 
 /**
  * Registers an individual test case.
-
-* @typeParam T The self type of the function to implement the test case
+ *
+ * @example Usage
+ * ```ts
+ * import { describe, it } from "@std/testing/bdd";
+ * import { assertEquals } from "@std/assert/assert-equals";
+ *
+ * describe("example", () => {
+ *   it("should pass", () => {
+ *     // test case
+ *     assertEquals(2 + 2, 4);
+ *   });
+ * });
+ * ```
+ *
+ * @typeParam T The self type of the function to implement the test case
  * @param args The test case
  */
 export function it<T>(...args: ItArgs<T>) {
@@ -610,6 +623,19 @@ it.skip = function itSkip<T>(...args: ItArgs<T>): void {
 /**
  * Alias of {@linkcode it}
  *
+ * Registers an individual test case.
+ *
+ * @example Usage
+ * ```ts
+ * import { test } from "@std/testing/bdd";
+ * import { assertEquals } from "@std/assert/assert-equals";
+ *
+ * test("a test case", () => {
+ *   // test case
+ *   assertEquals(2 + 2, 4);
+ * });
+ * ```
+ *
  * @typeParam T The self type of the function to implement the test case
  * @param args The test case
  */
@@ -639,6 +665,23 @@ function addHook<T>(
 /**
  * Run some shared setup before all of the tests in the suite.
  *
+ * @example Usage
+ * ```ts
+ * import { describe, it, beforeAll } from "@std/testing/bdd";
+ * import { assertEquals } from "@std/assert/assert-equals";
+ *
+ * beforeAll(() => {
+ *  console.log("beforeAll");
+ * });
+ *
+ * describe("example", () => {
+ *   it("should pass", () => {
+ *     // test case
+ *     assertEquals(2 + 2, 4);
+ *   });
+ * });
+ * ```
+ *
  * @typeParam T The self type of the function
  * @param fn The function to implement the setup behavior.
  */
@@ -653,6 +696,23 @@ export function beforeAll<T>(
  *
  * Run some shared setup before all of the tests in the suite.
  *
+ * @example Usage
+ * ```ts
+ * import { describe, it, before } from "@std/testing/bdd";
+ * import { assertEquals } from "@std/assert/assert-equals";
+ *
+ * before(() => {
+ *  console.log("before");
+ * });
+ *
+ * describe("example", () => {
+ *   it("should pass", () => {
+ *     // test case
+ *     assertEquals(2 + 2, 4);
+ *   });
+ * });
+ * ```
+ *
  * @typeParam T The self type of the function
  * @param fn The function to implement the setup behavior.
  */
@@ -664,6 +724,23 @@ export function before<T>(
 
 /**
  * Run some shared teardown after all of the tests in the suite.
+ *
+ * @example Usage
+ * ```ts
+ * import { describe, it, afterAll } from "@std/testing/bdd";
+ * import { assertEquals } from "@std/assert/assert-equals";
+ *
+ * afterAll(() => {
+ *  console.log("afterAll");
+ * });
+ *
+ * describe("example", () => {
+ *   it("should pass", () => {
+ *     // test case
+ *     assertEquals(2 + 2, 4);
+ *   });
+ * });
+ * ```
  *
  * @typeParam T The self type of the function
  * @param fn The function to implement the teardown behavior.
@@ -679,6 +756,23 @@ export function afterAll<T>(
  *
  * Run some shared teardown after all of the tests in the suite.
  *
+ * @example Usage
+ * ```ts
+ * import { describe, it, after } from "@std/testing/bdd";
+ * import { assertEquals } from "@std/assert/assert-equals";
+ *
+ * after(() => {
+ *  console.log("after");
+ * });
+ *
+ * describe("example", () => {
+ *   it("should pass", () => {
+ *     // test case
+ *     assertEquals(2 + 2, 4);
+ *   });
+ * });
+ * ```
+ *
  * @typeParam T The self type of the function
  * @param fn The function to implement the teardown behavior.
  */
@@ -691,6 +785,23 @@ export function after<T>(
 /**
  * Run some shared setup before each test in the suite.
  *
+ * @example Usage
+ * ```ts
+ * import { describe, it, beforeEach } from "@std/testing/bdd";
+ * import { assertEquals } from "@std/assert/assert-equals";
+ *
+ * beforeEach(() => {
+ *  console.log("beforeEach");
+ * });
+ *
+ * describe("example", () => {
+ *   it("should pass", () => {
+ *     // test case
+ *     assertEquals(2 + 2, 4);
+ *   });
+ * });
+ * ```
+ *
  * @typeParam T The self type of the function
  * @param fn The function to implement the shared setup behavior
  */
@@ -702,6 +813,23 @@ export function beforeEach<T>(
 
 /**
  * Run some shared teardown after each test in the suite.
+ *
+ * @example Usage
+ * ```ts
+ * import { describe, it, afterEach } from "@std/testing/bdd";
+ * import { assertEquals } from "@std/assert/assert-equals";
+ *
+ * afterEach(() => {
+ *  console.log("afterEach");
+ * });
+ *
+ * describe("example", () => {
+ *   it("should pass", () => {
+ *     // test case
+ *     assertEquals(2 + 2, 4);
+ *   });
+ * });
+ * ```
  *
  * @typeParam T The self type of the function
  * @param fn The function to implement the shared teardown behavior
@@ -852,6 +980,19 @@ export interface describe {
 
 /**
  * Registers a test suite.
+ *
+ * @example Usage
+ * ```ts
+ * import { describe, it } from "@std/testing/bdd";
+ * import { assertEquals } from "@std/assert/assert-equals";
+ *
+ * describe("example", () => {
+ *   it("should pass", () => {
+ *     // test case
+ *     assertEquals(2 + 2, 4);
+ *   });
+ * });
+ * ```
  *
  * @typeParam T The self type of the test suite body.
  * @param args The test suite body.
