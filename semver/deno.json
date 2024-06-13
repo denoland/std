@@ -1,6 +1,6 @@
 {
   "name": "@std/semver",
-  "version": "0.224.0",
+  "version": "0.224.3",
   "exports": {
     ".": "./mod.ts",
     "./can-parse": "./can_parse.ts",

@@ -20,6 +20,7 @@ export type ValueType =
  * Value map that can be encoded to MessagePack.
  */
 export interface ValueMap {
+  /** Value map entry */
   [index: string | number]: ValueType;
 }
 
@@ -37,11 +38,12 @@ const SIXTY_FOUR_BITS = 18446744073709551616n;
 const encoder = new TextEncoder();
 
 /**
- * Encode a value to MessagePack binary format.
+ * Encode a value to {@link https://msgpack.org/ | MessagePack} binary format.
  *
- * @example Encode a value to MessagePack binary format
+ * @example Usage
  * ```ts
  * import { encode } from "@std/msgpack/encode";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const obj = {
  *   str: "deno",
@@ -51,7 +53,9 @@ const encoder = new TextEncoder();
  *   }
  * }
  *
- * console.log(encode(obj))
+ * const encoded = encode(obj);
+ *
+ * assertEquals(encoded.length, 31);
  * ```
  *
  * @param object Value to encode to MessagePack binary format.

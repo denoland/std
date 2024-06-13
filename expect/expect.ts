@@ -114,8 +114,8 @@ const matchers: Record<MatcherKey, Matcher> = {
  * The `expect` function is used to test a value. You will use `expect` along with a
  * "matcher" function to assert something about a value.
  *
- * @example basic usage
- * ```ts
+ * @example Usage
+ * ```ts no-assert
  * import { expect } from "@std/expect";
  *
  * function bestLaCroixFlavor(): string {

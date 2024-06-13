@@ -3,7 +3,6 @@
 // Copyright 2011 The Go Authors. All rights reserved. BSD license.
 // https://github.com/golang/go/blob/master/LICENSE
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-import { assert } from "@std/assert/assert";
 
 /** Options for {@linkcode parseRecord}. */
 export interface ReadOptions {
@@ -71,7 +70,7 @@ export async function parseRecord(
     return [];
   }
 
-  assert(opt.separator !== undefined);
+  if (opt.separator === undefined) throw new TypeError("Separator is required");
 
   let fullLine = line;
   let quoteError: ParseError | null = null;
@@ -215,16 +214,99 @@ function runeCount(s: string): number {
 /**
  * A ParseError is returned for parsing errors.
  * Line numbers are 1-indexed and columns are 0-indexed.
+ *
+ * @example Usage
+ * ```ts
+ * import { parse, ParseError } from "@std/csv/parse";
+ * import { assertEquals } from "@std/assert/assert-equals";
+ *
+ * try {
+ *   parse(`a "word","b"`);
+ * } catch (error) {
+ *   if (error instanceof ParseError) {
+ *     assertEquals(error.message, `parse error on line 1, column 2: bare " in non-quoted-field`);
+ *   }
+ * }
+ * ```
  */
 export class ParseError extends SyntaxError {
-  /** Line where the record starts*/
+  /**
+   * Line where the record starts.
+   *
+   * @example Usage
+   * ```ts
+   * import { parse, ParseError } from "@std/csv/parse";
+   * import { assertEquals } from "@std/assert/assert-equals";
+   *
+   * try {
+   *   parse(`a "word","b"`);
+   * } catch (error) {
+   *   if (error instanceof ParseError) {
+   *     assertEquals(error.startLine, 1);
+   *   }
+   * }
+   * ```
+   */
   startLine: number;
-  /** Line where the error occurred */
+  /**
+   * Line where the error occurred.
+   *
+   * @example Usage
+   * ```ts
+   * import { parse, ParseError } from "@std/csv/parse";
+   * import { assertEquals } from "@std/assert/assert-equals";
+   *
+   * try {
+   *   parse(`a "word","b"`);
+   * } catch (error) {
+   *   if (error instanceof ParseError) {
+   *     assertEquals(error.line, 1);
+   *   }
+   * }
+   * ```
+   */
   line: number;
-  /** Column (rune index) where the error occurred */
+  /**
+   * Column (rune index) where the error occurred.
+   *
+   * @example Usage
+   * ```ts
+   * import { parse, ParseError } from "@std/csv/parse";
+   * import { assertEquals } from "@std/assert/assert-equals";
+   *
+   * try {
+   *   parse(`a "word","b"`);
+   * } catch (error) {
+   *   if (error instanceof ParseError) {
+   *     assertEquals(error.column, 2);
+   *   }
+   * }
+   * ```
+   */
   column: number | null;
 
-  /** Constructs a new instance. */
+  /**
+   * Constructs a new instance.
+   *
+   * @example Usage
+   * ```ts
+   * import { parse, ParseError } from "@std/csv/parse";
+   * import { assertEquals } from "@std/assert/assert-equals";
+   *
+   * try {
+   *   parse(`a "word","b"`);
+   * } catch (error) {
+   *   if (error instanceof ParseError) {
+   *     assertEquals(error.message, `parse error on line 1, column 2: bare " in non-quoted-field`);
+   *   }
+   * }
+   * ```
+   *
+   * @param start Line where the record starts
+   * @param line Line where the error occurred
+   * @param column Column The index where the error occurred
+   * @param message Error message
+   */
   constructor(
     start: number,
     line: number,

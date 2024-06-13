@@ -14,13 +14,18 @@ new (...args: any) => infer C ? C
  * Make an assertion that `obj` is an instance of `type`.
  * If not then throw.
  *
- * @example
- * ```ts
+ * @example Usage
+ * ```ts no-eval
  * import { assertInstanceOf } from "@std/assert/assert-instance-of";
  *
  * assertInstanceOf(new Date(), Date); // Doesn't throw
  * assertInstanceOf(new Date(), Number); // Throws
  * ```
+ *
+ * @typeParam T The expected type of the object.
+ * @param actual The object to check.
+ * @param expectedType The expected class constructor.
+ * @param msg The optional message to display if the assertion fails.
  */
 export function assertInstanceOf<T extends AnyConstructor>(
   actual: unknown,

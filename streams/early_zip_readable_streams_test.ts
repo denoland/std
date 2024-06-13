@@ -39,3 +39,24 @@ Deno.test("earlyZipReadableStreams() handles long first", async () => {
     "d",
   ]);
 });
+
+Deno.test("earlyZipReadableStreams() can zip three streams", async () => {
+  const textStream = ReadableStream.from(["a", "b", "c", "d", "e"]);
+  const textStream2 = ReadableStream.from(["1", "2", "3"]);
+  const textStream3 = ReadableStream.from(["x", "y"]);
+
+  const buf = await Array.fromAsync(
+    earlyZipReadableStreams(textStream, textStream2, textStream3),
+  );
+
+  assertEquals(buf, [
+    "a",
+    "1",
+    "x",
+    "b",
+    "2",
+    "y",
+    "c",
+    "3",
+  ]);
+});

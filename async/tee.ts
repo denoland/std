@@ -54,6 +54,7 @@ class Queue<T> {
  * @example Usage
  * ```ts
  * import { tee } from "@std/async/tee";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const gen = async function* gen() {
  *   yield 1;
@@ -63,13 +64,11 @@ class Queue<T> {
  *
  * const [branch1, branch2] = tee(gen());
  *
- * for await (const n of branch1) {
- *   console.log(n); // => 1, 2, 3
- * }
+ * const result1 = await Array.fromAsync(branch1);
+ * assertEquals(result1, [1, 2, 3]);
  *
- * for await (const n of branch2) {
- *   console.log(n); // => 1, 2, 3
- * }
+ * const result2 = await Array.fromAsync(branch2);
+ * assertEquals(result2, [1, 2, 3]);
  * ```
  *
  * @typeParam T The type of the provided async iterable and the returned async iterables.

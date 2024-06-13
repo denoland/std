@@ -8,7 +8,23 @@ import { normalizeGlob } from "./normalize_glob.ts";
 
 export type { GlobOptions };
 
-/** Like join(), but doesn't collapse "**\/.." when `globstar` is true. */
+/**
+ * Like join(), but doesn't collapse "**\/.." when `globstar` is true.
+ *
+ * @example Usage
+ *
+ * ```ts
+ * import { joinGlobs } from "@std/path/windows/join-globs";
+ * import { assertEquals } from "@std/assert/assert-equals";
+ *
+ * const joined = joinGlobs(["foo", "**", "bar"], { globstar: true });
+ * assertEquals(joined, "foo\\**\\bar");
+ * ```
+ *
+ * @param globs The globs to join.
+ * @param options The options for glob pattern.
+ * @returns The joined glob pattern.
+ */
 export function joinGlobs(
   globs: string[],
   { extended = true, globstar = false }: GlobOptions = {},
@@ -16,7 +32,6 @@ export function joinGlobs(
   if (!globstar || globs.length === 0) {
     return join(...globs);
   }
-  if (globs.length === 0) return ".";
   let joined: string | undefined;
   for (const glob of globs) {
     const path = glob;

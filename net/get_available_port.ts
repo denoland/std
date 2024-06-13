@@ -5,6 +5,11 @@ export interface GetAvailablePortOptions {
   /**
    * A port to check availability of first. If the port isn't available, fall
    * back to another port.
+   *
+   * Defaults to port 0, which will let the operating system choose an available
+   * port.
+   *
+   * @default {0}
    */
   preferredPort?: number;
 }
@@ -12,8 +17,11 @@ export interface GetAvailablePortOptions {
 /**
  * Returns an available network port.
  *
- * @example
- * ```ts
+ * @param options Options for getting an available port.
+ * @returns An available network port.
+ *
+ * @example Usage
+ * ```ts no-eval no-assert
  * import { getAvailablePort } from "@std/net/get-available-port";
  *
  * const port = getAvailablePort();

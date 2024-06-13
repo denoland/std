@@ -10,7 +10,7 @@
  * To generate a ULID use the {@linkcode ulid} function. This will generate a
  * ULID based on the current time.
  *
- * ```ts
+ * ```ts no-assert
  * import { ulid } from "@std/ulid";
  *
  * ulid(); // 01HYFKMDF3HVJ4J3JZW8KXPVTY
@@ -21,7 +21,7 @@
  * will be strictly increasing, even for the same current time, use the
  * {@linkcode monotonicUlid} function.
  *
- * ```ts
+ * ```ts no-assert
  * import { monotonicUlid } from "@std/ulid";
  *
  * monotonicUlid(); // 01HYFKHG5F8RHM2PM3D7NSTDAS
@@ -33,9 +33,12 @@
  *
  * ```ts
  * import { decodeTime, ulid } from "@std/ulid";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
- * const x = ulid(150000);
- * decodeTime(x); // 150000
+ * const timestamp = 150_000;
+ * const ulidString = ulid(timestamp);
+ *
+ * assertEquals(decodeTime(ulidString), timestamp);
  * ```
  *
  * @module
@@ -50,6 +53,7 @@ import {
   RANDOM_LEN,
   TIME_LEN,
   TIME_MAX,
+  ULID_LEN,
 } from "./_util.ts";
 
 /**
@@ -58,18 +62,21 @@ import {
  *
  * @example Decode the time from a ULID
  * ```ts
- * import { ulid, decodeTime } from "@std/ulid";
+ * import { decodeTime, ulid } from "@std/ulid";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
- * const x = ulid(150000);
- * decodeTime(x); // 150000
+ * const timestamp = 150_000;
+ * const ulidString = ulid(timestamp);
+ *
+ * assertEquals(decodeTime(ulidString), timestamp);
  * ```
  *
  * @param ulid The ULID to extract the timestamp from.
  * @returns The number of milliseconds since the Unix epoch that had passed when the ULID was generated.
  */
 export function decodeTime(ulid: string): number {
-  if (ulid.length !== TIME_LEN + RANDOM_LEN) {
-    throw new Error("malformed ulid");
+  if (ulid.length !== ULID_LEN) {
+    throw new Error(`ULID must be exactly ${ULID_LEN} characters long`);
   }
   const time = ulid
     .substring(0, TIME_LEN)
@@ -78,12 +85,14 @@ export function decodeTime(ulid: string): number {
     .reduce((carry, char, index) => {
       const encodingIndex = ENCODING.indexOf(char);
       if (encodingIndex === -1) {
-        throw new Error("invalid character found: " + char);
+        throw new Error(`Invalid ULID character found: ${char}`);
       }
       return (carry += encodingIndex * Math.pow(ENCODING_LEN, index));
     }, 0);
   if (time > TIME_MAX) {
-    throw new Error("malformed ulid, timestamp too large");
+    throw new RangeError(
+      `ULID timestamp component exceeds maximum value of ${TIME_MAX}`,
+    );
   }
   return time;
 }
@@ -102,15 +111,16 @@ const defaultMonotonicUlid = monotonicFactory();
  * previous ULIDs for that same seed time.
  *
  * @example Generate a monotonic ULID
- * ```ts
+ * ```ts no-assert
  * import { monotonicUlid } from "@std/ulid";
+ *
  * monotonicUlid(); // 01HYFKHG5F8RHM2PM3D7NSTDAS
  * monotonicUlid(); // 01HYFKHG5F8RHM2PM3D7NSTDAT
  * monotonicUlid(); // 01HYFKHHX8H4BRY8BYHAV1BZ2T
  * ```
  *
  * @example Generate a monotonic ULID with a seed time
- * ```ts
+ * ```ts no-assert
  * import { monotonicUlid } from "@std/ulid";
  *
  * // Strict ordering for the same timestamp, by incrementing the least-significant random bit by 1
@@ -144,15 +154,16 @@ export function monotonicUlid(seedTime: number = Date.now()): string {
  * same. For that, use the {@linkcode monotonicUlid} function.
  *
  * @example Generate a ULID
- * ```ts
+ * ```ts no-assert
  * import { ulid } from "@std/ulid";
+ *
  * ulid(); // 01HYFKMDF3HVJ4J3JZW8KXPVTY
  * ulid(); // 01HYFKMDF3D2P7G502B9Z2VKV0
  * ulid(); // 01HYFKMDZQ7JD17CRKDXQSZ3Z4
  * ```
  *
  * @example Generate a ULID with a seed time
- * ```ts
+ * ```ts no-assert
  * import { ulid } from "@std/ulid";
  *
  * ulid(150000); // 0000004JFG3EKDRE04TVVDJW7K

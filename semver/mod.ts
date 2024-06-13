@@ -3,9 +3,39 @@
 // This module is browser compatible.
 
 /**
- * The semantic version parser.
+ * The Semantic Version parser.
  *
  * Adapted directly from {@link https://github.com/npm/node-semver | semver}.
+ *
+ * ```ts
+ * import {
+ *   parse,
+ *   parseRange,
+ *   greaterThan,
+ *   lessThan,
+ *   format
+ * } from "@std/semver";
+ * import { assertEquals } from "@std/assert/assert-equals";
+ *
+ * const semver = parse("1.2.3");
+ * assertEquals(semver, {
+ *   major: 1,
+ *   minor: 2,
+ *   patch: 3,
+ *   prerelease: [],
+ *   build: []
+ * });
+ *
+ * assertEquals(format(semver), "1.2.3");
+ *
+ * const range = parseRange("1.x || >=2.5.0 || 5.0.0 - 7.2.3");
+ *
+ * const s0 = parse("1.2.3");
+ * const s1 = parse("9.8.7");
+ *
+ * assertEquals(greaterThan(s0, s1), false);
+ * assertEquals(lessThan(s0, s1), true);
+ * ```
  *
  * ## Versions
  *
@@ -240,28 +270,9 @@
  * If you want to know if a version satisfies or does not satisfy a range, use the
  * {@linkcode satisfies} function.
  *
- * This module is browser compatible.
  *
- * @example
- * ```ts
- * import {
- *   parse,
- *   parseRange,
- *   greaterThan,
- *   lessThan,
- *   format
- * } from "@std/semver";
  *
- * const semver = parse("1.2.3");
- * const range = parseRange("1.x || >=2.5.0 || 5.0.0 - 7.2.3");
- *
- * const s0 = parse("1.2.3");
- * const s1 = parse("9.8.7");
- * greaterThan(s0, s1); // false
- * lessThan(s0, s1); // true
- *
- * format(semver) // "1.2.3"
- * ```
+
  *
  * @module
  */

@@ -8,7 +8,30 @@ import { joinGlobs as windowsJoinGlobs } from "./windows/join_globs.ts";
 
 export type { GlobOptions };
 
-/** Like join(), but doesn't collapse "**\/.." when `globstar` is true. */
+/**
+ * Joins a sequence of globs, then normalizes the resulting glob.
+ *
+ * Behaves like {@linkcode https://jsr.io/@std/path/doc/~/join | join()}, but
+ * doesn't collapse `**\/..` when `globstar` is true.
+ *
+ * @example Usage
+ * ```ts
+ * import { joinGlobs } from "@std/path/join-globs";
+ * import { assertEquals } from "@std/assert/assert-equals";
+ *
+ * if (Deno.build.os === "windows") {
+ *   assertEquals(joinGlobs(["foo", "bar", "..", "baz"]), "foo\\baz");
+ *   assertEquals(joinGlobs(["foo", "**", "bar", "..", "baz"], { globstar: true }), "foo\\**\\baz");
+ * } else {
+ *   assertEquals(joinGlobs(["foo", "bar", "..", "baz"]), "foo/baz");
+ *   assertEquals(joinGlobs(["foo", "**", "bar", "..", "baz"], { globstar: true }), "foo/**\/baz");
+ * }
+ * ```
+ *
+ * @param globs Globs to be joined and normalized.
+ * @param options Glob options.
+ * @returns The joined and normalized glob string.
+ */
 export function joinGlobs(
   globs: string[],
   options: GlobOptions = {},
