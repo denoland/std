@@ -60,7 +60,7 @@ import { _internals } from "./_time.ts";
  * ```
  */
 export class TimeError extends Error {
-  /** Construct {@code TimeError}.
+  /** Construct TimeError.
    *
    * @example Usage
    * ```ts no-assert
@@ -280,7 +280,7 @@ let dueTree: RedBlackTree<DueNode>;
  */
 export class FakeTime {
   /**
-   * Construct a {@code FakeTime} object. This overrides the real Date object and timer functions with fake ones that can be
+   * Construct a FakeTime object. This overrides the real Date object and timer functions with fake ones that can be
    * controlled through the fake time instance.
    *
    * @example Usage
