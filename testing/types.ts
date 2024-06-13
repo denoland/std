@@ -5,7 +5,7 @@
  * Asserts at compile time that the provided type argument's type resolves to the expected boolean literal type.
  *
  * @example Usage
- * ```ts ignore no-assert
+ * ```ts ignore
  * import { assertType, IsExact, IsNullable } from "@std/testing/types";
  *
  * const result = "some result" as string | number;

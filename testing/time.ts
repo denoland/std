@@ -45,37 +45,28 @@ import { _internals } from "./_time.ts";
  * An error related to faking time.
  *
  * @example Usage
- * ```ts no-assert
- * import { FakeTime, TimeError} from "@std/testing/time";
+ * ```ts
+ * import { FakeTime, TimeError } from "@std/testing/time";
+ * import { assertThrows } from "@std/assert/assert-throws";
  *
- * try {
+ * assertThrows(() => {
  *   new FakeTime(NaN);
- * } catch (e) {
- *   if (e instanceof TimeError) {
- *     console.log(e);
- *   } else {
- *     throw e;
- *   }
- * }
+ * }, TimeError);
  * ```
  */
 export class TimeError extends Error {
   /** Construct TimeError.
    *
    * @example Usage
-   * ```ts no-assert
-   * import { FakeTime, TimeError} from "@std/testing/time";
+   * ```ts
+   * import { FakeTime, TimeError } from "@std/testing/time";
+   * import { assertThrows } from "@std/assert/assert-throws";
    *
-   * try {
+   * assertThrows(() => {
    *   new FakeTime(NaN);
-   * } catch (e) {
-   *   if (e instanceof TimeError) {
-   *     console.log(e);
-   *   } else {
-   *     throw e;
-   *   }
-   * }
+   * }, TimeError);
    * ```
+   *
    * @param message The error message
    */
   constructor(message: string) {
@@ -248,7 +239,7 @@ let dueTree: RedBlackTree<DueNode>;
  * controlled through the fake time instance.
  *
  * @example Usage
- * ```ts no-assert
+ * ```ts
  * import {
  *   assertSpyCalls,
  *   spy,
@@ -361,17 +352,24 @@ export class FakeTime {
    * Restores real time.
    *
    * @example Usage
-   * ```ts no-assert
+   * ```ts
    * import { FakeTime } from "@std/testing/time";
+   * import { assertEquals, assertNotEquals } from "@std/assert";
    *
-   * Deno.test("test with fake time", () => {
+   * const setTimeout = globalThis.setTimeout;
+   *
+   * {
    *   using fakeTime = new FakeTime();
+   *
+   *   assertNotEquals(globalThis.setTimeout, setTimeout);
    *
    *   // test timer related things.
    *
    *   // You don't need to call fakeTime.restore() explicitly
    *   // as it's implicitly called via [Symbol.dispose] method.
-   * });
+   * }
+   *
+   * assertEquals(globalThis.setTimeout, setTimeout);
    * ```
    */
   [Symbol.dispose]() {
