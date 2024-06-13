@@ -3,7 +3,7 @@
 /**
  * Utilities for mocking time while testing.
  *
- * ```ts no-assert
+ * ```ts
  * import {
  *   assertSpyCalls,
  *   spy,
@@ -41,10 +41,41 @@ import { ascend } from "@std/data-structures/comparators";
 import type { DelayOptions } from "@std/async/delay";
 import { _internals } from "./_time.ts";
 
-/** An error related to faking time. */
+/**
+ * An error related to faking time.
+ *
+ * @example Usage
+ * ```ts no-assert
+ * import { FakeTime, TimeError} from "@std/testing/time";
+ *
+ * try {
+ *   new FakeTime(NaN);
+ * } catch (e) {
+ *   if (e instanceof TimeError) {
+ *     console.log(e);
+ *   } else {
+ *     throw e;
+ *   }
+ * }
+ * ```
+ */
 export class TimeError extends Error {
   /** Construct {@code TimeError}.
    *
+   * @example Usage
+   * ```ts no-assert
+   * import { FakeTime, TimeError} from "@std/testing/time";
+   *
+   * try {
+   *   new FakeTime(NaN);
+   * } catch (e) {
+   *   if (e instanceof TimeError) {
+   *     console.log(e);
+   *   } else {
+   *     throw e;
+   *   }
+   * }
+   * ```
    * @param message The error message
    */
   constructor(message: string) {
@@ -253,7 +284,7 @@ export class FakeTime {
    * controlled through the fake time instance.
    *
    * @example Usage
-   * ```ts no-assert
+   * ```ts
    * import {
    *   assertSpyCalls,
    *   spy,
@@ -326,12 +357,46 @@ export class FakeTime {
       : undefined;
   }
 
-  /** Restores real time. */
+  /**
+   * Restores real time.
+   *
+   * @example Usage
+   * ```ts no-assert
+   * import { FakeTime } from "@std/testing/time";
+   *
+   * Deno.test("test with fake time", () => {
+   *   using fakeTime = new FakeTime();
+   *
+   *   // test timer related things.
+   *
+   *   // You don't need to call fakeTime.restore() explicitly
+   *   // as it's implicitly called via [Symbol.dispose] method.
+   * });
+   * ```
+   */
   [Symbol.dispose]() {
     this.restore();
   }
 
-  /** Restores real time. */
+  /**
+   * Restores real time.
+   *
+   * @example Usage
+   * ```ts
+   * import { FakeTime } from "@std/testing/time";
+   * import { assertEquals, assertNotEquals } from "@std/assert"
+   *
+   * const setTimeout = globalThis.setTimeout;
+   *
+   * const fakeTime = new FakeTime();
+   *
+   * assertNotEquals(globalThis.setTimeout, setTimeout);
+   *
+   * FakeTime.restore();
+   *
+   * assertEquals(globalThis.setTimeout, setTimeout);
+   * ```
+   */
   static restore() {
     if (!time) throw new TimeError("time already restored");
     time.restore();
@@ -339,6 +404,22 @@ export class FakeTime {
 
   /**
    * Restores real time temporarily until callback returns and resolves.
+   *
+   * @example Usage
+   * ```ts
+   * import { FakeTime } from "@std/testing/time";
+   * import { assertEquals, assertNotEquals } from "@std/assert"
+   *
+   * const setTimeout = globalThis.setTimeout;
+   *
+   * const fakeTime = new FakeTime();
+   *
+   * assertNotEquals(globalThis.setTimeout, setTimeout);
+   *
+   * FakeTime.restoreFor(() => {
+   *   assertEquals(globalThis.setTimeout, setTimeout);
+   * });
+   * ```
    *
    * @typeParam T The returned value type of the callback
    * @param callback The callback to be called while FakeTime being restored
@@ -370,6 +451,20 @@ export class FakeTime {
   /**
    * The amount of milliseconds elapsed since January 1, 1970 00:00:00 UTC for the fake time.
    *
+   * @example Usage
+   * ```ts
+   * import { FakeTime } from "@std/testing/time";
+   * import { assertEquals } from "@std/assert/assert-equals";
+   *
+   * const fakeTime = new FakeTime(15_000);
+   *
+   * assertEquals(fakeTime.now, 15_000);
+   *
+   * fakeTime.tick(5_000);
+   *
+   * assertEquals(fakeTime.now, 20_000);
+   * ```
+   *
    * @returns The amount of milliseconds elapsed since January 1, 1970 00:00:00 UTC for the fake time
    */
   get now(): number {
@@ -378,6 +473,20 @@ export class FakeTime {
   /**
    * Set the current time. It will call any functions waiting to be called between the current and new fake time.
    * If the timer callback throws, time will stop advancing forward beyond that timer.
+   *
+   * @example Usage
+   * ```ts
+   * import { FakeTime } from "@std/testing/time";
+   * import { assertEquals } from "@std/assert/assert-equals";
+   *
+   * const fakeTime = new FakeTime(15_000);
+   *
+   * assertEquals(fakeTime.now, 15_000);
+   *
+   * fakeTime.now = 35_000;
+   *
+   * assertEquals(fakeTime.now, 35_000);
+   * ```
    *
    * @param value The current time (in milliseconds)
    */
@@ -412,12 +521,34 @@ export class FakeTime {
   /**
    * The initial amount of milliseconds elapsed since January 1, 1970 00:00:00 UTC for the fake time.
    *
+   * @example Usage
+   * ```ts
+   * import { FakeTime } from "@std/testing/time";
+   * import { assertEquals } from "@std/assert/assert-equals";
+   *
+   * const fakeTime = new FakeTime(15_000);
+   *
+   * assertEquals(fakeTime.start, 15_000);
+   * ```
+   *
    * @returns The initial amount of milliseconds elapsed since January 1, 1970 00:00:00 UTC for the fake time.
    */
   get start(): number {
     return startedAt;
   }
   /** You can't set this property.
+   *
+   * @example Usage
+   * ```ts
+   * import { FakeTime } from "@std/testing/time";
+   * import { assertThrows } from "@std/assert/assert-throws";
+   *
+   * const fakeTime = new FakeTime(15_000);
+   *
+   * assertThrows(() => {
+   *   fakeTime.start = 20_000;
+   * }, Error)
+   * ```
    * @param value The value to set
    */
   set start(value: number) {
@@ -426,6 +557,18 @@ export class FakeTime {
 
   /**
    * Resolves after the given number of milliseconds using real time.
+   *
+   * @example Usage
+   * ```ts
+   * import { FakeTime } from "@std/testing/time";
+   * import { assertEquals } from "@std/assert/assert-equals";
+   *
+   * const fakeTime = new FakeTime(15_000);
+   *
+   * await fakeTime.delay(500); // wait 500 ms in real time.
+   *
+   * assertEquals(fakeTime.now, 15_000); // The simulated time doesn't advance.
+   * ```
    *
    * @param ms The milliseconds to delay
    * @param options The options
@@ -457,7 +600,25 @@ export class FakeTime {
     });
   }
 
-  /** Runs all pending microtasks. */
+  /**
+   * Runs all pending microtasks.
+   *
+   * @example Usage
+   * ```ts
+   * import { FakeTime } from "@std/testing/time";
+   * import { assert } from "@std/assert/assert";
+   *
+   * const fakeTime = new FakeTime(15_000);
+   *
+   * let called = false;
+   *
+   * Promise.resolve().then(() => { called = true });
+   *
+   * await fakeTime.runMicrotasks();
+   *
+   * assert(called);
+   * ```
+   */
   async runMicrotasks() {
     await this.delay(0);
   }
@@ -465,6 +626,37 @@ export class FakeTime {
   /**
    * Adds the specified number of milliseconds to the fake time.
    * This will call any functions waiting to be called between the current and new fake time.
+   *
+   * @example Usage
+   * ```ts
+   * import {
+   *   assertSpyCalls,
+   *   spy,
+   * } from "@std/testing/mock";
+   * import { FakeTime } from "@std/testing/time";
+   *
+   * function secondInterval(cb: () => void): number {
+   *   return setInterval(cb, 1000);
+   * }
+   *
+   * Deno.test("secondInterval calls callback every second and stops after being cleared", () => {
+   *   using time = new FakeTime();
+   *
+   *   const cb = spy();
+   *   const intervalId = secondInterval(cb);
+   *   assertSpyCalls(cb, 0);
+   *   time.tick(500);
+   *   assertSpyCalls(cb, 0);
+   *   time.tick(500);
+   *   assertSpyCalls(cb, 1);
+   *   time.tick(3500);
+   *   assertSpyCalls(cb, 4);
+   *
+   *   clearInterval(intervalId);
+   *   time.tick(1000);
+   *   assertSpyCalls(cb, 4);
+   * });
+   * ```
    *
    * @param ms The milliseconds to advance
    */
@@ -476,6 +668,23 @@ export class FakeTime {
    * Runs all pending microtasks then adds the specified number of milliseconds to the fake time.
    * This will call any functions waiting to be called between the current and new fake time.
    *
+   * @example Usage
+   * ```ts
+   * import { FakeTime } from "@std/testing/time";
+   * import { assert, assertEquals } from "@std/assert";
+   *
+   * const fakeTime = new FakeTime(15_000);
+   *
+   * let called = false;
+   *
+   * Promise.resolve().then(() => { called = true });
+   *
+   * await fakeTime.tickAsync(5_000);
+   *
+   * assert(called);
+   * assertEquals(fakeTime.now, 20_000);
+   * ```
+   *
    * @param ms The milliseconds to advance
    */
   async tickAsync(ms = 0) {
@@ -486,6 +695,23 @@ export class FakeTime {
   /**
    * Advances time to when the next scheduled timer is due.
    * If there are no pending timers, time will not be changed.
+   *
+   * @example Usage
+   * ```ts
+   * import { FakeTime } from "@std/testing/time";
+   * import { assert, assertEquals } from "@std/assert";
+   *
+   * const fakeTime = new FakeTime(15_000);
+   *
+   * let called = false;
+   *
+   * setTimeout(() => { called = true }, 5000);
+   *
+   * fakeTime.next();
+   *
+   * assert(called);
+   * assertEquals(fakeTime.now, 20_000);
+   * ```
    *
    * @returns `true` when there is a scheduled timer and `false` when there is not.
    */
@@ -499,6 +725,26 @@ export class FakeTime {
    * Runs all pending microtasks then advances time to when the next scheduled timer is due.
    * If there are no pending timers, time will not be changed.
    *
+   * @example Usage
+   * ```ts
+   * import { FakeTime } from "@std/testing/time";
+   * import { assert, assertEquals } from "@std/assert";
+   *
+   * const fakeTime = new FakeTime(15_000);
+   *
+   * let called0 = false;
+   * let called1 = false;
+   *
+   * setTimeout(() => { called0 = true }, 5000);
+   * Promise.resolve().then(() => { called1 = true });
+   *
+   * await fakeTime.nextAsync();
+   *
+   * assert(called0);
+   * assert(called1);
+   * assertEquals(fakeTime.now, 20_000);
+   * ```
+   *
    * @returns `true` if the pending timers existed and the time advanced, `false` if there was no pending timer and the time didn't advance.
    */
   async nextAsync(): Promise<boolean> {
@@ -510,6 +756,25 @@ export class FakeTime {
    * Advances time forward to the next due timer until there are no pending timers remaining.
    * If the timers create additional timers, they will be run too. If there is an interval,
    * time will keep advancing forward until the interval is cleared.
+   *
+   * @example Usage
+   * ```ts
+   * import { FakeTime } from "@std/testing/time";
+   * import { assertEquals } from "@std/assert/assert-equals";
+   *
+   * const fakeTime = new FakeTime(15_000);
+   *
+   * let count = 0;
+   *
+   * setTimeout(() => { count++ }, 5_000);
+   * setTimeout(() => { count++ }, 15_000);
+   * setTimeout(() => { count++ }, 35_000);
+   *
+   * fakeTime.runAll();
+   *
+   * assertEquals(count, 3);
+   * assertEquals(fakeTime.now, 50_000);
+   * ```
    */
   runAll() {
     while (!dueTree.isEmpty()) {
@@ -522,6 +787,26 @@ export class FakeTime {
    * If the timers create additional timers, they will be run too. If there is an interval,
    * time will keep advancing forward until the interval is cleared.
    * Runs all pending microtasks before each timer.
+   *
+   * @example Usage
+   * ```ts
+   * import { FakeTime } from "@std/testing/time";
+   * import { assertEquals } from "@std/assert/assert-equals";
+   *
+   * const fakeTime = new FakeTime(15_000);
+   *
+   * let count = 0;
+   *
+   * setTimeout(() => { count++ }, 5_000);
+   * setTimeout(() => { count++ }, 15_000);
+   * setTimeout(() => { count++ }, 35_000);
+   * Promise.resolve().then(() => { count++ });
+   *
+   * await fakeTime.runAllAsync();
+   *
+   * assertEquals(count, 4);
+   * assertEquals(fakeTime.now, 50_000);
+   * ```
    */
   async runAllAsync() {
     while (!dueTree.isEmpty()) {
@@ -529,7 +814,25 @@ export class FakeTime {
     }
   }
 
-  /** Restores time related global functions to their original state. */
+  /**
+   * Restores time related global functions to their original state.
+   *
+   * @example Usage
+   * ```ts
+   * import { FakeTime } from "@std/testing/time";
+   * import { assertEquals, assertNotEquals } from "@std/assert";
+   *
+   * const setTimeout = globalThis.setTimeout;
+   *
+   * const fakeTime = new FakeTime(); // global timers are now faked
+   *
+   * assertNotEquals(globalThis.setTimeout, setTimeout);
+   *
+   * fakeTime.restore(); // timers are restored
+   *
+   * assertEquals(globalThis.setTimeout, setTimeout);
+   * ```
+   */
   restore() {
     if (!time) throw new TimeError("time already restored");
     time = undefined;
