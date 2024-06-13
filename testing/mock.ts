@@ -20,7 +20,7 @@
  * a spy function around the `multiply` function and call
  * `square(multiplySpy, value)` in the testing code.
  *
- * ```ts
+ * ```ts no-assert
  * import {
  *   assertSpyCall,
  *   assertSpyCalls,
@@ -66,7 +66,7 @@
  * testing code to be able to spy on how the `square` function calls the `multiply`
  * function.
  *
- * ```ts
+ * ```ts no-assert
  * import {
  *   assertSpyCall,
  *   assertSpyCalls,
@@ -119,7 +119,7 @@
  * do not need to wrap your assertions in a try statement to ensure you restore the
  * methods before the tests finish.
  *
- * ```ts
+ * ```ts no-assert
  * import {
  *   assertSpyCall,
  *   assertSpyCalls,
@@ -180,7 +180,7 @@
  * easy. The `returnsNext` function takes an array of values we want it to return
  * on consecutive calls.
  *
- * ```ts
+ * ```ts no-assert
  * import {
  *   assertSpyCall,
  *   assertSpyCalls,
@@ -231,7 +231,7 @@
  * you do not need to wrap your assertions in a try statement to ensure you restore the
  * methods before the tests finish.
  *
- * ```ts
+ * ```ts no-assert
  * import {
  *   assertSpyCall,
  *   assertSpyCalls,
@@ -286,7 +286,7 @@
  * until real time is restored. You can control how time ticks forward with the
  * `tick` method on the `FakeTime` instance.
  *
- * ```ts
+ * ```ts no-assert
  * import {
  *   assertSpyCalls,
  *   spy,
@@ -326,7 +326,11 @@ import { AssertionError } from "@std/assert/assertion-error";
 
 /** An error related to spying on a function or instance method. */
 export class MockError extends Error {
-  /** Construct {@code MockError} */
+  /**
+   * Construct {@code MockError}
+   *
+   * @param message The error message.
+   */
   constructor(message: string) {
     super(message);
     this.name = "MockError";
@@ -426,7 +430,15 @@ function functionSpy<
   return spy;
 }
 
-/** Checks if a function is a spy. */
+/**
+ * Checks if a function is a spy.
+ *
+ * @typeParam Self The self type of the function.
+ * @typeParam Args The arguments type of the function.
+ * @typeParam Return The return type of the function.
+ * @param func The function to check
+ * @return `true` if the function is a spy, `false` otherwise.
+ */
 function isSpy<Self, Args extends unknown[], Return>(
   func: ((this: Self, ...args: Args) => Return) | unknown,
 ): func is Spy<Self, Args, Return> {
@@ -459,11 +471,19 @@ function unregisterMock(spy: Spy<any, any[], any>) {
 /**
  * Creates a session that tracks all mocks created before it's restored.
  * If a callback is provided, it restores all mocks created within it.
+ *
+ * @returns The id of the created session.
  */
 export function mockSession(): number;
 /**
  * Creates a session that tracks all mocks created before it's restored.
  * If a callback is provided, it restores all mocks created within it.
+ *
+ * @typeParam Self The self type of the function.
+ * @typeParam Args The arguments type of the function.
+ * @typeParam Return The return type of the function.
+ * @param func The function to be used for the created session.
+ * @returns The function to execute the session.
  */
 export function mockSession<
   Self,
@@ -495,7 +515,15 @@ export function mockSession<
   }
 }
 
-/** Creates an async session that tracks all mocks created before the promise resolves. */
+/**
+ * Creates an async session that tracks all mocks created before the promise resolves.
+ *
+ * @typeParam Self The self type of the function.
+ * @typeParam Args The arguments type of the function.
+ * @typeParam Return The return type of the function.
+ * @param func The function.
+ * @returns The return value of the function.
+ */
 export function mockSessionAsync<
   Self,
   Args extends unknown[],
@@ -517,6 +545,8 @@ export function mockSessionAsync<
 /**
  * Restores all mocks registered in the current session that have not already been restored.
  * If an id is provided, it will restore all mocks registered in the session associed with that id that have not already been restored.
+ *
+ * @param id The id of the session to restore. If not provided, all mocks registered in the current session are restored.
  */
 export function restore(id?: number) {
   id ??= (sessions.length || 1) - 1;
@@ -699,7 +729,13 @@ export type SpyLike<
   Return = any,
 > = Spy<Self, Args, Return> | ConstructorSpy<Self, Args>;
 
-/** Wraps a function or instance method with a Spy. */
+/** Creates a Spy function.
+ *
+ * @typeParam Self The self type of the function.
+ * @typeParam Args The arguments type of the function.
+ * @typeParam Return The return type of the function.
+ * @returns The spy function.
+ */
 export function spy<
   // deno-lint-ignore no-explicit-any
   Self = any,
@@ -707,21 +743,43 @@ export function spy<
   Args extends unknown[] = any[],
   Return = undefined,
 >(): Spy<Self, Args, Return>;
-/** Wraps a function or instance method with a Spy. */
+/**
+ * Wraps a function or instance method with a Spy.
+ *
+ * @typeParam Self The self type of the function to wrap
+ * @typeParam Args The arguments type of the function to wrap
+ * @typeParam Return The return type of the function to wrap
+ * @param func The function to wrap
+ * @returns The wrapped function.
+ */
 export function spy<
   Self,
   Args extends unknown[],
   Return,
 >(func: (this: Self, ...args: Args) => Return): Spy<Self, Args, Return>;
-/** Wraps a function or instance method with a Spy. */
+/**
+ * Wraps a constructor with a Spy.
+ *
+ * @typeParam Self The type of the instance of the class.
+ * @typeParam Args The arguments type of the constructor
+ * @param constructor The constructor to spy.
+ * @returns The wrapped constructor.
+ */
 export function spy<
   Self,
   Args extends unknown[],
-  Return = undefined,
 >(
   constructor: new (...args: Args) => Self,
 ): ConstructorSpy<Self, Args>;
-/** Wraps a function or instance method with a Spy. */
+/**
+ * Wraps a function or instance method with a Spy.
+ *
+ * @typeParam Self The type of the instance to spy the method of.
+ * @typeParam Prop The property to spy.
+ * @param self The instance to spy.
+ * @param property The property of the method to spy.
+ * @returns The spy function.
+ */
 export function spy<
   Self,
   Prop extends keyof Self,
@@ -772,7 +830,15 @@ export interface Stub<
   fake: (this: Self, ...args: Args) => Return;
 }
 
-/** Replaces an instance method with a Stub. */
+/**
+ * Replaces an instance method with a Stub.
+ *
+ * @typeParam Self The self type of the instance to replace a method of.
+ * @typeParam Prop The property of the instance to replace.
+ * @param self The instance to replace a method of.
+ * @param property The property of the instance to replace.
+ * @returns The stub function which replaced the original.
+ */
 export function stub<
   Self,
   Prop extends keyof Self,
@@ -780,7 +846,16 @@ export function stub<
   self: Self,
   property: Prop,
 ): Stub<Self, GetParametersFromProp<Self, Prop>, GetReturnFromProp<Self, Prop>>;
-/** Replaces an instance method with a Stub. */
+/**
+ * Replaces an instance method with a Stub.
+ *
+ * @typeParam Self The self type of the instance to replace a method of.
+ * @typeParam Prop The property of the instance to replace.
+ * @param self The instance to replace a method of.
+ * @param property The property of the instance to replace.
+ * @param func The fake implementation of the function.
+ * @returns The stub function which replaced the original.
+ */
 export function stub<
   Self,
   Prop extends keyof Self,
@@ -886,6 +961,12 @@ export function stub<
 
 /**
  * Asserts that a spy is called as much as expected and no more.
+ *
+ * @typeParam Self The self type of the spy function.
+ * @typeParam Args The arguments type of the spy function.
+ * @typeParam Return The return type of the spy function.
+ * @param spy The spy to check
+ * @param expectedCalls The number of the expected calls.
  */
 export function assertSpyCalls<
   Self,
@@ -950,6 +1031,13 @@ function getSpyCall<
 }
 /**
  * Asserts that a spy is called as expected.
+ *
+ * @typeParam Self The self type of the spy function.
+ * @typeParam Args The arguments type of the spy function.
+ * @typeParam Return The return type of the spy function.
+ * @param spy The spy to check
+ * @param callIndex The index of the call to check
+ * @param expected The expected spy call.
  */
 export function assertSpyCall<
   Self,
@@ -1026,6 +1114,13 @@ export function assertSpyCall<
 
 /**
  * Asserts that an async spy is called as expected.
+ *
+ * @typeParam Self The self type of the spy function.
+ * @typeParam Args The arguments type of the spy function.
+ * @typeParam Return The return type of the spy function.
+ * @param spy The spy to check
+ * @param callIndex The index of the call to check
+ * @param expected The expected spy call.
  */
 export async function assertSpyCallAsync<
   Self,
@@ -1106,6 +1201,16 @@ export async function assertSpyCallAsync<
 
 /**
  * Asserts that a spy is called with a specific arg as expected.
+ *
+ * @typeParam Self The self type of the spy function.
+ * @typeParam Args The arguments type of the spy function.
+ * @typeParam Return The return type of the spy function.
+ * @typeParam ExpectedArg The expected type of the argument for the spy to be called.
+ * @param spy The spy to check.
+ * @param callIndex The index of the call to check.
+ * @param argIndex The index of the arguments to check.
+ * @param expected The expected argument.
+ * @returns The actual argument.
  */
 export function assertSpyCallArg<
   Self,
@@ -1129,6 +1234,15 @@ export function assertSpyCallArg<
  * If a start and end index is not provided, the expected will be compared against all args.
  * If a start is provided without an end index, the expected will be compared against all args from the start index to the end.
  * The end index is not included in the range of args that are compared.
+ *
+ * @typeParam Self The self type of the spy function.
+ * @typeParam Args The arguments type of the spy function.
+ * @typeParam Return The return type of the spy function.
+ * @typeParam ExpectedArgs The expected type of the arguments for the spy to be called.
+ * @param spy The spy to check.
+ * @param callIndex The index of the call to check.
+ * @param expected The expected arguments.
+ * @returns The actual arguments.
  */
 export function assertSpyCallArgs<
   Self,
@@ -1145,6 +1259,16 @@ export function assertSpyCallArgs<
  * If a start and end index is not provided, the expected will be compared against all args.
  * If a start is provided without an end index, the expected will be compared against all args from the start index to the end.
  * The end index is not included in the range of args that are compared.
+ *
+ * @typeParam Self The self type of the spy function.
+ * @typeParam Args The arguments type of the spy function.
+ * @typeParam Return The return type of the spy function.
+ * @typeParam ExpectedArgs The expected type of the arguments for the spy to be called.
+ * @param spy The spy to check.
+ * @param callIndex The index of the call to check.
+ * @param argsStart The start index of the arguments to check. If not specified, it checks the arguments from the beignning.
+ * @param expected The expected arguments.
+ * @returns The actual arguments.
  */
 export function assertSpyCallArgs<
   Self,
@@ -1162,6 +1286,17 @@ export function assertSpyCallArgs<
  * If a start and end index is not provided, the expected will be compared against all args.
  * If a start is provided without an end index, the expected will be compared against all args from the start index to the end.
  * The end index is not included in the range of args that are compared.
+ *
+ * @typeParam Self The self type of the spy function.
+ * @typeParam Args The arguments type of the spy function.
+ * @typeParam Return The return type of the spy function.
+ * @typeParam ExpectedArgs The expected type of the arguments for the spy to be called.
+ * @param spy The spy to check
+ * @param callIndex The index of the call to check
+ * @param argsStart The start index of the arguments to check. If not specified, it checks the arguments from the beignning.
+ * @param argsEnd The end index of the arguments to check. If not specified, it checks the arguments until the end.
+ * @param expected The expected arguments.
+ * @returns The actual arguments
  */
 export function assertSpyCallArgs<
   Self,
@@ -1171,8 +1306,8 @@ export function assertSpyCallArgs<
 >(
   spy: SpyLike<Self, Args, Return>,
   callIndex: number,
-  argStart: number,
-  argEnd: number,
+  argsStart: number,
+  argsEnd: number,
   expected: ExpectedArgs,
 ): ExpectedArgs;
 export function assertSpyCallArgs<
@@ -1205,7 +1340,13 @@ export function assertSpyCallArgs<
   return args as ExpectedArgs;
 }
 
-/** Creates a function that returns the instance the method was called on. */
+/**
+ * Creates a function that returns the instance the method was called on.
+ *
+ * @typeParam Self The self type of the returned function.
+ * @typeParam Args The arguments type of the returned function.
+ * @returns A function that returns the instance the method was called on.
+ */
 export function returnsThis<
   // deno-lint-ignore no-explicit-any
   Self = any,
@@ -1217,9 +1358,19 @@ export function returnsThis<
   };
 }
 
-/** Creates a function that returns one of its arguments. */
-// deno-lint-ignore no-explicit-any
-export function returnsArg<Arg, Self = any>(
+/**
+ * Creates a function that returns one of its arguments.
+ *
+ * @typeParam Arg The type of returned argument.
+ * @typeParam Self The self type of the returned function.
+ * @param idx The index of the arguments to use.
+ * @returns A function that returns one of its arguments.
+ */
+export function returnsArg<
+  Arg,
+  // deno-lint-ignore no-explicit-any
+  Self = any,
+>(
   idx: number,
 ): (this: Self, ...args: Arg[]) => Arg | undefined {
   return function (...args: Arg[]): Arg | undefined {
@@ -1227,7 +1378,15 @@ export function returnsArg<Arg, Self = any>(
   };
 }
 
-/** Creates a function that returns its arguments or a subset of them. If end is specified, it will return arguments up to but not including the end. */
+/**
+ * Creates a function that returns its arguments or a subset of them. If end is specified, it will return arguments up to but not including the end.
+ *
+ * @typeParam Args The arguments type of the returned function
+ * @typeParam Self The self type of the returned function
+ * @param start The start index of the arguments to return. Default is 0.
+ * @param end The end index of the arguments to return.
+ * @returns A function that returns its arguments or a subset of them.
+ */
 export function returnsArgs<
   Args extends unknown[],
   // deno-lint-ignore no-explicit-any
@@ -1241,7 +1400,15 @@ export function returnsArgs<
   };
 }
 
-/** Creates a function that returns the iterable values. Any iterable values that are errors will be thrown. */
+/**
+ * Creates a function that returns the iterable values. Any iterable values that are errors will be thrown.
+ *
+ * @typeParam Return The type of each item of the iterable
+ * @typeParam Self The self type of the returned function
+ * @typeParam Args The arguments type of the returned function
+ * @param values The iterable values
+ * @return A function that returns the iterable values
+ */
 export function returnsNext<
   Return,
   // deno-lint-ignore no-explicit-any
