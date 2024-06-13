@@ -532,7 +532,12 @@ export interface it {
   skip<T>(...args: ItArgs<T>): void;
 }
 
-/** Registers an individual test case. */
+/**
+ * Registers an individual test case.
+
+* @typeParam T The self type of the function to implement the test case
+ * @param args The test case
+ */
 export function it<T>(...args: ItArgs<T>) {
   if (TestSuiteInternal.runningCount > 0) {
     throw new Error(
@@ -602,7 +607,12 @@ it.skip = function itSkip<T>(...args: ItArgs<T>): void {
   it.ignore(...args);
 };
 
-/** Alias of {@linkcode it} */
+/**
+ * Alias of {@linkcode it}
+ *
+ * @typeParam T The self type of the function to implement the test case
+ * @param args The test case
+ */
 export function test<T>(...args: ItArgs<T>) {
   it(...args);
 }
@@ -626,7 +636,12 @@ function addHook<T>(
   }
 }
 
-/** Run some shared setup before all of the tests in the suite. */
+/**
+ * Run some shared setup before all of the tests in the suite.
+ *
+ * @typeParam T The self type of the function
+ * @param fn The function to implement the setup behavior.
+ */
 export function beforeAll<T>(
   fn: (this: T) => void | Promise<void>,
 ) {
@@ -637,6 +652,9 @@ export function beforeAll<T>(
  * Alias of {@linkcode beforeAll}
  *
  * Run some shared setup before all of the tests in the suite.
+ *
+ * @typeParam T The self type of the function
+ * @param fn The function to implement the setup behavior.
  */
 export function before<T>(
   fn: (this: T) => void | Promise<void>,
@@ -644,7 +662,12 @@ export function before<T>(
   beforeAll(fn);
 }
 
-/** Run some shared teardown after all of the tests in the suite. */
+/**
+ * Run some shared teardown after all of the tests in the suite.
+ *
+ * @typeParam T The self type of the function
+ * @param fn The function to implement the teardown behavior.
+ */
 export function afterAll<T>(
   fn: (this: T) => void | Promise<void>,
 ) {
@@ -655,6 +678,9 @@ export function afterAll<T>(
  * Alias of {@linkcode afterAll}.
  *
  * Run some shared teardown after all of the tests in the suite.
+ *
+ * @typeParam T The self type of the function
+ * @param fn The function to implement the teardown behavior.
  */
 export function after<T>(
   fn: (this: T) => void | Promise<void>,
@@ -662,14 +688,24 @@ export function after<T>(
   afterAll(fn);
 }
 
-/** Run some shared setup before each test in the suite. */
+/**
+ * Run some shared setup before each test in the suite.
+ *
+ * @typeParam T The self type of the function
+ * @param fn The function to implement the shared setup behavior
+ */
 export function beforeEach<T>(
   fn: (this: T) => void | Promise<void>,
 ) {
   addHook("beforeEach", fn);
 }
 
-/** Run some shared teardown after each test in the suite. */
+/**
+ * Run some shared teardown after each test in the suite.
+ *
+ * @typeParam T The self type of the function
+ * @param fn The function to implement the shared teardown behavior
+ */
 export function afterEach<T>(
   fn: (this: T) => void | Promise<void>,
 ) {
@@ -814,7 +850,13 @@ export interface describe {
   skip<T>(...args: ItArgs<T>): void;
 }
 
-/** Registers a test suite. */
+/**
+ * Registers a test suite.
+ *
+ * @typeParam T The self type of the test suite body.
+ * @param args The test suite body.
+ * @returns The test suite
+ */
 export function describe<T>(
   ...args: DescribeArgs<T>
 ): TestSuite<T> {

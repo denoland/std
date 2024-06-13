@@ -72,7 +72,7 @@ const ENTRY_POINTS = [
 ] as const;
 
 const TS_SNIPPET = /```ts[\s\S]*?```/g;
-const ASSERTION_IMPORT = /import \{.*\} from "@std\/assert(?:\/.*)?";/gm;
+const ASSERTION_IMPORT = /from "@std\/assert(?:\/.*)?"/g;
 const NEWLINE = "\n";
 const diagnostics: DocumentError[] = [];
 const snippetPromises: Promise<void>[] = [];

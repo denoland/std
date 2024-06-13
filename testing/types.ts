@@ -3,9 +3,9 @@
 
 /**
  * Asserts at compile time that the provided type argument's type resolves to the expected boolean literal type.
- * @param expectTrue - True if the passed in type argument resolved to true.
- * @example
- * ```ts ignore
+ *
+ * @example Usage
+ * ```ts ignore no-assert
  * import { assertType, IsExact, IsNullable } from "@std/testing/types";
  *
  * const result = "some result" as string | number;
@@ -16,8 +16,14 @@
  * // causes a compile error that `true` is not assignable to `false`
  * assertType<IsNullable<string>>(true); // error: string is not nullable
  * ```
+ *
+ * @typeParam T The expected type (`true` or `false`)
+ * @param expectTrue - True if the passed in type argument resolved to true.
  */
-export function assertType<T extends true | false>(_expectTrue: T) {
+export function assertType<T extends true | false>(
+  // deno-lint-ignore no-unused-vars
+  expectTrue: T,
+) {
 }
 
 /**
