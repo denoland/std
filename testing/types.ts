@@ -23,8 +23,7 @@
 export function assertType<T extends true | false>(
   // deno-lint-ignore no-unused-vars
   expectTrue: T,
-) {
-}
+) {}
 
 /**
  * Asserts at compile time that the provided type argument's type resolves to true.
