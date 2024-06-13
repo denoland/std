@@ -202,6 +202,14 @@ function getErrorMessage(message: string, options: SnapshotOptions) {
 /**
  * Default serializer for `assertSnapshot`.
  *
+ * @example Usage
+ * ```ts
+ * import { serialize } from "@std/testing/snapshot";
+ * import { assertEquals } from "@std/assert/assert-equals";
+ *
+ * assertEquals(serialize({ foo: 42 }), "{\n  foo: 42,\n}")
+ * ```
+ *
  * @param actual The value to serialize
  * @returns The serialized string
  */
@@ -636,6 +644,23 @@ export async function assertSnapshot(
  * Create {@linkcode assertSnapshot} function with the given options.
  *
  * The specified option becomes the default for returned {@linkcode assertSnapshot}
+ *
+ * @example Usage
+ * ```ts no-assert
+ * import { createAssertSnapshot } from "@std/testing/snapshot";
+ *
+ * const assertSnapshot = createAssertSnapshot({
+ *   // Uses the custom directory for saving snapshot files.
+ *   dir: "my_snapshot_dir",
+ * });
+ *
+ * Deno.test("a snapshot test case", async (t) => {
+ *   await assertSnapshot(t, {
+ *     foo: "Hello",
+ *     bar: "World",
+ *   });
+ * })
+ * ```
  *
  * @typeParam T The type of the snapshot
  * @param options The options
