@@ -64,7 +64,7 @@ const optionalTestStepDefinitionKeys: (keyof Deno.TestStepDefinition)[] = [
  * A group of tests.
  */
 export interface TestSuite<T> {
-  /** The symbol */
+  /** The symbol to use for grouping the test suite */
   symbol: symbol;
 }
 
