@@ -1,5 +1,5 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-import { assert, assertEquals, assertThrows } from "@std/assert";
+import { assertEquals, assertThrows } from "@std/assert";
 import { type Args, parseArgs, type ParseOptions } from "./parse_args.ts";
 import { assertType, type IsExact } from "@std/testing/types";
 
