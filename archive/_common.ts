@@ -1,6 +1,5 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import { PartialReadError } from "@std/io/buf-reader";
 import type { Reader } from "@std/io/types";
 
 /** Base interface for {@linkcode TarMeta} */
@@ -176,4 +175,13 @@ export async function readBlock(
     bytesRead += rr;
   }
   return bytesRead;
+}
+
+/** Error thrown when data is partially read */
+export class PartialReadError extends Error {
+  override name = "PartialReadError";
+  partial?: Uint8Array;
+  constructor() {
+    super("Encountered UnexpectedEof, data only partially read");
+  }
 }
