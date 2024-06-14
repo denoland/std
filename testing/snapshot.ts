@@ -152,7 +152,7 @@ import { buildMessage } from "@std/internal/build-message";
 const SNAPSHOT_DIR = "__snapshots__";
 const SNAPSHOT_EXT = "snap";
 
-/** The mode of snapshot testing. "assert" or "update". */
+/** The mode of snapshot testing. */
 export type SnapshotMode = "assert" | "update";
 
 /** The options for {@linkcode assertSnapshot}. */

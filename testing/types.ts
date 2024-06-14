@@ -18,7 +18,7 @@
  * ```
  *
  * @typeParam T The expected type (`true` or `false`)
- * @param expectTrue - True if the passed in type argument resolved to true.
+ * @param expectTrue True if the passed in type argument resolved to true.
  */
 export function assertType<T extends true | false>(
   // deno-lint-ignore no-unused-vars
