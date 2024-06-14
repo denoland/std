@@ -49,6 +49,8 @@ export interface Cookie {
   secure?: boolean;
   /** The cookie's `HTTPOnly` attribute. If `true`, the cookie cannot be accessed via JavaScript. */
   httpOnly?: boolean;
+  /** The cookie's `Partitioned` attribute. If `true`, the cookie will be only be included in the `Cookie` request header if the domain it is embedded by matches the domain the cookie was originally set from.  */
+  partitioned?: boolean;
   /**
    * Allows servers to assert that a cookie ought not to
    * be sent along with cross-site requests.
@@ -85,6 +87,9 @@ function toString(cookie: Cookie): string {
   }
   if (cookie.httpOnly) {
     out.push("HttpOnly");
+  }
+  if (cookie.partitioned) {
+    out.push("Partitioned");
   }
   if (typeof cookie.maxAge === "number" && Number.isInteger(cookie.maxAge)) {
     if (cookie.maxAge < 0) {

@@ -201,6 +201,10 @@ Deno.test({
     assertEquals(headers.get("Set-Cookie"), "Space=Cat; HttpOnly");
 
     headers = new Headers();
+    setCookie(headers, { name: "Space", value: "Cat", partitioned: true });
+    assertEquals(headers.get("Set-Cookie"), "Space=Cat; Partitioned");
+
+    headers = new Headers();
     setCookie(headers, {
       name: "Space",
       value: "Cat",
