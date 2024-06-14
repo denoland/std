@@ -597,7 +597,27 @@ export function it<T>(...args: ItArgs<T>) {
   }
 }
 
-/** Only execute this test case. */
+/**
+ * Only execute this test case.
+ *
+ * @example Usage
+ * ```ts
+ * import { describe, it } from "@std/testing/bdd";
+ * import { assertEquals } from "@std/assert/assert-equals";
+ *
+ * describe("example", () => {
+ *   it("should pass", () => {
+ *     assertEquals(2 + 2, 4);
+ *   });
+ *
+ *   it.only("should pass too", () => {
+ *     assertEquals(3 + 4, 7);
+ *   });
+ * });
+ * ```
+ *
+ * @param args The test case
+ */
 it.only = function itOnly<T>(...args: ItArgs<T>): void {
   const options = itDefinition(...args);
   return it({
@@ -606,7 +626,27 @@ it.only = function itOnly<T>(...args: ItArgs<T>): void {
   });
 };
 
-/** Ignore this test case. */
+/**
+ * Ignore this test case.
+ *
+ * @example Usage
+ * ```ts
+ * import { describe, it } from "@std/testing/bdd";
+ * import { assertEquals } from "@std/assert/assert-equals";
+ *
+ * describe("example", () => {
+ *   it("should pass", () => {
+ *     assertEquals(2 + 2, 4);
+ *   });
+ *
+ *   it.ignore("should pass too", () => {
+ *     assertEquals(3 + 4, 7);
+ *   });
+ * });
+ * ```
+ *
+ * @param args The test case
+ */
 it.ignore = function itIgnore<T>(...args: ItArgs<T>): void {
   const options = itDefinition(...args);
   return it({
@@ -615,7 +655,26 @@ it.ignore = function itIgnore<T>(...args: ItArgs<T>): void {
   });
 };
 
-/** Skip this test case. */
+/** Skip this test case.
+ *
+ * @example Usage
+ * ```ts
+ * import { describe, it } from "@std/testing/bdd";
+ * import { assertEquals } from "@std/assert/assert-equals";
+ *
+ * describe("example", () => {
+ *   it("should pass", () => {
+ *     assertEquals(2 + 2, 4);
+ *   });
+ *
+ *   it.skip("should pass too", () => {
+ *     assertEquals(3 + 4, 7);
+ *   });
+ * });
+ * ```
+ *
+ * @param args The test case
+ */
 it.skip = function itSkip<T>(...args: ItArgs<T>): void {
   it.ignore(...args);
 };
@@ -1012,7 +1071,30 @@ export function describe<T>(
   return { symbol };
 }
 
-/** Only execute this test suite */
+/**
+ * Only execute this test suite.
+ *
+ * @example Usage
+ * ```ts
+ * import { describe, it, beforeAll } from "@std/testing/bdd";
+ * import { assertEquals } from "@std/assert/assert-equals";
+ *
+ * describe("example", () => {
+ *   it("should pass", () => {
+ *     assertEquals(2 + 2, 4);
+ *   });
+ * });
+ *
+ * // Only this test suite will run
+ * describe.only("example 2", () => {
+ *   it("should pass too", () => {
+ *     assertEquals(3 + 4, 7);
+ *   });
+ * });
+ * ```
+ *
+ * @param args The test suite body
+ */
 describe.only = function describeOnly<T>(
   ...args: DescribeArgs<T>
 ): TestSuite<T> {
@@ -1023,7 +1105,29 @@ describe.only = function describeOnly<T>(
   });
 };
 
-/** Ignore the test suite */
+/**
+ * Ignore the test suite.
+ *
+ * @example Usage
+ * ```ts
+ * import { describe, it, beforeAll } from "@std/testing/bdd";
+ * import { assertEquals } from "@std/assert/assert-equals";
+ *
+ * describe("example", () => {
+ *   it("should pass", () => {
+ *     assertEquals(2 + 2, 4);
+ *   });
+ * });
+ *
+ * describe.ignore("example 2", () => {
+ *   it("should pass too", () => {
+ *     assertEquals(3 + 4, 7);
+ *   });
+ * });
+ * ```
+ *
+ * @param args The test suite body
+ */
 describe.ignore = function describeIgnore<T>(
   ...args: DescribeArgs<T>
 ): TestSuite<T> {
@@ -1034,7 +1138,29 @@ describe.ignore = function describeIgnore<T>(
   });
 };
 
-/** Skip the test suite */
+/**
+ * Skip the test suite.
+ *
+ * @example Usage
+ * ```ts
+ * import { describe, it, beforeAll } from "@std/testing/bdd";
+ * import { assertEquals } from "@std/assert/assert-equals";
+ *
+ * describe("example", () => {
+ *   it("should pass", () => {
+ *     assertEquals(2 + 2, 4);
+ *   });
+ * });
+ *
+ * describe.skip("example 2", () => {
+ *   it("should pass too", () => {
+ *     assertEquals(3 + 4, 7);
+ *   });
+ * });
+ * ```
+ *
+ * @param args The test suite body
+ */
 describe.skip = function describeSkip<T>(
   ...args: DescribeArgs<T>
 ): TestSuite<T> {
