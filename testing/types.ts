@@ -42,7 +42,7 @@ export type AssertTrue<T extends true> = never;
 /**
  * Asserts at compile time that the provided type argument's type resolves to false.
  * @example
- * ```typescript
+ * ```ts
  * import { AssertFalse, IsNever } from "@std/testing/types";
  *
  * const result = 1 as string | number | null;
@@ -55,7 +55,7 @@ export type AssertFalse<T extends false> = never;
 /**
  * Asserts at compile time that the provided type argument's type resolves to the expected boolean literal type.
  * @example
- * ```typescript
+ * ```ts
  * import { Assert, Has } from "@std/testing/types";
  *
  * const result = 1 as string | number | null;
