@@ -49,7 +49,17 @@ export interface Cookie {
   secure?: boolean;
   /** The cookie's `HTTPOnly` attribute. If `true`, the cookie cannot be accessed via JavaScript. */
   httpOnly?: boolean;
-  /** The cookie's `Partitioned` attribute. If `true`, the cookie will be only be included in the `Cookie` request header if the domain it is embedded by matches the domain the cookie was originally set from.  */
+  /**
+   * The cookie's `Partitioned` attribute.
+   * If `true`, the cookie will be only be included in the `Cookie` request header if
+   * the domain it is embedded by matches the domain the cookie was originally set from.
+   *
+   * Warning: This is an attribute that has not been fully standardized yet.
+   * It may change in the future without following the semver semantics of the package.
+   * Clients may ignore the attribute until they understand it.
+   *
+   * @default {false}
+   */
   partitioned?: boolean;
   /**
    * Allows servers to assert that a cookie ought not to
