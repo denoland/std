@@ -20,7 +20,7 @@
  * @typeParam T The expected type (`true` or `false`)
  * @param expectTrue True if the passed in type argument resolved to true.
  */
-export function assertType<T extends true | false>(
+export function assertType<T extends boolean>(
   // deno-lint-ignore no-unused-vars
   expectTrue: T,
 ) {}
@@ -41,7 +41,7 @@ export type AssertTrue<T extends true> = never;
 
 /**
  * Asserts at compile time that the provided type argument's type resolves to false.
- * @example
+ * @example Usage
  * ```ts
  * import { AssertFalse, IsNever } from "@std/testing/types";
  *
@@ -54,7 +54,7 @@ export type AssertFalse<T extends false> = never;
 
 /**
  * Asserts at compile time that the provided type argument's type resolves to the expected boolean literal type.
- * @example
+ * @example Usage
  * ```ts
  * import { Assert, Has } from "@std/testing/types";
  *
@@ -63,7 +63,7 @@ export type AssertFalse<T extends false> = never;
  * type doTest = Assert<Has<typeof result, number>, true>;
  * ```
  */
-export type Assert<T extends true | false, Expected extends T> = never;
+export type Assert<T extends boolean, Expected extends T> = never;
 
 /**
  * Checks if type `T` has the specified type `U`.
