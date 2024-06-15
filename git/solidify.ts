@@ -72,9 +72,6 @@ export const solidify = async (
   for (const poolable of poolPlusReply) {
     if (isReply(poolable)) {
       log('reply', poolable)
-      if (isMergeReply(poolable)) {
-        parents.push(poolable.commit)
-      }
       const request = io.reply(poolable)
 
       const { outcome } = poolable
@@ -97,6 +94,7 @@ export const solidify = async (
       if (isBranch(request, fs.pid)) {
         assert(isMergeReply(poolable), 'branch requires merge reply')
         log('branch reply', poolable.commit)
+        parents.push(poolable.commit)
         if (request.proctype === PROCTYPE.BRANCH) {
           // TODO only close if the reply is to the origin
           const { sequence } = poolable
