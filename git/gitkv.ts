@@ -38,6 +38,9 @@ export class GitKV {
     if (!path && !opts) {
       throw new Error('path and opts are required')
     }
+    if (path === '/.git/index') {
+      throw new FileNotFoundError('file not found: ' + path)
+    }
     if (path === '/.git/HEAD') {
       let ref = `ref: refs/heads`
       for (const branch of this.#pid.branches) {
@@ -101,6 +104,9 @@ export class GitKV {
     if (this.isIgnored(path)) {
       log('writeFile ignored', path)
       return
+    }
+    if (path === '/.git/index') {
+      throw new Error('will not write to index')
     }
     if (this.#exists) {
       this.#exists.add(path)

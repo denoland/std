@@ -141,7 +141,7 @@ commands:
     console.dir(session, { depth: Infinity })
     await terminal.engineStop()
   })
-  Deno.test.only('help in branch', async () => {
+  Deno.test('help in branch', async () => {
     const terminal = await cradleMaker()
     const { pid } = await terminal.init({ repo: 'test/helpInBranch' })
     const help = `
