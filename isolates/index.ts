@@ -11,7 +11,6 @@ import * as session from './session.ts'
 import * as shell from './shell.ts'
 
 import * as completions from './ai-completions.ts'
-import * as executeTools from './ai-execute-tools.ts'
 import * as loadTools from './ai-load-tools.ts'
 import * as promptInjector from './ai-prompt-injector.ts'
 import * as prompt from './ai-prompt.ts'
@@ -32,7 +31,6 @@ export default {
   session,
   shell,
   'ai-completions': completions,
-  'ai-execute-tools': executeTools,
   'ai-load-tools': loadTools,
   'ai-prompt-injector': promptInjector,
   'ai-prompt': prompt,

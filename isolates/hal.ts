@@ -6,6 +6,7 @@ import {
   print,
   Provisioner,
 } from '@/constants.ts'
+import { rm } from '@/isolates/ai-session-utils.ts'
 import { Debug } from '@utils'
 import { assert } from '@std/assert'
 const log = Debug('AI:hal')
@@ -116,7 +117,7 @@ export const functions = {
     return engage({ help, text })
   },
   resetSession: (_: object, api: IsolateApi) => {
-    api.delete('session.json')
+    return rm(api)
   },
 }
 

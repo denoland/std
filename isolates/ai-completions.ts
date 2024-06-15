@@ -4,7 +4,7 @@ import OpenAI from 'openai'
 import '@std/dotenv/load'
 import { Help, IsolateApi, print } from '@/constants.ts'
 import { loadTools } from './ai-load-tools.ts'
-type MessageParam = OpenAI.ChatCompletionMessageParam
+import { readSession, writeSession } from '@/isolates/ai-session-utils.ts'
 const base = 'AI:completions'
 const log = Debug(base)
 const debugPart = Debug(base + ':ai-part')
@@ -22,7 +22,6 @@ export const api = {
   },
 }
 
-export const SESSION_PATH = 'session.json'
 export type Api = {
   create: (help: Help) => Promise<void>
 }
@@ -30,11 +29,11 @@ export const functions = {
   async create(help: Help, api: IsolateApi): Promise<string | void> {
     const tools = await loadTools(help.commands, api)
     const { model = 'gpt-4o', temperature = 0 } = help.config || {}
-    const messages = await api.readJSON<MessageParam[]>(SESSION_PATH)
+    const session = await readSession(api)
     const args: OpenAI.ChatCompletionCreateParamsStreaming = {
       model,
       temperature,
-      messages: [...messages],
+      messages: [...session],
       stream: true,
       seed: 1,
       tools,
@@ -43,8 +42,8 @@ export const functions = {
       role: 'assistant',
       content: null,
     }
-    messages.push(assistant)
-    api.writeJSON(SESSION_PATH, messages)
+    session.push(assistant)
+    writeSession(session, api)
 
     log('streamCall started', print(api.pid))
     const streamCall = await ai.chat.completions.create(args)
@@ -83,7 +82,7 @@ export const functions = {
           debugPart(`%o`, assistant.tool_calls[index]?.function)
         }
       }
-      api.writeJSON(SESSION_PATH, messages)
+      writeSession(session, api)
     }
     log('streamCall complete', assistant)
     if (assistant.content) {

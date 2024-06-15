@@ -1,7 +1,7 @@
 import { Engine } from '../engine.ts'
 import { expect, log } from '@utils'
 import IsolateApi from '../isolate-api.ts'
-import { Help, partialFromRepo, RUNNERS } from '../constants.ts'
+import { Help, partialFromRepo, RUNNERS, SESSION_PATH } from '../constants.ts'
 import { prepare } from './ai-prompt.ts'
 import * as completions from './ai-completions.ts'
 import FS from '@/git/fs.ts'
@@ -9,9 +9,8 @@ import DB from '@/db.ts'
 import Accumulator from '@/exe/accumulator.ts'
 import { Api } from '@/isolates/engage-help.ts'
 import { assert } from '@std/assert'
-import OpenAI from 'openai'
+import { readSession, rm } from '@/isolates/ai-session-utils.ts'
 import { Machine } from '@/api/web-client-machine.ts'
-type Messages = OpenAI.ChatCompletionMessageParam
 
 Deno.test('ai-chat', async (t) => {
   const helpBase: Help = {
@@ -32,7 +31,7 @@ Deno.test('ai-chat', async (t) => {
     const text = 'cheese emoji'
     await prepare(help, text, api)
     await completions.functions.create(help, api)
-    const session = await api.readJSON<Messages[]>('session.json')
+    const session = await readSession(api)
     log('session', session)
     expect(session).toHaveLength(3)
     expect(session[2].content).toBe('🧀')
@@ -43,10 +42,10 @@ Deno.test('ai-chat', async (t) => {
       ...helpBase,
       instructions: 'return the function call results verbatim',
     }
-    api.delete('session.json')
+    rm(api)
     await prepare(help, text, api)
     await completions.functions.create(help, api)
-    const session = await api.readJSON<Messages[]>('session.json')
+    const session = await readSession(api)
     assert('tool_calls' in session[2], 'tool calls missing')
     log('session', session[2].tool_calls)
     assert(session[2].tool_calls)
@@ -60,10 +59,10 @@ Deno.test('ai-chat', async (t) => {
       ...helpBase,
       instructions: 'return the function call error message',
     }
-    api.delete('session.json')
+    rm(api)
     await prepare(help, text, api)
     await completions.functions.create(help, api)
-    const session = await api.readJSON<Messages[]>('session.json')
+    const session = await readSession(api)
     assert('tool_calls' in session[2], 'tool calls missing')
     log('session', session[2].tool_calls)
     assert(session[2].tool_calls)
@@ -83,10 +82,10 @@ Deno.test('ai-chat', async (t) => {
       commands: ['io-fixture:ping'],
       instructions: '',
     }
-    api.delete('session.json')
+    rm(api)
     await prepare(help, text, api)
     await completions.functions.create(help, api)
-    const session = await api.readJSON<Messages[]>('session.json')
+    const session = await readSession(api)
 
     log('session', session)
     const [, assistant] = session
@@ -120,12 +119,12 @@ Deno.test('engage-help', async (t) => {
 
   let latest = {}
   const splices = async () => {
-    for await (const splice of session.read(pid, 'session.json')) {
+    for await (const splice of session.read(pid, SESSION_PATH)) {
       if (!Object.keys(splice.changes).length) {
         continue
       }
-      if (splice.changes['session.json']) {
-        const { patch } = splice.changes['session.json']
+      if (splice.changes[SESSION_PATH]) {
+        const { patch } = splice.changes[SESSION_PATH]
         assert(patch, 'patch missing')
         latest = JSON.parse(patch)
         log('splice', splice.oid, latest)

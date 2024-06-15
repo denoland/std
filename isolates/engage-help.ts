@@ -1,10 +1,10 @@
 import { assert, Debug } from '@utils'
+import { rm } from '@/isolates/ai-session-utils.ts'
 import { IsolateApi } from '@/constants.ts'
 import { Help, RUNNERS } from '@/constants.ts'
 import * as loadHelp from '@/isolates/load-help.ts'
 import * as prompt from '@/isolates/ai-prompt.ts'
 import * as promptInjector from '@/isolates/ai-prompt-injector.ts'
-import { SESSION_PATH } from '@/isolates/ai-completions.ts'
 const log = Debug('AI:engage-help')
 
 const engage = {
@@ -65,26 +65,28 @@ export const functions = {
     return await isolate.functions.prompt({ help, text }, api)
   },
   engageNew: (p: { help: string; text: string }, api: IsolateApi) => {
-    api.delete(SESSION_PATH)
+    rm(api)
     return functions.engage(p, api)
   },
   async command(p: { help: string; text: string }, api: IsolateApi) {
     const { engageNew } = await api.actions('engage-help')
     const prefix = `command_${p.help}`
+    // how do we know what is the commit that just returned ?
     const result = await engageNew(p, { prefix })
-    log('command result', result)
     return result
+    // while waiting, we want to write the commit of the branch down
+    // so we need a guaranteed name
   },
   async help(p: { help: string; text: string }, api: IsolateApi) {
     // TODO make this end only with a specific tool call
     // else it is meant to be a discussion with the user
     const { engageNew } = await api.actions('engage-help')
     const prefix = `help_${p.help}`
-    await engageNew(p, { prefix, noClose: true })
+    return await engageNew(p, { prefix })
   },
   async agent(p: { help: string; text: string }, api: IsolateApi) {
     const { engageNew } = await api.actions('engage-help')
     const prefix = `agent_${p.help}`
-    await engageNew(p, { prefix, noClose: true })
+    return await engageNew(p, { prefix, noClose: true })
   },
 }

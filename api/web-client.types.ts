@@ -617,3 +617,5 @@ export const isValidForMachine = (terminal: PID, machine: PID) => {
   const test = { ...machine, branches }
   return isPidEqual(test, machine)
 }
+export const SESSION_PATH = 'session.json'
+export const SESSION_BRANCHES = 'session-branches.json'

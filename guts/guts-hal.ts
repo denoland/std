@@ -9,6 +9,7 @@ import {
   getActorId,
   PID,
   print,
+  SESSION_PATH,
 } from '@/constants.ts'
 import { ulid } from 'ulid'
 type Messages = OpenAI.ChatCompletionMessageParam
@@ -70,7 +71,7 @@ export default (name: string, cradleMaker: CradleMaker) => {
       log('pid', print(session))
       await hal.prompt({ text: 'hello' })
       const messages = await terminal.readJSON<Messages[]>(
-        'session.json',
+        SESSION_PATH,
         session,
       )
       log('messages', messages)
@@ -89,7 +90,7 @@ export default (name: string, cradleMaker: CradleMaker) => {
 
       await hal.prompt({ text: 'hello again' })
       const messages = await terminal.readJSON<Messages[]>(
-        'session.json',
+        SESSION_PATH,
         session,
       )
       log('messages', messages)
@@ -105,19 +106,10 @@ export default (name: string, cradleMaker: CradleMaker) => {
     const hal = await terminal.actions<Api>('hal', session)
 
     await t.step('update', async () => {
-      // log.enable(
-      // 'AI:completions AI:tools:* *:ai-result-content AI:qbr* AI:system',
-      // )
       await hal.prompt({
         text:
           'Update HAL to the latest version by using the engage-help function with "hal-system" as the help name and "Update HAL" as the prompt.  Dont ask me any questions, just do it using your best guess.',
       })
-
-      // const messages = await terminal.readJSON<Messages[]>(
-      //   'session.json',
-      //   session,
-      // )
-      // console.dir(messages, { depth: Infinity })
     })
 
     await terminal.engineStop()
@@ -144,12 +136,12 @@ commands:
     const result = await engage({ help: 'double-test', text })
     log('result', result)
 
-    const session = await terminal.readJSON<Messages[]>('session.json', pid)
+    const session = await terminal.readJSON<Messages[]>(SESSION_PATH, pid)
     log('session', session)
     console.dir(session, { depth: Infinity })
     await terminal.engineStop()
   })
-  Deno.test('help in branch', async () => {
+  Deno.test.only('help in branch', async () => {
     const terminal = await cradleMaker()
     const { pid } = await terminal.init({ repo: 'test/helpInBranch' })
     const help = `
@@ -157,7 +149,9 @@ commands:
 commands:
   - helps/help-in-branch
 description: A test help used for exercising the system   
----`
+---
+If you get asked to "Just say the number: 1" then you should respond with the number 1, otherwise you should do as requested.
+`
     await terminal.write('helps/help-in-branch.md', help, pid)
     const isolate = 'engage-help'
     const { engage } = await terminal.actions<engageHelp.Api>(isolate, pid)
@@ -169,7 +163,7 @@ description: A test help used for exercising the system
     const result = await engage({ help: 'help-in-branch', text })
     log('resultL %s', result)
 
-    const session = await terminal.readJSON<Messages[]>('session.json', pid)
+    const session = await terminal.readJSON<Messages[]>(SESSION_PATH, pid)
     log('session', session)
 
     await terminal.engineStop()

@@ -21,7 +21,8 @@ const load = async (commands: string[] = [], api: IsolateApi) => {
   for (const cmd of commands) {
     log('loading command:', cmd)
     let tool: OpenAI.ChatCompletionTool, action, name: string
-    if (!cmd.includes(':')) {
+    const isHelp = !cmd.includes(':')
+    if (isHelp) {
       assert(cmd.startsWith('helps/'), `invalid help: ${cmd}`)
       name = posix.basename(cmd)
       // TODO cache and parallelize
@@ -34,14 +35,14 @@ const load = async (commands: string[] = [], api: IsolateApi) => {
         log('help command:', name, text, api.commit)
         return command({ help: name, text })
       }
-      tool = toTool(name, help, schemas.engage)
+      tool = helpTool(name, help, schemas.engage)
     } else {
       const [isolate, _name] = cmd.split(':')
       name = _name
       const isolateApiSchema = await api.apiSchema(isolate)
-      const functions = await api.actions(isolate)
-      assert(name in functions, `isolate missing command: ${cmd}`)
-      action = functions[name]
+      const _actions = await api.actions(isolate)
+      assert(name in _actions, `isolate missing command: ${cmd}`)
+      action = _actions[name]
       tool = isolateToGptApi(name, isolateApiSchema[name])
     }
     assert(action, `missing action: ${cmd}`)
@@ -57,7 +58,7 @@ const load = async (commands: string[] = [], api: IsolateApi) => {
     return { tools, actions }
   }
 }
-const toTool = (name: string, help: Help, schema: JSONSchemaType<object>) => {
+const helpTool = (name: string, help: Help, schema: JSONSchemaType<object>) => {
   const parameters = {
     type: 'object',
     additionalProperties: false,

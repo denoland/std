@@ -3,8 +3,8 @@ import { executeTools } from './ai-execute-tools.ts'
 import { Debug, equal } from '@utils'
 import OpenAI from 'openai'
 import '@std/dotenv/load'
-import { Help, IsolateApi } from '@/constants.ts'
-import { Api, SESSION_PATH } from './ai-completions.ts'
+import { Help, IsolateApi, SESSION_PATH } from '@/constants.ts'
+import { Api } from './ai-completions.ts'
 
 type MessageParam = OpenAI.ChatCompletionMessageParam
 const base = 'AI:prompt'
