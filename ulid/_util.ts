@@ -16,17 +16,17 @@ function replaceCharAt(str: string, index: number, char: string) {
   return str.substring(0, index) + char + str.substring(index + 1);
 }
 
-export function encodeTime(now: number, len: number = TIME_LEN): string {
-  if (!Number.isInteger(now) || now < 0 || now > TIME_MAX) {
+export function encodeTime(timestamp: number): string {
+  if (!Number.isInteger(timestamp) || timestamp < 0 || timestamp > TIME_MAX) {
     throw new RangeError(
-      "Time must be a positive integer less than " + TIME_MAX,
+      `Time must be a positive integer less than ${TIME_MAX}`,
     );
   }
   let str = "";
-  for (; len > 0; len--) {
-    const mod = now % ENCODING_LEN;
+  for (let len = TIME_LEN; len > 0; len--) {
+    const mod = timestamp % ENCODING_LEN;
     str = ENCODING[mod] + str;
-    now = (now - mod) / ENCODING_LEN;
+    timestamp = Math.floor(timestamp / ENCODING_LEN);
   }
   return str;
 }
@@ -67,10 +67,10 @@ export function monotonicFactory(encodeRand = encodeRandom): ULID {
   return function ulid(seedTime: number = Date.now()): string {
     if (seedTime <= lastTime) {
       const incrementedRandom = (lastRandom = incrementBase32(lastRandom));
-      return encodeTime(lastTime, TIME_LEN) + incrementedRandom;
+      return encodeTime(lastTime) + incrementedRandom;
     }
     lastTime = seedTime;
     const newRandom = (lastRandom = encodeRand(RANDOM_LEN));
-    return encodeTime(seedTime, TIME_LEN) + newRandom;
+    return encodeTime(seedTime) + newRandom;
   };
 }

@@ -175,5 +175,5 @@ export function monotonicUlid(seedTime: number = Date.now()): string {
  * @returns A ULID.
  */
 export function ulid(seedTime: number = Date.now()): string {
-  return encodeTime(seedTime, TIME_LEN) + encodeRandom(RANDOM_LEN);
+  return encodeTime(seedTime) + encodeRandom(RANDOM_LEN);
 }
