@@ -366,7 +366,8 @@ export class FakeTime {
    *   // test timer related things.
    *
    *   // You don't need to call fakeTime.restore() explicitly
-   *   // as it's implicitly called via [Symbol.dispose] method.
+   *   // as it's implicitly called via the [Symbol.dispose] method
+   *   // when declared with `using`.
    * }
    *
    * assertEquals(globalThis.setTimeout, setTimeout);
@@ -447,7 +448,7 @@ export class FakeTime {
   }
 
   /**
-   * The amount of milliseconds elapsed since January 1, 1970 00:00:00 UTC for the fake time.
+   * The number of milliseconds elapsed since the epoch (January 1, 1970 00:00:00 UTC) for the fake time.
    *
    * @example Usage
    * ```ts
@@ -463,7 +464,7 @@ export class FakeTime {
    * assertEquals(fakeTime.now, 20_000);
    * ```
    *
-   * @returns The amount of milliseconds elapsed since January 1, 1970 00:00:00 UTC for the fake time
+   * @returns The number of milliseconds elapsed since the epoch (January 1, 1970 00:00:00 UTC) for the fake time
    */
   get now(): number {
     return now;
@@ -517,7 +518,7 @@ export class FakeTime {
   }
 
   /**
-   * The initial amount of milliseconds elapsed since January 1, 1970 00:00:00 UTC for the fake time.
+   * The initial number of milliseconds elapsed since the epoch (January 1, 1970 00:00:00 UTC) for the fake time.
    *
    * @example Usage
    * ```ts
@@ -529,7 +530,7 @@ export class FakeTime {
    * assertEquals(fakeTime.start, 15_000);
    * ```
    *
-   * @returns The initial amount of milliseconds elapsed since January 1, 1970 00:00:00 UTC for the fake time.
+   * @returns The initial number of milliseconds elapsed since the epoch (January 1, 1970 00:00:00 UTC) for the fake time.
    */
   get start(): number {
     return startedAt;
