@@ -96,12 +96,14 @@
  *
  * class User {
  *   static users: Map<string, User> = new Map();
+ *   name: string;
  *   age?: number;
  *
- *   constructor(public name: string) {
+ *   constructor(name: string) {
  *     if (User.users.has(name)) {
  *       throw new Deno.errors.AlreadyExists(`User ${name} already exists`);
  *     }
+ *     this.name = name;
  *     User.users.set(name, this);
  *   }
  *
@@ -168,12 +170,14 @@
  *
  * class User {
  *   static users: Map<string, User> = new Map();
+ *   name: string;
  *   age?: number;
  *
- *   constructor(public name: string) {
+ *   constructor(name: string) {
  *     if (User.users.has(name)) {
  *       throw new Deno.errors.AlreadyExists(`User ${name} already exists`);
  *     }
+ *     this.name = name;
  *     User.users.set(name, this);
  *   }
  *
@@ -249,12 +253,14 @@
  *
  * class User {
  *   static users: Map<string, User> = new Map();
+ *   name: string;
  *   age?: number;
  *
- *   constructor(public name: string) {
+ *   constructor(name: string) {
  *     if (User.users.has(name)) {
  *       throw new Deno.errors.AlreadyExists(`User ${name} already exists`);
  *     }
+ *     this.name = name;
  *     User.users.set(name, this);
  *   }
  *
@@ -330,12 +336,14 @@
  *
  * class User {
  *   static users: Map<string, User> = new Map();
+ *   name: string;
  *   age?: number;
  *
- *   constructor(public name: string) {
+ *   constructor(name: string) {
  *     if (User.users.has(name)) {
  *       throw new Deno.errors.AlreadyExists(`User ${name} already exists`);
  *     }
+ *     this.name = name;
  *     User.users.set(name, this);
  *   }
  *
