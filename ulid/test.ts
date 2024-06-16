@@ -9,10 +9,9 @@ import { decodeTime, monotonicUlid, ulid } from "./mod.ts";
 import {
   encodeRandom,
   encodeTime,
-  ENCODING,
-  ENCODING_LEN,
   incrementBase32,
   monotonicFactory,
+  RANDOM_LEN,
 } from "./_util.ts";
 
 Deno.test("incrementBase32()", async (t) => {
@@ -85,7 +84,7 @@ Deno.test("encodeTime()", async (t) => {
 
 Deno.test("encodeRandom()", async (t) => {
   await t.step("should return correct length", () => {
-    assertEquals(12, encodeRandom(12).length);
+    assertEquals(RANDOM_LEN, encodeRandom().length);
   });
 });
 
@@ -138,13 +137,8 @@ Deno.test("ulid()", async (t) => {
 });
 
 Deno.test("monotonicUlid() handles monotonicity", async (t) => {
-  function encodeRandom(len: number): string {
-    let str = "";
-    const randomBytes = new Array(len).fill(30);
-    for (let i = 0; i < len; i++) {
-      str += ENCODING[randomBytes[i] % ENCODING_LEN];
-    }
-    return str;
+  function encodeRandom(): string {
+    return "YYYYYYYYYYYYYYYY";
   }
 
   await t.step("without seedTime", async (t) => {

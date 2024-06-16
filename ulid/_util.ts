@@ -31,9 +31,9 @@ export function encodeTime(timestamp: number): string {
   return str;
 }
 
-export function encodeRandom(len: number): string {
+export function encodeRandom(): string {
   let str = "";
-  const randomBytes = crypto.getRandomValues(new Uint8Array(len));
+  const randomBytes = crypto.getRandomValues(new Uint8Array(RANDOM_LEN));
   for (const randomByte of randomBytes) {
     str += ENCODING[randomByte % ENCODING_LEN];
   }
@@ -70,7 +70,7 @@ export function monotonicFactory(encodeRand = encodeRandom): ULID {
       return encodeTime(lastTime) + incrementedRandom;
     }
     lastTime = seedTime;
-    const newRandom = (lastRandom = encodeRand(RANDOM_LEN));
+    const newRandom = (lastRandom = encodeRand());
     return encodeTime(seedTime) + newRandom;
   };
 }
