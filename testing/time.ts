@@ -327,9 +327,6 @@ export class FakeTime {
   get start(): number {
     return startedAt;
   }
-  set start(value: number) {
-    throw new Error("cannot change start time after initialization");
-  }
 
   /** Resolves after the given number of milliseconds using real time. */
   async delay(ms: number, options: DelayOptions = {}): Promise<void> {
