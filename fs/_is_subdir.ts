@@ -3,6 +3,7 @@
 
 import { SEPARATOR } from "@std/path/constants";
 import { toPathString } from "./_to_path_string.ts";
+import { isSamePath } from "./_is_same_path.ts";
 
 /**
  * Checks whether `src` is a sub-directory of `dest`.
@@ -19,7 +20,7 @@ export function isSubdir(
   dest: string | URL,
   sep = SEPARATOR,
 ): boolean {
-  if (src === dest) {
+  if (isSamePath(src, dest)) {
     return false;
   }
   src = toPathString(src);
