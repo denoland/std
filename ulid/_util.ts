@@ -33,9 +33,9 @@ export function encodeTime(timestamp: number): string {
 
 export function encodeRandom(): string {
   let str = "";
-  const randomBytes = crypto.getRandomValues(new Uint8Array(RANDOM_LEN));
-  for (const randomByte of randomBytes) {
-    str += ENCODING[randomByte % ENCODING_LEN];
+  const bytes = crypto.getRandomValues(new Uint8Array(RANDOM_LEN));
+  for (const byte of bytes) {
+    str += ENCODING[byte % ENCODING_LEN];
   }
   return str;
 }
