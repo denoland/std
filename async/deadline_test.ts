@@ -79,6 +79,6 @@ Deno.test("deadline() handles already aborted signal", async () => {
   abort.abort();
   await assertRejects(async () => {
     await deadline(p, 100, { signal: abort.signal });
-  }, DeadlineError);
+  }, DOMException);
   controller.abort();
 });

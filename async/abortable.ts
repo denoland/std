@@ -100,9 +100,7 @@ export function abortablePromise<T>(
   p: Promise<T>,
   signal: AbortSignal,
 ): Promise<T> {
-  if (signal.aborted) {
-    return Promise.reject(createAbortError(signal.reason));
-  }
+  signal.throwIfAborted();
   const { promise, reject } = Promise.withResolvers<never>();
   const abort = () => reject(createAbortError(signal.reason));
   signal.addEventListener("abort", abort, { once: true });
@@ -146,9 +144,7 @@ export async function* abortableAsyncIterable<T>(
   p: AsyncIterable<T>,
   signal: AbortSignal,
 ): AsyncGenerator<T> {
-  if (signal.aborted) {
-    throw createAbortError(signal.reason);
-  }
+  signal.throwIfAborted();
   const { promise, reject } = Promise.withResolvers<never>();
   const abort = () => reject(createAbortError(signal.reason));
   signal.addEventListener("abort", abort, { once: true });

@@ -36,7 +36,7 @@ Deno.test("abortable() handles promise with already aborted signal", async () =>
       await abortable(promise, c.signal);
     },
     DOMException,
-    "AbortError",
+    "The signal has been aborted",
   );
   clearTimeout(t);
 });
@@ -97,7 +97,7 @@ Deno.test("abortable.AsyncIterable() handles already aborted signal", async () =
       }
     },
     DOMException,
-    "AbortError",
+    "The signal has been aborted",
   );
   assertEquals(items, []);
   clearTimeout(t);

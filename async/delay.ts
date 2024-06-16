@@ -43,7 +43,7 @@ export interface DelayOptions {
  */
 export function delay(ms: number, options: DelayOptions = {}): Promise<void> {
   const { signal, persistent = true } = options;
-  if (signal?.aborted) return Promise.reject(signal.reason);
+  signal?.throwIfAborted();
   return new Promise((resolve, reject) => {
     const abort = () => {
       clearTimeout(i);

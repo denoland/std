@@ -56,9 +56,7 @@ export function deadline<T>(
 ): Promise<T> {
   const controller = new AbortController();
   const { signal } = options;
-  if (signal?.aborted) {
-    return Promise.reject(new DeadlineError());
-  }
+  signal?.throwIfAborted();
   signal?.addEventListener("abort", () => controller.abort(signal.reason));
   const d = delay(ms, { signal: controller.signal })
     .catch(() => {}) // Do NOTHING on abort.
