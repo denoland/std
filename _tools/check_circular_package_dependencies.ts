@@ -247,12 +247,6 @@ if (Deno.args.includes("--graph")) {
   const svg = await graphviz.graphviz.dot(graph, "svg");
   console.log("Writing dependency graph image to .github/dependency_graph.svg");
   await Deno.writeTextFile(".github/dependency_graph.svg", svg);
-} else if (Deno.args.includes("--table")) {
-  console.log("| Package         | Status     |");
-  console.log("| --------------- | ---------- |");
-  for (const [mod, info] of Object.entries(deps)) {
-    console.log(`| ${mod.padEnd(15)} | ${info.state.padEnd(10)} |`);
-  }
 } else if (Deno.args.includes("--all-imports")) {
   for (const [mod, entrypoints] of Object.entries(ENTRYPOINTS)) {
     for (const path of entrypoints) {
