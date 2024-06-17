@@ -7,8 +7,6 @@ export function createAbortError(
   return new DOMException(message, "AbortError");
 }
 
-new DOMException();
-
 export function exponentialBackoffWithJitter(
   cap: number,
   base: number,
