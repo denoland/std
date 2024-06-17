@@ -50,7 +50,6 @@ import {
   ENCODING,
   ENCODING_LEN,
   monotonicFactory,
-  RANDOM_LEN,
   TIME_LEN,
   TIME_MAX,
   ULID_LEN,
@@ -175,5 +174,5 @@ export function monotonicUlid(seedTime: number = Date.now()): string {
  * @returns A ULID.
  */
 export function ulid(seedTime: number = Date.now()): string {
-  return encodeTime(seedTime, TIME_LEN) + encodeRandom(RANDOM_LEN);
+  return encodeTime(seedTime) + encodeRandom();
 }
