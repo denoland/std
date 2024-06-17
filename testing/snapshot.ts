@@ -447,7 +447,7 @@ class AssertSnapshotContext {
    * This method can safely be called more than once and will only register the teardown
    * function once in a context.
    */
-  public registerTeardown() {
+  registerTeardown() {
     if (!this.#teardownRegistered) {
       globalThis.addEventListener("unload", this.#teardown);
       this.#teardownRegistered = true;
@@ -458,7 +458,7 @@ class AssertSnapshotContext {
    * Gets the number of snapshots which have been created with the same name and increments
    * the count by 1.
    */
-  public getCount(snapshotName: string) {
+  getCount(snapshotName: string) {
     let count = this.#snapshotCounts.get(snapshotName) || 0;
     this.#snapshotCounts.set(snapshotName, ++count);
     return count;
@@ -467,7 +467,7 @@ class AssertSnapshotContext {
   /**
    * Get an existing snapshot by name or returns `undefined` if the snapshot does not exist.
    */
-  public async getSnapshot(snapshotName: string, options: SnapshotOptions) {
+  async getSnapshot(snapshotName: string, options: SnapshotOptions) {
     const snapshots = await this.#readSnapshotFile(options);
     return snapshots.get(snapshotName);
   }
@@ -478,7 +478,7 @@ class AssertSnapshotContext {
    *
    * Should only be called when mode is `update`.
    */
-  public updateSnapshot(snapshotName: string, snapshot: string) {
+  updateSnapshot(snapshotName: string, snapshot: string) {
     if (!this.#snapshotsUpdated.includes(snapshotName)) {
       this.#snapshotsUpdated.push(snapshotName);
     }
@@ -492,7 +492,7 @@ class AssertSnapshotContext {
   /**
    * Get the number of updated snapshots.
    */
-  public getUpdatedCount() {
+  getUpdatedCount() {
     return this.#snapshotsUpdated.length;
   }
 
@@ -506,14 +506,14 @@ class AssertSnapshotContext {
    * `assertSnapshot` could cause updates to be written to the snapshot file if the
    * `update` mode is passed in the options.
    */
-  public pushSnapshotToUpdateQueue(snapshotName: string) {
+  pushSnapshotToUpdateQueue(snapshotName: string) {
     this.snapshotUpdateQueue.push(snapshotName);
   }
 
   /**
    * Check if exist snapshot
    */
-  public hasSnapshot(snapshotName: string): boolean {
+  hasSnapshot(snapshotName: string): boolean {
     return this.#currentSnapshots
       ? this.#currentSnapshots.has(snapshotName)
       : false;
