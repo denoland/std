@@ -1,7 +1,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import { assertEquals, assertRejects } from "@std/assert";
 import { delay } from "./delay.ts";
-import { deadline, DeadlineError } from "./deadline.ts";
+import { deadline } from "./deadline.ts";
 
 Deno.test("deadline() returns fulfilled promise", async () => {
   const controller = new AbortController();
@@ -20,9 +20,13 @@ Deno.test("deadline() throws DeadlineError", async () => {
   const p = delay(1000, { signal })
     .catch(() => {})
     .then(() => "Hello");
-  await assertRejects(async () => {
-    await deadline(p, 100);
-  }, DeadlineError);
+  await assertRejects(
+    async () => {
+      await deadline(p, 100);
+    },
+    DOMException,
+    "Signal timed out.",
+  );
   controller.abort();
 });
 
@@ -63,9 +67,13 @@ Deno.test("deadline() handles aborted signal after delay", async () => {
   const abort = new AbortController();
   const promise = deadline(p, 100, { signal: abort.signal });
   abort.abort();
-  await assertRejects(async () => {
-    await promise;
-  }, DeadlineError);
+  await assertRejects(
+    async () => {
+      await promise;
+    },
+    DOMException,
+    "The signal has been aborted",
+  );
   controller.abort();
 });
 
@@ -77,8 +85,12 @@ Deno.test("deadline() handles already aborted signal", async () => {
     .then(() => "Hello");
   const abort = new AbortController();
   abort.abort();
-  await assertRejects(async () => {
-    await deadline(p, 100, { signal: abort.signal });
-  }, DOMException);
+  await assertRejects(
+    async () => {
+      await deadline(p, 100, { signal: abort.signal });
+    },
+    DOMException,
+    "The signal has been aborted",
+  );
   controller.abort();
 });

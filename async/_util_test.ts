@@ -55,7 +55,7 @@ Deno.test("createAbortError()", () => {
   const error = createAbortError();
   assertInstanceOf(error, DOMException);
   assertEquals(error.name, "AbortError");
-  assertEquals(error.message, "Aborted");
+  assertEquals(error.message, "The signal has been aborted");
 });
 
 Deno.test("createAbortError() handles aborted signal with reason", () => {
@@ -64,7 +64,7 @@ Deno.test("createAbortError() handles aborted signal with reason", () => {
   const error = createAbortError(c.signal.reason);
   assertInstanceOf(error, DOMException);
   assertEquals(error.name, "AbortError");
-  assertEquals(error.message, "Aborted: Expected Reason");
+  assertEquals(error.message, "Expected Reason");
 });
 
 Deno.test("createAbortError() handles aborted signal without reason", () => {
@@ -75,6 +75,6 @@ Deno.test("createAbortError() handles aborted signal without reason", () => {
   assertEquals(error.name, "AbortError");
   assertEquals(
     error.message,
-    "Aborted: AbortError: The signal has been aborted",
+    "AbortError: The signal has been aborted",
   );
 });

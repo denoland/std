@@ -1,7 +1,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-import { delay } from "./delay.ts";
+import { abortable } from "./abortable.ts";
 
 /** Options for {@linkcode deadline}. */
 export interface DeadlineOptions {
@@ -49,17 +49,12 @@ export class DeadlineError extends Error {
  * const result = await deadline(delayedPromise, 10);
  * ```
  */
-export function deadline<T>(
+export async function deadline<T>(
   p: Promise<T>,
   ms: number,
   options: DeadlineOptions = {},
 ): Promise<T> {
-  const controller = new AbortController();
-  const { signal } = options;
-  signal?.throwIfAborted();
-  signal?.addEventListener("abort", () => controller.abort(signal.reason));
-  const d = delay(ms, { signal: controller.signal })
-    .catch(() => {}) // Do NOTHING on abort.
-    .then(() => Promise.reject(new DeadlineError()));
-  return Promise.race([p.finally(() => controller.abort()), d]);
+  const signals = [AbortSignal.timeout(ms)];
+  if (options.signal) signals.push(options.signal);
+  return await abortable(p, AbortSignal.any(signals));
 }
