@@ -1,3 +1,45 @@
+### 2024.06.17
+
+#### @std/async 1.0.0-rc.1 (prerelease)
+
+- BREAKING(async): stop exporting ERROR_WHILE_MAPPING_MESSAGE (#5041)
+- docs(async): improve module docs (#5039)
+- docs(async): avoid memory leak in example (#5040)
+- chore(async): release `async@1.0.0-rc.1` (#5035)
+- chore(async): mark `Tuple` and `TupleOf` as `@internal` (#5042)
+
+#### @std/cli 0.224.7 (patch)
+
+- refactor(cli): minor cleanups (#5052)
+- test(cli): improve spinner test coverage (#5047)
+- test(cli): improve test coverage (#5046)
+
+#### @std/http 0.224.5 (patch)
+
+- feat(http): support partitioned cookies (#5044)
+
+#### @std/msgpack 1.0.0-rc.1 (prerelease)
+
+- chore(msgpack): release `msgpack@1.0.0-rc.1` (#5030)
+
+#### @std/path 1.0.0-rc.2 (prerelease)
+
+- test(path): improve test coverage (#5038)
+
+#### @std/streams 0.224.5 (patch)
+
+- chore(streams): remove unused test util (#5048)
+
+#### @std/testing 0.225.2 (patch)
+
+- docs(testing): improve the docs of `@std/testing` (#5033)
+- refactor(testing): remove use of `public` keyword (#5051)
+
+#### @std/ulid 1.0.0-rc.2 (prerelease)
+
+- refactor(ulid): remove `len` argument from `encodeTime()` and `encodeRandom()`
+  (#5054)
+
 ### 2024.06.12
 
 #### @std/assert 1.0.0-rc.2 (prerelease)
