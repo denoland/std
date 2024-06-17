@@ -14,7 +14,7 @@ Deno.test("deadline() returns fulfilled promise", async () => {
   controller.abort();
 });
 
-Deno.test("deadline() throws DeadlineError", async () => {
+Deno.test("deadline() throws DOMException", async () => {
   const controller = new AbortController();
   const { signal } = controller;
   const p = delay(1000, { signal })

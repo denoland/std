@@ -1,5 +1,4 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-// This module is browser compatible.
 
 import { abortable } from "./abortable.ts";
 
@@ -10,24 +9,7 @@ export interface DeadlineOptions {
 }
 
 /**
- * Error thrown when {@linkcode deadline} times out.
- *
- * @example Usage
- * ```ts no-assert
- * import { DeadlineError } from "@std/async/deadline";
- *
- * const error = new DeadlineError();
- * ```
- */
-export class DeadlineError extends Error {
-  constructor() {
-    super("Deadline");
-    this.name = this.constructor.name;
-  }
-}
-
-/**
- * Create a promise which will be rejected with {@linkcode DeadlineError} when
+ * Create a promise which will be rejected with {@linkcode DOMException} when
  * a given delay is exceeded.
  *
  * Note: Prefer to use {@linkcode AbortSignal.timeout} instead for the APIs
@@ -44,8 +26,8 @@ export class DeadlineError extends Error {
  * import { deadline } from "@std/async/deadline";
  * import { delay } from "@std/async/delay";
  *
- * const delayedPromise = delay(1000);
- * // Below throws `DeadlineError` after 10 ms
+ * const delayedPromise = delay(1_000);
+ * // Below throws `DOMException` after 10 ms
  * const result = await deadline(delayedPromise, 10);
  * ```
  */
