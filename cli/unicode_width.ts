@@ -5,9 +5,9 @@
 import data from "./_data.json" with { type: "json" };
 import { runLengthDecode } from "./_run_length.ts";
 
-const tables = data.tables.map(runLengthDecode);
-
+let tables: Uint8Array[] | null = null;
 function lookupWidth(cp: number) {
+  if (!tables) tables = data.tables.map(runLengthDecode);
   const t1Offset = tables[0]![(cp >> 13) & 0xff]!;
   const t2Offset = tables[1]![128 * t1Offset + ((cp >> 6) & 0x7f)]!;
   const packedWidths = tables[2]![16 * t2Offset + ((cp >> 2) & 0xf)]!;
