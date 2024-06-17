@@ -83,10 +83,30 @@ Deno.test("Buffer.bytes({ copy: false }) returns subarray, not an slice", () => 
   assertEquals(data, new Uint8Array([0, 0, 45, 19]));
 });
 
-Deno.test("Buffer.grow() grows the buffer", () => {
+Deno.test("Buffer.grow(n) allocates necessary array buffer (increases the capacity of the buffer) if necessary", () => {
   const buf = new Buffer();
+  assertEquals(buf.capacity, 0);
   buf.grow(10);
   assertEquals(buf.capacity, 10);
+});
+
+Deno.test("Buffer.grow(n) doesn't allocate a new array buffer if it has enough capacity", async () => {
+  const buf = new Buffer(new Uint8Array(100).buffer);
+  buf.reset();
+  assertEquals(buf.capacity, 100);
+  await buf.writable.getWriter().write(new Uint8Array([4, 21, 45, 19]));
+  await buf.readable.getReader({ mode: "byob" }).read(new Uint8Array(4));
+  buf.grow(10);
+  assertEquals(buf.capacity, 100);
+});
+
+Deno.test("Buffer.grow(n) slides down the unread data if the required n + buf.length <= buf.capacity / 2", async () => {
+  const array = new Uint8Array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]);
+  const buf = new Buffer(array.buffer);
+  await buf.readable.getReader({ mode: "byob" }).read(new Uint8Array(8)); // read 8 bytes
+  buf.grow(2); // grow the buffer by 2 bytes
+  assertEquals(buf.bytes(), new Uint8Array([8, 9]));
+  assertEquals(array, new Uint8Array([8, 9, 2, 3, 4, 5, 6, 7, 8, 9]));
 });
 
 Deno.test("Buffer.grow(n) throws an error if n is a negative value", () => {
