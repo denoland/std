@@ -59,6 +59,11 @@ const ENTRY_POINTS = [
   "../semver/mod.ts",
   "../streams/mod.ts",
   "../text/mod.ts",
+  "../testing/bdd.ts",
+  "../testing/mock.ts",
+  "../testing/snapshot.ts",
+  "../testing/time.ts",
+  "../testing/types.ts",
   "../toml/mod.ts",
   "../ulid/mod.ts",
   "../url/mod.ts",
@@ -67,7 +72,8 @@ const ENTRY_POINTS = [
 ] as const;
 
 const TS_SNIPPET = /```ts[\s\S]*?```/g;
-const ASSERTION_IMPORT = /import \{.*\} from "@std\/assert(?:\/.*)?";/gm;
+const ASSERTION_IMPORT =
+  /from "@std\/(assert(\/[a-z-]+)?|testing\/(mock|snapshot|types))"/g;
 const NEWLINE = "\n";
 const diagnostics: DocumentError[] = [];
 const snippetPromises: Promise<void>[] = [];
