@@ -238,6 +238,9 @@ let dueTree: RedBlackTree<DueNode>;
  * Overrides the real Date object and timer functions with fake ones that can be
  * controlled through the fake time instance.
  *
+ * Note: there is no setter for the `start` property, as it cannot be changed
+ * after initialization.
+ *
  * @example Usage
  * ```ts
  * import {
