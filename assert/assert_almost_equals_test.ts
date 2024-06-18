@@ -8,7 +8,9 @@ Deno.test("assertAlmostEquals() matches values within default precision range", 
   assertAlmostEquals(NaN, NaN);
   assertAlmostEquals(Number.NaN, Number.NaN);
   assertAlmostEquals(9e20, 9.0000000001e20);
+  assertAlmostEquals(-9e20, -9.0000000001e20);
   assertAlmostEquals(1.000000001e-8, 1.000000002e-8);
+  assertAlmostEquals(-1.000000001e-8, -1.000000002e-8);
 });
 
 Deno.test("assertAlmostEquals() throws values outside default precision range", () => {

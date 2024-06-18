@@ -40,7 +40,7 @@ export function assertAlmostEquals(
   }
   const delta = Math.abs(expected - actual);
   if (tolerance === undefined) {
-    tolerance = isFinite(expected) ? expected * 1e-7 : 1e-7;
+    tolerance = isFinite(expected) ? Math.abs(expected * 1e-7) : 1e-7;
   }
   if (delta <= tolerance) {
     return;

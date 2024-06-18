@@ -1,7 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-import { assert } from "@std/assert/assert";
 import { copy } from "@std/bytes/copy";
 import type { Reader } from "./types.ts";
 
@@ -95,7 +94,6 @@ export class BufReader implements Reader {
         this.#eof = true;
         return;
       }
-      assert(rr >= 0, "negative read");
       this.#w += rr;
       if (rr > 0) {
         return;
@@ -137,8 +135,6 @@ export class BufReader implements Reader {
         // Large read, empty buffer.
         // Read directly into p to avoid copy.
         const rr = await this.#rd.read(p);
-        const nread = rr ?? 0;
-        assert(nread >= 0, "negative read");
         // if (rr.nread > 0) {
         //   this.lastByte = p[rr.nread - 1];
         //   this.lastCharSize = -1;
@@ -152,7 +148,6 @@ export class BufReader implements Reader {
       this.#w = 0;
       rr = await this.#rd.read(this.#buf);
       if (rr === 0 || rr === null) return rr;
-      assert(rr >= 0, "negative read");
       this.#w += rr;
     }
 
@@ -262,10 +257,11 @@ export class BufReader implements Reader {
       let partial;
       if (err instanceof PartialReadError) {
         partial = err.partial;
-        assert(
-          partial instanceof Uint8Array,
-          "bufio: caught error from `readSlice()` without `partial` property",
-        );
+        if (!(partial instanceof Uint8Array)) {
+          throw new TypeError(
+            "bufio: caught error from `readSlice()` without `partial` property",
+          );
+        }
       }
 
       // Don't throw if `readSlice()` failed with `BufferFullError`, instead we
@@ -284,7 +280,9 @@ export class BufReader implements Reader {
       ) {
         // Put the '\r' back on buf and drop it from line.
         // Let the next call to ReadLine check for "\r\n".
-        assert(this.#r > 0, "bufio: tried to rewind past start of buffer");
+        if (this.#r <= 0) {
+          throw new Error("bufio: tried to rewind past start of buffer");
+        }
         this.#r--;
         partial = partial.subarray(0, partial.byteLength - 1);
       }
