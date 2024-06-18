@@ -1,5 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-import { assert, assertEquals, assertThrows } from "@std/assert";
+import { assert, assertEquals } from "@std/assert";
+import { assertStrictThrows } from "@std/internal/assert-strict";
 import { generate, validate } from "./v1.ts";
 
 Deno.test("validate() checks if a string is a valid v1 UUID", () => {
@@ -44,7 +45,7 @@ Deno.test("generate() can generate a static v1 UUID", () => {
 });
 
 Deno.test("generate() throws when node is passed with less than 6 numbers", () => {
-  assertThrows(
+  assertStrictThrows(
     () => {
       generate({ node: [0x01, 0x23, 0x45, 0x67, 0x89] });
     },
@@ -54,7 +55,7 @@ Deno.test("generate() throws when node is passed with less than 6 numbers", () =
 });
 
 Deno.test("generate() throws when node is passed with more than 6 numbers", () => {
-  assertThrows(
+  assertStrictThrows(
     () => {
       generate({ node: [0x01, 0x23, 0x45, 0x67, 0x89, 0x89, 0x89] });
     },
@@ -64,7 +65,7 @@ Deno.test("generate() throws when node is passed with more than 6 numbers", () =
 });
 
 Deno.test("generate() throws when create more than 10M uuids/sec", () => {
-  assertThrows(
+  assertStrictThrows(
     () => {
       generate({ nsecs: 10001 });
     },

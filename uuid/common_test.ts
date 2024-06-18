@@ -1,5 +1,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-import { assert, assertEquals, assertThrows } from "@std/assert";
+import { assert, assertEquals } from "@std/assert";
+import { assertStrictThrows } from "@std/internal/assert-strict";
+
 import { isNil, NIL_UUID, validate, version } from "./mod.ts";
 
 Deno.test("isNil() checks if a UUID is the nil UUID", () => {
@@ -23,12 +25,19 @@ Deno.test("version() detects the RFC version of a UUID", () => {
   assertEquals(version("109156be-c4fb-41ea-b1b4-efe1671c5836"), 4);
   assertEquals(version("a981a0c2-68b1-35dc-bcfc-296e52ab01ec"), 3);
   assertEquals(version("90123e1c-7512-523e-bb28-76fab9f2f73d"), 5);
-  assertThrows(() => version(""));
-  assertThrows(() => version("not a UUID"));
-  assertThrows(() => version("00000000000000000000000000000000"));
-  assertThrows(() =>
-    version(
-      "=Y00a-f*v00b*-00c-00d#-p00f\b-00g-00h-####00i^^^-00j*1*2*3&-L00k-\n00l-/00m-----00n-fg000-00p-00r+",
-    )
+  assertStrictThrows(() => version(""), TypeError, "Invalid UUID");
+  assertStrictThrows(() => version("not a UUID"), TypeError, "Invalid UUID");
+  assertStrictThrows(
+    () => version("00000000000000000000000000000000"),
+    TypeError,
+    "Invalid UUID",
+  );
+  assertStrictThrows(
+    () =>
+      version(
+        "=Y00a-f*v00b*-00c-00d#-p00f\b-00g-00h-####00i^^^-00j*1*2*3&-L00k-\n00l-/00m-----00n-fg000-00p-00r+",
+      ),
+    TypeError,
+    "Invalid UUID",
   );
 });

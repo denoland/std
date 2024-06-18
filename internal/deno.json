@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "exports": {
     ".": "./mod.ts",
+    "./assert-strict": "./assert_strict.ts",
     "./build-message": "./build_message.ts",
     "./diff-str": "./diff_str.ts",
     "./diff": "./diff.ts",
