@@ -1,6 +1,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // Copyright the Browserify authors. MIT License.
 
+import { resolve } from "@std/path/resolve";
 import { SEPARATOR } from "@std/path/constants";
 import { toPathString } from "./_to_path_string.ts";
 
@@ -19,12 +20,15 @@ export function isSubdir(
   dest: string | URL,
   sep = SEPARATOR,
 ): boolean {
-  if (src === dest) {
+  src = toPathString(src);
+  dest = toPathString(dest);
+
+  if (resolve(src) === resolve(dest)) {
     return false;
   }
-  src = toPathString(src);
+
   const srcArray = src.split(sep);
-  dest = toPathString(dest);
   const destArray = dest.split(sep);
+
   return srcArray.every((current, i) => destArray[i] === current);
 }
