@@ -268,6 +268,14 @@ Deno.test({
       ["tr", 'ue{"foo": "bar"}'],
       [true, { foo: "bar" }],
     );
+    // Invalid primitive which share some leading characters with the valid primitive
+    await assertInvalidParse(
+      ConcatenatedJsonParseStream,
+      ["truu"],
+      {},
+      SyntaxError,
+      `Unexpected token 'u', \"truu\" is not valid JSON (parsing: 'truu')`,
+    );
   },
 });
 
