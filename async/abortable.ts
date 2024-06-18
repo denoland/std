@@ -12,19 +12,40 @@ import { createAbortError } from "./_util.ts";
  * @param signal The signal to abort the promise with.
  * @returns A promise that can be aborted.
  *
- * @example Usage
- * ```ts no-eval
- * import {
- *   abortable,
- *   delay,
- * } from "@std/async";
+ * @example Error-handling a timeout
+ * ```ts
+ * import { abortable, delay } from "@std/async";
+ * import { assertInstanceOf, assertEquals } from "@std/assert";
  *
- * const p = delay(1000);
- * const c = new AbortController();
- * setTimeout(() => c.abort(), 100);
+ * const promise = delay(1_000);
  *
- * // Below throws `DOMException` after 100 ms
- * await abortable(p, c.signal);
+ * try {
+ *   // Rejects with `DOMException` after 100 ms
+ *   await abortable(promise, AbortSignal.timeout(100));
+ * } catch (error) {
+ *   assertInstanceOf(error, DOMException);
+ *   assertEquals(error.name, "AbortError");
+ *   assertEquals(error.message, "TimeoutError: Signal timed out.");
+ * }
+ * ```
+ *
+ * @example Error-handling an abort
+ * ```ts
+ * import { abortable, delay } from "@std/async";
+ * import { assertInstanceOf, assertEquals } from "@std/assert";
+ *
+ * const promise = delay(1_000);
+ * const controller = new AbortController();
+ * controller.abort();
+ *
+ * try {
+ *   // Rejects with `DOMException` immediately
+ *   await abortable(promise, controller.signal);
+ * } catch (error) {
+ *   assertInstanceOf(error, DOMException);
+ *   assertEquals(error.name, "AbortError");
+ *   assertEquals(error.message, "The signal has been aborted");
+ * }
  * ```
  */
 export function abortable<T>(p: Promise<T>, signal: AbortSignal): Promise<T>;
@@ -37,26 +58,53 @@ export function abortable<T>(p: Promise<T>, signal: AbortSignal): Promise<T>;
  * @param signal The signal to abort the promise with.
  * @returns An async iterable that can be aborted.
  *
- * @example Usage
- * ```ts no-eval
- * import {
- *   abortable,
- *   delay,
- * } from "@std/async";
+ * @example Error-handling a timeout
+ * ```ts
+ * import { abortable, delay } from "@std/async";
+ * import { assertInstanceOf, assertEquals } from "@std/assert";
  *
- * const p = async function* () {
+ * const asyncIter = async function* () {
  *   yield "Hello";
- *   await delay(1000);
+ *   await delay(1_000);
  *   yield "World";
  * };
- * const c = new AbortController();
- * setTimeout(() => c.abort(), 100);
  *
- * // Below throws `DOMException` after 100 ms
- * // and items become `["Hello"]`
- * const items: string[] = [];
- * for await (const item of abortable(p(), c.signal)) {
- *   items.push(item);
+ * try {
+ *   // Below throws `DOMException` after 100 ms and items become `["Hello"]`
+ *   const items = [];
+ *   for await (const item of abortable(asyncIter(), AbortSignal.timeout(100))) {
+ *     items.push(item);
+ *   }
+ * } catch (error) {
+ *   assertInstanceOf(error, DOMException);
+ *   assertEquals(error.name, "AbortError");
+ *   assertEquals(error.message, "TimeoutError: Signal timed out.");
+ * }
+ * ```
+ *
+ * @example Error-handling an abort
+ * ```ts
+ * import { abortable, delay } from "@std/async";
+ * import { assertInstanceOf, assertEquals } from "@std/assert";
+ *
+ * const asyncIter = async function* () {
+ *   yield "Hello";
+ *   await delay(1_000);
+ *   yield "World";
+ * };
+ * const controller = new AbortController();
+ * controller.abort();
+ *
+ * try {
+ *   // Below throws `DOMException` immediately
+ *   const items = [];
+ *   for await (const item of abortable(asyncIter(), controller.signal)) {
+ *     items.push(item);
+ *   }
+ * } catch (error) {
+ *   assertInstanceOf(error, DOMException);
+ *   assertEquals(error.name, "AbortError");
+ *   assertEquals(error.message, "The signal has been aborted");
  * }
  * ```
  */
