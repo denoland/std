@@ -218,7 +218,7 @@ function checkCircularDeps(
 
 /** Formats label for diagram */
 function formatLabel(mod: string) {
-  return '"' + mod.replace(/_/g, "_\\n") + '"';
+  return '"' + mod.replace(/_/g, "-\\n") + '"';
 }
 
 /** Returns node style (in DOT language) for each state */
@@ -238,7 +238,7 @@ if (Deno.args.includes("--graph")) {
     const info = deps[mod]!;
     lines.push(`  ${formatLabel(mod)} ${stateToNodeStyle(info.state)};`);
     for (const dep of info.set) {
-      lines.push(`  ${formatLabel(mod)} -> ${dep};`);
+      lines.push(`  ${formatLabel(mod)} -> ${formatLabel(dep)};`);
     }
   }
   lines.push("}");
