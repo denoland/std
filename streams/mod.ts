@@ -30,7 +30,7 @@ export * from "./merge_readable_streams.ts";
 export * from "./readable_stream_from_reader.ts";
 export * from "./reader_from_iterable.ts";
 export * from "./reader_from_stream_reader.ts";
-export * from "./resize_stream.ts";
+export * from "./fixed_chunk_stream.ts";
 export * from "./text_delimiter_stream.ts";
 export * from "./text_line_stream.ts";
 export * from "./to_array_buffer.ts";

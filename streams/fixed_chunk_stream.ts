@@ -1,10 +1,10 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
 /**
- * An interface specifying the requirements for the {@linkcode ResizeStream} to
+ * An interface specifying the requirements for the {@linkcode FixedChunkStream} to
  * successfully resize the chunks, with the exception of the last chunk.
  */
-export interface Resizeable<T, U = T extends ArrayLike<infer V> ? V : never>
+export interface Fixable<T, U = T extends ArrayLike<infer V> ? V : never>
   extends ArrayLike<U> {
   /**
    * Validates that a constructor property exists on the type. The constructor
@@ -31,7 +31,7 @@ export interface Resizeable<T, U = T extends ArrayLike<infer V> ? V : never>
  * A transform stream that resize the chunks into perfectly `size` chunks with
  * the exception of the last chunk.
  *
- * Works on any type that meets the {@linkcode Resizeable} requirements.
+ * Works on any type that meets the {@linkcode Fixable} requirements.
  * TypeScript is unable to validate the constructor requirement of needing a
  * signature of `new(length:number): T` so you must validate this yourself.
  *
@@ -39,7 +39,7 @@ export interface Resizeable<T, U = T extends ArrayLike<infer V> ? V : never>
  *
  * @example Usage
  * ```ts
- * import { ResizeStream } from "@std/streams/resize-stream";
+ * import { FixedChunkStream } from "@std/streams/fixed-chunk-stream";
  * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const readable = ReadableStream.from(function* () {
@@ -51,7 +51,7 @@ export interface Resizeable<T, U = T extends ArrayLike<infer V> ? V : never>
  *   }
  *   yield new Uint8Array(512 - count % 512)
  * }())
- *   .pipeThrough(new ResizeStream(512))
+ *   .pipeThrough(new FixedChunkStream(512))
  *   .pipeTo(new WritableStream({
  *     write(chunk, _controller) {
  *       assertEquals(chunk.length, 512)
@@ -59,7 +59,7 @@ export interface Resizeable<T, U = T extends ArrayLike<infer V> ? V : never>
  *   }))
  * ```
  */
-export class ResizeStream<T extends Resizeable<T>>
+export class FixedChunkStream<T extends Fixable<T>>
   extends TransformStream<T, T> {
   /**
    * Constructs a new instance.
@@ -68,14 +68,14 @@ export class ResizeStream<T extends Resizeable<T>>
    *
    * @example Usage
    * ```ts no-assert
-   * import { ResizeStream } from "@std/streams/resize-stream";
+   * import { FixedChunkStream } from "@std/streams/fixed-chunk-stream";
    *
    * const readable = ReadableStream.from(function* () {
    *   for (let i = 0; i < 100; ++i) {
    *     yield new Uint8Array(Math.floor(Math.random() * 1000));
    *   }
    * }())
-   *   .pipeThrough(new ResizeStream(512))
+   *   .pipeThrough(new FixedChunkStream(512))
    *   .pipeThrough(new TransformStream({
    *     transform(chunk, controller) {
    *       controller.enqueue(chunk.length.toString() + '\n')
