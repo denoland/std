@@ -19,7 +19,7 @@ const DELIMITER_STREAM_INPUTS = [
   "CRLFasd", // chunk starts with delimiter
 ].map((s) => new TextEncoder().encode(s));
 
-Deno.test("DelimiterStream discard", async () => {
+Deno.test("DelimiterStream handles { disposition: discard } correctly", async () => {
   const crlf = new TextEncoder().encode("CRLF");
   const delimStream = new DelimiterStream(crlf, { disposition: "discard" });
   const outputs = [
@@ -39,7 +39,7 @@ Deno.test("DelimiterStream discard", async () => {
   await testTransformStream(delimStream, DELIMITER_STREAM_INPUTS, outputs);
 });
 
-Deno.test("DelimiterStream suffix", async () => {
+Deno.test("DelimiterStream handles { dispositioin: suffix } correctly", async () => {
   const crlf = new TextEncoder().encode("CRLF");
   const delimStream = new DelimiterStream(crlf, { disposition: "suffix" });
   const outputs = [
@@ -59,7 +59,7 @@ Deno.test("DelimiterStream suffix", async () => {
   await testTransformStream(delimStream, DELIMITER_STREAM_INPUTS, outputs);
 });
 
-Deno.test("DelimiterStream prefix", async () => {
+Deno.test("DelimiterStream handles { dispositioin: prefix } correctly", async () => {
   const crlf = new TextEncoder().encode("CRLF");
   const delimStream = new DelimiterStream(crlf, { disposition: "prefix" });
   const outputs = [
@@ -79,6 +79,25 @@ Deno.test("DelimiterStream prefix", async () => {
   await testTransformStream(delimStream, DELIMITER_STREAM_INPUTS, outputs);
 });
 
+Deno.test("DelimiterStream handles { dispositioin: prefix } correctly when chunk starting with delimiter", async () => {
+  const crlf = new TextEncoder().encode("CRLF");
+  const delimStream = new DelimiterStream(crlf, { disposition: "prefix" });
+  const inputs = [
+    "CRLF123",
+    "4",
+    "5",
+    "CRLF67890CR",
+    "LF",
+  ].map((s) => new TextEncoder().encode(s));
+  const outputs = [
+    "",
+    "CRLF12345",
+    "CRLF67890",
+    "CRLF",
+  ].map((s) => new TextEncoder().encode(s));
+  await testTransformStream(delimStream, inputs, outputs);
+});
+
 const CHAR_DELIMITER_STREAM_INPUTS = [
   "a", // more than one subsequent chunks with no delimiters
   "b", // more than one subsequent chunks with no delimiters
@@ -95,7 +114,7 @@ const CHAR_DELIMITER_STREAM_INPUTS = [
   "_asd", // chunk starts with delimiter
 ].map((s) => new TextEncoder().encode(s));
 
-Deno.test("DelimiterStream char delimiter, discard", async () => {
+Deno.test("DelimiterStream, with char delimiter, handles { disposition: discard } option correctly", async () => {
   const delim = new TextEncoder().encode("_");
   const delimStream = new DelimiterStream(delim, { disposition: "discard" });
   const outputs = [
@@ -113,7 +132,7 @@ Deno.test("DelimiterStream char delimiter, discard", async () => {
   await testTransformStream(delimStream, CHAR_DELIMITER_STREAM_INPUTS, outputs);
 });
 
-Deno.test("DelimiterStream char delimiter, suffix", async () => {
+Deno.test("DelimiterStream, with char delimiter, handles { disposition: suffix } option correctly", async () => {
   const delim = new TextEncoder().encode("_");
   const delimStream = new DelimiterStream(delim, { disposition: "suffix" });
   const outputs = [
@@ -131,7 +150,7 @@ Deno.test("DelimiterStream char delimiter, suffix", async () => {
   await testTransformStream(delimStream, CHAR_DELIMITER_STREAM_INPUTS, outputs);
 });
 
-Deno.test("DelimiterStream char delimiter, prefix", async () => {
+Deno.test("DelimiterStream, with char delimiter, handles { disposition: prefix } option correctly", async () => {
   const delim = new TextEncoder().encode("_");
   const delimStream = new DelimiterStream(delim, { disposition: "prefix" });
   const outputs = [
@@ -147,6 +166,23 @@ Deno.test("DelimiterStream char delimiter, prefix", async () => {
     "_asd",
   ].map((s) => new TextEncoder().encode(s));
   await testTransformStream(delimStream, CHAR_DELIMITER_STREAM_INPUTS, outputs);
+});
+
+Deno.test("DelimiterStream, with char delimiter, handles { disposition: prefix } option correctly when chunk starting with delimiter", async () => {
+  const delim = new TextEncoder().encode("_");
+  const delimStream = new DelimiterStream(delim, { disposition: "prefix" });
+  const inputs = [
+    "_ab_ab",
+    "_cd_cd",
+  ].map((s) => new TextEncoder().encode(s));
+  const outputs = [
+    "",
+    "_ab",
+    "_ab",
+    "_cd",
+    "_cd",
+  ].map((s) => new TextEncoder().encode(s));
+  await testTransformStream(delimStream, inputs, outputs);
 });
 
 Deno.test("DelimiterStream regression 3609", async () => {
@@ -166,6 +202,40 @@ Deno.test("DelimiterStream regression 3609", async () => {
     "rt",
     "",
     "",
+  ].map((s) => new TextEncoder().encode(s));
+  await testTransformStream(delimStream, inputs, outputs);
+});
+
+Deno.test("DelimiterStream handles multiple chunks with no delimiters correctly", async () => {
+  // This tests flush implementation
+  const delimStream = new DelimiterStream(new TextEncoder().encode("|"));
+  const inputs = [
+    "a|b|c",
+    "d",
+    "e",
+    "f",
+    "|g",
+    "h",
+    "i",
+  ].map((s) => new TextEncoder().encode(s));
+  const outputs = [
+    "a",
+    "b",
+    "cdef",
+    "ghi",
+  ].map((s) => new TextEncoder().encode(s));
+  await testTransformStream(delimStream, inputs, outputs);
+});
+
+Deno.test("DelimiterStream handles delimiter AAB correctly when the input has AAABA", async () => {
+  // This tests flush implementation
+  const delimStream = new DelimiterStream(new TextEncoder().encode("AAB"));
+  const inputs = [
+    "AAABA",
+  ].map((s) => new TextEncoder().encode(s));
+  const outputs = [
+    "A",
+    "A",
   ].map((s) => new TextEncoder().encode(s));
   await testTransformStream(delimStream, inputs, outputs);
 });
