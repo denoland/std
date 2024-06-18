@@ -48,6 +48,7 @@ const ENTRY_POINTS = [
   "../http/mod.ts",
   "../ini/mod.ts",
   "../internal/mod.ts",
+  "../json/mod.ts",
   "../jsonc/mod.ts",
   "../media_types/mod.ts",
   "../msgpack/mod.ts",
