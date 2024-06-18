@@ -5,14 +5,11 @@ import type { JsonValue } from "./common.ts";
 export function parse(text: string): JsonValue {
   try {
     return JSON.parse(text);
-  } catch (error: unknown) {
-    if (error instanceof Error) {
-      // Truncate the string so that it is within 30 lengths.
-      const truncatedText = 30 < text.length ? `${text.slice(0, 30)}...` : text;
-      throw new (error.constructor as ErrorConstructor)(
-        `${error.message} (parsing: '${truncatedText}')`,
-      );
-    }
-    throw error;
+  } catch (error) {
+    // Truncate the string so that it is within 30 lengths.
+    const truncatedText = 30 < text.length ? `${text.slice(0, 30)}...` : text;
+    throw new ((error as Error).constructor as ErrorConstructor)(
+      `${(error as Error).message} (parsing: '${truncatedText}')`,
+    );
   }
 }
