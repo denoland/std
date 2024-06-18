@@ -41,11 +41,13 @@ export class StringWriter implements Writer, WriterSync {
   #chunks: Uint8Array[] = [];
   #byteLength = 0;
   #cache: string | undefined;
+  #base:string;
 
-  constructor(private base: string = "") {
+  constructor(base: string = "") {
     const c = new TextEncoder().encode(base);
     this.#chunks.push(c);
     this.#byteLength += c.byteLength;
+    this.#base=base;
   }
 
   write(p: Uint8Array): Promise<number> {

@@ -55,15 +55,15 @@ function compileMap(...typesList: Type[][]): TypeMap {
 }
 
 export class Schema implements SchemaDefinition {
-  public static SCHEMA_DEFAULT?: Schema;
+  static SCHEMA_DEFAULT?: Schema;
 
-  public implicit: Type[];
-  public explicit: Type[];
-  public include: Schema[];
+  implicit: Type[];
+  explicit: Type[];
+  include: Schema[];
 
-  public compiledImplicit: Type[];
-  public compiledExplicit: Type[];
-  public compiledTypeMap: TypeMap;
+  compiledImplicit: Type[];
+  compiledExplicit: Type[];
+  compiledTypeMap: TypeMap;
 
   constructor(definition: SchemaDefinition) {
     this.explicit = definition.explicit || [];
@@ -87,7 +87,7 @@ export class Schema implements SchemaDefinition {
   }
 
   /* Returns a new extended schema from current schema */
-  public extend(definition: SchemaDefinition): Schema {
+  extend(definition: SchemaDefinition): Schema {
     return new Schema({
       implicit: [
         ...new Set([...this.implicit, ...(definition?.implicit ?? [])]),
@@ -99,7 +99,7 @@ export class Schema implements SchemaDefinition {
     });
   }
 
-  public static create() {}
+  static create() {}
 }
 
 export interface SchemaDefinition {

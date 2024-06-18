@@ -15,8 +15,10 @@ const LF = "\n".charCodeAt(0);
  */
 export class BufferFullError extends Error {
   override name = "BufferFullError";
-  constructor(public partial: Uint8Array) {
+  partial:Uint8Array
+  constructor(partial: Uint8Array) {
     super("Buffer full");
+    this.partial=partial;
   }
 }
 
@@ -50,8 +52,8 @@ export class BufReader implements Reader {
   #r = 0; // buf read position.
   #w = 0; // buf write position.
   #eof = false;
-  // private lastByte: number;
-  // private lastCharSize: number;
+  // #lastByte: number;
+  // #lastCharSize: number;
 
   /** return new BufReader unless r is BufReader */
   static create(r: Reader, size: number = DEFAULT_BUF_SIZE): BufReader {
