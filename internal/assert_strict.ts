@@ -36,8 +36,8 @@ export class StrictAssertionError extends Error {
  * Asserts that the error is an instance of the given error class and that the
  * error message is a given string.
  *
- * @throws {import("@std/assert/assertion-error").AssertionError} If the error
- * is not an instance of the given error
+ * @throws {StrictAssertionError} If the error is not an instance of the given
+ * error.
  * @typeParam E The type of the error to assert.
  * @param error The error to assert.
  * @param ErrorClass The error class to assert.
@@ -83,9 +83,9 @@ function assertStrictIsError<E extends Error = Error>(
  * );
  * ```
  *
- * @throws {import("@std/assert/assertion-error").AssertionError} If the
- * function does not throw an error, or if the error is not an instance of the
- * given error class, or if the error message is not the given string.
+ * @throws {StrictAssertionError} If the function does not throw an error, or if
+ * the error is not an instance of the given error class, or if the error
+ * message is not the given string.
  * @typeParam E The type of the error to assert.
  * @param fn The function to assert throws an error.
  * @param errorClass The error class to assert.
@@ -123,9 +123,9 @@ export function assertStrictThrows<E extends Error = Error>(
  * );
  * ```
  *
- * @throws {import("@std/assert/assertion-error").AssertionError} If the
- * function does not reject with an error, or if the error is not an instance of
- * the given error class, or if the error message is not the given string.
+ * @throws {StrictAssertionError} If the function does not reject with an error,
+ * or if the error is not an instance of the given error class, or if the error
+ * message is not the given string.
  * @typeParam E The type of the error to assert.
  * @param fn The function to assert rejects with an error.
  * @param errorClass The error class to assert.
