@@ -248,8 +248,8 @@ export class Terminal implements ArtifactTerminal {
     }
     return this.#engine.read(pid, path, after, signal)
   }
-  readJSON<T>(path: string, pid: PID = this.pid) {
-    return this.#engine.readJSON<T>(path, pid)
+  readJSON<T>(path: string, pid: PID = this.pid, commit?: string) {
+    return this.#engine.readJSON<T>(path, pid, commit)
   }
   exists(path: string, pid: PID = this.pid) {
     return this.#engine.exists(path, pid)

@@ -24,6 +24,7 @@
     "@io/": "./io/",
     "@kitsonk/kv-toolbox": "jsr:@kitsonk/kv-toolbox",
     "@noble/secp256k1": "npm:@noble/secp256k1",
+    "@sindresorhus/is": "npm:@sindresorhus/is",
     "@std/assert": "jsr:@std/assert",
     "@std/async": "jsr:@std/async",
     "@std/dotenv": "jsr:@std/dotenv",

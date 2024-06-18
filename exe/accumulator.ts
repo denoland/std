@@ -1,4 +1,10 @@
-import { PID, SettledIsolatePromise, UnsequencedRequest } from '@/constants.ts'
+import {
+  META_SYMBOL,
+  PID,
+  PromisedIsolatePromise,
+  SettledIsolatePromise,
+  UnsequencedRequest,
+} from '@/constants.ts'
 import { IsolatePromise } from '@/constants.ts'
 import { assert, deserializeError, equal, expect } from '@utils'
 import FS from '@/git/fs.ts'
@@ -8,7 +14,7 @@ export default class Accumulator {
   #buffer: IsolatePromise[]
   #fs: FS
   #highestFs: FS
-  #new: IsolatePromise[] = []
+  #new: PromisedIsolatePromise[] = []
   #isActive = false
   #trigger: (() => void) | undefined
   private constructor(highestFs: FS, buffer: IsolatePromise[]) {
@@ -31,12 +37,12 @@ export default class Accumulator {
   get fs() {
     return this.#fs
   }
-  push(request: IsolatePromise) {
+  push(promised: PromisedIsolatePromise) {
     assert(this.isActive, 'Activity is denied')
     assert(typeof this.#trigger === 'function', 'Trigger is not set')
     this.#trigger()
-    this.#new.push(request)
-    this.#buffer.push(request)
+    this.#new.push(promised)
+    this.#buffer.push(promised)
   }
   #tickFs() {
     const next = this.#buffer[this.#index]
@@ -116,8 +122,10 @@ export default class Accumulator {
         const settledSink = sink as SettledIsolatePromise
         settledSink.outcome = source.outcome
         settledSink.commit = source.commit
+        settledSink.parent = source.parent
       }
-      if ('outcome' in sink && 'resolve' in sink) {
+      if ('outcome' in sink && 'promise' in sink) {
+        sink.promise[META_SYMBOL] = { parent: sink.parent }
         if (sink.outcome.error) {
           sink.reject(deserializeError(sink.outcome.error))
         } else {

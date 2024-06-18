@@ -1,6 +1,7 @@
-import { Debug, delay } from '@utils'
+import { Debug, delay, expect } from '@utils'
 import { IsolateApi, pidSchema } from '@/constants.ts'
 import { PID } from '@/constants.ts'
+import { withMeta } from '@/api/web-client.types.ts'
 const log = Debug('AI:io-fixture')
 
 export const api = {
@@ -179,7 +180,7 @@ export const functions = {
   ) => {
     log('fileAccumulation', params)
     const { path, content, count } = params
-    const { fileAccumulation } = await api.actions('io-fixture')
+    const { fileAccumulation } = await api.actions<Api>('io-fixture')
     const nextCount = count - 1
     let file = ''
     if (await api.exists(params.path)) {
@@ -188,7 +189,10 @@ export const functions = {
     file += `down: ${count} ${content}\n`
     api.write(path, file)
     if (nextCount) {
-      await fileAccumulation({ ...params, count: nextCount })
+      const { parent } = await withMeta(
+        fileAccumulation({ ...params, count: nextCount }),
+      )
+      expect(parent).not.toEqual(api.commit)
     } else {
       log('bottomed out')
     }
@@ -214,7 +218,8 @@ export const functions = {
       log('current', current)
       const content = current + loop + '\n' + baseContent + '\n'
       log('pre commit', api.commit)
-      await write({ path, content })
+      const { parent } = await withMeta(write({ path, content }))
+      expect(parent).not.toEqual(api.commit)
       log('post commit', api.commit)
     } while (loop--)
   },

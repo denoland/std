@@ -85,6 +85,7 @@ const serialAccumulation: () => IoStruct = () => ({
     },
   },
   replies: {},
+  parents: {},
   pendings: {
     0: [{ commit: '1222aa01861192073e2a02c803767f75574ff5be', sequences: [1] }],
   },

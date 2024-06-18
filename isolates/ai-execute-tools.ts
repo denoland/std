@@ -2,9 +2,13 @@ import { assert } from '@std/assert'
 import { Debug } from '@utils'
 import OpenAI from 'openai'
 import { serializeError } from 'serialize-error'
-import { colorize, Help, IsolateApi } from '@/constants.ts'
+import { colorize, Help, IsolateApi, withMeta } from '@/constants.ts'
 import { loadActions } from './ai-load-tools.ts'
-import { readSession, writeSession } from '@/isolates/ai-session-utils.ts'
+import {
+  readSession,
+  writeSession,
+  writeToolCommit,
+} from '@/isolates/ai-session-utils.ts'
 const base = 'AI:tools:execute-tools'
 const log = Debug(base)
 const debugToolCall = Debug(base + ':ai-result-tool')
@@ -39,11 +43,13 @@ export const executeTools = async (help: Help, api: IsolateApi) => {
     try {
       const parameters = JSON.parse(args)
       log('executing tool call:', colorize(api.commit), name, parameters)
-      // because we are serial, we can update the map immediately here
-      const result = await actions[name](parameters)
-      // at this point, we know what commit the reply came in on from io.json
+      const branchName = tool_call_id
+      const promise = actions[name](parameters, branchName)
+      const { result, parent } = await withMeta(promise)
+      assert(typeof parent === 'string', 'missing parent')
+      await writeToolCommit(tool_call_id, parent, api)
 
-      log('tool call result:', name, result)
+      log('tool call result:', name, result, colorize(parent))
       // TODO why would this have changed due to an action running ?
       session = await readSession(api)
       if (result === '@@ARTIFACT_RELAY@@') {

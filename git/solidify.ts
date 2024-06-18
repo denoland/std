@@ -80,13 +80,12 @@ export const solidify = async (
           const target = request.source
           const source = request.target
           const sequence = request.sequence
-          const commit = 'updated post commit'
           const reply: MergeReply = {
             target,
             source,
             sequence,
             outcome,
-            commit,
+            commit: 'updated post commit',
           }
           poolables.push(reply)
         }
@@ -96,7 +95,6 @@ export const solidify = async (
         log('branch reply', poolable.commit)
         parents.push(poolable.commit)
         if (request.proctype === PROCTYPE.BRANCH) {
-          // TODO only close if the reply is to the origin
           const { sequence } = poolable
           const branchPid = io.getBranchPid(sequence)
           deletes.push({ pid: branchPid, commit: poolable.commit })

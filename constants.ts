@@ -7,6 +7,7 @@ import {
   CommitObject,
   IsolateApiSchema,
   IsolateReturn,
+  MetaPromise,
   Outcome,
   Params,
   PID,
@@ -78,7 +79,8 @@ export type IsolatePromise =
 type BareIsolatePromise = {
   request: UnsequencedRequest
 }
-type PromisedIsolatePromise = BareIsolatePromise & {
+export type PromisedIsolatePromise = BareIsolatePromise & {
+  promise: MetaPromise
   resolve: (value: unknown) => void
   reject: (error: Error) => void
 }
@@ -89,6 +91,9 @@ export type SettledIsolatePromise =
     /** if an outcome is given, there must be a commit associated with it, so
      * that the execution environment can be notched forwards */
     commit: string
+    /** If the outcome was the result of a branch returning, then the parent
+     * commit of that branch is given here */
+    parent?: string
   }
 export const isSettledIsolatePromise = (
   p: IsolatePromise,

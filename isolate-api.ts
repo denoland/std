@@ -7,10 +7,12 @@ import {
   freezePid,
   IoStruct,
   isChildOf,
-  IsolatePromise,
   isSettledIsolatePromise,
+  META_SYMBOL,
+  MetaPromise,
   PID,
   print,
+  PromisedIsolatePromise,
   SolidRequest,
   toActions,
   UnsequencedRequest,
@@ -98,15 +100,29 @@ export default class IsolateApi<T extends object = Default> {
     if (recovered) {
       assert(isSettledIsolatePromise(recovered), 'recovered is not settled')
       const { outcome } = recovered
+      let promise: MetaPromise
       if (outcome.error) {
-        throw deserializeError(outcome.error)
+        promise = Promise.reject(deserializeError(outcome.error))
+      } else {
+        promise = Promise.resolve(outcome.result)
       }
-      return Promise.resolve(outcome.result)
+      promise[META_SYMBOL] = { parent: recovered.parent }
+      return promise
     }
-    const promise = new Promise((resolve, reject) => {
-      const store: IsolatePromise = { request, resolve, reject }
-      this.#accumulator.push(store)
+    let resolve, reject
+    const promise = new Promise((_resolve, _reject) => {
+      resolve = _resolve
+      reject = _reject
     })
+    assert(resolve)
+    assert(reject)
+    const promised: PromisedIsolatePromise = {
+      promise,
+      request,
+      resolve,
+      reject,
+    }
+    this.#accumulator.push(promised)
     return promise
   }
   /**

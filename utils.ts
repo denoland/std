@@ -16,7 +16,6 @@ log.enable = (...args: string[]) => {
   Debug.enable(...args)
 }
 export * as posix from '@std/path/posix'
-export const sha1 = /^[0-9a-f]{40}$/i
 
 const isDenoDeploy = Deno.env.get('DENO_DEPLOYMENT_ID') !== undefined
 let _isTestMode = false

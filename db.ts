@@ -8,9 +8,10 @@ import {
   Poolable,
   print,
   REPO_LOCK_TIMEOUT_MS,
+  sha1,
   Splice,
 } from '@/constants.ts'
-import { assert, Debug, equal, openKv, posix, sha1 } from '@utils'
+import { assert, Debug, equal, openKv, posix } from '@utils'
 import { Atomic } from './atomic.ts'
 import { QueueMessage } from '@/constants.ts'
 import { decodeTime, ulid } from 'ulid'

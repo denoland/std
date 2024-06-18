@@ -1,7 +1,7 @@
 import diff3Merge from 'diff3'
 import http from '$git/http/web/index.js'
 import * as secp from '@noble/secp256k1'
-import { assert, Debug, equal, posix, sha1 } from '@utils'
+import { assert, Debug, equal, posix } from '@utils'
 import {
   Change,
   ENTRY_BRANCH,
@@ -10,6 +10,7 @@ import {
   PartialPID,
   PID,
   print,
+  sha1,
 } from '@/constants.ts'
 import git, { type MergeDriverCallback } from '$git'
 import type DB from '@/db.ts'

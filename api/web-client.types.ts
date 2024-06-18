@@ -2,6 +2,7 @@
 import { Chalk } from 'chalk'
 import { JSONSchemaType } from './web-client.ajv.ts'
 import { Terminal } from './web-client-session.ts'
+import { assert } from '@sindresorhus/is'
 export enum PROCTYPE {
   SERIAL = 'SERIAL',
   BRANCH = 'BRANCH',
@@ -20,6 +21,8 @@ export type JsonValue =
   | {
     [key: string]: JsonValue
   }
+export type Params = { [key: string]: JsonValue }
+
 export type IsolateReturn = JsonValue | undefined | void
 export type ProcessOptions = {
   /**
@@ -58,6 +61,8 @@ export type IoStruct = {
   executed: { [key: number]: boolean }
   requests: { [key: number]: Request }
   replies: { [key: number]: Outcome }
+  /** If a reply is a merge reply, the commit that carried it is stored here */
+  parents: { [key: number]: Commit }
   /**
    * If a request generates child requests, they are tracked here.  The commit
    * in each entry is the commit that caused the child requests to be generated.
@@ -65,7 +70,7 @@ export type IoStruct = {
    * replay.
    */
   pendings: {
-    [key: number]: { commit: string; sequences: number[] }[]
+    [key: number]: { commit: Commit; sequences: number[] }[]
   }
   /** Active branches are stored here.  A branch is a daemon if it is listed
    * here but its request has been replied to or it is gone from the requests
@@ -81,7 +86,6 @@ export type DispatchFunctions = {
     options?: ProcessOptions,
   ) => Promise<unknown> | unknown
 }
-export type Params = { [key: string]: JsonValue }
 
 export type IsolateApiSchema = {
   [key: string]: JSONSchemaType<object>
@@ -319,7 +323,7 @@ export interface ArtifactTerminal {
     after?: string,
     signal?: AbortSignal,
   ): AsyncIterable<Splice>
-  readJSON<T>(path: string, pid?: PID): Promise<T>
+  readJSON<T>(path: string, pid?: PID, commit?: string): Promise<T>
   exists(path: string, pid?: PID): Promise<boolean>
   writeJSON(path: string, content?: JsonValue, pid?: PID): Promise<number>
   write(path: string, content?: JsonValue, pid?: PID): Promise<number>
@@ -379,7 +383,7 @@ export interface EngineInterface {
     after?: string,
     signal?: AbortSignal,
   ): AsyncIterable<Splice>
-  readJSON<T>(path: string, pid: PID): Promise<T>
+  readJSON<T>(path: string, pid: PID, commit?: string): Promise<T>
   exists(path: string, pid: PID): Promise<boolean>
   transcribe(audio: File): Promise<{ text: string }>
   apiSchema(isolate: string): Promise<ApiSchema>
@@ -619,3 +623,27 @@ export const isValidForMachine = (terminal: PID, machine: PID) => {
 }
 export const SESSION_PATH = 'session.json'
 export const SESSION_BRANCHES = 'session-branches.json'
+export const META_SYMBOL = Symbol.for('settling commit')
+export type Meta = {
+  parent?: Commit
+}
+export const withMeta = async (promise: MetaPromise) => {
+  const result = await promise
+  assert.truthy(META_SYMBOL in promise, 'missing commit symbol')
+  const meta = promise[META_SYMBOL]
+  assert.object(meta, 'missing meta on promise')
+  const { parent } = meta
+  if (parent) {
+    assert.string(parent, 'missing parent commit')
+    assert.truthy(sha1.test(parent), 'commit not sha1: ' + parent)
+  }
+  return { result, parent }
+}
+export const sha1 = /^[0-9a-f]{40}$/i
+export type MetaPromise = Promise<unknown> & { [META_SYMBOL]?: Meta }
+type Commit = string
+export type BranchMap = { [toolCallId: string]: Commit }
+
+export const addChild = (pid: PID, ...children: string[]) => {
+  return { ...pid, branches: [...pid.branches, ...children] }
+}

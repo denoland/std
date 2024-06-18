@@ -210,12 +210,18 @@ export class Engine implements EngineInterface {
     this.#abort.signal.addEventListener('abort', () => abort.abort())
     return db.watchSplices(pid, path, after, abort.signal)
   }
-  async readJSON<T>(path: string, pid: PID) {
+  async readJSON<T>(path: string, pid: PID, commit?: string) {
     freezePid(pid)
 
     const db = this.#api.context.db
     assert(db, 'db not found')
-    const fs = await FS.openHead(pid, db)
+    let fs
+    if (commit) {
+      fs = FS.open(pid, commit, db)
+    } else {
+      fs = await FS.openHead(pid, db)
+    }
+
     log('readJSON', path, print(pid))
     return fs.readJSON<T>(path)
   }

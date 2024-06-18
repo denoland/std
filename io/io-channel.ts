@@ -5,6 +5,7 @@
 import { assert, equal } from '@utils'
 import {
   IoStruct,
+  isMergeReply,
   isPierceRequest,
   isRemoteRequest,
   MergeReply,
@@ -25,6 +26,7 @@ const createBase = (): IoStruct => ({
   requests: {},
   executed: {},
   replies: {},
+  parents: {},
   pendings: {},
   branches: {},
 })
@@ -170,14 +172,17 @@ export default class IOChannel {
     assert(request, `reply sequence not found: ${sequence}`)
     assert(!this.#io.replies[sequence], 'sequence already replied')
     this.#io.replies[sequence] = reply.outcome
-    const blanks = []
+    if (isMergeReply(reply)) {
+      this.#io.parents[sequence] = reply.commit
+    }
+    const pendingsToBlank = []
     if (!this.#isAccumulation(request)) {
       const pendings = this.#io.pendings[sequence]
       if (pendings) {
         for (const layer of pendings) {
           for (const sequence of layer.sequences) {
             assert(this.isSettled(sequence), 'layer sequence not settled')
-            blanks.push(sequence)
+            pendingsToBlank.push(sequence)
           }
         }
       }
@@ -186,13 +191,14 @@ export default class IOChannel {
         delete this.#io.branches[sequence]
       }
     }
-    for (const key of blanks) {
+    for (const key of pendingsToBlank) {
       const request = this.#io.requests[key]
       if (request.proctype !== PROCTYPE.DAEMON) {
         delete this.#io.branches[key]
       }
       delete this.#io.requests[key]
       delete this.#io.replies[key]
+      delete this.#io.parents[key]
       delete this.#io.pendings[key]
       delete this.#io.executed[key]
     }
@@ -226,8 +232,9 @@ export default class IOChannel {
       assert(!isPierceRequest(saved), 'pierce request cannot accumulate')
       const request = toUnsequenced(saved)
       const outcome = this.#io.replies[index]
+      const parent = this.#io.parents[index]
       const commit = commits.shift()
-      const result: IsolatePromise = { request, outcome, commit }
+      const result: IsolatePromise = { request, outcome, commit, parent }
       accumulations.push(result)
     }
     return Accumulator.create(fs, accumulations)
@@ -338,6 +345,7 @@ export default class IOChannel {
     for (const key of toBlank) {
       delete this.#io.requests[key]
       delete this.#io.replies[key]
+      delete this.#io.parents[key]
     }
   }
 }

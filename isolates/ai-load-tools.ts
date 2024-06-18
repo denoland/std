@@ -2,7 +2,7 @@ import * as loadHelp from '@/isolates/load-help.ts'
 import * as engage from '@/isolates/engage-help.ts'
 import { assert, Debug, posix } from '@utils'
 import OpenAI from 'openai'
-import { Help, IsolateApi, JSONSchemaType } from '@/constants.ts'
+import { Help, IsolateApi, JSONSchemaType, Params } from '@/constants.ts'
 const log = Debug('AI:tools:load-tools')
 
 export const loadTools = async (commands: string[] = [], api: IsolateApi) => {
@@ -14,13 +14,17 @@ export const loadActions = async (commands: string[] = [], api: IsolateApi) => {
   assert(result?.actions, 'missing actions')
   return result.actions
 }
+type Action = (params: Params, branchName: string) => Promise<unknown>
+
 const load = async (commands: string[] = [], api: IsolateApi) => {
   const tools: OpenAI.ChatCompletionTool[] = []
   const names = new Set()
-  const actions: Record<string, (parameters: object) => unknown> = {}
+  const actions: Record<string, Action> = {}
   for (const cmd of commands) {
     log('loading command:', cmd)
-    let tool: OpenAI.ChatCompletionTool, action, name: string
+    let tool: OpenAI.ChatCompletionTool,
+      action: (params: Params, branchName: string) => Promise<unknown>,
+      name: string
     const isHelp = !cmd.includes(':')
     if (isHelp) {
       assert(cmd.startsWith('helps/'), `invalid help: ${cmd}`)
@@ -30,10 +34,11 @@ const load = async (commands: string[] = [], api: IsolateApi) => {
       const help = await load({ help: name })
       assert(help.description, `missing description: ${cmd}`)
       const schemas = await api.apiSchema('engage-help')
-      const { command } = await api.actions<engage.Api>('engage-help')
-      action = ({ text }: { text: string }) => {
+      const { engageNew } = await api.actions<engage.Api>('engage-help')
+      action = ({ text }: Params, branchName: string) => {
         log('help command:', name, text, api.commit)
-        return command({ help: name, text })
+        assert(typeof text === 'string', `invalid text: ${text}`)
+        return engageNew({ help: name, text }, { branchName })
       }
       tool = helpTool(name, help, schemas.engage)
     } else {
@@ -42,14 +47,16 @@ const load = async (commands: string[] = [], api: IsolateApi) => {
       const isolateApiSchema = await api.apiSchema(isolate)
       const _actions = await api.actions(isolate)
       assert(name in _actions, `isolate missing command: ${cmd}`)
-      action = _actions[name]
+      action = (params: Params, branchName: string) => {
+        return Promise.resolve(_actions[name](params, { branchName }))
+      }
       tool = isolateToGptApi(name, isolateApiSchema[name])
     }
     assert(action, `missing action: ${cmd}`)
     assert(!names.has(name), `duplicate action: ${cmd}`)
     names.add(name)
     assert(typeof action === 'function', `invalid action: ${action}`)
-    actions[name] = action as (parameters: object) => unknown
+    actions[name] = action
     assert(typeof tool === 'object', `invalid tool: ${tool}`)
     tools.push(tool)
   }

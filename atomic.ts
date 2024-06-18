@@ -7,9 +7,10 @@ import {
   print,
   QueueMessage,
   QueueMessageType,
+  sha1,
   SolidRequest,
 } from '@/constants.ts'
-import { assert, Debug, isKvTestMode, sha1 } from '@utils'
+import { assert, Debug, isKvTestMode } from '@utils'
 
 const log = Debug('AI:db:atomic')
 
