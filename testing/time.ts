@@ -238,6 +238,9 @@ let dueTree: RedBlackTree<DueNode>;
  * Overrides the real Date object and timer functions with fake ones that can be
  * controlled through the fake time instance.
  *
+ * Note: there is no setter for the `start` property, as it cannot be changed
+ * after initialization.
+ *
  * @example Usage
  * ```ts
  * import {
@@ -534,24 +537,6 @@ export class FakeTime {
    */
   get start(): number {
     return startedAt;
-  }
-  /** You can't set this property.
-   *
-   * @example Usage
-   * ```ts
-   * import { FakeTime } from "@std/testing/time";
-   * import { assertThrows } from "@std/assert/assert-throws";
-   *
-   * const fakeTime = new FakeTime(15_000);
-   *
-   * assertThrows(() => {
-   *   fakeTime.start = 20_000;
-   * }, Error)
-   * ```
-   * @param value The value to set
-   */
-  set start(value: number) {
-    throw new Error("cannot change start time after initialization");
   }
 
   /**
