@@ -6,6 +6,7 @@ import { createAbortError } from "./_util.ts";
 /**
  * Make a {@linkcode Promise} abortable with the given signal.
  *
+ * @throws {DOMException} If the signal is already aborted.
  * @typeParam T The type of the provided and returned promise.
  * @param p The promise to make abortable.
  * @param signal The signal to abort the promise with.
@@ -30,6 +31,7 @@ export function abortable<T>(p: Promise<T>, signal: AbortSignal): Promise<T>;
 /**
  * Make an {@linkcode AsyncIterable} abortable with the given signal.
  *
+ * @throws {DOMException} If the signal is already aborted.
  * @typeParam T The type of the provided and returned async iterable.
  * @param p The async iterable to make abortable.
  * @param signal The signal to abort the promise with.
