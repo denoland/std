@@ -1,8 +1,10 @@
 import { load } from '@std/dotenv'
 await load({ export: true })
-const db = await Deno.openKv(Deno.env.get('DENO_KV_URL'))
 
-if (!confirm('WARNING: The database will be reset. Continue?')) {
+const url = Deno.env.get('DENO_KV_URL')
+const db = await Deno.openKv(url)
+
+if (!confirm(`WARNING: The database ${url} will be reset. Continue?`)) {
   Deno.exit()
 }
 
