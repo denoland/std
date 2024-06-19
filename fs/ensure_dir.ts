@@ -27,13 +27,7 @@ import { getFileInfoType } from "./_get_file_info_type.ts";
 export async function ensureDir(dir: string | URL) {
   try {
     const fileInfo = await Deno.stat(dir);
-    if (!fileInfo.isDirectory) {
-      throw new Error(
-        `Ensure path exists, expected 'dir', got '${
-          getFileInfoType(fileInfo)
-        }'`,
-      );
-    }
+    throwIfNotDirectory(fileInfo);
     return;
   } catch (err) {
     if (!(err instanceof Deno.errors.NotFound)) {
@@ -51,13 +45,7 @@ export async function ensureDir(dir: string | URL) {
     }
 
     const fileInfo = await Deno.stat(dir);
-    if (!fileInfo.isDirectory) {
-      throw new Error(
-        `Ensure path exists, expected 'dir', got '${
-          getFileInfoType(fileInfo)
-        }'`,
-      );
-    }
+    throwIfNotDirectory(fileInfo);
   }
 }
 
@@ -87,13 +75,7 @@ export async function ensureDir(dir: string | URL) {
 export function ensureDirSync(dir: string | URL) {
   try {
     const fileInfo = Deno.statSync(dir);
-    if (!fileInfo.isDirectory) {
-      throw new Error(
-        `Ensure path exists, expected 'dir', got '${
-          getFileInfoType(fileInfo)
-        }'`,
-      );
-    }
+    throwIfNotDirectory(fileInfo);
     return;
   } catch (err) {
     if (!(err instanceof Deno.errors.NotFound)) {
@@ -111,12 +93,14 @@ export function ensureDirSync(dir: string | URL) {
     }
 
     const fileInfo = Deno.statSync(dir);
-    if (!fileInfo.isDirectory) {
-      throw new Error(
-        `Ensure path exists, expected 'dir', got '${
-          getFileInfoType(fileInfo)
-        }'`,
-      );
-    }
+    throwIfNotDirectory(fileInfo);
+  }
+}
+
+function throwIfNotDirectory(fileInfo: Deno.FileInfo) {
+  if (!fileInfo.isDirectory) {
+    throw new Error(
+      `Ensure path exists, expected 'dir', got '${getFileInfoType(fileInfo)}'`,
+    );
   }
 }
