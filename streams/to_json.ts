@@ -6,7 +6,7 @@ import { toText } from "./to_text.ts";
 /**
  * Converts a JSON-formatted {@linkcode ReadableSteam} of
  * {@linkcode Uint8Array}s to an object. Works the same as
- * {@linkcode Response.json}.
+ * {@linkcode Request.json} and {@linkcode Response.json}.
  *
  * @param readableStream A `ReadableStream` whose chunks compose a JSON.
  * @returns A promise that resolves to the parsed JSON.

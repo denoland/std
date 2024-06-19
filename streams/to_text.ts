@@ -5,7 +5,8 @@ const textDecoder = new TextDecoder();
 
 /**
  * Converts a {@linkcode ReadableSteam} of {@linkcode Uint8Array}s to a single
- * string. Works the same as {@linkcode Response.text}.
+ * string. Works the same as {@linkcode Request.text} and
+ * {@linkcode Response.text}.
  *
  * @param readableStream A `ReadableStream` to convert into a `string`.
  * @returns A `Promise` that resolves to the `string`.
