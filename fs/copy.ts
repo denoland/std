@@ -255,22 +255,24 @@ function copyDirSync(
 }
 
 /**
- * Asynchronously copy a file or directory. The directory can have contents.
- * Like `cp -r`.
+ * Asynchronously copy a file or directory (along with its contents), like
+ * {@linkcode https://www.ibm.com/docs/en/aix/7.3?topic=c-cp-command#cp__cp_flagr | cp -r}.
  *
- * If `src` is a directory it will copy everything inside of this directory,
- * not the entire directory itself. If `src` is a file, `dest` cannot be a
- * directory.
+ * Both `src` and `dest` must both be a file or directory.
  *
- * Requires the `--allow-read` and `--allow-write` flag.
+ * Requires `--allow-read` and `--allow-write` permissions.
+ *
+ * @see {@link https://docs.deno.com/runtime/manual/basics/permissions#file-system-access}
+ * for more information on Deno's permissions system.
  *
  * @param src The source file/directory path as a string or URL.
  * @param dest The destination file/directory path as a string or URL.
  * @param options Options for copying.
+ *
  * @returns A promise that resolves once the copy operation completes.
  *
  * @example Basic usage
- * ```ts
+ * ```ts no-eval
  * import { copy } from "@std/fs/copy";
  *
  * await copy("./foo", "./bar");
@@ -280,7 +282,7 @@ function copyDirSync(
  * overwriting.
  *
  * @example Overwriting files/directories
- * ```ts
+ * ```ts no-eval
  * import { copy } from "@std/fs/copy";
  *
  * await copy("./foo", "./bar", { overwrite: true });
@@ -290,7 +292,7 @@ function copyDirSync(
  * any existing files or directories.
  *
  * @example Preserving timestamps
- * ```ts
+ * ```ts no-eval
  * import { copy } from "@std/fs/copy";
  *
  * await copy("./foo", "./bar", { preserveTimestamps: true });
@@ -329,22 +331,24 @@ export async function copy(
 }
 
 /**
- * Synchronously copy a file or directory. The directory can have contents.
- * Like `cp -r`.
+ * Synchronously copy a file or directory (along with its contents), like
+ * {@linkcode https://www.ibm.com/docs/en/aix/7.3?topic=c-cp-command#cp__cp_flagr | cp -r}.
  *
- * If `src` is a directory it will copy everything inside of this directory,
- * not the entire directory itself. If `src` is a file, `dest` cannot be a
- * directory.
+ * Both `src` and `dest` must both be a file or directory.
  *
- * Requires the `--allow-read` and `--allow-write` flag.
+ * Requires `--allow-read` and `--allow-write` permissions.
+ *
+ * @see {@link https://docs.deno.com/runtime/manual/basics/permissions#file-system-access}
+ * for more information on Deno's permissions system.
  *
  * @param src The source file/directory path as a string or URL.
  * @param dest The destination file/directory path as a string or URL.
  * @param options Options for copying.
+ *
  * @returns A void value that returns once the copy operation completes.
  *
  * @example Basic usage
- * ```ts
+ * ```ts no-eval
  * import { copySync } from "@std/fs/copy";
  *
  * copySync("./foo", "./bar");
@@ -354,7 +358,7 @@ export async function copy(
  * overwriting.
  *
  * @example Overwriting files/directories
- * ```ts
+ * ```ts no-eval
  * import { copySync } from "@std/fs/copy";
  *
  * copySync("./foo", "./bar", { overwrite: true });
@@ -364,7 +368,7 @@ export async function copy(
  * any existing files or directories.
  *
  * @example Preserving timestamps
- * ```ts
+ * ```ts no-eval
  * import { copySync } from "@std/fs/copy";
  *
  * copySync("./foo", "./bar", { preserveTimestamps: true });

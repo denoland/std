@@ -152,8 +152,10 @@ import { buildMessage } from "@std/internal/build-message";
 const SNAPSHOT_DIR = "__snapshots__";
 const SNAPSHOT_EXT = "snap";
 
+/** The mode of snapshot testing. */
 export type SnapshotMode = "assert" | "update";
 
+/** The options for {@linkcode assertSnapshot}. */
 export type SnapshotOptions<T = unknown> = {
   /**
    * Snapshot output directory. Snapshot files will be written to this directory.
@@ -199,9 +201,18 @@ function getErrorMessage(message: string, options: SnapshotOptions) {
 
 /**
  * Default serializer for `assertSnapshot`.
+ *
+ * @example Usage
+ * ```ts
+ * import { serialize } from "@std/testing/snapshot";
+ * import { assertEquals } from "@std/assert/assert-equals";
+ *
+ * assertEquals(serialize({ foo: 42 }), "{\n  foo: 42,\n}")
+ * ```
+ *
+ * @param actual The value to serialize
+ * @returns The serialized string
  */
-export function serialize(actual: unknown): string;
-export function serialize<T>(actual: T): string;
 export function serialize(actual: unknown): string {
   return Deno.inspect(actual, {
     depth: Infinity,
@@ -436,7 +447,7 @@ class AssertSnapshotContext {
    * This method can safely be called more than once and will only register the teardown
    * function once in a context.
    */
-  public registerTeardown() {
+  registerTeardown() {
     if (!this.#teardownRegistered) {
       globalThis.addEventListener("unload", this.#teardown);
       this.#teardownRegistered = true;
@@ -447,7 +458,7 @@ class AssertSnapshotContext {
    * Gets the number of snapshots which have been created with the same name and increments
    * the count by 1.
    */
-  public getCount(snapshotName: string) {
+  getCount(snapshotName: string) {
     let count = this.#snapshotCounts.get(snapshotName) || 0;
     this.#snapshotCounts.set(snapshotName, ++count);
     return count;
@@ -456,7 +467,7 @@ class AssertSnapshotContext {
   /**
    * Get an existing snapshot by name or returns `undefined` if the snapshot does not exist.
    */
-  public async getSnapshot(snapshotName: string, options: SnapshotOptions) {
+  async getSnapshot(snapshotName: string, options: SnapshotOptions) {
     const snapshots = await this.#readSnapshotFile(options);
     return snapshots.get(snapshotName);
   }
@@ -467,7 +478,7 @@ class AssertSnapshotContext {
    *
    * Should only be called when mode is `update`.
    */
-  public updateSnapshot(snapshotName: string, snapshot: string) {
+  updateSnapshot(snapshotName: string, snapshot: string) {
     if (!this.#snapshotsUpdated.includes(snapshotName)) {
       this.#snapshotsUpdated.push(snapshotName);
     }
@@ -481,7 +492,7 @@ class AssertSnapshotContext {
   /**
    * Get the number of updated snapshots.
    */
-  public getUpdatedCount() {
+  getUpdatedCount() {
     return this.#snapshotsUpdated.length;
   }
 
@@ -495,14 +506,14 @@ class AssertSnapshotContext {
    * `assertSnapshot` could cause updates to be written to the snapshot file if the
    * `update` mode is passed in the options.
    */
-  public pushSnapshotToUpdateQueue(snapshotName: string) {
+  pushSnapshotToUpdateQueue(snapshotName: string) {
     this.snapshotUpdateQueue.push(snapshotName);
   }
 
   /**
    * Check if exist snapshot
    */
-  public hasSnapshot(snapshotName: string): boolean {
+  hasSnapshot(snapshotName: string): boolean {
     return this.#currentSnapshots
       ? this.#currentSnapshots.has(snapshotName)
       : false;
@@ -515,20 +526,44 @@ class AssertSnapshotContext {
  *
  * Type parameter can be specified to ensure values under comparison have the same type.
  *
- * @example
+ * @example Usage
  * ```ts
  * import { assertSnapshot } from "@std/testing/snapshot";
  *
- * Deno.test("snapshot", async (test) => {
- *  await assertSnapshot<number>(test, 2);
+ * Deno.test("snapshot", async (t) => {
+ *   await assertSnapshot<number>(t, 2);
  * });
  * ```
+ * @typeParam T The type of the snapshot
+ * @param context The test context
+ * @param actual The actual value to compare
+ * @param options The options
  */
 export async function assertSnapshot<T>(
   context: Deno.TestContext,
   actual: T,
   options: SnapshotOptions<T>,
 ): Promise<void>;
+/**
+ * Make an assertion that `actual` matches a snapshot. If the snapshot and `actual` do
+ * not a match, then throw.
+ *
+ * Type parameter can be specified to ensure values under comparison have the same type.
+ *
+ * @example Usage
+ * ```ts
+ * import { assertSnapshot } from "@std/testing/snapshot";
+ *
+ * Deno.test("snapshot", async (t) => {
+ *   await assertSnapshot<number>(t, 2);
+ * });
+ * ```
+ *
+ * @typeParam T The type of the snapshot
+ * @param context The test context
+ * @param actual The actual value to compare
+ * @param message The optional assertion messagge
+ */
 export async function assertSnapshot<T>(
   context: Deno.TestContext,
   actual: T,
@@ -605,6 +640,33 @@ export async function assertSnapshot(
   }
 }
 
+/**
+ * Create {@linkcode assertSnapshot} function with the given options.
+ *
+ * The specified option becomes the default for returned {@linkcode assertSnapshot}
+ *
+ * @example Usage
+ * ```ts
+ * import { createAssertSnapshot } from "@std/testing/snapshot";
+ *
+ * const assertSnapshot = createAssertSnapshot({
+ *   // Uses the custom directory for saving snapshot files.
+ *   dir: "my_snapshot_dir",
+ * });
+ *
+ * Deno.test("a snapshot test case", async (t) => {
+ *   await assertSnapshot(t, {
+ *     foo: "Hello",
+ *     bar: "World",
+ *   });
+ * })
+ * ```
+ *
+ * @typeParam T The type of the snapshot
+ * @param options The options
+ * @param baseAssertSnapshot {@linkcode assertSnapshot} function implementation. Default to the original {@linkcode assertSnapshot}
+ * @returns {@linkcode assertSnapshot} function with the given default options.
+ */
 export function createAssertSnapshot<T>(
   options: SnapshotOptions<T>,
   baseAssertSnapshot: typeof assertSnapshot = assertSnapshot,
