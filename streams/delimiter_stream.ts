@@ -93,7 +93,7 @@ export class DelimiterStream extends TransformStream<Uint8Array, Uint8Array> {
    */
   constructor(
     delimiter: Uint8Array,
-    options: DelimiterStreamOptions = { disposition: "discard" },
+    options: DelimiterStreamOptions = {},
   ) {
     super({
       transform: (chunk, controller) =>

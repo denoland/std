@@ -1,5 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
+
 /**
  * {@linkcode parse} and {@linkcode stringify} for handling
  * {@link https://en.wikipedia.org/wiki/INI_file | INI} encoded data, such as the
@@ -10,18 +11,19 @@
  * but will be preserved when using {@linkcode IniMap}. Multi-line values are not supported and will throw a syntax error.
  * White space padding and lines starting with '#', ';', or '//' will be treated as comments.
  *
- * @example
  * ```ts
  * import * as ini from "@std/ini";
+ * import { assertEquals } from "@std/assert/assert-equals";
+ *
  * const iniFile = `# Example configuration file
  * Global Key=Some data here
  *
  * [Section #1]
  * Section Value=42
- * Section Date=1977-05-25
- * `;
+ * Section Date=1977-05-25`;
+ *
  * const parsed = ini.parse(iniFile, {
- *   reviver: (key, value, section) => {
+ *   reviver(key, value, section) {
  *     if (section === "Section #1") {
  *       if (key === "Section Value") return Number(value);
  *       if (key === "Section Date") return new Date(value);
@@ -29,69 +31,64 @@
  *     return value;
  *   },
  * });
- * console.log(parsed);
  *
- * // =>
- * // {
- * //   "Global Key": "Some data here",
- * //   "Section #1": { "Section Value": 42, "Section Date": 1977-05-25T00:00:00.000Z }
- * // }
+ * assertEquals(parsed, {
+ *   "Global Key": "Some data here",
+ *   "Section #1": {
+ *     "Section Value": 42,
+ *     "Section Date": new Date("1977-05-25T00:00:00.000Z"),
+ *   },
+ * });
  *
  * const text = ini.stringify(parsed, {
- *   replacer: (key, value, section) => {
+ *   replacer(key, value, section) {
  *     if (section === "Section #1" && key === "Section Date") {
  *       return (value as Date).toISOString().split("T")[0];
  *     }
  *     return value;
  *   },
  * });
- * console.log(text);
  *
- * // =>
- * // Global Key=Some data here
- * // [Section #1]
- * // Section Value=42
- * // Section Date=1977-05-25
+ * assertEquals(text, `Global Key=Some data here
+ * [Section #1]
+ * Section Value=42
+ * Section Date=1977-05-25`);
  * ```
  *
  * Optionally, {@linkcode IniMap} may be used for finer INI handling. Using this class will permit preserving
  * comments, accessing values like a map, iterating over key/value/section entries, and more.
  *
- * @example
  * ```ts
- * import { IniMap } from "@std/ini";
- * const ini = new IniMap();
- * ini.set("section1", "keyA", 100)
- * console.log(ini.toString())
+ * import { IniMap } from "@std/ini/ini-map";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
- * // =>
- * // [section1]
- * // keyA=100
+ * const ini = new IniMap();
+ * ini.set("section1", "keyA", 100);
+ * assertEquals(ini.toString(), `[section1]
+ * keyA=100`);
  *
  * ini.set('keyA', 25)
- * console.log(ini.toObject())
- *
- * // =>
- * // {
- * //   keyA: 25,
- * //   section1: {
- * //     keyA: 100
- * //   }
- * // }
+ * assertEquals(ini.toObject(), {
+ *   keyA: 25,
+ *   section1: {
+ *     keyA: 100
+ *   }
+ * });
  * ```
  *
  * The reviver and replacer APIs can be used to extend the behavior of IniMap, such as adding support
  * for duplicate keys as if they were arrays of values.
  *
- * @example
  * ```ts
- * import { IniMap } from "@std/ini";
+ * import { IniMap } from "@std/ini/ini-map";
+ * import { assertEquals } from "@std/assert/assert-equals";
+ *
  * const iniFile = `# Example of key/value arrays
  * [section1]
  * key1=This key
  * key1=is non-standard
- * key1=but can be captured!
- * `;
+ * key1=but can be captured!`;
+ *
  * const ini = new IniMap({ assignment: "=", deduplicate: true });
  * ini.parse(iniFile, (key, value, section) => {
  *   if (section) {
@@ -107,9 +104,11 @@
  *   }
  *   return value;
  * });
- * console.log(ini.get("section1", "key1"));
  *
- * // => [ "This key", "is non-standard", "but can be captured!" ]
+ * assertEquals(
+ *   ini.get("section1", "key1"),
+ *   ["This key", "is non-standard", "but can be captured!"]
+ * );
  *
  * const result = ini.toString((key, value) => {
  *   if (Array.isArray(value)) {
@@ -119,9 +118,8 @@
  *   }
  *   return value;
  * });
- * console.log(result === iniFile);
  *
- * // => true
+ * assertEquals(result, iniFile);
  * ```
  *
  * @module
