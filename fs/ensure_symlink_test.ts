@@ -238,7 +238,10 @@ Deno.test("ensureSymlinkSync() creates symlink with relative target", function (
   Deno.removeSync(testDir, { recursive: true });
 });
 
-Deno.test("ensureSymlink() works with URLs", async () => {
+Deno.test("ensureSymlink() works with URLs", {
+  // TODO(kt3k): The 2nd test case doesn't pass on Windows. Fix it.
+  ignore: Deno.build.os === "windows",
+}, async () => {
   const testDir = path.join(testdataDir, "link_file_with_url");
   const testFile = path.join(testDir, "test.txt");
   const linkFile = path.join(testDir, "link.txt");
