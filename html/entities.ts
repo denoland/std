@@ -25,16 +25,20 @@ const rawRe = new RegExp(`[${[...rawToEntity.keys()].join("")}]`, "g");
 /**
  * Escapes text for safe interpolation into HTML text content and quoted attributes.
  *
- * @example
+ * @example Usage
  * ```ts
  * import { escape } from "@std/html/entities";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
- * escape("<>'&AA"); // "&lt;&gt;&#39;&amp;AA"
+ * assertEquals(escape("<>'&AA"), "&lt;&gt;&#39;&amp;AA");
  *
  * // Characters that don't need to be escaped will be left alone,
  * // even if named HTML entities exist for them.
- * escape("þð"); // "þð"
+ * assertEquals(escape("þð"), "þð");
  * ```
+ *
+ * @param str The string to escape.
+ * @returns The escaped string.
  */
 export function escape(str: string): string {
   return str.replaceAll(rawRe, (m) => rawToEntity.get(m)!);
@@ -57,19 +61,32 @@ const entityListRegexCache = new WeakMap<EntityList, RegExp>();
 /**
  * Unescapes HTML entities in text.
  *
- * @example
+ * Default options only handle `&<>'"` and numeric entities.
+ *
+ * @example Basic usage
  * ```ts
  * import { unescape } from "@std/html/entities";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
- * // Default options (only handles &<>'" and numeric entities)
- * unescape("&lt;&gt;&apos;&amp;&#65;&#x41;"); // "<>'&AA"
- * unescape("&thorn;&eth;"); // "&thorn;&eth;"
- *
- * // Using the full named entity list from the HTML spec (~47K un-minified)
- * import entityList from "@std/html/named-entity-list.json" with { type: "json" };
- *
- * unescape("&thorn;&eth;", { entityList }); // "þð"
+ * assertEquals(unescape("&lt;&gt;&#39;&amp;AA"), "<>'&AA");
+ * assertEquals(unescape("&thorn;&eth;"), "&thorn;&eth;");
  * ```
+ *
+ * @example Using a custom entity list
+ *
+ * This uses the full named entity list from the HTML spec (~47K un-minified)
+ *
+ * ```ts
+ * import { unescape } from "@std/html/entities";
+ * import entityList from "@std/html/named-entity-list.json" with { type: "json" };
+ * import { assertEquals } from "@std/assert/assert-equals";
+ *
+ * assertEquals(unescape("&lt;&gt;&#39;&amp;AA", { entityList }), "<>'&AA");
+ * ```
+ *
+ * @param str The string to unescape.
+ * @param options Options for unescaping.
+ * @returns The unescaped string.
  */
 export function unescape(
   str: string,

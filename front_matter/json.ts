@@ -10,9 +10,10 @@ import {
  * Extracts and parses {@link https://www.json.org/ | JSON } from the metadata
  * of front matter content.
  *
- * @example
+ * @example Extract JSON front matter
  * ```ts
  * import { extract } from "@std/front-matter/json";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const output = `---json
  * {
@@ -22,9 +23,11 @@ import {
  * Hello, world!`;
  * const result = extract(output);
  *
- * result.frontMatter; // '{\n "title": "Three dashes marks the spot"\n}'
- * result.body; // "Hello, world!"
- * result.attrs; // { title: "Three dashes marks the spot" }
+ * assertEquals(result, {
+ *   frontMatter: '{\n  "title": "Three dashes marks the spot"\n}',
+ *   body: "Hello, world!",
+ *   attrs: { title: "Three dashes marks the spot" },
+ * });
  * ```
  */
 export const extract: Extractor = createExtractor({

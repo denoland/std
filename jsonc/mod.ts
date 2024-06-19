@@ -6,17 +6,18 @@
  * module only provides a means of parsing JSONC. JSONC serialization is not
  * yet supported.
  *
- * This module is browser compatible.
- *
- * @example
- * ```ts Parsing JSONC
+ * ```ts
  * import { parse } from "@std/jsonc";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
- * parse('{"foo": "bar", } // comment'); // { foo: "bar" }
- * parse('{"foo": "bar", } /* comment *\/'); // { foo: "bar" }
- * parse('{"foo": "bar" } // comment', {
- *   allowTrailingComma: false,
- * }); // { foo: "bar" }
+ * assertEquals(parse('{"foo": "bar", } // comment'), { foo: "bar" });
+ *
+ * assertEquals(parse('{"foo": "bar", } /* comment *\/'), { foo: "bar" });
+ *
+ * assertEquals(
+ *   parse('{"foo": "bar" } // comment', { allowTrailingComma: false }),
+ *   { foo: "bar" }
+ * );
  * ```
  *
  * @module

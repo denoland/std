@@ -41,7 +41,7 @@ export type KnownExtensionOrType =
  * > file name, use {@linkcode https://jsr.io/@std/path/doc/~/extname | extname}
  * > to determine the extension and pass it here.
  *
- * @template T Type of the extension or media type to resolve.
+ * @typeParam T Type of the extension or media type to resolve.
  *
  * @param extensionOrType The extension or media type to resolve.
  *

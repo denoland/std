@@ -3,8 +3,53 @@
 // Copyright 2019 Allain Lalonde. All rights reserved. ISC License.
 // deno-lint-ignore-file no-explicit-any ban-types
 
+/**
+ * @module
+ *
+ * This module contains a function to mock functions for testing and assertions.
+ *
+ * ```ts
+ * import { fn, expect } from "@std/expect";
+ *
+ * Deno.test("example", () => {
+ *   const mockFn = fn((a: number, b: number) => a + b);
+ *   const result = mockFn(1, 2);
+ *   expect(result).toEqual(3);
+ *   expect(mockFn).toHaveBeenCalledWith(1, 2);
+ *   expect(mockFn).toHaveBeenCalledTimes(1);
+ * });
+ * ```
+ */
+
 import { MOCK_SYMBOL, type MockCall } from "./_mock_util.ts";
 
+/**
+ * Creates a mock function that can be used for testing and assertions.
+ *
+ * @param stubs - functions to be used as stubs for different calls.
+ * @returns A mock function that keeps track of calls and returns values based on the provided stubs.
+ *
+ * @example Usage
+ * ```ts no-assert
+ * import { fn, expect } from "@std/expect";
+ *
+ * Deno.test("example", () => {
+ *   const mockFn = fn(
+ *     (a: number, b: number) => a + b,
+ *     (a: number, b: number) => a - b
+ *   );
+ *   const result = mockFn(1, 2);
+ *   expect(result).toEqual(3);
+ *   expect(mockFn).toHaveBeenCalledWith(1, 2);
+ *   expect(mockFn).toHaveBeenCalledTimes(1);
+ *
+ *   const result2 = mockFn(3, 2);
+ *   expect(result2).toEqual(1);
+ *   expect(mockFn).toHaveBeenCalledWith(3, 2);
+ *   expect(mockFn).toHaveBeenCalledTimes(2);
+ * });
+ * ```
+ */
 export function fn(...stubs: Function[]): Function {
   const calls: MockCall[] = [];
 

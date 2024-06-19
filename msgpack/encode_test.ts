@@ -138,6 +138,21 @@ Deno.test("encode() handles strings", () => {
   assertEquals(decode(encode(reallyLongString)), reallyLongString);
 });
 
+Deno.test("encode() handles Uint8Arrays", () => {
+  assertEquals(
+    encode(Uint8Array.of(0, 1, 2, 3)),
+    Uint8Array.of(0xc4, 4, 0, 1, 2, 3),
+  );
+  assertEquals(
+    encode(new Uint8Array(256)),
+    Uint8Array.of(0xc5, 1, 0, ...new Uint8Array(256)),
+  );
+  assertEquals(
+    encode(new Uint8Array(65536)),
+    Uint8Array.of(0xc6, 0, 1, 0, 0, ...new Uint8Array(65536)),
+  );
+});
+
 Deno.test("encode() handles arrays", () => {
   const arr0: never[] = [];
   assertEquals(decode(encode(arr0)), arr0);
@@ -155,6 +170,9 @@ Deno.test("encode() handles arrays", () => {
 Deno.test("encode() handles maps", () => {
   const map0 = {};
   assertEquals(decode(encode(map0)), map0);
+
+  const mapNull = Object.create(null);
+  assertEquals(decode(encode(mapNull)), mapNull);
 
   const map1 = { "a": 0, "b": 2, "c": "three", "d": null };
   assertEquals(decode(encode(map1)), map1);
@@ -182,4 +200,17 @@ Deno.test("encode() handles huge object with 100k properties", () => {
     });
   }
   assertEquals(decode(encode(bigObject)), bigObject);
+});
+
+Deno.test("encode() throws when the object is an instance of a custom class", () => {
+  class Foo {
+    a = 1;
+  }
+  // deno-lint-ignore no-explicit-any
+  const foo = new Foo() as any;
+  assertThrows(
+    () => encode(foo),
+    Error,
+    "Cannot safely encode value into messagepack",
+  );
 });

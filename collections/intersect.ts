@@ -7,7 +7,7 @@ import { filterInPlace } from "./_utils.ts";
  * Returns all distinct elements that appear at least once in each of the given
  * arrays.
  *
- * @template T The type of the elements in the input arrays.
+ * @typeParam T The type of the elements in the input arrays.
  *
  * @param arrays The arrays to intersect.
  *

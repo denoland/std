@@ -4,15 +4,13 @@
 /**
  * Utilities for working with {@link https://en.wikipedia.org/wiki/Ascii85 | ascii85} encoding.
  *
- * This module is browser compatible.
- *
  * ## Specifying a standard and delimiter
  *
  * By default, all functions are using the most popular Adobe version of ascii85
  * and not adding any delimiter. However, there are three more standards
  * supported - btoa (different delimiter and additional compression of 4 bytes
  * equal to 32), {@link https://rfc.zeromq.org/spec/32/ | Z85} and
- * {@link https://tools.ietf.org/html/rfc1924 | RFC 1924}. It's possible to use a
+ * {@link https://www.rfc-editor.org/rfc/rfc1924.html | RFC 1924}. It's possible to use a
  * different encoding by specifying it in `options` object as a second parameter.
  *
  * Similarly, it's possible to make `encode` add a delimiter (`<~` and `~>` for
@@ -23,13 +21,16 @@
  * @module
  */
 
-import { validateBinaryLike } from "./_util.ts";
+import { validateBinaryLike } from "./_validate_binary_like.ts";
 
-/** Supported ascii85 standards for {@linkcode Ascii85Options}. */
+/**
+ * Supported ascii85 standards for {@linkcode EncodeAscii85Options} and
+ * {@linkcode DecodeAscii85Options}.
+ */
 export type Ascii85Standard = "Adobe" | "btoa" | "RFC 1924" | "Z85";
 
-/** Options for {@linkcode encodeAscii85} and {@linkcode decodeAscii85}. */
-export interface Ascii85Options {
+/** Options for {@linkcode encodeAscii85}. */
+export interface EncodeAscii85Options {
   /**
    * Character set and delimiter (if supported and used).
    *
@@ -43,28 +44,36 @@ export interface Ascii85Options {
    */
   delimiter?: boolean;
 }
+
 const rfc1924 =
   "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz!#$%&()*+-;<=>?@^_`{|}~" as const;
 const Z85 =
   "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ.-:+=^!/*?&<>()[]{}@%$#" as const;
 
 /**
- * Converts data into an ascii58-encoded string.
+ * Converts data into an ascii85-encoded string.
  *
- * @example
+ * @param data The data to encode.
+ * @param options Options for encoding.
+ *
+ * @returns The ascii85-encoded string.
+ *
+ * @example Usage
  * ```ts
  * import { encodeAscii85 } from "@std/encoding/ascii85";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
- * encodeAscii85("Hello world!"); // "87cURD]j7BEbo80"
+ * assertEquals(encodeAscii85("Hello world!"), "87cURD]j7BEbo80");
  * ```
  */
 export function encodeAscii85(
   data: ArrayBuffer | Uint8Array | string,
-  options?: Ascii85Options,
+  options: EncodeAscii85Options = {},
 ): string {
   let uint8 = validateBinaryLike(data);
 
-  const standard = options?.standard ?? "Adobe";
+  const { standard = "Adobe" } = options;
+
   let output: string[] = [];
   let v: number;
   let n = 0;
@@ -123,6 +132,9 @@ export function encodeAscii85(
   return output.slice(0, output.length - difference).join("");
 }
 
+/** Options for {@linkcode decodeAscii85}. */
+export type DecodeAscii85Options = Omit<EncodeAscii85Options, "delimiter">;
+
 /**
  * Decodes a ascii85-encoded string.
  *
@@ -130,21 +142,25 @@ export function encodeAscii85(
  * @param options Options for decoding.
  * @returns The decoded data.
  *
- * @example
+ * @example Usage
  * ```ts
  * import { decodeAscii85 } from "@std/encoding/ascii85";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
- * decodeAscii85("87cURD]j7BEbo80");
- * // Uint8Array(12) [ 72, 101, 108, 108, 111, 32, 119, 111, 114, 108, 100, 33 ]
+ * assertEquals(
+ *   decodeAscii85("87cURD]j7BEbo80"),
+ *   new TextEncoder().encode("Hello world!"),
+ * );
  * ```
  */
 export function decodeAscii85(
   ascii85: string,
-  options?: Ascii85Options,
+  options: DecodeAscii85Options = {},
 ): Uint8Array {
-  const encoding = options?.standard ?? "Adobe";
+  const { standard = "Adobe" } = options;
+
   // translate all encodings to most basic adobe/btoa one and decompress some special characters ("z" and "y")
-  switch (encoding) {
+  switch (standard) {
     case "Adobe":
       ascii85 = ascii85.replaceAll(/(<~|~>)/g, "").replaceAll("z", "!!!!!");
       break;

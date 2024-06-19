@@ -2,7 +2,7 @@
 // This module is browser compatible.
 
 /** Error message emitted from the thrown error while mapping. */
-export const ERROR_WHILE_MAPPING_MESSAGE = "Threw while mapping.";
+const ERROR_WHILE_MAPPING_MESSAGE = "Threw while mapping.";
 
 /**
  * pooledMap transforms values from an (async) iterable into another async
@@ -14,9 +14,10 @@ export const ERROR_WHILE_MAPPING_MESSAGE = "Threw while mapping.";
  * yielded on success. After that, the rejections among them are gathered and
  * thrown by the iterator in an `AggregateError`.
  *
- * @example
+ * @example Usage
  * ```ts
  * import { pooledMap } from "@std/async/pool";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const results = pooledMap(
  *   2,
@@ -24,14 +25,15 @@ export const ERROR_WHILE_MAPPING_MESSAGE = "Threw while mapping.";
  *   (i) => new Promise((r) => setTimeout(() => r(i), 1000)),
  * );
  *
- * for await (const value of results) {
- *   // ...
- * }
+ * assertEquals(await Array.fromAsync(results), [1, 2, 3]);
  * ```
  *
+ * @typeParam T the input type.
+ * @typeParam R the output type.
  * @param poolLimit The maximum count of items being processed concurrently.
  * @param array The input array for mapping.
  * @param iteratorFn The function to call for every item of the array.
+ * @returns The async iterator with the transformed values.
  */
 export function pooledMap<T, R>(
   poolLimit: number,

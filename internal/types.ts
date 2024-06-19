@@ -6,7 +6,7 @@ export type DiffType = "removed" | "common" | "added";
 /**
  * Represents the result of a diff operation.
  *
- * @template T The type of the value in the diff result.
+ * @typeParam T The type of the value in the diff result.
  */
 export interface DiffResult<T> {
   /** The type of the diff. */

@@ -1,34 +1,89 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
 /**
- * This script checks that all exported functions have JSDoc comments with
- * `@param`, `@return`, and `@example` tags, according to the contributing
- * guidelines.
+ * This script checks that all public symbols documentation aligns with the
+ * {@link ./CONTRIBUTING.md#documentation | documentation guidelines}.
  *
- * @see {@link https://github.com/denoland/deno_std/blob/main/.github/CONTRIBUTING.md#documentation}
- *
- * TODO(iuioiua): Add support for classes and methods.
+ * TODO(lucacasonato): Add support for variables, interfaces, namespaces, and type aliases.
  */
 import {
+  type ClassConstructorDef,
+  type ClassMethodDef,
+  type ClassPropertyDef,
   doc,
+  type DocNode,
   type DocNodeBase,
+  type DocNodeClass,
   type DocNodeFunction,
-  type JsDocTag,
+  type DocNodeModuleDoc,
+  type JsDoc,
   type JsDocTagDocRequired,
+  type Location,
+  type TsTypeDef,
 } from "@deno/doc";
 
+type DocNodeWithJsDoc<T = DocNodeBase> = T & {
+  jsDoc: JsDoc;
+};
+
 const ENTRY_POINTS = [
+  "../assert/mod.ts",
+  "../async/mod.ts",
   "../bytes/mod.ts",
-  "../datetime/mod.ts",
+  "../cli/mod.ts",
+  "../crypto/mod.ts",
   "../collections/mod.ts",
+  "../csv/mod.ts",
+  "../data_structures/mod.ts",
+  "../datetime/mod.ts",
+  "../encoding/mod.ts",
+  "../expect/mod.ts",
+  "../fmt/bytes.ts",
+  "../fmt/colors.ts",
+  "../fmt/duration.ts",
+  "../fmt/printf.ts",
+  "../front_matter/mod.ts",
+  "../fs/mod.ts",
+  "../html/mod.ts",
+  "../http/mod.ts",
+  "../ini/mod.ts",
   "../internal/mod.ts",
+  "../json/mod.ts",
+  "../jsonc/mod.ts",
   "../media_types/mod.ts",
+  "../msgpack/mod.ts",
+  "../net/mod.ts",
+  "../path/mod.ts",
+  "../path/posix/mod.ts",
+  "../path/windows/mod.ts",
+  "../regexp/mod.ts",
+  "../semver/mod.ts",
+  "../streams/mod.ts",
+  "../text/mod.ts",
+  "../testing/bdd.ts",
+  "../testing/mock.ts",
+  "../testing/snapshot.ts",
+  "../testing/time.ts",
+  "../testing/types.ts",
+  "../toml/mod.ts",
+  "../ulid/mod.ts",
+  "../url/mod.ts",
+  "../uuid/mod.ts",
+  "../webgpu/mod.ts",
 ] as const;
 
-const MD_SNIPPET = /(?<=```ts\n)(\n|.)*(?=\n```)/g;
+const TS_SNIPPET = /```ts[\s\S]*?```/g;
+const ASSERTION_IMPORT =
+  /from "@std\/(assert(\/[a-z-]+)?|testing\/(mock|snapshot|types))"/g;
+const NEWLINE = "\n";
+const diagnostics: DocumentError[] = [];
+const snippetPromises: Promise<void>[] = [];
 
 class DocumentError extends Error {
-  constructor(message: string, document: DocNodeBase) {
+  constructor(
+    message: string,
+    document: { location: Location },
+  ) {
     super(message, {
       cause: `${document.location.filename}:${document.location.line}`,
     });
@@ -39,153 +94,394 @@ class DocumentError extends Error {
 function assert(
   condition: boolean,
   message: string,
-  document: DocNodeBase,
-): asserts condition {
+  document: { location: Location },
+) {
   if (!condition) {
-    throw new DocumentError(message, document);
+    diagnostics.push(new DocumentError(message, document));
   }
-}
-
-/**
- * We only check functions that have JSDocs. We know that exported functions
- * have JSDocs thanks to `deno doc --lint`, which is used in the `lint:docs`
- * task.
- */
-function isFunctionDoc(document: DocNodeBase): document is DocNodeFunction {
-  return document.kind === "function" && document.jsDoc !== undefined;
 }
 
 function isExported(document: DocNodeBase) {
   return document.declarationKind === "export";
 }
 
-function assertHasTag(tags: JsDocTag[], kind: string, document: DocNodeBase) {
-  const tag = tags.find((tag) => tag.kind === kind);
-  assert(tag !== undefined, `Symbol must have a @${kind} tag`, document);
-  assert(
-    // @ts-ignore doc is defined
-    tag.doc !== undefined,
-    `@${kind} tag must have a description`,
-    document,
-  );
+function isVoidOrPromiseVoid(returnType: TsTypeDef) {
+  return isVoid(returnType) ||
+    (returnType.kind === "typeRef" &&
+      returnType.typeRef.typeName === "Promise" &&
+      returnType.typeRef.typeParams?.length === 1 &&
+      isVoid(returnType.typeRef.typeParams[0]!));
+}
+
+function isTypeAsserts(returnType: TsTypeDef) {
+  return returnType.kind === "typePredicate" &&
+    returnType.typePredicate.asserts;
+}
+
+function isVoid(returnType: TsTypeDef) {
+  return returnType.kind === "keyword" && returnType.keyword === "void";
+}
+
+function assertHasReturnTag(document: { jsDoc: JsDoc; location: Location }) {
+  const tag = document.jsDoc.tags?.find((tag) => tag.kind === "return");
+  if (tag === undefined) {
+    diagnostics.push(
+      new DocumentError("Symbol must have a @return or @returns tag", document),
+    );
+  } else {
+    assert(
+      // @ts-ignore doc is defined
+      tag.doc !== undefined,
+      "@return tag must have a description",
+      document,
+    );
+  }
 }
 
 function assertHasParamTag(
-  tags: JsDocTag[],
+  document: { jsDoc: JsDoc; location: Location },
   param: string,
-  document: DocNodeBase,
 ) {
-  const tag = tags.find((tag) => tag.kind === "param" && tag.name === param);
-  assert(
-    tag !== undefined,
-    `Symbol must have a @param tag for ${param}`,
-    document,
+  const tag = document.jsDoc.tags?.find((tag) =>
+    tag.kind === "param" && tag.name === param
   );
-  assert(
-    // @ts-ignore doc is defined
-    tag.doc !== undefined,
-    `@param tag for ${param} must have a description`,
-    document,
-  );
-}
-
-function assertHasExampleTag(tags: JsDocTag[], document: DocNodeBase) {
-  tags = tags.filter((tag) => tag.kind === "example");
-  if (tags.length === 0) {
-    throw new DocumentError("Symbol must have an @example tag", document);
-  }
-  for (const tag of (tags as JsDocTagDocRequired[])) {
+  if (!tag) {
+    diagnostics.push(
+      new DocumentError(`Symbol must have a @param tag for ${param}`, document),
+    );
+  } else {
     assert(
+      // @ts-ignore doc is defined
       tag.doc !== undefined,
-      "@example tag must have a description",
+      `@param tag for ${param} must have a description`,
       document,
     );
-    const snippets = tag.doc.match(MD_SNIPPET);
-    if (snippets === null) {
-      throw new DocumentError(
-        "@example tag must have a code snippet",
-        document,
-      );
-    }
-    for (const snippet of snippets) {
-      const command = new Deno.Command(Deno.execPath(), {
-        args: [
-          "eval",
-          "--ext=ts",
-          snippet,
-        ],
-        stderr: "piped",
-      });
-      // TODO(iuioiua): Use `await command.output()`
-      const { success, stderr } = command.outputSync();
-      assert(
-        success,
-        `Example code snippet failed to execute: \n${snippet}\n${
-          new TextDecoder().decode(stderr)
-        }`,
-        document,
-      );
-    }
   }
 }
 
-function assertHasTemplateTags(
-  tags: JsDocTag[],
-  template: string,
-  document: DocNodeBase,
+async function assertSnippetEvals(
+  snippet: string,
+  document: { jsDoc: JsDoc; location: Location },
 ) {
-  const tag = tags.find((tag) =>
-    tag.kind === "template" && tag.name === template
-  );
-  assert(
-    tag !== undefined,
-    `Symbol must have a @template tag for ${template}`,
-    document,
-  );
-  assert(
-    // @ts-ignore doc is defined
-    tag.doc !== undefined,
-    `@template tag for ${template} must have a description`,
-    document,
-  );
+  const command = new Deno.Command(Deno.execPath(), {
+    args: [
+      "eval",
+      "--ext=ts",
+      "--unstable-webgpu",
+      "--no-lock",
+      snippet,
+    ],
+    stderr: "piped",
+  });
+  const timeoutId = setTimeout(() => {
+    console.warn(
+      `Snippet at ${document.location.filename}:${document.location.line} has been running for more than 10 seconds...`,
+    );
+    console.warn(snippet);
+  }, 10_000);
+  try {
+    const { success, stderr } = await command.output();
+    const error = new TextDecoder().decode(stderr);
+    assert(
+      success,
+      `Failed to execute snippet: \n${snippet}\n${error}`,
+      document,
+    );
+  } finally {
+    clearTimeout(timeoutId);
+  }
 }
 
-function assertFunctionDocs(document: DocNodeFunction) {
-  assert(
-    document.jsDoc !== undefined,
-    "Symbol must have a JSDoc block",
-    document,
+function assertSnippetsWork(
+  doc: string,
+  document: { jsDoc: JsDoc; location: Location },
+  required = true,
+) {
+  const snippets = doc.match(TS_SNIPPET);
+  if (snippets === null) {
+    if (required) {
+      diagnostics.push(
+        new DocumentError(
+          "@example tag must have a TypeScript code snippet",
+          document,
+        ),
+      );
+      return;
+    } else {
+      return;
+    }
+  }
+  for (let snippet of snippets) {
+    const delim = snippet.split(NEWLINE)[0];
+    if (delim?.includes("no-eval")) continue;
+    // Trim the code block delimiters
+    snippet = snippet.split(NEWLINE).slice(1, -1).join(NEWLINE);
+    if (!delim?.includes("no-assert")) {
+      assert(
+        snippet.match(ASSERTION_IMPORT) !== null,
+        "Snippet must contain assertion from '@std/assert'",
+        document,
+      );
+    }
+    snippetPromises.push(assertSnippetEvals(snippet, document));
+  }
+}
+
+function assertHasExampleTag(
+  document: { jsDoc: JsDoc; location: Location },
+) {
+  const tags = document.jsDoc.tags?.filter((tag) =>
+    tag.kind === "example"
+  ) as JsDocTagDocRequired[];
+  if (tags === undefined || tags.length === 0) {
+    diagnostics.push(
+      new DocumentError("Symbol must have an @example tag", document),
+    );
+    return;
+  }
+  for (const tag of tags) {
+    assert(
+      tag.doc !== undefined,
+      "@example tag must have a title and TypeScript code snippet",
+      document,
+    );
+    /**
+     * Otherwise, if the example title is undefined, it is given the title
+     * "Example #" by default.
+     */
+    assert(
+      !tag.doc.startsWith("```ts"),
+      "@example tag must have a title",
+      document,
+    );
+    assertSnippetsWork(tag.doc, document);
+  }
+}
+
+function assertHasTypeParamTags(
+  document: { jsDoc: JsDoc; location: Location },
+  typeParamName: string,
+) {
+  const tag = document.jsDoc.tags?.find((tag) =>
+    tag.kind === "template" && tag.name === typeParamName
   );
-  const { tags } = document.jsDoc;
-  assert(tags !== undefined, "JSDoc block must have tags", document);
+  if (tag === undefined) {
+    diagnostics.push(
+      new DocumentError(
+        `Symbol must have a @typeParam tag for ${typeParamName}`,
+        document,
+      ),
+    );
+  } else {
+    assert(
+      // @ts-ignore doc is defined
+      tag.doc !== undefined,
+      `@typeParam tag for ${typeParamName} must have a description`,
+      document,
+    );
+  }
+}
+
+/**
+ * Asserts that a function document has:
+ * - A `@typeParam` tag for each type parameter.
+ * - A {@linkcode https://jsdoc.app/tags-param | @param} tag for each parameter.
+ * - A {@linkcode https://jsdoc.app/tags-returns | @returns} tag.
+ * - At least one {@linkcode https://jsdoc.app/tags-example | @example} tag with
+ *   a code snippet that executes successfully.
+ */
+function assertFunctionDocs(
+  document: DocNodeWithJsDoc<DocNodeFunction | ClassMethodDef>,
+) {
+  assertSnippetsWork(document.jsDoc.doc!, document, false);
   for (const param of document.functionDef.params) {
     if (param.kind === "identifier") {
-      assertHasParamTag(tags, param.name, document);
+      assertHasParamTag(document, param.name);
     }
-    if (param.kind === "assign") {
-      // @ts-ignore Trust me
-      assertHasParamTag(tags, param.left.name, document);
+    if (param.kind === "assign" && param.left.kind === "identifier") {
+      assertHasParamTag(document, param.left.name);
     }
   }
   for (const typeParam of document.functionDef.typeParams) {
-    assertHasTemplateTags(tags, typeParam.name, document);
+    assertHasTypeParamTags(document, typeParam.name);
   }
-  assertHasTag(tags, "return", document);
-  assertHasExampleTag(tags, document);
+  if (
+    document.functionDef.returnType !== undefined &&
+    !isVoidOrPromiseVoid(document.functionDef.returnType) &&
+    !isTypeAsserts(document.functionDef.returnType)
+  ) {
+    assertHasReturnTag(document);
+  }
+  assertHasExampleTag(document);
+}
+
+/**
+ * Asserts that a class document has:
+ * - A `@typeParam` tag for each type parameter.
+ * - At least one {@linkcode https://jsdoc.app/tags-example | @example} tag with
+ *   a code snippet that executes successfully.
+ * - Documentation on all properties, methods, and constructors.
+ */
+function assertClassDocs(document: DocNodeWithJsDoc<DocNodeClass>) {
+  assertSnippetsWork(document.jsDoc.doc!, document, false);
+  for (const typeParam of document.classDef.typeParams) {
+    assertHasTypeParamTags(document, typeParam.name);
+  }
+  assertHasExampleTag(document);
+
+  for (const property of document.classDef.properties) {
+    if (property.jsDoc === undefined) continue; // this is caught by `deno doc --lint`
+    if (property.accessibility !== undefined) {
+      diagnostics.push(
+        new DocumentError(
+          "Do not use `public`, `protected`, or `private` fields in classes",
+          property,
+        ),
+      );
+      continue;
+    }
+    assertClassPropertyDocs(
+      property as DocNodeWithJsDoc<ClassPropertyDef>,
+    );
+  }
+  for (const method of document.classDef.methods) {
+    if (method.jsDoc === undefined) continue; // this is caught by `deno doc --lint`
+    if (method.accessibility !== undefined) {
+      diagnostics.push(
+        new DocumentError(
+          "Do not use `public`, `protected`, or `private` methods in classes",
+          method,
+        ),
+      );
+    }
+    assertFunctionDocs(method as DocNodeWithJsDoc<ClassMethodDef>);
+  }
+  for (const constructor of document.classDef.constructors) {
+    if (constructor.jsDoc === undefined) continue; // this is caught by `deno doc --lint`
+    if (constructor.accessibility !== undefined) {
+      diagnostics.push(
+        new DocumentError(
+          "Do not use `public`, `protected`, or `private` constructors in classes",
+          constructor,
+        ),
+      );
+    }
+    assertConstructorDocs(
+      constructor as DocNodeWithJsDoc<ClassConstructorDef>,
+    );
+  }
+}
+
+/**
+ * Asserts that a class property document has:
+ * - At least one {@linkcode https://jsdoc.app/tags-example | @example} tag with
+ *   a code snippet that executes successfully.
+ */
+function assertClassPropertyDocs(
+  property: DocNodeWithJsDoc<ClassPropertyDef>,
+) {
+  assertHasExampleTag(property);
+}
+
+/**
+ * Checks a constructor document for:
+ * - No TypeScript parameters marked with `public`, `protected`, or `private`.
+ * - A {@linkcode https://jsdoc.app/tags-param | @param} tag for each parameter.
+ * - At least one {@linkcode https://jsdoc.app/tags-example | @example} tag with
+ *   a code snippet that executes successfully.
+ */
+function assertConstructorDocs(
+  constructor: DocNodeWithJsDoc<ClassConstructorDef>,
+) {
+  for (const param of constructor.params) {
+    assert(
+      param.accessibility === undefined,
+      "Do not use `public`, `protected`, or `private` parameters in constructors",
+      constructor,
+    );
+    if (param.kind === "identifier") {
+      assertHasParamTag(constructor, param.name);
+    }
+    if (param.kind === "assign" && param.left.kind === "identifier") {
+      assertHasParamTag(constructor, param.left.name);
+    }
+  }
+  assertHasExampleTag(constructor);
+}
+
+/**
+ * Checks a module document for:
+ * - Code snippets that execute successfully.
+ */
+function assertModuleDoc(document: DocNodeWithJsDoc<DocNodeModuleDoc>) {
+  assertSnippetsWork(document.jsDoc.doc!, document);
+}
+
+function resolve(specifier: string, referrer: string): string {
+  if (specifier.startsWith("@std/") && specifier.split("/").length > 2) {
+    specifier = specifier.replace("@std/", "../").replaceAll("-", "_") + ".ts";
+  }
+  return new URL(specifier, referrer).href;
 }
 
 async function checkDocs(specifier: string) {
-  const docs = await doc(specifier);
-  for (const document of docs.filter(isExported)) {
-    if (isFunctionDoc(document)) {
-      assertFunctionDocs(document);
+  const docs = await doc(specifier, { resolve });
+  for (const d of docs.filter(isExported)) {
+    if (d.jsDoc === undefined) continue; // this is caught by other checks
+    const document = d as DocNodeWithJsDoc<DocNode>;
+    switch (document.kind) {
+      case "moduleDoc": {
+        assertModuleDoc(document);
+        break;
+      }
+      case "function": {
+        assertFunctionDocs(document);
+        break;
+      }
+      case "class": {
+        assertClassDocs(document);
+        break;
+      }
     }
   }
 }
 
-const promises = [];
-for (const entry of ENTRY_POINTS) {
-  const { href } = new URL(entry, import.meta.url);
-  promises.push(checkDocs(href));
+const ENTRY_POINT_URLS = ENTRY_POINTS.map((entry) =>
+  new URL(entry, import.meta.url).href
+);
+
+const lintStatus = await new Deno.Command(Deno.execPath(), {
+  args: ["doc", "--lint", ...ENTRY_POINT_URLS],
+  stdin: "inherit",
+  stdout: "inherit",
+  stderr: "inherit",
+}).output();
+if (!lintStatus.success) {
+  console.error(
+    `%c[error] %c'deno doc --lint' failed`,
+    "color: red",
+    "",
+  );
+  Deno.exit(1);
 }
+
+const promises = [];
+for (const url of ENTRY_POINT_URLS) {
+  promises.push(checkDocs(url));
+}
+
 await Promise.all(promises);
+await Promise.all(snippetPromises);
+if (diagnostics.length > 0) {
+  for (const error of diagnostics) {
+    console.error(
+      `%c[error] %c${error.message} %cat ${error.cause}`,
+      "color: red",
+      "",
+      "color: gray",
+    );
+  }
+
+  console.log(`%c${diagnostics.length} errors found`, "color: red");
+  Deno.exit(1);
+}

@@ -95,9 +95,10 @@ async function calcFileInfo(
  * it will be fingerprinted as a "strong" tag, otherwise if it is just file
  * information, it will be calculated as a weak tag.
  *
+ * @example Usage
  * ```ts
  * import { calculate } from "@std/http/etag";
- * import { assert } from "@std/assert/assert"
+ * import { assert } from "@std/assert/assert";
  *
  * const body = "hello deno!";
  *
@@ -106,6 +107,10 @@ async function calcFileInfo(
  *
  * const res = new Response(body, { headers: { etag } });
  * ```
+ *
+ * @param entity The entity to get the ETag for.
+ * @param options Various additional options.
+ * @returns The calculated ETag.
  */
 export async function calculate(
   entity: Entity,
@@ -127,7 +132,8 @@ export async function calculate(
  * See MDN's [`If-Match`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/If-Match)
  * article for more information on how to use this function.
  *
- * ```ts
+ * @example Usage
+ * ```ts no-eval
  * import {
  *   calculate,
  *   ifMatch,
@@ -147,6 +153,10 @@ export async function calculate(
  *   }
  * });
  * ```
+ *
+ * @param value the If-Match header value.
+ * @param etag the ETag to check against.
+ * @returns whether or not the parameters match.
  */
 export function ifMatch(
   value: string | null,
@@ -170,7 +180,8 @@ export function ifMatch(
  * See MDN's [`If-None-Match`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/If-None-Match)
  * article for more information on how to use this function.
  *
- * ```ts
+ * @example Usage
+ * ```ts no-eval
  * import {
  *   calculate,
  *   ifNoneMatch,
@@ -190,6 +201,10 @@ export function ifMatch(
  *   }
  * });
  * ```
+ *
+ * @param value the If-None-Match header value.
+ * @param etag the ETag to check against.
+ * @returns whether or not the parameters do not match.
  */
 export function ifNoneMatch(
   value: string | null,

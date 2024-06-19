@@ -1,6 +1,5 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import { assertExists } from "@std/assert/assert-exists";
 import { describeTextureFormat } from "./describe_texture_format.ts";
 
 function textureDimensionArrayLayerCount(
@@ -18,7 +17,7 @@ function textureDimensionArrayLayerCount(
 
 function normalizeExtent3D(size: GPUExtent3D): GPUExtent3DDict {
   if (Array.isArray(size)) {
-    assertExists(size[0]);
+    if (size[0] === undefined) throw new TypeError("Width must be defined");
     return {
       width: size[0],
       height: size[1],
@@ -83,8 +82,8 @@ function textureMipLevelSize(
 /**
  * Create a {@linkcode GPUTexture} with data.
  *
- * @example
- * ```ts
+ * @example Usage
+ * ```ts no-eval
  * import { createTextureWithData } from "@std/webgpu/texture-with-data";
  *
  * const adapter = await navigator.gpu.requestAdapter();
@@ -99,6 +98,11 @@ function textureMipLevelSize(
  *   usage: GPUTextureUsage.COPY_SRC,
  * }, new Uint8Array([1, 1, 1, 1, 1, 1, 1]));
  * ```
+ *
+ * @param device The device to create the texture with.
+ * @param descriptor The texture descriptor to create the texture with.
+ * @param data The data to write to the texture.
+ * @returns The newly created texture.
  */
 export function createTextureWithData(
   device: GPUDevice,

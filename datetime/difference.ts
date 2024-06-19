@@ -50,35 +50,43 @@ function calculateMonthsDifference(from: Date, to: Date): number {
  * @example Basic usage
  * ```ts
  * import { difference } from "@std/datetime/difference";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const date0 = new Date("2018-05-14");
  * const date1 = new Date("2020-05-13");
  *
- * difference(date0, date1);
- * // {
- * //   milliseconds: 63072000000,
- * //   seconds: 63072000,
- * //   minutes: 1051200,
- * //   hours: 17520,
- * //   days: 730,
- * //   weeks: 104,
- * //   months: 23,
- * //   quarters: 7,
- * //   years: 1
- * // }
+ * assertEquals(difference(date0, date1), {
+ *   milliseconds: 63072000000,
+ *   seconds: 63072000,
+ *   minutes: 1051200,
+ *   hours: 17520,
+ *   days: 730,
+ *   weeks: 104,
+ *   months: 23,
+ *   quarters: 7,
+ *   years: 1
+ * });
  * ```
  *
  * @example Calculate difference in specific units
+ *
+ * The `units` option defines which units to calculate the difference in.
+ *
  * ```ts
  * import { difference } from "@std/datetime/difference";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const date0 = new Date("2018-05-14");
  * const date1 = new Date("2020-05-13");
  *
- * difference(date0, date1, { units: ["days", "months", "years"] });
- * // { days: 730, months: 23, years: 1 }
+ * const result = difference(date0, date1, { units: ["days", "months", "years"] });
+ *
+ * assertEquals(result, {
+ *   days: 730,
+ *   months: 23,
+ *   years: 1
+ * });
  * ```
- * The `units` option defines which units to calculate the difference in.
  */
 export function difference(
   from: Date,

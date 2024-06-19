@@ -10,7 +10,18 @@ import { isPathSeparator, isWindowsDeviceRoot } from "./_util.ts";
  * Normalize the `path`, resolving `'..'` and `'.'` segments.
  * Note that resolving these segments does not necessarily mean that all will be eliminated.
  * A `'..'` at the top-level will be preserved, and an empty path is canonically `'.'`.
- * @param path to be normalized
+ *
+ * @example Usage
+ * ```ts
+ * import { normalize } from "@std/path/windows/normalize";
+ * import { assertEquals } from "@std/assert/assert-equals";
+ *
+ * const normalized = normalize("C:\\foo\\..\\bar");
+ * assertEquals(normalized, "C:\\bar");
+ * ```
+ *
+ * @param path The path to normalize
+ * @returns The normalized path
  */
 export function normalize(path: string): string {
   assertArg(path);
@@ -111,17 +122,11 @@ export function normalize(path: string): string {
     if (isAbsolute) {
       if (tail.length > 0) return `\\${tail}`;
       else return "\\";
-    } else if (tail.length > 0) {
-      return tail;
-    } else {
-      return "";
     }
+    return tail;
   } else if (isAbsolute) {
     if (tail.length > 0) return `${device}\\${tail}`;
     else return `${device}\\`;
-  } else if (tail.length > 0) {
-    return device + tail;
-  } else {
-    return device;
   }
+  return device + tail;
 }

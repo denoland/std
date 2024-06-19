@@ -29,7 +29,7 @@ export interface SlidingWindowsOptions {
  * If partial is set, windows will be generated for the last elements of the
  * collection, resulting in some undefined values if size is greater than 1.
  *
- * @template T The type of the array elements.
+ * @typeParam T The type of the array elements.
  *
  * @param array The array to generate sliding windows from.
  * @param size The size of the sliding windows.

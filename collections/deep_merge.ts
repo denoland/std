@@ -10,7 +10,7 @@ import { filterInPlace } from "./_utils.ts";
  * For arrays, maps and sets, a merging strategy can be specified to either
  * `replace` values, or `merge` them instead.
  *
- * @template T Type of the first record
+ * @typeParam T Type of the first record
  *
  * @param record First record to merge.
  * @param other Second record to merge.
@@ -107,9 +107,9 @@ export function deepMerge<
  * For arrays, maps and sets, a merging strategy can be specified to either
  * `replace` values, or `merge` them instead.
  *
- * @template T Type of the first record
- * @template U Type of the second record
- * @template Options Merging options
+ * @typeParam T Type of the first record
+ * @typeParam U Type of the second record
+ * @typeParam Options Merging options
  *
  * @param record First record to merge.
  * @param other Second record to merge.

@@ -16,13 +16,18 @@ export interface GlobOptions {
    * @default {true}
    */
   globstar?: boolean;
-  /** Whether globstar should be case-insensitive. */
+  /**
+   * Whether globstar should be case-insensitive.
+   *
+   * @default {false}
+   */
   caseInsensitive?: boolean;
 }
 
+/** Options for {@linkcode globToRegExp}. */
 export type GlobToRegExpOptions = GlobOptions;
 
-const regExpEscapeChars = [
+const REG_EXP_ESCAPE_CHARS = [
   "!",
   "$",
   "(",
@@ -37,8 +42,12 @@ const regExpEscapeChars = [
   "^",
   "{",
   "|",
-];
-const rangeEscapeChars = ["-", "\\", "]"];
+] as const;
+const RANGE_ESCAPE_CHARS = ["-", "\\", "]"] as const;
+
+type RegExpEscapeChar = typeof REG_EXP_ESCAPE_CHARS[number];
+type RangeEscapeChar = typeof RANGE_ESCAPE_CHARS[number];
+type EscapeChar = RegExpEscapeChar | RangeEscapeChar;
 
 export interface GlobConstants {
   sep: string;
@@ -83,8 +92,12 @@ export function _globToRegExp(
     for (; i < glob.length && !c.seps.includes(glob[i]!); i++) {
       if (inEscape) {
         inEscape = false;
-        const escapeChars = inRange ? rangeEscapeChars : regExpEscapeChars;
-        segment += escapeChars.includes(glob[i]!) ? `\\${glob[i]}` : glob[i];
+        const escapeChars = (inRange
+          ? RANGE_ESCAPE_CHARS
+          : REG_EXP_ESCAPE_CHARS) as unknown as EscapeChar[];
+        segment += escapeChars.includes(glob[i]! as EscapeChar)
+          ? `\\${glob[i]}`
+          : glob[i];
         continue;
       }
 
@@ -141,11 +154,7 @@ export function _globToRegExp(
       }
 
       if (inRange) {
-        if (glob[i] === "\\") {
-          segment += `\\\\`;
-        } else {
-          segment += glob[i];
-        }
+        segment += glob[i];
         continue;
       }
 
@@ -247,7 +256,7 @@ export function _globToRegExp(
         continue;
       }
 
-      segment += regExpEscapeChars.includes(glob[i]!)
+      segment += REG_EXP_ESCAPE_CHARS.includes(glob[i]! as RegExpEscapeChar)
         ? `\\${glob[i]}`
         : glob[i];
     }
@@ -257,7 +266,9 @@ export function _globToRegExp(
       // Parse failure. Take all characters from this segment literally.
       segment = "";
       for (const c of glob.slice(j, i)) {
-        segment += regExpEscapeChars.includes(c) ? `\\${c}` : c;
+        segment += REG_EXP_ESCAPE_CHARS.includes(c as RegExpEscapeChar)
+          ? `\\${c}`
+          : c;
         endsWithSep = false;
       }
     }
@@ -271,10 +282,6 @@ export function _globToRegExp(
     // Terminates with `i` at the start of the next segment.
     while (c.seps.includes(glob[i]!)) i++;
 
-    // Check that the next value of `j` is indeed higher than the current value.
-    if (!(i > j)) {
-      throw new Error("Assertion failure: i > j (potential infinite loop)");
-    }
     j = i;
   }
 

@@ -64,11 +64,8 @@ documentation:
 
 ## Stabilization
 
-The Standard Library is now in the process of stabilizing its packages. Below is
-the current schedule:
-
-- [ ] [`@std/bytes`](https://jsr.io/@std/bytes) is being stabilized on July 7,
-      2024 ([#4746](https://github.com/denoland/deno_std/pull/4746))
+The Standard Library is now in the process of stabilizing its packages. See
+#4600 for the release schedule.
 
 Each package must go through the following steps to achieve stabilization:
 
@@ -110,13 +107,9 @@ Check out the contributing guidelines [here](.github/CONTRIBUTING.md).
 
 ## Releases
 
-The Standard Library is versioned independently of the Deno CLI. This will
-change once the Standard Library is stabilized. See
-[here](https://deno.com/versions.json) for the compatibility of different
-versions of the Deno Standard Library and the Deno CLI.
-
-A new minor version of the Standard Library is published at the same time as
-every new version of the Deno CLI (including patch versions).
+New versions of packages are published every 1 or 2 weeks. Package versions
+>=1.0.0 follow [Semantic Versioning](https://semver.org/), and package versions
+<1.0.0 follow [this proposal](https://github.com/semver/semver/pull/923).
 
 ## Badge
 

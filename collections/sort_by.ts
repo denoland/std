@@ -20,7 +20,7 @@ export type SortByOptions = {
  * element. Ascending or descending order can be specified through the `order`
  * option. By default, the elements are sorted in ascending order.
  *
- * @template T The type of the array elements.
+ * @typeParam T The type of the array elements.
  *
  * @param array The array to sort.
  * @param selector The selector function to get the value to sort by.
@@ -66,7 +66,7 @@ export function sortBy<T>(
  * element. Ascending or descending order can be specified through the `order`
  * option. By default, the elements are sorted in ascending order.
  *
- * @template T The type of the array elements.
+ * @typeParam T The type of the array elements.
  *
  * @param array The array to sort.
  * @param selector The selector function to get the value to sort by.
@@ -77,6 +77,7 @@ export function sortBy<T>(
  * @example Usage
  * ```ts
  * import { sortBy } from "@std/collections/sort-by";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const people = [
  *   { name: "Anna" },
@@ -84,6 +85,12 @@ export function sortBy<T>(
  *   { name: "John" },
  * ];
  * const sortedByName = sortBy(people, (it) => it.name);
+ *
+ * assertEquals(sortedByName, [
+ *   { name: "Anna" },
+ *   { name: "John" },
+ *   { name: "Kim" },
+ * ]);
  * ```
  */
 export function sortBy<T>(
@@ -97,7 +104,7 @@ export function sortBy<T>(
  * element. Ascending or descending order can be specified through the `order`
  * option. By default, the elements are sorted in ascending order.
  *
- * @template T The type of the array elements.
+ * @typeParam T The type of the array elements.
  *
  * @param array The array to sort.
  * @param selector The selector function to get the value to sort by.
@@ -137,7 +144,7 @@ export function sortBy<T>(
  * element. Ascending or descending order can be specified through the `order`
  * option. By default, the elements are sorted in ascending order.
  *
- * @template T The type of the array elements.
+ * @typeParam T The type of the array elements.
  *
  * @param array The array to sort.
  * @param selector The selector function to get the value to sort by.

@@ -10,7 +10,7 @@ import {
   parseRange,
 } from "./mod.ts";
 
-Deno.test("lessThanRange() checks if the semver is less than the range", async (t) => {
+Deno.test("lessThanRange() checks if the SemVer is less than the range", async (t) => {
   // From https://github.com/npm/node-semver/blob/692451bd6f75b38a71a99f39da405c94a5954a22/test/fixtures/version-lt-range.js
   const versionLtRange = [
     ["~1.2.2", "1.2.1"],

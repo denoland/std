@@ -150,3 +150,87 @@ Deno.test("decode() handles negative fixint", () => {
     assertEquals(decode(Uint8Array.of(i)), i);
   }
 });
+
+const EARLY_EOF_CASES: Record<string, number[]> = {
+  "empty input is invalid": [],
+  "fixmap with one entry, no data": [0b1000_0001],
+  "fixarray with one entry, no data": [0b1001_0001],
+  "fixstr with length 1, no data": [0b1011_0001],
+  "bin 8 with no length": [0xc4],
+  "bin 8 with length 1, no data": [0xc4, 1],
+  "bin 16 with no length": [0xc5],
+  "bin 16 with too short length": [0xc5, 0],
+  "bin 16 with length 1, no data": [0xc5, 0, 1],
+  "bin 32 with no length": [0xc6],
+  "bin 32 with too short length": [0xc6, 0, 0],
+  "bin 32 with length 1, no data": [0xc6, 0, 0, 0, 1],
+  "float 32 with no data": [0xca],
+  "float 32 with too short data": [0xca, 0x43, 0xd2, 0x58],
+  "float 64 with no data": [0xcb],
+  "float 64 with too short data": [0xcb, 0x40, 0x09, 0x21, 0xFB, 0x54],
+  "uint 8 with no data": [0xcc],
+  "uint 16 with no data": [0xcd],
+  "uint 16 with too short data": [0xcd, 0],
+  "uint 32 with no data": [0xce],
+  "uint 32 with too short data": [0xce, 0, 0],
+  "uint 64 with no data": [0xcf],
+  "uint 64 with too short data": [0xcf, 0, 0, 0, 0, 0],
+  "int 8 with no data": [0xd0],
+  "int 16 with no data": [0xd1],
+  "int 16 with too short data": [0xd1, 0],
+  "int 32 with no data": [0xd2],
+  "int 32 with too short data": [0xd2, 0, 0],
+  "int 64 with no data": [0xd3],
+  "int 64 with too short data": [0xd3, 0, 0, 0, 0, 0],
+  "str 8 with no length": [0xd9],
+  "str 8 with length 1, no data": [0xd9, 1],
+  "str 16 with no length": [0xda],
+  "str 16 with too short length": [0xda, 0],
+  "str 16 with length 1, no data": [0xda, 0, 1],
+  "str 32 with no length": [0xdb],
+  "str 32 with too short length": [0xdb, 0, 0, 0],
+  "str 32 with length 1, no data": [0xdb, 0, 0, 0, 1],
+  "array 16 with no length": [0xdc],
+  "array 16 with too short length": [0xdc, 0],
+  "array 16 with length 1, no data": [0xdc, 0, 1],
+  "array 32 with no length": [0xdd],
+  "array 32 with too short length": [0xdd, 0, 0, 0],
+  "array 32 with length 1, no data": [0xdd, 0, 0, 0, 1],
+  "map 16 with no length": [0xde],
+  "map 16 with too short length": [0xde, 0],
+  "map 16 with length 1, no data": [0xde, 0, 1],
+  "map 32 with no length": [0xdf],
+  "map 32 with too short length": [0xdf, 0, 0, 0],
+  "map 32 with length 1, no data": [0xdf, 0, 0, 0, 1],
+};
+
+Deno.test("decode() handles early end of data", async (t) => {
+  for (const name in EARLY_EOF_CASES) {
+    await t.step(name, () => {
+      assertThrows(() => decode(new Uint8Array(EARLY_EOF_CASES[name]!)));
+    });
+  }
+});
+
+Deno.test("decode() throws when there's extra data after the end", () => {
+  assertThrows(
+    () => decode(Uint8Array.of(1, 0)), // extra 0 after 1
+    EvalError,
+    "Messagepack decode did not consume whole array",
+  );
+  assertThrows(
+    () => decode(Uint8Array.of(0xc3, 0)), // extra 0 after true
+    EvalError,
+    "Messagepack decode did not consume whole array",
+  );
+});
+
+Deno.test("decode() throws when the key of the map is of invalid type", () => {
+  // Decode something like map { true -> true }
+  // but true is not a valid key
+  assertThrows(
+    () => decode(Uint8Array.of(0b10000000 | 1, 0xc2, 0xc2)),
+    EvalError,
+    "Messagepack decode came across an invalid type for a key of a map",
+  );
+});

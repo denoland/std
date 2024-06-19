@@ -6,13 +6,8 @@
  * {@link https://code.visualstudio.com/docs/languages/json#_json-with-comments | JSONC}
  * (JSON with Comments) strings.
  *
- * This module is browser compatible.
- *
  * @module
  */
-
-import { assert } from "@std/assert/assert";
-
 import type { JsonValue } from "@std/json/common";
 export type { JsonValue } from "@std/json/common";
 
@@ -29,18 +24,19 @@ export interface ParseOptions {
  * Converts a JSON with Comments (JSONC) string into an object.
  * If a syntax error is found, throw a {@linkcode SyntaxError}.
  *
- * @example
+ * @example Usage
  * ```ts
  * import { parse } from "@std/jsonc";
+ * import { assertEquals } from "@std/assert";
  *
- * parse('{"foo": "bar", } // comment'); // { foo: "bar" }
- * parse('{"foo": "bar", } /* comment *\/'); // { foo: "bar" }
- * parse('{"foo": "bar" } // comment', {
- *   allowTrailingComma: false,
- * }); // { foo: "bar" }
+ * assertEquals(parse('{"foo": "bar"}'), { foo: "bar" });
+ * assertEquals(parse('{"foo": "bar", }'), { foo: "bar" });
+ * assertEquals(parse('{"foo": "bar", } /* comment *\/'), { foo: "bar" });
+ * assertEquals(parse('{"foo": "bar" } // comment', { allowTrailingComma: false }), { foo: "bar" });
  * ```
  *
  * @param text A valid JSONC string.
+ * @returns The parsed JsonValue from the JSONC string.
  */
 export function parse(
   text: string,
@@ -78,8 +74,6 @@ type Token = {
   sourceText: string;
   position: number;
 };
-
-const originalJSONParse = globalThis.JSON.parse;
 
 // First tokenize and then parse the token.
 class JSONCParser {
@@ -325,11 +319,13 @@ class JSONCParser {
     let parsed;
     try {
       // Use JSON.parse to handle `\u0000` etc. correctly.
-      parsed = originalJSONParse(value.sourceText);
+      parsed = JSON.parse(value.sourceText);
     } catch {
       throw new SyntaxError(buildErrorMessage(value));
     }
-    assert(typeof parsed === "string");
+    if (typeof parsed !== "string") {
+      throw new TypeError(`Parsed value is not a string: ${parsed}`);
+    }
     return parsed;
   }
   #parseNullOrTrueOrFalseOrNumber(value: {
@@ -349,11 +345,13 @@ class JSONCParser {
     let parsed;
     try {
       // Use JSON.parse to handle `+100`, `Infinity` etc. correctly.
-      parsed = originalJSONParse(value.sourceText);
+      parsed = JSON.parse(value.sourceText);
     } catch {
       throw new SyntaxError(buildErrorMessage(value));
     }
-    assert(typeof parsed === "number");
+    if (typeof parsed !== "number") {
+      throw new TypeError(`Parsed value is not a number: ${parsed}`);
+    }
     return parsed;
   }
 }

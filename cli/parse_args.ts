@@ -5,8 +5,6 @@
  * Command line arguments parser based on
  * {@link https://github.com/minimistjs/minimist | minimist}.
  *
- * This module is browser compatible.
- *
  * @example
  * ```ts
  * import { parseArgs } from "@std/cli/parse-args";
@@ -16,26 +14,34 @@
  *
  * @module
  */
-import { assert } from "@std/assert/assert";
 
-/** Combines recursively all intersection types and returns a new single type. */
+/** Combines recursively all intersection types and returns a new single type.
+ * @internal
+ */
 type Id<TRecord> = TRecord extends Record<string, unknown>
   ? TRecord extends infer InferredRecord
     ? { [Key in keyof InferredRecord]: Id<InferredRecord[Key]> }
   : never
   : TRecord;
 
-/** Converts a union type `A | B | C` into an intersection type `A & B & C`. */
+/** Converts a union type `A | B | C` into an intersection type `A & B & C`.
+ * @internal
+ */
 type UnionToIntersection<TValue> =
   (TValue extends unknown ? (args: TValue) => unknown : never) extends
     (args: infer R) => unknown ? R extends Record<string, unknown> ? R : never
     : never;
 
+/** @internal */
 type BooleanType = boolean | string | undefined;
+/** @internal */
 type StringType = string | undefined;
+/** @internal */
 type ArgType = StringType | BooleanType;
 
+/** @internal */
 type Collectable = string | undefined;
+/** @internal */
 type Negatable = string | undefined;
 
 type UseTypes<
@@ -52,6 +58,7 @@ type UseTypes<
 /**
  * Creates a record with all available flags with the corresponding type and
  * default type.
+ * @internal
  */
 type Values<
   TBooleans extends BooleanType,
@@ -79,6 +86,7 @@ type Values<
   // deno-lint-ignore no-explicit-any
   : Record<string, any>;
 
+/** @internal */
 type Aliases<TArgNames = string, TAliasNames extends string = string> = Partial<
   Record<Extract<TArgNames, string>, TAliasNames | ReadonlyArray<TAliasNames>>
 >;
@@ -126,6 +134,7 @@ type SpreadDefaults<TArgs, TDefaults> = TDefaults extends undefined ? TArgs
 /**
  * Defines the Record for the `default` option to add
  * auto-suggestion support for IDE's.
+ * @internal
  */
 type Defaults<TBooleans extends BooleanType, TStrings extends StringType> = Id<
   UnionToIntersection<
@@ -245,6 +254,7 @@ export type Args<
     : Record<never, never>)
 >;
 
+/** @internal */
 type DoubleDash = {
   /** Contains all the arguments that appear after the double dash: "--". */
   "--"?: Array<string>;
@@ -333,8 +343,7 @@ interface NestedMapping {
   [key: string]: NestedMapping | unknown;
 }
 
-function isNumber(x: unknown): boolean {
-  if (typeof x === "number") return true;
+function isNumber(x: string): boolean {
   if (/^0x[0-9a-f]+$/i.test(String(x))) return true;
   return /^[-+]?(?:\d+(?:\.\d*)?|\.\d+)(e[-+]?\d+)?$/.test(String(x));
 }
@@ -420,17 +429,32 @@ const FLAG_REGEXP =
  * Numeric-looking arguments will be returned as numbers unless `options.string`
  * or `options.boolean` is set for that argument name.
  *
- * @example
- * ```ts
- * import { parseArgs } from "@std/cli/parse-args";
- * const parsedArgs = parseArgs(Deno.args);
- * ```
+ * @param args An array of command line arguments.
  *
- * @example
+ * @typeParam TArgs Type of result.
+ * @typeParam TDoubleDash Used by `TArgs` for the result.
+ * @typeParam TBooleans Used by `TArgs` for the result.
+ * @typeParam TStrings Used by `TArgs` for the result.
+ * @typeParam TCollectable Used by `TArgs` for the result.
+ * @typeParam TNegatable Used by `TArgs` for the result.
+ * @typeParam TDefaults Used by `TArgs` for the result.
+ * @typeParam TAliases Used by `TArgs` for the result.
+ * @typeParam TAliasArgNames Used by `TArgs` for the result.
+ * @typeParam TAliasNames Used by `TArgs` for the result.
+ *
+ * @return The parsed arguments.
+ *
+ * @example Usage
  * ```ts
  * import { parseArgs } from "@std/cli/parse-args";
- * const parsedArgs = parseArgs(["--foo", "--bar=baz", "./quux.txt"]);
- * // parsedArgs: { foo: true, bar: "baz", _: ["./quux.txt"] }
+ * import { assertEquals } from "@std/assert/assert-equals";
+ *
+ * // For proper use, one should use `parseArgs(Deno.args)`
+ * assertEquals(parseArgs(["--foo", "--bar=baz", "./quux.txt"]), {
+ *   foo: true,
+ *   bar: "baz",
+ *   _: ["./quux.txt"],
+ * });
  * ```
  */
 export function parseArgs<
@@ -484,7 +508,7 @@ export function parseArgs<
   if (alias) {
     for (const key in alias) {
       const val = (alias as Record<string, unknown>)[key];
-      assert(val !== undefined);
+      if (val === undefined) throw new TypeError("Alias value must be defined");
       const aliases = Array.isArray(val) ? val : [val];
       aliasMap.set(key, new Set(aliases));
       aliases.forEach((alias) =>

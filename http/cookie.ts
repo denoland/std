@@ -3,12 +3,10 @@
 // https://github.com/golang/go/blob/master/src/net/http/cookie.go
 // This module is browser compatible.
 
-import { assert } from "@std/assert/assert";
-
 /**
  * Represents an HTTP Cookie.
  *
- * @see {@link https://tools.ietf.org/html/rfc6265#section-4.1.1}
+ * @see {@link https://www.rfc-editor.org/rfc/rfc6265.html#section-4.2.1}
  */
 export interface Cookie {
   /** Name of the cookie. */
@@ -52,6 +50,18 @@ export interface Cookie {
   /** The cookie's `HTTPOnly` attribute. If `true`, the cookie cannot be accessed via JavaScript. */
   httpOnly?: boolean;
   /**
+   * The cookie's `Partitioned` attribute.
+   * If `true`, the cookie will be only be included in the `Cookie` request header if
+   * the domain it is embedded by matches the domain the cookie was originally set from.
+   *
+   * Warning: This is an attribute that has not been fully standardized yet.
+   * It may change in the future without following the semver semantics of the package.
+   * Clients may ignore the attribute until they understand it.
+   *
+   * @default {false}
+   */
+  partitioned?: boolean;
+  /**
    * Allows servers to assert that a cookie ought not to
    * be sent along with cross-site requests.
    */
@@ -72,7 +82,7 @@ function toString(cookie: Cookie): string {
   out.push(`${cookie.name}=${cookie.value}`);
 
   // Fallback for invalid Set-Cookie
-  // ref: https://tools.ietf.org/html/draft-ietf-httpbis-cookie-prefixes-00#section-3.1
+  // ref: https://www.rfc-editor.org/rfc/rfc6265.html#section-3.1
   if (cookie.name.startsWith("__Secure")) {
     cookie.secure = true;
   }
@@ -88,11 +98,15 @@ function toString(cookie: Cookie): string {
   if (cookie.httpOnly) {
     out.push("HttpOnly");
   }
+  if (cookie.partitioned) {
+    out.push("Partitioned");
+  }
   if (typeof cookie.maxAge === "number" && Number.isInteger(cookie.maxAge)) {
-    assert(
-      cookie.maxAge >= 0,
-      "Max-Age must be an integer superior or equal to 0",
-    );
+    if (cookie.maxAge < 0) {
+      throw new RangeError(
+        "Max-Age must be an integer superior or equal to 0. Cookie ignored.",
+      );
+    }
     out.push(`Max-Age=${cookie.maxAge}`);
   }
   if (cookie.domain) {
@@ -129,7 +143,7 @@ function validateName(name: string | undefined | null) {
 
 /**
  * Validate Path Value.
- * See {@link https://tools.ietf.org/html/rfc6265#section-4.1.2.4}.
+ * See {@link https://www.rfc-editor.org/rfc/rfc6265.html#section-4.1.2.4}.
  * @param path Path value.
  */
 function validatePath(path: string | null) {
@@ -151,7 +165,7 @@ function validatePath(path: string | null) {
 
 /**
  * Validate Cookie Value.
- * See {@link https://tools.ietf.org/html/rfc6265#section-4.1}.
+ * See {@link https://www.rfc-editor.org/rfc/rfc6265.html#section-4.1}.
  * @param value Cookie value.
  */
 function validateValue(name: string, value: string | null) {
@@ -178,7 +192,7 @@ function validateValue(name: string, value: string | null) {
 
 /**
  * Validate Cookie Domain.
- * See {@link https://datatracker.ietf.org/doc/html/rfc6265#section-4.1.2.3}.
+ * See {@link https://www.rfc-editor.org/rfc/rfc6265.html#section-4.1.2.3}.
  * @param domain Cookie domain.
  */
 function validateDomain(domain: string) {
@@ -194,15 +208,16 @@ function validateDomain(domain: string) {
 /**
  * Parse cookies of a header
  *
- * @example
+ * @example Usage
  * ```ts
  * import { getCookies } from "@std/http/cookie";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const headers = new Headers();
  * headers.set("Cookie", "full=of; tasty=chocolate");
  *
  * const cookies = getCookies(headers);
- * console.log(cookies); // { full: "of", tasty: "chocolate" }
+ * assertEquals(cookies, { full: "of", tasty: "chocolate" });
  * ```
  *
  * @param headers The headers instance to get cookies from
@@ -215,7 +230,9 @@ export function getCookies(headers: Headers): Record<string, string> {
     const c = cookie.split(";");
     for (const kv of c) {
       const [cookieKey, ...cookieVal] = kv.split("=");
-      assert(cookieKey !== undefined);
+      if (cookieKey === undefined) {
+        throw new TypeError("Cookie cannot start with '='");
+      }
       const key = cookieKey.trim();
       out[key] = cookieVal.join("=");
     }
@@ -227,19 +244,18 @@ export function getCookies(headers: Headers): Record<string, string> {
 /**
  * Set the cookie header properly in the headers
  *
- * @example
+ * @example Usage
  * ```ts
- * import {
- *   Cookie,
- *   setCookie,
- * } from "@std/http/cookie";
+ * import { Cookie, setCookie } from "@std/http/cookie";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const headers = new Headers();
  * const cookie: Cookie = { name: "Space", value: "Cat" };
  * setCookie(headers, cookie);
  *
  * const cookieHeader = headers.get("set-cookie");
- * console.log(cookieHeader); // Space=Cat
+ *
+ * assertEquals(cookieHeader, "Space=Cat");
  * ```
  *
  * @param headers The headers instance to set the cookie to
@@ -247,7 +263,7 @@ export function getCookies(headers: Headers): Record<string, string> {
  */
 export function setCookie(headers: Headers, cookie: Cookie) {
   // Parsing cookie headers to make consistent set-cookie header
-  // ref: https://tools.ietf.org/html/rfc6265#section-4.1.1
+  // ref: https://www.rfc-editor.org/rfc/rfc6265.html#section-4.1.1
   const v = toString(cookie);
   if (v) {
     headers.append("Set-Cookie", v);
@@ -260,15 +276,17 @@ export function setCookie(headers: Headers, cookie: Cookie) {
  * > Note: Deleting a `Cookie` will set its expiration date before now. Forcing
  * > the browser to delete it.
  *
- * @example
+ * @example Usage
  * ```ts
  * import { deleteCookie } from "@std/http/cookie";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const headers = new Headers();
  * deleteCookie(headers, "deno");
  *
  * const cookieHeader = headers.get("set-cookie");
- * console.log(cookieHeader); // deno=; Expires=Thus, 01 Jan 1970 00:00:00 GMT
+ *
+ * assertEquals(cookieHeader, "deno=; Expires=Thu, 01 Jan 1970 00:00:00 GMT");
  * ```
  *
  * @param headers The headers instance to delete the cookie from
@@ -376,9 +394,10 @@ function parseSetCookie(value: string): Cookie | null {
 /**
  * Parse set-cookies of a header
  *
- * @example
+ * @example Usage
  * ```ts
  * import { getSetCookies } from "@std/http/cookie";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const headers = new Headers([
  *   ["Set-Cookie", "lulu=meow; Secure; Max-Age=3600"],
@@ -386,7 +405,13 @@ function parseSetCookie(value: string): Cookie | null {
  * ]);
  *
  * const cookies = getSetCookies(headers);
- * console.log(cookies); // [{ name: "lulu", value: "meow", secure: true, maxAge: 3600 }, { name: "booya", value: "kahsa", httpOnly: true, path: "/ }]
+ *
+ * assertEquals(cookies[0], {
+ *   name: "lulu",
+ *   value: "meow",
+ *   secure: true,
+ *   maxAge: 3600
+ * });
  * ```
  *
  * @param headers The headers instance to get set-cookies from

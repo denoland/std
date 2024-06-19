@@ -13,7 +13,7 @@ export type InvertResult<T extends Record<PropertyKey, PropertyKey>> = {
  * assignments of previous values. If the record contains values which aren't
  * {@linkcode PropertyKey}s their string representation is used as the key.
  *
- * @template T The type of the input record.
+ * @typeParam T The type of the input record.
  *
  * @param record The record to invert.
  *

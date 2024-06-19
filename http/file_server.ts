@@ -51,6 +51,7 @@ import { parseArgs } from "@std/cli/parse-args";
 import { red } from "@std/fmt/colors";
 import denoConfig from "./deno.json" with { type: "json" };
 import { format as formatBytes } from "@std/fmt/bytes";
+import { getNetworkAddress } from "@std/net/get-network-address";
 
 interface EntryInfo {
   mode: string;
@@ -148,8 +149,19 @@ export interface ServeFileOptions {
 
 /**
  * Returns an HTTP Response with the requested file as the body.
+ *
+ * @example Usage
+ * ```ts no-eval
+ * import { serveFile } from "@std/http/file-server";
+ *
+ * Deno.serve((req) => {
+ *   return serveFile(req, "README.md");
+ * });
+ * ```
+ *
  * @param req The server request context used to cleanup the file handle.
  * @param filePath Path of the file to serve.
+ * @returns A response for the request.
  */
 export async function serveFile(
   req: Request,
@@ -577,7 +589,8 @@ export interface ServeDirOptions {
 /**
  * Serves the files under the given directory root (opts.fsRoot).
  *
- * ```ts
+ * @example Usage
+ * ```ts no-eval
  * import { serveDir } from "@std/http/file-server";
  *
  * Deno.serve((req) => {
@@ -592,9 +605,9 @@ export interface ServeDirOptions {
  * });
  * ```
  *
- * Optionally you can pass `urlRoot` option. If it's specified that part is stripped from the beginning of the requested pathname.
+ * @example Optionally you can pass `urlRoot` option. If it's specified that part is stripped from the beginning of the requested pathname.
  *
- * ```ts
+ * ```ts no-eval
  * import { serveDir } from "@std/http/file-server";
  *
  * // ...
@@ -607,6 +620,8 @@ export interface ServeDirOptions {
  * The above example serves `./public/path/to/file` for the request to `/static/path/to/file`.
  *
  * @param req The request to handle
+ * @param opts Additional options.
+ * @returns A response for the request.
  */
 export async function serveDir(
   req: Request,
@@ -830,19 +845,6 @@ function main() {
       hostname: host,
       onListen,
     }, handler);
-  }
-}
-
-/**
- * Gets the network address of the machine,
- * inspired by the util of the same name in `npm:serve`
- * https://github.com/vercel/serve/blob/1ea55b1b5004f468159b54775e4fb3090fedbb2b/source/utilities/http.ts#L33
- */
-function getNetworkAddress() {
-  for (const { family, address } of Deno.networkInterfaces()) {
-    if (family === "IPv4" && !address.startsWith("127.")) {
-      return address;
-    }
   }
 }
 

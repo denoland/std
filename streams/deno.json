@@ -1,19 +1,16 @@
 {
   "name": "@std/streams",
-  "version": "0.224.0",
+  "version": "0.224.5",
   "exports": {
     ".": "./mod.ts",
     "./buffer": "./buffer.ts",
     "./byte-slice-stream": "./byte_slice_stream.ts",
+    "./concat-readable-streams": "./concat_readable_streams.ts",
     "./delimiter-stream": "./delimiter_stream.ts",
     "./early-zip-readable-streams": "./early_zip_readable_streams.ts",
-    "./iterate-reader": "./iterate_reader.ts",
     "./limited-bytes-transform-stream": "./limited_bytes_transform_stream.ts",
     "./limited-transform-stream": "./limited_transform_stream.ts",
     "./merge-readable-streams": "./merge_readable_streams.ts",
-    "./readable-stream-from-reader": "./readable_stream_from_reader.ts",
-    "./reader-from-iterable": "./reader_from_iterable.ts",
-    "./reader-from-stream-reader": "./reader_from_stream_reader.ts",
     "./text-delimiter-stream": "./text_delimiter_stream.ts",
     "./text-line-stream": "./text_line_stream.ts",
     "./to-array-buffer": "./to_array_buffer.ts",
@@ -21,8 +18,6 @@
     "./to-json": "./to_json.ts",
     "./to-text": "./to_text.ts",
     "./to-transform-stream": "./to_transform_stream.ts",
-    "./writable-stream-from-writer": "./writable_stream_from_writer.ts",
-    "./writer-from-stream-writer": "./writer_from_stream_writer.ts",
     "./zip-readable-streams": "./zip_readable_streams.ts"
   }
 }

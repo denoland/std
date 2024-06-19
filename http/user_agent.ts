@@ -11,8 +11,6 @@
  * @module
  */
 
-import { assert } from "@std/assert/assert";
-
 const ARCHITECTURE = "architecture";
 const MODEL = "model";
 const NAME = "name";
@@ -210,7 +208,9 @@ function mapper(
               target[prop] = match ? match.replace(re, value) : undefined;
             } else {
               const [prop, re, value, fn] = processor;
-              assert(fn);
+              if (!fn) {
+                throw new TypeError("Function must be defined in processor");
+              }
               target[prop] = match
                 ? fn.call(prop, match.replace(re, value))
                 : undefined;
@@ -982,6 +982,17 @@ const matchers: Matchers = {
  * A representation of user agent string, which can be used to determine
  * environmental information represented by the string. All properties are
  * determined lazily.
+ *
+ * @example Usage
+ * ```ts no-eval
+ * import { UserAgent } from "@std/http/user-agent";
+ *
+ * Deno.serve((req) => {
+ *   const userAgent = new UserAgent(req.headers.get("user-agent") ?? "");
+ *   return new Response(`Hello, ${userAgent.browser.name}
+ *     on ${userAgent.os.name} ${userAgent.os.version}!`);
+ * });
+ * ```
  */
 export class UserAgent {
   #browser?: Browser;
@@ -994,8 +1005,8 @@ export class UserAgent {
   /**
    * Constructs a new instance.
    *
-   * @example
-   * ```ts
+   * @example Usage
+   * ```ts no-eval
    * import { UserAgent } from "@std/http/user-agent";
    *
    * Deno.serve((req) => {
@@ -1004,6 +1015,8 @@ export class UserAgent {
    *     on ${userAgent.os.name} ${userAgent.os.version}!`);
    * });
    * ```
+   *
+   * @param ua The user agent string to construct this instance with.
    */
   constructor(ua: string | null) {
     this.#ua = ua ?? "";
@@ -1012,6 +1025,18 @@ export class UserAgent {
   /**
    * The name and version of the browser extracted from the user agent
    * string.
+   *
+   * @example Usage
+   * ```ts no-eval
+   * import { UserAgent } from "@std/http/user-agent";
+   *
+   * Deno.serve((req) => {
+   *   const userAgent = new UserAgent(req.headers.get("user-agent") ?? "");
+   *   return new Response(`Hello, ${userAgent.browser.name}!`);
+   * });
+   * ```
+   *
+   * @returns An object with information about the user agent's browser.
    */
   get browser(): Browser {
     if (!this.#browser) {
@@ -1024,7 +1049,21 @@ export class UserAgent {
     return this.#browser;
   }
 
-  /** The architecture of the CPU extracted from the user agent string. */
+  /**
+   * The architecture of the CPU extracted from the user agent string.
+   *
+   * @example Usage
+   * ```ts no-eval
+   * import { UserAgent } from "@std/http/user-agent";
+   *
+   * Deno.serve((req) => {
+   *   const userAgent = new UserAgent(req.headers.get("user-agent") ?? "");
+   *   return new Response(`Hello, ${userAgent.cpu.architecture}!`);
+   * });
+   * ```
+   *
+   * @returns An object with information about the user agent's CPU.
+   */
   get cpu(): Cpu {
     if (!this.#cpu) {
       this.#cpu = { architecture: undefined };
@@ -1037,6 +1076,18 @@ export class UserAgent {
   /**
    * The model, type, and vendor of a device if present in a user agent
    * string.
+   *
+   * @example Usage
+   * ```ts no-eval
+   * import { UserAgent } from "@std/http/user-agent";
+   *
+   * Deno.serve((req) => {
+   *   const userAgent = new UserAgent(req.headers.get("user-agent") ?? "");
+   *   return new Response(`Hello, ${userAgent.device.model}!`);
+   * });
+   * ```
+   *
+   * @returns An object with information about the user agent's device.
    */
   get device(): Device {
     if (!this.#device) {
@@ -1047,7 +1098,21 @@ export class UserAgent {
     return this.#device;
   }
 
-  /** The name and version of the browser engine in a user agent string. */
+  /**
+   * The name and version of the browser engine in a user agent string.
+   *
+   * @example Usage
+   * ```ts no-eval
+   * import { UserAgent } from "@std/http/user-agent";
+   *
+   * Deno.serve((req) => {
+   *   const userAgent = new UserAgent(req.headers.get("user-agent") ?? "");
+   *   return new Response(`Hello, ${userAgent.engine.name}!`);
+   * });
+   * ```
+   *
+   * @returns An object with information about the user agent's browser engine.
+   */
   get engine(): Engine {
     if (!this.#engine) {
       this.#engine = { name: undefined, version: undefined };
@@ -1057,7 +1122,21 @@ export class UserAgent {
     return this.#engine;
   }
 
-  /** The name and version of the operating system in a user agent string. */
+  /**
+   * The name and version of the operating system in a user agent string.
+   *
+   * @example Usage
+   * ```ts no-eval
+   * import { UserAgent } from "@std/http/user-agent";
+   *
+   * Deno.serve((req) => {
+   *   const userAgent = new UserAgent(req.headers.get("user-agent") ?? "");
+   *   return new Response(`Hello, ${userAgent.os.name}!`);
+   * });
+   * ```
+   *
+   * @returns An object with information about the user agent's OS.
+   */
   get os(): Os {
     if (!this.#os) {
       this.#os = { name: undefined, version: undefined };
@@ -1067,12 +1146,40 @@ export class UserAgent {
     return this.#os;
   }
 
-  /** A read only version of the user agent string related to the instance. */
+  /**
+   * A read only version of the user agent string related to the instance.
+   *
+   * @example Usage
+   * ```ts no-eval
+   * import { UserAgent } from "@std/http/user-agent";
+   *
+   * Deno.serve((req) => {
+   *   const userAgent = new UserAgent(req.headers.get("user-agent") ?? "");
+   *   return new Response(`Hello, ${userAgent.ua}!`);
+   * });
+   * ```
+   *
+   * @returns The user agent string.
+   */
   get ua(): string {
     return this.#ua;
   }
 
-  /** Converts the current instance to a JSON representation. */
+  /**
+   * Converts the current instance to a JSON representation.
+   *
+   * @example Usage
+   * ```ts no-eval
+   * import { UserAgent } from "@std/http/user-agent";
+   *
+   * Deno.serve((req) => {
+   *   const userAgent = new UserAgent(req.headers.get("user-agent") ?? "");
+   *   return new Response(`Hello, ${JSON.stringify(userAgent.toJSON())}!`);
+   * });
+   * ```
+   *
+   * @returns A JSON representation on this user agent instance.
+   */
   toJSON(): {
     browser: Browser;
     cpu: Cpu;
@@ -1085,12 +1192,43 @@ export class UserAgent {
     return { browser, cpu, device, engine, os, ua };
   }
 
-  /** Converts the current instance to a string. */
+  /**
+   * Converts the current instance to a string.
+   *
+   * @example Usage
+   * ```ts no-eval
+   * import { UserAgent } from "@std/http/user-agent";
+   *
+   * Deno.serve((req) => {
+   *   const userAgent = new UserAgent(req.headers.get("user-agent") ?? "");
+   *   return new Response(`Hello, ${userAgent.toString()}!`);
+   * });
+   * ```
+   *
+   * @returns The user agent string.
+   */
   toString(): string {
     return this.#ua;
   }
 
-  /** Custom output for {@linkcode Deno.inspect}. */
+  /**
+   * Custom output for {@linkcode Deno.inspect}.
+   *
+   * @example Usage
+   * ```ts no-eval
+   * import { UserAgent } from "@std/http/user-agent";
+   *
+   * Deno.serve((req) => {
+   *   const userAgent = new UserAgent(req.headers.get("user-agent") ?? "");
+   *   Deno.inspect(userAgent);
+   *   return new Response(`Hello, ${userAgent.ua}!`);
+   * });
+   * ```
+   *
+   * @param inspect internal inspect function.
+   *
+   * @returns The custom value to inspect.
+   */
   [Symbol.for("Deno.customInspect")](
     inspect: (value: unknown) => string,
   ): string {
@@ -1103,6 +1241,24 @@ export class UserAgent {
   /**
    * Custom output for Node's
    * {@linkcode https://nodejs.org/api/util.html#utilinspectobject-options | util.inspect}.
+   *
+   * @example Usage
+   * ```ts no-eval
+   * import { UserAgent } from "@std/http/user-agent";
+   * import { inspect } from "node:util";
+   *
+   * Deno.serve((req) => {
+   *   const userAgent = new UserAgent(req.headers.get("user-agent") ?? "");
+   *   inspect(userAgent);
+   *   return new Response(`Hello, ${userAgent.ua}!`);
+   * });
+   * ```
+   *
+   * @param depth internal inspect depth.
+   * @param options internal inspect option.
+   * @param inspect internal inspect function.
+   *
+   * @returns The custom value to inspect.
    */
   [Symbol.for("nodejs.util.inspect.custom")](
     depth: number,

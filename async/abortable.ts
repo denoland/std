@@ -4,10 +4,15 @@
 import { createAbortError } from "./_util.ts";
 
 /**
- * Make {@linkcode Promise} abortable with the given signal.
+ * Make a {@linkcode Promise} abortable with the given signal.
  *
- * @example
- * ```ts
+ * @typeParam T The type of the provided and returned promise.
+ * @param p The promise to make abortable.
+ * @param signal The signal to abort the promise with.
+ * @returns A promise that can be aborted.
+ *
+ * @example Usage
+ * ```ts no-eval
  * import {
  *   abortable,
  *   delay,
@@ -23,10 +28,15 @@ import { createAbortError } from "./_util.ts";
  */
 export function abortable<T>(p: Promise<T>, signal: AbortSignal): Promise<T>;
 /**
- * Make {@linkcode AsyncIterable} abortable with the given signal.
+ * Make an {@linkcode AsyncIterable} abortable with the given signal.
  *
- * @example
- * ```ts
+ * @typeParam T The type of the provided and returned async iterable.
+ * @param p The async iterable to make abortable.
+ * @param signal The signal to abort the promise with.
+ * @returns An async iterable that can be aborted.
+ *
+ * @example Usage
+ * ```ts no-eval
  * import {
  *   abortable,
  *   delay,
@@ -63,25 +73,7 @@ export function abortable<T>(
   }
 }
 
-/**
- * Make Promise abortable with the given signal.
- *
- * @example
- * ```ts
- * import { abortablePromise } from "@std/async/abortable";
- *
- * const request = fetch("https://example.com");
- *
- * const c = new AbortController();
- * setTimeout(() => c.abort(), 100);
- *
- * const p = abortablePromise(request, c.signal);
- *
- * // The below throws if the request didn't resolve in 100ms
- * await p;
- * ```
- */
-export function abortablePromise<T>(
+function abortablePromise<T>(
   p: Promise<T>,
   signal: AbortSignal,
 ): Promise<T> {
@@ -96,33 +88,7 @@ export function abortablePromise<T>(
   });
 }
 
-/**
- * Make AsyncIterable abortable with the given signal.
- *
- * @example
- * ```ts
- * import {
- *   abortableAsyncIterable,
- *   delay,
- * } from "@std/async";
- *
- * const p = async function* () {
- *   yield "Hello";
- *   await delay(1000);
- *   yield "World";
- * };
- * const c = new AbortController();
- * setTimeout(() => c.abort(), 100);
- *
- * // Below throws `DOMException` after 100 ms
- * // and items become `["Hello"]`
- * const items: string[] = [];
- * for await (const item of abortableAsyncIterable(p(), c.signal)) {
- *   items.push(item);
- * }
- * ```
- */
-export async function* abortableAsyncIterable<T>(
+async function* abortableAsyncIterable<T>(
   p: AsyncIterable<T>,
   signal: AbortSignal,
 ): AsyncGenerator<T> {
