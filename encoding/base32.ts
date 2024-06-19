@@ -9,8 +9,6 @@
  *
  * Modified from {@link https://github.com/beatgammit/base64-js}.
  *
- * This module is browser compatible.
- *
  * ```ts
  * import { encodeBase32, decodeBase32 } from "@std/encoding/base32";
  * import { assertEquals } from "@std/assert/assert-equals";

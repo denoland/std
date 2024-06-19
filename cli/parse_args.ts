@@ -5,8 +5,6 @@
  * Command line arguments parser based on
  * {@link https://github.com/minimistjs/minimist | minimist}.
  *
- * This module is browser compatible.
- *
  * @example
  * ```ts
  * import { parseArgs } from "@std/cli/parse-args";
@@ -16,7 +14,6 @@
  *
  * @module
  */
-import { assert } from "@std/assert/assert";
 
 /** Combines recursively all intersection types and returns a new single type.
  * @internal
@@ -346,8 +343,7 @@ interface NestedMapping {
   [key: string]: NestedMapping | unknown;
 }
 
-function isNumber(x: unknown): boolean {
-  if (typeof x === "number") return true;
+function isNumber(x: string): boolean {
   if (/^0x[0-9a-f]+$/i.test(String(x))) return true;
   return /^[-+]?(?:\d+(?:\.\d*)?|\.\d+)(e[-+]?\d+)?$/.test(String(x));
 }
@@ -451,14 +447,14 @@ const FLAG_REGEXP =
  * @example Usage
  * ```ts
  * import { parseArgs } from "@std/cli/parse-args";
- * const parsedArgs = parseArgs(Deno.args);
- * ```
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
- * @example Usage
- * ```ts
- * import { parseArgs } from "@std/cli/parse-args";
- * const parsedArgs = parseArgs(["--foo", "--bar=baz", "./quux.txt"]);
- * // parsedArgs: { foo: true, bar: "baz", _: ["./quux.txt"] }
+ * // For proper use, one should use `parseArgs(Deno.args)`
+ * assertEquals(parseArgs(["--foo", "--bar=baz", "./quux.txt"]), {
+ *   foo: true,
+ *   bar: "baz",
+ *   _: ["./quux.txt"],
+ * });
  * ```
  */
 export function parseArgs<
@@ -512,7 +508,7 @@ export function parseArgs<
   if (alias) {
     for (const key in alias) {
       const val = (alias as Record<string, unknown>)[key];
-      assert(val !== undefined);
+      if (val === undefined) throw new TypeError("Alias value must be defined");
       const aliases = Array.isArray(val) ? val : [val];
       aliasMap.set(key, new Set(aliases));
       aliases.forEach((alias) =>

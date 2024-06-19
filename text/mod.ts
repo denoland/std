@@ -4,27 +4,17 @@
 /**
  * Utility functions for working with text.
  *
- * There are various functions for manipulating text, such as `toCamelCase`:
- *
  * ```ts
- * import { toCamelCase } from "@std/text/case";
- *
- * console.log(toCamelCase("snake_case")); // "snakeCase"
- * ```
- *
- * Or for comparing strings:
- *
- * ```ts
- * import { compareSimilarity } from "@std/text/compare-similarity";
+ * import { toCamelCase, compareSimilarity } from "@std/text";
  * import { assertEquals } from "@std/assert/assert-equals";
+ *
+ * assertEquals(toCamelCase("snake_case"), "snakeCase");
  *
  * const words = ["hi", "help", "hello"];
  *
  * // Words most similar to "hep" will be at the front
  * assertEquals(words.sort(compareSimilarity("hep")), ["help", "hi", "hello"]);
  * ```
- *
- * This module is browser compatible.
  *
  * @module
  */

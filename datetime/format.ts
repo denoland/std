@@ -42,27 +42,31 @@ export interface FormatOptions {
  * @return The formatted date string.
  *
  * @example Basic usage
- * ```ts
+ * ```ts no-eval
  * import { format } from "@std/datetime/format";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const date = new Date(2019, 0, 20, 16, 34, 23, 123);
  *
- * format(date, "dd-MM-yyyy"); // "20-01-2019"
+ * assertEquals(format(date, "dd-MM-yyyy"), "20-01-2019");
  *
- * format(date, "MM-dd-yyyy HH:mm:ss.SSS"); // "01-20-2019 16:34:23.123"
+ * assertEquals(format(date, "MM-dd-yyyy HH:mm:ss.SSS"), "01-20-2019 16:34:23.123");
  *
- * format(date, "'today:' yyyy-MM-dd"); // "today: 2019-01-20"
+ * assertEquals(format(date, "'today:' yyyy-MM-dd"), "today: 2019-01-20");
  * ```
  *
  * @example UTC formatting
- * ```ts
+ *
+ * Enable UTC formatting by setting the `utc` option to `true`.
+ *
+ * ```ts no-eval
  * import { format } from "@std/datetime/format";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const date = new Date(2019, 0, 20, 16, 34, 23, 123);
  *
- * format(date, "yyyy-MM-dd HH:mm:ss", { utc: true }); // "2019-01-20 05:34:23"
+ * assertEquals(format(date, "yyyy-MM-dd HH:mm:ss", { utc: true }), "2019-01-20 05:34:23");
  * ```
- * Enable UTC formatting by setting the `utc` option to `true`.
  */
 export function format(
   date: Date,

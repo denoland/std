@@ -13,8 +13,18 @@ import { assertArgs } from "../_common/relative.ts";
  *  to = 'C:\\orandea\\impl\\bbb'
  * The output of the function should be: '..\\..\\impl\\bbb'
  *
- * @param from path in current working directory
- * @param to path in current working directory
+ * @example Usage
+ * ```ts
+ * import { relative } from "@std/path/windows/relative";
+ * import { assertEquals } from "@std/assert/assert-equals";
+ *
+ * const relativePath = relative("C:\\foobar\\test\\aaa", "C:\\foobar\\impl\\bbb");
+ * assertEquals(relativePath, "..\\..\\impl\\bbb");
+ * ```
+ *
+ * @param from The path from which to calculate the relative path
+ * @param to The path to which to calculate the relative path
+ * @returns The relative path from `from` to `to`
  */
 export function relative(from: string, to: string): string {
   assertArgs(from, to);

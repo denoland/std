@@ -8,12 +8,9 @@ import { runLengthDecode } from "./_run_length.ts";
 let tables: Uint8Array[] | null = null;
 function lookupWidth(cp: number) {
   if (!tables) tables = data.tables.map(runLengthDecode);
-
-  const t1Offset = (tables[0] as Uint8Array)[(cp >> 13) & 0xff] as number;
-  const t2Offset =
-    (tables[1] as Uint8Array)[128 * t1Offset + ((cp >> 6) & 0x7f)] as number;
-  const packedWidths =
-    (tables[2] as Uint8Array)[16 * t2Offset + ((cp >> 2) & 0xf)] as number;
+  const t1Offset = tables[0]![(cp >> 13) & 0xff]!;
+  const t2Offset = tables[1]![128 * t1Offset + ((cp >> 6) & 0x7f)]!;
+  const packedWidths = tables[2]![16 * t2Offset + ((cp >> 2) & 0xf)]!;
 
   const width = (packedWidths >> (2 * (cp & 0b11))) & 0b11;
 
@@ -21,22 +18,22 @@ function lookupWidth(cp: number) {
 }
 
 const cache = new Map<string, number | null>();
-function charWidth(ch: string) {
-  if (cache.has(ch)) return cache.get(ch)!;
+function charWidth(char: string) {
+  if (cache.has(char)) return cache.get(char)!;
 
-  const cp = ch.codePointAt(0)!;
-  let v: number | null = null;
+  const codePoint = char.codePointAt(0)!;
+  let width: number | null = null;
 
-  if (cp < 0x7f) {
-    v = cp >= 0x20 ? 1 : cp === 0 ? 0 : null;
-  } else if (cp >= 0xa0) {
-    v = lookupWidth(cp);
+  if (codePoint < 0x7f) {
+    width = codePoint >= 0x20 ? 1 : codePoint === 0 ? 0 : null;
+  } else if (codePoint >= 0xa0) {
+    width = lookupWidth(codePoint);
   } else {
-    v = null;
+    width = null;
   }
 
-  cache.set(ch, v);
-  return v;
+  cache.set(char, width);
+  return width;
 }
 
 /**
@@ -54,20 +51,22 @@ function charWidth(ch: string) {
  * @example Calculating the unicode width of a string
  * ```ts
  * import { unicodeWidth } from "@std/cli/unicode-width";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
- * unicodeWidth("hello world"); // 11
- * unicodeWidth("天地玄黃宇宙洪荒"); // 16
- * unicodeWidth("ｆｕｌｌｗｉｄｔｈ"); // 18
+ * assertEquals(unicodeWidth("hello world"), 11);
+ * assertEquals(unicodeWidth("天地玄黃宇宙洪荒"), 16);
+ * assertEquals(unicodeWidth("ｆｕｌｌｗｉｄｔｈ"), 18);
  * ```
  *
  * @example Calculating the unicode width of a color-encoded string
  * ```ts
  * import { unicodeWidth } from "@std/cli/unicode-width";
  * import { stripAnsiCode } from "@std/fmt/colors";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
- * unicodeWidth(stripAnsiCode("\x1b[36mголубой\x1b[39m")); // 7
- * unicodeWidth(stripAnsiCode("\x1b[31m紅色\x1b[39m")); // 4
- * unicodeWidth(stripAnsiCode("\x1B]8;;https://deno.land\x07🦕\x1B]8;;\x07")); // 2
+ * assertEquals(unicodeWidth(stripAnsiCode("\x1b[36mголубой\x1b[39m")), 7);
+ * assertEquals(unicodeWidth(stripAnsiCode("\x1b[31m紅色\x1b[39m")), 4);
+ * assertEquals(unicodeWidth(stripAnsiCode("\x1B]8;;https://deno.land\x07🦕\x1B]8;;\x07")), 2);
  * ```
  *
  * Use

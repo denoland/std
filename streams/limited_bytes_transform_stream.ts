@@ -99,14 +99,14 @@ export class LimitedBytesTransformStream
    * @param options Options for the stream.
    *
    * @example size = 42
-   * ```ts
+   * ```ts no-assert
    * import { LimitedBytesTransformStream } from "@std/streams/limited-bytes-transform-stream";
    *
    * const limitedBytesTransformStream = new LimitedBytesTransformStream(42);
    * ```
    *
    * @example size = 42, error = true
-   * ```ts
+   * ```ts no-assert
    * import { LimitedBytesTransformStream } from "@std/streams/limited-bytes-transform-stream";
    *
    * const limitedBytesTransformStream = new LimitedBytesTransformStream(42, { error: true });

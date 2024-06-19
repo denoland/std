@@ -6,7 +6,6 @@ import { isAbsolute } from "@std/path/is-absolute";
 import { resolve } from "@std/path/resolve";
 import { SEPARATOR_PATTERN } from "@std/path/constants";
 import { walk, walkSync } from "./walk.ts";
-import { assert } from "@std/assert/assert";
 import { toPathString } from "./_to_path_string.ts";
 import {
   createWalkEntry,
@@ -81,14 +80,20 @@ function comparePath(a: WalkEntry, b: WalkEntry): number {
 
 /**
  * Returns an async iterator that yields each file path matching the given glob
- * pattern. The file paths are relative to the provided `root` directory.
- * If `root` is not provided, the current working directory is used.
- * The `root` directory is not included in the yielded file paths.
+ * pattern.
  *
- * Requires the `--allow-read` flag.
+ * The file paths are absolute paths. If `root` is not provided, the current
+ * working directory is used. The `root` directory is not included in the
+ * yielded file paths.
+ *
+ * Requires `--allow-read` permission.
+ *
+ * @see {@link https://docs.deno.com/runtime/manual/basics/permissions#file-system-access}
+ * for more information on Deno's permissions system.
  *
  * @param glob The glob pattern to expand.
  * @param options Additional options for the expansion.
+ *
  * @returns An async iterator that yields each walk entry matching the glob
  * pattern.
  *
@@ -101,31 +106,163 @@ function comparePath(a: WalkEntry, b: WalkEntry): number {
  * └── foo.ts
  * ```
  *
- * ```ts
+ * ```ts no-eval
  * // script.ts
  * import { expandGlob } from "@std/fs/expand-glob";
  *
- * const entries = [];
- * for await (const entry of expandGlob("*.ts")) {
- *   entries.push(entry);
- * }
+ * await Array.fromAsync(expandGlob("*.ts"));
+ * // [
+ * //   {
+ * //     path: "/Users/user/folder/script.ts",
+ * //     name: "script.ts",
+ * //     isFile: true,
+ * //     isDirectory: false,
+ * //     isSymlink: false,
+ * //   },
+ * //   {
+ * //     path: "/Users/user/folder/foo.ts",
+ * //     name: "foo.ts",
+ * //     isFile: true,
+ * //     isDirectory: false,
+ * //     isSymlink: false,
+ * //   },
+ * // ]
+ * ```
  *
- * entries[0]!.path; // "/Users/user/folder/script.ts"
- * entries[0]!.name; // "script.ts"
- * entries[0]!.isFile; // false
- * entries[0]!.isDirectory; // true
- * entries[0]!.isSymlink; // false
+ * @example Define root directory
  *
- * entries[1]!.path; // "/Users/user/folder/foo.ts"
- * entries[1]!.name; // "foo.ts"
- * entries[1]!.isFile; // true
- * entries[1]!.isDirectory; // false
- * entries[1]!.isSymlink; // false
+ * Setting the `root` option to `/folder` will expand the glob pattern from the
+ * `/folder` directory.
+ *
+ * File structure:
+ * ```
+ * folder
+ * ├── subdir
+ * │   └── bar.ts
+ * ├── script.ts
+ * └── foo.ts
+ * ```
+ *
+ * ```ts no-eval
+ * // script.ts
+ * import { expandGlob } from "@std/fs/expand-glob";
+ *
+ * await Array.fromAsync(expandGlob("*.ts", { root: "./subdir" }));
+ * // [
+ * //   {
+ * //     path: "/Users/user/folder/subdir/bar.ts",
+ * //     name: "bar.ts",
+ * //     isFile: true,
+ * //     isDirectory: false,
+ * //     isSymlink: false,
+ * //   },
+ * // ]
+ * ```
+ *
+ * @example Exclude files
+ *
+ * Setting the `exclude` option to `["foo.ts"]` will exclude the `foo.ts` file
+ * from the expansion.
+ *
+ * File structure:
+ * ```
+ * folder
+ * ├── script.ts
+ * └── foo.ts
+ * ```
+ *
+ * ```ts no-eval
+ * // script.ts
+ * import { expandGlob } from "@std/fs/expand-glob";
+ *
+ * await Array.fromAsync(expandGlob("*.ts", { exclude: ["foo.ts"] }));
+ * // [
+ * //   {
+ * //     path: "/Users/user/folder/script.ts",
+ * //     name: "true.ts",
+ * //     isFile: false,
+ * //     isDirectory: false,
+ * //     isSymlink: false,
+ * //   },
+ * // ]
+ * ```
+ *
+ * @example Exclude directories
+ *
+ * Setting the `includeDirs` option to `false` will exclude directories from the
+ * expansion.
+ *
+ * File structure:
+ * ```
+ * folder
+ * ├── subdir
+ * │   └── bar.ts
+ * ├── script.ts
+ * └── foo.ts
+ * ```
+ *
+ * ```ts no-eval
+ * // script.ts
+ * import { expandGlob } from "@std/fs/expand-glob";
+ *
+ * await Array.fromAsync(expandGlob("*", { includeDirs: false }));
+ * // [
+ * //   {
+ * //     path: "/Users/user/folder/script.ts",
+ * //     name: "script.ts",
+ * //     isFile: true,
+ * //     isDirectory: false,
+ * //     isSymlink: false,
+ * //   },
+ * //   {
+ * //     path: "/Users/user/folder/foo.ts",
+ * //     name: "foo.ts",
+ * //     isFile: true,
+ * //     isDirectory: false,
+ * //     isSymlink: false,
+ * //   },
+ * // ]
+ * ```
+ *
+ * @example Follow symbolic links
+ *
+ * Setting the `followSymlinks` option to `true` will follow symbolic links.
+ *
+ * File structure:
+ * ```
+ * folder
+ * ├── script.ts
+ * └── link.ts -> script.ts (symbolic link)
+ * ```
+ *
+ * ```ts no-eval
+ * // script.ts
+ * import { expandGlob } from "@std/fs/expand-glob";
+ *
+ * await Array.fromAsync(expandGlob("*.ts", { followSymlinks: true }));
+ * // [
+ * //   {
+ * //     path: "/Users/user/folder/script.ts",
+ * //     name: "script.ts",
+ * //     isFile: true,
+ * //     isDirectory: false,
+ * //     isSymlink: false,
+ * //   },
+ * //   {
+ * //     path: "/Users/user/folder/symlink",
+ * //     name: "symlink",
+ * //     isFile: true,
+ * //     isDirectory: false,
+ * //     isSymlink: true,
+ * //   },
+ * // ]
  * ```
  */
 export async function* expandGlob(
   glob: string | URL,
-  {
+  options: ExpandGlobOptions = {},
+): AsyncIterableIterator<WalkEntry> {
+  let {
     root,
     exclude = [],
     includeDirs = true,
@@ -134,8 +271,8 @@ export async function* expandGlob(
     caseInsensitive,
     followSymlinks,
     canonicalize,
-  }: ExpandGlobOptions = {},
-): AsyncIterableIterator<WalkEntry> {
+  } = options;
+
   const {
     segments,
     isAbsolute: isGlobAbsolute,
@@ -158,7 +295,9 @@ export async function* expandGlob(
     : absRoot;
   while (segments.length > 0 && !isGlob(segments[0]!)) {
     const seg = segments.shift();
-    assert(seg !== undefined);
+    if (seg === undefined) {
+      throw new TypeError("Unexpected undefined segment");
+    }
     fixedRoot = joinGlobs([fixedRoot, seg], globOptions);
   }
 
@@ -246,11 +385,15 @@ export async function* expandGlob(
  *
  * Requires the `--allow-read` flag.
  *
+ * @see {@link https://docs.deno.com/runtime/manual/basics/permissions#file-system-access}
+ * for more information on Deno's permissions system.
+ *
  * @param glob The glob pattern to expand.
  * @param options Additional options for the expansion.
+ *
  * @returns An iterator that yields each walk entry matching the glob pattern.
  *
- * @example Basic usage
+ * @example Usage
  *
  * File structure:
  * ```
@@ -259,7 +402,7 @@ export async function* expandGlob(
  * └── foo.ts
  * ```
  *
- * ```ts
+ * ```ts no-eval
  * // script.ts
  * import { expandGlobSync } from "@std/fs/expand-glob";
  *
@@ -316,7 +459,9 @@ export function* expandGlobSync(
     : absRoot;
   while (segments.length > 0 && !isGlob(segments[0]!)) {
     const seg = segments.shift();
-    assert(seg !== undefined);
+    if (seg === undefined) {
+      throw new TypeError("Unexpected undefined segment");
+    }
     fixedRoot = joinGlobs([fixedRoot, seg], globOptions);
   }
 

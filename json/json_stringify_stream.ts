@@ -39,37 +39,42 @@ export interface StringifyStreamOptions {
  *
  * You can optionally specify a prefix and suffix for each chunk. The default prefix is `""` and the default suffix is `"\n"`.
  *
- * @example
+ * @example Basic usage
+ *
  * ```ts
  * import { JsonStringifyStream } from "@std/json/json-stringify-stream";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
- * const file = await Deno.open("./tmp.jsonl", { create: true, write: true });
+ * const stream = ReadableStream.from([{ foo: "bar" }, { baz: 100 }])
+ *   .pipeThrough(new JsonStringifyStream());
  *
- * ReadableStream.from([{ foo: "bar" }, { baz: 100 }])
- *   .pipeThrough(new JsonStringifyStream()) // convert to JSON lines (ndjson)
- *   .pipeThrough(new TextEncoderStream()) // convert a string to a Uint8Array
- *   .pipeTo(file.writable)
- *   .then(() => console.log("write success"));
+ * assertEquals(await Array.fromAsync(stream), [
+ *   `{"foo":"bar"}\n`,
+ *   `{"baz":100}\n`
+ * ]);
  * ```
  *
- * @example
- * To convert to [JSON Text Sequences](https://www.rfc-editor.org/rfc/rfc7464.html), set the
- * prefix to the delimiter "\x1E" as options.
+ * @example Stringify stream of JSON text sequences
+ *
+ * Set `options.prefix` to `\x1E` to stringify
+ * {@linkcode https://www.rfc-editor.org/rfc/rfc7464.html | JSON Text Sequences}.
+ *
  * ```ts
  * import { JsonStringifyStream } from "@std/json/json-stringify-stream";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
- * const file = await Deno.open("./tmp.jsonl", { create: true, write: true });
+ * const stream = ReadableStream.from([{ foo: "bar" }, { baz: 100 }])
+ *   .pipeThrough(new JsonStringifyStream({ prefix: "\x1E", suffix: "\n" }));
  *
- * ReadableStream.from([{ foo: "bar" }, { baz: 100 }])
- *   .pipeThrough(new JsonStringifyStream({ prefix: "\x1E", suffix: "\n" })) // convert to JSON Text Sequences
- *   .pipeThrough(new TextEncoderStream())
- *   .pipeTo(file.writable)
- *   .then(() => console.log("write success"));
+ * assertEquals(await Array.fromAsync(stream), [
+ *   `\x1E{"foo":"bar"}\n`,
+ *   `\x1E{"baz":100}\n`
+ * ]);
  * ```
  *
- * @example
- * If you want to stream [JSON lines](https://jsonlines.org/) from the server:
- * ```ts
+ * @example Stringify JSON lines from a server
+ *
+ * ```ts no-eval no-assert
  * import { JsonStringifyStream } from "@std/json/json-stringify-stream";
  *
  * // A server that streams one line of JSON every second
@@ -77,7 +82,7 @@ export interface StringifyStreamOptions {
  *   let intervalId: number | undefined;
  *   const readable = new ReadableStream({
  *     start(controller) {
- *       // enqueue data once per second
+ *       // Enqueue data once per second
  *       intervalId = setInterval(() => {
  *         controller.enqueue({ now: new Date() });
  *       }, 1000);
@@ -88,15 +93,31 @@ export interface StringifyStreamOptions {
  *   });
  *
  *   const body = readable
- *     .pipeThrough(new JsonStringifyStream()) // convert data to JSON lines
- *     .pipeThrough(new TextEncoderStream()); // convert a string to a Uint8Array
+ *     .pipeThrough(new JsonStringifyStream()) // Convert data to JSON lines
+ *     .pipeThrough(new TextEncoderStream()); // Convert a string to a Uint8Array
  *
  *   return new Response(body);
  * });
  * ```
  */
 export class JsonStringifyStream extends TransformStream<unknown, string> {
-  /** Constructs new instance. */
+  /**
+   * Constructs new instance.
+   *
+   * @example Usage
+   * ```ts
+   * import { JsonStringifyStream } from "@std/json/json-stringify-stream";
+   * import { assertEquals } from "@std/assert/assert-equals";
+   *
+   * const stream = ReadableStream.from([{ foo: "bar" }, { baz: 100 }])
+   *   .pipeThrough(new JsonStringifyStream());
+   *
+   * assertEquals(await Array.fromAsync(stream), [
+   *   `{"foo":"bar"}\n`,
+   *   `{"baz":100}\n`
+   * ]);
+   * ```
+   */
   constructor({
     prefix = "",
     suffix = "\n",

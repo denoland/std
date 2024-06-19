@@ -19,7 +19,7 @@ export interface DelayOptions {
  * @param options Additional options.
  *
  * @example Basic usage
- * ```ts
+ * ```ts no-assert
  * import { delay } from "@std/async/delay";
  *
  * // ...
@@ -33,7 +33,7 @@ export interface DelayOptions {
  * Setting `persistent` to `false` will allow the process to continue to run as
  * long as the timer exists.
  *
- * ```ts
+ * ```ts no-assert
  * import { delay } from "@std/async/delay";
  *
  * // ...

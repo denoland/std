@@ -6,12 +6,10 @@
 /**
  * String formatters and utilities for dealing with ANSI color codes.
  *
- * This module is browser compatible.
- *
  * This module supports `NO_COLOR` environmental variable disabling any coloring
  * if `NO_COLOR` is set.
  *
- * ```ts
+ * ```ts no-assert
  * import {
  *   bgBlue,
  *   bgRgb24,
@@ -81,7 +79,7 @@ let enabled = !noColor;
  * doesn't work.
  *
  * @example Usage
- * ```ts
+ * ```ts no-assert
  * import { setColorEnabled } from "@std/fmt/colors";
  *
  * // Disable text color
@@ -105,7 +103,7 @@ export function setColorEnabled(value: boolean) {
  * Get whether text color change is enabled or disabled.
  *
  * @example Usage
- * ```ts
+ * ```ts no-assert
  * import { getColorEnabled } from "@std/fmt/colors";
  *
  * console.log(getColorEnabled()); // true if enabled, false if disabled
@@ -144,7 +142,7 @@ function run(str: string, code: Code): string {
  * Reset the text modified.
  *
  * @example Usage
- * ```ts
+ * ```ts no-assert
  * import { reset } from "@std/fmt/colors";
  *
  * console.log(reset("Hello, world!"));
@@ -161,7 +159,7 @@ export function reset(str: string): string {
  * Make the text bold.
  *
  * @example Usage
- * ```ts
+ * ```ts no-assert
  * import { bold } from "@std/fmt/colors";
  *
  * console.log(bold("Hello, world!"));
@@ -178,7 +176,7 @@ export function bold(str: string): string {
  * The text emits only a small amount of light.
  *
  * @example Usage
- * ```ts
+ * ```ts no-assert
  * import { dim } from "@std/fmt/colors";
  *
  * console.log(dim("Hello, world!"));
@@ -198,7 +196,7 @@ export function dim(str: string): string {
  * Make the text italic.
  *
  * @example Usage
- * ```ts
+ * ```ts no-assert
  * import { italic } from "@std/fmt/colors";
  *
  * console.log(italic("Hello, world!"));
@@ -215,7 +213,7 @@ export function italic(str: string): string {
  * Make the text underline.
  *
  * @example Usage
- * ```ts
+ * ```ts no-assert
  * import { underline } from "@std/fmt/colors";
  *
  * console.log(underline("Hello, world!"));
@@ -232,7 +230,7 @@ export function underline(str: string): string {
  * Invert background color and text color.
  *
  * @example Usage
- * ```ts
+ * ```ts no-assert
  * import { inverse } from "@std/fmt/colors";
  *
  * console.log(inverse("Hello, world!"));
@@ -249,7 +247,7 @@ export function inverse(str: string): string {
  * Make the text hidden.
  *
  * @example Usage
- * ```ts
+ * ```ts no-assert
  * import { hidden } from "@std/fmt/colors";
  *
  * console.log(hidden("Hello, world!"));
@@ -266,7 +264,7 @@ export function hidden(str: string): string {
  * Put horizontal line through the center of the text.
  *
  * @example Usage
- * ```ts
+ * ```ts no-assert
  * import { strikethrough } from "@std/fmt/colors";
  *
  * console.log(strikethrough("Hello, world!"));
@@ -283,7 +281,7 @@ export function strikethrough(str: string): string {
  * Set text color to black.
  *
  * @example Usage
- * ```ts
+ * ```ts no-assert
  * import { black } from "@std/fmt/colors";
  *
  * console.log(black("Hello, world!"));
@@ -300,7 +298,7 @@ export function black(str: string): string {
  * Set text color to red.
  *
  * @example Usage
- * ```ts
+ * ```ts no-assert
  * import { red } from "@std/fmt/colors";
  *
  * console.log(red("Hello, world!"));
@@ -317,7 +315,7 @@ export function red(str: string): string {
  * Set text color to green.
  *
  * @example Usage
- * ```ts
+ * ```ts no-assert
  * import { green } from "@std/fmt/colors";
  *
  * console.log(green("Hello, world!"));
@@ -334,7 +332,7 @@ export function green(str: string): string {
  * Set text color to yellow.
  *
  * @example Usage
- * ```ts
+ * ```ts no-assert
  * import { yellow } from "@std/fmt/colors";
  *
  * console.log(yellow("Hello, world!"));
@@ -351,7 +349,7 @@ export function yellow(str: string): string {
  * Set text color to blue.
  *
  * @example Usage
- * ```ts
+ * ```ts no-assert
  * import { blue } from "@std/fmt/colors";
  *
  * console.log(blue("Hello, world!"));
@@ -368,7 +366,7 @@ export function blue(str: string): string {
  * Set text color to magenta.
  *
  * @example Usage
- * ```ts
+ * ```ts no-assert
  * import { magenta } from "@std/fmt/colors";
  *
  * console.log(magenta("Hello, world!"));
@@ -385,7 +383,7 @@ export function magenta(str: string): string {
  * Set text color to cyan.
  *
  * @example Usage
- * ```ts
+ * ```ts no-assert
  * import { cyan } from "@std/fmt/colors";
  *
  * console.log(cyan("Hello, world!"));
@@ -402,7 +400,7 @@ export function cyan(str: string): string {
  * Set text color to white.
  *
  * @example Usage
- * ```ts
+ * ```ts no-assert
  * import { white } from "@std/fmt/colors";
  *
  * console.log(white("Hello, world!"));
@@ -419,7 +417,7 @@ export function white(str: string): string {
  * Set text color to gray.
  *
  * @example Usage
- * ```ts
+ * ```ts no-assert
  * import { gray } from "@std/fmt/colors";
  *
  * console.log(gray("Hello, world!"));
@@ -436,7 +434,7 @@ export function gray(str: string): string {
  * Set text color to bright black.
  *
  * @example Usage
- * ```ts
+ * ```ts no-assert
  * import { brightBlack } from "@std/fmt/colors";
  *
  * console.log(brightBlack("Hello, world!"));
@@ -453,7 +451,7 @@ export function brightBlack(str: string): string {
  * Set text color to bright red.
  *
  * @example Usage
- * ```ts
+ * ```ts no-assert
  * import { brightRed } from "@std/fmt/colors";
  *
  * console.log(brightRed("Hello, world!"));
@@ -470,7 +468,7 @@ export function brightRed(str: string): string {
  * Set text color to bright green.
  *
  * @example Usage
- * ```ts
+ * ```ts no-assert
  * import { brightGreen } from "@std/fmt/colors";
  *
  * console.log(brightGreen("Hello, world!"));
@@ -487,7 +485,7 @@ export function brightGreen(str: string): string {
  * Set text color to bright yellow.
  *
  * @example Usage
- * ```ts
+ * ```ts no-assert
  * import { brightYellow } from "@std/fmt/colors";
  *
  * console.log(brightYellow("Hello, world!"));
@@ -504,7 +502,7 @@ export function brightYellow(str: string): string {
  * Set text color to bright blue.
  *
  * @example Usage
- * ```ts
+ * ```ts no-assert
  * import { brightBlue } from "@std/fmt/colors";
  *
  * console.log(brightBlue("Hello, world!"));
@@ -521,7 +519,7 @@ export function brightBlue(str: string): string {
  * Set text color to bright magenta.
  *
  * @example Usage
- * ```ts
+ * ```ts no-assert
  * import { brightMagenta } from "@std/fmt/colors";
  *
  * console.log(brightMagenta("Hello, world!"));
@@ -538,7 +536,7 @@ export function brightMagenta(str: string): string {
  * Set text color to bright cyan.
  *
  * @example Usage
- * ```ts
+ * ```ts no-assert
  * import { brightCyan } from "@std/fmt/colors";
  *
  * console.log(brightCyan("Hello, world!"));
@@ -555,7 +553,7 @@ export function brightCyan(str: string): string {
  * Set text color to bright white.
  *
  * @example Usage
- * ```ts
+ * ```ts no-assert
  * import { brightWhite } from "@std/fmt/colors";
  *
  * console.log(brightWhite("Hello, world!"));
@@ -572,7 +570,7 @@ export function brightWhite(str: string): string {
  * Set background color to black.
  *
  * @example Usage
- * ```ts
+ * ```ts no-assert
  * import { bgBlack } from "@std/fmt/colors";
  *
  * console.log(bgBlack("Hello, world!"));
@@ -589,7 +587,7 @@ export function bgBlack(str: string): string {
  * Set background color to red.
  *
  * @example Usage
- * ```ts
+ * ```ts no-assert
  * import { bgRed } from "@std/fmt/colors";
  *
  * console.log(bgRed("Hello, world!"));
@@ -606,7 +604,7 @@ export function bgRed(str: string): string {
  * Set background color to green.
  *
  * @example Usage
- * ```ts
+ * ```ts no-assert
  * import { bgGreen } from "@std/fmt/colors";
  *
  * console.log(bgGreen("Hello, world!"));
@@ -623,7 +621,7 @@ export function bgGreen(str: string): string {
  * Set background color to yellow.
  *
  * @example Usage
- * ```ts
+ * ```ts no-assert
  * import { bgYellow } from "@std/fmt/colors";
  *
  * console.log(bgYellow("Hello, world!"));
@@ -640,7 +638,7 @@ export function bgYellow(str: string): string {
  * Set background color to blue.
  *
  * @example Usage
- * ```ts
+ * ```ts no-assert
  * import { bgBlue } from "@std/fmt/colors";
  *
  * console.log(bgBlue("Hello, world!"));
@@ -657,7 +655,7 @@ export function bgBlue(str: string): string {
  *  Set background color to magenta.
  *
  * @example Usage
- * ```ts
+ * ```ts no-assert
  * import { bgMagenta } from "@std/fmt/colors";
  *
  * console.log(bgMagenta("Hello, world!"));
@@ -674,7 +672,7 @@ export function bgMagenta(str: string): string {
  * Set background color to cyan.
  *
  * @example Usage
- * ```ts
+ * ```ts no-assert
  * import { bgCyan } from "@std/fmt/colors";
  *
  * console.log(bgCyan("Hello, world!"));
@@ -691,7 +689,7 @@ export function bgCyan(str: string): string {
  * Set background color to white.
  *
  * @example Usage
- * ```ts
+ * ```ts no-assert
  * import { bgWhite } from "@std/fmt/colors";
  *
  * console.log(bgWhite("Hello, world!"));
@@ -708,7 +706,7 @@ export function bgWhite(str: string): string {
  * Set background color to bright black.
  *
  * @example Usage
- * ```ts
+ * ```ts no-assert
  * import { bgBrightBlack } from "@std/fmt/colors";
  *
  * console.log(bgBrightBlack("Hello, world!"));
@@ -725,7 +723,7 @@ export function bgBrightBlack(str: string): string {
  * Set background color to bright red.
  *
  * @example Usage
- * ```ts
+ * ```ts no-assert
  * import { bgBrightRed } from "@std/fmt/colors";
  *
  * console.log(bgBrightRed("Hello, world!"));
@@ -742,7 +740,7 @@ export function bgBrightRed(str: string): string {
  * Set background color to bright green.
  *
  * @example Usage
- * ```ts
+ * ```ts no-assert
  * import { bgBrightGreen } from "@std/fmt/colors";
  *
  * console.log(bgBrightGreen("Hello, world!"));
@@ -759,7 +757,7 @@ export function bgBrightGreen(str: string): string {
  * Set background color to bright yellow.
  *
  * @example Usage
- * ```ts
+ * ```ts no-assert
  * import { bgBrightYellow } from "@std/fmt/colors";
  *
  * console.log(bgBrightYellow("Hello, world!"));
@@ -776,7 +774,7 @@ export function bgBrightYellow(str: string): string {
  * Set background color to bright blue.
  *
  * @example Usage
- * ```ts
+ * ```ts no-assert
  * import { bgBrightBlue } from "@std/fmt/colors";
  *
  * console.log(bgBrightBlue("Hello, world!"));
@@ -793,7 +791,7 @@ export function bgBrightBlue(str: string): string {
  * Set background color to bright magenta.
  *
  * @example Usage
- * ```ts
+ * ```ts no-assert
  * import { bgBrightMagenta } from "@std/fmt/colors";
  *
  * console.log(bgBrightMagenta("Hello, world!"));
@@ -810,7 +808,7 @@ export function bgBrightMagenta(str: string): string {
  * Set background color to bright cyan.
  *
  * @example Usage
- * ```ts
+ * ```ts no-assert
  * import { bgBrightCyan } from "@std/fmt/colors";
  *
  * console.log(bgBrightCyan("Hello, world!"));
@@ -827,7 +825,7 @@ export function bgBrightCyan(str: string): string {
  * Set background color to bright white.
  *
  * @example Usage
- * ```ts
+ * ```ts no-assert
  * import { bgBrightWhite } from "@std/fmt/colors";
  *
  * console.log(bgBrightWhite("Hello, world!"));
@@ -857,7 +855,7 @@ function clampAndTruncate(n: number, max = 255, min = 0): number {
  * https://en.wikipedia.org/wiki/ANSI_escape_code#8-bit
  *
  * @example Usage
- * ```ts
+ * ```ts no-assert
  * import { rgb8 } from "@std/fmt/colors";
  *
  * console.log(rgb8("Hello, world!", 42));
@@ -876,7 +874,7 @@ export function rgb8(str: string, color: number): string {
  * https://en.wikipedia.org/wiki/ANSI_escape_code#8-bit
  *
  * @example Usage
- * ```ts
+ * ```ts no-assert
  * import { bgRgb8 } from "@std/fmt/colors";
  *
  * console.log(bgRgb8("Hello, world!", 42));
@@ -896,7 +894,7 @@ export function bgRgb8(str: string, color: number): string {
  * an `Rgb`.
  *
  * @example To produce the color magenta:
- * ```ts
+ * ```ts no-assert
  * import { rgb24 } from "@std/fmt/colors";
  *
  * rgb24("foo", 0xff00ff);
@@ -937,7 +935,7 @@ export function rgb24(str: string, color: number | Rgb): string {
  * an `Rgb`.
  *
  * @example To produce the color magenta:
- * ```ts
+ * ```ts no-assert
  * import { bgRgb24 } from "@std/fmt/colors";
  *
  * bgRgb24("foo", 0xff00ff);
@@ -985,7 +983,7 @@ const ANSI_PATTERN = new RegExp(
  * Remove ANSI escape codes from the string.
  *
  * @example Usage
- * ```ts
+ * ```ts no-assert
  * import { stripColor, red } from "@std/fmt/colors";
  *
  * console.log(stripColor(red("Hello, world!")));
@@ -1004,7 +1002,7 @@ export function stripColor(string: string): string {
  * Remove ANSI escape codes from the string.
  *
  * @example Usage
- * ```ts
+ * ```ts no-assert
  * import { stripAnsiCode, red } from "@std/fmt/colors";
  *
  * console.log(stripAnsiCode(red("Hello, world!")));

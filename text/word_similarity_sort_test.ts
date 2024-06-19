@@ -2,31 +2,40 @@
 import { assertEquals } from "@std/assert";
 import { wordSimilaritySort } from "./word_similarity_sort.ts";
 
-Deno.test("wordSimilaritySort() handles basic example", function () {
-  const possibleWords: string[] = ["length", "size", "blah", "help"];
-  const badArg = "hep";
+Deno.test("wordSimilaritySort() handles basic example", () => {
+  const possibleWords = ["length", "size", "blah", "help"];
+  const givenWord = "hep";
   assertEquals(
-    wordSimilaritySort(badArg, possibleWords).join(", "),
-    "help, size, blah, length",
+    wordSimilaritySort(givenWord, possibleWords),
+    ["help", "size", "blah", "length"],
   );
 });
 
-Deno.test("wordSimilaritySort() handles empty string", function () {
-  const possibleWords: string[] = ["length", "size", "blah", "help", ""];
-  const badArg = "";
+Deno.test("wordSimilaritySort() with case-sensitive sorting", () => {
+  const possibleWords = ["length", "Size", "blah", "HELP"];
+  const givenWord = "hep";
+  assertEquals(
+    wordSimilaritySort(givenWord, possibleWords, { caseSensitive: true }),
+    ["Size", "blah", "HELP", "length"],
+  );
+});
+
+Deno.test("wordSimilaritySort() handles empty string", () => {
+  const possibleWords = ["length", "size", "blah", "help", ""];
+  const givenWord = "";
 
   assertEquals(
-    JSON.stringify(wordSimilaritySort(badArg, possibleWords)),
-    JSON.stringify(["", "size", "blah", "help", "length"]),
+    wordSimilaritySort(givenWord, possibleWords),
+    ["", "size", "blah", "help", "length"],
   );
 });
 
 Deno.test("wordSimilaritySort() handles empty array", function () {
   const possibleWords: string[] = [];
-  const badArg = "";
+  const givenWord = "";
 
   assertEquals(
-    JSON.stringify(wordSimilaritySort(badArg, possibleWords)),
-    "[]",
+    wordSimilaritySort(givenWord, possibleWords),
+    [],
   );
 });

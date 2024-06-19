@@ -37,7 +37,6 @@ import {
 import type { Reader } from "@std/io/types";
 import { MultiReader } from "@std/io/multi-reader";
 import { Buffer } from "@std/io/buffer";
-import { assert } from "@std/assert/assert";
 import { HEADER_LENGTH } from "./_common.ts";
 
 export type { TarInfo, TarMeta };
@@ -280,7 +279,9 @@ export class Tar {
       if (i < 0 || fileName.length > 100) {
         throw new Error(errMsg);
       } else {
-        assert(fileNamePrefix !== undefined);
+        if (fileNamePrefix === undefined) {
+          throw new TypeError("File name prefix is undefined");
+        }
         if (fileNamePrefix.length > 155) {
           throw new Error(errMsg);
         }
@@ -319,7 +320,9 @@ export class Tar {
     }
 
     const fileSize = info?.size ?? source.contentSize;
-    assert(fileSize !== undefined, "fileSize must be set");
+    if (fileSize === undefined) {
+      throw new TypeError("fileSize must be set");
+    }
 
     const type = source.type
       ? FileTypes[source.type as keyof typeof FileTypes]
@@ -367,13 +370,17 @@ export class Tar {
       const headerArr = formatHeader(tarData);
       readers.push(new Buffer(headerArr));
       if (!reader) {
-        assert(filePath !== undefined);
+        if (filePath === undefined) {
+          throw new TypeError("filePath must be defined");
+        }
         reader = new FileReader(filePath);
       }
       readers.push(reader);
 
       // to the nearest multiple of recordSize
-      assert(tarData.fileSize !== undefined, "fileSize must be set");
+      if (tarData.fileSize === undefined) {
+        throw new TypeError("fileSize must be set");
+      }
       readers.push(
         new Buffer(
           new Uint8Array(

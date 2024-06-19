@@ -8,8 +8,6 @@
  * {@link https://github.com/golang/go/blob/go1.12.5/src/encoding/hex/hex.go | encoding/hex}
  * library.
  *
- * This module is browser compatible.
- *
  * ```ts
  * import {
  *   decodeHex,

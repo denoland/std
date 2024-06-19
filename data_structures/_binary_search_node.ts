@@ -6,9 +6,14 @@ export type Direction = "left" | "right";
 export class BinarySearchNode<T> {
   left: BinarySearchNode<T> | null;
   right: BinarySearchNode<T> | null;
-  constructor(public parent: BinarySearchNode<T> | null, public value: T) {
+  parent: BinarySearchNode<T> | null;
+  value: T;
+
+  constructor(parent: BinarySearchNode<T> | null, value: T) {
     this.left = null;
     this.right = null;
+    this.parent = parent;
+    this.value = value;
   }
 
   static from<T>(node: BinarySearchNode<T>): BinarySearchNode<T> {

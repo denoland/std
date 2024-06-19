@@ -27,22 +27,22 @@ export type Request = {
  * @example Usage
  * ```ts
  * import { accepts } from "@std/http/negotiation";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
- * const req = new Request("https://example.com/", {
+ * const request = new Request("https://example.com/", {
  *   headers: {
- *     "accept":
+ *     accept:
  *       "text/html, application/xhtml+xml, application/xml;q=0.9, image/webp, *\/*;q=0.8",
  *   },
  * });
  *
- * console.log(accepts(req));
- * // [
- * //   "text/html",
- * //   "application/xhtml+xml",
- * //   "image/webp",
- * //   "application/xml",
- * //   "*\/*",
- * // ]
+ * assertEquals(accepts(request), [
+ *   "text/html",
+ *   "application/xhtml+xml",
+ *   "image/webp",
+ *   "application/xml",
+ *   "*\/*",
+ * ]);
  * ```
  *
  * @param request The request to get the acceptable media types for.
@@ -56,15 +56,16 @@ export function accepts(request: Request): string[];
  *  @example Usage
  * ```ts
  * import { accepts } from "@std/http/negotiation";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
- * const req = new Request("https://example.com/", {
+ * const request = new Request("https://example.com/", {
  *   headers: {
- *     "accept":
+ *     accept:
  *       "text/html, application/xhtml+xml, application/xml;q=0.9, image/webp, *\/*;q=0.8",
  *   },
  * });
  *
- * accepts(req, "text/html", "image/webp"); // "text/html";
+ * assertEquals(accepts(request, "text/html", "image/webp"), "text/html");
  * ```
  *
  * @param request The request to get the acceptable media types for.
@@ -95,12 +96,13 @@ export function accepts(
  * @example Usage
  * ```ts
  * import { acceptsEncodings } from "@std/http/negotiation";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
- * const req = new Request("https://example.com/", {
+ * const request = new Request("https://example.com/", {
  *   headers: { "accept-encoding": "deflate, gzip;q=1.0, *;q=0.5" },
  * });
  *
- * acceptsEncodings(req); // ["deflate", "gzip", "*"]
+ * assertEquals(acceptsEncodings(request), ["deflate", "gzip", "*"]);
  * ```
  *
  * @param request The request to get the acceptable content encodings for.
@@ -119,12 +121,13 @@ export function acceptsEncodings(request: Request): string[];
  * @example Usage
  * ```ts
  * import { acceptsEncodings } from "@std/http/negotiation";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
- * const req = new Request("https://example.com/", {
+ * const request = new Request("https://example.com/", {
  *   headers: { "accept-encoding": "deflate, gzip;q=1.0, *;q=0.5" },
  * });
  *
- * acceptsEncodings(req, "gzip", "identity"); // "gzip"
+ * assertEquals(acceptsEncodings(request, "gzip", "identity"), "gzip");
  * ```
  *
  * @param request The request to get the acceptable content encodings for.
@@ -157,14 +160,15 @@ export function acceptsEncodings(
  * @example Usage
  * ```ts
  * import { acceptsLanguages } from "@std/http/negotiation";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
- * const req = new Request("https://example.com/", {
+ * const request = new Request("https://example.com/", {
  *   headers: {
  *     "accept-language": "fr-CH, fr;q=0.9, en;q=0.8, de;q=0.7, *;q=0.5",
  *   },
  * });
  *
- * acceptsLanguages(req); // ["fr-CH", "fr", "en", "de", "*"]
+ * assertEquals(acceptsLanguages(request), ["fr-CH", "fr", "en", "de", "*"]);
  * ```
  *
  * @param request The request to get the acceptable languages for.
@@ -178,14 +182,15 @@ export function acceptsLanguages(request: Request): string[];
  * @example Usage
  * ```ts
  * import { acceptsLanguages } from "@std/http/negotiation";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
- * const req = new Request("https://example.com/", {
+ * const request = new Request("https://example.com/", {
  *   headers: {
  *     "accept-language": "fr-CH, fr;q=0.9, en;q=0.8, de;q=0.7, *;q=0.5",
  *   },
  * });
  *
- * acceptsLanguages(req, "en-gb", "en-us", "en"); // "en"
+ * assertEquals(acceptsLanguages(request, "en-gb", "en-us", "en"), "en");
  * ```
  *
  * @param request The request to get the acceptable language for.
