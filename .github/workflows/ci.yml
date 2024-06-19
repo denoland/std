@@ -17,8 +17,7 @@ jobs:
       fail-fast: false
       matrix:
         deno:
-          # TODO(kt3k): Enable this after CLI v1.43.0 released
-          # - v1.x
+          - v1.x
           - canary
         os:
           - ubuntu-latest
