@@ -195,8 +195,6 @@ export class DelimiterStream extends TransformStream<Uint8Array, Uint8Array> {
             chunkStart = disposition === "prefix"
               ? delimitedChunkEnd
               : inspectIndex;
-          } else {
-            throw new Error("unreachable");
           }
         }
       } else if (matchIndex === 0) {
@@ -288,8 +286,6 @@ export class DelimiterStream extends TransformStream<Uint8Array, Uint8Array> {
             ? delimitedChunkEnd
             : inspectIndex;
           controller.enqueue(result);
-        } else {
-          throw new Error("unreachable");
         }
       } else {
         inspectIndex++;
