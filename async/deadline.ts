@@ -1,6 +1,9 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-// This module is browser compatible.
-
+// TODO(iuioiua): Add web-compatible declaration once TypeScript 5.5 is released
+// and in the Deno runtime. See https://github.com/microsoft/TypeScript/pull/58211
+//
+// Note: this code is still compatible with recent
+// web browsers. See https://caniuse.com/?search=AbortSignal.any
 import { abortable } from "./abortable.ts";
 
 /** Options for {@linkcode deadline}. */
