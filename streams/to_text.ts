@@ -4,8 +4,8 @@
 const textDecoder = new TextDecoder();
 
 /**
- * Converts a {@linkcode ReadableSteam} of strings or {@linkcode Uint8Array}s
- * to a single string. Works the same as {@linkcode Response.text}.
+ * Converts a {@linkcode ReadableSteam} of {@linkcode Uint8Array}s to a single
+ * string. Works the same as {@linkcode Response.text}.
  *
  * @param readableStream A `ReadableStream` to convert into a `string`.
  * @returns A `Promise` that resolves to the `string`.
@@ -15,24 +15,23 @@ const textDecoder = new TextDecoder();
  * import { toText } from "@std/streams/to-text";
  * import { assertEquals } from "@std/assert/assert-equals";
  *
- * const stream = ReadableStream.from(["Hello, ", "world!"]);
+ * const stream = ReadableStream.from(["Hello, ", "world!"])
+ *   .pipeThrough(new TextEncoderStream());
  * assertEquals(await toText(stream), "Hello, world!");
  * ```
  */
 export async function toText(
-  readableStream: ReadableStream,
+  readableStream: ReadableStream<Uint8Array>,
 ): Promise<string> {
   const reader = readableStream.getReader();
   let result = "";
 
   while (true) {
     const { done, value } = await reader.read();
-
     if (done) {
       break;
     }
-
-    result += typeof value === "string" ? value : textDecoder.decode(value);
+    result += textDecoder.decode(value);
   }
 
   return result;

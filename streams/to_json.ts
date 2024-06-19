@@ -4,7 +4,7 @@
 import { toText } from "./to_text.ts";
 
 /**
- * Converts a JSON-formatted {@linkcode ReadableSteam} of strings or
+ * Converts a JSON-formatted {@linkcode ReadableSteam} of
  * {@linkcode Uint8Array}s to an object. Works the same as
  * {@linkcode Response.json}.
  *
@@ -20,13 +20,13 @@ import { toText } from "./to_text.ts";
  *   "[1, true",
  *   ', [], {}, "hello',
  *   '", null]',
- * ]);
+ * ]).pipeThrough(new TextEncoderStream());
  * const json = await toJson(stream);
  * assertEquals(json, [1, true, [], {}, "hello", null]);
  * ```
  */
 export function toJson(
-  readableStream: ReadableStream,
+  readableStream: ReadableStream<Uint8Array>,
 ): Promise<unknown> {
   return toText(readableStream).then(JSON.parse);
 }

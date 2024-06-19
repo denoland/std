@@ -9,7 +9,8 @@
  * import { toText } from "@std/streams";
  * import { assertEquals } from "@std/assert/assert-equals";
  *
- * const stream = ReadableStream.from("Hello, world!");
+ * const stream = ReadableStream.from(["Hello, ", "world!"])
+ *   .pipeThrough(new TextEncoderStream());
  * const text = await toText(stream);
  *
  * assertEquals(text, "Hello, world!");
