@@ -95,15 +95,14 @@ Deno.test("concatStreams() handles errors", async () => {
 });
 
 Deno.test("concatReadableStreams cancels all streams when concatenated stream is cancelled", async () => {
-  const REASON_MSG = "Test cancel";
-  const cancelReasons: string[] = [];
+  const reasons: string[] = [];
   const createMockStream = () =>
     new ReadableStream({
       start(controller) {
         controller.enqueue("data");
       },
       cancel(error) {
-        cancelReasons.push(error);
+        reasons.push(error);
       },
     });
 
@@ -111,7 +110,7 @@ Deno.test("concatReadableStreams cancels all streams when concatenated stream is
   const stream2 = createMockStream();
   const concatenatedStream = concatReadableStreams(stream1, stream2);
 
-  await concatenatedStream.cancel(REASON_MSG);
+  await concatenatedStream.cancel("Test cancel");
 
-  assertEquals(cancelReasons, [REASON_MSG, REASON_MSG]);
+  assertEquals(reasons, ["Test cancel", "Test cancel"]);
 });
