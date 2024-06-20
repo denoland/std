@@ -203,6 +203,7 @@ class JSONCParser {
       }
     }
   }
+
   #parseJsonValue(value: Token): JsonValue {
     switch (value.type) {
       case "BeginObject":
@@ -217,6 +218,7 @@ class JSONCParser {
         throw new SyntaxError(buildErrorMessage(value));
     }
   }
+
   #parseObject(): { [key: string]: JsonValue | undefined } {
     const target: { [key: string]: JsonValue | undefined } = {};
     //   ┌─token1
@@ -276,6 +278,7 @@ class JSONCParser {
       }
     }
   }
+
   #parseArray(): JsonValue[] {
     const target: JsonValue[] = [];
     //   ┌─token1
@@ -311,6 +314,7 @@ class JSONCParser {
       }
     }
   }
+
   #parseString(value: {
     type: "String";
     sourceText: string;
@@ -328,6 +332,7 @@ class JSONCParser {
     }
     return parsed;
   }
+
   #parseNullOrTrueOrFalseOrNumber(value: {
     type: "NullOrTrueOrFalseOrNumber";
     sourceText: string;
@@ -384,8 +389,6 @@ function buildErrorMessage({ type, sourceText, position }: Token): string {
         ? `${sourceText.slice(0, 30)}...`
         : sourceText;
       break;
-    default:
-      throw new Error("unreachable");
   }
   return `Unexpected token ${token} in JSONC at position ${position}`;
 }
