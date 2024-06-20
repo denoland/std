@@ -93,7 +93,8 @@ export function earlyZipReadableStreams<T>(
           await Promise.all(
             readers.map((reader) => reader.cancel("early_zip_ended")), // A better cancel message should maybe be put here?
           );
-          return controller.close();
+          controller.close();
+          return;
         }
         controller.enqueue(value);
       }
