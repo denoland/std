@@ -91,7 +91,7 @@ export function earlyZipReadableStreams<T>(
         const { done, value } = await readers[i]!.read();
         if (done) {
           await Promise.all(
-            readers.map((reader) => reader.cancel(`Stream ended at ${i}`)),
+            readers.map((reader) => reader.cancel(`Stream ${i} ended`)),
           );
           controller.close();
           return;
