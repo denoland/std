@@ -8,6 +8,10 @@ import {
   assertThrows,
 } from "@std/assert";
 
+import "./testdata/JSONTestSuite/test.ts";
+import "./testdata/node-jsonc-parser/test.ts";
+import "./testdata/test262/test.ts";
+
 // The test code for the jsonc module can also be found in the testcode directory.
 
 function assertValidParse(
@@ -111,6 +115,21 @@ Deno.test({
       SyntaxError,
       "Unexpected token aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa... in JSONC at position 1",
     );
+    assertInvalidParse(
+      `}`,
+      SyntaxError,
+      "Unexpected token } in JSONC at position 0",
+    );
+    assertInvalidParse(
+      `]`,
+      SyntaxError,
+      "Unexpected token ] in JSONC at position 0",
+    );
+    assertInvalidParse(
+      `,`,
+      SyntaxError,
+      "Unexpected token , in JSONC at position 0",
+    );
   },
 });
 
@@ -198,5 +217,17 @@ Deno.test({
     });
     const { success } = await command.output();
     assert(success);
+  },
+});
+
+Deno.test({
+  name: "new parse() throws error",
+  fn() {
+    assertThrows(
+      // deno-lint-ignore no-explicit-any
+      () => new (parse as any)(""),
+      TypeError,
+      "parse is not a constructor",
+    );
   },
 });
