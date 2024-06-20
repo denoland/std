@@ -66,7 +66,7 @@
 <!-- cli -->
 <g id="node7" class="node">
 <title>cli</title>
-<ellipse fill="none" stroke="black" cx="171" cy="-144" rx="36" ry="36"/>
+<ellipse fill="lightgreen" stroke="black" cx="171" cy="-144" rx="36" ry="36"/>
 <text text-anchor="middle" x="171" y="-139.8" font-family="Times,serif" font-size="14.00">cli</text>
 </g>
 <!-- collections -->
@@ -90,7 +90,7 @@
 <!-- streams -->
 <g id="node11" class="node">
 <title>streams</title>
-<ellipse fill="none" stroke="black" cx="81" cy="-144" rx="36" ry="36"/>
+<ellipse fill="lightgreen" stroke="black" cx="81" cy="-144" rx="36" ry="36"/>
 <text text-anchor="middle" x="81" y="-139.8" font-family="Times,serif" font-size="14.00">streams</text>
 </g>
 <!-- csv&#45;&gt;streams -->
@@ -194,7 +194,7 @@
 <!-- fs -->
 <g id="node21" class="node">
 <title>fs</title>
-<ellipse fill="none" stroke="black" cx="1019" cy="-144" rx="36" ry="36"/>
+<ellipse fill="lightgreen" stroke="black" cx="1019" cy="-144" rx="36" ry="36"/>
 <text text-anchor="middle" x="1019" y="-139.8" font-family="Times,serif" font-size="14.00">fs</text>
 </g>
 <!-- path -->
