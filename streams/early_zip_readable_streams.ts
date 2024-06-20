@@ -87,11 +87,11 @@ export function earlyZipReadableStreams<T>(
   const readers = streams.map((stream) => stream.getReader());
   return new ReadableStream<T>({
     async pull(controller) {
-      for (const reader of readers) {
-        const { done, value } = await reader.read();
+      for (let i = 0; i < readers.length; ++i) {
+        const { done, value } = await readers[i]!.read();
         if (done) {
           await Promise.all(
-            readers.map((reader) => reader.cancel("early_zip_ended")), // A better cancel message should maybe be put here?
+            readers.map((reader) => reader.cancel(`Stream ended at ${i}`)),
           );
           controller.close();
           return;
