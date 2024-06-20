@@ -16,13 +16,14 @@ Deno.test("abortable() handles promise with aborted signal after delay", async (
   const { promise, resolve } = Promise.withResolvers<string>();
   const t = setTimeout(() => resolve("Hello"), 100);
   setTimeout(() => c.abort(), 50);
-  await assertRejects(
+  const error = await assertRejects(
     async () => {
       await abortable(promise, c.signal);
     },
     DOMException,
-    "AbortError",
+    "AbortError: The signal has been aborted",
   );
+  assertEquals(error.name, "AbortError");
   clearTimeout(t);
 });
 
@@ -31,13 +32,14 @@ Deno.test("abortable() handles promise with already aborted signal", async () =>
   const { promise, resolve } = Promise.withResolvers<string>();
   const t = setTimeout(() => resolve("Hello"), 100);
   c.abort();
-  await assertRejects(
+  const error = await assertRejects(
     async () => {
       await abortable(promise, c.signal);
     },
     DOMException,
     "The signal has been aborted",
   );
+  assertEquals(error.name, "AbortError");
   clearTimeout(t);
 });
 
@@ -66,15 +68,16 @@ Deno.test("abortable.AsyncIterable() handles aborted signal after delay", async 
   };
   setTimeout(() => c.abort(), 50);
   const items: string[] = [];
-  await assertRejects(
+  const error = await assertRejects(
     async () => {
       for await (const item of abortable(a(), c.signal)) {
         items.push(item);
       }
     },
     DOMException,
-    "AbortError",
+    "AbortError: The signal has been aborted",
   );
+  assertEquals(error.name, "AbortError");
   assertEquals(items, ["Hello"]);
   clearTimeout(t);
 });
@@ -90,7 +93,7 @@ Deno.test("abortable.AsyncIterable() handles already aborted signal", async () =
   };
   c.abort();
   const items: string[] = [];
-  await assertRejects(
+  const error = await assertRejects(
     async () => {
       for await (const item of abortable(a(), c.signal)) {
         items.push(item);
@@ -99,6 +102,7 @@ Deno.test("abortable.AsyncIterable() handles already aborted signal", async () =
     DOMException,
     "The signal has been aborted",
   );
+  assertEquals(error.name, "AbortError");
   assertEquals(items, []);
   clearTimeout(t);
 });
