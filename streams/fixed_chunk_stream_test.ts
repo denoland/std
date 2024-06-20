@@ -3,7 +3,7 @@
 import { assertEquals } from "@std/assert";
 import { FixedChunkStream } from "./fixed_chunk_stream.ts";
 
-Deno.test("ResizeStream", async () => {
+Deno.test("FixedChunkStream", async () => {
   const readable = ReadableStream.from(function* () {
     for (let i = 0; i < 100; ++i) {
       yield new Uint8Array(Math.floor(Math.random() * 1000));
