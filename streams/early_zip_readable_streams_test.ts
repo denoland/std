@@ -62,13 +62,16 @@ Deno.test("earlyZipReadableStreams() can zip three streams", async () => {
 });
 
 Deno.test("earlyZipReadableStreams() forwards cancel()", async () => {
-  const streams = new Array(10).fill(false).map(() =>
+  const num = 10;
+  let cancelled = 0;
+  const streams = new Array(num).fill(false).map(() =>
     new ReadableStream(
       {
         pull(controller) {
           controller.enqueue("chunk");
         },
         cancel(reason) {
+          cancelled++;
           assertEquals(reason, "I was cancelled!");
         },
       },
@@ -76,4 +79,5 @@ Deno.test("earlyZipReadableStreams() forwards cancel()", async () => {
   );
 
   await earlyZipReadableStreams(...streams).cancel("I was cancelled!");
+  assertEquals(cancelled, num);
 });
