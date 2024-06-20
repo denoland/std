@@ -86,7 +86,7 @@ export class TextDelimiterStream extends TransformStream<string, string> {
    */
   constructor(
     delimiter: string,
-    options: DelimiterStreamOptions = { disposition: "discard" },
+    options?: DelimiterStreamOptions,
   ) {
     super({
       transform: (chunk, controller) => {
@@ -99,7 +99,7 @@ export class TextDelimiterStream extends TransformStream<string, string> {
 
     this.#delimiter = delimiter;
     this.#delimLPS = createLPS(new TextEncoder().encode(delimiter));
-    this.#disp = options.disposition ?? "discard";
+    this.#disp = options?.disposition ?? "discard";
   }
 
   #handle(
