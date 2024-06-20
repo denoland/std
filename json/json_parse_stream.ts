@@ -1,7 +1,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-import type { JsonValue, ParseStreamOptions } from "./common.ts";
+import type { JsonValue } from "./common.ts";
 import { parse } from "./_common.ts";
 
 const branks = /^[ \t\r\n]*$/;
@@ -95,7 +95,7 @@ export class JsonParseStream extends TransformStream<string, JsonValue> {
    * ]);
    * ```
    */
-  constructor({ writableStrategy, readableStrategy }: ParseStreamOptions = {}) {
+  constructor() {
     super(
       {
         transform(chunk, controller) {
@@ -104,8 +104,6 @@ export class JsonParseStream extends TransformStream<string, JsonValue> {
           }
         },
       },
-      writableStrategy,
-      readableStrategy,
     );
   }
 }

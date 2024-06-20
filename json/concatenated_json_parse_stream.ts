@@ -1,6 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import { toTransformStream } from "@std/streams/to-transform-stream";
-import type { JsonValue, ParseStreamOptions } from "./common.ts";
+import type { JsonValue } from "./common.ts";
 import { parse } from "./_common.ts";
 
 function isBlankChar(char: string | undefined) {
@@ -94,11 +94,9 @@ export class ConcatenatedJsonParseStream
    * ]);
    * ```
    */
-  constructor({ writableStrategy, readableStrategy }: ParseStreamOptions = {}) {
+  constructor() {
     const { writable, readable } = toTransformStream(
       this.#concatenatedJSONIterator,
-      writableStrategy,
-      readableStrategy,
     );
     this.writable = writable;
     this.readable = readable;
