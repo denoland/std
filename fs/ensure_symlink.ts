@@ -2,7 +2,7 @@
 import { dirname } from "@std/path/dirname";
 import { resolve } from "@std/path/resolve";
 import { ensureDir, ensureDirSync } from "./ensure_dir.ts";
-import { getFileInfoType } from "./_get_file_info_type.ts";
+import { getFileInfoType, type PathType } from "./_get_file_info_type.ts";
 import { toPathString } from "./_to_path_string.ts";
 
 const isWindows = Deno.build.os === "windows";
@@ -14,6 +14,12 @@ function resolveSymlinkTarget(target: string | URL, linkName: string | URL) {
   } else {
     return new URL(target, linkName);
   }
+}
+
+function getSymlinkOption(
+  type: PathType | undefined,
+): Deno.SymlinkOptions | undefined {
+  return isWindows ? { type: type === "dir" ? "dir" : "file" } : undefined;
 }
 
 /**
@@ -51,11 +57,7 @@ export async function ensureSymlink(
 
   await ensureDir(dirname(toPathString(linkName)));
 
-  const options: Deno.SymlinkOptions | undefined = isWindows
-    ? {
-      type: srcFilePathType === "dir" ? "dir" : "file",
-    }
-    : undefined;
+  const options = getSymlinkOption(srcFilePathType);
 
   try {
     await Deno.symlink(target, linkName, options);
@@ -114,11 +116,7 @@ export function ensureSymlinkSync(
 
   ensureDirSync(dirname(toPathString(linkName)));
 
-  const options: Deno.SymlinkOptions | undefined = isWindows
-    ? {
-      type: srcFilePathType === "dir" ? "dir" : "file",
-    }
-    : undefined;
+  const options = getSymlinkOption(srcFilePathType);
 
   try {
     Deno.symlinkSync(target, linkName, options);
