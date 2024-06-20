@@ -2,6 +2,7 @@
 import {
   assert,
   assertEquals,
+  assertMatch,
   assertRejects,
   assertStringIncludes,
   assertThrows,
@@ -111,12 +112,25 @@ Deno.test(
   "expandGlob() throws permission error if the runtime doesn't have read permission",
   { permissions: {} },
   async function () {
-    await assertRejects(async () => {
-      await expandGlobArray("*", EG_OPTIONS);
-    }, Deno.errors.PermissionDenied);
-    assertThrows(() => {
-      expandGlobSyncArray("*", EG_OPTIONS);
-    }, Deno.errors.PermissionDenied);
+    {
+      const e = await assertRejects(async () => {
+        await expandGlobArray("*", EG_OPTIONS);
+      }, Deno.errors.PermissionDenied);
+      assertMatch(
+        e.message,
+        /^Requires read access to "[^"]+", run again with the --allow-read flag$/,
+      );
+    }
+
+    {
+      const e = assertThrows(() => {
+        expandGlobSyncArray("*", EG_OPTIONS);
+      }, Deno.errors.PermissionDenied);
+      assertMatch(
+        e.message,
+        /^Requires read access to "[^"]+", run again with the --allow-read flag$/,
+      );
+    }
   },
 );
 
