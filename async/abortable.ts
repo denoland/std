@@ -18,12 +18,11 @@
  * const promise = delay(1_000);
  *
  * // Rejects with `DOMException` after 100 ms
- * const error = await assertRejects(
+ * await assertRejects(
  *   () => abortable(promise, AbortSignal.timeout(100)),
  *   DOMException,
- *   "TimeoutError: Signal timed out."
+ *   "Signal timed out."
  * );
- * assertEquals(error.name, "AbortError");
  * ```
  *
  * @example Error-handling an abort
@@ -33,15 +32,14 @@
  *
  * const promise = delay(1_000);
  * const controller = new AbortController();
- * controller.abort("This is my reason");
+ * controller.abort(new Error("This is my reason"));
  *
  * // Rejects with `DOMException` immediately
- * const error = await assertRejects(
+ * await assertRejects(
  *   () => abortable(promise, controller.signal),
- *   DOMException,
+ *   Error,
  *   "This is my reason"
  * );
- * assertEquals(error.name, "AbortError");
  * ```
  */
 export function abortable<T>(p: Promise<T>, signal: AbortSignal): Promise<T>;
@@ -67,16 +65,15 @@ export function abortable<T>(p: Promise<T>, signal: AbortSignal): Promise<T>;
  *
  * const items: string[] = [];
  * // Below throws `DOMException` after 100 ms and items become `["Hello"]`
- * const error = await assertRejects(
+ * await assertRejects(
  *   async () => {
  *     for await (const item of abortable(asyncIter(), AbortSignal.timeout(100))) {
  *       items.push(item);
  *     }
  *   },
  *   DOMException,
- *   "TimeoutError: Signal timed out."
+ *   "Signal timed out."
  * );
- * assertEquals(error.name, "AbortError");
  * assertEquals(items, ["Hello"]);
  * ```
  *
@@ -91,20 +88,19 @@ export function abortable<T>(p: Promise<T>, signal: AbortSignal): Promise<T>;
  *   yield "World";
  * };
  * const controller = new AbortController();
- * controller.abort("This is my reason");
+ * controller.abort(new Error("This is my reason"));
  *
  * const items: string[] = [];
  * // Below throws `DOMException` immediately
- * const error = await assertRejects(
+ * await assertRejects(
  *   async () => {
  *     for await (const item of abortable(asyncIter(), controller.signal)) {
  *       items.push(item);
  *     }
  *   },
- *   DOMException,
+ *   Error,
  *   "This is my reason"
  * );
- * assertEquals(error.name, "AbortError");
  * assertEquals(items, []);
  * ```
  */
