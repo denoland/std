@@ -43,7 +43,7 @@ export class StringWriter implements Writer, WriterSync {
   #cache: string | undefined;
   #base: string;
 
-  constructor(base: string = "") {
+  constructor(base = "") {
     const c = new TextEncoder().encode(base);
     this.#chunks.push(c);
     this.#byteLength += c.byteLength;
