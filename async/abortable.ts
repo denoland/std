@@ -1,8 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-import { createAbortError } from "./_util.ts";
-
 /**
  * Make a {@linkcode Promise} abortable with the given signal.
  *
@@ -129,9 +127,9 @@ function abortablePromise<T>(
   p: Promise<T>,
   signal: AbortSignal,
 ): Promise<T> {
-  if (signal.aborted) return Promise.reject(createAbortError(signal.reason));
+  if (signal.aborted) return Promise.reject(signal.reason);
   const { promise, reject } = Promise.withResolvers<never>();
-  const abort = () => reject(createAbortError(signal.reason));
+  const abort = () => reject(signal.reason);
   signal.addEventListener("abort", abort, { once: true });
   return Promise.race([promise, p]).finally(() => {
     signal.removeEventListener("abort", abort);
@@ -142,9 +140,9 @@ async function* abortableAsyncIterable<T>(
   p: AsyncIterable<T>,
   signal: AbortSignal,
 ): AsyncGenerator<T> {
-  if (signal.aborted) throw createAbortError(signal.reason);
+  signal.throwIfAborted();
   const { promise, reject } = Promise.withResolvers<never>();
-  const abort = () => reject(createAbortError(signal.reason));
+  const abort = () => reject(signal.reason);
   signal.addEventListener("abort", abort, { once: true });
 
   const it = p[Symbol.asyncIterator]();

@@ -23,9 +23,9 @@ Deno.test("deadline() throws DOMException", async () => {
   const error = await assertRejects(
     () => deadline(p, 100),
     DOMException,
-    "TimeoutError: Signal timed out.",
+    "Signal timed out.",
   );
-  assertEquals(error.name, "AbortError");
+  assertEquals(error.name, "TimeoutError");
   controller.abort();
 });
 
@@ -69,7 +69,7 @@ Deno.test("deadline() handles aborted signal after delay", async () => {
   const error = await assertRejects(
     () => promise,
     DOMException,
-    "AbortError: The signal has been aborted",
+    "The signal has been aborted",
   );
   assertEquals(error.name, "AbortError");
   controller.abort();
