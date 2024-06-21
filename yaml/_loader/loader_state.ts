@@ -26,6 +26,7 @@ export interface LoaderStateOptions {
 export type ResultType = any[] | Record<string, any> | string;
 
 export class LoaderState extends State {
+  input: string;
   documents: Any[] = [];
   length: number;
   lineIndent = 0;
@@ -61,6 +62,7 @@ export class LoaderState extends State {
     }: LoaderStateOptions,
   ) {
     super(schema);
+    this.input = input;
     this.filename = filename;
     this.onWarning = onWarning;
     this.legacy = legacy;

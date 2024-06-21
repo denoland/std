@@ -3,7 +3,7 @@
 import type { Reader } from "./types.ts";
 
 export const MIN_READ_BUFFER_SIZE = 16;
-export const bufsizes: number[] = [
+export const bufsizes = [
   0,
   MIN_READ_BUFFER_SIZE,
   23,
@@ -20,7 +20,7 @@ export class BinaryReader implements Reader {
   index = 0;
   #bytes: Uint8Array;
 
-  constructor(bytes: Uint8Array = new Uint8Array(0)) {
+  constructor(bytes = new Uint8Array(0)) {
     this.#bytes = bytes;
   }
 

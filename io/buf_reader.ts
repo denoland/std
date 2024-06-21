@@ -52,8 +52,6 @@ export class BufReader implements Reader {
   #r = 0; // buf read position.
   #w = 0; // buf write position.
   #eof = false;
-  // #lastByte: number;
-  // #lastCharSize: number;
 
   /** return new BufReader unless r is BufReader */
   static create(r: Reader, size: number = DEFAULT_BUF_SIZE): BufReader {
