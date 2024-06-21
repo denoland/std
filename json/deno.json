@@ -3,7 +3,7 @@
   "version": "0.224.1",
   "exports": {
     ".": "./mod.ts",
-    "./common": "./common.ts",
+    "./types": "./types.ts",
     "./concatenated-json-parse-stream": "./concatenated_json_parse_stream.ts",
     "./json-parse-stream": "./json_parse_stream.ts",
     "./json-stringify-stream": "./json_stringify_stream.ts"

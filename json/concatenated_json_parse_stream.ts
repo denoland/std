@@ -1,6 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import { toTransformStream } from "@std/streams/to-transform-stream";
-import type { JsonValue } from "./common.ts";
+import type { JsonValue } from "./types.ts";
 import { parse } from "./_common.ts";
 
 function isBlankChar(char: string | undefined) {
