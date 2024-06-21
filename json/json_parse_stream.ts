@@ -1,7 +1,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-import type { JsonValue } from "./common.ts";
+import type { JsonValue } from "./types.ts";
 import { parse } from "./_common.ts";
 
 const branks = /^[ \t\r\n]*$/;

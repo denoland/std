@@ -8,8 +8,8 @@
  *
  * @module
  */
-import type { JsonValue } from "@std/json/common";
-export type { JsonValue } from "@std/json/common";
+import type { JsonValue } from "@std/json/types";
+export type { JsonValue } from "@std/json/types";
 
 /** Options for {@linkcode parse}. */
 export interface ParseOptions {
