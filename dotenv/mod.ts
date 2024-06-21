@@ -243,10 +243,10 @@ export function loadSync(
  * import { load } from "@std/dotenv";
  *
  * const conf = await load({
- *   envPath: "./.env_prod",
- *   examplePath: "./.env_required",
- *   export: true,
- *   allowEmptyValues: true,
+ *   envPath: "./.env_prod", // Uses .env_prod instead of .env
+ *   examplePath: "./.env_required", // Uses .env_required instead of .env.example
+ *   export: true, // Exports all variables to the environment
+ *   allowEmptyValues: true, // Allows empty values for specified env variables
  * });
  * ```
  *
