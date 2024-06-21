@@ -272,7 +272,6 @@ Deno.test({
     await assertInvalidParse(
       ConcatenatedJsonParseStream,
       ["truu"],
-      {},
       SyntaxError,
       `Unexpected token 'u', \"truu\" is not valid JSON (parsing: 'truu')`,
     );
@@ -318,7 +317,6 @@ Deno.test({
     await assertInvalidParse(
       ConcatenatedJsonParseStream,
       ['{"foo": "bar"} {"foo": '],
-      {},
       SyntaxError,
       `Unexpected end of JSON input (parsing: ' {"foo": ')`,
     );
@@ -331,7 +329,6 @@ Deno.test({
     await assertInvalidParse(
       ConcatenatedJsonParseStream,
       [`{${"foo".repeat(100)}}`],
-      {},
       SyntaxError,
       `Expected property name or '}' in JSON at position 1 (line 1 column 2) (parsing: '{foofoofoofoofoofoofoofoofoofo...')`,
     );
