@@ -21,7 +21,7 @@ function splitByLast(value: string, separator: string): [string, string] {
  *
  * @example Usage
  * ```ts no-eval no-assert
- * import { signCookie } from "@std/http/unstable-signed-cookie";
+ * import { signCookie } from "@std/http/signed-cookie";
  * import { setCookie } from "@std/http/cookie";
  *
  * const key = await crypto.subtle.generateKey(
@@ -63,7 +63,7 @@ export async function signCookie(
  *
  * @example Usage
  * ```ts no-eval no-assert
- * import { verifyCookie } from "@std/http/unstable-signed-cookie";
+ * import { verifyCookie } from "@std/http/signed-cookie";
  * import { getCookies } from "@std/http/cookie";
  *
  * const key = await crypto.subtle.generateKey(
@@ -108,7 +108,7 @@ export async function verifyCookie(
  *
  * @example Usage
  * ```ts no-eval no-assert
- * import { verifyCookie, parseSignedCookie } from "@std/http/unstable-signed-cookie";
+ * import { verifyCookie, parseSignedCookie } from "@std/http/signed-cookie";
  * import { getCookies } from "@std/http/cookie";
  *
  * const key = await crypto.subtle.generateKey(
