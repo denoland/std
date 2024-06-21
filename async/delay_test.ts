@@ -99,7 +99,8 @@ Deno.test("delay() handles already aborted signal", async () => {
   const abort = new AbortController();
   abort.abort();
   const { signal } = abort;
-  const cause = await assertRejects(async () => await delay(100, { signal }));
+  const delayedPromise = delay(100, { signal });
+  const cause = await assertRejects(() => delayedPromise);
   const diff = new Date().getTime() - start.getTime();
   assert(diff < 100);
   assertIsDefaultAbortReason(cause);

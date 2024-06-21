@@ -1,10 +1,12 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
+// This `reason` comes from `AbortSignal` thus must be `any`.
 export function createAbortError(
-  message = "The signal has been aborted",
+  // deno-lint-ignore no-explicit-any
+  reason: any = "The signal has been aborted",
 ): DOMException {
-  return new DOMException(message, "AbortError");
+  return new DOMException(reason, "AbortError");
 }
 
 export function exponentialBackoffWithJitter(
