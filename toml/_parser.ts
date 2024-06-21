@@ -36,10 +36,10 @@ export class TOMLParseError extends Error {}
 export class Scanner {
   #whitespace = /[ \t]/;
   #position = 0;
-  #source:string;
-  
+  #source: string;
+
   constructor(source: string) {
-    this.#source=source;
+    this.#source = source;
   }
 
   /**

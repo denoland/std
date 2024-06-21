@@ -18,10 +18,10 @@ export const bufsizes: number[] = [
 
 export class BinaryReader implements Reader {
   index = 0;
-  #bytes:Uint8Array;
+  #bytes: Uint8Array;
 
   constructor(bytes: Uint8Array = new Uint8Array(0)) {
-    this.#bytes=bytes;
+    this.#bytes = bytes;
   }
 
   read(p: Uint8Array): Promise<number | null> {

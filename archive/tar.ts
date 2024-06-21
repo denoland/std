@@ -70,7 +70,7 @@ class FileReader implements Reader {
   #filePath: string;
 
   constructor(filePath: string) {
-    this.#filePath=filePath;
+    this.#filePath = filePath;
   }
 
   async read(p: Uint8Array): Promise<number | null> {

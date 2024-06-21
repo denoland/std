@@ -6,11 +6,11 @@
 import { repeat } from "./_utils.ts";
 
 export class Mark {
-  name:string;
-  buffer:string;
-  position:number;
-  line:number;
-  column:number
+  name: string;
+  buffer: string;
+  position: number;
+  line: number;
+  column: number;
   constructor(
     name: string,
     buffer: string,
@@ -18,11 +18,11 @@ export class Mark {
     line: number,
     column: number,
   ) {
-    this.name=name;
-    this.buffer=buffer;
-    this.position=position;
-    this.line=line;
-    this.column=column;
+    this.name = name;
+    this.buffer = buffer;
+    this.position = position;
+    this.line = line;
+    this.column = column;
   }
 
   getSnippet(indent = 4, maxLength = 75): string | null {

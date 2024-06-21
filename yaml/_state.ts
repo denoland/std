@@ -7,8 +7,8 @@ import type { SchemaDefinition } from "./schema.ts";
 import { DEFAULT_SCHEMA } from "./schema/mod.ts";
 
 export abstract class State {
-  schema:SchemaDefinition;
+  schema: SchemaDefinition;
   constructor(schema: SchemaDefinition = DEFAULT_SCHEMA) {
-    this.schema=schema;
+    this.schema = schema;
   }
 }

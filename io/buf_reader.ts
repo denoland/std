@@ -15,10 +15,10 @@ const LF = "\n".charCodeAt(0);
  */
 export class BufferFullError extends Error {
   override name = "BufferFullError";
-  partial:Uint8Array
+  partial: Uint8Array;
   constructor(partial: Uint8Array) {
     super("Buffer full");
-    this.partial=partial;
+    this.partial = partial;
   }
 }
 

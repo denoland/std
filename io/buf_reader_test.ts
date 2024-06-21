@@ -309,12 +309,12 @@ const testOutput = encoder.encode("0123456789abcdefghijklmnopqrstuvwxy");
 
 // TestReader wraps a Uint8Array and returns reads of a specific length.
 class TestReader implements Reader {
-  #data:Uint8Array;
-  #stride:number;
+  #data: Uint8Array;
+  #stride: number;
 
-  constructor(data: Uint8Array,stride: number) {
-    this.#data=data;
-    this.#stride=stride;
+  constructor(data: Uint8Array, stride: number) {
+    this.#data = data;
+    this.#stride = stride;
   }
 
   read(buf: Uint8Array): Promise<number | null> {
