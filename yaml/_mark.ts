@@ -6,15 +6,26 @@
 import { repeat } from "./_utils.ts";
 
 export class Mark {
+  name: string;
+  buffer: string;
+  position: number;
+  line: number;
+  column: number;
   constructor(
-    public name: string,
-    public buffer: string,
-    public position: number,
-    public line: number,
-    public column: number,
-  ) {}
+    name: string,
+    buffer: string,
+    position: number,
+    line: number,
+    column: number,
+  ) {
+    this.name = name;
+    this.buffer = buffer;
+    this.position = position;
+    this.line = line;
+    this.column = column;
+  }
 
-  public getSnippet(indent = 4, maxLength = 75): string | null {
+  getSnippet(indent = 4, maxLength = 75): string | null {
     if (!this.buffer) return null;
 
     let head = "";
@@ -56,7 +67,7 @@ export class Mark {
     }^`;
   }
 
-  public toString(compact?: boolean): string {
+  toString(compact?: boolean): string {
     let snippet;
     let where = "";
 
