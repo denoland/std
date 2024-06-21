@@ -41,7 +41,7 @@ import { createAbortError } from "./_util.ts";
  * const error = await assertRejects(
  *   () => abortable(promise, controller.signal),
  *   DOMException,
- *   "AbortError: This is my reason"
+ *   "This is my reason"
  * );
  * assertEquals(error.name, "AbortError");
  * ```
@@ -96,7 +96,7 @@ export function abortable<T>(p: Promise<T>, signal: AbortSignal): Promise<T>;
  * controller.abort("This is my reason");
  *
  * const items: string[] = [];
- * // Below throws `DOMException` immediately and items become `["Hello"]`
+ * // Below throws `DOMException` immediately
  * const error = await assertRejects(
  *   async () => {
  *     for await (const item of abortable(asyncIter(), controller.signal)) {
@@ -104,10 +104,10 @@ export function abortable<T>(p: Promise<T>, signal: AbortSignal): Promise<T>;
  *     }
  *   },
  *   DOMException,
- *   "AbortError: This is my reason"
+ *   "This is my reason"
  * );
  * assertEquals(error.name, "AbortError");
- * assertEquals(items, ["Hello"]);
+ * assertEquals(items, []);
  * ```
  */
 export function abortable<T>(
