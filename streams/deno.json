@@ -1,6 +1,6 @@
 {
   "name": "@std/streams",
-  "version": "0.224.5",
+  "version": "1.0.0-rc.1",
   "exports": {
     ".": "./mod.ts",
     "./buffer": "./buffer.ts",
