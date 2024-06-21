@@ -10,7 +10,7 @@
     "./server": "./server.ts",
     "./server-sent-event-stream": "./server_sent_event_stream.ts",
     "./status": "./status.ts",
-    "./unstable-signed-cookie": "./unstable_signed_cookie.ts",
+    "./signed-cookie": "./signed_cookie.ts",
     "./user-agent": "./user_agent.ts"
   }
 }

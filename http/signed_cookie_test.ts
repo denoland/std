@@ -3,7 +3,7 @@ import {
   parseSignedCookie,
   signCookie,
   verifyCookie,
-} from "./unstable_signed_cookie.ts";
+} from "./signed_cookie.ts";
 import { assertEquals } from "@std/assert/assert-equals";
 
 Deno.test("signCookie() and verifyCookie() work circularly", async () => {
