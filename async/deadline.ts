@@ -20,7 +20,7 @@ export interface DeadlineOptions {
  * that accept {@linkcode AbortSignal}.
  *
  * @throws {DOMException} When the provided duration runs out before resolving
- * or if the optional signal is aborted.
+ * or if the optional signal is aborted, and `signal.reason` is undefined.
  * @typeParam T The type of the provided and returned promise.
  * @param p The promise to make rejectable.
  * @param ms Duration in milliseconds for when the promise should time out.
