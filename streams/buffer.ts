@@ -375,9 +375,6 @@ export class Buffer {
   }
 
   #reslice(len: number) {
-    if (len > this.#buf.buffer.byteLength) {
-      throw new RangeError("Length is greater than buffer capacity");
-    }
     this.#buf = new Uint8Array(this.#buf.buffer, 0, len);
   }
 

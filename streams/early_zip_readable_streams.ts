@@ -84,26 +84,25 @@
 export function earlyZipReadableStreams<T>(
   ...streams: ReadableStream<T>[]
 ): ReadableStream<T> {
-  const readers = streams.map((s) => s.getReader());
+  const readers = streams.map((stream) => stream.getReader());
   return new ReadableStream<T>({
-    async start(controller) {
-      try {
-        loop:
-        while (true) {
-          for (const reader of readers) {
-            const { value, done } = await reader.read();
-            if (!done) {
-              controller.enqueue(value!);
-            } else {
-              await Promise.all(readers.map((reader) => reader.cancel()));
-              break loop;
-            }
-          }
+    async pull(controller) {
+      for (let i = 0; i < readers.length; ++i) {
+        const { done, value } = await readers[i]!.read();
+        if (done) {
+          await Promise.all(
+            readers.map((reader) =>
+              reader.cancel(`Stream at index ${i} ended`)
+            ),
+          );
+          controller.close();
+          return;
         }
-        controller.close();
-      } catch (e) {
-        controller.error(e);
+        controller.enqueue(value);
       }
+    },
+    async cancel(reason) {
+      await Promise.all(readers.map((reader) => reader.cancel(reason)));
     },
   });
 }

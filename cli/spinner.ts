@@ -18,7 +18,13 @@ const DEFAULT_SPINNER = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧",
 // deno-lint-ignore ban-types
 export type Ansi = string & {};
 
-/** Color options for {@linkcode SpinnerOptions.color}. */
+/**
+ * **UNSTABLE**: New API, yet to be vetted.
+ *
+ * Color options for {@linkcode SpinnerOptions.color}.
+ *
+ * @experimental
+ */
 export type Color =
   | "black"
   | "red"
@@ -43,7 +49,13 @@ const COLORS: Record<Color, string> = {
   gray: "\u001b[90m",
 };
 
-/** Options for {@linkcode Spinner}. */
+/**
+ * **UNSTABLE**: New API, yet to be vetted.
+ *
+ * Options for {@linkcode Spinner}.
+ *
+ * @experimental
+ */
 export interface SpinnerOptions {
   /**
    * The sequence of characters to be iterated through for animation.
@@ -70,6 +82,8 @@ export interface SpinnerOptions {
 }
 
 /**
+ * **UNSTABLE**: New API, yet to be vetted.
+ *
  * A spinner that can be used to indicate that something is loading.
  *
  * @example Usage
@@ -84,6 +98,8 @@ export interface SpinnerOptions {
  *  console.log("Finished loading!");
  * }, 3_000);
  * ```
+ *
+ * @experimental
  */
 export class Spinner {
   #spinner: string[];

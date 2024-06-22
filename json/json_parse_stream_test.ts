@@ -45,7 +45,6 @@ Deno.test({
     await assertInvalidParse(
       JsonParseStream,
       ['{"foo": "bar"}', '{"foo": '],
-      {},
       SyntaxError,
       `Unexpected end of JSON input (parsing: '{"foo": ')`,
     );

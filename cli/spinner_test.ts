@@ -6,6 +6,7 @@ import {
   assertLess,
   assertStringIncludes,
 } from "@std/assert";
+import { delay } from "@std/async/delay";
 import { Spinner } from "./spinner.ts";
 
 async function spawnDeno(args: string[], opts?: Deno.CommandOptions) {
@@ -26,6 +27,14 @@ const normalizeString = (s: string) =>
 const COLOR_RESET = "\u001b[0m";
 const LINE_CLEAR = "\r\u001b[K";
 const decoder = new TextDecoder();
+
+Deno.test("Spinner can start and stop", async () => {
+  const spinner = new Spinner({ message: "Loading..." });
+  spinner.start();
+  spinner.start(); // This doesn't throw, but ignored
+  await delay(300);
+  spinner.stop();
+});
 
 Deno.test("Spinner constructor accepts spinner", async () => {
   const text = await spawnDeno([

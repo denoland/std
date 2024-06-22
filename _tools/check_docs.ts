@@ -36,6 +36,7 @@ const ENTRY_POINTS = [
   "../csv/mod.ts",
   "../data_structures/mod.ts",
   "../datetime/mod.ts",
+  "../dotenv/mod.ts",
   "../encoding/mod.ts",
   "../expect/mod.ts",
   "../fmt/bytes.ts",
@@ -46,16 +47,25 @@ const ENTRY_POINTS = [
   "../fs/mod.ts",
   "../html/mod.ts",
   "../http/mod.ts",
+  "../ini/mod.ts",
   "../internal/mod.ts",
+  "../json/mod.ts",
   "../jsonc/mod.ts",
   "../media_types/mod.ts",
+  "../msgpack/mod.ts",
   "../net/mod.ts",
   "../path/mod.ts",
   "../path/posix/mod.ts",
   "../path/windows/mod.ts",
+  "../regexp/mod.ts",
   "../semver/mod.ts",
   "../streams/mod.ts",
   "../text/mod.ts",
+  "../testing/bdd.ts",
+  "../testing/mock.ts",
+  "../testing/snapshot.ts",
+  "../testing/time.ts",
+  "../testing/types.ts",
   "../toml/mod.ts",
   "../ulid/mod.ts",
   "../url/mod.ts",
@@ -64,7 +74,8 @@ const ENTRY_POINTS = [
 ] as const;
 
 const TS_SNIPPET = /```ts[\s\S]*?```/g;
-const ASSERTION_IMPORT = /import \{.*\} from "@std\/assert(?:\/.*)?";/gm;
+const ASSERTION_IMPORT =
+  /from "@std\/(assert(\/[a-z-]+)?|testing\/(mock|snapshot|types))"/g;
 const NEWLINE = "\n";
 const diagnostics: DocumentError[] = [];
 const snippetPromises: Promise<void>[] = [];

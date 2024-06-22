@@ -1,6 +1,6 @@
 {
   "name": "@std/yaml",
-  "version": "0.224.1",
+  "version": "0.224.2",
   "exports": {
     ".": "./mod.ts",
     "./parse": "./parse.ts",

@@ -10,7 +10,7 @@ declare module "./_types.ts" {
 }
 
 class Author {
-  public name: string;
+  name: string;
 
   constructor(name: string) {
     this.name = name;
@@ -18,8 +18,8 @@ class Author {
 }
 
 class Book {
-  public name: string;
-  public authors: Array<Author>;
+  name: string;
+  authors: Array<Author>;
 
   constructor(name: string, authors: Array<Author>) {
     this.name = name;
