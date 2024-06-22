@@ -14,10 +14,10 @@
  * along with its license.
  *
  * ```ts
- * import { contentType, extensionsByType, getCharset } from "@std/media-types";
+ * import { contentType, allExtensions, getCharset } from "@std/media-types";
  * import { assertEquals } from "@std/assert/assert-equals";
  *
- * assertEquals(extensionsByType("application/json"), ["json", "map"]);
+ * assertEquals(allExtensions("application/json"), ["json", "map"]);
  *
  * assertEquals(contentType(".json"), "application/json; charset=UTF-8");
  *
@@ -29,7 +29,7 @@
 
 export * from "./content_type.ts";
 export * from "./extension.ts";
-export * from "./extensions_by_type.ts";
+export * from "./all_extensions.ts";
 export * from "./format_media_type.ts";
 export * from "./get_charset.ts";
 export * from "./parse_media_type.ts";

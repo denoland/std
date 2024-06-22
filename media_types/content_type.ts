@@ -35,12 +35,6 @@ export type KnownExtensionOrType =
  *
  * Returns `undefined` if unable to resolve the media type.
  *
- * > Note: a side effect of `deno/x/media_types` was that you could pass a file
- * > name (e.g. `file.json`) and it would return the content type. This behavior
- * > is intentionally not supported here. If you want to get an extension for a
- * > file name, use {@linkcode https://jsr.io/@std/path/doc/~/extname | extname}
- * > to determine the extension and pass it here.
- *
  * @typeParam T Type of the extension or media type to resolve.
  *
  * @param extensionOrType The extension or media type to resolve.

@@ -1,7 +1,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
 import { assertEquals } from "@std/assert";
-import { extensionsByType } from "./extensions_by_type.ts";
+import { allExtensions } from "./all_extensions.ts";
 
 Deno.test({
   name: "extensionsByType()",
@@ -14,7 +14,7 @@ Deno.test({
       ["application/foo", undefined],
     ];
     for (const [fixture, expected] of fixtures) {
-      assertEquals(extensionsByType(fixture), expected);
+      assertEquals(allExtensions(fixture), expected);
     }
   },
 });
