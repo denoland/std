@@ -7,7 +7,6 @@
     "./etag": "./etag.ts",
     "./file-server": "./file_server.ts",
     "./negotiation": "./negotiation.ts",
-    "./server": "./server.ts",
     "./server-sent-event-stream": "./server_sent_event_stream.ts",
     "./status": "./status.ts",
     "./signed-cookie": "./signed_cookie.ts",
