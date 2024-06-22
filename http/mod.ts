@@ -35,12 +35,6 @@
  * > {@link https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Accept-Charset | clients omit and servers should ignore}
  * > therefore is not provided.
  *
- * ## Cookie maps
- *
- * An alternative to `cookie.ts` is `cookie_map.ts` which provides `CookieMap`,
- * `SecureCookieMap`, and `mergeHeaders` to manage request and response cookies
- * with the familiar `Map` interface.
- *
  * ## User agent handling
  *
  * The {@linkcode UserAgent} class provides user agent string parsing, allowing
