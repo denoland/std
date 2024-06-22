@@ -1,3 +1,96 @@
+### 2024.06.21
+
+#### @std/archive 0.224.2 (patch)
+
+- refactor(archive,expect,io,log,toml,yaml): remove `private` and `public`
+  access modifiers (#5077)
+
+#### @std/async 1.0.0-rc.2 (prerelease)
+
+- BREAKING(async): simplify `deadline()` logic, remove `DeadlineError` and
+  improve errors (#5058)
+- BREAKING(async): make `abortablePromise()` and `abortableAsyncIterable()`
+  private (#5056)
+
+#### @std/cli 1.0.0-rc.1 (prerelease)
+
+- chore(cli): release `cli@1.0.0-rc.1` (#5068)
+- chore(cli): make spinner unstable/experimental (#5067)
+
+#### @std/collections 1.0.0 (major)
+
+- chore(collections): release `collections@1.0.0` (#4773)
+
+#### @std/dotenv 0.224.1 (patch)
+
+- docs(dotenv): improve `dotenv` docs (#5095)
+
+#### @std/expect 0.224.5 (patch)
+
+- refactor(archive,expect,io,log,toml,yaml): remove `private` and `public`
+  access modifiers (#5077)
+
+#### @std/fs 1.0.0-rc.1 (prerelease)
+
+- refactor(fs): improve `expandGlob()` implementation and testing (#5089)
+- refactor(fs): reduce the repetition in `exists.ts` (#5088)
+- refactor(fs): reduce the repetition in ensure_dir.ts (#5085)
+- refactor(fs): resolve directories when checking whether they are the same in
+  `isSubdir()` (#5076)
+- test(fs): improve `copy()` testing (#5084)
+- test(fs): improve `ensureSymlink()` test (#5087)
+- test(fs): check `ensureDir()` is not racy (#5086)
+- chore(fs): release `fs@1.0.0-rc.1` (#5091)
+
+#### @std/io 0.224.2 (patch)
+
+- refactor(archive,expect,io,log,toml,yaml): remove `private` and `public`
+  access modifiers (#5077)
+
+#### @std/json 1.0.0-rc.1 (prerelease)
+
+- BREAKING(json): rename /common to /types (#5103)
+- BREAKING(json): remove `writableStrategy` and `readableStrategy` options
+  (#5097)
+- docs(json): lint `@std/json` docs (#4798)
+- test(json): improve json testing (#5075)
+- chore(json): release `json@1.0.0-rc.1` (#5102)
+
+#### @std/jsonc 0.224.3 (patch)
+
+- test(jsonc): remove dead code and improve testing (#5093)
+
+#### @std/log 0.224.3 (patch)
+
+- refactor(archive,expect,io,log,toml,yaml): remove `private` and `public`
+  access modifiers (#5077)
+
+#### @std/streams 1.0.0-rc.1 (prerelease)
+
+- BREAKING(streams): remove `iterateReader`, `readableStreamFromReader`,
+  `readerFromIterable`, `readerFromStreamReader`, `writableStreamFromWriter`,
+  and `writerFromStreamWriter` (#5060)
+- fix(streams): prevent `earlyZipReadableStreams()` from possibly using
+  excessive memory (#5082)
+- test(streams): improve test coverage (#5078)
+- test(streams): improve `DelimiterStream` test cases (#5070)
+- test(streams): improve `Buffer` test (#5061)
+- chore(streams): release `streams@1.0.0-rc.1` (#5074)
+
+#### @std/testing 0.225.3 (patch)
+
+- refactor(testing): remove `FakeTime.start` setter (#5050)
+
+#### @std/toml 1.0.0-rc.2 (prerelease)
+
+- refactor(archive,expect,io,log,toml,yaml): remove `private` and `public`
+  access modifiers (#5077)
+
+#### @std/yaml 0.224.2 (patch)
+
+- refactor(archive,expect,io,log,toml,yaml): remove `private` and `public`
+  access modifiers (#5077)
+
 ### 2024.06.17
 
 #### @std/async 1.0.0-rc.1 (prerelease)

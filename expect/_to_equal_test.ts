@@ -221,7 +221,7 @@ Deno.test("expect().toEqual() does not throw when a key with undfined value exis
 Deno.test("expect().toEqual() align to jest test cases", () => {
   function create() {
     class Person {
-      constructor(public readonly name = "deno") {}
+      constructor(readonly name = "deno") {}
     }
     return new Person();
   }

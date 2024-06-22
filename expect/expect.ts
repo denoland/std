@@ -243,8 +243,8 @@ export function expect(value: unknown, customMessage?: string): Expected {
  * import { expect } from "@std/expect";
  *
  * class Volume {
- *   public amount: number;
- *   public unit: "L" | "mL";
+ *   amount: number;
+ *   unit: "L" | "mL";
  *
  *   constructor(amount: number, unit: "L" | "mL") {
  *     this.amount = amount;

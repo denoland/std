@@ -26,14 +26,14 @@ function checkTagFormat(tag: string): string {
 }
 
 export class Type {
-  public tag: string;
-  public kind: KindType | null = null;
-  public instanceOf: Any;
-  public predicate?: (data: Record<string, unknown>) => boolean;
-  public represent?: RepresentFn | ArrayObject<RepresentFn>;
-  public defaultStyle?: StyleVariant;
-  public styleAliases?: ArrayObject;
-  public loadKind?: KindType;
+  tag: string;
+  kind: KindType | null = null;
+  instanceOf: Any;
+  predicate?: (data: Record<string, unknown>) => boolean;
+  represent?: RepresentFn | ArrayObject<RepresentFn>;
+  defaultStyle?: StyleVariant;
+  styleAliases?: ArrayObject;
+  loadKind?: KindType;
 
   constructor(tag: string, options?: TypeOptions) {
     this.tag = checkTagFormat(tag);
@@ -48,6 +48,6 @@ export class Type {
       this.styleAliases = options.styleAliases;
     }
   }
-  public resolve: (data?: Any) => boolean = (): boolean => true;
-  public construct: (data?: Any) => Any = (data): Any => data;
+  resolve: (data?: Any) => boolean = (): boolean => true;
+  construct: (data?: Any) => Any = (data): Any => data;
 }

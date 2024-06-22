@@ -15,18 +15,6 @@ export interface StringifyStreamOptions {
    * @default {"\n"}
    */
   readonly suffix?: string;
-  /**
-   * Controls the buffer of the {@linkcode TransformStream} used internally.
-   *
-   * @see {@link https://developer.mozilla.org/en-US/docs/Web/API/TransformStream/TransformStream#writablestrategy}
-   */
-  readonly writableStrategy?: QueuingStrategy<unknown>;
-  /**
-   * Controls the buffer of the {@linkcode TransformStream} used internally.
-   *
-   * @see {@link https://developer.mozilla.org/en-US/docs/Web/API/TransformStream/TransformStream#readablestrategy}
-   */
-  readonly readableStrategy?: QueuingStrategy<string>;
 }
 
 /**
@@ -121,8 +109,6 @@ export class JsonStringifyStream extends TransformStream<unknown, string> {
   constructor({
     prefix = "",
     suffix = "\n",
-    writableStrategy,
-    readableStrategy,
   }: StringifyStreamOptions = {}) {
     super(
       {
@@ -130,8 +116,6 @@ export class JsonStringifyStream extends TransformStream<unknown, string> {
           controller.enqueue(`${prefix}${JSON.stringify(chunk)}${suffix}`);
         },
       },
-      writableStrategy,
-      readableStrategy,
     );
   }
 }
