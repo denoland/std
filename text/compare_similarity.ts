@@ -17,7 +17,7 @@ export interface CompareSimilarityOptions {
    *
    * @default {getWordDistance}
    */
-  algorithm?: (str1: string, str2: string) => number;
+  distanceFn?: (str1: string, str2: string) => number;
 }
 
 /**
@@ -52,14 +52,14 @@ export function compareSimilarity(
   givenWord: string,
   options?: CompareSimilarityOptions
 ): (a: string, b: string) => number {
-  const { algorithm = getWordDistance } = { ...options };
+  const { distanceFn = getWordDistance } = { ...options };
 
   if (options?.caseSensitive) {
     return (a: string, b: string) =>
-      algorithm(givenWord, a) - algorithm(givenWord, b);
+      distanceFn(givenWord, a) - distanceFn(givenWord, b);
   }
   givenWord = givenWord.toLowerCase();
   return (a: string, b: string) =>
-    algorithm(givenWord, a.toLowerCase()) -
-    algorithm(givenWord, b.toLowerCase());
+    distanceFn(givenWord, a.toLowerCase()) -
+    distanceFn(givenWord, b.toLowerCase());
 }

@@ -41,7 +41,7 @@ export function closestString(
       "When using closestString(), the possibleWords array must contain at least one word"
     );
   }
-  const { caseSensitive, algorithm = getWordDistance } = { ...options };
+  const { caseSensitive, distanceFn = getWordDistance } = { ...options };
 
   if (!caseSensitive) {
     givenWord = givenWord.toLowerCase();
@@ -51,8 +51,8 @@ export function closestString(
   let closestStringDistance = Infinity;
   for (const each of possibleWords) {
     const distance = caseSensitive
-      ? algorithm(givenWord, each)
-      : algorithm(givenWord, each.toLowerCase());
+      ? distanceFn(givenWord, each)
+      : distanceFn(givenWord, each.toLowerCase());
     if (distance < closestStringDistance) {
       nearestWord = each;
       closestStringDistance = distance;
