@@ -81,7 +81,7 @@ export type EntryHelpFile = {
   help: string
 }
 
-const DEFAULT_HELP = 'hal-v0.2'
+const DEFAULT_HELP = 'hal-v0.3'
 
 export const functions = {
   '@@install': async (_: object, api: IsolateApi) => {
