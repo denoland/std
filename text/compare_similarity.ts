@@ -1,9 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
-import { levenshteinDistance } from "./levenshtein_distance.ts";
-
-// Note: this metric may change in future versions (e.g. better than levenshteinDistance)
-const getWordDistance = levenshteinDistance;
+import { getWordDistance } from "./get_word_distance.ts";
 
 /** Options for {@linkcode compareSimilarity}. */
 export interface CompareSimilarityOptions {
@@ -13,6 +10,14 @@ export interface CompareSimilarityOptions {
    * @default {false}
    */
   caseSensitive?: boolean;
+  /**
+   * Function used to compare two strings.
+   * Lower number means closer match.
+   * 0 means numbers match.
+   *
+   * @default {getWordDistance}
+   */
+  algorithm?: (str1: string, str2: string) => number;
 }
 
 /**
@@ -45,14 +50,16 @@ export interface CompareSimilarityOptions {
  */
 export function compareSimilarity(
   givenWord: string,
-  options?: CompareSimilarityOptions,
+  options?: CompareSimilarityOptions
 ): (a: string, b: string) => number {
+  const { algorithm = getWordDistance } = { ...options };
+
   if (options?.caseSensitive) {
     return (a: string, b: string) =>
-      getWordDistance(givenWord, a) - getWordDistance(givenWord, b);
+      algorithm(givenWord, a) - algorithm(givenWord, b);
   }
   givenWord = givenWord.toLowerCase();
   return (a: string, b: string) =>
-    getWordDistance(givenWord, a.toLowerCase()) -
-    getWordDistance(givenWord, b.toLowerCase());
+    algorithm(givenWord, a.toLowerCase()) -
+    algorithm(givenWord, b.toLowerCase());
 }

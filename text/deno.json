@@ -6,6 +6,7 @@
     "./case": "./case.ts",
     "./closest-string": "./closest_string.ts",
     "./compare-similarity": "./compare_similarity.ts",
+    "./get_word_distance": "./get_word_distance.ts",
     "./levenshtein-distance": "./levenshtein_distance.ts",
     "./word-similarity-sort": "./word_similarity_sort.ts"
   }
