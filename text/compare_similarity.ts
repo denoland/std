@@ -52,9 +52,9 @@ export function compareSimilarity(
   givenWord: string,
   options?: CompareSimilarityOptions
 ): (a: string, b: string) => number {
-  const { distanceFn = getWordDistance } = { ...options };
+  const { caseSensitive, distanceFn = getWordDistance } = { ...options };
 
-  if (options?.caseSensitive) {
+  if (caseSensitive) {
     return (a: string, b: string) =>
       distanceFn(givenWord, a) - distanceFn(givenWord, b);
   }
