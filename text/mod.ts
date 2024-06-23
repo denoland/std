@@ -22,6 +22,5 @@
 export * from "./levenshtein_distance.ts";
 export * from "./closest_string.ts";
 export * from "./compare_similarity.ts";
-export * from "./get_word_distance.ts";
 export * from "./word_similarity_sort.ts";
 export * from "./case.ts";

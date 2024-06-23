@@ -1,6 +1,9 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
-import { getWordDistance } from "./get_word_distance.ts";
+import { levenshteinDistance } from "./levenshtein_distance.ts";
+
+// NOTE: this metric may change in future versions (e.g. better than levenshteinDistance)
+const getWordDistance = levenshteinDistance;
 
 /** Options for {@linkcode compareSimilarity}. */
 export interface CompareSimilarityOptions {
