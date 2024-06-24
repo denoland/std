@@ -18,7 +18,7 @@ export interface CompareSimilarityOptions {
    * Lower number means closer match.
    * 0 means numbers match.
    *
-   * @default {getWordDistance}
+   * @default {levenshteinDistance}
    */
   distanceFn?: (str1: string, str2: string) => number;
 }
