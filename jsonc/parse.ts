@@ -1,13 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-/**
- * {@linkcode parse} function for parsing
- * {@link https://code.visualstudio.com/docs/languages/json#_json-with-comments | JSONC}
- * (JSON with Comments) strings.
- *
- * @module
- */
 import type { JsonValue } from "@std/json/types";
 export type { JsonValue } from "@std/json/types";
 
@@ -22,7 +15,6 @@ export interface ParseOptions {
 
 /**
  * Converts a JSON with Comments (JSONC) string into an object.
- * If a syntax error is found, throw a {@linkcode SyntaxError}.
  *
  * @example Usage
  * ```ts
@@ -35,13 +27,16 @@ export interface ParseOptions {
  * assertEquals(parse('{"foo": "bar" } // comment', { allowTrailingComma: false }), { foo: "bar" });
  * ```
  *
+ * @throws {SyntaxError} If the JSONC string is invalid.
  * @param text A valid JSONC string.
+ * @param options Options for parsing.
  * @returns The parsed JsonValue from the JSONC string.
  */
 export function parse(
   text: string,
-  { allowTrailingComma = true }: ParseOptions = {},
+  options?: ParseOptions,
 ): JsonValue {
+  const { allowTrailingComma = true } = { ...options };
   if (new.target) {
     throw new TypeError("parse is not a constructor");
   }
