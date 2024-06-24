@@ -2,9 +2,6 @@
 // This module is browser compatible.
 import { levenshteinDistance } from "./levenshtein_distance.ts";
 
-// NOTE: this metric may change in future versions (e.g. better than levenshteinDistance)
-const getWordDistance = levenshteinDistance;
-
 /** Options for {@linkcode compareSimilarity}. */
 export interface CompareSimilarityOptions {
   /**
@@ -55,7 +52,7 @@ export function compareSimilarity(
   givenWord: string,
   options?: CompareSimilarityOptions,
 ): (a: string, b: string) => number {
-  const { caseSensitive, distanceFn = getWordDistance } = { ...options };
+  const { caseSensitive, distanceFn = levenshteinDistance } = { ...options };
 
   if (caseSensitive) {
     return (a: string, b: string) =>

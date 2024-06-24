@@ -3,9 +3,6 @@
 import type { CompareSimilarityOptions } from "./compare_similarity.ts";
 import { levenshteinDistance } from "./levenshtein_distance.ts";
 
-// NOTE: this metric may change in future versions (e.g. better than levenshteinDistance)
-const getWordDistance = levenshteinDistance;
-
 /** Options for {@linkcode closestString}. */
 export interface ClosestStringOptions extends CompareSimilarityOptions {}
 
@@ -44,7 +41,7 @@ export function closestString(
       "When using closestString(), the possibleWords array must contain at least one word",
     );
   }
-  const { caseSensitive, distanceFn = getWordDistance } = { ...options };
+  const { caseSensitive, distanceFn = levenshteinDistance } = { ...options };
 
   if (!caseSensitive) {
     givenWord = givenWord.toLowerCase();
