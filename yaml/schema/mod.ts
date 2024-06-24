@@ -16,6 +16,7 @@ import { JSON_SCHEMA } from "./json.ts";
 export { JSON_SCHEMA } from "./json.ts";
 
 export function replaceSchemaNameWithSchemaClass(
+  // deno-lint-ignore no-explicit-any
   options?: { schema?: any },
 ) {
   if (!options) return;
