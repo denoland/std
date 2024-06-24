@@ -48,7 +48,6 @@ import {
 } from "./status.ts";
 import { ByteSliceStream } from "@std/streams/byte-slice-stream";
 import { parseArgs } from "@std/cli/parse-args";
-import { red } from "@std/fmt/colors";
 import denoConfig from "./deno.json" with { type: "json" };
 import { format as formatBytes } from "@std/fmt/bytes";
 import { getNetworkAddress } from "@std/net/get-network-address";
@@ -359,7 +358,7 @@ async function serveDirIndex(
         };
       } catch (error) {
         // Note: Deno.stat for windows system files may be rejected with os error 32.
-        if (!options.quiet) logError(error);
+        if (!options.quiet) logError(error as Error);
         return {
           mode: "(unknown mode)",
           size: "",
@@ -631,7 +630,7 @@ export async function serveDir(
   try {
     response = await createServeDirResponse(req, opts);
   } catch (error) {
-    if (!opts.quiet) logError(error);
+    if (!opts.quiet) logError(error as Error);
     response = serveFallback(error);
   }
 
@@ -750,8 +749,8 @@ async function createServeDirResponse(
   return createStandardResponse(STATUS_CODE.NotFound);
 }
 
-function logError(error: unknown) {
-  console.error(red(error instanceof Error ? error.message : `${error}`));
+function logError(error: Error) {
+  console.error(`%c${error.message}`, "color: red");
 }
 
 function main() {
