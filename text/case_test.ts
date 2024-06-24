@@ -69,6 +69,12 @@ Deno.test("toPascalCase() converts a single word", () => {
   assertEquals(toPascalCase(input), expected);
 });
 
+Deno.test("toPascalCase() converts a single word with Cyrillic letters", () => {
+  const input = "шруберри";
+  const expected = "Шруберри";
+  assertEquals(toPascalCase(input), expected);
+});
+
 Deno.test("toPascalCase() converts a sentence", () => {
   const input = "she turned me into a newt";
   const expected = "SheTurnedMeIntoANewt";
