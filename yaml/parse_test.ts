@@ -86,6 +86,7 @@ Deno.test({
     };
 
     assertEquals(parse(yaml, { schema: EXTENDED_SCHEMA }), expected);
+    assertEquals(parse(yaml, { schema: "extended" }), expected);
   },
 });
 
