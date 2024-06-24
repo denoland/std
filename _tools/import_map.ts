@@ -24,7 +24,9 @@ for (const workspace of rootDenoConfig.workspaces) {
   );
 
   if (typeof pkgDenoConfig.exports === "string") {
-    importMap.imports[name] = `./${join(workspace, pkgDenoConfig.exports)}`;
+    importMap.imports[pkgDenoConfig.name] = `./${
+      join(workspace, pkgDenoConfig.exports)
+    }`;
   } else {
     for (
       const [moduleName, modulePath] of Object.entries(

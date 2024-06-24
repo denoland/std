@@ -369,7 +369,7 @@
     "@std/toml": "./toml/mod.ts",
     "@std/toml/parse": "./toml/parse.ts",
     "@std/toml/stringify": "./toml/stringify.ts",
-    "": "./ulid/mod.ts",
+    "@std/ulid": "./ulid/mod.ts",
     "@std/url": "./url/mod.ts",
     "@std/url/basename": "./url/basename.ts",
     "@std/url/dirname": "./url/dirname.ts",
