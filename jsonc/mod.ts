@@ -14,13 +14,7 @@
  * import { assertEquals } from "@std/assert/assert-equals";
  *
  * assertEquals(parse('{"foo": "bar", } // comment'), { foo: "bar" });
- *
  * assertEquals(parse('{"foo": "bar", } /* comment *\/'), { foo: "bar" });
- *
- * assertEquals(
- *   parse('{"foo": "bar" } // comment', { allowTrailingComma: false }),
- *   { foo: "bar" }
- * );
  * ```
  *
  * @module
