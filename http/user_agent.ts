@@ -146,7 +146,7 @@ const windowsVersionMap = new Map<string, string | string[]>([
 ]);
 
 function has(str1: string, str2: string): boolean {
-  return lowerize(str2).indexOf(lowerize(str1)) !== -1;
+  return lowerize(str2).includes(lowerize(str1));
 }
 
 function mapWinVer(str: string) {
