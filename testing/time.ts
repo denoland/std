@@ -400,7 +400,7 @@ export class FakeTime {
    * ```
    */
   static restore() {
-    if (!time) throw new TimeError("time already restored");
+    if (!time) return;
     time.restore();
   }
 
