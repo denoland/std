@@ -53,7 +53,7 @@ export interface CompareSimilarityOptions {
  */
 export function compareSimilarity(
   givenWord: string,
-  options?: CompareSimilarityOptions
+  options?: CompareSimilarityOptions,
 ): (a: string, b: string) => number {
   const { caseSensitive, distanceFn = getWordDistance } = { ...options };
 

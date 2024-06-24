@@ -37,11 +37,11 @@ export interface ClosestStringOptions extends CompareSimilarityOptions {}
 export function closestString(
   givenWord: string,
   possibleWords: string[],
-  options?: ClosestStringOptions
+  options?: ClosestStringOptions,
 ): string {
   if (possibleWords.length === 0) {
     throw new TypeError(
-      "When using closestString(), the possibleWords array must contain at least one word"
+      "When using closestString(), the possibleWords array must contain at least one word",
     );
   }
   const { caseSensitive, distanceFn = getWordDistance } = { ...options };
