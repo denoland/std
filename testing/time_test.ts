@@ -632,3 +632,8 @@ Deno.test("Date from FakeTime is structured cloneable", () => {
   assert(date instanceof Date);
   assert(cloned instanceof Date_);
 });
+
+Deno.test("FakeTime does not throw when restored more than once", () => {
+  using _time1 = new FakeTime();
+  using _time2 = new FakeTime();
+});

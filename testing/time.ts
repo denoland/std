@@ -818,7 +818,7 @@ export class FakeTime {
    * ```
    */
   restore() {
-    if (!time) throw new TimeError("time already restored");
+    if (!time) return;
     time = undefined;
     restoreGlobals();
     if (advanceIntervalId) clearInterval(advanceIntervalId);
