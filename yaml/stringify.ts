@@ -4,6 +4,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
+import type { Schema } from "./schema.ts";
 import { dump } from "./_dumper/dumper.ts";
 import { replaceSchemaNameWithSchemaClass } from "./mod.ts";
 
@@ -32,8 +33,7 @@ export type DumpOptions = {
    *
    * Schema class or its name.
    */
-  // deno-lint-ignore no-explicit-any
-  schema?: any;
+  schema?: string | Schema;
   /**
    * If true, sort keys when dumping YAML in ascending, ASCII character order.
    * If a function, use the function to sort the keys. (default: false)
@@ -74,5 +74,6 @@ export function stringify(
   options?: DumpOptions,
 ): string {
   replaceSchemaNameWithSchemaClass(options);
-  return dump(data, options);
+  // deno-lint-ignore no-explicit-any
+  return dump(data, options as any);
 }

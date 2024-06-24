@@ -4,6 +4,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
+import type { Schema } from "./schema.ts";
 import { type CbFunction, load, loadAll } from "./_loader/loader.ts";
 import { replaceSchemaNameWithSchemaClass } from "./mod.ts";
 
@@ -23,8 +24,7 @@ export interface ParseOptions {
    *
    * Schema class or its name.
    */
-  // deno-lint-ignore no-explicit-any
-  schema?: any;
+  schema?: string | Schema;
   /** compatibility with JSON.parse behaviour. */
   json?: boolean;
   /** function to call on warning messages. */
@@ -39,7 +39,8 @@ export interface ParseOptions {
  */
 export function parse(content: string, options?: ParseOptions): unknown {
   replaceSchemaNameWithSchemaClass(options);
-  return load(content, options);
+  // deno-lint-ignore no-explicit-any
+  return load(content, options as any);
 }
 
 /**
@@ -80,5 +81,6 @@ export function parseAll(
     replaceSchemaNameWithSchemaClass(iteratorOrOption);
   }
   replaceSchemaNameWithSchemaClass(options);
-  return loadAll(content, iteratorOrOption, options);
+  // deno-lint-ignore no-explicit-any
+  return loadAll(content, iteratorOrOption as any, options as any);
 }
