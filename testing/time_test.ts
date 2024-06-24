@@ -3,6 +3,7 @@ import {
   assert,
   assertEquals,
   assertInstanceOf,
+  assertMatch,
   assertNotEquals,
   assertRejects,
   assertStrictEquals,
@@ -96,6 +97,11 @@ Deno.test("FakeTime causes Date instance methods passthrough to real Date instan
   } finally {
     func2.restore();
   }
+});
+
+Deno.test("FakeTime causes Date function to return the string representation of the current faked time", () => {
+  using _time = new FakeTime(24 * 60 * 60 * 1000);
+  assertMatch(Date(), /(Fri|Thu) Jan 0(1|2) 1970/);
 });
 
 Deno.test("FakeTime timeout functions unchanged if FakeTime is uninitialized", () => {
