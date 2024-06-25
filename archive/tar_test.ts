@@ -16,7 +16,7 @@ import { Untar } from "./untar.ts";
 import { Buffer } from "@std/io/buffer";
 import { copy } from "@std/io/copy";
 import { readAll } from "@std/io/read-all";
-import { filePath, testdataDir } from "./_test_common.ts";
+import { filePath, testdataDir } from "./_test_utils.ts";
 
 Deno.test("createTarArchive", async function () {
   // initialize

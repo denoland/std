@@ -53,12 +53,11 @@ const ZEBRA = "Zebra";
 type ProcessingFn = (value: string) => string | undefined;
 
 type MatchingTuple = [matchers: [RegExp, ...RegExp[]], processors: (
-  string | [string, string] | [string, ProcessingFn] | [
-    string,
-    RegExp,
-    string,
-    ProcessingFn?,
-  ]
+  | string
+  | [string, string]
+  | [string, ProcessingFn]
+  | [string, RegExp, string]
+  | [string, RegExp, string, ProcessingFn]
 )[]];
 
 interface Matchers {
@@ -146,16 +145,8 @@ const windowsVersionMap = new Map<string, string | string[]>([
   ["RT", "ARM"],
 ]);
 
-function has(str1: string | string[], str2: string): boolean {
-  if (Array.isArray(str1)) {
-    for (const el of str1) {
-      if (lowerize(el) === lowerize(str2)) {
-        return true;
-      }
-    }
-    return false;
-  }
-  return lowerize(str2).indexOf(lowerize(str1)) !== -1;
+function has(str1: string, str2: string): boolean {
+  return lowerize(str2).includes(lowerize(str1));
 }
 
 function mapWinVer(str: string) {
@@ -184,21 +175,18 @@ function mapper(
     let j = 0;
     let k = 0;
     while (j < matchers.length && !matches) {
-      if (!matchers[j]) {
-        break;
-      }
       matches = matchers[j++]!.exec(ua);
 
       if (matches) {
         for (const processor of processors) {
-          const match = matches[++k]!;
+          const match = matches[++k];
           if (Array.isArray(processor)) {
             if (processor.length === 2) {
               const [prop, value] = processor;
               if (typeof value === "function") {
                 target[prop] = value.call(
                   target,
-                  match,
+                  match!,
                 );
               } else {
                 target[prop] = value;
@@ -208,9 +196,6 @@ function mapper(
               target[prop] = match ? match.replace(re, value) : undefined;
             } else {
               const [prop, re, value, fn] = processor;
-              if (!fn) {
-                throw new TypeError("Function must be defined in processor");
-              }
               target[prop] = match
                 ? fn.call(prop, match.replace(re, value))
                 : undefined;

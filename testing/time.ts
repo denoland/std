@@ -313,7 +313,7 @@ export class FakeTime {
     start?: number | string | Date | null,
     options?: FakeTimeOptions,
   ) {
-    if (time) time.restore();
+    if (time) throw new TimeError("The time is already faked");
     initializedAt = _internals.Date.now();
     startedAt = start instanceof Date
       ? start.valueOf()
