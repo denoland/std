@@ -6,26 +6,27 @@
 // https://github.com/indexzero/http-server/blob/master/test/http-server-test.js
 
 /**
- * Contains functions {@linkcode serveDir} and {@linkcode serveFile} for building a static file server.
+ * Contains functions {@linkcode serveDir} and {@linkcode serveFile} for
+ * building a static file server.
  *
- * This module can also be used as a cli. If you want to run directly:
+ * This module can also be used as a CLI. If you want to run it directly:
  *
  * ```shell
  * > # start server
- * > deno run --allow-net --allow-read @std/http/file-server
+ * > deno run --allow-net --allow-read --allow-sys jsr:@std/http/file-server
  * > # show help
- * > deno run --allow-net --allow-read @std/http/file-server --help
+ * > deno run jsr:@std/http/file-server --help
  * ```
  *
  * If you want to install and run:
  *
  * ```shell
  * > # install
- * > deno install --allow-net --allow-read @std/http/file-server
+ * > deno install --allow-net --allow-read --allow-sys --global jsr:@std/http/file-server
  * > # start server
- * > file_server
+ * > file-server
  * > # show help
- * > file_server --help
+ * > file-server --help
  * ```
  *
  * @module
@@ -135,9 +136,10 @@ function parseRangeHeader(rangeValue: string, fileSize: number) {
   }
 }
 
-/** Interface for serveFile options. */
+/** Options for {@linkcode serveFile}. */
 export interface ServeFileOptions {
-  /** The algorithm to use for generating the ETag.
+  /**
+   * The algorithm to use for generating the ETag.
    *
    * @default {"SHA-256"}
    */
@@ -147,7 +149,7 @@ export interface ServeFileOptions {
 }
 
 /**
- * Returns an HTTP Response with the requested file as the body.
+ * Resolves a {@linkcode Response} with the requested file as the body.
  *
  * @example Usage
  * ```ts no-eval
@@ -371,6 +373,7 @@ async function serveDirIndex(
 
   const listEntry = await Promise.all(listEntryPromise);
   listEntry.sort((a, b) =>
+    // TODO(iuioiua): Add test to ensure list order is correct
     a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1
   );
   const formattedDirUrl = `${dirUrl.replace(/\/$/, "")}/`;
@@ -558,17 +561,20 @@ export interface ServeDirOptions {
    * @default {false}
    */
   showDotfiles?: boolean;
-  /** Serves index.html as the index file of the directory.
+  /** Serves `index.html` as the index file of the directory.
    *
    * @default {true}
    */
   showIndex?: boolean;
-  /** Enable CORS via the "Access-Control-Allow-Origin" header.
+  /**
+   * Enable CORS via the
+   * {@linkcode https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Access-Control-Allow-Origin | Access-Control-Allow-Origin}
+   * header.
    *
    * @default {false}
    */
   enableCors?: boolean;
-  /** Do not print request level logs. Defaults to false.
+  /** Do not print request level logs.
    *
    * @default {false}
    */
@@ -604,19 +610,18 @@ export interface ServeDirOptions {
  * });
  * ```
  *
- * @example Optionally you can pass `urlRoot` option. If it's specified that part is stripped from the beginning of the requested pathname.
+ * @example Changing the URL root
+ *
+ * Requests to `/static/path/to/file` will be served from `./public/path/to/file`.
  *
  * ```ts no-eval
  * import { serveDir } from "@std/http/file-server";
  *
- * // ...
- * serveDir(new Request("http://localhost/static/path/to/file"), {
+ * Deno.serve((req) => serveDir(req, {
  *   fsRoot: "public",
  *   urlRoot: "static",
  * });
  * ```
- *
- * The above example serves `./public/path/to/file` for the request to `/static/path/to/file`.
  *
  * @param req The request to handle
  * @param opts Additional options.
