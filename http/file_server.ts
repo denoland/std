@@ -620,7 +620,7 @@ export interface ServeDirOptions {
  * Deno.serve((req) => serveDir(req, {
  *   fsRoot: "public",
  *   urlRoot: "static",
- * });
+ * }));
  * ```
  *
  * @param req The request to handle
