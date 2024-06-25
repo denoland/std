@@ -518,6 +518,11 @@ Deno.test("spy() works on constructor that throws an error", () => {
   }
   const FooSpy = spy(Foo);
   assertThrows(() => new FooSpy(), Error, "foo");
+  assertSpyCall(FooSpy, 0, {
+    self: undefined,
+    args: [],
+    error: { Class: Error, msgIncludes: "foo" },
+  });
 });
 
 Deno.test("spy() works with throwing method", () => {
