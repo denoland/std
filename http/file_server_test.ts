@@ -223,6 +223,21 @@ Deno.test("serveDir() serves directory index with file containing space in the f
   await Deno.remove(filePath);
 });
 
+Deno.test("serveDir() serves directory index with file's mode is 0", async () => {
+  const stat = Deno.stat;
+  using _stub = stub(
+    Deno,
+    "stat",
+    async (path: string | URL): Promise<Deno.FileInfo> => ({
+      ...(await stat(path)),
+      mode: 0,
+    }),
+  );
+  const res = await serveDir(new Request("http://localhost/"), serveDirOptions);
+  const page = await res.text();
+  assertMatch(page, /<td class="mode">(\s)*- --- --- ---(\s)*<\/td>/);
+});
+
 Deno.test("serveDir() returns a response even if fileinfo is inaccessible", async () => {
   // Note: Deno.stat for windows system files may be rejected with os error 32.
   // Mock Deno.stat to test that the dirlisting page can be generated
