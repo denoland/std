@@ -31,10 +31,10 @@ export interface ParseOptions {
 }
 
 /**
- * Parses `content` as single YAML document.
+ * Parse `content` as single YAML document, and return it.
  *
- * Returns a JavaScript object or throws `YAMLError` on error.
- * By default, does not support regexps, functions and undefined. This method is safe for untrusted data.
+ * This function does not support regexps, functions, and undefined by default.
+ * This method is safe for parsing untrusted data.
  *
  * @example Usage
  * ```ts
@@ -49,6 +49,7 @@ export interface ParseOptions {
  * assertEquals(data, { id: 1, name: "Alice" });
  * ```
  *
+ * @throws {YAMLError} Throws error on invalid YAML.
  * @param content YAML string to parse.
  * @param options Parsing options.
  * @returns Parsed document.
