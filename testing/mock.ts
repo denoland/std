@@ -1414,11 +1414,6 @@ export async function assertSpyCallAsync<
           "do not expect error and return, only one should be expected",
         );
       }
-      if (call.error) {
-        throw new AssertionError(
-          "spy call did not return expected value, an error was thrown.",
-        );
-      }
       let expectedResolved;
       try {
         expectedResolved = await expected.returned;
