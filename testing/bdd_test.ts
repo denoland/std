@@ -551,7 +551,7 @@ Deno.test("it()", async (t) => {
         "minimum options (skip)",
         async () =>
           await assertMinimumOptions((fn) => {
-            assertEquals(it.skip({ name: "example", fn }), undefined);
+            it.skip({ name: "example", fn });
           }),
       );
 
@@ -1161,8 +1161,8 @@ Deno.test("describe()", async (t) => {
           await assertMinimumOptions((fns) => {
             const suite = describe.skip({ name: "example" });
             assert(suite && typeof suite.symbol === "symbol");
-            assertEquals(it({ suite, name: "a", fn: fns[0] }), undefined);
-            assertEquals(it({ suite, name: "b", fn: fns[1] }), undefined);
+            it({ suite, name: "a", fn: fns[0] });
+            it({ suite, name: "b", fn: fns[1] });
           }),
       );
 
@@ -1622,8 +1622,8 @@ Deno.test("describe()", async (t) => {
               beforeEach(beforeEachFn);
               afterEach(afterEachFn);
 
-              assertEquals(it({ name: "example 1", fn: fns[0] }), undefined);
-              assertEquals(it({ name: "example 2", fn: fns[1] }), undefined);
+              it({ name: "example 1", fn: fns[0] });
+              it({ name: "example 2", fn: fns[1] });
             });
           },
         ),
