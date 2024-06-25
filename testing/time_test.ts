@@ -641,6 +641,6 @@ Deno.test("Date from FakeTime is structured cloneable", () => {
 });
 
 Deno.test("new FakeTime() throws if the time is already faked", () => {
-  using _time: FakeTime = new FakeTime();
+  using _time = new FakeTime();
   assertThrows(() => new FakeTime());
 });
