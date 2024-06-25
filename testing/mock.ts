@@ -759,10 +759,11 @@ function constructorSpy<
   const calls: SpyCall<Self, Args, Self>[] = [];
   // @ts-ignore TS2509: Can't know the type of `original` statically.
   const spy = class extends original {
+    // deno-lint-ignore constructor-super
     constructor(...args: Args) {
-      super(...args);
       const call: SpyCall<Self, Args, Self> = { args };
       try {
+        super(...args);
         call.returned = this as unknown as Self;
       } catch (error) {
         call.error = error as Error;

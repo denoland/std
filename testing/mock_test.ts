@@ -510,6 +510,16 @@ Deno.test("spy() works on constructor of child class", () => {
   assertSpyCalls(PointSpy, 1);
 });
 
+Deno.test("spy() works on constructor that throws an error", () => {
+  class Foo {
+    constructor() {
+      throw new Error("foo");
+    }
+  }
+  const FooSpy = spy(Foo);
+  assertThrows(() => new FooSpy(), Error, "foo");
+});
+
 Deno.test("stub()", () => {
   const point = new Point(2, 3);
   const func = stub(point, "action");
