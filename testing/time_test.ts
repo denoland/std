@@ -7,6 +7,7 @@ import {
   assertNotEquals,
   assertRejects,
   assertStrictEquals,
+  assertThrows,
 } from "@std/assert";
 import { FakeTime, TimeError } from "./time.ts";
 import { _internals } from "./_time.ts";
@@ -637,4 +638,9 @@ Deno.test("Date from FakeTime is structured cloneable", () => {
   assertEquals(cloned.getTime(), date.getTime());
   assert(date instanceof Date);
   assert(cloned instanceof Date_);
+});
+
+Deno.test("new FakeTime() throws if the time is already faked", () => {
+  using _time: FakeTime = new FakeTime();
+  assertThrows(() => new FakeTime());
 });
