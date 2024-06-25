@@ -563,7 +563,6 @@ Deno.test("spy() throws when the property is not configurable", () => {
     MockError,
     "cannot spy on non configurable instance method",
   );
->>>>>>> main
 });
 
 Deno.test("stub()", () => {
