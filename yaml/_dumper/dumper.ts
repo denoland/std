@@ -440,7 +440,7 @@ function writeScalar(
       return "''";
     }
     if (
-      !state.noCompatMode &&
+      state.compatMode &&
       DEPRECATED_BOOLEANS_SYNTAX.indexOf(string) !== -1
     ) {
       return `'${string}'`;
@@ -768,7 +768,7 @@ function writeNode(
         }
       }
     } else if (type === "[object Array]") {
-      const arrayLevel = state.noArrayIndent && level > 0 ? level - 1 : level;
+      const arrayLevel = !state.indentArrays && level > 0 ? level - 1 : level;
       if (block && state.dump.length !== 0) {
         writeBlockSequence(state, arrayLevel, state.dump, compact);
         if (duplicate) {
@@ -844,7 +844,7 @@ export function dump(input: Any, options?: DumperStateOptions): string {
 
   const state = new DumperState(options);
 
-  if (!state.noRefs) getDuplicateReferences(input, state);
+  if (state.createRefs) getDuplicateReferences(input, state);
 
   if (writeNode(state, 0, input, true, true)) return `${state.dump}\n`;
 

@@ -41,8 +41,8 @@ function compileStyleMap(
 export interface DumperStateOptions {
   /** indentation width to use (in spaces). */
   indent?: number;
-  /** when true, will not add an indentation level to array elements */
-  noArrayIndent?: boolean;
+  /** when true, will add an indentation level to array elements (default: true) */
+  indentArrays?: boolean;
   /**
    * do not throw on invalid types (like function in the safe schema)
    * and skip pairs and single values with such types.
@@ -68,16 +68,16 @@ export interface DumperStateOptions {
   /** set max line width. (default: 80) */
   lineWidth?: number;
   /**
-   * if true, don't convert duplicate objects
-   * into references (default: false)
+   * if true, convert duplicate objects
+   * into references (default: true)
    */
-  noRefs?: boolean;
+  createRefs?: boolean;
   /**
-   * if true don't try to be compatible with older yaml versions.
+   * if true try to be compatible with older yaml versions.
    * Currently: don't quote "yes", "no" and so on,
-   * as required for YAML 1.1 (default: false)
+   * as required for YAML 1.1 (default: true)
    */
-  noCompatMode?: boolean;
+  compatMode?: boolean;
   /**
    * if true flow sequences will be condensed, omitting the
    * space between `key: value` or `a, b`. Eg. `'[a,b]'` or `{a:{b:c}}`.
@@ -89,13 +89,13 @@ export interface DumperStateOptions {
 
 export class DumperState extends State {
   indent: number;
-  noArrayIndent: boolean;
+  indentArrays: boolean;
   skipInvalid: boolean;
   flowLevel: number;
   sortKeys: boolean | ((a: Any, b: Any) => number);
   lineWidth: number;
-  noRefs: boolean;
-  noCompatMode: boolean;
+  createRefs: boolean;
+  compatMode: boolean;
   condenseFlow: boolean;
   implicitTypes: Type[];
   explicitTypes: Type[];
@@ -109,26 +109,26 @@ export class DumperState extends State {
   constructor({
     schema,
     indent = 2,
-    noArrayIndent = false,
+    indentArrays = true,
     skipInvalid = false,
     flowLevel = -1,
     styles = null,
     sortKeys = false,
     lineWidth = 80,
-    noRefs = false,
-    noCompatMode = false,
+    createRefs = true,
+    compatMode = true,
     condenseFlow = false,
   }: DumperStateOptions) {
     super(schema);
     this.indent = Math.max(1, indent);
-    this.noArrayIndent = noArrayIndent;
+    this.indentArrays = indentArrays;
     this.skipInvalid = skipInvalid;
     this.flowLevel = flowLevel;
     this.styleMap = compileStyleMap(this.schema as Schema, styles);
     this.sortKeys = sortKeys;
     this.lineWidth = lineWidth;
-    this.noRefs = noRefs;
-    this.noCompatMode = noCompatMode;
+    this.createRefs = createRefs;
+    this.compatMode = compatMode;
     this.condenseFlow = condenseFlow;
 
     this.implicitTypes = (this.schema as Schema).compiledImplicit;
