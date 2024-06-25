@@ -4,10 +4,32 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
+import type { Schema } from "./schema.ts";
 import { type CbFunction, load, loadAll } from "./_loader/loader.ts";
-import type { LoaderStateOptions } from "./_loader/loader_state.ts";
+import { replaceSchemaNameWithSchemaClass } from "./mod.ts";
 
-export type ParseOptions = LoaderStateOptions;
+/**
+ * Options for parsing YAML.
+ */
+export interface ParseOptions {
+  /** Uses legacy mode */
+  legacy?: boolean;
+  /** The listener */
+  // deno-lint-ignore no-explicit-any
+  listener?: ((...args: any[]) => void) | null;
+  /** string to be used as a file path in error/warning messages. */
+  filename?: string;
+  /**
+   * Specifies a schema to use.
+   *
+   * Schema class or its name.
+   */
+  schema?: string | Schema;
+  /** compatibility with JSON.parse behaviour. */
+  json?: boolean;
+  /** function to call on warning messages. */
+  onWarning?(this: null, e?: Error): void;
+}
 
 /**
  * Parses `content` as single YAML document.
@@ -16,7 +38,9 @@ export type ParseOptions = LoaderStateOptions;
  * By default, does not support regexps, functions and undefined. This method is safe for untrusted data.
  */
 export function parse(content: string, options?: ParseOptions): unknown {
-  return load(content, options);
+  replaceSchemaNameWithSchemaClass(options);
+  // deno-lint-ignore no-explicit-any
+  return load(content, options as any);
 }
 
 /**
@@ -50,8 +74,13 @@ export function parseAll(
 export function parseAll(content: string, options?: ParseOptions): unknown;
 export function parseAll(
   content: string,
-  iterator?: CbFunction | ParseOptions,
+  iteratorOrOption?: CbFunction | ParseOptions,
   options?: ParseOptions,
 ): unknown {
-  return loadAll(content, iterator, options);
+  if (typeof iteratorOrOption !== "function") {
+    replaceSchemaNameWithSchemaClass(iteratorOrOption);
+  }
+  replaceSchemaNameWithSchemaClass(options);
+  // deno-lint-ignore no-explicit-any
+  return loadAll(content, iteratorOrOption as any, options as any);
 }

@@ -119,6 +119,7 @@ undefined: !<tag:yaml.org,2002:js/undefined> ''
 `;
 
     assertEquals(stringify(object, { schema: EXTENDED_SCHEMA }), expected);
+    assertEquals(stringify(object, { schema: "extended" }), expected);
   },
 });
 
@@ -132,6 +133,9 @@ Deno.test({
 
     assertThrows(
       () => stringify({ function: func }, { schema: EXTENDED_SCHEMA }),
+    );
+    assertThrows(
+      () => stringify({ function: func }, { schema: "extended" }),
     );
   },
 });
