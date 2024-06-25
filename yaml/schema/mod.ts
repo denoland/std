@@ -18,7 +18,7 @@ export {
 };
 
 export function replaceSchemaNameWithSchemaClass(
-  options?: { schema?: string | unknown },
+  options?: { schema?: "core" | "default" | "failsafe" | "json" | "extended" | unknown },
 ) {
   switch (options?.schema) {
     case "core":
