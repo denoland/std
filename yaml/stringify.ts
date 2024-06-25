@@ -31,6 +31,8 @@ export type DumpOptions = {
    * Specifies a schema to use.
    *
    * Schema class or its name.
+   *
+   * Passing Schema class is deprecated. Use schema name instead.
    */
   schema?: string | unknown;
   /**
