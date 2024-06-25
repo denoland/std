@@ -63,4 +63,3 @@ export async function* toLines(
     await reader.cancel(reason);
   }
 }
-
