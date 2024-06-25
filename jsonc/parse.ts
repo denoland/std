@@ -4,15 +4,6 @@
 import type { JsonValue } from "@std/json/types";
 export type { JsonValue } from "@std/json/types";
 
-/** Options for {@linkcode parse}. */
-export interface ParseOptions {
-  /** Allow trailing commas at the end of arrays and objects.
-   *
-   * @default {true}
-   */
-  allowTrailingComma?: boolean;
-}
-
 /**
  * Converts a JSON with Comments (JSONC) string into an object.
  *
@@ -24,7 +15,6 @@ export interface ParseOptions {
  * assertEquals(parse('{"foo": "bar"}'), { foo: "bar" });
  * assertEquals(parse('{"foo": "bar", }'), { foo: "bar" });
  * assertEquals(parse('{"foo": "bar", } /* comment *\/'), { foo: "bar" });
- * assertEquals(parse('{"foo": "bar" } // comment', { allowTrailingComma: false }), { foo: "bar" });
  * ```
  *
  * @throws {SyntaxError} If the JSONC string is invalid.
@@ -32,15 +22,11 @@ export interface ParseOptions {
  * @param options Options for parsing.
  * @returns The parsed JsonValue from the JSONC string.
  */
-export function parse(
-  text: string,
-  options?: ParseOptions,
-): JsonValue {
-  const { allowTrailingComma = true } = { ...options };
+export function parse(text: string): JsonValue {
   if (new.target) {
     throw new TypeError("parse is not a constructor");
   }
-  return new JSONCParser(text, { allowTrailingComma }).parse();
+  return new JSONCParser(text).parse();
 }
 
 type TokenType =
@@ -77,12 +63,10 @@ class JSONCParser {
   #text: string;
   #length: number;
   #tokenized: Generator<Token, void>;
-  #options: ParseOptions;
-  constructor(text: string, options: ParseOptions) {
+  constructor(text: string) {
     this.#text = `${text}`;
     this.#length = this.#text.length;
     this.#tokenized = this.#tokenize();
-    this.#options = options;
   }
   parse(): JsonValue {
     const token = this.#getNext();
@@ -238,12 +222,9 @@ class JSONCParser {
     //      │   │   │   │   │   │   ┌─────token3
     //      │   │   │   │   │   │   │   ┌─token4
     //  { "key" : value , "key" : value }
-    for (let isFirst = true;; isFirst = false) {
+    while (true) {
       const token1 = this.#getNext();
-      if (
-        (isFirst || this.#options.allowTrailingComma) &&
-        token1.type === "EndObject"
-      ) {
+      if (token1.type === "EndObject") {
         return target;
       }
       if (token1.type !== "String") {
@@ -290,12 +271,9 @@ class JSONCParser {
     //      │   │   ┌─────token1
     //      │   │   │   ┌─token2
     //  [ value , value ]
-    for (let isFirst = true;; isFirst = false) {
+    while (true) {
       const token1 = this.#getNext();
-      if (
-        (isFirst || this.#options.allowTrailingComma) &&
-        token1.type === "EndArray"
-      ) {
+      if (token1.type === "EndArray") {
         return target;
       }
       target.push(this.#parseJsonValue(token1));
