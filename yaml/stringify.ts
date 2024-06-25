@@ -4,7 +4,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-import type { Schema } from "./schema.ts";
 import { dump } from "./_dumper/dumper.ts";
 import { replaceSchemaNameWithSchemaClass } from "./mod.ts";
 
@@ -33,7 +32,7 @@ export type DumpOptions = {
    *
    * Schema class or its name.
    */
-  schema?: string | Schema;
+  schema?: "core" | "default" | "failsafe" | "json" | "extended" | unknown;
   /**
    * If true, sort keys when dumping YAML in ascending, ASCII character order.
    * If a function, use the function to sort the keys. (default: false)
@@ -68,6 +67,21 @@ export type DumpOptions = {
  * Serializes `data` as a YAML document.
  *
  * You can disable exceptions by setting the skipInvalid option to true.
+ *
+ * @example Usage
+ * ```ts
+ * import { stringify } from "@std/yaml/stringify";
+ * import { assertEquals } from "@std/assert/assert-equals";
+ *
+ * const data = { id: 1, name: "Alice" };
+ * const yaml = stringify(data);
+ *
+ * assertEquals(yaml, "id: 1\nname: Alice\n");
+ * ```
+ *
+ * @param data The data to serialize.
+ * @param options The options for serialization.
+ * @returns A YAML string.
  */
 export function stringify(
   data: unknown,
