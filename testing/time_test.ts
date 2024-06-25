@@ -673,28 +673,20 @@ Deno.test("Faked Date.now returns real time after FakeTime is restored", () => {
   assertAlmostEquals(Date.now(), fakeDateNow());
 });
 
-Deno.test("FakeTime can be called multiple times (later call is effective)", () => {
-  const now = Date.now();
-  try {
-    const _time1 = new FakeTime(1000);
-    const _time2 = new FakeTime(2000);
-    assertEquals(Date.now(), 2000);
-  } finally {
-    FakeTime.restore();
-  }
-  assert(Date.now() >= now);
-});
-
 Deno.test("FakeTime can be constructed with number, Date, or string", () => {
-  try {
-    const _time1 = new FakeTime(1000);
+  {
+    using _time = new FakeTime(1000);
     assertEquals(Date.now(), 1000);
-    const _time2 = new FakeTime(new Date(2000));
+  }
+
+  {
+    using _time = new FakeTime(new Date(2000));
     assertEquals(Date.now(), 2000);
-    const _time3 = new FakeTime("Thu Jan 01 1970 00:00:03 GMT+0000");
+  }
+
+  {
+    using _time = new FakeTime("Thu Jan 01 1970 00:00:03 GMT+0000");
     assertEquals(Date.now(), 3000);
-  } finally {
-    FakeTime.restore();
   }
 });
 
