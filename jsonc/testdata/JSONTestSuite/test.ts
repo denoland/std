@@ -34,7 +34,7 @@ for await (
         JSON.parse(text);
       });
       const [hasJsoncError, jsoncError, jsoncResult] = getError(() => {
-        JSONC.parse(text, { allowTrailingComma: false });
+        JSONC.parse(text);
       });
 
       // If an error occurs in JSON.parse() but no error occurs in JSONC.parse(), or vice versa, an error is thrown.

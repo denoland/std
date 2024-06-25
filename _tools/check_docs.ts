@@ -71,6 +71,8 @@ const ENTRY_POINTS = [
   "../url/mod.ts",
   "../uuid/mod.ts",
   "../webgpu/mod.ts",
+  "../yaml/parse.ts",
+  "../yaml/stringify.ts",
 ] as const;
 
 const TS_SNIPPET = /```ts[\s\S]*?```/g;

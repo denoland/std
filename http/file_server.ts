@@ -76,10 +76,7 @@ function modeToString(isDir: boolean, maybeMode: number | null): string {
   if (maybeMode === null) {
     return "(unknown mode)";
   }
-  const mode = maybeMode.toString(8);
-  if (mode.length < 3) {
-    return "(unknown mode)";
-  }
+  const mode = maybeMode.toString(8).padStart(3, "0");
   let output = "";
   mode
     .split("")

@@ -85,10 +85,8 @@ const FakeDate = new Proxy(Date, {
     // @ts-expect-error this is a passthrough
     return new _internals.Date(...args);
   },
-  apply(_target, _thisArg, args) {
-    if (args.length === 0) args.push(FakeDate.now());
-    // @ts-expect-error this is a passthrough
-    return _internals.Date(...args);
+  apply(_target, _thisArg, _args) {
+    return new _internals.Date(FakeTimeNow()).toString();
   },
   get(target, prop, receiver) {
     if (prop === "now") {
@@ -315,7 +313,7 @@ export class FakeTime {
     start?: number | string | Date | null,
     options?: FakeTimeOptions,
   ) {
-    if (time) time.restore();
+    if (time) throw new TimeError("The time is already faked");
     initializedAt = _internals.Date.now();
     startedAt = start instanceof Date
       ? start.valueOf()
