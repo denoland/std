@@ -80,7 +80,7 @@ export function parse(content: string, options?: ParseOptions): unknown {
  * ---
  * id: 3
  * name: Eve
- * `, (doc) => {
+ * `, (doc: any) => {
  *   assertEquals(typeof doc, "object");
  *   assertEquals(typeof doc.id, "number");
  *   assertEquals(typeof doc.name, "string");
