@@ -64,13 +64,3 @@ export async function* toLines(
   }
 }
 
-console.log(
-  await Array.fromAsync(toLines(ReadableStream.from([
-    "qwertzu",
-    "iopasd\r\nmnbvc",
-    "xylk\rjhgfds\napoiuzt\r",
-    "qwr\r09ei\rqwrjiowqr\r",
-    "\nrewq0987\n\n654321",
-    "\nrewq0987\r\n\r\n654321\r",
-  ]))),
-);
