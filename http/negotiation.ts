@@ -12,13 +12,6 @@ import { preferredEncodings } from "./_negotiation/encoding.ts";
 import { preferredLanguages } from "./_negotiation/language.ts";
 import { preferredMediaTypes } from "./_negotiation/media_type.ts";
 
-/** Loose copy of {@linkcode Request}. */
-export type Request = {
-  headers: {
-    get(key: string): string | null;
-  };
-};
-
 /**
  * Returns an array of media types accepted by the request, in order of
  * preference. If there are no media types supplied in the request, then any
