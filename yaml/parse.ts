@@ -22,10 +22,8 @@ export interface ParseOptions {
    * Specifies a schema to use.
    *
    * Schema class or its name.
-   *
-   * Passing Schema class is deprecated. Use schema name instead.
    */
-  schema?: string | unknown;
+  schema?: "core" | "default" | "failsafe" | "json" | "extended" | unknown;
   /** compatibility with JSON.parse behaviour. */
   json?: boolean;
   /** function to call on warning messages. */
@@ -70,7 +68,7 @@ export function parse(content: string, options?: ParseOptions): unknown {
  * import { parseAll } from "@std/yaml/parse";
  * import { assertEquals } from "@std/assert/assert-equals";
  *
- * const data = parseAll(`
+ * parseAll(`
  * ---
  * id: 1
  * name: Alice
@@ -85,7 +83,6 @@ export function parse(content: string, options?: ParseOptions): unknown {
  *   assertEquals(typeof doc.id, "number");
  *   assertEquals(typeof doc.name, "string");
  * });
- * // => [ { id: 1, name: "Alice" }, { id: 2, name: "Bob" }, { id: 3, name: "Eve" } ]
  * ```
  *
  * @param content YAML string to parse.

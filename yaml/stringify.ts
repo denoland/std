@@ -31,10 +31,8 @@ export type DumpOptions = {
    * Specifies a schema to use.
    *
    * Schema class or its name.
-   *
-   * Passing Schema class is deprecated. Use schema name instead.
    */
-  schema?: string | unknown;
+  schema?: "core" | "default" | "failsafe" | "json" | "extended" | unknown;
   /**
    * If true, sort keys when dumping YAML in ascending, ASCII character order.
    * If a function, use the function to sort the keys. (default: false)
