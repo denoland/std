@@ -60,7 +60,7 @@ Deno.test({
             maxAge: 3,
           });
         },
-        Error,
+        SyntaxError,
         'Invalid cookie name: "' + name + '".',
       );
     });
@@ -97,7 +97,7 @@ Deno.test({
             },
           );
         },
-        Error,
+        SyntaxError,
         "RFC2616 cookie 'Space'",
       );
     });
@@ -109,7 +109,7 @@ Deno.test({
           value: "United Kingdom",
         });
       },
-      Error,
+      SyntaxError,
       "RFC2616 cookie 'location' cannot contain character ' '",
     );
   },
@@ -131,7 +131,7 @@ Deno.test({
           maxAge: 3,
         });
       },
-      Error,
+      SyntaxError,
       path + ": Invalid cookie path char ';'",
     );
   },
@@ -154,7 +154,7 @@ Deno.test({
             maxAge: 3,
           });
         },
-        Error,
+        SyntaxError,
         "Invalid first/last char in cookie domain: " + domain,
       );
     });
@@ -199,6 +199,10 @@ Deno.test({
     headers = new Headers();
     setCookie(headers, { name: "Space", value: "Cat", httpOnly: true });
     assertEquals(headers.get("Set-Cookie"), "Space=Cat; HttpOnly");
+
+    headers = new Headers();
+    setCookie(headers, { name: "Space", value: "Cat", partitioned: true });
+    assertEquals(headers.get("Set-Cookie"), "Space=Cat; Partitioned");
 
     headers = new Headers();
     setCookie(headers, {

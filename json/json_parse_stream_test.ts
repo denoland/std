@@ -4,7 +4,7 @@ import { assertEquals } from "@std/assert";
 import { TextDelimiterStream } from "@std/streams/text-delimiter-stream";
 import { TextLineStream } from "@std/streams/text-line-stream";
 import { JsonParseStream } from "./json_parse_stream.ts";
-import { assertInvalidParse, assertValidParse } from "./_test_common.ts";
+import { assertInvalidParse, assertValidParse } from "./_test_utils.ts";
 
 Deno.test({
   name: "JsonParseStream",
@@ -45,7 +45,6 @@ Deno.test({
     await assertInvalidParse(
       JsonParseStream,
       ['{"foo": "bar"}', '{"foo": '],
-      {},
       SyntaxError,
       `Unexpected end of JSON input (parsing: '{"foo": ')`,
     );

@@ -88,23 +88,23 @@ export interface DumperStateOptions {
 }
 
 export class DumperState extends State {
-  public indent: number;
-  public noArrayIndent: boolean;
-  public skipInvalid: boolean;
-  public flowLevel: number;
-  public sortKeys: boolean | ((a: Any, b: Any) => number);
-  public lineWidth: number;
-  public noRefs: boolean;
-  public noCompatMode: boolean;
-  public condenseFlow: boolean;
-  public implicitTypes: Type[];
-  public explicitTypes: Type[];
-  public tag: string | null = null;
-  public result = "";
-  public duplicates: Any[] = [];
-  public usedDuplicates: Any[] = []; // changed from null to []
-  public styleMap: ArrayObject<StyleVariant>;
-  public dump: Any;
+  indent: number;
+  noArrayIndent: boolean;
+  skipInvalid: boolean;
+  flowLevel: number;
+  sortKeys: boolean | ((a: Any, b: Any) => number);
+  lineWidth: number;
+  noRefs: boolean;
+  noCompatMode: boolean;
+  condenseFlow: boolean;
+  implicitTypes: Type[];
+  explicitTypes: Type[];
+  tag: string | null = null;
+  result = "";
+  duplicates: Any[] = [];
+  usedDuplicates: Any[] = []; // changed from null to []
+  styleMap: ArrayObject<StyleVariant>;
+  dump: Any;
 
   constructor({
     schema,

@@ -8,12 +8,9 @@ import { runLengthDecode } from "./_run_length.ts";
 let tables: Uint8Array[] | null = null;
 function lookupWidth(cp: number) {
   if (!tables) tables = data.tables.map(runLengthDecode);
-
-  const t1Offset = (tables[0] as Uint8Array)[(cp >> 13) & 0xff] as number;
-  const t2Offset =
-    (tables[1] as Uint8Array)[128 * t1Offset + ((cp >> 6) & 0x7f)] as number;
-  const packedWidths =
-    (tables[2] as Uint8Array)[16 * t2Offset + ((cp >> 2) & 0xf)] as number;
+  const t1Offset = tables[0]![(cp >> 13) & 0xff]!;
+  const t2Offset = tables[1]![128 * t1Offset + ((cp >> 6) & 0x7f)]!;
+  const packedWidths = tables[2]![16 * t2Offset + ((cp >> 2) & 0xf)]!;
 
   const width = (packedWidths >> (2 * (cp & 0b11))) & 0b11;
 
@@ -21,22 +18,22 @@ function lookupWidth(cp: number) {
 }
 
 const cache = new Map<string, number | null>();
-function charWidth(ch: string) {
-  if (cache.has(ch)) return cache.get(ch)!;
+function charWidth(char: string) {
+  if (cache.has(char)) return cache.get(char)!;
 
-  const cp = ch.codePointAt(0)!;
-  let v: number | null = null;
+  const codePoint = char.codePointAt(0)!;
+  let width: number | null = null;
 
-  if (cp < 0x7f) {
-    v = cp >= 0x20 ? 1 : cp === 0 ? 0 : null;
-  } else if (cp >= 0xa0) {
-    v = lookupWidth(cp);
+  if (codePoint < 0x7f) {
+    width = codePoint >= 0x20 ? 1 : codePoint === 0 ? 0 : null;
+  } else if (codePoint >= 0xa0) {
+    width = lookupWidth(codePoint);
   } else {
-    v = null;
+    width = null;
   }
 
-  cache.set(ch, v);
-  return v;
+  cache.set(char, width);
+  return width;
 }
 
 /**

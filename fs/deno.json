@@ -1,6 +1,6 @@
 {
   "name": "@std/fs",
-  "version": "0.229.2",
+  "version": "1.0.0-rc.1",
   "exports": {
     ".": "./mod.ts",
     "./copy": "./copy.ts",

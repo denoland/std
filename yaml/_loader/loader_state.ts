@@ -26,31 +26,32 @@ export interface LoaderStateOptions {
 export type ResultType = any[] | Record<string, any> | string;
 
 export class LoaderState extends State {
-  public documents: Any[] = [];
-  public length: number;
-  public lineIndent = 0;
-  public lineStart = 0;
-  public position = 0;
-  public line = 0;
-  public filename?: string;
-  public onWarning?: (...args: Any[]) => void;
-  public legacy: boolean;
-  public json: boolean;
-  public listener?: ((...args: Any[]) => void) | null;
-  public implicitTypes: Type[];
-  public typeMap: TypeMap;
+  input: string;
+  documents: Any[] = [];
+  length: number;
+  lineIndent = 0;
+  lineStart = 0;
+  position = 0;
+  line = 0;
+  filename?: string;
+  onWarning?: (...args: Any[]) => void;
+  legacy: boolean;
+  json: boolean;
+  listener?: ((...args: Any[]) => void) | null;
+  implicitTypes: Type[];
+  typeMap: TypeMap;
 
-  public version?: string | null;
-  public checkLineBreaks?: boolean;
-  public tagMap?: ArrayObject;
-  public anchorMap?: ArrayObject;
-  public tag?: string | null;
-  public anchor?: string | null;
-  public kind?: string | null;
-  public result: ResultType | null = "";
+  version?: string | null;
+  checkLineBreaks?: boolean;
+  tagMap?: ArrayObject;
+  anchorMap?: ArrayObject;
+  tag?: string | null;
+  anchor?: string | null;
+  kind?: string | null;
+  result: ResultType | null = "";
 
   constructor(
-    public input: string,
+    input: string,
     {
       filename,
       schema,
@@ -61,6 +62,7 @@ export class LoaderState extends State {
     }: LoaderStateOptions,
   ) {
     super(schema);
+    this.input = input;
     this.filename = filename;
     this.onWarning = onWarning;
     this.legacy = legacy;
