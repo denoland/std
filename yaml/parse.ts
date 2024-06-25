@@ -4,8 +4,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-import type { Schema } from "./schema.ts";
-import { type CbFunction, load, loadAll } from "./_loader/loader.ts";
+import { load, loadAll } from "./_loader/loader.ts";
 import { replaceSchemaNameWithSchemaClass } from "./mod.ts";
 
 /**
@@ -24,7 +23,7 @@ export interface ParseOptions {
    *
    * Schema class or its name.
    */
-  schema?: string | Schema;
+  schema?: string | unknown;
   /** compatibility with JSON.parse behaviour. */
   json?: boolean;
   /** function to call on warning messages. */
@@ -36,6 +35,23 @@ export interface ParseOptions {
  *
  * Returns a JavaScript object or throws `YAMLError` on error.
  * By default, does not support regexps, functions and undefined. This method is safe for untrusted data.
+ *
+ * @example Usage
+ * ```ts
+ * import { parse } from "@std/yaml/parse";
+ * import { assertEquals } from "@std/assert/assert-equals";
+ *
+ * const data = parse(`
+ * id: 1
+ * name: Alice
+ * `);
+ *
+ * assertEquals(data, { id: 1, name: "Alice" });
+ * ```
+ *
+ * @param content YAML string to parse.
+ * @param options Parsing options.
+ * @returns Parsed document.
  */
 export function parse(content: string, options?: ParseOptions): unknown {
   replaceSchemaNameWithSchemaClass(options);
@@ -47,9 +63,46 @@ export function parse(content: string, options?: ParseOptions): unknown {
  * Same as `parse()`, but understands multi-document sources.
  * Applies iterator to each document if specified, or returns array of documents.
  *
- * @example
+ * @example Usage
  * ```ts
  * import { parseAll } from "@std/yaml/parse";
+ * import { assertEquals } from "@std/assert/assert-equals";
+ *
+ * const data = parseAll(`
+ * ---
+ * id: 1
+ * name: Alice
+ * ---
+ * id: 2
+ * name: Bob
+ * ---
+ * id: 3
+ * name: Eve
+ * `, (doc) => {
+ *   assertEquals(typeof doc, "object");
+ *   assertEquals(typeof doc.id, "number");
+ *   assertEquals(typeof doc.name, "string");
+ * });
+ * // => [ { id: 1, name: "Alice" }, { id: 2, name: "Bob" }, { id: 3, name: "Eve" } ]
+ * ```
+ *
+ * @param content YAML string to parse.
+ * @param iterator Function to call on each document.
+ * @param options Parsing options.
+ */
+export function parseAll(
+  content: string,
+  iterator: (doc: unknown) => void,
+  options?: ParseOptions,
+): void;
+/**
+ * Same as `parse()`, but understands multi-document sources.
+ * Applies iterator to each document if specified, or returns array of documents.
+ *
+ * @example Usage
+ * ```ts
+ * import { parseAll } from "@std/yaml/parse";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const data = parseAll(`
  * ---
@@ -62,19 +115,17 @@ export function parse(content: string, options?: ParseOptions): unknown {
  * id: 3
  * name: Eve
  * `);
- * console.log(data);
- * // => [ { id: 1, name: "Alice" }, { id: 2, name: "Bob" }, { id: 3, name: "Eve" } ]
+ * assertEquals(data, [ { id: 1, name: "Alice" }, { id: 2, name: "Bob" }, { id: 3, name: "Eve" }]);
  * ```
+ *
+ * @param content YAML string to parse.
+ * @param options Parsing options.
+ * @returns Array of parsed documents.
  */
-export function parseAll(
-  content: string,
-  iterator: CbFunction,
-  options?: ParseOptions,
-): void;
 export function parseAll(content: string, options?: ParseOptions): unknown;
 export function parseAll(
   content: string,
-  iteratorOrOption?: CbFunction | ParseOptions,
+  iteratorOrOption?: ((doc: unknown) => void) | ParseOptions,
   options?: ParseOptions,
 ): unknown {
   if (typeof iteratorOrOption !== "function") {

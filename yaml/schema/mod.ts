@@ -4,7 +4,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-import type { Schema } from "../schema.ts";
 import { CORE_SCHEMA } from "./core.ts";
 import { DEFAULT_SCHEMA } from "./default.ts";
 import { EXTENDED_SCHEMA } from "./extended.ts";
@@ -19,7 +18,7 @@ export {
 };
 
 export function replaceSchemaNameWithSchemaClass(
-  options?: { schema?: string | Schema },
+  options?: { schema?: string | unknown },
 ) {
   switch (options?.schema) {
     case "core":
