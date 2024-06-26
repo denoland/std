@@ -4,7 +4,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-import { load, loadAll } from "./_loader/loader.ts";
+import { load, loadDocuments } from "./_loader/loader.ts";
 import { replaceSchemaNameWithSchemaClass } from "./mod.ts";
 
 /**
@@ -90,5 +90,5 @@ export function parse(content: string, options?: ParseOptions): unknown {
 export function parseAll(content: string, options?: ParseOptions): unknown {
   replaceSchemaNameWithSchemaClass(options);
   // deno-lint-ignore no-explicit-any
-  return loadAll(content, options as any);
+  return loadDocuments(content, options as any);
 }

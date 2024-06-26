@@ -1729,7 +1729,10 @@ function readDocument(state: LoaderState) {
   }
 }
 
-function loadDocuments(input: string, options?: LoaderStateOptions): unknown[] {
+export function loadDocuments(
+  input: string,
+  options?: LoaderStateOptions,
+): unknown[] {
   input = String(input);
   options = options || {};
 
@@ -1763,13 +1766,6 @@ function loadDocuments(input: string, options?: LoaderStateOptions): unknown[] {
   }
 
   return state.documents;
-}
-
-export function loadAll(
-  input: string,
-  options?: LoaderStateOptions,
-): unknown[] {
-  return loadDocuments(input, options);
 }
 
 export function load(input: string, options?: LoaderStateOptions): unknown {
