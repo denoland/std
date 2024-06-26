@@ -43,6 +43,10 @@ export default class FS {
   static clearCache(pid: PID) {
     FS.#caches.delete(pid.repoId)
   }
+  get #git() {
+    const cache = FS.#getGitCache(this.#pid)
+    return { fs: this.fs, dir, cache }
+  }
   get pid() {
     return this.#pid
   }
@@ -170,9 +174,7 @@ export default class FS {
     if (filepath) {
       assertPath(filepath)
     }
-    const { fs } = this
-    const cache = FS.#getGitCache(this.#pid)
-    return git.log({ fs, dir, filepath, depth, ref: this.oid, cache })
+    return git.log({ ...this.#git, filepath, depth, ref: this.oid })
   }
 
   async writeCommitObject(message = '', parents: string[] = []) {
@@ -182,33 +184,25 @@ export default class FS {
     this.#upserts.clear()
     this.#deletes.clear()
 
-    const { fs } = this
     const author = { name: 'git/commit' }
-    const cache = FS.#getGitCache(this.#pid)
     const nextCommit = await git.commit({
+      ...this.#git,
       noUpdateBranch: true,
-      fs,
-      dir,
       message,
       author,
       tree: oid,
       parent: [this.oid, ...parents],
-      cache,
     })
-    const { commit } = await git.readCommit({ fs, dir, oid: nextCommit, cache })
+    const { commit } = await git.readCommit({ ...this.#git, oid: nextCommit })
 
     const next = new FS(this.#pid, nextCommit, this.#db)
     return { next, changes, commit }
   }
   async merge(commit: string) {
     assert(!this.isChanged, 'cannot merge with changes')
-    const { fs } = this
-    const cache = FS.#getGitCache(this.#pid)
     const result = await git.merge({
-      fs,
-      dir,
+      ...this.#git,
       noUpdateBranch: true,
-      cache,
       mergeDriver,
       ours: this.oid,
       theirs: commit,
@@ -245,7 +239,8 @@ export default class FS {
     const dirname = posix.dirname(path)
     const filepath = dirname === '.' ? undefined : dirname
     const basename = posix.basename(path)
-    const { tree } = await git.readTree({ ...this.#git, filepath })
+    const oid = this.#internalOid
+    const { tree } = await git.readTree({ ...this.#git, oid, filepath })
     for (const entry of tree) {
       if (entry.path === basename) {
         return entry.oid
@@ -312,9 +307,7 @@ export default class FS {
         return upsert.data
       } else {
         const { oid } = upsert
-        const cache = FS.#getGitCache(this.#pid)
-        const { fs } = this
-        const { blob } = await git.readBlob({ dir, fs, oid, cache })
+        const { blob } = await git.readBlob({ ...this.#git, oid })
         return blob
       }
     }
@@ -323,14 +316,10 @@ export default class FS {
   }
   async #readBlob(path: string) {
     const oid = this.#internalOid
-    const { fs } = this
-    const cache = FS.#getGitCache(this.#pid)
     const { blob, oid: blobOid } = await git.readBlob({
-      dir,
-      fs,
+      ...this.#git,
       oid,
       filepath: path,
-      cache,
     })
     assert(blob instanceof Uint8Array, 'blob not Uint8Array: ' + typeof blob)
     return { blob, oid: blobOid }
@@ -341,16 +330,12 @@ export default class FS {
     // TODO handle changes in the directory like deletes and upserts
     log('ls', path)
     const oid = this.#internalOid
-    const { fs } = this
-    const cache = FS.#getGitCache(this.#pid)
     const filepath = path === '.' ? undefined : path
-    const { tree } = await git.readTree({ fs, dir, oid, filepath, cache })
+    const { tree } = await git.readTree({ ...this.#git, oid, filepath })
     return tree.map((entry) => entry.path)
   }
   async getCommit() {
-    const { fs } = this
-    const cache = FS.#getGitCache(this.#pid)
-    const result = await git.readCommit({ fs, dir, oid: this.oid, cache })
+    const result = await git.readCommit({ ...this.#git, oid: this.oid })
     return result.commit
   }
   copyChanges(from: FS) {
@@ -366,10 +351,6 @@ export default class FS {
   }
   async isPidExists(pid: PID) {
     return !!await this.#db.readHead(pid)
-  }
-  get #git() {
-    const cache = FS.#getGitCache(this.#pid)
-    return { fs: this.fs, dir, cache, oid: this.#internalOid }
   }
   async overwrite(commit: string, ...ignores: string[]) {
     // TODO allow changes so long as they are in the ignored set
@@ -405,9 +386,7 @@ export default class FS {
   async #flush() {
     const changes: { [key: string]: Change } = {}
     const oid = this.#internalOid
-    const { fs } = this
-    const cache = FS.#getGitCache(this.#pid)
-    const { tree: base } = await git.readTree({ fs, dir, oid, cache })
+    const { tree: base } = await git.readTree({ ...this.#git, oid })
     log('flush tree', base)
     const tree: Tree = {
       oid,
@@ -427,7 +406,7 @@ export default class FS {
         } else {
           blob = upsert.data
         }
-        oid = await git.writeBlob({ fs, dir, blob })
+        oid = await git.writeBlob({ ...this.#git, blob })
       } else {
         oid = upsert.oid
       }
@@ -457,9 +436,9 @@ export default class FS {
       // TODO should be able to wipe a whole dir with no effort here
     }
 
-    await retrieveAffectedTrees(tree, fs, cache)
+    await retrieveAffectedTrees(tree, this.#git)
 
-    await bubbleChanges(tree, fs)
+    await bubbleChanges(tree, this.#git)
 
     return { oid: tree.oid, changes }
   }
@@ -509,15 +488,12 @@ const ensurePath = (tree: Tree, path: string) => {
   }
   return parent
 }
-const retrieveAffectedTrees = async (
-  tree: Tree,
-  fs: { promises: GitKV },
-  cache: object,
-) => {
+type Opts = { fs: { promises: GitKV }; cache: object; dir: string }
+const retrieveAffectedTrees = async (tree: Tree, opts: Opts) => {
   const promises = []
   if (!tree.tree) {
     assert(tree.oid, 'tree oid not found')
-    const result = await git.readTree({ fs, dir, oid: tree.oid, cache })
+    const result = await git.readTree({ ...opts, oid: tree.oid })
     tree.tree = result.tree
   }
   for (const entry of tree.tree) {
@@ -526,13 +502,13 @@ const retrieveAffectedTrees = async (
         const child = tree.children.get(entry.path)
         assert(child, 'child not found: ' + entry.path)
         child.oid = entry.oid
-        promises.push(retrieveAffectedTrees(child, fs, cache))
+        promises.push(retrieveAffectedTrees(child, opts))
       }
     }
   }
   await Promise.all(promises)
 }
-const bubbleChanges = async (tree: Tree, fs: { promises: GitKV }) => {
+const bubbleChanges = async (tree: Tree, opts: Opts) => {
   const layers = treeToLayers(tree)
   log('layers', layers)
   while (layers.length) {
@@ -564,7 +540,7 @@ const bubbleChanges = async (tree: Tree, fs: { promises: GitKV }) => {
         }
         tree.push(entry)
       }
-      item.oid = await git.writeTree({ fs, dir, tree })
+      item.oid = await git.writeTree({ ...opts, tree })
       log('write tree', item.oid)
     }
   }
