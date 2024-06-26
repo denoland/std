@@ -218,7 +218,7 @@
 <!-- http -->
 <g id="node24" class="node">
 <title>http</title>
-<ellipse fill="none" stroke="black" cx="666" cy="-252" rx="36" ry="36"/>
+<ellipse fill="lightgreen" stroke="black" cx="666" cy="-252" rx="36" ry="36"/>
 <text text-anchor="middle" x="666" y="-247.8" font-family="Times,serif" font-size="14.00">http</text>
 </g>
 <!-- http&#45;&gt;cli -->
@@ -285,7 +285,7 @@
 <!-- json -->
 <g id="node28" class="node">
 <title>json</title>
-<ellipse fill="none" stroke="black" cx="36" cy="-252" rx="36" ry="36"/>
+<ellipse fill="lightgreen" stroke="black" cx="36" cy="-252" rx="36" ry="36"/>
 <text text-anchor="middle" x="36" y="-247.8" font-family="Times,serif" font-size="14.00">json</text>
 </g>
 <!-- json&#45;&gt;streams -->
@@ -297,7 +297,7 @@
 <!-- jsonc -->
 <g id="node29" class="node">
 <title>jsonc</title>
-<ellipse fill="none" stroke="black" cx="36" cy="-360" rx="36" ry="36"/>
+<ellipse fill="lightgreen" stroke="black" cx="36" cy="-360" rx="36" ry="36"/>
 <text text-anchor="middle" x="36" y="-355.8" font-family="Times,serif" font-size="14.00">jsonc</text>
 </g>
 <!-- jsonc&#45;&gt;json -->
@@ -357,7 +357,7 @@
 <!-- testing -->
 <g id="node34" class="node">
 <title>testing</title>
-<ellipse fill="none" stroke="black" cx="1192" cy="-252" rx="36" ry="36"/>
+<ellipse fill="lightgreen" stroke="black" cx="1192" cy="-252" rx="36" ry="36"/>
 <text text-anchor="middle" x="1192" y="-247.8" font-family="Times,serif" font-size="14.00">testing</text>
 </g>
 <!-- testing&#45;&gt;assert -->
