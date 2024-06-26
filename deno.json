@@ -16,8 +16,8 @@
     "@std/assert": "jsr:@std/assert@1.0.0-rc.2",
     "@std/async": "jsr:@std/async@^1.0.0-rc.2",
     "@std/bytes": "jsr:@std/bytes@^1.0.0-rc.3",
-    "@std/cli": "jsr:@std/cli@^1.0.0-rc.1",
-    "@std/collections": "jsr:@std/collections@^1.0.0",
+    "@std/cli": "jsr:@std/cli@^1.0.0-rc.2",
+    "@std/collections": "jsr:@std/collections@^1.0.1",
     "@std/crypto": "jsr:@std/crypto@^1.0.0-rc.1",
     "@std/csv": "jsr:@std/csv@^0.224.3",
     "@std/data-structures": "jsr:@std/data-structures@^1.0.0-rc.1",
@@ -27,7 +27,7 @@
     "@std/expect": "jsr:@std/expect@^0.224.5",
     "@std/fmt": "jsr:@std/fmt@^0.225.4",
     "@std/front-matter": "jsr:@std/front-matter@^0.224.2",
-    "@std/fs": "jsr:@std/fs@^1.0.0-rc.1",
+    "@std/fs": "jsr:@std/fs@^1.0.0-rc.2",
     "@std/html": "jsr:@std/html@^1.0.0-rc.1",
     "@std/http": "jsr:@std/http@^1.0.0-rc.1",
     "@std/ini": "jsr:@std/ini@^0.225.1",
@@ -50,7 +50,7 @@
     "@std/url": "jsr:@std/url@^1.0.0-rc.1",
     "@std/uuid": "jsr:@std/uuid@1.0.0-rc.1",
     "@std/webgpu": "jsr:@std/webgpu@^0.224.4",
-    "@std/yaml": "jsr:@std/yaml@^0.224.2"
+    "@std/yaml": "jsr:@std/yaml@^0.224.3"
   },
   "tasks": {
     "test": "deno test --unstable-http --unstable-webgpu --doc --allow-all --parallel --coverage --trace-leaks --clean",
