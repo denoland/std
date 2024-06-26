@@ -74,7 +74,6 @@ Deno.test('ai-chat', async (t) => {
     })
   })
   await t.step('double tool call', async () => {
-    log.enable('AI:io-fixture AI:tests')
     const text =
       'call the "ping" function twice with the message being the integer "1" for the first one and the integer "2" for the second'
     const help = {
