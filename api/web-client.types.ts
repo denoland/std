@@ -327,6 +327,7 @@ export interface ArtifactTerminal {
   exists(path: string, pid?: PID): Promise<boolean>
   writeJSON(path: string, content?: JsonValue, pid?: PID): Promise<number>
   write(path: string, content?: JsonValue, pid?: PID): Promise<number>
+  delete(path: string, pid?: PID): Promise<void>
   transcribe(params: { audio: File }): Promise<{ text: string }>
   apiSchema(isolate: string): Promise<ApiSchema>
   /** Pings the execution context without going thru the transaction queue.

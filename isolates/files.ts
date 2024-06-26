@@ -18,15 +18,26 @@ export const api = {
     },
   },
   ls: {
-    description: 'List files for a given path.  Path must be relative.',
+    description:
+      'List files for a given path with directories ending in a "/".  Path must be relative.  If unsure of the path, use ".".  If you want the root or / at any point, this is actually just ".".  If you want to count the number of files, set count to true.  If you want to list all files including hidden files, set all to true.',
     type: 'object',
     additionalProperties: false,
+    required: ['path'],
     properties: {
       path: {
         type: 'string',
         description: 'the relative path to the directory you want to list',
       },
-      count: { type: 'boolean', description: 'count the number of files' },
+      count: {
+        type: 'boolean',
+        description:
+          'count the number of files and return this instead of the names of the files',
+      },
+      all: {
+        type: 'boolean',
+        description:
+          'include all files including hidden files in the operation',
+      },
     },
   },
   read: {
@@ -63,15 +74,31 @@ export const api = {
       },
     },
   },
+  rm: {
+    description: 'Remove a file.  Path must be relative.  This is recursive.',
+    type: 'object',
+    additionalProperties: false,
+    required: ['path'],
+    properties: {
+      path: {
+        type: 'string',
+        description: 'the relative path to the file you want to remove',
+      },
+    },
+  },
 }
 export type Api = {
   write: (
     params: { path: string; content?: string },
+    // TODO check when this ever needed to be a branch call
     opts?: ProcessOptions,
   ) => Promise<number>
-  ls: (params: { path: string; count: number }) => Promise<string[] | number>
+  ls: (
+    params: { path: string; count: boolean; all: boolean },
+  ) => Promise<string[] | number>
   read: (params: { path: string }) => Promise<string>
   update: (params: Update) => Promise<number>
+  rm: (params: { path: string }) => Promise<void>
 }
 export const functions = {
   // TODO this should be a full mirror of the IsolateApi functions
@@ -81,10 +108,16 @@ export const functions = {
     api.write(path, content)
     return content.length
   },
-  ls: async (params: { path: string; count: number }, api: IsolateApi) => {
+  ls: async (
+    params: { path: string; count?: boolean; all?: boolean },
+    api: IsolateApi,
+  ) => {
     const { path, count } = params
     log('ls', path)
-    const result = await api.ls(path)
+    let result = await api.ls(path)
+    if (!params.all) {
+      result = result.filter((name) => !name.startsWith('.'))
+    }
     if (count) {
       return result.length
     }
@@ -102,6 +135,11 @@ export const functions = {
     const result = contents.replace(new RegExp(regex, 'g'), replacement)
     api.write(path, result)
     return matches.length
+  },
+  rm: (params: { path: string }, api: IsolateApi) => {
+    const { path } = params
+    log('rm', path)
+    api.delete(path)
   },
 }
 

@@ -229,6 +229,7 @@ export class Terminal implements ArtifactTerminal {
     return Promise.resolve()
   }
   async rm(params: { repo?: string; all?: boolean }) {
+    // TODO move this to be rmRepo or something
     const actor = await this.#getActor()
     const { repo, all } = params
     return actor.rm({ repo, all })
@@ -260,6 +261,10 @@ export class Terminal implements ArtifactTerminal {
   async write(path: string, content?: string, pid: PID = this.pid) {
     const actions = await this.actions<Files>('files', pid)
     return actions.write({ path, content })
+  }
+  async delete(path: string, pid: PID = this.pid): Promise<void> {
+    const actions = await this.actions<Files>('files', pid)
+    return actions.rm({ path })
   }
   async endSession(): Promise<void> {
     // should delete the session
@@ -335,6 +340,7 @@ type Files = {
     params: { path: string; content?: string },
     opts?: ProcessOptions,
   ) => Promise<number>
+  rm: (params: { path: string }) => Promise<void>
   ls: (params: { path: string; count: number }) => Promise<string[] | number>
   read: (params: { path: string }) => Promise<string>
   update: (params: Update) => Promise<number>

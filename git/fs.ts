@@ -332,7 +332,29 @@ export default class FS {
     const oid = this.#internalOid
     const filepath = path === '.' ? undefined : path
     const { tree } = await git.readTree({ ...this.#git, oid, filepath })
-    return tree.map((entry) => entry.path)
+
+    tree.sort((a, b) => {
+      if (a.type === 'tree' && b.type === 'blob') {
+        return -1
+      }
+      if (a.type === 'blob' && b.type === 'tree') {
+        return 1
+      }
+      if (a.path.startsWith('.') && !b.path.startsWith('.')) {
+        return -1
+      }
+      if (!a.path.startsWith('.') && b.path.startsWith('.')) {
+        return 1
+      }
+      return a.path.localeCompare(b.path)
+    })
+    return tree.map((entry) => {
+      if (entry.type === 'tree') {
+        return entry.path + '/'
+      }
+      assert(entry.type === 'blob', 'entry type not blob: ' + entry.type)
+      return entry.path
+    })
   }
   async getCommit() {
     const result = await git.readCommit({ ...this.#git, oid: this.oid })

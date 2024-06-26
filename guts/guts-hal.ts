@@ -118,7 +118,7 @@ export default (name: string, cradleMaker: CradleMaker) => {
     await terminal.engineStop()
   })
 
-  Deno.test('double tool call with responses', async () => {
+  Deno.test(prefix + 'double tool call with responses', async () => {
     const terminal = await cradleMaker()
     const { pid } = await terminal.init({ repo: 'test/doubleToolCall' })
     const help = `
@@ -149,7 +149,7 @@ commands:
 
     await terminal.engineStop()
   })
-  Deno.test('help in branch', async () => {
+  Deno.test(prefix + 'help in branch', async () => {
     const terminal = await cradleMaker()
     const { pid } = await terminal.init({ repo: 'test/helpInBranch' })
     const help = `
