@@ -9,8 +9,6 @@ import {
   BranchMap,
   CradleMaker,
   getActorId,
-  IO_PATH,
-  IoStruct,
   PID,
   print,
   SESSION_BRANCHES,
@@ -135,15 +133,20 @@ commands:
     const { engage } = await terminal.actions<engageHelp.Api>(isolate, pid)
     const text =
       'call the provided "ping" tool twice with the message being the integer "1" for the first one and the integer "2" for the second'
-    log.enable(
-      'AI:tests AI:io-fixture AI:prompt AI:io-fixture AI:completions AI:engage-help AI:tools:load-tools AI:tools:execute-tools',
-    )
     const result = await engage({ help: 'double-test', text })
     log('result', result)
 
     const session = await terminal.readJSON<Messages[]>(SESSION_PATH, pid)
     log('session', session)
-    console.dir(session, { depth: Infinity })
+
+    expect(session).toHaveLength(5)
+    const tool1 = session[2]
+    const tool2 = session[3]
+    expect(tool1.role).toBe('tool')
+    expect(tool1.content).toBe('1')
+    expect(tool2.role).toBe('tool')
+    expect(tool2.content).toBe('2')
+
     await terminal.engineStop()
   })
   Deno.test('help in branch', async () => {
@@ -162,13 +165,10 @@ If you get asked to "Just say the number: 1" then you should respond with the nu
     const { engage } = await terminal.actions<engageHelp.Api>(isolate, pid)
     const text =
       'call the "help-in-branch" function with: "Just say the number: 1"'
-    // log.enable(
-    //   'AI:tests AI:io-fixture AI:prompt AI:io-fixture AI:completions AI:engage-help AI:tools:load-tools AI:tools:execute-tools *qbr*',
-    // )
     const result = await engage({ help: 'help-in-branch', text })
     log('result %s', result)
 
-    const session = await terminal.readJSON<Messages[]>(SESSION_PATH, pid)
+    let session = await terminal.readJSON<Messages[]>(SESSION_PATH, pid)
     log('session', session)
 
     const branches = await terminal.readJSON<BranchMap>(SESSION_BRANCHES, pid)
@@ -191,6 +191,13 @@ If you get asked to "Just say the number: 1" then you should respond with the nu
     await expect(terminal.readJSON<Messages[]>(SESSION_PATH, helpPid))
       .rejects
       .toThrow('HEAD not found')
+
+    session = await terminal.readJSON<Messages[]>(SESSION_PATH, pid)
+    log('session', session)
+    expect(session).toHaveLength(5)
+    const tool = session[3]
+    expect(tool.role).toBe('tool')
+    expect(tool.content).toBe('1')
     await terminal.engineStop()
   })
 

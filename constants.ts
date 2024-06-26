@@ -89,7 +89,7 @@ export type SettledIsolatePromise =
   & {
     outcome: Outcome
     /** if an outcome is given, there must be a commit associated with it, so
-     * that the execution environment can be notched forwards */
+     * that the execution filesystem can be ticked forwards */
     commit: string
     /** If the outcome was the result of a branch returning, then the parent
      * commit of that branch is given here */

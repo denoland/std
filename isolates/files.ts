@@ -5,7 +5,7 @@ const log = Debug('AI:files')
 export const api = {
   write: {
     description:
-      'Overwrite or Add a file with optional contents.  If the contents are omitted, the file will be overwritten or created with zero contents.',
+      'Overwrite or Add a file with optional contents.  If the contents are omitted, the file will be overwritten or created with zero contents.  Path must be relative.',
     type: 'object',
     additionalProperties: false,
     required: ['path'],
@@ -18,7 +18,7 @@ export const api = {
     },
   },
   ls: {
-    description: 'list files',
+    description: 'List files for a given path.  Path must be relative.',
     type: 'object',
     additionalProperties: false,
     properties: {
@@ -30,7 +30,8 @@ export const api = {
     },
   },
   read: {
-    description: 'Read a file.  It will be returned to you as a string',
+    description:
+      'Read a file.  It will be returned to you as a string.  Path must be relative.',
     type: 'object',
     additionalProperties: false,
     required: ['path'],
@@ -43,7 +44,7 @@ export const api = {
   },
   update: {
     description:
-      'Update a file using a regex and a replacement string.  The number of occurrences replaced will be returned to you as an integer.  If you want to append something to a file, you can use a regex to match the end of the file and replace it with the contents you want to append.  To delete portions of a file, you can use a regex to match the contents you want to delete and replace it with an empty string.',
+      'Update a file using a regex and a replacement string.  The number of occurrences replaced will be returned to you as an integer.  If you want to append something to a file, you can use a regex to match the end of the file and replace it with the contents you want to append.  To delete portions of a file, you can use a regex to match the contents you want to delete and replace it with an empty string.  Path must be relative.',
     type: 'object',
     additionalProperties: false,
     required: ['path', 'regex', 'replacement'],

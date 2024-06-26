@@ -67,6 +67,17 @@ export default class Accumulator {
       return recovered
     }
   }
+  isParent(parent: string) {
+    assert(this.isActive, 'Activity is denied')
+    for (const promise of this.#buffer) {
+      if ('parent' in promise) {
+        if (promise.parent === parent) {
+          return true
+        }
+      }
+    }
+    return false
+  }
   activate(symbol: symbol) {
     assert(!this.isActive, 'Activity is already active')
     assert(!this.#trigger, 'Trigger is already set')

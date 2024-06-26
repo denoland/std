@@ -345,9 +345,7 @@ export default class IOChannel {
     for (const key of toBlank) {
       delete this.#io.requests[key]
       delete this.#io.replies[key]
-      if (this.#io.parents) {
-        delete this.#io.parents[key]
-      }
+      delete this.#io.parents[key]
     }
   }
 }

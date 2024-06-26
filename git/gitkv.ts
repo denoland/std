@@ -233,7 +233,7 @@ type EncodingOpts = {
   encoding?: 'utf8'
 }
 
-class FileNotFoundError extends Error {
+export class FileNotFoundError extends Error {
   code = 'ENOENT'
   constructor(message: string) {
     super(message)

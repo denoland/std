@@ -12,8 +12,10 @@ export const rm = (api: IsolateApi) => {
   api.delete(SESSION_BRANCHES)
 }
 export const readSession = async (api: IsolateApi) => {
-  const session = await api.readJSON<Messages[]>(SESSION_PATH)
-  return session
+  if (await api.exists(SESSION_PATH)) {
+    return await api.readJSON<Messages[]>(SESSION_PATH)
+  }
+  return []
 }
 export const writeSession = (session: Messages[], api: IsolateApi) => {
   api.writeJSON(SESSION_PATH, session)
@@ -33,3 +35,6 @@ export const writeToolCommit = async (
   branches[toolCallId] = parent
   api.writeJSON(SESSION_BRANCHES, branches)
 }
+
+// TODO write the commit of each message, to allow walking back chunks of
+// session at a time

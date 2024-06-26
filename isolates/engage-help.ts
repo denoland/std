@@ -1,6 +1,6 @@
 import { assert, Debug } from '@utils'
 import { rm } from '@/isolates/ai-session-utils.ts'
-import { IsolateApi, ProcessOptions } from '@/constants.ts'
+import { IsolateApi } from '@/constants.ts'
 import { Help, RUNNERS } from '@/constants.ts'
 import * as loadHelp from '@/isolates/load-help.ts'
 import * as prompt from '@/isolates/ai-prompt.ts'

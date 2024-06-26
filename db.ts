@@ -302,7 +302,7 @@ export default class DB {
     const splice: Splice = { pid, oid, commit, timestamp, changes: {} }
     if (path) {
       if (await fs.exists(path)) {
-        const { oid } = await fs.readBlob(path)
+        const oid = await fs.readOid(path)
         const patch = await fs.read(path) // TODO check caching makes this fast
         splice.changes[path] = { oid, patch }
       }

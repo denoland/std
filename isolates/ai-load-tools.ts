@@ -18,13 +18,12 @@ type Action = (params: Params, branchName: string) => Promise<unknown>
 
 const load = async (commands: string[] = [], api: IsolateApi) => {
   const tools: OpenAI.ChatCompletionTool[] = []
-  const names = new Set()
   const actions: Record<string, Action> = {}
   for (const cmd of commands) {
     log('loading command:', cmd)
-    let tool: OpenAI.ChatCompletionTool,
-      action: (params: Params, branchName: string) => Promise<unknown>,
-      name: string
+    let tool: OpenAI.ChatCompletionTool
+    let action: (params: Params, branchName: string) => Promise<unknown>
+    let name: string
     const isHelp = !cmd.includes(':')
     if (isHelp) {
       assert(cmd.startsWith('helps/'), `invalid help: ${cmd}`)
@@ -53,9 +52,8 @@ const load = async (commands: string[] = [], api: IsolateApi) => {
       tool = isolateToGptApi(name, isolateApiSchema[name])
     }
     assert(action, `missing action: ${cmd}`)
-    assert(!names.has(name), `duplicate action: ${cmd}`)
-    names.add(name)
     assert(typeof action === 'function', `invalid action: ${action}`)
+    assert(!actions[name], `duplicate action: ${cmd}`)
     actions[name] = action
     assert(typeof tool === 'object', `invalid tool: ${tool}`)
     tools.push(tool)

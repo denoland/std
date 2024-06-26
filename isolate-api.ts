@@ -217,4 +217,9 @@ export default class IsolateApi<T extends object = Default> {
     // TODO push a self responding action to the accumulator for repeatability
     return this.#fs.isPidExists(pid)
   }
+  overwrite(commit: string, ...excludes: string[]) {
+    assert(this.#accumulator.isParent(commit), 'Parent is not in scope')
+    log('overwrite', commit, excludes)
+    return this.#fs.overwrite(commit, ...excludes)
+  }
 }

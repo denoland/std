@@ -5,6 +5,7 @@ import OpenAI from 'openai'
 import '@std/dotenv/load'
 import { Help, IsolateApi, SESSION_PATH } from '@/constants.ts'
 import { Api } from './ai-completions.ts'
+import { readSession } from '@/isolates/ai-session-utils.ts'
 
 type MessageParam = OpenAI.ChatCompletionMessageParam
 const base = 'AI:prompt'
@@ -43,14 +44,8 @@ export const functions = {
 
 export const prepare = async (help: Help, text: string, api: IsolateApi) => {
   assert(text.length, 'text must not be empty')
-  let messages: MessageParam[] = []
-  let existing: MessageParam[] | undefined
-  if (await api.exists(SESSION_PATH)) {
-    log('session exists')
-    messages = await api.readJSON<MessageParam[]>(SESSION_PATH)
-    existing = [...messages]
-    assert(Array.isArray(messages), 'messages must be an array')
-  }
+  const existing = await readSession(api)
+  const messages: MessageParam[] = [...existing]
 
   const content = help.instructions
   if (content) {

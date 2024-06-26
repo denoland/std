@@ -2,7 +2,15 @@ import { assert } from '@std/assert'
 import { Debug } from '@utils'
 import OpenAI from 'openai'
 import { serializeError } from 'serialize-error'
-import { colorize, Help, IsolateApi, withMeta } from '@/constants.ts'
+import {
+  colorize,
+  Help,
+  IsolateApi,
+  SESSION_BRANCHES,
+  SESSION_PATH,
+  sha1,
+  withMeta,
+} from '@/constants.ts'
 import { loadActions } from './ai-load-tools.ts'
 import {
   readSession,
@@ -47,6 +55,8 @@ export const executeTools = async (help: Help, api: IsolateApi) => {
       const promise = actions[name](parameters, branchName)
       const { result, parent } = await withMeta(promise)
       assert(typeof parent === 'string', 'missing parent')
+      assert(sha1.test(parent), 'invalid parent')
+      await api.overwrite(parent, SESSION_PATH, SESSION_BRANCHES)
       await writeToolCommit(tool_call_id, parent, api)
 
       log('tool call result:', name, result, colorize(parent))

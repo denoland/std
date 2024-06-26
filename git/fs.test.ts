@@ -1,7 +1,7 @@
 import * as utils from '@utils'
 import DB from '@/db.ts'
 import FS from './fs.ts'
-import { partialFromRepo } from '@/constants.ts'
+import { addChild, IO_PATH, partialFromRepo } from '@/constants.ts'
 const { expect } = utils
 Deno.test('git/init', async (t) => {
   const db = await DB.create(DB.generateAesKey())
@@ -146,7 +146,39 @@ Deno.test('clone and pull', async (t) => {
 
   db.stop()
 })
+Deno.test('overwrite', async () => {
+  const db = await DB.create(DB.generateAesKey())
+  const pid = partialFromRepo('test/merge')
+  const base = await FS.init(pid, db)
+  base.write(IO_PATH, '0')
+  base.write('a.txt', 'a')
+  base.write('b.txt', 'b')
+  base.write('c/c.txt', 'c')
+  base.write('c/d.txt', 'd')
+  const { next } = await base.writeCommitObject('initial')
+  const childPid = addChild(next.pid, 'child')
+  const branch = next.branch(childPid)
 
+  branch.write(IO_PATH, '1')
+  branch.write('a.txt', 'A')
+  branch.delete('c/c.txt')
+  branch.write('c/e.txt', 'e')
+  branch.write('c/d.txt', 'D')
+  const { next: branchNext } = await branch.writeCommitObject('branch')
+
+  await next.overwrite(branchNext.oid, 'c/c.txt')
+  expect(await next.read(IO_PATH)).toBe('0')
+  expect(await branchNext.read(IO_PATH)).toBe('1')
+
+  expect(await next.read('a.txt')).toBe('A')
+  expect(await next.read('b.txt')).toBe('b')
+  expect(await next.read('c/c.txt')).toBe('c')
+  expect(await branchNext.exists('c/c.txt')).toBeFalsy()
+  expect(await next.read('c/d.txt')).toBe('D')
+  expect(await next.read('c/e.txt')).toBe('e')
+
+  db.stop()
+})
 // TODO block isolates from accessing .git paths
 
 // check that a nonexistent pid throws
