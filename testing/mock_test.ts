@@ -510,6 +510,21 @@ Deno.test("spy() works on constructor of child class", () => {
   assertSpyCalls(PointSpy, 1);
 });
 
+Deno.test("spy() works on constructor that throws an error", () => {
+  class Foo {
+    constructor() {
+      throw new Error("foo");
+    }
+  }
+  const FooSpy = spy(Foo);
+  assertThrows(() => new FooSpy(), Error, "foo");
+  assertSpyCall(FooSpy, 0, {
+    self: undefined,
+    args: [],
+    error: { Class: Error, msgIncludes: "foo" },
+  });
+});
+
 Deno.test("spy() works with throwing method", () => {
   const obj = {
     fn() {
