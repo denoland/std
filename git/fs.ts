@@ -364,19 +364,19 @@ export default class FS {
     assert(!this.isChanged, 'cannot copy changes to a changed FS')
     assert(equal(this.#pid, from.#pid), 'changes are from different pids')
     for (const path of from.#deletes) {
-      this.delete(path)
+      this.#deletes.add(path)
     }
     for (const [path, upsert] of from.#upserts) {
       this.#upserts.set(path, upsert)
-      this.#deletes.delete(path)
     }
+    this.#overwrite = from.#overwrite
   }
   async isPidExists(pid: PID) {
     return !!await this.#db.readHead(pid)
   }
   async overwrite(commit: string, ...ignores: string[]) {
     // TODO allow changes so long as they are in the ignored set
-    assert(!this.isChanged, 'Uncommitted changes present - these may be lost')
+    assert(!this.isChanged, 'Uncommitted changes may be lost')
     assert(sha1.test(commit), 'Commit not SHA-1: ' + commit)
     assert(this.oid !== commit, 'cannot overwrite with same commit')
     assert(this.#overwrite !== commit, 'cannot overwrite the same commit twice')

@@ -5,7 +5,7 @@ const log = Debug('AI:files')
 export const api = {
   write: {
     description:
-      'Overwrite or Add a file with optional contents.  If the contents are omitted, the file will be overwritten or created with zero contents.  Path must be relative.',
+      'Write to a file with optional contents.  Will overwrite existing files.  Will create all required parent directories.  Path must be relative.  Returns the number of characters written in the operation',
     type: 'object',
     additionalProperties: false,
     required: ['path'],

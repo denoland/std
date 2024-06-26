@@ -171,7 +171,7 @@ export default class IsolateApi<T extends object = Default> {
     log('exists', path)
     return this.#fs.exists(path)
   }
-  ls(path: string) {
+  ls(path: string = '.') {
     assert(this.#accumulator.isActive, 'Activity is denied')
     log('ls', path)
     return this.#fs.ls(path)
