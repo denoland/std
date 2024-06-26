@@ -69,41 +69,6 @@ export function parse(content: string, options?: ParseOptions): unknown {
  * import { parseAll } from "@std/yaml/parse";
  * import { assertEquals } from "@std/assert/assert-equals";
  *
- * parseAll(`
- * ---
- * id: 1
- * name: Alice
- * ---
- * id: 2
- * name: Bob
- * ---
- * id: 3
- * name: Eve
- * `, (doc: any) => {
- *   assertEquals(typeof doc, "object");
- *   assertEquals(typeof doc.id, "number");
- *   assertEquals(typeof doc.name, "string");
- * });
- * ```
- *
- * @param content YAML string to parse.
- * @param iterator Function to call on each document.
- * @param options Parsing options.
- */
-export function parseAll(
-  content: string,
-  iterator: (doc: unknown) => void,
-  options?: ParseOptions,
-): void;
-/**
- * Same as `parse()`, but understands multi-document sources.
- * Applies iterator to each document if specified, or returns array of documents.
- *
- * @example Usage
- * ```ts
- * import { parseAll } from "@std/yaml/parse";
- * import { assertEquals } from "@std/assert/assert-equals";
- *
  * const data = parseAll(`
  * ---
  * id: 1
@@ -122,16 +87,8 @@ export function parseAll(
  * @param options Parsing options.
  * @returns Array of parsed documents.
  */
-export function parseAll(content: string, options?: ParseOptions): unknown;
-export function parseAll(
-  content: string,
-  iteratorOrOption?: ((doc: unknown) => void) | ParseOptions,
-  options?: ParseOptions,
-): unknown {
-  if (typeof iteratorOrOption !== "function") {
-    replaceSchemaNameWithSchemaClass(iteratorOrOption);
-  }
+export function parseAll(content: string, options?: ParseOptions): unknown {
   replaceSchemaNameWithSchemaClass(options);
   // deno-lint-ignore no-explicit-any
-  return loadAll(content, iteratorOrOption as any, options as any);
+  return loadAll(content, options as any);
 }
