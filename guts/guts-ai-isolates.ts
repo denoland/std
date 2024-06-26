@@ -42,7 +42,6 @@ export default (name: string, cradleMaker: CradleMaker) => {
         await t.step('ls .', async () => {
             const text = 'ls .'
             const result = await engage({ help: 'files', text })
-            log.enable('AI:tests')
             log('result', result)
             expect(result).not.toContain('.io.json')
 
@@ -56,7 +55,6 @@ export default (name: string, cradleMaker: CradleMaker) => {
         await t.step('ls /', async () => {
             const text = 'ls /'
             const result = await engage({ help: 'files', text })
-            log.enable('AI:tests')
             log('result', result)
             expect(result).not.toContain('.io.json')
 
@@ -70,7 +68,6 @@ export default (name: string, cradleMaker: CradleMaker) => {
         await t.step('ls --all', async () => {
             const text = 'ls --all'
             const result = await engage({ help: 'files', text })
-            log.enable('AI:tests')
             log('result', result)
             expect(result).toContain('.io.json')
 
