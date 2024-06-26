@@ -19,14 +19,14 @@ export const api = {
   },
   ls: {
     description:
-      'List files for a given path with directories ending in a "/".  Path must be relative.  If unsure of the path, use ".".  If you want the root or / at any point, this is actually just ".".  If you want to count the number of files, set count to true.  If you want to list all files including hidden files, set all to true.',
+      'List files for a given path. Returns file names with directory names ending in "/".  Path must be relative.  The root ("/") is actually just ".".  To count the number of files instead of list them, set "count" to true.  To include hidden files in the list or count, set "all" to true.',
     type: 'object',
     additionalProperties: false,
-    required: ['path'],
     properties: {
       path: {
         type: 'string',
         description: 'the relative path to the directory you want to list',
+        default: '.',
       },
       count: {
         type: 'boolean',
@@ -94,7 +94,7 @@ export type Api = {
     opts?: ProcessOptions,
   ) => Promise<number>
   ls: (
-    params: { path: string; count: boolean; all: boolean },
+    params: { path?: string; count?: boolean; all?: boolean },
   ) => Promise<string[] | number>
   read: (params: { path: string }) => Promise<string>
   update: (params: Update) => Promise<number>
@@ -109,10 +109,10 @@ export const functions = {
     return content.length
   },
   ls: async (
-    params: { path: string; count?: boolean; all?: boolean },
+    params: { path?: string; count?: boolean; all?: boolean },
     api: IsolateApi,
   ) => {
-    const { path, count } = params
+    const { path = '.', count } = params
     log('ls', path)
     let result = await api.ls(path)
     if (!params.all) {
