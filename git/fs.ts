@@ -354,7 +354,7 @@ export default class FS {
   }
   async overwrite(commit: string, ...ignores: string[]) {
     // TODO allow changes so long as they are in the ignored set
-    assert(!this.isChanged, 'Uncommited changes present - these may be lost')
+    assert(!this.isChanged, 'Uncommitted changes present - these may be lost')
     assert(sha1.test(commit), 'Commit not SHA-1: ' + commit)
     assert(this.oid !== commit, 'cannot overwrite with same commit')
     assert(this.#overwrite !== commit, 'cannot overwrite the same commit twice')
