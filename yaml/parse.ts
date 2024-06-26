@@ -49,7 +49,7 @@ export interface ParseOptions {
  * assertEquals(data, { id: 1, name: "Alice" });
  * ```
  *
- * @throws {YAMLError} Throws error on invalid YAML.
+ * @throws {YamlError} Throws error on invalid YAML.
  * @param content YAML string to parse.
  * @param options Parsing options.
  * @returns Parsed document.
