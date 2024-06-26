@@ -218,7 +218,9 @@ function getValuesFromItem(
       let value: unknown = item;
 
       for (const prop of column.prop) {
-        if (typeof value !== "object" || value === null) continue;
+        if (typeof value !== "object" || value === null) {
+          continue;
+        }
         if (Array.isArray(value)) {
           if (typeof prop === "number") value = value[prop];
           else {
