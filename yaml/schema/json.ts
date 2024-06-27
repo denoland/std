@@ -4,7 +4,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-import { Schema } from "../schema.ts";
+import { Schema } from "../_schema.ts";
 import { bool, float, int, nil } from "../_type/mod.ts";
 import { FAILSAFE_SCHEMA } from "./failsafe.ts";
 

@@ -5,7 +5,7 @@
 // This module is browser compatible.
 
 import { YamlError } from "./_error.ts";
-import type { KindType, Type } from "./type.ts";
+import type { KindType, Type } from "./_type.ts";
 import type { Any, ArrayObject } from "./_utils.ts";
 
 function compileList(

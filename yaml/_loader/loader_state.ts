@@ -4,9 +4,9 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
 import type { YamlError } from "../_error.ts";
-import type { Schema, SchemaDefinition, TypeMap } from "../schema.ts";
+import type { Schema, SchemaDefinition, TypeMap } from "../_schema.ts";
 import { State } from "../_state.ts";
-import type { Type } from "../type.ts";
+import type { Type } from "../_type.ts";
 import type { Any, ArrayObject } from "../_utils.ts";
 
 export interface LoaderStateOptions {

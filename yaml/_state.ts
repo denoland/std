@@ -3,7 +3,7 @@
 // Copyright 2011-2015 by Vitaly Puzrin. All rights reserved. MIT license.
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import type { SchemaDefinition } from "./schema.ts";
+import type { SchemaDefinition } from "./_schema.ts";
 import { DEFAULT_SCHEMA } from "./schema/mod.ts";
 
 export abstract class State {
