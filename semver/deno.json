@@ -25,10 +25,7 @@
     "./parse": "./parse.ts",
     "./parse-range": "./parse_range.ts",
     "./range-intersects": "./range_intersects.ts",
-    "./range-max": "./range_max.ts",
-    "./range-min": "./range_min.ts",
     "./satisfies": "./satisfies.ts",
-    "./test-range": "./test_range.ts",
     "./try-parse": "./try_parse.ts",
     "./try-parse-range": "./try_parse_range.ts",
     "./types": "./types.ts"
