@@ -50,35 +50,29 @@ class Parser {
   #readLine(): string | null {
     if (this.#isEOF()) return null;
 
-    if (
-      !this.#input.startsWith("\r\n", this.#cursor) ||
-      !this.#input.startsWith("\n", this.#cursor)
-    ) {
-      let buffer = "";
-      let hadNewline = false;
-      while (this.#cursor < this.#input.length) {
-        if (this.#input.startsWith("\r\n", this.#cursor)) {
-          hadNewline = true;
-          this.#cursor += 2;
-          break;
-        }
-        if (
-          this.#input.startsWith("\n", this.#cursor)
-        ) {
-          hadNewline = true;
-          this.#cursor += 1;
-          break;
-        }
-        buffer += this.#input[this.#cursor];
+    let buffer = "";
+    let hadNewline = false;
+    while (this.#cursor < this.#input.length) {
+      if (this.#input.startsWith("\r\n", this.#cursor)) {
+        hadNewline = true;
+        this.#cursor += 2;
+        break;
+      }
+      if (
+        this.#input.startsWith("\n", this.#cursor)
+      ) {
+        hadNewline = true;
         this.#cursor += 1;
+        break;
       }
-      if (!hadNewline && buffer.endsWith("\r")) {
-        buffer = buffer.slice(0, -1);
-      }
-
-      return buffer;
+      buffer += this.#input[this.#cursor];
+      this.#cursor += 1;
     }
-    return null;
+    if (!hadNewline && buffer.endsWith("\r")) {
+      buffer = buffer.slice(0, -1);
+    }
+
+    return buffer;
   }
   #isEOF(): boolean {
     return this.#cursor >= this.#input.length;

@@ -64,7 +64,7 @@ export async function parseRecord(
   opt: ReadOptions,
   startLine: number,
   lineIndex: number = startLine,
-): Promise<Array<string> | null> {
+): Promise<Array<string>> {
   // line starting with comment character is ignored
   if (opt.comment && line[0] === opt.comment) {
     return [];
