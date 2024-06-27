@@ -83,23 +83,15 @@ export class CsvStringifyStream<TOptions extends CsvStringifyStreamOptions>
       {
         start(controller) {
           if (columns && columns.length > 0) {
-            try {
-              controller.enqueue(
-                stringify([columns], { separator, headers: false }),
-              );
-            } catch (error) {
-              controller.error(error);
-            }
+            controller.enqueue(
+              stringify([columns], { separator, headers: false }),
+            );
           }
         },
         transform(chunk, controller) {
-          try {
-            controller.enqueue(
-              stringify([chunk], { separator, headers: false, columns }),
-            );
-          } catch (error) {
-            controller.error(error);
-          }
+          controller.enqueue(
+            stringify([chunk], { separator, headers: false, columns }),
+          );
         },
       },
     );
