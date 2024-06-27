@@ -4,8 +4,8 @@
   "exports": {
     ".": "./mod.ts",
     "./types": "./types.ts",
-    "./concatenated-json-parse-stream": "./concatenated_json_parse_stream.ts",
-    "./json-parse-stream": "./json_parse_stream.ts",
-    "./json-stringify-stream": "./json_stringify_stream.ts"
+    "./concatenated-parse-stream": "./concatenated_parse_stream.ts",
+    "./parse-stream": "./parse_stream.ts",
+    "./stringify-stream": "./stringify_stream.ts"
   }
 }
