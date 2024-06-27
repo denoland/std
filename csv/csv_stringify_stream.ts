@@ -74,32 +74,21 @@ export class CsvStringifyStream<TOptions extends CsvStringifyStreamOptions>
    * @param options Options for the stream.
    */
   constructor(options?: TOptions) {
-    const {
-      separator,
-      columns = [],
-    } = options ?? {};
+    const { separator, columns = [] } = options ?? {};
 
     super(
       {
         start(controller) {
           if (columns && columns.length > 0) {
-            try {
-              controller.enqueue(
-                stringify([columns], { separator, headers: false }),
-              );
-            } catch (error) {
-              controller.error(error);
-            }
+            controller.enqueue(
+              stringify([columns], { separator, headers: false }),
+            );
           }
         },
         transform(chunk, controller) {
-          try {
-            controller.enqueue(
-              stringify([chunk], { separator, headers: false, columns }),
-            );
-          } catch (error) {
-            controller.error(error);
-          }
+          controller.enqueue(
+            stringify([chunk], { separator, headers: false, columns }),
+          );
         },
       },
     );

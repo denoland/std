@@ -104,9 +104,11 @@ export type StringifyOptions = {
    */
   separator?: string;
   /**
-   * a list of instructions for how to target and transform the data for each
+   * A list of instructions for how to target and transform the data for each
    * column of output. This is also where you can provide an explicit header
    * name for the column.
+   *
+   * @default {[]}
    */
   columns?: Column[];
   /**
@@ -299,9 +301,11 @@ function getValuesFromItem(
  */
 export function stringify(
   data: DataItem[],
-  { headers = true, separator: sep = ",", columns = [], bom = false }:
-    StringifyOptions = {},
+  options?: StringifyOptions,
 ): string {
+  const { headers = true, separator: sep = ",", columns = [], bom = false } =
+    options ?? {};
+
   if (sep.includes(QUOTE) || sep.includes(CRLF)) {
     const message = [
       "Separator cannot include the following strings:",

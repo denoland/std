@@ -103,8 +103,7 @@ class Parser {
     const separatorLen = this.#options.separator.length;
     let recordBuffer = "";
     const fieldIndexes = [] as number[];
-    parseField:
-    for (;;) {
+    parseField: while (true) {
       if (this.#options.trimLeadingSpace) {
         line = line.trimStart();
       }
@@ -142,7 +141,7 @@ class Parser {
       } else {
         // Quoted string field
         line = line.substring(quoteLen);
-        for (;;) {
+        while (true) {
           const i = line.indexOf(quote);
           if (i >= 0) {
             // Hit next quote.
@@ -250,7 +249,7 @@ class Parser {
       throw new Error(ERR_INVALID_DELIM);
     }
 
-    for (;;) {
+    while (true) {
       const r = this.#parseRecord(lineIndex);
       if (r === null) break;
       lineResult = r;
@@ -329,35 +328,35 @@ export function parse(input: string): string[][];
  *
  * @typeParam T The options' type for parsing.
  * @param input The input to parse.
- * @param opt The options for parsing.
- * @returns If you don't provide `opt.skipFirstRow` and `opt.columns`, it returns `string[][]`.
- *   If you provide `opt.skipFirstRow` or `opt.columns`, it returns `Record<string, unknown>[]`.
+ * @param options The options for parsing.
+ * @returns If you don't provide `options.skipFirstRow` and `options.columns`, it returns `string[][]`.
+ *   If you provide `options.skipFirstRow` or `options.columns`, it returns `Record<string, unknown>[]`.
  */
 export function parse<const T extends ParseOptions>(
   input: string,
-  opt: T,
+  options: T,
 ): ParseResult<ParseOptions, T>;
 export function parse<const T extends ParseOptions>(
   input: string,
-  opt: T = { skipFirstRow: false } as T,
+  options: T = { skipFirstRow: false } as T,
 ): ParseResult<ParseOptions, T> {
-  const parser = new Parser(opt);
+  const parser = new Parser(options);
   const r = parser.parse(input);
 
-  if (opt.skipFirstRow || opt.columns) {
+  if (options.skipFirstRow || options.columns) {
     let headers: readonly string[] = [];
 
-    if (opt.skipFirstRow) {
+    if (options.skipFirstRow) {
       const head = r.shift();
       if (head === undefined) throw new TypeError("Headers must be defined");
       headers = head;
     }
 
-    if (opt.columns) {
-      headers = opt.columns;
+    if (options.columns) {
+      headers = options.columns;
     }
 
-    const firstLineIndex = opt.skipFirstRow ? 1 : 0;
+    const firstLineIndex = options.skipFirstRow ? 1 : 0;
     return r.map((row, i) => {
       return convertRowToObject(row, headers, firstLineIndex + i);
     }) as ParseResult<ParseOptions, T>;
