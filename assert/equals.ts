@@ -2,7 +2,7 @@
 // This module is browser compatible.
 import { equal } from "./equal.ts";
 import { buildMessage, diff, diffStr, format } from "@std/internal";
-import { AssertionError } from "./assertion_error.ts";
+import { AssertionError } from "./error.ts";
 
 /**
  * Make an assertion that `actual` and `expected` are equal, deeply. If not

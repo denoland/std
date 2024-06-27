@@ -2,7 +2,7 @@
 // This module is browser compatible.
 
 import { equal } from "./equal.ts";
-import { AssertionError } from "./assertion_error.ts";
+import { AssertionError } from "./error.ts";
 
 /**
  * Make an assertion that `actual` and `expected` are not equal, deeply.

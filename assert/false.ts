@@ -1,6 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
-import { AssertionError } from "./assertion_error.ts";
+import { AssertionError } from "./error.ts";
 
 /** Assertion condition for {@linkcode assertFalse}. */
 export type Falsy = false | 0 | 0n | "" | null | undefined;

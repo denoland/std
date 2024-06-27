@@ -25,7 +25,7 @@
     "./assert-strict-equals": "./assert_strict_equals.ts",
     "./assert-string-includes": "./assert_string_includes.ts",
     "./assert-throws": "./assert_throws.ts",
-    "./assertion-error": "./assertion_error.ts",
+    "./assertion-error": "./error.ts",
     "./equal": "./equal.ts",
     "./fail": "./fail.ts",
     "./unimplemented": "./unimplemented.ts",

@@ -319,9 +319,9 @@
  * @module
  */
 
-import { assertEquals } from "@std/assert/assert-equals";
-import { assertIsError } from "@std/assert/assert-is-error";
-import { assertRejects } from "@std/assert/assert-rejects";
+import { assertEquals } from "../assert/equals.ts";
+import { assertIsError } from "../assert/is_error.ts";
+import { assertRejects } from "../assert/rejects.ts";
 import { AssertionError } from "@std/assert/assertion-error";
 
 /**

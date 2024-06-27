@@ -1,5 +1,5 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-import { assertThrows } from "./assert_throws.ts";
+import { assertThrows } from "./throws.ts";
 import { AssertionError, assertMatch } from "./mod.ts";
 
 Deno.test("assertMatch()", () => {

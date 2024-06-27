@@ -1,6 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
-import { assertEquals } from "./assert_equals.ts";
+import { assertEquals } from "./equals.ts";
 
 /**
  * Make an assertion that `actual` object is a subset of `expected` object,

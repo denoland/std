@@ -2,7 +2,7 @@
 // This module is browser compatible.
 import { equal } from "./equal.ts";
 import { format } from "@std/internal/format";
-import { AssertionError } from "./assertion_error.ts";
+import { AssertionError } from "./error.ts";
 
 /** An array-like object (`Array`, `Uint8Array`, `NodeList`, etc.) that is not a string */
 export type ArrayLikeArg<T> = ArrayLike<T> & object;

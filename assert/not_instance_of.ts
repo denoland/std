@@ -1,6 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
-import { assertFalse } from "./assert_false.ts";
+import { assertFalse } from "./false.ts";
 
 /**
  * Make an assertion that `obj` is not an instance of `type`.
