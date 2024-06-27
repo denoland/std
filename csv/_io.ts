@@ -79,8 +79,7 @@ export async function parseRecord(
   const separatorLen = opt.separator.length;
   let recordBuffer = "";
   const fieldIndexes = [] as number[];
-  parseField:
-  for (;;) {
+  parseField: while (true) {
     if (opt.trimLeadingSpace) {
       line = line.trimStart();
     }
@@ -118,7 +117,7 @@ export async function parseRecord(
     } else {
       // Quoted string field
       line = line.substring(quoteLen);
-      for (;;) {
+      while (true) {
         const i = line.indexOf(quote);
         if (i >= 0) {
           // Hit next quote.
