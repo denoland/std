@@ -3,9 +3,9 @@
   "version": "1.0.0-rc.1",
   "exports": {
     ".": "./mod.ts",
-    "./csv-parse-stream": "./csv_parse_stream.ts",
-    "./csv-stringify-stream": "./csv_stringify_stream.ts",
     "./parse": "./parse.ts",
-    "./stringify": "./stringify.ts"
+    "./parse-stream": "./csv_parse_stream.ts",
+    "./stringify": "./stringify.ts",
+    "./stringify-stream": "./csv_stringify_stream.ts"
   }
 }

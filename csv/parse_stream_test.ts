@@ -1,6 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-import { CsvParseStream } from "./csv_parse_stream.ts";
-import type { CsvParseStreamOptions } from "./csv_parse_stream.ts";
+import { CsvParseStream } from "./parse_stream.ts";
+import type { CsvParseStreamOptions } from "./parse_stream.ts";
 import { ERR_QUOTE, ParseError } from "./_io.ts";
 import {
   assert,
