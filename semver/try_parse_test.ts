@@ -92,7 +92,7 @@ Deno.test("tryParse() handles prerelease", async (t) => {
 });
 
 Deno.test({
-  name: "tryParse() throws on bad versions",
+  name: "tryParse() returns undefined on bad versions",
   fn: async (t) => {
     const versions: [unknown][] = [
       ["1.2." + new Array(256).join("1")], // too long
@@ -117,7 +117,7 @@ Deno.test({
   },
 });
 
-Deno.test("tryParse() throws on invalid versions", async (t) => {
+Deno.test("tryParse() returns undefined on invalid versions", async (t) => {
   const versions = ["1.2.3.4", "NOT VALID", 1.2, null, "Infinity.NaN.Infinity"];
 
   for (const v of versions) {
