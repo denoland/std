@@ -1,6 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
-import { ANY, INVALID } from "./constants.ts";
+import { ANY, INVALID } from "./_constants.ts";
 import type { SemVer } from "./types.ts";
 import { isValidNumber, isValidString } from "./_shared.ts";
 
