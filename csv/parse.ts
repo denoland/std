@@ -13,12 +13,7 @@ import {
   type RecordWithColumn,
 } from "./_io.ts";
 
-export {
-  ParseError,
-  type ParseResult,
-  type ReadOptions,
-  type RecordWithColumn,
-};
+export { ParseError, type ParseResult, type RecordWithColumn };
 
 const BYTE_ORDER_MARK = "\ufeff";
 
@@ -280,7 +275,47 @@ class Parser {
 }
 
 /** Options for {@linkcode parse}. */
-export interface ParseOptions extends ReadOptions {
+export interface ParseOptions {
+  /** Character which separates values.
+   *
+   * @default {","}
+   */
+  separator?: string;
+  /** Character to start a comment.
+   *
+   * Lines beginning with the comment character without preceding whitespace
+   * are ignored. With leading whitespace the comment character becomes part of
+   * the field, even you provide `trimLeadingSpace: true`.
+   *
+   * @default {"#"}
+   */
+  comment?: string;
+  /** Flag to trim the leading space of the value.
+   *
+   * This is done even if the field delimiter, `separator`, is white space.
+   *
+   * @default {false}
+   */
+  trimLeadingSpace?: boolean;
+  /**
+   * Allow unquoted quote in a quoted field or non-double-quoted quotes in
+   * quoted field.
+   *
+   * @default {false}
+   */
+  lazyQuotes?: boolean;
+  /**
+   * Enabling checking number of expected fields for each row.
+   *
+   * If positive, each record is required to have the given number of fields.
+   * If === 0, it will be set to the number of fields in the first row, so that
+   * future rows must have the same field count.
+   * If negative, no check is made and records may have a variable number of
+   * fields.
+   *
+   * If the wrong number of fields is in a row, a `ParseError` is thrown.
+   */
+  fieldsPerRecord?: number;
   /**
    * If you provide `skipFirstRow: true` and `columns`, the first line will be
    * skipped.
