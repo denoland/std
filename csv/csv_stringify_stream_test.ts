@@ -57,6 +57,18 @@ Deno.test({
       );
     });
 
+    await t.step("with invalid `columns`", async () => {
+      const readable = ReadableStream.from([
+        ["one", "two", "three"],
+        // deno-lint-ignore no-explicit-any
+      ]).pipeThrough(new CsvStringifyStream({ columns: { length: 1 } as any }));
+      await assertRejects(
+        async () => await Array.fromAsync(readable),
+        StringifyError,
+        "No property accessor function was provided for object",
+      );
+    });
+
     await t.step("with objects", async () => {
       const readable = ReadableStream.from([
         { id: 1, name: "foo" },

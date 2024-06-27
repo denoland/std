@@ -150,11 +150,6 @@ export class CsvParseStream<
       this.#options,
       this.#lineIndex,
     );
-    if (record === null) {
-      controller.close();
-      this.#lineReader.cancel();
-      return;
-    }
 
     if (this.#isFirstRow) {
       this.#isFirstRow = false;

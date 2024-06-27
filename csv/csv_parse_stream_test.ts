@@ -88,6 +88,12 @@ Deno.test({
         separator: ";",
       },
       {
+        name: "Separator is undefined",
+        input: "a;b;c\n",
+        errorMessage: "Separator is required",
+        separator: undefined,
+      },
+      {
         name: "MultiLine",
         input: `"two
 line","one line","three
@@ -107,6 +113,12 @@ field"`,
         name: "LeadingSpace",
         input: " a,  b,   c\n",
         output: [[" a", "  b", "   c"]],
+      },
+      {
+        name: "trimLeadingSpace = true",
+        input: " a,  b,   c\n",
+        output: [["a", "b", "c"]],
+        trimLeadingSpace: true,
       },
       {
         name: "Comment",
@@ -310,22 +322,45 @@ x,,,
         errorMessage:
           "Error number of fields line: 1\nNumber of fields found: 3\nExpected number of fields: 2",
       },
+      {
+        name: "bad quote in bare field",
+        input: `a "word",1,2,3`,
+        errorMessage: "Error line: 1\nBad quoting",
+      },
+      {
+        name: "bad quote in quoted field",
+        input: `"wo"rd",1,2,3`,
+        errorMessage: "Error line: 1\nBad quoting",
+      },
+      {
+        name: "lazy quote",
+        input: `a "word","1"2",a","b`,
+        output: [[`a "word"`, `1"2`, `a"`, `b`]],
+        lazyQuotes: true,
+      },
     ];
     for (const testCase of testCases) {
       await t.step(testCase.name, async () => {
         const options: CsvParseStreamOptions = {};
-        if (testCase.separator) {
+        if ("separator" in testCase) {
           options.separator = testCase.separator;
         }
-        if (testCase.comment) {
+        if ("comment" in testCase) {
           options.comment = testCase.comment;
         }
-        if (testCase.skipFirstRow) {
+        if ("skipFirstRow" in testCase) {
           options.skipFirstRow = testCase.skipFirstRow;
         }
-        if (testCase.columns) {
+        if ("columns" in testCase) {
           options.columns = testCase.columns;
         }
+        if ("trimLeadingSpace" in testCase) {
+          options.trimLeadingSpace = testCase.trimLeadingSpace;
+        }
+        if ("lazyQuotes" in testCase) {
+          options.lazyQuotes = testCase.lazyQuotes;
+        }
+
         const readable = ReadableStream.from(testCase.input)
           .pipeThrough(new CsvParseStream(options));
 
