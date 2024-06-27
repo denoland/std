@@ -3,7 +3,7 @@
 // Copyright 2011-2015 by Vitaly Puzrin. All rights reserved. MIT license.
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import { YAMLError } from "../_error.ts";
+import { YamlError } from "../_error.ts";
 import { Mark } from "../_mark.ts";
 import type { Type } from "../type.ts";
 import * as common from "../_utils.ts";
@@ -161,8 +161,8 @@ for (let i = 0; i < 256; i++) {
   simpleEscapeMap[i] = simpleEscapeSequence(i);
 }
 
-function generateError(state: LoaderState, message: string): YAMLError {
-  return new YAMLError(
+function generateError(state: LoaderState, message: string): YamlError {
+  return new YamlError(
     message,
     new Mark(
       state.filename as string,
@@ -1797,7 +1797,7 @@ export function load(input: string, options?: LoaderStateOptions): unknown {
   if (documents.length === 1) {
     return documents[0];
   }
-  throw new YAMLError(
+  throw new YamlError(
     "expected a single document in the stream, but found more",
   );
 }

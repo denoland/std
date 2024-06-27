@@ -5,7 +5,7 @@
 
 import { assertEquals, assertThrows } from "@std/assert";
 import { stringify } from "./stringify.ts";
-import { YAMLError } from "./_error.ts";
+import { YamlError } from "./_error.ts";
 import { DEFAULT_SCHEMA, EXTENDED_SCHEMA } from "./schema/mod.ts";
 import { Type } from "./type.ts";
 
@@ -95,7 +95,7 @@ Deno.test({
     const object = { undefined: undefined };
     assertThrows(
       () => stringify(object),
-      YAMLError,
+      YamlError,
       "unacceptable kind of an object to dump",
     );
   },

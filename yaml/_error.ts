@@ -5,7 +5,7 @@
 
 import type { Mark } from "./_mark.ts";
 
-export class YAMLError extends Error {
+export class YamlError extends Error {
   constructor(
     message = "(unknown reason)",
     protected mark: Mark | string = "",

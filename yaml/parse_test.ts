@@ -6,7 +6,7 @@
 import { parse, parseAll } from "./parse.ts";
 import { assert, assertEquals, assertThrows } from "@std/assert";
 import { DEFAULT_SCHEMA, EXTENDED_SCHEMA } from "./schema/mod.ts";
-import { YAMLError } from "./_error.ts";
+import { YamlError } from "./_error.ts";
 import { Type } from "./type.ts";
 
 Deno.test({
@@ -62,7 +62,7 @@ Deno.test({
   name: "parse() throws with `!!js/*` yaml types with default schemas",
   fn() {
     const yaml = `undefined: !!js/undefined ~`;
-    assertThrows(() => parse(yaml), YAMLError, "unknown tag !");
+    assertThrows(() => parse(yaml), YamlError, "unknown tag !");
   },
 });
 
@@ -291,25 +291,25 @@ Deno.test({
     // map entry is not an object
     assertThrows(
       () => parse("--- !!omap\n- 1"),
-      YAMLError,
+      YamlError,
       "cannot resolve a node with !<tag:yaml.org,2002:omap> explicit tag",
     );
     // map entry is empty object
     assertThrows(
       () => parse("--- !!omap\n- {}"),
-      YAMLError,
+      YamlError,
       "cannot resolve a node with !<tag:yaml.org,2002:omap> explicit tag",
     );
     // map entry is an object with multiple keys
     assertThrows(
       () => parse("--- !!omap\n- foo: 1\n  bar: 2"),
-      YAMLError,
+      YamlError,
       "cannot resolve a node with !<tag:yaml.org,2002:omap> explicit tag",
     );
     // 2 map entries have the same key
     assertThrows(
       () => parse("--- !!omap\n- foo: 1\n- foo: 2"),
-      YAMLError,
+      YamlError,
       "cannot resolve a node with !<tag:yaml.org,2002:omap> explicit tag",
     );
   },
