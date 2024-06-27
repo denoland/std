@@ -5,7 +5,7 @@
 // This module is browser compatible.
 
 import { dump } from "./_dumper/dumper.ts";
-import { replaceSchemaNameWithSchemaClass } from "./mod.ts";
+import { replaceSchemaNameWithSchemaClass } from "./schema/mod.ts";
 
 /**
  * The option for strinigfy.
@@ -32,7 +32,7 @@ export type StringifyOptions = {
    *
    * Schema class or its name.
    */
-  schema?: "core" | "default" | "failsafe" | "json" | "extended" | unknown;
+  schema?: "core" | "default" | "failsafe" | "json" | "extended";
   /**
    * If true, sort keys when dumping YAML in ascending, ASCII character order.
    * If a function, use the function to sort the keys. (default: false)

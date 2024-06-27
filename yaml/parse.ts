@@ -5,7 +5,7 @@
 // This module is browser compatible.
 
 import { load, loadDocuments } from "./_loader/loader.ts";
-import { replaceSchemaNameWithSchemaClass } from "./mod.ts";
+import { replaceSchemaNameWithSchemaClass } from "./schema/mod.ts";
 
 /**
  * Options for parsing YAML.
@@ -23,7 +23,7 @@ export interface ParseOptions {
    *
    * Schema class or its name.
    */
-  schema?: "core" | "default" | "failsafe" | "json" | "extended" | unknown;
+  schema?: "core" | "default" | "failsafe" | "json" | "extended";
   /** compatibility with JSON.parse behaviour. */
   json?: boolean;
   /** function to call on warning messages. */

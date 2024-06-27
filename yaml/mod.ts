@@ -19,7 +19,7 @@
  * - `binary` type is currently not stable.
  *
  * For further examples see https://github.com/nodeca/js-yaml/tree/master/examples.
- * @example
+ *
  * ```ts
  * import {
  *   parse,
@@ -49,5 +49,3 @@
 
 export * from "./parse.ts";
 export * from "./stringify.ts";
-export * from "./type.ts";
-export * from "./schema/mod.ts";
