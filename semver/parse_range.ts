@@ -9,7 +9,7 @@ import {
   parsePrerelease,
   XRANGE,
 } from "./_shared.ts";
-import { ALL, ANY, NONE } from "./constants.ts";
+import { ALL, ANY, NONE } from "./_constants.ts";
 import type { Comparator, Operator, Range } from "./types.ts";
 
 type ComparatorRegExpGroup = {
