@@ -18,11 +18,7 @@ export interface ParseOptions {
   listener?: ((...args: any[]) => void) | null;
   /** string to be used as a file path in error/warning messages. */
   filename?: string;
-  /**
-   * Specifies a schema to use.
-   *
-   * Schema class or its name.
-   */
+  /** Name of the schema to use.*/
   schema?: "core" | "default" | "failsafe" | "json" | "extended";
   /** compatibility with JSON.parse behaviour. */
   json?: boolean;

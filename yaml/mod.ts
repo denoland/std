@@ -12,9 +12,6 @@
  * If your YAML contains multiple documents in it, you can use {@linkcode parseAll} for
  * handling it.
  *
- * To handle `regexp`, and `undefined` types, use {@linkcode EXTENDED_SCHEMA}.
- * You can also use custom types by extending schemas.
- *
  * ## :warning: Limitations
  * - `binary` type is currently not stable.
  *

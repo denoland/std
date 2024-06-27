@@ -27,11 +27,7 @@ export type StringifyOptions = {
   flowLevel?: number;
   /** Each tag may have own set of styles.	- "tag" => "style" map. */
   styles?: Record<string, "lowercase" | "uppercase" | "camelcase" | "decimal">;
-  /**
-   * Specifies a schema to use.
-   *
-   * Schema class or its name.
-   */
+  /** Name of the schema to use. */
   schema?: "core" | "default" | "failsafe" | "json" | "extended";
   /**
    * If true, sort keys when dumping YAML in ascending, ASCII character order.
