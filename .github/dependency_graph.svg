@@ -84,7 +84,7 @@
 <!-- csv -->
 <g id="node10" class="node">
 <title>csv</title>
-<ellipse fill="none" stroke="black" cx="36" cy="-252" rx="36" ry="36"/>
+<ellipse fill="lightgreen" stroke="black" cx="36" cy="-252" rx="36" ry="36"/>
 <text text-anchor="middle" x="36" y="-247.8" font-family="Times,serif" font-size="14.00">csv</text>
 </g>
 <!-- streams -->
