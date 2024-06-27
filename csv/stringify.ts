@@ -297,6 +297,7 @@ function getValuesFromItem(
  *
  * @param data The source data to stringify. It's an array of items which are
  * plain objects or arrays.
+ * @param options Options for the stringification.
  * @returns A CSV string.
  */
 export function stringify(
