@@ -4,8 +4,8 @@
   "exports": {
     ".": "./mod.ts",
     "./parse": "./parse.ts",
-    "./parse-stream": "./csv_parse_stream.ts",
+    "./parse-stream": "./parse_stream.ts",
     "./stringify": "./stringify.ts",
-    "./stringify-stream": "./csv_stringify_stream.ts"
+    "./stringify-stream": "./stringify_stream.ts"
   }
 }
