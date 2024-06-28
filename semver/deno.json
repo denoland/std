@@ -3,7 +3,6 @@
   "version": "0.224.3",
   "exports": {
     ".": "./mod.ts",
-    "./can-parse": "./can_parse.ts",
     "./compare": "./compare.ts",
     "./difference": "./difference.ts",
     "./equals": "./equals.ts",

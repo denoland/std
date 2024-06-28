@@ -290,7 +290,6 @@ export * from "./range_intersects.ts";
 export * from "./types.ts";
 export * from "./try_parse_range.ts";
 export * from "./is_range.ts";
-export * from "./can_parse.ts";
 export * from "./try_parse.ts";
 export * from "./format_range.ts";
 export * from "./equals.ts";
