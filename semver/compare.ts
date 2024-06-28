@@ -8,12 +8,12 @@ import {
 } from "./_shared.ts";
 
 /**
- * Compare two semantic version objects.
+ * Compare two SemVers.
  *
  * Returns `0` if `s0 === s1`, or `1` if `s0` is greater, or `-1` if `s1` is
  * greater.
  *
- * Sorts in ascending order if passed to `Array.sort()`,
+ * Sorts in ascending order if passed to {@linkcode Array.sort}.
  *
  * @example Usage
  * ```ts
