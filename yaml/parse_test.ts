@@ -294,3 +294,26 @@ Deno.test({
     );
   },
 });
+
+Deno.test("parse() handles escaped strings in double quotes", () => {
+  assertEquals(parse('"\\"bar\\""'), '"bar"');
+  assertEquals(parse('"\\x30\\x31"'), "01");
+  assertEquals(parse('"\\\na"'), "a");
+  assertEquals(parse('"\\x4a"'), "J");
+  assertEquals(parse('"\\u0041"'), "A");
+  assertEquals(parse('"\\U00000041"'), "A");
+  assertEquals(parse('"\\U0001F431"'), "🐱");
+
+  assertThrows(
+    // invalid hex character
+    () => parse('"\\xyz"'),
+    YamlError,
+    'expected hexadecimal character at line 1, column 4:\n    "\\xyz"\n       ^',
+  );
+  assertThrows(
+    // invalid escape sequence
+    () => parse('"\\X30"'),
+    YamlError,
+    'unknown escape sequence at line 1, column 3:\n    "\\X30"\n      ^',
+  );
+});
