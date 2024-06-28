@@ -128,7 +128,7 @@
  *
  * ```ts
  * import { increment, parse } from "@std/semver";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert/equals";
  *
  * assertEquals(increment(parse("1.2.3"), "prerelease", "alpha"), parse("1.2.4-alpha.0"));
  * ```
