@@ -336,7 +336,7 @@ export interface ParseOptions {
  * @example Usage
  * ```ts
  * import { parse } from "@std/csv/parse";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert/equals";
  *
  * const string = "a,b,c\nd,e,f";
  *
@@ -354,7 +354,7 @@ export function parse(input: string): string[][];
  * @example Usage
  * ```ts
  * import { parse } from "@std/csv/parse";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert/equals";
  *
  * const string = "a,b,c\nd,e,f";
  *

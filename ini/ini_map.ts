@@ -44,7 +44,7 @@ export type ReviverFunction = (
  * @example Usage
  * ```ts
  * import { IniMap } from "@std/ini";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert/equals";
  *
  * const ini = new IniMap();
  * ini.set("section1", "keyA", 100)
@@ -185,7 +185,7 @@ export class IniMap {
    * @example Usage
    * ```ts
    * import { IniMap } from "@std/ini";
-   * import { assertEquals } from "@std/assert/assert-equals";
+   * import { assertEquals } from "@std/assert/equals";
    *
    * const ini = new IniMap();
    * ini.set("section1", "keyA", 100)
@@ -213,7 +213,7 @@ export class IniMap {
    * @example Usage
    * ```ts
    * import { IniMap } from "@std/ini/ini-map";
-   * import { assertEquals } from "@std/assert/assert-equals";
+   * import { assertEquals } from "@std/assert/equals";
    *
    * const iniMap = IniMap.from(`
    * key0 = value0
@@ -246,7 +246,7 @@ export class IniMap {
    * @example Usage
    * ```ts
    * import { IniMap } from "@std/ini/ini-map";
-   * import { assertEquals } from "@std/assert/assert-equals";
+   * import { assertEquals } from "@std/assert/equals";
    *
    * const iniMap = IniMap.from(`
    * key0 = value0
@@ -266,7 +266,7 @@ export class IniMap {
    * @example Usage
    * ```ts
    * import { IniMap } from "@std/ini/ini-map";
-   * import { assertEquals } from "@std/assert/assert-equals";
+   * import { assertEquals } from "@std/assert/equals";
    *
    * const iniMap = IniMap.from(`
    * // Hey
@@ -295,7 +295,7 @@ export class IniMap {
    * @example Usage
    * ```ts
    * import { IniMap } from "@std/ini/ini-map";
-   * import { assertEquals } from "@std/assert/assert-equals";
+   * import { assertEquals } from "@std/assert/equals";
    *
    * const iniMap = IniMap.from(`
    * key0 = value0
@@ -348,7 +348,7 @@ export class IniMap {
    * @example Usage
    * ```ts
    * import { IniMap } from "@std/ini/ini-map";
-   * import { assertEquals } from "@std/assert/assert-equals";
+   * import { assertEquals } from "@std/assert/equals";
    *
    * const iniMap = IniMap.from(`
    * key0 = value0
@@ -381,7 +381,7 @@ export class IniMap {
    * @example Usage
    * ```ts
    * import { IniMap } from "@std/ini/ini-map";
-   * import { assertEquals } from "@std/assert/assert-equals";
+   * import { assertEquals } from "@std/assert/equals";
    *
    * const iniMap = IniMap.from(`
    * key0 = value0
@@ -435,7 +435,7 @@ export class IniMap {
    * @example Usage
    * ```ts
    * import { IniMap } from "@std/ini/ini-map";
-   * import { assertEquals } from "@std/assert/assert-equals";
+   * import { assertEquals } from "@std/assert/equals";
    *
    * const iniMap = IniMap.from(`
    * key0 = value0
@@ -459,7 +459,7 @@ export class IniMap {
    * @example Usage
    * ```ts
    * import { IniMap } from "@std/ini/ini-map";
-   * import { assertEquals } from "@std/assert/assert-equals";
+   * import { assertEquals } from "@std/assert/equals";
    *
    * const iniMap = IniMap.from(`
    * key0 = value0
@@ -545,7 +545,7 @@ export class IniMap {
    * @example Usage
    * ```ts
    * import { IniMap } from "@std/ini/ini-map";
-   * import { assertEquals } from "@std/assert/assert-equals";
+   * import { assertEquals } from "@std/assert/equals";
    *
    * const iniMap = IniMap.from(`
    * key0 = value0
@@ -582,7 +582,7 @@ export class IniMap {
    * @example Usage
    * ```ts
    * import { IniMap } from "@std/ini/ini-map";
-   * import { assertEquals } from "@std/assert/assert-equals";
+   * import { assertEquals } from "@std/assert/equals";
    *
    * const iniMap = IniMap.from(`
    * key0 = value0
@@ -656,7 +656,7 @@ export class IniMap {
    * @example Usage
    * ```ts
    * import { IniMap } from "@std/ini/ini-map";
-   * import { assertEquals } from "@std/assert/assert-equals";
+   * import { assertEquals } from "@std/assert/equals";
    *
    * const iniMap = IniMap.from(`
    * key0 = value0
@@ -819,7 +819,7 @@ export class IniMap {
    * @example Usage
    * ```ts
    * import { IniMap } from "@std/ini/ini-map";
-   * import { assertEquals } from "@std/assert/assert-equals";
+   * import { assertEquals } from "@std/assert/equals";
    *
    * const iniMap = IniMap.from(`
    * key0 = value0
@@ -881,7 +881,7 @@ export class IniMap {
    * @example Usage
    * ```ts
    * import { IniMap } from "@std/ini/ini-map";
-   * import { assertEquals } from "@std/assert/assert-equals";
+   * import { assertEquals } from "@std/assert/equals";
    *
    * const iniMap = IniMap.from(`
    * key0 = value0
@@ -915,7 +915,7 @@ export class IniMap {
    * @example Usage
    * ```ts
    * import { IniMap } from "@std/ini/ini-map";
-   * import { assertEquals } from "@std/assert/assert-equals";
+   * import { assertEquals } from "@std/assert/equals";
    *
    * const iniMap = IniMap.from(`
    * // Hey
@@ -981,7 +981,7 @@ export class IniMap {
    * @example Usage
    * ```ts
    * import { IniMap } from "@std/ini/ini-map";
-   * import { assertEquals } from "@std/assert/assert-equals";
+   * import { assertEquals } from "@std/assert/equals";
    *
    * const iniMap = new IniMap();
    *
@@ -1116,7 +1116,7 @@ export class IniMap {
    * @example Usage
    * ```ts
    * import { IniMap } from "@std/ini/ini-map";
-   * import { assertEquals } from "@std/assert/assert-equals";
+   * import { assertEquals } from "@std/assert/equals";
    *
    * const iniMap = IniMap.from(`
    * key0 = value0
@@ -1152,7 +1152,7 @@ export class IniMap {
    * @example Usage
    * ```ts
    * import { IniMap } from "@std/ini/ini-map";
-   * import { assertEquals } from "@std/assert/assert-equals";
+   * import { assertEquals } from "@std/assert/equals";
    *
    * const iniMap = IniMap.from({
    *   key0: "value0",

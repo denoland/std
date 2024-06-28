@@ -17,7 +17,7 @@
  *
  * ```ts
  * import { fromFileUrl } from "@std/path/posix/from-file-url";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert/equals";
  *
  * assertEquals(fromFileUrl("file:///home/foo"), "/home/foo");
  * ```
@@ -26,7 +26,7 @@
  *
  * ```ts
  * import { fromFileUrl } from "@std/path/windows/from-file-url";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert/equals";
  *
  * assertEquals(fromFileUrl("file:///home/foo"), "\\home\\foo");
  * ```

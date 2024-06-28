@@ -12,7 +12,7 @@
  *
  * ```ts
  * import { fromFileUrl } from "@std/path/posix";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert/equals";
  *
  * assertEquals(fromFileUrl("file:///home/foo"), "/home/foo");
  * ```

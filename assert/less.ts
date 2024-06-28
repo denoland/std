@@ -9,7 +9,7 @@ import { AssertionError } from "./error.ts";
  *
  * @example Usage
  * ```ts no-eval
- * import { assertLess } from "@std/assert/assert-less";
+ * import { assertLess } from "@std/assert/less";
  *
  * assertLess(1, 2); // Doesn't throw
  * assertLess(2, 1); // Throws

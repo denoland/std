@@ -64,7 +64,7 @@ export interface FormatOptions {
  * @example Basic usage
  * ```ts
  * import { format } from "@std/fmt/bytes";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert/equals";
  *
  * assertEquals(format(1337), "1.34 kB");
  * assertEquals(format(100), "100 B");
@@ -74,7 +74,7 @@ export interface FormatOptions {
  *
  * ```ts
  * import { format } from "@std/fmt/bytes";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert/equals";
  *
  * assertEquals(format(1337, { bits: true }), "1.34 kbit");
  * ```
@@ -83,7 +83,7 @@ export interface FormatOptions {
  *
  * ```ts
  * import { format } from "@std/fmt/bytes";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert/equals";
  *
  * assertEquals(format(42, { signed: true }), "+42 B");
  * assertEquals(format(-42, { signed: true }), "-42 B");
@@ -93,7 +93,7 @@ export interface FormatOptions {
  *
  * ```ts
  * import { format } from "@std/fmt/bytes";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert/equals";
  *
  * assertEquals(format(1337, { locale: "de" }), "1,34 kB");
  * ```

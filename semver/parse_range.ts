@@ -385,7 +385,7 @@ function parseOperatorRanges(string: string): Comparator[] {
  * @example Usage
  * ```ts
  * import { parseRange } from "@std/semver/parse-range";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert/equals";
  *
  * const range = parseRange(">=1.0.0 <2.0.0 || >=3.0.0");
  * assertEquals(range, [

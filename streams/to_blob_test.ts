@@ -1,7 +1,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
 import { assert } from "@std/assert/assert";
-import { assertEquals } from "@std/assert/assert-equals";
+import { assertEquals } from "@std/assert/equals";
 import { toBlob } from "./to_blob.ts";
 
 Deno.test("toBlob()", async () => {

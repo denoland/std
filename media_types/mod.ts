@@ -15,7 +15,7 @@
  *
  * ```ts
  * import { contentType, allExtensions, getCharset } from "@std/media-types";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert/equals";
  *
  * assertEquals(allExtensions("application/json"), ["json", "map"]);
  *

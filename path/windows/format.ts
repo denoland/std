@@ -10,7 +10,7 @@ import type { FormatInputPathObject } from "../_interface.ts";
  * @example Usage
  * ```ts
  * import { format } from "@std/path/windows/format";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert/equals";
  *
  * const path = format({
  *   root: "C:\\",

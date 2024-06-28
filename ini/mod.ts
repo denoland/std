@@ -13,7 +13,7 @@
  *
  * ```ts
  * import * as ini from "@std/ini";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert/equals";
  *
  * const iniFile = `# Example configuration file
  * Global Key=Some data here
@@ -60,7 +60,7 @@
  *
  * ```ts
  * import { IniMap } from "@std/ini/ini-map";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert/equals";
  *
  * const ini = new IniMap();
  * ini.set("section1", "keyA", 100);
@@ -81,7 +81,7 @@
  *
  * ```ts
  * import { IniMap } from "@std/ini/ini-map";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert/equals";
  *
  * const iniFile = `# Example of key/value arrays
  * [section1]

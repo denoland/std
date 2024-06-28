@@ -33,7 +33,7 @@
  *
  * ```ts
  * import { decodeTime, ulid } from "@std/ulid";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert/equals";
  *
  * const timestamp = 150_000;
  * const ulidString = ulid(timestamp);
@@ -62,7 +62,7 @@ import {
  * @example Decode the time from a ULID
  * ```ts
  * import { decodeTime, ulid } from "@std/ulid";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert/equals";
  *
  * const timestamp = 150_000;
  * const ulidString = ulid(timestamp);

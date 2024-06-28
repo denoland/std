@@ -14,7 +14,7 @@
  * @example Basic usage
  * ```ts
  * import { distinct } from "@std/collections/distinct";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert/equals";
  *
  * const numbers = [3, 2, 5, 2, 5];
  * const distinctNumbers = distinct(numbers);

@@ -9,7 +9,7 @@ import { AssertionError } from "./error.ts";
  *
  * @example Usage
  * ```ts no-eval
- * import { assertStrictEquals } from "@std/assert/assert-strict-equals";
+ * import { assertStrictEquals } from "@std/assert/strict-equals";
  *
  * const a = {};
  * const b = a;

@@ -71,7 +71,7 @@ export type StringifyOptions = {
  * @example Usage
  * ```ts
  * import { stringify } from "@std/yaml/stringify";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert/equals";
  *
  * const data = { id: 1, name: "Alice" };
  * const yaml = stringify(data);

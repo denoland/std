@@ -13,7 +13,7 @@ import type {
   MatcherKey,
   Matchers,
 } from "./_types.ts";
-import { AssertionError } from "@std/assert/assertion-error";
+import { AssertionError } from "@std/assert";
 import {
   addCustomEqualityTesters,
   getCustomEqualityTesters,

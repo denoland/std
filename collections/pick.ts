@@ -16,7 +16,7 @@
  * @example Basic usage
  * ```ts
  * import { pick } from "@std/collections/pick";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert/equals";
  *
  * const obj = { a: 5, b: 6, c: 7, d: 8 };
  * const picked = pick(obj, ["a", "c"]);

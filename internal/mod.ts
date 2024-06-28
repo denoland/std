@@ -7,7 +7,7 @@
  *
  * ```ts
  * import { diff, diffStr, buildMessage } from "@std/internal";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert/equals";
  *
  * const a = [1, 2, 3];
  * const b = [1, 2, 4];

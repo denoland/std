@@ -15,7 +15,7 @@
  *   lessThan,
  *   format
  * } from "@std/semver";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert/equals";
  *
  * const semver = parse("1.2.3");
  * assertEquals(semver, {

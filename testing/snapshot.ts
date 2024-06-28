@@ -141,8 +141,8 @@ import { parse } from "@std/path/parse";
 import { resolve } from "@std/path/resolve";
 import { toFileUrl } from "@std/path/to-file-url";
 import { ensureFile, ensureFileSync } from "@std/fs/ensure-file";
-import { assert } from "@std/assert/assert";
-import { AssertionError } from "@std/assert/assertion-error";
+import { assert } from "@std/assert";
+import { AssertionError } from "@std/assert";
 import { equal } from "@std/assert/equal";
 import { diff } from "@std/internal/diff";
 import { diffStr } from "@std/internal/diff-str";
@@ -204,7 +204,7 @@ function getErrorMessage(message: string, options: SnapshotOptions) {
  * @example Usage
  * ```ts
  * import { serialize } from "@std/testing/snapshot";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * assertEquals(serialize({ foo: 42 }), "{\n  foo: 42,\n}")
  * ```
