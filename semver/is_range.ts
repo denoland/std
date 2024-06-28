@@ -2,7 +2,7 @@
 // This module is browser compatible.
 import type { Comparator, Range } from "./types.ts";
 import { OPERATORS } from "./_constants.ts";
-import { ALL, NONE } from "./constants.ts";
+import { ALL, NONE } from "./_constants.ts";
 import { isSemVer } from "./is_semver.ts";
 
 function isComparator(value: unknown): value is Comparator {

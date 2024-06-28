@@ -277,7 +277,6 @@
  * @module
  */
 export * from "./compare.ts";
-export * from "./constants.ts";
 export * from "./difference.ts";
 export * from "./format.ts";
 export * from "./satisfies.ts";

@@ -10,7 +10,7 @@ import { replaceSchemaNameWithSchemaClass } from "./mod.ts";
 /**
  * The option for strinigfy.
  */
-export type DumpOptions = {
+export type StringifyOptions = {
   /** Indentation width to use (in spaces). */
   indent?: number;
   /** When true, will not add an indentation level to array elements */
@@ -85,7 +85,7 @@ export type DumpOptions = {
  */
 export function stringify(
   data: unknown,
-  options?: DumpOptions,
+  options?: StringifyOptions,
 ): string {
   replaceSchemaNameWithSchemaClass(options);
   // deno-lint-ignore no-explicit-any
