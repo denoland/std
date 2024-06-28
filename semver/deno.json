@@ -5,7 +5,6 @@
     ".": "./mod.ts",
     "./can-parse": "./can_parse.ts",
     "./compare": "./compare.ts",
-    "./constants": "./constants.ts",
     "./difference": "./difference.ts",
     "./equals": "./equals.ts",
     "./format": "./format.ts",

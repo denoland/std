@@ -149,28 +149,8 @@ regexp: !!js/regexp bar
         regexp: /bar/,
       },
     ];
-    const mockCallback = () => {
-      let count = 0;
-      const fn = () => {
-        count++;
-      };
-      const callback = {
-        calls() {
-          return count;
-        },
-        fn,
-      };
-      return callback;
-    };
 
     assertEquals(parseAll(yaml, { schema: EXTENDED_SCHEMA }), expected);
-
-    const callback = mockCallback();
-    assertEquals(
-      parseAll(yaml, callback.fn, { schema: EXTENDED_SCHEMA }),
-      undefined,
-    );
-    assertEquals(callback.calls(), 2);
   },
 });
 
