@@ -1,6 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import { stripAnsiCode } from "@std/fmt/colors";
-import { dirname, fromFileUrl, join, toFileUrl } from "@std/path";
+import { join } from "@std/path";
 import {
   assert,
   assertInstanceOf,
@@ -10,10 +10,7 @@ import {
 } from "@std/assert";
 import { assertSnapshot, createAssertSnapshot, serialize } from "./snapshot.ts";
 
-const SNAPSHOT_MODULE_URL = toFileUrl(join(
-  dirname(fromFileUrl(import.meta.url)),
-  "snapshot.ts",
-));
+const SNAPSHOT_MODULE_URL = new URL(import.meta.resolve("./snapshot.ts"));
 
 function formatTestOutput(string: string) {
   // Strip colors and obfuscate any timings
@@ -324,7 +321,7 @@ Deno.test("assertSnapshot() - options", async (t) => {
         });
       `);
 
-      const { snapshot } = await import(toFileUrl(snapshotFilePath).toString());
+      const { snapshot } = await import(snapshotFilePath);
 
       await assertSnapshot(t, snapshot[`${snapshotName} 1`]);
       await assertSnapshot(t, formatTestOutput(result.output));
