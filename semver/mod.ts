@@ -123,7 +123,7 @@
  *
  * #### Prerelease Identifiers
  *
- * The method {@linkcode incremenet} takes an additional `identifier` string
+ * The method {@linkcode increment} takes an additional `identifier` string
  * argument that will append the value of the string as a prerelease identifier:
  *
  * ```ts
