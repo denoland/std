@@ -24,7 +24,7 @@ export interface CsvStringifyStreamOptions {
  *
  * @example Usage
  * ```ts no-assert
- * import { CsvStringifyStream } from "@std/csv/csv-stringify-stream";
+ * import { CsvStringifyStream } from "@std/csv/stringify-stream";
  *
  * const path = await Deno.makeTempFile();
  *
@@ -54,7 +54,7 @@ export class CsvStringifyStream<TOptions extends CsvStringifyStreamOptions>
    *
    * @example Usage
    * ```ts no-assert
-   * import { CsvStringifyStream } from "@std/csv/csv-stringify-stream";
+   * import { CsvStringifyStream } from "@std/csv/stringify-stream";
    *
    * const path = await Deno.makeTempFile();
    *
