@@ -43,8 +43,8 @@ export class LoaderState extends State {
 
   version?: string | null;
   checkLineBreaks?: boolean;
-  tagMap?: ArrayObject;
-  anchorMap?: ArrayObject;
+  tagMap: ArrayObject = Object.create(null);
+  anchorMap: ArrayObject = Object.create(null);
   tag?: string | null;
   anchor?: string | null;
   kind?: string | null;

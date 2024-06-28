@@ -108,7 +108,7 @@ export type RowType<T> = T extends undefined ? string[]
  *
  * @example Usage
  * ```ts no-assert
- * import { CsvParseStream } from "@std/csv/csv-parse-stream";
+ * import { CsvParseStream } from "@std/csv/parse-stream";
  *
  * const source = ReadableStream.from([
  *   "name,age",
@@ -139,7 +139,7 @@ export class CsvParseStream<
    *
    * @example Usage
    * ```ts no-assert
-   * import { CsvParseStream } from "@std/csv/csv-parse-stream";
+   * import { CsvParseStream } from "@std/csv/parse-stream";
    *
    * const source = ReadableStream.from([
    *   "name,age",
@@ -232,7 +232,7 @@ export class CsvParseStream<
    *
    * @example Usage
    * ```ts no-assert
-   * import { CsvParseStream } from "@std/csv/csv-parse-stream";
+   * import { CsvParseStream } from "@std/csv/parse-stream";
    *
    * const source = ReadableStream.from([
    *   "name,age",
@@ -258,7 +258,7 @@ export class CsvParseStream<
    *
    * @example Usage
    * ```ts no-assert
-   * import { CsvParseStream } from "@std/csv/csv-parse-stream";
+   * import { CsvParseStream } from "@std/csv/parse-stream";
    *
    * const source = ReadableStream.from([
    *   "name,age",
