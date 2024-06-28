@@ -36,7 +36,7 @@ function bumpPrerelease(
 }
 
 /**
- * Returns the new version resulting from an increment by release type.
+ * Returns the new SemVer resulting from an increment by release type.
  *
  * `premajor`, `preminor` and `prepatch` will bump the version up to the next version,
  * based on the type, and will also add prerelease metadata.
