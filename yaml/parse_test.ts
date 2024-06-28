@@ -439,3 +439,12 @@ hello: world`),
     "ill-formed tag prefix (second argument) of the TAG directive at line 2, column 1:\n    ---\n    ^",
   );
 });
+
+Deno.test("parse() throws with invalid strings", () => {
+  assertThrows(() => parse(`"`), YamlError, "unexpected end of the stream");
+  assertThrows(
+    () => parse(`"\x08"`),
+    YamlError,
+    'expected valid JSON character at line 1, column 3:\n    "\b"\n      ^',
+  );
+});
