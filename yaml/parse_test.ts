@@ -10,9 +10,7 @@ import {
   assertInstanceOf,
   assertThrows,
 } from "@std/assert";
-import { DEFAULT_SCHEMA, EXTENDED_SCHEMA } from "./schema/mod.ts";
 import { YamlError } from "./_error.ts";
-import { Type } from "./type.ts";
 import { assertSpyCall, spy } from "@std/testing/mock";
 
 Deno.test({
@@ -91,7 +89,6 @@ Deno.test({
       undefined: undefined,
     };
 
-    assertEquals(parse(yaml, { schema: EXTENDED_SCHEMA }), expected);
     assertEquals(parse(yaml, { schema: "extended" }), expected);
   },
 });
@@ -108,32 +105,7 @@ function: !!js/function >
 ${func.toString().split("\n").map((line) => `  ${line}`).join("\n")}
 `;
 
-    assertThrows(() => parse(yaml, { schema: EXTENDED_SCHEMA }));
-  },
-});
-
-Deno.test({
-  name: "parse() handles `!*` yaml user defined types",
-  fn() {
-    const PointYamlType = new Type("!point", {
-      kind: "sequence",
-      resolve(data) {
-        return data !== null && data?.length === 3;
-      },
-      construct(data) {
-        const [x, y, z] = data;
-        return { x, y, z };
-      },
-    });
-    const SPACE_SCHEMA = DEFAULT_SCHEMA.extend({ explicit: [PointYamlType] });
-
-    const yaml = `
-      point: !point [1, 2, 3]
-    `;
-
-    assertEquals(parse(yaml, { schema: SPACE_SCHEMA }), {
-      point: { x: 1, y: 2, z: 3 },
-    });
+    assertThrows(() => parse(yaml, { schema: "extended" }));
   },
 });
 
@@ -156,7 +128,7 @@ regexp: !!js/regexp bar
       },
     ];
 
-    assertEquals(parseAll(yaml, { schema: EXTENDED_SCHEMA }), expected);
+    assertEquals(parseAll(yaml, { schema: "extended" }), expected);
   },
 });
 

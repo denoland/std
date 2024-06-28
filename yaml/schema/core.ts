@@ -4,7 +4,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-import { Schema } from "../schema.ts";
+import { Schema } from "../_schema.ts";
 import { JSON_SCHEMA } from "./json.ts";
 
 /**
@@ -15,12 +15,3 @@ import { JSON_SCHEMA } from "./json.ts";
 export const CORE_SCHEMA: Schema = new Schema({
   include: [JSON_SCHEMA],
 });
-
-/**
- * Standard YAML's core schema.
- *
- * @see {@link http://www.yaml.org/spec/1.2/spec.html#id2804923}
- *
- * @deprecated This will be removed in 1.0.0. Use {@link CORE_SCHEMA} instead.
- */
-export const core = CORE_SCHEMA;
