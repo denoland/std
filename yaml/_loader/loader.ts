@@ -235,7 +235,7 @@ const directiveHandlers: DirectiveHandlers = {
       );
     }
 
-    if (state.tagMap && hasOwn(state.tagMap, handle)) {
+    if (hasOwn(state.tagMap, handle)) {
       return throwError(
         state,
         `there is a previously declared suffix for "${handle}" tag handle`,
@@ -249,9 +249,6 @@ const directiveHandlers: DirectiveHandlers = {
       );
     }
 
-    if (typeof state.tagMap === "undefined") {
-      state.tagMap = Object.create(null) as common.ArrayObject;
-    }
     state.tagMap[handle] = prefix;
   },
 };
@@ -744,11 +741,7 @@ function readFlowCollection(state: LoaderState, nodeIndent: number): boolean {
     return false;
   }
 
-  if (
-    state.anchor !== null &&
-    typeof state.anchor !== "undefined" &&
-    typeof state.anchorMap !== "undefined"
-  ) {
+  if (state.anchor !== null && typeof state.anchor !== "undefined") {
     state.anchorMap[state.anchor] = result;
   }
 
@@ -1017,11 +1010,7 @@ function readBlockSequence(state: LoaderState, nodeIndent: number): boolean {
   const anchor = state.anchor;
   const result: unknown[] = [];
 
-  if (
-    state.anchor !== null &&
-    typeof state.anchor !== "undefined" &&
-    typeof state.anchorMap !== "undefined"
-  ) {
+  if (state.anchor !== null && typeof state.anchor !== "undefined") {
     state.anchorMap[state.anchor] = result;
   }
 
@@ -1093,11 +1082,7 @@ function readBlockMapping(
   let detected = false;
   let ch: number;
 
-  if (
-    state.anchor !== null &&
-    typeof state.anchor !== "undefined" &&
-    typeof state.anchorMap !== "undefined"
-  ) {
+  if (state.anchor !== null && typeof state.anchor !== "undefined") {
     state.anchorMap[state.anchor] = result;
   }
 
@@ -1361,10 +1346,7 @@ function readTagProperty(state: LoaderState): boolean {
 
   if (isVerbatim) {
     state.tag = tagName;
-  } else if (
-    typeof state.tagMap !== "undefined" &&
-    hasOwn(state.tagMap, tagHandle)
-  ) {
+  } else if (hasOwn(state.tagMap, tagHandle)) {
     state.tag = state.tagMap[tagHandle] + tagName;
   } else if (tagHandle === "!") {
     state.tag = `!${tagName}`;
@@ -1422,16 +1404,11 @@ function readAlias(state: LoaderState): boolean {
   }
 
   const alias = state.input.slice(_position, state.position);
-  if (
-    typeof state.anchorMap !== "undefined" &&
-    !hasOwn(state.anchorMap, alias)
-  ) {
+  if (!hasOwn(state.anchorMap, alias)) {
     return throwError(state, `unidentified alias "${alias}"`);
   }
 
-  if (typeof state.anchorMap !== "undefined") {
-    state.result = state.anchorMap[alias];
-  }
+  state.result = state.anchorMap[alias];
   skipSeparationSpace(state, true, -1);
   return true;
 }
@@ -1543,7 +1520,7 @@ function composeNode(
           }
         }
 
-        if (state.anchor !== null && typeof state.anchorMap !== "undefined") {
+        if (state.anchor !== null) {
           state.anchorMap[state.anchor] = state.result;
         }
       }
@@ -1572,7 +1549,7 @@ function composeNode(
           // `state.result` updated in resolver if matched
           state.result = type.construct(state.result);
           state.tag = type.tag;
-          if (state.anchor !== null && typeof state.anchorMap !== "undefined") {
+          if (state.anchor !== null) {
             state.anchorMap[state.anchor] = state.result;
           }
           break;
@@ -1598,7 +1575,7 @@ function composeNode(
         );
       } else {
         state.result = type.construct(state.result);
-        if (state.anchor !== null && typeof state.anchorMap !== "undefined") {
+        if (state.anchor !== null) {
           state.anchorMap[state.anchor] = state.result;
         }
       }
@@ -1623,8 +1600,6 @@ function readDocument(state: LoaderState) {
 
   state.version = null;
   state.checkLineBreaks = state.legacy;
-  state.tagMap = Object.create(null);
-  state.anchorMap = Object.create(null);
 
   while ((ch = state.input.charCodeAt(state.position)) !== 0) {
     skipSeparationSpace(state, true, -1);
