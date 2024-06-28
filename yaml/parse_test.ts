@@ -273,6 +273,57 @@ Deno.test({
   },
 });
 
+Deno.test("parse() handles anchors and aliases", () => {
+  assertEquals(
+    parse(`- &anchor Foo
+- *anchor`),
+    ["Foo", "Foo"],
+  );
+  assertEquals(
+    parse(`- &anchor 1
+- *anchor`),
+    [1, 1],
+  );
+  assertEquals(
+    parse(`- &anchor { Monday: 3, Tuesday: 4 }
+- *anchor`),
+    [{ Monday: 3, Tuesday: 4 }, { Monday: 3, Tuesday: 4 }],
+  );
+  assertEquals(
+    parse(`- &anchor
+  Monday: 3
+  Tuesday: 4
+- <<: *anchor
+  Wednesday: 5`),
+    [
+      { Monday: 3, Tuesday: 4 },
+      { Monday: 3, Tuesday: 4, Wednesday: 5 },
+    ],
+  );
+  assertEquals(
+    parse(`- &anchor !!binary "SGVsbG8="
+- *anchor`),
+    [
+      new Uint8Array([72, 101, 108, 108, 111]),
+      new Uint8Array([72, 101, 108, 108, 111]),
+    ],
+  );
+  assertThrows(
+    () =>
+      parse(`- &anchor Foo
+- *anchor2`),
+    YamlError,
+    'unidentified alias "anchor2" at line 2, column 11:\n    - *anchor2\n              ^',
+  );
+  assertThrows(
+    () =>
+      parse(`- &anchor Foo
+- *`),
+    YamlError,
+    "name of an alias node must contain at least one character at line 2, column 4:\n    - *\n       ^",
+  );
+});
+
 Deno.test("parse() handles escaped strings in double quotes", () => {
   assertEquals(parse('"\\"bar\\""'), '"bar"');
   assertEquals(parse('"\\x30\\x31"'), "01");
