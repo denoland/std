@@ -4,10 +4,16 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
 import { parse, parseAll } from "./parse.ts";
-import { assert, assertEquals, assertThrows } from "@std/assert";
+import {
+  assert,
+  assertEquals,
+  assertInstanceOf,
+  assertThrows,
+} from "@std/assert";
 import { DEFAULT_SCHEMA, EXTENDED_SCHEMA } from "./schema/mod.ts";
 import { YamlError } from "./_error.ts";
 import { Type } from "./type.ts";
+import { assertSpyCall, spy } from "@std/testing/mock";
 
 Deno.test({
   name: "parse() handles single document yaml string",
@@ -315,5 +321,121 @@ Deno.test("parse() handles escaped strings in double quotes", () => {
     () => parse('"\\X30"'),
     YamlError,
     'unknown escape sequence at line 1, column 3:\n    "\\X30"\n      ^',
+  );
+});
+
+Deno.test("parse() handles %YAML directive", () => {
+  assertEquals(
+    parse(`%YAML 1.2
+---
+hello: world`),
+    { hello: "world" },
+  );
+
+  assertThrows(
+    () =>
+      parse(`%YAML 1.2
+%YAML 1.2
+---
+hello: world`),
+    YamlError,
+    "duplication of %YAML directive at line 3, column 1:\n    ---\n    ^",
+  );
+  assertThrows(
+    () =>
+      parse(`%YAML 1.2 1.1
+---
+hello: world`),
+    YamlError,
+    "YAML directive accepts exactly one argument at line 2, column 1:\n    ---\n    ^",
+  );
+  assertThrows(
+    () =>
+      parse(`%YAML 1.2.3
+---
+hello: world`),
+    YamlError,
+    "ill-formed argument of the YAML directive at line 2, column 1:\n    ---\n    ^",
+  );
+  assertThrows(
+    () =>
+      parse(`%YAML 2.0
+---
+hello: world`),
+    YamlError,
+    "unacceptable YAML version of the document at line 2, column 1:\n    ---\n    ^",
+  );
+  assertEquals(
+    // The future 1.x version is acceptable
+    parse(`%YAML 1.3
+---
+hello: world`),
+    { hello: "world" },
+  );
+
+  {
+    const warningSpy = spy();
+    assertEquals(
+      parse(
+        `%YAML 1.3
+---
+hello: world`,
+        { onWarning: warningSpy },
+      ),
+      { hello: "world" },
+    );
+    assertSpyCall(warningSpy, 0);
+    const warning = warningSpy.calls[0]?.args[0];
+    assertEquals(
+      warning.message,
+      "unsupported YAML version of the document at line 2, column 1:\n    ---\n    ^",
+    );
+    assertInstanceOf(warning, YamlError);
+  }
+});
+
+Deno.test("parse() handles %TAG directive", () => {
+  assertEquals(
+    parse(`%TAG ! tag:example.com,2000:
+---
+hello: world`),
+    { hello: "world" },
+  );
+
+  assertThrows(
+    () =>
+      parse(`%TAG !
+---
+hello: world`),
+    YamlError,
+    "TAG directive accepts exactly two arguments at line 2, column 1:\n    ---\n    ^",
+  );
+
+  assertThrows(
+    () =>
+      parse(`%TAG abc tag:example.com,2000:
+---
+hello: world`),
+    YamlError,
+    "ill-formed tag handle (first argument) of the TAG directive at line 2, column 1:\n    ---\n    ^",
+  );
+
+  assertThrows(
+    () =>
+      parse(`%TAG ! tag:example.com,2000:
+%TAG ! tag:example.com,2000:
+---
+hello: world`),
+    YamlError,
+    'there is a previously declared suffix for "!" tag handle at line 3, column 1:\n    ---\n    ^',
+  );
+
+  assertThrows(
+    () =>
+      parse(`%TAG ! ,:
+---
+hello: world`),
+    YamlError,
+    "ill-formed tag prefix (second argument) of the TAG directive at line 2, column 1:\n    ---\n    ^",
   );
 });
