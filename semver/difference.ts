@@ -4,8 +4,8 @@ import type { ReleaseType, SemVer } from "./types.ts";
 import { compareIdentifier } from "./_shared.ts";
 
 /**
- * Returns difference between two versions by the release type,
- * or `undefined` if the versions are the same.
+ * Returns difference between two SemVers by the release type,
+ * or `undefined` if the SemVers are the same.
  *
  * @example Usage
  * ```ts

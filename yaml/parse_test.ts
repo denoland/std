@@ -4,10 +4,16 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
 import { parse, parseAll } from "./parse.ts";
-import { assert, assertEquals, assertThrows } from "@std/assert";
+import {
+  assert,
+  assertEquals,
+  assertInstanceOf,
+  assertThrows,
+} from "@std/assert";
 import { DEFAULT_SCHEMA, EXTENDED_SCHEMA } from "./schema/mod.ts";
 import { YamlError } from "./_error.ts";
 import { Type } from "./type.ts";
+import { assertSpyCall, spy } from "@std/testing/mock";
 
 Deno.test({
   name: "parse() handles single document yaml string",
@@ -293,4 +299,169 @@ Deno.test({
       "cannot resolve a node with !<tag:yaml.org,2002:omap> explicit tag",
     );
   },
+});
+
+Deno.test("parse() handles escaped strings in double quotes", () => {
+  assertEquals(parse('"\\"bar\\""'), '"bar"');
+  assertEquals(parse('"\\x30\\x31"'), "01");
+  assertEquals(parse('"\\\na"'), "a");
+  assertEquals(parse('"\\x4a"'), "J");
+  assertEquals(parse('"\\u0041"'), "A");
+  assertEquals(parse('"\\U00000041"'), "A");
+  assertEquals(parse('"\\U0001F431"'), "🐱");
+
+  assertThrows(
+    // invalid hex character
+    () => parse('"\\xyz"'),
+    YamlError,
+    'expected hexadecimal character at line 1, column 4:\n    "\\xyz"\n       ^',
+  );
+  assertThrows(
+    // invalid escape sequence
+    () => parse('"\\X30"'),
+    YamlError,
+    'unknown escape sequence at line 1, column 3:\n    "\\X30"\n      ^',
+  );
+});
+
+Deno.test("parse() handles %YAML directive", () => {
+  assertEquals(
+    parse(`%YAML 1.2
+---
+hello: world`),
+    { hello: "world" },
+  );
+
+  assertThrows(
+    () =>
+      parse(`%YAML 1.2
+%YAML 1.2
+---
+hello: world`),
+    YamlError,
+    "duplication of %YAML directive at line 3, column 1:\n    ---\n    ^",
+  );
+  assertThrows(
+    () =>
+      parse(`%YAML 1.2 1.1
+---
+hello: world`),
+    YamlError,
+    "YAML directive accepts exactly one argument at line 2, column 1:\n    ---\n    ^",
+  );
+  assertThrows(
+    () =>
+      parse(`%YAML 1.2.3
+---
+hello: world`),
+    YamlError,
+    "ill-formed argument of the YAML directive at line 2, column 1:\n    ---\n    ^",
+  );
+  assertThrows(
+    () =>
+      parse(`%YAML 2.0
+---
+hello: world`),
+    YamlError,
+    "unacceptable YAML version of the document at line 2, column 1:\n    ---\n    ^",
+  );
+  assertEquals(
+    // The future 1.x version is acceptable
+    parse(`%YAML 1.3
+---
+hello: world`),
+    { hello: "world" },
+  );
+
+  {
+    const warningSpy = spy();
+    assertEquals(
+      parse(
+        `%YAML 1.3
+---
+hello: world`,
+        { onWarning: warningSpy },
+      ),
+      { hello: "world" },
+    );
+    assertSpyCall(warningSpy, 0);
+    const warning = warningSpy.calls[0]?.args[0];
+    assertEquals(
+      warning.message,
+      "unsupported YAML version of the document at line 2, column 1:\n    ---\n    ^",
+    );
+    assertInstanceOf(warning, YamlError);
+  }
+});
+
+Deno.test("parse() handles %TAG directive", () => {
+  assertEquals(
+    parse(`%TAG ! tag:example.com,2000:
+---
+hello: world`),
+    { hello: "world" },
+  );
+
+  assertThrows(
+    () =>
+      parse(`%TAG !
+---
+hello: world`),
+    YamlError,
+    "TAG directive accepts exactly two arguments at line 2, column 1:\n    ---\n    ^",
+  );
+
+  assertThrows(
+    () =>
+      parse(`%TAG abc tag:example.com,2000:
+---
+hello: world`),
+    YamlError,
+    "ill-formed tag handle (first argument) of the TAG directive at line 2, column 1:\n    ---\n    ^",
+  );
+
+  assertThrows(
+    () =>
+      parse(`%TAG ! tag:example.com,2000:
+%TAG ! tag:example.com,2000:
+---
+hello: world`),
+    YamlError,
+    'there is a previously declared suffix for "!" tag handle at line 3, column 1:\n    ---\n    ^',
+  );
+
+  assertThrows(
+    () =>
+      parse(`%TAG ! ,:
+---
+hello: world`),
+    YamlError,
+    "ill-formed tag prefix (second argument) of the TAG directive at line 2, column 1:\n    ---\n    ^",
+  );
+});
+
+Deno.test("parse() throws with invalid strings", () => {
+  assertThrows(() => parse(`"`), YamlError, "unexpected end of the stream");
+  assertThrows(
+    () => parse(`"\x08"`),
+    YamlError,
+    'expected valid JSON character at line 1, column 3:\n    "\b"\n      ^',
+  );
+});
+
+Deno.test("parse() handles merge (<<) types", () => {
+  assertEquals(
+    parse(`<<: { a: 1, b: 2 }
+c: 3`),
+    { a: 1, b: 2, c: 3 },
+  );
+
+  assertThrows(
+    () =>
+      // number can't be used as merge value
+      parse(`<<: 1
+c: 3`),
+    YamlError,
+    "cannot merge mappings; the provided source object is unacceptable at line 1, column 6:\n    <<: 1\n         ^",
+  );
 });

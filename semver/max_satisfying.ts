@@ -5,7 +5,7 @@ import { satisfies } from "./satisfies.ts";
 import { greaterThan } from "./greater_than.ts";
 
 /**
- * Returns the highest version in the list that satisfies the range, or `undefined`
+ * Returns the highest SemVer in the list that satisfies the range, or `undefined`
  * if none of them do.
  *
  * @example Usage
