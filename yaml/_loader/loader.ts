@@ -1600,6 +1600,8 @@ function readDocument(state: LoaderState) {
 
   state.version = null;
   state.checkLineBreaks = state.legacy;
+  state.tagMap = Object.create(null);
+  state.anchorMap = Object.create(null);
 
   while ((ch = state.input.charCodeAt(state.position)) !== 0) {
     skipSeparationSpace(state, true, -1);
