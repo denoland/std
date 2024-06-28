@@ -72,7 +72,7 @@ Deno.test({
 
 Deno.test({
   name:
-    "parse() handles `!!js/*` yaml types woth extended schema while parsing",
+    "parse() handles `!!js/*` yaml types with extended schema while parsing",
   fn() {
     const yaml = `
       regexp:
@@ -419,6 +419,12 @@ Deno.test("parse() throws with invalid strings", () => {
     YamlError,
     'expected valid JSON character at line 1, column 3:\n    "\b"\n      ^',
   );
+  // non-printable char in block scalar
+  assertThrows(
+    () => parse(`foo: |\n  \x08`),
+    YamlError,
+    "the stream contains non-printable characters at line 2, column 4:\n      \b\n       ^",
+  );
 });
 
 Deno.test("parse() handles merge (<<) types", () => {
@@ -435,5 +441,90 @@ c: 3`),
 c: 3`),
     YamlError,
     "cannot merge mappings; the provided source object is unacceptable at line 1, column 6:\n    <<: 1\n         ^",
+  );
+});
+
+// 8.1. Block Scalar Styles
+// https://yaml.org/spec/1.2.2/#81-block-scalar-styles
+Deno.test("parse() handles block scalars", () => {
+  assertEquals(
+    parse(`foo: |
+  bar`),
+    { foo: "bar\n" },
+  );
+  assertEquals(
+    parse(`foo: |
+  bar
+
+  bar`),
+    { foo: "bar\n\nbar\n" },
+  );
+  assertEquals(
+    parse(`foo: |+
+  bar`),
+    { foo: "bar\n" },
+  );
+  assertEquals(
+    parse(`foo: |+
+bar: baz`),
+    { foo: "", bar: "baz" },
+  );
+  assertEquals(
+    parse(`foo: |-
+  bar`),
+    { foo: "bar" },
+  );
+  assertThrows(
+    () => parse(`foo: |++\n  bar`),
+    YamlError,
+    "repeat of a chomping mode identifier at line 1, column 8:\n    foo: |++\n           ^",
+  );
+  assertEquals(
+    parse(`foo: |1
+  bar`),
+    { foo: " bar\n" },
+  );
+  assertEquals(
+    parse(`foo: |
+
+  bar`),
+    { foo: "\nbar\n" },
+  );
+  assertEquals(
+    parse(`foo: | \n  bar`),
+    { foo: "bar\n" },
+  );
+  assertEquals(
+    parse(`foo: | # comment\n  bar`),
+    { foo: "bar\n" },
+  );
+  assertThrows(
+    () => parse(`foo: |0\n  bar`),
+    YamlError,
+    "bad explicit indentation width of a block scalar; it cannot be less than one at line 1, column 7:\n    foo: |0\n          ^",
+  );
+  assertThrows(
+    () => parse(`foo: |11\n  bar`),
+    YamlError,
+    "repeat of an indentation width identifier at line 1, column 8:\n    foo: |11\n           ^",
+  );
+
+  // folding style (>)
+  assertEquals(parse(`foo: >1\n  bar`), { foo: " bar\n" });
+  assertEquals(
+    parse(`foo: >
+
+  a
+  b
+
+  c
+    - d
+    - e
+
+  f
+  g
+
+  `),
+    { foo: "\na b\nc\n  - d\n  - e\n\nf g\n" },
   );
 });
