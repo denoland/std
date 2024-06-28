@@ -846,6 +846,8 @@ function readFlowCollection(state: LoaderState, nodeIndent: number): boolean {
   );
 }
 
+// Handles block scaler styles: e.g. '|', '>', '|-' and '>-'.
+// https://yaml.org/spec/1.2.2/#81-block-scalar-styles
 function readBlockScalar(state: LoaderState, nodeIndent: number): boolean {
   let chomping = CHOMPING_CLIP;
   let didReadContent = false;
