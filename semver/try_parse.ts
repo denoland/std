@@ -4,7 +4,7 @@ import type { SemVer } from "./types.ts";
 import { parse } from "./parse.ts";
 
 /**
- * Returns the parsed version, or undefined if it's not valid.
+ * Returns the parsed SemVer, or `undefined` if it's not valid.
  *
  * @example Usage
  * ```ts

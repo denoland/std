@@ -5,7 +5,7 @@ import { satisfies } from "./satisfies.ts";
 import { lessThan } from "./less_than.ts";
 
 /**
- * Returns the lowest version in the list that satisfies the range, or `undefined` if
+ * Returns the lowest SemVer in the list that satisfies the range, or `undefined` if
  * none of them do.
  *
  * @example Usage

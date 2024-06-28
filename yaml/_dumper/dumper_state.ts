@@ -3,9 +3,9 @@
 // Copyright 2011-2015 by Vitaly Puzrin. All rights reserved. MIT license.
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import type { Schema, SchemaDefinition } from "../schema.ts";
+import type { Schema, SchemaDefinition } from "../_schema.ts";
 import { State } from "../_state.ts";
-import type { StyleVariant, Type } from "../type.ts";
+import type { StyleVariant, Type } from "../_type.ts";
 import type { Any, ArrayObject } from "../_utils.ts";
 
 const { hasOwn } = Object;
