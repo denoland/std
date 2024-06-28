@@ -448,3 +448,20 @@ Deno.test("parse() throws with invalid strings", () => {
     'expected valid JSON character at line 1, column 3:\n    "\b"\n      ^',
   );
 });
+
+Deno.test("parse() handles merge (<<) types", () => {
+  assertEquals(
+    parse(`<<: { a: 1, b: 2 }
+c: 3`),
+    { a: 1, b: 2, c: 3 },
+  );
+
+  assertThrows(
+    () =>
+      // number can't be used as merge value
+      parse(`<<: 1
+c: 3`),
+    YamlError,
+    "cannot merge mappings; the provided source object is unacceptable at line 1, column 6:\n    <<: 1\n         ^",
+  );
+});
