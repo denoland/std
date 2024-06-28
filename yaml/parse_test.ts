@@ -303,6 +303,13 @@ Deno.test("parse() handles %YAML directive", () => {
 hello: world`),
     { hello: "world" },
   );
+  // you can write comments after the directive
+  assertEquals(
+    parse(`%YAML 1.2 # comment
+---
+hello: world`),
+    { hello: "world" },
+  );
 
   assertThrows(
     () =>
@@ -526,5 +533,82 @@ bar: baz`),
 
   `),
     { foo: "\na b\nc\n  - d\n  - e\n\nf g\n" },
+  );
+});
+
+Deno.test("parse() handles BOM at the beginning of the yaml", () => {
+  const yaml = "\uFEFFhello: world";
+  assertEquals(parse(yaml), { hello: "world" });
+});
+
+Deno.test("parse() throws if there are more than one document in the yaml", () => {
+  assertThrows(
+    () => parse("hello: world\n---\nfoo: bar"),
+    YamlError,
+    "expected a single document in the stream, but found more",
+  );
+});
+
+Deno.test("parse() throws when the directive name is empty", () => {
+  assertThrows(
+    () =>
+      parse(`% 1.2
+---
+hello: world`),
+    YamlError,
+    "directive name must not be less than one character in length at line 1, column 2:\n    % 1.2\n     ^",
+  );
+});
+
+Deno.test("parse() ignores unknown directive", () => {
+  assertEquals(
+    parse(`%FOOBAR 1.2
+---
+hello: world`),
+    { hello: "world" },
+  );
+});
+
+Deno.test("parse() handles document separator", () => {
+  assertEquals(
+    parse(`---
+hello: world
+...`),
+    { hello: "world" },
+  );
+});
+
+Deno.test("parse() show warning with non-ascii line breaks if YAML version is < 1.2", () => {
+  const warningSpy = spy();
+  assertEquals(
+    parse(
+      `%YAML 1.1
+---
+hello: world\r\nfoo: bar\x85`,
+      { onWarning: warningSpy },
+    ),
+    { hello: "world", foo: "bar\x85" },
+  );
+  assertSpyCall(warningSpy, 0);
+  const warning = warningSpy.calls[0]?.args[0];
+  assertEquals(
+    warning.message,
+    "non-ASCII line breaks are interpreted as content at line 5, column 1:\n    \n    ^",
+  );
+});
+
+Deno.test("parse() throws with directive only document", () => {
+  assertThrows(
+    () => parse(`%YAML 1.2`),
+    YamlError,
+    "directives end mark is expected at line 2, column 1:\n    \n    ^",
+  );
+});
+
+Deno.test("parse() throws with \0 in the middle of the document", () => {
+  assertThrows(
+    () => parse("hello: \0 world"),
+    YamlError,
+    "end of the stream or a document separator is expected at line 1, column 8:\n    hello: \n           ^",
   );
 });
