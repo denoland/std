@@ -300,7 +300,7 @@ function mergeMappings(
     );
   }
 
-  for (const key in Object.keys(source)) {
+  for (const key of Object.keys(source)) {
     if (!hasOwn(destination, key)) {
       Object.defineProperty(destination, key, {
         value: source[key],
