@@ -33,13 +33,9 @@ Deno.test({
     _str = contentType("text/html");
     _str = contentType("txt");
 
-    // @ts-expect-error: string | undefined is not assignable to string
     _str = contentType("text/plain; charset=ISO-8859-1");
-    // @ts-expect-error: string | undefined is not assignable to string
     _str = contentType("foo");
-    // @ts-expect-error: string | undefined is not assignable to string
     _str = contentType("file.json");
-    // @ts-expect-error: string | undefined is not assignable to string
     _str = contentType("application/foo");
   },
 });
