@@ -273,6 +273,36 @@ Deno.test({
   },
 });
 
+Deno.test("parse() handles !!pairs type", () => {
+  assertEquals(
+    parse(`!!pairs
+- Monday: 3
+- Tuesday: 4`),
+    [
+      ["Monday", 3],
+      ["Tuesday", 4],
+    ],
+  );
+  // empty pairs
+  assertEquals(
+    parse(`!!pairs`),
+    [],
+  );
+  // invalid pairs
+  assertThrows(
+    // pair is not an object
+    () => parse(`!!pairs\n- 1`),
+    YamlError,
+    "cannot resolve a node with !<tag:yaml.org,2002:pairs> explicit tag",
+  );
+  assertThrows(
+    // pair is object with multiple keys
+    () => parse(`!!pairs\n- { Monday: 3, Tuesday: 4 }`),
+    YamlError,
+    "cannot resolve a node with !<tag:yaml.org,2002:pairs> explicit tag",
+  );
+});
+
 Deno.test("parse() handles anchors and aliases", () => {
   assertEquals(
     parse(`- &anchor Foo
