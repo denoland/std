@@ -20,7 +20,7 @@ import { types } from "./_db.ts";
  * import { typeByExtension } from "@std/media-types/type-by-extension";
  * import { assertEquals } from "@std/assert/assert-equals";
  *
- * assertEquals(typeByExtension("js"), "application/javascript");
+ * assertEquals(typeByExtension("js"), "text/javascript");
  * assertEquals(typeByExtension(".HTML"), "text/html");
  * assertEquals(typeByExtension("foo"), undefined);
  * assertEquals(typeByExtension("file.json"), undefined);
