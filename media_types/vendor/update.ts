@@ -1,10 +1,13 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-const file = await Deno.open(new URL("./db.json", import.meta.url), {
-  write: true,
-});
 const response = await fetch(
   "https://raw.githubusercontent.com/jshttp/mime-db/master/db.json",
 );
 
-// Run `deno fmt` after the file is updated.
-await response.body?.pipeTo(file.writable);
+const db = await response.text();
+const result =
+  `// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
+// deno-fmt-ignore-file
+
+export default ${db.slice(0, -1)} as const;`;
+await Deno.writeTextFile(new URL("./db.ts", import.meta.url), result);

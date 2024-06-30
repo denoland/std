@@ -1,5 +1,5 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-import db from "./vendor/db.json" with { type: "json" };
+import db from "./vendor/db.ts";
 import type { DBEntry } from "./_util.ts";
 
 export type KeyOfDb = keyof typeof db;
