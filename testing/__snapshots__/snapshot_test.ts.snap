@@ -470,3 +470,26 @@ snapshot[`createAssertSnapshot() - options object - custom name 1`] = `This gree
 snapshot[`createAssertSnapshot() > message 1`] = `"This snapshot has failed as expected"`;
 
 snapshot[`createAssertSnapshot() - composite - custom Name 1`] = `This green text has had it's colours stripped`;
+
+snapshot[`assertSnapshot() - regression #5155 1`] = `
+"running 1 test from <tempDir>/test.ts
+Snapshot Test ... FAILED (--ms)
+
+ ERRORS 
+
+Snapshot Test => ../../../..<tempDir>/test.ts:4:12
+error: PermissionDenied: Missing write access to snapshot file (file://<path>). This is required because assertSnapshot was called in update mode. Please pass the --allow-write flag.
+        throw new Deno.errors.PermissionDenied(
+              ^
+    at AssertSnapshotContext.registerTeardown (file://<path>)
+    at async assertSnapshot (file://<path>)
+    at async file://<tempDir>/test.ts:5:9
+
+ FAILURES 
+
+Snapshot Test => ../../../..<tempDir>/test.ts:4:12
+
+FAILED | 0 passed | 1 failed (--ms)
+
+"
+`;
