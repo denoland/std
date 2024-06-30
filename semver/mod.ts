@@ -299,6 +299,3 @@ export * from "./greater_or_equal.ts";
 export * from "./less_than.ts";
 export * from "./less_than_range.ts";
 export * from "./less_or_equal.ts";
-
-/** The SemVer spec version */
-export const SEMVER_SPEC_VERSION = "2.0.0";

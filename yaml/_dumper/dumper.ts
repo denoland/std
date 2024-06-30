@@ -4,7 +4,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
 import { YamlError } from "../_error.ts";
-import type { RepresentFn } from "../type.ts";
+import type { RepresentFn } from "../_type.ts";
 import * as common from "../_utils.ts";
 import { DumperState, type DumperStateOptions } from "./dumper_state.ts";
 

@@ -6,7 +6,6 @@
 export { binary } from "./binary.ts";
 export { bool } from "./bool.ts";
 export { float } from "./float.ts";
-export { func } from "./function.ts";
 export { int } from "./int.ts";
 export { map } from "./map.ts";
 export { merge } from "./merge.ts";

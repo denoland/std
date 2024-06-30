@@ -5,7 +5,7 @@
 // This module is browser compatible.
 
 import { YamlError } from "./_error.ts";
-import type { KindType, Type } from "./type.ts";
+import type { KindType, Type } from "./_type.ts";
 import type { Any, ArrayObject } from "./_utils.ts";
 
 function compileList(
@@ -85,21 +85,6 @@ export class Schema implements SchemaDefinition {
       this.compiledExplicit,
     );
   }
-
-  /* Returns a new extended schema from current schema */
-  extend(definition: SchemaDefinition): Schema {
-    return new Schema({
-      implicit: [
-        ...new Set([...this.implicit, ...(definition?.implicit ?? [])]),
-      ],
-      explicit: [
-        ...new Set([...this.explicit, ...(definition?.explicit ?? [])]),
-      ],
-      include: [...new Set([...this.include, ...(definition?.include ?? [])])],
-    });
-  }
-
-  static create() {}
 }
 
 export interface SchemaDefinition {
