@@ -9,6 +9,8 @@ import type { Any } from "../_utils.ts";
 const _toString = Object.prototype.toString;
 
 function resolveYamlPairs(data: Any[][]): boolean {
+  if (data === null) return true;
+
   const result = Array.from({ length: data.length });
 
   for (const [index, pair] of data.entries()) {

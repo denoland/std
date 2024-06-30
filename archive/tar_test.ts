@@ -70,7 +70,7 @@ Deno.test("Tar() deflates tar archive", async function () {
 Deno.test("Tar() appends file with long name to tar archive", async function (): Promise<
   void
 > {
-  // 9 * 15 + 13 = 148 bytes
+  // 10 * 15 + 13 = 163 bytes
   const fileName = "long-file-name/".repeat(10) + "file-name.txt";
   const text = "hello tar world!";
 

@@ -12,7 +12,7 @@ import { relative as windowsRelative } from "./windows/relative.ts";
  * @example Usage
  * ```ts
  * import { relative } from "@std/path/relative";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * if (Deno.build.os === "windows") {
  *   const path = relative("C:\\foobar\\test\\aaa", "C:\\foobar\\impl\\bbb");

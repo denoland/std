@@ -1,4 +1,4 @@
-import { assertEquals } from "@std/assert/assert-equals";
+import { assertEquals } from "@std/assert";
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
 import { iterateReader, iterateReaderSync } from "./iterate_reader.ts";

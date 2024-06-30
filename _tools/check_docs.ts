@@ -420,8 +420,14 @@ function assertModuleDoc(document: DocNodeWithJsDoc<DocNodeModuleDoc>) {
 }
 
 function resolve(specifier: string, referrer: string): string {
-  if (specifier.startsWith("@std/") && specifier.split("/").length > 2) {
-    specifier = specifier.replace("@std/", "../").replaceAll("-", "_") + ".ts";
+  if (specifier.startsWith("@std/")) {
+    specifier = specifier.replace("@std/", "../").replaceAll("-", "_");
+    const parts = specifier.split("/");
+    if (parts.length === 2) {
+      specifier += "/mod.ts";
+    } else if (parts.length > 2) {
+      specifier += ".ts";
+    }
   }
   return new URL(specifier, referrer).href;
 }
