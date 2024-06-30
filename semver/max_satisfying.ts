@@ -11,7 +11,7 @@ import { greaterThan } from "./greater_than.ts";
  * @example Usage
  * ```ts
  * import { parse, parseRange, maxSatisfying } from "@std/semver";
- * import { assertEquals } from "@std/assert/equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const versions = ["1.2.3", "1.2.4", "1.3.0", "2.0.0", "2.1.0"].map(parse);
  * const range = parseRange(">=1.0.0 <2.0.0");

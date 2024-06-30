@@ -10,7 +10,7 @@ import { compareIdentifier } from "./_shared.ts";
  * @example Usage
  * ```ts
  * import { parse, difference } from "@std/semver";
- * import { assertEquals } from "@std/assert/equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const s0 = parse("1.2.3");
  * const s1 = parse("1.2.4");

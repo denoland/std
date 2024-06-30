@@ -14,7 +14,7 @@ import { parse } from "@std/toml/parse";
  * @example Extract TOML front matter
  * ```ts
  * import { extract } from "@std/front-matter/toml";
- * import { assertEquals } from "@std/assert/equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const output = `---toml
  * title = "Three dashes marks the spot"

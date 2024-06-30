@@ -17,7 +17,7 @@ export type { ParsedPath } from "./_interface.ts";
  * @example Usage
  * ```ts
  * import { parse } from "@std/path/parse";
- * import { assertEquals } from "@std/assert/equals";
+ * import { assertEquals } from "@std/assert";
  *
  * if (Deno.build.os === "windows") {
  *   const parsedPathObj = parse("C:\\path\\to\\script.ts");

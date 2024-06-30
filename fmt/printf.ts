@@ -6,7 +6,7 @@
  *
  * ```ts
  * import { sprintf } from "@std/fmt/printf";
- * import { assertEquals } from "@std/assert/equals";
+ * import { assertEquals } from "@std/assert";
  *
  * assertEquals(sprintf("%d", 9), "9");
  * assertEquals(sprintf("%o", 9), "11");

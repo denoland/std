@@ -13,7 +13,7 @@ const textDecoder = new TextDecoder();
  * @example Basic usage
  * ```ts
  * import { toText } from "@std/streams/to-text";
- * import { assertEquals } from "@std/assert/equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const stream = ReadableStream.from(["Hello, ", "world!"]);
  * assertEquals(await toText(stream), "Hello, world!");

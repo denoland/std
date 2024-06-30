@@ -11,7 +11,7 @@ const getWordDistance = levenshteinDistance;
  * @example Usage
  * ```ts
  * import { closestString } from "@std/text/closest-string";
- * import { assertEquals } from "@std/assert/equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const possibleWords = ["length", "size", "blah", "help"];
  * const suggestion = closestString("hep", possibleWords);

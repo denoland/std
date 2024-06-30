@@ -11,7 +11,7 @@ import { lessThan } from "./less_than.ts";
  * @example Usage
  * ```ts
  * import { parse, parseRange, minSatisfying } from "@std/semver";
- * import { assertEquals } from "@std/assert/equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const versions = ["0.2.0", "1.2.3", "1.3.0", "2.0.0", "2.1.0"].map(parse);
  * const range = parseRange(">=1.0.0 <2.0.0");

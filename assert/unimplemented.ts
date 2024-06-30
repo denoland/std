@@ -7,7 +7,7 @@ import { AssertionError } from "./error.ts";
  *
  * @example Usage
  * ```ts no-eval
- * import { unimplemented } from "@std/assert/unimplemented";
+ * import { unimplemented } from "@std/assert";
  *
  * unimplemented(); // Throws
  * ```

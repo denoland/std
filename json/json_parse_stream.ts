@@ -21,7 +21,7 @@ function isBrankString(str: string) {
  *
  * ```ts
  * import { JsonParseStream } from "@std/json/json-parse-stream";
- * import { assertEquals } from "@std/assert/equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const stream = ReadableStream.from([
  *   `{"foo":"bar"}\n`,
@@ -38,7 +38,7 @@ function isBrankString(str: string) {
  * ```ts
  * import { TextLineStream } from "@std/streams/text-line-stream";
  * import { JsonParseStream } from "@std/json/json-parse-stream";
- * import { assertEquals } from "@std/assert/equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const file = await Deno.open("json/testdata/test.jsonl");
  *
@@ -62,7 +62,7 @@ export class JsonParseStream extends TransformStream<string, JsonValue> {
    *
    * ```ts
    * import { JsonParseStream } from "@std/json/json-parse-stream";
-   * import { assertEquals } from "@std/assert/equals";
+   * import { assertEquals } from "@std/assert";
    *
    * const stream = ReadableStream.from([
    *   `{"foo":"bar"}`,
@@ -79,7 +79,7 @@ export class JsonParseStream extends TransformStream<string, JsonValue> {
    * ```ts
    * import { TextLineStream } from "@std/streams/text-line-stream";
    * import { JsonParseStream } from "@std/json/json-parse-stream";
-   * import { assertEquals } from "@std/assert/equals";
+   * import { assertEquals } from "@std/assert";
    *
    * const file = await Deno.open("json/testdata/test.jsonl");
    *

@@ -17,7 +17,7 @@ import { randomInteger } from "./_utils.ts";
  * @example Basic usage
  * ```ts
  * import { sample } from "@std/collections/sample";
- * import { assertArrayIncludes } from "@std/assert/array-includes";
+ * import { assertArrayIncludes } from "@std/assert";
  *
  * const numbers = [1, 2, 3, 4];
  * const random = sample(numbers);

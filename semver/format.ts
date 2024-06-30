@@ -23,7 +23,7 @@ function formatNumber(value: number) {
  * @example Usage
  * ```ts
  * import { format } from "@std/semver/format";
- * import { assertEquals } from "@std/assert/equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const semver = {
  *   major: 1,

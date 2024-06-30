@@ -13,7 +13,7 @@ import { AssertionError } from "./error.ts";
  *
  * @example Usage
  * ```ts no-eval
- * import { assertEquals } from "@std/assert/equals";
+ * import { assertEquals } from "@std/assert";
  *
  * assertEquals("world", "world"); // Doesn't throw
  * assertEquals("hello", "world"); // Throws

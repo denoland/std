@@ -2,7 +2,7 @@
 
 import type { MatcherContext, MatchResult } from "./_types.ts";
 import { AssertionError } from "@std/assert";
-import { equal } from "@std/assert/equal";
+import { equal } from "@std/assert";
 import { getMockCalls } from "./_mock_util.ts";
 import { inspectArg } from "./_inspect_args.ts";
 

@@ -319,7 +319,7 @@ export type ErrorStatus = ClientErrorStatus | ServerErrorStatus;
  * @example Usage
  * ```ts
  * import { isStatus } from "@std/http/status";
- * import { assert } from "@std/assert/assert";
+ * import { assert } from "@std/assert";
  *
  * assert(isStatus(404));
  * ```
@@ -337,7 +337,7 @@ export function isStatus(status: number): status is StatusCode {
  * @example Usage
  * ```ts
  * import { isInformationalStatus } from "@std/http/status";
- * import { assert } from "@std/assert/assert";
+ * import { assert } from "@std/assert";
  *
  * assert(isInformationalStatus(100));
  * ```
@@ -357,7 +357,7 @@ export function isInformationalStatus(
  * @example Usage
  * ```ts
  * import { isSuccessfulStatus } from "@std/http/status";
- * import { assert } from "@std/assert/assert";
+ * import { assert } from "@std/assert";
  *
  * assert(isSuccessfulStatus(200));
  * ```
@@ -377,7 +377,7 @@ export function isSuccessfulStatus(
  * @example Usage
  * ```ts
  * import { isRedirectStatus } from "@std/http/status";
- * import { assert } from "@std/assert/assert";
+ * import { assert } from "@std/assert";
  *
  * assert(isRedirectStatus(302));
  * ```
@@ -395,7 +395,7 @@ export function isRedirectStatus(status: number): status is RedirectStatus {
  * @example Usage
  * ```ts
  * import { isClientErrorStatus } from "@std/http/status";
- * import { assert } from "@std/assert/assert";
+ * import { assert } from "@std/assert";
  *
  * assert(isClientErrorStatus(404));
  * ```
@@ -415,7 +415,7 @@ export function isClientErrorStatus(
  * @example Usage
  * ```ts
  * import { isServerErrorStatus } from "@std/http/status";
- * import { assert } from "@std/assert/assert";
+ * import { assert } from "@std/assert";
  *
  * assert(isServerErrorStatus(502));
  * ```
@@ -435,7 +435,7 @@ export function isServerErrorStatus(
  * @example Usage
  * ```ts
  * import { isErrorStatus } from "@std/http/status";
- * import { assert } from "@std/assert/assert";
+ * import { assert } from "@std/assert";
  *
  * assert(isErrorStatus(502));
  * ```

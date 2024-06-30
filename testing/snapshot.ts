@@ -143,7 +143,7 @@ import { toFileUrl } from "@std/path/to-file-url";
 import { ensureFile, ensureFileSync } from "@std/fs/ensure-file";
 import { assert } from "@std/assert";
 import { AssertionError } from "@std/assert";
-import { equal } from "@std/assert/equal";
+import { equal } from "@std/assert";
 import { diff } from "@std/internal/diff";
 import { diffStr } from "@std/internal/diff-str";
 import { buildMessage } from "@std/internal/build-message";

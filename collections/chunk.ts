@@ -14,7 +14,7 @@
  * @example Basic usage
  * ```ts
  * import { chunk } from "@std/collections/chunk";
- * import { assertEquals } from "@std/assert/equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const words = [
  *   "lorem",
