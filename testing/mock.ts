@@ -73,7 +73,6 @@
  *   spy,
  * } from "@std/testing/mock";
  * import { assertEquals } from "@std/assert";
- * import { assertEquals } from "@std/assert";
  *
  * function multiply(a: number, b: number): number {
  *   return a * b;
@@ -126,7 +125,6 @@
  *   assertSpyCalls,
  *   spy,
  * } from "@std/testing/mock";
- * import { assertEquals } from "@std/assert";
  * import { assertEquals } from "@std/assert";
  *
  * function multiply(a: number, b: number): number {
@@ -190,7 +188,6 @@
  *   stub,
  * } from "@std/testing/mock";
  * import { assertEquals } from "@std/assert";
- * import { assertEquals } from "@std/assert";
  *
  * function randomInt(lowerBound: number, upperBound: number): number {
  *   return lowerBound + Math.floor(Math.random() * (upperBound - lowerBound));
@@ -241,7 +238,6 @@
  *   returnsNext,
  *   stub,
  * } from "@std/testing/mock";
- * import { assertEquals } from "@std/assert";
  * import { assertEquals } from "@std/assert";
  *
  * function randomInt(lowerBound: number, upperBound: number): number {
@@ -1056,7 +1052,6 @@ export function stub<
  * ```ts
  * import { stub } from "@std/testing/mock";
  * import { assertEquals } from "@std/assert";
- * import { assertEquals } from "@std/assert";
  *
  * const obj = {
  *   method(): number {
@@ -1656,7 +1651,6 @@ export function assertSpyCallArgs<
  * ```ts
  * import { returnsThis } from "@std/testing/mock";
  * import { assertEquals } from "@std/assert";
- * import { assertEquals } from "@std/assert";
  *
  * const func = returnsThis();
  * const obj = { func };
@@ -1684,7 +1678,6 @@ export function returnsThis<
  * @example Usage
  * ```ts
  * import { returnsArg } from "@std/testing/mock";
- * import { assertEquals } from "@std/assert";
  * import { assertEquals } from "@std/assert";
  *
  * const func = returnsArg(1);
@@ -1714,7 +1707,6 @@ export function returnsArg<
  * @example Usage
  * ```ts
  * import { returnsArgs } from "@std/testing/mock";
- * import { assertEquals } from "@std/assert";
  * import { assertEquals } from "@std/assert";
  *
  * const func = returnsArgs();
