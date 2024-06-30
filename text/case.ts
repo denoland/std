@@ -9,7 +9,7 @@ import { capitalizeWord, splitToWords } from "./_util.ts";
  * @example Usage
  * ```ts
  * import { toCamelCase } from "@std/text/case";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * assertEquals(toCamelCase("deno is awesome"),"denoIsAwesome");
  * ```
@@ -29,7 +29,7 @@ export function toCamelCase(input: string): string {
  * @example Usage
  * ```ts
  * import { toKebabCase } from "@std/text/case";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * assertEquals(toKebabCase("deno is awesome"), "deno-is-awesome");
  * ```
@@ -48,7 +48,7 @@ export function toKebabCase(input: string): string {
  * @example Usage
  * ```ts
  * import { toPascalCase } from "@std/text/case";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * assertEquals(toPascalCase("deno is awesome"), "DenoIsAwesome");
  * ```
@@ -67,7 +67,7 @@ export function toPascalCase(input: string): string {
  * @example Usage
  * ```ts
  * import { toSnakeCase } from "@std/text/case";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * assertEquals(toSnakeCase("deno is awesome"), "deno_is_awesome");
  * ```

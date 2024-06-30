@@ -47,7 +47,7 @@ import { _internals } from "./_time.ts";
  * @example Usage
  * ```ts
  * import { FakeTime, TimeError } from "@std/testing/time";
- * import { assertThrows } from "@std/assert/assert-throws";
+ * import { assertThrows } from "@std/assert";
  *
  * assertThrows(() => {
  *   new FakeTime(NaN);
@@ -60,7 +60,7 @@ export class TimeError extends Error {
    * @example Usage
    * ```ts
    * import { FakeTime, TimeError } from "@std/testing/time";
-   * import { assertThrows } from "@std/assert/assert-throws";
+   * import { assertThrows } from "@std/assert";
    *
    * assertThrows(() => {
    *   new FakeTime(NaN);
@@ -454,7 +454,7 @@ export class FakeTime {
    * @example Usage
    * ```ts
    * import { FakeTime } from "@std/testing/time";
-   * import { assertEquals } from "@std/assert/assert-equals";
+   * import { assertEquals } from "@std/assert";
    *
    * const fakeTime = new FakeTime(15_000);
    *
@@ -477,7 +477,7 @@ export class FakeTime {
    * @example Usage
    * ```ts
    * import { FakeTime } from "@std/testing/time";
-   * import { assertEquals } from "@std/assert/assert-equals";
+   * import { assertEquals } from "@std/assert";
    *
    * const fakeTime = new FakeTime(15_000);
    *
@@ -524,7 +524,7 @@ export class FakeTime {
    * @example Usage
    * ```ts
    * import { FakeTime } from "@std/testing/time";
-   * import { assertEquals } from "@std/assert/assert-equals";
+   * import { assertEquals } from "@std/assert";
    *
    * const fakeTime = new FakeTime(15_000);
    *
@@ -543,7 +543,7 @@ export class FakeTime {
    * @example Usage
    * ```ts
    * import { FakeTime } from "@std/testing/time";
-   * import { assertEquals } from "@std/assert/assert-equals";
+   * import { assertEquals } from "@std/assert";
    *
    * const fakeTime = new FakeTime(15_000);
    *
@@ -742,7 +742,7 @@ export class FakeTime {
    * @example Usage
    * ```ts
    * import { FakeTime } from "@std/testing/time";
-   * import { assertEquals } from "@std/assert/assert-equals";
+   * import { assertEquals } from "@std/assert";
    *
    * const fakeTime = new FakeTime(15_000);
    *
@@ -773,7 +773,7 @@ export class FakeTime {
    * @example Usage
    * ```ts
    * import { FakeTime } from "@std/testing/time";
-   * import { assertEquals } from "@std/assert/assert-equals";
+   * import { assertEquals } from "@std/assert";
    *
    * const fakeTime = new FakeTime(15_000);
    *

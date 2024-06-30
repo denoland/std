@@ -18,7 +18,7 @@
  * @example Basic usage
  * ```ts
  * import { runningReduce } from "@std/collections/running-reduce";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const numbers = [1, 2, 3, 4, 5];
  * const sumSteps = runningReduce(numbers, (sum, current) => sum + current, 0);

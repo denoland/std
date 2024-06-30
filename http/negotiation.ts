@@ -20,7 +20,7 @@ import { preferredMediaTypes } from "./_negotiation/media_type.ts";
  * @example Usage
  * ```ts
  * import { accepts } from "@std/http/negotiation";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const request = new Request("https://example.com/", {
  *   headers: {
@@ -49,7 +49,7 @@ export function accepts(request: Request): string[];
  *  @example Usage
  * ```ts
  * import { accepts } from "@std/http/negotiation";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const request = new Request("https://example.com/", {
  *   headers: {
@@ -89,7 +89,7 @@ export function accepts(
  * @example Usage
  * ```ts
  * import { acceptsEncodings } from "@std/http/negotiation";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const request = new Request("https://example.com/", {
  *   headers: { "accept-encoding": "deflate, gzip;q=1.0, *;q=0.5" },
@@ -114,7 +114,7 @@ export function acceptsEncodings(request: Request): string[];
  * @example Usage
  * ```ts
  * import { acceptsEncodings } from "@std/http/negotiation";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const request = new Request("https://example.com/", {
  *   headers: { "accept-encoding": "deflate, gzip;q=1.0, *;q=0.5" },
@@ -153,7 +153,7 @@ export function acceptsEncodings(
  * @example Usage
  * ```ts
  * import { acceptsLanguages } from "@std/http/negotiation";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const request = new Request("https://example.com/", {
  *   headers: {
@@ -175,7 +175,7 @@ export function acceptsLanguages(request: Request): string[];
  * @example Usage
  * ```ts
  * import { acceptsLanguages } from "@std/http/negotiation";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const request = new Request("https://example.com/", {
  *   headers: {

@@ -56,7 +56,7 @@ export type { Format };
  * @example JSON front matter is not valid as YAML
  * ```ts
  * import { test } from "@std/front-matter/test";
- * import { assertFalse } from "@std/assert/assert-false";
+ * import { assertFalse } from "@std/assert";
  *
  * const result = test(
  * `---json
