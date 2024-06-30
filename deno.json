@@ -18,7 +18,7 @@
     "@std/bytes": "jsr:@std/bytes@^1.0.0-rc.3",
     "@std/cli": "jsr:@std/cli@^1.0.0-rc.2",
     "@std/collections": "jsr:@std/collections@^1.0.1",
-    "@std/crypto": "jsr:@std/crypto@^1.0.0-rc.1",
+    "@std/crypto": "jsr:@std/crypto@^1.0.0",
     "@std/csv": "jsr:@std/csv@^1.0.0-rc.1",
     "@std/data-structures": "jsr:@std/data-structures@^1.0.0-rc.1",
     "@std/datetime": "jsr:@std/datetime@^0.224.1",
