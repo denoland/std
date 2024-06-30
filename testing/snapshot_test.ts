@@ -863,10 +863,12 @@ Deno.test(
 
     await assertSnapshot(
       t,
-      formatTestOutput(errors).replaceAll(tempDir, "<tempDir>").replace(
-        /Snapshot Test => .+\n/g,
-        "",
-      ),
+      formatTestOutput(errors)
+        .replace(/\s+at .+\n/g, "")
+        .replace(
+          /\nSnapshot Test => .+\n/g,
+          "",
+        ),
     );
     assert(!output.success, "The test should fail");
   }),

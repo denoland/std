@@ -476,16 +476,10 @@ snapshot[`assertSnapshot() - regression #5155 1`] = `
 Snapshot Test ... FAILED (--ms)
 
  ERRORS 
-
 error: PermissionDenied: Missing write access to snapshot file (file://<path>). This is required because assertSnapshot was called in update mode. Please pass the --allow-write flag.
         throw new Deno.errors.PermissionDenied(
               ^
-    at AssertSnapshotContext.registerTeardown (file://<path>)
-    at async assertSnapshot (file://<path>)
-    at async file://<tempDir>/test.ts:5:9
-
  FAILURES 
-
 
 FAILED | 0 passed | 1 failed (--ms)
 
