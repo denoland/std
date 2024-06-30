@@ -17,7 +17,7 @@
  * @example Basic usage
  * ```ts
  * import { maxOf } from "@std/collections/max-of";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const inventory = [
  *   { name: "mustard", count: 2 },
@@ -50,7 +50,7 @@ export function maxOf<T>(
  * @example Basic usage
  * ```ts
  * import { maxOf } from "@std/collections/max-of";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const inventory = [
  *   { name: "mustard", count: 2n },

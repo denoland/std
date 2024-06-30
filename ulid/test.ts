@@ -9,10 +9,9 @@ import { decodeTime, monotonicUlid, ulid } from "./mod.ts";
 import {
   encodeRandom,
   encodeTime,
-  ENCODING,
-  ENCODING_LEN,
   incrementBase32,
   monotonicFactory,
+  RANDOM_LEN,
 } from "./_util.ts";
 
 Deno.test("incrementBase32()", async (t) => {
@@ -46,28 +45,20 @@ Deno.test("incrementBase32()", async (t) => {
 
 Deno.test("encodeTime()", async (t) => {
   await t.step("should return expected encoded result", () => {
-    assertEquals("01ARYZ6S41", encodeTime(1469918176385, 10));
-  });
-
-  await t.step("should change length properly", () => {
-    assertEquals("0001AS99AA60", encodeTime(1470264322240, 12));
-  });
-
-  await t.step("should truncate time if not enough length", () => {
-    assertEquals("AS4Y1E11", encodeTime(1470118279201, 8));
+    assertEquals("01ARYZ6S41", encodeTime(1469918176385));
   });
 
   await t.step("should throw an error", async (t) => {
     await t.step("if time greater than (2 ^ 48) - 1", () => {
       assertThrows(() => {
-        encodeTime(Math.pow(2, 48), 8);
+        encodeTime(Math.pow(2, 48));
       }, Error);
     });
 
     await t.step("if time is not a number", () => {
       assertThrows(() => {
         // deno-lint-ignore no-explicit-any
-        encodeTime("test" as any, 3);
+        encodeTime("test" as any);
       }, Error);
     });
 
@@ -93,7 +84,7 @@ Deno.test("encodeTime()", async (t) => {
 
 Deno.test("encodeRandom()", async (t) => {
   await t.step("should return correct length", () => {
-    assertEquals(12, encodeRandom(12).length);
+    assertEquals(RANDOM_LEN, encodeRandom().length);
   });
 });
 
@@ -146,13 +137,8 @@ Deno.test("ulid()", async (t) => {
 });
 
 Deno.test("monotonicUlid() handles monotonicity", async (t) => {
-  function encodeRandom(len: number): string {
-    let str = "";
-    const randomBytes = new Array(len).fill(30);
-    for (let i = 0; i < len; i++) {
-      str += ENCODING[randomBytes[i] % ENCODING_LEN];
-    }
-    return str;
+  function encodeRandom(): string {
+    return "YYYYYYYYYYYYYYYY";
   }
 
   await t.step("without seedTime", async (t) => {

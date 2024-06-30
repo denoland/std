@@ -2,7 +2,7 @@
 // https://github.com/nodeca/js-yaml/commit/665aadda42349dcae869f12040d9b10ef18d12da
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import { Type } from "../type.ts";
+import { Type } from "../_type.ts";
 
 export const str = new Type("tag:yaml.org,2002:str", {
   construct(data): string {

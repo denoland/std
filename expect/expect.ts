@@ -13,7 +13,7 @@ import type {
   MatcherKey,
   Matchers,
 } from "./_types.ts";
-import { AssertionError } from "@std/assert/assertion-error";
+import { AssertionError } from "@std/assert";
 import {
   addCustomEqualityTesters,
   getCustomEqualityTesters,
@@ -243,8 +243,8 @@ export function expect(value: unknown, customMessage?: string): Expected {
  * import { expect } from "@std/expect";
  *
  * class Volume {
- *   public amount: number;
- *   public unit: "L" | "mL";
+ *   amount: number;
+ *   unit: "L" | "mL";
  *
  *   constructor(amount: number, unit: "L" | "mL") {
  *     this.amount = amount;

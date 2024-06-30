@@ -12,12 +12,16 @@ function splitByLast(value: string, separator: string): [string, string] {
 }
 
 /**
+ * **UNSTABLE**: New API, yet to be vetted.
+ *
  * Returns a promise with the signed cookie value from the given cryptographic
  * key.
  *
+ * @experimental
+ *
  * @example Usage
  * ```ts no-eval no-assert
- * import { signCookie } from "@std/http/unstable-signed-cookie";
+ * import { signCookie } from "@std/http/signed-cookie";
  * import { setCookie } from "@std/http/cookie";
  *
  * const key = await crypto.subtle.generateKey(
@@ -51,11 +55,15 @@ export async function signCookie(
 }
 
 /**
+ * **UNSTABLE**: New API, yet to be vetted.
+ *
  * Returns a promise of a boolean indicating whether the signed cookie is valid.
+ *
+ * @experimental
  *
  * @example Usage
  * ```ts no-eval no-assert
- * import { verifyCookie } from "@std/http/unstable-signed-cookie";
+ * import { verifySignedCookie } from "@std/http/signed-cookie";
  * import { getCookies } from "@std/http/cookie";
  *
  * const key = await crypto.subtle.generateKey(
@@ -69,14 +77,14 @@ export async function signCookie(
  * });
  * const signedCookie = getCookies(headers)["location"];
  * if (signedCookie === undefined) throw new Error("Cookie not found");
- * await verifyCookie(signedCookie, key);
+ * await verifySignedCookie(signedCookie, key);
  * ```
  *
  * @param signedCookie The signed cookie to verify.
  * @param key The cryptographic key to verify the cookie with.
  * @returns Whether or not the cookie is valid.
  */
-export async function verifyCookie(
+export async function verifySignedCookie(
   signedCookie: string,
   key: CryptoKey,
 ): Promise<boolean> {
@@ -90,13 +98,17 @@ export async function verifyCookie(
 }
 
 /**
+ * **UNSTABLE**: New API, yet to be vetted.
+ *
  * Parses a signed cookie to get its value.
  *
- * Important: always verify the cookie using {@linkcode verifyCookie} first.
+ * Important: always verify the cookie using {@linkcode verifySignedCookie} first.
+ *
+ * @experimental
  *
  * @example Usage
  * ```ts no-eval no-assert
- * import { verifyCookie, parseSignedCookie } from "@std/http/unstable-signed-cookie";
+ * import { verifySignedCookie, parseSignedCookie } from "@std/http/signed-cookie";
  * import { getCookies } from "@std/http/cookie";
  *
  * const key = await crypto.subtle.generateKey(
@@ -110,7 +122,7 @@ export async function verifyCookie(
  * });
  * const signedCookie = getCookies(headers)["location"];
  * if (signedCookie === undefined) throw new Error("Cookie not found");
- * await verifyCookie(signedCookie, key);
+ * await verifySignedCookie(signedCookie, key);
  * const cookie = parseSignedCookie(signedCookie);
  * ```
  *

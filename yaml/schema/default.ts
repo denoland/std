@@ -4,7 +4,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-import { Schema } from "../schema.ts";
+import { Schema } from "../_schema.ts";
 import { binary, merge, omap, pairs, set, timestamp } from "../_type/mod.ts";
 import { CORE_SCHEMA } from "./core.ts";
 
@@ -16,10 +16,3 @@ export const DEFAULT_SCHEMA: Schema = new Schema({
   implicit: [timestamp, merge],
   include: [CORE_SCHEMA],
 });
-
-/**
- * Default YAML schema. It is not described in the YAML specification.
- *
- * @deprecated This will be removed in 1.0.0. Use {@link DEFAULT_SCHEMA} instead.
- */
-export const def = DEFAULT_SCHEMA;

@@ -1,7 +1,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-import { extensionsByType } from "./extensions_by_type.ts";
+import { allExtensions } from "./all_extensions.ts";
 
 /**
  * Returns the most relevant extension for the given media type, or `undefined`
@@ -17,7 +17,7 @@ import { extensionsByType } from "./extensions_by_type.ts";
  * @example Usage
  * ```ts
  * import { extension } from "@std/media-types/extension";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * assertEquals(extension("text/plain"), "txt");
  * assertEquals(extension("application/json"), "json");
@@ -26,5 +26,5 @@ import { extensionsByType } from "./extensions_by_type.ts";
  * ```
  */
 export function extension(type: string): string | undefined {
-  return extensionsByType(type)?.[0];
+  return allExtensions(type)?.[0];
 }

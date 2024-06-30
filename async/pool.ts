@@ -2,7 +2,7 @@
 // This module is browser compatible.
 
 /** Error message emitted from the thrown error while mapping. */
-export const ERROR_WHILE_MAPPING_MESSAGE = "Threw while mapping.";
+const ERROR_WHILE_MAPPING_MESSAGE = "Threw while mapping.";
 
 /**
  * pooledMap transforms values from an (async) iterable into another async
@@ -17,7 +17,7 @@ export const ERROR_WHILE_MAPPING_MESSAGE = "Threw while mapping.";
  * @example Usage
  * ```ts
  * import { pooledMap } from "@std/async/pool";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const results = pooledMap(
  *   2,

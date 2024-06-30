@@ -36,7 +36,7 @@ function bumpPrerelease(
 }
 
 /**
- * Returns the new version resulting from an increment by release type.
+ * Returns the new SemVer resulting from an increment by release type.
  *
  * `premajor`, `preminor` and `prepatch` will bump the version up to the next version,
  * based on the type, and will also add prerelease metadata.
@@ -59,7 +59,7 @@ function bumpPrerelease(
  * @example Usage
  * ```ts
  * import { increment, parse } from "@std/semver";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const version = parse("1.2.3");
  * assertEquals(increment(version, "major"), parse("2.0.0"));

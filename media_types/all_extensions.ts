@@ -5,7 +5,7 @@ import { parseMediaType } from "./parse_media_type.ts";
 import { extensions } from "./_db.ts";
 
 /**
- * Returns the extensions known to be associated with the media type `type`, or
+ * Returns all the extensions known to be associated with the media type `type`, or
  * `undefined` if no extensions are found.
  *
  * Extensions are returned without a leading `.`.
@@ -17,15 +17,15 @@ import { extensions } from "./_db.ts";
  *
  * @example Usage
  * ```ts
- * import { extensionsByType } from "@std/media-types/extensions-by-type";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { allExtensions } from "@std/media-types/all-extensions";
+ * import { assertEquals } from "@std/assert";
  *
- * assertEquals(extensionsByType("application/json"), ["json", "map"]);
- * assertEquals(extensionsByType("text/html; charset=UTF-8"), ["html", "htm", "shtml"]);
- * assertEquals(extensionsByType("application/foo"), undefined);
+ * assertEquals(allExtensions("application/json"), ["json", "map"]);
+ * assertEquals(allExtensions("text/html; charset=UTF-8"), ["html", "htm", "shtml"]);
+ * assertEquals(allExtensions("application/foo"), undefined);
  * ```
  */
-export function extensionsByType(type: string): string[] | undefined {
+export function allExtensions(type: string): string[] | undefined {
   try {
     const [mediaType] = parseMediaType(type);
     return extensions.get(mediaType);

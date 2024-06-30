@@ -1,3 +1,248 @@
+### 2024.06.26
+
+#### @std/cli 1.0.0-rc.2 (prerelease)
+
+- test(cli): improve `Spinner` test (#5108)
+
+#### @std/collections 1.0.1 (patch)
+
+- perf(collections): use `for` loop instead of `forEach()` in `unzip()` (#5104)
+
+#### @std/fs 1.0.0-rc.2 (prerelease)
+
+- docs(fs): add not supported docs for `CopyOptions.preserveTimestamps` (#5143)
+
+#### @std/http 1.0.0-rc.1 (prerelease)
+
+- BREAKING(http): rename `verifyCookie()` to `verifySignedCookie()` (#5138)
+- BREAKING(http): improve thrown errors in `cookie` module (#5129)
+- BREAKING(http): change the default port of file-server to the same default of
+  `Deno.serve()` (#4888)
+- BREAKING(http): move `unstable-signed-cookie` to `signed-cookie` (#5101)
+- BREAKING(http): remove deprecated `server` module (#5100)
+- fix(http): handle the case fileInfo.mode=0 correctly (#5132)
+- docs(http): remove outdated mention of `CookieMap` (#5109)
+- refactor(http): change error thrown in `ServerSentEventStream` to
+  `SyntaxError` (#5135)
+- refactor(http): minor cleanup (#5126)
+- refactor(http): remove dead code and improve `UserAgent` testing (#5120)
+- chore(http): release `http@1.0.0-rc.1` (#5131)
+
+#### @std/jsonc 1.0.0-rc.1 (prerelease)
+
+- BREAKING(jsonc): remove `allowTrailingComma` option (#5119)
+- refactor(jsonc): minor cleanups (#5114)
+- chore(jsonc): release `jsonc@1.0.0-rc.1` (#5115)
+
+#### @std/media-types 1.0.0 (major)
+
+- BREAKING(media-types): rename `extensionsByType` to `allExtensions` (#5106)
+- docs(media-types): remove outdated historical note (#5105)
+- chore(media-types): release `media-types@1.0.0` (#4780)
+
+#### @std/testing 1.0.0-rc.1 (prerelease)
+
+- BREAKING(testing): remove deprecated `asserts` module (#5099)
+- BREAKING(testing): disable multiple `FakeTime` creations (#5130)
+- fix(testing): correctly throw in constructor with `spy()` (#5139)
+- fix(testing): function call of `Date` constructor is not correctly faked
+  (#5122)
+- docs(testing): add module docs (#5147)
+- refactor(testing): remove `@std/fmt/colors` dependency from `snapshot` module
+  (#5145)
+- refactor(testing): remove dead code and improve test of `testing/mock.ts`
+  (#5137)
+- test(testing): improve bdd testing (#5136)
+- test(testing): improve `FakeTime` testing (#5123)
+- chore(testing): release `testing@1.0.0-rc.1` (#5142)
+
+#### @std/yaml 0.224.3 (patch)
+
+- feat(yaml): support schema name for 'schema' option (#5118)
+- docs(yaml): improve `yaml` document (#5127)
+
+### 2024.06.21
+
+#### @std/archive 0.224.2 (patch)
+
+- refactor(archive,expect,io,log,toml,yaml): remove `private` and `public`
+  access modifiers (#5077)
+
+#### @std/async 1.0.0-rc.2 (prerelease)
+
+- BREAKING(async): simplify `deadline()` logic, remove `DeadlineError` and
+  improve errors (#5058)
+- BREAKING(async): make `abortablePromise()` and `abortableAsyncIterable()`
+  private (#5056)
+
+#### @std/cli 1.0.0-rc.1 (prerelease)
+
+- chore(cli): release `cli@1.0.0-rc.1` (#5068)
+- chore(cli): make spinner unstable/experimental (#5067)
+
+#### @std/collections 1.0.0 (major)
+
+- chore(collections): release `collections@1.0.0` (#4773)
+
+#### @std/dotenv 0.224.1 (patch)
+
+- docs(dotenv): improve `dotenv` docs (#5095)
+
+#### @std/expect 0.224.5 (patch)
+
+- refactor(archive,expect,io,log,toml,yaml): remove `private` and `public`
+  access modifiers (#5077)
+
+#### @std/fs 1.0.0-rc.1 (prerelease)
+
+- refactor(fs): improve `expandGlob()` implementation and testing (#5089)
+- refactor(fs): reduce the repetition in `exists.ts` (#5088)
+- refactor(fs): reduce the repetition in ensure_dir.ts (#5085)
+- refactor(fs): resolve directories when checking whether they are the same in
+  `isSubdir()` (#5076)
+- test(fs): improve `copy()` testing (#5084)
+- test(fs): improve `ensureSymlink()` test (#5087)
+- test(fs): check `ensureDir()` is not racy (#5086)
+- chore(fs): release `fs@1.0.0-rc.1` (#5091)
+
+#### @std/io 0.224.2 (patch)
+
+- refactor(archive,expect,io,log,toml,yaml): remove `private` and `public`
+  access modifiers (#5077)
+
+#### @std/json 1.0.0-rc.1 (prerelease)
+
+- BREAKING(json): rename /common to /types (#5103)
+- BREAKING(json): remove `writableStrategy` and `readableStrategy` options
+  (#5097)
+- docs(json): lint `@std/json` docs (#4798)
+- test(json): improve json testing (#5075)
+- chore(json): release `json@1.0.0-rc.1` (#5102)
+
+#### @std/jsonc 0.224.3 (patch)
+
+- test(jsonc): remove dead code and improve testing (#5093)
+
+#### @std/log 0.224.3 (patch)
+
+- refactor(archive,expect,io,log,toml,yaml): remove `private` and `public`
+  access modifiers (#5077)
+
+#### @std/streams 1.0.0-rc.1 (prerelease)
+
+- BREAKING(streams): remove `iterateReader`, `readableStreamFromReader`,
+  `readerFromIterable`, `readerFromStreamReader`, `writableStreamFromWriter`,
+  and `writerFromStreamWriter` (#5060)
+- fix(streams): prevent `earlyZipReadableStreams()` from possibly using
+  excessive memory (#5082)
+- test(streams): improve test coverage (#5078)
+- test(streams): improve `DelimiterStream` test cases (#5070)
+- test(streams): improve `Buffer` test (#5061)
+- chore(streams): release `streams@1.0.0-rc.1` (#5074)
+
+#### @std/testing 0.225.3 (patch)
+
+- refactor(testing): remove `FakeTime.start` setter (#5050)
+
+#### @std/toml 1.0.0-rc.2 (prerelease)
+
+- refactor(archive,expect,io,log,toml,yaml): remove `private` and `public`
+  access modifiers (#5077)
+
+#### @std/yaml 0.224.2 (patch)
+
+- refactor(archive,expect,io,log,toml,yaml): remove `private` and `public`
+  access modifiers (#5077)
+
+### 2024.06.17
+
+#### @std/async 1.0.0-rc.1 (prerelease)
+
+- BREAKING(async): stop exporting ERROR_WHILE_MAPPING_MESSAGE (#5041)
+- docs(async): improve module docs (#5039)
+- docs(async): avoid memory leak in example (#5040)
+- chore(async): release `async@1.0.0-rc.1` (#5035)
+- chore(async): mark `Tuple` and `TupleOf` as `@internal` (#5042)
+
+#### @std/cli 0.224.7 (patch)
+
+- refactor(cli): minor cleanups (#5052)
+- test(cli): improve spinner test coverage (#5047)
+- test(cli): improve test coverage (#5046)
+
+#### @std/http 0.224.5 (patch)
+
+- feat(http): support partitioned cookies (#5044)
+
+#### @std/msgpack 1.0.0-rc.1 (prerelease)
+
+- chore(msgpack): release `msgpack@1.0.0-rc.1` (#5030)
+
+#### @std/path 1.0.0-rc.2 (prerelease)
+
+- test(path): improve test coverage (#5038)
+
+#### @std/streams 0.224.5 (patch)
+
+- chore(streams): remove unused test util (#5048)
+
+#### @std/testing 0.225.2 (patch)
+
+- docs(testing): improve the docs of `@std/testing` (#5033)
+- refactor(testing): remove use of `public` keyword (#5051)
+
+#### @std/ulid 1.0.0-rc.2 (prerelease)
+
+- refactor(ulid): remove `len` argument from `encodeTime()` and `encodeRandom()`
+  (#5054)
+
+### 2024.06.12
+
+#### @std/assert 1.0.0-rc.2 (prerelease)
+
+- fix(assert): fix tolerance calculation when comparing negative values (#5019)
+
+#### @std/data-structures 1.0.0-rc.1 (prerelease)
+
+- chore(data-structures): release `data-structures@1.0.0-rc.1` (#4987)
+
+#### @std/fs 0.229.3 (patch)
+
+- docs(fs): improve documentation (#4788)
+
+#### @std/ini 0.225.1 (patch)
+
+- docs(ini): improve ini docs (#5020)
+
+#### @std/msgpack 0.224.3 (patch)
+
+- docs(msgpack): complete documentation (#5029)
+- test(msgpack): add test cases for `encode()` (#5028)
+- test(msgpack): add `decode()` test cases (#5027)
+
+#### @std/net 0.224.3 (patch)
+
+- docs(net): complete documentation (#4982)
+
+#### @std/regexp 1.0.0-rc.1 (prerelease)
+
+- docs(regexp): complete documentation (#5023)
+- chore(regexp): release `regexp@1.0.0-rc.1` (#5024)
+
+#### @std/text 1.0.0-rc.1 (prerelease)
+
+- refactor(text): minor cleanups and improvements (#5025)
+- chore(text): release `text@1.0.0-rc.1` (#5026)
+
+#### @std/ulid 1.0.0-rc.1 (prerelease)
+
+- refactor(ulid): improve error types and messages (#5022)
+- chore(ulid): release `ulid@1.0.0-rc.1` (#4997)
+
+#### @std/url 1.0.0-rc.1 (prerelease)
+
+- chore(url): release `url@1.0.0-rc.1` (#4981)
+
 ### 2024.06.06
 
 #### @std/archive 0.224.1 (patch)
