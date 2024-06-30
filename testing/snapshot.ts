@@ -141,10 +141,9 @@ import { parse } from "@std/path/parse";
 import { resolve } from "@std/path/resolve";
 import { toFileUrl } from "@std/path/to-file-url";
 import { ensureFile, ensureFileSync } from "@std/fs/ensure-file";
-import { bold, green, red } from "@std/fmt/colors";
-import { assert } from "@std/assert/assert";
-import { AssertionError } from "@std/assert/assertion-error";
-import { equal } from "@std/assert/equal";
+import { assert } from "@std/assert";
+import { AssertionError } from "@std/assert";
+import { equal } from "@std/assert";
 import { diff } from "@std/internal/diff";
 import { diffStr } from "@std/internal/diff-str";
 import { buildMessage } from "@std/internal/build-message";
@@ -205,7 +204,7 @@ function getErrorMessage(message: string, options: SnapshotOptions) {
  * @example Usage
  * ```ts
  * import { serialize } from "@std/testing/snapshot";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * assertEquals(serialize({ foo: 42 }), "{\n  foo: 42,\n}")
  * ```
@@ -360,30 +359,22 @@ class AssertSnapshotContext {
     const updated = this.getUpdatedCount();
     if (updated > 0) {
       console.log(
-        green(
-          bold(
-            `\n > ${updated} ${
-              updated === 1 ? "snapshot" : "snapshots"
-            } updated.`,
-          ),
-        ),
+        `%c\n > ${updated} ${
+          updated === 1 ? "snapshot" : "snapshots"
+        } updated.`,
+        "color: green; font-weight: bold;",
       );
     }
     const removed = removedSnapshotNames.length;
     if (removed > 0) {
       console.log(
-        red(
-          bold(
-            `\n > ${removed} ${
-              removed === 1 ? "snapshot" : "snapshots"
-            } removed.`,
-          ),
-        ),
+        `%c\n > ${removed} ${
+          removed === 1 ? "snapshot" : "snapshots"
+        } removed.`,
+        "color: red; font-weight: bold;",
       );
       for (const snapshotName of removedSnapshotNames) {
-        console.log(
-          red(bold(`   • ${snapshotName}`)),
-        );
+        console.log(`%c   • ${snapshotName}`, "color: red;");
       }
     }
   };

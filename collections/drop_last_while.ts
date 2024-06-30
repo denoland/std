@@ -16,7 +16,7 @@
  * @example Basic usage
  * ```ts
  * import { dropLastWhile } from "@std/collections/drop-last-while";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const numbers = [11, 42, 55, 20, 33, 44];
  *

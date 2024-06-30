@@ -3,12 +3,14 @@
 // Copyright 2011-2015 by Vitaly Puzrin. All rights reserved. MIT license.
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import { Type } from "../type.ts";
+import { Type } from "../_type.ts";
 import type { Any } from "../_utils.ts";
 
 const _toString = Object.prototype.toString;
 
 function resolveYamlPairs(data: Any[][]): boolean {
+  if (data === null) return true;
+
   const result = Array.from({ length: data.length });
 
   for (const [index, pair] of data.entries()) {

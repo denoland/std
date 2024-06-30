@@ -1,5 +1,5 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-import { CsvStringifyStream } from "./csv_stringify_stream.ts";
+import { CsvStringifyStream } from "./stringify_stream.ts";
 import { StringifyError } from "./stringify.ts";
 import { assertEquals, assertRejects } from "@std/assert";
 
@@ -54,6 +54,18 @@ Deno.test({
       await assertRejects(
         async () => await Array.fromAsync(readable),
         StringifyError,
+      );
+    });
+
+    await t.step("with invalid `columns`", async () => {
+      const readable = ReadableStream.from([
+        ["one", "two", "three"],
+        // deno-lint-ignore no-explicit-any
+      ]).pipeThrough(new CsvStringifyStream({ columns: { length: 1 } as any }));
+      await assertRejects(
+        async () => await Array.fromAsync(readable),
+        StringifyError,
+        "No property accessor function was provided for object",
       );
     });
 

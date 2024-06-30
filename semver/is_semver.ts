@@ -1,6 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
-import { ANY, INVALID } from "./constants.ts";
+import { ANY, INVALID } from "./_constants.ts";
 import type { SemVer } from "./types.ts";
 import { isValidNumber, isValidString } from "./_shared.ts";
 
@@ -20,7 +20,7 @@ import { isValidNumber, isValidString } from "./_shared.ts";
  * @example Usage
  * ```ts
  * import { isSemVer } from "@std/semver/is-semver";
- * import { assert, assertFalse } from "@std/assert";
+ * import { assert } from "@std/assert";
  *
  * const value = {
  *   major: 1,
@@ -29,7 +29,7 @@ import { isValidNumber, isValidString } from "./_shared.ts";
  * };
  *
  * assert(isSemVer(value));
- * assertFalse(isSemVer({ major: 1, minor: 2 }));
+ * assert(!isSemVer({ major: 1, minor: 2 }));
  * ```
  *
  * @param value The value to check to see if its a valid SemVer object

@@ -3,8 +3,8 @@
 // Copyright 2011-2015 by Vitaly Puzrin. All rights reserved. MIT license.
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import { YAMLError } from "../_error.ts";
-import type { RepresentFn } from "../type.ts";
+import { YamlError } from "../_error.ts";
+import type { RepresentFn } from "../_type.ts";
 import * as common from "../_utils.ts";
 import { DumperState, type DumperStateOptions } from "./dumper_state.ts";
 
@@ -89,7 +89,7 @@ function encodeHex(character: number): string {
     handle = "U";
     length = 8;
   } else {
-    throw new YAMLError(
+    throw new YamlError(
       "code point within a string may not be greater than 0xFFFFFFFF",
     );
   }
@@ -497,7 +497,7 @@ function writeScalar(
       case STYLE_DOUBLE:
         return `"${escapeString(string)}"`;
       default:
-        throw new YAMLError("impossible error: invalid scalar style");
+        throw new YamlError("impossible error: invalid scalar style");
     }
   })();
 }
@@ -611,7 +611,7 @@ function writeBlockMapping(
     objectKeyList.sort(state.sortKeys);
   } else if (state.sortKeys) {
     // Something is wrong
-    throw new YAMLError("sortKeys must be a boolean or a function");
+    throw new YamlError("sortKeys must be a boolean or a function");
   }
 
   for (const [index, objectKey] of objectKeyList.entries()) {
@@ -693,7 +693,7 @@ function detectType(
             style,
           );
         } else {
-          throw new YAMLError(
+          throw new YamlError(
             `!<${type.tag}> tag resolver accepts not "${style}" style`,
           );
         }
@@ -786,7 +786,7 @@ function writeNode(
       }
     } else {
       if (state.skipInvalid) return false;
-      throw new YAMLError(`unacceptable kind of an object to dump ${type}`);
+      throw new YamlError(`unacceptable kind of an object to dump ${type}`);
     }
 
     if (state.tag !== null && state.tag !== "?") {

@@ -27,7 +27,7 @@ export type InvertByResult<
  * @example Basic usage
  * ```ts
  * import { invertBy } from "@std/collections/invert-by";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const record = { a: "x", b: "y", c: "z" };
  *
