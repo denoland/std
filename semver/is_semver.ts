@@ -20,7 +20,7 @@ import { isValidNumber, isValidString } from "./_shared.ts";
  * @example Usage
  * ```ts
  * import { isSemVer } from "@std/semver/is-semver";
- * import { assert } from "@std/assert/assert";
+ * import { assert } from "@std/assert";
  *
  * const value = {
  *   major: 1,

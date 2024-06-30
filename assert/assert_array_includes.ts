@@ -16,7 +16,7 @@ export type ArrayLikeArg<T> = ArrayLike<T> & object;
  *
  * @example Usage
  * ```ts no-eval
- * import { assertArrayIncludes } from "@std/assert/assert-array-includes";
+ * import { assertArrayIncludes } from "@std/assert";
  *
  * assertArrayIncludes([1, 2], [2]); // Doesn't throw
  * assertArrayIncludes([1, 2], [3]); // Throws

@@ -12,7 +12,7 @@ import { toNamespacedPath as windowsToNamespacedPath } from "./windows/to_namesp
  * @example Usage
  * ```ts
  * import { toNamespacedPath } from "@std/path/to-namespaced-path";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * if (Deno.build.os === "windows") {
  *   assertEquals(toNamespacedPath("C:\\foo\\bar"), "\\\\?\\C:\\foo\\bar");

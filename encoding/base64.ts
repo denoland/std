@@ -11,7 +11,7 @@
  *   encodeBase64,
  *   decodeBase64,
  * } from "@std/encoding/base64";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const foobar = new TextEncoder().encode("foobar");
  *
@@ -102,7 +102,7 @@ const base64abc = [
  * @example Usage
  * ```ts
  * import { encodeBase64 } from "@std/encoding/base64";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * assertEquals(encodeBase64("foobar"), "Zm9vYmFy");
  * ```
@@ -155,7 +155,7 @@ export function encodeBase64(data: ArrayBuffer | Uint8Array | string): string {
  * @example Usage
  * ```ts
  * import { decodeBase64 } from "@std/encoding/base64";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * assertEquals(
  *   decodeBase64("Zm9vYmFy"),

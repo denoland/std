@@ -28,7 +28,7 @@ const rawRe = new RegExp(`[${[...rawToEntity.keys()].join("")}]`, "g");
  * @example Usage
  * ```ts
  * import { escape } from "@std/html/entities";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * assertEquals(escape("<>'&AA"), "&lt;&gt;&#39;&amp;AA");
  *
@@ -66,7 +66,7 @@ const entityListRegexCache = new WeakMap<EntityList, RegExp>();
  * @example Basic usage
  * ```ts
  * import { unescape } from "@std/html/entities";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * assertEquals(unescape("&lt;&gt;&#39;&amp;AA"), "<>'&AA");
  * assertEquals(unescape("&thorn;&eth;"), "&thorn;&eth;");
@@ -79,7 +79,7 @@ const entityListRegexCache = new WeakMap<EntityList, RegExp>();
  * ```ts
  * import { unescape } from "@std/html/entities";
  * import entityList from "@std/html/named-entity-list.json" with { type: "json" };
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * assertEquals(unescape("&lt;&gt;&#39;&amp;AA", { entityList }), "<>'&AA");
  * ```
