@@ -19,7 +19,7 @@ import type {
  * @example Comma-separated values
  * ```ts
  * import { TextDelimiterStream } from "@std/streams/text-delimiter-stream";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const stream = ReadableStream.from([
  *   "alice,20,",
@@ -37,7 +37,7 @@ import type {
  * @example Semicolon-separated values with suffix disposition
  * ```ts
  * import { TextDelimiterStream } from "@std/streams/text-delimiter-stream";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const stream = ReadableStream.from([
  *   "const a = 42;;let b =",

@@ -11,7 +11,7 @@ import { fromFileUrl as windowsFromFileUrl } from "./windows/from_file_url.ts";
  * @example Usage
  * ```ts
  * import { fromFileUrl } from "@std/path/from-file-url";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * if (Deno.build.os === "windows") {
  *   assertEquals(fromFileUrl("file:///home/foo"), "\\home\\foo");

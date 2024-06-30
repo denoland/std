@@ -12,7 +12,7 @@ import { compare } from "./compare.ts";
  * @example Usage
  * ```ts
  * import { parse, parseRange, greaterThanRange } from "@std/semver";
- * import { assert } from "@std/assert/assert";
+ * import { assert } from "@std/assert";
  *
  * const v0 = parse("1.2.3");
  * const v1 = parse("1.2.4");

@@ -35,7 +35,7 @@ export interface ParseOptions {
  * @example Usage
  * ```ts
  * import { parse } from "@std/yaml/parse";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const data = parse(`
  * id: 1
@@ -63,7 +63,7 @@ export function parse(content: string, options?: ParseOptions): unknown {
  * @example Usage
  * ```ts
  * import { parseAll } from "@std/yaml/parse";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const data = parseAll(`
  * ---

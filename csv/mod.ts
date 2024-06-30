@@ -6,7 +6,7 @@
  *
  * ```ts
  * import { parse } from "@std/csv/parse";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const string = "a,b,c\nd,e,f";
  *

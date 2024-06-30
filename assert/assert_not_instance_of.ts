@@ -8,7 +8,7 @@ import { assertFalse } from "./assert_false.ts";
  *
  * @example Usage
  * ```ts no-eval
- * import { assertNotInstanceOf } from "@std/assert/assert-not-instance-of";
+ * import { assertNotInstanceOf } from "@std/assert";
  *
  * assertNotInstanceOf(new Date(), Number); // Doesn't throw
  * assertNotInstanceOf(new Date(), Date); // Throws
