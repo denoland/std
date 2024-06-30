@@ -1,6 +1,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
 import { assertEquals } from "../assert/equals.ts";
+import { assertEquals } from "@std/assert";
 import { invertBy } from "./invert_by.ts";
 
 function invertByTest<R extends Record<PropertyKey, PropertyKey>>(
