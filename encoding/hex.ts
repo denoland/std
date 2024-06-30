@@ -13,7 +13,7 @@
  *   decodeHex,
  *   encodeHex,
  * } from "@std/encoding/hex";
- * import { assertEquals } from "@std/assert";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * assertEquals(encodeHex("abc"), "616263");
  *
@@ -62,7 +62,7 @@ function fromHexChar(byte: number): number {
  * @example Usage
  * ```ts
  * import { encodeHex } from "@std/encoding/hex";
- * import { assertEquals } from "@std/assert";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * assertEquals(encodeHex("abc"), "616263");
  * ```
@@ -90,7 +90,7 @@ export function encodeHex(src: string | Uint8Array | ArrayBuffer): string {
  * @example Usage
  * ```ts
  * import { decodeHex } from "@std/encoding/hex";
- * import { assertEquals } from "@std/assert";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * assertEquals(
  *   decodeHex("616263"),

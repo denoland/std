@@ -19,7 +19,7 @@
  * @example Basic usage
  * ```ts
  * import { associateWith } from "@std/collections/associate-with";
- * import { assertEquals } from "@std/assert";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const names = ["Kim", "Lara", "Jonathan"];
  *

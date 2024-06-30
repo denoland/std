@@ -9,7 +9,7 @@
  * @example Usage
  * ```ts
  * import { levenshteinDistance } from "@std/text/levenshtein-distance";
- * import { assertEquals } from "@std/assert";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * assertEquals(levenshteinDistance("aa", "bb"), 2);
  * ```

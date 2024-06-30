@@ -33,7 +33,7 @@ const allFlags = GPUTextureUsage.COPY_SRC | GPUTextureUsage.COPY_DST |
  * @example Basic usage
  * ```ts
  * import { describeTextureFormat } from "@std/webgpu/describe-texture-format";
- * import { assertEquals } from "@std/assert";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * assertEquals(describeTextureFormat("rgba8unorm"), {
  *   requiredFeature: undefined,

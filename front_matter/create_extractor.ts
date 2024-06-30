@@ -79,7 +79,7 @@ function recognize(str: string, formats?: Format[]): Format {
  * @example Extract YAML front matter
  * ```ts
  * import { createExtractor, Parser } from "@std/front-matter";
- * import { assertEquals } from "@std/assert";
+ * import { assertEquals } from "@std/assert/assert-equals";
  * import { parse as parseYaml } from "@std/yaml/parse";
  *
  * const extractYaml = createExtractor({ yaml: parseYaml as Parser });
@@ -96,7 +96,7 @@ function recognize(str: string, formats?: Format[]): Format {
  * @example Extract TOML front matter
  * ```ts
  * import { createExtractor, Parser } from "@std/front-matter";
- * import { assertEquals } from "@std/assert";
+ * import { assertEquals } from "@std/assert/assert-equals";
  * import { parse as parseToml } from "@std/toml/parse";
  *
  * const extractToml = createExtractor({ toml: parseToml as Parser });
@@ -113,7 +113,7 @@ function recognize(str: string, formats?: Format[]): Format {
  * @example Extract JSON front matter
  * ```ts
  * import { createExtractor, Parser } from "@std/front-matter";
- * import { assertEquals } from "@std/assert";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const extractJson = createExtractor({ json: JSON.parse as Parser });
  * const { attrs, body, frontMatter } = extractJson<{ title: string }>(
@@ -129,7 +129,7 @@ function recognize(str: string, formats?: Format[]): Format {
  * @example Extract YAML or JSON front matter
  * ```ts
  * import { createExtractor, Parser } from "@std/front-matter";
- * import { assertEquals } from "@std/assert";
+ * import { assertEquals } from "@std/assert/assert-equals";
  * import { parse as parseYaml } from "@std/yaml/parse";
  *
  * const extractYamlOrJson = createExtractor({

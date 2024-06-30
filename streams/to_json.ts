@@ -14,7 +14,7 @@ import { toText } from "./to_text.ts";
  * @example Basic usage
  * ```ts
  * import { toJson } from "@std/streams/to-json";
- * import { assertEquals } from "@std/assert";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const stream = ReadableStream.from([
  *   "[1, true",

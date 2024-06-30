@@ -11,7 +11,7 @@
  *
  * ```ts
  * import { parse } from "@std/jsonc";
- * import { assertEquals } from "@std/assert";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * assertEquals(parse('{"foo": "bar", } // comment'), { foo: "bar" });
  * assertEquals(parse('{"foo": "bar", } /* comment *\/'), { foo: "bar" });

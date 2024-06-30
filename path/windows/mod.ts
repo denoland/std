@@ -12,7 +12,7 @@
  *
  * ```ts
  * import { fromFileUrl } from "@std/path/windows";
- * import { assertEquals } from "@std/assert";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * assertEquals(fromFileUrl("file:///home/foo"), "\\home\\foo");
  * ```

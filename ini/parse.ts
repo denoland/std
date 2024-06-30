@@ -8,7 +8,7 @@ import { IniMap, type ParseOptions } from "./ini_map.ts";
  * @example Usage
  * ```ts
  * import { parse } from "@std/ini/parse";
- * import { assertEquals } from "@std/assert";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const parsed = parse(`
  * key = value
@@ -24,7 +24,7 @@ import { IniMap, type ParseOptions } from "./ini_map.ts";
  * @example Using custom reviver
  * ```ts
  * import { parse } from "@std/ini/parse";
- * import { assertEquals } from "@std/assert";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const parsed = parse(`
  * [section Foo]

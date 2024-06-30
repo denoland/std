@@ -10,7 +10,7 @@
  *
  * ```ts
  * import { decode, encode } from "@std/msgpack";
- * import { assertEquals } from "@std/assert";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const obj = {
  *   str: "deno",

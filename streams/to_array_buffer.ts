@@ -13,7 +13,7 @@ import { concat } from "@std/bytes/concat";
  * @example Basic usage
  * ```ts
  * import { toArrayBuffer } from "@std/streams/to-array-buffer";
- * import { assertEquals } from "@std/assert";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const stream = ReadableStream.from([
  *   new Uint8Array([1, 2]),

@@ -1,5 +1,5 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-import { assertEquals } from "@std/assert";
+import { assertEquals } from "@std/assert/assert-equals";
 import * as log from "./mod.ts";
 import { TestHandler } from "./_test_handler.ts";
 

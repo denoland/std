@@ -17,7 +17,7 @@ import { filterInPlace } from "./_utils.ts";
  * @example Basic usage
  * ```ts
  * import { intersect } from "@std/collections/intersect";
- * import { assertEquals } from "@std/assert";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const lisaInterests = ["Cooking", "Music", "Hiking"];
  * const kimInterests = ["Music", "Tennis", "Cooking"];

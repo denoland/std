@@ -6,7 +6,7 @@
  *
  * ```ts
  * import { toCamelCase, compareSimilarity } from "@std/text";
- * import { assertEquals } from "@std/assert";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * assertEquals(toCamelCase("snake_case"), "snakeCase");
  *

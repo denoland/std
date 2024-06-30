@@ -5,7 +5,7 @@
  *
  * ```ts
  * import { JsonStringifyStream } from "@std/json";
- * import { assertEquals } from "@std/assert";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const stream = ReadableStream.from([{ foo: "bar" }, { baz: 100 }])
  *   .pipeThrough(new JsonStringifyStream());

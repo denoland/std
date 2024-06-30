@@ -43,7 +43,7 @@ const encoder = new TextEncoder();
  * @example Usage
  * ```ts
  * import { encode } from "@std/msgpack/encode";
- * import { assertEquals } from "@std/assert";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const obj = {
  *   str: "deno",

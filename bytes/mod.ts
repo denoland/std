@@ -8,7 +8,7 @@
  *
  * ```ts
  * import { concat, indexOfNeedle, endsWith } from "@std/bytes";
- * import { assertEquals } from "@std/assert";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const a = new Uint8Array([0, 1, 2]);
  * const b = new Uint8Array([3, 4, 5]);

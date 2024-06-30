@@ -16,7 +16,7 @@ import {
  * @example Usage
  * ```ts
  * import { dirname } from "@std/path/windows/dirname";
- * import { assertEquals } from "@std/assert";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const dir = dirname("C:\\foo\\bar\\baz.ext");
  * assertEquals(dir, "C:\\foo\\bar");

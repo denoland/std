@@ -11,7 +11,7 @@ import { isPosixPathSeparator } from "./_util.ts";
  * @example Usage
  * ```ts
  * import { extname } from "@std/path/posix/extname";
- * import { assertEquals } from "@std/assert";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * assertEquals(extname("/home/user/Documents/file.ts"), ".ts");
  * assertEquals(extname("/home/user/Documents/"), "");

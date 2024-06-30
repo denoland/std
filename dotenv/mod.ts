@@ -11,7 +11,7 @@
  *
  * ```ts
  * import { parse, stringify } from "@std/dotenv";
- * import { assertEquals } from "@std/assert";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * assertEquals(parse("GREETING=hello world"), { GREETING: "hello world" });
  * assertEquals(stringify({ GREETING: "hello world" }), "GREETING='hello world'");

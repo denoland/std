@@ -10,7 +10,7 @@ export type Falsy = false | 0 | 0n | "" | null | undefined;
  *
  * @example Usage
  * ```ts no-eval
- * import { assertFalse } from "@std/assert";
+ * import { assertFalse } from "@std/assert/assert-false";
  *
  * assertFalse(false); // Doesn't throw
  * assertFalse(true); // Throws

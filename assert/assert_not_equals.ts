@@ -12,7 +12,7 @@ import { AssertionError } from "./assertion_error.ts";
  *
  * @example Usage
  * ```ts no-eval
- * import { assertNotEquals } from "@std/assert";
+ * import { assertNotEquals } from "@std/assert/assert-not-equals";
  *
  * assertNotEquals(1, 2); // Doesn't throw
  * assertNotEquals(1, 1); // Throws

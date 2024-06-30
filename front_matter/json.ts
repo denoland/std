@@ -13,7 +13,7 @@ import {
  * @example Extract JSON front matter
  * ```ts
  * import { extract } from "@std/front-matter/json";
- * import { assertEquals } from "@std/assert";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const output = `---json
  * {

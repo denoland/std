@@ -14,7 +14,7 @@ import { parse } from "@std/yaml/parse";
  * @example Extract YAML front matter
  * ```ts
  * import { extract } from "@std/front-matter/yaml";
- * import { assertEquals } from "@std/assert";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const output = `---yaml
  * title: Three dashes marks the spot

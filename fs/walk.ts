@@ -36,7 +36,7 @@ export class WalkError extends Error {
    * @example Usage
    * ```ts
    * import { WalkError } from "@std/fs/walk";
-   * import { assertEquals } from "@std/assert";
+   * import { assertEquals } from "@std/assert/assert-equals";
    *
    * const error = new WalkError("error message", "./foo");
    *

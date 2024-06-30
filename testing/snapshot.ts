@@ -204,7 +204,7 @@ function getErrorMessage(message: string, options: SnapshotOptions) {
  * @example Usage
  * ```ts
  * import { serialize } from "@std/testing/snapshot";
- * import { assertEquals } from "@std/assert";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * assertEquals(serialize({ foo: 42 }), "{\n  foo: 42,\n}")
  * ```

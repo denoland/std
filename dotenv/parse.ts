@@ -60,7 +60,7 @@ function expand(str: string, variablesMap: { [key: string]: string }): string {
  * @example Usage
  * ```ts
  * import { parse } from "@std/dotenv/parse";
- * import { assertEquals } from "@std/assert";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const env = parse("GREETING=hello world");
  * assertEquals(env, { GREETING: "hello world" });

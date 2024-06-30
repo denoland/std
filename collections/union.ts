@@ -13,7 +13,7 @@
  * @example Basic usage
  * ```ts
  * import { union } from "@std/collections/union";
- * import { assertEquals } from "@std/assert";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const soupIngredients = ["Pepper", "Carrots", "Leek"];
  * const saladIngredients = ["Carrots", "Radicchio", "Pepper"];

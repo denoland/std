@@ -15,7 +15,7 @@
  *   lessThan,
  *   format
  * } from "@std/semver";
- * import { assertEquals } from "@std/assert";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const semver = parse("1.2.3");
  * assertEquals(semver, {
@@ -128,7 +128,7 @@
  *
  * ```ts
  * import { increment, parse } from "@std/semver";
- * import { assertEquals } from "@std/assert";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * assertEquals(increment(parse("1.2.3"), "prerelease", "alpha"), parse("1.2.4-alpha.0"));
  * ```

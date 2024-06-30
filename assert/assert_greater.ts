@@ -9,7 +9,7 @@ import { AssertionError } from "./assertion_error.ts";
  *
  * @example Usage
  * ```ts no-eval
- * import { assertGreater } from "@std/assert";
+ * import { assertGreater } from "@std/assert/assert-greater";
  *
  * assertGreater(2, 1); // Doesn't throw
  * assertGreater(1, 1); // Throws

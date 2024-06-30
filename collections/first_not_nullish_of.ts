@@ -18,7 +18,7 @@
  * @example Basic usage
  * ```ts
  * import { firstNotNullishOf } from "@std/collections/first-not-nullish-of";
- * import { assertEquals } from "@std/assert";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const tables = [
  *   { number: 11, order: null },

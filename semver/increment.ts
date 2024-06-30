@@ -59,7 +59,7 @@ function bumpPrerelease(
  * @example Usage
  * ```ts
  * import { increment, parse } from "@std/semver";
- * import { assertEquals } from "@std/assert";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const version = parse("1.2.3");
  * assertEquals(increment(version, "major"), parse("2.0.0"));

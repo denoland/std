@@ -6,7 +6,7 @@
  *
  * ```ts
  * import { unescape } from "@std/html/entities";
- * import { assertEquals } from "@std/assert";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * assertEquals(unescape("&lt;&gt;&#39;&amp;AA"), "<>'&AA");
  * assertEquals(unescape("&thorn;&eth;"), "&thorn;&eth;");

@@ -17,7 +17,7 @@
  * @example Basic usage
  * ```ts
  * import { distinctBy } from "@std/collections/distinct-by";
- * import { assertEquals } from "@std/assert";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const names = ["Anna", "Kim", "Arnold", "Kate"];
  * const exampleNamesByFirstLetter = distinctBy(names, (name) => name.charAt(0));

@@ -14,7 +14,7 @@ import { isPathSeparator, isWindowsDeviceRoot } from "./_util.ts";
  * @example Usage
  * ```ts
  * import { normalize } from "@std/path/windows/normalize";
- * import { assertEquals } from "@std/assert";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const normalized = normalize("C:\\foo\\..\\bar");
  * assertEquals(normalized, "C:\\bar");

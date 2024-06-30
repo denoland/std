@@ -19,7 +19,7 @@ export interface StringifyOptions extends FormattingOptions {
  * @example Usage
  * ```ts
  * import { stringify } from "@std/ini/stringify";
- * import { assertEquals } from "@std/assert";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const str = stringify({
  *   key1: "value1",
@@ -43,7 +43,7 @@ export interface StringifyOptions extends FormattingOptions {
  * @example Using replacer option
  * ```ts
  * import { stringify } from "@std/ini/stringify";
- * import { assertEquals } from "@std/assert";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const str = stringify({
  *   "section X": {

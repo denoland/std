@@ -17,7 +17,7 @@
  * @example Basic usage
  * ```ts
  * import { partitionEntries } from "@std/collections/partition-entries";
- * import { assertEquals } from "@std/assert";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const menu = {
  *   Salad: 11,

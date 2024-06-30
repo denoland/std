@@ -211,7 +211,7 @@ function validateDomain(domain: string) {
  * @example Usage
  * ```ts
  * import { getCookies } from "@std/http/cookie";
- * import { assertEquals } from "@std/assert";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const headers = new Headers();
  * headers.set("Cookie", "full=of; tasty=chocolate");
@@ -247,7 +247,7 @@ export function getCookies(headers: Headers): Record<string, string> {
  * @example Usage
  * ```ts
  * import { Cookie, setCookie } from "@std/http/cookie";
- * import { assertEquals } from "@std/assert";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const headers = new Headers();
  * const cookie: Cookie = { name: "Space", value: "Cat" };
@@ -279,7 +279,7 @@ export function setCookie(headers: Headers, cookie: Cookie) {
  * @example Usage
  * ```ts
  * import { deleteCookie } from "@std/http/cookie";
- * import { assertEquals } from "@std/assert";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const headers = new Headers();
  * deleteCookie(headers, "deno");
@@ -397,7 +397,7 @@ function parseSetCookie(value: string): Cookie | null {
  * @example Usage
  * ```ts
  * import { getSetCookies } from "@std/http/cookie";
- * import { assertEquals } from "@std/assert";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const headers = new Headers([
  *   ["Set-Cookie", "lulu=meow; Secure; Max-Age=3600"],

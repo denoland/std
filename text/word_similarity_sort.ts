@@ -15,7 +15,7 @@ export interface WordSimilaritySortOptions extends CompareSimilarityOptions {}
  *
  * ```ts
  * import { wordSimilaritySort } from "@std/text/word-similarity-sort";
- * import { assertEquals } from "@std/assert";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const possibleWords = ["length", "size", "blah", "help"];
  * const suggestions = wordSimilaritySort("hep", possibleWords);
@@ -27,7 +27,7 @@ export interface WordSimilaritySortOptions extends CompareSimilarityOptions {}
  *
  * ```ts
  * import { wordSimilaritySort } from "@std/text/word-similarity-sort";
- * import { assertEquals } from "@std/assert";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const possibleWords = ["length", "Size", "blah", "HELP"];
  * const suggestions = wordSimilaritySort("hep", possibleWords, { caseSensitive: true });

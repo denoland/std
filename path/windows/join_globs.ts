@@ -15,7 +15,7 @@ export type { GlobOptions };
  *
  * ```ts
  * import { joinGlobs } from "@std/path/windows/join-globs";
- * import { assertEquals } from "@std/assert";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const joined = joinGlobs(["foo", "**", "bar"], { globstar: true });
  * assertEquals(joined, "foo\\**\\bar");

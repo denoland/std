@@ -16,7 +16,7 @@ new (...args: any) => infer C ? C
  *
  * @example Usage
  * ```ts no-eval
- * import { assertInstanceOf } from "@std/assert";
+ * import { assertInstanceOf } from "@std/assert/assert-instance-of";
  *
  * assertInstanceOf(new Date(), Date); // Doesn't throw
  * assertInstanceOf(new Date(), Number); // Throws

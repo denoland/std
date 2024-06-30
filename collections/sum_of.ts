@@ -15,7 +15,7 @@
  * @example Basic usage
  * ```ts
  * import { sumOf } from "@std/collections/sum-of";
- * import { assertEquals } from "@std/assert";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const people = [
  *   { name: "Anna", age: 34 },

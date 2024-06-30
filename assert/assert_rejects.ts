@@ -10,7 +10,7 @@ import { assertIsError } from "./assert_is_error.ts";
  *
  * @example Usage
  * ```ts no-eval
- * import { assertRejects } from "@std/assert";
+ * import { assertRejects } from "@std/assert/assert-rejects";
  *
  * await assertRejects(async () => Promise.reject(new Error())); // Doesn't throw
  * await assertRejects(async () => console.log("Hello world")); // Throws
@@ -33,7 +33,7 @@ export function assertRejects(
  *
  * @example Usage
  * ```ts no-eval
- * import { assertRejects } from "@std/assert";
+ * import { assertRejects } from "@std/assert/assert-rejects";
  *
  * await assertRejects(async () => Promise.reject(new Error()), Error); // Doesn't throw
  * await assertRejects(async () => Promise.reject(new Error()), SyntaxError); // Throws

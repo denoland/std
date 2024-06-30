@@ -18,7 +18,7 @@ import { extensions } from "./_db.ts";
  * @example Usage
  * ```ts
  * import { allExtensions } from "@std/media-types/all-extensions";
- * import { assertEquals } from "@std/assert";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * assertEquals(allExtensions("application/json"), ["json", "map"]);
  * assertEquals(allExtensions("text/html; charset=UTF-8"), ["html", "htm", "shtml"]);

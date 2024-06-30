@@ -28,7 +28,7 @@ const ADDED = 3;
  * @example Usage
  * ```ts
  * import { createCommon } from "@std/internal/diff";
- * import { assertEquals } from "@std/assert";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const a = [1, 2, 3];
  * const b = [1, 2, 4];
@@ -62,7 +62,7 @@ export function createCommon<T>(A: T[], B: T[]): T[] {
  * @example Usage
  * ```ts
  * import { assertFp } from "@std/internal/diff";
- * import { assertThrows } from "@std/assert";
+ * import { assertThrows } from "@std/assert/assert-throws";
  *
  * assertFp({ y: 0, id: 0 });
  * assertThrows(() => assertFp({ id: 0 }));
@@ -98,7 +98,7 @@ export function assertFp(value: unknown): asserts value is FarthestPoint {
  * @example Usage
  * ```ts
  * import { backTrace } from "@std/internal/diff";
- * import { assertEquals } from "@std/assert";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * assertEquals(
  *   backTrace([], [], { y: 0, id: 0 }, false, new Uint32Array(0), 0),
@@ -166,7 +166,7 @@ export function backTrace<T>(
  * @example Usage
  * ```ts
  * import { createFp } from "@std/internal/diff";
- * import { assertEquals } from "@std/assert";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * assertEquals(
  *   createFp(
@@ -227,7 +227,7 @@ export function createFp(
  * @example Usage
  * ```ts
  * import { diff } from "@std/internal/diff";
- * import { assertEquals } from "@std/assert";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const a = [1, 2, 3];
  * const b = [1, 2, 4];

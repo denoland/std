@@ -11,7 +11,7 @@ import { join as windowsJoin } from "./windows/join.ts";
  * @example Usage
  * ```ts
  * import { join } from "@std/path/join";
- * import { assertEquals } from "@std/assert";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * if (Deno.build.os === "windows") {
  *   assertEquals(join("C:\\foo", "bar", "baz\\quux", "garply", ".."), "C:\\foo\\bar\\baz\\quux");

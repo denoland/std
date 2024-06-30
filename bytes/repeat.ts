@@ -14,7 +14,7 @@ import { copy } from "./copy.ts";
  * @example Basic usage
  * ```ts
  * import { repeat } from "@std/bytes/repeat";
- * import { assertEquals } from "@std/assert";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const source = new Uint8Array([0, 1, 2]);
  *
@@ -24,7 +24,7 @@ import { copy } from "./copy.ts";
  * @example Zero count
  * ```ts
  * import { repeat } from "@std/bytes/repeat";
- * import { assertEquals } from "@std/assert";
+ * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const source = new Uint8Array([0, 1, 2]);
  *
