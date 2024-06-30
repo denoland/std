@@ -4,8 +4,8 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-import { YAMLError } from "./_error.ts";
-import type { KindType, Type } from "./type.ts";
+import { YamlError } from "./_error.ts";
+import type { KindType, Type } from "./_type.ts";
 import type { Any, ArrayObject } from "./_utils.ts";
 
 function compileList(
@@ -72,7 +72,7 @@ export class Schema implements SchemaDefinition {
 
     for (const type of this.implicit) {
       if (type.loadKind && type.loadKind !== "scalar") {
-        throw new YAMLError(
+        throw new YamlError(
           "There is a non-scalar type in the implicit list of a schema. Implicit resolving of such types is not supported.",
         );
       }
@@ -85,21 +85,6 @@ export class Schema implements SchemaDefinition {
       this.compiledExplicit,
     );
   }
-
-  /* Returns a new extended schema from current schema */
-  extend(definition: SchemaDefinition): Schema {
-    return new Schema({
-      implicit: [
-        ...new Set([...this.implicit, ...(definition?.implicit ?? [])]),
-      ],
-      explicit: [
-        ...new Set([...this.explicit, ...(definition?.explicit ?? [])]),
-      ],
-      include: [...new Set([...this.include, ...(definition?.include ?? [])])],
-    });
-  }
-
-  static create() {}
 }
 
 export interface SchemaDefinition {

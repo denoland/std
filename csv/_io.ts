@@ -64,7 +64,7 @@ export async function parseRecord(
   opt: ReadOptions,
   startLine: number,
   lineIndex: number = startLine,
-): Promise<Array<string> | null> {
+): Promise<Array<string>> {
   // line starting with comment character is ignored
   if (opt.comment && line[0] === opt.comment) {
     return [];
@@ -352,7 +352,7 @@ export function convertRowToObject(
   return out;
 }
 
-/** Options for {@linkcode parse} and {@linkcode CsvParseStream}. */
+/** Parse result type for {@linkcode parse} and {@linkcode CsvParseStream}. */
 export type ParseResult<ParseOptions, T> =
   // If `columns` option is specified, the return type is Record type.
   T extends ParseOptions & { columns: readonly (infer C extends string)[] }

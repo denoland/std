@@ -12,19 +12,14 @@
  * If your YAML contains multiple documents in it, you can use {@linkcode parseAll} for
  * handling it.
  *
- * To handle `regexp`, and `undefined` types, use {@linkcode EXTENDED_SCHEMA}.
- * You can also use custom types by extending schemas.
- *
  * ## :warning: Limitations
  * - `binary` type is currently not stable.
  *
  * For further examples see https://github.com/nodeca/js-yaml/tree/master/examples.
- * @example
+ *
  * ```ts
- * import {
- *   parse,
- *   stringify,
- * } from "@std/yaml";
+ * import { parse, stringify } from "@std/yaml";
+ * import { assertEquals } from "@std/assert";
  *
  * const data = parse(`
  * foo: bar
@@ -32,16 +27,14 @@
  *   - qux
  *   - quux
  * `);
- * console.log(data);
- * // => { foo: "bar", baz: [ "qux", "quux" ] }
+ * assertEquals(data, { foo: "bar", baz: [ "qux", "quux" ] });
  *
  * const yaml = stringify({ foo: "bar", baz: ["qux", "quux"] });
- * console.log(yaml);
- * // =>
- * // foo: bar
- * // baz:
- * //   - qux
- * //   - quux
+ * assertEquals(yaml, `foo: bar
+ * baz:
+ *   - qux
+ *   - quux
+ * `);
  * ```
  *
  * @module
@@ -49,5 +42,3 @@
 
 export * from "./parse.ts";
 export * from "./stringify.ts";
-export * from "./type.ts";
-export * from "./schema/mod.ts";

@@ -3,10 +3,10 @@
 // Copyright 2011-2015 by Vitaly Puzrin. All rights reserved. MIT license.
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import type { YAMLError } from "../_error.ts";
-import type { Schema, SchemaDefinition, TypeMap } from "../schema.ts";
+import type { YamlError } from "../_error.ts";
+import type { Schema, SchemaDefinition, TypeMap } from "../_schema.ts";
 import { State } from "../_state.ts";
-import type { Type } from "../type.ts";
+import type { Type } from "../_type.ts";
 import type { Any, ArrayObject } from "../_utils.ts";
 
 export interface LoaderStateOptions {
@@ -19,7 +19,7 @@ export interface LoaderStateOptions {
   /** compatibility with JSON.parse behaviour. */
   json?: boolean;
   /** function to call on warning messages. */
-  onWarning?(this: null, e?: YAMLError): void;
+  onWarning?(this: null, e?: YamlError): void;
 }
 
 // deno-lint-ignore no-explicit-any
@@ -43,8 +43,8 @@ export class LoaderState extends State {
 
   version?: string | null;
   checkLineBreaks?: boolean;
-  tagMap?: ArrayObject;
-  anchorMap?: ArrayObject;
+  tagMap: ArrayObject = Object.create(null);
+  anchorMap: ArrayObject = Object.create(null);
   tag?: string | null;
   anchor?: string | null;
   kind?: string | null;
