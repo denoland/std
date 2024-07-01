@@ -3,7 +3,7 @@
 // Copyright 2011-2015 by Vitaly Puzrin. All rights reserved. MIT license.
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import type { Schema, SchemaDefinition } from "../_schema.ts";
+import type { Schema } from "../_schema.ts";
 import { State } from "../_state.ts";
 import type { StyleVariant, Type } from "../_type.ts";
 import type { Any, ArrayObject } from "../_utils.ts";
@@ -56,7 +56,7 @@ export interface DumperStateOptions {
   /** Each tag may have own set of styles.	- "tag" => "style" map. */
   styles?: ArrayObject<StyleVariant> | null;
   /** specifies a schema to use. */
-  schema?: SchemaDefinition;
+  schema?: Schema;
   /**
    * If true, sort keys when dumping YAML in ascending, ASCII character order.
    * If a function, use the function to sort the keys. (default: false)

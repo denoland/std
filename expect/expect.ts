@@ -54,11 +54,9 @@ import {
   toStrictEqual,
   toThrow,
 } from "./_matchers.ts";
-import { addSerializer } from "./_snapshot_serializer.ts";
 import { isPromiseLike } from "./_utils.ts";
 import * as asymmetricMatchers from "./_asymmetric_matchers.ts";
 import type { Tester } from "./_types.ts";
-import type { SnapshotPlugin } from "./_types.ts";
 
 export type { AnyConstructor, Async, Expected } from "./_types.ts";
 
@@ -287,22 +285,6 @@ export function expect(value: unknown, customMessage?: string): Expected {
  */
 expect.addEqualityTesters = addCustomEqualityTesters as (
   newTesters: Tester[],
-) => void;
-/**
- * It will be removed in 0.226.0. Use `expect.addEqualityTesters` instead.
- *
- * @deprecated (will be removed in 0.226.0) Use {@linkcode expect.addSnapshotSerializer} instead.
- */
-expect.addSnapshotSerializers = addSerializer as (
-  plugin: SnapshotPlugin,
-) => void;
-
-/**
- * This is a no-op right now. Don't use it.
- * Todo: support serialize plugin
- */
-expect.addSnapshotSerializer = addSerializer as (
-  plugin: SnapshotPlugin,
 ) => void;
 /**
  * TODO: export appropriate types to define custom matchers.

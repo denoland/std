@@ -5,7 +5,7 @@
 // This module is browser compatible.
 
 import { dump } from "./_dumper/dumper.ts";
-import { replaceSchemaNameWithSchemaClass } from "./_schema.ts";
+import { SCHEMA_MAP } from "./_schema.ts";
 
 /**
  * The option for strinigfy.
@@ -75,9 +75,7 @@ export type StringifyOptions = {
  */
 export function stringify(
   data: unknown,
-  options?: StringifyOptions,
+  options: StringifyOptions = {},
 ): string {
-  replaceSchemaNameWithSchemaClass(options);
-  // deno-lint-ignore no-explicit-any
-  return dump(data, options as any);
+  return dump(data, { ...options, schema: SCHEMA_MAP.get(options.schema!) });
 }
