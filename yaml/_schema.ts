@@ -7,6 +7,23 @@
 import { YamlError } from "./_error.ts";
 import type { KindType, Type } from "./_type.ts";
 import type { Any, ArrayObject } from "./_utils.ts";
+import {
+  binary,
+  bool,
+  float,
+  int,
+  map,
+  merge,
+  nil,
+  omap,
+  pairs,
+  regexp,
+  seq,
+  set,
+  str,
+  timestamp,
+  undefinedType,
+} from "./_type/mod.ts";
 
 function compileList(
   schema: Schema,
@@ -91,4 +108,95 @@ export interface SchemaDefinition {
   implicit?: Any[];
   explicit?: Type[];
   include?: Schema[];
+}
+
+/**
+ * Standard YAML's failsafe schema.
+ *
+ * @see {@link http://www.yaml.org/spec/1.2/spec.html#id2802346}
+ */
+const FAILSAFE_SCHEMA: Schema = new Schema({
+  explicit: [str, seq, map],
+});
+
+/**
+ * Standard YAML's JSON schema.
+ *
+ * @see {@link http://www.yaml.org/spec/1.2/spec.html#id2803231}
+ */
+const JSON_SCHEMA: Schema = new Schema({
+  implicit: [nil, bool, int, float],
+  include: [FAILSAFE_SCHEMA],
+});
+
+/**
+ * Standard YAML's core schema.
+ *
+ * @see {@link http://www.yaml.org/spec/1.2/spec.html#id2804923}
+ */
+const CORE_SCHEMA: Schema = new Schema({
+  include: [JSON_SCHEMA],
+});
+
+/**
+ * Default YAML schema. It is not described in the YAML specification.
+ */
+export const DEFAULT_SCHEMA: Schema = new Schema({
+  explicit: [binary, omap, pairs, set],
+  implicit: [timestamp, merge],
+  include: [CORE_SCHEMA],
+});
+
+/***
+ * Extends JS-YAML default schema with additional JavaScript types
+ * It is not described in the YAML specification.
+ * Functions are no longer supported for security reasons.
+ *
+ * @example
+ * ```ts
+ * import { parse } from "@std/yaml";
+ *
+ * const data = parse(
+ *   `
+ *   regexp:
+ *     simple: !!js/regexp foobar
+ *     modifiers: !!js/regexp /foobar/mi
+ *   undefined: !!js/undefined ~
+ * # Disabled, see: https://github.com/denoland/deno_std/pull/1275
+ * #  function: !!js/function >
+ * #    function foobar() {
+ * #      return 'hello world!';
+ * #    }
+ * `,
+ *   { schema: "extended" },
+ * );
+ * ```
+ */
+const EXTENDED_SCHEMA: Schema = new Schema({
+  explicit: [regexp, undefinedType],
+  include: [DEFAULT_SCHEMA],
+});
+
+export function replaceSchemaNameWithSchemaClass(
+  options?: {
+    schema?: "core" | "default" | "failsafe" | "json" | "extended" | unknown;
+  },
+) {
+  switch (options?.schema) {
+    case "core":
+      options.schema = CORE_SCHEMA;
+      break;
+    case "default":
+      options.schema = DEFAULT_SCHEMA;
+      break;
+    case "failsafe":
+      options.schema = FAILSAFE_SCHEMA;
+      break;
+    case "json":
+      options.schema = JSON_SCHEMA;
+      break;
+    case "extended":
+      options.schema = EXTENDED_SCHEMA;
+      break;
+  }
 }
