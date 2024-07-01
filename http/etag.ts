@@ -98,7 +98,7 @@ async function calcFileInfo(
  * @example Usage
  * ```ts
  * import { eTag } from "@std/http/etag";
- * import { assert } from "@std/assert/assert";
+ * import { assert } from "@std/assert";
  *
  * const body = "hello deno!";
  *
@@ -138,7 +138,7 @@ export async function eTag(
  *   eTag,
  *   ifMatch,
  * } from "@std/http/etag";
- * import { assert } from "@std/assert/assert"
+ * import { assert } from "@std/assert";
  *
  * const body = "hello deno!";
  *
@@ -186,7 +186,7 @@ export function ifMatch(
  *   eTag,
  *   ifNoneMatch,
  * } from "@std/http/etag";
- * import { assert } from "@std/assert/assert"
+ * import { assert } from "@std/assert";
  *
  * const body = "hello deno!";
  *

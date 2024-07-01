@@ -2,7 +2,7 @@
 
 // This file is copied from `std/assert`.
 
-import { AssertionError } from "@std/assert/assertion-error";
+import { AssertionError } from "@std/assert";
 import { buildNotEqualErrorMessage } from "./_build_message.ts";
 import { equal } from "./_equal.ts";
 import type { EqualOptions } from "./_types.ts";
@@ -15,7 +15,7 @@ import type { EqualOptions } from "./_types.ts";
  *
  * @example
  * ```ts
- * import { assertNotEquals } from "@std/assert/assert-not-equals";
+ * import { assertNotEquals } from "@std/assert";
  *
  * assertNotEquals(1, 2); // Doesn't throw
  * assertNotEquals(1, 1); // Throws

@@ -22,7 +22,7 @@ function isYearNumberALeapYear(yearNumber: number): boolean {
  * @example Basic usage
  * ```ts
  * import { isLeap } from "@std/datetime/is-leap";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * assertEquals(isLeap(new Date("1970-01-02")), false);
  *
@@ -63,7 +63,7 @@ export function isLeap(year: Date | number): boolean {
  * @example Basic usage
  * ```ts
  * import { isUtcLeap } from "@std/datetime/is-leap";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * assertEquals(isUtcLeap(new Date("2000-01-01")), true);
  *

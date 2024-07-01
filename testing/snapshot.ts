@@ -141,9 +141,9 @@ import { parse } from "@std/path/parse";
 import { resolve } from "@std/path/resolve";
 import { toFileUrl } from "@std/path/to-file-url";
 import { ensureFile, ensureFileSync } from "@std/fs/ensure-file";
-import { assert } from "@std/assert/assert";
-import { AssertionError } from "@std/assert/assertion-error";
-import { equal } from "@std/assert/equal";
+import { assert } from "@std/assert";
+import { AssertionError } from "@std/assert";
+import { equal } from "@std/assert";
 import { diff } from "@std/internal/diff";
 import { diffStr } from "@std/internal/diff-str";
 import { buildMessage } from "@std/internal/build-message";
@@ -204,7 +204,7 @@ function getErrorMessage(message: string, options: SnapshotOptions) {
  * @example Usage
  * ```ts
  * import { serialize } from "@std/testing/snapshot";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * assertEquals(serialize({ foo: 42 }), "{\n  foo: 42,\n}")
  * ```
@@ -438,8 +438,17 @@ class AssertSnapshotContext {
    * This method can safely be called more than once and will only register the teardown
    * function once in a context.
    */
-  registerTeardown() {
+  async registerTeardown() {
     if (!this.#teardownRegistered) {
+      const permission = await Deno.permissions.query({
+        name: "write",
+        path: this.#snapshotFileUrl,
+      });
+      if (permission.state !== "granted") {
+        throw new Deno.errors.PermissionDenied(
+          `Missing write access to snapshot file (${this.#snapshotFileUrl}). This is required because assertSnapshot was called in update mode. Please pass the --allow-write flag.`,
+        );
+      }
       globalThis.addEventListener("unload", this.#teardown);
       this.#teardownRegistered = true;
     }
@@ -582,7 +591,7 @@ export async function assertSnapshot(
   const _serialize = options.serializer || serialize;
   const _actual = _serialize(actual);
   if (getIsUpdate(options)) {
-    assertSnapshotContext.registerTeardown();
+    await assertSnapshotContext.registerTeardown();
     if (!equal(_actual, snapshot)) {
       assertSnapshotContext.updateSnapshot(name, _actual);
     }
