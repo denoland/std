@@ -5,7 +5,7 @@
 // This module is browser compatible.
 
 import { dump } from "./_dumper/dumper.ts";
-import { replaceSchemaNameWithSchemaClass } from "./_schema.ts";
+import { SCHEMA_MAP } from "./_schema.ts";
 
 /**
  * The option for strinigfy.
@@ -28,7 +28,7 @@ export type StringifyOptions = {
   /** Each tag may have own set of styles.	- "tag" => "style" map. */
   styles?: Record<string, "lowercase" | "uppercase" | "camelcase" | "decimal">;
   /** Name of the schema to use. */
-  schema?: "core" | "default" | "failsafe" | "json" | "extended";
+  schema?: keyof typeof SCHEMA_MAP;
   /**
    * If true, sort keys when dumping YAML in ascending, ASCII character order.
    * If a function, use the function to sort the keys. (default: false)
@@ -81,9 +81,8 @@ export type StringifyOptions = {
  */
 export function stringify(
   data: unknown,
-  options?: StringifyOptions,
+  options: StringifyOptions = {},
 ): string {
-  replaceSchemaNameWithSchemaClass(options);
-  // deno-lint-ignore no-explicit-any
-  return dump(data, options as any);
+  const schema = options.schema ? SCHEMA_MAP[options.schema] : undefined;
+  return dump(data, { ...options, schema });
 }

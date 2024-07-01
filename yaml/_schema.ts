@@ -71,7 +71,7 @@ function compileMap(...typesList: Type[][]): TypeMap {
   return result;
 }
 
-export class Schema implements SchemaDefinition {
+export class Schema {
   static SCHEMA_DEFAULT?: Schema;
 
   implicit: Type[];
@@ -82,7 +82,11 @@ export class Schema implements SchemaDefinition {
   compiledExplicit: Type[];
   compiledTypeMap: TypeMap;
 
-  constructor(definition: SchemaDefinition) {
+  constructor(definition: {
+    implicit?: Any[];
+    explicit?: Type[];
+    include?: Schema[];
+  }) {
     this.explicit = definition.explicit || [];
     this.implicit = definition.implicit || [];
     this.include = definition.include || [];
@@ -102,12 +106,6 @@ export class Schema implements SchemaDefinition {
       this.compiledExplicit,
     );
   }
-}
-
-export interface SchemaDefinition {
-  implicit?: Any[];
-  explicit?: Type[];
-  include?: Schema[];
 }
 
 /**
@@ -177,26 +175,10 @@ const EXTENDED_SCHEMA: Schema = new Schema({
   include: [DEFAULT_SCHEMA],
 });
 
-export function replaceSchemaNameWithSchemaClass(
-  options?: {
-    schema?: "core" | "default" | "failsafe" | "json" | "extended" | unknown;
-  },
-) {
-  switch (options?.schema) {
-    case "core":
-      options.schema = CORE_SCHEMA;
-      break;
-    case "default":
-      options.schema = DEFAULT_SCHEMA;
-      break;
-    case "failsafe":
-      options.schema = FAILSAFE_SCHEMA;
-      break;
-    case "json":
-      options.schema = JSON_SCHEMA;
-      break;
-    case "extended":
-      options.schema = EXTENDED_SCHEMA;
-      break;
-  }
-}
+export const SCHEMA_MAP = {
+  core: CORE_SCHEMA,
+  default: DEFAULT_SCHEMA,
+  failsafe: FAILSAFE_SCHEMA,
+  json: JSON_SCHEMA,
+  extended: EXTENDED_SCHEMA,
+};
