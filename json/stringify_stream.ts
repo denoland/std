@@ -31,7 +31,7 @@ export interface StringifyStreamOptions {
  *
  * ```ts
  * import { JsonStringifyStream } from "@std/json/stringify-stream";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const stream = ReadableStream.from([{ foo: "bar" }, { baz: 100 }])
  *   .pipeThrough(new JsonStringifyStream());
@@ -49,7 +49,7 @@ export interface StringifyStreamOptions {
  *
  * ```ts
  * import { JsonStringifyStream } from "@std/json/stringify-stream";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const stream = ReadableStream.from([{ foo: "bar" }, { baz: 100 }])
  *   .pipeThrough(new JsonStringifyStream({ prefix: "\x1E", suffix: "\n" }));
@@ -95,7 +95,7 @@ export class JsonStringifyStream extends TransformStream<unknown, string> {
    * @example Usage
    * ```ts
    * import { JsonStringifyStream } from "@std/json/stringify-stream";
-   * import { assertEquals } from "@std/assert/assert-equals";
+   * import { assertEquals } from "@std/assert";
    *
    * const stream = ReadableStream.from([{ foo: "bar" }, { baz: 100 }])
    *   .pipeThrough(new JsonStringifyStream());
