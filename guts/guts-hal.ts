@@ -1,11 +1,11 @@
 import OpenAI from 'openai'
-import { Api, ENTRY_HELP_FILE, init } from '@/isolates/hal.ts'
+import { Api, ENTRY_HELP_FILE, init as halInit } from '@/isolates/hal.ts'
 import { init as githubInit } from '@/isolates/github.ts'
 import * as engageHelp from '@/isolates/engage-help.ts'
 import { expect, log } from '@utils'
 import {
   addChild,
-  ArtifactTerminal,
+  ArtifactBackchat,
   BranchMap,
   CradleMaker,
   getActorId,
@@ -17,8 +17,8 @@ import {
 import { ulid } from 'ulid'
 type Messages = OpenAI.ChatCompletionMessageParam
 
-const combinedInit = async (session: ArtifactTerminal) => {
-  await Promise.all([githubInit(session), init(session)])
+const combinedInit = async (session: ArtifactBackchat) => {
+  await Promise.all([githubInit(session), halInit(session)])
 }
 
 export default (name: string, cradleMaker: CradleMaker) => {

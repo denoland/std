@@ -1,8 +1,8 @@
 // THIS IS SYNCED FROM THE ARTIFACT PROJECT
 // TODO publish to standalone repo
 import {
+  ArtifactBackchat,
   ArtifactMachine,
-  ArtifactTerminal,
   assertValidTerminal,
   EngineInterface,
   freezePid,
@@ -29,7 +29,7 @@ type Init = {
   params?: Params
 }
 
-export class Terminal implements ArtifactTerminal {
+export class Backchat implements ArtifactBackchat {
   #init: Promise<void> | undefined
 
   readonly #engine: EngineInterface
@@ -59,7 +59,7 @@ export class Terminal implements ArtifactTerminal {
   static create(engine: EngineInterface, machine: ArtifactMachine) {
     const branches = [...machine.pid.branches, ulid()]
     const pid = { ...machine.pid, branches }
-    return Terminal.resume(engine, machine, pid)
+    return Backchat.resume(engine, machine, pid)
   }
   static resume(engine: EngineInterface, machine: ArtifactMachine, pid: PID) {
     freezePid(pid)
@@ -67,7 +67,7 @@ export class Terminal implements ArtifactTerminal {
       // TODO change to be isChildOf
       throw new Error('Invalid session pid: ' + print(pid))
     }
-    const terminal = new Terminal(engine, machine, pid)
+    const terminal = new Backchat(engine, machine, pid)
     terminal.#init = machine.rootTerminalPromise.then(async (rootSession) => {
       await rootSession.#initialize(terminal.terminalId)
       terminal.#init = undefined
@@ -78,7 +78,7 @@ export class Terminal implements ArtifactTerminal {
     const branches = [...machine.pid.branches, ROOT_SESSION]
     const terminalPid = { ...machine.pid, branches }
     freezePid(terminalPid)
-    return new Terminal(engine, machine, terminalPid)
+    return new Backchat(engine, machine, terminalPid)
   }
   async #initialize(terminalId: string) {
     const thisSessionId = this.pid.branches[this.pid.branches.length - 1]
@@ -130,10 +130,10 @@ export class Terminal implements ArtifactTerminal {
   }
   newTerminal() {
     // TODO test rapidly creating two sessions, with queuing happening properly
-    return Terminal.create(this.#engine, this.#machine)
+    return Backchat.create(this.#engine, this.#machine)
   }
   resumeTerminal(pid: PID) {
-    return Terminal.resume(this.#engine, this.#machine, pid)
+    return Backchat.resume(this.#engine, this.#machine, pid)
   }
   async dns(repo: string) {
     const [account, repository, ...rest] = repo.split('/')

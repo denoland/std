@@ -2,7 +2,7 @@ import IsolateApi from './isolate-api.ts'
 export type { IsolateApi }
 export const IO_PATH = '.io.json'
 import {
-  ArtifactTerminal,
+  ArtifactBackchat,
   Change,
   CommitObject,
   IsolateApiSchema,
@@ -224,7 +224,7 @@ export const pidSchema = {
     },
   },
 }
-export type Provisioner = (superSession: ArtifactTerminal) => Promise<void>
-export type CradleMaker = (init?: Provisioner) => Promise<ArtifactTerminal>
+export type Provisioner = (superBackchat: ArtifactBackchat) => Promise<void>
+export type CradleMaker = (init?: Provisioner) => Promise<ArtifactBackchat>
 
 export * from './api/web-client.types.ts'

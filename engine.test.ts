@@ -7,28 +7,29 @@ import { Provisioner } from '@/constants.ts'
 
 const superuserKey = Machine.generatePrivateKey()
 const aesKey = DB.generateAesKey()
+const privateKey = Machine.generatePrivateKey()
+
 const cradleMaker = async (init?: Provisioner) => {
   const engine = await Engine.provision(superuserKey, aesKey, init)
-  const privateKey = Machine.generatePrivateKey()
   const machine = Machine.load(engine, privateKey)
   const terminal = machine.openTerminal()
   return terminal
 }
 
-Deno.test('cradle', async (t) => {
+Deno.test.only('cradle', async (t) => {
   await t.step('basic', async () => {
-    const terminal = await cradleMaker()
+    const thread = await cradleMaker()
 
-    const result = await terminal.ping({ data: 'hello' })
+    const result = await thread.ping({ data: 'hello' })
     expect(result).toBe('hello')
 
-    await terminal.rm({ repo: 'dreamcatcher-tech/HAL' })
-    const clone = await terminal.clone({ repo: 'dreamcatcher-tech/HAL' })
+    await thread.rm({ repo: 'dreamcatcher-tech/HAL' })
+    const clone = await thread.clone({ repo: 'dreamcatcher-tech/HAL' })
     log('clone result', clone)
     expect(clone.pid).toBeDefined()
     expect(clone.pid.account).toBe('dreamcatcher-tech')
     expect(typeof clone.head).toBe('string')
-    await terminal.engineStop()
+    await thread.engineStop()
   })
 })
 

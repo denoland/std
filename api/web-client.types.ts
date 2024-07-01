@@ -1,7 +1,8 @@
 // copied from the artifact project
 import { Chalk } from 'chalk'
+import { ulid } from 'ulid'
 import { JSONSchemaType } from './web-client.ajv.ts'
-import { Terminal } from './web-client-session.ts'
+import { Backchat } from './web-client-session.ts'
 import { assert } from '@sindresorhus/is'
 export enum PROCTYPE {
   SERIAL = 'SERIAL',
@@ -304,7 +305,7 @@ type ApiSchema = Record<string, JSONSchemaType<object>>
 type PidHead = { pid: PID; head: string }
 
 /** The client session interface to artifact */
-export interface ArtifactTerminal {
+export interface ArtifactBackchat {
   pid: PID
   machine: ArtifactMachine
   terminalId: string
@@ -348,8 +349,8 @@ export interface ArtifactTerminal {
   endSession(): Promise<void>
   /** Remove the account if currently signed in */
   deleteAccountUnrecoverably(): Promise<void>
-  newTerminal(): ArtifactTerminal
-  resumeTerminal(pid: PID): ArtifactTerminal
+  newTerminal(): ArtifactBackchat
+  resumeTerminal(pid: PID): ArtifactBackchat
   ensureBranch(branch: PID, ancestor: PID): Promise<PID>
   lsChildren(pid: PID): Promise<string[]>
 }
@@ -360,9 +361,9 @@ with github.
 export interface ArtifactMachine {
   pid: PID
   machineId: string
-  rootTerminalPromise: Promise<Terminal>
+  rootTerminalPromise: Promise<Backchat>
   /** Using the current session, create a new session. */
-  openTerminal(retry?: PID): ArtifactTerminal
+  openTerminal(retry?: PID): ArtifactBackchat
   /** Pings the execution context without going thru the transaction queue.
    *
    * Used primarily by web clients to establish base connectivity and get
@@ -572,6 +573,7 @@ export const machineIdRegex = /^[0-9a-f]{66}$/
 export const terminalIdRegex =
   /^[0-7][0-9A-HJKMNP-TV-Z]{9}[0-9A-HJKMNP-TV-Z]{16}$/
 export const ROOT_SESSION = '111111111111111R00TSESS10N'
+export const SUPERUSER = 'SUPERUSER00' // actorId for superuser
 export const getActorPid = (source: PID) => {
   const branches = source.branches.slice(0, 2)
   return { ...source, branches }
@@ -647,4 +649,11 @@ export type BranchMap = { [toolCallId: string]: Commit }
 
 export const addChild = (pid: PID, ...children: string[]) => {
   return { ...pid, branches: [...pid.branches, ...children] }
+}
+
+export const randomId = () => {
+  const string = ulid()
+  const regex = /(?<=.{10})(.{16})/
+  const randomnessPart = string.match(regex)?.[0] || ''
+  return randomnessPart
 }

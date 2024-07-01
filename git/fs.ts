@@ -372,6 +372,9 @@ export default class FS {
     this.#overwrite = from.#overwrite
   }
   async isPidExists(pid: PID) {
+    // TODO maybe if this gets read, it gets stored in the accumulator
+    // store the root head of our repo in the git file structure, used to
+    // reference from
     return !!await this.#db.readHead(pid)
   }
   async overwrite(commit: string, ...ignores: string[]) {

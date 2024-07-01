@@ -2,7 +2,7 @@ import { transcribe } from './isolates/ai-prompt.ts'
 import Compartment from './io/compartment.ts'
 import '@std/dotenv/load'
 import {
-  ArtifactTerminal,
+  ArtifactBackchat,
   assertValidTerminal,
   C,
   colorize,
@@ -38,7 +38,7 @@ export class Engine implements EngineInterface {
   #homeAddress: PID | undefined
   #githubAddress: PID | undefined
   #abort = new AbortController()
-  #suTerminal: Promise<ArtifactTerminal> | undefined
+  #suTerminal: Promise<ArtifactBackchat> | undefined
 
   private constructor(
     compartment: Compartment,
@@ -108,7 +108,7 @@ export class Engine implements EngineInterface {
         log('unlocked db', lockId)
       }
     }
-    // subtly, blocks only web requests, not queue processing
+    // importantly, this blocks only web requests, not queue processing
     await db.awaitDbProvisioning()
     this.#homeAddress = await db.awaitHomeAddress()
     log('db unlocked - home address:', print(this.#homeAddress))

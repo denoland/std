@@ -1,6 +1,6 @@
 import { Debug, isKvTestMode } from '@/utils.ts'
 import Server from '@/api/server.ts'
-import { ArtifactTerminal } from '@/constants.ts'
+import { ArtifactBackchat } from '@/constants.ts'
 import { init as githubInit } from '@/isolates/github.ts'
 import { init as halInit } from '@/isolates/hal.ts'
 
@@ -19,7 +19,7 @@ const getAesKey = () => {
   return aesKey
 }
 
-const init = async (session: ArtifactTerminal) => {
+const init = async (session: ArtifactBackchat) => {
   await Promise.all([githubInit(session), halInit(session)])
 }
 

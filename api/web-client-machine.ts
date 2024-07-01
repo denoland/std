@@ -5,7 +5,7 @@ import {
   JsonValue,
   PID,
 } from './web-client.types.ts'
-import { Terminal } from './web-client-session.ts'
+import { Backchat } from './web-client-session.ts'
 
 /**
  * Create a shell that is targeted at the home chain, to avoid reimplementation
@@ -19,7 +19,7 @@ export class Machine implements ArtifactMachine {
   readonly #privKey: Uint8Array
   readonly #pubKey: Uint8Array
   readonly #machineId: string
-  #rootSessionPromise: Promise<Terminal>
+  #rootSessionPromise: Promise<Backchat>
 
   static load(engine: EngineInterface, privateKey: string) {
     if (!secp.utils.isValidPrivateKey(privateKey)) {
@@ -64,15 +64,15 @@ export class Machine implements ArtifactMachine {
   }
   async #connect() {
     await this.#engine.ensureMachineTerminal(this.pid)
-    return Terminal.openRoot(this.#engine, this)
+    return Backchat.openRoot(this.#engine, this)
   }
 
   /** If the given pid is valid, uses that session, else creates a new one */
-  openTerminal(retry?: PID): Terminal {
+  openTerminal(retry?: PID): Backchat {
     if (retry) {
-      return Terminal.resume(this.#engine, this, retry)
+      return Backchat.resume(this.#engine, this, retry)
     }
-    return Terminal.create(this.#engine, this)
+    return Backchat.create(this.#engine, this)
   }
   ping(params?: { data?: JsonValue }) {
     return this.#engine.ping(params?.data)
