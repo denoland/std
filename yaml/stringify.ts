@@ -5,7 +5,7 @@
 // This module is browser compatible.
 
 import { dump } from "./_dumper/dumper.ts";
-import { replaceSchemaNameWithSchemaClass } from "./schema/mod.ts";
+import { replaceSchemaNameWithSchemaClass } from "./_schema.ts";
 
 /**
  * The option for strinigfy.

@@ -5,7 +5,7 @@
 // This module is browser compatible.
 
 import { load, loadDocuments } from "./_loader/loader.ts";
-import { replaceSchemaNameWithSchemaClass } from "./schema/mod.ts";
+import { replaceSchemaNameWithSchemaClass } from "./_schema.ts";
 
 /**
  * Options for parsing YAML.
