@@ -605,7 +605,7 @@ export function toHaveBeenNthCalledWith(
   ...expected: unknown[]
 ): MatchResult {
   if (nth < 1) {
-    new Error(`nth must be greater than 0. ${nth} was given.`);
+    throw new Error(`nth must be greater than 0. ${nth} was given.`);
   }
 
   const calls = getMockCalls(context.value);
