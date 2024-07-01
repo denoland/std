@@ -13,7 +13,7 @@ import { replaceSchemaNameWithSchemaClass } from "./_schema.ts";
 export type StringifyOptions = {
   /** Indentation width to use (in spaces). */
   indent?: number;
-  /** When true, will not add an indentation level to array elements */
+  /** When true, will add an indentation level to array elements */
   indentArrays?: boolean;
   /**
    * Do not throw on invalid types (like function in the safe schema)
@@ -40,12 +40,12 @@ export type StringifyOptions = {
   /** Set max line width. (default: 80) */
   lineWidth?: number;
   /**
-   * If true, don't convert duplicate objects
+   * If true, convert duplicate objects
    * into references (default: true)
    */
   createRefs?: boolean;
   /**
-   * If true don't try to be compatible with older yaml versions.
+   * If true try to be compatible with older yaml versions.
    * Currently: don't quote "yes", "no" and so on,
    * as required for YAML 1.1 (default: true)
    */
