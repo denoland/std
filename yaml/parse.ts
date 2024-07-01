@@ -11,8 +11,6 @@ import { replaceSchemaNameWithSchemaClass } from "./_schema.ts";
  * Options for parsing YAML.
  */
 export interface ParseOptions {
-  /** Uses legacy mode */
-  legacy?: boolean;
   /** Name of the schema to use.*/
   schema?: "core" | "default" | "failsafe" | "json" | "extended";
   /** compatibility with JSON.parse behaviour. */
