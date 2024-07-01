@@ -47,7 +47,7 @@ export interface ParseOptions {
  */
 export function parse(
   content: string,
-  options: ParseOptions = { schema: "default" },
+  options: ParseOptions = {},
 ): unknown {
   const schema = options.schema ? SCHEMA_MAP[options.schema] : undefined;
   return load(content, { ...options, schema });
