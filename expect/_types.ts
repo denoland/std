@@ -349,7 +349,6 @@ export interface Config {
   maxDepth: number;
   maxWidth: number;
   min: boolean;
-  plugins: SnapshotPlugin;
   printBasicPrototype: boolean;
   printFunctionName: boolean;
   spacingInner: string;
@@ -395,7 +394,3 @@ export interface OldSnapshotPlugin {
   ) => string;
   test: Test;
 }
-
-export type SnapshotPlugin = NewSnapshotPlugin | OldSnapshotPlugin;
-
-export type SnapshotPlugins = Array<SnapshotPlugin>;
