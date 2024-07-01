@@ -16,8 +16,6 @@ export interface ParseOptions {
   /** The listener */
   // deno-lint-ignore no-explicit-any
   listener?: ((...args: any[]) => void) | null;
-  /** string to be used as a file path in error/warning messages. */
-  filename?: string;
   /** Name of the schema to use.*/
   schema?: "core" | "default" | "failsafe" | "json" | "extended";
   /** compatibility with JSON.parse behaviour. */

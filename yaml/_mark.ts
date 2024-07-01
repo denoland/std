@@ -6,19 +6,16 @@
 import { repeat } from "./_utils.ts";
 
 export class Mark {
-  name: string;
   buffer: string;
   position: number;
   line: number;
   column: number;
   constructor(
-    name: string,
     buffer: string,
     position: number,
     line: number,
     column: number,
   ) {
-    this.name = name;
     this.buffer = buffer;
     this.position = position;
     this.line = line;
@@ -70,10 +67,6 @@ export class Mark {
   toString(compact?: boolean): string {
     let snippet;
     let where = "";
-
-    if (this.name) {
-      where += `in "${this.name}" `;
-    }
 
     where += `at line ${this.line + 1}, column ${this.column + 1}`;
 
