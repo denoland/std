@@ -1430,10 +1430,6 @@ function composeNode(
   let flowIndent: number;
   let blockIndent: number;
 
-  if (state.listener && state.listener !== null) {
-    state.listener("open", state);
-  }
-
   state.tag = null;
   state.anchor = null;
   state.kind = null;
@@ -1585,9 +1581,6 @@ function composeNode(
     }
   }
 
-  if (state.listener && state.listener !== null) {
-    state.listener("close", state);
-  }
   return state.tag !== null || state.anchor !== null || hasContent;
 }
 
