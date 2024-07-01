@@ -13,9 +13,6 @@ import { replaceSchemaNameWithSchemaClass } from "./schema/mod.ts";
 export interface ParseOptions {
   /** Uses legacy mode */
   legacy?: boolean;
-  /** The listener */
-  // deno-lint-ignore no-explicit-any
-  listener?: ((...args: any[]) => void) | null;
   /** string to be used as a file path in error/warning messages. */
   filename?: string;
   /** Name of the schema to use.*/
