@@ -289,15 +289,6 @@ expect.addEqualityTesters = addCustomEqualityTesters as (
   newTesters: Tester[],
 ) => void;
 /**
- * It will be removed in 0.226.0. Use `expect.addEqualityTesters` instead.
- *
- * @deprecated (will be removed in 0.226.0) Use {@linkcode expect.addSnapshotSerializer} instead.
- */
-expect.addSnapshotSerializers = addSerializer as (
-  plugin: SnapshotPlugin,
-) => void;
-
-/**
  * This is a no-op right now. Don't use it.
  * Todo: support serialize plugin
  */
