@@ -4,7 +4,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
 import type { YamlError } from "../_error.ts";
-import type { Schema, SchemaDefinition, TypeMap } from "../_schema.ts";
+import type { Schema, TypeMap } from "../_schema.ts";
 import { State } from "../_state.ts";
 import type { Type } from "../_type.ts";
 import type { Any, ArrayObject } from "../_utils.ts";
@@ -12,7 +12,7 @@ import type { Any, ArrayObject } from "../_utils.ts";
 export interface LoaderStateOptions {
   legacy?: boolean;
   /** specifies a schema to use. */
-  schema?: SchemaDefinition;
+  schema?: Schema;
   /** compatibility with JSON.parse behaviour. */
   json?: boolean;
   /** function to call on warning messages. */

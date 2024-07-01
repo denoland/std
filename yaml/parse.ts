@@ -5,7 +5,7 @@
 // This module is browser compatible.
 
 import { load, loadDocuments } from "./_loader/loader.ts";
-import { replaceSchemaNameWithSchemaClass } from "./_schema.ts";
+import { SCHEMA_MAP } from "./_schema.ts";
 
 /**
  * Options for parsing YAML.
@@ -45,10 +45,11 @@ export interface ParseOptions {
  * @param options Parsing options.
  * @returns Parsed document.
  */
-export function parse(content: string, options?: ParseOptions): unknown {
-  replaceSchemaNameWithSchemaClass(options);
-  // deno-lint-ignore no-explicit-any
-  return load(content, options as any);
+export function parse(
+  content: string,
+  options: ParseOptions = {},
+): unknown {
+  return load(content, { ...options, schema: SCHEMA_MAP.get(options.schema!) });
 }
 
 /**
@@ -78,8 +79,9 @@ export function parse(content: string, options?: ParseOptions): unknown {
  * @param options Parsing options.
  * @returns Array of parsed documents.
  */
-export function parseAll(content: string, options?: ParseOptions): unknown {
-  replaceSchemaNameWithSchemaClass(options);
-  // deno-lint-ignore no-explicit-any
-  return loadDocuments(content, options as any);
+export function parseAll(content: string, options: ParseOptions = {}): unknown {
+  return loadDocuments(content, {
+    ...options,
+    schema: SCHEMA_MAP.get(options.schema!),
+  });
 }
