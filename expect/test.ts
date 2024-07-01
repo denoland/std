@@ -1,12 +1,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
 import { expect } from "./expect.ts";
-import {
-  assert,
-  AssertionError,
-  assertRejects,
-  assertThrows,
-} from "@std/assert";
+import { AssertionError, assertRejects, assertThrows } from "@std/assert";
 
 Deno.test("expect().resolves.toEqual()", async () => {
   await expect(Promise.resolve(42)).resolves.toEqual(42);
@@ -20,7 +15,7 @@ Deno.test("expect().resolves.toEqual()", async () => {
   assertThrows(
     () => expect(null).resolves.toEqual(42),
     AssertionError,
-    "expected value must be PromiseLike",
+    "expected value must be Promiselike",
   );
 });
 
