@@ -8,7 +8,7 @@ import { assertEquals } from "./assert_equals.ts";
  *
  * @example Usage
  * ```ts no-eval
- * import { assertObjectMatch } from "@std/assert/assert-object-match";
+ * import { assertObjectMatch } from "@std/assert";
  *
  * assertObjectMatch({ foo: "bar" }, { foo: "bar" }); // Doesn't throw
  * assertObjectMatch({ foo: "bar" }, { foo: "baz" }); // Throws

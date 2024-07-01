@@ -813,6 +813,24 @@ Deno.test({
         assertEquals(parse(input, { trimLeadingSpace: true }), output);
       },
     });
+    await t.step({
+      name: "leading line breaks",
+      fn() {
+        const input = "\n\na,b,c";
+        const output = [["a", "b", "c"]];
+        assertEquals(parse(input), output);
+      },
+    });
+    await t.step({
+      name: "throws when skipFirstRow=true with empty data",
+      fn() {
+        assertThrows(
+          () => parse("", { skipFirstRow: true }),
+          Error,
+          "Headers must be defined",
+        );
+      },
+    });
   },
 });
 

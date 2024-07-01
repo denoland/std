@@ -218,7 +218,9 @@ function getValuesFromItem(
       let value: unknown = item;
 
       for (const prop of column.prop) {
-        if (typeof value !== "object" || value === null) continue;
+        if (typeof value !== "object" || value === null) {
+          continue;
+        }
         if (Array.isArray(value)) {
           if (typeof prop === "number") value = value[prop];
           else {
@@ -256,7 +258,7 @@ function getValuesFromItem(
  *   Column,
  *   stringify,
  * } from "@std/csv/stringify";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * type Character = {
  *   age: number;

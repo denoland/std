@@ -3,7 +3,7 @@
 // Copyright 2011-2015 by Vitaly Puzrin. All rights reserved. MIT license.
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import { type StyleVariant, Type } from "../type.ts";
+import { type StyleVariant, Type } from "../_type.ts";
 import { type Any, isNegativeZero } from "../_utils.ts";
 
 const YAML_FLOAT_PATTERN = new RegExp(

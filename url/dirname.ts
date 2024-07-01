@@ -16,7 +16,7 @@ import { strip } from "./_strip.ts";
  * @example Usage
  * ```ts
  * import { dirname } from "@std/url/dirname";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * assertEquals(dirname("https://deno.land/std/path/mod.ts"), new URL("https://deno.land/std/path"));
  * assertEquals(dirname(new URL("https://deno.land/std/path/mod.ts")), new URL("https://deno.land/std/path"));

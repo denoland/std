@@ -3,9 +3,9 @@
 // Copyright 2011-2015 by Vitaly Puzrin. All rights reserved. MIT license.
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import { YAMLError } from "../_error.ts";
+import { YamlError } from "../_error.ts";
 import { Mark } from "../_mark.ts";
-import type { Type } from "../type.ts";
+import type { Type } from "../_type.ts";
 import * as common from "../_utils.ts";
 import {
   LoaderState,
@@ -161,11 +161,10 @@ for (let i = 0; i < 256; i++) {
   simpleEscapeMap[i] = simpleEscapeSequence(i);
 }
 
-function generateError(state: LoaderState, message: string): YAMLError {
-  return new YAMLError(
+function generateError(state: LoaderState, message: string): YamlError {
+  return new YamlError(
     message,
     new Mark(
-      state.filename as string,
       state.input,
       state.position,
       state.line,
@@ -235,7 +234,7 @@ const directiveHandlers: DirectiveHandlers = {
       );
     }
 
-    if (state.tagMap && hasOwn(state.tagMap, handle)) {
+    if (hasOwn(state.tagMap, handle)) {
       return throwError(
         state,
         `there is a previously declared suffix for "${handle}" tag handle`,
@@ -249,9 +248,6 @@ const directiveHandlers: DirectiveHandlers = {
       );
     }
 
-    if (typeof state.tagMap === "undefined") {
-      state.tagMap = Object.create(null) as common.ArrayObject;
-    }
     state.tagMap[handle] = prefix;
   },
 };
@@ -300,7 +296,7 @@ function mergeMappings(
     );
   }
 
-  for (const key in Object.keys(source)) {
+  for (const key of Object.keys(source)) {
     if (!hasOwn(destination, key)) {
       Object.defineProperty(destination, key, {
         value: source[key],
@@ -744,11 +740,7 @@ function readFlowCollection(state: LoaderState, nodeIndent: number): boolean {
     return false;
   }
 
-  if (
-    state.anchor !== null &&
-    typeof state.anchor !== "undefined" &&
-    typeof state.anchorMap !== "undefined"
-  ) {
+  if (state.anchor !== null && typeof state.anchor !== "undefined") {
     state.anchorMap[state.anchor] = result;
   }
 
@@ -853,6 +845,8 @@ function readFlowCollection(state: LoaderState, nodeIndent: number): boolean {
   );
 }
 
+// Handles block scaler styles: e.g. '|', '>', '|-' and '>-'.
+// https://yaml.org/spec/1.2.2/#81-block-scalar-styles
 function readBlockScalar(state: LoaderState, nodeIndent: number): boolean {
   let chomping = CHOMPING_CLIP;
   let didReadContent = false;
@@ -1017,11 +1011,7 @@ function readBlockSequence(state: LoaderState, nodeIndent: number): boolean {
   const anchor = state.anchor;
   const result: unknown[] = [];
 
-  if (
-    state.anchor !== null &&
-    typeof state.anchor !== "undefined" &&
-    typeof state.anchorMap !== "undefined"
-  ) {
+  if (state.anchor !== null && typeof state.anchor !== "undefined") {
     state.anchorMap[state.anchor] = result;
   }
 
@@ -1093,11 +1083,7 @@ function readBlockMapping(
   let detected = false;
   let ch: number;
 
-  if (
-    state.anchor !== null &&
-    typeof state.anchor !== "undefined" &&
-    typeof state.anchorMap !== "undefined"
-  ) {
+  if (state.anchor !== null && typeof state.anchor !== "undefined") {
     state.anchorMap[state.anchor] = result;
   }
 
@@ -1361,10 +1347,7 @@ function readTagProperty(state: LoaderState): boolean {
 
   if (isVerbatim) {
     state.tag = tagName;
-  } else if (
-    typeof state.tagMap !== "undefined" &&
-    hasOwn(state.tagMap, tagHandle)
-  ) {
+  } else if (hasOwn(state.tagMap, tagHandle)) {
     state.tag = state.tagMap[tagHandle] + tagName;
   } else if (tagHandle === "!") {
     state.tag = `!${tagName}`;
@@ -1422,16 +1405,11 @@ function readAlias(state: LoaderState): boolean {
   }
 
   const alias = state.input.slice(_position, state.position);
-  if (
-    typeof state.anchorMap !== "undefined" &&
-    !hasOwn(state.anchorMap, alias)
-  ) {
+  if (!hasOwn(state.anchorMap, alias)) {
     return throwError(state, `unidentified alias "${alias}"`);
   }
 
-  if (typeof state.anchorMap !== "undefined") {
-    state.result = state.anchorMap[alias];
-  }
+  state.result = state.anchorMap[alias];
   skipSeparationSpace(state, true, -1);
   return true;
 }
@@ -1451,10 +1429,6 @@ function composeNode(
   let type: Type;
   let flowIndent: number;
   let blockIndent: number;
-
-  if (state.listener && state.listener !== null) {
-    state.listener("open", state);
-  }
 
   state.tag = null;
   state.anchor = null;
@@ -1543,7 +1517,7 @@ function composeNode(
           }
         }
 
-        if (state.anchor !== null && typeof state.anchorMap !== "undefined") {
+        if (state.anchor !== null) {
           state.anchorMap[state.anchor] = state.result;
         }
       }
@@ -1572,7 +1546,7 @@ function composeNode(
           // `state.result` updated in resolver if matched
           state.result = type.construct(state.result);
           state.tag = type.tag;
-          if (state.anchor !== null && typeof state.anchorMap !== "undefined") {
+          if (state.anchor !== null) {
             state.anchorMap[state.anchor] = state.result;
           }
           break;
@@ -1598,7 +1572,7 @@ function composeNode(
         );
       } else {
         state.result = type.construct(state.result);
-        if (state.anchor !== null && typeof state.anchorMap !== "undefined") {
+        if (state.anchor !== null) {
           state.anchorMap[state.anchor] = state.result;
         }
       }
@@ -1607,9 +1581,6 @@ function composeNode(
     }
   }
 
-  if (state.listener && state.listener !== null) {
-    state.listener("close", state);
-  }
   return state.tag !== null || state.anchor !== null || hasContent;
 }
 
@@ -1729,7 +1700,10 @@ function readDocument(state: LoaderState) {
   }
 }
 
-function loadDocuments(input: string, options?: LoaderStateOptions): unknown[] {
+export function loadDocuments(
+  input: string,
+  options?: LoaderStateOptions,
+): unknown[] {
   input = String(input);
   options = options || {};
 
@@ -1765,29 +1739,6 @@ function loadDocuments(input: string, options?: LoaderStateOptions): unknown[] {
   return state.documents;
 }
 
-export type CbFunction = (doc: unknown) => void;
-function isCbFunction(fn: unknown): fn is CbFunction {
-  return typeof fn === "function";
-}
-
-export function loadAll<T extends CbFunction | LoaderStateOptions>(
-  input: string,
-  iteratorOrOption?: T,
-  options?: LoaderStateOptions,
-): T extends CbFunction ? void : unknown[] {
-  if (!isCbFunction(iteratorOrOption)) {
-    return loadDocuments(input, iteratorOrOption as LoaderStateOptions) as Any;
-  }
-
-  const documents = loadDocuments(input, options);
-  const iterator = iteratorOrOption;
-  for (let index = 0; index < documents.length; index++) {
-    iterator(documents[index]);
-  }
-
-  return void 0 as Any;
-}
-
 export function load(input: string, options?: LoaderStateOptions): unknown {
   const documents = loadDocuments(input, options);
 
@@ -1797,7 +1748,7 @@ export function load(input: string, options?: LoaderStateOptions): unknown {
   if (documents.length === 1) {
     return documents[0];
   }
-  throw new YAMLError(
+  throw new YamlError(
     "expected a single document in the stream, but found more",
   );
 }

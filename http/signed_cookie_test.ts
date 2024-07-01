@@ -2,11 +2,11 @@
 import {
   parseSignedCookie,
   signCookie,
-  verifyCookie,
+  verifySignedCookie,
 } from "./signed_cookie.ts";
-import { assertEquals } from "@std/assert/assert-equals";
+import { assertEquals } from "@std/assert";
 
-Deno.test("signCookie() and verifyCookie() work circularly", async () => {
+Deno.test("signCookie() and verifySignedCookie() work circularly", async () => {
   const key = await crypto.subtle.generateKey(
     { name: "HMAC", hash: "SHA-256" },
     true,
@@ -15,13 +15,13 @@ Deno.test("signCookie() and verifyCookie() work circularly", async () => {
   const value = "boris";
 
   const signedCookie = await signCookie(value, key);
-  assertEquals(await verifyCookie(signedCookie, key), true);
+  assertEquals(await verifySignedCookie(signedCookie, key), true);
 
   const tamperedCookie = signedCookie.replace(value, "xenia");
-  assertEquals(await verifyCookie(tamperedCookie, key), false);
+  assertEquals(await verifySignedCookie(tamperedCookie, key), false);
 });
 
-Deno.test("signCookie() and verifyCookie() work circularly when the cookie value contains a period", async () => {
+Deno.test("signCookie() and verifySignedCookie() work circularly when the cookie value contains a period", async () => {
   const key = await crypto.subtle.generateKey(
     { name: "HMAC", hash: "SHA-256" },
     true,
@@ -30,22 +30,22 @@ Deno.test("signCookie() and verifyCookie() work circularly when the cookie value
   const value = "boris.xenia";
 
   const signedCookie = await signCookie(value, key);
-  assertEquals(await verifyCookie(signedCookie, key), true);
+  assertEquals(await verifySignedCookie(signedCookie, key), true);
 
   const tamperedCookie = signedCookie.replace(value, "xenia");
-  assertEquals(await verifyCookie(tamperedCookie, key), false);
+  assertEquals(await verifySignedCookie(tamperedCookie, key), false);
 });
 
-Deno.test("verifyCookie() returns false on poorly formed value", async () => {
+Deno.test("verifySignedCookie() returns false on poorly formed value", async () => {
   const key = await crypto.subtle.generateKey(
     { name: "HMAC", hash: "SHA-256" },
     true,
     ["sign", "verify"],
   );
 
-  assertEquals(await verifyCookie(".", key), false);
-  assertEquals(await verifyCookie("hello.", key), false);
-  assertEquals(await verifyCookie(".world", key), false);
+  assertEquals(await verifySignedCookie(".", key), false);
+  assertEquals(await verifySignedCookie("hello.", key), false);
+  assertEquals(await verifySignedCookie(".world", key), false);
 });
 
 Deno.test("parseSignedCookie() returns parsed cookie value", () => {

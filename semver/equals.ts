@@ -4,20 +4,20 @@ import { compare } from "./compare.ts";
 import type { SemVer } from "./types.ts";
 
 /**
- * Returns `true` if both semantic versions are logically equivalent, even if they're not the exact same version object.
+ * Returns `true` if both SemVers are equivalent.
  *
  * This is equal to `compare(s0, s1) === 0`.
  *
  * @example Usage
  * ```ts
  * import { parse, equals } from "@std/semver";
- * import { assert, assertFalse } from "@std/assert";
+ * import { assert } from "@std/assert";
  *
  * const s0 = parse("1.2.3");
  * const s1 = parse("1.2.3");
  *
  * assert(equals(s0, s1));
- * assertFalse(equals(s0, parse("1.2.4")));
+ * assert(!equals(s0, parse("1.2.4")));
  * ```
  *
  * @param s0 The first SemVer to compare

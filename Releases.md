@@ -1,3 +1,66 @@
+### 2024.06.26
+
+#### @std/cli 1.0.0-rc.2 (prerelease)
+
+- test(cli): improve `Spinner` test (#5108)
+
+#### @std/collections 1.0.1 (patch)
+
+- perf(collections): use `for` loop instead of `forEach()` in `unzip()` (#5104)
+
+#### @std/fs 1.0.0-rc.2 (prerelease)
+
+- docs(fs): add not supported docs for `CopyOptions.preserveTimestamps` (#5143)
+
+#### @std/http 1.0.0-rc.1 (prerelease)
+
+- BREAKING(http): rename `verifyCookie()` to `verifySignedCookie()` (#5138)
+- BREAKING(http): improve thrown errors in `cookie` module (#5129)
+- BREAKING(http): change the default port of file-server to the same default of
+  `Deno.serve()` (#4888)
+- BREAKING(http): move `unstable-signed-cookie` to `signed-cookie` (#5101)
+- BREAKING(http): remove deprecated `server` module (#5100)
+- fix(http): handle the case fileInfo.mode=0 correctly (#5132)
+- docs(http): remove outdated mention of `CookieMap` (#5109)
+- refactor(http): change error thrown in `ServerSentEventStream` to
+  `SyntaxError` (#5135)
+- refactor(http): minor cleanup (#5126)
+- refactor(http): remove dead code and improve `UserAgent` testing (#5120)
+- chore(http): release `http@1.0.0-rc.1` (#5131)
+
+#### @std/jsonc 1.0.0-rc.1 (prerelease)
+
+- BREAKING(jsonc): remove `allowTrailingComma` option (#5119)
+- refactor(jsonc): minor cleanups (#5114)
+- chore(jsonc): release `jsonc@1.0.0-rc.1` (#5115)
+
+#### @std/media-types 1.0.0 (major)
+
+- BREAKING(media-types): rename `extensionsByType` to `allExtensions` (#5106)
+- docs(media-types): remove outdated historical note (#5105)
+- chore(media-types): release `media-types@1.0.0` (#4780)
+
+#### @std/testing 1.0.0-rc.1 (prerelease)
+
+- BREAKING(testing): remove deprecated `asserts` module (#5099)
+- BREAKING(testing): disable multiple `FakeTime` creations (#5130)
+- fix(testing): correctly throw in constructor with `spy()` (#5139)
+- fix(testing): function call of `Date` constructor is not correctly faked
+  (#5122)
+- docs(testing): add module docs (#5147)
+- refactor(testing): remove `@std/fmt/colors` dependency from `snapshot` module
+  (#5145)
+- refactor(testing): remove dead code and improve test of `testing/mock.ts`
+  (#5137)
+- test(testing): improve bdd testing (#5136)
+- test(testing): improve `FakeTime` testing (#5123)
+- chore(testing): release `testing@1.0.0-rc.1` (#5142)
+
+#### @std/yaml 0.224.3 (patch)
+
+- feat(yaml): support schema name for 'schema' option (#5118)
+- docs(yaml): improve `yaml` document (#5127)
+
 ### 2024.06.21
 
 #### @std/archive 0.224.2 (patch)

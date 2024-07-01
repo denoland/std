@@ -31,7 +31,7 @@ export type SortByOptions = {
  * @example Usage
  * ```ts
  * import { sortBy } from "@std/collections/sort-by";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const people = [
  *   { name: "Anna", age: 34 },
@@ -77,7 +77,7 @@ export function sortBy<T>(
  * @example Usage
  * ```ts
  * import { sortBy } from "@std/collections/sort-by";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const people = [
  *   { name: "Anna" },
@@ -115,7 +115,7 @@ export function sortBy<T>(
  * @example Usage
  * ```ts
  * import { sortBy } from "@std/collections/sort-by";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const people = [
  *   { name: "Anna", age: 34n },
@@ -155,7 +155,7 @@ export function sortBy<T>(
  * @example Usage
  * ```ts
  * import { sortBy } from "@std/collections/sort-by";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const people = [
  *   { name: "Anna", startedAt: new Date("2020-01-01") },

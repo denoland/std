@@ -10,7 +10,7 @@ import { format } from "@std/internal/format";
  *
  * @example Usage
  * ```ts no-eval
- * import { assertNotStrictEquals } from "@std/assert/assert-not-strict-equals";
+ * import { assertNotStrictEquals } from "@std/assert";
  *
  * assertNotStrictEquals(1, 1); // Doesn't throw
  * assertNotStrictEquals(1, 2); // Throws
