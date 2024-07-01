@@ -30,7 +30,7 @@ export interface CompareSimilarityOptions {
  *
  * ```ts
  * import { compareSimilarity } from "@std/text/compare-similarity";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const words = ["hi", "hello", "help"];
  * const sortedWords = words.sort(compareSimilarity("hep"));

@@ -6,7 +6,7 @@
  *
  * ```ts
  * import { parse } from "@std/csv/parse";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const string = "a,b,c\nd,e,f";
  *
@@ -75,7 +75,7 @@
  * @module
  */
 
-export * from "./stringify.ts";
 export * from "./parse.ts";
-export * from "./csv_parse_stream.ts";
-export * from "./csv_stringify_stream.ts";
+export * from "./parse_stream.ts";
+export * from "./stringify.ts";
+export * from "./stringify_stream.ts";

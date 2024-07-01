@@ -3,7 +3,7 @@
 // Copyright 2011-2015 by Vitaly Puzrin. All rights reserved. MIT license.
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import { Type } from "../type.ts";
+import { Type } from "../_type.ts";
 
 export const undefinedType = new Type("tag:yaml.org,2002:js/undefined", {
   kind: "scalar",

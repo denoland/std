@@ -11,7 +11,7 @@ import type { ValueType } from "./encode.ts";
  * @example Usage
  * ```ts
  * import { decode } from "@std/msgpack/decode";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const encoded = new Uint8Array([163, 72, 105, 33]);
  *

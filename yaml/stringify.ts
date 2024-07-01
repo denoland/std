@@ -5,7 +5,7 @@
 // This module is browser compatible.
 
 import { dump } from "./_dumper/dumper.ts";
-import { replaceSchemaNameWithSchemaClass } from "./mod.ts";
+import { replaceSchemaNameWithSchemaClass } from "./_schema.ts";
 
 /**
  * The option for strinigfy.
@@ -27,12 +27,8 @@ export type StringifyOptions = {
   flowLevel?: number;
   /** Each tag may have own set of styles.	- "tag" => "style" map. */
   styles?: Record<string, "lowercase" | "uppercase" | "camelcase" | "decimal">;
-  /**
-   * Specifies a schema to use.
-   *
-   * Schema class or its name.
-   */
-  schema?: "core" | "default" | "failsafe" | "json" | "extended" | unknown;
+  /** Name of the schema to use. */
+  schema?: "core" | "default" | "failsafe" | "json" | "extended";
   /**
    * If true, sort keys when dumping YAML in ascending, ASCII character order.
    * If a function, use the function to sort the keys. (default: false)
@@ -71,7 +67,7 @@ export type StringifyOptions = {
  * @example Usage
  * ```ts
  * import { stringify } from "@std/yaml/stringify";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const data = { id: 1, name: "Alice" };
  * const yaml = stringify(data);

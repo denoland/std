@@ -5,7 +5,7 @@
 // This module is browser compatible.
 
 import { load, loadDocuments } from "./_loader/loader.ts";
-import { replaceSchemaNameWithSchemaClass } from "./mod.ts";
+import { replaceSchemaNameWithSchemaClass } from "./_schema.ts";
 
 /**
  * Options for parsing YAML.
@@ -13,17 +13,8 @@ import { replaceSchemaNameWithSchemaClass } from "./mod.ts";
 export interface ParseOptions {
   /** Uses legacy mode */
   legacy?: boolean;
-  /** The listener */
-  // deno-lint-ignore no-explicit-any
-  listener?: ((...args: any[]) => void) | null;
-  /** string to be used as a file path in error/warning messages. */
-  filename?: string;
-  /**
-   * Specifies a schema to use.
-   *
-   * Schema class or its name.
-   */
-  schema?: "core" | "default" | "failsafe" | "json" | "extended" | unknown;
+  /** Name of the schema to use.*/
+  schema?: "core" | "default" | "failsafe" | "json" | "extended";
   /** compatibility with JSON.parse behaviour. */
   json?: boolean;
   /** function to call on warning messages. */
@@ -39,7 +30,7 @@ export interface ParseOptions {
  * @example Usage
  * ```ts
  * import { parse } from "@std/yaml/parse";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const data = parse(`
  * id: 1
@@ -67,7 +58,7 @@ export function parse(content: string, options?: ParseOptions): unknown {
  * @example Usage
  * ```ts
  * import { parseAll } from "@std/yaml/parse";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const data = parseAll(`
  * ---
