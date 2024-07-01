@@ -11,7 +11,6 @@ import type { Any, ArrayObject } from "../_utils.ts";
 
 export interface LoaderStateOptions {
   legacy?: boolean;
-  listener?: ((...args: Any[]) => void) | null;
   /** specifies a schema to use. */
   schema?: SchemaDefinition;
   /** compatibility with JSON.parse behaviour. */

@@ -13,9 +13,6 @@ import { replaceSchemaNameWithSchemaClass } from "./schema/mod.ts";
 export interface ParseOptions {
   /** Uses legacy mode */
   legacy?: boolean;
-  /** The listener */
-  // deno-lint-ignore no-explicit-any
-  listener?: ((...args: any[]) => void) | null;
   /** Name of the schema to use.*/
   schema?: "core" | "default" | "failsafe" | "json" | "extended";
   /** compatibility with JSON.parse behaviour. */
