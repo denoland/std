@@ -165,7 +165,6 @@ function generateError(state: LoaderState, message: string): YamlError {
   return new YamlError(
     message,
     new Mark(
-      state.filename as string,
       state.input,
       state.position,
       state.line,

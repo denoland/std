@@ -11,8 +11,6 @@ import type { Any, ArrayObject } from "../_utils.ts";
 
 export interface LoaderStateOptions {
   legacy?: boolean;
-  /** string to be used as a file path in error/warning messages. */
-  filename?: string;
   /** specifies a schema to use. */
   schema?: SchemaDefinition;
   /** compatibility with JSON.parse behaviour. */
@@ -32,7 +30,6 @@ export class LoaderState extends State {
   lineStart = 0;
   position = 0;
   line = 0;
-  filename?: string;
   onWarning?: (...args: Any[]) => void;
   legacy: boolean;
   json: boolean;
@@ -51,7 +48,6 @@ export class LoaderState extends State {
   constructor(
     input: string,
     {
-      filename,
       schema,
       onWarning,
       legacy = false,
@@ -60,7 +56,6 @@ export class LoaderState extends State {
   ) {
     super(schema);
     this.input = input;
-    this.filename = filename;
     this.onWarning = onWarning;
     this.legacy = legacy;
     this.json = json;

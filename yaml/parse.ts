@@ -13,8 +13,6 @@ import { replaceSchemaNameWithSchemaClass } from "./_schema.ts";
 export interface ParseOptions {
   /** Uses legacy mode */
   legacy?: boolean;
-  /** string to be used as a file path in error/warning messages. */
-  filename?: string;
   /** Name of the schema to use.*/
   schema?: "core" | "default" | "failsafe" | "json" | "extended";
   /** compatibility with JSON.parse behaviour. */
