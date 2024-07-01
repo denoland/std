@@ -438,8 +438,17 @@ class AssertSnapshotContext {
    * This method can safely be called more than once and will only register the teardown
    * function once in a context.
    */
-  registerTeardown() {
+  async registerTeardown() {
     if (!this.#teardownRegistered) {
+      const permission = await Deno.permissions.query({
+        name: "write",
+        path: this.#snapshotFileUrl,
+      });
+      if (permission.state !== "granted") {
+        throw new Deno.errors.PermissionDenied(
+          `Missing write access to snapshot file (${this.#snapshotFileUrl}). This is required because assertSnapshot was called in update mode. Please pass the --allow-write flag.`,
+        );
+      }
       globalThis.addEventListener("unload", this.#teardown);
       this.#teardownRegistered = true;
     }
@@ -582,7 +591,7 @@ export async function assertSnapshot(
   const _serialize = options.serializer || serialize;
   const _actual = _serialize(actual);
   if (getIsUpdate(options)) {
-    assertSnapshotContext.registerTeardown();
+    await assertSnapshotContext.registerTeardown();
     if (!equal(_actual, snapshot)) {
       assertSnapshotContext.updateSnapshot(name, _actual);
     }
