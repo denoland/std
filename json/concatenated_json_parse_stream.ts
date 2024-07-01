@@ -18,7 +18,7 @@ const primitives = new Map(
  * @example Usage
  *
  * ```ts
- * import { ConcatenatedJsonParseStream } from "@std/json/concatenated-parse-stream";
+ * import { ConcatenatedJsonParseStream } from "@std/json/concatenated-json-parse-stream";
  * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const stream = ReadableStream.from([
@@ -39,7 +39,7 @@ export class ConcatenatedJsonParseStream
    *
    * @example Usage
    * ```ts
-   * import { ConcatenatedJsonParseStream } from "@std/json/concatenated-parse-stream";
+   * import { ConcatenatedJsonParseStream } from "@std/json/concatenated-json-parse-stream";
    * import { assertEquals } from "@std/assert/assert-equals";
    *
    * const stream = ReadableStream.from([
@@ -59,7 +59,7 @@ export class ConcatenatedJsonParseStream
    *
    * @example Usage
    * ```ts
-   * import { ConcatenatedJsonParseStream } from "@std/json/concatenated-parse-stream";
+   * import { ConcatenatedJsonParseStream } from "@std/json/concatenated-json-parse-stream";
    * import { assertEquals } from "@std/assert/assert-equals";
    *
    * const stream = ReadableStream.from([
@@ -80,7 +80,7 @@ export class ConcatenatedJsonParseStream
    *
    * @example Usage
    *  ```ts
-   * import { ConcatenatedJsonParseStream } from "@std/json/concatenated-parse-stream";
+   * import { ConcatenatedJsonParseStream } from "@std/json/concatenated-json-parse-stream";
    * import { assertEquals } from "@std/assert/assert-equals";
    *
    * const stream = ReadableStream.from([
