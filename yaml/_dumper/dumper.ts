@@ -55,25 +55,6 @@ ESCAPE_SEQUENCES[0xa0] = "\\_";
 ESCAPE_SEQUENCES[0x2028] = "\\L";
 ESCAPE_SEQUENCES[0x2029] = "\\P";
 
-const DEPRECATED_BOOLEANS_SYNTAX = [
-  "y",
-  "Y",
-  "yes",
-  "Yes",
-  "YES",
-  "on",
-  "On",
-  "ON",
-  "n",
-  "N",
-  "no",
-  "No",
-  "NO",
-  "off",
-  "Off",
-  "OFF",
-];
-
 function encodeHex(character: number): string {
   const string = character.toString(16).toUpperCase();
 
@@ -438,12 +419,6 @@ function writeScalar(
   state.dump = ((): string => {
     if (string.length === 0) {
       return "''";
-    }
-    if (
-      !state.noCompatMode &&
-      DEPRECATED_BOOLEANS_SYNTAX.indexOf(string) !== -1
-    ) {
-      return `'${string}'`;
     }
 
     const indent = state.indent * Math.max(1, level); // no 0-indent scalars
