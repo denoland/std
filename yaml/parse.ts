@@ -49,8 +49,7 @@ export function parse(
   content: string,
   options: ParseOptions = {},
 ): unknown {
-  const schema = options.schema ? SCHEMA_MAP[options.schema] : undefined;
-  return load(content, { ...options, schema });
+  return load(content, { ...options, schema: SCHEMA_MAP.get(options.schema!) });
 }
 
 /**
@@ -81,6 +80,8 @@ export function parse(
  * @returns Array of parsed documents.
  */
 export function parseAll(content: string, options: ParseOptions = {}): unknown {
-  const schema = options.schema ? SCHEMA_MAP[options.schema] : undefined;
-  return loadDocuments(content, { ...options, schema });
+  return loadDocuments(content, {
+    ...options,
+    schema: SCHEMA_MAP.get(options.schema!),
+  });
 }

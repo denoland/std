@@ -175,10 +175,10 @@ const EXTENDED_SCHEMA: Schema = new Schema({
   include: [DEFAULT_SCHEMA],
 });
 
-export const SCHEMA_MAP = {
-  core: CORE_SCHEMA,
-  default: DEFAULT_SCHEMA,
-  failsafe: FAILSAFE_SCHEMA,
-  json: JSON_SCHEMA,
-  extended: EXTENDED_SCHEMA,
-};
+export const SCHEMA_MAP = new Map([
+  ["core", CORE_SCHEMA],
+  ["default", DEFAULT_SCHEMA],
+  ["failsafe", FAILSAFE_SCHEMA],
+  ["json", JSON_SCHEMA],
+  ["extended", EXTENDED_SCHEMA],
+]);

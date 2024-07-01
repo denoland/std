@@ -83,6 +83,5 @@ export function stringify(
   data: unknown,
   options: StringifyOptions = {},
 ): string {
-  const schema = options.schema ? SCHEMA_MAP[options.schema] : undefined;
-  return dump(data, { ...options, schema });
+  return dump(data, { ...options, schema: SCHEMA_MAP.get(options.schema!) });
 }
