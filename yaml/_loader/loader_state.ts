@@ -11,7 +11,6 @@ import type { Any, ArrayObject } from "../_utils.ts";
 
 export interface LoaderStateOptions {
   legacy?: boolean;
-  listener?: ((...args: Any[]) => void) | null;
   /** string to be used as a file path in error/warning messages. */
   filename?: string;
   /** specifies a schema to use. */
@@ -37,7 +36,6 @@ export class LoaderState extends State {
   onWarning?: (...args: Any[]) => void;
   legacy: boolean;
   json: boolean;
-  listener?: ((...args: Any[]) => void) | null;
   implicitTypes: Type[];
   typeMap: TypeMap;
 
@@ -58,7 +56,6 @@ export class LoaderState extends State {
       onWarning,
       legacy = false,
       json = false,
-      listener = null,
     }: LoaderStateOptions,
   ) {
     super(schema);
@@ -67,7 +64,6 @@ export class LoaderState extends State {
     this.onWarning = onWarning;
     this.legacy = legacy;
     this.json = json;
-    this.listener = listener;
 
     this.implicitTypes = (this.schema as Schema).compiledImplicit;
     this.typeMap = (this.schema as Schema).compiledTypeMap;
