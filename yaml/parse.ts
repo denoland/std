@@ -14,7 +14,7 @@ export interface ParseOptions {
   /** Uses legacy mode */
   legacy?: boolean;
   /** Name of the schema to use.*/
-  schema?: keyof typeof SCHEMA_MAP;
+  schema?: "core" | "default" | "failsafe" | "json" | "extended";
   /** compatibility with JSON.parse behaviour. */
   json?: boolean;
   /** function to call on warning messages. */
