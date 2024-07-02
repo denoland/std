@@ -34,7 +34,7 @@ import {
 } from "../_chars.ts";
 import { YamlError } from "../_error.ts";
 import { Mark } from "../_mark.ts";
-import { Schema, TypeMap } from "../_schema.ts";
+import type { Schema, TypeMap } from "../_schema.ts";
 import { State } from "../_state.ts";
 import type { Type } from "../_type.ts";
 import * as common from "../_utils.ts";
