@@ -30,7 +30,7 @@ export class Mark {
 
     while (
       start > 0 &&
-      "\x00\r\n\x85\u2028\u2029".indexOf(this.buffer.charAt(start - 1)) === -1
+      !"\x00\r\n\x85\u2028\u2029".includes(this.buffer.charAt(start - 1))
     ) {
       start -= 1;
       if (this.position - start > maxLength / 2 - 1) {
@@ -45,7 +45,7 @@ export class Mark {
 
     while (
       end < this.buffer.length &&
-      "\x00\r\n\x85\u2028\u2029".indexOf(this.buffer.charAt(end)) === -1
+      !"\x00\r\n\x85\u2028\u2029".includes(this.buffer.charAt(end))
     ) {
       end += 1;
       if (end - this.position > maxLength / 2 - 1) {

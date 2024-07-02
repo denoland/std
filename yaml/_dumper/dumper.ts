@@ -805,7 +805,7 @@ function inspectNode(
   if (object !== null && typeof object === "object") {
     const index = objects.indexOf(object);
     if (index !== -1) {
-      if (duplicatesIndexes.indexOf(index) === -1) {
+      if (duplicatesIndexes.includes(index)) {
         duplicatesIndexes.push(index);
       }
     } else {
