@@ -11,9 +11,6 @@ import { DumperState, type DumperStateOptions } from "./dumper_state.ts";
 type Any = common.Any;
 type ArrayObject<T = Any> = common.ArrayObject<T>;
 
-const _toString = Object.prototype.toString;
-const { hasOwn } = Object;
-
 const CHAR_TAB = 0x09; /* Tab */
 const CHAR_LINE_FEED = 0x0a; /* LF */
 const CHAR_SPACE = 0x20; /* Space */
@@ -37,23 +34,23 @@ const CHAR_LEFT_CURLY_BRACKET = 0x7b; /* { */
 const CHAR_VERTICAL_LINE = 0x7c; /* | */
 const CHAR_RIGHT_CURLY_BRACKET = 0x7d; /* } */
 
-const ESCAPE_SEQUENCES: { [char: number]: string } = {};
-
-ESCAPE_SEQUENCES[0x00] = "\\0";
-ESCAPE_SEQUENCES[0x07] = "\\a";
-ESCAPE_SEQUENCES[0x08] = "\\b";
-ESCAPE_SEQUENCES[0x09] = "\\t";
-ESCAPE_SEQUENCES[0x0a] = "\\n";
-ESCAPE_SEQUENCES[0x0b] = "\\v";
-ESCAPE_SEQUENCES[0x0c] = "\\f";
-ESCAPE_SEQUENCES[0x0d] = "\\r";
-ESCAPE_SEQUENCES[0x1b] = "\\e";
-ESCAPE_SEQUENCES[0x22] = '\\"';
-ESCAPE_SEQUENCES[0x5c] = "\\\\";
-ESCAPE_SEQUENCES[0x85] = "\\N";
-ESCAPE_SEQUENCES[0xa0] = "\\_";
-ESCAPE_SEQUENCES[0x2028] = "\\L";
-ESCAPE_SEQUENCES[0x2029] = "\\P";
+const ESCAPE_SEQUENCES = new Map<number, string>([
+  [0x00, "\\0"],
+  [0x07, "\\a"],
+  [0x08, "\\b"],
+  [0x09, "\\t"],
+  [0x0a, "\\n"],
+  [0x0b, "\\v"],
+  [0x0c, "\\f"],
+  [0x0d, "\\r"],
+  [0x1b, "\\e"],
+  [0x22, '\\"'],
+  [0x5c, "\\\\"],
+  [0x85, "\\N"],
+  [0xa0, "\\_"],
+  [0x2028, "\\L"],
+  [0x2029, "\\P"],
+]);
 
 const DEPRECATED_BOOLEANS_SYNTAX = [
   "y",
@@ -94,7 +91,7 @@ function encodeHex(character: number): string {
     );
   }
 
-  return `\\${handle}${common.repeat("0", length - string.length)}${string}`;
+  return `\\${handle + "0".repeat(length - string.length) + string}`;
 }
 
 // Indents every line in a string. Empty lines (\n only) are not indented.
@@ -400,7 +397,7 @@ function escapeString(string: string): string {
         continue;
       }
     }
-    escapeSeq = ESCAPE_SEQUENCES[char];
+    escapeSeq = ESCAPE_SEQUENCES.get(char);
     result += !escapeSeq && isPrintable(char)
       ? string[i]
       : escapeSeq || encodeHex(char);
@@ -685,9 +682,9 @@ function detectType(
       if (type.represent) {
         const style = state.styleMap[type.tag]! || type.defaultStyle;
 
-        if (_toString.call(type.represent) === "[object Function]") {
+        if (typeof type.represent === "function") {
           _result = (type.represent as RepresentFn)(object, style);
-        } else if (hasOwn(type.represent, style)) {
+        } else if (Object.hasOwn(type.represent, style)) {
           _result = (type.represent as ArrayObject<RepresentFn>)[style]!(
             object,
             style,
@@ -726,13 +723,11 @@ function writeNode(
     detectType(state, object, true);
   }
 
-  const type = _toString.call(state.dump);
-
   if (block) {
     block = state.flowLevel < 0 || state.flowLevel > level;
   }
 
-  const objectOrArray = type === "[object Object]" || type === "[object Array]";
+  const objectOrArray = common.isObject(object) || Array.isArray(object);
 
   let duplicateIndex = -1;
   let duplicate = false;
@@ -755,7 +750,10 @@ function writeNode(
     if (objectOrArray && duplicate && !state.usedDuplicates[duplicateIndex]) {
       state.usedDuplicates[duplicateIndex] = true;
     }
-    if (type === "[object Object]") {
+    if (
+      typeof state.dump === "object" && state.dump !== null &&
+      !Array.isArray(state.dump)
+    ) {
       if (block && Object.keys(state.dump).length !== 0) {
         writeBlockMapping(state, level, state.dump, compact);
         if (duplicate) {
@@ -767,7 +765,7 @@ function writeNode(
           state.dump = `&ref_${duplicateIndex} ${state.dump}`;
         }
       }
-    } else if (type === "[object Array]") {
+    } else if (Array.isArray(state.dump)) {
       const arrayLevel = state.noArrayIndent && level > 0 ? level - 1 : level;
       if (block && state.dump.length !== 0) {
         writeBlockSequence(state, arrayLevel, state.dump, compact);
@@ -780,13 +778,15 @@ function writeNode(
           state.dump = `&ref_${duplicateIndex} ${state.dump}`;
         }
       }
-    } else if (type === "[object String]") {
+    } else if (typeof state.dump === "string") {
       if (state.tag !== "?") {
         writeScalar(state, state.dump, level, iskey);
       }
     } else {
       if (state.skipInvalid) return false;
-      throw new YamlError(`unacceptable kind of an object to dump ${type}`);
+      throw new YamlError(
+        `unacceptable kind of an object to dump ${state.dump}`,
+      );
     }
 
     if (state.tag !== null && state.tag !== "?") {

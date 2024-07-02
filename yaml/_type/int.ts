@@ -6,20 +6,24 @@
 import { Type } from "../_type.ts";
 import { type Any, isNegativeZero } from "../_utils.ts";
 
+function isCharCodeInRange(c: number, lower: number, upper: number): boolean {
+  return lower <= c && c <= upper;
+}
+
 function isHexCode(c: number): boolean {
   return (
-    (0x30 <= /* 0 */ c && c <= 0x39) /* 9 */ ||
-    (0x41 <= /* A */ c && c <= 0x46) /* F */ ||
-    (0x61 <= /* a */ c && c <= 0x66) /* f */
+    isCharCodeInRange(c, 0x30, 0x39) || // 0-9
+    isCharCodeInRange(c, 0x41, 0x46) || // A-F
+    isCharCodeInRange(c, 0x61, 0x66) // a-f
   );
 }
 
 function isOctCode(c: number): boolean {
-  return 0x30 <= /* 0 */ c && c <= 0x37 /* 7 */;
+  return isCharCodeInRange(c, 0x30, 0x37); // 0..7
 }
 
 function isDecCode(c: number): boolean {
-  return 0x30 <= /* 0 */ c && c <= 0x39 /* 9 */;
+  return isCharCodeInRange(c, 0x30, 0x39); // 0-9
 }
 
 function resolveYamlInteger(data: string): boolean {

@@ -8,8 +8,6 @@ import { State } from "../_state.ts";
 import type { StyleVariant, Type } from "../_type.ts";
 import type { Any, ArrayObject } from "../_utils.ts";
 
-const { hasOwn } = Object;
-
 function compileStyleMap(
   schema: Schema,
   map?: ArrayObject<StyleVariant> | null,
@@ -26,8 +24,8 @@ function compileStyleMap(
 
     if (
       type &&
-      typeof type.styleAliases !== "undefined" &&
-      hasOwn(type.styleAliases, style)
+      type.styleAliases !== undefined &&
+      Object.hasOwn(type.styleAliases, style)
     ) {
       style = type.styleAliases[style];
     }
