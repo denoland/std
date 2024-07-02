@@ -59,10 +59,8 @@ export class LoaderState extends State {
     this.onWarning = onWarning;
     this.legacy = legacy;
     this.json = json;
-
-    this.implicitTypes = (this.schema as Schema).compiledImplicit;
-    this.typeMap = (this.schema as Schema).compiledTypeMap;
-
+    this.implicitTypes = this.schema.compiledImplicit;
+    this.typeMap = this.schema.compiledTypeMap;
     this.length = input.length;
   }
 }

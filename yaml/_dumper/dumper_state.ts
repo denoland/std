@@ -118,14 +118,13 @@ export class DumperState extends State {
     this.noArrayIndent = noArrayIndent;
     this.skipInvalid = skipInvalid;
     this.flowLevel = flowLevel;
-    this.styleMap = compileStyleMap(this.schema as Schema, styles);
+    this.styleMap = compileStyleMap(this.schema, styles);
     this.sortKeys = sortKeys;
     this.lineWidth = lineWidth;
     this.noRefs = noRefs;
     this.noCompatMode = noCompatMode;
     this.condenseFlow = condenseFlow;
-
-    this.implicitTypes = (this.schema as Schema).compiledImplicit;
-    this.explicitTypes = (this.schema as Schema).compiledExplicit;
+    this.implicitTypes = this.schema.compiledImplicit;
+    this.explicitTypes = this.schema.compiledExplicit;
   }
 }
