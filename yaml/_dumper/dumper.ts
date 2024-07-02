@@ -962,9 +962,7 @@ function getDuplicateReferences(
   state.usedDuplicates = Array.from({ length: duplicatesIndexes.length });
 }
 
-export function dump(input: Any, options?: DumperStateOptions): string {
-  options = options || {};
-
+export function dump(input: Any, options: DumperStateOptions = {}): string {
   const state = new DumperState(options);
 
   if (!state.noRefs) getDuplicateReferences(input, state);
