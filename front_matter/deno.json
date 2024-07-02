@@ -1,6 +1,6 @@
 {
   "name": "@std/front-matter",
-  "version": "0.224.2",
+  "version": "0.224.3",
   "exports": {
     ".": "./mod.ts",
     "./any": "./any.ts",
