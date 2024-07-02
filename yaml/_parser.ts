@@ -144,48 +144,45 @@ const escapeMap = new Map<number, string>([
 
 class Parser {
   schema: Schema;
-  input: string;
-  documents: Any[] = [];
-  length: number;
-  lineIndent = 0;
-  lineStart = 0;
-  position = 0;
-  line = 0;
+  #input: string = "";
+  #documents: Any[] = [];
+  #length: number = 0;
+  #lineIndent = 0;
+  #lineStart = 0;
+  #position = 0;
+  #line = 0;
   onWarning?: (...args: Any[]) => void;
   legacy: boolean;
   json: boolean;
-  implicitTypes: Type[];
-  typeMap: TypeMap;
+  #implicitTypes: Type[];
+  #typeMap: TypeMap;
 
-  version?: string | null;
-  checkLineBreaks?: boolean;
-  tagMap: ArrayObject = Object.create(null);
-  anchorMap: ArrayObject = Object.create(null);
-  tag?: string | null;
-  anchor?: string | null;
-  kind?: string | null;
-  result: ResultType | null = "";
+  #version?: string | null;
+  #checkLineBreaks?: boolean;
+  #tagMap: ArrayObject = Object.create(null);
+  #anchorMap: ArrayObject = Object.create(null);
+  #tag?: string | null;
+  #anchor?: string | null;
+  #kind?: string | null;
+  #result: ResultType | null = "";
 
-  constructor(input: string, {
+  constructor({
     schema = DEFAULT_SCHEMA,
     onWarning,
     legacy = false,
     json = false,
   }: ParserOptions) {
     this.schema = schema;
-    this.input = input;
     this.onWarning = onWarning;
     this.legacy = legacy;
     this.json = json;
 
-    this.implicitTypes = (this.schema as Schema).compiledImplicit;
-    this.typeMap = (this.schema as Schema).compiledTypeMap;
-
-    this.length = input.length;
+    this.#implicitTypes = (this.schema as Schema).compiledImplicit;
+    this.#typeMap = (this.schema as Schema).compiledTypeMap;
   }
 
   #yamlDirectiveHandler(...args: string[]) {
-    if (this.version !== null) {
+    if (this.#version !== null) {
       return this.throwError("duplication of %YAML directive");
     }
 
@@ -204,8 +201,8 @@ class Parser {
       return this.throwError("unacceptable YAML version of the document");
     }
 
-    this.version = args[0];
-    this.checkLineBreaks = minor < 2;
+    this.#version = args[0];
+    this.#checkLineBreaks = minor < 2;
     if (minor !== 1 && minor !== 2) {
       return this.#throwWarning("unsupported YAML version of the document");
     }
@@ -225,7 +222,7 @@ class Parser {
       );
     }
 
-    if (Object.hasOwn(this.tagMap, handle)) {
+    if (Object.hasOwn(this.#tagMap, handle)) {
       return this.throwError(
         `there is a previously declared suffix for "${handle}" tag handle`,
       );
@@ -237,17 +234,17 @@ class Parser {
       );
     }
 
-    this.tagMap[handle] = prefix;
+    this.#tagMap[handle] = prefix;
   }
 
   #generateError(message: string): YamlError {
     return new YamlError(
       message,
       new Mark(
-        this.input,
-        this.position,
-        this.line,
-        this.position - this.lineStart,
+        this.#input,
+        this.#position,
+        this.#line,
+        this.#position - this.#lineStart,
       ),
     );
   }
@@ -261,9 +258,9 @@ class Parser {
   }
   #writeFoldedLines(count: number) {
     if (count === 1) {
-      this.result += " ";
+      this.#result += " ";
     } else if (count > 1) {
-      this.result += common.repeat("\n", count - 1);
+      this.#result += common.repeat("\n", count - 1);
     }
   }
   #composeNode(
@@ -281,10 +278,10 @@ class Parser {
     let flowIndent: number;
     let blockIndent: number;
 
-    this.tag = null;
-    this.anchor = null;
-    this.kind = null;
-    this.result = null;
+    this.#tag = null;
+    this.#anchor = null;
+    this.#kind = null;
+    this.#result = null;
 
     const allowBlockStyles = (allowBlockScalars =
       allowBlockCollections =
@@ -294,11 +291,11 @@ class Parser {
       if (this.#skipSeparationSpace(true, -1)) {
         atNewLine = true;
 
-        if (this.lineIndent > parentIndent) {
+        if (this.#lineIndent > parentIndent) {
           indentStatus = 1;
-        } else if (this.lineIndent === parentIndent) {
+        } else if (this.#lineIndent === parentIndent) {
           indentStatus = 0;
-        } else if (this.lineIndent < parentIndent) {
+        } else if (this.#lineIndent < parentIndent) {
           indentStatus = -1;
         }
       }
@@ -310,11 +307,11 @@ class Parser {
           atNewLine = true;
           allowBlockCollections = allowBlockStyles;
 
-          if (this.lineIndent > parentIndent) {
+          if (this.#lineIndent > parentIndent) {
             indentStatus = 1;
-          } else if (this.lineIndent === parentIndent) {
+          } else if (this.#lineIndent === parentIndent) {
             indentStatus = 0;
-          } else if (this.lineIndent < parentIndent) {
+          } else if (this.#lineIndent < parentIndent) {
             indentStatus = -1;
           }
         } else {
@@ -332,7 +329,7 @@ class Parser {
         CONTEXT_FLOW_OUT === nodeContext;
       flowIndent = cond ? parentIndent : parentIndent + 1;
 
-      blockIndent = this.position - this.lineStart;
+      blockIndent = this.#position - this.#lineStart;
 
       if (indentStatus === 1) {
         if (
@@ -352,7 +349,7 @@ class Parser {
           } else if (this.#readAlias()) {
             hasContent = true;
 
-            if (this.tag !== null || this.anchor !== null) {
+            if (this.#tag !== null || this.#anchor !== null) {
               return this.throwError(
                 "alias node should not have Any properties",
               );
@@ -362,13 +359,13 @@ class Parser {
           ) {
             hasContent = true;
 
-            if (this.tag === null) {
-              this.tag = "?";
+            if (this.#tag === null) {
+              this.#tag = "?";
             }
           }
 
-          if (this.anchor !== null) {
-            this.anchorMap[this.anchor] = this.result;
+          if (this.#anchor !== null) {
+            this.#anchorMap[this.#anchor] = this.#result;
           }
         }
       } else if (indentStatus === 0) {
@@ -379,57 +376,57 @@ class Parser {
       }
     }
 
-    if (this.tag !== null && this.tag !== "!") {
-      if (this.tag === "?") {
+    if (this.#tag !== null && this.#tag !== "!") {
+      if (this.#tag === "?") {
         for (
           let typeIndex = 0;
-          typeIndex < this.implicitTypes.length;
+          typeIndex < this.#implicitTypes.length;
           typeIndex++
         ) {
-          type = this.implicitTypes[typeIndex]!;
+          type = this.#implicitTypes[typeIndex]!;
 
           // Implicit resolving is not allowed for non-scalar types, and '?'
           // non-specific tag is only assigned to plain scalars. So, it isn't
           // needed to check for 'kind' conformity.
 
-          if (type.resolve(this.result)) {
+          if (type.resolve(this.#result)) {
             // `this.result` updated in resolver if matched
-            this.result = type.construct(this.result);
-            this.tag = type.tag;
-            if (this.anchor !== null) {
-              this.anchorMap[this.anchor] = this.result;
+            this.#result = type.construct(this.#result);
+            this.#tag = type.tag;
+            if (this.#anchor !== null) {
+              this.#anchorMap[this.#anchor] = this.#result;
             }
             break;
           }
         }
       } else if (
-        Object.hasOwn(this.typeMap[this.kind || "fallback"], this.tag)
+        Object.hasOwn(this.#typeMap[this.#kind || "fallback"], this.#tag)
       ) {
-        type = this.typeMap[this.kind || "fallback"][this.tag]!;
+        type = this.#typeMap[this.#kind || "fallback"][this.#tag]!;
 
-        if (this.result !== null && type.kind !== this.kind) {
+        if (this.#result !== null && type.kind !== this.#kind) {
           return this.throwError(
-            `unacceptable node kind for !<${this.tag}> tag; it should be "${type.kind}", not "${this.kind}"`,
+            `unacceptable node kind for !<${this.#tag}> tag; it should be "${type.kind}", not "${this.#kind}"`,
           );
         }
 
-        if (!type.resolve(this.result)) {
+        if (!type.resolve(this.#result)) {
           // `this.result` updated in resolver if matched
           return this.throwError(
-            `cannot resolve a node with !<${this.tag}> explicit tag`,
+            `cannot resolve a node with !<${this.#tag}> explicit tag`,
           );
         } else {
-          this.result = type.construct(this.result);
-          if (this.anchor !== null) {
-            this.anchorMap[this.anchor] = this.result;
+          this.#result = type.construct(this.#result);
+          if (this.#anchor !== null) {
+            this.#anchorMap[this.#anchor] = this.#result;
           }
         }
       } else {
-        return this.throwError(`unknown tag !<${this.tag}>`);
+        return this.throwError(`unknown tag !<${this.#tag}>`);
       }
     }
 
-    return this.tag !== null || this.anchor !== null || hasContent;
+    return this.#tag !== null || this.#anchor !== null || hasContent;
   }
 
   #captureSegment(
@@ -439,7 +436,7 @@ class Parser {
   ) {
     let result: string;
     if (start < end) {
-      result = this.input.slice(start, end);
+      result = this.#input.slice(start, end);
 
       if (checkJson) {
         for (
@@ -459,7 +456,7 @@ class Parser {
         return this.throwError("the stream contains non-printable characters");
       }
 
-      this.result += result;
+      this.#result += result;
     }
   }
 
@@ -549,8 +546,8 @@ class Parser {
         !Object.hasOwn(overridableKeys, keyNode) &&
         Object.hasOwn(result, keyNode)
       ) {
-        this.line = startLine || this.line;
-        this.position = startPos || this.position;
+        this.#line = startLine || this.#line;
+        this.#position = startPos || this.#position;
         return this.throwError("duplicated mapping key");
       }
       Object.defineProperty(result, keyNode, {
@@ -566,21 +563,21 @@ class Parser {
   }
 
   #readLineBreak() {
-    const ch = this.input.charCodeAt(this.position);
+    const ch = this.#input.charCodeAt(this.#position);
 
     if (ch === 0x0a /* LF */) {
-      this.position++;
+      this.#position++;
     } else if (ch === 0x0d /* CR */) {
-      this.position++;
-      if (this.input.charCodeAt(this.position) === 0x0a /* LF */) {
-        this.position++;
+      this.#position++;
+      if (this.#input.charCodeAt(this.#position) === 0x0a /* LF */) {
+        this.#position++;
       }
     } else {
       return this.throwError("a line break is expected");
     }
 
-    this.line += 1;
-    this.lineStart = this.position;
+    this.#line += 1;
+    this.#lineStart = this.#position;
   }
 
   #skipSeparationSpace(
@@ -588,29 +585,29 @@ class Parser {
     checkIndent: number,
   ): number {
     let lineBreaks = 0;
-    let ch = this.input.charCodeAt(this.position);
+    let ch = this.#input.charCodeAt(this.#position);
 
     while (ch !== 0) {
       while (isWhiteSpace(ch)) {
-        ch = this.input.charCodeAt(++this.position);
+        ch = this.#input.charCodeAt(++this.#position);
       }
 
       if (allowComments && ch === 0x23 /* # */) {
         do {
-          ch = this.input.charCodeAt(++this.position);
+          ch = this.#input.charCodeAt(++this.#position);
         } while (ch !== 0x0a && /* LF */ ch !== 0x0d && /* CR */ ch !== 0);
       }
 
       if (isEOL(ch)) {
         this.#readLineBreak();
 
-        ch = this.input.charCodeAt(this.position);
+        ch = this.#input.charCodeAt(this.#position);
         lineBreaks++;
-        this.lineIndent = 0;
+        this.#lineIndent = 0;
 
         while (ch === 0x20 /* Space */) {
-          this.lineIndent++;
-          ch = this.input.charCodeAt(++this.position);
+          this.#lineIndent++;
+          ch = this.#input.charCodeAt(++this.#position);
         }
       } else {
         break;
@@ -620,7 +617,7 @@ class Parser {
     if (
       checkIndent !== -1 &&
       lineBreaks !== 0 &&
-      this.lineIndent < checkIndent
+      this.#lineIndent < checkIndent
     ) {
       this.#throwWarning("deficient indentation");
     }
@@ -629,19 +626,19 @@ class Parser {
   }
 
   #testDocumentSeparator(): boolean {
-    let _position = this.position;
-    let ch = this.input.charCodeAt(_position);
+    let _position = this.#position;
+    let ch = this.#input.charCodeAt(_position);
 
     // Condition parser.position === parser.lineStart is tested
     // in parent on each call, for efficiency. No needs to test here again.
     if (
       (ch === 0x2d || /* - */ ch === 0x2e) /* . */ &&
-      ch === this.input.charCodeAt(_position + 1) &&
-      ch === this.input.charCodeAt(_position + 2)
+      ch === this.#input.charCodeAt(_position + 1) &&
+      ch === this.#input.charCodeAt(_position + 2)
     ) {
       _position += 3;
 
-      ch = this.input.charCodeAt(_position);
+      ch = this.#input.charCodeAt(_position);
 
       if (ch === 0 || isWsOrEol(ch)) {
         return true;
@@ -652,9 +649,9 @@ class Parser {
   }
 
   #readPlainScalar(nodeIndent: number, withinFlowCollection: boolean): boolean {
-    const kind = this.kind;
-    const result = this.result;
-    let ch = this.input.charCodeAt(this.position);
+    const kind = this.#kind;
+    const result = this.#result;
+    let ch = this.#input.charCodeAt(this.#position);
 
     if (
       isWsOrEol(ch) ||
@@ -676,7 +673,7 @@ class Parser {
 
     let following: number;
     if (ch === 0x3f || /* ? */ ch === 0x2d /* - */) {
-      following = this.input.charCodeAt(this.position + 1);
+      following = this.#input.charCodeAt(this.#position + 1);
 
       if (
         isWsOrEol(following) ||
@@ -686,15 +683,15 @@ class Parser {
       }
     }
 
-    this.kind = "scalar";
-    this.result = "";
-    let captureEnd = this.position;
-    let captureStart = this.position;
+    this.#kind = "scalar";
+    this.#result = "";
+    let captureEnd = this.#position;
+    let captureStart = this.#position;
     let hasPendingContent = false;
     let line = 0;
     while (ch !== 0) {
       if (ch === 0x3a /* : */) {
-        following = this.input.charCodeAt(this.position + 1);
+        following = this.#input.charCodeAt(this.#position + 1);
 
         if (
           isWsOrEol(following) ||
@@ -703,58 +700,58 @@ class Parser {
           break;
         }
       } else if (ch === 0x23 /* # */) {
-        const preceding = this.input.charCodeAt(this.position - 1);
+        const preceding = this.#input.charCodeAt(this.#position - 1);
 
         if (isWsOrEol(preceding)) {
           break;
         }
       } else if (
-        (this.position === this.lineStart &&
+        (this.#position === this.#lineStart &&
           this.#testDocumentSeparator()) ||
         (withinFlowCollection && isFlowIndicator(ch))
       ) {
         break;
       } else if (isEOL(ch)) {
-        line = this.line;
-        const lineStart = this.lineStart;
-        const lineIndent = this.lineIndent;
+        line = this.#line;
+        const lineStart = this.#lineStart;
+        const lineIndent = this.#lineIndent;
         this.#skipSeparationSpace(false, -1);
 
-        if (this.lineIndent >= nodeIndent) {
+        if (this.#lineIndent >= nodeIndent) {
           hasPendingContent = true;
-          ch = this.input.charCodeAt(this.position);
+          ch = this.#input.charCodeAt(this.#position);
           continue;
         } else {
-          this.position = captureEnd;
-          this.line = line;
-          this.lineStart = lineStart;
-          this.lineIndent = lineIndent;
+          this.#position = captureEnd;
+          this.#line = line;
+          this.#lineStart = lineStart;
+          this.#lineIndent = lineIndent;
           break;
         }
       }
 
       if (hasPendingContent) {
         this.#captureSegment(captureStart, captureEnd, false);
-        this.#writeFoldedLines(this.line - line);
-        captureStart = captureEnd = this.position;
+        this.#writeFoldedLines(this.#line - line);
+        captureStart = captureEnd = this.#position;
         hasPendingContent = false;
       }
 
       if (!isWhiteSpace(ch)) {
-        captureEnd = this.position + 1;
+        captureEnd = this.#position + 1;
       }
 
-      ch = this.input.charCodeAt(++this.position);
+      ch = this.#input.charCodeAt(++this.#position);
     }
 
     this.#captureSegment(captureStart, captureEnd, false);
 
-    if (this.result) {
+    if (this.#result) {
       return true;
     }
 
-    this.kind = kind;
-    this.result = result;
+    this.#kind = kind;
+    this.#result = result;
     return false;
   }
 
@@ -763,26 +760,26 @@ class Parser {
     let captureStart;
     let captureEnd;
 
-    ch = this.input.charCodeAt(this.position);
+    ch = this.#input.charCodeAt(this.#position);
 
     if (ch !== 0x27 /* ' */) {
       return false;
     }
 
-    this.kind = "scalar";
-    this.result = "";
-    this.position++;
-    captureStart = captureEnd = this.position;
+    this.#kind = "scalar";
+    this.#result = "";
+    this.#position++;
+    captureStart = captureEnd = this.#position;
 
-    while ((ch = this.input.charCodeAt(this.position)) !== 0) {
+    while ((ch = this.#input.charCodeAt(this.#position)) !== 0) {
       if (ch === 0x27 /* ' */) {
-        this.#captureSegment(captureStart, this.position, true);
-        ch = this.input.charCodeAt(++this.position);
+        this.#captureSegment(captureStart, this.#position, true);
+        ch = this.#input.charCodeAt(++this.#position);
 
         if (ch === 0x27 /* ' */) {
-          captureStart = this.position;
-          this.position++;
-          captureEnd = this.position;
+          captureStart = this.#position;
+          this.#position++;
+          captureEnd = this.#position;
         } else {
           return true;
         }
@@ -791,17 +788,17 @@ class Parser {
         this.#writeFoldedLines(
           this.#skipSeparationSpace(false, nodeIndent),
         );
-        captureStart = captureEnd = this.position;
+        captureStart = captureEnd = this.#position;
       } else if (
-        this.position === this.lineStart &&
+        this.#position === this.#lineStart &&
         this.#testDocumentSeparator()
       ) {
         return this.throwError(
           "unexpected end of the document within a single quoted scalar",
         );
       } else {
-        this.position++;
-        captureEnd = this.position;
+        this.#position++;
+        captureEnd = this.#position;
       }
     }
 
@@ -811,41 +808,41 @@ class Parser {
   }
 
   #readDoubleQuotedScalar(nodeIndent: number): boolean {
-    let ch = this.input.charCodeAt(this.position);
+    let ch = this.#input.charCodeAt(this.#position);
 
     if (ch !== 0x22 /* " */) {
       return false;
     }
 
-    this.kind = "scalar";
-    this.result = "";
-    this.position++;
-    let captureEnd = this.position;
-    let captureStart = this.position;
+    this.#kind = "scalar";
+    this.#result = "";
+    this.#position++;
+    let captureEnd = this.#position;
+    let captureStart = this.#position;
     let tmp: number;
-    while ((ch = this.input.charCodeAt(this.position)) !== 0) {
+    while ((ch = this.#input.charCodeAt(this.#position)) !== 0) {
       if (ch === 0x22 /* " */) {
-        this.#captureSegment(captureStart, this.position, true);
-        this.position++;
+        this.#captureSegment(captureStart, this.#position, true);
+        this.#position++;
         return true;
       }
       if (ch === 0x5c /* \ */) {
-        this.#captureSegment(captureStart, this.position, true);
-        ch = this.input.charCodeAt(++this.position);
+        this.#captureSegment(captureStart, this.#position, true);
+        ch = this.#input.charCodeAt(++this.#position);
 
         if (isEOL(ch)) {
           this.#skipSeparationSpace(false, nodeIndent);
 
           // TODO(bartlomieju): rework to inline fn with no type cast?
         } else if (ch < 256 && escapeMap.has(ch)) {
-          this.result += escapeMap.get(ch);
-          this.position++;
+          this.#result += escapeMap.get(ch);
+          this.#position++;
         } else if ((tmp = escapedHexLen(ch)) > 0) {
           let hexLength = tmp;
           let hexResult = 0;
 
           for (; hexLength > 0; hexLength--) {
-            ch = this.input.charCodeAt(++this.position);
+            ch = this.#input.charCodeAt(++this.#position);
 
             if ((tmp = fromHexCode(ch)) >= 0) {
               hexResult = (hexResult << 4) + tmp;
@@ -854,30 +851,30 @@ class Parser {
             }
           }
 
-          this.result += charFromCodepoint(hexResult);
+          this.#result += charFromCodepoint(hexResult);
 
-          this.position++;
+          this.#position++;
         } else {
           return this.throwError("unknown escape sequence");
         }
 
-        captureStart = captureEnd = this.position;
+        captureStart = captureEnd = this.#position;
       } else if (isEOL(ch)) {
         this.#captureSegment(captureStart, captureEnd, true);
         this.#writeFoldedLines(
           this.#skipSeparationSpace(false, nodeIndent),
         );
-        captureStart = captureEnd = this.position;
+        captureStart = captureEnd = this.#position;
       } else if (
-        this.position === this.lineStart &&
+        this.#position === this.#lineStart &&
         this.#testDocumentSeparator()
       ) {
         return this.throwError(
           "unexpected end of the document within a double quoted scalar",
         );
       } else {
-        this.position++;
-        captureEnd = this.position;
+        this.#position++;
+        captureEnd = this.#position;
       }
     }
 
@@ -887,7 +884,7 @@ class Parser {
   }
 
   #readFlowCollection(nodeIndent: number): boolean {
-    let ch = this.input.charCodeAt(this.position);
+    let ch = this.#input.charCodeAt(this.#position);
     let terminator: number;
     let isMapping = true;
     let result: ResultType = {};
@@ -901,14 +898,14 @@ class Parser {
       return false;
     }
 
-    if (this.anchor !== null && typeof this.anchor !== "undefined") {
-      this.anchorMap[this.anchor] = result;
+    if (this.#anchor !== null && typeof this.#anchor !== "undefined") {
+      this.#anchorMap[this.#anchor] = result;
     }
 
-    ch = this.input.charCodeAt(++this.position);
+    ch = this.#input.charCodeAt(++this.#position);
 
-    const tag = this.tag;
-    const anchor = this.anchor;
+    const tag = this.#tag;
+    const anchor = this.#anchor;
     let readNext = true;
     let valueNode = null;
     let keyNode = null;
@@ -921,14 +918,14 @@ class Parser {
     while (ch !== 0) {
       this.#skipSeparationSpace(true, nodeIndent);
 
-      ch = this.input.charCodeAt(this.position);
+      ch = this.#input.charCodeAt(this.#position);
 
       if (ch === terminator) {
-        this.position++;
-        this.tag = tag;
-        this.anchor = anchor;
-        this.kind = isMapping ? "mapping" : "sequence";
-        this.result = result;
+        this.#position++;
+        this.#tag = tag;
+        this.#anchor = anchor;
+        this.#kind = isMapping ? "mapping" : "sequence";
+        this.#result = result;
         return true;
       }
       if (!readNext) {
@@ -939,29 +936,29 @@ class Parser {
       isPair = isExplicitPair = false;
 
       if (ch === 0x3f /* ? */) {
-        following = this.input.charCodeAt(this.position + 1);
+        following = this.#input.charCodeAt(this.#position + 1);
 
         if (isWsOrEol(following)) {
           isPair = isExplicitPair = true;
-          this.position++;
+          this.#position++;
           this.#skipSeparationSpace(true, nodeIndent);
         }
       }
 
-      line = this.line;
+      line = this.#line;
       this.#composeNode(nodeIndent, CONTEXT_FLOW_IN, false, true);
-      keyTag = this.tag || null;
-      keyNode = this.result;
+      keyTag = this.#tag || null;
+      keyNode = this.#result;
       this.#skipSeparationSpace(true, nodeIndent);
 
-      ch = this.input.charCodeAt(this.position);
+      ch = this.#input.charCodeAt(this.#position);
 
-      if ((isExplicitPair || this.line === line) && ch === 0x3a /* : */) {
+      if ((isExplicitPair || this.#line === line) && ch === 0x3a /* : */) {
         isPair = true;
-        ch = this.input.charCodeAt(++this.position);
+        ch = this.#input.charCodeAt(++this.#position);
         this.#skipSeparationSpace(true, nodeIndent);
         this.#composeNode(nodeIndent, CONTEXT_FLOW_IN, false, true);
-        valueNode = this.result;
+        valueNode = this.#result;
       }
 
       if (isMapping) {
@@ -988,11 +985,11 @@ class Parser {
 
       this.#skipSeparationSpace(true, nodeIndent);
 
-      ch = this.input.charCodeAt(this.position);
+      ch = this.#input.charCodeAt(this.#position);
 
       if (ch === 0x2c /* , */) {
         readNext = true;
-        ch = this.input.charCodeAt(++this.position);
+        ch = this.#input.charCodeAt(++this.#position);
       } else {
         readNext = false;
       }
@@ -1013,7 +1010,7 @@ class Parser {
     let emptyLines = 0;
     let atMoreIndented = false;
 
-    let ch = this.input.charCodeAt(this.position);
+    let ch = this.#input.charCodeAt(this.#position);
 
     let folding = false;
     if (ch === 0x7c /* | */) {
@@ -1024,12 +1021,12 @@ class Parser {
       return false;
     }
 
-    this.kind = "scalar";
-    this.result = "";
+    this.#kind = "scalar";
+    this.#result = "";
 
     let tmp = 0;
     while (ch !== 0) {
-      ch = this.input.charCodeAt(++this.position);
+      ch = this.#input.charCodeAt(++this.#position);
 
       if (ch === 0x2b || /* + */ ch === 0x2d /* - */) {
         if (CHOMPING_CLIP === chomping) {
@@ -1055,32 +1052,32 @@ class Parser {
 
     if (isWhiteSpace(ch)) {
       do {
-        ch = this.input.charCodeAt(++this.position);
+        ch = this.#input.charCodeAt(++this.#position);
       } while (isWhiteSpace(ch));
 
       if (ch === 0x23 /* # */) {
         do {
-          ch = this.input.charCodeAt(++this.position);
+          ch = this.#input.charCodeAt(++this.#position);
         } while (!isEOL(ch) && ch !== 0);
       }
     }
 
     while (ch !== 0) {
       this.#readLineBreak();
-      this.lineIndent = 0;
+      this.#lineIndent = 0;
 
-      ch = this.input.charCodeAt(this.position);
+      ch = this.#input.charCodeAt(this.#position);
 
       while (
-        (!detectedIndent || this.lineIndent < textIndent) &&
+        (!detectedIndent || this.#lineIndent < textIndent) &&
         ch === 0x20 /* Space */
       ) {
-        this.lineIndent++;
-        ch = this.input.charCodeAt(++this.position);
+        this.#lineIndent++;
+        ch = this.#input.charCodeAt(++this.#position);
       }
 
-      if (!detectedIndent && this.lineIndent > textIndent) {
-        textIndent = this.lineIndent;
+      if (!detectedIndent && this.#lineIndent > textIndent) {
+        textIndent = this.#lineIndent;
       }
 
       if (isEOL(ch)) {
@@ -1089,17 +1086,17 @@ class Parser {
       }
 
       // End of the scalar.
-      if (this.lineIndent < textIndent) {
+      if (this.#lineIndent < textIndent) {
         // Perform the chomping.
         if (chomping === CHOMPING_KEEP) {
-          this.result += common.repeat(
+          this.#result += common.repeat(
             "\n",
             didReadContent ? 1 + emptyLines : emptyLines,
           );
         } else if (chomping === CHOMPING_CLIP) {
           if (didReadContent) {
             // i.e. only if the scalar is not empty.
-            this.result += "\n";
+            this.#result += "\n";
           }
         }
 
@@ -1113,7 +1110,7 @@ class Parser {
         if (isWhiteSpace(ch)) {
           atMoreIndented = true;
           // except for the first content line (cf. Example 8.1)
-          this.result += common.repeat(
+          this.#result += common.repeat(
             "\n",
             didReadContent ? 1 + emptyLines : emptyLines,
           );
@@ -1121,24 +1118,24 @@ class Parser {
           // End of more-indented block.
         } else if (atMoreIndented) {
           atMoreIndented = false;
-          this.result += common.repeat("\n", emptyLines + 1);
+          this.#result += common.repeat("\n", emptyLines + 1);
 
           // Just one line break - perceive as the same line.
         } else if (emptyLines === 0) {
           if (didReadContent) {
             // i.e. only if we have already read some scalar content.
-            this.result += " ";
+            this.#result += " ";
           }
 
           // Several line breaks - perceive as different lines.
         } else {
-          this.result += common.repeat("\n", emptyLines);
+          this.#result += common.repeat("\n", emptyLines);
         }
 
         // Literal style: just add exact number of line breaks between content lines.
       } else {
         // Keep all line breaks except the header line break.
-        this.result += common.repeat(
+        this.#result += common.repeat(
           "\n",
           didReadContent ? 1 + emptyLines : emptyLines,
         );
@@ -1147,13 +1144,13 @@ class Parser {
       didReadContent = true;
       detectedIndent = true;
       emptyLines = 0;
-      const captureStart = this.position;
+      const captureStart = this.#position;
 
       while (!isEOL(ch) && ch !== 0) {
-        ch = this.input.charCodeAt(++this.position);
+        ch = this.#input.charCodeAt(++this.#position);
       }
 
-      this.#captureSegment(captureStart, this.position, false);
+      this.#captureSegment(captureStart, this.#position, false);
     }
 
     return true;
@@ -1164,65 +1161,65 @@ class Parser {
     let following: number;
     let detected = false;
     let ch: number;
-    const tag = this.tag;
-    const anchor = this.anchor;
+    const tag = this.#tag;
+    const anchor = this.#anchor;
     const result: unknown[] = [];
 
-    if (this.anchor !== null && typeof this.anchor !== "undefined") {
-      this.anchorMap[this.anchor] = result;
+    if (this.#anchor !== null && typeof this.#anchor !== "undefined") {
+      this.#anchorMap[this.#anchor] = result;
     }
 
-    ch = this.input.charCodeAt(this.position);
+    ch = this.#input.charCodeAt(this.#position);
 
     while (ch !== 0) {
       if (ch !== 0x2d /* - */) {
         break;
       }
 
-      following = this.input.charCodeAt(this.position + 1);
+      following = this.#input.charCodeAt(this.#position + 1);
 
       if (!isWsOrEol(following)) {
         break;
       }
 
       detected = true;
-      this.position++;
+      this.#position++;
 
       if (this.#skipSeparationSpace(true, -1)) {
-        if (this.lineIndent <= nodeIndent) {
+        if (this.#lineIndent <= nodeIndent) {
           result.push(null);
-          ch = this.input.charCodeAt(this.position);
+          ch = this.#input.charCodeAt(this.#position);
           continue;
         }
       }
 
-      line = this.line;
+      line = this.#line;
       this.#composeNode(nodeIndent, CONTEXT_BLOCK_IN, false, true);
-      result.push(this.result);
+      result.push(this.#result);
       this.#skipSeparationSpace(true, -1);
 
-      ch = this.input.charCodeAt(this.position);
+      ch = this.#input.charCodeAt(this.#position);
 
-      if ((this.line === line || this.lineIndent > nodeIndent) && ch !== 0) {
+      if ((this.#line === line || this.#lineIndent > nodeIndent) && ch !== 0) {
         return this.throwError("bad indentation of a sequence entry");
-      } else if (this.lineIndent < nodeIndent) {
+      } else if (this.#lineIndent < nodeIndent) {
         break;
       }
     }
 
     if (detected) {
-      this.tag = tag;
-      this.anchor = anchor;
-      this.kind = "sequence";
-      this.result = result;
+      this.#tag = tag;
+      this.#anchor = anchor;
+      this.#kind = "sequence";
+      this.#result = result;
       return true;
     }
     return false;
   }
 
   #readBlockMapping(nodeIndent: number, flowIndent: number): boolean {
-    const tag = this.tag;
-    const anchor = this.anchor;
+    const tag = this.#tag;
+    const anchor = this.#anchor;
     const result = {};
     const overridableKeys = Object.create(null);
     let following: number;
@@ -1236,16 +1233,16 @@ class Parser {
     let detected = false;
     let ch: number;
 
-    if (this.anchor !== null && typeof this.anchor !== "undefined") {
-      this.anchorMap[this.anchor] = result;
+    if (this.#anchor !== null && typeof this.#anchor !== "undefined") {
+      this.#anchorMap[this.#anchor] = result;
     }
 
-    ch = this.input.charCodeAt(this.position);
+    ch = this.#input.charCodeAt(this.#position);
 
     while (ch !== 0) {
-      following = this.input.charCodeAt(this.position + 1);
-      line = this.line; // Save the current line.
-      pos = this.position;
+      following = this.#input.charCodeAt(this.#position + 1);
+      line = this.#line; // Save the current line.
+      pos = this.#position;
 
       //
       // Explicit notation case. There are two separate blocks:
@@ -1279,7 +1276,7 @@ class Parser {
           );
         }
 
-        this.position += 1;
+        this.#position += 1;
         ch = following;
 
         //
@@ -1288,15 +1285,15 @@ class Parser {
       } else if (
         this.#composeNode(flowIndent, CONTEXT_FLOW_OUT, false, true)
       ) {
-        if (this.line === line) {
-          ch = this.input.charCodeAt(this.position);
+        if (this.#line === line) {
+          ch = this.#input.charCodeAt(this.#position);
 
           while (isWhiteSpace(ch)) {
-            ch = this.input.charCodeAt(++this.position);
+            ch = this.#input.charCodeAt(++this.#position);
           }
 
           if (ch === 0x3a /* : */) {
-            ch = this.input.charCodeAt(++this.position);
+            ch = this.#input.charCodeAt(++this.#position);
 
             if (!isWsOrEol(ch)) {
               return this.throwError(
@@ -1318,15 +1315,15 @@ class Parser {
             detected = true;
             atExplicitKey = false;
             allowCompact = false;
-            keyTag = this.tag;
-            keyNode = this.result;
+            keyTag = this.#tag;
+            keyNode = this.#result;
           } else if (detected) {
             return this.throwError(
               "can not read an implicit mapping pair; a colon is missed",
             );
           } else {
-            this.tag = tag;
-            this.anchor = anchor;
+            this.#tag = tag;
+            this.#anchor = anchor;
             return true; // Keep the result of `composeNode`.
           }
         } else if (detected) {
@@ -1334,8 +1331,8 @@ class Parser {
             "can not read a block mapping entry; a multiline key may not be an implicit key",
           );
         } else {
-          this.tag = tag;
-          this.anchor = anchor;
+          this.#tag = tag;
+          this.#anchor = anchor;
           return true; // Keep the result of `composeNode`.
         }
       } else {
@@ -1345,14 +1342,14 @@ class Parser {
       //
       // Common reading code for both explicit and implicit notations.
       //
-      if (this.line === line || this.lineIndent > nodeIndent) {
+      if (this.#line === line || this.#lineIndent > nodeIndent) {
         if (
           this.#composeNode(nodeIndent, CONTEXT_BLOCK_OUT, true, allowCompact)
         ) {
           if (atExplicitKey) {
-            keyNode = this.result;
+            keyNode = this.#result;
           } else {
-            valueNode = this.result;
+            valueNode = this.#result;
           }
         }
 
@@ -1370,12 +1367,12 @@ class Parser {
         }
 
         this.#skipSeparationSpace(true, -1);
-        ch = this.input.charCodeAt(this.position);
+        ch = this.#input.charCodeAt(this.#position);
       }
 
-      if (this.lineIndent > nodeIndent && ch !== 0) {
+      if (this.#lineIndent > nodeIndent && ch !== 0) {
         return this.throwError("bad indentation of a mapping entry");
-      } else if (this.lineIndent < nodeIndent) {
+      } else if (this.#lineIndent < nodeIndent) {
         break;
       }
     }
@@ -1397,10 +1394,10 @@ class Parser {
 
     // Expose the resulting mapping.
     if (detected) {
-      this.tag = tag;
-      this.anchor = anchor;
-      this.kind = "mapping";
-      this.result = result;
+      this.#tag = tag;
+      this.#anchor = anchor;
+      this.#kind = "mapping";
+      this.#result = result;
     }
 
     return detected;
@@ -1414,37 +1411,37 @@ class Parser {
     let tagName: string;
     let ch: number;
 
-    ch = this.input.charCodeAt(this.position);
+    ch = this.#input.charCodeAt(this.#position);
 
     if (ch !== 0x21 /* ! */) return false;
 
-    if (this.tag !== null) {
+    if (this.#tag !== null) {
       return this.throwError("duplication of a tag property");
     }
 
-    ch = this.input.charCodeAt(++this.position);
+    ch = this.#input.charCodeAt(++this.#position);
 
     if (ch === 0x3c /* < */) {
       isVerbatim = true;
-      ch = this.input.charCodeAt(++this.position);
+      ch = this.#input.charCodeAt(++this.#position);
     } else if (ch === 0x21 /* ! */) {
       isNamed = true;
       tagHandle = "!!";
-      ch = this.input.charCodeAt(++this.position);
+      ch = this.#input.charCodeAt(++this.#position);
     } else {
       tagHandle = "!";
     }
 
-    position = this.position;
+    position = this.#position;
 
     if (isVerbatim) {
       do {
-        ch = this.input.charCodeAt(++this.position);
+        ch = this.#input.charCodeAt(++this.#position);
       } while (ch !== 0 && ch !== 0x3e /* > */);
 
-      if (this.position < this.length) {
-        tagName = this.input.slice(position, this.position);
-        ch = this.input.charCodeAt(++this.position);
+      if (this.#position < this.#length) {
+        tagName = this.#input.slice(position, this.#position);
+        ch = this.#input.charCodeAt(++this.#position);
       } else {
         return this.throwError(
           "unexpected end of the stream within a verbatim tag",
@@ -1454,7 +1451,7 @@ class Parser {
       while (ch !== 0 && !isWsOrEol(ch)) {
         if (ch === 0x21 /* ! */) {
           if (!isNamed) {
-            tagHandle = this.input.slice(position - 1, this.position + 1);
+            tagHandle = this.#input.slice(position - 1, this.#position + 1);
 
             if (!PATTERN_TAG_HANDLE.test(tagHandle)) {
               return this.throwError(
@@ -1463,7 +1460,7 @@ class Parser {
             }
 
             isNamed = true;
-            position = this.position + 1;
+            position = this.#position + 1;
           } else {
             return this.throwError(
               "tag suffix cannot contain exclamation marks",
@@ -1471,10 +1468,10 @@ class Parser {
           }
         }
 
-        ch = this.input.charCodeAt(++this.position);
+        ch = this.#input.charCodeAt(++this.#position);
       }
 
-      tagName = this.input.slice(position, this.position);
+      tagName = this.#input.slice(position, this.#position);
 
       if (PATTERN_FLOW_INDICATORS.test(tagName)) {
         return this.throwError(
@@ -1490,13 +1487,13 @@ class Parser {
     }
 
     if (isVerbatim) {
-      this.tag = tagName;
-    } else if (Object.hasOwn(this.tagMap, tagHandle)) {
-      this.tag = this.tagMap[tagHandle] + tagName;
+      this.#tag = tagName;
+    } else if (Object.hasOwn(this.#tagMap, tagHandle)) {
+      this.#tag = this.#tagMap[tagHandle] + tagName;
     } else if (tagHandle === "!") {
-      this.tag = `!${tagName}`;
+      this.#tag = `!${tagName}`;
     } else if (tagHandle === "!!") {
-      this.tag = `tag:yaml.org,2002:${tagName}`;
+      this.#tag = `tag:yaml.org,2002:${tagName}`;
     } else {
       return this.throwError(`undeclared tag handle "${tagHandle}"`);
     }
@@ -1505,87 +1502,87 @@ class Parser {
   }
 
   #readAnchorProperty(): boolean {
-    let ch = this.input.charCodeAt(this.position);
+    let ch = this.#input.charCodeAt(this.#position);
     if (ch !== 0x26 /* & */) return false;
 
-    if (this.anchor !== null) {
+    if (this.#anchor !== null) {
       return this.throwError("duplication of an anchor property");
     }
-    ch = this.input.charCodeAt(++this.position);
+    ch = this.#input.charCodeAt(++this.#position);
 
-    const position = this.position;
+    const position = this.#position;
     while (ch !== 0 && !isWsOrEol(ch) && !isFlowIndicator(ch)) {
-      ch = this.input.charCodeAt(++this.position);
+      ch = this.#input.charCodeAt(++this.#position);
     }
 
-    if (this.position === position) {
+    if (this.#position === position) {
       return this.throwError(
         "name of an anchor node must contain at least one character",
       );
     }
 
-    this.anchor = this.input.slice(position, this.position);
+    this.#anchor = this.#input.slice(position, this.#position);
     return true;
   }
 
   #readAlias(): boolean {
-    let ch = this.input.charCodeAt(this.position);
+    let ch = this.#input.charCodeAt(this.#position);
 
     if (ch !== 0x2a /* * */) return false;
 
-    ch = this.input.charCodeAt(++this.position);
-    const _position = this.position;
+    ch = this.#input.charCodeAt(++this.#position);
+    const _position = this.#position;
 
     while (ch !== 0 && !isWsOrEol(ch) && !isFlowIndicator(ch)) {
-      ch = this.input.charCodeAt(++this.position);
+      ch = this.#input.charCodeAt(++this.#position);
     }
 
-    if (this.position === _position) {
+    if (this.#position === _position) {
       return this.throwError(
         "name of an alias node must contain at least one character",
       );
     }
 
-    const alias = this.input.slice(_position, this.position);
-    if (!Object.hasOwn(this.anchorMap, alias)) {
+    const alias = this.#input.slice(_position, this.#position);
+    if (!Object.hasOwn(this.#anchorMap, alias)) {
       return this.throwError(`unidentified alias "${alias}"`);
     }
 
-    this.result = this.anchorMap[alias];
+    this.#result = this.#anchorMap[alias];
     this.#skipSeparationSpace(true, -1);
     return true;
   }
-  readDocument() {
-    const documentStart = this.position;
+  #readDocument() {
+    const documentStart = this.#position;
     let position: number;
     let directiveName: string;
     let directiveArgs: string[];
     let hasDirectives = false;
     let ch: number;
 
-    this.version = null;
-    this.checkLineBreaks = this.legacy;
-    this.tagMap = Object.create(null);
-    this.anchorMap = Object.create(null);
+    this.#version = null;
+    this.#checkLineBreaks = this.legacy;
+    this.#tagMap = Object.create(null);
+    this.#anchorMap = Object.create(null);
 
-    while ((ch = this.input.charCodeAt(this.position)) !== 0) {
+    while ((ch = this.#input.charCodeAt(this.#position)) !== 0) {
       this.#skipSeparationSpace(true, -1);
 
-      ch = this.input.charCodeAt(this.position);
+      ch = this.#input.charCodeAt(this.#position);
 
-      if (this.lineIndent > 0 || ch !== 0x25 /* % */) {
+      if (this.#lineIndent > 0 || ch !== 0x25 /* % */) {
         break;
       }
 
       hasDirectives = true;
-      ch = this.input.charCodeAt(++this.position);
-      position = this.position;
+      ch = this.#input.charCodeAt(++this.#position);
+      position = this.#position;
 
       while (ch !== 0 && !isWsOrEol(ch)) {
-        ch = this.input.charCodeAt(++this.position);
+        ch = this.#input.charCodeAt(++this.#position);
       }
 
-      directiveName = this.input.slice(position, this.position);
+      directiveName = this.#input.slice(position, this.#position);
       directiveArgs = [];
 
       if (directiveName.length < 1) {
@@ -1596,25 +1593,25 @@ class Parser {
 
       while (ch !== 0) {
         while (isWhiteSpace(ch)) {
-          ch = this.input.charCodeAt(++this.position);
+          ch = this.#input.charCodeAt(++this.#position);
         }
 
         if (ch === 0x23 /* # */) {
           do {
-            ch = this.input.charCodeAt(++this.position);
+            ch = this.#input.charCodeAt(++this.#position);
           } while (ch !== 0 && !isEOL(ch));
           break;
         }
 
         if (isEOL(ch)) break;
 
-        position = this.position;
+        position = this.#position;
 
         while (ch !== 0 && !isWsOrEol(ch)) {
-          ch = this.input.charCodeAt(++this.position);
+          ch = this.#input.charCodeAt(++this.#position);
         }
 
-        directiveArgs.push(this.input.slice(position, this.position));
+        directiveArgs.push(this.#input.slice(position, this.#position));
       }
 
       if (ch !== 0) this.#readLineBreak();
@@ -1634,44 +1631,59 @@ class Parser {
     this.#skipSeparationSpace(true, -1);
 
     if (
-      this.lineIndent === 0 &&
-      this.input.charCodeAt(this.position) === 0x2d /* - */ &&
-      this.input.charCodeAt(this.position + 1) === 0x2d /* - */ &&
-      this.input.charCodeAt(this.position + 2) === 0x2d /* - */
+      this.#lineIndent === 0 &&
+      this.#input.charCodeAt(this.#position) === 0x2d /* - */ &&
+      this.#input.charCodeAt(this.#position + 1) === 0x2d /* - */ &&
+      this.#input.charCodeAt(this.#position + 2) === 0x2d /* - */
     ) {
-      this.position += 3;
+      this.#position += 3;
       this.#skipSeparationSpace(true, -1);
     } else if (hasDirectives) {
       return this.throwError("directives end mark is expected");
     }
 
-    this.#composeNode(this.lineIndent - 1, CONTEXT_BLOCK_OUT, false, true);
+    this.#composeNode(this.#lineIndent - 1, CONTEXT_BLOCK_OUT, false, true);
     this.#skipSeparationSpace(true, -1);
 
     if (
-      this.checkLineBreaks &&
+      this.#checkLineBreaks &&
       PATTERN_NON_ASCII_LINE_BREAKS.test(
-        this.input.slice(documentStart, this.position),
+        this.#input.slice(documentStart, this.#position),
       )
     ) {
       this.#throwWarning("non-ASCII line breaks are interpreted as content");
     }
 
-    this.documents.push(this.result);
+    this.#documents.push(this.#result);
 
-    if (this.position === this.lineStart && this.#testDocumentSeparator()) {
-      if (this.input.charCodeAt(this.position) === 0x2e /* . */) {
-        this.position += 3;
+    if (this.#position === this.#lineStart && this.#testDocumentSeparator()) {
+      if (this.#input.charCodeAt(this.#position) === 0x2e /* . */) {
+        this.#position += 3;
         this.#skipSeparationSpace(true, -1);
       }
       return;
     }
 
-    if (this.position < this.length - 1) {
+    if (this.#position < this.#length - 1) {
       return this.throwError(
         "end of the stream or a document separator is expected",
       );
     }
+  }
+
+  parse(input: string) {
+    this.#input = input;
+    this.#length = input.length;
+
+    while (this.#input.charCodeAt(this.#position) === 0x20 /* Space */) {
+      this.#lineIndent += 1;
+      this.#position += 1;
+    }
+
+    while (this.#position < this.#length - 1) {
+      this.#readDocument();
+    }
+    return this.#documents;
   }
 }
 
@@ -1697,21 +1709,11 @@ export function parseDocuments(
     }
   }
 
-  const parser = new Parser(input, options);
-
   // Use 0 as string terminator. That significantly simplifies bounds check.
-  parser.input += "\0";
+  input += "\0";
 
-  while (parser.input.charCodeAt(parser.position) === 0x20 /* Space */) {
-    parser.lineIndent += 1;
-    parser.position += 1;
-  }
-
-  while (parser.position < parser.length - 1) {
-    parser.readDocument();
-  }
-
-  return parser.documents;
+  const parser = new Parser(options);
+  return parser.parse(input);
 }
 
 export function parseDocument(input: string, options?: ParserOptions): unknown {
