@@ -232,6 +232,37 @@ Deno.test({
 });
 
 Deno.test({
+  name: "parse() handles timestamp types",
+  fn() {
+    assertEquals(
+      parse(`
+- 2001-12-15T02:59:43.1Z
+- 2001-12-14t21:59:43.10-05:00
+- 2001-12-14 21:59:43.10 -5
+- 2002-12-14`),
+      [
+        new Date(Date.UTC(2001, 11, 15, 2, 59, 43, 100)),
+        new Date("2001-12-14T21:59:43.100-05:00"),
+        new Date("2001-12-14T21:59:43.100-05:00"),
+        new Date("2002-12-14"),
+      ],
+    );
+
+    assertThrows(
+      () => parse("- !!timestamp"),
+      YamlError,
+      "cannot resolve a node with !<tag:yaml.org,2002:timestamp> explicit tag at line 2, column 1:\n    \n    ^",
+    );
+
+    assertThrows(
+      () => parse("- !!timestamp 1"),
+      YamlError,
+      "cannot resolve a node with !<tag:yaml.org,2002:timestamp> explicit tag at line 1, column 16:\n    - !!timestamp 1\n                   ^",
+    );
+  },
+});
+
+Deno.test({
   name: "parse() handles omap type",
   fn() {
     const yaml = `--- !!omap
