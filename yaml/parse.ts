@@ -4,7 +4,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-import { load, loadDocuments } from "./_loader/loader.ts";
+import { parseDocument, parseDocuments } from "./_parser.ts";
 import { SCHEMA_MAP } from "./_schema.ts";
 
 /**
@@ -47,7 +47,10 @@ export function parse(
   content: string,
   options: ParseOptions = {},
 ): unknown {
-  return load(content, { ...options, schema: SCHEMA_MAP.get(options.schema!) });
+  return parseDocument(content, {
+    ...options,
+    schema: SCHEMA_MAP.get(options.schema!),
+  });
 }
 
 /**
@@ -78,7 +81,7 @@ export function parse(
  * @returns Array of parsed documents.
  */
 export function parseAll(content: string, options: ParseOptions = {}): unknown {
-  return loadDocuments(content, {
+  return parseDocuments(content, {
     ...options,
     schema: SCHEMA_MAP.get(options.schema!),
   });
