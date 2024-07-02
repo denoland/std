@@ -1658,10 +1658,9 @@ function readDocument(state: LoaderState) {
 
 export function loadDocuments(
   input: string,
-  options?: LoaderStateOptions,
+  options: LoaderStateOptions = {},
 ): unknown[] {
   input = String(input);
-  options = options || {};
 
   if (input.length !== 0) {
     // Add tailing `\n` if not exists
@@ -1695,7 +1694,7 @@ export function loadDocuments(
   return state.documents;
 }
 
-export function load(input: string, options?: LoaderStateOptions): unknown {
+export function load(input: string, options: LoaderStateOptions = {}): unknown {
   const documents = loadDocuments(input, options);
 
   if (documents.length === 0) {
