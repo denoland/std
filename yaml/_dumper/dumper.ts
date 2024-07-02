@@ -727,7 +727,7 @@ function writeNode(
     block = state.flowLevel < 0 || state.flowLevel > level;
   }
 
-  const objectOrArray = common.isObject(object) || Array.isArray(object);
+  const objectOrArray = common.isObject(state.dump) || Array.isArray(state.dump);
 
   let duplicateIndex = -1;
   let duplicate = false;
