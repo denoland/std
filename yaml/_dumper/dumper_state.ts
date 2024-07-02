@@ -22,11 +22,7 @@ function compileStyleMap(
     }
     const type = schema.compiledTypeMap.fallback[tag];
 
-    if (
-      type &&
-      type.styleAliases !== undefined &&
-      Object.hasOwn(type.styleAliases, style)
-    ) {
+    if (type?.styleAliases && Object.hasOwn(type.styleAliases, style)) {
       style = type.styleAliases[style];
     }
 

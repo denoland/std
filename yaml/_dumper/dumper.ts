@@ -750,10 +750,7 @@ function writeNode(
     if (objectOrArray && duplicate && !state.usedDuplicates[duplicateIndex]) {
       state.usedDuplicates[duplicateIndex] = true;
     }
-    if (
-      typeof state.dump === "object" && state.dump !== null &&
-      !Array.isArray(state.dump)
-    ) {
+    if (common.isObject(state.dump) && !Array.isArray(state.dump)) {
       if (block && Object.keys(state.dump).length !== 0) {
         writeBlockMapping(state, level, state.dump, compact);
         if (duplicate) {
