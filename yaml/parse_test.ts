@@ -232,6 +232,37 @@ Deno.test({
 });
 
 Deno.test({
+  name: "parse() handles timestamp types",
+  fn() {
+    assertEquals(
+      parse(`
+- 2001-12-15T02:59:43.1Z
+- 2001-12-14t21:59:43.10-05:00
+- 2001-12-14 21:59:43.10 -5
+- 2002-12-14`),
+      [
+        new Date(Date.UTC(2001, 11, 15, 2, 59, 43, 100)),
+        new Date("2001-12-14T21:59:43.100-05:00"),
+        new Date("2001-12-14T21:59:43.100-05:00"),
+        new Date("2002-12-14"),
+      ],
+    );
+
+    assertThrows(
+      () => parse("- !!timestamp"),
+      YamlError,
+      "cannot resolve a node with !<tag:yaml.org,2002:timestamp> explicit tag at line 2, column 1:\n    \n    ^",
+    );
+
+    assertThrows(
+      () => parse("- !!timestamp 1"),
+      YamlError,
+      "cannot resolve a node with !<tag:yaml.org,2002:timestamp> explicit tag at line 1, column 16:\n    - !!timestamp 1\n                   ^",
+    );
+  },
+});
+
+Deno.test({
   name: "parse() handles omap type",
   fn() {
     const yaml = `--- !!omap
@@ -691,5 +722,65 @@ Deno.test("parse() throws with \0 in the middle of the document", () => {
     () => parse("hello: \0 world"),
     YamlError,
     "end of the stream or a document separator is expected at line 1, column 8:\n    hello: \n           ^",
+  );
+});
+
+Deno.test("parse() handles complex mapping key", () => {
+  assertEquals(
+    parse(`? - Detroit Tigers
+  - Chicago cubs
+: - 2001-07-23
+
+? [ New York Yankees,
+    Atlanta Braves ]
+: [ 2001-07-02, 2001-08-12,
+    2001-08-14 ]`),
+    {
+      "Detroit Tigers,Chicago cubs": [new Date("2001-07-23")],
+      "New York Yankees,Atlanta Braves": [
+        new Date("2001-07-02"),
+        new Date("2001-08-12"),
+        new Date("2001-08-14"),
+      ],
+    },
+  );
+
+  // Nested array as key is not supported
+  assertThrows(
+    () =>
+      parse(`? - [ foo ]
+: bar`),
+    YamlError,
+    "nested arrays are not supported inside keys at line 2, column 6:\n    : bar\n         ^",
+  );
+
+  assertEquals(
+    parse(`? - { foo: bar }
+: baz`),
+    { "[object Object]": "baz" },
+  );
+
+  assertEquals(
+    parse(`? { foo: bar }
+: baz`),
+    { "[object Object]": "baz" },
+  );
+});
+
+Deno.test("parse() handles unordered set", () => {
+  assertEquals(
+    parse(`--- !!set
+? Mark McGwire
+? Sammy Sosa
+? Ken Griffey`),
+    { "Mark McGwire": null, "Sammy Sosa": null, "Ken Griffey": null },
+  );
+});
+
+Deno.test("parse() throws with empty mapping key", () => {
+  assertThrows(
+    () => parse(`? : 1`),
+    YamlError,
+    "incomplete explicit mapping pair; a key node is missed; or followed by a non-tabulated empty line at line 1, column 3:\n    ? : 1\n      ^",
   );
 });
