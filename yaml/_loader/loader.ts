@@ -277,7 +277,7 @@ function storeMappingPair(
   // We need to convert keyNode to a string, but doing so can hang the process
   // (deeply nested arrays that explode exponentially using aliases).
   if (Array.isArray(keyNode)) {
-    keyNode = keyNode.slice();
+    keyNode = Array.prototype.slice.call(keyNode);
 
     for (let index = 0; index < keyNode.length; index++) {
       if (Array.isArray(keyNode[index])) {
