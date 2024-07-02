@@ -293,7 +293,10 @@ function storeMappingPair(
   // Avoid code execution in load() via toString property
   // (still use its own toString for arrays, timestamps,
   // and whatever user schema extensions happen to have @@toStringTag)
-  if (common.isObject(keyNode)) {
+  if (
+    typeof keyNode === "object" &&
+    Object.prototype.toString.call(keyNode) === "[object Object]"
+  ) {
     keyNode = "[object Object]";
   }
 
