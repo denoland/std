@@ -165,7 +165,6 @@ function generateError(state: LoaderState, message: string): YamlError {
   return new YamlError(
     message,
     new Mark(
-      state.filename as string,
       state.input,
       state.position,
       state.line,
@@ -1431,10 +1430,6 @@ function composeNode(
   let flowIndent: number;
   let blockIndent: number;
 
-  if (state.listener && state.listener !== null) {
-    state.listener("open", state);
-  }
-
   state.tag = null;
   state.anchor = null;
   state.kind = null;
@@ -1586,9 +1581,6 @@ function composeNode(
     }
   }
 
-  if (state.listener && state.listener !== null) {
-    state.listener("close", state);
-  }
   return state.tag !== null || state.anchor !== null || hasContent;
 }
 
@@ -1601,7 +1593,7 @@ function readDocument(state: LoaderState) {
   let ch: number;
 
   state.version = null;
-  state.checkLineBreaks = state.legacy;
+  state.checkLineBreaks = false;
   state.tagMap = Object.create(null);
   state.anchorMap = Object.create(null);
 

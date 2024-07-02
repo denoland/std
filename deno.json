@@ -24,7 +24,7 @@
     "@std/datetime": "jsr:@std/datetime@^0.224.1",
     "@std/dotenv": "jsr:@std/dotenv@^0.224.1",
     "@std/encoding": "jsr:@std/encoding@1.0.0-rc.2",
-    "@std/expect": "jsr:@std/expect@^0.224.5",
+    "@std/expect": "jsr:@std/expect@^1.0.0-rc.1",
     "@std/fmt": "jsr:@std/fmt@^0.225.4",
     "@std/front-matter": "jsr:@std/front-matter@^0.224.2",
     "@std/fs": "jsr:@std/fs@^1.0.0-rc.2",
@@ -48,7 +48,7 @@
     "@std/toml": "jsr:@std/toml@^1.0.0-rc.2",
     "@std/ulid": "jsr:@std/ulid@^1.0.0-rc.2",
     "@std/url": "jsr:@std/url@^1.0.0-rc.1",
-    "@std/uuid": "jsr:@std/uuid@1.0.0-rc.1",
+    "@std/uuid": "jsr:@std/uuid@1.0.0",
     "@std/webgpu": "jsr:@std/webgpu@^0.224.4",
     "@std/yaml": "jsr:@std/yaml@^0.224.3"
   },

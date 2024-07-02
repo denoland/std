@@ -181,3 +181,23 @@ Deno.test({
     );
   },
 });
+
+Deno.test({
+  name: "stringify() encode string with special characters",
+  fn() {
+    assertEquals(stringify("\x03"), `"\\x03"\n`);
+    assertEquals(stringify("\x08"), `"\\b"\n`);
+    assertEquals(stringify("\uffff"), `"\\uFFFF"\n`);
+    assertEquals(stringify("🐱"), `"\\U0001F431"\n`);
+  },
+});
+
+Deno.test({
+  name: "stringify() format Date objet into ISO string",
+  fn() {
+    assertEquals(
+      stringify([new Date("2021-01-01T00:00:00.000Z")]),
+      `- 2021-01-01T00:00:00.000Z\n`,
+    );
+  },
+});
