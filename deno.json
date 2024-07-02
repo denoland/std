@@ -77,6 +77,7 @@
     "cov",
     "jsonc/testdata",
     "front_matter/testdata",
+    "_tools/node_test_runner",
     "coverage",
     "docs"
   ],
