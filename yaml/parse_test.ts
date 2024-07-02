@@ -343,6 +343,73 @@ Deno.test({
 });
 
 Deno.test({
+  name: "parse() handles integer types",
+  fn() {
+    assertEquals(
+      parse(`
+        - 0
+        - 42
+        - -42
+        - 1_000
+      `),
+      [0, 42, -42, 1000],
+    );
+
+    // binary, octal, and hexadecimal
+    assertEquals(
+      parse(`
+      - 0b1010
+      - 0b1010_1010
+      - 012
+      - 012_34
+      - 0x1A
+      - 0x1A_2B
+    `),
+      [10, 170, 10, 668, 26, 6699],
+    );
+
+    // empty string is invalid integer
+    assertThrows(
+      () => parse('!!int ""'),
+      YamlError,
+      'cannot resolve a node with !<tag:yaml.org,2002:int> explicit tag at line 1, column 9:\n    !!int ""\n            ^',
+    );
+
+    // number can't start with _
+    assertThrows(
+      () => parse("!!int _42"),
+      YamlError,
+      "cannot resolve a node with !<tag:yaml.org,2002:int> explicit tag at line 2, column 1:\n    \n    ^",
+    );
+    // number can't end with _
+    assertThrows(
+      () => parse("!!int 42_"),
+      YamlError,
+      "cannot resolve a node with !<tag:yaml.org,2002:int> explicit tag at line 2, column 1:\n    \n    ^",
+    );
+
+    // invalid binary number
+    assertThrows(
+      () => parse("!!int 0b102"),
+      YamlError,
+      "cannot resolve a node with !<tag:yaml.org,2002:int> explicit tag at line 2, column 1:\n    \n    ^",
+    );
+    // invalid octal number
+    assertThrows(
+      () => parse("!!int 09"),
+      YamlError,
+      "cannot resolve a node with !<tag:yaml.org,2002:int> explicit tag at line 2, column 1:\n    \n    ^",
+    );
+    // invalid hexadecimal number
+    assertThrows(
+      () => parse("!!int 0x1G"),
+      YamlError,
+      "cannot resolve a node with !<tag:yaml.org,2002:int> explicit tag at line 2, column 1:\n    \n    ^",
+    );
+  },
+});
+
+Deno.test({
   name: "parse() handles timestamp types",
   fn() {
     assertEquals(
