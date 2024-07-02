@@ -1,6 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import { assertThrows } from "../assert/assert_throws.ts";
+import { assertThrows } from "@std/assert";
 import { expect } from "./expect.ts";
 import { fn } from "./fn.ts";
 
