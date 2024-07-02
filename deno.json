@@ -50,7 +50,7 @@
     "@std/url": "jsr:@std/url@^1.0.0-rc.1",
     "@std/uuid": "jsr:@std/uuid@1.0.0",
     "@std/webgpu": "jsr:@std/webgpu@^0.224.4",
-    "@std/yaml": "jsr:@std/yaml@^0.224.3"
+    "@std/yaml": "jsr:@std/yaml@^1.0.0-rc.1"
   },
   "tasks": {
     "test": "deno test --unstable-http --unstable-webgpu --doc --allow-all --parallel --coverage --trace-leaks --clean",
