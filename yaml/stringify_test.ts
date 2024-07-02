@@ -77,13 +77,19 @@ Deno.test({
 });
 
 Deno.test({
-  name: "booleans can be stringified directly",
+  name: "stringify() serializes boolean values",
   fn() {
-    const boolean = true;
+    assertEquals(stringify([true, false]), "- true\n- false\n");
 
-    const expected = "true\n";
-
-    assertEquals(stringify(boolean), expected);
+    // casing can be controlled with style options
+    assertEquals(
+      stringify([true, false], { styles: { "!!bool": "camelcase" } }),
+      "- True\n- False\n",
+    );
+    assertEquals(
+      stringify([true, false], { styles: { "!!bool": "uppercase" } }),
+      "- TRUE\n- FALSE\n",
+    );
   },
 });
 

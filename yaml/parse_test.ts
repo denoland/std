@@ -252,6 +252,66 @@ Deno.test({
 });
 
 Deno.test({
+  name: "parse() handles boolean types",
+  fn() {
+    assertEquals(
+      parse(`
+        - true
+        - True
+        - TRUE
+        - false
+        - False
+        - FALSE
+      `),
+      [true, true, true, false, false, false],
+    );
+
+    // if the boolean names are in strange casing, they become strings
+    assertEquals(
+      parse(`
+        - TruE
+        - tRue
+        - FaLsE
+        - fAlSe
+      `),
+      ["TruE", "tRue", "FaLsE", "fAlSe"],
+    );
+
+    // Yes, No, On, Off are not booleans in YAML 1.2
+    assertEquals(
+      parse(`
+        - yes
+        - Yes
+        - YES
+        - no
+        - No
+        - NO
+        - on
+        - On
+        - ON
+        - off
+        - Off
+        - OFF
+      `),
+      [
+        "yes",
+        "Yes",
+        "YES",
+        "no",
+        "No",
+        "NO",
+        "on",
+        "On",
+        "ON",
+        "off",
+        "Off",
+        "OFF",
+      ],
+    );
+  },
+});
+
+Deno.test({
   name: "parse() handles float types",
   fn() {
     const yaml = `
