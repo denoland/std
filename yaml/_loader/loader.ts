@@ -70,7 +70,7 @@ function isFlowIndicator(c: number): boolean {
     c === COMMA ||
     c === LEFT_SQUARE_BRACKET ||
     c === RIGHT_SQUARE_BRACKET ||
-    c === LEFT_SQUARE_BRACKET ||
+    c === LEFT_CURLY_BRACKET ||
     c === RIGHT_CURLY_BRACKET
   );
 }
