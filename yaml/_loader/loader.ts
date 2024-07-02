@@ -60,6 +60,58 @@ const PATTERN_TAG_HANDLE = /^(?:!|!!|![a-z\-]+!)$/i;
 const PATTERN_TAG_URI =
   /^(?:!|[^,\[\]\{\}])(?:%[0-9a-f]{2}|[0-9a-z\-#;\/\?:@&=\+\$,_\.!~\*'\(\)\[\]])*$/i;
 
+interface LoaderStateOptions {
+  /** specifies a schema to use. */
+  schema?: Schema;
+  /** compatibility with JSON.parse behaviour. */
+  json?: boolean;
+  /** function to call on warning messages. */
+  onWarning?(this: null, e?: YamlError): void;
+}
+
+// deno-lint-ignore no-explicit-any
+type ResultType = any[] | Record<string, any> | string;
+
+class LoaderState extends State {
+  input: string;
+  documents: Any[] = [];
+  length: number;
+  lineIndent = 0;
+  lineStart = 0;
+  position = 0;
+  line = 0;
+  onWarning?: (...args: Any[]) => void;
+  json: boolean;
+  implicitTypes: Type[];
+  typeMap: TypeMap;
+
+  version?: string | null;
+  checkLineBreaks = false;
+  tagMap: ArrayObject = Object.create(null);
+  anchorMap: ArrayObject = Object.create(null);
+  tag?: string | null;
+  anchor?: string | null;
+  kind?: string | null;
+  result: ResultType | null = "";
+
+  constructor(
+    input: string,
+    {
+      schema,
+      onWarning,
+      json = false,
+    }: LoaderStateOptions,
+  ) {
+    super(schema);
+    this.input = input;
+    this.onWarning = onWarning;
+    this.json = json;
+    this.implicitTypes = this.schema.compiledImplicit;
+    this.typeMap = this.schema.compiledTypeMap;
+    this.length = input.length;
+  }
+}
+
 function _class(obj: unknown): string {
   return Object.prototype.toString.call(obj);
 }
@@ -1740,56 +1792,4 @@ export function load(input: string, options: LoaderStateOptions = {}): unknown {
   throw new YamlError(
     "expected a single document in the stream, but found more",
   );
-}
-
-export interface LoaderStateOptions {
-  /** specifies a schema to use. */
-  schema?: Schema;
-  /** compatibility with JSON.parse behaviour. */
-  json?: boolean;
-  /** function to call on warning messages. */
-  onWarning?(this: null, e?: YamlError): void;
-}
-
-// deno-lint-ignore no-explicit-any
-export type ResultType = any[] | Record<string, any> | string;
-
-export class LoaderState extends State {
-  input: string;
-  documents: Any[] = [];
-  length: number;
-  lineIndent = 0;
-  lineStart = 0;
-  position = 0;
-  line = 0;
-  onWarning?: (...args: Any[]) => void;
-  json: boolean;
-  implicitTypes: Type[];
-  typeMap: TypeMap;
-
-  version?: string | null;
-  checkLineBreaks = false;
-  tagMap: ArrayObject = Object.create(null);
-  anchorMap: ArrayObject = Object.create(null);
-  tag?: string | null;
-  anchor?: string | null;
-  kind?: string | null;
-  result: ResultType | null = "";
-
-  constructor(
-    input: string,
-    {
-      schema,
-      onWarning,
-      json = false,
-    }: LoaderStateOptions,
-  ) {
-    super(schema);
-    this.input = input;
-    this.onWarning = onWarning;
-    this.json = json;
-    this.implicitTypes = this.schema.compiledImplicit;
-    this.typeMap = this.schema.compiledTypeMap;
-    this.length = input.length;
-  }
 }
