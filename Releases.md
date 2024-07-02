@@ -7,33 +7,27 @@
 #### @std/assert 1.0.0-rc.3 (prerelease)
 
 - BREAKING(assert): remove `assert` from module names (#5176)
-- refactor(assert,async,bytes,cli,collections,crypto,csv,data-structures,datetime,dotenv,encoding,expect,fmt,front-matter,fs,html,http,ini,internal,io,json,jsonc,log,media-types,msgpack,net,path,semver,streams,testing,text,toml,ulid,url,uuid,webgpu,yaml):
-  import from `@std/assert` (#5199)
+- refactor: import from `@std/assert` (#5199)
 
 #### @std/async 1.0.0-rc.3 (prerelease)
 
-- refactor(assert,async,bytes,cli,collections,crypto,csv,data-structures,datetime,dotenv,encoding,expect,fmt,front-matter,fs,html,http,ini,internal,io,json,jsonc,log,media-types,msgpack,net,path,semver,streams,testing,text,toml,ulid,url,uuid,webgpu,yaml):
-  import from `@std/assert` (#5199)
+- refactor: import from `@std/assert` (#5199)
 
 #### @std/bytes 1.0.1 (patch)
 
-- refactor(assert,async,bytes,cli,collections,crypto,csv,data-structures,datetime,dotenv,encoding,expect,fmt,front-matter,fs,html,http,ini,internal,io,json,jsonc,log,media-types,msgpack,net,path,semver,streams,testing,text,toml,ulid,url,uuid,webgpu,yaml):
-  import from `@std/assert` (#5199)
+- refactor: import from `@std/assert` (#5199)
 
 #### @std/cli 1.0.0-rc.3 (prerelease)
 
-- refactor(assert,async,bytes,cli,collections,crypto,csv,data-structures,datetime,dotenv,encoding,expect,fmt,front-matter,fs,html,http,ini,internal,io,json,jsonc,log,media-types,msgpack,net,path,semver,streams,testing,text,toml,ulid,url,uuid,webgpu,yaml):
-  import from `@std/assert` (#5199)
+- refactor: import from `@std/assert` (#5199)
 
 #### @std/collections 1.0.2 (patch)
 
-- refactor(assert,async,bytes,cli,collections,crypto,csv,data-structures,datetime,dotenv,encoding,expect,fmt,front-matter,fs,html,http,ini,internal,io,json,jsonc,log,media-types,msgpack,net,path,semver,streams,testing,text,toml,ulid,url,uuid,webgpu,yaml):
-  import from `@std/assert` (#5199)
+- refactor: import from `@std/assert` (#5199)
 
 #### @std/crypto 1.0.0 (major)
 
-- refactor(assert,async,bytes,cli,collections,crypto,csv,data-structures,datetime,dotenv,encoding,expect,fmt,front-matter,fs,html,http,ini,internal,io,json,jsonc,log,media-types,msgpack,net,path,semver,streams,testing,text,toml,ulid,url,uuid,webgpu,yaml):
-  import from `@std/assert` (#5199)
+- refactor: import from `@std/assert` (#5199)
 - chore(crypto): release `crypto@1.0.0` (#4990)
 
 #### @std/csv 1.0.0-rc.1 (prerelease)
@@ -43,8 +37,7 @@
 - docs(csv): fix description of `ParseResult` (#5170)
 - docs(csv): add module docs (#5157)
 - refactor(csv): minor cleanup (#5166)
-- refactor(assert,async,bytes,cli,collections,crypto,csv,data-structures,datetime,dotenv,encoding,expect,fmt,front-matter,fs,html,http,ini,internal,io,json,jsonc,log,media-types,msgpack,net,path,semver,streams,testing,text,toml,ulid,url,uuid,webgpu,yaml):
-  import from `@std/assert` (#5199)
+- refactor: import from `@std/assert` (#5199)
 - refactor(csv): minor cleanups (#5158)
 - refactor(csv): remove dead code and improve `CsvParseStream` test (#5153)
 - refactor(csv): remove dead code and improve tests (#5151)
@@ -54,23 +47,19 @@
 
 #### @std/data-structures 1.0.0-rc.2 (prerelease)
 
-- refactor(assert,async,bytes,cli,collections,crypto,csv,data-structures,datetime,dotenv,encoding,expect,fmt,front-matter,fs,html,http,ini,internal,io,json,jsonc,log,media-types,msgpack,net,path,semver,streams,testing,text,toml,ulid,url,uuid,webgpu,yaml):
-  import from `@std/assert` (#5199)
+- refactor: import from `@std/assert` (#5199)
 
 #### @std/datetime 0.224.2 (patch)
 
-- refactor(assert,async,bytes,cli,collections,crypto,csv,data-structures,datetime,dotenv,encoding,expect,fmt,front-matter,fs,html,http,ini,internal,io,json,jsonc,log,media-types,msgpack,net,path,semver,streams,testing,text,toml,ulid,url,uuid,webgpu,yaml):
-  import from `@std/assert` (#5199)
+- refactor: import from `@std/assert` (#5199)
 
 #### @std/dotenv 0.224.2 (patch)
 
-- refactor(assert,async,bytes,cli,collections,crypto,csv,data-structures,datetime,dotenv,encoding,expect,fmt,front-matter,fs,html,http,ini,internal,io,json,jsonc,log,media-types,msgpack,net,path,semver,streams,testing,text,toml,ulid,url,uuid,webgpu,yaml):
-  import from `@std/assert` (#5199)
+- refactor: import from `@std/assert` (#5199)
 
 #### @std/encoding 1.0.0 (major)
 
-- refactor(assert,async,bytes,cli,collections,crypto,csv,data-structures,datetime,dotenv,encoding,expect,fmt,front-matter,fs,html,http,ini,internal,io,json,jsonc,log,media-types,msgpack,net,path,semver,streams,testing,text,toml,ulid,url,uuid,webgpu,yaml):
-  import from `@std/assert` (#5199)
+- refactor: import from `@std/assert` (#5199)
 - chore(encoding): release `encoding@1.0.0` (#4991)
 
 #### @std/expect 1.0.0-rc.1 (prerelease)
@@ -80,8 +69,7 @@
   (#5227)
 - refactor(expect,testing): update `@std/assert` imports (#5242)
 - refactor(expect): remove `expect.addSnapshotSerializer(s)` (#5231)
-- refactor(assert,async,bytes,cli,collections,crypto,csv,data-structures,datetime,dotenv,encoding,expect,fmt,front-matter,fs,html,http,ini,internal,io,json,jsonc,log,media-types,msgpack,net,path,semver,streams,testing,text,toml,ulid,url,uuid,webgpu,yaml):
-  import from `@std/assert` (#5199)
+- refactor: import from `@std/assert` (#5199)
 - test(expect): test edge cases of matchers (#5226)
 - test(expect): add test of `iterableEquality` (#5222)
 - test(expect): improve `expect` test cases (#5221)
@@ -89,81 +77,66 @@
 
 #### @std/fmt 0.225.5 (patch)
 
-- refactor(assert,async,bytes,cli,collections,crypto,csv,data-structures,datetime,dotenv,encoding,expect,fmt,front-matter,fs,html,http,ini,internal,io,json,jsonc,log,media-types,msgpack,net,path,semver,streams,testing,text,toml,ulid,url,uuid,webgpu,yaml):
-  import from `@std/assert` (#5199)
+- refactor: import from `@std/assert` (#5199)
 
 #### @std/front-matter 0.224.3 (patch)
 
-- refactor(assert,async,bytes,cli,collections,crypto,csv,data-structures,datetime,dotenv,encoding,expect,fmt,front-matter,fs,html,http,ini,internal,io,json,jsonc,log,media-types,msgpack,net,path,semver,streams,testing,text,toml,ulid,url,uuid,webgpu,yaml):
-  import from `@std/assert` (#5199)
+- refactor: import from `@std/assert` (#5199)
 
 #### @std/fs 1.0.0-rc.3 (prerelease)
 
-- refactor(assert,async,bytes,cli,collections,crypto,csv,data-structures,datetime,dotenv,encoding,expect,fmt,front-matter,fs,html,http,ini,internal,io,json,jsonc,log,media-types,msgpack,net,path,semver,streams,testing,text,toml,ulid,url,uuid,webgpu,yaml):
-  import from `@std/assert` (#5199)
+- refactor: import from `@std/assert` (#5199)
 
 #### @std/html 1.0.0-rc.2 (prerelease)
 
-- refactor(assert,async,bytes,cli,collections,crypto,csv,data-structures,datetime,dotenv,encoding,expect,fmt,front-matter,fs,html,http,ini,internal,io,json,jsonc,log,media-types,msgpack,net,path,semver,streams,testing,text,toml,ulid,url,uuid,webgpu,yaml):
-  import from `@std/assert` (#5199)
+- refactor: import from `@std/assert` (#5199)
 
 #### @std/http 1.0.0-rc.2 (prerelease)
 
-- refactor(assert,async,bytes,cli,collections,crypto,csv,data-structures,datetime,dotenv,encoding,expect,fmt,front-matter,fs,html,http,ini,internal,io,json,jsonc,log,media-types,msgpack,net,path,semver,streams,testing,text,toml,ulid,url,uuid,webgpu,yaml):
-  import from `@std/assert` (#5199)
+- refactor: import from `@std/assert` (#5199)
 
 #### @std/ini 0.225.2 (patch)
 
-- refactor(assert,async,bytes,cli,collections,crypto,csv,data-structures,datetime,dotenv,encoding,expect,fmt,front-matter,fs,html,http,ini,internal,io,json,jsonc,log,media-types,msgpack,net,path,semver,streams,testing,text,toml,ulid,url,uuid,webgpu,yaml):
-  import from `@std/assert` (#5199)
+- refactor: import from `@std/assert` (#5199)
 
 #### @std/internal 1.0.1 (patch)
 
-- refactor(assert,async,bytes,cli,collections,crypto,csv,data-structures,datetime,dotenv,encoding,expect,fmt,front-matter,fs,html,http,ini,internal,io,json,jsonc,log,media-types,msgpack,net,path,semver,streams,testing,text,toml,ulid,url,uuid,webgpu,yaml):
-  import from `@std/assert` (#5199)
+- refactor: import from `@std/assert` (#5199)
 
 #### @std/io 0.224.3 (patch)
 
-- refactor(assert,async,bytes,cli,collections,crypto,csv,data-structures,datetime,dotenv,encoding,expect,fmt,front-matter,fs,html,http,ini,internal,io,json,jsonc,log,media-types,msgpack,net,path,semver,streams,testing,text,toml,ulid,url,uuid,webgpu,yaml):
-  import from `@std/assert` (#5199)
+- refactor: import from `@std/assert` (#5199)
 
 #### @std/json 1.0.0-rc.2 (prerelease)
 
 - BREAKING(json): remove `json` from module names (#5173)
-- refactor(assert,async,bytes,cli,collections,crypto,csv,data-structures,datetime,dotenv,encoding,expect,fmt,front-matter,fs,html,http,ini,internal,io,json,jsonc,log,media-types,msgpack,net,path,semver,streams,testing,text,toml,ulid,url,uuid,webgpu,yaml):
-  import from `@std/assert` (#5199)
+- refactor: import from `@std/assert` (#5199)
 
 #### @std/jsonc 1.0.0-rc.2 (prerelease)
 
-- refactor(assert,async,bytes,cli,collections,crypto,csv,data-structures,datetime,dotenv,encoding,expect,fmt,front-matter,fs,html,http,ini,internal,io,json,jsonc,log,media-types,msgpack,net,path,semver,streams,testing,text,toml,ulid,url,uuid,webgpu,yaml):
-  import from `@std/assert` (#5199)
+- refactor: import from `@std/assert` (#5199)
 
 #### @std/log 0.224.4 (patch)
 
-- refactor(assert,async,bytes,cli,collections,crypto,csv,data-structures,datetime,dotenv,encoding,expect,fmt,front-matter,fs,html,http,ini,internal,io,json,jsonc,log,media-types,msgpack,net,path,semver,streams,testing,text,toml,ulid,url,uuid,webgpu,yaml):
-  import from `@std/assert` (#5199)
+- refactor: import from `@std/assert` (#5199)
 
 #### @std/media-types 1.0.1 (patch)
 
 - fix(media-types): update `db.ts` (#5193)
-- refactor(assert,async,bytes,cli,collections,crypto,csv,data-structures,datetime,dotenv,encoding,expect,fmt,front-matter,fs,html,http,ini,internal,io,json,jsonc,log,media-types,msgpack,net,path,semver,streams,testing,text,toml,ulid,url,uuid,webgpu,yaml):
-  import from `@std/assert` (#5199)
+- refactor: import from `@std/assert` (#5199)
 - chore(media-types): release `media-types@1.0.1` (#5197)
 
 #### @std/msgpack 1.0.0-rc.2 (prerelease)
 
-- refactor(assert,async,bytes,cli,collections,crypto,csv,data-structures,datetime,dotenv,encoding,expect,fmt,front-matter,fs,html,http,ini,internal,io,json,jsonc,log,media-types,msgpack,net,path,semver,streams,testing,text,toml,ulid,url,uuid,webgpu,yaml):
-  import from `@std/assert` (#5199)
+- refactor: import from `@std/assert` (#5199)
 
 #### @std/net 0.224.4 (patch)
 
-- refactor(assert,async,bytes,cli,collections,crypto,csv,data-structures,datetime,dotenv,encoding,expect,fmt,front-matter,fs,html,http,ini,internal,io,json,jsonc,log,media-types,msgpack,net,path,semver,streams,testing,text,toml,ulid,url,uuid,webgpu,yaml):
-  import from `@std/assert` (#5199)
+- refactor: import from `@std/assert` (#5199)
 
 #### @std/path 1.0.0-rc.3 (prerelease)
 
-- refactor(assert,async,bytes,cli,collections,crypto,csv,data-structures,datetime,dotenv,encoding,expect,fmt,front-matter,fs,html,http,ini,internal,io,json,jsonc,log,media-types,msgpack,net,path,semver,streams,testing,text,toml,ulid,url,uuid,webgpu,yaml):
-  import from `@std/assert` (#5199)
+- refactor: import from `@std/assert` (#5199)
 
 #### @std/semver 1.0.0-rc.1 (prerelease)
 
@@ -172,53 +145,44 @@
 - BREAKING(semver): remove deprecated `rangeMax()`, `rangeMin()` and
   `testRange()` APIs (#5160)
 - docs(semver): minor documentation cleanups (#5178)
-- refactor(assert,async,bytes,cli,collections,crypto,csv,data-structures,datetime,dotenv,encoding,expect,fmt,front-matter,fs,html,http,ini,internal,io,json,jsonc,log,media-types,msgpack,net,path,semver,streams,testing,text,toml,ulid,url,uuid,webgpu,yaml):
-  import from `@std/assert` (#5199)
+- refactor: import from `@std/assert` (#5199)
 - test(semver): add `tryParse()` tests (#5161)
 - chore(semver): release `semver@1.0.0-rc.1` (#5181)
 
 #### @std/streams 1.0.0-rc.2 (prerelease)
 
-- refactor(assert,async,bytes,cli,collections,crypto,csv,data-structures,datetime,dotenv,encoding,expect,fmt,front-matter,fs,html,http,ini,internal,io,json,jsonc,log,media-types,msgpack,net,path,semver,streams,testing,text,toml,ulid,url,uuid,webgpu,yaml):
-  import from `@std/assert` (#5199)
+- refactor: import from `@std/assert` (#5199)
 
 #### @std/testing 1.0.0-rc.2 (prerelease)
 
 - fix(testing): throw error eagerly when insufficient permissions are granted to
   write to snapshot file in update mode (#5201)
 - refactor(expect,testing): update `@std/assert` imports (#5242)
-- refactor(assert,async,bytes,cli,collections,crypto,csv,data-structures,datetime,dotenv,encoding,expect,fmt,front-matter,fs,html,http,ini,internal,io,json,jsonc,log,media-types,msgpack,net,path,semver,streams,testing,text,toml,ulid,url,uuid,webgpu,yaml):
-  import from `@std/assert` (#5199)
+- refactor: import from `@std/assert` (#5199)
 
 #### @std/text 1.0.0-rc.2 (prerelease)
 
-- refactor(assert,async,bytes,cli,collections,crypto,csv,data-structures,datetime,dotenv,encoding,expect,fmt,front-matter,fs,html,http,ini,internal,io,json,jsonc,log,media-types,msgpack,net,path,semver,streams,testing,text,toml,ulid,url,uuid,webgpu,yaml):
-  import from `@std/assert` (#5199)
+- refactor: import from `@std/assert` (#5199)
 
 #### @std/toml 1.0.0-rc.3 (prerelease)
 
-- refactor(assert,async,bytes,cli,collections,crypto,csv,data-structures,datetime,dotenv,encoding,expect,fmt,front-matter,fs,html,http,ini,internal,io,json,jsonc,log,media-types,msgpack,net,path,semver,streams,testing,text,toml,ulid,url,uuid,webgpu,yaml):
-  import from `@std/assert` (#5199)
+- refactor: import from `@std/assert` (#5199)
 
 #### @std/ulid 1.0.0-rc.3 (prerelease)
 
-- refactor(assert,async,bytes,cli,collections,crypto,csv,data-structures,datetime,dotenv,encoding,expect,fmt,front-matter,fs,html,http,ini,internal,io,json,jsonc,log,media-types,msgpack,net,path,semver,streams,testing,text,toml,ulid,url,uuid,webgpu,yaml):
-  import from `@std/assert` (#5199)
+- refactor: import from `@std/assert` (#5199)
 
 #### @std/url 1.0.0-rc.2 (prerelease)
 
-- refactor(assert,async,bytes,cli,collections,crypto,csv,data-structures,datetime,dotenv,encoding,expect,fmt,front-matter,fs,html,http,ini,internal,io,json,jsonc,log,media-types,msgpack,net,path,semver,streams,testing,text,toml,ulid,url,uuid,webgpu,yaml):
-  import from `@std/assert` (#5199)
+- refactor: import from `@std/assert` (#5199)
 
 #### @std/uuid 1.0.0 (major)
 
-- refactor(assert,async,bytes,cli,collections,crypto,csv,data-structures,datetime,dotenv,encoding,expect,fmt,front-matter,fs,html,http,ini,internal,io,json,jsonc,log,media-types,msgpack,net,path,semver,streams,testing,text,toml,ulid,url,uuid,webgpu,yaml):
-  import from `@std/assert` (#5199)
+- refactor: import from `@std/assert` (#5199)
 
 #### @std/webgpu 0.224.5 (patch)
 
-- refactor(assert,async,bytes,cli,collections,crypto,csv,data-structures,datetime,dotenv,encoding,expect,fmt,front-matter,fs,html,http,ini,internal,io,json,jsonc,log,media-types,msgpack,net,path,semver,streams,testing,text,toml,ulid,url,uuid,webgpu,yaml):
-  import from `@std/assert` (#5199)
+- refactor: import from `@std/assert` (#5199)
 
 #### @std/yaml 1.0.0-rc.1 (prerelease)
 
@@ -243,8 +207,7 @@
 - refactor(yaml): simplify schema (#5236)
 - refactor(yaml): consolidate `yaml/schema/*.ts` code into `yaml/_schema.ts`
   (#5225)
-- refactor(assert,async,bytes,cli,collections,crypto,csv,data-structures,datetime,dotenv,encoding,expect,fmt,front-matter,fs,html,http,ini,internal,io,json,jsonc,log,media-types,msgpack,net,path,semver,streams,testing,text,toml,ulid,url,uuid,webgpu,yaml):
-  import from `@std/assert` (#5199)
+- refactor: import from `@std/assert` (#5199)
 - refactor(yaml): remove unused `func` type (#5191)
 - refactor(yaml): remove dead code (#5189)
 - refactor(yaml): simplify map initializations (#5183)
