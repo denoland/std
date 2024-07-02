@@ -1687,10 +1687,7 @@ function readDocument(state: LoaderState) {
   }
 }
 
-export function loadDocuments(
-  input: string,
-  options: LoaderStateOptions = {},
-): unknown[] {
+function sanitizeInput(input: string) {
   input = String(input);
 
   if (input.length !== 0) {
@@ -1708,10 +1705,19 @@ export function loadDocuments(
     }
   }
 
-  const state = new LoaderState(input, options);
-
   // Use 0 as string terminator. That significantly simplifies bounds check.
-  state.input += "\0";
+  input += "\0";
+
+  return input;
+}
+
+export function loadDocuments(
+  input: string,
+  options: LoaderStateOptions = {},
+): unknown[] {
+  input = sanitizeInput(input);
+
+  const state = new LoaderState(input, options);
 
   while (state.input.charCodeAt(state.position) === SPACE) {
     state.lineIndent += 1;
