@@ -1695,11 +1695,9 @@ function sanitizeInput(input: string) {
 
 export function loadDocuments(
   input: string,
-  options?: LoaderStateOptions,
+  options: LoaderStateOptions = {},
 ): unknown[] {
   input = sanitizeInput(input);
-
-  options = options || {};
 
   const state = new LoaderState(input, options);
 
