@@ -3,16 +3,30 @@
 // Copyright 2011-2015 by Vitaly Puzrin. All rights reserved. MIT license.
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
+import { BACKSLASH, COLON, PLUS, QUESTION, SMALLER_THAN } from "../_chars.ts";
 import {
+  AMPERSAND,
+  ASTERISK,
   CARRIAGE_RETURN,
   COMMA,
+  COMMERCIAL_AT,
+  DOT,
+  DOUBLE_QUOTE,
+  EXCLAMATION,
+  GRAVE_ACCENT,
+  GREATER_THAN,
   LEFT_CURLY_BRACKET,
   LEFT_SQUARE_BRACKET,
   LINE_FEED,
+  MINUS,
+  PERCENT,
   RIGHT_CURLY_BRACKET,
   RIGHT_SQUARE_BRACKET,
+  SHARP,
+  SINGLE_QUOTE,
   SPACE,
   TAB,
+  VERTICAL_LINE,
 } from "../_chars.ts";
 import { YamlError } from "../_error.ts";
 import { Mark } from "../_mark.ts";
@@ -354,11 +368,11 @@ function storeMappingPair(
 function readLineBreak(state: LoaderState) {
   const ch = state.input.charCodeAt(state.position);
 
-  if (ch === 0x0a /* LF */) {
+  if (ch === LINE_FEED) {
     state.position++;
-  } else if (ch === 0x0d /* CR */) {
+  } else if (ch === CARRIAGE_RETURN) {
     state.position++;
-    if (state.input.charCodeAt(state.position) === 0x0a /* LF */) {
+    if (state.input.charCodeAt(state.position) === LINE_FEED) {
       state.position++;
     }
   } else {
@@ -382,10 +396,10 @@ function skipSeparationSpace(
       ch = state.input.charCodeAt(++state.position);
     }
 
-    if (allowComments && ch === 0x23 /* # */) {
+    if (allowComments && ch === SHARP) {
       do {
         ch = state.input.charCodeAt(++state.position);
-      } while (ch !== 0x0a && /* LF */ ch !== 0x0d && /* CR */ ch !== 0);
+      } while (ch !== LINE_FEED && ch !== CARRIAGE_RETURN && ch !== 0);
     }
 
     if (isEOL(ch)) {
@@ -395,7 +409,7 @@ function skipSeparationSpace(
       lineBreaks++;
       state.lineIndent = 0;
 
-      while (ch === 0x20 /* Space */) {
+      while (ch === SPACE) {
         state.lineIndent++;
         ch = state.input.charCodeAt(++state.position);
       }
@@ -422,7 +436,7 @@ function testDocumentSeparator(state: LoaderState): boolean {
   // Condition state.position === state.lineStart is tested
   // in parent on each call, for efficiency. No needs to test here again.
   if (
-    (ch === 0x2d || /* - */ ch === 0x2e) /* . */ &&
+    (ch === MINUS || ch === DOT) &&
     ch === state.input.charCodeAt(_position + 1) &&
     ch === state.input.charCodeAt(_position + 2)
   ) {
@@ -458,23 +472,23 @@ function readPlainScalar(
   if (
     isWsOrEol(ch) ||
     isFlowIndicator(ch) ||
-    ch === 0x23 /* # */ ||
-    ch === 0x26 /* & */ ||
-    ch === 0x2a /* * */ ||
-    ch === 0x21 /* ! */ ||
-    ch === 0x7c /* | */ ||
-    ch === 0x3e /* > */ ||
-    ch === 0x27 /* ' */ ||
-    ch === 0x22 /* " */ ||
-    ch === 0x25 /* % */ ||
-    ch === 0x40 /* @ */ ||
-    ch === 0x60 /* ` */
+    ch === SHARP ||
+    ch === AMPERSAND ||
+    ch === ASTERISK ||
+    ch === EXCLAMATION ||
+    ch === VERTICAL_LINE ||
+    ch === GREATER_THAN ||
+    ch === SINGLE_QUOTE ||
+    ch === DOUBLE_QUOTE ||
+    ch === PERCENT ||
+    ch === COMMERCIAL_AT ||
+    ch === GRAVE_ACCENT
   ) {
     return false;
   }
 
   let following: number;
-  if (ch === 0x3f || /* ? */ ch === 0x2d /* - */) {
+  if (ch === QUESTION || ch === MINUS) {
     following = state.input.charCodeAt(state.position + 1);
 
     if (
@@ -492,7 +506,7 @@ function readPlainScalar(
   let hasPendingContent = false;
   let line = 0;
   while (ch !== 0) {
-    if (ch === 0x3a /* : */) {
+    if (ch === COLON) {
       following = state.input.charCodeAt(state.position + 1);
 
       if (
@@ -501,7 +515,7 @@ function readPlainScalar(
       ) {
         break;
       }
-    } else if (ch === 0x23 /* # */) {
+    } else if (ch === SHARP) {
       const preceding = state.input.charCodeAt(state.position - 1);
 
       if (isWsOrEol(preceding)) {
@@ -566,7 +580,7 @@ function readSingleQuotedScalar(
 
   ch = state.input.charCodeAt(state.position);
 
-  if (ch !== 0x27 /* ' */) {
+  if (ch !== SINGLE_QUOTE) {
     return false;
   }
 
@@ -576,11 +590,11 @@ function readSingleQuotedScalar(
   captureStart = captureEnd = state.position;
 
   while ((ch = state.input.charCodeAt(state.position)) !== 0) {
-    if (ch === 0x27 /* ' */) {
+    if (ch === SINGLE_QUOTE) {
       captureSegment(state, captureStart, state.position, true);
       ch = state.input.charCodeAt(++state.position);
 
-      if (ch === 0x27 /* ' */) {
+      if (ch === SINGLE_QUOTE) {
         captureStart = state.position;
         state.position++;
         captureEnd = state.position;
@@ -617,7 +631,7 @@ function readDoubleQuotedScalar(
 ): boolean {
   let ch = state.input.charCodeAt(state.position);
 
-  if (ch !== 0x22 /* " */) {
+  if (ch !== DOUBLE_QUOTE) {
     return false;
   }
 
@@ -628,12 +642,12 @@ function readDoubleQuotedScalar(
   let captureStart = state.position;
   let tmp: number;
   while ((ch = state.input.charCodeAt(state.position)) !== 0) {
-    if (ch === 0x22 /* " */) {
+    if (ch === DOUBLE_QUOTE) {
       captureSegment(state, captureStart, state.position, true);
       state.position++;
       return true;
     }
-    if (ch === 0x5c /* \ */) {
+    if (ch === BACKSLASH) {
       captureSegment(state, captureStart, state.position, true);
       ch = state.input.charCodeAt(++state.position);
 
@@ -693,12 +707,12 @@ function readFlowCollection(state: LoaderState, nodeIndent: number): boolean {
   let terminator: number;
   let isMapping = true;
   let result: ResultType = {};
-  if (ch === 0x5b /* [ */) {
-    terminator = 0x5d; /* ] */
+  if (ch === LEFT_SQUARE_BRACKET) {
+    terminator = RIGHT_SQUARE_BRACKET;
     isMapping = false;
     result = [];
-  } else if (ch === 0x7b /* { */) {
-    terminator = 0x7d; /* } */
+  } else if (ch === LEFT_CURLY_BRACKET) {
+    terminator = RIGHT_CURLY_BRACKET;
   } else {
     return false;
   }
@@ -740,7 +754,7 @@ function readFlowCollection(state: LoaderState, nodeIndent: number): boolean {
     keyTag = keyNode = valueNode = null;
     isPair = isExplicitPair = false;
 
-    if (ch === 0x3f /* ? */) {
+    if (ch === QUESTION) {
       following = state.input.charCodeAt(state.position + 1);
 
       if (isWsOrEol(following)) {
@@ -758,7 +772,7 @@ function readFlowCollection(state: LoaderState, nodeIndent: number): boolean {
 
     ch = state.input.charCodeAt(state.position);
 
-    if ((isExplicitPair || state.line === line) && ch === 0x3a /* : */) {
+    if ((isExplicitPair || state.line === line) && ch === COLON) {
       isPair = true;
       ch = state.input.charCodeAt(++state.position);
       skipSeparationSpace(state, true, nodeIndent);
@@ -794,7 +808,7 @@ function readFlowCollection(state: LoaderState, nodeIndent: number): boolean {
 
     ch = state.input.charCodeAt(state.position);
 
-    if (ch === 0x2c /* , */) {
+    if (ch === COMMA) {
       readNext = true;
       ch = state.input.charCodeAt(++state.position);
     } else {
@@ -821,9 +835,9 @@ function readBlockScalar(state: LoaderState, nodeIndent: number): boolean {
   let ch = state.input.charCodeAt(state.position);
 
   let folding = false;
-  if (ch === 0x7c /* | */) {
+  if (ch === VERTICAL_LINE) {
     folding = false;
-  } else if (ch === 0x3e /* > */) {
+  } else if (ch === GREATER_THAN) {
     folding = true;
   } else {
     return false;
@@ -836,9 +850,9 @@ function readBlockScalar(state: LoaderState, nodeIndent: number): boolean {
   while (ch !== 0) {
     ch = state.input.charCodeAt(++state.position);
 
-    if (ch === 0x2b || /* + */ ch === 0x2d /* - */) {
+    if (ch === PLUS || ch === MINUS) {
       if (CHOMPING_CLIP === chomping) {
-        chomping = ch === 0x2b /* + */ ? CHOMPING_KEEP : CHOMPING_STRIP;
+        chomping = ch === PLUS ? CHOMPING_KEEP : CHOMPING_STRIP;
       } else {
         return throwError(state, "repeat of a chomping mode identifier");
       }
@@ -864,7 +878,7 @@ function readBlockScalar(state: LoaderState, nodeIndent: number): boolean {
       ch = state.input.charCodeAt(++state.position);
     } while (isWhiteSpace(ch));
 
-    if (ch === 0x23 /* # */) {
+    if (ch === SHARP) {
       do {
         ch = state.input.charCodeAt(++state.position);
       } while (!isEOL(ch) && ch !== 0);
@@ -879,7 +893,7 @@ function readBlockScalar(state: LoaderState, nodeIndent: number): boolean {
 
     while (
       (!detectedIndent || state.lineIndent < textIndent) &&
-      ch === 0x20 /* Space */
+      ch === SPACE
     ) {
       state.lineIndent++;
       ch = state.input.charCodeAt(++state.position);
@@ -981,7 +995,7 @@ function readBlockSequence(state: LoaderState, nodeIndent: number): boolean {
   ch = state.input.charCodeAt(state.position);
 
   while (ch !== 0) {
-    if (ch !== 0x2d /* - */) {
+    if (ch !== MINUS) {
       break;
     }
 
@@ -1061,8 +1075,8 @@ function readBlockMapping(
     // Explicit notation case. There are two separate blocks:
     // first for the key (denoted by "?") and second for the value (denoted by ":")
     //
-    if ((ch === 0x3f || /* ? */ ch === 0x3a) && /* : */ isWsOrEol(following)) {
-      if (ch === 0x3f /* ? */) {
+    if ((ch === QUESTION || ch === COLON) && isWsOrEol(following)) {
+      if (ch === QUESTION) {
         if (atExplicitKey) {
           storeMappingPair(
             state,
@@ -1103,7 +1117,7 @@ function readBlockMapping(
           ch = state.input.charCodeAt(++state.position);
         }
 
-        if (ch === 0x3a /* : */) {
+        if (ch === COLON) {
           ch = state.input.charCodeAt(++state.position);
 
           if (!isWsOrEol(ch)) {
@@ -1230,7 +1244,7 @@ function readTagProperty(state: LoaderState): boolean {
 
   ch = state.input.charCodeAt(state.position);
 
-  if (ch !== 0x21 /* ! */) return false;
+  if (ch !== EXCLAMATION) return false;
 
   if (state.tag !== null) {
     return throwError(state, "duplication of a tag property");
@@ -1238,10 +1252,10 @@ function readTagProperty(state: LoaderState): boolean {
 
   ch = state.input.charCodeAt(++state.position);
 
-  if (ch === 0x3c /* < */) {
+  if (ch === SMALLER_THAN) {
     isVerbatim = true;
     ch = state.input.charCodeAt(++state.position);
-  } else if (ch === 0x21 /* ! */) {
+  } else if (ch === EXCLAMATION) {
     isNamed = true;
     tagHandle = "!!";
     ch = state.input.charCodeAt(++state.position);
@@ -1254,7 +1268,7 @@ function readTagProperty(state: LoaderState): boolean {
   if (isVerbatim) {
     do {
       ch = state.input.charCodeAt(++state.position);
-    } while (ch !== 0 && ch !== 0x3e /* > */);
+    } while (ch !== 0 && ch !== GREATER_THAN);
 
     if (state.position < state.length) {
       tagName = state.input.slice(position, state.position);
@@ -1267,7 +1281,7 @@ function readTagProperty(state: LoaderState): boolean {
     }
   } else {
     while (ch !== 0 && !isWsOrEol(ch)) {
-      if (ch === 0x21 /* ! */) {
+      if (ch === EXCLAMATION) {
         if (!isNamed) {
           tagHandle = state.input.slice(position - 1, state.position + 1);
 
@@ -1325,7 +1339,7 @@ function readTagProperty(state: LoaderState): boolean {
 
 function readAnchorProperty(state: LoaderState): boolean {
   let ch = state.input.charCodeAt(state.position);
-  if (ch !== 0x26 /* & */) return false;
+  if (ch !== AMPERSAND) return false;
 
   if (state.anchor !== null) {
     return throwError(state, "duplication of an anchor property");
@@ -1351,7 +1365,7 @@ function readAnchorProperty(state: LoaderState): boolean {
 function readAlias(state: LoaderState): boolean {
   let ch = state.input.charCodeAt(state.position);
 
-  if (ch !== 0x2a /* * */) return false;
+  if (ch !== ASTERISK) return false;
 
   ch = state.input.charCodeAt(++state.position);
   const _position = state.position;
@@ -1565,7 +1579,7 @@ function readDocument(state: LoaderState) {
 
     ch = state.input.charCodeAt(state.position);
 
-    if (state.lineIndent > 0 || ch !== 0x25 /* % */) {
+    if (state.lineIndent > 0 || ch !== PERCENT) {
       break;
     }
 
@@ -1592,7 +1606,7 @@ function readDocument(state: LoaderState) {
         ch = state.input.charCodeAt(++state.position);
       }
 
-      if (ch === 0x23 /* # */) {
+      if (ch === SHARP) {
         do {
           ch = state.input.charCodeAt(++state.position);
         } while (ch !== 0 && !isEOL(ch));
@@ -1629,9 +1643,9 @@ function readDocument(state: LoaderState) {
 
   if (
     state.lineIndent === 0 &&
-    state.input.charCodeAt(state.position) === 0x2d /* - */ &&
-    state.input.charCodeAt(state.position + 1) === 0x2d /* - */ &&
-    state.input.charCodeAt(state.position + 2) === 0x2d /* - */
+    state.input.charCodeAt(state.position) === MINUS &&
+    state.input.charCodeAt(state.position + 1) === MINUS &&
+    state.input.charCodeAt(state.position + 2) === MINUS
   ) {
     state.position += 3;
     skipSeparationSpace(state, true, -1);
@@ -1654,7 +1668,7 @@ function readDocument(state: LoaderState) {
   state.documents.push(state.result);
 
   if (state.position === state.lineStart && testDocumentSeparator(state)) {
-    if (state.input.charCodeAt(state.position) === 0x2e /* . */) {
+    if (state.input.charCodeAt(state.position) === DOT) {
       state.position += 3;
       skipSeparationSpace(state, true, -1);
     }
@@ -1678,8 +1692,8 @@ export function loadDocuments(
   if (input.length !== 0) {
     // Add tailing `\n` if not exists
     if (
-      input.charCodeAt(input.length - 1) !== 0x0a /* LF */ &&
-      input.charCodeAt(input.length - 1) !== 0x0d /* CR */
+      input.charCodeAt(input.length - 1) !== LINE_FEED &&
+      input.charCodeAt(input.length - 1) !== CARRIAGE_RETURN
     ) {
       input += "\n";
     }
@@ -1695,7 +1709,7 @@ export function loadDocuments(
   // Use 0 as string terminator. That significantly simplifies bounds check.
   state.input += "\0";
 
-  while (state.input.charCodeAt(state.position) === 0x20 /* Space */) {
+  while (state.input.charCodeAt(state.position) === SPACE) {
     state.lineIndent += 1;
     state.position += 1;
   }
