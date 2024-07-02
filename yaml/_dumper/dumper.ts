@@ -28,7 +28,7 @@ import {
   VERTICAL_LINE,
 } from "../_chars.ts";
 import { YamlError } from "../_error.ts";
-import { Schema } from "../_schema.ts";
+import type { Schema } from "../_schema.ts";
 import { State } from "../_state.ts";
 import type { RepresentFn, StyleVariant, Type } from "../_type.ts";
 import * as common from "../_utils.ts";
