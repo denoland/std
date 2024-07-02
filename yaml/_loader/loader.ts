@@ -3,6 +3,17 @@
 // Copyright 2011-2015 by Vitaly Puzrin. All rights reserved. MIT license.
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
+import {
+  CARRIAGE_RETURN,
+  COMMA,
+  LEFT_CURLY_BRACKET,
+  LEFT_SQUARE_BRACKET,
+  LINE_FEED,
+  RIGHT_CURLY_BRACKET,
+  RIGHT_SQUARE_BRACKET,
+  SPACE,
+  TAB,
+} from "../_chars.ts";
 import { YamlError } from "../_error.ts";
 import { Mark } from "../_mark.ts";
 import type { Type } from "../_type.ts";
@@ -39,29 +50,29 @@ function _class(obj: unknown): string {
 }
 
 function isEOL(c: number): boolean {
-  return c === 0x0a || /* LF */ c === 0x0d /* CR */;
+  return c === LINE_FEED || c === CARRIAGE_RETURN;
 }
 
 function isWhiteSpace(c: number): boolean {
-  return c === 0x09 || /* Tab */ c === 0x20 /* Space */;
+  return c === TAB || c === SPACE;
 }
 
 function isWsOrEol(c: number): boolean {
   return (
-    c === 0x09 /* Tab */ ||
-    c === 0x20 /* Space */ ||
-    c === 0x0a /* LF */ ||
-    c === 0x0d /* CR */
+    c === TAB ||
+    c === SPACE ||
+    c === LINE_FEED ||
+    c === CARRIAGE_RETURN
   );
 }
 
 function isFlowIndicator(c: number): boolean {
   return (
-    c === 0x2c /* , */ ||
-    c === 0x5b /* [ */ ||
-    c === 0x5d /* ] */ ||
-    c === 0x7b /* { */ ||
-    c === 0x7d /* } */
+    c === COMMA ||
+    c === LEFT_SQUARE_BRACKET ||
+    c === RIGHT_SQUARE_BRACKET ||
+    c === LEFT_CURLY_BRACKET ||
+    c === RIGHT_CURLY_BRACKET
   );
 }
 
