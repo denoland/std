@@ -1715,7 +1715,7 @@ export function loadDocuments(
   return state.documents;
 }
 
-export function load(input: string, options?: LoaderStateOptions): unknown {
+export function load(input: string, options: LoaderStateOptions = {}): unknown {
   const documents = loadDocuments(input, options);
 
   if (documents.length === 0) {
