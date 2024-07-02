@@ -12,7 +12,9 @@ function resolveYamlPairs(data: Any[][]): boolean {
   const result = Array.from({ length: data.length });
 
   for (const [index, pair] of data.entries()) {
-    if (pair.toString() !== "[object Object]") return false;
+    if (Object.prototype.toString.call(pair) !== "[object Object]") {
+      return false;
+    }
 
     const keys = Object.keys(pair);
 

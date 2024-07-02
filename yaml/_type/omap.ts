@@ -5,7 +5,6 @@
 
 import { Type } from "../_type.ts";
 import type { Any } from "../_utils.ts";
-import { isObject } from "../_utils.ts";
 
 function resolveYamlOmap(data: Any): boolean {
   const objectKeys: string[] = [];
@@ -15,7 +14,9 @@ function resolveYamlOmap(data: Any): boolean {
   for (const pair of data) {
     pairHasKey = false;
 
-    if (!isObject(pair)) return false;
+    if (Object.prototype.toString.call(pair) !== "[object Object]") {
+      return false;
+    }
 
     for (pairKey in pair) {
       if (Object.hasOwn(pair, pairKey)) {

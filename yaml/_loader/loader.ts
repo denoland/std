@@ -34,6 +34,10 @@ const PATTERN_TAG_HANDLE = /^(?:!|!!|![a-z\-]+!)$/i;
 const PATTERN_TAG_URI =
   /^(?:!|[^,\[\]\{\}])(?:%[0-9a-f]{2}|[0-9a-z\-#;\/\?:@&=\+\$,_\.!~\*'\(\)\[\]])*$/i;
 
+function _class(obj: unknown): string {
+  return Object.prototype.toString.call(obj);
+}
+
 function isEOL(c: number): boolean {
   return c === 0x0a || /* LF */ c === 0x0d /* CR */;
 }
@@ -284,7 +288,10 @@ function storeMappingPair(
         return throwError(state, "nested arrays are not supported inside keys");
       }
 
-      if (typeof keyNode === "object" && common.isObject(keyNode[index])) {
+      if (
+        typeof keyNode === "object" &&
+        _class(keyNode[index]) === "[object Object]"
+      ) {
         keyNode[index] = "[object Object]";
       }
     }
@@ -293,10 +300,7 @@ function storeMappingPair(
   // Avoid code execution in load() via toString property
   // (still use its own toString for arrays, timestamps,
   // and whatever user schema extensions happen to have @@toStringTag)
-  if (
-    typeof keyNode === "object" &&
-    Object.prototype.toString.call(keyNode) === "[object Object]"
-  ) {
+  if (typeof keyNode === "object" && _class(keyNode) === "[object Object]") {
     keyNode = "[object Object]";
   }
 

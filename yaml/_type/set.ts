@@ -10,7 +10,9 @@ function resolveYamlSet(data: Any): boolean {
   if (data === null) return true;
 
   for (const key in data) {
-    if (data[key] !== null) return false;
+    if (Object.hasOwn(data, key)) {
+      if (data[key] !== null) return false;
+    }
   }
 
   return true;
