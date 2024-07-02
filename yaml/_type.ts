@@ -7,14 +7,25 @@
 import type { Any, ArrayObject } from "./_utils.ts";
 
 export type KindType = "sequence" | "scalar" | "mapping";
+/**
+ * The style variation for `styles` option of {@linkcode stringify}
+ */
 export type StyleVariant =
   | "lowercase"
   | "uppercase"
   | "camelcase"
   | "decimal"
+  | "dec"
+  | 10
   | "binary"
+  | "bin"
+  | 2
   | "octal"
-  | "hexadecimal";
+  | "oct"
+  | 8
+  | "hexadecimal"
+  | "hex"
+  | 16;
 export type RepresentFn = (data: Any, style?: StyleVariant) => Any;
 
 interface TypeOptions {
