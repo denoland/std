@@ -8,7 +8,7 @@
  *
  * ```ts
  * import { encodeVarint, decodeVarint } from "@std/encoding/varint";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const buf = new Uint8Array(10);
  * assertEquals(
@@ -74,7 +74,7 @@ const U64_VIEW = new BigUint64Array(AB);
  * @example Usage
  * ```ts
  * import { decodeVarint } from "@std/encoding/varint";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const buf = new Uint8Array([0x8E, 0x02]);
  * assertEquals(decodeVarint(buf), [270n, 2]);
@@ -160,7 +160,7 @@ export function decodeVarint(buf: Uint8Array, offset = 0): [bigint, number] {
  * @example Usage
  * ```ts
  * import { decodeVarint32 } from "@std/encoding/varint";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const buf = new Uint8Array([0x8E, 0x02]);
  * assertEquals(decodeVarint32(buf), [270, 2]);
@@ -202,7 +202,7 @@ export function decodeVarint32(buf: Uint8Array, offset = 0): [number, number] {
  * @example Usage
  * ```ts
  * import { encodeVarint } from "@std/encoding/varint";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const buf = new Uint8Array(10);
  * assertEquals(encodeVarint(42n, buf), [new Uint8Array([42]), 1]);

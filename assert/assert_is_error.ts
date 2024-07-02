@@ -11,7 +11,7 @@ import { stripAnsiCode } from "@std/internal/styles";
  *
  * @example Usage
  * ```ts no-eval
- * import { assertIsError } from "@std/assert/assert-is-error";
+ * import { assertIsError } from "@std/assert";
  *
  * assertIsError(null); // Throws
  * assertIsError(new RangeError("Out of range")); // Doesn't throw

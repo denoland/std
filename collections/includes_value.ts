@@ -18,7 +18,7 @@
  * @example Basic usage
  * ```ts
  * import { includesValue } from "@std/collections/includes-value";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const input = {
  *   first: 33,

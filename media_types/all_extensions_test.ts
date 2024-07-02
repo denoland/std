@@ -9,7 +9,8 @@ Deno.test({
     const fixtures: [string, string[] | undefined][] = [
       ["text/plain; charset", undefined],
       ["image/gif", ["gif"]],
-      ["application/javascript", ["js", "mjs"]],
+      ["application/javascript", ["js"]],
+      ["text/javascript", ["js", "mjs"]],
       ["text/html; charset=UTF-8", ["html", "htm", "shtml"]],
       ["application/foo", undefined],
     ];

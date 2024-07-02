@@ -9,7 +9,8 @@ function formatComparator(comparator: Comparator): string {
 }
 
 /**
- * Formats the range into a string
+ * Formats the SemVerrange into a string.
+ *
  * @example Usage
  * ```ts
  * import { formatRange, parseRange } from "@std/semver";
@@ -20,7 +21,7 @@ function formatComparator(comparator: Comparator): string {
  * ```
  *
  * @param range The range to format
- * @returns A string representation of the range
+ * @returns A string representation of the SemVer range
  */
 export function formatRange(range: Range): string {
   return range.map((c) => c.map((c) => formatComparator(c)).join(" "))

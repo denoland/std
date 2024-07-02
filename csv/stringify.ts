@@ -260,7 +260,7 @@ function getValuesFromItem(
  *   Column,
  *   stringify,
  * } from "@std/csv/stringify";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * type Character = {
  *   age: number;

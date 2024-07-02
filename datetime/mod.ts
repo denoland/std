@@ -6,7 +6,7 @@
  *
  * ```ts
  * import { dayOfYear, isLeap, difference } from "@std/datetime";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * assertEquals(dayOfYear(new Date("2019-03-11T03:24:00")), 70);
  * assertEquals(isLeap(1970), false);

@@ -4,13 +4,13 @@ import type { ReleaseType, SemVer } from "./types.ts";
 import { compareIdentifier } from "./_shared.ts";
 
 /**
- * Returns difference between two versions by the release type,
- * or `undefined` if the versions are the same.
+ * Returns difference between two SemVers by the release type,
+ * or `undefined` if the SemVers are the same.
  *
  * @example Usage
  * ```ts
  * import { parse, difference } from "@std/semver";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const s0 = parse("1.2.3");
  * const s1 = parse("1.2.4");
