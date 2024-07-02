@@ -724,3 +724,63 @@ Deno.test("parse() throws with \0 in the middle of the document", () => {
     "end of the stream or a document separator is expected at line 1, column 8:\n    hello: \n           ^",
   );
 });
+
+Deno.test("parse() handles complex mapping key", () => {
+  assertEquals(
+    parse(`? - Detroit Tigers
+  - Chicago cubs
+: - 2001-07-23
+
+? [ New York Yankees,
+    Atlanta Braves ]
+: [ 2001-07-02, 2001-08-12,
+    2001-08-14 ]`),
+    {
+      "Detroit Tigers,Chicago cubs": [new Date("2001-07-23")],
+      "New York Yankees,Atlanta Braves": [
+        new Date("2001-07-02"),
+        new Date("2001-08-12"),
+        new Date("2001-08-14"),
+      ],
+    },
+  );
+
+  // Nested array as key is not supported
+  assertThrows(
+    () =>
+      parse(`? - [ foo ]
+: bar`),
+    YamlError,
+    "nested arrays are not supported inside keys at line 2, column 6:\n    : bar\n         ^",
+  );
+
+  assertEquals(
+    parse(`? - { foo: bar }
+: baz`),
+    { "[object Object]": "baz" },
+  );
+
+  assertEquals(
+    parse(`? { foo: bar }
+: baz`),
+    { "[object Object]": "baz" },
+  );
+});
+
+Deno.test("parse() handles unordered set", () => {
+  assertEquals(
+    parse(`--- !!set
+? Mark McGwire
+? Sammy Sosa
+? Ken Griffey`),
+    { "Mark McGwire": null, "Sammy Sosa": null, "Ken Griffey": null },
+  );
+});
+
+Deno.test("parse() throws with empty mapping key", () => {
+  assertThrows(
+    () => parse(`? : 1`),
+    YamlError,
+    "incomplete explicit mapping pair; a key node is missed; or followed by a non-tabulated empty line at line 1, column 3:\n    ? : 1\n      ^",
+  );
+});
