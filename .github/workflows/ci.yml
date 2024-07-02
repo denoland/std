@@ -63,6 +63,32 @@ jobs:
         with:
           name: ${{ matrix.os }}-${{ matrix.deno }}
 
+  test-node:
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        node:
+          - v22.4
+        os:
+          - ubuntu-latest
+
+    steps:
+      - name: Clone repository
+        uses: actions/checkout@v4
+
+      - name: Set up Deno
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+
+      - run: npm install
+        working-directory: _tools/node_test_runner
+
+      - name: Run tests
+        run: deno task test:node
+
   lint:
     runs-on: ${{ matrix.os }}
     timeout-minutes: 30
