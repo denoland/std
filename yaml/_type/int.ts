@@ -19,7 +19,7 @@ function isHexCode(c: number): boolean {
 }
 
 function isOctCode(c: number): boolean {
-  return isCharCodeInRange(c, 0x30, 0x37); // 0..7
+  return isCharCodeInRange(c, 0x30, 0x37); // 0-7
 }
 
 function isDecCode(c: number): boolean {
