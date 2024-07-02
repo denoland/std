@@ -1565,7 +1565,7 @@ function composeNode(
   return state.tag !== null || state.anchor !== null || hasContent;
 }
 
-function* readDocument(state: LoaderState) {
+function readDocument(state: LoaderState) {
   const documentStart = state.position;
   let position: number;
   let directiveName: string;
@@ -1669,27 +1669,26 @@ function* readDocument(state: LoaderState) {
     throwWarning(state, "non-ASCII line breaks are interpreted as content");
   }
 
-  yield state.result;
-
   if (state.position === state.lineStart && testDocumentSeparator(state)) {
     if (state.input.charCodeAt(state.position) === DOT) {
       state.position += 3;
       skipSeparationSpace(state, true, -1);
     }
-    return;
+  } else {
+    if (state.position < state.length - 1) {
+      return throwError(
+        state,
+        "end of the stream or a document separator is expected",
+      );
+    }
   }
 
-  if (state.position < state.length - 1) {
-    return throwError(
-      state,
-      "end of the stream or a document separator is expected",
-    );
-  }
+  return state.result;
 }
 
 function* readDocuments(state: LoaderState) {
   while (state.position < state.length - 1) {
-    yield* readDocument(state);
+    yield readDocument(state);
   }
 }
 
