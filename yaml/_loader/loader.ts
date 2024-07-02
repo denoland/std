@@ -277,12 +277,14 @@ function storeMappingPair(
   // We need to convert keyNode to a string, but doing so can hang the process
   // (deeply nested arrays that explode exponentially using aliases).
   if (Array.isArray(keyNode)) {
+    keyNode = keyNode.slice();
+
     for (let index = 0; index < keyNode.length; index++) {
       if (Array.isArray(keyNode[index])) {
         return throwError(state, "nested arrays are not supported inside keys");
       }
 
-      if (common.isObject(keyNode[index])) {
+      if (typeof keyNode === "object" && common.isObject(keyNode[index])) {
         keyNode[index] = "[object Object]";
       }
     }
