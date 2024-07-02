@@ -1523,9 +1523,11 @@ function composeNode(
         // non-specific tag is only assigned to plain scalars. So, it isn't
         // needed to check for 'kind' conformity.
 
-        if (type.resolve(state.result)) {
+        if (type.resolve?.(state.result) ?? true) {
           // `state.result` updated in resolver if matched
-          state.result = type.construct(state.result);
+          state.result = type.construct
+            ? type.construct(state.result)
+            : state.result;
           state.tag = type.tag;
           if (state.anchor !== null) {
             state.anchorMap[state.anchor] = state.result;
@@ -1545,14 +1547,16 @@ function composeNode(
         );
       }
 
-      if (!type.resolve(state.result)) {
+      if (!type.resolve?.(state.result) ?? true) {
         // `state.result` updated in resolver if matched
         return throwError(
           state,
           `cannot resolve a node with !<${state.tag}> explicit tag`,
         );
       } else {
-        state.result = type.construct(state.result);
+        state.result = type.construct
+          ? type.construct(state.result)
+          : state.result;
         if (state.anchor !== null) {
           state.anchorMap[state.anchor] = state.result;
         }

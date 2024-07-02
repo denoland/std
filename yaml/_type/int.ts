@@ -3,7 +3,7 @@
 // Copyright 2011-2015 by Vitaly Puzrin. All rights reserved. MIT license.
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import { Type } from "../_type.ts";
+import type { Type } from "../_type.ts";
 import { type Any, isNegativeZero } from "../_utils.ts";
 
 function isCharCodeInRange(c: number, lower: number, upper: number): boolean {
@@ -156,7 +156,8 @@ function isInteger(object: Any): boolean {
     !isNegativeZero(object);
 }
 
-export const int = new Type("tag:yaml.org,2002:int", {
+export const int: Type = {
+  tag: "tag:yaml.org,2002:int",
   construct: constructYamlInteger,
   defaultStyle: "decimal",
   kind: "scalar",
@@ -186,4 +187,4 @@ export const int = new Type("tag:yaml.org,2002:int", {
     hexadecimal: [16, "hex"],
     octal: [8, "oct"],
   },
-});
+};

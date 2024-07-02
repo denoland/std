@@ -3,7 +3,7 @@
 // Copyright 2011-2015 by Vitaly Puzrin. All rights reserved. MIT license.
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import { Type } from "../_type.ts";
+import type { Type } from "../_type.ts";
 import type { Any } from "../_utils.ts";
 
 function resolveYamlSet(data: Any): boolean {
@@ -22,8 +22,9 @@ function constructYamlSet(data: string): Any {
   return data !== null ? data : {};
 }
 
-export const set = new Type("tag:yaml.org,2002:set", {
+export const set: Type = {
+  tag: "tag:yaml.org,2002:set",
   construct: constructYamlSet,
   kind: "mapping",
   resolve: resolveYamlSet,
-});
+};
