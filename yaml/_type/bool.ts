@@ -7,7 +7,10 @@ import { Type } from "../_type.ts";
 import { isBoolean } from "../_utils.ts";
 
 function resolveYamlBoolean(data: string): boolean {
-  return ["true", "false"].includes(data.toLowerCase());
+  return (
+    data === "true" || data === "True" || data === "TRUE" || data === "false" ||
+    data === "False" || data === "FALSE"
+  );
 }
 
 function constructYamlBoolean(data: string): boolean {
