@@ -1689,10 +1689,9 @@ class Parser {
 
 export function parseDocuments(
   input: string,
-  options?: ParserOptions,
+  options: ParserOptions = {},
 ): unknown[] {
   input = String(input);
-  options = options || {};
 
   if (input.length !== 0) {
     // Add tailing `\n` if not exists
@@ -1716,7 +1715,10 @@ export function parseDocuments(
   return parser.parse(input);
 }
 
-export function parseDocument(input: string, options?: ParserOptions): unknown {
+export function parseDocument(
+  input: string,
+  options: ParserOptions = {},
+): unknown {
   const documents = parseDocuments(input, options);
 
   if (documents.length === 0) return null;
