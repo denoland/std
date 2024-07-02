@@ -3,11 +3,12 @@
 // Copyright 2011-2015 by Vitaly Puzrin. All rights reserved. MIT license.
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import { BACKSLASH, COLON, PLUS, QUESTION, SMALLER_THAN } from "../_chars.ts";
 import {
   AMPERSAND,
   ASTERISK,
+  BACKSLASH,
   CARRIAGE_RETURN,
+  COLON,
   COMMA,
   COMMERCIAL_AT,
   DOT,
@@ -20,10 +21,13 @@ import {
   LINE_FEED,
   MINUS,
   PERCENT,
+  PLUS,
+  QUESTION,
   RIGHT_CURLY_BRACKET,
   RIGHT_SQUARE_BRACKET,
   SHARP,
   SINGLE_QUOTE,
+  SMALLER_THAN,
   SPACE,
   TAB,
   VERTICAL_LINE,
