@@ -3,6 +3,30 @@
 // Copyright 2011-2015 by Vitaly Puzrin. All rights reserved. MIT license.
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
+import {
+  AMPERSAND,
+  ASTERISK,
+  COLON,
+  COMMA,
+  COMMERCIAL_AT,
+  DOUBLE_QUOTE,
+  EXCLAMATION,
+  GRAVE_ACCENT,
+  GREATER_THAN,
+  LEFT_CURLY_BRACKET,
+  LEFT_SQUARE_BRACKET,
+  LINE_FEED,
+  MINUS,
+  PERCENT,
+  QUESTION,
+  RIGHT_CURLY_BRACKET,
+  RIGHT_SQUARE_BRACKET,
+  SHARP,
+  SINGLE_QUOTE,
+  SPACE,
+  TAB,
+  VERTICAL_LINE,
+} from "../_chars.ts";
 import { YamlError } from "../_error.ts";
 import type { RepresentFn } from "../_type.ts";
 import * as common from "../_utils.ts";
@@ -10,29 +34,6 @@ import { DumperState, type DumperStateOptions } from "./dumper_state.ts";
 
 type Any = common.Any;
 type ArrayObject<T = Any> = common.ArrayObject<T>;
-
-const CHAR_TAB = 0x09; /* Tab */
-const CHAR_LINE_FEED = 0x0a; /* LF */
-const CHAR_SPACE = 0x20; /* Space */
-const CHAR_EXCLAMATION = 0x21; /* ! */
-const CHAR_DOUBLE_QUOTE = 0x22; /* " */
-const CHAR_SHARP = 0x23; /* # */
-const CHAR_PERCENT = 0x25; /* % */
-const CHAR_AMPERSAND = 0x26; /* & */
-const CHAR_SINGLE_QUOTE = 0x27; /* ' */
-const CHAR_ASTERISK = 0x2a; /* * */
-const CHAR_COMMA = 0x2c; /* , */
-const CHAR_MINUS = 0x2d; /* - */
-const CHAR_COLON = 0x3a; /* : */
-const CHAR_GREATER_THAN = 0x3e; /* > */
-const CHAR_QUESTION = 0x3f; /* ? */
-const CHAR_COMMERCIAL_AT = 0x40; /* @ */
-const CHAR_LEFT_SQUARE_BRACKET = 0x5b; /* [ */
-const CHAR_RIGHT_SQUARE_BRACKET = 0x5d; /* ] */
-const CHAR_GRAVE_ACCENT = 0x60; /* ` */
-const CHAR_LEFT_CURLY_BRACKET = 0x7b; /* { */
-const CHAR_VERTICAL_LINE = 0x7c; /* | */
-const CHAR_RIGHT_CURLY_BRACKET = 0x7d; /* } */
 
 const ESCAPE_SEQUENCES = new Map<number, string>([
   [0x00, "\\0"],
@@ -131,7 +132,7 @@ function testImplicitResolving(state: DumperState, str: string): boolean {
 
 // [33] s-white ::= s-space | s-tab
 function isWhitespace(c: number): boolean {
-  return c === CHAR_SPACE || c === CHAR_TAB;
+  return c === SPACE || c === TAB;
 }
 
 // Returns true if the character can be printed without escaping.
@@ -155,14 +156,14 @@ function isPlainSafe(c: number): boolean {
     isPrintable(c) &&
     c !== 0xfeff &&
     // - c-flow-indicator
-    c !== CHAR_COMMA &&
-    c !== CHAR_LEFT_SQUARE_BRACKET &&
-    c !== CHAR_RIGHT_SQUARE_BRACKET &&
-    c !== CHAR_LEFT_CURLY_BRACKET &&
-    c !== CHAR_RIGHT_CURLY_BRACKET &&
+    c !== COMMA &&
+    c !== LEFT_SQUARE_BRACKET &&
+    c !== RIGHT_SQUARE_BRACKET &&
+    c !== LEFT_CURLY_BRACKET &&
+    c !== RIGHT_CURLY_BRACKET &&
     // - ":" - "#"
-    c !== CHAR_COLON &&
-    c !== CHAR_SHARP
+    c !== COLON &&
+    c !== SHARP
   );
 }
 
@@ -176,27 +177,27 @@ function isPlainSafeFirst(c: number): boolean {
     !isWhitespace(c) && // - s-white
     // - (c-indicator ::=
     // “-” | “?” | “:” | “,” | “[” | “]” | “{” | “}”
-    c !== CHAR_MINUS &&
-    c !== CHAR_QUESTION &&
-    c !== CHAR_COLON &&
-    c !== CHAR_COMMA &&
-    c !== CHAR_LEFT_SQUARE_BRACKET &&
-    c !== CHAR_RIGHT_SQUARE_BRACKET &&
-    c !== CHAR_LEFT_CURLY_BRACKET &&
-    c !== CHAR_RIGHT_CURLY_BRACKET &&
+    c !== MINUS &&
+    c !== QUESTION &&
+    c !== COLON &&
+    c !== COMMA &&
+    c !== LEFT_SQUARE_BRACKET &&
+    c !== RIGHT_SQUARE_BRACKET &&
+    c !== LEFT_CURLY_BRACKET &&
+    c !== RIGHT_CURLY_BRACKET &&
     // | “#” | “&” | “*” | “!” | “|” | “>” | “'” | “"”
-    c !== CHAR_SHARP &&
-    c !== CHAR_AMPERSAND &&
-    c !== CHAR_ASTERISK &&
-    c !== CHAR_EXCLAMATION &&
-    c !== CHAR_VERTICAL_LINE &&
-    c !== CHAR_GREATER_THAN &&
-    c !== CHAR_SINGLE_QUOTE &&
-    c !== CHAR_DOUBLE_QUOTE &&
+    c !== SHARP &&
+    c !== AMPERSAND &&
+    c !== ASTERISK &&
+    c !== EXCLAMATION &&
+    c !== VERTICAL_LINE &&
+    c !== GREATER_THAN &&
+    c !== SINGLE_QUOTE &&
+    c !== DOUBLE_QUOTE &&
     // | “%” | “@” | “`”)
-    c !== CHAR_PERCENT &&
-    c !== CHAR_COMMERCIAL_AT &&
-    c !== CHAR_GRAVE_ACCENT
+    c !== PERCENT &&
+    c !== COMMERCIAL_AT &&
+    c !== GRAVE_ACCENT
   );
 }
 
@@ -249,7 +250,7 @@ function chooseScalarStyle(
     // Case: block styles permitted.
     for (i = 0; i < string.length; i++) {
       char = string.charCodeAt(i);
-      if (char === CHAR_LINE_FEED) {
+      if (char === LINE_FEED) {
         hasLineBreak = true;
         // Check if any line can be folded.
         if (shouldTrackWidth) {
@@ -535,7 +536,7 @@ function writeBlockSequence(
         _result += generateNextLine(state, level);
       }
 
-      if (state.dump && CHAR_LINE_FEED === state.dump.charCodeAt(0)) {
+      if (state.dump && LINE_FEED === state.dump.charCodeAt(0)) {
         _result += "-";
       } else {
         _result += "- ";
@@ -628,7 +629,7 @@ function writeBlockMapping(
       (state.dump && state.dump.length > 1024);
 
     if (explicitPair) {
-      if (state.dump && CHAR_LINE_FEED === state.dump.charCodeAt(0)) {
+      if (state.dump && LINE_FEED === state.dump.charCodeAt(0)) {
         pairBuffer += "?";
       } else {
         pairBuffer += "? ";
@@ -645,7 +646,7 @@ function writeBlockMapping(
       continue; // Skip this pair because of invalid value.
     }
 
-    if (state.dump && CHAR_LINE_FEED === state.dump.charCodeAt(0)) {
+    if (state.dump && LINE_FEED === state.dump.charCodeAt(0)) {
       pairBuffer += ":";
     } else {
       pairBuffer += ": ";
