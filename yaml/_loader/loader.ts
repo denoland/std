@@ -1593,7 +1593,7 @@ function readDocument(state: LoaderState) {
   let ch: number;
 
   state.version = null;
-  state.checkLineBreaks = state.legacy;
+  state.checkLineBreaks = false;
   state.tagMap = Object.create(null);
   state.anchorMap = Object.create(null);
 

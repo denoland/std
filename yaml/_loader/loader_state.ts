@@ -10,7 +10,6 @@ import type { Type } from "../_type.ts";
 import type { Any, ArrayObject } from "../_utils.ts";
 
 export interface LoaderStateOptions {
-  legacy?: boolean;
   /** specifies a schema to use. */
   schema?: Schema;
   /** compatibility with JSON.parse behaviour. */
@@ -31,13 +30,12 @@ export class LoaderState extends State {
   position = 0;
   line = 0;
   onWarning?: (...args: Any[]) => void;
-  legacy: boolean;
   json: boolean;
   implicitTypes: Type[];
   typeMap: TypeMap;
 
   version?: string | null;
-  checkLineBreaks?: boolean;
+  checkLineBreaks = false;
   tagMap: ArrayObject = Object.create(null);
   anchorMap: ArrayObject = Object.create(null);
   tag?: string | null;
@@ -50,14 +48,12 @@ export class LoaderState extends State {
     {
       schema,
       onWarning,
-      legacy = false,
       json = false,
     }: LoaderStateOptions,
   ) {
     super(schema);
     this.input = input;
     this.onWarning = onWarning;
-    this.legacy = legacy;
     this.json = json;
 
     this.implicitTypes = (this.schema as Schema).compiledImplicit;
