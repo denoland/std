@@ -159,67 +159,63 @@ function throwWarning(state: LoaderState, message: string) {
   }
 }
 
-type DirectiveHandler = (state: LoaderState, ...args: string[]) => void;
+function yamlDirectiveHandler(state: LoaderState, ...args: string[]) {
+  if (state.version !== null) {
+    return throwError(state, "duplication of %YAML directive");
+  }
 
-const directiveHandlers: Record<string, DirectiveHandler> = {
-  YAML(state, ...args) {
-    if (state.version !== null) {
-      return throwError(state, "duplication of %YAML directive");
-    }
+  if (args.length !== 1) {
+    return throwError(state, "YAML directive accepts exactly one argument");
+  }
 
-    if (args.length !== 1) {
-      return throwError(state, "YAML directive accepts exactly one argument");
-    }
+  const match = /^([0-9]+)\.([0-9]+)$/.exec(args[0]!);
+  if (match === null) {
+    return throwError(state, "ill-formed argument of the YAML directive");
+  }
 
-    const match = /^([0-9]+)\.([0-9]+)$/.exec(args[0]!);
-    if (match === null) {
-      return throwError(state, "ill-formed argument of the YAML directive");
-    }
+  const major = parseInt(match[1]!, 10);
+  const minor = parseInt(match[2]!, 10);
+  if (major !== 1) {
+    return throwError(state, "unacceptable YAML version of the document");
+  }
 
-    const major = parseInt(match[1]!, 10);
-    const minor = parseInt(match[2]!, 10);
-    if (major !== 1) {
-      return throwError(state, "unacceptable YAML version of the document");
-    }
+  state.version = args[0];
+  state.checkLineBreaks = minor < 2;
+  if (minor !== 1 && minor !== 2) {
+    return throwWarning(state, "unsupported YAML version of the document");
+  }
+}
+function tagDirectiveHandler(state: LoaderState, ...args: string[]) {
+  if (args.length !== 2) {
+    return throwError(state, "TAG directive accepts exactly two arguments");
+  }
 
-    state.version = args[0];
-    state.checkLineBreaks = minor < 2;
-    if (minor !== 1 && minor !== 2) {
-      return throwWarning(state, "unsupported YAML version of the document");
-    }
-  },
-  TAG(state, ...args) {
-    if (args.length !== 2) {
-      return throwError(state, "TAG directive accepts exactly two arguments");
-    }
+  const handle = args[0]!;
+  const prefix = args[1]!;
 
-    const handle = args[0]!;
-    const prefix = args[1]!;
+  if (!PATTERN_TAG_HANDLE.test(handle)) {
+    return throwError(
+      state,
+      "ill-formed tag handle (first argument) of the TAG directive",
+    );
+  }
 
-    if (!PATTERN_TAG_HANDLE.test(handle)) {
-      return throwError(
-        state,
-        "ill-formed tag handle (first argument) of the TAG directive",
-      );
-    }
+  if (Object.hasOwn(state.tagMap, handle)) {
+    return throwError(
+      state,
+      `there is a previously declared suffix for "${handle}" tag handle`,
+    );
+  }
 
-    if (Object.hasOwn(state.tagMap, handle)) {
-      return throwError(
-        state,
-        `there is a previously declared suffix for "${handle}" tag handle`,
-      );
-    }
+  if (!PATTERN_TAG_URI.test(prefix)) {
+    return throwError(
+      state,
+      "ill-formed tag prefix (second argument) of the TAG directive",
+    );
+  }
 
-    if (!PATTERN_TAG_URI.test(prefix)) {
-      return throwError(
-        state,
-        "ill-formed tag prefix (second argument) of the TAG directive",
-      );
-    }
-
-    state.tagMap[handle] = prefix;
-  },
-} as const;
+  state.tagMap[handle] = prefix;
+}
 
 function captureSegment(
   state: LoaderState,
@@ -1616,10 +1612,16 @@ function readDocument(state: LoaderState) {
 
     if (ch !== 0) readLineBreak(state);
 
-    if (Object.hasOwn(directiveHandlers, directiveName)) {
-      directiveHandlers[directiveName]!(state, ...directiveArgs);
-    } else {
-      throwWarning(state, `unknown document directive "${directiveName}"`);
+    switch (directiveName) {
+      case "YAML":
+        yamlDirectiveHandler(state, ...directiveArgs);
+        break;
+      case "TAG":
+        tagDirectiveHandler(state, ...directiveArgs);
+        break;
+      default:
+        throwWarning(state, `unknown document directive "${directiveName}"`);
+        break;
     }
   }
 
