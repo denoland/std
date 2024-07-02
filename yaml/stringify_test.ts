@@ -88,6 +88,28 @@ Deno.test({
 });
 
 Deno.test({
+  name: "stringify() serializes Uint8Array as !!binary",
+  fn() {
+    assertEquals(
+      stringify(new Uint8Array([1])),
+      "!<tag:yaml.org,2002:binary> AQ==\n",
+    );
+    assertEquals(
+      stringify(new Uint8Array([1, 2])),
+      "!<tag:yaml.org,2002:binary> AQI=\n",
+    );
+    assertEquals(
+      stringify(new Uint8Array([1, 2, 3])),
+      "!<tag:yaml.org,2002:binary> AQID\n",
+    );
+    assertEquals(
+      stringify(new Uint8Array(Array(50).keys())),
+      "!<tag:yaml.org,2002:binary> AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8gISIjJCUmJygpKissLS4vMDE=\n",
+    );
+  },
+});
+
+Deno.test({
   name: "stringify() throws with `!!js/*` yaml types with default schemas",
   fn() {
     const object = { undefined: undefined };
