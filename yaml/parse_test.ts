@@ -784,3 +784,16 @@ Deno.test("parse() throws with empty mapping key", () => {
     "incomplete explicit mapping pair; a key node is missed; or followed by a non-tabulated empty line at line 1, column 3:\n    ? : 1\n      ^",
   );
 });
+
+Deno.test("parse() throws on duplicate keys", () => {
+  assertThrows(
+    () =>
+      parse(
+        `name: John Doe
+age: 30
+name: Jane Doe`,
+      ),
+    YamlError,
+    "duplicated mapping key at line 3, column 1:\n    name: Jane Doe\n    ^",
+  );
+});
