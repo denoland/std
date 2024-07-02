@@ -77,13 +77,41 @@ Deno.test({
 });
 
 Deno.test({
-  name: "booleans can be stringified directly",
+  name: "stringify() serializes boolean values",
   fn() {
-    const boolean = true;
+    assertEquals(stringify([true, false]), "- true\n- false\n");
 
-    const expected = "true\n";
+    // casing can be controlled with style options
+    assertEquals(
+      stringify([true, false], { styles: { "!!bool": "camelcase" } }),
+      "- True\n- False\n",
+    );
+    assertEquals(
+      stringify([true, false], { styles: { "!!bool": "uppercase" } }),
+      "- TRUE\n- FALSE\n",
+    );
+  },
+});
 
-    assertEquals(stringify(boolean), expected);
+Deno.test({
+  name: "stringify() serializes Uint8Array as !!binary",
+  fn() {
+    assertEquals(
+      stringify(new Uint8Array([1])),
+      "!<tag:yaml.org,2002:binary> AQ==\n",
+    );
+    assertEquals(
+      stringify(new Uint8Array([1, 2])),
+      "!<tag:yaml.org,2002:binary> AQI=\n",
+    );
+    assertEquals(
+      stringify(new Uint8Array([1, 2, 3])),
+      "!<tag:yaml.org,2002:binary> AQID\n",
+    );
+    assertEquals(
+      stringify(new Uint8Array(Array(50).keys())),
+      "!<tag:yaml.org,2002:binary> AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8gISIjJCUmJygpKissLS4vMDE=\n",
+    );
   },
 });
 

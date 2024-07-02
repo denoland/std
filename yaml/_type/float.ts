@@ -109,10 +109,8 @@ function representYamlFloat(object: Any, style?: StyleVariant): Any {
 }
 
 function isFloat(object: Any): boolean {
-  return (
-    Object.prototype.toString.call(object) === "[object Number]" &&
-    (object % 1 !== 0 || isNegativeZero(object))
-  );
+  return typeof object === "number" &&
+    (object % 1 !== 0 || isNegativeZero(object));
 }
 
 export const float = new Type("tag:yaml.org,2002:float", {

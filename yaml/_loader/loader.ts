@@ -3,6 +3,35 @@
 // Copyright 2011-2015 by Vitaly Puzrin. All rights reserved. MIT license.
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
+import {
+  AMPERSAND,
+  ASTERISK,
+  BACKSLASH,
+  CARRIAGE_RETURN,
+  COLON,
+  COMMA,
+  COMMERCIAL_AT,
+  DOT,
+  DOUBLE_QUOTE,
+  EXCLAMATION,
+  GRAVE_ACCENT,
+  GREATER_THAN,
+  LEFT_CURLY_BRACKET,
+  LEFT_SQUARE_BRACKET,
+  LINE_FEED,
+  MINUS,
+  PERCENT,
+  PLUS,
+  QUESTION,
+  RIGHT_CURLY_BRACKET,
+  RIGHT_SQUARE_BRACKET,
+  SHARP,
+  SINGLE_QUOTE,
+  SMALLER_THAN,
+  SPACE,
+  TAB,
+  VERTICAL_LINE,
+} from "../_chars.ts";
 import { YamlError } from "../_error.ts";
 import { Mark } from "../_mark.ts";
 import type { Type } from "../_type.ts";
@@ -15,8 +44,6 @@ import {
 
 type Any = common.Any;
 type ArrayObject<T = Any> = common.ArrayObject<T>;
-
-const { hasOwn } = Object;
 
 const CONTEXT_FLOW_IN = 1;
 const CONTEXT_FLOW_OUT = 2;
@@ -41,29 +68,29 @@ function _class(obj: unknown): string {
 }
 
 function isEOL(c: number): boolean {
-  return c === 0x0a || /* LF */ c === 0x0d /* CR */;
+  return c === LINE_FEED || c === CARRIAGE_RETURN;
 }
 
 function isWhiteSpace(c: number): boolean {
-  return c === 0x09 || /* Tab */ c === 0x20 /* Space */;
+  return c === TAB || c === SPACE;
 }
 
 function isWsOrEol(c: number): boolean {
   return (
-    c === 0x09 /* Tab */ ||
-    c === 0x20 /* Space */ ||
-    c === 0x0a /* LF */ ||
-    c === 0x0d /* CR */
+    c === TAB ||
+    c === SPACE ||
+    c === LINE_FEED ||
+    c === CARRIAGE_RETURN
   );
 }
 
 function isFlowIndicator(c: number): boolean {
   return (
-    c === 0x2c /* , */ ||
-    c === 0x5b /* [ */ ||
-    c === 0x5d /* ] */ ||
-    c === 0x7b /* { */ ||
-    c === 0x7d /* } */
+    c === COMMA ||
+    c === LEFT_SQUARE_BRACKET ||
+    c === RIGHT_SQUARE_BRACKET ||
+    c === LEFT_CURLY_BRACKET ||
+    c === RIGHT_CURLY_BRACKET
   );
 }
 
@@ -81,18 +108,11 @@ function fromHexCode(c: number): number {
   return -1;
 }
 
-function escapedHexLen(c: number): number {
-  if (c === 0x78 /* x */) {
-    return 2;
-  }
-  if (c === 0x75 /* u */) {
-    return 4;
-  }
-  if (c === 0x55 /* U */) {
-    return 8;
-  }
-  return 0;
-}
+const ESCAPED_HEX_LENGTHS = new Map<number, number>([
+  [0x78, 2], // x
+  [0x75, 4], // u
+  [0x55, 8], // U
+]);
 
 function fromDecimalCode(c: number): number {
   if (0x30 <= /* 0 */ c && c <= 0x39 /* 9 */) {
@@ -102,45 +122,26 @@ function fromDecimalCode(c: number): number {
   return -1;
 }
 
-function simpleEscapeSequence(c: number): string {
-  return c === 0x30 /* 0 */
-    ? "\x00"
-    : c === 0x61 /* a */
-    ? "\x07"
-    : c === 0x62 /* b */
-    ? "\x08"
-    : c === 0x74 /* t */
-    ? "\x09"
-    : c === 0x09 /* Tab */
-    ? "\x09"
-    : c === 0x6e /* n */
-    ? "\x0A"
-    : c === 0x76 /* v */
-    ? "\x0B"
-    : c === 0x66 /* f */
-    ? "\x0C"
-    : c === 0x72 /* r */
-    ? "\x0D"
-    : c === 0x65 /* e */
-    ? "\x1B"
-    : c === 0x20 /* Space */
-    ? " "
-    : c === 0x22 /* " */
-    ? "\x22"
-    : c === 0x2f /* / */
-    ? "/"
-    : c === 0x5c /* \ */
-    ? "\x5C"
-    : c === 0x4e /* N */
-    ? "\x85"
-    : c === 0x5f /* _ */
-    ? "\xA0"
-    : c === 0x4c /* L */
-    ? "\u2028"
-    : c === 0x50 /* P */
-    ? "\u2029"
-    : "";
-}
+const SIMPLE_ESCAPE_SEQUENCES = new Map<number, string>([
+  [0x30, "\x00"], // 0
+  [0x61, "\x07"], // a
+  [0x62, "\x08"], // b
+  [0x74, "\x09"], // t
+  [0x09, "\x09"], // Tab
+  [0x6e, "\x0A"], // n
+  [0x76, "\x0B"], // v
+  [0x66, "\x0C"], // f
+  [0x72, "\x0D"], // r
+  [0x65, "\x1B"], // e
+  [0x20, " "], // Space
+  [0x22, '"'], // "
+  [0x2f, "/"], // /
+  [0x5c, "\\"], // \
+  [0x4e, "\x85"], // N
+  [0x5f, "\xA0"], // _
+  [0x4c, "\u2028"], // L
+  [0x50, "\u2029"], // P
+]);
 
 function charFromCodepoint(c: number): string {
   if (c <= 0xffff) {
@@ -152,13 +153,6 @@ function charFromCodepoint(c: number): string {
     ((c - 0x010000) >> 10) + 0xd800,
     ((c - 0x010000) & 0x03ff) + 0xdc00,
   );
-}
-
-const simpleEscapeCheck = Array.from<number>({ length: 256 }); // integer, for fast access
-const simpleEscapeMap = Array.from<string>({ length: 256 });
-for (let i = 0; i < 256; i++) {
-  simpleEscapeCheck[i] = simpleEscapeSequence(i) ? 1 : 0;
-  simpleEscapeMap[i] = simpleEscapeSequence(i);
 }
 
 function generateError(state: LoaderState, message: string): YamlError {
@@ -183,74 +177,63 @@ function throwWarning(state: LoaderState, message: string) {
   }
 }
 
-interface DirectiveHandlers {
-  [directive: string]: (
-    state: LoaderState,
-    name: string,
-    ...args: string[]
-  ) => void;
+function yamlDirectiveHandler(state: LoaderState, ...args: string[]) {
+  if (state.version !== null) {
+    return throwError(state, "duplication of %YAML directive");
+  }
+
+  if (args.length !== 1) {
+    return throwError(state, "YAML directive accepts exactly one argument");
+  }
+
+  const match = /^([0-9]+)\.([0-9]+)$/.exec(args[0]!);
+  if (match === null) {
+    return throwError(state, "ill-formed argument of the YAML directive");
+  }
+
+  const major = parseInt(match[1]!, 10);
+  const minor = parseInt(match[2]!, 10);
+  if (major !== 1) {
+    return throwError(state, "unacceptable YAML version of the document");
+  }
+
+  state.version = args[0];
+  state.checkLineBreaks = minor < 2;
+  if (minor !== 1 && minor !== 2) {
+    return throwWarning(state, "unsupported YAML version of the document");
+  }
 }
+function tagDirectiveHandler(state: LoaderState, ...args: string[]) {
+  if (args.length !== 2) {
+    return throwError(state, "TAG directive accepts exactly two arguments");
+  }
 
-const directiveHandlers: DirectiveHandlers = {
-  YAML(state, _name, ...args: string[]) {
-    if (state.version !== null) {
-      return throwError(state, "duplication of %YAML directive");
-    }
+  const handle = args[0]!;
+  const prefix = args[1]!;
 
-    if (args.length !== 1) {
-      return throwError(state, "YAML directive accepts exactly one argument");
-    }
+  if (!PATTERN_TAG_HANDLE.test(handle)) {
+    return throwError(
+      state,
+      "ill-formed tag handle (first argument) of the TAG directive",
+    );
+  }
 
-    const match = /^([0-9]+)\.([0-9]+)$/.exec(args[0]!);
-    if (match === null) {
-      return throwError(state, "ill-formed argument of the YAML directive");
-    }
+  if (Object.hasOwn(state.tagMap, handle)) {
+    return throwError(
+      state,
+      `there is a previously declared suffix for "${handle}" tag handle`,
+    );
+  }
 
-    const major = parseInt(match[1]!, 10);
-    const minor = parseInt(match[2]!, 10);
-    if (major !== 1) {
-      return throwError(state, "unacceptable YAML version of the document");
-    }
+  if (!PATTERN_TAG_URI.test(prefix)) {
+    return throwError(
+      state,
+      "ill-formed tag prefix (second argument) of the TAG directive",
+    );
+  }
 
-    state.version = args[0];
-    state.checkLineBreaks = minor < 2;
-    if (minor !== 1 && minor !== 2) {
-      return throwWarning(state, "unsupported YAML version of the document");
-    }
-  },
-
-  TAG(state, _name, ...args: string[]) {
-    if (args.length !== 2) {
-      return throwError(state, "TAG directive accepts exactly two arguments");
-    }
-
-    const handle = args[0]!;
-    const prefix = args[1]!;
-
-    if (!PATTERN_TAG_HANDLE.test(handle)) {
-      return throwError(
-        state,
-        "ill-formed tag handle (first argument) of the TAG directive",
-      );
-    }
-
-    if (hasOwn(state.tagMap, handle)) {
-      return throwError(
-        state,
-        `there is a previously declared suffix for "${handle}" tag handle`,
-      );
-    }
-
-    if (!PATTERN_TAG_URI.test(prefix)) {
-      return throwError(
-        state,
-        "ill-formed tag prefix (second argument) of the TAG directive",
-      );
-    }
-
-    state.tagMap[handle] = prefix;
-  },
-};
+  state.tagMap[handle] = prefix;
+}
 
 function captureSegment(
   state: LoaderState,
@@ -297,7 +280,7 @@ function mergeMappings(
   }
 
   for (const key of Object.keys(source)) {
-    if (!hasOwn(destination, key)) {
+    if (!Object.hasOwn(destination, key)) {
       Object.defineProperty(destination, key, {
         value: source[key],
         writable: true,
@@ -367,8 +350,8 @@ function storeMappingPair(
   } else {
     if (
       !state.json &&
-      !hasOwn(overridableKeys, keyNode) &&
-      hasOwn(result, keyNode)
+      !Object.hasOwn(overridableKeys, keyNode) &&
+      Object.hasOwn(result, keyNode)
     ) {
       state.line = startLine || state.line;
       state.position = startPos || state.position;
@@ -389,11 +372,11 @@ function storeMappingPair(
 function readLineBreak(state: LoaderState) {
   const ch = state.input.charCodeAt(state.position);
 
-  if (ch === 0x0a /* LF */) {
+  if (ch === LINE_FEED) {
     state.position++;
-  } else if (ch === 0x0d /* CR */) {
+  } else if (ch === CARRIAGE_RETURN) {
     state.position++;
-    if (state.input.charCodeAt(state.position) === 0x0a /* LF */) {
+    if (state.input.charCodeAt(state.position) === LINE_FEED) {
       state.position++;
     }
   } else {
@@ -417,10 +400,10 @@ function skipSeparationSpace(
       ch = state.input.charCodeAt(++state.position);
     }
 
-    if (allowComments && ch === 0x23 /* # */) {
+    if (allowComments && ch === SHARP) {
       do {
         ch = state.input.charCodeAt(++state.position);
-      } while (ch !== 0x0a && /* LF */ ch !== 0x0d && /* CR */ ch !== 0);
+      } while (ch !== LINE_FEED && ch !== CARRIAGE_RETURN && ch !== 0);
     }
 
     if (isEOL(ch)) {
@@ -430,7 +413,7 @@ function skipSeparationSpace(
       lineBreaks++;
       state.lineIndent = 0;
 
-      while (ch === 0x20 /* Space */) {
+      while (ch === SPACE) {
         state.lineIndent++;
         ch = state.input.charCodeAt(++state.position);
       }
@@ -457,7 +440,7 @@ function testDocumentSeparator(state: LoaderState): boolean {
   // Condition state.position === state.lineStart is tested
   // in parent on each call, for efficiency. No needs to test here again.
   if (
-    (ch === 0x2d || /* - */ ch === 0x2e) /* . */ &&
+    (ch === MINUS || ch === DOT) &&
     ch === state.input.charCodeAt(_position + 1) &&
     ch === state.input.charCodeAt(_position + 2)
   ) {
@@ -493,23 +476,23 @@ function readPlainScalar(
   if (
     isWsOrEol(ch) ||
     isFlowIndicator(ch) ||
-    ch === 0x23 /* # */ ||
-    ch === 0x26 /* & */ ||
-    ch === 0x2a /* * */ ||
-    ch === 0x21 /* ! */ ||
-    ch === 0x7c /* | */ ||
-    ch === 0x3e /* > */ ||
-    ch === 0x27 /* ' */ ||
-    ch === 0x22 /* " */ ||
-    ch === 0x25 /* % */ ||
-    ch === 0x40 /* @ */ ||
-    ch === 0x60 /* ` */
+    ch === SHARP ||
+    ch === AMPERSAND ||
+    ch === ASTERISK ||
+    ch === EXCLAMATION ||
+    ch === VERTICAL_LINE ||
+    ch === GREATER_THAN ||
+    ch === SINGLE_QUOTE ||
+    ch === DOUBLE_QUOTE ||
+    ch === PERCENT ||
+    ch === COMMERCIAL_AT ||
+    ch === GRAVE_ACCENT
   ) {
     return false;
   }
 
   let following: number;
-  if (ch === 0x3f || /* ? */ ch === 0x2d /* - */) {
+  if (ch === QUESTION || ch === MINUS) {
     following = state.input.charCodeAt(state.position + 1);
 
     if (
@@ -527,7 +510,7 @@ function readPlainScalar(
   let hasPendingContent = false;
   let line = 0;
   while (ch !== 0) {
-    if (ch === 0x3a /* : */) {
+    if (ch === COLON) {
       following = state.input.charCodeAt(state.position + 1);
 
       if (
@@ -536,7 +519,7 @@ function readPlainScalar(
       ) {
         break;
       }
-    } else if (ch === 0x23 /* # */) {
+    } else if (ch === SHARP) {
       const preceding = state.input.charCodeAt(state.position - 1);
 
       if (isWsOrEol(preceding)) {
@@ -601,7 +584,7 @@ function readSingleQuotedScalar(
 
   ch = state.input.charCodeAt(state.position);
 
-  if (ch !== 0x27 /* ' */) {
+  if (ch !== SINGLE_QUOTE) {
     return false;
   }
 
@@ -611,11 +594,11 @@ function readSingleQuotedScalar(
   captureStart = captureEnd = state.position;
 
   while ((ch = state.input.charCodeAt(state.position)) !== 0) {
-    if (ch === 0x27 /* ' */) {
+    if (ch === SINGLE_QUOTE) {
       captureSegment(state, captureStart, state.position, true);
       ch = state.input.charCodeAt(++state.position);
 
-      if (ch === 0x27 /* ' */) {
+      if (ch === SINGLE_QUOTE) {
         captureStart = state.position;
         state.position++;
         captureEnd = state.position;
@@ -652,7 +635,7 @@ function readDoubleQuotedScalar(
 ): boolean {
   let ch = state.input.charCodeAt(state.position);
 
-  if (ch !== 0x22 /* " */) {
+  if (ch !== DOUBLE_QUOTE) {
     return false;
   }
 
@@ -663,23 +646,21 @@ function readDoubleQuotedScalar(
   let captureStart = state.position;
   let tmp: number;
   while ((ch = state.input.charCodeAt(state.position)) !== 0) {
-    if (ch === 0x22 /* " */) {
+    if (ch === DOUBLE_QUOTE) {
       captureSegment(state, captureStart, state.position, true);
       state.position++;
       return true;
     }
-    if (ch === 0x5c /* \ */) {
+    if (ch === BACKSLASH) {
       captureSegment(state, captureStart, state.position, true);
       ch = state.input.charCodeAt(++state.position);
 
       if (isEOL(ch)) {
         skipSeparationSpace(state, false, nodeIndent);
-
-        // TODO(bartlomieju): rework to inline fn with no type cast?
-      } else if (ch < 256 && simpleEscapeCheck[ch]) {
-        state.result += simpleEscapeMap[ch];
+      } else if (ch < 256 && SIMPLE_ESCAPE_SEQUENCES.has(ch)) {
+        state.result += SIMPLE_ESCAPE_SEQUENCES.get(ch);
         state.position++;
-      } else if ((tmp = escapedHexLen(ch)) > 0) {
+      } else if ((tmp = ESCAPED_HEX_LENGTHS.get(ch) ?? 0) > 0) {
         let hexLength = tmp;
         let hexResult = 0;
 
@@ -730,12 +711,12 @@ function readFlowCollection(state: LoaderState, nodeIndent: number): boolean {
   let terminator: number;
   let isMapping = true;
   let result: ResultType = {};
-  if (ch === 0x5b /* [ */) {
-    terminator = 0x5d; /* ] */
+  if (ch === LEFT_SQUARE_BRACKET) {
+    terminator = RIGHT_SQUARE_BRACKET;
     isMapping = false;
     result = [];
-  } else if (ch === 0x7b /* { */) {
-    terminator = 0x7d; /* } */
+  } else if (ch === LEFT_CURLY_BRACKET) {
+    terminator = RIGHT_CURLY_BRACKET;
   } else {
     return false;
   }
@@ -777,7 +758,7 @@ function readFlowCollection(state: LoaderState, nodeIndent: number): boolean {
     keyTag = keyNode = valueNode = null;
     isPair = isExplicitPair = false;
 
-    if (ch === 0x3f /* ? */) {
+    if (ch === QUESTION) {
       following = state.input.charCodeAt(state.position + 1);
 
       if (isWsOrEol(following)) {
@@ -795,7 +776,7 @@ function readFlowCollection(state: LoaderState, nodeIndent: number): boolean {
 
     ch = state.input.charCodeAt(state.position);
 
-    if ((isExplicitPair || state.line === line) && ch === 0x3a /* : */) {
+    if ((isExplicitPair || state.line === line) && ch === COLON) {
       isPair = true;
       ch = state.input.charCodeAt(++state.position);
       skipSeparationSpace(state, true, nodeIndent);
@@ -831,7 +812,7 @@ function readFlowCollection(state: LoaderState, nodeIndent: number): boolean {
 
     ch = state.input.charCodeAt(state.position);
 
-    if (ch === 0x2c /* , */) {
+    if (ch === COMMA) {
       readNext = true;
       ch = state.input.charCodeAt(++state.position);
     } else {
@@ -858,9 +839,9 @@ function readBlockScalar(state: LoaderState, nodeIndent: number): boolean {
   let ch = state.input.charCodeAt(state.position);
 
   let folding = false;
-  if (ch === 0x7c /* | */) {
+  if (ch === VERTICAL_LINE) {
     folding = false;
-  } else if (ch === 0x3e /* > */) {
+  } else if (ch === GREATER_THAN) {
     folding = true;
   } else {
     return false;
@@ -873,9 +854,9 @@ function readBlockScalar(state: LoaderState, nodeIndent: number): boolean {
   while (ch !== 0) {
     ch = state.input.charCodeAt(++state.position);
 
-    if (ch === 0x2b || /* + */ ch === 0x2d /* - */) {
+    if (ch === PLUS || ch === MINUS) {
       if (CHOMPING_CLIP === chomping) {
-        chomping = ch === 0x2b /* + */ ? CHOMPING_KEEP : CHOMPING_STRIP;
+        chomping = ch === PLUS ? CHOMPING_KEEP : CHOMPING_STRIP;
       } else {
         return throwError(state, "repeat of a chomping mode identifier");
       }
@@ -901,7 +882,7 @@ function readBlockScalar(state: LoaderState, nodeIndent: number): boolean {
       ch = state.input.charCodeAt(++state.position);
     } while (isWhiteSpace(ch));
 
-    if (ch === 0x23 /* # */) {
+    if (ch === SHARP) {
       do {
         ch = state.input.charCodeAt(++state.position);
       } while (!isEOL(ch) && ch !== 0);
@@ -916,7 +897,7 @@ function readBlockScalar(state: LoaderState, nodeIndent: number): boolean {
 
     while (
       (!detectedIndent || state.lineIndent < textIndent) &&
-      ch === 0x20 /* Space */
+      ch === SPACE
     ) {
       state.lineIndent++;
       ch = state.input.charCodeAt(++state.position);
@@ -1018,7 +999,7 @@ function readBlockSequence(state: LoaderState, nodeIndent: number): boolean {
   ch = state.input.charCodeAt(state.position);
 
   while (ch !== 0) {
-    if (ch !== 0x2d /* - */) {
+    if (ch !== MINUS) {
       break;
     }
 
@@ -1098,8 +1079,8 @@ function readBlockMapping(
     // Explicit notation case. There are two separate blocks:
     // first for the key (denoted by "?") and second for the value (denoted by ":")
     //
-    if ((ch === 0x3f || /* ? */ ch === 0x3a) && /* : */ isWsOrEol(following)) {
-      if (ch === 0x3f /* ? */) {
+    if ((ch === QUESTION || ch === COLON) && isWsOrEol(following)) {
+      if (ch === QUESTION) {
         if (atExplicitKey) {
           storeMappingPair(
             state,
@@ -1140,7 +1121,7 @@ function readBlockMapping(
           ch = state.input.charCodeAt(++state.position);
         }
 
-        if (ch === 0x3a /* : */) {
+        if (ch === COLON) {
           ch = state.input.charCodeAt(++state.position);
 
           if (!isWsOrEol(ch)) {
@@ -1267,7 +1248,7 @@ function readTagProperty(state: LoaderState): boolean {
 
   ch = state.input.charCodeAt(state.position);
 
-  if (ch !== 0x21 /* ! */) return false;
+  if (ch !== EXCLAMATION) return false;
 
   if (state.tag !== null) {
     return throwError(state, "duplication of a tag property");
@@ -1275,10 +1256,10 @@ function readTagProperty(state: LoaderState): boolean {
 
   ch = state.input.charCodeAt(++state.position);
 
-  if (ch === 0x3c /* < */) {
+  if (ch === SMALLER_THAN) {
     isVerbatim = true;
     ch = state.input.charCodeAt(++state.position);
-  } else if (ch === 0x21 /* ! */) {
+  } else if (ch === EXCLAMATION) {
     isNamed = true;
     tagHandle = "!!";
     ch = state.input.charCodeAt(++state.position);
@@ -1291,7 +1272,7 @@ function readTagProperty(state: LoaderState): boolean {
   if (isVerbatim) {
     do {
       ch = state.input.charCodeAt(++state.position);
-    } while (ch !== 0 && ch !== 0x3e /* > */);
+    } while (ch !== 0 && ch !== GREATER_THAN);
 
     if (state.position < state.length) {
       tagName = state.input.slice(position, state.position);
@@ -1304,7 +1285,7 @@ function readTagProperty(state: LoaderState): boolean {
     }
   } else {
     while (ch !== 0 && !isWsOrEol(ch)) {
-      if (ch === 0x21 /* ! */) {
+      if (ch === EXCLAMATION) {
         if (!isNamed) {
           tagHandle = state.input.slice(position - 1, state.position + 1);
 
@@ -1347,7 +1328,7 @@ function readTagProperty(state: LoaderState): boolean {
 
   if (isVerbatim) {
     state.tag = tagName;
-  } else if (hasOwn(state.tagMap, tagHandle)) {
+  } else if (Object.hasOwn(state.tagMap, tagHandle)) {
     state.tag = state.tagMap[tagHandle] + tagName;
   } else if (tagHandle === "!") {
     state.tag = `!${tagName}`;
@@ -1362,7 +1343,7 @@ function readTagProperty(state: LoaderState): boolean {
 
 function readAnchorProperty(state: LoaderState): boolean {
   let ch = state.input.charCodeAt(state.position);
-  if (ch !== 0x26 /* & */) return false;
+  if (ch !== AMPERSAND) return false;
 
   if (state.anchor !== null) {
     return throwError(state, "duplication of an anchor property");
@@ -1388,7 +1369,7 @@ function readAnchorProperty(state: LoaderState): boolean {
 function readAlias(state: LoaderState): boolean {
   let ch = state.input.charCodeAt(state.position);
 
-  if (ch !== 0x2a /* * */) return false;
+  if (ch !== ASTERISK) return false;
 
   ch = state.input.charCodeAt(++state.position);
   const _position = state.position;
@@ -1405,7 +1386,7 @@ function readAlias(state: LoaderState): boolean {
   }
 
   const alias = state.input.slice(_position, state.position);
-  if (!hasOwn(state.anchorMap, alias)) {
+  if (!Object.hasOwn(state.anchorMap, alias)) {
     return throwError(state, `unidentified alias "${alias}"`);
   }
 
@@ -1553,7 +1534,7 @@ function composeNode(
         }
       }
     } else if (
-      hasOwn(state.typeMap[state.kind || "fallback"], state.tag)
+      Object.hasOwn(state.typeMap[state.kind || "fallback"], state.tag)
     ) {
       type = state.typeMap[state.kind || "fallback"][state.tag]!;
 
@@ -1593,7 +1574,7 @@ function readDocument(state: LoaderState) {
   let ch: number;
 
   state.version = null;
-  state.checkLineBreaks = state.legacy;
+  state.checkLineBreaks = false;
   state.tagMap = Object.create(null);
   state.anchorMap = Object.create(null);
 
@@ -1602,7 +1583,7 @@ function readDocument(state: LoaderState) {
 
     ch = state.input.charCodeAt(state.position);
 
-    if (state.lineIndent > 0 || ch !== 0x25 /* % */) {
+    if (state.lineIndent > 0 || ch !== PERCENT) {
       break;
     }
 
@@ -1629,7 +1610,7 @@ function readDocument(state: LoaderState) {
         ch = state.input.charCodeAt(++state.position);
       }
 
-      if (ch === 0x23 /* # */) {
+      if (ch === SHARP) {
         do {
           ch = state.input.charCodeAt(++state.position);
         } while (ch !== 0 && !isEOL(ch));
@@ -1649,10 +1630,16 @@ function readDocument(state: LoaderState) {
 
     if (ch !== 0) readLineBreak(state);
 
-    if (hasOwn(directiveHandlers, directiveName)) {
-      directiveHandlers[directiveName]!(state, directiveName, ...directiveArgs);
-    } else {
-      throwWarning(state, `unknown document directive "${directiveName}"`);
+    switch (directiveName) {
+      case "YAML":
+        yamlDirectiveHandler(state, ...directiveArgs);
+        break;
+      case "TAG":
+        tagDirectiveHandler(state, ...directiveArgs);
+        break;
+      default:
+        throwWarning(state, `unknown document directive "${directiveName}"`);
+        break;
     }
   }
 
@@ -1660,9 +1647,9 @@ function readDocument(state: LoaderState) {
 
   if (
     state.lineIndent === 0 &&
-    state.input.charCodeAt(state.position) === 0x2d /* - */ &&
-    state.input.charCodeAt(state.position + 1) === 0x2d /* - */ &&
-    state.input.charCodeAt(state.position + 2) === 0x2d /* - */
+    state.input.charCodeAt(state.position) === MINUS &&
+    state.input.charCodeAt(state.position + 1) === MINUS &&
+    state.input.charCodeAt(state.position + 2) === MINUS
   ) {
     state.position += 3;
     skipSeparationSpace(state, true, -1);
@@ -1685,7 +1672,7 @@ function readDocument(state: LoaderState) {
   state.documents.push(state.result);
 
   if (state.position === state.lineStart && testDocumentSeparator(state)) {
-    if (state.input.charCodeAt(state.position) === 0x2e /* . */) {
+    if (state.input.charCodeAt(state.position) === DOT) {
       state.position += 3;
       skipSeparationSpace(state, true, -1);
     }
@@ -1700,18 +1687,14 @@ function readDocument(state: LoaderState) {
   }
 }
 
-export function loadDocuments(
-  input: string,
-  options?: LoaderStateOptions,
-): unknown[] {
+function sanitizeInput(input: string) {
   input = String(input);
-  options = options || {};
 
   if (input.length !== 0) {
     // Add tailing `\n` if not exists
     if (
-      input.charCodeAt(input.length - 1) !== 0x0a /* LF */ &&
-      input.charCodeAt(input.length - 1) !== 0x0d /* CR */
+      input.charCodeAt(input.length - 1) !== LINE_FEED &&
+      input.charCodeAt(input.length - 1) !== CARRIAGE_RETURN
     ) {
       input += "\n";
     }
@@ -1722,12 +1705,21 @@ export function loadDocuments(
     }
   }
 
+  // Use 0 as string terminator. That significantly simplifies bounds check.
+  input += "\0";
+
+  return input;
+}
+
+export function loadDocuments(
+  input: string,
+  options: LoaderStateOptions = {},
+): unknown[] {
+  input = sanitizeInput(input);
+
   const state = new LoaderState(input, options);
 
-  // Use 0 as string terminator. That significantly simplifies bounds check.
-  state.input += "\0";
-
-  while (state.input.charCodeAt(state.position) === 0x20 /* Space */) {
+  while (state.input.charCodeAt(state.position) === SPACE) {
     state.lineIndent += 1;
     state.position += 1;
   }
@@ -1739,7 +1731,7 @@ export function loadDocuments(
   return state.documents;
 }
 
-export function load(input: string, options?: LoaderStateOptions): unknown {
+export function load(input: string, options: LoaderStateOptions = {}): unknown {
   const documents = loadDocuments(input, options);
 
   if (documents.length === 0) {

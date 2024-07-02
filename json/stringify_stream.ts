@@ -30,7 +30,7 @@ export interface StringifyStreamOptions {
  * @example Basic usage
  *
  * ```ts
- * import { JsonStringifyStream } from "@std/json/json-stringify-stream";
+ * import { JsonStringifyStream } from "@std/json/stringify-stream";
  * import { assertEquals } from "@std/assert";
  *
  * const stream = ReadableStream.from([{ foo: "bar" }, { baz: 100 }])
@@ -48,7 +48,7 @@ export interface StringifyStreamOptions {
  * {@linkcode https://www.rfc-editor.org/rfc/rfc7464.html | JSON Text Sequences}.
  *
  * ```ts
- * import { JsonStringifyStream } from "@std/json/json-stringify-stream";
+ * import { JsonStringifyStream } from "@std/json/stringify-stream";
  * import { assertEquals } from "@std/assert";
  *
  * const stream = ReadableStream.from([{ foo: "bar" }, { baz: 100 }])
@@ -63,7 +63,7 @@ export interface StringifyStreamOptions {
  * @example Stringify JSON lines from a server
  *
  * ```ts no-eval no-assert
- * import { JsonStringifyStream } from "@std/json/json-stringify-stream";
+ * import { JsonStringifyStream } from "@std/json/stringify-stream";
  *
  * // A server that streams one line of JSON every second
  * Deno.serve(() => {
@@ -94,7 +94,7 @@ export class JsonStringifyStream extends TransformStream<unknown, string> {
    *
    * @example Usage
    * ```ts
-   * import { JsonStringifyStream } from "@std/json/json-stringify-stream";
+   * import { JsonStringifyStream } from "@std/json/stringify-stream";
    * import { assertEquals } from "@std/assert";
    *
    * const stream = ReadableStream.from([{ foo: "bar" }, { baz: 100 }])
