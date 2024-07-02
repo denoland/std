@@ -197,6 +197,57 @@ Deno.test({
     assertEquals(parse(yaml), {
       message: new Uint8Array([72, 101, 108, 108, 111]),
     });
+
+    // ignore CR LF in base64 string
+    assertEquals(
+      parse(`message: !!binary |
+  YWJjZGVmZ\r
+  2hpamtsbW\r
+  5vcHFyc3R\r
+  1dnd4eXo=
+`),
+      {
+        // deno-fmt-ignore
+        message: new Uint8Array([97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122]),
+      },
+    );
+
+    // check tailbits handling
+    // 2 padding characters
+    assertEquals(
+      parse(`message: !!binary "AQ=="`),
+      {
+        message: new Uint8Array([1]),
+      },
+    );
+    // 1 padding character
+    assertEquals(
+      parse(`message: !!binary "AQI="`),
+      {
+        message: new Uint8Array([1, 2]),
+      },
+    );
+    // no padding character
+    assertEquals(
+      parse(`message: !!binary "AQID"`),
+      {
+        message: new Uint8Array([1, 2, 3]),
+      },
+    );
+
+    // invalid base64 string
+    assertThrows(
+      () => parse("message: !!binary <>"),
+      YamlError,
+      "cannot resolve a node with !<tag:yaml.org,2002:binary> explicit tag at line 1, column 21:\n    message: !!binary <>\n                        ^",
+    );
+
+    // empty base64 string is error
+    assertThrows(
+      () => parse("message: !!binary"),
+      YamlError,
+      "cannot resolve a node with !<tag:yaml.org,2002:binary> explicit tag at line 2, column 1:\n    \n    ^",
+    );
   },
 });
 
