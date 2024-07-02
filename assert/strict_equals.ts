@@ -1,7 +1,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 import { buildMessage, diff, diffStr, format, red } from "@std/internal";
-import { AssertionError } from "./error.ts";
+import { AssertionError } from "./assertion_error.ts";
 
 /**
  * Make an assertion that `actual` and `expected` are strictly equal, using

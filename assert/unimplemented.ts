@@ -1,6 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
-import { AssertionError } from "./error.ts";
+import { AssertionError } from "./assertion_error.ts";
 
 /**
  * Use this to stub out methods that will throw when invoked.

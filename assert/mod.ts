@@ -40,7 +40,7 @@ export * from "./strict_equals.ts";
 export * from "./string_includes.ts";
 export * from "./throws.ts";
 export * from "./assert.ts";
-export * from "./error.ts";
+export * from "./assertion_error.ts";
 export * from "./equal.ts";
 export * from "./fail.ts";
 export * from "./unimplemented.ts";
