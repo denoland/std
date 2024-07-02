@@ -727,7 +727,8 @@ function writeNode(
     block = state.flowLevel < 0 || state.flowLevel > level;
   }
 
-  const objectOrArray = common.isObject(state.dump) || Array.isArray(state.dump);
+  const objectOrArray = common.isObject(state.dump) ||
+    Array.isArray(state.dump);
 
   let duplicateIndex = -1;
   let duplicate = false;
@@ -782,7 +783,7 @@ function writeNode(
     } else {
       if (state.skipInvalid) return false;
       throw new YamlError(
-        `unacceptable kind of an object to dump ${state.dump}`,
+        `unacceptable kind of an object to dump ${typeof state.dump}`,
       );
     }
 
