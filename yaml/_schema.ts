@@ -113,7 +113,7 @@ export class Schema {
  *
  * @see {@link http://www.yaml.org/spec/1.2/spec.html#id2802346}
  */
-const FAILSAFE_SCHEMA: Schema = new Schema({
+const FAILSAFE_SCHEMA = new Schema({
   explicit: [str, seq, map],
 });
 
@@ -122,7 +122,7 @@ const FAILSAFE_SCHEMA: Schema = new Schema({
  *
  * @see {@link http://www.yaml.org/spec/1.2/spec.html#id2803231}
  */
-const JSON_SCHEMA: Schema = new Schema({
+const JSON_SCHEMA = new Schema({
   implicit: [nil, bool, int, float],
   include: [FAILSAFE_SCHEMA],
 });
@@ -132,14 +132,14 @@ const JSON_SCHEMA: Schema = new Schema({
  *
  * @see {@link http://www.yaml.org/spec/1.2/spec.html#id2804923}
  */
-const CORE_SCHEMA: Schema = new Schema({
+const CORE_SCHEMA = new Schema({
   include: [JSON_SCHEMA],
 });
 
 /**
  * Default YAML schema. It is not described in the YAML specification.
  */
-export const DEFAULT_SCHEMA: Schema = new Schema({
+export const DEFAULT_SCHEMA = new Schema({
   explicit: [binary, omap, pairs, set],
   implicit: [timestamp, merge],
   include: [CORE_SCHEMA],
@@ -170,7 +170,7 @@ export const DEFAULT_SCHEMA: Schema = new Schema({
  * );
  * ```
  */
-const EXTENDED_SCHEMA: Schema = new Schema({
+const EXTENDED_SCHEMA = new Schema({
   explicit: [regexp, undefinedType],
   include: [DEFAULT_SCHEMA],
 });
