@@ -4,7 +4,7 @@ import { assertEquals, assertRejects } from "@std/assert";
 import {
   JsonStringifyStream,
   type StringifyStreamOptions,
-} from "./json_stringify_stream.ts";
+} from "./stringify_stream.ts";
 
 async function assertValidStringify(
   transformer: typeof JsonStringifyStream,
