@@ -16,8 +16,6 @@ import {
 type Any = common.Any;
 type ArrayObject<T = Any> = common.ArrayObject<T>;
 
-const { hasOwn } = Object;
-
 const CONTEXT_FLOW_IN = 1;
 const CONTEXT_FLOW_OUT = 2;
 const CONTEXT_BLOCK_IN = 3;
@@ -81,18 +79,11 @@ function fromHexCode(c: number): number {
   return -1;
 }
 
-function escapedHexLen(c: number): number {
-  if (c === 0x78 /* x */) {
-    return 2;
-  }
-  if (c === 0x75 /* u */) {
-    return 4;
-  }
-  if (c === 0x55 /* U */) {
-    return 8;
-  }
-  return 0;
-}
+const ESCAPED_HEX_LENGTHS = new Map<number, number>([
+  [0x78, 2], // x
+  [0x75, 4], // u
+  [0x55, 8], // U
+]);
 
 function fromDecimalCode(c: number): number {
   if (0x30 <= /* 0 */ c && c <= 0x39 /* 9 */) {
@@ -102,45 +93,26 @@ function fromDecimalCode(c: number): number {
   return -1;
 }
 
-function simpleEscapeSequence(c: number): string {
-  return c === 0x30 /* 0 */
-    ? "\x00"
-    : c === 0x61 /* a */
-    ? "\x07"
-    : c === 0x62 /* b */
-    ? "\x08"
-    : c === 0x74 /* t */
-    ? "\x09"
-    : c === 0x09 /* Tab */
-    ? "\x09"
-    : c === 0x6e /* n */
-    ? "\x0A"
-    : c === 0x76 /* v */
-    ? "\x0B"
-    : c === 0x66 /* f */
-    ? "\x0C"
-    : c === 0x72 /* r */
-    ? "\x0D"
-    : c === 0x65 /* e */
-    ? "\x1B"
-    : c === 0x20 /* Space */
-    ? " "
-    : c === 0x22 /* " */
-    ? "\x22"
-    : c === 0x2f /* / */
-    ? "/"
-    : c === 0x5c /* \ */
-    ? "\x5C"
-    : c === 0x4e /* N */
-    ? "\x85"
-    : c === 0x5f /* _ */
-    ? "\xA0"
-    : c === 0x4c /* L */
-    ? "\u2028"
-    : c === 0x50 /* P */
-    ? "\u2029"
-    : "";
-}
+const SIMPLE_ESCAPE_SEQUENCES = new Map<number, string>([
+  [0x30, "\x00"], // 0
+  [0x61, "\x07"], // a
+  [0x62, "\x08"], // b
+  [0x74, "\x09"], // t
+  [0x09, "\x09"], // Tab
+  [0x6e, "\x0A"], // n
+  [0x76, "\x0B"], // v
+  [0x66, "\x0C"], // f
+  [0x72, "\x0D"], // r
+  [0x65, "\x1B"], // e
+  [0x20, " "], // Space
+  [0x22, '"'], // "
+  [0x2f, "/"], // /
+  [0x5c, "\\"], // \
+  [0x4e, "\x85"], // N
+  [0x5f, "\xA0"], // _
+  [0x4c, "\u2028"], // L
+  [0x50, "\u2029"], // P
+]);
 
 function charFromCodepoint(c: number): string {
   if (c <= 0xffff) {
@@ -152,13 +124,6 @@ function charFromCodepoint(c: number): string {
     ((c - 0x010000) >> 10) + 0xd800,
     ((c - 0x010000) & 0x03ff) + 0xdc00,
   );
-}
-
-const simpleEscapeCheck = Array.from<number>({ length: 256 }); // integer, for fast access
-const simpleEscapeMap = Array.from<string>({ length: 256 });
-for (let i = 0; i < 256; i++) {
-  simpleEscapeCheck[i] = simpleEscapeSequence(i) ? 1 : 0;
-  simpleEscapeMap[i] = simpleEscapeSequence(i);
 }
 
 function generateError(state: LoaderState, message: string): YamlError {
@@ -183,16 +148,10 @@ function throwWarning(state: LoaderState, message: string) {
   }
 }
 
-interface DirectiveHandlers {
-  [directive: string]: (
-    state: LoaderState,
-    name: string,
-    ...args: string[]
-  ) => void;
-}
+type DirectiveHandler = (state: LoaderState, ...args: string[]) => void;
 
-const directiveHandlers: DirectiveHandlers = {
-  YAML(state, _name, ...args: string[]) {
+const directiveHandlers: Record<string, DirectiveHandler> = {
+  YAML(state, ...args) {
     if (state.version !== null) {
       return throwError(state, "duplication of %YAML directive");
     }
@@ -218,8 +177,7 @@ const directiveHandlers: DirectiveHandlers = {
       return throwWarning(state, "unsupported YAML version of the document");
     }
   },
-
-  TAG(state, _name, ...args: string[]) {
+  TAG(state, ...args) {
     if (args.length !== 2) {
       return throwError(state, "TAG directive accepts exactly two arguments");
     }
@@ -234,7 +192,7 @@ const directiveHandlers: DirectiveHandlers = {
       );
     }
 
-    if (hasOwn(state.tagMap, handle)) {
+    if (Object.hasOwn(state.tagMap, handle)) {
       return throwError(
         state,
         `there is a previously declared suffix for "${handle}" tag handle`,
@@ -250,7 +208,7 @@ const directiveHandlers: DirectiveHandlers = {
 
     state.tagMap[handle] = prefix;
   },
-};
+} as const;
 
 function captureSegment(
   state: LoaderState,
@@ -297,7 +255,7 @@ function mergeMappings(
   }
 
   for (const key of Object.keys(source)) {
-    if (!hasOwn(destination, key)) {
+    if (!Object.hasOwn(destination, key)) {
       Object.defineProperty(destination, key, {
         value: source[key],
         writable: true,
@@ -367,8 +325,8 @@ function storeMappingPair(
   } else {
     if (
       !state.json &&
-      !hasOwn(overridableKeys, keyNode) &&
-      hasOwn(result, keyNode)
+      !Object.hasOwn(overridableKeys, keyNode) &&
+      Object.hasOwn(result, keyNode)
     ) {
       state.line = startLine || state.line;
       state.position = startPos || state.position;
@@ -674,12 +632,10 @@ function readDoubleQuotedScalar(
 
       if (isEOL(ch)) {
         skipSeparationSpace(state, false, nodeIndent);
-
-        // TODO(bartlomieju): rework to inline fn with no type cast?
-      } else if (ch < 256 && simpleEscapeCheck[ch]) {
-        state.result += simpleEscapeMap[ch];
+      } else if (ch < 256 && SIMPLE_ESCAPE_SEQUENCES.has(ch)) {
+        state.result += SIMPLE_ESCAPE_SEQUENCES.get(ch);
         state.position++;
-      } else if ((tmp = escapedHexLen(ch)) > 0) {
+      } else if ((tmp = ESCAPED_HEX_LENGTHS.get(ch) ?? 0) > 0) {
         let hexLength = tmp;
         let hexResult = 0;
 
@@ -1347,7 +1303,7 @@ function readTagProperty(state: LoaderState): boolean {
 
   if (isVerbatim) {
     state.tag = tagName;
-  } else if (hasOwn(state.tagMap, tagHandle)) {
+  } else if (Object.hasOwn(state.tagMap, tagHandle)) {
     state.tag = state.tagMap[tagHandle] + tagName;
   } else if (tagHandle === "!") {
     state.tag = `!${tagName}`;
@@ -1405,7 +1361,7 @@ function readAlias(state: LoaderState): boolean {
   }
 
   const alias = state.input.slice(_position, state.position);
-  if (!hasOwn(state.anchorMap, alias)) {
+  if (!Object.hasOwn(state.anchorMap, alias)) {
     return throwError(state, `unidentified alias "${alias}"`);
   }
 
@@ -1553,7 +1509,7 @@ function composeNode(
         }
       }
     } else if (
-      hasOwn(state.typeMap[state.kind || "fallback"], state.tag)
+      Object.hasOwn(state.typeMap[state.kind || "fallback"], state.tag)
     ) {
       type = state.typeMap[state.kind || "fallback"][state.tag]!;
 
@@ -1649,8 +1605,8 @@ function readDocument(state: LoaderState) {
 
     if (ch !== 0) readLineBreak(state);
 
-    if (hasOwn(directiveHandlers, directiveName)) {
-      directiveHandlers[directiveName]!(state, directiveName, ...directiveArgs);
+    if (Object.hasOwn(directiveHandlers, directiveName)) {
+      directiveHandlers[directiveName]!(state, ...directiveArgs);
     } else {
       throwWarning(state, `unknown document directive "${directiveName}"`);
     }

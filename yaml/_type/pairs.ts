@@ -6,15 +6,15 @@
 import { Type } from "../_type.ts";
 import type { Any } from "../_utils.ts";
 
-const _toString = Object.prototype.toString;
-
 function resolveYamlPairs(data: Any[][]): boolean {
   if (data === null) return true;
 
   const result = Array.from({ length: data.length });
 
   for (const [index, pair] of data.entries()) {
-    if (_toString.call(pair) !== "[object Object]") return false;
+    if (Object.prototype.toString.call(pair) !== "[object Object]") {
+      return false;
+    }
 
     const keys = Object.keys(pair);
 
