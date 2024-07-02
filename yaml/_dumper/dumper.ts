@@ -783,7 +783,9 @@ function writeNode(
     } else {
       if (state.skipInvalid) return false;
       throw new YamlError(
-        `unacceptable kind of an object to dump ${typeof state.dump}`,
+        `unacceptable kind of an object to dump ${
+          Object.prototype.toString.call(state.dump)
+        }`,
       );
     }
 
