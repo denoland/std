@@ -170,8 +170,7 @@ export async function parseRecord(
     if (!opt.lazyQuotes) {
       const j = field.indexOf(quote);
       if (j >= 0) {
-        const col =
-          line.slice(0, line.length - currentLine.slice(j).length).length;
+        const col = line.slice(0, line.length - currentLine.length - j).length;
         throw new ParseError(
           startLine + 1,
           lineIndex,
