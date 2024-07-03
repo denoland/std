@@ -66,9 +66,7 @@ export async function parseRecord(
   lineIndex: number = startLine,
 ): Promise<Array<string>> {
   // line starting with comment character is ignored
-  if (options.comment && line[0] === options.comment) {
-    return [];
-  }
+  if (options.comment && line[0] === options.comment) return [];
 
   if (options.separator === undefined) {
     throw new TypeError("Separator is required");
@@ -135,12 +133,7 @@ export async function parseRecord(
             // Abrupt end of file (EOF or error).
             if (!options.lazyQuotes) {
               const col = line.length;
-              throw new ParseError(
-                startLine + 1,
-                lineIndex,
-                col,
-                ERR_QUOTE,
-              );
+              throw new ParseError(startLine + 1, lineIndex, col, ERR_QUOTE);
             }
             fieldIndexes.push(recordBuffer.length);
             break currentLineLoop;
@@ -152,12 +145,7 @@ export async function parseRecord(
         // Abrupt end of file (EOF on error).
         if (!options.lazyQuotes) {
           const col = line.length;
-          throw new ParseError(
-            startLine + 1,
-            lineIndex,
-            col,
-            ERR_QUOTE,
-          );
+          throw new ParseError(startLine + 1, lineIndex, col, ERR_QUOTE);
         }
         fieldIndexes.push(recordBuffer.length);
         break currentLineLoop;
@@ -173,12 +161,7 @@ export async function parseRecord(
       const j = field.indexOf(quote);
       if (j >= 0) {
         const col = line.length + j - currentLine.length;
-        throw new ParseError(
-          startLine + 1,
-          lineIndex,
-          col,
-          ERR_BARE_QUOTE,
-        );
+        throw new ParseError(startLine + 1, lineIndex, col, ERR_BARE_QUOTE);
       }
     }
     recordBuffer += field;

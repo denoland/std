@@ -75,14 +75,12 @@ class Parser {
   #parseRecord(startLine: number): string[] | null {
     let line = this.#readLine();
     if (line === null) return null;
-    if (line.length === 0) {
-      return [];
-    }
+    if (line.length === 0) return [];
 
     let lineIndex = startLine + 1;
 
     // line starting with comment character is ignored
-    if (this.#options.comment && line[0] === this.#options.comment) {
+    if (this.#options.comment && line.at(0) === this.#options.comment) {
       return [];
     }
 
@@ -148,12 +146,7 @@ class Parser {
               // Abrupt end of file (EOF or error).
               if (!this.#options.lazyQuotes) {
                 const col = line.length;
-                throw new ParseError(
-                  startLine + 1,
-                  lineIndex,
-                  col,
-                  ERR_QUOTE,
-                );
+                throw new ParseError(startLine + 1, lineIndex, col, ERR_QUOTE);
               }
               fieldIndexes.push(recordBuffer.length);
               break currentLineLoop;
@@ -165,12 +158,7 @@ class Parser {
           // Abrupt end of file (EOF on error).
           if (!this.#options.lazyQuotes) {
             const col = line.length;
-            throw new ParseError(
-              startLine + 1,
-              lineIndex,
-              col,
-              ERR_QUOTE,
-            );
+            throw new ParseError(startLine + 1, lineIndex, col, ERR_QUOTE);
           }
           fieldIndexes.push(recordBuffer.length);
           break currentLineLoop;
@@ -186,12 +174,7 @@ class Parser {
         const j = field.indexOf(quote);
         if (j >= 0) {
           const col = line.length + j - currentLine.length;
-          throw new ParseError(
-            startLine + 1,
-            lineIndex,
-            col,
-            ERR_BARE_QUOTE,
-          );
+          throw new ParseError(startLine + 1, lineIndex, col, ERR_BARE_QUOTE);
         }
       }
       recordBuffer += field;
