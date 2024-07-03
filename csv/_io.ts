@@ -175,20 +175,6 @@ export async function parseRecord(
             break parseField;
           }
           recordBuffer += "\n"; // preserve line feed (This is because TextProtoReader removes it.)
-        } else {
-          // Abrupt end of file (EOF on error).
-          if (!opt.lazyQuotes) {
-            const col = runeCount(fullLine);
-            quoteError = new ParseError(
-              startLine + 1,
-              lineIndex,
-              col,
-              ERR_QUOTE,
-            );
-            break parseField;
-          }
-          fieldIndexes.push(recordBuffer.length);
-          break parseField;
         }
       }
     }
