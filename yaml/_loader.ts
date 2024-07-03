@@ -561,7 +561,7 @@ function readPlainScalar(
   let line = 0;
   while (ch !== 0) {
     if (ch === COLON) {
-      following = state.peek(+1);
+      following = state.peek(1);
 
       if (
         isWsOrEol(following) ||
