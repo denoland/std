@@ -87,7 +87,6 @@ class Parser {
     }
 
     let currentLine = line;
-    let quoteError: ParseError | null = null;
     const quote = '"';
     const quoteLen = quote.length;
     const separatorLen = this.#options.separator.length;
