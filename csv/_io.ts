@@ -117,8 +117,7 @@ export async function parseRecord(
             continue quoteLoop;
           }
           // `"*` sequence (invalid non-escaped quote).
-          const col =
-            line.slice(0, line.length - currentLine.length - quoteLen).length;
+          const col = line.length - currentLine.length - quoteLen;
 
           throw new ParseError(startLine + 1, lineIndex, col, ERR_QUOTE);
         }
