@@ -80,16 +80,16 @@ export async function parseRecord(
   const fieldIndexes = [] as number[];
 
   let currentLine = line;
-  fieldLoop: while (true) {
+  currentLineLoop: while (true) {
     if (opt.trimLeadingSpace) currentLine = currentLine.trimStart();
     if (currentLine.length === 0) {
       fieldIndexes.push(recordBuffer.length);
-      break fieldLoop;
+      break currentLineLoop;
     }
     if (currentLine.startsWith(quote)) {
       // Quoted string field
       currentLine = currentLine.substring(quoteLen);
-      lineLoop: while (true) {
+      quoteLoop: while (true) {
         const i = currentLine.indexOf(quote);
         if (i >= 0) {
           // Hit next quote.
@@ -99,23 +99,23 @@ export async function parseRecord(
             // `""` sequence (append quote).
             recordBuffer += quote;
             currentLine = currentLine.substring(quoteLen);
-            continue lineLoop;
+            continue quoteLoop;
           }
           if (currentLine.startsWith(opt.separator)) {
             // `","` sequence (end of field).
             currentLine = currentLine.substring(separatorLen);
             fieldIndexes.push(recordBuffer.length);
-            continue fieldLoop;
+            continue currentLineLoop;
           }
           if (0 === currentLine.length) {
             // `"\n` sequence (end of line).
             fieldIndexes.push(recordBuffer.length);
-            break fieldLoop;
+            break currentLineLoop;
           }
           if (opt.lazyQuotes) {
             // `"` sequence (bare quote).
             recordBuffer += quote;
-            continue lineLoop;
+            continue quoteLoop;
           }
           // `"*` sequence (invalid non-escaped quote).
           const col = runeCount(
@@ -130,7 +130,7 @@ export async function parseRecord(
             col,
             ERR_QUOTE,
           );
-          break fieldLoop;
+          break currentLineLoop;
         }
         if (currentLine.length > 0 || !reader.isEOF()) {
           // Hit end of line (copy all data so far).
@@ -149,13 +149,13 @@ export async function parseRecord(
                 col,
                 ERR_QUOTE,
               );
-              break fieldLoop;
+              break currentLineLoop;
             }
             fieldIndexes.push(recordBuffer.length);
-            break fieldLoop;
+            break currentLineLoop;
           }
           recordBuffer += "\n"; // preserve line feed (This is because TextProtoReader removes it.)
-          continue lineLoop;
+          continue quoteLoop;
         }
 
         // Abrupt end of file (EOF on error).
@@ -167,10 +167,10 @@ export async function parseRecord(
             col,
             ERR_QUOTE,
           );
-          break fieldLoop;
+          break currentLineLoop;
         }
         fieldIndexes.push(recordBuffer.length);
-        break fieldLoop;
+        break currentLineLoop;
       }
     }
     // Non-quoted string field
@@ -190,16 +190,16 @@ export async function parseRecord(
           col,
           ERR_BARE_QUOTE,
         );
-        break fieldLoop;
+        break currentLineLoop;
       }
     }
     recordBuffer += field;
     fieldIndexes.push(recordBuffer.length);
     if (i >= 0) {
       currentLine = currentLine.substring(i + separatorLen);
-      continue fieldLoop;
+      continue currentLineLoop;
     }
-    break fieldLoop;
+    break currentLineLoop;
   }
 
   if (quoteError) throw quoteError;
