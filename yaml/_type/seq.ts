@@ -8,6 +8,9 @@ import type { Any } from "../_utils.ts";
 
 export const seq: Type = {
   tag: "tag:yaml.org,2002:seq",
+  resolve() {
+    return true;
+  },
   construct(data): Any {
     return data !== null ? data : [];
   },

@@ -13,4 +13,7 @@ export const merge: Type = {
   tag: "tag:yaml.org,2002:merge",
   kind: "scalar",
   resolve: resolveYamlMerge,
+  construct(data) {
+    return data;
+  },
 };

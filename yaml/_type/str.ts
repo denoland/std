@@ -6,6 +6,9 @@ import type { Type } from "../_type.ts";
 
 export const str: Type = {
   tag: "tag:yaml.org,2002:str",
+  resolve() {
+    return true;
+  },
   construct(data): string {
     return data !== null ? data : "";
   },

@@ -19,6 +19,6 @@ export interface Type {
   defaultStyle?: StyleVariant;
   styleAliases?: ArrayObject;
   loadKind?: KindType;
-  resolve?: (data?: Any) => boolean;
-  construct?: (data?: Any) => Any;
+  resolve: (data?: Any) => boolean;
+  construct: (data?: Any) => Any;
 }

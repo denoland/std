@@ -38,4 +38,7 @@ export const omap: Type = {
   tag: "tag:yaml.org,2002:omap",
   kind: "sequence",
   resolve: resolveYamlOmap,
+  construct(data) {
+    return data;
+  },
 };

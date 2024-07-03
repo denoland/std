@@ -127,7 +127,7 @@ function generateNextLine(state: DumperState, level: number): string {
 }
 
 function testImplicitResolving(state: DumperState, str: string): boolean {
-  return state.implicitTypes.some((type) => type.resolve?.(str) ?? true);
+  return state.implicitTypes.some((type) => type.resolve(str));
 }
 
 // [33] s-white ::= s-space | s-tab
