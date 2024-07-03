@@ -34,13 +34,10 @@ import {
 } from "../_chars.ts";
 import { YamlError } from "../_error.ts";
 import { Mark } from "../_mark.ts";
+import type { Schema, TypeMap } from "../_schema.ts";
+import { State } from "../_state.ts";
 import type { Type } from "../_type.ts";
 import * as common from "../_utils.ts";
-import {
-  LoaderState,
-  type LoaderStateOptions,
-  type ResultType,
-} from "./loader_state.ts";
 
 type Any = common.Any;
 type ArrayObject<T = Any> = common.ArrayObject<T>;
@@ -62,6 +59,62 @@ const PATTERN_FLOW_INDICATORS = /[,\[\]\{\}]/;
 const PATTERN_TAG_HANDLE = /^(?:!|!!|![a-z\-]+!)$/i;
 const PATTERN_TAG_URI =
   /^(?:!|[^,\[\]\{\}])(?:%[0-9a-f]{2}|[0-9a-z\-#;\/\?:@&=\+\$,_\.!~\*'\(\)\[\]])*$/i;
+
+interface LoaderStateOptions {
+  /** specifies a schema to use. */
+  schema?: Schema;
+  /** compatibility with JSON.parse behaviour. */
+  json?: boolean;
+  /** function to call on warning messages. */
+  onWarning?(this: null, e?: YamlError): void;
+}
+
+// deno-lint-ignore no-explicit-any
+type ResultType = any[] | Record<string, any> | string;
+
+class LoaderState extends State {
+  input: string;
+  length: number;
+  lineIndent = 0;
+  lineStart = 0;
+  position = 0;
+  line = 0;
+  onWarning?: (...args: Any[]) => void;
+  json: boolean;
+  implicitTypes: Type[];
+  typeMap: TypeMap;
+
+  version?: string | null;
+  checkLineBreaks = false;
+  tagMap: ArrayObject = Object.create(null);
+  anchorMap: ArrayObject = Object.create(null);
+  tag?: string | null;
+  anchor?: string | null;
+  kind?: string | null;
+  result: ResultType | null = "";
+
+  constructor(
+    input: string,
+    {
+      schema,
+      onWarning,
+      json = false,
+    }: LoaderStateOptions,
+  ) {
+    super(schema);
+    this.input = input;
+    this.onWarning = onWarning;
+    this.json = json;
+    this.implicitTypes = this.schema.compiledImplicit;
+    this.typeMap = this.schema.compiledTypeMap;
+    this.length = input.length;
+
+    while (this.input.charCodeAt(this.position) === SPACE) {
+      this.lineIndent += 1;
+      this.position += 1;
+    }
+  }
+}
 
 function _class(obj: unknown): string {
   return Object.prototype.toString.call(obj);
@@ -1669,21 +1722,24 @@ function readDocument(state: LoaderState) {
     throwWarning(state, "non-ASCII line breaks are interpreted as content");
   }
 
-  state.documents.push(state.result);
-
   if (state.position === state.lineStart && testDocumentSeparator(state)) {
     if (state.input.charCodeAt(state.position) === DOT) {
       state.position += 3;
       skipSeparationSpace(state, true, -1);
     }
-    return;
-  }
-
-  if (state.position < state.length - 1) {
+  } else if (state.position < state.length - 1) {
     return throwError(
       state,
       "end of the stream or a document separator is expected",
     );
+  }
+
+  return state.result;
+}
+
+function* readDocuments(state: LoaderState) {
+  while (state.position < state.length - 1) {
+    yield readDocument(state);
   }
 }
 
@@ -1716,31 +1772,19 @@ export function loadDocuments(
   options: LoaderStateOptions = {},
 ): unknown[] {
   input = sanitizeInput(input);
-
   const state = new LoaderState(input, options);
-
-  while (state.input.charCodeAt(state.position) === SPACE) {
-    state.lineIndent += 1;
-    state.position += 1;
-  }
-
-  while (state.position < state.length - 1) {
-    readDocument(state);
-  }
-
-  return state.documents;
+  return [...readDocuments(state)];
 }
 
 export function load(input: string, options: LoaderStateOptions = {}): unknown {
-  const documents = loadDocuments(input, options);
-
-  if (documents.length === 0) {
-    return null;
+  input = sanitizeInput(input);
+  const state = new LoaderState(input, options);
+  const documentGenerator = readDocuments(state);
+  const document = documentGenerator.next().value;
+  if (!documentGenerator.next().done) {
+    throw new YamlError(
+      "expected a single document in the stream, but found more",
+    );
   }
-  if (documents.length === 1) {
-    return documents[0];
-  }
-  throw new YamlError(
-    "expected a single document in the stream, but found more",
-  );
+  return document ?? null;
 }
