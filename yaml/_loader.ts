@@ -1403,7 +1403,7 @@ function readAlias(state: LoaderState): boolean {
   const position = state.position;
 
   while (ch !== 0 && !isWhiteSpaceOrEOL(ch) && !isFlowIndicator(ch)) {
-    ch = state.input.charCodeAt(++state.position);
+    ch = state.next();
   }
 
   if (state.position === position) {
