@@ -109,10 +109,18 @@ class LoaderState extends State {
     this.typeMap = this.schema.compiledTypeMap;
     this.length = input.length;
 
-    while (this.input.charCodeAt(this.position) === SPACE) {
+    while (this.peek() === SPACE) {
       this.lineIndent += 1;
       this.position += 1;
     }
+  }
+
+  peek(offset = 0) {
+    return this.input.charCodeAt(this.position + offset);
+  }
+  next() {
+    this.position += 1;
+    return this.peek();
   }
 }
 
@@ -423,13 +431,13 @@ function storeMappingPair(
 }
 
 function readLineBreak(state: LoaderState) {
-  const ch = state.input.charCodeAt(state.position);
+  const ch = state.peek();
 
   if (ch === LINE_FEED) {
     state.position++;
   } else if (ch === CARRIAGE_RETURN) {
     state.position++;
-    if (state.input.charCodeAt(state.position) === LINE_FEED) {
+    if (state.peek() === LINE_FEED) {
       state.position++;
     }
   } else {
@@ -446,29 +454,29 @@ function skipSeparationSpace(
   checkIndent: number,
 ): number {
   let lineBreaks = 0;
-  let ch = state.input.charCodeAt(state.position);
+  let ch = state.peek();
 
   while (ch !== 0) {
     while (isWhiteSpace(ch)) {
-      ch = state.input.charCodeAt(++state.position);
+      ch = state.next();
     }
 
     if (allowComments && ch === SHARP) {
       do {
-        ch = state.input.charCodeAt(++state.position);
+        ch = state.next();
       } while (ch !== LINE_FEED && ch !== CARRIAGE_RETURN && ch !== 0);
     }
 
     if (isEOL(ch)) {
       readLineBreak(state);
 
-      ch = state.input.charCodeAt(state.position);
+      ch = state.peek();
       lineBreaks++;
       state.lineIndent = 0;
 
       while (ch === SPACE) {
         state.lineIndent++;
-        ch = state.input.charCodeAt(++state.position);
+        ch = state.next();
       }
     } else {
       break;
@@ -487,19 +495,16 @@ function skipSeparationSpace(
 }
 
 function testDocumentSeparator(state: LoaderState): boolean {
-  let _position = state.position;
-  let ch = state.input.charCodeAt(_position);
+  let ch = state.peek();
 
   // Condition state.position === state.lineStart is tested
   // in parent on each call, for efficiency. No needs to test here again.
   if (
     (ch === MINUS || ch === DOT) &&
-    ch === state.input.charCodeAt(_position + 1) &&
-    ch === state.input.charCodeAt(_position + 2)
+    ch === state.peek(1) &&
+    ch === state.peek(2)
   ) {
-    _position += 3;
-
-    ch = state.input.charCodeAt(_position);
+    ch = state.peek(3);
 
     if (ch === 0 || isWsOrEol(ch)) {
       return true;
@@ -524,7 +529,7 @@ function readPlainScalar(
 ): boolean {
   const kind = state.kind;
   const result = state.result;
-  let ch = state.input.charCodeAt(state.position);
+  let ch = state.peek();
 
   if (
     isWsOrEol(ch) ||
@@ -546,7 +551,7 @@ function readPlainScalar(
 
   let following: number;
   if (ch === QUESTION || ch === MINUS) {
-    following = state.input.charCodeAt(state.position + 1);
+    following = state.peek(1);
 
     if (
       isWsOrEol(following) ||
@@ -564,7 +569,7 @@ function readPlainScalar(
   let line = 0;
   while (ch !== 0) {
     if (ch === COLON) {
-      following = state.input.charCodeAt(state.position + 1);
+      following = state.peek(+1);
 
       if (
         isWsOrEol(following) ||
@@ -573,7 +578,7 @@ function readPlainScalar(
         break;
       }
     } else if (ch === SHARP) {
-      const preceding = state.input.charCodeAt(state.position - 1);
+      const preceding = state.peek(-1);
 
       if (isWsOrEol(preceding)) {
         break;
@@ -591,7 +596,7 @@ function readPlainScalar(
 
       if (state.lineIndent >= nodeIndent) {
         hasPendingContent = true;
-        ch = state.input.charCodeAt(state.position);
+        ch = state.peek();
         continue;
       } else {
         state.position = captureEnd;
@@ -613,7 +618,7 @@ function readPlainScalar(
       captureEnd = state.position + 1;
     }
 
-    ch = state.input.charCodeAt(++state.position);
+    ch = state.next();
   }
 
   captureSegment(state, captureStart, captureEnd, false);
@@ -635,7 +640,7 @@ function readSingleQuotedScalar(
   let captureStart;
   let captureEnd;
 
-  ch = state.input.charCodeAt(state.position);
+  ch = state.peek();
 
   if (ch !== SINGLE_QUOTE) {
     return false;
@@ -646,10 +651,10 @@ function readSingleQuotedScalar(
   state.position++;
   captureStart = captureEnd = state.position;
 
-  while ((ch = state.input.charCodeAt(state.position)) !== 0) {
+  while ((ch = state.peek()) !== 0) {
     if (ch === SINGLE_QUOTE) {
       captureSegment(state, captureStart, state.position, true);
-      ch = state.input.charCodeAt(++state.position);
+      ch = state.next();
 
       if (ch === SINGLE_QUOTE) {
         captureStart = state.position;
@@ -686,7 +691,7 @@ function readDoubleQuotedScalar(
   state: LoaderState,
   nodeIndent: number,
 ): boolean {
-  let ch = state.input.charCodeAt(state.position);
+  let ch = state.peek();
 
   if (ch !== DOUBLE_QUOTE) {
     return false;
@@ -698,7 +703,7 @@ function readDoubleQuotedScalar(
   let captureEnd = state.position;
   let captureStart = state.position;
   let tmp: number;
-  while ((ch = state.input.charCodeAt(state.position)) !== 0) {
+  while ((ch = state.peek()) !== 0) {
     if (ch === DOUBLE_QUOTE) {
       captureSegment(state, captureStart, state.position, true);
       state.position++;
@@ -706,7 +711,7 @@ function readDoubleQuotedScalar(
     }
     if (ch === BACKSLASH) {
       captureSegment(state, captureStart, state.position, true);
-      ch = state.input.charCodeAt(++state.position);
+      ch = state.next();
 
       if (isEOL(ch)) {
         skipSeparationSpace(state, false, nodeIndent);
@@ -718,7 +723,7 @@ function readDoubleQuotedScalar(
         let hexResult = 0;
 
         for (; hexLength > 0; hexLength--) {
-          ch = state.input.charCodeAt(++state.position);
+          ch = state.next();
 
           if ((tmp = fromHexCode(ch)) >= 0) {
             hexResult = (hexResult << 4) + tmp;
@@ -760,7 +765,7 @@ function readDoubleQuotedScalar(
 }
 
 function readFlowCollection(state: LoaderState, nodeIndent: number): boolean {
-  let ch = state.input.charCodeAt(state.position);
+  let ch = state.peek();
   let terminator: number;
   let isMapping = true;
   let result: ResultType = {};
@@ -778,7 +783,7 @@ function readFlowCollection(state: LoaderState, nodeIndent: number): boolean {
     state.anchorMap[state.anchor] = result;
   }
 
-  ch = state.input.charCodeAt(++state.position);
+  ch = state.next();
 
   const tag = state.tag;
   const anchor = state.anchor;
@@ -794,7 +799,7 @@ function readFlowCollection(state: LoaderState, nodeIndent: number): boolean {
   while (ch !== 0) {
     skipSeparationSpace(state, true, nodeIndent);
 
-    ch = state.input.charCodeAt(state.position);
+    ch = state.peek();
 
     if (ch === terminator) {
       state.position++;
@@ -812,7 +817,7 @@ function readFlowCollection(state: LoaderState, nodeIndent: number): boolean {
     isPair = isExplicitPair = false;
 
     if (ch === QUESTION) {
-      following = state.input.charCodeAt(state.position + 1);
+      following = state.peek(1);
 
       if (isWsOrEol(following)) {
         isPair = isExplicitPair = true;
@@ -827,11 +832,11 @@ function readFlowCollection(state: LoaderState, nodeIndent: number): boolean {
     keyNode = state.result;
     skipSeparationSpace(state, true, nodeIndent);
 
-    ch = state.input.charCodeAt(state.position);
+    ch = state.peek();
 
     if ((isExplicitPair || state.line === line) && ch === COLON) {
       isPair = true;
-      ch = state.input.charCodeAt(++state.position);
+      ch = state.next();
       skipSeparationSpace(state, true, nodeIndent);
       composeNode(state, nodeIndent, CONTEXT_FLOW_IN, false, true);
       valueNode = state.result;
@@ -863,11 +868,11 @@ function readFlowCollection(state: LoaderState, nodeIndent: number): boolean {
 
     skipSeparationSpace(state, true, nodeIndent);
 
-    ch = state.input.charCodeAt(state.position);
+    ch = state.peek();
 
     if (ch === COMMA) {
       readNext = true;
-      ch = state.input.charCodeAt(++state.position);
+      ch = state.next();
     } else {
       readNext = false;
     }
@@ -889,7 +894,7 @@ function readBlockScalar(state: LoaderState, nodeIndent: number): boolean {
   let emptyLines = 0;
   let atMoreIndented = false;
 
-  let ch = state.input.charCodeAt(state.position);
+  let ch = state.peek();
 
   let folding = false;
   if (ch === VERTICAL_LINE) {
@@ -905,7 +910,7 @@ function readBlockScalar(state: LoaderState, nodeIndent: number): boolean {
 
   let tmp = 0;
   while (ch !== 0) {
-    ch = state.input.charCodeAt(++state.position);
+    ch = state.next();
 
     if (ch === PLUS || ch === MINUS) {
       if (CHOMPING_CLIP === chomping) {
@@ -932,12 +937,12 @@ function readBlockScalar(state: LoaderState, nodeIndent: number): boolean {
 
   if (isWhiteSpace(ch)) {
     do {
-      ch = state.input.charCodeAt(++state.position);
+      ch = state.next();
     } while (isWhiteSpace(ch));
 
     if (ch === SHARP) {
       do {
-        ch = state.input.charCodeAt(++state.position);
+        ch = state.next();
       } while (!isEOL(ch) && ch !== 0);
     }
   }
@@ -946,14 +951,14 @@ function readBlockScalar(state: LoaderState, nodeIndent: number): boolean {
     readLineBreak(state);
     state.lineIndent = 0;
 
-    ch = state.input.charCodeAt(state.position);
+    ch = state.peek();
 
     while (
       (!detectedIndent || state.lineIndent < textIndent) &&
       ch === SPACE
     ) {
       state.lineIndent++;
-      ch = state.input.charCodeAt(++state.position);
+      ch = state.next();
     }
 
     if (!detectedIndent && state.lineIndent > textIndent) {
@@ -1027,7 +1032,7 @@ function readBlockScalar(state: LoaderState, nodeIndent: number): boolean {
     const captureStart = state.position;
 
     while (!isEOL(ch) && ch !== 0) {
-      ch = state.input.charCodeAt(++state.position);
+      ch = state.next();
     }
 
     captureSegment(state, captureStart, state.position, false);
@@ -1049,14 +1054,14 @@ function readBlockSequence(state: LoaderState, nodeIndent: number): boolean {
     state.anchorMap[state.anchor] = result;
   }
 
-  ch = state.input.charCodeAt(state.position);
+  ch = state.peek();
 
   while (ch !== 0) {
     if (ch !== MINUS) {
       break;
     }
 
-    following = state.input.charCodeAt(state.position + 1);
+    following = state.peek(1);
 
     if (!isWsOrEol(following)) {
       break;
@@ -1068,7 +1073,7 @@ function readBlockSequence(state: LoaderState, nodeIndent: number): boolean {
     if (skipSeparationSpace(state, true, -1)) {
       if (state.lineIndent <= nodeIndent) {
         result.push(null);
-        ch = state.input.charCodeAt(state.position);
+        ch = state.peek();
         continue;
       }
     }
@@ -1078,7 +1083,7 @@ function readBlockSequence(state: LoaderState, nodeIndent: number): boolean {
     result.push(state.result);
     skipSeparationSpace(state, true, -1);
 
-    ch = state.input.charCodeAt(state.position);
+    ch = state.peek();
 
     if ((state.line === line || state.lineIndent > nodeIndent) && ch !== 0) {
       return throwError(state, "bad indentation of a sequence entry");
@@ -1121,10 +1126,10 @@ function readBlockMapping(
     state.anchorMap[state.anchor] = result;
   }
 
-  ch = state.input.charCodeAt(state.position);
+  ch = state.peek();
 
   while (ch !== 0) {
-    following = state.input.charCodeAt(state.position + 1);
+    following = state.peek(1);
     line = state.line; // Save the current line.
     pos = state.position;
 
@@ -1168,14 +1173,14 @@ function readBlockMapping(
       //
     } else if (composeNode(state, flowIndent, CONTEXT_FLOW_OUT, false, true)) {
       if (state.line === line) {
-        ch = state.input.charCodeAt(state.position);
+        ch = state.peek();
 
         while (isWhiteSpace(ch)) {
-          ch = state.input.charCodeAt(++state.position);
+          ch = state.next();
         }
 
         if (ch === COLON) {
-          ch = state.input.charCodeAt(++state.position);
+          ch = state.next();
 
           if (!isWsOrEol(ch)) {
             return throwError(
@@ -1254,7 +1259,7 @@ function readBlockMapping(
       }
 
       skipSeparationSpace(state, true, -1);
-      ch = state.input.charCodeAt(state.position);
+      ch = state.peek();
     }
 
     if (state.lineIndent > nodeIndent && ch !== 0) {
@@ -1299,7 +1304,7 @@ function readTagProperty(state: LoaderState): boolean {
   let tagName: string;
   let ch: number;
 
-  ch = state.input.charCodeAt(state.position);
+  ch = state.peek();
 
   if (ch !== EXCLAMATION) return false;
 
@@ -1307,15 +1312,15 @@ function readTagProperty(state: LoaderState): boolean {
     return throwError(state, "duplication of a tag property");
   }
 
-  ch = state.input.charCodeAt(++state.position);
+  ch = state.next();
 
   if (ch === SMALLER_THAN) {
     isVerbatim = true;
-    ch = state.input.charCodeAt(++state.position);
+    ch = state.next();
   } else if (ch === EXCLAMATION) {
     isNamed = true;
     tagHandle = "!!";
-    ch = state.input.charCodeAt(++state.position);
+    ch = state.next();
   } else {
     tagHandle = "!";
   }
@@ -1324,12 +1329,12 @@ function readTagProperty(state: LoaderState): boolean {
 
   if (isVerbatim) {
     do {
-      ch = state.input.charCodeAt(++state.position);
+      ch = state.next();
     } while (ch !== 0 && ch !== GREATER_THAN);
 
     if (state.position < state.length) {
       tagName = state.input.slice(position, state.position);
-      ch = state.input.charCodeAt(++state.position);
+      ch = state.next();
     } else {
       return throwError(
         state,
@@ -1359,7 +1364,7 @@ function readTagProperty(state: LoaderState): boolean {
         }
       }
 
-      ch = state.input.charCodeAt(++state.position);
+      ch = state.next();
     }
 
     tagName = state.input.slice(position, state.position);
@@ -1395,17 +1400,17 @@ function readTagProperty(state: LoaderState): boolean {
 }
 
 function readAnchorProperty(state: LoaderState): boolean {
-  let ch = state.input.charCodeAt(state.position);
+  let ch = state.peek();
   if (ch !== AMPERSAND) return false;
 
   if (state.anchor !== null) {
     return throwError(state, "duplication of an anchor property");
   }
-  ch = state.input.charCodeAt(++state.position);
+  ch = state.next();
 
   const position = state.position;
   while (ch !== 0 && !isWsOrEol(ch) && !isFlowIndicator(ch)) {
-    ch = state.input.charCodeAt(++state.position);
+    ch = state.next();
   }
 
   if (state.position === position) {
@@ -1420,25 +1425,24 @@ function readAnchorProperty(state: LoaderState): boolean {
 }
 
 function readAlias(state: LoaderState): boolean {
-  let ch = state.input.charCodeAt(state.position);
+  if (state.peek() !== ASTERISK) return false;
 
-  if (ch !== ASTERISK) return false;
+  let ch = state.next();
 
-  ch = state.input.charCodeAt(++state.position);
-  const _position = state.position;
+  const position = state.position;
 
   while (ch !== 0 && !isWsOrEol(ch) && !isFlowIndicator(ch)) {
-    ch = state.input.charCodeAt(++state.position);
+    ch = state.next();
   }
 
-  if (state.position === _position) {
+  if (state.position === position) {
     return throwError(
       state,
       "name of an alias node must contain at least one character",
     );
   }
 
-  const alias = state.input.slice(_position, state.position);
+  const alias = state.input.slice(position, state.position);
   if (!Object.hasOwn(state.anchorMap, alias)) {
     return throwError(state, `unidentified alias "${alias}"`);
   }
@@ -1631,21 +1635,21 @@ function readDocument(state: LoaderState) {
   state.tagMap = Object.create(null);
   state.anchorMap = Object.create(null);
 
-  while ((ch = state.input.charCodeAt(state.position)) !== 0) {
+  while ((ch = state.peek()) !== 0) {
     skipSeparationSpace(state, true, -1);
 
-    ch = state.input.charCodeAt(state.position);
+    ch = state.peek();
 
     if (state.lineIndent > 0 || ch !== PERCENT) {
       break;
     }
 
     hasDirectives = true;
-    ch = state.input.charCodeAt(++state.position);
+    ch = state.next();
     position = state.position;
 
     while (ch !== 0 && !isWsOrEol(ch)) {
-      ch = state.input.charCodeAt(++state.position);
+      ch = state.next();
     }
 
     directiveName = state.input.slice(position, state.position);
@@ -1660,12 +1664,12 @@ function readDocument(state: LoaderState) {
 
     while (ch !== 0) {
       while (isWhiteSpace(ch)) {
-        ch = state.input.charCodeAt(++state.position);
+        ch = state.next();
       }
 
       if (ch === SHARP) {
         do {
-          ch = state.input.charCodeAt(++state.position);
+          ch = state.next();
         } while (ch !== 0 && !isEOL(ch));
         break;
       }
@@ -1675,7 +1679,7 @@ function readDocument(state: LoaderState) {
       position = state.position;
 
       while (ch !== 0 && !isWsOrEol(ch)) {
-        ch = state.input.charCodeAt(++state.position);
+        ch = state.next();
       }
 
       directiveArgs.push(state.input.slice(position, state.position));
@@ -1700,9 +1704,9 @@ function readDocument(state: LoaderState) {
 
   if (
     state.lineIndent === 0 &&
-    state.input.charCodeAt(state.position) === MINUS &&
-    state.input.charCodeAt(state.position + 1) === MINUS &&
-    state.input.charCodeAt(state.position + 2) === MINUS
+    state.peek() === MINUS &&
+    state.peek(1) === MINUS &&
+    state.peek(2) === MINUS
   ) {
     state.position += 3;
     skipSeparationSpace(state, true, -1);
@@ -1723,7 +1727,7 @@ function readDocument(state: LoaderState) {
   }
 
   if (state.position === state.lineStart && testDocumentSeparator(state)) {
-    if (state.input.charCodeAt(state.position) === DOT) {
+    if (state.peek() === DOT) {
       state.position += 3;
       skipSeparationSpace(state, true, -1);
     }
