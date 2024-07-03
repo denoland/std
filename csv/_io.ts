@@ -100,16 +100,19 @@ export async function parseRecord(
             recordBuffer += quote;
             currentLine = currentLine.substring(quoteLen);
             continue lineLoop;
-          } else if (currentLine.startsWith(opt.separator)) {
+          }
+          if (currentLine.startsWith(opt.separator)) {
             // `","` sequence (end of field).
             currentLine = currentLine.substring(separatorLen);
             fieldIndexes.push(recordBuffer.length);
             continue fieldLoop;
-          } else if (0 === currentLine.length) {
+          }
+          if (0 === currentLine.length) {
             // `"\n` sequence (end of line).
             fieldIndexes.push(recordBuffer.length);
             break fieldLoop;
-          } else if (opt.lazyQuotes) {
+          }
+          if (opt.lazyQuotes) {
             // `"` sequence (bare quote).
             recordBuffer += quote;
             continue lineLoop;
