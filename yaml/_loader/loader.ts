@@ -74,7 +74,6 @@ type ResultType = any[] | Record<string, any> | string;
 
 class LoaderState extends State {
   input: string;
-  documents: Any[] = [];
   length: number;
   lineIndent = 0;
   lineStart = 0;
