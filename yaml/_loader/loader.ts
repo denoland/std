@@ -1746,19 +1746,12 @@ function* readDocuments(state: LoaderState) {
 function sanitizeInput(input: string) {
   input = String(input);
 
-  if (input.length !== 0) {
+  if (input.length > 0) {
     // Add tailing `\n` if not exists
-    if (
-      input.charCodeAt(input.length - 1) !== LINE_FEED &&
-      input.charCodeAt(input.length - 1) !== CARRIAGE_RETURN
-    ) {
-      input += "\n";
-    }
+    if (!isEOL(input.charCodeAt(input.length - 1))) input += "\n";
 
     // Strip BOM
-    if (input.charCodeAt(0) === 0xfeff) {
-      input = input.slice(1);
-    }
+    if (input.charCodeAt(0) === 0xfeff) input = input.slice(1);
   }
 
   // Use 0 as string terminator. That significantly simplifies bounds check.
