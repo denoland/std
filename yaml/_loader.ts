@@ -31,13 +31,13 @@ import {
   SPACE,
   TAB,
   VERTICAL_LINE,
-} from "../_chars.ts";
-import { YamlError } from "../_error.ts";
-import { Mark } from "../_mark.ts";
-import type { Schema, TypeMap } from "../_schema.ts";
-import { State } from "../_state.ts";
-import type { Type } from "../_type.ts";
-import * as common from "../_utils.ts";
+} from "./_chars.ts";
+import { YamlError } from "./_error.ts";
+import { Mark } from "./_mark.ts";
+import type { Schema, TypeMap } from "./_schema.ts";
+import { State } from "./_state.ts";
+import type { Type } from "./_type.ts";
+import * as common from "./_utils.ts";
 
 type Any = common.Any;
 type ArrayObject<T = Any> = common.ArrayObject<T>;
