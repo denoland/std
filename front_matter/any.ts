@@ -4,7 +4,7 @@ import {
   createExtractor,
   type Extractor,
   type Parser,
-} from "./create_extractor.ts";
+} from "./_create_extractor.ts";
 import { parse as parseYaml } from "@std/yaml/parse";
 import { parse as parseToml } from "@std/toml/parse";
 
