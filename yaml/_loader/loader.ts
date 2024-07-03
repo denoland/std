@@ -1774,11 +1774,7 @@ export function loadDocuments(
 ): unknown[] {
   input = sanitizeInput(input);
   const state = new LoaderState(input, options);
-  const documents = [];
-  for (const document of readDocuments(state)) {
-    documents.push(document);
-  }
-  return documents;
+  return [...readDocuments(state)];
 }
 
 export function load(input: string, options: LoaderStateOptions = {}): unknown {
