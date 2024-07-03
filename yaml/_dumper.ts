@@ -28,8 +28,7 @@ import {
   VERTICAL_LINE,
 } from "./_chars.ts";
 import { YamlError } from "./_error.ts";
-import type { Schema } from "./_schema.ts";
-import { State } from "./_state.ts";
+import { DEFAULT_SCHEMA, type Schema } from "./_schema.ts";
 import type { RepresentFn, StyleVariant, Type } from "./_type.ts";
 import * as common from "./_utils.ts";
 
@@ -146,7 +145,8 @@ export interface DumperStateOptions {
   condenseFlow?: boolean;
 }
 
-export class DumperState extends State {
+export class DumperState {
+  schema: Schema;
   indent: number;
   noArrayIndent: boolean;
   skipInvalid: boolean;
@@ -166,7 +166,7 @@ export class DumperState extends State {
   dump: Any;
 
   constructor({
-    schema,
+    schema = DEFAULT_SCHEMA,
     indent = 2,
     noArrayIndent = false,
     skipInvalid = false,
@@ -178,7 +178,7 @@ export class DumperState extends State {
     noCompatMode = false,
     condenseFlow = false,
   }: DumperStateOptions) {
-    super(schema);
+    this.schema = schema;
     this.indent = Math.max(1, indent);
     this.noArrayIndent = noArrayIndent;
     this.skipInvalid = skipInvalid;

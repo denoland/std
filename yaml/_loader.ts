@@ -34,8 +34,7 @@ import {
 } from "./_chars.ts";
 import { YamlError } from "./_error.ts";
 import { Mark } from "./_mark.ts";
-import type { Schema, TypeMap } from "./_schema.ts";
-import { State } from "./_state.ts";
+import { DEFAULT_SCHEMA, type Schema, type TypeMap } from "./_schema.ts";
 import type { Type } from "./_type.ts";
 import * as common from "./_utils.ts";
 
@@ -72,7 +71,8 @@ interface LoaderStateOptions {
 // deno-lint-ignore no-explicit-any
 type ResultType = any[] | Record<string, any> | string;
 
-class LoaderState extends State {
+class LoaderState {
+  schema: Schema;
   input: string;
   length: number;
   lineIndent = 0;
@@ -96,12 +96,12 @@ class LoaderState extends State {
   constructor(
     input: string,
     {
-      schema,
+      schema = DEFAULT_SCHEMA,
       onWarning,
       json = false,
     }: LoaderStateOptions,
   ) {
-    super(schema);
+    this.schema = schema;
     this.input = input;
     this.onWarning = onWarning;
     this.json = json;
