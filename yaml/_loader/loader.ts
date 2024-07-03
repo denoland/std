@@ -1728,13 +1728,11 @@ function readDocument(state: LoaderState) {
       state.position += 3;
       skipSeparationSpace(state, true, -1);
     }
-  } else {
-    if (state.position < state.length - 1) {
-      return throwError(
-        state,
-        "end of the stream or a document separator is expected",
-      );
-    }
+  } else if (state.position < state.length - 1) {
+    return throwError(
+      state,
+      "end of the stream or a document separator is expected",
+    );
   }
 
   return state.result;
