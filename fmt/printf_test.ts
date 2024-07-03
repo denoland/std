@@ -108,6 +108,7 @@ Deno.test("sprintf() handles floats", function () {
   assertEquals(sprintf("%e", Number.MIN_SAFE_INTEGER), "-9.007199e+15");
   assertEquals(sprintf("%.3e", 1.9999), "2.000e+00");
   assertEquals(sprintf("%.3e", 29.99999), "3.000e+01");
+  assertEquals(sprintf("%.3e", 0.000099999), "1.000e-04");
 });
 Deno.test("sprintf() handles floatE", function () {
   assertEquals(sprintf("%E", 4), "4.000000E+00");
