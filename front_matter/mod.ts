@@ -125,5 +125,6 @@ import { extract as extractToml } from "./toml.ts";
 import { extract as extractYaml } from "./yaml.ts";
 
 export * from "./test.ts";
+export * from "./types.ts";
 
 export { extractJson, extractToml, extractYaml };

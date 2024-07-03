@@ -1,11 +1,10 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import {
-  createExtractor,
-  type Extractor,
-  type Parser,
-} from "./_create_extractor.ts";
+import { createExtractor, type Parser } from "./_create_extractor.ts";
 import { parse } from "@std/yaml/parse";
+import type { Extractor } from "./types.ts";
+
+export type { Extractor };
 
 /**
  * Extracts and parses {@link https://yaml.org | YAML} from the metadata of

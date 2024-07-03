@@ -2,18 +2,7 @@
 
 import { EXTRACT_REGEXP_MAP, RECOGNIZE_REGEXP_MAP } from "./_formats.ts";
 import type { Format } from "./_types.ts";
-
-/** Return type for {@linkcode Extractor}. */
-export type Extract<T> = {
-  frontMatter: string;
-  body: string;
-  attrs: T;
-};
-
-/** Function return type for {@linkcode createExtractor}. */
-export type Extractor = <T = Record<string, unknown>>(
-  str: string,
-) => Extract<T>;
+import type { Extract, Extractor } from "./types.ts";
 
 /** Parser function type used alongside {@linkcode createExtractor}. */
 export type Parser = <T = Record<string, unknown>>(str: string) => T;
