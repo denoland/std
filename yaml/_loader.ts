@@ -114,6 +114,25 @@ class LoaderState {
       this.position += 1;
     }
   }
+
+  #createError(message: string): YamlError {
+    const mark = new Mark(
+      this.input,
+      this.position,
+      this.line,
+      this.position - this.lineStart,
+    );
+    return new YamlError(message, mark);
+  }
+
+  throwError(message: string): never {
+    throw this.#createError(message);
+  }
+
+  throwWarning(message: string) {
+    const error = this.#createError(message);
+    this.onWarning?.(error);
+  }
 }
 
 function _class(obj: unknown): string {
@@ -203,79 +222,54 @@ function charFromCodepoint(c: number): string {
   );
 }
 
-function generateError(state: LoaderState, message: string): YamlError {
-  return new YamlError(
-    message,
-    new Mark(
-      state.input,
-      state.position,
-      state.line,
-      state.position - state.lineStart,
-    ),
-  );
-}
-
-function throwError(state: LoaderState, message: string): never {
-  throw generateError(state, message);
-}
-
-function throwWarning(state: LoaderState, message: string) {
-  if (state.onWarning) {
-    state.onWarning.call(null, generateError(state, message));
-  }
-}
-
 function yamlDirectiveHandler(state: LoaderState, ...args: string[]) {
   if (state.version !== null) {
-    return throwError(state, "duplication of %YAML directive");
+    return state.throwError("duplication of %YAML directive");
   }
 
   if (args.length !== 1) {
-    return throwError(state, "YAML directive accepts exactly one argument");
+    return state.throwError("YAML directive accepts exactly one argument");
   }
 
   const match = /^([0-9]+)\.([0-9]+)$/.exec(args[0]!);
   if (match === null) {
-    return throwError(state, "ill-formed argument of the YAML directive");
+    return state.throwError("ill-formed argument of the YAML directive");
   }
 
   const major = parseInt(match[1]!, 10);
   const minor = parseInt(match[2]!, 10);
   if (major !== 1) {
-    return throwError(state, "unacceptable YAML version of the document");
+    return state.throwError("unacceptable YAML version of the document");
   }
 
   state.version = args[0];
   state.checkLineBreaks = minor < 2;
   if (minor !== 1 && minor !== 2) {
-    return throwWarning(state, "unsupported YAML version of the document");
+    return state.throwWarning("unsupported YAML version of the document");
   }
 }
 function tagDirectiveHandler(state: LoaderState, ...args: string[]) {
   if (args.length !== 2) {
-    return throwError(state, "TAG directive accepts exactly two arguments");
+    return state.throwError("TAG directive accepts exactly two arguments");
   }
 
   const handle = args[0]!;
   const prefix = args[1]!;
 
   if (!PATTERN_TAG_HANDLE.test(handle)) {
-    return throwError(
-      state,
+    return state.throwError(
       "ill-formed tag handle (first argument) of the TAG directive",
     );
   }
 
   if (Object.hasOwn(state.tagMap, handle)) {
-    return throwError(
-      state,
+    return state.throwError(
       `there is a previously declared suffix for "${handle}" tag handle`,
     );
   }
 
   if (!PATTERN_TAG_URI.test(prefix)) {
-    return throwError(
-      state,
+    return state.throwError(
       "ill-formed tag prefix (second argument) of the TAG directive",
     );
   }
@@ -303,11 +297,11 @@ function captureSegment(
         if (
           !(character === 0x09 || (0x20 <= character && character <= 0x10ffff))
         ) {
-          return throwError(state, "expected valid JSON character");
+          return state.throwError("expected valid JSON character");
         }
       }
     } else if (PATTERN_NON_PRINTABLE.test(result)) {
-      return throwError(state, "the stream contains non-printable characters");
+      return state.throwError("the stream contains non-printable characters");
     }
 
     state.result += result;
@@ -321,8 +315,7 @@ function mergeMappings(
   overridableKeys: ArrayObject<boolean>,
 ) {
   if (!common.isObject(source)) {
-    return throwError(
-      state,
+    return state.throwError(
       "cannot merge mappings; the provided source object is unacceptable",
     );
   }
@@ -358,7 +351,7 @@ function storeMappingPair(
 
     for (let index = 0; index < keyNode.length; index++) {
       if (Array.isArray(keyNode[index])) {
-        return throwError(state, "nested arrays are not supported inside keys");
+        return state.throwError("nested arrays are not supported inside keys");
       }
 
       if (
@@ -403,7 +396,7 @@ function storeMappingPair(
     ) {
       state.line = startLine || state.line;
       state.position = startPos || state.position;
-      return throwError(state, "duplicated mapping key");
+      return state.throwError("duplicated mapping key");
     }
     Object.defineProperty(result, keyNode, {
       value: valueNode,
@@ -428,7 +421,7 @@ function readLineBreak(state: LoaderState) {
       state.position++;
     }
   } else {
-    return throwError(state, "a line break is expected");
+    return state.throwError("a line break is expected");
   }
 
   state.line += 1;
@@ -475,7 +468,7 @@ function skipSeparationSpace(
     lineBreaks !== 0 &&
     state.lineIndent < checkIndent
   ) {
-    throwWarning(state, "deficient indentation");
+    state.throwWarning("deficient indentation");
   }
 
   return lineBreaks;
@@ -661,8 +654,7 @@ function readSingleQuotedScalar(
       state.position === state.lineStart &&
       testDocumentSeparator(state)
     ) {
-      return throwError(
-        state,
+      return state.throwError(
         "unexpected end of the document within a single quoted scalar",
       );
     } else {
@@ -671,8 +663,7 @@ function readSingleQuotedScalar(
     }
   }
 
-  return throwError(
-    state,
+  return state.throwError(
     "unexpected end of the stream within a single quoted scalar",
   );
 }
@@ -718,7 +709,7 @@ function readDoubleQuotedScalar(
           if ((tmp = fromHexCode(ch)) >= 0) {
             hexResult = (hexResult << 4) + tmp;
           } else {
-            return throwError(state, "expected hexadecimal character");
+            return state.throwError("expected hexadecimal character");
           }
         }
 
@@ -726,7 +717,7 @@ function readDoubleQuotedScalar(
 
         state.position++;
       } else {
-        return throwError(state, "unknown escape sequence");
+        return state.throwError("unknown escape sequence");
       }
 
       captureStart = captureEnd = state.position;
@@ -738,8 +729,7 @@ function readDoubleQuotedScalar(
       state.position === state.lineStart &&
       testDocumentSeparator(state)
     ) {
-      return throwError(
-        state,
+      return state.throwError(
         "unexpected end of the document within a double quoted scalar",
       );
     } else {
@@ -748,8 +738,7 @@ function readDoubleQuotedScalar(
     }
   }
 
-  return throwError(
-    state,
+  return state.throwError(
     "unexpected end of the stream within a double quoted scalar",
   );
 }
@@ -800,7 +789,7 @@ function readFlowCollection(state: LoaderState, nodeIndent: number): boolean {
       return true;
     }
     if (!readNext) {
-      return throwError(state, "missed comma between flow collection entries");
+      return state.throwError("missed comma between flow collection entries");
     }
 
     keyTag = keyNode = valueNode = null;
@@ -868,8 +857,7 @@ function readFlowCollection(state: LoaderState, nodeIndent: number): boolean {
     }
   }
 
-  return throwError(
-    state,
+  return state.throwError(
     "unexpected end of the stream within a flow collection",
   );
 }
@@ -906,19 +894,18 @@ function readBlockScalar(state: LoaderState, nodeIndent: number): boolean {
       if (CHOMPING_CLIP === chomping) {
         chomping = ch === PLUS ? CHOMPING_KEEP : CHOMPING_STRIP;
       } else {
-        return throwError(state, "repeat of a chomping mode identifier");
+        return state.throwError("repeat of a chomping mode identifier");
       }
     } else if ((tmp = fromDecimalCode(ch)) >= 0) {
       if (tmp === 0) {
-        return throwError(
-          state,
+        return state.throwError(
           "bad explicit indentation width of a block scalar; it cannot be less than one",
         );
       } else if (!detectedIndent) {
         textIndent = nodeIndent + tmp - 1;
         detectedIndent = true;
       } else {
-        return throwError(state, "repeat of an indentation width identifier");
+        return state.throwError("repeat of an indentation width identifier");
       }
     } else {
       break;
@@ -1076,7 +1063,7 @@ function readBlockSequence(state: LoaderState, nodeIndent: number): boolean {
     ch = state.input.charCodeAt(state.position);
 
     if ((state.line === line || state.lineIndent > nodeIndent) && ch !== 0) {
-      return throwError(state, "bad indentation of a sequence entry");
+      return state.throwError("bad indentation of a sequence entry");
     } else if (state.lineIndent < nodeIndent) {
       break;
     }
@@ -1149,8 +1136,7 @@ function readBlockMapping(
         atExplicitKey = false;
         allowCompact = true;
       } else {
-        return throwError(
-          state,
+        return state.throwError(
           "incomplete explicit mapping pair; a key node is missed; or followed by a non-tabulated empty line",
         );
       }
@@ -1173,8 +1159,7 @@ function readBlockMapping(
           ch = state.input.charCodeAt(++state.position);
 
           if (!isWhiteSpaceOrEOL(ch)) {
-            return throwError(
-              state,
+            return state.throwError(
               "a whitespace character is expected after the key-value separator within a block mapping",
             );
           }
@@ -1197,8 +1182,7 @@ function readBlockMapping(
           keyTag = state.tag;
           keyNode = state.result;
         } else if (detected) {
-          return throwError(
-            state,
+          return state.throwError(
             "can not read an implicit mapping pair; a colon is missed",
           );
         } else {
@@ -1207,8 +1191,7 @@ function readBlockMapping(
           return true; // Keep the result of `composeNode`.
         }
       } else if (detected) {
-        return throwError(
-          state,
+        return state.throwError(
           "can not read a block mapping entry; a multiline key may not be an implicit key",
         );
       } else {
@@ -1253,7 +1236,7 @@ function readBlockMapping(
     }
 
     if (state.lineIndent > nodeIndent && ch !== 0) {
-      return throwError(state, "bad indentation of a mapping entry");
+      return state.throwError("bad indentation of a mapping entry");
     } else if (state.lineIndent < nodeIndent) {
       break;
     }
@@ -1299,7 +1282,7 @@ function readTagProperty(state: LoaderState): boolean {
   if (ch !== EXCLAMATION) return false;
 
   if (state.tag !== null) {
-    return throwError(state, "duplication of a tag property");
+    return state.throwError("duplication of a tag property");
   }
 
   ch = state.input.charCodeAt(++state.position);
@@ -1326,8 +1309,7 @@ function readTagProperty(state: LoaderState): boolean {
       tagName = state.input.slice(position, state.position);
       ch = state.input.charCodeAt(++state.position);
     } else {
-      return throwError(
-        state,
+      return state.throwError(
         "unexpected end of the stream within a verbatim tag",
       );
     }
@@ -1338,8 +1320,7 @@ function readTagProperty(state: LoaderState): boolean {
           tagHandle = state.input.slice(position - 1, state.position + 1);
 
           if (!PATTERN_TAG_HANDLE.test(tagHandle)) {
-            return throwError(
-              state,
+            return state.throwError(
               "named tag handle cannot contain such characters",
             );
           }
@@ -1347,8 +1328,7 @@ function readTagProperty(state: LoaderState): boolean {
           isNamed = true;
           position = state.position + 1;
         } else {
-          return throwError(
-            state,
+          return state.throwError(
             "tag suffix cannot contain exclamation marks",
           );
         }
@@ -1360,16 +1340,14 @@ function readTagProperty(state: LoaderState): boolean {
     tagName = state.input.slice(position, state.position);
 
     if (PATTERN_FLOW_INDICATORS.test(tagName)) {
-      return throwError(
-        state,
+      return state.throwError(
         "tag suffix cannot contain flow indicator characters",
       );
     }
   }
 
   if (tagName && !PATTERN_TAG_URI.test(tagName)) {
-    return throwError(
-      state,
+    return state.throwError(
       `tag name cannot contain such characters: ${tagName}`,
     );
   }
@@ -1383,7 +1361,7 @@ function readTagProperty(state: LoaderState): boolean {
   } else if (tagHandle === "!!") {
     state.tag = `tag:yaml.org,2002:${tagName}`;
   } else {
-    return throwError(state, `undeclared tag handle "${tagHandle}"`);
+    return state.throwError(`undeclared tag handle "${tagHandle}"`);
   }
 
   return true;
@@ -1394,7 +1372,7 @@ function readAnchorProperty(state: LoaderState): boolean {
   if (ch !== AMPERSAND) return false;
 
   if (state.anchor !== null) {
-    return throwError(state, "duplication of an anchor property");
+    return state.throwError("duplication of an anchor property");
   }
   ch = state.input.charCodeAt(++state.position);
 
@@ -1404,8 +1382,7 @@ function readAnchorProperty(state: LoaderState): boolean {
   }
 
   if (state.position === position) {
-    return throwError(
-      state,
+    return state.throwError(
       "name of an anchor node must contain at least one character",
     );
   }
@@ -1427,15 +1404,14 @@ function readAlias(state: LoaderState): boolean {
   }
 
   if (state.position === _position) {
-    return throwError(
-      state,
+    return state.throwError(
       "name of an alias node must contain at least one character",
     );
   }
 
   const alias = state.input.slice(_position, state.position);
   if (!Object.hasOwn(state.anchorMap, alias)) {
-    return throwError(state, `unidentified alias "${alias}"`);
+    return state.throwError(`unidentified alias "${alias}"`);
   }
 
   state.result = state.anchorMap[alias];
@@ -1531,8 +1507,7 @@ function composeNode(
           hasContent = true;
 
           if (state.tag !== null || state.anchor !== null) {
-            return throwError(
-              state,
+            return state.throwError(
               "alias node should not have Any properties",
             );
           }
@@ -1587,16 +1562,14 @@ function composeNode(
       type = state.typeMap[state.kind || "fallback"][state.tag]!;
 
       if (state.result !== null && type.kind !== state.kind) {
-        return throwError(
-          state,
+        return state.throwError(
           `unacceptable node kind for !<${state.tag}> tag; it should be "${type.kind}", not "${state.kind}"`,
         );
       }
 
       if (!type.resolve(state.result)) {
         // `state.result` updated in resolver if matched
-        return throwError(
-          state,
+        return state.throwError(
           `cannot resolve a node with !<${state.tag}> explicit tag`,
         );
       } else {
@@ -1606,7 +1579,7 @@ function composeNode(
         }
       }
     } else {
-      return throwError(state, `unknown tag !<${state.tag}>`);
+      return state.throwError(`unknown tag !<${state.tag}>`);
     }
   }
 
@@ -1647,8 +1620,7 @@ function readDocument(state: LoaderState) {
     directiveArgs = [];
 
     if (directiveName.length < 1) {
-      return throwError(
-        state,
+      return state.throwError(
         "directive name must not be less than one character in length",
       );
     }
@@ -1686,7 +1658,7 @@ function readDocument(state: LoaderState) {
         tagDirectiveHandler(state, ...directiveArgs);
         break;
       default:
-        throwWarning(state, `unknown document directive "${directiveName}"`);
+        state.throwWarning(`unknown document directive "${directiveName}"`);
         break;
     }
   }
@@ -1702,7 +1674,7 @@ function readDocument(state: LoaderState) {
     state.position += 3;
     skipSeparationSpace(state, true, -1);
   } else if (hasDirectives) {
-    return throwError(state, "directives end mark is expected");
+    return state.throwError("directives end mark is expected");
   }
 
   composeNode(state, state.lineIndent - 1, CONTEXT_BLOCK_OUT, false, true);
@@ -1714,7 +1686,7 @@ function readDocument(state: LoaderState) {
       state.input.slice(documentStart, state.position),
     )
   ) {
-    throwWarning(state, "non-ASCII line breaks are interpreted as content");
+    state.throwWarning("non-ASCII line breaks are interpreted as content");
   }
 
   if (state.position === state.lineStart && testDocumentSeparator(state)) {
@@ -1723,8 +1695,7 @@ function readDocument(state: LoaderState) {
       skipSeparationSpace(state, true, -1);
     }
   } else if (state.position < state.length - 1) {
-    return throwError(
-      state,
+    return state.throwError(
       "end of the stream or a document separator is expected",
     );
   }
@@ -1741,19 +1712,12 @@ function* readDocuments(state: LoaderState) {
 function sanitizeInput(input: string) {
   input = String(input);
 
-  if (input.length !== 0) {
+  if (input.length > 0) {
     // Add tailing `\n` if not exists
-    if (
-      input.charCodeAt(input.length - 1) !== LINE_FEED &&
-      input.charCodeAt(input.length - 1) !== CARRIAGE_RETURN
-    ) {
-      input += "\n";
-    }
+    if (!isEOL(input.charCodeAt(input.length - 1))) input += "\n";
 
     // Strip BOM
-    if (input.charCodeAt(0) === 0xfeff) {
-      input = input.slice(1);
-    }
+    if (input.charCodeAt(0) === 0xfeff) input = input.slice(1);
   }
 
   // Use 0 as string terminator. That significantly simplifies bounds check.
