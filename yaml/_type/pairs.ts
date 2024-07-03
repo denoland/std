@@ -3,7 +3,7 @@
 // Copyright 2011-2015 by Vitaly Puzrin. All rights reserved. MIT license.
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import { Type } from "../_type.ts";
+import type { Type } from "../_type.ts";
 import type { Any } from "../_utils.ts";
 
 function resolveYamlPairs(data: Any[][]): boolean {
@@ -42,8 +42,9 @@ function constructYamlPairs(data: string): Any[] {
   return result;
 }
 
-export const pairs = new Type("tag:yaml.org,2002:pairs", {
+export const pairs: Type = {
+  tag: "tag:yaml.org,2002:pairs",
   construct: constructYamlPairs,
   kind: "sequence",
   resolve: resolveYamlPairs,
-});
+};

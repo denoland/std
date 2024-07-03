@@ -3,7 +3,7 @@
 // Copyright 2011-2015 by Vitaly Puzrin. All rights reserved. MIT license.
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import { Type } from "../_type.ts";
+import type { Type } from "../_type.ts";
 import type { Any } from "../_utils.ts";
 
 function resolveYamlOmap(data: Any): boolean {
@@ -34,7 +34,11 @@ function resolveYamlOmap(data: Any): boolean {
   return true;
 }
 
-export const omap = new Type("tag:yaml.org,2002:omap", {
+export const omap: Type = {
+  tag: "tag:yaml.org,2002:omap",
   kind: "sequence",
   resolve: resolveYamlOmap,
-});
+  construct(data) {
+    return data;
+  },
+};
