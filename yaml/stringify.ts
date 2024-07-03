@@ -4,7 +4,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-import { dump } from "./_dumper/dumper.ts";
+import { dump } from "./_dumper.ts";
 import { SCHEMA_MAP } from "./_schema.ts";
 import type { StyleVariant } from "./_type.ts";
 
