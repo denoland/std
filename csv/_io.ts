@@ -61,26 +61,28 @@ export interface LineReader {
 export async function parseRecord(
   line: string,
   reader: LineReader,
-  opt: ReadOptions,
+  options: ReadOptions,
   startLine: number,
   lineIndex: number = startLine,
 ): Promise<Array<string>> {
   // line starting with comment character is ignored
-  if (opt.comment && line[0] === opt.comment) {
+  if (options.comment && line[0] === options.comment) {
     return [];
   }
 
-  if (opt.separator === undefined) throw new TypeError("Separator is required");
+  if (options.separator === undefined) {
+    throw new TypeError("Separator is required");
+  }
 
   const quote = '"';
   const quoteLen = quote.length;
-  const separatorLen = opt.separator.length;
+  const separatorLen = options.separator.length;
   let recordBuffer = "";
   const fieldIndexes = [] as number[];
 
   let currentLine = line;
   currentLineLoop: while (true) {
-    if (opt.trimLeadingSpace) currentLine = currentLine.trimStart();
+    if (options.trimLeadingSpace) currentLine = currentLine.trimStart();
     if (currentLine.length === 0) {
       fieldIndexes.push(recordBuffer.length);
       break currentLineLoop;
@@ -100,7 +102,7 @@ export async function parseRecord(
             currentLine = currentLine.substring(quoteLen);
             continue quoteLoop;
           }
-          if (currentLine.startsWith(opt.separator)) {
+          if (currentLine.startsWith(options.separator)) {
             // `","` sequence (end of field).
             currentLine = currentLine.substring(separatorLen);
             fieldIndexes.push(recordBuffer.length);
@@ -111,7 +113,7 @@ export async function parseRecord(
             fieldIndexes.push(recordBuffer.length);
             break currentLineLoop;
           }
-          if (opt.lazyQuotes) {
+          if (options.lazyQuotes) {
             // `"` sequence (bare quote).
             recordBuffer += quote;
             continue quoteLoop;
@@ -131,7 +133,7 @@ export async function parseRecord(
           line = currentLine;
           if (r === null) {
             // Abrupt end of file (EOF or error).
-            if (!opt.lazyQuotes) {
+            if (!options.lazyQuotes) {
               const col = line.length;
               throw new ParseError(
                 startLine + 1,
@@ -148,7 +150,7 @@ export async function parseRecord(
         }
 
         // Abrupt end of file (EOF on error).
-        if (!opt.lazyQuotes) {
+        if (!options.lazyQuotes) {
           const col = line.length;
           throw new ParseError(
             startLine + 1,
@@ -163,14 +165,14 @@ export async function parseRecord(
     }
 
     // Non-quoted string field
-    const i = currentLine.indexOf(opt.separator);
+    const i = currentLine.indexOf(options.separator);
     let field = currentLine;
     if (i >= 0) field = field.substring(0, i);
     // Check to make sure a quote does not appear in field.
-    if (!opt.lazyQuotes) {
+    if (!options.lazyQuotes) {
       const j = field.indexOf(quote);
       if (j >= 0) {
-        const col = line.slice(0, line.length - currentLine.length - j).length;
+        const col = line.length + j - currentLine.length;
         throw new ParseError(
           startLine + 1,
           lineIndex,
