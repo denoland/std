@@ -26,12 +26,12 @@ import {
   SPACE,
   TAB,
   VERTICAL_LINE,
-} from "../_chars.ts";
-import { YamlError } from "../_error.ts";
-import type { Schema } from "../_schema.ts";
-import { State } from "../_state.ts";
-import type { RepresentFn, StyleVariant, Type } from "../_type.ts";
-import * as common from "../_utils.ts";
+} from "./_chars.ts";
+import { YamlError } from "./_error.ts";
+import type { Schema } from "./_schema.ts";
+import { State } from "./_state.ts";
+import type { RepresentFn, StyleVariant, Type } from "./_type.ts";
+import * as common from "./_utils.ts";
 
 type Any = common.Any;
 type ArrayObject<T = Any> = common.ArrayObject<T>;
