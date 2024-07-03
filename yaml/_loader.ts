@@ -147,13 +147,8 @@ function isWhiteSpace(c: number): boolean {
   return c === TAB || c === SPACE;
 }
 
-function isWsOrEol(c: number): boolean {
-  return (
-    c === TAB ||
-    c === SPACE ||
-    c === LINE_FEED ||
-    c === CARRIAGE_RETURN
-  );
+function isWhiteSpaceOrEOL(c: number): boolean {
+  return isWhiteSpace(c) || isEOL(c);
 }
 
 function isFlowIndicator(c: number): boolean {
@@ -494,7 +489,7 @@ function testDocumentSeparator(state: LoaderState): boolean {
 
     ch = state.input.charCodeAt(_position);
 
-    if (ch === 0 || isWsOrEol(ch)) {
+    if (ch === 0 || isWhiteSpaceOrEOL(ch)) {
       return true;
     }
   }
@@ -520,7 +515,7 @@ function readPlainScalar(
   let ch = state.input.charCodeAt(state.position);
 
   if (
-    isWsOrEol(ch) ||
+    isWhiteSpaceOrEOL(ch) ||
     isFlowIndicator(ch) ||
     ch === SHARP ||
     ch === AMPERSAND ||
@@ -542,7 +537,7 @@ function readPlainScalar(
     following = state.input.charCodeAt(state.position + 1);
 
     if (
-      isWsOrEol(following) ||
+      isWhiteSpaceOrEOL(following) ||
       (withinFlowCollection && isFlowIndicator(following))
     ) {
       return false;
@@ -560,7 +555,7 @@ function readPlainScalar(
       following = state.input.charCodeAt(state.position + 1);
 
       if (
-        isWsOrEol(following) ||
+        isWhiteSpaceOrEOL(following) ||
         (withinFlowCollection && isFlowIndicator(following))
       ) {
         break;
@@ -568,7 +563,7 @@ function readPlainScalar(
     } else if (ch === SHARP) {
       const preceding = state.input.charCodeAt(state.position - 1);
 
-      if (isWsOrEol(preceding)) {
+      if (isWhiteSpaceOrEOL(preceding)) {
         break;
       }
     } else if (
@@ -803,7 +798,7 @@ function readFlowCollection(state: LoaderState, nodeIndent: number): boolean {
     if (ch === QUESTION) {
       following = state.input.charCodeAt(state.position + 1);
 
-      if (isWsOrEol(following)) {
+      if (isWhiteSpaceOrEOL(following)) {
         isPair = isExplicitPair = true;
         state.position++;
         skipSeparationSpace(state, true, nodeIndent);
@@ -1045,7 +1040,7 @@ function readBlockSequence(state: LoaderState, nodeIndent: number): boolean {
 
     following = state.input.charCodeAt(state.position + 1);
 
-    if (!isWsOrEol(following)) {
+    if (!isWhiteSpaceOrEOL(following)) {
       break;
     }
 
@@ -1119,7 +1114,7 @@ function readBlockMapping(
     // Explicit notation case. There are two separate blocks:
     // first for the key (denoted by "?") and second for the value (denoted by ":")
     //
-    if ((ch === QUESTION || ch === COLON) && isWsOrEol(following)) {
+    if ((ch === QUESTION || ch === COLON) && isWhiteSpaceOrEOL(following)) {
       if (ch === QUESTION) {
         if (atExplicitKey) {
           storeMappingPair(
@@ -1163,7 +1158,7 @@ function readBlockMapping(
         if (ch === COLON) {
           ch = state.input.charCodeAt(++state.position);
 
-          if (!isWsOrEol(ch)) {
+          if (!isWhiteSpaceOrEOL(ch)) {
             return state.throwError(
               "a whitespace character is expected after the key-value separator within a block mapping",
             );
@@ -1319,7 +1314,7 @@ function readTagProperty(state: LoaderState): boolean {
       );
     }
   } else {
-    while (ch !== 0 && !isWsOrEol(ch)) {
+    while (ch !== 0 && !isWhiteSpaceOrEOL(ch)) {
       if (ch === EXCLAMATION) {
         if (!isNamed) {
           tagHandle = state.input.slice(position - 1, state.position + 1);
@@ -1382,7 +1377,7 @@ function readAnchorProperty(state: LoaderState): boolean {
   ch = state.input.charCodeAt(++state.position);
 
   const position = state.position;
-  while (ch !== 0 && !isWsOrEol(ch) && !isFlowIndicator(ch)) {
+  while (ch !== 0 && !isWhiteSpaceOrEOL(ch) && !isFlowIndicator(ch)) {
     ch = state.input.charCodeAt(++state.position);
   }
 
@@ -1404,7 +1399,7 @@ function readAlias(state: LoaderState): boolean {
   ch = state.input.charCodeAt(++state.position);
   const _position = state.position;
 
-  while (ch !== 0 && !isWsOrEol(ch) && !isFlowIndicator(ch)) {
+  while (ch !== 0 && !isWhiteSpaceOrEOL(ch) && !isFlowIndicator(ch)) {
     ch = state.input.charCodeAt(++state.position);
   }
 
@@ -1617,7 +1612,7 @@ function readDocument(state: LoaderState) {
     ch = state.input.charCodeAt(++state.position);
     position = state.position;
 
-    while (ch !== 0 && !isWsOrEol(ch)) {
+    while (ch !== 0 && !isWhiteSpaceOrEOL(ch)) {
       ch = state.input.charCodeAt(++state.position);
     }
 
@@ -1646,7 +1641,7 @@ function readDocument(state: LoaderState) {
 
       position = state.position;
 
-      while (ch !== 0 && !isWsOrEol(ch)) {
+      while (ch !== 0 && !isWhiteSpaceOrEOL(ch)) {
         ch = state.input.charCodeAt(++state.position);
       }
 
