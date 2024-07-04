@@ -12,6 +12,7 @@ import {
   type ReadOptions,
   type RecordWithColumn,
 } from "./_io.ts";
+import { graphemeLength } from "./_shared.ts";
 
 export { ParseError, type ParseResult, type RecordWithColumn };
 
@@ -108,7 +109,9 @@ class Parser {
         if (!this.#options.lazyQuotes) {
           const j = field.indexOf(quote);
           if (j >= 0) {
-            const col = fullLine.length + j - line.length;
+            const col = graphemeLength(
+              fullLine.slice(0, fullLine.length - line.slice(j).length),
+            );
             throw new ParseError(startLine + 1, lineIndex, col, ERR_BARE_QUOTE);
           }
         }
@@ -146,7 +149,9 @@ class Parser {
               recordBuffer += quote;
             } else {
               // `"*` sequence (invalid non-escaped quote).
-              const col = fullLine.length - line.length - quoteLen;
+              const col = graphemeLength(
+                fullLine.slice(0, fullLine.length - line.length - quoteLen),
+              );
               throw new ParseError(startLine + 1, lineIndex, col, ERR_QUOTE);
             }
           } else if (line.length > 0 || !(this.#isEOF())) {
@@ -159,7 +164,7 @@ class Parser {
             if (r === null) {
               // Abrupt end of file (EOF or error).
               if (!this.#options.lazyQuotes) {
-                const col = fullLine.length;
+                const col = graphemeLength(fullLine);
                 throw new ParseError(startLine + 1, lineIndex, col, ERR_QUOTE);
               }
               fieldIndexes.push(recordBuffer.length);
@@ -169,7 +174,7 @@ class Parser {
           } else {
             // Abrupt end of file (EOF on error).
             if (!this.#options.lazyQuotes) {
-              const col = fullLine.length;
+              const col = graphemeLength(fullLine);
               throw new ParseError(startLine + 1, lineIndex, col, ERR_QUOTE);
             }
             fieldIndexes.push(recordBuffer.length);
