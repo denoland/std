@@ -171,7 +171,6 @@ export async function parseRecord(
     }
     break currentLineLoop;
   }
-
   const result = [] as string[];
   let preIdx = 0;
   for (const i of fieldIndexes) {
