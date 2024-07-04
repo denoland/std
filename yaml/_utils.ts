@@ -69,7 +69,7 @@ export function codepointToChar(codepoint: number): string {
 /**
  * Encodes a Unicode character code point as a hexadecimal escape sequence.
  */
-export function charCodeToHex(charCode: number): string {
+export function charCodeToHexString(charCode: number): string {
   const hexString = charCode.toString(16).toUpperCase();
   if (charCode <= 0xff) return `\\x${hexString.padStart(2, "0")}`;
   if (charCode <= 0xffff) return `\\u${hexString.padStart(4, "0")}`;

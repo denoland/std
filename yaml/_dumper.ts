@@ -483,7 +483,7 @@ function escapeString(string: string): string {
       nextChar = string.charCodeAt(i + 1);
       if (nextChar >= 0xdc00 && nextChar <= 0xdfff /* low surrogate */) {
         // Combine the surrogate pair and store it escaped.
-        result += common.charCodeToHex(
+        result += common.charCodeToHexString(
           (char - 0xd800) * 0x400 + nextChar - 0xdc00 + 0x10000,
         );
         // Advance index one extra since we already used that char here.
@@ -494,7 +494,7 @@ function escapeString(string: string): string {
     escapeSeq = ESCAPE_SEQUENCES.get(char);
     result += !escapeSeq && isPrintable(char)
       ? string[i]
-      : escapeSeq || common.charCodeToHex(char);
+      : escapeSeq || common.charCodeToHexString(char);
   }
 
   return result;
