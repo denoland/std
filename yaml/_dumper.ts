@@ -29,11 +29,7 @@ import {
 import { YamlError } from "./_error.ts";
 import { DEFAULT_SCHEMA, type Schema } from "./_schema.ts";
 import type { RepresentFn, StyleVariant, Type } from "./_type.ts";
-import * as common from "./_utils.ts";
-import { isObject } from "./_utils.ts";
-
-type Any = common.Any;
-type ArrayObject<T = Any> = common.ArrayObject<T>;
+import { type Any, type ArrayObject, isObject } from "./_utils.ts";
 
 const ESCAPE_SEQUENCES = new Map<number, string>([
   [0x00, "\\0"],
@@ -71,6 +67,19 @@ const DEPRECATED_BOOLEANS_SYNTAX = [
   "Off",
   "OFF",
 ];
+
+/**
+ * Encodes a Unicode character code point as a hexadecimal escape sequence.
+ */
+function charCodeToHexString(charCode: number): string {
+  const hexString = charCode.toString(16).toUpperCase();
+  if (charCode <= 0xff) return `\\x${hexString.padStart(2, "0")}`;
+  if (charCode <= 0xffff) return `\\u${hexString.padStart(4, "0")}`;
+  if (charCode <= 0xffffffff) return `\\U${hexString.padStart(8, "0")}`;
+  throw new Error(
+    "Code point within a string may not be greater than 0xFFFFFFFF",
+  );
+}
 
 function compileStyleMap(
   schema: Schema,
@@ -192,17 +201,6 @@ export class DumperState {
     this.implicitTypes = this.schema.compiledImplicit;
     this.explicitTypes = this.schema.compiledExplicit;
   }
-}
-
-function encodeHex(character: number): string {
-  const string = character.toString(16).toUpperCase();
-
-  if (character <= 0xff) return `\\x${string.padStart(2, "0")}`;
-  if (character <= 0xffff) return `\\u${string.padStart(4, "0")}`;
-  if (character <= 0xffffffff) return `\\U${string.padStart(8, "0")}`;
-  throw new YamlError(
-    "code point within a string may not be greater than 0xFFFFFFFF",
-  );
 }
 
 // Indents every line in a string. Empty lines (\n only) are not indented.
@@ -495,7 +493,7 @@ function escapeString(string: string): string {
       nextChar = string.charCodeAt(i + 1);
       if (nextChar >= 0xdc00 && nextChar <= 0xdfff /* low surrogate */) {
         // Combine the surrogate pair and store it escaped.
-        result += encodeHex(
+        result += charCodeToHexString(
           (char - 0xd800) * 0x400 + nextChar - 0xdc00 + 0x10000,
         );
         // Advance index one extra since we already used that char here.
@@ -506,7 +504,7 @@ function escapeString(string: string): string {
     escapeSeq = ESCAPE_SEQUENCES.get(char);
     result += !escapeSeq && isPrintable(char)
       ? string[i]
-      : escapeSeq || encodeHex(char);
+      : escapeSeq || charCodeToHexString(char);
   }
 
   return result;
@@ -833,7 +831,7 @@ function writeNode(
     block = state.flowLevel < 0 || state.flowLevel > level;
   }
 
-  const objectOrArray = common.isObject(state.dump) ||
+  const objectOrArray = isObject(state.dump) ||
     Array.isArray(state.dump);
 
   let duplicateIndex = -1;
@@ -857,7 +855,7 @@ function writeNode(
     if (objectOrArray && duplicate) {
       state.usedDuplicates.add(object);
     }
-    if (common.isObject(state.dump) && !Array.isArray(state.dump)) {
+    if (isObject(state.dump) && !Array.isArray(state.dump)) {
       if (block && Object.keys(state.dump).length !== 0) {
         writeBlockMapping(state, level, state.dump, compact);
         if (duplicate) {
