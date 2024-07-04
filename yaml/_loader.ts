@@ -112,9 +112,14 @@ class LoaderState {
     this.typeMap = this.schema.compiledTypeMap;
     this.length = input.length;
 
-    while (this.peek() === SPACE) {
+    this.readIndent();
+  }
+
+  readIndent() {
+    let char = this.peek();
+    while (char === SPACE) {
       this.lineIndent += 1;
-      this.position += 1;
+      char = this.next();
     }
   }
 
@@ -442,10 +447,8 @@ function skipSeparationSpace(
       lineBreaks++;
       state.lineIndent = 0;
 
-      while (ch === SPACE) {
-        state.lineIndent++;
-        ch = state.next();
-      }
+      state.readIndent();
+      ch = state.peek();
     } else {
       break;
     }
