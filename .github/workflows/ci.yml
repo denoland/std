@@ -153,6 +153,9 @@ jobs:
       - name: Set up Deno
         uses: denoland/setup-deno@v1
         with:
+          # TODO(iuioiua): Revert once workspaces functionality is fixed in canary
+          # See: https://github.com/denoland/deno/issues/24422
+          # deno-version: canary
           deno-version: canary
 
       - name: Publish (dry run)
