@@ -16,8 +16,8 @@ export type { StyleVariant };
 export type StringifyOptions = {
   /** Indentation width to use (in spaces). */
   indent?: number;
-  /** When true, will not add an indentation level to array elements */
-  noArrayIndent?: boolean;
+  /** When true, adds an indentation level to array elements */
+  arrayIndent?: boolean;
   /**
    * Do not throw on invalid types (like function in the safe schema)
    * and skip pairs and single values with such types.
