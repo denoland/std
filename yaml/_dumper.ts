@@ -196,24 +196,12 @@ export class DumperState {
 function encodeHex(character: number): string {
   const string = character.toString(16).toUpperCase();
 
-  let handle: string;
-  let length: number;
-  if (character <= 0xff) {
-    handle = "x";
-    length = 2;
-  } else if (character <= 0xffff) {
-    handle = "u";
-    length = 4;
-  } else if (character <= 0xffffffff) {
-    handle = "U";
-    length = 8;
-  } else {
-    throw new YamlError(
-      "code point within a string may not be greater than 0xFFFFFFFF",
-    );
-  }
-
-  return `\\${handle + "0".repeat(length - string.length) + string}`;
+  if (character <= 0xff) return `\\x${string.padStart(2, "0")}`;
+  if (character <= 0xffff) return `\\u${string.padStart(4, "0")}`;
+  if (character <= 0xffffffff) return `\\U${string.padStart(8, "0")}`;
+  throw new YamlError(
+    "code point within a string may not be greater than 0xFFFFFFFF",
+  );
 }
 
 // Indents every line in a string. Empty lines (\n only) are not indented.
