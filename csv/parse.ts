@@ -97,15 +97,11 @@ class Parser {
       if (this.#options.trimLeadingSpace) {
         currentLine = currentLine.trimStart();
       }
-      if (currentLine.length === 0) {
-        fieldIndexes.push(recordBuffer.length);
-        break currentLineLoop;
-      }
 
-      if (line.length === 0 || !line.startsWith(quote)) {
+      if (currentLine.length === 0 || !currentLine.startsWith(quote)) {
         // Non-quoted string field
-        const i = line.indexOf(this.#options.separator);
-        let field = line;
+        const i = currentLine.indexOf(this.#options.separator);
+        let field = currentLine;
         if (i >= 0) {
           field = field.substring(0, i);
         }
@@ -122,14 +118,14 @@ class Parser {
         recordBuffer += field;
         fieldIndexes.push(recordBuffer.length);
         if (i >= 0) {
-          line = line.substring(i + separatorLen);
+          currentLine = currentLine.substring(i + separatorLen);
           continue currentLineLoop;
         }
         break currentLineLoop;
       } else {
         // Quoted string field
         currentLine = currentLine.substring(quoteLen);
-        quoteLoop: while (true) {
+        while (true) {
           const i = currentLine.indexOf(quote);
           if (i >= 0) {
             // Hit next quote.
@@ -139,20 +135,16 @@ class Parser {
               // `""` sequence (append quote).
               recordBuffer += quote;
               currentLine = currentLine.substring(quoteLen);
-              continue quoteLoop;
-            }
-            if (currentLine.startsWith(this.#options.separator)) {
+            } else if (currentLine.startsWith(this.#options.separator)) {
               // `","` sequence (end of field).
               currentLine = currentLine.substring(separatorLen);
               fieldIndexes.push(recordBuffer.length);
               continue currentLineLoop;
-            }
-            if (0 === currentLine.length) {
+            } else if (0 === currentLine.length) {
               // `"\n` sequence (end of line).
               fieldIndexes.push(recordBuffer.length);
               break currentLineLoop;
-            }
-            if (this.#options.lazyQuotes) {
+            } else if (this.#options.lazyQuotes) {
               // `"` sequence (bare quote).
               recordBuffer += quote;
             } else {
@@ -162,12 +154,7 @@ class Parser {
               );
               throw new ParseError(startLine + 1, lineIndex, col, ERR_QUOTE);
             }
-            // `"*` sequence (invalid non-escaped quote).
-            const col = line.length - currentLine.length - quoteLen;
-
-            throw new ParseError(startLine + 1, lineIndex, col, ERR_QUOTE);
-          }
-          if (currentLine.length > 0 || !this.#isEOF()) {
+          } else if (currentLine.length > 0 || !(this.#isEOF())) {
             // Hit end of line (copy all data so far).
             recordBuffer += currentLine;
             const r = this.#readLine();
@@ -193,36 +180,8 @@ class Parser {
             fieldIndexes.push(recordBuffer.length);
             break currentLineLoop;
           }
-
-          // Abrupt end of file (EOF on error).
-          if (!this.#options.lazyQuotes) {
-            const col = line.length;
-            throw new ParseError(startLine + 1, lineIndex, col, ERR_QUOTE);
-          }
-          fieldIndexes.push(recordBuffer.length);
-          break currentLineLoop;
         }
       }
-
-      // Non-quoted string field
-      const i = currentLine.indexOf(this.#options.separator);
-      let field = currentLine;
-      if (i >= 0) field = field.substring(0, i);
-      // Check to make sure a quote does not appear in field.
-      if (!this.#options.lazyQuotes) {
-        const j = field.indexOf(quote);
-        if (j >= 0) {
-          const col = line.length + j - currentLine.length;
-          throw new ParseError(startLine + 1, lineIndex, col, ERR_BARE_QUOTE);
-        }
-      }
-      recordBuffer += field;
-      fieldIndexes.push(recordBuffer.length);
-      if (i >= 0) {
-        currentLine = currentLine.substring(i + separatorLen);
-        continue currentLineLoop;
-      }
-      break currentLineLoop;
     }
     const result = [] as string[];
     let preIdx = 0;
