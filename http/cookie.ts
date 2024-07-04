@@ -3,8 +3,6 @@
 // https://github.com/golang/go/blob/master/src/net/http/cookie.go
 // This module is browser compatible.
 
-import { assert } from "@std/assert/assert";
-
 /**
  * Represents an HTTP Cookie.
  *
@@ -52,6 +50,18 @@ export interface Cookie {
   /** The cookie's `HTTPOnly` attribute. If `true`, the cookie cannot be accessed via JavaScript. */
   httpOnly?: boolean;
   /**
+   * The cookie's `Partitioned` attribute.
+   * If `true`, the cookie will be only be included in the `Cookie` request header if
+   * the domain it is embedded by matches the domain the cookie was originally set from.
+   *
+   * Warning: This is an attribute that has not been fully standardized yet.
+   * It may change in the future without following the semver semantics of the package.
+   * Clients may ignore the attribute until they understand it.
+   *
+   * @default {false}
+   */
+  partitioned?: boolean;
+  /**
    * Allows servers to assert that a cookie ought not to
    * be sent along with cross-site requests.
    */
@@ -88,11 +98,15 @@ function toString(cookie: Cookie): string {
   if (cookie.httpOnly) {
     out.push("HttpOnly");
   }
+  if (cookie.partitioned) {
+    out.push("Partitioned");
+  }
   if (typeof cookie.maxAge === "number" && Number.isInteger(cookie.maxAge)) {
-    assert(
-      cookie.maxAge >= 0,
-      "Max-Age must be an integer superior or equal to 0",
-    );
+    if (cookie.maxAge < 0) {
+      throw new RangeError(
+        "Max-Age must be an integer superior or equal to 0. Cookie ignored.",
+      );
+    }
     out.push(`Max-Age=${cookie.maxAge}`);
   }
   if (cookie.domain) {
@@ -123,7 +137,7 @@ function toString(cookie: Cookie): string {
  */
 function validateName(name: string | undefined | null) {
   if (name && !FIELD_CONTENT_REGEXP.test(name)) {
-    throw new TypeError(`Invalid cookie name: "${name}".`);
+    throw new SyntaxError(`Invalid cookie name: "${name}".`);
   }
 }
 
@@ -142,7 +156,7 @@ function validatePath(path: string | null) {
       c < String.fromCharCode(0x20) || c > String.fromCharCode(0x7E) ||
       c === ";"
     ) {
-      throw new Error(
+      throw new SyntaxError(
         path + ": Invalid cookie path char '" + c + "'",
       );
     }
@@ -163,12 +177,12 @@ function validateValue(name: string, value: string | null) {
       c === String.fromCharCode(0x2c) || c === String.fromCharCode(0x3b) ||
       c === String.fromCharCode(0x5c) || c === String.fromCharCode(0x7f)
     ) {
-      throw new Error(
+      throw new SyntaxError(
         "RFC2616 cookie '" + name + "' cannot contain character '" + c + "'",
       );
     }
     if (c > String.fromCharCode(0x80)) {
-      throw new Error(
+      throw new SyntaxError(
         "RFC2616 cookie '" + name + "' can only have US-ASCII chars as value" +
           c.charCodeAt(0).toString(16),
       );
@@ -185,7 +199,7 @@ function validateDomain(domain: string) {
   const char1 = domain.charAt(0);
   const charN = domain.charAt(domain.length - 1);
   if (char1 === "-" || charN === "." || charN === "-") {
-    throw new Error(
+    throw new SyntaxError(
       "Invalid first/last char in cookie domain: " + domain,
     );
   }
@@ -197,7 +211,7 @@ function validateDomain(domain: string) {
  * @example Usage
  * ```ts
  * import { getCookies } from "@std/http/cookie";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const headers = new Headers();
  * headers.set("Cookie", "full=of; tasty=chocolate");
@@ -216,7 +230,9 @@ export function getCookies(headers: Headers): Record<string, string> {
     const c = cookie.split(";");
     for (const kv of c) {
       const [cookieKey, ...cookieVal] = kv.split("=");
-      assert(cookieKey !== undefined);
+      if (cookieKey === undefined) {
+        throw new SyntaxError("Cookie cannot start with '='");
+      }
       const key = cookieKey.trim();
       out[key] = cookieVal.join("=");
     }
@@ -231,7 +247,7 @@ export function getCookies(headers: Headers): Record<string, string> {
  * @example Usage
  * ```ts
  * import { Cookie, setCookie } from "@std/http/cookie";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const headers = new Headers();
  * const cookie: Cookie = { name: "Space", value: "Cat" };
@@ -263,7 +279,7 @@ export function setCookie(headers: Headers, cookie: Cookie) {
  * @example Usage
  * ```ts
  * import { deleteCookie } from "@std/http/cookie";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const headers = new Headers();
  * deleteCookie(headers, "deno");
@@ -381,7 +397,7 @@ function parseSetCookie(value: string): Cookie | null {
  * @example Usage
  * ```ts
  * import { getSetCookies } from "@std/http/cookie";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const headers = new Headers([
  *   ["Set-Cookie", "lulu=meow; Secure; Max-Age=3600"],

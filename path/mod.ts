@@ -17,7 +17,7 @@
  *
  * ```ts
  * import { fromFileUrl } from "@std/path/posix/from-file-url";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * assertEquals(fromFileUrl("file:///home/foo"), "/home/foo");
  * ```
@@ -26,35 +26,13 @@
  *
  * ```ts
  * import { fromFileUrl } from "@std/path/windows/from-file-url";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * assertEquals(fromFileUrl("file:///home/foo"), "\\home\\foo");
  * ```
  *
- * This module is browser compatible.
- *
  * @module
  */
-
-import * as _windows from "./windows/mod.ts";
-import * as _posix from "./posix/mod.ts";
-
-/**
- * Module for working with Windows file paths.
- *
- * @deprecated This will be removed in 1.0.0. Import from
- * {@link https://jsr.io/@std/path/doc/windows/~ | @std/path/windows} instead.
- */
-export const win32: typeof _windows = _windows;
-
-/**
- * Module for working with POSIX file paths.
- *
- * @deprecated This will be removed in 1.0.0. Import from
- * {@link https://jsr.io/@std/path/doc/posix/~ | @std/path/posix} instead.
- */
-export const posix: typeof _posix = _posix;
-
 export * from "./basename.ts";
 export * from "./constants.ts";
 export * from "./dirname.ts";

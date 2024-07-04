@@ -9,11 +9,9 @@
  *
  * Modified from {@link https://github.com/beatgammit/base64-js}.
  *
- * This module is browser compatible.
- *
  * ```ts
  * import { encodeBase32, decodeBase32 } from "@std/encoding/base32";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * assertEquals(encodeBase32("foobar"), "MZXW6YTBOI======");
  *
@@ -72,7 +70,7 @@ function getByteLength(validLen: number, placeHoldersLen: number): number {
  * @example Usage
  * ```ts
  * import { decodeBase32 } from "@std/encoding/base32";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * assertEquals(
  *   decodeBase32("GZRTMMDDGA======"),
@@ -181,7 +179,7 @@ function encodeChunk(uint8: Uint8Array, start: number, end: number): string {
  * @example Usage
  * ```ts
  * import { encodeBase32 } from "@std/encoding/base32";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * assertEquals(encodeBase32("6c60c0"), "GZRTMMDDGA======");
  * ```

@@ -4,8 +4,6 @@
 /**
  * Utilities for working with {@link https://en.wikipedia.org/wiki/Ascii85 | ascii85} encoding.
  *
- * This module is browser compatible.
- *
  * ## Specifying a standard and delimiter
  *
  * By default, all functions are using the most popular Adobe version of ascii85
@@ -63,7 +61,7 @@ const Z85 =
  * @example Usage
  * ```ts
  * import { encodeAscii85 } from "@std/encoding/ascii85";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * assertEquals(encodeAscii85("Hello world!"), "87cURD]j7BEbo80");
  * ```
@@ -147,7 +145,7 @@ export type DecodeAscii85Options = Omit<EncodeAscii85Options, "delimiter">;
  * @example Usage
  * ```ts
  * import { decodeAscii85 } from "@std/encoding/ascii85";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * assertEquals(
  *   decodeAscii85("87cURD]j7BEbo80"),

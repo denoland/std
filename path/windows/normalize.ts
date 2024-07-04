@@ -14,7 +14,7 @@ import { isPathSeparator, isWindowsDeviceRoot } from "./_util.ts";
  * @example Usage
  * ```ts
  * import { normalize } from "@std/path/windows/normalize";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const normalized = normalize("C:\\foo\\..\\bar");
  * assertEquals(normalized, "C:\\bar");
@@ -122,17 +122,11 @@ export function normalize(path: string): string {
     if (isAbsolute) {
       if (tail.length > 0) return `\\${tail}`;
       else return "\\";
-    } else if (tail.length > 0) {
-      return tail;
-    } else {
-      return "";
     }
+    return tail;
   } else if (isAbsolute) {
     if (tail.length > 0) return `${device}\\${tail}`;
     else return `${device}\\`;
-  } else if (tail.length > 0) {
-    return device + tail;
-  } else {
-    return device;
   }
+  return device + tail;
 }

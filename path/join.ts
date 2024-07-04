@@ -6,12 +6,12 @@ import { join as posixJoin } from "./posix/join.ts";
 import { join as windowsJoin } from "./windows/join.ts";
 
 /**
- * Join all given a sequence of paths, then normalizes the resulting path.
+ * Joins a sequence of paths, then normalizes the resulting path.
  *
  * @example Usage
  * ```ts
  * import { join } from "@std/path/join";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * if (Deno.build.os === "windows") {
  *   assertEquals(join("C:\\foo", "bar", "baz\\quux", "garply", ".."), "C:\\foo\\bar\\baz\\quux");

@@ -18,7 +18,7 @@
  * @example Basic usage
  * ```ts
  * import { partition } from "@std/collections/partition";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const numbers = [5, 6, 7, 8, 9];
  * const [even, odd] = partition(numbers, (it) => it % 2 === 0);
@@ -53,7 +53,7 @@ export function partition<T>(
  * @example Basic usage
  * ```ts
  * import { partition } from "@std/collections/partition";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const numbers = [5, 6, 7, 8, 9];
  * const [even, odd] = partition(numbers, (it) => it % 2 === 0);

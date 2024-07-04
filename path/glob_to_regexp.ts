@@ -2,24 +2,17 @@
 // This module is browser compatible.
 
 import type { GlobOptions } from "./_common/glob_to_reg_exp.ts";
-import { isWindows, type OSType } from "./_os.ts";
+import { isWindows } from "./_os.ts";
 
 import { globToRegExp as posixGlobToRegExp } from "./posix/glob_to_regexp.ts";
 import {
   globToRegExp as windowsGlobToRegExp,
 } from "./windows/glob_to_regexp.ts";
 
-export type { GlobOptions, OSType };
+export type { GlobOptions };
 
 /** Options for {@linkcode globToRegExp}. */
-export type GlobToRegExpOptions = GlobOptions & {
-  /**
-   * The operating system to interpret paths as.
-   *
-   * If unset, it defaults to the current operating system.
-   */
-  os?: OSType;
-};
+export type GlobToRegExpOptions = GlobOptions;
 
 /**
  * Converts a glob string to a regular expression.
@@ -81,7 +74,7 @@ export type GlobToRegExpOptions = GlobOptions & {
  * @example Usage
  * ```ts
  * import { globToRegExp } from "@std/path/glob-to-regexp";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * if (Deno.build.os === "windows") {
  *   assertEquals(globToRegExp("*.js"), /^[^\\/]*\.js(?:\\|\/)*$/);
@@ -98,7 +91,7 @@ export function globToRegExp(
   glob: string,
   options: GlobToRegExpOptions = {},
 ): RegExp {
-  return options.os === "windows" || (!options.os && isWindows)
+  return isWindows
     ? windowsGlobToRegExp(glob, options)
     : posixGlobToRegExp(glob, options);
 }

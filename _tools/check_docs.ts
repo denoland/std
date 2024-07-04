@@ -27,42 +27,56 @@ type DocNodeWithJsDoc<T = DocNodeBase> = T & {
 };
 
 const ENTRY_POINTS = [
-  // "../assert/mod.ts",
-  // "../async/mod.ts",
-  // "../bytes/mod.ts",
-  // "../cli/mod.ts",
-  // "../crypto/mod.ts",
-  // "../collections/mod.ts",
-  // "../csv/mod.ts",
-  // "../data_structures/mod.ts",
-  // "../datetime/mod.ts",
-  // "../encoding/mod.ts",
-  // "../expect/mod.ts",
-  // "../fmt/bytes.ts",
-  // "../fmt/colors.ts",
-  // "../fmt/duration.ts",
-  // "../fmt/printf.ts",
-  // "../front_matter/mod.ts",
-  // "../html/mod.ts",
-  // "../http/mod.ts",
-  // "../internal/mod.ts",
-  // "../jsonc/mod.ts",
-  // "../media_types/mod.ts",
-  // "../path/mod.ts",
-  // "../path/posix/mod.ts",
-  // "../path/windows/mod.ts",
-  // "../semver/mod.ts",
-  // "../streams/mod.ts",
-  // "../text/mod.ts",
-  // "../toml/mod.ts",
-  // "../ulid/mod.ts",
-  // "../uuid/mod.ts",
-  // "../webgpu/mod.ts",
-  "../x.ts",
+  "../assert/mod.ts",
+  "../async/mod.ts",
+  "../bytes/mod.ts",
+  "../cli/mod.ts",
+  "../crypto/mod.ts",
+  "../collections/mod.ts",
+  "../csv/mod.ts",
+  "../data_structures/mod.ts",
+  "../datetime/mod.ts",
+  "../dotenv/mod.ts",
+  "../encoding/mod.ts",
+  "../expect/mod.ts",
+  "../fmt/bytes.ts",
+  "../fmt/colors.ts",
+  "../fmt/duration.ts",
+  "../fmt/printf.ts",
+  "../front_matter/mod.ts",
+  "../fs/mod.ts",
+  "../html/mod.ts",
+  "../http/mod.ts",
+  "../ini/mod.ts",
+  "../internal/mod.ts",
+  "../json/mod.ts",
+  "../jsonc/mod.ts",
+  "../media_types/mod.ts",
+  "../msgpack/mod.ts",
+  "../net/mod.ts",
+  "../path/mod.ts",
+  "../path/posix/mod.ts",
+  "../path/windows/mod.ts",
+  "../regexp/mod.ts",
+  "../semver/mod.ts",
+  "../streams/mod.ts",
+  "../text/mod.ts",
+  "../testing/bdd.ts",
+  "../testing/mock.ts",
+  "../testing/snapshot.ts",
+  "../testing/time.ts",
+  "../testing/types.ts",
+  "../toml/mod.ts",
+  "../ulid/mod.ts",
+  "../url/mod.ts",
+  "../uuid/mod.ts",
+  "../webgpu/mod.ts",
+  "../yaml/mod.ts",
 ] as const;
 
 const TS_SNIPPET = /```ts[\s\S]*?```/g;
-const ASSERTION_IMPORT = /import \{.*\} from "@std\/assert(?:\/.*)?";/gm;
+const ASSERTION_IMPORT =
+  /from "@std\/(assert(\/[a-z-]+)?|testing\/(mock|snapshot|types))"/g;
 const NEWLINE = "\n";
 const diagnostics: DocumentError[] = [];
 const snippetPromises: Promise<void>[] = [];
@@ -410,8 +424,14 @@ function assertInterfaceDocs(document: DocNodeWithJsDoc<DocNode>) {
 }
 
 function resolve(specifier: string, referrer: string): string {
-  if (specifier.startsWith("@std/") && specifier.split("/").length > 2) {
-    specifier = specifier.replace("@std/", "../").replaceAll("-", "_") + ".ts";
+  if (specifier.startsWith("@std/")) {
+    specifier = specifier.replace("@std/", "../").replaceAll("-", "_");
+    const parts = specifier.split("/");
+    if (parts.length === 2) {
+      specifier += "/mod.ts";
+    } else if (parts.length > 2) {
+      specifier += ".ts";
+    }
   }
   return new URL(specifier, referrer).href;
 }

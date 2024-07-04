@@ -6,12 +6,12 @@ import { dirname as posixDirname } from "./posix/dirname.ts";
 import { dirname as windowsDirname } from "./windows/dirname.ts";
 
 /**
- * Return the directory path of a pauth.
+ * Return the directory path of a path.
  *
  * @example Usage
  * ```ts
  * import { dirname } from "@std/path/dirname";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * if (Deno.build.os === "windows") {
  *   assertEquals(dirname("C:\\home\\user\\Documents\\image.png"), "C:\\home\\user\\Documents");

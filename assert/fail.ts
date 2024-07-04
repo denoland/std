@@ -1,13 +1,13 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
-import { assert } from "./assert.ts";
+import { AssertionError } from "./assertion_error.ts";
 
 /**
  * Forcefully throws a failed assertion.
  *
  * @example Usage
  * ```ts no-eval
- * import { fail } from "@std/assert/fail";
+ * import { fail } from "@std/assert";
  *
  * fail("Deliberately failed!"); // Throws
  * ```
@@ -17,5 +17,5 @@ import { assert } from "./assert.ts";
  */
 export function fail(msg?: string): never {
   const msgSuffix = msg ? `: ${msg}` : ".";
-  assert(false, `Failed assertion${msgSuffix}`);
+  throw new AssertionError(`Failed assertion${msgSuffix}`);
 }

@@ -6,7 +6,7 @@
  * Operating system type, equivalent to the type of
  * {@linkcode https://deno.land/api?s=Deno.build | Deno.build.os}.
  */
-export type OSType =
+type OSType =
   | "darwin"
   | "linux"
   | "windows"
@@ -14,22 +14,13 @@ export type OSType =
   | "netbsd"
   | "aix"
   | "solaris"
-  | "illumos";
+  | "illumos"
+  | "android";
 
-export const osType: OSType = (() => {
+function getOsType(): OSType {
   // deno-lint-ignore no-explicit-any
-  const { Deno } = globalThis as any;
-  if (typeof Deno?.build?.os === "string") {
-    return Deno.build.os;
-  }
+  return (globalThis as any).Deno?.build.os ||
+    (navigator.userAgent.includes("Win") ? "windows" : "linux");
+}
 
-  // deno-lint-ignore no-explicit-any
-  const { navigator } = globalThis as any;
-  if (navigator?.appVersion?.includes?.("Win")) {
-    return "windows";
-  }
-
-  return "linux";
-})();
-
-export const isWindows = osType === "windows";
+export const isWindows: boolean = getOsType() === "windows";

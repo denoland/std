@@ -3,7 +3,6 @@
 // Copyright 2011 The Go Authors. All rights reserved. BSD license.
 // https://github.com/golang/go/blob/master/LICENSE
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-import { assert } from "@std/assert/assert";
 
 /** Options for {@linkcode parseRecord}. */
 export interface ReadOptions {
@@ -65,13 +64,13 @@ export async function parseRecord(
   opt: ReadOptions,
   startLine: number,
   lineIndex: number = startLine,
-): Promise<Array<string> | null> {
+): Promise<Array<string>> {
   // line starting with comment character is ignored
   if (opt.comment && line[0] === opt.comment) {
     return [];
   }
 
-  assert(opt.separator !== undefined);
+  if (opt.separator === undefined) throw new TypeError("Separator is required");
 
   let fullLine = line;
   let quoteError: ParseError | null = null;
@@ -80,8 +79,7 @@ export async function parseRecord(
   const separatorLen = opt.separator.length;
   let recordBuffer = "";
   const fieldIndexes = [] as number[];
-  parseField:
-  for (;;) {
+  parseField: while (true) {
     if (opt.trimLeadingSpace) {
       line = line.trimStart();
     }
@@ -119,7 +117,7 @@ export async function parseRecord(
     } else {
       // Quoted string field
       line = line.substring(quoteLen);
-      for (;;) {
+      while (true) {
         const i = line.indexOf(quote);
         if (i >= 0) {
           // Hit next quote.
@@ -219,7 +217,7 @@ function runeCount(s: string): number {
  * @example Usage
  * ```ts
  * import { parse, ParseError } from "@std/csv/parse";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * try {
  *   parse(`a "word","b"`);
@@ -237,7 +235,7 @@ export class ParseError extends SyntaxError {
    * @example Usage
    * ```ts
    * import { parse, ParseError } from "@std/csv/parse";
-   * import { assertEquals } from "@std/assert/assert-equals";
+   * import { assertEquals } from "@std/assert";
    *
    * try {
    *   parse(`a "word","b"`);
@@ -255,7 +253,7 @@ export class ParseError extends SyntaxError {
    * @example Usage
    * ```ts
    * import { parse, ParseError } from "@std/csv/parse";
-   * import { assertEquals } from "@std/assert/assert-equals";
+   * import { assertEquals } from "@std/assert";
    *
    * try {
    *   parse(`a "word","b"`);
@@ -273,7 +271,7 @@ export class ParseError extends SyntaxError {
    * @example Usage
    * ```ts
    * import { parse, ParseError } from "@std/csv/parse";
-   * import { assertEquals } from "@std/assert/assert-equals";
+   * import { assertEquals } from "@std/assert";
    *
    * try {
    *   parse(`a "word","b"`);
@@ -292,7 +290,7 @@ export class ParseError extends SyntaxError {
    * @example Usage
    * ```ts
    * import { parse, ParseError } from "@std/csv/parse";
-   * import { assertEquals } from "@std/assert/assert-equals";
+   * import { assertEquals } from "@std/assert";
    *
    * try {
    *   parse(`a "word","b"`);
@@ -353,7 +351,7 @@ export function convertRowToObject(
   return out;
 }
 
-/** Options for {@linkcode parse} and {@linkcode CsvParseStream}. */
+/** Parse result type for {@linkcode parse} and {@linkcode CsvParseStream}. */
 export type ParseResult<ParseOptions, T> =
   // If `columns` option is specified, the return type is Record type.
   T extends ParseOptions & { columns: readonly (infer C extends string)[] }

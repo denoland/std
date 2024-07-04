@@ -8,14 +8,12 @@
  * {@link https://github.com/golang/go/blob/go1.12.5/src/encoding/hex/hex.go | encoding/hex}
  * library.
  *
- * This module is browser compatible.
- *
  * ```ts
  * import {
  *   decodeHex,
  *   encodeHex,
  * } from "@std/encoding/hex";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * assertEquals(encodeHex("abc"), "616263");
  *
@@ -64,7 +62,7 @@ function fromHexChar(byte: number): number {
  * @example Usage
  * ```ts
  * import { encodeHex } from "@std/encoding/hex";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * assertEquals(encodeHex("abc"), "616263");
  * ```
@@ -92,7 +90,7 @@ export function encodeHex(src: string | Uint8Array | ArrayBuffer): string {
  * @example Usage
  * ```ts
  * import { decodeHex } from "@std/encoding/hex";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * assertEquals(
  *   decodeHex("616263"),

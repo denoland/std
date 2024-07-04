@@ -1,6 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import { toTransformStream } from "@std/streams/to-transform-stream";
-import type { JsonValue, ParseStreamOptions } from "./common.ts";
+import type { JsonValue } from "./types.ts";
 import { parse } from "./_common.ts";
 
 function isBlankChar(char: string | undefined) {
@@ -12,37 +12,91 @@ const primitives = new Map(
 );
 
 /**
- * Stream to parse {@link https://en.wikipedia.org/wiki/JSON_streaming#Concatenated_JSON|Concatenated JSON}.
+ * Stream to parse
+ * {@link https://en.wikipedia.org/wiki/JSON_streaming#Concatenated_JSON | Concatenated JSON}.
  *
- * @example
+ * @example Usage
+ *
  * ```ts
  * import { ConcatenatedJsonParseStream } from "@std/json/concatenated-json-parse-stream";
+ * import { assertEquals } from "@std/assert";
  *
- * const url = "@std/json/testdata/test.concatenated-json";
- * const { body } = await fetch(url);
+ * const stream = ReadableStream.from([
+ *   `{"foo":"bar"}`,
+ *   `{"baz":100}`,
+ * ]).pipeThrough(new ConcatenatedJsonParseStream());
  *
- * const readable = body!
- *   .pipeThrough(new TextDecoderStream()) // convert Uint8Array to string
- *   .pipeThrough(new ConcatenatedJsonParseStream()); // parse Concatenated JSON
- *
- * for await (const data of readable) {
- *   console.log(data);
- * }
+ * assertEquals(await Array.fromAsync(stream), [
+ *   { foo: "bar" },
+ *   { baz: 100 },
+ * ]);
  * ```
  */
 export class ConcatenatedJsonParseStream
   implements TransformStream<string, JsonValue> {
-  /** A writable stream of byte data. */
+  /**
+   * A writable stream of byte data.
+   *
+   * @example Usage
+   * ```ts
+   * import { ConcatenatedJsonParseStream } from "@std/json/concatenated-json-parse-stream";
+   * import { assertEquals } from "@std/assert";
+   *
+   * const stream = ReadableStream.from([
+   *   `{"foo":"bar"}`,
+   *   `{"baz":100}`,
+   * ]).pipeThrough(new ConcatenatedJsonParseStream());
+   *
+   * assertEquals(await Array.fromAsync(stream), [
+   *   { foo: "bar" },
+   *   { baz: 100 },
+   * ]);
+   * ```
+   */
   readonly writable: WritableStream<string>;
-  /** A readable stream of byte data. */
+  /**
+   * A readable stream of byte data.
+   *
+   * @example Usage
+   * ```ts
+   * import { ConcatenatedJsonParseStream } from "@std/json/concatenated-json-parse-stream";
+   * import { assertEquals } from "@std/assert";
+   *
+   * const stream = ReadableStream.from([
+   *   `{"foo":"bar"}`,
+   *   `{"baz":100}`,
+   * ]).pipeThrough(new ConcatenatedJsonParseStream());
+   *
+   * assertEquals(await Array.fromAsync(stream), [
+   *   { foo: "bar" },
+   *   { baz: 100 },
+   * ]);
+   * ```
+   */
   readonly readable: ReadableStream<JsonValue>;
 
-  /** Constructs a new instance. */
-  constructor({ writableStrategy, readableStrategy }: ParseStreamOptions = {}) {
+  /**
+   * Constructs a new instance.
+   *
+   * @example Usage
+   *  ```ts
+   * import { ConcatenatedJsonParseStream } from "@std/json/concatenated-json-parse-stream";
+   * import { assertEquals } from "@std/assert";
+   *
+   * const stream = ReadableStream.from([
+   *   `{"foo":"bar"}`,
+   *   `{"baz":100}`,
+   * ]).pipeThrough(new ConcatenatedJsonParseStream());
+   *
+   * assertEquals(await Array.fromAsync(stream), [
+   *   { foo: "bar" },
+   *   { baz: 100 },
+   * ]);
+   * ```
+   */
+  constructor() {
     const { writable, readable } = toTransformStream(
       this.#concatenatedJSONIterator,
-      writableStrategy,
-      readableStrategy,
     );
     this.writable = writable;
     this.readable = readable;

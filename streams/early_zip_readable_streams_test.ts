@@ -1,7 +1,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
 import { earlyZipReadableStreams } from "./early_zip_readable_streams.ts";
-import { assertEquals } from "@std/assert";
+import { assertEquals, assertRejects } from "@std/assert";
 
 Deno.test("earlyZipReadableStreams() handles short first", async () => {
   const textStream = ReadableStream.from(["1", "2", "3"]);
@@ -59,4 +59,46 @@ Deno.test("earlyZipReadableStreams() can zip three streams", async () => {
     "c",
     "3",
   ]);
+});
+
+Deno.test("earlyZipReadableStreams() forwards cancel()", async () => {
+  const num = 10;
+  let cancelled = 0;
+  const streams = new Array(num).fill(false).map(() =>
+    new ReadableStream(
+      {
+        pull(controller) {
+          controller.enqueue("chunk");
+        },
+        cancel(reason) {
+          cancelled++;
+          assertEquals(reason, "I was cancelled!");
+        },
+      },
+    )
+  );
+
+  await earlyZipReadableStreams(...streams).cancel("I was cancelled!");
+  assertEquals(cancelled, num);
+});
+
+Deno.test("earlyZipReadableStreams() controller error", async () => {
+  const errorMsg = "Test error";
+  const stream = new ReadableStream({
+    start(controller) {
+      controller.enqueue("This will succeed");
+    },
+    pull() {
+      throw new Error(errorMsg);
+    },
+  });
+
+  const zippedStream = earlyZipReadableStreams(stream);
+  const reader = zippedStream.getReader();
+
+  assertEquals(await reader.read(), {
+    value: "This will succeed",
+    done: false,
+  });
+  await assertRejects(async () => await reader.read(), Error, errorMsg);
 });

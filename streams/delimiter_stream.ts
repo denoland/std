@@ -33,7 +33,7 @@ export interface DelimiterStreamOptions {
  * Divide a CSV stream by commas, discarding the commas:
  * ```ts
  * import { DelimiterStream } from "@std/streams/delimiter-stream";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const inputStream = ReadableStream.from(["foo,bar", ",baz"]);
  *
@@ -48,7 +48,7 @@ export interface DelimiterStreamOptions {
  * Divide a stream after semi-colons, keeping the semicolons in the output:
  * ```ts
  * import { DelimiterStream } from "@std/streams/delimiter-stream";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const inputStream = ReadableStream.from(["foo;", "bar;baz", ";"]);
  *
@@ -93,7 +93,7 @@ export class DelimiterStream extends TransformStream<Uint8Array, Uint8Array> {
    */
   constructor(
     delimiter: Uint8Array,
-    options: DelimiterStreamOptions = { disposition: "discard" },
+    options: DelimiterStreamOptions = {},
   ) {
     super({
       transform: (chunk, controller) =>

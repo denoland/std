@@ -12,12 +12,10 @@
  *
  * ```ts
  * import { fromFileUrl } from "@std/path/windows";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * assertEquals(fromFileUrl("file:///home/foo"), "\\home\\foo");
  * ```
- *
- * This module is browser compatible.
  *
  * @module
  */

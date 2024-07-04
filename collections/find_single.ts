@@ -16,7 +16,7 @@
  * @example Basic usage
  * ```ts
  * import { findSingle } from "@std/collections/find-single";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const bookings = [
  *   { month: "January", active: false },

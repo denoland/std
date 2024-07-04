@@ -6,7 +6,7 @@
  *
  * ```ts
  * import { format } from "@std/fmt/duration";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * assertEquals(format(99674, { style: "digital" }), "00:00:01:39:674:000:000");
  *
@@ -95,7 +95,7 @@ export interface PrettyDurationOptions {
  * @example Usage
  * ```ts
  * import { format } from "@std/fmt/duration";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * assertEquals(format(99674, { style: "digital" }), "00:00:01:39:674:000:000");
  *
