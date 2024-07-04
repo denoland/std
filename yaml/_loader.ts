@@ -39,10 +39,7 @@ import { YamlError } from "./_error.ts";
 import { Mark } from "./_mark.ts";
 import { DEFAULT_SCHEMA, type Schema, type TypeMap } from "./_schema.ts";
 import type { Type } from "./_type.ts";
-import * as common from "./_utils.ts";
-
-type Any = common.Any;
-type ArrayObject<T = Any> = common.ArrayObject<T>;
+import { type Any, type ArrayObject, isObject } from "./_utils.ts";
 
 const CONTEXT_FLOW_IN = 1;
 const CONTEXT_FLOW_OUT = 2;
@@ -73,6 +70,77 @@ interface LoaderStateOptions {
 
 // deno-lint-ignore no-explicit-any
 type ResultType = any[] | Record<string, any> | string;
+
+const ESCAPED_HEX_LENGTHS = new Map<number, number>([
+  [0x78, 2], // x
+  [0x75, 4], // u
+  [0x55, 8], // U
+]);
+
+const SIMPLE_ESCAPE_SEQUENCES = new Map<number, string>([
+  [0x30, "\x00"], // 0
+  [0x61, "\x07"], // a
+  [0x62, "\x08"], // b
+  [0x74, "\x09"], // t
+  [0x09, "\x09"], // Tab
+  [0x6e, "\x0A"], // n
+  [0x76, "\x0B"], // v
+  [0x66, "\x0C"], // f
+  [0x72, "\x0D"], // r
+  [0x65, "\x1B"], // e
+  [0x20, " "], // Space
+  [0x22, '"'], // "
+  [0x2f, "/"], // /
+  [0x5c, "\\"], // \
+  [0x4e, "\x85"], // N
+  [0x5f, "\xA0"], // _
+  [0x4c, "\u2028"], // L
+  [0x50, "\u2029"], // P
+]);
+
+function getObjectTypeString(object: unknown) {
+  return Object.prototype.toString.call(object);
+}
+
+/**
+ * Converts a hexadecimal character code to its decimal value.
+ */
+function hexCharCodeToNumber(charCode: number) {
+  // Check if the character code is in the range for '0' to '9'
+  if (0x30 <= charCode && charCode <= 0x39) return charCode - 0x30; // Convert '0'-'9' to 0-9
+
+  // Normalize the character code to lowercase if it's a letter
+  const lc = charCode | 0x20;
+
+  // Check if the character code is in the range for 'a' to 'f'
+  if (0x61 <= lc && lc <= 0x66) return lc - 0x61 + 10; // Convert 'a'-'f' to 10-15
+
+  return -1;
+}
+
+/**
+ * Converts a decimal character code to its decimal value.
+ */
+function decimalCharCodeToNumber(charCode: number): number {
+  // Check if the character code is in the range for '0' to '9'
+  if (0x30 <= charCode && charCode <= 0x39) return charCode - 0x30; // Convert '0'-'9' to 0-9
+  return -1;
+}
+
+/**
+ * Converts a Unicode code point to a string.
+ */
+function codepointToChar(codepoint: number): string {
+  // Check if the code point is within the Basic Multilingual Plane (BMP)
+  if (codepoint <= 0xffff) return String.fromCharCode(codepoint); // Convert BMP code point to character
+
+  // Encode UTF-16 surrogate pair for code points beyond BMP
+  // Reference: https://en.wikipedia.org/wiki/UTF-16#Code_points_U.2B010000_to_U.2B10FFFF
+  return String.fromCharCode(
+    ((codepoint - 0x010000) >> 10) + 0xd800, // High surrogate
+    ((codepoint - 0x010000) & 0x03ff) + 0xdc00, // Low surrogate
+  );
+}
 
 class LoaderState {
   schema: Schema;
@@ -148,71 +216,6 @@ class LoaderState {
     const error = this.#createError(message);
     this.onWarning?.(error);
   }
-}
-
-function _class(obj: unknown): string {
-  return Object.prototype.toString.call(obj);
-}
-
-function fromHexCode(c: number): number {
-  if (0x30 <= /* 0 */ c && c <= 0x39 /* 9 */) {
-    return c - 0x30;
-  }
-
-  const lc = c | 0x20;
-
-  if (0x61 <= /* a */ lc && lc <= 0x66 /* f */) {
-    return lc - 0x61 + 10;
-  }
-
-  return -1;
-}
-
-const ESCAPED_HEX_LENGTHS = new Map<number, number>([
-  [0x78, 2], // x
-  [0x75, 4], // u
-  [0x55, 8], // U
-]);
-
-function fromDecimalCode(c: number): number {
-  if (0x30 <= /* 0 */ c && c <= 0x39 /* 9 */) {
-    return c - 0x30;
-  }
-
-  return -1;
-}
-
-const SIMPLE_ESCAPE_SEQUENCES = new Map<number, string>([
-  [0x30, "\x00"], // 0
-  [0x61, "\x07"], // a
-  [0x62, "\x08"], // b
-  [0x74, "\x09"], // t
-  [0x09, "\x09"], // Tab
-  [0x6e, "\x0A"], // n
-  [0x76, "\x0B"], // v
-  [0x66, "\x0C"], // f
-  [0x72, "\x0D"], // r
-  [0x65, "\x1B"], // e
-  [0x20, " "], // Space
-  [0x22, '"'], // "
-  [0x2f, "/"], // /
-  [0x5c, "\\"], // \
-  [0x4e, "\x85"], // N
-  [0x5f, "\xA0"], // _
-  [0x4c, "\u2028"], // L
-  [0x50, "\u2029"], // P
-]);
-
-function charFromCodepoint(c: number): string {
-  if (c <= 0xffff) {
-    return String.fromCharCode(c);
-  }
-  // Encode UTF-16 surrogate pair
-  // https://en.wikipedia.org/wiki/UTF-16#Code_points_U.2B010000_to_U.2B10FFFF
-  return String.fromCharCode(
-    ((c - 0x010000) >> 10) + 0xd800,
-    ((c - 0x010000) & 0x03ff) + 0xdc00,
-  );
 }
 
 function yamlDirectiveHandler(state: LoaderState, ...args: string[]) {
@@ -307,7 +310,7 @@ function mergeMappings(
   source: ArrayObject,
   overridableKeys: ArrayObject<boolean>,
 ) {
-  if (!common.isObject(source)) {
+  if (!isObject(source)) {
     return state.throwError(
       "cannot merge mappings; the provided source object is unacceptable",
     );
@@ -343,7 +346,7 @@ function storeMappingPair(
 
       if (
         typeof keyNode === "object" &&
-        _class(keyNode[index]) === "[object Object]"
+        getObjectTypeString(keyNode[index]) === "[object Object]"
       ) {
         keyNode[index] = "[object Object]";
       }
@@ -353,7 +356,10 @@ function storeMappingPair(
   // Avoid code execution in load() via toString property
   // (still use its own toString for arrays, timestamps,
   // and whatever user schema extensions happen to have @@toStringTag)
-  if (typeof keyNode === "object" && _class(keyNode) === "[object Object]") {
+  if (
+    typeof keyNode === "object" &&
+    getObjectTypeString(keyNode) === "[object Object]"
+  ) {
     keyNode = "[object Object]";
   }
 
@@ -688,14 +694,14 @@ function readDoubleQuotedScalar(
         for (; hexLength > 0; hexLength--) {
           ch = state.next();
 
-          if ((tmp = fromHexCode(ch)) >= 0) {
+          if ((tmp = hexCharCodeToNumber(ch)) >= 0) {
             hexResult = (hexResult << 4) + tmp;
           } else {
             return state.throwError("expected hexadecimal character");
           }
         }
 
-        state.result += charFromCodepoint(hexResult);
+        state.result += codepointToChar(hexResult);
 
         state.position++;
       } else {
@@ -878,7 +884,7 @@ function readBlockScalar(state: LoaderState, nodeIndent: number): boolean {
       } else {
         return state.throwError("repeat of a chomping mode identifier");
       }
-    } else if ((tmp = fromDecimalCode(ch)) >= 0) {
+    } else if ((tmp = decimalCharCodeToNumber(ch)) >= 0) {
       if (tmp === 0) {
         return state.throwError(
           "bad explicit indentation width of a block scalar; it cannot be less than one",
