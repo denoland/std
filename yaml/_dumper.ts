@@ -29,10 +29,7 @@ import {
 import { YamlError } from "./_error.ts";
 import { DEFAULT_SCHEMA, type Schema } from "./_schema.ts";
 import type { RepresentFn, StyleVariant, Type } from "./_type.ts";
-import * as common from "./_utils.ts";
-
-type Any = common.Any;
-type ArrayObject<T = Any> = common.ArrayObject<T>;
+import { type Any, type ArrayObject, isObject } from "./_utils.ts";
 
 const ESCAPE_SEQUENCES = new Map<number, string>([
   [0x00, "\\0"],
@@ -70,6 +67,19 @@ const DEPRECATED_BOOLEANS_SYNTAX = [
   "Off",
   "OFF",
 ];
+
+/**
+ * Encodes a Unicode character code point as a hexadecimal escape sequence.
+ */
+function charCodeToHexString(charCode: number): string {
+  const hexString = charCode.toString(16).toUpperCase();
+  if (charCode <= 0xff) return `\\x${hexString.padStart(2, "0")}`;
+  if (charCode <= 0xffff) return `\\u${hexString.padStart(4, "0")}`;
+  if (charCode <= 0xffffffff) return `\\U${hexString.padStart(8, "0")}`;
+  throw new Error(
+    "Code point within a string may not be greater than 0xFFFFFFFF",
+  );
+}
 
 function compileStyleMap(
   schema: Schema,
@@ -160,7 +170,7 @@ export class DumperState {
   tag: string | null = null;
   result = "";
   duplicates: Any[] = [];
-  usedDuplicates: Any[] = []; // changed from null to []
+  usedDuplicates: Set<Any> = new Set();
   styleMap: ArrayObject<StyleVariant>;
   dump: Any;
 
@@ -191,17 +201,6 @@ export class DumperState {
     this.implicitTypes = this.schema.compiledImplicit;
     this.explicitTypes = this.schema.compiledExplicit;
   }
-}
-
-function encodeHex(character: number): string {
-  const string = character.toString(16).toUpperCase();
-
-  if (character <= 0xff) return `\\x${string.padStart(2, "0")}`;
-  if (character <= 0xffff) return `\\u${string.padStart(4, "0")}`;
-  if (character <= 0xffffffff) return `\\U${string.padStart(8, "0")}`;
-  throw new YamlError(
-    "code point within a string may not be greater than 0xFFFFFFFF",
-  );
 }
 
 // Indents every line in a string. Empty lines (\n only) are not indented.
@@ -494,7 +493,7 @@ function escapeString(string: string): string {
       nextChar = string.charCodeAt(i + 1);
       if (nextChar >= 0xdc00 && nextChar <= 0xdfff /* low surrogate */) {
         // Combine the surrogate pair and store it escaped.
-        result += encodeHex(
+        result += charCodeToHexString(
           (char - 0xd800) * 0x400 + nextChar - 0xdc00 + 0x10000,
         );
         // Advance index one extra since we already used that char here.
@@ -505,7 +504,7 @@ function escapeString(string: string): string {
     escapeSeq = ESCAPE_SEQUENCES.get(char);
     result += !escapeSeq && isPrintable(char)
       ? string[i]
-      : escapeSeq || encodeHex(char);
+      : escapeSeq || charCodeToHexString(char);
   }
 
   return result;
@@ -832,7 +831,7 @@ function writeNode(
     block = state.flowLevel < 0 || state.flowLevel > level;
   }
 
-  const objectOrArray = common.isObject(state.dump) ||
+  const objectOrArray = isObject(state.dump) ||
     Array.isArray(state.dump);
 
   let duplicateIndex = -1;
@@ -850,13 +849,13 @@ function writeNode(
     compact = false;
   }
 
-  if (duplicate && state.usedDuplicates[duplicateIndex]) {
+  if (duplicate && state.usedDuplicates.has(object)) {
     state.dump = `*ref_${duplicateIndex}`;
   } else {
-    if (objectOrArray && duplicate && !state.usedDuplicates[duplicateIndex]) {
-      state.usedDuplicates[duplicateIndex] = true;
+    if (objectOrArray && duplicate) {
+      state.usedDuplicates.add(object);
     }
-    if (common.isObject(state.dump) && !Array.isArray(state.dump)) {
+    if (isObject(state.dump) && !Array.isArray(state.dump)) {
       if (block && Object.keys(state.dump).length !== 0) {
         writeBlockMapping(state, level, state.dump, compact);
         if (duplicate) {
@@ -902,30 +901,16 @@ function writeNode(
   return true;
 }
 
-function inspectNode(
-  object: Any,
-  objects: Any[],
-  duplicatesIndexes: number[],
-) {
-  if (object !== null && typeof object === "object") {
-    const index = objects.indexOf(object);
-    if (index !== -1) {
-      if (!duplicatesIndexes.includes(index)) {
-        duplicatesIndexes.push(index);
-      }
-    } else {
-      objects.push(object);
-
-      if (Array.isArray(object)) {
-        for (let idx = 0; idx < object.length; idx += 1) {
-          inspectNode(object[idx], objects, duplicatesIndexes);
-        }
-      } else {
-        for (const objectKey of Object.keys(object)) {
-          inspectNode(object[objectKey], objects, duplicatesIndexes);
-        }
-      }
-    }
+function inspectNode(object: Any, objects: Any[], duplicateObjects: Set<Any>) {
+  if (!isObject(object)) return;
+  if (objects.includes(object)) {
+    duplicateObjects.add(object);
+    return;
+  }
+  objects.push(object);
+  const entries = Array.isArray(object) ? object : Object.values(object);
+  for (const value of entries) {
+    inspectNode(value, objects, duplicateObjects);
   }
 }
 
@@ -934,14 +919,12 @@ function getDuplicateReferences(
   state: DumperState,
 ) {
   const objects: Any[] = [];
-  const duplicatesIndexes: number[] = [];
+  const duplicateObjects: Set<Any> = new Set();
 
-  inspectNode(object, objects, duplicatesIndexes);
+  inspectNode(object, objects, duplicateObjects);
 
-  for (const idx of duplicatesIndexes) {
-    state.duplicates.push(objects[idx]);
-  }
-  state.usedDuplicates = Array.from({ length: duplicatesIndexes.length });
+  for (const object of duplicateObjects) state.duplicates.push(object);
+  state.usedDuplicates = new Set();
 }
 
 export function dump(input: Any, options: DumperStateOptions = {}): string {
