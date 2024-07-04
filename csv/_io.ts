@@ -94,9 +94,7 @@ export async function parseRecord(
       if (!opt.lazyQuotes) {
         const j = field.indexOf(quote);
         if (j >= 0) {
-          const col = runeCount(
-            fullLine.slice(0, fullLine.length - line.slice(j).length),
-          );
+          const col = fullLine.length + j - line.length;
           throw new ParseError(startLine + 1, lineIndex, col, ERR_BARE_QUOTE);
         }
       }
@@ -134,9 +132,7 @@ export async function parseRecord(
             recordBuffer += quote;
           } else {
             // `"*` sequence (invalid non-escaped quote).
-            const col = runeCount(
-              fullLine.slice(0, fullLine.length - line.length - quoteLen),
-            );
+            const col = fullLine.length - line.length - quoteLen;
             throw new ParseError(startLine + 1, lineIndex, col, ERR_QUOTE);
           }
         } else if (line.length > 0 || !reader.isEOF()) {
@@ -149,7 +145,7 @@ export async function parseRecord(
           if (r === null) {
             // Abrupt end of file (EOF or error).
             if (!opt.lazyQuotes) {
-              const col = runeCount(fullLine);
+              const col = fullLine.length;
               throw new ParseError(startLine + 1, lineIndex, col, ERR_QUOTE);
             }
             fieldIndexes.push(recordBuffer.length);
@@ -159,7 +155,7 @@ export async function parseRecord(
         } else {
           // Abrupt end of file (EOF on error).
           if (!opt.lazyQuotes) {
-            const col = runeCount(fullLine);
+            const col = fullLine.length;
             throw new ParseError(startLine + 1, lineIndex, col, ERR_QUOTE);
           }
           fieldIndexes.push(recordBuffer.length);
@@ -175,11 +171,6 @@ export async function parseRecord(
     preIdx = i;
   }
   return result;
-}
-
-function runeCount(s: string): number {
-  // Array.from considers the surrogate pair.
-  return Array.from(s).length;
 }
 
 /**
