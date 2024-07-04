@@ -28,8 +28,9 @@ import {
 } from "./_chars.ts";
 import { YamlError } from "./_error.ts";
 import { DEFAULT_SCHEMA, type Schema } from "./_schema.ts";
-import type { RepresentFn, StyleVariant, Type } from "./_type.ts";
+import type { StyleVariant, Type } from "./_type.ts";
 import * as common from "./_utils.ts";
+import { isObject } from "./_utils.ts";
 
 type Any = common.Any;
 type ArrayObject<T = Any> = common.ArrayObject<T>;
@@ -774,13 +775,10 @@ function detectType(
   const typeList = explicit ? state.explicitTypes : state.implicitTypes;
 
   for (const type of typeList) {
-    let _result: string;
-
     if (
-      (type.instanceOf || type.predicate) &&
-      (!type.instanceOf ||
-        (typeof object === "object" && object instanceof type.instanceOf)) &&
-      (!type.predicate || type.predicate(object))
+      (type.instanceOf &&
+        (isObject(object) && object instanceof type.instanceOf)) ||
+      (type.predicate && type.predicate(object))
     ) {
       state.tag = explicit ? type.tag : "?";
 
@@ -788,19 +786,16 @@ function detectType(
         const style = state.styleMap[type.tag]! || type.defaultStyle;
 
         if (typeof type.represent === "function") {
-          _result = (type.represent as RepresentFn)(object, style);
-        } else if (Object.hasOwn(type.represent, style)) {
-          _result = (type.represent as ArrayObject<RepresentFn>)[style]!(
-            object,
-            style,
-          );
-        } else {
-          throw new YamlError(
-            `!<${type.tag}> tag resolver accepts not "${style}" style`,
-          );
+          state.dump = type.represent(object, style);
+          return true;
         }
-
-        state.dump = _result;
+        if (Object.hasOwn(type.represent, style)) {
+          state.dump = type.represent[style]!(object, style);
+          return true;
+        }
+        throw new YamlError(
+          `!<${type.tag}> tag resolver accepts not "${style}" style`,
+        );
       }
 
       return true;
