@@ -143,7 +143,7 @@ export async function parseRecord(
             );
             throw new ParseError(startLine + 1, lineIndex, col, ERR_QUOTE);
           }
-        } else if (line.length > 0 || !(reader.isEOF())) {
+        } else if (line.length > 0 || !reader.isEOF()) {
           // Hit end of line (copy all data so far).
           recordBuffer += line;
           const r = await reader.readLine();
