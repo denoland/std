@@ -14,9 +14,9 @@ export interface ParseOptions {
   /** Name of the schema to use.*/
   schema?: "core" | "default" | "failsafe" | "json" | "extended";
   /** compatibility with JSON.parse behaviour. */
-  json?: boolean;
+  allowDuplicateKeys?: boolean;
   /** function to call on warning messages. */
-  onWarning?(this: null, e?: Error): void;
+  onWarning?(error?: Error): void;
 }
 
 /**
