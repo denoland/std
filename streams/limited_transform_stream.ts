@@ -25,7 +25,7 @@ export interface LimitedTransformStreamOptions {
  * @example `size` is equal to the total number of chunks
  * ```ts
  * import { LimitedTransformStream } from "@std/streams/limited-transform-stream";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const stream = ReadableStream.from(["1234", "5678"]);
  * const transformed = stream.pipeThrough(
@@ -42,7 +42,7 @@ export interface LimitedTransformStreamOptions {
  * @example `size` is less than the total number of chunks
  * ```ts
  * import { LimitedTransformStream } from "@std/streams/limited-transform-stream";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const stream = ReadableStream.from(["1234", "5678"]);
  * const transformed = stream.pipeThrough(
@@ -59,7 +59,7 @@ export interface LimitedTransformStreamOptions {
  * @example error: true
  * ```ts
  * import { LimitedTransformStream } from "@std/streams/limited-transform-stream";
- * import { assertRejects } from "@std/assert/assert-rejects";
+ * import { assertRejects } from "@std/assert";
  *
  * const stream = ReadableStream.from(["1234", "5678"]);
  * const transformed = stream.pipeThrough(

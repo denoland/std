@@ -17,7 +17,7 @@ import { isPathSeparator, isWindowsDeviceRoot } from "./_util.ts";
  * @example Usage
  * ```ts
  * import { basename } from "@std/path/windows/basename";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * assertEquals(basename("C:\\user\\Documents\\"), "Documents");
  * assertEquals(basename("C:\\user\\Documents\\image.png"), "image.png");

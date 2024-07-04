@@ -7,7 +7,7 @@
 High-quality APIs for [Deno](https://deno.com/) and the web. Use fearlessly.
 
 <!--deno-fmt-ignore-start-->
-> [!NOTE]
+> [!IMPORTANT]
 > Newer versions of the Standard Library are now hosted on
 > [JSR](https://jsr.io/@std). Older versions up till 0.224.0 are still available
 > at [deno.land/std](https://deno.land/std).
@@ -59,33 +59,16 @@ documentation:
 | [webgpu](https://jsr.io/@std/webgpu)                   | Unstable | [![JSR](https://jsr.io/badges/@std/webgpu)](https://jsr.io/@std/webgpu)                   |
 | [yaml](https://jsr.io/@std/yaml)                       | Settled  | [![JSR](https://jsr.io/badges/@std/yaml)](https://jsr.io/@std/yaml)                       |
 
-> Note: Settled status means a package is unlikely to have breaking changes, but
-> has not yet achieved v1 status.
+<!--deno-fmt-ignore-start-->
+> [!NOTE]
+> Settled status means a package is unlikely to have breaking changes, but has
+> not yet achieved v1 status.
+<!--deno-fmt-ignore-end-->
 
 ## Stabilization
 
 The Standard Library is now in the process of stabilizing its packages. See
-#4600 for the release schedule.
-
-Each package must go through the following steps to achieve stabilization:
-
-1. Publish version 1.0.0-rc.1 once meeting the following requirements:
-   1. Approved by at least 2 maintainers. There must be consensus that the
-      design, documentation and implementation of the package are good and that
-      it is unlikely to undergo breaking changes in the future.
-   1. 100% documented, passing `deno doc --lint` checks and adhering to the
-      [documentation guidelines](https://github.com/denoland/deno_std/blob/main/.github/CONTRIBUTING.md#documentation).
-   1. Maximum possible test coverage
-   1. No open issues or pull requests that might lead to breaking changes. For
-      example, issues that suggest new non-breaking features are fine to exist
-      at stabilization.
-1. Allow 1 month for the community and the core team to review the package and
-   handle any feedback. There must be consensus that the design, documentation
-   and implementation of the package are good and that it is unlikely to undergo
-   breaking changes in the future.
-1. If there are no remaining issues, publish version 1.0.0. If there are
-   remaining issues, extend the waiting period to allow further time for a
-   resolution. Then, repeat this step.
+[#4600](https://github.com/denoland/deno_std/issues/4600) for details.
 
 ## Architecture
 
@@ -93,13 +76,7 @@ Check out the architecture guide [here](./.github/ARCHITECTURE.md).
 
 ## Design
 
-### Minimal Exports
-
-Files are structured to minimize the number of dependencies they incur and the
-amount of effort required to manage them, both for the maintainer and the user.
-In most cases, only a single function or class, alongside its related types, are
-exported. In other cases, functions that incur negligible dependency overhead
-will be grouped together in the same file.
+Check out the design documentation [here](.github/ARCHITECTURE.md#design).
 
 ## Contributing
 
@@ -107,9 +84,9 @@ Check out the contributing guidelines [here](.github/CONTRIBUTING.md).
 
 ## Releases
 
-New versions of packages are published every 1 or 2 weeks. Package versions
->=1.0.0 follow [Semantic Versioning](https://semver.org/), and package versions
-<1.0.0 follow [this proposal](https://github.com/semver/semver/pull/923).
+Package versions >=1.0.0 follow [Semantic Versioning](https://semver.org/), and
+package versions <1.0.0 follow
+[this proposal](https://github.com/semver/semver/pull/923).
 
 ## Badge
 

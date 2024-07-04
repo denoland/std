@@ -3,11 +3,15 @@ import {
   assert,
   assertEquals,
   assertObjectMatch,
+  assertRejects,
   assertStrictEquals,
+  assertThrows,
 } from "@std/assert";
 import {
+  after,
   afterAll,
   afterEach,
+  before,
   beforeAll,
   beforeEach,
   describe,
@@ -543,6 +547,14 @@ Deno.test("it()", async (t) => {
           }),
       );
 
+      await t.step(
+        "minimum options (skip)",
+        async () =>
+          await assertMinimumOptions((fn) => {
+            it.skip({ name: "example", fn });
+          }),
+      );
+
       await t.step("all options", async () =>
         await assertAllOptions((fn) => {
           assertEquals(
@@ -664,10 +676,6 @@ Deno.test("it()", async (t) => {
             undefined,
           );
         }));
-    });
-
-    await t.step(".skip is an alias of .ignore", () => {
-      assertEquals(it.ignore, it.skip);
     });
   });
 });
@@ -1148,6 +1156,17 @@ Deno.test("describe()", async (t) => {
       );
 
       await t.step(
+        "minimum options (skip)",
+        async () =>
+          await assertMinimumOptions((fns) => {
+            const suite = describe.skip({ name: "example" });
+            assert(suite && typeof suite.symbol === "symbol");
+            it({ suite, name: "a", fn: fns[0] });
+            it({ suite, name: "b", fn: fns[1] });
+          }),
+      );
+
+      await t.step(
         "all options",
         async () =>
           await assertAllOptions((fns) => {
@@ -1310,10 +1329,6 @@ Deno.test("describe()", async (t) => {
             assertEquals(it({ suite, name: "b", fn: fns[1] }), undefined);
           }),
       );
-    });
-
-    await t.step(".skip is an alias of .ignore", () => {
-      assertEquals(describe.ignore, describe.skip);
     });
   });
 
@@ -1590,6 +1605,25 @@ Deno.test("describe()", async (t) => {
 
               assertEquals(it({ name: "example 1", fn: fns[0] }), undefined);
               assertEquals(it({ name: "example 2", fn: fns[1] }), undefined);
+            });
+          },
+        ),
+    );
+
+    await t.step(
+      "in callback (using after, before aliases)",
+      async () =>
+        await assertHooks(
+          ({ beforeAllFn, afterAllFn, beforeEachFn, afterEachFn, fns }) => {
+            describe("example", () => {
+              before(beforeAllFn);
+              after(afterAllFn);
+
+              beforeEach(beforeEachFn);
+              afterEach(afterEachFn);
+
+              it({ name: "example 1", fn: fns[0] });
+              it({ name: "example 2", fn: fns[1] });
             });
           },
         ),
@@ -1882,4 +1916,96 @@ Deno.test("describe()", async (t) => {
       },
     );
   });
+
+  await t.step(
+    "mutiple hook calls",
+    async () => {
+      using test = stub(Deno, "test");
+      const context = new TestContext("example");
+      const beforeAllFn = spy();
+      const afterAllFn = spy();
+      const beforeEachFn = spy();
+      const afterEachFn = spy();
+
+      const nested = {
+        beforeAllFn: spy(),
+        afterAllFn: spy(),
+        beforeEachFn: spy(),
+        afterEachFn: spy(),
+      };
+      try {
+        describe("example multiple hooks", () => {
+          beforeAll(beforeAllFn);
+          beforeAll(beforeAllFn);
+          afterAll(afterAllFn);
+          afterAll(afterAllFn);
+          beforeEach(beforeEachFn);
+          beforeEach(beforeEachFn);
+          afterEach(afterEachFn);
+          afterEach(afterEachFn);
+
+          describe("nested", () => {
+            beforeAll(nested.beforeAllFn);
+            beforeAll(nested.beforeAllFn);
+            afterAll(nested.afterAllFn);
+            afterAll(nested.afterAllFn);
+            beforeEach(nested.beforeEachFn);
+            beforeEach(nested.beforeEachFn);
+            afterEach(nested.afterEachFn);
+            afterEach(nested.afterEachFn);
+            it({ name: "example 1", fn() {} });
+            it({ name: "example 2", fn() {} });
+          });
+        });
+        const call = test.calls[0];
+        const options = call?.args[0] as Deno.TestDefinition;
+        await options.fn(context);
+      } finally {
+        TestSuiteInternal.reset();
+      }
+
+      assertSpyCalls(beforeAllFn, 2);
+      assertSpyCalls(afterAllFn, 2);
+      assertSpyCalls(beforeEachFn, 4);
+      assertSpyCalls(afterEachFn, 4);
+
+      assertSpyCalls(nested.beforeAllFn, 2);
+      assertSpyCalls(nested.afterAllFn, 2);
+      assertSpyCalls(nested.beforeEachFn, 4);
+      assertSpyCalls(nested.afterEachFn, 4);
+    },
+  );
+
+  await t.step("throws if called with wrong suite object", () => {
+    assertThrows(
+      // deno-lint-ignore no-explicit-any
+      () => describe({ name: "", suite: {} as any, fn: () => {} }),
+      Error,
+      "suite does not represent a registered test suite",
+    );
+  });
+
+  await t.step(
+    "throws if nested test case is called with permission option",
+    async () => {
+      using test = stub(Deno, "test");
+      const context = new TestContext("example");
+      try {
+        describe("foo", () => {
+          describe("bar", { permissions: { read: true } }, () => {
+            it("baz", () => {});
+          });
+        });
+        const call = test.calls[0];
+        const options = call?.args[0] as Deno.TestDefinition;
+        await assertRejects(
+          async () => await options.fn(context),
+          Error,
+          "permissions option not available for nested tests",
+        );
+      } finally {
+        TestSuiteInternal.reset();
+      }
+    },
+  );
 });

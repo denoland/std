@@ -36,14 +36,18 @@ export class TOMLParseError extends Error {}
 export class Scanner {
   #whitespace = /[ \t]/;
   #position = 0;
-  constructor(private source: string) {}
+  #source: string;
+
+  constructor(source: string) {
+    this.#source = source;
+  }
 
   /**
    * Get current character
    * @param index - relative index from current position
    */
   char(index = 0) {
-    return this.source[this.#position + index] ?? "";
+    return this.#source[this.#position + index] ?? "";
   }
 
   /**
@@ -52,7 +56,7 @@ export class Scanner {
    * @param end - end position relative from current position
    */
   slice(start: number, end: number): string {
-    return this.source.slice(this.#position + start, this.#position + end);
+    return this.#source.slice(this.#position + start, this.#position + end);
   }
 
   /**
@@ -105,7 +109,7 @@ export class Scanner {
    * Position reached EOF or not
    */
   eof() {
-    return this.position() >= this.source.length;
+    return this.position() >= this.#source.length;
   }
 
   /**

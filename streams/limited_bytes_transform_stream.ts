@@ -22,7 +22,7 @@ export interface LimitedBytesTransformStreamOptions {
  * @example `size` is equal to the total byte length of the chunks
  * ```ts
  * import { LimitedBytesTransformStream } from "@std/streams/limited-bytes-transform-stream";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const stream = ReadableStream.from(["1234", "5678"]);
  * const transformed = stream.pipeThrough(new TextEncoderStream()).pipeThrough(
@@ -39,7 +39,7 @@ export interface LimitedBytesTransformStreamOptions {
  * boundary of the chunks
  * ```ts
  * import { LimitedBytesTransformStream } from "@std/streams/limited-bytes-transform-stream";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const stream = ReadableStream.from(["1234", "5678"]);
  * const transformed = stream.pipeThrough(new TextEncoderStream()).pipeThrough(
@@ -58,7 +58,7 @@ export interface LimitedBytesTransformStreamOptions {
  * the boundary of the chunks
  * ```ts
  * import { LimitedBytesTransformStream } from "@std/streams/limited-bytes-transform-stream";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const stream = ReadableStream.from(["1234", "5678"]);
  * const transformed = stream.pipeThrough(new TextEncoderStream()).pipeThrough(
@@ -76,7 +76,7 @@ export interface LimitedBytesTransformStreamOptions {
  * @example error: true
  * ```ts
  * import { LimitedBytesTransformStream } from "@std/streams/limited-bytes-transform-stream";
- * import { assertRejects } from "@std/assert/assert-rejects";
+ * import { assertRejects } from "@std/assert";
  *
  * const stream = ReadableStream.from(["1234", "5678"]);
  * const transformed = stream.pipeThrough(new TextEncoderStream()).pipeThrough(

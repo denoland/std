@@ -16,7 +16,7 @@
  * @example Basic usage
  * ```ts
  * import { minBy } from "@std/collections/min-by";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const people = [
  *   { name: "Anna", age: 34 },
@@ -48,7 +48,7 @@ export function minBy<T>(
  * @example Basic usage
  * ```ts
  * import { minBy } from "@std/collections/min-by";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const people = [
  *   { name: "Anna" },
@@ -80,7 +80,7 @@ export function minBy<T>(
  * @example Basic usage
  * ```ts
  * import { minBy } from "@std/collections/min-by";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const people = [
  *   { name: "Anna", age: 34n },
@@ -112,7 +112,7 @@ export function minBy<T>(
  * @example Basic usage
  * ```ts
  * import { minBy } from "@std/collections/min-by";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const people = [
  *   { name: "Anna", startedAt: new Date("2020-01-01") },

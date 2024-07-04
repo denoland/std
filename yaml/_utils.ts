@@ -10,10 +10,6 @@ export function isBoolean(value: unknown): value is boolean {
   return typeof value === "boolean" || value instanceof Boolean;
 }
 
-export function isNull(value: unknown): value is null {
-  return value === null;
-}
-
 export function isObject(value: unknown): value is Record<string, unknown> {
   return value !== null && typeof value === "object";
 }

@@ -2,7 +2,7 @@
 // This module is browser compatible.
 import type { Comparator, Range } from "./types.ts";
 import { OPERATORS } from "./_constants.ts";
-import { ALL, NONE } from "./constants.ts";
+import { ALL, NONE } from "./_constants.ts";
 import { isSemVer } from "./is_semver.ts";
 
 function isComparator(value: unknown): value is Comparator {
@@ -30,11 +30,11 @@ function isComparator(value: unknown): value is Comparator {
  * @example Usage
  * ```ts
  * import { isRange } from "@std/semver/is-range";
- * import { assert, assertFalse } from "@std/assert";
+ * import { assert } from "@std/assert";
  *
  * const range = [[{ major: 1, minor: 2, patch: 3 }]];
  * assert(isRange(range));
- * assertFalse(isRange({}));
+ * assert(!isRange({}));
  * ```
  * @param value The value to check if its a valid Range
  * @returns True if its a valid Range otherwise false.

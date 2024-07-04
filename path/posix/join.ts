@@ -10,7 +10,7 @@ import { normalize } from "./normalize.ts";
  * @example Usage
  * ```ts
  * import { join } from "@std/path/posix/join";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const path = join("/foo", "bar", "baz/asdf", "quux", "..");
  * assertEquals(path, "/foo/bar/baz/asdf");

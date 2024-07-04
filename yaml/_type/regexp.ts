@@ -3,12 +3,13 @@
 // Copyright 2011-2015 by Vitaly Puzrin. All rights reserved. MIT license.
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import { Type } from "../type.ts";
+import type { Type } from "../_type.ts";
 import type { Any } from "../_utils.ts";
 
 const REGEXP = /^\/(?<regexp>[\s\S]+)\/(?<modifiers>[gismuy]*)$/;
 
-export const regexp = new Type("tag:yaml.org,2002:js/regexp", {
+export const regexp: Type = {
+  tag: "tag:yaml.org,2002:js/regexp",
   kind: "scalar",
   resolve(data: Any) {
     if ((data === null) || (!data.length)) {
@@ -41,4 +42,4 @@ export const regexp = new Type("tag:yaml.org,2002:js/regexp", {
   represent(object: RegExp) {
     return object.toString();
   },
-});
+};

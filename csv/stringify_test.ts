@@ -277,6 +277,17 @@ Deno.test({
     );
     await t.step(
       {
+        name: "Column: array string accessor via prop field",
+        fn() {
+          const columns = [{ prop: ["msg", "value"] }];
+          const data = [{ msg: { value: "foo" } }, { msg: { value: "bar" } }];
+          const output = `value${CRLF}foo${CRLF}bar${CRLF}`;
+          assertEquals(stringify(data, { columns }), output);
+        },
+      },
+    );
+    await t.step(
+      {
         name: "Explicit header",
         fn() {
           const columns = [
@@ -364,6 +375,18 @@ Deno.test({
           const data = [[null], [null]];
           const output = `0${CRLF}${CRLF}${CRLF}`;
           assertEquals(stringify(data, { columns }), output);
+        },
+      },
+    );
+    await t.step(
+      {
+        name: "The case when the entire item is null",
+        fn() {
+          const columns = [0];
+          const data = [null, null];
+          const output = `0${CRLF}${CRLF}${CRLF}`;
+          // deno-lint-ignore no-explicit-any
+          assertEquals(stringify(data as any, { columns }), output);
         },
       },
     );
@@ -508,6 +531,16 @@ Deno.test({
         const output = `1,2,3${CRLF}4,5,6${CRLF}`;
 
         assertEquals(stringify(data), output);
+      },
+    });
+    await t.step({
+      name: "The case when each item is single data, no columns",
+      fn() {
+        const data = [1, 2, 3, 4, 5, 6];
+        const output = `1${CRLF}2${CRLF}3${CRLF}4${CRLF}5${CRLF}6${CRLF}`;
+
+        // deno-lint-ignore no-explicit-any
+        assertEquals(stringify(data as any), output);
       },
     });
     await t.step(
