@@ -83,7 +83,7 @@ class Parser {
     let lineIndex = startLine + 1;
 
     // line starting with comment character is ignored
-    if (this.#options.comment && line.at(0) === this.#options.comment) {
+    if (this.#options.comment && line[0] === this.#options.comment) {
       return [];
     }
 
