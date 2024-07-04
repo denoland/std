@@ -63,9 +63,9 @@ interface LoaderStateOptions {
   /** specifies a schema to use. */
   schema?: Schema;
   /** compatibility with JSON.parse behaviour. */
-  json?: boolean;
+  allowDuplicateKeys?: boolean;
   /** function to call on warning messages. */
-  onWarning?(this: null, e?: YamlError): void;
+  onWarning?(error?: YamlError): void;
 }
 
 // deno-lint-ignore no-explicit-any
@@ -80,7 +80,7 @@ class LoaderState {
   position = 0;
   line = 0;
   onWarning?: (...args: Any[]) => void;
-  json: boolean;
+  allowDuplicateKeys: boolean;
   implicitTypes: Type[];
   typeMap: TypeMap;
 
@@ -98,13 +98,13 @@ class LoaderState {
     {
       schema = DEFAULT_SCHEMA,
       onWarning,
-      json = false,
+      allowDuplicateKeys = false,
     }: LoaderStateOptions,
   ) {
     this.schema = schema;
     this.input = input;
     this.onWarning = onWarning;
-    this.json = json;
+    this.allowDuplicateKeys = allowDuplicateKeys;
     this.implicitTypes = this.schema.compiledImplicit;
     this.typeMap = this.schema.compiledTypeMap;
     this.length = input.length;
@@ -397,7 +397,7 @@ function storeMappingPair(
     }
   } else {
     if (
-      !state.json &&
+      !state.allowDuplicateKeys &&
       !Object.hasOwn(overridableKeys, keyNode) &&
       Object.hasOwn(result, keyNode)
     ) {
