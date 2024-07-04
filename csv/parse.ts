@@ -123,9 +123,9 @@ class Parser {
         fieldIndexes.push(recordBuffer.length);
         if (i >= 0) {
           line = line.substring(i + separatorLen);
-          continue parseField;
+          continue currentLineLoop;
         }
-        break parseField;
+        break currentLineLoop;
       } else {
         // Quoted string field
         currentLine = currentLine.substring(quoteLen);
