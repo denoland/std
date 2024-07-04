@@ -43,11 +43,6 @@ export type StringifyOptions = {
   /** Set max line width. (default: 80) */
   lineWidth?: number;
   /**
-   * If true, don't convert duplicate objects
-   * into references (default: false)
-   */
-  noRefs?: boolean;
-  /**
    * If false don't try to be compatible with older yaml versions.
    * Currently: don't quote "yes", "no" and so on,
    * as required for YAML 1.1 (default: true)

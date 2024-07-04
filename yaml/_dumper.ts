@@ -126,11 +126,6 @@ export interface DumperStateOptions {
   /** set max line width. (default: 80) */
   lineWidth?: number;
   /**
-   * if true, don't convert duplicate objects
-   * into references (default: false)
-   */
-  noRefs?: boolean;
-  /**
    * if false don't try to be compatible with older yaml versions.
    * Currently: don't quote "yes", "no" and so on,
    * as required for YAML 1.1 (default: true)
@@ -153,7 +148,6 @@ export class DumperState {
   flowLevel: number;
   sortKeys: boolean | ((a: Any, b: Any) => number);
   lineWidth: number;
-  noRefs: boolean;
   compatMode: boolean;
   condenseFlow: boolean;
   implicitTypes: Type[];
@@ -174,7 +168,6 @@ export class DumperState {
     styles = null,
     sortKeys = false,
     lineWidth = 80,
-    noRefs = false,
     compatMode = true,
     condenseFlow = false,
   }: DumperStateOptions) {
@@ -186,7 +179,6 @@ export class DumperState {
     this.styleMap = compileStyleMap(this.schema, styles);
     this.sortKeys = sortKeys;
     this.lineWidth = lineWidth;
-    this.noRefs = noRefs;
     this.compatMode = compatMode;
     this.condenseFlow = condenseFlow;
     this.implicitTypes = this.schema.compiledImplicit;
@@ -920,52 +912,8 @@ function writeNode(
   return true;
 }
 
-function inspectNode(
-  object: Any,
-  objects: Any[],
-  duplicatesIndexes: number[],
-) {
-  if (object !== null && typeof object === "object") {
-    const index = objects.indexOf(object);
-    if (index !== -1) {
-      if (duplicatesIndexes.includes(index)) {
-        duplicatesIndexes.push(index);
-      }
-    } else {
-      objects.push(object);
-
-      if (Array.isArray(object)) {
-        for (let idx = 0; idx < object.length; idx += 1) {
-          inspectNode(object[idx], objects, duplicatesIndexes);
-        }
-      } else {
-        for (const objectKey of Object.keys(object)) {
-          inspectNode(object[objectKey], objects, duplicatesIndexes);
-        }
-      }
-    }
-  }
-}
-
-function getDuplicateReferences(
-  object: Record<string, unknown>,
-  state: DumperState,
-) {
-  const objects: Any[] = [];
-  const duplicatesIndexes: number[] = [];
-
-  inspectNode(object, objects, duplicatesIndexes);
-
-  for (const idx of duplicatesIndexes) {
-    state.duplicates.push(objects[idx]);
-  }
-  state.usedDuplicates = Array.from({ length: duplicatesIndexes.length });
-}
-
 export function dump(input: Any, options: DumperStateOptions = {}): string {
   const state = new DumperState(options);
-
-  if (!state.noRefs) getDuplicateReferences(input, state);
 
   if (writeNode(state, 0, input, true, true)) return `${state.dump}\n`;
 
