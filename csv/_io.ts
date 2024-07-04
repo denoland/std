@@ -4,6 +4,8 @@
 // https://github.com/golang/go/blob/master/LICENSE
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
+import { graphemeLength } from "./_shared.ts";
+
 /** Options for {@linkcode parseRecord}. */
 export interface ReadOptions {
   /** Character which separates values.
@@ -117,8 +119,9 @@ export async function parseRecord(
             continue parseQuotedField;
           }
           // `"*` sequence (invalid non-escaped quote).
-          const col = fullLine.length - line.length - quoteLen;
-
+          const col = graphemeLength(
+            fullLine.slice(0, fullLine.length - line.length - quoteLen),
+          );
           throw new ParseError(startLine + 1, lineIndex, col, ERR_QUOTE);
         }
         if (line.length > 0 || !reader.isEOF()) {
@@ -131,7 +134,7 @@ export async function parseRecord(
           if (r === null) {
             // Abrupt end of file (EOF or error).
             if (!options.lazyQuotes) {
-              const col = fullLine.length;
+              const col = graphemeLength(fullLine);
               throw new ParseError(startLine + 1, lineIndex, col, ERR_QUOTE);
             }
             fieldIndexes.push(recordBuffer.length);
@@ -143,7 +146,7 @@ export async function parseRecord(
 
         // Abrupt end of file (EOF on error).
         if (!options.lazyQuotes) {
-          const col = fullLine.length;
+          const col = graphemeLength(fullLine);
           throw new ParseError(startLine + 1, lineIndex, col, ERR_QUOTE);
         }
         fieldIndexes.push(recordBuffer.length);
@@ -159,7 +162,9 @@ export async function parseRecord(
     if (!options.lazyQuotes) {
       const j = field.indexOf(quote);
       if (j >= 0) {
-        const col = fullLine.length + j - line.length;
+        const col = graphemeLength(
+          fullLine.slice(0, fullLine.length - line.slice(j).length),
+        );
         throw new ParseError(startLine + 1, lineIndex, col, ERR_BARE_QUOTE);
       }
     }
