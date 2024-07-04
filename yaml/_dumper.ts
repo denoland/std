@@ -131,11 +131,11 @@ export interface DumperStateOptions {
    */
   noRefs?: boolean;
   /**
-   * if true don't try to be compatible with older yaml versions.
+   * if false don't try to be compatible with older yaml versions.
    * Currently: don't quote "yes", "no" and so on,
-   * as required for YAML 1.1 (default: false)
+   * as required for YAML 1.1 (default: true)
    */
-  noCompatMode?: boolean;
+  compatMode?: boolean;
   /**
    * if true flow sequences will be condensed, omitting the
    * space between `key: value` or `a, b`. Eg. `'[a,b]'` or `{a:{b:c}}`.
@@ -154,7 +154,7 @@ export class DumperState {
   sortKeys: boolean | ((a: Any, b: Any) => number);
   lineWidth: number;
   noRefs: boolean;
-  noCompatMode: boolean;
+  compatMode: boolean;
   condenseFlow: boolean;
   implicitTypes: Type[];
   explicitTypes: Type[];
@@ -175,7 +175,7 @@ export class DumperState {
     sortKeys = false,
     lineWidth = 80,
     noRefs = false,
-    noCompatMode = false,
+    compatMode = true,
     condenseFlow = false,
   }: DumperStateOptions) {
     this.schema = schema;
@@ -187,7 +187,7 @@ export class DumperState {
     this.sortKeys = sortKeys;
     this.lineWidth = lineWidth;
     this.noRefs = noRefs;
-    this.noCompatMode = noCompatMode;
+    this.compatMode = compatMode;
     this.condenseFlow = condenseFlow;
     this.implicitTypes = this.schema.compiledImplicit;
     this.explicitTypes = this.schema.compiledExplicit;
@@ -560,7 +560,7 @@ function writeScalar(
       return "''";
     }
     if (
-      !state.noCompatMode &&
+      state.compatMode &&
       DEPRECATED_BOOLEANS_SYNTAX.indexOf(string) !== -1
     ) {
       return `'${string}'`;
