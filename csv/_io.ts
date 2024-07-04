@@ -73,7 +73,6 @@ export async function parseRecord(
   if (opt.separator === undefined) throw new TypeError("Separator is required");
 
   let fullLine = line;
-  let quoteError: ParseError | null = null;
   const quote = '"';
   const quoteLen = quote.length;
   const separatorLen = opt.separator.length;
@@ -98,13 +97,7 @@ export async function parseRecord(
           const col = runeCount(
             fullLine.slice(0, fullLine.length - line.slice(j).length),
           );
-          quoteError = new ParseError(
-            startLine + 1,
-            lineIndex,
-            col,
-            ERR_BARE_QUOTE,
-          );
-          break parseField;
+          throw new ParseError(startLine + 1, lineIndex, col, ERR_BARE_QUOTE);
         }
       }
       recordBuffer += field;
@@ -144,13 +137,7 @@ export async function parseRecord(
             const col = runeCount(
               fullLine.slice(0, fullLine.length - line.length - quoteLen),
             );
-            quoteError = new ParseError(
-              startLine + 1,
-              lineIndex,
-              col,
-              ERR_QUOTE,
-            );
-            break parseField;
+            throw new ParseError(startLine + 1, lineIndex, col, ERR_QUOTE);
           }
         } else if (line.length > 0 || !reader.isEOF()) {
           // Hit end of line (copy all data so far).
@@ -163,13 +150,7 @@ export async function parseRecord(
             // Abrupt end of file (EOF or error).
             if (!opt.lazyQuotes) {
               const col = runeCount(fullLine);
-              quoteError = new ParseError(
-                startLine + 1,
-                lineIndex,
-                col,
-                ERR_QUOTE,
-              );
-              break parseField;
+              throw new ParseError(startLine + 1, lineIndex, col, ERR_QUOTE);
             }
             fieldIndexes.push(recordBuffer.length);
             break parseField;
@@ -179,22 +160,13 @@ export async function parseRecord(
           // Abrupt end of file (EOF on error).
           if (!opt.lazyQuotes) {
             const col = runeCount(fullLine);
-            quoteError = new ParseError(
-              startLine + 1,
-              lineIndex,
-              col,
-              ERR_QUOTE,
-            );
-            break parseField;
+            throw new ParseError(startLine + 1, lineIndex, col, ERR_QUOTE);
           }
           fieldIndexes.push(recordBuffer.length);
           break parseField;
         }
       }
     }
-  }
-  if (quoteError) {
-    throw quoteError;
   }
   const result = [] as string[];
   let preIdx = 0;
