@@ -15,7 +15,7 @@ import { decode, encode } from "./_utils.ts";
  *
  * ```ts
  * import { encodeBase32Hex, decodeBase32Hex } from "@std/encoding/base32hex";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * assertEquals(encodeBase32Hex("foobar"), "CPNMUOJ1E8======");
  *
@@ -43,7 +43,7 @@ lookup.forEach((c, i) => (revLookup[c.charCodeAt(0)] = i));
  * @example Usage
  * ```ts
  * import { decodeBase32Hex } from "@std/encoding/base32hex";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * assertEquals(
  *   decodeBase32Hex("6PHJCC3360======"),
@@ -66,7 +66,7 @@ export function decodeBase32Hex(b32: string): Uint8Array {
  * @example Usage
  * ```ts
  * import { encodeBase32Hex } from "@std/encoding/base32hex";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * assertEquals(encodeBase32Hex("6c60c0"), "6PHJCC3360======");
  * ```
