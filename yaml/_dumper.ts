@@ -99,8 +99,8 @@ function compileStyleMap(
 export interface DumperStateOptions {
   /** indentation width to use (in spaces). */
   indent?: number;
-  /** when true, will not add an indentation level to array elements */
-  noArrayIndent?: boolean;
+  /** when true, adds an indentation level to array elements */
+  arrayIndent?: boolean;
   /**
    * do not throw on invalid types (like function in the safe schema)
    * and skip pairs and single values with such types.
@@ -148,7 +148,7 @@ export interface DumperStateOptions {
 export class DumperState {
   schema: Schema;
   indent: number;
-  noArrayIndent: boolean;
+  arrayIndent: boolean;
   skipInvalid: boolean;
   flowLevel: number;
   sortKeys: boolean | ((a: Any, b: Any) => number);
@@ -168,7 +168,7 @@ export class DumperState {
   constructor({
     schema = DEFAULT_SCHEMA,
     indent = 2,
-    noArrayIndent = false,
+    arrayIndent = true,
     skipInvalid = false,
     flowLevel = -1,
     styles = null,
@@ -180,7 +180,7 @@ export class DumperState {
   }: DumperStateOptions) {
     this.schema = schema;
     this.indent = Math.max(1, indent);
-    this.noArrayIndent = noArrayIndent;
+    this.arrayIndent = arrayIndent;
     this.skipInvalid = skipInvalid;
     this.flowLevel = flowLevel;
     this.styleMap = compileStyleMap(this.schema, styles);
@@ -887,7 +887,7 @@ function writeNode(
         }
       }
     } else if (Array.isArray(state.dump)) {
-      const arrayLevel = state.noArrayIndent && level > 0 ? level - 1 : level;
+      const arrayLevel = !state.arrayIndent && level > 0 ? level - 1 : level;
       if (block && state.dump.length !== 0) {
         writeBlockSequence(state, arrayLevel, state.dump, compact);
         if (duplicate) {
