@@ -61,42 +61,44 @@ export interface LineReader {
 export async function parseRecord(
   line: string,
   reader: LineReader,
-  opt: ReadOptions,
+  options: ReadOptions,
   startLine: number,
   lineIndex: number = startLine,
 ): Promise<Array<string>> {
   // line starting with comment character is ignored
-  if (opt.comment && line[0] === opt.comment) {
+  if (options.comment && line[0] === options.comment) {
     return [];
   }
 
-  if (opt.separator === undefined) throw new TypeError("Separator is required");
+  if (options.separator === undefined) {
+    throw new TypeError("Separator is required");
+  }
 
-  let fullLine = line;
+  let currentLine = line;
   let quoteError: ParseError | null = null;
   const quote = '"';
   const quoteLen = quote.length;
-  const separatorLen = opt.separator.length;
+  const separatorLen = options.separator.length;
   let recordBuffer = "";
   const fieldIndexes = [] as number[];
-  parseField: while (true) {
-    if (opt.trimLeadingSpace) {
-      line = line.trimStart();
+  currentLineLoop: while (true) {
+    if (options.trimLeadingSpace) {
+      currentLine = currentLine.trimStart();
     }
 
-    if (line.length === 0 || !line.startsWith(quote)) {
+    if (currentLine.length === 0 || !currentLine.startsWith(quote)) {
       // Non-quoted string field
-      const i = line.indexOf(opt.separator);
-      let field = line;
+      const i = currentLine.indexOf(options.separator);
+      let field = currentLine;
       if (i >= 0) {
         field = field.substring(0, i);
       }
       // Check to make sure a quote does not appear in field.
-      if (!opt.lazyQuotes) {
+      if (!options.lazyQuotes) {
         const j = field.indexOf(quote);
         if (j >= 0) {
           const col = runeCount(
-            fullLine.slice(0, fullLine.length - line.slice(j).length),
+            line.slice(0, line.length - currentLine.slice(j).length),
           );
           quoteError = new ParseError(
             startLine + 1,
@@ -104,45 +106,45 @@ export async function parseRecord(
             col,
             ERR_BARE_QUOTE,
           );
-          break parseField;
+          break currentLineLoop;
         }
       }
       recordBuffer += field;
       fieldIndexes.push(recordBuffer.length);
       if (i >= 0) {
-        line = line.substring(i + separatorLen);
-        continue parseField;
+        currentLine = currentLine.substring(i + separatorLen);
+        continue currentLineLoop;
       }
-      break parseField;
+      break currentLineLoop;
     } else {
       // Quoted string field
-      line = line.substring(quoteLen);
+      currentLine = currentLine.substring(quoteLen);
       while (true) {
-        const i = line.indexOf(quote);
+        const i = currentLine.indexOf(quote);
         if (i >= 0) {
           // Hit next quote.
-          recordBuffer += line.substring(0, i);
-          line = line.substring(i + quoteLen);
-          if (line.startsWith(quote)) {
+          recordBuffer += currentLine.substring(0, i);
+          currentLine = currentLine.substring(i + quoteLen);
+          if (currentLine.startsWith(quote)) {
             // `""` sequence (append quote).
             recordBuffer += quote;
-            line = line.substring(quoteLen);
-          } else if (line.startsWith(opt.separator)) {
+            currentLine = currentLine.substring(quoteLen);
+          } else if (currentLine.startsWith(options.separator)) {
             // `","` sequence (end of field).
-            line = line.substring(separatorLen);
+            currentLine = currentLine.substring(separatorLen);
             fieldIndexes.push(recordBuffer.length);
-            continue parseField;
-          } else if (0 === line.length) {
+            continue currentLineLoop;
+          } else if (0 === currentLine.length) {
             // `"\n` sequence (end of line).
             fieldIndexes.push(recordBuffer.length);
-            break parseField;
-          } else if (opt.lazyQuotes) {
+            break currentLineLoop;
+          } else if (options.lazyQuotes) {
             // `"` sequence (bare quote).
             recordBuffer += quote;
           } else {
             // `"*` sequence (invalid non-escaped quote).
             const col = runeCount(
-              fullLine.slice(0, fullLine.length - line.length - quoteLen),
+              line.slice(0, line.length - currentLine.length - quoteLen),
             );
             quoteError = new ParseError(
               startLine + 1,
@@ -150,45 +152,45 @@ export async function parseRecord(
               col,
               ERR_QUOTE,
             );
-            break parseField;
+            break currentLineLoop;
           }
-        } else if (line.length > 0 || !reader.isEOF()) {
+        } else if (currentLine.length > 0 || !reader.isEOF()) {
           // Hit end of line (copy all data so far).
-          recordBuffer += line;
+          recordBuffer += currentLine;
           const r = await reader.readLine();
           lineIndex++;
-          line = r ?? ""; // This is a workaround for making this module behave similarly to the encoding/csv/reader.go.
-          fullLine = line;
+          currentLine = r ?? ""; // This is a workaround for making this module behave similarly to the encoding/csv/reader.go.
+          line = currentLine;
           if (r === null) {
             // Abrupt end of file (EOF or error).
-            if (!opt.lazyQuotes) {
-              const col = runeCount(fullLine);
+            if (!options.lazyQuotes) {
+              const col = runeCount(line);
               quoteError = new ParseError(
                 startLine + 1,
                 lineIndex,
                 col,
                 ERR_QUOTE,
               );
-              break parseField;
+              break currentLineLoop;
             }
             fieldIndexes.push(recordBuffer.length);
-            break parseField;
+            break currentLineLoop;
           }
           recordBuffer += "\n"; // preserve line feed (This is because TextProtoReader removes it.)
         } else {
           // Abrupt end of file (EOF on error).
-          if (!opt.lazyQuotes) {
-            const col = runeCount(fullLine);
+          if (!options.lazyQuotes) {
+            const col = runeCount(line);
             quoteError = new ParseError(
               startLine + 1,
               lineIndex,
               col,
               ERR_QUOTE,
             );
-            break parseField;
+            break currentLineLoop;
           }
           fieldIndexes.push(recordBuffer.length);
-          break parseField;
+          break currentLineLoop;
         }
       }
     }
