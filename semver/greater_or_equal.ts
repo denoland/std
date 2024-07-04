@@ -4,19 +4,20 @@ import type { SemVer } from "./types.ts";
 import { compare } from "./compare.ts";
 
 /**
- * Greater than or equal to comparison
+ * Greater than or equal to comparison for two SemVers.
  *
  * This is equal to `compare(s0, s1) >= 0`.
  *
  * @example Usage
  * ```ts
  * import { parse, greaterOrEqual } from "@std/semver";
- * import { assert, assertFalse } from "@std/assert";
+ * import { assert } from "@std/assert";
  *
  * const s0 = parse("1.2.3");
  * const s1 = parse("1.2.4");
+ *
  * assert(greaterOrEqual(s1, s0));
- * assertFalse(greaterOrEqual(s0, s1));
+ * assert(!greaterOrEqual(s0, s1));
  * assert(greaterOrEqual(s0, s0));
  * ```
  *

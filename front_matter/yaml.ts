@@ -1,11 +1,10 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import {
-  createExtractor,
-  type Extractor,
-  type Parser,
-} from "./create_extractor.ts";
+import { createExtractor, type Parser } from "./_create_extractor.ts";
 import { parse } from "@std/yaml/parse";
+import type { Extractor } from "./types.ts";
+
+export type { Extractor };
 
 /**
  * Extracts and parses {@link https://yaml.org | YAML} from the metadata of
@@ -14,7 +13,7 @@ import { parse } from "@std/yaml/parse";
  * @example Extract YAML front matter
  * ```ts
  * import { extract } from "@std/front-matter/yaml";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const output = `---yaml
  * title: Three dashes marks the spot

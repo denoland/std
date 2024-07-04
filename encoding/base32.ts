@@ -13,7 +13,7 @@ import { decode, encode } from "./_utils.ts";
  *
  * ```ts
  * import { encodeBase32, decodeBase32 } from "@std/encoding/base32";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * assertEquals(encodeBase32("foobar"), "MZXW6YTBOI======");
  *
@@ -41,7 +41,7 @@ lookup.forEach((c, i) => (revLookup[c.charCodeAt(0)] = i));
  * @example Usage
  * ```ts
  * import { decodeBase32 } from "@std/encoding/base32";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * assertEquals(
  *   decodeBase32("GZRTMMDDGA======"),
@@ -64,7 +64,7 @@ export function decodeBase32(b32: string): Uint8Array {
  * @example Usage
  * ```ts
  * import { encodeBase32 } from "@std/encoding/base32";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * assertEquals(encodeBase32("6c60c0"), "GZRTMMDDGA======");
  * ```

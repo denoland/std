@@ -14,7 +14,7 @@ export type { GlobOptions };
  * @example Usage
  * ```ts
  * import { joinGlobs } from "@std/path/posix/join-globs";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const path = joinGlobs(["foo", "bar", "**"], { globstar: true });
  * assertEquals(path, "foo/bar/**");

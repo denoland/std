@@ -15,7 +15,7 @@ import type { DiffResult, DiffType } from "./types.ts";
  * @example Usage
  * ```ts
  * import { createColor } from "@std/internal";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  * import { bold, green, red, white } from "@std/fmt/colors";
  *
  * assertEquals(createColor("added")("foo"), green(bold("foo")));
@@ -51,7 +51,7 @@ export function createColor(
  * @example Usage
  * ```ts
  * import { createSign } from "@std/internal";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * assertEquals(createSign("added"), "+   ");
  * assertEquals(createSign("removed"), "-   ");
