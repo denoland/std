@@ -139,7 +139,7 @@ class LoaderState {
     throw this.#createError(message);
   }
 
-  throwWarning(message: string) {
+  dispatchWarning(message: string) {
     const error = this.#createError(message);
     this.onWarning?.(error);
   }
@@ -233,7 +233,7 @@ function yamlDirectiveHandler(state: LoaderState, ...args: string[]) {
   state.version = args[0];
   state.checkLineBreaks = minor < 2;
   if (minor !== 1 && minor !== 2) {
-    return state.throwWarning("unsupported YAML version of the document");
+    return state.dispatchWarning("unsupported YAML version of the document");
   }
 }
 function tagDirectiveHandler(state: LoaderState, ...args: string[]) {
@@ -456,7 +456,7 @@ function skipSeparationSpace(
     lineBreaks !== 0 &&
     state.lineIndent < checkIndent
   ) {
-    state.throwWarning("deficient indentation");
+    state.dispatchWarning("deficient indentation");
   }
 
   return lineBreaks;
@@ -1642,7 +1642,7 @@ function readDocument(state: LoaderState) {
         tagDirectiveHandler(state, ...directiveArgs);
         break;
       default:
-        state.throwWarning(`unknown document directive "${directiveName}"`);
+        state.dispatchWarning(`unknown document directive "${directiveName}"`);
         break;
     }
   }
@@ -1670,7 +1670,7 @@ function readDocument(state: LoaderState) {
       state.input.slice(documentStart, state.position),
     )
   ) {
-    state.throwWarning("non-ASCII line breaks are interpreted as content");
+    state.dispatchWarning("non-ASCII line breaks are interpreted as content");
   }
 
   if (state.position === state.lineStart && testDocumentSeparator(state)) {
