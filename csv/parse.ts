@@ -87,7 +87,7 @@ class Parser {
       return [];
     }
 
-    let currentLine = line;
+    let fullLine = line;
     const quote = '"';
     const quoteLen = quote.length;
     const separatorLen = this.#options.separator.length;
@@ -95,13 +95,13 @@ class Parser {
     const fieldIndexes = [] as number[];
     parseField: while (true) {
       if (this.#options.trimLeadingSpace) {
-        currentLine = currentLine.trimStart();
+        line = line.trimStart();
       }
 
-      if (currentLine.length === 0 || !currentLine.startsWith(quote)) {
+      if (line.length === 0 || !line.startsWith(quote)) {
         // Non-quoted string field
-        const i = currentLine.indexOf(this.#options.separator);
-        let field = currentLine;
+        const i = line.indexOf(this.#options.separator);
+        let field = line;
         if (i >= 0) {
           field = field.substring(0, i);
         }
@@ -110,7 +110,7 @@ class Parser {
           const j = field.indexOf(quote);
           if (j >= 0) {
             const col = graphemeLength(
-              line.slice(0, line.length - currentLine.slice(j).length),
+              fullLine.slice(0, fullLine.length - line.slice(j).length),
             );
             throw new ParseError(startLine + 1, lineIndex, col, ERR_BARE_QUOTE);
           }
@@ -118,29 +118,29 @@ class Parser {
         recordBuffer += field;
         fieldIndexes.push(recordBuffer.length);
         if (i >= 0) {
-          currentLine = currentLine.substring(i + separatorLen);
+          line = line.substring(i + separatorLen);
           continue parseField;
         }
         break parseField;
       } else {
         // Quoted string field
-        currentLine = currentLine.substring(quoteLen);
+        line = line.substring(quoteLen);
         while (true) {
-          const i = currentLine.indexOf(quote);
+          const i = line.indexOf(quote);
           if (i >= 0) {
             // Hit next quote.
-            recordBuffer += currentLine.substring(0, i);
-            currentLine = currentLine.substring(i + quoteLen);
-            if (currentLine.startsWith(quote)) {
+            recordBuffer += line.substring(0, i);
+            line = line.substring(i + quoteLen);
+            if (line.startsWith(quote)) {
               // `""` sequence (append quote).
               recordBuffer += quote;
-              currentLine = currentLine.substring(quoteLen);
-            } else if (currentLine.startsWith(this.#options.separator)) {
+              line = line.substring(quoteLen);
+            } else if (line.startsWith(this.#options.separator)) {
               // `","` sequence (end of field).
-              currentLine = currentLine.substring(separatorLen);
+              line = line.substring(separatorLen);
               fieldIndexes.push(recordBuffer.length);
               continue parseField;
-            } else if (0 === currentLine.length) {
+            } else if (0 === line.length) {
               // `"\n` sequence (end of line).
               fieldIndexes.push(recordBuffer.length);
               break parseField;
@@ -150,21 +150,24 @@ class Parser {
             } else {
               // `"*` sequence (invalid non-escaped quote).
               const col = graphemeLength(
-                line.slice(0, line.length - currentLine.length - quoteLen),
+                fullLine.slice(
+                  0,
+                  fullLine.length - line.length - quoteLen,
+                ),
               );
               throw new ParseError(startLine + 1, lineIndex, col, ERR_QUOTE);
             }
-          } else if (currentLine.length > 0 || !(this.#isEOF())) {
+          } else if (line.length > 0 || !(this.#isEOF())) {
             // Hit end of line (copy all data so far).
-            recordBuffer += currentLine;
+            recordBuffer += line;
             const r = this.#readLine();
             lineIndex++;
-            currentLine = r ?? ""; // This is a workaround for making this module behave similarly to the encoding/csv/reader.go.
-            line = currentLine;
+            line = r ?? ""; // This is a workaround for making this module behave similarly to the encoding/csv/reader.go.
+            fullLine = line;
             if (r === null) {
               // Abrupt end of file (EOF or error).
               if (!this.#options.lazyQuotes) {
-                const col = graphemeLength(line);
+                const col = graphemeLength(fullLine);
                 throw new ParseError(startLine + 1, lineIndex, col, ERR_QUOTE);
               }
               fieldIndexes.push(recordBuffer.length);
@@ -174,7 +177,7 @@ class Parser {
           } else {
             // Abrupt end of file (EOF on error).
             if (!this.#options.lazyQuotes) {
-              const col = graphemeLength(line);
+              const col = graphemeLength(fullLine);
               throw new ParseError(startLine + 1, lineIndex, col, ERR_QUOTE);
             }
             fieldIndexes.push(recordBuffer.length);
