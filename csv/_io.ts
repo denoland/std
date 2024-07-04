@@ -75,7 +75,6 @@ export async function parseRecord(
   }
 
   let currentLine = line;
-  let quoteError: ParseError | null = null;
   const quote = '"';
   const quoteLen = quote.length;
   const separatorLen = options.separator.length;
@@ -97,16 +96,8 @@ export async function parseRecord(
       if (!options.lazyQuotes) {
         const j = field.indexOf(quote);
         if (j >= 0) {
-          const col = runeCount(
-            line.slice(0, line.length - currentLine.slice(j).length),
-          );
-          quoteError = new ParseError(
-            startLine + 1,
-            lineIndex,
-            col,
-            ERR_BARE_QUOTE,
-          );
-          break currentLineLoop;
+          const col = line.length + j - currentLine.length;
+          throw new ParseError(startLine + 1, lineIndex, col, ERR_BARE_QUOTE);
         }
       }
       recordBuffer += field;
@@ -143,16 +134,8 @@ export async function parseRecord(
             recordBuffer += quote;
           } else {
             // `"*` sequence (invalid non-escaped quote).
-            const col = runeCount(
-              line.slice(0, line.length - currentLine.length - quoteLen),
-            );
-            quoteError = new ParseError(
-              startLine + 1,
-              lineIndex,
-              col,
-              ERR_QUOTE,
-            );
-            break currentLineLoop;
+            const col = line.length - currentLine.length - quoteLen;
+            throw new ParseError(startLine + 1, lineIndex, col, ERR_QUOTE);
           }
         } else if (currentLine.length > 0 || !reader.isEOF()) {
           // Hit end of line (copy all data so far).
@@ -164,14 +147,8 @@ export async function parseRecord(
           if (r === null) {
             // Abrupt end of file (EOF or error).
             if (!options.lazyQuotes) {
-              const col = runeCount(line);
-              quoteError = new ParseError(
-                startLine + 1,
-                lineIndex,
-                col,
-                ERR_QUOTE,
-              );
-              break currentLineLoop;
+              const col = line.length;
+              throw new ParseError(startLine + 1, lineIndex, col, ERR_QUOTE);
             }
             fieldIndexes.push(recordBuffer.length);
             break currentLineLoop;
@@ -180,23 +157,14 @@ export async function parseRecord(
         } else {
           // Abrupt end of file (EOF on error).
           if (!options.lazyQuotes) {
-            const col = runeCount(line);
-            quoteError = new ParseError(
-              startLine + 1,
-              lineIndex,
-              col,
-              ERR_QUOTE,
-            );
-            break currentLineLoop;
+            const col = line.length;
+            throw new ParseError(startLine + 1, lineIndex, col, ERR_QUOTE);
           }
           fieldIndexes.push(recordBuffer.length);
           break currentLineLoop;
         }
       }
     }
-  }
-  if (quoteError) {
-    throw quoteError;
   }
   const result = [] as string[];
   let preIdx = 0;
@@ -205,11 +173,6 @@ export async function parseRecord(
     preIdx = i;
   }
   return result;
-}
-
-function runeCount(s: string): number {
-  // Array.from considers the surrogate pair.
-  return Array.from(s).length;
 }
 
 /**

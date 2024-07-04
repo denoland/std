@@ -79,64 +79,32 @@ class Parser {
       return [];
     }
 
-    function runeCount(s: string): number {
-      // Array.from considers the surrogate pair.
-      return Array.from(s).length;
-    }
-
     let lineIndex = startLine + 1;
 
     // line starting with comment character is ignored
-    if (this.#options.comment && line[0] === this.#options.comment) {
+    if (this.#options.comment && line.at(0) === this.#options.comment) {
       return [];
     }
 
     let currentLine = line;
-    let quoteError: ParseError | null = null;
     const quote = '"';
     const quoteLen = quote.length;
     const separatorLen = this.#options.separator.length;
     let recordBuffer = "";
     const fieldIndexes = [] as number[];
-    parseField: while (true) {
+    currentLineLoop: while (true) {
       if (this.#options.trimLeadingSpace) {
         currentLine = currentLine.trimStart();
       }
-
-      if (currentLine.length === 0 || !currentLine.startsWith(quote)) {
-        // Non-quoted string field
-        const i = currentLine.indexOf(this.#options.separator);
-        let field = currentLine;
-        if (i >= 0) {
-          field = field.substring(0, i);
-        }
-        // Check to make sure a quote does not appear in field.
-        if (!this.#options.lazyQuotes) {
-          const j = field.indexOf(quote);
-          if (j >= 0) {
-            const col = runeCount(
-              line.slice(0, line.length - currentLine.slice(j).length),
-            );
-            quoteError = new ParseError(
-              startLine + 1,
-              lineIndex,
-              col,
-              ERR_BARE_QUOTE,
-            );
-            break parseField;
-          }
-        }
-        recordBuffer += field;
+      if (currentLine.length === 0) {
         fieldIndexes.push(recordBuffer.length);
-        if (i >= 0) {
-          currentLine = currentLine.substring(i + separatorLen);
-          continue parseField;
-        }
-        break parseField;
-      } else {
+        break currentLineLoop;
+      }
+
+      if (currentLine.startsWith(quote)) {
         // Quoted string field
         currentLine = currentLine.substring(quoteLen);
-        while (true) {
+        quoteLoop: while (true) {
           const i = currentLine.indexOf(quote);
           if (i >= 0) {
             // Hit next quote.
@@ -146,35 +114,30 @@ class Parser {
               // `""` sequence (append quote).
               recordBuffer += quote;
               currentLine = currentLine.substring(quoteLen);
-            } else if (currentLine.startsWith(this.#options.separator)) {
+              continue quoteLoop;
+            }
+            if (currentLine.startsWith(this.#options.separator)) {
               // `","` sequence (end of field).
               currentLine = currentLine.substring(separatorLen);
               fieldIndexes.push(recordBuffer.length);
-              continue parseField;
-            } else if (0 === currentLine.length) {
+              continue currentLineLoop;
+            }
+            if (0 === currentLine.length) {
               // `"\n` sequence (end of line).
               fieldIndexes.push(recordBuffer.length);
-              break parseField;
-            } else if (this.#options.lazyQuotes) {
+              break currentLineLoop;
+            }
+            if (this.#options.lazyQuotes) {
               // `"` sequence (bare quote).
               recordBuffer += quote;
-            } else {
-              // `"*` sequence (invalid non-escaped quote).
-              const col = runeCount(
-                line.slice(
-                  0,
-                  line.length - currentLine.length - quoteLen,
-                ),
-              );
-              quoteError = new ParseError(
-                startLine + 1,
-                lineIndex,
-                col,
-                ERR_QUOTE,
-              );
-              break parseField;
+              continue quoteLoop;
             }
-          } else if (currentLine.length > 0 || !(this.#isEOF())) {
+            // `"*` sequence (invalid non-escaped quote).
+            const col = line.length - currentLine.length - quoteLen;
+
+            throw new ParseError(startLine + 1, lineIndex, col, ERR_QUOTE);
+          }
+          if (currentLine.length > 0 || !this.#isEOF()) {
             // Hit end of line (copy all data so far).
             recordBuffer += currentLine;
             const r = this.#readLine();
@@ -184,39 +147,45 @@ class Parser {
             if (r === null) {
               // Abrupt end of file (EOF or error).
               if (!this.#options.lazyQuotes) {
-                const col = runeCount(line);
-                quoteError = new ParseError(
-                  startLine + 1,
-                  lineIndex,
-                  col,
-                  ERR_QUOTE,
-                );
-                break parseField;
+                const col = line.length;
+                throw new ParseError(startLine + 1, lineIndex, col, ERR_QUOTE);
               }
               fieldIndexes.push(recordBuffer.length);
-              break parseField;
+              break currentLineLoop;
             }
             recordBuffer += "\n"; // preserve line feed (This is because TextProtoReader removes it.)
-          } else {
-            // Abrupt end of file (EOF on error).
-            if (!this.#options.lazyQuotes) {
-              const col = runeCount(line);
-              quoteError = new ParseError(
-                startLine + 1,
-                lineIndex,
-                col,
-                ERR_QUOTE,
-              );
-              break parseField;
-            }
-            fieldIndexes.push(recordBuffer.length);
-            break parseField;
+            continue quoteLoop;
           }
+
+          // Abrupt end of file (EOF on error).
+          if (!this.#options.lazyQuotes) {
+            const col = line.length;
+            throw new ParseError(startLine + 1, lineIndex, col, ERR_QUOTE);
+          }
+          fieldIndexes.push(recordBuffer.length);
+          break currentLineLoop;
         }
       }
-    }
-    if (quoteError) {
-      throw quoteError;
+
+      // Non-quoted string field
+      const i = currentLine.indexOf(this.#options.separator);
+      let field = currentLine;
+      if (i >= 0) field = field.substring(0, i);
+      // Check to make sure a quote does not appear in field.
+      if (!this.#options.lazyQuotes) {
+        const j = field.indexOf(quote);
+        if (j >= 0) {
+          const col = line.length + j - currentLine.length;
+          throw new ParseError(startLine + 1, lineIndex, col, ERR_BARE_QUOTE);
+        }
+      }
+      recordBuffer += field;
+      fieldIndexes.push(recordBuffer.length);
+      if (i >= 0) {
+        currentLine = currentLine.substring(i + separatorLen);
+        continue currentLineLoop;
+      }
+      break currentLineLoop;
     }
     const result = [] as string[];
     let preIdx = 0;
