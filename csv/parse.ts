@@ -150,10 +150,7 @@ class Parser {
             } else {
               // `"*` sequence (invalid non-escaped quote).
               const col = graphemeLength(
-                fullLine.slice(
-                  0,
-                  fullLine.length - line.length - quoteLen,
-                ),
+                fullLine.slice(0, fullLine.length - line.length - quoteLen),
               );
               throw new ParseError(startLine + 1, lineIndex, col, ERR_QUOTE);
             }
