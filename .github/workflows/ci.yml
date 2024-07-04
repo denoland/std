@@ -156,7 +156,7 @@ jobs:
           # TODO(iuioiua): Revert once workspaces functionality is fixed in canary
           # See: https://github.com/denoland/deno/issues/24422
           # deno-version: canary
-          deno-version: canary
+          deno-version: v1.x
 
       - name: Publish (dry run)
         run: deno publish --dry-run
