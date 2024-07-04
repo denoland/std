@@ -3,7 +3,7 @@
 import { assertEquals } from "./equals.ts";
 
 /**
- * Make an assertion that `actual` object is a superset of `expected` object,
+ * Make an assertion that `expected` object is a subset of `actual` object,
  * deeply. If not, then throw.
  *
  * @example Usage
