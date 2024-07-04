@@ -18,7 +18,9 @@ jobs:
       matrix:
         deno:
           - v1.x
-          - canary
+          # TODO(iuioiua): Re-enable once workspaces functionality is fixed in canary
+          # See: https://github.com/denoland/deno/issues/24422
+          # - canary
         os:
           - ubuntu-latest
           - windows-latest
