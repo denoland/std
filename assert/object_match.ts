@@ -15,7 +15,7 @@ import { assertEquals } from "./equals.ts";
  * ```
  *
  * @example Usage with nested objects
- * ```ts
+ * ```ts no-eval
  * import { assertObjectMatch } from "@std/assert";
  *
  * assertObjectMatch({ foo: { bar: 3, baz: 4 } }, { foo: { bar: 3 } }); // Doesn't throw
