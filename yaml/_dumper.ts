@@ -195,17 +195,10 @@ export class DumperState {
 
 function encodeHex(character: number): string {
   const string = character.toString(16).toUpperCase();
-  const length = string.length;
 
-  if (character <= 0xff) {
-    return `\\x${"0".repeat(2 - length)}${string}`;
-  }
-  if (character <= 0xffff) {
-    return `\\u${"0".repeat(4 - length)}${string}`;
-  }
-  if (character <= 0xffffffff) {
-    return `\\U${"0".repeat(8 - length)}${string}`;
-  }
+  if (character <= 0xff) return `\\x${string.padStart(2, "0")}`;
+  if (character <= 0xffff) return `\\u${string.padStart(4, "0")}`;
+  if (character <= 0xffffffff) return `\\U${string.padStart(8, "0")}`;
   throw new YamlError(
     "code point within a string may not be greater than 0xFFFFFFFF",
   );
