@@ -318,7 +318,12 @@ function mergeMappings(
 
   for (const [key, value] of Object.entries(source)) {
     if (Object.hasOwn(destination, key)) continue;
-    destination[key] = value;
+    Object.defineProperty(destination, key, {
+      value,
+      writable: true,
+      enumerable: true,
+      configurable: true,
+    });
     overridableKeys[key] = true;
   }
 }
