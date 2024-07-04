@@ -24,8 +24,6 @@ import {
   RIGHT_SQUARE_BRACKET,
   SHARP,
   SINGLE_QUOTE,
-  SPACE,
-  TAB,
   VERTICAL_LINE,
 } from "./_chars.ts";
 import { YamlError } from "./_error.ts";
