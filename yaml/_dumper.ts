@@ -29,10 +29,12 @@ import {
 import { YamlError } from "./_error.ts";
 import { DEFAULT_SCHEMA, type Schema } from "./_schema.ts";
 import type { RepresentFn, StyleVariant, Type } from "./_type.ts";
-import * as common from "./_utils.ts";
-
-type Any = common.Any;
-type ArrayObject<T = Any> = common.ArrayObject<T>;
+import {
+  type Any,
+  type ArrayObject,
+  charCodeToHexString,
+  isObject,
+} from "./_utils.ts";
 
 const ESCAPE_SEQUENCES = new Map<number, string>([
   [0x00, "\\0"],
@@ -483,7 +485,7 @@ function escapeString(string: string): string {
       nextChar = string.charCodeAt(i + 1);
       if (nextChar >= 0xdc00 && nextChar <= 0xdfff /* low surrogate */) {
         // Combine the surrogate pair and store it escaped.
-        result += common.charCodeToHexString(
+        result += charCodeToHexString(
           (char - 0xd800) * 0x400 + nextChar - 0xdc00 + 0x10000,
         );
         // Advance index one extra since we already used that char here.
@@ -494,7 +496,7 @@ function escapeString(string: string): string {
     escapeSeq = ESCAPE_SEQUENCES.get(char);
     result += !escapeSeq && isPrintable(char)
       ? string[i]
-      : escapeSeq || common.charCodeToHexString(char);
+      : escapeSeq || charCodeToHexString(char);
   }
 
   return result;
@@ -821,7 +823,7 @@ function writeNode(
     block = state.flowLevel < 0 || state.flowLevel > level;
   }
 
-  const objectOrArray = common.isObject(state.dump) ||
+  const objectOrArray = isObject(state.dump) ||
     Array.isArray(state.dump);
 
   let duplicateIndex = -1;
@@ -845,7 +847,7 @@ function writeNode(
     if (objectOrArray && duplicate && !state.usedDuplicates[duplicateIndex]) {
       state.usedDuplicates[duplicateIndex] = true;
     }
-    if (common.isObject(state.dump) && !Array.isArray(state.dump)) {
+    if (isObject(state.dump) && !Array.isArray(state.dump)) {
       if (block && Object.keys(state.dump).length !== 0) {
         writeBlockMapping(state, level, state.dump, compact);
         if (duplicate) {

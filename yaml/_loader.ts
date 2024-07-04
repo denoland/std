@@ -39,11 +39,15 @@ import { YamlError } from "./_error.ts";
 import { Mark } from "./_mark.ts";
 import { DEFAULT_SCHEMA, type Schema, type TypeMap } from "./_schema.ts";
 import type { Type } from "./_type.ts";
-import * as common from "./_utils.ts";
-import { getObjectTypeString } from "./_utils.ts";
-
-type Any = common.Any;
-type ArrayObject<T = Any> = common.ArrayObject<T>;
+import {
+  type Any,
+  type ArrayObject,
+  codepointToChar,
+  decimalCharCodeToNumber,
+  getObjectTypeString,
+  hexCharCodeToNumber,
+  isObject,
+} from "./_utils.ts";
 
 const CONTEXT_FLOW_IN = 1;
 const CONTEXT_FLOW_OUT = 2;
@@ -270,7 +274,7 @@ function mergeMappings(
   source: ArrayObject,
   overridableKeys: ArrayObject<boolean>,
 ) {
-  if (!common.isObject(source)) {
+  if (!isObject(source)) {
     return state.throwError(
       "cannot merge mappings; the provided source object is unacceptable",
     );
@@ -660,14 +664,14 @@ function readDoubleQuotedScalar(
         for (; hexLength > 0; hexLength--) {
           ch = state.next();
 
-          if ((tmp = common.hexCharCodeToNumber(ch)) >= 0) {
+          if ((tmp = hexCharCodeToNumber(ch)) >= 0) {
             hexResult = (hexResult << 4) + tmp;
           } else {
             return state.throwError("expected hexadecimal character");
           }
         }
 
-        state.result += common.codepointToChar(hexResult);
+        state.result += codepointToChar(hexResult);
 
         state.position++;
       } else {
@@ -850,7 +854,7 @@ function readBlockScalar(state: LoaderState, nodeIndent: number): boolean {
       } else {
         return state.throwError("repeat of a chomping mode identifier");
       }
-    } else if ((tmp = common.decimalCharCodeToNumber(ch)) >= 0) {
+    } else if ((tmp = decimalCharCodeToNumber(ch)) >= 0) {
       if (tmp === 0) {
         return state.throwError(
           "bad explicit indentation width of a block scalar; it cannot be less than one",
