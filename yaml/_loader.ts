@@ -316,16 +316,15 @@ function mergeMappings(
     );
   }
 
-  for (const key of Object.keys(source)) {
-    if (!Object.hasOwn(destination, key)) {
-      Object.defineProperty(destination, key, {
-        value: source[key],
-        writable: true,
-        enumerable: true,
-        configurable: true,
-      });
-      overridableKeys[key] = true;
-    }
+  for (const [key, value] of Object.entries(source)) {
+    if (Object.hasOwn(destination, key)) continue;
+    Object.defineProperty(destination, key, {
+      value,
+      writable: true,
+      enumerable: true,
+      configurable: true,
+    });
+    overridableKeys[key] = true;
   }
 }
 
