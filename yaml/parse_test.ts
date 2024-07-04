@@ -976,13 +976,13 @@ name: Jane Doe`,
   );
 });
 
-Deno.test("parse() allows duplicate keys when `json` option is set to `true`", () => {
+Deno.test("parse() allows duplicate keys when `allowDuplicateKeys` option is set to `true`", () => {
   assertEquals(
     parse(
       `name: John Doe
 age: 30
 name: Jane Doe`,
-      { json: true },
+      { allowDuplicateKeys: true },
     ),
     { name: "Jane Doe", age: 30 },
   );
