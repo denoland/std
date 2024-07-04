@@ -61,14 +61,14 @@ export interface LineReader {
 }
 
 export async function parseRecord(
-  fullLine: string,
+  line: string,
   reader: LineReader,
   options: ReadOptions,
   startLine: number,
   lineIndex: number = startLine,
 ): Promise<Array<string>> {
   // line starting with comment character is ignored
-  if (options.comment && fullLine[0] === options.comment) return [];
+  if (options.comment && line[0] === options.comment) return [];
 
   if (options.separator === undefined) {
     throw new TypeError("Separator is required");
@@ -80,7 +80,7 @@ export async function parseRecord(
   let recordBuffer = "";
   const fieldIndexes = [] as number[];
 
-  let line = fullLine;
+  let fullLine = line;
   parseField: while (true) {
     if (options.trimLeadingSpace) line = line.trimStart();
     if (line.length === 0) {
