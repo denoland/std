@@ -486,7 +486,7 @@ function writeFoldedLines(state: LoaderState, count: number) {
   if (count === 1) {
     state.result += " ";
   } else if (count > 1) {
-    state.result += common.repeat("\n", count - 1);
+    state.result += "\n".repeat(count - 1);
   }
 }
 
@@ -936,8 +936,7 @@ function readBlockScalar(state: LoaderState, nodeIndent: number): boolean {
     if (state.lineIndent < textIndent) {
       // Perform the chomping.
       if (chomping === CHOMPING_KEEP) {
-        state.result += common.repeat(
-          "\n",
+        state.result += "\n".repeat(
           didReadContent ? 1 + emptyLines : emptyLines,
         );
       } else if (chomping === CHOMPING_CLIP) {
@@ -957,15 +956,14 @@ function readBlockScalar(state: LoaderState, nodeIndent: number): boolean {
       if (isWhiteSpace(ch)) {
         atMoreIndented = true;
         // except for the first content line (cf. Example 8.1)
-        state.result += common.repeat(
-          "\n",
+        state.result += "\n".repeat(
           didReadContent ? 1 + emptyLines : emptyLines,
         );
 
         // End of more-indented block.
       } else if (atMoreIndented) {
         atMoreIndented = false;
-        state.result += common.repeat("\n", emptyLines + 1);
+        state.result += "\n".repeat(emptyLines + 1);
 
         // Just one line break - perceive as the same line.
       } else if (emptyLines === 0) {
@@ -976,16 +974,13 @@ function readBlockScalar(state: LoaderState, nodeIndent: number): boolean {
 
         // Several line breaks - perceive as different lines.
       } else {
-        state.result += common.repeat("\n", emptyLines);
+        state.result += "\n".repeat(emptyLines);
       }
 
       // Literal style: just add exact number of line breaks between content lines.
     } else {
       // Keep all line breaks except the header line break.
-      state.result += common.repeat(
-        "\n",
-        didReadContent ? 1 + emptyLines : emptyLines,
-      );
+      state.result += "\n".repeat(didReadContent ? 1 + emptyLines : emptyLines);
     }
 
     didReadContent = true;
