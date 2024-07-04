@@ -275,3 +275,18 @@ Deno.test({
     );
   },
 });
+
+Deno.test({
+  name: "stringify() works with noRefs option",
+  fn() {
+    const obj = { foo: "bar" };
+    assertEquals(
+      stringify([obj, obj], { noRefs: true }),
+      `- foo: bar\n- foo: bar\n`,
+    );
+    assertEquals(
+      stringify([obj, obj], { noRefs: false }),
+      `- &ref_0\n  foo: bar\n- *ref_0\n`,
+    );
+  },
+});

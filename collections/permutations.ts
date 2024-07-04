@@ -54,7 +54,7 @@ export function permutations<T>(inputArray: Iterable<T>): T[][] {
 
       result.push([...array]);
 
-      c[i] += 1;
+      c[i]! += 1;
       i = 1;
     } else {
       c[i] = 0;
