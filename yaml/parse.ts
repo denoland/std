@@ -4,7 +4,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-import { load, loadDocuments } from "./_loader/loader.ts";
+import { load, loadDocuments } from "./_loader.ts";
 import { SCHEMA_MAP } from "./_schema.ts";
 
 /**
@@ -16,7 +16,7 @@ export interface ParseOptions {
   /** compatibility with JSON.parse behaviour. */
   json?: boolean;
   /** function to call on warning messages. */
-  onWarning?(this: null, e?: Error): void;
+  onWarning?(error?: Error): void;
 }
 
 /**

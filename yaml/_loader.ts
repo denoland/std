@@ -31,16 +31,12 @@ import {
   SPACE,
   TAB,
   VERTICAL_LINE,
-} from "../_chars.ts";
-import { YamlError } from "../_error.ts";
-import { Mark } from "../_mark.ts";
-import type { Type } from "../_type.ts";
-import * as common from "../_utils.ts";
-import {
-  LoaderState,
-  type LoaderStateOptions,
-  type ResultType,
-} from "./loader_state.ts";
+} from "./_chars.ts";
+import { YamlError } from "./_error.ts";
+import { Mark } from "./_mark.ts";
+import { DEFAULT_SCHEMA, type Schema, type TypeMap } from "./_schema.ts";
+import type { Type } from "./_type.ts";
+import * as common from "./_utils.ts";
 
 type Any = common.Any;
 type ArrayObject<T = Any> = common.ArrayObject<T>;
@@ -63,6 +59,89 @@ const PATTERN_TAG_HANDLE = /^(?:!|!!|![a-z\-]+!)$/i;
 const PATTERN_TAG_URI =
   /^(?:!|[^,\[\]\{\}])(?:%[0-9a-f]{2}|[0-9a-z\-#;\/\?:@&=\+\$,_\.!~\*'\(\)\[\]])*$/i;
 
+interface LoaderStateOptions {
+  /** specifies a schema to use. */
+  schema?: Schema;
+  /** compatibility with JSON.parse behaviour. */
+  json?: boolean;
+  /** function to call on warning messages. */
+  onWarning?(error?: YamlError): void;
+}
+
+// deno-lint-ignore no-explicit-any
+type ResultType = any[] | Record<string, any> | string;
+
+class LoaderState {
+  schema: Schema;
+  input: string;
+  length: number;
+  lineIndent = 0;
+  lineStart = 0;
+  position = 0;
+  line = 0;
+  onWarning?: (...args: Any[]) => void;
+  json: boolean;
+  implicitTypes: Type[];
+  typeMap: TypeMap;
+
+  version?: string | null;
+  checkLineBreaks = false;
+  tagMap: ArrayObject = Object.create(null);
+  anchorMap: ArrayObject = Object.create(null);
+  tag?: string | null;
+  anchor?: string | null;
+  kind?: string | null;
+  result: ResultType | null = "";
+
+  constructor(
+    input: string,
+    {
+      schema = DEFAULT_SCHEMA,
+      onWarning,
+      json = false,
+    }: LoaderStateOptions,
+  ) {
+    this.schema = schema;
+    this.input = input;
+    this.onWarning = onWarning;
+    this.json = json;
+    this.implicitTypes = this.schema.compiledImplicit;
+    this.typeMap = this.schema.compiledTypeMap;
+    this.length = input.length;
+
+    while (this.peek() === SPACE) {
+      this.lineIndent += 1;
+      this.position += 1;
+    }
+  }
+
+  peek(offset = 0) {
+    return this.input.charCodeAt(this.position + offset);
+  }
+  next() {
+    this.position += 1;
+    return this.peek();
+  }
+  #createError(message: string): YamlError {
+    const mark = new Mark(
+      this.input,
+      this.position,
+      this.line,
+      this.position - this.lineStart,
+    );
+    return new YamlError(message, mark);
+  }
+
+  throwError(message: string): never {
+    throw this.#createError(message);
+  }
+
+  throwWarning(message: string) {
+    const error = this.#createError(message);
+    this.onWarning?.(error);
+  }
+}
+
 function _class(obj: unknown): string {
   return Object.prototype.toString.call(obj);
 }
@@ -75,13 +154,8 @@ function isWhiteSpace(c: number): boolean {
   return c === TAB || c === SPACE;
 }
 
-function isWsOrEol(c: number): boolean {
-  return (
-    c === TAB ||
-    c === SPACE ||
-    c === LINE_FEED ||
-    c === CARRIAGE_RETURN
-  );
+function isWhiteSpaceOrEOL(c: number): boolean {
+  return isWhiteSpace(c) || isEOL(c);
 }
 
 function isFlowIndicator(c: number): boolean {
@@ -155,79 +229,54 @@ function charFromCodepoint(c: number): string {
   );
 }
 
-function generateError(state: LoaderState, message: string): YamlError {
-  return new YamlError(
-    message,
-    new Mark(
-      state.input,
-      state.position,
-      state.line,
-      state.position - state.lineStart,
-    ),
-  );
-}
-
-function throwError(state: LoaderState, message: string): never {
-  throw generateError(state, message);
-}
-
-function throwWarning(state: LoaderState, message: string) {
-  if (state.onWarning) {
-    state.onWarning.call(null, generateError(state, message));
-  }
-}
-
 function yamlDirectiveHandler(state: LoaderState, ...args: string[]) {
   if (state.version !== null) {
-    return throwError(state, "duplication of %YAML directive");
+    return state.throwError("duplication of %YAML directive");
   }
 
   if (args.length !== 1) {
-    return throwError(state, "YAML directive accepts exactly one argument");
+    return state.throwError("YAML directive accepts exactly one argument");
   }
 
   const match = /^([0-9]+)\.([0-9]+)$/.exec(args[0]!);
   if (match === null) {
-    return throwError(state, "ill-formed argument of the YAML directive");
+    return state.throwError("ill-formed argument of the YAML directive");
   }
 
   const major = parseInt(match[1]!, 10);
   const minor = parseInt(match[2]!, 10);
   if (major !== 1) {
-    return throwError(state, "unacceptable YAML version of the document");
+    return state.throwError("unacceptable YAML version of the document");
   }
 
   state.version = args[0];
   state.checkLineBreaks = minor < 2;
   if (minor !== 1 && minor !== 2) {
-    return throwWarning(state, "unsupported YAML version of the document");
+    return state.throwWarning("unsupported YAML version of the document");
   }
 }
 function tagDirectiveHandler(state: LoaderState, ...args: string[]) {
   if (args.length !== 2) {
-    return throwError(state, "TAG directive accepts exactly two arguments");
+    return state.throwError("TAG directive accepts exactly two arguments");
   }
 
   const handle = args[0]!;
   const prefix = args[1]!;
 
   if (!PATTERN_TAG_HANDLE.test(handle)) {
-    return throwError(
-      state,
+    return state.throwError(
       "ill-formed tag handle (first argument) of the TAG directive",
     );
   }
 
   if (Object.hasOwn(state.tagMap, handle)) {
-    return throwError(
-      state,
+    return state.throwError(
       `there is a previously declared suffix for "${handle}" tag handle`,
     );
   }
 
   if (!PATTERN_TAG_URI.test(prefix)) {
-    return throwError(
-      state,
+    return state.throwError(
       "ill-formed tag prefix (second argument) of the TAG directive",
     );
   }
@@ -255,11 +304,11 @@ function captureSegment(
         if (
           !(character === 0x09 || (0x20 <= character && character <= 0x10ffff))
         ) {
-          return throwError(state, "expected valid JSON character");
+          return state.throwError("expected valid JSON character");
         }
       }
     } else if (PATTERN_NON_PRINTABLE.test(result)) {
-      return throwError(state, "the stream contains non-printable characters");
+      return state.throwError("the stream contains non-printable characters");
     }
 
     state.result += result;
@@ -273,8 +322,7 @@ function mergeMappings(
   overridableKeys: ArrayObject<boolean>,
 ) {
   if (!common.isObject(source)) {
-    return throwError(
-      state,
+    return state.throwError(
       "cannot merge mappings; the provided source object is unacceptable",
     );
   }
@@ -310,7 +358,7 @@ function storeMappingPair(
 
     for (let index = 0; index < keyNode.length; index++) {
       if (Array.isArray(keyNode[index])) {
-        return throwError(state, "nested arrays are not supported inside keys");
+        return state.throwError("nested arrays are not supported inside keys");
       }
 
       if (
@@ -355,7 +403,7 @@ function storeMappingPair(
     ) {
       state.line = startLine || state.line;
       state.position = startPos || state.position;
-      return throwError(state, "duplicated mapping key");
+      return state.throwError("duplicated mapping key");
     }
     Object.defineProperty(result, keyNode, {
       value: valueNode,
@@ -370,17 +418,17 @@ function storeMappingPair(
 }
 
 function readLineBreak(state: LoaderState) {
-  const ch = state.input.charCodeAt(state.position);
+  const ch = state.peek();
 
   if (ch === LINE_FEED) {
     state.position++;
   } else if (ch === CARRIAGE_RETURN) {
     state.position++;
-    if (state.input.charCodeAt(state.position) === LINE_FEED) {
+    if (state.peek() === LINE_FEED) {
       state.position++;
     }
   } else {
-    return throwError(state, "a line break is expected");
+    return state.throwError("a line break is expected");
   }
 
   state.line += 1;
@@ -393,29 +441,29 @@ function skipSeparationSpace(
   checkIndent: number,
 ): number {
   let lineBreaks = 0;
-  let ch = state.input.charCodeAt(state.position);
+  let ch = state.peek();
 
   while (ch !== 0) {
     while (isWhiteSpace(ch)) {
-      ch = state.input.charCodeAt(++state.position);
+      ch = state.next();
     }
 
     if (allowComments && ch === SHARP) {
       do {
-        ch = state.input.charCodeAt(++state.position);
+        ch = state.next();
       } while (ch !== LINE_FEED && ch !== CARRIAGE_RETURN && ch !== 0);
     }
 
     if (isEOL(ch)) {
       readLineBreak(state);
 
-      ch = state.input.charCodeAt(state.position);
+      ch = state.peek();
       lineBreaks++;
       state.lineIndent = 0;
 
       while (ch === SPACE) {
         state.lineIndent++;
-        ch = state.input.charCodeAt(++state.position);
+        ch = state.next();
       }
     } else {
       break;
@@ -427,28 +475,25 @@ function skipSeparationSpace(
     lineBreaks !== 0 &&
     state.lineIndent < checkIndent
   ) {
-    throwWarning(state, "deficient indentation");
+    state.throwWarning("deficient indentation");
   }
 
   return lineBreaks;
 }
 
 function testDocumentSeparator(state: LoaderState): boolean {
-  let _position = state.position;
-  let ch = state.input.charCodeAt(_position);
+  let ch = state.peek();
 
   // Condition state.position === state.lineStart is tested
   // in parent on each call, for efficiency. No needs to test here again.
   if (
     (ch === MINUS || ch === DOT) &&
-    ch === state.input.charCodeAt(_position + 1) &&
-    ch === state.input.charCodeAt(_position + 2)
+    ch === state.peek(1) &&
+    ch === state.peek(2)
   ) {
-    _position += 3;
+    ch = state.peek(3);
 
-    ch = state.input.charCodeAt(_position);
-
-    if (ch === 0 || isWsOrEol(ch)) {
+    if (ch === 0 || isWhiteSpaceOrEOL(ch)) {
       return true;
     }
   }
@@ -471,10 +516,10 @@ function readPlainScalar(
 ): boolean {
   const kind = state.kind;
   const result = state.result;
-  let ch = state.input.charCodeAt(state.position);
+  let ch = state.peek();
 
   if (
-    isWsOrEol(ch) ||
+    isWhiteSpaceOrEOL(ch) ||
     isFlowIndicator(ch) ||
     ch === SHARP ||
     ch === AMPERSAND ||
@@ -493,10 +538,10 @@ function readPlainScalar(
 
   let following: number;
   if (ch === QUESTION || ch === MINUS) {
-    following = state.input.charCodeAt(state.position + 1);
+    following = state.peek(1);
 
     if (
-      isWsOrEol(following) ||
+      isWhiteSpaceOrEOL(following) ||
       (withinFlowCollection && isFlowIndicator(following))
     ) {
       return false;
@@ -511,18 +556,18 @@ function readPlainScalar(
   let line = 0;
   while (ch !== 0) {
     if (ch === COLON) {
-      following = state.input.charCodeAt(state.position + 1);
+      following = state.peek(1);
 
       if (
-        isWsOrEol(following) ||
+        isWhiteSpaceOrEOL(following) ||
         (withinFlowCollection && isFlowIndicator(following))
       ) {
         break;
       }
     } else if (ch === SHARP) {
-      const preceding = state.input.charCodeAt(state.position - 1);
+      const preceding = state.peek(-1);
 
-      if (isWsOrEol(preceding)) {
+      if (isWhiteSpaceOrEOL(preceding)) {
         break;
       }
     } else if (
@@ -538,7 +583,7 @@ function readPlainScalar(
 
       if (state.lineIndent >= nodeIndent) {
         hasPendingContent = true;
-        ch = state.input.charCodeAt(state.position);
+        ch = state.peek();
         continue;
       } else {
         state.position = captureEnd;
@@ -560,7 +605,7 @@ function readPlainScalar(
       captureEnd = state.position + 1;
     }
 
-    ch = state.input.charCodeAt(++state.position);
+    ch = state.next();
   }
 
   captureSegment(state, captureStart, captureEnd, false);
@@ -582,7 +627,7 @@ function readSingleQuotedScalar(
   let captureStart;
   let captureEnd;
 
-  ch = state.input.charCodeAt(state.position);
+  ch = state.peek();
 
   if (ch !== SINGLE_QUOTE) {
     return false;
@@ -593,10 +638,10 @@ function readSingleQuotedScalar(
   state.position++;
   captureStart = captureEnd = state.position;
 
-  while ((ch = state.input.charCodeAt(state.position)) !== 0) {
+  while ((ch = state.peek()) !== 0) {
     if (ch === SINGLE_QUOTE) {
       captureSegment(state, captureStart, state.position, true);
-      ch = state.input.charCodeAt(++state.position);
+      ch = state.next();
 
       if (ch === SINGLE_QUOTE) {
         captureStart = state.position;
@@ -613,8 +658,7 @@ function readSingleQuotedScalar(
       state.position === state.lineStart &&
       testDocumentSeparator(state)
     ) {
-      return throwError(
-        state,
+      return state.throwError(
         "unexpected end of the document within a single quoted scalar",
       );
     } else {
@@ -623,8 +667,7 @@ function readSingleQuotedScalar(
     }
   }
 
-  return throwError(
-    state,
+  return state.throwError(
     "unexpected end of the stream within a single quoted scalar",
   );
 }
@@ -633,7 +676,7 @@ function readDoubleQuotedScalar(
   state: LoaderState,
   nodeIndent: number,
 ): boolean {
-  let ch = state.input.charCodeAt(state.position);
+  let ch = state.peek();
 
   if (ch !== DOUBLE_QUOTE) {
     return false;
@@ -645,7 +688,7 @@ function readDoubleQuotedScalar(
   let captureEnd = state.position;
   let captureStart = state.position;
   let tmp: number;
-  while ((ch = state.input.charCodeAt(state.position)) !== 0) {
+  while ((ch = state.peek()) !== 0) {
     if (ch === DOUBLE_QUOTE) {
       captureSegment(state, captureStart, state.position, true);
       state.position++;
@@ -653,7 +696,7 @@ function readDoubleQuotedScalar(
     }
     if (ch === BACKSLASH) {
       captureSegment(state, captureStart, state.position, true);
-      ch = state.input.charCodeAt(++state.position);
+      ch = state.next();
 
       if (isEOL(ch)) {
         skipSeparationSpace(state, false, nodeIndent);
@@ -665,12 +708,12 @@ function readDoubleQuotedScalar(
         let hexResult = 0;
 
         for (; hexLength > 0; hexLength--) {
-          ch = state.input.charCodeAt(++state.position);
+          ch = state.next();
 
           if ((tmp = fromHexCode(ch)) >= 0) {
             hexResult = (hexResult << 4) + tmp;
           } else {
-            return throwError(state, "expected hexadecimal character");
+            return state.throwError("expected hexadecimal character");
           }
         }
 
@@ -678,7 +721,7 @@ function readDoubleQuotedScalar(
 
         state.position++;
       } else {
-        return throwError(state, "unknown escape sequence");
+        return state.throwError("unknown escape sequence");
       }
 
       captureStart = captureEnd = state.position;
@@ -690,8 +733,7 @@ function readDoubleQuotedScalar(
       state.position === state.lineStart &&
       testDocumentSeparator(state)
     ) {
-      return throwError(
-        state,
+      return state.throwError(
         "unexpected end of the document within a double quoted scalar",
       );
     } else {
@@ -700,14 +742,13 @@ function readDoubleQuotedScalar(
     }
   }
 
-  return throwError(
-    state,
+  return state.throwError(
     "unexpected end of the stream within a double quoted scalar",
   );
 }
 
 function readFlowCollection(state: LoaderState, nodeIndent: number): boolean {
-  let ch = state.input.charCodeAt(state.position);
+  let ch = state.peek();
   let terminator: number;
   let isMapping = true;
   let result: ResultType = {};
@@ -725,7 +766,7 @@ function readFlowCollection(state: LoaderState, nodeIndent: number): boolean {
     state.anchorMap[state.anchor] = result;
   }
 
-  ch = state.input.charCodeAt(++state.position);
+  ch = state.next();
 
   const tag = state.tag;
   const anchor = state.anchor;
@@ -741,7 +782,7 @@ function readFlowCollection(state: LoaderState, nodeIndent: number): boolean {
   while (ch !== 0) {
     skipSeparationSpace(state, true, nodeIndent);
 
-    ch = state.input.charCodeAt(state.position);
+    ch = state.peek();
 
     if (ch === terminator) {
       state.position++;
@@ -752,16 +793,16 @@ function readFlowCollection(state: LoaderState, nodeIndent: number): boolean {
       return true;
     }
     if (!readNext) {
-      return throwError(state, "missed comma between flow collection entries");
+      return state.throwError("missed comma between flow collection entries");
     }
 
     keyTag = keyNode = valueNode = null;
     isPair = isExplicitPair = false;
 
     if (ch === QUESTION) {
-      following = state.input.charCodeAt(state.position + 1);
+      following = state.peek(1);
 
-      if (isWsOrEol(following)) {
+      if (isWhiteSpaceOrEOL(following)) {
         isPair = isExplicitPair = true;
         state.position++;
         skipSeparationSpace(state, true, nodeIndent);
@@ -774,11 +815,11 @@ function readFlowCollection(state: LoaderState, nodeIndent: number): boolean {
     keyNode = state.result;
     skipSeparationSpace(state, true, nodeIndent);
 
-    ch = state.input.charCodeAt(state.position);
+    ch = state.peek();
 
     if ((isExplicitPair || state.line === line) && ch === COLON) {
       isPair = true;
-      ch = state.input.charCodeAt(++state.position);
+      ch = state.next();
       skipSeparationSpace(state, true, nodeIndent);
       composeNode(state, nodeIndent, CONTEXT_FLOW_IN, false, true);
       valueNode = state.result;
@@ -810,18 +851,17 @@ function readFlowCollection(state: LoaderState, nodeIndent: number): boolean {
 
     skipSeparationSpace(state, true, nodeIndent);
 
-    ch = state.input.charCodeAt(state.position);
+    ch = state.peek();
 
     if (ch === COMMA) {
       readNext = true;
-      ch = state.input.charCodeAt(++state.position);
+      ch = state.next();
     } else {
       readNext = false;
     }
   }
 
-  return throwError(
-    state,
+  return state.throwError(
     "unexpected end of the stream within a flow collection",
   );
 }
@@ -836,7 +876,7 @@ function readBlockScalar(state: LoaderState, nodeIndent: number): boolean {
   let emptyLines = 0;
   let atMoreIndented = false;
 
-  let ch = state.input.charCodeAt(state.position);
+  let ch = state.peek();
 
   let folding = false;
   if (ch === VERTICAL_LINE) {
@@ -852,25 +892,24 @@ function readBlockScalar(state: LoaderState, nodeIndent: number): boolean {
 
   let tmp = 0;
   while (ch !== 0) {
-    ch = state.input.charCodeAt(++state.position);
+    ch = state.next();
 
     if (ch === PLUS || ch === MINUS) {
       if (CHOMPING_CLIP === chomping) {
         chomping = ch === PLUS ? CHOMPING_KEEP : CHOMPING_STRIP;
       } else {
-        return throwError(state, "repeat of a chomping mode identifier");
+        return state.throwError("repeat of a chomping mode identifier");
       }
     } else if ((tmp = fromDecimalCode(ch)) >= 0) {
       if (tmp === 0) {
-        return throwError(
-          state,
+        return state.throwError(
           "bad explicit indentation width of a block scalar; it cannot be less than one",
         );
       } else if (!detectedIndent) {
         textIndent = nodeIndent + tmp - 1;
         detectedIndent = true;
       } else {
-        return throwError(state, "repeat of an indentation width identifier");
+        return state.throwError("repeat of an indentation width identifier");
       }
     } else {
       break;
@@ -879,12 +918,12 @@ function readBlockScalar(state: LoaderState, nodeIndent: number): boolean {
 
   if (isWhiteSpace(ch)) {
     do {
-      ch = state.input.charCodeAt(++state.position);
+      ch = state.next();
     } while (isWhiteSpace(ch));
 
     if (ch === SHARP) {
       do {
-        ch = state.input.charCodeAt(++state.position);
+        ch = state.next();
       } while (!isEOL(ch) && ch !== 0);
     }
   }
@@ -893,14 +932,14 @@ function readBlockScalar(state: LoaderState, nodeIndent: number): boolean {
     readLineBreak(state);
     state.lineIndent = 0;
 
-    ch = state.input.charCodeAt(state.position);
+    ch = state.peek();
 
     while (
       (!detectedIndent || state.lineIndent < textIndent) &&
       ch === SPACE
     ) {
       state.lineIndent++;
-      ch = state.input.charCodeAt(++state.position);
+      ch = state.next();
     }
 
     if (!detectedIndent && state.lineIndent > textIndent) {
@@ -974,7 +1013,7 @@ function readBlockScalar(state: LoaderState, nodeIndent: number): boolean {
     const captureStart = state.position;
 
     while (!isEOL(ch) && ch !== 0) {
-      ch = state.input.charCodeAt(++state.position);
+      ch = state.next();
     }
 
     captureSegment(state, captureStart, state.position, false);
@@ -996,16 +1035,16 @@ function readBlockSequence(state: LoaderState, nodeIndent: number): boolean {
     state.anchorMap[state.anchor] = result;
   }
 
-  ch = state.input.charCodeAt(state.position);
+  ch = state.peek();
 
   while (ch !== 0) {
     if (ch !== MINUS) {
       break;
     }
 
-    following = state.input.charCodeAt(state.position + 1);
+    following = state.peek(1);
 
-    if (!isWsOrEol(following)) {
+    if (!isWhiteSpaceOrEOL(following)) {
       break;
     }
 
@@ -1015,7 +1054,7 @@ function readBlockSequence(state: LoaderState, nodeIndent: number): boolean {
     if (skipSeparationSpace(state, true, -1)) {
       if (state.lineIndent <= nodeIndent) {
         result.push(null);
-        ch = state.input.charCodeAt(state.position);
+        ch = state.peek();
         continue;
       }
     }
@@ -1025,10 +1064,10 @@ function readBlockSequence(state: LoaderState, nodeIndent: number): boolean {
     result.push(state.result);
     skipSeparationSpace(state, true, -1);
 
-    ch = state.input.charCodeAt(state.position);
+    ch = state.peek();
 
     if ((state.line === line || state.lineIndent > nodeIndent) && ch !== 0) {
-      return throwError(state, "bad indentation of a sequence entry");
+      return state.throwError("bad indentation of a sequence entry");
     } else if (state.lineIndent < nodeIndent) {
       break;
     }
@@ -1068,10 +1107,10 @@ function readBlockMapping(
     state.anchorMap[state.anchor] = result;
   }
 
-  ch = state.input.charCodeAt(state.position);
+  ch = state.peek();
 
   while (ch !== 0) {
-    following = state.input.charCodeAt(state.position + 1);
+    following = state.peek(1);
     line = state.line; // Save the current line.
     pos = state.position;
 
@@ -1079,7 +1118,7 @@ function readBlockMapping(
     // Explicit notation case. There are two separate blocks:
     // first for the key (denoted by "?") and second for the value (denoted by ":")
     //
-    if ((ch === QUESTION || ch === COLON) && isWsOrEol(following)) {
+    if ((ch === QUESTION || ch === COLON) && isWhiteSpaceOrEOL(following)) {
       if (ch === QUESTION) {
         if (atExplicitKey) {
           storeMappingPair(
@@ -1101,8 +1140,7 @@ function readBlockMapping(
         atExplicitKey = false;
         allowCompact = true;
       } else {
-        return throwError(
-          state,
+        return state.throwError(
           "incomplete explicit mapping pair; a key node is missed; or followed by a non-tabulated empty line",
         );
       }
@@ -1115,18 +1153,17 @@ function readBlockMapping(
       //
     } else if (composeNode(state, flowIndent, CONTEXT_FLOW_OUT, false, true)) {
       if (state.line === line) {
-        ch = state.input.charCodeAt(state.position);
+        ch = state.peek();
 
         while (isWhiteSpace(ch)) {
-          ch = state.input.charCodeAt(++state.position);
+          ch = state.next();
         }
 
         if (ch === COLON) {
-          ch = state.input.charCodeAt(++state.position);
+          ch = state.next();
 
-          if (!isWsOrEol(ch)) {
-            return throwError(
-              state,
+          if (!isWhiteSpaceOrEOL(ch)) {
+            return state.throwError(
               "a whitespace character is expected after the key-value separator within a block mapping",
             );
           }
@@ -1149,8 +1186,7 @@ function readBlockMapping(
           keyTag = state.tag;
           keyNode = state.result;
         } else if (detected) {
-          return throwError(
-            state,
+          return state.throwError(
             "can not read an implicit mapping pair; a colon is missed",
           );
         } else {
@@ -1159,8 +1195,7 @@ function readBlockMapping(
           return true; // Keep the result of `composeNode`.
         }
       } else if (detected) {
-        return throwError(
-          state,
+        return state.throwError(
           "can not read a block mapping entry; a multiline key may not be an implicit key",
         );
       } else {
@@ -1201,11 +1236,11 @@ function readBlockMapping(
       }
 
       skipSeparationSpace(state, true, -1);
-      ch = state.input.charCodeAt(state.position);
+      ch = state.peek();
     }
 
     if (state.lineIndent > nodeIndent && ch !== 0) {
-      return throwError(state, "bad indentation of a mapping entry");
+      return state.throwError("bad indentation of a mapping entry");
     } else if (state.lineIndent < nodeIndent) {
       break;
     }
@@ -1246,23 +1281,23 @@ function readTagProperty(state: LoaderState): boolean {
   let tagName: string;
   let ch: number;
 
-  ch = state.input.charCodeAt(state.position);
+  ch = state.peek();
 
   if (ch !== EXCLAMATION) return false;
 
   if (state.tag !== null) {
-    return throwError(state, "duplication of a tag property");
+    return state.throwError("duplication of a tag property");
   }
 
-  ch = state.input.charCodeAt(++state.position);
+  ch = state.next();
 
   if (ch === SMALLER_THAN) {
     isVerbatim = true;
-    ch = state.input.charCodeAt(++state.position);
+    ch = state.next();
   } else if (ch === EXCLAMATION) {
     isNamed = true;
     tagHandle = "!!";
-    ch = state.input.charCodeAt(++state.position);
+    ch = state.next();
   } else {
     tagHandle = "!";
   }
@@ -1271,27 +1306,25 @@ function readTagProperty(state: LoaderState): boolean {
 
   if (isVerbatim) {
     do {
-      ch = state.input.charCodeAt(++state.position);
+      ch = state.next();
     } while (ch !== 0 && ch !== GREATER_THAN);
 
     if (state.position < state.length) {
       tagName = state.input.slice(position, state.position);
-      ch = state.input.charCodeAt(++state.position);
+      ch = state.next();
     } else {
-      return throwError(
-        state,
+      return state.throwError(
         "unexpected end of the stream within a verbatim tag",
       );
     }
   } else {
-    while (ch !== 0 && !isWsOrEol(ch)) {
+    while (ch !== 0 && !isWhiteSpaceOrEOL(ch)) {
       if (ch === EXCLAMATION) {
         if (!isNamed) {
           tagHandle = state.input.slice(position - 1, state.position + 1);
 
           if (!PATTERN_TAG_HANDLE.test(tagHandle)) {
-            return throwError(
-              state,
+            return state.throwError(
               "named tag handle cannot contain such characters",
             );
           }
@@ -1299,29 +1332,26 @@ function readTagProperty(state: LoaderState): boolean {
           isNamed = true;
           position = state.position + 1;
         } else {
-          return throwError(
-            state,
+          return state.throwError(
             "tag suffix cannot contain exclamation marks",
           );
         }
       }
 
-      ch = state.input.charCodeAt(++state.position);
+      ch = state.next();
     }
 
     tagName = state.input.slice(position, state.position);
 
     if (PATTERN_FLOW_INDICATORS.test(tagName)) {
-      return throwError(
-        state,
+      return state.throwError(
         "tag suffix cannot contain flow indicator characters",
       );
     }
   }
 
   if (tagName && !PATTERN_TAG_URI.test(tagName)) {
-    return throwError(
-      state,
+    return state.throwError(
       `tag name cannot contain such characters: ${tagName}`,
     );
   }
@@ -1335,29 +1365,28 @@ function readTagProperty(state: LoaderState): boolean {
   } else if (tagHandle === "!!") {
     state.tag = `tag:yaml.org,2002:${tagName}`;
   } else {
-    return throwError(state, `undeclared tag handle "${tagHandle}"`);
+    return state.throwError(`undeclared tag handle "${tagHandle}"`);
   }
 
   return true;
 }
 
 function readAnchorProperty(state: LoaderState): boolean {
-  let ch = state.input.charCodeAt(state.position);
+  let ch = state.peek();
   if (ch !== AMPERSAND) return false;
 
   if (state.anchor !== null) {
-    return throwError(state, "duplication of an anchor property");
+    return state.throwError("duplication of an anchor property");
   }
-  ch = state.input.charCodeAt(++state.position);
+  ch = state.next();
 
   const position = state.position;
-  while (ch !== 0 && !isWsOrEol(ch) && !isFlowIndicator(ch)) {
-    ch = state.input.charCodeAt(++state.position);
+  while (ch !== 0 && !isWhiteSpaceOrEOL(ch) && !isFlowIndicator(ch)) {
+    ch = state.next();
   }
 
   if (state.position === position) {
-    return throwError(
-      state,
+    return state.throwError(
       "name of an anchor node must contain at least one character",
     );
   }
@@ -1367,27 +1396,25 @@ function readAnchorProperty(state: LoaderState): boolean {
 }
 
 function readAlias(state: LoaderState): boolean {
-  let ch = state.input.charCodeAt(state.position);
+  if (state.peek() !== ASTERISK) return false;
 
-  if (ch !== ASTERISK) return false;
+  let ch = state.next();
 
-  ch = state.input.charCodeAt(++state.position);
-  const _position = state.position;
+  const position = state.position;
 
-  while (ch !== 0 && !isWsOrEol(ch) && !isFlowIndicator(ch)) {
-    ch = state.input.charCodeAt(++state.position);
+  while (ch !== 0 && !isWhiteSpaceOrEOL(ch) && !isFlowIndicator(ch)) {
+    ch = state.next();
   }
 
-  if (state.position === _position) {
-    return throwError(
-      state,
+  if (state.position === position) {
+    return state.throwError(
       "name of an alias node must contain at least one character",
     );
   }
 
-  const alias = state.input.slice(_position, state.position);
+  const alias = state.input.slice(position, state.position);
   if (!Object.hasOwn(state.anchorMap, alias)) {
-    return throwError(state, `unidentified alias "${alias}"`);
+    return state.throwError(`unidentified alias "${alias}"`);
   }
 
   state.result = state.anchorMap[alias];
@@ -1483,8 +1510,7 @@ function composeNode(
           hasContent = true;
 
           if (state.tag !== null || state.anchor !== null) {
-            return throwError(
-              state,
+            return state.throwError(
               "alias node should not have Any properties",
             );
           }
@@ -1539,16 +1565,14 @@ function composeNode(
       type = state.typeMap[state.kind || "fallback"][state.tag]!;
 
       if (state.result !== null && type.kind !== state.kind) {
-        return throwError(
-          state,
+        return state.throwError(
           `unacceptable node kind for !<${state.tag}> tag; it should be "${type.kind}", not "${state.kind}"`,
         );
       }
 
       if (!type.resolve(state.result)) {
         // `state.result` updated in resolver if matched
-        return throwError(
-          state,
+        return state.throwError(
           `cannot resolve a node with !<${state.tag}> explicit tag`,
         );
       } else {
@@ -1558,7 +1582,7 @@ function composeNode(
         }
       }
     } else {
-      return throwError(state, `unknown tag !<${state.tag}>`);
+      return state.throwError(`unknown tag !<${state.tag}>`);
     }
   }
 
@@ -1578,41 +1602,40 @@ function readDocument(state: LoaderState) {
   state.tagMap = Object.create(null);
   state.anchorMap = Object.create(null);
 
-  while ((ch = state.input.charCodeAt(state.position)) !== 0) {
+  while ((ch = state.peek()) !== 0) {
     skipSeparationSpace(state, true, -1);
 
-    ch = state.input.charCodeAt(state.position);
+    ch = state.peek();
 
     if (state.lineIndent > 0 || ch !== PERCENT) {
       break;
     }
 
     hasDirectives = true;
-    ch = state.input.charCodeAt(++state.position);
+    ch = state.next();
     position = state.position;
 
-    while (ch !== 0 && !isWsOrEol(ch)) {
-      ch = state.input.charCodeAt(++state.position);
+    while (ch !== 0 && !isWhiteSpaceOrEOL(ch)) {
+      ch = state.next();
     }
 
     directiveName = state.input.slice(position, state.position);
     directiveArgs = [];
 
     if (directiveName.length < 1) {
-      return throwError(
-        state,
+      return state.throwError(
         "directive name must not be less than one character in length",
       );
     }
 
     while (ch !== 0) {
       while (isWhiteSpace(ch)) {
-        ch = state.input.charCodeAt(++state.position);
+        ch = state.next();
       }
 
       if (ch === SHARP) {
         do {
-          ch = state.input.charCodeAt(++state.position);
+          ch = state.next();
         } while (ch !== 0 && !isEOL(ch));
         break;
       }
@@ -1621,8 +1644,8 @@ function readDocument(state: LoaderState) {
 
       position = state.position;
 
-      while (ch !== 0 && !isWsOrEol(ch)) {
-        ch = state.input.charCodeAt(++state.position);
+      while (ch !== 0 && !isWhiteSpaceOrEOL(ch)) {
+        ch = state.next();
       }
 
       directiveArgs.push(state.input.slice(position, state.position));
@@ -1638,7 +1661,7 @@ function readDocument(state: LoaderState) {
         tagDirectiveHandler(state, ...directiveArgs);
         break;
       default:
-        throwWarning(state, `unknown document directive "${directiveName}"`);
+        state.throwWarning(`unknown document directive "${directiveName}"`);
         break;
     }
   }
@@ -1647,14 +1670,14 @@ function readDocument(state: LoaderState) {
 
   if (
     state.lineIndent === 0 &&
-    state.input.charCodeAt(state.position) === MINUS &&
-    state.input.charCodeAt(state.position + 1) === MINUS &&
-    state.input.charCodeAt(state.position + 2) === MINUS
+    state.peek() === MINUS &&
+    state.peek(1) === MINUS &&
+    state.peek(2) === MINUS
   ) {
     state.position += 3;
     skipSeparationSpace(state, true, -1);
   } else if (hasDirectives) {
-    return throwError(state, "directives end mark is expected");
+    return state.throwError("directives end mark is expected");
   }
 
   composeNode(state, state.lineIndent - 1, CONTEXT_BLOCK_OUT, false, true);
@@ -1666,43 +1689,38 @@ function readDocument(state: LoaderState) {
       state.input.slice(documentStart, state.position),
     )
   ) {
-    throwWarning(state, "non-ASCII line breaks are interpreted as content");
+    state.throwWarning("non-ASCII line breaks are interpreted as content");
   }
 
-  state.documents.push(state.result);
-
   if (state.position === state.lineStart && testDocumentSeparator(state)) {
-    if (state.input.charCodeAt(state.position) === DOT) {
+    if (state.peek() === DOT) {
       state.position += 3;
       skipSeparationSpace(state, true, -1);
     }
-    return;
-  }
-
-  if (state.position < state.length - 1) {
-    return throwError(
-      state,
+  } else if (state.position < state.length - 1) {
+    return state.throwError(
       "end of the stream or a document separator is expected",
     );
+  }
+
+  return state.result;
+}
+
+function* readDocuments(state: LoaderState) {
+  while (state.position < state.length - 1) {
+    yield readDocument(state);
   }
 }
 
 function sanitizeInput(input: string) {
   input = String(input);
 
-  if (input.length !== 0) {
+  if (input.length > 0) {
     // Add tailing `\n` if not exists
-    if (
-      input.charCodeAt(input.length - 1) !== LINE_FEED &&
-      input.charCodeAt(input.length - 1) !== CARRIAGE_RETURN
-    ) {
-      input += "\n";
-    }
+    if (!isEOL(input.charCodeAt(input.length - 1))) input += "\n";
 
     // Strip BOM
-    if (input.charCodeAt(0) === 0xfeff) {
-      input = input.slice(1);
-    }
+    if (input.charCodeAt(0) === 0xfeff) input = input.slice(1);
   }
 
   // Use 0 as string terminator. That significantly simplifies bounds check.
@@ -1716,31 +1734,19 @@ export function loadDocuments(
   options: LoaderStateOptions = {},
 ): unknown[] {
   input = sanitizeInput(input);
-
   const state = new LoaderState(input, options);
-
-  while (state.input.charCodeAt(state.position) === SPACE) {
-    state.lineIndent += 1;
-    state.position += 1;
-  }
-
-  while (state.position < state.length - 1) {
-    readDocument(state);
-  }
-
-  return state.documents;
+  return [...readDocuments(state)];
 }
 
 export function load(input: string, options: LoaderStateOptions = {}): unknown {
-  const documents = loadDocuments(input, options);
-
-  if (documents.length === 0) {
-    return null;
+  input = sanitizeInput(input);
+  const state = new LoaderState(input, options);
+  const documentGenerator = readDocuments(state);
+  const document = documentGenerator.next().value;
+  if (!documentGenerator.next().done) {
+    throw new YamlError(
+      "expected a single document in the stream, but found more",
+    );
   }
-  if (documents.length === 1) {
-    return documents[0];
-  }
-  throw new YamlError(
-    "expected a single document in the stream, but found more",
-  );
+  return document ?? null;
 }

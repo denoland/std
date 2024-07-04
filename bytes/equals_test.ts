@@ -21,10 +21,10 @@ Deno.test("equals() handles randomized testing", () => {
     const arr3 = arr1.slice(0);
     // the chance of arr1 equaling arr2 is basically 0
     // but introduce an inequality at the end just in case
-    arr2[arr2.length - 1] = arr1.at(-1)! ^ 1;
+    arr2[arr2.length - 1]! = arr1.at(-1)! ^ 1;
     // arr3 is arr1 but with an inequality in the very last element
     // this is to test the equality check when length isn't a multiple of 4
-    arr3[arr3.length - 1] ^= 1;
+    arr3[arr3.length - 1]! ^= 1;
     // arrays with same underlying ArrayBuffer should be equal
     assert(equals(arr1, arr1));
     // equal arrays with different underlying ArrayBuffers should be equal
