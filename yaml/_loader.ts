@@ -65,7 +65,7 @@ interface LoaderStateOptions {
   /** compatibility with JSON.parse behaviour. */
   allowDuplicateKeys?: boolean;
   /** function to call on warning messages. */
-  onWarning?(this: null, e?: YamlError): void;
+  onWarning?(error?: YamlError): void;
 }
 
 // deno-lint-ignore no-explicit-any

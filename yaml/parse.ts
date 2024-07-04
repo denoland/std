@@ -16,7 +16,7 @@ export interface ParseOptions {
   /** compatibility with JSON.parse behaviour. */
   allowDuplicateKeys?: boolean;
   /** function to call on warning messages. */
-  onWarning?(this: null, e?: Error): void;
+  onWarning?(error?: Error): void;
 }
 
 /**
