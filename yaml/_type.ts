@@ -7,47 +7,36 @@
 import type { Any, ArrayObject } from "./_utils.ts";
 
 export type KindType = "sequence" | "scalar" | "mapping";
-export type StyleVariant = "lowercase" | "uppercase" | "camelcase" | "decimal";
+/**
+ * The style variation for `styles` option of {@linkcode stringify}
+ */
+export type StyleVariant =
+  | "lowercase"
+  | "uppercase"
+  | "camelcase"
+  | "decimal"
+  | "dec"
+  | 10
+  | "binary"
+  | "bin"
+  | 2
+  | "octal"
+  | "oct"
+  | 8
+  | "hexadecimal"
+  | "hex"
+  | 16;
 export type RepresentFn = (data: Any, style?: StyleVariant) => Any;
 
-interface TypeOptions {
-  kind: KindType;
-  resolve?: (data: Any) => boolean;
-  construct?: (data: string) => Any;
+export interface Type {
+  tag: string;
+  kind: KindType | null;
   instanceOf?: Any;
   predicate?: (data: Record<string, unknown>) => boolean;
   represent?: RepresentFn | ArrayObject<RepresentFn>;
   defaultStyle?: StyleVariant;
   styleAliases?: ArrayObject;
-}
-
-function checkTagFormat(tag: string): string {
-  return tag;
-}
-
-export class Type {
-  tag: string;
-  kind: KindType | null = null;
-  instanceOf: Any;
-  predicate?: (data: Record<string, unknown>) => boolean;
-  represent?: RepresentFn | ArrayObject<RepresentFn>;
-  defaultStyle?: StyleVariant;
-  styleAliases?: ArrayObject;
   loadKind?: KindType;
-
-  constructor(tag: string, options?: TypeOptions) {
-    this.tag = checkTagFormat(tag);
-    if (options) {
-      this.kind = options.kind;
-      this.resolve = options.resolve || (() => true);
-      this.construct = options.construct || ((data: Any): Any => data);
-      this.instanceOf = options.instanceOf;
-      this.predicate = options.predicate;
-      this.represent = options.represent;
-      this.defaultStyle = options.defaultStyle;
-      this.styleAliases = options.styleAliases;
-    }
-  }
-  resolve: (data?: Any) => boolean = (): boolean => true;
-  construct: (data?: Any) => Any = (data): Any => data;
+  resolve: (data?: Any) => boolean;
+  construct: (data?: Any) => Any;
 }

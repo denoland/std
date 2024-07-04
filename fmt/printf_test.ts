@@ -5,8 +5,9 @@
 //   https://golang.org/src/fmt/fmt_test.go
 //   BSD: Copyright (c) 2009 The Go Authors. All rights reserved.
 
-import { sprintf } from "./printf.ts";
-import { assertEquals } from "@std/assert";
+import { printf, sprintf } from "./printf.ts";
+import { assertEquals, assertThrows } from "@std/assert";
+import { assertSpyCall, spy } from "@std/testing/mock";
 
 Deno.test("sprintf() handles noVerb", function () {
   assertEquals(sprintf("bla"), "bla");
@@ -108,6 +109,8 @@ Deno.test("sprintf() handles floats", function () {
   assertEquals(sprintf("%e", Number.MIN_SAFE_INTEGER), "-9.007199e+15");
   assertEquals(sprintf("%.3e", 1.9999), "2.000e+00");
   assertEquals(sprintf("%.3e", 29.99999), "3.000e+01");
+  assertEquals(sprintf("%.3e", 999999), "1.000e+06");
+  assertEquals(sprintf("%.3e", 0.000099999), "1.000e-04");
 });
 Deno.test("sprintf() handles floatE", function () {
   assertEquals(sprintf("%E", 4), "4.000000E+00");
@@ -169,6 +172,13 @@ Deno.test("sprintf() handles string", function () {
 Deno.test("sprintf() handles hex", function () {
   assertEquals(sprintf("%x", "123"), "313233");
   assertEquals(sprintf("%x", "n"), "6e");
+
+  // hex throws with non-strings and non-numbers
+  assertThrows(
+    () => sprintf("%x", {}),
+    Error,
+    "currently only number and string are implemented for hex",
+  );
 });
 Deno.test("sprintf() handles heX", function () {
   assertEquals(sprintf("%X", "123"), "313233");
@@ -641,6 +651,7 @@ Deno.test("sprintf() handles formatV", function () {
 }`,
   );
   assertEquals(sprintf("%#.1v", a), `{ a: { a: [Object] } }`);
+  assertEquals(sprintf("%.10v", a), "[object Ob"); // truncated at 10th char
 });
 
 Deno.test("sprintf() handles formatJ", function () {
@@ -715,4 +726,17 @@ Deno.test("sprintf() handles errors", function () {
   assertEquals(sprintf("%[5]f"), "%!(BAD INDEX)");
   assertEquals(sprintf("%.[5]f"), "%!(BAD INDEX)");
   assertEquals(sprintf("%.[5]*f"), "%!(BAD INDEX)");
+});
+
+Deno.test("sprintf() throws with d with sharp option", () => {
+  assertThrows(() => sprintf("%#d", 1.1), Error, "cannot handle base: 10");
+});
+
+Deno.test("printf() prints the result synchronously", () => {
+  using writeSpy = spy(Deno.stdout, "writeSync");
+  printf("Hello %s", "world");
+
+  assertSpyCall(writeSpy, 0, {
+    args: [new TextEncoder().encode("Hello world")],
+  });
 });

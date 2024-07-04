@@ -14,16 +14,6 @@ export function isObject(value: unknown): value is Record<string, unknown> {
   return value !== null && typeof value === "object";
 }
 
-export function repeat(str: string, count: number): string {
-  let result = "";
-
-  for (let cycle = 0; cycle < count; cycle++) {
-    result += str;
-  }
-
-  return result;
-}
-
 export function isNegativeZero(i: number): boolean {
   return i === 0 && Number.NEGATIVE_INFINITY === 1 / i;
 }

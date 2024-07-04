@@ -164,3 +164,33 @@ Deno.test({
     assert(!timingSafeEqual(ua, ub));
   },
 });
+
+Deno.test({
+  name: "timingSafeEqual() compares equal DataViews",
+  fn() {
+    const a = new ArrayBuffer(2);
+    const va = new DataView(a);
+    va.setUint8(0, 212);
+    va.setUint8(1, 213);
+    const b = new ArrayBuffer(2);
+    const vb = new DataView(b);
+    vb.setUint8(0, 212);
+    vb.setUint8(1, 213);
+    assert(timingSafeEqual(va, vb));
+  },
+});
+
+Deno.test({
+  name: "timingSafeEqual() compares unequal DataViews",
+  fn() {
+    const a = new ArrayBuffer(2);
+    const va = new DataView(a);
+    va.setUint8(0, 212);
+    va.setUint8(1, 213);
+    const b = new ArrayBuffer(2);
+    const vb = new DataView(b);
+    vb.setUint8(0, 212);
+    vb.setUint8(1, 212);
+    assert(!timingSafeEqual(va, vb));
+  },
+});

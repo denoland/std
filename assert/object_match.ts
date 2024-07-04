@@ -1,9 +1,9 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
-import { assertEquals } from "./assert_equals.ts";
+import { assertEquals } from "./equals.ts";
 
 /**
- * Make an assertion that `actual` object is a subset of `expected` object,
+ * Make an assertion that `expected` object is a subset of `actual` object,
  * deeply. If not, then throw.
  *
  * @example Usage
@@ -12,6 +12,14 @@ import { assertEquals } from "./assert_equals.ts";
  *
  * assertObjectMatch({ foo: "bar" }, { foo: "bar" }); // Doesn't throw
  * assertObjectMatch({ foo: "bar" }, { foo: "baz" }); // Throws
+ * ```
+ *
+ * @example Usage with nested objects
+ * ```ts no-eval
+ * import { assertObjectMatch } from "@std/assert";
+ *
+ * assertObjectMatch({ foo: { bar: 3, baz: 4 } }, { foo: { bar: 3 } }); // Doesn't throw
+ * assertObjectMatch({ foo: { bar: 3 } }, { foo: { bar: 3, baz: 4 } }); // Throws
  * ```
  *
  * @param actual The actual value to be matched.

@@ -21,3 +21,8 @@ Deno.test("expect().toHaveProperty()", () => {
     expect({ a: { b: { c: { d: 5 } } } }).not.toHaveProperty("a.b.c", { d: 5 });
   }, AssertionError);
 });
+
+Deno.test("expect().toHaveProperty() handles null and undefined", () => {
+  expect(null).not.toHaveProperty("foo");
+  expect(undefined).not.toHaveProperty("foo");
+});

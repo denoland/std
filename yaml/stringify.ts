@@ -4,8 +4,11 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-import { dump } from "./_dumper/dumper.ts";
-import { replaceSchemaNameWithSchemaClass } from "./schema/mod.ts";
+import { dump } from "./_dumper.ts";
+import { SCHEMA_MAP } from "./_schema.ts";
+import type { StyleVariant } from "./_type.ts";
+
+export type { StyleVariant };
 
 /**
  * The option for strinigfy.
@@ -13,8 +16,8 @@ import { replaceSchemaNameWithSchemaClass } from "./schema/mod.ts";
 export type StringifyOptions = {
   /** Indentation width to use (in spaces). */
   indent?: number;
-  /** When true, will not add an indentation level to array elements */
-  noArrayIndent?: boolean;
+  /** When true, adds an indentation level to array elements */
+  arrayIndent?: boolean;
   /**
    * Do not throw on invalid types (like function in the safe schema)
    * and skip pairs and single values with such types.
@@ -26,7 +29,7 @@ export type StringifyOptions = {
    */
   flowLevel?: number;
   /** Each tag may have own set of styles.	- "tag" => "style" map. */
-  styles?: Record<string, "lowercase" | "uppercase" | "camelcase" | "decimal">;
+  styles?: Record<string, StyleVariant>;
   /** Name of the schema to use. */
   schema?: "core" | "default" | "failsafe" | "json" | "extended";
   /**
@@ -45,11 +48,11 @@ export type StringifyOptions = {
    */
   noRefs?: boolean;
   /**
-   * If true don't try to be compatible with older yaml versions.
+   * If false don't try to be compatible with older yaml versions.
    * Currently: don't quote "yes", "no" and so on,
-   * as required for YAML 1.1 (default: false)
+   * as required for YAML 1.1 (default: true)
    */
-  noCompatMode?: boolean;
+  compatMode?: boolean;
   /**
    * If true flow sequences will be condensed, omitting the
    * space between `key: value` or `a, b`. Eg. `'[a,b]'` or `{a:{b:c}}`.
@@ -81,9 +84,7 @@ export type StringifyOptions = {
  */
 export function stringify(
   data: unknown,
-  options?: StringifyOptions,
+  options: StringifyOptions = {},
 ): string {
-  replaceSchemaNameWithSchemaClass(options);
-  // deno-lint-ignore no-explicit-any
-  return dump(data, options as any);
+  return dump(data, { ...options, schema: SCHEMA_MAP.get(options.schema!) });
 }

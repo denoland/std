@@ -7,6 +7,23 @@
 import { YamlError } from "./_error.ts";
 import type { KindType, Type } from "./_type.ts";
 import type { Any, ArrayObject } from "./_utils.ts";
+import {
+  binary,
+  bool,
+  float,
+  int,
+  map,
+  merge,
+  nil,
+  omap,
+  pairs,
+  regexp,
+  seq,
+  set,
+  str,
+  timestamp,
+  undefinedType,
+} from "./_type/mod.ts";
 
 function compileList(
   schema: Schema,
@@ -54,7 +71,7 @@ function compileMap(...typesList: Type[][]): TypeMap {
   return result;
 }
 
-export class Schema implements SchemaDefinition {
+export class Schema {
   static SCHEMA_DEFAULT?: Schema;
 
   implicit: Type[];
@@ -65,7 +82,11 @@ export class Schema implements SchemaDefinition {
   compiledExplicit: Type[];
   compiledTypeMap: TypeMap;
 
-  constructor(definition: SchemaDefinition) {
+  constructor(definition: {
+    implicit?: Any[];
+    explicit?: Type[];
+    include?: Schema[];
+  }) {
     this.explicit = definition.explicit || [];
     this.implicit = definition.implicit || [];
     this.include = definition.include || [];
@@ -87,8 +108,77 @@ export class Schema implements SchemaDefinition {
   }
 }
 
-export interface SchemaDefinition {
-  implicit?: Any[];
-  explicit?: Type[];
-  include?: Schema[];
-}
+/**
+ * Standard YAML's failsafe schema.
+ *
+ * @see {@link http://www.yaml.org/spec/1.2/spec.html#id2802346}
+ */
+const FAILSAFE_SCHEMA = new Schema({
+  explicit: [str, seq, map],
+});
+
+/**
+ * Standard YAML's JSON schema.
+ *
+ * @see {@link http://www.yaml.org/spec/1.2/spec.html#id2803231}
+ */
+const JSON_SCHEMA = new Schema({
+  implicit: [nil, bool, int, float],
+  include: [FAILSAFE_SCHEMA],
+});
+
+/**
+ * Standard YAML's core schema.
+ *
+ * @see {@link http://www.yaml.org/spec/1.2/spec.html#id2804923}
+ */
+const CORE_SCHEMA = new Schema({
+  include: [JSON_SCHEMA],
+});
+
+/**
+ * Default YAML schema. It is not described in the YAML specification.
+ */
+export const DEFAULT_SCHEMA = new Schema({
+  explicit: [binary, omap, pairs, set],
+  implicit: [timestamp, merge],
+  include: [CORE_SCHEMA],
+});
+
+/***
+ * Extends JS-YAML default schema with additional JavaScript types
+ * It is not described in the YAML specification.
+ * Functions are no longer supported for security reasons.
+ *
+ * @example
+ * ```ts
+ * import { parse } from "@std/yaml";
+ *
+ * const data = parse(
+ *   `
+ *   regexp:
+ *     simple: !!js/regexp foobar
+ *     modifiers: !!js/regexp /foobar/mi
+ *   undefined: !!js/undefined ~
+ * # Disabled, see: https://github.com/denoland/deno_std/pull/1275
+ * #  function: !!js/function >
+ * #    function foobar() {
+ * #      return 'hello world!';
+ * #    }
+ * `,
+ *   { schema: "extended" },
+ * );
+ * ```
+ */
+const EXTENDED_SCHEMA = new Schema({
+  explicit: [regexp, undefinedType],
+  include: [DEFAULT_SCHEMA],
+});
+
+export const SCHEMA_MAP = new Map([
+  ["core", CORE_SCHEMA],
+  ["default", DEFAULT_SCHEMA],
+  ["failsafe", FAILSAFE_SCHEMA],
+  ["json", JSON_SCHEMA],
+  ["extended", EXTENDED_SCHEMA],
+]);

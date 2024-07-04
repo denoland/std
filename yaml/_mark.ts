@@ -3,22 +3,17 @@
 // Copyright 2011-2015 by Vitaly Puzrin. All rights reserved. MIT license.
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import { repeat } from "./_utils.ts";
-
 export class Mark {
-  name: string;
   buffer: string;
   position: number;
   line: number;
   column: number;
   constructor(
-    name: string,
     buffer: string,
     position: number,
     line: number,
     column: number,
   ) {
-    this.name = name;
     this.buffer = buffer;
     this.position = position;
     this.line = line;
@@ -33,7 +28,7 @@ export class Mark {
 
     while (
       start > 0 &&
-      "\x00\r\n\x85\u2028\u2029".indexOf(this.buffer.charAt(start - 1)) === -1
+      !"\x00\r\n\x85\u2028\u2029".includes(this.buffer.charAt(start - 1))
     ) {
       start -= 1;
       if (this.position - start > maxLength / 2 - 1) {
@@ -48,7 +43,7 @@ export class Mark {
 
     while (
       end < this.buffer.length &&
-      "\x00\r\n\x85\u2028\u2029".indexOf(this.buffer.charAt(end)) === -1
+      !"\x00\r\n\x85\u2028\u2029".includes(this.buffer.charAt(end))
     ) {
       end += 1;
       if (end - this.position > maxLength / 2 - 1) {
@@ -59,21 +54,14 @@ export class Mark {
     }
 
     const snippet = this.buffer.slice(start, end);
-    return `${repeat(" ", indent)}${head}${snippet}${tail}\n${
-      repeat(
-        " ",
-        indent + this.position - start + head.length,
-      )
+    return `${" ".repeat(indent)}${head}${snippet}${tail}\n${
+      " ".repeat(indent + this.position - start + head.length)
     }^`;
   }
 
   toString(compact?: boolean): string {
     let snippet;
     let where = "";
-
-    if (this.name) {
-      where += `in "${this.name}" `;
-    }
 
     where += `at line ${this.line + 1}, column ${this.column + 1}`;
 
