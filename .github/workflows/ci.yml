@@ -83,7 +83,10 @@ jobs:
       - name: Set up Deno
         uses: denoland/setup-deno@v1
         with:
-          deno-version: canary
+          # TODO(iuioiua): Revert once workspaces functionality is fixed in canary
+          # See: https://github.com/denoland/deno/issues/24422
+          # deno-version: canary
+          deno-version: v1.x
 
       - name: Format
         run: deno fmt --check
