@@ -926,7 +926,7 @@ function getDuplicateReferences(
   inspectNode(object, objects, duplicateObjects);
 
   for (const object of duplicateObjects) state.duplicates.push(object);
-  state.usedDuplicates = state.usedDuplicates = new Set();
+  state.usedDuplicates = new Set();
 }
 
 export function dump(input: Any, options: DumperStateOptions = {}): string {
