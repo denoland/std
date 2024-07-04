@@ -87,7 +87,6 @@ class Parser {
     }
 
     let fullLine = line;
-    let quoteError: ParseError | null = null;
     const quote = '"';
     const quoteLen = quote.length;
     const separatorLen = this.#options.separator.length;
@@ -110,13 +109,7 @@ class Parser {
           const j = field.indexOf(quote);
           if (j >= 0) {
             const col = fullLine.length + j - line.length;
-            quoteError = new ParseError(
-              startLine + 1,
-              lineIndex,
-              col,
-              ERR_BARE_QUOTE,
-            );
-            break parseField;
+            throw new ParseError(startLine + 1, lineIndex, col, ERR_BARE_QUOTE);
           }
         }
         recordBuffer += field;
@@ -154,13 +147,7 @@ class Parser {
             } else {
               // `"*` sequence (invalid non-escaped quote).
               const col = fullLine.length - line.length - quoteLen;
-              quoteError = new ParseError(
-                startLine + 1,
-                lineIndex,
-                col,
-                ERR_QUOTE,
-              );
-              break parseField;
+              throw new ParseError(startLine + 1, lineIndex, col, ERR_QUOTE);
             }
           } else if (line.length > 0 || !(this.#isEOF())) {
             // Hit end of line (copy all data so far).
@@ -173,13 +160,7 @@ class Parser {
               // Abrupt end of file (EOF or error).
               if (!this.#options.lazyQuotes) {
                 const col = fullLine.length;
-                quoteError = new ParseError(
-                  startLine + 1,
-                  lineIndex,
-                  col,
-                  ERR_QUOTE,
-                );
-                break parseField;
+                throw new ParseError(startLine + 1, lineIndex, col, ERR_QUOTE);
               }
               fieldIndexes.push(recordBuffer.length);
               break parseField;
@@ -189,22 +170,13 @@ class Parser {
             // Abrupt end of file (EOF on error).
             if (!this.#options.lazyQuotes) {
               const col = fullLine.length;
-              quoteError = new ParseError(
-                startLine + 1,
-                lineIndex,
-                col,
-                ERR_QUOTE,
-              );
-              break parseField;
+              throw new ParseError(startLine + 1, lineIndex, col, ERR_QUOTE);
             }
             fieldIndexes.push(recordBuffer.length);
             break parseField;
           }
         }
       }
-    }
-    if (quoteError) {
-      throw quoteError;
     }
     const result = [] as string[];
     let preIdx = 0;
