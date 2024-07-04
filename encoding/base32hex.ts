@@ -25,6 +25,8 @@ import { decode, encode } from "./_utils.ts";
  * );
  * ```
  *
+ * @experimental
+ *
  * @module
  */
 
@@ -50,6 +52,8 @@ lookup.forEach((c, i) => (revLookup[c.charCodeAt(0)] = i));
  *   new TextEncoder().encode("6c60c0"),
  * );
  * ```
+ *
+ * @experimental
  */
 export function decodeBase32Hex(b32: string): Uint8Array {
   return decode(b32, lookup);
@@ -70,6 +74,8 @@ export function decodeBase32Hex(b32: string): Uint8Array {
  *
  * assertEquals(encodeBase32Hex("6c60c0"), "6PHJCC3360======");
  * ```
+ *
+ * @experimental
  */
 export function encodeBase32Hex(
   data: ArrayBuffer | Uint8Array | string,
