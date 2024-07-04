@@ -13,6 +13,7 @@ import {
   EXCLAMATION,
   GRAVE_ACCENT,
   GREATER_THAN,
+  isWhiteSpace,
   LEFT_CURLY_BRACKET,
   LEFT_SQUARE_BRACKET,
   LINE_FEED,
@@ -23,8 +24,6 @@ import {
   RIGHT_SQUARE_BRACKET,
   SHARP,
   SINGLE_QUOTE,
-  SPACE,
-  TAB,
   VERTICAL_LINE,
 } from "./_chars.ts";
 import { YamlError } from "./_error.ts";
@@ -252,11 +251,6 @@ function testImplicitResolving(state: DumperState, str: string): boolean {
   return state.implicitTypes.some((type) => type.resolve(str));
 }
 
-// [33] s-white ::= s-space | s-tab
-function isWhitespace(c: number): boolean {
-  return c === SPACE || c === TAB;
-}
-
 // Returns true if the character can be printed without escaping.
 // From YAML 1.2: "any allowed characters known to be non-printable
 // should also be escaped. [However,] This isn’t mandatory"
@@ -296,7 +290,7 @@ function isPlainSafeFirst(c: number): boolean {
   return (
     isPrintable(c) &&
     c !== 0xfeff &&
-    !isWhitespace(c) && // - s-white
+    !isWhiteSpace(c) && // - s-white
     // - (c-indicator ::=
     // “-” | “?” | “:” | “,” | “[” | “]” | “{” | “}”
     c !== MINUS &&
@@ -354,7 +348,7 @@ function chooseScalarStyle(
   let hasFoldableLine = false; // only checked if shouldTrackWidth
   let previousLineBreak = -1; // count the first line correctly
   let plain = isPlainSafeFirst(string.charCodeAt(0)) &&
-    !isWhitespace(string.charCodeAt(string.length - 1));
+    !isWhiteSpace(string.charCodeAt(string.length - 1));
 
   let char: number;
   let i: number;

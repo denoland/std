@@ -16,6 +16,10 @@ import {
   EXCLAMATION,
   GRAVE_ACCENT,
   GREATER_THAN,
+  isEOL,
+  isFlowIndicator,
+  isWhiteSpace,
+  isWhiteSpaceOrEOL,
   LEFT_CURLY_BRACKET,
   LEFT_SQUARE_BRACKET,
   LINE_FEED,
@@ -29,7 +33,6 @@ import {
   SINGLE_QUOTE,
   SMALLER_THAN,
   SPACE,
-  TAB,
   VERTICAL_LINE,
 } from "./_chars.ts";
 import { YamlError } from "./_error.ts";
@@ -144,28 +147,6 @@ class LoaderState {
 
 function _class(obj: unknown): string {
   return Object.prototype.toString.call(obj);
-}
-
-function isEOL(c: number): boolean {
-  return c === LINE_FEED || c === CARRIAGE_RETURN;
-}
-
-function isWhiteSpace(c: number): boolean {
-  return c === TAB || c === SPACE;
-}
-
-function isWhiteSpaceOrEOL(c: number): boolean {
-  return isWhiteSpace(c) || isEOL(c);
-}
-
-function isFlowIndicator(c: number): boolean {
-  return (
-    c === COMMA ||
-    c === LEFT_SQUARE_BRACKET ||
-    c === RIGHT_SQUARE_BRACKET ||
-    c === LEFT_CURLY_BRACKET ||
-    c === RIGHT_CURLY_BRACKET
-  );
 }
 
 function fromHexCode(c: number): number {
