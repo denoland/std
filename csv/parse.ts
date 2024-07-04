@@ -73,117 +73,117 @@ class Parser {
     return this.#cursor >= this.#input.length;
   }
   #parseRecord(startLine: number): string[] | null {
-    let line = this.#readLine();
-    if (line === null) return null;
-    if (line.length === 0) return [];
+    let fullLine = this.#readLine();
+    if (fullLine === null) return null;
+    if (fullLine.length === 0) return [];
 
     let lineIndex = startLine + 1;
 
     // line starting with comment character is ignored
-    if (this.#options.comment && line.at(0) === this.#options.comment) {
+    if (this.#options.comment && fullLine.at(0) === this.#options.comment) {
       return [];
     }
 
-    let currentLine = line;
+    let line = fullLine;
     const quote = '"';
     const quoteLen = quote.length;
     const separatorLen = this.#options.separator.length;
     let recordBuffer = "";
     const fieldIndexes = [] as number[];
-    currentLineLoop: while (true) {
+    parseField: while (true) {
       if (this.#options.trimLeadingSpace) {
-        currentLine = currentLine.trimStart();
+        line = line.trimStart();
       }
-      if (currentLine.length === 0) {
+      if (line.length === 0) {
         fieldIndexes.push(recordBuffer.length);
-        break currentLineLoop;
+        break parseField;
       }
 
-      if (currentLine.startsWith(quote)) {
+      if (line.startsWith(quote)) {
         // Quoted string field
-        currentLine = currentLine.substring(quoteLen);
-        quoteLoop: while (true) {
-          const i = currentLine.indexOf(quote);
+        line = line.substring(quoteLen);
+        parseQuotedField: while (true) {
+          const i = line.indexOf(quote);
           if (i >= 0) {
             // Hit next quote.
-            recordBuffer += currentLine.substring(0, i);
-            currentLine = currentLine.substring(i + quoteLen);
-            if (currentLine.startsWith(quote)) {
+            recordBuffer += line.substring(0, i);
+            line = line.substring(i + quoteLen);
+            if (line.startsWith(quote)) {
               // `""` sequence (append quote).
               recordBuffer += quote;
-              currentLine = currentLine.substring(quoteLen);
-              continue quoteLoop;
+              line = line.substring(quoteLen);
+              continue parseQuotedField;
             }
-            if (currentLine.startsWith(this.#options.separator)) {
+            if (line.startsWith(this.#options.separator)) {
               // `","` sequence (end of field).
-              currentLine = currentLine.substring(separatorLen);
+              line = line.substring(separatorLen);
               fieldIndexes.push(recordBuffer.length);
-              continue currentLineLoop;
+              continue parseField;
             }
-            if (0 === currentLine.length) {
+            if (0 === line.length) {
               // `"\n` sequence (end of line).
               fieldIndexes.push(recordBuffer.length);
-              break currentLineLoop;
+              break parseField;
             }
             if (this.#options.lazyQuotes) {
               // `"` sequence (bare quote).
               recordBuffer += quote;
-              continue quoteLoop;
+              continue parseQuotedField;
             }
             // `"*` sequence (invalid non-escaped quote).
-            const col = line.length - currentLine.length - quoteLen;
+            const col = fullLine.length - line.length - quoteLen;
 
             throw new ParseError(startLine + 1, lineIndex, col, ERR_QUOTE);
           }
-          if (currentLine.length > 0 || !this.#isEOF()) {
+          if (line.length > 0 || !this.#isEOF()) {
             // Hit end of line (copy all data so far).
-            recordBuffer += currentLine;
+            recordBuffer += line;
             const r = this.#readLine();
             lineIndex++;
-            currentLine = r ?? ""; // This is a workaround for making this module behave similarly to the encoding/csv/reader.go.
-            line = currentLine;
+            line = r ?? ""; // This is a workaround for making this module behave similarly to the encoding/csv/reader.go.
+            fullLine = line;
             if (r === null) {
               // Abrupt end of file (EOF or error).
               if (!this.#options.lazyQuotes) {
-                const col = line.length;
+                const col = fullLine.length;
                 throw new ParseError(startLine + 1, lineIndex, col, ERR_QUOTE);
               }
               fieldIndexes.push(recordBuffer.length);
-              break currentLineLoop;
+              break parseField;
             }
             recordBuffer += "\n"; // preserve line feed (This is because TextProtoReader removes it.)
-            continue quoteLoop;
+            continue parseQuotedField;
           }
 
           // Abrupt end of file (EOF on error).
           if (!this.#options.lazyQuotes) {
-            const col = line.length;
+            const col = fullLine.length;
             throw new ParseError(startLine + 1, lineIndex, col, ERR_QUOTE);
           }
           fieldIndexes.push(recordBuffer.length);
-          break currentLineLoop;
+          break parseField;
         }
       }
 
       // Non-quoted string field
-      const i = currentLine.indexOf(this.#options.separator);
-      let field = currentLine;
+      const i = line.indexOf(this.#options.separator);
+      let field = line;
       if (i >= 0) field = field.substring(0, i);
       // Check to make sure a quote does not appear in field.
       if (!this.#options.lazyQuotes) {
         const j = field.indexOf(quote);
         if (j >= 0) {
-          const col = line.length + j - currentLine.length;
+          const col = fullLine.length + j - line.length;
           throw new ParseError(startLine + 1, lineIndex, col, ERR_BARE_QUOTE);
         }
       }
       recordBuffer += field;
       fieldIndexes.push(recordBuffer.length);
       if (i >= 0) {
-        currentLine = currentLine.substring(i + separatorLen);
-        continue currentLineLoop;
+        line = line.substring(i + separatorLen);
+        continue parseField;
       }
-      break currentLineLoop;
+      break parseField;
     }
     const result = [] as string[];
     let preIdx = 0;
