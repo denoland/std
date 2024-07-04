@@ -38,7 +38,7 @@ export type Async<T> = {
 /**
  * The Expected interface defines the available assertion methods.
  */
-export interface Expected {
+export interface Expected<IsAsync = false> {
   /**
    * Asserts that the function was called with the specified arguments.
    * @param expected The expected arguments.
@@ -294,17 +294,17 @@ export interface Expected {
   /**
    * The negation object that allows chaining negated assertions.
    */
-  not: Expected;
+  not: IsAsync extends true ? Async<Expected<true>> : Expected<false>;
 
   /**
    * The object that allows chaining assertions with async functions that are expected to resolve to a value.
    */
-  resolves: Async<Expected>;
+  resolves: Async<Expected<true>>;
 
   /**
    * The object that allows chaining assertions with async functions that are expected to throw an error.
    */
-  rejects: Async<Expected>;
+  rejects: Async<Expected<true>>;
 
   /**
    * Additional custom assertion methods can be added here.
