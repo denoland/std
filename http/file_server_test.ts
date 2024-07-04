@@ -223,6 +223,21 @@ Deno.test("serveDir() serves directory index with file containing space in the f
   await Deno.remove(filePath);
 });
 
+Deno.test("serveDir() serves directory index with file's mode is 0", async () => {
+  const stat = Deno.stat;
+  using _stub = stub(
+    Deno,
+    "stat",
+    async (path: string | URL): Promise<Deno.FileInfo> => ({
+      ...(await stat(path)),
+      mode: 0,
+    }),
+  );
+  const res = await serveDir(new Request("http://localhost/"), serveDirOptions);
+  const page = await res.text();
+  assertMatch(page, /<td class="mode">(\s)*- --- --- ---(\s)*<\/td>/);
+});
+
 Deno.test("serveDir() returns a response even if fileinfo is inaccessible", async () => {
   // Note: Deno.stat for windows system files may be rejected with os error 32.
   // Mock Deno.stat to test that the dirlisting page can be generated
@@ -798,7 +813,7 @@ Deno.test("serveFile() etag value falls back to DENO_DEPLOYMENT_ID if fileInfo.m
   const code = `
     import { serveFile } from "${import.meta.resolve("./file_server.ts")}";
     import { fromFileUrl } from "${import.meta.resolve("../path/mod.ts")}";
-    import { assertEquals } from "${import.meta.resolve("../assert/assert_equals.ts")}";
+    import { assertEquals } from "${import.meta.resolve("../assert/equals.ts")}";
     const testdataPath = "${toFileUrl(join(testdataDir, "test_file.txt"))}";
     const fileInfo = await Deno.stat(new URL(testdataPath));
     fileInfo.mtime = null;

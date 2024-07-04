@@ -4,4 +4,5 @@ const spinner = new Spinner();
 
 spinner.start();
 
-setTimeout(spinner.stop, 200);
+setTimeout(() => spinner.stop(), 200);
+setTimeout(() => {}, 500);

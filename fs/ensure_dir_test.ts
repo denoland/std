@@ -187,3 +187,22 @@ Deno.test({
     );
   },
 });
+
+Deno.test({
+  name: "ensureDir() isn't racy",
+  async fn() {
+    for (const _ of Array(100)) {
+      const dir = path.join(
+        await Deno.makeTempDir(),
+        "check",
+        "race",
+      );
+
+      // It doesn't throw with successive calls.
+      await Promise.all([
+        ensureDir(dir),
+        ensureDir(dir),
+      ]);
+    }
+  },
+});

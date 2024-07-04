@@ -6,15 +6,23 @@
 import { repeat } from "./_utils.ts";
 
 export class Mark {
+  buffer: string;
+  position: number;
+  line: number;
+  column: number;
   constructor(
-    public name: string,
-    public buffer: string,
-    public position: number,
-    public line: number,
-    public column: number,
-  ) {}
+    buffer: string,
+    position: number,
+    line: number,
+    column: number,
+  ) {
+    this.buffer = buffer;
+    this.position = position;
+    this.line = line;
+    this.column = column;
+  }
 
-  public getSnippet(indent = 4, maxLength = 75): string | null {
+  getSnippet(indent = 4, maxLength = 75): string | null {
     if (!this.buffer) return null;
 
     let head = "";
@@ -22,7 +30,7 @@ export class Mark {
 
     while (
       start > 0 &&
-      "\x00\r\n\x85\u2028\u2029".indexOf(this.buffer.charAt(start - 1)) === -1
+      !"\x00\r\n\x85\u2028\u2029".includes(this.buffer.charAt(start - 1))
     ) {
       start -= 1;
       if (this.position - start > maxLength / 2 - 1) {
@@ -37,7 +45,7 @@ export class Mark {
 
     while (
       end < this.buffer.length &&
-      "\x00\r\n\x85\u2028\u2029".indexOf(this.buffer.charAt(end)) === -1
+      !"\x00\r\n\x85\u2028\u2029".includes(this.buffer.charAt(end))
     ) {
       end += 1;
       if (end - this.position > maxLength / 2 - 1) {
@@ -56,13 +64,9 @@ export class Mark {
     }^`;
   }
 
-  public toString(compact?: boolean): string {
+  toString(compact?: boolean): string {
     let snippet;
     let where = "";
-
-    if (this.name) {
-      where += `in "${this.name}" `;
-    }
 
     where += `at line ${this.line + 1}, column ${this.column + 1}`;
 

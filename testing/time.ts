@@ -47,7 +47,7 @@ import { _internals } from "./_time.ts";
  * @example Usage
  * ```ts
  * import { FakeTime, TimeError } from "@std/testing/time";
- * import { assertThrows } from "@std/assert/assert-throws";
+ * import { assertThrows } from "@std/assert";
  *
  * assertThrows(() => {
  *   new FakeTime(NaN);
@@ -60,7 +60,7 @@ export class TimeError extends Error {
    * @example Usage
    * ```ts
    * import { FakeTime, TimeError } from "@std/testing/time";
-   * import { assertThrows } from "@std/assert/assert-throws";
+   * import { assertThrows } from "@std/assert";
    *
    * assertThrows(() => {
    *   new FakeTime(NaN);
@@ -85,10 +85,8 @@ const FakeDate = new Proxy(Date, {
     // @ts-expect-error this is a passthrough
     return new _internals.Date(...args);
   },
-  apply(_target, _thisArg, args) {
-    if (args.length === 0) args.push(FakeDate.now());
-    // @ts-expect-error this is a passthrough
-    return _internals.Date(...args);
+  apply(_target, _thisArg, _args) {
+    return new _internals.Date(FakeTimeNow()).toString();
   },
   get(target, prop, receiver) {
     if (prop === "now") {
@@ -315,7 +313,7 @@ export class FakeTime {
     start?: number | string | Date | null,
     options?: FakeTimeOptions,
   ) {
-    if (time) time.restore();
+    if (time) throw new TimeError("The time is already faked");
     initializedAt = _internals.Date.now();
     startedAt = start instanceof Date
       ? start.valueOf()
@@ -456,7 +454,7 @@ export class FakeTime {
    * @example Usage
    * ```ts
    * import { FakeTime } from "@std/testing/time";
-   * import { assertEquals } from "@std/assert/assert-equals";
+   * import { assertEquals } from "@std/assert";
    *
    * const fakeTime = new FakeTime(15_000);
    *
@@ -479,7 +477,7 @@ export class FakeTime {
    * @example Usage
    * ```ts
    * import { FakeTime } from "@std/testing/time";
-   * import { assertEquals } from "@std/assert/assert-equals";
+   * import { assertEquals } from "@std/assert";
    *
    * const fakeTime = new FakeTime(15_000);
    *
@@ -526,7 +524,7 @@ export class FakeTime {
    * @example Usage
    * ```ts
    * import { FakeTime } from "@std/testing/time";
-   * import { assertEquals } from "@std/assert/assert-equals";
+   * import { assertEquals } from "@std/assert";
    *
    * const fakeTime = new FakeTime(15_000);
    *
@@ -545,7 +543,7 @@ export class FakeTime {
    * @example Usage
    * ```ts
    * import { FakeTime } from "@std/testing/time";
-   * import { assertEquals } from "@std/assert/assert-equals";
+   * import { assertEquals } from "@std/assert";
    *
    * const fakeTime = new FakeTime(15_000);
    *
@@ -590,7 +588,7 @@ export class FakeTime {
    * @example Usage
    * ```ts
    * import { FakeTime } from "@std/testing/time";
-   * import { assert } from "@std/assert/assert";
+   * import { assert } from "@std/assert";
    *
    * const fakeTime = new FakeTime(15_000);
    *
@@ -744,7 +742,7 @@ export class FakeTime {
    * @example Usage
    * ```ts
    * import { FakeTime } from "@std/testing/time";
-   * import { assertEquals } from "@std/assert/assert-equals";
+   * import { assertEquals } from "@std/assert";
    *
    * const fakeTime = new FakeTime(15_000);
    *
@@ -775,7 +773,7 @@ export class FakeTime {
    * @example Usage
    * ```ts
    * import { FakeTime } from "@std/testing/time";
-   * import { assertEquals } from "@std/assert/assert-equals";
+   * import { assertEquals } from "@std/assert";
    *
    * const fakeTime = new FakeTime(15_000);
    *

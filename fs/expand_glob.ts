@@ -290,14 +290,9 @@ export async function* expandGlob(
   const shouldInclude = (path: string): boolean =>
     !excludePatterns.some((p: RegExp): boolean => !!path.match(p));
 
-  let fixedRoot = isGlobAbsolute
-    ? winRoot !== undefined ? winRoot : "/"
-    : absRoot;
+  let fixedRoot = isGlobAbsolute ? winRoot ?? "/" : absRoot;
   while (segments.length > 0 && !isGlob(segments[0]!)) {
-    const seg = segments.shift();
-    if (seg === undefined) {
-      throw new TypeError("Unexpected undefined segment");
-    }
+    const seg = segments.shift()!;
     fixedRoot = joinGlobs([fixedRoot, seg], globOptions);
   }
 
@@ -316,12 +311,8 @@ export async function* expandGlob(
       return;
     } else if (globSegment === "..") {
       const parentPath = joinGlobs([walkInfo.path, ".."], globOptions);
-      try {
-        if (shouldInclude(parentPath)) {
-          return yield await createWalkEntry(parentPath);
-        }
-      } catch (error) {
-        throwUnlessNotFound(error);
+      if (shouldInclude(parentPath)) {
+        return yield await createWalkEntry(parentPath);
       }
       return;
     } else if (globSegment === "**") {
@@ -454,14 +445,9 @@ export function* expandGlobSync(
   const shouldInclude = (path: string): boolean =>
     !excludePatterns.some((p: RegExp): boolean => !!path.match(p));
 
-  let fixedRoot = isGlobAbsolute
-    ? winRoot !== undefined ? winRoot : "/"
-    : absRoot;
+  let fixedRoot = isGlobAbsolute ? winRoot ?? "/" : absRoot;
   while (segments.length > 0 && !isGlob(segments[0]!)) {
-    const seg = segments.shift();
-    if (seg === undefined) {
-      throw new TypeError("Unexpected undefined segment");
-    }
+    const seg = segments.shift()!;
     fixedRoot = joinGlobs([fixedRoot, seg], globOptions);
   }
 
@@ -480,12 +466,8 @@ export function* expandGlobSync(
       return;
     } else if (globSegment === "..") {
       const parentPath = joinGlobs([walkInfo.path, ".."], globOptions);
-      try {
-        if (shouldInclude(parentPath)) {
-          return yield createWalkEntrySync(parentPath);
-        }
-      } catch (error) {
-        throwUnlessNotFound(error);
+      if (shouldInclude(parentPath)) {
+        return yield createWalkEntrySync(parentPath);
       }
       return;
     } else if (globSegment === "**") {

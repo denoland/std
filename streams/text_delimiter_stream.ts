@@ -19,7 +19,7 @@ import type {
  * @example Comma-separated values
  * ```ts
  * import { TextDelimiterStream } from "@std/streams/text-delimiter-stream";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const stream = ReadableStream.from([
  *   "alice,20,",
@@ -37,7 +37,7 @@ import type {
  * @example Semicolon-separated values with suffix disposition
  * ```ts
  * import { TextDelimiterStream } from "@std/streams/text-delimiter-stream";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const stream = ReadableStream.from([
  *   "const a = 42;;let b =",
@@ -86,7 +86,7 @@ export class TextDelimiterStream extends TransformStream<string, string> {
    */
   constructor(
     delimiter: string,
-    options: DelimiterStreamOptions = { disposition: "discard" },
+    options?: DelimiterStreamOptions,
   ) {
     super({
       transform: (chunk, controller) => {
@@ -99,7 +99,7 @@ export class TextDelimiterStream extends TransformStream<string, string> {
 
     this.#delimiter = delimiter;
     this.#delimLPS = createLPS(new TextEncoder().encode(delimiter));
-    this.#disp = options.disposition ?? "discard";
+    this.#disp = options?.disposition ?? "discard";
   }
 
   #handle(

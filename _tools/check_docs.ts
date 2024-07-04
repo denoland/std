@@ -36,6 +36,7 @@ const ENTRY_POINTS = [
   "../csv/mod.ts",
   "../data_structures/mod.ts",
   "../datetime/mod.ts",
+  "../dotenv/mod.ts",
   "../encoding/mod.ts",
   "../expect/mod.ts",
   "../fmt/bytes.ts",
@@ -70,6 +71,7 @@ const ENTRY_POINTS = [
   "../url/mod.ts",
   "../uuid/mod.ts",
   "../webgpu/mod.ts",
+  "../yaml/mod.ts",
 ] as const;
 
 const TS_SNIPPET = /```ts[\s\S]*?```/g;
@@ -418,8 +420,14 @@ function assertModuleDoc(document: DocNodeWithJsDoc<DocNodeModuleDoc>) {
 }
 
 function resolve(specifier: string, referrer: string): string {
-  if (specifier.startsWith("@std/") && specifier.split("/").length > 2) {
-    specifier = specifier.replace("@std/", "../").replaceAll("-", "_") + ".ts";
+  if (specifier.startsWith("@std/")) {
+    specifier = specifier.replace("@std/", "../").replaceAll("-", "_");
+    const parts = specifier.split("/");
+    if (parts.length === 2) {
+      specifier += "/mod.ts";
+    } else if (parts.length > 2) {
+      specifier += ".ts";
+    }
   }
   return new URL(specifier, referrer).href;
 }

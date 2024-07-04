@@ -12,12 +12,13 @@ import { compare } from "./compare.ts";
  * @example Usage
  * ```ts
  * import { parse, parseRange, lessThanRange } from "@std/semver";
- * import { assert, assertFalse } from "@std/assert";
+ * import { assert } from "@std/assert";
  *
  * const v0 = parse("1.2.3");
  * const v1 = parse("1.0.0");
  * const range = parseRange(">=1.2.3 <1.2.4");
- * assertFalse(lessThanRange(v0, range));
+ *
+ * assert(!lessThanRange(v0, range));
  * assert(lessThanRange(v1, range));
  * ```
  *

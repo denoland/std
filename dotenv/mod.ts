@@ -4,6 +4,19 @@
  * Parses and loads environment variables from a `.env` file into the current
  * process, or stringify data into a `.env` file format.
  *
+ * ```ts no-eval
+ * // Automatically load environment variables from a `.env` file
+ * import "@std/dotenv/load";
+ * ```
+ *
+ * ```ts
+ * import { parse, stringify } from "@std/dotenv";
+ * import { assertEquals } from "@std/assert";
+ *
+ * assertEquals(parse("GREETING=hello world"), { GREETING: "hello world" });
+ * assertEquals(stringify({ GREETING: "hello world" }), "GREETING='hello world'");
+ * ```
+ *
  * @module
  */
 
@@ -62,16 +75,29 @@ export interface LoadOptions {
   defaultsPath?: string | null;
 }
 
-/** Works identically to {@linkcode load}, but synchronously. */
+/**
+ * Works identically to {@linkcode load}, but synchronously.
+ *
+ * @example Usage
+ * ```ts no-eval
+ * import { loadSync } from "@std/dotenv";
+ *
+ * const conf = loadSync();
+ * ```
+ *
+ * @param options Options for loading the environment variables.
+ * @returns The parsed environment variables.
+ */
 export function loadSync(
-  {
+  options: LoadOptions = {},
+): Record<string, string> {
+  const {
     envPath = ".env",
     examplePath = ".env.example",
     defaultsPath = ".env.defaults",
     export: _export = false,
     allowEmptyValues = false,
-  }: LoadOptions = {},
-): Record<string, string> {
+  } = options;
   const conf = envPath ? parseFileSync(envPath) : {};
 
   if (defaultsPath) {
@@ -114,11 +140,12 @@ export function loadSync(
  *
  * Then import the environment variables using the `load` function.
  *
- * ```ts
+ * @example Basic usage
+ * ```ts no-eval
  * // app.ts
  * import { load } from "@std/dotenv";
  *
- * console.log(await load({export: true})); // { GREETING: "hello world" }
+ * console.log(await load({ export: true })); // { GREETING: "hello world" }
  * console.log(Deno.env.get("GREETING")); // hello world
  * ```
  *
@@ -131,7 +158,8 @@ export function loadSync(
  * Import the `load.ts` module to auto-import from the `.env` file and into
  * the process environment.
  *
- * ```ts
+ * @example Auto-loading
+ * ```ts no-eval
  * // app.ts
  * import "@std/dotenv/load";
  *
@@ -209,15 +237,17 @@ export function loadSync(
  * |allowEmptyValues|false|Allows empty values for specified env variables (throws otherwise)
  *
  * ### Example configuration
- * ```ts
+ *
+ * @example Using with options
+ * ```ts no-eval
  * import { load } from "@std/dotenv";
  *
  * const conf = await load({
- *     envPath: "./.env_prod",
- *     examplePath: "./.env_required",
- *     export: true,
- *     allowEmptyValues: true,
- *   });
+ *   envPath: "./.env_prod", // Uses .env_prod instead of .env
+ *   examplePath: "./.env_required", // Uses .env_required instead of .env.example
+ *   export: true, // Exports all variables to the environment
+ *   allowEmptyValues: true, // Allows empty values for specified env variables
+ * });
  * ```
  *
  * ## Permissions
@@ -269,16 +299,20 @@ export function loadSync(
  *   `{ KEY: "default" }`. Also there is possible to do this case
  *   `KEY=${NO_SUCH_KEY:-${EXISTING_KEY:-default}}` which becomes
  *   `{ KEY: "<EXISTING_KEY_VALUE_FROM_ENV>" }`)
+ *
+ * @param options The options
+ * @returns The parsed environment variables
  */
 export async function load(
-  {
+  options: LoadOptions = {},
+): Promise<Record<string, string>> {
+  const {
     envPath = ".env",
     examplePath = ".env.example",
     defaultsPath = ".env.defaults",
     export: _export = false,
     allowEmptyValues = false,
-  }: LoadOptions = {},
-): Promise<Record<string, string>> {
+  } = options;
   const conf = envPath ? await parseFile(envPath) : {};
 
   if (defaultsPath) {
@@ -370,11 +404,57 @@ function assertSafe(
 /**
  * Error thrown in {@linkcode load} and {@linkcode loadSync} when required
  * environment variables are missing.
+ *
+ * @example Usage
+ * ```ts no-eval
+ * import { MissingEnvVarsError, load } from "@std/dotenv";
+ *
+ * try {
+ *   await load();
+ * } catch (e) {
+ *   if (e instanceof MissingEnvVarsError) {
+ *     console.error(e.message);
+ *   }
+ * }
+ * ```
  */
 export class MissingEnvVarsError extends Error {
-  /** The keys of the missing environment variables. */
+  /**
+   * The keys of the missing environment variables.
+   *
+   * @example Usage
+   * ```ts no-eval
+   * import { MissingEnvVarsError, load } from "@std/dotenv";
+   *
+   * try {
+   *   await load();
+   * } catch (e) {
+   *   if (e instanceof MissingEnvVarsError) {
+   *     console.error(e.missing);
+   *   }
+   * }
+   * ```
+   */
   missing: string[];
-  /** Constructs a new instance. */
+  /**
+   * Constructs a new instance.
+   *
+   * @example Usage
+   * ```ts no-eval
+   * import { MissingEnvVarsError, load } from "@std/dotenv";
+   *
+   * try {
+   *   await load();
+   * } catch (e) {
+   *   if (e instanceof MissingEnvVarsError) {
+   *     console.error(e.message);
+   *   }
+   * }
+   * ```
+   *
+   * @param message The error message
+   * @param missing The keys of the missing environment variables
+   */
   constructor(message: string, missing: string[]) {
     super(message);
     this.name = "MissingEnvVarsError";

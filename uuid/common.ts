@@ -57,7 +57,7 @@ export function validate(uuid: string): boolean {
  * @example Usage
  * ```ts
  * import { version } from "@std/uuid";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * assertEquals(version("d9428888-122b-11e1-b85c-61cd3cbb3210"), 1);
  * assertEquals(version("6ec0bd7f-11c0-43da-975e-2a8ad9ebae0b"), 4);

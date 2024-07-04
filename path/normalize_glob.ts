@@ -20,7 +20,7 @@ export type { GlobOptions };
  * @example Usage
  * ```ts
  * import { normalizeGlob } from "@std/path/normalize-glob";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * if (Deno.build.os === "windows") {
  *   assertEquals(normalizeGlob("foo\\bar\\..\\baz"), "foo\\baz");

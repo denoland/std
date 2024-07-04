@@ -11,7 +11,7 @@ import { resolve as windowsResolve } from "./windows/resolve.ts";
  * @example Usage
  * ```ts
  * import { resolve } from "@std/path/resolve";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * if (Deno.build.os === "windows") {
  *   assertEquals(resolve("C:\\foo", "bar", "baz"), "C:\\foo\\bar\\baz");
