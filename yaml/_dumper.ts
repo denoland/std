@@ -31,8 +31,7 @@ import { DEFAULT_SCHEMA, type Schema } from "./_schema.ts";
 import type { RepresentFn, StyleVariant, Type } from "./_type.ts";
 import * as common from "./_utils.ts";
 
-type Any = common.Any;
-type ArrayObject<T = Any> = common.ArrayObject<T>;
+type ArrayObject<T = any> = common.ArrayObject<T>;
 
 const ESCAPE_SEQUENCES = new Map<number, string>([
   [0x00, "\\0"],
@@ -150,7 +149,7 @@ export class DumperState {
   arrayIndent: boolean;
   skipInvalid: boolean;
   flowLevel: number;
-  sortKeys: boolean | ((a: Any, b: Any) => number);
+  sortKeys: boolean | ((a: any, b: any) => number);
   lineWidth: number;
   noRefs: boolean;
   compatMode: boolean;
@@ -159,10 +158,10 @@ export class DumperState {
   explicitTypes: Type[];
   tag: string | null = null;
   result = "";
-  duplicates: Any[] = [];
-  usedDuplicates: Any[] = []; // changed from null to []
+  duplicates: any[] = [];
+  usedDuplicates: any[] = []; // changed from null to []
   styleMap: ArrayObject<StyleVariant>;
-  dump: Any;
+  dump: any;
 
   constructor({
     schema = DEFAULT_SCHEMA,
@@ -329,7 +328,7 @@ function chooseScalarStyle(
   singleLineOnly: boolean,
   indentPerLevel: number,
   lineWidth: number,
-  testAmbiguousType: (...args: Any[]) => Any,
+  testAmbiguousType: (...args: any[]) => any,
 ): number {
   const shouldTrackWidth = lineWidth !== -1;
   let hasLineBreak = false;
@@ -607,7 +606,7 @@ function writeScalar(
 function writeFlowSequence(
   state: DumperState,
   level: number,
-  object: Any,
+  object: any,
 ) {
   let _result = "";
   const _tag = state.tag;
@@ -627,7 +626,7 @@ function writeFlowSequence(
 function writeBlockSequence(
   state: DumperState,
   level: number,
-  object: Any,
+  object: any,
   compact = false,
 ) {
   let _result = "";
@@ -657,7 +656,7 @@ function writeBlockSequence(
 function writeFlowMapping(
   state: DumperState,
   level: number,
-  object: Any,
+  object: any,
 ) {
   let _result = "";
   const _tag = state.tag;
@@ -697,7 +696,7 @@ function writeFlowMapping(
 function writeBlockMapping(
   state: DumperState,
   level: number,
-  object: Any,
+  object: any,
   compact = false,
 ) {
   const _tag = state.tag;
@@ -768,7 +767,7 @@ function writeBlockMapping(
 
 function detectType(
   state: DumperState,
-  object: Any,
+  object: any,
   explicit = false,
 ): boolean {
   const typeList = explicit ? state.explicitTypes : state.implicitTypes;
@@ -816,7 +815,7 @@ function detectType(
 function writeNode(
   state: DumperState,
   level: number,
-  object: Any,
+  object: any,
   block: boolean,
   compact: boolean,
   iskey = false,
@@ -903,8 +902,8 @@ function writeNode(
 }
 
 function inspectNode(
-  object: Any,
-  objects: Any[],
+  object: any,
+  objects: any[],
   duplicatesIndexes: number[],
 ) {
   if (object !== null && typeof object === "object") {
@@ -933,7 +932,7 @@ function getDuplicateReferences(
   object: Record<string, unknown>,
   state: DumperState,
 ) {
-  const objects: Any[] = [];
+  const objects: any[] = [];
   const duplicatesIndexes: number[] = [];
 
   inspectNode(object, objects, duplicatesIndexes);
@@ -944,7 +943,7 @@ function getDuplicateReferences(
   state.usedDuplicates = Array.from({ length: duplicatesIndexes.length });
 }
 
-export function dump(input: Any, options: DumperStateOptions = {}): string {
+export function dump(input: any, options: DumperStateOptions = {}): string {
   const state = new DumperState(options);
 
   if (!state.noRefs) getDuplicateReferences(input, state);

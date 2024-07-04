@@ -4,9 +4,8 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
 import type { Type } from "../_type.ts";
-import type { Any } from "../_utils.ts";
 
-function resolveYamlPairs(data: Any[][]): boolean {
+function resolveYamlPairs(data: any[][]): boolean {
   if (data === null) return true;
 
   const result = Array.from({ length: data.length });
@@ -20,13 +19,13 @@ function resolveYamlPairs(data: Any[][]): boolean {
 
     if (keys.length !== 1) return false;
 
-    result[index] = [keys[0], pair[keys[0] as Any]];
+    result[index] = [keys[0], pair[keys[0] as any]];
   }
 
   return true;
 }
 
-function constructYamlPairs(data: string): Any[] {
+function constructYamlPairs(data: string): any[] {
   if (data === null) return [];
 
   const result = Array.from({ length: data.length });
@@ -36,7 +35,7 @@ function constructYamlPairs(data: string): Any[] {
 
     const keys = Object.keys(pair);
 
-    result[index] = [keys[0], pair[keys[0] as Any]];
+    result[index] = [keys[0], pair[keys[0] as any]];
   }
 
   return result;

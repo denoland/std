@@ -4,14 +4,13 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
 import type { Type } from "../_type.ts";
-import type { Any } from "../_utils.ts";
 
 export const seq: Type = {
   tag: "tag:yaml.org,2002:seq",
   resolve() {
     return true;
   },
-  construct(data): Any {
+  construct(data): any {
     return data !== null ? data : [];
   },
   kind: "sequence",

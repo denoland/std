@@ -6,7 +6,7 @@
 
 import { YamlError } from "./_error.ts";
 import type { KindType, Type } from "./_type.ts";
-import type { Any, ArrayObject } from "./_utils.ts";
+import type { ArrayObject } from "./_utils.ts";
 import {
   binary,
   bool,
@@ -83,7 +83,7 @@ export class Schema {
   compiledTypeMap: TypeMap;
 
   constructor(definition: {
-    implicit?: Any[];
+    implicit?: any[];
     explicit?: Type[];
     include?: Schema[];
   }) {

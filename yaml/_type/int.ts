@@ -4,7 +4,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
 import type { Type } from "../_type.ts";
-import { type Any, isNegativeZero } from "../_utils.ts";
+import { isNegativeZero } from "../_utils.ts";
 
 function isCharCodeInRange(c: number, lower: number, upper: number): boolean {
   return lower <= c && c <= upper;
@@ -151,7 +151,7 @@ function constructYamlInteger(data: string): number {
   return sign * parseInt(value, 10);
 }
 
-function isInteger(object: Any): boolean {
+function isInteger(object: any): boolean {
   return typeof object === "number" && object % 1 === 0 &&
     !isNegativeZero(object);
 }
