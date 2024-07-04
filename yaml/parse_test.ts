@@ -975,3 +975,15 @@ name: Jane Doe`,
     "duplicated mapping key at line 3, column 1:\n    name: Jane Doe\n    ^",
   );
 });
+
+Deno.test("parse() allows duplicate keys when `allowDuplicateKeys` option is set to `true`", () => {
+  assertEquals(
+    parse(
+      `name: John Doe
+age: 30
+name: Jane Doe`,
+      { allowDuplicateKeys: true },
+    ),
+    { name: "Jane Doe", age: 30 },
+  );
+});
