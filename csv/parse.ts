@@ -93,7 +93,7 @@ class Parser {
     const separatorLen = this.#options.separator.length;
     let recordBuffer = "";
     const fieldIndexes = [] as number[];
-    currentLineLoop: while (true) {
+    parseField: while (true) {
       if (this.#options.trimLeadingSpace) {
         currentLine = currentLine.trimStart();
       }
@@ -119,9 +119,9 @@ class Parser {
         fieldIndexes.push(recordBuffer.length);
         if (i >= 0) {
           currentLine = currentLine.substring(i + separatorLen);
-          continue currentLineLoop;
+          continue parseField;
         }
-        break currentLineLoop;
+        break parseField;
       } else {
         // Quoted string field
         currentLine = currentLine.substring(quoteLen);
@@ -139,11 +139,11 @@ class Parser {
               // `","` sequence (end of field).
               currentLine = currentLine.substring(separatorLen);
               fieldIndexes.push(recordBuffer.length);
-              continue currentLineLoop;
+              continue parseField;
             } else if (0 === currentLine.length) {
               // `"\n` sequence (end of line).
               fieldIndexes.push(recordBuffer.length);
-              break currentLineLoop;
+              break parseField;
             } else if (this.#options.lazyQuotes) {
               // `"` sequence (bare quote).
               recordBuffer += quote;
@@ -168,7 +168,7 @@ class Parser {
                 throw new ParseError(startLine + 1, lineIndex, col, ERR_QUOTE);
               }
               fieldIndexes.push(recordBuffer.length);
-              break currentLineLoop;
+              break parseField;
             }
             recordBuffer += "\n"; // preserve line feed (This is because TextProtoReader removes it.)
           } else {
@@ -178,7 +178,7 @@ class Parser {
               throw new ParseError(startLine + 1, lineIndex, col, ERR_QUOTE);
             }
             fieldIndexes.push(recordBuffer.length);
-            break currentLineLoop;
+            break parseField;
           }
         }
       }
