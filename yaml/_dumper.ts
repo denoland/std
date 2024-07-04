@@ -160,7 +160,7 @@ export class DumperState {
   tag: string | null = null;
   result = "";
   duplicates: Any[] = [];
-  usedDuplicates: Any[] = []; // changed from null to []
+  usedDuplicates: Set<Any> = new Set();
   styleMap: ArrayObject<StyleVariant>;
   dump: Any;
 
@@ -850,11 +850,11 @@ function writeNode(
     compact = false;
   }
 
-  if (duplicate && state.usedDuplicates[duplicateIndex]) {
+  if (duplicate && state.usedDuplicates.has(object)) {
     state.dump = `*ref_${duplicateIndex}`;
   } else {
-    if (objectOrArray && duplicate && !state.usedDuplicates[duplicateIndex]) {
-      state.usedDuplicates[duplicateIndex] = true;
+    if (objectOrArray && duplicate) {
+      state.usedDuplicates.add(object);
     }
     if (common.isObject(state.dump) && !Array.isArray(state.dump)) {
       if (block && Object.keys(state.dump).length !== 0) {
@@ -941,7 +941,7 @@ function getDuplicateReferences(
   for (const idx of duplicatesIndexes) {
     state.duplicates.push(objects[idx]);
   }
-  state.usedDuplicates = Array.from({ length: duplicatesIndexes.length });
+  state.usedDuplicates = new Set();
 }
 
 export function dump(input: Any, options: DumperStateOptions = {}): string {
