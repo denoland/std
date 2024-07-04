@@ -29,12 +29,7 @@ import {
 import { YamlError } from "./_error.ts";
 import { DEFAULT_SCHEMA, type Schema } from "./_schema.ts";
 import type { RepresentFn, StyleVariant, Type } from "./_type.ts";
-import {
-  type Any,
-  type ArrayObject,
-  charCodeToHexString,
-  isObject,
-} from "./_utils.ts";
+import { type Any, type ArrayObject, isObject } from "./_utils.ts";
 
 const ESCAPE_SEQUENCES = new Map<number, string>([
   [0x00, "\\0"],
@@ -72,6 +67,19 @@ const DEPRECATED_BOOLEANS_SYNTAX = [
   "Off",
   "OFF",
 ];
+
+/**
+ * Encodes a Unicode character code point as a hexadecimal escape sequence.
+ */
+function charCodeToHexString(charCode: number): string {
+  const hexString = charCode.toString(16).toUpperCase();
+  if (charCode <= 0xff) return `\\x${hexString.padStart(2, "0")}`;
+  if (charCode <= 0xffff) return `\\u${hexString.padStart(4, "0")}`;
+  if (charCode <= 0xffffffff) return `\\U${hexString.padStart(8, "0")}`;
+  throw new Error(
+    "Code point within a string may not be greater than 0xFFFFFFFF",
+  );
+}
 
 function compileStyleMap(
   schema: Schema,
