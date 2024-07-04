@@ -72,23 +72,16 @@ const DEPRECATED_BOOLEANS_SYNTAX = [
 ];
 
 function compileStyleMap(
-  schema: Schema,
   map?: ArrayObject<StyleVariant> | null,
 ): ArrayObject<StyleVariant> {
   if (typeof map === "undefined" || map === null) return {};
 
   const result: ArrayObject<StyleVariant> = {};
   for (let tag of Object.keys(map)) {
-    let style = String(map[tag]) as StyleVariant;
+    const style = String(map[tag]) as StyleVariant;
     if (tag.slice(0, 2) === "!!") {
       tag = `tag:yaml.org,2002:${tag.slice(2)}`;
     }
-    const type = schema.compiledTypeMap.fallback[tag];
-
-    if (type?.styleAliases && Object.hasOwn(type.styleAliases, style)) {
-      style = type.styleAliases[style];
-    }
-
     result[tag] = style;
   }
 
@@ -182,7 +175,7 @@ export class DumperState {
     this.arrayIndent = arrayIndent;
     this.skipInvalid = skipInvalid;
     this.flowLevel = flowLevel;
-    this.styleMap = compileStyleMap(this.schema, styles);
+    this.styleMap = compileStyleMap(styles);
     this.sortKeys = sortKeys;
     this.lineWidth = lineWidth;
     this.noRefs = noRefs;
