@@ -1,5 +1,8 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-import { type GlobOptions, globToRegExp } from "@std/path/glob-to-regexp";
+import {
+  globToRegExp,
+  type GlobToRegExpOptions,
+} from "@std/path/glob-to-regexp";
 import { joinGlobs } from "@std/path/join-globs";
 import { isGlob } from "@std/path/is-glob";
 import { isAbsolute } from "@std/path/is-absolute";
@@ -13,12 +16,12 @@ import {
   type WalkEntry,
 } from "./_create_walk_entry.ts";
 
-export type { GlobOptions, WalkEntry };
+export type { GlobToRegExpOptions, WalkEntry };
 
 const isWindows = Deno.build.os === "windows";
 
 /** Options for {@linkcode expandGlob} and {@linkcode expandGlobSync}. */
-export interface ExpandGlobOptions extends Omit<GlobOptions, "os"> {
+export interface ExpandGlobOptions extends Omit<GlobToRegExpOptions, "os"> {
   /** File path where to expand from. */
   root?: string;
   /** List of glob patterns to be excluded from the expansion. */
@@ -281,7 +284,11 @@ export async function* expandGlob(
   } = split(toPathString(glob));
   root ??= isGlobAbsolute ? winRoot ?? "/" : Deno.cwd();
 
-  const globOptions: GlobOptions = { extended, globstar, caseInsensitive };
+  const globOptions: GlobToRegExpOptions = {
+    extended,
+    globstar,
+    caseInsensitive,
+  };
   const absRoot = isGlobAbsolute ? root : resolve(root!); // root is always string here
   const resolveFromRoot = (path: string): string => resolve(absRoot, path);
   const excludePatterns = exclude
@@ -436,7 +443,11 @@ export function* expandGlobSync(
   } = split(toPathString(glob));
   root ??= isGlobAbsolute ? winRoot ?? "/" : Deno.cwd();
 
-  const globOptions: GlobOptions = { extended, globstar, caseInsensitive };
+  const globOptions: GlobToRegExpOptions = {
+    extended,
+    globstar,
+    caseInsensitive,
+  };
   const absRoot = isGlobAbsolute ? root : resolve(root!); // root is always string here
   const resolveFromRoot = (path: string): string => resolve(absRoot, path);
   const excludePatterns = exclude
