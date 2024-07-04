@@ -30,3 +30,25 @@ export const GRAVE_ACCENT = 0x60; /* ` */
 export const LEFT_CURLY_BRACKET = 0x7b; /* { */
 export const VERTICAL_LINE = 0x7c; /* | */
 export const RIGHT_CURLY_BRACKET = 0x7d; /* } */
+
+export function isEOL(c: number): boolean {
+  return c === LINE_FEED || c === CARRIAGE_RETURN;
+}
+
+export function isWhiteSpace(c: number): boolean {
+  return c === TAB || c === SPACE;
+}
+
+export function isWhiteSpaceOrEOL(c: number): boolean {
+  return isWhiteSpace(c) || isEOL(c);
+}
+
+export function isFlowIndicator(c: number): boolean {
+  return (
+    c === COMMA ||
+    c === LEFT_SQUARE_BRACKET ||
+    c === RIGHT_SQUARE_BRACKET ||
+    c === LEFT_CURLY_BRACKET ||
+    c === RIGHT_CURLY_BRACKET
+  );
+}
