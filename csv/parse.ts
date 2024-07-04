@@ -74,18 +74,18 @@ class Parser {
     return this.#cursor >= this.#input.length;
   }
   #parseRecord(startLine: number): string[] | null {
-    let line = this.#readLine();
-    if (line === null) return null;
-    if (line.length === 0) return [];
+    let fullLine = this.#readLine();
+    if (fullLine === null) return null;
+    if (fullLine.length === 0) return [];
 
     let lineIndex = startLine + 1;
 
     // line starting with comment character is ignored
-    if (this.#options.comment && line[0] === this.#options.comment) {
+    if (this.#options.comment && fullLine[0] === this.#options.comment) {
       return [];
     }
 
-    let fullLine = line;
+    let line = fullLine;
     const quote = '"';
     const quoteLen = quote.length;
     const separatorLen = this.#options.separator.length;
