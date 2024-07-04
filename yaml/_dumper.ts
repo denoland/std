@@ -193,17 +193,6 @@ export class DumperState {
   }
 }
 
-function encodeHex(character: number): string {
-  const string = character.toString(16).toUpperCase();
-
-  if (character <= 0xff) return `\\x${string.padStart(2, "0")}`;
-  if (character <= 0xffff) return `\\u${string.padStart(4, "0")}`;
-  if (character <= 0xffffffff) return `\\U${string.padStart(8, "0")}`;
-  throw new YamlError(
-    "code point within a string may not be greater than 0xFFFFFFFF",
-  );
-}
-
 // Indents every line in a string. Empty lines (\n only) are not indented.
 function indentString(string: string, spaces: number): string {
   const ind = " ".repeat(spaces);
@@ -494,7 +483,7 @@ function escapeString(string: string): string {
       nextChar = string.charCodeAt(i + 1);
       if (nextChar >= 0xdc00 && nextChar <= 0xdfff /* low surrogate */) {
         // Combine the surrogate pair and store it escaped.
-        result += encodeHex(
+        result += common.charCodeToHex(
           (char - 0xd800) * 0x400 + nextChar - 0xdc00 + 0x10000,
         );
         // Advance index one extra since we already used that char here.
@@ -505,7 +494,7 @@ function escapeString(string: string): string {
     escapeSeq = ESCAPE_SEQUENCES.get(char);
     result += !escapeSeq && isPrintable(char)
       ? string[i]
-      : escapeSeq || encodeHex(char);
+      : escapeSeq || common.charCodeToHex(char);
   }
 
   return result;

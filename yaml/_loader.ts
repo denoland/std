@@ -40,6 +40,7 @@ import { Mark } from "./_mark.ts";
 import { DEFAULT_SCHEMA, type Schema, type TypeMap } from "./_schema.ts";
 import type { Type } from "./_type.ts";
 import * as common from "./_utils.ts";
+import { getObjectTypeString } from "./_utils.ts";
 
 type Any = common.Any;
 type ArrayObject<T = Any> = common.ArrayObject<T>;
@@ -150,37 +151,11 @@ class LoaderState {
   }
 }
 
-function _class(obj: unknown): string {
-  return Object.prototype.toString.call(obj);
-}
-
-function fromHexCode(c: number): number {
-  if (0x30 <= /* 0 */ c && c <= 0x39 /* 9 */) {
-    return c - 0x30;
-  }
-
-  const lc = c | 0x20;
-
-  if (0x61 <= /* a */ lc && lc <= 0x66 /* f */) {
-    return lc - 0x61 + 10;
-  }
-
-  return -1;
-}
-
 const ESCAPED_HEX_LENGTHS = new Map<number, number>([
   [0x78, 2], // x
   [0x75, 4], // u
   [0x55, 8], // U
 ]);
-
-function fromDecimalCode(c: number): number {
-  if (0x30 <= /* 0 */ c && c <= 0x39 /* 9 */) {
-    return c - 0x30;
-  }
-
-  return -1;
-}
 
 const SIMPLE_ESCAPE_SEQUENCES = new Map<number, string>([
   [0x30, "\x00"], // 0
@@ -202,18 +177,6 @@ const SIMPLE_ESCAPE_SEQUENCES = new Map<number, string>([
   [0x4c, "\u2028"], // L
   [0x50, "\u2029"], // P
 ]);
-
-function charFromCodepoint(c: number): string {
-  if (c <= 0xffff) {
-    return String.fromCharCode(c);
-  }
-  // Encode UTF-16 surrogate pair
-  // https://en.wikipedia.org/wiki/UTF-16#Code_points_U.2B010000_to_U.2B10FFFF
-  return String.fromCharCode(
-    ((c - 0x010000) >> 10) + 0xd800,
-    ((c - 0x010000) & 0x03ff) + 0xdc00,
-  );
-}
 
 function yamlDirectiveHandler(state: LoaderState, ...args: string[]) {
   if (state.version !== null) {
@@ -349,7 +312,7 @@ function storeMappingPair(
 
       if (
         typeof keyNode === "object" &&
-        _class(keyNode[index]) === "[object Object]"
+        getObjectTypeString(keyNode[index]) === "[object Object]"
       ) {
         keyNode[index] = "[object Object]";
       }
@@ -359,7 +322,10 @@ function storeMappingPair(
   // Avoid code execution in load() via toString property
   // (still use its own toString for arrays, timestamps,
   // and whatever user schema extensions happen to have @@toStringTag)
-  if (typeof keyNode === "object" && _class(keyNode) === "[object Object]") {
+  if (
+    typeof keyNode === "object" &&
+    getObjectTypeString(keyNode) === "[object Object]"
+  ) {
     keyNode = "[object Object]";
   }
 
@@ -694,14 +660,14 @@ function readDoubleQuotedScalar(
         for (; hexLength > 0; hexLength--) {
           ch = state.next();
 
-          if ((tmp = fromHexCode(ch)) >= 0) {
+          if ((tmp = common.hexCharCodeToNumber(ch)) >= 0) {
             hexResult = (hexResult << 4) + tmp;
           } else {
             return state.throwError("expected hexadecimal character");
           }
         }
 
-        state.result += charFromCodepoint(hexResult);
+        state.result += common.codepointToChar(hexResult);
 
         state.position++;
       } else {
@@ -884,7 +850,7 @@ function readBlockScalar(state: LoaderState, nodeIndent: number): boolean {
       } else {
         return state.throwError("repeat of a chomping mode identifier");
       }
-    } else if ((tmp = fromDecimalCode(ch)) >= 0) {
+    } else if ((tmp = common.decimalCharCodeToNumber(ch)) >= 0) {
       if (tmp === 0) {
         return state.throwError(
           "bad explicit indentation width of a block scalar; it cannot be less than one",
