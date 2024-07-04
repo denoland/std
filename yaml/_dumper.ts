@@ -897,30 +897,16 @@ function writeNode(
   return true;
 }
 
-function inspectNode(
-  object: Any,
-  objects: Any[],
-  duplicatesIndexes: number[],
-) {
-  if (object !== null && typeof object === "object") {
-    const index = objects.indexOf(object);
-    if (index !== -1) {
-      if (!duplicatesIndexes.includes(index)) {
-        duplicatesIndexes.push(index);
-      }
-    } else {
-      objects.push(object);
-
-      if (Array.isArray(object)) {
-        for (let idx = 0; idx < object.length; idx += 1) {
-          inspectNode(object[idx], objects, duplicatesIndexes);
-        }
-      } else {
-        for (const objectKey of Object.keys(object)) {
-          inspectNode(object[objectKey], objects, duplicatesIndexes);
-        }
-      }
-    }
+function inspectNode(object: Any, objects: Any[], duplicateObjects: Set<Any>) {
+  if (!isObject(object)) return;
+  if (objects.includes(object)) {
+    duplicateObjects.add(object);
+    return;
+  }
+  objects.push(object);
+  const entries = Array.isArray(object) ? object : Object.values(object);
+  for (const value of entries) {
+    inspectNode(value, objects, duplicateObjects);
   }
 }
 
@@ -929,14 +915,12 @@ function getDuplicateReferences(
   state: DumperState,
 ) {
   const objects: Any[] = [];
-  const duplicatesIndexes: number[] = [];
+  const duplicateObjects: Set<Any> = new Set();
 
-  inspectNode(object, objects, duplicatesIndexes);
+  inspectNode(object, objects, duplicateObjects);
 
-  for (const idx of duplicatesIndexes) {
-    state.duplicates.push(objects[idx]);
-  }
-  state.usedDuplicates = Array.from({ length: duplicatesIndexes.length });
+  for (const object of duplicateObjects) state.duplicates.push(object);
+  state.usedDuplicates = Array.from({ length: duplicateObjects.size });
 }
 
 export function dump(input: Any, options: DumperStateOptions = {}): string {
