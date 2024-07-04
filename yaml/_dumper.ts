@@ -13,6 +13,7 @@ import {
   EXCLAMATION,
   GRAVE_ACCENT,
   GREATER_THAN,
+  isWhiteSpace,
   LEFT_CURLY_BRACKET,
   LEFT_SQUARE_BRACKET,
   LINE_FEED,
@@ -23,8 +24,6 @@ import {
   RIGHT_SQUARE_BRACKET,
   SHARP,
   SINGLE_QUOTE,
-  SPACE,
-  TAB,
   VERTICAL_LINE,
 } from "./_chars.ts";
 import { YamlError } from "./_error.ts";
@@ -219,7 +218,7 @@ function encodeHex(character: number): string {
 
 // Indents every line in a string. Empty lines (\n only) are not indented.
 function indentString(string: string, spaces: number): string {
-  const ind = common.repeat(" ", spaces);
+  const ind = " ".repeat(spaces);
   const length = string.length;
   let position = 0;
   let next = -1;
@@ -245,16 +244,11 @@ function indentString(string: string, spaces: number): string {
 }
 
 function generateNextLine(state: DumperState, level: number): string {
-  return `\n${common.repeat(" ", state.indent * level)}`;
+  return `\n${" ".repeat(state.indent * level)}`;
 }
 
 function testImplicitResolving(state: DumperState, str: string): boolean {
   return state.implicitTypes.some((type) => type.resolve(str));
-}
-
-// [33] s-white ::= s-space | s-tab
-function isWhitespace(c: number): boolean {
-  return c === SPACE || c === TAB;
 }
 
 // Returns true if the character can be printed without escaping.
@@ -296,7 +290,7 @@ function isPlainSafeFirst(c: number): boolean {
   return (
     isPrintable(c) &&
     c !== 0xfeff &&
-    !isWhitespace(c) && // - s-white
+    !isWhiteSpace(c) && // - s-white
     // - (c-indicator ::=
     // “-” | “?” | “:” | “,” | “[” | “]” | “{” | “}”
     c !== MINUS &&
@@ -354,7 +348,7 @@ function chooseScalarStyle(
   let hasFoldableLine = false; // only checked if shouldTrackWidth
   let previousLineBreak = -1; // count the first line correctly
   let plain = isPlainSafeFirst(string.charCodeAt(0)) &&
-    !isWhitespace(string.charCodeAt(string.length - 1));
+    !isWhiteSpace(string.charCodeAt(string.length - 1));
 
   let char: number;
   let i: number;

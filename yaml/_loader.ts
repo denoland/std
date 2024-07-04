@@ -16,6 +16,10 @@ import {
   EXCLAMATION,
   GRAVE_ACCENT,
   GREATER_THAN,
+  isEOL,
+  isFlowIndicator,
+  isWhiteSpace,
+  isWhiteSpaceOrEOL,
   LEFT_CURLY_BRACKET,
   LEFT_SQUARE_BRACKET,
   LINE_FEED,
@@ -29,7 +33,6 @@ import {
   SINGLE_QUOTE,
   SMALLER_THAN,
   SPACE,
-  TAB,
   VERTICAL_LINE,
 } from "./_chars.ts";
 import { YamlError } from "./_error.ts";
@@ -141,7 +144,7 @@ class LoaderState {
     throw this.#createError(message);
   }
 
-  throwWarning(message: string) {
+  dispatchWarning(message: string) {
     const error = this.#createError(message);
     this.onWarning?.(error);
   }
@@ -149,28 +152,6 @@ class LoaderState {
 
 function _class(obj: unknown): string {
   return Object.prototype.toString.call(obj);
-}
-
-function isEOL(c: number): boolean {
-  return c === LINE_FEED || c === CARRIAGE_RETURN;
-}
-
-function isWhiteSpace(c: number): boolean {
-  return c === TAB || c === SPACE;
-}
-
-function isWhiteSpaceOrEOL(c: number): boolean {
-  return isWhiteSpace(c) || isEOL(c);
-}
-
-function isFlowIndicator(c: number): boolean {
-  return (
-    c === COMMA ||
-    c === LEFT_SQUARE_BRACKET ||
-    c === RIGHT_SQUARE_BRACKET ||
-    c === LEFT_CURLY_BRACKET ||
-    c === RIGHT_CURLY_BRACKET
-  );
 }
 
 function fromHexCode(c: number): number {
@@ -257,7 +238,7 @@ function yamlDirectiveHandler(state: LoaderState, ...args: string[]) {
   state.version = args[0];
   state.checkLineBreaks = minor < 2;
   if (minor !== 1 && minor !== 2) {
-    return state.throwWarning("unsupported YAML version of the document");
+    return state.dispatchWarning("unsupported YAML version of the document");
   }
 }
 function tagDirectiveHandler(state: LoaderState, ...args: string[]) {
@@ -478,7 +459,7 @@ function skipSeparationSpace(
     lineBreaks !== 0 &&
     state.lineIndent < checkIndent
   ) {
-    state.throwWarning("deficient indentation");
+    state.dispatchWarning("deficient indentation");
   }
 
   return lineBreaks;
@@ -508,7 +489,7 @@ function writeFoldedLines(state: LoaderState, count: number) {
   if (count === 1) {
     state.result += " ";
   } else if (count > 1) {
-    state.result += common.repeat("\n", count - 1);
+    state.result += "\n".repeat(count - 1);
   }
 }
 
@@ -958,8 +939,7 @@ function readBlockScalar(state: LoaderState, nodeIndent: number): boolean {
     if (state.lineIndent < textIndent) {
       // Perform the chomping.
       if (chomping === CHOMPING_KEEP) {
-        state.result += common.repeat(
-          "\n",
+        state.result += "\n".repeat(
           didReadContent ? 1 + emptyLines : emptyLines,
         );
       } else if (chomping === CHOMPING_CLIP) {
@@ -979,15 +959,14 @@ function readBlockScalar(state: LoaderState, nodeIndent: number): boolean {
       if (isWhiteSpace(ch)) {
         atMoreIndented = true;
         // except for the first content line (cf. Example 8.1)
-        state.result += common.repeat(
-          "\n",
+        state.result += "\n".repeat(
           didReadContent ? 1 + emptyLines : emptyLines,
         );
 
         // End of more-indented block.
       } else if (atMoreIndented) {
         atMoreIndented = false;
-        state.result += common.repeat("\n", emptyLines + 1);
+        state.result += "\n".repeat(emptyLines + 1);
 
         // Just one line break - perceive as the same line.
       } else if (emptyLines === 0) {
@@ -998,16 +977,13 @@ function readBlockScalar(state: LoaderState, nodeIndent: number): boolean {
 
         // Several line breaks - perceive as different lines.
       } else {
-        state.result += common.repeat("\n", emptyLines);
+        state.result += "\n".repeat(emptyLines);
       }
 
       // Literal style: just add exact number of line breaks between content lines.
     } else {
       // Keep all line breaks except the header line break.
-      state.result += common.repeat(
-        "\n",
-        didReadContent ? 1 + emptyLines : emptyLines,
-      );
+      state.result += "\n".repeat(didReadContent ? 1 + emptyLines : emptyLines);
     }
 
     didReadContent = true;
@@ -1664,7 +1640,7 @@ function readDocument(state: LoaderState) {
         tagDirectiveHandler(state, ...directiveArgs);
         break;
       default:
-        state.throwWarning(`unknown document directive "${directiveName}"`);
+        state.dispatchWarning(`unknown document directive "${directiveName}"`);
         break;
     }
   }
@@ -1692,7 +1668,7 @@ function readDocument(state: LoaderState) {
       state.input.slice(documentStart, state.position),
     )
   ) {
-    state.throwWarning("non-ASCII line breaks are interpreted as content");
+    state.dispatchWarning("non-ASCII line breaks are interpreted as content");
   }
 
   if (state.position === state.lineStart && testDocumentSeparator(state)) {
