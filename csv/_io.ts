@@ -95,9 +95,7 @@ export async function parseRecord(
       if (!opt.lazyQuotes) {
         const j = field.indexOf(quote);
         if (j >= 0) {
-          const col = runeCount(
-            fullLine.slice(0, fullLine.length - line.slice(j).length),
-          );
+          const col = fullLine.length + j - line.length;
           quoteError = new ParseError(
             startLine + 1,
             lineIndex,
@@ -141,9 +139,7 @@ export async function parseRecord(
             recordBuffer += quote;
           } else {
             // `"*` sequence (invalid non-escaped quote).
-            const col = runeCount(
-              fullLine.slice(0, fullLine.length - line.length - quoteLen),
-            );
+            const col = fullLine.length - line.length - quoteLen;
             quoteError = new ParseError(
               startLine + 1,
               lineIndex,
@@ -162,7 +158,7 @@ export async function parseRecord(
           if (r === null) {
             // Abrupt end of file (EOF or error).
             if (!opt.lazyQuotes) {
-              const col = runeCount(fullLine);
+              const col = fullLine.length;
               quoteError = new ParseError(
                 startLine + 1,
                 lineIndex,
@@ -178,7 +174,7 @@ export async function parseRecord(
         } else {
           // Abrupt end of file (EOF on error).
           if (!opt.lazyQuotes) {
-            const col = runeCount(fullLine);
+            const col = fullLine.length;
             quoteError = new ParseError(
               startLine + 1,
               lineIndex,
@@ -203,11 +199,6 @@ export async function parseRecord(
     preIdx = i;
   }
   return result;
-}
-
-function runeCount(s: string): number {
-  // Array.from considers the surrogate pair.
-  return Array.from(s).length;
 }
 
 /**

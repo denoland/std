@@ -79,11 +79,6 @@ class Parser {
       return [];
     }
 
-    function runeCount(s: string): number {
-      // Array.from considers the surrogate pair.
-      return Array.from(s).length;
-    }
-
     let lineIndex = startLine + 1;
 
     // line starting with comment character is ignored
@@ -114,9 +109,7 @@ class Parser {
         if (!this.#options.lazyQuotes) {
           const j = field.indexOf(quote);
           if (j >= 0) {
-            const col = runeCount(
-              fullLine.slice(0, fullLine.length - line.slice(j).length),
-            );
+            const col = fullLine.length + j - line.length;
             quoteError = new ParseError(
               startLine + 1,
               lineIndex,
@@ -160,9 +153,7 @@ class Parser {
               recordBuffer += quote;
             } else {
               // `"*` sequence (invalid non-escaped quote).
-              const col = runeCount(
-                fullLine.slice(0, fullLine.length - line.length - quoteLen),
-              );
+              const col = fullLine.length - line.length - quoteLen;
               quoteError = new ParseError(
                 startLine + 1,
                 lineIndex,
@@ -181,7 +172,7 @@ class Parser {
             if (r === null) {
               // Abrupt end of file (EOF or error).
               if (!this.#options.lazyQuotes) {
-                const col = runeCount(fullLine);
+                const col = fullLine.length;
                 quoteError = new ParseError(
                   startLine + 1,
                   lineIndex,
@@ -197,7 +188,7 @@ class Parser {
           } else {
             // Abrupt end of file (EOF on error).
             if (!this.#options.lazyQuotes) {
-              const col = runeCount(fullLine);
+              const col = fullLine.length;
               quoteError = new ParseError(
                 startLine + 1,
                 lineIndex,
