@@ -12,6 +12,7 @@ import {
   type ReadOptions,
   type RecordWithColumn,
 } from "./_io.ts";
+import { graphemeLength } from "./_shared.ts";
 
 export { ParseError, type ParseResult, type RecordWithColumn };
 
@@ -101,7 +102,31 @@ class Parser {
         break currentLineLoop;
       }
 
-      if (currentLine.startsWith(quote)) {
+      if (line.length === 0 || !line.startsWith(quote)) {
+        // Non-quoted string field
+        const i = line.indexOf(this.#options.separator);
+        let field = line;
+        if (i >= 0) {
+          field = field.substring(0, i);
+        }
+        // Check to make sure a quote does not appear in field.
+        if (!this.#options.lazyQuotes) {
+          const j = field.indexOf(quote);
+          if (j >= 0) {
+            const col = graphemeLength(
+              line.slice(0, line.length - currentLine.slice(j).length),
+            );
+            throw new ParseError(startLine + 1, lineIndex, col, ERR_BARE_QUOTE);
+          }
+        }
+        recordBuffer += field;
+        fieldIndexes.push(recordBuffer.length);
+        if (i >= 0) {
+          line = line.substring(i + separatorLen);
+          continue parseField;
+        }
+        break parseField;
+      } else {
         // Quoted string field
         currentLine = currentLine.substring(quoteLen);
         quoteLoop: while (true) {
@@ -130,7 +155,12 @@ class Parser {
             if (this.#options.lazyQuotes) {
               // `"` sequence (bare quote).
               recordBuffer += quote;
-              continue quoteLoop;
+            } else {
+              // `"*` sequence (invalid non-escaped quote).
+              const col = graphemeLength(
+                line.slice(0, line.length - currentLine.length - quoteLen),
+              );
+              throw new ParseError(startLine + 1, lineIndex, col, ERR_QUOTE);
             }
             // `"*` sequence (invalid non-escaped quote).
             const col = line.length - currentLine.length - quoteLen;
@@ -147,14 +177,21 @@ class Parser {
             if (r === null) {
               // Abrupt end of file (EOF or error).
               if (!this.#options.lazyQuotes) {
-                const col = line.length;
+                const col = graphemeLength(line);
                 throw new ParseError(startLine + 1, lineIndex, col, ERR_QUOTE);
               }
               fieldIndexes.push(recordBuffer.length);
               break currentLineLoop;
             }
             recordBuffer += "\n"; // preserve line feed (This is because TextProtoReader removes it.)
-            continue quoteLoop;
+          } else {
+            // Abrupt end of file (EOF on error).
+            if (!this.#options.lazyQuotes) {
+              const col = graphemeLength(line);
+              throw new ParseError(startLine + 1, lineIndex, col, ERR_QUOTE);
+            }
+            fieldIndexes.push(recordBuffer.length);
+            break currentLineLoop;
           }
 
           // Abrupt end of file (EOF on error).

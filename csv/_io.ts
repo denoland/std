@@ -4,6 +4,8 @@
 // https://github.com/golang/go/blob/master/LICENSE
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
+import { graphemeLength } from "./_shared.ts";
+
 /** Options for {@linkcode parseRecord}. */
 export interface ReadOptions {
   /** Character which separates values.
@@ -96,7 +98,9 @@ export async function parseRecord(
       if (!options.lazyQuotes) {
         const j = field.indexOf(quote);
         if (j >= 0) {
-          const col = line.length + j - currentLine.length;
+          const col = graphemeLength(
+            line.slice(0, line.length - currentLine.slice(j).length),
+          );
           throw new ParseError(startLine + 1, lineIndex, col, ERR_BARE_QUOTE);
         }
       }
@@ -134,7 +138,9 @@ export async function parseRecord(
             recordBuffer += quote;
           } else {
             // `"*` sequence (invalid non-escaped quote).
-            const col = line.length - currentLine.length - quoteLen;
+            const col = graphemeLength(
+              line.slice(0, line.length - currentLine.length - quoteLen),
+            );
             throw new ParseError(startLine + 1, lineIndex, col, ERR_QUOTE);
           }
         } else if (currentLine.length > 0 || !reader.isEOF()) {
@@ -147,7 +153,7 @@ export async function parseRecord(
           if (r === null) {
             // Abrupt end of file (EOF or error).
             if (!options.lazyQuotes) {
-              const col = line.length;
+              const col = graphemeLength(line);
               throw new ParseError(startLine + 1, lineIndex, col, ERR_QUOTE);
             }
             fieldIndexes.push(recordBuffer.length);
@@ -157,7 +163,7 @@ export async function parseRecord(
         } else {
           // Abrupt end of file (EOF on error).
           if (!options.lazyQuotes) {
-            const col = line.length;
+            const col = graphemeLength(line);
             throw new ParseError(startLine + 1, lineIndex, col, ERR_QUOTE);
           }
           fieldIndexes.push(recordBuffer.length);
