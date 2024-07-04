@@ -2,9 +2,7 @@ import { assert, Debug } from '@utils'
 import Executor from '../exe/exe.ts'
 import IOChannel from '../io/io-channel.ts'
 import {
-  ACTORS,
   C,
-  colorize,
   ExeResult,
   freezePid,
   IsolateLifecycle,
@@ -19,7 +17,6 @@ import {
   QueueMessage,
   SolidRequest,
 } from '@/constants.ts'
-import { Config } from '@/isolates/actors.ts'
 import IsolateApi from '../isolate-api.ts'
 import { doAtomicBranch, doAtomicCommit } from '@io/io.ts'
 import DB from '../db.ts'
@@ -62,21 +59,10 @@ export const api = {
     required: ['pierce'],
     properties: { pierce: request },
   },
-  initHome: {
-    type: 'object',
-    required: ['superuser'],
-    properties: { superuser: { type: 'string' } },
-  },
 }
 
 export interface Api {
   pierce: (params: { pierce: PierceRequest }) => Promise<void>
-  /**
-   * Set the first repo and the public key of the superuser account.
-   * Has to be done separately since the queue processing cannot begin without a
-   * home address repo set.
-   */
-  initHome: (params: { superuser: string }) => Promise<PID>
 }
 
 /**
@@ -96,21 +82,6 @@ export const functions = {
     await db.atomic().enqueuePierce(pierce)
     // TODO test if head is deleted between pooling and commit
     // TODO test caller can handle head not present
-  },
-
-  async initHome({ superuser }: { superuser: string }, api: IsolateApi<C>) {
-    log('installHome superuser:', colorize(superuser))
-    const { db } = sanitizeContext(api)
-    const fs = await FS.init(ACTORS, db)
-    const config: Config = { superuser, authProviders: {} }
-    fs.writeJSON('config.json', config)
-    const { next } = await fs.writeCommitObject('System Provisioning')
-    const atomic = await db.atomic().updateHead(fs.pid, fs.oid, next.oid)
-    assert(atomic, 'atomic failed')
-    await atomic.commit()
-
-    log('initialized home', print(fs.pid))
-    return fs.pid
   },
 }
 

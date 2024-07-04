@@ -21,7 +21,7 @@ export const branch = async (fs: FS, sequence: number) => {
   const io = await IOChannel.load(fs)
   const pid = io.getBranchPid(sequence)
 
-  const { isolate, functionName, params } = io.getRequest(sequence)
+  const { isolate, functionName, params, deletes } = io.getRequest(sequence)
 
   const origin: RemoteRequest = {
     isolate,
@@ -36,6 +36,9 @@ export const branch = async (fs: FS, sequence: number) => {
   log('origin', origin)
   const branch = fs.branch(pid)
   IOChannel.blank(branch)
+  if (deletes) {
+    deletes.forEach((d) => branch.delete(d))
+  }
   // TODO handle branch exists with an error reply
 
   const solids = await solidify(branch, [origin])

@@ -151,7 +151,7 @@ export const functions = {
   compound: async (params: { target?: PID }, api: IsolateApi) => {
     const { target } = params
     log('compound target:', target)
-    const { pong } = await api.actions('io-fixture', target)
+    const { pong } = await api.actions('io-fixture', { target })
     const result = await pong({})
     return result
   },

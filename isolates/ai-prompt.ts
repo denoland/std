@@ -89,6 +89,10 @@ const ai = new OpenAI({ apiKey, timeout: 20 * 1000, maxRetries: 5 })
 
 export const transcribe = async (file: File) => {
   const transcription = await ai.audio.transcriptions
-    .create({ file, model: 'whisper-1' })
+    .create({
+      file,
+      model: 'whisper-1',
+      prompt: 'Backchat, GPT4, GPT3, Dreamcatcher, CRM, HAL, Deno, Stucks',
+    })
   return transcription.text
 }

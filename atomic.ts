@@ -76,6 +76,7 @@ export class Atomic {
     return this
   }
   createBranch(pid: PID, commit: string) {
+    // TODO check the pid is based on this pid
     assert(this.#atomic, 'Atomic not set')
     assert(sha1.test(commit), 'Commit not SHA-1: ' + commit)
     const key = keys.getHeadKey(pid)

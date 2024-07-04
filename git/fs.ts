@@ -1,16 +1,15 @@
 import diff3Merge from 'diff3'
 import http from '$git/http/web/index.js'
-import * as secp from '@noble/secp256k1'
 import { assert, Debug, equal, posix } from '@utils'
 import {
   Change,
   ENTRY_BRANCH,
   IO_PATH,
   isBaseRepo,
-  isChildOf,
   PartialPID,
   PID,
   print,
+  randomId,
   sha1,
 } from '@/constants.ts'
 import git, { Errors, type MergeDriverCallback } from '$git'
@@ -167,7 +166,7 @@ export default class FS {
   }
   /** @param the new PID to branch into */
   branch(pid: PID) {
-    assert(isChildOf(pid, this.#pid), 'not a child pid')
+    assert(isSameRepo(this.#pid, pid), 'branching into a different repo')
     return new FS(pid, this.oid, this.#db)
   }
   logs(filepath?: string, depth?: number) {
@@ -592,9 +591,8 @@ const assertPath = (path: string) => {
 
 const generateFakeRepoId = () => {
   // TODO make this genuine based on the genesis commit
-  const privKey = secp.utils.randomPrivateKey()
-  const pubKey = secp.getPublicKey(privKey)
-  return secp.etc.bytesToHex(pubKey)
+  // TODO make this be a RIPEMD-160 hash of the public key like in Crypto
+  return `rep_${randomId()}`
 }
 
 const mergeDriver: MergeDriverCallback = ({ contents, path }) => {
@@ -621,4 +619,16 @@ const mergeDriver: MergeDriverCallback = ({ contents, path }) => {
     }
   }
   return { cleanMerge: true, mergedText }
+}
+const isSameRepo = (a: PID, b: PID) => {
+  if (a.repoId !== b.repoId) {
+    return false
+  }
+  if (a.account !== b.account) {
+    return false
+  }
+  if (a.repository !== b.repository) {
+    return false
+  }
+  return true
 }

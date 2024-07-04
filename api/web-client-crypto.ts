@@ -1,83 +1,38 @@
 import * as secp from '@noble/secp256k1'
-import {
-  ArtifactMachine,
-  EngineInterface,
-  JsonValue,
-  PID,
-} from './web-client.types.ts'
-import { Backchat } from './web-client-session.ts'
+import { ripemd160 } from '@noble/hashes/ripemd160'
+import { base32 } from 'multiformats/bases/base32'
+import { machineIdRegex } from '@/api/web-client.types.ts'
 
-/**
- * Create a shell that is targeted at the home chain, to avoid reimplementation
- * of the shell logic.
- * Ping should validate that the home chain exists on the server.
- */
-
-export class Machine implements ArtifactMachine {
-  readonly #engine: EngineInterface
-  readonly #pid: PID
+export class Crypto {
   readonly #privKey: Uint8Array
   readonly #pubKey: Uint8Array
   readonly #machineId: string
-  #rootSessionPromise: Promise<Backchat>
 
-  static load(engine: EngineInterface, privateKey: string) {
+  static load(privateKey: string) {
     if (!secp.utils.isValidPrivateKey(privateKey)) {
       throw new Error('Invalid private key')
     }
-    return new Machine(engine, privateKey)
+    return new Crypto(privateKey)
   }
   static generatePrivateKey() {
     return secp.etc.bytesToHex(secp.utils.randomPrivateKey())
   }
-  static deriveMachineId(privateKey: string) {
-    if (!secp.utils.isValidPrivateKey(privateKey)) {
-      throw new Error('Invalid private key')
+  static check(machineId: string) {
+    if (!machineIdRegex.test(machineId)) {
+      throw new Error('Invalid machine id: ' + machineId)
     }
-    const pubKey = secp.getPublicKey(privateKey)
-    return secp.etc.bytesToHex(pubKey)
+    return true
   }
-
-  private constructor(engine: EngineInterface, privateKey: string) {
-    this.#engine = engine
+  private constructor(privateKey: string) {
     this.#privKey = secp.etc.hexToBytes(privateKey)
     this.#pubKey = secp.getPublicKey(this.#privKey)
-    this.#machineId = secp.etc.bytesToHex(this.#pubKey)
-
-    const actorId = this.#machineId
-    const machineId = this.#machineId
-    const branches = [...engine.homeAddress.branches, actorId, machineId]
-    this.#pid = { ...engine.homeAddress, branches }
-    this.#rootSessionPromise = this.#connect()
-  }
-  get rootTerminalPromise() {
-    return this.#rootSessionPromise
-  }
-  get pid() {
-    return this.#pid
+    const hash = ripemd160(this.#pubKey)
+    this.#machineId = 'mac_' + base32.encode(hash)
+    if (!machineIdRegex.test(this.#machineId)) {
+      throw new Error('Invalid machine id: ' + this.#machineId)
+    }
   }
   get machineId() {
     return this.#machineId
-  }
-  clone() {
-    return new Machine(this.#engine, secp.etc.bytesToHex(this.#privKey))
-  }
-  async #connect() {
-    await this.#engine.ensureMachineTerminal(this.pid)
-    return Backchat.openRoot(this.#engine, this)
-  }
-
-  /** If the given pid is valid, uses that session, else creates a new one */
-  openTerminal(retry?: PID): Backchat {
-    if (retry) {
-      return Backchat.resume(this.#engine, this, retry)
-    }
-    return Backchat.create(this.#engine, this)
-  }
-  ping(params?: { data?: JsonValue }) {
-    return this.#engine.ping(params?.data)
-    // TODO return some info about the deployment
-    // version, deployment location, etc
-    // if you want to ping in a chain, use an isolate
   }
 }

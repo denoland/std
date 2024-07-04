@@ -1,7 +1,7 @@
 import * as utils from '@utils'
 import DB from '@/db.ts'
 import FS from './fs.ts'
-import { addChild, IO_PATH, partialFromRepo } from '@/constants.ts'
+import { addBranches, IO_PATH, partialFromRepo } from '@/constants.ts'
 const { expect } = utils
 Deno.test('git/init', async (t) => {
   const db = await DB.create(DB.generateAesKey())
@@ -156,7 +156,7 @@ Deno.test('overwrite', async () => {
   base.write('c/c.txt', 'c')
   base.write('c/d.txt', 'd')
   const { next } = await base.writeCommitObject('initial')
-  const childPid = addChild(next.pid, 'child')
+  const childPid = addBranches(next.pid, 'child')
   const branch = next.branch(childPid)
 
   branch.write(IO_PATH, '1')

@@ -2,7 +2,7 @@
 import { Chalk } from 'chalk'
 import { ulid } from 'ulid'
 import { JSONSchemaType } from './web-client.ajv.ts'
-import { Backchat } from './web-client-session.ts'
+import type { Backchat } from './web-client-backchat.ts'
 import { assert } from '@sindresorhus/is'
 export enum PROCTYPE {
   SERIAL = 'SERIAL',
@@ -10,20 +10,33 @@ export enum PROCTYPE {
   DAEMON = 'DAEMON',
   EFFECT = 'EFFECT',
   // TODO FORGET = 'FORGET', // allow fire and forget actions
+  // BUT forget needs to be a separate option as we need DAEMON and FORGET
+  // together to allow for a fire and forget branches
+  // OR make DAEMON be the same as FORGET since no new info need be returned ?
 }
 export type { JSONSchemaType }
+export type ApiFunction =
+  | (() => unknown | Promise<unknown>)
+  | ((arg1: { [key: string]: unknown }) => unknown | Promise<unknown>)
+export type ApiFunctions = {
+  [key: string]: ApiFunction
+}
+type RepoParams = { repo: string; isolate?: string; params?: Params }
+export type ActorApi = ApiFunctions & {
+  backchat: (params: { backchatId: string; machineId?: string }) => Promise<PID>
+  /** Clones from github, using the github PAT (if any) for the calling machine.
+   * Updates the repo.json file in the actor branch to point to the new PID of
+   * the clone.
+   */
+  clone: (params: RepoParams) => Promise<{ pid: PID; head: string }>
 
-export type JsonValue =
-  | string
-  | number
-  | boolean
-  | null
-  | JsonValue[]
-  | {
-    [key: string]: JsonValue
-  }
-export type Params = { [key: string]: JsonValue }
+  init: (params: RepoParams) => Promise<{ pid: PID; head: string }>
 
+  /**
+   * List all the repos that this Actor has created.
+   */
+  lsRepos: () => Promise<string[]>
+}
 export type IsolateReturn = JsonValue | undefined | void
 export type ProcessOptions = {
   /**
@@ -45,14 +58,16 @@ export type ProcessOptions = {
    */
   branch?: boolean
   /**
-   * Should the branch be closed after the process is done.
-   * Implies `branch: true`
+   * Enables Daemon mode, where the branch will not be closed after the process
+   * is done.
    */
   noClose?: boolean
   /** Set a prefix for the new branch name.  Implies branch = true */
   prefix?: string
   /** Set the name of the new branch.  Will error if this exists already */
   branchName?: string
+  /** Provide file paths that will be deleted in the new branch */
+  deletes?: string[]
 }
 export type IoStruct = {
   sequence: number
@@ -101,18 +116,7 @@ export const ENTRY_BRANCH = 'main'
 /**
  * The Process Identifier used to address a specific process branch.
  */
-export type PID = {
-  /**
-   * The hash of the genesis commit is used to identify this repo in a
-   * cryptographically secure way.  This repoId is used to reference this repo
-   * unique with strong guarantees that this is the correct repo that
-   * communication was intended with.
-   */
-  repoId: string
-  account: string
-  repository: string
-  branches: string[]
-}
+
 export type PartialPID = Omit<PID, 'repoId'>
 
 export type HelpConfig = {
@@ -129,6 +133,24 @@ export type Help = {
   examples?: string[]
   tests?: string[]
 }
+export type PierceRequest = Invocation & {
+  target: PID
+  ulid: string
+  params: { request: UnsequencedRequest }
+}
+export const isPierceRequest = (p: Request): p is PierceRequest => {
+  return 'ulid' in p
+}
+export type JsonValue =
+  | string
+  | number
+  | boolean
+  | null
+  | JsonValue[]
+  | {
+    [key: string]: JsonValue
+  }
+export type Params = { [key: string]: JsonValue }
 export type Invocation = {
   isolate: string
   functionName: string
@@ -149,6 +171,8 @@ export type Invocation = {
    * branch.  If the branch already exists, the request will fail.
    */
   branchName?: string
+  /** Relative paths to delete in the branch */
+  deletes?: string[]
   effect?: boolean | {
     /** does this side effect have access to the network ? */
     net?: boolean
@@ -160,18 +184,18 @@ export type Invocation = {
     timeout?: number
   }
 }
-export type PierceRequest = Invocation & {
-  target: PID
-  ulid: string
-  params: { request: UnsequencedRequest }
+export type PID = {
+  /**
+   * The hash of the genesis commit is used to identify this repo in a
+   * cryptographically secure way.  This repoId is used to reference this repo
+   * unique with strong guarantees that this is the correct repo that
+   * communication was intended with.
+   */
+  repoId: string // TODO add regex checks to pid checks
+  account: string
+  repository: string
+  branches: string[]
 }
-export const isPierceRequest = (p: Request): p is PierceRequest => {
-  return 'ulid' in p
-}
-export type UnsequencedRequest = Omit<
-  RemoteRequest,
-  'sequence' | 'source' | 'commit'
->
 /**
  * A request that has been included in a commit, therefore has a sequence number
  */
@@ -184,17 +208,25 @@ export type SolidRequest = Invocation & {
 export type RemoteRequest = SolidRequest & {
   commit: string
 }
+export type UnsequencedRequest = Omit<
+  RemoteRequest,
+  'sequence' | 'source' | 'commit'
+>
+
 export type Request = PierceRequest | SolidRequest | RemoteRequest
 
 // TODO remove this by passing ProcessOptions in with the Request
-export const getProcType = (options?: ProcessOptions) => {
-  if (!options) {
+export const getProcType = (procOpts?: ProcessOptions) => {
+  if (!procOpts) {
     return PROCTYPE.SERIAL
   }
-  if (options.noClose) {
+  if (procOpts.noClose) {
     return PROCTYPE.DAEMON
   }
-  if (options.branch || options.branchName || options.prefix) {
+  if (
+    procOpts.deletes || procOpts.branch || procOpts.branchName ||
+    procOpts.prefix
+  ) {
     return PROCTYPE.BRANCH
   }
   return PROCTYPE.SERIAL
@@ -371,6 +403,7 @@ export interface ArtifactMachine {
   ping(params?: { data?: JsonValue; pid?: PID }): Promise<IsolateReturn>
 }
 export interface EngineInterface {
+  upsertBackchat(machineId: string, resume?: string): Promise<PID>
   /**
    * The address in use as basis of identity for this engine.  May be a repo
    * hosted on external engines, or hosted in cooperation with other engines.
@@ -389,21 +422,13 @@ export interface EngineInterface {
   exists(path: string, pid: PID): Promise<boolean>
   transcribe(audio: File): Promise<{ text: string }>
   apiSchema(isolate: string): Promise<ApiSchema>
-  ping(data?: JsonValue): Promise<IsolateReturn>
   /**
-   * When a new machine is created, it needs to create its actorId and its
-   * machineId needs to be inserted to that actor.  It will immediately start a
-   * session, so this all gets done in one shot.
-   *
-   * Without this function, a new machine has no way to begin piercing into
-   * chainland.
+   * Send a ping to the edge isolate that will process requests, to establish
+   * basic network connectivity. To ping a chain, use an isolate.
+   * TODO ping should return some info about the deployment
+   * @param data Data that will be echoed back
    */
-  ensureMachineTerminal(machinePid: PID): Promise<void>
-  /** Checks if the provided PID is active and accessible to this machine.  If
-   * it is not accessible due to permissions, it will appear as tho it did not
-   * exist */
-  isTerminalAvailable(pid: PID): Promise<boolean>
-  ensureBranch(pierce: PierceRequest): Promise<void>
+  ping(data?: JsonValue): Promise<IsolateReturn>
 }
 export const isPID = (value: unknown): value is PID => {
   if (typeof value !== 'object' || value === null) {
@@ -444,13 +469,10 @@ export const print = (pid?: PID) => {
     return '(no pid)'
   }
   const branches = pid.branches.map((segment) => {
-    if (terminalIdRegex.test(segment)) {
-      return colorize(segment.slice(-7))
-    }
-    if (machineIdRegex.test(segment)) {
-      return colorize(segment)
-    }
-    const noSubstring = true
+    const noSubstring = !segment.startsWith('mac_') &&
+      !segment.startsWith('bac_') &&
+      !segment.startsWith('act_') &&
+      !segment.startsWith('rep_')
     return colorize(segment, noSubstring)
   })
   return `${colorize(pid.repoId)}/${pid.account}/${pid.repository}:${
@@ -460,6 +482,9 @@ export const print = (pid?: PID) => {
 export const freezePid = (pid: PID) => {
   if (!pid.repoId) {
     throw new Error('repoId is required')
+  }
+  if (!repoIdRegex.test(pid.repoId)) {
+    throw new Error('Invalid repoId: ' + pid.repoId)
   }
   if (!pid.account) {
     throw new Error('account is required')
@@ -477,6 +502,7 @@ export const freezePid = (pid: PID) => {
   }
   Object.freeze(pid)
   Object.freeze(pid.branches)
+  return pid
 }
 export const partialFromRepo = (repo: string) => {
   const [account, repository] = repo.split('/')
@@ -488,21 +514,27 @@ export const partialFromRepo = (repo: string) => {
   return pid
 }
 
-export const ACTORS: Omit<PID, 'repoId'> = {
+export const HAL: Omit<PID, 'repoId'> = {
   account: 'dreamcatcher-tech',
-  repository: 'actors',
-  branches: ['base'],
+  repository: 'HAL',
+  branches: ['main'],
 }
+export type RpcOpts = { target?: PID } & ProcessOptions
 export const toActions = <T = DispatchFunctions>(
   target: PID,
   isolate: string,
   schema: IsolateApiSchema,
-  execute: (request: UnsequencedRequest) => Promise<unknown>,
+  procOpts: ProcessOptions,
+  execute: (request: UnsequencedRequest) => unknown | Promise<unknown>,
 ) => {
+  procOpts = procOpts || {}
+  if (procOpts.prefix && procOpts.branchName) {
+    throw new Error('failed mutex: ' + print(target))
+  }
+  const proctype = getProcType(procOpts)
   const actions: DispatchFunctions = {}
   for (const functionName of Object.keys(schema)) {
-    actions[functionName] = (arg1?: Params, options?: ProcessOptions) => {
-      const proctype = getProcType(options)
+    actions[functionName] = (arg1?: Params) => {
       const params = safeParams(arg1)
       const unsequencedRequest: UnsequencedRequest = {
         target,
@@ -511,20 +543,18 @@ export const toActions = <T = DispatchFunctions>(
         params,
         proctype,
       }
-      options = options || {}
-      if (options.prefix && options.branchName) {
-        throw new Error('failed mutex: ' + print(target))
+      if (procOpts.prefix) {
+        unsequencedRequest.branchPrefix = procOpts.prefix
       }
-      if (options.prefix) {
-        unsequencedRequest.branchPrefix = options.prefix
+      if (procOpts.branchName) {
+        unsequencedRequest.branchName = procOpts.branchName
       }
-      if (options.branchName) {
-        unsequencedRequest.branchName = options.branchName
+      if (procOpts.deletes) {
+        unsequencedRequest.deletes = procOpts.deletes
       }
       return execute(unsequencedRequest)
     }
   }
-
   return actions as T
 }
 const safeParams = (params?: Params) => {
@@ -539,65 +569,29 @@ const safeParams = (params?: Params) => {
   }
   return safe
 }
-
-export const assertValidTerminal = (pid: PID, identity: PID) => {
-  const { repoId, account, repository, branches } = identity
-  const msg = print(pid)
-  if (pid.repoId !== repoId) {
-    throw new Error('invalid repoId: ' + msg)
-  }
-  if (pid.account !== account) {
-    throw new Error('invalid account: ' + msg)
-  }
-  if (pid.repository !== repository) {
-    throw new Error('invalid repository: ' + msg)
-  }
-  if (pid.branches[0] !== branches[0]) {
-    throw new Error('invalid branch: ' + msg)
-  }
-  if (pid.branches.length !== 4) {
-    throw new Error('invalid initial pid: ' + msg)
-  }
-  if (pid.branches[1] !== pid.branches[2]) {
-    throw new Error('invalid actor: ' + msg)
-  }
-  const [, , machineId, sessionId] = pid.branches
-  if (!machineIdRegex.test(machineId)) {
-    throw new Error('invalid machineId: ' + msg)
-  }
-  if (!terminalIdRegex.test(sessionId)) {
-    throw new Error('invalid terminalId: ' + msg)
-  }
-}
-export const machineIdRegex = /^[0-9a-f]{66}$/
-export const terminalIdRegex =
-  /^[0-7][0-9A-HJKMNP-TV-Z]{9}[0-9A-HJKMNP-TV-Z]{16}$/
-export const ROOT_SESSION = '111111111111111R00TSESS10N'
-export const SUPERUSER = 'SUPERUSER00' // actorId for superuser
-export const getActorPid = (source: PID) => {
-  const branches = source.branches.slice(0, 2)
-  return { ...source, branches }
-}
+export const repoIdRegex = /^rep_[0-9A-HJKMNP-TV-Z]{16}$/
+export const machineIdRegex = /^mac_[2-7a-z]{33}$/
+export const actorIdRegex = /^act_[0-9A-HJKMNP-TV-Z]{16}$/
+export const backchatIdRegex = /^bac_[0-9A-HJKMNP-TV-Z]{16}$/
+export const SU_ACTOR = 'act_SVPERVSER0000000'
+export const SU_BACKCHAT = 'bac_SVPERVSER0000000'
 export const getActorId = (source: PID) => {
-  const [, actorId] = source.branches
+  const [base, actorId] = source.branches
+  const parent = { ...source, branches: [base] }
+  const fullHAL = { ...HAL, repoId: source.repoId }
+  if (!isPidEqual(parent, fullHAL)) {
+    throw new Error('source is not a child of HAL')
+  }
+  if (!actorIdRegex.test(actorId)) {
+    throw new Error('Invalid actor id: ' + actorId)
+  }
   return actorId
 }
-export const getMachineId = (source: PID) => {
-  const [, , machineId] = source.branches
-  return machineId
-}
-export const getTerminalId = (source: PID) => {
-  const [, , , terminalId] = source.branches
-  return terminalId
-}
-export const isTerminalPID = (source: PID) => {
-  const [, actorId, machineId, terminalId] = source.branches
-  return (
-    source.branches.length === 4 &&
-    machineIdRegex.test(actorId) &&
-    machineIdRegex.test(machineId) &&
-    terminalIdRegex.test(terminalId)
-  )
+export const isActorBranch = (pid: PID) => {
+  if (pid.branches.length !== 2) {
+    return false
+  }
+  return !!getActorId(pid)
 }
 export const isPidEqual = (pid1: PID, pid2: PID) => {
   if (pid1.repoId !== pid2.repoId) {
@@ -619,11 +613,7 @@ export const isPidEqual = (pid1: PID, pid2: PID) => {
   }
   return true
 }
-export const isValidForMachine = (terminal: PID, machine: PID) => {
-  const branches = terminal.branches.slice(0, -1)
-  const test = { ...machine, branches }
-  return isPidEqual(test, machine)
-}
+// TODO merge these two files into the same json file with different keys
 export const SESSION_PATH = 'session.json'
 export const SESSION_BRANCHES = 'session-branches.json'
 export const META_SYMBOL = Symbol.for('settling commit')
@@ -647,8 +637,15 @@ export type MetaPromise = Promise<unknown> & { [META_SYMBOL]?: Meta }
 type Commit = string
 export type BranchMap = { [toolCallId: string]: Commit }
 
-export const addChild = (pid: PID, ...children: string[]) => {
-  return { ...pid, branches: [...pid.branches, ...children] }
+export const addBranches = (pid: PID, ...children: string[]) => {
+  const next = { ...pid, branches: [...pid.branches, ...children] }
+  return freezePid(next)
+}
+export const addPeer = (pid: PID, peer: string) => {
+  const branches = [...pid.branches]
+  branches.pop()
+  const next = { ...pid, branches: [...branches, peer] }
+  return freezePid(next)
 }
 
 export const randomId = () => {

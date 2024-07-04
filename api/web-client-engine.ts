@@ -40,13 +40,12 @@ export class WebClientEngine implements EngineInterface {
   get homeAddress() {
     return this.#homeAddress
   }
-  ensureMachineTerminal(pid: PID) {
-    return this.#request('ensureMachineTerminal', { pid })
-  }
   get abortSignal() {
     return this.#abort.signal
   }
-
+  upsertBackchat(machineId: string, resume?: string | undefined): Promise<PID> {
+    throw new Error('Method not implemented.')
+  }
   stop() {
     this.#abort.abort()
     for (const abort of this.#aborts) {
@@ -65,6 +64,7 @@ export class WebClientEngine implements EngineInterface {
     }
   }
   async pierce(pierce: PierceRequest) {
+    // TODO lock to only allowing a backchat branch to pierce
     await this.#request('pierce', pierce)
   }
   async apiSchema(isolate: string) {
@@ -78,7 +78,6 @@ export class WebClientEngine implements EngineInterface {
     this.#schemas.set(isolate, result)
     return result
   }
-
   async transcribe(audio: File) {
     const formData = new FormData()
     formData.append('audio', audio)
@@ -96,7 +95,6 @@ export class WebClientEngine implements EngineInterface {
     }
     return outcome.result
   }
-
   read(pid: PID, path?: string, after?: string, signal?: AbortSignal) {
     const abort = new AbortController()
     this.#aborts.add(abort)
@@ -168,13 +166,6 @@ export class WebClientEngine implements EngineInterface {
   async exists(path: string, pid: PID) {
     const result = await this.#request('exists', { path, pid })
     return result as boolean
-  }
-  async isTerminalAvailable(pid: PID): Promise<boolean> {
-    const result = await this.#request('isTerminalAvailable', { pid })
-    return result as boolean
-  }
-  async ensureBranch(pierce: PierceRequest): Promise<void> {
-    await this.#request('ensureBranch', pierce)
   }
   async #request(path: string, params: Params) {
     const abort = new AbortController()

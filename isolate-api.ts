@@ -3,6 +3,7 @@ import Accumulator from './exe/accumulator.ts'
 import Compartment from './io/compartment.ts'
 import { assert, Debug } from '@utils'
 import {
+  ApiFunctions,
   DispatchFunctions,
   freezePid,
   IoStruct,
@@ -13,6 +14,7 @@ import {
   PID,
   print,
   PromisedIsolatePromise,
+  RpcOpts,
   SolidRequest,
   toActions,
   UnsequencedRequest,
@@ -21,7 +23,7 @@ const log = Debug('AI:isolateApi')
 interface Default {
   [key: string]: unknown
 }
-type Options = {
+type EffectOptions = {
   isEffect: boolean
   isEffectRecovered: boolean
 }
@@ -40,7 +42,7 @@ export default class IsolateApi<T extends object = Default> {
   static create(
     accumulator: Accumulator,
     origin?: SolidRequest,
-    opts?: Options,
+    opts?: EffectOptions,
   ) {
     const api = new IsolateApi(accumulator, origin)
     if (opts) {
@@ -88,12 +90,24 @@ export default class IsolateApi<T extends object = Default> {
     return this.#abort.signal
   }
 
-  async actions<T = DispatchFunctions>(isolate: string, targetPID?: PID) {
-    const target = targetPID ? targetPID : this.pid
+  async actions<T = DispatchFunctions>(isolate: string, opts: RpcOpts = {}) {
+    const { target = this.pid, ...procOpts } = opts
     freezePid(target)
     const schema = await this.apiSchema(isolate)
     const execute = (request: UnsequencedRequest) => this.action(request)
-    return toActions<T>(target, isolate, schema, execute)
+    return toActions<T>(target, isolate, schema, procOpts, execute)
+  }
+  async requests<T extends ApiFunctions>(isolate: string, opts: RpcOpts = {}) {
+    const { target = this.pid, ...procOpts } = opts
+    freezePid(target)
+
+    type Unseq = {
+      [K in keyof T]: (...args: Parameters<T[K]>) => UnsequencedRequest
+    }
+
+    const schema = await this.apiSchema(isolate)
+    const execute = (request: UnsequencedRequest) => request
+    return toActions<Unseq>(target, isolate, schema, procOpts, execute)
   }
   action(request: UnsequencedRequest) {
     const recovered = this.#accumulator.recover(request)

@@ -1,6 +1,6 @@
 import * as Actors from '../isolates/actors.ts'
 import {
-  ArtifactBackchat,
+  addBranches,
   colorize,
   isBaseRepo,
   IsolateApi,
@@ -8,6 +8,7 @@ import {
   pidSchema,
   print,
 } from '@/constants.ts'
+import { Backchat } from '@/api/web-client-backchat.ts'
 import type { Tokens } from '@deno/kv-oauth'
 import { Debug } from '@utils'
 import { assert } from '@std/assert'
@@ -136,17 +137,14 @@ export const functions = {
     log('actorId', colorize(actorId))
     api.delete(authFilename)
 
-    const githubPid = {
-      ...api.pid,
-      branches: [...api.pid.branches, githubUserId],
-    }
+    const target = addBranches(api.pid, githubUserId)
     const files = await api.actions<files.Api>('files')
     const path = 'credentials.json'
     let credentials: Credentials
 
-    if (await api.isChild(githubPid)) {
+    if (await api.isChild(target)) {
       // TODO make the api able to be focused remotely
-      const { read, write } = await api.actions<files.Api>('files', githubPid)
+      const { read, write } = await api.actions<files.Api>('files', { target })
       const string = await read({ path })
       credentials = JSON.parse(string)
       credentials.tokens[actorId] = tokens
@@ -157,7 +155,7 @@ export const functions = {
         githubUserId,
         tokens: { [actorId]: tokens },
       }
-      log('create branch', print(githubPid))
+      log('create branch', print(target))
       await files.write(
         { path, content: JSON.stringify(credentials) },
         { noClose: true, branchName: githubUserId },
@@ -188,15 +186,15 @@ type Credentials = {
 }
 type ActorPointer = Omit<Credentials, 'tokens'>
 
-export const init = async (session: ArtifactBackchat) => {
-  const { homeAddress } = session
-  const { pid } = await session.init({
+export const init = async (backchat: Backchat) => {
+  const { homeAddress } = backchat
+  const { pid } = await backchat.init({
     repo: 'dreamcatcher-tech/github',
     isolate: 'github',
     params: { homeAddress },
   })
   log('github installed', print(pid))
-
-  const actor = await session.actions<Actors.ActorAdmin>('actors', homeAddress)
+  const opts = { target: homeAddress }
+  const actor = await backchat.actions<Actors.ActorAdmin>('actors', opts)
   await actor.addAuthProvider({ name: 'github', provider: pid })
 }

@@ -3,10 +3,10 @@ import Server from './server.ts'
 import { expect } from '@utils'
 import { WebClientEngine } from '@/api/web-client-engine.ts'
 import guts from '../guts/guts.ts'
-import { Machine } from '@/api/web-client-machine.ts'
 import DB from '@/db.ts'
+import { Crypto } from '@/api/web-client-crypto.ts'
 
-const superuserPrivateKey = Machine.generatePrivateKey()
+const superuserPrivateKey = Crypto.generatePrivateKey()
 const aesKey = DB.generateAesKey()
 Deno.test('hono basic', async (t) => {
   await t.step('ping', async () => {
@@ -27,7 +27,7 @@ const cradleMaker = async (init?: Provisioner) => {
   const fetcher = server.request as typeof fetch
 
   const engine = await WebClientEngine.start('mock', fetcher)
-  const privateKey = Machine.generatePrivateKey()
+  const privateKey = Crypto.generatePrivateKey()
   const machine = Machine.load(engine, privateKey)
   const session = machine.openTerminal()
   const clientStop = session.engineStop.bind(session)

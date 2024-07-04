@@ -16,7 +16,10 @@ Deno.test('login with github', async (t) => {
   const machine = Machine.load(engine, Machine.generatePrivateKey())
   const session = machine.openTerminal()
   const home = session.homeAddress
-  const config = await session.readJSON<Actors.Config>('config.json', home)
+  const config = await session.readJSON<Actors.AdminConfig>(
+    'config.json',
+    home,
+  )
   const authProvider = config.authProviders.github
   const github = await session.actions<Github.Api>('github', authProvider)
 

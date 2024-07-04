@@ -75,6 +75,7 @@ export const api = {
     },
   },
   rm: {
+    // TODO extend to support glob pattens
     description: 'Remove a file.  Path must be relative.  This is recursive.',
     type: 'object',
     additionalProperties: false,

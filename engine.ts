@@ -2,31 +2,32 @@ import { transcribe } from './isolates/ai-prompt.ts'
 import Compartment from './io/compartment.ts'
 import '@std/dotenv/load'
 import {
-  ArtifactBackchat,
-  assertValidTerminal,
+  actorIdRegex,
+  addBranches,
+  backchatIdRegex,
   C,
-  colorize,
   EngineInterface,
   freezePid,
-  getActorId,
-  isPID,
+  HAL,
   JsonValue,
   PID,
   PierceRequest,
   print,
   PROCTYPE,
   Provisioner,
-  ROOT_SESSION,
+  randomId,
   UnsequencedRequest,
 } from './constants.ts'
 import IsolateApi from './isolate-api.ts'
-import { assert, Debug, equal, posix } from '@utils'
+import { assert, Debug, posix } from '@utils'
 import FS from '@/git/fs.ts'
 import * as artifact from '@/isolates/artifact.ts'
 import { ulid } from 'ulid'
-import { Machine } from '@/api/web-client-machine.ts'
+import { Crypto } from '@/api/web-client-crypto.ts'
 import { PierceWatcher } from '@/api/web-client-watcher.ts'
-import { ActorAdmin } from '@/isolates/actors.ts'
+import { ActorAdmin, ActorApi } from '@/isolates/actors.ts'
+import { Backchat } from '@/api/web-client-backchat.ts'
+import { shardedPath } from '@/isolates/machines.ts'
 const log = Debug('AI:engine')
 
 export class Engine implements EngineInterface {
@@ -34,11 +35,10 @@ export class Engine implements EngineInterface {
   #compartment: Compartment
   #api: IsolateApi<C>
   #pierce: artifact.Api['pierce']
-  #initHome: artifact.Api['initHome']
   #homeAddress: PID | undefined
   #githubAddress: PID | undefined
   #abort = new AbortController()
-  #suTerminal: Promise<ArtifactBackchat> | undefined
+  #suBackchat: Backchat | undefined
 
   private constructor(
     compartment: Compartment,
@@ -49,7 +49,6 @@ export class Engine implements EngineInterface {
     this.#api = api
     const functions = compartment.functions<artifact.Api>(api)
     this.#pierce = functions.pierce
-    this.#initHome = functions.initHome
     this.#superuserKey = superuserKey
   }
   static async boot(superuserKey: string, aesKey: string) {
@@ -69,6 +68,14 @@ export class Engine implements EngineInterface {
     await engine.ensureHomeAddress(init)
     return engine
   }
+  get #su() {
+    if (!this.#suBackchat) {
+      const crypto = Crypto.load(this.#superuserKey)
+      this.#suBackchat = Backchat.superuser(this, crypto)
+    }
+    assert(this.#suBackchat)
+    return this.#suBackchat
+  }
   get context() {
     return this.#api.context
   }
@@ -77,6 +84,69 @@ export class Engine implements EngineInterface {
       throw new Error('home not provisioned')
     }
     return this.#homeAddress
+  }
+  get #isDropping() {
+    const toDelete = Deno.env.get('DROP_HOME') || ''
+    const isDropping = toDelete.trim() === this.homeAddress.repoId
+    isDropping && log('isDropping', isDropping)
+    return isDropping
+  }
+  get abortSignal() {
+    return this.#abort.signal
+  }
+  get isProvisioned() {
+    return !!this.#homeAddress && !!this.#githubAddress
+  }
+  async upsertBackchat(machineId: string, resume?: string) {
+    // TODO handshake to prove the machineId is valid
+    assert(Crypto.check(machineId), 'invalid machineId: ' + machineId)
+    assert(!resume || backchatIdRegex.test(resume), 'invalid resume')
+    const { db } = artifact.sanitizeContext(this.#api)
+
+    const machines = addBranches(this.homeAddress, 'machines')
+    const machineFs = await FS.openHead(machines, db)
+    let actor: PID
+    let backchat: PID | undefined
+
+    const machinePath = shardedPath(machineId)
+    if (await machineFs.exists(machinePath)) {
+      const actorId = await machineFs.readJSON<string>(machinePath)
+      assert(actorIdRegex.test(actorId), 'invalid actor: ' + actorId)
+      actor = addBranches(this.homeAddress, actorId)
+    } else {
+      const result = await this.#createActor(machineId)
+      actor = result.actor
+      backchat = result.backchat
+    }
+    if (resume) {
+      const actorFs = await FS.openHead(actor, db)
+      throw new Error('resume not implemented')
+    }
+    if (!backchat) {
+      backchat = await this.#createBackchat(actor)
+    }
+
+    return backchat
+  }
+  async #createActor(machineId: string) {
+    assert(Crypto.check(machineId), 'invalid machineId: ' + machineId)
+    const actorId = `act_${randomId()}`
+    const actor = addBranches(this.homeAddress, actorId)
+    const backchatId = `bac_${randomId()}`
+    const backchat = addBranches(actor, backchatId)
+
+    const target = this.homeAddress
+    const actions = await this.#su.actions<ActorAdmin>('actors', { target })
+    await actions.createActor({ actorId, machineId, backchatId })
+
+    return { actor, backchat }
+  }
+  async #createBackchat(target: PID) {
+    // TODO assert is actor PID
+    const actions = await this.#su.actions<ActorApi>('actors', { target })
+    const backchatId = `bac_${randomId()}`
+    const pid = await actions.backchat({ backchatId })
+    return freezePid(pid)
   }
   async ensureHomeAddress(init?: Provisioner) {
     if (this.#homeAddress) {
@@ -98,8 +168,8 @@ export class Engine implements EngineInterface {
         log('db drop complete')
 
         log('initializing homeAddress')
-        const superuser = Machine.deriveMachineId(this.#superuserKey)
-        this.#homeAddress = await this.#initHome({ superuser })
+        const noClone = true
+        this.#homeAddress = await this.#initHome(noClone)
         await db.setHomeAddress(this.#homeAddress)
         log('homeAddress initialized to:', print(this.#homeAddress))
 
@@ -113,34 +183,30 @@ export class Engine implements EngineInterface {
     this.#homeAddress = await db.awaitHomeAddress()
     log('db unlocked - home address:', print(this.#homeAddress))
   }
-  get #isDropping() {
-    const toDelete = Deno.env.get('DROP_HOME') || ''
-    const isDropping = toDelete.trim() === this.homeAddress.repoId
-    isDropping && log('isDropping', isDropping)
-    return isDropping
-  }
-  get abortSignal() {
-    return this.#abort.signal
-  }
   async stop() {
     await this.#compartment.unmount(this.#api)
     this.#abort.abort()
   }
-  get isProvisioned() {
-    return !!this.#homeAddress && !!this.#githubAddress
+  async #initHome(noClone = false) {
+    // queue processing cannot begin without a home repo
+    log('initHome')
+    const { db } = artifact.sanitizeContext(this.#api)
+    const repo = `${HAL.account}/${HAL.repository}`
+    const fs = noClone ? await FS.init(HAL, db) : await FS.clone(repo, db)
+    log('initialized home', print(fs.pid))
+    return fs.pid
   }
-
   async #provision(init?: Provisioner) {
     const abort = new AbortController()
 
     const watcher = PierceWatcher.create(abort.signal, this, this.homeAddress)
     watcher.watchPierces()
-
+    const { machineId: superuser } = Crypto.load(this.#superuserKey)
     const request: UnsequencedRequest = {
       target: this.homeAddress,
       isolate: 'actors',
       functionName: '@@install',
-      params: {},
+      params: { superuser },
       proctype: PROCTYPE.SERIAL,
     }
     const pierce: PierceRequest = {
@@ -159,25 +225,16 @@ export class Engine implements EngineInterface {
     log('pierced', print(this.homeAddress))
     await promise
     abort.abort() // TODO make this a method on the watcher
-    log('home installed')
+    log('superuser is', print(this.#su.pid))
 
     if (!init) {
       log('no init function - returning')
       return
     }
 
-    const terminal = await this.#su()
     log('provisioning')
-    await init(terminal)
+    // await init(backchat)
     log('provisioned')
-    log('superuser is', colorize(getActorId(terminal.pid)))
-  }
-  #su() {
-    if (!this.#suTerminal) {
-      const machine = Machine.load(this, this.#superuserKey)
-      this.#suTerminal = machine.rootTerminalPromise
-    }
-    return this.#suTerminal
   }
 
   ping(data?: JsonValue): Promise<JsonValue | undefined> {
@@ -234,60 +291,9 @@ export class Engine implements EngineInterface {
     log('exists', path, print(pid))
     return fs.exists(path)
   }
-  async ensureMachineTerminal(machinePid: PID) {
-    const { homeAddress } = this
-    // TODO require some signature proof from the machine
-    const rootTerminalPid = createRootSessionPid(machinePid)
-    assertValidTerminal(rootTerminalPid, homeAddress)
-
-    log('ensureMachineTerminal', print(machinePid))
-    const [, , machineId] = machinePid.branches
-
-    if (await this.isTerminalAvailable(rootTerminalPid)) {
-      log('machinePid already exists', print(machinePid))
-      return
-    }
-
-    const su = await this.#su()
-    const actions = await su.actions<ActorAdmin>('actors', homeAddress)
-    await actions.ensureMachineTerminal({ machineId })
-  }
-  async isTerminalAvailable(pid: PID): Promise<boolean> {
-    // TODO restrict to only be a child of a machine, and the only sender
-    freezePid(pid)
-    const db = this.#api.context.db
-    assert(db, 'db not found')
-    const head = await db.readHead(pid)
-    return !!head
-  }
-  async ensureBranch(pierce: PierceRequest) {
-    const { request } = pierce.params
-    assert(request.isolate === 'actors', 'only actors can ensureBranch')
-    assert(equal(request.target, pierce.target), 'target mismatch')
-    const { branch, ancestor } = request.params
-    assert(isPID(branch), 'branch must be a PID')
-    assert(isPID(ancestor), 'ancestor must be a PID')
-    // TODO assert this is an ensure request
-    // TODO verify that the branch is a child of the ancestor
-
-    log('ensureBranch branch', print(branch))
-    log('ensureBranch ancestor', print(ancestor))
-    const { db } = artifact.sanitizeContext(this.#api)
-    const head = await db.readHead(branch)
-    if (!head) {
-      log('branch not found', print(branch))
-      await this.pierce(pierce)
-    }
-    log('pierce done')
-  }
   async #dropDB() {
     log('dropping homeAddress', print(this.#homeAddress))
     const { db } = artifact.sanitizeContext(this.#api)
     await db.drop()
   }
-}
-
-const createRootSessionPid = (pid: PID) => {
-  const branches = [...pid.branches, ROOT_SESSION]
-  return { ...pid, branches }
 }

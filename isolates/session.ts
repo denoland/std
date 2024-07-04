@@ -1,6 +1,14 @@
-import { IsolateApi, PID, print, ProcessOptions } from '@/constants.ts'
+import {
+  IsolateApi,
+  IsolateReturn,
+  PID,
+  print,
+  ProcessOptions,
+  UnsequencedRequest,
+} from '@/constants.ts'
 import { assert, Debug } from '@utils'
 const log = Debug('AI:session')
+
 export const api = {
   create: {
     description: 'Creat a new session branch',
@@ -39,9 +47,13 @@ export const api = {
 
 export type Api = {
   create: (
-    arg1?: { prefix?: string; retry?: PID; name?: string },
+    params?: { retry?: PID; name?: string; prefix?: string },
   ) => Promise<PID>
   close: () => void
+  noop: () => Promise<PID>
+  rexec: (
+    params: { requests: UnsequencedRequest[]; opts: ProcessOptions },
+  ) => Promise<IsolateReturn>[]
 }
 
 export const functions = {
@@ -59,7 +71,6 @@ export const functions = {
       }
     }
 
-    const { noop } = await api.actions('session')
     const options: ProcessOptions = { noClose: true }
     if (prefix) {
       options.prefix = prefix
@@ -70,7 +81,8 @@ export const functions = {
     if (!retry && !prefix && !name) {
       options.prefix = 'session'
     }
-    const pid = await noop({}, options) as PID
+    const { noop } = await api.actions<Api>('session', options)
+    const pid = await noop()
     assert(pid, 'no pid returned')
     log('noop pid returned', print(pid))
     return pid
@@ -82,6 +94,18 @@ export const functions = {
   close: (_: object, api: IsolateApi) => {
     log(api)
     // message the parent and tell it to close this child
+  },
+  rexec: (
+    { requests, opts }: {
+      requests: UnsequencedRequest[]
+      opts?: ProcessOptions
+    },
+    api: IsolateApi,
+  ) => {
+    // if we wrap this in the api, then all the remote options can be provided
+    // in this same interface, since it can do any kind of process option
+
+    return Promise.all(requests.map((request) => api.action(request)))
   },
 }
 

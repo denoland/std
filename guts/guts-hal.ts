@@ -4,7 +4,7 @@ import { init as githubInit } from '@/isolates/github.ts'
 import * as engageHelp from '@/isolates/engage-help.ts'
 import { expect, log } from '@utils'
 import {
-  addChild,
+  addBranches,
   ArtifactBackchat,
   BranchMap,
   CradleMaker,
@@ -176,7 +176,7 @@ If you get asked to "Just say the number: 1" then you should respond with the nu
     expect(Object.values(branches)).toHaveLength(1)
     const [toolCallId, commit] = Object.entries(branches)[0]
     log('toolCallId', toolCallId)
-    const helpPid = addChild(pid, toolCallId)
+    const helpPid = addBranches(pid, toolCallId)
     log('helpPid', print(helpPid))
 
     const branchSession = await terminal.readJSON<Messages[]>(

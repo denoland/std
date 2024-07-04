@@ -19,7 +19,9 @@ export default class Compartment {
   private constructor(isolate: string) {
     log('load isolate:', isolate)
     assert(isolates[isolate as keyof typeof isolates], `not found: ${isolate}`)
-    this.#module = isolates[isolate as keyof typeof isolates] as Isolate
+    // TODO this is incredibly messy for types
+    this.#module =
+      isolates[isolate as keyof typeof isolates] as unknown as Isolate
     this.#isolate = isolate
     const { api, functions } = this.#module
     assert(typeof functions === 'object', 'functions not exported: ' + isolate)

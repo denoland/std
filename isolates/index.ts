@@ -18,6 +18,7 @@ import * as prompt from './ai-prompt.ts'
 import * as hal from './hal.ts'
 import * as github from './github.ts'
 import * as actors from './actors.ts'
+import * as machines from './machines.ts'
 
 export default {
   system,
@@ -37,4 +38,5 @@ export default {
   hal,
   github,
   actors,
+  machines,
 }
