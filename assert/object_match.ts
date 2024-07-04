@@ -3,7 +3,7 @@
 import { assertEquals } from "./equals.ts";
 
 /**
- * Make an assertion that `actual` object is a subset of `expected` object,
+ * Make an assertion that `actual` object is a superset of `expected` object,
  * deeply. If not, then throw.
  *
  * @example Usage
@@ -12,6 +12,14 @@ import { assertEquals } from "./equals.ts";
  *
  * assertObjectMatch({ foo: "bar" }, { foo: "bar" }); // Doesn't throw
  * assertObjectMatch({ foo: "bar" }, { foo: "baz" }); // Throws
+ * ```
+ *
+ * @example Usage with nested objects
+ * ```ts
+ * import { assertObjectMatch } from "@std/assert";
+ *
+ * assertObjectMatch({ foo: { bar: 3, baz: 4 } }, { foo: { bar: 3 } }); // Doesn't throw
+ * assertObjectMatch({ foo: { bar: 3 } }, { foo: { bar: 3, baz: 4 } }); // Throws
  * ```
  *
  * @param actual The actual value to be matched.
