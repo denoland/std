@@ -218,7 +218,7 @@ function encodeHex(character: number): string {
 
 // Indents every line in a string. Empty lines (\n only) are not indented.
 function indentString(string: string, spaces: number): string {
-  const ind = common.repeat(" ", spaces);
+  const ind = " ".repeat(spaces);
   const length = string.length;
   let position = 0;
   let next = -1;
@@ -244,7 +244,7 @@ function indentString(string: string, spaces: number): string {
 }
 
 function generateNextLine(state: DumperState, level: number): string {
-  return `\n${common.repeat(" ", state.indent * level)}`;
+  return `\n${" ".repeat(state.indent * level)}`;
 }
 
 function testImplicitResolving(state: DumperState, str: string): boolean {

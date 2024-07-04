@@ -3,8 +3,6 @@
 // Copyright 2011-2015 by Vitaly Puzrin. All rights reserved. MIT license.
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import { repeat } from "./_utils.ts";
-
 export class Mark {
   buffer: string;
   position: number;
@@ -56,11 +54,8 @@ export class Mark {
     }
 
     const snippet = this.buffer.slice(start, end);
-    return `${repeat(" ", indent)}${head}${snippet}${tail}\n${
-      repeat(
-        " ",
-        indent + this.position - start + head.length,
-      )
+    return `${" ".repeat(indent)}${head}${snippet}${tail}\n${
+      " ".repeat(indent + this.position - start + head.length)
     }^`;
   }
 
