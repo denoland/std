@@ -4,10 +4,14 @@
 export interface X {
   /**
    * Hello
+   *
+   * @default {42}
    */
-  x: number;
+  x?: number;
   /**
    * Hello
+   *
+   * @default {"world"}
    */
   y?: string;
 }

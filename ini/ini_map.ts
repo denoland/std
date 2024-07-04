@@ -3,15 +3,35 @@
 
 /** Options for providing formatting marks. */
 export interface FormattingOptions {
-  /** The character used to assign a value to a key; defaults to '='. */
+  /**
+   * The character used to assign a value to a key; defaults to '='.
+   *
+   * @default {"="}
+   */
   assignment?: string;
-  /** Character(s) used to break lines in the config file; defaults to '\n'. Ignored on parse. */
+  /**
+   * Character(s) used to break lines in the config file. Ignored on parse.
+   *
+   * @default {"\n"}
+   */
   lineBreak?: "\n" | "\r\n" | "\r";
-  /** Mark to use for setting comments; expects '#', ';', '//', defaults to '#' unless another mark is found. */
+  /**
+   * Mark to use for setting comments.
+   *
+   * @default {"#"}
+   */
   commentChar?: "#" | ";" | "//";
-  /** Use a plain assignment char or pad with spaces; defaults to false. Ignored on parse. */
+  /**
+   * Use a plain assignment char or pad with spaces. Ignored on parse.
+   *
+   * @default {false}
+   */
   pretty?: boolean;
-  /** Filter duplicate keys from INI string output; defaults to false to preserve data parity. */
+  /**
+   * Filter duplicate keys from INI string output.
+   *
+   * @default {false}
+   */
   deduplicate?: boolean;
 }
 

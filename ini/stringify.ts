@@ -14,7 +14,8 @@ export interface StringifyOptions extends FormattingOptions {
 }
 
 /**
- * Compile an object into an INI config string. Provide formatting options to modify the output.
+ * Compile an object into an INI config string. Provide formatting options to
+ * modify the output.
  *
  * @example Usage
  * ```ts

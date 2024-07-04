@@ -64,9 +64,15 @@ export interface Cookie {
   /**
    * Allows servers to assert that a cookie ought not to
    * be sent along with cross-site requests.
+   *
+   * @default {undefined}
    */
   sameSite?: "Strict" | "Lax" | "None";
-  /** Additional key value pairs with the form "key=value" */
+  /**
+   * Additional key value pairs with the form "key=value".
+   *
+   * @default {[]}
+   */
   unparsed?: string[];
 }
 

@@ -66,6 +66,8 @@ export interface SpinnerOptions {
   /**
    * The message to display next to the spinner. This can be changed while the
    * spinner is active.
+   *
+   * @default {undefined}
    */
   message?: string;
   /**
@@ -77,6 +79,8 @@ export interface SpinnerOptions {
   /**
    * The color of the spinner. Defaults to the default terminal color.
    * This can be changed while the spinner is active.
+   *
+   * @default {undefined}
    */
   color?: Color;
 }

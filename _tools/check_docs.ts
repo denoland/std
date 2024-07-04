@@ -15,6 +15,7 @@ import {
   type DocNodeBase,
   type DocNodeClass,
   type DocNodeFunction,
+  type DocNodeInterface,
   type DocNodeModuleDoc,
   type JsDoc,
   type JsDocTagDocRequired,
@@ -419,8 +420,22 @@ function assertModuleDoc(document: DocNodeWithJsDoc<DocNodeModuleDoc>) {
   assertSnippetsWork(document.jsDoc.doc!, document);
 }
 
-function assertInterfaceDocs(document: DocNodeWithJsDoc<DocNode>) {
-  assertSnippetsWork(document.jsDoc.doc!, document);
+/**
+ * Ensures an interface document:
+ * - Has `@default` tags for all optional properties.
+ */
+function assertInterfaceDocs(document: DocNodeWithJsDoc<DocNodeInterface>) {
+  for (const prop of document.interfaceDef.properties) {
+    if (!prop.optional) continue;
+    if (!prop.jsDoc?.tags?.find((tag) => tag.kind === "default")) {
+      diagnostics.push(
+        new DocumentError(
+          "Optional interface properties should have default values",
+          document,
+        ),
+      );
+    }
+  }
 }
 
 function resolve(specifier: string, referrer: string): string {
@@ -441,7 +456,6 @@ async function checkDocs(specifier: string) {
   for (const d of docs.filter(isExported)) {
     if (d.jsDoc === undefined) continue; // this is caught by other checks
     const document = d as DocNodeWithJsDoc<DocNode>;
-    console.log(document);
     switch (document.kind) {
       case "moduleDoc": {
         assertModuleDoc(document);
@@ -456,6 +470,7 @@ async function checkDocs(specifier: string) {
         break;
       }
       case "interface":
+        assertInterfaceDocs(document);
     }
   }
 }
