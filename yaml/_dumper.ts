@@ -431,9 +431,8 @@ function foldLine(line: string, width: number): string {
   return result.slice(1); // drop extra \n joiner
 }
 
-// (See the note for writeScalar.)
-function dropEndingNewline(string: string): string {
-  return string[string.length - 1] === "\n" ? string.slice(0, -1) : string;
+function trimTrailingNewline(string: string) {
+  return string.at(-1) ? string.slice(0, -1) : string;
 }
 
 // Note: a long line without a suitable break point will exceed the width limit.
@@ -578,13 +577,11 @@ function writeScalar(
         return `'${string.replace(/'/g, "''")}'`;
       case STYLE_LITERAL:
         return `|${blockHeader(string, state.indent)}${
-          dropEndingNewline(
-            indentString(string, indent),
-          )
+          trimTrailingNewline(indentString(string, indent))
         }`;
       case STYLE_FOLDED:
         return `>${blockHeader(string, state.indent)}${
-          dropEndingNewline(
+          trimTrailingNewline(
             indentString(foldString(string, lineWidth), indent),
           )
         }`;
