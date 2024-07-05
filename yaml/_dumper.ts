@@ -29,7 +29,12 @@ import {
 import { YamlError } from "./_error.ts";
 import { DEFAULT_SCHEMA, type Schema } from "./_schema.ts";
 import type { StyleVariant, Type } from "./_type.ts";
-import { type Any, type ArrayObject, isObject } from "./_utils.ts";
+import {
+  type Any,
+  type ArrayObject,
+  getObjectTypeString,
+  isObject,
+} from "./_utils.ts";
 
 const ESCAPE_SEQUENCES = new Map<number, string>([
   [0x00, "\\0"],
@@ -875,7 +880,7 @@ function writeNode(
       if (state.skipInvalid) return false;
       throw new YamlError(
         `unacceptable kind of an object to dump ${
-          Object.prototype.toString.call(state.dump)
+          getObjectTypeString(state.dump)
         }`,
       );
     }
