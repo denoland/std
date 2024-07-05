@@ -197,7 +197,7 @@ export class DumperState {
 }
 
 // Indents every line in a string. Empty lines (\n only) are not indented.
-function indentString(string: string, spaces: number): string {
+export function indentString(string: string, spaces: number): string {
   const indent = " ".repeat(spaces);
   return string
     .split("\n")
