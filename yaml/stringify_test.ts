@@ -88,35 +88,11 @@ Deno.test({
       "0b101010\n",
     );
     assertEquals(
-      stringify(42, { styles: { "!!int": "bin" } }),
-      "0b101010\n",
-    );
-    assertEquals(
-      stringify(42, { styles: { "!!int": 2 } }),
-      "0b101010\n",
-    );
-    assertEquals(
       stringify(42, { styles: { "!!int": "octal" } }),
       "052\n",
     );
     assertEquals(
-      stringify(42, { styles: { "!!int": "oct" } }),
-      "052\n",
-    );
-    assertEquals(
-      stringify(42, { styles: { "!!int": 8 } }),
-      "052\n",
-    );
-    assertEquals(
       stringify(42, { styles: { "!!int": "hexadecimal" } }),
-      "0x2A\n",
-    );
-    assertEquals(
-      stringify(42, { styles: { "!!int": "hex" } }),
-      "0x2A\n",
-    );
-    assertEquals(
-      stringify(42, { styles: { "!!int": 16 } }),
       "0x2A\n",
     );
   },
