@@ -431,7 +431,7 @@ function foldLine(line: string, width: number): string {
   return result.slice(1); // drop extra \n joiner
 }
 
-function trimTrailingNewline(string: string) {
+export function trimTrailingNewline(string: string) {
   return string.at(-1) ? string.slice(0, -1) : string;
 }
 
