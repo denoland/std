@@ -11,10 +11,10 @@ import { SCHEMA_MAP } from "./_schema.ts";
 export interface ParseOptions {
   /**
    * Name of the schema to use. Options includes:
-   * - `default` (default)
+   * - `default` (extends `core` schema)
+   * - {@linkcode https://yaml.org/spec/1.2.2/#103-core-schema | core} (extends `json` schema)
+   * - {@linkcode https://yaml.org/spec/1.2.2/#102-json-schema | json} (extends `failsafe` schema)
    * - {@linkcode https://yaml.org/spec/1.2.2/#101-failsafe-schema | failsafe}
-   * - {@linkcode https://yaml.org/spec/1.2.2/#102-json-schema | json}
-   * - {@linkcode https://yaml.org/spec/1.2.2/#103-core-schema | core}
    *
    * @default {"default"}
    */

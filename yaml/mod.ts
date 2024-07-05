@@ -9,13 +9,8 @@
  * Ported from
  * {@link https://github.com/nodeca/js-yaml/commit/665aadda42349dcae869f12040d9b10ef18d12da | js-yaml v3.13.1}.
  *
- * If your YAML contains multiple documents in it, you can use {@linkcode parseAll} for
- * handling it.
- *
- * ## :warning: Limitations
- * - `binary` type is currently not stable.
- *
- * For further examples see https://github.com/nodeca/js-yaml/tree/master/examples.
+ * Use {@linkcode parseAll} for parsing multiple documents in a single YAML
+ * string.
  *
  * ```ts
  * import { parse, stringify } from "@std/yaml";
@@ -36,6 +31,11 @@
  *   - quux
  * `);
  * ```
+ *
+ * ## Limitations
+ * - `binary` type is currently not stable.
+ *
+ * For further examples see https://github.com/nodeca/js-yaml/tree/master/examples.
  *
  * @module
  */
