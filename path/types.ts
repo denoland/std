@@ -38,8 +38,3 @@ export interface ParsedPath {
    */
   name: string;
 }
-
-/**
- * A parsed path object to be consumed by `path.format()`.
- */
-export type FormatInputPathObject = Partial<ParsedPath>;

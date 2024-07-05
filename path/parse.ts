@@ -2,11 +2,11 @@
 // This module is browser compatible.
 
 import { isWindows } from "./_os.ts";
-import type { ParsedPath } from "./_interface.ts";
+import type { ParsedPath } from "./types.ts";
 import { parse as posixParse } from "./posix/parse.ts";
 import { parse as windowsParse } from "./windows/parse.ts";
 
-export type { ParsedPath } from "./_interface.ts";
+export type { ParsedPath } from "./types.ts";
 
 /**
  * Return an object containing the parsed components of the path.
