@@ -1,58 +1,52 @@
 import { expect, log } from '@utils'
-import {
-  CradleMaker,
-  getTerminalId,
-  IoStruct,
-  PID,
-  print,
-} from '@/constants.ts'
-import { Machine } from '@/api/web-client-machine.ts'
+import { CradleMaker, IoStruct, PID, print } from '@/constants.ts'
 import { ulid } from 'ulid'
 
 export default (name: string, cradleMaker: CradleMaker) => {
   const prefix = name + ': '
   Deno.test(prefix + 'session', async (t) => {
-    const terminal = await cradleMaker()
-    log('pid', print(terminal.pid))
+    const { backchat } = await cradleMaker()
+    log('pid', print(backchat.pid))
 
     const repo = 'sessions/basic'
-    const target = await terminal.init({ repo })
+    const target = await backchat.init({ repo })
 
     // TODO exercise the ACL blocking some actions to the session chain
     await t.step('interact', async () => {
-      const { local } = await terminal.actions('io-fixture', terminal.pid)
+      const target = backchat.pid
+      const { local } = await backchat.actions('io-fixture', { target })
       const result = await local()
       expect(result).toEqual('local reply')
     })
-    const second = terminal.newTerminal()
+    const second = backchat.newTerminal()
     await t.step('second session', async () => {
       const { local } = await second.actions('io-fixture', target.pid)
       const result = await local()
       expect(result).toEqual('local reply')
     })
     await t.step('cross session', async () => {
-      const { local } = await second.actions('io-fixture', terminal.pid)
+      const { local } = await second.actions('io-fixture', backchat.pid)
       const result = await local()
       expect(result).toEqual('local reply')
     })
 
-    const resumed = terminal.resumeTerminal(terminal.pid)
+    const resumed = backchat.resumeTerminal(backchat.pid)
     await t.step('resume session', async () => {
       // TODO this should check if the session is valid
-      expect(resumed.pid).toEqual(terminal.pid)
+      expect(resumed.pid).toEqual(backchat.pid)
       const { local } = await resumed.actions('io-fixture', target.pid)
       const result = await local()
       expect(result).toEqual('local reply')
     })
     await t.step('invalid session', () => {
-      const branches = terminal.pid.branches.slice(0, -1)
+      const branches = backchat.pid.branches.slice(0, -1)
       branches.push('invalid ulid')
-      const pid = { ...terminal.pid, branches }
-      expect(() => terminal.resumeTerminal(pid)).toThrow('invalid terminal')
+      const pid = { ...backchat.pid, branches }
+      expect(() => backchat.resumeTerminal(pid)).toThrow('invalid terminal')
     })
     // test a session resume to a non existent PID
-    await Promise.all([resumed.stop(), second.stop(), terminal.stop()])
-    await terminal.engineStop()
+    await Promise.all([resumed.stop(), second.stop(), backchat.stop()])
+    await backchat.engineStop()
   })
   Deno.test(prefix + 'internal requests', async (t) => {
     const session = await cradleMaker()

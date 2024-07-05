@@ -4,6 +4,8 @@ import { ulid } from 'ulid'
 import { JSONSchemaType } from './web-client.ajv.ts'
 import type { Backchat } from './web-client-backchat.ts'
 import { assert } from '@sindresorhus/is'
+
+export { Backchat }
 export enum PROCTYPE {
   SERIAL = 'SERIAL',
   BRANCH = 'BRANCH',
@@ -15,9 +17,10 @@ export enum PROCTYPE {
   // OR make DAEMON be the same as FORGET since no new info need be returned ?
 }
 export type { JSONSchemaType }
-export type ApiFunction =
-  | (() => unknown | Promise<unknown>)
-  | ((arg1: { [key: string]: unknown }) => unknown | Promise<unknown>)
+export type ApiFunction = {
+  (): unknown | Promise<unknown>
+  (arg1: { [key: string]: unknown }): unknown | Promise<unknown>
+}
 export type ApiFunctions = {
   [key: string]: ApiFunction
 }
@@ -28,9 +31,9 @@ export type ActorApi = ApiFunctions & {
    * Updates the repo.json file in the actor branch to point to the new PID of
    * the clone.
    */
-  clone: (params: RepoParams) => Promise<{ pid: PID; head: string }>
+  clone: (params: RepoParams) => Promise<PidHead>
 
-  init: (params: RepoParams) => Promise<{ pid: PID; head: string }>
+  init: (params: RepoParams) => Promise<PidHead>
 
   /**
    * List all the repos that this Actor has created.
@@ -336,72 +339,6 @@ export type CommitObject = {
 type ApiSchema = Record<string, JSONSchemaType<object>>
 type PidHead = { pid: PID; head: string }
 
-/** The client session interface to artifact */
-export interface ArtifactBackchat {
-  pid: PID
-  machine: ArtifactMachine
-  terminalId: string
-  homeAddress: PID
-  initializationPromise: Promise<void>
-  stop(): void
-  engineStop(): Promise<void>
-  /**
-   * This is managed client side, and can be composed any way people like
-   */
-  dns(repo: string): Promise<PID>
-  actions<T = DispatchFunctions>(isolate: string, target?: PID): Promise<T>
-  read(
-    pid: PID,
-    path?: string,
-    after?: string,
-    signal?: AbortSignal,
-  ): AsyncIterable<Splice>
-  readJSON<T>(path: string, pid?: PID, commit?: string): Promise<T>
-  exists(path: string, pid?: PID): Promise<boolean>
-  writeJSON(path: string, content?: JsonValue, pid?: PID): Promise<number>
-  write(path: string, content?: JsonValue, pid?: PID): Promise<number>
-  delete(path: string, pid?: PID): Promise<void>
-  transcribe(params: { audio: File }): Promise<{ text: string }>
-  apiSchema(isolate: string): Promise<ApiSchema>
-  /** Pings the execution context without going thru the transaction queue.
-   *
-   * Used primarily by web clients to establish base connectivity and get
-   * various diagnostics about the platform they are interacting with */
-  ping(params?: { data?: JsonValue; pid?: PID }): Promise<IsolateReturn>
-  /** Calls the repo isolate */
-  init(
-    params: { repo: string; isolate?: string; params?: Params },
-  ): Promise<PidHead>
-  clone(
-    params: { repo: string; isolate?: string; params?: Params },
-  ): Promise<PidHead>
-  pull(params: { pid: PID }): Promise<PidHead>
-  push(params: { pid: PID }): Promise<void>
-  rm(params: { repo: string }): Promise<boolean>
-  endSession(): Promise<void>
-  /** Remove the account if currently signed in */
-  deleteAccountUnrecoverably(): Promise<void>
-  newTerminal(): ArtifactBackchat
-  resumeTerminal(pid: PID): ArtifactBackchat
-  ensureBranch(branch: PID, ancestor: PID): Promise<PID>
-  lsChildren(pid: PID): Promise<string[]>
-}
-/** The client home interface to Artifact, only able to create new sessions.
-Will handle the generation of signing keys for the session, and authentication
-with github.
- */
-export interface ArtifactMachine {
-  pid: PID
-  machineId: string
-  rootTerminalPromise: Promise<Backchat>
-  /** Using the current session, create a new session. */
-  openTerminal(retry?: PID): ArtifactBackchat
-  /** Pings the execution context without going thru the transaction queue.
-   *
-   * Used primarily by web clients to establish base connectivity and get
-   * various diagnostics about the platform they are interacting with */
-  ping(params?: { data?: JsonValue; pid?: PID }): Promise<IsolateReturn>
-}
 export interface EngineInterface {
   upsertBackchat(machineId: string, resume?: string): Promise<PID>
   /**

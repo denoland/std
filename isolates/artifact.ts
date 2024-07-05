@@ -87,13 +87,14 @@ export const functions = {
 
 export const lifecycles: IsolateLifecycle = {
   async '@@mount'(api: IsolateApi<C>) {
-    const { aesKey } = api.context
+    const { aesKey, seed } = api.context
     assert(aesKey, 'AES_KEY not found')
-    const db = await DB.create(aesKey)
+    const db = await DB.create(aesKey, seed)
     const exe = Executor.createCacheContext()
     const context: C = { db, exe }
     api.context = context
     assert(!api.context.aesKey, 'AES_KEY leaked')
+    assert(!api.context.seed, 'seed leaked')
 
     db.listen(async (message: QueueMessage) => {
       if (isQueuePool(message)) {
@@ -146,7 +147,8 @@ export const lifecycles: IsolateLifecycle = {
     })
   },
   '@@unmount'(api: IsolateApi<C>) {
-    return api.context.db!.stop()
+    const { db } = sanitizeContext(api)
+    return db.stop()
   },
 }
 const execute = async (request: SolidRequest, commit: string, c: C) => {

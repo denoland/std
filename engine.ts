@@ -2,7 +2,6 @@ import { transcribe } from './isolates/ai-prompt.ts'
 import Compartment from './io/compartment.ts'
 import '@std/dotenv/load'
 import {
-  actorIdRegex,
   addBranches,
   backchatIdRegex,
   C,
@@ -27,8 +26,9 @@ import { Crypto } from '@/api/web-client-crypto.ts'
 import { PierceWatcher } from '@/api/web-client-watcher.ts'
 import { ActorAdmin, ActorApi } from '@/isolates/actors.ts'
 import { Backchat } from '@/api/web-client-backchat.ts'
-import { shardedPath } from '@/isolates/machines.ts'
+import { tryActorId } from '@/isolates/machines.ts'
 const log = Debug('AI:engine')
+type Seed = Deno.KvEntry<unknown>[]
 
 export class Engine implements EngineInterface {
   #superuserKey: string
@@ -51,10 +51,10 @@ export class Engine implements EngineInterface {
     this.#pierce = functions.pierce
     this.#superuserKey = superuserKey
   }
-  static async boot(superuserKey: string, aesKey: string) {
+  static async boot(superuserKey: string, aesKey: string, seed?: Seed) {
     const compartment = await Compartment.create('artifact')
     const api = IsolateApi.createContext<C>()
-    api.context = { aesKey }
+    api.context = { aesKey, seed }
     await compartment.mount(api)
     const engine = new Engine(compartment, api, superuserKey)
     return engine
@@ -63,8 +63,9 @@ export class Engine implements EngineInterface {
     superuserKey: string,
     aesKey: string,
     init?: Provisioner,
+    seed?: Seed,
   ) {
-    const engine = await Engine.boot(superuserKey, aesKey)
+    const engine = await Engine.boot(superuserKey, aesKey, seed)
     await engine.ensureHomeAddress(init)
     return engine
   }
@@ -106,27 +107,20 @@ export class Engine implements EngineInterface {
     const machines = addBranches(this.homeAddress, 'machines')
     const machineFs = await FS.openHead(machines, db)
     let actor: PID
-    let backchat: PID | undefined
 
-    const machinePath = shardedPath(machineId)
-    if (await machineFs.exists(machinePath)) {
-      const actorId = await machineFs.readJSON<string>(machinePath)
-      assert(actorIdRegex.test(actorId), 'invalid actor: ' + actorId)
+    const actorId = await tryActorId(machineId, machineFs)
+    if (actorId) {
       actor = addBranches(this.homeAddress, actorId)
     } else {
-      const result = await this.#createActor(machineId)
-      actor = result.actor
-      backchat = result.backchat
+      return this.#createActor(machineId)
     }
     if (resume) {
-      const actorFs = await FS.openHead(actor, db)
-      throw new Error('resume not implemented')
+      const resumedBackchat = addBranches(actor, resume)
+      if (await db.readHead(resumedBackchat)) {
+        return resumedBackchat
+      }
     }
-    if (!backchat) {
-      backchat = await this.#createBackchat(actor)
-    }
-
-    return backchat
+    return this.#createBackchat(actor)
   }
   async #createActor(machineId: string) {
     assert(Crypto.check(machineId), 'invalid machineId: ' + machineId)
@@ -139,7 +133,7 @@ export class Engine implements EngineInterface {
     const actions = await this.#su.actions<ActorAdmin>('actors', { target })
     await actions.createActor({ actorId, machineId, backchatId })
 
-    return { actor, backchat }
+    return backchat
   }
   async #createBackchat(target: PID) {
     // TODO assert is actor PID
@@ -168,8 +162,7 @@ export class Engine implements EngineInterface {
         log('db drop complete')
 
         log('initializing homeAddress')
-        const noClone = true
-        this.#homeAddress = await this.#initHome(noClone)
+        this.#homeAddress = await this.#initHome()
         await db.setHomeAddress(this.#homeAddress)
         log('homeAddress initialized to:', print(this.#homeAddress))
 
@@ -187,12 +180,12 @@ export class Engine implements EngineInterface {
     await this.#compartment.unmount(this.#api)
     this.#abort.abort()
   }
-  async #initHome(noClone = false) {
+  async #initHome() {
     // queue processing cannot begin without a home repo
     log('initHome')
     const { db } = artifact.sanitizeContext(this.#api)
     const repo = `${HAL.account}/${HAL.repository}`
-    const fs = noClone ? await FS.init(HAL, db) : await FS.clone(repo, db)
+    const fs = await FS.clone(repo, db)
     log('initialized home', print(fs.pid))
     return fs.pid
   }
@@ -295,5 +288,9 @@ export class Engine implements EngineInterface {
     log('dropping homeAddress', print(this.#homeAddress))
     const { db } = artifact.sanitizeContext(this.#api)
     await db.drop()
+  }
+  dump() {
+    const { db } = artifact.sanitizeContext(this.#api)
+    return db.dump()
   }
 }

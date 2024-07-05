@@ -1,5 +1,5 @@
 import {
-  ArtifactBackchat,
+  Backchat,
   isBaseRepo,
   IsolateApi,
   PID,
@@ -121,7 +121,7 @@ export const functions = {
   },
 }
 
-export const init: Provisioner = async (superTerminal: ArtifactBackchat) => {
+export const init: Provisioner = async (superTerminal: Backchat) => {
   log('init terminal pid', print(superTerminal.pid))
   const { pid } = await superTerminal.clone({
     repo: 'dreamcatcher-tech/HAL',

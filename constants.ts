@@ -2,9 +2,10 @@ import IsolateApi from './isolate-api.ts'
 export type { IsolateApi }
 export const IO_PATH = '.io.json'
 import {
-  ArtifactBackchat,
+  Backchat,
   Change,
   CommitObject,
+  EngineInterface,
   IsolateApiSchema,
   IsolateReturn,
   MetaPromise,
@@ -25,12 +26,18 @@ import { equal } from '@utils'
 export const REPO_LOCK_TIMEOUT_MS = 5000
 
 /** Artifact Context, including the db and executor */
-export type C = { db: DB; exe: Executor; aesKey?: string }
+export type C = {
+  db: DB
+  exe: Executor
+  aesKey?: string
+  seed?: Deno.KvEntry<unknown>[]
+}
 
-export type IsolateFunction =
-  | (() => unknown | Promise<unknown>)
-  | ((...args: [Params]) => unknown | Promise<unknown>)
-  | ((...args: [Params, IsolateApi]) => unknown | Promise<unknown>)
+export type IsolateFunction = {
+  (): unknown | Promise<unknown>
+  (...args: [Params]): unknown | Promise<unknown>
+  (...args: [Params, IsolateApi]): unknown | Promise<unknown>
+}
 
 export type IsolateFunctions = {
   [key: string]: IsolateFunction
@@ -185,7 +192,6 @@ export type QueueBranch = {
   parentPid: PID
   sequence: number
 }
-
 export const isQueuePool = (m: QueueMessage): m is QueuePool => {
   return m.type === QueueMessageType.POOL
 }
@@ -224,7 +230,11 @@ export const pidSchema = {
     },
   },
 }
-export type Provisioner = (superBackchat: ArtifactBackchat) => Promise<void>
-export type CradleMaker = (init?: Provisioner) => Promise<ArtifactBackchat>
+
+export type Provisioner = (superBackchat: Backchat) => Promise<void>
+
+export type CradleMaker = (
+  init?: Provisioner,
+) => Promise<{ backchat: Backchat; engine: EngineInterface }>
 
 export * from './api/web-client.types.ts'

@@ -28,10 +28,13 @@ export default class DB {
     this.#kvStore = kv
     this.#cryptoKv = new CryptoKv(kv, aesKey)
   }
-  static async create(aesKey: string) {
+  static async create(aesKey: string, seed?: Deno.KvEntry<unknown>[]) {
     const kv = await openKv()
     watchUndelivered(kv)
     const db = new DB(kv, aesKey)
+    if (seed) {
+      await db.load(seed)
+    }
     return db
   }
   static generateAesKey() {
@@ -391,6 +394,28 @@ export default class DB {
       }
     }
     await Promise.all(promises)
+  }
+  async dump() {
+    const all = this.#kv.list({ prefix: [] }, { batchSize: 1000 })
+    const entries = []
+    for await (const entry of all) {
+      entries.push(entry)
+    }
+    return entries
+  }
+  async load(entries: Deno.KvEntry<unknown>[]) {
+    let atomic = this.#kv.atomic()
+    let count = 0
+    for (const entry of entries) {
+      count++
+      // mutation limit is 1000, but there is also a size limit
+      if (count % 500 === 0) {
+        await atomic.commit()
+        atomic = this.#kv.atomic()
+      }
+      atomic.set(entry.key, entry.value)
+    }
+    await atomic.commit()
   }
 }
 

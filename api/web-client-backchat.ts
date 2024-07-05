@@ -3,6 +3,7 @@
 import {
   ActorApi,
   addBranches,
+  ApiFunctions,
   backchatIdRegex,
   EngineInterface,
   IoStruct,
@@ -70,6 +71,9 @@ export class Backchat {
   get pid() {
     return this.#pid
   }
+  get id() {
+    return this.pid.branches[2]
+  }
   get homeAddress() {
     return this.#engine.homeAddress
   }
@@ -81,7 +85,7 @@ export class Backchat {
     // TODO stopping the engine should stop all threads too
     await this.#engine.stop()
   }
-  async actions<T>(isolate: string, opts: RpcOpts = {}) {
+  async actions<T = ApiFunctions>(isolate: string, opts: RpcOpts = {}) {
     const { target = this.#pid, ...procOpts } = opts
     const schema = await this.apiSchema(isolate)
     const execute = (request: UnsequencedRequest) => this.#action(request)
