@@ -3,9 +3,9 @@
 import { createExtractor, type Parser } from "./_create_extractor.ts";
 import { parse as parseYaml } from "@std/yaml/parse";
 import { parse as parseToml } from "@std/toml/parse";
-import type { Extract, Extractor } from "./types.ts";
+import type { Extract } from "./types.ts";
 
-export type { Extract, Extractor };
+export type { Extract };
 
 const _extractor = createExtractor({
   yaml: parseYaml as Parser,
