@@ -88,35 +88,11 @@ Deno.test({
       "0b101010\n",
     );
     assertEquals(
-      stringify(42, { styles: { "!!int": "bin" } }),
-      "0b101010\n",
-    );
-    assertEquals(
-      stringify(42, { styles: { "!!int": 2 } }),
-      "0b101010\n",
-    );
-    assertEquals(
       stringify(42, { styles: { "!!int": "octal" } }),
       "052\n",
     );
     assertEquals(
-      stringify(42, { styles: { "!!int": "oct" } }),
-      "052\n",
-    );
-    assertEquals(
-      stringify(42, { styles: { "!!int": 8 } }),
-      "052\n",
-    );
-    assertEquals(
       stringify(42, { styles: { "!!int": "hexadecimal" } }),
-      "0x2A\n",
-    );
-    assertEquals(
-      stringify(42, { styles: { "!!int": "hex" } }),
-      "0x2A\n",
-    );
-    assertEquals(
-      stringify(42, { styles: { "!!int": 16 } }),
       "0x2A\n",
     );
   },
@@ -272,6 +248,21 @@ Deno.test({
     assertEquals(
       stringify([new Date("2021-01-01T00:00:00.000Z")]),
       `- 2021-01-01T00:00:00.000Z\n`,
+    );
+  },
+});
+
+Deno.test({
+  name: "stringify() works with noRefs option",
+  fn() {
+    const obj = { foo: "bar" };
+    assertEquals(
+      stringify([obj, obj], { noRefs: true }),
+      `- foo: bar\n- foo: bar\n`,
+    );
+    assertEquals(
+      stringify([obj, obj], { noRefs: false }),
+      `- &ref_0\n  foo: bar\n- *ref_0\n`,
     );
   },
 });

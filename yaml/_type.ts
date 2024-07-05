@@ -15,17 +15,9 @@ export type StyleVariant =
   | "uppercase"
   | "camelcase"
   | "decimal"
-  | "dec"
-  | 10
   | "binary"
-  | "bin"
-  | 2
   | "octal"
-  | "oct"
-  | 8
-  | "hexadecimal"
-  | "hex"
-  | 16;
+  | "hexadecimal";
 export type RepresentFn = (data: Any, style?: StyleVariant) => Any;
 
 export interface Type {
@@ -35,7 +27,6 @@ export interface Type {
   predicate?: (data: Record<string, unknown>) => boolean;
   represent?: RepresentFn | ArrayObject<RepresentFn>;
   defaultStyle?: StyleVariant;
-  styleAliases?: ArrayObject;
   loadKind?: KindType;
   resolve: (data?: Any) => boolean;
   construct: (data?: Any) => Any;

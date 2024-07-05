@@ -4,6 +4,8 @@
 // https://github.com/golang/go/blob/master/LICENSE
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
+import { graphemeLength } from "./_shared.ts";
+
 /** Options for {@linkcode parseRecord}. */
 export interface ReadOptions {
   /** Character which separates values.
@@ -59,52 +61,47 @@ export interface LineReader {
 }
 
 export async function parseRecord(
-  line: string,
+  fullLine: string,
   reader: LineReader,
-  opt: ReadOptions,
+  options: ReadOptions,
   startLine: number,
   lineIndex: number = startLine,
 ): Promise<Array<string>> {
   // line starting with comment character is ignored
-  if (opt.comment && line[0] === opt.comment) {
+  if (options.comment && fullLine[0] === options.comment) {
     return [];
   }
 
-  if (opt.separator === undefined) throw new TypeError("Separator is required");
+  if (options.separator === undefined) {
+    throw new TypeError("Separator is required");
+  }
 
-  let fullLine = line;
-  let quoteError: ParseError | null = null;
+  let line = fullLine;
   const quote = '"';
   const quoteLen = quote.length;
-  const separatorLen = opt.separator.length;
+  const separatorLen = options.separator.length;
   let recordBuffer = "";
   const fieldIndexes = [] as number[];
   parseField: while (true) {
-    if (opt.trimLeadingSpace) {
+    if (options.trimLeadingSpace) {
       line = line.trimStart();
     }
 
     if (line.length === 0 || !line.startsWith(quote)) {
       // Non-quoted string field
-      const i = line.indexOf(opt.separator);
+      const i = line.indexOf(options.separator);
       let field = line;
       if (i >= 0) {
         field = field.substring(0, i);
       }
       // Check to make sure a quote does not appear in field.
-      if (!opt.lazyQuotes) {
+      if (!options.lazyQuotes) {
         const j = field.indexOf(quote);
         if (j >= 0) {
-          const col = runeCount(
+          const col = graphemeLength(
             fullLine.slice(0, fullLine.length - line.slice(j).length),
           );
-          quoteError = new ParseError(
-            startLine + 1,
-            lineIndex,
-            col,
-            ERR_BARE_QUOTE,
-          );
-          break parseField;
+          throw new ParseError(startLine + 1, lineIndex, col, ERR_BARE_QUOTE);
         }
       }
       recordBuffer += field;
@@ -127,7 +124,7 @@ export async function parseRecord(
             // `""` sequence (append quote).
             recordBuffer += quote;
             line = line.substring(quoteLen);
-          } else if (line.startsWith(opt.separator)) {
+          } else if (line.startsWith(options.separator)) {
             // `","` sequence (end of field).
             line = line.substring(separatorLen);
             fieldIndexes.push(recordBuffer.length);
@@ -136,21 +133,15 @@ export async function parseRecord(
             // `"\n` sequence (end of line).
             fieldIndexes.push(recordBuffer.length);
             break parseField;
-          } else if (opt.lazyQuotes) {
+          } else if (options.lazyQuotes) {
             // `"` sequence (bare quote).
             recordBuffer += quote;
           } else {
             // `"*` sequence (invalid non-escaped quote).
-            const col = runeCount(
+            const col = graphemeLength(
               fullLine.slice(0, fullLine.length - line.length - quoteLen),
             );
-            quoteError = new ParseError(
-              startLine + 1,
-              lineIndex,
-              col,
-              ERR_QUOTE,
-            );
-            break parseField;
+            throw new ParseError(startLine + 1, lineIndex, col, ERR_QUOTE);
           }
         } else if (line.length > 0 || !reader.isEOF()) {
           // Hit end of line (copy all data so far).
@@ -161,15 +152,9 @@ export async function parseRecord(
           fullLine = line;
           if (r === null) {
             // Abrupt end of file (EOF or error).
-            if (!opt.lazyQuotes) {
-              const col = runeCount(fullLine);
-              quoteError = new ParseError(
-                startLine + 1,
-                lineIndex,
-                col,
-                ERR_QUOTE,
-              );
-              break parseField;
+            if (!options.lazyQuotes) {
+              const col = graphemeLength(fullLine);
+              throw new ParseError(startLine + 1, lineIndex, col, ERR_QUOTE);
             }
             fieldIndexes.push(recordBuffer.length);
             break parseField;
@@ -177,24 +162,15 @@ export async function parseRecord(
           recordBuffer += "\n"; // preserve line feed (This is because TextProtoReader removes it.)
         } else {
           // Abrupt end of file (EOF on error).
-          if (!opt.lazyQuotes) {
-            const col = runeCount(fullLine);
-            quoteError = new ParseError(
-              startLine + 1,
-              lineIndex,
-              col,
-              ERR_QUOTE,
-            );
-            break parseField;
+          if (!options.lazyQuotes) {
+            const col = graphemeLength(fullLine);
+            throw new ParseError(startLine + 1, lineIndex, col, ERR_QUOTE);
           }
           fieldIndexes.push(recordBuffer.length);
           break parseField;
         }
       }
     }
-  }
-  if (quoteError) {
-    throw quoteError;
   }
   const result = [] as string[];
   let preIdx = 0;
@@ -203,11 +179,6 @@ export async function parseRecord(
     preIdx = i;
   }
   return result;
-}
-
-function runeCount(s: string): number {
-  // Array.from considers the surrogate pair.
-  return Array.from(s).length;
 }
 
 /**
