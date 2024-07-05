@@ -128,10 +128,10 @@ export interface DumperStateOptions {
   /** set max line width. (default: 80) */
   lineWidth?: number;
   /**
-   * if true, don't convert duplicate objects
-   * into references (default: false)
+   * if false, don't convert duplicate objects
+   * into references (default: true)
    */
-  noRefs?: boolean;
+  useAnchors?: boolean;
   /**
    * if false don't try to be compatible with older yaml versions.
    * Currently: don't quote "yes", "no" and so on,
@@ -155,7 +155,7 @@ export class DumperState {
   flowLevel: number;
   sortKeys: boolean | ((a: Any, b: Any) => number);
   lineWidth: number;
-  noRefs: boolean;
+  useAnchors: boolean;
   compatMode: boolean;
   condenseFlow: boolean;
   implicitTypes: Type[];
@@ -176,7 +176,7 @@ export class DumperState {
     styles = null,
     sortKeys = false,
     lineWidth = 80,
-    noRefs = false,
+    useAnchors = true,
     compatMode = true,
     condenseFlow = false,
   }: DumperStateOptions) {
@@ -188,7 +188,7 @@ export class DumperState {
     this.styleMap = compileStyleMap(styles);
     this.sortKeys = sortKeys;
     this.lineWidth = lineWidth;
-    this.noRefs = noRefs;
+    this.useAnchors = useAnchors;
     this.compatMode = compatMode;
     this.condenseFlow = condenseFlow;
     this.implicitTypes = this.schema.compiledImplicit;
@@ -917,7 +917,7 @@ function getDuplicateReferences(
 export function dump(input: Any, options: DumperStateOptions = {}): string {
   const state = new DumperState(options);
 
-  if (!state.noRefs) getDuplicateReferences(input, state);
+  if (state.useAnchors) getDuplicateReferences(input, state);
 
   if (writeNode(state, 0, input, true, true)) return `${state.dump}\n`;
 
