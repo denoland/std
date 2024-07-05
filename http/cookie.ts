@@ -13,7 +13,11 @@ export interface Cookie {
   name: string;
   /** Value of the cookie. */
   value: string;
-  /** The cookie's `Expires` attribute, either as an explicit date or UTC milliseconds.
+  /**
+   * The cookie's `Expires` attribute, either as an explicit date or UTC
+   * milliseconds. If `undefined`, the cookie will expire when the client's
+   * session ends.
+   *
    * @example <caption>Explicit date:</caption>
    *
    * ```ts
@@ -37,15 +41,38 @@ export interface Cookie {
    *   expires: Date.now() + 10000
    * }
    * ```
+   *
+   * @default {undefined}
    */
   expires?: Date | number;
-  /** The cookie's `Max-Age` attribute, in seconds. Must be a non-negative integer. A cookie with a `maxAge` of `0` expires immediately. */
+  /**
+   * The cookie's `Max-Age` attribute, in seconds. Must be a non-negative
+   * integer. A cookie with a `maxAge` of `0` expires immediately.
+   *
+   * @default {undefined}
+   */
   maxAge?: number;
-  /** The cookie's `Domain` attribute. Specifies those hosts to which the cookie will be sent. */
+  /**
+   * The cookie's `Domain` attribute. Specifies those hosts to which the cookie
+   * will be sent.
+   *
+   * @default {undefined}
+   */
   domain?: string;
-  /** The cookie's `Path` attribute. A cookie with a path will only be included in the `Cookie` request header if the requested URL matches that path. */
+  /**
+   * The cookie's `Path` attribute. A cookie with a path will only be included
+   * in the `Cookie` request header if the requested URL matches that path.
+   *
+   * @default {undefined}
+   */
   path?: string;
-  /** The cookie's `Secure` attribute. If `true`, the cookie will only be included in the `Cookie` request header if the connection uses SSL and HTTPS. */
+  /**
+   * The cookie's `Secure` attribute. If `true`, the cookie will only be
+   * included in the `Cookie` request header if the connection uses SSL and
+   * HTTPS.
+   *
+   * @default {false}
+   */
   secure?: boolean;
   /** The cookie's `HTTPOnly` attribute. If `true`, the cookie cannot be accessed via JavaScript. */
   httpOnly?: boolean;
