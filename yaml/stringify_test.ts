@@ -253,15 +253,15 @@ Deno.test({
 });
 
 Deno.test({
-  name: "stringify() works with noRefs option",
+  name: "stringify() works with useAnchors option",
   fn() {
     const obj = { foo: "bar" };
     assertEquals(
-      stringify([obj, obj], { noRefs: true }),
+      stringify([obj, obj], { useAnchors: true }),
       `- foo: bar\n- foo: bar\n`,
     );
     assertEquals(
-      stringify([obj, obj], { noRefs: false }),
+      stringify([obj, obj], { useAnchors: false }),
       `- &ref_0\n  foo: bar\n- *ref_0\n`,
     );
   },
