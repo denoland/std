@@ -257,11 +257,11 @@ Deno.test({
   fn() {
     const obj = { foo: "bar" };
     assertEquals(
-      stringify([obj, obj], { useAnchors: true }),
+      stringify([obj, obj], { useAnchors: false }),
       `- foo: bar\n- foo: bar\n`,
     );
     assertEquals(
-      stringify([obj, obj], { useAnchors: false }),
+      stringify([obj, obj], { useAnchors: true }),
       `- &ref_0\n  foo: bar\n- *ref_0\n`,
     );
   },
