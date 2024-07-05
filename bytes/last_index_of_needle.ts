@@ -44,8 +44,9 @@
 export function lastIndexOfNeedle(
   source: Uint8Array,
   needle: Uint8Array,
-  start: number = source.length - 1,
+  start?: number,
 ): number {
+  start ??= source.length - 1;
   if (start < 0) {
     return -1;
   }
