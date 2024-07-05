@@ -46,7 +46,7 @@ export type StringifyOptions = {
    * If false, don't convert duplicate objects
    * into references (default: true)
    */
-  createRefs?: boolean;
+  useAnchors?: boolean;
   /**
    * If false don't try to be compatible with older yaml versions.
    * Currently: don't quote "yes", "no" and so on,
