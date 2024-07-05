@@ -523,77 +523,63 @@ function blockHeader(string: string, indentPerLevel: number): string {
 //    • No ending newline => unaffected; already using strip "-" chomping.
 //    • Ending newline    => removed then restored.
 //  Importantly, this keeps the "+" chomp indicator from gaining an extra line.
-function writeScalar(
+function stringifyScalar(
   state: DumperState,
   string: string,
   level: number,
-  iskey: boolean,
+  isKey: boolean,
 ) {
-  state.dump = ((): string => {
-    if (string.length === 0) {
-      return "''";
-    }
-    if (
-      state.compatMode &&
-      DEPRECATED_BOOLEANS_SYNTAX.indexOf(string) !== -1
-    ) {
-      return `'${string}'`;
-    }
+  if (string.length === 0) return "''";
+  if (state.compatMode && DEPRECATED_BOOLEANS_SYNTAX.indexOf(string) !== -1) {
+    return `'${string}'`;
+  }
 
-    const indent = state.indent * Math.max(1, level); // no 0-indent scalars
-    // As indentation gets deeper, let the width decrease monotonically
-    // to the lower bound min(state.lineWidth, 40).
-    // Note that this implies
-    //  state.lineWidth ≤ 40 + state.indent: width is fixed at the lower bound.
-    //  state.lineWidth > 40 + state.indent: width decreases until the lower
-    //  bound.
-    // This behaves better than a constant minimum width which disallows
-    // narrower options, or an indent threshold which causes the width
-    // to suddenly increase.
-    const lineWidth = state.lineWidth === -1
-      ? -1
-      : Math.max(Math.min(state.lineWidth, 40), state.lineWidth - indent);
+  const indent = state.indent * Math.max(1, level); // no 0-indent scalars
+  // As indentation gets deeper, let the width decrease monotonically
+  // to the lower bound min(state.lineWidth, 40).
+  // Note that this implies
+  //  state.lineWidth ≤ 40 + state.indent: width is fixed at the lower bound.
+  //  state.lineWidth > 40 + state.indent: width decreases until the lower
+  //  bound.
+  // This behaves better than a constant minimum width which disallows
+  // narrower options, or an indent threshold which causes the width
+  // to suddenly increase.
+  const lineWidth = state.lineWidth === -1
+    ? -1
+    : Math.max(40, state.lineWidth - indent);
 
-    // Without knowing if keys are implicit/explicit,
-    // assume implicit for safety.
-    const singleLineOnly = iskey ||
-      // No block styles in flow mode.
-      (state.flowLevel > -1 && level >= state.flowLevel);
-    function testAmbiguity(str: string): boolean {
-      return testImplicitResolving(state, str);
-    }
+  // Without knowing if keys are implicit/explicit,
+  // assume implicit for safety.
+  const singleLineOnly = isKey ||
+    // No block styles in flow mode.
+    (state.flowLevel > -1 && level >= state.flowLevel);
 
-    switch (
-      chooseScalarStyle(
-        string,
-        singleLineOnly,
-        state.indent,
-        lineWidth,
-        testAmbiguity,
-      )
-    ) {
-      case STYLE_PLAIN:
-        return string;
-      case STYLE_SINGLE:
-        return `'${string.replace(/'/g, "''")}'`;
-      case STYLE_LITERAL:
-        return `|${blockHeader(string, state.indent)}${
-          dropEndingNewline(
-            indentString(string, indent),
-          )
-        }`;
-      case STYLE_FOLDED:
-        return `>${blockHeader(string, state.indent)}${
-          dropEndingNewline(
-            indentString(foldString(string, lineWidth), indent),
-          )
-        }`;
-      case STYLE_DOUBLE:
-        return `"${escapeString(string)}"`;
-      default:
-        throw new YamlError("impossible error: invalid scalar style");
-    }
-  })();
+  switch (
+    chooseScalarStyle(
+      string,
+      singleLineOnly,
+      state.indent,
+      lineWidth,
+      (str) => testImplicitResolving(state, str),
+    )
+  ) {
+    case STYLE_PLAIN:
+      return string;
+    case STYLE_SINGLE:
+      return `'${string.replace(/'/g, "''")}'`;
+    case STYLE_LITERAL:
+      return `|${blockHeader(string, state.indent)}${
+        dropEndingNewline(indentString(string, indent))
+      }`;
+    case STYLE_FOLDED:
+      return `>${blockHeader(string, state.indent)}${
+        dropEndingNewline(indentString(foldString(string, lineWidth), indent))
+      }`;
+    case STYLE_DOUBLE:
+      return `"${escapeString(string)}"`;
+    default:
+      throw new YamlError("impossible error: invalid scalar style");
+  }
 }
 
 function writeFlowSequence(
@@ -805,7 +791,7 @@ function writeNode(
   object: Any,
   block: boolean,
   compact: boolean,
-  iskey = false,
+  isKey = false,
 ): boolean {
   state.tag = null;
   state.dump = object;
@@ -869,7 +855,7 @@ function writeNode(
       }
     } else if (typeof state.dump === "string") {
       if (state.tag !== "?") {
-        writeScalar(state, state.dump, level, iskey);
+        state.dump = stringifyScalar(state, state.dump, level, isKey);
       }
     } else {
       if (state.skipInvalid) return false;
