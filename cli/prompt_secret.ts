@@ -43,8 +43,10 @@ export type PromptSecretOptions = {
  */
 export function promptSecret(
   message = "Secret",
-  { mask = "*", clear }: PromptSecretOptions = {},
+  options?: PromptSecretOptions,
 ): string | null {
+  const { mask = "*", clear } = options ?? {};
+
   if (!input.isTerminal()) {
     return null;
   }

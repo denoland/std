@@ -477,7 +477,17 @@ export function parseArgs<
   TAliasNames extends string = string,
 >(
   args: string[],
-  {
+  options?: ParseOptions<
+    TBooleans,
+    TStrings,
+    TCollectable,
+    TNegatable,
+    TDefaults,
+    TAliases,
+    TDoubleDash
+  >,
+): Args<TArgs, TDoubleDash> {
+  const {
     "--": doubleDash = false,
     alias = {} as NonNullable<TAliases>,
     boolean = false,
@@ -487,16 +497,8 @@ export function parseArgs<
     collect = [],
     negatable = [],
     unknown: unknownFn = (i: string): unknown => i,
-  }: ParseOptions<
-    TBooleans,
-    TStrings,
-    TCollectable,
-    TNegatable,
-    TDefaults,
-    TAliases,
-    TDoubleDash
-  > = {},
-): Args<TArgs, TDoubleDash> {
+  } = options ?? {};
+
   const aliasMap: Map<string, Set<string>> = new Map();
   const booleanSet = new Set<string>();
   const stringSet = new Set<string>();
