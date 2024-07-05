@@ -7,23 +7,36 @@
 import { load, loadDocuments } from "./_loader.ts";
 import { SCHEMA_MAP } from "./_schema.ts";
 
-/**
- * Options for parsing YAML.
- */
+/** Options for {@linkcode parse}. */
 export interface ParseOptions {
-  /** Name of the schema to use.*/
+  /**
+   * Name of the schema to use. Options includes:
+   * - `default` (default)
+   * - {@linkcode https://yaml.org/spec/1.2.2/#101-failsafe-schema | failsafe}
+   * - {@linkcode https://yaml.org/spec/1.2.2/#102-json-schema | json}
+   * - {@linkcode https://yaml.org/spec/1.2.2/#103-core-schema | core}
+   *
+   * @default {"default"}
+   */
   schema?: "core" | "default" | "failsafe" | "json" | "extended";
-  /** compatibility with JSON.parse behaviour. */
+  /**
+   * If `true`, duplicate keys will overwrite previous values. Otherwise,
+   * duplicate keys will throw a {@linkcode YamlError}.
+   *
+   * @default {false}
+   */
   allowDuplicateKeys?: boolean;
-  /** function to call on warning messages. */
+  /**
+   * If defined, a function to call on warning messages taking an
+   * {@linkcode Error} as its only argument.
+   */
   onWarning?(error?: Error): void;
 }
 
 /**
- * Parse `content` as single YAML document, and return it.
+ * Parse and return a YAML string as a parsed YAML document object.
  *
- * This function does not support regexps, functions, and undefined by default.
- * This method is safe for parsing untrusted data.
+ * Note: This does not support functions. Untrusted data is safe to parse.
  *
  * @example Usage
  * ```ts
@@ -51,8 +64,8 @@ export function parse(
 }
 
 /**
- * Same as `parse()`, but understands multi-document sources.
- * Applies iterator to each document if specified, or returns array of documents.
+ * Same as {@linkcode parse}, but understands multi-document YAML sources, and
+ * returns multiple parsed YAML document objects.
  *
  * @example Usage
  * ```ts

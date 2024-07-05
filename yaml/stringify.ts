@@ -10,9 +10,7 @@ import type { StyleVariant } from "./_type.ts";
 
 export type { StyleVariant };
 
-/**
- * The option for strinigfy.
- */
+/** Options for {@linkcode stringify}. */
 export type StringifyOptions = {
   /** Indentation width to use (in spaces). */
   indent?: number;
