@@ -1,9 +1,8 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
 import { EXTRACT_REGEXP_MAP, RECOGNIZE_REGEXP_MAP } from "./_formats.ts";
-import type { Format } from "./_types.ts";
+import type { Extractor, Format } from "./_types.ts";
 import type { Extract } from "./types.ts";
-import type { Extractor } from "./_types.ts";
 
 /** Parser function type used alongside {@linkcode createExtractor}. */
 export type Parser = <T = Record<string, unknown>>(str: string) => T;
