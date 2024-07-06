@@ -173,7 +173,7 @@ export class DumperState {
     arrayIndent = true,
     skipInvalid = false,
     flowLevel = -1,
-    styles = null,
+    styles = undefined,
     sortKeys = false,
     lineWidth = 80,
     useAnchors = true,
