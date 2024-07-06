@@ -4,10 +4,10 @@ import { assertEquals } from "@std/assert";
 import { trimTrailingNewline } from "./_dumper.ts";
 
 Deno.test("trimTrailingNewline()", async (t) => {
-  await t.step("handles single line", () => {
+  await t.step("handles string without trailing newline", () => {
     assertEquals(trimTrailingNewline("hello\nworld"), "hello\nworld");
   });
-  await t.step("handles trailing newline", () => {
+  await t.step("handles string with trailing newline", () => {
     assertEquals(trimTrailingNewline("hello\nworld\n"), "hello\nworld");
   });
 });
