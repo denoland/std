@@ -21,3 +21,7 @@ export function isObject(value: unknown): value is Record<string, unknown> {
 export function isNegativeZero(i: number): boolean {
   return i === 0 && Number.NEGATIVE_INFINITY === 1 / i;
 }
+
+export function getObjectTypeString(object: unknown) {
+  return Object.prototype.toString.call(object);
+}
