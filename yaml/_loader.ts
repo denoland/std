@@ -39,7 +39,12 @@ import { YamlError } from "./_error.ts";
 import { Mark } from "./_mark.ts";
 import { DEFAULT_SCHEMA, type Schema, type TypeMap } from "./_schema.ts";
 import type { Type } from "./_type.ts";
-import { type Any, type ArrayObject, isObject } from "./_utils.ts";
+import {
+  type Any,
+  type ArrayObject,
+  getObjectTypeString,
+  isObject,
+} from "./_utils.ts";
 
 const CONTEXT_FLOW_IN = 1;
 const CONTEXT_FLOW_OUT = 2;
@@ -97,10 +102,6 @@ const SIMPLE_ESCAPE_SEQUENCES = new Map<number, string>([
   [0x4c, "\u2028"], // L
   [0x50, "\u2029"], // P
 ]);
-
-function getObjectTypeString(object: unknown) {
-  return Object.prototype.toString.call(object);
-}
 
 /**
  * Converts a hexadecimal character code to its decimal value.
