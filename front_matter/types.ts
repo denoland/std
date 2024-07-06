@@ -6,11 +6,3 @@ export type Extract<T> = {
   body: string;
   attrs: T;
 };
-
-/**
- * Type for function that accepts an input string and returns
- * {@linkcode Extract}.
- */
-export type Extractor = <T = Record<string, unknown>>(
-  str: string,
-) => Extract<T>;

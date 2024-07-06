@@ -1,9 +1,9 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
 import { createExtractor, type Parser } from "./_create_extractor.ts";
-import type { Extract, Extractor } from "./types.ts";
+import type { Extract } from "./types.ts";
 
-export type { Extract, Extractor };
+export type { Extract };
 
 const _extractor = createExtractor({
   ["json"]: JSON.parse as Parser,
