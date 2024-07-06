@@ -24,7 +24,8 @@ export class Mark {
     this.column = column;
   }
 
-  getSnippet(): string {
+  getSnippet(): string | null {
+    if (!this.buffer) return null;
     let start = this.position;
     let end = this.position;
     let head = "";
