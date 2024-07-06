@@ -35,8 +35,6 @@
  * ## Limitations
  * - `binary` type is currently not stable.
  *
- * For further examples see https://github.com/nodeca/js-yaml/tree/master/examples.
- *
  * @module
  */
 
