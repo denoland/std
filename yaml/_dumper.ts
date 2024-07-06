@@ -388,7 +388,7 @@ function chooseScalarStyle(
 // Picks the longest line under the limit each time,
 // otherwise settles for the shortest line over the limit.
 // NB. More-indented lines *cannot* be folded, as that would add an extra \n.
-function foldLine(line: string, width: number): string {
+export function foldLine(line: string, width: number): string {
   if (line === "" || line[0] === " ") return line;
 
   // Since a more-indented line adds a \n, breaks can't be followed by a space.
