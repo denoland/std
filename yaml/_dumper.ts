@@ -432,7 +432,7 @@ function foldLine(line: string, width: number): string {
 }
 
 export function trimTrailingNewline(string: string) {
-  return string.at(-1) ? string.slice(0, -1) : string;
+  return string.at(-1) === "\n" ? string.slice(0, -1) : string;
 }
 
 // Note: a long line without a suitable break point will exceed the width limit.
