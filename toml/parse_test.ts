@@ -1,26 +1,26 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import { assertEquals, assertThrows } from "@std/assert";
 import {
-  ArrayValue,
-  BareKey,
-  BasicString,
-  DateTime,
-  DottedKey,
-  Float,
-  InlineTable,
-  Integer,
-  LiteralString,
-  LocalTime,
-  MultilineBasicString,
-  MultilineLiteralString,
-  Pair,
-  ParserFactory,
+  arrayValue,
+  bareKey,
+  basicString,
+  dateTime,
+  dottedKey,
+  float,
+  inlineTable,
+  integer,
+  literalString,
+  localTime,
+  multilineBasicString,
+  multilineLiteralString,
+  pair,
+  parserFactory,
   Scanner,
-  Symbols,
-  Table,
+  symbols,
+  table,
   TOMLParseError,
   Utils,
-  Value,
+  value,
 } from "./_parser.ts";
 import { parse, stringify } from "./mod.ts";
 import { existsSync } from "@std/fs/exists";
@@ -57,7 +57,7 @@ Deno.test({
 Deno.test({
   name: "parse() handles bare key",
   fn() {
-    const parse = ParserFactory(BareKey);
+    const parse = parserFactory(bareKey);
     assertEquals(parse("A-Za-z0-9_-"), "A-Za-z0-9_-");
     assertThrows(() => parse(""));
     assertThrows(() => parse('"foo"'));
@@ -67,7 +67,7 @@ Deno.test({
 Deno.test({
   name: "parse() handles basic string",
   fn() {
-    const parse = ParserFactory(BasicString);
+    const parse = parserFactory(basicString);
     assertEquals(
       parse('"a\\"\\n\\t\\b\\\\\\u3042\\U01F995"'),
       'a"\n\t\b\\\あ🦕',
@@ -88,7 +88,7 @@ Deno.test({
 Deno.test({
   name: "parse() handles literal string",
   fn() {
-    const parse = ParserFactory(LiteralString);
+    const parse = parserFactory(literalString);
     assertEquals(parse("'a\\n'"), "a\\n");
     assertThrows(() => parse(""));
     assertThrows(() => parse("'a"));
@@ -99,7 +99,7 @@ Deno.test({
 Deno.test({
   name: "parse() handles multi-line basic string",
   fn() {
-    const parse = ParserFactory(MultilineBasicString);
+    const parse = parserFactory(multilineBasicString);
     assertEquals(
       parse(`"""
 Roses are red
@@ -138,7 +138,7 @@ Violets are\\tblue`),
 Deno.test({
   name: "parse() handles multi-line basic string (CRLF)",
   fn() {
-    const parse = ParserFactory(MultilineBasicString);
+    const parse = parserFactory(multilineBasicString);
     assertEquals(
       parse(`"""\r
 Roses are red\r
@@ -159,7 +159,7 @@ Violets are\\tblue"""`),
 Deno.test({
   name: "parse() handles multi-line literal string",
   fn() {
-    const parse = ParserFactory(MultilineLiteralString);
+    const parse = parserFactory(multilineLiteralString);
     assertEquals(
       parse(`'''
 Roses are red
@@ -180,7 +180,7 @@ Violets are\\tblue`),
 Deno.test({
   name: "parse() handles multi-line literal string (CRLF)",
   fn() {
-    const parse = ParserFactory(MultilineLiteralString);
+    const parse = parserFactory(multilineLiteralString);
     assertEquals(
       parse(`'''\r
 Roses are red\r
@@ -193,7 +193,7 @@ Violets are\\tblue'''`),
 Deno.test({
   name: "parse() handles symbols",
   fn() {
-    const parse = ParserFactory(Symbols);
+    const parse = parserFactory(symbols);
     assertEquals(parse("true"), true);
     assertEquals(parse("nan"), NaN);
     assertEquals(parse("inf"), Infinity);
@@ -205,7 +205,7 @@ Deno.test({
 Deno.test({
   name: "parse() handles dotted key",
   fn() {
-    const parse = ParserFactory(DottedKey);
+    const parse = parserFactory(dottedKey);
     assertEquals(parse("a . b . c"), ["a", "b", "c"]);
     assertEquals(parse(`a.'b.c'."d.e"`), ["a", "b.c", "d.e"]);
     assertThrows(() => parse(""));
@@ -217,7 +217,7 @@ Deno.test({
 Deno.test({
   name: "parse() handles table",
   fn() {
-    const parse = ParserFactory(Table);
+    const parse = parserFactory(table);
     assertEquals(
       parse(`
 [foo.bar]
@@ -249,7 +249,7 @@ fizz.buzz = true
 Deno.test({
   name: "parse() handles integer",
   fn() {
-    const parse = ParserFactory(Integer);
+    const parse = parserFactory(integer);
     assertEquals(parse("123"), 123);
     assertEquals(parse("+123"), 123);
     assertEquals(parse("-123"), -123);
@@ -269,7 +269,7 @@ Deno.test({
 Deno.test({
   name: "parse() handles float",
   fn() {
-    const parse = ParserFactory(Float);
+    const parse = parserFactory(float);
     assertEquals(parse("+1.0"), 1.0);
     assertEquals(parse("3.1415"), 3.1415);
     assertEquals(parse("-0.01"), -0.01);
@@ -287,7 +287,7 @@ Deno.test({
 Deno.test({
   name: "parse() handles date and date time",
   fn() {
-    const parse = ParserFactory(DateTime);
+    const parse = parserFactory(dateTime);
     assertEquals(
       parse("1979-05-27T07:32:00Z"),
       new Date("1979-05-27T07:32:00Z"),
@@ -319,7 +319,7 @@ Deno.test({
 Deno.test({
   name: "parse() handles local time",
   fn() {
-    const parse = ParserFactory(LocalTime);
+    const parse = parserFactory(localTime);
     assertEquals(parse("07:32:00"), "07:32:00");
     assertEquals(parse("07:32:00.999"), "07:32:00.999");
     assertThrows(() => parse(""));
@@ -329,7 +329,7 @@ Deno.test({
 Deno.test({
   name: "parse() handles value",
   fn() {
-    const parse = ParserFactory(Value);
+    const parse = parserFactory(value);
     assertEquals(parse("1"), 1);
     assertEquals(parse("1.2"), 1.2);
     assertEquals(parse("1979-05-27"), new Date("1979-05-27"));
@@ -342,7 +342,7 @@ Deno.test({
 Deno.test({
   name: "parse() handles key value pair",
   fn() {
-    const parse = ParserFactory(Pair);
+    const parse = parserFactory(pair);
     assertEquals(parse("key = 'value'"), { key: "value" });
     assertThrows(() => parse("key ="));
     assertThrows(() => parse("key = \n 'value'"));
@@ -353,7 +353,7 @@ Deno.test({
 Deno.test({
   name: "parse() handles array",
   fn() {
-    const parse = ParserFactory(ArrayValue);
+    const parse = parserFactory(arrayValue);
     assertEquals(parse("[]"), []);
     assertEquals(parse("[1, 2, 3]"), [1, 2, 3]);
     assertEquals(parse(`[ "red", "yellow", "green" ]`), [
@@ -388,7 +388,7 @@ Deno.test({
 Deno.test({
   name: "parse() handles inline table",
   fn() {
-    const parse = ParserFactory(InlineTable);
+    const parse = parserFactory(inlineTable);
     assertEquals(parse(`{ first = "Tom", last = "Preston-Werner" }`), {
       first: "Tom",
       last: "Preston-Werner",
@@ -555,7 +555,7 @@ Deno.test({
     );
     assertThrows(
       () =>
-        ParserFactory((_s) => {
+        parserFactory((_s) => {
           throw "Custom parser";
         })(""),
       TOMLParseError,
