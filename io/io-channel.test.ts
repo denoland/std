@@ -46,7 +46,7 @@ const serialAccumulation: () => IoStruct = () => ({
         branches: ['main'],
       },
       ulid: '01HV3NRRWC4NQVZ5PEKD8XWBMY',
-      isolate: 'shell',
+      isolate: 'backchat',
       functionName: 'pierce',
       params: {
         request: {

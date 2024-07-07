@@ -1,7 +1,12 @@
 import { Engine } from '../engine.ts'
 import { expect, log } from '@utils'
 import IsolateApi from '../isolate-api.ts'
-import { Help, partialFromRepo, RUNNERS, SESSION_PATH } from '../constants.ts'
+import {
+  Agent,
+  AGENT_RUNNERS,
+  partialFromRepo,
+  SESSION_PATH,
+} from '../constants.ts'
 import { prepare } from './ai-prompt.ts'
 import * as completions from './ai-completions.ts'
 import FS from '@/git/fs.ts'
@@ -13,9 +18,9 @@ import { readSession, rm } from '@/isolates/ai-session-utils.ts'
 import { Machine } from '@/api/web-client-machine.ts'
 
 Deno.test('ai-chat', async (t) => {
-  const helpBase: Help = {
+  const helpBase: Agent = {
     config: { model: 'gpt-4o' },
-    runner: RUNNERS.CHAT,
+    runner: AGENT_RUNNERS.CHAT,
     commands: ['io-fixture:local', 'io-fixture:error'],
     instructions: 'Only reply with a SINGLE word',
   }

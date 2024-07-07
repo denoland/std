@@ -6,6 +6,7 @@ import {
   ApiFunctions,
   backchatIdRegex,
   EngineInterface,
+  freezePid,
   IoStruct,
   JsonValue,
   Params,
@@ -29,13 +30,12 @@ type Init = {
 }
 
 export class Backchat {
-  #init: Promise<void> | undefined
-
   readonly #engine: EngineInterface
   readonly #crypto: Crypto
   readonly #pid: PID
   readonly #abort = new AbortController()
   readonly #watcher: PierceWatcher
+  readonly #dnsCache = new Map<string, Promise<PID>>()
 
   private constructor(engine: EngineInterface, crypto: Crypto, pid: PID) {
     this.#engine = engine
@@ -77,13 +77,57 @@ export class Backchat {
   get homeAddress() {
     return this.#engine.homeAddress
   }
+  /**
+   * This is the main function that is used to interact with the backchat
+   * system. The prompt is relayed thru backchat, and then if it is not
+   * intercepted, it will go on to the targeted thread, where the agent running
+   * that thread will respond.
+   * @param target The thread we targeting with the prompt.  Backchat may
+   * intercept this before it reaches target. The target can be anything, since
+   * the user might have used the back button to navigate away from the current
+   * focus
+   * @param text The optional text that is to be parsed by the AI.  It can be
+   * empty if there are files attached or to indicate a positive response to
+   * something.
+   * @param last The commit of the last message in the thread.  This is used to
+   * ensure that the state of the thread is exactly as we expect it to be, else
+   * an error will be thrown
+   * @param paths The relative paths to the files that were attached with the
+   * prompt, which may include directories.  May include pointers to the tmp
+   * files that are created when a user attaches files in the browser.
+   */
+  async prompt(target: string, text = '', last?: string, paths?: string[]) {
+    // pierce the backchat thread
+    const pierce: PierceRequest = {
+      target: this.#pid,
+      ulid: ulid(),
+      isolate: 'backchat',
+      functionName: 'prompt',
+      params: { target, text },
+      proctype: PROCTYPE.SERIAL,
+    }
+    if (last) {
+      pierce.params.last = last
+    }
+    if (paths) {
+      pierce.params.paths = paths
+    }
+  }
+  /** start a new thread and make it the focus */
+  thread() {
+    // call into the backchat isolate, and pull up the thread you want
+  }
+  /** The path to the current session that this backchat is pointing to.  Can
+   * sometimes be itself */
+  get focus() {
+    return 'todo'
+  }
+  get isSelfFocused() {
+    return this.focus === this.id
+  }
+
   stop() {
     this.#abort.abort()
-  }
-  async engineStop() {
-    this.stop()
-    // TODO stopping the engine should stop all threads too
-    await this.#engine.stop()
   }
   async actions<T = ApiFunctions>(isolate: string, opts: RpcOpts = {}) {
     const { target = this.#pid, ...procOpts } = opts
@@ -92,21 +136,18 @@ export class Backchat {
     return toActions<T>(target, isolate, schema, procOpts, execute)
   }
   #action(request: UnsequencedRequest) {
+    // TODO if the target is this branch, convert to a direct pierce
     const pierce: PierceRequest = {
       target: this.#pid,
       ulid: ulid(),
-      isolate: 'shell',
-      functionName: 'pierce',
+      isolate: 'backchat',
+      functionName: 'relay',
       params: { request },
       proctype: PROCTYPE.SERIAL,
     }
     const promise = this.#watcher.watch(pierce.ulid)
     // TODO handle an error in pierce
-    if (this.#init) {
-      this.#init = this.#init.then(() => this.#engine.pierce(pierce))
-    } else {
-      this.#engine.pierce(pierce)
-    }
+    this.#engine.pierce(pierce)
     return promise
   }
   ping(params?: { data?: JsonValue }) {
@@ -176,15 +217,40 @@ export class Backchat {
     const actions = await this.actions<Files>('files', { target })
     return actions.rm({ path })
   }
-  async endSession(): Promise<void> {
-    // should delete the session
-  }
-  async deleteAccountUnrecoverably(): Promise<void> {
-    // throw new Error('not implemented')
+  deleteAccountUnrecoverably(): Promise<void> {
+    throw new Error('not implemented')
   }
   async lsChildren() {
     const obj = await this.readJSON<IoStruct>('.io.json')
     return Object.values(obj.branches)
+  }
+  async dns(repo: string) {
+    const [account, repository, ...rest] = repo.split('/')
+    if (rest.length || !account || !repository) {
+      throw new Error('invalid repo: ' + repo)
+    }
+    if (this.#dnsCache.has(repo)) {
+      const pid = await this.#dnsCache.get(repo)
+      if (!pid) {
+        throw new Error('repo cache error: ' + repo)
+      }
+      freezePid(pid)
+      return pid
+    }
+    const promise = Promise.resolve().then(async () => {
+      const home = this.homeAddress
+      const superuser = addBranches(home, SU_ACTOR)
+
+      type Repos = { [repo: string]: PID }
+      const repos = await this.readJSON<Repos>('repos.json', superuser)
+      const pid = repos[repo]
+      if (!pid) {
+        throw new Error('repo not found: ' + repo)
+      }
+      return pid
+    })
+    this.#dnsCache.set(repo, promise)
+    return promise
   }
 }
 type Files = {

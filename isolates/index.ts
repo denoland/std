@@ -8,7 +8,6 @@ import * as loadHelp from './load-help.ts'
 import * as utils from './utils.ts'
 import * as artifact from './artifact.ts'
 import * as session from './session.ts'
-import * as shell from './shell.ts'
 
 import * as completions from './ai-completions.ts'
 import * as loadTools from './ai-load-tools.ts'
@@ -19,6 +18,7 @@ import * as hal from './hal.ts'
 import * as github from './github.ts'
 import * as actors from './actors.ts'
 import * as machines from './machines.ts'
+import * as backchat from './backchat.ts'
 
 export default {
   system,
@@ -30,7 +30,6 @@ export default {
   utils,
   artifact,
   session,
-  shell,
   'ai-completions': completions,
   'ai-load-tools': loadTools,
   'ai-prompt-injector': promptInjector,
@@ -39,4 +38,5 @@ export default {
   github,
   actors,
   machines,
+  backchat,
 }

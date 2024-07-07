@@ -2,7 +2,7 @@ import * as loadHelp from '@/isolates/load-help.ts'
 import * as engage from '@/isolates/engage-help.ts'
 import { assert, Debug, posix } from '@utils'
 import OpenAI from 'openai'
-import { Help, IsolateApi, JSONSchemaType, Params } from '@/constants.ts'
+import { Agent, IsolateApi, JSONSchemaType, Params } from '@/constants.ts'
 const log = Debug('AI:tools:load-tools')
 
 export const loadTools = async (commands: string[] = [], api: IsolateApi) => {
@@ -63,7 +63,11 @@ const load = async (commands: string[] = [], api: IsolateApi) => {
     return { tools, actions }
   }
 }
-const helpTool = (name: string, help: Help, schema: JSONSchemaType<object>) => {
+const helpTool = (
+  name: string,
+  help: Agent,
+  schema: JSONSchemaType<object>,
+) => {
   const parameters = {
     type: 'object',
     additionalProperties: false,

@@ -15,7 +15,6 @@ import {
   PROCTYPE,
   Provisioner,
   randomId,
-  UnsequencedRequest,
 } from './constants.ts'
 import IsolateApi from './isolate-api.ts'
 import { assert, Debug, posix } from '@utils'
@@ -195,19 +194,12 @@ export class Engine implements EngineInterface {
     const watcher = PierceWatcher.create(abort.signal, this, this.homeAddress)
     watcher.watchPierces()
     const { machineId: superuser } = Crypto.load(this.#superuserKey)
-    const request: UnsequencedRequest = {
-      target: this.homeAddress,
-      isolate: 'actors',
-      functionName: '@@install',
-      params: { superuser },
-      proctype: PROCTYPE.SERIAL,
-    }
     const pierce: PierceRequest = {
       target: this.homeAddress,
       ulid: ulid(),
-      isolate: 'shell',
-      functionName: 'pierce',
-      params: { request },
+      isolate: 'actors',
+      functionName: '@@install',
+      params: { superuser },
       proctype: PROCTYPE.SERIAL,
     }
     const promise = watcher.watch(pierce.ulid)

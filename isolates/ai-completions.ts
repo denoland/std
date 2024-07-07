@@ -2,7 +2,7 @@ import { assert, Debug } from '@utils'
 import merge from 'lodash.merge'
 import OpenAI from 'openai'
 import '@std/dotenv/load'
-import { Help, IsolateApi, print } from '@/constants.ts'
+import { Agent, IsolateApi, print } from '@/constants.ts'
 import { loadTools } from './ai-load-tools.ts'
 import { readSession, writeSession } from '@/isolates/ai-session-utils.ts'
 const base = 'AI:completions'
@@ -23,10 +23,10 @@ export const api = {
 }
 
 export type Api = {
-  create: (help: Help) => Promise<void>
+  create: (help: Agent) => Promise<void>
 }
 export const functions = {
-  async create(help: Help, api: IsolateApi): Promise<string | void> {
+  async create(help: Agent, api: IsolateApi): Promise<string | void> {
     const tools = await loadTools(help.commands, api)
     const { model = 'gpt-4o', temperature = 0 } = help.config || {}
     const session = await readSession(api)

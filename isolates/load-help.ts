@@ -1,6 +1,6 @@
 import { posix } from '@utils'
-import { IsolateApi, RUNNERS } from '@/constants.ts'
-import { type Help } from '@/constants.ts'
+import { AGENT_RUNNERS, IsolateApi } from '@/constants.ts'
+import { type Agent } from '@/constants.ts'
 import matter from 'gray-matter'
 import { assert } from '@std/assert'
 
@@ -26,8 +26,8 @@ export const api = {
   },
 }
 export interface Api {
-  load: (params: { help: string }) => Promise<Help>
-  loadAll: () => Promise<Help[]>
+  load: (params: { help: string }) => Promise<Agent>
+  loadAll: () => Promise<Agent[]>
 }
 
 export const functions = {
@@ -36,7 +36,7 @@ export const functions = {
     const { data, content } = matter(string.trim())
     assert(typeof content === 'string', 'content missing')
     const defaults = {
-      runner: RUNNERS.CHAT,
+      runner: AGENT_RUNNERS.CHAT,
       instructions: '',
     }
     const loaded = { ...defaults, ...data, instructions: content.trim() }
@@ -46,7 +46,7 @@ export const functions = {
   },
   loadAll: async (_: object, api: IsolateApi) => {
     // TODO provide a glob as first arg
-    const helps: { name: string; help: Help }[] = []
+    const helps: { name: string; help: Agent }[] = []
     const files = await api.ls('helps')
     for (const file of files) {
       if (file.endsWith('.md')) {
@@ -59,12 +59,12 @@ export const functions = {
   },
 }
 
-const checkHelp = (help: Help) => {
+const checkHelp = (help: Agent) => {
   if (!(typeof help.instructions === 'string')) {
     throw new Error('instructions must be an array')
   }
   const { runner } = help
-  if (runner !== RUNNERS.CHAT && runner !== RUNNERS.INJECTOR) {
+  if (runner !== AGENT_RUNNERS.CHAT && runner !== AGENT_RUNNERS.INJECTOR) {
     throw new Error('runner must be chat or injector')
   }
   if (help.description && typeof help.description !== 'string') {

@@ -3,8 +3,8 @@ import { Debug } from '@utils'
 import OpenAI from 'openai'
 import { serializeError } from 'serialize-error'
 import {
+  Agent,
   colorize,
-  Help,
   IsolateApi,
   SESSION_BRANCHES,
   SESSION_PATH,
@@ -22,9 +22,9 @@ const log = Debug(base)
 const debugToolCall = Debug(base + ':ai-result-tool')
 const debugToolResult = Debug(base + ':ai-tool-result')
 
-export const executeTools = async (help: Help, api: IsolateApi) => {
+export const executeTools = async (agent: Agent, api: IsolateApi) => {
   // TODO only load what the assistant message needs
-  const actions = await loadActions(help.commands, api)
+  const actions = await loadActions(agent.commands, api)
   let session = await readSession(api)
   const assistant = session[session.length - 1]
   assert('tool_calls' in assistant, 'missing tool calls')

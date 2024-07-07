@@ -41,8 +41,9 @@ Deno.test('cradle', async (t) => {
   await t.step('second backchat', async () => {
     const next = await Backchat.upsert(engine, privateKey)
     expect(next.pid).not.toEqual(backchat.pid)
+    expect(next.id).not.toEqual(backchat.id)
   })
-  await t.step('thread', async () => {
+  await t.step('new thread', async () => {
     // start a new thread using backchat
   })
   await engine.stop()

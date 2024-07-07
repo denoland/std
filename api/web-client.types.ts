@@ -116,30 +116,25 @@ export type SerializableError = {
 }
 export type Outcome = { result?: JsonValue; error?: SerializableError }
 export const ENTRY_BRANCH = 'main'
-/**
- * The Process Identifier used to address a specific process branch.
- */
 
 export type PartialPID = Omit<PID, 'repoId'>
 
-export type HelpConfig = {
+export type AgentConfig = {
   model?: 'gpt-3.5-turbo' | 'gpt-4-turbo' | 'gpt-4o'
   temperature?: number
+  presencePenalty?: number
 }
-export type Help = {
+export type Agent = {
   description?: string
-  config?: HelpConfig
-  runner: RUNNERS
+  config?: AgentConfig
+  runner: AGENT_RUNNERS
   commands?: string[]
   instructions: string
-  done?: string
-  examples?: string[]
-  tests?: string[]
 }
 export type PierceRequest = Invocation & {
   target: PID
   ulid: string
-  params: { request: UnsequencedRequest }
+  params: Params
 }
 export const isPierceRequest = (p: Request): p is PierceRequest => {
   return 'ulid' in p
@@ -187,6 +182,9 @@ export type Invocation = {
     timeout?: number
   }
 }
+/**
+ * The Process Identifier used to address a specific process branch.
+ */
 export type PID = {
   /**
    * The hash of the genesis commit is used to identify this repo in a
@@ -194,7 +192,7 @@ export type PID = {
    * unique with strong guarantees that this is the correct repo that
    * communication was intended with.
    */
-  repoId: string // TODO add regex checks to pid checks
+  repoId: string
   account: string
   repository: string
   branches: string[]
@@ -234,7 +232,7 @@ export const getProcType = (procOpts?: ProcessOptions) => {
   }
   return PROCTYPE.SERIAL
 }
-export enum RUNNERS {
+export enum AGENT_RUNNERS {
   CHAT = 'ai-prompt',
   INJECTOR = 'ai-prompt-injector',
 }
@@ -409,7 +407,8 @@ export const print = (pid?: PID) => {
     const noSubstring = !segment.startsWith('mac_') &&
       !segment.startsWith('bac_') &&
       !segment.startsWith('act_') &&
-      !segment.startsWith('rep_')
+      !segment.startsWith('rep_') &&
+      !segment.startsWith('thr_')
     return colorize(segment, noSubstring)
   })
   return `${colorize(pid.repoId)}/${pid.account}/${pid.repository}:${
@@ -510,6 +509,7 @@ export const repoIdRegex = /^rep_[0-9A-HJKMNP-TV-Z]{16}$/
 export const machineIdRegex = /^mac_[2-7a-z]{33}$/
 export const actorIdRegex = /^act_[0-9A-HJKMNP-TV-Z]{16}$/
 export const backchatIdRegex = /^bac_[0-9A-HJKMNP-TV-Z]{16}$/
+export const threadIdRegex = /^thr_[0-9A-HJKMNP-TV-Z]{16}$/
 export const SU_ACTOR = 'act_SVPERVSER0000000'
 export const SU_BACKCHAT = 'bac_SVPERVSER0000000'
 export const getActorId = (source: PID) => {

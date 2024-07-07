@@ -1,7 +1,7 @@
 import { assert, Debug } from '@utils'
 import { rm } from '@/isolates/ai-session-utils.ts'
 import { IsolateApi } from '@/constants.ts'
-import { Help, RUNNERS } from '@/constants.ts'
+import { Agent, AGENT_RUNNERS } from '@/constants.ts'
 import * as loadHelp from '@/isolates/load-help.ts'
 import * as prompt from '@/isolates/ai-prompt.ts'
 import * as promptInjector from '@/isolates/ai-prompt-injector.ts'
@@ -39,14 +39,15 @@ export const functions = {
     const { help: path, text } = p
     log('engage:', path)
     const { load } = await api.functions<loadHelp.Api>('load-help')
-    const help: Help = await load({ help: path })
+    const help: Agent = await load({ help: path })
 
-    const { runner = RUNNERS.CHAT } = help
-    const isValid = runner === RUNNERS.CHAT || runner === RUNNERS.INJECTOR
+    const { runner = AGENT_RUNNERS.CHAT } = help
+    const isValid = runner === AGENT_RUNNERS.CHAT ||
+      runner === AGENT_RUNNERS.INJECTOR
     assert(isValid, `no runner: ${help.runner}`)
     log('found runner string:', runner)
 
-    const isolate = runner === RUNNERS.CHAT ? prompt : promptInjector
+    const isolate = runner === AGENT_RUNNERS.CHAT ? prompt : promptInjector
 
     return await isolate.functions.prompt({ help, text }, api)
   },

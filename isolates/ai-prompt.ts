@@ -3,7 +3,7 @@ import { executeTools } from './ai-execute-tools.ts'
 import { Debug, equal } from '@utils'
 import OpenAI from 'openai'
 import '@std/dotenv/load'
-import { Help, IsolateApi, SESSION_PATH } from '@/constants.ts'
+import { Agent, IsolateApi, SESSION_PATH } from '@/constants.ts'
 import { Api } from './ai-completions.ts'
 import { readSession } from '@/isolates/ai-session-utils.ts'
 
@@ -12,7 +12,7 @@ const base = 'AI:prompt'
 const log = Debug(base)
 const debugResult = Debug(base + ':ai-result-content')
 
-type Args = { text: string; help: Help }
+type Args = { text: string; help: Agent }
 
 export const api = {
   prompt: {
@@ -42,7 +42,11 @@ export const functions = {
   },
 }
 
-export const prepare = async (help: Help, text: string, api: IsolateApi) => {
+export const prepare = async (
+  help: Agent,
+  text: string,
+  api: IsolateApi,
+) => {
   assert(text.length, 'text must not be empty')
   const existing = await readSession(api)
   const messages: MessageParam[] = [...existing]

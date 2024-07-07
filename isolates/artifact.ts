@@ -62,15 +62,17 @@ export const api = {
 }
 
 export interface Api {
-  pierce: (params: { pierce: PierceRequest }) => Promise<void>
+  pierce: (params: Pierce) => Promise<void>
 }
-
+interface Pierce {
+  pierce: PierceRequest
+}
 /**
  * Reason to keep artifact with an Isolate interface, is so we can control it
  * from within an isolate.
  */
 export const functions = {
-  async pierce({ pierce }: { pierce: PierceRequest }, api: IsolateApi<C>) {
+  async pierce({ pierce }: Pierce, api: IsolateApi<C>) {
     assert(isPierceRequest(pierce), 'invalid pierce request')
     log('pierce %o %o', pierce.isolate, pierce.functionName)
     log('target', print(pierce.target))
