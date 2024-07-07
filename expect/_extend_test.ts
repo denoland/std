@@ -153,4 +153,8 @@ Deno.test("expect.extend() example is valid", async () => {
   myexpect("🦧").not.toBeDinosaur();
   await myexpect(Promise.resolve("🦕")).resolves.toBeDinosaur();
   await myexpect(Promise.resolve("🦧")).resolves.not.toBeDinosaur();
+
+  // Regular matchers will still be available
+  myexpect("foo").not.toBeNull();
+  myexpect.anything;
 });

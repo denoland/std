@@ -341,6 +341,10 @@ expect.addEqualityTesters = addCustomEqualityTesters as (
  * myexpect("🦧").not.toBeDinosaur();
  * await myexpect(Promise.resolve("🦕")).resolves.toBeDinosaur();
  * await myexpect(Promise.resolve("🦧")).resolves.not.toBeDinosaur();
+ *
+ * // Regular matchers will still be available
+ * myexpect("foo").not.toBeNull()
+ * myexpect.anything
  * ```
  */
 expect.extend = setExtendMatchers as (newExtendMatchers: Matchers) => void;
