@@ -4,7 +4,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
 import type { Type } from "../_type.ts";
-import type { Any } from "../_utils.ts";
+import { type Any, getObjectTypeString } from "../_utils.ts";
 
 function resolveYamlOmap(data: Any): boolean {
   const objectKeys: string[] = [];
@@ -14,7 +14,7 @@ function resolveYamlOmap(data: Any): boolean {
   for (const pair of data) {
     pairHasKey = false;
 
-    if (Object.prototype.toString.call(pair) !== "[object Object]") {
+    if (getObjectTypeString(pair) !== "[object Object]") {
       return false;
     }
 

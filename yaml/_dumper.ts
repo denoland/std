@@ -28,8 +28,13 @@ import {
 } from "./_chars.ts";
 import { YamlError } from "./_error.ts";
 import { DEFAULT_SCHEMA, type Schema } from "./_schema.ts";
-import type { RepresentFn, StyleVariant, Type } from "./_type.ts";
-import { type Any, type ArrayObject, isObject } from "./_utils.ts";
+import type { StyleVariant, Type } from "./_type.ts";
+import {
+  type Any,
+  type ArrayObject,
+  getObjectTypeString,
+  isObject,
+} from "./_utils.ts";
 
 const ESCAPE_SEQUENCES = new Map<number, string>([
   [0x00, "\\0"],
@@ -82,23 +87,16 @@ function charCodeToHexString(charCode: number): string {
 }
 
 function compileStyleMap(
-  schema: Schema,
   map?: ArrayObject<StyleVariant> | null,
 ): ArrayObject<StyleVariant> {
   if (typeof map === "undefined" || map === null) return {};
 
   const result: ArrayObject<StyleVariant> = {};
   for (let tag of Object.keys(map)) {
-    let style = String(map[tag]) as StyleVariant;
+    const style = String(map[tag]) as StyleVariant;
     if (tag.slice(0, 2) === "!!") {
       tag = `tag:yaml.org,2002:${tag.slice(2)}`;
     }
-    const type = schema.compiledTypeMap.fallback[tag];
-
-    if (type?.styleAliases && Object.hasOwn(type.styleAliases, style)) {
-      style = type.styleAliases[style];
-    }
-
     result[tag] = style;
   }
 
@@ -135,10 +133,10 @@ export interface DumperStateOptions {
   /** set max line width. (default: 80) */
   lineWidth?: number;
   /**
-   * if true, don't convert duplicate objects
-   * into references (default: false)
+   * if false, don't convert duplicate objects
+   * into references (default: true)
    */
-  noRefs?: boolean;
+  useAnchors?: boolean;
   /**
    * if false don't try to be compatible with older yaml versions.
    * Currently: don't quote "yes", "no" and so on,
@@ -162,7 +160,7 @@ export class DumperState {
   flowLevel: number;
   sortKeys: boolean | ((a: Any, b: Any) => number);
   lineWidth: number;
-  noRefs: boolean;
+  useAnchors: boolean;
   compatMode: boolean;
   condenseFlow: boolean;
   implicitTypes: Type[];
@@ -180,10 +178,10 @@ export class DumperState {
     arrayIndent = true,
     skipInvalid = false,
     flowLevel = -1,
-    styles = null,
+    styles = undefined,
     sortKeys = false,
     lineWidth = 80,
-    noRefs = false,
+    useAnchors = true,
     compatMode = true,
     condenseFlow = false,
   }: DumperStateOptions) {
@@ -192,10 +190,10 @@ export class DumperState {
     this.arrayIndent = arrayIndent;
     this.skipInvalid = skipInvalid;
     this.flowLevel = flowLevel;
-    this.styleMap = compileStyleMap(this.schema, styles);
+    this.styleMap = compileStyleMap(styles);
     this.sortKeys = sortKeys;
     this.lineWidth = lineWidth;
-    this.noRefs = noRefs;
+    this.useAnchors = useAnchors;
     this.compatMode = compatMode;
     this.condenseFlow = condenseFlow;
     this.implicitTypes = this.schema.compiledImplicit;
@@ -773,13 +771,10 @@ function detectType(
   const typeList = explicit ? state.explicitTypes : state.implicitTypes;
 
   for (const type of typeList) {
-    let _result: string;
-
     if (
-      (type.instanceOf || type.predicate) &&
-      (!type.instanceOf ||
-        (typeof object === "object" && object instanceof type.instanceOf)) &&
-      (!type.predicate || type.predicate(object))
+      (type.instanceOf &&
+        (isObject(object) && object instanceof type.instanceOf)) ||
+      (type.predicate && type.predicate(object))
     ) {
       state.tag = explicit ? type.tag : "?";
 
@@ -787,19 +782,16 @@ function detectType(
         const style = state.styleMap[type.tag]! || type.defaultStyle;
 
         if (typeof type.represent === "function") {
-          _result = (type.represent as RepresentFn)(object, style);
-        } else if (Object.hasOwn(type.represent, style)) {
-          _result = (type.represent as ArrayObject<RepresentFn>)[style]!(
-            object,
-            style,
-          );
-        } else {
-          throw new YamlError(
-            `!<${type.tag}> tag resolver accepts not "${style}" style`,
-          );
+          state.dump = type.represent(object, style);
+          return true;
         }
-
-        state.dump = _result;
+        if (Object.hasOwn(type.represent, style)) {
+          state.dump = type.represent[style]!(object, style);
+          return true;
+        }
+        throw new YamlError(
+          `!<${type.tag}> tag resolver accepts not "${style}" style`,
+        );
       }
 
       return true;
@@ -888,7 +880,7 @@ function writeNode(
       if (state.skipInvalid) return false;
       throw new YamlError(
         `unacceptable kind of an object to dump ${
-          Object.prototype.toString.call(state.dump)
+          getObjectTypeString(state.dump)
         }`,
       );
     }
@@ -930,7 +922,7 @@ function getDuplicateReferences(
 export function dump(input: Any, options: DumperStateOptions = {}): string {
   const state = new DumperState(options);
 
-  if (!state.noRefs) getDuplicateReferences(input, state);
+  if (state.useAnchors) getDuplicateReferences(input, state);
 
   if (writeNode(state, 0, input, true, true)) return `${state.dump}\n`;
 
