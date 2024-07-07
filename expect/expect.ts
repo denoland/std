@@ -295,6 +295,9 @@ expect.addEqualityTesters = addCustomEqualityTesters as (
  * To do so, you will need to extend the interface `Expected` to define the new signature of the `expect`.
  *
  * ```ts
+ * import type { Async, Expected } from "./expect.ts";
+ * import { expect } from "./expect.ts";
+ *
  * // Extends the `Expected` interface with your new matchers signatures
  * interface ExtendedExpected<IsAsync = false> extends Expected<IsAsync> {
  *   // Matcher that asserts value is a dinosaur
