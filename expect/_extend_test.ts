@@ -1,7 +1,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
 import { expect } from "./expect.ts";
-import type { MatcherContext, Tester } from "./_types.ts";
+import type { Async, Expected, MatcherContext, Tester } from "./_types.ts";
 import { AssertionError, assertThrows } from "@std/assert";
 
 declare module "./_types.ts" {
@@ -109,4 +109,48 @@ Deno.test("expect.extend() api test case", () => {
     AssertionError,
     "Expected Book object: Book 1. Actual Book object: Book 1",
   );
+});
+
+Deno.test("expect.extend() example is valid", async () => {
+  // Extends the `Expected` interface with your new matchers signatures
+  interface ExtendedExpected<IsAsync = false> extends Expected<IsAsync> {
+    // Matcher that asserts value is a dinosaur
+    toBeDinosaur: (options?: { includeTrexs?: boolean }) => unknown;
+
+    // NOTE: You also need to overrides the following typings to allow modifiers to correctly infer typing
+    not: IsAsync extends true ? Async<ExtendedExpected<true>>
+      : ExtendedExpected<false>;
+    resolves: Async<ExtendedExpected<true>>;
+    rejects: Async<ExtendedExpected<true>>;
+  }
+
+  // Call `expect.extend()` with your new matchers definitions
+  expect.extend({
+    toBeDinosaur(context, options) {
+      const dino = `${context.value}`;
+      const allowed = ["🦕"];
+      if (options?.includeTrexs) {
+        allowed.push("🦖");
+      }
+      const pass = allowed.includes(dino);
+      if (context.isNot) {
+        // Note: when `context.isNot` is set, the test is considered successful when `pass` is false
+        return {
+          message: () => `Expected "${dino}" to NOT be a dinosaur`,
+          pass,
+        };
+      }
+      return { message: () => `Expected "${dino}" to be a dinosaur`, pass };
+    },
+  });
+
+  // Alias expect to avoid having to pass the generic typing argument each time
+  // This is probably what you want to export and reuse across your tests
+  const myexpect = expect<ExtendedExpected>;
+
+  // Perform some tests
+  myexpect("🦕").toBeDinosaur();
+  myexpect("🦧").not.toBeDinosaur();
+  await myexpect(Promise.resolve("🦕")).resolves.toBeDinosaur();
+  await myexpect(Promise.resolve("🦧")).resolves.not.toBeDinosaur();
 });
