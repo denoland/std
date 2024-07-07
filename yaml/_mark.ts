@@ -60,7 +60,9 @@ export class Mark {
   }
 
   toString(): string {
+    let where = `at line ${this.line + 1}, column ${this.column + 1}`;
     const snippet = this.getSnippet();
-    return `at line ${this.line + 1}, column ${this.column + 1}:\n${snippet}`;
+    if (snippet) where += `:\n${snippet}`;
+    return where;
   }
 }
