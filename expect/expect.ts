@@ -137,6 +137,8 @@ const matchers: Record<MatcherKey, Matcher> = {
  * @param customMessage - An optional custom message to include in the assertion error.
  * @returns An expected object that can be used to chain matchers.
  *
+ * @typeParam T The interface used for `expect`. This is usually needed only if you want to use `expect.extend` to create custom matchers.
+ *
  * @module
  */
 export function expect<T extends Expected = Expected>(
