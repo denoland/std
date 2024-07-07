@@ -26,12 +26,15 @@ export interface DebouncedFunction<T extends Array<unknown>> {
  * ```ts no-eval
  * import { debounce } from "@std/async/debounce";
  *
- * await Array.fromAsync(
- *   Deno.watchFs('./'),
- *   debounce((event) => {
- *     console.log('[%s] %s', event.kind, event.paths[0]);
- *   }, 200),
+ * const log = debounce(
+ *   (event: Deno.FsEvent) =>
+ *     console.log("[%s] %s", event.kind, event.paths[0]),
+ *   200,
  * );
+ *
+ * for await (const event of Deno.watchFs("./")) {
+ *   log(event);
+ * }
  * // wait 200ms ...
  * // output: Function debounced after 200ms with baz
  * ```

@@ -1,6 +1,12 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 export class Point {
-  constructor(public x: number, public y: number) {}
+  x: number;
+  y: number;
+
+  constructor(x: number, y: number) {
+    this.x = x;
+    this.y = y;
+  }
   // deno-lint-ignore no-explicit-any
   action(...args: any[]): any {
     return args[0];

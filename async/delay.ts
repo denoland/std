@@ -15,6 +15,8 @@ export interface DelayOptions {
 /**
  * Resolve a {@linkcode Promise} after a given amount of milliseconds.
  *
+ * @throws {DOMException} If the optional signal is aborted before the delay
+ * duration, and `signal.reason` is undefined.
  * @param ms Duration in milliseconds for how long the delay should last.
  * @param options Additional options.
  *

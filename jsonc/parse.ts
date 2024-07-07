@@ -1,28 +1,11 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-/**
- * {@linkcode parse} function for parsing
- * {@link https://code.visualstudio.com/docs/languages/json#_json-with-comments | JSONC}
- * (JSON with Comments) strings.
- *
- * @module
- */
-import type { JsonValue } from "@std/json/common";
-export type { JsonValue } from "@std/json/common";
-
-/** Options for {@linkcode parse}. */
-export interface ParseOptions {
-  /** Allow trailing commas at the end of arrays and objects.
-   *
-   * @default {true}
-   */
-  allowTrailingComma?: boolean;
-}
+import type { JsonValue } from "@std/json/types";
+export type { JsonValue } from "@std/json/types";
 
 /**
  * Converts a JSON with Comments (JSONC) string into an object.
- * If a syntax error is found, throw a {@linkcode SyntaxError}.
  *
  * @example Usage
  * ```ts
@@ -32,20 +15,18 @@ export interface ParseOptions {
  * assertEquals(parse('{"foo": "bar"}'), { foo: "bar" });
  * assertEquals(parse('{"foo": "bar", }'), { foo: "bar" });
  * assertEquals(parse('{"foo": "bar", } /* comment *\/'), { foo: "bar" });
- * assertEquals(parse('{"foo": "bar" } // comment', { allowTrailingComma: false }), { foo: "bar" });
  * ```
  *
+ * @throws {SyntaxError} If the JSONC string is invalid.
  * @param text A valid JSONC string.
+ * @param options Options for parsing.
  * @returns The parsed JsonValue from the JSONC string.
  */
-export function parse(
-  text: string,
-  { allowTrailingComma = true }: ParseOptions = {},
-): JsonValue {
+export function parse(text: string): JsonValue {
   if (new.target) {
     throw new TypeError("parse is not a constructor");
   }
-  return new JSONCParser(text, { allowTrailingComma }).parse();
+  return new JSONCParser(text).parse();
 }
 
 type TokenType =
@@ -82,12 +63,10 @@ class JSONCParser {
   #text: string;
   #length: number;
   #tokenized: Generator<Token, void>;
-  #options: ParseOptions;
-  constructor(text: string, options: ParseOptions) {
+  constructor(text: string) {
     this.#text = `${text}`;
     this.#length = this.#text.length;
     this.#tokenized = this.#tokenize();
-    this.#options = options;
   }
   parse(): JsonValue {
     const token = this.#getNext();
@@ -203,6 +182,7 @@ class JSONCParser {
       }
     }
   }
+
   #parseJsonValue(value: Token): JsonValue {
     switch (value.type) {
       case "BeginObject":
@@ -217,6 +197,7 @@ class JSONCParser {
         throw new SyntaxError(buildErrorMessage(value));
     }
   }
+
   #parseObject(): { [key: string]: JsonValue | undefined } {
     const target: { [key: string]: JsonValue | undefined } = {};
     //   ┌─token1
@@ -241,12 +222,9 @@ class JSONCParser {
     //      │   │   │   │   │   │   ┌─────token3
     //      │   │   │   │   │   │   │   ┌─token4
     //  { "key" : value , "key" : value }
-    for (let isFirst = true;; isFirst = false) {
+    while (true) {
       const token1 = this.#getNext();
-      if (
-        (isFirst || this.#options.allowTrailingComma) &&
-        token1.type === "EndObject"
-      ) {
+      if (token1.type === "EndObject") {
         return target;
       }
       if (token1.type !== "String") {
@@ -276,6 +254,7 @@ class JSONCParser {
       }
     }
   }
+
   #parseArray(): JsonValue[] {
     const target: JsonValue[] = [];
     //   ┌─token1
@@ -292,12 +271,9 @@ class JSONCParser {
     //      │   │   ┌─────token1
     //      │   │   │   ┌─token2
     //  [ value , value ]
-    for (let isFirst = true;; isFirst = false) {
+    while (true) {
       const token1 = this.#getNext();
-      if (
-        (isFirst || this.#options.allowTrailingComma) &&
-        token1.type === "EndArray"
-      ) {
+      if (token1.type === "EndArray") {
         return target;
       }
       target.push(this.#parseJsonValue(token1));
@@ -311,6 +287,7 @@ class JSONCParser {
       }
     }
   }
+
   #parseString(value: {
     type: "String";
     sourceText: string;
@@ -328,6 +305,7 @@ class JSONCParser {
     }
     return parsed;
   }
+
   #parseNullOrTrueOrFalseOrNumber(value: {
     type: "NullOrTrueOrFalseOrNumber";
     sourceText: string;
@@ -384,8 +362,6 @@ function buildErrorMessage({ type, sourceText, position }: Token): string {
         ? `${sourceText.slice(0, 30)}...`
         : sourceText;
       break;
-    default:
-      throw new Error("unreachable");
   }
   return `Unexpected token ${token} in JSONC at position ${position}`;
 }

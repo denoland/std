@@ -17,7 +17,7 @@
  * @example Basic usage
  * ```ts
  * import { copy } from "@std/bytes/copy";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const src = new Uint8Array([9, 8, 7]);
  * const dst = new Uint8Array([0, 1, 2, 3, 4, 5]);
@@ -29,7 +29,7 @@
  * @example Copy with offset
  * ```ts
  * import { copy } from "@std/bytes/copy";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const src = new Uint8Array([1, 1, 1, 1]);
  * const dst = new Uint8Array([0, 0, 0, 0]);

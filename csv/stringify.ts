@@ -104,9 +104,11 @@ export type StringifyOptions = {
    */
   separator?: string;
   /**
-   * a list of instructions for how to target and transform the data for each
+   * A list of instructions for how to target and transform the data for each
    * column of output. This is also where you can provide an explicit header
    * name for the column.
+   *
+   * @default {[]}
    */
   columns?: Column[];
   /**
@@ -218,7 +220,9 @@ function getValuesFromItem(
       let value: unknown = item;
 
       for (const prop of column.prop) {
-        if (typeof value !== "object" || value === null) continue;
+        if (typeof value !== "object" || value === null) {
+          continue;
+        }
         if (Array.isArray(value)) {
           if (typeof prop === "number") value = value[prop];
           else {
@@ -256,7 +260,7 @@ function getValuesFromItem(
  *   Column,
  *   stringify,
  * } from "@std/csv/stringify";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * type Character = {
  *   age: number;
@@ -293,13 +297,16 @@ function getValuesFromItem(
  *
  * @param data The source data to stringify. It's an array of items which are
  * plain objects or arrays.
+ * @param options Options for the stringification.
  * @returns A CSV string.
  */
 export function stringify(
   data: DataItem[],
-  { headers = true, separator: sep = ",", columns = [], bom = false }:
-    StringifyOptions = {},
+  options?: StringifyOptions,
 ): string {
+  const { headers = true, separator: sep = ",", columns = [], bom = false } =
+    options ?? {};
+
   if (sep.includes(QUOTE) || sep.includes(CRLF)) {
     const message = [
       "Separator cannot include the following strings:",

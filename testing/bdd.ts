@@ -4,7 +4,7 @@
  * A {@link https://en.wikipedia.org/wiki/Behavior-driven_development | BDD} interface
  * to `Deno.test()` API.
  *
- * With the `bdd.ts` module you can write your tests in a familiar format for
+ * With `@std/testing/bdd` module you can write your tests in a familiar format for
  * grouping tests and adding setup/teardown hooks used by other JavaScript testing
  * frameworks like Jasmine, Jest, and Mocha.
  *
@@ -96,12 +96,14 @@
  *
  * class User {
  *   static users: Map<string, User> = new Map();
+ *   name: string;
  *   age?: number;
  *
- *   constructor(public name: string) {
+ *   constructor(name: string) {
  *     if (User.users.has(name)) {
  *       throw new Deno.errors.AlreadyExists(`User ${name} already exists`);
  *     }
+ *     this.name = name;
  *     User.users.set(name, this);
  *   }
  *
@@ -168,12 +170,14 @@
  *
  * class User {
  *   static users: Map<string, User> = new Map();
+ *   name: string;
  *   age?: number;
  *
- *   constructor(public name: string) {
+ *   constructor(name: string) {
  *     if (User.users.has(name)) {
  *       throw new Deno.errors.AlreadyExists(`User ${name} already exists`);
  *     }
+ *     this.name = name;
  *     User.users.set(name, this);
  *   }
  *
@@ -249,12 +253,14 @@
  *
  * class User {
  *   static users: Map<string, User> = new Map();
+ *   name: string;
  *   age?: number;
  *
- *   constructor(public name: string) {
+ *   constructor(name: string) {
  *     if (User.users.has(name)) {
  *       throw new Deno.errors.AlreadyExists(`User ${name} already exists`);
  *     }
+ *     this.name = name;
  *     User.users.set(name, this);
  *   }
  *
@@ -330,12 +336,14 @@
  *
  * class User {
  *   static users: Map<string, User> = new Map();
+ *   name: string;
  *   age?: number;
  *
- *   constructor(public name: string) {
+ *   constructor(name: string) {
  *     if (User.users.has(name)) {
  *       throw new Deno.errors.AlreadyExists(`User ${name} already exists`);
  *     }
+ *     this.name = name;
  *     User.users.set(name, this);
  *   }
  *
@@ -532,7 +540,25 @@ export interface it {
   skip<T>(...args: ItArgs<T>): void;
 }
 
-/** Registers an individual test case. */
+/**
+ * Registers an individual test case.
+ *
+ * @example Usage
+ * ```ts
+ * import { describe, it } from "@std/testing/bdd";
+ * import { assertEquals } from "@std/assert";
+ *
+ * describe("example", () => {
+ *   it("should pass", () => {
+ *     // test case
+ *     assertEquals(2 + 2, 4);
+ *   });
+ * });
+ * ```
+ *
+ * @typeParam T The self type of the function to implement the test case
+ * @param args The test case
+ */
 export function it<T>(...args: ItArgs<T>) {
   if (TestSuiteInternal.runningCount > 0) {
     throw new Error(
@@ -579,6 +605,27 @@ export function it<T>(...args: ItArgs<T>) {
   }
 }
 
+/**
+ * Only execute this test case.
+ *
+ * @example Usage
+ * ```ts
+ * import { describe, it } from "@std/testing/bdd";
+ * import { assertEquals } from "@std/assert";
+ *
+ * describe("example", () => {
+ *   it("should pass", () => {
+ *     assertEquals(2 + 2, 4);
+ *   });
+ *
+ *   it.only("should pass too", () => {
+ *     assertEquals(3 + 4, 7);
+ *   });
+ * });
+ * ```
+ *
+ * @param args The test case
+ */
 it.only = function itOnly<T>(...args: ItArgs<T>): void {
   const options = itDefinition(...args);
   return it({
@@ -587,6 +634,27 @@ it.only = function itOnly<T>(...args: ItArgs<T>): void {
   });
 };
 
+/**
+ * Ignore this test case.
+ *
+ * @example Usage
+ * ```ts
+ * import { describe, it } from "@std/testing/bdd";
+ * import { assertEquals } from "@std/assert";
+ *
+ * describe("example", () => {
+ *   it("should pass", () => {
+ *     assertEquals(2 + 2, 4);
+ *   });
+ *
+ *   it.ignore("should pass too", () => {
+ *     assertEquals(3 + 4, 7);
+ *   });
+ * });
+ * ```
+ *
+ * @param args The test case
+ */
 it.ignore = function itIgnore<T>(...args: ItArgs<T>): void {
   const options = itDefinition(...args);
   return it({
@@ -595,10 +663,52 @@ it.ignore = function itIgnore<T>(...args: ItArgs<T>): void {
   });
 };
 
-it.skip = it.ignore;
+/** Skip this test case.
+ *
+ * @example Usage
+ * ```ts
+ * import { describe, it } from "@std/testing/bdd";
+ * import { assertEquals } from "@std/assert";
+ *
+ * describe("example", () => {
+ *   it("should pass", () => {
+ *     assertEquals(2 + 2, 4);
+ *   });
+ *
+ *   it.skip("should pass too", () => {
+ *     assertEquals(3 + 4, 7);
+ *   });
+ * });
+ * ```
+ *
+ * @param args The test case
+ */
+it.skip = function itSkip<T>(...args: ItArgs<T>): void {
+  it.ignore(...args);
+};
 
-/** Alias of {@linkcode it} */
-export const test = it;
+/**
+ * Alias of {@linkcode it}
+ *
+ * Registers an individual test case.
+ *
+ * @example Usage
+ * ```ts
+ * import { test } from "@std/testing/bdd";
+ * import { assertEquals } from "@std/assert";
+ *
+ * test("a test case", () => {
+ *   // test case
+ *   assertEquals(2 + 2, 4);
+ * });
+ * ```
+ *
+ * @typeParam T The self type of the function to implement the test case
+ * @param args The test case
+ */
+export function test<T>(...args: ItArgs<T>) {
+  it(...args);
+}
 
 function addHook<T>(
   name: HookNames,
@@ -619,34 +729,178 @@ function addHook<T>(
   }
 }
 
-/** Run some shared setup before all of the tests in the suite. */
+/**
+ * Run some shared setup before all of the tests in the suite.
+ *
+ * @example Usage
+ * ```ts
+ * import { describe, it, beforeAll } from "@std/testing/bdd";
+ * import { assertEquals } from "@std/assert";
+ *
+ * beforeAll(() => {
+ *  console.log("beforeAll");
+ * });
+ *
+ * describe("example", () => {
+ *   it("should pass", () => {
+ *     // test case
+ *     assertEquals(2 + 2, 4);
+ *   });
+ * });
+ * ```
+ *
+ * @typeParam T The self type of the function
+ * @param fn The function to implement the setup behavior.
+ */
 export function beforeAll<T>(
   fn: (this: T) => void | Promise<void>,
 ) {
   addHook("beforeAll", fn);
 }
 
-/** Alias of {@linkcode beforeAll} */
-export const before = beforeAll;
+/**
+ * Alias of {@linkcode beforeAll}
+ *
+ * Run some shared setup before all of the tests in the suite.
+ *
+ * @example Usage
+ * ```ts
+ * import { describe, it, before } from "@std/testing/bdd";
+ * import { assertEquals } from "@std/assert";
+ *
+ * before(() => {
+ *  console.log("before");
+ * });
+ *
+ * describe("example", () => {
+ *   it("should pass", () => {
+ *     // test case
+ *     assertEquals(2 + 2, 4);
+ *   });
+ * });
+ * ```
+ *
+ * @typeParam T The self type of the function
+ * @param fn The function to implement the setup behavior.
+ */
+export function before<T>(
+  fn: (this: T) => void | Promise<void>,
+) {
+  beforeAll(fn);
+}
 
-/** Run some shared teardown after all of the tests in the suite. */
+/**
+ * Run some shared teardown after all of the tests in the suite.
+ *
+ * @example Usage
+ * ```ts
+ * import { describe, it, afterAll } from "@std/testing/bdd";
+ * import { assertEquals } from "@std/assert";
+ *
+ * afterAll(() => {
+ *  console.log("afterAll");
+ * });
+ *
+ * describe("example", () => {
+ *   it("should pass", () => {
+ *     // test case
+ *     assertEquals(2 + 2, 4);
+ *   });
+ * });
+ * ```
+ *
+ * @typeParam T The self type of the function
+ * @param fn The function to implement the teardown behavior.
+ */
 export function afterAll<T>(
   fn: (this: T) => void | Promise<void>,
 ) {
   addHook("afterAll", fn);
 }
 
-/** Alias of {@linkcode afterAll} */
-export const after = afterAll;
+/**
+ * Alias of {@linkcode afterAll}.
+ *
+ * Run some shared teardown after all of the tests in the suite.
+ *
+ * @example Usage
+ * ```ts
+ * import { describe, it, after } from "@std/testing/bdd";
+ * import { assertEquals } from "@std/assert";
+ *
+ * after(() => {
+ *  console.log("after");
+ * });
+ *
+ * describe("example", () => {
+ *   it("should pass", () => {
+ *     // test case
+ *     assertEquals(2 + 2, 4);
+ *   });
+ * });
+ * ```
+ *
+ * @typeParam T The self type of the function
+ * @param fn The function to implement the teardown behavior.
+ */
+export function after<T>(
+  fn: (this: T) => void | Promise<void>,
+) {
+  afterAll(fn);
+}
 
-/** Run some shared setup before each test in the suite. */
+/**
+ * Run some shared setup before each test in the suite.
+ *
+ * @example Usage
+ * ```ts
+ * import { describe, it, beforeEach } from "@std/testing/bdd";
+ * import { assertEquals } from "@std/assert";
+ *
+ * beforeEach(() => {
+ *  console.log("beforeEach");
+ * });
+ *
+ * describe("example", () => {
+ *   it("should pass", () => {
+ *     // test case
+ *     assertEquals(2 + 2, 4);
+ *   });
+ * });
+ * ```
+ *
+ * @typeParam T The self type of the function
+ * @param fn The function to implement the shared setup behavior
+ */
 export function beforeEach<T>(
   fn: (this: T) => void | Promise<void>,
 ) {
   addHook("beforeEach", fn);
 }
 
-/** Run some shared teardown after each test in the suite. */
+/**
+ * Run some shared teardown after each test in the suite.
+ *
+ * @example Usage
+ * ```ts
+ * import { describe, it, afterEach } from "@std/testing/bdd";
+ * import { assertEquals } from "@std/assert";
+ *
+ * afterEach(() => {
+ *  console.log("afterEach");
+ * });
+ *
+ * describe("example", () => {
+ *   it("should pass", () => {
+ *     // test case
+ *     assertEquals(2 + 2, 4);
+ *   });
+ * });
+ * ```
+ *
+ * @typeParam T The self type of the function
+ * @param fn The function to implement the shared teardown behavior
+ */
 export function afterEach<T>(
   fn: (this: T) => void | Promise<void>,
 ) {
@@ -791,7 +1045,26 @@ export interface describe {
   skip<T>(...args: ItArgs<T>): void;
 }
 
-/** Registers a test suite. */
+/**
+ * Registers a test suite.
+ *
+ * @example Usage
+ * ```ts
+ * import { describe, it } from "@std/testing/bdd";
+ * import { assertEquals } from "@std/assert";
+ *
+ * describe("example", () => {
+ *   it("should pass", () => {
+ *     // test case
+ *     assertEquals(2 + 2, 4);
+ *   });
+ * });
+ * ```
+ *
+ * @typeParam T The self type of the test suite body.
+ * @param args The test suite body.
+ * @returns The test suite
+ */
 export function describe<T>(
   ...args: DescribeArgs<T>
 ): TestSuite<T> {
@@ -806,6 +1079,30 @@ export function describe<T>(
   return { symbol };
 }
 
+/**
+ * Only execute this test suite.
+ *
+ * @example Usage
+ * ```ts
+ * import { describe, it, beforeAll } from "@std/testing/bdd";
+ * import { assertEquals } from "@std/assert";
+ *
+ * describe("example", () => {
+ *   it("should pass", () => {
+ *     assertEquals(2 + 2, 4);
+ *   });
+ * });
+ *
+ * // Only this test suite will run
+ * describe.only("example 2", () => {
+ *   it("should pass too", () => {
+ *     assertEquals(3 + 4, 7);
+ *   });
+ * });
+ * ```
+ *
+ * @param args The test suite body
+ */
 describe.only = function describeOnly<T>(
   ...args: DescribeArgs<T>
 ): TestSuite<T> {
@@ -816,6 +1113,29 @@ describe.only = function describeOnly<T>(
   });
 };
 
+/**
+ * Ignore the test suite.
+ *
+ * @example Usage
+ * ```ts
+ * import { describe, it, beforeAll } from "@std/testing/bdd";
+ * import { assertEquals } from "@std/assert";
+ *
+ * describe("example", () => {
+ *   it("should pass", () => {
+ *     assertEquals(2 + 2, 4);
+ *   });
+ * });
+ *
+ * describe.ignore("example 2", () => {
+ *   it("should pass too", () => {
+ *     assertEquals(3 + 4, 7);
+ *   });
+ * });
+ * ```
+ *
+ * @param args The test suite body
+ */
 describe.ignore = function describeIgnore<T>(
   ...args: DescribeArgs<T>
 ): TestSuite<T> {
@@ -826,4 +1146,31 @@ describe.ignore = function describeIgnore<T>(
   });
 };
 
-describe.skip = describe.ignore;
+/**
+ * Skip the test suite.
+ *
+ * @example Usage
+ * ```ts
+ * import { describe, it, beforeAll } from "@std/testing/bdd";
+ * import { assertEquals } from "@std/assert";
+ *
+ * describe("example", () => {
+ *   it("should pass", () => {
+ *     assertEquals(2 + 2, 4);
+ *   });
+ * });
+ *
+ * describe.skip("example 2", () => {
+ *   it("should pass too", () => {
+ *     assertEquals(3 + 4, 7);
+ *   });
+ * });
+ * ```
+ *
+ * @param args The test suite body
+ */
+describe.skip = function describeSkip<T>(
+  ...args: DescribeArgs<T>
+): TestSuite<T> {
+  return describe.ignore(...args);
+};

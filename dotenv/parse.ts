@@ -57,21 +57,25 @@ function expand(str: string, variablesMap: { [key: string]: string }): string {
 /**
  * Parse `.env` file output in an object.
  *
- * @example
+ * @example Usage
  * ```ts
  * import { parse } from "@std/dotenv/parse";
+ * import { assertEquals } from "@std/assert";
  *
  * const env = parse("GREETING=hello world");
- * env.GREETING; // "hello world"
+ * assertEquals(env, { GREETING: "hello world" });
  * ```
+ *
+ * @param text The text to parse.
+ * @returns The parsed object.
  */
-export function parse(rawDotenv: string): Record<string, string> {
+export function parse(text: string): Record<string, string> {
   const env: Record<string, string> = {};
 
   let match;
   const keysForExpandCheck = [];
 
-  while ((match = RE_KEY_VALUE.exec(rawDotenv)) !== null) {
+  while ((match = RE_KEY_VALUE.exec(text)) !== null) {
     const { key, interpolated, notInterpolated, unquoted } = match
       ?.groups as LineParseResult;
 
