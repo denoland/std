@@ -140,66 +140,64 @@ function failure(): Failure {
   };
 }
 
-export const Utils = {
-  unflat(
-    keys: string[],
-    values: unknown = {},
-    cObj?: unknown,
-  ): Record<string, unknown> {
-    const out: Record<string, unknown> = {};
-    if (keys.length === 0) {
-      return cObj as Record<string, unknown>;
-    } else {
-      if (!cObj) {
-        cObj = values;
-      }
-      const key: string | undefined = keys[keys.length - 1];
-      if (typeof key === "string") {
-        out[key] = cObj;
-      }
-      return this.unflat(keys.slice(0, -1), values, out);
+export function unflat(
+  keys: string[],
+  values: unknown = {},
+  cObj?: unknown,
+): Record<string, unknown> {
+  const out: Record<string, unknown> = {};
+  if (keys.length === 0) {
+    return cObj as Record<string, unknown>;
+  } else {
+    if (!cObj) {
+      cObj = values;
     }
-  },
-  deepAssignWithTable(target: Record<string, unknown>, table: {
-    type: "Table" | "TableArray";
-    key: string[];
-    value: Record<string, unknown>;
-  }) {
-    if (table.key.length === 0 || table.key[0] == null) {
-      throw new Error("Unexpected key length");
+    const key: string | undefined = keys[keys.length - 1];
+    if (typeof key === "string") {
+      out[key] = cObj;
     }
-    const value = target[table.key[0]];
+    return unflat(keys.slice(0, -1), values, out);
+  }
+}
+export function deepAssignWithTable(target: Record<string, unknown>, table: {
+  type: "Table" | "TableArray";
+  key: string[];
+  value: Record<string, unknown>;
+}) {
+  if (table.key.length === 0 || table.key[0] == null) {
+    throw new Error("Unexpected key length");
+  }
+  const value = target[table.key[0]];
 
-    if (typeof value === "undefined") {
-      Object.assign(
-        target,
-        this.unflat(
-          table.key,
-          table.type === "Table" ? table.value : [table.value],
-        ),
-      );
-    } else if (Array.isArray(value)) {
-      if (table.type === "TableArray" && table.key.length === 1) {
-        value.push(table.value);
-      } else {
-        const last = value[value.length - 1];
-        Utils.deepAssignWithTable(last, {
-          type: table.type,
-          key: table.key.slice(1),
-          value: table.value,
-        });
-      }
-    } else if (typeof value === "object" && value !== null) {
-      Utils.deepAssignWithTable(value as Record<string, unknown>, {
+  if (typeof value === "undefined") {
+    Object.assign(
+      target,
+      unflat(
+        table.key,
+        table.type === "Table" ? table.value : [table.value],
+      ),
+    );
+  } else if (Array.isArray(value)) {
+    if (table.type === "TableArray" && table.key.length === 1) {
+      value.push(table.value);
+    } else {
+      const last = value[value.length - 1];
+      deepAssignWithTable(last, {
         type: table.type,
         key: table.key.slice(1),
         value: table.value,
       });
-    } else {
-      throw new Error("Unexpected assign");
     }
-  },
-};
+  } else if (typeof value === "object" && value !== null) {
+    deepAssignWithTable(value as Record<string, unknown>, {
+      type: table.type,
+      key: table.key.slice(1),
+      value: table.value,
+    });
+  } else {
+    throw new Error("Unexpected assign");
+  }
+}
 
 // ---------------------------------
 // Parser combinators and generators
@@ -264,7 +262,7 @@ function kv<T>(
         `Value of key/value pair is invalid data format`,
       );
     }
-    return success(Utils.unflat(key.body, value.body));
+    return success(unflat(key.body, value.body));
   };
 }
 
@@ -850,11 +848,11 @@ export function toml(
         break;
       }
       case "Table": {
-        Utils.deepAssignWithTable(body, block);
+        deepAssignWithTable(body, block);
         break;
       }
       case "TableArray": {
-        Utils.deepAssignWithTable(body, block);
+        deepAssignWithTable(body, block);
         break;
       }
     }
