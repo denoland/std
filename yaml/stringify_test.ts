@@ -266,3 +266,23 @@ Deno.test({
     );
   },
 });
+
+Deno.test({
+  name: "stringify() uses block scalar style for multiline strings",
+  fn() {
+    assertEquals(
+      stringify("foo\nbar"),
+      `|-
+  foo
+  bar
+`,
+    );
+    assertEquals(
+      stringify("foo  \nbar  "),
+      `|-
+  foo \x20
+  bar \x20
+`,
+    );
+  },
+});
