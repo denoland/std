@@ -349,19 +349,17 @@ function character(str: string) {
 // Parser components
 // -----------------------
 
-const Patterns = {
-  BARE_KEY: /[A-Za-z0-9_-]/,
-  FLOAT: /[0-9_\.e+\-]/i,
-  END_OF_VALUE: /[ \t\r\n#,}\]]/,
-};
+const BARE_KEY_REGEXP = /[A-Za-z0-9_-]/;
+const FLOAT_REGEXP = /[0-9_\.e+\-]/i;
+const END_OF_VALUE_REGEXP = /[ \t\r\n#,}\]]/;
 
 export function bareKey(scanner: Scanner): ParseResult<string> {
   scanner.nextUntilChar({ inline: true });
-  if (!scanner.char() || !Patterns.BARE_KEY.test(scanner.char())) {
+  if (!scanner.char() || !BARE_KEY_REGEXP.test(scanner.char())) {
     return failure();
   }
   const acc: string[] = [];
-  while (scanner.char() && Patterns.BARE_KEY.test(scanner.char())) {
+  while (scanner.char() && BARE_KEY_REGEXP.test(scanner.char())) {
     acc.push(scanner.char());
     scanner.next();
   }
@@ -624,9 +622,9 @@ export function float(scanner: Scanner): ParseResult<number> {
   let position = 0;
   while (
     scanner.char(position) &&
-    !Patterns.END_OF_VALUE.test(scanner.char(position))
+    !END_OF_VALUE_REGEXP.test(scanner.char(position))
   ) {
-    if (!Patterns.FLOAT.test(scanner.char(position))) {
+    if (!FLOAT_REGEXP.test(scanner.char(position))) {
       return failure();
     }
     position++;
@@ -637,7 +635,7 @@ export function float(scanner: Scanner): ParseResult<number> {
     acc.push(scanner.char());
     scanner.next();
   }
-  while (Patterns.FLOAT.test(scanner.char()) && !scanner.eof()) {
+  while (FLOAT_REGEXP.test(scanner.char()) && !scanner.eof()) {
     acc.push(scanner.char());
     scanner.next();
   }
