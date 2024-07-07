@@ -7,7 +7,7 @@ import type { Mark } from "./_mark.ts";
 
 export class YamlError extends Error {
   constructor(message: string, mark?: Mark) {
-    super(`${message} ${mark}`);
+    super(mark ? `${message} ${mark}` : message);
     this.name = this.constructor.name;
   }
 }
