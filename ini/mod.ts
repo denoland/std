@@ -125,6 +125,5 @@
  * @module
  */
 
-export * from "./ini_map.ts";
 export * from "./parse.ts";
 export * from "./stringify.ts";
