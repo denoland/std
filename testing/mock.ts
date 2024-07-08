@@ -368,13 +368,29 @@ export interface SpyCall<
   // deno-lint-ignore no-explicit-any
   Return = any,
 > {
-  /** Arguments passed to a function when called. */
+  /**
+   * Arguments passed to a function when called.
+   *
+   * @default {undefined}
+   */
   args: Args;
-  /** The value that was returned by a function. */
+  /**
+   * The value that was returned by a function.
+   *
+   * @default {undefined}
+   */
   returned?: Return;
-  /** The error value that was thrown by a function. */
+  /**
+   * The error value that was thrown by a function.
+   *
+   * @default {undefined}
+   */
   error?: Error;
-  /** The instance that a method was called on. */
+  /**
+   * The instance that a method was called on.
+   *
+   * @default {undefined}
+   */
   self?: Self;
 }
 
@@ -1224,16 +1240,30 @@ export interface ExpectedSpyCall<
   // deno-lint-ignore no-explicit-any
   Return = any,
 > {
-  /** Arguments passed to a function when called. */
+  /**
+   * Arguments passed to a function when called.
+   *
+   * @default {undefined}
+   */
   args?: [...Args, ...unknown[]];
-  /** The instance that a method was called on. */
+  /**
+   * The instance that a method was called on.
+   *
+   * @default {undefined}
+   */
   self?: Self;
   /**
    * The value that was returned by a function.
    * If you expect a promise to reject, expect error instead.
+   *
+   * @default {undefined}
    */
   returned?: Return;
-  /** The expected thrown error. */
+  /**
+   * The expected thrown error.
+   *
+   * @default {undefined}
+   */
   error?: {
     /** The class for the error that was thrown by a function. */
     // deno-lint-ignore no-explicit-any

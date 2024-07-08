@@ -74,7 +74,11 @@ export interface Cookie {
    * @default {false}
    */
   secure?: boolean;
-  /** The cookie's `HTTPOnly` attribute. If `true`, the cookie cannot be accessed via JavaScript. */
+  /**
+   * The cookie's `HTTPOnly` attribute. If `true`, the cookie cannot be accessed via JavaScript.
+   *
+   * @default {false}
+   */
   httpOnly?: boolean;
   /**
    * The cookie's `Partitioned` attribute.

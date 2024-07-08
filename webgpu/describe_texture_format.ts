@@ -2,7 +2,11 @@
 
 /** Return type for {@linkcode describeTextureFormat}. */
 export interface TextureFormatInfo {
-  /** The specific feature needed to use the format, if any. */
+  /**
+   * The specific feature needed to use the format, if any.
+   *
+   * @default {undefined}
+   */
   requiredFeature?: GPUFeatureName;
   /** Type of sampling that is valid for the texture. */
   sampleType: GPUTextureSampleType;

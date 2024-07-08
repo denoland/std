@@ -37,7 +37,11 @@ export interface FormattingOptions {
 
 /** Options for parsing INI strings. */
 export interface ParseOptions {
-  /** Provide custom parsing of the value in a key/value pair. */
+  /**
+   * Provide custom parsing of the value in a key/value pair.
+   *
+   * @default {undefined}
+   */
   reviver?: ReviverFunction;
 }
 

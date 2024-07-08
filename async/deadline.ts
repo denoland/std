@@ -8,7 +8,11 @@ import { abortable } from "./abortable.ts";
 
 /** Options for {@linkcode deadline}. */
 export interface DeadlineOptions {
-  /** Signal used to abort the deadline. */
+  /**
+   * Signal used to abort the deadline.
+   *
+   * @default {undefined}
+   */
   signal?: AbortSignal;
 }
 

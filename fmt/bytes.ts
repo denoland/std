@@ -35,6 +35,8 @@ export interface FormatOptions {
    * string should be a
    * {@link https://en.wikipedia.org/wiki/IETF_language_tag | BCP 47 language tag}.
    * You can also give the list of language tags.
+   *
+   * @default {undefined}
    */
   locale?: boolean | string | string[];
   /**

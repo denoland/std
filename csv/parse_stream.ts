@@ -51,6 +51,8 @@ export interface CsvParseStreamOptions {
    *
    * If the wrong number of fields is in a row, a {@linkcode ParseError} is
    * thrown.
+   *
+   * @default {undefined}
    */
   fieldsPerRecord?: number;
   /**
@@ -58,9 +60,15 @@ export interface CsvParseStreamOptions {
    * skipped.
    * If you provide `skipFirstRow: true` but not `columns`, the first line will
    * be skipped and used as header definitions.
+   *
+   * @default {false}
    */
   skipFirstRow?: boolean;
-  /** List of names used for header definition. */
+  /**
+   * List of names used for header definition.
+   *
+   * @default {undefined}
+   */
   columns?: readonly string[];
 }
 

@@ -9,7 +9,11 @@ import {
 
 /** Options for constructing INI strings. */
 export interface StringifyOptions extends FormattingOptions {
-  /** Provide custom string conversion for the value in a key/value pair. */
+  /**
+   * Provide custom string conversion for the value in a key/value pair.
+   *
+   * @default {undefined}
+   */
   replacer?: ReplacerFunction;
 }
 
