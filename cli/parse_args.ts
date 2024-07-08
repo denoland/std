@@ -343,8 +343,7 @@ interface NestedMapping {
   [key: string]: NestedMapping | unknown;
 }
 
-function isNumber(x: unknown): boolean {
-  if (typeof x === "number") return true;
+function isNumber(x: string): boolean {
   if (/^0x[0-9a-f]+$/i.test(String(x))) return true;
   return /^[-+]?(?:\d+(?:\.\d*)?|\.\d+)(e[-+]?\d+)?$/.test(String(x));
 }
@@ -448,7 +447,7 @@ const FLAG_REGEXP =
  * @example Usage
  * ```ts
  * import { parseArgs } from "@std/cli/parse-args";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * // For proper use, one should use `parseArgs(Deno.args)`
  * assertEquals(parseArgs(["--foo", "--bar=baz", "./quux.txt"]), {

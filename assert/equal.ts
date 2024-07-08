@@ -19,7 +19,7 @@ function constructorsEqual(a: object, b: object) {
  *
  * @example Usage
  * ```ts
- * import { equal } from "@std/assert/equal";
+ * import { equal } from "@std/assert";
  *
  * equal({ foo: "bar" }, { foo: "bar" }); // Returns `true`
  * equal({ foo: "bar" }, { foo: "baz" }); // Returns `false

@@ -2,16 +2,23 @@
 import { getFileInfoType } from "./_get_file_info_type.ts";
 
 /**
- * Asynchronously ensures that the directory exists. If the directory structure
- * does not exist, it is created. Like `mkdir -p`.
+ * Asynchronously ensures that the directory exists, like
+ * {@linkcode https://www.ibm.com/docs/en/aix/7.3?topic=m-mkdir-command#mkdir__row-d3e133766 | mkdir -p}.
  *
- * Requires the `--allow-read` and `--allow-write` flag.
+ * If the directory already exists, this function does nothing. If the directory
+ * does not exist, it is created.
+ *
+ * Requires `--allow-read` and `--allow-write` permissions.
+ *
+ * @see {@link https://docs.deno.com/runtime/manual/basics/permissions#file-system-access}
+ * for more information on Deno's permissions system.
  *
  * @param dir The path of the directory to ensure, as a string or URL.
+ *
  * @returns A promise that resolves once the directory exists.
  *
- * @example
- * ```ts
+ * @example Usage
+ * ```ts no-eval
  * import { ensureDir } from "@std/fs/ensure-dir";
  *
  * await ensureDir("./bar");
@@ -20,13 +27,7 @@ import { getFileInfoType } from "./_get_file_info_type.ts";
 export async function ensureDir(dir: string | URL) {
   try {
     const fileInfo = await Deno.stat(dir);
-    if (!fileInfo.isDirectory) {
-      throw new Error(
-        `Ensure path exists, expected 'dir', got '${
-          getFileInfoType(fileInfo)
-        }'`,
-      );
-    }
+    throwIfNotDirectory(fileInfo);
     return;
   } catch (err) {
     if (!(err instanceof Deno.errors.NotFound)) {
@@ -44,42 +45,37 @@ export async function ensureDir(dir: string | URL) {
     }
 
     const fileInfo = await Deno.stat(dir);
-    if (!fileInfo.isDirectory) {
-      throw new Error(
-        `Ensure path exists, expected 'dir', got '${
-          getFileInfoType(fileInfo)
-        }'`,
-      );
-    }
+    throwIfNotDirectory(fileInfo);
   }
 }
 
 /**
- * Synchronously ensures that the directory exists. If the directory structure
- * does not exist, it is created. Like `mkdir -p`.
+ * Synchronously ensures that the directory exists, like
+ * {@linkcode https://www.ibm.com/docs/en/aix/7.3?topic=m-mkdir-command#mkdir__row-d3e133766 | mkdir -p}.
  *
- * Requires the `--allow-read` and `--allow-write` flag.
+ * If the directory already exists, this function does nothing. If the directory
+ * does not exist, it is created.
+ *
+ * Requires `--allow-read` and `--allow-write` permissions.
+ *
+ * @see {@link https://docs.deno.com/runtime/manual/basics/permissions#file-system-access}
+ * for more information on Deno's permissions system.
  *
  * @param dir The path of the directory to ensure, as a string or URL.
+ *
  * @returns A void value that returns once the directory exists.
  *
- * @example
- * ```ts
- * import { ensureDir } from "@std/fs/ensure-dir";
+ * @example Usage
+ * ```ts no-eval
+ * import { ensureDirSync } from "@std/fs/ensure-dir";
  *
- * await ensureDir("./bar");
+ * ensureDirSync("./bar");
  * ```
  */
 export function ensureDirSync(dir: string | URL) {
   try {
     const fileInfo = Deno.statSync(dir);
-    if (!fileInfo.isDirectory) {
-      throw new Error(
-        `Ensure path exists, expected 'dir', got '${
-          getFileInfoType(fileInfo)
-        }'`,
-      );
-    }
+    throwIfNotDirectory(fileInfo);
     return;
   } catch (err) {
     if (!(err instanceof Deno.errors.NotFound)) {
@@ -97,12 +93,14 @@ export function ensureDirSync(dir: string | URL) {
     }
 
     const fileInfo = Deno.statSync(dir);
-    if (!fileInfo.isDirectory) {
-      throw new Error(
-        `Ensure path exists, expected 'dir', got '${
-          getFileInfoType(fileInfo)
-        }'`,
-      );
-    }
+    throwIfNotDirectory(fileInfo);
+  }
+}
+
+function throwIfNotDirectory(fileInfo: Deno.FileInfo) {
+  if (!fileInfo.isDirectory) {
+    throw new Error(
+      `Ensure path exists, expected 'dir', got '${getFileInfoType(fileInfo)}'`,
+    );
   }
 }

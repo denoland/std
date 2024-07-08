@@ -9,8 +9,8 @@ export const CRLF = "\r\n" as const;
 /**
  * End-of-line character evaluated for the current platform.
  *
- * @example
- * ```ts
+ * @example Usage
+ * ```ts no-eval
  * import { EOL } from "@std/fs/eol";
  *
  * EOL; // "\n" on POSIX platforms and "\r\n" on Windows
@@ -25,10 +25,11 @@ const regDetect = /(?:\r?\n)/g;
  * character is detected, `null` is returned.
  *
  * @param content The input string to detect EOL characters.
+ *
  * @returns The detected EOL character(s) or `null` if no EOL character is detected.
  *
- * @example
- * ```ts
+ * @example Usage
+ * ```ts no-eval
  * import { detect } from "@std/fs/eol";
  *
  * detect("deno\r\nis not\r\nnode"); // "\r\n"
@@ -52,10 +53,11 @@ export function detect(content: string): typeof EOL | null {
  *
  * @param content The input string to normalize.
  * @param eol The EOL character(s) to normalize the input string to.
+ *
  * @returns The input string normalized to the targeted EOL.
  *
- * @example
- * ```ts
+ * @example Usage
+ * ```ts no-eval
  * import { LF, format } from "@std/fs/eol";
  *
  * const CRLFinput = "deno\r\nis not\r\nnode";

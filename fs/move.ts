@@ -5,11 +5,36 @@ import { isSamePath } from "./_is_same_path.ts";
 const EXISTS_ERROR = new Deno.errors.AlreadyExists("dest already exists.");
 
 /**
- * Error thrown in {@linkcode move} or {@linkcode moveSync} when the
- * destination is a subdirectory of the source.
+ * Error thrown in {@linkcode move} or {@linkcode moveSync} when the destination
+ * is a subdirectory of the source.
+ *
+ * @example Usage
+ * ```ts no-eval
+ * import { move, SubdirectoryMoveError } from "@std/fs/move";
+ *
+ * try {
+ *   await move("./foo", "./foo/bar");
+ * } catch (error) {
+ *   if (error instanceof SubdirectoryMoveError) {
+ *     console.error(error.message);
+ *   }
+ * }
+ * ```
  */
 export class SubdirectoryMoveError extends Error {
-  /** Constructs a new instance. */
+  /**
+   * Constructs a new instance.
+   *
+   * @param src The source file or directory as a string or URL.
+   * @param dest The destination file or directory as a string or URL.
+   *
+   * @example Usage
+   * ```ts no-eval
+   * import { SubdirectoryMoveError } from "@std/fs/move";
+   *
+   * throw new SubdirectoryMoveError("./foo", "./foo/bar");
+   * ```
+   */
   constructor(src: string | URL, dest: string | URL) {
     super(
       `Cannot move '${src}' to a subdirectory of itself, '${dest}'.`,
@@ -29,15 +54,24 @@ export interface MoveOptions {
 }
 
 /**
- * Asynchronously moves a file or directory.
+ * Asynchronously moves a file or directory (along with its contents).
+ *
+ * If `src` is a sub-directory of `dest`, a {@linkcode SubdirectoryMoveError}
+ * will be thrown.
+ *
+ * Requires `--allow-read` and `--allow-write` permissions.
+ *
+ * @see {@link https://docs.deno.com/runtime/manual/basics/permissions#file-system-access}
+ * for more information on Deno's permissions system.
  *
  * @param src The source file or directory as a string or URL.
  * @param dest The destination file or directory as a string or URL.
  * @param options Options for the move operation.
+ *
  * @returns A void promise that resolves once the operation completes.
  *
  * @example Basic usage
- * ```ts
+ * ```ts no-eval
  * import { move } from "@std/fs/move";
  *
  * await move("./foo", "./bar");
@@ -47,7 +81,7 @@ export interface MoveOptions {
  * overwriting.
  *
  * @example Overwriting
- * ```ts
+ * ```ts no-eval
  * import { move } from "@std/fs/move";
  *
  * await move("./foo", "./bar", { overwrite: true });
@@ -92,15 +126,24 @@ export async function move(
 }
 
 /**
- * Synchronously moves a file or directory.
+ * Synchronously moves a file or directory (along with its contents).
+ *
+ * If `src` is a sub-directory of `dest`, a {@linkcode SubdirectoryMoveError}
+ * will be thrown.
+ *
+ * Requires `--allow-read` and `--allow-write` permissions.
+ *
+ * @see {@link https://docs.deno.com/runtime/manual/basics/permissions#file-system-access}
+ * for more information on Deno's permissions system.
  *
  * @param src The source file or directory as a string or URL.
  * @param dest The destination file or directory as a string or URL.
  * @param options Options for the move operation.
+ *
  * @returns A void value that returns once the operation completes.
  *
  * @example Basic usage
- * ```ts
+ * ```ts no-eval
  * import { moveSync } from "@std/fs/move";
  *
  * moveSync("./foo", "./bar");
@@ -110,7 +153,7 @@ export async function move(
  * overwriting.
  *
  * @example Overwriting
- * ```ts
+ * ```ts no-eval
  * import { moveSync } from "@std/fs/move";
  *
  * moveSync("./foo", "./bar", { overwrite: true });

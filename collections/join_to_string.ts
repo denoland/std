@@ -56,7 +56,7 @@ export type JoinToStringOptions = {
  * @example Usage with options
  * ```ts
  * import { joinToString } from "@std/collections/join-to-string";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const users = [
  *   { name: "Kim" },

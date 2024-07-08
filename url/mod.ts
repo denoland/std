@@ -7,7 +7,7 @@
  *
  * ```ts
  * import { basename, join, normalize } from "@std/url";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const url = new URL("https:///deno.land///std//assert//.//mod.ts");
  * const normalizedUrl = normalize(url);
