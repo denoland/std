@@ -424,7 +424,7 @@ function assertModuleDoc(document: DocNodeWithJsDoc<DocNodeModuleDoc>) {
  * Ensures an interface document:
  * - Has `@default` tags for all optional properties.
  */
-function assertInterfaceDocs(document: DocNodeWithJsDoc<DocNodeInterface>) {
+function assertHasDefaultTags(document: DocNodeWithJsDoc<DocNodeInterface>) {
   for (const prop of document.interfaceDef.properties) {
     if (!prop.optional) continue;
     if (!prop.jsDoc?.tags?.find((tag) => tag.kind === "default")) {
@@ -436,6 +436,10 @@ function assertInterfaceDocs(document: DocNodeWithJsDoc<DocNodeInterface>) {
       );
     }
   }
+}
+
+function assertInterfaceDocs(document: DocNodeWithJsDoc<DocNodeInterface>) {
+  assertHasDefaultTags(document);
 }
 
 function resolve(specifier: string, referrer: string): string {
