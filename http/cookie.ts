@@ -273,7 +273,8 @@ export function setCookie(headers: Headers, cookie: Cookie) {
 /**
  * Set the cookie header with empty value in the headers to delete it.
  *
- * The attributes (path, domain, secure, httpOnly, partitioned) need to match the values when the cookie was set.
+ * The attributes (`path`, `domain`, `secure`, `httpOnly`, `partitioned`) need
+ * to match the values when the cookie was set.
  *
  * > Note: Deleting a `Cookie` will set its expiration date before now. Forcing
  * > the browser to delete it.
@@ -298,13 +299,7 @@ export function setCookie(headers: Headers, cookie: Cookie) {
 export function deleteCookie(
   headers: Headers,
   name: string,
-  attributes?: {
-    path?: string;
-    domain?: string;
-    secure?: boolean;
-    httpOnly?: boolean;
-    partitioned?: boolean;
-  },
+  attributes?: Omit<Cookie, "name" | "value">,
 ) {
   setCookie(headers, {
     name: name,
