@@ -4,6 +4,9 @@ import { ulid } from 'ulid'
 import { JSONSchemaType } from './web-client.ajv.ts'
 import type { Backchat } from './web-client-backchat.ts'
 import { assert } from '@sindresorhus/is'
+import type OpenAI from 'openai'
+
+type CommitOid = string
 
 export { Backchat }
 export enum PROCTYPE {
@@ -81,7 +84,7 @@ export type IoStruct = {
   requests: { [key: number]: Request }
   replies: { [key: number]: Outcome }
   /** If a reply is a merge reply, the commit that carried it is stored here */
-  parents: { [key: number]: Commit }
+  parents: { [key: number]: CommitOid }
   /**
    * If a request generates child requests, they are tracked here.  The commit
    * in each entry is the commit that caused the child requests to be generated.
@@ -89,7 +92,7 @@ export type IoStruct = {
    * replay.
    */
   pendings: {
-    [key: number]: { commit: Commit; sequences: number[] }[]
+    [key: number]: { commit: CommitOid; sequences: number[] }[]
   }
   /** Active branches are stored here.  A branch is a daemon if it is listed
    * here but its request has been replied to or it is gone from the requests
@@ -99,6 +102,7 @@ export type IoStruct = {
   }
 }
 type BranchName = string
+
 export type DispatchFunctions = {
   [key: string]: (
     params?: Params,
@@ -119,17 +123,31 @@ export const ENTRY_BRANCH = 'main'
 
 export type PartialPID = Omit<PID, 'repoId'>
 
-export type AgentConfig = {
-  model?: 'gpt-3.5-turbo' | 'gpt-4-turbo' | 'gpt-4o'
-  temperature?: number
-  presencePenalty?: number
+export type Thread = {
+  /** Where exactly did this agent come from */
+  source: Triad
+  agent: Agent
+  messages: OpenAI.ChatCompletionMessageParam[]
+  toolCommits: { [toolCallId: string]: CommitOid }
+}
+export type BackchatThread = Thread & {
+  focus: string
 }
 export type Agent = {
   description?: string
-  config?: AgentConfig
+  config?: {
+    model?: 'gpt-3.5-turbo' | 'gpt-4-turbo' | 'gpt-4o'
+    temperature?: number
+    presencePenalty?: number
+  }
   runner: AGENT_RUNNERS
   commands?: string[]
   instructions: string
+}
+export type Triad = {
+  path: string
+  pid: PID
+  commit: CommitOid
 }
 export type PierceRequest = Invocation & {
   target: PID
@@ -550,12 +568,9 @@ export const isPidEqual = (pid1: PID, pid2: PID) => {
   }
   return true
 }
-// TODO merge these two files into the same json file with different keys
-export const SESSION_PATH = 'session.json'
-export const SESSION_BRANCHES = 'session-branches.json'
 export const META_SYMBOL = Symbol.for('settling commit')
 export type Meta = {
-  parent?: Commit
+  parent?: CommitOid
 }
 export const withMeta = async (promise: MetaPromise) => {
   const result = await promise
@@ -571,8 +586,6 @@ export const withMeta = async (promise: MetaPromise) => {
 }
 export const sha1 = /^[0-9a-f]{40}$/i
 export type MetaPromise = Promise<unknown> & { [META_SYMBOL]?: Meta }
-type Commit = string
-export type BranchMap = { [toolCallId: string]: Commit }
 
 export const addBranches = (pid: PID, ...children: string[]) => {
   const next = { ...pid, branches: [...pid.branches, ...children] }

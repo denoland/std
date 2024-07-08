@@ -4,9 +4,10 @@ import {
   SESSION_BRANCHES,
   SESSION_PATH,
 } from '@/constants.ts'
-import { assert } from '@std/assert'
+import { assert } from '@utils'
 import OpenAI from 'openai'
 type Messages = OpenAI.ChatCompletionMessageParam
+
 export const rm = (api: IsolateApi) => {
   api.delete(SESSION_PATH)
   api.delete(SESSION_BRANCHES)

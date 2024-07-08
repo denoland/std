@@ -166,9 +166,14 @@ export default class IsolateApi<T extends object = Default> {
     log('write', path)
     this.#fs.write(path, content)
   }
-  readJSON<T>(path: string): Promise<T> {
+  async readJSON<T>(path: string, fallback?: T): Promise<T> {
     assert(this.#accumulator.isActive, 'Activity is denied')
-    log('readJSON', path)
+    log('readJSON', path, fallback)
+    if (fallback !== undefined) {
+      if (!await this.#fs.exists(path)) {
+        return fallback
+      }
+    }
     return this.#fs.readJSON<T>(path)
   }
   read(path: string) {
@@ -231,7 +236,7 @@ export default class IsolateApi<T extends object = Default> {
     // TODO push a self responding action to the accumulator for repeatability
     return this.#fs.isPidExists(pid)
   }
-  overwrite(commit: string, ...excludes: string[]) {
+  merge(commit: string, ...excludes: string[]) {
     assert(this.#accumulator.isParent(commit), 'Parent is not in scope')
     log('overwrite', commit, excludes)
     return this.#fs.overwrite(commit, ...excludes)
