@@ -1,7 +1,6 @@
 ---
 commands:
-  - load-help:load
-  - engage-help:engage
+  - engage-agent:engage
   - files:ls
   - files:write
   - files:read
