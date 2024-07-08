@@ -13,6 +13,8 @@ export interface StringifyOptions extends FormattingOptions {
   replacer?: ReplacerFunction;
 }
 
+export type { FormattingOptions, ReplacerFunction };
+
 /**
  * Compile an object into an INI config string. Provide formatting options to modify the output.
  *
