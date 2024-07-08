@@ -5,7 +5,7 @@ import {
   type FormattingOptions,
   IniMap,
   type ReplacerFunction,
-} from "./ini_map.ts";
+} from "./_ini_map.ts";
 
 /** Options for constructing INI strings. */
 export interface StringifyOptions extends FormattingOptions {
