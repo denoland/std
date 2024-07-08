@@ -12,6 +12,7 @@ import {
   type ReadOptions,
   type RecordWithColumn,
 } from "./_io.ts";
+import { graphemeLength } from "./_shared.ts";
 
 export { ParseError, type ParseResult, type RecordWithColumn };
 
@@ -73,33 +74,26 @@ class Parser {
     return this.#cursor >= this.#input.length;
   }
   #parseRecord(startLine: number): string[] | null {
-    let line = this.#readLine();
-    if (line === null) return null;
-    if (line.length === 0) {
+    let fullLine = this.#readLine();
+    if (fullLine === null) return null;
+    if (fullLine.length === 0) {
       return [];
-    }
-
-    function runeCount(s: string): number {
-      // Array.from considers the surrogate pair.
-      return Array.from(s).length;
     }
 
     let lineIndex = startLine + 1;
 
     // line starting with comment character is ignored
-    if (this.#options.comment && line[0] === this.#options.comment) {
+    if (this.#options.comment && fullLine[0] === this.#options.comment) {
       return [];
     }
 
-    let fullLine = line;
-    let quoteError: ParseError | null = null;
+    let line = fullLine;
     const quote = '"';
     const quoteLen = quote.length;
     const separatorLen = this.#options.separator.length;
     let recordBuffer = "";
     const fieldIndexes = [] as number[];
-    parseField:
-    for (;;) {
+    parseField: while (true) {
       if (this.#options.trimLeadingSpace) {
         line = line.trimStart();
       }
@@ -115,16 +109,10 @@ class Parser {
         if (!this.#options.lazyQuotes) {
           const j = field.indexOf(quote);
           if (j >= 0) {
-            const col = runeCount(
+            const col = graphemeLength(
               fullLine.slice(0, fullLine.length - line.slice(j).length),
             );
-            quoteError = new ParseError(
-              startLine + 1,
-              lineIndex,
-              col,
-              ERR_BARE_QUOTE,
-            );
-            break parseField;
+            throw new ParseError(startLine + 1, lineIndex, col, ERR_BARE_QUOTE);
           }
         }
         recordBuffer += field;
@@ -137,7 +125,7 @@ class Parser {
       } else {
         // Quoted string field
         line = line.substring(quoteLen);
-        for (;;) {
+        while (true) {
           const i = line.indexOf(quote);
           if (i >= 0) {
             // Hit next quote.
@@ -161,16 +149,10 @@ class Parser {
               recordBuffer += quote;
             } else {
               // `"*` sequence (invalid non-escaped quote).
-              const col = runeCount(
+              const col = graphemeLength(
                 fullLine.slice(0, fullLine.length - line.length - quoteLen),
               );
-              quoteError = new ParseError(
-                startLine + 1,
-                lineIndex,
-                col,
-                ERR_QUOTE,
-              );
-              break parseField;
+              throw new ParseError(startLine + 1, lineIndex, col, ERR_QUOTE);
             }
           } else if (line.length > 0 || !(this.#isEOF())) {
             // Hit end of line (copy all data so far).
@@ -182,14 +164,8 @@ class Parser {
             if (r === null) {
               // Abrupt end of file (EOF or error).
               if (!this.#options.lazyQuotes) {
-                const col = runeCount(fullLine);
-                quoteError = new ParseError(
-                  startLine + 1,
-                  lineIndex,
-                  col,
-                  ERR_QUOTE,
-                );
-                break parseField;
+                const col = graphemeLength(fullLine);
+                throw new ParseError(startLine + 1, lineIndex, col, ERR_QUOTE);
               }
               fieldIndexes.push(recordBuffer.length);
               break parseField;
@@ -198,23 +174,14 @@ class Parser {
           } else {
             // Abrupt end of file (EOF on error).
             if (!this.#options.lazyQuotes) {
-              const col = runeCount(fullLine);
-              quoteError = new ParseError(
-                startLine + 1,
-                lineIndex,
-                col,
-                ERR_QUOTE,
-              );
-              break parseField;
+              const col = graphemeLength(fullLine);
+              throw new ParseError(startLine + 1, lineIndex, col, ERR_QUOTE);
             }
             fieldIndexes.push(recordBuffer.length);
             break parseField;
           }
         }
       }
-    }
-    if (quoteError) {
-      throw quoteError;
     }
     const result = [] as string[];
     let preIdx = 0;
@@ -245,7 +212,7 @@ class Parser {
       throw new Error(ERR_INVALID_DELIM);
     }
 
-    for (;;) {
+    while (true) {
       const r = this.#parseRecord(lineIndex);
       if (r === null) break;
       lineResult = r;
@@ -365,35 +332,35 @@ export function parse(input: string): string[][];
  *
  * @typeParam T The options' type for parsing.
  * @param input The input to parse.
- * @param opt The options for parsing.
- * @returns If you don't provide `opt.skipFirstRow` and `opt.columns`, it returns `string[][]`.
- *   If you provide `opt.skipFirstRow` or `opt.columns`, it returns `Record<string, unknown>[]`.
+ * @param options The options for parsing.
+ * @returns If you don't provide `options.skipFirstRow` and `options.columns`, it returns `string[][]`.
+ *   If you provide `options.skipFirstRow` or `options.columns`, it returns `Record<string, unknown>[]`.
  */
 export function parse<const T extends ParseOptions>(
   input: string,
-  opt: T,
+  options: T,
 ): ParseResult<ParseOptions, T>;
 export function parse<const T extends ParseOptions>(
   input: string,
-  opt: T = { skipFirstRow: false } as T,
+  options: T = { skipFirstRow: false } as T,
 ): ParseResult<ParseOptions, T> {
-  const parser = new Parser(opt);
+  const parser = new Parser(options);
   const r = parser.parse(input);
 
-  if (opt.skipFirstRow || opt.columns) {
+  if (options.skipFirstRow || options.columns) {
     let headers: readonly string[] = [];
 
-    if (opt.skipFirstRow) {
+    if (options.skipFirstRow) {
       const head = r.shift();
       if (head === undefined) throw new TypeError("Headers must be defined");
       headers = head;
     }
 
-    if (opt.columns) {
-      headers = opt.columns;
+    if (options.columns) {
+      headers = options.columns;
     }
 
-    const firstLineIndex = opt.skipFirstRow ? 1 : 0;
+    const firstLineIndex = options.skipFirstRow ? 1 : 0;
     return r.map((row, i) => {
       return convertRowToObject(row, headers, firstLineIndex + i);
     }) as ParseResult<ParseOptions, T>;

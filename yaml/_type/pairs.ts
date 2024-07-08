@@ -3,10 +3,8 @@
 // Copyright 2011-2015 by Vitaly Puzrin. All rights reserved. MIT license.
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import { Type } from "../_type.ts";
-import type { Any } from "../_utils.ts";
-
-const _toString = Object.prototype.toString;
+import type { Type } from "../_type.ts";
+import { type Any, getObjectTypeString } from "../_utils.ts";
 
 function resolveYamlPairs(data: Any[][]): boolean {
   if (data === null) return true;
@@ -14,7 +12,9 @@ function resolveYamlPairs(data: Any[][]): boolean {
   const result = Array.from({ length: data.length });
 
   for (const [index, pair] of data.entries()) {
-    if (_toString.call(pair) !== "[object Object]") return false;
+    if (getObjectTypeString(pair) !== "[object Object]") {
+      return false;
+    }
 
     const keys = Object.keys(pair);
 
@@ -42,8 +42,9 @@ function constructYamlPairs(data: string): Any[] {
   return result;
 }
 
-export const pairs = new Type("tag:yaml.org,2002:pairs", {
+export const pairs: Type = {
+  tag: "tag:yaml.org,2002:pairs",
   construct: constructYamlPairs,
   kind: "sequence",
   resolve: resolveYamlPairs,
-});
+};

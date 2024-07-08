@@ -3,7 +3,7 @@
 // Copyright 2011-2015 by Vitaly Puzrin. All rights reserved. MIT license.
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import { type StyleVariant, Type } from "../_type.ts";
+import type { StyleVariant, Type } from "../_type.ts";
 import { type Any, isNegativeZero } from "../_utils.ts";
 
 const YAML_FLOAT_PATTERN = new RegExp(
@@ -109,17 +109,16 @@ function representYamlFloat(object: Any, style?: StyleVariant): Any {
 }
 
 function isFloat(object: Any): boolean {
-  return (
-    Object.prototype.toString.call(object) === "[object Number]" &&
-    (object % 1 !== 0 || isNegativeZero(object))
-  );
+  return typeof object === "number" &&
+    (object % 1 !== 0 || isNegativeZero(object));
 }
 
-export const float = new Type("tag:yaml.org,2002:float", {
+export const float: Type = {
+  tag: "tag:yaml.org,2002:float",
   construct: constructYamlFloat,
   defaultStyle: "lowercase",
   kind: "scalar",
   predicate: isFloat,
   represent: representYamlFloat,
   resolve: resolveYamlFloat,
-});
+};
