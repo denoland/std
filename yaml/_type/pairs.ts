@@ -4,7 +4,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
 import type { Type } from "../_type.ts";
-import type { Any } from "../_utils.ts";
+import { type Any, getObjectTypeString } from "../_utils.ts";
 
 function resolveYamlPairs(data: Any[][]): boolean {
   if (data === null) return true;
@@ -12,7 +12,7 @@ function resolveYamlPairs(data: Any[][]): boolean {
   const result = Array.from({ length: data.length });
 
   for (const [index, pair] of data.entries()) {
-    if (Object.prototype.toString.call(pair) !== "[object Object]") {
+    if (getObjectTypeString(pair) !== "[object Object]") {
       return false;
     }
 

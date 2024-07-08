@@ -6,15 +6,8 @@
 import type { Mark } from "./_mark.ts";
 
 export class YamlError extends Error {
-  constructor(
-    message = "(unknown reason)",
-    protected mark: Mark | string = "",
-  ) {
-    super(`${message} ${mark}`);
+  constructor(message: string, mark?: Mark) {
+    super(mark ? `${message} ${mark}` : message);
     this.name = this.constructor.name;
-  }
-
-  override toString(): string {
-    return `${this.name}: ${this.message} ${this.mark}`;
   }
 }

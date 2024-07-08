@@ -12,6 +12,7 @@ import {
   type ReadOptions,
   type RecordWithColumn,
 } from "./_io.ts";
+import { graphemeLength } from "./_shared.ts";
 
 export { ParseError, type ParseResult, type RecordWithColumn };
 
@@ -73,26 +74,20 @@ class Parser {
     return this.#cursor >= this.#input.length;
   }
   #parseRecord(startLine: number): string[] | null {
-    let line = this.#readLine();
-    if (line === null) return null;
-    if (line.length === 0) {
+    let fullLine = this.#readLine();
+    if (fullLine === null) return null;
+    if (fullLine.length === 0) {
       return [];
-    }
-
-    function runeCount(s: string): number {
-      // Array.from considers the surrogate pair.
-      return Array.from(s).length;
     }
 
     let lineIndex = startLine + 1;
 
     // line starting with comment character is ignored
-    if (this.#options.comment && line[0] === this.#options.comment) {
+    if (this.#options.comment && fullLine[0] === this.#options.comment) {
       return [];
     }
 
-    let fullLine = line;
-    let quoteError: ParseError | null = null;
+    let line = fullLine;
     const quote = '"';
     const quoteLen = quote.length;
     const separatorLen = this.#options.separator.length;
@@ -114,16 +109,10 @@ class Parser {
         if (!this.#options.lazyQuotes) {
           const j = field.indexOf(quote);
           if (j >= 0) {
-            const col = runeCount(
+            const col = graphemeLength(
               fullLine.slice(0, fullLine.length - line.slice(j).length),
             );
-            quoteError = new ParseError(
-              startLine + 1,
-              lineIndex,
-              col,
-              ERR_BARE_QUOTE,
-            );
-            break parseField;
+            throw new ParseError(startLine + 1, lineIndex, col, ERR_BARE_QUOTE);
           }
         }
         recordBuffer += field;
@@ -160,16 +149,10 @@ class Parser {
               recordBuffer += quote;
             } else {
               // `"*` sequence (invalid non-escaped quote).
-              const col = runeCount(
+              const col = graphemeLength(
                 fullLine.slice(0, fullLine.length - line.length - quoteLen),
               );
-              quoteError = new ParseError(
-                startLine + 1,
-                lineIndex,
-                col,
-                ERR_QUOTE,
-              );
-              break parseField;
+              throw new ParseError(startLine + 1, lineIndex, col, ERR_QUOTE);
             }
           } else if (line.length > 0 || !(this.#isEOF())) {
             // Hit end of line (copy all data so far).
@@ -181,14 +164,8 @@ class Parser {
             if (r === null) {
               // Abrupt end of file (EOF or error).
               if (!this.#options.lazyQuotes) {
-                const col = runeCount(fullLine);
-                quoteError = new ParseError(
-                  startLine + 1,
-                  lineIndex,
-                  col,
-                  ERR_QUOTE,
-                );
-                break parseField;
+                const col = graphemeLength(fullLine);
+                throw new ParseError(startLine + 1, lineIndex, col, ERR_QUOTE);
               }
               fieldIndexes.push(recordBuffer.length);
               break parseField;
@@ -197,23 +174,14 @@ class Parser {
           } else {
             // Abrupt end of file (EOF on error).
             if (!this.#options.lazyQuotes) {
-              const col = runeCount(fullLine);
-              quoteError = new ParseError(
-                startLine + 1,
-                lineIndex,
-                col,
-                ERR_QUOTE,
-              );
-              break parseField;
+              const col = graphemeLength(fullLine);
+              throw new ParseError(startLine + 1, lineIndex, col, ERR_QUOTE);
             }
             fieldIndexes.push(recordBuffer.length);
             break parseField;
           }
         }
       }
-    }
-    if (quoteError) {
-      throw quoteError;
     }
     const result = [] as string[];
     let preIdx = 0;

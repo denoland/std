@@ -13,7 +13,7 @@
     "graphviz": "npm:node-graphviz@^0.1.1",
 
     "@std/archive": "jsr:@std/archive@^0.224.3",
-    "@std/assert": "jsr:@std/assert@1.0.0-rc.3",
+    "@std/assert": "jsr:@std/assert@^1.0.0",
     "@std/async": "jsr:@std/async@^1.0.0-rc.3",
     "@std/bytes": "jsr:@std/bytes@^1.0.1-rc.3",
     "@std/cli": "jsr:@std/cli@^1.0.0-rc.3",
@@ -23,7 +23,7 @@
     "@std/data-structures": "jsr:@std/data-structures@^1.0.0-rc.2",
     "@std/datetime": "jsr:@std/datetime@^0.224.2",
     "@std/dotenv": "jsr:@std/dotenv@^0.224.2",
-    "@std/encoding": "jsr:@std/encoding@1.0.0-rc.2",
+    "@std/encoding": "jsr:@std/encoding@^1.0.0",
     "@std/expect": "jsr:@std/expect@^1.0.0-rc.1",
     "@std/fmt": "jsr:@std/fmt@^0.225.5",
     "@std/front-matter": "jsr:@std/front-matter@^1.0.0-rc.1",
@@ -48,13 +48,14 @@
     "@std/toml": "jsr:@std/toml@^1.0.0-rc.3",
     "@std/ulid": "jsr:@std/ulid@^1.0.0-rc.3",
     "@std/url": "jsr:@std/url@^1.0.0-rc.2",
-    "@std/uuid": "jsr:@std/uuid@1.0.0",
+    "@std/uuid": "jsr:@std/uuid@^1.0.0",
     "@std/webgpu": "jsr:@std/webgpu@^0.224.5",
     "@std/yaml": "jsr:@std/yaml@^1.0.0-rc.1"
   },
   "tasks": {
     "test": "deno test --unstable-http --unstable-webgpu --doc --allow-all --parallel --coverage --trace-leaks --clean",
     "test:browser": "git grep --name-only \"This module is browser compatible.\" | grep -v deno.json | grep -v .github/workflows | grep -v _tools | grep -v encoding/README.md | grep -v media_types/vendor/update.ts | xargs deno check --config browser-compat.tsconfig.json",
+    "test:node": "node --import ./_tools/node_test_runner/register_deno_shim.mjs ./_tools/node_test_runner/run_test.mjs",
     "fmt:licence-headers": "deno run --allow-read --allow-write ./_tools/check_licence.ts",
     "lint:deprecations": "deno run --allow-read --allow-net --allow-env ./_tools/check_deprecation.ts",
     "lint:circular": "deno run --allow-env --allow-read --allow-write --allow-net=deno.land,jsr.io ./_tools/check_circular_package_dependencies.ts",
@@ -76,6 +77,7 @@
     "cov",
     "jsonc/testdata",
     "front_matter/testdata",
+    "_tools/node_test_runner",
     "coverage",
     "docs"
   ],
