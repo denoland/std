@@ -32,7 +32,11 @@ export type Operator =
  * @example >=0.0.0
  */
 export interface Comparator extends SemVer {
-  /** The operator */
+  /**
+   * The operator
+   *
+   * @default {undefined}
+   */
   operator?: Operator;
 }
 
@@ -46,9 +50,17 @@ export interface SemVer {
   minor: number;
   /** The patch version */
   patch: number;
-  /** The prerelease version */
+  /**
+   * The prerelease version
+   *
+   * @default {[]}
+   */
   prerelease?: (string | number)[];
-  /** The build metadata */
+  /**
+   * The build metadata
+   *
+   * @default {[]}
+   */
   build?: string[];
 }
 
