@@ -222,7 +222,7 @@ export function serialize(actual: unknown): string {
     strAbbreviateSize: Infinity,
     breakLength: Infinity,
     escapeSequences: false,
-  }).replace(/\r/g, "\\r");
+  }).replaceAll("\r", "\\r");
 }
 
 /**
