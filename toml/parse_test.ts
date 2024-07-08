@@ -5,6 +5,7 @@ import {
   bareKey,
   basicString,
   dateTime,
+  deepAssignWithTable,
   dottedKey,
   float,
   inlineTable,
@@ -19,7 +20,6 @@ import {
   symbols,
   table,
   TOMLParseError,
-  Utils,
   value,
 } from "./_parser.ts";
 import { parse, stringify } from "./mod.ts";
@@ -401,7 +401,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "parse() handles Utils.deepAssignWithTable",
+  name: "parse() handles deepAssignWithTable",
   fn() {
     const source = {
       foo: {
@@ -419,7 +419,7 @@ Deno.test({
       },
     };
 
-    Utils.deepAssignWithTable(
+    deepAssignWithTable(
       source,
       {
         type: "Table",
@@ -452,14 +452,14 @@ Deno.test({
 });
 
 Deno.test({
-  name: "parse() handles Utils.deepAssignWithTable / TableArray",
+  name: "parse() handles deepAssignWithTable / TableArray",
   fn() {
     const source = {
       foo: {},
       bar: null,
     };
 
-    Utils.deepAssignWithTable(
+    deepAssignWithTable(
       source,
       {
         type: "TableArray",
@@ -480,7 +480,7 @@ Deno.test({
         bar: null,
       },
     );
-    Utils.deepAssignWithTable(
+    deepAssignWithTable(
       source,
       {
         type: "TableArray",
@@ -507,7 +507,7 @@ Deno.test({
 
     assertThrows(
       () =>
-        Utils.deepAssignWithTable(
+        deepAssignWithTable(
           source,
           {
             type: "TableArray",
@@ -521,7 +521,7 @@ Deno.test({
 
     assertThrows(
       () =>
-        Utils.deepAssignWithTable(
+        deepAssignWithTable(
           source,
           {
             type: "TableArray",
