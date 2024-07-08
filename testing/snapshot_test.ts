@@ -873,3 +873,7 @@ Deno.test(
     assert(!output.success, "The test should fail");
   }),
 );
+
+Deno.test("assertSnapshot() - should work with the string with '\\r' character", async (t) => {
+  await assertSnapshot(t, "Hello\r\nWorld!\r\n");
+});
