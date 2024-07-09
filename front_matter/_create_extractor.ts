@@ -18,7 +18,7 @@ function _extract<T>(
   }
   const frontMatter = match.at(-1)?.replace(/^\s+|\s+$/g, "") || "";
   const attrs = parse(frontMatter) as T;
-  const body = str.replace(match[0], "");
+  const body = str.slice(match[0].length);
   return { frontMatter, body, attrs };
 }
 
