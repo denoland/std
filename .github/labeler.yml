@@ -16,16 +16,13 @@ cli:
 collections:
   - changed-files:
     - any-glob-to-any-file: collections/**
-console:
-  - changed-files:
-    - any-glob-to-any-file: console/**
 crypto:
   - changed-files:
     - any-glob-to-any-file: crypto/**
 csv:
   - changed-files:
     - any-glob-to-any-file: csv/**
-data_structures:
+data-structures:
   - changed-files:
     - any-glob-to-any-file: data_structures/**
 datetime:
@@ -40,13 +37,10 @@ encoding:
 expect:
   - changed-files:
     - any-glob-to-any-file: expect/**
-flags:
-  - changed-files:
-    - any-glob-to-any-file: flags/**
 fmt:
   - changed-files:
     - any-glob-to-any-file: fmt/**
-front_matter:
+front-matter:
   - changed-files:
     - any-glob-to-any-file: front_matter/**
 fs:
@@ -61,6 +55,9 @@ http:
 ini:
   - changed-files:
     - any-glob-to-any-file: ini/**
+internal:
+  - changed-files:
+    - any-glob-to-any-file: internal/**
 io:
   - changed-files:
     - any-glob-to-any-file: io/**
@@ -73,7 +70,7 @@ jsonc:
 log:
   - changed-files:
     - any-glob-to-any-file: log/**
-media_types:
+media-types:
   - changed-files:
     - any-glob-to-any-file: media_types/**
 msgpack:
@@ -85,18 +82,12 @@ net:
 path:
   - changed-files:
     - any-glob-to-any-file: path/**
-permissions:
-  - changed-files:
-    - any-glob-to-any-file: permissions/**
 regexp:
   - changed-files:
     - any-glob-to-any-file: regexp/**
 semver:
   - changed-files:
     - any-glob-to-any-file: semver/**
-signal:
-  - changed-files:
-    - any-glob-to-any-file: signal/**
 streams:
   - changed-files:
     - any-glob-to-any-file: streams/**
@@ -118,6 +109,9 @@ url:
 uuid:
   - changed-files:
     - any-glob-to-any-file: uuid/**
+webgpu:
+  - changed-files:
+    - any-glob-to-any-file: webgpu/**
 yaml:
   - changed-files:
     - any-glob-to-any-file: yaml/**

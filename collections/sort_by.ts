@@ -6,25 +6,39 @@ export type Order = "asc" | "desc";
 
 /** Options for {@linkcode sortBy}. */
 export type SortByOptions = {
+  /**
+   * The order to sort the elements in.
+   *
+   * @default {"asc"}
+   */
   order: Order;
 };
 
 /**
  * Returns all elements in the given collection, sorted by their result using
  * the given selector. The selector function is called only once for each
- * element. Ascending or descending order can be specified.
+ * element. Ascending or descending order can be specified through the `order`
+ * option. By default, the elements are sorted in ascending order.
  *
- * @example
+ * @typeParam T The type of the array elements.
+ *
+ * @param array The array to sort.
+ * @param selector The selector function to get the value to sort by.
+ * @param options The options for sorting.
+ *
+ * @returns A new array containing all elements sorted by the selector.
+ *
+ * @example Usage
  * ```ts
- * import { sortBy } from "https://deno.land/std@$STD_VERSION/collections/sort_by.ts";
- * import { assertEquals } from "https://deno.land/std@$STD_VERSION/assert/assert_equals.ts";
+ * import { sortBy } from "@std/collections/sort-by";
+ * import { assertEquals } from "@std/assert";
  *
  * const people = [
  *   { name: "Anna", age: 34 },
  *   { name: "Kim", age: 42 },
  *   { name: "John", age: 23 },
  * ];
- * const sortedByAge = sortBy(people, (it) => it.age);
+ * const sortedByAge = sortBy(people, (person) => person.age);
  *
  * assertEquals(sortedByAge, [
  *   { name: "John", age: 23 },
@@ -32,7 +46,7 @@ export type SortByOptions = {
  *   { name: "Kim", age: 42 },
  * ]);
  *
- * const sortedByAgeDesc = sortBy(people, (it) => it.age, { order: "desc" });
+ * const sortedByAgeDesc = sortBy(people, (person) => person.age, { order: "desc" });
  *
  * assertEquals(sortedByAgeDesc, [
  *   { name: "Kim", age: 42 },
@@ -49,11 +63,21 @@ export function sortBy<T>(
 /**
  * Returns all elements in the given collection, sorted by their result using
  * the given selector. The selector function is called only once for each
- * element. Ascending or descending order can be specified.
+ * element. Ascending or descending order can be specified through the `order`
+ * option. By default, the elements are sorted in ascending order.
  *
- * @example
+ * @typeParam T The type of the array elements.
+ *
+ * @param array The array to sort.
+ * @param selector The selector function to get the value to sort by.
+ * @param options The options for sorting.
+ *
+ * @returns A new array containing all elements sorted by the selector.
+ *
+ * @example Usage
  * ```ts
- * import { sortBy } from "https://deno.land/std@$STD_VERSION/collections/sort_by.ts";
+ * import { sortBy } from "@std/collections/sort-by";
+ * import { assertEquals } from "@std/assert";
  *
  * const people = [
  *   { name: "Anna" },
@@ -61,6 +85,13 @@ export function sortBy<T>(
  *   { name: "John" },
  * ];
  * const sortedByName = sortBy(people, (it) => it.name);
+ *
+ * assertEquals(sortedByName, [
+ *   { name: "Anna" },
+ *   { name: "John" },
+ *   { name: "Kim" },
+ * ]);
+ * ```
  */
 export function sortBy<T>(
   array: readonly T[],
@@ -70,18 +101,35 @@ export function sortBy<T>(
 /**
  * Returns all elements in the given collection, sorted by their result using
  * the given selector. The selector function is called only once for each
- * element. Ascending or descending order can be specified.
+ * element. Ascending or descending order can be specified through the `order`
+ * option. By default, the elements are sorted in ascending order.
  *
- * @example
+ * @typeParam T The type of the array elements.
+ *
+ * @param array The array to sort.
+ * @param selector The selector function to get the value to sort by.
+ * @param options The options for sorting.
+ *
+ * @returns A new array containing all elements sorted by the selector.
+ *
+ * @example Usage
  * ```ts
- * import { sortBy } from "https://deno.land/std@$STD_VERSION/collections/sort_by.ts";
+ * import { sortBy } from "@std/collections/sort-by";
+ * import { assertEquals } from "@std/assert";
  *
  * const people = [
  *   { name: "Anna", age: 34n },
  *   { name: "Kim", age: 42n },
  *   { name: "John", age: 23n },
  * ];
- * const sortedByAge = sortBy(people, (it) => it.age);
+ *
+ * const sortedByAge = sortBy(people, (person) => person.age);
+ *
+ * assertEquals(sortedByAge, [
+ *   { name: "John", age: 23n },
+ *   { name: "Anna", age: 34n },
+ *   { name: "Kim", age: 42n },
+ * ]);
  * ```
  */
 
@@ -93,18 +141,35 @@ export function sortBy<T>(
 /**
  * Returns all elements in the given collection, sorted by their result using
  * the given selector. The selector function is called only once for each
- * element. Ascending or descending order can be specified.
+ * element. Ascending or descending order can be specified through the `order`
+ * option. By default, the elements are sorted in ascending order.
  *
- * @example
+ * @typeParam T The type of the array elements.
+ *
+ * @param array The array to sort.
+ * @param selector The selector function to get the value to sort by.
+ * @param options The options for sorting.
+ *
+ * @returns A new array containing all elements sorted by the selector.
+ *
+ * @example Usage
  * ```ts
- * import { sortBy } from "https://deno.land/std@$STD_VERSION/collections/sort_by.ts";
+ * import { sortBy } from "@std/collections/sort-by";
+ * import { assertEquals } from "@std/assert";
  *
  * const people = [
  *   { name: "Anna", startedAt: new Date("2020-01-01") },
  *   { name: "Kim", startedAt: new Date("2020-03-01") },
  *   { name: "John", startedAt: new Date("2020-06-01") },
  * ];
- * const sortedByStartedAt = sortBy(people, (it) => it.startedAt);
+ *
+ * const sortedByStartedAt = sortBy(people, (people) => people.startedAt);
+ *
+ * assertEquals(sortedByStartedAt, [
+ *   { name: "Anna", startedAt: new Date("2020-01-01") },
+ *   { name: "Kim", startedAt: new Date("2020-03-01") },
+ *   { name: "John", startedAt: new Date("2020-06-01") },
+ * ]);
  * ```
  */
 export function sortBy<T>(
@@ -126,10 +191,10 @@ export function sortBy<T>(
   const selectors = new Array<ReturnType<typeof selector> | null>(len);
   const order = options?.order ?? "asc";
 
-  array.forEach((item, idx) => {
-    indexes[idx] = idx;
-    const s = selector(item);
-    selectors[idx] = Number.isNaN(s) ? null : s;
+  array.forEach((element, index) => {
+    indexes[index] = index;
+    const selected = selector(element);
+    selectors[index] = Number.isNaN(selected) ? null : selected;
   });
 
   indexes.sort((ai, bi) => {
@@ -144,7 +209,7 @@ export function sortBy<T>(
   });
 
   for (let i = 0; i < len; i++) {
-    (indexes as unknown as T[])[i] = array[indexes[i] as number] as T;
+    (indexes as unknown as T[])[i] = array[indexes[i]!] as T;
   }
 
   return indexes as unknown as T[];

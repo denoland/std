@@ -1,0 +1,12 @@
+{
+  "name": "@std/url",
+  "version": "1.0.0-rc.2",
+  "exports": {
+    ".": "./mod.ts",
+    "./basename": "./basename.ts",
+    "./dirname": "./dirname.ts",
+    "./extname": "./extname.ts",
+    "./join": "./join.ts",
+    "./normalize": "./normalize.ts"
+  }
+}

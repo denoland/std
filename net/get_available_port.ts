@@ -5,6 +5,11 @@ export interface GetAvailablePortOptions {
   /**
    * A port to check availability of first. If the port isn't available, fall
    * back to another port.
+   *
+   * Defaults to port 0, which will let the operating system choose an available
+   * port.
+   *
+   * @default {0}
    */
   preferredPort?: number;
 }
@@ -12,9 +17,12 @@ export interface GetAvailablePortOptions {
 /**
  * Returns an available network port.
  *
- * @example
- * ```ts
- * import { getAvailablePort } from "https://deno.land/std@$STD_VERSION/net/get_available_port.ts";
+ * @param options Options for getting an available port.
+ * @returns An available network port.
+ *
+ * @example Usage
+ * ```ts no-eval no-assert
+ * import { getAvailablePort } from "@std/net/get-available-port";
  *
  * const port = getAvailablePort();
  * Deno.serve({ port }, () => new Response("Hello, world!"));
@@ -25,7 +33,7 @@ export function getAvailablePort(options?: GetAvailablePortOptions): number {
     try {
       // Check if the preferred port is available
       using listener = Deno.listen({ port: options.preferredPort });
-      return (listener.addr as Deno.NetAddr).port;
+      return listener.addr.port;
     } catch (e) {
       // If the preferred port is not available, fall through and find an available port
       if (!(e instanceof Deno.errors.AddrInUse)) {
@@ -35,5 +43,5 @@ export function getAvailablePort(options?: GetAvailablePortOptions): number {
   }
 
   using listener = Deno.listen({ port: 0 });
-  return (listener.addr as Deno.NetAddr).port;
+  return listener.addr.port;
 }

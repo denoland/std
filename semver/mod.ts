@@ -3,9 +3,39 @@
 // This module is browser compatible.
 
 /**
- * The semantic version parser.
+ * The Semantic Version parser.
  *
  * Adapted directly from {@link https://github.com/npm/node-semver | semver}.
+ *
+ * ```ts
+ * import {
+ *   parse,
+ *   parseRange,
+ *   greaterThan,
+ *   lessThan,
+ *   format
+ * } from "@std/semver";
+ * import { assertEquals } from "@std/assert";
+ *
+ * const semver = parse("1.2.3");
+ * assertEquals(semver, {
+ *   major: 1,
+ *   minor: 2,
+ *   patch: 3,
+ *   prerelease: [],
+ *   build: []
+ * });
+ *
+ * assertEquals(format(semver), "1.2.3");
+ *
+ * const range = parseRange("1.x || >=2.5.0 || 5.0.0 - 7.2.3");
+ *
+ * const s0 = parse("1.2.3");
+ * const s1 = parse("9.8.7");
+ *
+ * assertEquals(greaterThan(s0, s1), false);
+ * assertEquals(lessThan(s0, s1), true);
+ * ```
  *
  * ## Versions
  *
@@ -38,11 +68,11 @@
  *
  * ## Ranges
  *
- * A `version range` is a set of `comparators` which specify versions that satisfy
- * the range.
+ * A version {@linkcode Range} is a set of {@linkcode Comparator}s which specify
+ * versions that satisfy the range.
  *
- * A `comparator` is composed of an `operator` and a `version`. The set of
- * primitive `operators` is:
+ * A {@linkcode Comparator} is composed of an {@linkcode Operator} and a
+ * {@link SemVer}. The set of primitive `operators` is:
  *
  * - `<` Less than
  * - `<=` Less than or equal to
@@ -93,20 +123,22 @@
  *
  * #### Prerelease Identifiers
  *
- * The method `.increment` takes an additional `identifier` string argument that
- * will append the value of the string as a prerelease identifier:
+ * The method {@linkcode increment} takes an additional `identifier` string
+ * argument that will append the value of the string as a prerelease identifier:
  *
- * ```javascript
- * semver.increment(parse("1.2.3"), "prerelease", "beta");
- * // "1.2.4-beta.0"
+ * ```ts
+ * import { increment, parse } from "@std/semver";
+ * import { assertEquals } from "@std/assert";
+ *
+ * assertEquals(increment(parse("1.2.3"), "prerelease", "alpha"), parse("1.2.4-alpha.0"));
  * ```
  *
  * ### Build Metadata
  *
  * Build metadata is `.` delimited alpha-numeric string.
  * When parsing a version it is retained on the `build: string[]` field
- * of the semver instance. When incrementing there is an additional parameter that
- * can set the build metadata on the semver instance.
+ * of the SemVer instance. When incrementing there is an additional parameter that
+ * can set the build metadata on the SemVer instance.
  *
  * ### Advanced Range Syntax
  *
@@ -240,36 +272,12 @@
  * If you want to know if a version satisfies or does not satisfy a range, use the
  * {@linkcode satisfies} function.
  *
- * This module is browser compatible.
- *
- * @example
- * ```ts
- * import {
- *   parse,
- *   parseRange,
- *   greaterThan,
- *   lessThan,
- *   format
- * } from "https://deno.land/std@$STD_VERSION/semver/mod.ts";
- *
- * const semver = parse("1.2.3");
- * const range = parseRange("1.x || >=2.5.0 || 5.0.0 - 7.2.3");
- *
- * const s0 = parse("1.2.3");
- * const s1 = parse("9.8.7");
- * greaterThan(s0, s1); // false
- * lessThan(s0, s1); // true
- *
- * format(semver) // "1.2.3"
- * ```
- *
  * @module
  */
 export * from "./compare.ts";
-export * from "./constants.ts";
 export * from "./difference.ts";
 export * from "./format.ts";
-export * from "./test_range.ts";
+export * from "./satisfies.ts";
 export * from "./increment.ts";
 export * from "./is_semver.ts";
 export * from "./max_satisfying.ts";
@@ -277,8 +285,6 @@ export * from "./min_satisfying.ts";
 export * from "./parse_range.ts";
 export * from "./parse.ts";
 export * from "./range_intersects.ts";
-export * from "./range_max.ts";
-export * from "./range_min.ts";
 export * from "./types.ts";
 export * from "./try_parse_range.ts";
 export * from "./is_range.ts";
@@ -288,8 +294,8 @@ export * from "./format_range.ts";
 export * from "./equals.ts";
 export * from "./not_equals.ts";
 export * from "./greater_than.ts";
+export * from "./greater_than_range.ts";
 export * from "./greater_or_equal.ts";
 export * from "./less_than.ts";
+export * from "./less_than_range.ts";
 export * from "./less_or_equal.ts";
-
-export const SEMVER_SPEC_VERSION = "2.0.0";

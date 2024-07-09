@@ -1,7 +1,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-import { copy } from "../bytes/copy.ts";
+import { copy } from "@std/bytes/copy";
 import type { Writer, WriterSync } from "./types.ts";
 
 const DEFAULT_BUF_SIZE = 4096;
@@ -40,7 +40,7 @@ abstract class AbstractBufBase {
  * flush() method to guarantee all data has been forwarded to
  * the underlying deno.Writer.
  *
- * @deprecated (will be removed after 1.0.0) Use the {@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API | Web Streams API} instead.
+ * @deprecated This will be removed in 1.0.0. Use the {@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API | Web Streams API} instead.
  */
 export class BufWriter extends AbstractBufBase implements Writer {
   #writer: Writer;
@@ -133,7 +133,7 @@ export class BufWriter extends AbstractBufBase implements Writer {
  * flush() method to guarantee all data has been forwarded to
  * the underlying deno.WriterSync.
  *
- * @deprecated (will be removed after 1.0.0) Use the {@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API | Web Streams API} instead.
+ * @deprecated This will be removed in 1.0.0. Use the {@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API | Web Streams API} instead.
  */
 export class BufWriterSync extends AbstractBufBase implements WriterSync {
   #writer: WriterSync;

@@ -1,9 +1,9 @@
-import { assertEquals } from "../assert/assert_equals.ts";
+import { assertEquals } from "@std/assert";
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
 import { iterateReader, iterateReaderSync } from "./iterate_reader.ts";
-import { readerFromIterable } from "../streams/reader_from_iterable.ts";
-import { delay } from "../async/delay.ts";
+import { readerFromStreamReader } from "./reader_from_stream_reader.ts";
+import { delay } from "@std/async/delay";
 import type { Reader, ReaderSync } from "./types.ts";
 
 Deno.test("iterateReader()", async () => {
@@ -45,7 +45,9 @@ Deno.test("iterateReader()", async () => {
 Deno.test("iterateReader() works with slow consumer", async () => {
   const a = new Uint8Array([97]);
   const b = new Uint8Array([98]);
-  const iter = iterateReader(readerFromIterable([a, b]));
+  const iter = iterateReader(
+    readerFromStreamReader(ReadableStream.from([a, b]).getReader()),
+  );
   const promises = [];
   for await (const bytes of iter) {
     promises.push(delay(10).then(() => bytes));

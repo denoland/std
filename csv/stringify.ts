@@ -104,9 +104,11 @@ export type StringifyOptions = {
    */
   separator?: string;
   /**
-   * a list of instructions for how to target and transform the data for each
+   * A list of instructions for how to target and transform the data for each
    * column of output. This is also where you can provide an explicit header
    * name for the column.
+   *
+   * @default {[]}
    */
   columns?: Column[];
   /**
@@ -168,9 +170,35 @@ function normalizeColumn(column: Column): NormalizedColumn {
   return { header, prop };
 }
 
-/** Error thrown in {@linkcode stringify}. */
+/**
+ * Error thrown in {@linkcode stringify}.
+ *
+ * @example Usage
+ * ```ts no-assert
+ * import { stringify, StringifyError } from "@std/csv/stringify";
+ *
+ * try {
+ *   stringify([{ a: 1 }, { a: 2 }], { separator: "\r\n" });
+ * } catch (error) {
+ *   if (error instanceof StringifyError) {
+ *     console.error(error.message);
+ *   }
+ * }
+ * ```
+ */
 export class StringifyError extends Error {
-  /** Construct a new instance. */
+  /**
+   * Construct a new instance.
+   *
+   * @example Usage
+   * ```ts no-eval
+   * import { StringifyError } from "@std/csv/stringify";
+   *
+   * throw new StringifyError("An error occurred");
+   * ```
+   *
+   * @param message The error message.
+   */
   constructor(message?: string) {
     super(message);
     this.name = "StringifyError";
@@ -192,7 +220,9 @@ function getValuesFromItem(
       let value: unknown = item;
 
       for (const prop of column.prop) {
-        if (typeof value !== "object" || value === null) continue;
+        if (typeof value !== "object" || value === null) {
+          continue;
+        }
         if (Array.isArray(value)) {
           if (typeof prop === "number") value = value[prop];
           else {
@@ -222,29 +252,15 @@ function getValuesFromItem(
 }
 
 /**
- * Write data using CSV encoding.
+ * Converts an array of objects into a CSV string.
  *
- * @param data The source data to stringify. It's an array of items which are
- * plain objects or arrays.
- *
- * `DataItem: Record<string, unknown> | unknown[]`
- *
- * ```ts
- * const data = [
- *   {
- *     name: "Deno",
- *     repo: { org: "denoland", name: "deno" },
- *     runsOn: ["Rust", "TypeScript"],
- *   },
- * ];
- * ```
- *
- * @example
+ * @example Usage
  * ```ts
  * import {
  *   Column,
  *   stringify,
- * } from "https://deno.land/std@$STD_VERSION/csv/stringify.ts";
+ * } from "@std/csv/stringify";
+ * import { assertEquals } from "@std/assert";
  *
  * type Character = {
  *   age: number;
@@ -276,17 +292,21 @@ function getValuesFromItem(
  *   "age",
  * ];
  *
- * console.log(stringify(data, { columns }));
- * // first,age
- * // Rick,70
- * // Morty,14
+ * assertEquals(stringify(data, { columns }), `first,age\r\nRick,70\r\nMorty,14\r\n`);
  * ```
+ *
+ * @param data The source data to stringify. It's an array of items which are
+ * plain objects or arrays.
+ * @param options Options for the stringification.
+ * @returns A CSV string.
  */
 export function stringify(
   data: DataItem[],
-  { headers = true, separator: sep = ",", columns = [], bom = false }:
-    StringifyOptions = {},
+  options?: StringifyOptions,
 ): string {
+  const { headers = true, separator: sep = ",", columns = [], bom = false } =
+    options ?? {};
+
   if (sep.includes(QUOTE) || sep.includes(CRLF)) {
     const message = [
       "Separator cannot include the following strings:",
@@ -303,7 +323,7 @@ export function stringify(
     output += BYTE_ORDER_MARK;
   }
 
-  if (headers) {
+  if (headers && normalizedColumns.length > 0) {
     output += normalizedColumns
       .map((column) => getEscapedString(column.header, sep))
       .join(sep);

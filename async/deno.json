@@ -1,0 +1,15 @@
+{
+  "name": "@std/async",
+  "version": "1.0.0-rc.3",
+  "exports": {
+    ".": "./mod.ts",
+    "./abortable": "./abortable.ts",
+    "./deadline": "./deadline.ts",
+    "./debounce": "./debounce.ts",
+    "./delay": "./delay.ts",
+    "./mux-async-iterator": "./mux_async_iterator.ts",
+    "./pool": "./pool.ts",
+    "./retry": "./retry.ts",
+    "./tee": "./tee.ts"
+  }
+}

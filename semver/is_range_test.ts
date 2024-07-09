@@ -1,6 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-import { assert } from "../assert/mod.ts";
-import { ALL, MIN } from "./constants.ts";
+import { assert } from "@std/assert";
+import { ALL, MIN } from "./_constants.ts";
 import { formatRange } from "./format_range.ts";
 import { isRange } from "./is_range.ts";
 import type { Range } from "./types.ts";
@@ -13,7 +13,6 @@ Deno.test({
     ], [
       [{
         operator: ">=",
-        semver: { major: 0, minor: 0, patch: 0, prerelease: [], build: [] },
         major: 0,
         minor: 0,
         patch: 0,
@@ -21,7 +20,6 @@ Deno.test({
         build: [],
       }, {
         operator: "<",
-        semver: MIN,
         ...MIN,
       }],
     ]];

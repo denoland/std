@@ -1,7 +1,8 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
 import { isWildcardComparator } from "./_shared.ts";
 import { compare } from "./compare.ts";
-import { testRange } from "./test_range.ts";
+import { satisfies } from "./satisfies.ts";
 import type { Comparator, Range } from "./types.ts";
 
 function comparatorIntersects(
@@ -14,11 +15,11 @@ function comparatorIntersects(
   if (op0 === undefined) {
     // if c0 is empty comparator, then returns true
     if (isWildcardComparator(c0)) return true;
-    return testRange(c0, [[c1]]);
+    return satisfies(c0, [[c1]]);
   }
   if (op1 === undefined) {
     if (isWildcardComparator(c1)) return true;
-    return testRange(c1, [[c0]]);
+    return satisfies(c1, [[c0]]);
   }
 
   const cmp = compare(c0, c1);
@@ -65,10 +66,26 @@ function comparatorsSatisfiable(comparators: Comparator[]): boolean {
 }
 
 /**
- * The ranges intersect every range of AND comparators intersects with a least one range of OR ranges.
+ * The ranges intersect every range of AND comparators intersects with a least
+ * one range of OR ranges.
+ *
+ * @example Usage
+ * ```ts
+ * import { parseRange, rangeIntersects } from "@std/semver";
+ * import { assert } from "@std/assert";
+ *
+ * const r0 = parseRange(">=1.0.0 <2.0.0");
+ * const r1 = parseRange(">=1.0.0 <1.2.3");
+ * const r2 = parseRange(">=1.2.3 <2.0.0");
+ *
+ * assert(rangeIntersects(r0, r1));
+ * assert(rangeIntersects(r0, r2));
+ * assert(!rangeIntersects(r1, r2));
+ * ```
+ *
  * @param r0 range 0
  * @param r1 range 1
- * @returns returns true if any
+ * @returns returns true if the given ranges intersect, false otherwise
  */
 export function rangeIntersects(
   r0: Range,

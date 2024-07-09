@@ -2,14 +2,23 @@
 // This module is browser compatible.
 
 /**
- * If the given value is part of the given object it returns true, otherwise it
- * returns false. Doesn't work with non-primitive values: includesValue({x: {}},
- * {}) returns false.
+ * Returns true if the given value is part of the given object, otherwise it
+ * returns false.
  *
- * @example
+ * Note: this doesn't work with non-primitive values. For example,
+ * `includesValue({x: {}}, {})` returns false.
+ *
+ * @typeParam T The type of the values in the input record.
+ *
+ * @param record The record to check for the given value.
+ * @param value The value to check for in the record.
+ *
+ * @returns `true` if the value is part of the record, otherwise `false`.
+ *
+ * @example Basic usage
  * ```ts
- * import { includesValue } from "https://deno.land/std@$STD_VERSION/collections/includes_value.ts";
- * import { assertEquals } from "https://deno.land/std@$STD_VERSION/assert/assert_equals.ts";
+ * import { includesValue } from "@std/collections/includes-value";
+ * import { assertEquals } from "@std/assert";
  *
  * const input = {
  *   first: 33,

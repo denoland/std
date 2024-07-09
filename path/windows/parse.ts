@@ -2,13 +2,32 @@
 // This module is browser compatible.
 
 import { CHAR_COLON, CHAR_DOT } from "../_common/constants.ts";
-import type { ParsedPath } from "../_interface.ts";
+import type { ParsedPath } from "../types.ts";
 import { assertPath } from "../_common/assert_path.ts";
 import { isPathSeparator, isWindowsDeviceRoot } from "./_util.ts";
 
+export type { ParsedPath } from "../types.ts";
+
 /**
  * Return a `ParsedPath` object of the `path`.
- * @param path to process
+ *
+ * @example Usage
+ * ```ts
+ * import { parse } from "@std/path/windows/parse";
+ * import { assertEquals } from "@std/assert";
+ *
+ * const parsed = parse("C:\\foo\\bar\\baz.ext");
+ * assertEquals(parsed, {
+ *   root: "C:\\",
+ *   dir: "C:\\foo\\bar",
+ *   base: "baz.ext",
+ *   ext: ".ext",
+ *   name: "baz",
+ * });
+ * ```
+ *
+ * @param path The path to parse.
+ * @returns The `ParsedPath` object.
  */
 export function parse(path: string): ParsedPath {
   assertPath(path);

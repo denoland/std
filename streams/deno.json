@@ -1,0 +1,23 @@
+{
+  "name": "@std/streams",
+  "version": "1.0.0-rc.2",
+  "exports": {
+    ".": "./mod.ts",
+    "./buffer": "./buffer.ts",
+    "./byte-slice-stream": "./byte_slice_stream.ts",
+    "./concat-readable-streams": "./concat_readable_streams.ts",
+    "./delimiter-stream": "./delimiter_stream.ts",
+    "./early-zip-readable-streams": "./early_zip_readable_streams.ts",
+    "./limited-bytes-transform-stream": "./limited_bytes_transform_stream.ts",
+    "./limited-transform-stream": "./limited_transform_stream.ts",
+    "./merge-readable-streams": "./merge_readable_streams.ts",
+    "./text-delimiter-stream": "./text_delimiter_stream.ts",
+    "./text-line-stream": "./text_line_stream.ts",
+    "./to-array-buffer": "./to_array_buffer.ts",
+    "./to-blob": "./to_blob.ts",
+    "./to-json": "./to_json.ts",
+    "./to-text": "./to_text.ts",
+    "./to-transform-stream": "./to_transform_stream.ts",
+    "./zip-readable-streams": "./zip_readable_streams.ts"
+  }
+}

@@ -1,11 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-import {
-  assert,
-  assertEquals,
-  assertRejects,
-  assertThrows,
-} from "../assert/mod.ts";
-import * as path from "../path/mod.ts";
+import { assert, assertEquals, assertRejects, assertThrows } from "@std/assert";
+import * as path from "@std/path";
 import { move, moveSync, SubdirectoryMoveError } from "./move.ts";
 import { ensureFile, ensureFileSync } from "./ensure_file.ts";
 import { ensureDir, ensureDirSync } from "./ensure_dir.ts";

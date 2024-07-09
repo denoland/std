@@ -5,8 +5,8 @@ import {
   assertEquals,
   assertRejects,
   assertThrows,
-} from "../assert/mod.ts";
-import { fromFileUrl, resolve } from "../path/mod.ts";
+} from "@std/assert";
+import { fromFileUrl, resolve } from "@std/path";
 
 const testdataDir = resolve(fromFileUrl(import.meta.url), "../testdata/walk");
 
@@ -89,7 +89,17 @@ Deno.test("walk() accepts ext option as strings", async () =>
     exts: [".rs", ".ts"],
   }));
 
+Deno.test("walk() accepts ext option as strings (excluding period prefix)", async () =>
+  await assertWalkPaths("ext", ["y.rs", "x.ts"], {
+    exts: ["rs", "ts"],
+  }));
+
 Deno.test("walkSync() accepts ext option as strings", () =>
+  assertWalkSyncPaths("ext", ["y.rs", "x.ts"], {
+    exts: [".rs", ".ts"],
+  }));
+
+Deno.test("walkSync() accepts ext option as strings (excluding period prefix)", () =>
   assertWalkSyncPaths("ext", ["y.rs", "x.ts"], {
     exts: [".rs", ".ts"],
   }));

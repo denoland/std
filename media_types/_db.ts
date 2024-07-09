@@ -1,5 +1,5 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-import db from "./vendor/mime-db.v1.52.0.ts";
+import db from "./vendor/db.ts";
 import type { DBEntry } from "./_util.ts";
 
 export type KeyOfDb = keyof typeof db;
@@ -21,7 +21,7 @@ for (const type of Object.keys(db) as KeyOfDb[]) {
     continue;
   }
 
-  // @ts-ignore work around denoland/dnt#148
+  // @ts-ignore Work around https://github.com/denoland/dnt/issues/148
   extensions.set(type, exts);
 
   for (const ext of exts) {
@@ -33,7 +33,7 @@ for (const type of Object.keys(db) as KeyOfDb[]) {
       if (
         current !== "application/octet-stream" &&
         (from > to ||
-          // @ts-ignore work around denoland/dnt#148
+          // @ts-ignore work around https://github.com/denoland/dnt/issues/148
           (from === to && current.startsWith("application/")))
       ) {
         continue;

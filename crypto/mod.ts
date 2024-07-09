@@ -7,8 +7,8 @@
  * supporting additional encryption APIs, but also delegating to the built-in
  * APIs when possible.
  *
- * ```ts
- * import { crypto } from "https://deno.land/std@$STD_VERSION/crypto/crypto.ts";
+ * ```ts no-assert
+ * import { crypto } from "@std/crypto/crypto";
  *
  * const message = "Hello, Deno!";
  * const encoder = new TextEncoder();
@@ -21,5 +21,4 @@
  */
 
 export * from "./crypto.ts";
-export * from "./unstable_keystack.ts";
 export * from "./timing_safe_equal.ts";

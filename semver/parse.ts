@@ -1,11 +1,28 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
 import type { SemVer } from "./types.ts";
 import { parseBuild, parseNumber, parsePrerelease } from "./_shared.ts";
 import { FULL_REGEXP, MAX_LENGTH } from "./_shared.ts";
 
 /**
- * Attempt to parse a string as a semantic version, returning either a `SemVer`
- * object or throws a TypeError.
+ * Attempt to parse a string as a semantic version, returning a SemVer object.
+ *
+ * @example Usage
+ * ```ts
+ * import { parse } from "@std/semver/parse";
+ * import { assertEquals } from "@std/assert";
+ *
+ * const version = parse("1.2.3");
+ * assertEquals(version, {
+ *   major: 1,
+ *   minor: 2,
+ *   patch: 3,
+ *   prerelease: [],
+ *   build: [],
+ * });
+ * ```
+ *
+ * @throws {TypeError} If the input string is invalid.
  * @param version The version string to parse
  * @returns A valid SemVer
  */

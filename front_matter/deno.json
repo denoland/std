@@ -1,0 +1,13 @@
+{
+  "name": "@std/front-matter",
+  "version": "1.0.0-rc.1",
+  "exports": {
+    ".": "./mod.ts",
+    "./any": "./any.ts",
+    "./json": "./json.ts",
+    "./test": "./test.ts",
+    "./toml": "./toml.ts",
+    "./yaml": "./yaml.ts",
+    "./types": "./types.ts"
+  }
+}

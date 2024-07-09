@@ -1,19 +1,19 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import { assertNotStrictEquals } from "../assert/assert_not_strict_equals.ts";
-import { assertStrictEquals } from "../assert/assert_strict_equals.ts";
-import { assertInstanceOf } from "../assert/assert_instance_of.ts";
-import { assertIsError } from "../assert/assert_is_error.ts";
-import { assertNotInstanceOf } from "../assert/assert_not_instance_of.ts";
-import { assertMatch } from "../assert/assert_match.ts";
-import { assertObjectMatch } from "../assert/assert_object_match.ts";
-import { assertNotMatch } from "../assert/assert_not_match.ts";
-import { AssertionError } from "../assert/assertion_error.ts";
+import { assertNotStrictEquals } from "@std/assert/not-strict-equals";
+import { assertStrictEquals } from "@std/assert/strict-equals";
+import { assertInstanceOf } from "@std/assert/instance-of";
+import { assertIsError } from "@std/assert/is-error";
+import { assertNotInstanceOf } from "@std/assert/not-instance-of";
+import { assertMatch } from "@std/assert/match";
+import { assertObjectMatch } from "@std/assert/object-match";
+import { assertNotMatch } from "@std/assert/not-match";
+import { AssertionError } from "@std/assert/assertion-error";
 
 import { assertEquals } from "./_assert_equals.ts";
 import { assertNotEquals } from "./_assert_not_equals.ts";
 import { equal } from "./_equal.ts";
-import { format } from "./_format.ts";
+import { format } from "@std/internal/format";
 import type { AnyConstructor, MatcherContext, MatchResult } from "./_types.ts";
 import { getMockCalls } from "./_mock_util.ts";
 import { inspectArg, inspectArgs } from "./_inspect_args.ts";
@@ -373,13 +373,20 @@ export function toContain(
   // deno-lint-ignore no-explicit-any
   const doesContain = (context.value as any)?.includes?.(expected);
 
+  const fmtValue = format(context.value);
+  const fmtExpected = format(expected);
+
   if (context.isNot) {
     if (doesContain) {
-      throw new AssertionError("The value contains the expected item");
+      throw new AssertionError(
+        `The value ${fmtValue} contains the expected item ${fmtExpected}`,
+      );
     }
   } else {
     if (!doesContain) {
-      throw new AssertionError("The value doesn't contain the expected item");
+      throw new AssertionError(
+        `The value ${fmtValue} doesn't contain the expected item ${fmtExpected}`,
+      );
     }
   }
 }
@@ -399,13 +406,29 @@ export function toContainEqual(
     }
   }
 
+  const prettyStringify = (js: unknown) =>
+    JSON.stringify(js, null, "\t")
+      .replace(/\"|\n|\t/g, "")
+      .slice(0, 100);
+
+  const fmtValue = prettyStringify(context.value);
+  const fmtExpected = prettyStringify(expected);
+
   if (context.isNot) {
     if (doesContain) {
-      throw new AssertionError("The value contains the expected item");
+      throw new AssertionError(
+        `The value contains the expected item.
+Value: ${fmtValue}
+Expected: ${fmtExpected}`,
+      );
     }
   } else {
     if (!doesContain) {
-      throw new AssertionError("The value doesn't contain the expected item");
+      throw new AssertionError(
+        `The value doesn't contain the expected item.
+Value: ${fmtValue}
+Expected: ${fmtExpected}`,
+      );
     }
   }
 }
@@ -582,7 +605,7 @@ export function toHaveBeenNthCalledWith(
   ...expected: unknown[]
 ): MatchResult {
   if (nth < 1) {
-    new Error(`nth must be greater than 0. ${nth} was given.`);
+    throw new Error(`nth must be greater than 0. ${nth} was given.`);
   }
 
   const calls = getMockCalls(context.value);

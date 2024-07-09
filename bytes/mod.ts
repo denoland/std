@@ -2,20 +2,28 @@
 // This module is browser compatible.
 
 /**
- * Provides helper functions to manipulate `Uint8Array` byte slices that are not
- * included on the `Uint8Array` prototype.
+ * Helper functions for working with
+ * {@linkcode https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array | Uint8Array}
+ * byte slices.
  *
  * ```ts
- * import { concat } from "https://deno.land/std@$STD_VERSION/bytes/concat.ts";
+ * import { concat, indexOfNeedle, endsWith } from "@std/bytes";
+ * import { assertEquals } from "@std/assert";
  *
  * const a = new Uint8Array([0, 1, 2]);
  * const b = new Uint8Array([3, 4, 5]);
- * concat([a, b]); // Uint8Array(6) [ 0, 1, 2, 3, 4, 5 ]
+ *
+ * const c = concat([a, b]);
+ *
+ * assertEquals(c, new Uint8Array([0, 1, 2, 3, 4, 5]));
+ *
+ * assertEquals(indexOfNeedle(c, new Uint8Array([2, 3])), 2);
+ *
+ * assertEquals(endsWith(c, b), true);
  * ```
  *
  * @module
  */
-
 export * from "./concat.ts";
 export * from "./copy.ts";
 export * from "./ends_with.ts";

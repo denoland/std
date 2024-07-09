@@ -1,0 +1,10 @@
+{
+  "name": "@std/fmt",
+  "version": "0.225.5",
+  "exports": {
+    "./bytes": "./bytes.ts",
+    "./colors": "./colors.ts",
+    "./duration": "./duration.ts",
+    "./printf": "./printf.ts"
+  }
+}

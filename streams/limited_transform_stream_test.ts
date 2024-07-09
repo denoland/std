@@ -1,6 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import { assertEquals, assertRejects } from "../assert/mod.ts";
+import { assertEquals, assertRejects } from "@std/assert";
 import { LimitedTransformStream } from "./limited_transform_stream.ts";
 
 Deno.test("LimitedTransformStream", async function () {
@@ -14,7 +14,11 @@ Deno.test("LimitedTransformStream", async function () {
   ]).pipeThrough(new LimitedTransformStream(3));
 
   const chunks = await Array.fromAsync(r);
-  assertEquals(chunks.length, 3);
+  assertEquals(chunks, [
+    "foo",
+    "foo",
+    "foo",
+  ]);
 });
 
 Deno.test("LimitedTransformStream handles error", async function () {

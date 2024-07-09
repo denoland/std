@@ -1,12 +1,13 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import { assertEquals } from "../assert/mod.ts";
+import { assertEquals } from "@std/assert";
 import { formatMediaType } from "./mod.ts";
 
 Deno.test({
   name: "formatMediaType()",
   fn() {
     const fixtures = [
+      ["/", undefined, ""],
       ["noslash", { X: "Y" }, "noslash; x=Y"],
       ["foo bar/baz", undefined, ""],
       ["foo/bar baz", undefined, ""],
@@ -58,6 +59,7 @@ Deno.test({
       ],
       ["foo/bar", { "0": "'", "9": "'" }, "foo/bar; 0='; 9='"],
       ["foo", { "bar": "" }, `foo; bar=""`],
+      ["foo/bar", [], "foo/bar"],
     ] as const;
     for (const [type, param, expected] of fixtures) {
       assertEquals(formatMediaType(type, param), expected);

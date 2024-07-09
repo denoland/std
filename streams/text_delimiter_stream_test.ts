@@ -1,7 +1,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
 import { TextDelimiterStream } from "./text_delimiter_stream.ts";
-import { testTransformStream } from "./_test_common.ts";
+import { testTransformStream } from "./_test_utils.ts";
 
 Deno.test("TextDelimiterStream handles discard", async () => {
   const delimStream = new TextDelimiterStream("foo", {
@@ -73,6 +73,24 @@ Deno.test("TextDelimiterStream handles prefix", async () => {
     "foo",
     "fooaueiourewq098765432",
     "foo349012i491290",
+  ];
+
+  await testTransformStream(delimStream, inputs, outputs);
+});
+
+Deno.test("TextDelimiterStream handles JSONL with an empty line in the middle and trailing newline", async () => {
+  const delimStream = new TextDelimiterStream("\n");
+
+  const inputs = [
+    '{"a": 1}\n',
+    '\n{"a',
+    '": 2, "b": true}\n',
+  ];
+  const outputs = [
+    '{"a": 1}',
+    "",
+    '{"a": 2, "b": true}',
+    "",
   ];
 
   await testTransformStream(delimStream, inputs, outputs);

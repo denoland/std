@@ -8,12 +8,21 @@ import { toText } from "./to_text.ts";
  * {@linkcode Uint8Array}s to an object. Works the same as
  * {@linkcode Response.json}.
  *
- * @example
- * ```ts
- * import { toJson } from "https://deno.land/std@$STD_VERSION/streams/to_json.ts";
+ * @param readableStream A `ReadableStream` whose chunks compose a JSON.
+ * @returns A promise that resolves to the parsed JSON.
  *
- * const stream = ReadableStream.from([JSON.stringify({ hello: "world" })]);
- * await toJson(stream); // { hello: "world" }
+ * @example Basic usage
+ * ```ts
+ * import { toJson } from "@std/streams/to-json";
+ * import { assertEquals } from "@std/assert";
+ *
+ * const stream = ReadableStream.from([
+ *   "[1, true",
+ *   ', [], {}, "hello',
+ *   '", null]',
+ * ]);
+ * const json = await toJson(stream);
+ * assertEquals(json, [1, true, [], {}, "hello", null]);
  * ```
  */
 export function toJson(

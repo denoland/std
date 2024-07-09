@@ -6,39 +6,40 @@
 // https://github.com/indexzero/http-server/blob/master/test/http-server-test.js
 
 /**
- * Contains functions {@linkcode serveDir} and {@linkcode serveFile} for building a static file server.
+ * Contains functions {@linkcode serveDir} and {@linkcode serveFile} for
+ * building a static file server.
  *
- * This module can also be used as a cli. If you want to run directly:
+ * This module can also be used as a CLI. If you want to run it directly:
  *
  * ```shell
  * > # start server
- * > deno run --allow-net --allow-read https://deno.land/std@$STD_VERSION/http/file_server.ts
+ * > deno run --allow-net --allow-read --allow-sys jsr:@std/http/file-server
  * > # show help
- * > deno run --allow-net --allow-read https://deno.land/std@$STD_VERSION/http/file_server.ts --help
+ * > deno run jsr:@std/http/file-server --help
  * ```
  *
  * If you want to install and run:
  *
  * ```shell
  * > # install
- * > deno install --allow-net --allow-read https://deno.land/std@$STD_VERSION/http/file_server.ts
+ * > deno install --allow-net --allow-read --allow-sys --global jsr:@std/http/file-server
  * > # start server
- * > file_server
+ * > file-server
  * > # show help
- * > file_server --help
+ * > file-server --help
  * ```
  *
  * @module
  */
 
-import { join as posixJoin } from "../path/posix/join.ts";
-import { normalize as posixNormalize } from "../path/posix/normalize.ts";
-import { extname } from "../path/extname.ts";
-import { join } from "../path/join.ts";
-import { relative } from "../path/relative.ts";
-import { resolve } from "../path/resolve.ts";
-import { SEPARATOR_PATTERN } from "../path/constants.ts";
-import { contentType } from "../media_types/content_type.ts";
+import { join as posixJoin } from "@std/path/posix/join";
+import { normalize as posixNormalize } from "@std/path/posix/normalize";
+import { extname } from "@std/path/extname";
+import { join } from "@std/path/join";
+import { relative } from "@std/path/relative";
+import { resolve } from "@std/path/resolve";
+import { SEPARATOR_PATTERN } from "@std/path/constants";
+import { contentType } from "@std/media-types/content-type";
 import { calculate, ifNoneMatch } from "./etag.ts";
 import {
   isRedirectStatus,
@@ -46,11 +47,11 @@ import {
   STATUS_TEXT,
   type StatusCode,
 } from "./status.ts";
-import { ByteSliceStream } from "../streams/byte_slice_stream.ts";
-import { parseArgs } from "../cli/parse_args.ts";
-import { red } from "../fmt/colors.ts";
-import { VERSION } from "../version.ts";
-import { format as formatBytes } from "../fmt/bytes.ts";
+import { ByteSliceStream } from "@std/streams/byte-slice-stream";
+import { parseArgs } from "@std/cli/parse-args";
+import denoConfig from "./deno.json" with { type: "json" };
+import { format as formatBytes } from "@std/fmt/bytes";
+import { getNetworkAddress } from "@std/net/get-network-address";
 
 interface EntryInfo {
   mode: string;
@@ -75,10 +76,7 @@ function modeToString(isDir: boolean, maybeMode: number | null): string {
   if (maybeMode === null) {
     return "(unknown mode)";
   }
-  const mode = maybeMode.toString(8);
-  if (mode.length < 3) {
-    return "(unknown mode)";
-  }
+  const mode = maybeMode.toString(8).padStart(3, "0");
   let output = "";
   mode
     .split("")
@@ -135,9 +133,10 @@ function parseRangeHeader(rangeValue: string, fileSize: number) {
   }
 }
 
-/** Interface for serveFile options. */
+/** Options for {@linkcode serveFile}. */
 export interface ServeFileOptions {
-  /** The algorithm to use for generating the ETag.
+  /**
+   * The algorithm to use for generating the ETag.
    *
    * @default {"SHA-256"}
    */
@@ -147,9 +146,20 @@ export interface ServeFileOptions {
 }
 
 /**
- * Returns an HTTP Response with the requested file as the body.
+ * Resolves a {@linkcode Response} with the requested file as the body.
+ *
+ * @example Usage
+ * ```ts no-eval
+ * import { serveFile } from "@std/http/file-server";
+ *
+ * Deno.serve((req) => {
+ *   return serveFile(req, "README.md");
+ * });
+ * ```
+ *
  * @param req The server request context used to cleanup the file handle.
  * @param filePath Path of the file to serve.
+ * @returns A response for the request.
  */
 export async function serveFile(
   req: Request,
@@ -347,7 +357,7 @@ async function serveDirIndex(
         };
       } catch (error) {
         // Note: Deno.stat for windows system files may be rejected with os error 32.
-        if (!options.quiet) logError(error);
+        if (!options.quiet) logError(error as Error);
         return {
           mode: "(unknown mode)",
           size: "",
@@ -360,6 +370,7 @@ async function serveDirIndex(
 
   const listEntry = await Promise.all(listEntryPromise);
   listEntry.sort((a, b) =>
+    // TODO(iuioiua): Add test to ensure list order is correct
     a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1
   );
   const formattedDirUrl = `${dirUrl.replace(/\/$/, "")}/`;
@@ -547,17 +558,20 @@ export interface ServeDirOptions {
    * @default {false}
    */
   showDotfiles?: boolean;
-  /** Serves index.html as the index file of the directory.
+  /** Serves `index.html` as the index file of the directory.
    *
    * @default {true}
    */
   showIndex?: boolean;
-  /** Enable CORS via the "Access-Control-Allow-Origin" header.
+  /**
+   * Enable CORS via the
+   * {@linkcode https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Access-Control-Allow-Origin | Access-Control-Allow-Origin}
+   * header.
    *
    * @default {false}
    */
   enableCors?: boolean;
-  /** Do not print request level logs. Defaults to false.
+  /** Do not print request level logs.
    *
    * @default {false}
    */
@@ -577,8 +591,9 @@ export interface ServeDirOptions {
 /**
  * Serves the files under the given directory root (opts.fsRoot).
  *
- * ```ts
- * import { serveDir } from "https://deno.land/std@$STD_VERSION/http/file_server.ts";
+ * @example Usage
+ * ```ts no-eval
+ * import { serveDir } from "@std/http/file-server";
  *
  * Deno.serve((req) => {
  *   const pathname = new URL(req.url).pathname;
@@ -592,21 +607,22 @@ export interface ServeDirOptions {
  * });
  * ```
  *
- * Optionally you can pass `urlRoot` option. If it's specified that part is stripped from the beginning of the requested pathname.
+ * @example Changing the URL root
  *
- * ```ts
- * import { serveDir } from "https://deno.land/std@$STD_VERSION/http/file_server.ts";
+ * Requests to `/static/path/to/file` will be served from `./public/path/to/file`.
  *
- * // ...
- * serveDir(new Request("http://localhost/static/path/to/file"), {
+ * ```ts no-eval
+ * import { serveDir } from "@std/http/file-server";
+ *
+ * Deno.serve((req) => serveDir(req, {
  *   fsRoot: "public",
  *   urlRoot: "static",
- * });
+ * }));
  * ```
  *
- * The above example serves `./public/path/to/file` for the request to `/static/path/to/file`.
- *
  * @param req The request to handle
+ * @param opts Additional options.
+ * @returns A response for the request.
  */
 export async function serveDir(
   req: Request,
@@ -616,7 +632,7 @@ export async function serveDir(
   try {
     response = await createServeDirResponse(req, opts);
   } catch (error) {
-    if (!opts.quiet) logError(error);
+    if (!opts.quiet) logError(error as Error);
     response = serveFallback(error);
   }
 
@@ -735,8 +751,8 @@ async function createServeDirResponse(
   return createStandardResponse(STATUS_CODE.NotFound);
 }
 
-function logError(error: unknown) {
-  console.error(red(error instanceof Error ? error.message : `${error}`));
+function logError(error: Error) {
+  console.error(`%c${error.message}`, "color: red");
 }
 
 function main() {
@@ -752,7 +768,7 @@ function main() {
       verbose: false,
       version: false,
       host: "0.0.0.0",
-      port: "4507",
+      port: undefined,
       cert: "",
       key: "",
     },
@@ -766,7 +782,7 @@ function main() {
       H: "header",
     },
   });
-  const port = Number(serverArgs.port);
+  const port = serverArgs.port ? Number(serverArgs.port) : undefined;
   const headers = serverArgs.header || [];
   const host = serverArgs.host;
   const certFile = serverArgs.cert;
@@ -778,7 +794,7 @@ function main() {
   }
 
   if (serverArgs.version) {
-    console.log(`Deno File Server ${VERSION}`);
+    console.log(`Deno File Server ${denoConfig.version}`);
     Deno.exit();
   }
 
@@ -806,10 +822,21 @@ function main() {
 
   const useTls = !!(keyFile && certFile);
 
+  function onListen({ port, hostname }: { port: number; hostname: string }) {
+    const networkAddress = getNetworkAddress();
+    const protocol = useTls ? "https" : "http";
+    let message = `Listening on:\n- Local: ${protocol}://${hostname}:${port}`;
+    if (networkAddress && !DENO_DEPLOYMENT_ID) {
+      message += `\n- Network: ${protocol}://${networkAddress}:${port}`;
+    }
+    console.log(message);
+  }
+
   if (useTls) {
     Deno.serve({
       port,
       hostname: host,
+      onListen,
       cert: Deno.readTextFileSync(certFile),
       key: Deno.readTextFileSync(keyFile),
     }, handler);
@@ -817,23 +844,24 @@ function main() {
     Deno.serve({
       port,
       hostname: host,
+      onListen,
     }, handler);
   }
 }
 
 function printUsage() {
-  console.log(`Deno File Server ${VERSION}
+  console.log(`Deno File Server ${denoConfig.version}
   Serves a local directory in HTTP.
 
 INSTALL:
-  deno install --allow-net --allow-read https://deno.land/std/http/file_server.ts
+  deno install --allow-net --allow-read --allow-sys jsr:@std/http@${denoConfig.version}/file-server
 
 USAGE:
   file_server [path] [options]
 
 OPTIONS:
   -h, --help            Prints help information
-  -p, --port <PORT>     Set port
+  -p, --port <PORT>     Set port (default is 8000)
   --cors                Enable CORS via the "Access-Control-Allow-Origin" header
   --host     <HOST>     Hostname (default is 0.0.0.0)
   -c, --cert <FILE>     TLS certificate file (enables TLS)

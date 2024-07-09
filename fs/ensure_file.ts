@@ -1,22 +1,29 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-import { dirname } from "../path/dirname.ts";
+import { dirname } from "@std/path/dirname";
 import { ensureDir, ensureDirSync } from "./ensure_dir.ts";
 import { getFileInfoType } from "./_get_file_info_type.ts";
 import { toPathString } from "./_to_path_string.ts";
 
 /**
- * Ensures that the file exists.
- * If the file that is requested to be created is in directories that do not
- * exist.
- * these directories are created. If the file already exists,
- * it is NOTMODIFIED.
- * Requires the `--allow-read` and `--allow-write` flag.
+ * Asynchronously ensures that the file exists.
  *
- * @example
- * ```ts
- * import { ensureFile } from "https://deno.land/std@$STD_VERSION/fs/mod.ts";
+ * If the file already exists, this function does nothing. If the parent
+ * directories for the file do not exist, they are created.
  *
- * ensureFile("./folder/targetFile.dat"); // returns promise
+ * Requires `--allow-read` and `--allow-write` permissions.
+ *
+ * @see {@link https://docs.deno.com/runtime/manual/basics/permissions#file-system-access}
+ * for more information on Deno's permissions system.
+ *
+ * @param filePath The path of the file to ensure, as a string or URL.
+ *
+ * @returns A void promise that resolves once the file exists.
+ *
+ * @example Usage
+ * ```ts no-eval
+ * import { ensureFile } from "@std/fs/ensure-file";
+ *
+ * await ensureFile("./folder/targetFile.dat");
  * ```
  */
 export async function ensureFile(filePath: string | URL): Promise<void> {
@@ -43,18 +50,25 @@ export async function ensureFile(filePath: string | URL): Promise<void> {
 }
 
 /**
- * Ensures that the file exists.
- * If the file that is requested to be created is in directories that do not
- * exist,
- * these directories are created. If the file already exists,
- * it is NOT MODIFIED.
- * Requires the `--allow-read` and `--allow-write` flag.
+ * Synchronously ensures that the file exists.
  *
- * @example
- * ```ts
- * import { ensureFileSync } from "https://deno.land/std@$STD_VERSION/fs/mod.ts";
+ * If the file already exists, this function does nothing. If the parent
+ * directories for the file do not exist, they are created.
  *
- * ensureFileSync("./folder/targetFile.dat"); // void
+ * Requires `--allow-read` and `--allow-write` permissions.
+ *
+ * @see {@link https://docs.deno.com/runtime/manual/basics/permissions#file-system-access}
+ * for more information on Deno's permissions system.
+ *
+ * @param filePath The path of the file to ensure, as a string or URL.
+ *
+ * @returns A void value that returns once the file exists.
+ *
+ * @example Usage
+ * ```ts no-eval
+ * import { ensureFileSync } from "@std/fs/ensure-file";
+ *
+ * ensureFileSync("./folder/targetFile.dat");
  * ```
  */
 export function ensureFileSync(filePath: string | URL): void {

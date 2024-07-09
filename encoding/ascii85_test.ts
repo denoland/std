@@ -1,5 +1,5 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-import { assertEquals } from "../assert/mod.ts";
+import { assertEquals } from "@std/assert";
 import {
   type Ascii85Standard,
   decodeAscii85,
@@ -174,7 +174,6 @@ for (const [standard, tests] of Object.entries(testCasesDelimiter)) {
         assertEquals(
           decodeAscii85(b85 as string, {
             standard: standard as Ascii85Standard,
-            delimiter: true,
           }),
           utf8encoder.encode(bin),
         );

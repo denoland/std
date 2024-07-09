@@ -3,15 +3,26 @@
 
 /**
  * Utilities for
- * {@link https://datatracker.ietf.org/doc/html/rfc4648#section-4 | base64}
+ * {@link https://www.rfc-editor.org/rfc/rfc4648.html#section-4 | base64}
  * encoding and decoding.
  *
- * This module is browser compatible.
+ * ```ts
+ * import {
+ *   encodeBase64,
+ *   decodeBase64,
+ * } from "@std/encoding/base64";
+ * import { assertEquals } from "@std/assert";
+ *
+ * const foobar = new TextEncoder().encode("foobar");
+ *
+ * assertEquals(encodeBase64(foobar), "Zm9vYmFy");
+ * assertEquals(decodeBase64("Zm9vYmFy"), foobar);
+ * ```
  *
  * @module
  */
 
-import { validateBinaryLike } from "./_util.ts";
+import { validateBinaryLike } from "./_validate_binary_like.ts";
 
 const base64abc = [
   "A",
@@ -83,13 +94,17 @@ const base64abc = [
 /**
  * Converts data into a base64-encoded string.
  *
- * @see {@link https://datatracker.ietf.org/doc/html/rfc4648#section-4}
+ * @see {@link https://www.rfc-editor.org/rfc/rfc4648.html#section-4}
  *
- * @example
+ * @param data The data to encode.
+ * @returns The base64-encoded string.
+ *
+ * @example Usage
  * ```ts
- * import { encodeBase64 } from "https://deno.land/std@$STD_VERSION/encoding/base64.ts";
+ * import { encodeBase64 } from "@std/encoding/base64";
+ * import { assertEquals } from "@std/assert";
  *
- * encodeBase64("foobar"); // "Zm9vYmFy"
+ * assertEquals(encodeBase64("foobar"), "Zm9vYmFy");
  * ```
  */
 export function encodeBase64(data: ArrayBuffer | Uint8Array | string): string {
@@ -132,13 +147,20 @@ export function encodeBase64(data: ArrayBuffer | Uint8Array | string): string {
 /**
  * Decodes a base64-encoded string.
  *
- * @see {@link https://datatracker.ietf.org/doc/html/rfc4648#section-4}
+ * @see {@link https://www.rfc-editor.org/rfc/rfc4648.html#section-4}
  *
- * @example
+ * @param b64 The base64-encoded string to decode.
+ * @returns The decoded data.
+ *
+ * @example Usage
  * ```ts
- * import { encodeBase64 } from "https://deno.land/std@$STD_VERSION/encoding/base64.ts";
+ * import { decodeBase64 } from "@std/encoding/base64";
+ * import { assertEquals } from "@std/assert";
  *
- * encodeBase64("foobar"); // "Zm9vYmFy"
+ * assertEquals(
+ *   decodeBase64("Zm9vYmFy"),
+ *   new TextEncoder().encode("foobar")
+ * );
  * ```
  */
 export function decodeBase64(b64: string): Uint8Array {

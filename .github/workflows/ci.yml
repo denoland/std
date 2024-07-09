@@ -18,32 +18,38 @@ jobs:
       matrix:
         deno:
           - v1.x
-          - canary
+          # TODO(iuioiua): Re-enable once workspaces functionality is fixed in canary
+          # See: https://github.com/denoland/deno/issues/24422
+          # - canary
         os:
-          - ubuntu-22.04
-          - windows-2022
-          - macOS-12
+          - ubuntu-latest
+          - windows-latest
+          - macOS-latest
 
     steps:
       - name: Clone repository
         uses: actions/checkout@v4
-        with:
-          submodules: true
 
       - name: Set up Deno
         uses: denoland/setup-deno@v1
         with:
           deno-version: ${{ matrix.deno }}
 
-      - name: Run tests canary
+      - name: Run tests
         run: deno task test
+
+      - name: Run tests (simulate Deno 2)
+        if: matrix.deno == 'canary'
+        run: deno task test
+        env:
+          DENO_FUTURE: 1
 
       - name: Run timezone-dependent tests
         run: |
           TZ=Australia/Sydney deno test datetime
           TZ=Europe/London deno test datetime
           TZ=America/Toronto deno test datetime
-        if: matrix.os == 'ubuntu-22.04'
+        if: matrix.os == 'ubuntu-latest'
 
       - name: Type check browser compatible modules
         shell: bash
@@ -54,33 +60,62 @@ jobs:
 
       - name: Upload coverage
         uses: codecov/codecov-action@v4
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
         with:
           name: ${{ matrix.os }}-${{ matrix.deno }}
-          files: cov.lcov
 
-      - name: Release if version change
-        if: |
-          matrix.os == 'ubuntu-22.04' &&
-          github.repository == 'denoland/deno_std' &&
-          github.ref == 'refs/heads/main'
-        shell: bash
-        env:
-          GITHUB_TOKEN: ${{ secrets.DENOBOT_PAT }}
-        run: ./_tools/release/03_release.ts
+  test-node:
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        node:
+          - latest
+        os:
+          - ubuntu-latest
+
+    steps:
+      - name: Clone repository
+        uses: actions/checkout@v4
+
+      - name: Set up Deno
+        uses: denoland/setup-deno@v1
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+
+      - run: npm install
+        working-directory: _tools/node_test_runner
+
+      - name: Run tests
+        run: deno task test:node
 
   lint:
-    runs-on: ubuntu-22.04
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-latest
+          - windows-latest
     steps:
       - name: Clone repository
         uses: actions/checkout@v4
         with:
-          submodules: false
           persist-credentials: false
 
       - name: Set up Deno
         uses: denoland/setup-deno@v1
         with:
-          deno-version: canary
+          # TODO(iuioiua): Revert once workspaces functionality is fixed in canary
+          # See: https://github.com/denoland/deno/issues/24422
+          # deno-version: canary
+          deno-version: v1.x
 
       - name: Format
         run: deno fmt --check
@@ -90,12 +125,13 @@ jobs:
 
       - name: Spell-check
         uses: crate-ci/typos@master
+        if: matrix.os == 'ubuntu-latest'
         with:
           config: ./.github/typos.toml
 
   wasm:
     name: wasm
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     strategy:
       matrix:
         module: [crypto/_wasm]
@@ -105,7 +141,6 @@ jobs:
         with:
           # required to check for changes
           fetch-depth: 2
-          submodules: false
           persist-credentials: false
 
       - name: Check for changes
@@ -128,10 +163,32 @@ jobs:
         if: success() && steps.source.outputs.modified == 'true'
         with:
           # This must match the version in _wasm/rust-toolchain.toml of the module folder
-          rust-version: 1.75.0
+          rust-version: 1.77.2
           targets: wasm32-unknown-unknown
           components: rustfmt
 
       - name: Rebuild Wasm and verify it hasn't changed
         if: success() && steps.source.outputs.modified == 'true'
-        run: deno task --cwd ${{ matrix.module }} wasmbuild --check
+        run: deno task --cwd ${{ matrix.module }} --config deno.json wasmbuild --check
+
+  publish-dry-run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - name: Clone repository
+        uses: actions/checkout@v4
+
+      - name: Set up Deno
+        uses: denoland/setup-deno@v1
+        with:
+          # TODO(iuioiua): Revert once workspaces functionality is fixed in canary
+          # See: https://github.com/denoland/deno/issues/24422
+          # deno-version: canary
+          deno-version: v1.x
+
+      - name: Publish (dry run)
+        run: deno publish --dry-run

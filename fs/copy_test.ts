@@ -1,11 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-import {
-  assert,
-  assertEquals,
-  assertRejects,
-  assertThrows,
-} from "../assert/mod.ts";
-import * as path from "../path/mod.ts";
+import { assert, assertEquals, assertRejects, assertThrows } from "@std/assert";
+import * as path from "@std/path";
 import { copy, copySync } from "./copy.ts";
 import { existsSync } from "./exists.ts";
 import { ensureDir, ensureDirSync } from "./ensure_dir.ts";
@@ -127,26 +122,54 @@ testCopy(
 testCopy(
   "copy() copies with preserve timestamps",
   async (tempDir: string) => {
-    const srcFile = path.join(testdataDir, "copy_file.txt");
-    const destFile = path.join(tempDir, "copy_file_copy.txt");
+    {
+      const srcFile = path.join(testdataDir, "copy_file.txt");
+      const destFile = path.join(tempDir, "copy_file_copy.txt");
 
-    const srcStatInfo = await Deno.stat(srcFile);
+      const srcStatInfo = await Deno.stat(srcFile);
 
-    assert(srcStatInfo.atime instanceof Date);
-    assert(srcStatInfo.mtime instanceof Date);
+      assert(srcStatInfo.atime instanceof Date);
+      assert(srcStatInfo.mtime instanceof Date);
 
-    // Copy with overwrite and preserve timestamps options.
-    await copy(srcFile, destFile, {
-      overwrite: true,
-      preserveTimestamps: true,
-    });
+      // Copy with overwrite and preserve timestamps options.
+      await copy(srcFile, destFile, {
+        overwrite: true,
+        preserveTimestamps: true,
+      });
 
-    const destStatInfo = await Deno.stat(destFile);
+      const destStatInfo = await Deno.stat(destFile);
 
-    assert(destStatInfo.atime instanceof Date);
-    assert(destStatInfo.mtime instanceof Date);
-    assertEquals(destStatInfo.atime, srcStatInfo.atime);
-    assertEquals(destStatInfo.mtime, srcStatInfo.mtime);
+      assert(destStatInfo.atime instanceof Date);
+      assert(destStatInfo.mtime instanceof Date);
+      assertEquals(destStatInfo.atime, srcStatInfo.atime);
+      assertEquals(destStatInfo.mtime, srcStatInfo.mtime);
+    }
+
+    // copy dir with preserve timestamps
+    {
+      const srcDir = path.join(testdataDir, "copy_dir");
+      const destDir = path.join(tempDir, "copy_dir");
+      const srcFile = path.join(srcDir, "0.txt");
+      const destFile = path.join(destDir, "0.txt");
+      const srcNestFile = path.join(srcDir, "nest", "0.txt");
+      const destNestFile = path.join(destDir, "nest", "0.txt");
+
+      await copy(srcDir, destDir, { preserveTimestamps: true });
+
+      const srcDirInfo = await Deno.stat(srcFile);
+      const destDirInfo = await Deno.stat(destFile);
+      const srcFileInfo = await Deno.stat(srcFile);
+      const destFileInfo = await Deno.stat(destFile);
+      const srcNestFileInfo = await Deno.stat(srcNestFile);
+      const destNestFileInfo = await Deno.stat(destNestFile);
+
+      assertEquals(srcDirInfo.atime, destDirInfo.atime);
+      assertEquals(srcDirInfo.mtime, destDirInfo.mtime);
+      assertEquals(srcFileInfo.atime, destFileInfo.atime);
+      assertEquals(srcFileInfo.mtime, destFileInfo.mtime);
+      assertEquals(srcNestFileInfo.atime, destNestFileInfo.atime);
+      assertEquals(srcNestFileInfo.mtime, destNestFileInfo.mtime);
+    }
   },
 );
 
@@ -289,26 +312,54 @@ testCopySync(
 testCopySync(
   "copySync() copies with preserve timestamps",
   (tempDir: string) => {
-    const srcFile = path.join(testdataDir, "copy_file.txt");
-    const destFile = path.join(tempDir, "copy_file_copy.txt");
+    {
+      const srcFile = path.join(testdataDir, "copy_file.txt");
+      const destFile = path.join(tempDir, "copy_file_copy.txt");
 
-    const srcStatInfo = Deno.statSync(srcFile);
+      const srcStatInfo = Deno.statSync(srcFile);
 
-    assert(srcStatInfo.atime instanceof Date);
-    assert(srcStatInfo.mtime instanceof Date);
+      assert(srcStatInfo.atime instanceof Date);
+      assert(srcStatInfo.mtime instanceof Date);
 
-    // Copy with overwrite and preserve timestamps options.
-    copySync(srcFile, destFile, {
-      overwrite: true,
-      preserveTimestamps: true,
-    });
+      // Copy with overwrite and preserve timestamps options.
+      copySync(srcFile, destFile, {
+        overwrite: true,
+        preserveTimestamps: true,
+      });
 
-    const destStatInfo = Deno.statSync(destFile);
+      const destStatInfo = Deno.statSync(destFile);
 
-    assert(destStatInfo.atime instanceof Date);
-    assert(destStatInfo.mtime instanceof Date);
-    assertEquals(destStatInfo.atime, srcStatInfo.atime);
-    assertEquals(destStatInfo.mtime, srcStatInfo.mtime);
+      assert(destStatInfo.atime instanceof Date);
+      assert(destStatInfo.mtime instanceof Date);
+      assertEquals(destStatInfo.atime, srcStatInfo.atime);
+      assertEquals(destStatInfo.mtime, srcStatInfo.mtime);
+    }
+
+    // copy dir with preserve timestamps
+    {
+      const srcDir = path.join(testdataDir, "copy_dir");
+      const destDir = path.join(tempDir, "copy_dir");
+      const srcFile = path.join(srcDir, "0.txt");
+      const destFile = path.join(destDir, "0.txt");
+      const srcNestFile = path.join(srcDir, "nest", "0.txt");
+      const destNestFile = path.join(destDir, "nest", "0.txt");
+
+      copySync(srcDir, destDir, { preserveTimestamps: true });
+
+      const srcDirInfo = Deno.statSync(srcFile);
+      const destDirInfo = Deno.statSync(destFile);
+      const srcFileInfo = Deno.statSync(srcFile);
+      const destFileInfo = Deno.statSync(destFile);
+      const srcNestFileInfo = Deno.statSync(srcNestFile);
+      const destNestFileInfo = Deno.statSync(destNestFile);
+
+      assertEquals(srcDirInfo.atime, destDirInfo.atime);
+      assertEquals(srcDirInfo.mtime, destDirInfo.mtime);
+      assertEquals(srcFileInfo.atime, destFileInfo.atime);
+      assertEquals(srcFileInfo.mtime, destFileInfo.mtime);
+      assertEquals(srcNestFileInfo.atime, destNestFileInfo.atime);
+      assertEquals(srcNestFileInfo.mtime, destNestFileInfo.mtime);
+    }
   },
 );
 

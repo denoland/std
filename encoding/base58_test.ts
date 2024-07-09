@@ -1,6 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import { assertEquals, assertThrows } from "../assert/mod.ts";
+import { assertEquals, assertThrows } from "@std/assert";
 import { decodeBase58, encodeBase58 } from "./base58.ts";
 
 const testSetString = [
@@ -67,6 +67,7 @@ Deno.test("decodeBase58() decodes binary", () => {
 Deno.test("decodeBase58() throws on invalid input", () => {
   assertThrows(
     () => decodeBase58("+2NEpo7TZRRrLZSi2U"),
+    TypeError,
     `Invalid base58 char at index 0 with value +`,
   );
 });

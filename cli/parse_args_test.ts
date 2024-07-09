@@ -1,7 +1,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-import { assertEquals } from "../assert/mod.ts";
+import { assertEquals, assertThrows } from "@std/assert";
 import { type Args, parseArgs, type ParseOptions } from "./parse_args.ts";
-import { assertType, type IsExact } from "../testing/types.ts";
+import { assertType, type IsExact } from "@std/testing/types";
 
 // flag boolean true (default all --args to boolean)
 Deno.test("parseArgs() handles true boolean flag", function () {
@@ -267,6 +267,14 @@ Deno.test("parseArgs() handles latest flag boolean", function () {
     negatable: ["foo"],
   });
   assertEquals(parsed2.foo, true);
+});
+
+Deno.test("parseArgs() handles string negatable option", function () {
+  const parsed = parseArgs(["--no-foo"], {
+    boolean: ["foo"],
+    negatable: "foo",
+  });
+  assertEquals(parsed.foo, false);
 });
 
 Deno.test("parseArgs() handles hyphen", function () {
@@ -897,6 +905,22 @@ Deno.test("parseArgs() handles collect negateable args", function () {
   assertEquals(argv, {
     foo: false,
     f: false,
+    _: [],
+  });
+});
+
+Deno.test("parseArgs() handles string collect option", function () {
+  const argv = parseArgs([
+    "--foo",
+    "123",
+    "--foo",
+    "345",
+  ], {
+    collect: "foo",
+  });
+
+  assertEquals(argv, {
+    foo: [123, 345],
     _: [],
   });
 });
@@ -1914,4 +1938,29 @@ Deno.test("parseArgs() handles types of parse options generic defaults", functio
       }
     >
   >(true);
+});
+
+Deno.test("parseArgs() handles collect with alias", () => {
+  const args = ["--header", "abc", "--header", "def"];
+  const parsed = parseArgs(args, {
+    collect: ["header"],
+    alias: {
+      H: "header",
+    },
+  });
+  assertEquals(parsed.header, ["abc", "def"]);
+});
+
+Deno.test("parseArgs() throws if the alias value is undefined", () => {
+  assertThrows(
+    () => {
+      parseArgs([], {
+        alias: {
+          h: undefined,
+        },
+      });
+    },
+    Error,
+    "Alias value must be defined",
+  );
 });

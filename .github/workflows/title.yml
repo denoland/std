@@ -1,0 +1,77 @@
+name: "Lint PR title"
+
+on:
+  pull_request_target:
+    types:
+      - opened
+      - edited
+      - synchronize
+
+permissions:
+  pull-requests: read
+
+jobs:
+  main:
+    name: Validate PR title
+    runs-on: ubuntu-latest
+    steps:
+      - uses: amannn/action-semantic-pull-request@v5
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          types: |
+            BREAKING
+            [unstable] BREAKING
+            deprecation
+            [unstable] deprecation
+            feat
+            fix
+            docs
+            refactor
+            perf
+            test
+            ci
+            chore
+            revert
+          # This should be kept up-to-date with the current packages list
+          scopes: |
+            archive
+            assert
+            async
+            bytes
+            cache
+            cli
+            collections
+            crypto
+            csv
+            data-structures
+            datetime
+            dotenv
+            encoding
+            expect
+            fmt
+            front-matter
+            fs
+            html
+            http
+            ini
+            internal
+            io
+            json
+            jsonc
+            log
+            media-types
+            msgpack
+            net
+            path
+            regexp
+            semver
+            streams
+            testing
+            text
+            toml
+            ulid
+            url
+            uuid
+            webgpu
+            yaml

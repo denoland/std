@@ -1,4 +1,5 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
 
 import {
   COMPARATOR_REGEXP,
@@ -8,7 +9,7 @@ import {
   parsePrerelease,
   XRANGE,
 } from "./_shared.ts";
-import { ALL, ANY, NONE } from "./constants.ts";
+import { ALL, ANY, NONE } from "./_constants.ts";
 import type { Comparator, Operator, Range } from "./types.ts";
 
 type ComparatorRegExpGroup = {
@@ -45,7 +46,7 @@ function parseComparator(comparator: string): Comparator {
     }
     : ANY;
 
-  return { operator: operator || undefined, ...semver, semver };
+  return { operator: operator || undefined, ...semver };
 }
 
 function isWildcard(id?: string): boolean {
@@ -379,9 +380,28 @@ function parseOperatorRanges(string: string): Comparator[] {
 }
 
 /**
- * Parses a range string into a Range object or throws a TypeError.
+ * Parses a range string into a {@linkcode Range} object.
+ *
+ * @example Usage
+ * ```ts
+ * import { parseRange } from "@std/semver/parse-range";
+ * import { assertEquals } from "@std/assert";
+ *
+ * const range = parseRange(">=1.0.0 <2.0.0 || >=3.0.0");
+ * assertEquals(range, [
+ *   [
+ *     { operator: ">=", major: 1, minor: 0, patch: 0, prerelease: [], build: [] },
+ *     { operator: "<", major: 2, minor: 0, patch: 0, prerelease: [], build: [] },
+ *   ],
+ *   [
+ *     { operator: ">=", major: 3, minor: 0, patch: 0, prerelease: [], build: [] },
+ *   ]
+ * ]);
+ * ```
+ *
+ * @throws {TypeError} If the input range is invalid.
  * @param range The range set string
- * @returns A valid semantic range
+ * @returns A valid SemVer range
  */
 export function parseRange(range: string): Range {
   return range

@@ -1,15 +1,17 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
 
 import { capitalizeWord, splitToWords } from "./_util.ts";
 
 /**
  * Converts a string into camelCase.
  *
- * @example
+ * @example Usage
  * ```ts
- * import { toCamelCase } from "https://deno.land/std@$STD_VERSION/text/case.ts";
+ * import { toCamelCase } from "@std/text/case";
+ * import { assertEquals } from "@std/assert";
  *
- * toCamelCase("deno is awesome"); // "denoIsAwesome"
+ * assertEquals(toCamelCase("deno is awesome"),"denoIsAwesome");
  * ```
  *
  * @param input The string that is going to be converted into camelCase
@@ -24,11 +26,12 @@ export function toCamelCase(input: string): string {
 /**
  * Converts a string into kebab-case.
  *
- * @example
+ * @example Usage
  * ```ts
- * import { toKebabCase } from "https://deno.land/std@$STD_VERSION/text/case.ts";
+ * import { toKebabCase } from "@std/text/case";
+ * import { assertEquals } from "@std/assert";
  *
- * toKebabCase("deno is awesome"); // "deno-is-awesome"
+ * assertEquals(toKebabCase("deno is awesome"), "deno-is-awesome");
  * ```
  *
  * @param input The string that is going to be converted into kebab-case
@@ -42,11 +45,12 @@ export function toKebabCase(input: string): string {
 /**
  * Converts a string into PascalCase.
  *
- * @example
+ * @example Usage
  * ```ts
- * import { toPascalCase } from "https://deno.land/std@$STD_VERSION/text/case.ts";
+ * import { toPascalCase } from "@std/text/case";
+ * import { assertEquals } from "@std/assert";
  *
- * toPascalCase("deno is awesome"); // "DenoIsAwesome"
+ * assertEquals(toPascalCase("deno is awesome"), "DenoIsAwesome");
  * ```
  *
  * @param input The string that is going to be converted into PascalCase
@@ -60,10 +64,12 @@ export function toPascalCase(input: string): string {
 /**
  * Converts a string into snake_case.
  *
- * @example
+ * @example Usage
  * ```ts
- * import { toSnakeCase } from "https://deno.land/std@$STD_VERSION/text/case.ts";
- * toSnakeCase("deno is awesome"); // "deno_is_awesome"
+ * import { toSnakeCase } from "@std/text/case";
+ * import { assertEquals } from "@std/assert";
+ *
+ * assertEquals(toSnakeCase("deno is awesome"), "deno_is_awesome");
  * ```
  *
  * @param input The string that is going to be converted into snake_case

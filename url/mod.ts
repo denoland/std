@@ -2,9 +2,23 @@
 // This module is browser compatible.
 
 /**
- * Utilities for working with URL paths.
+ * Utilities for working with
+ * {@linkcode https://developer.mozilla.org/en-US/docs/Web/API/URL | URL}s.
  *
- * This module is browser compatible.
+ * ```ts
+ * import { basename, join, normalize } from "@std/url";
+ * import { assertEquals } from "@std/assert";
+ *
+ * const url = new URL("https:///deno.land///std//assert//.//mod.ts");
+ * const normalizedUrl = normalize(url);
+ *
+ * assertEquals(normalizedUrl.href, "https://deno.land/std/assert/mod.ts");
+ * assertEquals(basename(normalizedUrl), "mod.ts");
+ *
+ * const joinedUrl = join(normalizedUrl, "..", "..", "async", "retry.ts");
+ *
+ * assertEquals(joinedUrl.href, "https://deno.land/std/async/retry.ts");
+ * ```
  *
  * @module
  */

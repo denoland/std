@@ -9,14 +9,14 @@
  * **to run this test**
  * deno run --allow-read archive/tar_test.ts
  */
-import { assert, assertEquals } from "../assert/mod.ts";
-import { resolve } from "../path/mod.ts";
+import { assert, assertEquals } from "@std/assert";
+import { resolve } from "@std/path";
 import { Tar } from "./tar.ts";
 import { Untar } from "./untar.ts";
-import { Buffer } from "../io/buffer.ts";
-import { copy } from "../io/copy.ts";
-import { readAll } from "../io/read_all.ts";
-import { filePath, testdataDir } from "./_test_common.ts";
+import { Buffer } from "@std/io/buffer";
+import { copy } from "@std/io/copy";
+import { readAll } from "@std/io/read-all";
+import { filePath, testdataDir } from "./_test_utils.ts";
 
 Deno.test("createTarArchive", async function () {
   // initialize
@@ -70,7 +70,7 @@ Deno.test("Tar() deflates tar archive", async function () {
 Deno.test("Tar() appends file with long name to tar archive", async function (): Promise<
   void
 > {
-  // 9 * 15 + 13 = 148 bytes
+  // 10 * 15 + 13 = 163 bytes
   const fileName = "long-file-name/".repeat(10) + "file-name.txt";
   const text = "hello tar world!";
 

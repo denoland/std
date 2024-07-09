@@ -1,6 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import { assertEquals } from "../assert/mod.ts";
+import { assertEquals, assertRejects } from "@std/assert";
 import { zipReadableStreams } from "./zip_readable_streams.ts";
 
 Deno.test("zipReadableStreams()", async () => {
@@ -28,4 +28,26 @@ Deno.test("zipReadableStreams()", async () => {
     "apoiuztrewq0987321",
     "qwertzuiopasq123d",
   ]);
+});
+
+Deno.test("zipReadableStreams handles errors by closing the stream with an error", async () => {
+  const errorStream = new ReadableStream({
+    start(controller) {
+      controller.enqueue("Initial data");
+    },
+    pull() {
+      throw new Error("Test error during read");
+    },
+  });
+  const normalStream = ReadableStream.from(["Normal data"]);
+  const zippedStream = zipReadableStreams(errorStream, normalStream);
+  const reader = zippedStream.getReader();
+
+  assertEquals(await reader.read(), { value: "Initial data", done: false });
+  assertEquals(await reader.read(), { value: "Normal data", done: false });
+  await assertRejects(
+    async () => await reader.read(),
+    Error,
+    "Test error during read",
+  );
 });

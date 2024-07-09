@@ -1,17 +1,12 @@
 name: workspace publish
 
 on:
-  push:
-    branches: [main]
   release:
     types: [published]
 
-env:
-  DENO_UNSTABLE_WORKSPACES: true
-
 jobs:
   publish:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     timeout-minutes: 30
 
     permissions:
@@ -21,25 +16,20 @@ jobs:
     steps:
       - name: Clone repository
         uses: actions/checkout@v4
-        with:
-          submodules: true
 
       - name: Set up Deno
         uses: denoland/setup-deno@v1
-
-      - name: Convert to workspace
-        run: deno run -A ./_tools/convert_to_workspace.ts
+        with:
+          # TODO(iuioiua): Revert once workspaces functionality is fixed in canary
+          # See: https://github.com/denoland/deno/issues/24422
+          # deno-version: canary
+          deno-version: v1.x
 
       - name: Format
-        run: deno fmt
+        run: deno fmt --check
 
-      - name: Type check
+      - name: Test
         run: deno task test
 
-      - name: Publish (dry run)
-        if: github.event_name == 'push'
-        run: deno publish --dry-run
-
-      - name: Publish (real)
-        if: github.event_name == 'release'
-        run: deno publish --allow-dirty
+      - name: Publish to JSR
+        run: deno publish

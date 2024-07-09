@@ -1,7 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-import { assert } from "../assert/assert.ts";
 import type { Reader, Writer } from "./types.ts";
 
 const DEFAULT_BUFFER_SIZE = 32 * 1024;
@@ -12,7 +11,7 @@ const DEFAULT_BUFFER_SIZE = 32 * 1024;
  * @param dest Writer
  * @param size Read size
  *
- * @deprecated (will be removed after 1.0.0) Use the {@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API | Web Streams API} instead.
+ * @deprecated This will be removed in 1.0.0. Use the {@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API | Web Streams API} instead.
  */
 export async function copyN(
   r: Reader,
@@ -33,7 +32,9 @@ export async function copyN(
       while (n < nread) {
         n += await dest.write(buf.slice(n, nread));
       }
-      assert(n === nread, "could not write");
+      if (n !== nread) {
+        throw new Error("could not write");
+      }
     }
     if (result === null) {
       break;

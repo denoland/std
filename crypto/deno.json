@@ -1,0 +1,12 @@
+{
+  "name": "@std/crypto",
+  "version": "1.0.0",
+  "exports": {
+    ".": "./mod.ts",
+    "./crypto": "./crypto.ts",
+    "./timing-safe-equal": "./timing_safe_equal.ts"
+  },
+  "exclude": [
+    "_wasm/target"
+  ]
+}

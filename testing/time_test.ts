@@ -1,12 +1,15 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import {
   assert,
+  assertAlmostEquals,
   assertEquals,
   assertInstanceOf,
+  assertMatch,
   assertNotEquals,
   assertRejects,
   assertStrictEquals,
-} from "../assert/mod.ts";
+  assertThrows,
+} from "@std/assert";
 import { FakeTime, TimeError } from "./time.ts";
 import { _internals } from "./_time.ts";
 import { assertSpyCall, spy, type SpyCall } from "./mock.ts";
@@ -16,11 +19,11 @@ function fromNow(): () => number {
   return () => Date.now() - start;
 }
 
-Deno.test("Date unchanged if FakeTime is uninitialized", () => {
+Deno.test("FakeTime doesn't affect Date unchanged if uninitialized", () => {
   assertStrictEquals(Date, _internals.Date);
 });
 
-Deno.test("Date is fake if FakeTime is initialized", () => {
+Deno.test("FakeTime fakes Date", () => {
   {
     using _time = new FakeTime(9001);
     assertNotEquals(Date, _internals.Date);
@@ -28,7 +31,7 @@ Deno.test("Date is fake if FakeTime is initialized", () => {
   assertStrictEquals(Date, _internals.Date);
 });
 
-Deno.test("Fake Date parse and UTC behave the same", () => {
+Deno.test("FakeTime causes date parse and UTC behave the same", () => {
   const expectedUTC = Date.UTC(96, 1, 2, 3, 4, 5);
   const expectedParse = Date.parse("04 Dec 1995 00:12:00 GMT");
 
@@ -43,7 +46,7 @@ Deno.test("Fake Date parse and UTC behave the same", () => {
   );
 });
 
-Deno.test("Fake Date.now returns current fake time", () => {
+Deno.test("FakeTime causes Date.now() returns current fake time", () => {
   const time: FakeTime = new FakeTime(9001);
   const now = spy(_internals.Date, "now");
   try {
@@ -63,7 +66,7 @@ Deno.test("Fake Date.now returns current fake time", () => {
   }
 });
 
-Deno.test("Fake Date instance methods passthrough to real Date instance methods", () => {
+Deno.test("FakeTime causes Date instance methods passthrough to real Date instance methods", () => {
   using _time = new FakeTime();
   const now = new Date("2020-05-25T05:00:00.12345Z");
   assertEquals(now.toISOString(), "2020-05-25T05:00:00.123Z");
@@ -98,12 +101,17 @@ Deno.test("Fake Date instance methods passthrough to real Date instance methods"
   }
 });
 
-Deno.test("timeout functions unchanged if FakeTime is uninitialized", () => {
+Deno.test("FakeTime causes Date function to return the string representation of the current faked time", () => {
+  using _time = new FakeTime(24 * 60 * 60 * 1000);
+  assertMatch(Date(), /(Fri|Thu) Jan 0(1|2) 1970/);
+});
+
+Deno.test("FakeTime timeout functions unchanged if FakeTime is uninitialized", () => {
   assertStrictEquals(setTimeout, _internals.setTimeout);
   assertStrictEquals(clearTimeout, _internals.clearTimeout);
 });
 
-Deno.test("timeout functions are fake if FakeTime is initialized", () => {
+Deno.test("FakeTime timeout functions are fake if FakeTime is initialized", () => {
   {
     using _time: FakeTime = new FakeTime();
     assertNotEquals(setTimeout, _internals.setTimeout);
@@ -170,12 +178,12 @@ Deno.test("FakeTime controls timeouts", () => {
   assertEquals(cb.calls, expected);
 });
 
-Deno.test("interval functions unchanged if FakeTime is uninitialized", () => {
+Deno.test("FakeTime interval functions unchanged if FakeTime is uninitialized", () => {
   assertStrictEquals(setInterval, _internals.setInterval);
   assertStrictEquals(clearInterval, _internals.clearInterval);
 });
 
-Deno.test("interval functions are fake if FakeTime is initialized", () => {
+Deno.test("FakeTime fakes interval functions", () => {
   {
     using _time: FakeTime = new FakeTime();
     assertNotEquals(setInterval, _internals.setInterval);
@@ -257,7 +265,7 @@ Deno.test("FakeTime calls timeout and interval callbacks in correct order", () =
   assertEquals(intervalCb.calls, intervalExpected);
 });
 
-Deno.test("FakeTime restoreFor restores real time temporarily", async () => {
+Deno.test("FakeTime.restoreFor() restores real time temporarily", async () => {
   using time: FakeTime = new FakeTime();
   const start: number = Date.now();
 
@@ -272,7 +280,7 @@ Deno.test("FakeTime restoreFor restores real time temporarily", async () => {
   assert(_internals.Date.now() < start + 1000);
 });
 
-Deno.test("FakeTime restoreFor restores real time and re-overridden atomically", async () => {
+Deno.test("FakeTime.restoreFor() restores real time and re-overridden atomically", async () => {
   using _time: FakeTime = new FakeTime();
   const fakeSetTimeout = setTimeout;
   const actualSetTimeouts: (typeof setTimeout)[] = [];
@@ -296,7 +304,7 @@ Deno.test("FakeTime restoreFor restores real time and re-overridden atomically",
   ]);
 });
 
-Deno.test("FakeTime restoreFor returns promise that resolved to result of callback", async () => {
+Deno.test("FakeTime.restoreFor() returns promise that resolved to result of callback", async () => {
   using _time: FakeTime = new FakeTime();
 
   const resultSync = await FakeTime.restoreFor(() => "a");
@@ -305,7 +313,7 @@ Deno.test("FakeTime restoreFor returns promise that resolved to result of callba
   assertEquals(resultAsync, "b");
 });
 
-Deno.test("FakeTime restoreFor returns promise that rejected to error in callback", async () => {
+Deno.test("FakeTime.restoreFor() returns promise that rejected to error in callback", async () => {
   using _time: FakeTime = new FakeTime();
 
   await assertRejects(
@@ -326,7 +334,7 @@ Deno.test("FakeTime restoreFor returns promise that rejected to error in callbac
   );
 });
 
-Deno.test("FakeTime restoreFor returns promise that rejected to TimeError if FakeTime is uninitialized", async () => {
+Deno.test("FakeTime.restoreFor() returns promise that rejected to TimeError if FakeTime is uninitialized", async () => {
   await assertRejects(
     () => FakeTime.restoreFor(() => {}),
     TimeError,
@@ -334,7 +342,7 @@ Deno.test("FakeTime restoreFor returns promise that rejected to TimeError if Fak
   );
 });
 
-Deno.test("delay uses real time", async () => {
+Deno.test("FakeTime.delay() uses real time", async () => {
   using time: FakeTime = new FakeTime();
   const start: number = Date.now();
 
@@ -344,7 +352,7 @@ Deno.test("delay uses real time", async () => {
   assertEquals(Date.now(), start);
 });
 
-Deno.test("delay runs all microtasks before resolving", async () => {
+Deno.test("FakeTime.delay() runs all microtasks before resolving", async () => {
   using time: FakeTime = new FakeTime();
 
   const seq = [];
@@ -356,7 +364,7 @@ Deno.test("delay runs all microtasks before resolving", async () => {
   assertEquals(seq, [1, 2, 3, 4]);
 });
 
-Deno.test("delay with abort", async () => {
+Deno.test("FakeTime.delay() works with abort", async () => {
   using time: FakeTime = new FakeTime();
 
   const seq = [];
@@ -379,7 +387,7 @@ Deno.test("delay with abort", async () => {
   assertEquals(seq, [1, 2, 3]);
 });
 
-Deno.test("runMicrotasks runs all microtasks before resolving", async () => {
+Deno.test("FakeTime.runMicrotasks() runs all microtasks before resolving", async () => {
   using time: FakeTime = new FakeTime();
   const start: number = Date.now();
 
@@ -393,7 +401,7 @@ Deno.test("runMicrotasks runs all microtasks before resolving", async () => {
   assertEquals(Date.now(), start);
 });
 
-Deno.test("tickAsync runs all microtasks and runs timers if ticks past due", async () => {
+Deno.test("FakeTime.tickAsync() runs all microtasks and runs timers if ticks past due", async () => {
   using time: FakeTime = new FakeTime();
   const start: number = Date.now();
   const cb = spy(fromNow());
@@ -419,7 +427,7 @@ Deno.test("tickAsync runs all microtasks and runs timers if ticks past due", asy
   assertEquals(seq, [1, 2, 3, 4, 5, 6, 7]);
 });
 
-Deno.test("next runs next timer without running microtasks", async () => {
+Deno.test("FakeTime.next() runs next timer without running microtasks", async () => {
   using time: FakeTime = new FakeTime();
   const start: number = Date.now();
   const cb = spy(fromNow());
@@ -489,7 +497,7 @@ Deno.test("next runs next timer without running microtasks", async () => {
   assertEquals(seq, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]);
 });
 
-Deno.test("nextAsync runs all microtasks and next timer", async () => {
+Deno.test("FakeTime.nextAsync() runs all microtasks and next timer", async () => {
   using time: FakeTime = new FakeTime();
   const start: number = Date.now();
   const cb = spy(fromNow());
@@ -556,7 +564,7 @@ Deno.test("nextAsync runs all microtasks and next timer", async () => {
   assertEquals(seq, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]);
 });
 
-Deno.test("runAll runs all timers without running microtasks", async () => {
+Deno.test("FakeTime.runAll() runs all timers without running microtasks", async () => {
   using time: FakeTime = new FakeTime();
   const start: number = Date.now();
   const cb = spy(fromNow());
@@ -589,7 +597,7 @@ Deno.test("runAll runs all timers without running microtasks", async () => {
   assertEquals(seq, [1, 2, 3, 4, 5, 6, 7, 8]);
 });
 
-Deno.test("runAllAsync runs all microtasks and timers", async () => {
+Deno.test("FakeTime.runAllAsync() runs all microtasks and timers", async () => {
   using time: FakeTime = new FakeTime();
   const start: number = Date.now();
   const cb = spy(fromNow());
@@ -631,4 +639,86 @@ Deno.test("Date from FakeTime is structured cloneable", () => {
   assertEquals(cloned.getTime(), date.getTime());
   assert(date instanceof Date);
   assert(cloned instanceof Date_);
+});
+
+Deno.test("new FakeTime() throws if the time is already faked", () => {
+  using _time = new FakeTime();
+  assertThrows(() => new FakeTime());
+});
+
+Deno.test("Faked timer functions throws when called after FakeTime is restored", () => {
+  let fakeSetTimeout: typeof setTimeout;
+  let fakeClearTimeout: typeof clearTimeout;
+  let fakeSetInterval: typeof setInterval;
+  let fakeClearInterval: typeof clearInterval;
+  {
+    using _time: FakeTime = new FakeTime();
+    fakeSetTimeout = setTimeout;
+    fakeClearTimeout = clearTimeout;
+    fakeSetInterval = setInterval;
+    fakeClearInterval = clearInterval;
+  }
+  assertThrows(() => fakeSetTimeout(() => {}, 0), TimeError, "no fake time");
+  assertThrows(() => fakeClearTimeout(0), TimeError, "no fake time");
+  assertThrows(() => fakeSetInterval(() => {}, 0), TimeError, "no fake time");
+  assertThrows(() => fakeClearInterval(0), TimeError, "no fake time");
+});
+
+Deno.test("Faked Date.now returns real time after FakeTime is restored", () => {
+  let fakeDateNow: typeof Date.now;
+  {
+    using _time: FakeTime = new FakeTime();
+    fakeDateNow = Date.now;
+  }
+  assertAlmostEquals(Date.now(), fakeDateNow());
+});
+
+Deno.test("FakeTime can be constructed with number, Date, or string", () => {
+  {
+    using _time = new FakeTime(1000);
+    assertEquals(Date.now(), 1000);
+  }
+
+  {
+    using _time = new FakeTime(new Date(2000));
+    assertEquals(Date.now(), 2000);
+  }
+
+  {
+    using _time = new FakeTime("Thu Jan 01 1970 00:00:03 GMT+0000");
+    assertEquals(Date.now(), 3000);
+  }
+});
+
+Deno.test("FakeTime throws when NaN is provided", () => {
+  assertThrows(() => new FakeTime(NaN), TimeError, "invalid start");
+});
+
+Deno.test("FakeTime.restore() throws when the time is already restored", () => {
+  const _time = new FakeTime();
+  FakeTime.restore();
+  assertThrows(() => FakeTime.restore(), TimeError, "time already restored");
+});
+
+Deno.test("time.restore() throws when the time is already restored", () => {
+  const time = new FakeTime();
+  time.restore();
+  assertThrows(() => time.restore(), TimeError, "time already restored");
+});
+
+Deno.test("time.now = N throws when N < time.now", () => {
+  using time = new FakeTime(1000);
+  assertThrows(
+    () => {
+      time.now = 999;
+    },
+    Error,
+    "time cannot go backwards",
+  );
+});
+
+Deno.test("time.start returns the started time of the fake time", () => {
+  using time = new FakeTime(1000);
+  time.now = 2000;
+  assertEquals(time.start, 1000);
 });

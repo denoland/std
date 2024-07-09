@@ -1,0 +1,13 @@
+{
+  "name": "@std/internal",
+  "version": "1.0.1",
+  "exports": {
+    ".": "./mod.ts",
+    "./build-message": "./build_message.ts",
+    "./diff-str": "./diff_str.ts",
+    "./diff": "./diff.ts",
+    "./format": "./format.ts",
+    "./styles": "./styles.ts",
+    "./types": "./types.ts"
+  }
+}

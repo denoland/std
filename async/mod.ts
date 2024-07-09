@@ -1,11 +1,17 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// TODO(iuioiua): Add web-compatible declaration once TypeScript 5.5 is released
+// and in the Deno runtime. See https://github.com/microsoft/TypeScript/pull/58211
+//
+// Note: this code is still compatible with recent
+// web browsers. See https://caniuse.com/?search=AbortSignal.any
 
 /**
- * Provide help with asynchronous tasks like delays, debouncing, deferring, or
- * pooling.
+ * Provide helpers with asynchronous tasks like {@linkcode delay | delays},
+ * {@linkcode debounce | debouncing}, {@linkcode retry | retrying}, or
+ * {@linkcode pooledMap | pooling}.
  *
- * ```ts
- * import { delay } from "https://deno.land/std@$STD_VERSION/async/delay.ts";
+ * ```ts no-assert
+ * import { delay } from "@std/async/delay";
  *
  * await delay(100); // waits for 100 milliseconds
  * ```

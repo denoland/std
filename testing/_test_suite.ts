@@ -1,7 +1,8 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 /** The options for creating a test suite with the describe function. */
 export interface DescribeDefinition<T> extends Omit<Deno.TestDefinition, "fn"> {
-  fn?: () => void;
+  /** The body of the test suite */
+  fn?: () => void | undefined;
   /**
    * The `describe` function returns a `TestSuite` representing the group of tests.
    * If `describe` is called within another `describe` calls `fn`, the suite will default to that parent `describe` calls returned `TestSuite`.
@@ -28,6 +29,7 @@ export interface DescribeDefinition<T> extends Omit<Deno.TestDefinition, "fn"> {
 
 /** The options for creating an individual test case with the it function. */
 export interface ItDefinition<T> extends Omit<Deno.TestDefinition, "fn"> {
+  /** The body of the test case */
   fn: (this: T, t: Deno.TestContext) => void | Promise<void>;
   /**
    * The `describe` function returns a `TestSuite` representing the group of tests.
@@ -62,6 +64,7 @@ const optionalTestStepDefinitionKeys: (keyof Deno.TestStepDefinition)[] = [
  * A group of tests.
  */
 export interface TestSuite<T> {
+  /** The symbol to use for grouping the test suite */
   symbol: symbol;
 }
 

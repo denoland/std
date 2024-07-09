@@ -1,13 +1,12 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import { copy as copyBytes } from "../bytes/copy.ts";
-import { assert } from "../assert/assert.ts";
+import { copy as copyBytes } from "@std/bytes/copy";
 import type { Reader, ReaderSync } from "./types.ts";
 
 const DEFAULT_BUFFER_SIZE = 32 * 1024;
 
 /**
- * @deprecated (will be removed after 1.0.0) Use the {@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API | Web Streams API} instead.
+ * @deprecated This will be removed in 1.0.0. Use the {@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API | Web Streams API} instead.
  */
 export interface ByteRange {
   /** The 0 based index of the start byte for a range. */
@@ -23,8 +22,8 @@ export interface ByteRange {
  * range.
  *
  * ```ts
- * import { assertEquals } from "https://deno.land/std@$STD_VERSION/assert/assert_equals.ts";
- * import { readRange } from "https://deno.land/std@$STD_VERSION/io/read_range.ts";
+ * import { assertEquals } from "@std/assert";
+ * import { readRange } from "@std/io/read-range";
  *
  * // Read the first 10 bytes of a file
  * const file = await Deno.open("example.txt", { read: true });
@@ -32,7 +31,7 @@ export interface ByteRange {
  * assertEquals(bytes.length, 10);
  * ```
  *
- * @deprecated (will be removed after 1.0.0) Use the {@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API | Web Streams API} instead.
+ * @deprecated This will be removed in 1.0.0. Use the {@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API | Web Streams API} instead.
  */
 export async function readRange(
   r: Reader & Deno.Seeker,
@@ -40,19 +39,25 @@ export async function readRange(
 ): Promise<Uint8Array> {
   // byte ranges are inclusive, so we have to add one to the end
   let length = range.end - range.start + 1;
-  assert(length > 0, "Invalid byte range was passed.");
+  if (length <= 0) throw new RangeError("Invalid byte range was passed.");
   await r.seek(range.start, Deno.SeekMode.Start);
   const result = new Uint8Array(length);
   let off = 0;
   while (length) {
     const p = new Uint8Array(Math.min(length, DEFAULT_BUFFER_SIZE));
     const nread = await r.read(p);
-    assert(nread !== null, "Unexpected EOF reach while reading a range.");
-    assert(nread > 0, "Unexpected read of 0 bytes while reading a range.");
+    if (nread === null) {
+      throw new Error("Unexpected EOF reach while reading a range.");
+    }
+    if (nread === 0) {
+      throw new Error("Unexpected read of 0 bytes while reading a range.");
+    }
     copyBytes(p, result, off);
     off += nread;
     length -= nread;
-    assert(length >= 0, "Unexpected length remaining after reading range.");
+    if (length < 0) {
+      throw new Error("Unexpected length remaining after reading range.");
+    }
   }
   return result;
 }
@@ -63,8 +68,8 @@ export async function readRange(
  * within that range.
  *
  * ```ts
- * import { assertEquals } from "https://deno.land/std@$STD_VERSION/assert/assert_equals.ts";
- * import { readRangeSync } from "https://deno.land/std@$STD_VERSION/io/read_range.ts";
+ * import { assertEquals } from "@std/assert";
+ * import { readRangeSync } from "@std/io/read-range";
  *
  * // Read the first 10 bytes of a file
  * const file = Deno.openSync("example.txt", { read: true });
@@ -72,7 +77,7 @@ export async function readRange(
  * assertEquals(bytes.length, 10);
  * ```
  *
- * @deprecated (will be removed after 1.0.0) Use the {@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API | Web Streams API} instead.
+ * @deprecated This will be removed in 1.0.0. Use the {@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API | Web Streams API} instead.
  */
 export function readRangeSync(
   r: ReaderSync & Deno.SeekerSync,
@@ -80,19 +85,25 @@ export function readRangeSync(
 ): Uint8Array {
   // byte ranges are inclusive, so we have to add one to the end
   let length = range.end - range.start + 1;
-  assert(length > 0, "Invalid byte range was passed.");
+  if (length <= 0) throw new RangeError("Invalid byte range was passed.");
   r.seekSync(range.start, Deno.SeekMode.Start);
   const result = new Uint8Array(length);
   let off = 0;
   while (length) {
     const p = new Uint8Array(Math.min(length, DEFAULT_BUFFER_SIZE));
     const nread = r.readSync(p);
-    assert(nread !== null, "Unexpected EOF reach while reading a range.");
-    assert(nread > 0, "Unexpected read of 0 bytes while reading a range.");
+    if (nread === null) {
+      throw new Error("Unexpected EOF reach while reading a range.");
+    }
+    if (nread === 0) {
+      throw new Error("Unexpected read of 0 bytes while reading a range.");
+    }
     copyBytes(p, result, off);
     off += nread;
     length -= nread;
-    assert(length >= 0, "Unexpected length remaining after reading range.");
+    if (length < 0) {
+      throw new Error("Unexpected length remaining after reading range.");
+    }
   }
   return result;
 }

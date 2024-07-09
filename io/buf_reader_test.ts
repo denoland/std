@@ -2,13 +2,13 @@
 // This code has been ported almost directly from Go's src/bytes/buffer_test.go
 // Copyright 2009 The Go Authors. All rights reserved. BSD license.
 // https://github.com/golang/go/blob/master/LICENSE
-import { assert, assertEquals, assertRejects, fail } from "../assert/mod.ts";
+import { assert, assertEquals, assertRejects, fail } from "@std/assert";
 import { BufferFullError, BufReader, PartialReadError } from "./buf_reader.ts";
 import { StringReader } from "./string_reader.ts";
 import { bufsizes, MIN_READ_BUFFER_SIZE } from "./_test_common.ts";
 import { Buffer } from "./buffer.ts";
 import type { Reader } from "./types.ts";
-import { copy } from "../bytes/copy.ts";
+import { copy } from "@std/bytes/copy";
 
 /** OneByteReader returns a Reader that implements
  * each non-empty Read by reading one byte from r.
@@ -309,12 +309,18 @@ const testOutput = encoder.encode("0123456789abcdefghijklmnopqrstuvwxy");
 
 // TestReader wraps a Uint8Array and returns reads of a specific length.
 class TestReader implements Reader {
-  constructor(private data: Uint8Array, private stride: number) {}
+  #data: Uint8Array;
+  #stride: number;
+
+  constructor(data: Uint8Array, stride: number) {
+    this.#data = data;
+    this.#stride = stride;
+  }
 
   read(buf: Uint8Array): Promise<number | null> {
-    let nread = this.stride;
-    if (nread > this.data.byteLength) {
-      nread = this.data.byteLength;
+    let nread = this.#stride;
+    if (nread > this.#data.byteLength) {
+      nread = this.#data.byteLength;
     }
     if (nread > buf.byteLength) {
       nread = buf.byteLength;
@@ -322,8 +328,8 @@ class TestReader implements Reader {
     if (nread === 0) {
       return Promise.resolve(null);
     }
-    copy(this.data, buf as Uint8Array);
-    this.data = this.data.subarray(nread);
+    copy(this.#data, buf as Uint8Array);
+    this.#data = this.#data.subarray(nread);
     return Promise.resolve(nread);
   }
 }

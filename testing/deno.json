@@ -1,0 +1,11 @@
+{
+  "name": "@std/testing",
+  "version": "1.0.0-rc.2",
+  "exports": {
+    "./bdd": "./bdd.ts",
+    "./mock": "./mock.ts",
+    "./snapshot": "./snapshot.ts",
+    "./time": "./time.ts",
+    "./types": "./types.ts"
+  }
+}

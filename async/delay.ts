@@ -15,9 +15,14 @@ export interface DelayOptions {
 /**
  * Resolve a {@linkcode Promise} after a given amount of milliseconds.
  *
- * @example
- * ```ts
- * import { delay } from "https://deno.land/std@$STD_VERSION/async/delay.ts";
+ * @throws {DOMException} If the optional signal is aborted before the delay
+ * duration, and `signal.reason` is undefined.
+ * @param ms Duration in milliseconds for how long the delay should last.
+ * @param options Additional options.
+ *
+ * @example Basic usage
+ * ```ts no-assert
+ * import { delay } from "@std/async/delay";
  *
  * // ...
  * const delayedPromise = delay(100);
@@ -25,10 +30,13 @@ export interface DelayOptions {
  * // ...
  * ```
  *
- * To allow the process to continue to run as long as the timer exists.
+ * @example Disable persistence
  *
- * ```ts
- * import { delay } from "https://deno.land/std@$STD_VERSION/async/delay.ts";
+ * Setting `persistent` to `false` will allow the process to continue to run as
+ * long as the timer exists.
+ *
+ * ```ts no-assert
+ * import { delay } from "@std/async/delay";
  *
  * // ...
  * await delay(100, { persistent: false });
@@ -36,7 +44,7 @@ export interface DelayOptions {
  * ```
  */
 export function delay(ms: number, options: DelayOptions = {}): Promise<void> {
-  const { signal, persistent } = options;
+  const { signal, persistent = true } = options;
   if (signal?.aborted) return Promise.reject(signal.reason);
   return new Promise((resolve, reject) => {
     const abort = () => {

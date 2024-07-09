@@ -1,15 +1,10 @@
 // Test cases copied from https://github.com/LinusU/base32-encode/blob/master/test.js
 // Copyright (c) 2016-2017 Linus Unnebäck. MIT license.
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-import { assertThrows } from "../assert/assert_throws.ts";
-import { assertEquals, assertExists } from "../assert/mod.ts";
+import { assertThrows } from "@std/assert";
+import { assertEquals, assertExists } from "@std/assert";
 import { decodeBase32, encodeBase32 } from "./base32.ts";
-
-// Lifted from https://stackoverflow.com/questions/38987784
-const fromHexString = (hexString: string): Uint8Array =>
-  new Uint8Array(hexString.match(/.{1,2}/g)!.map((byte) => parseInt(byte, 16)));
-const toHexString = (bytes: Uint8Array): string =>
-  bytes.reduce((str, byte) => str + byte.toString(16).padStart(2, "0"), "");
+import { decodeHex, encodeHex } from "./mod.ts";
 
 const testCases = [
   ["73", "OM======"],
@@ -91,7 +86,7 @@ Deno.test({
   name: "encodeBase32()",
   fn() {
     for (const [bin, b32] of testCases) {
-      assertEquals(encodeBase32(fromHexString(bin)), b32);
+      assertEquals(encodeBase32(decodeHex(bin)), b32);
     }
   },
 });
@@ -100,7 +95,7 @@ Deno.test({
   name: "decodeBase32()",
   fn() {
     for (const [bin, b32] of testCases) {
-      assertEquals(toHexString(decodeBase32(b32)), bin);
+      assertEquals(encodeHex(decodeBase32(b32)), bin);
     }
   },
 });
@@ -110,6 +105,7 @@ Deno.test({
   fn() {
     assertThrows(
       () => decodeBase32("OOOO=="),
+      Error,
       "Invalid string. Length must be a multiple of 8",
     );
   },
@@ -119,7 +115,8 @@ Deno.test({
   name: "decodeBase32() throws on bad padding",
   fn() {
     assertThrows(
-      () => decodeBase32("OOOO=="),
+      () => decodeBase32("5HXR334AQYAAAA=="),
+      Error,
       "Invalid pad length",
     );
   },

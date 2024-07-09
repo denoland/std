@@ -1,0 +1,14 @@
+{
+  "name": "@std/media-types",
+  "version": "1.0.1",
+  "exports": {
+    ".": "./mod.ts",
+    "./content-type": "./content_type.ts",
+    "./extension": "./extension.ts",
+    "./all-extensions": "./all_extensions.ts",
+    "./format-media-type": "./format_media_type.ts",
+    "./get-charset": "./get_charset.ts",
+    "./parse-media-type": "./parse_media_type.ts",
+    "./type-by-extension": "./type_by_extension.ts"
+  }
+}

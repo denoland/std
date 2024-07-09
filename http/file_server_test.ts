@@ -6,8 +6,8 @@ import {
   assertFalse,
   assertMatch,
   assertStringIncludes,
-} from "../assert/mod.ts";
-import { stub } from "../testing/mock.ts";
+} from "@std/assert";
+import { stub } from "@std/testing/mock";
 import { serveDir, type ServeDirOptions, serveFile } from "./file_server.ts";
 import { calculate } from "./etag.ts";
 import {
@@ -17,9 +17,11 @@ import {
   join,
   resolve,
   toFileUrl,
-} from "../path/mod.ts";
-import { VERSION } from "../version.ts";
-import { MINUTE } from "../datetime/constants.ts";
+} from "@std/path";
+import denoConfig from "./deno.json" with { type: "json" };
+import { MINUTE } from "@std/datetime/constants";
+import { getAvailablePort } from "@std/net/get-available-port";
+import { concat } from "@std/bytes/concat";
 
 const moduleDir = dirname(fromFileUrl(import.meta.url));
 const testdataDir = resolve(moduleDir, "testdata");
@@ -221,6 +223,21 @@ Deno.test("serveDir() serves directory index with file containing space in the f
   await Deno.remove(filePath);
 });
 
+Deno.test("serveDir() serves directory index with file's mode is 0", async () => {
+  const stat = Deno.stat;
+  using _stub = stub(
+    Deno,
+    "stat",
+    async (path: string | URL): Promise<Deno.FileInfo> => ({
+      ...(await stat(path)),
+      mode: 0,
+    }),
+  );
+  const res = await serveDir(new Request("http://localhost/"), serveDirOptions);
+  const page = await res.text();
+  assertMatch(page, /<td class="mode">(\s)*- --- --- ---(\s)*<\/td>/);
+});
+
 Deno.test("serveDir() returns a response even if fileinfo is inaccessible", async () => {
   // Note: Deno.stat for windows system files may be rejected with os error 32.
   // Mock Deno.stat to test that the dirlisting page can be generated
@@ -352,7 +369,7 @@ Deno.test("serveDir() script prints help", async () => {
   });
   const { stdout } = await command.output();
   const output = new TextDecoder().decode(stdout);
-  assert(output.includes(`Deno File Server ${VERSION}`));
+  assert(output.includes(`Deno File Server ${denoConfig.version}`));
 });
 
 Deno.test("serveDir() script prints version", async () => {
@@ -370,7 +387,7 @@ Deno.test("serveDir() script prints version", async () => {
   });
   const { stdout } = await command.output();
   const output = new TextDecoder().decode(stdout);
-  assert(output.includes(`Deno File Server ${VERSION}`));
+  assert(output.includes(`Deno File Server ${denoConfig.version}`));
 });
 
 Deno.test("serveDir() ignores query params", async () => {
@@ -796,7 +813,7 @@ Deno.test("serveFile() etag value falls back to DENO_DEPLOYMENT_ID if fileInfo.m
   const code = `
     import { serveFile } from "${import.meta.resolve("./file_server.ts")}";
     import { fromFileUrl } from "${import.meta.resolve("../path/mod.ts")}";
-    import { assertEquals } from "${import.meta.resolve("../assert/assert_equals.ts")}";
+    import { assertEquals } from "${import.meta.resolve("../assert/equals.ts")}";
     const testdataPath = "${toFileUrl(join(testdataDir, "test_file.txt"))}";
     const fileInfo = await Deno.stat(new URL(testdataPath));
     fileInfo.mtime = null;
@@ -970,3 +987,90 @@ Deno.test(
     await Deno.remove(tempDir);
   },
 );
+
+Deno.test("file_server prints local and network urls", async () => {
+  const port = await getAvailablePort();
+  const process = spawnDeno([
+    "--allow-net",
+    "--allow-read",
+    "--allow-sys=networkInterfaces",
+    "http/file_server.ts",
+    "--port",
+    `${port}`,
+  ]);
+  const output = await readUntilMatch(process.stdout, "Network:");
+  const networkAdress = Deno.networkInterfaces().find((i) =>
+    i.family === "IPv4" && !i.address.startsWith("127")
+  )?.address;
+  assertEquals(
+    output,
+    `Listening on:\n- Local: http://localhost:${port}\n- Network: http://${networkAdress}:${port}\n`,
+  );
+  process.stdout.cancel();
+  process.stderr.cancel();
+  process.kill();
+  await process.status;
+});
+
+Deno.test("file_server prints only local address on Deploy", async () => {
+  const port = await getAvailablePort();
+  const process = spawnDeno([
+    "--allow-net",
+    "--allow-read",
+    "--allow-sys=networkInterfaces",
+    "--allow-env=DENO_DEPLOYMENT_ID",
+    "http/file_server.ts",
+    "--port",
+    `${port}`,
+  ], {
+    env: {
+      DENO_DEPLOYMENT_ID: "abcdef",
+    },
+  });
+  const output = await readUntilMatch(process.stdout, "Local:");
+  console.log(output);
+  assertEquals(
+    output,
+    `Listening on:\n- Local: http://localhost:${port}\n`,
+  );
+  process.stdout.cancel();
+  process.stderr.cancel();
+  process.kill();
+  await process.status;
+});
+
+/** Spawn deno child process with the options convenient for testing */
+function spawnDeno(args: string[], opts?: Deno.CommandOptions) {
+  const cmd = new Deno.Command(Deno.execPath(), {
+    args: [
+      "run",
+      "--no-lock",
+      "--quiet",
+      "--config",
+      "deno.json",
+      ...args,
+    ],
+    stdout: "piped",
+    stderr: "piped",
+    ...opts,
+  });
+  return cmd.spawn();
+}
+
+async function readUntilMatch(
+  source: ReadableStream,
+  match: string,
+) {
+  const reader = source.getReader();
+  let buf = new Uint8Array(0);
+  const dec = new TextDecoder();
+  while (!dec.decode(buf).includes(match)) {
+    const { value } = await reader.read();
+    if (!value) {
+      break;
+    }
+    buf = concat([buf, value]);
+  }
+  reader.releaseLock();
+  return dec.decode(buf);
+}

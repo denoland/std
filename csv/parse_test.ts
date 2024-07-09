@@ -4,9 +4,9 @@
 // https://github.com/golang/go/blob/master/LICENSE
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import { assert, assertEquals, assertThrows } from "../assert/mod.ts";
+import { assert, assertEquals, assertThrows } from "@std/assert";
 import { parse, ParseError, type ParseOptions } from "./parse.ts";
-import type { AssertTrue, IsExact } from "../testing/types.ts";
+import type { AssertTrue, IsExact } from "@std/testing/types";
 
 const BYTE_ORDER_MARK = "\ufeff";
 
@@ -195,6 +195,17 @@ Deno.test({
           () => parse(input),
           ParseError,
           'parse error on line 1, column 1: bare " in non-quoted-field',
+        );
+      },
+    });
+    await t.step({
+      name: "error column grapheme number",
+      fn() {
+        const input = `a,b,🐱"`;
+        assertThrows(
+          () => parse(input),
+          ParseError,
+          'parse error on line 1, column 5: bare " in non-quoted-field',
         );
       },
     });
@@ -813,6 +824,24 @@ Deno.test({
         assertEquals(parse(input, { trimLeadingSpace: true }), output);
       },
     });
+    await t.step({
+      name: "leading line breaks",
+      fn() {
+        const input = "\n\na,b,c";
+        const output = [["a", "b", "c"]];
+        assertEquals(parse(input), output);
+      },
+    });
+    await t.step({
+      name: "throws when skipFirstRow=true with empty data",
+      fn() {
+        assertThrows(
+          () => parse("", { skipFirstRow: true }),
+          Error,
+          "Headers must be defined",
+        );
+      },
+    });
   },
 });
 
@@ -825,7 +854,7 @@ Deno.test({
       type _ = AssertTrue<IsExact<typeof parsed, string[][]>>;
     }
     {
-      const parsed = parse("a\nb", undefined);
+      const parsed = parse("a\nb");
       type _ = AssertTrue<IsExact<typeof parsed, string[][]>>;
     }
     {

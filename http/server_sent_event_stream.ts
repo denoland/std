@@ -24,7 +24,7 @@ export interface ServerSentEventMessage {
 
 function assertHasNoNewline(value: string, varName: string) {
   if (value.match(NEWLINE_REGEXP) !== null) {
-    throw new RangeError(`${varName} cannot contain a newline`);
+    throw new SyntaxError(`${varName} cannot contain a newline`);
   }
 }
 
@@ -61,12 +61,12 @@ function stringify(message: ServerSentEventMessage): Uint8Array {
  *
  * @see {@link https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events/Using_server-sent_events}
  *
- * @example
- * ```ts
+ * @example Usage
+ * ```ts no-assert
  * import {
  *   type ServerSentEventMessage,
  *   ServerSentEventStream,
- * } from "https://deno.land/std@$STD_VERSION/http/server_sent_event_stream.ts";
+ * } from "@std/http/server-sent-event-stream";
  *
  * const stream = ReadableStream.from<ServerSentEventMessage>([
  *   { data: "hello there" }

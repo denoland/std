@@ -1,0 +1,10 @@
+{
+  "name": "@std/dotenv",
+  "version": "0.224.2",
+  "exports": {
+    ".": "./mod.ts",
+    "./load": "./load.ts",
+    "./parse": "./parse.ts",
+    "./stringify": "./stringify.ts"
+  }
+}

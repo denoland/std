@@ -1,10 +1,10 @@
 // Copyright Isaac Z. Schlueter and Contributors. All rights reserved. ISC license.
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-import { assertEquals } from "../assert/mod.ts";
+import { assertEquals } from "@std/assert";
 import { parse } from "./parse.ts";
 import { parseRange } from "./parse_range.ts";
 import { maxSatisfying } from "./max_satisfying.ts";
-import { MAX, MIN } from "./constants.ts";
+import { MAX, MIN } from "./_constants.ts";
 
 Deno.test({
   name: "maxSatisfying()",

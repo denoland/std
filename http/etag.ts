@@ -1,4 +1,5 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
 
 /**
  * Provides functions for dealing with and matching ETags, including
@@ -13,7 +14,7 @@
  * @module
  */
 
-import { encodeBase64 as base64Encode } from "../encoding/base64.ts";
+import { encodeBase64 as base64Encode } from "@std/encoding/base64";
 
 /**
  * Just the part of {@linkcode Deno.FileInfo} that is required to calculate an `ETag`,
@@ -40,7 +41,7 @@ export interface ETagOptions {
   /**
    * A digest algorithm to use to calculate the etag.
    *
-   * @default {"FNV32A"}
+   * @default {"SHA-256"}
    */
   algorithm?: AlgorithmIdentifier;
 
@@ -94,9 +95,10 @@ async function calcFileInfo(
  * it will be fingerprinted as a "strong" tag, otherwise if it is just file
  * information, it will be calculated as a weak tag.
  *
+ * @example Usage
  * ```ts
- * import { calculate } from "https://deno.land/std@$STD_VERSION/http/etag.ts";
- * import { assert } from "https://deno.land/std@$STD_VERSION/assert/assert.ts"
+ * import { calculate } from "@std/http/etag";
+ * import { assert } from "@std/assert";
  *
  * const body = "hello deno!";
  *
@@ -105,6 +107,10 @@ async function calcFileInfo(
  *
  * const res = new Response(body, { headers: { etag } });
  * ```
+ *
+ * @param entity The entity to get the ETag for.
+ * @param options Various additional options.
+ * @returns The calculated ETag.
  */
 export async function calculate(
   entity: Entity,
@@ -126,12 +132,13 @@ export async function calculate(
  * See MDN's [`If-Match`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/If-Match)
  * article for more information on how to use this function.
  *
- * ```ts
+ * @example Usage
+ * ```ts no-eval
  * import {
  *   calculate,
  *   ifMatch,
- * } from "https://deno.land/std@$STD_VERSION/http/etag.ts";
- * import { assert } from "https://deno.land/std@$STD_VERSION/assert/assert.ts"
+ * } from "@std/http/etag";
+ * import { assert } from "@std/assert";
  *
  * const body = "hello deno!";
  *
@@ -146,6 +153,10 @@ export async function calculate(
  *   }
  * });
  * ```
+ *
+ * @param value the If-Match header value.
+ * @param etag the ETag to check against.
+ * @returns whether or not the parameters match.
  */
 export function ifMatch(
   value: string | null,
@@ -169,12 +180,13 @@ export function ifMatch(
  * See MDN's [`If-None-Match`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/If-None-Match)
  * article for more information on how to use this function.
  *
- * ```ts
+ * @example Usage
+ * ```ts no-eval
  * import {
  *   calculate,
  *   ifNoneMatch,
- * } from "https://deno.land/std@$STD_VERSION/http/etag.ts";
- * import { assert } from "https://deno.land/std@$STD_VERSION/assert/assert.ts"
+ * } from "@std/http/etag";
+ * import { assert } from "@std/assert";
  *
  * const body = "hello deno!";
  *
@@ -189,6 +201,10 @@ export function ifMatch(
  *   }
  * });
  * ```
+ *
+ * @param value the If-None-Match header value.
+ * @param etag the ETag to check against.
+ * @returns whether or not the parameters do not match.
  */
 export function ifNoneMatch(
   value: string | null,

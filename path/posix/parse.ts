@@ -2,14 +2,33 @@
 // This module is browser compatible.
 
 import { CHAR_DOT } from "../_common/constants.ts";
-import type { ParsedPath } from "../_interface.ts";
+import type { ParsedPath } from "../types.ts";
 import { stripTrailingSeparators } from "../_common/strip_trailing_separators.ts";
 import { assertPath } from "../_common/assert_path.ts";
 import { isPosixPathSeparator } from "./_util.ts";
 
+export type { ParsedPath } from "../types.ts";
+
 /**
  * Return a `ParsedPath` object of the `path`.
- * @param path to process
+ *
+ * @example Usage
+ * ```ts
+ * import { parse } from "@std/path/posix/parse";
+ * import { assertEquals } from "@std/assert";
+ *
+ * const path = parse("/home/user/file.txt");
+ * assertEquals(path, {
+ *   root: "/",
+ *   dir: "/home/user",
+ *   base: "file.txt",
+ *   ext: ".txt",
+ *   name: "file"
+ * });
+ * ```
+ *
+ * @param path The path to parse.
+ * @returns The parsed path object.
  */
 export function parse(path: string): ParsedPath {
   assertPath(path);

@@ -2,7 +2,7 @@
 
 import { expect } from "./expect.ts";
 import { fn } from "./fn.ts";
-import { AssertionError, assertThrows } from "../assert/mod.ts";
+import { AssertionError, assertThrows } from "@std/assert";
 
 Deno.test("expect().toHaveBeenNthCalledWith()", () => {
   const mockFn = fn();
@@ -40,5 +40,17 @@ Deno.test("expect().toHaveBeenNthCalledWith() should throw when mock call does n
     },
     AssertionError,
     'Expected the n-th call (n=2) of mock function is with "hello", but the n-th call does not exist.',
+  );
+});
+
+Deno.test("expect().toHaveBeenNthCalledWith() throw when n is not a positive integer", () => {
+  const mockFn = fn();
+
+  assertThrows(
+    () => {
+      expect(mockFn).toHaveBeenNthCalledWith(0, "hello");
+    },
+    Error,
+    "nth must be greater than 0. 0 was given.",
   );
 });

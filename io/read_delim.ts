@@ -1,7 +1,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-import { concat } from "../bytes/concat.ts";
+import { concat } from "@std/bytes/concat";
 import type { Reader } from "./types.ts";
 
 /** Generate longest proper prefix which is also suffix array. */
@@ -28,7 +28,7 @@ function createLPS(pat: Uint8Array): Uint8Array {
 /**
  * Read delimited bytes from a Reader.
  *
- * @deprecated (will be removed after 1.0.0) Use the {@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API | Web Streams API} instead.
+ * @deprecated This will be removed in 1.0.0. Use the {@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API | Web Streams API} instead.
  */
 export async function* readDelim(
   reader: Reader,

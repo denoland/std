@@ -1,0 +1,12 @@
+{
+  "name": "@std/text",
+  "version": "1.0.0-rc.2",
+  "exports": {
+    ".": "./mod.ts",
+    "./case": "./case.ts",
+    "./closest-string": "./closest_string.ts",
+    "./compare-similarity": "./compare_similarity.ts",
+    "./levenshtein-distance": "./levenshtein_distance.ts",
+    "./word-similarity-sort": "./word_similarity_sort.ts"
+  }
+}

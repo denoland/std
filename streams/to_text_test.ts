@@ -1,6 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import { assertEquals } from "../assert/assert_equals.ts";
+import { assertEquals } from "@std/assert";
 import { toText } from "./to_text.ts";
 
 Deno.test("toText()", async () => {

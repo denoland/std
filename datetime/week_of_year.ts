@@ -18,14 +18,18 @@ const Day = {
 /**
  * Returns the ISO week number of the provided date (1-53).
  *
- * @example
+ * @param date Date to get the week number of.
+ * @returns The week number of the provided date.
+ *
+ * @example Basic usage
  * ```ts
- * import { weekOfYear } from "https://deno.land/std@$STD_VERSION/datetime/week_of_year.ts";
+ * import { weekOfYear } from "@std/datetime/week-of-year";
+ * import { assertEquals } from "@std/assert";
  *
- * weekOfYear(new Date("2020-12-28T03:24:00")); // Returns 53
+ * assertEquals(weekOfYear(new Date("2020-12-28T03:24:00")), 53);
+ *
+ * assertEquals(weekOfYear(new Date("2020-07-10T03:24:00")), 28);
  * ```
- *
- * @return Number of the week in year
  */
 export function weekOfYear(date: Date): number {
   const workingDate = new Date(

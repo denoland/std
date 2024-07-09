@@ -17,27 +17,23 @@
  * ## Supported algorithms
  *
  * Here is a list of supported algorithms. If the algorithm name in WebCrypto
- * and Wasm/Rust is the same, this library prefers to use algorithms that are
- * supported by WebCrypto.
+ * and Wasm/Rust is the same, this library prefers to use the implementation
+ * provided by WebCrypto.
  *
  * WebCrypto:
  * - `SHA-384`
- * - `SHA-256`
- * - `SHA-512` (length-extendable and collidable)
+ * - `SHA-256` (length-extendable)
+ * - `SHA-512` (length-extendable)
  *
  * Wasm/Rust:
+ * - `BLAKE2B`
  * - `BLAKE2B-128`
  * - `BLAKE2B-160`
  * - `BLAKE2B-224`
  * - `BLAKE2B-256`
  * - `BLAKE2B-384`
- * - `BLAKE2B`
  * - `BLAKE2S`
  * - `BLAKE3`
- * - `FNV32` (length-extendable)
- * - `FNV32A` (length-extendable)
- * - `FNV64` (length-extendable)
- * - `FNV64A` (length-extendable)
  * - `KECCAK-224`
  * - `KECCAK-256`
  * - `KECCAK-384`
@@ -54,14 +50,17 @@
  * - `SHA-224` (length-extendable)
  * - `SHA-256` (length-extendable)
  * - `SHA-512` (length-extendable)
- * - `MD4` (collidable and length-extendable)
- * - `MD5` (collidable and length-extendable)
- * - `SHA-1` (collidable and length-extendable)
- * ```
+ * - `MD4` (length-extendable and collidable)
+ * - `MD5` (length-extendable and collidable)
+ * - `SHA-1` (length-extendable and collidable)
+ * - `FNV32` (non-cryptographic)
+ * - `FNV32A` (non-cryptographic)
+ * - `FNV64` (non-cryptographic)
+ * - `FNV64A` (non-cryptographic)
  *
  * @example
  * ```ts
- * import { crypto } from "https://deno.land/std@$STD_VERSION/crypto/mod.ts";
+ * import { crypto } from "@std/crypto";
  *
  * // This will delegate to the runtime's WebCrypto implementation.
  * console.log(
@@ -89,9 +88,9 @@
  * ```ts
  * import {
  *   crypto,
- * } from "https://deno.land/std@$STD_VERSION/crypto/mod.ts";
- * import { encodeHex } from "https://deno.land/std@$STD_VERSION/encoding/hex.ts"
- * import { encodeBase64 } from "https://deno.land/std@$STD_VERSION/encoding/base64.ts"
+ * } from "@std/crypto";
+ * import { encodeHex } from "@std/encoding/hex"
+ * import { encodeBase64 } from "@std/encoding/base64"
  *
  * const hash = await crypto.subtle.digest(
  *   "SHA-384",
@@ -107,15 +106,22 @@
  *
  * @module
  */
-
 import {
-  type DigestAlgorithm as WasmDigestAlgorithm,
-  digestAlgorithms as wasmDigestAlgorithms,
+  DIGEST_ALGORITHM_NAMES,
+  type DigestAlgorithmName,
   instantiateWasm,
 } from "./_wasm/mod.ts";
-import { fnv } from "./_fnv/mod.ts";
 
-export { type WasmDigestAlgorithm, wasmDigestAlgorithms };
+export { DIGEST_ALGORITHM_NAMES, type DigestAlgorithmName };
+
+/** Digest algorithms supported by WebCrypto. */
+const WEB_CRYPTO_DIGEST_ALGORITHM_NAMES = [
+  "SHA-384",
+  "SHA-256",
+  "SHA-512",
+  // insecure (length-extendable and collidable):
+  "SHA-1",
+] as const;
 
 /**
  * A copy of the global WebCrypto interface, with methods bound so they're
@@ -140,17 +146,16 @@ const webCrypto = ((crypto) => ({
   },
 }))(globalThis.crypto);
 
-const bufferSourceBytes = (data: BufferSource | unknown) => {
-  let bytes: Uint8Array | undefined;
+function toUint8Array(data: unknown): Uint8Array | undefined {
   if (data instanceof Uint8Array) {
-    bytes = data;
+    return data;
   } else if (ArrayBuffer.isView(data)) {
-    bytes = new Uint8Array(data.buffer, data.byteOffset, data.byteLength);
+    return new Uint8Array(data.buffer, data.byteOffset, data.byteLength);
   } else if (data instanceof ArrayBuffer) {
-    bytes = new Uint8Array(data);
+    return new Uint8Array(data);
   }
-  return bytes;
-};
+  return undefined;
+}
 
 /** Extensions to the web standard `SubtleCrypto` interface. */
 export interface StdSubtleCrypto extends SubtleCrypto {
@@ -201,37 +206,31 @@ const stdCrypto: StdCrypto = ((x) => x)({
 
       assertValidDigestLength(length);
 
-      const bytes = bufferSourceBytes(data);
-
-      if (FNV_ALGORITHMS.includes(name)) {
-        return fnv(name, bytes);
-      }
-
       // We delegate to WebCrypto whenever possible,
       if (
         // if the algorithm is supported by the WebCrypto standard,
-        (webCryptoDigestAlgorithms as readonly string[]).includes(name) &&
+        (WEB_CRYPTO_DIGEST_ALGORITHM_NAMES as readonly string[]).includes(
+          name,
+        ) &&
         // and the data is a single buffer,
-        bytes
+        isBufferSource(data)
       ) {
-        return webCrypto.subtle.digest(algorithm, bytes);
-      } else if (wasmDigestAlgorithms.includes(name as WasmDigestAlgorithm)) {
-        if (bytes) {
+        return await webCrypto.subtle.digest(algorithm, data);
+      } else if (DIGEST_ALGORITHM_NAMES.includes(name as DigestAlgorithmName)) {
+        if (isBufferSource(data)) {
           // Otherwise, we use our bundled Wasm implementation via digestSync
           // if it supports the algorithm.
-          return stdCrypto.subtle.digestSync(algorithm, bytes);
-        } else if ((data as Iterable<BufferSource>)[Symbol.iterator]) {
+          return stdCrypto.subtle.digestSync(algorithm, data);
+        } else if (isIterable(data)) {
           return stdCrypto.subtle.digestSync(
             algorithm,
             data as Iterable<BufferSource>,
           );
-        } else if (
-          (data as AsyncIterable<BufferSource>)[Symbol.asyncIterator]
-        ) {
+        } else if (isAsyncIterable(data)) {
           const wasmCrypto = instantiateWasm();
           const context = new wasmCrypto.DigestContext(name);
           for await (const chunk of data as AsyncIterable<BufferSource>) {
-            const chunkBytes = bufferSourceBytes(chunk);
+            const chunkBytes = toUint8Array(chunk);
             if (!chunkBytes) {
               throw new TypeError("data contained chunk of the wrong type");
             }
@@ -243,18 +242,12 @@ const stdCrypto: StdCrypto = ((x) => x)({
             "data must be a BufferSource or [Async]Iterable<BufferSource>",
           );
         }
-      } else if (webCrypto.subtle?.digest) {
-        // (TypeScript type definitions prohibit this case.) If they're trying
-        // to call an algorithm we don't recognize, pass it along to WebCrypto
-        // in case it's a non-standard algorithm supported by the the runtime
-        // they're using.
-        return webCrypto.subtle.digest(
-          algorithm,
-          (data as unknown) as Uint8Array,
-        );
-      } else {
-        throw new TypeError(`unsupported digest algorithm: ${algorithm}`);
       }
+      // (TypeScript type definitions prohibit this case.) If they're trying
+      // to call an algorithm we don't recognize, pass it along to WebCrypto
+      // in case it's a non-standard algorithm supported by the the runtime
+      // they're using.
+      return await webCrypto.subtle.digest(algorithm, data as BufferSource);
     },
 
     digestSync(
@@ -262,54 +255,30 @@ const stdCrypto: StdCrypto = ((x) => x)({
       data: BufferSource | Iterable<BufferSource>,
     ): ArrayBuffer {
       const { name, length } = normalizeAlgorithm(algorithm);
-
       assertValidDigestLength(length);
 
-      const bytes = bufferSourceBytes(data);
-
-      if (FNV_ALGORITHMS.includes(name)) {
-        return fnv(name, bytes);
-      }
-
       const wasmCrypto = instantiateWasm();
-      if (bytes) {
-        return wasmCrypto.digest(name, bytes, length)
-          .buffer;
-      } else if ((data as Iterable<BufferSource>)[Symbol.iterator]) {
+      if (isBufferSource(data)) {
+        const bytes = toUint8Array(data)!;
+        return wasmCrypto.digest(name, bytes, length).buffer;
+      }
+      if (isIterable(data)) {
         const context = new wasmCrypto.DigestContext(name);
-        for (const chunk of data as Iterable<BufferSource>) {
-          const chunkBytes = bufferSourceBytes(chunk);
+        for (const chunk of data) {
+          const chunkBytes = toUint8Array(chunk);
           if (!chunkBytes) {
             throw new TypeError("data contained chunk of the wrong type");
           }
           context.update(chunkBytes);
         }
         return context.digestAndDrop(length).buffer;
-      } else {
-        throw new TypeError(
-          "data must be a BufferSource or Iterable<BufferSource>",
-        );
       }
+      throw new TypeError(
+        "data must be a BufferSource or Iterable<BufferSource>",
+      );
     },
   },
 });
-
-const FNV_ALGORITHMS = ["FNV32", "FNV32A", "FNV64", "FNV64A"];
-
-/** Digest algorithms supported by WebCrypto. */
-const webCryptoDigestAlgorithms = [
-  "SHA-384",
-  "SHA-256",
-  "SHA-512",
-  // insecure (length-extendable and collidable):
-  "SHA-1",
-] as const;
-
-/** FNV (Fowler/Noll/Vo) algorithms names. */
-export type FNVAlgorithms = "FNV32" | "FNV32A" | "FNV64" | "FNV64A";
-
-/** Extended digest algorithm names. */
-export type DigestAlgorithmName = WasmDigestAlgorithm | FNVAlgorithms;
 
 /*
  * The largest digest length the current Wasm implementation can support. This
@@ -352,6 +321,18 @@ function normalizeAlgorithm(algorithm: DigestAlgorithm) {
       ...algorithm,
       name: algorithm.name.toUpperCase(),
     }) as DigestAlgorithmObject;
+}
+
+function isBufferSource(obj: unknown): obj is BufferSource {
+  return obj instanceof ArrayBuffer || ArrayBuffer.isView(obj);
+}
+
+function isIterable<T>(obj: unknown): obj is Iterable<T> {
+  return typeof (obj as Iterable<T>)[Symbol.iterator] === "function";
+}
+
+function isAsyncIterable<T>(obj: unknown): obj is AsyncIterable<T> {
+  return typeof (obj as AsyncIterable<T>)[Symbol.asyncIterator] === "function";
 }
 
 export { stdCrypto as crypto };

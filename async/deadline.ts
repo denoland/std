@@ -1,62 +1,48 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-// This module is browser compatible.
+// TODO(iuioiua): Add web-compatible declaration once TypeScript 5.5 is released
+// and in the Deno runtime. See https://github.com/microsoft/TypeScript/pull/58211
+//
+// Note: this code is still compatible with recent
+// web browsers. See https://caniuse.com/?search=AbortSignal.any
+import { abortable } from "./abortable.ts";
 
-import { delay } from "./delay.ts";
-
-/** Options for {@linkcode Deadline}. */
+/** Options for {@linkcode deadline}. */
 export interface DeadlineOptions {
   /** Signal used to abort the deadline. */
   signal?: AbortSignal;
 }
 
-/** Error thrown when {@linkcode Deadline} times out. */
-export class DeadlineError extends Error {
-  /**
-   * Constructs a new {@linkcode DeadlineError} instance.
-   *
-   * @example
-   * ```ts
-   * import { DeadlineError } from "https://deno.land/std@$STD_VERSION/async/deadline.ts";
-   *
-   * throw new DeadlineError();
-   * ```
-   */
-  constructor() {
-    super("Deadline");
-    this.name = this.constructor.name;
-  }
-}
-
 /**
- * Create a promise which will be rejected with {@linkcode DeadlineError} when
+ * Create a promise which will be rejected with {@linkcode DOMException} when
  * a given delay is exceeded.
  *
  * Note: Prefer to use {@linkcode AbortSignal.timeout} instead for the APIs
  * that accept {@linkcode AbortSignal}.
  *
- * @example
- * ```ts
- * import { deadline } from "https://deno.land/std@$STD_VERSION/async/deadline.ts";
- * import { delay } from "https://deno.land/std@$STD_VERSION/async/delay.ts";
+ * @throws {DOMException} When the provided duration runs out before resolving
+ * or if the optional signal is aborted, and `signal.reason` is undefined.
+ * @typeParam T The type of the provided and returned promise.
+ * @param p The promise to make rejectable.
+ * @param ms Duration in milliseconds for when the promise should time out.
+ * @param options Additional options.
+ * @returns A promise that will reject if the provided duration runs out before resolving.
  *
- * const delayedPromise = delay(1000);
- * // Below throws `DeadlineError` after 10 ms
+ * @example Usage
+ * ```ts no-eval
+ * import { deadline } from "@std/async/deadline";
+ * import { delay } from "@std/async/delay";
+ *
+ * const delayedPromise = delay(1_000);
+ * // Below throws `DOMException` after 10 ms
  * const result = await deadline(delayedPromise, 10);
  * ```
  */
-export function deadline<T>(
+export async function deadline<T>(
   p: Promise<T>,
   ms: number,
   options: DeadlineOptions = {},
 ): Promise<T> {
-  const controller = new AbortController();
-  const { signal } = options;
-  if (signal?.aborted) {
-    return Promise.reject(new DeadlineError());
-  }
-  signal?.addEventListener("abort", () => controller.abort(signal.reason));
-  const d = delay(ms, { signal: controller.signal })
-    .catch(() => {}) // Do NOTHING on abort.
-    .then(() => Promise.reject(new DeadlineError()));
-  return Promise.race([p.finally(() => controller.abort()), d]);
+  const signals = [AbortSignal.timeout(ms)];
+  if (options.signal) signals.push(options.signal);
+  return await abortable(p, AbortSignal.any(signals));
 }

@@ -1,6 +1,5 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-
-import type { OPERATORS } from "./_constants.ts";
+// This module is browser compatible.
 
 /**
  * The possible release types are used as an operator for the
@@ -19,28 +18,37 @@ export type ReleaseType =
 /**
  * SemVer comparison operators.
  */
-export type Operator = typeof OPERATORS[number];
+export type Operator =
+  | undefined
+  | "="
+  | "!="
+  | ">"
+  | ">="
+  | "<"
+  | "<=";
 
 /**
  * The shape of a valid semantic version comparator
  * @example >=0.0.0
  */
 export interface Comparator extends SemVer {
+  /** The operator */
   operator?: Operator;
-  /**
-   * @deprecated (will be removed in 0.219.0) {@linkcode Comparator} extends {@linkcode SemVer}. Use `major`, `minor`, `patch`, `prerelease`, and `build` properties instead.
-   */
-  semver?: SemVer;
 }
 
 /**
  * A SemVer object parsed into its constituent parts.
  */
 export interface SemVer {
+  /** The major version */
   major: number;
+  /** The minor version */
   minor: number;
+  /** The patch version */
   patch: number;
+  /** The prerelease version */
   prerelease?: (string | number)[];
+  /** The build metadata */
   build?: string[];
 }
 

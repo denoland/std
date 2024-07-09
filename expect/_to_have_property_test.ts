@@ -1,7 +1,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
 import { expect } from "./expect.ts";
-import { AssertionError, assertThrows } from "../assert/mod.ts";
+import { AssertionError, assertThrows } from "@std/assert";
 
 Deno.test("expect().toHaveProperty()", () => {
   expect({ a: 1 }).toHaveProperty("a");
@@ -20,4 +20,9 @@ Deno.test("expect().toHaveProperty()", () => {
   assertThrows(() => {
     expect({ a: { b: { c: { d: 5 } } } }).not.toHaveProperty("a.b.c", { d: 5 });
   }, AssertionError);
+});
+
+Deno.test("expect().toHaveProperty() handles null and undefined", () => {
+  expect(null).not.toHaveProperty("foo");
+  expect(undefined).not.toHaveProperty("foo");
 });

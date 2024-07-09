@@ -1,8 +1,5 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-// TODO(kt3k): Write test when pty is supported in Deno
-// See: https://github.com/denoland/deno/issues/3994
-
 const encoder = new TextEncoder();
 
 const LINE_CLEAR = encoder.encode("\r\u001b[K"); // From cli/prompt_secret.ts
@@ -21,7 +18,13 @@ const DEFAULT_SPINNER = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧",
 // deno-lint-ignore ban-types
 export type Ansi = string & {};
 
-/** Color options for {@linkcode SpinnerOptions.color}. */
+/**
+ * **UNSTABLE**: New API, yet to be vetted.
+ *
+ * Color options for {@linkcode SpinnerOptions.color}.
+ *
+ * @experimental
+ */
 export type Color =
   | "black"
   | "red"
@@ -46,7 +49,13 @@ const COLORS: Record<Color, string> = {
   gray: "\u001b[90m",
 };
 
-/** Options for {@linkcode Spinner}. */
+/**
+ * **UNSTABLE**: New API, yet to be vetted.
+ *
+ * Options for {@linkcode Spinner}.
+ *
+ * @experimental
+ */
 export interface SpinnerOptions {
   /**
    * The sequence of characters to be iterated through for animation.
@@ -73,12 +82,52 @@ export interface SpinnerOptions {
 }
 
 /**
+ * **UNSTABLE**: New API, yet to be vetted.
+ *
  * A spinner that can be used to indicate that something is loading.
+ *
+ * @example Usage
+ * ```ts no-eval
+ * import { Spinner } from "@std/cli/spinner";
+ *
+ * const spinner = new Spinner({ message: "Loading...", color: "yellow" });
+ * spinner.start();
+ *
+ * setTimeout(() => {
+ *  spinner.stop();
+ *  console.log("Finished loading!");
+ * }, 3_000);
+ * ```
+ *
+ * @experimental
  */
 export class Spinner {
   #spinner: string[];
-  /** The message to display next to the spinner. */
+
+  /**
+   * The message to display next to the spinner.
+   * This can be changed while the spinner is active.
+   *
+   * @example Usage
+   * ```ts no-eval
+   * import { Spinner } from "@std/cli/spinner";
+   *
+   * const spinner = new Spinner({ message: "Working..." });
+   * spinner.start();
+   *
+   * for (let step = 0; step < 5; step++) {
+   *   // do some work
+   *   await new Promise((resolve) => setTimeout(resolve, 1000));
+   *
+   *   spinner.message = `Finished Step #${step}`;
+   * }
+   *
+   * spinner.stop();
+   * console.log("Done!");
+   * ```
+   */
   message: string;
+
   #interval: number;
   #color?: Color;
   #intervalId: number | undefined;
@@ -87,21 +136,20 @@ export class Spinner {
   /**
    * Creates a new spinner.
    *
-   * @example
-   * ```ts
-   * import { Spinner } from "https://deno.land/std@$STD_VERSION/cli/spinner.ts";
+   * @example Usage
+   * ```ts no-assert
+   * import { Spinner } from "@std/cli/spinner";
    *
    * const spinner = new Spinner({ message: "Loading..." });
+   * spinner.stop();
    * ```
    */
-  constructor(
-    {
-      spinner = DEFAULT_SPINNER,
-      message = "",
-      interval = DEFAULT_INTERVAL,
-      color,
-    }: SpinnerOptions = {},
-  ) {
+  constructor({
+    spinner = DEFAULT_SPINNER,
+    message = "",
+    interval = DEFAULT_INTERVAL,
+    color,
+  }: SpinnerOptions = {}) {
     this.#spinner = spinner;
     this.message = message;
     this.#interval = interval;
@@ -111,11 +159,41 @@ export class Spinner {
   /**
    * Set the color of the spinner. This defaults to the default terminal color.
    * This can be changed while the spinner is active.
+   *
+   * Providing `undefined` will use the default terminal color.
+   *
+   * @param value Color to set.
+   *
+   * @example Usage
+   * ```ts no-eval
+   * import { Spinner } from "@std/cli/spinner";
+   *
+   * const spinner = new Spinner({ message: "Loading...", color: "yellow" });
+   * spinner.start();
+   *
+   * // do some work
+   * await new Promise((resolve) => setTimeout(resolve, 1000));
+   *
+   * spinner.color = "magenta";
+   * ```
    */
   set color(value: Color | undefined) {
     this.#color = value ? COLORS[value] : undefined;
   }
 
+  /**
+   * Get the current color of the spinner.
+   *
+   * @example Usage
+   * ```ts no-assert
+   * import { Spinner } from "@std/cli/spinner";
+   *
+   * const spinner = new Spinner({ message: "Loading", color: "blue" });
+   *
+   * spinner.color; // Blue ANSI escape sequence
+   * ```
+   * @returns The color of the spinner or `undefined` if it's using the terminal default.
+   */
   get color(): Color | undefined {
     return this.#color;
   }
@@ -123,36 +201,48 @@ export class Spinner {
   /**
    * Starts the spinner.
    *
-   * @example
-   * ```ts
-   * import { Spinner } from "https://deno.land/std@$STD_VERSION/cli/spinner.ts";
+   * @example Usage
+   * ```ts no-eval
+   * import { Spinner } from "@std/cli/spinner";
    *
    * const spinner = new Spinner({ message: "Loading..." });
    * spinner.start();
    * ```
    */
   start() {
-    if (this.#active || Deno.stdout.writable.locked) return;
+    if (this.#active || Deno.stdout.writable.locked) {
+      return;
+    }
+
     this.#active = true;
     let i = 0;
+    const noColor = Deno.noColor;
+
     // Updates the spinner after the given interval.
     const updateFrame = () => {
       const color = this.#color ?? "";
-      Deno.stdout.writeSync(LINE_CLEAR);
       const frame = encoder.encode(
-        color + this.#spinner[i] + COLOR_RESET + " " + this.message,
+        noColor
+          ? this.#spinner[i] + " " + this.message
+          : color + this.#spinner[i] + COLOR_RESET + " " + this.message,
       );
-      Deno.stdout.writeSync(frame);
+      // call writeSync once to reduce flickering
+      const writeData = new Uint8Array(LINE_CLEAR.length + frame.length);
+      writeData.set(LINE_CLEAR);
+      writeData.set(frame, LINE_CLEAR.length);
+      Deno.stdout.writeSync(writeData);
       i = (i + 1) % this.#spinner.length;
     };
+
     this.#intervalId = setInterval(updateFrame, this.#interval);
   }
+
   /**
    * Stops the spinner.
    *
-   * @example
-   * ```ts
-   * import { Spinner } from "https://deno.land/std@$STD_VERSION/cli/spinner.ts";
+   * @example Usage
+   * ```ts no-eval
+   * import { Spinner } from "@std/cli/spinner";
    *
    * const spinner = new Spinner({ message: "Loading..." });
    * spinner.start();
@@ -160,7 +250,7 @@ export class Spinner {
    * setTimeout(() => {
    *  spinner.stop();
    *  console.log("Finished loading!");
-   * }, 3000);
+   * }, 3_000);
    * ```
    */
   stop() {

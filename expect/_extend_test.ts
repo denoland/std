@@ -1,7 +1,8 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
 import { expect } from "./expect.ts";
-import { MatcherContext, Tester } from "./_types.ts";
+import type { MatcherContext, Tester } from "./_types.ts";
+import { AssertionError, assertThrows } from "@std/assert";
 
 declare module "./_types.ts" {
   interface Expected {
@@ -10,7 +11,7 @@ declare module "./_types.ts" {
 }
 
 class Author {
-  public name: string;
+  name: string;
 
   constructor(name: string) {
     this.name = name;
@@ -18,8 +19,8 @@ class Author {
 }
 
 class Book {
-  public name: string;
-  public authors: Array<Author>;
+  name: string;
+  authors: Array<Author>;
 
   constructor(name: string, authors: Array<Author>) {
     this.name = name;
@@ -97,4 +98,15 @@ Deno.test("expect.extend() api test case", () => {
   expect(book1a).not.toEqualBook(book2);
   expect(book1a).not.toEqualBook(1);
   expect(book1a).not.toEqualBook(null);
+
+  assertThrows(
+    () => expect(book1a).toEqualBook(book2),
+    AssertionError,
+    "Expected Book object: Book 2. Actual Book object: Book 1",
+  );
+  assertThrows(
+    () => expect(book1a).not.toEqualBook(book1b),
+    AssertionError,
+    "Expected Book object: Book 1. Actual Book object: Book 1",
+  );
 });

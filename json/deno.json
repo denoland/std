@@ -1,0 +1,11 @@
+{
+  "name": "@std/json",
+  "version": "1.0.0-rc.2",
+  "exports": {
+    ".": "./mod.ts",
+    "./types": "./types.ts",
+    "./concatenated-json-parse-stream": "./concatenated_json_parse_stream.ts",
+    "./parse-stream": "./parse_stream.ts",
+    "./stringify-stream": "./stringify_stream.ts"
+  }
+}

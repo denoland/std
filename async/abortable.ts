@@ -2,48 +2,108 @@
 // This module is browser compatible.
 
 /**
- * Make {@linkcode Promise} abortable with the given signal.
+ * Make a {@linkcode Promise} abortable with the given signal.
  *
- * @example
+ * @throws {DOMException} If the signal is already aborted and `signal.reason`
+ * is undefined. Otherwise, throws `signal.reason`.
+ * @typeParam T The type of the provided and returned promise.
+ * @param p The promise to make abortable.
+ * @param signal The signal to abort the promise with.
+ * @returns A promise that can be aborted.
+ *
+ * @example Error-handling a timeout
  * ```ts
- * import {
- *   abortable,
- *   delay,
- * } from "https://deno.land/std@$STD_VERSION/async/mod.ts";
+ * import { abortable, delay } from "@std/async";
+ * import { assertRejects, assertEquals } from "@std/assert";
  *
- * const p = delay(1000);
- * const c = new AbortController();
- * setTimeout(() => c.abort(), 100);
+ * const promise = delay(1_000);
  *
- * // Below throws `DOMException` after 100 ms
- * await abortable(p, c.signal);
+ * // Rejects with `DOMException` after 100 ms
+ * await assertRejects(
+ *   () => abortable(promise, AbortSignal.timeout(100)),
+ *   DOMException,
+ *   "Signal timed out."
+ * );
+ * ```
+ *
+ * @example Error-handling an abort
+ * ```ts
+ * import { abortable, delay } from "@std/async";
+ * import { assertRejects, assertEquals } from "@std/assert";
+ *
+ * const promise = delay(1_000);
+ * const controller = new AbortController();
+ * controller.abort(new Error("This is my reason"));
+ *
+ * // Rejects with `DOMException` immediately
+ * await assertRejects(
+ *   () => abortable(promise, controller.signal),
+ *   Error,
+ *   "This is my reason"
+ * );
  * ```
  */
 export function abortable<T>(p: Promise<T>, signal: AbortSignal): Promise<T>;
 /**
- * Make {@linkcode AsyncIterable} abortable with the given signal.
+ * Make an {@linkcode AsyncIterable} abortable with the given signal.
  *
- * @example
+ * @throws {DOMException} If the signal is already aborted and `signal.reason`
+ * is undefined. Otherwise, throws `signal.reason`.
+ * @typeParam T The type of the provided and returned async iterable.
+ * @param p The async iterable to make abortable.
+ * @param signal The signal to abort the promise with.
+ * @returns An async iterable that can be aborted.
+ *
+ * @example Error-handling a timeout
  * ```ts
- * import {
- *   abortable,
- *   delay,
- * } from "https://deno.land/std@$STD_VERSION/async/mod.ts";
+ * import { abortable, delay } from "@std/async";
+ * import { assertRejects, assertEquals } from "@std/assert";
  *
- * const p = async function* () {
+ * const asyncIter = async function* () {
  *   yield "Hello";
- *   await delay(1000);
+ *   await delay(1_000);
  *   yield "World";
  * };
- * const c = new AbortController();
- * setTimeout(() => c.abort(), 100);
  *
- * // Below throws `DOMException` after 100 ms
- * // and items become `["Hello"]`
  * const items: string[] = [];
- * for await (const item of abortable(p(), c.signal)) {
- *   items.push(item);
- * }
+ * // Below throws `DOMException` after 100 ms and items become `["Hello"]`
+ * await assertRejects(
+ *   async () => {
+ *     for await (const item of abortable(asyncIter(), AbortSignal.timeout(100))) {
+ *       items.push(item);
+ *     }
+ *   },
+ *   DOMException,
+ *   "Signal timed out."
+ * );
+ * assertEquals(items, ["Hello"]);
+ * ```
+ *
+ * @example Error-handling an abort
+ * ```ts
+ * import { abortable, delay } from "@std/async";
+ * import { assertRejects, assertEquals } from "@std/assert";
+ *
+ * const asyncIter = async function* () {
+ *   yield "Hello";
+ *   await delay(1_000);
+ *   yield "World";
+ * };
+ * const controller = new AbortController();
+ * controller.abort(new Error("This is my reason"));
+ *
+ * const items: string[] = [];
+ * // Below throws `DOMException` immediately
+ * await assertRejects(
+ *   async () => {
+ *     for await (const item of abortable(asyncIter(), controller.signal)) {
+ *       items.push(item);
+ *     }
+ *   },
+ *   Error,
+ *   "This is my reason"
+ * );
+ * assertEquals(items, []);
  * ```
  */
 export function abortable<T>(
@@ -61,74 +121,26 @@ export function abortable<T>(
   }
 }
 
-/**
- * Make Promise abortable with the given signal.
- *
- * @example
- * ```ts
- * import { abortablePromise } from "https://deno.land/std@$STD_VERSION/async/abortable.ts";
- *
- * const request = fetch("https://example.com");
- *
- * const c = new AbortController();
- * setTimeout(() => c.abort(), 100);
- *
- * const p = abortablePromise(request, c.signal);
- *
- * // The below throws if the request didn't resolve in 100ms
- * await p;
- * ```
- */
-export function abortablePromise<T>(
+function abortablePromise<T>(
   p: Promise<T>,
   signal: AbortSignal,
 ): Promise<T> {
-  if (signal.aborted) {
-    return Promise.reject(createAbortError(signal.reason));
-  }
+  if (signal.aborted) return Promise.reject(signal.reason);
   const { promise, reject } = Promise.withResolvers<never>();
-  const abort = () => reject(createAbortError(signal.reason));
+  const abort = () => reject(signal.reason);
   signal.addEventListener("abort", abort, { once: true });
   return Promise.race([promise, p]).finally(() => {
     signal.removeEventListener("abort", abort);
   });
 }
 
-/**
- * Make AsyncIterable abortable with the given signal.
- *
- * @example
- * ```ts
- * import {
- *   abortableAsyncIterable,
- *   delay,
- * } from "https://deno.land/std@$STD_VERSION/async/mod.ts";
- *
- * const p = async function* () {
- *   yield "Hello";
- *   await delay(1000);
- *   yield "World";
- * };
- * const c = new AbortController();
- * setTimeout(() => c.abort(), 100);
- *
- * // Below throws `DOMException` after 100 ms
- * // and items become `["Hello"]`
- * const items: string[] = [];
- * for await (const item of abortableAsyncIterable(p(), c.signal)) {
- *   items.push(item);
- * }
- * ```
- */
-export async function* abortableAsyncIterable<T>(
+async function* abortableAsyncIterable<T>(
   p: AsyncIterable<T>,
   signal: AbortSignal,
 ): AsyncGenerator<T> {
-  if (signal.aborted) {
-    throw createAbortError(signal.reason);
-  }
+  signal.throwIfAborted();
   const { promise, reject } = Promise.withResolvers<never>();
-  const abort = () => reject(createAbortError(signal.reason));
+  const abort = () => reject(signal.reason);
   signal.addEventListener("abort", abort, { once: true });
 
   const it = p[Symbol.asyncIterator]();
@@ -144,13 +156,4 @@ export async function* abortableAsyncIterable<T>(
     }
     yield value;
   }
-}
-
-// This `reason` comes from `AbortSignal` thus must be `any`.
-// deno-lint-ignore no-explicit-any
-function createAbortError(reason?: any): DOMException {
-  return new DOMException(
-    reason ? `Aborted: ${reason}` : "Aborted",
-    "AbortError",
-  );
 }

@@ -8,16 +8,18 @@ import { isPosixPathSeparator } from "./_util.ts";
 /**
  * Return the extension of the `path` with leading period.
  *
- * @example
+ * @example Usage
  * ```ts
- * import { extname } from "https://deno.land/std@$STD_VERSION/path/extname.ts";
+ * import { extname } from "@std/path/posix/extname";
+ * import { assertEquals } from "@std/assert";
  *
- * console.log(extname("/home/user/Documents/")); // ""
- * console.log(extname("/home/user/Documents/image.png")); // ".png"
+ * assertEquals(extname("/home/user/Documents/file.ts"), ".ts");
+ * assertEquals(extname("/home/user/Documents/"), "");
+ * assertEquals(extname("/home/user/Documents/image.png"), ".png");
  * ```
  *
- * @param path with extension
- * @returns extension (ex. for `file.ts` returns `.ts`)
+ * @param path The path to get the extension from.
+ * @returns The extension (ex. for `file.ts` returns `.ts`).
  */
 export function extname(path: string): string {
   assertPath(path);

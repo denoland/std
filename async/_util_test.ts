@@ -1,6 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import { exponentialBackoffWithJitter } from "./_util.ts";
-import { assertEquals } from "../assert/mod.ts";
+import { assertEquals } from "@std/assert";
 
 // test util to ensure deterministic results during testing of backoff function by polyfilling Math.random
 function prngMulberry32(seed: number) {

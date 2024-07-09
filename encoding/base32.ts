@@ -4,24 +4,35 @@
 
 /**
  * Utilities for
- * {@link https://datatracker.ietf.org/doc/html/rfc4648#section-6 | base32}
+ * {@link https://www.rfc-editor.org/rfc/rfc4648.html#section-6 | base32}
  * encoding and decoding.
  *
  * Modified from {@link https://github.com/beatgammit/base64-js}.
  *
- * This module is browser compatible.
+ * ```ts
+ * import { encodeBase32, decodeBase32 } from "@std/encoding/base32";
+ * import { assertEquals } from "@std/assert";
+ *
+ * assertEquals(encodeBase32("foobar"), "MZXW6YTBOI======");
+ *
+ * assertEquals(
+ *   decodeBase32("MZXW6YTBOI======"),
+ *   new TextEncoder().encode("foobar")
+ * );
+ * ```
  *
  * @module
  */
 
-import { validateBinaryLike } from "./_util.ts";
+import { validateBinaryLike } from "./_validate_binary_like.ts";
 
 const lookup: string[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567".split("");
 const revLookup: number[] = [];
 lookup.forEach((c, i) => revLookup[c.charCodeAt(0)] = i);
 
 const placeHolderPadLookup = [0, 1, , 2, 3, , 4];
-function _getPadLen(placeHoldersLen: number): number {
+
+function getPadLength(placeHoldersLen: number): number {
   const maybeLen = placeHolderPadLookup[placeHoldersLen];
   if (typeof maybeLen !== "number") {
     throw new Error("Invalid pad length");
@@ -44,27 +55,34 @@ function getLens(b32: string): [number, number] {
   return [validLen, placeHoldersLen];
 }
 
-function _byteLength(validLen: number, placeHoldersLen: number): number {
-  return ((validLen + placeHoldersLen) * 5) / 8 - _getPadLen(placeHoldersLen);
+function getByteLength(validLen: number, placeHoldersLen: number): number {
+  return ((validLen + placeHoldersLen) * 5) / 8 - getPadLength(placeHoldersLen);
 }
 
 /**
  * Decodes a base32-encoded string.
  *
- * @see {@link https://datatracker.ietf.org/doc/html/rfc4648#section-6}
+ * @see {@link https://www.rfc-editor.org/rfc/rfc4648.html#section-6}
  *
- * @example
+ * @param b32 The base32-encoded string to decode.
+ * @returns The decoded data.
+ *
+ * @example Usage
  * ```ts
- * import { decodeBase32 } from "https://deno.land/std@$STD_VERSION/encoding/base32.ts";
+ * import { decodeBase32 } from "@std/encoding/base32";
+ * import { assertEquals } from "@std/assert";
  *
- * decodeBase32("NRQMA==="); // Uint8Array(3) [ 108, 96, 192 ]
+ * assertEquals(
+ *   decodeBase32("GZRTMMDDGA======"),
+ *   new TextEncoder().encode("6c60c0"),
+ * );
  * ```
  */
 export function decodeBase32(b32: string): Uint8Array {
   let tmp: number;
   const [validLen, placeHoldersLen] = getLens(b32);
 
-  const arr = new Uint8Array(_byteLength(validLen, placeHoldersLen));
+  const arr = new Uint8Array(getByteLength(validLen, placeHoldersLen));
 
   let curByte = 0;
 
@@ -151,15 +169,19 @@ function encodeChunk(uint8: Uint8Array, start: number, end: number): string {
 }
 
 /**
- * Converts data to a base32-encoded string.
+ * Converts data into a base32-encoded string.
  *
- * @see {@link https://datatracker.ietf.org/doc/html/rfc4648#section-6}
+ * @see {@link https://www.rfc-editor.org/rfc/rfc4648.html#section-6}
  *
- * @example
+ * @param data The data to encode.
+ * @returns The base32-encoded string.
+ *
+ * @example Usage
  * ```ts
- * import { encodeBase32 } from "https://deno.land/std@$STD_VERSION/encoding/base32.ts";
+ * import { encodeBase32 } from "@std/encoding/base32";
+ * import { assertEquals } from "@std/assert";
  *
- * encodeBase32("6c60c0"); // "NRQMA==="
+ * assertEquals(encodeBase32("6c60c0"), "GZRTMMDDGA======");
  * ```
  */
 export function encodeBase32(data: ArrayBuffer | Uint8Array | string): string {

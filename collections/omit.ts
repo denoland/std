@@ -1,12 +1,21 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
 
 /**
  * Creates a new object by excluding the specified keys from the provided object.
  *
- * @example
+ * @typeParam T The type of the object.
+ * @typeParam K The type of the keys to omit.
+ *
+ * @param obj The object to omit keys from.
+ * @param keys The keys to omit from the object.
+ *
+ * @returns A new object with the specified keys omitted.
+ *
+ * @example Basic usage
  * ```ts
- * import { omit } from "https://deno.land/std@$STD_VERSION/collections/omit.ts";
- * import { assertEquals } from "https://deno.land/std@$STD_VERSION/assert/assert_equals.ts";
+ * import { omit } from "@std/collections/omit";
+ * import { assertEquals } from "@std/assert";
  *
  * const obj = { a: 5, b: 6, c: 7, d: 8 };
  * const omitted = omit(obj, ["a", "c"]);
@@ -19,8 +28,7 @@ export function omit<T extends object, K extends keyof T>(
   keys: readonly K[],
 ): Omit<T, K> {
   const excludes = new Set(keys);
-  const has = excludes.has.bind(excludes);
   return Object.fromEntries(
-    Object.entries(obj).filter(([k, _]) => !has(k as K)),
+    Object.entries(obj).filter(([k, _]) => !excludes.has(k as K)),
   ) as Omit<T, K>;
 }

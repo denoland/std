@@ -1,6 +1,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
 
-import { concat } from "../bytes/concat.ts";
+import { concat } from "@std/bytes/concat";
 
 /**
  * Value types that can be encoded to MessagePack.
@@ -19,9 +20,7 @@ export type ValueType =
  * Value map that can be encoded to MessagePack.
  */
 export interface ValueMap {
-  /**
-   * Value types that can be encoded to MessagePack.
-   */
+  /** Value map entry */
   [index: string | number]: ValueType;
 }
 
@@ -39,11 +38,12 @@ const SIXTY_FOUR_BITS = 18446744073709551616n;
 const encoder = new TextEncoder();
 
 /**
- * Encode a value to MessagePack binary format.
+ * Encode a value to {@link https://msgpack.org/ | MessagePack} binary format.
  *
- * @example
+ * @example Usage
  * ```ts
- * import { encode } from "https://deno.land/std@$STD_VERSION/msgpack/encode.ts";
+ * import { encode } from "@std/msgpack/encode";
+ * import { assertEquals } from "@std/assert";
  *
  * const obj = {
  *   str: "deno",
@@ -53,8 +53,13 @@ const encoder = new TextEncoder();
  *   }
  * }
  *
- * console.log(encode(obj))
+ * const encoded = encode(obj);
+ *
+ * assertEquals(encoded.length, 31);
  * ```
+ *
+ * @param object Value to encode to MessagePack binary format.
+ * @returns Encoded MessagePack binary data.
  */
 export function encode(object: ValueType): Uint8Array {
   const byteParts: Uint8Array[] = [];
@@ -248,7 +253,9 @@ function encodeSlice(object: ValueType, byteParts: Uint8Array[]) {
   }
 
   // If object is a plain object
-  if (Object.getPrototypeOf(object) === Object.prototype) {
+  const prototype = Object.getPrototypeOf(object);
+
+  if (prototype === null || prototype === Object.prototype) {
     const numKeys = Object.keys(object).length;
 
     if (numKeys < FOUR_BITS) { // fixarray

@@ -1,0 +1,9 @@
+{
+  "name": "@std/yaml",
+  "version": "1.0.0-rc.1",
+  "exports": {
+    ".": "./mod.ts",
+    "./parse": "./parse.ts",
+    "./stringify": "./stringify.ts"
+  }
+}

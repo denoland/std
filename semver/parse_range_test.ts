@@ -1,6 +1,6 @@
 // Copyright Isaac Z. Schlueter and Contributors. All rights reserved. ISC license.
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-import { assertEquals } from "../assert/mod.ts";
+import { assertEquals } from "@std/assert";
 import { parseRange } from "./parse_range.ts";
 import type { Range } from "./types.ts";
 
@@ -360,7 +360,6 @@ Deno.test("parseRange() parse ranges of different kinds", () => {
           patch: 0,
           prerelease: [],
           build: [],
-          semver: { major: 0, minor: 0, patch: 0, prerelease: [], build: [] },
         },
       ],
     ]],
@@ -479,13 +478,6 @@ Deno.test("parseRange() parses ranges with x", () => {
           patch: NaN,
           prerelease: [],
           build: [],
-          semver: {
-            major: NaN,
-            minor: NaN,
-            patch: NaN,
-            prerelease: [],
-            build: [],
-          },
         },
       ],
     ]],
@@ -510,13 +502,6 @@ Deno.test("parseRange() parses ranges with x", () => {
           patch: NaN,
           prerelease: [],
           build: [],
-          semver: {
-            major: NaN,
-            minor: NaN,
-            patch: NaN,
-            prerelease: [],
-            build: [],
-          },
         },
       ],
     ]],
