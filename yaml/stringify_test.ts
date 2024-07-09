@@ -286,3 +286,48 @@ Deno.test({
     );
   },
 });
+
+Deno.test({
+  name: "stringify() uses folded scalar style for long strings",
+  fn() {
+    assertEquals(
+      stringify(
+        "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.\nDuis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
+      ),
+      `>-
+  Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor
+  incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis
+  nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+
+  Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore
+  eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt
+  in culpa qui officia deserunt mollit anim id est laborum.
+`,
+    );
+  },
+});
+
+Deno.test({
+  name:
+    "stringify() uses flow style for arrays and mappings when the nesting level exceeds flowLevel option value",
+  fn() {
+    assertEquals(
+      stringify({ foo: ["bar", "baz"], bar: { hello: "world" } }, {
+        flowLevel: 1,
+      }),
+      `foo: [bar, baz]
+bar: {hello: world}
+`,
+    );
+
+    const a = { foo: 42 };
+    const b = [1, 2];
+    const obj = { foo: [a, b], bar: { a, b } };
+    assertEquals(
+      stringify(obj, { flowLevel: 1 }),
+      `foo: [&ref_0 {foo: 42}, &ref_1 [1, 2]]
+bar: {a: *ref_0, b: *ref_1}
+`,
+    );
+  },
+});

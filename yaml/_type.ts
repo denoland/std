@@ -4,7 +4,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-import type { Any, ArrayObject } from "./_utils.ts";
+import type { ArrayObject } from "./_utils.ts";
 
 export type KindType = "sequence" | "scalar" | "mapping";
 /**
@@ -18,16 +18,20 @@ export type StyleVariant =
   | "binary"
   | "octal"
   | "hexadecimal";
-export type RepresentFn = (data: Any, style?: StyleVariant) => Any;
+// deno-lint-ignore no-explicit-any
+export type RepresentFn = (data: any, style?: StyleVariant) => any;
 
 export interface Type {
   tag: string;
   kind: KindType | null;
-  instanceOf?: Any;
+  // deno-lint-ignore no-explicit-any
+  instanceOf?: any;
   predicate?: (data: Record<string, unknown>) => boolean;
   represent?: RepresentFn | ArrayObject<RepresentFn>;
   defaultStyle?: StyleVariant;
   loadKind?: KindType;
-  resolve: (data?: Any) => boolean;
-  construct: (data?: Any) => Any;
+  // deno-lint-ignore no-explicit-any
+  resolve: (data?: any) => boolean;
+  // deno-lint-ignore no-explicit-any
+  construct: (data?: any) => any;
 }
