@@ -299,7 +299,7 @@ export function setCookie(headers: Headers, cookie: Cookie) {
 export function deleteCookie(
   headers: Headers,
   name: string,
-  attributes?: Omit<Cookie, "name" | "value">,
+  attributes?: Omit<Cookie, "name" | "value" | "sameSite">,
 ) {
   setCookie(headers, {
     name: name,
