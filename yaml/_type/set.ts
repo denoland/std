@@ -4,9 +4,9 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
 import type { Type } from "../_type.ts";
-import type { Any } from "../_utils.ts";
 
-function resolveYamlSet(data: Any): boolean {
+// deno-lint-ignore no-explicit-any
+function resolveYamlSet(data: any): boolean {
   if (data === null) return true;
 
   for (const key in data) {
@@ -18,7 +18,7 @@ function resolveYamlSet(data: Any): boolean {
   return true;
 }
 
-function constructYamlSet(data: string): Any {
+function constructYamlSet(data: string) {
   return data !== null ? data : {};
 }
 
