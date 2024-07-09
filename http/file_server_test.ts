@@ -20,7 +20,6 @@ import {
 } from "@std/path";
 import denoConfig from "./deno.json" with { type: "json" };
 import { MINUTE } from "@std/datetime/constants";
-import { getAvailablePort } from "@std/net/get-available-port";
 import { concat } from "@std/bytes/concat";
 
 const moduleDir = dirname(fromFileUrl(import.meta.url));
@@ -277,20 +276,23 @@ Deno.test("serveDir() traverses path correctly", async () => {
 
 Deno.test("serveDir() traverses path", async () => {
   const controller = new AbortController();
-  const port = 4507;
   const server = Deno.serve(
-    { port, signal: controller.signal },
+    { port: 0, signal: controller.signal },
     async (req) => await serveDir(req, serveDirOptions),
   );
 
-  const res1 = await fetchExactPath("127.0.0.1", port, "../../../..");
+  const res1 = await fetchExactPath(
+    "127.0.0.1",
+    server.addr.port,
+    "../../../..",
+  );
   await res1.body?.cancel();
 
   assertEquals(res1.status, 400);
 
   const res2 = await fetchExactPath(
     "127.0.0.1",
-    port,
+    server.addr.port,
     "http://localhost/../../../..",
   );
   const page = await res2.text();
@@ -989,7 +991,7 @@ Deno.test(
 );
 
 Deno.test("file_server prints local and network urls", async () => {
-  const port = await getAvailablePort();
+  const port = 4507;
   const process = spawnDeno([
     "--allow-net",
     "--allow-read",
@@ -1013,7 +1015,7 @@ Deno.test("file_server prints local and network urls", async () => {
 });
 
 Deno.test("file_server prints only local address on Deploy", async () => {
-  const port = await getAvailablePort();
+  const port = 4507;
   const process = spawnDeno([
     "--allow-net",
     "--allow-read",
