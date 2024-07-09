@@ -7,7 +7,7 @@ import {
   type ReplacerFunction,
 } from "./_ini_map.ts";
 
-/** Options for constructing INI strings. */
+/** Options for {@linkcode stringify}. */
 export interface StringifyOptions extends FormattingOptions {
   /** Provide custom string conversion for the value in a key/value pair. */
   replacer?: ReplacerFunction;
