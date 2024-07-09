@@ -1,6 +1,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import { IniMap, parse, type ParseOptions } from "./mod.ts";
+import { parse, type ParseOptions } from "./mod.ts";
+import { IniMap } from "./_ini_map.ts";
 import {
   assert,
   assertEquals,

@@ -72,8 +72,6 @@ function compileMap(...typesList: Type[][]): TypeMap {
 }
 
 export class Schema {
-  static SCHEMA_DEFAULT?: Schema;
-
   implicit: Type[];
   explicit: Type[];
   include: Schema[];

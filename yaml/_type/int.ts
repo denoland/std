@@ -156,20 +156,6 @@ function isInteger(object: any): boolean {
     !isNegativeZero(object);
 }
 
-function compileStyleAliases(map?: Record<string, unknown[] | null>) {
-  const result = {} as Record<string, string>;
-
-  if (map) {
-    Object.keys(map).forEach((style) => {
-      map[style]!.forEach((alias) => {
-        result[String(alias)] = style;
-      });
-    });
-  }
-
-  return result;
-}
-
 export const int: Type = {
   tag: "tag:yaml.org,2002:int",
   construct: constructYamlInteger,
@@ -195,10 +181,4 @@ export const int: Type = {
     },
   },
   resolve: resolveYamlInteger,
-  styleAliases: compileStyleAliases({
-    binary: [2, "bin"],
-    decimal: [10, "dec"],
-    hexadecimal: [16, "hex"],
-    octal: [8, "oct"],
-  }),
 };

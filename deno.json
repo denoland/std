@@ -13,7 +13,7 @@
     "graphviz": "npm:node-graphviz@^0.1.1",
 
     "@std/archive": "jsr:@std/archive@^0.224.3",
-    "@std/assert": "jsr:@std/assert@1.0.0",
+    "@std/assert": "jsr:@std/assert@^1.0.0",
     "@std/async": "jsr:@std/async@^1.0.0-rc.3",
     "@std/bytes": "jsr:@std/bytes@^1.0.1-rc.3",
     "@std/cli": "jsr:@std/cli@^1.0.0-rc.3",
@@ -30,7 +30,7 @@
     "@std/fs": "jsr:@std/fs@^1.0.0-rc.3",
     "@std/html": "jsr:@std/html@^1.0.0-rc.2",
     "@std/http": "jsr:@std/http@^1.0.0-rc.2",
-    "@std/ini": "jsr:@std/ini@^0.225.2",
+    "@std/ini": "jsr:@std/ini@^1.0.0-rc.1",
     "@std/internal": "jsr:@std/internal@^1.0.1",
     "@std/io": "jsr:@std/io@^0.224.3",
     "@std/json": "jsr:@std/json@^1.0.0-rc.2",
@@ -48,7 +48,7 @@
     "@std/toml": "jsr:@std/toml@^1.0.0-rc.3",
     "@std/ulid": "jsr:@std/ulid@^1.0.0-rc.3",
     "@std/url": "jsr:@std/url@^1.0.0-rc.2",
-    "@std/uuid": "jsr:@std/uuid@1.0.0",
+    "@std/uuid": "jsr:@std/uuid@^1.0.0",
     "@std/webgpu": "jsr:@std/webgpu@^0.224.5",
     "@std/yaml": "jsr:@std/yaml@^1.0.0-rc.1"
   },
