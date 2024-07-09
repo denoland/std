@@ -4,9 +4,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
 // deno-lint-ignore no-explicit-any
-export type Any = any;
-
-export interface ArrayObject<T = Any> {
+export interface ArrayObject<T = any> {
   [P: string]: T;
 }
 

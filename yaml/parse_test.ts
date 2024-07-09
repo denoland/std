@@ -586,6 +586,28 @@ Deno.test("parse() handles escaped strings in double quotes", () => {
   );
 });
 
+Deno.test("parse() handles single quoted scalar", () => {
+  assertEquals(parse("'bar'"), "bar");
+  // escaped single quote
+  assertEquals(parse("'''bar'''"), "'bar'");
+  // line break in single quoted scalar
+  assertEquals(parse("'foo\nbar'"), "foo bar");
+
+  assertThrows(
+    // document end in single quoted scalar
+    () => parse("'bar\n"),
+    YamlError,
+    "unexpected end of the stream within a single quoted scalar at line 2, column 1:\n    \n    ^",
+  );
+
+  assertThrows(
+    // document separator appears in single quoted scalar
+    () => parse("'bar\n..."),
+    YamlError,
+    "unexpected end of the document within a single quoted scalar at line 2, column 1:\n    ...\n    ^",
+  );
+});
+
 Deno.test("parse() handles %YAML directive", () => {
   assertEquals(
     parse(`%YAML 1.2

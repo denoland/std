@@ -127,15 +127,10 @@ export class Scanner {
 // -----------------------
 
 function success<T>(body: T): Success<T> {
-  return {
-    ok: true,
-    body,
-  };
+  return { ok: true, body };
 }
 function failure(): Failure {
-  return {
-    ok: false,
-  };
+  return { ok: false };
 }
 
 export function unflat(
@@ -146,16 +141,11 @@ export function unflat(
   const out: Record<string, unknown> = {};
   if (keys.length === 0) {
     return cObj as Record<string, unknown>;
-  } else {
-    if (!cObj) {
-      cObj = values;
-    }
-    const key: string | undefined = keys[keys.length - 1];
-    if (typeof key === "string") {
-      out[key] = cObj;
-    }
-    return unflat(keys.slice(0, -1), values, out);
   }
+  if (!cObj) cObj = values;
+  const key: string | undefined = keys[keys.length - 1];
+  if (typeof key === "string") out[key] = cObj;
+  return unflat(keys.slice(0, -1), values, out);
 }
 export function deepAssignWithTable(target: Record<string, unknown>, table: {
   type: "Table" | "TableArray";
@@ -205,9 +195,7 @@ function or<T>(parsers: ParserComponent<T>[]): ParserComponent<T> {
   return (scanner: Scanner): ParseResult<T> => {
     for (const parse of parsers) {
       const result = parse(scanner);
-      if (result.ok) {
-        return result;
-      }
+      if (result.ok) return result;
     }
     return failure();
   };
@@ -220,20 +208,15 @@ function join<T>(
   const Separator = character(separator);
   return (scanner: Scanner): ParseResult<T[]> => {
     const first = parser(scanner);
-    if (!first.ok) {
-      return failure();
-    }
+    if (!first.ok) return failure();
     const out: T[] = [first.body];
     while (!scanner.eof()) {
-      if (!Separator(scanner).ok) {
-        break;
-      }
+      if (!Separator(scanner).ok) break;
       const result = parser(scanner);
-      if (result.ok) {
-        out.push(result.body);
-      } else {
+      if (!result.ok) {
         throw new SyntaxError(`Invalid token after "${separator}"`);
       }
+      out.push(result.body);
     }
     return success(out);
   };
@@ -247,9 +230,7 @@ function kv<T>(
   const Separator = character(separator);
   return (scanner: Scanner): ParseResult<{ [key: string]: unknown }> => {
     const key = keyParser(scanner);
-    if (!key.ok) {
-      return failure();
-    }
+    if (!key.ok) return failure();
     const sep = Separator(scanner);
     if (!sep.ok) {
       throw new SyntaxError(`key/value pair doesn't have "${separator}"`);
@@ -269,9 +250,7 @@ function merge(
 ): ParserComponent<Record<string, unknown>> {
   return (scanner: Scanner): ParseResult<Record<string, unknown>> => {
     const result = parser(scanner);
-    if (!result.ok) {
-      return failure();
-    }
+    if (!result.ok) return failure();
     let body = {};
     for (const record of result.body) {
       if (typeof body === "object" && body !== null) {
@@ -290,16 +269,11 @@ function repeat<T>(
     const body: T[] = [];
     while (!scanner.eof()) {
       const result = parser(scanner);
-      if (result.ok) {
-        body.push(result.body);
-      } else {
-        break;
-      }
+      if (!result.ok) break;
+      body.push(result.body);
       scanner.nextUntilChar();
     }
-    if (body.length === 0) {
-      return failure();
-    }
+    if (body.length === 0) return failure();
     return success(body);
   };
 }
@@ -331,11 +305,8 @@ function surround<T>(
 function character(str: string) {
   return (scanner: Scanner): ParseResult<void> => {
     scanner.nextUntilChar({ inline: true });
-    if (scanner.slice(0, str.length) === str) {
-      scanner.next(str.length);
-    } else {
-      return failure();
-    }
+    if (scanner.slice(0, str.length) !== str) return failure();
+    scanner.next(str.length);
     scanner.nextUntilChar({ inline: true });
     return success(undefined);
   };
@@ -364,60 +335,54 @@ export function bareKey(scanner: Scanner): ParseResult<string> {
 }
 
 function escapeSequence(scanner: Scanner): ParseResult<string> {
-  if (scanner.char() === "\\") {
-    scanner.next();
-    // See https://toml.io/en/v1.0.0-rc.3#string
-    switch (scanner.char()) {
-      case "b":
-        scanner.next();
-        return success("\b");
-      case "t":
-        scanner.next();
-        return success("\t");
-      case "n":
-        scanner.next();
-        return success("\n");
-      case "f":
-        scanner.next();
-        return success("\f");
-      case "r":
-        scanner.next();
-        return success("\r");
-      case "u":
-      case "U": {
-        // Unicode character
-        const codePointLen = scanner.char() === "u" ? 4 : 6;
-        const codePoint = parseInt(
-          "0x" + scanner.slice(1, 1 + codePointLen),
-          16,
-        );
-        const str = String.fromCodePoint(codePoint);
-        scanner.next(codePointLen + 1);
-        return success(str);
-      }
-      case '"':
-        scanner.next();
-        return success('"');
-      case "\\":
-        scanner.next();
-        return success("\\");
-      default:
-        throw new SyntaxError(
-          `Invalid escape sequence: \\${scanner.char()}`,
-        );
+  if (scanner.char() !== "\\") return failure();
+  scanner.next();
+  // See https://toml.io/en/v1.0.0-rc.3#string
+  switch (scanner.char()) {
+    case "b":
+      scanner.next();
+      return success("\b");
+    case "t":
+      scanner.next();
+      return success("\t");
+    case "n":
+      scanner.next();
+      return success("\n");
+    case "f":
+      scanner.next();
+      return success("\f");
+    case "r":
+      scanner.next();
+      return success("\r");
+    case "u":
+    case "U": {
+      // Unicode character
+      const codePointLen = scanner.char() === "u" ? 4 : 6;
+      const codePoint = parseInt(
+        "0x" + scanner.slice(1, 1 + codePointLen),
+        16,
+      );
+      const str = String.fromCodePoint(codePoint);
+      scanner.next(codePointLen + 1);
+      return success(str);
     }
-  } else {
-    return failure();
+    case '"':
+      scanner.next();
+      return success('"');
+    case "\\":
+      scanner.next();
+      return success("\\");
+    default:
+      throw new TOMLParseError(
+        `Invalid escape sequence: \\${scanner.char()}`,
+      );
   }
 }
 
 export function basicString(scanner: Scanner): ParseResult<string> {
   scanner.nextUntilChar({ inline: true });
-  if (scanner.char() === '"') {
-    scanner.next();
-  } else {
-    return failure();
-  }
+  if (scanner.char() !== '"') return failure();
+  scanner.next();
   const acc = [];
   while (scanner.char() !== '"' && !scanner.eof()) {
     if (scanner.char() === "\n") {
@@ -442,11 +407,8 @@ export function basicString(scanner: Scanner): ParseResult<string> {
 
 export function literalString(scanner: Scanner): ParseResult<string> {
   scanner.nextUntilChar({ inline: true });
-  if (scanner.char() === "'") {
-    scanner.next();
-  } else {
-    return failure();
-  }
+  if (scanner.char() !== "'") return failure();
+  scanner.next();
   const acc: string[] = [];
   while (scanner.char() !== "'" && !scanner.eof()) {
     if (scanner.char() === "\n") {
@@ -468,11 +430,8 @@ export function multilineBasicString(
   scanner: Scanner,
 ): ParseResult<string> {
   scanner.nextUntilChar({ inline: true });
-  if (scanner.slice(0, 3) === '"""') {
-    scanner.next(3);
-  } else {
-    return failure();
-  }
+  if (scanner.slice(0, 3) !== '"""') return failure();
+  scanner.next(3);
   if (scanner.char() === "\n") {
     // The first newline (LF) is trimmed
     scanner.next();
@@ -519,11 +478,8 @@ export function multilineLiteralString(
   scanner: Scanner,
 ): ParseResult<string> {
   scanner.nextUntilChar({ inline: true });
-  if (scanner.slice(0, 3) === "'''") {
-    scanner.next(3);
-  } else {
-    return failure();
-  }
+  if (scanner.slice(0, 3) !== "'''") return failure();
+  scanner.next(3);
   if (scanner.char() === "\n") {
     // The first newline (LF) is trimmed
     scanner.next();
@@ -565,9 +521,7 @@ export function symbols(scanner: Scanner): ParseResult<unknown> {
   const found = symbolPairs.find(([str]) =>
     scanner.slice(0, str.length) === str
   );
-  if (!found) {
-    return failure();
-  }
+  if (!found) return failure();
   const [str, value] = found;
   scanner.next(str.length);
   return success(value);
@@ -587,9 +541,7 @@ export function integer(scanner: Scanner): ParseResult<number | string> {
       acc.push(scanner.char());
       scanner.next();
     }
-    if (acc.length === 1) {
-      return failure();
-    }
+    if (acc.length === 1) return failure();
     return success(acc.join(""));
   }
 
@@ -620,9 +572,7 @@ export function float(scanner: Scanner): ParseResult<number> {
     scanner.char(position) &&
     !END_OF_VALUE_REGEXP.test(scanner.char(position))
   ) {
-    if (!FLOAT_REGEXP.test(scanner.char(position))) {
-      return failure();
-    }
+    if (!FLOAT_REGEXP.test(scanner.char(position))) return failure();
     position++;
   }
 
@@ -636,13 +586,9 @@ export function float(scanner: Scanner): ParseResult<number> {
     scanner.next();
   }
 
-  if (acc.length === 0) {
-    return failure();
-  }
+  if (acc.length === 0) return failure();
   const float = parseFloat(acc.filter((char) => char !== "_").join(""));
-  if (isNaN(float)) {
-    return failure();
-  }
+  if (isNaN(float)) return failure();
 
   return success(float);
 }
@@ -652,11 +598,8 @@ export function dateTime(scanner: Scanner): ParseResult<Date> {
 
   let dateStr = scanner.slice(0, 10);
   // example: 1979-05-27
-  if (/^\d{4}-\d{2}-\d{2}/.test(dateStr)) {
-    scanner.next(10);
-  } else {
-    return failure();
-  }
+  if (!/^\d{4}-\d{2}-\d{2}/.test(dateStr)) return failure();
+  scanner.next(10);
 
   const acc = [];
   // example: 1979-05-27T00:32:00Z
@@ -678,19 +621,13 @@ export function localTime(scanner: Scanner): ParseResult<string> {
   scanner.nextUntilChar({ inline: true });
 
   let timeStr = scanner.slice(0, 8);
-  if (/^(\d{2}):(\d{2}):(\d{2})/.test(timeStr)) {
-    scanner.next(8);
-  } else {
-    return failure();
-  }
+  if (!/^(\d{2}):(\d{2}):(\d{2})/.test(timeStr)) return failure();
+  scanner.next(8);
 
   const acc = [];
-  if (scanner.char() === ".") {
-    acc.push(scanner.char());
-    scanner.next();
-  } else {
-    return success(timeStr);
-  }
+  if (scanner.char() !== ".") return success(timeStr);
+  acc.push(scanner.char());
+  scanner.next();
 
   while (/[0-9]/.test(scanner.char()) && !scanner.eof()) {
     acc.push(scanner.char());
@@ -703,36 +640,24 @@ export function localTime(scanner: Scanner): ParseResult<string> {
 export function arrayValue(scanner: Scanner): ParseResult<unknown[]> {
   scanner.nextUntilChar({ inline: true });
 
-  if (scanner.char() === "[") {
-    scanner.next();
-  } else {
-    return failure();
-  }
+  if (scanner.char() !== "[") return failure();
+  scanner.next();
 
   const array: unknown[] = [];
   while (!scanner.eof()) {
     scanner.nextUntilChar();
     const result = value(scanner);
-    if (result.ok) {
-      array.push(result.body);
-    } else {
-      break;
-    }
+    if (!result.ok) break;
+    array.push(result.body);
     scanner.nextUntilChar({ inline: true });
     // may have a next item, but trailing comma is allowed at array
-    if (scanner.char() === ",") {
-      scanner.next();
-    } else {
-      break;
-    }
+    if (scanner.char() !== ",") break;
+    scanner.next();
   }
   scanner.nextUntilChar();
 
-  if (scanner.char() === "]") {
-    scanner.next();
-  } else {
-    throw new SyntaxError("Array is not closed");
-  }
+  if (scanner.char() !== "]") throw new SyntaxError("Array is not closed");
+  scanner.next();
 
   return success(array);
 }
@@ -750,9 +675,7 @@ export function inlineTable(
     join(pair, ","),
     "}",
   )(scanner);
-  if (!pairs.ok) {
-    return failure();
-  }
+  if (!pairs.ok) return failure();
   let table = {};
   for (const pair of pairs.body) {
     table = deepMerge(table, pair);
@@ -781,26 +704,16 @@ export function block(
 ): ParseResult<BlockParseResultBody> {
   scanner.nextUntilChar();
   const result = merge(repeat(pair))(scanner);
-  if (result.ok) {
-    return success({
-      type: "Block",
-      value: result.body,
-    });
-  } else {
-    return failure();
-  }
+  if (result.ok) return success({ type: "Block", value: result.body });
+  return failure();
 }
 
 export const tableHeader = surround("[", dottedKey, "]");
 
-export function table(
-  scanner: Scanner,
-): ParseResult<BlockParseResultBody> {
+export function table(scanner: Scanner): ParseResult<BlockParseResultBody> {
   scanner.nextUntilChar();
   const header = tableHeader(scanner);
-  if (!header.ok) {
-    return failure();
-  }
+  if (!header.ok) return failure();
   scanner.nextUntilChar();
   const b = block(scanner);
   return success({
@@ -817,9 +730,7 @@ export function tableArray(
 ): ParseResult<BlockParseResultBody> {
   scanner.nextUntilChar();
   const header = tableArrayHeader(scanner);
-  if (!header.ok) {
-    return failure();
-  }
+  if (!header.ok) return failure();
   scanner.nextUntilChar();
   const b = block(scanner);
   return success({
@@ -833,9 +744,7 @@ export function toml(
   scanner: Scanner,
 ): ParseResult<Record<string, unknown>> {
   const blocks = repeat(or([block, tableArray, table]))(scanner);
-  if (!blocks.ok) {
-    return failure();
-  }
+  if (!blocks.ok) return failure();
   let body = {};
   for (const block of blocks.body) {
     switch (block.type) {
@@ -876,11 +785,8 @@ export function parserFactory<T>(parser: ParserComponent<T>) {
       const column = (() => {
         let count = subStr.length;
         for (const line of lines) {
-          if (count > line.length) {
-            count -= line.length + 1;
-          } else {
-            break;
-          }
+          if (count <= line.length) break;
+          count -= line.length + 1;
         }
         return count;
       })();
