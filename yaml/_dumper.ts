@@ -28,11 +28,8 @@ import {
 } from "./_chars.ts";
 import { YamlError } from "./_error.ts";
 import { DEFAULT_SCHEMA, type Schema } from "./_schema.ts";
-import type { RepresentFn, StyleVariant, Type } from "./_type.ts";
-import * as common from "./_utils.ts";
-
-type Any = common.Any;
-type ArrayObject<T = Any> = common.ArrayObject<T>;
+import type { StyleVariant, Type } from "./_type.ts";
+import { type ArrayObject, getObjectTypeString, isObject } from "./_utils.ts";
 
 const ESCAPE_SEQUENCES = new Map<number, string>([
   [0x00, "\\0"],
@@ -71,24 +68,30 @@ const DEPRECATED_BOOLEANS_SYNTAX = [
   "OFF",
 ];
 
+/**
+ * Encodes a Unicode character code point as a hexadecimal escape sequence.
+ */
+function charCodeToHexString(charCode: number): string {
+  const hexString = charCode.toString(16).toUpperCase();
+  if (charCode <= 0xff) return `\\x${hexString.padStart(2, "0")}`;
+  if (charCode <= 0xffff) return `\\u${hexString.padStart(4, "0")}`;
+  if (charCode <= 0xffffffff) return `\\U${hexString.padStart(8, "0")}`;
+  throw new Error(
+    "Code point within a string may not be greater than 0xFFFFFFFF",
+  );
+}
+
 function compileStyleMap(
-  schema: Schema,
   map?: ArrayObject<StyleVariant> | null,
 ): ArrayObject<StyleVariant> {
   if (typeof map === "undefined" || map === null) return {};
 
   const result: ArrayObject<StyleVariant> = {};
   for (let tag of Object.keys(map)) {
-    let style = String(map[tag]) as StyleVariant;
+    const style = String(map[tag]) as StyleVariant;
     if (tag.slice(0, 2) === "!!") {
       tag = `tag:yaml.org,2002:${tag.slice(2)}`;
     }
-    const type = schema.compiledTypeMap.fallback[tag];
-
-    if (type?.styleAliases && Object.hasOwn(type.styleAliases, style)) {
-      style = type.styleAliases[style];
-    }
-
     result[tag] = style;
   }
 
@@ -125,10 +128,10 @@ export interface DumperStateOptions {
   /** set max line width. (default: 80) */
   lineWidth?: number;
   /**
-   * if true, don't convert duplicate objects
-   * into references (default: false)
+   * if false, don't convert duplicate objects
+   * into references (default: true)
    */
-  noRefs?: boolean;
+  useAnchors?: boolean;
   /**
    * if false don't try to be compatible with older yaml versions.
    * Currently: don't quote "yes", "no" and so on,
@@ -150,19 +153,23 @@ export class DumperState {
   arrayIndent: boolean;
   skipInvalid: boolean;
   flowLevel: number;
-  sortKeys: boolean | ((a: Any, b: Any) => number);
+  // deno-lint-ignore no-explicit-any
+  sortKeys: boolean | ((a: any, b: any) => number);
   lineWidth: number;
-  noRefs: boolean;
+  useAnchors: boolean;
   compatMode: boolean;
   condenseFlow: boolean;
   implicitTypes: Type[];
   explicitTypes: Type[];
   tag: string | null = null;
   result = "";
-  duplicates: Any[] = [];
-  usedDuplicates: Any[] = []; // changed from null to []
+  // deno-lint-ignore no-explicit-any
+  duplicates: any[] = [];
+  // deno-lint-ignore no-explicit-any
+  usedDuplicates: Set<any> = new Set();
   styleMap: ArrayObject<StyleVariant>;
-  dump: Any;
+  // deno-lint-ignore no-explicit-any
+  dump: any;
 
   constructor({
     schema = DEFAULT_SCHEMA,
@@ -170,10 +177,10 @@ export class DumperState {
     arrayIndent = true,
     skipInvalid = false,
     flowLevel = -1,
-    styles = null,
+    styles = undefined,
     sortKeys = false,
     lineWidth = 80,
-    noRefs = false,
+    useAnchors = true,
     compatMode = true,
     condenseFlow = false,
   }: DumperStateOptions) {
@@ -182,26 +189,15 @@ export class DumperState {
     this.arrayIndent = arrayIndent;
     this.skipInvalid = skipInvalid;
     this.flowLevel = flowLevel;
-    this.styleMap = compileStyleMap(this.schema, styles);
+    this.styleMap = compileStyleMap(styles);
     this.sortKeys = sortKeys;
     this.lineWidth = lineWidth;
-    this.noRefs = noRefs;
+    this.useAnchors = useAnchors;
     this.compatMode = compatMode;
     this.condenseFlow = condenseFlow;
     this.implicitTypes = this.schema.compiledImplicit;
     this.explicitTypes = this.schema.compiledExplicit;
   }
-}
-
-function encodeHex(character: number): string {
-  const string = character.toString(16).toUpperCase();
-
-  if (character <= 0xff) return `\\x${string.padStart(2, "0")}`;
-  if (character <= 0xffff) return `\\u${string.padStart(4, "0")}`;
-  if (character <= 0xffffffff) return `\\U${string.padStart(8, "0")}`;
-  throw new YamlError(
-    "code point within a string may not be greater than 0xFFFFFFFF",
-  );
 }
 
 // Indents every line in a string. Empty lines (\n only) are not indented.
@@ -329,7 +325,8 @@ function chooseScalarStyle(
   singleLineOnly: boolean,
   indentPerLevel: number,
   lineWidth: number,
-  testAmbiguousType: (...args: Any[]) => Any,
+  // deno-lint-ignore no-explicit-any
+  testAmbiguousType: (...args: any[]) => any,
 ): number {
   const shouldTrackWidth = lineWidth !== -1;
   let hasLineBreak = false;
@@ -439,9 +436,8 @@ function foldLine(line: string, width: number): string {
   return result.slice(1); // drop extra \n joiner
 }
 
-// (See the note for writeScalar.)
-function dropEndingNewline(string: string): string {
-  return string[string.length - 1] === "\n" ? string.slice(0, -1) : string;
+export function trimTrailingNewline(string: string) {
+  return string.at(-1) === "\n" ? string.slice(0, -1) : string;
 }
 
 // Note: a long line without a suitable break point will exceed the width limit.
@@ -494,7 +490,7 @@ function escapeString(string: string): string {
       nextChar = string.charCodeAt(i + 1);
       if (nextChar >= 0xdc00 && nextChar <= 0xdfff /* low surrogate */) {
         // Combine the surrogate pair and store it escaped.
-        result += encodeHex(
+        result += charCodeToHexString(
           (char - 0xd800) * 0x400 + nextChar - 0xdc00 + 0x10000,
         );
         // Advance index one extra since we already used that char here.
@@ -505,7 +501,7 @@ function escapeString(string: string): string {
     escapeSeq = ESCAPE_SEQUENCES.get(char);
     result += !escapeSeq && isPrintable(char)
       ? string[i]
-      : escapeSeq || encodeHex(char);
+      : escapeSeq || charCodeToHexString(char);
   }
 
   return result;
@@ -535,7 +531,7 @@ function writeScalar(
   state: DumperState,
   string: string,
   level: number,
-  iskey: boolean,
+  isKey: boolean,
 ) {
   state.dump = ((): string => {
     if (string.length === 0) {
@@ -564,7 +560,7 @@ function writeScalar(
 
     // Without knowing if keys are implicit/explicit,
     // assume implicit for safety.
-    const singleLineOnly = iskey ||
+    const singleLineOnly = isKey ||
       // No block styles in flow mode.
       (state.flowLevel > -1 && level >= state.flowLevel);
     function testAmbiguity(str: string): boolean {
@@ -586,13 +582,11 @@ function writeScalar(
         return `'${string.replace(/'/g, "''")}'`;
       case STYLE_LITERAL:
         return `|${blockHeader(string, state.indent)}${
-          dropEndingNewline(
-            indentString(string, indent),
-          )
+          trimTrailingNewline(indentString(string, indent))
         }`;
       case STYLE_FOLDED:
         return `>${blockHeader(string, state.indent)}${
-          dropEndingNewline(
+          trimTrailingNewline(
             indentString(foldString(string, lineWidth), indent),
           )
         }`;
@@ -607,7 +601,8 @@ function writeScalar(
 function writeFlowSequence(
   state: DumperState,
   level: number,
-  object: Any,
+  // deno-lint-ignore no-explicit-any
+  object: any,
 ) {
   let _result = "";
   const _tag = state.tag;
@@ -627,7 +622,8 @@ function writeFlowSequence(
 function writeBlockSequence(
   state: DumperState,
   level: number,
-  object: Any,
+  // deno-lint-ignore no-explicit-any
+  object: any,
   compact = false,
 ) {
   let _result = "";
@@ -657,7 +653,8 @@ function writeBlockSequence(
 function writeFlowMapping(
   state: DumperState,
   level: number,
-  object: Any,
+  // deno-lint-ignore no-explicit-any
+  object: any,
 ) {
   let _result = "";
   const _tag = state.tag;
@@ -697,7 +694,8 @@ function writeFlowMapping(
 function writeBlockMapping(
   state: DumperState,
   level: number,
-  object: Any,
+  // deno-lint-ignore no-explicit-any
+  object: any,
   compact = false,
 ) {
   const _tag = state.tag;
@@ -768,19 +766,17 @@ function writeBlockMapping(
 
 function detectType(
   state: DumperState,
-  object: Any,
+  // deno-lint-ignore no-explicit-any
+  object: any,
   explicit = false,
 ): boolean {
   const typeList = explicit ? state.explicitTypes : state.implicitTypes;
 
   for (const type of typeList) {
-    let _result: string;
-
     if (
-      (type.instanceOf || type.predicate) &&
-      (!type.instanceOf ||
-        (typeof object === "object" && object instanceof type.instanceOf)) &&
-      (!type.predicate || type.predicate(object))
+      (type.instanceOf &&
+        (isObject(object) && object instanceof type.instanceOf)) ||
+      (type.predicate && type.predicate(object))
     ) {
       state.tag = explicit ? type.tag : "?";
 
@@ -788,19 +784,16 @@ function detectType(
         const style = state.styleMap[type.tag]! || type.defaultStyle;
 
         if (typeof type.represent === "function") {
-          _result = (type.represent as RepresentFn)(object, style);
-        } else if (Object.hasOwn(type.represent, style)) {
-          _result = (type.represent as ArrayObject<RepresentFn>)[style]!(
-            object,
-            style,
-          );
-        } else {
-          throw new YamlError(
-            `!<${type.tag}> tag resolver accepts not "${style}" style`,
-          );
+          state.dump = type.represent(object, style);
+          return true;
         }
-
-        state.dump = _result;
+        if (Object.hasOwn(type.represent, style)) {
+          state.dump = type.represent[style]!(object, style);
+          return true;
+        }
+        throw new YamlError(
+          `!<${type.tag}> tag resolver accepts not "${style}" style`,
+        );
       }
 
       return true;
@@ -816,10 +809,11 @@ function detectType(
 function writeNode(
   state: DumperState,
   level: number,
-  object: Any,
+  // deno-lint-ignore no-explicit-any
+  object: any,
   block: boolean,
   compact: boolean,
-  iskey = false,
+  isKey = false,
 ): boolean {
   state.tag = null;
   state.dump = object;
@@ -832,7 +826,7 @@ function writeNode(
     block = state.flowLevel < 0 || state.flowLevel > level;
   }
 
-  const objectOrArray = common.isObject(state.dump) ||
+  const objectOrArray = isObject(state.dump) ||
     Array.isArray(state.dump);
 
   let duplicateIndex = -1;
@@ -850,13 +844,13 @@ function writeNode(
     compact = false;
   }
 
-  if (duplicate && state.usedDuplicates[duplicateIndex]) {
+  if (duplicate && state.usedDuplicates.has(object)) {
     state.dump = `*ref_${duplicateIndex}`;
   } else {
-    if (objectOrArray && duplicate && !state.usedDuplicates[duplicateIndex]) {
-      state.usedDuplicates[duplicateIndex] = true;
+    if (objectOrArray && duplicate) {
+      state.usedDuplicates.add(object);
     }
-    if (common.isObject(state.dump) && !Array.isArray(state.dump)) {
+    if (isObject(state.dump) && !Array.isArray(state.dump)) {
       if (block && Object.keys(state.dump).length !== 0) {
         writeBlockMapping(state, level, state.dump, compact);
         if (duplicate) {
@@ -883,13 +877,13 @@ function writeNode(
       }
     } else if (typeof state.dump === "string") {
       if (state.tag !== "?") {
-        writeScalar(state, state.dump, level, iskey);
+        writeScalar(state, state.dump, level, isKey);
       }
     } else {
       if (state.skipInvalid) return false;
       throw new YamlError(
         `unacceptable kind of an object to dump ${
-          Object.prototype.toString.call(state.dump)
+          getObjectTypeString(state.dump)
         }`,
       );
     }
@@ -902,30 +896,17 @@ function writeNode(
   return true;
 }
 
-function inspectNode(
-  object: Any,
-  objects: Any[],
-  duplicatesIndexes: number[],
-) {
-  if (object !== null && typeof object === "object") {
-    const index = objects.indexOf(object);
-    if (index !== -1) {
-      if (!duplicatesIndexes.includes(index)) {
-        duplicatesIndexes.push(index);
-      }
-    } else {
-      objects.push(object);
-
-      if (Array.isArray(object)) {
-        for (let idx = 0; idx < object.length; idx += 1) {
-          inspectNode(object[idx], objects, duplicatesIndexes);
-        }
-      } else {
-        for (const objectKey of Object.keys(object)) {
-          inspectNode(object[objectKey], objects, duplicatesIndexes);
-        }
-      }
-    }
+// deno-lint-ignore no-explicit-any
+function inspectNode(object: any, objects: any[], duplicateObjects: Set<any>) {
+  if (!isObject(object)) return;
+  if (objects.includes(object)) {
+    duplicateObjects.add(object);
+    return;
+  }
+  objects.push(object);
+  const entries = Array.isArray(object) ? object : Object.values(object);
+  for (const value of entries) {
+    inspectNode(value, objects, duplicateObjects);
   }
 }
 
@@ -933,21 +914,22 @@ function getDuplicateReferences(
   object: Record<string, unknown>,
   state: DumperState,
 ) {
-  const objects: Any[] = [];
-  const duplicatesIndexes: number[] = [];
+  // deno-lint-ignore no-explicit-any
+  const objects: any[] = [];
+  // deno-lint-ignore no-explicit-any
+  const duplicateObjects: Set<any> = new Set();
 
-  inspectNode(object, objects, duplicatesIndexes);
+  inspectNode(object, objects, duplicateObjects);
 
-  for (const idx of duplicatesIndexes) {
-    state.duplicates.push(objects[idx]);
-  }
-  state.usedDuplicates = Array.from({ length: duplicatesIndexes.length });
+  for (const object of duplicateObjects) state.duplicates.push(object);
+  state.usedDuplicates = new Set();
 }
 
-export function dump(input: Any, options: DumperStateOptions = {}): string {
+// deno-lint-ignore no-explicit-any
+export function dump(input: any, options: DumperStateOptions = {}): string {
   const state = new DumperState(options);
 
-  if (!state.noRefs) getDuplicateReferences(input, state);
+  if (state.useAnchors) getDuplicateReferences(input, state);
 
   if (writeNode(state, 0, input, true, true)) return `${state.dump}\n`;
 

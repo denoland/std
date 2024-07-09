@@ -4,7 +4,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
 import type { Type } from "../_type.ts";
-import { type Any, isNegativeZero } from "../_utils.ts";
+import { isNegativeZero } from "../_utils.ts";
 
 function isCharCodeInRange(c: number, lower: number, upper: number): boolean {
   return lower <= c && c <= upper;
@@ -151,23 +151,9 @@ function constructYamlInteger(data: string): number {
   return sign * parseInt(value, 10);
 }
 
-function isInteger(object: Any): boolean {
+function isInteger(object: unknown): boolean {
   return typeof object === "number" && object % 1 === 0 &&
     !isNegativeZero(object);
-}
-
-function compileStyleAliases(map?: Record<string, unknown[] | null>) {
-  const result = {} as Record<string, string>;
-
-  if (map) {
-    Object.keys(map).forEach((style) => {
-      map[style]!.forEach((alias) => {
-        result[String(alias)] = style;
-      });
-    });
-  }
-
-  return result;
 }
 
 export const int: Type = {
@@ -195,10 +181,4 @@ export const int: Type = {
     },
   },
   resolve: resolveYamlInteger,
-  styleAliases: compileStyleAliases({
-    binary: [2, "bin"],
-    decimal: [10, "dec"],
-    hexadecimal: [16, "hex"],
-    octal: [8, "oct"],
-  }),
 };

@@ -4,15 +4,15 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
 import type { Type } from "../_type.ts";
-import type { Any } from "../_utils.ts";
+import { getObjectTypeString } from "../_utils.ts";
 
-function resolveYamlPairs(data: Any[][]): boolean {
+function resolveYamlPairs(data: unknown[][]): boolean {
   if (data === null) return true;
 
   const result = Array.from({ length: data.length });
 
   for (const [index, pair] of data.entries()) {
-    if (Object.prototype.toString.call(pair) !== "[object Object]") {
+    if (getObjectTypeString(pair) !== "[object Object]") {
       return false;
     }
 
@@ -20,13 +20,13 @@ function resolveYamlPairs(data: Any[][]): boolean {
 
     if (keys.length !== 1) return false;
 
-    result[index] = [keys[0], pair[keys[0] as Any]];
+    // deno-lint-ignore no-explicit-any
+    result[index] = [keys[0], pair[keys[0] as any]];
   }
 
   return true;
 }
-
-function constructYamlPairs(data: string): Any[] {
+function constructYamlPairs(data: string) {
   if (data === null) return [];
 
   const result = Array.from({ length: data.length });
@@ -36,7 +36,8 @@ function constructYamlPairs(data: string): Any[] {
 
     const keys = Object.keys(pair);
 
-    result[index] = [keys[0], pair[keys[0] as Any]];
+    // deno-lint-ignore no-explicit-any
+    result[index] = [keys[0], pair[keys[0] as any]];
   }
 
   return result;

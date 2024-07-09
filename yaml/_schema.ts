@@ -6,7 +6,7 @@
 
 import { YamlError } from "./_error.ts";
 import type { KindType, Type } from "./_type.ts";
-import type { Any, ArrayObject } from "./_utils.ts";
+import type { ArrayObject } from "./_utils.ts";
 import {
   binary,
   bool,
@@ -72,8 +72,6 @@ function compileMap(...typesList: Type[][]): TypeMap {
 }
 
 export class Schema {
-  static SCHEMA_DEFAULT?: Schema;
-
   implicit: Type[];
   explicit: Type[];
   include: Schema[];
@@ -83,7 +81,8 @@ export class Schema {
   compiledTypeMap: TypeMap;
 
   constructor(definition: {
-    implicit?: Any[];
+    // deno-lint-ignore no-explicit-any
+    implicit?: any[];
     explicit?: Type[];
     include?: Schema[];
   }) {
