@@ -5,7 +5,7 @@
  *
  * ```ts
  * import { parseArgs } from "@std/cli/parse-args";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * // Same as running `deno run example.ts --foo --bar=baz ./quux.txt`
  * const args = parseArgs(["--foo", "--bar=baz", "./quux.txt"]);

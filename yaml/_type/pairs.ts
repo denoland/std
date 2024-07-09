@@ -3,28 +3,30 @@
 // Copyright 2011-2015 by Vitaly Puzrin. All rights reserved. MIT license.
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import { Type } from "../type.ts";
-import type { Any } from "../_utils.ts";
+import type { Type } from "../_type.ts";
+import { getObjectTypeString } from "../_utils.ts";
 
-const _toString = Object.prototype.toString;
+function resolveYamlPairs(data: unknown[][]): boolean {
+  if (data === null) return true;
 
-function resolveYamlPairs(data: Any[][]): boolean {
   const result = Array.from({ length: data.length });
 
   for (const [index, pair] of data.entries()) {
-    if (_toString.call(pair) !== "[object Object]") return false;
+    if (getObjectTypeString(pair) !== "[object Object]") {
+      return false;
+    }
 
     const keys = Object.keys(pair);
 
     if (keys.length !== 1) return false;
 
-    result[index] = [keys[0], pair[keys[0] as Any]];
+    // deno-lint-ignore no-explicit-any
+    result[index] = [keys[0], pair[keys[0] as any]];
   }
 
   return true;
 }
-
-function constructYamlPairs(data: string): Any[] {
+function constructYamlPairs(data: string) {
   if (data === null) return [];
 
   const result = Array.from({ length: data.length });
@@ -34,14 +36,16 @@ function constructYamlPairs(data: string): Any[] {
 
     const keys = Object.keys(pair);
 
-    result[index] = [keys[0], pair[keys[0] as Any]];
+    // deno-lint-ignore no-explicit-any
+    result[index] = [keys[0], pair[keys[0] as any]];
   }
 
   return result;
 }
 
-export const pairs = new Type("tag:yaml.org,2002:pairs", {
+export const pairs: Type = {
+  tag: "tag:yaml.org,2002:pairs",
   construct: constructYamlPairs,
   kind: "sequence",
   resolve: resolveYamlPairs,
-});
+};

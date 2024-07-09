@@ -5,7 +5,7 @@
  *
  * ```ts
  * import { JsonStringifyStream } from "@std/json";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const stream = ReadableStream.from([{ foo: "bar" }, { baz: 100 }])
  *   .pipeThrough(new JsonStringifyStream());
@@ -21,5 +21,5 @@
 
 export * from "./concatenated_json_parse_stream.ts";
 export * from "./types.ts";
-export * from "./json_parse_stream.ts";
-export * from "./json_stringify_stream.ts";
+export * from "./parse_stream.ts";
+export * from "./stringify_stream.ts";

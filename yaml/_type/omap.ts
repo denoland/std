@@ -3,13 +3,11 @@
 // Copyright 2011-2015 by Vitaly Puzrin. All rights reserved. MIT license.
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import { Type } from "../type.ts";
-import type { Any } from "../_utils.ts";
+import type { Type } from "../_type.ts";
+import { getObjectTypeString } from "../_utils.ts";
 
-const { hasOwn } = Object;
-const _toString = Object.prototype.toString;
-
-function resolveYamlOmap(data: Any): boolean {
+// deno-lint-ignore no-explicit-any
+function resolveYamlOmap(data: any): boolean {
   const objectKeys: string[] = [];
   let pairKey = "";
   let pairHasKey = false;
@@ -17,10 +15,12 @@ function resolveYamlOmap(data: Any): boolean {
   for (const pair of data) {
     pairHasKey = false;
 
-    if (_toString.call(pair) !== "[object Object]") return false;
+    if (getObjectTypeString(pair) !== "[object Object]") {
+      return false;
+    }
 
     for (pairKey in pair) {
-      if (hasOwn(pair, pairKey)) {
+      if (Object.hasOwn(pair, pairKey)) {
         if (!pairHasKey) pairHasKey = true;
         else return false;
       }
@@ -28,14 +28,18 @@ function resolveYamlOmap(data: Any): boolean {
 
     if (!pairHasKey) return false;
 
-    if (objectKeys.indexOf(pairKey) === -1) objectKeys.push(pairKey);
+    if (!objectKeys.includes(pairKey)) objectKeys.push(pairKey);
     else return false;
   }
 
   return true;
 }
 
-export const omap = new Type("tag:yaml.org,2002:omap", {
+export const omap: Type = {
+  tag: "tag:yaml.org,2002:omap",
   kind: "sequence",
   resolve: resolveYamlOmap,
-});
+  construct(data) {
+    return data;
+  },
+};
