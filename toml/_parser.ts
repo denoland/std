@@ -373,7 +373,7 @@ function escapeSequence(scanner: Scanner): ParseResult<string> {
       scanner.next();
       return success("\\");
     default:
-      throw new TOMLParseError(
+      throw new SyntaxError(
         `Invalid escape sequence: \\${scanner.char()}`,
       );
   }
