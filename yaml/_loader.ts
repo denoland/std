@@ -146,6 +146,7 @@ class LoaderState {
   lineStart = 0;
   position = 0;
   line = 0;
+  // deno-lint-ignore no-explicit-any
   onWarning?: (...args: any[]) => void;
   allowDuplicateKeys: boolean;
   implicitTypes: Type[];
@@ -329,6 +330,7 @@ function storeMappingPair(
   result: ArrayObject | null,
   overridableKeys: ArrayObject<boolean>,
   keyTag: string | null,
+  // deno-lint-ignore no-explicit-any
   keyNode: any,
   valueNode: unknown,
   startLine?: number,

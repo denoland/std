@@ -68,6 +68,7 @@ function constructYamlFloat(data: string): number {
 
 const SCIENTIFIC_WITHOUT_DOT = /^[-+]?[0-9]+e/;
 
+// deno-lint-ignore no-explicit-any
 function representYamlFloat(object: any, style?: StyleVariant): any {
   if (isNaN(object)) {
     switch (style) {
@@ -108,7 +109,7 @@ function representYamlFloat(object: any, style?: StyleVariant): any {
   return SCIENTIFIC_WITHOUT_DOT.test(res) ? res.replace("e", ".e") : res;
 }
 
-function isFloat(object: any): boolean {
+function isFloat(object: unknown): boolean {
   return typeof object === "number" &&
     (object % 1 !== 0 || isNegativeZero(object));
 }

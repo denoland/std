@@ -18,16 +18,20 @@ export type StyleVariant =
   | "binary"
   | "octal"
   | "hexadecimal";
+// deno-lint-ignore no-explicit-any
 export type RepresentFn = (data: any, style?: StyleVariant) => any;
 
 export interface Type {
   tag: string;
   kind: KindType | null;
+  // deno-lint-ignore no-explicit-any
   instanceOf?: any;
   predicate?: (data: Record<string, unknown>) => boolean;
   represent?: RepresentFn | ArrayObject<RepresentFn>;
   defaultStyle?: StyleVariant;
   loadKind?: KindType;
+  // deno-lint-ignore no-explicit-any
   resolve: (data?: any) => boolean;
+  // deno-lint-ignore no-explicit-any
   construct: (data?: any) => any;
 }

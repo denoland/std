@@ -10,7 +10,7 @@ export const map: Type = {
   resolve() {
     return true;
   },
-  construct(data): any {
+  construct(data) {
     return data !== null ? data : {};
   },
   kind: "mapping",

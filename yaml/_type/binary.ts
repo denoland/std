@@ -8,6 +8,7 @@ import type { Type } from "../_type.ts";
 const BASE64_MAP =
   "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=\n\r";
 
+// deno-lint-ignore no-explicit-any
 function resolveYamlBinary(data: any): boolean {
   if (data === null) return false;
 
@@ -113,8 +114,7 @@ function representYamlBinary(object: Uint8Array): string {
 
   return result;
 }
-
-function isBinary(obj: any): obj is Uint8Array {
+function isBinary(obj: unknown): obj is Uint8Array {
   return obj instanceof Uint8Array;
 }
 

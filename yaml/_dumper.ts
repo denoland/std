@@ -153,6 +153,7 @@ export class DumperState {
   arrayIndent: boolean;
   skipInvalid: boolean;
   flowLevel: number;
+  // deno-lint-ignore no-explicit-any
   sortKeys: boolean | ((a: any, b: any) => number);
   lineWidth: number;
   useAnchors: boolean;
@@ -162,9 +163,12 @@ export class DumperState {
   explicitTypes: Type[];
   tag: string | null = null;
   result = "";
+  // deno-lint-ignore no-explicit-any
   duplicates: any[] = [];
+  // deno-lint-ignore no-explicit-any
   usedDuplicates: Set<any> = new Set();
   styleMap: ArrayObject<StyleVariant>;
+  // deno-lint-ignore no-explicit-any
   dump: any;
 
   constructor({
@@ -321,6 +325,7 @@ function chooseScalarStyle(
   singleLineOnly: boolean,
   indentPerLevel: number,
   lineWidth: number,
+  // deno-lint-ignore no-explicit-any
   testAmbiguousType: (...args: any[]) => any,
 ): number {
   const shouldTrackWidth = lineWidth !== -1;
@@ -596,6 +601,7 @@ function writeScalar(
 function writeFlowSequence(
   state: DumperState,
   level: number,
+  // deno-lint-ignore no-explicit-any
   object: any,
 ) {
   let _result = "";
@@ -616,6 +622,7 @@ function writeFlowSequence(
 function writeBlockSequence(
   state: DumperState,
   level: number,
+  // deno-lint-ignore no-explicit-any
   object: any,
   compact = false,
 ) {
@@ -646,6 +653,7 @@ function writeBlockSequence(
 function writeFlowMapping(
   state: DumperState,
   level: number,
+  // deno-lint-ignore no-explicit-any
   object: any,
 ) {
   let _result = "";
@@ -686,6 +694,7 @@ function writeFlowMapping(
 function writeBlockMapping(
   state: DumperState,
   level: number,
+  // deno-lint-ignore no-explicit-any
   object: any,
   compact = false,
 ) {
@@ -757,6 +766,7 @@ function writeBlockMapping(
 
 function detectType(
   state: DumperState,
+  // deno-lint-ignore no-explicit-any
   object: any,
   explicit = false,
 ): boolean {
@@ -799,6 +809,7 @@ function detectType(
 function writeNode(
   state: DumperState,
   level: number,
+  // deno-lint-ignore no-explicit-any
   object: any,
   block: boolean,
   compact: boolean,
@@ -885,6 +896,7 @@ function writeNode(
   return true;
 }
 
+// deno-lint-ignore no-explicit-any
 function inspectNode(object: any, objects: any[], duplicateObjects: Set<any>) {
   if (!isObject(object)) return;
   if (objects.includes(object)) {
@@ -902,7 +914,9 @@ function getDuplicateReferences(
   object: Record<string, unknown>,
   state: DumperState,
 ) {
+  // deno-lint-ignore no-explicit-any
   const objects: any[] = [];
+  // deno-lint-ignore no-explicit-any
   const duplicateObjects: Set<any> = new Set();
 
   inspectNode(object, objects, duplicateObjects);
@@ -911,6 +925,7 @@ function getDuplicateReferences(
   state.usedDuplicates = new Set();
 }
 
+// deno-lint-ignore no-explicit-any
 export function dump(input: any, options: DumperStateOptions = {}): string {
   const state = new DumperState(options);
 

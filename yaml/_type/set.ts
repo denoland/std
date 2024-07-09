@@ -5,6 +5,7 @@
 
 import type { Type } from "../_type.ts";
 
+// deno-lint-ignore no-explicit-any
 function resolveYamlSet(data: any): boolean {
   if (data === null) return true;
 
@@ -17,7 +18,7 @@ function resolveYamlSet(data: any): boolean {
   return true;
 }
 
-function constructYamlSet(data: string): any {
+function constructYamlSet(data: string) {
   return data !== null ? data : {};
 }
 

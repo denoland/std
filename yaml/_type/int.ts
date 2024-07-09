@@ -151,7 +151,7 @@ function constructYamlInteger(data: string): number {
   return sign * parseInt(value, 10);
 }
 
-function isInteger(object: any): boolean {
+function isInteger(object: unknown): boolean {
   return typeof object === "number" && object % 1 === 0 &&
     !isNegativeZero(object);
 }

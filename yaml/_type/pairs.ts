@@ -6,7 +6,7 @@
 import type { Type } from "../_type.ts";
 import { getObjectTypeString } from "../_utils.ts";
 
-function resolveYamlPairs(data: any[][]): boolean {
+function resolveYamlPairs(data: unknown[][]): boolean {
   if (data === null) return true;
 
   const result = Array.from({ length: data.length });
@@ -20,13 +20,13 @@ function resolveYamlPairs(data: any[][]): boolean {
 
     if (keys.length !== 1) return false;
 
+    // deno-lint-ignore no-explicit-any
     result[index] = [keys[0], pair[keys[0] as any]];
   }
 
   return true;
 }
-
-function constructYamlPairs(data: string): any[] {
+function constructYamlPairs(data: string) {
   if (data === null) return [];
 
   const result = Array.from({ length: data.length });
@@ -36,6 +36,7 @@ function constructYamlPairs(data: string): any[] {
 
     const keys = Object.keys(pair);
 
+    // deno-lint-ignore no-explicit-any
     result[index] = [keys[0], pair[keys[0] as any]];
   }
 
