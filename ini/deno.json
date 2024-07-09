@@ -1,6 +1,6 @@
 {
   "name": "@std/ini",
-  "version": "0.225.2",
+  "version": "1.0.0-rc.1",
   "exports": {
     ".": "./mod.ts",
     "./parse": "./parse.ts",
