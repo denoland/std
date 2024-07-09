@@ -130,3 +130,5 @@ export { parseYaml } from "./parse_yaml.ts";
 
 export * from "./test.ts";
 export * from "./types.ts";
+
+export { parse } from "./parse.ts";
