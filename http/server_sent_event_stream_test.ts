@@ -62,57 +62,57 @@ Deno.test("ServerSentEventStream throws if single-line fields contain a newline"
   // Comment
   await assertRejects(
     async () => await createStream([{ comment: "a\n" }]).getReader().read(),
-    RangeError,
+    SyntaxError,
     "`message.comment` cannot contain a newline",
   );
 
   await assertRejects(
     async () => await createStream([{ comment: "a\r" }]).getReader().read(),
-    RangeError,
+    SyntaxError,
     "`message.comment` cannot contain a newline",
   );
 
   await assertRejects(
     async () => await createStream([{ comment: "a\n\r" }]).getReader().read(),
-    RangeError,
+    SyntaxError,
     "`message.comment` cannot contain a newline",
   );
 
   // Event
   await assertRejects(
     async () => await createStream([{ event: "a\n" }]).getReader().read(),
-    RangeError,
+    SyntaxError,
     "`message.event` cannot contain a newline",
   );
 
   await assertRejects(
     async () => await createStream([{ event: "a\r" }]).getReader().read(),
-    RangeError,
+    SyntaxError,
     "`message.event` cannot contain a newline",
   );
 
   await assertRejects(
     async () => await createStream([{ event: "a\n\r" }]).getReader().read(),
-    RangeError,
+    SyntaxError,
     "`message.event` cannot contain a newline",
   );
 
   // ID
   await assertRejects(
     async () => await createStream([{ id: "a\n" }]).getReader().read(),
-    RangeError,
+    SyntaxError,
     "`message.id` cannot contain a newline",
   );
 
   await assertRejects(
     async () => await createStream([{ id: "a\r" }]).getReader().read(),
-    RangeError,
+    SyntaxError,
     "`message.id` cannot contain a newline",
   );
 
   await assertRejects(
     async () => await createStream([{ id: "a\n\r" }]).getReader().read(),
-    RangeError,
+    SyntaxError,
     "`message.id` cannot contain a newline",
   );
 });

@@ -5,9 +5,7 @@
 
 import { assertEquals, assertThrows } from "@std/assert";
 import { stringify } from "./stringify.ts";
-import { YAMLError } from "./_error.ts";
-import { DEFAULT_SCHEMA, EXTENDED_SCHEMA } from "./schema/mod.ts";
-import { Type } from "./type.ts";
+import { YamlError } from "./_error.ts";
 
 Deno.test({
   name: "stringify()",
@@ -79,13 +77,63 @@ Deno.test({
 });
 
 Deno.test({
-  name: "booleans can be stringified directly",
+  name: "stringify() serializes integers",
   fn() {
-    const boolean = true;
+    assertEquals(stringify(42), "42\n");
+    assertEquals(stringify(-42), "-42\n");
 
-    const expected = "true\n";
+    // binary, octal, and hexadecimal can be specified in styles options
+    assertEquals(
+      stringify(42, { styles: { "!!int": "binary" } }),
+      "0b101010\n",
+    );
+    assertEquals(
+      stringify(42, { styles: { "!!int": "octal" } }),
+      "052\n",
+    );
+    assertEquals(
+      stringify(42, { styles: { "!!int": "hexadecimal" } }),
+      "0x2A\n",
+    );
+  },
+});
 
-    assertEquals(stringify(boolean), expected);
+Deno.test({
+  name: "stringify() serializes boolean values",
+  fn() {
+    assertEquals(stringify([true, false]), "- true\n- false\n");
+
+    // casing can be controlled with styles options
+    assertEquals(
+      stringify([true, false], { styles: { "!!bool": "camelcase" } }),
+      "- True\n- False\n",
+    );
+    assertEquals(
+      stringify([true, false], { styles: { "!!bool": "uppercase" } }),
+      "- TRUE\n- FALSE\n",
+    );
+  },
+});
+
+Deno.test({
+  name: "stringify() serializes Uint8Array as !!binary",
+  fn() {
+    assertEquals(
+      stringify(new Uint8Array([1])),
+      "!<tag:yaml.org,2002:binary> AQ==\n",
+    );
+    assertEquals(
+      stringify(new Uint8Array([1, 2])),
+      "!<tag:yaml.org,2002:binary> AQI=\n",
+    );
+    assertEquals(
+      stringify(new Uint8Array([1, 2, 3])),
+      "!<tag:yaml.org,2002:binary> AQID\n",
+    );
+    assertEquals(
+      stringify(new Uint8Array(Array(50).keys())),
+      "!<tag:yaml.org,2002:binary> AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8gISIjJCUmJygpKissLS4vMDE=\n",
+    );
   },
 });
 
@@ -95,7 +143,7 @@ Deno.test({
     const object = { undefined: undefined };
     assertThrows(
       () => stringify(object),
-      YAMLError,
+      YamlError,
       "unacceptable kind of an object to dump",
     );
   },
@@ -118,7 +166,7 @@ Deno.test({
 undefined: !<tag:yaml.org,2002:js/undefined> ''
 `;
 
-    assertEquals(stringify(object, { schema: EXTENDED_SCHEMA }), expected);
+    assertEquals(stringify(object, { schema: "extended" }), expected);
   },
 });
 
@@ -131,44 +179,8 @@ Deno.test({
     };
 
     assertThrows(
-      () => stringify({ function: func }, { schema: EXTENDED_SCHEMA }),
+      () => stringify({ function: func }, { schema: "extended" }),
     );
-  },
-});
-
-Deno.test({
-  name: "stringify() handles `!*` yaml user defined types",
-  fn() {
-    const PointYamlType = new Type("!point", {
-      kind: "sequence",
-      resolve(data) {
-        return data !== null && data?.length === 3;
-      },
-      construct(data) {
-        const [x, y, z] = data;
-        return { x, y, z };
-      },
-      predicate(object: unknown) {
-        return !!(object && typeof object === "object" && "x" in object &&
-          "y" in object && "z" in object);
-      },
-      represent(point) {
-        return [point.x, point.y, point.z];
-      },
-    });
-    const SPACE_SCHEMA = DEFAULT_SCHEMA.extend({ explicit: [PointYamlType] });
-
-    const object = {
-      point: { x: 1, y: 2, z: 3 },
-    };
-
-    const expected = `point: !<!point>${" "}
-  - 1
-  - 2
-  - 3
-`;
-
-    assertEquals(stringify(object, { schema: SPACE_SCHEMA }), expected);
   },
 });
 
@@ -215,6 +227,106 @@ Deno.test({
       `- .Inf
 - -.Inf
 - .NaN
+`,
+    );
+  },
+});
+
+Deno.test({
+  name: "stringify() encode string with special characters",
+  fn() {
+    assertEquals(stringify("\x03"), `"\\x03"\n`);
+    assertEquals(stringify("\x08"), `"\\b"\n`);
+    assertEquals(stringify("\uffff"), `"\\uFFFF"\n`);
+    assertEquals(stringify("🐱"), `"\\U0001F431"\n`);
+  },
+});
+
+Deno.test({
+  name: "stringify() format Date objet into ISO string",
+  fn() {
+    assertEquals(
+      stringify([new Date("2021-01-01T00:00:00.000Z")]),
+      `- 2021-01-01T00:00:00.000Z\n`,
+    );
+  },
+});
+
+Deno.test({
+  name: "stringify() works with useAnchors option",
+  fn() {
+    const obj = { foo: "bar" };
+    assertEquals(
+      stringify([obj, obj], { useAnchors: false }),
+      `- foo: bar\n- foo: bar\n`,
+    );
+    assertEquals(
+      stringify([obj, obj], { useAnchors: true }),
+      `- &ref_0\n  foo: bar\n- *ref_0\n`,
+    );
+  },
+});
+
+Deno.test({
+  name: "stringify() uses block scalar style for multiline strings",
+  fn() {
+    assertEquals(
+      stringify("foo\nbar"),
+      `|-
+  foo
+  bar
+`,
+    );
+    assertEquals(
+      stringify("foo  \nbar  "),
+      `|-
+  foo \x20
+  bar \x20
+`,
+    );
+  },
+});
+
+Deno.test({
+  name: "stringify() uses folded scalar style for long strings",
+  fn() {
+    assertEquals(
+      stringify(
+        "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.\nDuis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
+      ),
+      `>-
+  Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor
+  incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis
+  nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+
+  Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore
+  eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt
+  in culpa qui officia deserunt mollit anim id est laborum.
+`,
+    );
+  },
+});
+
+Deno.test({
+  name:
+    "stringify() uses flow style for arrays and mappings when the nesting level exceeds flowLevel option value",
+  fn() {
+    assertEquals(
+      stringify({ foo: ["bar", "baz"], bar: { hello: "world" } }, {
+        flowLevel: 1,
+      }),
+      `foo: [bar, baz]
+bar: {hello: world}
+`,
+    );
+
+    const a = { foo: 42 };
+    const b = [1, 2];
+    const obj = { foo: [a, b], bar: { a, b } };
+    assertEquals(
+      stringify(obj, { flowLevel: 1 }),
+      `foo: [&ref_0 {foo: 42}, &ref_1 [1, 2]]
+bar: {a: *ref_0, b: *ref_1}
 `,
     );
   },

@@ -2,6 +2,7 @@
 
 import { expect } from "./expect.ts";
 import type { MatcherContext, Tester } from "./_types.ts";
+import { AssertionError, assertThrows } from "@std/assert";
 
 declare module "./_types.ts" {
   interface Expected {
@@ -97,4 +98,15 @@ Deno.test("expect.extend() api test case", () => {
   expect(book1a).not.toEqualBook(book2);
   expect(book1a).not.toEqualBook(1);
   expect(book1a).not.toEqualBook(null);
+
+  assertThrows(
+    () => expect(book1a).toEqualBook(book2),
+    AssertionError,
+    "Expected Book object: Book 2. Actual Book object: Book 1",
+  );
+  assertThrows(
+    () => expect(book1a).not.toEqualBook(book1b),
+    AssertionError,
+    "Expected Book object: Book 1. Actual Book object: Book 1",
+  );
 });

@@ -36,7 +36,7 @@ export class WalkError extends Error {
    * @example Usage
    * ```ts
    * import { WalkError } from "@std/fs/walk";
-   * import { assertEquals } from "@std/assert/assert-equals";
+   * import { assertEquals } from "@std/assert";
    *
    * const error = new WalkError("error message", "./foo");
    *
@@ -136,7 +136,9 @@ export interface WalkOptions {
    * If specified, entries without the file extension specified by this option
    * are excluded.
    *
-   * @default {undefined}
+   * File extensions with or without a leading period are accepted.
+   *
+   * @default {[]}
    */
   exts?: string[];
   /**
@@ -433,8 +435,8 @@ export type { WalkEntry };
  *
  * @example Filter by file extensions
  *
- * Setting the `exts` option to `[".ts"]` will only include entries with the
- * `.ts` file extension.
+ * Setting the `exts` option to `[".ts"]` or `["ts"]` will only include entries
+ * with the `.ts` file extension.
  *
  * File structure:
  * ```
@@ -516,7 +518,7 @@ export async function* walk(
   root: string | URL,
   options: WalkOptions = {},
 ): AsyncIterableIterator<WalkEntry> {
-  const {
+  let {
     maxDepth = Infinity,
     includeFiles = true,
     includeDirs = true,
@@ -532,6 +534,9 @@ export async function* walk(
     return;
   }
   root = toPathString(root);
+  if (exts) {
+    exts = exts.map((ext) => ext.startsWith(".") ? ext : `.${ext}`);
+  }
   if (includeDirs && include(root, exts, match, skip)) {
     yield await createWalkEntry(root);
   }
@@ -856,8 +861,8 @@ export async function* walk(
  *
  * @example Filter by file extensions
  *
- * Setting the `exts` option to `[".ts"]` will only include entries with the
- * `.ts` file extension.
+ * Setting the `exts` option to `[".ts"]` or `["ts"]` will only include entries
+ * with the `.ts` file extension.
  *
  * File structure:
  * ```
@@ -950,6 +955,9 @@ export function* walkSync(
   }: WalkOptions = {},
 ): IterableIterator<WalkEntry> {
   root = toPathString(root);
+  if (exts) {
+    exts = exts.map((ext) => ext.startsWith(".") ? ext : `.${ext}`);
+  }
   if (maxDepth < 0) {
     return;
   }

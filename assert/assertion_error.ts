@@ -6,7 +6,7 @@
  *
  * @example Usage
  * ```ts no-eval
- * import { AssertionError } from "@std/assert/assertion-error";
+ * import { AssertionError } from "@std/assert";
  *
  * throw new AssertionError("Assertion failed");
  * ```
@@ -16,7 +16,7 @@ export class AssertionError extends Error {
    *
    * @example Usage
    * ```ts no-eval
-   * import { AssertionError } from "@std/assert/assertion-error";
+   * import { AssertionError } from "@std/assert";
    *
    * throw new AssertionError("Assertion failed");
    * ```

@@ -16,7 +16,7 @@ import { strip } from "./_strip.ts";
  * @example Usage
  * ```ts
  * import { extname } from "@std/url/extname";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * assertEquals(extname("https://deno.land/std/path/mod.ts"), ".ts");
  * assertEquals(extname("https://deno.land/std/path/mod"), "");

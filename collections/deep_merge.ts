@@ -21,7 +21,7 @@ import { filterInPlace } from "./_utils.ts";
  * @example Merge objects
  * ```ts
  * import { deepMerge } from "@std/collections/deep-merge";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const a = { foo: true };
  * const b = { foo: { bar: true } };
@@ -36,7 +36,7 @@ import { filterInPlace } from "./_utils.ts";
  * @example Merge arrays
  * ```ts
  * import { deepMerge } from "@std/collections/deep-merge";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const a = { foo: [1, 2] };
  * const b = { foo: [3, 4] };
@@ -51,7 +51,7 @@ import { filterInPlace } from "./_utils.ts";
  * @example Merge maps
  * ```ts
  * import { deepMerge } from "@std/collections/deep-merge";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const a = { foo: new Map([["a", 1]]) };
  * const b = { foo: new Map([["b", 2]]) };
@@ -66,7 +66,7 @@ import { filterInPlace } from "./_utils.ts";
  * @example Merge sets
  * ```ts
  * import { deepMerge } from "@std/collections/deep-merge";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const a = { foo: new Set([1]) };
  * const b = { foo: new Set([2]) };
@@ -81,7 +81,7 @@ import { filterInPlace } from "./_utils.ts";
  * @example Merge with custom options
  * ```ts
  * import { deepMerge } from "@std/collections/deep-merge";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const a = { foo: [1, 2] };
  * const b = { foo: [3, 4] };
@@ -120,7 +120,7 @@ export function deepMerge<
  * @example Merge objects
  * ```ts
  * import { deepMerge } from "@std/collections/deep-merge";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const a = { foo: true };
  * const b = { foo: { bar: true } };
@@ -135,7 +135,7 @@ export function deepMerge<
  * @example Merge arrays
  * ```ts
  * import { deepMerge } from "@std/collections/deep-merge";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const a = { foo: [1, 2] };
  * const b = { foo: [3, 4] };
@@ -150,7 +150,7 @@ export function deepMerge<
  * @example Merge maps
  * ```ts
  * import { deepMerge } from "@std/collections/deep-merge";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const a = { foo: new Map([["a", 1]]) };
  * const b = { foo: new Map([["b", 2]]) };
@@ -165,7 +165,7 @@ export function deepMerge<
  * @example Merge sets
  * ```ts
  * import { deepMerge } from "@std/collections/deep-merge";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const a = { foo: new Set([1]) };
  * const b = { foo: new Set([2]) };
@@ -180,7 +180,7 @@ export function deepMerge<
  * @example Merge with custom options
  * ```ts
  * import { deepMerge } from "@std/collections/deep-merge";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const a = { foo: [1, 2] };
  * const b = { foo: [3, 4] };

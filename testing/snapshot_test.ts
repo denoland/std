@@ -9,6 +9,7 @@ import {
   fail,
 } from "@std/assert";
 import { assertSnapshot, createAssertSnapshot, serialize } from "./snapshot.ts";
+import { ensureDir } from "../fs/ensure_dir.ts";
 
 const SNAPSHOT_MODULE_URL = toFileUrl(join(
   dirname(fromFileUrl(import.meta.url)),
@@ -20,7 +21,7 @@ function formatTestOutput(string: string) {
   return stripAnsiCode(string).replace(/([0-9])+m?s/g, "--ms").replace(
     /(?<=running ([0-9])+ test(s)? from )(.*)(?=test.ts)/g,
     "<tempDir>/",
-  );
+  ).replace(/\(file:\/\/.+\)/g, "(file://<path>)");
 }
 
 function formatTestError(string: string) {
@@ -813,4 +814,66 @@ Deno.test("createAssertSnapshot()", async (t) => {
       "\x1b[32mThis green text has had it's colours stripped\x1b[39m",
     );
   });
+});
+
+// Regression test for https://github.com/denoland/deno_std/issues/5155
+// Asserting snapshots in update mode without required write permissions
+Deno.test(
+  "assertSnapshot() - regression #5155",
+  testFnWithTempDir(async (t, tempDir) => {
+    const tempTestFileName = "test.ts";
+    const tempTestFilePath = join(tempDir, tempTestFileName);
+    const tempSnapshotFileName = `${tempTestFileName}.snap`;
+    const tempSnapshotDir = join(
+      tempDir,
+      "__snapshots__",
+    );
+    const tempSnapshotFilePath = join(tempSnapshotDir, tempSnapshotFileName);
+    await ensureDir(tempSnapshotDir);
+    await Deno.writeTextFile(
+      tempSnapshotFilePath,
+      [
+        "export const snapshot = {};",
+        "\nsnapshot[`Snapshot Test 1`] = \`42\`;",
+      ].join("\n"),
+    );
+    await Deno.writeTextFile(
+      tempTestFilePath,
+      `
+      import { assertSnapshot } from "${SNAPSHOT_MODULE_URL}";
+
+      Deno.test("Snapshot Test", async (t) => {
+        await assertSnapshot(t, 42);
+      });
+    `,
+    );
+
+    const command = new Deno.Command(Deno.execPath(), {
+      args: [
+        "test",
+        "--no-lock",
+        "--allow-read",
+        tempTestFilePath,
+        "--",
+        "-u",
+      ],
+    });
+    const output = await command.output();
+    const errors = new TextDecoder().decode(output.stdout);
+
+    await assertSnapshot(
+      t,
+      formatTestOutput(errors)
+        .replace(/\s+at .+\n/g, "")
+        .replace(
+          /\nSnapshot Test => .+\n/g,
+          "",
+        ),
+    );
+    assert(!output.success, "The test should fail");
+  }),
+);
+
+Deno.test("assertSnapshot() - should work with the string with '\\r' character", async (t) => {
+  await assertSnapshot(t, "Hello\r\nWorld!\r\n");
 });

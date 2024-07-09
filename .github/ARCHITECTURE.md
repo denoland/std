@@ -56,6 +56,16 @@ codebase. This is not the import map used to publish packages to JSR. Rather,
 this import map should only be used for repositories that use `deno_std` as a
 Git submodule to simplify imports. E.g. The Deno runtime repo.
 
+## Design
+
+### Minimal Exports
+
+Files are structured to minimize the number of dependencies they incur and the
+amount of effort required to manage them, both for the maintainer and the user.
+In most cases, only a single function or class, alongside its related types, are
+exported. In other cases, functions that incur negligible dependency overhead
+will be grouped together in the same file.
+
 ## Dependency Graph
 
 <img src="./dependency_graph.svg">

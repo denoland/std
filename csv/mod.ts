@@ -1,7 +1,19 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-/** Reads and writes comma-separated values (CSV) files.
+/**
+ * Reads and writes comma-separated values (CSV) files.
+ *
+ * ```ts
+ * import { parse } from "@std/csv/parse";
+ * import { assertEquals } from "@std/assert";
+ *
+ * const string = "a,b,c\nd,e,f";
+ *
+ * assertEquals(parse(string, { skipFirstRow: false }), [["a", "b", "c"], ["d", "e", "f"]]);
+ * assertEquals(parse(string, { skipFirstRow: true }), [{ a: "d", b: "e", c: "f" }]);
+ * assertEquals(parse(string, { columns: ["x", "y", "z"] }), [{ x: "a", y: "b", z: "c" }, { x: "d", y: "e", z: "f" }]);
+ * ```
  *
  * There are many kinds of CSV files; this module supports the format described
  * in {@link https://www.rfc-editor.org/rfc/rfc4180.html | RFC 4180}.
@@ -63,7 +75,7 @@
  * @module
  */
 
-export * from "./stringify.ts";
 export * from "./parse.ts";
-export * from "./csv_parse_stream.ts";
-export * from "./csv_stringify_stream.ts";
+export * from "./parse_stream.ts";
+export * from "./stringify.ts";
+export * from "./stringify_stream.ts";
