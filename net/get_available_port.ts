@@ -46,7 +46,7 @@ export interface GetAvailablePortOptions {
  * ```ts no-eval no-assert
  * import { getAvailablePort } from "@std/net/get-available-port";
  *
- * const command = new Deno.Command(Deno.exec(), {
+ * const command = new Deno.Command(Deno.execPath(), {
  *   args: ["test.ts", "--port", getAvailablePort().toString()],
  * });
  * // ...
