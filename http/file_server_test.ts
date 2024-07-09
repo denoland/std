@@ -1015,7 +1015,7 @@ Deno.test("file_server prints local and network urls", async () => {
 });
 
 Deno.test("file_server prints only local address on Deploy", async () => {
-  const port = 4507;
+  const port = 4508;
   const process = spawnDeno([
     "--allow-net",
     "--allow-read",
