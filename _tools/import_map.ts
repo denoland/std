@@ -12,7 +12,7 @@
 
 import rootDenoConfig from "../deno.json" with { type: "json" };
 import { join } from "../path/posix/join.ts";
-import { assertEquals } from "../assert/assert_equals.ts";
+import { assertEquals } from "../assert/equals.ts";
 
 const importMap: { imports: Record<string, string> } = { imports: {} };
 for (const workspace of rootDenoConfig.workspaces) {
