@@ -31,8 +31,6 @@ type BlockParseResultBody = {
   value: Record<string, unknown>;
 };
 
-export class TOMLParseError extends Error {}
-
 export class Scanner {
   #whitespace = /[ \t]/;
   #position = 0;
@@ -101,7 +99,7 @@ export class Scanner {
     // Invalid if current char is other kinds of whitespace
     if (!this.isCurrentCharEOL() && /\s/.test(this.char())) {
       const escaped = "\\u" + this.char().charCodeAt(0).toString(16);
-      throw new TOMLParseError(`Contains invalid whitespaces: \`${escaped}\``);
+      throw new SyntaxError(`Contains invalid whitespaces: \`${escaped}\``);
     }
   }
 
@@ -216,7 +214,7 @@ function join<T>(
       if (!Separator(scanner).ok) break;
       const result = parser(scanner);
       if (!result.ok) {
-        throw new TOMLParseError(`Invalid token after "${separator}"`);
+        throw new SyntaxError(`Invalid token after "${separator}"`);
       }
       out.push(result.body);
     }
@@ -235,11 +233,11 @@ function kv<T>(
     if (!key.ok) return failure();
     const sep = Separator(scanner);
     if (!sep.ok) {
-      throw new TOMLParseError(`key/value pair doesn't have "${separator}"`);
+      throw new SyntaxError(`key/value pair doesn't have "${separator}"`);
     }
     const value = valueParser(scanner);
     if (!value.ok) {
-      throw new TOMLParseError(
+      throw new SyntaxError(
         `Value of key/value pair is invalid data format`,
       );
     }
@@ -293,10 +291,10 @@ function surround<T>(
     }
     const result = parser(scanner);
     if (!result.ok) {
-      throw new TOMLParseError(`Invalid token after "${left}"`);
+      throw new SyntaxError(`Invalid token after "${left}"`);
     }
     if (!Right(scanner).ok) {
-      throw new TOMLParseError(
+      throw new SyntaxError(
         `Not closed by "${right}" after started with "${left}"`,
       );
     }
@@ -375,7 +373,7 @@ function escapeSequence(scanner: Scanner): ParseResult<string> {
       scanner.next();
       return success("\\");
     default:
-      throw new TOMLParseError(
+      throw new SyntaxError(
         `Invalid escape sequence: \\${scanner.char()}`,
       );
   }
@@ -388,7 +386,7 @@ export function basicString(scanner: Scanner): ParseResult<string> {
   const acc = [];
   while (scanner.char() !== '"' && !scanner.eof()) {
     if (scanner.char() === "\n") {
-      throw new TOMLParseError("Single-line string cannot contain EOL");
+      throw new SyntaxError("Single-line string cannot contain EOL");
     }
     const escapedChar = escapeSequence(scanner);
     if (escapedChar.ok) {
@@ -399,7 +397,7 @@ export function basicString(scanner: Scanner): ParseResult<string> {
     }
   }
   if (scanner.eof()) {
-    throw new TOMLParseError(
+    throw new SyntaxError(
       `Single-line string is not closed:\n${acc.join("")}`,
     );
   }
@@ -414,13 +412,13 @@ export function literalString(scanner: Scanner): ParseResult<string> {
   const acc: string[] = [];
   while (scanner.char() !== "'" && !scanner.eof()) {
     if (scanner.char() === "\n") {
-      throw new TOMLParseError("Single-line string cannot contain EOL");
+      throw new SyntaxError("Single-line string cannot contain EOL");
     }
     acc.push(scanner.char());
     scanner.next();
   }
   if (scanner.eof()) {
-    throw new TOMLParseError(
+    throw new SyntaxError(
       `Single-line string is not closed:\n${acc.join("")}`,
     );
   }
@@ -463,7 +461,7 @@ export function multilineBasicString(
   }
 
   if (scanner.eof()) {
-    throw new TOMLParseError(
+    throw new SyntaxError(
       `Multi-line string is not closed:\n${acc.join("")}`,
     );
   }
@@ -495,7 +493,7 @@ export function multilineLiteralString(
     scanner.next();
   }
   if (scanner.eof()) {
-    throw new TOMLParseError(
+    throw new SyntaxError(
       `Multi-line string is not closed:\n${acc.join("")}`,
     );
   }
@@ -613,7 +611,7 @@ export function dateTime(scanner: Scanner): ParseResult<Date> {
   const date = new Date(dateStr.trim());
   // invalid date
   if (isNaN(date.getTime())) {
-    throw new TOMLParseError(`Invalid date string "${dateStr}"`);
+    throw new SyntaxError(`Invalid date string "${dateStr}"`);
   }
 
   return success(date);
@@ -658,7 +656,7 @@ export function arrayValue(scanner: Scanner): ParseResult<unknown[]> {
   }
   scanner.nextUntilChar();
 
-  if (scanner.char() !== "]") throw new TOMLParseError("Array is not closed");
+  if (scanner.char() !== "]") throw new SyntaxError("Array is not closed");
   scanner.next();
 
   return success(array);
@@ -795,7 +793,7 @@ export function parserFactory<T>(parser: ParserComponent<T>) {
       const message = `Parse error on line ${row}, column ${column}: ${
         err ? err.message : `Unexpected character: "${scanner.char()}"`
       }`;
-      throw new TOMLParseError(message);
+      throw new SyntaxError(message);
     }
     return parsed.body;
   };
