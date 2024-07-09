@@ -531,7 +531,7 @@ function writeScalar(
   state: DumperState,
   string: string,
   level: number,
-  iskey: boolean,
+  isKey: boolean,
 ) {
   state.dump = ((): string => {
     if (string.length === 0) {
@@ -560,7 +560,7 @@ function writeScalar(
 
     // Without knowing if keys are implicit/explicit,
     // assume implicit for safety.
-    const singleLineOnly = iskey ||
+    const singleLineOnly = isKey ||
       // No block styles in flow mode.
       (state.flowLevel > -1 && level >= state.flowLevel);
     function testAmbiguity(str: string): boolean {
@@ -807,7 +807,7 @@ function writeNode(
   object: Any,
   block: boolean,
   compact: boolean,
-  iskey = false,
+  isKey = false,
 ): boolean {
   state.tag = null;
   state.dump = object;
@@ -871,7 +871,7 @@ function writeNode(
       }
     } else if (typeof state.dump === "string") {
       if (state.tag !== "?") {
-        writeScalar(state, state.dump, level, iskey);
+        writeScalar(state, state.dump, level, isKey);
       }
     } else {
       if (state.skipInvalid) return false;
