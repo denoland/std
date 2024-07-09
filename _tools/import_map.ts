@@ -43,7 +43,7 @@ for (const workspace of rootDenoConfig.workspaces) {
 if (Deno.args[0] === "update") {
   await Deno.writeTextFile(
     "./import_map.json",
-    JSON.stringify(importMap, null, 2),
+    JSON.stringify(importMap, null, 2) + "\n",
   );
 } else if (Deno.args[0] === "check") {
   const currentImportMap = await import("../import_map.json", {
