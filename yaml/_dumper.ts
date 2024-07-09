@@ -29,7 +29,12 @@ import {
 import { YamlError } from "./_error.ts";
 import { DEFAULT_SCHEMA, type Schema } from "./_schema.ts";
 import type { StyleVariant, Type } from "./_type.ts";
-import { type Any, type ArrayObject, isObject } from "./_utils.ts";
+import {
+  type Any,
+  type ArrayObject,
+  getObjectTypeString,
+  isObject,
+} from "./_utils.ts";
 
 const ESCAPE_SEQUENCES = new Map<number, string>([
   [0x00, "\\0"],
@@ -173,7 +178,7 @@ export class DumperState {
     arrayIndent = true,
     skipInvalid = false,
     flowLevel = -1,
-    styles = null,
+    styles = undefined,
     sortKeys = false,
     lineWidth = 80,
     useAnchors = true,
@@ -413,9 +418,8 @@ function foldLine(line: string, width: number): string {
   return result.slice(1); // drop extra \n joiner
 }
 
-// (See the note for writeScalar.)
-function dropEndingNewline(string: string): string {
-  return string[string.length - 1] === "\n" ? string.slice(0, -1) : string;
+export function trimTrailingNewline(string: string) {
+  return string.at(-1) === "\n" ? string.slice(0, -1) : string;
 }
 
 // Note: a long line without a suitable break point will exceed the width limit.
@@ -560,11 +564,11 @@ function writeScalar(
         return `'${string.replace(/'/g, "''")}'`;
       case STYLE_LITERAL:
         return `|${blockHeader(string, state.indent)}${
-          dropEndingNewline(indentString(string, indent))
+          trimTrailingNewline(indentString(string, indent))
         }`;
       case STYLE_FOLDED:
         return `>${blockHeader(string, state.indent)}${
-          dropEndingNewline(
+          trimTrailingNewline(
             indentString(foldString(string, lineWidth), indent),
           )
         }`;
@@ -855,7 +859,7 @@ function writeNode(
       if (state.skipInvalid) return false;
       throw new YamlError(
         `unacceptable kind of an object to dump ${
-          Object.prototype.toString.call(state.dump)
+          getObjectTypeString(state.dump)
         }`,
       );
     }

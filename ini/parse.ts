@@ -1,7 +1,15 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-import { IniMap, type ParseOptions } from "./ini_map.ts";
+import { IniMap, type ReviverFunction } from "./_ini_map.ts";
+export type { ParseOptions, ReviverFunction };
+
+/** Options for {@linkcode parse}. */
+interface ParseOptions {
+  /** Provide custom parsing of the value in a key/value pair. */
+  reviver?: ReviverFunction;
+}
+
 /**
  * Parse an INI config string into an object. Provide formatting options to override the default assignment operator.
  *
