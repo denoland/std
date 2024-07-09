@@ -135,68 +135,66 @@ function failure(): Failure {
   return { ok: false };
 }
 
-export const Utils = {
-  unflat(
-    keys: string[],
-    values: unknown = {},
-    cObj?: unknown,
-  ): Record<string, unknown> {
-    const out: Record<string, unknown> = {};
-    if (keys.length === 0) {
-      return cObj as Record<string, unknown>;
-    }
-    if (!cObj) cObj = values;
-    const key: string | undefined = keys[keys.length - 1];
-    if (typeof key === "string") out[key] = cObj;
-    return this.unflat(keys.slice(0, -1), values, out);
-  },
-  deepAssignWithTable(target: Record<string, unknown>, table: {
-    type: "Table" | "TableArray";
-    key: string[];
-    value: Record<string, unknown>;
-  }) {
-    if (table.key.length === 0 || table.key[0] == null) {
-      throw new Error("Unexpected key length");
-    }
-    const value = target[table.key[0]];
+export function unflat(
+  keys: string[],
+  values: unknown = {},
+  cObj?: unknown,
+): Record<string, unknown> {
+  const out: Record<string, unknown> = {};
+  if (keys.length === 0) {
+    return cObj as Record<string, unknown>;
+  }
+  if (!cObj) cObj = values;
+  const key: string | undefined = keys[keys.length - 1];
+  if (typeof key === "string") out[key] = cObj;
+  return unflat(keys.slice(0, -1), values, out);
+}
+export function deepAssignWithTable(target: Record<string, unknown>, table: {
+  type: "Table" | "TableArray";
+  key: string[];
+  value: Record<string, unknown>;
+}) {
+  if (table.key.length === 0 || table.key[0] == null) {
+    throw new Error("Unexpected key length");
+  }
+  const value = target[table.key[0]];
 
-    if (typeof value === "undefined") {
-      Object.assign(
-        target,
-        this.unflat(
-          table.key,
-          table.type === "Table" ? table.value : [table.value],
-        ),
-      );
-    } else if (Array.isArray(value)) {
-      if (table.type === "TableArray" && table.key.length === 1) {
-        value.push(table.value);
-      } else {
-        const last = value[value.length - 1];
-        Utils.deepAssignWithTable(last, {
-          type: table.type,
-          key: table.key.slice(1),
-          value: table.value,
-        });
-      }
-    } else if (typeof value === "object" && value !== null) {
-      Utils.deepAssignWithTable(value as Record<string, unknown>, {
+  if (typeof value === "undefined") {
+    Object.assign(
+      target,
+      unflat(
+        table.key,
+        table.type === "Table" ? table.value : [table.value],
+      ),
+    );
+  } else if (Array.isArray(value)) {
+    if (table.type === "TableArray" && table.key.length === 1) {
+      value.push(table.value);
+    } else {
+      const last = value[value.length - 1];
+      deepAssignWithTable(last, {
         type: table.type,
         key: table.key.slice(1),
         value: table.value,
       });
-    } else {
-      throw new Error("Unexpected assign");
     }
-  },
-};
+  } else if (typeof value === "object" && value !== null) {
+    deepAssignWithTable(value as Record<string, unknown>, {
+      type: table.type,
+      key: table.key.slice(1),
+      value: table.value,
+    });
+  } else {
+    throw new Error("Unexpected assign");
+  }
+}
 
 // ---------------------------------
 // Parser combinators and generators
 // ---------------------------------
 
 function or<T>(parsers: ParserComponent<T>[]): ParserComponent<T> {
-  return function Or(scanner: Scanner): ParseResult<T> {
+  return (scanner: Scanner): ParseResult<T> => {
     for (const parse of parsers) {
       const result = parse(scanner);
       if (result.ok) return result;
@@ -210,7 +208,7 @@ function join<T>(
   separator: string,
 ): ParserComponent<T[]> {
   const Separator = character(separator);
-  return function Join(scanner: Scanner): ParseResult<T[]> {
+  return (scanner: Scanner): ParseResult<T[]> => {
     const first = parser(scanner);
     if (!first.ok) return failure();
     const out: T[] = [first.body];
@@ -232,9 +230,7 @@ function kv<T>(
   valueParser: ParserComponent<T>,
 ): ParserComponent<{ [key: string]: unknown }> {
   const Separator = character(separator);
-  return function Kv(
-    scanner: Scanner,
-  ): ParseResult<{ [key: string]: unknown }> {
+  return (scanner: Scanner): ParseResult<{ [key: string]: unknown }> => {
     const key = keyParser(scanner);
     if (!key.ok) return failure();
     const sep = Separator(scanner);
@@ -247,16 +243,14 @@ function kv<T>(
         `Value of key/value pair is invalid data format`,
       );
     }
-    return success(Utils.unflat(key.body, value.body));
+    return success(unflat(key.body, value.body));
   };
 }
 
 function merge(
   parser: ParserComponent<unknown[]>,
 ): ParserComponent<Record<string, unknown>> {
-  return function Merge(
-    scanner: Scanner,
-  ): ParseResult<Record<string, unknown>> {
+  return (scanner: Scanner): ParseResult<Record<string, unknown>> => {
     const result = parser(scanner);
     if (!result.ok) return failure();
     let body = {};
@@ -270,8 +264,10 @@ function merge(
   };
 }
 
-function repeat<T>(parser: ParserComponent<T>): ParserComponent<T[]> {
-  return function Repeat(scanner: Scanner) {
+function repeat<T>(
+  parser: ParserComponent<T>,
+): ParserComponent<T[]> {
+  return (scanner: Scanner) => {
     const body: T[] = [];
     while (!scanner.eof()) {
       const result = parser(scanner);
@@ -291,7 +287,7 @@ function surround<T>(
 ): ParserComponent<T> {
   const Left = character(left);
   const Right = character(right);
-  return function Surround(scanner: Scanner) {
+  return (scanner: Scanner) => {
     if (!Left(scanner).ok) {
       return failure();
     }
@@ -309,7 +305,7 @@ function surround<T>(
 }
 
 function character(str: string) {
-  return function character(scanner: Scanner): ParseResult<void> {
+  return (scanner: Scanner): ParseResult<void> => {
     scanner.nextUntilChar({ inline: true });
     if (scanner.slice(0, str.length) !== str) return failure();
     scanner.next(str.length);
@@ -322,19 +318,17 @@ function character(str: string) {
 // Parser components
 // -----------------------
 
-const Patterns = {
-  BARE_KEY: /[A-Za-z0-9_-]/,
-  FLOAT: /[0-9_\.e+\-]/i,
-  END_OF_VALUE: /[ \t\r\n#,}\]]/,
-};
+const BARE_KEY_REGEXP = /[A-Za-z0-9_-]/;
+const FLOAT_REGEXP = /[0-9_\.e+\-]/i;
+const END_OF_VALUE_REGEXP = /[ \t\r\n#,}\]]/;
 
-export function BareKey(scanner: Scanner): ParseResult<string> {
+export function bareKey(scanner: Scanner): ParseResult<string> {
   scanner.nextUntilChar({ inline: true });
-  if (!scanner.char() || !Patterns.BARE_KEY.test(scanner.char())) {
+  if (!scanner.char() || !BARE_KEY_REGEXP.test(scanner.char())) {
     return failure();
   }
   const acc: string[] = [];
-  while (scanner.char() && Patterns.BARE_KEY.test(scanner.char())) {
+  while (scanner.char() && BARE_KEY_REGEXP.test(scanner.char())) {
     acc.push(scanner.char());
     scanner.next();
   }
@@ -342,7 +336,7 @@ export function BareKey(scanner: Scanner): ParseResult<string> {
   return success(key);
 }
 
-function EscapeSequence(scanner: Scanner): ParseResult<string> {
+function escapeSequence(scanner: Scanner): ParseResult<string> {
   if (scanner.char() !== "\\") return failure();
   scanner.next();
   // See https://toml.io/en/v1.0.0-rc.3#string
@@ -387,7 +381,7 @@ function EscapeSequence(scanner: Scanner): ParseResult<string> {
   }
 }
 
-export function BasicString(scanner: Scanner): ParseResult<string> {
+export function basicString(scanner: Scanner): ParseResult<string> {
   scanner.nextUntilChar({ inline: true });
   if (scanner.char() !== '"') return failure();
   scanner.next();
@@ -396,7 +390,7 @@ export function BasicString(scanner: Scanner): ParseResult<string> {
     if (scanner.char() === "\n") {
       throw new TOMLParseError("Single-line string cannot contain EOL");
     }
-    const escapedChar = EscapeSequence(scanner);
+    const escapedChar = escapeSequence(scanner);
     if (escapedChar.ok) {
       acc.push(escapedChar.body);
     } else {
@@ -413,7 +407,7 @@ export function BasicString(scanner: Scanner): ParseResult<string> {
   return success(acc.join(""));
 }
 
-export function LiteralString(scanner: Scanner): ParseResult<string> {
+export function literalString(scanner: Scanner): ParseResult<string> {
   scanner.nextUntilChar({ inline: true });
   if (scanner.char() !== "'") return failure();
   scanner.next();
@@ -434,7 +428,7 @@ export function LiteralString(scanner: Scanner): ParseResult<string> {
   return success(acc.join(""));
 }
 
-export function MultilineBasicString(
+export function multilineBasicString(
   scanner: Scanner,
 ): ParseResult<string> {
   scanner.nextUntilChar({ inline: true });
@@ -459,7 +453,7 @@ export function MultilineBasicString(
       scanner.nextUntilChar({ comment: false });
       continue;
     }
-    const escapedChar = EscapeSequence(scanner);
+    const escapedChar = escapeSequence(scanner);
     if (escapedChar.ok) {
       acc.push(escapedChar.body);
     } else {
@@ -482,7 +476,7 @@ export function MultilineBasicString(
   return success(acc.join(""));
 }
 
-export function MultilineLiteralString(
+export function multilineLiteralString(
   scanner: Scanner,
 ): ParseResult<string> {
   scanner.nextUntilChar({ inline: true });
@@ -524,7 +518,7 @@ const symbolPairs: [string, unknown][] = [
   ["+nan", NaN],
   ["-nan", NaN],
 ];
-export function Symbols(scanner: Scanner): ParseResult<unknown> {
+export function symbols(scanner: Scanner): ParseResult<unknown> {
   scanner.nextUntilChar({ inline: true });
   const found = symbolPairs.find(([str]) =>
     scanner.slice(0, str.length) === str
@@ -535,9 +529,9 @@ export function Symbols(scanner: Scanner): ParseResult<unknown> {
   return success(value);
 }
 
-export const DottedKey = join(or([BareKey, BasicString, LiteralString]), ".");
+export const dottedKey = join(or([bareKey, basicString, literalString]), ".");
 
-export function Integer(scanner: Scanner): ParseResult<number | string> {
+export function integer(scanner: Scanner): ParseResult<number | string> {
   scanner.nextUntilChar({ inline: true });
 
   // If binary / octal / hex
@@ -571,16 +565,16 @@ export function Integer(scanner: Scanner): ParseResult<number | string> {
   return success(int);
 }
 
-export function Float(scanner: Scanner): ParseResult<number> {
+export function float(scanner: Scanner): ParseResult<number> {
   scanner.nextUntilChar({ inline: true });
 
   // lookahead validation is needed for integer value is similar to float
   let position = 0;
   while (
     scanner.char(position) &&
-    !Patterns.END_OF_VALUE.test(scanner.char(position))
+    !END_OF_VALUE_REGEXP.test(scanner.char(position))
   ) {
-    if (!Patterns.FLOAT.test(scanner.char(position))) return failure();
+    if (!FLOAT_REGEXP.test(scanner.char(position))) return failure();
     position++;
   }
 
@@ -589,7 +583,7 @@ export function Float(scanner: Scanner): ParseResult<number> {
     acc.push(scanner.char());
     scanner.next();
   }
-  while (Patterns.FLOAT.test(scanner.char()) && !scanner.eof()) {
+  while (FLOAT_REGEXP.test(scanner.char()) && !scanner.eof()) {
     acc.push(scanner.char());
     scanner.next();
   }
@@ -601,7 +595,7 @@ export function Float(scanner: Scanner): ParseResult<number> {
   return success(float);
 }
 
-export function DateTime(scanner: Scanner): ParseResult<Date> {
+export function dateTime(scanner: Scanner): ParseResult<Date> {
   scanner.nextUntilChar({ inline: true });
 
   let dateStr = scanner.slice(0, 10);
@@ -625,7 +619,7 @@ export function DateTime(scanner: Scanner): ParseResult<Date> {
   return success(date);
 }
 
-export function LocalTime(scanner: Scanner): ParseResult<string> {
+export function localTime(scanner: Scanner): ParseResult<string> {
   scanner.nextUntilChar({ inline: true });
 
   let timeStr = scanner.slice(0, 8);
@@ -645,7 +639,7 @@ export function LocalTime(scanner: Scanner): ParseResult<string> {
   return success(timeStr);
 }
 
-export function ArrayValue(scanner: Scanner): ParseResult<unknown[]> {
+export function arrayValue(scanner: Scanner): ParseResult<unknown[]> {
   scanner.nextUntilChar({ inline: true });
 
   if (scanner.char() !== "[") return failure();
@@ -654,7 +648,7 @@ export function ArrayValue(scanner: Scanner): ParseResult<unknown[]> {
   const array: unknown[] = [];
   while (!scanner.eof()) {
     scanner.nextUntilChar();
-    const result = Value(scanner);
+    const result = value(scanner);
     if (!result.ok) break;
     array.push(result.body);
     scanner.nextUntilChar({ inline: true });
@@ -670,7 +664,7 @@ export function ArrayValue(scanner: Scanner): ParseResult<unknown[]> {
   return success(array);
 }
 
-export function InlineTable(
+export function inlineTable(
   scanner: Scanner,
 ): ParseResult<Record<string, unknown>> {
   scanner.nextUntilChar();
@@ -680,7 +674,7 @@ export function InlineTable(
   }
   const pairs = surround(
     "{",
-    join(Pair, ","),
+    join(pair, ","),
     "}",
   )(scanner);
   if (!pairs.ok) return failure();
@@ -691,67 +685,67 @@ export function InlineTable(
   return success(table);
 }
 
-export const Value = or([
-  MultilineBasicString,
-  MultilineLiteralString,
-  BasicString,
-  LiteralString,
-  Symbols,
-  DateTime,
-  LocalTime,
-  Float,
-  Integer,
-  ArrayValue,
-  InlineTable,
+export const value = or([
+  multilineBasicString,
+  multilineLiteralString,
+  basicString,
+  literalString,
+  symbols,
+  dateTime,
+  localTime,
+  float,
+  integer,
+  arrayValue,
+  inlineTable,
 ]);
 
-export const Pair = kv(DottedKey, "=", Value);
+export const pair = kv(dottedKey, "=", value);
 
-export function Block(
+export function block(
   scanner: Scanner,
 ): ParseResult<BlockParseResultBody> {
   scanner.nextUntilChar();
-  const result = merge(repeat(Pair))(scanner);
+  const result = merge(repeat(pair))(scanner);
   if (result.ok) return success({ type: "Block", value: result.body });
   return failure();
 }
 
-export const TableHeader = surround("[", DottedKey, "]");
+export const tableHeader = surround("[", dottedKey, "]");
 
-export function Table(scanner: Scanner): ParseResult<BlockParseResultBody> {
+export function table(scanner: Scanner): ParseResult<BlockParseResultBody> {
   scanner.nextUntilChar();
-  const header = TableHeader(scanner);
+  const header = tableHeader(scanner);
   if (!header.ok) return failure();
   scanner.nextUntilChar();
-  const block = Block(scanner);
+  const b = block(scanner);
   return success({
     type: "Table",
     key: header.body,
-    value: block.ok ? block.body.value : {},
+    value: b.ok ? b.body.value : {},
   });
 }
 
-export const TableArrayHeader = surround("[[", DottedKey, "]]");
+export const tableArrayHeader = surround("[[", dottedKey, "]]");
 
-export function TableArray(
+export function tableArray(
   scanner: Scanner,
 ): ParseResult<BlockParseResultBody> {
   scanner.nextUntilChar();
-  const header = TableArrayHeader(scanner);
+  const header = tableArrayHeader(scanner);
   if (!header.ok) return failure();
   scanner.nextUntilChar();
-  const block = Block(scanner);
+  const b = block(scanner);
   return success({
     type: "TableArray",
     key: header.body,
-    value: block.ok ? block.body.value : {},
+    value: b.ok ? b.body.value : {},
   });
 }
 
-export function Toml(
+export function toml(
   scanner: Scanner,
 ): ParseResult<Record<string, unknown>> {
-  const blocks = repeat(or([Block, TableArray, Table]))(scanner);
+  const blocks = repeat(or([block, tableArray, table]))(scanner);
   if (!blocks.ok) return failure();
   let body = {};
   for (const block of blocks.body) {
@@ -761,11 +755,11 @@ export function Toml(
         break;
       }
       case "Table": {
-        Utils.deepAssignWithTable(body, block);
+        deepAssignWithTable(body, block);
         break;
       }
       case "TableArray": {
-        Utils.deepAssignWithTable(body, block);
+        deepAssignWithTable(body, block);
         break;
       }
     }
@@ -773,8 +767,8 @@ export function Toml(
   return success(body);
 }
 
-export function ParserFactory<T>(parser: ParserComponent<T>) {
-  return function parse(tomlString: string): T {
+export function parserFactory<T>(parser: ParserComponent<T>) {
+  return (tomlString: string): T => {
     const scanner = new Scanner(tomlString);
 
     let parsed: ParseResult<T> | null = null;

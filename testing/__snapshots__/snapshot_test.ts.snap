@@ -485,3 +485,9 @@ FAILED | 0 passed | 1 failed (--ms)
 
 "
 `;
+
+snapshot[`assertSnapshot() - should work with the string with '\\r' character 1`] = `
+"Hello\\r
+World!\\r
+"
+`;
