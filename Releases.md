@@ -1,3 +1,142 @@
+### 2024.07.09
+
+#### @std/assert 1.0.0 (major)
+
+- docs(assert): improve `assertObjectMatch` docs (#5296)
+- docs(assert): improve `assertNotStrictEquals` example (#5295)
+- docs(assert): update `assertMatch` example (#5294)
+- test(assert): add "`assert()` throws if expr is falsy" test (#5267)
+- chore(assert): release `assert@1.0.0` (#4989)
+
+#### @std/bytes 1.0.2 (patch)
+
+- fix(bytes,cli,collections,expect): add missing non-null assertions (#5280)
+
+#### @std/cli 1.0.0-rc.4 (prerelease)
+
+- fix(bytes,cli,collections,expect): add missing non-null assertions (#5280)
+
+#### @std/collections 1.0.3 (patch)
+
+- fix(bytes,cli,collections,expect): add missing non-null assertions (#5280)
+
+#### @std/crypto 1.0.1 (patch)
+
+- test(crypto): test `timingSafeEqual()` in handling `DataView`s (#5268)
+
+#### @std/csv 1.0.0-rc.2 (prerelease)
+
+- refactor(csv): rename arguments, variables and loop (#5297)
+- refactor(csv): remove `runeCount()` function (#5298)
+- refactor(csv): throw errors immediately (#5299)
+- test(csv): add grapheme length test (#5304)
+
+#### @std/encoding 1.0.1 (patch)
+
+- perf(encoding): fix loop times in `encodeHex()` (#5344)
+
+#### @std/expect 1.0.0-rc.2 (prerelease)
+
+- fix(expect): make `.not` aware of whether is it is in async context (#5308)
+- fix(bytes,cli,collections,expect): add missing non-null assertions (#5280)
+
+#### @std/fmt 0.225.6 (patch)
+
+- fix(fmt): fix the case when mantissa exceeds 10 by rounding and exponent is
+  negative (#5279)
+- test(fmt): add test cases for `printf()` (#5278)
+
+#### @std/front-matter 1.0.0-rc.1 (prerelease)
+
+- BREAKING(front-matter): make `Extractor` helper type private (#5334)
+- BREAKING(front-matter): remove `createExtractor()` (#5266)
+- fix(front-matter): improve `extract` types (#5325)
+- chore(front-matter): release `front-matter@1.0.0-rc.1` (#5263)
+
+#### @std/fs 1.0.0-rc.4 (prerelease)
+
+- fix(fs): accept `exts` without leading period in `walk[Sync]()` (#5345)
+
+#### @std/http 1.0.0-rc.3 (prerelease)
+
+- fix(http): allow deleting cookie with `secure`, `httpOnly` and `partitioned`
+  attributes (#5354)
+
+#### @std/ini 1.0.0-rc.1 (prerelease)
+
+- BREAKING(ini): make `IniMap` private (#5351)
+- docs(ini): link options interfaces to functions that use them (#5359)
+- chore(ini): release `ini@1.0.0-rc.1` (#5357)
+
+#### @std/net 0.224.5 (patch)
+
+- chore(net): mark `getNetworkAddress()` unstable (#5348)
+
+#### @std/path 1.0.0-rc.4 (prerelease)
+
+- BREAKING(path): remove `FormatInputPathObject` (#5321)
+- BREAKING(path): remove `GlobToRegExpOptions` (#5320)
+
+#### @std/testing 1.0.0-rc.3 (prerelease)
+
+- fix(testing): cause type error for async function as describe body (#5355)
+- fix(testing): escape CR in snapshot files (#5352)
+
+#### @std/toml 1.0.0-rc.4 (prerelease)
+
+- refactor(toml): remove Utils object (#5342)
+- refactor(toml): remove `Patterns` object (#5343)
+- refactor(toml): rename functions to camel case (#5339)
+
+#### @std/yaml 1.0.0-rc.2 (prerelease)
+
+- BREAKING(yaml): rename `StringifyOptions.noRefs` to
+  `StringifyOptions.useAnchors` (#5288)
+- BREAKING(yaml): remove style aliases of `!!int` type (#5307)
+- BREAKING(yaml): rename `StringifyOptions.noCompatMode` to
+  `StringifyOptions.compatMode` (#5287)
+- BREAKING(yaml): rename `ParseOptions.noArrayIndent` to
+  `ParseOptions.arrayIndent` (#5286)
+- BREAKING(yaml): rename `ParseOptions.json` to
+  `ParseOptions.allowDuplicateKeys` (#5282)
+- fix(yaml): fix `StringifyOptions.noRefs` (#5292)
+- fix(yaml): fix `!!int` style variation handling in `stringfiy` (#5256)
+- docs(yaml): improve documentation (#5324)
+- refactor(yaml): cleanup dead code in `Mark` class (#5327)
+- refactor(yaml): simplify `YamlError` (#5328)
+- refactor(yaml): simplify and rename `dropEndingNewline()` (#5336)
+- refactor(yaml): move `getObjectTypeString()` (#5332)
+- refactor(yaml): remove obsolete static `Schema.SCHEMA_DEFAULT` property
+  (#5326)
+- refactor(yaml): cleanup `detectType()` (#5313)
+- refactor(yaml): cleanup `mergeMappings()` (#5314)
+- refactor(yaml): rename util functions (#5310)
+- refactor(yaml): replace `usedDuplicates()` array with `Set` (#5312)
+- refactor(yaml): cleanup `inspectNode()` (#5311)
+- refactor(yaml): simplify `encodeHex()` (#5305)
+- refactor(yaml): add `readIndent()` method (#5302)
+- refactor(yaml): remove repeat helper function (#5303)
+- refactor(yaml): rename `throwWarning()` to `dispatchWarning()` (#5301)
+- refactor(yaml): move char check functions (#5300)
+- refactor(yaml): remove first argument from `ParseOptions.onWarning` (#5284)
+- refactor(yaml): add `peek()` and `next()` to `LoaderState` (#5276)
+- refactor(yaml): replace `Type` class with interface (#5262)
+- refactor(yaml): simplify isWhiteSpaceOrEOL (#5271)
+- refactor(yaml): simplify `sanitizeInput()` (#5274)
+- refactor(yaml): inline error functions as methods (#5273)
+- refactor(yaml): remove `State` class (#5275)
+- refactor(yaml): move loader and dumper files (#5270)
+- refactor(yaml): make `readDocument()` and `readDocuments()` generator
+  functions (#5255)
+- refactor(yaml): merge `yaml/_dumper/` files (#5260)
+- refactor(yaml): merge `yaml/_loader/` files (#5259)
+- refactor(yaml): add default options object (#5261)
+- test(yaml): test parsing of single quoted scalars (#5356)
+- test(yaml): add test cases of stringify (#5350)
+- test(yaml): test block scalar output of stringify (#5341)
+- test(yaml): add test for `ParseOptions.json` option (#5283)
+- test(yaml): add test of parsing !!int types (#5253)
+
 ### 2024.07.02
 
 #### @std/archive 0.224.3 (patch)
