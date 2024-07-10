@@ -325,8 +325,7 @@ function chooseScalarStyle(
   singleLineOnly: boolean,
   indentPerLevel: number,
   lineWidth: number,
-  // deno-lint-ignore no-explicit-any
-  testAmbiguousType: (...args: any[]) => any,
+  testAmbiguousType: (string: string) => boolean,
 ): number {
   const shouldTrackWidth = lineWidth !== -1;
   let hasLineBreak = false;
