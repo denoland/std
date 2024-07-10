@@ -47,7 +47,7 @@ function getParserForFormat(format: Format): Parser {
  * @returns The extracted front matter and body content.
  */
 export function extract<T>(text: string): Extract<T> {
-  const formats: Format[] = ["yaml", "toml", "json"];
+  const formats = Object.keys(EXTRACT_REGEXP_MAP) as Format[];
   const format = recognize(text, formats);
   const regexp = EXTRACT_REGEXP_MAP[format];
   const parser = getParserForFormat(format);
