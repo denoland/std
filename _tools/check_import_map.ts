@@ -11,11 +11,13 @@ for (const [key, value] of Object.entries(denoJson.imports)) {
 }
 
 if (invalidEntries.length > 0) {
-  console.log("Invalid entries found in deno.json imports:")
+  console.log("Invalid entries found in deno.json imports:");
   for (const [key, value] of invalidEntries) {
     console.log(`  ${key}: ${value}`);
   }
-  console.log("The range part of std specifier needs to be in the form of ^x.y.z");
+  console.log(
+    "The range part of std specifier needs to be in the form of ^x.y.z",
+  );
   Deno.exit(1);
 }
 console.log("ok");
