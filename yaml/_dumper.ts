@@ -153,8 +153,7 @@ export class DumperState {
   arrayIndent: boolean;
   skipInvalid: boolean;
   flowLevel: number;
-  // deno-lint-ignore no-explicit-any
-  sortKeys: boolean | ((a: any, b: any) => number);
+  sortKeys: boolean | ((a: string, b: string) => number);
   lineWidth: number;
   useAnchors: boolean;
   compatMode: boolean;
