@@ -119,7 +119,7 @@ export type StringifyOptions = {
    *
    * @default {false}
    */
-  bom?: boolean;
+  byteOrderMark?: boolean;
 };
 
 const QUOTE = '"';
@@ -304,8 +304,12 @@ export function stringify(
   data: DataItem[],
   options?: StringifyOptions,
 ): string {
-  const { headers = true, separator: sep = ",", columns = [], bom = false } =
-    options ?? {};
+  const {
+    headers = true,
+    separator: sep = ",",
+    columns = [],
+    byteOrderMark = false,
+  } = options ?? {};
 
   if (sep.includes(QUOTE) || sep.includes(CRLF)) {
     const message = [
@@ -319,7 +323,7 @@ export function stringify(
   const normalizedColumns = columns.map(normalizeColumn);
   let output = "";
 
-  if (bom) {
+  if (byteOrderMark) {
     output += BYTE_ORDER_MARK;
   }
 
