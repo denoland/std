@@ -601,8 +601,7 @@ function writeScalar(
 function writeFlowSequence(
   state: DumperState,
   level: number,
-  // deno-lint-ignore no-explicit-any
-  object: any,
+  object: unknown[],
 ) {
   let _result = "";
   const _tag = state.tag;
