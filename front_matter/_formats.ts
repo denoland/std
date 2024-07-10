@@ -2,9 +2,9 @@
 
 import type { Format } from "./_types.ts";
 
-const RECOGNIZE_YAML_REGEXP = /^---yaml|= yaml =|---$/im;
-const RECOGNIZE_TOML_REGEXP = /^---toml|\+\+\+|= toml =$/im;
-const RECOGNIZE_JSON_REGEXP = /^---json|= json =$/im;
+const RECOGNIZE_YAML_REGEXP = /^(?:---yaml|= yaml =|---)$/im;
+const RECOGNIZE_TOML_REGEXP = /^(?:---toml|\+\+\+|= toml =)$/im;
+const RECOGNIZE_JSON_REGEXP = /^(?:---json|= json =)$/im;
 
 export const RECOGNIZE_REGEXP_MAP = {
   yaml: RECOGNIZE_YAML_REGEXP,
