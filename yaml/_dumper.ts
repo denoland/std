@@ -653,8 +653,7 @@ function writeBlockSequence(
 function writeFlowMapping(
   state: DumperState,
   level: number,
-  // deno-lint-ignore no-explicit-any
-  object: any,
+  object: Record<PropertyKey, unknown>,
 ) {
   let _result = "";
   const _tag = state.tag;
