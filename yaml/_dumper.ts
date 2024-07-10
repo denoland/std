@@ -537,10 +537,7 @@ function writeScalar(
     if (string.length === 0) {
       return "''";
     }
-    if (
-      state.compatMode &&
-      DEPRECATED_BOOLEANS_SYNTAX.indexOf(string) !== -1
-    ) {
+    if (state.compatMode && DEPRECATED_BOOLEANS_SYNTAX.includes(string)) {
       return `'${string}'`;
     }
 
