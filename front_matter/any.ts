@@ -1,17 +1,24 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import { createExtractor, type Parser } from "./_create_extractor.ts";
+import { extractAndParse, type Parser, recognize } from "./_shared.ts";
 import { parse as parseYaml } from "@std/yaml/parse";
 import { parse as parseToml } from "@std/toml/parse";
 import type { Extract } from "./types.ts";
+import type { Format } from "./test.ts";
+import { EXTRACT_REGEXP_MAP } from "./_formats.ts";
 
 export type { Extract };
 
-const _extractor = createExtractor({
-  yaml: parseYaml as Parser,
-  toml: parseToml as Parser,
-  json: JSON.parse as Parser,
-});
+function getParserForFormat(format: Format): Parser {
+  switch (format) {
+    case "yaml":
+      return parseYaml as Parser;
+    case "toml":
+      return parseToml as Parser;
+    case "json":
+      return JSON.parse;
+  }
+}
 
 /**
  * Extracts and parses {@link https://yaml.org | YAML}, {@link https://toml.io |
@@ -40,5 +47,9 @@ const _extractor = createExtractor({
  * @returns The extracted front matter and body content.
  */
 export function extract<T>(text: string): Extract<T> {
-  return _extractor(text);
+  const formats: Format[] = ["yaml", "toml", "json"];
+  const format = recognize(text, formats);
+  const regexp = EXTRACT_REGEXP_MAP[format];
+  const parser = getParserForFormat(format);
+  return extractAndParse(text, regexp, parser);
 }

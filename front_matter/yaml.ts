@@ -1,14 +1,11 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import { createExtractor, type Parser } from "./_create_extractor.ts";
-import { parse } from "@std/yaml/parse";
+import { extractAndParse, type Parser } from "./_shared.ts";
+import { parse as parseYaml } from "@std/yaml/parse";
 import type { Extract } from "./types.ts";
+import { EXTRACT_YAML_REGEXP } from "./_formats.ts";
 
 export type { Extract };
-
-const _extractor = createExtractor({
-  ["yaml"]: parse as Parser,
-});
 
 /**
  * Extracts and parses {@link https://yaml.org | YAML} from the metadata of
@@ -37,5 +34,5 @@ const _extractor = createExtractor({
  * @returns The extracted YAML front matter and body content.
  */
 export function extract<T>(text: string): Extract<T> {
-  return _extractor(text);
+  return extractAndParse(text, EXTRACT_YAML_REGEXP, parseYaml as Parser);
 }
