@@ -9,6 +9,7 @@
  *
  * Based on {@link https://github.com/sindresorhus/pretty-bytes | pretty-bytes}.
  * A utility for displaying file sizes for humans.
+ *
  * ```ts
  * import { format } from "@std/fmt/bytes";
  * import { assertEquals } from "@std/assert";
