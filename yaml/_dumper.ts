@@ -809,8 +809,7 @@ function detectType(
 function writeNode(
   state: DumperState,
   level: number,
-  // deno-lint-ignore no-explicit-any
-  object: any,
+  object: unknown,
   block: boolean,
   compact: boolean,
   isKey = false,
