@@ -766,8 +766,7 @@ function writeBlockMapping(
 
 function detectType(
   state: DumperState,
-  // deno-lint-ignore no-explicit-any
-  object: any,
+  object: Record<string, unknown>,
   explicit = false,
 ): boolean {
   const typeList = explicit ? state.explicitTypes : state.implicitTypes;
