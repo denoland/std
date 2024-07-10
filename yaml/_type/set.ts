@@ -5,8 +5,7 @@
 
 import type { Type } from "../_type.ts";
 
-// deno-lint-ignore no-explicit-any
-function resolveYamlSet(data: any): boolean {
+function resolveYamlSet(data: Record<PropertyKey, unknown>): boolean {
   if (data === null) return true;
 
   for (const key in data) {
@@ -22,7 +21,7 @@ function constructYamlSet(data: string) {
   return data !== null ? data : {};
 }
 
-export const set: Type = {
+export const set: Type<Record<PropertyKey, unknown>> = {
   tag: "tag:yaml.org,2002:set",
   construct: constructYamlSet,
   kind: "mapping",

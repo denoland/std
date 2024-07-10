@@ -6,8 +6,7 @@
 import type { Type } from "../_type.ts";
 import { getObjectTypeString } from "../_utils.ts";
 
-// deno-lint-ignore no-explicit-any
-function resolveYamlOmap(data: any): boolean {
+function resolveYamlOmap(data: Record<PropertyKey, unknown>[]): boolean {
   const objectKeys: string[] = [];
   let pairKey = "";
   let pairHasKey = false;
@@ -35,7 +34,7 @@ function resolveYamlOmap(data: any): boolean {
   return true;
 }
 
-export const omap: Type = {
+export const omap: Type<Record<PropertyKey, unknown>[]> = {
   tag: "tag:yaml.org,2002:omap",
   kind: "sequence",
   resolve: resolveYamlOmap,
