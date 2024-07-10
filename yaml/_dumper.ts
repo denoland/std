@@ -379,26 +379,24 @@ function foldLine(line: string, width: number): string {
   if (line === "" || line[0] === " ") return line;
 
   // Since a more-indented line adds a \n, breaks can't be followed by a space.
-  const breakRe = / [^ ]/g; // note: the match index will always be <= length-2.
-  let match;
+  const breakRegExp = / [^ ]/g; // note: the match index will always be <= length-2.
   // start is an inclusive index. end, curr, and next are exclusive.
   let start = 0;
   let end;
   let curr = 0;
   let next = 0;
-  let result = "";
+  const lines = [];
 
   // Invariants: 0 <= start <= length-1.
   //   0 <= curr <= next <= max(0, length-2). curr - start <= width.
   // Inside the loop:
   //   A match implies length >= 2, so curr and next are <= length-2.
-  // tslint:disable-next-line:no-conditional-assignment
-  while ((match = breakRe.exec(line))) {
+  for (const match of line.matchAll(breakRegExp)) {
     next = match.index;
     // maintain invariant: curr - start <= width
     if (next - start > width) {
       end = curr > start ? curr : next; // derive end <= length-2
-      result += `\n${line.slice(start, end)}`;
+      lines.push(line.slice(start, end));
       // skip the space that was output as \n
       start = end + 1; // derive start <= length-1
     }
@@ -407,15 +405,15 @@ function foldLine(line: string, width: number): string {
 
   // By the invariants, start <= length-1, so there is something left over.
   // It is either the whole string or a part starting from non-whitespace.
-  result += "\n";
   // Insert a break if the remainder is too long and there is a break available.
   if (line.length - start > width && curr > start) {
-    result += `${line.slice(start, curr)}\n${line.slice(curr + 1)}`;
+    lines.push(line.slice(start, curr));
+    lines.push(line.slice(curr + 1));
   } else {
-    result += line.slice(start);
+    lines.push(line.slice(start));
   }
 
-  return result.slice(1); // drop extra \n joiner
+  return lines.join("\n");
 }
 
 export function trimTrailingNewline(string: string) {
