@@ -146,8 +146,7 @@ class LoaderState {
   lineStart = 0;
   position = 0;
   line = 0;
-  // deno-lint-ignore no-explicit-any
-  onWarning?: (...args: any[]) => void;
+  onWarning?: (error: YamlError) => void;
   allowDuplicateKeys: boolean;
   implicitTypes: Type[];
   typeMap: TypeMap;
