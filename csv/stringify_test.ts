@@ -10,7 +10,11 @@ import {
   assertStringIncludes,
   assertThrows,
 } from "@std/assert";
-import { stringify, StringifyError } from "./stringify.ts";
+import {
+  stringify,
+  StringifyError,
+  type StringifyOptions,
+} from "./stringify.ts";
 
 const CRLF = "\r\n";
 const BYTE_ORDER_MARK = "\ufeff";
@@ -43,7 +47,7 @@ Deno.test({
             '  - U+0022: Quotation mark (")',
             "  - U+000D U+000A: Carriage Return + Line Feed (\\r\\n)",
           ].join("\n");
-          const options = { separator: '"', columns };
+          const options: StringifyOptions = { separator: '"', columns };
           assertThrows(
             () => stringify(data, options),
             StringifyError,
@@ -63,7 +67,7 @@ Deno.test({
             '  - U+0022: Quotation mark (")',
             "  - U+000D U+000A: Carriage Return + Line Feed (\\r\\n)",
           ].join("\n");
-          const options = { separator: "\r\n", columns };
+          const options: StringifyOptions = { separator: "\r\n", columns };
           assertThrows(
             () => stringify(data, options),
             StringifyError,
@@ -118,7 +122,7 @@ Deno.test({
           const columns: string[] = [];
           const data: string[][] = [];
           const output = ``;
-          const options = { headers: false, columns };
+          const options: StringifyOptions = { headers: false, columns };
           assertEquals(stringify(data, options), output);
         },
       },
@@ -142,7 +146,7 @@ Deno.test({
           const columns = ["a"];
           const data: string[][] = [];
           const output = ``;
-          const options = { headers: false, columns };
+          const options: StringifyOptions = { headers: false, columns };
           assertEquals(stringify(data, options), output);
         },
       },
@@ -154,7 +158,7 @@ Deno.test({
           const columns = [0, 1];
           const data = [["foo", "bar"], ["baz", "qux"]];
           const output = `0\r1${CRLF}foo\rbar${CRLF}baz\rqux${CRLF}`;
-          const options = { separator: "\r", columns };
+          const options: StringifyOptions = { separator: "\r", columns };
           assertEquals(stringify(data, options), output);
         },
       },
@@ -167,7 +171,7 @@ Deno.test({
           const columns = [0, 1];
           const data = [["foo", "bar"], ["baz", "qux"]];
           const output = `0\n1${CRLF}foo\nbar${CRLF}baz\nqux${CRLF}`;
-          const options = { separator: "\n", columns };
+          const options: StringifyOptions = { separator: "\n", columns };
           assertEquals(stringify(data, options), output);
         },
       },
@@ -191,7 +195,7 @@ Deno.test({
           const columns = [{ header: "Value", prop: "value" }];
           const data = [{ value: "foo" }, { value: "bar" }];
           const output = `foo${CRLF}bar${CRLF}`;
-          const options = { headers: false, columns };
+          const options: StringifyOptions = { headers: false, columns };
           assertEquals(stringify(data, options), output);
         },
       },
@@ -351,7 +355,7 @@ Deno.test({
           const data = [[["foo", "bar"]], [["baz", "qux"]]];
           const output =
             `0${CRLF}"[""foo"",""bar""]"${CRLF}"[""baz"",""qux""]"${CRLF}`;
-          const options = { separator: "\t", columns };
+          const options: StringifyOptions = { separator: "\t", columns };
           assertEquals(stringify(data, options), output);
         },
       },
@@ -519,7 +523,7 @@ Deno.test({
           const data = [["foo,"]];
           const output = `0${CRLF}foo,${CRLF}`;
 
-          const options = { separator: "\t", columns };
+          const options: StringifyOptions = { separator: "\t", columns };
           assertEquals(stringify(data, options), output);
         },
       },
@@ -545,11 +549,14 @@ Deno.test({
     });
     await t.step(
       {
-        name: "byte-order mark with bom=true",
+        name: "byte-order mark with byteOrderMark=true",
         fn() {
           const data = [["abc"]];
           const output = `${BYTE_ORDER_MARK}abc${CRLF}`;
-          const options = { headers: false, bom: true };
+          const options: StringifyOptions = {
+            headers: false,
+            byteOrderMark: true,
+          };
           assertStringIncludes(stringify(data, options), BYTE_ORDER_MARK);
           assertEquals(stringify(data, options), output);
         },
@@ -561,7 +568,7 @@ Deno.test({
         fn() {
           const data = [["abc"]];
           const output = `abc${CRLF}`;
-          const options = { headers: false };
+          const options: StringifyOptions = { headers: false };
           assert(!stringify(data, options).includes(BYTE_ORDER_MARK));
           assertEquals(stringify(data, options), output);
         },
@@ -569,11 +576,14 @@ Deno.test({
     );
     await t.step(
       {
-        name: "no byte-order mark with bom=false",
+        name: "no byte-order mark with byteOrderMark=false",
         fn() {
           const data = [["abc"]];
           const output = `abc${CRLF}`;
-          const options = { headers: false, bom: false };
+          const options: StringifyOptions = {
+            headers: false,
+            byteOrderMark: false,
+          };
           assert(!stringify(data, options).includes(BYTE_ORDER_MARK));
           assertEquals(stringify(data, options), output);
         },
