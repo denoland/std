@@ -3,7 +3,7 @@
 
 /**
  * Provides functions for dealing with and matching ETags, including
- * {@linkcode eTag} to eTag an etag for a given entity,
+ * {@linkcode eTag} to calculate an etag for a given entity,
  * {@linkcode ifMatch} for validating if an ETag matches against a `If-Match`
  * header and {@linkcode ifNoneMatch} for validating an Etag against an
  * `If-None-Match` header.
@@ -17,7 +17,7 @@
 import { encodeBase64 as base64Encode } from "@std/encoding/base64";
 
 /**
- * Just the part of {@linkcode Deno.FileInfo} that is required to eTag an `ETag`,
+ * Just the part of {@linkcode Deno.FileInfo} that is required to calculate an `ETag`,
  * so partial or user generated file information can be passed.
  */
 export interface FileInfo {
@@ -39,7 +39,7 @@ const DEFAULT_ALGORITHM: AlgorithmIdentifier = "SHA-256";
 /** Options for {@linkcode eTag}. */
 export interface ETagOptions {
   /**
-   * A digest algorithm to use to eTag the etag.
+   * A digest algorithm to use to calculate the etag.
    *
    * @default {"SHA-256"}
    */
