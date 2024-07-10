@@ -544,7 +544,7 @@ export class DateTimeFormatter {
           break;
         }
         case "dayPeriod": {
-          value = /^(A|P)M/.exec(string)?.[0] as string;
+          value = /^(A|P)\.?M\.?/i.exec(string)?.[0] as string;
           break;
         }
         case "literal": {
