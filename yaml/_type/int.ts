@@ -3,23 +3,27 @@
 // Copyright 2011-2015 by Vitaly Puzrin. All rights reserved. MIT license.
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import { Type } from "../_type.ts";
-import { type Any, isNegativeZero } from "../_utils.ts";
+import type { Type } from "../_type.ts";
+import { isNegativeZero } from "../_utils.ts";
+
+function isCharCodeInRange(c: number, lower: number, upper: number): boolean {
+  return lower <= c && c <= upper;
+}
 
 function isHexCode(c: number): boolean {
   return (
-    (0x30 <= /* 0 */ c && c <= 0x39) /* 9 */ ||
-    (0x41 <= /* A */ c && c <= 0x46) /* F */ ||
-    (0x61 <= /* a */ c && c <= 0x66) /* f */
+    isCharCodeInRange(c, 0x30, 0x39) || // 0-9
+    isCharCodeInRange(c, 0x41, 0x46) || // A-F
+    isCharCodeInRange(c, 0x61, 0x66) // a-f
   );
 }
 
 function isOctCode(c: number): boolean {
-  return 0x30 <= /* 0 */ c && c <= 0x37 /* 7 */;
+  return isCharCodeInRange(c, 0x30, 0x37); // 0-7
 }
 
 function isDecCode(c: number): boolean {
-  return 0x30 <= /* 0 */ c && c <= 0x39 /* 9 */;
+  return isCharCodeInRange(c, 0x30, 0x39); // 0-9
 }
 
 function resolveYamlInteger(data: string): boolean {
@@ -147,15 +151,13 @@ function constructYamlInteger(data: string): number {
   return sign * parseInt(value, 10);
 }
 
-function isInteger(object: Any): boolean {
-  return (
-    Object.prototype.toString.call(object) === "[object Number]" &&
-    object % 1 === 0 &&
-    !isNegativeZero(object)
-  );
+function isInteger(object: unknown): boolean {
+  return typeof object === "number" && object % 1 === 0 &&
+    !isNegativeZero(object);
 }
 
-export const int = new Type("tag:yaml.org,2002:int", {
+export const int: Type = {
+  tag: "tag:yaml.org,2002:int",
   construct: constructYamlInteger,
   defaultStyle: "decimal",
   kind: "scalar",
@@ -179,10 +181,4 @@ export const int = new Type("tag:yaml.org,2002:int", {
     },
   },
   resolve: resolveYamlInteger,
-  styleAliases: {
-    binary: [2, "bin"],
-    decimal: [10, "dec"],
-    hexadecimal: [16, "hex"],
-    octal: [8, "oct"],
-  },
-});
+};

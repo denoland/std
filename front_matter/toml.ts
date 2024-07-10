@@ -1,11 +1,14 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import {
-  createExtractor,
-  type Extractor,
-  type Parser,
-} from "./create_extractor.ts";
+import { createExtractor, type Parser } from "./_create_extractor.ts";
 import { parse } from "@std/toml/parse";
+import type { Extract } from "./types.ts";
+
+export type { Extract };
+
+const _extractor = createExtractor({
+  ["toml"]: parse as Parser,
+});
 
 /**
  * Extracts and parses {@link https://toml.io | TOML} from the metadata of
@@ -28,7 +31,11 @@ import { parse } from "@std/toml/parse";
  *   attrs: { title: "Three dashes marks the spot" },
  * });
  * ```
+ *
+ * @typeParam T The type of the parsed front matter.
+ * @param text The text to extract TOML front matter from.
+ * @returns The extracted TOML front matter and body content.
  */
-export const extract: Extractor = createExtractor({
-  ["toml"]: parse as Parser,
-});
+export function extract<T>(text: string): Extract<T> {
+  return _extractor(text);
+}

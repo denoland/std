@@ -197,6 +197,117 @@ Deno.test({
     assertEquals(parse(yaml), {
       message: new Uint8Array([72, 101, 108, 108, 111]),
     });
+
+    // ignore CR LF in base64 string
+    assertEquals(
+      parse(`message: !!binary |
+  YWJjZGVmZ\r
+  2hpamtsbW\r
+  5vcHFyc3R\r
+  1dnd4eXo=
+`),
+      {
+        // deno-fmt-ignore
+        message: new Uint8Array([97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122]),
+      },
+    );
+
+    // check tailbits handling
+    // 2 padding characters
+    assertEquals(
+      parse(`message: !!binary "AQ=="`),
+      {
+        message: new Uint8Array([1]),
+      },
+    );
+    // 1 padding character
+    assertEquals(
+      parse(`message: !!binary "AQI="`),
+      {
+        message: new Uint8Array([1, 2]),
+      },
+    );
+    // no padding character
+    assertEquals(
+      parse(`message: !!binary "AQID"`),
+      {
+        message: new Uint8Array([1, 2, 3]),
+      },
+    );
+
+    // invalid base64 string
+    assertThrows(
+      () => parse("message: !!binary <>"),
+      YamlError,
+      "cannot resolve a node with !<tag:yaml.org,2002:binary> explicit tag at line 1, column 21:\n    message: !!binary <>\n                        ^",
+    );
+
+    // empty base64 string is error
+    assertThrows(
+      () => parse("message: !!binary"),
+      YamlError,
+      "cannot resolve a node with !<tag:yaml.org,2002:binary> explicit tag at line 2, column 1:\n    \n    ^",
+    );
+  },
+});
+
+Deno.test({
+  name: "parse() handles boolean types",
+  fn() {
+    assertEquals(
+      parse(`
+        - true
+        - True
+        - TRUE
+        - false
+        - False
+        - FALSE
+      `),
+      [true, true, true, false, false, false],
+    );
+
+    // if the boolean names are in strange casing, they become strings
+    assertEquals(
+      parse(`
+        - TruE
+        - tRue
+        - FaLsE
+        - fAlSe
+      `),
+      ["TruE", "tRue", "FaLsE", "fAlSe"],
+    );
+
+    // Yes, No, On, Off are not booleans in YAML 1.2
+    assertEquals(
+      parse(`
+        - yes
+        - Yes
+        - YES
+        - no
+        - No
+        - NO
+        - on
+        - On
+        - ON
+        - off
+        - Off
+        - OFF
+      `),
+      [
+        "yes",
+        "Yes",
+        "YES",
+        "no",
+        "No",
+        "NO",
+        "on",
+        "On",
+        "ON",
+        "off",
+        "Off",
+        "OFF",
+      ],
+    );
   },
 });
 
@@ -228,6 +339,104 @@ Deno.test({
       -4520,
       12000,
     ]);
+  },
+});
+
+Deno.test({
+  name: "parse() handles integer types",
+  fn() {
+    assertEquals(
+      parse(`
+        - 0
+        - 42
+        - -42
+        - 1_000
+      `),
+      [0, 42, -42, 1000],
+    );
+
+    // binary, octal, and hexadecimal
+    assertEquals(
+      parse(`
+      - 0b1010
+      - 0b1010_1010
+      - 012
+      - 012_34
+      - 0x1A
+      - 0x1A_2B
+    `),
+      [10, 170, 10, 668, 26, 6699],
+    );
+
+    // empty string is invalid integer
+    assertThrows(
+      () => parse('!!int ""'),
+      YamlError,
+      'cannot resolve a node with !<tag:yaml.org,2002:int> explicit tag at line 1, column 9:\n    !!int ""\n            ^',
+    );
+
+    // number can't start with _
+    assertThrows(
+      () => parse("!!int _42"),
+      YamlError,
+      "cannot resolve a node with !<tag:yaml.org,2002:int> explicit tag at line 2, column 1:\n    \n    ^",
+    );
+    // number can't end with _
+    assertThrows(
+      () => parse("!!int 42_"),
+      YamlError,
+      "cannot resolve a node with !<tag:yaml.org,2002:int> explicit tag at line 2, column 1:\n    \n    ^",
+    );
+
+    // invalid binary number
+    assertThrows(
+      () => parse("!!int 0b102"),
+      YamlError,
+      "cannot resolve a node with !<tag:yaml.org,2002:int> explicit tag at line 2, column 1:\n    \n    ^",
+    );
+    // invalid octal number
+    assertThrows(
+      () => parse("!!int 09"),
+      YamlError,
+      "cannot resolve a node with !<tag:yaml.org,2002:int> explicit tag at line 2, column 1:\n    \n    ^",
+    );
+    // invalid hexadecimal number
+    assertThrows(
+      () => parse("!!int 0x1G"),
+      YamlError,
+      "cannot resolve a node with !<tag:yaml.org,2002:int> explicit tag at line 2, column 1:\n    \n    ^",
+    );
+  },
+});
+
+Deno.test({
+  name: "parse() handles timestamp types",
+  fn() {
+    assertEquals(
+      parse(`
+- 2001-12-15T02:59:43.1Z
+- 2001-12-14t21:59:43.10-05:00
+- 2001-12-14 21:59:43.10 -5
+- 2002-12-14`),
+      [
+        new Date(Date.UTC(2001, 11, 15, 2, 59, 43, 100)),
+        new Date("2001-12-14T21:59:43.100-05:00"),
+        new Date("2001-12-14T21:59:43.100-05:00"),
+        new Date("2002-12-14"),
+      ],
+    );
+
+    assertThrows(
+      () => parse("- !!timestamp"),
+      YamlError,
+      "cannot resolve a node with !<tag:yaml.org,2002:timestamp> explicit tag at line 2, column 1:\n    \n    ^",
+    );
+
+    assertThrows(
+      () => parse("- !!timestamp 1"),
+      YamlError,
+      "cannot resolve a node with !<tag:yaml.org,2002:timestamp> explicit tag at line 1, column 16:\n    - !!timestamp 1\n                   ^",
+    );
   },
 });
 
@@ -374,6 +583,28 @@ Deno.test("parse() handles escaped strings in double quotes", () => {
     () => parse('"\\X30"'),
     YamlError,
     'unknown escape sequence at line 1, column 3:\n    "\\X30"\n      ^',
+  );
+});
+
+Deno.test("parse() handles single quoted scalar", () => {
+  assertEquals(parse("'bar'"), "bar");
+  // escaped single quote
+  assertEquals(parse("'''bar'''"), "'bar'");
+  // line break in single quoted scalar
+  assertEquals(parse("'foo\nbar'"), "foo bar");
+
+  assertThrows(
+    // document end in single quoted scalar
+    () => parse("'bar\n"),
+    YamlError,
+    "unexpected end of the stream within a single quoted scalar at line 2, column 1:\n    \n    ^",
+  );
+
+  assertThrows(
+    // document separator appears in single quoted scalar
+    () => parse("'bar\n..."),
+    YamlError,
+    "unexpected end of the document within a single quoted scalar at line 2, column 1:\n    ...\n    ^",
   );
 });
 
@@ -691,5 +922,90 @@ Deno.test("parse() throws with \0 in the middle of the document", () => {
     () => parse("hello: \0 world"),
     YamlError,
     "end of the stream or a document separator is expected at line 1, column 8:\n    hello: \n           ^",
+  );
+});
+
+Deno.test("parse() handles complex mapping key", () => {
+  assertEquals(
+    parse(`? - Detroit Tigers
+  - Chicago cubs
+: - 2001-07-23
+
+? [ New York Yankees,
+    Atlanta Braves ]
+: [ 2001-07-02, 2001-08-12,
+    2001-08-14 ]`),
+    {
+      "Detroit Tigers,Chicago cubs": [new Date("2001-07-23")],
+      "New York Yankees,Atlanta Braves": [
+        new Date("2001-07-02"),
+        new Date("2001-08-12"),
+        new Date("2001-08-14"),
+      ],
+    },
+  );
+
+  // Nested array as key is not supported
+  assertThrows(
+    () =>
+      parse(`? - [ foo ]
+: bar`),
+    YamlError,
+    "nested arrays are not supported inside keys at line 2, column 6:\n    : bar\n         ^",
+  );
+
+  assertEquals(
+    parse(`? - { foo: bar }
+: baz`),
+    { "[object Object]": "baz" },
+  );
+
+  assertEquals(
+    parse(`? { foo: bar }
+: baz`),
+    { "[object Object]": "baz" },
+  );
+});
+
+Deno.test("parse() handles unordered set", () => {
+  assertEquals(
+    parse(`--- !!set
+? Mark McGwire
+? Sammy Sosa
+? Ken Griffey`),
+    { "Mark McGwire": null, "Sammy Sosa": null, "Ken Griffey": null },
+  );
+});
+
+Deno.test("parse() throws with empty mapping key", () => {
+  assertThrows(
+    () => parse(`? : 1`),
+    YamlError,
+    "incomplete explicit mapping pair; a key node is missed; or followed by a non-tabulated empty line at line 1, column 3:\n    ? : 1\n      ^",
+  );
+});
+
+Deno.test("parse() throws on duplicate keys", () => {
+  assertThrows(
+    () =>
+      parse(
+        `name: John Doe
+age: 30
+name: Jane Doe`,
+      ),
+    YamlError,
+    "duplicated mapping key at line 3, column 1:\n    name: Jane Doe\n    ^",
+  );
+});
+
+Deno.test("parse() allows duplicate keys when `allowDuplicateKeys` option is set to `true`", () => {
+  assertEquals(
+    parse(
+      `name: John Doe
+age: 30
+name: Jane Doe`,
+      { allowDuplicateKeys: true },
+    ),
+    { name: "Jane Doe", age: 30 },
   );
 });

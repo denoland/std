@@ -41,6 +41,8 @@ import { ascend } from "@std/data-structures/comparators";
 import type { DelayOptions } from "@std/async/delay";
 import { _internals } from "./_time.ts";
 
+export type { DelayOptions };
+
 /**
  * An error related to faking time.
  *
