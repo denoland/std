@@ -34,5 +34,5 @@ export type { Extract };
  * @returns The extracted YAML front matter and body content.
  */
 export function extract<T>(text: string): Extract<T> {
-  return extractAndParse(text, EXTRACT_YAML_REGEXP, parseYaml as Parser);
+  return extractAndParse(text, EXTRACT_YAML_REGEXP, parse as Parser);
 }

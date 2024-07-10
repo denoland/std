@@ -47,9 +47,9 @@ function getParserForFormat(format: Format): Parser {
  * @returns The extracted front matter and body content.
  */
 export function extract<T>(text: string): Extract<T> {
-  const formats = Object.keys(EXTRACT_REGEXP_MAP) as Format[];
+  const formats = [...EXTRACT_REGEXP_MAP.keys()] as Format[];
   const format = recognize(text, formats);
-  const regexp = EXTRACT_REGEXP_MAP[format];
+  const regexp = EXTRACT_REGEXP_MAP.get(format) as RegExp;
   const parser = getParserForFormat(format);
   return extractAndParse(text, regexp, parser);
 }

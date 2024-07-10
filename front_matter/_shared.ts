@@ -38,7 +38,7 @@ export function recognize(str: string, formats?: Format[]): Format {
   const [firstLine] = str.split(/(\r?\n)/) as [string];
 
   for (const format of formats) {
-    if (RECOGNIZE_REGEXP_MAP[format].test(firstLine)) {
+    if (RECOGNIZE_REGEXP_MAP.get(format)?.test(firstLine)) {
       return format;
     }
   }
