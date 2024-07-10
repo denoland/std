@@ -39,12 +39,7 @@ import { YamlError } from "./_error.ts";
 import { Mark } from "./_mark.ts";
 import { DEFAULT_SCHEMA, type Schema, type TypeMap } from "./_schema.ts";
 import type { Type } from "./_type.ts";
-import {
-  type Any,
-  type ArrayObject,
-  getObjectTypeString,
-  isObject,
-} from "./_utils.ts";
+import { type ArrayObject, getObjectTypeString, isObject } from "./_utils.ts";
 
 const CONTEXT_FLOW_IN = 1;
 const CONTEXT_FLOW_OUT = 2;
@@ -151,7 +146,8 @@ class LoaderState {
   lineStart = 0;
   position = 0;
   line = 0;
-  onWarning?: (...args: Any[]) => void;
+  // deno-lint-ignore no-explicit-any
+  onWarning?: (...args: any[]) => void;
   allowDuplicateKeys: boolean;
   implicitTypes: Type[];
   typeMap: TypeMap;
@@ -334,7 +330,8 @@ function storeMappingPair(
   result: ArrayObject | null,
   overridableKeys: ArrayObject<boolean>,
   keyTag: string | null,
-  keyNode: Any,
+  // deno-lint-ignore no-explicit-any
+  keyNode: any,
   valueNode: unknown,
   startLine?: number,
   startPos?: number,

@@ -6,7 +6,7 @@ export interface DescribeDefinition<T> extends Omit<Deno.TestDefinition, "fn"> {
    *
    * @default {undefined}
    */
-  fn?: () => void;
+  fn?: () => void | undefined;
   /**
    * The `describe` function returns a `TestSuite` representing the group of tests.
    * If `describe` is called within another `describe` calls `fn`, the suite will default to that parent `describe` calls returned `TestSuite`.

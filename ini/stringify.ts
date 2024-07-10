@@ -5,9 +5,9 @@ import {
   type FormattingOptions,
   IniMap,
   type ReplacerFunction,
-} from "./ini_map.ts";
+} from "./_ini_map.ts";
 
-/** Options for constructing INI strings. */
+/** Options for {@linkcode stringify}. */
 export interface StringifyOptions extends FormattingOptions {
   /**
    * Provide custom string conversion for the value in a key/value pair.
@@ -16,6 +16,8 @@ export interface StringifyOptions extends FormattingOptions {
    */
   replacer?: ReplacerFunction;
 }
+
+export type { FormattingOptions, ReplacerFunction };
 
 /**
  * Compile an object into an INI config string. Provide formatting options to
