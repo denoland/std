@@ -622,8 +622,7 @@ function writeFlowSequence(
 function writeBlockSequence(
   state: DumperState,
   level: number,
-  // deno-lint-ignore no-explicit-any
-  object: any,
+  object: unknown[],
   compact = false,
 ) {
   let _result = "";
