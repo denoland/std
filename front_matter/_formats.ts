@@ -48,14 +48,14 @@ export const [RECOGNIZE_JSON_REGEXP, EXTRACT_JSON_REGEXP] = createRegExps(
   ],
 );
 
-export const RECOGNIZE_REGEXP_MAP = {
-  yaml: RECOGNIZE_YAML_REGEXP,
-  toml: RECOGNIZE_TOML_REGEXP,
-  json: RECOGNIZE_JSON_REGEXP,
-} as const;
+export const RECOGNIZE_REGEXP_MAP = new Map([
+  ["yaml", RECOGNIZE_YAML_REGEXP],
+  ["toml", RECOGNIZE_TOML_REGEXP],
+  ["json", RECOGNIZE_JSON_REGEXP],
+]);
 
-export const EXTRACT_REGEXP_MAP = {
-  yaml: EXTRACT_YAML_REGEXP,
-  toml: EXTRACT_TOML_REGEXP,
-  json: EXTRACT_JSON_REGEXP,
-} as const;
+export const EXTRACT_REGEXP_MAP = new Map([
+  ["yaml", EXTRACT_YAML_REGEXP],
+  ["toml", EXTRACT_TOML_REGEXP],
+  ["json", EXTRACT_JSON_REGEXP],
+]);
