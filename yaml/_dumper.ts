@@ -661,9 +661,9 @@ function isPlainSafeFirst(c: number): boolean {
 }
 
 // Determines whether block indentation indicator is required.
+const LEADING_SPACE_REGEXP = /^\n* /;
 function needIndentIndicator(string: string): boolean {
-  const leadingSpaceRe = /^\n* /;
-  return leadingSpaceRe.test(string);
+  return LEADING_SPACE_REGEXP.test(string);
 }
 
 const STYLE_PLAIN = 1;
