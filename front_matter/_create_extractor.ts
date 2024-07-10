@@ -30,15 +30,11 @@ function _extract<T>(
  * @param str String to recognize.
  * @param formats A list of formats to recognize. Defaults to all supported formats.
  */
-function recognize(str: string, formats?: Format[]): Format {
-  if (!formats) {
-    formats = Object.keys(RECOGNIZE_REGEXP_MAP) as Format[];
-  }
-
+function recognize(str: string, formats: Format[]): Format {
   const [firstLine] = str.split(/(\r?\n)/) as [string];
 
   for (const format of formats) {
-    if (RECOGNIZE_REGEXP_MAP[format].test(firstLine)) {
+    if (RECOGNIZE_REGEXP_MAP.get(format)?.test(firstLine)) {
       return format;
     }
   }
@@ -71,7 +67,7 @@ export function createExtractor(
 
     const parser = formats[format];
     if (!parser) throw new TypeError(`Unsupported front matter format`);
-    const regexp = EXTRACT_REGEXP_MAP[format];
+    const regexp = EXTRACT_REGEXP_MAP.get(format);
     if (!regexp) throw new TypeError(`Unsupported front matter format`);
 
     return _extract(str, regexp, parser);
