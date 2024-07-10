@@ -1,6 +1,5 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import { CsvStringifyStream } from "./stringify_stream.ts";
-import { StringifyError } from "./stringify.ts";
 import { assertEquals, assertRejects } from "@std/assert";
 
 Deno.test({
@@ -29,7 +28,7 @@ Deno.test({
       ]).pipeThrough(new CsvStringifyStream({ columns: ["id", "name"] }));
       await assertRejects(
         async () => await Array.fromAsync(readable),
-        StringifyError,
+        TypeError,
       );
     });
 
@@ -53,7 +52,7 @@ Deno.test({
       ]).pipeThrough(new CsvStringifyStream({ separator: "\r\n" }));
       await assertRejects(
         async () => await Array.fromAsync(readable),
-        StringifyError,
+        TypeError,
       );
     });
 
@@ -64,7 +63,7 @@ Deno.test({
       ]).pipeThrough(new CsvStringifyStream({ columns: { length: 1 } as any }));
       await assertRejects(
         async () => await Array.fromAsync(readable),
-        StringifyError,
+        TypeError,
         "No property accessor function was provided for object",
       );
     });
@@ -93,7 +92,7 @@ Deno.test({
       ]).pipeThrough(new CsvStringifyStream());
       await assertRejects(
         async () => await Array.fromAsync(readable),
-        StringifyError,
+        TypeError,
       );
     });
   },
