@@ -30,11 +30,7 @@ function _extract<T>(
  * @param str String to recognize.
  * @param formats A list of formats to recognize. Defaults to all supported formats.
  */
-function recognize(str: string, formats?: Format[]): Format {
-  if (!formats) {
-    formats = [...RECOGNIZE_REGEXP_MAP.keys()] as Format[];
-  }
-
+function recognize(str: string, formats: Format[]): Format {
   const [firstLine] = str.split(/(\r?\n)/) as [string];
 
   for (const format of formats) {
