@@ -2,7 +2,7 @@
 /** The options for creating a test suite with the describe function. */
 export interface DescribeDefinition<T> extends Omit<Deno.TestDefinition, "fn"> {
   /** The body of the test suite */
-  fn?: () => void;
+  fn?: () => void | undefined;
   /**
    * The `describe` function returns a `TestSuite` representing the group of tests.
    * If `describe` is called within another `describe` calls `fn`, the suite will default to that parent `describe` calls returned `TestSuite`.

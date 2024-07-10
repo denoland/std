@@ -141,9 +141,9 @@ import { parse } from "@std/path/parse";
 import { resolve } from "@std/path/resolve";
 import { toFileUrl } from "@std/path/to-file-url";
 import { ensureFile, ensureFileSync } from "@std/fs/ensure-file";
-import { assert } from "@std/assert";
-import { AssertionError } from "@std/assert";
-import { equal } from "@std/assert";
+import { assert } from "@std/assert/assert";
+import { AssertionError } from "@std/assert/assertion-error";
+import { equal } from "@std/assert/equal";
 import { diff } from "@std/internal/diff";
 import { diffStr } from "@std/internal/diff-str";
 import { buildMessage } from "@std/internal/build-message";
@@ -222,7 +222,7 @@ export function serialize(actual: unknown): string {
     strAbbreviateSize: Infinity,
     breakLength: Infinity,
     escapeSequences: false,
-  });
+  }).replaceAll("\r", "\\r");
 }
 
 /**

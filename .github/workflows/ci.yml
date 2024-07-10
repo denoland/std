@@ -18,7 +18,9 @@ jobs:
       matrix:
         deno:
           - v1.x
-          - canary
+          # TODO(iuioiua): Re-enable once workspaces functionality is fixed in canary
+          # See: https://github.com/denoland/deno/issues/24422
+          # - canary
         os:
           - ubuntu-latest
           - windows-latest
@@ -63,6 +65,35 @@ jobs:
         with:
           name: ${{ matrix.os }}-${{ matrix.deno }}
 
+  test-node:
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        node:
+          - latest
+        os:
+          - ubuntu-latest
+
+    steps:
+      - name: Clone repository
+        uses: actions/checkout@v4
+
+      - name: Set up Deno
+        uses: denoland/setup-deno@v1
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+
+      - run: npm install
+        working-directory: _tools/node_test_runner
+
+      - name: Run tests
+        run: deno task test:node
+
   lint:
     runs-on: ${{ matrix.os }}
     timeout-minutes: 30
@@ -81,7 +112,10 @@ jobs:
       - name: Set up Deno
         uses: denoland/setup-deno@v1
         with:
-          deno-version: canary
+          # TODO(iuioiua): Revert once workspaces functionality is fixed in canary
+          # See: https://github.com/denoland/deno/issues/24422
+          # deno-version: canary
+          deno-version: v1.x
 
       - name: Format
         run: deno fmt --check
@@ -151,7 +185,10 @@ jobs:
       - name: Set up Deno
         uses: denoland/setup-deno@v1
         with:
-          deno-version: canary
+          # TODO(iuioiua): Revert once workspaces functionality is fixed in canary
+          # See: https://github.com/denoland/deno/issues/24422
+          # deno-version: canary
+          deno-version: v1.x
 
       - name: Publish (dry run)
         run: deno publish --dry-run
