@@ -30,17 +30,14 @@ export function extractAndParse<T>(
  * @param str String to recognize.
  * @param formats A list of formats to recognize. Defaults to all supported formats.
  */
-export function recognize(str: string, formats?: Format[]): Format {
-  if (!formats) {
-    formats = Object.keys(RECOGNIZE_REGEXP_MAP) as Format[];
-  }
-
+export function recognize(
+  str: string,
+  formats: Format[],
+): Format {
   const [firstLine] = str.split(/(\r?\n)/) as [string];
 
   for (const format of formats) {
-    if (RECOGNIZE_REGEXP_MAP.get(format)?.test(firstLine)) {
-      return format;
-    }
+    if (RECOGNIZE_REGEXP_MAP.get(format)?.test(firstLine)) return format;
   }
 
   throw new TypeError(`Unsupported front matter format.`);
