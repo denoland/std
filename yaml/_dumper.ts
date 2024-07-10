@@ -533,7 +533,7 @@ function writeScalar(
   level: number,
   isKey: boolean,
 ) {
-  const createDump = () => {
+  function createDump() {
     if (string.length === 0) {
       return "''";
     }
@@ -592,7 +592,7 @@ function writeScalar(
       default:
         throw new YamlError("impossible error: invalid scalar style");
     }
-  };
+  }
   state.dump = createDump();
 }
 
