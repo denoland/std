@@ -7,8 +7,7 @@ Provides utilities for formatting text of different types:
 
 ```ts
 import { format } from "@std/fmt/bytes";
-import { assertEquals } from "@std/assert";
+import { red } from "@std/fmt/colors";
 
-assertEquals(format(1337), "1.34 kB");
-assertEquals(format(100), "100 B");
+console.log(red(format(1337))); // Prints "1.34 kB"
 ```
