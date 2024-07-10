@@ -533,7 +533,7 @@ function writeScalar(
   level: number,
   isKey: boolean,
 ) {
-  state.dump = ((): string => {
+  const createDump = () => {
     if (string.length === 0) {
       return "''";
     }
@@ -563,9 +563,6 @@ function writeScalar(
     const singleLineOnly = isKey ||
       // No block styles in flow mode.
       (state.flowLevel > -1 && level >= state.flowLevel);
-    function testAmbiguity(str: string): boolean {
-      return testImplicitResolving(state, str);
-    }
 
     switch (
       chooseScalarStyle(
@@ -573,7 +570,7 @@ function writeScalar(
         singleLineOnly,
         state.indent,
         lineWidth,
-        testAmbiguity,
+        (str) => testImplicitResolving(state, str),
       )
     ) {
       case STYLE_PLAIN:
@@ -595,7 +592,8 @@ function writeScalar(
       default:
         throw new YamlError("impossible error: invalid scalar style");
     }
-  })();
+  };
+  state.dump = createDump();
 }
 
 function writeFlowSequence(
