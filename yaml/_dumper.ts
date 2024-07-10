@@ -29,12 +29,7 @@ import {
 import { YamlError } from "./_error.ts";
 import { DEFAULT_SCHEMA, type Schema } from "./_schema.ts";
 import type { StyleVariant, Type } from "./_type.ts";
-import {
-  type Any,
-  type ArrayObject,
-  getObjectTypeString,
-  isObject,
-} from "./_utils.ts";
+import { type ArrayObject, getObjectTypeString, isObject } from "./_utils.ts";
 
 const ESCAPE_SEQUENCES = new Map<number, string>([
   [0x00, "\\0"],
@@ -158,7 +153,8 @@ export class DumperState {
   arrayIndent: boolean;
   skipInvalid: boolean;
   flowLevel: number;
-  sortKeys: boolean | ((a: Any, b: Any) => number);
+  // deno-lint-ignore no-explicit-any
+  sortKeys: boolean | ((a: any, b: any) => number);
   lineWidth: number;
   useAnchors: boolean;
   compatMode: boolean;
@@ -167,10 +163,13 @@ export class DumperState {
   explicitTypes: Type[];
   tag: string | null = null;
   result = "";
-  duplicates: Any[] = [];
-  usedDuplicates: Set<Any> = new Set();
+  // deno-lint-ignore no-explicit-any
+  duplicates: any[] = [];
+  // deno-lint-ignore no-explicit-any
+  usedDuplicates: Set<any> = new Set();
   styleMap: ArrayObject<StyleVariant>;
-  dump: Any;
+  // deno-lint-ignore no-explicit-any
+  dump: any;
 
   constructor({
     schema = DEFAULT_SCHEMA,
@@ -326,7 +325,8 @@ function chooseScalarStyle(
   singleLineOnly: boolean,
   indentPerLevel: number,
   lineWidth: number,
-  testAmbiguousType: (...args: Any[]) => Any,
+  // deno-lint-ignore no-explicit-any
+  testAmbiguousType: (...args: any[]) => any,
 ): number {
   const shouldTrackWidth = lineWidth !== -1;
   let hasLineBreak = false;
@@ -436,9 +436,8 @@ function foldLine(line: string, width: number): string {
   return result.slice(1); // drop extra \n joiner
 }
 
-// (See the note for writeScalar.)
-function dropEndingNewline(string: string): string {
-  return string[string.length - 1] === "\n" ? string.slice(0, -1) : string;
+export function trimTrailingNewline(string: string) {
+  return string.at(-1) === "\n" ? string.slice(0, -1) : string;
 }
 
 // Note: a long line without a suitable break point will exceed the width limit.
@@ -532,7 +531,7 @@ function writeScalar(
   state: DumperState,
   string: string,
   level: number,
-  iskey: boolean,
+  isKey: boolean,
 ) {
   state.dump = ((): string => {
     if (string.length === 0) {
@@ -561,7 +560,7 @@ function writeScalar(
 
     // Without knowing if keys are implicit/explicit,
     // assume implicit for safety.
-    const singleLineOnly = iskey ||
+    const singleLineOnly = isKey ||
       // No block styles in flow mode.
       (state.flowLevel > -1 && level >= state.flowLevel);
     function testAmbiguity(str: string): boolean {
@@ -583,13 +582,11 @@ function writeScalar(
         return `'${string.replace(/'/g, "''")}'`;
       case STYLE_LITERAL:
         return `|${blockHeader(string, state.indent)}${
-          dropEndingNewline(
-            indentString(string, indent),
-          )
+          trimTrailingNewline(indentString(string, indent))
         }`;
       case STYLE_FOLDED:
         return `>${blockHeader(string, state.indent)}${
-          dropEndingNewline(
+          trimTrailingNewline(
             indentString(foldString(string, lineWidth), indent),
           )
         }`;
@@ -604,7 +601,8 @@ function writeScalar(
 function writeFlowSequence(
   state: DumperState,
   level: number,
-  object: Any,
+  // deno-lint-ignore no-explicit-any
+  object: any,
 ) {
   let _result = "";
   const _tag = state.tag;
@@ -624,7 +622,8 @@ function writeFlowSequence(
 function writeBlockSequence(
   state: DumperState,
   level: number,
-  object: Any,
+  // deno-lint-ignore no-explicit-any
+  object: any,
   compact = false,
 ) {
   let _result = "";
@@ -654,7 +653,8 @@ function writeBlockSequence(
 function writeFlowMapping(
   state: DumperState,
   level: number,
-  object: Any,
+  // deno-lint-ignore no-explicit-any
+  object: any,
 ) {
   let _result = "";
   const _tag = state.tag;
@@ -694,7 +694,8 @@ function writeFlowMapping(
 function writeBlockMapping(
   state: DumperState,
   level: number,
-  object: Any,
+  // deno-lint-ignore no-explicit-any
+  object: any,
   compact = false,
 ) {
   const _tag = state.tag;
@@ -765,7 +766,8 @@ function writeBlockMapping(
 
 function detectType(
   state: DumperState,
-  object: Any,
+  // deno-lint-ignore no-explicit-any
+  object: any,
   explicit = false,
 ): boolean {
   const typeList = explicit ? state.explicitTypes : state.implicitTypes;
@@ -807,10 +809,11 @@ function detectType(
 function writeNode(
   state: DumperState,
   level: number,
-  object: Any,
+  // deno-lint-ignore no-explicit-any
+  object: any,
   block: boolean,
   compact: boolean,
-  iskey = false,
+  isKey = false,
 ): boolean {
   state.tag = null;
   state.dump = object;
@@ -874,7 +877,7 @@ function writeNode(
       }
     } else if (typeof state.dump === "string") {
       if (state.tag !== "?") {
-        writeScalar(state, state.dump, level, iskey);
+        writeScalar(state, state.dump, level, isKey);
       }
     } else {
       if (state.skipInvalid) return false;
@@ -893,7 +896,8 @@ function writeNode(
   return true;
 }
 
-function inspectNode(object: Any, objects: Any[], duplicateObjects: Set<Any>) {
+// deno-lint-ignore no-explicit-any
+function inspectNode(object: any, objects: any[], duplicateObjects: Set<any>) {
   if (!isObject(object)) return;
   if (objects.includes(object)) {
     duplicateObjects.add(object);
@@ -910,8 +914,10 @@ function getDuplicateReferences(
   object: Record<string, unknown>,
   state: DumperState,
 ) {
-  const objects: Any[] = [];
-  const duplicateObjects: Set<Any> = new Set();
+  // deno-lint-ignore no-explicit-any
+  const objects: any[] = [];
+  // deno-lint-ignore no-explicit-any
+  const duplicateObjects: Set<any> = new Set();
 
   inspectNode(object, objects, duplicateObjects);
 
@@ -919,7 +925,8 @@ function getDuplicateReferences(
   state.usedDuplicates = new Set();
 }
 
-export function dump(input: Any, options: DumperStateOptions = {}): string {
+// deno-lint-ignore no-explicit-any
+export function dump(input: any, options: DumperStateOptions = {}): string {
   const state = new DumperState(options);
 
   if (state.useAnchors) getDuplicateReferences(input, state);
