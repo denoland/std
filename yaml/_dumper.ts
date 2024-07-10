@@ -202,29 +202,11 @@ export class DumperState {
 
 // Indents every line in a string. Empty lines (\n only) are not indented.
 function indentString(string: string, spaces: number): string {
-  const ind = " ".repeat(spaces);
-  const length = string.length;
-  let position = 0;
-  let next = -1;
-  let result = "";
-  let line: string;
-
-  while (position < length) {
-    next = string.indexOf("\n", position);
-    if (next === -1) {
-      line = string.slice(position);
-      position = length;
-    } else {
-      line = string.slice(position, next + 1);
-      position = next + 1;
-    }
-
-    if (line.length && line !== "\n") result += ind;
-
-    result += line;
-  }
-
-  return result;
+  const indent = " ".repeat(spaces);
+  return string
+    .split("\n")
+    .map((line) => line.length ? indent + line : line)
+    .join("\n");
 }
 
 function generateNextLine(state: DumperState, level: number): string {
