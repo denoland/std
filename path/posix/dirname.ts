@@ -15,6 +15,7 @@ import { isPosixPathSeparator } from "./_util.ts";
  *
  * assertEquals(dirname("/home/user/Documents/"), "/home/user");
  * assertEquals(dirname("/home/user/Documents/image.png"), "/home/user/Documents");
+ * assertEquals(dirname("https://deno.land/std/path/mod.ts"), "https://deno.land/std/path");
  * ```
  *
  * @param path The path to get the directory from.

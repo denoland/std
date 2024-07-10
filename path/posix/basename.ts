@@ -21,6 +21,7 @@ import { isPosixPathSeparator } from "./_util.ts";
  * assertEquals(basename("/home/user/Documents/"), "Documents");
  * assertEquals(basename("/home/user/Documents/image.png"), "image.png");
  * assertEquals(basename("/home/user/Documents/image.png", ".png"), "image");
+ * assertEquals(basename("https://deno.land/std/path/mod.ts"), "mod.ts");
  * ```
  *
  * @param path The path to extract the name from.
