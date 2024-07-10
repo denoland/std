@@ -2008,4 +2008,39 @@ Deno.test("describe()", async (t) => {
       }
     },
   );
+
+  await t.step(
+    "cause type error if async function is passed as describe definition",
+    () => {
+      // @ts-expect-error async function is not assignable to describe argument
+      describe({ name: "example", fn: async () => {} });
+      // @ts-expect-error async function is not assignable to describe argument
+      describe("example", { fn: async () => {} });
+      // @ts-expect-error async function is not assignable to describe argument
+      describe("example", async () => {});
+      // TODO(kt3k): This case should be type error but it's checked as
+      // DescribeDefinition<T> and passes the type check
+      // describe(async function example() {});
+      // @ts-expect-error async function is not assignable to describe argument
+      describe("example", {}, async () => {});
+      // @ts-expect-error async function is not assignable to describe argument
+      describe({ name: "example" }, async () => {});
+      // @ts-expect-error async function is not assignable to describe argument
+      describe({}, async function example() {});
+
+      const suite = describe("example");
+      // @ts-expect-error async function is not assignable to describe argument
+      describe(suite, "example", { fn: async () => {} });
+      // @ts-expect-error async function is not assignable to describe argument
+      describe(suite, "example", async () => {});
+      // @ts-expect-error async function is not assignable to describe argument
+      describe(suite, async () => {});
+      // @ts-expect-error async function is not assignable to describe argument
+      describe(suite, "example", {}, async () => {});
+      // @ts-expect-error async function is not assignable to describe argument
+      describe(suite, { name: "example" }, async () => {});
+      // @ts-expect-error async function is not assignable to describe argument
+      describe(suite, {}, async function example() {});
+    },
+  );
 });

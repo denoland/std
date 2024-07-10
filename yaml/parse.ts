@@ -4,33 +4,39 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-import { load, loadDocuments } from "./_loader/loader.ts";
-import { replaceSchemaNameWithSchemaClass } from "./schema/mod.ts";
+import { load, loadDocuments } from "./_loader.ts";
+import { SCHEMA_MAP } from "./_schema.ts";
 
-/**
- * Options for parsing YAML.
- */
+/** Options for {@linkcode parse}. */
 export interface ParseOptions {
-  /** Uses legacy mode */
-  legacy?: boolean;
-  /** The listener */
-  // deno-lint-ignore no-explicit-any
-  listener?: ((...args: any[]) => void) | null;
-  /** string to be used as a file path in error/warning messages. */
-  filename?: string;
-  /** Name of the schema to use.*/
+  /**
+   * Name of the schema to use. Options includes:
+   * - `default` (extends `core` schema)
+   * - {@linkcode https://yaml.org/spec/1.2.2/#103-core-schema | core} (extends `json` schema)
+   * - {@linkcode https://yaml.org/spec/1.2.2/#102-json-schema | json} (extends `failsafe` schema)
+   * - {@linkcode https://yaml.org/spec/1.2.2/#101-failsafe-schema | failsafe}
+   *
+   * @default {"default"}
+   */
   schema?: "core" | "default" | "failsafe" | "json" | "extended";
-  /** compatibility with JSON.parse behaviour. */
-  json?: boolean;
-  /** function to call on warning messages. */
-  onWarning?(this: null, e?: Error): void;
+  /**
+   * If `true`, duplicate keys will overwrite previous values. Otherwise,
+   * duplicate keys will throw a {@linkcode YamlError}.
+   *
+   * @default {false}
+   */
+  allowDuplicateKeys?: boolean;
+  /**
+   * If defined, a function to call on warning messages taking an
+   * {@linkcode Error} as its only argument.
+   */
+  onWarning?(error?: Error): void;
 }
 
 /**
- * Parse `content` as single YAML document, and return it.
+ * Parse and return a YAML string as a parsed YAML document object.
  *
- * This function does not support regexps, functions, and undefined by default.
- * This method is safe for parsing untrusted data.
+ * Note: This does not support functions. Untrusted data is safe to parse.
  *
  * @example Usage
  * ```ts
@@ -50,15 +56,16 @@ export interface ParseOptions {
  * @param options Parsing options.
  * @returns Parsed document.
  */
-export function parse(content: string, options?: ParseOptions): unknown {
-  replaceSchemaNameWithSchemaClass(options);
-  // deno-lint-ignore no-explicit-any
-  return load(content, options as any);
+export function parse(
+  content: string,
+  options: ParseOptions = {},
+): unknown {
+  return load(content, { ...options, schema: SCHEMA_MAP.get(options.schema!) });
 }
 
 /**
- * Same as `parse()`, but understands multi-document sources.
- * Applies iterator to each document if specified, or returns array of documents.
+ * Same as {@linkcode parse}, but understands multi-document YAML sources, and
+ * returns multiple parsed YAML document objects.
  *
  * @example Usage
  * ```ts
@@ -83,8 +90,9 @@ export function parse(content: string, options?: ParseOptions): unknown {
  * @param options Parsing options.
  * @returns Array of parsed documents.
  */
-export function parseAll(content: string, options?: ParseOptions): unknown {
-  replaceSchemaNameWithSchemaClass(options);
-  // deno-lint-ignore no-explicit-any
-  return loadDocuments(content, options as any);
+export function parseAll(content: string, options: ParseOptions = {}): unknown {
+  return loadDocuments(content, {
+    ...options,
+    schema: SCHEMA_MAP.get(options.schema!),
+  });
 }

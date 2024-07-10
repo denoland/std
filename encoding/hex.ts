@@ -71,7 +71,7 @@ export function encodeHex(src: string | Uint8Array | ArrayBuffer): string {
   const u8 = validateBinaryLike(src);
 
   const dst = new Uint8Array(u8.length * 2);
-  for (let i = 0; i < dst.length; i++) {
+  for (let i = 0; i < u8.length; i++) {
     const v = u8[i]!;
     dst[i * 2] = hexTable[v >> 4]!;
     dst[i * 2 + 1] = hexTable[v & 0x0f]!;

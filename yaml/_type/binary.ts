@@ -2,14 +2,14 @@
 // Copyright 2011-2015 by Vitaly Puzrin. All rights reserved. MIT license.
 // https://github.com/nodeca/js-yaml/commit/665aadda42349dcae869f12040d9b10ef18d12da
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-import { Type } from "../_type.ts";
-import type { Any } from "../_utils.ts";
+import type { Type } from "../_type.ts";
 
 // [ 64, 65, 66 ] -> [ padding, CR, LF ]
 const BASE64_MAP =
   "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=\n\r";
 
-function resolveYamlBinary(data: Any): boolean {
+// deno-lint-ignore no-explicit-any
+function resolveYamlBinary(data: any): boolean {
   if (data === null) return false;
 
   let code: number;
@@ -114,15 +114,15 @@ function representYamlBinary(object: Uint8Array): string {
 
   return result;
 }
-
-function isBinary(obj: Any): obj is Uint8Array {
+function isBinary(obj: unknown): obj is Uint8Array {
   return obj instanceof Uint8Array;
 }
 
-export const binary = new Type("tag:yaml.org,2002:binary", {
+export const binary: Type = {
+  tag: "tag:yaml.org,2002:binary",
   construct: constructYamlBinary,
   kind: "scalar",
   predicate: isBinary,
   represent: representYamlBinary,
   resolve: resolveYamlBinary,
-});
+};

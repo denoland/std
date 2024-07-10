@@ -1,12 +1,17 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import {
-  createExtractor,
-  type Extractor,
-  type Parser,
-} from "./create_extractor.ts";
+import { createExtractor, type Parser } from "./_create_extractor.ts";
 import { parse as parseYaml } from "@std/yaml/parse";
 import { parse as parseToml } from "@std/toml/parse";
+import type { Extract } from "./types.ts";
+
+export type { Extract };
+
+const _extractor = createExtractor({
+  yaml: parseYaml as Parser,
+  toml: parseToml as Parser,
+  json: JSON.parse as Parser,
+});
 
 /**
  * Extracts and parses {@link https://yaml.org | YAML}, {@link https://toml.io |
@@ -29,9 +34,11 @@ import { parse as parseToml } from "@std/toml/parse";
  * result.body; // "Hello, world!"
  * result.attrs; // { title: "Three dashes marks the spot" }
  * ```
+ *
+ * @typeParam T The type of the parsed front matter.
+ * @param text The text to extract front matter from.
+ * @returns The extracted front matter and body content.
  */
-export const extract: Extractor = createExtractor({
-  yaml: parseYaml as Parser,
-  toml: parseToml as Parser,
-  json: JSON.parse as Parser,
-});
+export function extract<T>(text: string): Extract<T> {
+  return _extractor(text);
+}
