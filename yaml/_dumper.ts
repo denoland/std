@@ -163,10 +163,8 @@ export class DumperState {
   explicitTypes: Type[];
   tag: string | null = null;
   result = "";
-  // deno-lint-ignore no-explicit-any
-  duplicates: any[] = [];
-  // deno-lint-ignore no-explicit-any
-  usedDuplicates: Set<any> = new Set();
+  duplicates: unknown[] = [];
+  usedDuplicates: Set<unknown> = new Set();
   styleMap: ArrayObject<StyleVariant>;
   // deno-lint-ignore no-explicit-any
   dump: any;
