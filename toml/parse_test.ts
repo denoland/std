@@ -5,6 +5,7 @@ import {
   bareKey,
   basicString,
   dateTime,
+  deepAssignWithTable,
   dottedKey,
   float,
   inlineTable,
@@ -18,8 +19,6 @@ import {
   Scanner,
   symbols,
   table,
-  TOMLParseError,
-  Utils,
   value,
 } from "./_parser.ts";
 import { parse, stringify } from "./mod.ts";
@@ -76,7 +75,7 @@ Deno.test({
     assertEquals(parse('"a\\n"'), "a\n");
     assertThrows(
       () => parse('"a\\0b\\?c"'),
-      TOMLParseError,
+      SyntaxError,
       "Invalid escape sequence: \\0",
     );
     assertThrows(() => parse(""));
@@ -121,7 +120,7 @@ Violets are\\tblue"""`),
     fox jumps over\\? \\
     the lazy dog\\0.\\
     """`),
-      TOMLParseError,
+      SyntaxError,
       "Invalid escape sequence: \\?",
     );
     assertThrows(
@@ -129,7 +128,7 @@ Violets are\\tblue"""`),
         parse(`"""
 Roses are red
 Violets are\\tblue`),
-      TOMLParseError,
+      SyntaxError,
       "not closed",
     );
   },
@@ -171,7 +170,7 @@ Violets are\\tblue'''`),
         parse(`'''
 Roses are red
 Violets are\\tblue`),
-      TOMLParseError,
+      SyntaxError,
       "not closed",
     );
   },
@@ -381,7 +380,7 @@ Deno.test({
       ]`),
       [1, 2],
     );
-    assertThrows(() => parse("[1, 2, 3"), TOMLParseError, "not closed");
+    assertThrows(() => parse("[1, 2, 3"), SyntaxError, "not closed");
   },
 });
 
@@ -401,7 +400,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "parse() handles Utils.deepAssignWithTable",
+  name: "parse() handles deepAssignWithTable",
   fn() {
     const source = {
       foo: {
@@ -419,7 +418,7 @@ Deno.test({
       },
     };
 
-    Utils.deepAssignWithTable(
+    deepAssignWithTable(
       source,
       {
         type: "Table",
@@ -452,14 +451,14 @@ Deno.test({
 });
 
 Deno.test({
-  name: "parse() handles Utils.deepAssignWithTable / TableArray",
+  name: "parse() handles deepAssignWithTable / TableArray",
   fn() {
     const source = {
       foo: {},
       bar: null,
     };
 
-    Utils.deepAssignWithTable(
+    deepAssignWithTable(
       source,
       {
         type: "TableArray",
@@ -480,7 +479,7 @@ Deno.test({
         bar: null,
       },
     );
-    Utils.deepAssignWithTable(
+    deepAssignWithTable(
       source,
       {
         type: "TableArray",
@@ -507,7 +506,7 @@ Deno.test({
 
     assertThrows(
       () =>
-        Utils.deepAssignWithTable(
+        deepAssignWithTable(
           source,
           {
             type: "TableArray",
@@ -521,7 +520,7 @@ Deno.test({
 
     assertThrows(
       () =>
-        Utils.deepAssignWithTable(
+        deepAssignWithTable(
           source,
           {
             type: "TableArray",
@@ -540,17 +539,17 @@ Deno.test({
   fn() {
     assertThrows(
       () => parse("foo = 1\nbar ="),
-      TOMLParseError,
+      SyntaxError,
       "line 2, column 5",
     );
     assertThrows(
       () => parse("foo = 1\nbar = 'foo\nbaz=1"),
-      TOMLParseError,
+      SyntaxError,
       "line 2, column 10",
     );
     assertThrows(
       () => parse(""),
-      TOMLParseError,
+      SyntaxError,
       "line 1, column 0",
     );
     assertThrows(
@@ -558,7 +557,7 @@ Deno.test({
         parserFactory((_s) => {
           throw "Custom parser";
         })(""),
-      TOMLParseError,
+      SyntaxError,
       "[non-error thrown]",
     );
   },
