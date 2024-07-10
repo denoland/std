@@ -1,12 +1,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import { CsvParseStream } from "./parse_stream.ts";
 import type { CsvParseStreamOptions } from "./parse_stream.ts";
-import {
-  assert,
-  assertEquals,
-  assertRejects,
-  assertStringIncludes,
-} from "@std/assert";
+import { assertEquals, assertRejects } from "@std/assert";
 import type { AssertTrue, IsExact } from "@std/testing/types";
 import { fromFileUrl, join } from "@std/path";
 import { delay } from "@std/async/delay";
@@ -47,10 +42,9 @@ Deno.test({
     const reader = readable.getReader();
     assertEquals(await reader.read(), { done: false, value: ["id", "name"] });
     assertEquals(await reader.read(), { done: false, value: ["1", "foo"] });
-    const error = await assertRejects(() => reader.read());
-    assert(error instanceof SyntaxError);
-    assertStringIncludes(
-      error.message,
+    await assertRejects(
+      () => reader.read(),
+      SyntaxError,
       `record on line 4; parse error on line 5, column 0: extraneous or missing " in quoted-field`,
     );
   },
