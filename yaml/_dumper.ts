@@ -314,7 +314,7 @@ function foldLine(line: string, width: number): string {
   return lines.join("\n");
 }
 
-export function trimTrailingNewline(string: string) {
+function trimTrailingNewline(string: string) {
   return string.at(-1) === "\n" ? string.slice(0, -1) : string;
 }
 
@@ -522,7 +522,7 @@ export class DumperState {
     level: number,
     isKey: boolean,
   ) {
-    this.dump = ((): string => {
+    const createDump = () => {
       if (string.length === 0) {
         return "''";
       }
@@ -579,7 +579,8 @@ export class DumperState {
         default:
           throw new YamlError("impossible error: invalid scalar style");
       }
-    })();
+    };
+    this.dump = createDump();
   }
 
   writeFlowSequence(
