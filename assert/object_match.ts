@@ -48,7 +48,7 @@ export function assertObjectMatch(
 function filter(a: loose, b: loose): loose {
   const seen = new WeakMap();
 
-  function filterObj(a: loose, b: loose): loose {
+  function filterObject(a: loose, b: loose): loose {
     // Prevent infinite loop with circular references with same filter
     if ((seen.has(a)) && (seen.get(a) === b)) {
       return a;
@@ -107,7 +107,7 @@ function filter(a: loose, b: loose): loose {
                   [k, v],
                 ) => [
                   k,
-                  typeof v === "object" ? filterObj(v, subset.get(k)) : v,
+                  typeof v === "object" ? filterObject(v, subset.get(k)) : v,
                 ]),
               );
               continue;
@@ -117,7 +117,7 @@ function filter(a: loose, b: loose): loose {
               filtered[key] = new Set([...value].filter((v) => subset.has(v)));
               continue;
             }
-            filtered[key] = filterObj(value as loose, subset as loose);
+            filtered[key] = filterObject(value as loose, subset as loose);
             continue;
           }
         }
@@ -169,7 +169,7 @@ function filter(a: loose, b: loose): loose {
               [k, v],
             ) => [
               k,
-              typeof v === "object" ? filterObj(v, elementB.get(k)) : v,
+              typeof v === "object" ? filterObject(v, elementB.get(k)) : v,
             ]),
           );
           filtered.push(map);
@@ -181,7 +181,7 @@ function filter(a: loose, b: loose): loose {
           filtered.push(set);
           continue;
         }
-        filtered.push(filterObj(elementA as loose, elementB as loose));
+        filtered.push(filterObject(elementA as loose, elementB as loose));
         continue;
       }
       filtered.push(elementA);
@@ -189,5 +189,5 @@ function filter(a: loose, b: loose): loose {
     return filtered;
   }
 
-  return filterObj(a, b);
+  return filterObject(a, b);
 }
