@@ -10,6 +10,7 @@ import {
 } from "@std/assert";
 import { assertSnapshot, createAssertSnapshot, serialize } from "./snapshot.ts";
 import { ensureDir } from "../fs/ensure_dir.ts";
+import { delay } from "../async/delay.ts";
 
 const SNAPSHOT_MODULE_URL = toFileUrl(join(
   dirname(fromFileUrl(import.meta.url)),
@@ -620,6 +621,7 @@ Deno.test(
         Deno.writeTextFile(tempTestFilePath1, test1),
         Deno.writeTextFile(tempTestFilePath2, test2),
       ]);
+      await delay(100);
 
       const command = new Deno.Command(Deno.execPath(), {
         args: [
