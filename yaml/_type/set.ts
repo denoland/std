@@ -5,7 +5,8 @@
 
 import type { Type } from "../_type.ts";
 
-function resolveYamlSet(data: Record<string, unknown> | null): boolean {
+// deno-lint-ignore no-explicit-any
+function resolveYamlSet(data: any): boolean {
   if (data === null) return true;
 
   for (const key in data) {

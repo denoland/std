@@ -6,7 +6,8 @@
 import type { Type } from "../_type.ts";
 import { getObjectTypeString } from "../_utils.ts";
 
-function resolveYamlOmap(data: Record<PropertyKey, unknown>[]): boolean {
+// deno-lint-ignore no-explicit-any
+function resolveYamlOmap(data: any): boolean {
   const objectKeys: string[] = [];
   let pairKey = "";
   let pairHasKey = false;
