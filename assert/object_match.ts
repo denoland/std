@@ -76,8 +76,8 @@ function filter(a: loose, b: loose): loose {
       .filter((key) => keysB.includes(key))
       .map((key) => [key, a[key as string]]) as Array<[string, unknown]>;
 
-    if (entries.length === 0 && keysB.length) {
-      // If no keys or symbols are present in both actual and expected, and expected is not empty,
+    if (keysA.length && keysB.length && entries.length === 0) {
+      // If actual and expected don't have the same keys, and both are not empty,
       // returns keys and symbols in actual
       for (const key of keysA) {
         filtered[key] = a[key];
