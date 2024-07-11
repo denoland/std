@@ -319,3 +319,61 @@ Deno.test("assertObjectMatch() throws readable type error for non mappable primi
     "assertObjectMatch",
   );
 });
+
+Deno.test("assertObjectMatch() prints inputs correctly", () => {
+  assertThrows(
+    () => assertObjectMatch({ foo: [] }, { foo: ["bar"] }),
+    AssertionError,
+    `    {
++     foo: [
++       "bar",
++     ],
+-     foo: [],
+    }`,
+  );
+
+  const x = {
+    command: "error",
+    payload: {
+      message: "NodeNotFound",
+    },
+    protocol: "graph",
+  };
+  const y = {
+    protocol: "graph",
+    command: "addgroup",
+    payload: {
+      graph: "foo",
+      metadata: {
+        description: "foo",
+      },
+      name: "somegroup",
+      nodes: [
+        "somenode",
+        "someothernode",
+      ],
+    },
+  };
+
+  assertThrows(
+    () => assertObjectMatch(x, y),
+    AssertionError,
+    `    {
++     command: "addgroup",
+-     command: "error",
+      payload: {
++       graph: "foo",
++       metadata: {
++         description: "foo",
++       },
++       name: "somegroup",
++       nodes: [
++         "somenode",
++         "someothernode",
++       ],
+-       message: "NodeNotFound",
+      },
+      protocol: "graph",
+    }`,
+  );
+});

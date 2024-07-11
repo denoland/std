@@ -2,6 +2,8 @@
 // This module is browser compatible.
 import { assertEquals } from "./equals.ts";
 
+type loose = Record<PropertyKey, unknown>;
+
 /**
  * Make an assertion that `expected` object is a subset of `actual` object,
  * deeply. If not, then throw.
@@ -32,75 +34,6 @@ export function assertObjectMatch(
   expected: Record<PropertyKey, unknown>,
   msg?: string,
 ): void {
-  type loose = Record<PropertyKey, unknown>;
-
-  function filter(a: loose, b: loose) {
-    const seen = new WeakMap();
-    return fn(a, b);
-
-    function fn(a: loose, b: loose): loose {
-      // Prevent infinite loop with circular references with same filter
-      if ((seen.has(a)) && (seen.get(a) === b)) {
-        return a;
-      }
-      try {
-        seen.set(a, b);
-      } catch (err) {
-        if (err instanceof TypeError) {
-          throw new TypeError(
-            `Cannot assertObjectMatch ${
-              a === null ? null : `type ${typeof a}`
-            }`,
-          );
-        }
-      }
-      // Filter keys and symbols which are present in both actual and expected
-      const filtered = {} as loose;
-      const entries = [
-        ...Object.getOwnPropertyNames(a),
-        ...Object.getOwnPropertySymbols(a),
-      ]
-        .filter((key) => key in b)
-        .map((key) => [key, a[key as string]]) as Array<[string, unknown]>;
-      for (const [key, value] of entries) {
-        // On array references, build a filtered array and filter nested objects inside
-        if (Array.isArray(value)) {
-          const subset = (b as loose)[key];
-          if (Array.isArray(subset)) {
-            filtered[key] = fn({ ...value }, { ...subset });
-            continue;
-          }
-        } // On regexp references, keep value as it to avoid loosing pattern and flags
-        else if (value instanceof RegExp) {
-          filtered[key] = value;
-          continue;
-        } // On nested objects references, build a filtered object recursively
-        else if (typeof value === "object" && value !== null) {
-          const subset = (b as loose)[key];
-          if ((typeof subset === "object") && subset) {
-            // When both operands are maps, build a filtered map with common keys and filter nested objects inside
-            if ((value instanceof Map) && (subset instanceof Map)) {
-              filtered[key] = new Map(
-                [...value].filter(([k]) => subset.has(k)).map((
-                  [k, v],
-                ) => [k, typeof v === "object" ? fn(v, subset.get(k)) : v]),
-              );
-              continue;
-            }
-            // When both operands are set, build a filtered set with common values
-            if ((value instanceof Set) && (subset instanceof Set)) {
-              filtered[key] = new Set([...value].filter((v) => subset.has(v)));
-              continue;
-            }
-            filtered[key] = fn(value as loose, subset as loose);
-            continue;
-          }
-        }
-        filtered[key] = value;
-      }
-      return filtered;
-    }
-  }
   return assertEquals(
     // get the intersection of "actual" and "expected"
     // side effect: all the instances' constructor field is "Object" now.
@@ -110,4 +43,160 @@ export function assertObjectMatch(
     filter(expected, expected),
     msg,
   );
+}
+
+function filter(a: loose, b: loose): loose {
+  const seen = new WeakMap();
+
+  function filterObj(
+    a: loose,
+    b: loose,
+  ): loose {
+    // Prevent infinite loop with circular references with same filter
+    if ((seen.has(a)) && (seen.get(a) === b)) {
+      return a;
+    }
+    try {
+      seen.set(a, b);
+    } catch (err) {
+      if (err instanceof TypeError) {
+        throw new TypeError(
+          `Cannot assertObjectMatch ${a === null ? null : `type ${typeof a}`}`,
+        );
+      }
+    }
+    // Filter keys and symbols which are present in both actual and expected
+    const filtered = {} as loose;
+    const entriesA = [
+      ...Object.getOwnPropertyNames(a),
+      ...Object.getOwnPropertySymbols(a),
+    ];
+    const entriesB = [
+      ...Object.getOwnPropertyNames(b),
+      ...Object.getOwnPropertySymbols(b),
+    ];
+    const entries = entriesA
+      .filter((key) => entriesB.includes(key))
+      .map((key) => [key, a[key as string]]) as Array<[string, unknown]>;
+
+    if (entries.length === 0 && entriesB.length) {
+      // If no keys or symbols are present in both actual and expected, and expected is not empty,
+      // returns keys and symbols in actual
+      return { ...a };
+    }
+
+    for (const [key, value] of entries) {
+      // On array references, build a filtered array and filter nested objects inside
+      if (Array.isArray(value)) {
+        const subset = (b as loose)[key];
+        if (Array.isArray(subset)) {
+          filtered[key] = filterArray(value, subset);
+          continue;
+        }
+      } // On regexp references, keep value as it to avoid loosing pattern and flags
+      else if (value instanceof RegExp) {
+        filtered[key] = value;
+        continue;
+      } // On nested objects references, build a filtered object recursively
+      else if (typeof value === "object" && value !== null) {
+        const subset = (b as loose)[key];
+        if ((typeof subset === "object") && subset !== null) {
+          // When both operands are maps, build a filtered map with
+          // common keys and filter nested objects inside
+          if ((value instanceof Map) && (subset instanceof Map)) {
+            filtered[key] = new Map(
+              [...value].filter(([k]) => subset.has(k)).map((
+                [k, v],
+              ) => [
+                k,
+                typeof v === "object" ? filterObj(v, subset.get(k)) : v,
+              ]),
+            );
+            continue;
+          }
+          // When both operands are set, build a filtered set with common values
+          if ((value instanceof Set) && (subset instanceof Set)) {
+            filtered[key] = new Set([...value].filter((v) => subset.has(v)));
+            continue;
+          }
+          filtered[key] = filterObj(value as loose, subset as loose);
+          continue;
+        }
+      }
+      filtered[key] = value;
+    }
+    return filtered;
+  }
+
+  function filterArray(
+    a: unknown[],
+    b: unknown[],
+  ): unknown[] {
+    if ((seen.has(a)) && (seen.get(a) === b)) {
+      return a;
+    }
+    try {
+      seen.set(a, b);
+    } catch (err) {
+      if (err instanceof TypeError) {
+        throw new TypeError(
+          `Cannot assertObjectMatch ${a === null ? null : `type ${typeof a}`}`,
+        );
+      }
+    }
+
+    const filtered: unknown[] = [];
+    if (a.length === 0 && b.length) {
+      // If a is empty and b is not empty, returns empty array.
+      return filtered;
+    }
+
+    const length = Math.min(a.length, b.length);
+
+    for (let i = 0; i < length; ++i) {
+      const elementA = a[i];
+      const elementB = b[i];
+
+      if (Array.isArray(elementA) && Array.isArray(elementB)) {
+        filtered.push(
+          filterArray(elementA as unknown[], elementB as unknown[]),
+        );
+        continue;
+      } // On regexp references, keep value as it to avoid loosing pattern and flags
+      else if (elementA instanceof RegExp) {
+        filtered.push(elementA);
+        continue;
+      } // On objects references, build a filtered object recursively
+      else if (
+        (typeof elementA === "object" && elementA !== null) &&
+        (typeof elementB === "object" && elementB !== null)
+      ) {
+        // When both operands are maps, build a filtered map with common keys and filter nested objects inside
+        if ((elementA instanceof Map) && (elementB instanceof Map)) {
+          const map = new Map(
+            [...elementA].filter(([k]) => elementB.has(k)).map((
+              [k, v],
+            ) => [
+              k,
+              typeof v === "object" ? filterObj(v, elementB.get(k)) : v,
+            ]),
+          );
+          filtered.push(map);
+          continue;
+        }
+        // When both operands are set, build a filtered set with common values
+        if ((elementA instanceof Set) && (elementB instanceof Set)) {
+          const set = new Set([...elementA].filter((v) => elementB.has(v)));
+          filtered.push(set);
+          continue;
+        }
+        filtered.push(filterObj(elementA as loose, elementB as loose));
+        continue;
+      }
+      filtered.push(elementA);
+    }
+    return filtered;
+  }
+
+  return filterObj(a, b);
 }
