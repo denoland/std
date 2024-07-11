@@ -583,14 +583,10 @@ export class DumperState {
     this.dump = createDump();
   }
 
-  writeFlowSequence(
-    level: number,
-    // deno-lint-ignore no-explicit-any
-    object: any,
-  ) {
+  writeFlowSequence(level: number) {
     let _result = "";
+    const object = this.dump;
     const _tag = this.tag;
-
     for (let index = 0; index < object.length; index += 1) {
       // Write only valid elements.
       if (
@@ -609,13 +605,9 @@ export class DumperState {
     this.dump = `[${_result}]`;
   }
 
-  writeBlockSequence(
-    level: number,
-    // deno-lint-ignore no-explicit-any
-    object: any,
-    compact: boolean,
-  ) {
+  writeBlockSequence(level: number, compact: boolean) {
     let _result = "";
+    const object = this.dump;
     const _tag = this.tag;
 
     for (let index = 0; index < object.length; index += 1) {
@@ -645,13 +637,10 @@ export class DumperState {
     this.dump = _result || "[]"; // Empty sequence if no valid values.
   }
 
-  writeFlowMapping(
-    level: number,
-    // deno-lint-ignore no-explicit-any
-    object: any,
-  ) {
+  writeFlowMapping(level: number) {
     let _result = "";
     const _tag = this.tag;
+    const object = this.dump;
     const objectKeyList = Object.keys(object);
 
     for (const [index, objectKey] of objectKeyList.entries()) {
@@ -697,12 +686,8 @@ export class DumperState {
     this.dump = `{${_result}}`;
   }
 
-  writeBlockMapping(
-    level: number,
-    // deno-lint-ignore no-explicit-any
-    object: any,
-    compact: boolean,
-  ) {
+  writeBlockMapping(level: number, compact: boolean) {
+    const object = this.dump;
     const _tag = this.tag;
     const objectKeyList = Object.keys(object);
     let _result = "";
@@ -781,11 +766,8 @@ export class DumperState {
     this.dump = _result || "{}"; // Empty mapping if no valid pairs.
   }
 
-  detectType(
-    // deno-lint-ignore no-explicit-any
-    object: any,
-    explicit: boolean,
-  ): boolean {
+  detectType(explicit: boolean): boolean {
+    const object = this.dump;
     const typeList = explicit ? this.explicitTypes : this.implicitTypes;
 
     for (const type of typeList) {
@@ -834,8 +816,8 @@ export class DumperState {
     this.tag = null;
     this.dump = object;
 
-    if (!this.detectType(object, false)) {
-      this.detectType(object, true);
+    if (!this.detectType(false)) {
+      this.detectType(true);
     }
 
     if (block) {
@@ -868,12 +850,12 @@ export class DumperState {
       }
       if (isObject(this.dump) && !Array.isArray(this.dump)) {
         if (block && Object.keys(this.dump).length !== 0) {
-          this.writeBlockMapping(level, this.dump, compact);
+          this.writeBlockMapping(level, compact);
           if (duplicate) {
             this.dump = `&ref_${duplicateIndex}${this.dump}`;
           }
         } else {
-          this.writeFlowMapping(level, this.dump);
+          this.writeFlowMapping(level);
           if (duplicate) {
             this.dump = `&ref_${duplicateIndex} ${this.dump}`;
           }
@@ -881,12 +863,12 @@ export class DumperState {
       } else if (Array.isArray(this.dump)) {
         const arrayLevel = !this.arrayIndent && level > 0 ? level - 1 : level;
         if (block && this.dump.length !== 0) {
-          this.writeBlockSequence(arrayLevel, this.dump, compact);
+          this.writeBlockSequence(arrayLevel, compact);
           if (duplicate) {
             this.dump = `&ref_${duplicateIndex}${this.dump}`;
           }
         } else {
-          this.writeFlowSequence(arrayLevel, this.dump);
+          this.writeFlowSequence(arrayLevel);
           if (duplicate) {
             this.dump = `&ref_${duplicateIndex} ${this.dump}`;
           }
