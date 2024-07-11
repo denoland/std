@@ -81,8 +81,7 @@ export class Schema {
   compiledTypeMap: TypeMap;
 
   constructor(definition: {
-    // deno-lint-ignore no-explicit-any
-    implicit?: any[];
+    implicit?: Type[];
     explicit?: Type[];
     include?: Schema[];
   }) {
