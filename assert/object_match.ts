@@ -127,10 +127,7 @@ function filter(a: loose, b: loose): loose {
     return filtered;
   }
 
-  function filterArray(
-    a: unknown[],
-    b: unknown[],
-  ): unknown[] {
+  function filterArray(a: unknown[], b: unknown[]): unknown[] {
     if ((seen.has(a)) && (seen.get(a) === b)) {
       return a;
     }
