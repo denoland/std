@@ -22,7 +22,7 @@ export interface ExpandGlobOptions extends Omit<GlobOptions, "os"> {
   /**
    * File path where to expand from.
    *
-   * @default {Deno.cwd}
+   * @default {Deno.cwd()}
    */
   root?: string;
   /**
