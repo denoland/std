@@ -418,11 +418,8 @@ export class DumperState {
     this.dump = _result || "{}"; // Empty mapping if no valid pairs.
   }
 
-  detectType(
-    // deno-lint-ignore no-explicit-any
-    object: any,
-    explicit = false,
-  ): boolean {
+  detectType(explicit = false): boolean {
+    const object = this.dump;
     const typeList = explicit ? this.explicitTypes : this.implicitTypes;
 
     for (const type of typeList) {
@@ -469,8 +466,8 @@ export class DumperState {
     this.tag = null;
     this.dump = object;
 
-    if (!this.detectType(object, false)) {
-      this.detectType(object, true);
+    if (!this.detectType(false)) {
+      this.detectType(true);
     }
 
     if (block) {
