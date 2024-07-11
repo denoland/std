@@ -5,7 +5,7 @@
 
 import type { Type } from "../_type.ts";
 
-function resolveYamlSet(data: Record<PropertyKey, unknown>): boolean {
+function resolveYamlSet(data: ResultType | null): boolean {
   if (data === null) return true;
 
   for (const key in data) {
