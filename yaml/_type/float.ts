@@ -38,7 +38,7 @@ function constructYamlFloat(data: string): number {
   const sign = value[0] === "-" ? -1 : 1;
   const digits: number[] = [];
 
-  if (value[0] && "+-".indexOf(value[0]) >= 0) {
+  if (value[0] && "+-".includes(value[0])) {
     value = value.slice(1);
   }
 
@@ -48,7 +48,7 @@ function constructYamlFloat(data: string): number {
   if (value === ".nan") {
     return NaN;
   }
-  if (value.indexOf(":") >= 0) {
+  if (value.includes(":")) {
     value.split(":").forEach((v) => {
       digits.unshift(parseFloat(v));
     });

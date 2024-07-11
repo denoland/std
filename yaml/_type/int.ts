@@ -112,7 +112,7 @@ function constructYamlInteger(data: string): number {
   let value = data;
   const digits: number[] = [];
 
-  if (value.indexOf("_") !== -1) {
+  if (value.includes("_")) {
     value = value.replace(/_/g, "");
   }
 
@@ -132,7 +132,7 @@ function constructYamlInteger(data: string): number {
     return sign * parseInt(value, 8);
   }
 
-  if (value.indexOf(":") !== -1) {
+  if (value.includes(":")) {
     value.split(":").forEach((v) => {
       digits.unshift(parseInt(v, 10));
     });
