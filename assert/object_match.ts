@@ -48,10 +48,7 @@ export function assertObjectMatch(
 function filter(a: loose, b: loose): loose {
   const seen = new WeakMap();
 
-  function filterObj(
-    a: loose,
-    b: loose,
-  ): loose {
+  function filterObj(a: loose, b: loose): loose {
     // Prevent infinite loop with circular references with same filter
     if ((seen.has(a)) && (seen.get(a) === b)) {
       return a;
