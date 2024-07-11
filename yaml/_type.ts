@@ -21,13 +21,11 @@ export type StyleVariant =
 
 export type RepresentFn<D> = (data: D, style?: StyleVariant) => string;
 
-type Constructor<T> = new (...args: unknown[]) => T;
-
 // deno-lint-ignore no-explicit-any
 export interface Type<D = any> {
   tag: string;
   kind: KindType | null;
-  instanceOf?: Constructor<D>;
+  instanceOf?: new (...args: unknown[]) => D;
   predicate?: (data: Record<string, unknown>) => boolean;
   represent?: RepresentFn<D> | ArrayObject<RepresentFn<D>>;
   defaultStyle?: StyleVariant;
