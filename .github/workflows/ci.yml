@@ -17,7 +17,8 @@ jobs:
       fail-fast: false
       matrix:
         deno:
-          - v1.x
+          # TODO(iuioiua): re-enable once 1.45.1 is released
+          # - v1.x
           - canary
         os:
           - ubuntu-latest
