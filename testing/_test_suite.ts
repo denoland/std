@@ -97,7 +97,13 @@ export class TestSuiteInternal<T> implements TestSuite<T> {
       const temp = TestSuiteInternal.current;
       TestSuiteInternal.current = this;
       try {
-        fn();
+        // deno-lint-ignore no-explicit-any
+        const value = fn() as any;
+        if (value instanceof Promise) {
+          throw new Error(
+            'Returning a Promise from "describe" is not supported. Tests must be defined synchronously.',
+          );
+        }
       } finally {
         TestSuiteInternal.current = temp;
       }

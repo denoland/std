@@ -1,7 +1,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
 const workspaces = JSON.parse(await Deno.readTextFile("deno.json"))
-  .workspaces as string[];
+  .workspace as string[];
 // deno-lint-ignore no-explicit-any
 const denoConfig = {} as Record<string, any>;
 for (const workspace of workspaces) {
