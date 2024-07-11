@@ -145,16 +145,12 @@ export interface WalkOptions {
    * List of regular expression patterns used to filter entries.
    * If specified, entries that do not match the patterns specified by this
    * option are excluded.
-   *
-   * @default {undefined}
    */
   match?: RegExp[];
   /**
    * List of regular expression patterns used to filter entries.
    * If specified, entries matching the patterns specified by this option are
    * excluded.
-   *
-   * @default {undefined}
    */
   skip?: RegExp[];
 }
