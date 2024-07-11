@@ -45,8 +45,12 @@ export interface ETagOptions {
    */
   algorithm?: AlgorithmIdentifier;
 
-  /** Override the default behavior of calculating the `ETag`, either forcing
-   * a tag to be labelled weak or not. */
+  /**
+   * Override the default behavior of calculating the `ETag`, either forcing
+   * a tag to be labelled weak or not.
+   *
+   * Defaults to `true` when the entity is a `FileInfo` and `false` otherwise.
+   */
   weak?: boolean;
 }
 

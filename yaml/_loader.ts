@@ -68,8 +68,7 @@ interface LoaderStateOptions {
   onWarning?(error?: YamlError): void;
 }
 
-// deno-lint-ignore no-explicit-any
-type ResultType = any[] | Record<string, any> | string;
+type ResultType = unknown[] | Record<string, unknown> | string;
 
 const ESCAPED_HEX_LENGTHS = new Map<number, number>([
   [0x78, 2], // x
@@ -329,8 +328,7 @@ function storeMappingPair(
   result: ArrayObject | null,
   overridableKeys: ArrayObject<boolean>,
   keyTag: string | null,
-  // deno-lint-ignore no-explicit-any
-  keyNode: any,
+  keyNode: Record<PropertyKey, unknown> | unknown[] | string | null,
   valueNode: unknown,
   startLine?: number,
   startPos?: number,
