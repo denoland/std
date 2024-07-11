@@ -35,7 +35,7 @@ function resolveYamlOmap(data: any): boolean {
   return true;
 }
 
-export const omap: Type = {
+export const omap: Type<Record<PropertyKey, unknown>[]> = {
   tag: "tag:yaml.org,2002:omap",
   kind: "sequence",
   resolve: resolveYamlOmap,

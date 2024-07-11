@@ -12,9 +12,7 @@ Deno.test({
     class TestFileHandler extends FileHandler {
       override flush() {
         super.flush();
-        const decoder = new TextDecoder("utf-8");
-        const data = Deno.readFileSync(LOG_FILE);
-        const text = decoder.decode(data);
+        const text = Deno.readTextFileSync(LOG_FILE);
         assertEquals(text.slice(-1), "\n");
       }
 
