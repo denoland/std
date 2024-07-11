@@ -616,8 +616,10 @@ Deno.test(
     const tempTestFilePath2 = join(tempDir2, tempTestFileName);
 
     async function runTestWithUpdateFlag(test1: string, test2: string) {
-      await Deno.writeTextFile(tempTestFilePath1, test1);
-      await Deno.writeTextFile(tempTestFilePath2, test2);
+      await Promise.all([
+        Deno.writeTextFile(tempTestFilePath1, test1),
+        Deno.writeTextFile(tempTestFilePath2, test2),
+      ]);
 
       const command = new Deno.Command(Deno.execPath(), {
         args: [
