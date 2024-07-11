@@ -376,4 +376,26 @@ Deno.test("assertObjectMatch() prints inputs correctly", () => {
       protocol: "graph",
     }`,
   );
+
+  const a = {};
+  const b = {};
+
+  Object.defineProperty(a, "hello", {
+    value: "world",
+    enumerable: false,
+  });
+
+  Object.defineProperty(b, "foo", {
+    value: "bar",
+    enumerable: false,
+  });
+
+  assertThrows(
+    () => assertObjectMatch(a, b),
+    AssertionError,
+    `    {
+-     hello: "world",
++     foo: "bar",
+    }`,
+  );
 });

@@ -64,63 +64,65 @@ function filter(a: loose, b: loose): loose {
     }
     // Filter keys and symbols which are present in both actual and expected
     const filtered = {} as loose;
-    const entriesA = [
+    const keysA = [
       ...Object.getOwnPropertyNames(a),
       ...Object.getOwnPropertySymbols(a),
     ];
-    const entriesB = [
+    const keysB = [
       ...Object.getOwnPropertyNames(b),
       ...Object.getOwnPropertySymbols(b),
     ];
-    const entries = entriesA
-      .filter((key) => entriesB.includes(key))
+    const entries = keysA
+      .filter((key) => keysB.includes(key))
       .map((key) => [key, a[key as string]]) as Array<[string, unknown]>;
 
-    if (entries.length === 0 && entriesB.length) {
+    if (entries.length === 0 && keysB.length) {
       // If no keys or symbols are present in both actual and expected, and expected is not empty,
       // returns keys and symbols in actual
-      return { ...a };
-    }
-
-    for (const [key, value] of entries) {
-      // On array references, build a filtered array and filter nested objects inside
-      if (Array.isArray(value)) {
-        const subset = (b as loose)[key];
-        if (Array.isArray(subset)) {
-          filtered[key] = filterArray(value, subset);
-          continue;
-        }
-      } // On regexp references, keep value as it to avoid loosing pattern and flags
-      else if (value instanceof RegExp) {
-        filtered[key] = value;
-        continue;
-      } // On nested objects references, build a filtered object recursively
-      else if (typeof value === "object" && value !== null) {
-        const subset = (b as loose)[key];
-        if ((typeof subset === "object") && subset !== null) {
-          // When both operands are maps, build a filtered map with
-          // common keys and filter nested objects inside
-          if ((value instanceof Map) && (subset instanceof Map)) {
-            filtered[key] = new Map(
-              [...value].filter(([k]) => subset.has(k)).map((
-                [k, v],
-              ) => [
-                k,
-                typeof v === "object" ? filterObj(v, subset.get(k)) : v,
-              ]),
-            );
-            continue;
-          }
-          // When both operands are set, build a filtered set with common values
-          if ((value instanceof Set) && (subset instanceof Set)) {
-            filtered[key] = new Set([...value].filter((v) => subset.has(v)));
-            continue;
-          }
-          filtered[key] = filterObj(value as loose, subset as loose);
-          continue;
-        }
+      for (const key of keysA) {
+        filtered[key] = a[key];
       }
-      filtered[key] = value;
+    } else {
+      for (const [key, value] of entries) {
+        // On array references, build a filtered array and filter nested objects inside
+        if (Array.isArray(value)) {
+          const subset = (b as loose)[key];
+          if (Array.isArray(subset)) {
+            filtered[key] = filterArray(value, subset);
+            continue;
+          }
+        } // On regexp references, keep value as it to avoid loosing pattern and flags
+        else if (value instanceof RegExp) {
+          filtered[key] = value;
+          continue;
+        } // On nested objects references, build a filtered object recursively
+        else if (typeof value === "object" && value !== null) {
+          const subset = (b as loose)[key];
+          if ((typeof subset === "object") && subset !== null) {
+            // When both operands are maps, build a filtered map with
+            // common keys and filter nested objects inside
+            if ((value instanceof Map) && (subset instanceof Map)) {
+              filtered[key] = new Map(
+                [...value].filter(([k]) => subset.has(k)).map((
+                  [k, v],
+                ) => [
+                  k,
+                  typeof v === "object" ? filterObj(v, subset.get(k)) : v,
+                ]),
+              );
+              continue;
+            }
+            // When both operands are set, build a filtered set with common values
+            if ((value instanceof Set) && (subset instanceof Set)) {
+              filtered[key] = new Set([...value].filter((v) => subset.has(v)));
+              continue;
+            }
+            filtered[key] = filterObj(value as loose, subset as loose);
+            continue;
+          }
+        }
+        filtered[key] = value;
+      }
     }
     return filtered;
   }
@@ -142,12 +144,12 @@ function filter(a: loose, b: loose): loose {
       }
     }
 
-    const filtered: unknown[] = [];
     if (a.length === 0 && b.length) {
-      // If a is empty and b is not empty, returns empty array.
-      return filtered;
+      // If a is empty and b is not empty, returns a.
+      return a;
     }
 
+    const filtered: unknown[] = [];
     const length = Math.min(a.length, b.length);
 
     for (let i = 0; i < length; ++i) {
