@@ -207,7 +207,7 @@ export class DumperState {
     level: number,
     isKey: boolean,
   ) {
-    this.dump = ((): string => {
+    const createDump = () => {
       if (string.length === 0) {
         return "''";
       }
@@ -264,7 +264,8 @@ export class DumperState {
         default:
           throw new YamlError("impossible error: invalid scalar style");
       }
-    })();
+    };
+    this.dump = createDump();
   }
 
   writeFlowSequence(
