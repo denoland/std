@@ -19,9 +19,17 @@ const isWindows = Deno.build.os === "windows";
 
 /** Options for {@linkcode expandGlob} and {@linkcode expandGlobSync}. */
 export interface ExpandGlobOptions extends Omit<GlobOptions, "os"> {
-  /** File path where to expand from. */
+  /**
+   * File path where to expand from.
+   *
+   * @default {Deno.cwd()}
+   */
   root?: string;
-  /** List of glob patterns to be excluded from the expansion. */
+  /**
+   * List of glob patterns to be excluded from the expansion.
+   *
+   * @default {[]}
+   */
   exclude?: string[];
   /**
    * Whether to include directories in entries.
