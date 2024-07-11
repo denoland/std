@@ -87,7 +87,7 @@ function representYamlTimestamp(date: Date): string {
   return date.toISOString();
 }
 
-export const timestamp: Type = {
+export const timestamp: Type<Date> = {
   tag: "tag:yaml.org,2002:timestamp",
   construct: constructYamlTimestamp,
   instanceOf: Date,

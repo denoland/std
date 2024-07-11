@@ -92,7 +92,7 @@
       ]
     }
   },
-  "workspaces": [
+  "workspace": [
     "./archive",
     "./assert",
     "./async",

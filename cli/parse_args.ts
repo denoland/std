@@ -293,6 +293,8 @@ export interface ParseOptions<
   /**
    * An object mapping string names to strings or arrays of string argument
    * names to use as aliases.
+   *
+   * @default {{}}
    */
   alias?: TAliases;
 
@@ -301,19 +303,31 @@ export interface ParseOptions<
    * `true` will treat all double hyphenated arguments without equal signs as
    * `boolean` (e.g. affects `--foo`, not `-f` or `--foo=bar`).
    *  All `boolean` arguments will be set to `false` by default.
+   *
+   * @default {false}
    */
   boolean?: TBooleans | ReadonlyArray<Extract<TBooleans, string>>;
 
-  /** An object mapping string argument names to default values. */
+  /**
+   * An object mapping string argument names to default values.
+   *
+   * @default {{}}
+   */
   default?: TDefault & Defaults<TBooleans, TStrings>;
 
   /**
    * When `true`, populate the result `_` with everything after the first
    * non-option.
+   *
+   * @default {false}
    */
   stopEarly?: boolean;
 
-  /** A string or array of strings argument names to always treat as strings. */
+  /**
+   * A string or array of strings argument names to always treat as strings.
+   *
+   * @default {[]}
+   */
   string?: TStrings | ReadonlyArray<Extract<TStrings, string>>;
 
   /**
@@ -321,13 +335,16 @@ export interface ParseOptions<
    * Collectable options can be used multiple times. All values will be
    * collected into one array. If a non-collectable option is used multiple
    * times, the last value is used.
-   * All Collectable arguments will be set to `[]` by default.
+   *
+   * @default {[]}
    */
   collect?: TCollectable | ReadonlyArray<Extract<TCollectable, string>>;
 
   /**
    * A string or array of strings argument names which can be negated
    * by prefixing them with `--no-`, like `--no-config`.
+   *
+   * @default {[]}
    */
   negatable?: TNegatable | ReadonlyArray<Extract<TNegatable, string>>;
 
@@ -335,6 +352,8 @@ export interface ParseOptions<
    * A function which is invoked with a command line parameter not defined in
    * the `options` configuration object. If the function returns `false`, the
    * unknown option is not added to `parsedArgs`.
+   *
+   * @default {unknown}
    */
   unknown?: (arg: string, key?: string, value?: unknown) => unknown;
 }

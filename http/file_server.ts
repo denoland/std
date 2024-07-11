@@ -141,7 +141,13 @@ export interface ServeFileOptions {
    * @default {"SHA-256"}
    */
   etagAlgorithm?: AlgorithmIdentifier;
-  /** An optional FileInfo object returned by Deno.stat. It is used for optimization purposes. */
+  /**
+   * An optional object returned by {@linkcode Deno.stat}. It is used for
+   * optimization purposes.
+   *
+   * Defaults to the result of calling {@linkcode Deno.stat} with the provided
+   * `filePath`.
+   */
   fileInfo?: Deno.FileInfo;
 }
 
@@ -544,8 +550,6 @@ export interface ServeDirOptions {
    */
   fsRoot?: string;
   /** Specified that part is stripped from the beginning of the requested pathname.
-   *
-   * @default {undefined}
    */
   urlRoot?: string;
   /** Enable directory listing.

@@ -118,7 +118,7 @@ function isBinary(obj: unknown): obj is Uint8Array {
   return obj instanceof Uint8Array;
 }
 
-export const binary: Type = {
+export const binary: Type<Uint8Array> = {
   tag: "tag:yaml.org,2002:binary",
   construct: constructYamlBinary,
   kind: "scalar",
