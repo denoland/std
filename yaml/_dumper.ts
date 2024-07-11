@@ -268,14 +268,10 @@ export class DumperState {
     this.dump = createDump();
   }
 
-  writeFlowSequence(
-    level: number,
-    // deno-lint-ignore no-explicit-any
-    object: any,
-  ) {
+  writeFlowSequence(level: number) {
     let _result = "";
+    const object = this.dump;
     const _tag = this.tag;
-
     for (let index = 0; index < object.length; index += 1) {
       // Write only valid elements.
       if (this.writeNode(level, object[index], false, false)) {
@@ -290,11 +286,10 @@ export class DumperState {
 
   writeBlockSequence(
     level: number,
-    // deno-lint-ignore no-explicit-any
-    object: any,
     compact = false,
   ) {
     let _result = "";
+    const object = this.dump;
     const _tag = this.tag;
 
     for (let index = 0; index < object.length; index += 1) {
@@ -318,13 +313,10 @@ export class DumperState {
     this.dump = _result || "[]"; // Empty sequence if no valid values.
   }
 
-  writeFlowMapping(
-    level: number,
-    // deno-lint-ignore no-explicit-any
-    object: any,
-  ) {
+  writeFlowMapping(level: number) {
     let _result = "";
     const _tag = this.tag;
+    const object = this.dump;
     const objectKeyList = Object.keys(object);
 
     for (const [index, objectKey] of objectKeyList.entries()) {
@@ -358,12 +350,8 @@ export class DumperState {
     this.dump = `{${_result}}`;
   }
 
-  writeBlockMapping(
-    level: number,
-    // deno-lint-ignore no-explicit-any
-    object: any,
-    compact = false,
-  ) {
+  writeBlockMapping(level: number, compact = false) {
+    const object = this.dump;
     const _tag = this.tag;
     const objectKeyList = Object.keys(object);
     let _result = "";
@@ -515,12 +503,12 @@ export class DumperState {
       }
       if (isObject(this.dump) && !Array.isArray(this.dump)) {
         if (block && Object.keys(this.dump).length !== 0) {
-          this.writeBlockMapping(level, this.dump, compact);
+          this.writeBlockMapping(level, compact);
           if (duplicate) {
             this.dump = `&ref_${duplicateIndex}${this.dump}`;
           }
         } else {
-          this.writeFlowMapping(level, this.dump);
+          this.writeFlowMapping(level);
           if (duplicate) {
             this.dump = `&ref_${duplicateIndex} ${this.dump}`;
           }
@@ -528,12 +516,12 @@ export class DumperState {
       } else if (Array.isArray(this.dump)) {
         const arrayLevel = !this.arrayIndent && level > 0 ? level - 1 : level;
         if (block && this.dump.length !== 0) {
-          this.writeBlockSequence(arrayLevel, this.dump, compact);
+          this.writeBlockSequence(arrayLevel, compact);
           if (duplicate) {
             this.dump = `&ref_${duplicateIndex}${this.dump}`;
           }
         } else {
-          this.writeFlowSequence(arrayLevel, this.dump);
+          this.writeFlowSequence(arrayLevel);
           if (duplicate) {
             this.dump = `&ref_${duplicateIndex} ${this.dump}`;
           }
