@@ -211,10 +211,7 @@ export class DumperState {
       if (string.length === 0) {
         return "''";
       }
-      if (
-        this.compatMode &&
-        DEPRECATED_BOOLEANS_SYNTAX.indexOf(string) !== -1
-      ) {
+      if (this.compatMode && DEPRECATED_BOOLEANS_SYNTAX.includes(string)) {
         return `'${string}'`;
       }
 
