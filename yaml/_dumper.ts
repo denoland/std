@@ -786,7 +786,7 @@ function foldLine(line: string, width: number): string {
   return lines.join("\n");
 }
 
-export function trimTrailingNewline(string: string) {
+function trimTrailingNewline(string: string) {
   return string.at(-1) === "\n" ? string.slice(0, -1) : string;
 }
 
