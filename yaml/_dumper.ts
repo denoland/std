@@ -280,7 +280,13 @@ export class DumperState {
 
     for (let index = 0; index < object.length; index += 1) {
       // Write only valid elements.
-      if (this.writeNode(level, object[index], false, false)) {
+      if (
+        this.writeNode(level, object[index], {
+          block: false,
+          compact: false,
+          isKey: false,
+        })
+      ) {
         if (index !== 0) _result += `,${!this.condenseFlow ? " " : ""}`;
         _result += this.dump;
       }
@@ -294,14 +300,20 @@ export class DumperState {
     level: number,
     // deno-lint-ignore no-explicit-any
     object: any,
-    compact = false,
+    compact: boolean,
   ) {
     let _result = "";
     const _tag = this.tag;
 
     for (let index = 0; index < object.length; index += 1) {
       // Write only valid elements.
-      if (this.writeNode(level + 1, object[index], true, true)) {
+      if (
+        this.writeNode(level + 1, object[index], {
+          block: true,
+          compact: true,
+          isKey: false,
+        })
+      ) {
         if (!compact || index !== 0) {
           _result += generateNextLine(this.indent, level);
         }
@@ -336,7 +348,13 @@ export class DumperState {
 
       const objectValue = object[objectKey];
 
-      if (!this.writeNode(level, objectKey, false, false)) {
+      if (
+        !this.writeNode(level, objectKey, {
+          block: false,
+          compact: false,
+          isKey: false,
+        })
+      ) {
         continue; // Skip this pair because of invalid key;
       }
 
@@ -346,7 +364,13 @@ export class DumperState {
         this.condenseFlow ? "" : " "
       }`;
 
-      if (!this.writeNode(level, objectValue, false, false)) {
+      if (
+        !this.writeNode(level, objectValue, {
+          block: false,
+          compact: false,
+          isKey: false,
+        })
+      ) {
         continue; // Skip this pair because of invalid value.
       }
 
@@ -364,7 +388,7 @@ export class DumperState {
     level: number,
     // deno-lint-ignore no-explicit-any
     object: any,
-    compact = false,
+    compact: boolean,
   ) {
     const _tag = this.tag;
     const objectKeyList = Object.keys(object);
@@ -391,7 +415,13 @@ export class DumperState {
 
       const objectValue = object[objectKey];
 
-      if (!this.writeNode(level + 1, objectKey, true, true, true)) {
+      if (
+        !this.writeNode(level + 1, objectKey, {
+          block: true,
+          compact: true,
+          isKey: true,
+        })
+      ) {
         continue; // Skip this pair because of invalid key.
       }
 
@@ -412,7 +442,13 @@ export class DumperState {
         pairBuffer += generateNextLine(this.indent, level);
       }
 
-      if (!this.writeNode(level + 1, objectValue, true, explicitPair)) {
+      if (
+        !this.writeNode(level + 1, objectValue, {
+          block: true,
+          compact: explicitPair,
+          isKey: false,
+        })
+      ) {
         continue; // Skip this pair because of invalid value.
       }
 
@@ -435,7 +471,7 @@ export class DumperState {
   detectType(
     // deno-lint-ignore no-explicit-any
     object: any,
-    explicit = false,
+    explicit: boolean,
   ): boolean {
     const typeList = explicit ? this.explicitTypes : this.implicitTypes;
 
@@ -476,9 +512,11 @@ export class DumperState {
     level: number,
     // deno-lint-ignore no-explicit-any
     object: any,
-    block: boolean,
-    compact: boolean,
-    isKey = false,
+    { block, compact, isKey }: {
+      block: boolean;
+      compact: boolean;
+      isKey: boolean;
+    },
   ): boolean {
     this.tag = null;
     this.dump = object;
@@ -894,7 +932,13 @@ export function dump(input: any, options: DumperStateOptions = {}): string {
 
   if (state.useAnchors) state.getDuplicateReferences(input);
 
-  if (state.writeNode(0, input, true, true)) return `${state.dump}\n`;
+  if (
+    state.writeNode(0, input, {
+      block: true,
+      compact: true,
+      isKey: false,
+    })
+  ) return `${state.dump}\n`;
 
   return "";
 }
