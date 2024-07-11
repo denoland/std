@@ -141,11 +141,6 @@ function filter(a: loose, b: loose): loose {
       }
     }
 
-    if (a.length === 0 && b.length) {
-      // If a is empty and b is not empty, returns a.
-      return a;
-    }
-
     const filtered: unknown[] = [];
     const length = Math.min(a.length, b.length);
 
