@@ -34,8 +34,6 @@ export type Operator =
 export interface Comparator extends SemVer {
   /**
    * The operator
-   *
-   * @default {undefined}
    */
   operator?: Operator;
 }

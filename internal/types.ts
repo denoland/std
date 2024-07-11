@@ -15,8 +15,6 @@ export interface DiffResult<T> {
   value: T;
   /**
    * The details of the diff.
-   *
-   * @default {undefined}
    */
   details?: DiffResult<T>[];
 }

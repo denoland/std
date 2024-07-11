@@ -147,8 +147,6 @@ export interface ServeFileOptions {
    *
    * Defaults to the result of calling {@linkcode Deno.stat} with the provided
    * `filePath`.
-   *
-   * @default {undefined}
    */
   fileInfo?: Deno.FileInfo;
 }
@@ -552,8 +550,6 @@ export interface ServeDirOptions {
    */
   fsRoot?: string;
   /** Specified that part is stripped from the beginning of the requested pathname.
-   *
-   * @default {undefined}
    */
   urlRoot?: string;
   /** Enable directory listing.

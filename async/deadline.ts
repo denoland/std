@@ -10,8 +10,6 @@ import { abortable } from "./abortable.ts";
 export interface DeadlineOptions {
   /**
    * Signal used to abort the deadline.
-   *
-   * @default {undefined}
    */
   signal?: AbortSignal;
 }

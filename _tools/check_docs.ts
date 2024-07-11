@@ -424,6 +424,7 @@ function assertModuleDoc(document: DocNodeWithJsDoc<DocNodeModuleDoc>) {
  * Ensures an interface document:
  * - Has `@default` tags for all optional properties.
  */
+// deno-lint-ignore no-unused-vars
 function assertHasDefaultTags(document: DocNodeWithJsDoc<DocNodeInterface>) {
   for (const prop of document.interfaceDef.properties) {
     if (!prop.optional) continue;
@@ -438,8 +439,13 @@ function assertHasDefaultTags(document: DocNodeWithJsDoc<DocNodeInterface>) {
   }
 }
 
+// deno-lint-ignore no-unused-vars
 function assertInterfaceDocs(document: DocNodeWithJsDoc<DocNodeInterface>) {
-  assertHasDefaultTags(document);
+  // TODO(iuioiua): This is currently disabled deliberately, as it throws errors
+  // for interface properties that don't have a `@default` tag. Re-enable this
+  // when checking for `@default` tags again, or when a solution is found for
+  // ignoring some properties (those that don't require a `@default` tag).
+  // assertHasDefaultTags(document);
 }
 
 function resolve(specifier: string, referrer: string): string {

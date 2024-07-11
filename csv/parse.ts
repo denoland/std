@@ -282,8 +282,6 @@ export interface ParseOptions {
    *
    * If the wrong number of fields is in a row, a {@linkcode ParseError} is
    * thrown.
-   *
-   * @default {undefined}
    */
   fieldsPerRecord?: number;
   /**
@@ -297,8 +295,6 @@ export interface ParseOptions {
   skipFirstRow?: boolean;
   /**
    * List of names used for header definition.
-   *
-   * @default {undefined}
    */
   columns?: readonly string[];
 }

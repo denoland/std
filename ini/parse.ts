@@ -8,8 +8,6 @@ export type { ParseOptions, ReviverFunction };
 interface ParseOptions {
   /**
    * Provide custom parsing of the value in a key/value pair.
-   *
-   * @default {undefined}
    */
   reviver?: ReviverFunction;
 }

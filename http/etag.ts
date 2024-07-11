@@ -50,8 +50,6 @@ export interface ETagOptions {
    * a tag to be labelled weak or not.
    *
    * Defaults to `true` when the entity is a `FileInfo` and `false` otherwise.
-   *
-   * @default {undefined}
    */
   weak?: boolean;
 }
