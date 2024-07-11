@@ -10,26 +10,15 @@ const encoder = new TextEncoder();
  * @see {@link https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events/Using_server-sent_events#fields}
  */
 export interface ServerSentEventMessage {
-  /**
-   * Ignored by the client.
-   */
+  /** Ignored by the client. */
   comment?: string;
-  /**
-   * A string identifying the type of event described.
-   */
+  /** A string identifying the type of event described. */
   event?: string;
-  /**
-   * The data field for the message. Split by new lines.
-   */
+  /** The data field for the message. Split by new lines. */
   data?: string;
-  /**
-   * The event ID to set the {@linkcode EventSource} object's last event ID
-   * value.
-   */
+  /** The event ID to set the {@linkcode EventSource} object's last event ID value. */
   id?: string | number;
-  /**
-   * The reconnection time.
-   */
+  /** The reconnection time. */
   retry?: number;
 }
 

@@ -13,8 +13,6 @@ export interface DiffResult<T> {
   type: DiffType;
   /** The value of the diff. */
   value: T;
-  /**
-   * The details of the diff.
-   */
+  /** The details of the diff. */
   details?: DiffResult<T>[];
 }

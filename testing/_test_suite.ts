@@ -1,9 +1,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 /** The options for creating a test suite with the describe function. */
 export interface DescribeDefinition<T> extends Omit<Deno.TestDefinition, "fn"> {
-  /**
-   * The body of the test suite
-   */
+  /** The body of the test suite */
   fn?: () => void | undefined;
   /**
    * The `describe` function returns a `TestSuite` representing the group of tests.
@@ -11,27 +9,19 @@ export interface DescribeDefinition<T> extends Omit<Deno.TestDefinition, "fn"> {
    * If `describe` is not called within another `describe` calls `fn`, the suite will default to the `TestSuite` representing the global group of tests.
    */
   suite?: TestSuite<T>;
-  /**
-   * Run some shared setup before all of the tests in the suite.
-   */
+  /** Run some shared setup before all of the tests in the suite. */
   beforeAll?:
     | ((this: T) => void | Promise<void>)
     | ((this: T) => void | Promise<void>)[];
-  /**
-   * Run some shared teardown after all of the tests in the suite.
-   */
+  /** Run some shared teardown after all of the tests in the suite. */
   afterAll?:
     | ((this: T) => void | Promise<void>)
     | ((this: T) => void | Promise<void>)[];
-  /**
-   * Run some shared setup before each test in the suite.
-   */
+  /** Run some shared setup before each test in the suite. */
   beforeEach?:
     | ((this: T) => void | Promise<void>)
     | ((this: T) => void | Promise<void>)[];
-  /**
-   * Run some shared teardown after each test in the suite.
-   */
+  /** Run some shared teardown after each test in the suite. */
   afterEach?:
     | ((this: T) => void | Promise<void>)
     | ((this: T) => void | Promise<void>)[];

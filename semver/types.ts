@@ -32,9 +32,7 @@ export type Operator =
  * @example >=0.0.0
  */
 export interface Comparator extends SemVer {
-  /**
-   * The operator
-   */
+  /** The operator */
   operator?: Operator;
 }
 

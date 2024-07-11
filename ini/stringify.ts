@@ -9,17 +9,14 @@ import {
 
 /** Options for {@linkcode stringify}. */
 export interface StringifyOptions extends FormattingOptions {
-  /**
-   * Provide custom string conversion for the value in a key/value pair.
-   */
+  /** Provide custom string conversion for the value in a key/value pair. */
   replacer?: ReplacerFunction;
 }
 
 export type { FormattingOptions, ReplacerFunction };
 
 /**
- * Compile an object into an INI config string. Provide formatting options to
- * modify the output.
+ * Compile an object into an INI config string. Provide formatting options to modify the output.
  *
  * @example Usage
  * ```ts

@@ -6,9 +6,7 @@ export type { ParseOptions, ReviverFunction };
 
 /** Options for {@linkcode parse}. */
 interface ParseOptions {
-  /**
-   * Provide custom parsing of the value in a key/value pair.
-   */
+  /** Provide custom parsing of the value in a key/value pair. */
   reviver?: ReviverFunction;
 }
 
