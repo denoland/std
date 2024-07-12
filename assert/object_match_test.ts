@@ -280,6 +280,10 @@ Deno.test("assertObjectMatch() throws when built-in data structures mismatches",
     () => assertObjectMatch(n, { baz: new Map([["a", { baz: true }]]) }),
     AssertionError,
   );
+  assertThrows(
+    () => assertObjectMatch(n, { baz: new Map([["b", null]]) }),
+    AssertionError,
+  );
 });
 
 Deno.test("assertObjectMatch() throws assertion error when in the first argument mismatches, rather than a TypeError: Invalid value used as weak map key", () => {
