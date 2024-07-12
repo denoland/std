@@ -6,7 +6,7 @@ import type { Extract } from "./types.ts";
  * Supported format for front matter. `"unknown"` is used when auto format
  * detection logic fails.
  */
-export type Format = "yaml" | "toml" | "json" | "unknown";
+export type Format = "yaml" | "toml" | "json";
 
 /**
  * Type for function that accepts an input string and returns

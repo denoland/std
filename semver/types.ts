@@ -46,9 +46,17 @@ export interface SemVer {
   minor: number;
   /** The patch version */
   patch: number;
-  /** The prerelease version */
+  /**
+   * The prerelease version
+   *
+   * @default {[]}
+   */
   prerelease?: (string | number)[];
-  /** The build metadata */
+  /**
+   * The build metadata
+   *
+   * @default {[]}
+   */
   build?: string[];
 }
 

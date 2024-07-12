@@ -4,7 +4,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
 import type { StyleVariant, Type } from "../_type.ts";
-import { type Any, isNegativeZero } from "../_utils.ts";
+import { isNegativeZero } from "../_utils.ts";
 
 const YAML_FLOAT_PATTERN = new RegExp(
   // 2.5e4, 2.5 and integers
@@ -38,7 +38,7 @@ function constructYamlFloat(data: string): number {
   const sign = value[0] === "-" ? -1 : 1;
   const digits: number[] = [];
 
-  if (value[0] && "+-".indexOf(value[0]) >= 0) {
+  if (value[0] && "+-".includes(value[0])) {
     value = value.slice(1);
   }
 
@@ -48,7 +48,7 @@ function constructYamlFloat(data: string): number {
   if (value === ".nan") {
     return NaN;
   }
-  if (value.indexOf(":") >= 0) {
+  if (value.includes(":")) {
     value.split(":").forEach((v) => {
       digits.unshift(parseFloat(v));
     });
@@ -68,7 +68,8 @@ function constructYamlFloat(data: string): number {
 
 const SCIENTIFIC_WITHOUT_DOT = /^[-+]?[0-9]+e/;
 
-function representYamlFloat(object: Any, style?: StyleVariant): Any {
+// deno-lint-ignore no-explicit-any
+function representYamlFloat(object: any, style?: StyleVariant): any {
   if (isNaN(object)) {
     switch (style) {
       case "lowercase":
@@ -108,12 +109,12 @@ function representYamlFloat(object: Any, style?: StyleVariant): Any {
   return SCIENTIFIC_WITHOUT_DOT.test(res) ? res.replace("e", ".e") : res;
 }
 
-function isFloat(object: Any): boolean {
+function isFloat(object: unknown): boolean {
   return typeof object === "number" &&
     (object % 1 !== 0 || isNegativeZero(object));
 }
 
-export const float: Type = {
+export const float: Type<number> = {
   tag: "tag:yaml.org,2002:float",
   construct: constructYamlFloat,
   defaultStyle: "lowercase",

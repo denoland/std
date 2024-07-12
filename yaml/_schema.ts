@@ -6,7 +6,7 @@
 
 import { YamlError } from "./_error.ts";
 import type { KindType, Type } from "./_type.ts";
-import type { Any, ArrayObject } from "./_utils.ts";
+import type { ArrayObject } from "./_utils.ts";
 import {
   binary,
   bool,
@@ -52,8 +52,8 @@ function compileList(
   return result.filter((_type, index): unknown => !exclude.includes(index));
 }
 
-export type TypeMap = { [k in KindType | "fallback"]: ArrayObject<Type> };
-function compileMap(...typesList: Type[][]): TypeMap {
+export type TypeMap = Record<KindType | "fallback", ArrayObject<Type<unknown>>>;
+function compileMap(...typesList: Type<unknown>[][]): TypeMap {
   const result: TypeMap = {
     fallback: {},
     mapping: {},
@@ -81,7 +81,7 @@ export class Schema {
   compiledTypeMap: TypeMap;
 
   constructor(definition: {
-    implicit?: Any[];
+    implicit?: Type[];
     explicit?: Type[];
     include?: Schema[];
   }) {

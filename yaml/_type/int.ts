@@ -4,7 +4,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
 import type { Type } from "../_type.ts";
-import { type Any, isNegativeZero } from "../_utils.ts";
+import { isNegativeZero } from "../_utils.ts";
 
 function isCharCodeInRange(c: number, lower: number, upper: number): boolean {
   return lower <= c && c <= upper;
@@ -112,7 +112,7 @@ function constructYamlInteger(data: string): number {
   let value = data;
   const digits: number[] = [];
 
-  if (value.indexOf("_") !== -1) {
+  if (value.includes("_")) {
     value = value.replace(/_/g, "");
   }
 
@@ -132,7 +132,7 @@ function constructYamlInteger(data: string): number {
     return sign * parseInt(value, 8);
   }
 
-  if (value.indexOf(":") !== -1) {
+  if (value.includes(":")) {
     value.split(":").forEach((v) => {
       digits.unshift(parseInt(v, 10));
     });
@@ -151,12 +151,12 @@ function constructYamlInteger(data: string): number {
   return sign * parseInt(value, 10);
 }
 
-function isInteger(object: Any): boolean {
+function isInteger(object: unknown): boolean {
   return typeof object === "number" && object % 1 === 0 &&
     !isNegativeZero(object);
 }
 
-export const int: Type = {
+export const int: Type<number> = {
   tag: "tag:yaml.org,2002:int",
   construct: constructYamlInteger,
   defaultStyle: "decimal",

@@ -266,3 +266,180 @@ Deno.test({
     );
   },
 });
+
+Deno.test({
+  name: "stringify() uses block scalar style for multiline strings",
+  fn() {
+    assertEquals(
+      stringify("foo\nbar"),
+      `|-
+  foo
+  bar
+`,
+    );
+    assertEquals(
+      stringify("foo  \nbar  "),
+      `|-
+  foo \x20
+  bar \x20
+`,
+    );
+  },
+});
+
+Deno.test({
+  name: "stringify() uses folded scalar style for long strings",
+  fn() {
+    assertEquals(
+      stringify(
+        "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.\nDuis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
+      ),
+      `>-
+  Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor
+  incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis
+  nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+
+  Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore
+  eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt
+  in culpa qui officia deserunt mollit anim id est laborum.
+`,
+    );
+  },
+});
+
+Deno.test({
+  name:
+    "stringify() uses flow style for arrays and mappings when the nesting level exceeds flowLevel option value",
+  fn() {
+    assertEquals(
+      stringify({ foo: ["bar", "baz"], bar: { hello: "world" } }, {
+        flowLevel: 1,
+      }),
+      `foo: [bar, baz]
+bar: {hello: world}
+`,
+    );
+
+    const a = { foo: 42 };
+    const b = [1, 2];
+    const obj = { foo: [a, b], bar: { a, b } };
+    assertEquals(
+      stringify(obj, { flowLevel: 1 }),
+      `foo: [&ref_0 {foo: 42}, &ref_1 [1, 2]]
+bar: {a: *ref_0, b: *ref_1}
+`,
+    );
+  },
+});
+
+Deno.test("stringify() handles indentation", () => {
+  const object = {
+    name: "John",
+    age: 30,
+    address: {
+      street: "123 Main St",
+      city: "Anytown",
+      zip: 12345,
+    },
+    skills: ["JavaScript", "TypeScript", "Deno"],
+  };
+
+  const expected = `name: John
+age: 30
+address:
+  street: 123 Main St
+  city: Anytown
+  zip: 12345
+skills:
+  - JavaScript
+  - TypeScript
+  - Deno
+`;
+
+  const actual = stringify(object);
+  assertEquals(actual.trim(), expected.trim());
+});
+
+Deno.test("stringify() handles indentation with whitespace values", () => {
+  const object = {
+    name: "John",
+    age: 30,
+    address: {
+      street: " 123 Main St ",
+      city: "Anytown",
+      zip: 12345,
+    },
+    skills: [" JavaScript ", "TypeScript", "Deno"],
+  };
+
+  const expected = `name: John
+age: 30
+address:
+  street: ' 123 Main St '
+  city: Anytown
+  zip: 12345
+skills:
+  - ' JavaScript '
+  - TypeScript
+  - Deno
+`;
+
+  const actual = stringify(object);
+  assertEquals(actual.trim(), expected.trim());
+});
+
+Deno.test("stringify() handles indentation with start newline values", () => {
+  const object = {
+    name: "John",
+    age: 30,
+    address: {
+      street: "\n123 Main St",
+      city: "Anytown",
+      zip: 12345,
+    },
+    skills: ["\nJavaScript", "TypeScript", "Deno"],
+  };
+
+  const expected = `name: John
+age: 30
+address:
+  street: |-\n\n    123 Main St
+  city: Anytown
+  zip: 12345
+skills:
+  - |-\n\n    JavaScript
+  - TypeScript
+  - Deno
+`;
+
+  const actual = stringify(object);
+  assertEquals(actual.trim(), expected.trim());
+});
+
+Deno.test("stringify() handles indentation with trailing newline values", () => {
+  const object = {
+    name: "John",
+    age: 30,
+    address: {
+      street: "123 Main St\n",
+      city: "Anytown",
+      zip: 12345,
+    },
+    skills: ["JavaScript\n", "TypeScript", "Deno"],
+  };
+
+  const expected = `name: John
+age: 30
+address:
+  street: |\n    123 Main St
+  city: Anytown
+  zip: 12345
+skills:
+  - |\n    JavaScript
+  - TypeScript
+  - Deno
+`;
+
+  const actual = stringify(object);
+  assertEquals(actual.trim(), expected.trim());
+});

@@ -4,14 +4,14 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
 import type { Type } from "../_type.ts";
-import type { Any } from "../_utils.ts";
 
 const REGEXP = /^\/(?<regexp>[\s\S]+)\/(?<modifiers>[gismuy]*)$/;
 
-export const regexp: Type = {
+export const regexp: Type<RegExp> = {
   tag: "tag:yaml.org,2002:js/regexp",
   kind: "scalar",
-  resolve(data: Any) {
+  // deno-lint-ignore no-explicit-any
+  resolve(data: any) {
     if ((data === null) || (!data.length)) {
       return false;
     }

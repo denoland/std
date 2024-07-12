@@ -39,12 +39,7 @@ import { YamlError } from "./_error.ts";
 import { Mark } from "./_mark.ts";
 import { DEFAULT_SCHEMA, type Schema, type TypeMap } from "./_schema.ts";
 import type { Type } from "./_type.ts";
-import {
-  type Any,
-  type ArrayObject,
-  getObjectTypeString,
-  isObject,
-} from "./_utils.ts";
+import { type ArrayObject, getObjectTypeString, isObject } from "./_utils.ts";
 
 const CONTEXT_FLOW_IN = 1;
 const CONTEXT_FLOW_OUT = 2;
@@ -70,11 +65,10 @@ interface LoaderStateOptions {
   /** compatibility with JSON.parse behaviour. */
   allowDuplicateKeys?: boolean;
   /** function to call on warning messages. */
-  onWarning?(error?: YamlError): void;
+  onWarning?(error: Error): void;
 }
 
-// deno-lint-ignore no-explicit-any
-type ResultType = any[] | Record<string, any> | string;
+type ResultType = unknown[] | Record<string, unknown> | string;
 
 const ESCAPED_HEX_LENGTHS = new Map<number, number>([
   [0x78, 2], // x
@@ -151,7 +145,7 @@ class LoaderState {
   lineStart = 0;
   position = 0;
   line = 0;
-  onWarning?: (...args: Any[]) => void;
+  onWarning?: (error: Error) => void;
   allowDuplicateKeys: boolean;
   implicitTypes: Type[];
   typeMap: TypeMap;
@@ -334,7 +328,7 @@ function storeMappingPair(
   result: ArrayObject | null,
   overridableKeys: ArrayObject<boolean>,
   keyTag: string | null,
-  keyNode: Any,
+  keyNode: Record<PropertyKey, unknown> | unknown[] | string | null,
   valueNode: unknown,
   startLine?: number,
   startPos?: number,
