@@ -22,7 +22,7 @@ function constructYamlSet(data: string) {
   return data !== null ? data : {};
 }
 
-export const set: Type = {
+export const set: Type<Record<PropertyKey, unknown>> = {
   tag: "tag:yaml.org,2002:set",
   construct: constructYamlSet,
   kind: "mapping",

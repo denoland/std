@@ -15,6 +15,8 @@ export interface CsvStringifyStreamOptions {
    * A list of columns to be included in the output.
    *
    * If you want to stream objects, this option is required.
+   *
+   * @default {[]}
    */
   readonly columns?: Array<string>;
 }

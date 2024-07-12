@@ -17,7 +17,7 @@ function constructYamlBoolean(data: string): boolean {
   return data === "true" || data === "True" || data === "TRUE";
 }
 
-export const bool: Type = {
+export const bool: Type<boolean> = {
   tag: "tag:yaml.org,2002:bool",
   construct: constructYamlBoolean,
   defaultStyle: "lowercase",
