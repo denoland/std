@@ -3,15 +3,13 @@
 // Copyright 2011-2015 by Vitaly Puzrin. All rights reserved. MIT license.
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import { Type } from "../_type.ts";
+import type { Type } from "../_type.ts";
 import { isBoolean } from "../_utils.ts";
 
 function resolveYamlBoolean(data: string): boolean {
-  const max = data.length;
-
   return (
-    (max === 4 && (data === "true" || data === "True" || data === "TRUE")) ||
-    (max === 5 && (data === "false" || data === "False" || data === "FALSE"))
+    data === "true" || data === "True" || data === "TRUE" || data === "false" ||
+    data === "False" || data === "FALSE"
   );
 }
 
@@ -19,7 +17,8 @@ function constructYamlBoolean(data: string): boolean {
   return data === "true" || data === "True" || data === "TRUE";
 }
 
-export const bool = new Type("tag:yaml.org,2002:bool", {
+export const bool: Type<boolean> = {
+  tag: "tag:yaml.org,2002:bool",
   construct: constructYamlBoolean,
   defaultStyle: "lowercase",
   kind: "scalar",
@@ -36,4 +35,4 @@ export const bool = new Type("tag:yaml.org,2002:bool", {
     },
   },
   resolve: resolveYamlBoolean,
-});
+};

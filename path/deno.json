@@ -1,6 +1,6 @@
 {
   "name": "@std/path",
-  "version": "1.0.0-rc.2",
+  "version": "1.0.0",
   "exports": {
     ".": "./mod.ts",
     "./basename": "./basename.ts",
@@ -42,6 +42,7 @@
     "./resolve": "./resolve.ts",
     "./to-file-url": "./to_file_url.ts",
     "./to-namespaced-path": "./to_namespaced_path.ts",
+    "./types": "./types.ts",
     "./windows": "./windows/mod.ts",
     "./windows/basename": "./windows/basename.ts",
     "./windows/common": "./windows/common.ts",
