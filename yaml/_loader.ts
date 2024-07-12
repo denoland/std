@@ -65,11 +65,10 @@ interface LoaderStateOptions {
   /** compatibility with JSON.parse behaviour. */
   allowDuplicateKeys?: boolean;
   /** function to call on warning messages. */
-  onWarning?(error?: YamlError): void;
+  onWarning?(error: Error): void;
 }
 
-// deno-lint-ignore no-explicit-any
-type ResultType = any[] | Record<string, any> | string;
+type ResultType = unknown[] | Record<string, unknown> | string;
 
 const ESCAPED_HEX_LENGTHS = new Map<number, number>([
   [0x78, 2], // x
@@ -146,8 +145,7 @@ class LoaderState {
   lineStart = 0;
   position = 0;
   line = 0;
-  // deno-lint-ignore no-explicit-any
-  onWarning?: (...args: any[]) => void;
+  onWarning?: (error: Error) => void;
   allowDuplicateKeys: boolean;
   implicitTypes: Type[];
   typeMap: TypeMap;
@@ -330,8 +328,7 @@ function storeMappingPair(
   result: ArrayObject | null,
   overridableKeys: ArrayObject<boolean>,
   keyTag: string | null,
-  // deno-lint-ignore no-explicit-any
-  keyNode: any,
+  keyNode: Record<PropertyKey, unknown> | unknown[] | string | null,
   valueNode: unknown,
   startLine?: number,
   startPos?: number,
