@@ -6,7 +6,12 @@ import { levenshteinDistance } from "./levenshtein_distance.ts";
 const getWordDistance = levenshteinDistance;
 
 /**
- * The the most similar string from an array of strings.
+ * Finds the most similar string from an array of strings.
+ *
+ * Note: the ordering of words may change with version-updates
+ * E.g. word-distance metric may change (improve)
+ * use a named-distance (e.g. levenshteinDistance) to
+ * guarantee a particular ordering.
  *
  * @example Usage
  * ```ts
@@ -20,19 +25,14 @@ const getWordDistance = levenshteinDistance;
  * ```
  *
  * @param givenWord The string to measure distance against
- * @param possibleWords The string-array that will be sorted
+ * @param possibleWords The string-array to pick the closest string from
  * @param options An options bag containing a `caseSensitive` flag indicating
  * whether the distance should include case. Default is false.
- * @returns A sorted copy of possibleWords
- * @note
- * the ordering of words may change with version-updates
- * e.g. word-distance metric may change (improve)
- * use a named-distance (e.g. levenshteinDistance) to
- * guarantee a particular ordering
+ * @returns The closest string
  */
 export function closestString(
   givenWord: string,
-  possibleWords: string[],
+  possibleWords: ReadonlyArray<string>,
   options?: {
     caseSensitive?: boolean;
   },
