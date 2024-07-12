@@ -1,17 +1,38 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import type { Format } from "./_types.ts";
+const BOM = "\\ufeff?";
 
-const RECOGNIZE_YAML_REGEXP = /^(?:---yaml|= yaml =|---)$/im;
-const RECOGNIZE_TOML_REGEXP = /^(?:---toml|\+\+\+|= toml =)$/im;
-const RECOGNIZE_JSON_REGEXP = /^(?:---json|= json =)$/im;
+const YAML_DELIMITER = "---|= yaml =";
+const YAML_HEADER = `(?:---yaml|${YAML_DELIMITER})`;
+const YAML_FOOTER = `(?:${YAML_DELIMITER})`;
 
-const EXTRACT_YAML_REGEXP =
-  /^\ufeff?(?:---yaml|= yaml =|---)$([\s\S]+?)^(?:---|= yaml =)\s*$\r?\n?/im;
-const EXTRACT_TOML_REGEXP =
-  /^\ufeff?(?:---toml|\+\+\+|= toml =)$([\s\S]+?)^(?:---|\+\+\+|= toml =)\s*$\r?\n?/im;
-const EXTRACT_JSON_REGEXP =
-  /^\ufeff?(?:---json|= json =)$([\s\S]+?)^(?:---|= json =)\s*$\r?\n?/im;
+const TOML_DELIMITER = "\\+\\+\\+|= toml =";
+const TOML_HEADER = `(?:---toml|${TOML_DELIMITER})`;
+const TOML_FOOTER = `(?:---|${TOML_DELIMITER})`;
+
+const JSON_DELIMITER = "= json =";
+const JSON_HEADER = `(?:---json|${JSON_DELIMITER})`;
+const JSON_FOOTER = `(?:---|${JSON_DELIMITER})`;
+
+const DATA = "(?<data>[\\s\\S]+?)";
+const NEWLINE = "\\r?\\n?";
+
+export const RECOGNIZE_YAML_REGEXP = new RegExp(`^${YAML_HEADER}$`, "im");
+export const RECOGNIZE_TOML_REGEXP = new RegExp(`^${TOML_HEADER}$`, "im");
+export const RECOGNIZE_JSON_REGEXP = new RegExp(`^${JSON_HEADER}$`, "im");
+
+export const EXTRACT_YAML_REGEXP = new RegExp(
+  `^${BOM}${YAML_HEADER}$${DATA}^${YAML_FOOTER}\\s*$${NEWLINE}`,
+  "im",
+);
+export const EXTRACT_TOML_REGEXP = new RegExp(
+  `^${BOM}${TOML_HEADER}$${DATA}^${TOML_FOOTER}\\s*$${NEWLINE}`,
+  "im",
+);
+export const EXTRACT_JSON_REGEXP = new RegExp(
+  `^${BOM}${JSON_HEADER}$${DATA}^${JSON_FOOTER}\\s*$${NEWLINE}`,
+  "im",
+);
 
 export const RECOGNIZE_REGEXP_MAP = new Map([
   ["yaml", RECOGNIZE_YAML_REGEXP],
