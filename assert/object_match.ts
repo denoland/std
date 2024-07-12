@@ -89,12 +89,10 @@ function filter(a: loose, b: loose): loose {
           const subset = (b as loose)[key];
           if (Array.isArray(subset)) {
             filtered[key] = filterArray(value, subset);
-            continue;
           }
         } // On regexp references, keep value as it to avoid loosing pattern and flags
         else if (value instanceof RegExp) {
           filtered[key] = value;
-          continue;
         } // On nested objects references, build a filtered object recursively
         else if (typeof value === "object" && value !== null) {
           const subset = (b as loose)[key];
@@ -103,27 +101,28 @@ function filter(a: loose, b: loose): loose {
             // common keys and filter nested objects inside
             if ((value instanceof Map) && (subset instanceof Map)) {
               filtered[key] = new Map(
-                [...value].filter(([k]) => subset.has(k)).map((
-                  [k, v],
-                ) => [
-                  k,
-                  typeof v === "object" ? filterObject(v, subset.get(k)) : v,
-                ]),
+                [...value]
+                  .filter(([k]) => subset.has(k))
+                  .map(([k, v]) => [
+                    k,
+                    (typeof v === "object" && v !== null)
+                      ? filterObject(v, subset.get(k))
+                      : v,
+                  ]),
               );
-              continue;
+            } // When both operands are set, build a filtered set with common values
+            else if ((value instanceof Set) && (subset instanceof Set)) {
+              filtered[key] = value.intersection(subset);
+            } else {
+              filtered[key] = filterObject(value as loose, subset as loose);
             }
-            // When both operands are set, build a filtered set with common values
-            if ((value instanceof Set) && (subset instanceof Set)) {
-              filtered[key] = new Set([...value].filter((v) => subset.has(v)));
-              continue;
-            }
-            filtered[key] = filterObject(value as loose, subset as loose);
-            continue;
           }
+        } else {
+          filtered[key] = value;
         }
-        filtered[key] = value;
       }
     }
+
     return filtered;
   }
 
@@ -152,11 +151,9 @@ function filter(a: loose, b: loose): loose {
         filtered.push(
           filterArray(elementA as unknown[], elementB as unknown[]),
         );
-        continue;
       } // On regexp references, keep value as it to avoid loosing pattern and flags
       else if (elementA instanceof RegExp) {
         filtered.push(elementA);
-        continue;
       } // On objects references, build a filtered object recursively
       else if (
         (typeof elementA === "object" && elementA !== null) &&
@@ -165,27 +162,27 @@ function filter(a: loose, b: loose): loose {
         // When both operands are maps, build a filtered map with common keys and filter nested objects inside
         if ((elementA instanceof Map) && (elementB instanceof Map)) {
           const map = new Map(
-            [...elementA].filter(([k]) => elementB.has(k)).map((
-              [k, v],
-            ) => [
-              k,
-              typeof v === "object" ? filterObject(v, elementB.get(k)) : v,
-            ]),
+            [...elementA]
+              .filter(([k]) => elementB.has(k))
+              .map(([k, v]) => [
+                k,
+                (typeof v === "object" && v !== null)
+                  ? filterObject(v, elementB.get(k))
+                  : v,
+              ]),
           );
           filtered.push(map);
-          continue;
+        } // When both operands are set, build a filtered set with common values
+        else if ((elementA instanceof Set) && (elementB instanceof Set)) {
+          filtered.push(elementA.intersection(elementB));
+        } else {
+          filtered.push(filterObject(elementA as loose, elementB as loose));
         }
-        // When both operands are set, build a filtered set with common values
-        if ((elementA instanceof Set) && (elementB instanceof Set)) {
-          const set = new Set([...elementA].filter((v) => elementB.has(v)));
-          filtered.push(set);
-          continue;
-        }
-        filtered.push(filterObject(elementA as loose, elementB as loose));
-        continue;
+      } else {
+        filtered.push(elementA);
       }
-      filtered.push(elementA);
     }
+
     return filtered;
   }
 
