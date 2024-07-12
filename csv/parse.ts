@@ -76,7 +76,9 @@ class Parser {
   #parseRecord(startLine: number): string[] | null {
     let fullLine = this.#readLine();
     if (fullLine === null) return null;
-    if (fullLine.length === 0) return [];
+    if (fullLine.length === 0) {
+      return [];
+    }
 
     let lineIndex = startLine + 1;
 
