@@ -31,6 +31,11 @@ const n = {
     ["b", b],
   ]),
 };
+const o = { foo: [new Map([["bar", n.bar], ["baz", null]])] };
+const p = { bar: [new Set([1, 2, 3])] };
+const q = { foo: [1, 2] as unknown[] };
+q.foo[2] = q.foo;
+const r = { bar: [[1, [2, [q]]]] };
 
 Deno.test("assertObjectMatch() matches simple subset", () => {
   assertObjectMatch(a, {
@@ -79,6 +84,7 @@ Deno.test("assertObjectMatch() matches subset with circular reference", () => {
       },
     },
   });
+  assertObjectMatch(q, { foo: [1, 2, [1, 2, [1, 2, [1, 2]]]] });
 });
 
 Deno.test("assertObjectMatch() matches subset with interface", () => {
@@ -105,6 +111,7 @@ Deno.test("assertObjectMatch() matches subset with nested array inside", () => {
   assertObjectMatch(j, { foo: [[1, 2, 3]] });
   assertObjectMatch(k, { foo: [[1, [2, [3]]]] });
   assertObjectMatch(l, { foo: [[1, [2, [a, e, j, k]]]] });
+  assertObjectMatch(r, { bar: [[1, [2, [q]]]] });
 });
 
 Deno.test("assertObjectMatch() matches subset with regexp", () => {
@@ -117,6 +124,12 @@ Deno.test("assertObjectMatch() matches subset with built-in data structures", ()
   assertObjectMatch(n, { bar: new Map([["bar", 2]]) });
   assertObjectMatch(n, { baz: new Map([["b", b]]) });
   assertObjectMatch(n, { baz: new Map([["b", { foo: true }]]) });
+});
+
+Deno.test("assertObjectMatch() matches subset with array of built-in data structures", () => {
+  assertObjectMatch(o, { foo: [new Map([["baz", null]])] });
+  assertObjectMatch(o, { foo: [new Map([["bar", n.bar]])] });
+  assertObjectMatch(p, { bar: [new Set([2, 3])] });
 });
 
 Deno.test("assertObjectMatch() throws when a key is missing from subset", () => {

@@ -132,15 +132,8 @@ function filter(a: loose, b: loose): loose {
     if ((seen.has(a)) && (seen.get(a) === b)) {
       return a;
     }
-    try {
-      seen.set(a, b);
-    } catch (err) {
-      if (err instanceof TypeError) {
-        throw new TypeError(
-          `Cannot assertObjectMatch ${a === null ? null : `type ${typeof a}`}`,
-        );
-      }
-    }
+
+    seen.set(a, b);
 
     const filtered: unknown[] = [];
     const length = Math.min(a.length, b.length);
