@@ -47,6 +47,7 @@ export function assertObjectMatch(
 
 function filter(a: loose, b: loose): loose {
   const seen = new WeakMap();
+  return filterObject(a, b);
 
   function filterObject(a: loose, b: loose): loose {
     // Prevent infinite loop with circular references with same filter
@@ -184,8 +185,6 @@ function filter(a: loose, b: loose): loose {
 
     return filtered;
   }
-
-  return filterObject(a, b);
 }
 
 function isObject(val: unknown) {
