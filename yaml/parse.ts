@@ -30,7 +30,7 @@ export interface ParseOptions {
    * If defined, a function to call on warning messages taking an
    * {@linkcode Error} as its only argument.
    */
-  onWarning?(error?: Error): void;
+  onWarning?(error: Error): void;
 }
 
 /**
