@@ -1,5 +1,10 @@
 {
   "name": "@std/ulid",
-  "version": "1.0.0-rc.3",
-  "exports": "./mod.ts"
+  "version": "1.0.0-rc.4",
+  "exports": {
+    ".": "./mod.ts",
+    "./decoce-time": "./decode_time.ts",
+    "./monotonic-ulid": "./monotonic_ulid.ts",
+    "./ulid": "./ulid.ts"
+  }
 }

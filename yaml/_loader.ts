@@ -65,7 +65,7 @@ interface LoaderStateOptions {
   /** compatibility with JSON.parse behaviour. */
   allowDuplicateKeys?: boolean;
   /** function to call on warning messages. */
-  onWarning?(error?: YamlError): void;
+  onWarning?(error: Error): void;
 }
 
 type ResultType = unknown[] | Record<string, unknown> | string;
@@ -145,8 +145,7 @@ class LoaderState {
   lineStart = 0;
   position = 0;
   line = 0;
-  // deno-lint-ignore no-explicit-any
-  onWarning?: (...args: any[]) => void;
+  onWarning?: (error: Error) => void;
   allowDuplicateKeys: boolean;
   implicitTypes: Type[];
   typeMap: TypeMap;

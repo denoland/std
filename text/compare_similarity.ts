@@ -16,7 +16,13 @@ export interface CompareSimilarityOptions {
 }
 
 /**
- * Sort based on word similarity.
+ * Takes a string and generates a comparator function to determine which of two
+ * strings is more similar to the given one.
+ *
+ * Note: the ordering of words may change with version-updates
+ * E.g. word-distance metric may change (improve)
+ * use a named-distance (e.g. levenshteinDistance) to
+ * guarantee a particular ordering.
  *
  * @param givenWord The string to measure distance against.
  * @param options Options for the sort.
@@ -33,15 +39,10 @@ export interface CompareSimilarityOptions {
  * import { assertEquals } from "@std/assert";
  *
  * const words = ["hi", "hello", "help"];
- * const sortedWords = words.sort(compareSimilarity("hep"));
+ * const sortedWords = words.toSorted(compareSimilarity("hep"));
  *
  * assertEquals(sortedWords, ["help", "hi", "hello"]);
  * ```
- *
- * Note: the ordering of words may change with version-updates
- * E.g. word-distance metric may change (improve)
- * use a named-distance (e.g. levenshteinDistance) to
- * guarantee a particular ordering
  */
 export function compareSimilarity(
   givenWord: string,
