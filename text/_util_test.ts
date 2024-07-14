@@ -1,6 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import { assertEquals } from "@std/assert/assert-equals";
+import { assertEquals } from "@std/assert";
 import { splitToWords } from "./_util.ts";
 
 Deno.test({
@@ -22,6 +22,15 @@ Deno.test({
 });
 
 Deno.test({
+  name: "split() handles a delimiter sequence",
+  fn() {
+    const result = splitToWords("I am   -> thirsty!");
+    const expected = ["I", "am", "thirsty"];
+    assertEquals(result, expected);
+  },
+});
+
+Deno.test({
   name: "split() handles upper case delimiter",
   fn() {
     const result = splitToWords("denoIsAwesome");
@@ -35,6 +44,42 @@ Deno.test({
   fn() {
     const result = splitToWords("deno-is-awesome");
     const expected = ["deno", "is", "awesome"];
+    assertEquals(result, expected);
+  },
+});
+
+Deno.test({
+  name: "split() handles casing",
+  fn() {
+    const result = splitToWords("denoIsAwesome");
+    const expected = ["deno", "Is", "Awesome"];
+    assertEquals(result, expected);
+  },
+});
+
+Deno.test({
+  name: "split() handles unicode",
+  fn() {
+    const result = splitToWords("шруберри IsAwesome");
+    const expected = ["шруберри", "Is", "Awesome"];
+    assertEquals(result, expected);
+  },
+});
+
+Deno.test({
+  name: "split() handles unicode casing",
+  fn() {
+    const result = splitToWords("шруберриШруберри");
+    const expected = ["шруберри", "Шруберри"];
+    assertEquals(result, expected);
+  },
+});
+
+Deno.test({
+  name: "split() handles languages without casing",
+  fn() {
+    const result = splitToWords("אין_על דינו");
+    const expected = ["אין", "על", "דינו"];
     assertEquals(result, expected);
   },
 });

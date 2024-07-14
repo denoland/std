@@ -9,7 +9,7 @@ import { capitalizeWord, splitToWords } from "./_util.ts";
  * @example Usage
  * ```ts
  * import { toCamelCase } from "@std/text/case";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * assertEquals(toCamelCase("deno is awesome"),"denoIsAwesome");
  * ```
@@ -18,7 +18,6 @@ import { capitalizeWord, splitToWords } from "./_util.ts";
  * @returns The string as camelCase
  */
 export function toCamelCase(input: string): string {
-  input = input.trim();
   const [first = "", ...rest] = splitToWords(input);
   return [first.toLocaleLowerCase(), ...rest.map(capitalizeWord)].join("");
 }
@@ -29,7 +28,7 @@ export function toCamelCase(input: string): string {
  * @example Usage
  * ```ts
  * import { toKebabCase } from "@std/text/case";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * assertEquals(toKebabCase("deno is awesome"), "deno-is-awesome");
  * ```
@@ -38,7 +37,6 @@ export function toCamelCase(input: string): string {
  * @returns The string as kebab-case
  */
 export function toKebabCase(input: string): string {
-  input = input.trim();
   return splitToWords(input).join("-").toLocaleLowerCase();
 }
 
@@ -48,7 +46,7 @@ export function toKebabCase(input: string): string {
  * @example Usage
  * ```ts
  * import { toPascalCase } from "@std/text/case";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * assertEquals(toPascalCase("deno is awesome"), "DenoIsAwesome");
  * ```
@@ -57,27 +55,7 @@ export function toKebabCase(input: string): string {
  * @returns The string as PascalCase
  */
 export function toPascalCase(input: string): string {
-  input = input.trim();
   return splitToWords(input).map(capitalizeWord).join("");
-}
-
-/**
- * Converts a string into CONSTANT_CASE (also known as SCREAMING_SNAKE_CASE).
- *
- * @example Usage
- * ```ts
- * import { toConstantCase } from "@std/text/case";
- * import { assertEquals } from "@std/assert/assert-equals";
- *
- * assertEquals(toConstantCase("deno is awesome"), "DENO_IS_AWESOME");
- * ```
- *
- * @param input The string that is going to be converted into CONSTANT_CASE
- * @returns The string as CONSTANT_CASE
- */
-export function toConstantCase(input: string): string {
-  input = input.trim();
-  return splitToWords(input).join("_").toLocaleUpperCase();
 }
 
 /**
@@ -86,7 +64,7 @@ export function toConstantCase(input: string): string {
  * @example Usage
  * ```ts
  * import { toSnakeCase } from "@std/text/case";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * assertEquals(toSnakeCase("deno is awesome"), "deno_is_awesome");
  * ```
@@ -95,6 +73,5 @@ export function toConstantCase(input: string): string {
  * @returns The string as snake_case
  */
 export function toSnakeCase(input: string): string {
-  input = input.trim();
   return splitToWords(input).join("_").toLocaleLowerCase();
 }
