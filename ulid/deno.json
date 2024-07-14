@@ -1,6 +1,6 @@
 {
   "name": "@std/ulid",
-  "version": "1.0.0-rc.4",
+  "version": "1.0.0",
   "exports": {
     ".": "./mod.ts",
     "./decoce-time": "./decode_time.ts",
