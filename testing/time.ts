@@ -246,7 +246,7 @@ let dueTree: RedBlackTree<DueNode>;
  * after initialization.
  *
  * @example Usage
- * ```ts
+ * ```ts no-assert
  * import {
  *   assertSpyCalls,
  *   spy,
@@ -282,7 +282,7 @@ export class FakeTime {
    * controlled through the fake time instance.
    *
    * @example Usage
-   * ```ts
+   * ```ts no-assert
    * import {
    *   assertSpyCalls,
    *   spy,
@@ -616,12 +616,12 @@ export class FakeTime {
    * This will call any functions waiting to be called between the current and new fake time.
    *
    * @example Usage
-   * ```ts
+   * ```ts no-assert
    * import {
    *   assertSpyCalls,
    *   spy,
    *   FakeTime,
-   * } from "@std/testing/mock";
+   * } from "@std/testing";
    *
    * function secondInterval(cb: () => void): number {
    *   return setInterval(cb, 1000);

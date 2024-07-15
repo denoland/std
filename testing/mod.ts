@@ -9,7 +9,7 @@
  * - {@link https://jsr.io/@std/testing/doc/snapshot/~ | Snapshot testing}
  * - {@link https://jsr.io/@std/testing/doc/types/~ | Type assertions}
  *
- * ```ts no-assert no-eval
+ * ```ts no-assert
  * import { assertSpyCalls, spy, FakeTime } from "@std/testing";
  *
  * function secondInterval(cb: () => void): number {
