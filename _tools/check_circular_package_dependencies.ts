@@ -107,7 +107,7 @@ const ENTRYPOINTS: Record<Mod, string[]> = {
   regexp: ["mod.ts"],
   semver: ["mod.ts"],
   streams: ["mod.ts"],
-  testing: ["bdd.ts", "mock.ts", "snapshot.ts", "time.ts", "types.ts"],
+  testing: ["mod.ts"],
   text: ["mod.ts"],
   toml: ["mod.ts"],
   ulid: ["mod.ts"],
