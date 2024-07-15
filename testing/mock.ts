@@ -290,8 +290,8 @@
  * import {
  *   assertSpyCalls,
  *   spy,
+ *   FakeTime,
  * } from "@std/testing/mock";
- * import { FakeTime } from "@std/testing/time";
  *
  * function secondInterval(cb: () => void): number {
  *   return setInterval(cb, 1000);

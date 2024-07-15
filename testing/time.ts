@@ -7,8 +7,8 @@
  * import {
  *   assertSpyCalls,
  *   spy,
- * } from "@std/testing/mock";
- * import { FakeTime } from "@std/testing/time";
+ *   FakeTime
+ * } from "@std/testing";
  *
  * function secondInterval(cb: () => void): number {
  *   return setInterval(cb, 1000);
@@ -250,8 +250,8 @@ let dueTree: RedBlackTree<DueNode>;
  * import {
  *   assertSpyCalls,
  *   spy,
- * } from "@std/testing/mock";
- * import { FakeTime } from "@std/testing/time";
+ *   FakeTime,
+ * } from "@std/testing";
  *
  * function secondInterval(cb: () => void): number {
  *   return setInterval(cb, 1000);
@@ -286,8 +286,8 @@ export class FakeTime {
    * import {
    *   assertSpyCalls,
    *   spy,
-   * } from "@std/testing/mock";
-   * import { FakeTime } from "@std/testing/time";
+   *   FakeTime,
+   * } from "@std/testing";
    *
    * function secondInterval(cb: () => void): number {
    *   return setInterval(cb, 1000);
@@ -620,8 +620,8 @@ export class FakeTime {
    * import {
    *   assertSpyCalls,
    *   spy,
+   *   FakeTime,
    * } from "@std/testing/mock";
-   * import { FakeTime } from "@std/testing/time";
    *
    * function secondInterval(cb: () => void): number {
    *   return setInterval(cb, 1000);
