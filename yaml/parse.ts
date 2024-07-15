@@ -21,7 +21,7 @@ export interface ParseOptions {
   schema?: "core" | "default" | "failsafe" | "json" | "extended";
   /**
    * If `true`, duplicate keys will overwrite previous values. Otherwise,
-   * duplicate keys will throw a {@linkcode YamlError}.
+   * duplicate keys will throw a {@linkcode SyntaxError}.
    *
    * @default {false}
    */
@@ -51,7 +51,7 @@ export interface ParseOptions {
  * assertEquals(data, { id: 1, name: "Alice" });
  * ```
  *
- * @throws {YamlError} Throws error on invalid YAML.
+ * @throws {SyntaxError} Throws error on invalid YAML.
  * @param content YAML string to parse.
  * @param options Parsing options.
  * @returns Parsed document.
