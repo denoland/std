@@ -291,7 +291,7 @@
  *   assertSpyCalls,
  *   spy,
  *   FakeTime,
- * } from "@std/testing/mock";
+ * } from "@std/testing";
  *
  * function secondInterval(cb: () => void): number {
  *   return setInterval(cb, 1000);
