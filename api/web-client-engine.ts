@@ -2,6 +2,7 @@ import { pushable } from 'it-pushable'
 import { EventSourceParserStream } from 'eventsource-parser/stream'
 import { deserializeError } from 'serialize-error'
 import {
+  backchatIdRegex,
   EngineInterface,
   freezePid,
   JSONSchemaType,
@@ -11,6 +12,8 @@ import {
   PierceRequest,
   Splice,
 } from './web-client.types.ts'
+import { assert } from '@sindresorhus/is'
+import { Crypto } from './web-client-crypto.ts'
 
 export class WebClientEngine implements EngineInterface {
   readonly #aborts = new Set<AbortController>()
@@ -43,8 +46,14 @@ export class WebClientEngine implements EngineInterface {
   get abortSignal() {
     return this.#abort.signal
   }
-  upsertBackchat(machineId: string, resume?: string | undefined): Promise<PID> {
-    throw new Error('Method not implemented.')
+  upsertBackchat(machineId: string, resume?: string): Promise<PID> {
+    Crypto.assert(machineId)
+    const params: { machineId: string; resume?: string } = { machineId }
+    if (resume) {
+      assert.truthy(backchatIdRegex.test(resume), 'invalid resume')
+      params.resume = resume
+    }
+    return this.#request('upsertBackchat', params)
   }
   stop() {
     this.#abort.abort()

@@ -1,6 +1,6 @@
-import * as loadHelp from '@/isolates/load-help.ts'
-import * as engage from '@/isolates/engage-help.ts'
-import { assert, Debug, posix } from '@utils'
+import * as loadHelp from './load-agent.ts'
+import * as thread from './thread.ts'
+import { assert, Debug } from '@utils'
 import OpenAI from 'openai'
 import { Agent, IsolateApi, JSONSchemaType, Params } from '@/constants.ts'
 const log = Debug('AI:tools:load-tools')
@@ -24,22 +24,29 @@ const load = async (commands: string[] = [], api: IsolateApi) => {
     let tool: OpenAI.ChatCompletionTool
     let action: (params: Params, branchName: string) => Promise<unknown>
     let name: string
-    const isHelp = !cmd.includes(':')
-    if (isHelp) {
-      assert(cmd.startsWith('helps/'), `invalid help: ${cmd}`)
-      name = posix.basename(cmd)
+    const isAgent = !cmd.includes(':')
+    if (isAgent) {
       // TODO cache and parallelize
-      const { load } = await api.functions<loadHelp.Api>('load-help')
-      const help = await load({ help: name })
-      assert(help.description, `missing description: ${cmd}`)
-      const schemas = await api.apiSchema('engage-help')
-      const { engageNew } = await api.actions<engage.Api>('engage-help')
-      action = ({ text }: Params, branchName: string) => {
-        log('help command:', name, text, api.commit)
-        assert(typeof text === 'string', `invalid text: ${text}`)
-        return engageNew({ help: name, text }, { branchName })
+      const { load } = await api.functions<loadHelp.Api>('load-agent')
+      const agent = await load({ path: cmd })
+      assert(agent.description, `missing description: ${cmd}`)
+      name = agent.name
+      const schemas = await api.apiSchema('thread')
+      action = async ({ prompt }: Params, toolCallId: string) => {
+        const threadId = `thr_${toolCallId}`
+        const { execute } = await api.actions<thread.Api>('thread', {
+          branchName: threadId,
+        })
+        assert(typeof prompt === 'string', `invalid text: ${prompt}`)
+        log('agent command:', name, prompt, api.commit)
+        return execute({
+          threadId,
+          agentPath: cmd,
+          content: prompt,
+          userId: '',
+        })
       }
-      tool = helpTool(name, help, schemas.engage)
+      tool = agentTool(agent, schemas.execute)
     } else {
       const [isolate, _name] = cmd.split(':')
       name = _name
@@ -63,25 +70,24 @@ const load = async (commands: string[] = [], api: IsolateApi) => {
     return { tools, actions }
   }
 }
-const helpTool = (
-  name: string,
-  help: Agent,
+const agentTool = (
+  agent: Agent,
   schema: JSONSchemaType<object>,
 ) => {
   const parameters = {
     type: 'object',
     additionalProperties: false,
-    required: ['text'],
+    required: ['prompt'],
     properties: {
-      text: schema.properties.text,
+      prompt: schema.properties.prompt,
     },
   }
 
   const tool: OpenAI.ChatCompletionTool = {
     type: 'function',
     function: {
-      name,
-      description: help.description,
+      name: agent.name,
+      description: agent.description,
       parameters,
     },
   }

@@ -13,7 +13,9 @@ import DB from '@/db.ts'
 import { UnsequencedRequest } from '@/constants.ts'
 import { Engine } from '@/engine.ts'
 import { Api } from '@/isolates/io-fixture.ts'
-import { Machine } from '@/api/web-client-machine.ts'
+import { Crypto } from '@/api/web-client-crypto.ts'
+import { Backchat } from '@/api/web-client-backchat.ts'
+import { randomId } from '@/constants.ts'
 
 type PartialRequest = Omit<SolidRequest, 'target'>
 
@@ -97,7 +99,7 @@ Deno.test('loopback', async () => {
 
 Deno.test('compound', async (t) => {
   const target = {
-    repoId: 't',
+    repoId: `rep_${randomId()}`,
     account: 'exe',
     repository: 'other',
     branches: ['other'],
@@ -175,23 +177,37 @@ Deno.test('compound', async (t) => {
   // test multiple cycles thru requests and replies
   // test making different request between two invocations
 })
+
+let seed: Deno.KvEntry<unknown>[] = []
+let superKey: string | undefined
+let aesKey: string | undefined
+
+const provision = async (withExeCache: boolean) => {
+  if (!superKey || !aesKey) {
+    superKey = Crypto.generatePrivateKey()
+    aesKey = DB.generateAesKey()
+  }
+  const engine = await Engine.provision(superKey, aesKey, undefined, seed)
+  if (!withExeCache) {
+    engine.context.exe?.disableFunctionCache()
+  }
+  const backchat = await Backchat.upsert(engine, superKey)
+  if (!seed.length) {
+    seed = await engine.dump()
+  }
+  return { engine, backchat }
+}
+
 for (const withExeCache of [true, false]) {
   Deno.test(`commit spanning (cache: ${withExeCache}`, async (t) => {
     await t.step(`function cache`, async () => {
-      const superuserKey = Machine.generatePrivateKey()
-      const aesKey = DB.generateAesKey()
-      const engine = await Engine.provision(superuserKey, aesKey)
-      if (!withExeCache) {
-        engine.context.exe?.disableFunctionCache()
-      }
-      const machine = Machine.load(engine, Machine.generatePrivateKey())
-      const session = machine.openTerminal()
+      const { backchat, engine } = await provision(withExeCache)
 
-      const { fileAccumulation } = await session.actions<Api>('io-fixture')
+      const { fileAccumulation } = await backchat.actions<Api>('io-fixture')
       await fileAccumulation({ path: 'test.txt', content: 'hello', count: 3 })
 
       let first
-      for await (const splice of session.read(session.pid, 'test.txt')) {
+      for await (const splice of backchat.read(backchat.pid, 'test.txt')) {
         first = splice
         break
       }
@@ -200,26 +216,22 @@ for (const withExeCache of [true, false]) {
       assert(file)
       log(file)
       expect(file.split('\n')).toHaveLength(7)
-      await session.engineStop()
+      await engine.stop()
     })
   })
 
   Deno.test(`looping accumulation (cache: ${withExeCache}`, async (t) => {
     await t.step(`function cache ${withExeCache}`, async () => {
-      const superuserKey = Machine.generatePrivateKey()
-      const aesKey = DB.generateAesKey()
-      const engine = await Engine.provision(superuserKey, aesKey)
-      if (!withExeCache) {
-        engine.context.exe?.disableFunctionCache()
-      }
-      const machine = Machine.load(engine, Machine.generatePrivateKey())
-      const session = machine.openTerminal()
-      const { pid } = session
-      const { loopAccumulation } = await session.actions<Api>('io-fixture', pid)
+      const { backchat, engine } = await provision(withExeCache)
+      const { pid } = backchat
+      const { loopAccumulation } = await backchat.actions<Api>(
+        'io-fixture',
+        { target: pid },
+      )
       await loopAccumulation({ path: 'test.txt', content: 'hello', count: 3 })
 
       let first
-      for await (const splice of session.read(pid, 'test.txt')) {
+      for await (const splice of backchat.read(pid, 'test.txt')) {
         first = splice
         break
       }
@@ -229,7 +241,7 @@ for (const withExeCache of [true, false]) {
       log(file)
       expect(file.split('\n')).toHaveLength(9)
 
-      await session.engineStop()
+      await engine.stop()
     })
   })
 }

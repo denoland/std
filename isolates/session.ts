@@ -1,11 +1,4 @@
-import {
-  IsolateApi,
-  IsolateReturn,
-  PID,
-  print,
-  ProcessOptions,
-  UnsequencedRequest,
-} from '@/constants.ts'
+import { IsolateApi, PID, print, ProcessOptions } from '@/constants.ts'
 import { assert, Debug } from '@utils'
 const log = Debug('AI:session')
 
@@ -51,10 +44,9 @@ export type Api = {
   ) => Promise<PID>
   close: () => void
   noop: () => Promise<PID>
-  rexec: (
-    params: { requests: UnsequencedRequest[]; opts: ProcessOptions },
-  ) => Promise<IsolateReturn>[]
 }
+
+// TODO try kill this whole file
 
 export const functions = {
   async create(
@@ -94,18 +86,6 @@ export const functions = {
   close: (_: object, api: IsolateApi) => {
     log(api)
     // message the parent and tell it to close this child
-  },
-  rexec: (
-    { requests, opts }: {
-      requests: UnsequencedRequest[]
-      opts?: ProcessOptions
-    },
-    api: IsolateApi,
-  ) => {
-    // if we wrap this in the api, then all the remote options can be provided
-    // in this same interface, since it can do any kind of process option
-
-    return Promise.all(requests.map((request) => api.action(request)))
   },
 }
 

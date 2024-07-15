@@ -18,6 +18,7 @@ import {
   SU_BACKCHAT,
 } from '@/constants.ts'
 import { assert, Debug, equal, expect } from '@utils'
+import * as backchat from './backchat.ts'
 import * as session from './session.ts'
 import * as files from './files.ts'
 import * as system from './system.ts'
@@ -141,7 +142,7 @@ export const functions = {
   async '@@install'(p: { superuser: string }, api: IsolateApi) {
     // TODO set ACL on io.json to only run this isolate
     const { superuser } = p
-    assert(Crypto.check(superuser), 'invalid superuser: ' + superuser)
+    assert(Crypto.assert(superuser), 'invalid superuser: ' + superuser)
     assert(isBaseRepo(api.pid), '@@install not base: ' + print(api.pid))
     log('@@install', print(api.pid))
 
@@ -217,9 +218,11 @@ export const functions = {
       branchName: backchatId,
       deletes: ['config.json'],
     }
-    const { noop } = await api.actions<session.Api>('session', opts)
+    const { create } = await api.actions<backchat.Api>('session', opts)
     // TODO set permissions on .io.json
-    const pid = await noop()
+    const pid = await create()
+    // TODO optionally start a default thread
+
     log('backchat pid', print(pid))
     return pid
   },

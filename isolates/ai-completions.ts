@@ -2,9 +2,8 @@ import { assert, Debug } from '@utils'
 import merge from 'lodash.merge'
 import OpenAI from 'openai'
 import '@std/dotenv/load'
-import { Agent, IsolateApi, print } from '@/constants.ts'
+import { IsolateApi, print, Thread } from '@/constants.ts'
 import { loadTools } from './ai-load-tools.ts'
-import { readSession, writeSession } from '@/isolates/ai-session-utils.ts'
 const base = 'AI:completions'
 const log = Debug(base)
 const debugPart = Debug(base + ':ai-part')
@@ -15,35 +14,51 @@ if (!apiKey) {
 }
 const ai = new OpenAI({ apiKey, timeout: 20 * 1000, maxRetries: 5 })
 
+export const transcribe = async (file: File) => {
+  const transcription = await ai.audio.transcriptions
+    .create({
+      file,
+      model: 'whisper-1',
+      prompt: 'Backchat, GPT4, GPT3, Dreamcatcher, CRM, HAL, Deno, Stucks',
+    })
+  return transcription.text
+}
+
 export const api = {
-  create: {
+  complete: {
     type: 'object',
-    // TODO write json schema for helps
+    additionalProperties: false,
+    required: ['threadPath'],
+    properties: { threadPath: { type: 'string' } },
   },
 }
 
 export type Api = {
-  create: (help: Agent) => Promise<void>
+  complete: (params: { threadPath: string }) => Promise<void>
 }
 export const functions = {
-  async create(help: Agent, api: IsolateApi): Promise<string | void> {
-    const tools = await loadTools(help.commands, api)
-    const { model = 'gpt-4o', temperature = 0 } = help.config || {}
-    const session = await readSession(api)
+  async complete(
+    { threadPath }: { threadPath: string },
+    api: IsolateApi,
+  ): Promise<string | void> {
+    const thread = await api.readJSON<Thread>(threadPath)
+    // TODO assert thread is correctly formatted
+    const tools = await loadTools(thread.agent.commands, api)
+    const { model = 'gpt-4o', temperature = 0 } = thread.agent.config || {}
     const args: OpenAI.ChatCompletionCreateParamsStreaming = {
       model,
       temperature,
-      messages: [...session],
+      messages: [...thread.messages],
       stream: true,
-      seed: 1,
+      seed: 1337,
       tools,
     }
     const assistant: OpenAI.ChatCompletionMessage = {
       role: 'assistant',
       content: null,
     }
-    session.push(assistant)
-    writeSession(session, api)
+    thread.messages.push(assistant)
+    api.writeJSON(threadPath, thread)
 
     log('streamCall started', print(api.pid))
     const streamCall = await ai.chat.completions.create(args)
@@ -70,7 +85,11 @@ export const functions = {
           if (!assistant.tool_calls[index]) {
             const { id } = call
             assert(id, 'toolCalls id must be a string')
-            const callChunk = {} as OpenAI.ChatCompletionMessageToolCall
+            const callChunk: OpenAI.ChatCompletionMessageToolCall = {
+              id,
+              function: { name: '', arguments: '' },
+              type: 'function',
+            }
             assistant.tool_calls[index] = callChunk
           }
           const existing = assistant.tool_calls[index].function?.arguments || ''
@@ -82,7 +101,7 @@ export const functions = {
           debugPart(`%o`, assistant.tool_calls[index]?.function)
         }
       }
-      writeSession(session, api)
+      api.writeJSON(threadPath, thread)
     }
     log('streamCall complete', assistant)
     if (assistant.content) {

@@ -124,8 +124,6 @@ export const ENTRY_BRANCH = 'main'
 export type PartialPID = Omit<PID, 'repoId'>
 
 export type Thread = {
-  /** Where exactly did this agent come from */
-  source: Triad
   agent: Agent
   messages: OpenAI.ChatCompletionMessageParam[]
   toolCommits: { [toolCallId: string]: CommitOid }
@@ -133,7 +131,15 @@ export type Thread = {
 export type BackchatThread = Thread & {
   focus: string
 }
+export type RemoteThread = {
+  /** The location in the remote repo and the last known commit we have of it */
+  triad: Triad
+}
 export type Agent = {
+  /** Name used to identify this agent in the UI */
+  name: string
+  /** Where exactly did this agent come from */
+  source: Triad
   description?: string
   config?: {
     model?: 'gpt-3.5-turbo' | 'gpt-4-turbo' | 'gpt-4o'
@@ -148,6 +154,11 @@ export type Triad = {
   path: string
   pid: PID
   commit: CommitOid
+}
+export type PathTriad = {
+  path: string
+  pid?: PID
+  commit?: CommitOid
 }
 export type PierceRequest = Invocation & {
   target: PID
@@ -250,9 +261,9 @@ export const getProcType = (procOpts?: ProcessOptions) => {
   }
   return PROCTYPE.SERIAL
 }
+/** Here is where additional AI models and runner techniques can be added */
 export enum AGENT_RUNNERS {
-  CHAT = 'ai-prompt',
-  INJECTOR = 'ai-prompt-injector',
+  CHAT = 'ai-runner',
 }
 
 export type Change = {
@@ -356,14 +367,23 @@ type ApiSchema = Record<string, JSONSchemaType<object>>
 type PidHead = { pid: PID; head: string }
 
 export interface EngineInterface {
-  upsertBackchat(machineId: string, resume?: string): Promise<PID>
   /**
    * The address in use as basis of identity for this engine.  May be a repo
    * hosted on external engines, or hosted in cooperation with other engines.
    */
   homeAddress: PID
   abortSignal: AbortSignal
+  upsertBackchat(machineId: string, resume?: string): Promise<PID>
   stop(): Promise<void> | void
+  /**
+   * Send a ping to the edge isolate that will process requests, to establish
+   * basic network connectivity. To ping a chain, use an isolate.
+   * TODO ping should return some info about the deployment
+   * @param data Data that will be echoed back
+   */
+  ping(data?: JsonValue): Promise<IsolateReturn>
+  apiSchema(isolate: string): Promise<ApiSchema>
+  transcribe(audio: File): Promise<{ text: string }>
   pierce(pierce: PierceRequest): Promise<void>
   read(
     pid: PID,
@@ -373,15 +393,6 @@ export interface EngineInterface {
   ): AsyncIterable<Splice>
   readJSON<T>(path: string, pid: PID, commit?: string): Promise<T>
   exists(path: string, pid: PID): Promise<boolean>
-  transcribe(audio: File): Promise<{ text: string }>
-  apiSchema(isolate: string): Promise<ApiSchema>
-  /**
-   * Send a ping to the edge isolate that will process requests, to establish
-   * basic network connectivity. To ping a chain, use an isolate.
-   * TODO ping should return some info about the deployment
-   * @param data Data that will be echoed back
-   */
-  ping(data?: JsonValue): Promise<IsolateReturn>
 }
 export const isPID = (value: unknown): value is PID => {
   if (typeof value !== 'object' || value === null) {
@@ -601,6 +612,6 @@ export const addPeer = (pid: PID, peer: string) => {
 export const randomId = () => {
   const string = ulid()
   const regex = /(?<=.{10})(.{16})/
-  const randomnessPart = string.match(regex)?.[0] || ''
+  const randomnessPart = string.match(regex)?.[0]
   return randomnessPart
 }

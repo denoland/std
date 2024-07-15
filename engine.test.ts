@@ -20,7 +20,10 @@ const cradleMaker = async (init?: Provisioner) => {
   const engine = await Engine.provision(superuserKey, aesKey, init, seed)
   const backchat = await Backchat.upsert(engine, privateKey, backchatId)
   if (!seedSet) {
-    seeds.set(init, { seed: await engine.dump(), backchatId: backchat.id })
+    seeds.set(init, {
+      seed: await engine.dump(),
+      backchatId: backchat.threadId,
+    })
   }
   return { backchat, engine }
 }
@@ -41,7 +44,7 @@ Deno.test('cradle', async (t) => {
   await t.step('second backchat', async () => {
     const next = await Backchat.upsert(engine, privateKey)
     expect(next.pid).not.toEqual(backchat.pid)
-    expect(next.id).not.toEqual(backchat.id)
+    expect(next.threadId).not.toEqual(backchat.threadId)
   })
   await t.step('new thread', async () => {
     // start a new thread using backchat

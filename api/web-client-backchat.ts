@@ -22,7 +22,7 @@ import {
 } from './web-client.types.ts'
 import { ulid } from 'ulid'
 import { PierceWatcher } from './web-client-watcher.ts'
-import { Crypto } from '@/api/web-client-crypto.ts'
+import { Crypto } from './web-client-crypto.ts'
 type Init = {
   repo: string
   isolate?: string
@@ -71,8 +71,11 @@ export class Backchat {
   get pid() {
     return this.#pid
   }
-  get id() {
+  get threadId() {
     return this.pid.branches[2]
+  }
+  get machineId() {
+    return this.#crypto.machineId
   }
   get homeAddress() {
     return this.#engine.homeAddress
@@ -82,36 +85,37 @@ export class Backchat {
    * system. The prompt is relayed thru backchat, and then if it is not
    * intercepted, it will go on to the targeted thread, where the agent running
    * that thread will respond.
-   * @param target The thread we targeting with the prompt.  Backchat may
-   * intercept this before it reaches target. The target can be anything, since
-   * the user might have used the back button to navigate away from the current
-   * focus
    * @param text The optional text that is to be parsed by the AI.  It can be
    * empty if there are files attached or to indicate a positive response to
    * something.
-   * @param last The commit of the last message in the thread.  This is used to
-   * ensure that the state of the thread is exactly as we expect it to be, else
-   * an error will be thrown
+   * @param threadId The thread we targeting with the prompt.  Backchat may
+   * intercept this before it reaches target. The target can be anything, since
+   * the user might have used the back button to navigate away from the current
+   * focus
    * @param paths The relative paths to the files that were attached with the
    * prompt, which may include directories.  May include pointers to the tmp
    * files that are created when a user attaches files in the browser.
    */
-  async prompt(target: string, text = '', last?: string, paths?: string[]) {
+  async prompt(text = '', threadId?: string, paths?: string[]) {
     // pierce the backchat thread
     const pierce: PierceRequest = {
       target: this.#pid,
       ulid: ulid(),
       isolate: 'backchat',
       functionName: 'prompt',
-      params: { target, text },
+      params: { text },
       proctype: PROCTYPE.SERIAL,
     }
-    if (last) {
-      pierce.params.last = last
+    if (threadId) {
+      pierce.params.target = threadId
     }
     if (paths) {
       pierce.params.paths = paths
     }
+    const promise = this.#watcher.watch(pierce.ulid)
+    // TODO handle an error in pierce
+    await this.#engine.pierce(pierce)
+    return promise
   }
   /** start a new thread and make it the focus */
   thread() {
@@ -123,7 +127,7 @@ export class Backchat {
     return 'todo'
   }
   get isSelfFocused() {
-    return this.focus === this.id
+    return this.focus === this.threadId
   }
 
   stop() {

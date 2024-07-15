@@ -1,7 +1,7 @@
 import * as secp from '@noble/secp256k1'
 import { ripemd160 } from '@noble/hashes/ripemd160'
 import { base32 } from 'multiformats/bases/base32'
-import { machineIdRegex } from '@/api/web-client.types.ts'
+import { machineIdRegex } from './web-client.types.ts'
 
 export class Crypto {
   readonly #privKey: Uint8Array
@@ -17,7 +17,7 @@ export class Crypto {
   static generatePrivateKey() {
     return secp.etc.bytesToHex(secp.utils.randomPrivateKey())
   }
-  static check(machineId: string) {
+  static assert(machineId: string) {
     if (!machineIdRegex.test(machineId)) {
       throw new Error('Invalid machine id: ' + machineId)
     }

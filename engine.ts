@@ -1,4 +1,4 @@
-import { transcribe } from './isolates/ai-prompt.ts'
+import { transcribe } from './isolates/ai-completions.ts'
 import Compartment from './io/compartment.ts'
 import '@std/dotenv/load'
 import {
@@ -99,7 +99,7 @@ export class Engine implements EngineInterface {
   }
   async upsertBackchat(machineId: string, resume?: string) {
     // TODO handshake to prove the machineId is valid
-    assert(Crypto.check(machineId), 'invalid machineId: ' + machineId)
+    assert(Crypto.assert(machineId), 'invalid machineId: ' + machineId)
     assert(!resume || backchatIdRegex.test(resume), 'invalid resume')
     const { db } = artifact.sanitizeContext(this.#api)
 
@@ -122,7 +122,7 @@ export class Engine implements EngineInterface {
     return this.#createBackchat(actor)
   }
   async #createActor(machineId: string) {
-    assert(Crypto.check(machineId), 'invalid machineId: ' + machineId)
+    assert(Crypto.assert(machineId), 'invalid machineId: ' + machineId)
     const actorId = `act_${randomId()}`
     const actor = addBranches(this.homeAddress, actorId)
     const backchatId = `bac_${randomId()}`
@@ -221,7 +221,6 @@ export class Engine implements EngineInterface {
     // await init(backchat)
     log('provisioned')
   }
-
   ping(data?: JsonValue): Promise<JsonValue | undefined> {
     log('ping', data)
     return Promise.resolve(data)
@@ -242,6 +241,7 @@ export class Engine implements EngineInterface {
     await this.#pierce({ pierce })
   }
   read(pid: PID, path?: string, after?: string, signal?: AbortSignal) {
+    // TODO read should take a triad and should not require strict sequence
     freezePid(pid)
     assert(!path || !posix.isAbsolute(path), `path must be relative: ${path}`)
 
@@ -268,6 +268,7 @@ export class Engine implements EngineInterface {
     return fs.readJSON<T>(path)
   }
   async exists(path: string, pid: PID): Promise<boolean> {
+    // TODO convert to triad
     freezePid(pid)
 
     const db = this.#api.context.db

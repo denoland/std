@@ -1,98 +1,102 @@
-import { Engine } from '../engine.ts'
-import { expect, log } from '@utils'
+import { assert, expect, log } from '@utils'
 import IsolateApi from '../isolate-api.ts'
-import {
-  Agent,
-  AGENT_RUNNERS,
-  partialFromRepo,
-  SESSION_PATH,
-} from '../constants.ts'
-import { prepare } from './ai-prompt.ts'
+import { partialFromRepo, Thread } from '../constants.ts'
 import * as completions from './ai-completions.ts'
+import * as thread from './thread.ts'
 import FS from '@/git/fs.ts'
 import DB from '@/db.ts'
 import Accumulator from '@/exe/accumulator.ts'
-import { Api } from '@/isolates/engage-help.ts'
-import { assert } from '@std/assert'
-import { readSession, rm } from '@/isolates/ai-session-utils.ts'
-import { Machine } from '@/api/web-client-machine.ts'
+
+const agentMd = `
+---
+commands:
+  - io-fixture:local
+  - io-fixture:error
+---
+Only reply with a SINGLE word
+`
+const threadPath = 'threads/thread-test.json'
+const agentPath = 'agents/agent-fixture.md'
 
 Deno.test('ai-chat', async (t) => {
-  const helpBase: Agent = {
-    config: { model: 'gpt-4o' },
-    runner: AGENT_RUNNERS.CHAT,
-    commands: ['io-fixture:local', 'io-fixture:error'],
-    instructions: 'Only reply with a SINGLE word',
-  }
   const db = await DB.create(DB.generateAesKey())
-  const pid = partialFromRepo('runner/test')
-  const fs = await FS.init(pid, db)
+  const partialPid = partialFromRepo('runner/test')
+  const fs = await FS.init(partialPid, db)
   const accumulator = Accumulator.create(fs)
   const api = IsolateApi.create(accumulator)
   accumulator.activate(Symbol())
 
-  await t.step('hello world', async () => {
-    const help = { ...helpBase, commands: [] }
-    const text = 'cheese emoji'
-    await prepare(help, text, api)
-    await completions.functions.create(help, api)
-    const session = await readSession(api)
-    log('session', session)
-    expect(session).toHaveLength(3)
-    expect(session[2].content).toBe('🧀')
+  await t.step('create thread', async () => {
+    api.write(agentPath, agentMd)
+    await thread.functions.startThread({ threadPath, agentPath }, api)
   })
+
+  await t.step('hello world', async () => {
+    const content = 'cheese emoji'
+    await thread.functions.addMessage({ threadPath, content }, api)
+    await completions.functions.complete({ threadPath }, api)
+    const result = await api.readJSON<Thread>(threadPath)
+    log('result', result)
+    expect(result.messages).toHaveLength(3)
+    expect(result.messages[2].content).toBe('🧀')
+  })
+
   await t.step('tool call', async () => {
-    const text = 'call the "local" function'
-    const help = {
-      ...helpBase,
-      instructions: 'return the function call results verbatim',
-    }
-    rm(api)
-    await prepare(help, text, api)
-    await completions.functions.create(help, api)
-    const session = await readSession(api)
-    assert('tool_calls' in session[2], 'tool calls missing')
-    log('session', session[2].tool_calls)
-    assert(session[2].tool_calls)
-    expect(session[2].tool_calls).toHaveLength(1)
-    const fn = session[2].tool_calls[0]
+    resetInstructions(api, 'return the function call results verbatim')
+    const content = 'call the "local" function'
+
+    await thread.functions.startThread({ threadPath, agentPath }, api)
+    await thread.functions.addMessage({ threadPath, content }, api)
+    await completions.functions.complete({ threadPath }, api)
+
+    const result = await api.readJSON<Thread>(threadPath)
+    assert('tool_calls' in result.messages[2], 'tool calls missing')
+    log('result.messages', result.messages[2].tool_calls)
+    assert(result.messages[2].tool_calls)
+    expect(result.messages[2].tool_calls).toHaveLength(1)
+    const fn = result.messages[2].tool_calls[0]
     expect(fn.function).toEqual({ name: 'local', arguments: '{}' })
   })
   await t.step('tool error', async () => {
-    const text = 'call the "error" function with message: salami'
-    const help = {
-      ...helpBase,
-      instructions: 'return the function call error message',
-    }
-    rm(api)
-    await prepare(help, text, api)
-    await completions.functions.create(help, api)
-    const session = await readSession(api)
-    assert('tool_calls' in session[2], 'tool calls missing')
-    log('session', session[2].tool_calls)
-    assert(session[2].tool_calls)
-    expect(session[2].tool_calls).toHaveLength(1)
-    const fn = session[2].tool_calls[0]
+    resetInstructions(api, 'return the function call error message')
+    const content = 'call the "error" function with message: salami'
+
+    await thread.functions.startThread({ threadPath, agentPath }, api)
+    await thread.functions.addMessage({ threadPath, content }, api)
+    await completions.functions.complete({ threadPath }, api)
+
+    const result = await api.readJSON<Thread>(threadPath)
+    assert('tool_calls' in result.messages[2], 'tool calls missing')
+    log('result.messages', result.messages[2].tool_calls)
+    assert(result.messages[2].tool_calls)
+    expect(result.messages[2].tool_calls).toHaveLength(1)
+    const fn = result.messages[2].tool_calls[0]
     expect(fn.function).toEqual({
       name: 'error',
       arguments: '{"message":"salami"}',
     })
   })
   await t.step('double tool call', async () => {
-    const text =
-      'call the "ping" function twice with the message being the integer "1" for the first one and the integer "2" for the second'
-    const help = {
-      ...helpBase,
-      commands: ['io-fixture:ping'],
-      instructions: '',
-    }
-    rm(api)
-    await prepare(help, text, api)
-    await completions.functions.create(help, api)
-    const session = await readSession(api)
+    const agentMd = `
+---
+commands:
+  - io-fixture:ping
+---
+`
 
-    log('session', session)
-    const [, assistant] = session
+    const content =
+      'call the "ping" function twice with the message being the integer "1" for the first one and the integer "2" for the second'
+    api.write(agentPath, agentMd)
+    api.delete(threadPath)
+
+    await thread.functions.startThread({ threadPath, agentPath }, api)
+    await thread.functions.addMessage({ threadPath, content }, api)
+    await completions.functions.complete({ threadPath }, api)
+
+    const result = await api.readJSON<Thread>(threadPath)
+
+    log('result.messages', result.messages)
+    const [, assistant] = result.messages
     assert('tool_calls' in assistant, 'tool calls missing')
     assert(Array.isArray(assistant.tool_calls), 'tool calls not an array')
 
@@ -111,64 +115,11 @@ Deno.test('ai-chat', async (t) => {
   db.stop()
 })
 
-Deno.test('engage-help', async (t) => {
-  const superuserKey = Machine.generatePrivateKey()
-  const aesKey = DB.generateAesKey()
-  const engine = await Engine.provision(superuserKey, aesKey)
-  const machine = Machine.load(engine, Machine.generatePrivateKey())
-  const session = machine.openTerminal()
-
-  await session.rm({ repo: 'dreamcatcher-tech/HAL' })
-  const { pid } = await session.clone({ repo: 'dreamcatcher-tech/HAL' })
-
-  let latest = {}
-  const splices = async () => {
-    for await (const splice of session.read(pid, SESSION_PATH)) {
-      if (!Object.keys(splice.changes).length) {
-        continue
-      }
-      if (splice.changes[SESSION_PATH]) {
-        const { patch } = splice.changes[SESSION_PATH]
-        assert(patch, 'patch missing')
-        latest = JSON.parse(patch)
-        log('splice', splice.oid, latest)
-      }
-    }
-  }
-  splices()
-  await t.step('say the word "hello"', async () => {
-    const isolate = 'engage-help'
-    const { engage } = await session.actions<Api>(isolate, pid)
-    await engage({
-      help: 'help-fixture',
-      text: 'say the word: "hello" without calling any functions',
-    })
-
-    log('result', latest)
-    assert(Array.isArray(latest))
-    expect(latest[2].content.toLowerCase()).toBe('hello')
-  })
-  await t.step('what is your name ?', async () => {
-    const isolate = 'engage-help'
-    const { engage } = await session.actions<Api>(isolate, pid)
-    await engage({
-      help: 'help-fixture',
-      text: 'what is your name ?',
-    })
-    assert(Array.isArray(latest))
-  })
-
-  await t.step('repeat your last', async () => {
-    const isolate = 'engage-help'
-    const { engage } = await session.actions<Api>(isolate, pid)
-    await engage({
-      help: 'help-fixture',
-      text: 'repeat your last, without calling any functions',
-    })
-
-    log('result', latest)
-    assert(Array.isArray(latest))
-  })
-
-  await session.engineStop()
-})
+const resetInstructions = (api: IsolateApi, instructions: string) => {
+  const split = agentMd.trim().split('\n')
+  split.pop()
+  split.push(instructions)
+  const newInstructions = split.join('\n')
+  api.write(agentPath, newInstructions)
+  api.delete(threadPath)
+}
