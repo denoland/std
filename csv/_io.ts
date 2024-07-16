@@ -4,7 +4,7 @@
 // https://github.com/golang/go/blob/master/LICENSE
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import { graphemeLength } from "./_shared.ts";
+import { codePointLength } from "./_shared.ts";
 
 /** Options for {@linkcode parseRecord}. */
 export interface ReadOptions {
@@ -98,7 +98,7 @@ export async function parseRecord(
       if (!options.lazyQuotes) {
         const j = field.indexOf(quote);
         if (j >= 0) {
-          const col = graphemeLength(
+          const col = codePointLength(
             fullLine.slice(0, fullLine.length - line.slice(j).length),
           );
           throw new SyntaxError(
@@ -140,7 +140,7 @@ export async function parseRecord(
             recordBuffer += quote;
           } else {
             // `"*` sequence (invalid non-escaped quote).
-            const col = graphemeLength(
+            const col = codePointLength(
               fullLine.slice(0, fullLine.length - line.length - quoteLen),
             );
             throw new SyntaxError(
@@ -157,7 +157,7 @@ export async function parseRecord(
           if (r === null) {
             // Abrupt end of file (EOF or error).
             if (!options.lazyQuotes) {
-              const col = graphemeLength(fullLine);
+              const col = codePointLength(fullLine);
               throw new SyntaxError(
                 createQuoteErrorMessage(startLine + 1, lineIndex, col),
               );
@@ -169,7 +169,7 @@ export async function parseRecord(
         } else {
           // Abrupt end of file (EOF on error).
           if (!options.lazyQuotes) {
-            const col = graphemeLength(fullLine);
+            const col = codePointLength(fullLine);
             throw new SyntaxError(
               createQuoteErrorMessage(startLine + 1, lineIndex, col),
             );

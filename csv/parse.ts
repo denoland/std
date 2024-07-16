@@ -9,7 +9,7 @@ import {
   type ReadOptions,
   type RecordWithColumn,
 } from "./_io.ts";
-import { graphemeLength } from "./_shared.ts";
+import { codePointLength } from "./_shared.ts";
 
 export type { ParseResult, RecordWithColumn };
 
@@ -106,7 +106,7 @@ class Parser {
         if (!this.#options.lazyQuotes) {
           const j = field.indexOf(quote);
           if (j >= 0) {
-            const col = graphemeLength(
+            const col = codePointLength(
               fullLine.slice(0, fullLine.length - line.slice(j).length),
             );
             throw new SyntaxError(
@@ -148,7 +148,7 @@ class Parser {
               recordBuffer += quote;
             } else {
               // `"*` sequence (invalid non-escaped quote).
-              const col = graphemeLength(
+              const col = codePointLength(
                 fullLine.slice(0, fullLine.length - line.length - quoteLen),
               );
               throw new SyntaxError(
@@ -165,7 +165,7 @@ class Parser {
             if (r === null) {
               // Abrupt end of file (EOF or error).
               if (!this.#options.lazyQuotes) {
-                const col = graphemeLength(fullLine);
+                const col = codePointLength(fullLine);
                 throw new SyntaxError(
                   createQuoteErrorMessage(startLine + 1, lineIndex, col),
                 );
@@ -177,7 +177,7 @@ class Parser {
           } else {
             // Abrupt end of file (EOF on error).
             if (!this.#options.lazyQuotes) {
-              const col = graphemeLength(fullLine);
+              const col = codePointLength(fullLine);
               throw new SyntaxError(
                 createQuoteErrorMessage(startLine + 1, lineIndex, col),
               );

@@ -31,6 +31,14 @@ import { DEFAULT_SCHEMA, type Schema } from "./_schema.ts";
 import type { StyleVariant, Type } from "./_type.ts";
 import { type ArrayObject, getObjectTypeString, isObject } from "./_utils.ts";
 
+const STYLE_PLAIN = 1;
+const STYLE_SINGLE = 2;
+const STYLE_LITERAL = 3;
+const STYLE_FOLDED = 4;
+const STYLE_DOUBLE = 5;
+
+const LEADING_SPACE_REGEXP = /^\n* /;
+
 const ESCAPE_SEQUENCES = new Map<number, string>([
   [0x00, "\\0"],
   [0x07, "\\a"],
@@ -96,6 +104,313 @@ function compileStyleMap(
   }
 
   return result;
+}
+
+// Indents every line in a string. Empty lines (\n only) are not indented.
+function indentString(string: string, spaces: number): string {
+  const indent = " ".repeat(spaces);
+  return string
+    .split("\n")
+    .map((line) => line.length ? indent + line : line)
+    .join("\n");
+}
+
+function generateNextLine(indent: number, level: number): string {
+  return `\n${" ".repeat(indent * level)}`;
+}
+
+function testImplicitResolving(implicitTypes: Type[], str: string): boolean {
+  return implicitTypes.some((type) => type.resolve(str));
+}
+
+// Returns true if the character can be printed without escaping.
+// From YAML 1.2: "any allowed characters known to be non-printable
+// should also be escaped. [However,] This isn’t mandatory"
+// Derived from nb-char - \t - #x85 - #xA0 - #x2028 - #x2029.
+function isPrintable(c: number): boolean {
+  return (
+    (0x00020 <= c && c <= 0x00007e) ||
+    (0x000a1 <= c && c <= 0x00d7ff && c !== 0x2028 && c !== 0x2029) ||
+    (0x0e000 <= c && c <= 0x00fffd && c !== 0xfeff) /* BOM */ ||
+    (0x10000 <= c && c <= 0x10ffff)
+  );
+}
+
+// Simplified test for values allowed after the first character in plain style.
+function isPlainSafe(c: number): boolean {
+  // Uses a subset of nb-char - c-flow-indicator - ":" - "#"
+  // where nb-char ::= c-printable - b-char - c-byte-order-mark.
+  return (
+    isPrintable(c) &&
+    c !== 0xfeff &&
+    // - c-flow-indicator
+    c !== COMMA &&
+    c !== LEFT_SQUARE_BRACKET &&
+    c !== RIGHT_SQUARE_BRACKET &&
+    c !== LEFT_CURLY_BRACKET &&
+    c !== RIGHT_CURLY_BRACKET &&
+    // - ":" - "#"
+    c !== COLON &&
+    c !== SHARP
+  );
+}
+
+// Simplified test for values allowed as the first character in plain style.
+function isPlainSafeFirst(c: number): boolean {
+  // Uses a subset of ns-char - c-indicator
+  // where ns-char = nb-char - s-white.
+  return (
+    isPrintable(c) &&
+    c !== 0xfeff &&
+    !isWhiteSpace(c) && // - s-white
+    // - (c-indicator ::=
+    // “-” | “?” | “:” | “,” | “[” | “]” | “{” | “}”
+    c !== MINUS &&
+    c !== QUESTION &&
+    c !== COLON &&
+    c !== COMMA &&
+    c !== LEFT_SQUARE_BRACKET &&
+    c !== RIGHT_SQUARE_BRACKET &&
+    c !== LEFT_CURLY_BRACKET &&
+    c !== RIGHT_CURLY_BRACKET &&
+    // | “#” | “&” | “*” | “!” | “|” | “>” | “'” | “"”
+    c !== SHARP &&
+    c !== AMPERSAND &&
+    c !== ASTERISK &&
+    c !== EXCLAMATION &&
+    c !== VERTICAL_LINE &&
+    c !== GREATER_THAN &&
+    c !== SINGLE_QUOTE &&
+    c !== DOUBLE_QUOTE &&
+    // | “%” | “@” | “`”)
+    c !== PERCENT &&
+    c !== COMMERCIAL_AT &&
+    c !== GRAVE_ACCENT
+  );
+}
+
+// Determines whether block indentation indicator is required.
+function needIndentIndicator(string: string): boolean {
+  return LEADING_SPACE_REGEXP.test(string);
+}
+
+// Determines which scalar styles are possible and returns the preferred style.
+// lineWidth = -1 => no limit.
+// Pre-conditions: str.length > 0.
+// Post-conditions:
+//  STYLE_PLAIN or STYLE_SINGLE => no \n are in the string.
+//  STYLE_LITERAL => no lines are suitable for folding (or lineWidth is -1).
+//  STYLE_FOLDED => a line > lineWidth and can be folded (and lineWidth !== -1).
+function chooseScalarStyle(
+  string: string,
+  singleLineOnly: boolean,
+  indentPerLevel: number,
+  lineWidth: number,
+  testAmbiguousType: (string: string) => boolean,
+): number {
+  const shouldTrackWidth = lineWidth !== -1;
+  let hasLineBreak = false;
+  let hasFoldableLine = false; // only checked if shouldTrackWidth
+  let previousLineBreak = -1; // count the first line correctly
+  let plain = isPlainSafeFirst(string.charCodeAt(0)) &&
+    !isWhiteSpace(string.charCodeAt(string.length - 1));
+
+  let char: number;
+  let i: number;
+  if (singleLineOnly) {
+    // Case: no block styles.
+    // Check for disallowed characters to rule out plain and single.
+    for (i = 0; i < string.length; i++) {
+      char = string.charCodeAt(i);
+      if (!isPrintable(char)) {
+        return STYLE_DOUBLE;
+      }
+      plain = plain && isPlainSafe(char);
+    }
+  } else {
+    // Case: block styles permitted.
+    for (i = 0; i < string.length; i++) {
+      char = string.charCodeAt(i);
+      if (char === LINE_FEED) {
+        hasLineBreak = true;
+        // Check if any line can be folded.
+        if (shouldTrackWidth) {
+          hasFoldableLine = hasFoldableLine ||
+            // Foldable line = too long, and not more-indented.
+            (i - previousLineBreak - 1 > lineWidth &&
+              string[previousLineBreak + 1] !== " ");
+          previousLineBreak = i;
+        }
+      } else if (!isPrintable(char)) {
+        return STYLE_DOUBLE;
+      }
+      plain = plain && isPlainSafe(char);
+    }
+    // in case the end is missing a \n
+    hasFoldableLine = hasFoldableLine ||
+      (shouldTrackWidth &&
+        i - previousLineBreak - 1 > lineWidth &&
+        string[previousLineBreak + 1] !== " ");
+  }
+  // Although every style can represent \n without escaping, prefer block styles
+  // for multiline, since they're more readable and they don't add empty lines.
+  // Also prefer folding a super-long line.
+  if (!hasLineBreak && !hasFoldableLine) {
+    // Strings interpretable as another type have to be quoted;
+    // e.g. the string 'true' vs. the boolean true.
+    return plain && !testAmbiguousType(string) ? STYLE_PLAIN : STYLE_SINGLE;
+  }
+  // Edge case: block indentation indicator can only have one digit.
+  if (indentPerLevel > 9 && needIndentIndicator(string)) {
+    return STYLE_DOUBLE;
+  }
+  // At this point we know block styles are valid.
+  // Prefer literal style unless we want to fold.
+  return hasFoldableLine ? STYLE_FOLDED : STYLE_LITERAL;
+}
+
+// Greedy line breaking.
+// Picks the longest line under the limit each time,
+// otherwise settles for the shortest line over the limit.
+// NB. More-indented lines *cannot* be folded, as that would add an extra \n.
+function foldLine(line: string, width: number): string {
+  if (line === "" || line[0] === " ") return line;
+
+  // Since a more-indented line adds a \n, breaks can't be followed by a space.
+  const breakRegExp = / [^ ]/g; // note: the match index will always be <= length-2.
+  // start is an inclusive index. end, curr, and next are exclusive.
+  let start = 0;
+  let end;
+  let curr = 0;
+  let next = 0;
+  const lines = [];
+
+  // Invariants: 0 <= start <= length-1.
+  //   0 <= curr <= next <= max(0, length-2). curr - start <= width.
+  // Inside the loop:
+  //   A match implies length >= 2, so curr and next are <= length-2.
+  for (const match of line.matchAll(breakRegExp)) {
+    next = match.index;
+    // maintain invariant: curr - start <= width
+    if (next - start > width) {
+      end = curr > start ? curr : next; // derive end <= length-2
+      lines.push(line.slice(start, end));
+      // skip the space that was output as \n
+      start = end + 1; // derive start <= length-1
+    }
+    curr = next;
+  }
+
+  // By the invariants, start <= length-1, so there is something left over.
+  // It is either the whole string or a part starting from non-whitespace.
+  // Insert a break if the remainder is too long and there is a break available.
+  if (line.length - start > width && curr > start) {
+    lines.push(line.slice(start, curr));
+    lines.push(line.slice(curr + 1));
+  } else {
+    lines.push(line.slice(start));
+  }
+
+  return lines.join("\n");
+}
+
+function trimTrailingNewline(string: string) {
+  return string.at(-1) === "\n" ? string.slice(0, -1) : string;
+}
+
+// Note: a long line without a suitable break point will exceed the width limit.
+// Pre-conditions: every char in str isPrintable, str.length > 0, width > 0.
+function foldString(string: string, width: number): string {
+  // In folded style, $k$ consecutive newlines output as $k+1$ newlines—
+  // unless they're before or after a more-indented line, or at the very
+  // beginning or end, in which case $k$ maps to $k$.
+  // Therefore, parse each chunk as newline(s) followed by a content line.
+  const lineRe = /(\n+)([^\n]*)/g;
+
+  // first line (possibly an empty line)
+  let result = ((): string => {
+    let nextLF = string.indexOf("\n");
+    nextLF = nextLF !== -1 ? nextLF : string.length;
+    lineRe.lastIndex = nextLF;
+    return foldLine(string.slice(0, nextLF), width);
+  })();
+  // If we haven't reached the first content line yet, don't add an extra \n.
+  let prevMoreIndented = string[0] === "\n" || string[0] === " ";
+  let moreIndented;
+
+  // rest of the lines
+  let match;
+  // tslint:disable-next-line:no-conditional-assignment
+  while ((match = lineRe.exec(string))) {
+    const prefix = match[1];
+    const line = match[2] || "";
+    moreIndented = line[0] === " ";
+    result += prefix +
+      (!prevMoreIndented && !moreIndented && line !== "" ? "\n" : "") +
+      foldLine(line, width);
+    prevMoreIndented = moreIndented;
+  }
+
+  return result;
+}
+
+// Escapes a double-quoted string.
+function escapeString(string: string): string {
+  let result = "";
+  let char;
+  let nextChar;
+  let escapeSeq;
+
+  for (let i = 0; i < string.length; i++) {
+    char = string.charCodeAt(i);
+    // Check for surrogate pairs (reference Unicode 3.0 section "3.7 Surrogates").
+    if (char >= 0xd800 && char <= 0xdbff /* high surrogate */) {
+      nextChar = string.charCodeAt(i + 1);
+      if (nextChar >= 0xdc00 && nextChar <= 0xdfff /* low surrogate */) {
+        // Combine the surrogate pair and store it escaped.
+        result += charCodeToHexString(
+          (char - 0xd800) * 0x400 + nextChar - 0xdc00 + 0x10000,
+        );
+        // Advance index one extra since we already used that char here.
+        i++;
+        continue;
+      }
+    }
+    escapeSeq = ESCAPE_SEQUENCES.get(char);
+    result += !escapeSeq && isPrintable(char)
+      ? string[i]
+      : escapeSeq || charCodeToHexString(char);
+  }
+
+  return result;
+}
+
+// Pre-conditions: string is valid for a block scalar, 1 <= indentPerLevel <= 9.
+function blockHeader(string: string, indentPerLevel: number): string {
+  const indentIndicator = needIndentIndicator(string)
+    ? String(indentPerLevel)
+    : "";
+
+  // note the special case: the string '\n' counts as a "trailing" empty line.
+  const clip = string[string.length - 1] === "\n";
+  const keep = clip && (string[string.length - 2] === "\n" || string === "\n");
+  const chomp = keep ? "+" : clip ? "" : "-";
+
+  return `${indentIndicator}${chomp}\n`;
+}
+
+// deno-lint-ignore no-explicit-any
+function inspectNode(object: any, objects: any[], duplicateObjects: Set<any>) {
+  if (!isObject(object)) return;
+  if (objects.includes(object)) {
+    duplicateObjects.add(object);
+    return;
+  }
+  objects.push(object);
+  const entries = Array.isArray(object) ? object : Object.values(object);
+  for (const value of entries) {
+    inspectNode(value, objects, duplicateObjects);
+  }
 }
 
 export interface DumperStateOptions {
@@ -589,320 +904,6 @@ export class DumperState {
 
     for (const object of duplicateObjects) this.duplicates.push(object);
     this.usedDuplicates = new Set();
-  }
-}
-
-// Indents every line in a string. Empty lines (\n only) are not indented.
-function indentString(string: string, spaces: number): string {
-  const indent = " ".repeat(spaces);
-  return string
-    .split("\n")
-    .map((line) => line.length ? indent + line : line)
-    .join("\n");
-}
-
-function generateNextLine(indent: number, level: number): string {
-  return `\n${" ".repeat(indent * level)}`;
-}
-
-function testImplicitResolving(implicitTypes: Type[], str: string): boolean {
-  return implicitTypes.some((type) => type.resolve(str));
-}
-
-// Returns true if the character can be printed without escaping.
-// From YAML 1.2: "any allowed characters known to be non-printable
-// should also be escaped. [However,] This isn’t mandatory"
-// Derived from nb-char - \t - #x85 - #xA0 - #x2028 - #x2029.
-function isPrintable(c: number): boolean {
-  return (
-    (0x00020 <= c && c <= 0x00007e) ||
-    (0x000a1 <= c && c <= 0x00d7ff && c !== 0x2028 && c !== 0x2029) ||
-    (0x0e000 <= c && c <= 0x00fffd && c !== 0xfeff) /* BOM */ ||
-    (0x10000 <= c && c <= 0x10ffff)
-  );
-}
-
-// Simplified test for values allowed after the first character in plain style.
-function isPlainSafe(c: number): boolean {
-  // Uses a subset of nb-char - c-flow-indicator - ":" - "#"
-  // where nb-char ::= c-printable - b-char - c-byte-order-mark.
-  return (
-    isPrintable(c) &&
-    c !== 0xfeff &&
-    // - c-flow-indicator
-    c !== COMMA &&
-    c !== LEFT_SQUARE_BRACKET &&
-    c !== RIGHT_SQUARE_BRACKET &&
-    c !== LEFT_CURLY_BRACKET &&
-    c !== RIGHT_CURLY_BRACKET &&
-    // - ":" - "#"
-    c !== COLON &&
-    c !== SHARP
-  );
-}
-
-// Simplified test for values allowed as the first character in plain style.
-function isPlainSafeFirst(c: number): boolean {
-  // Uses a subset of ns-char - c-indicator
-  // where ns-char = nb-char - s-white.
-  return (
-    isPrintable(c) &&
-    c !== 0xfeff &&
-    !isWhiteSpace(c) && // - s-white
-    // - (c-indicator ::=
-    // “-” | “?” | “:” | “,” | “[” | “]” | “{” | “}”
-    c !== MINUS &&
-    c !== QUESTION &&
-    c !== COLON &&
-    c !== COMMA &&
-    c !== LEFT_SQUARE_BRACKET &&
-    c !== RIGHT_SQUARE_BRACKET &&
-    c !== LEFT_CURLY_BRACKET &&
-    c !== RIGHT_CURLY_BRACKET &&
-    // | “#” | “&” | “*” | “!” | “|” | “>” | “'” | “"”
-    c !== SHARP &&
-    c !== AMPERSAND &&
-    c !== ASTERISK &&
-    c !== EXCLAMATION &&
-    c !== VERTICAL_LINE &&
-    c !== GREATER_THAN &&
-    c !== SINGLE_QUOTE &&
-    c !== DOUBLE_QUOTE &&
-    // | “%” | “@” | “`”)
-    c !== PERCENT &&
-    c !== COMMERCIAL_AT &&
-    c !== GRAVE_ACCENT
-  );
-}
-
-// Determines whether block indentation indicator is required.
-const LEADING_SPACE_REGEXP = /^\n* /;
-function needIndentIndicator(string: string): boolean {
-  return LEADING_SPACE_REGEXP.test(string);
-}
-
-const STYLE_PLAIN = 1;
-const STYLE_SINGLE = 2;
-const STYLE_LITERAL = 3;
-const STYLE_FOLDED = 4;
-const STYLE_DOUBLE = 5;
-
-// Determines which scalar styles are possible and returns the preferred style.
-// lineWidth = -1 => no limit.
-// Pre-conditions: str.length > 0.
-// Post-conditions:
-//  STYLE_PLAIN or STYLE_SINGLE => no \n are in the string.
-//  STYLE_LITERAL => no lines are suitable for folding (or lineWidth is -1).
-//  STYLE_FOLDED => a line > lineWidth and can be folded (and lineWidth !== -1).
-function chooseScalarStyle(
-  string: string,
-  singleLineOnly: boolean,
-  indentPerLevel: number,
-  lineWidth: number,
-  testAmbiguousType: (string: string) => boolean,
-): number {
-  const shouldTrackWidth = lineWidth !== -1;
-  let hasLineBreak = false;
-  let hasFoldableLine = false; // only checked if shouldTrackWidth
-  let previousLineBreak = -1; // count the first line correctly
-  let plain = isPlainSafeFirst(string.charCodeAt(0)) &&
-    !isWhiteSpace(string.charCodeAt(string.length - 1));
-
-  let char: number;
-  let i: number;
-  if (singleLineOnly) {
-    // Case: no block styles.
-    // Check for disallowed characters to rule out plain and single.
-    for (i = 0; i < string.length; i++) {
-      char = string.charCodeAt(i);
-      if (!isPrintable(char)) {
-        return STYLE_DOUBLE;
-      }
-      plain = plain && isPlainSafe(char);
-    }
-  } else {
-    // Case: block styles permitted.
-    for (i = 0; i < string.length; i++) {
-      char = string.charCodeAt(i);
-      if (char === LINE_FEED) {
-        hasLineBreak = true;
-        // Check if any line can be folded.
-        if (shouldTrackWidth) {
-          hasFoldableLine = hasFoldableLine ||
-            // Foldable line = too long, and not more-indented.
-            (i - previousLineBreak - 1 > lineWidth &&
-              string[previousLineBreak + 1] !== " ");
-          previousLineBreak = i;
-        }
-      } else if (!isPrintable(char)) {
-        return STYLE_DOUBLE;
-      }
-      plain = plain && isPlainSafe(char);
-    }
-    // in case the end is missing a \n
-    hasFoldableLine = hasFoldableLine ||
-      (shouldTrackWidth &&
-        i - previousLineBreak - 1 > lineWidth &&
-        string[previousLineBreak + 1] !== " ");
-  }
-  // Although every style can represent \n without escaping, prefer block styles
-  // for multiline, since they're more readable and they don't add empty lines.
-  // Also prefer folding a super-long line.
-  if (!hasLineBreak && !hasFoldableLine) {
-    // Strings interpretable as another type have to be quoted;
-    // e.g. the string 'true' vs. the boolean true.
-    return plain && !testAmbiguousType(string) ? STYLE_PLAIN : STYLE_SINGLE;
-  }
-  // Edge case: block indentation indicator can only have one digit.
-  if (indentPerLevel > 9 && needIndentIndicator(string)) {
-    return STYLE_DOUBLE;
-  }
-  // At this point we know block styles are valid.
-  // Prefer literal style unless we want to fold.
-  return hasFoldableLine ? STYLE_FOLDED : STYLE_LITERAL;
-}
-
-// Greedy line breaking.
-// Picks the longest line under the limit each time,
-// otherwise settles for the shortest line over the limit.
-// NB. More-indented lines *cannot* be folded, as that would add an extra \n.
-function foldLine(line: string, width: number): string {
-  if (line === "" || line[0] === " ") return line;
-
-  // Since a more-indented line adds a \n, breaks can't be followed by a space.
-  const breakRegExp = / [^ ]/g; // note: the match index will always be <= length-2.
-  // start is an inclusive index. end, curr, and next are exclusive.
-  let start = 0;
-  let end;
-  let curr = 0;
-  let next = 0;
-  const lines = [];
-
-  // Invariants: 0 <= start <= length-1.
-  //   0 <= curr <= next <= max(0, length-2). curr - start <= width.
-  // Inside the loop:
-  //   A match implies length >= 2, so curr and next are <= length-2.
-  for (const match of line.matchAll(breakRegExp)) {
-    next = match.index;
-    // maintain invariant: curr - start <= width
-    if (next - start > width) {
-      end = curr > start ? curr : next; // derive end <= length-2
-      lines.push(line.slice(start, end));
-      // skip the space that was output as \n
-      start = end + 1; // derive start <= length-1
-    }
-    curr = next;
-  }
-
-  // By the invariants, start <= length-1, so there is something left over.
-  // It is either the whole string or a part starting from non-whitespace.
-  // Insert a break if the remainder is too long and there is a break available.
-  if (line.length - start > width && curr > start) {
-    lines.push(line.slice(start, curr));
-    lines.push(line.slice(curr + 1));
-  } else {
-    lines.push(line.slice(start));
-  }
-
-  return lines.join("\n");
-}
-
-function trimTrailingNewline(string: string) {
-  return string.at(-1) === "\n" ? string.slice(0, -1) : string;
-}
-
-// Note: a long line without a suitable break point will exceed the width limit.
-// Pre-conditions: every char in str isPrintable, str.length > 0, width > 0.
-function foldString(string: string, width: number): string {
-  // In folded style, $k$ consecutive newlines output as $k+1$ newlines—
-  // unless they're before or after a more-indented line, or at the very
-  // beginning or end, in which case $k$ maps to $k$.
-  // Therefore, parse each chunk as newline(s) followed by a content line.
-  const lineRe = /(\n+)([^\n]*)/g;
-
-  // first line (possibly an empty line)
-  let result = ((): string => {
-    let nextLF = string.indexOf("\n");
-    nextLF = nextLF !== -1 ? nextLF : string.length;
-    lineRe.lastIndex = nextLF;
-    return foldLine(string.slice(0, nextLF), width);
-  })();
-  // If we haven't reached the first content line yet, don't add an extra \n.
-  let prevMoreIndented = string[0] === "\n" || string[0] === " ";
-  let moreIndented;
-
-  // rest of the lines
-  let match;
-  // tslint:disable-next-line:no-conditional-assignment
-  while ((match = lineRe.exec(string))) {
-    const prefix = match[1];
-    const line = match[2] || "";
-    moreIndented = line[0] === " ";
-    result += prefix +
-      (!prevMoreIndented && !moreIndented && line !== "" ? "\n" : "") +
-      foldLine(line, width);
-    prevMoreIndented = moreIndented;
-  }
-
-  return result;
-}
-
-// Escapes a double-quoted string.
-function escapeString(string: string): string {
-  let result = "";
-  let char;
-  let nextChar;
-  let escapeSeq;
-
-  for (let i = 0; i < string.length; i++) {
-    char = string.charCodeAt(i);
-    // Check for surrogate pairs (reference Unicode 3.0 section "3.7 Surrogates").
-    if (char >= 0xd800 && char <= 0xdbff /* high surrogate */) {
-      nextChar = string.charCodeAt(i + 1);
-      if (nextChar >= 0xdc00 && nextChar <= 0xdfff /* low surrogate */) {
-        // Combine the surrogate pair and store it escaped.
-        result += charCodeToHexString(
-          (char - 0xd800) * 0x400 + nextChar - 0xdc00 + 0x10000,
-        );
-        // Advance index one extra since we already used that char here.
-        i++;
-        continue;
-      }
-    }
-    escapeSeq = ESCAPE_SEQUENCES.get(char);
-    result += !escapeSeq && isPrintable(char)
-      ? string[i]
-      : escapeSeq || charCodeToHexString(char);
-  }
-
-  return result;
-}
-
-// Pre-conditions: string is valid for a block scalar, 1 <= indentPerLevel <= 9.
-function blockHeader(string: string, indentPerLevel: number): string {
-  const indentIndicator = needIndentIndicator(string)
-    ? String(indentPerLevel)
-    : "";
-
-  // note the special case: the string '\n' counts as a "trailing" empty line.
-  const clip = string[string.length - 1] === "\n";
-  const keep = clip && (string[string.length - 2] === "\n" || string === "\n");
-  const chomp = keep ? "+" : clip ? "" : "-";
-
-  return `${indentIndicator}${chomp}\n`;
-}
-
-// deno-lint-ignore no-explicit-any
-function inspectNode(object: any, objects: any[], duplicateObjects: Set<any>) {
-  if (!isObject(object)) return;
-  if (objects.includes(object)) {
-    duplicateObjects.add(object);
-    return;
-  }
-  objects.push(object);
-  const entries = Array.isArray(object) ? object : Object.values(object);
-  for (const value of entries) {
-    inspectNode(value, objects, duplicateObjects);
   }
 }
 

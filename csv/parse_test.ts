@@ -199,7 +199,7 @@ Deno.test({
       },
     });
     await t.step({
-      name: "error column grapheme number",
+      name: "error column Unicode code point number",
       fn() {
         const input = `a,b,🐱"`;
         assertThrows(
