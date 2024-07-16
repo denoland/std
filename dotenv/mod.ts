@@ -152,32 +152,7 @@ export function loadSync(
  * |File|Purpose|
  * |----|-------|
  * |.env|primary file for storing key-value environment entries
- * |.env.example|this file does not set any values, but specifies env variables which must be present in the configuration object or process environment after loading dotenv
  * |.env.defaults|specify default values for env variables to be used when there is no entry in the `.env` file
- *
- * ### Example file
- *
- * The purpose of the example file is to provide a list of environment
- * variables which must be set or already present in the process environment
- * or an exception will be thrown.  These
- * variables may be set externally or loaded via the `.env` or
- * `.env.defaults` files.  A description may also be provided to help
- * understand the purpose of the env variable. The values in this file
- * are for documentation only and are not set in the environment. Example:
- *
- * ```sh
- * # .env.example
- *
- * # With optional description (this is not set in the environment)
- * DATA_KEY=API key for the api.data.com service.
- *
- * # Without description
- * DATA_URL=
- * ```
- *
- * When the above file is present, after dotenv is loaded, if either
- * DATA_KEY or DATA_URL is not present in the environment an exception
- * is thrown.
  *
  * ### Defaults
  *
@@ -230,7 +205,7 @@ export function loadSync(
  * in your `.env` file, you will need the `--allow-env` permission.  E.g.
  *
  * ```sh
- * deno run --allow-read=.env,.env.defaults,.env.example --allow-env=ENV1,ENV2 app.ts
+ * deno run --allow-read=.env,.env.defaults --allow-env=ENV1,ENV2 app.ts
  * ```
  *
  * ## Parsing Rules
