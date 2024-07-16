@@ -106,6 +106,7 @@ export type StringifyOptions = {
  * assertEquals(yaml, "id: 1\nname: Alice\n");
  * ```
  *
+ * @throws {TypeError} If `data` contains invalid types.
  * @param data The data to serialize.
  * @param options The options for serialization.
  * @returns A YAML string.
