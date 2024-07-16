@@ -129,6 +129,26 @@ export function unescape(
     .replaceAll(RX_HEX_ENTITY, (_, hex) => codePointStrToChar(hex, 16));
 }
 
+/**
+ * Validates if a element is a valid custom element name according to the HTML
+ * spec: https://html.spec.whatwg.org/multipage/custom-elements.html#valid-custom-element-name
+ *
+ * @example Basic usage
+ *
+ * Using a valid custom element name
+ *
+ * ```ts
+ * import { isValidCustomElement } from '@std/html/entities'
+ * import { assertEquals } from "@std/assert";
+ *
+ * assertEquals(isValidCustomElement("custom-element"), true)
+ * ```
+ *
+ * Reference on invalid names can be found [here](https://html.spec.whatwg.org/multipage/custom-elements.html#valid-custom-element-name)
+ *
+ * @param {string} elementName
+ * @returns {boolean} A boolean value indicating if the custom element name is valid or not
+ */
 export function isValidCustomElement(elementName: string): boolean {
   if (forbiddenCustomElementNames.includes(elementName)) {
     return false;
