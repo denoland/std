@@ -1,6 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import { escape, unescape } from "./entities.ts";
+import { escape, isValidCustomElement, unescape } from "./entities.ts";
 import { assertEquals } from "@std/assert";
 import entityList from "./named_entity_list.json" with { type: "json" };
 
@@ -106,5 +106,48 @@ Deno.test("unescape()", async (t) => {
         assertEquals(unescape("&#x110000;"), "�");
       },
     );
+  });
+});
+
+Deno.test("isValidCustomElement()", async (t) => {
+  const forbiddenCustomElementNames: string[] = [
+    "annotation-xml",
+    "color-profile",
+    "font-face",
+    "font-face-src",
+    "font-face-uri",
+    "font-face-format",
+    "font-face-name",
+    "missing-glyph",
+  ] as const;
+
+  await t.step("handles forbidden custom names", () => {
+    forbiddenCustomElementNames.map((forbiddenName) => {
+      assertEquals(isValidCustomElement(forbiddenName), false);
+    });
+  });
+
+  await t.step("handles custom names with upper cases", () => {
+    assertEquals(isValidCustomElement("Custom-element"), false);
+  });
+
+  await t.step("handles custom names with especial chars", () => {
+    assertEquals(isValidCustomElement("custom-element@"), false);
+  });
+
+  await t.step("handles custom names with numbers", () => {
+    assertEquals(isValidCustomElement("custom-1-element"), true);
+  });
+
+  await t.step("handles custom names with underscores", () => {
+    assertEquals(isValidCustomElement("custom_element"), true);
+  });
+
+  await t.step("handles custom names with points", () => {
+    assertEquals(isValidCustomElement("custom.element"), true);
+  });
+
+  await t.step("handles valid custom names", () => {
+    assertEquals(isValidCustomElement("custom-element"), true);
   });
 });

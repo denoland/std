@@ -12,6 +12,20 @@ const rawToEntityEntries = [
   ["'", "&#39;"],
 ] as const;
 
+const forbiddenCustomElementNames: string[] = [
+  "annotation-xml",
+  "color-profile",
+  "font-face",
+  "font-face-src",
+  "font-face-uri",
+  "font-face-format",
+  "font-face-name",
+  "missing-glyph",
+] as const;
+
+const potentialCustomElementsNameChars =
+  /^[a-z](?:[-.0-9_a-z\xB7\xC0-\xD6\xD8-\xF6\xF8-\u037D\u037F-\u1FFF\u200C\u200D\u203F\u2040\u2070-\u218F\u2C00-\u2FEF\u3001-\uD7FF\uF900-\uFDCF\uFDF0-\uFFFD]|[\uD800-\uDB7F][\uDC00-\uDFFF])*(-?(?:[-.0-9_a-z\xB7\xC0-\xD6\xD8-\xF6\xF8-\u037D\u037F-\u1FFF\u200C\u200D\u203F\u2040\u2070-\u218F\u2C00-\u2FEF\u3001-\uD7FF\uF900-\uFDCF\uFDF0-\uFFFD]|[\uD800-\uDB7F][\uDC00-\uDFFF])*)*$/;
+
 const defaultEntityList: EntityList = Object.fromEntries([
   ...rawToEntityEntries.map(([raw, entity]) => [entity, raw]),
   ["&apos;", "'"],
@@ -113,6 +127,14 @@ export function unescape(
     .replaceAll(entityRe, (m) => entityList[m]!)
     .replaceAll(RX_DEC_ENTITY, (_, dec) => codePointStrToChar(dec, 10))
     .replaceAll(RX_HEX_ENTITY, (_, hex) => codePointStrToChar(hex, 16));
+}
+
+export function isValidCustomElement(elementName: string): boolean {
+  if (forbiddenCustomElementNames.includes(elementName)) {
+    return false;
+  }
+
+  return potentialCustomElementsNameChars.test(elementName);
 }
 
 function codePointStrToChar(codePointStr: string, radix: number) {
