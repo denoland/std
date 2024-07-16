@@ -25,7 +25,6 @@ export type RepresentFn<D> = (data: D, style?: StyleVariant) => string;
 export interface Type<K extends KindType, D = any> {
   tag: string;
   kind: K;
-  instanceOf?: new (...args: unknown[]) => D;
   predicate?: (data: unknown) => data is D;
   represent?: RepresentFn<D> | ArrayObject<RepresentFn<D>>;
   defaultStyle?: StyleVariant;

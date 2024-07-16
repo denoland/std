@@ -773,11 +773,7 @@ export class DumperState {
     const typeList = explicit ? this.explicitTypes : this.implicitTypes;
 
     for (const type of typeList) {
-      if (
-        (type.instanceOf &&
-          (isObject(object) && object instanceof type.instanceOf)) ||
-        (type.predicate && type.predicate(object))
-      ) {
+      if (type.predicate?.(object)) {
         this.tag = explicit ? type.tag : "?";
 
         if (type.represent) {
