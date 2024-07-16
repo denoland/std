@@ -42,6 +42,7 @@ export type StringifyOptions = {
   styles?: Record<string, StyleVariant>;
   /**
    * Name of the schema to use. Options includes:
+   * - `extended` (extends `default` schema)
    * - `default` (extends `core` schema)
    * - {@linkcode https://yaml.org/spec/1.2.2/#103-core-schema | core} (extends `json` schema)
    * - {@linkcode https://yaml.org/spec/1.2.2/#102-json-schema | json} (extends `failsafe` schema)

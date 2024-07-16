@@ -24,7 +24,7 @@ export type RepresentFn<D> = (data: D, style?: StyleVariant) => string;
 // deno-lint-ignore no-explicit-any
 export interface Type<D = any> {
   tag: string;
-  kind: KindType | null;
+  kind: KindType;
   instanceOf?: new (...args: unknown[]) => D;
   predicate?: (data: Record<string, unknown>) => boolean;
   represent?: RepresentFn<D> | ArrayObject<RepresentFn<D>>;
