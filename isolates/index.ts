@@ -1,6 +1,6 @@
 import * as system from './system.ts'
 
-import * as engageHelp from './thread.ts'
+import * as thread from './thread.ts'
 import * as fetch from './fetch.ts'
 import * as files from './files.ts'
 import * as ioFixture from './io-fixture.ts'
@@ -11,7 +11,6 @@ import * as session from './session.ts'
 
 import * as completions from './ai-completions.ts'
 import * as loadTools from './ai-load-tools.ts'
-import * as runner from './ai-runner.ts'
 
 import * as github from './github.ts'
 import * as actors from './actors.ts'
@@ -20,7 +19,7 @@ import * as backchat from './backchat.ts'
 
 export default {
   system,
-  'engage-help': engageHelp,
+  thread,
   fetch,
   files,
   'io-fixture': ioFixture,
@@ -30,7 +29,6 @@ export default {
   session,
   'ai-completions': completions,
   'ai-load-tools': loadTools,
-  'ai-runner': runner,
   github,
   actors,
   machines,

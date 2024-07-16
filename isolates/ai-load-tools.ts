@@ -43,7 +43,7 @@ const load = async (commands: string[] = [], api: IsolateApi) => {
           threadId,
           agentPath: cmd,
           content: prompt,
-          userId: '',
+          userId: '0',
         })
       }
       tool = agentTool(agent, schemas.execute)

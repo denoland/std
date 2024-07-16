@@ -2,10 +2,10 @@
 
 import { expect, log } from '@utils'
 import processMgmt from './process-mgmt.ts'
-// import aiCalls from './ai-calls.ts'
+import aiCalls from './ai-calls.ts'
 // import splices from './splices.ts'
 // import benchmarks from './benchmarks.ts'
-import sessions from './guts-sessions.ts'
+import backchats from './guts-backchats.ts'
 // import isolates from './guts-ai-isolates.ts'
 // import hal from './guts-hal.ts'
 import { CradleMaker } from '@/constants.ts'
@@ -101,8 +101,8 @@ export default (name: string, cradleMaker: CradleMaker) => {
   })
 
   processMgmt(name, cradleMaker)
-  sessions(name, cradleMaker)
-  // aiCalls(name, cradleMaker)
+  backchats(name, cradleMaker)
+  aiCalls(name, cradleMaker)
   // splices(name, cradleMaker)
   // hal(name, cradleMaker)
   // isolates(name, cradleMaker)

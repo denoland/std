@@ -3,8 +3,8 @@ import { addBranches, CradleMaker, print, randomId } from '@/constants.ts'
 import { Api } from '../isolates/thread.ts'
 
 export default (name: string, cradleMaker: CradleMaker) => {
-  const prefix = name + ': '
-  Deno.test(prefix + 'ai', async (t) => {
+  const prefix = name + ':ai: '
+  Deno.test(prefix + 'basic', async (t) => {
     const { backchat, engine } = await cradleMaker()
     log('pid', print(backchat.pid))
 
@@ -13,10 +13,10 @@ export default (name: string, cradleMaker: CradleMaker) => {
       const threadId = `thr_${randomId()}`
       const result = await execute({
         threadId,
-        agentPath: 'agents/goalie.md',
-        content: 'hello',
+        agentPath: 'agents/agent-fixture.md',
+        content: 'say "Hello"',
       })
-      console.log('result', result)
+      expect(result).toBe('Hello')
     })
     log('stopping')
     await engine.stop()
@@ -38,42 +38,56 @@ export default (name: string, cradleMaker: CradleMaker) => {
           const { patch } = splice.changes[threadPath]
           assert(patch, 'patch missing')
           latest = JSON.parse(patch)
-          log('splice', splice.oid, latest)
+          log('splice', splice.oid)
         }
       }
     }
     splices()
     await t.step('say the word "hello"', async () => {
-      const { execute } = await backchat.actions<Api>('thread')
-      await execute({
+      const opts = { branchName: threadId, noClose: true }
+      const { execute } = await backchat.actions<Api>('thread', opts)
+      const result = await execute({
         threadId,
         agentPath: 'agents/agent-fixture.md',
         content: 'say the word: "hello" without calling any functions',
       })
-      log('result', latest)
-      assert(Array.isArray(latest))
-      expect(latest[2].content.toLowerCase()).toBe('hello')
+      log('result', result)
+      expect(result).toBe('hello')
+      assert('messages' in latest, 'messages missing')
+      assert(Array.isArray(latest.messages), 'messages not an array')
+      expect(latest.messages[2].content.toLowerCase()).toBe('hello')
     })
+
+    const opts = { target }
     await t.step('what is your name ?', async () => {
-      const { execute } = await backchat.actions<Api>('thread')
-      await execute({
+      log('target', print(target))
+      const { addMessageRun } = await backchat.actions<Api>('thread', opts)
+      const result = await addMessageRun({
         threadId,
-        agentPath: 'agents/agent-fixture.md',
         content: 'what is your name ?',
       })
-      assert(Array.isArray(latest))
+      log('result', result)
+
+      const expected = `My name is Assistant.`
+      expect(result).toBe(expected)
+      assert('messages' in latest, 'messages missing')
+      assert(Array.isArray(latest.messages), 'messages not an array')
+      expect(latest.messages[4].content).toBe(expected)
     })
 
     await t.step('repeat your last', async () => {
-      const { execute } = await backchat.actions<Api>('thread')
-      await execute({
+      const { addMessageRun } = await backchat.actions<Api>('thread', opts)
+      const result = await addMessageRun({
         threadId,
-        agentPath: 'agents/agent-fixture.md',
         content: 'repeat your last, without calling any functions',
       })
 
-      log('result', latest)
-      assert(Array.isArray(latest))
+      log('result', result)
+      const expected = `My name is Assistant.`
+      expect(result).toBe(expected)
+      assert('messages' in latest, 'messages missing')
+      assert(Array.isArray(latest.messages), 'messages not an array')
+      expect(latest.messages[6].content).toBe(expected)
     })
 
     await engine.stop()

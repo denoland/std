@@ -2,7 +2,7 @@ import { expect } from '@utils'
 import { addBranches, CradleMaker } from '@/constants.ts'
 
 export default (name: string, cradleMaker: CradleMaker) => {
-  const prefix = name + ': '
+  const prefix = name + ':process: '
   Deno.test(prefix + 'session', async (t) => {
     const { backchat, engine } = await cradleMaker()
     const repo = 'process/session'
