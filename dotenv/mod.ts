@@ -44,22 +44,6 @@ export interface LoadOptions {
   export?: boolean;
 
   /**
-   * Optional path to `.env.example` file which is used for validation.
-   * To prevent the default value from being used, set to `null`.
-   *
-   * @default {"./.env.example"}
-   */
-  examplePath?: string | null;
-
-  /**
-   * Set to `true` to allow required env variables to be empty. Otherwise, it
-   * will throw an error if any variable is empty.
-   *
-   * @default {false}
-   */
-  allowEmptyValues?: boolean;
-
-  /**
    * Optional path to `.env.defaults` file which is used to define default
    * (fallback) values. To prevent the default value from being used,
    * set to `null`.
@@ -93,10 +77,8 @@ export function loadSync(
 ): Record<string, string> {
   const {
     envPath = ".env",
-    examplePath = ".env.example",
     defaultsPath = ".env.defaults",
     export: _export = false,
-    allowEmptyValues = false,
   } = options;
   const conf = envPath ? parseFileSync(envPath) : {};
 
@@ -107,11 +89,6 @@ export function loadSync(
         conf[key] = value;
       }
     }
-  }
-
-  if (examplePath) {
-    const confExample = parseFileSync(examplePath);
-    assertSafe(conf, confExample, allowEmptyValues);
   }
 
   if (_export) {
@@ -232,9 +209,7 @@ export function loadSync(
  * |------|-------|-----------
  * |envPath|./.env|Path and filename of the `.env` file.  Use null to prevent the .env file from being loaded.
  * |defaultsPath|./.env.defaults|Path and filename of the `.env.defaults` file. Use null to prevent the .env.defaults file from being loaded.
- * |examplePath|./.env.example|Path and filename of the `.env.example` file. Use null to prevent the .env.example file from being loaded.
  * |export|false|When true, this will export all environment variables in the `.env` and `.env.default` files to the process environment (e.g. for use by `Deno.env.get()`) but only if they are not already set.  If a variable is already in the process, the `.env` value is ignored.
- * |allowEmptyValues|false|Allows empty values for specified env variables (throws otherwise)
  *
  * ### Example configuration
  *
@@ -244,9 +219,7 @@ export function loadSync(
  *
  * const conf = await load({
  *   envPath: "./.env_prod", // Uses .env_prod instead of .env
- *   examplePath: "./.env_required", // Uses .env_required instead of .env.example
  *   export: true, // Exports all variables to the environment
- *   allowEmptyValues: true, // Allows empty values for specified env variables
  * });
  * ```
  *
@@ -308,10 +281,8 @@ export async function load(
 ): Promise<Record<string, string>> {
   const {
     envPath = ".env",
-    examplePath = ".env.example",
     defaultsPath = ".env.defaults",
     export: _export = false,
-    allowEmptyValues = false,
   } = options;
   const conf = envPath ? await parseFile(envPath) : {};
 
@@ -322,11 +293,6 @@ export async function load(
         conf[key] = value;
       }
     }
-  }
-
-  if (examplePath) {
-    const confExample = await parseFile(examplePath);
-    assertSafe(conf, confExample, allowEmptyValues);
   }
 
   if (_export) {
@@ -358,107 +324,5 @@ async function parseFile(
   } catch (e) {
     if (e instanceof Deno.errors.NotFound) return {};
     throw e;
-  }
-}
-
-function assertSafe(
-  conf: Record<string, string>,
-  confExample: Record<string, string>,
-  allowEmptyValues: boolean,
-) {
-  const missingEnvVars: string[] = [];
-
-  for (const key in confExample) {
-    if (key in conf) {
-      if (!allowEmptyValues && conf[key] === "") {
-        missingEnvVars.push(key);
-      }
-    } else if (Deno.env.get(key) !== undefined) {
-      if (!allowEmptyValues && Deno.env.get(key) === "") {
-        missingEnvVars.push(key);
-      }
-    } else {
-      missingEnvVars.push(key);
-    }
-  }
-
-  if (missingEnvVars.length > 0) {
-    const errorMessages = [
-      `The following variables were defined in the example file but are not present in the environment:\n  ${
-        missingEnvVars.join(
-          ", ",
-        )
-      }`,
-      `Make sure to add them to your env file.`,
-      !allowEmptyValues &&
-      `If you expect any of these variables to be empty, you can set the allowEmptyValues option to true.`,
-    ];
-
-    throw new MissingEnvVarsError(
-      errorMessages.filter(Boolean).join("\n\n"),
-      missingEnvVars,
-    );
-  }
-}
-
-/**
- * Error thrown in {@linkcode load} and {@linkcode loadSync} when required
- * environment variables are missing.
- *
- * @example Usage
- * ```ts no-eval
- * import { MissingEnvVarsError, load } from "@std/dotenv";
- *
- * try {
- *   await load();
- * } catch (e) {
- *   if (e instanceof MissingEnvVarsError) {
- *     console.error(e.message);
- *   }
- * }
- * ```
- */
-export class MissingEnvVarsError extends Error {
-  /**
-   * The keys of the missing environment variables.
-   *
-   * @example Usage
-   * ```ts no-eval
-   * import { MissingEnvVarsError, load } from "@std/dotenv";
-   *
-   * try {
-   *   await load();
-   * } catch (e) {
-   *   if (e instanceof MissingEnvVarsError) {
-   *     console.error(e.missing);
-   *   }
-   * }
-   * ```
-   */
-  missing: string[];
-  /**
-   * Constructs a new instance.
-   *
-   * @example Usage
-   * ```ts no-eval
-   * import { MissingEnvVarsError, load } from "@std/dotenv";
-   *
-   * try {
-   *   await load();
-   * } catch (e) {
-   *   if (e instanceof MissingEnvVarsError) {
-   *     console.error(e.message);
-   *   }
-   * }
-   * ```
-   *
-   * @param message The error message
-   * @param missing The keys of the missing environment variables
-   */
-  constructor(message: string, missing: string[]) {
-    super(message);
-    this.name = "MissingEnvVarsError";
-    this.missing = missing;
-    Object.setPrototypeOf(this, new.target.prototype);
   }
 }
