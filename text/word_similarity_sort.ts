@@ -11,10 +11,8 @@ export interface WordSimilaritySortOptions extends CompareSimilarityOptions {}
 /**
  * Sorts a string-array by similarity to a given string.
  *
- * Note: the ordering of words may change with version-updates
- * E.g. word-distance metric may change (improve)
- * use a named-distance (e.g. levenshteinDistance) to
- * guarantee a particular ordering.
+ * By default, calculates the distance between words using the
+ * {@link https://en.wikipedia.org/wiki/Levenshtein_distance | Levenshtein distance}.
  *
  * @example Basic usage
  *
