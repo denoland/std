@@ -63,9 +63,7 @@ function compileMap(...typesList: Type<unknown>[][]): TypeMap {
 
   for (const types of typesList) {
     for (const type of types) {
-      if (type.kind !== null) {
-        result[type.kind][type.tag] = result["fallback"][type.tag] = type;
-      }
+      result[type.kind][type.tag] = result["fallback"][type.tag] = type;
     }
   }
   return result;
