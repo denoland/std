@@ -199,6 +199,17 @@ Deno.test({
       },
     });
     await t.step({
+      name: "error column Unicode code point number",
+      fn() {
+        const input = `a,b,🐱"`;
+        assertThrows(
+          () => parse(input),
+          ParseError,
+          'parse error on line 1, column 5: bare " in non-quoted-field',
+        );
+      },
+    });
+    await t.step({
       name: "TrimQuote",
       fn() {
         const input = ` "a"," b",c`;

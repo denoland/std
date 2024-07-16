@@ -21,5 +21,5 @@
 
 export * from "./concatenated_json_parse_stream.ts";
 export * from "./types.ts";
-export * from "./json_parse_stream.ts";
-export * from "./json_stringify_stream.ts";
+export * from "./parse_stream.ts";
+export * from "./stringify_stream.ts";

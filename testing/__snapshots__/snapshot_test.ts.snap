@@ -418,14 +418,14 @@ Snapshot Test - First ... ok (--ms)
 Snapshot Test - Second ... ok (--ms)
 ------- post-test output -------
 
- > 1 snapshot updated.
+ > some snapshots updated.
 ----- post-test output end -----
 running 2 tests from <tempDir>/test.ts
 Snapshot Test - First ... ok (--ms)
 Snapshot Test - Second ... ok (--ms)
 ------- post-test output -------
 
- > 2 snapshots updated.
+ > some snapshots updated.
 ----- post-test output end -----
 
 ok | 4 passed | 0 failed (--ms)
@@ -483,5 +483,11 @@ error: PermissionDenied: Missing write access to snapshot file (file://<path>). 
 
 FAILED | 0 passed | 1 failed (--ms)
 
+"
+`;
+
+snapshot[`assertSnapshot() - should work with the string with '\\r' character 1`] = `
+"Hello\\r
+World!\\r
 "
 `;
