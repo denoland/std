@@ -20,43 +20,27 @@ const testdataDir = path.resolve(moduleDir, "testdata");
 
 const testOptions = Object.freeze({
   envPath: path.join(testdataDir, ".env"),
-  defaultsPath: path.join(testdataDir, ".env.defaults"),
 });
 
 Deno.test("load() handles non-existent .env files", async () => {
-  //n.b. neither .env nor .env.default exist in the current directory
+  // .env doesn't exist in the current directory
   assertEquals({}, await load());
   assertEquals({}, loadSync());
 
   const loadOptions = {
     envPath: "some.nonexistent.env",
     examplePath: "some.nonexistent.example",
-    defaultsPath: "some.nonexistent.defaults",
   };
   assertEquals({}, await load(loadOptions));
   assertEquals({}, loadSync(loadOptions));
 });
 
-Deno.test("load() handles build from .env.default only", async () => {
-  const conf = loadSync({
-    defaultsPath: path.join(testdataDir, ".env.defaults"),
-  });
-  assertEquals(conf.DEFAULT1, "Some Default", "loaded from .env.default");
-
-  const asyncConf = await load({
-    defaultsPath: path.join(testdataDir, ".env.defaults"),
-  });
-  assertEquals(asyncConf.DEFAULT1, "Some Default", "loaded from .env.default");
-});
-
 Deno.test("load() handles comprised .env and .env.defaults", async () => {
   const conf = loadSync(testOptions);
   assertEquals(conf.GREETING, "hello world", "loaded from .env");
-  assertEquals(conf.DEFAULT1, "Some Default", "loaded from .env.default");
 
   const asyncConf = await load(testOptions);
   assertEquals(asyncConf.GREETING, "hello world", "loaded from .env");
-  assertEquals(asyncConf.DEFAULT1, "Some Default", "loaded from .env.default");
 });
 
 Deno.test("load() handles exported entries accessibility in Deno.env", async () => {
@@ -77,14 +61,8 @@ function validateExport(): void {
       "hello world",
       "exported from .env -> Deno.env",
     );
-    assertEquals(
-      Deno.env.get("DEFAULT1"),
-      "Some Default",
-      "exported from .env.default -> Deno.env",
-    );
   } finally {
     Deno.env.delete("GREETING");
-    Deno.env.delete("DEFAULT1");
   }
 }
 
@@ -104,11 +82,6 @@ function validateNotOverridden(conf: Record<string, string>): void {
       "Do not override!",
       "not exported from .env -> Deno.env",
     );
-    assertEquals(
-      Deno.env.get("DEFAULT1"),
-      "Some Default",
-      "exported from .env.default -> Deno.env",
-    );
   } finally {
     Deno.env.delete("DEFAULT1");
   }
@@ -119,16 +92,6 @@ Deno.test("load() handles example file key in .env, no issues loading", async ()
   const loadOptions = {
     ...testOptions,
     examplePath: path.join(testdataDir, "./.env.example.test"),
-  };
-  loadSync(loadOptions);
-  await load(loadOptions);
-});
-
-Deno.test("load() handles example file key in .env.default, no issues loading", async () => {
-  //Both .env.example3.test and .env.default contain "DEFAULT1"
-  const loadOptions = {
-    ...testOptions,
-    examplePath: path.join(testdataDir, "./.env.example3.test"),
   };
   loadSync(loadOptions);
   await load(loadOptions);
@@ -249,26 +212,6 @@ Deno.test("load() checks that required keys sourced from process environment can
   }
 });
 
-Deno.test("load() loads .env and .env.defaults successfully from default file names/paths", async () => {
-  const command = new Deno.Command(Deno.execPath(), {
-    args: [
-      "run",
-      "--no-lock",
-      "--allow-read",
-      "--allow-env",
-      path.join(testdataDir, "./app_defaults.ts"),
-    ],
-    cwd: testdataDir,
-  });
-  const { stdout } = await command.output();
-
-  const decoder = new TextDecoder();
-  const conf = JSON.parse(decoder.decode(stdout).trim());
-
-  assertEquals(conf.GREETING, "hello world", "fetches .env by default");
-  assertEquals(conf.DEFAULT1, "Some Default", "default value loaded");
-});
-
 Deno.test("load() expands empty values from process env expand as empty value", async () => {
   try {
     Deno.env.set("EMPTY", "");
@@ -308,7 +251,6 @@ Deno.test(
     // note lack of --allow-env permission
     const conf = loadSync(testOptions);
     assertEquals(conf.GREETING, "hello world");
-    assertEquals(conf.DEFAULT1, "Some Default");
   },
 );
 
@@ -324,7 +266,6 @@ Deno.test(
     // note lack of --allow-env permission
     const loadOptions = {
       envPath: path.join(testdataDir, "./.env.single.expand"),
-      defaultsPath: null,
       examplePath: null,
     };
     assertThrows(
@@ -349,7 +290,6 @@ Deno.test(
 
       const loadOptions = {
         envPath: path.join(testdataDir, "./.env.single.expand"),
-        defaultsPath: null,
         examplePath: null,
       };
       const conf = loadSync(loadOptions);
@@ -376,7 +316,6 @@ Deno.test(
   },
   async (t) => {
     const optsNoPaths = {
-      defaultsPath: null,
       envPath: null,
       examplePath: null,
     } satisfies LoadOptions;
@@ -387,7 +326,6 @@ Deno.test(
 
     const optsOnlyEnvPath = {
       ...optsEnvPath,
-      defaultsPath: null,
       examplePath: null,
     } satisfies LoadOptions;
 
@@ -402,21 +340,9 @@ Deno.test(
       assertEnv(await load(optsOnlyEnvPath));
 
       await assertRejects(
-        () => load(optsEnvPath),
-        Deno.errors.PermissionDenied,
-        `Requires read access to ".env.defaults"`,
-      );
-
-      await assertRejects(
-        () => load({ ...optsEnvPath, defaultsPath: null }),
+        () => load({ ...optsEnvPath }),
         Deno.errors.PermissionDenied,
         `Requires read access to ".env.example"`,
-      );
-
-      await assertRejects(
-        () => load({ ...optsEnvPath, examplePath: null }),
-        Deno.errors.PermissionDenied,
-        `Requires read access to ".env.defaults"`,
       );
     });
 
@@ -425,21 +351,9 @@ Deno.test(
       assertEnv(loadSync(optsOnlyEnvPath));
 
       assertThrows(
-        () => loadSync(optsEnvPath),
-        Deno.errors.PermissionDenied,
-        `Requires read access to ".env.defaults"`,
-      );
-
-      assertThrows(
-        () => loadSync({ ...optsEnvPath, defaultsPath: null }),
+        () => loadSync({ ...optsEnvPath }),
         Deno.errors.PermissionDenied,
         `Requires read access to ".env.example"`,
-      );
-
-      assertThrows(
-        () => loadSync({ ...optsEnvPath, examplePath: null }),
-        Deno.errors.PermissionDenied,
-        `Requires read access to ".env.defaults"`,
       );
     });
   },

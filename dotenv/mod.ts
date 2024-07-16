@@ -58,21 +58,6 @@ export interface LoadOptions {
    * @default {false}
    */
   allowEmptyValues?: boolean;
-
-  /**
-   * Optional path to `.env.defaults` file which is used to define default
-   * (fallback) values. To prevent the default value from being used,
-   * set to `null`.
-   *
-   * ```sh
-   * # .env.defaults
-   * # Will not be set if GREETING is set in base .env file
-   * GREETING="a secret to everybody"
-   * ```
-   *
-   * @default {"./.env.defaults"}
-   */
-  defaultsPath?: string | null;
 }
 
 /**
@@ -94,20 +79,10 @@ export function loadSync(
   const {
     envPath = ".env",
     examplePath = ".env.example",
-    defaultsPath = ".env.defaults",
     export: _export = false,
     allowEmptyValues = false,
   } = options;
   const conf = envPath ? parseFileSync(envPath) : {};
-
-  if (defaultsPath) {
-    const confDefaults = parseFileSync(defaultsPath);
-    for (const [key, value] of Object.entries(confDefaults)) {
-      if (!(key in conf)) {
-        conf[key] = value;
-      }
-    }
-  }
 
   if (examplePath) {
     const confExample = parseFileSync(examplePath);
@@ -176,15 +151,14 @@ export function loadSync(
  * |----|-------|
  * |.env|primary file for storing key-value environment entries
  * |.env.example|this file does not set any values, but specifies env variables which must be present in the configuration object or process environment after loading dotenv
- * |.env.defaults|specify default values for env variables to be used when there is no entry in the `.env` file
  *
  * ### Example file
  *
  * The purpose of the example file is to provide a list of environment
  * variables which must be set or already present in the process environment
  * or an exception will be thrown.  These
- * variables may be set externally or loaded via the `.env` or
- * `.env.defaults` files.  A description may also be provided to help
+ * variables may be set externally or loaded via the `.env` files.
+ * A description may also be provided to help
  * understand the purpose of the env variable. The values in this file
  * are for documentation only and are not set in the environment. Example:
  *
@@ -202,27 +176,6 @@ export function loadSync(
  * DATA_KEY or DATA_URL is not present in the environment an exception
  * is thrown.
  *
- * ### Defaults
- *
- * This file is used to provide a list of default environment variables
- * which will be used if there is no overriding variable in the `.env`
- * file.
- *
- * ```sh
- * # .env.defaults
- * KEY_1=DEFAULT_VALUE
- * KEY_2=ANOTHER_DEFAULT_VALUE
- * ```
- * ```sh
- * # .env
- * KEY_1=ABCD
- * ```
- * The environment variables set after dotenv loads are:
- * ```sh
- * KEY_1=ABCD
- * KEY_2=ANOTHER_DEFAULT_VALUE
- * ```
- *
  * ## Configuration
  *
  * Loading environment files comes with a number of options passed into
@@ -231,9 +184,8 @@ export function loadSync(
  * |Option|Default|Description
  * |------|-------|-----------
  * |envPath|./.env|Path and filename of the `.env` file.  Use null to prevent the .env file from being loaded.
- * |defaultsPath|./.env.defaults|Path and filename of the `.env.defaults` file. Use null to prevent the .env.defaults file from being loaded.
  * |examplePath|./.env.example|Path and filename of the `.env.example` file. Use null to prevent the .env.example file from being loaded.
- * |export|false|When true, this will export all environment variables in the `.env` and `.env.default` files to the process environment (e.g. for use by `Deno.env.get()`) but only if they are not already set.  If a variable is already in the process, the `.env` value is ignored.
+ * |export|false|When true, this will export all environment variables in the `.env` file to the process environment (e.g. for use by `Deno.env.get()`) but only if they are not already set.  If a variable is already in the process, the `.env` value is ignored.
  * |allowEmptyValues|false|Allows empty values for specified env variables (throws otherwise)
  *
  * ### Example configuration
@@ -257,7 +209,7 @@ export function loadSync(
  * in your `.env` file, you will need the `--allow-env` permission.  E.g.
  *
  * ```sh
- * deno run --allow-read=.env,.env.defaults,.env.example --allow-env=ENV1,ENV2 app.ts
+ * deno run --allow-read=.env,.env.example --allow-env=ENV1,ENV2 app.ts
  * ```
  *
  * ## Parsing Rules
@@ -309,20 +261,10 @@ export async function load(
   const {
     envPath = ".env",
     examplePath = ".env.example",
-    defaultsPath = ".env.defaults",
     export: _export = false,
     allowEmptyValues = false,
   } = options;
   const conf = envPath ? await parseFile(envPath) : {};
-
-  if (defaultsPath) {
-    const confDefaults = await parseFile(defaultsPath);
-    for (const [key, value] of Object.entries(confDefaults)) {
-      if (!(key in conf)) {
-        conf[key] = value;
-      }
-    }
-  }
 
   if (examplePath) {
     const confExample = await parseFile(examplePath);
