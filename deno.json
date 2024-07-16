@@ -25,7 +25,7 @@
     "@std/dotenv": "jsr:@std/dotenv@^0.224.2",
     "@std/encoding": "jsr:@std/encoding@^1.0.1",
     "@std/expect": "jsr:@std/expect@^1.0.0-rc.2",
-    "@std/fmt": "jsr:@std/fmt@^1.0.0-rc.1",
+    "@std/fmt": "jsr:@std/fmt@^1.0.0",
     "@std/front-matter": "jsr:@std/front-matter@^1.0.0-rc.2",
     "@std/fs": "jsr:@std/fs@^1.0.0-rc.5",
     "@std/html": "jsr:@std/html@^1.0.0",
