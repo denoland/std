@@ -4,7 +4,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-import type { KindType, Type } from "./_type.ts";
+import type { KindType, ScalarType, Type } from "./_type.ts";
 import type { ArrayObject } from "./_utils.ts";
 import {
   binary,
@@ -69,7 +69,7 @@ function compileMap(...typesList: Type<unknown>[][]): TypeMap {
 }
 
 export class Schema {
-  implicit: Type[];
+  implicit: ScalarType[];
   explicit: Type[];
   include: Schema[];
 
@@ -78,7 +78,7 @@ export class Schema {
   compiledTypeMap: TypeMap;
 
   constructor(definition: {
-    implicit?: Type[];
+    implicit?: ScalarType[];
     explicit?: Type[];
     include?: Schema[];
   }) {

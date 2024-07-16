@@ -3,7 +3,7 @@
 // Copyright 2011-2015 by Vitaly Puzrin. All rights reserved. MIT license.
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import type { Type } from "../_type.ts";
+import type { ScalarType } from "../_type.ts";
 import { isBoolean } from "../_utils.ts";
 
 function resolveYamlBoolean(data: string): boolean {
@@ -17,7 +17,7 @@ function constructYamlBoolean(data: string): boolean {
   return data === "true" || data === "True" || data === "TRUE";
 }
 
-export const bool: Type<boolean> = {
+export const bool: ScalarType<boolean> = {
   tag: "tag:yaml.org,2002:bool",
   construct: constructYamlBoolean,
   defaultStyle: "lowercase",

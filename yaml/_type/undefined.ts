@@ -3,9 +3,9 @@
 // Copyright 2011-2015 by Vitaly Puzrin. All rights reserved. MIT license.
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import type { Type } from "../_type.ts";
+import type { ScalarType } from "../_type.ts";
 
-export const undefinedType: Type<undefined> = {
+export const undefinedType: ScalarType<undefined> = {
   tag: "tag:yaml.org,2002:js/undefined",
   kind: "scalar",
   resolve() {

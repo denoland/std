@@ -2,9 +2,9 @@
 // https://github.com/nodeca/js-yaml/commit/665aadda42349dcae869f12040d9b10ef18d12da
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import type { Type } from "../_type.ts";
+import type { ScalarType } from "../_type.ts";
 
-export const str: Type<string> = {
+export const str: ScalarType<string> = {
   tag: "tag:yaml.org,2002:str",
   resolve() {
     return true;

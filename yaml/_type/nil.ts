@@ -3,7 +3,7 @@
 // Copyright 2011-2015 by Vitaly Puzrin. All rights reserved. MIT license.
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import type { Type } from "../_type.ts";
+import type { ScalarType } from "../_type.ts";
 
 function resolveYamlNull(data: string): boolean {
   const max = data.length;
@@ -22,7 +22,7 @@ function isNull(object: unknown): object is null {
   return object === null;
 }
 
-export const nil: Type<null> = {
+export const nil: ScalarType<null> = {
   tag: "tag:yaml.org,2002:null",
   construct: constructYamlNull,
   defaultStyle: "lowercase",

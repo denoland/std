@@ -3,7 +3,7 @@
 // Copyright 2011-2015 by Vitaly Puzrin. All rights reserved. MIT license.
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import type { StyleVariant, Type } from "../_type.ts";
+import type { ScalarType, StyleVariant } from "../_type.ts";
 import { isNegativeZero } from "../_utils.ts";
 
 const YAML_FLOAT_PATTERN = new RegExp(
@@ -114,7 +114,7 @@ function isFloat(object: unknown): boolean {
     (object % 1 !== 0 || isNegativeZero(object));
 }
 
-export const float: Type<number> = {
+export const float: ScalarType<number> = {
   tag: "tag:yaml.org,2002:float",
   construct: constructYamlFloat,
   defaultStyle: "lowercase",

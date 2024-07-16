@@ -3,7 +3,7 @@
 // Copyright 2011-2015 by Vitaly Puzrin. All rights reserved. MIT license.
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import type { Type } from "../_type.ts";
+import type { ScalarType } from "../_type.ts";
 
 const YAML_DATE_REGEXP = new RegExp(
   "^([0-9][0-9][0-9][0-9])" + // [1] year
@@ -87,7 +87,7 @@ function representYamlTimestamp(date: Date): string {
   return date.toISOString();
 }
 
-export const timestamp: Type<Date> = {
+export const timestamp: ScalarType<Date> = {
   tag: "tag:yaml.org,2002:timestamp",
   construct: constructYamlTimestamp,
   instanceOf: Date,

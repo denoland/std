@@ -35,3 +35,6 @@ export interface Type<D = any> {
   // deno-lint-ignore no-explicit-any
   construct: (data: any) => D;
 }
+
+// deno-lint-ignore no-explicit-any
+export type ScalarType<D = any> = Omit<Type<D>, "kind"> & { kind: "scalar" };
