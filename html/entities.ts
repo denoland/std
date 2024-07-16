@@ -146,7 +146,7 @@ export function unescape(
  *
  * Reference on invalid names can be found [here](https://html.spec.whatwg.org/multipage/custom-elements.html#valid-custom-element-name)
  *
- * @param {string} elementName
+ * @param {string} elementName The element name to be validate
  * @returns {boolean} A boolean value indicating if the custom element name is valid or not
  */
 export function isValidCustomElement(elementName: string): boolean {
