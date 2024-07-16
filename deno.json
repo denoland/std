@@ -38,7 +38,7 @@
     "@std/log": "jsr:@std/log@^0.224.5",
     "@std/media-types": "jsr:@std/media-types@^1.0.1",
     "@std/msgpack": "jsr:@std/msgpack@^1.0.0",
-    "@std/net": "jsr:@std/net@^1.0.0-rc.1",
+    "@std/net": "jsr:@std/net@^1.0.0",
     "@std/path": "jsr:@std/path@^1.0.0",
     "@std/regexp": "jsr:@std/regexp@^1.0.0",
     "@std/semver": "jsr:@std/semver@^1.0.0-rc.2",
