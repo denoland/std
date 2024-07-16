@@ -2,7 +2,7 @@
 commands:
   - files:read
   - files:search            # searches artifacts using CoT
-  - backchat:searchAgents   # search for an agent to fulfill a task
+  - agents:search           # search for an agent to fulfill a task
   - backchat:thread         # starts a new thread with a specified agent
   - backchat:focus          # given an existing thread, focus the user on it
   - backchat:searchThreads  # searches for threads based on content
