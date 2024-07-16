@@ -237,7 +237,7 @@ type Dedot<TKey extends string, TValue> = TKey extends
 
 type ValueOf<TValue> = TValue[keyof TValue];
 
-/** The value returned from `parseArgs`. */
+/** The value returned from {@linkcode parseArgs}. */
 export type Args<
   // deno-lint-ignore no-explicit-any
   TArgs extends Record<string, unknown> = Record<string, any>,
@@ -260,7 +260,7 @@ type DoubleDash = {
   "--"?: Array<string>;
 };
 
-/** The options for the `parseArgs` call. */
+/** Options for {@linkcode parseArgs}. */
 export interface ParseOptions<
   TBooleans extends BooleanType = BooleanType,
   TStrings extends StringType = StringType,
@@ -435,12 +435,12 @@ const FLAG_REGEXP =
  * considered a key-value pair. Any arguments which could not be parsed are
  * available in the `_` property of the returned object.
  *
- * By default, the flags module tries to determine the type of all arguments
- * automatically and the return type of the `parseArgs` method will have an index
+ * By default, this module tries to determine the type of all arguments
+ * automatically and the return type of this function will have an index
  * signature with `any` as value (`{ [x: string]: any }`).
  *
  * If the `string`, `boolean` or `collect` option is set, the return value of
- * the `parseArgs` method will be fully typed and the index signature of the return
+ * this function will be fully typed and the index signature of the return
  * type will change to `{ [x: string]: unknown }`.
  *
  * Any arguments after `'--'` will not be parsed and will end up in `parsedArgs._`.
