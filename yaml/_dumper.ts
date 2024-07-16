@@ -26,7 +26,6 @@ import {
   SINGLE_QUOTE,
   VERTICAL_LINE,
 } from "./_chars.ts";
-import { YamlError } from "./_error.ts";
 import { DEFAULT_SCHEMA, type Schema } from "./_schema.ts";
 import type { StyleVariant, Type } from "./_type.ts";
 import { type ArrayObject, getObjectTypeString, isObject } from "./_utils.ts";
@@ -577,7 +576,7 @@ export class DumperState {
         case STYLE_DOUBLE:
           return `"${escapeString(string)}"`;
         default:
-          throw new YamlError("impossible error: invalid scalar style");
+          throw new TypeError("impossible error: invalid scalar style");
       }
     };
     this.dump = createDump();
@@ -701,7 +700,7 @@ export class DumperState {
       objectKeyList.sort(this.sortKeys);
     } else if (this.sortKeys) {
       // Something is wrong
-      throw new YamlError("sortKeys must be a boolean or a function");
+      throw new TypeError("sortKeys must be a boolean or a function");
     }
 
     for (const [index, objectKey] of objectKeyList.entries()) {
@@ -789,7 +788,7 @@ export class DumperState {
             this.dump = type.represent[style]!(object, style);
             return true;
           }
-          throw new YamlError(
+          throw new TypeError(
             `!<${type.tag}> tag resolver accepts not "${style}" style`,
           );
         }
@@ -879,7 +878,7 @@ export class DumperState {
         }
       } else {
         if (this.skipInvalid) return false;
-        throw new YamlError(
+        throw new TypeError(
           `unacceptable kind of an object to dump ${
             getObjectTypeString(this.dump)
           }`,
