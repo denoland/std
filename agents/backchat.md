@@ -1,4 +1,6 @@
 ---
+config:
+  temperature: 0
 commands:
   - files:search            # searches artifacts using CoT
   - agents:search           # search for an agent to fulfill a task
