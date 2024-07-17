@@ -4,6 +4,8 @@
 // https://github.com/golang/go/blob/master/LICENSE
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
+import { codePointLength } from "./_shared.ts";
+
 /** Options for {@linkcode parseRecord}. */
 export interface ReadOptions {
   /** Character which separates values.
@@ -59,53 +61,49 @@ export interface LineReader {
 }
 
 export async function parseRecord(
-  line: string,
+  fullLine: string,
   reader: LineReader,
-  opt: ReadOptions,
+  options: ReadOptions,
   startLine: number,
   lineIndex: number = startLine,
 ): Promise<Array<string>> {
   // line starting with comment character is ignored
-  if (opt.comment && line[0] === opt.comment) {
+  if (options.comment && fullLine[0] === options.comment) {
     return [];
   }
 
-  if (opt.separator === undefined) throw new TypeError("Separator is required");
+  if (options.separator === undefined) {
+    throw new TypeError("Separator is required");
+  }
 
-  let fullLine = line;
-  let quoteError: ParseError | null = null;
+  let line = fullLine;
   const quote = '"';
   const quoteLen = quote.length;
-  const separatorLen = opt.separator.length;
+  const separatorLen = options.separator.length;
   let recordBuffer = "";
   const fieldIndexes = [] as number[];
-  parseField:
-  for (;;) {
-    if (opt.trimLeadingSpace) {
+  parseField: while (true) {
+    if (options.trimLeadingSpace) {
       line = line.trimStart();
     }
 
     if (line.length === 0 || !line.startsWith(quote)) {
       // Non-quoted string field
-      const i = line.indexOf(opt.separator);
+      const i = line.indexOf(options.separator);
       let field = line;
       if (i >= 0) {
         field = field.substring(0, i);
       }
       // Check to make sure a quote does not appear in field.
-      if (!opt.lazyQuotes) {
+      if (!options.lazyQuotes) {
         const j = field.indexOf(quote);
         if (j >= 0) {
-          const col = runeCount(
+          const col = codePointLength(
             fullLine.slice(0, fullLine.length - line.slice(j).length),
           );
-          quoteError = new ParseError(
-            startLine + 1,
-            lineIndex,
-            col,
-            ERR_BARE_QUOTE,
+          throw new SyntaxError(
+            createBareQuoteErrorMessage(startLine + 1, lineIndex, col),
           );
-          break parseField;
         }
       }
       recordBuffer += field;
@@ -118,7 +116,7 @@ export async function parseRecord(
     } else {
       // Quoted string field
       line = line.substring(quoteLen);
-      for (;;) {
+      while (true) {
         const i = line.indexOf(quote);
         if (i >= 0) {
           // Hit next quote.
@@ -128,7 +126,7 @@ export async function parseRecord(
             // `""` sequence (append quote).
             recordBuffer += quote;
             line = line.substring(quoteLen);
-          } else if (line.startsWith(opt.separator)) {
+          } else if (line.startsWith(options.separator)) {
             // `","` sequence (end of field).
             line = line.substring(separatorLen);
             fieldIndexes.push(recordBuffer.length);
@@ -137,21 +135,17 @@ export async function parseRecord(
             // `"\n` sequence (end of line).
             fieldIndexes.push(recordBuffer.length);
             break parseField;
-          } else if (opt.lazyQuotes) {
+          } else if (options.lazyQuotes) {
             // `"` sequence (bare quote).
             recordBuffer += quote;
           } else {
             // `"*` sequence (invalid non-escaped quote).
-            const col = runeCount(
+            const col = codePointLength(
               fullLine.slice(0, fullLine.length - line.length - quoteLen),
             );
-            quoteError = new ParseError(
-              startLine + 1,
-              lineIndex,
-              col,
-              ERR_QUOTE,
+            throw new SyntaxError(
+              createQuoteErrorMessage(startLine + 1, lineIndex, col),
             );
-            break parseField;
           }
         } else if (line.length > 0 || !reader.isEOF()) {
           // Hit end of line (copy all data so far).
@@ -162,15 +156,11 @@ export async function parseRecord(
           fullLine = line;
           if (r === null) {
             // Abrupt end of file (EOF or error).
-            if (!opt.lazyQuotes) {
-              const col = runeCount(fullLine);
-              quoteError = new ParseError(
-                startLine + 1,
-                lineIndex,
-                col,
-                ERR_QUOTE,
+            if (!options.lazyQuotes) {
+              const col = codePointLength(fullLine);
+              throw new SyntaxError(
+                createQuoteErrorMessage(startLine + 1, lineIndex, col),
               );
-              break parseField;
             }
             fieldIndexes.push(recordBuffer.length);
             break parseField;
@@ -178,24 +168,17 @@ export async function parseRecord(
           recordBuffer += "\n"; // preserve line feed (This is because TextProtoReader removes it.)
         } else {
           // Abrupt end of file (EOF on error).
-          if (!opt.lazyQuotes) {
-            const col = runeCount(fullLine);
-            quoteError = new ParseError(
-              startLine + 1,
-              lineIndex,
-              col,
-              ERR_QUOTE,
+          if (!options.lazyQuotes) {
+            const col = codePointLength(fullLine);
+            throw new SyntaxError(
+              createQuoteErrorMessage(startLine + 1, lineIndex, col),
             );
-            break parseField;
           }
           fieldIndexes.push(recordBuffer.length);
           break parseField;
         }
       }
     }
-  }
-  if (quoteError) {
-    throw quoteError;
   }
   const result = [] as string[];
   let preIdx = 0;
@@ -206,134 +189,20 @@ export async function parseRecord(
   return result;
 }
 
-function runeCount(s: string): number {
-  // Array.from considers the surrogate pair.
-  return Array.from(s).length;
+export function createBareQuoteErrorMessage(
+  start: number,
+  line: number,
+  column: number,
+) {
+  return `record on line ${start}; parse error on line ${line}, column ${column}: bare " in non-quoted-field`;
 }
-
-/**
- * A ParseError is returned for parsing errors.
- * Line numbers are 1-indexed and columns are 0-indexed.
- *
- * @example Usage
- * ```ts
- * import { parse, ParseError } from "@std/csv/parse";
- * import { assertEquals } from "@std/assert";
- *
- * try {
- *   parse(`a "word","b"`);
- * } catch (error) {
- *   if (error instanceof ParseError) {
- *     assertEquals(error.message, `parse error on line 1, column 2: bare " in non-quoted-field`);
- *   }
- * }
- * ```
- */
-export class ParseError extends SyntaxError {
-  /**
-   * Line where the record starts.
-   *
-   * @example Usage
-   * ```ts
-   * import { parse, ParseError } from "@std/csv/parse";
-   * import { assertEquals } from "@std/assert";
-   *
-   * try {
-   *   parse(`a "word","b"`);
-   * } catch (error) {
-   *   if (error instanceof ParseError) {
-   *     assertEquals(error.startLine, 1);
-   *   }
-   * }
-   * ```
-   */
-  startLine: number;
-  /**
-   * Line where the error occurred.
-   *
-   * @example Usage
-   * ```ts
-   * import { parse, ParseError } from "@std/csv/parse";
-   * import { assertEquals } from "@std/assert";
-   *
-   * try {
-   *   parse(`a "word","b"`);
-   * } catch (error) {
-   *   if (error instanceof ParseError) {
-   *     assertEquals(error.line, 1);
-   *   }
-   * }
-   * ```
-   */
-  line: number;
-  /**
-   * Column (rune index) where the error occurred.
-   *
-   * @example Usage
-   * ```ts
-   * import { parse, ParseError } from "@std/csv/parse";
-   * import { assertEquals } from "@std/assert";
-   *
-   * try {
-   *   parse(`a "word","b"`);
-   * } catch (error) {
-   *   if (error instanceof ParseError) {
-   *     assertEquals(error.column, 2);
-   *   }
-   * }
-   * ```
-   */
-  column: number | null;
-
-  /**
-   * Constructs a new instance.
-   *
-   * @example Usage
-   * ```ts
-   * import { parse, ParseError } from "@std/csv/parse";
-   * import { assertEquals } from "@std/assert";
-   *
-   * try {
-   *   parse(`a "word","b"`);
-   * } catch (error) {
-   *   if (error instanceof ParseError) {
-   *     assertEquals(error.message, `parse error on line 1, column 2: bare " in non-quoted-field`);
-   *   }
-   * }
-   * ```
-   *
-   * @param start Line where the record starts
-   * @param line Line where the error occurred
-   * @param column Column The index where the error occurred
-   * @param message Error message
-   */
-  constructor(
-    start: number,
-    line: number,
-    column: number | null,
-    message: string,
-  ) {
-    super();
-    this.startLine = start;
-    this.column = column;
-    this.line = line;
-
-    if (message === ERR_FIELD_COUNT) {
-      this.message = `record on line ${line}: ${message}`;
-    } else if (start !== line) {
-      this.message =
-        `record on line ${start}; parse error on line ${line}, column ${column}: ${message}`;
-    } else {
-      this.message =
-        `parse error on line ${line}, column ${column}: ${message}`;
-    }
-  }
+export function createQuoteErrorMessage(
+  start: number,
+  line: number,
+  column: number,
+) {
+  return `record on line ${start}; parse error on line ${line}, column ${column}: extraneous or missing " in quoted-field`;
 }
-
-export const ERR_BARE_QUOTE = 'bare " in non-quoted-field';
-export const ERR_QUOTE = 'extraneous or missing " in quoted-field';
-export const ERR_INVALID_DELIM = "Invalid Delimiter";
-export const ERR_FIELD_COUNT = "wrong number of fields";
 
 export function convertRowToObject(
   row: string[],

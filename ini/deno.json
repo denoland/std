@@ -1,9 +1,8 @@
 {
   "name": "@std/ini",
-  "version": "0.225.1",
+  "version": "1.0.0-rc.2",
   "exports": {
     ".": "./mod.ts",
-    "./ini-map": "./ini_map.ts",
     "./parse": "./parse.ts",
     "./stringify": "./stringify.ts"
   }

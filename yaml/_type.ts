@@ -4,50 +4,34 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-import type { Any, ArrayObject } from "./_utils.ts";
+import type { ArrayObject } from "./_utils.ts";
 
 export type KindType = "sequence" | "scalar" | "mapping";
-export type StyleVariant = "lowercase" | "uppercase" | "camelcase" | "decimal";
-export type RepresentFn = (data: Any, style?: StyleVariant) => Any;
+/**
+ * The style variation for `styles` option of {@linkcode stringify}
+ */
+export type StyleVariant =
+  | "lowercase"
+  | "uppercase"
+  | "camelcase"
+  | "decimal"
+  | "binary"
+  | "octal"
+  | "hexadecimal";
 
-interface TypeOptions {
-  kind: KindType;
-  resolve?: (data: Any) => boolean;
-  construct?: (data: string) => Any;
-  instanceOf?: Any;
-  predicate?: (data: Record<string, unknown>) => boolean;
-  represent?: RepresentFn | ArrayObject<RepresentFn>;
-  defaultStyle?: StyleVariant;
-  styleAliases?: ArrayObject;
-}
+export type RepresentFn<D> = (data: D, style?: StyleVariant) => string;
 
-function checkTagFormat(tag: string): string {
-  return tag;
-}
-
-export class Type {
+// deno-lint-ignore no-explicit-any
+export interface Type<D = any> {
   tag: string;
-  kind: KindType | null = null;
-  instanceOf: Any;
+  kind: KindType;
+  instanceOf?: new (...args: unknown[]) => D;
   predicate?: (data: Record<string, unknown>) => boolean;
-  represent?: RepresentFn | ArrayObject<RepresentFn>;
+  represent?: RepresentFn<D> | ArrayObject<RepresentFn<D>>;
   defaultStyle?: StyleVariant;
-  styleAliases?: ArrayObject;
   loadKind?: KindType;
-
-  constructor(tag: string, options?: TypeOptions) {
-    this.tag = checkTagFormat(tag);
-    if (options) {
-      this.kind = options.kind;
-      this.resolve = options.resolve || (() => true);
-      this.construct = options.construct || ((data: Any): Any => data);
-      this.instanceOf = options.instanceOf;
-      this.predicate = options.predicate;
-      this.represent = options.represent;
-      this.defaultStyle = options.defaultStyle;
-      this.styleAliases = options.styleAliases;
-    }
-  }
-  resolve: (data?: Any) => boolean = (): boolean => true;
-  construct: (data?: Any) => Any = (data): Any => data;
+  // deno-lint-ignore no-explicit-any
+  resolve: (data: any) => boolean;
+  // deno-lint-ignore no-explicit-any
+  construct: (data: any) => D;
 }
