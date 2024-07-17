@@ -24,3 +24,4 @@ export * from "./closest_string.ts";
 export * from "./compare_similarity.ts";
 export * from "./word_similarity_sort.ts";
 export * from "./case.ts";
+export * from "./to_constant_case.ts";

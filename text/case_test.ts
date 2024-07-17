@@ -7,7 +7,7 @@ import {
   toKebabCase,
   toPascalCase,
   toSnakeCase,
-} from "./case.ts";
+} from "./mod.ts";
 
 Deno.test("toCamelCase() handles an empty string", () => {
   assertEquals(toCamelCase(""), "");
