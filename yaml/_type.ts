@@ -26,7 +26,7 @@ export interface Type<D = any> {
   tag: string;
   kind: KindType;
   instanceOf?: new (...args: unknown[]) => D;
-  predicate?: (data: Record<string, unknown>) => boolean;
+  predicate?: (data: unknown) => data is D;
   represent?: RepresentFn<D> | ArrayObject<RepresentFn<D>>;
   defaultStyle?: StyleVariant;
   // deno-lint-ignore no-explicit-any
