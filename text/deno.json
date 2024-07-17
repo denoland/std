@@ -7,6 +7,7 @@
     "./compare-similarity": "./compare_similarity.ts",
     "./levenshtein-distance": "./levenshtein_distance.ts",
     "./to-camel-case": "./to_camel_case.ts",
+    "./to-constant-case": "./to_constant_case.ts",
     "./to-kebab-case": "./to_kebab_case.ts",
     "./to-pascal-case": "./to_pascal_case.ts",
     "./to-snake-case": "./to_snake_case.ts",
