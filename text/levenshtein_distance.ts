@@ -2,6 +2,23 @@
 // This module is browser compatible.
 
 /**
+ * Options for Levenshtein distance calculation.
+ */
+export type LevenshteinOptions = {
+  /**
+   * The maximum calculation time to allow in milliseconds. If the calculation
+   * takes longer than this, the result will be approximated.
+   *
+   * @default 100
+   */
+  maxTimeElapsed: number;
+};
+
+const defaultOptions: LevenshteinOptions = {
+  maxTimeElapsed: 100,
+};
+
+/**
  * Calculates the
  * {@link https://en.wikipedia.org/wiki/Levenshtein_distance | Levenshtein distance}
  * between two strings.
@@ -15,9 +32,27 @@
  * ```
  * @param str1 The first string.
  * @param str2 The second string.
+ * @param options The options for the calculation.
  * @returns The Levenshtein distance between the two strings.
  */
-export function levenshteinDistance(str1: string, str2: string): number {
+export function levenshteinDistance(
+  str1: string,
+  str2: string,
+  options?: Partial<LevenshteinOptions>,
+): number {
+  if (str1 === str2) {
+    return 0;
+  }
+  if (!str1) {
+    return str2.length;
+  }
+  if (!str2) {
+    return str1.length;
+  }
+
+  const { maxTimeElapsed } = { ...defaultOptions, ...options };
+  const startTime = Date.now();
+
   if (str1.length > str2.length) {
     [str1, str2] = [str2, str1];
   }
@@ -45,6 +80,9 @@ export function levenshteinDistance(str1: string, str2: string): number {
       }
     }
     distances = tempDistances;
+    if (Date.now() - startTime > maxTimeElapsed) {
+      break;
+    }
   }
   return distances.at(-1)!;
 }
