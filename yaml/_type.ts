@@ -29,7 +29,6 @@ export interface Type<D = any> {
   predicate?: (data: Record<string, unknown>) => boolean;
   represent?: RepresentFn<D> | ArrayObject<RepresentFn<D>>;
   defaultStyle?: StyleVariant;
-  loadKind?: KindType;
   // deno-lint-ignore no-explicit-any
   resolve: (data: any) => boolean;
   // deno-lint-ignore no-explicit-any
