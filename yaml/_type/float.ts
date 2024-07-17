@@ -109,7 +109,7 @@ function representYamlFloat(object: any, style?: StyleVariant): any {
   return SCIENTIFIC_WITHOUT_DOT.test(res) ? res.replace("e", ".e") : res;
 }
 
-function isFloat(object: unknown): boolean {
+function isFloat(object: unknown): object is number {
   return typeof object === "number" &&
     (object % 1 !== 0 || isNegativeZero(object));
 }
