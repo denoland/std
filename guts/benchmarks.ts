@@ -5,7 +5,7 @@ import 'benchmark' // load these modules into cache for ghactions
 
 const ioFixture = 'io-fixture'
 export default (name: string, cradleMaker: CradleMaker) => {
-  const prefix = name + ': '
+  const prefix = name + ':benchmarks: '
 
   Deno.test(prefix + 'resource hogging', async (t) => {
     const terminal = await cradleMaker()

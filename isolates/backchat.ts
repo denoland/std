@@ -141,14 +141,19 @@ export const functions = {
 
     const { start } = await api.functions<thread.Api>('thread')
     await start({ threadId, agentPath })
-    log('create:', threadId, agentPath)
+    log('create:', threadId, agentPath, params.focus)
+    const thread = await readBackchat(api)
     if (params.focus) {
       assert(threadIdRegex.test(params.focus), 'Invalid thread id')
       const threadPath = `threads/${params.focus}.json`
       // create the new thread at the actor level, possibly in parallel too ?
       // verify the thread exists
       // await functions.focus({ threadId: params.focus }, api)
+    } else {
+      thread.focus = threadId
     }
+    log('setting focus to:', thread.focus)
+    writeBackchat(thread, api)
   },
   async prompt({ content = '', threadId, attachments }: PromptArgs, api: IA) {
     log('prompt: %o', content)

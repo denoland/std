@@ -16,6 +16,19 @@ export const functions = {
     return []
   },
 }
+/**
+ * Search can be just loading up all the threads, grabbing all the messages,
+ * stripping out the sysprompt and tool calls, then using context to decided
+ * which is better.
+ *
+ * Or, if we are updating the summary of each thread in the background, just
+ * read the summaries and make a decision based on that.
+ *
+ * Could do batch ranking if things don't fit in the window.
+ *
+ * Ultimately the thread size and summary, chunks, and topication would be
+ * handled inside the thread, each time there is a change to it.
+ */
 export const api = {
   search: {
     type: 'object',

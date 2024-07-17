@@ -545,8 +545,8 @@ export const machineIdRegex = /^mac_[2-7a-z]{33}$/
 export const actorIdRegex = /^act_[0-9A-HJKMNP-TV-Z]{16}$/
 export const backchatIdRegex = /^bac_[0-9A-HJKMNP-TV-Z]{16}$/
 export const threadIdRegex = /^thr_[0-9A-HJKMNP-TV-Z]{16}$/
-export const SU_ACTOR = 'act_SVPERVSER0000000'
-export const SU_BACKCHAT = 'bac_SVPERVSER0000000'
+export const SU_ACTOR = 'act_0000000000000000'
+export const SU_BACKCHAT = 'bac_0000000000000000'
 
 export const generateActorId = (seed: string) => {
   return 'act_' + randomId(seed)

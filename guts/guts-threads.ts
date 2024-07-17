@@ -1,112 +1,62 @@
-import OpenAI from 'openai'
-import { init as githubInit } from '@/isolates/github.ts'
-import * as engageHelp from '../isolates/thread.ts'
 import { expect, log } from '@utils'
-import {
-  addBranches,
-  Backchat,
-  CradleMaker,
-  getActorId,
-  PID,
-  print,
-} from '@/constants.ts'
-import { ulid } from 'ulid'
+import { Backchat, BackchatThread, CradleMaker } from '@/constants.ts'
 
 export default (name: string, cradleMaker: CradleMaker) => {
   const prefix = name + ':threads: '
 
-  Deno.test.only(prefix + 'thread management', async (t) => {
-    log.enable('AI:tests AI:completions AI:backchat AI:execute-tools *qbr*')
-
+  // log.enable('AI:tests AI:backchat AI:execute-tools *qbr*')
+  Deno.test(prefix + 'thread management', async (t) => {
     const { backchat, engine } = await cradleMaker()
-
+    let focus: string = await getFocus(backchat)
     // backchat should have been started with a thread, which is what the prompt
     // should hit
     await t.step('first thread', async () => {
+      expect(focus).toBeDefined()
       log('prompting')
       const result = await backchat.prompt('backchat start the files agent')
       log('result', result)
+      focus = await getFocus(backchat, focus)
     })
 
-    // await t.step('second thread', async () => {
-    //   const second = backchat.newTerminal()
-    //   log('second session', print(second.pid))
-    //   expect(second.pid).not.toEqual(backchat.pid)
-    //   const session2 = createHalSessionPid(second.pid, halPid)
-    //   log('HAL session request', print(session2))
-    //   expect(session2).not.toEqual(session)
-    //   await second.ensureBranch(session2, halPid)
-    //   log('prompting')
-    //   const hal = await second.actions<Api>('hal', session2)
-    //   await hal.prompt({ text: 'hello' })
-    // })
+    await t.step('talk to the files agent', async () => {
+      const result = await backchat.prompt('hey what files have I got ?')
+      log('result', result)
+      focus = await getFocus(backchat, focus, 'equals')
+    })
 
-    // await t.step('restart a thread', async () => {
-    //   log('resuming session', print(backchat.pid))
-    //   const resumed = backchat.resumeTerminal(backchat.pid)
-    //   const hal = await resumed.actions<Api>('hal', session)
-    //   await hal.prompt({ text: 'hello' })
-    // })
+    await t.step('second thread', async () => {
+      const result = await backchat.prompt('backchat start a new files thread')
+      log('result', result)
+      focus = await getFocus(backchat, focus)
+    })
+
+    await t.step('restart a thread', async () => {
+      const result = await backchat.prompt(
+        'backchat switch me back to the first thread',
+      )
+      log('result', result)
+      focus = await getFocus(backchat, focus)
+    })
+
+    // test changing some files then have that show up on the other thread
 
     // TODO test valid format but deleted / nonexistent session
     await engine.stop()
   })
 
-  //   Deno.test(prefix + 'HAL prompt redirection', async (t) => {
-  //     const terminal = await cradleMaker()
-  //     await terminal.rm({ repo: 'dreamcatcher-tech/HAL' })
-  //     const { pid } = await terminal.clone({ repo: 'dreamcatcher-tech/HAL' })
-  //     const session = createHalSessionPid(terminal.pid, pid)
-  //     await terminal.ensureBranch(session, pid)
-  //     const hal = await terminal.actions<Api>('hal', session)
+  Deno.test(prefix + 'update from github', async (t) => {
+    const { backchat, engine } = await cradleMaker()
+    // this test should cover passing on extra instructions to backchat
+    // it should go find the github bot, and call it with some base
+    // instructions
+    await t.step('update', async () => {
+      await backchat.prompt(
+        'Update HAL to the latest version by using the engage-help function with "hal-system" as the help name and "Update HAL" as the prompt.  Dont ask me any questions, just do it using your best guess.',
+      )
+    })
 
-  //     await t.step('prompt', async () => {
-  //       log('pid', print(session))
-  //       await hal.prompt({ text: 'hello' })
-  //       const messages = await terminal.readJSON<Messages[]>(
-  //         SESSION_PATH,
-  //         session,
-  //       )
-  //       log('messages', messages)
-  //     })
-
-  //     await t.step('redirect HAL', async () => {
-  //       const sessionBase = await terminal.actions<Api>(
-  //         'hal',
-  //         session,
-  //       )
-  //       await expect(terminal.exists(ENTRY_HELP_FILE, session)).resolves
-  //         .toBeTruthy()
-  //       await sessionBase.setPromptTarget({ help: 'help-fixture' })
-  //       await expect(terminal.exists(ENTRY_HELP_FILE, session)).resolves
-  //         .toBeTruthy()
-
-  //       await hal.prompt({ text: 'hello again' })
-  //       const messages = await terminal.readJSON<Messages[]>(
-  //         SESSION_PATH,
-  //         session,
-  //       )
-  //       log('messages', messages)
-  //     })
-  //     await terminal.engineStop()
-  //   })
-  //   Deno.test(prefix + 'update from github', async (t) => {
-  //     const terminal = await cradleMaker()
-  //     await terminal.rm({ repo: 'dreamcatcher-tech/HAL' })
-  //     const { pid } = await terminal.clone({ repo: 'dreamcatcher-tech/HAL' })
-  //     const session = createHalSessionPid(terminal.pid, pid)
-  //     await terminal.ensureBranch(session, pid)
-  //     const hal = await terminal.actions<Api>('hal', session)
-
-  //     await t.step('update', async () => {
-  //       await hal.prompt({
-  //         text:
-  //           'Update HAL to the latest version by using the engage-help function with "hal-system" as the help name and "Update HAL" as the prompt.  Dont ask me any questions, just do it using your best guess.',
-  //       })
-  //     })
-
-  //     await terminal.engineStop()
-  //   })
+    await engine.stop()
+  })
 
   //   Deno.test(prefix + 'double tool call with responses', async () => {
   //     const terminal = await cradleMaker()
@@ -200,4 +150,21 @@ export default (name: string, cradleMaker: CradleMaker) => {
   // really want to work on a branch of HAL from a safe place, where it is doing
   // writes and reads to a fork, and testing things out in safety before
   // changing its own programming.
+}
+const getFocus = async (
+  backchat: Backchat,
+  previous?: string,
+  comparison?: 'equals',
+) => {
+  const threadPath = 'threads/' + backchat.threadId + '.json'
+  const { focus } = await backchat.readJSON<BackchatThread>(threadPath)
+  if (previous) {
+    log('focus was: %o focus is: %o', previous, focus)
+    if (!comparison) {
+      expect(focus).not.toBe(previous)
+    } else {
+      expect(focus).toBe(previous)
+    }
+  }
+  return focus
 }

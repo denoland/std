@@ -118,10 +118,6 @@ export class Backchat {
     await this.#engine.pierce(pierce)
     return promise
   }
-  /** start a new thread and make it the focus */
-  thread() {
-    // call into the backchat isolate, and pull up the thread you want
-  }
   /** The path to the current session that this backchat is pointing to.  Can
    * sometimes be itself */
   get focus() {

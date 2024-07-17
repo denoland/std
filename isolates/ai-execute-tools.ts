@@ -51,7 +51,8 @@ export const executeTools = async (threadPath: string, api: IA) => {
       log('tool call result:', name, result, colorize(parent))
       if (result === '@@ARTIFACT_RELAY@@') {
         log('tool call relay')
-
+        // TODO pass back the tool call id for precision
+        // TODO test this works with parallel calls calling combinations of relay
         const withoutTip = thread.messages.slice(0, -1)
         const lastToolCall = withoutTip
           .findLast(({ role }) => role === 'tool')

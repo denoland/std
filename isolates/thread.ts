@@ -127,7 +127,6 @@ export const functions = {
     const threadPath = `threads/${threadId}.json`
     assert(!await api.exists(threadPath), `thread exists: ${threadPath}`)
     const { load } = await api.functions<loadAgent.Api>('load-agent')
-    console.log('load', agentPath)
     const agent: Agent = await load({ path: agentPath })
     const messages: Thread['messages'] = []
     if (agent.instructions) {

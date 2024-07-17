@@ -1,10 +1,10 @@
 import OpenAI from 'openai'
-import * as engageHelp from '@/isolates/engage-help.ts'
+import * as engageHelp from '../isolates/thread.ts'
 import { expect, log } from '@utils'
-import { CradleMaker, SESSION_PATH } from '@/constants.ts'
+import { CradleMaker, getParent } from '@/constants.ts'
 type Messages = OpenAI.ChatCompletionMessageParam
 
-const help = `
+const agent = `
 ---
 commands:
 - files:ls
@@ -13,28 +13,26 @@ commands:
 `
 
 export default (name: string, cradleMaker: CradleMaker) => {
-  const prefix = name + ': '
-  Deno.test(prefix + 'files:ls', async (t) => {
-    const terminal = await cradleMaker()
+  const prefix = name + ':isolates: '
+  Deno.test.only(prefix + 'files:ls', async (t) => {
+    const { backchat, engine } = await cradleMaker()
+    const actor = getParent(backchat.pid)
+    await backchat.write('agents/files.md', agent, actor)
+    await backchat.write('tmp', '', actor)
 
-    const { pid } = await terminal.clone({ repo: 'dreamcatcher-tech/HAL' })
-    await terminal.write('helps/files.md', help, pid)
-    await terminal.write('tmp', '', pid)
-    const isolate = 'engage-help'
-
-    const { engage } = await terminal.actions<engageHelp.Api>(isolate, pid)
+    const { engage } = await backchat.actions<engageHelp.Api>('thread', pid)
     await t.step('ls', async () => {
       const text = 'ls'
       const result = await engage({ help: 'files', text })
       log('result', result)
       expect(result).not.toContain('.io.json')
 
-      const session = await terminal.readJSON<Messages[]>(
+      const session = await backchat.readJSON<Messages[]>(
         SESSION_PATH,
         pid,
       )
       log('session', session)
-      await terminal.delete(SESSION_PATH, pid)
+      await backchat.delete(SESSION_PATH, pid)
     })
     await t.step('ls .', async () => {
       const text = 'ls .'
@@ -42,12 +40,12 @@ export default (name: string, cradleMaker: CradleMaker) => {
       log('result', result)
       expect(result).not.toContain('.io.json')
 
-      const session = await terminal.readJSON<Messages[]>(
+      const session = await backchat.readJSON<Messages[]>(
         SESSION_PATH,
         pid,
       )
       log('session', session)
-      await terminal.delete(SESSION_PATH, pid)
+      await backchat.delete(SESSION_PATH, pid)
     })
     await t.step('ls /', async () => {
       const text = 'ls /'
@@ -55,12 +53,12 @@ export default (name: string, cradleMaker: CradleMaker) => {
       log('result', result)
       expect(result).not.toContain('.io.json')
 
-      const session = await terminal.readJSON<Messages[]>(
+      const session = await backchat.readJSON<Messages[]>(
         SESSION_PATH,
         pid,
       )
       log('session', session)
-      await terminal.delete(SESSION_PATH, pid)
+      await backchat.delete(SESSION_PATH, pid)
     })
     await t.step('ls --all', async () => {
       const text = 'ls --all'
@@ -68,20 +66,20 @@ export default (name: string, cradleMaker: CradleMaker) => {
       log('result', result)
       expect(result).toContain('.io.json')
 
-      const session = await terminal.readJSON<Messages[]>(
+      const session = await backchat.readJSON<Messages[]>(
         SESSION_PATH,
         pid,
       )
       log('session', session)
-      await terminal.delete(SESSION_PATH, pid)
+      await backchat.delete(SESSION_PATH, pid)
     })
 
-    await terminal.engineStop()
+    await engine.stop()
   })
   Deno.test(prefix + 'files:write', async (t) => {
     const terminal = await cradleMaker()
     const { pid } = await terminal.init({ repo: 'test/write' })
-    await terminal.write('helps/files.md', help, pid)
+    await terminal.write('helps/files.md', agent, pid)
     const isolate = 'engage-help'
     const { engage } = await terminal.actions<engageHelp.Api>(isolate, pid)
 
