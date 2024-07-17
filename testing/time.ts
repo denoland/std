@@ -41,6 +41,8 @@ import { ascend } from "@std/data-structures/comparators";
 import type { DelayOptions } from "@std/async/delay";
 import { _internals } from "./_time.ts";
 
+export type { DelayOptions };
+
 /**
  * An error related to faking time.
  *
@@ -112,11 +114,15 @@ export interface FakeTimeOptions {
    * The rate relative to real time at which fake time is updated.
    * By default time only moves forward through calling tick or setting now.
    * Set to 1 to have the fake time automatically tick forward at the same rate in milliseconds as real time.
+   *
+   * @default {0}
    */
   advanceRate: number;
   /**
    * The frequency in milliseconds at which fake time is updated.
    * If advanceRate is set, we will update the time every 10 milliseconds by default.
+   *
+   * @default {10}
    */
   advanceFrequency?: number;
 }
@@ -336,11 +342,11 @@ export class FakeTime {
 
     advanceRate = Math.max(
       0,
-      options?.advanceRate ? options.advanceRate : 0,
+      options?.advanceRate ?? 0,
     );
     advanceFrequency = Math.max(
       0,
-      options?.advanceFrequency ? options.advanceFrequency : 10,
+      options?.advanceFrequency ?? 10,
     );
     advanceIntervalId = advanceRate > 0
       ? _internals.setInterval.call(null, () => {

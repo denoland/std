@@ -11,9 +11,6 @@ import {
 
 export type { GlobOptions };
 
-/** Options for {@linkcode globToRegExp}. */
-export type GlobToRegExpOptions = GlobOptions;
-
 /**
  * Converts a glob string to a regular expression.
  *
@@ -89,7 +86,7 @@ export type GlobToRegExpOptions = GlobOptions;
  */
 export function globToRegExp(
   glob: string,
-  options: GlobToRegExpOptions = {},
+  options: GlobOptions = {},
 ): RegExp {
   return isWindows
     ? windowsGlobToRegExp(glob, options)
