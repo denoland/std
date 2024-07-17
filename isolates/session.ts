@@ -1,4 +1,4 @@
-import { IsolateApi, PID, print, ProcessOptions } from '@/constants.ts'
+import { IA, PID, print, ProcessOptions } from '@/constants.ts'
 import { assert, Debug } from '@utils'
 const log = Debug('AI:session')
 
@@ -52,7 +52,7 @@ export const functions = {
   async create(
     { retry, name, prefix }: { retry?: PID; name?: string; prefix?: string } =
       {},
-    api: IsolateApi,
+    api: IA,
   ) {
     assert(isMaxOneOf(retry, name, prefix), 'max one arg is possible')
     log('create %o', { retry, name, prefix })
@@ -79,11 +79,11 @@ export const functions = {
     log('noop pid returned', print(pid))
     return pid
   },
-  noop(_: object, api: IsolateApi) {
+  noop(_: object, api: IA) {
     log('noop', print(api.pid))
     return api.pid
   },
-  close: (_: object, api: IsolateApi) => {
+  close: (_: object, api: IA) => {
     log(api)
     // message the parent and tell it to close this child
   },

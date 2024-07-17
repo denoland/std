@@ -1,5 +1,10 @@
 import { assert, expect, log } from '@utils'
-import { addBranches, CradleMaker, print, randomId } from '@/constants.ts'
+import {
+  addBranches,
+  CradleMaker,
+  generateThreadId,
+  print,
+} from '@/constants.ts'
 import { Api } from '../isolates/thread.ts'
 
 export default (name: string, cradleMaker: CradleMaker) => {
@@ -10,7 +15,7 @@ export default (name: string, cradleMaker: CradleMaker) => {
 
     await t.step('prompt', async () => {
       const { execute } = await backchat.actions<Api>('thread')
-      const threadId = `thr_${randomId()}`
+      const threadId = generateThreadId(t.name)
       const result = await execute({
         threadId,
         agentPath: 'agents/agent-fixture.md',
@@ -25,7 +30,7 @@ export default (name: string, cradleMaker: CradleMaker) => {
 
   Deno.test('thread:execute', async (t) => {
     const { backchat, engine } = await cradleMaker()
-    const threadId = `thr_${randomId()}`
+    const threadId = generateThreadId(t.name)
     const target = addBranches(backchat.pid, threadId)
     const threadPath = `threads/${threadId}.json`
     let latest = {}

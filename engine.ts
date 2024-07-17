@@ -7,6 +7,8 @@ import {
   C,
   EngineInterface,
   freezePid,
+  generateActorId,
+  generateBackchatId,
   HAL,
   JsonValue,
   PID,
@@ -14,9 +16,8 @@ import {
   print,
   PROCTYPE,
   Provisioner,
-  randomId,
 } from './constants.ts'
-import IsolateApi from './isolate-api.ts'
+import IA from './isolate-api.ts'
 import { assert, Debug, posix } from '@utils'
 import FS from '@/git/fs.ts'
 import * as artifact from '@/isolates/artifact.ts'
@@ -32,7 +33,7 @@ type Seed = Deno.KvEntry<unknown>[]
 export class Engine implements EngineInterface {
   #superuserKey: string
   #compartment: Compartment
-  #api: IsolateApi<C>
+  #api: IA<C>
   #pierce: artifact.Api['pierce']
   #homeAddress: PID | undefined
   #githubAddress: PID | undefined
@@ -41,7 +42,7 @@ export class Engine implements EngineInterface {
 
   private constructor(
     compartment: Compartment,
-    api: IsolateApi<C>,
+    api: IA<C>,
     superuserKey: string,
   ) {
     this.#compartment = compartment
@@ -52,7 +53,7 @@ export class Engine implements EngineInterface {
   }
   static async boot(superuserKey: string, aesKey: string, seed?: Seed) {
     const compartment = await Compartment.create('artifact')
-    const api = IsolateApi.createContext<C>()
+    const api = IA.createContext<C>()
     api.context = { aesKey, seed }
     await compartment.mount(api)
     const engine = new Engine(compartment, api, superuserKey)
@@ -123,9 +124,9 @@ export class Engine implements EngineInterface {
   }
   async #createActor(machineId: string) {
     assert(Crypto.assert(machineId), 'invalid machineId: ' + machineId)
-    const actorId = `act_${randomId()}`
+    const actorId = generateActorId(ulid())
     const actor = addBranches(this.homeAddress, actorId)
-    const backchatId = `bac_${randomId()}`
+    const backchatId = generateBackchatId(ulid())
     const backchat = addBranches(actor, backchatId)
 
     const target = this.homeAddress
@@ -137,7 +138,7 @@ export class Engine implements EngineInterface {
   async #createBackchat(target: PID) {
     // TODO assert is actor PID
     const actions = await this.#su.actions<ActorApi>('actors', { target })
-    const backchatId = `bac_${randomId()}`
+    const backchatId = generateBackchatId(ulid())
     const pid = await actions.backchat({ backchatId })
     return freezePid(pid)
   }

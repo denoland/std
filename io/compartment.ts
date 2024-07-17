@@ -1,7 +1,7 @@
 import validator from './validator.ts'
 import { assert, Debug } from '@utils'
 import { Isolate, Params } from '@/constants.ts'
-import IsolateApi from '../isolate-api.ts'
+import IA from '../isolate-api.ts'
 
 // deno has no dynamic runtime imports, so this is a workaround
 import isolates from '../isolates/index.ts'
@@ -51,7 +51,7 @@ export default class Compartment {
    * @param api : IsolateApi
    * @returns Promise<void> | void
    */
-  mount(api: IsolateApi) {
+  mount(api: IA) {
     // TODO use exe to ensure that mount stops working arfter invocation
     this.#check()
     if (this.#module.lifecycles) {
@@ -64,7 +64,7 @@ export default class Compartment {
    * Unmount the isolate as a side effect, and give it the chance to clean up
    * @param api : IsolateApi
    */
-  unmount(api: IsolateApi) {
+  unmount(api: IA) {
     this.#check()
     if (this.#module.lifecycles) {
       if (typeof this.#module.lifecycles['@@unmount'] === 'function') {
@@ -72,7 +72,7 @@ export default class Compartment {
       }
     }
   }
-  functions<T = DispatchFunctions>(api: IsolateApi) {
+  functions<T = DispatchFunctions>(api: IA) {
     this.#check()
     const actions: DispatchFunctions = {}
     for (const functionName in this.#module.api) {
@@ -80,7 +80,7 @@ export default class Compartment {
     }
     return actions as T
   }
-  #toFunction(functionName: string, api: IsolateApi) {
+  #toFunction(functionName: string, api: IA) {
     return (
       parameters?: Params,
     ) => {

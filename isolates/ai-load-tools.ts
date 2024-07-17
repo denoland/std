@@ -2,27 +2,39 @@ import * as loadHelp from './load-agent.ts'
 import * as thread from './thread.ts'
 import { assert, Debug } from '@utils'
 import OpenAI from 'openai'
-import { Agent, IsolateApi, JSONSchemaType, Params } from '@/constants.ts'
+import {
+  Agent,
+  generateThreadId,
+  getActorId,
+  IA,
+  JSONSchemaType,
+  MetaPromise,
+  Params,
+} from '@/constants.ts'
 const log = Debug('AI:tools:load-tools')
 
-export const loadTools = async (commands: string[] = [], api: IsolateApi) => {
+export const loadTools = async (commands: string[] = [], api: IA) => {
   const result = await load(commands, api)
   return result?.tools || undefined
 }
-export const loadActions = async (commands: string[] = [], api: IsolateApi) => {
+export const loadActions = async (commands: string[] = [], api: IA) => {
   const result = await load(commands, api)
   assert(result?.actions, 'missing actions')
   return result.actions
 }
-type Action = (params: Params, branchName: string) => Promise<unknown>
+type Action = (
+  params: Params,
+  branchName: string,
+) => Promise<{ promise: MetaPromise }>
 
-const load = async (commands: string[] = [], api: IsolateApi) => {
+const load = async (commands: string[] = [], api: IA) => {
   const tools: OpenAI.ChatCompletionTool[] = []
   const actions: Record<string, Action> = {}
+  const actorId = getActorId(api.pid)
   for (const cmd of commands) {
     log('loading command:', cmd)
     let tool: OpenAI.ChatCompletionTool
-    let action: (params: Params, branchName: string) => Promise<unknown>
+    let action: Action
     let name: string
     const isAgent = !cmd.includes(':')
     if (isAgent) {
@@ -32,31 +44,38 @@ const load = async (commands: string[] = [], api: IsolateApi) => {
       assert(agent.description, `missing description: ${cmd}`)
       name = agent.name
       const schemas = await api.apiSchema('thread')
-      action = async ({ prompt }: Params, toolCallId: string) => {
-        const threadId = `thr_${toolCallId}`
+      action = async ({ prompt }: Params) => {
+        const threadId = generateThreadId(api.commit + prompt)
+        // TODO should we be calling backchat to do this job ?
         const { execute } = await api.actions<thread.Api>('thread', {
           branchName: threadId,
+          // note noClose is not used ?
         })
         assert(typeof prompt === 'string', `invalid text: ${prompt}`)
         log('agent command:', name, prompt, api.commit)
-        return execute({
+        const promise = execute({
           threadId,
           agentPath: cmd,
           content: prompt,
-          userId: '0',
+          actorId,
         })
+        return { promise }
       }
       tool = agentTool(agent, schemas.execute)
     } else {
-      const [isolate, _name] = cmd.split(':')
-      name = _name
-      const isolateApiSchema = await api.apiSchema(isolate)
-      const _actions = await api.actions(isolate)
-      assert(name in _actions, `isolate missing command: ${cmd}`)
-      action = (params: Params, branchName: string) => {
-        return Promise.resolve(_actions[name](params, { branchName }))
+      const [isolate, functionName] = cmd.split(':')
+      name = isolate + '_' + functionName
+      const schema = await api.apiSchema(isolate)
+      assert(functionName in schema, `isolate missing command: ${cmd}`)
+      action = async (params: Params, branchName: string) => {
+        const actions = await api.actions(isolate, { branchName })
+        assert(actions[functionName], `missing action: ${cmd}`)
+        // TODO fix this since needs wrapping to get the commit symbol
+        // TODO fix ts types so actions always return metapromise types
+        const promise = actions[functionName](params) as MetaPromise
+        return { promise }
       }
-      tool = isolateToGptApi(name, isolateApiSchema[name])
+      tool = isolateToGptApi(name, schema[functionName])
     }
     assert(action, `missing action: ${cmd}`)
     assert(typeof action === 'function', `invalid action: ${action}`)

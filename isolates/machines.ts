@@ -1,4 +1,4 @@
-import { actorIdRegex, IsolateApi } from '@/constants.ts'
+import { actorIdRegex, IA } from '@/constants.ts'
 import FS from '@/git/fs.ts'
 import { assert } from '@utils'
 
@@ -17,7 +17,7 @@ export const api = {
   },
 }
 export const functions = {
-  upsert(p: { machineId: string; actorId: string }, api: IsolateApi) {
+  upsert(p: { machineId: string; actorId: string }, api: IA) {
     const { machineId, actorId } = p
     const path = shardedPath(machineId)
     api.writeJSON(path, actorId)

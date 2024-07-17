@@ -1,6 +1,6 @@
 import { expect } from '@utils'
 import { partialFromRepo } from '@/constants.ts'
-import IsolateApi from '../isolate-api.ts'
+import IA from '../isolate-api.ts'
 import { Api } from './load-agent.ts'
 import DB from '@/db.ts'
 import Compartment from '@io/compartment.ts'
@@ -15,7 +15,7 @@ Deno.test('format checking', async (t) => {
   const fs = await FS.init(partial, db)
   const accumulator = Accumulator.create(fs)
   accumulator.activate(Symbol())
-  const api = IsolateApi.create(accumulator)
+  const api = IA.create(accumulator)
 
   const path = 'agents/agent-fixture.md'
   await t.step('fixture', async () => {

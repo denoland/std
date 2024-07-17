@@ -1,5 +1,5 @@
 import { assert, posix } from '@utils'
-import { AGENT_RUNNERS, IsolateApi, Triad } from '@/constants.ts'
+import { AGENT_RUNNERS, IA, Triad } from '@/constants.ts'
 import { type Agent } from '@/constants.ts'
 import matter from 'gray-matter'
 
@@ -40,7 +40,7 @@ export interface Api {
 }
 
 export const functions = {
-  load: async ({ path }: { path: string }, api: IsolateApi) => {
+  load: async ({ path }: { path: string }, api: IA) => {
     assert(path.endsWith('.md'), 'path must end with .md')
     const string = await api.read(path)
     const { data, content } = matter(string.trim())
@@ -59,7 +59,7 @@ export const functions = {
     assertAgent(loaded)
     return loaded
   },
-  loadAll: async ({ dir }: { dir: string }, api: IsolateApi) => {
+  loadAll: async ({ dir }: { dir: string }, api: IA) => {
     // TODO provide globs
     const agents: { name: string; agent: Agent }[] = []
     const files = await api.ls(dir)

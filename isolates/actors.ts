@@ -5,9 +5,9 @@ import {
   backchatIdRegex,
   colorize,
   getActorId,
+  IA,
   isActorBranch,
   isBaseRepo,
-  IsolateApi,
   machineIdRegex,
   Params,
   PID,
@@ -16,9 +16,11 @@ import {
   RpcOpts,
   SU_ACTOR,
   SU_BACKCHAT,
+  ThreadArgs,
 } from '@/constants.ts'
 import { assert, Debug, equal, expect } from '@utils'
 import * as backchat from './backchat.ts'
+import * as thread from './thread.ts'
 import * as session from './session.ts'
 import * as files from './files.ts'
 import * as system from './system.ts'
@@ -102,7 +104,15 @@ export const api = {
     },
     additionalProperties: false,
   },
-
+  thread: {
+    type: 'object',
+    additionalProperties: false,
+    required: ['agentPath', 'threadId'],
+    properties: {
+      agentPath: { type: 'string' },
+      threadId: { type: 'string' },
+    },
+  },
   init,
   clone: init,
   rm: {
@@ -139,7 +149,7 @@ export const api = {
 }
 
 export const functions = {
-  async '@@install'(p: { superuser: string }, api: IsolateApi) {
+  async '@@install'(p: { superuser: string }, api: IA) {
     // TODO set ACL on io.json to only run this isolate
     const { superuser } = p
     assert(Crypto.assert(superuser), 'invalid superuser: ' + superuser)
@@ -172,7 +182,7 @@ export const functions = {
   },
   async createActor(
     p: { machineId: string; actorId: string; backchatId: string },
-    api: IsolateApi,
+    api: IA,
   ) {
     assert(isBaseRepo(api.pid), 'createActor not base: ' + print(api.pid))
     const { machineId, actorId, backchatId } = p
@@ -197,10 +207,7 @@ export const functions = {
     // TODO parallelize
     return pid
   },
-  async backchat(
-    p: { backchatId: string; machineId?: string },
-    api: IsolateApi,
-  ) {
+  async backchat(p: { backchatId: string; machineId?: string }, api: IA) {
     assert(isActorBranch(api.pid), 'Not actor branch: ' + print(api.pid))
 
     log('backchat', print(api.pid))
@@ -218,17 +225,23 @@ export const functions = {
       branchName: backchatId,
       deletes: ['config.json'],
     }
-    const { create } = await api.actions<backchat.Api>('session', opts)
+    const { create } = await api.actions<backchat.Api>('backchat', opts)
     // TODO set permissions on .io.json
-    const pid = await create()
+    await create()
     // TODO optionally start a default thread
-
+    const pid = addBranches(api.pid, backchatId)
     log('backchat pid', print(pid))
+    return pid
+  },
+  async thread({ agentPath, threadId }: ThreadArgs, api: IA) {
+    const opts = { branchName: threadId, noClose: true }
+    const actions = await api.actions<thread.Api>('thread', opts)
+    const pid = await actions.start({ agentPath, threadId })
     return pid
   },
   async addAuthProvider(
     { provider, name }: { provider: PID; name: string },
-    api: IsolateApi,
+    api: IA,
   ) {
     assert(isBaseRepo(provider), 'addAuthProvider not base: ' + print(provider))
     log('addAuthProvider provider', print(provider))
@@ -244,7 +257,7 @@ export const functions = {
   },
   rm: async (
     { repo, all = false }: { repo?: string; all?: boolean },
-    api: IsolateApi,
+    api: IA,
   ) => {
     assert(isActorBranch(api.pid), 'rm not actor: ' + print(api.pid))
     log('rm', repo, all)
@@ -277,14 +290,14 @@ export const functions = {
     api.writeJSON('config.json', config)
     return true
   },
-  lsRepos: async (_params: Params, api: IsolateApi) => {
+  lsRepos: async (_params: Params, api: IA) => {
     assert(isActorBranch(api.pid), 'lsRepos not actor: ' + print(api.pid))
     const config = await readConfig(api)
     return Object.keys(config.repos)
   },
   clone: async (
     p: { repo: string; isolate?: string; params?: Params },
-    api: IsolateApi,
+    api: IA,
   ) => {
     assert(isActorBranch(api.pid), 'clone not actor: ' + print(api.pid))
     const { repo, isolate, params } = p
@@ -304,7 +317,7 @@ export const functions = {
   },
   init: async (
     p: { repo: string; isolate?: string; params?: Params },
-    api: IsolateApi,
+    api: IA,
   ) => {
     assert(isActorBranch(api.pid), 'init not actor: ' + print(api.pid))
 
@@ -322,7 +335,7 @@ export const functions = {
     log('init wrote repos:', Object.keys(config.repos))
     return { pid, head }
   },
-  surrender: async (params: { authProvider: PID }, api: IsolateApi) => {
+  surrender: async (params: { authProvider: PID }, api: IA) => {
     assert(isBaseRepo(api.pid), 'surrender not base: ' + print(api.pid))
     log('surrender', print(api.pid))
     log('surrender authProvider', print(params.authProvider))
@@ -349,7 +362,7 @@ export const functions = {
   },
 }
 
-const readConfig = async (api: IsolateApi, checkRepo?: string) => {
+const readConfig = async (api: IA, checkRepo?: string) => {
   let config: ActorConfig = { repos: {}, machines: {} }
   if (await api.exists('config.json')) {
     config = await api.readJSON<ActorConfig>('config.json')

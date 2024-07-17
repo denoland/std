@@ -1,5 +1,5 @@
 import { Debug } from '@utils'
-import { IsolateApi, ProcessOptions } from '@/constants.ts'
+import { IA, ProcessOptions } from '@/constants.ts'
 const log = Debug('AI:files')
 
 export const api = {
@@ -87,6 +87,24 @@ export const api = {
       },
     },
   },
+  search: {
+    description:
+      'Search for a file or directory.  Returns the relative path to the first match.',
+    type: 'object',
+    additionalProperties: false,
+    required: ['query'],
+    properties: {
+      query: {
+        type: 'string',
+        description:
+          'the relative path to the file or directory you want to find',
+      },
+    },
+  },
+}
+interface SearchResult {
+  path: string
+  description: string
 }
 export type Api = {
   write: (
@@ -100,10 +118,11 @@ export type Api = {
   read: (params: { path: string }) => Promise<string>
   update: (params: Update) => Promise<number>
   rm: (params: { path: string }) => Promise<void>
+  search: (params: { query: string }) => Promise<SearchResult[]>
 }
 export const functions = {
   // TODO this should be a full mirror of the IsolateApi functions
-  write: (params: { path: string; content?: string }, api: IsolateApi) => {
+  write: (params: { path: string; content?: string }, api: IA) => {
     const { path, content = '' } = params
     log('add', path, content)
     api.write(path, content)
@@ -111,7 +130,7 @@ export const functions = {
   },
   ls: async (
     params: { path?: string; count?: boolean; all?: boolean },
-    api: IsolateApi,
+    api: IA,
   ) => {
     const { path = '.', count } = params
     log('ls', path)
@@ -124,11 +143,11 @@ export const functions = {
     }
     return result
   },
-  read: async (params: { path: string }, api: IsolateApi) => {
+  read: async (params: { path: string }, api: IA) => {
     const { path } = params
     return await api.read(path)
   },
-  update: async (params: Update, api: IsolateApi) => {
+  update: async (params: Update, api: IA) => {
     const { path, regex, replacement } = params
     log('update', path, regex, replacement)
     const contents = await api.read(path)
@@ -137,10 +156,14 @@ export const functions = {
     api.write(path, result)
     return matches.length
   },
-  rm: (params: { path: string }, api: IsolateApi) => {
+  rm: (params: { path: string }, api: IA) => {
     const { path } = params
     log('rm', path)
     api.delete(path)
+  },
+  search: async (params: { query: string }, api: IA) => {
+    const { query } = params
+    log('search', query)
   },
 }
 

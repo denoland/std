@@ -4,8 +4,8 @@ import { Crypto } from '@/api/web-client-crypto.ts'
 import { Backchat } from '@/api/web-client-backchat.ts'
 
 export default (name: string, cradleMaker: CradleMaker) => {
-  const prefix = name + 'backchats: '
-  Deno.test(prefix + 'session', async (t) => {
+  const prefix = name + ':backchats: '
+  Deno.test(prefix + 'multi backchat', async (t) => {
     const { engine } = await cradleMaker()
     const key = Crypto.generatePrivateKey()
     const backchat = await Backchat.upsert(engine, key)
@@ -42,7 +42,7 @@ export default (name: string, cradleMaker: CradleMaker) => {
       await expect(Backchat.upsert(engine, key, 'invalid'))
         .rejects.toThrow('Invalid resume backchat id: invalid')
 
-      const almost = `bac_${randomId()}`
+      const almost = `bac_${randomId('almost')}`
       const next = await Backchat.upsert(engine, key, almost)
       expect(next.threadId).not.toEqual(almost)
     })

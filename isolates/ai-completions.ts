@@ -2,7 +2,7 @@ import { assert, Debug } from '@utils'
 import merge from 'lodash.merge'
 import OpenAI from 'openai'
 import '@std/dotenv/load'
-import { IsolateApi, print, Thread } from '@/constants.ts'
+import { IA, print, Thread } from '@/constants.ts'
 import { loadTools } from './ai-load-tools.ts'
 const base = 'AI:completions'
 const log = Debug(base)
@@ -39,7 +39,7 @@ export type Api = {
 export const functions = {
   async complete(
     { threadPath }: { threadPath: string },
-    api: IsolateApi,
+    api: IA,
   ): Promise<string | void> {
     const thread = await api.readJSON<Thread>(threadPath)
     // TODO assert thread is correctly formatted
@@ -104,6 +104,9 @@ export const functions = {
       api.writeJSON(threadPath, thread)
     }
     log('streamCall complete', assistant)
+    if (assistant.tool_calls) {
+      log('tool calls:', assistant.tool_calls)
+    }
     if (assistant.content) {
       return assistant.content
     }

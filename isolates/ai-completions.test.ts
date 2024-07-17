@@ -1,6 +1,6 @@
 import { assert, expect, log } from '@utils'
-import IsolateApi from '../isolate-api.ts'
-import { partialFromRepo, Thread } from '../constants.ts'
+import IA from '../isolate-api.ts'
+import { generateThreadId, partialFromRepo, Thread } from '../constants.ts'
 import * as completions from './ai-completions.ts'
 import * as thread from './thread.ts'
 import FS from '@/git/fs.ts'
@@ -15,7 +15,8 @@ commands:
 ---
 Only reply with a SINGLE word
 `
-const threadPath = 'threads/thread-test.json'
+const threadId = generateThreadId()
+// const threadPath = 'threads/thread-test.json'
 const agentPath = 'agents/agent-fixture.md'
 
 Deno.test('ai-chat', async (t) => {
@@ -23,18 +24,18 @@ Deno.test('ai-chat', async (t) => {
   const partialPid = partialFromRepo('runner/test')
   const fs = await FS.init(partialPid, db)
   const accumulator = Accumulator.create(fs)
-  const api = IsolateApi.create(accumulator)
+  const api = IA.create(accumulator)
   accumulator.activate(Symbol())
 
   await t.step('create thread', async () => {
     api.write(agentPath, agentMd)
-    await thread.functions.startThread({ threadPath, agentPath }, api)
+    await thread.functions.start({ threadId, agentPath }, api)
   })
 
   await t.step('hello world', async () => {
     const content = 'cheese emoji'
-    await thread.functions.addMessage({ threadPath, content }, api)
-    await completions.functions.complete({ threadPath }, api)
+    await thread.functions.addMessage({ threadId, content }, api)
+    await completions.functions.complete({ threadId }, api)
     const result = await api.readJSON<Thread>(threadPath)
     log('result', result)
     expect(result.messages).toHaveLength(3)
@@ -115,7 +116,7 @@ commands:
   db.stop()
 })
 
-const resetInstructions = (api: IsolateApi, instructions: string) => {
+const resetInstructions = (api: IA, instructions: string) => {
   const split = agentMd.trim().split('\n')
   split.pop()
   split.push(instructions)

@@ -2,6 +2,7 @@ import { deserializeError } from 'serialize-error'
 import Accumulator from './exe/accumulator.ts'
 import Compartment from './io/compartment.ts'
 import { assert, Debug } from '@utils'
+import micromatch from 'micromatch'
 import {
   ApiFunctions,
   DispatchFunctions,
@@ -27,7 +28,7 @@ type EffectOptions = {
   isEffect: boolean
   isEffectRecovered: boolean
 }
-export default class IsolateApi<T extends object = Default> {
+export default class IA<T extends object = Default> {
   #accumulator: Accumulator
   #origin: SolidRequest | undefined
   // TODO assign a mount id for each side effect execution context ?
@@ -44,7 +45,7 @@ export default class IsolateApi<T extends object = Default> {
     origin?: SolidRequest,
     opts?: EffectOptions,
   ) {
-    const api = new IsolateApi(accumulator, origin)
+    const api = new IA(accumulator, origin)
     if (opts) {
       api.#isEffect = opts.isEffect || false
       api.#isEffectRecovered = opts.isEffectRecovered || false
@@ -53,7 +54,7 @@ export default class IsolateApi<T extends object = Default> {
   }
   static createContext<T extends object = Default>() {
     // TODO find a more graceful way to do this for cradle setup
-    return new IsolateApi<T>(
+    return new IA<T>(
       null as unknown as Accumulator,
     )
   }
@@ -124,7 +125,7 @@ export default class IsolateApi<T extends object = Default> {
       return promise
     }
     let resolve, reject
-    const promise = new Promise((_resolve, _reject) => {
+    const promise: MetaPromise = new Promise((_resolve, _reject) => {
       resolve = _resolve
       reject = _reject
     })
@@ -218,9 +219,10 @@ export default class IsolateApi<T extends object = Default> {
     }
     return false
   }
-  async lsChildren() {
+  async lsChildren(patterns: string[] = []) {
     const obj = await this.readJSON<IoStruct>('.io.json')
-    return Object.values(obj.branches)
+    const branches = Object.values(obj.branches)
+    return micromatch(branches, patterns)
   }
   get context() {
     // TODO at creation, this should flag context capable and reject if not

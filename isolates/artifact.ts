@@ -17,7 +17,7 @@ import {
   QueueMessage,
   SolidRequest,
 } from '@/constants.ts'
-import IsolateApi from '../isolate-api.ts'
+import IA from '../isolate-api.ts'
 import { doAtomicBranch, doAtomicCommit } from '@io/io.ts'
 import DB from '../db.ts'
 import FS from '../git/fs.ts'
@@ -72,7 +72,7 @@ interface Pierce {
  * from within an isolate.
  */
 export const functions = {
-  async pierce({ pierce }: Pierce, api: IsolateApi<C>) {
+  async pierce({ pierce }: Pierce, api: IA<C>) {
     assert(isPierceRequest(pierce), 'invalid pierce request')
     log('pierce %o %o', pierce.isolate, pierce.functionName)
     log('target', print(pierce.target))
@@ -88,7 +88,7 @@ export const functions = {
 }
 
 export const lifecycles: IsolateLifecycle = {
-  async '@@mount'(api: IsolateApi<C>) {
+  async '@@mount'(api: IA<C>) {
     const { aesKey, seed } = api.context
     assert(aesKey, 'AES_KEY not found')
     const db = await DB.create(aesKey, seed)
@@ -148,7 +148,7 @@ export const lifecycles: IsolateLifecycle = {
       }
     })
   },
-  '@@unmount'(api: IsolateApi<C>) {
+  '@@unmount'(api: IA<C>) {
     const { db } = sanitizeContext(api)
     return db.stop()
   },
@@ -190,7 +190,7 @@ const isSettled = async (request: SolidRequest, sequence: number, db: DB) => {
   }
   return false
 }
-export const sanitizeContext = (api: IsolateApi<C>): C => {
+export const sanitizeContext = (api: IA<C>): C => {
   assert(api.context, 'context not found')
   const { db, exe } = api.context
   assert(db instanceof DB, 'db not found')

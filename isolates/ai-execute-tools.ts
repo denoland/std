@@ -2,14 +2,14 @@ import { assert } from '@std/assert'
 import { Debug } from '@utils'
 import OpenAI from 'openai'
 import { serializeError } from 'serialize-error'
-import { colorize, IsolateApi, sha1, Thread, withMeta } from '@/constants.ts'
+import { colorize, IA, sha1, Thread, withMeta } from '@/constants.ts'
 import { loadActions } from './ai-load-tools.ts'
-const base = 'AI:tools:execute-tools'
+const base = 'AI:execute-tools'
 const log = Debug(base)
 const debugToolCall = Debug(base + ':ai-result-tool')
 const debugToolResult = Debug(base + ':ai-tool-result')
 
-export const executeTools = async (threadPath: string, api: IsolateApi) => {
+export const executeTools = async (threadPath: string, api: IA) => {
   // TODO only load what the assistant message needs
 
   let thread = await api.readJSON<Thread>(threadPath)
@@ -38,7 +38,7 @@ export const executeTools = async (threadPath: string, api: IsolateApi) => {
       const parameters = JSON.parse(args)
       log('executing tool call:', colorize(api.commit), name, parameters)
       const branchName = tool_call_id
-      const promise = actions[name](parameters, branchName)
+      const { promise } = await actions[name](parameters, branchName)
       const { result, parent } = await withMeta(promise)
       assert(typeof parent === 'string', 'missing parent')
       assert(sha1.test(parent), 'invalid parent')

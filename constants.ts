@@ -1,5 +1,5 @@
-import IsolateApi from './isolate-api.ts'
-export type { IsolateApi }
+import IA from './isolate-api.ts'
+export type { IA }
 export const IO_PATH = '.io.json'
 import {
   Backchat,
@@ -36,15 +36,15 @@ export type C = {
 export type IsolateFunction = {
   (): unknown | Promise<unknown>
   (...args: [Params]): unknown | Promise<unknown>
-  (...args: [Params, IsolateApi]): unknown | Promise<unknown>
+  (...args: [Params, IA]): unknown | Promise<unknown>
 }
 
 export type IsolateFunctions = {
   [key: string]: IsolateFunction
 }
 export type IsolateLifecycle = {
-  '@@mount'?: (api: IsolateApi) => Promise<IsolateReturn> | IsolateReturn
-  '@@unmount'?: (api: IsolateApi) => Promise<IsolateReturn> | IsolateReturn
+  '@@mount'?: (api: IA) => Promise<IsolateReturn> | IsolateReturn
+  '@@unmount'?: (api: IA) => Promise<IsolateReturn> | IsolateReturn
 }
 export type Isolate = {
   api: IsolateApiSchema

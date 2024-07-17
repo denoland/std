@@ -3,7 +3,7 @@ import { assert, Debug } from '@utils'
 import {
   C,
   ENTRY_BRANCH,
-  IsolateApi,
+  IA,
   isPID,
   Params,
   PID,
@@ -93,7 +93,7 @@ export type Api = {
 export const functions = {
   init: async (
     p: { repo: string; isolate?: string; params?: Params },
-    api: IsolateApi<C>,
+    api: IA<C>,
   ) => {
     const { repo, isolate, params = {} } = p
     // TODO lock so only the actor branch can call this function
@@ -113,7 +113,7 @@ export const functions = {
     }
     return { pid, head }
   },
-  rm: async (params: { pid: PID }, api: IsolateApi<C>) => {
+  rm: async (params: { pid: PID }, api: IA<C>) => {
     const { pid } = params
     assert(isPID(pid), 'invalid pid')
     assert(isBaseRepo(pid), 'cannot remove a non-base repository')
@@ -124,7 +124,7 @@ export const functions = {
   },
   clone: async (
     p: { repo: string; isolate?: string; params: Params },
-    api: IsolateApi<C>,
+    api: IA<C>,
   ) => {
     const { repo, isolate, params = {} } = p
     log('clone', repo, isolate, params)
@@ -143,7 +143,7 @@ export const functions = {
     log('cloned %s in %ims', print(pid), elapsed)
     return { pid, head, elapsed }
   },
-  pull: async (params: { repo: string }, api: IsolateApi<C>) => {
+  pull: async (params: { repo: string }, api: IA<C>) => {
     log('pull', params, print(api.pid))
     const actions = await api.actions<Api>('system')
     const { pid } = api
@@ -168,7 +168,7 @@ export const functions = {
     }
   },
 
-  sideEffectClone: async ({ repo }: { repo: string }, api: IsolateApi<C>) => {
+  sideEffectClone: async ({ repo }: { repo: string }, api: IA<C>) => {
     // TODO assert we got called by ourselves
     const { db } = api.context
     assert(db, 'db not found')
@@ -177,7 +177,7 @@ export const functions = {
     const elapsed = Date.now() - start
     return { pid, head: oid, elapsed }
   },
-  sideEffectInit: async ({ repo }: { repo: string }, api: IsolateApi<C>) => {
+  sideEffectInit: async ({ repo }: { repo: string }, api: IA<C>) => {
     // TODO assert we got called by ourselves
     const { db } = api.context
     assert(db, 'db not found')
@@ -190,7 +190,7 @@ export const functions = {
   },
   sideEffectFetch: async (
     { pid, repo }: { pid: PID; repo: string },
-    api: IsolateApi<C>,
+    api: IA<C>,
   ) => {
     const { db } = api.context
     assert(db, 'db not found')

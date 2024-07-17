@@ -7,6 +7,7 @@ import {
   backchatIdRegex,
   EngineInterface,
   freezePid,
+  getParent,
   IoStruct,
   JsonValue,
   Params,
@@ -85,7 +86,7 @@ export class Backchat {
    * system. The prompt is relayed thru backchat, and then if it is not
    * intercepted, it will go on to the targeted thread, where the agent running
    * that thread will respond.
-   * @param text The optional text that is to be parsed by the AI.  It can be
+   * @param content The optional text that is to be parsed by the AI.  It can be
    * empty if there are files attached or to indicate a positive response to
    * something.
    * @param threadId The thread we targeting with the prompt.  Backchat may
@@ -96,14 +97,14 @@ export class Backchat {
    * prompt, which may include directories.  May include pointers to the tmp
    * files that are created when a user attaches files in the browser.
    */
-  async prompt(text = '', threadId?: string, paths?: string[]) {
+  async prompt(content = '', threadId?: string, paths?: string[]) {
     // pierce the backchat thread
     const pierce: PierceRequest = {
       target: this.#pid,
       ulid: ulid(),
       isolate: 'backchat',
       functionName: 'prompt',
-      params: { text },
+      params: { content },
       proctype: PROCTYPE.SERIAL,
     }
     if (threadId) {
@@ -194,7 +195,7 @@ export class Backchat {
     return actor.lsRepos()
   }
   async #getActor() {
-    const target = getActorPid(this.#pid)
+    const target = getParent(this.#pid)
     const actor = await this.actions<ActorApi>('actors', { target })
     return actor
   }
@@ -272,9 +273,4 @@ interface Update {
   path: string
   regex: string
   replacement: string
-}
-
-export const getActorPid = (source: PID) => {
-  const branches = source.branches.slice(0, 2)
-  return { ...source, branches }
 }

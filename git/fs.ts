@@ -15,6 +15,7 @@ import {
 import git, { Errors, type MergeDriverCallback } from '$git'
 import type DB from '@/db.ts'
 import { GitKV } from './gitkv.ts'
+import { ulid } from 'ulid'
 const log = Debug('git:fs')
 const dir = '/'
 
@@ -591,8 +592,7 @@ const assertPath = (path: string) => {
 
 const generateFakeRepoId = () => {
   // TODO make this genuine based on the genesis commit
-  // TODO make this be a RIPEMD-160 hash of the public key like in Crypto
-  return `rep_${randomId()}`
+  return `rep_${randomId(ulid())}`
 }
 
 const mergeDriver: MergeDriverCallback = ({ contents, path }) => {

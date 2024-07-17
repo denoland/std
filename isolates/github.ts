@@ -2,16 +2,15 @@ import * as Actors from '../isolates/actors.ts'
 import {
   addBranches,
   colorize,
+  IA,
   isBaseRepo,
-  IsolateApi,
   PID,
   pidSchema,
   print,
 } from '@/constants.ts'
 import { Backchat } from '@/api/web-client-backchat.ts'
 import type { Tokens } from '@deno/kv-oauth'
-import { Debug } from '@utils'
-import { assert } from '@std/assert'
+import { assert, Debug } from '@utils'
 import * as files from './files.ts'
 const log = Debug('AI:github')
 
@@ -99,14 +98,14 @@ export const api = {
 }
 
 export const functions = {
-  '@@install': (params: { homeAddress: PID }, api: IsolateApi) => {
+  '@@install': (params: { homeAddress: PID }, api: IA) => {
     log('install with homeAddress:', print(params.homeAddress))
     assert(isBaseRepo(api.pid), '@@install not base: ' + print(api.pid))
     api.writeJSON('config.json', { homeAddress: params.homeAddress })
   },
   registerAttempt: (
     params: { actorId: string; authSessionId: string },
-    api: IsolateApi,
+    api: IA,
   ) => {
     log('registerAttempt', colorize(params.actorId))
     assert(isBaseRepo(api.pid), 'registerAttempt not base: ' + print(api.pid))
@@ -123,7 +122,7 @@ export const functions = {
   },
   authorize: async (
     params: { authSessionId: string; tokens: Tokens; githubUserId: string },
-    api: IsolateApi,
+    api: IA,
   ) => {
     assert(isBaseRepo(api.pid), 'authorize not base: ' + print(api.pid))
     const { authSessionId, tokens, githubUserId } = params

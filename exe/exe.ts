@@ -8,7 +8,7 @@ import {
   SolidReply,
   SolidRequest,
 } from '@/constants.ts'
-import IsolateApi from '../isolate-api.ts'
+import IA from '../isolate-api.ts'
 import Compartment from '../io/compartment.ts'
 import { assert, Debug, equal, serializeError } from '@utils'
 import Accumulator from '@/exe/accumulator.ts'
@@ -53,7 +53,7 @@ export default class Executor {
       // TODO read side effect config from io.json
       const origin = io.getExecution()
       assert(origin, 'origin not found')
-      const isolateApi = IsolateApi.create(accumulator, origin, opts)
+      const isolateApi = IA.create(accumulator, origin, opts)
       if (req.isolate === 'system') {
         log('system isolate')
         isolateApi.context = c
@@ -133,6 +133,6 @@ export default class Executor {
 type Execution = {
   function: Promise<Outcome>
   accumulator: Accumulator
-  api: IsolateApi
+  api: IA
   commits: string[]
 }

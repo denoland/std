@@ -1,6 +1,7 @@
 // copied from the artifact project
 import { Chalk } from 'chalk'
-import { ulid } from 'ulid'
+import { ripemd160 } from '@noble/hashes/ripemd160'
+import { base32crockford } from '@scure/base'
 import { JSONSchemaType } from './web-client.ajv.ts'
 import type { Backchat } from './web-client-backchat.ts'
 import { assert } from '@sindresorhus/is'
@@ -27,9 +28,14 @@ export type ApiFunction = {
 export type ApiFunctions = {
   [key: string]: ApiFunction
 }
+export interface ThreadArgs {
+  agentPath: string
+  threadId: string
+}
 type RepoParams = { repo: string; isolate?: string; params?: Params }
 export type ActorApi = ApiFunctions & {
   backchat: (params: { backchatId: string; machineId?: string }) => Promise<PID>
+  thread: (params: ThreadArgs) => Promise<PID>
   /** Clones from github, using the github PAT (if any) for the calling machine.
    * Updates the repo.json file in the actor branch to point to the new PID of
    * the clone.
@@ -541,6 +547,17 @@ export const backchatIdRegex = /^bac_[0-9A-HJKMNP-TV-Z]{16}$/
 export const threadIdRegex = /^thr_[0-9A-HJKMNP-TV-Z]{16}$/
 export const SU_ACTOR = 'act_SVPERVSER0000000'
 export const SU_BACKCHAT = 'bac_SVPERVSER0000000'
+
+export const generateActorId = (seed: string) => {
+  return 'act_' + randomId(seed)
+}
+export const generateBackchatId = (seed: string) => {
+  return 'bac_' + randomId(seed)
+}
+export const generateThreadId = (seed: string) => {
+  return 'thr_' + randomId(seed)
+}
+
 export const getActorId = (source: PID) => {
   const [base, actorId] = source.branches
   const parent = { ...source, branches: [base] }
@@ -553,12 +570,18 @@ export const getActorId = (source: PID) => {
   }
   return actorId
 }
+export const getActorPid = (source: PID) => {
+  const actorId = getActorId(source)
+  const branches = [source.branches[0], actorId]
+  return { ...source, branches }
+}
 export const isActorBranch = (pid: PID) => {
   if (pid.branches.length !== 2) {
     return false
   }
   return !!getActorId(pid)
 }
+
 export const isPidEqual = (pid1: PID, pid2: PID) => {
   if (pid1.repoId !== pid2.repoId) {
     return false
@@ -608,10 +631,18 @@ export const addPeer = (pid: PID, peer: string) => {
   const next = { ...pid, branches: [...branches, peer] }
   return freezePid(next)
 }
+export const getParent = (pid: PID) => {
+  const branches = [...pid.branches]
+  branches.pop()
+  return freezePid({ ...pid, branches })
+}
 
-export const randomId = () => {
-  const string = ulid()
-  const regex = /(?<=.{10})(.{16})/
-  const randomnessPart = string.match(regex)?.[0]
-  return randomnessPart
+export const randomId = (seed: string) => {
+  const hash = ripemd160(seed)
+  const encoded = base32crockford.encode(hash)
+  return encoded.slice(-16)
+}
+export const isBackchatSummoned = (text: string = '') => {
+  const plain = text.toLowerCase().trim()
+  return plain.startsWith('backchat') || plain.startsWith('back chat')
 }

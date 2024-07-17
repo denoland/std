@@ -1,5 +1,5 @@
 import { Debug, delay, expect } from '@utils'
-import { IsolateApi, pidSchema } from '@/constants.ts'
+import { IA, pidSchema } from '@/constants.ts'
 import { PID } from '@/constants.ts'
 import { withMeta } from '@/api/web-client.types.ts'
 const log = Debug('AI:io-fixture')
@@ -121,13 +121,13 @@ export type Api = {
   local: () => Promise<string>
 }
 export const functions = {
-  write: (params: { path: string; content: string }, api: IsolateApi) => {
+  write: (params: { path: string; content: string }, api: IA) => {
     log('write', params)
     api.write(params.path, params.content)
   },
   async writeSlow(
     params: { path: string; content: string; delay: number },
-    api: IsolateApi,
+    api: IA,
   ) {
     log('writeSlow', params)
     let string = ''
@@ -142,20 +142,20 @@ export const functions = {
     log('error', message)
     throw new Error(message)
   },
-  branch: async (_: object, api: IsolateApi) => {
+  branch: async (_: object, api: IA) => {
     log('branch')
     const { pong } = await api.actions('io-fixture')
     const result = await pong({}, { branch: true })
     return result
   },
-  compound: async (params: { target?: PID }, api: IsolateApi) => {
+  compound: async (params: { target?: PID }, api: IA) => {
     const { target } = params
     log('compound target:', target)
     const { pong } = await api.actions('io-fixture', { target })
     const result = await pong({})
     return result
   },
-  parallel: async (params: { count: number }, api: IsolateApi) => {
+  parallel: async (params: { count: number }, api: IA) => {
     const { local } = await api.actions('io-fixture')
     const promises = []
     for (let i = 0; i < params.count; i++) {
@@ -165,7 +165,7 @@ export const functions = {
   },
   squared: async (
     params: { count: number; multiplier: number },
-    api: IsolateApi,
+    api: IA,
   ) => {
     const { parallel } = await api.actions('io-fixture')
     const promises = []
@@ -176,7 +176,7 @@ export const functions = {
   },
   fileAccumulation: async (
     params: { path: string; content: string; count: number },
-    api: IsolateApi,
+    api: IA,
   ) => {
     log('fileAccumulation', params)
     const { path, content, count } = params
@@ -204,7 +204,7 @@ export const functions = {
   },
   loopAccumulation: async (
     params: { path: string; content: string; count: number },
-    api: IsolateApi,
+    api: IA,
   ) => {
     log('loopAccumulation', params)
     log('commit', api.commit)
@@ -237,7 +237,7 @@ export const functions = {
   },
   touch: (
     params: { count: number; prefix: string; suffix: string },
-    api: IsolateApi,
+    api: IA,
   ) => {
     const { count, prefix = '', suffix = '' } = params
     log('touch', params)
