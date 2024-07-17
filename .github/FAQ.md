@@ -18,7 +18,7 @@ The Standard Library aims to compliment the
 By virtue of the APIs it supports, the Standard Library primarily aims to work
 with:
 
-1. [Deno](https://deno.com/)
+1. [Deno](https://deno.com/) (latest stable version and canary)
 1. [Deno Deploy](https://deno.com/deploy)
 1. Web browsers (i.e. [Google Chrome](https://www.google.com.au/chrome/),
    [Mozilla Firefox](https://www.mozilla.org/firefox/),
@@ -30,6 +30,18 @@ support the same APIs that the Standard Library targets. These runtimes include:
 1. [Node.js](https://nodejs.org/)
 1. [Cloudflare Workers](https://workers.cloudflare.com/)
 1. [Bun](https://bun.sh/)
+
+## Why is the Standard Library versioned differently to the Deno runtime?
+
+Deno is not the only runtime that the Standard Library is designed to work with
+(see above section). Hence, there's no reason to have Deno and the Standard
+Library to be versioned the same. Also, having both projects versioned
+independently allows them to progress asynchronously.
+
+## Which versions of Deno is the Standard Library guaranteed to work with?
+
+The Standard Library is designed to work with the latest stable and canary
+versions of Deno. This is checked-for with all PRs in CI.
 
 ## How is the Standard Library distributed?
 
