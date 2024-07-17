@@ -3,10 +3,13 @@
   "version": "1.0.0",
   "exports": {
     ".": "./mod.ts",
-    "./case": "./case.ts",
     "./closest-string": "./closest_string.ts",
     "./compare-similarity": "./compare_similarity.ts",
     "./levenshtein-distance": "./levenshtein_distance.ts",
+    "./to-camel-case": "./to_camel_case.ts",
+    "./to-kebab-case": "./to_kebab_case.ts",
+    "./to-pascal-case": "./to_pascal_case.ts",
+    "./to-snake-case": "./to_snake_case.ts",
     "./word-similarity-sort": "./word_similarity_sort.ts"
   }
 }

@@ -11,6 +11,9 @@ export interface WordSimilaritySortOptions extends CompareSimilarityOptions {}
 /**
  * Sorts a string-array by similarity to a given string.
  *
+ * By default, calculates the distance between words using the
+ * {@link https://en.wikipedia.org/wiki/Levenshtein_distance | Levenshtein distance}.
+ *
  * @example Basic usage
  *
  * ```ts
@@ -36,17 +39,16 @@ export interface WordSimilaritySortOptions extends CompareSimilarityOptions {}
  * ```
  *
  * @param givenWord The string to measure distance against.
- * @param possibleWords The string-array that will be sorted.
+ * @param possibleWords The string-array that will be sorted. This array will
+ * not be mutated, but the sorted copy will be returned.
  * @param options Options for the sort.
- * @returns A sorted copy of possibleWords.
+ * @returns A sorted copy of `possibleWords`.
  */
 export function wordSimilaritySort(
   givenWord: string,
-  possibleWords: string[],
+  possibleWords: ReadonlyArray<string>,
   options?: WordSimilaritySortOptions,
 ): string[] {
   // This distance metric could be swapped/improved in the future
-  return [...possibleWords].sort(
-    compareSimilarity(givenWord, options),
-  );
+  return possibleWords.toSorted(compareSimilarity(givenWord, options));
 }
