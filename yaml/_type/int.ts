@@ -151,12 +151,12 @@ function constructYamlInteger(data: string): number {
   return sign * parseInt(value, 10);
 }
 
-function isInteger(object: unknown): boolean {
+function isInteger(object: unknown): object is number {
   return typeof object === "number" && object % 1 === 0 &&
     !isNegativeZero(object);
 }
 
-export const int: Type<number> = {
+export const int: Type<"scalar", number> = {
   tag: "tag:yaml.org,2002:int",
   construct: constructYamlInteger,
   defaultStyle: "decimal",
