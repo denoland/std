@@ -27,7 +27,7 @@ import {
   VERTICAL_LINE,
 } from "./_chars.ts";
 import { DEFAULT_SCHEMA, type Schema } from "./_schema.ts";
-import type { StyleVariant, Type } from "./_type.ts";
+import type { KindType, StyleVariant, Type } from "./_type.ts";
 import { type ArrayObject, getObjectTypeString, isObject } from "./_utils.ts";
 
 const STYLE_PLAIN = 1;
@@ -118,7 +118,10 @@ function generateNextLine(indent: number, level: number): string {
   return `\n${" ".repeat(indent * level)}`;
 }
 
-function testImplicitResolving(implicitTypes: Type[], str: string): boolean {
+function testImplicitResolving(
+  implicitTypes: Type<"scalar">[],
+  str: string,
+): boolean {
   return implicitTypes.some((type) => type.resolve(str));
 }
 
@@ -472,8 +475,8 @@ export class DumperState {
   useAnchors: boolean;
   compatMode: boolean;
   condenseFlow: boolean;
-  implicitTypes: Type[];
-  explicitTypes: Type[];
+  implicitTypes: Type<"scalar">[];
+  explicitTypes: Type<KindType>[];
   tag: string | null = null;
   result = "";
   duplicates: unknown[] = [];

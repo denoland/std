@@ -24,11 +24,12 @@ import {
   undefinedType,
 } from "./_type/mod.ts";
 
-function compileList(
+// deno-lint-ignore no-explicit-any
+function compileList<K extends KindType, D = any>(
   schema: Schema,
   name: "implicit" | "explicit",
-  result: Type[],
-): Type[] {
+  result: Type<K, D>[],
+): Type<K, D>[] {
   const exclude: number[] = [];
 
   for (const includedSchema of schema.include) {
@@ -45,14 +46,17 @@ function compileList(
       }
     }
 
-    result.push(currentType);
+    result.push(currentType as Type<K, D>);
   }
 
   return result.filter((_type, index): unknown => !exclude.includes(index));
 }
 
-export type TypeMap = Record<KindType | "fallback", ArrayObject<Type<unknown>>>;
-function compileMap(...typesList: Type<unknown>[][]): TypeMap {
+export type TypeMap = Record<
+  KindType | "fallback",
+  ArrayObject<Type<KindType>>
+>;
+function compileMap(...typesList: Type<KindType>[][]): TypeMap {
   const result: TypeMap = {
     fallback: {},
     mapping: {},
@@ -69,17 +73,17 @@ function compileMap(...typesList: Type<unknown>[][]): TypeMap {
 }
 
 export class Schema {
-  implicit: Type[];
-  explicit: Type[];
+  implicit: Type<"scalar">[];
+  explicit: Type<KindType>[];
   include: Schema[];
 
-  compiledImplicit: Type[];
-  compiledExplicit: Type[];
+  compiledImplicit: Type<"scalar">[];
+  compiledExplicit: Type<KindType>[];
   compiledTypeMap: TypeMap;
 
   constructor(definition: {
-    implicit?: Type[];
-    explicit?: Type[];
+    implicit?: Type<"scalar">[];
+    explicit?: Type<KindType>[];
     include?: Schema[];
   }) {
     this.explicit = definition.explicit || [];

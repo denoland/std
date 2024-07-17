@@ -37,7 +37,7 @@ import {
 } from "./_chars.ts";
 import { Mark } from "./_mark.ts";
 import { DEFAULT_SCHEMA, type Schema, type TypeMap } from "./_schema.ts";
-import type { Type } from "./_type.ts";
+import type { KindType, Type } from "./_type.ts";
 import { type ArrayObject, getObjectTypeString, isObject } from "./_utils.ts";
 
 const CONTEXT_FLOW_IN = 1;
@@ -146,7 +146,7 @@ class LoaderState {
   line = 0;
   onWarning?: (error: Error) => void;
   allowDuplicateKeys: boolean;
-  implicitTypes: Type[];
+  implicitTypes: Type<"scalar">[];
   typeMap: TypeMap;
 
   version?: string | null;
@@ -1412,7 +1412,7 @@ function composeNode(
   let indentStatus = 1; // 1: this>parent, 0: this=parent, -1: this<parent
   let atNewLine = false;
   let hasContent = false;
-  let type: Type;
+  let type: Type<KindType>;
   let flowIndent: number;
   let blockIndent: number;
 
