@@ -13,7 +13,7 @@ import { SEPARATOR } from "./constants.ts";
  * @example Usage
  * ```ts
  * import { common } from "@std/path/common";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * if (Deno.build.os === "windows") {
  *   const path = common([

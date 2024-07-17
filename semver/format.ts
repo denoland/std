@@ -16,14 +16,14 @@ function formatNumber(value: number) {
 /**
  * Format a SemVer object into a string.
  *
- * If any number is NaN then NaN will be printed.
+ * If any number is {@linkcode NaN}, then `NaN` will be printed.
  *
  * If any number is positive or negative infinity then '∞' or '⧞' will be printed instead.
  *
  * @example Usage
  * ```ts
  * import { format } from "@std/semver/format";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const semver = {
  *   major: 1,

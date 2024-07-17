@@ -6,7 +6,7 @@
  *
  * ```ts
  * import { toCamelCase, compareSimilarity } from "@std/text";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * assertEquals(toCamelCase("snake_case"), "snakeCase");
  *
@@ -23,5 +23,8 @@ export * from "./levenshtein_distance.ts";
 export * from "./closest_string.ts";
 export * from "./compare_similarity.ts";
 export * from "./word_similarity_sort.ts";
-export * from "./case.ts";
+export * from "./to_camel_case.ts";
 export * from "./to_constant_case.ts";
+export * from "./to_kebab_case.ts";
+export * from "./to_pascal_case.ts";
+export * from "./to_snake_case.ts";

@@ -13,7 +13,7 @@
  *
  * ```ts
  * import { test, extractJson } from "@std/front-matter";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const str = "---json\n{\"and\": \"this\"}\n---\ndeno is awesome";
  *
@@ -46,7 +46,7 @@
  *
  * ```ts
  * import { test, extractToml } from "@std/front-matter";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const str = "---toml\nmodule = 'front_matter'\n---\ndeno is awesome";
  *
@@ -85,7 +85,7 @@
  *
  * ```ts
  * import { test, extractYaml } from "@std/front-matter";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const str = "---yaml\nmodule: front_matter\n---\ndeno is awesome";
  *
@@ -124,7 +124,7 @@ import { extract as extractJson } from "./json.ts";
 import { extract as extractToml } from "./toml.ts";
 import { extract as extractYaml } from "./yaml.ts";
 
-export * from "./create_extractor.ts";
 export * from "./test.ts";
+export * from "./types.ts";
 
 export { extractJson, extractToml, extractYaml };

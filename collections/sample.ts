@@ -1,7 +1,12 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-import { randomInteger } from "./_utils.ts";
+/**
+ * Produces a random number between the inclusive `lower` and `upper` bounds.
+ */
+function randomInteger(lower: number, upper: number): number {
+  return lower + Math.floor(Math.random() * (upper - lower + 1));
+}
 
 /**
  * Returns a random element from the given array.
@@ -17,7 +22,7 @@ import { randomInteger } from "./_utils.ts";
  * @example Basic usage
  * ```ts
  * import { sample } from "@std/collections/sample";
- * import { assertArrayIncludes } from "@std/assert/assert-array-includes";
+ * import { assertArrayIncludes } from "@std/assert";
  *
  * const numbers = [1, 2, 3, 4];
  * const random = sample(numbers);

@@ -1,11 +1,10 @@
 {
   "name": "@std/semver",
-  "version": "0.224.3",
+  "version": "1.0.0-rc.2",
   "exports": {
     ".": "./mod.ts",
     "./can-parse": "./can_parse.ts",
     "./compare": "./compare.ts",
-    "./constants": "./constants.ts",
     "./difference": "./difference.ts",
     "./equals": "./equals.ts",
     "./format": "./format.ts",
@@ -25,10 +24,7 @@
     "./parse": "./parse.ts",
     "./parse-range": "./parse_range.ts",
     "./range-intersects": "./range_intersects.ts",
-    "./range-max": "./range_max.ts",
-    "./range-min": "./range_min.ts",
     "./satisfies": "./satisfies.ts",
-    "./test-range": "./test_range.ts",
     "./try-parse": "./try_parse.ts",
     "./try-parse-range": "./try_parse_range.ts",
     "./types": "./types.ts"

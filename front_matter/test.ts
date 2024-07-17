@@ -17,7 +17,7 @@ export type { Format };
  * @example Test for valid YAML front matter
  * ```ts
  * import { test } from "@std/front-matter/test";
- * import { assert } from "@std/assert/assert";
+ * import { assert } from "@std/assert";
  *
  * const result = test(
  * `---
@@ -30,7 +30,7 @@ export type { Format };
  * @example Test for valid TOML front matter
  * ```ts
  * import { test } from "@std/front-matter/test";
- * import { assert } from "@std/assert/assert";
+ * import { assert } from "@std/assert";
  *
  * const result = test(
  * `---toml
@@ -43,7 +43,7 @@ export type { Format };
  * @example Test for valid JSON front matter
  * ```ts
  * import { test } from "@std/front-matter/test";
- * import { assert } from "@std/assert/assert";
+ * import { assert } from "@std/assert";
  *
  * const result = test(
  * `---json
@@ -56,7 +56,7 @@ export type { Format };
  * @example JSON front matter is not valid as YAML
  * ```ts
  * import { test } from "@std/front-matter/test";
- * import { assertFalse } from "@std/assert/assert-false";
+ * import { assertFalse } from "@std/assert";
  *
  * const result = test(
  * `---json
@@ -66,20 +66,15 @@ export type { Format };
  * assertFalse(result);
  * ```
  */
-export function test(
-  str: string,
-  formats?: Format[],
-): boolean {
-  if (!formats) {
-    formats = Object.keys(EXTRACT_REGEXP_MAP) as Format[];
-  }
+export function test(str: string, formats?: Format[]): boolean {
+  if (!formats) formats = [...EXTRACT_REGEXP_MAP.keys()] as Format[];
 
   for (const format of formats) {
-    if (format === "unknown") {
-      throw new TypeError("Unable to test for unknown front matter format");
+    const regexp = EXTRACT_REGEXP_MAP.get(format);
+    if (!regexp) {
+      throw new TypeError(`Unable to test for ${format} front matter format`);
     }
-
-    const match = EXTRACT_REGEXP_MAP[format].exec(str);
+    const match = regexp.exec(str);
     if (match?.index === 0) {
       return true;
     }

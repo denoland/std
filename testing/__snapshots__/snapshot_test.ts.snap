@@ -418,14 +418,14 @@ Snapshot Test - First ... ok (--ms)
 Snapshot Test - Second ... ok (--ms)
 ------- post-test output -------
 
- > 1 snapshot updated.
+ > some snapshots updated.
 ----- post-test output end -----
 running 2 tests from <tempDir>/test.ts
 Snapshot Test - First ... ok (--ms)
 Snapshot Test - Second ... ok (--ms)
 ------- post-test output -------
 
- > 2 snapshots updated.
+ > some snapshots updated.
 ----- post-test output end -----
 
 ok | 4 passed | 0 failed (--ms)
@@ -470,3 +470,24 @@ snapshot[`createAssertSnapshot() - options object - custom name 1`] = `This gree
 snapshot[`createAssertSnapshot() > message 1`] = `"This snapshot has failed as expected"`;
 
 snapshot[`createAssertSnapshot() - composite - custom Name 1`] = `This green text has had it's colours stripped`;
+
+snapshot[`assertSnapshot() - regression #5155 1`] = `
+"running 1 test from <tempDir>/test.ts
+Snapshot Test ... FAILED (--ms)
+
+ ERRORS 
+error: PermissionDenied: Missing write access to snapshot file (file://<path>). This is required because assertSnapshot was called in update mode. Please pass the --allow-write flag.
+        throw new Deno.errors.PermissionDenied(
+              ^
+ FAILURES 
+
+FAILED | 0 passed | 1 failed (--ms)
+
+"
+`;
+
+snapshot[`assertSnapshot() - should work with the string with '\\r' character 1`] = `
+"Hello\\r
+World!\\r
+"
+`;

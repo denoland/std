@@ -26,7 +26,7 @@
  *   assertSpyCalls,
  *   spy,
  * } from "@std/testing/mock";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * function multiply(a: number, b: number): number {
  *   return a * b;
@@ -72,7 +72,7 @@
  *   assertSpyCalls,
  *   spy,
  * } from "@std/testing/mock";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * function multiply(a: number, b: number): number {
  *   return a * b;
@@ -125,7 +125,7 @@
  *   assertSpyCalls,
  *   spy,
  * } from "@std/testing/mock";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * function multiply(a: number, b: number): number {
  *   return a * b;
@@ -187,7 +187,7 @@
  *   returnsNext,
  *   stub,
  * } from "@std/testing/mock";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * function randomInt(lowerBound: number, upperBound: number): number {
  *   return lowerBound + Math.floor(Math.random() * (upperBound - lowerBound));
@@ -238,7 +238,7 @@
  *   returnsNext,
  *   stub,
  * } from "@std/testing/mock";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * function randomInt(lowerBound: number, upperBound: number): number {
  *   return lowerBound + Math.floor(Math.random() * (upperBound - lowerBound));
@@ -319,9 +319,9 @@
  * @module
  */
 
-import { assertEquals } from "@std/assert/assert-equals";
-import { assertIsError } from "@std/assert/assert-is-error";
-import { assertRejects } from "@std/assert/assert-rejects";
+import { assertEquals } from "@std/assert/equals";
+import { assertIsError } from "@std/assert/is-error";
+import { assertRejects } from "@std/assert/rejects";
 import { AssertionError } from "@std/assert/assertion-error";
 
 /**
@@ -330,7 +330,7 @@ import { AssertionError } from "@std/assert/assertion-error";
  * @example Usage
  * ```ts
  * import { MockError, spy } from "@std/testing/mock";
- * import { assertThrows } from "@std/assert/assert-throws";
+ * import { assertThrows } from "@std/assert";
  *
  * assertThrows(() => {
  *   spy({} as any, "no-such-method");
@@ -344,7 +344,7 @@ export class MockError extends Error {
    * @example Usage
    * ```ts
    * import { MockError, spy } from "@std/testing/mock";
-   * import { assertThrows } from "@std/assert/assert-throws";
+   * import { assertThrows } from "@std/assert";
    *
    * assertThrows(() => {
    *   spy({} as any, "no-such-method");
@@ -759,10 +759,11 @@ function constructorSpy<
   const calls: SpyCall<Self, Args, Self>[] = [];
   // @ts-ignore TS2509: Can't know the type of `original` statically.
   const spy = class extends original {
+    // deno-lint-ignore constructor-super
     constructor(...args: Args) {
-      super(...args);
       const call: SpyCall<Self, Args, Self> = { args };
       try {
+        super(...args);
         call.returned = this as unknown as Self;
       } catch (error) {
         call.error = error as Error;
@@ -1050,7 +1051,7 @@ export function stub<
  * @example Usage
  * ```ts
  * import { stub } from "@std/testing/mock";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const obj = {
  *   method(): number {
@@ -1413,11 +1414,6 @@ export async function assertSpyCallAsync<
           "do not expect error and return, only one should be expected",
         );
       }
-      if (call.error) {
-        throw new AssertionError(
-          "spy call did not return expected value, an error was thrown.",
-        );
-      }
       let expectedResolved;
       try {
         expectedResolved = await expected.returned;
@@ -1654,7 +1650,7 @@ export function assertSpyCallArgs<
  * @example Usage
  * ```ts
  * import { returnsThis } from "@std/testing/mock";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const func = returnsThis();
  * const obj = { func };
@@ -1682,7 +1678,7 @@ export function returnsThis<
  * @example Usage
  * ```ts
  * import { returnsArg } from "@std/testing/mock";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const func = returnsArg(1);
  * assertEquals(func(1, 2, 3), 2);
@@ -1711,7 +1707,7 @@ export function returnsArg<
  * @example Usage
  * ```ts
  * import { returnsArgs } from "@std/testing/mock";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const func = returnsArgs();
  * assertEquals(func(1, 2, 3), [1, 2, 3]);

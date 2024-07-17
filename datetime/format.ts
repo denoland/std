@@ -5,7 +5,11 @@ import { DateTimeFormatter } from "./_date_time_formatter.ts";
 
 /** Options for {@linkcode format}. */
 export interface FormatOptions {
-  /** Whether returns the formatted date in UTC instead of local time. */
+  /**
+   * Whether returns the formatted date in UTC instead of local time.
+   *
+   * @default {false}
+   */
   utc?: boolean;
 }
 
@@ -44,7 +48,7 @@ export interface FormatOptions {
  * @example Basic usage
  * ```ts no-eval
  * import { format } from "@std/datetime/format";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const date = new Date(2019, 0, 20, 16, 34, 23, 123);
  *
@@ -61,7 +65,7 @@ export interface FormatOptions {
  *
  * ```ts no-eval
  * import { format } from "@std/datetime/format";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const date = new Date(2019, 0, 20, 16, 34, 23, 123);
  *

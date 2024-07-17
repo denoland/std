@@ -1,8 +1,7 @@
 {
   "name": "@std/testing",
-  "version": "0.225.3",
+  "version": "1.0.0-rc.4",
   "exports": {
-    "./asserts": "./asserts.ts",
     "./bdd": "./bdd.ts",
     "./mock": "./mock.ts",
     "./snapshot": "./snapshot.ts",

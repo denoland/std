@@ -53,7 +53,7 @@ function convertBase64ToBase64url(b64: string) {
  * @example Usage
  * ```ts
  * import { encodeBase64Url } from "@std/encoding/base64url";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * assertEquals(encodeBase64Url("foobar"), "Zm9vYmFy");
  * ```
@@ -75,7 +75,7 @@ export function encodeBase64Url(
  * @example Usage
  * ```ts
  * import { decodeBase64Url } from "@std/encoding/base64url";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * assertEquals(
  *   decodeBase64Url("Zm9vYmFy"),
