@@ -19,17 +19,24 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
+          headerPattern: '^([\w/]+)(?:\(([\w\$\.\-\* ]*)\))?\: (.*)$'
           types: |
             BREAKING
-            [unstable] BREAKING
+            unstable/BREAKING
             deprecation
-            [unstable] deprecation
+            unstable/deprecation
             feat
+            unstable/feat
             fix
+            unstable/fix
             docs
+            unstable/docs
             refactor
+            unstable/refactor
             perf
+            unstable/perf
             test
+            unstable/test
             ci
             chore
             revert
