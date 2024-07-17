@@ -156,7 +156,7 @@ function isInteger(object: unknown): object is number {
     !isNegativeZero(object);
 }
 
-export const int: Type<number> = {
+export const int: Type<"scalar", number> = {
   tag: "tag:yaml.org,2002:int",
   construct: constructYamlInteger,
   defaultStyle: "decimal",

@@ -22,9 +22,9 @@ export type StyleVariant =
 export type RepresentFn<D> = (data: D, style?: StyleVariant) => string;
 
 // deno-lint-ignore no-explicit-any
-export interface Type<D = any> {
+export interface Type<K extends KindType, D = any> {
   tag: string;
-  kind: KindType;
+  kind: K;
   instanceOf?: new (...args: unknown[]) => D;
   predicate?: (data: unknown) => data is D;
   represent?: RepresentFn<D> | ArrayObject<RepresentFn<D>>;

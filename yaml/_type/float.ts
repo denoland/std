@@ -114,7 +114,7 @@ function isFloat(object: unknown): object is number {
     (object % 1 !== 0 || isNegativeZero(object));
 }
 
-export const float: Type<number> = {
+export const float: Type<"scalar", number> = {
   tag: "tag:yaml.org,2002:float",
   construct: constructYamlFloat,
   defaultStyle: "lowercase",

@@ -9,7 +9,7 @@ function resolveYamlMerge(data: string): boolean {
   return data === "<<" || data === null;
 }
 
-export const merge: Type<unknown> = {
+export const merge: Type<"scalar", unknown> = {
   tag: "tag:yaml.org,2002:merge",
   kind: "scalar",
   resolve: resolveYamlMerge,
