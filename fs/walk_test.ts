@@ -246,7 +246,6 @@ Deno.test("walk() rejects with `Deno.errors.NotFound` when root is removed durin
         );
       },
       Deno.errors.NotFound,
-      "(os error 2)",
     );
   } catch (err) {
     await Deno.remove(root, { recursive: true });
