@@ -107,6 +107,7 @@ export type { WalkEntry };
  *
  * @param root The root directory to start the walk from, as a string or URL.
  * @param options The options for the walk.
+ * @throws {Deno.errors.NotFound} If the root directory does not exist.
  *
  * @returns An async iterable iterator that yields the walk entry objects.
  *
