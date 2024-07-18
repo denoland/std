@@ -2,9 +2,6 @@
 // This module is browser compatible.
 import { levenshteinDistance } from "./levenshtein_distance.ts";
 
-// Note: this metric may change in future versions (e.g. better than levenshteinDistance)
-const getWordDistance = levenshteinDistance;
-
 /** Options for {@linkcode compareSimilarity}. */
 export interface CompareSimilarityOptions {
   /**
@@ -13,10 +10,23 @@ export interface CompareSimilarityOptions {
    * @default {false}
    */
   caseSensitive?: boolean;
+  /**
+   * A custom comparison function to use for comparing strings.
+   *
+   * @param a The first string for comparison.
+   * @param b The second string for comparison.
+   * @returns The distance between the two strings.
+   * @default {levenshteinDistance}
+   */
+  compareFn?: (a: string, b: string) => number;
 }
 
 /**
- * Sort based on word similarity.
+ * Takes a string and generates a comparator function to determine which of two
+ * strings is more similar to the given one.
+ *
+ * By default, calculates the distance between words using the
+ * {@link https://en.wikipedia.org/wiki/Levenshtein_distance | Levenshtein distance}.
  *
  * @param givenWord The string to measure distance against.
  * @param options Options for the sort.
@@ -30,29 +40,25 @@ export interface CompareSimilarityOptions {
  *
  * ```ts
  * import { compareSimilarity } from "@std/text/compare-similarity";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const words = ["hi", "hello", "help"];
- * const sortedWords = words.sort(compareSimilarity("hep"));
+ * const sortedWords = words.toSorted(compareSimilarity("hep"));
  *
  * assertEquals(sortedWords, ["help", "hi", "hello"]);
  * ```
- *
- * Note: the ordering of words may change with version-updates
- * E.g. word-distance metric may change (improve)
- * use a named-distance (e.g. levenshteinDistance) to
- * guarantee a particular ordering
  */
 export function compareSimilarity(
   givenWord: string,
   options?: CompareSimilarityOptions,
 ): (a: string, b: string) => number {
+  const { compareFn = levenshteinDistance } = { ...options };
   if (options?.caseSensitive) {
     return (a: string, b: string) =>
-      getWordDistance(givenWord, a) - getWordDistance(givenWord, b);
+      compareFn(givenWord, a) - compareFn(givenWord, b);
   }
   givenWord = givenWord.toLowerCase();
   return (a: string, b: string) =>
-    getWordDistance(givenWord, a.toLowerCase()) -
-    getWordDistance(givenWord, b.toLowerCase());
+    compareFn(givenWord, a.toLowerCase()) -
+    compareFn(givenWord, b.toLowerCase());
 }

@@ -7,7 +7,7 @@
  * @example Usage
  * ```ts
  * import { toNamespacedPath } from "@std/path/posix/to-namespaced-path";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * assertEquals(toNamespacedPath("/home/foo"), "/home/foo");
  * ```

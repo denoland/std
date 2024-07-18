@@ -1,16 +1,9 @@
 {
   "name": "@std/yaml",
-  "version": "0.224.2",
+  "version": "1.0.0-rc.3",
   "exports": {
     ".": "./mod.ts",
     "./parse": "./parse.ts",
-    "./schema": "./schema/mod.ts",
-    "./schema/core": "./schema/core.ts",
-    "./schema/default": "./schema/default.ts",
-    "./schema/extended": "./schema/extended.ts",
-    "./schema/failsafe": "./schema/failsafe.ts",
-    "./schema/json": "./schema/json.ts",
-    "./stringify": "./stringify.ts",
-    "./type": "./type.ts"
+    "./stringify": "./stringify.ts"
   }
 }

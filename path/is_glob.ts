@@ -7,7 +7,7 @@
  * @example Usage
  * ```ts
  * import { isGlob } from "@std/path/is-glob";
- * import { assert } from "@std/assert/assert";
+ * import { assert } from "@std/assert";
  *
  * assert(!isGlob("foo/bar/../baz"));
  * assert(isGlob("foo/*ar/../baz"));

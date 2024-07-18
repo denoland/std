@@ -4,7 +4,7 @@ import { assertEquals } from "@std/assert";
 import { parse } from "./parse.ts";
 import { parseRange } from "./parse_range.ts";
 import { minSatisfying } from "./min_satisfying.ts";
-import { MAX, MIN } from "./constants.ts";
+import { MAX, MIN } from "./_constants.ts";
 
 Deno.test("minSatisfying()", async (t) => {
   const versions: [string[], string, string][] = [

@@ -15,6 +15,7 @@ import {
   type DocNodeBase,
   type DocNodeClass,
   type DocNodeFunction,
+  type DocNodeInterface,
   type DocNodeModuleDoc,
   type JsDoc,
   type JsDocTagDocRequired,
@@ -71,6 +72,7 @@ const ENTRY_POINTS = [
   "../url/mod.ts",
   "../uuid/mod.ts",
   "../webgpu/mod.ts",
+  "../yaml/mod.ts",
 ] as const;
 
 const TS_SNIPPET = /```ts[\s\S]*?```/g;
@@ -418,9 +420,43 @@ function assertModuleDoc(document: DocNodeWithJsDoc<DocNodeModuleDoc>) {
   assertSnippetsWork(document.jsDoc.doc!, document);
 }
 
+/**
+ * Ensures an interface document:
+ * - Has `@default` tags for all optional properties.
+ */
+// deno-lint-ignore no-unused-vars
+function assertHasDefaultTags(document: DocNodeWithJsDoc<DocNodeInterface>) {
+  for (const prop of document.interfaceDef.properties) {
+    if (!prop.optional) continue;
+    if (!prop.jsDoc?.tags?.find((tag) => tag.kind === "default")) {
+      diagnostics.push(
+        new DocumentError(
+          "Optional interface properties should have default values",
+          document,
+        ),
+      );
+    }
+  }
+}
+
+// deno-lint-ignore no-unused-vars
+function assertInterfaceDocs(document: DocNodeWithJsDoc<DocNodeInterface>) {
+  // TODO(iuioiua): This is currently disabled deliberately, as it throws errors
+  // for interface properties that don't have a `@default` tag. Re-enable this
+  // when checking for `@default` tags again, or when a solution is found for
+  // ignoring some properties (those that don't require a `@default` tag).
+  // assertHasDefaultTags(document);
+}
+
 function resolve(specifier: string, referrer: string): string {
-  if (specifier.startsWith("@std/") && specifier.split("/").length > 2) {
-    specifier = specifier.replace("@std/", "../").replaceAll("-", "_") + ".ts";
+  if (specifier.startsWith("@std/")) {
+    specifier = specifier.replace("@std/", "../").replaceAll("-", "_");
+    const parts = specifier.split("/");
+    if (parts.length === 2) {
+      specifier += "/mod.ts";
+    } else if (parts.length > 2) {
+      specifier += ".ts";
+    }
   }
   return new URL(specifier, referrer).href;
 }
@@ -443,6 +479,8 @@ async function checkDocs(specifier: string) {
         assertClassDocs(document);
         break;
       }
+      case "interface":
+        assertInterfaceDocs(document);
     }
   }
 }

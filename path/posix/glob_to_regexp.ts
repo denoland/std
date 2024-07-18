@@ -4,10 +4,10 @@
 import {
   _globToRegExp,
   type GlobConstants,
-  type GlobToRegExpOptions,
+  type GlobOptions,
 } from "../_common/glob_to_reg_exp.ts";
 
-export type { GlobToRegExpOptions };
+export type { GlobOptions };
 
 const constants: GlobConstants = {
   sep: "/+",
@@ -77,7 +77,7 @@ const constants: GlobConstants = {
  * @example Usage
  * ```ts
  * import { globToRegExp } from "@std/path/posix/glob-to-regexp";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * assertEquals(globToRegExp("*.js"), /^[^/]*\.js\/*$/);
  * ```
@@ -88,7 +88,7 @@ const constants: GlobConstants = {
  */
 export function globToRegExp(
   glob: string,
-  options: GlobToRegExpOptions = {},
+  options: GlobOptions = {},
 ): RegExp {
   return _globToRegExp(constants, glob, options);
 }

@@ -49,6 +49,16 @@ This is the
 for this codebase. It contains settings and tasks that apply to the codebase as
 a whole.
 
+## Design
+
+### Minimal Exports
+
+Files are structured to minimize the number of dependencies they incur and the
+amount of effort required to manage them, both for the maintainer and the user.
+In most cases, only a single function or class, alongside its related types, are
+exported. In other cases, functions that incur negligible dependency overhead
+will be grouped together in the same file.
+
 ## Dependency Graph
 
 <img src="./dependency_graph.svg">

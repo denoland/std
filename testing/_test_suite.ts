@@ -2,7 +2,7 @@
 /** The options for creating a test suite with the describe function. */
 export interface DescribeDefinition<T> extends Omit<Deno.TestDefinition, "fn"> {
   /** The body of the test suite */
-  fn?: () => void;
+  fn?: () => void | undefined;
   /**
    * The `describe` function returns a `TestSuite` representing the group of tests.
    * If `describe` is called within another `describe` calls `fn`, the suite will default to that parent `describe` calls returned `TestSuite`.
@@ -97,7 +97,13 @@ export class TestSuiteInternal<T> implements TestSuite<T> {
       const temp = TestSuiteInternal.current;
       TestSuiteInternal.current = this;
       try {
-        fn();
+        // deno-lint-ignore no-explicit-any
+        const value = fn() as any;
+        if (value instanceof Promise) {
+          throw new Error(
+            'Returning a Promise from "describe" is not supported. Tests must be defined synchronously.',
+          );
+        }
       } finally {
         TestSuiteInternal.current = temp;
       }
