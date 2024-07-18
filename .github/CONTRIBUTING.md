@@ -133,3 +133,23 @@ delimiter. E.g.
  * ```
  */
 ````
+
+### Notices for unstable APIs
+
+Each unstable API must have the
+[`@experimental`](https://tsdoc.org/pages/tags/experimental/) TSDoc tag and a
+[warning alert](https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax#alerts)
+after the starting description.
+
+```ts
+/**
+ * <description>
+ *
+ * > [!WARNING]
+ * > **UNSTABLE**: New API, yet to be vetted.
+ *
+ * @experimental
+ *
+ * ...
+ */
+```
