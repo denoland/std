@@ -26,9 +26,8 @@ import {
   SINGLE_QUOTE,
   VERTICAL_LINE,
 } from "./_chars.ts";
-import { YamlError } from "./_error.ts";
 import { DEFAULT_SCHEMA, type Schema } from "./_schema.ts";
-import type { StyleVariant, Type } from "./_type.ts";
+import type { KindType, StyleVariant, Type } from "./_type.ts";
 import { type ArrayObject, getObjectTypeString, isObject } from "./_utils.ts";
 
 const STYLE_PLAIN = 1;
@@ -119,7 +118,10 @@ function generateNextLine(indent: number, level: number): string {
   return `\n${" ".repeat(indent * level)}`;
 }
 
-function testImplicitResolving(implicitTypes: Type[], str: string): boolean {
+function testImplicitResolving(
+  implicitTypes: Type<"scalar">[],
+  str: string,
+): boolean {
   return implicitTypes.some((type) => type.resolve(str));
 }
 
@@ -473,8 +475,8 @@ export class DumperState {
   useAnchors: boolean;
   compatMode: boolean;
   condenseFlow: boolean;
-  implicitTypes: Type[];
-  explicitTypes: Type[];
+  implicitTypes: Type<"scalar">[];
+  explicitTypes: Type<KindType>[];
   tag: string | null = null;
   result = "";
   duplicates: unknown[] = [];
@@ -577,7 +579,7 @@ export class DumperState {
         case STYLE_DOUBLE:
           return `"${escapeString(string)}"`;
         default:
-          throw new YamlError("impossible error: invalid scalar style");
+          throw new TypeError("impossible error: invalid scalar style");
       }
     };
     this.dump = createDump();
@@ -701,7 +703,7 @@ export class DumperState {
       objectKeyList.sort(this.sortKeys);
     } else if (this.sortKeys) {
       // Something is wrong
-      throw new YamlError("sortKeys must be a boolean or a function");
+      throw new TypeError("sortKeys must be a boolean or a function");
     }
 
     for (const [index, objectKey] of objectKeyList.entries()) {
@@ -771,11 +773,7 @@ export class DumperState {
     const typeList = explicit ? this.explicitTypes : this.implicitTypes;
 
     for (const type of typeList) {
-      if (
-        (type.instanceOf &&
-          (isObject(object) && object instanceof type.instanceOf)) ||
-        (type.predicate && type.predicate(object))
-      ) {
+      if (type.predicate?.(object)) {
         this.tag = explicit ? type.tag : "?";
 
         if (type.represent) {
@@ -789,7 +787,7 @@ export class DumperState {
             this.dump = type.represent[style]!(object, style);
             return true;
           }
-          throw new YamlError(
+          throw new TypeError(
             `!<${type.tag}> tag resolver accepts not "${style}" style`,
           );
         }
@@ -879,7 +877,7 @@ export class DumperState {
         }
       } else {
         if (this.skipInvalid) return false;
-        throw new YamlError(
+        throw new TypeError(
           `unacceptable kind of an object to dump ${
             getObjectTypeString(this.dump)
           }`,

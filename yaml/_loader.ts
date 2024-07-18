@@ -35,10 +35,9 @@ import {
   SPACE,
   VERTICAL_LINE,
 } from "./_chars.ts";
-import { YamlError } from "./_error.ts";
 import { Mark } from "./_mark.ts";
 import { DEFAULT_SCHEMA, type Schema, type TypeMap } from "./_schema.ts";
-import type { Type } from "./_type.ts";
+import type { KindType, Type } from "./_type.ts";
 import { type ArrayObject, getObjectTypeString, isObject } from "./_utils.ts";
 
 const CONTEXT_FLOW_IN = 1;
@@ -147,7 +146,7 @@ class LoaderState {
   line = 0;
   onWarning?: (error: Error) => void;
   allowDuplicateKeys: boolean;
-  implicitTypes: Type[];
+  implicitTypes: Type<"scalar">[];
   typeMap: TypeMap;
 
   version?: string | null;
@@ -193,14 +192,14 @@ class LoaderState {
     this.position += 1;
     return this.peek();
   }
-  #createError(message: string): YamlError {
+  #createError(message: string): SyntaxError {
     const mark = new Mark(
       this.input,
       this.position,
       this.line,
       this.position - this.lineStart,
     );
-    return new YamlError(message, mark);
+    return new SyntaxError(`${message} ${mark}`);
   }
 
   throwError(message: string): never {
@@ -1413,7 +1412,7 @@ function composeNode(
   let indentStatus = 1; // 1: this>parent, 0: this=parent, -1: this<parent
   let atNewLine = false;
   let hasContent = false;
-  let type: Type;
+  let type: Type<KindType>;
   let flowIndent: number;
   let blockIndent: number;
 
@@ -1723,7 +1722,7 @@ export function load(input: string, options: LoaderStateOptions = {}): unknown {
   const documentGenerator = readDocuments(state);
   const document = documentGenerator.next().value;
   if (!documentGenerator.next().done) {
-    throw new YamlError(
+    throw new SyntaxError(
       "expected a single document in the stream, but found more",
     );
   }

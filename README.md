@@ -1,8 +1,8 @@
 # Deno Standard Library
 
 [![JSR @std](https://jsr.io/badges/@std)](https://jsr.io/@std)
-[![codecov](https://codecov.io/gh/denoland/deno_std/branch/main/graph/badge.svg?token=w6s3ODtULz)](https://codecov.io/gh/denoland/deno_std)
-[![ci](https://github.com/denoland/deno_std/actions/workflows/ci.yml/badge.svg)](https://github.com/denoland/deno_std/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/denoland/std/branch/main/graph/badge.svg?token=w6s3ODtULz)](https://codecov.io/gh/denoland/std)
+[![ci](https://github.com/denoland/std/actions/workflows/ci.yml/badge.svg)](https://github.com/denoland/std/actions/workflows/ci.yml)
 
 High-quality APIs for [Deno](https://deno.com/) and the web. Use fearlessly.
 
@@ -68,7 +68,7 @@ documentation:
 ## Stabilization
 
 The Standard Library is now in the process of stabilizing its packages. See
-[#4600](https://github.com/denoland/deno_std/issues/4600) for details.
+[#4600](https://github.com/denoland/std/issues/4600) for details.
 
 ## Architecture
 
@@ -97,14 +97,14 @@ package versions <1.0.0 follow
   <img
     width="135"
     height="20"
-    src="https://raw.githubusercontent.com/denoland/deno_std/main/badge.svg"
+    src="https://raw.githubusercontent.com/denoland/std/main/badge.svg"
     alt="Built with the Deno Standard Library"
   />
 </a>
 ```
 
 ```md
-[![Built with the Deno Standard Library](https://raw.githubusercontent.com/denoland/deno_std/main/badge.svg)](https://jsr.io/@std)
+[![Built with the Deno Standard Library](https://raw.githubusercontent.com/denoland/std/main/badge.svg)](https://jsr.io/@std)
 ```
 
 ## Frequently Asked Questions
