@@ -13,7 +13,7 @@
  * @see {@link https://github.com/vercel/serve/blob/1ea55b1b5004f468159b54775e4fb3090fedbb2b/source/utilities/http.ts#L33}
  *
  * @param family The IP protocol version of the interface to get the address of.
- * @returns The IPv4 network address of the machine.
+ * @returns The IPv4 network address of the machine or `undefined` if not found.
  *
  * @example Get the IPv4 network address (default)
  * ```ts no-assert no-eval
