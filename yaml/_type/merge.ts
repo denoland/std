@@ -3,13 +3,17 @@
 // Copyright 2011-2015 by Vitaly Puzrin. All rights reserved. MIT license.
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import { Type } from "../_type.ts";
+import type { Type } from "../_type.ts";
 
 function resolveYamlMerge(data: string): boolean {
   return data === "<<" || data === null;
 }
 
-export const merge = new Type("tag:yaml.org,2002:merge", {
+export const merge: Type<"scalar", unknown> = {
+  tag: "tag:yaml.org,2002:merge",
   kind: "scalar",
   resolve: resolveYamlMerge,
-});
+  construct(data) {
+    return data;
+  },
+};

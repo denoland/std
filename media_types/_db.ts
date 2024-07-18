@@ -32,6 +32,7 @@ for (const type of Object.keys(db) as KeyOfDb[]) {
 
       if (
         current !== "application/octet-stream" &&
+        current !== "application/mp4" &&
         (from > to ||
           // @ts-ignore work around https://github.com/denoland/dnt/issues/148
           (from === to && current.startsWith("application/")))

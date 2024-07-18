@@ -9,7 +9,7 @@ import {
 } from "@std/assert";
 import { stub } from "@std/testing/mock";
 import { serveDir, type ServeDirOptions, serveFile } from "./file_server.ts";
-import { calculate } from "./etag.ts";
+import { eTag } from "./etag.ts";
 import {
   basename,
   dirname,
@@ -36,7 +36,7 @@ const serveDirOptions: ServeDirOptions = {
 const TEST_FILE_PATH = join(testdataDir, "test_file.txt");
 const TEST_FILE_STAT = await Deno.stat(TEST_FILE_PATH);
 const TEST_FILE_SIZE = TEST_FILE_STAT.size;
-const TEST_FILE_ETAG = await calculate(TEST_FILE_STAT) as string;
+const TEST_FILE_ETAG = await eTag(TEST_FILE_STAT) as string;
 const TEST_FILE_LAST_MODIFIED = TEST_FILE_STAT.mtime instanceof Date
   ? new Date(TEST_FILE_STAT.mtime).toUTCString()
   : "";
@@ -361,8 +361,6 @@ Deno.test("serveDir() script prints help", async () => {
       "--no-check",
       "--quiet",
       "--no-lock",
-      "--config",
-      "deno.json",
       "http/file_server.ts",
       "--help",
     ],
@@ -379,8 +377,6 @@ Deno.test("serveDir() script prints version", async () => {
       "--no-check",
       "--quiet",
       "--no-lock",
-      "--config",
-      "deno.json",
       "http/file_server.ts",
       "--version",
     ],
@@ -409,8 +405,6 @@ Deno.test("serveDir() script fails with partial TLS args", async () => {
       "--allow-read",
       "--allow-net",
       "--no-lock",
-      "--config",
-      "deno.json",
       "http/file_server.ts",
       ".",
       "--host",
@@ -806,14 +800,14 @@ Deno.test("serveFile() only uses if-none-match header if if-non-match and if-mod
 
 Deno.test("serveFile() etag value falls back to DENO_DEPLOYMENT_ID if fileInfo.mtime is not available", async () => {
   const DENO_DEPLOYMENT_ID = "__THIS_IS_DENO_DEPLOYMENT_ID__";
-  const hashedDenoDeploymentId = await calculate(DENO_DEPLOYMENT_ID, {
+  const hashedDenoDeploymentId = await eTag(DENO_DEPLOYMENT_ID, {
     weak: true,
   });
   // deno-fmt-ignore
   const code = `
     import { serveFile } from "${import.meta.resolve("./file_server.ts")}";
     import { fromFileUrl } from "${import.meta.resolve("../path/mod.ts")}";
-    import { assertEquals } from "${import.meta.resolve("../assert/assert_equals.ts")}";
+    import { assertEquals } from "${import.meta.resolve("../assert/equals.ts")}";
     const testdataPath = "${toFileUrl(join(testdataDir, "test_file.txt"))}";
     const fileInfo = await Deno.stat(new URL(testdataPath));
     fileInfo.mtime = null;
@@ -1046,8 +1040,6 @@ function spawnDeno(args: string[], opts?: Deno.CommandOptions) {
       "run",
       "--no-lock",
       "--quiet",
-      "--config",
-      "deno.json",
       ...args,
     ],
     stdout: "piped",

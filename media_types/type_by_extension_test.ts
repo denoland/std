@@ -16,6 +16,7 @@ Deno.test({
       ["file.json", undefined],
       ["foo", undefined],
       [".foo", undefined],
+      [".mp4", "video/mp4"],
     ] as const;
     for (const [fixture, expected] of fixtures) {
       assertEquals(typeByExtension(fixture), expected);
