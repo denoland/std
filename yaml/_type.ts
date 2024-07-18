@@ -18,20 +18,18 @@ export type StyleVariant =
   | "binary"
   | "octal"
   | "hexadecimal";
-// deno-lint-ignore no-explicit-any
-export type RepresentFn = (data: any, style?: StyleVariant) => any;
 
-export interface Type {
+export type RepresentFn<D> = (data: D, style?: StyleVariant) => string;
+
+// deno-lint-ignore no-explicit-any
+export interface Type<K extends KindType, D = any> {
   tag: string;
-  kind: KindType | null;
-  // deno-lint-ignore no-explicit-any
-  instanceOf?: any;
-  predicate?: (data: Record<string, unknown>) => boolean;
-  represent?: RepresentFn | ArrayObject<RepresentFn>;
+  kind: K;
+  predicate?: (data: unknown) => data is D;
+  represent?: RepresentFn<D> | ArrayObject<RepresentFn<D>>;
   defaultStyle?: StyleVariant;
-  loadKind?: KindType;
   // deno-lint-ignore no-explicit-any
-  resolve: (data?: any) => boolean;
+  resolve: (data: any) => boolean;
   // deno-lint-ignore no-explicit-any
-  construct: (data?: any) => any;
+  construct: (data: any) => D;
 }

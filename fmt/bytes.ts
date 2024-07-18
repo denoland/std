@@ -56,13 +56,17 @@ export interface FormatOptions {
   /**
    * The minimum number of fraction digits to display. If neither
    * {@linkcode minimumFractionDigits} or {@linkcode maximumFractionDigits}
-   * are set, the default behavior is to round to 3 significant digits.
+   * are set.
+   *
+   * @default {3}
    */
   minimumFractionDigits?: number;
   /**
    * The maximum number of fraction digits to display. If neither
    * {@linkcode minimumFractionDigits} or {@linkcode maximumFractionDigits}
-   * are set, the default behavior is to round to 3 significant digits.
+   * are set.
+   *
+   * @default {3}
    */
   maximumFractionDigits?: number;
 }

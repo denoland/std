@@ -5,7 +5,7 @@
 
 import type { Type } from "../_type.ts";
 
-export const seq: Type = {
+export const seq: Type<"sequence", unknown[]> = {
   tag: "tag:yaml.org,2002:seq",
   resolve() {
     return true;

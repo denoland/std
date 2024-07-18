@@ -5,7 +5,6 @@
 
 import { assertEquals, assertThrows } from "@std/assert";
 import { stringify } from "./stringify.ts";
-import { YamlError } from "./_error.ts";
 
 Deno.test({
   name: "stringify()",
@@ -143,7 +142,7 @@ Deno.test({
     const object = { undefined: undefined };
     assertThrows(
       () => stringify(object),
-      YamlError,
+      TypeError,
       "unacceptable kind of an object to dump",
     );
   },
@@ -330,4 +329,116 @@ bar: {a: *ref_0, b: *ref_1}
 `,
     );
   },
+});
+
+Deno.test("stringify() handles indentation", () => {
+  const object = {
+    name: "John",
+    age: 30,
+    address: {
+      street: "123 Main St",
+      city: "Anytown",
+      zip: 12345,
+    },
+    skills: ["JavaScript", "TypeScript", "Deno"],
+  };
+
+  const expected = `name: John
+age: 30
+address:
+  street: 123 Main St
+  city: Anytown
+  zip: 12345
+skills:
+  - JavaScript
+  - TypeScript
+  - Deno
+`;
+
+  const actual = stringify(object);
+  assertEquals(actual.trim(), expected.trim());
+});
+
+Deno.test("stringify() handles indentation with whitespace values", () => {
+  const object = {
+    name: "John",
+    age: 30,
+    address: {
+      street: " 123 Main St ",
+      city: "Anytown",
+      zip: 12345,
+    },
+    skills: [" JavaScript ", "TypeScript", "Deno"],
+  };
+
+  const expected = `name: John
+age: 30
+address:
+  street: ' 123 Main St '
+  city: Anytown
+  zip: 12345
+skills:
+  - ' JavaScript '
+  - TypeScript
+  - Deno
+`;
+
+  const actual = stringify(object);
+  assertEquals(actual.trim(), expected.trim());
+});
+
+Deno.test("stringify() handles indentation with start newline values", () => {
+  const object = {
+    name: "John",
+    age: 30,
+    address: {
+      street: "\n123 Main St",
+      city: "Anytown",
+      zip: 12345,
+    },
+    skills: ["\nJavaScript", "TypeScript", "Deno"],
+  };
+
+  const expected = `name: John
+age: 30
+address:
+  street: |-\n\n    123 Main St
+  city: Anytown
+  zip: 12345
+skills:
+  - |-\n\n    JavaScript
+  - TypeScript
+  - Deno
+`;
+
+  const actual = stringify(object);
+  assertEquals(actual.trim(), expected.trim());
+});
+
+Deno.test("stringify() handles indentation with trailing newline values", () => {
+  const object = {
+    name: "John",
+    age: 30,
+    address: {
+      street: "123 Main St\n",
+      city: "Anytown",
+      zip: 12345,
+    },
+    skills: ["JavaScript\n", "TypeScript", "Deno"],
+  };
+
+  const expected = `name: John
+age: 30
+address:
+  street: |\n    123 Main St
+  city: Anytown
+  zip: 12345
+skills:
+  - |\n    JavaScript
+  - TypeScript
+  - Deno
+`;
+
+  const actual = stringify(object);
+  assertEquals(actual.trim(), expected.trim());
 });

@@ -5,7 +5,7 @@
 
 import type { Type } from "../_type.ts";
 
-export const undefinedType: Type = {
+export const undefinedType: Type<"scalar", undefined> = {
   tag: "tag:yaml.org,2002:js/undefined",
   kind: "scalar",
   resolve() {

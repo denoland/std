@@ -19,7 +19,6 @@ export type { JsonValue } from "@std/json/types";
  *
  * @throws {SyntaxError} If the JSONC string is invalid.
  * @param text A valid JSONC string.
- * @param options Options for parsing.
  * @returns The parsed JsonValue from the JSONC string.
  */
 export function parse(text: string): JsonValue {

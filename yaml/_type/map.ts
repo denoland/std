@@ -5,7 +5,7 @@
 
 import type { Type } from "../_type.ts";
 
-export const map: Type = {
+export const map: Type<"mapping", unknown> = {
   tag: "tag:yaml.org,2002:map",
   resolve() {
     return true;

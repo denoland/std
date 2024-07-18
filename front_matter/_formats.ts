@@ -27,21 +27,21 @@ function createRegExps(delimiters: Delimiter[]): [RegExp, RegExp] {
   ];
 }
 
-const [RECOGNIZE_YAML_REGEXP, EXTRACT_YAML_REGEXP] = createRegExps(
+export const [RECOGNIZE_YAML_REGEXP, EXTRACT_YAML_REGEXP] = createRegExps(
   [
     ["---yaml", "---"],
     "= yaml =",
     "---",
   ],
 );
-const [RECOGNIZE_TOML_REGEXP, EXTRACT_TOML_REGEXP] = createRegExps(
+export const [RECOGNIZE_TOML_REGEXP, EXTRACT_TOML_REGEXP] = createRegExps(
   [
     ["---toml", "---"],
     "\\+\\+\\+",
     "= toml =",
   ],
 );
-const [RECOGNIZE_JSON_REGEXP, EXTRACT_JSON_REGEXP] = createRegExps(
+export const [RECOGNIZE_JSON_REGEXP, EXTRACT_JSON_REGEXP] = createRegExps(
   [
     ["---json", "---"],
     "= json =",
