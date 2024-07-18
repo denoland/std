@@ -803,8 +803,7 @@ export class DumperState {
   // Returns true on success, or false on invalid object.
   writeNode(
     level: number,
-    // deno-lint-ignore no-explicit-any
-    object: any,
+    object: unknown,
     { block, compact, isKey }: {
       block: boolean;
       compact: boolean;

@@ -963,11 +963,11 @@ Deno.test("increment()", async (t) => {
     ],
   ];
 
-  for (const [version, op, identifier, metadata, expected] of versions) {
+  for (const [version, op, prerelease, build, expected] of versions) {
     await t.step({
       name: `${op} ${format(version)}`,
       fn: () => {
-        const actual = increment(version, op, identifier, metadata);
+        const actual = increment(version, op, { prerelease, build });
         assertEquals(format(actual), expected);
       },
     });
