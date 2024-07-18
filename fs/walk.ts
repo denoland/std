@@ -3,70 +3,12 @@
 // https://golang.org/pkg/path/filepath/#Walk
 // Copyright 2009 The Go Authors. All rights reserved. BSD license.
 import { join } from "@std/path/join";
-import { normalize } from "@std/path/normalize";
 import { toPathString } from "./_to_path_string.ts";
 import {
   createWalkEntry,
   createWalkEntrySync,
   type WalkEntry,
 } from "./_create_walk_entry.ts";
-
-/**
- * Error thrown in {@linkcode walk} or {@linkcode walkSync} during iteration.
- *
- * @example Usage
- * ```ts no-eval
- * import { walk, WalkError } from "@std/fs/walk";
- *
- * try {
- *   for await (const entry of walk("./non_existent_root")) {
- *     console.log(entry.path);
- *   }
- * } catch (error) {
- *   if (error instanceof WalkError) {
- *     console.error(error.message);
- *   }
- * }
- * ```
- */
-export class WalkError extends Error {
-  /**
-   * File path of the root that's being walked.
-   *
-   * @example Usage
-   * ```ts
-   * import { WalkError } from "@std/fs/walk";
-   * import { assertEquals } from "@std/assert";
-   *
-   * const error = new WalkError("error message", "./foo");
-   *
-   * assertEquals(error.root, "./foo");
-   * ```
-   */
-  root: string;
-
-  /**
-   * Constructs a new instance.
-   *
-   * @param cause The cause of the error.
-   * @param root The root directory that's being walked.
-   *
-   * @example Usage
-   * ```ts no-eval
-   * import { WalkError } from "@std/fs/walk";
-   *
-   * throw new WalkError("error message", "./foo");
-   * ```
-   */
-  constructor(cause: unknown, root: string) {
-    super(
-      `${cause instanceof Error ? cause.message : cause} for path "${root}"`,
-    );
-    this.cause = cause;
-    this.name = this.constructor.name;
-    this.root = root;
-  }
-}
 
 function include(
   path: string,
@@ -84,11 +26,6 @@ function include(
     return false;
   }
   return true;
-}
-
-function wrapErrorWithPath(err: unknown, root: string) {
-  if (err instanceof WalkError) return err;
-  return new WalkError(err, root);
 }
 
 /** Options for {@linkcode walk} and {@linkcode walkSync}. */
@@ -539,46 +476,42 @@ export async function* walk(
   if (maxDepth < 1 || !include(root, undefined, undefined, skip)) {
     return;
   }
-  try {
-    for await (const entry of Deno.readDir(root)) {
-      let path = join(root, entry.name);
+  for await (const entry of Deno.readDir(root)) {
+    let path = join(root, entry.name);
 
-      let { isSymlink, isDirectory } = entry;
+    let { isSymlink, isDirectory } = entry;
 
-      if (isSymlink) {
-        if (!followSymlinks) {
-          if (includeSymlinks && include(path, exts, match, skip)) {
-            yield { path, ...entry };
-          }
-          continue;
+    if (isSymlink) {
+      if (!followSymlinks) {
+        if (includeSymlinks && include(path, exts, match, skip)) {
+          yield { path, ...entry };
         }
-        const realPath = await Deno.realPath(path);
-        if (canonicalize) {
-          path = realPath;
-        }
-        // Caveat emptor: don't assume |path| is not a symlink. realpath()
-        // resolves symlinks but another process can replace the file system
-        // entity with a different type of entity before we call lstat().
-        ({ isSymlink, isDirectory } = await Deno.lstat(realPath));
+        continue;
       }
-
-      if (isSymlink || isDirectory) {
-        yield* walk(path, {
-          maxDepth: maxDepth - 1,
-          includeFiles,
-          includeDirs,
-          includeSymlinks,
-          followSymlinks,
-          exts,
-          match,
-          skip,
-        });
-      } else if (includeFiles && include(path, exts, match, skip)) {
-        yield { path, ...entry };
+      const realPath = await Deno.realPath(path);
+      if (canonicalize) {
+        path = realPath;
       }
+      // Caveat emptor: don't assume |path| is not a symlink. realpath()
+      // resolves symlinks but another process can replace the file system
+      // entity with a different type of entity before we call lstat().
+      ({ isSymlink, isDirectory } = await Deno.lstat(realPath));
     }
-  } catch (err) {
-    throw wrapErrorWithPath(err, normalize(root));
+
+    if (isSymlink || isDirectory) {
+      yield* walk(path, {
+        maxDepth: maxDepth - 1,
+        includeFiles,
+        includeDirs,
+        includeSymlinks,
+        followSymlinks,
+        exts,
+        match,
+        skip,
+      });
+    } else if (includeFiles && include(path, exts, match, skip)) {
+      yield { path, ...entry };
+    }
   }
 }
 
@@ -963,12 +896,7 @@ export function* walkSync(
   if (maxDepth < 1 || !include(root, undefined, undefined, skip)) {
     return;
   }
-  let entries;
-  try {
-    entries = Deno.readDirSync(root);
-  } catch (err) {
-    throw wrapErrorWithPath(err, normalize(root));
-  }
+  const entries = Deno.readDirSync(root);
   for (const entry of entries) {
     let path = join(root, entry.name);
 
