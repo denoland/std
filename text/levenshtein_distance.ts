@@ -6,6 +6,10 @@
  * {@link https://en.wikipedia.org/wiki/Levenshtein_distance | Levenshtein distance}
  * between two strings.
  *
+ * > ![NOTE]
+ * > The complexity of this function is O(m * n), where m and n are the lengths
+ * > of the two strings.
+ *
  * @example Usage
  * ```ts
  * import { levenshteinDistance } from "@std/text/levenshtein-distance";
