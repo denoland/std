@@ -1,25 +1,22 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+
+const RE_ACRONYM = /\p{Lu}{2,}/gu; // e.g. ID, URL
+const RE_CAPITALIZED_WORD = /\p{Lu}\p{Ll}+/gu; // e.g. Apple
+const RE_LOWERCASED_WORD = /\P{Lu}+/gu; // e.g. apple, this will also match a sequence of unicode letters in languages without a concept of upper/lower case
+const RE_DIGITS = /\p{N}+/gu; // e.g. 123
+const RE_MATCH_WORD_BY_CASE = new RegExp(
+  `${RE_ACRONYM.source}|${RE_CAPITALIZED_WORD.source}|${RE_DIGITS.source}|${RE_LOWERCASED_WORD.source}`,
+  "gu",
+);
+
 function splitByCase(input: string): string[] {
-  const acronym = /\p{Lu}{2,}/gu; // e.g. ID, URL
-  const capitalizedWord = /\p{Lu}\p{Ll}+/gu; // e.g. Apple
-  const lowercasedWord = /\P{Lu}+/gu; // e.g. apple, this will also match a sequence of unicode letters in languages without a concept of upper/lower case
-  const digits = /\p{N}+/gu; // e.g. 123
-
-  const matchWordByCase = new RegExp(
-    `${acronym.source}|${capitalizedWord.source}|${digits.source}|${lowercasedWord.source}`,
-    "gu",
-  );
-
-  const matches = input.match(matchWordByCase);
+  const matches = input.match(RE_MATCH_WORD_BY_CASE);
 
   return matches || [input];
 }
 
 export function splitToWords(input: string) {
-  const words = input.split(/[^\p{L}\p{N}]+/gu).filter(Boolean).flatMap(
-    splitByCase,
-  );
-  return words;
+  return input.split(/[^\p{L}\p{N}]+/gu).filter(Boolean).flatMap(splitByCase);
 }
 
 export function capitalizeWord(word: string): string {
