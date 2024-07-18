@@ -1,32 +1,33 @@
 import { Engine } from '@/engine.ts'
-import { Machine } from '@/api/web-client-machine.ts'
 import * as Github from '@/isolates/github.ts'
 import * as Actors from '../isolates/actors.ts'
 import { expect } from '@utils'
 import { Tokens } from '@deno/kv-oauth'
-import { getActorId } from '@/constants.ts'
+import { getActorId, print } from '@/constants.ts'
 import DB from '@/db.ts'
+import { Crypto } from '@/api/web-client-crypto.ts'
+import { Backchat } from '@/api/web-client-backchat.ts'
 
 Deno.test('login with github', async (t) => {
-  // figure out how to reload a browser session, then decide how to tidy up
-  const superuserKey = Machine.generatePrivateKey()
+  const superuserKey = Crypto.generatePrivateKey()
   const aesKey = DB.generateAesKey()
   const engine = await Engine.provision(superuserKey, aesKey, Github.init)
 
-  const machine = Machine.load(engine, Machine.generatePrivateKey())
-  const session = machine.openTerminal()
-  const home = session.homeAddress
-  const config = await session.readJSON<Actors.AdminConfig>(
+  const backchat = await Backchat.upsert(engine, Crypto.generatePrivateKey())
+  const home = backchat.homeAddress
+  const config = await backchat.readJSON<Actors.AdminConfig>(
     'config.json',
     home,
   )
   const authProvider = config.authProviders.github
-  const github = await session.actions<Github.Api>('github', authProvider)
+  console.log(print(authProvider))
+  const opts = { target: authProvider }
+  const github = await backchat.actions<Github.Api>('github', opts)
 
   const githubUserId = 'github-user-id'
 
   await t.step('login with github', async () => {
-    const { pid } = session
+    const { pid } = backchat
     const actorId = getActorId(pid)
     const authSessionId = 'mock-session-id'
 
@@ -37,26 +38,24 @@ Deno.test('login with github', async (t) => {
     }
     await github.authorize({ authSessionId, tokens, githubUserId })
 
-    const home = engine.homeAddress
-    const actorAdmin = await session.actions<Actors.ActorAdmin>('actors', home)
-    const newActorId = await actorAdmin.surrender({ authProvider })
+    const opts = { target: engine.homeAddress }
+    const admin = await backchat.actions<Actors.ActorAdmin>('actors', opts)
+    const newActorId = await admin.surrender({ authProvider })
     expect(newActorId).toEqual(actorId)
   })
   await t.step('second machine login', async () => {
-    const secondMachine = Machine.load(engine, Machine.generatePrivateKey())
-    const second = secondMachine.openTerminal()
+    const second = await Backchat.upsert(engine, Crypto.generatePrivateKey())
 
-    const { pid: sessionPid } = second
-    expect(sessionPid).not.toEqual(session.pid)
-    const actorId = getActorId(sessionPid)
+    expect(second.pid).not.toEqual(backchat.pid)
+    const actorId = getActorId(second.pid)
     const authSessionId = 'mock-session-id-2'
     await github.registerAttempt({ actorId, authSessionId })
     const tokens: Tokens = { accessToken: 'mock-token-2', tokenType: 'bearer' }
     await github.authorize({ authSessionId, tokens, githubUserId })
 
-    const actor = await second.actions<Actors.ActorAdmin>('actors', home)
-    // these should be managed inside the session since it changes the machine
-    await actor.surrender({ authProvider })
+    const opts = { target: engine.homeAddress }
+    const admin = await second.actions<Actors.ActorAdmin>('actors', opts)
+    await admin.surrender({ authProvider })
 
     // TODO assert that the PID for the session has changed
   })

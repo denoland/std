@@ -27,20 +27,20 @@ export const transcribe = async (file: File) => {
 export const api = {
   complete: {
     type: 'object',
+    required: ['threadId'],
     additionalProperties: false,
-    required: ['threadPath'],
-    properties: { threadPath: { type: 'string' } },
+    properties: { threadId: { type: 'string' } },
   },
 }
-
+interface CompleteArgs {
+  threadId: string
+}
 export type Api = {
-  complete: (params: { threadPath: string }) => Promise<void>
+  complete: (params: CompleteArgs) => Promise<void>
 }
 export const functions = {
-  async complete(
-    { threadPath }: { threadPath: string },
-    api: IA,
-  ): Promise<string | void> {
+  async complete({ threadId }: CompleteArgs, api: IA): Promise<string | void> {
+    const threadPath = `threads/${threadId}.json`
     const thread = await api.readJSON<Thread>(threadPath)
     // TODO assert thread is correctly formatted
     const tools = await loadTools(thread.agent.commands, api)

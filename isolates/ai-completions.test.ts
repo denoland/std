@@ -15,8 +15,6 @@ commands:
 ---
 Only reply with a SINGLE word
 `
-const threadId = generateThreadId()
-// const threadPath = 'threads/thread-test.json'
 const agentPath = 'agents/agent-fixture.md'
 
 Deno.test('ai-chat', async (t) => {
@@ -26,6 +24,8 @@ Deno.test('ai-chat', async (t) => {
   const accumulator = Accumulator.create(fs)
   const api = IA.create(accumulator)
   accumulator.activate(Symbol())
+  const threadId = generateThreadId('ai-chat')
+  const threadPath = `threads/${threadId}.json`
 
   await t.step('create thread', async () => {
     api.write(agentPath, agentMd)
@@ -43,12 +43,12 @@ Deno.test('ai-chat', async (t) => {
   })
 
   await t.step('tool call', async () => {
-    resetInstructions(api, 'return the function call results verbatim')
+    resetInstructions(api, 'return the function call results', threadId)
     const content = 'call the "local" function'
 
-    await thread.functions.startThread({ threadPath, agentPath }, api)
-    await thread.functions.addMessage({ threadPath, content }, api)
-    await completions.functions.complete({ threadPath }, api)
+    await thread.functions.start({ threadId, agentPath }, api)
+    await thread.functions.addMessage({ threadId, content }, api)
+    await completions.functions.complete({ threadId }, api)
 
     const result = await api.readJSON<Thread>(threadPath)
     assert('tool_calls' in result.messages[2], 'tool calls missing')
@@ -56,15 +56,15 @@ Deno.test('ai-chat', async (t) => {
     assert(result.messages[2].tool_calls)
     expect(result.messages[2].tool_calls).toHaveLength(1)
     const fn = result.messages[2].tool_calls[0]
-    expect(fn.function).toEqual({ name: 'local', arguments: '{}' })
+    expect(fn.function).toEqual({ name: 'io-fixture_local', arguments: '{}' })
   })
   await t.step('tool error', async () => {
-    resetInstructions(api, 'return the function call error message')
+    resetInstructions(api, 'return the function call error message', threadId)
     const content = 'call the "error" function with message: salami'
 
-    await thread.functions.startThread({ threadPath, agentPath }, api)
-    await thread.functions.addMessage({ threadPath, content }, api)
-    await completions.functions.complete({ threadPath }, api)
+    await thread.functions.start({ threadId, agentPath }, api)
+    await thread.functions.addMessage({ threadId, content }, api)
+    await completions.functions.complete({ threadId }, api)
 
     const result = await api.readJSON<Thread>(threadPath)
     assert('tool_calls' in result.messages[2], 'tool calls missing')
@@ -73,7 +73,7 @@ Deno.test('ai-chat', async (t) => {
     expect(result.messages[2].tool_calls).toHaveLength(1)
     const fn = result.messages[2].tool_calls[0]
     expect(fn.function).toEqual({
-      name: 'error',
+      name: 'io-fixture_error',
       arguments: '{"message":"salami"}',
     })
   })
@@ -90,9 +90,9 @@ commands:
     api.write(agentPath, agentMd)
     api.delete(threadPath)
 
-    await thread.functions.startThread({ threadPath, agentPath }, api)
-    await thread.functions.addMessage({ threadPath, content }, api)
-    await completions.functions.complete({ threadPath }, api)
+    await thread.functions.start({ threadId, agentPath }, api)
+    await thread.functions.addMessage({ threadId, content }, api)
+    await completions.functions.complete({ threadId }, api)
 
     const result = await api.readJSON<Thread>(threadPath)
 
@@ -105,22 +105,22 @@ commands:
     const fn0 = assistant.tool_calls[0]
     const fn1 = assistant.tool_calls[1]
     expect(fn0.function).toEqual({
-      name: 'ping',
+      name: 'io-fixture_ping',
       arguments: '{"message": "1"}',
     })
     expect(fn1.function).toEqual({
-      name: 'ping',
+      name: 'io-fixture_ping',
       arguments: '{"message": "2"}',
     })
   })
   db.stop()
 })
 
-const resetInstructions = (api: IA, instructions: string) => {
+const resetInstructions = (api: IA, instructions: string, threadId: string) => {
   const split = agentMd.trim().split('\n')
   split.pop()
   split.push(instructions)
   const newInstructions = split.join('\n')
   api.write(agentPath, newInstructions)
-  api.delete(threadPath)
+  api.delete(`threads/${threadId}.json`)
 }

@@ -158,7 +158,7 @@ export const functions = {
     let result
     const threadPath = `threads/${threadId}.json`
     while (!await isDone(threadPath, api)) {
-      result = await complete({ threadPath })
+      result = await complete({ threadId })
       if (await isDone(threadPath, api)) {
         return result
       }

@@ -30,7 +30,7 @@ type Action = (
 const load = async (commands: string[] = [], api: IA) => {
   const tools: OpenAI.ChatCompletionTool[] = []
   const actions: Record<string, Action> = {}
-  const actorId = getActorId(api.pid)
+  const actorId = tryGetActorId(api)
   for (const cmd of commands) {
     log('loading command:', cmd)
     let tool: OpenAI.ChatCompletionTool
@@ -127,4 +127,12 @@ const isolateToGptApi = (name: string, schema: JSONSchemaType<object>) => {
     },
   }
   return tool
+}
+const tryGetActorId = (api: IA) => {
+  // TODO handle when an origin action has come in, or something remote
+  try {
+    return getActorId(api.pid)
+  } catch (_error) {
+    return
+  }
 }

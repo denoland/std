@@ -99,7 +99,7 @@ Deno.test('loopback', async () => {
 
 Deno.test('compound', async (t) => {
   const target = {
-    repoId: `rep_${randomId()}`,
+    repoId: `rep_${randomId('compound')}`,
     account: 'exe',
     repository: 'other',
     branches: ['other'],

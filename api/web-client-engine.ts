@@ -48,10 +48,9 @@ export class WebClientEngine implements EngineInterface {
   }
   upsertBackchat(machineId: string, resume?: string): Promise<PID> {
     Crypto.assert(machineId)
-    const params: { machineId: string; resume?: string } = { machineId }
+    const params: { machineId: string; resume?: string } = { machineId, resume }
     if (resume) {
       assert.truthy(backchatIdRegex.test(resume), 'invalid resume')
-      params.resume = resume
     }
     return this.#request('upsertBackchat', params)
   }

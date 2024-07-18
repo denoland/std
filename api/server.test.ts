@@ -5,6 +5,7 @@ import { WebClientEngine } from '@/api/web-client-engine.ts'
 import guts from '../guts/guts.ts'
 import DB from '@/db.ts'
 import { Crypto } from '@/api/web-client-crypto.ts'
+import { Backchat } from '@/api/web-client-backchat.ts'
 
 const superuserPrivateKey = Crypto.generatePrivateKey()
 const aesKey = DB.generateAesKey()
@@ -27,15 +28,13 @@ const cradleMaker = async (init?: Provisioner) => {
   const fetcher = server.request as typeof fetch
 
   const engine = await WebClientEngine.start('mock', fetcher)
-  const privateKey = Crypto.generatePrivateKey()
-  const machine = Machine.load(engine, privateKey)
-  const session = machine.openTerminal()
-  const clientStop = session.engineStop.bind(session)
-  session.engineStop = async () => {
+  const backchat = await Backchat.upsert(engine, Crypto.generatePrivateKey())
+  const clientStop = engine.stop.bind(engine)
+  engine.stop = async () => {
     // must stop the client first, else will retry
-    await clientStop()
+    clientStop()
     await server.stop()
   }
-  return session
+  return { backchat, engine }
 }
 guts('Web', cradleMaker)

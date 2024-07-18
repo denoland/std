@@ -77,6 +77,12 @@ export class Engine implements EngineInterface {
     assert(this.#suBackchat)
     return this.#suBackchat
   }
+  get #isDropping() {
+    const toDelete = Deno.env.get('DROP_HOME') || ''
+    const isDropping = toDelete.trim() === this.homeAddress.repoId
+    isDropping && log('isDropping', isDropping)
+    return isDropping
+  }
   get context() {
     return this.#api.context
   }
@@ -86,12 +92,6 @@ export class Engine implements EngineInterface {
     }
     return this.#homeAddress
   }
-  get #isDropping() {
-    const toDelete = Deno.env.get('DROP_HOME') || ''
-    const isDropping = toDelete.trim() === this.homeAddress.repoId
-    isDropping && log('isDropping', isDropping)
-    return isDropping
-  }
   get abortSignal() {
     return this.#abort.signal
   }
@@ -100,7 +100,7 @@ export class Engine implements EngineInterface {
   }
   async upsertBackchat(machineId: string, resume?: string) {
     // TODO handshake to prove the machineId is valid
-    assert(Crypto.assert(machineId), 'invalid machineId: ' + machineId)
+    Crypto.assert(machineId)
     assert(!resume || backchatIdRegex.test(resume), 'invalid resume')
     const { db } = artifact.sanitizeContext(this.#api)
 
@@ -123,7 +123,7 @@ export class Engine implements EngineInterface {
     return this.#createBackchat(actor)
   }
   async #createActor(machineId: string) {
-    assert(Crypto.assert(machineId), 'invalid machineId: ' + machineId)
+    Crypto.assert(machineId)
     const actorId = generateActorId(ulid())
     const actor = addBranches(this.homeAddress, actorId)
     const backchatId = generateBackchatId(ulid())
@@ -219,7 +219,7 @@ export class Engine implements EngineInterface {
     }
 
     log('provisioning')
-    // await init(backchat)
+    await init(this.#su)
     log('provisioned')
   }
   ping(data?: JsonValue): Promise<JsonValue | undefined> {

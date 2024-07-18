@@ -49,10 +49,16 @@ export default class Server {
     app.post(`/homeAddress`, (c) => {
       return execute(c, Promise.resolve(engine.homeAddress), 'homeAddress')
     })
-    app.post(`/ensureMachineTerminal`, async (c) => {
-      const params = await c.req.json()
-      const p = engine.ensureMachineTerminal(params.pid)
-      return execute(c, p, 'ensureMachineTerminal')
+    app.post(`/upsertBackchat`, async (c) => {
+      const { machineId, resume } = await c.req.json() as {
+        machineId: string
+        resume?: string
+      }
+      return execute(
+        c,
+        engine.upsertBackchat(machineId, resume),
+        'upsertBackchat',
+      )
     })
     app.post(`/pierce`, async (c) => {
       // TODO hook GitKV for write count, read count, and size
@@ -100,15 +106,6 @@ export default class Server {
       const params = await c.req.json()
       const { path, pid } = params
       return execute(c, engine.exists(path, pid), 'exists')
-    })
-    app.post(`/isTerminalAvailable`, async (c) => {
-      const params = await c.req.json()
-      const { pid } = params
-      return execute(c, engine.isTerminalAvailable(pid), 'isTerminalAvailable')
-    })
-    app.post(`/ensureBranch`, async (c) => {
-      const pierce = await c.req.json()
-      return execute(c, engine.ensureBranch(pierce), 'ensureBranch')
     })
     app.post('/transcribe', async (c) => {
       const body = await c.req.parseBody()
