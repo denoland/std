@@ -8,7 +8,8 @@
  *
  * > ![NOTE]
  * > The complexity of this function is O(m * n), where m and n are the lengths
- * > of the two strings.
+ * > of the two strings. It's recommended to limit the length and validate input
+ * > if arbitrarily accepting input.
  *
  * @example Usage
  * ```ts
