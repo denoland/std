@@ -1,8 +1,6 @@
 import { Debug, isKvTestMode } from '@/utils.ts'
 import Server from '@/api/server.ts'
-import { Backchat } from '@/api/web-client-backchat.ts'
-import { init as githubInit } from '@/isolates/github.ts'
-import { init as halInit } from '@/isolates/hal.ts'
+import { init } from '@/isolates/github.ts'
 
 const getPrivateKey = () => {
   const privateKey = Deno.env.get('SUPERUSER_PRIVATE_KEY')
@@ -17,10 +15,6 @@ const getAesKey = () => {
     throw new Error('AES_KEY not set')
   }
   return aesKey
-}
-
-const init = async (backchat: Backchat) => {
-  await Promise.all([githubInit(backchat), halInit(backchat)])
 }
 
 Debug.enable(
