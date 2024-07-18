@@ -110,10 +110,7 @@ export type IoStruct = {
 type BranchName = string
 
 export type DispatchFunctions = {
-  [key: string]: (
-    params?: Params,
-    options?: ProcessOptions,
-  ) => Promise<unknown> | unknown
+  [key: string]: (params?: Params) => Promise<unknown> | unknown
 }
 
 export type IsolateApiSchema = {

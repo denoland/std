@@ -57,7 +57,7 @@ export const functions = {
     assert(isMaxOneOf(retry, name, prefix), 'max one arg is possible')
     log('create %o', { retry, name, prefix })
     if (retry) {
-      if (await api.isChild(retry)) {
+      if (await api.isActiveChild(retry)) {
         // TODO check signing keys for validity too
         return retry
       }

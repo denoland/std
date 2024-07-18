@@ -201,7 +201,7 @@ export default class IA<T extends object = Default> {
     log('delete', filepath)
     return this.#fs.delete(filepath)
   }
-  async isChild(pid: PID) {
+  async isActiveChild(pid: PID) {
     if (!isChildOf(pid, this.pid)) {
       throw new Error('not child: ' + print(pid) + ' of ' + print(this.pid))
       // TODO allow recursive PID walking

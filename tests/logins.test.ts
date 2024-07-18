@@ -12,7 +12,6 @@ Deno.test('login with github', async (t) => {
   const superuserKey = Crypto.generatePrivateKey()
   const aesKey = DB.generateAesKey()
   const engine = await Engine.provision(superuserKey, aesKey, Github.init)
-
   const backchat = await Backchat.upsert(engine, Crypto.generatePrivateKey())
   const home = backchat.homeAddress
   const config = await backchat.readJSON<Actors.AdminConfig>(
@@ -31,6 +30,7 @@ Deno.test('login with github', async (t) => {
     const actorId = getActorId(pid)
     const authSessionId = 'mock-session-id'
 
+    // log.enable('AI:actors AI:github')
     await github.registerAttempt({ actorId, authSessionId })
     const tokens: Tokens = {
       accessToken: 'mock-token-1',

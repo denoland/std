@@ -347,14 +347,14 @@ export const functions = {
 
     // look up the pointer from the auth provider
     const target = addBranches(params.authProvider, actorId)
+    // TODO make this an api function exposed by the auth provider isolate
     const authActor = await api.actions<files.Api>('files', { target })
     // TODO implement readJSON<type> for remote reads
     const pointerString = await authActor.read({ path: 'pointer.json' })
     const pointer = JSON.parse(pointerString)
     log('authPointer', pointer)
 
-    const { baseActorId } = pointer
-    if (baseActorId === actorId) {
+    if (pointer.actorId === actorId) {
       return actorId
     }
 

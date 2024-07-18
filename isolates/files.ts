@@ -109,8 +109,6 @@ interface SearchResult {
 export type Api = {
   write: (
     params: { path: string; content?: string },
-    // TODO check when this ever needed to be a branch call
-    opts?: ProcessOptions,
   ) => Promise<number>
   ls: (
     params: { path?: string; count?: boolean; all?: boolean },

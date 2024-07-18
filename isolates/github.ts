@@ -107,7 +107,7 @@ export const functions = {
     params: { actorId: string; authSessionId: string },
     api: IA,
   ) => {
-    log('registerAttempt', colorize(params.actorId))
+    log('registerAttempt', colorize(params.actorId), params.authSessionId)
     assert(isBaseRepo(api.pid), 'registerAttempt not base: ' + print(api.pid))
 
     // TODO use a branch to store the authsession info
@@ -133,15 +133,15 @@ export const functions = {
       throw new Error('authSessionId not found: ' + authSessionId)
     }
     const actorId = await api.readJSON<string>(authFilename)
-    log('actorId', colorize(actorId))
+    log('actorId', colorize(actorId), actorId)
     api.delete(authFilename)
 
     const target = addBranches(api.pid, githubUserId)
-    const files = await api.actions<files.Api>('files')
+    log('target', print(target))
     const path = 'credentials.json'
     let credentials: Credentials
 
-    if (await api.isChild(target)) {
+    if (await api.isActiveChild(target)) {
       // TODO make the api able to be focused remotely
       const { read, write } = await api.actions<files.Api>('files', { target })
       const string = await read({ path })
@@ -149,35 +149,34 @@ export const functions = {
       credentials.tokens[actorId] = tokens
       await write({ path, content: JSON.stringify(credentials) })
     } else {
-      credentials = {
-        baseActorId: actorId,
-        githubUserId,
-        tokens: { [actorId]: tokens },
-      }
+      credentials = { actorId, githubUserId, tokens: { [actorId]: tokens } }
       log('create branch', print(target))
-      await files.write(
-        { path, content: JSON.stringify(credentials) },
-        { noClose: true, branchName: githubUserId },
-      )
+      const { write } = await api.actions<files.Api>('files', {
+        noClose: true,
+        branchName: githubUserId,
+      })
+      await write({ path, content: JSON.stringify(credentials) })
+      log('written')
     }
 
     // TODO add some info about the PAT
-    const pointer: ActorPointer = { baseActorId: actorId, githubUserId }
-    const branchName = actorId
-    const actorPid = { ...api.pid, branches: [...api.pid.branches, branchName] }
-    if (await api.isChild(actorPid)) {
+    // TODO use sharded names like in the machines branch ?
+    const pointer: ActorPointer = { actorId, githubUserId }
+    const actorPid = addBranches(api.pid, actorId)
+    if (await api.isActiveChild(actorPid)) {
       throw new Error('actorId already exists: ' + print(actorPid))
     }
     const filename = 'pointer.json'
-    await files.write(
-      { path: filename, content: JSON.stringify(pointer) },
-      { noClose: true, branchName: actorId },
-    )
+    const { write } = await api.actions<files.Api>('files', {
+      noClose: true,
+      branchName: actorId,
+    })
+    await write({ path: filename, content: JSON.stringify(pointer) })
     log('actorPid', print(actorPid))
   },
 }
 type Credentials = {
-  baseActorId: string
+  actorId: string
   githubUserId: string
   tokens: {
     [machineId: string]: Tokens

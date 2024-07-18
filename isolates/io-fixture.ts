@@ -144,8 +144,8 @@ export const functions = {
   },
   branch: async (_: object, api: IA) => {
     log('branch')
-    const { pong } = await api.actions('io-fixture')
-    const result = await pong({}, { branch: true })
+    const { pong } = await api.actions('io-fixture', { branch: true })
+    const result = await pong({})
     return result
   },
   compound: async (params: { target?: PID }, api: IA) => {
@@ -156,10 +156,10 @@ export const functions = {
     return result
   },
   parallel: async (params: { count: number }, api: IA) => {
-    const { local } = await api.actions('io-fixture')
+    const { local } = await api.actions('io-fixture', { branch: true })
     const promises = []
     for (let i = 0; i < params.count; i++) {
-      promises.push(local({}, { branch: true }))
+      promises.push(local({}))
     }
     return Promise.all(promises)
   },
@@ -167,10 +167,10 @@ export const functions = {
     params: { count: number; multiplier: number },
     api: IA,
   ) => {
-    const { parallel } = await api.actions('io-fixture')
+    const { parallel } = await api.actions('io-fixture', { branch: true })
     const promises = []
     for (let i = 0; i < params.multiplier; i++) {
-      promises.push(parallel({ count: params.count }, { branch: true }))
+      promises.push(parallel({ count: params.count }))
     }
     return Promise.all(promises)
   },
