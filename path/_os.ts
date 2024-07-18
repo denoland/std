@@ -20,7 +20,10 @@ type OSType =
 function getOsType(): OSType {
   // deno-lint-ignore no-explicit-any
   return (globalThis as any).Deno?.build.os ||
-    (navigator.userAgent.includes("Win") ? "windows" : "linux");
+    // deno-lint-ignore no-explicit-any
+    ((globalThis as any).navigator?.userAgent.includes("Win")
+      ? "windows"
+      : "linux");
 }
 
 export const isWindows: boolean = getOsType() === "windows";
