@@ -298,6 +298,7 @@ export default class DB {
     drain().catch(sink.throw)
     return sink as AsyncIterable<Splice>
   }
+  // TODO add aborts here, or have a master promise that is awaited
   async #getSplice(pid: PID, oid: string, path?: string) {
     const fs = FS.open(pid, oid, this)
     const commit = await fs.getCommit()

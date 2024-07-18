@@ -11,6 +11,7 @@ import { Engine } from '../engine.ts'
 import { assert, Debug, delay, serializeError } from '@/utils.ts'
 import { EventSourceMessage, machineIdRegex, Provisioner } from '@/constants.ts'
 import '@std/dotenv/load'
+type Seed = Deno.KvEntry<unknown>[]
 
 const log = Debug('AI:server')
 
@@ -18,12 +19,18 @@ let sseId = 0
 export default class Server {
   #engine: Engine
   #app: Hono
+  #provisioning: Promise<void> | undefined
   private constructor(engine: Engine, app: Hono) {
     this.#engine = engine
     this.#app = app
   }
-  static async create(privateKey: string, aesKey: string, init?: Provisioner) {
-    const engine = await Engine.boot(privateKey, aesKey)
+  static async create(
+    privateKey: string,
+    aesKey: string,
+    init?: Provisioner,
+    seed?: Seed,
+  ) {
+    const engine = await Engine.boot(privateKey, aesKey, seed)
     const base = new Hono()
     const server = new Server(engine, base)
 
@@ -33,12 +40,12 @@ export default class Server {
     app.use(prettyJSON())
     app.use('*', logger(), poweredBy(), cors())
 
-    let provisioning: Promise<void>
     app.use(async (_, next) => {
-      if (!provisioning) {
-        provisioning = engine.ensureHomeAddress(init)
+      if (!server.#provisioning) {
+        // must be as part of a request, else deno deploy times out
+        server.#provisioning = engine.ensureHomeAddress(init)
       }
-      await provisioning
+      await server.#provisioning
       await next()
     })
 
@@ -74,6 +81,7 @@ export default class Server {
         const params = await c.req.json()
         const abort = new AbortController()
         stream.onAbort(() => abort.abort())
+        engine.abortSignal.addEventListener('abort', () => abort.abort())
         const { pid, path, after } = params
         try {
           const iterable = engine.read(pid, path, after, abort.signal)
@@ -172,7 +180,12 @@ export default class Server {
 
     return server
   }
+  dump() {
+    return this.#engine.dump()
+  }
   async stop() {
+    // TODO figure out why this stops resource leaks
+    await this.#provisioning
     // TODO add all the read streams to be stopped too ?
     await this.#engine.stop()
   }

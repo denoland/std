@@ -17,6 +17,7 @@ const cradleMaker = async (init?: Provisioner) => {
   const seedSet = seeds.get(init)
   const seed = seedSet?.seed
   const backchatId = seedSet?.backchatId
+
   const engine = await Engine.provision(superuserKey, aesKey, init, seed)
   const backchat = await Backchat.upsert(engine, privateKey, backchatId)
   if (!seedSet) {

@@ -65,6 +65,7 @@ export class Engine implements EngineInterface {
     init?: Provisioner,
     seed?: Seed,
   ) {
+    // TODO collapse this to be same as server, so never gets called
     const engine = await Engine.boot(superuserKey, aesKey, seed)
     await engine.ensureHomeAddress(init)
     return engine

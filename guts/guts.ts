@@ -31,6 +31,7 @@ export default (name: string, cradleMaker: CradleMaker) => {
     })
     log('params done')
     await engine.stop()
+
     log('stop done')
   })
   Deno.test(prefix + 'init', async () => {
