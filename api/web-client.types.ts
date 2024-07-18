@@ -440,7 +440,7 @@ export const print = (pid?: PID) => {
       !segment.startsWith('bac_') &&
       !segment.startsWith('act_') &&
       !segment.startsWith('rep_') &&
-      !segment.startsWith('thr_')
+      !segment.startsWith('the_')
     return colorize(segment, noSubstring)
   })
   return `${colorize(pid.repoId)}/${pid.account}/${pid.repository}:${
@@ -541,7 +541,7 @@ export const repoIdRegex = /^rep_[0-9A-HJKMNP-TV-Z]{16}$/
 export const machineIdRegex = /^mac_[2-7a-z]{33}$/
 export const actorIdRegex = /^act_[0-9A-HJKMNP-TV-Z]{16}$/
 export const backchatIdRegex = /^bac_[0-9A-HJKMNP-TV-Z]{16}$/
-export const threadIdRegex = /^thr_[0-9A-HJKMNP-TV-Z]{16}$/
+export const threadIdRegex = /^the_[0-9A-HJKMNP-TV-Z]{16}$/
 export const SU_ACTOR = 'act_0000000000000000'
 export const SU_BACKCHAT = 'bac_0000000000000000'
 
@@ -552,7 +552,7 @@ export const generateBackchatId = (seed: string) => {
   return 'bac_' + randomId(seed)
 }
 export const generateThreadId = (seed: string) => {
-  return 'thr_' + randomId(seed)
+  return 'the_' + randomId(seed)
 }
 
 export const getActorId = (source: PID) => {
