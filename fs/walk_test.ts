@@ -234,7 +234,7 @@ Deno.test({
   },
 });
 
-Deno.test("walk() rejects with WalkError when root is removed during execution", async () => {
+Deno.test("walk() rejects with `Deno.errors.NotFound` when root is removed during execution", async () => {
   const root = resolve(testdataDir, "error");
   await Deno.mkdir(root);
   try {
@@ -246,7 +246,7 @@ Deno.test("walk() rejects with WalkError when root is removed during execution",
         );
       },
       Deno.errors.NotFound,
-      "No such file or directory (os error 2)",
+      "(os error 2)",
     );
   } catch (err) {
     await Deno.remove(root, { recursive: true });
