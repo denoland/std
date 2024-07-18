@@ -56,7 +56,11 @@ export interface LimitedTransformStreamOptions {
  * );
  * ```
  *
- * @example error: true
+ * @example Throw a {@linkcode RangeError} when the total number of chunks is
+ * about to exceed the specified limit
+ *
+ * Do this by setting `options.error` to `true`.
+ *
  * ```ts
  * import { LimitedTransformStream } from "@std/streams/limited-transform-stream";
  * import { assertRejects } from "@std/assert";
@@ -80,18 +84,57 @@ export class LimitedTransformStream<T> extends TransformStream<T, T> {
    * @param size The maximum number of chunks to read.
    * @param options Options for the stream.
    *
-   * @example size = 42
-   * ```ts no-assert
+   * @example `size` is equal to the total number of chunks
+   * ```ts
    * import { LimitedTransformStream } from "@std/streams/limited-transform-stream";
+   * import { assertEquals } from "@std/assert";
    *
-   * const limitedTransformStream = new LimitedTransformStream(42);
+   * const stream = ReadableStream.from(["1234", "5678"]);
+   * const transformed = stream.pipeThrough(
+   *   new LimitedTransformStream(2),
+   * );
+   *
+   * // All chunks were read
+   * assertEquals(
+   *   await Array.fromAsync(transformed),
+   *   ["1234", "5678"],
+   * );
    * ```
    *
-   * @example size = 42, error = true
-   * ```ts no-assert
+   * @example `size` is less than the total number of chunks
+   * ```ts
    * import { LimitedTransformStream } from "@std/streams/limited-transform-stream";
+   * import { assertEquals } from "@std/assert";
    *
-   * const limitedTransformStream = new LimitedTransformStream(42, { error: true });
+   * const stream = ReadableStream.from(["1234", "5678"]);
+   * const transformed = stream.pipeThrough(
+   *   new LimitedTransformStream(1),
+   * );
+   *
+   * // Only the first chunk was read
+   * assertEquals(
+   *   await Array.fromAsync(transformed),
+   *   ["1234"],
+   * );
+   * ```
+   *
+   * @example Throw a {@linkcode RangeError} when the total number of chunks is
+   * about to exceed the specified limit
+   *
+   * Do this by setting `options.error` to `true`.
+   *
+   * ```ts
+   * import { LimitedTransformStream } from "@std/streams/limited-transform-stream";
+   * import { assertRejects } from "@std/assert";
+   *
+   * const stream = ReadableStream.from(["1234", "5678"]);
+   * const transformed = stream.pipeThrough(
+   *   new LimitedTransformStream(1, { error: true }),
+   * );
+   *
+   * await assertRejects(async () => {
+   *   await Array.fromAsync(transformed);
+   * }, RangeError);
    * ```
    */
   constructor(
