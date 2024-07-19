@@ -19,9 +19,10 @@ const DEFAULT_SPINNER = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧",
 export type Ansi = string & {};
 
 /**
- * **UNSTABLE**: New API, yet to be vetted.
- *
  * Color options for {@linkcode SpinnerOptions.color}.
+ *
+ * > [!WARNING]
+ * > **UNSTABLE**: New API, yet to be vetted.
  *
  * @experimental
  */
@@ -50,9 +51,10 @@ const COLORS: Record<Color, string> = {
 };
 
 /**
- * **UNSTABLE**: New API, yet to be vetted.
- *
  * Options for {@linkcode Spinner}.
+ *
+ * > [!WARNING]
+ * > **UNSTABLE**: New API, yet to be vetted.
  *
  * @experimental
  */
@@ -82,9 +84,10 @@ export interface SpinnerOptions {
 }
 
 /**
- * **UNSTABLE**: New API, yet to be vetted.
- *
  * A spinner that can be used to indicate that something is loading.
+ *
+ * > [!WARNING]
+ * > **UNSTABLE**: New API, yet to be vetted.
  *
  * @example Usage
  * ```ts no-eval
