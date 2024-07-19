@@ -1,3 +1,102 @@
+### 2024.07.19
+
+#### @std/async 1.0.0 (major)
+
+- chore(async): release `async@1.0.0` (#5211)
+
+#### @std/cli 1.0.0 (major)
+
+- docs(cli): fix options arguments display (#5486)
+- docs(cli): improve unstable API notices (#5482)
+- docs(cli): documentation tweaks (#5458)
+- chore(cli): release `cli@1.0.0` (#5212)
+
+#### @std/collections 1.0.5 (patch)
+
+- refactor(collections): use `Set.prototype.intersection()` method in
+  `intersect()` (#5417)
+
+#### @std/csv 1.0.0-rc.4 (prerelease)
+
+- BREAKING(csv): remove `ParseError` (#5405)
+
+#### @std/dotenv 0.225.0 (minor)
+
+- BREAKING(dotenv): remove `defaultPath` option from `load[Sync]()` (#5451)
+- BREAKING(dotenv): remove `examplePath` option from `load[Sync]()` (#5450)
+
+#### @std/expect 1.0.0-rc.3 (prerelease)
+
+- fix(expect): improve `expect` type to make it work better with `expect.extend`
+  (#5309)
+
+#### @std/fs 1.0.0-rc.6 (prerelease)
+
+- docs(fs): fix options argument display (#5491)
+- docs(fs): fix options argument display (#5487)
+
+#### @std/http 1.0.0-rc.5 (prerelease)
+
+- docs(http): fix options argument display (#5488)
+- docs(http): fix options argument display (#5489)
+- docs(http): improve unstable API notices (#5483)
+
+#### @std/json 1.0.0-rc.3 (prerelease)
+
+- docs(json): fix options argument display (#5490)
+
+#### @std/jsonc 1.0.0-rc.3 (prerelease)
+
+- docs(jsonc): remove docs for removed `options` parameter (#5438)
+
+#### @std/media-types 1.0.2 (patch)
+
+- fix(media-types): return `video/mp4` for `.mp4` extension (#5475)
+
+#### @std/net 1.0.0-rc.2 (prerelease)
+
+- docs(net): tweak `getNetworkAddress()` return doc (#5473)
+
+#### @std/path 1.0.1 (patch)
+
+- fix(path): support use in dnt (#5478)
+
+#### @std/semver 1.0.0-rc.3 (prerelease)
+
+- BREAKING(semver): replace `prerelease` and `buildmetadata` arguments with
+  options object (#5471)
+
+#### @std/streams 1.0.0-rc.4 (prerelease)
+
+- docs(streams): address documentation issues (#5480)
+- chore(streams): release `streams@1.0.0` (#5213)
+
+#### @std/text 1.0.0 (major)
+
+- BREAKING(text): align to single-export file pattern (#5428)
+- feat(text): add ability for user to control word comparison function (#5448)
+- docs(text): state complexity of `levenshteinDistance()` (#5472)
+- chore(text): release `text@1.0.0` (#5209)
+
+#### @std/ulid 1.0.0 (major)
+
+- fix(ulid): fix decode-time export path (#5432)
+- chore(ulid): release `ulid@1.0.0` (#5206)
+
+#### @std/yaml 1.0.0-rc.4 (prerelease)
+
+- BREAKING(yaml): replace `YamlError` with `TypeError` in `stringify()` (#5452)
+- BREAKING(yaml): replace `YamlError` with `SyntaxError` in `parse()` (#5446)
+- docs(yaml): list `extended` schema (#5444)
+- refactor(yaml): change `object` type from `any` to `unknown` in `writeNode`
+  (#5404)
+- refactor(yaml): remove `instanceOf` field of `Type` (#5462)
+- refactor(yaml): add `KindType` generic type argument to `Type` (#5461)
+- refactor(yaml): improve `Type.predicate` behavior (#5460)
+- refactor(yaml): remove `Type.loadKind` property (#5459)
+- refactor(yaml): remove dead code in `Schema` constructor (#5445)
+- refactor(yaml): make `Type.kind` required (#5442)
+
 ### 2024.07.12
 
 #### @std/async 1.0.0-rc.4 (prerelease)
