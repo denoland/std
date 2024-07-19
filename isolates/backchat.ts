@@ -172,10 +172,13 @@ export const functions = {
       threadId = backchatId
     }
 
+    const backchat = await readBackchat(api)
     if (!threadId) {
-      const selfPath = `threads/${backchatId}.json`
-      const backchat = await api.readJSON<BackchatThread>(selfPath)
       threadId = backchat.focus || backchatId
+    }
+    if (backchat.focus !== threadId) {
+      backchat.focus = threadId
+      writeBackchat(backchat, api)
     }
 
     if (threadId === backchatId) {
