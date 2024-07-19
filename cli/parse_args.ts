@@ -496,17 +496,7 @@ export function parseArgs<
   TAliasNames extends string = string,
 >(
   args: string[],
-  {
-    "--": doubleDash = false,
-    alias = {} as NonNullable<TAliases>,
-    boolean = false,
-    default: defaults = {} as TDefaults & Defaults<TBooleans, TStrings>,
-    stopEarly = false,
-    string = [],
-    collect = [],
-    negatable = [],
-    unknown: unknownFn = (i: string): unknown => i,
-  }: ParseOptions<
+  options: ParseOptions<
     TBooleans,
     TStrings,
     TCollectable,
@@ -516,6 +506,17 @@ export function parseArgs<
     TDoubleDash
   > = {},
 ): Args<TArgs, TDoubleDash> {
+  const {
+    "--": doubleDash = false,
+    alias = {} as NonNullable<TAliases>,
+    boolean = false,
+    default: defaults = {} as TDefaults & Defaults<TBooleans, TStrings>,
+    stopEarly = false,
+    string = [],
+    collect = [],
+    negatable = [],
+    unknown: unknownFn = (i: string): unknown => i,
+  } = options;
   const aliasMap: Map<string, Set<string>> = new Map();
   const booleanSet = new Set<string>();
   const stringSet = new Set<string>();
