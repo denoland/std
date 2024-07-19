@@ -170,8 +170,10 @@ export interface ServeFileOptions {
 export async function serveFile(
   req: Request,
   filePath: string,
-  { etagAlgorithm: algorithm, fileInfo }: ServeFileOptions = {},
+  options?: ServeFileOptions,
 ): Promise<Response> {
+  let { etagAlgorithm: algorithm, fileInfo } = options ?? {};
+
   try {
     fileInfo ??= await Deno.stat(filePath);
   } catch (error) {
