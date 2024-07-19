@@ -3,7 +3,6 @@
 import {
   assert,
   assertEquals,
-  assertRejects,
   assertStrictEquals,
   assertThrows,
 } from "@std/assert";
