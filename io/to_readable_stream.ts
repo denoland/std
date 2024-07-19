@@ -40,12 +40,14 @@ export interface ToReadableStreamOptions {
  */
 export function toReadableStream(
   reader: Reader | (Reader & Closer),
-  {
+  options?: ToReadableStreamOptions,
+): ReadableStream<Uint8Array> {
+  const {
     autoClose = true,
     chunkSize = DEFAULT_CHUNK_SIZE,
     strategy,
-  }: ToReadableStreamOptions = {},
-): ReadableStream<Uint8Array> {
+  } = options ?? {};
+
   return new ReadableStream({
     async pull(controller) {
       const chunk = new Uint8Array(chunkSize);
