@@ -106,10 +106,8 @@ export class JsonStringifyStream extends TransformStream<unknown, string> {
    * ]);
    * ```
    */
-  constructor({
-    prefix = "",
-    suffix = "\n",
-  }: StringifyStreamOptions = {}) {
+  constructor(options?: StringifyStreamOptions) {
+    const { prefix = "", suffix = "\n" } = options ?? {};
     super(
       {
         transform(chunk, controller) {
