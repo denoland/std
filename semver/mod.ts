@@ -130,7 +130,7 @@
  * import { increment, parse } from "@std/semver";
  * import { assertEquals } from "@std/assert";
  *
- * assertEquals(increment(parse("1.2.3"), "prerelease", "alpha"), parse("1.2.4-alpha.0"));
+ * assertEquals(increment(parse("1.2.3"), "prerelease", { prerelease: "alpha" }), parse("1.2.4-alpha.0"));
  * ```
  *
  * ### Build Metadata
