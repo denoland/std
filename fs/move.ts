@@ -93,8 +93,10 @@ export interface MoveOptions {
 export async function move(
   src: string | URL,
   dest: string | URL,
-  { overwrite = false }: MoveOptions = {},
+  options?: MoveOptions,
 ): Promise<void> {
+  const { overwrite = false } = options ?? {};
+
   const srcStat = await Deno.stat(src);
 
   if (
@@ -165,8 +167,10 @@ export async function move(
 export function moveSync(
   src: string | URL,
   dest: string | URL,
-  { overwrite = false }: MoveOptions = {},
+  options?: MoveOptions,
 ): void {
+  const { overwrite = false } = options ?? {};
+
   const srcStat = Deno.statSync(src);
 
   if (

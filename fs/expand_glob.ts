@@ -268,7 +268,7 @@ function comparePath(a: WalkEntry, b: WalkEntry): number {
  */
 export async function* expandGlob(
   glob: string | URL,
-  options: ExpandGlobOptions = {},
+  options?: ExpandGlobOptions,
 ): AsyncIterableIterator<WalkEntry> {
   let {
     root,
@@ -279,7 +279,7 @@ export async function* expandGlob(
     caseInsensitive,
     followSymlinks,
     canonicalize,
-  } = options;
+  } = options ?? {};
 
   const {
     segments,
@@ -425,7 +425,9 @@ export async function* expandGlob(
  */
 export function* expandGlobSync(
   glob: string | URL,
-  {
+  options?: ExpandGlobOptions,
+): IterableIterator<WalkEntry> {
+  let {
     root,
     exclude = [],
     includeDirs = true,
@@ -434,8 +436,8 @@ export function* expandGlobSync(
     caseInsensitive,
     followSymlinks,
     canonicalize,
-  }: ExpandGlobOptions = {},
-): IterableIterator<WalkEntry> {
+  } = options ?? {};
+
   const {
     segments,
     isAbsolute: isGlobAbsolute,

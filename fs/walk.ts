@@ -512,7 +512,7 @@ export type { WalkEntry };
  */
 export async function* walk(
   root: string | URL,
-  options: WalkOptions = {},
+  options?: WalkOptions,
 ): AsyncIterableIterator<WalkEntry> {
   let {
     maxDepth = Infinity,
@@ -524,7 +524,7 @@ export async function* walk(
     exts = undefined,
     match = undefined,
     skip = undefined,
-  } = options;
+  } = options ?? {};
 
   if (maxDepth < 0) {
     return;
@@ -938,7 +938,9 @@ export async function* walk(
  */
 export function* walkSync(
   root: string | URL,
-  {
+  options?: WalkOptions,
+): IterableIterator<WalkEntry> {
+  let {
     maxDepth = Infinity,
     includeFiles = true,
     includeDirs = true,
@@ -948,8 +950,8 @@ export function* walkSync(
     exts = undefined,
     match = undefined,
     skip = undefined,
-  }: WalkOptions = {},
-): IterableIterator<WalkEntry> {
+  } = options ?? {};
+
   root = toPathString(root);
   if (exts) {
     exts = exts.map((ext) => ext.startsWith(".") ? ext : `.${ext}`);
