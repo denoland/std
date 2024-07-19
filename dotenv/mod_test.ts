@@ -3,7 +3,6 @@
 import {
   assert,
   assertEquals,
-  assertRejects,
   assertStrictEquals,
   assertThrows,
 } from "@std/assert";
@@ -15,42 +14,26 @@ const testdataDir = path.resolve(moduleDir, "testdata");
 
 const testOptions = Object.freeze({
   envPath: path.join(testdataDir, ".env"),
-  defaultsPath: path.join(testdataDir, ".env.defaults"),
 });
 
 Deno.test("load() handles non-existent .env files", async () => {
-  //n.b. neither .env nor .env.default exist in the current directory
+  // .env doesn't exist in the current directory
   assertEquals({}, await load());
   assertEquals({}, loadSync());
 
   const loadOptions = {
     envPath: "some.nonexistent.env",
-    defaultsPath: "some.nonexistent.defaults",
   };
   assertEquals({}, await load(loadOptions));
   assertEquals({}, loadSync(loadOptions));
 });
 
-Deno.test("load() handles build from .env.default only", async () => {
-  const conf = loadSync({
-    defaultsPath: path.join(testdataDir, ".env.defaults"),
-  });
-  assertEquals(conf.DEFAULT1, "Some Default", "loaded from .env.default");
-
-  const asyncConf = await load({
-    defaultsPath: path.join(testdataDir, ".env.defaults"),
-  });
-  assertEquals(asyncConf.DEFAULT1, "Some Default", "loaded from .env.default");
-});
-
 Deno.test("load() handles comprised .env and .env.defaults", async () => {
   const conf = loadSync(testOptions);
   assertEquals(conf.GREETING, "hello world", "loaded from .env");
-  assertEquals(conf.DEFAULT1, "Some Default", "loaded from .env.default");
 
   const asyncConf = await load(testOptions);
   assertEquals(asyncConf.GREETING, "hello world", "loaded from .env");
-  assertEquals(asyncConf.DEFAULT1, "Some Default", "loaded from .env.default");
 });
 
 Deno.test("load() handles exported entries accessibility in Deno.env", async () => {
@@ -71,14 +54,8 @@ function validateExport(): void {
       "hello world",
       "exported from .env -> Deno.env",
     );
-    assertEquals(
-      Deno.env.get("DEFAULT1"),
-      "Some Default",
-      "exported from .env.default -> Deno.env",
-    );
   } finally {
     Deno.env.delete("GREETING");
-    Deno.env.delete("DEFAULT1");
   }
 }
 
@@ -98,17 +75,12 @@ function validateNotOverridden(conf: Record<string, string>): void {
       "Do not override!",
       "not exported from .env -> Deno.env",
     );
-    assertEquals(
-      Deno.env.get("DEFAULT1"),
-      "Some Default",
-      "exported from .env.default -> Deno.env",
-    );
   } finally {
     Deno.env.delete("DEFAULT1");
   }
 }
 
-Deno.test("load() loads .env and .env.defaults successfully from default file names/paths", async () => {
+Deno.test("load() loads .env successfully from default file names/paths", async () => {
   const command = new Deno.Command(Deno.execPath(), {
     args: [
       "run",
@@ -125,7 +97,6 @@ Deno.test("load() loads .env and .env.defaults successfully from default file na
   const conf = JSON.parse(decoder.decode(stdout).trim());
 
   assertEquals(conf.GREETING, "hello world", "fetches .env by default");
-  assertEquals(conf.DEFAULT1, "Some Default", "default value loaded");
 });
 
 Deno.test("load() expands empty values from process env expand as empty value", async () => {
@@ -166,7 +137,6 @@ Deno.test(
     // note lack of --allow-env permission
     const conf = loadSync(testOptions);
     assertEquals(conf.GREETING, "hello world");
-    assertEquals(conf.DEFAULT1, "Some Default");
   },
 );
 
@@ -182,7 +152,6 @@ Deno.test(
     // note lack of --allow-env permission
     const loadOptions = {
       envPath: path.join(testdataDir, "./.env.single.expand"),
-      defaultsPath: null,
     };
     assertThrows(
       () => loadSync(loadOptions),
@@ -206,7 +175,6 @@ Deno.test(
 
       const loadOptions = {
         envPath: path.join(testdataDir, "./.env.single.expand"),
-        defaultsPath: null,
       };
       const conf = loadSync(loadOptions);
       assertEquals(
@@ -232,7 +200,6 @@ Deno.test(
   },
   async (t) => {
     const optsNoPaths = {
-      defaultsPath: null,
       envPath: null,
     } satisfies LoadOptions;
 
@@ -242,7 +209,6 @@ Deno.test(
 
     const optsOnlyEnvPath = {
       ...optsEnvPath,
-      defaultsPath: null,
     } satisfies LoadOptions;
 
     const assertEnv = (env: Record<string, string>): void => {
@@ -254,23 +220,11 @@ Deno.test(
     await t.step("load", async () => {
       assertStrictEquals(Object.keys(await load(optsNoPaths)).length, 0);
       assertEnv(await load(optsOnlyEnvPath));
-
-      await assertRejects(
-        () => load(optsEnvPath),
-        Deno.errors.PermissionDenied,
-        `Requires read access to ".env.defaults"`,
-      );
     });
 
     await t.step("loadSync", () => {
       assertStrictEquals(Object.keys(loadSync(optsNoPaths)).length, 0);
       assertEnv(loadSync(optsOnlyEnvPath));
-
-      assertThrows(
-        () => loadSync(optsEnvPath),
-        Deno.errors.PermissionDenied,
-        `Requires read access to ".env.defaults"`,
-      );
     });
   },
 );

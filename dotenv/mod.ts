@@ -42,21 +42,6 @@ export interface LoadOptions {
    * @default {false}
    */
   export?: boolean;
-
-  /**
-   * Optional path to `.env.defaults` file which is used to define default
-   * (fallback) values. To prevent the default value from being used,
-   * set to `null`.
-   *
-   * ```sh
-   * # .env.defaults
-   * # Will not be set if GREETING is set in base .env file
-   * GREETING="a secret to everybody"
-   * ```
-   *
-   * @default {"./.env.defaults"}
-   */
-  defaultsPath?: string | null;
 }
 
 /**
@@ -77,19 +62,9 @@ export function loadSync(
 ): Record<string, string> {
   const {
     envPath = ".env",
-    defaultsPath = ".env.defaults",
     export: _export = false,
   } = options;
   const conf = envPath ? parseFileSync(envPath) : {};
-
-  if (defaultsPath) {
-    const confDefaults = parseFileSync(defaultsPath);
-    for (const [key, value] of Object.entries(confDefaults)) {
-      if (!(key in conf)) {
-        conf[key] = value;
-      }
-    }
-  }
 
   if (_export) {
     for (const [key, value] of Object.entries(conf)) {
@@ -152,28 +127,6 @@ export function loadSync(
  * |File|Purpose|
  * |----|-------|
  * |.env|primary file for storing key-value environment entries
- * |.env.defaults|specify default values for env variables to be used when there is no entry in the `.env` file
- *
- * ### Defaults
- *
- * This file is used to provide a list of default environment variables
- * which will be used if there is no overriding variable in the `.env`
- * file.
- *
- * ```sh
- * # .env.defaults
- * KEY_1=DEFAULT_VALUE
- * KEY_2=ANOTHER_DEFAULT_VALUE
- * ```
- * ```sh
- * # .env
- * KEY_1=ABCD
- * ```
- * The environment variables set after dotenv loads are:
- * ```sh
- * KEY_1=ABCD
- * KEY_2=ANOTHER_DEFAULT_VALUE
- * ```
  *
  * ## Configuration
  *
@@ -183,8 +136,7 @@ export function loadSync(
  * |Option|Default|Description
  * |------|-------|-----------
  * |envPath|./.env|Path and filename of the `.env` file.  Use null to prevent the .env file from being loaded.
- * |defaultsPath|./.env.defaults|Path and filename of the `.env.defaults` file. Use null to prevent the .env.defaults file from being loaded.
- * |export|false|When true, this will export all environment variables in the `.env` and `.env.default` files to the process environment (e.g. for use by `Deno.env.get()`) but only if they are not already set.  If a variable is already in the process, the `.env` value is ignored.
+ * |export|false|When true, this will export all environment variables in the `.env` file to the process environment (e.g. for use by `Deno.env.get()`) but only if they are not already set.  If a variable is already in the process, the `.env` value is ignored.
  *
  * ### Example configuration
  *
@@ -205,7 +157,7 @@ export function loadSync(
  * in your `.env` file, you will need the `--allow-env` permission.  E.g.
  *
  * ```sh
- * deno run --allow-read=.env,.env.defaults --allow-env=ENV1,ENV2 app.ts
+ * deno run --allow-read=.env --allow-env=ENV1,ENV2 app.ts
  * ```
  *
  * ## Parsing Rules
@@ -256,19 +208,9 @@ export async function load(
 ): Promise<Record<string, string>> {
   const {
     envPath = ".env",
-    defaultsPath = ".env.defaults",
     export: _export = false,
   } = options;
   const conf = envPath ? await parseFile(envPath) : {};
-
-  if (defaultsPath) {
-    const confDefaults = await parseFile(defaultsPath);
-    for (const [key, value] of Object.entries(confDefaults)) {
-      if (!(key in conf)) {
-        conf[key] = value;
-      }
-    }
-  }
 
   if (_export) {
     for (const [key, value] of Object.entries(conf)) {
