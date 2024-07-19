@@ -165,13 +165,16 @@ export interface ServeFileOptions {
  *
  * @param req The server request context used to cleanup the file handle.
  * @param filePath Path of the file to serve.
+ * @param options Additional options.
  * @returns A response for the request.
  */
 export async function serveFile(
   req: Request,
   filePath: string,
-  { etagAlgorithm: algorithm, fileInfo }: ServeFileOptions = {},
+  options?: ServeFileOptions,
 ): Promise<Response> {
+  let { etagAlgorithm: algorithm, fileInfo } = options ?? {};
+
   try {
     fileInfo ??= await Deno.stat(filePath);
   } catch (error) {
