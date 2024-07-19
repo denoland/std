@@ -10,7 +10,6 @@ import {
   assertInstanceOf,
   assertThrows,
 } from "@std/assert";
-import { YamlError } from "./_error.ts";
 import { assertSpyCall, spy } from "@std/testing/mock";
 
 Deno.test({
@@ -66,7 +65,7 @@ Deno.test({
   name: "parse() throws with `!!js/*` yaml types with default schemas",
   fn() {
     const yaml = `undefined: !!js/undefined ~`;
-    assertThrows(() => parse(yaml), YamlError, "unknown tag !");
+    assertThrows(() => parse(yaml), SyntaxError, "unknown tag !");
   },
 });
 
@@ -238,14 +237,14 @@ Deno.test({
     // invalid base64 string
     assertThrows(
       () => parse("message: !!binary <>"),
-      YamlError,
+      SyntaxError,
       "cannot resolve a node with !<tag:yaml.org,2002:binary> explicit tag at line 1, column 21:\n    message: !!binary <>\n                        ^",
     );
 
     // empty base64 string is error
     assertThrows(
       () => parse("message: !!binary"),
-      YamlError,
+      SyntaxError,
       "cannot resolve a node with !<tag:yaml.org,2002:binary> explicit tag at line 2, column 1:\n    \n    ^",
     );
   },
@@ -371,39 +370,39 @@ Deno.test({
     // empty string is invalid integer
     assertThrows(
       () => parse('!!int ""'),
-      YamlError,
+      SyntaxError,
       'cannot resolve a node with !<tag:yaml.org,2002:int> explicit tag at line 1, column 9:\n    !!int ""\n            ^',
     );
 
     // number can't start with _
     assertThrows(
       () => parse("!!int _42"),
-      YamlError,
+      SyntaxError,
       "cannot resolve a node with !<tag:yaml.org,2002:int> explicit tag at line 2, column 1:\n    \n    ^",
     );
     // number can't end with _
     assertThrows(
       () => parse("!!int 42_"),
-      YamlError,
+      SyntaxError,
       "cannot resolve a node with !<tag:yaml.org,2002:int> explicit tag at line 2, column 1:\n    \n    ^",
     );
 
     // invalid binary number
     assertThrows(
       () => parse("!!int 0b102"),
-      YamlError,
+      SyntaxError,
       "cannot resolve a node with !<tag:yaml.org,2002:int> explicit tag at line 2, column 1:\n    \n    ^",
     );
     // invalid octal number
     assertThrows(
       () => parse("!!int 09"),
-      YamlError,
+      SyntaxError,
       "cannot resolve a node with !<tag:yaml.org,2002:int> explicit tag at line 2, column 1:\n    \n    ^",
     );
     // invalid hexadecimal number
     assertThrows(
       () => parse("!!int 0x1G"),
-      YamlError,
+      SyntaxError,
       "cannot resolve a node with !<tag:yaml.org,2002:int> explicit tag at line 2, column 1:\n    \n    ^",
     );
   },
@@ -428,13 +427,13 @@ Deno.test({
 
     assertThrows(
       () => parse("- !!timestamp"),
-      YamlError,
+      SyntaxError,
       "cannot resolve a node with !<tag:yaml.org,2002:timestamp> explicit tag at line 2, column 1:\n    \n    ^",
     );
 
     assertThrows(
       () => parse("- !!timestamp 1"),
-      YamlError,
+      SyntaxError,
       "cannot resolve a node with !<tag:yaml.org,2002:timestamp> explicit tag at line 1, column 16:\n    - !!timestamp 1\n                   ^",
     );
   },
@@ -458,25 +457,25 @@ Deno.test({
     // map entry is not an object
     assertThrows(
       () => parse("--- !!omap\n- 1"),
-      YamlError,
+      SyntaxError,
       "cannot resolve a node with !<tag:yaml.org,2002:omap> explicit tag",
     );
     // map entry is empty object
     assertThrows(
       () => parse("--- !!omap\n- {}"),
-      YamlError,
+      SyntaxError,
       "cannot resolve a node with !<tag:yaml.org,2002:omap> explicit tag",
     );
     // map entry is an object with multiple keys
     assertThrows(
       () => parse("--- !!omap\n- foo: 1\n  bar: 2"),
-      YamlError,
+      SyntaxError,
       "cannot resolve a node with !<tag:yaml.org,2002:omap> explicit tag",
     );
     // 2 map entries have the same key
     assertThrows(
       () => parse("--- !!omap\n- foo: 1\n- foo: 2"),
-      YamlError,
+      SyntaxError,
       "cannot resolve a node with !<tag:yaml.org,2002:omap> explicit tag",
     );
   },
@@ -501,13 +500,13 @@ Deno.test("parse() handles !!pairs type", () => {
   assertThrows(
     // pair is not an object
     () => parse(`!!pairs\n- 1`),
-    YamlError,
+    SyntaxError,
     "cannot resolve a node with !<tag:yaml.org,2002:pairs> explicit tag",
   );
   assertThrows(
     // pair is object with multiple keys
     () => parse(`!!pairs\n- { Monday: 3, Tuesday: 4 }`),
-    YamlError,
+    SyntaxError,
     "cannot resolve a node with !<tag:yaml.org,2002:pairs> explicit tag",
   );
 });
@@ -551,14 +550,14 @@ Deno.test("parse() handles anchors and aliases", () => {
     () =>
       parse(`- &anchor Foo
 - *anchor2`),
-    YamlError,
+    SyntaxError,
     'unidentified alias "anchor2" at line 2, column 11:\n    - *anchor2\n              ^',
   );
   assertThrows(
     () =>
       parse(`- &anchor Foo
 - *`),
-    YamlError,
+    SyntaxError,
     "name of an alias node must contain at least one character at line 2, column 4:\n    - *\n       ^",
   );
 });
@@ -575,13 +574,13 @@ Deno.test("parse() handles escaped strings in double quotes", () => {
   assertThrows(
     // invalid hex character
     () => parse('"\\xyz"'),
-    YamlError,
+    SyntaxError,
     'expected hexadecimal character at line 1, column 4:\n    "\\xyz"\n       ^',
   );
   assertThrows(
     // invalid escape sequence
     () => parse('"\\X30"'),
-    YamlError,
+    SyntaxError,
     'unknown escape sequence at line 1, column 3:\n    "\\X30"\n      ^',
   );
 });
@@ -596,14 +595,14 @@ Deno.test("parse() handles single quoted scalar", () => {
   assertThrows(
     // document end in single quoted scalar
     () => parse("'bar\n"),
-    YamlError,
+    SyntaxError,
     "unexpected end of the stream within a single quoted scalar at line 2, column 1:\n    \n    ^",
   );
 
   assertThrows(
     // document separator appears in single quoted scalar
     () => parse("'bar\n..."),
-    YamlError,
+    SyntaxError,
     "unexpected end of the document within a single quoted scalar at line 2, column 1:\n    ...\n    ^",
   );
 });
@@ -629,7 +628,7 @@ hello: world`),
 %YAML 1.2
 ---
 hello: world`),
-    YamlError,
+    SyntaxError,
     "duplication of %YAML directive at line 3, column 1:\n    ---\n    ^",
   );
   assertThrows(
@@ -637,7 +636,7 @@ hello: world`),
       parse(`%YAML 1.2 1.1
 ---
 hello: world`),
-    YamlError,
+    SyntaxError,
     "YAML directive accepts exactly one argument at line 2, column 1:\n    ---\n    ^",
   );
   assertThrows(
@@ -645,7 +644,7 @@ hello: world`),
       parse(`%YAML 1.2.3
 ---
 hello: world`),
-    YamlError,
+    SyntaxError,
     "ill-formed argument of the YAML directive at line 2, column 1:\n    ---\n    ^",
   );
   assertThrows(
@@ -653,7 +652,7 @@ hello: world`),
       parse(`%YAML 2.0
 ---
 hello: world`),
-    YamlError,
+    SyntaxError,
     "unacceptable YAML version of the document at line 2, column 1:\n    ---\n    ^",
   );
   assertEquals(
@@ -681,7 +680,7 @@ hello: world`,
       warning.message,
       "unsupported YAML version of the document at line 2, column 1:\n    ---\n    ^",
     );
-    assertInstanceOf(warning, YamlError);
+    assertInstanceOf(warning, SyntaxError);
   }
 });
 
@@ -698,7 +697,7 @@ hello: world`),
       parse(`%TAG !
 ---
 hello: world`),
-    YamlError,
+    SyntaxError,
     "TAG directive accepts exactly two arguments at line 2, column 1:\n    ---\n    ^",
   );
 
@@ -707,7 +706,7 @@ hello: world`),
       parse(`%TAG abc tag:example.com,2000:
 ---
 hello: world`),
-    YamlError,
+    SyntaxError,
     "ill-formed tag handle (first argument) of the TAG directive at line 2, column 1:\n    ---\n    ^",
   );
 
@@ -717,7 +716,7 @@ hello: world`),
 %TAG ! tag:example.com,2000:
 ---
 hello: world`),
-    YamlError,
+    SyntaxError,
     'there is a previously declared suffix for "!" tag handle at line 3, column 1:\n    ---\n    ^',
   );
 
@@ -726,22 +725,22 @@ hello: world`),
       parse(`%TAG ! ,:
 ---
 hello: world`),
-    YamlError,
+    SyntaxError,
     "ill-formed tag prefix (second argument) of the TAG directive at line 2, column 1:\n    ---\n    ^",
   );
 });
 
 Deno.test("parse() throws with invalid strings", () => {
-  assertThrows(() => parse(`"`), YamlError, "unexpected end of the stream");
+  assertThrows(() => parse(`"`), SyntaxError, "unexpected end of the stream");
   assertThrows(
     () => parse(`"\x08"`),
-    YamlError,
+    SyntaxError,
     'expected valid JSON character at line 1, column 3:\n    "\b"\n      ^',
   );
   // non-printable char in block scalar
   assertThrows(
     () => parse(`foo: |\n  \x08`),
-    YamlError,
+    SyntaxError,
     "the stream contains non-printable characters at line 2, column 4:\n      \b\n       ^",
   );
 });
@@ -758,7 +757,7 @@ c: 3`),
       // number can't be used as merge value
       parse(`<<: 1
 c: 3`),
-    YamlError,
+    SyntaxError,
     "cannot merge mappings; the provided source object is unacceptable at line 1, column 6:\n    <<: 1\n         ^",
   );
 });
@@ -795,7 +794,7 @@ bar: baz`),
   );
   assertThrows(
     () => parse(`foo: |++\n  bar`),
-    YamlError,
+    SyntaxError,
     "repeat of a chomping mode identifier at line 1, column 8:\n    foo: |++\n           ^",
   );
   assertEquals(
@@ -819,12 +818,12 @@ bar: baz`),
   );
   assertThrows(
     () => parse(`foo: |0\n  bar`),
-    YamlError,
+    SyntaxError,
     "bad explicit indentation width of a block scalar; it cannot be less than one at line 1, column 7:\n    foo: |0\n          ^",
   );
   assertThrows(
     () => parse(`foo: |11\n  bar`),
-    YamlError,
+    SyntaxError,
     "repeat of an indentation width identifier at line 1, column 8:\n    foo: |11\n           ^",
   );
 
@@ -856,7 +855,7 @@ Deno.test("parse() handles BOM at the beginning of the yaml", () => {
 Deno.test("parse() throws if there are more than one document in the yaml", () => {
   assertThrows(
     () => parse("hello: world\n---\nfoo: bar"),
-    YamlError,
+    SyntaxError,
     "expected a single document in the stream, but found more",
   );
 });
@@ -867,7 +866,7 @@ Deno.test("parse() throws when the directive name is empty", () => {
       parse(`% 1.2
 ---
 hello: world`),
-    YamlError,
+    SyntaxError,
     "directive name must not be less than one character in length at line 1, column 2:\n    % 1.2\n     ^",
   );
 });
@@ -912,7 +911,7 @@ hello: world\r\nfoo: bar\x85`,
 Deno.test("parse() throws with directive only document", () => {
   assertThrows(
     () => parse(`%YAML 1.2`),
-    YamlError,
+    SyntaxError,
     "directives end mark is expected at line 2, column 1:\n    \n    ^",
   );
 });
@@ -920,7 +919,7 @@ Deno.test("parse() throws with directive only document", () => {
 Deno.test("parse() throws with \0 in the middle of the document", () => {
   assertThrows(
     () => parse("hello: \0 world"),
-    YamlError,
+    SyntaxError,
     "end of the stream or a document separator is expected at line 1, column 8:\n    hello: \n           ^",
   );
 });
@@ -950,7 +949,7 @@ Deno.test("parse() handles complex mapping key", () => {
     () =>
       parse(`? - [ foo ]
 : bar`),
-    YamlError,
+    SyntaxError,
     "nested arrays are not supported inside keys at line 2, column 6:\n    : bar\n         ^",
   );
 
@@ -980,7 +979,7 @@ Deno.test("parse() handles unordered set", () => {
 Deno.test("parse() throws with empty mapping key", () => {
   assertThrows(
     () => parse(`? : 1`),
-    YamlError,
+    SyntaxError,
     "incomplete explicit mapping pair; a key node is missed; or followed by a non-tabulated empty line at line 1, column 3:\n    ? : 1\n      ^",
   );
 });
@@ -993,7 +992,7 @@ Deno.test("parse() throws on duplicate keys", () => {
 age: 30
 name: Jane Doe`,
       ),
-    YamlError,
+    SyntaxError,
     "duplicated mapping key at line 3, column 1:\n    name: Jane Doe\n    ^",
   );
 });
