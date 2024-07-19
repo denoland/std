@@ -139,6 +139,8 @@ export class Spinner {
   /**
    * Creates a new spinner.
    *
+   * @param options Options for the spinner.
+   *
    * @example Usage
    * ```ts no-assert
    * import { Spinner } from "@std/cli/spinner";
@@ -147,12 +149,13 @@ export class Spinner {
    * spinner.stop();
    * ```
    */
-  constructor({
-    spinner = DEFAULT_SPINNER,
-    message = "",
-    interval = DEFAULT_INTERVAL,
-    color,
-  }: SpinnerOptions = {}) {
+  constructor(options?: SpinnerOptions) {
+    const {
+      spinner = DEFAULT_SPINNER,
+      message = "",
+      interval = DEFAULT_INTERVAL,
+      color,
+    } = options ?? {};
     this.#spinner = spinner;
     this.message = message;
     this.#interval = interval;
