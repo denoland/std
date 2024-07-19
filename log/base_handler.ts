@@ -23,8 +23,9 @@ export class BaseHandler {
 
   constructor(
     levelName: LevelName,
-    { formatter = DEFAULT_FORMATTER }: BaseHandlerOptions = {},
+    options?: BaseHandlerOptions,
   ) {
+    const { formatter = DEFAULT_FORMATTER } = options ?? {};
     this.#levelName = levelName;
     this.#level = getLevelByName(levelName);
     this.formatter = formatter;
