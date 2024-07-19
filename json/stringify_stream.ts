@@ -92,6 +92,8 @@ export class JsonStringifyStream extends TransformStream<unknown, string> {
   /**
    * Constructs new instance.
    *
+   * @param options Options for the stream.
+   *
    * @example Usage
    * ```ts
    * import { JsonStringifyStream } from "@std/json/stringify-stream";
