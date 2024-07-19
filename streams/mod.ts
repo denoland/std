@@ -23,6 +23,7 @@ export * from "./byte_slice_stream.ts";
 export * from "./concat_readable_streams.ts";
 export * from "./delimiter_stream.ts";
 export * from "./early_zip_readable_streams.ts";
+export * from "./exact_reader.ts";
 export * from "./limited_bytes_transform_stream.ts";
 export * from "./limited_transform_stream.ts";
 export * from "./merge_readable_streams.ts";

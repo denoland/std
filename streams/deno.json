@@ -8,6 +8,7 @@
     "./concat-readable-streams": "./concat_readable_streams.ts",
     "./delimiter-stream": "./delimiter_stream.ts",
     "./early-zip-readable-streams": "./early_zip_readable_streams.ts",
+    "./exact-reader": "./exact_reader.ts",
     "./limited-bytes-transform-stream": "./limited_bytes_transform_stream.ts",
     "./limited-transform-stream": "./limited_transform_stream.ts",
     "./merge-readable-streams": "./merge_readable_streams.ts",
