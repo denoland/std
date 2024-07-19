@@ -26,7 +26,7 @@ export type Api = {
   ls: ({ pid, patterns }: LsArgs) => Promise<PID[]>
 }
 export const functions = {
-  ls: async ({ pid, patterns }: LsArgs, api: IA) => {
+  ls: ({ pid, patterns }: LsArgs, api: IA) => {
     if (!pid) {
       return api.lsChildren(patterns)
     }

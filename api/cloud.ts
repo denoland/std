@@ -6,7 +6,7 @@ import { assert } from '@utils'
 import { WebClientEngine } from '@/api/web-client-engine.ts'
 import guts from '../guts/guts.ts'
 import '@std/dotenv/load'
-import { Machine } from '@/api/web-client-machine.ts'
+import { Backchat } from '@/api/web-client-backchat.ts'
 
 let introDone = false
 
@@ -17,22 +17,21 @@ const cradleMaker = async () => {
   assert(machineKey, 'CLOUD_MACHINE_KEY not set')
 
   const engine = await WebClientEngine.start(url)
-  const machine = Machine.load(engine, machineKey)
 
-  const terminal = machine.openTerminal()
+  const backchat = await Backchat.upsert(engine, machineKey)
   if (!introDone) {
     introDone = true
     console.log('testing:', url)
-    const repos = await terminal.lsRepos()
+    const repos = await backchat.lsRepos()
     if (repos.length) {
       console.log('deleting repos:', repos)
-      await terminal.rm({ all: true })
+      await backchat.rm({ all: true })
 
-      const postRepos = await terminal.lsRepos()
+      const postRepos = await backchat.lsRepos()
       console.log('postRepos:', postRepos)
     }
   }
-  return terminal
+  return { backchat, engine }
 }
 guts('Cloud', cradleMaker)
 

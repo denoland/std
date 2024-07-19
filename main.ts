@@ -22,10 +22,13 @@ Debug.enable(
 )
 const server = await Server.create(getPrivateKey(), getAesKey(), init)
 
-const opts: { cert?: string; key?: string } = {}
+const opts: { cert?: string; key?: string; hostname?: string; port?: number } =
+  {}
 if (isKvTestMode()) {
   opts.cert = Deno.readTextFileSync('tests/ssl/cert.pem')
   opts.key = Deno.readTextFileSync('tests/ssl/key.pem')
+  opts.hostname = '0.0.0.0'
+  opts.port = 8000
   console.log('loading test ssl certs')
 }
 

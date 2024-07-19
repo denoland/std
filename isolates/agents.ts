@@ -1,4 +1,5 @@
-import { IA } from '@/constants.ts'
+import { IA, print } from '@/constants.ts'
+import { log } from '@utils'
 
 export const api = {
   search: {
@@ -27,7 +28,7 @@ export type Api = {
 }
 
 export const functions = {
-  search: async ({ query }: SearchArgs, api: IA) => {
+  search: ({ query }: SearchArgs, api: IA) => {
     // read all the agent files in from disk
     // make an AI call to select the best ones and rank them
     // also to provide a reason why they were selected
@@ -38,6 +39,7 @@ export const functions = {
     // this is just using AI to help do coding tasks, as opposed to agents
     // so agents are defined by their interaction aspect
     // interaction implies state
+    log('search', query, print(api.pid))
     return []
   },
 }

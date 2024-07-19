@@ -93,11 +93,11 @@ export class Backchat {
    * intercept this before it reaches target. The target can be anything, since
    * the user might have used the back button to navigate away from the current
    * focus
-   * @param paths The relative paths to the files that were attached with the
-   * prompt, which may include directories.  May include pointers to the tmp
-   * files that are created when a user attaches files in the browser.
+   * @param attachments The relative paths to the files that were attached with
+   * the  prompt, which may include directories.  May include pointers to the
+   * tmp files that are created when a user attaches files in the browser.
    */
-  async prompt(content = '', threadId?: string, paths?: string[]) {
+  async prompt(content = '', threadId?: string, attachments?: string[]) {
     // pierce the backchat thread
     const pierce: PierceRequest = {
       target: this.#pid,
@@ -108,10 +108,10 @@ export class Backchat {
       proctype: PROCTYPE.SERIAL,
     }
     if (threadId) {
-      pierce.params.target = threadId
+      pierce.params.threadId = threadId
     }
-    if (paths) {
-      pierce.params.paths = paths
+    if (attachments) {
+      pierce.params.attachments = attachments
     }
     const promise = this.#watcher.watch(pierce.ulid)
     // TODO handle an error in pierce

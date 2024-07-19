@@ -1,5 +1,5 @@
 import { Debug } from '@utils'
-import { IA, ProcessOptions } from '@/constants.ts'
+import { IA, print } from '@/constants.ts'
 const log = Debug('AI:files')
 
 export const api = {
@@ -159,9 +159,9 @@ export const functions = {
     log('rm', path)
     api.delete(path)
   },
-  search: async (params: { query: string }, api: IA) => {
+  search: (params: { query: string }, api: IA) => {
     const { query } = params
-    log('search', query)
+    log('search', query, print(api.pid))
   },
 }
 

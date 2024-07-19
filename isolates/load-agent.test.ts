@@ -32,6 +32,7 @@ Deno.test('format checking', async (t) => {
     api.write(path, 'HELLO')
     const functions = compartment.functions<Api>(api)
     const agent = await functions.load({ path })
+    expect(agent.config).toBeDefined()
   })
   // TODO test some erroneous config written
 

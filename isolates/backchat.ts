@@ -5,7 +5,6 @@ import {
   generateThreadId,
   getActorId,
   getActorPid,
-  getParent,
   IA,
   isBackchatSummoned,
   PID,
@@ -145,7 +144,7 @@ export const functions = {
     const thread = await readBackchat(api)
     if (params.focus) {
       assert(threadIdRegex.test(params.focus), 'Invalid thread id')
-      const threadPath = `threads/${params.focus}.json`
+      // const threadPath = `threads/${params.focus}.json`
       // create the new thread at the actor level, possibly in parallel too ?
       // verify the thread exists
       // await functions.focus({ threadId: params.focus }, api)
@@ -157,15 +156,15 @@ export const functions = {
   },
   async prompt({ content = '', threadId, attachments }: PromptArgs, api: IA) {
     log('prompt: %o', content)
-    log('threadId: %o paths: %o', threadId, attachments)
+    log('threadId: %o attachments: %o', threadId, attachments)
     const backchatId = assertBackchatThread(api)
     const actorId = getActorId(api.pid)
 
     if (threadId) {
-      await assertThreadId(threadId, api) // TODO make this function work
-      // if this is self, send to self using a function
-      // else send to the other thread using an action
-      throw new Error('not implemented')
+      // await assertThreadId(threadId, api) // TODO make this function work
+      // // if this is self, send to self using a function
+      // // else send to the other thread using an action
+      // throw new Error('not implemented')
     }
 
     if (isBackchatSummoned(content)) {
@@ -233,9 +232,9 @@ const getBackchatId = (api: IA) => {
   return backchatId
 }
 const assertThreadId = async (threadId: string, api: IA) => {
-  assert(threadIdRegex.test(threadId), 'Invalid thread id')
+  assert(threadIdRegex.test(threadId), 'Invalid thread id: ' + threadId)
   // TODO make this a system function
-  const target = getParent(api.pid)
+  // const target = getParent(api.pid)
   // const { ls } = await api.actions<branches.Api>('branches', { target })
   const threadPath = `threads/${threadId}.json`
   // NOT WORKING

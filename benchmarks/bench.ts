@@ -1,11 +1,13 @@
 // @deno-types="npm:@types/benchmark"
 import Benchmark from 'benchmark'
 import { Debug } from '@utils'
-import { Machine } from '@/api/web-client-machine.ts'
 import { Engine } from '@/engine.ts'
 import { Api } from '@/isolates/io-fixture.ts'
 import { assert } from '@std/assert'
 import DB from '@/db.ts'
+import { Crypto } from '@/api/web-client-crypto.ts'
+import { Backchat } from '@/api/web-client-backchat.ts'
+
 const log = Debug('AI:benchmarks')
 Debug.enable('AI:benchmarks AI:qbr')
 log('starting benchmarks')
@@ -19,11 +21,9 @@ const aesKey = DB.generateAesKey()
 const engines: Engine[] = []
 const factory = async () => {
   const engine = await engineFactory()
-  const privateKey = Machine.generatePrivateKey()
-  const machine = Machine.load(engine, privateKey)
-  const session = machine.openTerminal()
-  await session.initializationPromise
-  return session
+  const privateKey = Crypto.generatePrivateKey()
+  const backchat = await Backchat.upsert(engine, privateKey)
+  return backchat
 }
 const engineFactory = async () => {
   const engine = await Engine.provision(superuserKey, aesKey)
@@ -31,9 +31,8 @@ const engineFactory = async () => {
   return engine
 }
 const machineEngine = await engineFactory()
-const remachineEngine = await engineFactory()
-const machineEnginePrivateKey = Machine.generatePrivateKey()
-Machine.load(remachineEngine, machineEnginePrivateKey) // do premul crypto
+const machineEnginePrivateKey = Crypto.generatePrivateKey()
+Crypto.load(machineEnginePrivateKey) // do premul crypto
 
 const sessionStartSession = await factory()
 const sessionReloadSession = await factory()
@@ -61,7 +60,7 @@ suite
     // generate a new machine key and await the root session
     defer: true,
     async fn(deferred: Benchmark.Deferred) {
-      const privateKey = Machine.generatePrivateKey()
+      const privateKey = Crypto.generatePrivateKey()
       const machine = Machine.load(machineEngine, privateKey)
       await machine.rootTerminalPromise
       deferred.resolve()

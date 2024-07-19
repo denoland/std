@@ -1,3 +1,6 @@
+import { IA, print } from '@/constants.ts'
+import { log } from '@utils'
+
 interface SearchArgs {
   query: string
   after?: number
@@ -12,7 +15,8 @@ export type Api = {
   search: (params: SearchArgs) => Promise<SearchResult[]>
 }
 export const functions = {
-  search: async ({ query }: SearchArgs, api: Api) => {
+  search: ({ query }: SearchArgs, api: IA) => {
+    log('search', query, print(api.pid))
     return []
   },
 }
