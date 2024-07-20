@@ -58,6 +58,20 @@ export default (name: string, cradleMaker: CradleMaker) => {
     await engine.stop()
   })
 
+  Deno.test.skip(prefix + 'infinite loop regression', async (t) => {
+    const { backchat, engine } = await cradleMaker()
+    await t.step('infinite loop', async () => {
+      log.enable('AI:completions')
+      await backchat.prompt(
+        'backchat start a thread with the agent: agents/files.md',
+      )
+      const prompt =
+        'Write a file with the following text "I love to be in Paris in the Spring". Then save it as paris.txt. Then replace all text in that file where "Paris" occurs with "Edinburgh". Then rename the file Edinburgh.txt'
+      await backchat.prompt(prompt)
+    })
+    await engine.stop()
+  })
+
   //   Deno.test(prefix + 'double tool call with responses', async () => {
   //     const terminal = await cradleMaker()
   //     const { pid } = await terminal.init({ repo: 'test/doubleToolCall' })

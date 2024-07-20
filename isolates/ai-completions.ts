@@ -44,8 +44,8 @@ export const functions = {
     const thread = await api.readJSON<Thread>(threadPath)
     // TODO assert thread is correctly formatted
     const tools = await loadTools(thread.agent.commands, api)
-    const { model = 'gpt-4o-mini', temperature = 0 }: Agent['config'] =
-      thread.agent.config || {}
+    const { model = 'gpt-4o-mini', temperature = 0, toolChoice = 'auto' }:
+      Agent['config'] = thread.agent.config || {}
     const args: OpenAI.ChatCompletionCreateParamsStreaming = {
       model,
       temperature,
@@ -53,6 +53,7 @@ export const functions = {
       stream: true,
       seed: 1337,
       tools,
+      tool_choice: toolChoice,
     }
     const assistant: OpenAI.ChatCompletionMessage = {
       role: 'assistant',
@@ -61,7 +62,7 @@ export const functions = {
     thread.messages.push(assistant)
     api.writeJSON(threadPath, thread)
 
-    log('streamCall started', print(api.pid))
+    log('streamCall started with model: %o', args.model, print(api.pid))
     const streamCall = await ai.chat.completions.create(args)
     log('streamCall placed')
     for await (const part of streamCall) {
@@ -104,10 +105,7 @@ export const functions = {
       }
       api.writeJSON(threadPath, thread)
     }
-    log('streamCall complete', assistant)
-    if (assistant.tool_calls) {
-      log('tool calls:', assistant.tool_calls)
-    }
+    log('streamCall complete', assistant.tool_calls?.[0], assistant.content)
     if (assistant.content) {
       return assistant.content
     }

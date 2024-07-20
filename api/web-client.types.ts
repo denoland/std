@@ -148,6 +148,8 @@ export type Agent = {
     model?: 'gpt-3.5-turbo' | 'gpt-4-turbo' | 'gpt-4o' | 'gpt-4o-mini'
     temperature?: number
     presencePenalty?: number
+    /** control model behaviour to force it to call a tool or no tool */
+    toolChoice?: 'auto' | 'none' | 'required'
   }
   runner: AGENT_RUNNERS
   commands?: string[]

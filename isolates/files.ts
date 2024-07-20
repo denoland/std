@@ -87,6 +87,23 @@ export const api = {
       },
     },
   },
+  mv: {
+    description:
+      'Move a file.  Path must be relative.  This is a rename operation.',
+    type: 'object',
+    additionalProperties: false,
+    required: ['from', 'to'],
+    properties: {
+      from: {
+        type: 'string',
+        description: 'the relative path to the file you want to move',
+      },
+      to: {
+        type: 'string',
+        description: 'the relative path to the new location of the file',
+      },
+    },
+  },
   search: {
     description:
       'Search for a file or directory.  Returns the relative path to the first match.',
@@ -116,6 +133,7 @@ export type Api = {
   read: (params: { path: string }) => Promise<string>
   update: (params: Update) => Promise<{ matchesUpdated: number }>
   rm: (params: { path: string }) => Promise<void>
+  mv: (params: { from: string; to: string }) => Promise<void>
   search: (params: { query: string }) => Promise<SearchResult[]>
 }
 export const functions = {
@@ -158,6 +176,11 @@ export const functions = {
     const { path } = params
     log('rm', path)
     api.delete(path)
+  },
+  mv: (params: { from: string; to: string }, api: IA) => {
+    const { from, to } = params
+    log('mv', from, to)
+    // api.move(from, to)
   },
   search: (params: { query: string }, api: IA) => {
     const { query } = params
