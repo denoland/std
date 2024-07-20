@@ -40,7 +40,7 @@ export const functions = {
     // so agents are defined by their interaction aspect
     // interaction implies state
     log('search', query, print(api.pid))
-    throw new Error('not implemented')
-    // return []
+    // throw new Error('not implemented')
+    return ['agents/files.md']
   },
 }
