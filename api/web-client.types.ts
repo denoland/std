@@ -145,7 +145,7 @@ export type Agent = {
   source: Triad
   description?: string
   config?: {
-    model?: 'gpt-3.5-turbo' | 'gpt-4-turbo' | 'gpt-4o'
+    model?: 'gpt-3.5-turbo' | 'gpt-4-turbo' | 'gpt-4o' | 'gpt-4o-mini'
     temperature?: number
     presencePenalty?: number
   }

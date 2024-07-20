@@ -2,7 +2,7 @@ import { assert, Debug } from '@utils'
 import merge from 'lodash.merge'
 import OpenAI from 'openai'
 import '@std/dotenv/load'
-import { IA, print, Thread } from '@/constants.ts'
+import { Agent, IA, print, Thread } from '@/constants.ts'
 import { loadTools } from './ai-load-tools.ts'
 const base = 'AI:completions'
 const log = Debug(base)
@@ -44,7 +44,8 @@ export const functions = {
     const thread = await api.readJSON<Thread>(threadPath)
     // TODO assert thread is correctly formatted
     const tools = await loadTools(thread.agent.commands, api)
-    const { model = 'gpt-4o', temperature = 0 } = thread.agent.config || {}
+    const { model = 'gpt-4o-mini', temperature = 0 }: Agent['config'] =
+      thread.agent.config || {}
     const args: OpenAI.ChatCompletionCreateParamsStreaming = {
       model,
       temperature,

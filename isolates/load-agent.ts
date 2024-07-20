@@ -89,9 +89,10 @@ const assertAgent = (agent: Agent) => {
     const { config } = agent
     if (
       config.model && config.model !== 'gpt-3.5-turbo' &&
-      config.model !== 'gpt-4-turbo' && config.model !== 'gpt-4o'
+      config.model !== 'gpt-4-turbo' && config.model !== 'gpt-4o' &&
+      config.model !== 'gpt-4o-mini'
     ) {
-      throw new Error('model must be gpt-3.5-turbo or gpt-4-turbo or gpt-4o')
+      throw new Error('invalid model: ' + config.model)
     }
     if (
       agent.config.temperature &&
