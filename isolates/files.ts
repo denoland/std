@@ -109,12 +109,12 @@ interface SearchResult {
 export type Api = {
   write: (
     params: { path: string; content?: string },
-  ) => Promise<number>
+  ) => Promise<{ charactersWritten: number }>
   ls: (
     params: { path?: string; count?: boolean; all?: boolean },
   ) => Promise<string[] | number>
   read: (params: { path: string }) => Promise<string>
-  update: (params: Update) => Promise<number>
+  update: (params: Update) => Promise<{ matchesUpdated: number }>
   rm: (params: { path: string }) => Promise<void>
   search: (params: { query: string }) => Promise<SearchResult[]>
 }
@@ -124,7 +124,7 @@ export const functions = {
     const { path, content = '' } = params
     log('add', path, content)
     api.write(path, content)
-    return content.length
+    return { charactersWritten: content.length }
   },
   ls: async (
     params: { path?: string; count?: boolean; all?: boolean },
@@ -152,7 +152,7 @@ export const functions = {
     const matches = contents.match(new RegExp(regex, 'g')) || []
     const result = contents.replace(new RegExp(regex, 'g'), replacement)
     api.write(path, result)
-    return matches.length
+    return { matchersUpdated: matches.length }
   },
   rm: (params: { path: string }, api: IA) => {
     const { path } = params
