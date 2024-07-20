@@ -293,6 +293,9 @@ Deno.test("assertObjectMatch() throws assertion error when in the first argument
     () => assertObjectMatch({ foo: undefined, bar: null }, { foo: null }),
     AssertionError,
   );
+  assertThrows(
+    () => assertObjectMatch(n, { baz: new Map([["b", null]]) }),
+  );
 });
 
 Deno.test("assertObjectMatch() throws readable type error for non mappable primitive types", () => {
@@ -317,5 +320,45 @@ Deno.test("assertObjectMatch() throws readable type error for non mappable primi
     () => assertObjectMatch("string", "string"),
     TypeError,
     "assertObjectMatch",
+  );
+});
+
+Deno.test("assertObjectMatch() prints inputs correctly", () => {
+  const x = {
+    command: "error",
+    payload: {
+      message: "NodeNotFound",
+    },
+    protocol: "graph",
+  };
+
+  const y = {
+    protocol: "graph",
+    command: "addgroup",
+    payload: {
+      graph: "foo",
+      metadata: {
+        description: "foo",
+      },
+      name: "somegroup",
+    },
+  };
+
+  assertThrows(
+    () => assertObjectMatch(x, y),
+    AssertionError,
+    `    {
++     command: "addgroup",
+-     command: "error",
+      payload: {
++       graph: "foo",
++       metadata: {
++         description: "foo",
++       },
++       name: "somegroup",
+-       message: "NodeNotFound",
+      },
+      protocol: "graph",
+    }`,
   );
 });
