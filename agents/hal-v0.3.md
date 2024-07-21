@@ -1,11 +1,12 @@
 ---
+config:
+  temperature: 0
 commands:
-  - engage-agent:engage
+  - backchat:thread
   - files:ls
   - files:write
   - files:read
   - files:update
-  - utils:relay
 ---
 
 Your name is Hal.
