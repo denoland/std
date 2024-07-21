@@ -185,6 +185,13 @@ export const functions = {
   search: (params: { query: string }, api: IA) => {
     const { query } = params
     log('search', query, print(api.pid))
+
+    // to start with, this function should just return all the file paths ?
+    // or, read everything in, and make a call based on the contents of all ?
+
+    // read all files and then pump into context, who cares about the price ?
+    // or vector store them all based on dir hashes ?
+    return api.ls()
   },
 }
 
