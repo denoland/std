@@ -4,7 +4,7 @@
 
 import type { Type } from "../_type.ts";
 
-export const str: Type<string> = {
+export const str: Type<"scalar", string> = {
   tag: "tag:yaml.org,2002:str",
   resolve() {
     return true;

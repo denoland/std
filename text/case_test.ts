@@ -1,7 +1,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
 import { assertEquals } from "@std/assert";
-import { toCamelCase, toKebabCase, toPascalCase, toSnakeCase } from "./case.ts";
+import { toCamelCase, toKebabCase, toPascalCase, toSnakeCase } from "./mod.ts";
 
 Deno.test("toCamelCase() handles an empty string", () => {
   assertEquals(toCamelCase(""), "");
