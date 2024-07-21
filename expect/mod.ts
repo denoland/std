@@ -15,7 +15,69 @@
  * await expect(Promise.resolve(x)).resolves.toEqual(42);
  * ```
  *
- * See {@linkcode Expected} for the list of supported matchers.
+ * Currently this module supports the following functions:
+ * - Common matchers:
+ *   - `toBe`
+ *   - `toEqual`
+ *   - `toStrictEqual`
+ *   - `toMatch`
+ *   - `toMatchObject`
+ *   - `toBeDefined`
+ *   - `toBeUndefined`
+ *   - `toBeNull`
+ *   - `toBeNaN`
+ *   - `toBeTruthy`
+ *   - `toBeFalsy`
+ *   - `toContain`
+ *   - `toContainEqual`
+ *   - `toHaveLength`
+ *   - `toBeGreaterThan`
+ *   - `toBeGreaterThanOrEqual`
+ *   - `toBeLessThan`
+ *   - `toBeLessThanOrEqual`
+ *   - `toBeCloseTo`
+ *   - `toBeInstanceOf`
+ *   - `toThrow`
+ *   - `toHaveProperty`
+ *   - `toHaveLength`
+ * - Mock related matchers:
+ *   - `toHaveBeenCalled`
+ *   - `toHaveBeenCalledTimes`
+ *   - `toHaveBeenCalledWith`
+ *   - `toHaveBeenLastCalledWith`
+ *   - `toHaveBeenNthCalledWith`
+ *   - `toHaveReturned`
+ *   - `toHaveReturnedTimes`
+ *   - `toHaveReturnedWith`
+ *   - `toHaveLastReturnedWith`
+ *   - `toHaveNthReturnedWith`
+ * - Asymmetric matchers:
+ *   - `expect.anything`
+ *   - `expect.any`
+ *   - `expect.arrayContaining`
+ *   - `expect.not.arrayContaining`
+ *   - `expect.closeTo`
+ *   - `expect.stringContaining`
+ *   - `expect.not.stringContaining`
+ *   - `expect.stringMatching`
+ *   - `expect.not.stringMatching`
+ * - Utilities:
+ *   - `expect.addEqualityTester`
+ *   - `expect.extend`
+ *
+ * Only these functions are still not available:
+ * - Matchers:
+ *   - `toMatchSnapShot`
+ *   - `toMatchInlineSnapShot`
+ *   - `toThrowErrorMatchingSnapShot`
+ *   - `toThrowErrorMatchingInlineSnapShot`
+ * - Asymmetric matchers:
+ *   - `expect.objectContaining`
+ *   - `expect.not.objectContaining`
+ * - Utilities:
+ *   - `expect.assertions`
+ *   - `expect.hasAssertions`
+ *   - `expect.addSnapshotSerializer`
  *
  * The tracking issue to add support for unsupported parts of the API is
  * {@link https://github.com/denoland/std/issues/3964}.
@@ -27,4 +89,4 @@
  * @module
  */
 export * from "./expect.ts";
-export { fn } from "./fn.ts";
+export * from "./fn.ts";
