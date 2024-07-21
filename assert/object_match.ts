@@ -45,13 +45,13 @@ export function assertObjectMatch(
 
 type loose = Record<PropertyKey, unknown>;
 
+function isObject(val: unknown): boolean {
+  return typeof val === "object" && val !== null;
+}
+
 function filter(a: loose, b: loose) {
   const seen = new WeakMap();
   return filterObject(a, b);
-
-  function isObject(val: unknown): boolean {
-    return typeof val === "object" && val !== null;
-  }
 
   function filterObject(a: loose, b: loose): loose {
     // Prevent infinite loop with circular references with same filter
