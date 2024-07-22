@@ -29,6 +29,7 @@ export type PromptSecretOptions = {
  * Use an empty `mask` if you don't want to show any character.
  *
  * @param message The prompt message to show to the user.
+ * @param options The options for the prompt.
  * @returns The string that was entered or `null` if stdin is not a TTY.
  *
  * @example Usage
@@ -43,8 +44,10 @@ export type PromptSecretOptions = {
  */
 export function promptSecret(
   message = "Secret",
-  { mask = "*", clear }: PromptSecretOptions = {},
+  options?: PromptSecretOptions,
 ): string | null {
+  const { mask = "*", clear } = options ?? {};
+
   if (!input.isTerminal()) {
     return null;
   }
