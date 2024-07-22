@@ -8,7 +8,7 @@ export function runLengthEncode(arr: number[]) {
 
   for (const x of arr) {
     if (x === prev) {
-      ++runLengths[runLengths.length - 1];
+      ++runLengths[runLengths.length - 1]!;
     } else {
       prev = x;
       data.push(x);

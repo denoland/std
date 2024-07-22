@@ -6,6 +6,11 @@
 /**
  * String formatters and utilities for dealing with ANSI color codes.
  *
+ * > ![IMPORTANT]
+ * > If printing directly to the console, it's recommended to style console
+ * > output using CSS (guide
+ * > {@linkcode https://developer.mozilla.org/en-US/docs/Web/API/console#styling_console_output | here}).
+ *
  * This module supports `NO_COLOR` environmental variable disabling any coloring
  * if `NO_COLOR` is set.
  *
@@ -978,25 +983,6 @@ const ANSI_PATTERN = new RegExp(
   ].join("|"),
   "g",
 );
-
-/**
- * Remove ANSI escape codes from the string.
- *
- * @example Usage
- * ```ts no-assert
- * import { stripColor, red } from "@std/fmt/colors";
- *
- * console.log(stripColor(red("Hello, world!")));
- * ```
- *
- * @param string The text to remove ANSI escape codes from
- * @returns The text without ANSI escape codes
- *
- * @deprecated This will be removed in 1.0.0. Use {@linkcode stripAnsiCode} instead.
- */
-export function stripColor(string: string): string {
-  return stripAnsiCode(string);
-}
 
 /**
  * Remove ANSI escape codes from the string.

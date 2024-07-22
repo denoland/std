@@ -89,7 +89,17 @@ Deno.test("walk() accepts ext option as strings", async () =>
     exts: [".rs", ".ts"],
   }));
 
+Deno.test("walk() accepts ext option as strings (excluding period prefix)", async () =>
+  await assertWalkPaths("ext", ["y.rs", "x.ts"], {
+    exts: ["rs", "ts"],
+  }));
+
 Deno.test("walkSync() accepts ext option as strings", () =>
+  assertWalkSyncPaths("ext", ["y.rs", "x.ts"], {
+    exts: [".rs", ".ts"],
+  }));
+
+Deno.test("walkSync() accepts ext option as strings (excluding period prefix)", () =>
   assertWalkSyncPaths("ext", ["y.rs", "x.ts"], {
     exts: [".rs", ".ts"],
   }));

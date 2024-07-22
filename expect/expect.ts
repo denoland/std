@@ -13,7 +13,7 @@ import type {
   MatcherKey,
   Matchers,
 } from "./_types.ts";
-import { AssertionError } from "@std/assert";
+import { AssertionError } from "@std/assert/assertion-error";
 import {
   addCustomEqualityTesters,
   getCustomEqualityTesters,
@@ -54,11 +54,9 @@ import {
   toStrictEqual,
   toThrow,
 } from "./_matchers.ts";
-import { addSerializer } from "./_snapshot_serializer.ts";
 import { isPromiseLike } from "./_utils.ts";
 import * as asymmetricMatchers from "./_asymmetric_matchers.ts";
 import type { Tester } from "./_types.ts";
-import type { SnapshotPlugin } from "./_types.ts";
 
 export type { AnyConstructor, Async, Expected } from "./_types.ts";
 
@@ -139,12 +137,17 @@ const matchers: Record<MatcherKey, Matcher> = {
  * @param customMessage - An optional custom message to include in the assertion error.
  * @returns An expected object that can be used to chain matchers.
  *
+ * @typeParam T The interface used for `expect`. This is usually needed only if you want to use `expect.extend` to create custom matchers.
+ *
  * @module
  */
-export function expect(value: unknown, customMessage?: string): Expected {
+export function expect<T extends Expected = Expected>(
+  value: unknown,
+  customMessage?: string,
+): T {
   let isNot = false;
   let isPromised = false;
-  const self: Expected = new Proxy<Expected>(<Expected> {}, {
+  const self: T = new Proxy<T>(<T> {}, {
     get(_, name) {
       if (name === "not") {
         isNot = !isNot;
@@ -289,23 +292,60 @@ expect.addEqualityTesters = addCustomEqualityTesters as (
   newTesters: Tester[],
 ) => void;
 /**
- * It will be removed in 0.226.0. Use `expect.addEqualityTesters` instead.
+ * Extend `expect()` with custom provided matchers.
  *
- * @deprecated (will be removed in 0.226.0) Use {@linkcode expect.addSnapshotSerializer} instead.
- */
-expect.addSnapshotSerializers = addSerializer as (
-  plugin: SnapshotPlugin,
-) => void;
-
-/**
- * This is a no-op right now. Don't use it.
- * Todo: support serialize plugin
- */
-expect.addSnapshotSerializer = addSerializer as (
-  plugin: SnapshotPlugin,
-) => void;
-/**
- * TODO: export appropriate types to define custom matchers.
+ * To do so, you will need to extend the interface `Expected` to define the new signature of the `expect`.
+ *
+ * ```ts
+ * import type { Async, Expected } from "./expect.ts";
+ * import { expect } from "./expect.ts";
+ *
+ * // Extends the `Expected` interface with your new matchers signatures
+ * interface ExtendedExpected<IsAsync = false> extends Expected<IsAsync> {
+ *   // Matcher that asserts value is a dinosaur
+ *   toBeDinosaur: (options?: { includeTrexs?: boolean }) => unknown;
+ *
+ *   // NOTE: You also need to overrides the following typings to allow modifiers to correctly infer typing
+ *   not: IsAsync extends true ? Async<ExtendedExpected<true>>
+ *     : ExtendedExpected<false>;
+ *   resolves: Async<ExtendedExpected<true>>;
+ *   rejects: Async<ExtendedExpected<true>>;
+ * }
+ *
+ * // Call `expect.extend()` with your new matchers definitions
+ * expect.extend({
+ *   toBeDinosaur(context, options) {
+ *     const dino = `${context.value}`;
+ *     const allowed = ["🦕"];
+ *     if (options?.includeTrexs) {
+ *       allowed.push("🦖");
+ *     }
+ *     const pass = allowed.includes(dino);
+ *     if (context.isNot) {
+ *       // Note: when `context.isNot` is set, the test is considered successful when `pass` is false
+ *       return {
+ *         message: () => `Expected "${dino}" to NOT be a dinosaur`,
+ *         pass,
+ *       };
+ *     }
+ *     return { message: () => `Expected "${dino}" to be a dinosaur`, pass };
+ *   },
+ * });
+ *
+ * // Alias expect to avoid having to pass the generic typing argument each time
+ * // This is probably what you want to export and reuse across your tests
+ * const myexpect = expect<ExtendedExpected>;
+ *
+ * // Perform some tests
+ * myexpect("🦕").toBeDinosaur();
+ * myexpect("🦧").not.toBeDinosaur();
+ * await myexpect(Promise.resolve("🦕")).resolves.toBeDinosaur();
+ * await myexpect(Promise.resolve("🦧")).resolves.not.toBeDinosaur();
+ *
+ * // Regular matchers will still be available
+ * myexpect("foo").not.toBeNull()
+ * myexpect.anything
+ * ```
  */
 expect.extend = setExtendMatchers as (newExtendMatchers: Matchers) => void;
 /**

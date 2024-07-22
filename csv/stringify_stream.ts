@@ -15,6 +15,8 @@ export interface CsvStringifyStreamOptions {
    * A list of columns to be included in the output.
    *
    * If you want to stream objects, this option is required.
+   *
+   * @default {[]}
    */
   readonly columns?: Array<string>;
 }
@@ -74,10 +76,7 @@ export class CsvStringifyStream<TOptions extends CsvStringifyStreamOptions>
    * @param options Options for the stream.
    */
   constructor(options?: TOptions) {
-    const {
-      separator,
-      columns = [],
-    } = options ?? {};
+    const { separator, columns = [] } = options ?? {};
 
     super(
       {

@@ -1,0 +1,8 @@
+{
+  "name": "node_test_runner",
+  "private": true,
+  "dependencies": {
+    "@deno/shim-deno-test": "^0.5.0",
+    "sucrase": "^3.35.0"
+  }
+}

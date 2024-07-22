@@ -4,15 +4,32 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-import { YamlError } from "./_error.ts";
 import type { KindType, Type } from "./_type.ts";
-import type { Any, ArrayObject } from "./_utils.ts";
+import type { ArrayObject } from "./_utils.ts";
+import {
+  binary,
+  bool,
+  float,
+  int,
+  map,
+  merge,
+  nil,
+  omap,
+  pairs,
+  regexp,
+  seq,
+  set,
+  str,
+  timestamp,
+  undefinedType,
+} from "./_type/mod.ts";
 
-function compileList(
+// deno-lint-ignore no-explicit-any
+function compileList<K extends KindType, D = any>(
   schema: Schema,
   name: "implicit" | "explicit",
-  result: Type[],
-): Type[] {
+  result: Type<K, D>[],
+): Type<K, D>[] {
   const exclude: number[] = [];
 
   for (const includedSchema of schema.include) {
@@ -29,14 +46,17 @@ function compileList(
       }
     }
 
-    result.push(currentType);
+    result.push(currentType as Type<K, D>);
   }
 
   return result.filter((_type, index): unknown => !exclude.includes(index));
 }
 
-export type TypeMap = { [k in KindType | "fallback"]: ArrayObject<Type> };
-function compileMap(...typesList: Type[][]): TypeMap {
+export type TypeMap = Record<
+  KindType | "fallback",
+  ArrayObject<Type<KindType>>
+>;
+function compileMap(...typesList: Type<KindType>[][]): TypeMap {
   const result: TypeMap = {
     fallback: {},
     mapping: {},
@@ -46,38 +66,29 @@ function compileMap(...typesList: Type[][]): TypeMap {
 
   for (const types of typesList) {
     for (const type of types) {
-      if (type.kind !== null) {
-        result[type.kind][type.tag] = result["fallback"][type.tag] = type;
-      }
+      result[type.kind][type.tag] = result["fallback"][type.tag] = type;
     }
   }
   return result;
 }
 
-export class Schema implements SchemaDefinition {
-  static SCHEMA_DEFAULT?: Schema;
-
-  implicit: Type[];
-  explicit: Type[];
+export class Schema {
+  implicit: Type<"scalar">[];
+  explicit: Type<KindType>[];
   include: Schema[];
 
-  compiledImplicit: Type[];
-  compiledExplicit: Type[];
+  compiledImplicit: Type<"scalar">[];
+  compiledExplicit: Type<KindType>[];
   compiledTypeMap: TypeMap;
 
-  constructor(definition: SchemaDefinition) {
+  constructor(definition: {
+    implicit?: Type<"scalar">[];
+    explicit?: Type<KindType>[];
+    include?: Schema[];
+  }) {
     this.explicit = definition.explicit || [];
     this.implicit = definition.implicit || [];
     this.include = definition.include || [];
-
-    for (const type of this.implicit) {
-      if (type.loadKind && type.loadKind !== "scalar") {
-        throw new YamlError(
-          "There is a non-scalar type in the implicit list of a schema. Implicit resolving of such types is not supported.",
-        );
-      }
-    }
-
     this.compiledImplicit = compileList(this, "implicit", []);
     this.compiledExplicit = compileList(this, "explicit", []);
     this.compiledTypeMap = compileMap(
@@ -87,8 +98,77 @@ export class Schema implements SchemaDefinition {
   }
 }
 
-export interface SchemaDefinition {
-  implicit?: Any[];
-  explicit?: Type[];
-  include?: Schema[];
-}
+/**
+ * Standard YAML's failsafe schema.
+ *
+ * @see {@link http://www.yaml.org/spec/1.2/spec.html#id2802346}
+ */
+const FAILSAFE_SCHEMA = new Schema({
+  explicit: [str, seq, map],
+});
+
+/**
+ * Standard YAML's JSON schema.
+ *
+ * @see {@link http://www.yaml.org/spec/1.2/spec.html#id2803231}
+ */
+const JSON_SCHEMA = new Schema({
+  implicit: [nil, bool, int, float],
+  include: [FAILSAFE_SCHEMA],
+});
+
+/**
+ * Standard YAML's core schema.
+ *
+ * @see {@link http://www.yaml.org/spec/1.2/spec.html#id2804923}
+ */
+const CORE_SCHEMA = new Schema({
+  include: [JSON_SCHEMA],
+});
+
+/**
+ * Default YAML schema. It is not described in the YAML specification.
+ */
+export const DEFAULT_SCHEMA = new Schema({
+  explicit: [binary, omap, pairs, set],
+  implicit: [timestamp, merge],
+  include: [CORE_SCHEMA],
+});
+
+/***
+ * Extends JS-YAML default schema with additional JavaScript types
+ * It is not described in the YAML specification.
+ * Functions are no longer supported for security reasons.
+ *
+ * @example
+ * ```ts
+ * import { parse } from "@std/yaml";
+ *
+ * const data = parse(
+ *   `
+ *   regexp:
+ *     simple: !!js/regexp foobar
+ *     modifiers: !!js/regexp /foobar/mi
+ *   undefined: !!js/undefined ~
+ * # Disabled, see: https://github.com/denoland/deno_std/pull/1275
+ * #  function: !!js/function >
+ * #    function foobar() {
+ * #      return 'hello world!';
+ * #    }
+ * `,
+ *   { schema: "extended" },
+ * );
+ * ```
+ */
+const EXTENDED_SCHEMA = new Schema({
+  explicit: [regexp, undefinedType],
+  include: [DEFAULT_SCHEMA],
+});
+
+export const SCHEMA_MAP = new Map([
+  ["core", CORE_SCHEMA],
+  ["default", DEFAULT_SCHEMA],
+  ["failsafe", FAILSAFE_SCHEMA],
+  ["json", JSON_SCHEMA],
+  ["extended", EXTENDED_SCHEMA],
+]);
