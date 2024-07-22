@@ -20,7 +20,7 @@
  *   - {@linkcode Expected.toBeFalsy | toBeFalsy}
  *   - {@linkcode Expected.toContain | toContain}
  *   - {@linkcode Expected.toContainEqual | toContainEqual}
- *   - {@linkcode Expected.toHveLength | toHaveLength}
+ *   - {@linkcode Expected.toHaveLength | toHaveLength}
  *   - {@linkcode Expected.toBeGreaterThan | toBeGreaterThan}
  *   - {@linkcode Expected.toBeGreaterThanOrEqual | toBeGreaterThanOrEqual}
  *   - {@linkcode Expected.toBeLessThan | toBeLessThan}
