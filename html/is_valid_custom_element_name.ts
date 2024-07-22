@@ -47,9 +47,6 @@ const POTENTIAL_CUSTOM_ELEMENT_NAME_CHARS =
  * @returns `true` if the element name is valid, `false` otherwise.
  */
 export function isValidCustomElementName(elementName: string): boolean {
-  if (FORBIDDEN_CUSTOM_ELEMENT_NAMES.includes(elementName)) {
-    return false;
-  }
-
-  return POTENTIAL_CUSTOM_ELEMENT_NAME_CHARS.test(elementName);
+  return !FORBIDDEN_CUSTOM_ELEMENT_NAMES.includes(elementName) &&
+    POTENTIAL_CUSTOM_ELEMENT_NAME_CHARS.test(elementName);
 }
