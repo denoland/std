@@ -40,7 +40,7 @@ export interface Fixable<T, U = T extends ArrayLike<infer V> ? V : never>
  * @example Usage
  * ```ts
  * import { FixedChunkStream } from "@std/streams/fixed-chunk-stream";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert/equals";
  *
  * const readable = ReadableStream.from(function* () {
  *   let count = 0
@@ -65,25 +65,6 @@ export class FixedChunkStream<T extends Fixable<T>>
    * Constructs a new instance.
    *
    * @param size The size of the chunks to be resized to.
-   *
-   * @example Usage
-   * ```ts no-assert
-   * import { FixedChunkStream } from "@std/streams/fixed-chunk-stream";
-   *
-   * const readable = ReadableStream.from(function* () {
-   *   for (let i = 0; i < 100; ++i) {
-   *     yield new Uint8Array(Math.floor(Math.random() * 1000));
-   *   }
-   * }())
-   *   .pipeThrough(new FixedChunkStream(512))
-   *   .pipeThrough(new TransformStream({
-   *     transform(chunk, controller) {
-   *       controller.enqueue(chunk.length.toString() + '\n')
-   *     }
-   *   }))
-   *   .pipeThrough(new TextEncoderStream())
-   *   .pipeTo(Deno.stdout.writable, { preventClose: true })
-   * ```
    */
   constructor(size: number) {
     let push: T | undefined;
