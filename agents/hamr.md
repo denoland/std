@@ -27,71 +27,95 @@ string customer_name: "John Doe"
 
 ```mermaid
 erDiagram
-
-CUSTOMER_AGENT { int agent_id string name int age string address }
+CUSTOMER_AGENT {
+    int agent_id PK
+    int company_id FK
+    int department_id FK
+    string name
+    int age
+    string address
+}
 
 COMPANY {
-    int company_id
+    int company_id PK
     string company_name
     string country
 }
 
 CUSTOMER {
-    int customer_id
+    int customer_id PK
+    int agent_id FK
+    int location_id FK
     string customer_name
     date start_date
     date end_date
 }
 
 LOCATION {
-    int location_id
+    int location_id PK
     string address
     string route
     string details
 }
 
 DEPARTMENT {
-    int department_id
+    int department_id PK
     string department_name
 }
 
 ROUTE {
-    int route_id
+    int route_id PK
+    int location_id FK
     string day
 }
 
 DRIVER {
-    int driver_id
+    int driver_id PK
+    int truck_id FK
     string name
     string license_number
 }
 
 TRUCK {
-    int truck_id
+    int truck_id PK
     string model
     string license_plate
 }
 
 PICKUP {
-    int pickup_id
+    int pickup_id PK
+    int customer_id FK
+    int schedule_id FK
+    int log_id FK
     date pickup_date
     string status
 }
 
 SCHEDULE {
-    int schedule_id
+    int schedule_id PK
+    int truck_id FK
+    int driver_id FK
+    int route_id FK
     date date
 }
 
 PERMISSION {
-    int permission_id
+    int permission_id PK
+    int agent_id FK
+    int manager_id FK
     string status
     string details
 }
 
 LOG {
-    int log_id
-    int entity_id
+    int log_id PK
+    int schedule_id FK
+    int pickup_id FK
+    int permission_id FK
+    int agent_id FK
+    int driver_id FK
+    int truck_id FK
+    int route_id FK
     string entity_type
     string action
     string status
@@ -101,12 +125,14 @@ LOG {
 }
 
 DUTY_MANAGER {
-    int manager_id
+    int manager_id PK
     string name
 }
 
 MESSAGE {
-    int message_id
+    int message_id PK
+    int agent_id FK
+    int manager_id FK
     string content
     date sent_date
 }
