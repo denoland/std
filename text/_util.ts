@@ -6,13 +6,13 @@ const LOWERCASED_WORD_REGEXP = /(\p{Ll}+)/u; // e.g. apple
 const ANY_LETTERS = /\p{L}+/u; // will also match any sequence of letters in languages without a concept of upper/lower case
 const DIGITS_REGEXP = /\p{N}+/u; // e.g. 123
 
-const WORD_REGEXP = new RegExp(
+const WORD_OR_NUMBER_REGEXP = new RegExp(
   `${CAPITALIZED_WORD_REGEXP.source}|${ACRONYM_REGEXP.source}|${LOWERCASED_WORD_REGEXP.source}|${ANY_LETTERS.source}|${DIGITS_REGEXP.source}`,
   "gu",
 );
 
 export function splitToWords(input: string) {
-  return input.match(WORD_REGEXP) || [];
+  return input.match(WORD_OR_NUMBER_REGEXP) || [];
 }
 
 export function capitalizeWord(word: string): string {
