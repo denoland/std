@@ -202,7 +202,7 @@ export const functions = {
     backchat.focus = threadId
     writeBackchat(backchat, api)
     log('thread started:', print(pid))
-    return { focus: threadId }
+    return { newThreadId: threadId, currentFocus: threadId }
   },
   relay: ({ request }: RelayArgs, api: IA) => {
     // TODO replace this with native relay ability
