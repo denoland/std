@@ -7,53 +7,53 @@
  *
  * Currently this module supports the following functions:
  * - Common matchers:
- *   - [`toBe`](./doc/~/Expected.toBe)
- *   - [`toEqual`](./doc/~/Expected.toEqual)
- *   - [`toStrictEqual`](./doc/~/Expected.toStrictEqual)
- *   - [`toMatch`](./doc/~/Expected.toMatch)
- *   - [`toMatchObject`](./doc/~/Expected.toMatchObject)
- *   - [`toBeDefined`](./doc/~/Expected.toBeDefined)
- *   - [`toBeUndefined`](./doc/~/Expected.toBeUndefined)
- *   - [`toBeNull`](./doc/~/Expected.toBeNull)
- *   - [`toBeNaN`](./doc/~/Expected.toBeNaN)
- *   - [`toBeTruthy`](./doc/~/Expected.toBeTruthy)
- *   - [`toBeFalsy`](./doc/~/Expected.toBeFalsy)
- *   - [`toContain`](./doc/~/Expected.toContain)
- *   - [`toContainEqual`](./doc/~/Expected.toContainEqual)
- *   - [`toHaveLength`](./doc/~/Expected.toHaveLength)
- *   - [`toBeGreaterThan`](./doc/~/Expected.toBeGreaterThan)
- *   - [`toBeGreaterThanOrEqual`](./doc/~/Expected.toBeGreaterThanOrEqual)
- *   - [`toBeLessThan`](./doc/~/Expected.toBeLessThan)
- *   - [`toBeLessThanOrEqual`](./doc/~/Expected.toBeLessThanOrEqual)
- *   - [`toBeCloseTo`](./doc/~/Expected.toBeCloseTo)
- *   - [`toBeInstanceOf`](./doc/~/Expected.toBeInstanceOf)
- *   - [`toThrow`](./doc/~/Expected.toThrow)
- *   - [`toHaveProperty`](./doc/~/Expected.toHaveProperty)
- *   - [`toHaveLength`](./doc/~/Expected.toHaveLength)
+ *   - `toBe`
+ *   - `toEqual`
+ *   - `toStrictEqual`
+ *   - `toMatch`
+ *   - `toMatchObject`
+ *   - `toBeDefined`
+ *   - `toBeUndefined`
+ *   - `toBeNull`
+ *   - `toBeNaN`
+ *   - `toBeTruthy`
+ *   - `toBeFalsy`
+ *   - `toContain`
+ *   - `toContainEqual`
+ *   - `toHaveLength`
+ *   - `toBeGreaterThan`
+ *   - `toBeGreaterThanOrEqual`
+ *   - `toBeLessThan`
+ *   - `toBeLessThanOrEqual`
+ *   - `toBeCloseTo`
+ *   - `toBeInstanceOf`
+ *   - `toThrow`
+ *   - `toHaveProperty`
+ *   - `toHaveLength`
  * - Mock related matchers:
- *   - [`toHaveBeenCalled`](./doc/~/Expected.toHaveBeenCalled)
- *   - [`toHaveBeenCalledTimes`](./doc/~/Expected.toHaveBeenCalledTimes)
- *   - [`toHaveBeenCalledWith`](./doc/~/Expected.toHaveBeenCalledWith)
- *   - [`toHaveBeenLastCalledWith`](./doc/~/Expected.toHaveBeenLastCalledWith)
- *   - [`toHaveBeenNthCalledWith`](./doc/~/Expected.toHaveBeenNthCalledWith)
- *   - [`toHaveReturned`](./doc/~/Expected.toHaveReturned)
- *   - [`toHaveReturnedTimes`](./doc/~/Expected.toHaveReturnedTimes)
- *   - [`toHaveReturnedWith`](./doc/~/Expected.toHaveReturnedWith)
- *   - [`toHaveLastReturnedWith`](./doc/~/Expected.toHaveLastReturnedWith)
- *   - [`toHaveNthReturnedWith`](./doc/~/Expected.toHaveNthReturnedWith)
+ *   - `toHaveBeenCalled`
+ *   - `toHaveBeenCalledTimes`
+ *   - `toHaveBeenCalledWith`
+ *   - `toHaveBeenLastCalledWith`
+ *   - `toHaveBeenNthCalledWith`
+ *   - `toHaveReturned`
+ *   - `toHaveReturnedTimes`
+ *   - `toHaveReturnedWith`
+ *   - `toHaveLastReturnedWith`
+ *   - `toHaveNthReturnedWith`
  * - Asymmetric matchers:
- *   - [`expect.anything`](./doc/~/expect.anything)
- *   - [`expect.any`](./doc/~/expect.any)
- *   - [`expect.arrayContaining`](./doc/~/expect.arrayContaining)
+ *   - `expect.anything`
+ *   - `expect.any`
+ *   - `expect.arrayContaining`
  *   - `expect.not.arrayContaining`
- *   - [`expect.closeTo`](./doc/~/expect.closeTo)
- *   - [`expect.stringContaining`](./doc/~/expect.stringContaining)
+ *   - `expect.closeTo`
+ *   - `expect.stringContaining`
  *   - `expect.not.stringContaining`
- *   - [`expect.stringMatching`](./doc/~/expect.stringMatching)
+ *   - `expect.stringMatching`
  *   - `expect.not.stringMatching`
  * - Utilities:
- *   - [`expect.addEqualityTester`](./doc/~/expect.addEqualityTester)
- *   - [`expect.extend`](./doc/~/expect.extend)
+ *   - `expect.addEqualityTester`
+ *   - `expect.extend`
  *
  * Only these functions are still not available:
  * - Matchers:
