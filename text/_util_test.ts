@@ -94,6 +94,15 @@ Deno.test({
 });
 
 Deno.test({
+  name: "split() handles acronym followed by a capitalized word",
+  fn() {
+    const result = splitToWords("I Love HTMLDivElement");
+    const expected = ["I", "Love","HTML", "Div", "Element"];
+    assertEquals(result, expected);
+  },
+});
+
+Deno.test({
   name: "split() handles underscore delimiter",
   fn() {
     const result = splitToWords("deno_is_awesome");
