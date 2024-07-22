@@ -140,16 +140,15 @@ export function unescape(
  *
  * This uses the EBNF notation from the XML specification. [XML]
  *
- * name must not be any of the following:
- *
- * annotation-xml
- * color-profile
- * font-face
- * font-face-src
- * font-face-uri
- * font-face-format
- * font-face-name
- * missing-glyph
+ * The element name must not be any of the following:
+ * - `annotation-xml`
+ * - `color-profile`
+ * - `font-face`
+ * - `font-face-src`
+ * - `font-face-uri`
+ * - `font-face-format`
+ * - `font-face-name`
+ * - `missing-glyph`
  *
  * @example Basic usage
  *
@@ -164,8 +163,8 @@ export function unescape(
  *
  * Reference on invalid names can be found [here](https://html.spec.whatwg.org/multipage/custom-elements.html#valid-custom-element-name)
  *
- * @param {string} elementName The element name to be validate
- * @returns {boolean} A boolean value indicating if the custom element name is valid or not
+ * @param elementName The element name to be validate
+ * @returns A boolean value indicating if the custom element name is valid or not
  */
 export function isValidCustomElement(elementName: string): boolean {
   if (forbiddenCustomElementNames.includes(elementName)) {
