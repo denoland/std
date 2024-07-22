@@ -449,6 +449,7 @@ const FLAG_REGEXP =
  * or `options.boolean` is set for that argument name.
  *
  * @param args An array of command line arguments.
+ * @param options Options for the parse function.
  *
  * @typeParam TArgs Type of result.
  * @typeParam TDoubleDash Used by `TArgs` for the result.
@@ -496,7 +497,17 @@ export function parseArgs<
   TAliasNames extends string = string,
 >(
   args: string[],
-  {
+  options?: ParseOptions<
+    TBooleans,
+    TStrings,
+    TCollectable,
+    TNegatable,
+    TDefaults,
+    TAliases,
+    TDoubleDash
+  >,
+): Args<TArgs, TDoubleDash> {
+  const {
     "--": doubleDash = false,
     alias = {} as NonNullable<TAliases>,
     boolean = false,
@@ -506,16 +517,7 @@ export function parseArgs<
     collect = [],
     negatable = [],
     unknown: unknownFn = (i: string): unknown => i,
-  }: ParseOptions<
-    TBooleans,
-    TStrings,
-    TCollectable,
-    TNegatable,
-    TDefaults,
-    TAliases,
-    TDoubleDash
-  > = {},
-): Args<TArgs, TDoubleDash> {
+  } = options ?? {};
   const aliasMap: Map<string, Set<string>> = new Map();
   const booleanSet = new Set<string>();
   const stringSet = new Set<string>();

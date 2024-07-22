@@ -197,12 +197,21 @@ function setTimer(
   return id;
 }
 
+function fakeAbortSignalTimeout(delay: number): AbortSignal {
+  const aborter = new AbortController();
+  fakeSetTimeout(() => {
+    aborter.abort(new DOMException("Signal timed out.", "TimeoutError"));
+  }, delay);
+  return aborter.signal;
+}
+
 function overrideGlobals() {
   globalThis.Date = FakeDate;
   globalThis.setTimeout = fakeSetTimeout;
   globalThis.clearTimeout = fakeClearTimeout;
   globalThis.setInterval = fakeSetInterval;
   globalThis.clearInterval = fakeClearInterval;
+  AbortSignal.timeout = fakeAbortSignalTimeout;
 }
 
 function restoreGlobals() {
@@ -211,6 +220,7 @@ function restoreGlobals() {
   globalThis.clearTimeout = _internals.clearTimeout;
   globalThis.setInterval = _internals.setInterval;
   globalThis.clearInterval = _internals.clearInterval;
+  AbortSignal.timeout = _internals.AbortSignalTimeout;
 }
 
 function* timerIdGen() {

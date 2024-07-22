@@ -752,6 +752,12 @@ c: 3`),
     { a: 1, b: 2, c: 3 },
   );
 
+  assertEquals(
+    parse(`<<: [{ a: 1 }, { b: 2 }]
+c: 1`),
+    { a: 1, b: 2, c: 1 },
+  );
+
   assertThrows(
     () =>
       // number can't be used as merge value
