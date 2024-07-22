@@ -13,6 +13,7 @@ import {
 import { FakeTime, TimeError } from "./time.ts";
 import { _internals } from "./_time.ts";
 import { assertSpyCall, spy, type SpyCall } from "./mock.ts";
+import { deadline, delay } from "@std/async";
 
 function fromNow(): (..._args: unknown[]) => number {
   const start: number = Date.now();
@@ -769,4 +770,19 @@ Deno.test("FakeTime controls AbortSignal.timeout", () => {
   expected.push({ args: ["c"], returned: 5000 });
   expected.push({ args: ["b"], returned: 5500 });
   assertEquals(cb.calls, expected);
+});
+
+// https://github.com/denoland/std/issues/5499
+Deno.test("FakeTime regression test for issue #5499", async () => {
+  using t = new FakeTime();
+  const p = deadline(delay(1_000), 10);
+  let state: "pending" | "rejected" | "fulfilled" = "pending";
+  p.then(() => {
+    state = "fulfilled";
+  }).catch(() => {
+    state = "rejected";
+  });
+  await t.tickAsync(10);
+  await t.runMicrotasks();
+  assertEquals(state, "rejected");
 });
