@@ -5,10 +5,30 @@ I will now give you the entity relationship diagram in mermaid format. I want yo
 In your response YOU MUST ONLY give the data relevant to the last request. DO
 NOT provide a description of your thinking.
 
+Remember that comments in an erDiagram must be as shown:
+
+```mermaid
+erDiagram
+    CUSTOMER {
+        string customer_name "John Doe"
+    }
+```
+
+and NOT using the ":" character like this:
+
+```mermaid
+erDiagram
+    CUSTOMER {
+        string customer_name: "John Doe"
+    }
+```
+
 ---
 
 ```mermaid
-erDiagram CUSTOMER_AGENT { int agent_id string name int age string address }
+erDiagram
+
+CUSTOMER_AGENT { int agent_id string name int age string address }
 
 COMPANY {
     int company_id
