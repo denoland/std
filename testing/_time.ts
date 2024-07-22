@@ -7,5 +7,5 @@ export const _internals = {
   clearTimeout,
   setInterval,
   clearInterval,
-  "AbortSignal_timeout": AbortSignal.timeout,
+  AbortSignalTimeout: AbortSignal.timeout,
 };

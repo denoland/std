@@ -724,15 +724,15 @@ Deno.test("time.start returns the started time of the fake time", () => {
 });
 
 Deno.test("FakeTime doesn't affect AbortSignal.timeout unchanged if uninitialized", () => {
-  assertStrictEquals(AbortSignal.timeout, _internals.AbortSignal_timeout);
+  assertStrictEquals(AbortSignal.timeout, _internals.AbortSignalTimeout);
 });
 
 Deno.test("FakeTime fakes AbortSignal.timeout", () => {
   {
     using _time = new FakeTime(9001);
-    assertNotEquals(AbortSignal.timeout, _internals.AbortSignal_timeout);
+    assertNotEquals(AbortSignal.timeout, _internals.AbortSignalTimeout);
   }
-  assertStrictEquals(AbortSignal.timeout, _internals.AbortSignal_timeout);
+  assertStrictEquals(AbortSignal.timeout, _internals.AbortSignalTimeout);
 });
 
 Deno.test("FakeTime controls AbortSignal.timeout", () => {

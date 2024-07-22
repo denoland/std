@@ -220,7 +220,7 @@ function restoreGlobals() {
   globalThis.clearTimeout = _internals.clearTimeout;
   globalThis.setInterval = _internals.setInterval;
   globalThis.clearInterval = _internals.clearInterval;
-  AbortSignal.timeout = _internals.AbortSignal_timeout;
+  AbortSignal.timeout = _internals.AbortSignalTimeout;
 }
 
 function* timerIdGen() {
