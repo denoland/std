@@ -354,3 +354,19 @@ and reviews. Clearing them should be controlled.
 
 - Description: The Duty Manager sends messages to inform Customer Agents about decisions.
 - Cardinality: ||--||
+
+---
+
+# Public Holidays in New Zealand
+
+- New Year's Day - January 1
+- Day after New Year's Day - January 2
+- Waitangi Day - February 6
+- Good Friday - Varies (April 19, 2024)
+- Easter Monday - Varies (April 22, 2024)
+- ANZAC Day - April 25
+- King's Birthday - First Monday in June (June 3, 2024)
+- Matariki - Varies (June 28, 2024)
+- Labour Day - Fourth Monday in October (October 28, 2024)
+- Christmas Day - December 25
+- Boxing Day - December 26
