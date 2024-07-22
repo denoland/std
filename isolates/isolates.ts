@@ -1,3 +1,5 @@
+import { pidSchema } from '@/constants.ts'
+import { PID } from '@/constants.ts'
 interface SearchArgs {
   query: string
 }
@@ -12,6 +14,14 @@ interface ReadArgs {
   /** Read the functions object, and convert into a string */
   functions?: boolean
 }
+interface LoadArgs {
+  /** The name of the isolate to load */
+  isolate: string
+  /** Which function to load within the isolate */
+  functionName: string
+  /** The address to target with the loaded function call */
+  pid: PID
+}
 export type Api = {
   ls: () => Promise<string[]>
   /**
@@ -23,4 +33,8 @@ export type Api = {
    */
   search: (params: SearchArgs) => Promise<SearchResult[]>
   read: (params: ReadArgs) => Promise<string[]>
+  load: (params: LoadArgs) => Promise<void>
 }
+
+// can make this run only in the current repo, rather than being a cross repo
+// thing ?

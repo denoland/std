@@ -78,6 +78,8 @@ const assertAgent = (agent: Agent) => {
   if (!(typeof agent.instructions === 'string')) {
     throw new Error('instructions must be an array')
   }
+  // TODO check max length of instructions
+  // https://platform.openai.com/docs/api-reference/assistants/createAssistant#assistants-createassistant-instructions
   const { runner } = agent
   if (runner !== AGENT_RUNNERS.CHAT) {
     throw new Error('runner must be chat')
@@ -103,5 +105,8 @@ const assertAgent = (agent: Agent) => {
   }
   if (agent.commands && !Array.isArray(agent.commands)) {
     throw new Error('commands must be an array')
+  }
+  if (!/^[a-zA-Z0-9_-]+$/.test(agent.name)) {
+    throw new Error('name must be alphanumeric: ' + agent.name)
   }
 }

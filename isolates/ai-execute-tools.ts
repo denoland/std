@@ -1,6 +1,6 @@
 import { assert } from '@std/assert'
 import { Debug } from '@utils'
-import OpenAI from 'openai'
+import type OpenAI from 'openai'
 import { serializeError } from 'serialize-error'
 import { colorize, IA, sha1, Thread, withMeta } from '@/constants.ts'
 import { loadActions } from './ai-load-tools.ts'

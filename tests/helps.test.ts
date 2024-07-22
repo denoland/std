@@ -23,12 +23,3 @@ Deno.test.ignore('chat', async () => {
 // })
 // test.skip('add a file to the database')
 // test.skip('editing the help and rerunning it')
-
-// get the GUI back up to parity
-// make some manual helps to ensure the calling is correct, like db add
-// implement stuck finder crudely, using a big ass GPT call
-// create stucks using stuckloop
-// use embeddings to do help finds
-
-// make some tools to write helps, so it stores them in json, so we can load
-// from fs directly

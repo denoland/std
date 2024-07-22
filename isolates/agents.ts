@@ -44,6 +44,6 @@ export const functions = {
     // interaction implies state
     log('search', query, print(api.pid))
     // throw new Error('not implemented')
-    return ['agents/files.md']
+    return api.ls('agents')
   },
 }

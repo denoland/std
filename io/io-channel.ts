@@ -261,17 +261,17 @@ export default class IOChannel {
     const branchTypes = [PROCTYPE.BRANCH, PROCTYPE.DAEMON]
     assert(branchTypes.includes(request.proctype), 'not a branch request')
 
-    let name = sequence + ''
+    let branchName = sequence + ''
     if (request.branchName) {
       assert(!request.branchPrefix, 'cannot have both branch and branchPrefix')
-      name = request.branchName
+      branchName = request.branchName
     }
     if (request.branchPrefix) {
       assert(!request.branch, 'cannot have both branch and branchPrefix')
-      name = request.branchPrefix + '-' + sequence
+      branchName = request.branchPrefix + '-' + sequence
     }
     const parentPid = this.#pid
-    const branches = [...parentPid.branches, name]
+    const branches = [...parentPid.branches, branchName]
     const pid = { ...parentPid, branches }
     return pid
   }

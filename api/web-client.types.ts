@@ -130,6 +130,9 @@ export type Thread = {
   agent: Agent
   messages: OpenAI.ChatCompletionMessageParam[]
   toolCommits: { [toolCallId: string]: CommitOid }
+  // openai threadid
+  // metadatas: name and summary of sections of the thread
+  // stateboards: stateboard changes linked to messages
 }
 export type BackchatThread = Thread & {
   focus: string
