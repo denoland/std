@@ -13,7 +13,7 @@ import { isPosixPathSeparator } from "./_util.ts";
  * @example Usage
  * ```ts
  * import { normalize } from "@std/path/posix/normalize";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const path = normalize("/foo/bar//baz/asdf/quux/..");
  * assertEquals(path, "/foo/bar/baz/asdf");

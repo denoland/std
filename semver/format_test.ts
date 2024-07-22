@@ -3,7 +3,7 @@
 import { assertEquals } from "@std/assert";
 import { format } from "./format.ts";
 import { parse } from "./parse.ts";
-import { INVALID, MAX, MIN } from "./constants.ts";
+import { INVALID, MAX, MIN } from "./_constants.ts";
 import type { SemVer } from "./types.ts";
 
 Deno.test("format()", async (t) => {

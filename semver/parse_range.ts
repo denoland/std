@@ -9,7 +9,7 @@ import {
   parsePrerelease,
   XRANGE,
 } from "./_shared.ts";
-import { ALL, ANY, NONE } from "./constants.ts";
+import { ALL, ANY, NONE } from "./_constants.ts";
 import type { Comparator, Operator, Range } from "./types.ts";
 
 type ComparatorRegExpGroup = {
@@ -380,12 +380,12 @@ function parseOperatorRanges(string: string): Comparator[] {
 }
 
 /**
- * Parses a range string into a Range object or throws a TypeError.
+ * Parses a range string into a {@linkcode Range} object.
  *
  * @example Usage
  * ```ts
  * import { parseRange } from "@std/semver/parse-range";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const range = parseRange(">=1.0.0 <2.0.0 || >=3.0.0");
  * assertEquals(range, [
@@ -399,8 +399,9 @@ function parseOperatorRanges(string: string): Comparator[] {
  * ]);
  * ```
  *
+ * @throws {TypeError} If the input range is invalid.
  * @param range The range set string
- * @returns A valid semantic range
+ * @returns A valid SemVer range
  */
 export function parseRange(range: string): Range {
   return range

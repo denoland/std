@@ -1,7 +1,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-import { ParserFactory, Toml } from "./_parser.ts";
+import { parserFactory, toml } from "./_parser.ts";
 
 /**
  * Parses a {@link https://toml.io | TOML} string into an object.
@@ -9,7 +9,7 @@ import { ParserFactory, Toml } from "./_parser.ts";
  * @example Usage
  * ```ts
  * import { parse } from "@std/toml/parse";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const tomlString = `title = "TOML Example"
  * [owner]
@@ -23,5 +23,5 @@ import { ParserFactory, Toml } from "./_parser.ts";
  * @returns The parsed JS object.
  */
 export function parse(tomlString: string): Record<string, unknown> {
-  return ParserFactory(Toml)(tomlString);
+  return parserFactory(toml)(tomlString);
 }

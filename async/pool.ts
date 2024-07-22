@@ -17,7 +17,7 @@ const ERROR_WHILE_MAPPING_MESSAGE = "Threw while mapping.";
  * @example Usage
  * ```ts
  * import { pooledMap } from "@std/async/pool";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const results = pooledMap(
  *   2,

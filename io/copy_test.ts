@@ -1,6 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import { copy } from "./copy.ts";
-import { assertEquals } from "@std/assert/assert-equals";
+import { assertEquals } from "@std/assert";
 
 const SRC_PATH = "./io/testdata/copy-src.txt";
 const DST_PATH = "./io/testdata/copy-dst.txt";

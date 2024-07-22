@@ -17,7 +17,7 @@
  *
  * ```ts
  * import { fromFileUrl } from "@std/path/posix/from-file-url";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * assertEquals(fromFileUrl("file:///home/foo"), "/home/foo");
  * ```
@@ -26,7 +26,7 @@
  *
  * ```ts
  * import { fromFileUrl } from "@std/path/windows/from-file-url";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * assertEquals(fromFileUrl("file:///home/foo"), "\\home\\foo");
  * ```
@@ -48,7 +48,7 @@ export * from "./resolve.ts";
 export * from "./to_file_url.ts";
 export * from "./to_namespaced_path.ts";
 export * from "./common.ts";
-export * from "./_interface.ts";
+export * from "./types.ts";
 export * from "./glob_to_regexp.ts";
 export * from "./is_glob.ts";
 export * from "./join_globs.ts";

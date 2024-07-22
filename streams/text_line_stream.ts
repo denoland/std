@@ -21,7 +21,7 @@ export interface TextLineStreamOptions {
  * ```ts
  * import { TextLineStream } from "@std/streams/text-line-stream";
  * import { toTransformStream } from "@std/streams/to-transform-stream";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const stream = ReadableStream.from([
  *   '{"name": "Alice", "age": ',
@@ -52,7 +52,7 @@ export interface TextLineStreamOptions {
  *
  * ```ts
  * import { TextLineStream } from "@std/streams/text-line-stream";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const stream = ReadableStream.from([
  *  "CR\rLF",
@@ -75,7 +75,7 @@ export class TextLineStream extends TransformStream<string, string> {
    * @example No parameters
    * ```ts
    * import { TextLineStream } from "@std/streams/text-line-stream";
-   * import { assertEquals } from "@std/assert/assert-equals";
+   * import { assertEquals } from "@std/assert";
    *
    * const stream = ReadableStream.from([
    *  "Hello,\n",
@@ -91,7 +91,7 @@ export class TextLineStream extends TransformStream<string, string> {
    *
    * ```ts
    * import { TextLineStream } from "@std/streams/text-line-stream";
-   * import { assertEquals } from "@std/assert/assert-equals";
+   * import { assertEquals } from "@std/assert";
    *
    * const stream = ReadableStream.from([
    *  "CR\rLF",

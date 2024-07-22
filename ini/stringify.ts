@@ -5,13 +5,15 @@ import {
   type FormattingOptions,
   IniMap,
   type ReplacerFunction,
-} from "./ini_map.ts";
+} from "./_ini_map.ts";
 
-/** Options for constructing INI strings. */
+/** Options for {@linkcode stringify}. */
 export interface StringifyOptions extends FormattingOptions {
   /** Provide custom string conversion for the value in a key/value pair. */
   replacer?: ReplacerFunction;
 }
+
+export type { FormattingOptions, ReplacerFunction };
 
 /**
  * Compile an object into an INI config string. Provide formatting options to modify the output.
@@ -19,7 +21,7 @@ export interface StringifyOptions extends FormattingOptions {
  * @example Usage
  * ```ts
  * import { stringify } from "@std/ini/stringify";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const str = stringify({
  *   key1: "value1",
@@ -43,7 +45,7 @@ export interface StringifyOptions extends FormattingOptions {
  * @example Using replacer option
  * ```ts
  * import { stringify } from "@std/ini/stringify";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const str = stringify({
  *   "section X": {

@@ -13,7 +13,7 @@
  *
  * ```ts
  * import * as ini from "@std/ini";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const iniFile = `# Example configuration file
  * Global Key=Some data here
@@ -55,76 +55,8 @@
  * Section Date=1977-05-25`);
  * ```
  *
- * Optionally, {@linkcode IniMap} may be used for finer INI handling. Using this class will permit preserving
- * comments, accessing values like a map, iterating over key/value/section entries, and more.
- *
- * ```ts
- * import { IniMap } from "@std/ini/ini-map";
- * import { assertEquals } from "@std/assert/assert-equals";
- *
- * const ini = new IniMap();
- * ini.set("section1", "keyA", 100);
- * assertEquals(ini.toString(), `[section1]
- * keyA=100`);
- *
- * ini.set('keyA', 25)
- * assertEquals(ini.toObject(), {
- *   keyA: 25,
- *   section1: {
- *     keyA: 100
- *   }
- * });
- * ```
- *
- * The reviver and replacer APIs can be used to extend the behavior of IniMap, such as adding support
- * for duplicate keys as if they were arrays of values.
- *
- * ```ts
- * import { IniMap } from "@std/ini/ini-map";
- * import { assertEquals } from "@std/assert/assert-equals";
- *
- * const iniFile = `# Example of key/value arrays
- * [section1]
- * key1=This key
- * key1=is non-standard
- * key1=but can be captured!`;
- *
- * const ini = new IniMap({ assignment: "=", deduplicate: true });
- * ini.parse(iniFile, (key, value, section) => {
- *   if (section) {
- *     if (ini.has(section, key)) {
- *       const exists = ini.get(section, key);
- *       if (Array.isArray(exists)) {
- *         exists.push(value);
- *         return exists;
- *       } else {
- *         return [exists, value];
- *       }
- *     }
- *   }
- *   return value;
- * });
- *
- * assertEquals(
- *   ini.get("section1", "key1"),
- *   ["This key", "is non-standard", "but can be captured!"]
- * );
- *
- * const result = ini.toString((key, value) => {
- *   if (Array.isArray(value)) {
- *     return value.join(
- *       `${ini.formatting.lineBreak}${key}${ini.formatting.assignment}`,
- *     );
- *   }
- *   return value;
- * });
- *
- * assertEquals(result, iniFile);
- * ```
- *
  * @module
  */
 
-export * from "./ini_map.ts";
 export * from "./parse.ts";
 export * from "./stringify.ts";

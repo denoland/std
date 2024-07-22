@@ -16,7 +16,7 @@ import { minOf } from "./min_of.ts";
  * @example Basic usage
  * ```ts
  * import { zip } from "@std/collections/zip";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const numbers = [1, 2, 3, 4];
  * const letters = ["a", "b", "c", "d"];

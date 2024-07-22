@@ -23,6 +23,8 @@ export interface CopyOptions {
    * the original source files. When `false`, timestamp behavior is
    * OS-dependent.
    *
+   * Note: This options is currently unsupported for symbolic links.
+   *
    * @default {false}
    */
   preserveTimestamps?: boolean;

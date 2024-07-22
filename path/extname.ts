@@ -10,7 +10,7 @@ import { extname as windowsExtname } from "./windows/extname.ts";
  * @example Usage
  * ```ts
  * import { extname } from "@std/path/extname";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * if (Deno.build.os === "windows") {
  *   assertEquals(extname("C:\\home\\user\\Documents\\image.png"), ".png");

@@ -1,11 +1,14 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import {
   assert,
+  assertAlmostEquals,
   assertEquals,
   assertInstanceOf,
+  assertMatch,
   assertNotEquals,
   assertRejects,
   assertStrictEquals,
+  assertThrows,
 } from "@std/assert";
 import { FakeTime, TimeError } from "./time.ts";
 import { _internals } from "./_time.ts";
@@ -96,6 +99,11 @@ Deno.test("FakeTime causes Date instance methods passthrough to real Date instan
   } finally {
     func2.restore();
   }
+});
+
+Deno.test("FakeTime causes Date function to return the string representation of the current faked time", () => {
+  using _time = new FakeTime(24 * 60 * 60 * 1000);
+  assertMatch(Date(), /(Fri|Thu) Jan 0(1|2) 1970/);
 });
 
 Deno.test("FakeTime timeout functions unchanged if FakeTime is uninitialized", () => {
@@ -631,4 +639,86 @@ Deno.test("Date from FakeTime is structured cloneable", () => {
   assertEquals(cloned.getTime(), date.getTime());
   assert(date instanceof Date);
   assert(cloned instanceof Date_);
+});
+
+Deno.test("new FakeTime() throws if the time is already faked", () => {
+  using _time = new FakeTime();
+  assertThrows(() => new FakeTime());
+});
+
+Deno.test("Faked timer functions throws when called after FakeTime is restored", () => {
+  let fakeSetTimeout: typeof setTimeout;
+  let fakeClearTimeout: typeof clearTimeout;
+  let fakeSetInterval: typeof setInterval;
+  let fakeClearInterval: typeof clearInterval;
+  {
+    using _time: FakeTime = new FakeTime();
+    fakeSetTimeout = setTimeout;
+    fakeClearTimeout = clearTimeout;
+    fakeSetInterval = setInterval;
+    fakeClearInterval = clearInterval;
+  }
+  assertThrows(() => fakeSetTimeout(() => {}, 0), TimeError, "no fake time");
+  assertThrows(() => fakeClearTimeout(0), TimeError, "no fake time");
+  assertThrows(() => fakeSetInterval(() => {}, 0), TimeError, "no fake time");
+  assertThrows(() => fakeClearInterval(0), TimeError, "no fake time");
+});
+
+Deno.test("Faked Date.now returns real time after FakeTime is restored", () => {
+  let fakeDateNow: typeof Date.now;
+  {
+    using _time: FakeTime = new FakeTime();
+    fakeDateNow = Date.now;
+  }
+  assertAlmostEquals(Date.now(), fakeDateNow());
+});
+
+Deno.test("FakeTime can be constructed with number, Date, or string", () => {
+  {
+    using _time = new FakeTime(1000);
+    assertEquals(Date.now(), 1000);
+  }
+
+  {
+    using _time = new FakeTime(new Date(2000));
+    assertEquals(Date.now(), 2000);
+  }
+
+  {
+    using _time = new FakeTime("Thu Jan 01 1970 00:00:03 GMT+0000");
+    assertEquals(Date.now(), 3000);
+  }
+});
+
+Deno.test("FakeTime throws when NaN is provided", () => {
+  assertThrows(() => new FakeTime(NaN), TimeError, "invalid start");
+});
+
+Deno.test("FakeTime.restore() throws when the time is already restored", () => {
+  const _time = new FakeTime();
+  FakeTime.restore();
+  assertThrows(() => FakeTime.restore(), TimeError, "time already restored");
+});
+
+Deno.test("time.restore() throws when the time is already restored", () => {
+  const time = new FakeTime();
+  time.restore();
+  assertThrows(() => time.restore(), TimeError, "time already restored");
+});
+
+Deno.test("time.now = N throws when N < time.now", () => {
+  using time = new FakeTime(1000);
+  assertThrows(
+    () => {
+      time.now = 999;
+    },
+    Error,
+    "time cannot go backwards",
+  );
+});
+
+Deno.test("time.start returns the started time of the fake time", () => {
+  using time = new FakeTime(1000);
+  time.now = 2000;
+  assertEquals(time.start, 1000);
 });

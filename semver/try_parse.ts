@@ -4,12 +4,12 @@ import type { SemVer } from "./types.ts";
 import { parse } from "./parse.ts";
 
 /**
- * Returns the parsed version, or undefined if it's not valid.
+ * Returns the parsed SemVer, or `undefined` if it's not valid.
  *
  * @example Usage
  * ```ts
  * import { tryParse } from "@std/semver/try-parse";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * assertEquals(tryParse("1.2.3"), { major: 1, minor: 2, patch: 3, prerelease: [], build: [] });
  * assertEquals(tryParse("1.2.3-alpha"), { major: 1, minor: 2, patch: 3, prerelease: ["alpha"], build: [] });

@@ -35,8 +35,16 @@ function bumpPrerelease(
   return values;
 }
 
+/** Options for {@linkcode increment}. */
+export interface IncrementOptions {
+  /** The pre-release metadata of the new version. */
+  prerelease?: string;
+  /** The build metadata of the new version. */
+  build?: string;
+}
+
 /**
- * Returns the new version resulting from an increment by release type.
+ * Returns the new SemVer resulting from an increment by release type.
  *
  * `premajor`, `preminor` and `prepatch` will bump the version up to the next version,
  * based on the type, and will also add prerelease metadata.
@@ -59,7 +67,7 @@ function bumpPrerelease(
  * @example Usage
  * ```ts
  * import { increment, parse } from "@std/semver";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const version = parse("1.2.3");
  * assertEquals(increment(version, "major"), parse("2.0.0"));
@@ -73,18 +81,16 @@ function bumpPrerelease(
  *
  * @param version The version to increment
  * @param release The type of increment to perform
- * @param prerelease The pre-release metadata of the new version
- * @param buildmetadata The build metadata of the new version
+ * @param options Additional options
  * @returns The new version
  */
 export function increment(
   version: SemVer,
   release: ReleaseType,
-  prerelease?: string,
-  buildmetadata?: string,
+  options?: IncrementOptions,
 ): SemVer {
-  const build = buildmetadata !== undefined
-    ? parseBuild(buildmetadata)
+  const build = options?.build !== undefined
+    ? parseBuild(options?.build)
     : version.build;
 
   switch (release) {
@@ -93,7 +99,7 @@ export function increment(
         major: version.major + 1,
         minor: 0,
         patch: 0,
-        prerelease: bumpPrerelease(version.prerelease, prerelease),
+        prerelease: bumpPrerelease(version.prerelease, options?.prerelease),
         build,
       };
     case "preminor":
@@ -101,7 +107,7 @@ export function increment(
         major: version.major,
         minor: version.minor + 1,
         patch: 0,
-        prerelease: bumpPrerelease(version.prerelease, prerelease),
+        prerelease: bumpPrerelease(version.prerelease, options?.prerelease),
         build,
       };
     case "prepatch":
@@ -109,7 +115,7 @@ export function increment(
         major: version.major,
         minor: version.minor,
         patch: version.patch + 1,
-        prerelease: bumpPrerelease(version.prerelease, prerelease),
+        prerelease: bumpPrerelease(version.prerelease, options?.prerelease),
         build,
       };
     case "prerelease": {
@@ -120,7 +126,7 @@ export function increment(
         major: version.major,
         minor: version.minor,
         patch,
-        prerelease: bumpPrerelease(version.prerelease, prerelease),
+        prerelease: bumpPrerelease(version.prerelease, options?.prerelease),
         build,
       };
     }
@@ -180,7 +186,7 @@ export function increment(
         major: version.major,
         minor: version.minor,
         patch: version.patch,
-        prerelease: bumpPrerelease(version.prerelease, prerelease),
+        prerelease: bumpPrerelease(version.prerelease, options?.prerelease),
         build,
       };
     }

@@ -546,7 +546,7 @@ export interface it {
  * @example Usage
  * ```ts
  * import { describe, it } from "@std/testing/bdd";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * describe("example", () => {
  *   it("should pass", () => {
@@ -611,7 +611,7 @@ export function it<T>(...args: ItArgs<T>) {
  * @example Usage
  * ```ts
  * import { describe, it } from "@std/testing/bdd";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * describe("example", () => {
  *   it("should pass", () => {
@@ -640,7 +640,7 @@ it.only = function itOnly<T>(...args: ItArgs<T>): void {
  * @example Usage
  * ```ts
  * import { describe, it } from "@std/testing/bdd";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * describe("example", () => {
  *   it("should pass", () => {
@@ -668,7 +668,7 @@ it.ignore = function itIgnore<T>(...args: ItArgs<T>): void {
  * @example Usage
  * ```ts
  * import { describe, it } from "@std/testing/bdd";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * describe("example", () => {
  *   it("should pass", () => {
@@ -695,7 +695,7 @@ it.skip = function itSkip<T>(...args: ItArgs<T>): void {
  * @example Usage
  * ```ts
  * import { test } from "@std/testing/bdd";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * test("a test case", () => {
  *   // test case
@@ -735,7 +735,7 @@ function addHook<T>(
  * @example Usage
  * ```ts
  * import { describe, it, beforeAll } from "@std/testing/bdd";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * beforeAll(() => {
  *  console.log("beforeAll");
@@ -766,7 +766,7 @@ export function beforeAll<T>(
  * @example Usage
  * ```ts
  * import { describe, it, before } from "@std/testing/bdd";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * before(() => {
  *  console.log("before");
@@ -795,7 +795,7 @@ export function before<T>(
  * @example Usage
  * ```ts
  * import { describe, it, afterAll } from "@std/testing/bdd";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * afterAll(() => {
  *  console.log("afterAll");
@@ -826,7 +826,7 @@ export function afterAll<T>(
  * @example Usage
  * ```ts
  * import { describe, it, after } from "@std/testing/bdd";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * after(() => {
  *  console.log("after");
@@ -855,7 +855,7 @@ export function after<T>(
  * @example Usage
  * ```ts
  * import { describe, it, beforeEach } from "@std/testing/bdd";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * beforeEach(() => {
  *  console.log("beforeEach");
@@ -884,7 +884,7 @@ export function beforeEach<T>(
  * @example Usage
  * ```ts
  * import { describe, it, afterEach } from "@std/testing/bdd";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * afterEach(() => {
  *  console.log("afterEach");
@@ -915,20 +915,20 @@ export type DescribeArgs<T> =
     name: string,
     options: Omit<DescribeDefinition<T>, "name">,
   ]
-  | [name: string, fn: () => void]
-  | [fn: () => void]
+  | [name: string, fn: () => void | undefined]
+  | [fn: () => void | undefined]
   | [
     name: string,
     options: Omit<DescribeDefinition<T>, "fn" | "name">,
-    fn: () => void,
+    fn: () => void | undefined,
   ]
   | [
     options: Omit<DescribeDefinition<T>, "fn">,
-    fn: () => void,
+    fn: () => void | undefined,
   ]
   | [
     options: Omit<DescribeDefinition<T>, "fn" | "name">,
-    fn: () => void,
+    fn: () => void | undefined,
   ]
   | [
     suite: TestSuite<T>,
@@ -942,27 +942,27 @@ export type DescribeArgs<T> =
   | [
     suite: TestSuite<T>,
     name: string,
-    fn: () => void,
+    fn: () => void | undefined,
   ]
   | [
     suite: TestSuite<T>,
-    fn: () => void,
+    fn: () => void | undefined,
   ]
   | [
     suite: TestSuite<T>,
     name: string,
     options: Omit<DescribeDefinition<T>, "fn" | "name" | "suite">,
-    fn: () => void,
+    fn: () => void | undefined,
   ]
   | [
     suite: TestSuite<T>,
     options: Omit<DescribeDefinition<T>, "fn" | "suite">,
-    fn: () => void,
+    fn: () => void | undefined,
   ]
   | [
     suite: TestSuite<T>,
     options: Omit<DescribeDefinition<T>, "fn" | "name" | "suite">,
-    fn: () => void,
+    fn: () => void | undefined,
   ];
 
 /** Generates a DescribeDefinition from DescribeArgs. */
@@ -1051,7 +1051,7 @@ export interface describe {
  * @example Usage
  * ```ts
  * import { describe, it } from "@std/testing/bdd";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * describe("example", () => {
  *   it("should pass", () => {
@@ -1085,7 +1085,7 @@ export function describe<T>(
  * @example Usage
  * ```ts
  * import { describe, it, beforeAll } from "@std/testing/bdd";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * describe("example", () => {
  *   it("should pass", () => {
@@ -1119,7 +1119,7 @@ describe.only = function describeOnly<T>(
  * @example Usage
  * ```ts
  * import { describe, it, beforeAll } from "@std/testing/bdd";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * describe("example", () => {
  *   it("should pass", () => {
@@ -1152,7 +1152,7 @@ describe.ignore = function describeIgnore<T>(
  * @example Usage
  * ```ts
  * import { describe, it, beforeAll } from "@std/testing/bdd";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * describe("example", () => {
  *   it("should pass", () => {

@@ -22,63 +22,6 @@ export function isPromiseLike(value: unknown): value is PromiseLike<unknown> {
   }
 }
 
-// Check of these sentinel values are supported in jest (expect-utils)
-// See https://github.com/jestjs/jest/blob/442c7f692e3a92f14a2fb56c1737b26fc663a0ef/packages/expect-utils/src/immutableUtils.ts#L29
-// SENTINEL constants are from https://github.com/facebook/immutable-js
-const IS_KEYED_SENTINEL = "@@__IMMUTABLE_KEYED__@@";
-const IS_SET_SENTINEL = "@@__IMMUTABLE_SET__@@";
-const IS_LIST_SENTINEL = "@@__IMMUTABLE_LIST__@@";
-const IS_ORDERED_SENTINEL = "@@__IMMUTABLE_ORDERED__@@";
-const IS_RECORD_SYMBOL = "@@__IMMUTABLE_RECORD__@@";
-
-function isObjectLiteral(source: unknown): source is Record<string, unknown> {
-  return source != null && typeof source === "object" && !Array.isArray(source);
-}
-
-export function isImmutableUnorderedKeyed(source: unknown): boolean {
-  return Boolean(
-    source &&
-      isObjectLiteral(source) &&
-      source[IS_KEYED_SENTINEL] &&
-      !source[IS_ORDERED_SENTINEL],
-  );
-}
-
-export function isImmutableUnorderedSet(source: unknown): boolean {
-  return Boolean(
-    source &&
-      isObjectLiteral(source) &&
-      source[IS_SET_SENTINEL] &&
-      !source[IS_ORDERED_SENTINEL],
-  );
-}
-
-export function isImmutableList(source: unknown): boolean {
-  return Boolean(source && isObjectLiteral(source) && source[IS_LIST_SENTINEL]);
-}
-
-export function isImmutableOrderedKeyed(source: unknown): boolean {
-  return Boolean(
-    source &&
-      isObjectLiteral(source) &&
-      source[IS_KEYED_SENTINEL] &&
-      source[IS_ORDERED_SENTINEL],
-  );
-}
-
-export function isImmutableOrderedSet(source: unknown): boolean {
-  return Boolean(
-    source &&
-      isObjectLiteral(source) &&
-      source[IS_SET_SENTINEL] &&
-      source[IS_ORDERED_SENTINEL],
-  );
-}
-
-export function isImmutableRecord(source: unknown): boolean {
-  return Boolean(source && isObjectLiteral(source) && source[IS_RECORD_SYMBOL]);
-}
-
 // deno-lint-ignore no-explicit-any
 export function hasIterator(object: any) {
   return !!(object != null && object[Symbol.iterator]);
@@ -93,14 +36,13 @@ function isObject(a: unknown) {
 }
 
 // deno-lint-ignore no-explicit-any
-export function entries(obj: any) {
+function entries(obj: any) {
   if (!isObject(obj)) return [];
 
-  const symbolProperties = Object.getOwnPropertySymbols(obj)
+  return Object.getOwnPropertySymbols(obj)
     .filter((key) => key !== Symbol.iterator)
-    .map((key) => [key, obj[key]]);
-
-  return [...symbolProperties, ...Object.entries(obj)];
+    .map((key) => [key, obj[key as keyof typeof obj]])
+    .concat(Object.entries(obj));
 }
 
 // Ported from https://github.com/jestjs/jest/blob/442c7f692e3a92f14a2fb56c1737b26fc663a0ef/packages/expect-utils/src/utils.ts#L173
@@ -159,7 +101,7 @@ export function iterableEquality(
   if (a.size !== undefined) {
     if (a.size !== b.size) {
       return false;
-    } else if (isA<Set<unknown>>("Set", a) || isImmutableUnorderedSet(a)) {
+    } else if (isA<Set<unknown>>("Set", a)) {
       let allFound = true;
       for (const aValue of a) {
         if (!b.has(aValue)) {
@@ -183,10 +125,7 @@ export function iterableEquality(
       aStack.pop();
       bStack.pop();
       return allFound;
-    } else if (
-      isA<Map<unknown, unknown>>("Map", a) ||
-      isImmutableUnorderedKeyed(a)
-    ) {
+    } else if (isA<Map<unknown, unknown>>("Map", a)) {
       let allFound = true;
       for (const aEntry of a) {
         if (
@@ -244,17 +183,10 @@ export function iterableEquality(
     return false;
   }
 
-  if (
-    !isImmutableList(a) &&
-    !isImmutableOrderedKeyed(a) &&
-    !isImmutableOrderedSet(a) &&
-    !isImmutableRecord(a)
-  ) {
-    const aEntries = entries(a);
-    const bEntries = entries(b);
-    if (!equal(aEntries, bEntries)) {
-      return false;
-    }
+  const aEntries = entries(a);
+  const bEntries = entries(b);
+  if (!equal(aEntries, bEntries)) {
+    return false;
   }
 
   // Remove the first value from the stack of traversed values.

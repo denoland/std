@@ -15,7 +15,7 @@ import type { EqualOptions } from "./_types.ts";
  *
  * @example
  * ```ts
- * import { assertNotEquals } from "@std/assert/assert-not-equals";
+ * import { assertNotEquals } from "@std/assert";
  *
  * assertNotEquals(1, 2); // Doesn't throw
  * assertNotEquals(1, 1); // Throws

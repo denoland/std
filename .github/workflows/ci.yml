@@ -49,9 +49,10 @@ jobs:
           TZ=America/Toronto deno test datetime
         if: matrix.os == 'ubuntu-latest'
 
-      - name: Type check browser compatible modules
-        shell: bash
-        run: deno task test:browser
+      # TODO(kt3k): Rewrite test:browser task and enable this check
+      #- name: Type check browser compatible modules
+      #  shell: bash
+      #  run: deno task test:browser
 
       - name: Generate lcov
         run: deno task cov:gen
@@ -62,6 +63,35 @@ jobs:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
         with:
           name: ${{ matrix.os }}-${{ matrix.deno }}
+
+  test-node:
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        node:
+          - latest
+        os:
+          - ubuntu-latest
+
+    steps:
+      - name: Clone repository
+        uses: actions/checkout@v4
+
+      - name: Set up Deno
+        uses: denoland/setup-deno@v1
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+
+      - run: npm install
+        working-directory: _tools/node_test_runner
+
+      - name: Run tests
+        run: deno task test:node
 
   lint:
     runs-on: ${{ matrix.os }}

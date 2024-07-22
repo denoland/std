@@ -3,7 +3,7 @@
 
 /**
  * Provides functions for dealing with and matching ETags, including
- * {@linkcode calculate} to calculate an etag for a given entity,
+ * {@linkcode eTag} to calculate an etag for a given entity,
  * {@linkcode ifMatch} for validating if an ETag matches against a `If-Match`
  * header and {@linkcode ifNoneMatch} for validating an Etag against an
  * `If-None-Match` header.
@@ -30,13 +30,13 @@ export interface FileInfo {
 }
 
 /** Represents an entity that can be used for generating an ETag. */
-export type Entity = string | Uint8Array | FileInfo;
+export type ETagSource = string | Uint8Array | FileInfo;
 
 const encoder = new TextEncoder();
 
 const DEFAULT_ALGORITHM: AlgorithmIdentifier = "SHA-256";
 
-/** Options for {@linkcode calculate}. */
+/** Options for {@linkcode eTag}. */
 export interface ETagOptions {
   /**
    * A digest algorithm to use to calculate the etag.
@@ -45,8 +45,12 @@ export interface ETagOptions {
    */
   algorithm?: AlgorithmIdentifier;
 
-  /** Override the default behavior of calculating the `ETag`, either forcing
-   * a tag to be labelled weak or not. */
+  /**
+   * Override the default behavior of calculating the `ETag`, either forcing
+   * a tag to be labelled weak or not.
+   *
+   * Defaults to `true` when the entity is a `FileInfo` and `false` otherwise.
+   */
   weak?: boolean;
 }
 
@@ -97,12 +101,12 @@ async function calcFileInfo(
  *
  * @example Usage
  * ```ts
- * import { calculate } from "@std/http/etag";
- * import { assert } from "@std/assert/assert";
+ * import { eTag } from "@std/http/etag";
+ * import { assert } from "@std/assert";
  *
  * const body = "hello deno!";
  *
- * const etag = await calculate(body);
+ * const etag = await eTag(body);
  * assert(etag);
  *
  * const res = new Response(body, { headers: { etag } });
@@ -112,8 +116,8 @@ async function calcFileInfo(
  * @param options Various additional options.
  * @returns The calculated ETag.
  */
-export async function calculate(
-  entity: Entity,
+export async function eTag(
+  entity: ETagSource,
   options: ETagOptions = {},
 ): Promise<string | undefined> {
   const weak = options.weak ?? isFileInfo(entity);
@@ -135,16 +139,16 @@ export async function calculate(
  * @example Usage
  * ```ts no-eval
  * import {
- *   calculate,
+ *   eTag,
  *   ifMatch,
  * } from "@std/http/etag";
- * import { assert } from "@std/assert/assert"
+ * import { assert } from "@std/assert";
  *
  * const body = "hello deno!";
  *
  * Deno.serve(async (req) => {
  *   const ifMatchValue = req.headers.get("if-match");
- *   const etag = await calculate(body);
+ *   const etag = await eTag(body);
  *   assert(etag);
  *   if (!ifMatchValue || ifMatch(ifMatchValue, etag)) {
  *     return new Response(body, { status: 200, headers: { etag } });
@@ -183,16 +187,16 @@ export function ifMatch(
  * @example Usage
  * ```ts no-eval
  * import {
- *   calculate,
+ *   eTag,
  *   ifNoneMatch,
  * } from "@std/http/etag";
- * import { assert } from "@std/assert/assert"
+ * import { assert } from "@std/assert";
  *
  * const body = "hello deno!";
  *
  * Deno.serve(async (req) => {
  *   const ifNoneMatchValue = req.headers.get("if-none-match");
- *   const etag = await calculate(body);
+ *   const etag = await eTag(body);
  *   assert(etag);
  *   if (!ifNoneMatch(ifNoneMatchValue, etag)) {
  *     return new Response(null, { status: 304, headers: { etag } });

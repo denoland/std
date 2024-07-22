@@ -510,6 +510,66 @@ Deno.test("spy() works on constructor of child class", () => {
   assertSpyCalls(PointSpy, 1);
 });
 
+Deno.test("spy() works on constructor that throws an error", () => {
+  class Foo {
+    constructor() {
+      throw new Error("foo");
+    }
+  }
+  const FooSpy = spy(Foo);
+  assertThrows(() => new FooSpy(), Error, "foo");
+  assertSpyCall(FooSpy, 0, {
+    self: undefined,
+    args: [],
+    error: { Class: Error, msgIncludes: "foo" },
+  });
+});
+
+Deno.test("spy() works with throwing method", () => {
+  const obj = {
+    fn() {
+      throw new Error("failed");
+    },
+  };
+  const spyFn = spy(obj, "fn");
+  assertThrows(() => obj.fn(), Error, "failed");
+  assertSpyCall(spyFn, 0, {
+    self: obj,
+    args: [],
+    error: { Class: Error, msgIncludes: "failed" },
+  });
+});
+
+Deno.test("spy() throws when try spying already spied method", () => {
+  const obj = { fn() {} };
+  spy(obj, "fn");
+  assertThrows(
+    () => spy(obj, "fn"),
+    MockError,
+    "already spying on instance method",
+  );
+});
+
+Deno.test("spy() throws when the property is not a method", () => {
+  const obj = {};
+  assertThrows(
+    // deno-lint-ignore no-explicit-any
+    () => spy(obj as any, "fn"),
+    MockError,
+    "property is not an instance method",
+  );
+});
+
+Deno.test("spy() throws when the property is not configurable", () => {
+  const obj = { fn() {} };
+  Object.defineProperty(obj, "fn", { configurable: false });
+  assertThrows(
+    () => spy(obj, "fn"),
+    MockError,
+    "cannot spy on non configurable instance method",
+  );
+});
+
 Deno.test("stub()", () => {
   const point = new Point(2, 3);
   const func = stub(point, "action");
@@ -712,6 +772,53 @@ Deno.test("stub() correctly handles types", () => {
     args: [1, "hello"],
     returned: true,
   });
+});
+
+Deno.test("stub() works with throwing fake implementation", () => {
+  const obj = {
+    fn() {
+      throw new Error("failed");
+    },
+  };
+  const stubFn = stub(obj, "fn", () => {
+    throw new Error("failed");
+  });
+  assertThrows(() => obj.fn(), Error, "failed");
+  assertSpyCall(stubFn, 0, {
+    self: obj,
+    args: [],
+    error: { Class: Error, msgIncludes: "failed" },
+  });
+});
+
+Deno.test("stub() throws when the property is not a method", () => {
+  const obj = { fn: 1 };
+  assertThrows(
+    // deno-lint-ignore no-explicit-any
+    () => stub(obj as any, "fn"),
+    MockError,
+    "property is not an instance method",
+  );
+});
+
+Deno.test("stub() throws when try stubbing already stubbed method", () => {
+  const obj = { fn() {} };
+  stub(obj, "fn");
+  assertThrows(
+    () => stub(obj, "fn"),
+    MockError,
+    "already spying on instance method",
+  );
+});
+
+Deno.test("stub() throws then the property is not configurable", () => {
+  const obj = { fn() {} };
+  Object.defineProperty(obj, "fn", { configurable: false });
+  assertThrows(
+    () => stub(obj, "fn"),
+    MockError,
+    "cannot spy on non configurable instance method",
+  );
 });
 
 Deno.test("mockSession() and mockSessionAsync()", async () => {
@@ -1228,6 +1335,21 @@ Deno.test("assertSpyCall() works with error", () => {
   );
 });
 
+Deno.test("assertSpyCall() throws TypeError when returned and error are both provided", () => {
+  const spyFunc = spy(() => 5);
+  spyFunc();
+
+  assertThrows(
+    () =>
+      assertSpyCall(spyFunc, 0, {
+        returned: 5,
+        error: { msgIncludes: "x" },
+      }),
+    TypeError,
+    "do not expect error and return, only one should be expected",
+  );
+});
+
 Deno.test("assertSpyCallAsync() works with function", async () => {
   const spyFunc = spy((multiplier?: number) =>
     Promise.resolve(5 * (multiplier ?? 1))
@@ -1528,6 +1650,16 @@ Deno.test("assertSpyCallAsync() works with error", async () => {
       msgIncludes: "fail",
     },
   });
+  await assertSpyCallAsync(spyFunc, 0, {
+    error: {
+      msgIncludes: "fail",
+    },
+  });
+  await assertSpyCallAsync(spyFunc, 0, {
+    error: {
+      Class: Error,
+    },
+  });
 
   await assertRejects(
     () =>
@@ -1633,6 +1765,20 @@ Deno.test("assertSpyCallAsync() works with error", async () => {
     () => assertSpyCallAsync(spyFunc, 1),
     AssertionError,
     "spy not called as much as expected",
+  );
+});
+
+Deno.test("assertSpyCallAsync() throws type error if expected return value is rejected", async () => {
+  const spyFunc = spy(() => Promise.resolve(5));
+
+  spyFunc();
+  await assertRejects(
+    () =>
+      assertSpyCallAsync(spyFunc, 0, {
+        returned: Promise.reject(new Error("failed")),
+      }),
+    TypeError,
+    "do not expect rejected promise, expect error instead",
   );
 });
 

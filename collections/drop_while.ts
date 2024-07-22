@@ -16,7 +16,7 @@
  * @example Basic usage
  * ```ts
  * import { dropWhile } from "@std/collections/drop-while";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const numbers = [3, 2, 5, 2, 5];
  * const dropWhileNumbers = dropWhile(numbers, (number) => number !== 2);

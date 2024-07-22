@@ -17,7 +17,7 @@ export type { GlobOptions };
  * @example Usage
  * ```ts
  * import { joinGlobs } from "@std/path/join-globs";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * if (Deno.build.os === "windows") {
  *   assertEquals(joinGlobs(["foo", "bar", "..", "baz"]), "foo\\baz");

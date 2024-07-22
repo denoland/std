@@ -15,7 +15,7 @@ interface TaggedYieldedValue<T> {
  * @example Usage
  * ```ts
  * import { MuxAsyncIterator } from "@std/async/mux-async-iterator";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * async function* gen123(): AsyncIterableIterator<number> {
  *   yield 1;
@@ -55,7 +55,7 @@ export class MuxAsyncIterator<T> implements AsyncIterable<T> {
    * @example Usage
    * ```ts
    * import { MuxAsyncIterator } from "@std/async/mux-async-iterator";
-   * import { assertEquals } from "@std/assert/assert-equals";
+   * import { assertEquals } from "@std/assert";
    *
    * async function* gen123(): AsyncIterableIterator<number> {
    *   yield 1;
@@ -99,7 +99,7 @@ export class MuxAsyncIterator<T> implements AsyncIterable<T> {
    * @example Usage
    * ```ts
    * import { MuxAsyncIterator } from "@std/async/mux-async-iterator";
-   * import { assertEquals } from "@std/assert/assert-equals";
+   * import { assertEquals } from "@std/assert";
    *
    * async function* gen123(): AsyncIterableIterator<number> {
    *   yield 1;
@@ -144,7 +144,7 @@ export class MuxAsyncIterator<T> implements AsyncIterable<T> {
    * @example Usage
    * ```ts
    * import { MuxAsyncIterator } from "@std/async/mux-async-iterator";
-   * import { assertEquals } from "@std/assert/assert-equals";
+   * import { assertEquals } from "@std/assert";
    *
    * async function* gen123(): AsyncIterableIterator<number> {
    *   yield 1;

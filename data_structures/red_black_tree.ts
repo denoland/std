@@ -41,7 +41,7 @@ const {
  *   descend,
  *   RedBlackTree,
  * } from "@std/data-structures";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const values = [3, 10, 13, 4, 6, 7, 1, 14];
  * const tree = new RedBlackTree<number>();
@@ -331,7 +331,7 @@ export class RedBlackTree<T> extends BinarySearchTree<T> {
    * @example Inserting a value into the tree
    * ```ts
    * import { RedBlackTree } from "@std/data-structures";
-   * import { assertEquals } from "@std/assert/assert-equals";
+   * import { assertEquals } from "@std/assert";
    *
    * const tree = new RedBlackTree<number>();
    *
@@ -388,7 +388,7 @@ export class RedBlackTree<T> extends BinarySearchTree<T> {
    * @example Removing values from the tree
    * ```ts
    * import { RedBlackTree } from "@std/data-structures";
-   * import { assertEquals } from "@std/assert/assert-equals";
+   * import { assertEquals } from "@std/assert";
    *
    * const tree = RedBlackTree.from<number>([42]);
    *
