@@ -30,7 +30,7 @@ const POTENTIAL_CUSTOM_ELEMENT_NAME_CHARS =
  * - `font-face-name`
  * - `missing-glyph`
  *
- * @example Basic usage
+ * @example Usage
  *
  * Using a valid custom element name
  *
