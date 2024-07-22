@@ -6,6 +6,9 @@ In your response YOU MUST ONLY give the data relevant to the last request. DO
 NOT provide a description of your thinking. IF you choose to return a mermaid
 diagram as part of your response then ALWAYS give a brief summary as well.
 
+You are responsible for generating all required IDs, so make sure PK and FK
+constraints are honoured and displayed.
+
 Remember that comments in an erDiagram must be as shown:
 
 erDiagram
