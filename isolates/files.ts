@@ -5,7 +5,7 @@ const log = Debug('AI:files')
 export const api = {
   write: {
     description:
-      'Write to a file with optional contents.  Will overwrite existing files.  Will create all required parent directories.  Path must be relative.  Returns the number of characters written in the operation',
+      'Write to a file with optional contents.  Will overwrite existing files.  Will create all required parent directories. Returns the number of characters written in the operation',
     type: 'object',
     additionalProperties: false,
     required: ['path'],
@@ -19,7 +19,7 @@ export const api = {
   },
   ls: {
     description:
-      'List files for a given path. Returns file names with directory names ending in "/".  Path must be relative.  The root ("/") is actually just ".".  To count the number of files instead of list them, set "count" to true.  To include hidden files in the list or count, set "all" to true.',
+      'List files for a given path. Returns file names with directory names ending in "/".  The root ("/") is actually just ".".  To count the number of files instead of list them, set "count" to true.  To include hidden files in the list or count, set "all" to true.',
     type: 'object',
     additionalProperties: false,
     properties: {
@@ -41,8 +41,7 @@ export const api = {
     },
   },
   read: {
-    description:
-      'Read a file.  It will be returned to you as a string.  Path must be relative.',
+    description: 'Read a file.  It will be returned as a string.',
     type: 'object',
     additionalProperties: false,
     required: ['path'],
@@ -76,7 +75,7 @@ export const api = {
   },
   rm: {
     // TODO extend to support glob patterns
-    description: 'Remove a file.  Path must be relative.  This is recursive.',
+    description: 'Remove a file.  This is recursive.',
     type: 'object',
     additionalProperties: false,
     required: ['path'],
@@ -88,8 +87,7 @@ export const api = {
     },
   },
   mv: {
-    description:
-      'Move a file.  Path must be relative.  This is a rename operation.',
+    description: 'Move a file efficiently. This is a rename operation.',
     type: 'object',
     additionalProperties: false,
     required: ['from', 'to'],
@@ -180,7 +178,7 @@ export const functions = {
   mv: (params: { from: string; to: string }, api: IA) => {
     const { from, to } = params
     log('mv', from, to)
-    // api.move(from, to)
+    return api.mv(from, to)
   },
   search: (params: { query: string }, api: IA) => {
     const { query } = params

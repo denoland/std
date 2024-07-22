@@ -243,4 +243,7 @@ export default class IA<T extends object = Default> {
     log('overwrite', commit, excludes)
     return this.#fs.overwrite(commit, ...excludes)
   }
+  mv(from: string, to: string) {
+    return this.#fs.mv(from, to)
+  }
 }

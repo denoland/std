@@ -233,8 +233,12 @@ export default class FS {
       throw error
     }
   }
+
   async readOid(path: string): Promise<string> {
     // TODO test how this works for "."
+    if (this.#deletes.has(path)) {
+      throw new Errors.NotFoundError(path)
+    }
     assertPath(path)
     const dirname = posix.dirname(path)
     const filepath = dirname === '.' ? undefined : dirname
@@ -376,6 +380,14 @@ export default class FS {
     // store the root head of our repo in the git file structure, used to
     // reference from
     return !!await this.#db.readHead(pid)
+  }
+  async mv(from: string, to: string) {
+    // TODO check using directories
+    assert(from !== to, 'source and destination are the same')
+    const oid = await this.readOid(from)
+    assert(!await this.exists(to), 'destination already exists: ' + to)
+    this.#upserts.set(to, { oid })
+    this.delete(from)
   }
   async overwrite(commit: string, ...ignores: string[]) {
     // TODO allow changes so long as they are in the ignored set

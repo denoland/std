@@ -58,7 +58,7 @@ export default (name: string, cradleMaker: CradleMaker) => {
     await engine.stop()
   })
 
-  Deno.test.skip(prefix + 'infinite loop regression', async (t) => {
+  Deno.test.only(prefix + 'infinite loop regression', async (t) => {
     const { backchat, engine } = await cradleMaker()
     await t.step('infinite loop', async () => {
       log.enable('AI:completions')
