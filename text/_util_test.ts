@@ -4,9 +4,45 @@ import { assertEquals } from "@std/assert";
 import { splitToWords } from "./_util.ts";
 
 Deno.test({
+  name: "split() returns an empty array for an empty string",
+  fn() {
+    const result = splitToWords("");
+    assertEquals(result.length, 0);
+  },
+});
+
+Deno.test({
+  name:
+    "split() returns an empty array when input has no alphanumeric characters",
+  fn() {
+    const result = splitToWords("🦕♥️ 🦕♥️ 🦕♥️");
+    assertEquals(result.length, 0);
+  },
+});
+
+Deno.test({
+  name: "split() ignores non-alphanumeric characters mixed with words",
+  fn() {
+    const result = splitToWords("🦕deno♥️wuv");
+    const expected = ["deno", "wuv"];
+
+    assertEquals(result, expected);
+  },
+});
+
+Deno.test({
   name: "split() handles whitespace",
   fn() {
     const result = splitToWords("deno Is AWESOME");
+    const expected = ["deno", "Is", "AWESOME"];
+    assertEquals(result, expected);
+  },
+});
+
+Deno.test({
+  name: "split() handles whitespace at string end and start",
+  fn() {
+    const result = splitToWords("  deno Is AWESOME ");
     const expected = ["deno", "Is", "AWESOME"];
     assertEquals(result, expected);
   },
@@ -97,7 +133,7 @@ Deno.test({
   name: "split() handles acronym followed by a capitalized word",
   fn() {
     const result = splitToWords("I Love HTMLDivElement");
-    const expected = ["I", "Love","HTML", "Div", "Element"];
+    const expected = ["I", "Love", "HTML", "Div", "Element"];
     assertEquals(result, expected);
   },
 });
@@ -107,6 +143,15 @@ Deno.test({
   fn() {
     const result = splitToWords("deno_is_awesome");
     const expected = ["deno", "is", "awesome"];
+    assertEquals(result, expected);
+  },
+});
+
+Deno.test({
+  name: "split() handles acronym followed by a capitalized word",
+  fn() {
+    const result = splitToWords("I Love HTMLDivElement");
+    const expected = ["I", "Love", "HTML", "Div", "Element"];
     assertEquals(result, expected);
   },
 });
