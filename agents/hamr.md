@@ -225,32 +225,50 @@ and reviews. Clearing them should be controlled.
 ## Entities
 
 1. CUSTOMER_AGENT
-   - Description: Individuals who manage customer interactions and requests. They are responsible for updating customer details and scheduling pickups.
-   - Attributes: agent_id (PK), name, age, address.
+
+- Description: Individuals who manage customer interactions and requests. They are responsible for updating customer details and scheduling pickups.
+- Attributes: agent_id (PK), name, age, address.
+
 2. COMPANY
-   - Description: The organization that operates the recycling service, managing various departments and employees.
-   - Attributes: company_id (PK), company_name, country.
+
+- Description: The organization that operates the recycling service, managing various departments and employees.
+- Attributes: company_id (PK), company_name, country.
+
 3. CUSTOMER
-   - Description: Individuals or entities that use the recycling services provided by the company.
-   - Attributes: customer_id (PK), customer_name, start_date, end_date.
+
+- Description: Individuals or entities that use the recycling services provided by the company.
+- Attributes: customer_id (PK), customer_name, start_date, end_date.
+
 4. LOCATION
-   - Description: Physical places where pickups occur. Locations are associated with routes.
-   - Attributes: location_id (PK), address, route, details.
+
+- Description: Physical places where pickups occur. Locations are associated with routes.
+- Attributes: location_id (PK), address, route, details.
+
 5. DEPARTMENT
-   - Description: Various divisions within the company that manage different aspects of the recycling operations.
-   - Attributes: department_id (PK), department_name.
+
+- Description: Various divisions within the company that manage different aspects of the recycling operations.
+- Attributes: department_id (PK), department_name.
+
 6. ROUTE
-   - Description: Defined paths that trucks follow to make pickups at various locations. Routes are linked to schedules.
-   - Attributes: route_id (PK), day.
+
+- Description: Defined paths that trucks follow to make pickups at various locations. Routes are linked to schedules.
+- Attributes: route_id (PK), day.
+
 7. DRIVER
-   - Description: Employees responsible for driving the trucks and completing the pickups.
-   - Attributes: driver_id (PK), name, license_number.
+
+- Description: Employees responsible for driving the trucks and completing the pickups.
+- Attributes: driver_id (PK), name, license_number.
+
 8. TRUCK
-   - Description: Vehicles used to perform pickups according to schedules.
-   - Attributes: truck_id (PK), model, license_plate.
+
+- Description: Vehicles used to perform pickups according to schedules.
+- Attributes: truck_id (PK), model, license_plate.
+
 9. PICKUP
-   - Description: Scheduled recycling collections from customers’ locations.
-   - Attributes: pickup_id (PK), pickup_date, status.
+
+- Description: Scheduled recycling collections from customers’ locations.
+- Attributes: pickup_id (PK), pickup_date, status.
+
 10. SCHEDULE
 
 - Description: A timetable that specifies which truck and driver will execute a route on a particular date.
