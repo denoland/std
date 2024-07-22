@@ -44,7 +44,7 @@ const POTENTIAL_CUSTOM_ELEMENT_NAME_CHARS =
  * ```
  *
  * @param elementName The element name to be validate
- * @returns A boolean value indicating if the custom element name is valid or not
+ * @returns `true` if the element name is valid, `false` otherwise.
  */
 export function isValidCustomElementName(elementName: string): boolean {
   if (FORBIDDEN_CUSTOM_ELEMENT_NAMES.includes(elementName)) {
