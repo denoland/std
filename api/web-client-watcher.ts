@@ -38,7 +38,7 @@ export class PierceWatcher {
     let lastSplice
     const after = undefined
     const { signal } = this.#abort
-    const s = this.#engine.read(this.#pid, '.io.json', after, signal)
+    const s = this.#engine.watch(this.#pid, '.io.json', after, signal)
     for await (const splice of s) {
       // move these checks to the engine side
       if (lastSplice && splice.commit.parent[0] !== lastSplice.oid) {

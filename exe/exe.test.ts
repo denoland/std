@@ -207,7 +207,7 @@ for (const withExeCache of [true, false]) {
       await fileAccumulation({ path: 'test.txt', content: 'hello', count: 3 })
 
       let first
-      for await (const splice of backchat.read(backchat.pid, 'test.txt')) {
+      for await (const splice of backchat.watch(backchat.pid, 'test.txt')) {
         first = splice
         break
       }
@@ -231,7 +231,7 @@ for (const withExeCache of [true, false]) {
       await loopAccumulation({ path: 'test.txt', content: 'hello', count: 3 })
 
       let first
-      for await (const splice of backchat.read(pid, 'test.txt')) {
+      for await (const splice of backchat.watch(pid, 'test.txt')) {
         first = splice
         break
       }

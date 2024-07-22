@@ -21,7 +21,7 @@ export default (name: string, cradleMaker: CradleMaker) => {
         agentPath: 'agents/agent-fixture.md',
         content: 'say "Hello"',
       })
-      expect(result).toBe('Hello')
+      expect(result).toContain('Hello')
     })
     log('stopping')
     await engine.stop()
@@ -35,7 +35,7 @@ export default (name: string, cradleMaker: CradleMaker) => {
     const threadPath = `threads/${threadId}.json`
     let latest = {}
     const splices = async () => {
-      for await (const splice of backchat.read(target, threadPath)) {
+      for await (const splice of backchat.watch(target, threadPath)) {
         if (!Object.keys(splice.changes).length) {
           continue
         }

@@ -126,7 +126,7 @@ export type Api = {
     params: { path: string; content?: string },
   ) => Promise<{ charactersWritten: number }>
   ls: (
-    params: { path?: string; count?: boolean; all?: boolean },
+    params?: { path?: string; count?: boolean; all?: boolean },
   ) => Promise<string[] | number>
   read: (params: { path: string }) => Promise<string>
   update: (params: Update) => Promise<{ matchesUpdated: number }>

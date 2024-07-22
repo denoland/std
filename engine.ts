@@ -242,7 +242,7 @@ export class Engine implements EngineInterface {
   async pierce(pierce: PierceRequest) {
     await this.#pierce({ pierce })
   }
-  read(pid: PID, path?: string, after?: string, signal?: AbortSignal) {
+  watch(pid: PID, path?: string, after?: string, signal?: AbortSignal) {
     // TODO read should take a triad and should not require strict sequence
     freezePid(pid)
     assert(!path || !posix.isAbsolute(path), `path must be relative: ${path}`)
@@ -253,6 +253,21 @@ export class Engine implements EngineInterface {
     signal?.addEventListener('abort', () => abort.abort())
     this.#abort.signal.addEventListener('abort', () => abort.abort())
     return db.watchSplices(pid, path, after, abort.signal)
+  }
+  async read(path: string, pid: PID, commit?: string) {
+    freezePid(pid)
+
+    const db = this.#api.context.db
+    assert(db, 'db not found')
+    let fs
+    if (commit) {
+      fs = FS.open(pid, commit, db)
+    } else {
+      fs = await FS.openHead(pid, db)
+    }
+
+    log('read', path, print(pid))
+    return fs.read(path)
   }
   async readJSON<T>(path: string, pid: PID, commit?: string) {
     freezePid(pid)

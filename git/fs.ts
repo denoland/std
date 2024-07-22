@@ -384,8 +384,9 @@ export default class FS {
   async mv(from: string, to: string) {
     // TODO check using directories
     assert(from !== to, 'source and destination are the same')
-    const oid = await this.readOid(from)
+    assert(await this.exists(from), 'source does not exist: ' + from)
     assert(!await this.exists(to), 'destination already exists: ' + to)
+    const oid = await this.readOid(from)
     this.#upserts.set(to, { oid })
     this.delete(from)
   }

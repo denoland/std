@@ -12,7 +12,7 @@ export default (name: string, cradleMaker: CradleMaker) => {
     await t.step('read', async () => {
       const p = write({ path: 'test', content: 'hello' })
       let first
-      for await (const splice of backchat.read(pid, 'test')) {
+      for await (const splice of backchat.watch(pid, 'test')) {
         log('splice', splice)
         if (splice.changes['test']) {
           first = splice
@@ -38,7 +38,7 @@ export default (name: string, cradleMaker: CradleMaker) => {
     const { write } = await backchat.actions('io-fixture', { target: pid })
 
     const logger = async () => {
-      const stream = backchat.read(pid, '.io.json')
+      const stream = backchat.watch(pid, '.io.json')
       // make a library that transforms splice streams
       for await (const splice of stream) {
         log('splice', splice.changes)
@@ -50,7 +50,7 @@ export default (name: string, cradleMaker: CradleMaker) => {
     await t.step('read', async () => {
       const p = write({ path: 'test', content: 'hello' })
       let first
-      for await (const splice of backchat.read(pid, 'test')) {
+      for await (const splice of backchat.watch(pid, 'test')) {
         if (splice.changes['test']) {
           first = splice
           break
@@ -70,7 +70,7 @@ export default (name: string, cradleMaker: CradleMaker) => {
 
     let fileSpliceCount = 0
     const fileSplices = async () => {
-      for await (const splice of backchat.read(pid, 'test.txt')) {
+      for await (const splice of backchat.watch(pid, 'test.txt')) {
         log('file', splice.changes)
         fileSpliceCount++
       }
@@ -78,7 +78,7 @@ export default (name: string, cradleMaker: CradleMaker) => {
     fileSplices()
     let spliceCount = 0
     const splices = async () => {
-      for await (const splice of backchat.read(pid)) {
+      for await (const splice of backchat.watch(pid)) {
         log('splice', splice.oid)
         spliceCount++
       }
@@ -90,7 +90,7 @@ export default (name: string, cradleMaker: CradleMaker) => {
       await write({ path: 'test.txt', content: 'hello' })
       const p = write({ path: 'test.txt', content: 'ell' })
       let fileCount = 0
-      for await (const _splice of backchat.read(pid, 'test.txt')) {
+      for await (const _splice of backchat.watch(pid, 'test.txt')) {
         fileCount++
         if (fileCount === 3) {
           break

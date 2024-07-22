@@ -181,6 +181,7 @@ export type JsonValue =
   | number
   | boolean
   | null
+  | undefined
   | JsonValue[]
   | {
     [key: string]: JsonValue
@@ -393,12 +394,13 @@ export interface EngineInterface {
   apiSchema(isolate: string): Promise<ApiSchema>
   transcribe(audio: File): Promise<{ text: string }>
   pierce(pierce: PierceRequest): Promise<void>
-  read(
+  watch(
     pid: PID,
     path?: string,
     after?: string,
     signal?: AbortSignal,
   ): AsyncIterable<Splice>
+  read(path: string, pid: PID, commit?: string): Promise<string>
   readJSON<T>(path: string, pid: PID, commit?: string): Promise<T>
   exists(path: string, pid: PID): Promise<boolean>
 }

@@ -195,11 +195,14 @@ export class Backchat {
     const actor = await this.actions<ActorApi>('actors', { target })
     return actor
   }
-  read(pid: PID, path?: string, after?: string, signal?: AbortSignal) {
+  watch(pid: PID, path?: string, after?: string, signal?: AbortSignal) {
     if (after) {
       throw new Error('after not implemented')
     }
-    return this.#engine.read(pid, path, after, signal)
+    return this.#engine.watch(pid, path, after, signal)
+  }
+  read(path: string, pid: PID = this.pid, commit?: string) {
+    return this.#engine.read(path, pid, commit)
   }
   readJSON<T>(path: string, pid: PID = this.pid, commit?: string) {
     return this.#engine.readJSON<T>(path, pid, commit)

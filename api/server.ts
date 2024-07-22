@@ -76,7 +76,7 @@ export default class Server {
       const params = await c.req.json()
       return execute(c, engine.apiSchema(params.isolate), 'apiSchema')
     })
-    app.post('/read', (c) => {
+    app.post('/watch', (c) => {
       return streamSSE(c, async (stream) => {
         const params = await c.req.json()
         const abort = new AbortController()
@@ -84,7 +84,7 @@ export default class Server {
         engine.abortSignal.addEventListener('abort', () => abort.abort())
         const { pid, path, after } = params
         try {
-          const iterable = engine.read(pid, path, after, abort.signal)
+          const iterable = engine.watch(pid, path, after, abort.signal)
           for await (const splice of iterable) {
             const event: EventSourceMessage = {
               data: JSON.stringify(splice, null, 2),
@@ -104,6 +104,11 @@ export default class Server {
           await delay(3600000, abort)
         }
       })
+    })
+    app.post(`/read`, async (c) => {
+      const params = await c.req.json()
+      const { path, pid, commit } = params
+      return execute(c, engine.read(path, pid, commit), 'read')
     })
     app.post(`/readJSON`, async (c) => {
       const params = await c.req.json()

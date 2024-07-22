@@ -1,4 +1,3 @@
-import { pidSchema } from '@/constants.ts'
 import { PID } from '@/constants.ts'
 interface SearchArgs {
   query: string

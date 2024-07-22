@@ -1,5 +1,6 @@
 import { expect, log } from '@utils'
-import { Backchat, BackchatThread, CradleMaker } from '@/constants.ts'
+import { addPeer, Backchat, BackchatThread, CradleMaker } from '@/constants.ts'
+import * as files from '@/isolates/files.ts'
 
 export default (name: string, cradleMaker: CradleMaker) => {
   const prefix = name + ':threads: '
@@ -58,16 +59,28 @@ export default (name: string, cradleMaker: CradleMaker) => {
     await engine.stop()
   })
 
-  Deno.test.only(prefix + 'infinite loop regression', async (t) => {
+  Deno.test(prefix + 'infinite loop regression', async (t) => {
     const { backchat, engine } = await cradleMaker()
     await t.step('infinite loop', async () => {
-      log.enable('AI:completions')
       await backchat.prompt(
         'backchat start a thread with the agent: agents/files.md',
       )
       const prompt =
         'Write a file with the following text "I love to be in Paris in the Spring". Then save it as paris.txt. Then replace all text in that file where "Paris" occurs with "Edinburgh". Then rename the file Edinburgh.txt'
       await backchat.prompt(prompt)
+
+      const thread = await backchat.readJSON<BackchatThread>(
+        'threads/' + backchat.threadId + '.json',
+      )
+      const { focus } = thread
+      log(focus)
+      const target = addPeer(backchat.pid, focus)
+
+      const { ls } = await backchat.actions<files.Api>('files', { target })
+      const listing = await ls()
+      expect(listing).toContain('Edinburgh.txt')
+      const edinburgh = await backchat.read('Edinburgh.txt', target)
+      expect(edinburgh).toEqual('I love to be in Edinburgh in the Spring')
     })
     await engine.stop()
   })

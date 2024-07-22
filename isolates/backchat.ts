@@ -9,7 +9,6 @@ import {
   isBackchatSummoned,
   PID,
   print,
-  Thread,
   threadIdRegex,
   UnsequencedRequest,
 } from '@/constants.ts'
@@ -234,17 +233,17 @@ const getBackchatId = (api: IA) => {
   assert(backchatIdRegex.test(backchatId), 'Invalid backchat id')
   return backchatId
 }
-const assertThreadId = async (threadId: string, api: IA) => {
-  assert(threadIdRegex.test(threadId), 'Invalid thread id: ' + threadId)
-  // TODO make this a system function
-  // const target = getParent(api.pid)
-  // const { ls } = await api.actions<branches.Api>('branches', { target })
-  const threadPath = `threads/${threadId}.json`
-  // NOT WORKING
-  // needs to read the .io.json from the parent and ensure the threadId is valid
+// const assertThreadId = async (threadId: string, api: IA) => {
+//   assert(threadIdRegex.test(threadId), 'Invalid thread id: ' + threadId)
+//   // TODO make this a system function
+//   // const target = getParent(api.pid)
+//   // const { ls } = await api.actions<branches.Api>('branches', { target })
+//   const threadPath = `threads/${threadId}.json`
+//   // NOT WORKING
+//   // needs to read the .io.json from the parent and ensure the threadId is valid
 
-  api.lsChildren()
-  const thread = await api.readJSON<Thread>(threadPath)
-  assert(thread, `Thread not found: ${threadId}`)
-  return thread
-}
+//   api.lsChildren()
+//   const thread = await api.readJSON<Thread>(threadPath)
+//   assert(thread, `Thread not found: ${threadId}`)
+//   return thread
+// }

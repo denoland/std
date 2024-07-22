@@ -103,7 +103,7 @@ export class WebClientEngine implements EngineInterface {
     }
     return outcome.result
   }
-  read(pid: PID, path?: string, after?: string, signal?: AbortSignal) {
+  watch(pid: PID, path?: string, after?: string, signal?: AbortSignal) {
     const abort = new AbortController()
     this.#aborts.add(abort)
     if (signal) {
@@ -120,7 +120,7 @@ export class WebClientEngine implements EngineInterface {
       let retryCount = 0
       while (!abort.signal.aborted) {
         try {
-          const response = await this.#fetcher(`/api/read`, {
+          const response = await this.#fetcher(`/api/watch`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -161,6 +161,10 @@ export class WebClientEngine implements EngineInterface {
     }
     pipe().catch(source.throw)
     return source
+  }
+  async read(path: string, pid: PID, commit?: string) {
+    const result = await this.#request('read', { path, pid, commit })
+    return result as string
   }
   async readJSON<T>(path: string, pid: PID, commit?: string) {
     const params: { path: string; pid: PID; commit?: string } = {
