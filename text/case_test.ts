@@ -120,3 +120,8 @@ Deno.test("toSnakeCase() trims whitespace", () => {
   const expected = "deno_is_awesome";
   assertEquals(result, expected);
 });
+
+Deno.test("toSnakeCase() splits words before and after the numbers", () => {
+  assertEquals(toSnakeCase("str2Num"), "str_2_num");
+  assertEquals(toSnakeCase("Str2Num"), "str_2_num");
+});
