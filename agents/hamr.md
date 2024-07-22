@@ -4,10 +4,8 @@ I will now give you the entity relationship diagram in mermaid format. I want yo
 
 In your response YOU MUST ONLY give the data relevant to the last request. DO
 NOT provide a description of your thinking. IF you choose to return a mermaid
-diagram as part of your response then ALWAYS give a brief summary as well.
-
-You are responsible for generating all required IDs, so make sure PK and FK
-constraints are honoured and displayed.
+diagram as part of your response then ALWAYS give a brief summary as well. IF
+you generate data that needs a PK, you MUST generate that PK.
 
 Remember that comments in an erDiagram must be as shown:
 
