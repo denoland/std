@@ -10,9 +10,7 @@ const MATCH_WORD_BASE_CASE_REGEXP = new RegExp(
 );
 
 function splitByCase(input: string): string[] {
-  const matches = input.match(MATCH_WORD_BASE_CASE_REGEXP);
-
-  return matches || [input];
+  return input.match(MATCH_WORD_BASE_CASE_REGEXP) || [input];
 }
 
 export function splitToWords(input: string) {
