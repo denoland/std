@@ -17,53 +17,49 @@
  *
  * Currently this module supports the following functions:
  * - Common matchers:
- *   - `toBe`
- *   - `toEqual`
- *   - `toStrictEqual`
- *   - `toMatch`
- *   - `toMatchObject`
- *   - `toBeDefined`
- *   - `toBeUndefined`
- *   - `toBeNull`
- *   - `toBeNaN`
- *   - `toBeTruthy`
- *   - `toBeFalsy`
- *   - `toContain`
- *   - `toContainEqual`
- *   - `toHaveLength`
- *   - `toBeGreaterThan`
- *   - `toBeGreaterThanOrEqual`
- *   - `toBeLessThan`
- *   - `toBeLessThanOrEqual`
- *   - `toBeCloseTo`
- *   - `toBeInstanceOf`
- *   - `toThrow`
- *   - `toHaveProperty`
- *   - `toHaveLength`
+ *   - {@linkcode Expected.toBe | toBe}
+ *   - {@linkcode Expected.toEqual | toEqual}
+ *   - {@linkcode Expected.toStrictEqual | toStrictEqual}
+ *   - {@linkcode Expected.toMatch | toMatch}
+ *   - {@linkcode Expected.toMatchObject | toMatchObject}
+ *   - {@linkcode Expected.toBeDefined | toBeDefined}
+ *   - {@linkcode Expected.toBeUndefined | toBeUndefined}
+ *   - {@linkcode Expected.toBeNull | toBeNull}
+ *   - {@linkcode Expected.toBeNaN | toBeNaN}
+ *   - {@linkcode Expected.toBeTruthy | toBeTruthy}
+ *   - {@linkcode Expected.toBeFalsy | toBeFalsy}
+ *   - {@linkcode Expected.toContain | toContain}
+ *   - {@linkcode Expected.toContainEqual | toContainEqual}
+ *   - {@linkcode Expected.toHaveLength | toHaveLength}
+ *   - {@linkcode Expected.toBeGreaterThan | toBeGreaterThan}
+ *   - {@linkcode Expected.toBeGreaterThanOrEqual | toBeGreaterThanOrEqual}
+ *   - {@linkcode Expected.toBeLessThan | toBeLessThan}
+ *   - {@linkcode Expected.toBeLessThanOrEqual | toBeLessThanOrEqual}
+ *   - {@linkcode Expected.toBeCloseTo | toBeCloseTo}
+ *   - {@linkcode Expected.toBeInstanceOf | toBeInstanceOf}
+ *   - {@linkcode Expected.toThrow | toThrow}
+ *   - {@linkcode Expected.toHaveProperty | toHaveProperty}
  * - Mock related matchers:
- *   - `toHaveBeenCalled`
- *   - `toHaveBeenCalledTimes`
- *   - `toHaveBeenCalledWith`
- *   - `toHaveBeenLastCalledWith`
- *   - `toHaveBeenNthCalledWith`
- *   - `toHaveReturned`
- *   - `toHaveReturnedTimes`
- *   - `toHaveReturnedWith`
- *   - `toHaveLastReturnedWith`
- *   - `toHaveNthReturnedWith`
+ *   - {@linkcode Expected.toHaveBeenCalled | toHaveBeenCalled}
+ *   - {@linkcode Expected.toHaveBeenCalledTimes | toHaveBeenCalledTimes}
+ *   - {@linkcode Expected.toHaveBeenCalledWith | toHaveBeenCalledWith}
+ *   - {@linkcode Expected.toHaveBeenLastCalledWith | toHaveBeenLastCalledWith}
+ *   - {@linkcode Expected.toHaveBeenNthCalledWith | toHaveBeenNthCalledWith}
+ *   - {@linkcode Expected.toHaveReturned | toHaveReturned}
+ *   - {@linkcode Expected.toHaveReturnedTimes | toHaveReturnedTimes}
+ *   - {@linkcode Expected.toHaveReturnedWith | toHaveReturnedWith}
+ *   - {@linkcode Expected.toHaveLastReturnedWith | toHaveLastReturnedWith}
+ *   - {@linkcode Expected.toHaveNthReturnedWith | toHaveNthReturnedWith}
  * - Asymmetric matchers:
- *   - `expect.anything`
- *   - `expect.any`
- *   - `expect.arrayContaining`
- *   - `expect.not.arrayContaining`
- *   - `expect.closeTo`
- *   - `expect.stringContaining`
- *   - `expect.not.stringContaining`
- *   - `expect.stringMatching`
- *   - `expect.not.stringMatching`
+ *   - {@linkcode expect.anything}
+ *   - {@linkcode expect.any}
+ *   - {@linkcode expect.arrayContaining}
+ *   - {@linkcode expect.closeTo}
+ *   - {@linkcode expect.stringContaining}
+ *   - {@linkcode expect.stringMatching}
  * - Utilities:
- *   - `expect.addEqualityTester`
- *   - `expect.extend`
+ *   - {@linkcode expect.addEqualityTester}
+ *   - {@linkcode expect.extend}
  *
  * Only these functions are still not available:
  * - Matchers:
