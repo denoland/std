@@ -718,7 +718,7 @@ class Printf {
       if (10 <= mantissa) {
         mantissa = 1;
         const r = parseInt(esign + e) + 1;
-        e = r.toString();
+        e = Math.abs(r).toString();
         esign = r < 0 ? "-" : "+";
       }
     }

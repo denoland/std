@@ -3,12 +3,15 @@
 // Copyright 2011-2015 by Vitaly Puzrin. All rights reserved. MIT license.
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import { Type } from "../_type.ts";
-import type { Any } from "../_utils.ts";
+import type { Type } from "../_type.ts";
 
-export const seq = new Type("tag:yaml.org,2002:seq", {
-  construct(data): Any {
+export const seq: Type<"sequence", unknown[]> = {
+  tag: "tag:yaml.org,2002:seq",
+  resolve() {
+    return true;
+  },
+  construct(data) {
     return data !== null ? data : [];
   },
   kind: "sequence",
-});
+};

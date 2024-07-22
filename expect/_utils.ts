@@ -36,14 +36,13 @@ function isObject(a: unknown) {
 }
 
 // deno-lint-ignore no-explicit-any
-export function entries(obj: any) {
+function entries(obj: any) {
   if (!isObject(obj)) return [];
 
-  const symbolProperties = Object.getOwnPropertySymbols(obj)
+  return Object.getOwnPropertySymbols(obj)
     .filter((key) => key !== Symbol.iterator)
-    .map((key) => [key, obj[key]]);
-
-  return [...symbolProperties, ...Object.entries(obj)];
+    .map((key) => [key, obj[key as keyof typeof obj]])
+    .concat(Object.entries(obj));
 }
 
 // Ported from https://github.com/jestjs/jest/blob/442c7f692e3a92f14a2fb56c1737b26fc663a0ef/packages/expect-utils/src/utils.ts#L173

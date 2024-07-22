@@ -5,7 +5,11 @@ import { DateTimeFormatter } from "./_date_time_formatter.ts";
 
 /** Options for {@linkcode format}. */
 export interface FormatOptions {
-  /** Whether returns the formatted date in UTC instead of local time. */
+  /**
+   * Whether returns the formatted date in UTC instead of local time.
+   *
+   * @default {false}
+   */
   utc?: boolean;
 }
 

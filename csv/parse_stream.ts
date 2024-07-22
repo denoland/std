@@ -58,6 +58,8 @@ export interface CsvParseStreamOptions {
    * skipped.
    * If you provide `skipFirstRow: true` but not `columns`, the first line will
    * be skipped and used as header definitions.
+   *
+   * @default {false}
    */
   skipFirstRow?: boolean;
   /** List of names used for header definition. */
