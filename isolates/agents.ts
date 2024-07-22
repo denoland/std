@@ -29,7 +29,7 @@ export type Api = {
 }
 
 export const functions = {
-  search: ({ query }: SearchArgs, api: IA) => {
+  search: async ({ query }: SearchArgs, api: IA) => {
     // TODO make this the same as the files search function
 
     // read all the agent files in from disk
@@ -43,7 +43,7 @@ export const functions = {
     // so agents are defined by their interaction aspect
     // interaction implies state
     log('search', query, print(api.pid))
-    // throw new Error('not implemented')
-    return api.ls('agents')
+    const cheapResults = await api.ls('agents')
+    return cheapResults.map((path) => `agents/${path}`)
   },
 }
