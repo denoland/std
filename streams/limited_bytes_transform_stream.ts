@@ -73,7 +73,11 @@ export interface LimitedBytesTransformStreamOptions {
  * );
  * ```
  *
- * @example error: true
+ * @example Throw error when the total byte length of the chunks exceeds the
+ * specified size
+ *
+ * To do so, set `options.error` to `true`.
+ *
  * ```ts
  * import { LimitedBytesTransformStream } from "@std/streams/limited-bytes-transform-stream";
  * import { assertRejects } from "@std/assert";
@@ -98,18 +102,75 @@ export class LimitedBytesTransformStream
    * @param size A size limit in bytes.
    * @param options Options for the stream.
    *
-   * @example size = 42
-   * ```ts no-assert
+   * @example `size` is equal to the total byte length of the chunks
+   * ```ts
    * import { LimitedBytesTransformStream } from "@std/streams/limited-bytes-transform-stream";
+   * import { assertEquals } from "@std/assert";
    *
-   * const limitedBytesTransformStream = new LimitedBytesTransformStream(42);
+   * const stream = ReadableStream.from(["1234", "5678"]);
+   * const transformed = stream.pipeThrough(new TextEncoderStream()).pipeThrough(
+   *   new LimitedBytesTransformStream(8),
+   * ).pipeThrough(new TextDecoderStream());
+   *
+   * assertEquals(
+   *   await Array.fromAsync(transformed),
+   *   ["1234", "5678"],
+   * );
    * ```
    *
-   * @example size = 42, error = true
-   * ```ts no-assert
+   * @example `size` is less than the total byte length of the chunks, and at the
+   * boundary of the chunks
+   * ```ts
    * import { LimitedBytesTransformStream } from "@std/streams/limited-bytes-transform-stream";
+   * import { assertEquals } from "@std/assert";
    *
-   * const limitedBytesTransformStream = new LimitedBytesTransformStream(42, { error: true });
+   * const stream = ReadableStream.from(["1234", "5678"]);
+   * const transformed = stream.pipeThrough(new TextEncoderStream()).pipeThrough(
+   *   // `4` is the boundary of the chunks
+   *   new LimitedBytesTransformStream(4),
+   * ).pipeThrough(new TextDecoderStream());
+   *
+   * assertEquals(
+   *   await Array.fromAsync(transformed),
+   *   // The first chunk was read, but the second chunk was not
+   *   ["1234"],
+   * );
+   * ```
+   *
+   * @example `size` is less than the total byte length of the chunks, and not at
+   * the boundary of the chunks
+   * ```ts
+   * import { LimitedBytesTransformStream } from "@std/streams/limited-bytes-transform-stream";
+   * import { assertEquals } from "@std/assert";
+   *
+   * const stream = ReadableStream.from(["1234", "5678"]);
+   * const transformed = stream.pipeThrough(new TextEncoderStream()).pipeThrough(
+   *   // `5` is not the boundary of the chunks
+   *   new LimitedBytesTransformStream(5),
+   * ).pipeThrough(new TextDecoderStream());
+   *
+   * assertEquals(
+   *   await Array.fromAsync(transformed),
+   *   // The second chunk was not read because it would exceed the specified size
+   *   ["1234"],
+   * );
+   * ```
+   *
+   * @example Throw error when the total byte length of the chunks exceeds the
+   * specified size
+   *
+   * ```ts
+   * import { LimitedBytesTransformStream } from "@std/streams/limited-bytes-transform-stream";
+   * import { assertRejects } from "@std/assert";
+   *
+   * const stream = ReadableStream.from(["1234", "5678"]);
+   * const transformed = stream.pipeThrough(new TextEncoderStream()).pipeThrough(
+   *   new LimitedBytesTransformStream(5, { error: true }),
+   * ).pipeThrough(new TextDecoderStream());
+   *
+   * await assertRejects(async () => {
+   *   await Array.fromAsync(transformed);
+   * }, RangeError);
    * ```
    */
   constructor(
