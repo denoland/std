@@ -90,7 +90,9 @@ function representYamlTimestamp(date: Date): string {
 export const timestamp: Type<"scalar", Date> = {
   tag: "tag:yaml.org,2002:timestamp",
   construct: constructYamlTimestamp,
-  instanceOf: Date,
+  predicate(object): object is Date {
+    return object instanceof Date;
+  },
   kind: "scalar",
   represent: representYamlTimestamp,
   resolve: resolveYamlTimestamp,
