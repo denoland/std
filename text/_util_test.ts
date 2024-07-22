@@ -97,7 +97,7 @@ Deno.test({
   name: "split() handles acronym followed by a capitalized word",
   fn() {
     const result = splitToWords("I Love HTMLDivElement");
-    const expected = ["I", "Love","HTML", "Div", "Element"];
+    const expected = ["I", "Love", "HTML", "Div", "Element"];
     assertEquals(result, expected);
   },
 });
