@@ -4,9 +4,12 @@
 import { splitToWords } from "./_util.ts";
 
 /**
- * **UNSTABLE**: New API, yet to be vetted.
- *
  * Converts a string into CONSTANT_CASE (also known as SCREAMING_SNAKE_CASE).
+ *
+ * > [!WARNING]
+ * > **UNSTABLE**: New API, yet to be vetted.
+ *
+ * @experimental
  *
  * @example Usage
  * ```ts
