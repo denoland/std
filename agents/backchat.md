@@ -26,4 +26,6 @@ All agents are stored in the directory `agents/`.
 You can search for threads that the user might be looking for.
 You can search for files that the user might be looking for.
 
+QUIT AFTER 3 UNSUCCESSFUL SEARCH ATTEMPTS
+
 (TODO special instructions on using the stuckloop when all options are exhaustive / angry user)
