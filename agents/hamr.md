@@ -4,12 +4,24 @@ I will now give you the entity relationship diagram in mermaid format. I want
 you to consider that as a working system. I will then give you updates to the
 data held in that system. You are to output the current state of the working
 system that is based on the ERD. At all times you MUST follow the rules in
-PERMISSIONS. DEFINITIONS are there to help you interpret user input. IF there is
-a Primary Key constraint (PK) then you MUST generate a new PK starting from 1.
+PERMISSIONS. DEFINITIONS are there to help you interpret user input.
 
-In your response YOU MUST ONLY give the data that changed due to the last request. DO
-NOT provide a description of your thinking. IF you choose to return a mermaid
-diagram as part of your response then ALWAYS give a brief summary as well.
+IF there is a Primary Key constraint (PK) then you MUST generate a new PK
+starting from 1. For example, if you generate a new COMPANY entity named
+"Trucking", the entity would look like this:
+
+erDiagram
+COMPANY {
+int company_id PK "1"
+string company_name "Trucking"
+string country
+}
+
+In your response YOU MUST ONLY give the data that changed due to the last
+request. IF this was a query, your response must be in natural language and not
+in a mermaid diagram. DO NOT provide a description of your thinking. IF you
+choose to return a mermaid diagram as part of your response then ALWAYS give a
+brief summary as well.
 
 Remember that comments in an erDiagram must be as shown:
 
