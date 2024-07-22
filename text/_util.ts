@@ -16,7 +16,7 @@ function splitByCase(input: string): string[] {
 }
 
 export function splitToWords(input: string) {
-  return input.split(/[^\p{L}\p{N}]+/gu).filter(Boolean).flatMap(splitByCase);
+  return input.split(/[^\p{L}\p{N}]+/u).filter(Boolean).flatMap(splitByCase);
 }
 
 export function capitalizeWord(word: string): string {
