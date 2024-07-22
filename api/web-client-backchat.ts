@@ -177,7 +177,6 @@ export class Backchat {
     return Promise.resolve({ pid, head: 'head' })
   }
   push(_params: { pid: PID }) {
-    console.log('push', _params)
     return Promise.resolve()
   }
   async rm(params: { repo?: string; all?: boolean }) {

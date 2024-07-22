@@ -48,6 +48,7 @@ export const functions = {
     const defaults = {
       runner: AGENT_RUNNERS.CHAT,
       instructions: '',
+      config: {},
     }
 
     const { pid, commit } = api

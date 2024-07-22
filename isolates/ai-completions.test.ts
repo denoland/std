@@ -6,7 +6,6 @@ import * as thread from './thread.ts'
 import FS from '@/git/fs.ts'
 import DB from '@/db.ts'
 import Accumulator from '@/exe/accumulator.ts'
-
 const agentMd = `
 ---
 commands:

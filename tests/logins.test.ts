@@ -19,7 +19,6 @@ Deno.test('login with github', async (t) => {
     home,
   )
   const authProvider = config.authProviders.github
-  console.log(print(authProvider))
   const opts = { target: authProvider }
   const github = await backchat.actions<Github.Api>('github', opts)
 

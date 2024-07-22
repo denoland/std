@@ -155,7 +155,6 @@ export default class FS {
     const { fs } = await FS.openHead(pid, db)
     const cache = FS.#getGitCache(pid)
     const result = await git.push({ fs, http, dir, url, cache })
-    console.log('push result', result)
     const { ok } = result
     if (!ok) {
       throw new Error('push failed')
