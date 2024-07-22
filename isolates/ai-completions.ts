@@ -53,7 +53,7 @@ export const functions = {
       stream: true,
       seed: 1337,
       tools,
-      tool_choice: toolChoice,
+      tool_choice: tools && toolChoice,
     }
     const assistant: OpenAI.ChatCompletionMessage = {
       role: 'assistant',
