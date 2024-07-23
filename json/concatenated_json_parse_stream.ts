@@ -77,22 +77,6 @@ export class ConcatenatedJsonParseStream
 
   /**
    * Constructs a new instance.
-   *
-   * @example Usage
-   *  ```ts
-   * import { ConcatenatedJsonParseStream } from "@std/json/concatenated-json-parse-stream";
-   * import { assertEquals } from "@std/assert";
-   *
-   * const stream = ReadableStream.from([
-   *   `{"foo":"bar"}`,
-   *   `{"baz":100}`,
-   * ]).pipeThrough(new ConcatenatedJsonParseStream());
-   *
-   * assertEquals(await Array.fromAsync(stream), [
-   *   { foo: "bar" },
-   *   { baz: 100 },
-   * ]);
-   * ```
    */
   constructor() {
     const { writable, readable } = toTransformStream(
