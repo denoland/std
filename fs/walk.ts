@@ -50,13 +50,6 @@ export class WalkError extends Error {
    *
    * @param cause The cause of the error.
    * @param root The root directory that's being walked.
-   *
-   * @example Usage
-   * ```ts no-eval
-   * import { WalkError } from "@std/fs/walk";
-   *
-   * throw new WalkError("error message", "./foo");
-   * ```
    */
   constructor(cause: unknown, root: string) {
     super(
