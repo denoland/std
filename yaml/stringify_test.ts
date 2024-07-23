@@ -184,6 +184,25 @@ Deno.test({
 });
 
 Deno.test({
+  name:
+    "stringify() ignores `!!js/*` yaml types when skipInvalid option is true",
+  fn() {
+    assertEquals(
+      stringify({ undefined: undefined }, { skipInvalid: true }),
+      "{}\n",
+    );
+    assertEquals(
+      stringify({
+        foobar() {
+          return "hello world!";
+        },
+      }, { skipInvalid: true }),
+      "{}\n",
+    );
+  },
+});
+
+Deno.test({
   name: "stringify() handles float types",
   fn() {
     const floats = [
