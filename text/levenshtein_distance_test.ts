@@ -1,24 +1,24 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-import { assertStrictEquals } from "@std/assert";
+import { assertEquals } from "@std/assert/equals";
 import { levenshteinDistance } from "./levenshtein_distance.ts";
 
 Deno.test("levenshteinDistance() handles basic cases", () => {
-  assertStrictEquals(levenshteinDistance("levenshtein", "levenshtein"), 0);
-  assertStrictEquals(levenshteinDistance("sitting", "kitten"), 3);
-  assertStrictEquals(levenshteinDistance("gumbo", "gambol"), 2);
-  assertStrictEquals(levenshteinDistance("saturday", "sunday"), 3);
-  assertStrictEquals(levenshteinDistance("aarrgh", "aargh"), 1);
-  assertStrictEquals(levenshteinDistance("aargh", "aarrgh"), 1);
+  assertEquals(levenshteinDistance("levenshtein", "levenshtein"), 0);
+  assertEquals(levenshteinDistance("sitting", "kitten"), 3);
+  assertEquals(levenshteinDistance("gumbo", "gambol"), 2);
+  assertEquals(levenshteinDistance("saturday", "sunday"), 3);
+  assertEquals(levenshteinDistance("aarrgh", "aargh"), 1);
+  assertEquals(levenshteinDistance("aargh", "aarrgh"), 1);
 });
 
 Deno.test("levenshteinDistance() handles empty strings", () => {
-  assertStrictEquals(levenshteinDistance("", "a"), 1);
-  assertStrictEquals(levenshteinDistance("a", ""), 1);
-  assertStrictEquals(levenshteinDistance("", ""), 0);
+  assertEquals(levenshteinDistance("", "a"), 1);
+  assertEquals(levenshteinDistance("a", ""), 1);
+  assertEquals(levenshteinDistance("", ""), 0);
 });
 
 Deno.test("levenshteinDistance() handles long strings", () => {
-  assertStrictEquals(
+  assertEquals(
     levenshteinDistance(
       "the quick brown fox jumps over the lazy dog",
       "the lazy dog is jumped over by the quick brown fox",
