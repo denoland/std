@@ -504,3 +504,19 @@ skills:
 `,
   );
 });
+
+Deno.test("stringify() handles nil", () => {
+  assertEquals(stringify(null), "null\n");
+  assertEquals(
+    stringify(null, { styles: { "tag:yaml.org,2002:null": "lowercase" } }),
+    "null\n",
+  );
+  assertEquals(
+    stringify(null, { styles: { "tag:yaml.org,2002:null": "uppercase" } }),
+    "NULL\n",
+  );
+  assertEquals(
+    stringify(null, { styles: { "tag:yaml.org,2002:null": "camelcase" } }),
+    "Null\n",
+  );
+});
