@@ -54,6 +54,14 @@ and [architecture guide](./ARCHITECTURE.md) before contributing.
    deprecation(<package>): <symbol>
    ```
 
+## Implementations
+
+### Assertions
+
+Do not use assertions from [`@std/assert`](https://jsr.io/@std/assert) to assert
+values in implementation code. Instead, check values inline. `@std/assert`
+functions should only be used in testing. See #4865 for details.
+
 ## Tests
 
 ### Test names
