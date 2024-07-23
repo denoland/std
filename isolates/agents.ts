@@ -9,7 +9,7 @@ export const api = {
       query: {
         type: 'string',
         description:
-          'The highly descriptive natrual language search query saying what the agent you want should be capable of doing.  Will return a ranked array of results, where each result will have a path to the agent file, the name of the agent, and a reason why it was selected, and optionally an avatar representing the agent.',
+          'The highly descriptive natural language search query saying what the agent you want should be capable of doing.  Will return a ranked array of results, where each result will have a path to the agent file, the name of the agent, and a reason why it was selected, and optionally an avatar representing the agent.',
       },
     },
     additionalProperties: false,
