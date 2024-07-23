@@ -442,3 +442,53 @@ skills:
   const actual = stringify(object);
   assertEquals(actual.trim(), expected.trim());
 });
+
+Deno.test("stringify() changes line wrap behavior based on lineWidth option", () => {
+  const object = {
+    message:
+      "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
+  };
+
+  assertEquals(
+    stringify(object, { lineWidth: 40 }),
+    `message: >-
+  Lorem ipsum dolor sit amet, consectetur
+  adipiscing elit, sed do eiusmod tempor
+  incididunt ut labore et dolore magna
+  aliqua. Ut enim ad minim veniam, quis
+  nostrud exercitation ullamco laboris
+  nisi ut aliquip ex ea commodo consequat.
+  Duis aute irure dolor in reprehenderit
+  in voluptate velit esse cillum dolore eu
+  fugiat nulla pariatur. Excepteur sint
+  occaecat cupidatat non proident, sunt in
+  culpa qui officia deserunt mollit anim
+  id est laborum.
+`,
+  );
+  // default lineWidth is 80
+  assertEquals(
+    stringify(object),
+    `message: >-
+  Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor
+  incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis
+  nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+  Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore
+  eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt
+  in culpa qui officia deserunt mollit anim id est laborum.
+`,
+  );
+  assertEquals(
+    stringify(object, { lineWidth: 120 }),
+    `message: >-
+  Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna
+  aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+  Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint
+  occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+`,
+  );
+  assertEquals(
+    stringify(object, { lineWidth: Infinity }),
+    "message: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.'\n",
+  );
+});
