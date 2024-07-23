@@ -184,6 +184,25 @@ Deno.test({
 });
 
 Deno.test({
+  name:
+    "stringify() ignores `!!js/*` yaml types when skipInvalid option is true",
+  fn() {
+    assertEquals(
+      stringify({ undefined: undefined }, { skipInvalid: true }),
+      "{}\n",
+    );
+    assertEquals(
+      stringify({
+        foobar() {
+          return "hello world!";
+        },
+      }, { skipInvalid: true }),
+      "{}\n",
+    );
+  },
+});
+
+Deno.test({
   name: "stringify() handles float types",
   fn() {
     const floats = [
@@ -473,3 +492,46 @@ skills:
     );
   },
 );
+
+Deno.test("stringify() changes indentation with indent option", () => {
+  const object = {
+    name: "John",
+    age: 30,
+    address: {
+      street: "123 Main St",
+      city: "Anytown",
+      zip: 12345,
+    },
+    skills: ["JavaScript", "TypeScript", "Deno"],
+  };
+
+  assertEquals(
+    stringify(object, { indent: 4 }),
+    `name: John
+age: 30
+address:
+    street: 123 Main St
+    city: Anytown
+    zip: 12345
+skills:
+    - JavaScript
+    - TypeScript
+    - Deno
+`,
+  );
+
+  assertEquals(
+    stringify(object, { indent: 8 }),
+    `name: John
+age: 30
+address:
+        street: 123 Main St
+        city: Anytown
+        zip: 12345
+skills:
+        - JavaScript
+        - TypeScript
+        - Deno
+`,
+  );
+});
