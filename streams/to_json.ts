@@ -10,7 +10,7 @@ import { toText } from "./to_text.ts";
  * Works the same as {@linkcode Response.json} and {@linkcode Request.json}, but
  * also extends to support streams of strings.
  *
- * @param readableStream A `ReadableStream` whose chunks compose a JSON.
+ * @param stream A `ReadableStream` whose chunks compose a JSON.
  * @returns A promise that resolves to the parsed JSON.
  *
  * @example Usage with a stream of strings

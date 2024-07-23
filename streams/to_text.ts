@@ -6,7 +6,7 @@
  * to a single string. Works the same as {@linkcode Response.text} and
  * {@linkcode Request.text}, but also extends to support streams of strings.
  *
- * @param readableStream A `ReadableStream` to convert into a `string`.
+ * @param stream A `ReadableStream` to convert into a `string`.
  * @returns A `Promise` that resolves to the `string`.
  *
  * @example Basic usage with a stream of strings
