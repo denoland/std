@@ -20,6 +20,9 @@
  * and Wasm/Rust is the same, this library prefers to use the implementation
  * provided by WebCrypto.
  *
+ * Length-adjustable algorithms support the
+ * {@linkcode DigestAlgorithmObject.length} option.
+ *
  * WebCrypto:
  * - `SHA-384`
  * - `SHA-256` (length-extendable)
@@ -33,7 +36,7 @@
  * - `BLAKE2B-256`
  * - `BLAKE2B-384`
  * - `BLAKE2S`
- * - `BLAKE3`
+ * - `BLAKE3` (length-adjustable)
  * - `KECCAK-224`
  * - `KECCAK-256`
  * - `KECCAK-384`
@@ -43,8 +46,8 @@
  * - `SHA3-256`
  * - `SHA3-384`
  * - `SHA3-512`
- * - `SHAKE128`
- * - `SHAKE256`
+ * - `SHAKE128` (length-adjustable)
+ * - `SHAKE256` (length-adjustable)
  * - `TIGER`
  * - `RIPEMD-160` (length-extendable)
  * - `SHA-224` (length-extendable)
@@ -215,6 +218,11 @@ const stdCrypto: StdCrypto = ((x) => x)({
         // and the data is a single buffer,
         isBufferSource(data)
       ) {
+        if (length !== undefined) {
+          throw new TypeError(
+            "non-default length specified for non-extendable algorithm",
+          );
+        }
         return await webCrypto.subtle.digest(algorithm, data);
       } else if (DIGEST_ALGORITHM_NAMES.includes(name as DigestAlgorithmName)) {
         if (isBufferSource(data)) {

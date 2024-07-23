@@ -14,6 +14,7 @@ import {
 } from "./mod.ts";
 import { repeat } from "@std/bytes/repeat";
 import { encodeHex } from "@std/encoding/hex";
+import { partition } from "@std/collections/partition";
 
 const webCrypto = globalThis.crypto;
 
@@ -154,16 +155,56 @@ Deno.test("digest() returns an ArrayBuffer", async () => {
   );
 });
 
-Deno.test("digest() handles length option", async () => {
+Deno.test("digest() handles length option", async (t) => {
   const inputString = "taking the hobbits to isengard";
   const inputBytes = new TextEncoder().encode(inputString);
 
-  assertEquals(
-    new Uint8Array(
-      await stdCrypto.subtle.digest({ name: "BLAKE3", length: 0 }, inputBytes),
-    ),
-    new Uint8Array(0),
+  const [supportedAlgorithmNames, unsupportedAlgorithmNames] = partition(
+    DIGEST_ALGORITHM_NAMES,
+    (name) => ["BLAKE3", "SHAKE128", "SHAKE256"].includes(name),
   );
+
+  for (const name of supportedAlgorithmNames) {
+    await t.step(`${name} supports length option (async)`, async () => {
+      assertEquals(
+        new Uint8Array(
+          await stdCrypto.subtle.digest({ name, length: 0 }, inputBytes),
+        ),
+        new Uint8Array(0),
+      );
+    });
+  }
+
+  for (const name of unsupportedAlgorithmNames) {
+    await t.step(`${name} does not support length option (sync)`, () => {
+      assertThrows(
+        () => stdCrypto.subtle.digestSync({ name, length: 0 }, inputBytes),
+        TypeError,
+        "non-default length specified for non-extendable algorithm",
+      );
+    });
+  }
+
+  for (const name of supportedAlgorithmNames) {
+    await t.step(`${name} supports length option (sync)`, () => {
+      assertEquals(
+        new Uint8Array(
+          stdCrypto.subtle.digestSync({ name, length: 0 }, inputBytes),
+        ),
+        new Uint8Array(0),
+      );
+    });
+  }
+
+  for (const name of unsupportedAlgorithmNames) {
+    await t.step(`${name} does not support length option (async)`, async () => {
+      await assertRejects(
+        () => stdCrypto.subtle.digest({ name, length: 0 }, inputBytes),
+        TypeError,
+        "non-default length specified for non-extendable algorithm",
+      );
+    });
+  }
 
   assertEquals(
     new Uint8Array(
