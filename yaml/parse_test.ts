@@ -1014,3 +1014,16 @@ name: Jane Doe`,
     { name: "Jane Doe", age: 30 },
   );
 });
+
+Deno.test("parse() throws at reseverd characters '`' and '@'", () => {
+  assertThrows(
+    () => parse("`"),
+    SyntaxError,
+    "end of the stream or a document separator is expected at line 1, column 1:\n    `\n    ^",
+  );
+  assertThrows(
+    () => parse("@"),
+    SyntaxError,
+    "end of the stream or a document separator is expected at line 1, column 1:\n    @\n    ^",
+  );
+});
