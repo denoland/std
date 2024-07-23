@@ -93,6 +93,12 @@ Deno.test("toPascalCase() trims whitespace", () => {
   assertEquals(result, expected);
 });
 
+Deno.test("toPascalCase() converts a single word with Cyrillic letters", () => {
+  const input = "шруберри";
+  const expected = "Шруберри";
+  assertEquals(toPascalCase(input), expected);
+});
+
 Deno.test("toSnakeCase() handles an empty string", () => {
   assertEquals(toSnakeCase(""), "");
 });
@@ -119,6 +125,11 @@ Deno.test("toSnakeCase() trims whitespace", () => {
   const result = toSnakeCase(" deno Is AWESOME ");
   const expected = "deno_is_awesome";
   assertEquals(result, expected);
+});
+
+Deno.test("toSnakeCase() splits words before and after the numbers", () => {
+  assertEquals(toSnakeCase("str2Num"), "str_2_num");
+  assertEquals(toSnakeCase("Str2Num"), "str_2_num");
 });
 
 Deno.test("toConstantCase() converts a single word", () => {
