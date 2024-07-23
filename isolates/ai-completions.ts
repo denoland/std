@@ -17,7 +17,8 @@ export const transcribe = async (file: File) => {
     .create({
       file,
       model: 'whisper-1',
-      prompt: 'Backchat, GPT4, GPT3, Dreamcatcher, CRM, HAL, Deno, Stucks',
+      prompt:
+        'Backchat, GPT4, GPT3, Dreamcatcher, CRM, HAL, Deno, Stucks, Redlid',
     })
   return transcription.text
 }

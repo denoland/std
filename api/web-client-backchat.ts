@@ -176,8 +176,8 @@ export class Backchat {
     const { pid } = params
     return Promise.resolve({ pid, head: 'head' })
   }
-  push(_params: { pid: PID }) {
-    return Promise.resolve()
+  push(params: { pid: PID }) {
+    return Promise.resolve(params)
   }
   async rm(params: { repo?: string; all?: boolean }) {
     // TODO move this to be rmRepo or something

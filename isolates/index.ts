@@ -20,6 +20,7 @@ import * as branches from './branches.ts'
 import * as agents from './agents.ts'
 import * as thread from './thread.ts'
 import * as threads from './threads.ts'
+import * as youtube from './youtube.ts'
 
 export default {
   system,
@@ -41,4 +42,5 @@ export default {
   agents,
   thread,
   threads,
+  youtube,
 }
