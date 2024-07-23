@@ -1,10 +1,7 @@
 ---
 config:
   parallel_tool_calls: false
-  tool_choice: 
-    type: function
-    function: 
-      name: agents_switch
+  tool_choice: required
 commands:
   - agents:search   # search for agents that can fulfill a query
   - agents:switch   # switch in the chosen agent to the thread
