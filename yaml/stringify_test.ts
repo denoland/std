@@ -463,6 +463,37 @@ skills:
   assertEquals(actual.trim(), expected.trim());
 });
 
+Deno.test(
+  "stringify() changes indentation style for arrays when arrayIndent = false is specified",
+  () => {
+    const object = {
+      name: "John",
+      age: 30,
+      address: {
+        street: "123 Main St",
+        city: "Anytown",
+        zip: 12345,
+      },
+      skills: ["JavaScript", "TypeScript", "Deno"],
+    };
+
+    assertEquals(
+      stringify(object, { arrayIndent: false }),
+      `name: John
+age: 30
+address:
+  street: 123 Main St
+  city: Anytown
+  zip: 12345
+skills:
+- JavaScript
+- TypeScript
+- Deno
+`,
+    );
+  },
+);
+
 Deno.test("stringify() changes the key order when the sortKeys option is specified", () => {
   const object = {
     "1.0.0": null,
@@ -609,4 +640,30 @@ Deno.test("stringify() handles nil", () => {
     stringify(null, { styles: { "tag:yaml.org,2002:null": "camelcase" } }),
     "Null\n",
   );
+});
+
+Deno.test("stringify() handles sequence", () => {
+  assertEquals(stringify([]), "[]\n");
+  assertEquals(
+    stringify(["Clark Evans", "Ingy döt Net", "Oren Ben-Kiki"]),
+    `- Clark Evans
+- Ingy döt Net
+- Oren Ben-Kiki
+`,
+  );
+});
+
+Deno.test("stringify() handles mapping", () => {
+  assertEquals(stringify({}), "{}\n");
+  assertEquals(
+    stringify({ Clark: "Evans", Ingy: "döt Net", Oren: "Ben-Kiki" }),
+    `Clark: Evans
+Ingy: döt Net
+Oren: Ben-Kiki
+`,
+  );
+});
+
+Deno.test("stringify() handles string", () => {
+  assertEquals(stringify("Hello World"), "Hello World\n");
 });
