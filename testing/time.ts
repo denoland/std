@@ -59,16 +59,6 @@ export type { DelayOptions };
 export class TimeError extends Error {
   /** Construct TimeError.
    *
-   * @example Usage
-   * ```ts
-   * import { FakeTime, TimeError } from "@std/testing/time";
-   * import { assertThrows } from "@std/assert";
-   *
-   * assertThrows(() => {
-   *   new FakeTime(NaN);
-   * }, TimeError);
-   * ```
-   *
    * @param message The error message
    */
   constructor(message: string) {
@@ -114,11 +104,15 @@ export interface FakeTimeOptions {
    * The rate relative to real time at which fake time is updated.
    * By default time only moves forward through calling tick or setting now.
    * Set to 1 to have the fake time automatically tick forward at the same rate in milliseconds as real time.
+   *
+   * @default {0}
    */
   advanceRate: number;
   /**
    * The frequency in milliseconds at which fake time is updated.
    * If advanceRate is set, we will update the time every 10 milliseconds by default.
+   *
+   * @default {10}
    */
   advanceFrequency?: number;
 }
@@ -193,12 +187,21 @@ function setTimer(
   return id;
 }
 
+function fakeAbortSignalTimeout(delay: number): AbortSignal {
+  const aborter = new AbortController();
+  fakeSetTimeout(() => {
+    aborter.abort(new DOMException("Signal timed out.", "TimeoutError"));
+  }, delay);
+  return aborter.signal;
+}
+
 function overrideGlobals() {
   globalThis.Date = FakeDate;
   globalThis.setTimeout = fakeSetTimeout;
   globalThis.clearTimeout = fakeClearTimeout;
   globalThis.setInterval = fakeSetInterval;
   globalThis.clearInterval = fakeClearInterval;
+  AbortSignal.timeout = fakeAbortSignalTimeout;
 }
 
 function restoreGlobals() {
@@ -207,6 +210,7 @@ function restoreGlobals() {
   globalThis.clearTimeout = _internals.clearTimeout;
   globalThis.setInterval = _internals.setInterval;
   globalThis.clearInterval = _internals.clearInterval;
+  AbortSignal.timeout = _internals.AbortSignalTimeout;
 }
 
 function* timerIdGen() {
@@ -277,37 +281,6 @@ export class FakeTime {
    * Construct a FakeTime object. This overrides the real Date object and timer functions with fake ones that can be
    * controlled through the fake time instance.
    *
-   * @example Usage
-   * ```ts
-   * import {
-   *   assertSpyCalls,
-   *   spy,
-   * } from "@std/testing/mock";
-   * import { FakeTime } from "@std/testing/time";
-   *
-   * function secondInterval(cb: () => void): number {
-   *   return setInterval(cb, 1000);
-   * }
-   *
-   * Deno.test("secondInterval calls callback every second and stops after being cleared", () => {
-   *   using time = new FakeTime();
-   *
-   *   const cb = spy();
-   *   const intervalId = secondInterval(cb);
-   *   assertSpyCalls(cb, 0);
-   *   time.tick(500);
-   *   assertSpyCalls(cb, 0);
-   *   time.tick(500);
-   *   assertSpyCalls(cb, 1);
-   *   time.tick(3500);
-   *   assertSpyCalls(cb, 4);
-   *
-   *   clearInterval(intervalId);
-   *   time.tick(1000);
-   *   assertSpyCalls(cb, 4);
-   * });
-   * ```
-   *
    * @param start The time to simulate. The default is the current time..
    * @param options The options
    */
@@ -338,11 +311,11 @@ export class FakeTime {
 
     advanceRate = Math.max(
       0,
-      options?.advanceRate ? options.advanceRate : 0,
+      options?.advanceRate ?? 0,
     );
     advanceFrequency = Math.max(
       0,
-      options?.advanceFrequency ? options.advanceFrequency : 10,
+      options?.advanceFrequency ?? 10,
     );
     advanceIntervalId = advanceRate > 0
       ? _internals.setInterval.call(null, () => {

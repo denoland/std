@@ -56,7 +56,11 @@ export interface LimitedTransformStreamOptions {
  * );
  * ```
  *
- * @example error: true
+ * @example Throw a {@linkcode RangeError} when the total number of chunks is
+ * about to exceed the specified limit
+ *
+ * Do this by setting `options.error` to `true`.
+ *
  * ```ts
  * import { LimitedTransformStream } from "@std/streams/limited-transform-stream";
  * import { assertRejects } from "@std/assert";
@@ -79,20 +83,6 @@ export class LimitedTransformStream<T> extends TransformStream<T, T> {
    *
    * @param size The maximum number of chunks to read.
    * @param options Options for the stream.
-   *
-   * @example size = 42
-   * ```ts no-assert
-   * import { LimitedTransformStream } from "@std/streams/limited-transform-stream";
-   *
-   * const limitedTransformStream = new LimitedTransformStream(42);
-   * ```
-   *
-   * @example size = 42, error = true
-   * ```ts no-assert
-   * import { LimitedTransformStream } from "@std/streams/limited-transform-stream";
-   *
-   * const limitedTransformStream = new LimitedTransformStream(42, { error: true });
-   * ```
    */
   constructor(
     size: number,

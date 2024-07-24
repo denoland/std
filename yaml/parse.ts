@@ -11,6 +11,7 @@ import { SCHEMA_MAP } from "./_schema.ts";
 export interface ParseOptions {
   /**
    * Name of the schema to use. Options includes:
+   * - `extended` (extends `default` schema)
    * - `default` (extends `core` schema)
    * - {@linkcode https://yaml.org/spec/1.2.2/#103-core-schema | core} (extends `json` schema)
    * - {@linkcode https://yaml.org/spec/1.2.2/#102-json-schema | json} (extends `failsafe` schema)
@@ -21,7 +22,7 @@ export interface ParseOptions {
   schema?: "core" | "default" | "failsafe" | "json" | "extended";
   /**
    * If `true`, duplicate keys will overwrite previous values. Otherwise,
-   * duplicate keys will throw a {@linkcode YamlError}.
+   * duplicate keys will throw a {@linkcode SyntaxError}.
    *
    * @default {false}
    */
@@ -30,7 +31,7 @@ export interface ParseOptions {
    * If defined, a function to call on warning messages taking an
    * {@linkcode Error} as its only argument.
    */
-  onWarning?(error?: Error): void;
+  onWarning?(error: Error): void;
 }
 
 /**
@@ -51,7 +52,7 @@ export interface ParseOptions {
  * assertEquals(data, { id: 1, name: "Alice" });
  * ```
  *
- * @throws {YamlError} Throws error on invalid YAML.
+ * @throws {SyntaxError} Throws error on invalid YAML.
  * @param content YAML string to parse.
  * @param options Parsing options.
  * @returns Parsed document.

@@ -5,7 +5,6 @@
 
 import { assertEquals, assertThrows } from "@std/assert";
 import { stringify } from "./stringify.ts";
-import { YamlError } from "./_error.ts";
 
 Deno.test({
   name: "stringify()",
@@ -143,7 +142,7 @@ Deno.test({
     const object = { undefined: undefined };
     assertThrows(
       () => stringify(object),
-      YamlError,
+      TypeError,
       "unacceptable kind of an object to dump",
     );
   },
@@ -180,6 +179,25 @@ Deno.test({
 
     assertThrows(
       () => stringify({ function: func }, { schema: "extended" }),
+    );
+  },
+});
+
+Deno.test({
+  name:
+    "stringify() ignores `!!js/*` yaml types when skipInvalid option is true",
+  fn() {
+    assertEquals(
+      stringify({ undefined: undefined }, { skipInvalid: true }),
+      "{}\n",
+    );
+    assertEquals(
+      stringify({
+        foobar() {
+          return "hello world!";
+        },
+      }, { skipInvalid: true }),
+      "{}\n",
     );
   },
 });
@@ -330,4 +348,175 @@ bar: {a: *ref_0, b: *ref_1}
 `,
     );
   },
+});
+
+Deno.test("stringify() handles indentation", () => {
+  const object = {
+    name: "John",
+    age: 30,
+    address: {
+      street: "123 Main St",
+      city: "Anytown",
+      zip: 12345,
+    },
+    skills: ["JavaScript", "TypeScript", "Deno"],
+  };
+
+  const expected = `name: John
+age: 30
+address:
+  street: 123 Main St
+  city: Anytown
+  zip: 12345
+skills:
+  - JavaScript
+  - TypeScript
+  - Deno
+`;
+
+  const actual = stringify(object);
+  assertEquals(actual.trim(), expected.trim());
+});
+
+Deno.test("stringify() handles indentation with whitespace values", () => {
+  const object = {
+    name: "John",
+    age: 30,
+    address: {
+      street: " 123 Main St ",
+      city: "Anytown",
+      zip: 12345,
+    },
+    skills: [" JavaScript ", "TypeScript", "Deno"],
+  };
+
+  const expected = `name: John
+age: 30
+address:
+  street: ' 123 Main St '
+  city: Anytown
+  zip: 12345
+skills:
+  - ' JavaScript '
+  - TypeScript
+  - Deno
+`;
+
+  const actual = stringify(object);
+  assertEquals(actual.trim(), expected.trim());
+});
+
+Deno.test("stringify() handles indentation with start newline values", () => {
+  const object = {
+    name: "John",
+    age: 30,
+    address: {
+      street: "\n123 Main St",
+      city: "Anytown",
+      zip: 12345,
+    },
+    skills: ["\nJavaScript", "TypeScript", "Deno"],
+  };
+
+  const expected = `name: John
+age: 30
+address:
+  street: |-\n\n    123 Main St
+  city: Anytown
+  zip: 12345
+skills:
+  - |-\n\n    JavaScript
+  - TypeScript
+  - Deno
+`;
+
+  const actual = stringify(object);
+  assertEquals(actual.trim(), expected.trim());
+});
+
+Deno.test("stringify() handles indentation with trailing newline values", () => {
+  const object = {
+    name: "John",
+    age: 30,
+    address: {
+      street: "123 Main St\n",
+      city: "Anytown",
+      zip: 12345,
+    },
+    skills: ["JavaScript\n", "TypeScript", "Deno"],
+  };
+
+  const expected = `name: John
+age: 30
+address:
+  street: |\n    123 Main St
+  city: Anytown
+  zip: 12345
+skills:
+  - |\n    JavaScript
+  - TypeScript
+  - Deno
+`;
+
+  const actual = stringify(object);
+  assertEquals(actual.trim(), expected.trim());
+});
+
+Deno.test("stringify() changes indentation with indent option", () => {
+  const object = {
+    name: "John",
+    age: 30,
+    address: {
+      street: "123 Main St",
+      city: "Anytown",
+      zip: 12345,
+    },
+    skills: ["JavaScript", "TypeScript", "Deno"],
+  };
+
+  assertEquals(
+    stringify(object, { indent: 4 }),
+    `name: John
+age: 30
+address:
+    street: 123 Main St
+    city: Anytown
+    zip: 12345
+skills:
+    - JavaScript
+    - TypeScript
+    - Deno
+`,
+  );
+
+  assertEquals(
+    stringify(object, { indent: 8 }),
+    `name: John
+age: 30
+address:
+        street: 123 Main St
+        city: Anytown
+        zip: 12345
+skills:
+        - JavaScript
+        - TypeScript
+        - Deno
+`,
+  );
+});
+
+Deno.test("stringify() handles nil", () => {
+  assertEquals(stringify(null), "null\n");
+  assertEquals(
+    stringify(null, { styles: { "tag:yaml.org,2002:null": "lowercase" } }),
+    "null\n",
+  );
+  assertEquals(
+    stringify(null, { styles: { "tag:yaml.org,2002:null": "uppercase" } }),
+    "NULL\n",
+  );
+  assertEquals(
+    stringify(null, { styles: { "tag:yaml.org,2002:null": "camelcase" } }),
+    "Null\n",
+  );
 });
