@@ -27,13 +27,6 @@ export class SubdirectoryMoveError extends Error {
    *
    * @param src The source file or directory as a string or URL.
    * @param dest The destination file or directory as a string or URL.
-   *
-   * @example Usage
-   * ```ts no-eval
-   * import { SubdirectoryMoveError } from "@std/fs/move";
-   *
-   * throw new SubdirectoryMoveError("./foo", "./foo/bar");
-   * ```
    */
   constructor(src: string | URL, dest: string | URL) {
     super(
@@ -93,8 +86,10 @@ export interface MoveOptions {
 export async function move(
   src: string | URL,
   dest: string | URL,
-  { overwrite = false }: MoveOptions = {},
+  options?: MoveOptions,
 ): Promise<void> {
+  const { overwrite = false } = options ?? {};
+
   const srcStat = await Deno.stat(src);
 
   if (
@@ -165,8 +160,10 @@ export async function move(
 export function moveSync(
   src: string | URL,
   dest: string | URL,
-  { overwrite = false }: MoveOptions = {},
+  options?: MoveOptions,
 ): void {
+  const { overwrite = false } = options ?? {};
+
   const srcStat = Deno.statSync(src);
 
   if (

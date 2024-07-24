@@ -752,6 +752,12 @@ c: 3`),
     { a: 1, b: 2, c: 3 },
   );
 
+  assertEquals(
+    parse(`<<: [{ a: 1 }, { b: 2 }]
+c: 1`),
+    { a: 1, b: 2, c: 1 },
+  );
+
   assertThrows(
     () =>
       // number can't be used as merge value
@@ -1006,5 +1012,18 @@ name: Jane Doe`,
       { allowDuplicateKeys: true },
     ),
     { name: "Jane Doe", age: 30 },
+  );
+});
+
+Deno.test("parse() throws at reseverd characters '`' and '@'", () => {
+  assertThrows(
+    () => parse("`"),
+    SyntaxError,
+    "end of the stream or a document separator is expected at line 1, column 1:\n    `\n    ^",
+  );
+  assertThrows(
+    () => parse("@"),
+    SyntaxError,
+    "end of the stream or a document separator is expected at line 1, column 1:\n    @\n    ^",
   );
 });
