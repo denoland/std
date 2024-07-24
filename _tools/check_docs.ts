@@ -405,7 +405,6 @@ function assertConstructorDocs(
       assertHasParamTag(constructor, param.left.name);
     }
   }
-  assertHasExampleTag(constructor);
 }
 
 /**

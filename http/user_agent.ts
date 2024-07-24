@@ -990,17 +990,6 @@ export class UserAgent {
   /**
    * Constructs a new instance.
    *
-   * @example Usage
-   * ```ts no-eval
-   * import { UserAgent } from "@std/http/user-agent";
-   *
-   * Deno.serve((req) => {
-   *   const userAgent = new UserAgent(req.headers.get("user-agent") ?? "");
-   *   return new Response(`Hello, ${userAgent.browser.name}
-   *     on ${userAgent.os.name} ${userAgent.os.version}!`);
-   * });
-   * ```
-   *
    * @param ua The user agent string to construct this instance with.
    */
   constructor(ua: string | null) {

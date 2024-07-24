@@ -5,7 +5,7 @@
 
 import { assertEquals, assertThrows } from "@std/assert";
 import { stringify } from "./stringify.ts";
-import { YamlError } from "./_error.ts";
+import { compare, parse } from "@std/semver";
 
 Deno.test({
   name: "stringify()",
@@ -143,7 +143,7 @@ Deno.test({
     const object = { undefined: undefined };
     assertThrows(
       () => stringify(object),
-      YamlError,
+      TypeError,
       "unacceptable kind of an object to dump",
     );
   },
@@ -180,6 +180,25 @@ Deno.test({
 
     assertThrows(
       () => stringify({ function: func }, { schema: "extended" }),
+    );
+  },
+});
+
+Deno.test({
+  name:
+    "stringify() ignores `!!js/*` yaml types when skipInvalid option is true",
+  fn() {
+    assertEquals(
+      stringify({ undefined: undefined }, { skipInvalid: true }),
+      "{}\n",
+    );
+    assertEquals(
+      stringify({
+        foobar() {
+          return "hello world!";
+        },
+      }, { skipInvalid: true }),
+      "{}\n",
     );
   },
 });
@@ -442,4 +461,152 @@ skills:
 
   const actual = stringify(object);
   assertEquals(actual.trim(), expected.trim());
+});
+
+Deno.test("stringify() changes the key order when the sortKeys option is specified", () => {
+  const object = {
+    "1.0.0": null,
+    "0.0.0-0": null,
+    "0.0.0": null,
+    "1.0.2": null,
+    "1.0.10": null,
+  };
+  assertEquals(
+    stringify(object),
+    `1.0.0: null
+0.0.0-0: null
+0.0.0: null
+1.0.2: null
+1.0.10: null
+`,
+  );
+  // When sortKeys is true, keys are sorted in ASCII char order
+  assertEquals(
+    stringify(object, { sortKeys: true }),
+    `0.0.0: null
+0.0.0-0: null
+1.0.0: null
+1.0.10: null
+1.0.2: null
+`,
+  );
+  // When sortKeys is a function, keys are sorted by the return value of the function
+  assertEquals(
+    stringify(object, { sortKeys: (a, b) => compare(parse(a), parse(b)) }),
+    `0.0.0-0: null
+0.0.0: null
+1.0.0: null
+1.0.2: null
+1.0.10: null
+`,
+  );
+});
+
+Deno.test("stringify() changes line wrap behavior based on lineWidth option", () => {
+  const object = {
+    message:
+      "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
+  };
+
+  assertEquals(
+    stringify(object, { lineWidth: 40 }),
+    `message: >-
+  Lorem ipsum dolor sit amet, consectetur
+  adipiscing elit, sed do eiusmod tempor
+  incididunt ut labore et dolore magna
+  aliqua. Ut enim ad minim veniam, quis
+  nostrud exercitation ullamco laboris
+  nisi ut aliquip ex ea commodo consequat.
+  Duis aute irure dolor in reprehenderit
+  in voluptate velit esse cillum dolore eu
+  fugiat nulla pariatur. Excepteur sint
+  occaecat cupidatat non proident, sunt in
+  culpa qui officia deserunt mollit anim
+  id est laborum.
+`,
+  );
+  // default lineWidth is 80
+  assertEquals(
+    stringify(object),
+    `message: >-
+  Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor
+  incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis
+  nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+  Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore
+  eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt
+  in culpa qui officia deserunt mollit anim id est laborum.
+`,
+  );
+  assertEquals(
+    stringify(object, { lineWidth: 120 }),
+    `message: >-
+  Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna
+  aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+  Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint
+  occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+`,
+  );
+  assertEquals(
+    stringify(object, { lineWidth: Infinity }),
+    "message: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.'\n",
+  );
+});
+
+Deno.test("stringify() changes indentation with indent option", () => {
+  const object = {
+    name: "John",
+    age: 30,
+    address: {
+      street: "123 Main St",
+      city: "Anytown",
+      zip: 12345,
+    },
+    skills: ["JavaScript", "TypeScript", "Deno"],
+  };
+
+  assertEquals(
+    stringify(object, { indent: 4 }),
+    `name: John
+age: 30
+address:
+    street: 123 Main St
+    city: Anytown
+    zip: 12345
+skills:
+    - JavaScript
+    - TypeScript
+    - Deno
+`,
+  );
+
+  assertEquals(
+    stringify(object, { indent: 8 }),
+    `name: John
+age: 30
+address:
+        street: 123 Main St
+        city: Anytown
+        zip: 12345
+skills:
+        - JavaScript
+        - TypeScript
+        - Deno
+`,
+  );
+});
+
+Deno.test("stringify() handles nil", () => {
+  assertEquals(stringify(null), "null\n");
+  assertEquals(
+    stringify(null, { styles: { "tag:yaml.org,2002:null": "lowercase" } }),
+    "null\n",
+  );
+  assertEquals(
+    stringify(null, { styles: { "tag:yaml.org,2002:null": "uppercase" } }),
+    "NULL\n",
+  );
+  assertEquals(
+    stringify(null, { styles: { "tag:yaml.org,2002:null": "camelcase" } }),
+    "Null\n",
+  );
 });

@@ -54,6 +54,14 @@ and [architecture guide](./ARCHITECTURE.md) before contributing.
    deprecation(<package>): <symbol>
    ```
 
+## Implementations
+
+### Assertions
+
+Do not use assertions from [`@std/assert`](https://jsr.io/@std/assert) to assert
+values in implementation code. Instead, check values inline. `@std/assert`
+functions should only be used in testing. See #4865 for details.
+
 ## Tests
 
 ### Test names
@@ -133,3 +141,23 @@ delimiter. E.g.
  * ```
  */
 ````
+
+### Notices for unstable APIs
+
+Each unstable API must have the
+[`@experimental`](https://tsdoc.org/pages/tags/experimental/) TSDoc tag and a
+[warning alert](https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax#alerts)
+after the starting description.
+
+```ts
+/**
+ * <description>
+ *
+ * > [!WARNING]
+ * > **UNSTABLE**: New API, yet to be vetted.
+ *
+ * @experimental
+ *
+ * ...
+ */
+```

@@ -3,18 +3,15 @@
 
 import {
   convertRowToObject,
-  ERR_BARE_QUOTE,
-  ERR_FIELD_COUNT,
-  ERR_INVALID_DELIM,
-  ERR_QUOTE,
-  ParseError,
+  createBareQuoteErrorMessage,
+  createQuoteErrorMessage,
   type ParseResult,
   type ReadOptions,
   type RecordWithColumn,
 } from "./_io.ts";
 import { codePointLength } from "./_shared.ts";
 
-export { ParseError, type ParseResult, type RecordWithColumn };
+export type { ParseResult, RecordWithColumn };
 
 const BYTE_ORDER_MARK = "\ufeff";
 
@@ -112,7 +109,9 @@ class Parser {
             const col = codePointLength(
               fullLine.slice(0, fullLine.length - line.slice(j).length),
             );
-            throw new ParseError(startLine + 1, lineIndex, col, ERR_BARE_QUOTE);
+            throw new SyntaxError(
+              createBareQuoteErrorMessage(startLine + 1, lineIndex, col),
+            );
           }
         }
         recordBuffer += field;
@@ -152,7 +151,9 @@ class Parser {
               const col = codePointLength(
                 fullLine.slice(0, fullLine.length - line.length - quoteLen),
               );
-              throw new ParseError(startLine + 1, lineIndex, col, ERR_QUOTE);
+              throw new SyntaxError(
+                createQuoteErrorMessage(startLine + 1, lineIndex, col),
+              );
             }
           } else if (line.length > 0 || !(this.#isEOF())) {
             // Hit end of line (copy all data so far).
@@ -165,7 +166,9 @@ class Parser {
               // Abrupt end of file (EOF or error).
               if (!this.#options.lazyQuotes) {
                 const col = codePointLength(fullLine);
-                throw new ParseError(startLine + 1, lineIndex, col, ERR_QUOTE);
+                throw new SyntaxError(
+                  createQuoteErrorMessage(startLine + 1, lineIndex, col),
+                );
               }
               fieldIndexes.push(recordBuffer.length);
               break parseField;
@@ -175,7 +178,9 @@ class Parser {
             // Abrupt end of file (EOF on error).
             if (!this.#options.lazyQuotes) {
               const col = codePointLength(fullLine);
-              throw new ParseError(startLine + 1, lineIndex, col, ERR_QUOTE);
+              throw new SyntaxError(
+                createQuoteErrorMessage(startLine + 1, lineIndex, col),
+              );
             }
             fieldIndexes.push(recordBuffer.length);
             break parseField;
@@ -209,7 +214,7 @@ class Parser {
         INVALID_RUNE.includes(options.comment)) ||
       options.separator === options.comment
     ) {
-      throw new Error(ERR_INVALID_DELIM);
+      throw new Error("Invalid Delimiter");
     }
 
     while (true) {
@@ -232,7 +237,9 @@ class Parser {
 
       if (lineResult.length > 0) {
         if (_nbFields && _nbFields !== lineResult.length) {
-          throw new ParseError(lineIndex, lineIndex, null, ERR_FIELD_COUNT);
+          throw new SyntaxError(
+            `record on line ${lineIndex}: wrong number of fields`,
+          );
         }
         result.push(lineResult);
       }
