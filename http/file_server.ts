@@ -839,21 +839,13 @@ function main() {
     console.log(message);
   }
 
-  if (useTls) {
-    Deno.serve({
-      port,
-      hostname: host,
-      onListen,
-      cert: Deno.readTextFileSync(certFile),
-      key: Deno.readTextFileSync(keyFile),
-    }, handler);
-  } else {
-    Deno.serve({
-      port,
-      hostname: host,
-      onListen,
-    }, handler);
-  }
+  Deno.serve({
+    port,
+    hostname: host,
+    onListen,
+    cert: useTls ? Deno.readTextFileSync(certFile) : undefined,
+    key: useTls ? Deno.readTextFileSync(keyFile) : undefined,
+  }, handler);
 }
 
 function printUsage() {
