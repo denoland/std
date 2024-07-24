@@ -1052,3 +1052,33 @@ Deno.test("parse() handles sequence", () => {
     ["Clark Evans", "Ingy döt Net", "Oren Ben-Kiki"],
   );
 });
+
+Deno.test("parse() handles mapping", () => {
+  assertEquals(parse("{}"), {});
+  assertEquals(
+    parse("{ Clark: Evans, Ingy: döt Net, Oren: Ben-Kiki }"),
+    { Clark: "Evans", Ingy: "döt Net", Oren: "Ben-Kiki" },
+  );
+  assertEquals(parse("!!map {}"), {});
+  assertEquals(
+    parse("!!map { Clark: Evans, Ingy: döt Net, Oren: Ben-Kiki }"),
+    { Clark: "Evans", Ingy: "döt Net", Oren: "Ben-Kiki" },
+  );
+  assertEquals(
+    parse(`!!map
+    `),
+    {},
+  );
+  assertEquals(
+    parse(`!!map
+  Clark : Evans
+  Ingy  : döt Net
+  Oren  : Ben-Kiki`),
+    { Clark: "Evans", Ingy: "döt Net", Oren: "Ben-Kiki" },
+  );
+});
+
+Deno.test("parse() handles string", () => {
+  assertEquals(parse("!!str"), "");
+  assertEquals(parse("!!str 2002-04-28"), "2002-04-28");
+});

@@ -5,6 +5,7 @@
 
 import { assertEquals, assertThrows } from "@std/assert";
 import { stringify } from "./stringify.ts";
+import { compare, parse } from "@std/semver";
 
 Deno.test({
   name: "stringify()",
@@ -462,6 +463,95 @@ skills:
   assertEquals(actual.trim(), expected.trim());
 });
 
+Deno.test("stringify() changes the key order when the sortKeys option is specified", () => {
+  const object = {
+    "1.0.0": null,
+    "0.0.0-0": null,
+    "0.0.0": null,
+    "1.0.2": null,
+    "1.0.10": null,
+  };
+  assertEquals(
+    stringify(object),
+    `1.0.0: null
+0.0.0-0: null
+0.0.0: null
+1.0.2: null
+1.0.10: null
+`,
+  );
+  // When sortKeys is true, keys are sorted in ASCII char order
+  assertEquals(
+    stringify(object, { sortKeys: true }),
+    `0.0.0: null
+0.0.0-0: null
+1.0.0: null
+1.0.10: null
+1.0.2: null
+`,
+  );
+  // When sortKeys is a function, keys are sorted by the return value of the function
+  assertEquals(
+    stringify(object, { sortKeys: (a, b) => compare(parse(a), parse(b)) }),
+    `0.0.0-0: null
+0.0.0: null
+1.0.0: null
+1.0.2: null
+1.0.10: null
+`,
+  );
+});
+
+Deno.test("stringify() changes line wrap behavior based on lineWidth option", () => {
+  const object = {
+    message:
+      "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
+  };
+
+  assertEquals(
+    stringify(object, { lineWidth: 40 }),
+    `message: >-
+  Lorem ipsum dolor sit amet, consectetur
+  adipiscing elit, sed do eiusmod tempor
+  incididunt ut labore et dolore magna
+  aliqua. Ut enim ad minim veniam, quis
+  nostrud exercitation ullamco laboris
+  nisi ut aliquip ex ea commodo consequat.
+  Duis aute irure dolor in reprehenderit
+  in voluptate velit esse cillum dolore eu
+  fugiat nulla pariatur. Excepteur sint
+  occaecat cupidatat non proident, sunt in
+  culpa qui officia deserunt mollit anim
+  id est laborum.
+`,
+  );
+  // default lineWidth is 80
+  assertEquals(
+    stringify(object),
+    `message: >-
+  Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor
+  incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis
+  nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+  Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore
+  eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt
+  in culpa qui officia deserunt mollit anim id est laborum.
+`,
+  );
+  assertEquals(
+    stringify(object, { lineWidth: 120 }),
+    `message: >-
+  Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna
+  aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+  Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint
+  occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+`,
+  );
+  assertEquals(
+    stringify(object, { lineWidth: Infinity }),
+    "message: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.'\n",
+  );
+});
+
 Deno.test("stringify() changes indentation with indent option", () => {
   const object = {
     name: "John",
@@ -530,4 +620,19 @@ Deno.test("stringify() handles sequence", () => {
 - Oren Ben-Kiki
 `,
   );
+});
+
+Deno.test("stringify() handles mapping", () => {
+  assertEquals(stringify({}), "{}\n");
+  assertEquals(
+    stringify({ Clark: "Evans", Ingy: "döt Net", Oren: "Ben-Kiki" }),
+    `Clark: Evans
+Ingy: döt Net
+Oren: Ben-Kiki
+`,
+  );
+});
+
+Deno.test("stringify() handles string", () => {
+  assertEquals(stringify("Hello World"), "Hello World\n");
 });
