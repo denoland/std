@@ -4,17 +4,10 @@
 // This module is browser compatible.
 
 /**
- * Utilities for working with OS-specific file paths.
- *
- * This module also provides some functions that help when working with URLs.
- * See the documentation for examples.
- *
- * Codes in the examples uses POSIX path but it automatically use Windows path
- * on Windows. Use methods under `posix` or `win32` object instead to handle non
- * platform specific path like:
+ * Utilities for working with POSIX-formatted paths.
  *
  * ```ts
- * import { fromFileUrl } from "@std/path/posix";
+ * import { fromFileUrl } from "@std/path/posix/from-file-url";
  * import { assertEquals } from "@std/assert";
  *
  * assertEquals(fromFileUrl("file:///home/foo"), "/home/foo");
