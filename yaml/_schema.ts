@@ -24,6 +24,26 @@ import {
   undefinedType,
 } from "./_type/mod.ts";
 
+/**
+ * Name of the schema to use.
+ *
+ * Options include:
+ * - `failsafe`: supports generic mappings, generic sequences and generic
+ * strings.
+ * - `json`: extends `failsafe` schema by also supporting nulls, booleans,
+ * integers and floats.
+ * - `core`: extends `json` schema by also supporting tag resolution.
+ * - `default`: extends `core` schema by also supporting binary, omap, pairs and
+ * set types.
+ * - `extended`: extends `default` schema by also supporting regular
+ * expressions and undefined values.
+ *
+ * See
+ * {@link https://yaml.org/spec/1.2.2/#chapter-10-recommended-schemas | YAML 1.2 spec}
+ * for more details on the `failsafe`, `json` and `core` schemas.
+ */
+export type SchemaType = "core" | "default" | "failsafe" | "json" | "extended";
+
 // deno-lint-ignore no-explicit-any
 function compileList<K extends KindType, D = any>(
   schema: Schema,
