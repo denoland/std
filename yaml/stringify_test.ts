@@ -5,6 +5,7 @@
 
 import { assertEquals, assertThrows } from "@std/assert";
 import { stringify } from "./stringify.ts";
+import { compare, parse } from "@std/semver";
 
 Deno.test({
   name: "stringify()",
@@ -460,6 +461,45 @@ skills:
 
   const actual = stringify(object);
   assertEquals(actual.trim(), expected.trim());
+});
+
+Deno.test("stringify() changes the key order when the sortKeys option is specified", () => {
+  const object = {
+    "1.0.0": null,
+    "0.0.0-0": null,
+    "0.0.0": null,
+    "1.0.2": null,
+    "1.0.10": null,
+  };
+  assertEquals(
+    stringify(object),
+    `1.0.0: null
+0.0.0-0: null
+0.0.0: null
+1.0.2: null
+1.0.10: null
+`,
+  );
+  // When sortKeys is true, keys are sorted in ASCII char order
+  assertEquals(
+    stringify(object, { sortKeys: true }),
+    `0.0.0: null
+0.0.0-0: null
+1.0.0: null
+1.0.10: null
+1.0.2: null
+`,
+  );
+  // When sortKeys is a function, keys are sorted by the return value of the function
+  assertEquals(
+    stringify(object, { sortKeys: (a, b) => compare(parse(a), parse(b)) }),
+    `0.0.0-0: null
+0.0.0: null
+1.0.0: null
+1.0.2: null
+1.0.10: null
+`,
+  );
 });
 
 Deno.test("stringify() changes line wrap behavior based on lineWidth option", () => {
