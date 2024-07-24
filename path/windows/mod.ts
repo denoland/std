@@ -4,11 +4,7 @@
 // This module is browser compatible.
 
 /**
- * Utilities for working with OS-specific file paths.
- *
- * Codes in the examples uses POSIX path but it automatically use Windows path
- * on Windows. Use methods under `posix` or `win32` object instead to handle non
- * platform specific path like:
+ * Utilities for working with Windows-specific paths.
  *
  * ```ts
  * import { fromFileUrl } from "@std/path/windows";
