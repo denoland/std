@@ -463,6 +463,37 @@ skills:
   assertEquals(actual.trim(), expected.trim());
 });
 
+Deno.test(
+  "stringify() changes indentation style for arrays when arrayIndent = false is specified",
+  () => {
+    const object = {
+      name: "John",
+      age: 30,
+      address: {
+        street: "123 Main St",
+        city: "Anytown",
+        zip: 12345,
+      },
+      skills: ["JavaScript", "TypeScript", "Deno"],
+    };
+
+    assertEquals(
+      stringify(object, { arrayIndent: false }),
+      `name: John
+age: 30
+address:
+  street: 123 Main St
+  city: Anytown
+  zip: 12345
+skills:
+- JavaScript
+- TypeScript
+- Deno
+`,
+    );
+  },
+);
+
 Deno.test("stringify() changes the key order when the sortKeys option is specified", () => {
   const object = {
     "1.0.0": null,
