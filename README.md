@@ -23,5 +23,20 @@ in to `main`.
 - Repo: https://github.com/dreamcatcher-tech/artifact-ui
 - Web: https://hal3.dreamcatcher.land
 - API: https://hal3.deno.dev
-- API-Next: https://hal3-next.deno.dev
 - released on: 2024-06-24
+- frozen on: 2024-07-13
+
+### backchat
+
+- Repo: https://github.com/dreamcatcher-tech/artifact-ui
+- Web: https://backchat.dreamcatcher.land
+- API: https://hal3-next.deno.dev
+- released on: 2024-07-20
+- frozen on: 2024-07-23
+
+### longthreat
+
+- Repo: https://github.com/dreamcatcher-tech/artifact-ui
+- Web: https://dash.deno.com/projects/longthreat-ui
+- API: https://longthreat.deno.dev
+- released on: 2024-07-23
