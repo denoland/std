@@ -73,7 +73,11 @@ export interface LimitedBytesTransformStreamOptions {
  * );
  * ```
  *
- * @example error: true
+ * @example Throw error when the total byte length of the chunks exceeds the
+ * specified size
+ *
+ * To do so, set `options.error` to `true`.
+ *
  * ```ts
  * import { LimitedBytesTransformStream } from "@std/streams/limited-bytes-transform-stream";
  * import { assertRejects } from "@std/assert";
@@ -97,20 +101,6 @@ export class LimitedBytesTransformStream
    *
    * @param size A size limit in bytes.
    * @param options Options for the stream.
-   *
-   * @example size = 42
-   * ```ts no-assert
-   * import { LimitedBytesTransformStream } from "@std/streams/limited-bytes-transform-stream";
-   *
-   * const limitedBytesTransformStream = new LimitedBytesTransformStream(42);
-   * ```
-   *
-   * @example size = 42, error = true
-   * ```ts no-assert
-   * import { LimitedBytesTransformStream } from "@std/streams/limited-bytes-transform-stream";
-   *
-   * const limitedBytesTransformStream = new LimitedBytesTransformStream(42, { error: true });
-   * ```
    */
   constructor(
     size: number,
