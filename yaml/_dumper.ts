@@ -26,7 +26,7 @@ import {
   SINGLE_QUOTE,
   VERTICAL_LINE,
 } from "./_chars.ts";
-import { DEFAULT_SCHEMA, type Schema } from "./_schema.ts";
+import { CORE_SCHEMA, type Schema } from "./_schema.ts";
 import type { KindType, StyleVariant, Type } from "./_type.ts";
 import { type ArrayObject, getObjectTypeString, isObject } from "./_utils.ts";
 
@@ -486,7 +486,7 @@ export class DumperState {
   dump: any;
 
   constructor({
-    schema = DEFAULT_SCHEMA,
+    schema = CORE_SCHEMA,
     indent = 2,
     arrayIndent = true,
     skipInvalid = false,

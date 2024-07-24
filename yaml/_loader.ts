@@ -36,7 +36,7 @@ import {
   VERTICAL_LINE,
 } from "./_chars.ts";
 import { Mark } from "./_mark.ts";
-import { DEFAULT_SCHEMA, type Schema, type TypeMap } from "./_schema.ts";
+import { CORE_SCHEMA, type Schema, type TypeMap } from "./_schema.ts";
 import type { KindType, Type } from "./_type.ts";
 import { type ArrayObject, getObjectTypeString, isObject } from "./_utils.ts";
 
@@ -161,7 +161,7 @@ class LoaderState {
   constructor(
     input: string,
     {
-      schema = DEFAULT_SCHEMA,
+      schema = CORE_SCHEMA,
       onWarning,
       allowDuplicateKeys = false,
     }: LoaderStateOptions,

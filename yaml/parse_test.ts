@@ -193,18 +193,21 @@ Deno.test({
   name: "parse() handles binary type",
   fn() {
     const yaml = `message: !!binary "SGVsbG8="`;
-    assertEquals(parse(yaml), {
+    assertEquals(parse(yaml, { schema: "extended" }), {
       message: new Uint8Array([72, 101, 108, 108, 111]),
     });
 
     // ignore CR LF in base64 string
     assertEquals(
-      parse(`message: !!binary |
+      parse(
+        `message: !!binary |
   YWJjZGVmZ\r
   2hpamtsbW\r
   5vcHFyc3R\r
   1dnd4eXo=
-`),
+`,
+        { schema: "extended" },
+      ),
       {
         // deno-fmt-ignore
         message: new Uint8Array([97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122]),
@@ -214,21 +217,21 @@ Deno.test({
     // check tailbits handling
     // 2 padding characters
     assertEquals(
-      parse(`message: !!binary "AQ=="`),
+      parse(`message: !!binary "AQ=="`, { schema: "extended" }),
       {
         message: new Uint8Array([1]),
       },
     );
     // 1 padding character
     assertEquals(
-      parse(`message: !!binary "AQI="`),
+      parse(`message: !!binary "AQI="`, { schema: "extended" }),
       {
         message: new Uint8Array([1, 2]),
       },
     );
     // no padding character
     assertEquals(
-      parse(`message: !!binary "AQID"`),
+      parse(`message: !!binary "AQID"`, { schema: "extended" }),
       {
         message: new Uint8Array([1, 2, 3]),
       },
@@ -236,14 +239,14 @@ Deno.test({
 
     // invalid base64 string
     assertThrows(
-      () => parse("message: !!binary <>"),
+      () => parse("message: !!binary <>", { schema: "extended" }),
       SyntaxError,
       "cannot resolve a node with !<tag:yaml.org,2002:binary> explicit tag at line 1, column 21:\n    message: !!binary <>\n                        ^",
     );
 
     // empty base64 string is error
     assertThrows(
-      () => parse("message: !!binary"),
+      () => parse("message: !!binary", { schema: "extended" }),
       SyntaxError,
       "cannot resolve a node with !<tag:yaml.org,2002:binary> explicit tag at line 2, column 1:\n    \n    ^",
     );
@@ -412,11 +415,14 @@ Deno.test({
   name: "parse() handles timestamp types",
   fn() {
     assertEquals(
-      parse(`
+      parse(
+        `
 - 2001-12-15T02:59:43.1Z
 - 2001-12-14t21:59:43.10-05:00
 - 2001-12-14 21:59:43.10 -5
-- 2002-12-14`),
+- 2002-12-14`,
+        { schema: "extended" },
+      ),
       [
         new Date(Date.UTC(2001, 11, 15, 2, 59, 43, 100)),
         new Date("2001-12-14T21:59:43.100-05:00"),
@@ -426,13 +432,13 @@ Deno.test({
     );
 
     assertThrows(
-      () => parse("- !!timestamp"),
+      () => parse("- !!timestamp", { schema: "extended" }),
       SyntaxError,
       "cannot resolve a node with !<tag:yaml.org,2002:timestamp> explicit tag at line 2, column 1:\n    \n    ^",
     );
 
     assertThrows(
-      () => parse("- !!timestamp 1"),
+      () => parse("- !!timestamp 1", { schema: "extended" }),
       SyntaxError,
       "cannot resolve a node with !<tag:yaml.org,2002:timestamp> explicit tag at line 1, column 16:\n    - !!timestamp 1\n                   ^",
     );
@@ -447,7 +453,7 @@ Deno.test({
 - Sammy Sosa: 63
 - Ken Griffey: 58
 `;
-    assertEquals(parse(yaml), [
+    assertEquals(parse(yaml, { schema: "extended" }), [
       { "Mark McGwire": 65 },
       { "Sammy Sosa": 63 },
       { "Ken Griffey": 58 },
@@ -456,25 +462,25 @@ Deno.test({
     // Invalid omap
     // map entry is not an object
     assertThrows(
-      () => parse("--- !!omap\n- 1"),
+      () => parse("--- !!omap\n- 1", { schema: "extended" }),
       SyntaxError,
       "cannot resolve a node with !<tag:yaml.org,2002:omap> explicit tag",
     );
     // map entry is empty object
     assertThrows(
-      () => parse("--- !!omap\n- {}"),
+      () => parse("--- !!omap\n- {}", { schema: "extended" }),
       SyntaxError,
       "cannot resolve a node with !<tag:yaml.org,2002:omap> explicit tag",
     );
     // map entry is an object with multiple keys
     assertThrows(
-      () => parse("--- !!omap\n- foo: 1\n  bar: 2"),
+      () => parse("--- !!omap\n- foo: 1\n  bar: 2", { schema: "extended" }),
       SyntaxError,
       "cannot resolve a node with !<tag:yaml.org,2002:omap> explicit tag",
     );
     // 2 map entries have the same key
     assertThrows(
-      () => parse("--- !!omap\n- foo: 1\n- foo: 2"),
+      () => parse("--- !!omap\n- foo: 1\n- foo: 2", { schema: "extended" }),
       SyntaxError,
       "cannot resolve a node with !<tag:yaml.org,2002:omap> explicit tag",
     );
@@ -483,9 +489,12 @@ Deno.test({
 
 Deno.test("parse() handles !!pairs type", () => {
   assertEquals(
-    parse(`!!pairs
+    parse(
+      `!!pairs
 - Monday: 3
-- Tuesday: 4`),
+- Tuesday: 4`,
+      { schema: "extended" },
+    ),
     [
       ["Monday", 3],
       ["Tuesday", 4],
@@ -493,19 +502,19 @@ Deno.test("parse() handles !!pairs type", () => {
   );
   // empty pairs
   assertEquals(
-    parse(`!!pairs`),
+    parse(`!!pairs`, { schema: "extended" }),
     [],
   );
   // invalid pairs
   assertThrows(
     // pair is not an object
-    () => parse(`!!pairs\n- 1`),
+    () => parse(`!!pairs\n- 1`, { schema: "extended" }),
     SyntaxError,
     "cannot resolve a node with !<tag:yaml.org,2002:pairs> explicit tag",
   );
   assertThrows(
     // pair is object with multiple keys
-    () => parse(`!!pairs\n- { Monday: 3, Tuesday: 4 }`),
+    () => parse(`!!pairs\n- { Monday: 3, Tuesday: 4 }`, { schema: "extended" }),
     SyntaxError,
     "cannot resolve a node with !<tag:yaml.org,2002:pairs> explicit tag",
   );
@@ -513,34 +522,49 @@ Deno.test("parse() handles !!pairs type", () => {
 
 Deno.test("parse() handles anchors and aliases", () => {
   assertEquals(
-    parse(`- &anchor Foo
-- *anchor`),
+    parse(
+      `- &anchor Foo
+- *anchor`,
+      { schema: "extended" },
+    ),
     ["Foo", "Foo"],
   );
   assertEquals(
-    parse(`- &anchor 1
-- *anchor`),
+    parse(
+      `- &anchor 1
+- *anchor`,
+      { schema: "extended" },
+    ),
     [1, 1],
   );
   assertEquals(
-    parse(`- &anchor { Monday: 3, Tuesday: 4 }
-- *anchor`),
+    parse(
+      `- &anchor { Monday: 3, Tuesday: 4 }
+- *anchor`,
+      { schema: "extended" },
+    ),
     [{ Monday: 3, Tuesday: 4 }, { Monday: 3, Tuesday: 4 }],
   );
   assertEquals(
-    parse(`- &anchor
+    parse(
+      `- &anchor
   Monday: 3
   Tuesday: 4
 - <<: *anchor
-  Wednesday: 5`),
+  Wednesday: 5`,
+      { schema: "extended" },
+    ),
     [
       { Monday: 3, Tuesday: 4 },
       { Monday: 3, Tuesday: 4, Wednesday: 5 },
     ],
   );
   assertEquals(
-    parse(`- &anchor !!binary "SGVsbG8="
-- *anchor`),
+    parse(
+      `- &anchor !!binary "SGVsbG8="
+- *anchor`,
+      { schema: "extended" },
+    ),
     [
       new Uint8Array([72, 101, 108, 108, 111]),
       new Uint8Array([72, 101, 108, 108, 111]),
@@ -548,15 +572,21 @@ Deno.test("parse() handles anchors and aliases", () => {
   );
   assertThrows(
     () =>
-      parse(`- &anchor Foo
-- *anchor2`),
+      parse(
+        `- &anchor Foo
+- *anchor2`,
+        { schema: "extended" },
+      ),
     SyntaxError,
     'unidentified alias "anchor2" at line 2, column 11:\n    - *anchor2\n              ^',
   );
   assertThrows(
     () =>
-      parse(`- &anchor Foo
-- *`),
+      parse(
+        `- &anchor Foo
+- *`,
+        { schema: "extended" },
+      ),
     SyntaxError,
     "name of an alias node must contain at least one character at line 2, column 4:\n    - *\n       ^",
   );
@@ -747,22 +777,31 @@ Deno.test("parse() throws with invalid strings", () => {
 
 Deno.test("parse() handles merge (<<) types", () => {
   assertEquals(
-    parse(`<<: { a: 1, b: 2 }
-c: 3`),
+    parse(
+      `<<: { a: 1, b: 2 }
+c: 3`,
+      { schema: "extended" },
+    ),
     { a: 1, b: 2, c: 3 },
   );
 
   assertEquals(
-    parse(`<<: [{ a: 1 }, { b: 2 }]
-c: 1`),
+    parse(
+      `<<: [{ a: 1 }, { b: 2 }]
+c: 1`,
+      { schema: "extended" },
+    ),
     { a: 1, b: 2, c: 1 },
   );
 
   assertThrows(
     () =>
       // number can't be used as merge value
-      parse(`<<: 1
-c: 3`),
+      parse(
+        `<<: 1
+c: 3`,
+        { schema: "extended" },
+      ),
     SyntaxError,
     "cannot merge mappings; the provided source object is unacceptable at line 1, column 6:\n    <<: 1\n         ^",
   );
@@ -932,14 +971,17 @@ Deno.test("parse() throws with \0 in the middle of the document", () => {
 
 Deno.test("parse() handles complex mapping key", () => {
   assertEquals(
-    parse(`? - Detroit Tigers
+    parse(
+      `? - Detroit Tigers
   - Chicago cubs
 : - 2001-07-23
 
 ? [ New York Yankees,
     Atlanta Braves ]
 : [ 2001-07-02, 2001-08-12,
-    2001-08-14 ]`),
+    2001-08-14 ]`,
+      { schema: "extended" },
+    ),
     {
       "Detroit Tigers,Chicago cubs": [new Date("2001-07-23")],
       "New York Yankees,Atlanta Braves": [
@@ -974,10 +1016,13 @@ Deno.test("parse() handles complex mapping key", () => {
 
 Deno.test("parse() handles unordered set", () => {
   assertEquals(
-    parse(`--- !!set
+    parse(
+      `--- !!set
 ? Mark McGwire
 ? Sammy Sosa
-? Ken Griffey`),
+? Ken Griffey`,
+      { schema: "extended" },
+    ),
     { "Mark McGwire": null, "Sammy Sosa": null, "Ken Griffey": null },
   );
 });

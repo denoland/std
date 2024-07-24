@@ -39,7 +39,7 @@ test: foobar
 binary: !<tag:yaml.org,2002:binary> SGVsbG8=
 `;
 
-    assertEquals(stringify(FIXTURE), ASSERTS);
+    assertEquals(stringify(FIXTURE, { schema: "extended" }), ASSERTS);
   },
 });
 
@@ -119,19 +119,19 @@ Deno.test({
   name: "stringify() serializes Uint8Array as !!binary",
   fn() {
     assertEquals(
-      stringify(new Uint8Array([1])),
+      stringify(new Uint8Array([1]), { schema: "extended" }),
       "!<tag:yaml.org,2002:binary> AQ==\n",
     );
     assertEquals(
-      stringify(new Uint8Array([1, 2])),
+      stringify(new Uint8Array([1, 2]), { schema: "extended" }),
       "!<tag:yaml.org,2002:binary> AQI=\n",
     );
     assertEquals(
-      stringify(new Uint8Array([1, 2, 3])),
+      stringify(new Uint8Array([1, 2, 3]), { schema: "extended" }),
       "!<tag:yaml.org,2002:binary> AQID\n",
     );
     assertEquals(
-      stringify(new Uint8Array(Array(50).keys())),
+      stringify(new Uint8Array(Array(50).keys()), { schema: "extended" }),
       "!<tag:yaml.org,2002:binary> AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8gISIjJCUmJygpKissLS4vMDE=\n",
     );
   },
@@ -265,7 +265,7 @@ Deno.test({
   name: "stringify() format Date objet into ISO string",
   fn() {
     assertEquals(
-      stringify([new Date("2021-01-01T00:00:00.000Z")]),
+      stringify([new Date("2021-01-01T00:00:00.000Z")], { schema: "extended" }),
       `- 2021-01-01T00:00:00.000Z\n`,
     );
   },

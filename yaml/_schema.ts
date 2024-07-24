@@ -37,17 +37,15 @@ import {
  * strings.
  * - `json`: extends `failsafe` schema by also supporting nulls, booleans,
  * integers and floats.
- * - `core`: extends `json` schema by also supporting tag resolution.
- * - `default`: extends `core` schema by also supporting binary, omap, pairs and
- * set types.
- * - `extended`: extends `default` schema by also supporting regular
- * expressions and undefined values.
+ * - `core` (default): extends `json` schema by also supporting tag resolution.
+ * - `extended`: extends `default` schema by also supporting binary, omap,
+ * pairs, set, regular expressions and undefined types, and anchors and aliases.
  *
  * See
  * {@link https://yaml.org/spec/1.2.2/#chapter-10-recommended-schemas | YAML 1.2 spec}
  * for more details on the `failsafe`, `json` and `core` schemas.
  */
-export type SchemaType = "failsafe" | "json" | "core" | "default" | "extended";
+export type SchemaType = "failsafe" | "json" | "core" | "extended";
 
 // deno-lint-ignore no-explicit-any
 function compileList<K extends KindType, D = any>(
@@ -147,17 +145,8 @@ const JSON_SCHEMA = new Schema({
  *
  * @see {@link http://www.yaml.org/spec/1.2/spec.html#id2804923}
  */
-const CORE_SCHEMA = new Schema({
+export const CORE_SCHEMA = new Schema({
   include: [JSON_SCHEMA],
-});
-
-/**
- * Default YAML schema. It is not described in the YAML specification.
- */
-export const DEFAULT_SCHEMA = new Schema({
-  explicit: [binary, omap, pairs, set],
-  implicit: [timestamp, merge],
-  include: [CORE_SCHEMA],
 });
 
 /***
@@ -186,14 +175,14 @@ export const DEFAULT_SCHEMA = new Schema({
  * ```
  */
 const EXTENDED_SCHEMA = new Schema({
-  explicit: [regexp, undefinedType],
-  include: [DEFAULT_SCHEMA],
+  explicit: [regexp, undefinedType, binary, omap, pairs, set],
+  implicit: [timestamp, merge],
+  include: [CORE_SCHEMA],
 });
 
 export const SCHEMA_MAP = new Map([
-  ["core", CORE_SCHEMA],
-  ["default", DEFAULT_SCHEMA],
   ["failsafe", FAILSAFE_SCHEMA],
   ["json", JSON_SCHEMA],
+  ["core", CORE_SCHEMA],
   ["extended", EXTENDED_SCHEMA],
 ]);
