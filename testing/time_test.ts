@@ -339,7 +339,7 @@ Deno.test("FakeTime.restoreFor() returns promise that rejected to TimeError if F
   await assertRejects(
     () => FakeTime.restoreFor(() => {}),
     TimeError,
-    "no fake time",
+    "Time is not faked",
   );
 });
 
@@ -659,10 +659,18 @@ Deno.test("Faked timer functions throws when called after FakeTime is restored",
     fakeSetInterval = setInterval;
     fakeClearInterval = clearInterval;
   }
-  assertThrows(() => fakeSetTimeout(() => {}, 0), TimeError, "no fake time");
-  assertThrows(() => fakeClearTimeout(0), TimeError, "no fake time");
-  assertThrows(() => fakeSetInterval(() => {}, 0), TimeError, "no fake time");
-  assertThrows(() => fakeClearInterval(0), TimeError, "no fake time");
+  assertThrows(
+    () => fakeSetTimeout(() => {}, 0),
+    TimeError,
+    "Time is not faked",
+  );
+  assertThrows(() => fakeClearTimeout(0), TimeError, "Time is not faked");
+  assertThrows(
+    () => fakeSetInterval(() => {}, 0),
+    TimeError,
+    "Time is not faked",
+  );
+  assertThrows(() => fakeClearInterval(0), TimeError, "Time is not faked");
 });
 
 Deno.test("Faked Date.now returns real time after FakeTime is restored", () => {
@@ -692,19 +700,19 @@ Deno.test("FakeTime can be constructed with number, Date, or string", () => {
 });
 
 Deno.test("FakeTime throws when NaN is provided", () => {
-  assertThrows(() => new FakeTime(NaN), TimeError, "invalid start");
+  assertThrows(() => new FakeTime(NaN), TimeError, "Invalid start");
 });
 
 Deno.test("FakeTime.restore() throws when the time is already restored", () => {
   const _time = new FakeTime();
   FakeTime.restore();
-  assertThrows(() => FakeTime.restore(), TimeError, "time already restored");
+  assertThrows(() => FakeTime.restore(), TimeError, "Time is already restored");
 });
 
 Deno.test("time.restore() throws when the time is already restored", () => {
   const time = new FakeTime();
   time.restore();
-  assertThrows(() => time.restore(), TimeError, "time already restored");
+  assertThrows(() => time.restore(), TimeError, "Time is already restored");
 });
 
 Deno.test("time.now = N throws when N < time.now", () => {

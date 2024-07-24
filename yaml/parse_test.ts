@@ -1052,3 +1052,8 @@ Deno.test("parse() handles mapping", () => {
     { Clark: "Evans", Ingy: "döt Net", Oren: "Ben-Kiki" },
   );
 });
+
+Deno.test("parse() handles string", () => {
+  assertEquals(parse("!!str"), "");
+  assertEquals(parse("!!str 2002-04-28"), "2002-04-28");
+});
