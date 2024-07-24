@@ -1027,3 +1027,8 @@ Deno.test("parse() throws at reseverd characters '`' and '@'", () => {
     "end of the stream or a document separator is expected at line 1, column 1:\n    @\n    ^",
   );
 });
+
+Deno.test("parse() handles string", () => {
+  assertEquals(parse("!!str"), "");
+  assertEquals(parse("!!str 2002-04-28"), "2002-04-28");
+});
