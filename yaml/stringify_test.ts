@@ -520,3 +520,7 @@ Deno.test("stringify() handles nil", () => {
     "Null\n",
   );
 });
+
+Deno.test("stringify() handles string", () => {
+  assertEquals(stringify("Hello World"), "Hello World\n");
+});
