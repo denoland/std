@@ -1028,6 +1028,31 @@ Deno.test("parse() throws at reseverd characters '`' and '@'", () => {
   );
 });
 
+Deno.test("parse() handles sequence", () => {
+  assertEquals(parse("[]"), []);
+  assertEquals(
+    parse("[ Clark Evans, Ingy döt Net, Oren Ben-Kiki ]"),
+    ["Clark Evans", "Ingy döt Net", "Oren Ben-Kiki"],
+  );
+  assertEquals(parse("!!seq []"), []);
+  assertEquals(
+    parse("!!seq [ Clark Evans, Ingy döt Net, Oren Ben-Kiki ]"),
+    ["Clark Evans", "Ingy döt Net", "Oren Ben-Kiki"],
+  );
+  assertEquals(
+    parse(`!!seq
+    `),
+    [],
+  );
+  assertEquals(
+    parse(`!!seq
+- Clark Evans
+- Ingy döt Net
+- Oren Ben-Kiki`),
+    ["Clark Evans", "Ingy döt Net", "Oren Ben-Kiki"],
+  );
+});
+
 Deno.test("parse() handles mapping", () => {
   assertEquals(parse("{}"), {});
   assertEquals(
