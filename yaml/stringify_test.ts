@@ -520,3 +520,14 @@ Deno.test("stringify() handles nil", () => {
     "Null\n",
   );
 });
+
+Deno.test("stringify() handles mapping", () => {
+  assertEquals(stringify({}), "{}\n");
+  assertEquals(
+    stringify({ Clark: "Evans", Ingy: "döt Net", Oren: "Ben-Kiki" }),
+    `Clark: Evans
+Ingy: döt Net
+Oren: Ben-Kiki
+`,
+  );
+});
