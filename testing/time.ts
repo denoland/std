@@ -131,12 +131,12 @@ function fakeSetTimeout(
   // deno-lint-ignore no-explicit-any
   ...args: any[]
 ): number {
-  if (!time) throw new TimeError("no fake time");
+  if (!time) throw new TimeError("Time is not faked");
   return setTimer(callback, delay, args, false);
 }
 
 function fakeClearTimeout(id?: unknown) {
-  if (!time) throw new TimeError("no fake time");
+  if (!time) throw new TimeError("Time is not faked");
   if (typeof id === "number" && dueNodes.has(id)) {
     dueNodes.delete(id);
   }
@@ -149,12 +149,12 @@ function fakeSetInterval(
   // deno-lint-ignore no-explicit-any
   ...args: any[]
 ): number {
-  if (!time) throw new TimeError("no fake time");
+  if (!time) throw new TimeError("Time is not faked");
   return setTimer(callback, delay, args, true);
 }
 
 function fakeClearInterval(id?: unknown) {
-  if (!time) throw new TimeError("no fake time");
+  if (!time) throw new TimeError("Time is not faked");
   if (typeof id === "number" && dueNodes.has(id)) {
     dueNodes.delete(id);
   }
@@ -288,7 +288,7 @@ export class FakeTime {
     start?: number | string | Date | null,
     options?: FakeTimeOptions,
   ) {
-    if (time) throw new TimeError("The time is already faked");
+    if (time) throw new TimeError("Time is already faked");
     initializedAt = _internals.Date.now();
     startedAt = start instanceof Date
       ? start.valueOf()
@@ -297,7 +297,7 @@ export class FakeTime {
       : typeof start === "string"
       ? (new Date(start)).valueOf()
       : initializedAt;
-    if (Number.isNaN(startedAt)) throw new TimeError("invalid start");
+    if (Number.isNaN(startedAt)) throw new TimeError("Invalid start");
     now = startedAt;
 
     timerId = timerIdGen();
@@ -373,7 +373,7 @@ export class FakeTime {
    * ```
    */
   static restore() {
-    if (!time) throw new TimeError("time already restored");
+    if (!time) throw new TimeError("Time is already restored");
     time.restore();
   }
 
@@ -407,7 +407,7 @@ export class FakeTime {
     // deno-lint-ignore no-explicit-any
     ...args: any[]
   ): Promise<T> {
-    if (!time) return Promise.reject(new TimeError("no fake time"));
+    if (!time) return Promise.reject(new TimeError("Time is not faked"));
     restoreGlobals();
     try {
       const result = callback.apply(null, args);
@@ -791,7 +791,7 @@ export class FakeTime {
    * ```
    */
   restore() {
-    if (!time) throw new TimeError("time already restored");
+    if (!time) throw new TimeError("Time is already restored");
     time = undefined;
     restoreGlobals();
     if (advanceIntervalId) clearInterval(advanceIntervalId);
