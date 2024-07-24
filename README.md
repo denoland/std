@@ -37,6 +37,6 @@ in to `main`.
 ### longthreat
 
 - Repo: https://github.com/dreamcatcher-tech/artifact-ui
-- Web: https://dash.deno.com/projects/longthreat-ui
+- Web: https://longthreat-ui.deno.dev
 - API: https://longthreat.deno.dev
 - released on: 2024-07-23
