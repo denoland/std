@@ -339,7 +339,7 @@ Deno.test("FakeTime.restoreFor() returns promise that rejected to TimeError if F
   await assertRejects(
     () => FakeTime.restoreFor(() => {}),
     TimeError,
-    "no fake time",
+    "Time is not faked",
   );
 });
 
