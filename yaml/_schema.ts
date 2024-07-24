@@ -27,6 +27,11 @@ import {
 /**
  * Name of the schema to use.
  *
+ * > ![NOTE]
+ * > It is recommended to use the schema that is most appropriate for your use
+ * > case. Doing so will avoid any unnecessary processing and benefit
+ * > performance.
+ *
  * Options include:
  * - `failsafe`: supports generic mappings, generic sequences and generic
  * strings.
@@ -42,7 +47,7 @@ import {
  * {@link https://yaml.org/spec/1.2.2/#chapter-10-recommended-schemas | YAML 1.2 spec}
  * for more details on the `failsafe`, `json` and `core` schemas.
  */
-export type SchemaType = "core" | "default" | "failsafe" | "json" | "extended";
+export type SchemaType = "failsafe" | "json" | "core" | "default" | "extended";
 
 // deno-lint-ignore no-explicit-any
 function compileList<K extends KindType, D = any>(
