@@ -181,6 +181,10 @@ export default class IA<T extends object = Default> {
     assert(this.#accumulator.isActive, 'Activity is denied')
     return this.#fs.read(path)
   }
+  readOid(path: string) {
+    assert(this.#accumulator.isActive, 'Activity is denied')
+    return this.#fs.readOid(path)
+  }
   readBinary(path: string) {
     assert(this.#accumulator.isActive, 'Activity is denied')
     log('readBinary', path)

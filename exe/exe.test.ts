@@ -15,7 +15,7 @@ import { Engine } from '@/engine.ts'
 import { Api } from '@/isolates/io-fixture.ts'
 import { Crypto } from '@/api/web-client-crypto.ts'
 import { Backchat } from '@/api/web-client-backchat.ts'
-import { randomId } from '@/constants.ts'
+import { hash } from '@/constants.ts'
 
 type PartialRequest = Omit<SolidRequest, 'target'>
 
@@ -99,7 +99,7 @@ Deno.test('loopback', async () => {
 
 Deno.test('compound', async (t) => {
   const target = {
-    repoId: `rep_${randomId('compound')}`,
+    repoId: `rep_${hash('compound')}`,
     account: 'exe',
     repository: 'other',
     branches: ['other'],

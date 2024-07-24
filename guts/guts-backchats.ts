@@ -1,5 +1,5 @@
 import { expect, log } from '@utils'
-import { CradleMaker, print, randomId } from '@/constants.ts'
+import { CradleMaker, hash, print } from '@/constants.ts'
 import { Crypto } from '@/api/web-client-crypto.ts'
 import { Backchat } from '@/api/web-client-backchat.ts'
 
@@ -42,7 +42,7 @@ export default (name: string, cradleMaker: CradleMaker) => {
       await expect(Backchat.upsert(engine, key, 'invalid'))
         .rejects.toThrow('Invalid resume backchat id: invalid')
 
-      const almost = `bac_${randomId('almost')}`
+      const almost = `bac_${hash('almost')}`
       const next = await Backchat.upsert(engine, key, almost)
       expect(next.threadId).not.toEqual(almost)
     })

@@ -130,9 +130,23 @@ export type Thread = {
   agent: Agent
   messages: OpenAI.ChatCompletionMessageParam[]
   toolCommits: { [toolCallId: string]: CommitOid }
-  // openai threadid
-  // metadatas: name and summary of sections of the thread
-  // stateboards: stateboard changes linked to messages
+}
+export type LongThread = {
+  messages: OpenAI.ChatCompletionMessageParam[]
+  toolCommits: { [toolCallId: string]: CommitOid }
+  /** Have any files been changed in this threads branch */
+  isDirty?: boolean
+  externalId: string
+  summaries?: {
+    title: string
+    summary: string
+    /** The message index that this summary starts with */
+    start: number
+    /** The message index that this summary ends with */
+    end: number
+  }[]
+  /** When the stateboard changes, the commit is logged, for replay */
+  stateboards?: { start: number; commit: string }[]
 }
 export type BackchatThread = Thread & {
   focus: string
@@ -147,12 +161,14 @@ export type Agent = {
   /** Where exactly did this agent come from */
   source: Triad
   description?: string
-  config?: {
-    model?: 'gpt-3.5-turbo' | 'gpt-4-turbo' | 'gpt-4o' | 'gpt-4o-mini'
-    temperature?: number
-    presencePenalty?: number
+  config: {
+    model: 'gpt-3.5-turbo' | 'gpt-4-turbo' | 'gpt-4o' | 'gpt-4o-mini'
+    temperature: number
+    presence_penalty?: number
     /** control model behaviour to force it to call a tool or no tool */
-    toolChoice?: 'auto' | 'none' | 'required'
+    tool_choice?: 'auto' | 'none' | 'required'
+    /** Is the model permitted to call more than one function at a time */
+    parallel_tool_calls?: boolean
   }
   runner: AGENT_RUNNERS
   commands?: string[]
@@ -530,7 +546,12 @@ export const toActions = <T = DispatchFunctions>(
       return execute(unsequencedRequest)
     }
   }
-  return actions as T
+  return actions as PromisifyFunctionReturnTypes<T>
+}
+type PromisifyFunctionReturnTypes<T> = {
+  [K in keyof T]: T[K] extends (...args: infer Args) => infer R
+    ? (...args: Args) => R extends Promise<unknown> ? R : Promise<R>
+    : T[K]
 }
 const safeParams = (params?: Params) => {
   if (!params) {
@@ -549,17 +570,22 @@ export const machineIdRegex = /^mac_[2-7a-z]{33}$/
 export const actorIdRegex = /^act_[0-9A-HJKMNP-TV-Z]{16}$/
 export const backchatIdRegex = /^bac_[0-9A-HJKMNP-TV-Z]{16}$/
 export const threadIdRegex = /^the_[0-9A-HJKMNP-TV-Z]{16}$/
+export const agentHashRegex = /^age_[0-9A-HJKMNP-TV-Z]{16}$/
+
 export const SU_ACTOR = 'act_0000000000000000'
 export const SU_BACKCHAT = 'bac_0000000000000000'
 
 export const generateActorId = (seed: string) => {
-  return 'act_' + randomId(seed)
+  return 'act_' + hash(seed)
 }
 export const generateBackchatId = (seed: string) => {
-  return 'bac_' + randomId(seed)
+  return 'bac_' + hash(seed)
 }
 export const generateThreadId = (seed: string) => {
-  return 'the_' + randomId(seed)
+  return 'the_' + hash(seed)
+}
+export const generateAgentHash = (creationString: string) => {
+  return 'age_' + hash(creationString)
 }
 
 export const getActorId = (source: PID) => {
@@ -640,8 +666,12 @@ export const getParent = (pid: PID) => {
   branches.pop()
   return freezePid({ ...pid, branches })
 }
+export const getBase = (pid: PID) => {
+  const branches = [pid.branches[0]]
+  return freezePid({ ...pid, branches })
+}
 
-export const randomId = (seed: string) => {
+export const hash = (seed: string) => {
   const hash = ripemd160(seed)
   const encoded = base32crockford.encode(hash)
   return encoded.slice(-16)

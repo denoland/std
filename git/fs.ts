@@ -4,12 +4,12 @@ import { assert, Debug, equal, posix } from '@utils'
 import {
   Change,
   ENTRY_BRANCH,
+  hash,
   IO_PATH,
   isBaseRepo,
   PartialPID,
   PID,
   print,
-  randomId,
   sha1,
 } from '@/constants.ts'
 import git, { Errors, type MergeDriverCallback } from '$git'
@@ -604,7 +604,7 @@ const assertPath = (path: string) => {
 
 const generateFakeRepoId = () => {
   // TODO make this genuine based on the genesis commit
-  return `rep_${randomId(ulid())}`
+  return `rep_${hash(ulid())}`
 }
 
 const mergeDriver: MergeDriverCallback = ({ contents, path }) => {

@@ -49,7 +49,7 @@ const load = async (commands: string[] = [], api: IA) => {
         // TODO should we be calling backchat to do this job ?
         const { execute } = await api.actions<thread.Api>('thread', {
           branchName: threadId,
-          // note noClose is not used ?
+          // TODO noClose is not used ?
         })
         assert(typeof prompt === 'string', `invalid text: ${prompt}`)
         log('agent command:', name, prompt, api.commit)

@@ -1,5 +1,5 @@
 import { assert, posix } from '@utils'
-import { AGENT_RUNNERS, IA, Triad } from '@/constants.ts'
+import { AGENT_RUNNERS, Functions, Triad } from '@/constants.ts'
 import { type Agent } from '@/constants.ts'
 import matter from 'gray-matter'
 
@@ -39,16 +39,20 @@ export interface Api {
   ) => Promise<{ path: string; agent: Agent }[]>
 }
 
-export const functions = {
-  load: async ({ path }: { path: string }, api: IA) => {
+export const functions: Functions<Api> = {
+  load: async ({ path }, api) => {
     assert(path.endsWith('.md'), 'path must end with .md')
     const string = await api.read(path)
     const { data, content } = matter(string.trim())
     assert(typeof content === 'string', 'content missing')
+    const config: Agent['config'] = {
+      model: 'gpt-4o-mini',
+      temperature: 0,
+    }
     const defaults = {
       runner: AGENT_RUNNERS.CHAT,
       instructions: '',
-      config: {},
+      config,
     }
 
     const { pid, commit } = api
@@ -60,15 +64,15 @@ export const functions = {
     assertAgent(loaded)
     return loaded
   },
-  loadAll: async ({ dir }: { dir: string }, api: IA) => {
+  loadAll: async ({ dir }, api) => {
     // TODO provide globs
-    const agents: { name: string; agent: Agent }[] = []
+    const agents: { path: string; agent: Agent }[] = []
     const files = await api.ls(dir)
     for (const file of files) {
       if (file.endsWith('.md')) {
         const path = posix.basename(file, posix.extname(file))
         const agent = await functions.load({ path }, api)
-        agents.push({ name: agent.name, agent })
+        agents.push({ path, agent })
       }
     }
     return agents

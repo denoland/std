@@ -33,6 +33,14 @@ export type C = {
   seed?: Deno.KvEntry<unknown>[]
 }
 
+/** Extends the actions api to be the isolate api */
+export type Functions<Api> = {
+  [K in keyof Api]: Function<Api[K]>
+}
+type Function<T> = T extends (...args: infer Args) => infer R
+  ? (...args: [...Args, IA]) => R
+  : never
+
 export type IsolateFunction = {
   (): unknown | Promise<unknown>
   (...args: [Params]): unknown | Promise<unknown>
