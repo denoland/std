@@ -16,6 +16,7 @@ in to `main`.
 - Repo: https://github.com/dreamcatcher-tech/hal2
 - Web: https://hal.dreamcatcher.land
 - API: https://healthy-seal-74.deno.dev
+- released on: 2024-05-25
 - frozen on: 2024-06-24
 
 ### HAL3
