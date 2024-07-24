@@ -502,6 +502,56 @@ Deno.test("stringify() changes the key order when the sortKeys option is specifi
   );
 });
 
+Deno.test("stringify() changes line wrap behavior based on lineWidth option", () => {
+  const object = {
+    message:
+      "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
+  };
+
+  assertEquals(
+    stringify(object, { lineWidth: 40 }),
+    `message: >-
+  Lorem ipsum dolor sit amet, consectetur
+  adipiscing elit, sed do eiusmod tempor
+  incididunt ut labore et dolore magna
+  aliqua. Ut enim ad minim veniam, quis
+  nostrud exercitation ullamco laboris
+  nisi ut aliquip ex ea commodo consequat.
+  Duis aute irure dolor in reprehenderit
+  in voluptate velit esse cillum dolore eu
+  fugiat nulla pariatur. Excepteur sint
+  occaecat cupidatat non proident, sunt in
+  culpa qui officia deserunt mollit anim
+  id est laborum.
+`,
+  );
+  // default lineWidth is 80
+  assertEquals(
+    stringify(object),
+    `message: >-
+  Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor
+  incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis
+  nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+  Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore
+  eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt
+  in culpa qui officia deserunt mollit anim id est laborum.
+`,
+  );
+  assertEquals(
+    stringify(object, { lineWidth: 120 }),
+    `message: >-
+  Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna
+  aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+  Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint
+  occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+`,
+  );
+  assertEquals(
+    stringify(object, { lineWidth: Infinity }),
+    "message: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.'\n",
+  );
+});
+
 Deno.test("stringify() changes indentation with indent option", () => {
   const object = {
     name: "John",
@@ -542,5 +592,21 @@ skills:
         - TypeScript
         - Deno
 `,
+  );
+});
+
+Deno.test("stringify() handles nil", () => {
+  assertEquals(stringify(null), "null\n");
+  assertEquals(
+    stringify(null, { styles: { "tag:yaml.org,2002:null": "lowercase" } }),
+    "null\n",
+  );
+  assertEquals(
+    stringify(null, { styles: { "tag:yaml.org,2002:null": "uppercase" } }),
+    "NULL\n",
+  );
+  assertEquals(
+    stringify(null, { styles: { "tag:yaml.org,2002:null": "camelcase" } }),
+    "Null\n",
   );
 });
