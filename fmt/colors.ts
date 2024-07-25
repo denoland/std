@@ -6,6 +6,11 @@
 /**
  * String formatters and utilities for dealing with ANSI color codes.
  *
+ * > ![IMPORTANT]
+ * > If printing directly to the console, it's recommended to style console
+ * > output using CSS (guide
+ * > {@linkcode https://developer.mozilla.org/en-US/docs/Web/API/console#styling_console_output | here}).
+ *
  * This module supports `NO_COLOR` environmental variable disabling any coloring
  * if `NO_COLOR` is set.
  *

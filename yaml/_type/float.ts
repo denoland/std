@@ -12,8 +12,6 @@ const YAML_FLOAT_PATTERN = new RegExp(
     // .2e4, .2
     // special case, seems not from spec
     "|\\.[0-9_]+(?:[eE][-+]?[0-9]+)?" +
-    // 20:59
-    "|[-+]?[0-9][0-9_]*(?::[0-5]?[0-9])+\\.[0-9_]*" +
     // .inf
     "|[-+]?\\.(?:inf|Inf|INF)" +
     // .nan
@@ -36,9 +34,8 @@ function resolveYamlFloat(data: string): boolean {
 function constructYamlFloat(data: string): number {
   let value = data.replace(/_/g, "").toLowerCase();
   const sign = value[0] === "-" ? -1 : 1;
-  const digits: number[] = [];
 
-  if (value[0] && "+-".indexOf(value[0]) >= 0) {
+  if (value[0] && "+-".includes(value[0])) {
     value = value.slice(1);
   }
 
@@ -47,21 +44,6 @@ function constructYamlFloat(data: string): number {
   }
   if (value === ".nan") {
     return NaN;
-  }
-  if (value.indexOf(":") >= 0) {
-    value.split(":").forEach((v) => {
-      digits.unshift(parseFloat(v));
-    });
-
-    let valueNb = 0.0;
-    let base = 1;
-
-    digits.forEach((d) => {
-      valueNb += d * base;
-      base *= 60;
-    });
-
-    return sign * valueNb;
   }
   return sign * parseFloat(value);
 }
@@ -109,12 +91,12 @@ function representYamlFloat(object: any, style?: StyleVariant): any {
   return SCIENTIFIC_WITHOUT_DOT.test(res) ? res.replace("e", ".e") : res;
 }
 
-function isFloat(object: unknown): boolean {
+function isFloat(object: unknown): object is number {
   return typeof object === "number" &&
     (object % 1 !== 0 || isNegativeZero(object));
 }
 
-export const float: Type = {
+export const float: Type<"scalar", number> = {
   tag: "tag:yaml.org,2002:float",
   construct: constructYamlFloat,
   defaultStyle: "lowercase",

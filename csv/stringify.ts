@@ -171,41 +171,6 @@ function normalizeColumn(column: Column): NormalizedColumn {
 }
 
 /**
- * Error thrown in {@linkcode stringify}.
- *
- * @example Usage
- * ```ts no-assert
- * import { stringify, StringifyError } from "@std/csv/stringify";
- *
- * try {
- *   stringify([{ a: 1 }, { a: 2 }], { separator: "\r\n" });
- * } catch (error) {
- *   if (error instanceof StringifyError) {
- *     console.error(error.message);
- *   }
- * }
- * ```
- */
-export class StringifyError extends Error {
-  /**
-   * Construct a new instance.
-   *
-   * @example Usage
-   * ```ts no-eval
-   * import { StringifyError } from "@std/csv/stringify";
-   *
-   * throw new StringifyError("An error occurred");
-   * ```
-   *
-   * @param message The error message.
-   */
-  constructor(message?: string) {
-    super(message);
-    this.name = "StringifyError";
-  }
-}
-
-/**
  * Returns an array of values from an object using the property accessors
  * (and optional transform function) in each column
  */
@@ -226,7 +191,7 @@ function getValuesFromItem(
         if (Array.isArray(value)) {
           if (typeof prop === "number") value = value[prop];
           else {
-            throw new StringifyError(
+            throw new TypeError(
               'Property accessor is not of type "number"',
             );
           }
@@ -240,7 +205,7 @@ function getValuesFromItem(
     if (Array.isArray(item)) {
       values.push(...item);
     } else if (typeof item === "object") {
-      throw new StringifyError(
+      throw new TypeError(
         "No property accessor function was provided for object",
       );
     } else {
@@ -313,7 +278,7 @@ export function stringify(
       '  - U+0022: Quotation mark (")',
       "  - U+000D U+000A: Carriage Return + Line Feed (\\r\\n)",
     ].join("\n");
-    throw new StringifyError(message);
+    throw new TypeError(message);
   }
 
   const normalizedColumns = columns.map(normalizeColumn);

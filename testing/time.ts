@@ -59,16 +59,6 @@ export type { DelayOptions };
 export class TimeError extends Error {
   /** Construct TimeError.
    *
-   * @example Usage
-   * ```ts
-   * import { FakeTime, TimeError } from "@std/testing/time";
-   * import { assertThrows } from "@std/assert";
-   *
-   * assertThrows(() => {
-   *   new FakeTime(NaN);
-   * }, TimeError);
-   * ```
-   *
    * @param message The error message
    */
   constructor(message: string) {
@@ -114,11 +104,15 @@ export interface FakeTimeOptions {
    * The rate relative to real time at which fake time is updated.
    * By default time only moves forward through calling tick or setting now.
    * Set to 1 to have the fake time automatically tick forward at the same rate in milliseconds as real time.
+   *
+   * @default {0}
    */
   advanceRate: number;
   /**
    * The frequency in milliseconds at which fake time is updated.
    * If advanceRate is set, we will update the time every 10 milliseconds by default.
+   *
+   * @default {10}
    */
   advanceFrequency?: number;
 }
@@ -137,12 +131,12 @@ function fakeSetTimeout(
   // deno-lint-ignore no-explicit-any
   ...args: any[]
 ): number {
-  if (!time) throw new TimeError("no fake time");
+  if (!time) throw new TimeError("Time is not faked");
   return setTimer(callback, delay, args, false);
 }
 
 function fakeClearTimeout(id?: unknown) {
-  if (!time) throw new TimeError("no fake time");
+  if (!time) throw new TimeError("Time is not faked");
   if (typeof id === "number" && dueNodes.has(id)) {
     dueNodes.delete(id);
   }
@@ -155,12 +149,12 @@ function fakeSetInterval(
   // deno-lint-ignore no-explicit-any
   ...args: any[]
 ): number {
-  if (!time) throw new TimeError("no fake time");
+  if (!time) throw new TimeError("Time is not faked");
   return setTimer(callback, delay, args, true);
 }
 
 function fakeClearInterval(id?: unknown) {
-  if (!time) throw new TimeError("no fake time");
+  if (!time) throw new TimeError("Time is not faked");
   if (typeof id === "number" && dueNodes.has(id)) {
     dueNodes.delete(id);
   }
@@ -193,12 +187,21 @@ function setTimer(
   return id;
 }
 
+function fakeAbortSignalTimeout(delay: number): AbortSignal {
+  const aborter = new AbortController();
+  fakeSetTimeout(() => {
+    aborter.abort(new DOMException("Signal timed out.", "TimeoutError"));
+  }, delay);
+  return aborter.signal;
+}
+
 function overrideGlobals() {
   globalThis.Date = FakeDate;
   globalThis.setTimeout = fakeSetTimeout;
   globalThis.clearTimeout = fakeClearTimeout;
   globalThis.setInterval = fakeSetInterval;
   globalThis.clearInterval = fakeClearInterval;
+  AbortSignal.timeout = fakeAbortSignalTimeout;
 }
 
 function restoreGlobals() {
@@ -207,6 +210,7 @@ function restoreGlobals() {
   globalThis.clearTimeout = _internals.clearTimeout;
   globalThis.setInterval = _internals.setInterval;
   globalThis.clearInterval = _internals.clearInterval;
+  AbortSignal.timeout = _internals.AbortSignalTimeout;
 }
 
 function* timerIdGen() {
@@ -277,37 +281,6 @@ export class FakeTime {
    * Construct a FakeTime object. This overrides the real Date object and timer functions with fake ones that can be
    * controlled through the fake time instance.
    *
-   * @example Usage
-   * ```ts
-   * import {
-   *   assertSpyCalls,
-   *   spy,
-   * } from "@std/testing/mock";
-   * import { FakeTime } from "@std/testing/time";
-   *
-   * function secondInterval(cb: () => void): number {
-   *   return setInterval(cb, 1000);
-   * }
-   *
-   * Deno.test("secondInterval calls callback every second and stops after being cleared", () => {
-   *   using time = new FakeTime();
-   *
-   *   const cb = spy();
-   *   const intervalId = secondInterval(cb);
-   *   assertSpyCalls(cb, 0);
-   *   time.tick(500);
-   *   assertSpyCalls(cb, 0);
-   *   time.tick(500);
-   *   assertSpyCalls(cb, 1);
-   *   time.tick(3500);
-   *   assertSpyCalls(cb, 4);
-   *
-   *   clearInterval(intervalId);
-   *   time.tick(1000);
-   *   assertSpyCalls(cb, 4);
-   * });
-   * ```
-   *
    * @param start The time to simulate. The default is the current time..
    * @param options The options
    */
@@ -315,7 +288,7 @@ export class FakeTime {
     start?: number | string | Date | null,
     options?: FakeTimeOptions,
   ) {
-    if (time) throw new TimeError("The time is already faked");
+    if (time) throw new TimeError("Time is already faked");
     initializedAt = _internals.Date.now();
     startedAt = start instanceof Date
       ? start.valueOf()
@@ -324,7 +297,7 @@ export class FakeTime {
       : typeof start === "string"
       ? (new Date(start)).valueOf()
       : initializedAt;
-    if (Number.isNaN(startedAt)) throw new TimeError("invalid start");
+    if (Number.isNaN(startedAt)) throw new TimeError("Invalid start");
     now = startedAt;
 
     timerId = timerIdGen();
@@ -338,11 +311,11 @@ export class FakeTime {
 
     advanceRate = Math.max(
       0,
-      options?.advanceRate ? options.advanceRate : 0,
+      options?.advanceRate ?? 0,
     );
     advanceFrequency = Math.max(
       0,
-      options?.advanceFrequency ? options.advanceFrequency : 10,
+      options?.advanceFrequency ?? 10,
     );
     advanceIntervalId = advanceRate > 0
       ? _internals.setInterval.call(null, () => {
@@ -400,7 +373,7 @@ export class FakeTime {
    * ```
    */
   static restore() {
-    if (!time) throw new TimeError("time already restored");
+    if (!time) throw new TimeError("Time is already restored");
     time.restore();
   }
 
@@ -434,7 +407,7 @@ export class FakeTime {
     // deno-lint-ignore no-explicit-any
     ...args: any[]
   ): Promise<T> {
-    if (!time) return Promise.reject(new TimeError("no fake time"));
+    if (!time) return Promise.reject(new TimeError("Time is not faked"));
     restoreGlobals();
     try {
       const result = callback.apply(null, args);
@@ -818,7 +791,7 @@ export class FakeTime {
    * ```
    */
   restore() {
-    if (!time) throw new TimeError("time already restored");
+    if (!time) throw new TimeError("Time is already restored");
     time = undefined;
     restoreGlobals();
     if (advanceIntervalId) clearInterval(advanceIntervalId);

@@ -1,7 +1,12 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-import { randomInteger } from "./_utils.ts";
+/**
+ * Produces a random number between the inclusive `lower` and `upper` bounds.
+ */
+function randomInteger(lower: number, upper: number): number {
+  return lower + Math.floor(Math.random() * (upper - lower + 1));
+}
 
 /**
  * Returns a random element from the given array.
