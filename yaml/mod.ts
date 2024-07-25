@@ -18,7 +18,7 @@
  * The example 1.1 features we support are:
  * - `merge` type (<< symbol)
  *
- * The example 1.1 features we do not support are:
+ * The example 1.1 features we explicitly do not support are:
  * - Yes, No, On, Off literals for bool type
  * - sexagesimal numbers (e.g. `3:25:45`)
  *
