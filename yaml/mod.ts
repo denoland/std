@@ -12,6 +12,16 @@
  * Use {@linkcode parseAll} for parsing multiple documents in a single YAML
  * string.
  *
+ * This module generally support YAML 1.2.x (the latest), but it also supports some of
+ * YAML 1.1 features when they seem commonly used in the wild.
+ *
+ * The example 1.1 features we support are:
+ * - `merge` type (<< symbol)
+ *
+ * The example 1.1 features we do not support are:
+ * - Yes, No, On, Off literals for bool type
+ * - sexagesimal numbers (e.g. `3:25:45`)
+ *
  * ```ts
  * import { parse, stringify } from "@std/yaml";
  * import { assertEquals } from "@std/assert";
