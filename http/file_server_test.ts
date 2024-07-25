@@ -991,6 +991,7 @@ Deno.test("file_server prints local and network urls", async () => {
     "http/file_server.ts",
     "--port",
     `${port}`,
+    "--ip",
   ]);
   const output = await readUntilMatch(process.stdout, "Network:");
   const networkAdress = Deno.networkInterfaces().find((i) =>
@@ -1016,6 +1017,7 @@ Deno.test("file_server prints only local address on Deploy", async () => {
     "http/file_server.ts",
     "--port",
     `${port}`,
+    "--ip",
   ], {
     env: {
       DENO_DEPLOYMENT_ID: "abcdef",

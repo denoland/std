@@ -13,7 +13,7 @@
  *
  * ```shell
  * > # start server
- * > deno run --allow-net --allow-read --allow-sys jsr:@std/http/file-server
+ * > deno run --allow-net --allow-read jsr:@std/http/file-server
  * > # show help
  * > deno run jsr:@std/http/file-server --help
  * ```
@@ -22,7 +22,7 @@
  *
  * ```shell
  * > # install
- * > deno install --allow-net --allow-read --allow-sys --global jsr:@std/http/file-server
+ * > deno install --allow-net --allow-read --global jsr:@std/http/file-server
  * > # start server
  * > file-server
  * > # show help
@@ -578,6 +578,14 @@ export interface ServeDirOptions {
    * @default {false}
    */
   enableCors?: boolean;
+  /**
+   * Prints the network IP address of the current machine.
+   *
+   * Requires the `--allow-sys` permissions flag.
+   *
+   * @default {false}
+   */
+  printNetworkIp?: boolean;
   /** Do not print request level logs.
    *
    * @default {false}
@@ -765,13 +773,22 @@ function logError(error: Error) {
 function main() {
   const serverArgs = parseArgs(Deno.args, {
     string: ["port", "host", "cert", "key", "header"],
-    boolean: ["help", "dir-listing", "dotfiles", "cors", "verbose", "version"],
+    boolean: [
+      "help",
+      "dir-listing",
+      "dotfiles",
+      "cors",
+      "ip",
+      "verbose",
+      "version",
+    ],
     negatable: ["dir-listing", "dotfiles", "cors"],
     collect: ["header"],
     default: {
       "dir-listing": true,
       dotfiles: true,
       cors: true,
+      ip: false,
       verbose: false,
       version: false,
       host: "0.0.0.0",
@@ -842,7 +859,7 @@ function main() {
   Deno.serve({
     port,
     hostname: host,
-    onListen,
+    onListen: serverArgs.ip ? onListen : undefined,
     cert: useTls ? Deno.readTextFileSync(certFile) : undefined,
     key: useTls ? Deno.readTextFileSync(keyFile) : undefined,
   }, handler);
@@ -862,6 +879,8 @@ OPTIONS:
   -h, --help            Prints help information
   -p, --port <PORT>     Set port (default is 8000)
   --cors                Enable CORS via the "Access-Control-Allow-Origin" header
+  --ip                  Print network IP address.
+                        Note: requires the \`--allow-sys\` permissions flag.
   --host     <HOST>     Hostname (default is 0.0.0.0)
   -c, --cert <FILE>     TLS certificate file (enables TLS)
   -k, --key  <FILE>     TLS key file (enables TLS)
