@@ -37,6 +37,9 @@ export default class Executor {
     assert(equal(fs.pid, req.target), 'target is not self')
     const io = await IOChannel.read(fs)
     assert(io, 'io not found')
+    if (!io.isExecution(req)) {
+      io.isExecution(req)
+    }
     assert(io.isExecution(req), 'request is not callable')
     log('request %o %o', req.isolate, req.functionName, commit)
 

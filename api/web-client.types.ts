@@ -132,7 +132,8 @@ export type Thread = {
   toolCommits: { [toolCallId: string]: CommitOid }
 }
 export type LongThread = {
-  messages: OpenAI.ChatCompletionMessageParam[]
+  messages: OpenAI.Beta.Threads.Message[]
+  additionalMessages: OpenAI.Beta.Threads.RunCreateParams.AdditionalMessage[]
   toolCommits: { [toolCallId: string]: CommitOid }
   /** Have any files been changed in this threads branch */
   isDirty?: boolean
@@ -166,12 +167,12 @@ export type Agent = {
     temperature: number
     presence_penalty?: number
     /** control model behaviour to force it to call a tool or no tool */
-    tool_choice?: 'auto' | 'none' | 'required'
+    tool_choice: 'auto' | 'none' | 'required'
     /** Is the model permitted to call more than one function at a time */
-    parallel_tool_calls?: boolean
+    parallel_tool_calls: boolean
   }
   runner: AGENT_RUNNERS
-  commands?: string[]
+  commands: string[]
   instructions: string
 }
 export type Triad = {
@@ -197,7 +198,6 @@ export type JsonValue =
   | number
   | boolean
   | null
-  | undefined
   | JsonValue[]
   | {
     [key: string]: JsonValue
@@ -563,7 +563,18 @@ const safeParams = (params?: Params) => {
       delete safe[key]
     }
   }
+  checkUndefined(safe)
   return safe
+}
+const checkUndefined = (params: Params) => {
+  for (const key in params) {
+    if (params[key] === undefined) {
+      throw new Error('undefined value: ' + key)
+    }
+    if (typeof params[key] === 'object') {
+      checkUndefined(params[key] as Params)
+    }
+  }
 }
 export const repoIdRegex = /^rep_[0-9A-HJKMNP-TV-Z]{16}$/
 export const machineIdRegex = /^mac_[2-7a-z]{33}$/
@@ -679,4 +690,11 @@ export const hash = (seed: string) => {
 export const isBackchatSummoned = (text: string = '') => {
   const plain = text.toLowerCase().trim()
   return plain.startsWith('backchat') || plain.startsWith('back chat')
+}
+export const getContent = (message: LongThread['messages'][number]) => {
+  const { content } = message
+  if (content[0].type !== 'text') {
+    throw new Error('content not text')
+  }
+  return content[0].text.value
 }

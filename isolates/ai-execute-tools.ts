@@ -11,7 +11,7 @@ const debugToolResult = Debug(base + ':ai-tool-result')
 
 export const executeTools = async (threadPath: string, api: IA) => {
   // TODO only load what the assistant message needs
-
+  log('execute tools:', threadPath)
   let thread = await api.readJSON<Thread>(threadPath)
   const actions = await loadActions(thread.agent.commands, api)
 

@@ -2,12 +2,12 @@ import {
   addPeer,
   backchatIdRegex,
   BackchatThread,
+  Functions,
   generateThreadId,
   getActorId,
   getActorPid,
   IA,
   isBackchatSummoned,
-  PID,
   print,
   threadIdRegex,
   UnsequencedRequest,
@@ -106,30 +106,18 @@ export const api = {
   },
 }
 
-interface PromptArgs {
-  content?: string
-  threadId?: string
-  attachments?: string[]
-}
-interface ThreadArgs {
-  agentPath: string
-}
-interface RelayArgs {
-  request: UnsequencedRequest
-}
-interface FocusArgs {
-  threadId: string
-}
 export type Api = {
-  create: (params?: { focusId?: string }) => Promise<PID>
-  prompt: (params: PromptArgs) => void
-  thread: (params: ThreadArgs) => void
-  relay: (params: RelayArgs) => void
-  focus: (params: FocusArgs) => Promise<void>
+  create: (params?: { focus?: string }) => Promise<void>
+  prompt: (
+    params: { content?: string; threadId?: string; attachments?: string[] },
+  ) => void
+  thread: (params: { agentPath: string }) => void
+  relay: (params: { request: UnsequencedRequest }) => void
+  focus: (params: { threadId: string }) => Promise<void>
 }
 
-export const functions = {
-  create: async (params: { focus?: string }, api: IA) => {
+export const functions: Functions<Api> = {
+  create: async ({ focus } = {}, api) => {
     const threadId = assertBackchatThread(api)
     const agentPath = 'agents/backchat.md'
 
@@ -139,10 +127,10 @@ export const functions = {
 
     const { start } = await api.functions<thread.Api>('thread')
     await start({ threadId, agentPath })
-    log('create:', threadId, agentPath, params.focus)
+    log('create:', threadId, agentPath, focus)
     const thread = await readBackchat(api)
-    if (params.focus) {
-      assert(threadIdRegex.test(params.focus), 'Invalid thread id')
+    if (focus) {
+      assert(threadIdRegex.test(focus), 'Invalid thread id')
       // const threadPath = `threads/${params.focus}.json`
       // create the new thread at the actor level, possibly in parallel too ?
       // verify the thread exists
@@ -153,7 +141,7 @@ export const functions = {
     log('setting focus to:', thread.focus)
     writeBackchat(thread, api)
   },
-  async prompt({ content = '', threadId, attachments }: PromptArgs, api: IA) {
+  async prompt({ content = '', threadId, attachments }, api) {
     log('prompt: %o', content)
     log('threadId: %o attachments: %o', threadId, attachments)
     const backchatId = assertBackchatThread(api)
@@ -190,7 +178,7 @@ export const functions = {
 
     // TODO handle remote threadIds with symlinks in the threads dir
   },
-  thread: async ({ agentPath }: ThreadArgs, api: IA) => {
+  thread: async ({ agentPath }, api) => {
     log('thread:', agentPath, print(api.pid))
     const threadId = generateThreadId(api.commit + 'thread' + agentPath)
 
@@ -203,11 +191,11 @@ export const functions = {
     log('thread started:', print(pid))
     return { newThreadId: threadId, currentFocus: threadId }
   },
-  relay: ({ request }: RelayArgs, api: IA) => {
+  relay: ({ request }, api) => {
     // TODO replace this with native relay ability
     return api.action(request)
   },
-  focus: async ({ threadId }: FocusArgs, api: IA) => {
+  focus: async ({ threadId }, api) => {
     log('focus:', threadId)
     const backchat = await readBackchat(api)
     if (threadId !== backchat.focus) {

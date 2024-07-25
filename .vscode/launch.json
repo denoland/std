@@ -28,6 +28,22 @@
     },
     {
       "request": "launch",
+      "name": "longthread",
+      "type": "node",
+      "cwd": "${workspaceFolder}",
+      "runtimeExecutable": "~/.deno/bin/deno",
+      "runtimeArgs": [
+        "task",
+        "watch",
+        "--inspect-wait",
+        "isolates/longthread.test.ts"
+      ],
+      "attachSimplePort": 9229,
+      "internalConsoleOptions": "neverOpen",
+      "console": "integratedTerminal"
+    },
+    {
+      "request": "launch",
       "name": "FS",
       "type": "node",
       "cwd": "${workspaceFolder}",

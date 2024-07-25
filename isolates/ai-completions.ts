@@ -15,8 +15,7 @@ import { assert } from '@std/assert'
 import * as machines from '@/isolates/machines.ts'
 type AssistantCreateParams = OpenAI.Beta.AssistantCreateParams
 type RunOptions = OpenAI.Beta.Threads.Runs.RunCreateParamsStreaming
-const base = 'AI:completions'
-const log = Debug(base)
+const log = Debug('AI:completions')
 
 const apiKey = Deno.env.get('OPENAI_API_KEY')
 if (!apiKey) {
@@ -42,6 +41,66 @@ export const api = {
     additionalProperties: false,
     properties: { threadId: { type: 'string' } },
   },
+  createThread: {
+    type: 'object',
+    additionalProperties: false,
+    properties: {},
+  },
+  run: {
+    type: 'object',
+    required: ['threadId', 'content', 'path', 'actorId'],
+    additionalProperties: false,
+    properties: {
+      threadId: { type: 'string' },
+      content: { type: 'string' },
+      path: { type: 'string' },
+      actorId: { type: 'string' },
+    },
+  },
+  createAssistant: {
+    type: 'object',
+    required: ['name'],
+    additionalProperties: false,
+    properties: {
+      description: { type: 'string' },
+      temperature: { type: 'number' },
+      instructions: { type: 'string' },
+      name: { type: 'string' },
+      tools: { type: 'array' },
+      model: { type: 'string' },
+    },
+  },
+  addMessage: {
+    type: 'object',
+    required: ['externalId', 'content'],
+    additionalProperties: false,
+    properties: {
+      externalId: { type: 'string' },
+      content: { type: 'string' },
+    },
+  },
+  runStream: {
+    type: 'object',
+    required: ['threadId', 'runOptions'],
+    additionalProperties: false,
+    properties: {
+      threadId: { type: 'string' },
+      runOptions: { type: 'object' },
+    },
+  },
+  deleteThread: {
+    type: 'object',
+    required: ['externalId'],
+    additionalProperties: false,
+    properties: {
+      externalId: { type: 'string' },
+    },
+  },
+  deleteAllAgents: {
+    type: 'object',
+    additionalProperties: false,
+    properties: {},
+  },
 }
 
 export type Api = {
@@ -51,6 +110,9 @@ export type Api = {
   createAssistant: (
     params: AssistantCreateParams,
   ) => Promise<string>
+  addMessage: (
+    params: { externalId: string; content: string },
+  ) => Promise<OpenAI.Beta.Threads.Message>
   run: (params: {
     threadId: string
     content: string
@@ -61,10 +123,13 @@ export type Api = {
   runStream: (
     params: { threadId: string; runOptions: RunOptions },
   ) => Promise<void>
+  deleteThread: (params: { externalId: string }) => Promise<void>
+  deleteAllAgents: (params: void) => Promise<void>
 }
 export const functions: Functions<Api> = {
   async complete({ threadId }, api) {
     const threadPath = `threads/${threadId}.json`
+    log('completing thread %o', threadId, print(api.pid))
     const thread = await api.readJSON<Thread>(threadPath)
     // TODO assert thread is correctly formatted
     const tools = await loadTools(thread.agent.commands, api)
@@ -91,6 +156,7 @@ export const functions: Functions<Api> = {
     return id
   },
   async syncAgent({ path }, api) {
+    log('syncing agent %o', path, print(api.pid))
     const agent = await loadAgent.functions.load({ path }, api)
     const tools = await loadTools(agent.commands, api)
 
@@ -98,21 +164,24 @@ export const functions: Functions<Api> = {
       description: agent.description,
       temperature: agent.config.temperature,
       instructions: agent.instructions,
-      name: agent.name,
       tools,
       model: agent.config.model,
     }
     const agentHash = generateAgentHash(JSON.stringify(creation))
+    creation.name = agent.name + ' ' + agentHash
 
     const existing = await machines.tryAssistantId(agentHash, api)
     if (existing) {
+      log('existing agent found - no sync required')
       return existing
     }
     const { createAssistant } = await api.actions<Api>('ai-completions')
     const id = await createAssistant(creation)
+    log('assistant created:', id)
     const target = machines.getMachineTarget(api.pid)
     const { register } = await api.actions<machines.Api>('machines', { target })
     await register({ agentHash, assistantId: id })
+    log('assistant registered')
     return id
   },
   async createAssistant(creation) {
@@ -120,59 +189,104 @@ export const functions: Functions<Api> = {
     assert(id.startsWith('asst_'), 'invalid assistant id: ' + id)
     return id
   },
-  async run({ threadId, content, path, actorId }, api) {
-    const threadPath = `threads/${threadId}.json`
-    const thread = await api.readJSON<LongThread>(threadPath)
-    assert(thread.externalId, 'thread not synced with openai')
-    const message: LongThread['messages'][number] = {
-      name: actorId,
+  async addMessage({ externalId, content }) {
+    log('adding message to %o', externalId)
+    const message = await ai.beta.threads.messages.create(externalId, {
       role: 'user',
       content,
-    }
+    })
+    log('message added', message)
+    return message
+  },
+  async run({ threadId, content, path }, api) {
+    const threadPath = `threads/${threadId}.json`
+    const thread = await api.readJSON<LongThread>(threadPath)
+    const { externalId } = thread
+    assert(externalId, 'thread not synced with openai')
+
+    thread.additionalMessages.push({ role: 'user', content })
+    api.writeJSON(threadPath, thread)
+    const { runStream, addMessage } = await api.actions<Api>('ai-completions')
+
+    const message = await addMessage({ externalId, content })
     thread.messages.push(message)
+    thread.additionalMessages.pop()
     api.writeJSON(threadPath, thread)
 
+    // TODO parallelize
     const assistant_id = await functions.syncAgent({ path }, api)
-    const additional_instructions = `The time is ${new Date().toISOString()}`
+    const additional_instructions = `\n---\nThe time is ${
+      new Date().toISOString()
+    }`
     const agent = await loadAgent.functions.load({ path }, api)
 
     const runOptions: RunOptions = {
       stream: true,
       assistant_id,
       additional_instructions,
-      additional_messages: [message],
       parallel_tool_calls: agent.config.parallel_tool_calls,
       temperature: agent.config.temperature,
       tool_choice: agent.config.tool_choice,
     }
-    const { runStream } = await api.actions<Api>('ai-completions')
     await runStream({ threadId, runOptions })
   },
-  runStream({ threadId, runOptions }) {
+  async runStream({ threadId, runOptions }, api) {
+    const threadPath = `threads/${threadId}.json`
+    const thread = await api.readJSON<LongThread>(threadPath)
+    const { externalId } = thread
+    assert(externalId, 'thread not synced with openai')
+    log('running stream', threadId, externalId)
+
     return new Promise((resolve, reject) => {
-      const stream = ai.beta.threads.runs.stream(threadId, runOptions)
+      const stream = ai.beta.threads.runs.stream(externalId, runOptions)
       stream
-        .on('textCreated', (text) => log('\nassistant > '))
-        .on('textDelta', (textDelta, snapshot) => log(textDelta.value))
+        .on('error', (error) => {
+          log('stream error', error)
+          reject(error)
+        })
+        .on('end', () => {
+          log('stream ended')
+          resolve()
+        })
+        .on('messageCreated', (message) => {
+          log('messageCreated', message)
+          thread.messages.push(message)
+          api.writeJSON(threadPath, thread)
+        })
+        .on('messageDone', (message) => {
+          log('messageDone', message)
+          thread.messages.pop()
+          thread.messages.push(message)
+          api.writeJSON(threadPath, thread)
+        })
         .on(
           'toolCallCreated',
-          (toolCall) => log(`\nassistant > ${toolCall.type}\n\n`),
+          (toolCall) => {
+            log('toolCallCreated', toolCall)
+            // thread.messages.push(toolCall)
+          },
         )
-        .on('toolCallDelta', (toolCallDelta, snapshot) => {
-          if (toolCallDelta.type === 'code_interpreter') {
-            if (toolCallDelta?.code_interpreter?.input) {
-              log(toolCallDelta.code_interpreter.input)
-            }
-            if (toolCallDelta?.code_interpreter?.outputs) {
-              log('\noutput >\n')
-              toolCallDelta.code_interpreter.outputs.forEach((output) => {
-                if (output.type === 'logs') {
-                  log(`\n${output.logs}\n`)
-                }
-              })
-            }
-          }
+        .on('toolCallDone', (toolCall) => {
+          log('toolCallDone', toolCall)
         })
+      // .on('event', (event) => {
+      //   log('event', event)
+      // })
     })
+  },
+  async deleteThread({ externalId }) {
+    await ai.beta.threads.del(externalId)
+  },
+  async deleteAllAgents(_, api) {
+    const target = machines.getMachineTarget(api.pid)
+    const { deleteAllAgents } = await api.actions<machines.Api>('machines', {
+      target,
+    })
+    const ids = await deleteAllAgents()
+    log('deleting:', ids)
+    for (const id of ids) {
+      await ai.beta.assistants.del(id)
+    }
+    log('deleted:', ids)
   },
 }

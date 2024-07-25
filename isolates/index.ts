@@ -21,6 +21,7 @@ import * as agents from './agents.ts'
 import * as thread from './thread.ts'
 import * as threads from './threads.ts'
 import * as youtube from './youtube.ts'
+import * as longthread from './longthread.ts'
 
 export default {
   system,
@@ -43,4 +44,5 @@ export default {
   thread,
   threads,
   youtube,
+  longthread,
 }

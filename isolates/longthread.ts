@@ -1,8 +1,9 @@
-import { assert } from '@utils'
-import { IA, LongThread, PID, Thread } from '@/constants.ts'
+import { assert, Debug } from '@utils'
+import { IA, LongThread, PID } from '@/constants.ts'
 import { Functions } from '@/constants.ts'
 import * as completions from './ai-completions.ts'
 import { executeTools } from '@/isolates/ai-execute-tools.ts'
+const log = Debug('AI:longthread')
 
 export const api = {
   start: {
@@ -28,6 +29,19 @@ export const api = {
     },
     additionalProperties: false,
   },
+  delete: {
+    type: 'object',
+    required: ['threadId'],
+    properties: {
+      threadId: { type: 'string' },
+    },
+    additionalProperties: false,
+  },
+  deleteAllAgents: {
+    type: 'object',
+    additionalProperties: false,
+    properties: {},
+  },
 }
 export interface Api {
   start: (params: { threadId: string }) => Promise<PID>
@@ -38,21 +52,30 @@ export interface Api {
     content: string
     actorId: string
   }) => Promise<void>
+  delete: (params: { threadId: string }) => Promise<void>
+  deleteAllAgents: (params: void) => Promise<void>
 }
 
 export const functions: Functions<Api> = {
   start: async ({ threadId }, api) => {
+    log('start', threadId)
     const threadPath = `threads/${threadId}.json`
     assert(!await api.exists(threadPath), `thread exists: ${threadPath}`)
     const { createThread } = await api.actions<completions.Api>(
       'ai-completions',
     )
     const externalId = await createThread()
-    const thread: LongThread = { messages: [], toolCommits: {}, externalId }
+    const thread: LongThread = {
+      messages: [],
+      toolCommits: {},
+      externalId,
+      additionalMessages: [],
+    }
     api.writeJSON(threadPath, thread)
     return api.pid
   },
   run: async ({ threadId, path, content, actorId }, api) => {
+    log('run', threadId, path, content, actorId)
     const { run } = await api.actions<completions.Api>('ai-completions')
     const threadPath = `threads/${threadId}.json`
     while (!await isDone(threadPath, api)) {
@@ -64,14 +87,32 @@ export const functions: Functions<Api> = {
       await executeTools(threadPath, api)
     }
   },
+  delete: async ({ threadId }, api) => {
+    log('delete', threadId)
+    const threadPath = `threads/${threadId}.json`
+    const { externalId } = await api.readJSON<LongThread>(threadPath)
+    assert(externalId, 'missing externalId: ' + threadPath)
+    api.delete(threadPath)
+    const { deleteThread } = await api.actions<completions.Api>(
+      'ai-completions',
+    )
+    await deleteThread({ externalId })
+  },
+  deleteAllAgents: async (_, api) => {
+    const { deleteAllAgents } = await api.actions<completions.Api>(
+      'ai-completions',
+    )
+    await deleteAllAgents()
+  },
 }
 
 const isDone = async (threadPath: string, api: IA) => {
-  const thread = await api.readJSON<Thread>(threadPath)
+  const thread = await api.readJSON<LongThread>(threadPath)
   const last = thread.messages[thread.messages.length - 1]
   if (!last || last.role !== 'assistant') {
     return false
   }
+  assert(last.status === 'completed', 'thread not done')
   if ('tool_calls' in last) {
     return false
   }

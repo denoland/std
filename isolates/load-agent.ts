@@ -48,11 +48,14 @@ export const functions: Functions<Api> = {
     const config: Agent['config'] = {
       model: 'gpt-4o-mini',
       temperature: 0,
+      tool_choice: 'auto',
+      parallel_tool_calls: true,
     }
     const defaults = {
       runner: AGENT_RUNNERS.CHAT,
       instructions: '',
       config,
+      commands: [],
     }
 
     const { pid, commit } = api
@@ -108,7 +111,7 @@ const assertAgent = (agent: Agent) => {
       throw new Error('temperature must be between 0 and 1')
     }
   }
-  if (agent.commands && !Array.isArray(agent.commands)) {
+  if (!agent.commands || !Array.isArray(agent.commands)) {
     throw new Error('commands must be an array')
   }
   if (!/^[a-zA-Z0-9_-]+$/.test(agent.name)) {

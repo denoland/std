@@ -1,10 +1,20 @@
 import { expect, log } from '@utils'
 import IA from '../isolate-api.ts'
-import { generateThreadId, partialFromRepo, Thread } from '../constants.ts'
+import {
+  generateThreadId,
+  getContent,
+  LongThread,
+  partialFromRepo,
+  Thread,
+} from '../constants.ts'
 import * as longthread from './longthread.ts'
 import FS from '@/git/fs.ts'
 import DB from '@/db.ts'
 import Accumulator from '@/exe/accumulator.ts'
+import { Engine } from '@/engine.ts'
+import { Crypto } from '@/api/web-client-crypto.ts'
+import { Backchat } from '@/api/web-client-backchat.ts'
+import { assert } from '@std/assert'
 const agentMd = `
 ---
 commands:
@@ -16,28 +26,34 @@ Only reply with a SINGLE word
 const path = 'agents/agent-fixture.md'
 
 Deno.test.only('longthread chat', async (t) => {
-  const db = await DB.create(DB.generateAesKey())
-  const partialPid = partialFromRepo('runner/test')
-  const fs = await FS.init(partialPid, db)
-  const accumulator = Accumulator.create(fs)
-  const api = IA.create(accumulator)
-  accumulator.activate(Symbol())
+  const superuserKey = Crypto.generatePrivateKey()
+  const aesKey = DB.generateAesKey()
+  const privateKey = Crypto.generatePrivateKey()
+  const engine = await Engine.provision(superuserKey, aesKey)
+  const backchat = await Backchat.upsert(engine, privateKey)
+
   const threadId = generateThreadId('longthread chat')
   const threadPath = `threads/${threadId}.json`
   const actorId = 'longthread'
 
+  const longthread = await backchat.actions<longthread.Api>('longthread')
+
+  log.enable(
+    'AI:tests AI:machines AI:completions AI:longthread AI:execute-tools',
+  )
+
   await t.step('create longthread', async () => {
-    api.write(path, agentMd)
-    await longthread.functions.start({ threadId }, api)
+    await backchat.write(path, agentMd)
+    await longthread.start({ threadId })
   })
 
   await t.step('hello world', async () => {
     const content = 'cheese emoji'
-    await longthread.functions.run({ threadId, path, content, actorId }, api)
-    const result = await api.readJSON<Thread>(threadPath)
+    await longthread.run({ threadId, path, content, actorId })
+    const result = await backchat.readJSON<LongThread>(threadPath)
     log('result', result)
-    expect(result.messages).toHaveLength(3)
-    expect(result.messages[2].content).toBe('🧀')
+    expect(result.messages).toHaveLength(2)
+    expect(getContent(result.messages[1])).toBe('🧀')
   })
 
   //   await t.step('tool call', async () => {
@@ -111,7 +127,9 @@ Deno.test.only('longthread chat', async (t) => {
   //       arguments: '{"message": "2"}',
   //     })
   //   })
-  db.stop()
+  await longthread.delete({ threadId })
+  await longthread.deleteAllAgents()
+  await engine.stop()
 })
 
 const resetInstructions = (api: IA, instructions: string, threadId: string) => {

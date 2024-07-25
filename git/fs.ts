@@ -226,6 +226,7 @@ export default class FS {
       await this.readOid(path)
       return true
     } catch (error) {
+      // TODO move all errors to be FileNotFoundError
       if (error.code === 'NotFoundError') {
         return false
       }
@@ -328,6 +329,9 @@ export default class FS {
     return { blob, oid: blobOid }
   }
   async ls(path: string = '.') {
+    if (path.endsWith('/')) {
+      path = path.slice(0, -1)
+    }
     assertPath(path)
     // TODO make a streaming version of this for very large dirs
     // TODO handle changes in the directory like deletes and upserts
