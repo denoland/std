@@ -66,20 +66,6 @@ export class BinaryHeap<T> implements Iterable<T> {
   /**
    * Construct an empty binary heap.
    *
-   * @example Creating an empty binary heap
-   * ```ts no-assert
-   * import { BinaryHeap } from "@std/data-structures";
-   *
-   * const heap = new BinaryHeap<number>();
-   * ```
-   *
-   * @example Creating a binary heap with a custom comparison function
-   * ```ts no-assert
-   * import { BinaryHeap, ascend } from "@std/data-structures";
-   *
-   * const heap = new BinaryHeap(ascend);
-   * ```
-   *
    * @param compare A custom comparison function to sort the values in the heap. By default, the values are sorted in descending order.
    */
   constructor(compare: (a: T, b: T) => number = descend) {

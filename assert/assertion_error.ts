@@ -14,13 +14,6 @@
 export class AssertionError extends Error {
   /** Constructs a new instance.
    *
-   * @example Usage
-   * ```ts no-eval
-   * import { AssertionError } from "@std/assert";
-   *
-   * throw new AssertionError("Assertion failed");
-   * ```
-   *
    * @param message The error message.
    */
   constructor(message: string) {
