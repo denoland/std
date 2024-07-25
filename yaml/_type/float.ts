@@ -36,7 +36,6 @@ function resolveYamlFloat(data: string): boolean {
 function constructYamlFloat(data: string): number {
   let value = data.replace(/_/g, "").toLowerCase();
   const sign = value[0] === "-" ? -1 : 1;
-  const digits: number[] = [];
 
   if (value[0] && "+-".includes(value[0])) {
     value = value.slice(1);
@@ -47,21 +46,6 @@ function constructYamlFloat(data: string): number {
   }
   if (value === ".nan") {
     return NaN;
-  }
-  if (value.includes(":")) {
-    value.split(":").forEach((v) => {
-      digits.unshift(parseFloat(v));
-    });
-
-    let valueNb = 0.0;
-    let base = 1;
-
-    digits.forEach((d) => {
-      valueNb += d * base;
-      base *= 60;
-    });
-
-    return sign * valueNb;
   }
   return sign * parseFloat(value);
 }

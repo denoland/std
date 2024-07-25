@@ -341,16 +341,6 @@ export class MockError extends Error {
   /**
    * Construct MockError
    *
-   * @example Usage
-   * ```ts
-   * import { MockError, spy } from "@std/testing/mock";
-   * import { assertThrows } from "@std/assert";
-   *
-   * assertThrows(() => {
-   *   spy({} as any, "no-such-method");
-   * }, MockError);
-   * ```
-   *
    * @param message The error message.
    */
   constructor(message: string) {
