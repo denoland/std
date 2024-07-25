@@ -8,7 +8,9 @@ import { format } from "@std/internal/format";
  * {@linkcode Object.is} for equality comparison. If the values are strictly
  * equal then throw.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts no-eval
  * import { assertNotStrictEquals } from "@std/assert";
  *

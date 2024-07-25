@@ -6,7 +6,9 @@ import { splitToWords } from "./_util.ts";
 /**
  * Converts a string into snake_case.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { toSnakeCase } from "@std/text/to-snake-case";
  * import { assertEquals } from "@std/assert";

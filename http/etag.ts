@@ -99,7 +99,9 @@ async function calcFileInfo(
  * it will be fingerprinted as a "strong" tag, otherwise if it is just file
  * information, it will be calculated as a weak tag.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { eTag } from "@std/http/etag";
  * import { assert } from "@std/assert";
@@ -136,7 +138,9 @@ export async function eTag(
  * See MDN's [`If-Match`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/If-Match)
  * article for more information on how to use this function.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts no-eval
  * import {
  *   eTag,
@@ -184,7 +188,9 @@ export function ifMatch(
  * See MDN's [`If-None-Match`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/If-None-Match)
  * article for more information on how to use this function.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts no-eval
  * import {
  *   eTag,

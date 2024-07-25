@@ -5,7 +5,9 @@ import { parse } from "./parse.ts";
 /**
  * Returns true if the string can be parsed as SemVer.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { canParse } from "@std/semver/can-parse";
  * import { assert, assertFalse } from "@std/assert";

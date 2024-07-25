@@ -8,7 +8,9 @@ import { normalize } from "./normalize.ts";
 /**
  * Join all given a sequence of `paths`,then normalizes the resulting path.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { join } from "@std/path/windows/join";
  * import { assertEquals } from "@std/assert";

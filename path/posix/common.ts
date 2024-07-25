@@ -6,7 +6,9 @@ import { SEPARATOR } from "./constants.ts";
 
 /** Determines the common path from a set of paths for POSIX systems.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { common } from "@std/path/posix/common";
  * import { assertEquals } from "@std/assert";

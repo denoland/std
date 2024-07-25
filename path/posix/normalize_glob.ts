@@ -10,7 +10,9 @@ export type { GlobOptions };
 /**
  * Like normalize(), but doesn't collapse "**\/.." when `globstar` is true.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { normalizeGlob } from "@std/path/posix/normalize-glob";
  * import { assertEquals } from "@std/assert";

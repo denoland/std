@@ -8,7 +8,9 @@ import { isPathSeparator, isWindowsDeviceRoot } from "./_util.ts";
 /**
  * Return the extension of the `path` with leading period.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { extname } from "@std/path/windows/extname";
  * import { assertEquals } from "@std/assert";

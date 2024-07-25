@@ -16,7 +16,9 @@
  * @returns An object where each element of the array is associated with a value
  * returned by the selector function.
  *
- * @example Basic usage
+ * @example
+ * <caption>Basic usage</caption>
+
  * ```ts
  * import { associateWith } from "@std/collections/associate-with";
  * import { assertEquals } from "@std/assert";

@@ -7,7 +7,9 @@ import type { ParsedPath } from "../types.ts";
 /**
  * Generate a path from `ParsedPath` object.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { format } from "@std/path/windows/format";
  * import { assertEquals } from "@std/assert";

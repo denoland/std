@@ -25,7 +25,9 @@ const rawRe = new RegExp(`[${[...rawToEntity.keys()].join("")}]`, "g");
 /**
  * Escapes text for safe interpolation into HTML text content and quoted attributes.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { escape } from "@std/html/entities";
  * import { assertEquals } from "@std/assert";
@@ -63,7 +65,9 @@ const entityListRegexCache = new WeakMap<EntityList, RegExp>();
  *
  * Default options only handle `&<>'"` and numeric entities.
  *
- * @example Basic usage
+ * @example
+ * <caption>Basic usage</caption>
+
  * ```ts
  * import { unescape } from "@std/html/entities";
  * import { assertEquals } from "@std/assert";

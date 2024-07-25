@@ -12,7 +12,9 @@
  * @returns `true` if the prefix array appears at the start of the source array,
  * `false` otherwise.
  *
- * @example Basic usage
+ * @example
+ * <caption>Basic usage</caption>
+
  * ```ts
  * import { startsWith } from "@std/bytes/starts-with";
  * import { assertEquals } from "@std/assert";

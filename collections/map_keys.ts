@@ -15,7 +15,9 @@
  *
  * @returns A new record with all keys transformed by the given transformer.
  *
- * @example Basic usage
+ * @example
+ * <caption>Basic usage</caption>
+
  * ```ts
  * import { mapKeys } from "@std/collections/map-keys";
  * import { assertEquals } from "@std/assert";

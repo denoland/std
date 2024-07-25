@@ -18,7 +18,9 @@ import { mapValues } from "./map_values.ts";
  * @returns A record with the same keys as the input grouping, where each value
  * is the result of applying the reducer to the respective group.
  *
- * @example Basic usage
+ * @example
+ * <caption>Basic usage</caption>
+
  * ```ts
  * import { reduceGroups } from "@std/collections/reduce-groups";
  * import { assertEquals } from "@std/assert";

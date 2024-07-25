@@ -10,7 +10,9 @@ export type { Extract };
  * Extracts and parses {@link https://www.json.org/ | JSON } from the metadata
  * of front matter content.
  *
- * @example Extract JSON front matter
+ * @example
+ * <caption>Extract JSON front matter</caption>
+
  * ```ts
  * import { extract } from "@std/front-matter/json";
  * import { assertEquals } from "@std/assert";

@@ -14,7 +14,9 @@ const UUID_RE =
  *
  * @returns `true` if the string is a valid UUIDv1, otherwise `false`.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { validate } from "@std/uuid/v1";
  * import { assert, assertFalse } from "@std/assert";
@@ -80,7 +82,9 @@ export interface GenerateOptions {
  *
  * @returns Returns a UUIDv1 string or an array of 16 bytes.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { generate, validate } from "@std/uuid/v1";
  * import { assert } from "@std/assert";

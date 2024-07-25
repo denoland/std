@@ -968,7 +968,9 @@ const matchers: Matchers = {
  * environmental information represented by the string. All properties are
  * determined lazily.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts no-eval
  * import { UserAgent } from "@std/http/user-agent";
  *
@@ -1000,7 +1002,9 @@ export class UserAgent {
    * The name and version of the browser extracted from the user agent
    * string.
    *
-   * @example Usage
+   * @example
+   * <caption>Usage</caption>
+
    * ```ts no-eval
    * import { UserAgent } from "@std/http/user-agent";
    *
@@ -1026,7 +1030,9 @@ export class UserAgent {
   /**
    * The architecture of the CPU extracted from the user agent string.
    *
-   * @example Usage
+   * @example
+   * <caption>Usage</caption>
+
    * ```ts no-eval
    * import { UserAgent } from "@std/http/user-agent";
    *
@@ -1051,7 +1057,9 @@ export class UserAgent {
    * The model, type, and vendor of a device if present in a user agent
    * string.
    *
-   * @example Usage
+   * @example
+   * <caption>Usage</caption>
+
    * ```ts no-eval
    * import { UserAgent } from "@std/http/user-agent";
    *
@@ -1075,7 +1083,9 @@ export class UserAgent {
   /**
    * The name and version of the browser engine in a user agent string.
    *
-   * @example Usage
+   * @example
+   * <caption>Usage</caption>
+
    * ```ts no-eval
    * import { UserAgent } from "@std/http/user-agent";
    *
@@ -1099,7 +1109,9 @@ export class UserAgent {
   /**
    * The name and version of the operating system in a user agent string.
    *
-   * @example Usage
+   * @example
+   * <caption>Usage</caption>
+
    * ```ts no-eval
    * import { UserAgent } from "@std/http/user-agent";
    *
@@ -1123,7 +1135,9 @@ export class UserAgent {
   /**
    * A read only version of the user agent string related to the instance.
    *
-   * @example Usage
+   * @example
+   * <caption>Usage</caption>
+
    * ```ts no-eval
    * import { UserAgent } from "@std/http/user-agent";
    *
@@ -1142,7 +1156,9 @@ export class UserAgent {
   /**
    * Converts the current instance to a JSON representation.
    *
-   * @example Usage
+   * @example
+   * <caption>Usage</caption>
+
    * ```ts no-eval
    * import { UserAgent } from "@std/http/user-agent";
    *
@@ -1169,7 +1185,9 @@ export class UserAgent {
   /**
    * Converts the current instance to a string.
    *
-   * @example Usage
+   * @example
+   * <caption>Usage</caption>
+
    * ```ts no-eval
    * import { UserAgent } from "@std/http/user-agent";
    *
@@ -1188,7 +1206,9 @@ export class UserAgent {
   /**
    * Custom output for {@linkcode Deno.inspect}.
    *
-   * @example Usage
+   * @example
+   * <caption>Usage</caption>
+
    * ```ts no-eval
    * import { UserAgent } from "@std/http/user-agent";
    *
@@ -1216,7 +1236,9 @@ export class UserAgent {
    * Custom output for Node's
    * {@linkcode https://nodejs.org/api/util.html#utilinspectobject-options | util.inspect}.
    *
-   * @example Usage
+   * @example
+   * <caption>Usage</caption>
+
    * ```ts no-eval
    * import { UserAgent } from "@std/http/user-agent";
    * import { inspect } from "node:util";

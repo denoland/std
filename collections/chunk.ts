@@ -11,7 +11,9 @@
  *
  * @returns An array of chunks of the given size.
  *
- * @example Basic usage
+ * @example
+ * <caption>Basic usage</caption>
+
  * ```ts
  * import { chunk } from "@std/collections/chunk";
  * import { assertEquals } from "@std/assert";

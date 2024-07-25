@@ -10,7 +10,9 @@
  *
  * @returns A new array containing all distinct elements from the given arrays.
  *
- * @example Basic usage
+ * @example
+ * <caption>Basic usage</caption>
+
  * ```ts
  * import { union } from "@std/collections/union";
  * import { assertEquals } from "@std/assert";

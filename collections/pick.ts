@@ -13,7 +13,9 @@
  *
  * @returns A new object with the specified keys from the provided object.
  *
- * @example Basic usage
+ * @example
+ * <caption>Basic usage</caption>
+
  * ```ts
  * import { pick } from "@std/collections/pick";
  * import { assertEquals } from "@std/assert";

@@ -9,7 +9,9 @@ import { toNamespacedPath as windowsToNamespacedPath } from "./windows/to_namesp
  * Resolves path to a namespace path.  This is a no-op on
  * non-windows systems.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { toNamespacedPath } from "@std/path/to-namespaced-path";
  * import { assertEquals } from "@std/assert";

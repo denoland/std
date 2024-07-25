@@ -19,7 +19,9 @@ export interface CreateCapture {
 /**
  * Creates a texture and buffer to use as a capture.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts no-eval
  * import { createCapture } from "@std/webgpu/create-capture";
  * import { getRowPadding } from "@std/webgpu/row-padding";

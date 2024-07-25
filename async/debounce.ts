@@ -22,7 +22,9 @@ export interface DebouncedFunction<T extends Array<unknown>> {
  * again before the timeout expires, the previous call will be
  * aborted.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts no-eval
  * import { debounce } from "@std/async/debounce";
  *

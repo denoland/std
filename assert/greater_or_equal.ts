@@ -7,7 +7,9 @@ import { AssertionError } from "./assertion_error.ts";
  * Make an assertion that `actual` is greater than or equal to `expected`.
  * If not then throw.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts no-eval
  * import { assertGreaterOrEqual } from "@std/assert";
  *

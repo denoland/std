@@ -14,7 +14,9 @@ new (...args: any) => infer C ? C
  * Make an assertion that `obj` is an instance of `type`.
  * If not then throw.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts no-eval
  * import { assertInstanceOf } from "@std/assert";
  *

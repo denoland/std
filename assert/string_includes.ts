@@ -6,7 +6,9 @@ import { AssertionError } from "./assertion_error.ts";
  * Make an assertion that actual includes expected. If not
  * then throw.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts no-eval
  * import { assertStringIncludes } from "@std/assert";
  *

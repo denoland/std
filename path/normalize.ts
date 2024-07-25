@@ -11,7 +11,9 @@ import { normalize as windowsNormalize } from "./windows/normalize.ts";
  * eliminated. A `'..'` at the top-level will be preserved, and an empty path is
  * canonically `'.'`.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { normalize } from "@std/path/normalize";
  * import { assertEquals } from "@std/assert";

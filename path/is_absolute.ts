@@ -8,7 +8,9 @@ import { isAbsolute as windowsIsAbsolute } from "./windows/is_absolute.ts";
 /**
  * Verifies whether provided path is absolute.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { isAbsolute } from "@std/path/is-absolute";
  * import { assert, assertFalse } from "@std/assert";

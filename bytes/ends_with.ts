@@ -12,7 +12,9 @@
  * @returns `true` if the suffix array appears at the end of the source array,
  * `false` otherwise.
  *
- * @example Basic usage
+ * @example
+ * <caption>Basic usage</caption>
+
  * ```ts
  * import { endsWith } from "@std/bytes/ends-with";
  * import { assertEquals } from "@std/assert";

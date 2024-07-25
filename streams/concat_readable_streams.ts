@@ -10,7 +10,9 @@
  * @param streams An iterable of `ReadableStream`s to concat.
  * @returns A `ReadableStream` that will emit the concatenated chunks.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { concatReadableStreams } from "@std/streams/concat-readable-streams";
  * import { assertEquals } from "@std/assert";

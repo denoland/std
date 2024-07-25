@@ -19,7 +19,9 @@ export interface LimitedBytesTransformStreamOptions {
  * is thrown when `options.error` is set to true, otherwise the stream is just
  * terminated.
  *
- * @example `size` is equal to the total byte length of the chunks
+ * @example
+ * <caption>`size` is equal to the total byte length of the chunks</caption>
+
  * ```ts
  * import { LimitedBytesTransformStream } from "@std/streams/limited-bytes-transform-stream";
  * import { assertEquals } from "@std/assert";

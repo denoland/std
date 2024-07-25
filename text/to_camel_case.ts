@@ -6,7 +6,9 @@ import { capitalizeWord, splitToWords } from "./_util.ts";
 /**
  * Converts a string into camelCase.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { toCamelCase } from "@std/text/to-camel-case";
  * import { assertEquals } from "@std/assert";

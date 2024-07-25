@@ -15,7 +15,9 @@
  * @returns A new array with all elements transformed by the given transformer,
  * except the ones that were transformed to `null` or `undefined`.
  *
- * @example Basic usage
+ * @example
+ * <caption>Basic usage</caption>
+
  * ```ts
  * import { mapNotNullish } from "@std/collections/map-not-nullish";
  * import { assertEquals } from "@std/assert";

@@ -6,7 +6,9 @@ import { assertEquals } from "./equals.ts";
  * Make an assertion that `expected` object is a subset of `actual` object,
  * deeply. If not, then throw.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts no-eval
  * import { assertObjectMatch } from "@std/assert";
  *
@@ -14,7 +16,9 @@ import { assertEquals } from "./equals.ts";
  * assertObjectMatch({ foo: "bar" }, { foo: "baz" }); // Throws
  * ```
  *
- * @example Usage with nested objects
+ * @example
+ * <caption>Usage with nested objects</caption>
+
  * ```ts no-eval
  * import { assertObjectMatch } from "@std/assert";
  *

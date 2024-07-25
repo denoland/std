@@ -34,7 +34,9 @@ import { DateTimeFormatter } from "./_date_time_formatter.ts";
  * @param formatString The date time string format.
  * @return The parsed date.
  *
- * @example Basic usage
+ * @example
+ * <caption>Basic usage</caption>
+
  * ```ts
  * import { parse } from "@std/datetime/parse";
  * import { assertEquals } from "@std/assert";

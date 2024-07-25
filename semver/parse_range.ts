@@ -382,7 +382,9 @@ function parseOperatorRanges(string: string): Comparator[] {
 /**
  * Parses a range string into a {@linkcode Range} object.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { parseRange } from "@std/semver/parse-range";
  * import { assertEquals } from "@std/assert";

@@ -14,7 +14,9 @@ export type { ParsedPath } from "./types.ts";
  * Use {@linkcode https://jsr.io/@std/path/doc/~/format | format()} to reverse
  * the result.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { parse } from "@std/path/parse";
  * import { assertEquals } from "@std/assert";

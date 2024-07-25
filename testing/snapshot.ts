@@ -201,7 +201,9 @@ function getErrorMessage(message: string, options: SnapshotOptions) {
 /**
  * Default serializer for `assertSnapshot`.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { serialize } from "@std/testing/snapshot";
  * import { assertEquals } from "@std/assert";
@@ -526,7 +528,9 @@ class AssertSnapshotContext {
  *
  * Type parameter can be specified to ensure values under comparison have the same type.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { assertSnapshot } from "@std/testing/snapshot";
  *
@@ -550,7 +554,9 @@ export async function assertSnapshot<T>(
  *
  * Type parameter can be specified to ensure values under comparison have the same type.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { assertSnapshot } from "@std/testing/snapshot";
  *
@@ -645,7 +651,9 @@ export async function assertSnapshot(
  *
  * The specified option becomes the default for returned {@linkcode assertSnapshot}
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { createAssertSnapshot } from "@std/testing/snapshot";
  *

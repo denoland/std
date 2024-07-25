@@ -14,7 +14,9 @@
  * @returns A new array containing all elements until the first element that
  * does not match the predicate.
  *
- * @example Basic usage
+ * @example
+ * <caption>Basic usage</caption>
+
  * ```ts
  * import { takeWhile } from "@std/collections/take-while";
  * import { assertEquals } from "@std/assert";

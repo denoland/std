@@ -265,7 +265,9 @@ class Dumper {
 /**
  * Converts an object to a {@link https://toml.io | TOML} string.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { stringify } from "@std/toml/stringify";
  * import { assertEquals } from "@std/assert";

@@ -4,7 +4,9 @@
 /**
  * Stringify an object into a valid `.env` file format.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { stringify } from "@std/dotenv/stringify";
  * import { assertEquals } from "@std/assert";

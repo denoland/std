@@ -12,7 +12,9 @@
  *
  * @returns The sum of all elements in the collection.
  *
- * @example Basic usage
+ * @example
+ * <caption>Basic usage</caption>
+
  * ```ts
  * import { sumOf } from "@std/collections/sum-of";
  * import { assertEquals } from "@std/assert";

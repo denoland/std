@@ -11,7 +11,9 @@
  * @param signal The signal to abort the promise with.
  * @returns A promise that can be aborted.
  *
- * @example Error-handling a timeout
+ * @example
+ * <caption>Error-handling a timeout</caption>
+
  * ```ts
  * import { abortable, delay } from "@std/async";
  * import { assertRejects, assertEquals } from "@std/assert";
@@ -26,7 +28,9 @@
  * );
  * ```
  *
- * @example Error-handling an abort
+ * @example
+ * <caption>Error-handling an abort</caption>
+
  * ```ts
  * import { abortable, delay } from "@std/async";
  * import { assertRejects, assertEquals } from "@std/assert";
@@ -54,7 +58,9 @@ export function abortable<T>(p: Promise<T>, signal: AbortSignal): Promise<T>;
  * @param signal The signal to abort the promise with.
  * @returns An async iterable that can be aborted.
  *
- * @example Error-handling a timeout
+ * @example
+ * <caption>Error-handling a timeout</caption>
+
  * ```ts
  * import { abortable, delay } from "@std/async";
  * import { assertRejects, assertEquals } from "@std/assert";
@@ -79,7 +85,9 @@ export function abortable<T>(p: Promise<T>, signal: AbortSignal): Promise<T>;
  * assertEquals(items, ["Hello"]);
  * ```
  *
- * @example Error-handling an abort
+ * @example
+ * <caption>Error-handling an abort</caption>
+
  * ```ts
  * import { abortable, delay } from "@std/async";
  * import { assertRejects, assertEquals } from "@std/assert";

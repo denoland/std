@@ -11,7 +11,9 @@
  * @param readableStrategy An object that optionally defines a queuing strategy for the stream.
  * @returns A {@linkcode TransformStream} that transforms the source stream as defined by the provided transformer.
  *
- * @example Build a transform stream that multiplies each value by 100
+ * @example
+ * <caption>Build a transform stream that multiplies each value by 100</caption>
+
  * ```ts
  * import { toTransformStream } from "@std/streams/to-transform-stream";
  * import { assertEquals } from "@std/assert";
@@ -29,7 +31,9 @@
  * );
  * ```
  *
- * @example JSON Lines
+ * @example
+ * <caption>JSON Lines</caption>
+
  * ```ts
  * import { TextLineStream } from "@std/streams/text-line-stream";
  * import { toTransformStream } from "@std/streams/to-transform-stream";

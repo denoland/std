@@ -12,7 +12,9 @@ import type { DiffResult, DiffType } from "./types.ts";
  *
  * @returns A function that colors the input string.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { createColor } from "@std/internal";
  * import { assertEquals } from "@std/assert";
@@ -48,7 +50,9 @@ export function createColor(
  *
  * @returns A string representing the sign.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { createSign } from "@std/internal";
  * import { assertEquals } from "@std/assert";
@@ -87,7 +91,9 @@ export interface BuildMessageOptions {
  *
  * @returns An array of strings representing the built message.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts no-assert
  * import { diffStr, buildMessage } from "@std/internal";
  *

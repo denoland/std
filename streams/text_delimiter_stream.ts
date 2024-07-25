@@ -16,7 +16,9 @@ import type {
  *
  * If you want to split by a newline, consider using {@linkcode TextLineStream}.
  *
- * @example Comma-separated values
+ * @example
+ * <caption>Comma-separated values</caption>
+
  * ```ts
  * import { TextDelimiterStream } from "@std/streams/text-delimiter-stream";
  * import { assertEquals } from "@std/assert";
@@ -34,7 +36,9 @@ import type {
  * );
  * ```
  *
- * @example Semicolon-separated values with suffix disposition
+ * @example
+ * <caption>Semicolon-separated values with suffix disposition</caption>
+
  * ```ts
  * import { TextDelimiterStream } from "@std/streams/text-delimiter-stream";
  * import { assertEquals } from "@std/assert";

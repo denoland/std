@@ -13,7 +13,9 @@ import {
 /**
  * Return the directory path of a `path`.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { dirname } from "@std/path/windows/dirname";
  * import { assertEquals } from "@std/assert";

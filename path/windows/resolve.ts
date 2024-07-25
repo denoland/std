@@ -9,7 +9,9 @@ import { isPathSeparator, isWindowsDeviceRoot } from "./_util.ts";
 /**
  * Resolves path segments into a `path`.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { resolve } from "@std/path/windows/resolve";
  * import { assertEquals } from "@std/assert";

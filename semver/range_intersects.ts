@@ -69,7 +69,9 @@ function comparatorsSatisfiable(comparators: Comparator[]): boolean {
  * The ranges intersect every range of AND comparators intersects with a least
  * one range of OR ranges.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { parseRange, rangeIntersects } from "@std/semver";
  * import { assert } from "@std/assert";

@@ -7,7 +7,9 @@ import { exponentialBackoffWithJitter } from "./_util.ts";
  * Error thrown in {@linkcode retry} once the maximum number of failed attempts
  * has been reached.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts no-assert no-eval
  * import { RetryError } from "@std/async/retry";
  *
@@ -86,7 +88,9 @@ const defaultRetryOptions: Required<RetryOptions> = {
  *
  * When `jitter` is `0`, waits the full backoff time.
  *
- * @example Example configuration 1
+ * @example
+ * <caption>Example configuration 1</caption>
+
  * ```ts no-assert
  * import { retry } from "@std/async/retry";
  * const req = async () => {
@@ -103,7 +107,9 @@ const defaultRetryOptions: Required<RetryOptions> = {
  * });
  * ```
  *
- * @example Example configuration 2
+ * @example
+ * <caption>Example configuration 2</caption>
+
  * ```ts no-assert
  * import { retry } from "@std/async/retry";
  * const req = async () => {

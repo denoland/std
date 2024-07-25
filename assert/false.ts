@@ -8,7 +8,9 @@ export type Falsy = false | 0 | 0n | "" | null | undefined;
 /**
  * Make an assertion, error will be thrown if `expr` have truthy value.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts no-eval
  * import { assertFalse } from "@std/assert";
  *

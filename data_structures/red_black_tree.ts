@@ -34,7 +34,9 @@ const {
  * | min()         | O(log n)     | O(log n)   |
  * | max()         | O(log n)     | O(log n)   |
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import {
  *   ascend,
@@ -124,14 +126,18 @@ export class RedBlackTree<T> extends BinarySearchTree<T> {
    * unless a {@link RedBlackTree} is passed, in which case the comparison
    * function is copied from the input tree.
    *
-   * @example Creating a red-black tree from an array like
+   * @example
+   * <caption>Creating a red-black tree from an array like</caption>
+
    * ```ts no-assert
    * import { RedBlackTree } from "@std/data-structures";
    *
    * const tree = RedBlackTree.from<number>([3, 10, 13, 4, 6, 7, 1, 14]);
    * ```
    *
-   * @example Creating a red-black tree from an iterable object
+   * @example
+   * <caption>Creating a red-black tree from an iterable object</caption>
+
    * ```ts no-assert
    * import { RedBlackTree } from "@std/data-structures";
    *
@@ -142,7 +148,9 @@ export class RedBlackTree<T> extends BinarySearchTree<T> {
    * })());
    * ```
    *
-   * @example Creating a red-black tree from an existing red-black tree
+   * @example
+   * <caption>Creating a red-black tree from an existing red-black tree</caption>
+
    * ```ts no-assert
    * import { RedBlackTree } from "@std/data-structures";
    *
@@ -150,7 +158,9 @@ export class RedBlackTree<T> extends BinarySearchTree<T> {
    * const copy = RedBlackTree.from(tree);
    * ```
    *
-   * @example Creating a red-black tree from an array like with a custom comparison function
+   * @example
+   * <caption>Creating a red-black tree from an array like with a custom comparison function</caption>
+
    * ```ts no-assert
    * import { RedBlackTree, descend } from "@std/data-structures";
    *
@@ -185,7 +195,9 @@ export class RedBlackTree<T> extends BinarySearchTree<T> {
    * comparison operator is used to sort the values in the tree after mapping
    * the values.
    *
-   * @example Creating a red-black tree from an array like with a custom mapping function
+   * @example
+   * <caption>Creating a red-black tree from an array like with a custom mapping function</caption>
+
    * ```ts no-assert
    * import { RedBlackTree } from "@std/data-structures";
    *
@@ -312,7 +324,9 @@ export class RedBlackTree<T> extends BinarySearchTree<T> {
    * The complexity of this operation is on average and at worst O(log n), where
    * n is the number of values in the tree.
    *
-   * @example Inserting a value into the tree
+   * @example
+   * <caption>Inserting a value into the tree</caption>
+
    * ```ts
    * import { RedBlackTree } from "@std/data-structures";
    * import { assertEquals } from "@std/assert";
@@ -369,7 +383,9 @@ export class RedBlackTree<T> extends BinarySearchTree<T> {
    * The complexity of this operation is on average and at worst O(log n), where
    * n is the number of values in the tree.
    *
-   * @example Removing values from the tree
+   * @example
+   * <caption>Removing values from the tree</caption>
+
    * ```ts
    * import { RedBlackTree } from "@std/data-structures";
    * import { assertEquals } from "@std/assert";

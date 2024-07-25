@@ -14,7 +14,9 @@ export type { Format };
  * @param formats A list of formats to test for. Defaults to all supported formats.
  * @returns `true` if the string has valid front matter, otherwise `false`.
  *
- * @example Test for valid YAML front matter
+ * @example
+ * <caption>Test for valid YAML front matter</caption>
+
  * ```ts
  * import { test } from "@std/front-matter/test";
  * import { assert } from "@std/assert";
@@ -27,7 +29,9 @@ export type { Format };
  * assert(result);
  * ```
  *
- * @example Test for valid TOML front matter
+ * @example
+ * <caption>Test for valid TOML front matter</caption>
+
  * ```ts
  * import { test } from "@std/front-matter/test";
  * import { assert } from "@std/assert";
@@ -40,7 +44,9 @@ export type { Format };
  * assert(result);
  * ```
  *
- * @example Test for valid JSON front matter
+ * @example
+ * <caption>Test for valid JSON front matter</caption>
+
  * ```ts
  * import { test } from "@std/front-matter/test";
  * import { assert } from "@std/assert";
@@ -53,7 +59,9 @@ export type { Format };
  * assert(result);
  * ```
  *
- * @example JSON front matter is not valid as YAML
+ * @example
+ * <caption>JSON front matter is not valid as YAML</caption>
+
  * ```ts
  * import { test } from "@std/front-matter/test";
  * import { assertFalse } from "@std/assert";

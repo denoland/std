@@ -38,7 +38,9 @@ import { generate as generateV5, validate as validateV5 } from "./v5.ts";
  * Generator and validator for
  * {@link https://www.rfc-editor.org/rfc/rfc9562.html#section-5.1 | UUIDv1}.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { v1 } from "@std/uuid";
  * import { assert } from "@std/assert";
@@ -56,7 +58,9 @@ export const v1 = {
  * Generator and validator for
  * {@link https://www.rfc-editor.org/rfc/rfc9562.html#section-5.3 | UUIDv3}.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { v3, NAMESPACE_DNS } from "@std/uuid";
  * import { assert } from "@std/assert";
@@ -75,7 +79,9 @@ export const v3 = {
  * Validator for
  * {@link https://www.rfc-editor.org/rfc/rfc9562.html#section-5.4 | UUIDv4}.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { v4 } from "@std/uuid";
  * import { assert } from "@std/assert";
@@ -92,7 +98,9 @@ export const v4 = {
  * Generator and validator for
  * {@link https://www.rfc-editor.org/rfc/rfc9562.html#section-5.5 | UUIDv5}.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { v5, NAMESPACE_DNS } from "@std/uuid";
  * import { assert } from "@std/assert";

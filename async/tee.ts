@@ -59,7 +59,9 @@ class Queue<T> {
 /**
  * Branches the given async iterable into the `n` branches.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { tee } from "@std/async/tee";
  * import { assertEquals } from "@std/assert";

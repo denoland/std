@@ -6,7 +6,9 @@ import { capitalizeWord, splitToWords } from "./_util.ts";
 /**
  * Converts a string into PascalCase.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { toPascalCase } from "@std/text/to-pascal-case";
  * import { assertEquals } from "@std/assert";

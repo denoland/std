@@ -37,7 +37,9 @@ export interface SlidingWindowsOptions {
  *
  * @returns A new array containing all sliding windows of the given size.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { slidingWindows } from "@std/collections/sliding-windows";
  * import { assertEquals } from "@std/assert";

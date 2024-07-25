@@ -10,7 +10,9 @@ import type { ParsedPath } from "./types.ts";
  * Generate a path from a {@linkcode ParsedPath} object. It does the
  * opposite of {@linkcode https://jsr.io/@std/path/doc/~/parse | parse()}.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { format } from "@std/path/format";
  * import { assertEquals } from "@std/assert";

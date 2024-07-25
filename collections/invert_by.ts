@@ -24,7 +24,9 @@ export type InvertByResult<
  *
  * @returns A new record with all keys and values inverted.
  *
- * @example Basic usage
+ * @example
+ * <caption>Basic usage</caption>
+
  * ```ts
  * import { invertBy } from "@std/collections/invert-by";
  * import { assertEquals } from "@std/assert";

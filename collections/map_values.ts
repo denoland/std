@@ -15,7 +15,9 @@
  *
  * @returns A new record with all values transformed by the given transformer.
  *
- * @example Basic usage
+ * @example
+ * <caption>Basic usage</caption>
+
  * ```ts
  * import { mapValues } from "@std/collections/map-values";
  * import { assertEquals } from "@std/assert";
@@ -53,7 +55,9 @@ export function mapValues<T, O, K extends string>(
  *
  * @returns A new record with all values transformed by the given transformer.
  *
- * @example Basic usage
+ * @example
+ * <caption>Basic usage</caption>
+
  * ```ts
  * import { mapValues } from "@std/collections/map-values";
  * import { assertEquals } from "@std/assert";

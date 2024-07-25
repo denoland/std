@@ -21,7 +21,9 @@ const Day = {
  * @param date Date to get the week number of.
  * @returns The week number of the provided date.
  *
- * @example Basic usage
+ * @example
+ * <caption>Basic usage</caption>
+
  * ```ts
  * import { weekOfYear } from "@std/datetime/week-of-year";
  * import { assertEquals } from "@std/assert";

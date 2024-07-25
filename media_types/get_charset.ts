@@ -14,7 +14,9 @@ import { db, type KeyOfDb } from "./_db.ts";
  * @returns The charset for the given media type or header value, or `undefined`
  * if the charset cannot be determined.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { getCharset } from "@std/media-types/get-charset";
  * import { assertEquals } from "@std/assert";

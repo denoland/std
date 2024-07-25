@@ -15,7 +15,9 @@ import {
  * Extracts the number of milliseconds since the Unix epoch that had passed when
  * the ULID was generated. If the ULID is malformed, an error will be thrown.
  *
- * @example Decode the time from a ULID
+ * @example
+ * <caption>Decode the time from a ULID</caption>
+
  * ```ts
  * import { decodeTime, ulid } from "@std/ulid";
  * import { assertEquals } from "@std/assert";

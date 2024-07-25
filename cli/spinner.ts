@@ -89,7 +89,9 @@ export interface SpinnerOptions {
  * > [!WARNING]
  * > **UNSTABLE**: New API, yet to be vetted.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts no-eval
  * import { Spinner } from "@std/cli/spinner";
  *
@@ -111,7 +113,9 @@ export class Spinner {
    * The message to display next to the spinner.
    * This can be changed while the spinner is active.
    *
-   * @example Usage
+   * @example
+   * <caption>Usage</caption>
+
    * ```ts no-eval
    * import { Spinner } from "@std/cli/spinner";
    *
@@ -162,7 +166,9 @@ export class Spinner {
    *
    * @param value Color to set.
    *
-   * @example Usage
+   * @example
+   * <caption>Usage</caption>
+
    * ```ts no-eval
    * import { Spinner } from "@std/cli/spinner";
    *
@@ -182,7 +188,9 @@ export class Spinner {
   /**
    * Get the current color of the spinner.
    *
-   * @example Usage
+   * @example
+   * <caption>Usage</caption>
+
    * ```ts no-assert
    * import { Spinner } from "@std/cli/spinner";
    *
@@ -199,7 +207,9 @@ export class Spinner {
   /**
    * Starts the spinner.
    *
-   * @example Usage
+   * @example
+   * <caption>Usage</caption>
+
    * ```ts no-eval
    * import { Spinner } from "@std/cli/spinner";
    *
@@ -238,7 +248,9 @@ export class Spinner {
   /**
    * Stops the spinner.
    *
-   * @example Usage
+   * @example
+   * <caption>Usage</caption>
+
    * ```ts no-eval
    * import { Spinner } from "@std/cli/spinner";
    *

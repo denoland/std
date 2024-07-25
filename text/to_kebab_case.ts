@@ -6,7 +6,9 @@ import { splitToWords } from "./_util.ts";
 /**
  * Converts a string into kebab-case.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { toKebabCase } from "@std/text/to-kebab-case";
  * import { assertEquals } from "@std/assert";

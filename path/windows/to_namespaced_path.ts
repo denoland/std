@@ -13,7 +13,9 @@ import { resolve } from "./resolve.ts";
 /**
  * Resolves path to a namespace path
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { toNamespacedPath } from "@std/path/windows/to-namespaced-path";
  * import { assertEquals } from "@std/assert";

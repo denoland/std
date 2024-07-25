@@ -13,7 +13,9 @@ import { minOf } from "./min_of.ts";
  *
  * @returns A new array containing N-tuples of elements from the given arrays.
  *
- * @example Basic usage
+ * @example
+ * <caption>Basic usage</caption>
+
  * ```ts
  * import { zip } from "@std/collections/zip";
  * import { assertEquals } from "@std/assert";

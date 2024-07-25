@@ -15,7 +15,9 @@ import { indexOfNeedle } from "./index_of_needle.ts";
  * @returns `true` if the source array contains the needle array, `false`
  * otherwise.
  *
- * @example Basic usage
+ * @example
+ * <caption>Basic usage</caption>
+
  * ```ts
  * import { includesNeedle } from "@std/bytes/includes-needle";
  * import { assertEquals } from "@std/assert";
@@ -26,7 +28,9 @@ import { indexOfNeedle } from "./index_of_needle.ts";
  * assertEquals(includesNeedle(source, needle), true);
  * ```
  *
- * @example Start index
+ * @example
+ * <caption>Start index</caption>
+
  * ```ts
  * import { includesNeedle } from "@std/bytes/includes-needle";
  * import { assertEquals } from "@std/assert";

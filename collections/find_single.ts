@@ -13,7 +13,9 @@
  * @returns The single element that matches the given condition or `undefined`
  * if there are zero or more than one matching elements.
  *
- * @example Basic usage
+ * @example
+ * <caption>Basic usage</caption>
+
  * ```ts
  * import { findSingle } from "@std/collections/find-single";
  * import { assertEquals } from "@std/assert";

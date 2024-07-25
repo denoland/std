@@ -27,7 +27,9 @@ function isComparator(value: unknown): value is Comparator {
  *
  * Adds a type assertion if true.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { isRange } from "@std/semver/is-range";
  * import { assert } from "@std/assert";

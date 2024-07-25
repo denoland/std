@@ -108,7 +108,9 @@ export type RowType<T> = T extends undefined ? string[]
  * A `CsvParseStream` expects input conforming to
  * {@link https://www.rfc-editor.org/rfc/rfc4180.html | RFC 4180}.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts no-assert
  * import { CsvParseStream } from "@std/csv/parse-stream";
  *
@@ -219,7 +221,9 @@ export class CsvParseStream<
   /**
    * The instance's {@linkcode ReadableStream}.
    *
-   * @example Usage
+   * @example
+   * <caption>Usage</caption>
+
    * ```ts no-assert
    * import { CsvParseStream } from "@std/csv/parse-stream";
    *
@@ -245,7 +249,9 @@ export class CsvParseStream<
   /**
    * The instance's {@linkcode WritableStream}.
    *
-   * @example Usage
+   * @example
+   * <caption>Usage</caption>
+
    * ```ts no-assert
    * import { CsvParseStream } from "@std/csv/parse-stream";
    *

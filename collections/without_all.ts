@@ -12,7 +12,9 @@
  * @returns A new array containing all elements from the given array except the
  * ones that are in the values array.
  *
- * @example Basic usage
+ * @example
+ * <caption>Basic usage</caption>
+
  * ```ts
  * import { withoutAll } from "@std/collections/without-all";
  * import { assertEquals } from "@std/assert";

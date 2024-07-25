@@ -6,7 +6,9 @@ import { parse } from "./parse.ts";
 /**
  * Returns the parsed SemVer, or `undefined` if it's not valid.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { tryParse } from "@std/semver/try-parse";
  * import { assertEquals } from "@std/assert";

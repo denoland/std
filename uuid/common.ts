@@ -11,7 +11,9 @@ import { NIL_UUID } from "./constants.ts";
  *
  * @returns `true` if the UUID is the nil UUID, otherwise `false`.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { isNil } from "@std/uuid";
  * import { assert, assertFalse } from "@std/assert";
@@ -31,7 +33,9 @@ export function isNil(id: string): boolean {
  *
  * @returns `true` if the string is a valid UUID, otherwise `false`.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { validate } from "@std/uuid";
  * import { assert, assertFalse } from "@std/assert";
@@ -54,7 +58,9 @@ export function validate(uuid: string): boolean {
  *
  * @returns The RFC version of the UUID.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { version } from "@std/uuid";
  * import { assertEquals } from "@std/assert";

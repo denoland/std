@@ -31,7 +31,9 @@ export interface MoveOptions {
  *
  * @returns A void promise that resolves once the operation completes.
  *
- * @example Basic usage
+ * @example
+ * <caption>Basic usage</caption>
+
  * ```ts no-eval
  * import { move } from "@std/fs/move";
  *
@@ -41,7 +43,9 @@ export interface MoveOptions {
  * This will move the file or directory at `./foo` to `./bar` without
  * overwriting.
  *
- * @example Overwriting
+ * @example
+ * <caption>Overwriting</caption>
+
  * ```ts no-eval
  * import { move } from "@std/fs/move";
  *
@@ -107,7 +111,9 @@ export async function move(
  *
  * @returns A void value that returns once the operation completes.
  *
- * @example Basic usage
+ * @example
+ * <caption>Basic usage</caption>
+
  * ```ts no-eval
  * import { moveSync } from "@std/fs/move";
  *
@@ -117,7 +123,9 @@ export async function move(
  * This will move the file or directory at `./foo` to `./bar` without
  * overwriting.
  *
- * @example Overwriting
+ * @example
+ * <caption>Overwriting</caption>
+
  * ```ts no-eval
  * import { moveSync } from "@std/fs/move";
  *

@@ -13,7 +13,9 @@
  * @returns A new record with all entries that have a key that matches the given
  * predicate.
  *
- * @example Basic usage
+ * @example
+ * <caption>Basic usage</caption>
+
  * ```ts
  * import { filterKeys } from "@std/collections/filter-keys";
  * import { assertEquals } from "@std/assert";

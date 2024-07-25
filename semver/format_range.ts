@@ -11,7 +11,9 @@ function formatComparator(comparator: Comparator): string {
 /**
  * Formats the SemVerrange into a string.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { formatRange, parseRange } from "@std/semver";
  * import { assertEquals } from "@std/assert";

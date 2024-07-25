@@ -18,7 +18,9 @@ export type { FormattingOptions, ReplacerFunction };
 /**
  * Compile an object into an INI config string. Provide formatting options to modify the output.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { stringify } from "@std/ini/stringify";
  * import { assertEquals } from "@std/assert";
@@ -42,7 +44,9 @@ export type { FormattingOptions, ReplacerFunction };
  * hello=world`);
  * ```
  *
- * @example Using replacer option
+ * @example
+ * <caption>Using replacer option</caption>
+
  * ```ts
  * import { stringify } from "@std/ini/stringify";
  * import { assertEquals } from "@std/assert";

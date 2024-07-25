@@ -14,7 +14,9 @@
  * @returns A new array containing all elements after the last element that does
  * not match the predicate.
  *
- * @example Basic usage
+ * @example
+ * <caption>Basic usage</caption>
+
  * ```ts
  * import { takeLastWhile } from "@std/collections/take-last-while";
  * import { assertEquals } from "@std/assert";

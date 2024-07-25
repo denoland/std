@@ -53,7 +53,9 @@ export type JoinToStringOptions = {
  *
  * @returns The resulting string.
  *
- * @example Usage with options
+ * @example
+ * <caption>Usage with options</caption>
+
  * ```ts
  * import { joinToString } from "@std/collections/join-to-string";
  * import { assertEquals } from "@std/assert";

@@ -17,7 +17,9 @@ import { getFileInfoType } from "./_get_file_info_type.ts";
  *
  * @returns A promise that resolves once the directory exists.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts no-eval
  * import { ensureDir } from "@std/fs/ensure-dir";
  *
@@ -65,7 +67,9 @@ export async function ensureDir(dir: string | URL) {
  *
  * @returns A void value that returns once the directory exists.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts no-eval
  * import { ensureDirSync } from "@std/fs/ensure-dir";
  *

@@ -29,7 +29,9 @@ import { MOCK_SYMBOL, type MockCall } from "./_mock_util.ts";
  * @param stubs Functions to be used as stubs for different calls.
  * @returns A mock function that keeps track of calls and returns values based on the provided stubs.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts no-assert
  * import { fn, expect } from "@std/expect";
  *

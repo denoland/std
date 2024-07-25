@@ -8,7 +8,9 @@ import { isPosixPathSeparator } from "./_util.ts";
 /**
  * Return the directory path of a `path`.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { dirname } from "@std/path/posix/dirname";
  * import { assertEquals } from "@std/assert";

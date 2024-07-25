@@ -19,7 +19,9 @@ function isYearNumberALeapYear(yearNumber: number): boolean {
  * @param year The year in number or `Date` format.
  * @returns `true` if the given year is a leap year; `false` otherwise.
  *
- * @example Basic usage
+ * @example
+ * <caption>Basic usage</caption>
+
  * ```ts
  * import { isLeap } from "@std/datetime/is-leap";
  * import { assertEquals } from "@std/assert";
@@ -33,7 +35,9 @@ function isYearNumberALeapYear(yearNumber: number): boolean {
  * assertEquals(isLeap(1972), true);
  * ```
  *
- * @example Accounting for timezones
+ * @example
+ * <caption>Accounting for timezones</caption>
+
  * ```ts no-assert
  * import { isLeap } from "@std/datetime/is-leap";
  *
@@ -60,7 +64,9 @@ export function isLeap(year: Date | number): boolean {
  * @param year The year in number or `Date` format.
  * @returns `true` if the given year is a leap year; `false` otherwise.
  *
- * @example Basic usage
+ * @example
+ * <caption>Basic usage</caption>
+
  * ```ts
  * import { isUtcLeap } from "@std/datetime/is-leap";
  * import { assertEquals } from "@std/assert";

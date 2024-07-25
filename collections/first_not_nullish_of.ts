@@ -15,7 +15,9 @@
  * @returns The first non-`null` and non-`undefined` value produced by the
  * selector function, or `undefined` if no such value is produced.
  *
- * @example Basic usage
+ * @example
+ * <caption>Basic usage</caption>
+
  * ```ts
  * import { firstNotNullishOf } from "@std/collections/first-not-nullish-of";
  * import { assertEquals } from "@std/assert";

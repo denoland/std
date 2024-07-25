@@ -30,7 +30,9 @@ const allFlags = GPUTextureUsage.COPY_SRC | GPUTextureUsage.COPY_DST |
 /**
  * Get various information about a specific {@linkcode GPUTextureFormat}.
  *
- * @example Basic usage
+ * @example
+ * <caption>Basic usage</caption>
+
  * ```ts
  * import { describeTextureFormat } from "@std/webgpu/describe-texture-format";
  * import { assertEquals } from "@std/assert";

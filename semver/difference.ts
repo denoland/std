@@ -7,7 +7,9 @@ import { compareIdentifier } from "./_shared.ts";
  * Returns difference between two SemVers by the release type,
  * or `undefined` if the SemVers are the same.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { parse, difference } from "@std/semver";
  * import { assertEquals } from "@std/assert";

@@ -10,7 +10,9 @@ import { SEPARATOR } from "./constants.ts";
  * @param paths Paths to search for common path.
  * @returns The common path.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { common } from "@std/path/common";
  * import { assertEquals } from "@std/assert";

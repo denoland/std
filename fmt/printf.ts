@@ -931,7 +931,9 @@ class Printf {
  *
  * See the module documentation for the available format strings.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { sprintf } from "@std/fmt/printf";
  * import { assertEquals } from "@std/assert";
@@ -960,7 +962,9 @@ export function sprintf(format: string, ...args: unknown[]): string {
  *
  * See the module documentation for the available format strings.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts no-assert
  * import { printf } from "@std/fmt/printf";
  *

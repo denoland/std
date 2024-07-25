@@ -58,7 +58,9 @@ const Z85 =
  *
  * @returns The ascii85-encoded string.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { encodeAscii85 } from "@std/encoding/ascii85";
  * import { assertEquals } from "@std/assert";
@@ -142,7 +144,9 @@ export type DecodeAscii85Options = Omit<EncodeAscii85Options, "delimiter">;
  * @param options Options for decoding.
  * @returns The decoded data.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { decodeAscii85 } from "@std/encoding/ascii85";
  * import { assertEquals } from "@std/assert";

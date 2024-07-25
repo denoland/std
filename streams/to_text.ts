@@ -9,7 +9,9 @@
  * @param stream A `ReadableStream` to convert into a `string`.
  * @returns A `Promise` that resolves to the `string`.
  *
- * @example Basic usage with a stream of strings
+ * @example
+ * <caption>Basic usage with a stream of strings</caption>
+
  * ```ts
  * import { toText } from "@std/streams/to-text";
  * import { assertEquals } from "@std/assert";
@@ -18,7 +20,9 @@
  * assertEquals(await toText(stream), "Hello, world!");
  * ```
  *
- * @example Basic usage with a stream of `Uint8Array`s
+ * @example
+ * <caption>Basic usage with a stream of `Uint8Array`s</caption>
+
  * ```ts
  * import { toText } from "@std/streams/to-text";
  * import { assertEquals } from "@std/assert";

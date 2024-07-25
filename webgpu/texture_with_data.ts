@@ -82,7 +82,9 @@ function textureMipLevelSize(
 /**
  * Create a {@linkcode GPUTexture} with data.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts no-eval
  * import { createTextureWithData } from "@std/webgpu/texture-with-data";
  *

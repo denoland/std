@@ -11,7 +11,9 @@ import { splitToWords } from "./_util.ts";
  *
  * @experimental
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { toConstantCase } from "@std/text/to-constant-case";
  * import { assertEquals } from "@std/assert/equals";

@@ -9,7 +9,9 @@ import { DAY } from "./constants.ts";
  * @param date Date to get the day of the year of.
  * @return Number of the day in the year in the local time zone.
  *
- * @example Basic usage
+ * @example
+ * <caption>Basic usage</caption>
+
  * ```ts
  * import { dayOfYear } from "@std/datetime/day-of-year";
  * import { assertEquals } from "@std/assert";
@@ -36,7 +38,9 @@ export function dayOfYear(date: Date): number {
  * @param date Date to get the day of the year of.
  * @return Number of the day in the year in UTC time.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { dayOfYearUtc } from "@std/datetime/day-of-year";
  * import { assertEquals } from "@std/assert";

@@ -8,7 +8,9 @@ import { assertIsError } from "./is_error.ts";
  *
  * To assert that a synchronous function throws, use {@linkcode assertThrows}.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts no-eval
  * import { assertRejects } from "@std/assert";
  *
@@ -31,7 +33,9 @@ export function assertRejects(
  *
  * To assert that a synchronous function throws, use {@linkcode assertThrows}.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts no-eval
  * import { assertRejects } from "@std/assert";
  *

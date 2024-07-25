@@ -17,7 +17,9 @@
  * @returns Index of the first occurrence of the needle array in the source
  * array, or -1 if it is not present.
  *
- * @example Basic usage
+ * @example
+ * <caption>Basic usage</caption>
+
  * ```ts
  * import { indexOfNeedle } from "@std/bytes/index-of-needle";
  * import { assertEquals } from "@std/assert";
@@ -30,7 +32,9 @@
  * assertEquals(indexOfNeedle(source, notNeedle), -1);
  * ```
  *
- * @example Start index
+ * @example
+ * <caption>Start index</caption>
+
  * ```ts
  * import { indexOfNeedle } from "@std/bytes/index-of-needle";
  * import { assertEquals } from "@std/assert";

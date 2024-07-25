@@ -32,7 +32,9 @@ export type PromptSecretOptions = {
  * @param options The options for the prompt.
  * @returns The string that was entered or `null` if stdin is not a TTY.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts no-eval
  * import { promptSecret } from "@std/cli/prompt-secret";
  *

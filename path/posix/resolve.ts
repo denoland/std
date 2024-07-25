@@ -8,7 +8,9 @@ import { isPosixPathSeparator } from "./_util.ts";
 /**
  * Resolves path segments into a `path`.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { resolve } from "@std/path/posix/resolve";
  * import { assertEquals } from "@std/assert";

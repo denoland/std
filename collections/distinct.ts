@@ -11,7 +11,9 @@
  *
  * @returns An array of distinct elements in the input array.
  *
- * @example Basic usage
+ * @example
+ * <caption>Basic usage</caption>
+
  * ```ts
  * import { distinct } from "@std/collections/distinct";
  * import { assertEquals } from "@std/assert";

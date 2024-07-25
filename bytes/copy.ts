@@ -14,7 +14,9 @@
  * to 0.
  * @returns Number of bytes copied.
  *
- * @example Basic usage
+ * @example
+ * <caption>Basic usage</caption>
+
  * ```ts
  * import { copy } from "@std/bytes/copy";
  * import { assertEquals } from "@std/assert";
@@ -26,7 +28,9 @@
  * assertEquals(dst, new Uint8Array([9, 8, 7, 3, 4, 5]));
  * ```
  *
- * @example Copy with offset
+ * @example
+ * <caption>Copy with offset</caption>
+
  * ```ts
  * import { copy } from "@std/bytes/copy";
  * import { assertEquals } from "@std/assert";

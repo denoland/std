@@ -464,7 +464,9 @@ const FLAG_REGEXP =
  *
  * @return The parsed arguments.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { parseArgs } from "@std/cli/parse-args";
  * import { assertEquals } from "@std/assert";

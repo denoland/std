@@ -8,7 +8,9 @@ import { parseRange } from "./parse_range.ts";
  * Parses the given range string and returns a Range object. If the range string
  * is invalid, `undefined` is returned.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { tryParseRange } from "@std/semver";
  * import { assertEquals } from "@std/assert";

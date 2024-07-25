@@ -18,7 +18,9 @@ const defaultMonotonicUlid = monotonicFactory();
  * still be generated, but it will not be guaranteed to be monotonic with
  * previous ULIDs for that same seed time.
  *
- * @example Generate a monotonic ULID
+ * @example
+ * <caption>Generate a monotonic ULID</caption>
+
  * ```ts no-assert
  * import { monotonicUlid } from "@std/ulid";
  *
@@ -27,7 +29,9 @@ const defaultMonotonicUlid = monotonicFactory();
  * monotonicUlid(); // 01HYFKHHX8H4BRY8BYHAV1BZ2T
  * ```
  *
- * @example Generate a monotonic ULID with a seed time
+ * @example
+ * <caption>Generate a monotonic ULID with a seed time</caption>
+
  * ```ts no-assert
  * import { monotonicUlid } from "@std/ulid";
  *

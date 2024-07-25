@@ -8,7 +8,9 @@ import { isPosixPathSeparator } from "./_util.ts";
 /**
  * Return the extension of the `path` with leading period.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { extname } from "@std/path/posix/extname";
  * import { assertEquals } from "@std/assert";

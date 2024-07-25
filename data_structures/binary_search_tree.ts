@@ -24,7 +24,9 @@ type Direction = "left" | "right";
  * | min()         | O(log n)     | O(n)       |
  * | max()         | O(log n)     | O(n)       |
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import {
  *   BinarySearchTree,
@@ -151,14 +153,18 @@ export class BinarySearchTree<T> implements Iterable<T> {
    * unless a {@link BinarySearchTree} is passed, in which case the comparison
    * function is copied from the input tree.
    *
-   * @example Creating a binary search tree from an array like
+   * @example
+   * <caption>Creating a binary search tree from an array like</caption>
+
    * ```ts no-assert
    * import { BinarySearchTree } from "@std/data-structures";
    *
    * const tree = BinarySearchTree.from<number>([42, 43, 41]);
    * ```
    *
-   * @example Creating a binary search tree from an iterable object
+   * @example
+   * <caption>Creating a binary search tree from an iterable object</caption>
+
    * ```ts no-assert
    * import { BinarySearchTree } from "@std/data-structures";
    *
@@ -169,7 +175,9 @@ export class BinarySearchTree<T> implements Iterable<T> {
    * })());
    * ```
    *
-   * @example Creating a binary search tree from an existing binary search tree
+   * @example
+   * <caption>Creating a binary search tree from an existing binary search tree</caption>
+
    * ```ts no-assert
    * import { BinarySearchTree } from "@std/data-structures";
    *
@@ -177,7 +185,9 @@ export class BinarySearchTree<T> implements Iterable<T> {
    * const copy = BinarySearchTree.from(tree);
    * ```
    *
-   * @example Creating a binary search tree from an array like with a custom comparison function
+   * @example
+   * <caption>Creating a binary search tree from an array like with a custom comparison function</caption>
+
    * ```ts no-assert
    * import { BinarySearchTree, descend } from "@std/data-structures";
    *
@@ -213,7 +223,9 @@ export class BinarySearchTree<T> implements Iterable<T> {
    * comparison operator is used to sort the values in the tree after mapping
    * the values.
    *
-   * @example Creating a binary search tree from an array like with a custom mapping function
+   * @example
+   * <caption>Creating a binary search tree from an array like with a custom mapping function</caption>
+
    * ```ts no-assert
    * import { BinarySearchTree } from "@std/data-structures";
    *
@@ -300,7 +312,9 @@ export class BinarySearchTree<T> implements Iterable<T> {
    *
    * The complexity of this operation is O(1).
    *
-   * @example Getting the size of the tree
+   * @example
+   * <caption>Getting the size of the tree</caption>
+
    * ```ts no-assert
    * import { BinarySearchTree } from "@std/data-structures";
    * import { assertEquals } from "@std/assert";
@@ -417,7 +431,9 @@ export class BinarySearchTree<T> implements Iterable<T> {
    * The complexity of this operation is on average O(log n), where n is the
    * number of values in the tree. In the worst case, the complexity is O(n).
    *
-   * @example Inserting values into the tree
+   * @example
+   * <caption>Inserting values into the tree</caption>
+
    * ```ts
    * import { BinarySearchTree } from "@std/data-structures";
    * import { assertEquals } from "@std/assert";
@@ -441,7 +457,9 @@ export class BinarySearchTree<T> implements Iterable<T> {
    * The complexity of this operation is on average O(log n), where n is the
    * number of values in the tree. In the worst case, the complexity is O(n).
    *
-   * @example Removing values from the tree
+   * @example
+   * <caption>Removing values from the tree</caption>
+
    * ```ts
    * import { BinarySearchTree } from "@std/data-structures";
    * import { assertEquals } from "@std/assert";
@@ -467,7 +485,9 @@ export class BinarySearchTree<T> implements Iterable<T> {
    * The complexity of this operation depends on the underlying structure of the
    * tree. Refer to the documentation of the structure itself for more details.
    *
-   * @example Finding values in the tree
+   * @example
+   * <caption>Finding values in the tree</caption>
+
    * ```ts
    * import { BinarySearchTree } from "@std/data-structures";
    * import { assertEquals } from "@std/assert";
@@ -492,7 +512,9 @@ export class BinarySearchTree<T> implements Iterable<T> {
    * The complexity of this operation depends on the underlying structure of the
    * tree. Refer to the documentation of the structure itself for more details.
    *
-   * @example Finding the minimum value in the tree
+   * @example
+   * <caption>Finding the minimum value in the tree</caption>
+
    * ```ts
    * import { BinarySearchTree } from "@std/data-structures";
    * import { assertEquals } from "@std/assert";
@@ -515,7 +537,9 @@ export class BinarySearchTree<T> implements Iterable<T> {
    * The complexity of this operation depends on the underlying structure of the
    * tree. Refer to the documentation of the structure itself for more details.
    *
-   * @example Finding the maximum value in the tree
+   * @example
+   * <caption>Finding the maximum value in the tree</caption>
+
    * ```ts
    * import { BinarySearchTree } from "@std/data-structures";
    * import { assertEquals } from "@std/assert";
@@ -536,7 +560,9 @@ export class BinarySearchTree<T> implements Iterable<T> {
    *
    * The complexity of this operation is O(1).
    *
-   * @example Clearing the tree
+   * @example
+   * <caption>Clearing the tree</caption>
+
    * ```ts
    * import { BinarySearchTree } from "@std/data-structures";
    * import { assertEquals } from "@std/assert";
@@ -558,7 +584,9 @@ export class BinarySearchTree<T> implements Iterable<T> {
    *
    * The complexity of this operation is O(1).
    *
-   * @example Checking if the tree is empty
+   * @example
+   * <caption>Checking if the tree is empty</caption>
+
    * ```ts
    * import { BinarySearchTree } from "@std/data-structures";
    * import { assertEquals } from "@std/assert";
@@ -582,7 +610,9 @@ export class BinarySearchTree<T> implements Iterable<T> {
    * Create an iterator over this tree that traverses the tree in-order (LNR,
    * Left-Node-Right).
    *
-   * @example Using the in-order LNR iterator
+   * @example
+   * <caption>Using the in-order LNR iterator</caption>
+
    * ```ts
    * import { BinarySearchTree } from "@std/data-structures";
    * import { assertEquals } from "@std/assert";
@@ -613,7 +643,9 @@ export class BinarySearchTree<T> implements Iterable<T> {
    * Create an iterator over this tree that traverses the tree in reverse
    * in-order (RNL, Right-Node-Left).
    *
-   * @example Using the reverse in-order RNL iterator
+   * @example
+   * <caption>Using the reverse in-order RNL iterator</caption>
+
    * ```ts
    * import { BinarySearchTree } from "@std/data-structures";
    * import { assertEquals } from "@std/assert";
@@ -643,7 +675,9 @@ export class BinarySearchTree<T> implements Iterable<T> {
    * Create an iterator over this tree that traverses the tree in pre-order (NLR,
    * Node-Left-Right).
    *
-   * @example Using the pre-order NLR iterator
+   * @example
+   * <caption>Using the pre-order NLR iterator</caption>
+
    * ```ts
    * import { BinarySearchTree } from "@std/data-structures";
    * import { assertEquals } from "@std/assert";
@@ -670,7 +704,9 @@ export class BinarySearchTree<T> implements Iterable<T> {
    * Create an iterator over this tree that traverses the tree in post-order (LRN,
    * Left-Right-Node).
    *
-   * @example Using the post-order LRN iterator
+   * @example
+   * <caption>Using the post-order LRN iterator</caption>
+
    * ```ts
    * import { BinarySearchTree } from "@std/data-structures";
    * import { assertEquals } from "@std/assert";
@@ -706,7 +742,9 @@ export class BinarySearchTree<T> implements Iterable<T> {
    * Create an iterator over this tree that traverses the tree in level-order (BFS,
    * Breadth-First Search).
    *
-   * @example Using the level-order BFS iterator
+   * @example
+   * <caption>Using the level-order BFS iterator</caption>
+
    * ```ts
    * import { BinarySearchTree } from "@std/data-structures";
    * import { assertEquals } from "@std/assert";
@@ -733,7 +771,9 @@ export class BinarySearchTree<T> implements Iterable<T> {
    * Create an iterator over this tree that traverses the tree in-order (LNR,
    * Left-Node-Right).
    *
-   * @example Using the in-order iterator
+   * @example
+   * <caption>Using the in-order iterator</caption>
+
    * ```ts
    * import { BinarySearchTree } from "@std/data-structures";
    * import { assertEquals } from "@std/assert";

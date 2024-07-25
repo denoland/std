@@ -8,7 +8,9 @@
  * @param stream A `ReadableStream` of `Uint8Array`s to convert into a `Blob`.
  * @returns A `Promise` that resolves to the `Blob`.
  *
- * @example Basic usage
+ * @example
+ * <caption>Basic usage</caption>
+
  * ```ts
  * import { toBlob } from "@std/streams/to-blob";
  * import { assertEquals } from "@std/assert";

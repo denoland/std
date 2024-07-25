@@ -13,7 +13,9 @@ import { assertArgs } from "../_common/relative.ts";
  *  to = 'C:\\orandea\\impl\\bbb'
  * The output of the function should be: '..\\..\\impl\\bbb'
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { relative } from "@std/path/windows/relative";
  * import { assertEquals } from "@std/assert";

@@ -22,7 +22,9 @@
 /**
  * Asserts at compile time that the provided type argument's type resolves to the expected boolean literal type.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts ignore
  * import { assertType, IsExact, IsNullable } from "@std/testing/types";
  *
@@ -46,7 +48,9 @@ export function assertType<T extends boolean>(
 /**
  * Asserts at compile time that the provided type argument's type resolves to true.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { AssertTrue, Has, IsNullable } from "@std/testing/types";
  *
@@ -62,7 +66,9 @@ export type AssertTrue<T extends true> = never;
 /**
  * Asserts at compile time that the provided type argument's type resolves to false.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { AssertFalse, IsNever } from "@std/testing/types";
  *
@@ -78,7 +84,9 @@ export type AssertFalse<T extends false> = never;
 /**
  * Asserts at compile time that the provided type argument's type resolves to the expected boolean literal type.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { Assert, Has } from "@std/testing/types";
  *
@@ -95,7 +103,9 @@ export type Assert<T extends boolean, Expected extends T> = never;
 /**
  * Checks if type `T` has the specified type `U`.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { assertType, Has } from "@std/testing/types";
  *
@@ -118,7 +128,9 @@ export type Has<T, U> = IsAny<T> extends true ? true
 /**
  * Checks if type `T` does not have the specified type `U`.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { assertType, NotHas } from "@std/testing/types";
  *
@@ -138,7 +150,9 @@ export type NotHas<T, U> = Has<T, U> extends false ? true : false;
 /**
  * Checks if type `T` is possibly null or undefined.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { assertType, IsNullable } from "@std/testing/types";
  *
@@ -159,7 +173,9 @@ export type IsNullable<T> = Extract<T, null | undefined> extends never ? false
 /**
  * Checks if type `T` exactly matches type `U`.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { assertType, IsExact } from "@std/testing/types";
  *
@@ -202,7 +218,9 @@ export type DeepPrepareIsExactProp<Prop, Parent, VisitedTypes> = Prop extends
 /**
  * Checks if type `T` is the `any` type.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { assertType, IsAny } from "@std/testing/types";
  *
@@ -218,7 +236,9 @@ export type IsAny<T> = 0 extends (1 & T) ? true : false;
 /**
  * Checks if type `T` is the `never` type.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { assertType, IsNever } from "@std/testing/types";
  *
@@ -233,7 +253,9 @@ export type IsNever<T> = [T] extends [never] ? true : false;
 /**
  * Checks if type `T` is the `unknown` type.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { assertType, IsUnknown } from "@std/testing/types";
  *

@@ -17,7 +17,9 @@ import { mapEntries } from "./map_entries.ts";
  * @returns A record with the same keys as the input record, but with the values
  * being the result of applying the aggregator to each group.
  *
- * @example Basic usage
+ * @example
+ * <caption>Basic usage</caption>
+
  * ```ts
  * import { aggregateGroups } from "@std/collections/aggregate-groups";
  * import { assertEquals } from "@std/assert";

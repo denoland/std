@@ -8,7 +8,9 @@ import { toFileUrl as windowsToFileUrl } from "./windows/to_file_url.ts";
 /**
  * Converts a path string to a file URL.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { toFileUrl } from "@std/path/to-file-url";
  * import { assertEquals } from "@std/assert";

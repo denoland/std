@@ -19,7 +19,9 @@ export type InvertResult<T extends Record<PropertyKey, PropertyKey>> = {
  *
  * @returns A new record with all keys and values inverted.
  *
- * @example Basic usage
+ * @example
+ * <caption>Basic usage</caption>
+
  * ```ts
  * import { invert } from "@std/collections/invert";
  * import { assertEquals } from "@std/assert";

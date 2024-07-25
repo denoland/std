@@ -9,7 +9,9 @@ import { relative as windowsRelative } from "./windows/relative.ts";
  * Return the relative path from `from` to `to` based on current working
  * directory.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { relative } from "@std/path/relative";
  * import { assertEquals } from "@std/assert";

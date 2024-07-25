@@ -14,7 +14,9 @@
  * @returns A tuple containing two arrays, the first one holding all first tuple
  * elements and the second one holding all second elements.
  *
- * @example Basic usage
+ * @example
+ * <caption>Basic usage</caption>
+
  * ```ts
  * import { unzip } from "@std/collections/unzip";
  * import { assertEquals } from "@std/assert";

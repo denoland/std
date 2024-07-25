@@ -15,7 +15,9 @@
  * @param family The IP protocol version of the interface to get the address of.
  * @returns The IPv4 network address of the machine or `undefined` if not found.
  *
- * @example Get the IPv4 network address (default)
+ * @example
+ * <caption>Get the IPv4 network address (default)</caption>
+
  * ```ts no-assert no-eval
  * import { getNetworkAddress } from "@std/net/get-network-address";
  *
@@ -24,7 +26,9 @@
  * Deno.serve({ port: 0, hostname }, () => new Response("Hello, world!"));
  * ```
  *
- * @example Get the IPv6 network address
+ * @example
+ * <caption>Get the IPv6 network address</caption>
+
  * ```ts no-assert no-eval
  * import { getNetworkAddress } from "@std/net/get-network-address";
  *

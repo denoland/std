@@ -20,7 +20,9 @@ function formatNumber(value: number) {
  *
  * If any number is positive or negative infinity then '∞' or '⧞' will be printed instead.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { format } from "@std/semver/format";
  * import { assertEquals } from "@std/assert";

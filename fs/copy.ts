@@ -274,7 +274,9 @@ function copyDirSync(
  *
  * @returns A promise that resolves once the copy operation completes.
  *
- * @example Basic usage
+ * @example
+ * <caption>Basic usage</caption>
+
  * ```ts no-eval
  * import { copy } from "@std/fs/copy";
  *
@@ -284,7 +286,9 @@ function copyDirSync(
  * This will copy the file or directory at `./foo` to `./bar` without
  * overwriting.
  *
- * @example Overwriting files/directories
+ * @example
+ * <caption>Overwriting files/directories</caption>
+
  * ```ts no-eval
  * import { copy } from "@std/fs/copy";
  *
@@ -294,7 +298,9 @@ function copyDirSync(
  * This will copy the file or directory at `./foo` to `./bar` and overwrite
  * any existing files or directories.
  *
- * @example Preserving timestamps
+ * @example
+ * <caption>Preserving timestamps</caption>
+
  * ```ts no-eval
  * import { copy } from "@std/fs/copy";
  *
@@ -350,7 +356,9 @@ export async function copy(
  *
  * @returns A void value that returns once the copy operation completes.
  *
- * @example Basic usage
+ * @example
+ * <caption>Basic usage</caption>
+
  * ```ts no-eval
  * import { copySync } from "@std/fs/copy";
  *
@@ -360,7 +368,9 @@ export async function copy(
  * This will copy the file or directory at `./foo` to `./bar` without
  * overwriting.
  *
- * @example Overwriting files/directories
+ * @example
+ * <caption>Overwriting files/directories</caption>
+
  * ```ts no-eval
  * import { copySync } from "@std/fs/copy";
  *
@@ -370,7 +380,9 @@ export async function copy(
  * This will copy the file or directory at `./foo` to `./bar` and overwrite
  * any existing files or directories.
  *
- * @example Preserving timestamps
+ * @example
+ * <caption>Preserving timestamps</caption>
+
  * ```ts no-eval
  * import { copySync } from "@std/fs/copy";
  *

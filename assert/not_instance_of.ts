@@ -6,7 +6,9 @@ import { assertFalse } from "./false.ts";
  * Make an assertion that `obj` is not an instance of `type`.
  * If so, then throw.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts no-eval
  * import { assertNotInstanceOf } from "@std/assert";
  *

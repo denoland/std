@@ -14,7 +14,9 @@ export type { GlobOptions };
  * Behaves like {@linkcode https://jsr.io/@std/path/doc/~/join | join()}, but
  * doesn't collapse `**\/..` when `globstar` is true.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { joinGlobs } from "@std/path/join-globs";
  * import { assertEquals } from "@std/assert";

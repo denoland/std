@@ -17,7 +17,9 @@ const UUID_RE =
  *
  * @returns `true` if the string is a valid UUIDv3, otherwise `false`.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { validate } from "@std/uuid/v3";
  * import { assert, assertFalse } from "@std/assert";
@@ -41,7 +43,9 @@ export function validate(id: string): boolean {
  *
  * @throws {TypeError} If the namespace is not a valid UUID.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { NAMESPACE_URL } from "@std/uuid/constants";
  * import { generate, validate } from "@std/uuid/v3";

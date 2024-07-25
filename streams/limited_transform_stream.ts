@@ -22,7 +22,9 @@ export interface LimitedTransformStreamOptions {
  *
  * @typeparam T The type the chunks in the stream.
  *
- * @example `size` is equal to the total number of chunks
+ * @example
+ * <caption>`size` is equal to the total number of chunks</caption>
+
  * ```ts
  * import { LimitedTransformStream } from "@std/streams/limited-transform-stream";
  * import { assertEquals } from "@std/assert";
@@ -39,7 +41,9 @@ export interface LimitedTransformStreamOptions {
  * );
  * ```
  *
- * @example `size` is less than the total number of chunks
+ * @example
+ * <caption>`size` is less than the total number of chunks</caption>
+
  * ```ts
  * import { LimitedTransformStream } from "@std/streams/limited-transform-stream";
  * import { assertEquals } from "@std/assert";

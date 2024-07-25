@@ -13,7 +13,9 @@ import { encodeRandom, encodeTime } from "./_util.ts";
  * that the ULIDs will be strictly increasing, even if the seed time is the
  * same. For that, use the {@linkcode monotonicUlid} function.
  *
- * @example Generate a ULID
+ * @example
+ * <caption>Generate a ULID</caption>
+
  * ```ts no-assert
  * import { ulid } from "@std/ulid";
  *
@@ -22,7 +24,9 @@ import { encodeRandom, encodeTime } from "./_util.ts";
  * ulid(); // 01HYFKMDZQ7JD17CRKDXQSZ3Z4
  * ```
  *
- * @example Generate a ULID with a seed time
+ * @example
+ * <caption>Generate a ULID with a seed time</caption>
+
  * ```ts no-assert
  * import { ulid } from "@std/ulid";
  *

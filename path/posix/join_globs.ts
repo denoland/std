@@ -11,7 +11,9 @@ export type { GlobOptions };
 /**
  * Like join(), but doesn't collapse "**\/.." when `globstar` is true.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { joinGlobs } from "@std/path/posix/join-globs";
  * import { assertEquals } from "@std/assert";

@@ -10,7 +10,9 @@ import { concat } from "@std/bytes/concat";
  * @param readableStream A `ReadableStream` of `Uint8Array`s to convert into an `ArrayBuffer`.
  * @returns A promise that resolves with the `ArrayBuffer` containing all the data from the stream.
  *
- * @example Basic usage
+ * @example
+ * <caption>Basic usage</caption>
+
  * ```ts
  * import { toArrayBuffer } from "@std/streams/to-array-buffer";
  * import { assertEquals } from "@std/assert";

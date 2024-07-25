@@ -14,7 +14,9 @@
  * @typeparam T The type of the chunks in the input streams.
  * @returns A `ReadableStream` that will emit the zipped chunks
  *
- * @example Zip 2 streams with the same length
+ * @example
+ * <caption>Zip 2 streams with the same length</caption>
+
  * ```ts
  * import { earlyZipReadableStreams } from "@std/streams/early-zip-readable-streams";
  * import { assertEquals } from "@std/assert";
@@ -29,7 +31,9 @@
  * );
  * ```
  *
- * @example Zip 2 streams with different length (first one is shorter)
+ * @example
+ * <caption>Zip 2 streams with different length (first one is shorter)</caption>
+
  * ```ts
  * import { earlyZipReadableStreams } from "@std/streams/early-zip-readable-streams";
  * import { assertEquals } from "@std/assert";
@@ -47,7 +51,9 @@
  * );
  * ```
  *
- * @example Zip 2 streams with different length (first one is longer)
+ * @example
+ * <caption>Zip 2 streams with different length (first one is longer)</caption>
+
  * ```ts
  * import { earlyZipReadableStreams } from "@std/streams/early-zip-readable-streams";
  * import { assertEquals } from "@std/assert";
@@ -65,7 +71,9 @@
  * );
  * ```
  *
- * @example Zip 3 streams
+ * @example
+ * <caption>Zip 3 streams</caption>
+
  * ```ts
  * import { earlyZipReadableStreams } from "@std/streams/early-zip-readable-streams";
  * import { assertEquals } from "@std/assert";

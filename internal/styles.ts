@@ -42,7 +42,9 @@ function run(str: string, code: Code): string {
  *
  * @returns Bold text for printing
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts no-assert
  * import { bold } from "@std/internal/styles";
  *
@@ -62,7 +64,9 @@ export function bold(str: string): string {
  *
  * @returns Red text for printing
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts no-assert
  * import { red } from "@std/internal/styles";
  *
@@ -82,7 +86,9 @@ export function red(str: string): string {
  *
  * @returns Green text for print
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts no-assert
  * import { green } from "@std/internal/styles";
  *
@@ -102,7 +108,9 @@ export function green(str: string): string {
  *
  * @returns Yellow text for print
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts no-assert
  * import { yellow } from "@std/internal/styles";
  *
@@ -120,7 +128,9 @@ export function yellow(str: string): string {
  *
  * @returns White text for print
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts no-assert
  * import { white } from "@std/internal/styles";
  *
@@ -138,7 +148,9 @@ export function white(str: string): string {
  *
  * @returns Gray text for print
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts no-assert
  * import { gray } from "@std/internal/styles";
  *
@@ -156,7 +168,9 @@ export function gray(str: string): string {
  *
  * @returns Bright-black text for print
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts no-assert
  * import { brightBlack } from "@std/internal/styles";
  *
@@ -174,7 +188,9 @@ export function brightBlack(str: string): string {
  *
  * @returns Red background text for print
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts no-assert
  * import { bgRed } from "@std/internal/styles";
  *
@@ -192,7 +208,9 @@ export function bgRed(str: string): string {
  *
  * @returns Green background text for print
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts no-assert
  * import { bgGreen } from "@std/internal/styles";
  *
@@ -219,7 +237,9 @@ const ANSI_PATTERN = new RegExp(
  *
  * @returns Text without ANSI escape codes
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts no-assert
  * import { red, stripAnsiCode } from "@std/internal/styles";
  *

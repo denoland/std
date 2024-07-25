@@ -327,7 +327,9 @@ import { AssertionError } from "@std/assert/assertion-error";
 /**
  * An error related to spying on a function or instance method.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { MockError, spy } from "@std/testing/mock";
  * import { assertThrows } from "@std/assert";
@@ -484,7 +486,9 @@ function unregisterMock(spy: Spy<any, any[], any>) {
  * Creates a session that tracks all mocks created before it's restored.
  * If a callback is provided, it restores all mocks created within it.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { mockSession, restore, stub } from "@std/testing/mock";
  * import { assertEquals, assertNotEquals } from "@std/assert";
@@ -508,7 +512,9 @@ export function mockSession(): number;
  * Creates a session that tracks all mocks created before it's restored.
  * If a callback is provided, it restores all mocks created within it.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { mockSession, restore, stub } from "@std/testing/mock";
  * import { assertEquals, assertNotEquals } from "@std/assert";
@@ -563,7 +569,9 @@ export function mockSession<
 /**
  * Creates an async session that tracks all mocks created before the promise resolves.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { mockSessionAsync, restore, stub } from "@std/testing/mock";
  * import { assertEquals, assertNotEquals } from "@std/assert";
@@ -606,7 +614,9 @@ export function mockSessionAsync<
  * Restores all mocks registered in the current session that have not already been restored.
  * If an id is provided, it will restore all mocks registered in the session associed with that id that have not already been restored.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { mockSession, restore, stub } from "@std/testing/mock";
  * import { assertEquals, assertNotEquals } from "@std/assert";
@@ -808,7 +818,9 @@ export type SpyLike<
 
 /** Creates a spy function.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import {
  *   assertSpyCall,
@@ -845,7 +857,9 @@ export function spy<
 /**
  * Create a spy function with the given implementation.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import {
  *   assertSpyCall,
@@ -879,7 +893,9 @@ export function spy<
 /**
  * Create a spy constructor.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import {
  *   assertSpyCall,
@@ -917,7 +933,9 @@ export function spy<
 /**
  * Wraps a instance method with a Spy.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import {
  *   assertSpyCall,
@@ -1002,7 +1020,9 @@ export interface Stub<
 /**
  * Replaces an instance method with a Stub with empty implementation.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { stub, assertSpyCalls } from "@std/testing/mock";
  *
@@ -1038,7 +1058,9 @@ export function stub<
 /**
  * Replaces an instance method with a Stub with the given implementation.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { stub } from "@std/testing/mock";
  * import { assertEquals } from "@std/assert";
@@ -1167,7 +1189,9 @@ export function stub<
 /**
  * Asserts that a spy is called as much as expected and no more.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { assertSpyCalls, spy } from "@std/testing/mock";
  *
@@ -1249,7 +1273,9 @@ function getSpyCall<
 /**
  * Asserts that a spy is called as expected.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { assertSpyCall, spy } from "@std/testing/mock";
  *
@@ -1346,7 +1372,9 @@ export function assertSpyCall<
 /**
  * Asserts that an async spy is called as expected.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { assertSpyCallAsync, spy } from "@std/testing/mock";
  *
@@ -1444,7 +1472,9 @@ export async function assertSpyCallAsync<
 /**
  * Asserts that a spy is called with a specific arg as expected.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { assertSpyCallArg, spy } from "@std/testing/mock";
  *
@@ -1493,7 +1523,9 @@ export function assertSpyCallArg<
  * If a start is provided without an end index, the expected will be compared against all args from the start index to the end.
  * The end index is not included in the range of args that are compared.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { assertSpyCallArgs, spy } from "@std/testing/mock";
  *
@@ -1532,7 +1564,9 @@ export function assertSpyCallArgs<
  * If a start is provided without an end index, the expected will be compared against all args from the start index to the end.
  * The end index is not included in the range of args that are compared.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { assertSpyCallArgs, spy } from "@std/testing/mock";
  *
@@ -1570,7 +1604,9 @@ export function assertSpyCallArgs<
  * If a start is provided without an end index, the expected will be compared against all args from the start index to the end.
  * The end index is not included in the range of args that are compared.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { assertSpyCallArgs, spy } from "@std/testing/mock";
  *
@@ -1637,7 +1673,9 @@ export function assertSpyCallArgs<
 /**
  * Creates a function that returns the instance the method was called on.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { returnsThis } from "@std/testing/mock";
  * import { assertEquals } from "@std/assert";
@@ -1665,7 +1703,9 @@ export function returnsThis<
 /**
  * Creates a function that returns one of its arguments.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { returnsArg } from "@std/testing/mock";
  * import { assertEquals } from "@std/assert";
@@ -1694,7 +1734,9 @@ export function returnsArg<
 /**
  * Creates a function that returns its arguments or a subset of them. If end is specified, it will return arguments up to but not including the end.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { returnsArgs } from "@std/testing/mock";
  * import { assertEquals } from "@std/assert";
@@ -1725,7 +1767,9 @@ export function returnsArgs<
 /**
  * Creates a function that returns the iterable values. Any iterable values that are errors will be thrown.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { returnsNext } from "@std/testing/mock";
  * import { assertEquals, assertThrows } from "@std/assert";
@@ -1771,7 +1815,9 @@ export function returnsNext<
 /**
  * Creates a function that resolves the awaited iterable values. Any awaited iterable values that are errors will be thrown.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { resolvesNext } from "@std/testing/mock";
  * import { assertEquals, assertRejects } from "@std/assert";

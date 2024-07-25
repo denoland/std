@@ -5,7 +5,9 @@
  * A transform stream that only transforms from the zero-indexed `start` and
  * `end` bytes (both inclusive).
  *
- * @example Basic usage
+ * @example
+ * <caption>Basic usage</caption>
+
  * ```ts
  * import { ByteSliceStream } from "@std/streams/byte-slice-stream";
  * import { assertEquals } from "@std/assert";
@@ -22,7 +24,9 @@
  * );
  * ```
  *
- * @example Get a range of bytes from a fetch response body
+ * @example
+ * <caption>Get a range of bytes from a fetch response body</caption>
+
  * ```ts
  * import { ByteSliceStream } from "@std/streams/byte-slice-stream";
  * import { assertEquals } from "@std/assert";

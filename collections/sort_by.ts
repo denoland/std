@@ -28,7 +28,9 @@ export type SortByOptions = {
  *
  * @returns A new array containing all elements sorted by the selector.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { sortBy } from "@std/collections/sort-by";
  * import { assertEquals } from "@std/assert";
@@ -74,7 +76,9 @@ export function sortBy<T>(
  *
  * @returns A new array containing all elements sorted by the selector.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { sortBy } from "@std/collections/sort-by";
  * import { assertEquals } from "@std/assert";
@@ -112,7 +116,9 @@ export function sortBy<T>(
  *
  * @returns A new array containing all elements sorted by the selector.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { sortBy } from "@std/collections/sort-by";
  * import { assertEquals } from "@std/assert";
@@ -152,7 +158,9 @@ export function sortBy<T>(
  *
  * @returns A new array containing all elements sorted by the selector.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { sortBy } from "@std/collections/sort-by";
  * import { assertEquals } from "@std/assert";

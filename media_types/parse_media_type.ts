@@ -23,7 +23,9 @@ import { consumeMediaParam, decode2331Encoding } from "./_util.ts";
  * @returns A tuple where the first element is the media type and the second
  * element is the optional parameters or `undefined` if there are none.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { parseMediaType } from "@std/media-types/parse-media-type";
  * import { assertEquals } from "@std/assert";

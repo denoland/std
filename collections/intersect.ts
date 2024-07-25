@@ -12,7 +12,9 @@
  * @returns An array of distinct elements that appear at least once in each of
  * the given arrays.
  *
- * @example Basic usage
+ * @example
+ * <caption>Basic usage</caption>
+
  * ```ts
  * import { intersect } from "@std/collections/intersect";
  * import { assertEquals } from "@std/assert";

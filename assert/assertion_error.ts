@@ -4,7 +4,9 @@
 /**
  * Error thrown when an assertion fails.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts no-eval
  * import { AssertionError } from "@std/assert";
  *

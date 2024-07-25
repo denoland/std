@@ -6,7 +6,9 @@
  * status codes and provides several type guards for handling status codes
  * with type safety.
  *
- * @example The status code and status text
+ * @example
+ * <caption>The status code and status text</caption>
+
  * ```ts
  * import {
  *   STATUS_CODE,
@@ -17,7 +19,9 @@
  * console.log(STATUS_TEXT[STATUS_CODE.NotFound]); // Returns "Not Found"
  * ```
  *
- * @example Checking the status code type
+ * @example
+ * <caption>Checking the status code type</caption>
+
  * ```ts
  * import { isErrorStatus } from "@std/http/status";
  *
@@ -316,7 +320,9 @@ export type ErrorStatus = ClientErrorStatus | ServerErrorStatus;
 /**
  * Returns whether the provided number is a valid HTTP status code.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { isStatus } from "@std/http/status";
  * import { assert } from "@std/assert";
@@ -334,7 +340,9 @@ export function isStatus(status: number): status is StatusCode {
 /**
  * A type guard that determines if the status code is informational.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { isInformationalStatus } from "@std/http/status";
  * import { assert } from "@std/assert";
@@ -354,7 +362,9 @@ export function isInformationalStatus(
 /**
  * A type guard that determines if the status code is successful.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { isSuccessfulStatus } from "@std/http/status";
  * import { assert } from "@std/assert";
@@ -374,7 +384,9 @@ export function isSuccessfulStatus(
 /**
  * A type guard that determines if the status code is a redirection.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { isRedirectStatus } from "@std/http/status";
  * import { assert } from "@std/assert";
@@ -392,7 +404,9 @@ export function isRedirectStatus(status: number): status is RedirectStatus {
 /**
  * A type guard that determines if the status code is a client error.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { isClientErrorStatus } from "@std/http/status";
  * import { assert } from "@std/assert";
@@ -412,7 +426,9 @@ export function isClientErrorStatus(
 /**
  * A type guard that determines if the status code is a server error.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { isServerErrorStatus } from "@std/http/status";
  * import { assert } from "@std/assert";
@@ -432,7 +448,9 @@ export function isServerErrorStatus(
 /**
  * A type guard that determines if the status code is an error.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { isErrorStatus } from "@std/http/status";
  * import { assert } from "@std/assert";

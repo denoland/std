@@ -5,7 +5,9 @@ import { AssertionError } from "./assertion_error.ts";
 /**
  * Make an assertion, error will be thrown if `expr` does not have truthy value.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts no-eval
  * import { assert } from "@std/assert";
  *

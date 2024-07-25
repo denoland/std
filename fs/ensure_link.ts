@@ -19,7 +19,9 @@ import { toPathString } from "./_to_path_string.ts";
  *
  * @returns A void promise that resolves once the hard link exists.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts no-eval
  * import { ensureLink } from "@std/fs/ensure-link";
  *
@@ -49,7 +51,9 @@ export async function ensureLink(src: string | URL, dest: string | URL) {
  *
  * @returns A void value that returns once the hard link exists.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts no-eval
  * import { ensureLinkSync } from "@std/fs/ensure-link";
  *

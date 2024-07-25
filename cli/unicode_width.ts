@@ -48,7 +48,9 @@ function charWidth(char: string) {
  * @param str The string to measure.
  * @returns The unicode width of the string.
  *
- * @example Calculating the unicode width of a string
+ * @example
+ * <caption>Calculating the unicode width of a string</caption>
+
  * ```ts
  * import { unicodeWidth } from "@std/cli/unicode-width";
  * import { assertEquals } from "@std/assert";
@@ -58,7 +60,9 @@ function charWidth(char: string) {
  * assertEquals(unicodeWidth("ｆｕｌｌｗｉｄｔｈ"), 18);
  * ```
  *
- * @example Calculating the unicode width of a color-encoded string
+ * @example
+ * <caption>Calculating the unicode width of a color-encoded string</caption>
+
  * ```ts
  * import { unicodeWidth } from "@std/cli/unicode-width";
  * import { stripAnsiCode } from "@std/fmt/colors";

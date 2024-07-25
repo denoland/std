@@ -46,7 +46,9 @@ export type { DelayOptions };
 /**
  * An error related to faking time.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { FakeTime, TimeError } from "@std/testing/time";
  * import { assertThrows } from "@std/assert";
@@ -245,7 +247,9 @@ let dueTree: RedBlackTree<DueNode>;
  * Note: there is no setter for the `start` property, as it cannot be changed
  * after initialization.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import {
  *   assertSpyCalls,
@@ -327,7 +331,9 @@ export class FakeTime {
   /**
    * Restores real time.
    *
-   * @example Usage
+   * @example
+   * <caption>Usage</caption>
+
    * ```ts
    * import { FakeTime } from "@std/testing/time";
    * import { assertEquals, assertNotEquals } from "@std/assert";
@@ -356,7 +362,9 @@ export class FakeTime {
   /**
    * Restores real time.
    *
-   * @example Usage
+   * @example
+   * <caption>Usage</caption>
+
    * ```ts
    * import { FakeTime } from "@std/testing/time";
    * import { assertEquals, assertNotEquals } from "@std/assert"
@@ -380,7 +388,9 @@ export class FakeTime {
   /**
    * Restores real time temporarily until callback returns and resolves.
    *
-   * @example Usage
+   * @example
+   * <caption>Usage</caption>
+
    * ```ts
    * import { FakeTime } from "@std/testing/time";
    * import { assertEquals, assertNotEquals } from "@std/assert"
@@ -426,7 +436,9 @@ export class FakeTime {
   /**
    * The number of milliseconds elapsed since the epoch (January 1, 1970 00:00:00 UTC) for the fake time.
    *
-   * @example Usage
+   * @example
+   * <caption>Usage</caption>
+
    * ```ts
    * import { FakeTime } from "@std/testing/time";
    * import { assertEquals } from "@std/assert";
@@ -449,7 +461,9 @@ export class FakeTime {
    * Set the current time. It will call any functions waiting to be called between the current and new fake time.
    * If the timer callback throws, time will stop advancing forward beyond that timer.
    *
-   * @example Usage
+   * @example
+   * <caption>Usage</caption>
+
    * ```ts
    * import { FakeTime } from "@std/testing/time";
    * import { assertEquals } from "@std/assert";
@@ -496,7 +510,9 @@ export class FakeTime {
   /**
    * The initial number of milliseconds elapsed since the epoch (January 1, 1970 00:00:00 UTC) for the fake time.
    *
-   * @example Usage
+   * @example
+   * <caption>Usage</caption>
+
    * ```ts
    * import { FakeTime } from "@std/testing/time";
    * import { assertEquals } from "@std/assert";
@@ -515,7 +531,9 @@ export class FakeTime {
   /**
    * Resolves after the given number of milliseconds using real time.
    *
-   * @example Usage
+   * @example
+   * <caption>Usage</caption>
+
    * ```ts
    * import { FakeTime } from "@std/testing/time";
    * import { assertEquals } from "@std/assert";
@@ -560,7 +578,9 @@ export class FakeTime {
   /**
    * Runs all pending microtasks.
    *
-   * @example Usage
+   * @example
+   * <caption>Usage</caption>
+
    * ```ts
    * import { FakeTime } from "@std/testing/time";
    * import { assert } from "@std/assert";
@@ -584,7 +604,9 @@ export class FakeTime {
    * Adds the specified number of milliseconds to the fake time.
    * This will call any functions waiting to be called between the current and new fake time.
    *
-   * @example Usage
+   * @example
+   * <caption>Usage</caption>
+
    * ```ts
    * import {
    *   assertSpyCalls,
@@ -625,7 +647,9 @@ export class FakeTime {
    * Runs all pending microtasks then adds the specified number of milliseconds to the fake time.
    * This will call any functions waiting to be called between the current and new fake time.
    *
-   * @example Usage
+   * @example
+   * <caption>Usage</caption>
+
    * ```ts
    * import { FakeTime } from "@std/testing/time";
    * import { assert, assertEquals } from "@std/assert";
@@ -653,7 +677,9 @@ export class FakeTime {
    * Advances time to when the next scheduled timer is due.
    * If there are no pending timers, time will not be changed.
    *
-   * @example Usage
+   * @example
+   * <caption>Usage</caption>
+
    * ```ts
    * import { FakeTime } from "@std/testing/time";
    * import { assert, assertEquals } from "@std/assert";
@@ -682,7 +708,9 @@ export class FakeTime {
    * Runs all pending microtasks then advances time to when the next scheduled timer is due.
    * If there are no pending timers, time will not be changed.
    *
-   * @example Usage
+   * @example
+   * <caption>Usage</caption>
+
    * ```ts
    * import { FakeTime } from "@std/testing/time";
    * import { assert, assertEquals } from "@std/assert";
@@ -714,7 +742,9 @@ export class FakeTime {
    * If the timers create additional timers, they will be run too. If there is an interval,
    * time will keep advancing forward until the interval is cleared.
    *
-   * @example Usage
+   * @example
+   * <caption>Usage</caption>
+
    * ```ts
    * import { FakeTime } from "@std/testing/time";
    * import { assertEquals } from "@std/assert";
@@ -745,7 +775,9 @@ export class FakeTime {
    * time will keep advancing forward until the interval is cleared.
    * Runs all pending microtasks before each timer.
    *
-   * @example Usage
+   * @example
+   * <caption>Usage</caption>
+
    * ```ts
    * import { FakeTime } from "@std/testing/time";
    * import { assertEquals } from "@std/assert";
@@ -774,7 +806,9 @@ export class FakeTime {
   /**
    * Restores time related global functions to their original state.
    *
-   * @example Usage
+   * @example
+   * <caption>Usage</caption>
+
    * ```ts
    * import { FakeTime } from "@std/testing/time";
    * import { assertEquals, assertNotEquals } from "@std/assert";

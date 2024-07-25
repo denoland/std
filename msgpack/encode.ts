@@ -40,7 +40,9 @@ const encoder = new TextEncoder();
 /**
  * Encode a value to {@link https://msgpack.org/ | MessagePack} binary format.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { encode } from "@std/msgpack/encode";
  * import { assertEquals } from "@std/assert";

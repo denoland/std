@@ -66,7 +66,9 @@ const THRESHOLD_32_BIT = 160;
  * @param b Second array to check equality.
  * @returns `true` if the arrays are equal, `false` otherwise.
  *
- * @example Basic usage
+ * @example
+ * <caption>Basic usage</caption>
+
  * ```ts
  * import { equals } from "@std/bytes/equals";
  * import { assertEquals } from "@std/assert";

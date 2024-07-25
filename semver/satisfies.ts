@@ -6,7 +6,9 @@ import { testComparatorSet } from "./_test_comparator_set.ts";
 /**
  * Test to see if the SemVer satisfies the range.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { parse, parseRange, satisfies } from "@std/semver";
  * import { assert } from "@std/assert";

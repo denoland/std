@@ -8,7 +8,9 @@ import { isPathSeparator, isWindowsDeviceRoot } from "./_util.ts";
 /**
  * Verifies whether provided path is absolute.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { isAbsolute } from "@std/path/windows/is-absolute";
  * import { assert, assertFalse } from "@std/assert";

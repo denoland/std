@@ -6,7 +6,9 @@ import { AssertionError } from "./assertion_error.ts";
  * Make an assertion that `actual` not match RegExp `expected`. If match
  * then throw.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts no-eval
  * import { assertNotMatch } from "@std/assert";
  *

@@ -64,7 +64,9 @@ export interface IncrementOptions {
  * unless a new build parameter is specified. Specifying `""` will unset existing build
  * metadata.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { increment, parse } from "@std/semver";
  * import { assertEquals } from "@std/assert";

@@ -27,7 +27,9 @@ export interface ClosestStringOptions {
  * By default, calculates the distance between words using the
  * {@link https://en.wikipedia.org/wiki/Levenshtein_distance | Levenshtein distance}.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { closestString } from "@std/text/closest-string";
  * import { assertEquals } from "@std/assert";

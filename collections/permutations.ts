@@ -12,7 +12,9 @@
  *
  * @returns An array of all possible permutations of the given array.
  *
- * @example Basic usage
+ * @example
+ * <caption>Basic usage</caption>
+
  * ```ts
  * import { permutations } from "@std/collections/permutations";
  * import { assertEquals } from "@std/assert";

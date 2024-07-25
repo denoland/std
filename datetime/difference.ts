@@ -47,7 +47,9 @@ function calculateMonthsDifference(from: Date, to: Date): number {
  * @param options Options such as units to calculate difference in.
  * @returns The difference of the 2 given dates in various units.
  *
- * @example Basic usage
+ * @example
+ * <caption>Basic usage</caption>
+
  * ```ts
  * import { difference } from "@std/datetime/difference";
  * import { assertEquals } from "@std/assert";

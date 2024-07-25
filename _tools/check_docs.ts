@@ -76,6 +76,7 @@ const ENTRY_POINTS = [
 ] as const;
 
 const TS_SNIPPET = /```ts[\s\S]*?```/g;
+const CAPTION_TAG = /^<caption>.+<\/caption>/s;
 const ASSERTION_IMPORT =
   /from "@std\/(assert(\/[a-z-]+)?|testing\/(mock|snapshot|types))"/g;
 const NEWLINE = "\n";
@@ -252,11 +253,19 @@ function assertHasExampleTag(
      * Otherwise, if the example title is undefined, it is given the title
      * "Example #" by default.
      */
+    const captionMatch = tag.doc.match(CAPTION_TAG)?.[0];
     assert(
-      !tag.doc.startsWith("```ts"),
-      "@example tag must have a title",
+      captionMatch != null,
+      "@example tag must have a title in a `<caption>` tag",
       document,
     );
+    if (captionMatch != null) {
+      assert(
+        tag.doc.slice(captionMatch.length).startsWith("\n\n"),
+        "@example tag caption must be followed by an empty line",
+        document,
+      );
+    }
     assertSnippetsWork(tag.doc, document);
   }
 }

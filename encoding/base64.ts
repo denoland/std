@@ -99,7 +99,9 @@ const base64abc = [
  * @param data The data to encode.
  * @returns The base64-encoded string.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { encodeBase64 } from "@std/encoding/base64";
  * import { assertEquals } from "@std/assert";
@@ -152,7 +154,9 @@ export function encodeBase64(data: ArrayBuffer | Uint8Array | string): string {
  * @param b64 The base64-encoded string to decode.
  * @returns The decoded data.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { decodeBase64 } from "@std/encoding/base64";
  * import { assertEquals } from "@std/assert";

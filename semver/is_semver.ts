@@ -17,7 +17,9 @@ import { isValidNumber, isValidString } from "./_shared.ts";
  *
  * A type assertion is added to the value.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { isSemVer } from "@std/semver/is-semver";
  * import { assert } from "@std/assert";

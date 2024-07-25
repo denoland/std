@@ -11,7 +11,9 @@ import { basename as windowsBasename } from "./windows/basename.ts";
  * The trailing directory separators are ignored, and optional suffix is
  * removed.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { basename } from "@std/path/basename";
  * import { assertEquals } from "@std/assert";

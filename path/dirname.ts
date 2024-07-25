@@ -8,7 +8,9 @@ import { dirname as windowsDirname } from "./windows/dirname.ts";
 /**
  * Return the directory path of a path.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { dirname } from "@std/path/dirname";
  * import { assertEquals } from "@std/assert";

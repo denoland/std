@@ -11,7 +11,9 @@ export type { Extract };
  * Extracts and parses {@link https://toml.io | TOML} from the metadata of
  * front matter content.
  *
- * @example Extract TOML front matter
+ * @example
+ * <caption>Extract TOML front matter</caption>
+
  * ```ts
  * import { extract } from "@std/front-matter/toml";
  * import { assertEquals } from "@std/assert";

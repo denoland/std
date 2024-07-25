@@ -8,7 +8,9 @@ import { resolve as windowsResolve } from "./windows/resolve.ts";
 /**
  * Resolves path segments into a path.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { resolve } from "@std/path/resolve";
  * import { assertEquals } from "@std/assert";

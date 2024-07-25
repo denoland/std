@@ -34,7 +34,9 @@ function isBrankString(str: string) {
  * ]);
  * ```
  *
- * @example parse JSON lines or NDJSON from a file
+ * @example
+ * <caption>parse JSON lines or NDJSON from a file</caption>
+
  * ```ts
  * import { TextLineStream } from "@std/streams/text-line-stream";
  * import { JsonParseStream } from "@std/json/parse-stream";

@@ -13,7 +13,9 @@
  * @returns The first element that is the largest value of the given function or
  * undefined if there are no elements.
  *
- * @example Basic usage
+ * @example
+ * <caption>Basic usage</caption>
+
  * ```ts
  * import { maxBy } from "@std/collections/max-by";
  * import { assertEquals } from "@std/assert";
@@ -45,7 +47,9 @@ export function maxBy<T>(
  * @returns The first element that is the largest value of the given function or
  * undefined if there are no elements.
  *
- * @example Basic usage
+ * @example
+ * <caption>Basic usage</caption>
+
  * ```ts
  * import { maxBy } from "@std/collections/max-by";
  * import { assertEquals } from "@std/assert";
@@ -77,7 +81,9 @@ export function maxBy<T>(
  * @returns The first element that is the largest value of the given function or
  * undefined if there are no elements.
  *
- * @example Basic usage
+ * @example
+ * <caption>Basic usage</caption>
+
  * ```ts
  * import { maxBy } from "@std/collections/max-by";
  * import { assertEquals } from "@std/assert";
@@ -109,7 +115,9 @@ export function maxBy<T>(
  * @returns The first element that is the largest value of the given function or
  * undefined if there are no elements.
  *
- * @example Basic usage
+ * @example
+ * <caption>Basic usage</caption>
+
  * ```ts
  * import { maxBy } from "@std/collections/max-by";
  * import { assertEquals } from "@std/assert";

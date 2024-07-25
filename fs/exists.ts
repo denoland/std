@@ -47,7 +47,9 @@ export interface ExistsOptions {
  * @returns A promise that resolves with `true` if the path exists, `false`
  * otherwise.
  *
- * @example Recommended method
+ * @example
+ * <caption>Recommended method</caption>
+
  * ```ts no-eval
  * // Notice no use of exists
  * try {
@@ -63,7 +65,9 @@ export interface ExistsOptions {
  * Notice that `exists()` is not used in the above example. Doing so avoids a
  * possible race condition. See the above note for details.
  *
- * @example Basic usage
+ * @example
+ * <caption>Basic usage</caption>
+
  * ```ts no-eval
  * import { exists } from "@std/fs/exists";
  *
@@ -71,7 +75,9 @@ export interface ExistsOptions {
  * await exists("./does_not_exist"); // false
  * ```
  *
- * @example Check if a path is readable
+ * @example
+ * <caption>Check if a path is readable</caption>
+
  * ```ts no-eval
  * import { exists } from "@std/fs/exists";
  *
@@ -79,7 +85,9 @@ export interface ExistsOptions {
  * await exists("./not_readable", { isReadable: true }); // false
  * ```
  *
- * @example Check if a path is a directory
+ * @example
+ * <caption>Check if a path is a directory</caption>
+
  * ```ts no-eval
  * import { exists } from "@std/fs/exists";
  *
@@ -87,7 +95,9 @@ export interface ExistsOptions {
  * await exists("./file", { isDirectory: true }); // false
  * ```
  *
- * @example Check if a path is a file
+ * @example
+ * <caption>Check if a path is a file</caption>
+
  * ```ts no-eval
  * import { exists } from "@std/fs/exists";
  *
@@ -95,7 +105,9 @@ export interface ExistsOptions {
  * await exists("./directory", { isFile: true }); // false
  * ```
  *
- * @example Check if a path is a readable directory
+ * @example
+ * <caption>Check if a path is a readable directory</caption>
+
  * ```ts no-eval
  * import { exists } from "@std/fs/exists";
  *
@@ -103,7 +115,9 @@ export interface ExistsOptions {
  * await exists("./not_readable_directory", { isReadable: true, isDirectory: true }); // false
  * ```
  *
- * @example Check if a path is a readable file
+ * @example
+ * <caption>Check if a path is a readable file</caption>
+
  * ```ts no-eval
  * import { exists } from "@std/fs/exists";
  *
@@ -176,7 +190,9 @@ export async function exists(
  *
  * @returns `true` if the path exists, `false` otherwise.
  *
- * @example Recommended method
+ * @example
+ * <caption>Recommended method</caption>
+
  * ```ts no-eval
  * // Notice no use of exists
  * try {
@@ -192,7 +208,9 @@ export async function exists(
  * Notice that `existsSync()` is not used in the above example. Doing so avoids
  * a possible race condition. See the above note for details.
  *
- * @example Basic usage
+ * @example
+ * <caption>Basic usage</caption>
+
  * ```ts no-eval
  * import { existsSync } from "@std/fs/exists";
  *
@@ -200,7 +218,9 @@ export async function exists(
  * existsSync("./does_not_exist"); // false
  * ```
  *
- * @example Check if a path is readable
+ * @example
+ * <caption>Check if a path is readable</caption>
+
  * ```ts no-eval
  * import { existsSync } from "@std/fs/exists";
  *
@@ -208,7 +228,9 @@ export async function exists(
  * existsSync("./not_readable", { isReadable: true }); // false
  * ```
  *
- * @example Check if a path is a directory
+ * @example
+ * <caption>Check if a path is a directory</caption>
+
  * ```ts no-eval
  * import { existsSync } from "@std/fs/exists";
  *
@@ -216,7 +238,9 @@ export async function exists(
  * existsSync("./file", { isDirectory: true }); // false
  * ```
  *
- * @example Check if a path is a file
+ * @example
+ * <caption>Check if a path is a file</caption>
+
  * ```ts no-eval
  * import { existsSync } from "@std/fs/exists";
  *
@@ -224,7 +248,9 @@ export async function exists(
  * existsSync("./directory", { isFile: true }); // false
  * ```
  *
- * @example Check if a path is a readable directory
+ * @example
+ * <caption>Check if a path is a readable directory</caption>
+
  * ```ts no-eval
  * import { existsSync } from "@std/fs/exists";
  *
@@ -232,7 +258,9 @@ export async function exists(
  * existsSync("./not_readable_directory", { isReadable: true, isDirectory: true }); // false
  * ```
  *
- * @example Check if a path is a readable file
+ * @example
+ * <caption>Check if a path is a readable file</caption>
+
  * ```ts no-eval
  * import { existsSync } from "@std/fs/exists";
  *

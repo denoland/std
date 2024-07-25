@@ -9,7 +9,9 @@
  * @param streams An iterable of `ReadableStream`s to merge.
  * @returns A `ReadableStream` that will emit the merged chunks.
  *
- * @example Merge 2 streams
+ * @example
+ * <caption>Merge 2 streams</caption>
+
  * ```ts
  * import { mergeReadableStreams } from "@std/streams/merge-readable-streams";
  * import { assertEquals } from "@std/assert";
@@ -22,7 +24,9 @@
  * assertEquals(merged.toSorted(), [1, 2, 3, 4, 5]);
  * ```
  *
- * @example Merge 3 streams
+ * @example
+ * <caption>Merge 3 streams</caption>
+
  * ```ts
  * import { mergeReadableStreams } from "@std/streams/merge-readable-streams";
  * import { assertEquals } from "@std/assert";

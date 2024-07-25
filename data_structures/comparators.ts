@@ -5,7 +5,9 @@
  * Compare two values in ascending order using JavaScript's built in comparison
  * operators.
  *
- * @example Comparing numbers
+ * @example
+ * <caption>Comparing numbers</caption>
+
  * ```ts
  * import { ascend } from "@std/data-structures";
  * import { assertEquals } from "@std/assert";
@@ -28,7 +30,9 @@ export function ascend<T>(a: T, b: T): -1 | 0 | 1 {
  * Compare two values in descending order using JavaScript's built in comparison
  * operators.
  *
- * @example Comparing numbers
+ * @example
+ * <caption>Comparing numbers</caption>
+
  * ```ts
  * import { descend } from "@std/data-structures";
  * import { assertEquals } from "@std/assert";

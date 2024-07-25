@@ -19,7 +19,9 @@ function randomInteger(lower: number, upper: number): number {
  * @returns A random element from the given array, or `undefined` if the array
  * is empty.
  *
- * @example Basic usage
+ * @example
+ * <caption>Basic usage</caption>
+
  * ```ts
  * import { sample } from "@std/collections/sample";
  * import { assertArrayIncludes } from "@std/assert";

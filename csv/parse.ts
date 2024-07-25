@@ -309,7 +309,9 @@ export interface ParseOptions {
  * Csv parse helper to manipulate data.
  * Provides an auto/custom mapper for columns.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { parse } from "@std/csv/parse";
  * import { assertEquals } from "@std/assert";
@@ -327,7 +329,9 @@ export function parse(input: string): string[][];
  * Csv parse helper to manipulate data.
  * Provides an auto/custom mapper for columns.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { parse } from "@std/csv/parse";
  * import { assertEquals } from "@std/assert";

@@ -17,7 +17,9 @@ import { preferredMediaTypes } from "./_negotiation/media_type.ts";
  * preference. If there are no media types supplied in the request, then any
  * media type selector will be returned.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { accepts } from "@std/http/negotiation";
  * import { assertEquals } from "@std/assert";
@@ -46,7 +48,9 @@ export function accepts(request: Request): string[];
  * For a given set of media types, return the best match accepted in the
  * request. If no media type matches, then the function returns `undefined`.
  *
- *  @example Usage
+ *  @example
+ *  <caption>Usage</caption>
+
  * ```ts
  * import { accepts } from "@std/http/negotiation";
  * import { assertEquals } from "@std/assert";
@@ -86,7 +90,9 @@ export function accepts(
  * preference. If there are no encoding supplied in the request, then `["*"]`
  * is returned, implying any encoding is accepted.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { acceptsEncodings } from "@std/http/negotiation";
  * import { assertEquals } from "@std/assert";
@@ -111,7 +117,9 @@ export function acceptsEncodings(request: Request): string[];
  * to ensure that there is a match when the `Accept-Encoding` header is part
  * of the request.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { acceptsEncodings } from "@std/http/negotiation";
  * import { assertEquals } from "@std/assert";
@@ -150,7 +158,9 @@ export function acceptsEncodings(
  * preference. If there are no languages supplied in the request, then `["*"]`
  * is returned, imply any language is accepted.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { acceptsLanguages } from "@std/http/negotiation";
  * import { assertEquals } from "@std/assert";
@@ -172,7 +182,9 @@ export function acceptsLanguages(request: Request): string[];
  * For a given set of languages, return the best match accepted in the request.
  * If no languages match, then the function returns `undefined`.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { acceptsLanguages } from "@std/http/negotiation";
  * import { assertEquals } from "@std/assert";

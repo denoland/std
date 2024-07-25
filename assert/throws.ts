@@ -10,7 +10,9 @@ import { AssertionError } from "./assertion_error.ts";
  * To assert that an asynchronous function rejects, use
  * {@linkcode assertRejects}.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts no-eval
  * import { assertThrows } from "@std/assert";
  *
@@ -34,7 +36,9 @@ export function assertThrows(
  * To assert that an asynchronous function rejects, use
  * {@linkcode assertRejects}.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts no-eval
  * import { assertThrows } from "@std/assert";
  *

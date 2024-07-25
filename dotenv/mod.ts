@@ -47,7 +47,9 @@ export interface LoadOptions {
 /**
  * Works identically to {@linkcode load}, but synchronously.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts no-eval
  * import { loadSync } from "@std/dotenv";
  *
@@ -92,7 +94,9 @@ export function loadSync(
  *
  * Then import the environment variables using the `load` function.
  *
- * @example Basic usage
+ * @example
+ * <caption>Basic usage</caption>
+
  * ```ts no-eval
  * // app.ts
  * import { load } from "@std/dotenv";
@@ -110,7 +114,9 @@ export function loadSync(
  * Import the `load.ts` module to auto-import from the `.env` file and into
  * the process environment.
  *
- * @example Auto-loading
+ * @example
+ * <caption>Auto-loading</caption>
+
  * ```ts no-eval
  * // app.ts
  * import "@std/dotenv/load";
@@ -140,7 +146,9 @@ export function loadSync(
  *
  * ### Example configuration
  *
- * @example Using with options
+ * @example
+ * <caption>Using with options</caption>
+
  * ```ts no-eval
  * import { load } from "@std/dotenv";
  *

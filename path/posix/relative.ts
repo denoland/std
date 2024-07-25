@@ -10,7 +10,9 @@ import { assertArgs } from "../_common/relative.ts";
  *
  * If `from` and `to` are the same, return an empty string.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { relative } from "@std/path/posix/relative";
  * import { assertEquals } from "@std/assert";

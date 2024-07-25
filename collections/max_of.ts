@@ -14,7 +14,9 @@
  * @returns The largest value of the given function or undefined if there are no
  * elements.
  *
- * @example Basic usage
+ * @example
+ * <caption>Basic usage</caption>
+
  * ```ts
  * import { maxOf } from "@std/collections/max-of";
  * import { assertEquals } from "@std/assert";
@@ -47,7 +49,9 @@ export function maxOf<T>(
  * @returns The first element that is the largest value of the given function or
  * undefined if there are no elements.
  *
- * @example Basic usage
+ * @example
+ * <caption>Basic usage</caption>
+
  * ```ts
  * import { maxOf } from "@std/collections/max-of";
  * import { assertEquals } from "@std/assert";

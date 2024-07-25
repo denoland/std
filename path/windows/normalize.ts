@@ -11,7 +11,9 @@ import { isPathSeparator, isWindowsDeviceRoot } from "./_util.ts";
  * Note that resolving these segments does not necessarily mean that all will be eliminated.
  * A `'..'` at the top-level will be preserved, and an empty path is canonically `'.'`.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { normalize } from "@std/path/windows/normalize";
  * import { assertEquals } from "@std/assert";

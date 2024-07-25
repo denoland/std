@@ -74,7 +74,9 @@ const constants: GlobConstants = {
  *   `!(foo|bar)` is treated like `!(@(foo|bar)*)`. This will work correctly if
  *   the group occurs not nested at the end of the segment.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { globToRegExp } from "@std/path/posix/glob-to-regexp";
  * import { assertEquals } from "@std/assert";

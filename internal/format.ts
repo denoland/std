@@ -9,7 +9,9 @@
  *
  * @returns The formatted string
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { format } from "@std/internal/format";
  * import { assertEquals } from "@std/assert";

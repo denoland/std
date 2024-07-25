@@ -6,7 +6,9 @@ import { parserFactory, toml } from "./_parser.ts";
 /**
  * Parses a {@link https://toml.io | TOML} string into an object.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { parse } from "@std/toml/parse";
  * import { assertEquals } from "@std/assert";

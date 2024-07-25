@@ -35,7 +35,9 @@ export interface BufferBytesOptions {
  *
  * Based on {@link https://golang.org/pkg/bytes/#Buffer | Go Buffer}.
  *
- * @example Buffer input bytes and convert it to a string
+ * @example
+ * <caption>Buffer input bytes and convert it to a string</caption>
+
  * ```ts
  * import { Buffer } from "@std/streams/buffer";
  * import { toText } from "@std/streams/to-text";
@@ -91,7 +93,9 @@ export class Buffer {
    *
    * @returns A `ReadableStream` of the buffer.
    *
-   * @example Read the content out of the buffer to stdout
+   * @example
+   * <caption>Read the content out of the buffer to stdout</caption>
+
    * ```ts no-assert
    * import { Buffer } from "@std/streams/buffer";
    *
@@ -115,7 +119,9 @@ export class Buffer {
    *
    * @returns A `WritableStream` of the buffer.
    *
-   * @example Write the data from stdin to the buffer
+   * @example
+   * <caption>Write the data from stdin to the buffer</caption>
+
    * ```ts no-assert
    * import { Buffer } from "@std/streams/buffer";
    *
@@ -151,7 +157,9 @@ export class Buffer {
    * @param options Options for the bytes method.
    * @returns A copy or a slice of the buffer.
    *
-   * @example Copy the buffer
+   * @example
+   * <caption>Copy the buffer</caption>
+
    * ```ts
    * import { assertEquals } from "@std/assert";
    * import { assertNotEquals } from "@std/assert";
@@ -170,7 +178,9 @@ export class Buffer {
    * assertEquals(copied[2], array[2]);
    * ```
    *
-   * @example Get a slice to the buffer
+   * @example
+   * <caption>Get a slice to the buffer</caption>
+
    * ```ts
    * import { assertEquals } from "@std/assert";
    * import { Buffer } from "@std/streams/buffer";
@@ -198,7 +208,9 @@ export class Buffer {
    *
    * @returns Whether the buffer is empty.
    *
-   * @example Empty buffer
+   * @example
+   * <caption>Empty buffer</caption>
+
    * ```ts
    * import { assert } from "@std/assert";
    * import { Buffer } from "@std/streams/buffer";
@@ -207,7 +219,9 @@ export class Buffer {
    * assert(buf.empty());
    * ```
    *
-   * @example Non-empty buffer
+   * @example
+   * <caption>Non-empty buffer</caption>
+
    * ```ts
    * import { assert } from "@std/assert";
    * import { Buffer } from "@std/streams/buffer";
@@ -217,7 +231,9 @@ export class Buffer {
    * assert(!buf.empty());
    * ```
    *
-   * @example Non-empty, but the content was already read
+   * @example
+   * <caption>Non-empty, but the content was already read</caption>
+
    * ```ts
    * import { assert } from "@std/assert";
    * import { Buffer } from "@std/streams/buffer";
@@ -240,7 +256,9 @@ export class Buffer {
    *
    * @returns The number of bytes in the unread portion of the buffer.
    *
-   * @example Basic usage
+   * @example
+   * <caption>Basic usage</caption>
+
    * ```ts
    * import { assertEquals } from "@std/assert";
    * import { Buffer } from "@std/streams/buffer";
@@ -250,7 +268,9 @@ export class Buffer {
    * assertEquals(buf.length, 3);
    * ```
    *
-   * @example Length becomes 0 after the content is read
+   * @example
+   * <caption>Length becomes 0 after the content is read</caption>
+
    * ```ts
    * import { assertEquals } from "@std/assert";
    * import { Buffer } from "@std/streams/buffer";
@@ -274,7 +294,9 @@ export class Buffer {
    *
    * @returns The number of allocated bytes for the buffer.
    *
-   * @example Basic usage
+   * @example
+   * <caption>Basic usage</caption>
+
    * ```ts
    * import { assertEquals } from "@std/assert";
    * import { Buffer } from "@std/streams/buffer";
@@ -295,7 +317,9 @@ export class Buffer {
    *
    * @param n The number of bytes to keep.
    *
-   * @example Basic usage
+   * @example
+   * <caption>Basic usage</caption>
+
    * ```ts
    * import { assertEquals } from "@std/assert";
    * import { Buffer } from "@std/streams/buffer";
@@ -323,7 +347,9 @@ export class Buffer {
   /**
    * Resets to an empty buffer.
    *
-   * @example Basic usage
+   * @example
+   * <caption>Basic usage</caption>
+
    * ```ts
    * import { assert } from "@std/assert";
    * import { Buffer } from "@std/streams/buffer";
@@ -398,7 +424,9 @@ export class Buffer {
    * Based on Go Lang's
    * {@link https://golang.org/pkg/bytes/#Buffer.Grow | Buffer.Grow}.
    *
-   * @example Basic usage
+   * @example
+   * <caption>Basic usage</caption>
+
    * ```ts
    * import { assert } from "@std/assert";
    * import { assertEquals } from "@std/assert";

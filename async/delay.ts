@@ -20,7 +20,9 @@ export interface DelayOptions {
  * @param ms Duration in milliseconds for how long the delay should last.
  * @param options Additional options.
  *
- * @example Basic usage
+ * @example
+ * <caption>Basic usage</caption>
+
  * ```ts no-assert
  * import { delay } from "@std/async/delay";
  *

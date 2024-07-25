@@ -13,7 +13,9 @@ import { strip } from "./_strip.ts";
  * @param url The URL from which to extract the extension.
  * @returns The extension of the URL.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { extname } from "@std/url/extname";
  * import { assertEquals } from "@std/assert";

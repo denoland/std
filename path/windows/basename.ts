@@ -14,7 +14,9 @@ import { isPathSeparator, isWindowsDeviceRoot } from "./_util.ts";
  * Return the last portion of a `path`.
  * Trailing directory separators are ignored, and optional suffix is removed.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { basename } from "@std/path/windows/basename";
  * import { assertEquals } from "@std/assert";

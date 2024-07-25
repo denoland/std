@@ -7,7 +7,9 @@ import { AssertionError } from "./assertion_error.ts";
  * Make an assertion that `actual` is less than `expected`.
  * If not then throw.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts no-eval
  * import { assertLess } from "@std/assert";
  *

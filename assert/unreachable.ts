@@ -5,7 +5,9 @@ import { AssertionError } from "./assertion_error.ts";
 /**
  * Use this to assert unreachable code.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts no-eval
  * import { unreachable } from "@std/assert";
  *

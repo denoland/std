@@ -81,7 +81,9 @@ export interface FormatOptions {
  * @param options The options for formatting
  * @returns The formatted string
  *
- * @example Basic usage
+ * @example
+ * <caption>Basic usage</caption>
+
  * ```ts
  * import { format } from "@std/fmt/bytes";
  * import { assertEquals } from "@std/assert";

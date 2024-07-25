@@ -10,7 +10,9 @@ import { AssertionError } from "./assertion_error.ts";
  *
  * Type parameter can be specified to ensure values under comparison have the same type.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts no-eval
  * import { assertNotEquals } from "@std/assert";
  *

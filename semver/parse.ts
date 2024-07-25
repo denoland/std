@@ -7,7 +7,9 @@ import { FULL_REGEXP, MAX_LENGTH } from "./_shared.ts";
 /**
  * Attempt to parse a string as a semantic version, returning a SemVer object.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { parse } from "@std/semver/parse";
  * import { assertEquals } from "@std/assert";

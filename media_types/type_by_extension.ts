@@ -15,7 +15,9 @@ import { types } from "./_db.ts";
  * @returns The media type associated with the file extension, or `undefined` if
  * no media type is found.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { typeByExtension } from "@std/media-types/type-by-extension";
  * import { assertEquals } from "@std/assert";

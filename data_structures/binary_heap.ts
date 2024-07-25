@@ -26,7 +26,9 @@ function getParentIndex(index: number) {
  * | pop()       | O(log n)     | O(log n)   |
  * | push(value) | O(1)         | O(log n)   |
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import {
  *   ascend,
@@ -80,7 +82,9 @@ export class BinaryHeap<T> implements Iterable<T> {
   /**
    * Returns the underlying cloned array in arbitrary order without sorting.
    *
-   * @example Getting the underlying array
+   * @example
+   * <caption>Getting the underlying array</caption>
+
    * ```ts
    * import { BinaryHeap } from "@std/data-structures";
    * import { assertEquals } from "@std/assert";
@@ -105,21 +109,27 @@ export class BinaryHeap<T> implements Iterable<T> {
    * unless a {@link BinaryHeap} is passed, in which case the comparison
    * function is copied from the input heap.
    *
-   * @example Creating a binary heap from an array like
+   * @example
+   * <caption>Creating a binary heap from an array like</caption>
+
    * ```ts no-assert
    * import { BinaryHeap } from "@std/data-structures";
    *
    * const heap = BinaryHeap.from([4, 1, 3, 5, 2]);
    * ```
    *
-   * @example Creating a binary heap from an iterable object
+   * @example
+   * <caption>Creating a binary heap from an iterable object</caption>
+
    * ```ts no-assert
    * import { BinaryHeap } from "@std/data-structures";
    *
    * const heap = BinaryHeap.from((function*() { yield* [4, 1, 3, 5, 2]; })());
    * ```
    *
-   * @example Creating a binary heap from an existing binary heap
+   * @example
+   * <caption>Creating a binary heap from an existing binary heap</caption>
+
    * ```ts no-assert
    * import { BinaryHeap } from "@std/data-structures";
    *
@@ -127,7 +137,9 @@ export class BinaryHeap<T> implements Iterable<T> {
    * const copy = BinaryHeap.from(heap);
    * ```
    *
-   * @example Creating a binary heap from an array like with a custom comparison function
+   * @example
+   * <caption>Creating a binary heap from an array like with a custom comparison function</caption>
+
    * ```ts no-assert
    * import { BinaryHeap, ascend } from "@std/data-structures";
    *
@@ -158,7 +170,9 @@ export class BinaryHeap<T> implements Iterable<T> {
    * function is copied from the input heap. The comparison operator is used to
    * sort the values in the heap after mapping the values.
    *
-   * @example Creating a binary heap from an array like with a custom mapping function
+   * @example
+   * <caption>Creating a binary heap from an array like with a custom mapping function</caption>
+
    * ```ts no-eval
    * import { BinaryHeap } from "@std/data-structures";
    *
@@ -217,7 +231,9 @@ export class BinaryHeap<T> implements Iterable<T> {
    *
    * The complexity of this operation is O(1).
    *
-   * @example Getting the length of the binary heap
+   * @example
+   * <caption>Getting the length of the binary heap</caption>
+
    * ```ts
    * import { BinaryHeap } from "@std/data-structures";
    * import { assertEquals } from "@std/assert";
@@ -239,7 +255,9 @@ export class BinaryHeap<T> implements Iterable<T> {
    *
    * The complexity of this operation is O(1).
    *
-   * @example Getting the greatest value from the binary heap
+   * @example
+   * <caption>Getting the greatest value from the binary heap</caption>
+
    * ```ts
    * import { BinaryHeap } from "@std/data-structures";
    * import { assertEquals } from "@std/assert";
@@ -249,7 +267,9 @@ export class BinaryHeap<T> implements Iterable<T> {
    * assertEquals(heap.peek(), 5);
    * ```
    *
-   * @example Getting the greatest value from an empty binary heap
+   * @example
+   * <caption>Getting the greatest value from an empty binary heap</caption>
+
    * ```ts
    * import { BinaryHeap } from "@std/data-structures";
    * import { assertEquals } from "@std/assert";
@@ -269,7 +289,9 @@ export class BinaryHeap<T> implements Iterable<T> {
    * Remove the greatest value from the binary heap and return it, or return
    * undefined if the heap is empty.
    *
-   * @example Removing the greatest value from the binary heap
+   * @example
+   * <caption>Removing the greatest value from the binary heap</caption>
+
    * ```ts
    * import { BinaryHeap } from "@std/data-structures";
    * import { assertEquals } from "@std/assert";
@@ -283,7 +305,9 @@ export class BinaryHeap<T> implements Iterable<T> {
    * The complexity of this operation is on average and worst case O(log n),
    * where n is the count of values stored in the binary heap.
    *
-   * @example Removing the greatest value from an empty binary heap
+   * @example
+   * <caption>Removing the greatest value from an empty binary heap</caption>
+
    * ```ts
    * import { BinaryHeap } from "@std/data-structures";
    * import { assertEquals } from "@std/assert";
@@ -325,7 +349,9 @@ export class BinaryHeap<T> implements Iterable<T> {
    * The complexity of this operation is O(1) on average and O(log n) in the
    * worst case, where n is the count of values stored in the binary heap.
    *
-   * @example Adding values to the binary heap
+   * @example
+   * <caption>Adding values to the binary heap</caption>
+
    * ```ts
    * import { BinaryHeap } from "@std/data-structures";
    * import { assertEquals } from "@std/assert";
@@ -359,7 +385,9 @@ export class BinaryHeap<T> implements Iterable<T> {
   /**
    * Remove all values from the binary heap.
    *
-   * @example Clearing the binary heap
+   * @example
+   * <caption>Clearing the binary heap</caption>
+
    * ```ts
    * import { BinaryHeap } from "@std/data-structures";
    * import { assertEquals } from "@std/assert";
@@ -377,7 +405,9 @@ export class BinaryHeap<T> implements Iterable<T> {
   /**
    * Check if the binary heap is empty.
    *
-   * @example Checking if the binary heap is empty
+   * @example
+   * <caption>Checking if the binary heap is empty</caption>
+
    * ```ts
    * import { BinaryHeap } from "@std/data-structures";
    * import { assertEquals } from "@std/assert";
@@ -405,7 +435,9 @@ export class BinaryHeap<T> implements Iterable<T> {
    * {@link BinaryHeap.from} and then call {@link BinaryHeap.prototype.drain}
    * on the copy.
    *
-   * @example Draining the binary heap
+   * @example
+   * <caption>Draining the binary heap</caption>
+
    * ```ts
    * import { BinaryHeap } from "@std/data-structures";
    * import { assertEquals } from "@std/assert";
@@ -428,7 +460,9 @@ export class BinaryHeap<T> implements Iterable<T> {
    * Create an iterator that retrieves values from the binary heap in order
    * from greatest to least. The binary heap is drained in the process.
    *
-   * @example Getting an iterator for the binary heap
+   * @example
+   * <caption>Getting an iterator for the binary heap</caption>
+
    * ```ts
    * import { BinaryHeap } from "@std/data-structures";
    * import { assertEquals } from "@std/assert";

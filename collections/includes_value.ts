@@ -15,7 +15,9 @@
  *
  * @returns `true` if the value is part of the record, otherwise `false`.
  *
- * @example Basic usage
+ * @example
+ * <caption>Basic usage</caption>
+
  * ```ts
  * import { includesValue } from "@std/collections/includes-value";
  * import { assertEquals } from "@std/assert";

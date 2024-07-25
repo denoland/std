@@ -25,7 +25,9 @@ const ADDED = 3;
  *
  * @returns An array containing the common elements between the two arrays.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { createCommon } from "@std/internal/diff";
  * import { assertEquals } from "@std/assert";
@@ -59,7 +61,9 @@ export function createCommon<T>(A: T[], B: T[]): T[] {
  *
  * @returns A void value that returns once the assertion completes.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { assertFp } from "@std/internal/diff";
  * import { assertThrows } from "@std/assert";
@@ -95,7 +99,9 @@ export function assertFp(value: unknown): asserts value is FarthestPoint {
  *
  * @returns An array of backtraced differences.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { backTrace } from "@std/internal/diff";
  * import { assertEquals } from "@std/assert";
@@ -163,7 +169,9 @@ export function backTrace<T>(
  *
  * @returns A {@linkcode FarthestPoint}.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { createFp } from "@std/internal/diff";
  * import { assertEquals } from "@std/assert";
@@ -224,7 +232,9 @@ export function createFp(
  *
  * @returns An array of differences between the actual and expected values.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { diff } from "@std/internal/diff";
  * import { assertEquals } from "@std/assert";

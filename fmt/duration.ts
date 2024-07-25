@@ -92,7 +92,9 @@ export interface PrettyDurationOptions {
 /**
  * Format milliseconds to time duration.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { format } from "@std/fmt/duration";
  * import { assertEquals } from "@std/assert";

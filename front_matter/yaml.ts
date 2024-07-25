@@ -11,7 +11,9 @@ export type { Extract };
  * Extracts and parses {@link https://yaml.org | YAML} from the metadata of
  * front matter content.
  *
- * @example Extract YAML front matter
+ * @example
+ * <caption>Extract YAML front matter</caption>
+
  * ```ts
  * import { extract } from "@std/front-matter/yaml";
  * import { assertEquals } from "@std/assert";

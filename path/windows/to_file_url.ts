@@ -7,7 +7,9 @@ import { isAbsolute } from "./is_absolute.ts";
 /**
  * Converts a path string to a file URL.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { toFileUrl } from "@std/path/windows/to-file-url";
  * import { assertEquals } from "@std/assert";

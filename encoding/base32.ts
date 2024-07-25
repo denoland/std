@@ -67,7 +67,9 @@ function getByteLength(validLen: number, placeHoldersLen: number): number {
  * @param b32 The base32-encoded string to decode.
  * @returns The decoded data.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { decodeBase32 } from "@std/encoding/base32";
  * import { assertEquals } from "@std/assert";
@@ -176,7 +178,9 @@ function encodeChunk(uint8: Uint8Array, start: number, end: number): string {
  * @param data The data to encode.
  * @returns The base32-encoded string.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { encodeBase32 } from "@std/encoding/base32";
  * import { assertEquals } from "@std/assert";

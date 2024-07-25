@@ -8,7 +8,9 @@ import { compare } from "./compare.ts";
  *
  * This is equal to `compare(s0, s1) !== 0`.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { parse, notEquals } from "@std/semver";
  * import { assert } from "@std/assert";

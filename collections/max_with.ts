@@ -17,7 +17,9 @@
  * @returns The first element that is the largest value of the given function or
  * undefined if there are no elements.
  *
- * @example Basic usage
+ * @example
+ * <caption>Basic usage</caption>
+
  * ```ts
  * import { maxWith } from "@std/collections/max-with";
  * import { assertEquals } from "@std/assert";

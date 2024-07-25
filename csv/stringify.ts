@@ -219,7 +219,9 @@ function getValuesFromItem(
 /**
  * Converts an array of objects into a CSV string.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import {
  *   Column,

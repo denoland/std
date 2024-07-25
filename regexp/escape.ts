@@ -74,7 +74,9 @@ const RX_REGEXP_ESCAPE = new RegExp(
  * Escapes arbitrary text for interpolation into a regexp, such that it will
  * match exactly that text and nothing else.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { escape } from "@std/regexp/escape";
  * import { assertEquals, assertMatch, assertNotMatch } from "@std/assert";

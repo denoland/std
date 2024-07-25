@@ -8,7 +8,9 @@ import { greaterThan } from "./greater_than.ts";
  * Returns the highest SemVer in the list that satisfies the range, or `undefined`
  * if none of them do.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { parse, parseRange, maxSatisfying } from "@std/semver";
  * import { assertEquals } from "@std/assert";

@@ -17,7 +17,9 @@ export type { GlobOptions };
  * {@linkcode https://jsr.io/@std/path/doc/~/normalize | normalize()}, but
  * doesn't collapse "**\/.." when `globstar` is true.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { normalizeGlob } from "@std/path/normalize-glob";
  * import { assertEquals } from "@std/assert";

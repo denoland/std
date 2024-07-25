@@ -12,7 +12,9 @@ export type { ParsedPath } from "../types.ts";
 /**
  * Return a `ParsedPath` object of the `path`.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { parse } from "@std/path/posix/parse";
  * import { assertEquals } from "@std/assert";

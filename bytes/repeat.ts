@@ -11,7 +11,9 @@ import { copy } from "./copy.ts";
  * @returns A new byte slice composed of `count` repetitions of the `source`
  * array.
  *
- * @example Basic usage
+ * @example
+ * <caption>Basic usage</caption>
+
  * ```ts
  * import { repeat } from "@std/bytes/repeat";
  * import { assertEquals } from "@std/assert";
@@ -21,7 +23,9 @@ import { copy } from "./copy.ts";
  * assertEquals(repeat(source, 3), new Uint8Array([0, 1, 2, 0, 1, 2, 0, 1, 2]));
  * ```
  *
- * @example Zero count
+ * @example
+ * <caption>Zero count</caption>
+
  * ```ts
  * import { repeat } from "@std/bytes/repeat";
  * import { assertEquals } from "@std/assert";

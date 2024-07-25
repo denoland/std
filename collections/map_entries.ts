@@ -13,7 +13,9 @@
  *
  * @returns A new record with all entries transformed by the given transformer.
  *
- * @example Basic usage
+ * @example
+ * <caption>Basic usage</caption>
+
  * ```ts
  * import { mapEntries } from "@std/collections/map-entries";
  * import { assertEquals } from "@std/assert";

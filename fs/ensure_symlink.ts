@@ -40,7 +40,9 @@ function getSymlinkOption(
  *
  * @returns A void promise that resolves once the link exists.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts no-eval
  * import { ensureSymlink } from "@std/fs/ensure-symlink";
  *
@@ -99,7 +101,9 @@ export async function ensureSymlink(
  * @param linkName The destination link path as a string or URL.
  * @returns A void value that returns once the link exists.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts no-eval
  * import { ensureSymlinkSync } from "@std/fs/ensure-symlink";
  *

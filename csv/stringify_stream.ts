@@ -24,7 +24,9 @@ export interface CsvStringifyStreamOptions {
 /**
  * Convert each chunk to a CSV record.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts no-assert
  * import { CsvStringifyStream } from "@std/csv/stringify-stream";
  *

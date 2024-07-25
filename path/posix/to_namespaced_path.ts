@@ -4,7 +4,9 @@
 /**
  * Converts a path to a namespaced path. This function returns the path as is on posix.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { toNamespacedPath } from "@std/path/posix/to-namespaced-path";
  * import { assertEquals } from "@std/assert";

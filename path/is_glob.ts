@@ -4,7 +4,9 @@
 /**
  * Test whether the given string is a glob.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { isGlob } from "@std/path/is-glob";
  * import { assert } from "@std/assert";

@@ -83,7 +83,9 @@ let enabled = !noColor;
  * and disables text color. Use this API only when the automatic detection
  * doesn't work.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts no-assert
  * import { setColorEnabled } from "@std/fmt/colors";
  *
@@ -107,7 +109,9 @@ export function setColorEnabled(value: boolean) {
 /**
  * Get whether text color change is enabled or disabled.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts no-assert
  * import { getColorEnabled } from "@std/fmt/colors";
  *
@@ -146,7 +150,9 @@ function run(str: string, code: Code): string {
 /**
  * Reset the text modified.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts no-assert
  * import { reset } from "@std/fmt/colors";
  *
@@ -163,7 +169,9 @@ export function reset(str: string): string {
 /**
  * Make the text bold.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts no-assert
  * import { bold } from "@std/fmt/colors";
  *
@@ -180,7 +188,9 @@ export function bold(str: string): string {
 /**
  * The text emits only a small amount of light.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts no-assert
  * import { dim } from "@std/fmt/colors";
  *
@@ -200,7 +210,9 @@ export function dim(str: string): string {
 /**
  * Make the text italic.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts no-assert
  * import { italic } from "@std/fmt/colors";
  *
@@ -217,7 +229,9 @@ export function italic(str: string): string {
 /**
  * Make the text underline.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts no-assert
  * import { underline } from "@std/fmt/colors";
  *
@@ -234,7 +248,9 @@ export function underline(str: string): string {
 /**
  * Invert background color and text color.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts no-assert
  * import { inverse } from "@std/fmt/colors";
  *
@@ -251,7 +267,9 @@ export function inverse(str: string): string {
 /**
  * Make the text hidden.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts no-assert
  * import { hidden } from "@std/fmt/colors";
  *
@@ -268,7 +286,9 @@ export function hidden(str: string): string {
 /**
  * Put horizontal line through the center of the text.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts no-assert
  * import { strikethrough } from "@std/fmt/colors";
  *
@@ -285,7 +305,9 @@ export function strikethrough(str: string): string {
 /**
  * Set text color to black.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts no-assert
  * import { black } from "@std/fmt/colors";
  *
@@ -302,7 +324,9 @@ export function black(str: string): string {
 /**
  * Set text color to red.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts no-assert
  * import { red } from "@std/fmt/colors";
  *
@@ -319,7 +343,9 @@ export function red(str: string): string {
 /**
  * Set text color to green.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts no-assert
  * import { green } from "@std/fmt/colors";
  *
@@ -336,7 +362,9 @@ export function green(str: string): string {
 /**
  * Set text color to yellow.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts no-assert
  * import { yellow } from "@std/fmt/colors";
  *
@@ -353,7 +381,9 @@ export function yellow(str: string): string {
 /**
  * Set text color to blue.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts no-assert
  * import { blue } from "@std/fmt/colors";
  *
@@ -370,7 +400,9 @@ export function blue(str: string): string {
 /**
  * Set text color to magenta.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts no-assert
  * import { magenta } from "@std/fmt/colors";
  *
@@ -387,7 +419,9 @@ export function magenta(str: string): string {
 /**
  * Set text color to cyan.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts no-assert
  * import { cyan } from "@std/fmt/colors";
  *
@@ -404,7 +438,9 @@ export function cyan(str: string): string {
 /**
  * Set text color to white.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts no-assert
  * import { white } from "@std/fmt/colors";
  *
@@ -421,7 +457,9 @@ export function white(str: string): string {
 /**
  * Set text color to gray.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts no-assert
  * import { gray } from "@std/fmt/colors";
  *
@@ -438,7 +476,9 @@ export function gray(str: string): string {
 /**
  * Set text color to bright black.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts no-assert
  * import { brightBlack } from "@std/fmt/colors";
  *
@@ -455,7 +495,9 @@ export function brightBlack(str: string): string {
 /**
  * Set text color to bright red.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts no-assert
  * import { brightRed } from "@std/fmt/colors";
  *
@@ -472,7 +514,9 @@ export function brightRed(str: string): string {
 /**
  * Set text color to bright green.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts no-assert
  * import { brightGreen } from "@std/fmt/colors";
  *
@@ -489,7 +533,9 @@ export function brightGreen(str: string): string {
 /**
  * Set text color to bright yellow.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts no-assert
  * import { brightYellow } from "@std/fmt/colors";
  *
@@ -506,7 +552,9 @@ export function brightYellow(str: string): string {
 /**
  * Set text color to bright blue.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts no-assert
  * import { brightBlue } from "@std/fmt/colors";
  *
@@ -523,7 +571,9 @@ export function brightBlue(str: string): string {
 /**
  * Set text color to bright magenta.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts no-assert
  * import { brightMagenta } from "@std/fmt/colors";
  *
@@ -540,7 +590,9 @@ export function brightMagenta(str: string): string {
 /**
  * Set text color to bright cyan.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts no-assert
  * import { brightCyan } from "@std/fmt/colors";
  *
@@ -557,7 +609,9 @@ export function brightCyan(str: string): string {
 /**
  * Set text color to bright white.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts no-assert
  * import { brightWhite } from "@std/fmt/colors";
  *
@@ -574,7 +628,9 @@ export function brightWhite(str: string): string {
 /**
  * Set background color to black.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts no-assert
  * import { bgBlack } from "@std/fmt/colors";
  *
@@ -591,7 +647,9 @@ export function bgBlack(str: string): string {
 /**
  * Set background color to red.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts no-assert
  * import { bgRed } from "@std/fmt/colors";
  *
@@ -608,7 +666,9 @@ export function bgRed(str: string): string {
 /**
  * Set background color to green.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts no-assert
  * import { bgGreen } from "@std/fmt/colors";
  *
@@ -625,7 +685,9 @@ export function bgGreen(str: string): string {
 /**
  * Set background color to yellow.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts no-assert
  * import { bgYellow } from "@std/fmt/colors";
  *
@@ -642,7 +704,9 @@ export function bgYellow(str: string): string {
 /**
  * Set background color to blue.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts no-assert
  * import { bgBlue } from "@std/fmt/colors";
  *
@@ -659,7 +723,9 @@ export function bgBlue(str: string): string {
 /**
  *  Set background color to magenta.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts no-assert
  * import { bgMagenta } from "@std/fmt/colors";
  *
@@ -676,7 +742,9 @@ export function bgMagenta(str: string): string {
 /**
  * Set background color to cyan.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts no-assert
  * import { bgCyan } from "@std/fmt/colors";
  *
@@ -693,7 +761,9 @@ export function bgCyan(str: string): string {
 /**
  * Set background color to white.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts no-assert
  * import { bgWhite } from "@std/fmt/colors";
  *
@@ -710,7 +780,9 @@ export function bgWhite(str: string): string {
 /**
  * Set background color to bright black.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts no-assert
  * import { bgBrightBlack } from "@std/fmt/colors";
  *
@@ -727,7 +799,9 @@ export function bgBrightBlack(str: string): string {
 /**
  * Set background color to bright red.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts no-assert
  * import { bgBrightRed } from "@std/fmt/colors";
  *
@@ -744,7 +818,9 @@ export function bgBrightRed(str: string): string {
 /**
  * Set background color to bright green.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts no-assert
  * import { bgBrightGreen } from "@std/fmt/colors";
  *
@@ -761,7 +837,9 @@ export function bgBrightGreen(str: string): string {
 /**
  * Set background color to bright yellow.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts no-assert
  * import { bgBrightYellow } from "@std/fmt/colors";
  *
@@ -778,7 +856,9 @@ export function bgBrightYellow(str: string): string {
 /**
  * Set background color to bright blue.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts no-assert
  * import { bgBrightBlue } from "@std/fmt/colors";
  *
@@ -795,7 +875,9 @@ export function bgBrightBlue(str: string): string {
 /**
  * Set background color to bright magenta.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts no-assert
  * import { bgBrightMagenta } from "@std/fmt/colors";
  *
@@ -812,7 +894,9 @@ export function bgBrightMagenta(str: string): string {
 /**
  * Set background color to bright cyan.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts no-assert
  * import { bgBrightCyan } from "@std/fmt/colors";
  *
@@ -829,7 +913,9 @@ export function bgBrightCyan(str: string): string {
 /**
  * Set background color to bright white.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts no-assert
  * import { bgBrightWhite } from "@std/fmt/colors";
  *
@@ -859,7 +945,9 @@ function clampAndTruncate(n: number, max = 255, min = 0): number {
  * Set text color using paletted 8bit colors.
  * https://en.wikipedia.org/wiki/ANSI_escape_code#8-bit
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts no-assert
  * import { rgb8 } from "@std/fmt/colors";
  *
@@ -878,7 +966,9 @@ export function rgb8(str: string, color: number): string {
  * Set background color using paletted 8bit colors.
  * https://en.wikipedia.org/wiki/ANSI_escape_code#8-bit
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts no-assert
  * import { bgRgb8 } from "@std/fmt/colors";
  *
@@ -898,7 +988,9 @@ export function bgRgb8(str: string, color: number): string {
  * `color` can be a number in range `0x000000` to `0xffffff` or
  * an `Rgb`.
  *
- * @example To produce the color magenta:
+ * @example
+ * <caption>To produce the color magenta:</caption>
+
  * ```ts no-assert
  * import { rgb24 } from "@std/fmt/colors";
  *
@@ -939,7 +1031,9 @@ export function rgb24(str: string, color: number | Rgb): string {
  * `color` can be a number in range `0x000000` to `0xffffff` or
  * an `Rgb`.
  *
- * @example To produce the color magenta:
+ * @example
+ * <caption>To produce the color magenta:</caption>
+
  * ```ts no-assert
  * import { bgRgb24 } from "@std/fmt/colors";
  *
@@ -987,7 +1081,9 @@ const ANSI_PATTERN = new RegExp(
 /**
  * Remove ANSI escape codes from the string.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts no-assert
  * import { stripAnsiCode, red } from "@std/fmt/colors";
  *

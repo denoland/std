@@ -43,7 +43,9 @@ const base58alphabet =
  * @param data The data to encode.
  * @returns The base58-encoded string.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { encodeBase58 } from "@std/encoding/base58";
  * import { assertEquals } from "@std/assert";
@@ -109,7 +111,9 @@ export function encodeBase58(data: ArrayBuffer | Uint8Array | string): string {
  * @param b58 The base58-encoded string to decode.
  * @returns The decoded data.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { decodeBase58 } from "@std/encoding/base58";
  * import { assertEquals } from "@std/assert";

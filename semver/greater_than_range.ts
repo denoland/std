@@ -9,7 +9,9 @@ import { compare } from "./compare.ts";
 /**
  * Check if the SemVer is greater than the range.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { parse, parseRange, greaterThanRange } from "@std/semver";
  * import { assert } from "@std/assert";

@@ -13,7 +13,9 @@
  * @returns A new array that drops all elements until the last element that does
  * not match the given predicate.
  *
- * @example Basic usage
+ * @example
+ * <caption>Basic usage</caption>
+
  * ```ts
  * import { dropLastWhile } from "@std/collections/drop-last-while";
  * import { assertEquals } from "@std/assert";

@@ -59,7 +59,9 @@ function fromHexChar(byte: number): number {
  *
  * @returns The hex-encoded string.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { encodeHex } from "@std/encoding/hex";
  * import { assertEquals } from "@std/assert";
@@ -87,7 +89,9 @@ export function encodeHex(src: string | Uint8Array | ArrayBuffer): string {
  *
  * @returns The decoded data.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { decodeHex } from "@std/encoding/hex";
  * import { assertEquals } from "@std/assert";

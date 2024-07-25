@@ -17,7 +17,9 @@ export interface TextLineStreamOptions {
  *
  * If you want to split by a custom delimiter, consider using {@linkcode TextDelimiterStream}.
  *
- * @example JSON Lines
+ * @example
+ * <caption>JSON Lines</caption>
+
  * ```ts
  * import { TextLineStream } from "@std/streams/text-line-stream";
  * import { toTransformStream } from "@std/streams/to-transform-stream";

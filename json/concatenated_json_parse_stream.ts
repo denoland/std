@@ -37,7 +37,9 @@ export class ConcatenatedJsonParseStream
   /**
    * A writable stream of byte data.
    *
-   * @example Usage
+   * @example
+   * <caption>Usage</caption>
+
    * ```ts
    * import { ConcatenatedJsonParseStream } from "@std/json/concatenated-json-parse-stream";
    * import { assertEquals } from "@std/assert";
@@ -57,7 +59,9 @@ export class ConcatenatedJsonParseStream
   /**
    * A readable stream of byte data.
    *
-   * @example Usage
+   * @example
+   * <caption>Usage</caption>
+
    * ```ts
    * import { ConcatenatedJsonParseStream } from "@std/json/concatenated-json-parse-stream";
    * import { assertEquals } from "@std/assert";

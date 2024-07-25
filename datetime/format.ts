@@ -45,7 +45,9 @@ export interface FormatOptions {
  * @param options The options to customize the formatting of the date.
  * @return The formatted date string.
  *
- * @example Basic usage
+ * @example
+ * <caption>Basic usage</caption>
+
  * ```ts no-eval
  * import { format } from "@std/datetime/format";
  * import { assertEquals } from "@std/assert";

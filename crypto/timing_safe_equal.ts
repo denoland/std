@@ -23,7 +23,9 @@ function toDataView(
  * {@link https://github.com/w3c/webcrypto/issues/270 | w3c/webcrypto#270}), but until
  * that time, `timingSafeEqual()` is provided:
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { timingSafeEqual } from "@std/crypto/timing-safe-equal";
  * import { assert } from "@std/assert";

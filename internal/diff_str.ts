@@ -11,7 +11,9 @@ import { diff } from "./diff.ts";
  *
  * @returns Unescaped string.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { unescape } from "@std/internal/diff-str";
  * import { assertEquals } from "@std/assert";
@@ -42,7 +44,9 @@ const WHITESPACE_SYMBOLS = /([^\S\r\n]+|[()[\]{}'"\r\n]|\b)/;
  *
  * @returns An array of tokens.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { tokenize } from "@std/internal/diff-str";
  * import { assertEquals } from "@std/assert";
@@ -78,7 +82,9 @@ export function tokenize(string: string, wordDiff = false): string[] {
  *
  * @returns Array of diff results.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { createDetails } from "@std/internal/diff-str";
  * import { assertEquals } from "@std/assert";
@@ -123,7 +129,9 @@ export function createDetails(
  *
  * @returns Array of diff results.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { diffStr } from "@std/internal/diff-str";
  * import { assertEquals } from "@std/assert";

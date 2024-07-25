@@ -15,7 +15,9 @@ import { strip } from "./_strip.ts";
  * @param suffix An optional suffix to remove from the base name.
  * @returns The base name of the URL.
  *
- * @example Basic usage
+ * @example
+ * <caption>Basic usage</caption>
+
  * ```ts
  * import { basename } from "@std/url/basename";
  * import { assertEquals } from "@std/assert";

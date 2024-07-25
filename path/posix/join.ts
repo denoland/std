@@ -7,7 +7,9 @@ import { normalize } from "./normalize.ts";
 /**
  * Join all given a sequence of `paths`,then normalizes the resulting path.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { join } from "@std/path/posix/join";
  * import { assertEquals } from "@std/assert";
@@ -16,7 +18,9 @@ import { normalize } from "./normalize.ts";
  * assertEquals(path, "/foo/bar/baz/asdf");
  * ```
  *
- * @example Working with URLs
+ * @example
+ * <caption>Working with URLs</caption>
+
  * ```ts
  * import { join } from "@std/path/posix/join";
  * import { assertEquals } from "@std/assert";

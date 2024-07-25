@@ -14,7 +14,9 @@
  * @returns Index of the last occurrence of the needle array in the source
  * array, or -1 if it is not present.
  *
- * @example Basic usage
+ * @example
+ * <caption>Basic usage</caption>
+
  * ```ts
  * import { lastIndexOfNeedle } from "@std/bytes/last-index-of-needle";
  * import { assertEquals } from "@std/assert";
@@ -27,7 +29,9 @@
  * assertEquals(lastIndexOfNeedle(source, notNeedle), -1);
  * ```
  *
- * @example Start index
+ * @example
+ * <caption>Start index</caption>
+
  * ```ts
  * import { lastIndexOfNeedle } from "@std/bytes/last-index-of-needle";
  * import { assertEquals } from "@std/assert";

@@ -57,7 +57,9 @@ function expand(str: string, variablesMap: { [key: string]: string }): string {
 /**
  * Parse `.env` file output in an object.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { parse } from "@std/dotenv/parse";
  * import { assertEquals } from "@std/assert";

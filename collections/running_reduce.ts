@@ -15,7 +15,9 @@
  *
  * @returns An array of all intermediate accumulator results.
  *
- * @example Basic usage
+ * @example
+ * <caption>Basic usage</caption>
+
  * ```ts
  * import { runningReduce } from "@std/collections/running-reduce";
  * import { assertEquals } from "@std/assert";

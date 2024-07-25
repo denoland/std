@@ -7,7 +7,9 @@ import { extname as windowsExtname } from "./windows/extname.ts";
 /**
  * Return the extension of the path with leading period (".").
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { extname } from "@std/path/extname";
  * import { assertEquals } from "@std/assert";

@@ -15,7 +15,9 @@ import {
  *
  * Sorts in ascending order if passed to {@linkcode Array.sort}.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { parse, compare } from "@std/semver";
  * import { assertEquals } from "@std/assert";

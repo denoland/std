@@ -18,7 +18,9 @@ import { filterInPlace } from "./_utils.ts";
  *
  * @returns A new record with the merged values.
  *
- * @example Merge objects
+ * @example
+ * <caption>Merge objects</caption>
+
  * ```ts
  * import { deepMerge } from "@std/collections/deep-merge";
  * import { assertEquals } from "@std/assert";
@@ -33,7 +35,9 @@ import { filterInPlace } from "./_utils.ts";
  * assertEquals(result, expected);
  * ```
  *
- * @example Merge arrays
+ * @example
+ * <caption>Merge arrays</caption>
+
  * ```ts
  * import { deepMerge } from "@std/collections/deep-merge";
  * import { assertEquals } from "@std/assert";
@@ -48,7 +52,9 @@ import { filterInPlace } from "./_utils.ts";
  * assertEquals(result, expected);
  * ```
  *
- * @example Merge maps
+ * @example
+ * <caption>Merge maps</caption>
+
  * ```ts
  * import { deepMerge } from "@std/collections/deep-merge";
  * import { assertEquals } from "@std/assert";
@@ -63,7 +69,9 @@ import { filterInPlace } from "./_utils.ts";
  * assertEquals(result, expected);
  * ```
  *
- * @example Merge sets
+ * @example
+ * <caption>Merge sets</caption>
+
  * ```ts
  * import { deepMerge } from "@std/collections/deep-merge";
  * import { assertEquals } from "@std/assert";
@@ -78,7 +86,9 @@ import { filterInPlace } from "./_utils.ts";
  * assertEquals(result, expected);
  * ```
  *
- * @example Merge with custom options
+ * @example
+ * <caption>Merge with custom options</caption>
+
  * ```ts
  * import { deepMerge } from "@std/collections/deep-merge";
  * import { assertEquals } from "@std/assert";
@@ -117,7 +127,9 @@ export function deepMerge<
  *
  * @returns A new record with the merged values.
  *
- * @example Merge objects
+ * @example
+ * <caption>Merge objects</caption>
+
  * ```ts
  * import { deepMerge } from "@std/collections/deep-merge";
  * import { assertEquals } from "@std/assert";
@@ -132,7 +144,9 @@ export function deepMerge<
  * assertEquals(result, expected);
  * ```
  *
- * @example Merge arrays
+ * @example
+ * <caption>Merge arrays</caption>
+
  * ```ts
  * import { deepMerge } from "@std/collections/deep-merge";
  * import { assertEquals } from "@std/assert";
@@ -147,7 +161,9 @@ export function deepMerge<
  * assertEquals(result, expected);
  * ```
  *
- * @example Merge maps
+ * @example
+ * <caption>Merge maps</caption>
+
  * ```ts
  * import { deepMerge } from "@std/collections/deep-merge";
  * import { assertEquals } from "@std/assert";
@@ -162,7 +178,9 @@ export function deepMerge<
  * assertEquals(result, expected);
  * ```
  *
- * @example Merge sets
+ * @example
+ * <caption>Merge sets</caption>
+
  * ```ts
  * import { deepMerge } from "@std/collections/deep-merge";
  * import { assertEquals } from "@std/assert";
@@ -177,7 +195,9 @@ export function deepMerge<
  * assertEquals(result, expected);
  * ```
  *
- * @example Merge with custom options
+ * @example
+ * <caption>Merge with custom options</caption>
+
  * ```ts
  * import { deepMerge } from "@std/collections/deep-merge";
  * import { assertEquals } from "@std/assert";

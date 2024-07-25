@@ -11,7 +11,9 @@
  * > of the two strings. It's recommended to limit the length and validate input
  * > if arbitrarily accepting input.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { levenshteinDistance } from "@std/text/levenshtein-distance";
  * import { assertEquals } from "@std/assert";

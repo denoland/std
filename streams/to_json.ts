@@ -13,7 +13,9 @@ import { toText } from "./to_text.ts";
  * @param stream A `ReadableStream` whose chunks compose a JSON.
  * @returns A promise that resolves to the parsed JSON.
  *
- * @example Usage with a stream of strings
+ * @example
+ * <caption>Usage with a stream of strings</caption>
+
  * ```ts
  * import { toJson } from "@std/streams/to-json";
  * import { assertEquals } from "@std/assert";
@@ -26,7 +28,9 @@ import { toText } from "./to_text.ts";
  * assertEquals(await toJson(stream), [1, true, [], {}, "hello", null]);
  * ```
  *
- * @example Usage with a stream of `Uint8Array`s
+ * @example
+ * <caption>Usage with a stream of `Uint8Array`s</caption>
+
  * ```ts
  * import { toJson } from "@std/streams/to-json";
  * import { assertEquals } from "@std/assert";

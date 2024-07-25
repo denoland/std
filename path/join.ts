@@ -8,7 +8,9 @@ import { join as windowsJoin } from "./windows/join.ts";
 /**
  * Joins a sequence of paths, then normalizes the resulting path.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { join } from "@std/path/join";
  * import { assertEquals } from "@std/assert";

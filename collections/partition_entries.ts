@@ -14,7 +14,9 @@
  * @returns A tuple containing two records, the first one containing all entries
  * that match the predicate and the second one containing all that do not.
  *
- * @example Basic usage
+ * @example
+ * <caption>Basic usage</caption>
+
  * ```ts
  * import { partitionEntries } from "@std/collections/partition-entries";
  * import { assertEquals } from "@std/assert";

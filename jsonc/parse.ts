@@ -7,7 +7,9 @@ export type { JsonValue };
 /**
  * Converts a JSON with Comments (JSONC) string into an object.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { parse } from "@std/jsonc";
  * import { assertEquals } from "@std/assert";

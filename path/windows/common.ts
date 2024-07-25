@@ -7,7 +7,9 @@ import { SEPARATOR } from "./constants.ts";
 /**
  * Determines the common path from a set of paths for Windows systems.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { common } from "@std/path/windows/common";
  * import { assertEquals } from "@std/assert";

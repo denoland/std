@@ -9,7 +9,9 @@ import { stripAnsiCode } from "@std/internal/styles";
  * An error class and a string that should be included in the
  * error message can also be asserted.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts no-eval
  * import { assertIsError } from "@std/assert";
  *

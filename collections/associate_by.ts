@@ -16,7 +16,9 @@
  * @returns A record with the keys produced by the selector and the elements as
  * values.
  *
- * @example Basic usage
+ * @example
+ * <caption>Basic usage</caption>
+
  * ```ts
  * import { associateBy } from "@std/collections/associate-by";
  * import { assertEquals } from "@std/assert";

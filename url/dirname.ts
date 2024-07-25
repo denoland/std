@@ -13,7 +13,9 @@ import { strip } from "./_strip.ts";
  * @param url URL to extract the directory from.
  * @returns The directory path URL of the URL.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { dirname } from "@std/url/dirname";
  * import { assertEquals } from "@std/assert";

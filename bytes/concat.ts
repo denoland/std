@@ -7,7 +7,9 @@
  * @param buffers Array of byte slices to concatenate.
  * @returns A new byte slice containing all the input slices concatenated.
  *
- * @example Basic usage
+ * @example
+ * <caption>Basic usage</caption>
+
  * ```ts
  * import { concat } from "@std/bytes/concat";
  * import { assertEquals } from "@std/assert";

@@ -18,7 +18,9 @@ import { isIterator, isToken, needsEncoding } from "./_util.ts";
  *
  * @returns The serialized media type.
  *
- * @example Basic usage
+ * @example
+ * <caption>Basic usage</caption>
+
  * ```ts
  * import { formatMediaType } from "@std/media-types/format-media-type";
  * import { assertEquals } from "@std/assert";
@@ -26,7 +28,9 @@ import { isIterator, isToken, needsEncoding } from "./_util.ts";
  * assertEquals(formatMediaType("text/plain"), "text/plain");
  * ```
  *
- * @example With parameters
+ * @example
+ * <caption>With parameters</caption>
+
  * ```ts
  * import { formatMediaType } from "@std/media-types/format-media-type";
  * import { assertEquals } from "@std/assert";

@@ -36,7 +36,9 @@ export interface ParseOptions {
  *
  * Note: This does not support functions. Untrusted data is safe to parse.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { parse } from "@std/yaml/parse";
  * import { assertEquals } from "@std/assert";
@@ -65,7 +67,9 @@ export function parse(
  * Same as {@linkcode parse}, but understands multi-document YAML sources, and
  * returns multiple parsed YAML document objects.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { parseAll } from "@std/yaml/parse";
  * import { assertEquals } from "@std/assert";

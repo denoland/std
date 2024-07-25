@@ -543,7 +543,9 @@ export interface it {
 /**
  * Registers an individual test case.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { describe, it } from "@std/testing/bdd";
  * import { assertEquals } from "@std/assert";
@@ -608,7 +610,9 @@ export function it<T>(...args: ItArgs<T>) {
 /**
  * Only execute this test case.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { describe, it } from "@std/testing/bdd";
  * import { assertEquals } from "@std/assert";
@@ -637,7 +641,9 @@ it.only = function itOnly<T>(...args: ItArgs<T>): void {
 /**
  * Ignore this test case.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { describe, it } from "@std/testing/bdd";
  * import { assertEquals } from "@std/assert";
@@ -665,7 +671,9 @@ it.ignore = function itIgnore<T>(...args: ItArgs<T>): void {
 
 /** Skip this test case.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { describe, it } from "@std/testing/bdd";
  * import { assertEquals } from "@std/assert";
@@ -692,7 +700,9 @@ it.skip = function itSkip<T>(...args: ItArgs<T>): void {
  *
  * Registers an individual test case.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { test } from "@std/testing/bdd";
  * import { assertEquals } from "@std/assert";
@@ -732,7 +742,9 @@ function addHook<T>(
 /**
  * Run some shared setup before all of the tests in the suite.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { describe, it, beforeAll } from "@std/testing/bdd";
  * import { assertEquals } from "@std/assert";
@@ -763,7 +775,9 @@ export function beforeAll<T>(
  *
  * Run some shared setup before all of the tests in the suite.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { describe, it, before } from "@std/testing/bdd";
  * import { assertEquals } from "@std/assert";
@@ -792,7 +806,9 @@ export function before<T>(
 /**
  * Run some shared teardown after all of the tests in the suite.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { describe, it, afterAll } from "@std/testing/bdd";
  * import { assertEquals } from "@std/assert";
@@ -823,7 +839,9 @@ export function afterAll<T>(
  *
  * Run some shared teardown after all of the tests in the suite.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { describe, it, after } from "@std/testing/bdd";
  * import { assertEquals } from "@std/assert";
@@ -852,7 +870,9 @@ export function after<T>(
 /**
  * Run some shared setup before each test in the suite.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { describe, it, beforeEach } from "@std/testing/bdd";
  * import { assertEquals } from "@std/assert";
@@ -881,7 +901,9 @@ export function beforeEach<T>(
 /**
  * Run some shared teardown after each test in the suite.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { describe, it, afterEach } from "@std/testing/bdd";
  * import { assertEquals } from "@std/assert";
@@ -1048,7 +1070,9 @@ export interface describe {
 /**
  * Registers a test suite.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { describe, it } from "@std/testing/bdd";
  * import { assertEquals } from "@std/assert";
@@ -1082,7 +1106,9 @@ export function describe<T>(
 /**
  * Only execute this test suite.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { describe, it, beforeAll } from "@std/testing/bdd";
  * import { assertEquals } from "@std/assert";
@@ -1116,7 +1142,9 @@ describe.only = function describeOnly<T>(
 /**
  * Ignore the test suite.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { describe, it, beforeAll } from "@std/testing/bdd";
  * import { assertEquals } from "@std/assert";
@@ -1149,7 +1177,9 @@ describe.ignore = function describeIgnore<T>(
 /**
  * Skip the test suite.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { describe, it, beforeAll } from "@std/testing/bdd";
  * import { assertEquals } from "@std/assert";

@@ -17,7 +17,9 @@ function constructorsEqual(a: object, b: object) {
  * @param d The expected value
  * @returns `true` if the values are deeply equal, `false` otherwise
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { equal } from "@std/assert";
  *

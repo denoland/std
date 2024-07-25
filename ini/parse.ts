@@ -13,7 +13,9 @@ interface ParseOptions {
 /**
  * Parse an INI config string into an object. Provide formatting options to override the default assignment operator.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { parse } from "@std/ini/parse";
  * import { assertEquals } from "@std/assert";
@@ -29,7 +31,9 @@ interface ParseOptions {
  * assertEquals(parsed, { key: "value", "section 1": { foo: "Hello", baz: "World" } })
  * ```
  *
- * @example Using custom reviver
+ * @example
+ * <caption>Using custom reviver</caption>
+
  * ```ts
  * import { parse } from "@std/ini/parse";
  * import { assertEquals } from "@std/assert";

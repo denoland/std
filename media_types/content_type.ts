@@ -42,7 +42,9 @@ export type KnownExtensionOrType =
  * @returns The full `Content-Type` or `Content-Disposition` header value, or
  * `undefined` if unable to resolve the media type.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { contentType } from "@std/media-types/content-type";
  * import { assertEquals } from "@std/assert";

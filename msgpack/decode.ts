@@ -8,7 +8,9 @@ import type { ValueType } from "./encode.ts";
  *
  * If the input is not in valid message pack format, an error will be thrown.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { decode } from "@std/msgpack/decode";
  * import { assertEquals } from "@std/assert";

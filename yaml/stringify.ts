@@ -90,7 +90,9 @@ export type StringifyOptions = {
 /**
  * Converts a JavaScript object or value to a YAML document string.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { stringify } from "@std/yaml/stringify";
  * import { assertEquals } from "@std/assert";

@@ -14,7 +14,9 @@ import { allExtensions } from "./all_extensions.ts";
  * @returns The extension for the given media type, or `undefined` if no
  * extension is found.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts
  * import { extension } from "@std/media-types/extension";
  * import { assertEquals } from "@std/assert";

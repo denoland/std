@@ -11,7 +11,9 @@ import { AssertionError } from "./assertion_error.ts";
  * The default tolerance is one hundred thousandth of a percent of the
  * expected value.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
+
  * ```ts no-eval
  * import { assertAlmostEquals } from "@std/assert";
  *
