@@ -12,7 +12,7 @@
  * Listening on:
  * - Local: http://localhost:8000
  * ```
- * 
+ *
  * When the `--allow-sys=networkInterfaces` permission is provided, the file
  * server will also display the local area network addresses that can be used to
  * access the server.
