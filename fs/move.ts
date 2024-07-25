@@ -27,7 +27,7 @@ export interface MoveOptions {
  * @param options Options for the move operation.
  * @throws {Deno.errors.AlreadyExists} If `dest` already exists and
  * `options.overwrite` is `false`.
- * @throws {Deno.errors.InvalidData} If `src` is a sub-directory of `dest`.
+ * @throws {Deno.errors.NotSupported} If `src` is a sub-directory of `dest`.
  *
  * @returns A void promise that resolves once the operation completes.
  *
@@ -64,7 +64,7 @@ export async function move(
     srcStat.isDirectory &&
     (isSubdir(src, dest) || isSamePath(src, dest))
   ) {
-    throw new Deno.errors.InvalidData(
+    throw new Deno.errors.NotSupported(
       `Cannot move '${src}' to a subdirectory of itself, '${dest}'.`,
     );
   }
@@ -103,7 +103,7 @@ export async function move(
  * @param options Options for the move operation.
  * @throws {Deno.errors.AlreadyExists} If `dest` already exists and
  * `options.overwrite` is `false`.
- * @throws {Deno.errors.InvalidData} If `src` is a sub-directory of `dest`.
+ * @throws {Deno.errors.NotSupported} If `src` is a sub-directory of `dest`.
  *
  * @returns A void value that returns once the operation completes.
  *
@@ -140,7 +140,7 @@ export function moveSync(
     srcStat.isDirectory &&
     (isSubdir(src, dest) || isSamePath(src, dest))
   ) {
-    throw new Deno.errors.InvalidData(
+    throw new Deno.errors.NotSupported(
       `Cannot move '${src}' to a subdirectory of itself, '${dest}'.`,
     );
   }

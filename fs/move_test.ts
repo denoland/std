@@ -420,7 +420,7 @@ Deno.test("move() accepts overwrite option set to true for directories", async f
       async () => {
         await move(src, dest);
       },
-      Deno.errors.InvalidData,
+      Deno.errors.NotSupported,
       `Cannot move '${src}' to a subdirectory of itself, '${dest}'.`,
     );
   }
@@ -482,7 +482,7 @@ Deno.test("move() accepts overwrite option set to true for directories", functio
       () => {
         moveSync(src, dest);
       },
-      Deno.errors.InvalidData,
+      Deno.errors.NotSupported,
       `Cannot move '${src}' to a subdirectory of itself, '${dest}'.`,
     );
   }
