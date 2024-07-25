@@ -91,7 +91,6 @@ function resolveYamlInteger(data: string): boolean {
   for (; index < max; index++) {
     ch = data[index];
     if (ch === "_") continue;
-    if (ch === ":") break;
     if (!isDecCode(data.charCodeAt(index))) {
       return false;
     }
@@ -101,16 +100,12 @@ function resolveYamlInteger(data: string): boolean {
   // Should have digits and should not end with `_`
   if (!hasDigits || ch === "_") return false;
 
-  // if !base60 - done;
-  if (ch !== ":") return true;
-
   // base60 almost not used, no needs to optimize
   return /^(:[0-5]?[0-9])+$/.test(data.slice(index));
 }
 
 function constructYamlInteger(data: string): number {
   let value = data;
-  const digits: number[] = [];
 
   if (value.includes("_")) {
     value = value.replace(/_/g, "");
@@ -130,22 +125,6 @@ function constructYamlInteger(data: string): number {
     if (value[1] === "b") return sign * parseInt(value.slice(2), 2);
     if (value[1] === "x") return sign * parseInt(value, 16);
     return sign * parseInt(value, 8);
-  }
-
-  if (value.includes(":")) {
-    value.split(":").forEach((v) => {
-      digits.unshift(parseInt(v, 10));
-    });
-
-    let valueInt = 0;
-    let base = 1;
-
-    digits.forEach((d) => {
-      valueInt += d * base;
-      base *= 60;
-    });
-
-    return sign * valueInt;
   }
 
   return sign * parseInt(value, 10);
