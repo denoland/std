@@ -830,7 +830,13 @@ function main() {
   const useTls = !!(keyFile && certFile);
 
   function onListen({ port, hostname }: { port: number; hostname: string }) {
-    const networkAddress = getNetworkAddress();
+    let networkAddress: string | undefined = undefined;
+    if (
+      Deno.permissions.querySync({ name: "sys", kind: "networkInterfaces" })
+        .state === "granted"
+    ) {
+      networkAddress = getNetworkAddress();
+    }
     const protocol = useTls ? "https" : "http";
     let message = `Listening on:\n- Local: ${protocol}://${hostname}:${port}`;
     if (networkAddress && !DENO_DEPLOYMENT_ID) {

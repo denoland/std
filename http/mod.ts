@@ -8,11 +8,14 @@
  * A small program for serving local files over HTTP.
  *
  * ```sh
- * deno run --allow-net --allow-read --allow-sys jsr:@std/http/file-server
+ * deno run --allow-net --allow-read jsr:@std/http/file-server
  * Listening on:
  * - Local: http://localhost:8000
-
  * ```
+ * 
+ * When the `--allow-sys=networkInterfaces` permission is provided, the file
+ * server will also display the local area network addresses that can be used to
+ * access the server.
  *
  * ## HTTP Status Code and Status Text
  *
