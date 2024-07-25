@@ -14,7 +14,7 @@ import {
 } from '@/constants.ts'
 import * as actors from './actors.ts'
 import { assert, Debug } from '@utils'
-import * as thread from './thread.ts'
+import * as ai from './ai.ts'
 const log = Debug('AI:backchat')
 
 export const api = {
@@ -125,7 +125,7 @@ export const functions: Functions<Api> = {
     // start the default thread in the background
     // also read what the backchat agentPath should be
 
-    const { start } = await api.functions<thread.Api>('thread')
+    const { start } = await api.functions<ai.Api>('ai')
     await start({ threadId, agentPath })
     log('create:', threadId, agentPath, focus)
     const thread = await readBackchat(api)
@@ -169,11 +169,11 @@ export const functions: Functions<Api> = {
     }
 
     if (threadId === backchatId) {
-      const functions = await api.functions<thread.Api>('thread')
+      const functions = await api.functions<ai.Api>('ai')
       return functions.addMessageRun({ threadId, content, actorId })
     }
     const target = addPeer(api.pid, threadId)
-    const actions = await api.actions<thread.Api>('thread', { target })
+    const actions = await api.actions<ai.Api>('ai', { target })
     return actions.addMessageRun({ threadId, content, actorId })
 
     // TODO handle remote threadIds with symlinks in the threads dir

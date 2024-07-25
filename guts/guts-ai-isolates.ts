@@ -1,4 +1,4 @@
-import * as engageHelp from '../isolates/thread.ts'
+import * as engageHelp from '../isolates/ai.ts'
 import { expect, log } from '@utils'
 import { CradleMaker, getParent } from '@/constants.ts'
 

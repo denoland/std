@@ -20,6 +20,7 @@ import {
   toActions,
   UnsequencedRequest,
 } from '@/constants.ts'
+import { type Isolate } from '@/isolates/index.ts'
 const log = Debug('AI:isolateApi')
 interface Default {
   [key: string]: unknown
@@ -28,6 +29,7 @@ type EffectOptions = {
   isEffect: boolean
   isEffectRecovered: boolean
 }
+
 export default class IA<T extends object = Default> {
   #accumulator: Accumulator
   #origin: SolidRequest | undefined
@@ -91,14 +93,14 @@ export default class IA<T extends object = Default> {
     return this.#abort.signal
   }
 
-  async actions<T = DispatchFunctions>(isolate: string, opts: RpcOpts = {}) {
+  async actions<T = DispatchFunctions>(isolate: Isolate, opts: RpcOpts = {}) {
     const { target = this.pid, ...procOpts } = opts
     freezePid(target)
     const schema = await this.apiSchema(isolate)
     const execute = (request: UnsequencedRequest) => this.action(request)
     return toActions<T>(target, isolate, schema, procOpts, execute)
   }
-  async requests<T extends ApiFunctions>(isolate: string, opts: RpcOpts = {}) {
+  async requests<T extends ApiFunctions>(isolate: Isolate, opts: RpcOpts = {}) {
     const { target = this.pid, ...procOpts } = opts
     freezePid(target)
 
@@ -147,13 +149,13 @@ export default class IA<T extends object = Default> {
    * @returns An object keyed by API function name, with values being the
    * function itself.
    */
-  async functions<T = DispatchFunctions>(isolate: string): Promise<T> {
+  async functions<T = DispatchFunctions>(isolate: Isolate): Promise<T> {
     // TODO these need some kind of PID attached ?
     const compartment = await Compartment.create(isolate)
     // TODO but these need to be wrapped in a dispatch call somewhere
     return compartment.functions<T>(this)
   }
-  async apiSchema(isolate: string) {
+  async apiSchema(isolate: Isolate) {
     const compartment = await Compartment.create(isolate)
     return compartment.api
   }

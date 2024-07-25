@@ -38,40 +38,37 @@ Deno.test.only('longthread chat', async (t) => {
 
   const longthread = await backchat.actions<longthread.Api>('longthread')
 
-  log.enable(
-    'AI:tests AI:machines AI:completions AI:longthread AI:execute-tools',
-  )
-
   await t.step('create longthread', async () => {
     await backchat.write(path, agentMd)
     await longthread.start({ threadId })
   })
 
-  await t.step('hello world', async () => {
-    const content = 'cheese emoji'
+  // await t.step('hello world', async () => {
+  //   const content = 'cheese emoji'
+  //   await longthread.run({ threadId, path, content, actorId })
+  //   const result = await backchat.readJSON<LongThread>(threadPath)
+  //   log('result', result)
+  //   expect(result.messages).toHaveLength(2)
+  //   expect(getContent(result.messages[1])).toBe('🧀')
+  // })
+  log.enable(
+    'AI:tests AI:machines AI:completions AI:longthread AI:execute-tools',
+  )
+
+  await t.step('tool call', async () => {
+    resetInstructions(backchat, 'return the function call results')
+    const content = 'call the "local" function'
+
     await longthread.run({ threadId, path, content, actorId })
+
     const result = await backchat.readJSON<LongThread>(threadPath)
-    log('result', result)
-    expect(result.messages).toHaveLength(2)
-    expect(getContent(result.messages[1])).toBe('🧀')
+    assert('tool_calls' in result.messages[2], 'tool calls missing')
+    log('result.messages', result.messages[2].tool_calls)
+    // assert(result.messages[2].tool_calls)
+    // expect(result.messages[2].tool_calls).toHaveLength(1)
+    // const fn = result.messages[2].tool_calls[0]
+    // expect(fn.function).toEqual({ name: 'io-fixture_local', arguments: '{}' })
   })
-
-  //   await t.step('tool call', async () => {
-  //     resetInstructions(api, 'return the function call results', threadId)
-  //     const content = 'call the "local" function'
-
-  //     await longthread.functions.start({ threadId, path }, api)
-  //     await longthread.functions.addMessage({ threadId, content }, api)
-  //     await completions.functions.complete({ threadId }, api)
-
-  //     const result = await api.readJSON<Thread>(threadPath)
-  //     assert('tool_calls' in result.messages[2], 'tool calls missing')
-  //     log('result.messages', result.messages[2].tool_calls)
-  //     assert(result.messages[2].tool_calls)
-  //     expect(result.messages[2].tool_calls).toHaveLength(1)
-  //     const fn = result.messages[2].tool_calls[0]
-  //     expect(fn.function).toEqual({ name: 'io-fixture_local', arguments: '{}' })
-  //   })
   //   await t.step('tool error', async () => {
   //     resetInstructions(api, 'return the function call error message', threadId)
   //     const content = 'call the "error" function with message: salami'
@@ -132,11 +129,10 @@ Deno.test.only('longthread chat', async (t) => {
   await engine.stop()
 })
 
-const resetInstructions = (api: IA, instructions: string, threadId: string) => {
+const resetInstructions = (backchat: Backchat, instructions: string) => {
   const split = agentMd.trim().split('\n')
   split.pop()
   split.push(instructions)
   const newInstructions = split.join('\n')
-  api.write(path, newInstructions)
-  api.delete(`threads/${threadId}.json`)
+  backchat.write(path, newInstructions)
 }

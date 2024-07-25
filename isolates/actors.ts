@@ -20,7 +20,7 @@ import {
 } from '@/constants.ts'
 import { assert, Debug, equal, expect } from '@utils'
 import * as backchat from './backchat.ts'
-import * as thread from './thread.ts'
+import * as ai from './ai.ts'
 import * as session from './session.ts'
 import * as files from './files.ts'
 import * as system from './system.ts'
@@ -235,7 +235,7 @@ export const functions = {
   },
   async thread({ agentPath, threadId }: ThreadArgs, api: IA) {
     const opts = { branchName: threadId, noClose: true }
-    const actions = await api.actions<thread.Api>('thread', opts)
+    const actions = await api.actions<ai.Api>('ai', opts)
     const pid = await actions.start({ agentPath, threadId })
     return pid
   },

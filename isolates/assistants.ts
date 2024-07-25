@@ -1,7 +1,7 @@
 import { assert, Debug } from '@utils'
 import { IA, LongThread, PID } from '@/constants.ts'
 import { Functions } from '@/constants.ts'
-import * as assistants from './assistants-effects.ts'
+import * as effects from './assistants-effects.ts'
 import { executeTools } from '@/isolates/ai-execute-tools.ts'
 const log = Debug('AI:longthread')
 
@@ -61,7 +61,9 @@ export const functions: Functions<Api> = {
     log('start', threadId)
     const threadPath = `threads/${threadId}.json`
     assert(!await api.exists(threadPath), `thread exists: ${threadPath}`)
-    const { createThread } = await api.actions<assistants.Api>('assistants')
+    const { createThread } = await api.actions<effects.Api>(
+      'assistants-effects',
+    )
     const externalId = await createThread()
     const thread: LongThread = {
       messages: [],
@@ -74,8 +76,9 @@ export const functions: Functions<Api> = {
   },
   run: async ({ threadId, path, content, actorId }, api) => {
     log('run', threadId, path, content, actorId)
-    const { run } = await api.actions<assistants.Api>('assistants')
+    const { run } = await api.actions<effects.Api>('assistants-effects')
     const threadPath = `threads/${threadId}.json`
+    // TODO this is not tested at all
     while (!await isDone(threadPath, api)) {
       await run({ threadId, content, path, actorId })
       if (await isDone(threadPath, api)) {
@@ -91,11 +94,15 @@ export const functions: Functions<Api> = {
     const { externalId } = await api.readJSON<LongThread>(threadPath)
     assert(externalId, 'missing externalId: ' + threadPath)
     api.delete(threadPath)
-    const { deleteThread } = await api.actions<assistants.Api>('assistants')
+    const { deleteThread } = await api.actions<effects.Api>(
+      'assistants-effects',
+    )
     await deleteThread({ externalId })
   },
   deleteAllAgents: async (_, api) => {
-    const { deleteAllAgents } = await api.actions<assistants.Api>('assistants')
+    const { deleteAllAgents } = await api.actions<effects.Api>(
+      'assistants-effects',
+    )
     await deleteAllAgents()
   },
 }

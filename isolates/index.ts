@@ -8,23 +8,28 @@ import * as utils from './utils.ts'
 import * as artifact from './artifact.ts'
 import * as session from './session.ts'
 
-import * as completions from './ai-completions.ts'
-import * as loadTools from './ai-load-tools.ts'
-import * as github from './github.ts'
-
 import * as actors from './actors.ts'
 import * as machines from './machines.ts'
 import * as backchat from './backchat.ts'
 import * as isolates from './isolates.ts'
 import * as branches from './branches.ts'
 import * as agents from './agents.ts'
-import * as thread from './thread.ts'
-import * as threads from './threads.ts'
 import * as youtube from './youtube.ts'
+import * as github from './github.ts'
+import * as threads from './threads.ts'
+
+import * as completions from './ai-completions.ts'
+import * as loadTools from './ai-load-tools.ts'
+import * as ai from './ai.ts'
+
+import * as assistantsEffects from './assistants-effects.ts'
+import * as assistants from './assistants.ts'
+
 import * as longthread from './longthread.ts'
 
-export default {
+const isolatesExport = {
   system,
+
   fetch,
   files,
   'io-fixture': ioFixture,
@@ -32,8 +37,7 @@ export default {
   utils,
   artifact,
   session,
-  'ai-completions': completions,
-  'ai-load-tools': loadTools,
+
   github,
   actors,
   machines,
@@ -41,8 +45,22 @@ export default {
   isolates,
   branches,
   agents,
-  thread,
   threads,
   youtube,
+
+  'ai-completions': completions,
+  'ai-load-tools': loadTools,
+  ai,
+
+  'assistants-effects': assistantsEffects,
+  assistants,
+
   longthread,
+}
+
+export default isolatesExport
+
+export type Isolate = keyof typeof isolatesExport
+export const isIsolate = (isolate: string): isolate is Isolate => {
+  return isolate in isolatesExport
 }

@@ -1,5 +1,5 @@
 import { assert } from '@utils'
-import { IA, PID, Thread } from '@/constants.ts'
+import { Functions, IA, PID, Thread } from '@/constants.ts'
 import { Agent } from '@/constants.ts'
 import * as loadAgent from './load-agent.ts'
 import * as completions from './ai-completions.ts'
@@ -96,34 +96,31 @@ export const api = {
     },
   },
 }
-interface StartArgs {
-  threadId: string
-  agentPath: string
-}
-interface MessageArgs {
-  threadId: string
-  content: string
-  actorId?: string
-}
-interface RunArgs {
-  threadId: string
-}
-interface ExecuteArgs {
-  threadId: string
-  agentPath: string
-  content: string
-  actorId?: string
-}
 export interface Api {
-  start: (params: StartArgs) => Promise<PID>
-  addMessage: (params: MessageArgs) => Promise<void>
-  run: (params: RunArgs) => Promise<string | void>
-  addMessageRun: (params: MessageArgs) => Promise<string | void>
-  execute: (params: ExecuteArgs) => Promise<string | void>
+  start: (params: { threadId: string; agentPath: string }) => Promise<PID>
+  addMessage: (params: {
+    threadId: string
+    content: string
+    actorId?: string
+  }) => Promise<void>
+  run: (params: {
+    threadId: string
+  }) => Promise<string | void>
+  addMessageRun: (params: {
+    threadId: string
+    content: string
+    actorId?: string
+  }) => Promise<string | void>
+  execute: (params: {
+    threadId: string
+    agentPath: string
+    content: string
+    actorId?: string
+  }) => Promise<string | void>
 }
 
-export const functions = {
-  start: async ({ threadId, agentPath }: StartArgs, api: IA) => {
+export const functions: Functions<Api> = {
+  start: async ({ threadId, agentPath }, api) => {
     const threadPath = `threads/${threadId}.json`
     assert(!await api.exists(threadPath), `thread exists: ${threadPath}`)
     const { load } = await api.functions<loadAgent.Api>('load-agent')
@@ -144,16 +141,13 @@ export const functions = {
     api.writeJSON(threadPath, thread)
     return api.pid
   },
-  addMessage: async (
-    { threadId, content, actorId = '0' }: MessageArgs,
-    api: IA,
-  ) => {
+  addMessage: async ({ threadId, content, actorId = '0' }, api) => {
     const threadPath = `threads/${threadId}.json`
     const thread = await api.readJSON<Thread>(threadPath)
     thread.messages.push({ name: actorId, role: 'user', content })
     api.writeJSON(threadPath, thread)
   },
-  run: async ({ threadId }: RunArgs, api: IA) => {
+  run: async ({ threadId }, api) => {
     const { complete } = await api.actions<completions.Api>('ai-completions')
     let result
     const threadPath = `threads/${threadId}.json`
@@ -167,17 +161,11 @@ export const functions = {
     }
     return result
   },
-  addMessageRun: async (
-    { threadId, content, actorId = '0' }: MessageArgs,
-    api: IA,
-  ) => {
+  addMessageRun: async ({ threadId, content, actorId = '0' }, api) => {
     await functions.addMessage({ threadId, content, actorId }, api)
     return functions.run({ threadId }, api)
   },
-  execute: async (
-    { threadId, agentPath, content, actorId = '0' }: ExecuteArgs,
-    api: IA,
-  ) => {
+  execute: async ({ threadId, agentPath, content, actorId = '0' }, api) => {
     await functions.start({ threadId, agentPath }, api)
     return functions.addMessageRun({ threadId, content, actorId }, api)
   },

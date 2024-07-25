@@ -5,7 +5,7 @@ import {
   generateThreadId,
   print,
 } from '@/constants.ts'
-import { Api } from '../isolates/thread.ts'
+import { Api } from '../isolates/ai.ts'
 
 export default (name: string, cradleMaker: CradleMaker) => {
   const prefix = name + ':ai: '

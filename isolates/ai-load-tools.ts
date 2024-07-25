@@ -1,5 +1,5 @@
 import * as loadHelp from './load-agent.ts'
-import * as thread from './thread.ts'
+import * as thread from './ai.ts'
 import { assert, Debug } from '@utils'
 import type OpenAI from 'openai'
 import {
@@ -11,6 +11,7 @@ import {
   MetaPromise,
   Params,
 } from '@/constants.ts'
+import { isIsolate } from './index.ts'
 const log = Debug('AI:tools:load-tools')
 
 export const loadTools = async (commands: string[] = [], api: IA) => {
@@ -43,11 +44,11 @@ const load = async (commands: string[] = [], api: IA) => {
       const agent = await load({ path: cmd })
       assert(agent.description, `missing description: ${cmd}`)
       name = agent.name
-      const schemas = await api.apiSchema('thread')
+      const schemas = await api.apiSchema('ai')
       action = async ({ prompt }: Params) => {
         const threadId = generateThreadId(api.commit + prompt)
         // TODO should we be calling backchat to do this job ?
-        const { execute } = await api.actions<thread.Api>('thread', {
+        const { execute } = await api.actions<thread.Api>('ai', {
           branchName: threadId,
           // TODO noClose is not used ?
         })
@@ -64,6 +65,7 @@ const load = async (commands: string[] = [], api: IA) => {
       tool = agentTool(agent, schemas.execute)
     } else {
       const [isolate, functionName] = cmd.split(':')
+      assert(isIsolate(isolate), `missing isolate: ${isolate}`)
       name = isolate + '_' + functionName
       const schema = await api.apiSchema(isolate)
       assert(functionName in schema, `isolate missing command: ${cmd}`)
