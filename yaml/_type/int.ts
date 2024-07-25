@@ -91,7 +91,6 @@ function resolveYamlInteger(data: string): boolean {
   for (; index < max; index++) {
     ch = data[index];
     if (ch === "_") continue;
-    if (ch === ":") break;
     if (!isDecCode(data.charCodeAt(index))) {
       return false;
     }
@@ -100,9 +99,6 @@ function resolveYamlInteger(data: string): boolean {
 
   // Should have digits and should not end with `_`
   if (!hasDigits || ch === "_") return false;
-
-  // if !base60 - done;
-  if (ch !== ":") return true;
 
   // base60 almost not used, no needs to optimize
   return /^(:[0-5]?[0-9])+$/.test(data.slice(index));
