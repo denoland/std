@@ -2,7 +2,7 @@
 // This module is browser compatible.
 
 import type { JsonValue } from "@std/json/types";
-export type { JsonValue } from "@std/json/types";
+export type { JsonValue };
 
 /**
  * Converts a JSON with Comments (JSONC) string into an object.
