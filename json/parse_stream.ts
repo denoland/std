@@ -17,7 +17,8 @@ function isBrankString(str: string) {
  * {@link https://www.rfc-editor.org/rfc/rfc7464.html | JSON Text Sequences}.
  * Chunks consisting of spaces, tab characters, or newline characters will be ignored.
  *
- * @example Basic usage
+ * @example
+ * <caption>Basic usage</caption>
  *
  * ```ts
  * import { JsonParseStream } from "@std/json/parse-stream";

@@ -20,7 +20,8 @@ import { isPosixPathSeparator } from "./_util.ts";
  * assertEquals(dirname("https://deno.land/std/path/mod.ts"), "https://deno.land/std/path");
  * ```
  *
- * @example Working with URLs
+ * @example
+ * <caption>Working with URLs</caption>
  *
  * ```ts
  * import { dirname } from "@std/path/posix/dirname";

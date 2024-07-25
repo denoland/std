@@ -14,7 +14,8 @@ export interface WordSimilaritySortOptions extends CompareSimilarityOptions {}
  * By default, calculates the distance between words using the
  * {@link https://en.wikipedia.org/wiki/Levenshtein_distance | Levenshtein distance}.
  *
- * @example Basic usage
+ * @example
+ * <caption>Basic usage</caption>
  *
  * ```ts
  * import { wordSimilaritySort } from "@std/text/word-similarity-sort";
@@ -26,7 +27,8 @@ export interface WordSimilaritySortOptions extends CompareSimilarityOptions {}
  * assertEquals(suggestions, ["help", "size", "blah", "length"]);
  * ```
  *
- * @example Case-sensitive sorting
+ * @example
+ * <caption>Case-sensitive sorting</caption>
  *
  * ```ts
  * import { wordSimilaritySort } from "@std/text/word-similarity-sort";

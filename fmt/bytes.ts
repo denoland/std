@@ -92,7 +92,8 @@ export interface FormatOptions {
  * assertEquals(format(100), "100 B");
  * ```
  *
- * @example Include bits representation
+ * @example
+ * <caption>Include bits representation</caption>
  *
  * ```ts
  * import { format } from "@std/fmt/bytes";
@@ -101,7 +102,8 @@ export interface FormatOptions {
  * assertEquals(format(1337, { bits: true }), "1.34 kbit");
  * ```
  *
- * @example Include sign
+ * @example
+ * <caption>Include sign</caption>
  *
  * ```ts
  * import { format } from "@std/fmt/bytes";
@@ -111,7 +113,8 @@ export interface FormatOptions {
  * assertEquals(format(-42, { signed: true }), "-42 B");
  * ```
  *
- * @example Change locale
+ * @example
+ * <caption>Change locale</caption>
  *
  * ```ts
  * import { format } from "@std/fmt/bytes";

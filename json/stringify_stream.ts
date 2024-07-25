@@ -27,7 +27,8 @@ export interface StringifyStreamOptions {
  *
  * You can optionally specify a prefix and suffix for each chunk. The default prefix is `""` and the default suffix is `"\n"`.
  *
- * @example Basic usage
+ * @example
+ * <caption>Basic usage</caption>
  *
  * ```ts
  * import { JsonStringifyStream } from "@std/json/stringify-stream";
@@ -60,7 +61,8 @@ export interface StringifyStreamOptions {
  * ]);
  * ```
  *
- * @example Stringify JSON lines from a server
+ * @example
+ * <caption>Stringify JSON lines from a server</caption>
  *
  * ```ts no-eval no-assert
  * import { JsonStringifyStream } from "@std/json/stringify-stream";

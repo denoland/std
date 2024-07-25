@@ -15,7 +15,8 @@ const primitives = new Map(
  * Stream to parse
  * {@link https://en.wikipedia.org/wiki/JSON_streaming#Concatenated_JSON | Concatenated JSON}.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
  *
  * ```ts
  * import { ConcatenatedJsonParseStream } from "@std/json/concatenated-json-parse-stream";

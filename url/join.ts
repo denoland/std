@@ -11,7 +11,8 @@ import { join as posixJoin } from "@std/path/posix/join";
  * @param paths Array of path segments to be joined to the base URL.
  * @returns A complete URL containing the base URL joined with the paths.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
  *
  * ```ts
  * import { join } from "@std/url/join";

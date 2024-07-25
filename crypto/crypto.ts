@@ -83,7 +83,8 @@
  * );
  * ```
  *
- * @example Convert hash to a string
+ * @example
+ * <caption>Convert hash to a string</caption>
  *
  * ```ts
  * import {

@@ -10,7 +10,8 @@ import { normalize as posixNormalize } from "@std/path/posix/normalize";
  * @param url URL to be normalized.
  * @returns Normalized URL.
  *
- * @example Usage
+ * @example
+ * <caption>Usage</caption>
  *
  * ```ts
  * import { normalize } from "@std/url/normalize";

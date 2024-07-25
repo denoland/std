@@ -50,7 +50,8 @@ export interface TextLineStreamOptions {
  * );
  * ```
  *
- * @example Allow splitting by `\r`
+ * @example
+ * <caption>Allow splitting by `\r`</caption>
  *
  * ```ts
  * import { TextLineStream } from "@std/streams/text-line-stream";

@@ -18,7 +18,8 @@ export interface Cookie {
    * milliseconds. If `undefined`, the cookie will expire when the client's
    * session ends.
    *
-   * @example <caption>Explicit date:</caption>
+   * @example
+   * <caption><caption>Explicit date:</caption></caption>
    *
    * ```ts
    * import { Cookie } from "@std/http/cookie";
@@ -30,7 +31,8 @@ export interface Cookie {
    * }
    * ```
    *
-   * @example <caption>UTC milliseconds</caption>
+   * @example
+   * <caption><caption>UTC milliseconds</caption></caption>
    *
    * ```ts
    * import { Cookie } from "@std/http/cookie";
