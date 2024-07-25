@@ -66,20 +66,15 @@ export type { Format };
  * assertFalse(result);
  * ```
  */
-export function test(
-  str: string,
-  formats?: Format[],
-): boolean {
-  if (!formats) {
-    formats = Object.keys(EXTRACT_REGEXP_MAP) as Format[];
-  }
+export function test(str: string, formats?: Format[]): boolean {
+  if (!formats) formats = [...EXTRACT_REGEXP_MAP.keys()] as Format[];
 
   for (const format of formats) {
-    if (format === "unknown") {
-      throw new TypeError("Unable to test for unknown front matter format");
+    const regexp = EXTRACT_REGEXP_MAP.get(format);
+    if (!regexp) {
+      throw new TypeError(`Unable to test for ${format} front matter format`);
     }
-
-    const match = EXTRACT_REGEXP_MAP[format].exec(str);
+    const match = regexp.exec(str);
     if (match?.index === 0) {
       return true;
     }

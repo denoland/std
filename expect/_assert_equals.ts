@@ -2,7 +2,7 @@
 
 // This file is copied from `std/assert`.
 
-import { AssertionError } from "@std/assert";
+import { AssertionError } from "@std/assert/assertion-error";
 import { buildEqualErrorMessage } from "./_build_message.ts";
 import { equal } from "./_equal.ts";
 import type { EqualOptions } from "./_types.ts";

@@ -319,10 +319,10 @@
  * @module
  */
 
-import { assertEquals } from "@std/assert";
-import { assertIsError } from "@std/assert";
-import { assertRejects } from "@std/assert";
-import { AssertionError } from "@std/assert";
+import { assertEquals } from "@std/assert/equals";
+import { assertIsError } from "@std/assert/is-error";
+import { assertRejects } from "@std/assert/rejects";
+import { AssertionError } from "@std/assert/assertion-error";
 
 /**
  * An error related to spying on a function or instance method.
@@ -340,16 +340,6 @@ import { AssertionError } from "@std/assert";
 export class MockError extends Error {
   /**
    * Construct MockError
-   *
-   * @example Usage
-   * ```ts
-   * import { MockError, spy } from "@std/testing/mock";
-   * import { assertThrows } from "@std/assert";
-   *
-   * assertThrows(() => {
-   *   spy({} as any, "no-such-method");
-   * }, MockError);
-   * ```
    *
    * @param message The error message.
    */

@@ -31,8 +31,10 @@ export interface toWritableStreamOptions {
  */
 export function toWritableStream(
   writer: Writer,
-  { autoClose = true }: toWritableStreamOptions = {},
+  options?: toWritableStreamOptions,
 ): WritableStream<Uint8Array> {
+  const { autoClose = true } = options ?? {};
+
   return new WritableStream({
     async write(chunk, controller) {
       try {

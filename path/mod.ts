@@ -31,6 +31,9 @@
  * assertEquals(fromFileUrl("file:///home/foo"), "\\home\\foo");
  * ```
  *
+ * Functions for working with URLs can be found in
+ * {@link ./doc/posix/~ | @std/path/posix}.
+ *
  * @module
  */
 export * from "./basename.ts";
@@ -48,7 +51,7 @@ export * from "./resolve.ts";
 export * from "./to_file_url.ts";
 export * from "./to_namespaced_path.ts";
 export * from "./common.ts";
-export * from "./_interface.ts";
+export * from "./types.ts";
 export * from "./glob_to_regexp.ts";
 export * from "./is_glob.ts";
 export * from "./join_globs.ts";
