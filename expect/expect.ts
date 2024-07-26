@@ -357,7 +357,7 @@ expect.extend = setExtendMatchers as (newExtendMatchers: Matchers) => void;
  * import { expect, fn } from "@std/expect";
  *
  * Deno.test("map calls its argument with a non-null argument", () => {
- *   const mock = jest.fn();
+ *   const mock = fn();
  *   [1].map((x) => mock(x));
  *   expect(mock).toHaveBeenCalledWith(expect.anything());
  * });

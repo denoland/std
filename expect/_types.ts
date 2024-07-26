@@ -65,7 +65,7 @@ export interface Expected<IsAsync = false> {
    * ```ts
    * import { expect, fn } from "@std/expect";
    *
-   * const mock = fn((str, num) => [str, num]);
+   * const mock = fn((str: string, num: number) => [str, num]);
    * mock("foo", 42);
    * mock("bar", 43);
    *
@@ -104,7 +104,7 @@ export interface Expected<IsAsync = false> {
    * ```ts
    * import { expect, fn } from "@std/expect";
    *
-   * const mock = fn((str, num) => [str, num]);
+   * const mock = fn((str: string, num: number) => [str, num]);
    * mock("foo", 42);
    * mock("bar", 43);
    * mock("baz", 44);
@@ -563,7 +563,7 @@ export interface Expected<IsAsync = false> {
    * ```ts
    * import { expect, fn } from "@std/expect";
    *
-   * const mock = fn((str, num) => [str, num]);
+   * const mock = fn((str: string, num: number) => [str, num]);
    * mock("foo", 42);
    * mock("bar", 43);
    *
@@ -582,7 +582,7 @@ export interface Expected<IsAsync = false> {
    * ```ts
    * import { expect, fn } from "@std/expect";
    *
-   * const mock = fn((str, num) => [str, num]);
+   * const mock = fn((str: string, num: number) => [str, num]);
    * mock("foo", 42);
    * mock("bar", 43);
    * mock("baz", 44);
