@@ -21,7 +21,8 @@ jobs:
       - name: Set up Deno
         uses: denoland/setup-deno@v1
         with:
-          deno-version: canary
+          # TODO(kt3k): Set canary when LICENSE issue resolved. See std#5555
+          deno-version: 1.45.3
 
       - name: Format
         run: deno fmt --check
