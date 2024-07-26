@@ -1,5 +1,5 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-import { walk, WalkError, type WalkOptions, walkSync } from "./walk.ts";
+import { walk, type WalkOptions, walkSync } from "./walk.ts";
 import {
   assertArrayIncludes,
   assertEquals,
@@ -234,16 +234,19 @@ Deno.test({
   },
 });
 
-Deno.test("walk() rejects with WalkError when root is removed during execution", async () => {
+Deno.test("walk() rejects with `Deno.errors.NotFound` when root is removed during execution", async () => {
   const root = resolve(testdataDir, "error");
   await Deno.mkdir(root);
   try {
-    await assertRejects(async () => {
-      await Array.fromAsync(
-        walk(root),
-        async () => await Deno.remove(root, { recursive: true }),
-      );
-    }, WalkError);
+    await assertRejects(
+      async () => {
+        await Array.fromAsync(
+          walk(root),
+          async () => await Deno.remove(root, { recursive: true }),
+        );
+      },
+      Deno.errors.NotFound,
+    );
   } catch (err) {
     await Deno.remove(root, { recursive: true });
     throw err;

@@ -148,14 +148,6 @@ export class Spinner {
    * Creates a new spinner.
    *
    * @param options Options for the spinner.
-   *
-   * @example Usage
-   * ```ts no-assert
-   * import { Spinner } from "@std/cli/spinner";
-   *
-   * const spinner = new Spinner({ message: "Loading..." });
-   * spinner.stop();
-   * ```
    */
   constructor(options?: SpinnerOptions) {
     const {
