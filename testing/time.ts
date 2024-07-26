@@ -259,6 +259,9 @@ export class FakeTime {
    *
    * @param start The time to simulate. The default is the current time..
    * @param options The options
+   *
+   * @throws {TypeError} If time is already faked
+   * @throws {TypeError} If the start is invalid
    */
   constructor(
     start?: number | string | Date | null,
@@ -332,6 +335,8 @@ export class FakeTime {
   /**
    * Restores real time.
    *
+   * @throws {TypeError} If time is already restored
+   *
    * @example Usage
    * ```ts
    * import { FakeTime } from "@std/testing/time";
@@ -355,6 +360,8 @@ export class FakeTime {
 
   /**
    * Restores real time temporarily until callback returns and resolves.
+   *
+   * @throws {ReferenceError} If time is not faked
    *
    * @example Usage
    * ```ts
@@ -425,6 +432,8 @@ export class FakeTime {
    * Set the current time. It will call any functions waiting to be called between the current and new fake time.
    * If the timer callback throws, time will stop advancing forward beyond that timer.
    *
+   * @throws {RangeError} If the time goes backwards
+   *
    * @example Usage
    * ```ts
    * import { FakeTime } from "@std/testing/time";
@@ -442,7 +451,7 @@ export class FakeTime {
    * @param value The current time (in milliseconds)
    */
   set now(value: number) {
-    if (value < now) throw new Error("time cannot go backwards");
+    if (value < now) throw new RangeError("Time cannot go backwards");
     let dueNode: DueNode | null = dueTree.min();
     while (dueNode && dueNode.due <= value) {
       const timer: Timer | undefined = dueNode.timers.shift();
@@ -749,6 +758,8 @@ export class FakeTime {
 
   /**
    * Restores time related global functions to their original state.
+   *
+   * @throws {TypeError} If time is already restored
    *
    * @example Usage
    * ```ts

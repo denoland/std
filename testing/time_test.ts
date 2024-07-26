@@ -721,8 +721,8 @@ Deno.test("time.now = N throws when N < time.now", () => {
     () => {
       time.now = 999;
     },
-    Error,
-    "time cannot go backwards",
+    RangeError,
+    "Time cannot go backwards",
   );
 });
 
