@@ -435,7 +435,7 @@ function functionSpy<
     restore: {
       enumerable: true,
       value: () => {
-        throw new MockError("function cannot be restored");
+        throw new MockError("Function cannot be restored");
       },
     },
   });
@@ -643,15 +643,15 @@ function methodSpy<
   Return,
 >(self: Self, property: keyof Self): MethodSpy<Self, Args, Return> {
   if (typeof self[property] !== "function") {
-    throw new MockError("property is not an instance method");
+    throw new MockError("Property is not an instance method");
   }
   if (isSpy(self[property])) {
-    throw new MockError("already spying on instance method");
+    throw new MockError("Already spying on instance method");
   }
 
   const propertyDescriptor = Object.getOwnPropertyDescriptor(self, property);
   if (propertyDescriptor && !propertyDescriptor.configurable) {
-    throw new MockError("cannot spy on non configurable instance method");
+    throw new MockError("Cannot spy on non-configurable instance method");
   }
 
   const original = self[property] as unknown as (
@@ -690,7 +690,7 @@ function methodSpy<
       enumerable: true,
       value: () => {
         if (restored) {
-          throw new MockError("instance method already restored");
+          throw new MockError("Instance method already restored");
         }
         if (propertyDescriptor) {
           Object.defineProperty(self, property, propertyDescriptor);
@@ -767,7 +767,7 @@ function constructorSpy<
     static readonly calls = calls;
     static readonly restored = false;
     static restore() {
-      throw new MockError("constructor cannot be restored");
+      throw new MockError("Constructor cannot be restored");
     }
   } as ConstructorSpy<Self, Args>;
   return spy;
@@ -1082,15 +1082,15 @@ export function stub<
   func?: (this: Self, ...args: Args) => Return,
 ): Stub<Self, Args, Return> {
   if (self[property] !== undefined && typeof self[property] !== "function") {
-    throw new MockError("property is not an instance method");
+    throw new MockError("Property is not an instance method");
   }
   if (isSpy(self[property])) {
-    throw new MockError("already spying on instance method");
+    throw new MockError("Already spying on instance method");
   }
 
   const propertyDescriptor = Object.getOwnPropertyDescriptor(self, property);
   if (propertyDescriptor && !propertyDescriptor.configurable) {
-    throw new MockError("cannot spy on non configurable instance method");
+    throw new MockError("Cannot spy on non configurable instance method");
   }
 
   const fake = func ?? (() => {}) as (this: Self, ...args: Args) => Return;
@@ -1135,7 +1135,7 @@ export function stub<
       enumerable: true,
       value: () => {
         if (restored) {
-          throw new MockError("instance method already restored");
+          throw new MockError("Instance method already restored");
         }
         if (propertyDescriptor) {
           Object.defineProperty(self, property, propertyDescriptor);
@@ -1759,7 +1759,9 @@ export function returnsNext<
   return function () {
     const next = gen.next();
     if (next.done) {
-      throw new MockError(`not expected to be called more than ${calls} times`);
+      throw new MockError(
+        `Not expected to be called more than ${calls} time(s)`,
+      );
     }
     calls++;
     const { value } = next;
@@ -1807,7 +1809,9 @@ export function resolvesNext<
   return async function () {
     const next = await gen.next();
     if (next.done) {
-      throw new MockError(`not expected to be called more than ${calls} times`);
+      throw new MockError(
+        `Not expected to be called more than ${calls} time(s)`,
+      );
     }
     calls++;
     const { value } = next;
