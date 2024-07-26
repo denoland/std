@@ -1090,7 +1090,7 @@ export function stub<
 
   const propertyDescriptor = Object.getOwnPropertyDescriptor(self, property);
   if (propertyDescriptor && !propertyDescriptor.configurable) {
-    throw new MockError("Cannot spy on non configurable instance method");
+    throw new MockError("Cannot spy on non-configurable instance method");
   }
 
   const fake = func ?? (() => {}) as (this: Self, ...args: Args) => Return;
@@ -1198,7 +1198,7 @@ export function assertSpyCalls<
   } catch (e) {
     assertIsError(e);
     let message = spy.calls.length < expectedCalls
-      ? "spy not called as much as expected:\n"
+      ? "Spy not called as much as expected:\n"
       : "spy called more than expected:\n";
     message += e.message.split("\n").slice(1).join("\n");
     throw new AssertionError(message);
@@ -1242,7 +1242,7 @@ function getSpyCall<
   callIndex: number,
 ): SpyCall {
   if (spy.calls.length < (callIndex + 1)) {
-    throw new AssertionError("spy not called as much as expected");
+    throw new AssertionError("Spy not called as much as expected");
   }
   return spy.calls[callIndex]!;
 }
