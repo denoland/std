@@ -1,5 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import type { WriterSync } from "@std/io/types";
+export type { WriterSync };
 
 const encoder = new TextEncoder();
 
