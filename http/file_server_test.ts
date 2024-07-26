@@ -1006,6 +1006,26 @@ Deno.test("file_server prints local and network urls", async () => {
   await process.status;
 });
 
+Deno.test("file_server doesn't print local network url without --allow-sys", async () => {
+  const port = await getAvailablePort();
+  const process = spawnDeno([
+    "--allow-net",
+    "--allow-read",
+    "http/file_server.ts",
+    "--port",
+    `${port}`,
+  ]);
+  const output = await readUntilMatch(process.stdout, "Local:");
+  assertEquals(
+    output,
+    `Listening on:\n- Local: http://localhost:${port}\n`,
+  );
+  process.stdout.cancel();
+  process.stderr.cancel();
+  process.kill();
+  await process.status;
+});
+
 Deno.test("file_server prints only local address on Deploy", async () => {
   const port = await getAvailablePort();
   const process = spawnDeno([
@@ -1022,7 +1042,6 @@ Deno.test("file_server prints only local address on Deploy", async () => {
     },
   });
   const output = await readUntilMatch(process.stdout, "Local:");
-  console.log(output);
   assertEquals(
     output,
     `Listening on:\n- Local: http://localhost:${port}\n`,

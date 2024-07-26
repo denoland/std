@@ -26,15 +26,15 @@
     "@std/encoding": "jsr:@std/encoding@^1.0.1",
     "@std/expect": "jsr:@std/expect@^1.0.0",
     "@std/fmt": "jsr:@std/fmt@^1.0.0-rc.1",
-    "@std/front-matter": "jsr:@std/front-matter@^1.0.0-rc.2",
-    "@std/fs": "jsr:@std/fs@^1.0.0-rc.6",
+    "@std/front-matter": "jsr:@std/front-matter@^1.0.0",
+    "@std/fs": "jsr:@std/fs@^1.0.0",
     "@std/html": "jsr:@std/html@^1.0.0",
     "@std/http": "jsr:@std/http@^1.0.0-rc.5",
     "@std/ini": "jsr:@std/ini@^1.0.0-rc.2",
     "@std/internal": "jsr:@std/internal@^1.0.1",
     "@std/io": "jsr:@std/io@^0.224.3",
     "@std/json": "jsr:@std/json@^1.0.0",
-    "@std/jsonc": "jsr:@std/jsonc@^1.0.0-rc.3",
+    "@std/jsonc": "jsr:@std/jsonc@^1.0.0",
     "@std/log": "jsr:@std/log@^0.224.5",
     "@std/media-types": "jsr:@std/media-types@^1.0.2",
     "@std/msgpack": "jsr:@std/msgpack@^1.0.0",
@@ -50,7 +50,7 @@
     "@std/url": "jsr:@std/url@^1.0.0-rc.2",
     "@std/uuid": "jsr:@std/uuid@^1.0.0",
     "@std/webgpu": "jsr:@std/webgpu@^0.224.5",
-    "@std/yaml": "jsr:@std/yaml@^1.0.0-rc.4"
+    "@std/yaml": "jsr:@std/yaml@^1.0.0"
   },
   "tasks": {
     "test": "deno test --unstable-http --unstable-webgpu --doc --allow-all --parallel --coverage --trace-leaks --clean",
