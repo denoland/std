@@ -218,11 +218,6 @@ const stdCrypto: StdCrypto = ((x) => x)({
         // and the data is a single buffer,
         isBufferSource(data)
       ) {
-        if (length !== undefined) {
-          throw new TypeError(
-            "non-default length specified for non-extendable algorithm",
-          );
-        }
         return await webCrypto.subtle.digest(algorithm, data);
       } else if (DIGEST_ALGORITHM_NAMES.includes(name as DigestAlgorithmName)) {
         if (isBufferSource(data)) {
@@ -319,6 +314,9 @@ export type DigestAlgorithmObject = {
 
 /**
  * Extended digest algorithms accepted by {@linkcode stdCrypto.subtle.digest}.
+ *
+ * The `length` option will be ignored for
+ * {@link https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/digest#algorithm | Web Standard algorithms}.
  */
 export type DigestAlgorithm = DigestAlgorithmName | DigestAlgorithmObject;
 

@@ -3,6 +3,7 @@ import {
   assert,
   assertEquals,
   assertInstanceOf,
+  assertNotEquals,
   assertRejects,
   assertThrows,
   fail,
@@ -164,6 +165,12 @@ Deno.test("digest() handles length option", async (t) => {
     (name) => ["BLAKE3", "SHAKE128", "SHAKE256"].includes(name),
   );
 
+  const [unsupportedAlgorithmNamesIgnore, unsupportedAlgorithmNamesThrow] =
+    partition(
+      unsupportedAlgorithmNames,
+      (name) => ["SHA-1", "SHA-256", "SHA-384", "SHA-512"].includes(name),
+    );
+
   for (const name of supportedAlgorithmNames) {
     await t.step(`${name} supports length option (async)`, async () => {
       assertEquals(
@@ -175,12 +182,23 @@ Deno.test("digest() handles length option", async (t) => {
     });
   }
 
-  for (const name of unsupportedAlgorithmNames) {
-    await t.step(`${name} does not support length option (sync)`, () => {
-      assertThrows(
-        () => stdCrypto.subtle.digestSync({ name, length: 0 }, inputBytes),
+  for (const name of unsupportedAlgorithmNamesThrow) {
+    await t.step(`${name} does not support length option (async)`, async () => {
+      await assertRejects(
+        () => stdCrypto.subtle.digest({ name, length: 0 }, inputBytes),
         TypeError,
         "non-default length specified for non-extendable algorithm",
+      );
+    });
+  }
+
+  for (const name of unsupportedAlgorithmNamesIgnore) {
+    await t.step(`${name} ignores length option (async)`, async () => {
+      assertNotEquals(
+        new Uint8Array(
+          await stdCrypto.subtle.digest({ name, length: 0 }, inputBytes),
+        ).length,
+        0,
       );
     });
   }
@@ -196,10 +214,10 @@ Deno.test("digest() handles length option", async (t) => {
     });
   }
 
-  for (const name of unsupportedAlgorithmNames) {
-    await t.step(`${name} does not support length option (async)`, async () => {
-      await assertRejects(
-        () => stdCrypto.subtle.digest({ name, length: 0 }, inputBytes),
+  for (const name of unsupportedAlgorithmNamesThrow) {
+    await t.step(`${name} does not support length option (sync)`, () => {
+      assertThrows(
+        () => stdCrypto.subtle.digestSync({ name, length: 0 }, inputBytes),
         TypeError,
         "non-default length specified for non-extendable algorithm",
       );
