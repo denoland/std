@@ -37,7 +37,7 @@ import {
  * strings.
  * - `json`: extends `failsafe` schema by also supporting nulls, booleans,
  * integers and floats.
- * - `core`: extends `json` schema by also supporting tag resolution.
+ * - `core`: functionally the same as `json` schema.
  * - `default`: extends `core` schema by also supporting binary, omap, pairs and
  * set types.
  * - `extended`: extends `default` schema by also supporting regular
