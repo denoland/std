@@ -260,14 +260,14 @@ export class FakeTime {
    * @param start The time to simulate. The default is the current time..
    * @param options The options
    *
-   * @throws {TypeError} If time is already faked
+   * @throws {Error} If time is already faked
    * @throws {TypeError} If the start is invalid
    */
   constructor(
     start?: number | string | Date | null,
     options?: FakeTimeOptions,
   ) {
-    if (time) throw new TypeError("Time is already faked");
+    if (time) throw new Error("Time is already faked");
     initializedAt = _internals.Date.now();
     startedAt = start instanceof Date
       ? start.valueOf()
@@ -335,7 +335,7 @@ export class FakeTime {
   /**
    * Restores real time.
    *
-   * @throws {TypeError} If time is already restored
+   * @throws {Error} If time is already restored
    *
    * @example Usage
    * ```ts
@@ -354,7 +354,7 @@ export class FakeTime {
    * ```
    */
   static restore() {
-    if (!time) throw new TypeError("Time is already restored");
+    if (!time) throw new Error("Time is already restored");
     time.restore();
   }
 
@@ -759,7 +759,7 @@ export class FakeTime {
   /**
    * Restores time related global functions to their original state.
    *
-   * @throws {TypeError} If time is already restored
+   * @throws {Error} If time is already restored
    *
    * @example Usage
    * ```ts
@@ -778,7 +778,7 @@ export class FakeTime {
    * ```
    */
   restore() {
-    if (!time) throw new TypeError("Time is already restored");
+    if (!time) throw new Error("Time is already restored");
     time = undefined;
     restoreGlobals();
     if (advanceIntervalId) clearInterval(advanceIntervalId);

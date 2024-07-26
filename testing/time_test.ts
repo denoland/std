@@ -706,13 +706,13 @@ Deno.test("FakeTime throws when NaN is provided", () => {
 Deno.test("FakeTime.restore() throws when the time is already restored", () => {
   const _time = new FakeTime();
   FakeTime.restore();
-  assertThrows(() => FakeTime.restore(), TypeError, "Time is already restored");
+  assertThrows(() => FakeTime.restore(), Error, "Time is already restored");
 });
 
 Deno.test("time.restore() throws when the time is already restored", () => {
   const time = new FakeTime();
   time.restore();
-  assertThrows(() => time.restore(), TypeError, "Time is already restored");
+  assertThrows(() => time.restore(), Error, "Time is already restored");
 });
 
 Deno.test("time.now = N throws when N < time.now", () => {
