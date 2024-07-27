@@ -97,8 +97,8 @@ export type { WalkEntry };
  * Recursively walks through a directory and yields information about each file
  * and directory encountered.
  *
- * The file paths are relative paths. The root directory is included in the
- * yielded entries.
+ * The root path determines whether the file paths is relative or absolute.
+ * The root directory is included in the yielded entries.
  *
  * Requires `--allow-read` permission.
  *
@@ -520,8 +520,8 @@ export async function* walk(
  * Recursively walks through a directory and yields information about each file
  * and directory encountered.
  *
- * The file paths are relative paths. The root directory is included in the
- * yielded entries.
+ * The root path determines whether the file paths is relative or absolute.
+ * The root directory is included in the yielded entries.
  *
  * Requires `--allow-read` permission.
  *
