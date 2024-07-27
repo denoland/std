@@ -97,7 +97,7 @@ export type { WalkEntry };
  * Recursively walks through a directory and yields information about each file
  * and directory encountered.
  *
- * The root path determines whether the file paths is relative or absolute.
+ * The root path determines whether the file paths are relative or absolute.
  * The root directory is included in the yielded entries.
  *
  * Requires `--allow-read` permission.
