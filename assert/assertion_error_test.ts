@@ -1,39 +1,25 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-import {
-  assert,
-  assertInstanceOf,
-  AssertionError,
-  assertStrictEquals,
-} from "./mod.ts";
+import { AssertionError, assertStrictEquals, assertThrows } from "./mod.ts";
 
 Deno.test("AssertionError", async (t) => {
-  let expectedPathReached = false;
   const originalError = new Error("foo");
-  try {
-    throw originalError;
-  } catch (cause) {
+  const assertionError = assertThrows(() => {
     try {
-      throw new AssertionError("bar", { cause });
+      throw originalError;
     } catch (cause) {
-      assertInstanceOf(cause, AssertionError);
-
-      await t.step(
-        'value of message parameter is accessible on property "message"',
-        () => assertStrictEquals(cause.message, "bar"),
-      );
-
-      await t.step("options parameter", async (t) => {
-        await t.step(
-          'value of property "cause" is accessible on property "cause"',
-          () => assertStrictEquals(cause.cause, originalError),
-        );
-      });
-
-      expectedPathReached = true;
+      throw new AssertionError("bar", { cause });
     }
-  }
-  assert(
-    expectedPathReached,
-    "Expected all exception-handling code paths to be reached",
+  }, AssertionError);
+
+  await t.step(
+    'value of message parameter is accessible on property "message"',
+    () => assertStrictEquals(assertionError.message, "bar"),
   );
+
+  await t.step("options parameter", async (t) => {
+    await t.step(
+      'value of property "cause" is accessible on property "cause"',
+      () => assertStrictEquals(assertionError.cause, originalError),
+    );
+  });
 });
