@@ -8,7 +8,22 @@
  * ```ts no-eval
  * import { AssertionError } from "@std/assert";
  *
+ * // Throw an AssertionError:
  * throw new AssertionError("Assertion failed");
+ *
+ * // Throw an AssertionError with a specified cause:
+ * const originalError = new Error("foo");
+ * try {
+ *   try {
+ *     throw originalError;
+ *   } catch (cause) {
+ *     throw new AssertionError("bar", { cause });
+ *   }
+ * } catch (cause) {
+ *   cause instanceof AssertionError && // true
+ *     cause.message === "bar" && // true
+ *     cause.cause === originalError; // true
+ * }
  * ```
  */
 export class AssertionError extends Error {
