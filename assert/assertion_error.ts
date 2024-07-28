@@ -16,8 +16,8 @@ export class AssertionError extends Error {
    *
    * @param message The error message.
    */
-  constructor(message: string) {
-    super(message);
+  constructor(message: string, options?: ErrorOptions) {
+    super(message, options);
     this.name = "AssertionError";
   }
 }
