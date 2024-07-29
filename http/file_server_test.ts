@@ -41,6 +41,7 @@ const TEST_FILE_LAST_MODIFIED = TEST_FILE_STAT.mtime instanceof Date
   ? new Date(TEST_FILE_STAT.mtime).toUTCString()
   : "";
 const TEST_FILE_TEXT = await Deno.readTextFile(TEST_FILE_PATH);
+const LOCALHOST = Deno.build.os === "windows" ? "localhost" : "0.0.0.0";
 
 /* HTTP GET request allowing arbitrary paths */
 async function fetchExactPath(
@@ -998,7 +999,7 @@ Deno.test("file_server prints local and network urls", async () => {
   )?.address;
   assertEquals(
     output,
-    `Listening on:\n- Local: http://localhost:${port}\n- Network: http://${networkAdress}:${port}\n`,
+    `Listening on:\n- Local: http://${LOCALHOST}:${port}\n- Network: http://${networkAdress}:${port}\n`,
   );
   process.stdout.cancel();
   process.stderr.cancel();
@@ -1018,7 +1019,7 @@ Deno.test("file_server doesn't print local network url without --allow-sys", asy
   const output = await readUntilMatch(process.stdout, "Local:");
   assertEquals(
     output,
-    `Listening on:\n- Local: http://localhost:${port}\n`,
+    `Listening on:\n- Local: http://${LOCALHOST}:${port}\n`,
   );
   process.stdout.cancel();
   process.stderr.cancel();
@@ -1044,7 +1045,7 @@ Deno.test("file_server prints only local address on Deploy", async () => {
   const output = await readUntilMatch(process.stdout, "Local:");
   assertEquals(
     output,
-    `Listening on:\n- Local: http://localhost:${port}\n`,
+    `Listening on:\n- Local: http://${LOCALHOST}:${port}\n`,
   );
   process.stdout.cancel();
   process.stderr.cancel();
