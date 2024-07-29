@@ -579,6 +579,12 @@ Deno.test("parseRange() parses ranges with caret", () => {
         { operator: "<", major: 2, minor: 0, patch: 0 },
       ],
     ]],
+    ["^ 1.2.3", [
+      [
+        { operator: ">=", major: 1, minor: 2, patch: 3, prerelease: [] },
+        { operator: "<", major: 2, minor: 0, patch: 0 },
+      ],
+    ]],
     ["^0.2.3", [
       [
         { operator: ">=", major: 0, minor: 2, patch: 3, prerelease: [] },
