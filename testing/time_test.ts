@@ -10,7 +10,7 @@ import {
   assertStrictEquals,
   assertThrows,
 } from "@std/assert";
-import { FakeTime } from "./time.ts";
+import { FakeTime, TimeError } from "./time.ts";
 import { _internals } from "./_time.ts";
 import { assertSpyCall, spy, type SpyCall } from "./mock.ts";
 import { deadline, delay } from "@std/async";
@@ -338,7 +338,7 @@ Deno.test("FakeTime.restoreFor() returns promise that rejected to error in callb
 Deno.test("FakeTime.restoreFor() returns promise that rejected to ReferenceError if FakeTime is uninitialized", async () => {
   await assertRejects(
     () => FakeTime.restoreFor(() => {}),
-    ReferenceError,
+    TimeError,
     "Time is not faked",
   );
 });
@@ -661,16 +661,16 @@ Deno.test("Faked timer functions throws when called after FakeTime is restored",
   }
   assertThrows(
     () => fakeSetTimeout(() => {}, 0),
-    ReferenceError,
+    TimeError,
     "Time is not faked",
   );
-  assertThrows(() => fakeClearTimeout(0), ReferenceError, "Time is not faked");
+  assertThrows(() => fakeClearTimeout(0), TimeError, "Time is not faked");
   assertThrows(
     () => fakeSetInterval(() => {}, 0),
-    ReferenceError,
+    TimeError,
     "Time is not faked",
   );
-  assertThrows(() => fakeClearInterval(0), ReferenceError, "Time is not faked");
+  assertThrows(() => fakeClearInterval(0), TimeError, "Time is not faked");
 });
 
 Deno.test("Faked Date.now returns real time after FakeTime is restored", () => {
