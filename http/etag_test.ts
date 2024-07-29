@@ -1,7 +1,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
 import { assert, assertEquals } from "@std/assert";
-import { assertType, IsExact } from "@std/testing/types";
+import { assertType, type IsExact } from "@std/testing/types";
 
 import { eTag, ifMatch, ifNoneMatch } from "./etag.ts";
 
