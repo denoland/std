@@ -379,7 +379,7 @@ export class FakeTime {
    * ```
    */
   static restore() {
-    if (!time) throw new Error("Time is already restored");
+    if (!time) throw new TimeError("Time is already restored");
     time.restore();
   }
 
