@@ -9,7 +9,12 @@ import {
 
 /** Options for {@linkcode stringify}. */
 export interface StringifyOptions extends FormattingOptions {
-  /** Provide custom string conversion for the value in a key/value pair. */
+  /**
+   * Provide custom string conversion for the value in a key/value pair.
+   * Similar to the
+   * {@linkcode https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/stringify#replacer | replacer}
+   * function in {@linkcode JSON.stringify}.
+   */
   replacer?: ReplacerFunction;
 }
 
