@@ -325,7 +325,8 @@ import { assertRejects } from "@std/assert/rejects";
 import { AssertionError } from "@std/assert/assertion-error";
 
 /**
- * An error related to spying on a function or instance method.
+ * Represents an error when trying to execute an invalid mocking or spying
+ * operation.
  *
  * @example Usage
  * ```ts
