@@ -120,6 +120,30 @@ export async function eTag(
   entity: string | Uint8Array,
   options?: ETagOptions,
 ): Promise<string>;
+/**
+ * Calculate an ETag for an entity. When the entity is a specific set of data
+ * it will be fingerprinted as a "strong" tag, otherwise if it is just file
+ * information, it will be calculated as a weak tag.
+ *
+ * @example Usage
+ * ```ts
+ * import { eTag } from "@std/http/etag";
+ * import { assert } from "@std/assert";
+ *
+ * const fileInfo = await Deno.stat("README.md");
+ *
+ * const etag = await eTag(fileInfo);
+ * assert(etag);
+ *
+ * const body = (await Deno.open("README.md")).readable;
+ *
+ * const res = new Response(body, { headers: { etag } });
+ * ```
+ *
+ * @param entity The entity to get the ETag for.
+ * @param options Various additional options.
+ * @returns The calculated ETag.
+ */
 export async function eTag(
   entity: FileInfo,
   options?: ETagOptions,
