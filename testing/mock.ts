@@ -643,7 +643,7 @@ function methodSpy<
   Return,
 >(self: Self, property: keyof Self): MethodSpy<Self, Args, Return> {
   if (typeof self[property] !== "function") {
-    throw new MockError("Property is not an instance method");
+    throw new TypeError("Property is not an instance method");
   }
   if (isSpy(self[property])) {
     throw new MockError("Already spying on instance method");
@@ -651,7 +651,7 @@ function methodSpy<
 
   const propertyDescriptor = Object.getOwnPropertyDescriptor(self, property);
   if (propertyDescriptor && !propertyDescriptor.configurable) {
-    throw new MockError("Cannot spy on non-configurable instance method");
+    throw new TypeError("Cannot spy on non-configurable instance method");
   }
 
   const original = self[property] as unknown as (
@@ -948,6 +948,8 @@ export function spy<
  * @param self The instance to spy.
  * @param property The property of the method to spy.
  * @returns The spy function.
+ * @throws {TypeError} If the property is not an instance method or is not
+ * configurable.
  */
 export function spy<
   Self,
@@ -1060,6 +1062,8 @@ export function stub<
  * @param property The property of the instance to replace.
  * @param func The fake implementation of the function.
  * @returns The stub function which replaced the original.
+ * @throws {TypeError} If the property is not an instance method or is not
+ * configurable.
  */
 export function stub<
   Self,
@@ -1082,7 +1086,7 @@ export function stub<
   func?: (this: Self, ...args: Args) => Return,
 ): Stub<Self, Args, Return> {
   if (self[property] !== undefined && typeof self[property] !== "function") {
-    throw new MockError("Property is not an instance method");
+    throw new TypeError("Property is not an instance method");
   }
   if (isSpy(self[property])) {
     throw new MockError("Already spying on instance method");
@@ -1090,7 +1094,7 @@ export function stub<
 
   const propertyDescriptor = Object.getOwnPropertyDescriptor(self, property);
   if (propertyDescriptor && !propertyDescriptor.configurable) {
-    throw new MockError("Cannot spy on non-configurable instance method");
+    throw new TypeError("Cannot spy on non-configurable instance method");
   }
 
   const fake = func ?? (() => {}) as (this: Self, ...args: Args) => Return;
