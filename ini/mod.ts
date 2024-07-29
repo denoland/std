@@ -3,7 +3,7 @@
 
 /**
  * {@linkcode parse} and {@linkcode stringify} for handling
- * {@link https://en.wikipedia.org/wiki/INI_file | INI} encoded data, such asthe
+ * {@link https://en.wikipedia.org/wiki/INI_file | INI} encoded data, such as the
  * {@link https://specifications.freedesktop.org/desktop-entry-spec/latest/ar01s03.html | Desktop Entry specification}.
  *
  * ```ts
