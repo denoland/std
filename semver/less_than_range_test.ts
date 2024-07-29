@@ -37,7 +37,7 @@ Deno.test("lessThanRange() checks if the SemVer is less than the range", async (
     ["~>1", "0.2.4"],
     ["~> 1", "0.2.3"],
     ["~1.0", "0.1.2"], // >=1.0.0 <1.1.0
-    // ["~ 1.0", "0.1.0"], TODO(kt3k): Enable this. The parsing of `~ 1.0` seems broken now.
+    ["~ 1.0", "0.1.0"],
     [">1.2", "1.2.0"],
     ["> 1.2", "1.2.1"],
     ["~v0.5.4-pre", "0.5.4-alpha"],
