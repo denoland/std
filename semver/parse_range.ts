@@ -406,7 +406,7 @@ function parseOperatorRanges(string: string): Comparator[] {
 export function parseRange(range: string): Range {
   return range
     // remove spaces between operators and versions
-    .replaceAll(/(?<=<|>|=) +/g, "")
+    .replaceAll(/(?<=<|>|=|~) +/g, "")
     .split(/\s*\|\|\s*/)
     .map((string) => parseHyphenRange(string) || parseOperatorRanges(string));
 }

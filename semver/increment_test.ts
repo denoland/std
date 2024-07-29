@@ -1,6 +1,6 @@
 // Copyright Isaac Z. Schlueter and Contributors. All rights reserved. ISC license.
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-import { assertEquals } from "@std/assert";
+import { assertEquals, assertThrows } from "@std/assert";
 import type { ReleaseType, SemVer } from "./types.ts";
 import { increment } from "./increment.ts";
 import { format } from "./format.ts";
@@ -972,4 +972,10 @@ Deno.test("increment()", async (t) => {
       },
     });
   }
+});
+
+Deno.test("increment() throws on invalid input", () => {
+  assertThrows(() =>
+    increment({ major: 1, minor: 2, patch: 3 }, "invalid" as ReleaseType)
+  );
 });
