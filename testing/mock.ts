@@ -333,9 +333,19 @@ import { AssertionError } from "@std/assert/assertion-error";
  * import { MockError, spy } from "@std/testing/mock";
  * import { assertThrows } from "@std/assert";
  *
- * assertThrows(() => {
- *   spy({} as any, "no-such-method");
- * }, MockError);
+ * class Point {
+ *   x: number;
+ *   y: number;
+ *
+ *   constructor(x: number, y: number) {
+ *     this.x = x;
+ *     this.y = y;
+ *   }
+ * }
+ *
+ * const PointSpy = spy(Point);
+ *
+ * assertThrows(() => PointSpy.restore(), MockError, "Constructor cannot be restored");
  * ```
  */
 export class MockError extends Error {
