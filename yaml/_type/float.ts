@@ -12,8 +12,6 @@ const YAML_FLOAT_PATTERN = new RegExp(
     // .2e4, .2
     // special case, seems not from spec
     "|\\.[0-9_]+(?:[eE][-+]?[0-9]+)?" +
-    // 20:59
-    "|[-+]?[0-9][0-9_]*(?::[0-5]?[0-9])+\\.[0-9_]*" +
     // .inf
     "|[-+]?\\.(?:inf|Inf|INF)" +
     // .nan

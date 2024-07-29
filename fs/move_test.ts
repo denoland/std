@@ -1,7 +1,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import { assert, assertEquals, assertRejects, assertThrows } from "@std/assert";
 import * as path from "@std/path";
-import { move, moveSync, SubdirectoryMoveError } from "./move.ts";
+import { move, moveSync } from "./move.ts";
 import { ensureFile, ensureFileSync } from "./ensure_file.ts";
 import { ensureDir, ensureDirSync } from "./ensure_dir.ts";
 import { existsSync } from "./exists.ts";
@@ -416,9 +416,13 @@ Deno.test("move() accepts overwrite option set to true for directories", async f
     const src = p[0];
     const dest = p[1];
 
-    await assertRejects(async () => {
-      await move(src, dest);
-    }, SubdirectoryMoveError);
+    await assertRejects(
+      async () => {
+        await move(src, dest);
+      },
+      Deno.errors.NotSupported,
+      `Cannot move '${src}' to a subdirectory of itself, '${dest}'.`,
+    );
   }
 
   await Deno.remove(dir, { recursive: true });
@@ -474,9 +478,13 @@ Deno.test("move() accepts overwrite option set to true for directories", functio
     const src = p[0];
     const dest = p[1];
 
-    assertThrows(() => {
-      moveSync(src, dest);
-    }, SubdirectoryMoveError);
+    assertThrows(
+      () => {
+        moveSync(src, dest);
+      },
+      Deno.errors.NotSupported,
+      `Cannot move '${src}' to a subdirectory of itself, '${dest}'.`,
+    );
   }
 
   Deno.removeSync(dir, { recursive: true });
