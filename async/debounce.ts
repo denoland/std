@@ -58,7 +58,7 @@ export function debounce<T extends Array<any>>(
       debounced.clear();
       fn.call(debounced, ...args);
     };
-    timeout = setTimeout(flush, wait);
+    timeout = Number(setTimeout(flush, wait));
   }) as DebouncedFunction<T>;
 
   debounced.clear = () => {

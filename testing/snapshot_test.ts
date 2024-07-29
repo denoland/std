@@ -6,6 +6,7 @@ import {
   assertInstanceOf,
   AssertionError,
   assertRejects,
+  assertStringIncludes,
   fail,
 } from "@std/assert";
 import { assertSnapshot, createAssertSnapshot, serialize } from "./snapshot.ts";
@@ -644,6 +645,10 @@ Deno.test(
       }
     }
 
+    function maskSnapshotCount(output: string) {
+      return output.replace(/(1|2) snapshots?/g, "some snapshots");
+    }
+
     /**
      * New snapshot
      */
@@ -721,10 +726,17 @@ Deno.test(
       });`,
     );
     assertNoError(result2.error);
-    await assertSnapshot(t, formatTestOutput(result2.output), {
-      name:
-        "assertSnapshot() - different directory - Existing snapshot - update",
-    });
+    const output = formatTestOutput(result2.output);
+    await assertSnapshot(
+      t,
+      maskSnapshotCount(output),
+      {
+        name:
+          "assertSnapshot() - different directory - Existing snapshot - update",
+      },
+    );
+    assertStringIncludes(output, "> 1 snapshot updated");
+    assertStringIncludes(output, "> 2 snapshots updated");
   }),
 );
 
@@ -873,3 +885,7 @@ Deno.test(
     assert(!output.success, "The test should fail");
   }),
 );
+
+Deno.test("assertSnapshot() - should work with the string with '\\r' character", async (t) => {
+  await assertSnapshot(t, "Hello\r\nWorld!\r\n");
+});

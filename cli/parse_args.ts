@@ -237,7 +237,7 @@ type Dedot<TKey extends string, TValue> = TKey extends
 
 type ValueOf<TValue> = TValue[keyof TValue];
 
-/** The value returned from `parseArgs`. */
+/** The value returned from {@linkcode parseArgs}. */
 export type Args<
   // deno-lint-ignore no-explicit-any
   TArgs extends Record<string, unknown> = Record<string, any>,
@@ -260,7 +260,7 @@ type DoubleDash = {
   "--"?: Array<string>;
 };
 
-/** The options for the `parseArgs` call. */
+/** Options for {@linkcode parseArgs}. */
 export interface ParseOptions<
   TBooleans extends BooleanType = BooleanType,
   TStrings extends StringType = StringType,
@@ -293,6 +293,8 @@ export interface ParseOptions<
   /**
    * An object mapping string names to strings or arrays of string argument
    * names to use as aliases.
+   *
+   * @default {{}}
    */
   alias?: TAliases;
 
@@ -301,19 +303,31 @@ export interface ParseOptions<
    * `true` will treat all double hyphenated arguments without equal signs as
    * `boolean` (e.g. affects `--foo`, not `-f` or `--foo=bar`).
    *  All `boolean` arguments will be set to `false` by default.
+   *
+   * @default {false}
    */
   boolean?: TBooleans | ReadonlyArray<Extract<TBooleans, string>>;
 
-  /** An object mapping string argument names to default values. */
+  /**
+   * An object mapping string argument names to default values.
+   *
+   * @default {{}}
+   */
   default?: TDefault & Defaults<TBooleans, TStrings>;
 
   /**
    * When `true`, populate the result `_` with everything after the first
    * non-option.
+   *
+   * @default {false}
    */
   stopEarly?: boolean;
 
-  /** A string or array of strings argument names to always treat as strings. */
+  /**
+   * A string or array of strings argument names to always treat as strings.
+   *
+   * @default {[]}
+   */
   string?: TStrings | ReadonlyArray<Extract<TStrings, string>>;
 
   /**
@@ -321,13 +335,16 @@ export interface ParseOptions<
    * Collectable options can be used multiple times. All values will be
    * collected into one array. If a non-collectable option is used multiple
    * times, the last value is used.
-   * All Collectable arguments will be set to `[]` by default.
+   *
+   * @default {[]}
    */
   collect?: TCollectable | ReadonlyArray<Extract<TCollectable, string>>;
 
   /**
    * A string or array of strings argument names which can be negated
    * by prefixing them with `--no-`, like `--no-config`.
+   *
+   * @default {[]}
    */
   negatable?: TNegatable | ReadonlyArray<Extract<TNegatable, string>>;
 
@@ -335,6 +352,8 @@ export interface ParseOptions<
    * A function which is invoked with a command line parameter not defined in
    * the `options` configuration object. If the function returns `false`, the
    * unknown option is not added to `parsedArgs`.
+   *
+   * @default {unknown}
    */
   unknown?: (arg: string, key?: string, value?: unknown) => unknown;
 }
@@ -416,12 +435,12 @@ const FLAG_REGEXP =
  * considered a key-value pair. Any arguments which could not be parsed are
  * available in the `_` property of the returned object.
  *
- * By default, the flags module tries to determine the type of all arguments
- * automatically and the return type of the `parseArgs` method will have an index
+ * By default, this module tries to determine the type of all arguments
+ * automatically and the return type of this function will have an index
  * signature with `any` as value (`{ [x: string]: any }`).
  *
  * If the `string`, `boolean` or `collect` option is set, the return value of
- * the `parseArgs` method will be fully typed and the index signature of the return
+ * this function will be fully typed and the index signature of the return
  * type will change to `{ [x: string]: unknown }`.
  *
  * Any arguments after `'--'` will not be parsed and will end up in `parsedArgs._`.
@@ -430,6 +449,7 @@ const FLAG_REGEXP =
  * or `options.boolean` is set for that argument name.
  *
  * @param args An array of command line arguments.
+ * @param options Options for the parse function.
  *
  * @typeParam TArgs Type of result.
  * @typeParam TDoubleDash Used by `TArgs` for the result.
@@ -477,7 +497,17 @@ export function parseArgs<
   TAliasNames extends string = string,
 >(
   args: string[],
-  {
+  options?: ParseOptions<
+    TBooleans,
+    TStrings,
+    TCollectable,
+    TNegatable,
+    TDefaults,
+    TAliases,
+    TDoubleDash
+  >,
+): Args<TArgs, TDoubleDash> {
+  const {
     "--": doubleDash = false,
     alias = {} as NonNullable<TAliases>,
     boolean = false,
@@ -487,16 +517,7 @@ export function parseArgs<
     collect = [],
     negatable = [],
     unknown: unknownFn = (i: string): unknown => i,
-  }: ParseOptions<
-    TBooleans,
-    TStrings,
-    TCollectable,
-    TNegatable,
-    TDefaults,
-    TAliases,
-    TDoubleDash
-  > = {},
-): Args<TArgs, TDoubleDash> {
+  } = options ?? {};
   const aliasMap: Map<string, Set<string>> = new Map();
   const booleanSet = new Set<string>();
   const stringSet = new Set<string>();
