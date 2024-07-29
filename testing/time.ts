@@ -43,6 +43,31 @@ import { _internals } from "./_time.ts";
 
 export type { DelayOptions };
 
+/**
+ * Represents an error when trying to execute an invalid operation on fake time,
+ * given the state fake time is in.
+ *
+ * @example Usage
+ * ```ts
+ * import { FakeTime, TimeError } from "@std/testing/time";
+ * import { assertThrows } from "@std/assert";
+ *
+ * assertThrows(() => {
+ *   new FakeTime(NaN);
+ * }, TimeError);
+ * ```
+ */
+export class TimeError extends Error {
+  /** Construct TimeError.
+   *
+   * @param message The error message
+   */
+  constructor(message: string) {
+    super(message);
+    this.name = "TimeError";
+  }
+}
+
 function FakeTimeNow() {
   return time?.now ?? _internals.Date.now();
 }
@@ -107,12 +132,12 @@ function fakeSetTimeout(
   // deno-lint-ignore no-explicit-any
   ...args: any[]
 ): number {
-  if (!time) throw new ReferenceError("Time is not faked");
+  if (!time) throw new TimeError("Time is not faked");
   return setTimer(callback, delay, args, false);
 }
 
 function fakeClearTimeout(id?: unknown) {
-  if (!time) throw new ReferenceError("Time is not faked");
+  if (!time) throw new TimeError("Time is not faked");
   if (typeof id === "number" && dueNodes.has(id)) {
     dueNodes.delete(id);
   }
@@ -125,12 +150,12 @@ function fakeSetInterval(
   // deno-lint-ignore no-explicit-any
   ...args: any[]
 ): number {
-  if (!time) throw new ReferenceError("Time is not faked");
+  if (!time) throw new TimeError("Time is not faked");
   return setTimer(callback, delay, args, true);
 }
 
 function fakeClearInterval(id?: unknown) {
-  if (!time) throw new ReferenceError("Time is not faked");
+  if (!time) throw new TimeError("Time is not faked");
   if (typeof id === "number" && dueNodes.has(id)) {
     dueNodes.delete(id);
   }
@@ -260,14 +285,14 @@ export class FakeTime {
    * @param start The time to simulate. The default is the current time..
    * @param options The options
    *
-   * @throws {Error} If time is already faked
+   * @throws {TimeError} If time is already faked
    * @throws {TypeError} If the start is invalid
    */
   constructor(
     start?: number | string | Date | null,
     options?: FakeTimeOptions,
   ) {
-    if (time) throw new Error("Time is already faked");
+    if (time) throw new TimeError("Time is already faked");
     initializedAt = _internals.Date.now();
     startedAt = start instanceof Date
       ? start.valueOf()
@@ -335,7 +360,7 @@ export class FakeTime {
   /**
    * Restores real time.
    *
-   * @throws {Error} If time is already restored
+   * @throws {TimeError} If time is already restored
    *
    * @example Usage
    * ```ts
@@ -361,7 +386,7 @@ export class FakeTime {
   /**
    * Restores real time temporarily until callback returns and resolves.
    *
-   * @throws {ReferenceError} If time is not faked
+   * @throws {TimeError} If time is not faked
    *
    * @example Usage
    * ```ts
@@ -390,7 +415,7 @@ export class FakeTime {
     // deno-lint-ignore no-explicit-any
     ...args: any[]
   ): Promise<T> {
-    if (!time) return Promise.reject(new ReferenceError("Time is not faked"));
+    if (!time) return Promise.reject(new TimeError("Time is not faked"));
     restoreGlobals();
     try {
       const result = callback.apply(null, args);
@@ -759,8 +784,6 @@ export class FakeTime {
   /**
    * Restores time related global functions to their original state.
    *
-   * @throws {Error} If time is already restored
-   *
    * @example Usage
    * ```ts
    * import { FakeTime } from "@std/testing/time";
@@ -778,7 +801,7 @@ export class FakeTime {
    * ```
    */
   restore() {
-    if (!time) throw new Error("Time is already restored");
+    if (!time) throw new TimeError("Time is already restored");
     time = undefined;
     restoreGlobals();
     if (advanceIntervalId) clearInterval(advanceIntervalId);
