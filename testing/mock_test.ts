@@ -555,7 +555,7 @@ Deno.test("spy() throws when the property is not a method", () => {
   assertThrows(
     // deno-lint-ignore no-explicit-any
     () => spy(obj as any, "fn"),
-    MockError,
+    TypeError,
     "Property is not an instance method",
   );
 });
@@ -565,7 +565,7 @@ Deno.test("spy() throws when the property is not configurable", () => {
   Object.defineProperty(obj, "fn", { configurable: false });
   assertThrows(
     () => spy(obj, "fn"),
-    MockError,
+    TypeError,
     "Cannot spy on non-configurable instance method",
   );
 });
@@ -796,7 +796,7 @@ Deno.test("stub() throws when the property is not a method", () => {
   assertThrows(
     // deno-lint-ignore no-explicit-any
     () => stub(obj as any, "fn"),
-    MockError,
+    TypeError,
     "Property is not an instance method",
   );
 });
@@ -816,7 +816,7 @@ Deno.test("stub() throws then the property is not configurable", () => {
   Object.defineProperty(obj, "fn", { configurable: false });
   assertThrows(
     () => stub(obj, "fn"),
-    MockError,
+    TypeError,
     "Cannot spy on non-configurable instance method",
   );
 });
