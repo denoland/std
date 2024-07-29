@@ -1,14 +1,10 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-import {
-  type FormattingOptions,
-  IniMap,
-  type ReplacerFunction,
-} from "./_ini_map.ts";
+import { IniMap, type ReplacerFunction } from "./_ini_map.ts";
 
 /** Options for {@linkcode stringify}. */
-export interface StringifyOptions extends FormattingOptions {
+export interface StringifyOptions {
   /**
    * Provide custom string conversion for the value in a key/value pair.
    * Similar to the
@@ -18,7 +14,7 @@ export interface StringifyOptions extends FormattingOptions {
   replacer?: ReplacerFunction;
 }
 
-export type { FormattingOptions, ReplacerFunction };
+export type { ReplacerFunction };
 
 /**
  * Compile an object into an INI config string. Provide formatting options to modify the output.
@@ -83,5 +79,5 @@ export function stringify(
   object: any,
   options?: StringifyOptions,
 ): string {
-  return IniMap.from(object, options).toString(options?.replacer);
+  return IniMap.from(object).toString(options?.replacer);
 }
