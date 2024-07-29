@@ -282,7 +282,7 @@ export class FakeTime {
    * Construct a FakeTime object. This overrides the real Date object and timer functions with fake ones that can be
    * controlled through the fake time instance.
    *
-   * @param start The time to simulate. The default is the current time..
+   * @param start The time to simulate. The default is the current time.
    * @param options The options
    *
    * @throws {TimeError} If time is already faked
@@ -301,7 +301,7 @@ export class FakeTime {
       : typeof start === "string"
       ? (new Date(start)).valueOf()
       : initializedAt;
-    if (Number.isNaN(startedAt)) throw new TypeError("Invalid start");
+    if (Number.isNaN(startedAt)) throw new TypeError("Invalid start time");
     now = startedAt;
 
     timerId = timerIdGen();
