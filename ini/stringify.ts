@@ -6,6 +6,18 @@ import { IniMap, type ReplacerFunction } from "./_ini_map.ts";
 /** Options for {@linkcode stringify}. */
 export interface StringifyOptions {
   /**
+   * Character(s) used to break lines in the config file. Ignored on parse.
+   *
+   * @default {"\n"}
+   */
+  lineBreak?: "\n" | "\r\n" | "\r";
+  /**
+   * Use a plain assignment char or pad with spaces. Ignored on parse.
+   *
+   * @default {false}
+   */
+  pretty?: boolean;
+  /**
    * Provide custom string conversion for the value in a key/value pair.
    * Similar to the
    * {@linkcode https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/stringify#replacer | replacer}
@@ -79,5 +91,5 @@ export function stringify(
   object: any,
   options?: StringifyOptions,
 ): string {
-  return IniMap.from(object).toString(options?.replacer);
+  return IniMap.from(object, options).toString(options?.replacer);
 }
