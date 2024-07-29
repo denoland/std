@@ -98,22 +98,6 @@ export class BinarySearchTree<T> implements Iterable<T> {
   /**
    * Construct an empty binary search tree.
    *
-   * @example Creating an empty binary search tree
-   * ```ts no-assert
-   * import { BinarySearchTree } from "@std/data-structures";
-   *
-   * const tree = new BinarySearchTree<number>();
-   * ```
-   *
-   * @example Creating a binary search tree with a custom comparison function
-   * ```ts no-assert
-   * import { BinarySearchTree, ascend } from "@std/data-structures";
-   *
-   * const tree = new BinarySearchTree<{ price: number, name: string }>(
-   *   (a, b) => ascend(a.price, b.price) || ascend(a.name, b.name)
-   * );
-   * ```
-   *
    * To create a binary search tree from an array like, an iterable object, or an
    * existing binary search tree, use the {@link BinarySearchTree.from} method.
    *
