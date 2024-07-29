@@ -53,7 +53,9 @@ export type { DelayOptions };
  * import { assertThrows } from "@std/assert";
  *
  * assertThrows(() => {
- *   new FakeTime(NaN);
+ *   const time = new FakeTime();
+ *   time.restore();
+ *   time.restore();
  * }, TimeError);
  * ```
  */
