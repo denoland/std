@@ -1,6 +1,5 @@
 ---
 config:
-  model:
   temperature: 0
   parallel_tool_calls: false
   tool_choice: required
