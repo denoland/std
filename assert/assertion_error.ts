@@ -22,7 +22,7 @@ export class AssertionError extends Error {
   /** Constructs a new instance.
    *
    * @param message The error message.
-   * @param options Additional options.
+   * @param options Additional options. This argument is still unstable. It may change in the future release.
    */
   constructor(message: string, options?: ErrorOptions) {
     super(message, options);
