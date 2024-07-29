@@ -9,7 +9,7 @@ import {
   parsePrerelease,
   XRANGE,
 } from "./_shared.ts";
-import { ALL, ANY, NONE } from "./_constants.ts";
+import { ALL, ANY } from "./_constants.ts";
 import type { Comparator, Operator, Range } from "./types.ts";
 
 type ComparatorRegExpGroup = {
@@ -21,11 +21,11 @@ type ComparatorRegExpGroup = {
   buildmetadata: string;
 };
 
-function parseComparator(comparator: string): Comparator {
+function parseComparator(comparator: string): Comparator | null {
   const match = comparator.match(COMPARATOR_REGEXP);
   const groups = match?.groups;
 
-  if (!groups) return NONE;
+  if (!groups) return null;
 
   const { operator, prerelease, buildmetadata } =
     groups as ComparatorRegExpGroup;
@@ -349,7 +349,7 @@ function handleEqualOperator(groups: RangeRegExpGroups): Comparator[] {
   return [{ operator: undefined, major, minor, patch, prerelease, build }];
 }
 
-function parseOperatorRange(string: string): Comparator | Comparator[] {
+function parseOperatorRange(string: string): Comparator | Comparator[] | null {
   const groups = string.match(OPERATOR_XRANGE_REGEXP)
     ?.groups as RangeRegExpGroups;
   if (!groups) return parseComparator(string);
@@ -375,7 +375,7 @@ function parseOperatorRange(string: string): Comparator | Comparator[] {
       throw new Error(`'${groups.operator}' is not a valid operator.`);
   }
 }
-function parseOperatorRanges(string: string): Comparator[] {
+function parseOperatorRanges(string: string): (Comparator | null)[] {
   return string.split(/\s+/).flatMap(parseOperatorRange);
 }
 
@@ -404,9 +404,13 @@ function parseOperatorRanges(string: string): Comparator[] {
  * @returns A valid SemVer range
  */
 export function parseRange(range: string): Range {
-  return range
+  const result = range
     // remove spaces between operators and versions
     .replaceAll(/(?<=<|>|=|~) +/g, "")
     .split(/\s*\|\|\s*/)
     .map((string) => parseHyphenRange(string) || parseOperatorRanges(string));
+  if (result.some((r) => r.includes(null))) {
+    throw new TypeError(`Invalid range: ${range}`);
+  }
+  return result as Range;
 }
