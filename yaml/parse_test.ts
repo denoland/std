@@ -333,9 +333,9 @@ Deno.test({
       -Infinity,
       NaN,
       12000,
-      75,
-      4520,
-      -4520,
+      "1:15",
+      "1:15:20",
+      "-1:15:20",
       12000,
     ]);
   },
@@ -752,6 +752,12 @@ c: 3`),
     { a: 1, b: 2, c: 3 },
   );
 
+  assertEquals(
+    parse(`<<: [{ a: 1 }, { b: 2 }]
+c: 1`),
+    { a: 1, b: 2, c: 1 },
+  );
+
   assertThrows(
     () =>
       // number can't be used as merge value
@@ -1007,4 +1013,72 @@ name: Jane Doe`,
     ),
     { name: "Jane Doe", age: 30 },
   );
+});
+
+Deno.test("parse() throws at reseverd characters '`' and '@'", () => {
+  assertThrows(
+    () => parse("`"),
+    SyntaxError,
+    "end of the stream or a document separator is expected at line 1, column 1:\n    `\n    ^",
+  );
+  assertThrows(
+    () => parse("@"),
+    SyntaxError,
+    "end of the stream or a document separator is expected at line 1, column 1:\n    @\n    ^",
+  );
+});
+
+Deno.test("parse() handles sequence", () => {
+  assertEquals(parse("[]"), []);
+  assertEquals(
+    parse("[ Clark Evans, Ingy döt Net, Oren Ben-Kiki ]"),
+    ["Clark Evans", "Ingy döt Net", "Oren Ben-Kiki"],
+  );
+  assertEquals(parse("!!seq []"), []);
+  assertEquals(
+    parse("!!seq [ Clark Evans, Ingy döt Net, Oren Ben-Kiki ]"),
+    ["Clark Evans", "Ingy döt Net", "Oren Ben-Kiki"],
+  );
+  assertEquals(
+    parse(`!!seq
+    `),
+    [],
+  );
+  assertEquals(
+    parse(`!!seq
+- Clark Evans
+- Ingy döt Net
+- Oren Ben-Kiki`),
+    ["Clark Evans", "Ingy döt Net", "Oren Ben-Kiki"],
+  );
+});
+
+Deno.test("parse() handles mapping", () => {
+  assertEquals(parse("{}"), {});
+  assertEquals(
+    parse("{ Clark: Evans, Ingy: döt Net, Oren: Ben-Kiki }"),
+    { Clark: "Evans", Ingy: "döt Net", Oren: "Ben-Kiki" },
+  );
+  assertEquals(parse("!!map {}"), {});
+  assertEquals(
+    parse("!!map { Clark: Evans, Ingy: döt Net, Oren: Ben-Kiki }"),
+    { Clark: "Evans", Ingy: "döt Net", Oren: "Ben-Kiki" },
+  );
+  assertEquals(
+    parse(`!!map
+    `),
+    {},
+  );
+  assertEquals(
+    parse(`!!map
+  Clark : Evans
+  Ingy  : döt Net
+  Oren  : Ben-Kiki`),
+    { Clark: "Evans", Ingy: "döt Net", Oren: "Ben-Kiki" },
+  );
+});
+
+Deno.test("parse() handles string", () => {
+  assertEquals(parse("!!str"), "");
+  assertEquals(parse("!!str 2002-04-28"), "2002-04-28");
 });

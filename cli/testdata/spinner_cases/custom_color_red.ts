@@ -4,4 +4,4 @@ const spinner = new Spinner({ color: "red" });
 
 spinner.start();
 
-setTimeout(spinner.stop, 100);
+setTimeout(() => spinner.stop(), 100);

@@ -43,7 +43,7 @@ function constructYamlPairs(data: string) {
   return result;
 }
 
-export const pairs: Type = {
+export const pairs: Type<"sequence"> = {
   tag: "tag:yaml.org,2002:pairs",
   construct: constructYamlPairs,
   kind: "sequence",

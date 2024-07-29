@@ -5,10 +5,10 @@
 // This module is browser compatible.
 
 import { dump } from "./_dumper.ts";
-import { SCHEMA_MAP } from "./_schema.ts";
+import { SCHEMA_MAP, type SchemaType } from "./_schema.ts";
 import type { StyleVariant } from "./_type.ts";
 
-export type { StyleVariant };
+export type { SchemaType, StyleVariant };
 
 /** Options for {@linkcode stringify}. */
 export type StringifyOptions = {
@@ -41,16 +41,11 @@ export type StringifyOptions = {
   /** Each tag may have own set of styles.	- "tag" => "style" map. */
   styles?: Record<string, StyleVariant>;
   /**
-   * Name of the schema to use. Options includes:
-   * - `extended` (extends `default` schema)
-   * - `default` (extends `core` schema)
-   * - {@linkcode https://yaml.org/spec/1.2.2/#103-core-schema | core} (extends `json` schema)
-   * - {@linkcode https://yaml.org/spec/1.2.2/#102-json-schema | json} (extends `failsafe` schema)
-   * - {@linkcode https://yaml.org/spec/1.2.2/#101-failsafe-schema | failsafe}
+   * Name of the schema to use.
    *
    * @default {"default"}
    */
-  schema?: "core" | "default" | "failsafe" | "json" | "extended";
+  schema?: SchemaType;
   /**
    * If true, sort keys when dumping YAML in ascending, ASCII character order.
    * If a function, use the function to sort the keys.
