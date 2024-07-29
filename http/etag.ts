@@ -117,6 +117,14 @@ async function calcFileInfo(
  * @returns The calculated ETag.
  */
 export async function eTag(
+  entity: string | Uint8Array,
+  options?: ETagOptions,
+): Promise<string>;
+export async function eTag(
+  entity: FileInfo,
+  options?: ETagOptions,
+): Promise<string | undefined>;
+export async function eTag(
   entity: ETagSource,
   options: ETagOptions = {},
 ): Promise<string | undefined> {
