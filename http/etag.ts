@@ -95,7 +95,11 @@ async function calcFileInfo(
 }
 
 /**
- * Calculate an ETag for string or `Uint8Array` entities. This returns a strong tag.
+ * Calculate an ETag for string or `Uint8Array` entities. This returns a
+ * {@linkcode https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/ETag#etag_value | strong tag}
+ * of the form `"<ascii chars>"`, which guarantees the byte-for-byte equality of the resource.
+ *
+ * You can optionally set true to the `weak` option to get a weak tag.
  *
  * @example Usage
  * ```ts
@@ -119,7 +123,10 @@ export async function eTag(
   options?: ETagOptions,
 ): Promise<string>;
 /**
- * Calculate an ETag for file information entity. This returns a weak tag.
+ * Calculate an ETag for file information entity. This returns a
+ * {@linkcode https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/ETag#w | weak tag}
+ * of the form `W\"<ascii chars>"`, which guarantees the equivalence of the resource,
+ * not the byte-for-byte equality.
  *
  * @example Usage
  * ```ts
