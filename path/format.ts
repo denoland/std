@@ -4,10 +4,10 @@
 import { isWindows } from "./_os.ts";
 import { format as posixFormat } from "./posix/format.ts";
 import { format as windowsFormat } from "./windows/format.ts";
-import type { FormatInputPathObject } from "./_interface.ts";
+import type { ParsedPath } from "./types.ts";
 
 /**
- * Generate a path from a {@linkcode FormatInputPathObject} object. It does the
+ * Generate a path from a {@linkcode ParsedPath} object. It does the
  * opposite of {@linkcode https://jsr.io/@std/path/doc/~/parse | parse()}.
  *
  * @example Usage
@@ -25,6 +25,6 @@ import type { FormatInputPathObject } from "./_interface.ts";
  * @param pathObject Object with path components.
  * @returns The formatted path.
  */
-export function format(pathObject: FormatInputPathObject): string {
+export function format(pathObject: Partial<ParsedPath>): string {
   return isWindows ? windowsFormat(pathObject) : posixFormat(pathObject);
 }

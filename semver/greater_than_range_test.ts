@@ -133,7 +133,7 @@ Deno.test("greaterThanRange() checks if the semver is greater than the range", a
     ["~>1", "1.2.3"],
     ["~> 1", "1.2.3"],
     ["~1.0", "1.0.2"], // >=1.0.0 <1.1.0
-    // ["~ 1.0", "1.0.2"], TODO(kt3k): Enable this. The parsing of `~ 1.0` seems broken now.
+    ["~ 1.0", "1.0.2"],
     [">=1", "1.0.0"],
     [">= 1", "1.0.0"],
     ["<1.2", "1.1.1"],
