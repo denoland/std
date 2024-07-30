@@ -6,7 +6,7 @@ import { IniMap, type ReplacerFunction } from "./_ini_map.ts";
 /** Options for {@linkcode stringify}. */
 export interface StringifyOptions {
   /**
-   * Character(s) used to break lines in the config file. Ignored on parse.
+   * Character(s) used to break lines in the config file.
    *
    * @default {"\n"}
    */
