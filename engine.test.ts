@@ -29,7 +29,7 @@ const cradleMaker = async (init?: Provisioner) => {
   return { backchat, engine }
 }
 
-Deno.test.only('cradle', async (t) => {
+Deno.test('cradle', async (t) => {
   const { backchat, engine } = await cradleMaker()
   await t.step('basic', async () => {
     const result = await backchat.ping({ data: 'hello' })

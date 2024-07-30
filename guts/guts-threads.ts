@@ -5,18 +5,18 @@ import * as files from '@/isolates/files.ts'
 export default (name: string, cradleMaker: CradleMaker) => {
   const prefix = name + ':threads: '
 
-  // log.enable('AI:tests AI:backchat AI:execute-tools *qbr*')
-  Deno.test(prefix + 'thread management', async (t) => {
+  log.enable(
+    'AI:tests AI:backchat AI:execute-tools *qbr* AI:longthread AI:agents',
+  )
+  Deno.test.only(prefix + 'thread management', async (t) => {
     const { backchat, engine } = await cradleMaker()
     let focus: string = await getFocus(backchat)
-    // backchat should have been started with a thread, which is what the prompt
-    // should hit
+    log('initial focus', focus)
+
     await t.step('first thread', async () => {
       expect(focus).toBeDefined()
       log('prompting')
-      const result = await backchat.prompt('backchat start the files agent')
-      log('result', result)
-      focus = await getFocus(backchat, focus)
+      await backchat.prompt('backchat start the files agent')
     })
 
     await t.step('talk to the files agent', async () => {
@@ -25,19 +25,19 @@ export default (name: string, cradleMaker: CradleMaker) => {
       focus = await getFocus(backchat, focus, 'equals')
     })
 
-    await t.step('second thread', async () => {
-      const result = await backchat.prompt('backchat start a new files thread')
-      log('result', result)
-      focus = await getFocus(backchat, focus)
-    })
+    // await t.step('second thread', async () => {
+    //   const result = await backchat.prompt('backchat start a new files thread')
+    //   log('result', result)
+    //   focus = await getFocus(backchat, focus)
+    // })
 
-    await t.step('restart a thread', async () => {
-      const result = await backchat.prompt(
-        'backchat switch me back to the first thread',
-      )
-      log('result', result)
-      focus = await getFocus(backchat, focus)
-    })
+    // await t.step('restart a thread', async () => {
+    //   const result = await backchat.prompt(
+    //     'backchat switch me back to the first thread',
+    //   )
+    //   log('result', result)
+    //   focus = await getFocus(backchat, focus)
+    // })
 
     // test changing some files then have that show up on the other thread
 

@@ -1,3 +1,4 @@
+import merge from 'lodash.merge'
 import { assert, posix } from '@utils'
 import { AGENT_RUNNERS, Functions, Triad } from '@/constants.ts'
 import { type Agent } from '@/constants.ts'
@@ -57,12 +58,13 @@ export const functions: Functions<Api> = {
       config,
       commands: [],
     }
+    merge(defaults, data)
 
     const { pid, commit } = api
     const source: Triad = { path, pid, commit }
     const instructions = content.trim()
     const name = posix.basename(path, posix.extname(path))
-    const loaded: Agent = { ...defaults, ...data, name, instructions, source }
+    const loaded: Agent = { ...defaults, name, instructions, source }
 
     assertAgent(loaded)
     return loaded

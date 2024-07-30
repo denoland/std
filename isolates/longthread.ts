@@ -1,5 +1,13 @@
 import { assert, Debug } from '@utils'
-import { actorIdRegex, IA, PID, Thread, threadIdRegex } from '@/constants.ts'
+import {
+  actorIdRegex,
+  backchatIdRegex,
+  IA,
+  PID,
+  print,
+  Thread,
+  threadIdRegex,
+} from '@/constants.ts'
 import { Functions } from '@/constants.ts'
 import { executeTools } from '@/isolates/ai-execute-tools.ts'
 import * as completions from '@/isolates/ai-completions.ts'
@@ -33,7 +41,10 @@ export const api = {
     type: 'object',
     required: ['threadId', 'content', 'actorId'],
     properties: {
-      threadId: { type: 'string', pattern: threadIdRegex.source },
+      threadId: {
+        type: 'string',
+        pattern: threadIdRegex.source + '|' + backchatIdRegex.source,
+      },
       content: { type: 'string' },
       actorId: { type: 'string', pattern: actorIdRegex.source },
     },
@@ -56,7 +67,7 @@ export interface Api {
 
 export const functions: Functions<Api> = {
   start: async ({ threadId }, api) => {
-    log('start', threadId)
+    log('start', threadId, print(api.pid))
     const threadPath = `threads/${threadId}.json`
     assert(!await api.exists(threadPath), `thread exists: ${threadPath}`)
     const thread: Thread = {
@@ -67,22 +78,15 @@ export const functions: Functions<Api> = {
     return api.pid
   },
   run: async ({ threadId, path, content, actorId }, api) => {
+    log('run', threadId, path, content, actorId)
     const threadPath = `threads/${threadId}.json`
     const thread = await api.readJSON<Thread>(threadPath)
     thread.messages.push({ name: actorId, role: 'user', content })
     api.writeJSON(threadPath, thread)
-
-    const { complete } = await api.actions<completions.Api>('ai-completions')
-    while (!await isDone(threadPath, api)) {
-      await complete({ threadId, path })
-      if (await isDone(threadPath, api)) {
-        return
-      }
-      // TODO check tool responses come back correct
-      await executeTools(threadPath, api)
-    }
+    await loop(threadId, path, api)
   },
   switchboard: async ({ threadId, content, actorId }, api) => {
+    log('switchboard', threadId, content, actorId)
     const threadPath = `threads/${threadId}.json`
     const thread = await api.readJSON<Thread>(threadPath)
     thread.messages.push({ name: actorId, role: 'user', content })
@@ -90,14 +94,28 @@ export const functions: Functions<Api> = {
 
     // make the switchboard call.
     const path = `agents/switchboard.md`
-    const { once } = await api.actions<completions.Api>('ai-completions')
-    const assistant = await once({ path, content })
+    const { halt } = await api.actions<completions.Api>('ai-completions')
+    const params = await halt({ path, content, threadId })
 
-    throw new Error('not implemented')
-    // ? what is the formula for ending on a function of a guaranteed type ?
-    // basically, pass in the schema, and expect to get the function call params
-    // object out of it, with the name being set
+    log('switchboard result', params)
+    assert('path' in params, 'missing path in switchboard result')
+    assert(typeof params.path === 'string', 'invalid switchboard path')
+
+    await loop(threadId, params.path, api)
   },
+}
+
+const loop = async (threadId: string, path: string, api: IA) => {
+  const threadPath = `threads/${threadId}.json`
+  const { complete } = await api.actions<completions.Api>('ai-completions')
+  while (!await isDone(threadPath, api)) {
+    await complete({ threadId, path })
+    if (await isDone(threadPath, api)) {
+      return
+    }
+    // TODO check tool responses come back correct
+    await executeTools(threadPath, api)
+  }
 }
 
 const isDone = async (threadPath: string, api: IA) => {

@@ -1,9 +1,21 @@
-import { Debug } from '@utils'
+import { assert, Debug, expect } from '@utils'
 import '@std/dotenv/load' // load .env variables
 import OpenAI from 'openai'
-import { Agent, Functions, IA, print, Thread } from '@/constants.ts'
-import { loadTools } from './ai-load-tools.ts'
+import {
+  Agent,
+  ApiFunctions,
+  backchatIdRegex,
+  Functions,
+  IA,
+  Params,
+  print,
+  Thread,
+  threadIdRegex,
+} from '@/constants.ts'
+import { loadTools, loadValidators } from './ai-load-tools.ts'
 import * as loadAgent from './load-agent.ts'
+import { Isolate } from '@/isolates/index.ts'
+import validator from '@io/validator.ts'
 const log = Debug('AI:completions')
 
 const apiKey = Deno.env.get('OPENAI_API_KEY')
@@ -36,6 +48,19 @@ export const api = {
     additionalProperties: false,
     properties: { path: { type: 'string' }, content: { type: 'string' } },
   },
+  halt: {
+    type: 'object',
+    required: ['threadId', 'content', 'path'],
+    additionalProperties: false,
+    properties: {
+      threadId: {
+        type: 'string',
+        pattern: threadIdRegex.source + '|' + backchatIdRegex.source,
+      },
+      content: { type: 'string' },
+      path: { type: 'string' },
+    },
+  },
 }
 
 export type Api = {
@@ -43,6 +68,9 @@ export type Api = {
   once: (
     params: { path: string; content: string },
   ) => Promise<OpenAI.ChatCompletionAssistantMessageParam>
+  halt: (
+    params: { threadId: string; content: string; path: string },
+  ) => Promise<Params>
 }
 export const functions: Functions<Api> = {
   async complete({ threadId, path }, api) {
@@ -59,6 +87,29 @@ export const functions: Functions<Api> = {
   async once({ path, content }, api) {
     const result = await complete(path, [{ role: 'user', content }], api)
     return result
+  },
+  async halt({ threadId, content, path }, api) {
+    const threadPath = `threads/${threadId}.json`
+    log('halt %o', threadId, content, path, print(api.pid))
+    const thread = await api.readJSON<Thread>(threadPath)
+    const assistant = await complete(path, thread.messages, api)
+
+    assert(assistant.tool_calls, 'tool_calls missing from halt call')
+    assert(assistant.tool_calls.length === 1, 'tool_calls length is not 1')
+    const result = assistant.tool_calls[0]
+    log('result', result)
+
+    const { load } = await api.functions<loadAgent.Api>('load-agent')
+    const agent = await load({ path })
+    const validators = await loadValidators(agent.commands, api)
+
+    const { name } = result.function
+    assert(validators[name], 'validator not found: ' + name)
+    const parsed = JSON.parse(result.function.arguments)
+    validators[name](parsed)
+
+    log('halt complete', name, parsed)
+    return parsed
   },
 }
 
@@ -97,7 +148,7 @@ const complete = async (
   return assistant
 }
 const safeAssistantName = (message: Thread['messages'][number]) => {
-  if (message.role !== 'assistant') {
+  if (message.role !== 'assistant' && message.role !== 'system') {
     return message
   }
   if (!message.name) {
@@ -107,4 +158,29 @@ const safeAssistantName = (message: Thread['messages'][number]) => {
     return { ...message, name: message.name.replaceAll(/[^a-zA-Z0-9_-]/g, '_') }
   }
   return message
+}
+
+// TODO kill this function
+export const halt = async <T extends ApiFunctions>(
+  content: string,
+  path: string, // but we want to run it with the full thread available
+  isolate: Isolate,
+  name: keyof T,
+  api: IA,
+) => {
+  const { once } = await api.actions<Api>('ai-completions')
+  const assistant = await once({ path, content })
+  assert(assistant.tool_calls, 'tool_calls missing from once call')
+  assert(assistant.tool_calls.length === 1, 'tool_calls length is not 1')
+  const result = assistant.tool_calls[0]
+  log('result', result)
+  assert(typeof name === 'string', 'name is not a string')
+
+  expect(result.function.name).toEqual(`${isolate}_${name}`)
+  const schema = await api.apiSchema(isolate)
+  const parsed = JSON.parse(result.function.arguments)
+
+  assert(typeof parsed === 'object', 'parsed is not an object')
+  validator(schema[name], name)(parsed)
+  return parsed
 }

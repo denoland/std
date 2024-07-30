@@ -63,27 +63,3 @@ export const functions: Functions<Api> = {
     throw new Error('Never execute this function: ' + params.value)
   },
 }
-
-export const halt = async <T extends ApiFunctions>(
-  content: string,
-  path: string,
-  isolate: Isolate,
-  name: keyof T,
-  api: IA,
-) => {
-  const { once } = await api.actions<completions.Api>('ai-completions')
-  const assistant = await once({ path, content })
-  assert(assistant.tool_calls, 'tool_calls missing from once call')
-  assert(assistant.tool_calls.length === 1, 'tool_calls length is not 1')
-  const result = assistant.tool_calls[0]
-  log('result', result)
-  assert(typeof name === 'string', 'name is not a string')
-
-  expect(result.function.name).toEqual(`${isolate}_${name}`)
-  const schema = await api.apiSchema(isolate)
-  const parsed = JSON.parse(result.function.arguments)
-
-  assert(typeof parsed === 'object', 'parsed is not an object')
-  validator(schema, name)(parsed)
-  return parsed
-}

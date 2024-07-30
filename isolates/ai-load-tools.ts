@@ -9,16 +9,20 @@ import {
   Params,
 } from '@/constants.ts'
 import { isIsolate } from './index.ts'
+import validator from '@io/validator.ts'
 const log = Debug('AI:tools:load-tools')
 
 export const loadTools = async (commands: string[] = [], api: IA) => {
   const result = await load(commands, api)
-  return result?.tools || undefined
+  return result.tools
 }
 export const loadActions = async (commands: string[] = [], api: IA) => {
   const result = await load(commands, api)
-  assert(result?.actions, 'missing actions')
   return result.actions
+}
+export const loadValidators = async (commands: string[] = [], api: IA) => {
+  const result = await load(commands, api)
+  return result.validators
 }
 type Action = (
   params: Params,
@@ -28,6 +32,8 @@ type Action = (
 const load = async (commands: string[] = [], api: IA) => {
   const tools: OpenAI.ChatCompletionTool[] = []
   const actions: Record<string, Action> = {}
+  const validators: Record<string, (parameters: Params) => void> = {}
+
   const actorId = tryGetActorId(api)
   for (const cmd of commands) {
     log('loading command:', cmd)
@@ -75,6 +81,7 @@ const load = async (commands: string[] = [], api: IA) => {
         const promise = actions[functionName](params) as MetaPromise
         return { promise }
       }
+      validators[name] = validator(schema[functionName], name)
       tool = isolateToGptApi(name, schema[functionName])
     }
     assert(action, `missing action: ${cmd}`)
@@ -85,9 +92,7 @@ const load = async (commands: string[] = [], api: IA) => {
     tools.push(tool)
   }
 
-  if (tools.length) {
-    return { tools, actions }
-  }
+  return { tools, actions, validators }
 }
 const agentTool = (
   agent: Agent,

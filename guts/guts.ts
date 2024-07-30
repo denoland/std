@@ -48,7 +48,7 @@ export default (name: string, cradleMaker: CradleMaker) => {
   Deno.test(prefix + 'rm', async () => {
     const { backchat, engine } = await cradleMaker()
     const first = await backchat.rm({ repo: 'dreamcatcher-tech/HAL' })
-    expect(first).toBeFalsy()
+    expect(first.reposDeleted).toBeFalsy()
 
     await backchat.init({ repo: 'dreamcatcher-tech/HAL' })
     const second = await backchat.rm({ repo: 'dreamcatcher-tech/HAL' })

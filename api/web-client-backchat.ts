@@ -96,7 +96,7 @@ export class Backchat {
    * tmp files that are created when a user attaches files in the browser.  Can
    * also include structured data that widgets have prepared.
    */
-  async prompt(content = '', threadId?: string, attachments?: string[]) {
+  async prompt(content: string, threadId?: string, attachments?: string[]) {
     const pierce: PierceRequest = {
       target: this.#pid,
       ulid: ulid(),
@@ -114,7 +114,7 @@ export class Backchat {
     const promise = this.#watcher.watch(pierce.ulid)
     // TODO handle an error in pierce
     await this.#engine.pierce(pierce)
-    return promise
+    await promise
   }
   async actions<T>(isolate: string, opts: RpcOpts = {}) {
     const { target = this.#pid, ...procOpts } = opts

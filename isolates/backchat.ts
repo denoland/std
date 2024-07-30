@@ -14,7 +14,7 @@ import {
 import * as actors from './actors.ts'
 import { assert, Debug } from '@utils'
 import * as longthread from './longthread.ts'
-import { halt } from '@/isolates/utils.ts'
+import { halt } from '@/isolates/ai-completions.ts'
 const log = Debug('AI:backchat')
 
 export const api = {
@@ -36,7 +36,10 @@ export const api = {
     required: ['content'],
     properties: {
       content: { type: 'string' },
-      threadId: { type: 'string' },
+      threadId: {
+        type: 'string',
+        pattern: threadIdRegex.source + '|' + backchatIdRegex.source,
+      },
       attachments: {
         type: 'array',
         items: { type: 'string' },
@@ -144,16 +147,21 @@ export const functions: Functions<Api> = {
     }
 
     const backchat = await readBackchat(api)
+    if (!threadId) {
+      threadId = backchat.focus
+    }
     if (backchat.focus !== threadId) {
       backchat.focus = threadId
       writeBackchat(backchat, api)
     }
 
     if (threadId === backchatId) {
+      log('backchat thread', threadId)
       const functions = await api.functions<longthread.Api>('longthread')
       return functions.switchboard({ threadId, content, actorId })
     }
 
+    log('regular thread', threadId)
     const target = addPeer(api.pid, threadId)
     const actions = await api.actions<longthread.Api>('longthread', { target })
     return actions.switchboard({ threadId, content, actorId })

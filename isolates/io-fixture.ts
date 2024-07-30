@@ -20,7 +20,7 @@ export const api = {
     properties: {
       path: { type: 'string' },
       content: { type: 'string' },
-      delay: { type: 'integer', minimum: 0 },
+      delayMs: { type: 'integer', minimum: 0 },
     },
   },
   error: {
