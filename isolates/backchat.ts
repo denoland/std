@@ -50,15 +50,8 @@ export const api = {
   thread: {
     type: 'object',
     description:
-      'Create a new thread.  If the agent image is not specified then it will use the configured default agent.  Any file from anywhere can be used as an agent.',
-    required: ['agentPath'],
-    properties: {
-      agentPath: {
-        type: 'string',
-        minLength: 1,
-        description: 'The relative path to the agent .md file to load',
-      },
-    },
+      'Create a new blank thread and switch the current focus to this new thread so it is displayed for the user to converse with',
+    properties: {},
   },
   relay: {
     type: 'object',
@@ -114,7 +107,7 @@ export type Api = {
   prompt: (
     params: { content: string; threadId: string; attachments?: string[] },
   ) => void
-  thread: (params: { path: string }) => void
+  thread: (_: void) => void
   relay: (params: { request: UnsequencedRequest }) => void
   focus: (params: { threadId: string }) => Promise<void>
 }
@@ -168,9 +161,9 @@ export const functions: Functions<Api> = {
 
     // TODO handle remote threadIds with symlinks in the threads dir
   },
-  thread: async ({ path }, api) => {
-    log('thread:', path, print(api.pid))
-    const threadId = generateThreadId(api.commit + 'thread' + path)
+  thread: async (_, api) => {
+    log('thread', print(api.pid))
+    const threadId = generateThreadId(api.commit + 'backchat:thread')
 
     const target = getActorPid(api.pid)
     const actions = await api.actions<actors.Api>('actors', { target })
