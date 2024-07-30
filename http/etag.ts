@@ -29,9 +29,6 @@ export interface FileInfo {
   size: number;
 }
 
-/** Represents an entity that can be used for generating an ETag. */
-export type ETagSource = string | Uint8Array | FileInfo;
-
 const encoder = new TextEncoder();
 
 const DEFAULT_ALGORITHM: AlgorithmIdentifier = "SHA-256";
@@ -95,9 +92,11 @@ async function calcFileInfo(
 }
 
 /**
- * Calculate an ETag for an entity. When the entity is a specific set of data
- * it will be fingerprinted as a "strong" tag, otherwise if it is just file
- * information, it will be calculated as a weak tag.
+ * Calculate an ETag for string or `Uint8Array` entities. This returns a
+ * {@linkcode https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/ETag#etag_value | strong tag}
+ * of the form `"<ascii chars>"`, which guarantees the byte-for-byte equality of the resource.
+ *
+ * You can optionally set true to the `weak` option to get a weak tag.
  *
  * @example Usage
  * ```ts
@@ -117,7 +116,40 @@ async function calcFileInfo(
  * @returns The calculated ETag.
  */
 export async function eTag(
-  entity: ETagSource,
+  entity: string | Uint8Array,
+  options?: ETagOptions,
+): Promise<string>;
+/**
+ * Calculate an ETag for file information entity. This returns a
+ * {@linkcode https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/ETag#w | weak tag}
+ * of the form `W\"<ascii chars>"`, which guarantees the equivalence of the resource,
+ * not the byte-for-byte equality.
+ *
+ * @example Usage
+ * ```ts
+ * import { eTag } from "@std/http/etag";
+ * import { assert } from "@std/assert";
+ *
+ * const fileInfo = await Deno.stat("README.md");
+ *
+ * const etag = await eTag(fileInfo);
+ * assert(etag);
+ *
+ * const body = (await Deno.open("README.md")).readable;
+ *
+ * const res = new Response(body, { headers: { etag } });
+ * ```
+ *
+ * @param entity The entity to get the ETag for.
+ * @param options Various additional options.
+ * @returns The calculated ETag.
+ */
+export async function eTag(
+  entity: FileInfo,
+  options?: ETagOptions,
+): Promise<string | undefined>;
+export async function eTag(
+  entity: string | Uint8Array | FileInfo,
   options: ETagOptions = {},
 ): Promise<string | undefined> {
   const weak = options.weak ?? isFileInfo(entity);

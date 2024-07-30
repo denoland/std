@@ -6,12 +6,26 @@ export type { ParseOptions, ReviverFunction };
 
 /** Options for {@linkcode parse}. */
 interface ParseOptions {
-  /** Provide custom parsing of the value in a key/value pair. */
+  /**
+   * Provide custom parsing of the value in a key/value pair. Similar to the
+   * {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/parse#reviver | reviver}
+   * function in {@linkcode JSON.parse}.
+   */
   reviver?: ReviverFunction;
 }
 
 /**
- * Parse an INI config string into an object. Provide formatting options to override the default assignment operator.
+ * Parse an INI config string into an object.
+ *
+ * Values are parsed as strings by default to preserve data parity from the
+ * original.
+ *
+ * Nested sections, repeated key names within a section, and key/value arrays
+ * are not supported. White space padding and lines starting with `#`, `;`, or
+ * `//` will be treated as comments.
+ *
+ * @throws {SyntaxError} If the INI string is invalid or if it contains
+ * multi-line values.
  *
  * @example Usage
  * ```ts

@@ -27,7 +27,7 @@ import {
 /**
  * Name of the schema to use.
  *
- * > ![NOTE]
+ * > [!NOTE]
  * > It is recommended to use the schema that is most appropriate for your use
  * > case. Doing so will avoid any unnecessary processing and benefit
  * > performance.

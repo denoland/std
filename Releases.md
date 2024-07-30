@@ -83,6 +83,7 @@
 
 #### @std/text 1.0.1 (patch)
 
+- feat(text/unstable): add toConstantCase() (#5110)
 - fix(text): unicode support and word splitting according to case (#5447)
 - perf(text): make `levenshteinDistance()` up to 147x faster (#5527)
 - test(text): add more testcases for `levenshteinDistance` (#5528)
