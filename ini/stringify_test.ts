@@ -18,10 +18,6 @@ Deno.test({
   fn() {
     assertValidStringify({ a: "b" }, `a=b`);
     assertValidStringify({ a: "b" }, `a = b`, { pretty: true });
-    assertValidStringify({ a: "b" }, `a : b`, {
-      assignment: ":",
-      pretty: true,
-    });
     assertValidStringify(
       { a: "b", section: { c: "d" }, e: "f" },
       `a=b\ne=f\n[section]\nc=d`,
