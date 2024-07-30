@@ -1,10 +1,7 @@
-import * as loadHelp from './load-agent.ts'
-import * as thread from './ai.ts'
 import { assert, Debug } from '@utils'
 import type OpenAI from 'openai'
 import {
   Agent,
-  generateThreadId,
   getActorId,
   IA,
   JSONSchemaType,

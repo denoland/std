@@ -20,7 +20,6 @@ import * as threads from './threads.ts'
 
 import * as completions from './ai-completions.ts'
 import * as loadTools from './ai-load-tools.ts'
-import * as ai from './ai.ts'
 
 import * as assistantsEffects from './assistants-effects.ts'
 import * as assistants from './assistants.ts'
@@ -50,7 +49,6 @@ const isolatesExport = {
 
   'ai-completions': completions,
   'ai-load-tools': loadTools,
-  ai,
 
   'assistants-effects': assistantsEffects,
   assistants,
