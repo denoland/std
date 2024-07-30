@@ -2,6 +2,7 @@ import { transcribe } from './isolates/ai-completions.ts'
 import Compartment from './io/compartment.ts'
 import '@std/dotenv/load'
 import {
+  ActorApi,
   addBranches,
   backchatIdRegex,
   C,
@@ -24,7 +25,7 @@ import * as artifact from '@/isolates/artifact.ts'
 import { ulid } from 'ulid'
 import { Crypto } from '@/api/web-client-crypto.ts'
 import { PierceWatcher } from '@/api/web-client-watcher.ts'
-import { ActorAdmin, ActorApi } from '@/isolates/actors.ts'
+import { ActorAdmin } from '@/isolates/actors.ts'
 import { Backchat } from '@/api/web-client-backchat.ts'
 import { tryActorId } from '@/isolates/machines.ts'
 const log = Debug('AI:engine')

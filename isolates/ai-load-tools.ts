@@ -39,30 +39,31 @@ const load = async (commands: string[] = [], api: IA) => {
     let name: string
     const isAgent = !cmd.includes(':')
     if (isAgent) {
+      throw new Error('Not implemented')
       // TODO cache and parallelize
-      const { load } = await api.functions<loadHelp.Api>('load-agent')
-      const agent = await load({ path: cmd })
-      assert(agent.description, `missing description: ${cmd}`)
-      name = agent.name
-      const schemas = await api.apiSchema('ai')
-      action = async ({ prompt }: Params) => {
-        const threadId = generateThreadId(api.commit + prompt)
-        // TODO should we be calling backchat to do this job ?
-        const { execute } = await api.actions<thread.Api>('ai', {
-          branchName: threadId,
-          // TODO noClose is not used ?
-        })
-        assert(typeof prompt === 'string', `invalid text: ${prompt}`)
-        log('agent command:', name, prompt, api.commit)
-        const promise = execute({
-          threadId,
-          agentPath: cmd,
-          content: prompt,
-          actorId,
-        })
-        return { promise }
-      }
-      tool = agentTool(agent, schemas.execute)
+      // const { load } = await api.functions<loadHelp.Api>('load-agent')
+      // const agent = await load({ path: cmd })
+      // assert(agent.description, `missing description: ${cmd}`)
+      // name = agent.name
+      // const schemas = await api.apiSchema('ai')
+      // action = async ({ prompt }: Params) => {
+      //   const threadId = generateThreadId(api.commit + prompt)
+      //   // TODO should we be calling backchat to do this job ?
+      //   const { execute } = await api.actions<thread.Api>('ai', {
+      //     branchName: threadId,
+      //     // TODO noClose is not used ?
+      //   })
+      //   assert(typeof prompt === 'string', `invalid text: ${prompt}`)
+      //   log('agent command:', name, prompt, api.commit)
+      //   const promise = execute({
+      //     threadId,
+      //     agentPath: cmd,
+      //     content: prompt,
+      //     actorId,
+      //   })
+      //   return { promise }
+      // }
+      // tool = agentTool(agent, schemas.execute)
     } else {
       const [isolate, functionName] = cmd.split(':')
       assert(isIsolate(isolate), `missing isolate: ${isolate}`)

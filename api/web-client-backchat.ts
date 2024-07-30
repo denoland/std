@@ -3,7 +3,6 @@
 import {
   ActorApi,
   addBranches,
-  ApiFunctions,
   backchatIdRegex,
   EngineInterface,
   freezePid,
@@ -83,22 +82,21 @@ export class Backchat {
   }
   /**
    * This is the main function that is used to interact with the backchat
-   * system. The prompt is relayed thru backchat, and then if it is not
-   * intercepted, it will go on to the targeted thread, where the agent running
-   * that thread will respond.
+   * system. The prompt is relayed thru a switchboard agent to select what is
+   * the best agent to process this message, which will be loaded and asked to
+   * process this message.
    * @param content The optional text that is to be parsed by the AI.  It can be
    * empty if there are files attached or to indicate a positive response to
    * something.
-   * @param threadId The thread we targeting with the prompt.  Backchat may
-   * intercept this before it reaches target. The target can be anything, since
-   * the user might have used the back button to navigate away from the current
-   * focus
+   * @param threadId The thread we targeting with the prompt.  The client may
+   * have used history to navigate to a different threadId.  As soon as this is
+   * processed, the focus of backchat will be switched.
    * @param attachments The relative paths to the files that were attached with
    * the  prompt, which may include directories.  May include pointers to the
-   * tmp files that are created when a user attaches files in the browser.
+   * tmp files that are created when a user attaches files in the browser.  Can
+   * also include structured data that widgets have prepared.
    */
   async prompt(content = '', threadId?: string, attachments?: string[]) {
-    // pierce the backchat thread
     const pierce: PierceRequest = {
       target: this.#pid,
       ulid: ulid(),
@@ -118,19 +116,7 @@ export class Backchat {
     await this.#engine.pierce(pierce)
     return promise
   }
-  /** The path to the current session that this backchat is pointing to.  Can
-   * sometimes be itself */
-  get focus() {
-    return 'todo'
-  }
-  get isSelfFocused() {
-    return this.focus === this.threadId
-  }
-
-  stop() {
-    this.#abort.abort()
-  }
-  async actions<T = ApiFunctions>(isolate: string, opts: RpcOpts = {}) {
+  async actions<T>(isolate: string, opts: RpcOpts = {}) {
     const { target = this.#pid, ...procOpts } = opts
     const schema = await this.apiSchema(isolate)
     const execute = (request: UnsequencedRequest) => this.#action(request)
@@ -256,6 +242,7 @@ export class Backchat {
     return promise
   }
 }
+
 type Files = {
   write: (
     params: { path: string; content?: string },

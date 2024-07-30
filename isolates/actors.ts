@@ -4,6 +4,7 @@ import {
   addBranches,
   backchatIdRegex,
   colorize,
+  Functions,
   getActorId,
   IA,
   isActorBranch,
@@ -16,17 +17,16 @@ import {
   RpcOpts,
   SU_ACTOR,
   SU_BACKCHAT,
-  ThreadArgs,
 } from '@/constants.ts'
 import { assert, Debug, equal, expect } from '@utils'
 import * as backchat from './backchat.ts'
-import * as ai from './ai.ts'
+import * as longthread from './longthread.ts'
 import * as session from './session.ts'
 import * as files from './files.ts'
 import * as system from './system.ts'
 import * as machines from './machines.ts'
 import { Crypto } from '@/api/web-client-crypto.ts'
-export type { ActorApi }
+
 const log = Debug('AI:actors')
 
 export type ActorAdmin = {
@@ -44,7 +44,7 @@ export type ActorAdmin = {
    * The operation leaves a record of what auth provider approved what
    * unification and at what commit.
    */
-  surrender: (params: { authProvider: PID }) => Promise<void>
+  surrender: (params: { authProvider: PID }) => Promise<string>
   /**
    * Register an auth provider that is allowed to authorize merging actorIds.
    * Can only be called by the installation owner account.
@@ -52,7 +52,10 @@ export type ActorAdmin = {
   addAuthProvider: (params: { provider: PID; name: string }) => Promise<void>
 }
 
-export type Api = ActorAdmin & ActorApi
+export type Api =
+  & { '@@install': (params: { superuser: string }) => Promise<void> }
+  & ActorAdmin
+  & ActorApi
 
 const init = {
   type: 'object',
@@ -95,11 +98,13 @@ export const api = {
         type: 'string',
         description:
           'The backchat id to create.  If the backchat id already exists, an error will be thrown',
+        pattern: backchatIdRegex.source,
       },
       machineId: {
         type: 'string',
         description:
           'The machine id to add to the actors list of machines.  If the machine id already exists, an error will be thrown',
+        pattern: machineIdRegex.source,
       },
     },
     additionalProperties: false,
@@ -107,11 +112,8 @@ export const api = {
   thread: {
     type: 'object',
     additionalProperties: false,
-    required: ['agentPath', 'threadId'],
-    properties: {
-      agentPath: { type: 'string' },
-      threadId: { type: 'string' },
-    },
+    required: ['threadId'],
+    properties: { threadId: { type: 'string' } },
   },
   init,
   clone: init,
@@ -148,10 +150,9 @@ export const api = {
   },
 }
 
-export const functions = {
-  async '@@install'(p: { superuser: string }, api: IA) {
+export const functions: Functions<Api> = {
+  async '@@install'({ superuser }, api) {
     // TODO set ACL on io.json to only run this isolate
-    const { superuser } = p
     assert(Crypto.assert(superuser), 'invalid superuser: ' + superuser)
     assert(isBaseRepo(api.pid), '@@install not base: ' + print(api.pid))
     log('@@install', print(api.pid))
@@ -180,16 +181,9 @@ export const functions = {
     })
     log('@@install complete', print(pid))
   },
-  async createActor(
-    p: { machineId: string; actorId: string; backchatId: string },
-    api: IA,
-  ) {
+  async createActor({ machineId, actorId, backchatId }, api) {
     assert(isBaseRepo(api.pid), 'createActor not base: ' + print(api.pid))
-    const { machineId, actorId, backchatId } = p
-    assert(machineIdRegex.test(machineId), 'machineId: ' + machineId)
-    assert(actorIdRegex.test(actorId), 'actorId: ' + actorId)
-    assert(backchatIdRegex.test(backchatId), 'backchatId: ' + backchatId)
-    log('createActor', colorize(p.machineId), colorize(p.actorId))
+    log('createActor', colorize(machineId), colorize(actorId))
 
     const opts: RpcOpts = {
       noClose: true,
@@ -207,11 +201,10 @@ export const functions = {
     // TODO parallelize
     return pid
   },
-  async backchat(p: { backchatId: string; machineId?: string }, api: IA) {
+  async backchat({ backchatId, machineId }, api) {
     assert(isActorBranch(api.pid), 'Not actor branch: ' + print(api.pid))
 
     log('backchat', print(api.pid))
-    const { backchatId, machineId } = p
     const isNewActor = !!machineId
     if (isNewActor) {
       const config: ActorConfig = {
@@ -233,16 +226,13 @@ export const functions = {
     log('backchat pid', print(pid))
     return pid
   },
-  async thread({ agentPath, threadId }: ThreadArgs, api: IA) {
+  async thread({ threadId }, api) {
     const opts = { branchName: threadId, noClose: true }
-    const actions = await api.actions<ai.Api>('ai', opts)
-    const pid = await actions.start({ agentPath, threadId })
+    const actions = await api.actions<longthread.Api>('longthread', opts)
+    const pid = await actions.start({ threadId })
     return pid
   },
-  async addAuthProvider(
-    { provider, name }: { provider: PID; name: string },
-    api: IA,
-  ) {
+  async addAuthProvider({ provider, name }, api) {
     assert(isBaseRepo(provider), 'addAuthProvider not base: ' + print(provider))
     log('addAuthProvider provider', print(provider))
     log('addAuthProvider in', print(api.pid))
@@ -255,10 +245,7 @@ export const functions = {
     config.authProviders[name] = provider
     api.writeJSON('config.json', config)
   },
-  rm: async (
-    { repo, all = false }: { repo?: string; all?: boolean },
-    api: IA,
-  ) => {
+  rm: async ({ repo, all = false }, api) => {
     assert(isActorBranch(api.pid), 'rm not actor: ' + print(api.pid))
     log('rm', repo, all)
 
@@ -274,11 +261,11 @@ export const functions = {
       assert(equal(config.repos, configCheck), 'config changed')
       config.repos = {}
       api.writeJSON('config.json', config)
-      return true
+      return { reposDeleted: promises.length }
     }
     assert(repo, 'must specify repo or all')
     if (!(repo in config.repos)) {
-      return false
+      return { reposDeleted: 0 }
     }
     const pid = config.repos[repo]
     log('rm', repo, print(pid), all)
@@ -288,9 +275,9 @@ export const functions = {
     assert(equal(config, configCheck), 'config changed')
     delete config.repos[repo]
     api.writeJSON('config.json', config)
-    return true
+    return { reposDeleted: 1 }
   },
-  lsRepos: async (_params: Params, api: IA) => {
+  lsRepos: async (_, api) => {
     assert(isActorBranch(api.pid), 'lsRepos not actor: ' + print(api.pid))
     const config = await readConfig(api)
     return Object.keys(config.repos)
@@ -335,10 +322,10 @@ export const functions = {
     log('init wrote repos:', Object.keys(config.repos))
     return { pid, head }
   },
-  surrender: async (params: { authProvider: PID }, api: IA) => {
+  surrender: async ({ authProvider }, api) => {
     assert(isBaseRepo(api.pid), 'surrender not base: ' + print(api.pid))
     log('surrender', print(api.pid))
-    log('surrender authProvider', print(params.authProvider))
+    log('surrender authProvider', print(authProvider))
     log('origin', print(api.origin.source))
 
     const actorId = getActorId(api.origin.source)
@@ -346,7 +333,7 @@ export const functions = {
     // ? is this allowed to happen ?
 
     // look up the pointer from the auth provider
-    const target = addBranches(params.authProvider, actorId)
+    const target = addBranches(authProvider, actorId)
     // TODO make this an api function exposed by the auth provider isolate
     const authActor = await api.actions<files.Api>('files', { target })
     // TODO implement readJSON<type> for remote reads
@@ -354,9 +341,7 @@ export const functions = {
     const pointer = JSON.parse(pointerString)
     log('authPointer', pointer)
 
-    if (pointer.actorId === actorId) {
-      return actorId
-    }
+    return actorId
 
     // TODO move every machine in this actor to merge with the baseActorId
   },

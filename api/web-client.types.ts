@@ -23,19 +23,15 @@ export enum PROCTYPE {
 export type { JSONSchemaType }
 export type ApiFunction = {
   (): unknown | Promise<unknown>
-  (arg1: { [key: string]: unknown }): unknown | Promise<unknown>
+  (...args: [{ [key: string]: unknown }]): unknown | Promise<unknown>
 }
 export type ApiFunctions = {
   [key: string]: ApiFunction
 }
-export interface ThreadArgs {
-  agentPath: string
-  threadId: string
-}
 type RepoParams = { repo: string; isolate?: string; params?: Params }
-export type ActorApi = ApiFunctions & {
+export type ActorApi = {
   backchat: (params: { backchatId: string; machineId?: string }) => Promise<PID>
-  thread: (params: ThreadArgs) => Promise<PID>
+  thread: (params: { threadId: string }) => Promise<PID>
   /** Clones from github, using the github PAT (if any) for the calling machine.
    * Updates the repo.json file in the actor branch to point to the new PID of
    * the clone.
@@ -44,10 +40,14 @@ export type ActorApi = ApiFunctions & {
 
   init: (params: RepoParams) => Promise<PidHead>
 
+  rm: (
+    params: { repo?: string; all?: boolean },
+  ) => Promise<{ reposDeleted: number }>
+
   /**
    * List all the repos that this Actor has created.
    */
-  lsRepos: () => Promise<string[]>
+  lsRepos: (params: void) => Promise<string[]>
 }
 export type IsolateReturn = JsonValue | undefined | void
 export type ProcessOptions = {
@@ -127,17 +127,10 @@ export const ENTRY_BRANCH = 'main'
 export type PartialPID = Omit<PID, 'repoId'>
 
 export type Thread = {
-  agent: Agent
   messages: OpenAI.ChatCompletionMessageParam[]
-  toolCommits: { [toolCallId: string]: CommitOid }
-}
-export type LongThread = {
-  messages: OpenAI.Beta.Threads.Message[]
-  additionalMessages: OpenAI.Beta.Threads.RunCreateParams.AdditionalMessage[]
   toolCommits: { [toolCallId: string]: CommitOid }
   /** Have any files been changed in this threads branch */
   isDirty?: boolean
-  externalId: string
   summaries?: {
     title: string
     summary: string
@@ -151,6 +144,11 @@ export type LongThread = {
 }
 export type BackchatThread = Thread & {
   focus: string
+}
+export type AssistantsThread = Thread & {
+  externalId: string
+  messages: OpenAI.Beta.Threads.Message[]
+  additionalMessages: OpenAI.Beta.Threads.RunCreateParams.AdditionalMessage[]
 }
 export type RemoteThread = {
   /** The location in the remote repo and the last known commit we have of it */
@@ -687,11 +685,8 @@ export const hash = (seed: string) => {
   const encoded = base32crockford.encode(hash)
   return encoded.slice(-16)
 }
-export const isBackchatSummoned = (text: string = '') => {
-  const plain = text.toLowerCase().trim()
-  return plain.startsWith('backchat') || plain.startsWith('back chat')
-}
-export const getContent = (message: LongThread['messages'][number]) => {
+
+export const getContent = (message: AssistantsThread['messages'][number]) => {
   const { content } = message
   if (content[0].type !== 'text') {
     throw new Error('content not text')

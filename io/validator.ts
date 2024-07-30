@@ -2,6 +2,7 @@ import ajvModule, { ErrorObject } from 'ajv'
 const Ajv = ajvModule.default
 
 import { assert } from '@utils'
+import { Params } from '@/constants.ts'
 
 let _ajv: typeof Ajv.prototype | undefined
 const loadAjv = () => {
@@ -15,7 +16,7 @@ export default (schema: object, functionName: string) => {
   const ajv = loadAjv()
   const validate = ajv.compile(schema)
 
-  return (parameters: object) => {
+  return (parameters: Params) => {
     if (!validate(parameters)) {
       assert(validate.errors, 'validate.errors is missing')
       throwIfNotValid(validate.errors, functionName)

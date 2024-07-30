@@ -1,3 +1,11 @@
+import validator from '@/io/validator.ts'
+import * as completions from './ai-completions.ts'
+import { ApiFunctions, Functions, IA } from '@/constants.ts'
+import { Isolate } from '@/isolates/index.ts'
+import { assert, Debug, expect } from '@utils'
+
+const log = Debug('AI:utils')
+
 export const api = {
   delay: {
     description:
@@ -27,14 +35,55 @@ export const api = {
     additionalProperties: false,
     properties: {},
   },
+  trueOrFalse: {
+    description:
+      `Make a tool call with either true or false as the value.  Used as a way to trigger exit calls from an AI model, rather than relying on text based results which can be unreliable`,
+    type: 'object',
+    additionalProperties: false,
+    required: ['value'],
+    properties: {
+      value: { type: 'boolean' },
+    },
+  },
 }
-export const functions = {
-  delay: async (params: { milliseconds: number }) => {
-    const { milliseconds } = params
+export type Api = {
+  delay: (params: { milliseconds: number }) => Promise<string>
+  relay: () => string
+  trueOrFalse: (params: { value: boolean }) => void
+}
+export const functions: Functions<Api> = {
+  delay: async ({ milliseconds }) => {
     await new Promise((resolve) => setTimeout(resolve, milliseconds))
     return new Date().toLocaleString()
   },
   relay: () => {
     return '@@ARTIFACT_RELAY@@'
   },
+  trueOrFalse: (params: { value: boolean }) => {
+    throw new Error('Never execute this function: ' + params.value)
+  },
+}
+
+export const halt = async <T extends ApiFunctions>(
+  content: string,
+  path: string,
+  isolate: Isolate,
+  name: keyof T,
+  api: IA,
+) => {
+  const { once } = await api.actions<completions.Api>('ai-completions')
+  const assistant = await once({ path, content })
+  assert(assistant.tool_calls, 'tool_calls missing from once call')
+  assert(assistant.tool_calls.length === 1, 'tool_calls length is not 1')
+  const result = assistant.tool_calls[0]
+  log('result', result)
+  assert(typeof name === 'string', 'name is not a string')
+
+  expect(result.function.name).toEqual(`${isolate}_${name}`)
+  const schema = await api.apiSchema(isolate)
+  const parsed = JSON.parse(result.function.arguments)
+
+  assert(typeof parsed === 'object', 'parsed is not an object')
+  validator(schema, name)(parsed)
+  return parsed
 }

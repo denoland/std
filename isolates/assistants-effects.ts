@@ -1,7 +1,12 @@
 import { Debug } from '@utils'
 import '@std/dotenv/load' // load .env variables
 import OpenAI from 'openai'
-import { Functions, generateAgentHash, LongThread, print } from '@/constants.ts'
+import {
+  AssistantsThread,
+  Functions,
+  generateAgentHash,
+  print,
+} from '@/constants.ts'
 import { loadTools } from './ai-load-tools.ts'
 import * as loadAgent from '@/isolates/load-agent.ts'
 import { assert } from '@std/assert'
@@ -163,7 +168,7 @@ export const functions: Functions<Api> = {
   },
   async run({ threadId, content, path }, api) {
     const threadPath = `threads/${threadId}.json`
-    const thread = await api.readJSON<LongThread>(threadPath)
+    const thread = await api.readJSON<AssistantsThread>(threadPath)
     const { externalId } = thread
     assert(externalId, 'thread not synced with openai')
 
@@ -197,7 +202,7 @@ export const functions: Functions<Api> = {
   },
   async runStream({ threadId, runOptions }, api) {
     const threadPath = `threads/${threadId}.json`
-    const thread = await api.readJSON<LongThread>(threadPath)
+    const thread = await api.readJSON<AssistantsThread>(threadPath)
     const { externalId } = thread
     assert(externalId, 'thread not synced with openai')
     log('running stream', threadId, externalId)

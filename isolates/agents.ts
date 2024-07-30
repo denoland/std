@@ -1,4 +1,4 @@
-import { IA, print } from '@/constants.ts'
+import { Functions, print } from '@/constants.ts'
 import { log } from '@utils'
 
 export const api = {
@@ -15,9 +15,6 @@ export const api = {
     additionalProperties: false,
   },
 }
-interface SearchArgs {
-  query: string
-}
 interface SearchResult {
   path: string
   name: string
@@ -25,11 +22,12 @@ interface SearchResult {
   imageUrl?: string
 }
 export type Api = {
-  search: (params: SearchArgs) => Promise<SearchResult[]>
+  search: (params: { query: string }) => Promise<SearchResult[]>
+  switch: (params: { agentPath: string }) => Promise<void>
 }
 
-export const functions = {
-  search: async ({ query }: SearchArgs, api: IA) => {
+export const functions: Functions<Api> = {
+  search: async ({ query }, api) => {
     // TODO make this the same as the files search function
 
     // read all the agent files in from disk
@@ -44,6 +42,28 @@ export const functions = {
     // interaction implies state
     log('search', query, print(api.pid))
     const cheapResults = await api.ls('agents')
-    return cheapResults.map((path) => `agents/${path}`)
+    return cheapResults.map((path) => ({
+      path: `agents/${path}`,
+      name: path,
+      reason: 'no reason available',
+    }))
+  },
+  switch: async ({ agentPath }, api) => {
+    log('switch', agentPath, print(api.pid))
+
+    // then this gets called, we need to break out of the tool execution, since
+    // we are now going to halt the current execution
+    // could submit tool results, but carry on the execution with the new agent
+    // this would let us show the switch in the ui.
   },
 }
+
+// ---
+// config:
+//   model:
+//   temperature: 0
+//   parallel_tool_calls: false
+//   tool_choice: required
+// commands:
+//   - agents:switch # switch in the chosen agent to the thread
+// ---

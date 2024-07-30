@@ -1,5 +1,5 @@
 import { assert, Debug } from '@utils'
-import { IA, LongThread, PID } from '@/constants.ts'
+import { AssistantsThread, IA, PID } from '@/constants.ts'
 import { Functions } from '@/constants.ts'
 import * as effects from './assistants-effects.ts'
 import { executeTools } from '@/isolates/ai-execute-tools.ts'
@@ -65,7 +65,7 @@ export const functions: Functions<Api> = {
       'assistants-effects',
     )
     const externalId = await createThread()
-    const thread: LongThread = {
+    const thread: AssistantsThread = {
       messages: [],
       toolCommits: {},
       externalId,
@@ -91,7 +91,7 @@ export const functions: Functions<Api> = {
   delete: async ({ threadId }, api) => {
     log('delete', threadId)
     const threadPath = `threads/${threadId}.json`
-    const { externalId } = await api.readJSON<LongThread>(threadPath)
+    const { externalId } = await api.readJSON<AssistantsThread>(threadPath)
     assert(externalId, 'missing externalId: ' + threadPath)
     api.delete(threadPath)
     const { deleteThread } = await api.actions<effects.Api>(
@@ -108,7 +108,7 @@ export const functions: Functions<Api> = {
 }
 
 const isDone = async (threadPath: string, api: IA) => {
-  const thread = await api.readJSON<LongThread>(threadPath)
+  const thread = await api.readJSON<AssistantsThread>(threadPath)
   const last = thread.messages[thread.messages.length - 1]
   if (!last || last.role !== 'assistant') {
     return false

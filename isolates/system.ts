@@ -3,6 +3,7 @@ import { assert, Debug } from '@utils'
 import {
   C,
   ENTRY_BRANCH,
+  Functions,
   IA,
   isPID,
   Params,
@@ -81,6 +82,7 @@ export type Api = {
   clone: (
     params: { repo: string; isolate?: string; params?: Params },
   ) => Promise<{ pid: PID; head: string; elapsed: number }>
+  pull: (params: { repo: string }) => Promise<void>
   rm: (params: { pid: PID }) => Promise<void>
   sideEffectClone: (
     params: { repo: string },
@@ -90,7 +92,7 @@ export type Api = {
   ) => Promise<{ pid: PID; head: string }>
   sideEffectFetch: (params: { pid: PID; repo: string }) => Promise<string>
 }
-export const functions = {
+export const functions: Functions<Api> = {
   init: async (
     p: { repo: string; isolate?: string; params?: Params },
     api: IA<C>,
@@ -122,11 +124,7 @@ export const functions = {
     assert(db, 'db not found')
     await db.rm(pid)
   },
-  clone: async (
-    p: { repo: string; isolate?: string; params: Params },
-    api: IA<C>,
-  ) => {
-    const { repo, isolate, params = {} } = p
+  clone: async ({ repo, isolate, params }, api: IA<C>) => {
     log('clone', repo, isolate, params)
 
     const actions = await api.actions<Api>('system')
@@ -135,7 +133,7 @@ export const functions = {
       await api.action({
         isolate,
         functionName: '@@install',
-        params,
+        params: params || {},
         proctype: PROCTYPE.SERIAL,
         target: pid,
       })
@@ -143,11 +141,10 @@ export const functions = {
     log('cloned %s in %ims', print(pid), elapsed)
     return { pid, head, elapsed }
   },
-  pull: async (params: { repo: string }, api: IA<C>) => {
-    log('pull', params, print(api.pid))
+  pull: async ({ repo }, api: IA<C>) => {
+    log('pull', repo, print(api.pid))
     const actions = await api.actions<Api>('system')
     const { pid } = api
-    const { repo } = params
     log('commit is', api.commit)
     const fetchHead = await actions.sideEffectFetch({ pid, repo })
     log('fetched', fetchHead)

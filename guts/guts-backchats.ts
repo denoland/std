@@ -2,6 +2,7 @@ import { expect, log } from '@utils'
 import { CradleMaker, hash, print } from '@/constants.ts'
 import { Crypto } from '@/api/web-client-crypto.ts'
 import { Backchat } from '@/api/web-client-backchat.ts'
+import { Api } from '@/isolates/io-fixture.ts'
 
 export default (name: string, cradleMaker: CradleMaker) => {
   const prefix = name + ':backchats: '
@@ -55,7 +56,9 @@ export default (name: string, cradleMaker: CradleMaker) => {
     const { pid } = await backchat.init({ repo })
 
     await t.step('ping', async () => {
-      const { branch } = await backchat.actions('io-fixture', { target: pid })
+      const { branch } = await backchat.actions<Api>('io-fixture', {
+        target: pid,
+      })
       const result = await branch()
       expect(result).toEqual('remote pong')
     })

@@ -4,6 +4,7 @@ import type OpenAI from 'openai'
 import { serializeError } from 'serialize-error'
 import { colorize, IA, sha1, Thread, withMeta } from '@/constants.ts'
 import { loadActions } from './ai-load-tools.ts'
+import * as loadAgent from './load-agent.ts'
 const base = 'AI:execute-tools'
 const log = Debug(base)
 const debugToolCall = Debug(base + ':ai-result-tool')
@@ -13,11 +14,16 @@ export const executeTools = async (threadPath: string, api: IA) => {
   // TODO only load what the assistant message needs
   log('execute tools:', threadPath)
   let thread = await api.readJSON<Thread>(threadPath)
-  const actions = await loadActions(thread.agent.commands, api)
 
   const assistant = thread.messages[thread.messages.length - 1]
   assert('tool_calls' in assistant, 'missing tool calls')
   assert(Array.isArray(assistant.tool_calls), 'tool calls must be an array')
+  assert(assistant.name, 'missing assistant name')
+  log('assistant:', assistant.name)
+
+  const { load } = await api.functions<loadAgent.Api>('load-agent')
+  const agent = await load({ path: assistant.name })
+  const actions = await loadActions(agent.commands, api)
 
   // TODO use the new openai runTools helper with a parser
   for (const call of assistant.tool_calls) {
@@ -71,7 +77,9 @@ export const executeTools = async (threadPath: string, api: IA) => {
       }
     } catch (error) {
       log('tool call error:', error)
-      message.content = JSON.stringify(serializeError(error), null, 2)
+      const serializeable = serializeError(error)
+      delete serializeable.stack
+      message.content = JSON.stringify(serializeable, null, 2)
     }
     debugToolResult(message.content)
     thread.messages[messageIndex] = message

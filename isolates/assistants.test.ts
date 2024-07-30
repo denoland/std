@@ -1,5 +1,5 @@
 import { expect, log } from '@utils'
-import { generateThreadId, getContent, LongThread } from '../constants.ts'
+import { AssistantsThread, generateThreadId, getContent } from '../constants.ts'
 import * as assistants from './assistants.ts'
 import DB from '@/db.ts'
 import { Engine } from '@/engine.ts'
@@ -38,7 +38,7 @@ Deno.test.only('assistants chat', async (t) => {
   await t.step('hello world', async () => {
     const content = 'cheese emoji'
     await assistants.run({ threadId, path, content, actorId })
-    const result = await backchat.readJSON<LongThread>(threadPath)
+    const result = await backchat.readJSON<AssistantsThread>(threadPath)
     log('result', result)
     expect(result.messages).toHaveLength(2)
     expect(getContent(result.messages[1])).toBe('🧀')
@@ -50,7 +50,7 @@ Deno.test.only('assistants chat', async (t) => {
 
     await assistants.run({ threadId, path, content, actorId })
 
-    const result = await backchat.readJSON<LongThread>(threadPath)
+    const result = await backchat.readJSON<AssistantsThread>(threadPath)
     log('result', result)
     // expect(fn.function).toEqual({ name: 'io-fixture_local', arguments: '{}' })
   })

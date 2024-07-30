@@ -1,5 +1,5 @@
 import { Debug, delay, expect } from '@utils'
-import { IA, pidSchema } from '@/constants.ts'
+import { Functions, IA, pidSchema } from '@/constants.ts'
 import { PID } from '@/constants.ts'
 import { withMeta } from '@/api/web-client.types.ts'
 const log = Debug('AI:io-fixture')
@@ -110,67 +110,72 @@ export const api = {
   },
 }
 export type Api = {
-  write: (params: { path: string; content: string }) => Promise<void>
-
+  write: (params: { path: string; content: string }) => void
+  writeSlow: (
+    params: { path: string; content: string; delayMs: number },
+  ) => Promise<void>
   fileAccumulation: (
     params: { path: string; content: string; count: number },
   ) => Promise<void>
   loopAccumulation: {
     (params: { path: string; content: string; count: number }): Promise<void>
   }
-  local: () => Promise<string>
+  local: () => string
+  branch: (_: void) => Promise<string>
+  ping: (params: { message?: string }) => string | undefined
+  pong: () => string
+  error: (params: { message: string }) => void
+  compound: (params: { target?: PID }) => Promise<string>
+  parallel: (params: { count: number }) => Promise<string[]>
+  squared: (
+    params: { count: number; multiplier: number },
+  ) => Promise<string[][]>
+  touch: (params: { count: number; prefix?: string; suffix?: string }) => void
 }
-export const functions = {
-  write: (params: { path: string; content: string }, api: IA) => {
-    log('write', params)
-    api.write(params.path, params.content)
+export const functions: Functions<Api> = {
+  write: ({ path, content }, api) => {
+    log('write', path, content)
+    api.write(path, content)
   },
-  async writeSlow(
-    params: { path: string; content: string; delay: number },
-    api: IA,
-  ) {
-    log('writeSlow', params)
+  async writeSlow({ path, content, delayMs }, api) {
+    log('writeSlow', path, content, delayMs)
     let string = ''
-    for (const char of params.content) {
+    for (const char of content) {
       string += char
-      api.write(params.path, string)
-      await delay(10)
+      api.write(path, string)
+      await delay(delayMs)
     }
     // TODO extend to test with large strings so we can check performance impact
   },
-  error: ({ message }: { message: string }) => {
+  error: ({ message }) => {
     log('error', message)
     throw new Error(message)
   },
-  branch: async (_: object, api: IA) => {
+  branch: async (_, api) => {
     log('branch')
-    const { pong } = await api.actions('io-fixture', { branch: true })
-    const result = await pong({})
+    const { pong } = await api.actions<Api>('io-fixture', { branch: true })
+    const result = await pong()
     return result
   },
-  compound: async (params: { target?: PID }, api: IA) => {
-    const { target } = params
+  compound: async ({ target }, api) => {
     log('compound target:', target)
-    const { pong } = await api.actions('io-fixture', { target })
-    const result = await pong({})
+    const { pong } = await api.actions<Api>('io-fixture', { target })
+    const result = await pong()
     return result
   },
-  parallel: async (params: { count: number }, api: IA) => {
-    const { local } = await api.actions('io-fixture', { branch: true })
+  parallel: async ({ count }, api) => {
+    const { local } = await api.actions<Api>('io-fixture', { branch: true })
     const promises = []
-    for (let i = 0; i < params.count; i++) {
-      promises.push(local({}))
+    for (let i = 0; i < count; i++) {
+      promises.push(local())
     }
     return Promise.all(promises)
   },
-  squared: async (
-    params: { count: number; multiplier: number },
-    api: IA,
-  ) => {
-    const { parallel } = await api.actions('io-fixture', { branch: true })
+  squared: async ({ count, multiplier }, api) => {
+    const { parallel } = await api.actions<Api>('io-fixture', { branch: true })
     const promises = []
-    for (let i = 0; i < params.multiplier; i++) {
-      promises.push(parallel({ count: params.count }))
+    for (let i = 0; i < multiplier; i++) {
+      promises.push(parallel({ count }))
     }
     return Promise.all(promises)
   },
@@ -231,16 +236,12 @@ export const functions = {
     log('local')
     return 'local reply'
   },
-  ping: (params: { message?: string }) => {
-    log('ping', params)
-    return params.message
+  ping: ({ message }) => {
+    log('ping', message)
+    return message
   },
-  touch: (
-    params: { count: number; prefix: string; suffix: string },
-    api: IA,
-  ) => {
-    const { count, prefix = '', suffix = '' } = params
-    log('touch', params)
+  touch: ({ count, prefix = '', suffix = '' }, api) => {
+    log('touch', count, prefix, suffix)
     for (let i = 0; i < count; i++) {
       const path = `${prefix}${i}${suffix}`
       api.write(path)

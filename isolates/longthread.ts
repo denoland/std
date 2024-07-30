@@ -1,8 +1,8 @@
 import { assert, Debug } from '@utils'
-import { IA, LongThread, PID } from '@/constants.ts'
+import { actorIdRegex, IA, PID, Thread, threadIdRegex } from '@/constants.ts'
 import { Functions } from '@/constants.ts'
-import * as assistants from './assistants-effects.ts'
 import { executeTools } from '@/isolates/ai-execute-tools.ts'
+import * as completions from '@/isolates/ai-completions.ts'
 const log = Debug('AI:longthread')
 
 export const api = {
@@ -29,18 +29,15 @@ export const api = {
     },
     additionalProperties: false,
   },
-  delete: {
+  switchboard: {
     type: 'object',
-    required: ['threadId'],
+    required: ['threadId', 'content', 'actorId'],
     properties: {
-      threadId: { type: 'string' },
+      threadId: { type: 'string', pattern: threadIdRegex.source },
+      content: { type: 'string' },
+      actorId: { type: 'string', pattern: actorIdRegex.source },
     },
     additionalProperties: false,
-  },
-  deleteAllAgents: {
-    type: 'object',
-    additionalProperties: false,
-    properties: {},
   },
 }
 export interface Api {
@@ -52,8 +49,9 @@ export interface Api {
     content: string
     actorId: string
   }) => Promise<void>
-  delete: (params: { threadId: string }) => Promise<void>
-  deleteAllAgents: (params: void) => Promise<void>
+  switchboard: (
+    params: { threadId: string; content: string; actorId: string },
+  ) => Promise<void>
 }
 
 export const functions: Functions<Api> = {
@@ -61,23 +59,22 @@ export const functions: Functions<Api> = {
     log('start', threadId)
     const threadPath = `threads/${threadId}.json`
     assert(!await api.exists(threadPath), `thread exists: ${threadPath}`)
-    const { createThread } = await api.actions<assistants.Api>('assistants')
-    const externalId = await createThread()
-    const thread: LongThread = {
+    const thread: Thread = {
       messages: [],
       toolCommits: {},
-      externalId,
-      additionalMessages: [],
     }
     api.writeJSON(threadPath, thread)
     return api.pid
   },
   run: async ({ threadId, path, content, actorId }, api) => {
-    log('run', threadId, path, content, actorId)
-    const { run } = await api.actions<assistants.Api>('assistants')
     const threadPath = `threads/${threadId}.json`
+    const thread = await api.readJSON<Thread>(threadPath)
+    thread.messages.push({ name: actorId, role: 'user', content })
+    api.writeJSON(threadPath, thread)
+
+    const { complete } = await api.actions<completions.Api>('ai-completions')
     while (!await isDone(threadPath, api)) {
-      await run({ threadId, content, path, actorId })
+      await complete({ threadId, path })
       if (await isDone(threadPath, api)) {
         return
       }
@@ -85,28 +82,30 @@ export const functions: Functions<Api> = {
       await executeTools(threadPath, api)
     }
   },
-  delete: async ({ threadId }, api) => {
-    log('delete', threadId)
+  switchboard: async ({ threadId, content, actorId }, api) => {
     const threadPath = `threads/${threadId}.json`
-    const { externalId } = await api.readJSON<LongThread>(threadPath)
-    assert(externalId, 'missing externalId: ' + threadPath)
-    api.delete(threadPath)
-    const { deleteThread } = await api.actions<assistants.Api>('assistants')
-    await deleteThread({ externalId })
-  },
-  deleteAllAgents: async (_, api) => {
-    const { deleteAllAgents } = await api.actions<assistants.Api>('assistants')
-    await deleteAllAgents()
+    const thread = await api.readJSON<Thread>(threadPath)
+    thread.messages.push({ name: actorId, role: 'user', content })
+    api.writeJSON(threadPath, thread)
+
+    // make the switchboard call.
+    const path = `agents/switchboard.md`
+    const { once } = await api.actions<completions.Api>('ai-completions')
+    const assistant = await once({ path, content })
+
+    throw new Error('not implemented')
+    // ? what is the formula for ending on a function of a guaranteed type ?
+    // basically, pass in the schema, and expect to get the function call params
+    // object out of it, with the name being set
   },
 }
 
 const isDone = async (threadPath: string, api: IA) => {
-  const thread = await api.readJSON<LongThread>(threadPath)
+  const thread = await api.readJSON<Thread>(threadPath)
   const last = thread.messages[thread.messages.length - 1]
   if (!last || last.role !== 'assistant') {
     return false
   }
-  assert(last.status === 'completed', 'thread not done')
   if ('tool_calls' in last) {
     return false
   }

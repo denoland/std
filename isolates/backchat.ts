@@ -7,14 +7,14 @@ import {
   getActorId,
   getActorPid,
   IA,
-  isBackchatSummoned,
   print,
   threadIdRegex,
   UnsequencedRequest,
 } from '@/constants.ts'
 import * as actors from './actors.ts'
 import { assert, Debug } from '@utils'
-import * as ai from './ai.ts'
+import * as longthread from './longthread.ts'
+import { halt } from '@/isolates/utils.ts'
 const log = Debug('AI:backchat')
 
 export const api = {
@@ -107,84 +107,66 @@ export const api = {
 }
 
 export type Api = {
-  create: (params?: { focus?: string }) => Promise<void>
+  create: (_: void) => Promise<void>
   prompt: (
-    params: { content?: string; threadId?: string; attachments?: string[] },
+    params: { content: string; threadId: string; attachments?: string[] },
   ) => void
-  thread: (params: { agentPath: string }) => void
+  thread: (params: { path: string }) => void
   relay: (params: { request: UnsequencedRequest }) => void
   focus: (params: { threadId: string }) => Promise<void>
 }
 
 export const functions: Functions<Api> = {
-  create: async ({ focus } = {}, api) => {
+  create: async (_, api) => {
     const threadId = assertBackchatThread(api)
-    const agentPath = 'agents/backchat.md'
+    const path = 'agents/backchat.md'
 
-    // read from the actor config to get what the default thread should be
-    // start the default thread in the background
-    // also read what the backchat agentPath should be
-
-    const { start } = await api.functions<ai.Api>('ai')
-    await start({ threadId, agentPath })
-    log('create:', threadId, agentPath, focus)
+    const { start } = await api.functions<longthread.Api>('longthread')
+    await start({ threadId })
+    log('create:', threadId, path)
     const thread = await readBackchat(api)
-    if (focus) {
-      assert(threadIdRegex.test(focus), 'Invalid thread id')
-      // const threadPath = `threads/${params.focus}.json`
-      // create the new thread at the actor level, possibly in parallel too ?
-      // verify the thread exists
-      // await functions.focus({ threadId: params.focus }, api)
-    } else {
-      thread.focus = threadId
-    }
+    thread.focus = threadId
     log('setting focus to:', thread.focus)
     writeBackchat(thread, api)
   },
-  async prompt({ content = '', threadId, attachments }, api) {
+  async prompt({ content, threadId, attachments }, api) {
     log('prompt: %o', content)
     log('threadId: %o attachments: %o', threadId, attachments)
     const backchatId = assertBackchatThread(api)
     const actorId = getActorId(api.pid)
 
-    if (threadId) {
-      // await assertThreadId(threadId, api) // TODO make this function work
-      // // if this is self, send to self using a function
-      // // else send to the other thread using an action
-      // throw new Error('not implemented')
-    }
-
-    if (isBackchatSummoned(content)) {
-      log('backchat was summoned')
-      threadId = backchatId
+    if (threadId !== backchatId) {
+      const isSummoned = await isBackchatSummoned(content, api)
+      if (isSummoned) {
+        log('backchat was summoned')
+        threadId = backchatId
+      }
     }
 
     const backchat = await readBackchat(api)
-    if (!threadId) {
-      threadId = backchat.focus || backchatId
-    }
     if (backchat.focus !== threadId) {
       backchat.focus = threadId
       writeBackchat(backchat, api)
     }
 
     if (threadId === backchatId) {
-      const functions = await api.functions<ai.Api>('ai')
-      return functions.addMessageRun({ threadId, content, actorId })
+      const functions = await api.functions<longthread.Api>('longthread')
+      return functions.switchboard({ threadId, content, actorId })
     }
+
     const target = addPeer(api.pid, threadId)
-    const actions = await api.actions<ai.Api>('ai', { target })
-    return actions.addMessageRun({ threadId, content, actorId })
+    const actions = await api.actions<longthread.Api>('longthread', { target })
+    return actions.switchboard({ threadId, content, actorId })
 
     // TODO handle remote threadIds with symlinks in the threads dir
   },
-  thread: async ({ agentPath }, api) => {
-    log('thread:', agentPath, print(api.pid))
-    const threadId = generateThreadId(api.commit + 'thread' + agentPath)
+  thread: async ({ path }, api) => {
+    log('thread:', path, print(api.pid))
+    const threadId = generateThreadId(api.commit + 'thread' + path)
 
     const target = getActorPid(api.pid)
     const actions = await api.actions<actors.Api>('actors', { target })
-    const pid = await actions.thread({ agentPath, threadId })
+    const pid = await actions.thread({ threadId })
     const backchat = await readBackchat(api)
     backchat.focus = threadId
     writeBackchat(backchat, api)
@@ -221,17 +203,10 @@ const getBackchatId = (api: IA) => {
   assert(backchatIdRegex.test(backchatId), 'Invalid backchat id')
   return backchatId
 }
-// const assertThreadId = async (threadId: string, api: IA) => {
-//   assert(threadIdRegex.test(threadId), 'Invalid thread id: ' + threadId)
-//   // TODO make this a system function
-//   // const target = getParent(api.pid)
-//   // const { ls } = await api.actions<branches.Api>('branches', { target })
-//   const threadPath = `threads/${threadId}.json`
-//   // NOT WORKING
-//   // needs to read the .io.json from the parent and ensure the threadId is valid
-
-//   api.lsChildren()
-//   const thread = await api.readJSON<Thread>(threadPath)
-//   assert(thread, `Thread not found: ${threadId}`)
-//   return thread
-// }
+const isBackchatSummoned = async (content: string, api: IA) => {
+  const path = `agents/summoner.md`
+  const result = await halt(content, path, 'utils', 'trueOrFalse', api)
+  const { value } = result
+  assert(typeof value === 'boolean', 'value is not a boolean')
+  return value
+}
