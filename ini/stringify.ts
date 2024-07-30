@@ -12,7 +12,7 @@ export interface StringifyOptions {
    */
   lineBreak?: "\n" | "\r\n" | "\r";
   /**
-   * Use a plain assignment char or pad with spaces. Ignored on parse.
+   * Use a plain assignment char or pad with spaces.
    *
    * @default {false}
    */
