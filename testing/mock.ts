@@ -1090,7 +1090,7 @@ export function stub<
 
   const propertyDescriptor = Object.getOwnPropertyDescriptor(self, property);
   if (propertyDescriptor && !propertyDescriptor.configurable) {
-    throw new MockError("Cannot spy on non-configurable instance method");
+    throw new MockError("Cannot stub non-configurable instance method");
   }
 
   const fake = func ?? (() => {}) as (this: Self, ...args: Args) => Return;
