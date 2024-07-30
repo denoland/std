@@ -1,6 +1,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
 import { assert, assertEquals } from "@std/assert";
+import { assertType, type IsExact } from "@std/testing/types";
 
 import { eTag, ifMatch, ifNoneMatch } from "./etag.ts";
 
@@ -129,5 +130,19 @@ Deno.test({
         }),
       ),
     );
+  },
+});
+
+Deno.test({
+  name: "eTag() returns string type for string and Uint8Array",
+  async fn() {
+    {
+      const result = await eTag("hello deno");
+      assertType<IsExact<typeof result, string>>(true);
+    }
+    {
+      const result = await eTag(new Uint8Array());
+      assertType<IsExact<typeof result, string>>(true);
+    }
   },
 });

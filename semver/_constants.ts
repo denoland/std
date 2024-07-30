@@ -57,14 +57,6 @@ export const ALL: Comparator = {
   ...ANY,
 };
 
-/**
- * A comparator which will not span any semantic versions
- */
-export const NONE: Comparator = {
-  operator: "<",
-  ...MIN,
-};
-
 export const OPERATORS = [
   undefined,
   "=",
