@@ -95,7 +95,7 @@ async function calcFileInfo(
 }
 
 /**
- * Calculate an ETag for string or Uint8Array entities. This returns a strong tag.
+ * Calculate an ETag for string or `Uint8Array` entities. This returns a strong tag.
  *
  * @example Usage
  * ```ts
