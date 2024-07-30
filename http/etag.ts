@@ -29,9 +29,6 @@ export interface FileInfo {
   size: number;
 }
 
-/** Represents an entity that can be used for generating an ETag. */
-export type ETagSource = string | Uint8Array | FileInfo;
-
 const encoder = new TextEncoder();
 
 const DEFAULT_ALGORITHM: AlgorithmIdentifier = "SHA-256";
@@ -152,7 +149,7 @@ export async function eTag(
   options?: ETagOptions,
 ): Promise<string | undefined>;
 export async function eTag(
-  entity: ETagSource,
+  entity: string | Uint8Array | FileInfo,
   options: ETagOptions = {},
 ): Promise<string | undefined> {
   const weak = options.weak ?? isFileInfo(entity);
