@@ -95,9 +95,7 @@ async function calcFileInfo(
 }
 
 /**
- * Calculate an ETag for an entity. When the entity is a specific set of data
- * it will be fingerprinted as a "strong" tag, otherwise if it is just file
- * information, it will be calculated as a weak tag.
+ * Calculate an ETag for string or Uint8Array entities. This returns a strong tag.
  *
  * @example Usage
  * ```ts
@@ -121,9 +119,7 @@ export async function eTag(
   options?: ETagOptions,
 ): Promise<string>;
 /**
- * Calculate an ETag for an entity. When the entity is a specific set of data
- * it will be fingerprinted as a "strong" tag, otherwise if it is just file
- * information, it will be calculated as a weak tag.
+ * Calculate an ETag for file information entity. This returns a weak tag.
  *
  * @example Usage
  * ```ts
