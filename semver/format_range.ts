@@ -9,10 +9,19 @@ function formatComparator(comparator: Comparator): string {
 }
 
 /**
- * Formats the range into a string
- * @example >=0.0.0 || <1.0.0
+ * Formats the SemVerrange into a string.
+ *
+ * @example Usage
+ * ```ts
+ * import { formatRange, parseRange } from "@std/semver";
+ * import { assertEquals } from "@std/assert";
+ *
+ * const range = parseRange(">=1.2.3 <1.2.4");
+ * assertEquals(formatRange(range), ">=1.2.3 <1.2.4");
+ * ```
+ *
  * @param range The range to format
- * @returns A string representation of the range
+ * @returns A string representation of the SemVer range
  */
 export function formatRange(range: Range): string {
   return range.map((c) => c.map((c) => formatComparator(c)).join(" "))

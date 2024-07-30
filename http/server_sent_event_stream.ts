@@ -24,7 +24,7 @@ export interface ServerSentEventMessage {
 
 function assertHasNoNewline(value: string, varName: string) {
   if (value.match(NEWLINE_REGEXP) !== null) {
-    throw new RangeError(`${varName} cannot contain a newline`);
+    throw new SyntaxError(`${varName} cannot contain a newline`);
   }
 }
 
@@ -62,7 +62,7 @@ function stringify(message: ServerSentEventMessage): Uint8Array {
  * @see {@link https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events/Using_server-sent_events}
  *
  * @example Usage
- * ```ts
+ * ```ts no-assert
  * import {
  *   type ServerSentEventMessage,
  *   ServerSentEventStream,

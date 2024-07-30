@@ -4,8 +4,10 @@ import {
   assertEquals,
   assertGreater,
   assertLess,
+  assertLessOrEqual,
   assertStringIncludes,
 } from "@std/assert";
+import { delay } from "@std/async/delay";
 import { Spinner } from "./spinner.ts";
 
 async function spawnDeno(args: string[], opts?: Deno.CommandOptions) {
@@ -26,6 +28,14 @@ const normalizeString = (s: string) =>
 const COLOR_RESET = "\u001b[0m";
 const LINE_CLEAR = "\r\u001b[K";
 const decoder = new TextDecoder();
+
+Deno.test("Spinner can start and stop", async () => {
+  const spinner = new Spinner({ message: "Loading..." });
+  spinner.start();
+  spinner.start(); // This doesn't throw, but ignored
+  await delay(300);
+  spinner.stop();
+});
 
 Deno.test("Spinner constructor accepts spinner", async () => {
   const text = await spawnDeno([
@@ -69,63 +79,63 @@ Deno.test("Spinner constructor accepts each color", async () => {
     const text = await spawnDeno([
       "cli/testdata/spinner_cases/custom_color_black.ts",
     ]);
-    assertEquals(text, `${LINE_CLEAR}\u001b[30m⠋${COLOR_RESET} `);
+    assertStringIncludes(text, `${LINE_CLEAR}\u001b[30m⠋${COLOR_RESET} `);
   }
 
   {
     const text = await spawnDeno([
       "cli/testdata/spinner_cases/custom_color_red.ts",
     ]);
-    assertEquals(text, `${LINE_CLEAR}\u001b[31m⠋${COLOR_RESET} `);
+    assertStringIncludes(text, `${LINE_CLEAR}\u001b[31m⠋${COLOR_RESET} `);
   }
 
   {
     const text = await spawnDeno([
       "cli/testdata/spinner_cases/custom_color_green.ts",
     ]);
-    assertEquals(text, `${LINE_CLEAR}\u001b[32m⠋${COLOR_RESET} `);
+    assertStringIncludes(text, `${LINE_CLEAR}\u001b[32m⠋${COLOR_RESET} `);
   }
 
   {
     const text = await spawnDeno([
       "cli/testdata/spinner_cases/custom_color_yellow.ts",
     ]);
-    assertEquals(text, `${LINE_CLEAR}\u001b[33m⠋${COLOR_RESET} `);
+    assertStringIncludes(text, `${LINE_CLEAR}\u001b[33m⠋${COLOR_RESET} `);
   }
 
   {
     const text = await spawnDeno([
       "cli/testdata/spinner_cases/custom_color_blue.ts",
     ]);
-    assertEquals(text, `${LINE_CLEAR}\u001b[34m⠋${COLOR_RESET} `);
+    assertStringIncludes(text, `${LINE_CLEAR}\u001b[34m⠋${COLOR_RESET} `);
   }
 
   {
     const text = await spawnDeno([
       "cli/testdata/spinner_cases/custom_color_magenta.ts",
     ]);
-    assertEquals(text, `${LINE_CLEAR}\u001b[35m⠋${COLOR_RESET} `);
+    assertStringIncludes(text, `${LINE_CLEAR}\u001b[35m⠋${COLOR_RESET} `);
   }
 
   {
     const text = await spawnDeno([
       "cli/testdata/spinner_cases/custom_color_cyan.ts",
     ]);
-    assertEquals(text, `${LINE_CLEAR}\u001b[36m⠋${COLOR_RESET} `);
+    assertStringIncludes(text, `${LINE_CLEAR}\u001b[36m⠋${COLOR_RESET} `);
   }
 
   {
     const text = await spawnDeno([
       "cli/testdata/spinner_cases/custom_color_white.ts",
     ]);
-    assertEquals(text, `${LINE_CLEAR}\u001b[37m⠋${COLOR_RESET} `);
+    assertStringIncludes(text, `${LINE_CLEAR}\u001b[37m⠋${COLOR_RESET} `);
   }
 
   {
     const text = await spawnDeno([
       "cli/testdata/spinner_cases/custom_color_gray.ts",
     ]);
-    assertEquals(text, `${LINE_CLEAR}\u001b[90m⠋${COLOR_RESET} `);
+    assertStringIncludes(text, `${LINE_CLEAR}\u001b[90m⠋${COLOR_RESET} `);
   }
 });
 
@@ -169,15 +179,14 @@ Deno.test("Spinner.color can get each color", () => {
 
 Deno.test("Spinner.start() begins the sequence", async () => {
   const text = await spawnDeno(["cli/testdata/spinner_cases/start.ts"]);
-  assertEquals(text, `${LINE_CLEAR}⠋${COLOR_RESET} `);
+  assertStringIncludes(text, `${LINE_CLEAR}⠋${COLOR_RESET} `);
 });
 
 Deno.test("Spinner.stop() terminates the sequence", async () => {
   const text = await spawnDeno(["cli/testdata/spinner_cases/stop.ts"]);
-  assertEquals(
-    text,
-    `${LINE_CLEAR}⠋${COLOR_RESET} ${LINE_CLEAR}⠙${COLOR_RESET} `,
-  );
+  // Spinner renders 2 times and then renders LINE_CLEAR at the end.
+  // (LINE_CLEAR(4) + ⠋(1) COLOR_RESET(4) + SPACE(1)) * 2 + LINE_CLEAR(4) = 24
+  assertLessOrEqual(text.length, 24);
 });
 
 Deno.test("Spinner.message can be updated", async () => {

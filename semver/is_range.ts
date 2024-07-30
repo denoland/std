@@ -2,7 +2,7 @@
 // This module is browser compatible.
 import type { Comparator, Range } from "./types.ts";
 import { OPERATORS } from "./_constants.ts";
-import { ALL, NONE } from "./constants.ts";
+import { ALL } from "./_constants.ts";
 import { isSemVer } from "./is_semver.ts";
 
 function isComparator(value: unknown): value is Comparator {
@@ -10,7 +10,7 @@ function isComparator(value: unknown): value is Comparator {
     value === null || value === undefined || Array.isArray(value) ||
     typeof value !== "object"
   ) return false;
-  if (value === NONE || value === ALL) return true;
+  if (value === ALL) return true;
   const { operator } = value as Comparator;
   return (
     (operator === undefined ||
@@ -26,6 +26,16 @@ function isComparator(value: unknown): value is Comparator {
  * least the correct fields.
  *
  * Adds a type assertion if true.
+ *
+ * @example Usage
+ * ```ts
+ * import { isRange } from "@std/semver/is-range";
+ * import { assert } from "@std/assert";
+ *
+ * const range = [[{ major: 1, minor: 2, patch: 3 }]];
+ * assert(isRange(range));
+ * assert(!isRange({}));
+ * ```
  * @param value The value to check if its a valid Range
  * @returns True if its a valid Range otherwise false.
  */

@@ -9,8 +9,13 @@
  *
  * ```sh
  * deno run --allow-net --allow-read jsr:@std/http/file-server
- * > HTTP server listening on http://localhost:4507/
+ * Listening on:
+ * - Local: http://localhost:8000
  * ```
+ *
+ * When the `--allow-sys=networkInterfaces` permission is provided, the file
+ * server will also display the local area network addresses that can be used to
+ * access the server.
  *
  * ## HTTP Status Code and Status Text
  *
@@ -35,12 +40,6 @@
  * > {@link https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Accept-Charset | clients omit and servers should ignore}
  * > therefore is not provided.
  *
- * ## Cookie maps
- *
- * An alternative to `cookie.ts` is `cookie_map.ts` which provides `CookieMap`,
- * `SecureCookieMap`, and `mergeHeaders` to manage request and response cookies
- * with the familiar `Map` interface.
- *
  * ## User agent handling
  *
  * The {@linkcode UserAgent} class provides user agent string parsing, allowing
@@ -49,7 +48,7 @@
  * For example to integrate the user agent provided in the header `User-Agent`
  * in an http request would look like this:
  *
- * ```ts
+ * ```ts no-eval
  * import { UserAgent } from "@std/http/user-agent";
  *
  * Deno.serve((req) => {
@@ -66,8 +65,7 @@ export * from "./cookie.ts";
 export * from "./etag.ts";
 export * from "./status.ts";
 export * from "./negotiation.ts";
-export * from "./server.ts";
-export * from "./unstable_signed_cookie.ts";
+export * from "./signed_cookie.ts";
 export * from "./server_sent_event_stream.ts";
 export * from "./user_agent.ts";
 export * from "./file_server.ts";

@@ -5,7 +5,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
 import { assert, assertEquals, assertThrows } from "@std/assert";
-import { parse, ParseError, type ParseOptions } from "./parse.ts";
+import { parse, type ParseOptions } from "./parse.ts";
 import type { AssertTrue, IsExact } from "@std/testing/types";
 
 const BYTE_ORDER_MARK = "\ufeff";
@@ -193,8 +193,19 @@ Deno.test({
         const input = `a""b,c`;
         assertThrows(
           () => parse(input),
-          ParseError,
+          SyntaxError,
           'parse error on line 1, column 1: bare " in non-quoted-field',
+        );
+      },
+    });
+    await t.step({
+      name: "error column Unicode code point number",
+      fn() {
+        const input = `a,b,🐱"`;
+        assertThrows(
+          () => parse(input),
+          SyntaxError,
+          'parse error on line 1, column 5: bare " in non-quoted-field',
         );
       },
     });
@@ -212,7 +223,7 @@ Deno.test({
         const input = `a "word","b"`;
         assertThrows(
           () => parse(input),
-          ParseError,
+          SyntaxError,
           'parse error on line 1, column 2: bare " in non-quoted-field',
         );
       },
@@ -223,7 +234,7 @@ Deno.test({
         const input = `"a word",b"`;
         assertThrows(
           () => parse(input),
-          ParseError,
+          SyntaxError,
           'parse error on line 1, column 10: bare " in non-quoted-field',
         );
       },
@@ -234,7 +245,7 @@ Deno.test({
         const input = `"a "word","b"`;
         assertThrows(
           () => parse(input),
-          ParseError,
+          SyntaxError,
           `parse error on line 1, column 3: extraneous or missing " in quoted-field`,
         );
       },
@@ -245,7 +256,7 @@ Deno.test({
         const input = "a,b,c\nd,e";
         assertThrows(
           () => parse(input, { fieldsPerRecord: 0 }),
-          ParseError,
+          SyntaxError,
           "record on line 2: wrong number of fields",
         );
       },
@@ -256,7 +267,7 @@ Deno.test({
         const input = `a,b,c`;
         assertThrows(
           () => parse(input, { fieldsPerRecord: 2 }),
-          ParseError,
+          SyntaxError,
           "record on line 1: wrong number of fields",
         );
       },
@@ -373,7 +384,7 @@ Deno.test({
         const input = 'a,"b\nc"d,e';
         assertThrows(
           () => parse(input, { fieldsPerRecord: 2 }),
-          ParseError,
+          SyntaxError,
           'record on line 1; parse error on line 2, column 1: extraneous or missing " in quoted-field',
         );
       },
@@ -384,7 +395,7 @@ Deno.test({
         const input = 'a,b\n"d\n\n,e';
         assertThrows(
           () => parse(input, { fieldsPerRecord: 2 }),
-          ParseError,
+          SyntaxError,
           'record on line 2; parse error on line 5, column 0: extraneous or missing " in quoted-field',
         );
       },
@@ -427,7 +438,7 @@ Deno.test({
         const input = '"field"\r\r';
         assertThrows(
           () => parse(input, { fieldsPerRecord: 2 }),
-          ParseError,
+          SyntaxError,
           'parse error on line 1, column 6: extraneous or missing " in quoted-field',
         );
       },
@@ -570,7 +581,7 @@ Deno.test({
         const input = '"foo"bar"\r\n';
         assertThrows(
           () => parse(input),
-          ParseError,
+          SyntaxError,
           `parse error on line 1, column 4: extraneous or missing " in quoted-field`,
         );
       },
@@ -605,7 +616,7 @@ Deno.test({
         const input = `"""""""`;
         assertThrows(
           () => parse(input),
-          ParseError,
+          SyntaxError,
           `parse error on line 1, column 7: extraneous or missing " in quoted-field`,
         );
       },
@@ -811,6 +822,24 @@ Deno.test({
         const input = ` ${BYTE_ORDER_MARK}abc`;
         const output = [["abc"]];
         assertEquals(parse(input, { trimLeadingSpace: true }), output);
+      },
+    });
+    await t.step({
+      name: "leading line breaks",
+      fn() {
+        const input = "\n\na,b,c";
+        const output = [["a", "b", "c"]];
+        assertEquals(parse(input), output);
+      },
+    });
+    await t.step({
+      name: "throws when skipFirstRow=true with empty data",
+      fn() {
+        assertThrows(
+          () => parse("", { skipFirstRow: true }),
+          Error,
+          "Headers must be defined",
+        );
       },
     });
   },

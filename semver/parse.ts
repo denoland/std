@@ -5,8 +5,24 @@ import { parseBuild, parseNumber, parsePrerelease } from "./_shared.ts";
 import { FULL_REGEXP, MAX_LENGTH } from "./_shared.ts";
 
 /**
- * Attempt to parse a string as a semantic version, returning either a `SemVer`
- * object or throws a TypeError.
+ * Attempt to parse a string as a semantic version, returning a SemVer object.
+ *
+ * @example Usage
+ * ```ts
+ * import { parse } from "@std/semver/parse";
+ * import { assertEquals } from "@std/assert";
+ *
+ * const version = parse("1.2.3");
+ * assertEquals(version, {
+ *   major: 1,
+ *   minor: 2,
+ *   patch: 3,
+ *   prerelease: [],
+ *   build: [],
+ * });
+ * ```
+ *
+ * @throws {TypeError} If the input string is invalid.
  * @param version The version string to parse
  * @returns A valid SemVer
  */
@@ -26,7 +42,7 @@ export function parse(version: string): SemVer {
   version = version.trim();
 
   const groups = version.match(FULL_REGEXP)?.groups;
-  if (!groups) throw new TypeError(`Invalid Version: ${version}`);
+  if (!groups) throw new TypeError(`Invalid version: ${version}`);
 
   const major = parseNumber(groups.major!, "Invalid major version");
   const minor = parseNumber(groups.minor!, "Invalid minor version");

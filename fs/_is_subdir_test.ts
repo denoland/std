@@ -9,6 +9,7 @@ import { isSubdir } from "./_is_subdir.ts";
 Deno.test("isSubdir() returns a boolean indicating if dir is a subdir", function () {
   const pairs = [
     ["", "", false, SEP_POSIX],
+    [".", "", false, SEP_POSIX],
     ["/first/second", "/first", false, SEP_POSIX],
     ["/first", "/first", false, SEP_POSIX],
     ["/first", "/first/second", true, SEP_POSIX],

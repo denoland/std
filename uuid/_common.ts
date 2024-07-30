@@ -27,13 +27,10 @@ export function bytesToUuid(bytes: number[] | Uint8Array): string {
  * Converts a string to a byte array by converting the hex value to a number.
  * @param uuid Value that gets converted.
  */
-export function uuidToBytes(uuid: string): number[] {
-  const bytes: number[] = [];
-
-  uuid.replace(/[a-fA-F0-9]{2}/g, (hex: string): string => {
-    bytes.push(parseInt(hex, 16));
-    return "";
-  });
-
-  return bytes;
+export function uuidToBytes(uuid: string): Uint8Array {
+  const bytes = uuid
+    .replaceAll("-", "")
+    .match(/.{1,2}/g)!
+    .map((byte) => parseInt(byte, 16));
+  return new Uint8Array(bytes);
 }

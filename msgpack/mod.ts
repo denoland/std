@@ -2,15 +2,15 @@
 // This module is browser compatible.
 
 /**
+ * This module provides functions to encode and decode MessagePack.
+ *
  * MessagePack is an efficient binary serialization format that is language
  * agnostic. It is like JSON, but generally produces much smaller payloads.
- * [Learn more about MessagePack](https://msgpack.org/).
- *
- * This module provides functions to encode and decode MessagePack.
+ * {@link https://msgpack.org/ | Learn more about MessagePack}.
  *
  * ```ts
  * import { decode, encode } from "@std/msgpack";
- * import { assertEquals } from "@std/assert"
+ * import { assertEquals } from "@std/assert";
  *
  * const obj = {
  *   str: "deno",
@@ -23,7 +23,7 @@
  * };
  *
  * const encoded = encode(obj);
- * console.log(encoded); // Uint8Array(42) [...]
+ * assertEquals(encoded.length, 42);
  *
  * const decoded = decode(encoded);
  * assertEquals(decoded, obj);

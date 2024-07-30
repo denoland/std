@@ -17,7 +17,7 @@
  * @example Basic usage
  * ```ts
  * import { takeLastWhile } from "@std/collections/take-last-while";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const numbers = [1, 2, 3, 4, 5, 6];
  *

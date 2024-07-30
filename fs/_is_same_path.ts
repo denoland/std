@@ -5,14 +5,17 @@ import { resolve } from "@std/path/resolve";
 import { toPathString } from "./_to_path_string.ts";
 
 /**
- * Test whether `src` and `dest` resolve to the same location
- * @param src src file path
- * @param dest dest file path
+ * Checks if two paths are the same.
+ *
+ * @param src Source file path as a string or URL.
+ * @param dest Destination file path as a string or URL.
+ *
+ * @returns `true` if the paths are the same, `false` otherwise.
  */
 export function isSamePath(
   src: string | URL,
   dest: string | URL,
-): boolean | void {
+): boolean {
   src = toPathString(src);
   dest = toPathString(dest);
 

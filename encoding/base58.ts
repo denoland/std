@@ -6,11 +6,9 @@
  * {@link https://datatracker.ietf.org/doc/html/draft-msporny-base58-03 | base58}
  * encoding and decoding.
  *
- * This module is browser compatible.
- *
  * ```ts
  * import { encodeBase58, decodeBase58 } from "@std/encoding/base58";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const hello = new TextEncoder().encode("Hello World!");
  *
@@ -22,7 +20,7 @@
  * @module
  */
 
-import { validateBinaryLike } from "./_util.ts";
+import { validateBinaryLike } from "./_validate_binary_like.ts";
 
 // deno-fmt-ignore
 const mapBase58: Record<string, number> = {
@@ -48,7 +46,7 @@ const base58alphabet =
  * @example Usage
  * ```ts
  * import { encodeBase58 } from "@std/encoding/base58";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * assertEquals(encodeBase58("Hello World!"), "2NEpo7TZRRrLZSi2U");
  * ```
@@ -114,7 +112,7 @@ export function encodeBase58(data: ArrayBuffer | Uint8Array | string): string {
  * @example Usage
  * ```ts
  * import { decodeBase58 } from "@std/encoding/base58";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * assertEquals(
  *   decodeBase58("2NEpo7TZRRrLZSi2U"),
@@ -145,7 +143,9 @@ export function decodeBase58(b58: string): Uint8Array {
     let i = 0;
 
     if (carry === undefined) {
-      throw new Error(`Invalid base58 char at index ${idx} with value ${char}`);
+      throw new TypeError(
+        `Invalid base58 char at index ${idx} with value ${char}`,
+      );
     }
 
     for (

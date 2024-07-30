@@ -104,9 +104,11 @@ export type StringifyOptions = {
    */
   separator?: string;
   /**
-   * a list of instructions for how to target and transform the data for each
+   * A list of instructions for how to target and transform the data for each
    * column of output. This is also where you can provide an explicit header
    * name for the column.
+   *
+   * @default {[]}
    */
   columns?: Column[];
   /**
@@ -168,15 +170,6 @@ function normalizeColumn(column: Column): NormalizedColumn {
   return { header, prop };
 }
 
-/** Error thrown in {@linkcode stringify}. */
-export class StringifyError extends Error {
-  /** Construct a new instance. */
-  constructor(message?: string) {
-    super(message);
-    this.name = "StringifyError";
-  }
-}
-
 /**
  * Returns an array of values from an object using the property accessors
  * (and optional transform function) in each column
@@ -192,11 +185,13 @@ function getValuesFromItem(
       let value: unknown = item;
 
       for (const prop of column.prop) {
-        if (typeof value !== "object" || value === null) continue;
+        if (typeof value !== "object" || value === null) {
+          continue;
+        }
         if (Array.isArray(value)) {
           if (typeof prop === "number") value = value[prop];
           else {
-            throw new StringifyError(
+            throw new TypeError(
               'Property accessor is not of type "number"',
             );
           }
@@ -210,7 +205,7 @@ function getValuesFromItem(
     if (Array.isArray(item)) {
       values.push(...item);
     } else if (typeof item === "object") {
-      throw new StringifyError(
+      throw new TypeError(
         "No property accessor function was provided for object",
       );
     } else {
@@ -222,29 +217,15 @@ function getValuesFromItem(
 }
 
 /**
- * Write data using CSV encoding.
+ * Converts an array of objects into a CSV string.
  *
- * @param data The source data to stringify. It's an array of items which are
- * plain objects or arrays.
- *
- * `DataItem: Record<string, unknown> | unknown[]`
- *
- * ```ts
- * const data = [
- *   {
- *     name: "Deno",
- *     repo: { org: "denoland", name: "deno" },
- *     runsOn: ["Rust", "TypeScript"],
- *   },
- * ];
- * ```
- *
- * @example
+ * @example Usage
  * ```ts
  * import {
  *   Column,
  *   stringify,
  * } from "@std/csv/stringify";
+ * import { assertEquals } from "@std/assert";
  *
  * type Character = {
  *   age: number;
@@ -276,24 +257,28 @@ function getValuesFromItem(
  *   "age",
  * ];
  *
- * console.log(stringify(data, { columns }));
- * // first,age
- * // Rick,70
- * // Morty,14
+ * assertEquals(stringify(data, { columns }), `first,age\r\nRick,70\r\nMorty,14\r\n`);
  * ```
+ *
+ * @param data The source data to stringify. It's an array of items which are
+ * plain objects or arrays.
+ * @param options Options for the stringification.
+ * @returns A CSV string.
  */
 export function stringify(
   data: DataItem[],
-  { headers = true, separator: sep = ",", columns = [], bom = false }:
-    StringifyOptions = {},
+  options?: StringifyOptions,
 ): string {
+  const { headers = true, separator: sep = ",", columns = [], bom = false } =
+    options ?? {};
+
   if (sep.includes(QUOTE) || sep.includes(CRLF)) {
     const message = [
       "Separator cannot include the following strings:",
       '  - U+0022: Quotation mark (")',
       "  - U+000D U+000A: Carriage Return + Line Feed (\\r\\n)",
     ].join("\n");
-    throw new StringifyError(message);
+    throw new TypeError(message);
   }
 
   const normalizedColumns = columns.map(normalizeColumn);

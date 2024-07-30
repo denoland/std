@@ -11,7 +11,7 @@ import {
 import { Buffer } from "@std/io/buffer";
 import { copy } from "@std/io/copy";
 import { readAll } from "@std/io/read-all";
-import { filePath, testdataDir } from "./_test_common.ts";
+import { filePath, testdataDir } from "./_test_utils.ts";
 
 interface TestEntry {
   name: string;

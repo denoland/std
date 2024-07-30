@@ -20,6 +20,9 @@
  * and Wasm/Rust is the same, this library prefers to use the implementation
  * provided by WebCrypto.
  *
+ * Length-adjustable algorithms support the
+ * {@linkcode DigestAlgorithmObject.length} option.
+ *
  * WebCrypto:
  * - `SHA-384`
  * - `SHA-256` (length-extendable)
@@ -33,7 +36,7 @@
  * - `BLAKE2B-256`
  * - `BLAKE2B-384`
  * - `BLAKE2S`
- * - `BLAKE3`
+ * - `BLAKE3` (length-adjustable)
  * - `KECCAK-224`
  * - `KECCAK-256`
  * - `KECCAK-384`
@@ -43,8 +46,8 @@
  * - `SHA3-256`
  * - `SHA3-384`
  * - `SHA3-512`
- * - `SHAKE128`
- * - `SHAKE256`
+ * - `SHAKE128` (length-adjustable)
+ * - `SHAKE256` (length-adjustable)
  * - `TIGER`
  * - `RIPEMD-160` (length-extendable)
  * - `SHA-224` (length-extendable)
@@ -280,29 +283,6 @@ const stdCrypto: StdCrypto = ((x) => x)({
   },
 });
 
-/**
- * A FNV (Fowler/Noll/Vo) digest algorithm name supported by std/crypto.
- *
- * @deprecated This will be removed in 1.0.0.
- */
-export type FNVAlgorithms = "FNV32" | "FNV32A" | "FNV64" | "FNV64A";
-
-/**
- * Digest algorithm names supported by std/crypto with a Wasm implementation.
- *
- * @deprecated This will be removed in 1.0.0. Use
- * {@linkcode DIGEST_ALGORITHM_NAMES} instead.
- */
-export const wasmDigestAlgorithms = DIGEST_ALGORITHM_NAMES;
-
-/**
- * A digest algorithm name supported by std/crypto with a Wasm implementation.
- *
- * @deprecated This will be removed in 1.0.0. Use
- * {@linkcode DigestAlgorithmName} instead.
- */
-export type WasmDigestAlgorithm = DigestAlgorithmName;
-
 /*
  * The largest digest length the current Wasm implementation can support. This
  * is the value of `isize::MAX` on 32-bit platforms like Wasm, which is the
@@ -334,6 +314,9 @@ export type DigestAlgorithmObject = {
 
 /**
  * Extended digest algorithms accepted by {@linkcode stdCrypto.subtle.digest}.
+ *
+ * The `length` option will be ignored for
+ * {@link https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/digest#algorithm | Web Standard algorithms}.
  */
 export type DigestAlgorithm = DigestAlgorithmName | DigestAlgorithmObject;
 

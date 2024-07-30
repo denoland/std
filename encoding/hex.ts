@@ -8,14 +8,12 @@
  * {@link https://github.com/golang/go/blob/go1.12.5/src/encoding/hex/hex.go | encoding/hex}
  * library.
  *
- * This module is browser compatible.
- *
  * ```ts
  * import {
  *   decodeHex,
  *   encodeHex,
  * } from "@std/encoding/hex";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * assertEquals(encodeHex("abc"), "616263");
  *
@@ -28,7 +26,7 @@
  * @module
  */
 
-import { validateBinaryLike } from "./_util.ts";
+import { validateBinaryLike } from "./_validate_binary_like.ts";
 
 const hexTable = new TextEncoder().encode("0123456789abcdef");
 const textEncoder = new TextEncoder();
@@ -64,7 +62,7 @@ function fromHexChar(byte: number): number {
  * @example Usage
  * ```ts
  * import { encodeHex } from "@std/encoding/hex";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * assertEquals(encodeHex("abc"), "616263");
  * ```
@@ -73,7 +71,7 @@ export function encodeHex(src: string | Uint8Array | ArrayBuffer): string {
   const u8 = validateBinaryLike(src);
 
   const dst = new Uint8Array(u8.length * 2);
-  for (let i = 0; i < dst.length; i++) {
+  for (let i = 0; i < u8.length; i++) {
     const v = u8[i]!;
     dst[i * 2] = hexTable[v >> 4]!;
     dst[i * 2 + 1] = hexTable[v & 0x0f]!;
@@ -92,7 +90,7 @@ export function encodeHex(src: string | Uint8Array | ArrayBuffer): string {
  * @example Usage
  * ```ts
  * import { decodeHex } from "@std/encoding/hex";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * assertEquals(
  *   decodeHex("616263"),

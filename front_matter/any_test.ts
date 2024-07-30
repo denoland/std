@@ -3,11 +3,11 @@
 import { test } from "./test.ts";
 import { extract } from "./any.ts";
 import {
-  runExtractJSONTests,
-  runExtractTOMLTests,
+  runExtractJsonTests,
+  runExtractTomlTests,
   runExtractTypeErrorTests,
-  runExtractYAMLTests1,
-  runExtractYAMLTests2,
+  runExtractYamlTests1,
+  runExtractYamlTests2,
   runTestInvalidInputTests,
   runTestValidInputTests,
 } from "./_test_utils.ts";
@@ -27,11 +27,11 @@ Deno.test("extract() extracts type error on invalid input", () => {
 });
 
 Deno.test("extract() parses yaml delineate by `---`", async () => {
-  await runExtractYAMLTests1(extract);
+  await runExtractYamlTests1(extract);
 });
 
 Deno.test("extract() parses yaml delineate by `---yaml`", async () => {
-  await runExtractYAMLTests2(extract);
+  await runExtractYamlTests2(extract);
 });
 
 // JSON //
@@ -49,7 +49,7 @@ Deno.test("extract() extracts type error on invalid json input", () => {
 });
 
 Deno.test("extract() parses json delineate by ---json", async () => {
-  await runExtractJSONTests(extract);
+  await runExtractJsonTests(extract);
 });
 
 // TOML //
@@ -67,5 +67,5 @@ Deno.test("extract() extracts type error on invalid toml input", () => {
 });
 
 Deno.test("extract() parses toml delineate by ---toml", async () => {
-  await runExtractTOMLTests(extract);
+  await runExtractTomlTests(extract);
 });

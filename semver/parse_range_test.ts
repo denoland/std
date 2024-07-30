@@ -1,6 +1,6 @@
 // Copyright Isaac Z. Schlueter and Contributors. All rights reserved. ISC license.
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-import { assertEquals } from "@std/assert";
+import { assertEquals, assertThrows } from "@std/assert";
 import { parseRange } from "./parse_range.ts";
 import type { Range } from "./types.ts";
 
@@ -351,18 +351,6 @@ Deno.test("parseRange() parse ranges of different kinds", () => {
         { operator: "<", major: 0, minor: 0, patch: 2 },
       ],
     ]],
-    ["blerg", [
-      [
-        {
-          operator: "<",
-          major: 0,
-          minor: 0,
-          patch: 0,
-          prerelease: [],
-          build: [],
-        },
-      ],
-    ]],
     ["^1.2.3", [
       [
         { operator: ">=", major: 1, minor: 2, patch: 3, prerelease: [] },
@@ -591,6 +579,12 @@ Deno.test("parseRange() parses ranges with caret", () => {
         { operator: "<", major: 2, minor: 0, patch: 0 },
       ],
     ]],
+    ["^ 1.2.3", [
+      [
+        { operator: ">=", major: 1, minor: 2, patch: 3, prerelease: [] },
+        { operator: "<", major: 2, minor: 0, patch: 0 },
+      ],
+    ]],
     ["^0.2.3", [
       [
         { operator: ">=", major: 0, minor: 2, patch: 3, prerelease: [] },
@@ -663,4 +657,8 @@ Deno.test("parseRange() parses ranges with caret", () => {
     const range = parseRange(r);
     assertEquals(range, expected);
   }
+});
+
+Deno.test("parseRange() throws on invalid range", () => {
+  assertThrows(() => parseRange("blerg"), TypeError, "Invalid range: blerg");
 });

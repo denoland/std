@@ -13,42 +13,29 @@
  * To use functions for a specific path style regardless of the current OS
  * import the modules from the platform sub directory instead.
  *
- * Example, for `posix`:
+ * Example, for POSIX:
  *
  * ```ts
  * import { fromFileUrl } from "@std/path/posix/from-file-url";
- * const p = fromFileUrl("file:///home/foo");
- * console.log(p); // "/home/foo"
+ * import { assertEquals } from "@std/assert";
+ *
+ * assertEquals(fromFileUrl("file:///home/foo"), "/home/foo");
  * ```
  *
- * or, for `windows`:
+ * Or, for Windows:
  *
  * ```ts
  * import { fromFileUrl } from "@std/path/windows/from-file-url";
- * const p = fromFileUrl("file:///home/foo");
- * console.log(p); // "\\home\\foo"
+ * import { assertEquals } from "@std/assert";
+ *
+ * assertEquals(fromFileUrl("file:///home/foo"), "\\home\\foo");
  * ```
  *
- * This module is browser compatible.
+ * Functions for working with URLs can be found in
+ * {@link ./doc/posix/~ | @std/path/posix}.
  *
  * @module
  */
-
-import * as _windows from "./windows/mod.ts";
-import * as _posix from "./posix/mod.ts";
-
-/**
- * @deprecated This will be removed in 1.0.0. Import from
- * {@link https://jsr.io/@std/path/doc/windows/~ | @std/path/windows} instead.
- */
-export const win32: typeof _windows = _windows;
-
-/**
- * @deprecated This will be removed in 1.0.0. Import from
- * {@link https://jsr.io/@std/path/doc/posix/~ | @std/path/posix} instead.
- */
-export const posix: typeof _posix = _posix;
-
 export * from "./basename.ts";
 export * from "./constants.ts";
 export * from "./dirname.ts";
@@ -64,7 +51,7 @@ export * from "./resolve.ts";
 export * from "./to_file_url.ts";
 export * from "./to_namespaced_path.ts";
 export * from "./common.ts";
-export * from "./_interface.ts";
+export * from "./types.ts";
 export * from "./glob_to_regexp.ts";
 export * from "./is_glob.ts";
 export * from "./join_globs.ts";

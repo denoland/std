@@ -18,7 +18,14 @@ const DEFAULT_SPINNER = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧",
 // deno-lint-ignore ban-types
 export type Ansi = string & {};
 
-/** Color options for {@linkcode SpinnerOptions.color}. */
+/**
+ * Color options for {@linkcode SpinnerOptions.color}.
+ *
+ * > [!WARNING]
+ * > **UNSTABLE**: New API, yet to be vetted.
+ *
+ * @experimental
+ */
 export type Color =
   | "black"
   | "red"
@@ -43,7 +50,14 @@ const COLORS: Record<Color, string> = {
   gray: "\u001b[90m",
 };
 
-/** Options for {@linkcode Spinner}. */
+/**
+ * Options for {@linkcode Spinner}.
+ *
+ * > [!WARNING]
+ * > **UNSTABLE**: New API, yet to be vetted.
+ *
+ * @experimental
+ */
 export interface SpinnerOptions {
   /**
    * The sequence of characters to be iterated through for animation.
@@ -72,6 +86,9 @@ export interface SpinnerOptions {
 /**
  * A spinner that can be used to indicate that something is loading.
  *
+ * > [!WARNING]
+ * > **UNSTABLE**: New API, yet to be vetted.
+ *
  * @example Usage
  * ```ts no-eval
  * import { Spinner } from "@std/cli/spinner";
@@ -84,6 +101,8 @@ export interface SpinnerOptions {
  *  console.log("Finished loading!");
  * }, 3_000);
  * ```
+ *
+ * @experimental
  */
 export class Spinner {
   #spinner: string[];
@@ -120,20 +139,15 @@ export class Spinner {
   /**
    * Creates a new spinner.
    *
-   * @example Usage
-   * ```ts
-   * import { Spinner } from "@std/cli/spinner";
-   *
-   * const spinner = new Spinner({ message: "Loading..." });
-   * spinner.stop();
-   * ```
+   * @param options Options for the spinner.
    */
-  constructor({
-    spinner = DEFAULT_SPINNER,
-    message = "",
-    interval = DEFAULT_INTERVAL,
-    color,
-  }: SpinnerOptions = {}) {
+  constructor(options?: SpinnerOptions) {
+    const {
+      spinner = DEFAULT_SPINNER,
+      message = "",
+      interval = DEFAULT_INTERVAL,
+      color,
+    } = options ?? {};
     this.#spinner = spinner;
     this.message = message;
     this.#interval = interval;
@@ -169,11 +183,12 @@ export class Spinner {
    * Get the current color of the spinner.
    *
    * @example Usage
-   * ```ts
+   * ```ts no-assert
    * import { Spinner } from "@std/cli/spinner";
    *
    * const spinner = new Spinner({ message: "Loading", color: "blue" });
-   * console.log(spinner.color); // "blue"
+   *
+   * spinner.color; // Blue ANSI escape sequence
    * ```
    * @returns The color of the spinner or `undefined` if it's using the terminal default.
    */

@@ -1,13 +1,13 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import { assertNotStrictEquals } from "@std/assert/assert-not-strict-equals";
-import { assertStrictEquals } from "@std/assert/assert-strict-equals";
-import { assertInstanceOf } from "@std/assert/assert-instance-of";
-import { assertIsError } from "@std/assert/assert-is-error";
-import { assertNotInstanceOf } from "@std/assert/assert-not-instance-of";
-import { assertMatch } from "@std/assert/assert-match";
-import { assertObjectMatch } from "@std/assert/assert-object-match";
-import { assertNotMatch } from "@std/assert/assert-not-match";
+import { assertNotStrictEquals } from "@std/assert/not-strict-equals";
+import { assertStrictEquals } from "@std/assert/strict-equals";
+import { assertInstanceOf } from "@std/assert/instance-of";
+import { assertIsError } from "@std/assert/is-error";
+import { assertNotInstanceOf } from "@std/assert/not-instance-of";
+import { assertMatch } from "@std/assert/match";
+import { assertObjectMatch } from "@std/assert/object-match";
+import { assertNotMatch } from "@std/assert/not-match";
 import { AssertionError } from "@std/assert/assertion-error";
 
 import { assertEquals } from "./_assert_equals.ts";
@@ -605,7 +605,7 @@ export function toHaveBeenNthCalledWith(
   ...expected: unknown[]
 ): MatchResult {
   if (nth < 1) {
-    new Error(`nth must be greater than 0. ${nth} was given.`);
+    throw new Error(`nth must be greater than 0. ${nth} was given.`);
   }
 
   const calls = getMockCalls(context.value);

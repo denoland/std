@@ -26,14 +26,14 @@ function getParentIndex(index: number) {
  * | pop()       | O(log n)     | O(log n)   |
  * | push(value) | O(1)         | O(log n)   |
  *
- * @example
+ * @example Usage
  * ```ts
  * import {
  *   ascend,
  *   BinaryHeap,
  *   descend,
  * } from "@std/data-structures";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const maxHeap = new BinaryHeap<number>();
  * maxHeap.push(4, 1, 3, 5, 2);
@@ -66,18 +66,6 @@ export class BinaryHeap<T> implements Iterable<T> {
   /**
    * Construct an empty binary heap.
    *
-   * @example Creating an empty binary heap
-   * ```ts
-   * import { BinaryHeap } from "@std/data-structures";
-   * const heap = new BinaryHeap<number>();
-   * ```
-   *
-   * @example Creating a binary heap with a custom comparison function
-   * ```ts
-   * import { BinaryHeap, ascend } from "@std/data-structures";
-   * const heap = new BinaryHeap(ascend);
-   * ```
-   *
    * @param compare A custom comparison function to sort the values in the heap. By default, the values are sorted in descending order.
    */
   constructor(compare: (a: T, b: T) => number = descend) {
@@ -95,8 +83,11 @@ export class BinaryHeap<T> implements Iterable<T> {
    * @example Getting the underlying array
    * ```ts
    * import { BinaryHeap } from "@std/data-structures";
+   * import { assertEquals } from "@std/assert";
+   *
    * const heap = BinaryHeap.from([4, 1, 3, 5, 2]);
-   * heap.toArray(); // [ 5, 4, 3, 1, 2 ]
+   *
+   * assertEquals(heap.toArray(), [ 5, 4, 3, 1, 2 ]);
    * ```
    *
    * @returns An array containing the values in the binary heap.
@@ -115,27 +106,31 @@ export class BinaryHeap<T> implements Iterable<T> {
    * function is copied from the input heap.
    *
    * @example Creating a binary heap from an array like
-   * ```ts
+   * ```ts no-assert
    * import { BinaryHeap } from "@std/data-structures";
+   *
    * const heap = BinaryHeap.from([4, 1, 3, 5, 2]);
    * ```
    *
    * @example Creating a binary heap from an iterable object
-   * ```ts
+   * ```ts no-assert
    * import { BinaryHeap } from "@std/data-structures";
+   *
    * const heap = BinaryHeap.from((function*() { yield* [4, 1, 3, 5, 2]; })());
    * ```
    *
    * @example Creating a binary heap from an existing binary heap
-   * ```ts
+   * ```ts no-assert
    * import { BinaryHeap } from "@std/data-structures";
+   *
    * const heap = BinaryHeap.from([4, 1, 3, 5, 2]);
    * const copy = BinaryHeap.from(heap);
    * ```
    *
    * @example Creating a binary heap from an array like with a custom comparison function
-   * ```ts
+   * ```ts no-assert
    * import { BinaryHeap, ascend } from "@std/data-structures";
+   *
    * const heap = BinaryHeap.from([4, 1, 3, 5, 2], { compare: ascend });
    * ```
    *
@@ -164,8 +159,9 @@ export class BinaryHeap<T> implements Iterable<T> {
    * sort the values in the heap after mapping the values.
    *
    * @example Creating a binary heap from an array like with a custom mapping function
-   * ```ts
+   * ```ts no-eval
    * import { BinaryHeap } from "@std/data-structures";
+   *
    * const heap = BinaryHeap.from([4, 1, 3, 5, 2], { map: (value) => value * 2 });
    * ```
    *
@@ -224,8 +220,11 @@ export class BinaryHeap<T> implements Iterable<T> {
    * @example Getting the length of the binary heap
    * ```ts
    * import { BinaryHeap } from "@std/data-structures";
+   * import { assertEquals } from "@std/assert";
+   *
    * const heap = BinaryHeap.from([4, 1, 3, 5, 2]);
-   * heap.length; // 5
+   *
+   * assertEquals(heap.length, 5);
    * ```
    *
    * @returns The count of values stored in the binary heap.
@@ -243,15 +242,21 @@ export class BinaryHeap<T> implements Iterable<T> {
    * @example Getting the greatest value from the binary heap
    * ```ts
    * import { BinaryHeap } from "@std/data-structures";
+   * import { assertEquals } from "@std/assert";
+   *
    * const heap = BinaryHeap.from([4, 1, 3, 5, 2]);
-   * heap.peek(); // 5
+   *
+   * assertEquals(heap.peek(), 5);
    * ```
    *
    * @example Getting the greatest value from an empty binary heap
    * ```ts
    * import { BinaryHeap } from "@std/data-structures";
+   * import { assertEquals } from "@std/assert";
+   *
    * const heap = new BinaryHeap<number>();
-   * heap.peek(); // undefined
+   *
+   * assertEquals(heap.peek(), undefined);
    * ```
    *
    * @returns The greatest value from the binary heap, or undefined if it is empty.
@@ -267,9 +272,12 @@ export class BinaryHeap<T> implements Iterable<T> {
    * @example Removing the greatest value from the binary heap
    * ```ts
    * import { BinaryHeap } from "@std/data-structures";
+   * import { assertEquals } from "@std/assert";
+   *
    * const heap = BinaryHeap.from([4, 1, 3, 5, 2]);
-   * heap.pop(); // 5
-   * [...heap]; // [ 4, 3, 2, 1 ]
+   *
+   * assertEquals(heap.pop(), 5);
+   * assertEquals([...heap], [4, 3, 2, 1]);
    * ```
    *
    * The complexity of this operation is on average and worst case O(log n),
@@ -278,8 +286,11 @@ export class BinaryHeap<T> implements Iterable<T> {
    * @example Removing the greatest value from an empty binary heap
    * ```ts
    * import { BinaryHeap } from "@std/data-structures";
+   * import { assertEquals } from "@std/assert";
+   *
    * const heap = new BinaryHeap<number>();
-   * heap.pop(); // undefined
+   *
+   * assertEquals(heap.pop(), undefined);
    * ```
    *
    * @returns The greatest value from the binary heap, or undefined if the heap is empty.
@@ -317,9 +328,12 @@ export class BinaryHeap<T> implements Iterable<T> {
    * @example Adding values to the binary heap
    * ```ts
    * import { BinaryHeap } from "@std/data-structures";
+   * import { assertEquals } from "@std/assert";
+   *
    * const heap = BinaryHeap.from([4, 1, 3, 2]);
    * heap.push(5);
-   * [...heap]; // [ 5, 4, 3, 1, 2 ]
+   *
+   * assertEquals([...heap], [5, 4, 3, 2, 1]);
    * ```
    *
    * @param values The values to add to the binary heap.
@@ -348,9 +362,12 @@ export class BinaryHeap<T> implements Iterable<T> {
    * @example Clearing the binary heap
    * ```ts
    * import { BinaryHeap } from "@std/data-structures";
+   * import { assertEquals } from "@std/assert";
+   *
    * const heap = BinaryHeap.from([4, 1, 3, 5, 2]);
    * heap.clear();
-   * [...heap]; // []
+   *
+   * assertEquals([...heap], []);
    * ```
    */
   clear() {
@@ -363,10 +380,15 @@ export class BinaryHeap<T> implements Iterable<T> {
    * @example Checking if the binary heap is empty
    * ```ts
    * import { BinaryHeap } from "@std/data-structures";
+   * import { assertEquals } from "@std/assert";
+   *
    * const heap = new BinaryHeap<number>();
-   * heap.isEmpty(); // true
+   *
+   * assertEquals(heap.isEmpty(), true);
+   *
    * heap.push(42);
-   * heap.isEmpty(); // false
+   *
+   * assertEquals(heap.isEmpty(), false);
    * ```
    *
    * @returns true if the binary heap is empty, otherwise false.
@@ -380,14 +402,18 @@ export class BinaryHeap<T> implements Iterable<T> {
    * from greatest to least. The binary heap is drained in the process.
    *
    * To avoid draining the binary heap, create a copy using
-   * {@link BinaryHeap.from} and then call {@link BinaryHeap#drain} on the copy.
+   * {@link BinaryHeap.from} and then call {@link BinaryHeap.prototype.drain}
+   * on the copy.
    *
    * @example Draining the binary heap
    * ```ts
    * import { BinaryHeap } from "@std/data-structures";
+   * import { assertEquals } from "@std/assert";
+   *
    * const heap = BinaryHeap.from([4, 1, 3, 5, 2]);
-   * [...heap.drain()]; // [ 5, 4, 3, 2, 1 ]
-   * [...heap.drain()]; // []
+   *
+   * assertEquals([...heap.drain()], [ 5, 4, 3, 2, 1 ]);
+   * assertEquals([...heap.drain()], []);
    * ```
    *
    * @returns An iterator for retrieving and removing values from the binary heap.
@@ -402,14 +428,15 @@ export class BinaryHeap<T> implements Iterable<T> {
    * Create an iterator that retrieves values from the binary heap in order
    * from greatest to least. The binary heap is drained in the process.
    *
-   * See {@link BinaryHeap#values}.
-   *
    * @example Getting an iterator for the binary heap
    * ```ts
    * import { BinaryHeap } from "@std/data-structures";
+   * import { assertEquals } from "@std/assert";
+   *
    * const heap = BinaryHeap.from([4, 1, 3, 5, 2]);
-   * [...heap]; // [ 5, 4, 3, 2, 1 ]
-   * [...heap]; // []
+   *
+   * assertEquals([...heap], [ 5, 4, 3, 2, 1 ]);
+   * assertEquals([...heap], []);
    * ```
    *
    * @returns An iterator for retrieving and removing values from the binary heap.

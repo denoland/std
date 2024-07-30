@@ -15,7 +15,7 @@
  * @example Basic usage
  * ```ts
  * import { permutations } from "@std/collections/permutations";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const numbers = [ 1, 2 ];
  * const windows = permutations(numbers);
@@ -54,7 +54,7 @@ export function permutations<T>(inputArray: Iterable<T>): T[][] {
 
       result.push([...array]);
 
-      c[i] += 1;
+      c[i]! += 1;
       i = 1;
     } else {
       c[i] = 0;

@@ -9,15 +9,49 @@ import type {
 } from "./delimiter_stream.ts";
 
 /**
- * Transform a stream into a stream where each chunk is divided by a given delimiter.
+ * Transform a stream `string` into a stream where each chunk is divided by a
+ * given delimiter.
  *
- * @example
+ * If you are working with a stream of `Uint8Array`, consider using {@linkcode DelimiterStream}.
+ *
+ * If you want to split by a newline, consider using {@linkcode TextLineStream}.
+ *
+ * @example Comma-separated values
  * ```ts
  * import { TextDelimiterStream } from "@std/streams/text-delimiter-stream";
- * const res = await fetch("https://example.com");
- * const parts = res.body!
- *   .pipeThrough(new TextDecoderStream())
- *   .pipeThrough(new TextDelimiterStream("foo"));
+ * import { assertEquals } from "@std/assert";
+ *
+ * const stream = ReadableStream.from([
+ *   "alice,20,",
+ *   ",US,",
+ * ]);
+ *
+ * const valueStream = stream.pipeThrough(new TextDelimiterStream(","));
+ *
+ * assertEquals(
+ *   await Array.fromAsync(valueStream),
+ *   ["alice", "20", "", "US", ""],
+ * );
+ * ```
+ *
+ * @example Semicolon-separated values with suffix disposition
+ * ```ts
+ * import { TextDelimiterStream } from "@std/streams/text-delimiter-stream";
+ * import { assertEquals } from "@std/assert";
+ *
+ * const stream = ReadableStream.from([
+ *   "const a = 42;;let b =",
+ *   " true;",
+ * ]);
+ *
+ * const valueStream = stream.pipeThrough(
+ *   new TextDelimiterStream(";", { disposition: "suffix" }),
+ * );
+ *
+ * assertEquals(
+ *   await Array.fromAsync(valueStream),
+ *   ["const a = 42;", ";", "let b = true;", ""],
+ * );
  * ```
  */
 export class TextDelimiterStream extends TransformStream<string, string> {
@@ -28,8 +62,16 @@ export class TextDelimiterStream extends TransformStream<string, string> {
   #delimLPS: Uint8Array;
   #disp: DelimiterDisposition;
 
-  /** Constructs a new instance. */
-  constructor(delimiter: string, options?: DelimiterStreamOptions) {
+  /**
+   * Constructs a new instance.
+   *
+   * @param delimiter A delimiter to split the stream by.
+   * @param options Options for the stream.
+   */
+  constructor(
+    delimiter: string,
+    options?: DelimiterStreamOptions,
+  ) {
     super({
       transform: (chunk, controller) => {
         this.#handle(chunk, controller);

@@ -34,14 +34,14 @@ const {
  * | min()         | O(log n)     | O(log n)   |
  * | max()         | O(log n)     | O(log n)   |
  *
- * @example
+ * @example Usage
  * ```ts
  * import {
  *   ascend,
  *   descend,
  *   RedBlackTree,
  * } from "@std/data-structures";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const values = [3, 10, 13, 4, 6, 7, 1, 14];
  * const tree = new RedBlackTree<number>();
@@ -101,24 +101,8 @@ const {
  * @typeparam T The type of the values being stored in the tree.
  */
 export class RedBlackTree<T> extends BinarySearchTree<T> {
-  declare protected root: RedBlackNode<T> | null;
-
   /**
    * Construct an empty red-black tree.
-   *
-   * @example Creating an empty red-black tree
-   * ```ts
-   * import { RedBlackTree } from "@std/data-structures";
-   * const tree = new RedBlackTree<number>();
-   * ```
-   *
-   * @example Creating a red-black tree with a custom comparison function
-   * ```ts
-   * import { RedBlackTree, ascend } from "@std/data-structures";
-   * const tree = new RedBlackTree<{ price: number, name: string }>(
-   *   (a, b) => ascend(a.price, b.price) || ascend(a.name, b.name)
-   * );
-   * ```
    *
    * @param compare A custom comparison function for the values. The default comparison function sorts by ascending order.
    */
@@ -141,14 +125,16 @@ export class RedBlackTree<T> extends BinarySearchTree<T> {
    * function is copied from the input tree.
    *
    * @example Creating a red-black tree from an array like
-   * ```ts
+   * ```ts no-assert
    * import { RedBlackTree } from "@std/data-structures";
+   *
    * const tree = RedBlackTree.from<number>([3, 10, 13, 4, 6, 7, 1, 14]);
    * ```
    *
    * @example Creating a red-black tree from an iterable object
-   * ```ts
+   * ```ts no-assert
    * import { RedBlackTree } from "@std/data-structures";
+   *
    * const tree = RedBlackTree.from<number>((function*() {
    *   yield 3;
    *   yield 10;
@@ -157,15 +143,17 @@ export class RedBlackTree<T> extends BinarySearchTree<T> {
    * ```
    *
    * @example Creating a red-black tree from an existing red-black tree
-   * ```ts
+   * ```ts no-assert
    * import { RedBlackTree } from "@std/data-structures";
+   *
    * const tree = RedBlackTree.from<number>([3, 10, 13, 4, 6, 7, 1, 14]);
    * const copy = RedBlackTree.from(tree);
    * ```
    *
    * @example Creating a red-black tree from an array like with a custom comparison function
-   * ```ts
+   * ```ts no-assert
    * import { RedBlackTree, descend } from "@std/data-structures";
+   *
    * const tree = RedBlackTree.from<number>([3, 10, 13, 4, 6, 7, 1, 14], {
    *  compare: descend,
    * });
@@ -198,8 +186,9 @@ export class RedBlackTree<T> extends BinarySearchTree<T> {
    * the values.
    *
    * @example Creating a red-black tree from an array like with a custom mapping function
-   * ```ts
+   * ```ts no-assert
    * import { RedBlackTree } from "@std/data-structures";
+   *
    * const tree = RedBlackTree.from<number, string>([3, 10, 13, 4, 6, 7, 1, 14], {
    *   map: (value) => value.toString(),
    * });
@@ -326,9 +315,12 @@ export class RedBlackTree<T> extends BinarySearchTree<T> {
    * @example Inserting a value into the tree
    * ```ts
    * import { RedBlackTree } from "@std/data-structures";
+   * import { assertEquals } from "@std/assert";
+   *
    * const tree = new RedBlackTree<number>();
-   * tree.insert(42); // true
-   * tree.insert(42); // false
+   *
+   * assertEquals(tree.insert(42), true);
+   * assertEquals(tree.insert(42), false);
    * ```
    *
    * @param value The value to insert into the tree.
@@ -380,9 +372,12 @@ export class RedBlackTree<T> extends BinarySearchTree<T> {
    * @example Removing values from the tree
    * ```ts
    * import { RedBlackTree } from "@std/data-structures";
+   * import { assertEquals } from "@std/assert";
+   *
    * const tree = RedBlackTree.from<number>([42]);
-   * tree.remove(42); // true
-   * tree.remove(42); // false
+   *
+   * assertEquals(tree.remove(42), true);
+   * assertEquals(tree.remove(42), false);
    * ```
    *
    * @param value The value to remove from the tree.

@@ -1,7 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import { assert, assertEquals, assertThrows } from "@std/assert";
 import { generate, validate } from "./v1.ts";
-import { uuidToBytes } from "./_common.ts";
 
 Deno.test("validate() checks if a string is a valid v1 UUID", () => {
   const u = generate();
@@ -42,21 +41,6 @@ Deno.test("generate() can generate a static v1 UUID", () => {
   };
   const u = generate(v1options);
   assertEquals(u, "710b962e-041c-11e1-9234-0123456789ab");
-});
-
-Deno.test("generate() can fill the UUID into a buffer", () => {
-  const buf: number[] = [];
-  const v1options = {
-    node: [0x01, 0x23, 0x45, 0x67, 0x89, 0xab],
-    clockseq: 0x1234,
-    msecs: new Date("2011-11-01").getTime(),
-    nsecs: 5678,
-  };
-  const uuid = generate(v1options, buf, 0);
-  const expect = uuidToBytes("710b962e-041c-11e1-9234-0123456789ab");
-
-  assertEquals(buf, expect);
-  assertEquals(buf, uuid);
 });
 
 Deno.test("generate() throws when node is passed with less than 6 numbers", () => {

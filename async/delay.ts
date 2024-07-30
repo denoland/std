@@ -15,11 +15,13 @@ export interface DelayOptions {
 /**
  * Resolve a {@linkcode Promise} after a given amount of milliseconds.
  *
+ * @throws {DOMException} If the optional signal is aborted before the delay
+ * duration, and `signal.reason` is undefined.
  * @param ms Duration in milliseconds for how long the delay should last.
  * @param options Additional options.
  *
  * @example Basic usage
- * ```ts
+ * ```ts no-assert
  * import { delay } from "@std/async/delay";
  *
  * // ...
@@ -33,7 +35,7 @@ export interface DelayOptions {
  * Setting `persistent` to `false` will allow the process to continue to run as
  * long as the timer exists.
  *
- * ```ts
+ * ```ts no-assert
  * import { delay } from "@std/async/delay";
  *
  * // ...

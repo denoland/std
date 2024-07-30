@@ -174,7 +174,6 @@ for (const [standard, tests] of Object.entries(testCasesDelimiter)) {
         assertEquals(
           decodeAscii85(b85 as string, {
             standard: standard as Ascii85Standard,
-            delimiter: true,
           }),
           utf8encoder.encode(bin),
         );

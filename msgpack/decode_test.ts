@@ -211,3 +211,26 @@ Deno.test("decode() handles early end of data", async (t) => {
     });
   }
 });
+
+Deno.test("decode() throws when there's extra data after the end", () => {
+  assertThrows(
+    () => decode(Uint8Array.of(1, 0)), // extra 0 after 1
+    EvalError,
+    "Messagepack decode did not consume whole array",
+  );
+  assertThrows(
+    () => decode(Uint8Array.of(0xc3, 0)), // extra 0 after true
+    EvalError,
+    "Messagepack decode did not consume whole array",
+  );
+});
+
+Deno.test("decode() throws when the key of the map is of invalid type", () => {
+  // Decode something like map { true -> true }
+  // but true is not a valid key
+  assertThrows(
+    () => decode(Uint8Array.of(0b10000000 | 1, 0xc2, 0xc2)),
+    EvalError,
+    "Messagepack decode came across an invalid type for a key of a map",
+  );
+});
