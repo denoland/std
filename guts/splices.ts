@@ -1,5 +1,6 @@
 import { assert, expect, log } from '@utils'
 import { CradleMaker } from '@/constants.ts'
+import { Api } from '@/isolates/io-fixture.ts'
 
 export default (name: string, cradleMaker: CradleMaker) => {
   const prefix = name + ':splices: '
@@ -7,7 +8,7 @@ export default (name: string, cradleMaker: CradleMaker) => {
     const { backchat, engine } = await cradleMaker()
     const repo = 'splices/files'
     const { pid } = await backchat.init({ repo })
-    const { write } = await backchat.actions('io-fixture', { target: pid })
+    const { write } = await backchat.actions<Api>('io-fixture', { target: pid })
 
     await t.step('read', async () => {
       const p = write({ path: 'test', content: 'hello' })
@@ -35,7 +36,7 @@ export default (name: string, cradleMaker: CradleMaker) => {
     const repo = 'splices/diffs'
     await backchat.rm({ repo })
     const { pid } = await backchat.init({ repo })
-    const { write } = await backchat.actions('io-fixture', { target: pid })
+    const { write } = await backchat.actions<Api>('io-fixture', { target: pid })
 
     const logger = async () => {
       const stream = backchat.watch(pid, '.io.json')
@@ -86,7 +87,8 @@ export default (name: string, cradleMaker: CradleMaker) => {
     splices()
 
     await t.step('write', async () => {
-      const { write } = await backchat.actions('io-fixture', { target: pid })
+      const opts = { target: pid }
+      const { write } = await backchat.actions<Api>('io-fixture', opts)
       await write({ path: 'test.txt', content: 'hello' })
       const p = write({ path: 'test.txt', content: 'ell' })
       let fileCount = 0

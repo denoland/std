@@ -163,7 +163,12 @@ export class WebClientEngine implements EngineInterface {
     return source
   }
   async read(path: string, pid: PID, commit?: string) {
-    const result = await this.#request('read', { path, pid, commit })
+    const params: { path: string; pid: PID; commit?: string } = {
+      path,
+      pid,
+      commit,
+    }
+    const result = await this.#request('read', params)
     return result as string
   }
   async readJSON<T>(path: string, pid: PID, commit?: string) {

@@ -4,8 +4,9 @@ import {
   CradleMaker,
   generateThreadId,
   print,
+  Thread,
 } from '@/constants.ts'
-import { Api } from '../isolates/ai.ts'
+import { Api } from '../isolates/longthread.ts'
 
 export default (name: string, cradleMaker: CradleMaker) => {
   const prefix = name + ':ai: '
@@ -14,14 +15,18 @@ export default (name: string, cradleMaker: CradleMaker) => {
     log('pid', print(backchat.pid))
 
     await t.step('prompt', async () => {
-      const { execute } = await backchat.actions<Api>('thread')
+      const { start, run } = await backchat.actions<Api>('longthread')
       const threadId = generateThreadId(t.name)
-      const result = await execute({
+      await start({ threadId })
+      await run({
         threadId,
-        agentPath: 'agents/agent-fixture.md',
+        path: 'agents/agent-fixture.md',
         content: 'say "Hello"',
+        actorId: 'ai',
       })
-      expect(result).toContain('Hello')
+      const result = await backchat.readJSON<Thread>(`threads/${threadId}.json`)
+      const [assistant] = result.messages.slice(-1)
+      expect(assistant.content).toContain('Hello')
     })
     log('stopping')
     await engine.stop()
@@ -50,14 +55,17 @@ export default (name: string, cradleMaker: CradleMaker) => {
     splices()
     await t.step('say the word "hello"', async () => {
       const opts = { branchName: threadId, noClose: true }
-      const { execute } = await backchat.actions<Api>('thread', opts)
-      const result = await execute({
+      const { start, run } = await backchat.actions<Api>('longthread', opts)
+      await start({ threadId })
+      await run({
         threadId,
-        agentPath: 'agents/agent-fixture.md',
+        path: 'agents/agent-fixture.md',
         content: 'say the word: "hello" without calling any functions',
+        actorId: 'ai',
       })
-      log('result', result)
-      expect(result).toBe('hello')
+      const result = await backchat.readJSON<Thread>(`threads/${threadId}.json`)
+      const [assistant] = result.messages.slice(-1)
+      expect(assistant.content).toBe('hello')
       assert('messages' in latest, 'messages missing')
       assert(Array.isArray(latest.messages), 'messages not an array')
       expect(latest.messages[2].content.toLowerCase()).toBe('hello')
@@ -66,30 +74,34 @@ export default (name: string, cradleMaker: CradleMaker) => {
     const opts = { target }
     await t.step('what is your name ?', async () => {
       log('target', print(target))
-      const { addMessageRun } = await backchat.actions<Api>('thread', opts)
-      const result = await addMessageRun({
+      const { run } = await backchat.actions<Api>('longthread', opts)
+      await run({
         threadId,
         content: 'what is your name ?',
+        path: 'agents/agent-fixture.md',
+        actorId: 'ai',
       })
-      log('result', result)
-
+      const result = await backchat.readJSON<Thread>(`threads/${threadId}.json`)
+      const [assistant] = result.messages.slice(-1)
       const expected = `My name is Assistant.`
-      expect(result).toBe(expected)
+      expect(assistant.content).toBe(expected)
       assert('messages' in latest, 'messages missing')
       assert(Array.isArray(latest.messages), 'messages not an array')
       expect(latest.messages[4].content).toBe(expected)
     })
 
     await t.step('repeat your last', async () => {
-      const { addMessageRun } = await backchat.actions<Api>('thread', opts)
-      const result = await addMessageRun({
+      const { run } = await backchat.actions<Api>('thread', opts)
+      await run({
         threadId,
         content: 'repeat your last, without calling any functions',
+        path: 'agents/agent-fixture.md',
+        actorId: 'ai',
       })
-
-      log('result', result)
+      const result = await backchat.readJSON<Thread>(`threads/${threadId}.json`)
+      const [assistant] = result.messages.slice(-1)
       const expected = `My name is Assistant.`
-      expect(result).toBe(expected)
+      expect(assistant.content).toBe(expected)
       assert('messages' in latest, 'messages missing')
       assert(Array.isArray(latest.messages), 'messages not an array')
       expect(latest.messages[6].content).toBe(expected)

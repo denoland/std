@@ -1,6 +1,7 @@
 // the Grand Unified Test Suite™
 
 import { expect, log } from '@utils'
+import { Api } from '@/isolates/io-fixture.ts'
 import processMgmt from './process-mgmt.ts'
 import aiCalls from './ai-calls.ts'
 import splices from './splices.ts'
@@ -10,8 +11,6 @@ import threads from './guts-threads.ts'
 // import isolates from './guts-ai-isolates.ts'
 import { CradleMaker } from '@/constants.ts'
 import { assert } from '@std/assert'
-
-const ioFixture = 'io-fixture'
 
 export default (name: string, cradleMaker: CradleMaker) => {
   const prefix = name + ': '
@@ -78,7 +77,7 @@ export default (name: string, cradleMaker: CradleMaker) => {
     const { backchat, engine } = await cradleMaker()
     await backchat.rm({ repo: 'cradle/pierce' })
     const { pid: target } = await backchat.init({ repo: 'cradle/pierce' })
-    const actions = await backchat.actions(ioFixture, { target })
+    const actions = await backchat.actions<Api>('io-fixture', { target })
     await t.step('local', async () => {
       const result = await actions.local()
       log('local result', result)
@@ -95,7 +94,10 @@ export default (name: string, cradleMaker: CradleMaker) => {
     })
     await t.step('params fails validation', async () => {
       const msg = 'Parameters Validation Error '
-      await expect(actions.local({ invalid: 'parameters' }))
+      const invalid = { invalid: 'parameters' } as unknown as {
+        message: string
+      }
+      await expect(actions.ping(invalid))
         .rejects.toThrow(msg)
     })
     await engine.stop()

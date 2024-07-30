@@ -22,7 +22,7 @@ commands:
 `
 const path = 'agents/agent-fixture.md'
 
-Deno.test.only('longthread chat', async (t) => {
+Deno.test('longthread chat', async (t) => {
   const superuserKey = Crypto.generatePrivateKey()
   const aesKey = DB.generateAesKey()
   const privateKey = Crypto.generatePrivateKey()

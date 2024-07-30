@@ -75,7 +75,7 @@ const complete = async (
   const sysprompt: OpenAI.ChatCompletionSystemMessageParam = {
     role: 'system',
     content: agent.instructions,
-    name: agent.name,
+    name: agent.source.path,
   }
   const args: OpenAI.ChatCompletionCreateParams = {
     model,

@@ -14,19 +14,19 @@ export default (name: string, cradleMaker: CradleMaker) => {
 
     // TODO exercise the ACL blocking some actions to the session chain
     await t.step('initial', async () => {
-      const { local } = await backchat.actions('io-fixture')
+      const { local } = await backchat.actions<Api>('io-fixture')
       const result = await local()
       expect(result).toEqual('local reply')
     })
     const second = await Backchat.upsert(engine, key)
     await t.step('second backchat', async () => {
-      const { local } = await second.actions('io-fixture')
+      const { local } = await second.actions<Api>('io-fixture')
       const result = await local()
       expect(result).toEqual('local reply')
     })
     await t.step('cross backchat', async () => {
       const opts = { target: backchat.pid }
-      const { local } = await second.actions('io-fixture', opts)
+      const { local } = await second.actions<Api>('io-fixture', opts)
       const result = await local()
       expect(result).toEqual('local reply')
     })
@@ -35,7 +35,7 @@ export default (name: string, cradleMaker: CradleMaker) => {
     await t.step('resume session', async () => {
       // TODO this should check if the session is valid
       expect(resumed.pid).toEqual(backchat.pid)
-      const { local } = await resumed.actions('io-fixture')
+      const { local } = await resumed.actions<Api>('io-fixture')
       const result = await local()
       expect(result).toEqual('local reply')
     })

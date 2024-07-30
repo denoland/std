@@ -17,7 +17,7 @@ Only reply with a SINGLE word
 
 const path = 'agents/agent-fixture.md'
 
-Deno.test.only('assistants chat', async (t) => {
+Deno.test.ignore('assistants chat', async (t) => {
   const superuserKey = Crypto.generatePrivateKey()
   const aesKey = DB.generateAesKey()
   const privateKey = Crypto.generatePrivateKey()

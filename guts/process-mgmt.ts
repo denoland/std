@@ -1,5 +1,7 @@
 import { expect } from '@utils'
 import { addBranches, CradleMaker } from '@/constants.ts'
+import { Api } from '@/isolates/session.ts'
+import { Api as IoApi } from '@/isolates/io-fixture.ts'
 
 export default (name: string, cradleMaker: CradleMaker) => {
   const prefix = name + ':process: '
@@ -9,13 +11,13 @@ export default (name: string, cradleMaker: CradleMaker) => {
 
     const { pid } = await backchat.init({ repo })
     const testBranch1Pid = addBranches(pid, 'session-1')
-    const { create } = await backchat.actions('session', { target: pid })
+    const { create } = await backchat.actions<Api>('session', { target: pid })
     await t.step('create', async () => {
       const branchPid = await create()
       expect(branchPid).toEqual(testBranch1Pid)
 
       const opts = { target: testBranch1Pid }
-      const { local } = await backchat.actions('io-fixture', opts)
+      const { local } = await backchat.actions<IoApi>('io-fixture', opts)
       const result = await local()
       expect(result).toEqual('local reply')
     })
@@ -24,7 +26,7 @@ export default (name: string, cradleMaker: CradleMaker) => {
       const testBranch3Pid = addBranches(pid, 'session-3')
       expect(branchPid).toEqual(testBranch3Pid)
       const opts = { target: testBranch3Pid }
-      const { local } = await backchat.actions('io-fixture', opts)
+      const { local } = await backchat.actions<IoApi>('io-fixture', opts)
       const result = await local()
       expect(result).toEqual('local reply')
     })
@@ -37,7 +39,8 @@ export default (name: string, cradleMaker: CradleMaker) => {
     const { pid } = await backchat.init({ repo })
 
     await t.step('ping', async () => {
-      const { branch } = await backchat.actions('io-fixture', { target: pid })
+      const opts = { target: pid }
+      const { branch } = await backchat.actions<IoApi>('io-fixture', opts)
       const result = await branch()
       expect(result).toEqual('remote pong')
     })
