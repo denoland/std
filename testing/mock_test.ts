@@ -817,7 +817,7 @@ Deno.test("stub() throws then the property is not configurable", () => {
   assertThrows(
     () => stub(obj, "fn"),
     MockError,
-    "Cannot spy on non-configurable instance method",
+    "Cannot stub non-configurable instance method",
   );
 });
 
