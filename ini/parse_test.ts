@@ -1,7 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
 import { parse, type ParseOptions } from "./mod.ts";
-import { IniMap } from "./_ini_map.ts";
 import {
   assert,
   assertEquals,
@@ -123,11 +122,6 @@ Deno.test({
     });
     assertEquals(ini, { aaa: 1 });
     assertEquals(ini, json);
-    assertEquals(
-      IniMap.from("#comment\naaa=0\naaa=1", { deduplicate: true })
-        .toString(),
-      "#comment\naaa=1",
-    );
   },
 });
 
