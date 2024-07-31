@@ -13,8 +13,9 @@ import {
 import { FakeTime, TimeError } from "./time.ts";
 import { _internals } from "./_time.ts";
 import { assertSpyCall, spy, type SpyCall } from "./mock.ts";
+import { deadline, delay } from "@std/async";
 
-function fromNow(): () => number {
+function fromNow(): (..._args: unknown[]) => number {
   const start: number = Date.now();
   return () => Date.now() - start;
 }
@@ -338,7 +339,7 @@ Deno.test("FakeTime.restoreFor() returns promise that rejected to TimeError if F
   await assertRejects(
     () => FakeTime.restoreFor(() => {}),
     TimeError,
-    "no fake time",
+    "Time is not faked",
   );
 });
 
@@ -658,10 +659,18 @@ Deno.test("Faked timer functions throws when called after FakeTime is restored",
     fakeSetInterval = setInterval;
     fakeClearInterval = clearInterval;
   }
-  assertThrows(() => fakeSetTimeout(() => {}, 0), TimeError, "no fake time");
-  assertThrows(() => fakeClearTimeout(0), TimeError, "no fake time");
-  assertThrows(() => fakeSetInterval(() => {}, 0), TimeError, "no fake time");
-  assertThrows(() => fakeClearInterval(0), TimeError, "no fake time");
+  assertThrows(
+    () => fakeSetTimeout(() => {}, 0),
+    TimeError,
+    "Time is not faked",
+  );
+  assertThrows(() => fakeClearTimeout(0), TimeError, "Time is not faked");
+  assertThrows(
+    () => fakeSetInterval(() => {}, 0),
+    TimeError,
+    "Time is not faked",
+  );
+  assertThrows(() => fakeClearInterval(0), TimeError, "Time is not faked");
 });
 
 Deno.test("Faked Date.now returns real time after FakeTime is restored", () => {
@@ -691,19 +700,19 @@ Deno.test("FakeTime can be constructed with number, Date, or string", () => {
 });
 
 Deno.test("FakeTime throws when NaN is provided", () => {
-  assertThrows(() => new FakeTime(NaN), TimeError, "invalid start");
+  assertThrows(() => new FakeTime(NaN), TypeError, "Invalid start time");
 });
 
 Deno.test("FakeTime.restore() throws when the time is already restored", () => {
   const _time = new FakeTime();
   FakeTime.restore();
-  assertThrows(() => FakeTime.restore(), TimeError, "time already restored");
+  assertThrows(() => FakeTime.restore(), TimeError, "Time is already restored");
 });
 
 Deno.test("time.restore() throws when the time is already restored", () => {
   const time = new FakeTime();
   time.restore();
-  assertThrows(() => time.restore(), TimeError, "time already restored");
+  assertThrows(() => time.restore(), TimeError, "Time is already restored");
 });
 
 Deno.test("time.now = N throws when N < time.now", () => {
@@ -712,8 +721,8 @@ Deno.test("time.now = N throws when N < time.now", () => {
     () => {
       time.now = 999;
     },
-    Error,
-    "time cannot go backwards",
+    RangeError,
+    "Time cannot go backwards",
   );
 });
 
@@ -721,4 +730,67 @@ Deno.test("time.start returns the started time of the fake time", () => {
   using time = new FakeTime(1000);
   time.now = 2000;
   assertEquals(time.start, 1000);
+});
+
+Deno.test("FakeTime doesn't affect AbortSignal.timeout unchanged if uninitialized", () => {
+  assertStrictEquals(AbortSignal.timeout, _internals.AbortSignalTimeout);
+});
+
+Deno.test("FakeTime fakes AbortSignal.timeout", () => {
+  {
+    using _time = new FakeTime(9001);
+    assertNotEquals(AbortSignal.timeout, _internals.AbortSignalTimeout);
+  }
+  assertStrictEquals(AbortSignal.timeout, _internals.AbortSignalTimeout);
+});
+
+Deno.test("FakeTime controls AbortSignal.timeout", () => {
+  using time: FakeTime = new FakeTime();
+  const cb = spy(fromNow());
+  const expected: SpyCall[] = [];
+
+  const signal = AbortSignal.timeout(1000);
+  signal.onabort = () => cb();
+  time.tick(250);
+  assertEquals(cb.calls, expected);
+  time.tick(250);
+  assertEquals(cb.calls, expected);
+  time.tick(500);
+  expected.push({ args: [], returned: 1000 });
+  assertEquals(cb.calls, expected);
+  time.tick(2500);
+  assertEquals(cb.calls, expected);
+
+  assertEquals(signal.aborted, true);
+  assertInstanceOf(signal.reason, DOMException);
+  assertEquals(signal.reason.name, "TimeoutError");
+  assertEquals(signal.reason.message, "Signal timed out.");
+
+  const signalA = AbortSignal.timeout(1000);
+  signalA.addEventListener("abort", () => cb("a"));
+  const signalB = AbortSignal.timeout(2000);
+  signalB.addEventListener("abort", () => cb("b"));
+  const signalC = AbortSignal.timeout(1500);
+  signalC.addEventListener("abort", () => cb("c"));
+  assertEquals(cb.calls, expected);
+  time.tick(2500);
+  expected.push({ args: ["a"], returned: 4500 });
+  expected.push({ args: ["c"], returned: 5000 });
+  expected.push({ args: ["b"], returned: 5500 });
+  assertEquals(cb.calls, expected);
+});
+
+// https://github.com/denoland/std/issues/5499
+Deno.test("FakeTime regression test for issue #5499", async () => {
+  using t = new FakeTime();
+  const p = deadline(delay(1_000), 10);
+  let state: "pending" | "rejected" | "fulfilled" = "pending";
+  p.then(() => {
+    state = "fulfilled";
+  }).catch(() => {
+    state = "rejected";
+  });
+  await t.tickAsync(10);
+  await t.runMicrotasks();
+  assertEquals(state, "rejected");
 });

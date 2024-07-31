@@ -1,3 +1,115 @@
+### 2024.07.26
+
+#### @std/assert 1.0.1 (patch)
+
+- fix(assert): fix `assertObjectMatch()` prints arrays as objects (#5503)
+- fix(assert): `assertObjectMatch` doesn't print whole object (#5498)
+- chore(assert): remove redundant constructor example (#5506)
+
+#### @std/async 1.0.1 (patch)
+
+- chore(async): remove redundant constructor example (#5507)
+
+#### @std/cli 1.0.1 (patch)
+
+- test(cli): stop spinner without error (#5551)
+- chore(cli): remove redundant constructor example (#5508)
+
+#### @std/crypto 1.0.2 (patch)
+
+- fix(crypto): improve handling of `length` option (#5505)
+
+#### @std/csv 1.0.0-rc.5 (prerelease)
+
+- chore(csv): remove redundant constructor examples (#5509)
+
+#### @std/data-structures 1.0.1 (patch)
+
+- chore(data-structures): remove redundant constructor examples (#5510)
+
+#### @std/expect 1.0.0 (major)
+
+- docs(expect): add examples of matcher usages (#5553)
+- docs(expect): link to matcher docs (#5502)
+- docs(expect): minor doc tweaks (#5501)
+
+#### @std/front-matter 1.0.0 (major)
+
+- chore(front-matter): release `front-matter@1.0.0` (#5376)
+
+#### @std/fs 1.0.0 (major)
+
+- BREAKING(fs): throw `Deno.errors.NotSupported` instead of
+  `SubdirectoryMoveError` in `move[Sync]()` (#5532)
+- BREAKING(fs): throw `Deno.errors.NotFound` instead of `WalkError` in
+  `walk[Sync]()` (#5477)
+- docs(fs): make `preserveTimestamps` note more prominent (#5543)
+- chore(fs): release `fs@1.0.0` (#5214)
+- chore(fs): remove redundant constructor examples (#5511)
+
+#### @std/http 1.0.0-rc.6 (prerelease)
+
+- fix(http): only show LAN address when `--allow-sys` is provided (#5547)
+- chore(http): remove redundant constructor example (#5512)
+
+#### @std/json 1.0.0 (major)
+
+- chore(json): remove redundant constructor examples (#5513)
+- chore(json): release `json@1.0.0` (#5215)
+
+#### @std/jsonc 1.0.0 (major)
+
+- chore(jsonc): tweak `JsonValue` export (#5546)
+- chore(jsonc): release `jsonc@1.0.0` (#5216)
+
+#### @std/path 1.0.2 (patch)
+
+- docs(path): cleanup `@std/path/posix` and `@std/path/windows` module
+  documentation (#5529)
+- docs(path): add examples to `@std/path/posix` examples (#5371)
+
+#### @std/streams 1.0.0 (major)
+
+- fix(streams): strictly define `toJson()` and `toText()` input (#5517)
+- chore(streams): release `streams@1.0.0` (#5518)
+- chore(streams): remove redundant constructor examples (#5514)
+
+#### @std/testing 1.0.0-rc.5 (prerelease)
+
+- fix(testing): FakeTime fakes `AbortSignal.timeout` (#5500)
+- refactor(testing): improve error messages in `mock` module (#5549)
+- refactor(testing): improve `FakeTime` error messaging (#5533)
+- chore(testing): remove redundant constructor examples (#5515)
+
+#### @std/text 1.0.1 (patch)
+
+- feat(text/unstable): add toConstantCase() (#5110)
+- fix(text): unicode support and word splitting according to case (#5447)
+- perf(text): make `levenshteinDistance()` up to 147x faster (#5527)
+- test(text): add more testcases for `levenshteinDistance` (#5528)
+
+#### @std/yaml 1.0.0 (major)
+
+- docs(yaml): correct `core` schema note (#5552)
+- docs(yaml): document compatibility policy (#5542)
+- docs(yaml): document different schemas (#5531)
+- refactor(yaml): cleanup dead sexagesimal regexp code in float type (#5545)
+- refactor(yaml): remove deprecated sexagesimal functionality for integer types
+  (#5539)
+- refactor(yaml): cleanup dead code in float `Type` implementation (#5526)
+- test(yaml): test `arrayIndent = false` option (#5521)
+- test(yaml): improve test coverage for sequence type (#5536)
+- test(yaml): improve test coverage for mapping type (#5535)
+- test(yaml): improve test coverage for string type (#5534)
+- test(yaml): test sortKeys option behavior (#5523)
+- test(yaml): check `lineWidth` option behavior (#5524)
+- test(yaml): improve coverage for nil `Type` (#5525)
+- test(yaml): check the use of reserved characters (#5519)
+- test(yaml): check stringify behavior when `skipInvalid` specified (#5522)
+- test(yaml): test `indent` option of stringify (#5520)
+- test(yaml): add check of merge of list of mapping (#5496)
+- chore(yaml): release `yaml@1.0.0` (#5264)
+
 ### 2024.07.19
 
 #### @std/async 1.0.0 (major)

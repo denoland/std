@@ -5,21 +5,18 @@
 // This module is browser compatible.
 
 import { load, loadDocuments } from "./_loader.ts";
-import { SCHEMA_MAP } from "./_schema.ts";
+import { SCHEMA_MAP, type SchemaType } from "./_schema.ts";
+
+export type { SchemaType };
 
 /** Options for {@linkcode parse}. */
 export interface ParseOptions {
   /**
-   * Name of the schema to use. Options includes:
-   * - `extended` (extends `default` schema)
-   * - `default` (extends `core` schema)
-   * - {@linkcode https://yaml.org/spec/1.2.2/#103-core-schema | core} (extends `json` schema)
-   * - {@linkcode https://yaml.org/spec/1.2.2/#102-json-schema | json} (extends `failsafe` schema)
-   * - {@linkcode https://yaml.org/spec/1.2.2/#101-failsafe-schema | failsafe}
+   * Name of the schema to use.
    *
    * @default {"default"}
    */
-  schema?: "core" | "default" | "failsafe" | "json" | "extended";
+  schema?: SchemaType;
   /**
    * If `true`, duplicate keys will overwrite previous values. Otherwise,
    * duplicate keys will throw a {@linkcode SyntaxError}.

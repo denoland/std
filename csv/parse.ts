@@ -287,7 +287,7 @@ export interface ParseOptions {
    * If negative, no check is made and records may have a variable number of
    * fields.
    *
-   * If the wrong number of fields is in a row, a {@linkcode ParseError} is
+   * If the wrong number of fields is in a row, a {@linkcode SyntaxError} is
    * thrown.
    */
   fieldsPerRecord?: number;
