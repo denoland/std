@@ -58,6 +58,13 @@ export type ReviverFunction = (
   // deno-lint-ignore no-explicit-any
 ) => any;
 
+function trimQuotes(value: string): string {
+  if (value.startsWith('"') && value.endsWith('"')) {
+    return value.slice(1, -1);
+  }
+  return value;
+}
+
 /**
  * Class implementation for fine control of INI data structures.
  */
@@ -658,7 +665,7 @@ export class IniMap {
         }
 
         const key = leftHand.trim();
-        const value = rightHand.trim();
+        const value = trimQuotes(rightHand.trim());
 
         if (currentSection) {
           const lineValue: LineValue = {

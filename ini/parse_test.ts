@@ -38,6 +38,7 @@ Deno.test({
       reviver: (_, value) => Number(value),
     });
     assertValidParse(`a=b\n[section]\nc=d`, { a: "b", section: { c: "d" } });
+    assertValidParse('value="value"', { value: "value" });
   },
 });
 
