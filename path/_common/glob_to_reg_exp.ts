@@ -1,7 +1,10 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-/** Options for {@linkcode globToRegExp}. */
+/**
+ * Options for {@linkcode globToRegExp}, {@linkcode joinGlobs},
+ * {@linkcode normalizeGlob} and {@linkcode expandGlob}.
+ */
 export interface GlobOptions {
   /** Extended glob syntax.
    * See https://www.linuxjournal.com/content/bash-extended-globbing.
@@ -23,9 +26,6 @@ export interface GlobOptions {
    */
   caseInsensitive?: boolean;
 }
-
-/** Options for {@linkcode globToRegExp}. */
-export type GlobToRegExpOptions = GlobOptions;
 
 const REG_EXP_ESCAPE_CHARS = [
   "!",
@@ -66,7 +66,7 @@ export function _globToRegExp(
     globstar: globstarOption = true,
     // os = osType,
     caseInsensitive = false,
-  }: GlobToRegExpOptions = {},
+  }: GlobOptions = {},
 ): RegExp {
   if (glob === "") {
     return /(?!)/;

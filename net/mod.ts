@@ -8,7 +8,11 @@
  *
  * console.log(`My network IP address is ${getNetworkAddress()}`);
  *
- * Deno.serve({ port: getAvailablePort() }, () => new Response("Hello, world!"));
+ * const command = new Deno.Command(Deno.execPath(), {
+ *  args: ["test.ts", "--port", getAvailablePort().toString()],
+ * });
+ *
+ * // ...
  * ```
  *
  * @module

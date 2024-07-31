@@ -21,10 +21,7 @@ import { parse } from "./parse.ts";
  * @param version The version string to parse
  * @returns A valid SemVer or `undefined`
  */
-export function tryParse(version?: string): SemVer | undefined {
-  if (version === undefined) {
-    return undefined;
-  }
+export function tryParse(version: string): SemVer | undefined {
   try {
     return parse(version);
   } catch {

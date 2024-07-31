@@ -71,37 +71,6 @@ export class TextLineStream extends TransformStream<string, string> {
    * Constructs a new instance.
    *
    * @param options Options for the stream.
-   *
-   * @example No parameters
-   * ```ts
-   * import { TextLineStream } from "@std/streams/text-line-stream";
-   * import { assertEquals } from "@std/assert";
-   *
-   * const stream = ReadableStream.from([
-   *  "Hello,\n",
-   *   "world!\n",
-   * ]).pipeThrough(new TextLineStream());
-   *
-   * const lines = await Array.fromAsync(stream);
-   *
-   * assertEquals(lines, ["Hello,", "world!"]);
-   * ```
-   *
-   * @example Allow splitting by `\r`
-   *
-   * ```ts
-   * import { TextLineStream } from "@std/streams/text-line-stream";
-   * import { assertEquals } from "@std/assert";
-   *
-   * const stream = ReadableStream.from([
-   *  "CR\rLF",
-   *  "\nCRLF\r\ndone",
-   * ]).pipeThrough(new TextLineStream({ allowCR: true }));
-   *
-   * const lines = await Array.fromAsync(stream);
-   *
-   * assertEquals(lines, ["CR", "LF", "CRLF", "done"]);
-   * ```
    */
   constructor(options: TextLineStreamOptions = { allowCR: false }) {
     super({

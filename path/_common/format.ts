@@ -1,11 +1,11 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-import type { FormatInputPathObject } from "../_interface.ts";
+import type { ParsedPath } from "../types.ts";
 
 export function _format(
   sep: string,
-  pathObject: FormatInputPathObject,
+  pathObject: Partial<ParsedPath>,
 ): string {
   const dir: string | undefined = pathObject.dir || pathObject.root;
   const base: string = pathObject.base ||
@@ -16,7 +16,7 @@ export function _format(
   return dir + sep + base;
 }
 
-export function assertArg(pathObject: FormatInputPathObject) {
+export function assertArg(pathObject: Partial<ParsedPath>) {
   if (pathObject === null || typeof pathObject !== "object") {
     throw new TypeError(
       `The "pathObject" argument must be of type Object. Received type ${typeof pathObject}`,

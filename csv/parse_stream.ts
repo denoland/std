@@ -58,6 +58,8 @@ export interface CsvParseStreamOptions {
    * skipped.
    * If you provide `skipFirstRow: true` but not `columns`, the first line will
    * be skipped and used as header definitions.
+   *
+   * @default {false}
    */
   skipFirstRow?: boolean;
   /** List of names used for header definition. */
@@ -136,19 +138,6 @@ export class CsvParseStream<
   #headers: readonly string[] = [];
 
   /** Construct a new instance.
-   *
-   * @example Usage
-   * ```ts no-assert
-   * import { CsvParseStream } from "@std/csv/parse-stream";
-   *
-   * const source = ReadableStream.from([
-   *   "name,age",
-   *   "Alice,34",
-   *   "Bob,24",
-   *   "Charlie,45",
-   * ]);
-   * const parts = source.pipeThrough(new CsvParseStream());
-   * ```
    *
    * @param options Options for the stream.
    */
