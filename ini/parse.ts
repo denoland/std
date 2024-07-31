@@ -2,17 +2,7 @@
 // This module is browser compatible.
 
 import { IniMap, type ReviverFunction } from "./_ini_map.ts";
-export type { ParseOptions, ReviverFunction };
-
-/** Options for {@linkcode parse}. */
-interface ParseOptions {
-  /**
-   * Provide custom parsing of the value in a key/value pair. Similar to the
-   * {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/parse#reviver | reviver}
-   * function in {@linkcode JSON.parse}.
-   */
-  reviver?: ReviverFunction;
-}
+export type { ReviverFunction };
 
 /**
  * Parse an INI config string into an object.
@@ -48,22 +38,22 @@ interface ParseOptions {
  * import { parse } from "@std/ini/parse";
  * import { assertEquals } from "@std/assert";
  *
+ * function reviver(key: string, value: string, section?: string): Date | number | string {
+ *   if (section === "section Foo") {
+ *     if (key === "date") {
+ *       return new Date(value);
+ *     } else if (key === "amount") {
+ *       return +value;
+ *     }
+ *   }
+ *   return value;
+ * }
+ *
  * const parsed = parse(`
  * [section Foo]
  * date = 2012-10-10
  * amount = 12345
- * `, {
- *   reviver(key, value, section) {
- *     if (section === "section Foo") {
- *       if (key === "date") {
- *         return new Date(value);
- *       } else if (key === "amount") {
- *         return +value;
- *       }
- *     }
- *     return value;
- *   }
- * });
+ * `, reviver);
  *
  * assertEquals(parsed, {
  *   "section Foo": {
@@ -74,12 +64,12 @@ interface ParseOptions {
  * ```
  *
  * @param text The text to parse
- * @param options The options to use
+ * @param reviver Function for replacing INI values with JavaScript values.
  * @return The parsed object
  */
 export function parse(
   text: string,
-  options?: ParseOptions,
+  reviver: ReviverFunction = (_key, value) => value,
 ): Record<string, unknown | Record<string, unknown>> {
-  return IniMap.from(text, options).toObject();
+  return IniMap.from(text, { reviver }).toObject();
 }

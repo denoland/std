@@ -1,6 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import { parse, type ParseOptions } from "./mod.ts";
+import { parse, type ReviverFunction } from "./parse.ts";
 import { IniMap } from "./_ini_map.ts";
 import {
   assert,
@@ -12,9 +12,9 @@ import {
 function assertValidParse(
   text: string,
   expected: unknown,
-  options?: ParseOptions,
+  reviver?: ReviverFunction,
 ) {
-  assertEquals(parse(text, options), expected);
+  assertEquals(parse(text, reviver), expected);
 }
 
 function assertInvalidParse(
@@ -22,10 +22,10 @@ function assertInvalidParse(
   // deno-lint-ignore no-explicit-any
   ErrorClass: new (...args: any[]) => Error,
   msgIncludes?: string,
-  options?: ParseOptions,
+  reviver?: ReviverFunction,
 ) {
   assertThrows(
-    () => parse(text, options),
+    () => parse(text, reviver),
     ErrorClass,
     msgIncludes,
   );
@@ -34,9 +34,7 @@ function assertInvalidParse(
 Deno.test({
   name: "parse()",
   fn() {
-    assertValidParse(`a=100`, { a: 100 }, {
-      reviver: (_, value) => Number(value),
-    });
+    assertValidParse(`a=100`, { a: 100 }, (_, value) => Number(value));
     assertValidParse(`a=b\n[section]\nc=d`, { a: "b", section: { c: "d" } });
   },
 });
@@ -93,10 +91,8 @@ Deno.test({
   fn() {
     // The result of JSON.parse and the result of INI.parse should match
     const json = JSON.parse('{"__proto__": 100}');
-    const ini = parse("__proto__ = 100", {
-      reviver: (key, value) => {
-        if (key === "__proto__") return Number(value);
-      },
+    const ini = parse("__proto__ = 100", (key, value) => {
+      if (key === "__proto__") return Number(value);
     });
     assertEquals(ini, json);
     assertEquals((ini as Record<string, number>).__proto__, 100);
@@ -114,9 +110,7 @@ Deno.test({
   fn() {
     // The result of JSON.parse and the result of INI.parse should match
     const json = JSON.parse('{"aaa": 0, "aaa": 1}');
-    const ini = parse("aaa=0\naaa=1", {
-      reviver: (_, value) => Number(value),
-    });
+    const ini = parse("aaa=0\naaa=1", (_, value) => Number(value));
     assertEquals(ini, { aaa: 1 });
     assertEquals(ini, json);
     assertEquals(
