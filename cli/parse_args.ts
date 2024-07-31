@@ -691,7 +691,7 @@ export function parseArgs<
         if (LETTER_REGEXP.test(letter)) {
           const groups = VALUE_REGEXP.exec(next)?.groups;
           if (groups) {
-            setArgument(letter, groups.value as string, arg, true);
+            setArgument(letter, groups.value!, arg, true);
             broken = true;
             break;
           }
