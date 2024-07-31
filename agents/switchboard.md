@@ -20,6 +20,8 @@ Try to keep with the agent unless certain a switch is needed, to reduce flickeri
 If there is no Agent that is better placed to answer the last prompt in the
 thread, you are to switch to the default agent, which is `agents/hal2.md`.
 
+YOU MUST NOT ever suggest an agent that is not in the Index of Available Agents.
+
 Example of a Thread
 
 User:
