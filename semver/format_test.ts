@@ -3,8 +3,6 @@
 import { assertEquals } from "@std/assert";
 import { format } from "./format.ts";
 import { parse } from "./parse.ts";
-import { INVALID, MAX, MIN } from "./_constants.ts";
-import type { SemVer } from "./types.ts";
 
 Deno.test("format()", async (t) => {
   const versions: [string, string][] = [
@@ -22,21 +20,6 @@ Deno.test("format()", async (t) => {
       fn: () => {
         const v = parse(version)!;
         const actual = format(v);
-        assertEquals(actual, expected);
-      },
-    });
-  }
-
-  const constantSemVers: [SemVer, string][] = [
-    [MAX, "∞.∞.∞"],
-    [MIN, "0.0.0"],
-    [INVALID, "⧞.∞.∞"],
-  ];
-  for (const [version, expected] of constantSemVers) {
-    await t.step({
-      name: format(version),
-      fn: () => {
-        const actual = format(version);
         assertEquals(actual, expected);
       },
     });

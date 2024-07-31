@@ -1,16 +1,9 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 import type { SemVer } from "./types.ts";
-import { isWildcardComparator } from "./_shared.ts";
 
 function formatNumber(value: number) {
-  if (value === Number.POSITIVE_INFINITY) {
-    return "∞";
-  } else if (value === Number.NEGATIVE_INFINITY) {
-    return "⧞";
-  } else {
-    return value.toFixed(0);
-  }
+  return value.toFixed(0);
 }
 
 /**
@@ -37,10 +30,6 @@ function formatNumber(value: number) {
  * @returns The string representation of a semantic version.
  */
 export function format(semver: SemVer): string {
-  if (isWildcardComparator(semver)) {
-    return "*";
-  }
-
   const major = formatNumber(semver.major);
   const minor = formatNumber(semver.minor);
   const patch = formatNumber(semver.patch);
