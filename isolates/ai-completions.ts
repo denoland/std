@@ -2,8 +2,8 @@ import { assert, Debug, expect } from '@utils'
 import '@std/dotenv/load' // load .env variables
 import OpenAI from 'openai'
 import {
+  actorIdRegex,
   Agent,
-  ApiFunctions,
   backchatIdRegex,
   Functions,
   IA,
@@ -14,8 +14,6 @@ import {
 } from '@/constants.ts'
 import { loadTools, loadValidators } from './ai-load-tools.ts'
 import * as loadAgent from './load-agent.ts'
-import { Isolate } from '@/isolates/index.ts'
-import validator from '@io/validator.ts'
 const log = Debug('AI:completions')
 
 const apiKey = Deno.env.get('OPENAI_API_KEY')
@@ -44,9 +42,14 @@ export const api = {
   },
   once: {
     type: 'object',
-    required: ['path', 'content'],
+    required: ['threadId', 'path', 'content', 'actorId'],
     additionalProperties: false,
-    properties: { path: { type: 'string' }, content: { type: 'string' } },
+    properties: {
+      threadId: { type: 'string', pattern: threadIdRegex.source },
+      path: { type: 'string' },
+      content: { type: 'string' },
+      actorId: { type: 'string', pattern: actorIdRegex.source },
+    },
   },
   halt: {
     type: 'object',
@@ -66,7 +69,12 @@ export const api = {
 export type Api = {
   complete: (params: { threadId: string; path: string }) => Promise<void>
   once: (
-    params: { path: string; content: string },
+    params: {
+      threadId: string
+      path: string
+      content: string
+      actorId: string
+    },
   ) => Promise<OpenAI.ChatCompletionAssistantMessageParam>
   halt: (
     params: { threadId: string; content: string; path: string },
@@ -84,8 +92,18 @@ export const functions: Functions<Api> = {
     api.writeJSON(threadPath, thread)
     log('completion complete', assistant.tool_calls?.[0], assistant.content)
   },
-  async once({ path, content }, api) {
-    const result = await complete(path, [{ role: 'user', content }], api)
+  async once({ threadId, path, content, actorId }, api) {
+    const threadPath = `threads/${threadId}.json`
+    log('once %o', threadId, print(api.pid))
+    const thread = await api.readJSON<Thread>(threadPath)
+    const message: Thread['messages'][number] = {
+      role: 'user',
+      content,
+      name: actorId,
+    }
+    const messages = [...thread.messages, message]
+    // TODO verify the agent is restricted to a single function call
+    const result = await complete(path, messages, api)
     return result
   },
   async halt({ threadId, content, path }, api) {
@@ -133,14 +151,14 @@ const complete = async (
     temperature,
     messages: [...messages, sysprompt].map(safeAssistantName),
     seed: 1337,
-    tools,
-    tool_choice: tools && tool_choice,
+    tools: tools.length ? tools : undefined,
+    tool_choice: tools.length ? tool_choice : undefined,
   }
 
   log('completion started with model: %o', args.model, print(api.pid))
   const completion = await ai.chat.completions.create(args)
   const result = completion.choices[0].message
-  log('completion complete', result)
+  log('completion complete', agent.source.path, result)
   const assistant: OpenAI.ChatCompletionAssistantMessageParam = {
     ...result,
     name: agent.source.path,
@@ -158,29 +176,4 @@ const safeAssistantName = (message: Thread['messages'][number]) => {
     return { ...message, name: message.name.replaceAll(/[^a-zA-Z0-9_-]/g, '_') }
   }
   return message
-}
-
-// TODO kill this function
-export const halt = async <T extends ApiFunctions>(
-  content: string,
-  path: string, // but we want to run it with the full thread available
-  isolate: Isolate,
-  name: keyof T,
-  api: IA,
-) => {
-  const { once } = await api.actions<Api>('ai-completions')
-  const assistant = await once({ path, content })
-  assert(assistant.tool_calls, 'tool_calls missing from once call')
-  assert(assistant.tool_calls.length === 1, 'tool_calls length is not 1')
-  const result = assistant.tool_calls[0]
-  log('result', result)
-  assert(typeof name === 'string', 'name is not a string')
-
-  expect(result.function.name).toEqual(`${isolate}_${name}`)
-  const schema = await api.apiSchema(isolate)
-  const parsed = JSON.parse(result.function.arguments)
-
-  assert(typeof parsed === 'object', 'parsed is not an object')
-  validator(schema[name], name)(parsed)
-  return parsed
 }

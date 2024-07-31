@@ -86,18 +86,16 @@ export const functions: Functions<Api> = {
     await loop(threadId, path, api)
   },
   switchboard: async ({ threadId, content, actorId }, api) => {
-    log('switchboard', threadId, content, actorId)
     const threadPath = `threads/${threadId}.json`
     const thread = await api.readJSON<Thread>(threadPath)
     thread.messages.push({ name: actorId, role: 'user', content })
     api.writeJSON(threadPath, thread)
 
-    // make the switchboard call.
     const path = `agents/switchboard.md`
     const { halt } = await api.actions<completions.Api>('ai-completions')
     const params = await halt({ path, content, threadId })
 
-    log('switchboard result', params)
+    log('switchboard:', params)
     assert('path' in params, 'missing path in switchboard result')
     assert(typeof params.path === 'string', 'invalid switchboard path')
 
@@ -121,10 +119,17 @@ const loop = async (threadId: string, path: string, api: IA) => {
 const isDone = async (threadPath: string, api: IA) => {
   const thread = await api.readJSON<Thread>(threadPath)
   const last = thread.messages[thread.messages.length - 1]
-  if (!last || last.role !== 'assistant') {
+  if (!last) {
+    return false
+  }
+  if (last.role === 'user' || last.role === 'assistant') {
+    log(`${last.role}:${last.name}:`, last.content)
+  }
+  if (last.role !== 'assistant') {
     return false
   }
   if ('tool_calls' in last) {
+    log(last.name, last.tool_calls)
     return false
   }
   if ('tool_call_id' in last) {

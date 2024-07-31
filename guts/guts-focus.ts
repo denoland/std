@@ -5,31 +5,30 @@ import * as files from '@/isolates/files.ts'
 export default (name: string, cradleMaker: CradleMaker) => {
   const prefix = name + ':threads: '
 
-  log.enable(
-    'AI:tests AI:backchat AI:execute-tools *qbr* AI:longthread AI:agents',
-  )
+  // TODO make a fake thread, and then test summoner
+
   Deno.test.only(prefix + 'thread management', async (t) => {
     const { backchat, engine } = await cradleMaker()
     let focus: string = await getFocus(backchat)
+    log.enable(
+      'AI:tests AI:backchat AI:longthread AI:agents',
+    )
     log('initial focus', focus)
 
-    await t.step('first thread', async () => {
+    await t.step('first thread, files agent', async () => {
       expect(focus).toBeDefined()
-      log('prompting')
-      await backchat.prompt('backchat start the files agent')
-    })
-
-    await t.step('talk to the files agent', async () => {
-      const result = await backchat.prompt('hey what files have I got ?')
-      log('result', result)
+      await backchat.prompt('hey what files have I got ?')
       focus = await getFocus(backchat, focus, 'equals')
     })
 
-    // await t.step('second thread', async () => {
-    //   const result = await backchat.prompt('backchat start a new files thread')
-    //   log('result', result)
-    //   focus = await getFocus(backchat, focus)
-    // })
+    await t.step('second thread', async () => {
+      await backchat.prompt('start a new thread')
+      focus = await getFocus(backchat, focus)
+    })
+    await t.step('list files in second thread', async () => {
+      await backchat.prompt('files list')
+      focus = await getFocus(backchat, focus, 'equals')
+    })
 
     // await t.step('restart a thread', async () => {
     //   const result = await backchat.prompt(

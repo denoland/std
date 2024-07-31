@@ -12,9 +12,11 @@ import {
   UnsequencedRequest,
 } from '@/constants.ts'
 import * as actors from './actors.ts'
-import { assert, Debug } from '@utils'
+import { assert, Debug, expect } from '@utils'
 import * as longthread from './longthread.ts'
-import { halt } from '@/isolates/ai-completions.ts'
+import * as loadAgent from './load-agent.ts'
+import * as completions from './ai-completions.ts'
+import { loadValidators } from '@/isolates/ai-load-tools.ts'
 const log = Debug('AI:backchat')
 
 export const api = {
@@ -50,8 +52,14 @@ export const api = {
   thread: {
     type: 'object',
     description:
-      'Create a new blank thread and switch the current focus to this new thread so it is displayed for the user to converse with',
-    properties: {},
+      'Create a new blank thread and switch the current focus to this new thread so it is displayed for the user to converse with.  Optionally provide an initial prompt to the thread to start it running.',
+    additionalProperties: false,
+    properties: {
+      prompt: {
+        type: 'string',
+        description: 'An initial prompt to start the thread with',
+      },
+    },
   },
   relay: {
     type: 'object',
@@ -107,7 +115,7 @@ export type Api = {
   prompt: (
     params: { content: string; threadId: string; attachments?: string[] },
   ) => void
-  thread: (_: void) => void
+  thread: (params: { prompt?: string }) => void
   relay: (params: { request: UnsequencedRequest }) => void
   focus: (params: { threadId: string }) => Promise<void>
 }
@@ -131,15 +139,15 @@ export const functions: Functions<Api> = {
     const backchatId = assertBackchatThread(api)
     const actorId = getActorId(api.pid)
 
-    if (threadId !== backchatId) {
-      const isSummoned = await isBackchatSummoned(content, api)
+    const backchat = await readBackchat(api)
+    if (threadId !== backchatId && backchat.focus !== backchatId) {
+      const isSummoned = await isBackchatSummoned(content, actorId, api)
       if (isSummoned) {
         log('backchat was summoned')
         threadId = backchatId
       }
     }
 
-    const backchat = await readBackchat(api)
     if (!threadId) {
       threadId = backchat.focus
     }
@@ -159,10 +167,13 @@ export const functions: Functions<Api> = {
     const actions = await api.actions<longthread.Api>('longthread', { target })
     return actions.switchboard({ threadId, content, actorId })
 
+    // change the focus to whatever just got run
+    // ensure that ai halts when the focus has shifted
+
     // TODO handle remote threadIds with symlinks in the threads dir
   },
-  thread: async (_, api) => {
-    log('thread', print(api.pid))
+  thread: async ({ prompt }, api) => {
+    log('thread:', prompt, print(api.pid))
     const threadId = generateThreadId(api.commit + 'backchat:thread')
 
     const target = getActorPid(api.pid)
@@ -172,6 +183,10 @@ export const functions: Functions<Api> = {
     backchat.focus = threadId
     writeBackchat(backchat, api)
     log('thread started:', print(pid))
+
+    // now insert the prompt into the thread and run it
+    // at least run the thread, even if it is blank
+
     return { newThreadId: threadId, currentFocus: threadId }
   },
   relay: ({ request }, api) => {
@@ -204,10 +219,38 @@ const getBackchatId = (api: IA) => {
   assert(backchatIdRegex.test(backchatId), 'Invalid backchat id')
   return backchatId
 }
-const isBackchatSummoned = async (content: string, api: IA) => {
+const isBackchatSummoned = async (
+  content: string,
+  actorId: string,
+  api: IA,
+) => {
+  log('isBackchatSummoned')
   const path = `agents/summoner.md`
-  const result = await halt(content, path, 'utils', 'trueOrFalse', api)
-  const { value } = result
+  const { load } = await api.functions<loadAgent.Api>('load-agent')
+  const agent = await load({ path })
+  assert(!agent.config.parallel_tool_calls, 'parallel_tool_calls not false')
+  assert(agent.config.tool_choice === 'required', 'tool_choice is required')
+  assert(agent.commands.length === 1, 'commands length is not 1')
+
+  const { focus: threadId } = await readBackchat(api)
+  const opts = { target: addPeer(api.pid, threadId) }
+  const { once } = await api.actions<completions.Api>('ai-completions', opts)
+  assert(threadIdRegex.test(threadId), 'Invalid threadId: ' + threadId)
+
+  const assistant = await once({ threadId, path, content, actorId })
+  assert(assistant.role === 'assistant', 'role is not assistant')
+  assert(assistant.tool_calls, 'tool_calls missing from once call')
+  assert(assistant.tool_calls.length === 1, 'tool_calls length is not 1')
+  const result = assistant.tool_calls[0]
+  log('result', result)
+
+  const validators = await loadValidators(agent.commands, api)
+  const { name } = result.function
+  assert(validators[name], 'validator not found: ' + name)
+  const parsed = JSON.parse(result.function.arguments)
+  validators[name](parsed)
+
+  const { value } = parsed
   assert(typeof value === 'boolean', 'value is not a boolean')
   return value
 }
