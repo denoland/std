@@ -6,6 +6,7 @@ import { parse } from "./parse.ts";
 
 Deno.test("format()", async (t) => {
   const versions: [string, string][] = [
+    ["0.0.0", "0.0.0"],
     ["1.2.3", "1.2.3"],
     ["1.2.3-pre", "1.2.3-pre"],
     ["1.2.3-pre.0", "1.2.3-pre.0"],
