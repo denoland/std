@@ -82,7 +82,7 @@ export interface FormatOptions {
    * "digital" for "00:00:00:00:000..."
    * "full" for "0 days, 0 hours, 0 minutes,..."
    *
-   * The default is "narrow".
+   * @default {"narrow"}
    */
   style?: "narrow" | "digital" | "full";
   /**
