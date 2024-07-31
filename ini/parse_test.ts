@@ -38,6 +38,10 @@ Deno.test({
       reviver: (_, value) => Number(value),
     });
     assertValidParse(`a=b\n[section]\nc=d`, { a: "b", section: { c: "d" } });
+    assertValidParse("#comment\nkeyA=1977-05-25\n[section1]\nkeyA=100", {
+      keyA: "1977-05-25",
+      section1: { keyA: "100" },
+    });
   },
 });
 
