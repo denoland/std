@@ -1,6 +1,6 @@
 ---
 config:
-  temperature: 0
+  temperature: 1
   parallel_tool_calls: false
   tool_choice: required
 commands:
