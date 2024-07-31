@@ -2,35 +2,37 @@
 
 const BOM = "\\ufeff?";
 
-const YAML_DELIMITER = "---|= yaml =";
-const YAML_HEADER = `(?:---yaml|${YAML_DELIMITER})`;
-const YAML_FOOTER = `(?:${YAML_DELIMITER})`;
+const YAML_DELIMITER = "= yaml =|---";
+const YAML_HEADER = `(---yaml|${YAML_DELIMITER})`;
+const YAML_FOOTER = `(?:---|${YAML_DELIMITER})`;
 
 const TOML_DELIMITER = "\\+\\+\\+|= toml =";
-const TOML_HEADER = `(?:---toml|${TOML_DELIMITER})`;
+const TOML_HEADER = `(---toml|${TOML_DELIMITER})`;
 const TOML_FOOTER = `(?:---|${TOML_DELIMITER})`;
 
-const JSON_DELIMITER = "= json =";
-const JSON_HEADER = `(?:---json|${JSON_DELIMITER})`;
+const JSON_DELIMITER = `= json =`;
+const JSON_HEADER = `(---json|${JSON_DELIMITER})`;
 const JSON_FOOTER = `(?:---|${JSON_DELIMITER})`;
 
-const DATA = "(?<data>[\\s\\S]+?)";
-const NEWLINE = "\\r?\\n?";
+const DATA = "([\\s\\S]+?)";
+const NEWLINE = `${
+  globalThis?.Deno?.build?.os === "windows" ? "\\r?" : ""
+}(?:\\n)?`;
 
 export const RECOGNIZE_YAML_REGEXP = new RegExp(`^${YAML_HEADER}$`, "im");
 export const RECOGNIZE_TOML_REGEXP = new RegExp(`^${TOML_HEADER}$`, "im");
 export const RECOGNIZE_JSON_REGEXP = new RegExp(`^${JSON_HEADER}$`, "im");
 
 export const EXTRACT_YAML_REGEXP = new RegExp(
-  `^${BOM}${YAML_HEADER}$${DATA}^${YAML_FOOTER}\\s*$${NEWLINE}`,
+  `^(${BOM}${YAML_HEADER}$${DATA}^${YAML_FOOTER}\\s*$${NEWLINE})`,
   "im",
 );
 export const EXTRACT_TOML_REGEXP = new RegExp(
-  `^${BOM}${TOML_HEADER}$${DATA}^${TOML_FOOTER}\\s*$${NEWLINE}`,
+  `^(${BOM}${TOML_HEADER}$${DATA}^${TOML_FOOTER}\\s*$${NEWLINE})`,
   "im",
 );
 export const EXTRACT_JSON_REGEXP = new RegExp(
-  `^${BOM}${JSON_HEADER}$${DATA}^${JSON_FOOTER}\\s*$${NEWLINE}`,
+  `^(${BOM}${JSON_HEADER}$${DATA}^${JSON_FOOTER}\\s*$${NEWLINE})`,
   "im",
 );
 
