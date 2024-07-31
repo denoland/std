@@ -28,7 +28,7 @@ export type Operator =
   | "<=";
 
 /**
- * The shape of a valid semantic version comparator.
+ * The shape of a valid SemVer comparator.
  *
  * @example Usage
  * ```ts
