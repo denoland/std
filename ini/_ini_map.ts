@@ -36,9 +36,10 @@ export interface FormattingOptions {
 }
 
 /** Options for parsing INI strings. */
-interface ParseOptions {
+// deno-lint-ignore no-explicit-any
+interface ParseOptions<T = any> {
   /** Provide custom parsing of the value in a key/value pair. */
-  reviver?: ReviverFunction;
+  reviver?: ReviverFunction<T>;
 }
 
 /** Function for replacing JavaScript values with INI string values. */
@@ -50,18 +51,18 @@ export type ReplacerFunction = (
 ) => string;
 
 /** Function for replacing INI values with JavaScript values. */
-export type ReviverFunction = (
+// deno-lint-ignore no-explicit-any
+export type ReviverFunction<T = any> = (
   key: string,
-  // deno-lint-ignore no-explicit-any
-  value: any,
+  value: string,
   section?: string,
-  // deno-lint-ignore no-explicit-any
-) => any;
+) => T;
 
 /**
  * Class implementation for fine control of INI data structures.
  */
-export class IniMap {
+// deno-lint-ignore no-explicit-any
+export class IniMap<T = any> {
   #global = new Map<string, LineValue>();
   #sections = new Map<string, LineSection>();
   #lines: Line[] = [];
@@ -501,8 +502,8 @@ export class IniMap {
    *
    * @returns The object equivalent to this {@code IniMap}
    */
-  toObject(): Record<string, unknown | Record<string, unknown>> {
-    const obj: Record<string, unknown | Record<string, unknown>> = {};
+  toObject(): Record<string, T | Record<string, T>> {
+    const obj: Record<string, T | Record<string, T>> = {};
 
     for (const { key, val } of this.#global.values()) {
       Object.defineProperty(obj, key, {
@@ -513,7 +514,7 @@ export class IniMap {
       });
     }
     for (const { sec, map } of this.#sections.values()) {
-      const section: Record<string, unknown> = {};
+      const section: Record<string, T> = {};
       Object.defineProperty(obj, sec, {
         value: section,
         writable: true,
