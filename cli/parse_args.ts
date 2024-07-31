@@ -237,7 +237,7 @@ type Dedot<TKey extends string, TValue> = TKey extends
 
 type ValueOf<TValue> = TValue[keyof TValue];
 
-/** The value returned from `parseArgs`. */
+/** The value returned from {@linkcode parseArgs}. */
 export type Args<
   // deno-lint-ignore no-explicit-any
   TArgs extends Record<string, unknown> = Record<string, any>,
@@ -260,7 +260,7 @@ type DoubleDash = {
   "--"?: Array<string>;
 };
 
-/** The options for the `parseArgs` call. */
+/** Options for {@linkcode parseArgs}. */
 export interface ParseOptions<
   TBooleans extends BooleanType = BooleanType,
   TStrings extends StringType = StringType,
@@ -435,12 +435,12 @@ const FLAG_REGEXP =
  * considered a key-value pair. Any arguments which could not be parsed are
  * available in the `_` property of the returned object.
  *
- * By default, the flags module tries to determine the type of all arguments
- * automatically and the return type of the `parseArgs` method will have an index
+ * By default, this module tries to determine the type of all arguments
+ * automatically and the return type of this function will have an index
  * signature with `any` as value (`{ [x: string]: any }`).
  *
  * If the `string`, `boolean` or `collect` option is set, the return value of
- * the `parseArgs` method will be fully typed and the index signature of the return
+ * this function will be fully typed and the index signature of the return
  * type will change to `{ [x: string]: unknown }`.
  *
  * Any arguments after `'--'` will not be parsed and will end up in `parsedArgs._`.
@@ -449,6 +449,7 @@ const FLAG_REGEXP =
  * or `options.boolean` is set for that argument name.
  *
  * @param args An array of command line arguments.
+ * @param options Options for the parse function.
  *
  * @typeParam TArgs Type of result.
  * @typeParam TDoubleDash Used by `TArgs` for the result.
@@ -496,7 +497,17 @@ export function parseArgs<
   TAliasNames extends string = string,
 >(
   args: string[],
-  {
+  options?: ParseOptions<
+    TBooleans,
+    TStrings,
+    TCollectable,
+    TNegatable,
+    TDefaults,
+    TAliases,
+    TDoubleDash
+  >,
+): Args<TArgs, TDoubleDash> {
+  const {
     "--": doubleDash = false,
     alias = {} as NonNullable<TAliases>,
     boolean = false,
@@ -506,16 +517,7 @@ export function parseArgs<
     collect = [],
     negatable = [],
     unknown: unknownFn = (i: string): unknown => i,
-  }: ParseOptions<
-    TBooleans,
-    TStrings,
-    TCollectable,
-    TNegatable,
-    TDefaults,
-    TAliases,
-    TDoubleDash
-  > = {},
-): Args<TArgs, TDoubleDash> {
+  } = options ?? {};
   const aliasMap: Map<string, Set<string>> = new Map();
   const booleanSet = new Set<string>();
   const stringSet = new Set<string>();

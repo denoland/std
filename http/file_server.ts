@@ -165,13 +165,16 @@ export interface ServeFileOptions {
  *
  * @param req The server request context used to cleanup the file handle.
  * @param filePath Path of the file to serve.
+ * @param options Additional options.
  * @returns A response for the request.
  */
 export async function serveFile(
   req: Request,
   filePath: string,
-  { etagAlgorithm: algorithm, fileInfo }: ServeFileOptions = {},
+  options?: ServeFileOptions,
 ): Promise<Response> {
+  let { etagAlgorithm: algorithm, fileInfo } = options ?? {};
+
   try {
     fileInfo ??= await Deno.stat(filePath);
   } catch (error) {
@@ -827,7 +830,13 @@ function main() {
   const useTls = !!(keyFile && certFile);
 
   function onListen({ port, hostname }: { port: number; hostname: string }) {
-    const networkAddress = getNetworkAddress();
+    let networkAddress: string | undefined = undefined;
+    if (
+      Deno.permissions.querySync({ name: "sys", kind: "networkInterfaces" })
+        .state === "granted"
+    ) {
+      networkAddress = getNetworkAddress();
+    }
     const protocol = useTls ? "https" : "http";
     let message = `Listening on:\n- Local: ${protocol}://${hostname}:${port}`;
     if (networkAddress && !DENO_DEPLOYMENT_ID) {

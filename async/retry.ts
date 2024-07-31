@@ -20,13 +20,6 @@ export class RetryError extends Error {
    *
    * @param cause the cause for this error.
    * @param attempts the number of retry attempts made.
-   *
-   * @example Usage
-   * ```ts no-assert no-eval
-   * import { RetryError } from "@std/async/retry";
-   *
-   * throw new RetryError({ foo: "bar" }, 3);
-   * ```
    */
   constructor(cause: unknown, attempts: number) {
     super(`Retrying exceeded the maxAttempts (${attempts}).`);

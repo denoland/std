@@ -92,24 +92,10 @@ export class JsonStringifyStream extends TransformStream<unknown, string> {
   /**
    * Constructs new instance.
    *
-   * @example Usage
-   * ```ts
-   * import { JsonStringifyStream } from "@std/json/stringify-stream";
-   * import { assertEquals } from "@std/assert";
-   *
-   * const stream = ReadableStream.from([{ foo: "bar" }, { baz: 100 }])
-   *   .pipeThrough(new JsonStringifyStream());
-   *
-   * assertEquals(await Array.fromAsync(stream), [
-   *   `{"foo":"bar"}\n`,
-   *   `{"baz":100}\n`
-   * ]);
-   * ```
+   * @param options Options for the stream.
    */
-  constructor({
-    prefix = "",
-    suffix = "\n",
-  }: StringifyStreamOptions = {}) {
+  constructor(options?: StringifyStreamOptions) {
+    const { prefix = "", suffix = "\n" } = options ?? {};
     super(
       {
         transform(chunk, controller) {
