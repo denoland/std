@@ -189,7 +189,7 @@ export type SnapshotOptions<T = unknown> = {
    */
   path?: string;
   /**
-   * Function to use when serializing the snapshot.
+   * Function to use when serializing the snapshot. The default is {@linkcode serialize}.
    */
   serializer?: (actual: T) => string;
 };
