@@ -74,19 +74,23 @@ function durationArray(
 }
 
 /** Options for {@linkcode format}. */
-export interface PrettyDurationOptions {
+export interface FormatOptions {
   /**
+   * The style for formatting the duration.
+   *
    * "narrow" for "0d 0h 0m 0s 0ms..."
    * "digital" for "00:00:00:00:000..."
    * "full" for "0 days, 0 hours, 0 minutes,..."
+   *
+   * The default is "narrow".
    */
-  style: "narrow" | "digital" | "full";
+  style?: "narrow" | "digital" | "full";
   /**
    * Whether to ignore zero values.
    * With style="narrow" | "full", all zero values are ignored.
    * With style="digital", only values in the ends are ignored.
    */
-  ignoreZero: boolean;
+  ignoreZero?: boolean;
 }
 
 /**
@@ -112,7 +116,7 @@ export interface PrettyDurationOptions {
  */
 export function format(
   ms: number,
-  options: Partial<PrettyDurationOptions> = {},
+  options: FormatOptions = {},
 ): string {
   const opt = Object.assign(
     { style: "narrow", ignoreZero: false },
