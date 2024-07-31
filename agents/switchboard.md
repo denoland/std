@@ -66,11 +66,11 @@ The Index of Available Agents follows:
 ---
 
 `agents/files.md`
-`agents/hamr.md`
+`agents/hamr.md` this is the crm
 `agents/system.md`
 `agents/hal2.md`
 `agents/hal3.md`
-`agents/agent-fixture.md`
-`agents/backchat.md`
+`agents/backchat.md` this bot knows about threads
+`agents/creatorBot.md` this bot makes other threads
 
 ---
