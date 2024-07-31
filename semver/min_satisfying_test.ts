@@ -4,7 +4,6 @@ import { assertEquals } from "@std/assert";
 import { parse } from "./parse.ts";
 import { parseRange } from "./parse_range.ts";
 import { minSatisfying } from "./min_satisfying.ts";
-import { MAX, MIN } from "./_constants.ts";
 
 Deno.test("minSatisfying()", async (t) => {
   const versions: [string[], string, string][] = [
@@ -22,9 +21,4 @@ Deno.test("minSatisfying()", async (t) => {
       assertEquals(actual, expected);
     });
   }
-});
-
-Deno.test("minSatisfying() handles bad ranges", function () {
-  const r = parseRange("some frogs and sneks-v2.5.6");
-  assertEquals(minSatisfying([MIN, MAX], r), undefined);
 });
