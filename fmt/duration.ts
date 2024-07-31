@@ -89,6 +89,8 @@ export interface FormatOptions {
    * Whether to ignore zero values.
    * With style="narrow" | "full", all zero values are ignored.
    * With style="digital", only values in the ends are ignored.
+   *
+   * @default {false}
    */
   ignoreZero?: boolean;
 }
