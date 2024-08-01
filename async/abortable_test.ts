@@ -166,3 +166,43 @@ Deno.test("abortable.AsyncIterable() calls return before throwing", async () => 
   assertEquals(items, []);
   clearTimeout(timeoutId!);
 });
+
+Deno.test("abortable.AsyncIterable() behaves just like original when not aborted", async () => {
+  async function* gen() {
+    yield 1;
+    yield await Promise.resolve(2);
+    yield 3;
+    return 4;
+  }
+  const normalIterator = gen();
+  const abortController = new AbortController();
+  const abortableIterator = abortable(gen(), abortController.signal);
+
+  assertEquals(await abortableIterator.next(), await normalIterator.next());
+  assertEquals(await abortableIterator.next(), await normalIterator.next());
+  assertEquals(await abortableIterator.next(), await normalIterator.next());
+  assertEquals(await abortableIterator.next(), await normalIterator.next());
+  assertEquals(await abortableIterator.next(), await normalIterator.next());
+});
+
+Deno.test("abortable.AsyncIterable() behaves just like original when return is called", async () => {
+  async function* gen() {
+    yield 1;
+    yield await Promise.resolve(2);
+    yield 3;
+    return 4;
+  }
+  const normalIterator = gen();
+  const abortController = new AbortController();
+  const abortableIterator = abortable(gen(), abortController.signal);
+
+  assertEquals(
+    await abortableIterator.next(123),
+    await normalIterator.next(123),
+  );
+  assertEquals(
+    await abortableIterator.return(321),
+    await normalIterator.return(321),
+  );
+  assertEquals(await abortableIterator.next(), await normalIterator.next());
+});
