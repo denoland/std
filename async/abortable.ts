@@ -144,16 +144,21 @@ async function* abortableAsyncIterable<T>(
   signal.addEventListener("abort", abort, { once: true });
 
   const it = p[Symbol.asyncIterator]();
-  while (true) {
-    const race = Promise.race([promise, it.next()]);
-    race.catch(() => {
-      signal.removeEventListener("abort", abort);
-    });
-    const { done, value } = await race;
-    if (done) {
-      signal.removeEventListener("abort", abort);
-      return;
+  try {
+    while (true) {
+      const race = Promise.race([promise, it.next()]);
+      race.catch(() => {
+        signal.removeEventListener("abort", abort);
+      });
+      const { done, value } = await race;
+      if (done) {
+        signal.removeEventListener("abort", abort);
+        return;
+      }
+      yield value;
     }
-    yield value;
+  } catch (e) {
+    await it.return?.();
+    throw e;
   }
 }
