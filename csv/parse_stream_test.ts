@@ -45,7 +45,7 @@ Deno.test({
     await assertRejects(
       () => reader.read(),
       SyntaxError,
-      `record on line 4; parse error on line 5, column 0: extraneous or missing " in quoted-field`,
+      `record on line 4; parse error on line 5, column 1: extraneous or missing " in quoted-field`,
     );
   },
 });
@@ -366,7 +366,7 @@ x,,,
         error: {
           klass: SyntaxError,
           msg:
-            'record on line 1; parse error on line 0, column 2: bare " in non-quoted-field',
+            'record on line 1; parse error on line 1, column 3: bare " in non-quoted-field',
         },
       },
       {
@@ -375,7 +375,25 @@ x,,,
         error: {
           klass: SyntaxError,
           msg:
-            'record on line 1; parse error on line 0, column 3: extraneous or missing " in quoted-field',
+            'record on line 1; parse error on line 1, column 4: extraneous or missing " in quoted-field',
+        },
+      },
+      {
+        name: "bad quote at line 1 in quoted field with newline",
+        input: `"w\n\no"rd",1,2,3`,
+        error: {
+          klass: SyntaxError,
+          msg:
+            'record on line 1; parse error on line 3, column 2: extraneous or missing " in quoted-field',
+        },
+      },
+      {
+        name: "bad quote at line 2 in quoted field with newline",
+        input: `a,b,c,d\n"w\n\no"rd",1,2,3`,
+        error: {
+          klass: SyntaxError,
+          msg:
+            'record on line 2; parse error on line 4, column 2: extraneous or missing " in quoted-field',
         },
       },
       {
