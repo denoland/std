@@ -425,6 +425,13 @@ function parseBooleanString(value: unknown) {
 
 const FLAG_REGEXP =
   /^(?:-(?:(?<doubleDash>-)(?<negated>no-)?)?)(?<key>.+?)(?:=(?<value>.+?))?$/s;
+const LETTER_REGEXP = /[A-Za-z]/;
+const NUMBER_REGEXP = /-?\d+(\.\d*)?(e-?\d+)?$/;
+const HYPHEN_REGEXP = /^(-|--)[^-]/;
+const VALUE_REGEXP = /=(?<value>.+)/;
+const FLAG_NAME_REGEXP = /^--[^=]+$/;
+const IS_FLAG_REGEXP = /^-/;
+const SPECIAL_CHAR_REGEXP = /\W/;
 
 /**
  * Take a set of command line arguments, optionally with a set of options, and
@@ -591,11 +598,12 @@ export function parseArgs<
       !booleanSet.has(key) &&
       !stringSet.has(key) &&
       !aliasMap.has(key) &&
-      !(allBools && /^--[^=]+$/.test(arg)) &&
+      !(allBools && FLAG_NAME_REGEXP.test(arg)) &&
       unknownFn?.(arg, key, value) === false
     ) {
       return;
     }
+
     if (typeof value === "string" && !stringSet.has(key)) {
       value = isNumber(value) ? Number(value) : value;
     }
@@ -647,7 +655,7 @@ export function parseArgs<
           !booleanSet.has(key) &&
           !allBools &&
           next &&
-          !/^-/.test(next) &&
+          !IS_FLAG_REGEXP.test(next) &&
           (aliasMap.get(key)
             ? !aliasIsBoolean(aliasMap, booleanSet, key)
             : true)
@@ -680,22 +688,21 @@ export function parseArgs<
           continue;
         }
 
-        if (/[A-Za-z]/.test(letter) && /=/.test(next)) {
-          setArgument(letter, next.split(/=(.+)/)[1]!, arg, true);
-          broken = true;
-          break;
+        if (LETTER_REGEXP.test(letter)) {
+          const groups = VALUE_REGEXP.exec(next)?.groups;
+          if (groups) {
+            setArgument(letter, groups.value!, arg, true);
+            broken = true;
+            break;
+          }
+          if (NUMBER_REGEXP.test(next)) {
+            setArgument(letter, next, arg, true);
+            broken = true;
+            break;
+          }
         }
 
-        if (
-          /[A-Za-z]/.test(letter) &&
-          /-?\d+(\.\d*)?(e-?\d+)?$/.test(next)
-        ) {
-          setArgument(letter, next, arg, true);
-          broken = true;
-          break;
-        }
-
-        if (letters[j + 1] && letters[j + 1]!.match(/\W/)) {
+        if (letters[j + 1] && letters[j + 1]!.match(SPECIAL_CHAR_REGEXP)) {
           setArgument(letter, arg.slice(j + 2), arg, true);
           broken = true;
           break;
@@ -713,7 +720,7 @@ export function parseArgs<
         const nextArg = args[i + 1];
         if (
           nextArg &&
-          !/^(-|--)[^-]/.test(nextArg) &&
+          !HYPHEN_REGEXP.test(nextArg) &&
           !booleanSet.has(key) &&
           (aliasMap.get(key)
             ? !aliasIsBoolean(aliasMap, booleanSet, key)

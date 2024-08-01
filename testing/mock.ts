@@ -1090,7 +1090,7 @@ export function stub<
 
   const propertyDescriptor = Object.getOwnPropertyDescriptor(self, property);
   if (propertyDescriptor && !propertyDescriptor.configurable) {
-    throw new MockError("Cannot spy on non-configurable instance method");
+    throw new MockError("Cannot stub non-configurable instance method");
   }
 
   const fake = func ?? (() => {}) as (this: Self, ...args: Args) => Return;
@@ -1199,7 +1199,7 @@ export function assertSpyCalls<
     assertIsError(e);
     let message = spy.calls.length < expectedCalls
       ? "Spy not called as much as expected:\n"
-      : "spy called more than expected:\n";
+      : "Spy called more than expected:\n";
     message += e.message.split("\n").slice(1).join("\n");
     throw new AssertionError(message);
   }
@@ -1287,7 +1287,7 @@ export function assertSpyCall<
       } catch (e) {
         assertIsError(e);
         throw new AssertionError(
-          "spy not called with expected args:\n" +
+          "Spy not called with expected args:\n" +
             e.message.split("\n").slice(1).join("\n"),
         );
       }
@@ -1299,8 +1299,8 @@ export function assertSpyCall<
       } catch (e) {
         assertIsError(e);
         let message = expected.self
-          ? "spy not called as method on expected self:\n"
-          : "spy not expected to be called as method on object:\n";
+          ? "Spy not called as method on expected self:\n"
+          : "Spy not expected to be called as method on object:\n";
         message += e.message.split("\n").slice(1).join("\n");
         throw new AssertionError(message);
       }
@@ -1309,12 +1309,12 @@ export function assertSpyCall<
     if ("returned" in expected) {
       if ("error" in expected) {
         throw new TypeError(
-          "do not expect error and return, only one should be expected",
+          "Do not expect error and return, only one should be expected",
         );
       }
       if (call.error) {
         throw new AssertionError(
-          "spy call did not return expected value, an error was thrown.",
+          "Spy call did not return expected value, an error was thrown.",
         );
       }
       try {
@@ -1322,7 +1322,7 @@ export function assertSpyCall<
       } catch (e) {
         assertIsError(e);
         throw new AssertionError(
-          "spy call did not return expected value:\n" +
+          "Spy call did not return expected value:\n" +
             e.message.split("\n").slice(1).join("\n"),
         );
       }
@@ -1331,7 +1331,7 @@ export function assertSpyCall<
     if ("error" in expected) {
       if ("returned" in call) {
         throw new AssertionError(
-          "spy call did not throw an error, a value was returned.",
+          "Spy call did not throw an error, a value was returned.",
         );
       }
       assertIsError(
@@ -1388,12 +1388,12 @@ export async function assertSpyCallAsync<
 
   if (call.error) {
     throw new AssertionError(
-      "spy call did not return a promise, an error was thrown.",
+      "Spy call did not return a promise, an error was thrown.",
     );
   }
   if (call.returned !== Promise.resolve(call.returned)) {
     throw new AssertionError(
-      "spy call did not return a promise, a value was returned.",
+      "Spy call did not return a promise, a value was returned.",
     );
   }
 
@@ -1401,7 +1401,7 @@ export async function assertSpyCallAsync<
     if ("returned" in expected) {
       if ("error" in expected) {
         throw new TypeError(
-          "do not expect error and return, only one should be expected",
+          "Do not expect error and return, only one should be expected",
         );
       }
       let expectedResolved;
@@ -1409,7 +1409,7 @@ export async function assertSpyCallAsync<
         expectedResolved = await expected.returned;
       } catch {
         throw new TypeError(
-          "do not expect rejected promise, expect error instead",
+          "Do not expect rejected promise, expect error instead",
         );
       }
 
@@ -1417,7 +1417,7 @@ export async function assertSpyCallAsync<
       try {
         resolved = await call.returned;
       } catch {
-        throw new AssertionError("spy call returned promise was rejected");
+        throw new AssertionError("Spy call returned promise was rejected");
       }
 
       try {
@@ -1425,7 +1425,7 @@ export async function assertSpyCallAsync<
       } catch (e) {
         assertIsError(e);
         throw new AssertionError(
-          "spy call did not resolve to expected value:\n" +
+          "Spy call did not resolve to expected value:\n" +
             e.message.split("\n").slice(1).join("\n"),
         );
       }
