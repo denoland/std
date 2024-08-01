@@ -2,9 +2,9 @@
 import { assert, assertEquals, assertMatch } from "@std/assert";
 import { Logger, type LogRecord } from "./logger.ts";
 import { type LevelName, LogLevels } from "./levels.ts";
-import { BaseHandler } from "./base_handler.ts";
+import { Handler } from "./handler.ts";
 
-class TestHandler extends BaseHandler {
+class TestHandler extends Handler {
   messages: string[] = [];
   records: LogRecord[] = [];
 

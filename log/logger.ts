@@ -2,7 +2,7 @@
 // This module is browser compatible.
 import { getLevelByName, getLevelName, LogLevels } from "./levels.ts";
 import type { LevelName, LogLevel } from "./levels.ts";
-import type { BaseHandler } from "./base_handler.ts";
+import type { Handler } from "./handler.ts";
 
 // deno-lint-ignore no-explicit-any
 export type GenericFunction = (...args: any[]) => any;
@@ -21,7 +21,7 @@ export class LoggerConfig {
 
 export interface LogConfig {
   handlers?: {
-    [name: string]: BaseHandler;
+    [name: string]: Handler;
   };
   loggers?: {
     [name: string]: LoggerConfig;
@@ -57,12 +57,12 @@ export class LogRecord {
 }
 
 export interface LoggerOptions {
-  handlers?: BaseHandler[];
+  handlers?: Handler[];
 }
 
 export class Logger {
   #level: LogLevel;
-  handlers: BaseHandler[];
+  handlers: Handler[];
   readonly #loggerName: string;
 
   constructor(

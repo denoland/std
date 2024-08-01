@@ -1,7 +1,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-import { BaseHandler } from "./base_handler.ts";
+import { Handler } from "./handler.ts";
 
-export class TestHandler extends BaseHandler {
+export class TestHandler extends Handler {
   messages: string[] = [];
 
   override log(msg: string) {

@@ -3,9 +3,9 @@
 import { type LevelName, LogLevels } from "./levels.ts";
 import type { LogRecord } from "./logger.ts";
 import { blue, bold, red, yellow } from "@std/fmt/colors";
-import { BaseHandler, type BaseHandlerOptions } from "./base_handler.ts";
+import { Handler, type HandlerOptions } from "./handler.ts";
 
-export interface ConsoleHandlerOptions extends BaseHandlerOptions {
+export interface ConsoleHandlerOptions extends HandlerOptions {
   useColors?: boolean;
 }
 
@@ -13,7 +13,7 @@ export interface ConsoleHandlerOptions extends BaseHandlerOptions {
  * This is the default logger. It will output color coded log messages to the
  * console via `console.log()`.
  */
-export class ConsoleHandler extends BaseHandler {
+export class ConsoleHandler extends Handler {
   #useColors?: boolean;
 
   constructor(levelName: LevelName, options: ConsoleHandlerOptions = {}) {

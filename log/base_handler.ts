@@ -1,69 +1,23 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
+
 import {
-  getLevelByName,
-  getLevelName,
-  type LevelName,
-  type LogLevel,
-} from "./levels.ts";
-import type { LogRecord } from "./logger.ts";
+  type FormatterFunction,
+  Handler,
+  type HandlerOptions,
+} from "./handler.ts";
 
-export type FormatterFunction = (logRecord: LogRecord) => string;
-const DEFAULT_FORMATTER: FormatterFunction = ({ levelName, msg }) =>
-  `${levelName} ${msg}`;
+/**
+ * @deprecated This will be removed in 1.0.0. Use {@linkcode FormatterFunction} instead.
+ */
+export type { FormatterFunction };
 
-export interface BaseHandlerOptions {
-  formatter?: FormatterFunction;
-}
+/**
+ * @deprecated This will be removed in 1.0.0. Use {@linkcode Handler} instead.
+ */
+export const BaseHandler = Handler;
 
-export class BaseHandler {
-  #levelName: LevelName;
-  #level: LogLevel;
-  formatter: FormatterFunction;
-
-  constructor(
-    levelName: LevelName,
-    options?: BaseHandlerOptions,
-  ) {
-    const { formatter = DEFAULT_FORMATTER } = options ?? {};
-    this.#levelName = levelName;
-    this.#level = getLevelByName(levelName);
-    this.formatter = formatter;
-  }
-
-  get level(): LogLevel {
-    return this.#level;
-  }
-
-  set level(level: LogLevel) {
-    this.#level = level;
-    this.#levelName = getLevelName(level);
-  }
-
-  get levelName(): LevelName {
-    return this.#levelName;
-  }
-  set levelName(levelName: LevelName) {
-    this.#levelName = levelName;
-    this.#level = getLevelByName(levelName);
-  }
-
-  handle(logRecord: LogRecord) {
-    if (this.level > logRecord.level) return;
-
-    const msg = this.format(logRecord);
-    this.log(msg);
-  }
-
-  format(logRecord: LogRecord): string {
-    return this.formatter(logRecord);
-  }
-
-  log(_msg: string) {}
-  setup() {}
-  destroy() {}
-
-  [Symbol.dispose]() {
-    this.destroy();
-  }
-}
+/**
+ * @deprecated This will be removed in 1.0.0. Use {@linkcode HandlerOptions} instead.
+ */
+export type BaseHandlerOptions = HandlerOptions;

@@ -1,7 +1,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-import type { BaseHandler } from "./base_handler.ts";
+import type { Handler } from "./handler.ts";
 import { DEFAULT_CONFIG, DEFAULT_LEVEL } from "./_config.ts";
 import { type LogConfig, Logger } from "./logger.ts";
 import { state } from "./_state.ts";
@@ -34,7 +34,7 @@ export function setup(config: LogConfig) {
   const loggers = state.config.loggers || {};
   for (const [loggerName, loggerConfig] of Object.entries(loggers)) {
     const handlerNames = loggerConfig.handlers || [];
-    const handlers: BaseHandler[] = [];
+    const handlers: Handler[] = [];
 
     handlerNames.forEach((handlerName) => {
       const handler = state.handlers.get(handlerName);

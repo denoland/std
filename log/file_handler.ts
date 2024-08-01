@@ -1,12 +1,12 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import { type LevelName, LogLevels } from "./levels.ts";
 import type { LogRecord } from "./logger.ts";
-import { BaseHandler, type BaseHandlerOptions } from "./base_handler.ts";
+import { Handler, type HandlerOptions } from "./handler.ts";
 import { writeAllSync } from "@std/io/write-all";
 
 export type LogMode = "a" | "w" | "x";
 
-export interface FileHandlerOptions extends BaseHandlerOptions {
+export interface FileHandlerOptions extends HandlerOptions {
   filename: string;
   mode?: LogMode;
   /**
@@ -35,7 +35,7 @@ export interface FileHandlerOptions extends BaseHandlerOptions {
  *
  * This handler requires `--allow-write` permission on the log file.
  */
-export class FileHandler extends BaseHandler {
+export class FileHandler extends Handler {
   protected _file: Deno.FsFile | undefined;
   protected _buf: Uint8Array;
   protected _pointer = 0;
