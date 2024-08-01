@@ -313,9 +313,23 @@ export interface ParseOptions {
  * import { parse } from "@std/csv/parse";
  * import { assertEquals } from "@std/assert";
  *
- * const string = "a,b,c\nd,e,f";
+ * const string = "a,b,c\n#d,e,f";
  *
- * assertEquals(parse(string), [["a", "b", "c"], ["d", "e", "f"]]);
+ * assertEquals(parse(string), [["a", "b", "c"], ["#d", "e", "f"]]);
+ * ```
+ *
+ * @example Quoted fields
+ * ```ts
+ * import { parse } from "@std/csv/parse";
+ * import { assertEquals } from "@std/assert";
+ *
+ * const string = `"a ""word""","comma,","newline\n"\nfoo,bar,baz`;
+ * const result = parse(string);
+ *
+ * assertEquals(result, [
+ *   ['a "word"', "comma,", "newline\n"],
+ *   ["foo", "bar", "baz"]
+ * ]);
  * ```
  *
  * @param input The input to parse.
@@ -325,26 +339,110 @@ export function parse(input: string): string[][];
 /**
  * Parses CSV string into an array of objects or an array of arrays of strings.
  *
- * If `column` or `skipFirstRow` option is provided, it returns an array of
+ * If `columns` or `skipFirstRow` option is provided, it returns an array of
  * objects, otherwise it returns an array of arrays of string.
  *
- * @example Usage
+ * @example skipFirstRow: false
+ * ```ts
+ * import { parse } from "@std/csv/parse";
+ * import { assertEquals } from "@std/assert";
+ * import { assertType, IsExact } from "@std/testing/types"
+ *
+ * const string = "a,b,c\nd,e,f";
+ * const result = parse(string, { skipFirstRow: false });
+ *
+ * assertEquals(result, [["a", "b", "c"], ["d", "e", "f"]]);
+ * assertType<IsExact<typeof result, string[][]>>(true);
+ * ```
+ *
+ * @example skipFirstRow: true
+ * ```ts
+ * import { parse } from "@std/csv/parse";
+ * import { assertEquals } from "@std/assert";
+ * import { assertType, IsExact } from "@std/testing/types"
+ *
+ * const string = "a,b,c\nd,e,f";
+ * const result = parse(string, { skipFirstRow: true });
+ *
+ * assertEquals(result, [{ a: "d", b: "e", c: "f" }]);
+ * assertType<IsExact<typeof result, Record<string, string | undefined>[]>>(true);
+ * ```
+ *
+ * @example specify columns
+ * ```ts
+ * import { parse } from "@std/csv/parse";
+ * import { assertEquals } from "@std/assert";
+ * import { assertType, IsExact } from "@std/testing/types"
+ *
+ * const string = "a,b,c\nd,e,f";
+ * const result = parse(string, { columns: ["x", "y", "z"] });
+ *
+ * assertEquals(result, [{ x: "a", y: "b", z: "c" }, { x: "d", y: "e", z: "f" }]);
+ * assertType<IsExact<typeof result, Record<"x" | "y" | "z", string>[]>>(true);
+ * ```
+ *
+ * @example specify columns with skipFirstRow
+ * ```ts
+ * import { parse } from "@std/csv/parse";
+ * import { assertEquals } from "@std/assert";
+ * import { assertType, IsExact } from "@std/testing/types"
+ *
+ * const string = "a,b,c\nd,e,f";
+ * const result = parse(string, { columns: ["x", "y", "z"], skipFirstRow: true });
+ *
+ * assertEquals(result, [{ x: "d", y: "e", z: "f" }]);
+ * assertType<IsExact<typeof result, Record<"x" | "y" | "z", string>[]>>(true);
+ * ```
+ *
+ * @example TSV (tab-separated values)
  * ```ts
  * import { parse } from "@std/csv/parse";
  * import { assertEquals } from "@std/assert";
  *
- * const string = "a,b,c\nd,e,f";
+ * const string = "a\tb\tc\nd\te\tf";
+ * const result = parse(string, { separator: "\t" });
  *
- * assertEquals(parse(string, { skipFirstRow: false }), [["a", "b", "c"], ["d", "e", "f"]]);
- * assertEquals(parse(string, { skipFirstRow: true }), [{ a: "d", b: "e", c: "f" }]);
- * assertEquals(parse(string, { columns: ["x", "y", "z"] }), [{ x: "a", y: "b", z: "c" }, { x: "d", y: "e", z: "f" }]);
+ * assertEquals(result, [["a", "b", "c"], ["d", "e", "f"]]);
+ * ```
+ *
+ * @example trimLeadingSpace: true
+ * ```ts
+ * import { parse } from "@std/csv/parse";
+ * import { assertEquals } from "@std/assert";
+ *
+ * const string = " a,  b,    c\n";
+ * const result = parse(string, { trimLeadingSpace: true });
+ *
+ * assertEquals(result, [["a", "b", "c"]]);
+ * ```
+ *
+ * @example lazyQuotes: true
+ * ```ts
+ * import { parse } from "@std/csv/parse";
+ * import { assertEquals } from "@std/assert";
+ *
+ * const string = `a "word","1"2",a","b`;
+ * const result = parse(string, { lazyQuotes: true });
+ *
+ * assertEquals(result, [['a "word"', '1"2', 'a"', 'b']]);
+ * ```
+ *
+ * @example comment
+ * ```ts
+ * import { parse } from "@std/csv/parse";
+ * import { assertEquals } from "@std/assert";
+ *
+ * const string = "a,b,c\n# THIS IS A COMMENT LINE\nd,e,f";
+ * const result = parse(string, { comment: "#" });
+ *
+ * assertEquals(result, [["a", "b", "c"], ["d", "e", "f"]]);
  * ```
  *
  * @typeParam T The options' type for parsing.
  * @param input The input to parse.
  * @param options The options for parsing.
- * @returns If you don't provide `options.skipFirstRow` and `options.columns`, it returns `string[][]`.
- *   If you provide `options.skipFirstRow` or `options.columns`, it returns `Record<string, unknown>[]`.
+ * @returns If you don't provide `options.skipFirstRow` or `options.columns`, it returns `string[][]`.
+ *   If you provide `options.skipFirstRow` or `options.columns`, it returns `Record<string, string>[]`.
  */
 export function parse<const T extends ParseOptions>(
   input: string,
