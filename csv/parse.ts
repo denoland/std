@@ -306,8 +306,7 @@ export interface ParseOptions {
 }
 
 /**
- * Csv parse helper to manipulate data.
- * Provides an auto/custom mapper for columns.
+ * Parses CSV string into an array of arrays of strings.
  *
  * @example Usage
  * ```ts
@@ -324,8 +323,10 @@ export interface ParseOptions {
  */
 export function parse(input: string): string[][];
 /**
- * Csv parse helper to manipulate data.
- * Provides an auto/custom mapper for columns.
+ * Parses CSV string into an array of objects or an array of arrays of strings.
+ *
+ * If `column` or `skipFirstRow` option is provided, it returns an array of
+ * objects, otherwise it returns an array of arrays of string.
  *
  * @example Usage
  * ```ts
