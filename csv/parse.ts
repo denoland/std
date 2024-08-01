@@ -70,14 +70,14 @@ class Parser {
   #isEOF(): boolean {
     return this.#cursor >= this.#input.length;
   }
-  #parseRecord(startLine: number): string[] | null {
+  #parseRecord(zeroBasedStartLine: number): string[] | null {
     let fullLine = this.#readLine();
     if (fullLine === null) return null;
     if (fullLine.length === 0) {
       return [];
     }
 
-    let lineIndex = startLine + 1;
+    let zeroBasedLine = zeroBasedStartLine;
 
     // line starting with comment character is ignored
     if (this.#options.comment && fullLine[0] === this.#options.comment) {
@@ -110,7 +110,11 @@ class Parser {
               fullLine.slice(0, fullLine.length - line.slice(j).length),
             );
             throw new SyntaxError(
-              createBareQuoteErrorMessage(startLine + 1, lineIndex, col),
+              createBareQuoteErrorMessage(
+                zeroBasedStartLine,
+                zeroBasedLine,
+                col,
+              ),
             );
           }
         }
@@ -152,14 +156,14 @@ class Parser {
                 fullLine.slice(0, fullLine.length - line.length - quoteLen),
               );
               throw new SyntaxError(
-                createQuoteErrorMessage(startLine + 1, lineIndex, col),
+                createQuoteErrorMessage(zeroBasedStartLine, zeroBasedLine, col),
               );
             }
           } else if (line.length > 0 || !(this.#isEOF())) {
             // Hit end of line (copy all data so far).
             recordBuffer += line;
             const r = this.#readLine();
-            lineIndex++;
+            zeroBasedLine++;
             line = r ?? ""; // This is a workaround for making this module behave similarly to the encoding/csv/reader.go.
             fullLine = line;
             if (r === null) {
@@ -167,7 +171,11 @@ class Parser {
               if (!this.#options.lazyQuotes) {
                 const col = codePointLength(fullLine);
                 throw new SyntaxError(
-                  createQuoteErrorMessage(startLine + 1, lineIndex, col),
+                  createQuoteErrorMessage(
+                    zeroBasedStartLine,
+                    zeroBasedLine,
+                    col,
+                  ),
                 );
               }
               fieldIndexes.push(recordBuffer.length);
@@ -179,7 +187,7 @@ class Parser {
             if (!this.#options.lazyQuotes) {
               const col = codePointLength(fullLine);
               throw new SyntaxError(
-                createQuoteErrorMessage(startLine + 1, lineIndex, col),
+                createQuoteErrorMessage(zeroBasedStartLine, zeroBasedLine, col),
               );
             }
             fieldIndexes.push(recordBuffer.length);

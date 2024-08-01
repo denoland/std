@@ -132,7 +132,7 @@ export class CsvParseStream<
   readonly #options: CsvParseStreamOptions;
   readonly #lineReader: StreamLineReader;
   readonly #lines: TextDelimiterStream;
-  #lineIndex = 0;
+  #zeroBasedLineIndex = 0;
   #isFirstRow = true;
 
   // The number of fields per record that is either inferred from the first row
@@ -186,7 +186,7 @@ export class CsvParseStream<
     const line = await this.#lineReader.readLine();
     if (line === "") {
       // Found an empty line
-      this.#lineIndex++;
+      this.#zeroBasedLineIndex++;
       return this.#pull(controller);
     }
     if (line === null) {
@@ -200,7 +200,7 @@ export class CsvParseStream<
       line,
       this.#lineReader,
       this.#options,
-      this.#lineIndex,
+      this.#zeroBasedLineIndex,
     );
 
     if (this.#isFirstRow) {
@@ -233,18 +233,18 @@ export class CsvParseStream<
     ) {
       throw new SyntaxError(
         `record on line ${
-          this.#lineIndex + 1
+          this.#zeroBasedLineIndex + 1
         }: expected ${this.#fieldsPerRecord} fields but got ${record.length}`,
       );
     }
 
-    this.#lineIndex++;
+    this.#zeroBasedLineIndex++;
     if (record.length > 0) {
       if (this.#options.skipFirstRow || this.#options.columns) {
         controller.enqueue(convertRowToObject(
           record,
           this.#headers,
-          this.#lineIndex,
+          this.#zeroBasedLineIndex,
         ));
       } else {
         controller.enqueue(record);
