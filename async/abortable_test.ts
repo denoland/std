@@ -137,9 +137,13 @@ Deno.test("abortable.AsyncIterable() calls return before throwing", async () => 
   const iterable: AsyncIterable<string> = {
     [Symbol.asyncIterator]: () => ({
       next: () =>
-        new Promise((resolve) =>
-          setTimeout(() => resolve({ value: "Hello", done: false }), 1)
-        ),
+        new Promise((resolve) => {
+          const timeoutId = setTimeout(
+            () => resolve({ value: "Hello", done: false }),
+            1,
+          );
+          clearTimeout(timeoutId);
+        }),
       return: () => {
         returnCalled = true;
         return Promise.resolve({ value: undefined, done: true });
