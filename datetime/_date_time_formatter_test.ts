@@ -67,7 +67,6 @@ Deno.test("tokenizer.tokenize() works with multiple rules", () => {
   ];
   const tokenizer = new Tokenizer(rules);
   const tokens = tokenizer.tokenize("foobarqux");
-  console.log(tokens);
   assertEquals(tokens, [
     { index: 9, type: "qux", value: "qux" },
   ]);
