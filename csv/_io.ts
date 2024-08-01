@@ -65,8 +65,8 @@ export async function parseRecord(
   fullLine: string,
   reader: LineReader,
   options: ReadOptions,
-  startLine: number,
-  lineIndex: number = startLine,
+  zeroBasedRecordStartLine: number,
+  zeroBasedLine: number = zeroBasedRecordStartLine,
 ): Promise<Array<string>> {
   // line starting with comment character is ignored
   if (options.comment && fullLine[0] === options.comment) {
@@ -103,7 +103,11 @@ export async function parseRecord(
             fullLine.slice(0, fullLine.length - line.slice(j).length),
           );
           throw new SyntaxError(
-            createBareQuoteErrorMessage(startLine + 1, lineIndex, col),
+            createBareQuoteErrorMessage(
+              zeroBasedRecordStartLine,
+              zeroBasedLine,
+              col,
+            ),
           );
         }
       }
@@ -145,14 +149,17 @@ export async function parseRecord(
               fullLine.slice(0, fullLine.length - line.length - quoteLen),
             );
             throw new SyntaxError(
-              createQuoteErrorMessage(startLine + 1, lineIndex, col),
+              createQuoteErrorMessage(
+                zeroBasedRecordStartLine,
+                zeroBasedLine,
+                col,
+              ),
             );
           }
         } else if (line.length > 0 || !reader.isEOF()) {
           // Hit end of line (copy all data so far).
           recordBuffer += line;
           const r = await reader.readLine();
-          lineIndex++;
           line = r ?? ""; // This is a workaround for making this module behave similarly to the encoding/csv/reader.go.
           fullLine = line;
           if (r === null) {
@@ -160,19 +167,28 @@ export async function parseRecord(
             if (!options.lazyQuotes) {
               const col = codePointLength(fullLine);
               throw new SyntaxError(
-                createQuoteErrorMessage(startLine + 1, lineIndex, col),
+                createQuoteErrorMessage(
+                  zeroBasedRecordStartLine,
+                  zeroBasedLine,
+                  col,
+                ),
               );
             }
             fieldIndexes.push(recordBuffer.length);
             break parseField;
           }
+          zeroBasedLine++;
           recordBuffer += "\n"; // preserve line feed (This is because TextProtoReader removes it.)
         } else {
           // Abrupt end of file (EOF on error).
           if (!options.lazyQuotes) {
             const col = codePointLength(fullLine);
             throw new SyntaxError(
-              createQuoteErrorMessage(startLine + 1, lineIndex, col),
+              createQuoteErrorMessage(
+                zeroBasedRecordStartLine,
+                zeroBasedLine,
+                col,
+              ),
             );
           }
           fieldIndexes.push(recordBuffer.length);
@@ -191,18 +207,22 @@ export async function parseRecord(
 }
 
 export function createBareQuoteErrorMessage(
-  start: number,
-  line: number,
-  column: number,
+  zeroBasedRecordStartLine: number,
+  zeroBasedLine: number,
+  zeroBasedColumn: number,
 ) {
-  return `record on line ${start}; parse error on line ${line}, column ${column}: bare " in non-quoted-field`;
+  return `record on line ${zeroBasedRecordStartLine + 1}; parse error on line ${
+    zeroBasedLine + 1
+  }, column ${zeroBasedColumn + 1}: bare " in non-quoted-field`;
 }
 export function createQuoteErrorMessage(
-  start: number,
-  line: number,
-  column: number,
+  zeroBasedRecordStartLine: number,
+  zeroBasedLine: number,
+  zeroBasedColumn: number,
 ) {
-  return `record on line ${start}; parse error on line ${line}, column ${column}: extraneous or missing " in quoted-field`;
+  return `record on line ${zeroBasedRecordStartLine + 1}; parse error on line ${
+    zeroBasedLine + 1
+  }, column ${zeroBasedColumn + 1}: extraneous or missing " in quoted-field`;
 }
 
 export function convertRowToObject(
