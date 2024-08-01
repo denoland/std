@@ -1,7 +1,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import { CsvParseStream } from "./parse_stream.ts";
 import type { CsvParseStreamOptions } from "./parse_stream.ts";
-import { assertEquals, assertRejects } from "@std/assert";
+import { assert, assertEquals, assertRejects } from "@std/assert";
 import type { AssertTrue, IsExact } from "@std/testing/types";
 import { fromFileUrl, join } from "@std/path";
 import { delay } from "@std/async/delay";
@@ -83,8 +83,11 @@ Deno.test({
       {
         name: "Separator is undefined",
         input: "a;b;c\n",
-        errorMessage: "Separator is required",
         separator: undefined,
+        error: {
+          klass: TypeError,
+          msg: "Separator is required",
+        },
       },
       {
         name: "MultiLine",
@@ -128,12 +131,51 @@ field"`,
         ],
       },
       {
-        name: "FieldCount",
+        name: "fieldsPerRecord - variable number of fields is allowed",
         input: "a,b,c\nd,e",
         output: [
           ["a", "b", "c"],
           ["d", "e"],
         ],
+      },
+      {
+        name: "fieldsPerRecord = -42 - variable number of fields is allowed",
+        input: "a,b,c\nd,e",
+        output: [
+          ["a", "b", "c"],
+          ["d", "e"],
+        ],
+        fieldsPerRecord: -42,
+      },
+      {
+        name:
+          "fieldsPerRecord = 0 - the number of fields is inferred from the first row",
+        input: "a,b,c\nd,e,f",
+        output: [
+          ["a", "b", "c"],
+          ["d", "e", "f"],
+        ],
+        fieldsPerRecord: 0,
+      },
+      {
+        name:
+          "fieldsPerRecord = 0 - inferred number of fields does not match subsequent rows",
+        input: "a,b,c\nd,e",
+        fieldsPerRecord: 0,
+        error: {
+          klass: SyntaxError,
+          msg: "record on line 2: expected 3 fields but got 2",
+        },
+      },
+      {
+        name:
+          "fieldsPerRecord = 3 - SyntaxError is thrown when the number of fields is not 2",
+        input: "a,b,c\nd,e",
+        fieldsPerRecord: 3,
+        error: {
+          klass: SyntaxError,
+          msg: "record on line 2: expected 3 fields but got 2",
+        },
       },
       {
         name: "TrailingCommaEOF",
@@ -312,18 +354,29 @@ x,,,
         input: "a,b,c\nd,e",
         skipFirstRow: true,
         columns: ["foo", "bar", "baz"],
-        errorMessage:
-          "Error number of fields line: 1\nNumber of fields found: 3\nExpected number of fields: 2",
+        error: {
+          klass: Error,
+          msg:
+            "Error number of fields line: 1\nNumber of fields found: 3\nExpected number of fields: 2",
+        },
       },
       {
         name: "bad quote in bare field",
         input: `a "word",1,2,3`,
-        errorMessage: "Error line: 1\nBad quoting",
+        error: {
+          klass: SyntaxError,
+          msg:
+            'record on line 1; parse error on line 0, column 2: bare " in non-quoted-field',
+        },
       },
       {
         name: "bad quote in quoted field",
         input: `"wo"rd",1,2,3`,
-        errorMessage: "Error line: 1\nBad quoting",
+        error: {
+          klass: SyntaxError,
+          msg:
+            'record on line 1; parse error on line 0, column 3: extraneous or missing " in quoted-field',
+        },
       },
       {
         name: "lazy quote",
@@ -341,17 +394,20 @@ x,,,
         if ("comment" in testCase) {
           options.comment = testCase.comment;
         }
-        if ("skipFirstRow" in testCase) {
-          options.skipFirstRow = testCase.skipFirstRow;
-        }
-        if ("columns" in testCase) {
-          options.columns = testCase.columns;
-        }
         if ("trimLeadingSpace" in testCase) {
           options.trimLeadingSpace = testCase.trimLeadingSpace;
         }
         if ("lazyQuotes" in testCase) {
           options.lazyQuotes = testCase.lazyQuotes;
+        }
+        if ("fieldsPerRecord" in testCase) {
+          options.fieldsPerRecord = testCase.fieldsPerRecord;
+        }
+        if ("skipFirstRow" in testCase) {
+          options.skipFirstRow = testCase.skipFirstRow;
+        }
+        if ("columns" in testCase) {
+          options.columns = testCase.columns;
         }
 
         const readable = ReadableStream.from(testCase.input)
@@ -361,9 +417,14 @@ x,,,
           const actual = await Array.fromAsync(readable);
           assertEquals(actual, testCase.output);
         } else {
-          await assertRejects(async () => {
-            for await (const _ of readable);
-          }, testCase.errorMessage);
+          assert(testCase.error);
+          await assertRejects(
+            async () => {
+              for await (const _ of readable);
+            },
+            testCase.error.klass,
+            testCase.error.msg,
+          );
         }
       });
     }
