@@ -261,7 +261,7 @@ export interface ParseOptions {
    * are ignored. With leading whitespace the comment character becomes part of
    * the field, even you provide `trimLeadingSpace: true`.
    *
-   * @default {"#"}
+   * By default, no character is considered to be a start of a comment.
    */
   comment?: string;
   /** Flag to trim the leading space of the value.
