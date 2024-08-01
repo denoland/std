@@ -59,7 +59,7 @@ export type MemoizeOptions<
    * rejection. If `cacheRejectedPromises` is set to `true`, promises will be
    * retained in the cache even if rejected.
    *
-   * @default false
+   * @default {false}
    */
   cacheRejectedPromises?: boolean;
 };
