@@ -49,8 +49,8 @@ export interface CsvParseStreamOptions {
    * If negative, no check is made and records may have a variable number of
    * fields.
    *
-   * If the wrong number of fields is in a row, a {@linkcode ParseError} is
-   * thrown.
+   * If the wrong number of fields is in a row, a {@linkcode https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/SyntaxError | SyntaxError}
+   * is thrown.
    */
   fieldsPerRecord?: number;
   /**
