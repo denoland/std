@@ -295,6 +295,7 @@ export type RowType<T> = T extends undefined ? string[]
  * ```ts
  * import { CsvParseStream } from "@std/csv/parse-stream";
  * import { assertEquals } from "@std/assert/equals";
+ * import { assertRejects } from "@std/assert/rejects";
  *
  * const source = ReadableStream.from([
  *   "Alice,34\n",
@@ -303,14 +304,35 @@ export type RowType<T> = T extends undefined ? string[]
  * const stream = source.pipeThrough(new CsvParseStream({
  *   fieldsPerRecord: 0,
  * }));
- * for await (const row of stream) {
- * }
- * const result = await Array.fromAsync(stream);
+ * const reader = stream.getReader();
+ * assertEquals(await reader.read(), { done: false, value: ["Alice", "34"] });
+ * await assertRejects(
+ *   () => reader.read(),
+ *   SyntaxError,
+ *   "record on line 2: expected 2 fields but got 3",
+ * );
+ * ```
  *
- * assertEquals(result, [
- *   ["Alice", "34"],
- *   ["Bob", "24"],
+ * @example fieldsPerRecord: 2 (enforce the number of fields for each row)
+ * ```ts
+ * import { CsvParseStream } from "@std/csv/parse-stream";
+ * import { assertEquals } from "@std/assert/equals";
+ * import { assertRejects } from "@std/assert/rejects";
+ *
+ * const source = ReadableStream.from([
+ *   "Alice,34\n",
+ *   "Bob,24,CA\n",
  * ]);
+ * const stream = source.pipeThrough(new CsvParseStream({
+ *   fieldsPerRecord: 2,
+ * }));
+ * const reader = stream.getReader();
+ * assertEquals(await reader.read(), { done: false, value: ["Alice", "34"] });
+ * await assertRejects(
+ *   () => reader.read(),
+ *   SyntaxError,
+ *   "record on line 2: expected 2 fields but got 3",
+ * );
  * ```
  *
  * @typeParam T The type of options for the stream.

@@ -246,7 +246,7 @@ class Parser {
       if (lineResult.length > 0) {
         if (_nbFields && _nbFields !== lineResult.length) {
           throw new SyntaxError(
-            `record on line ${lineIndex}: wrong number of fields`,
+            `record on line ${lineIndex}: expected ${_nbFields} fields but got ${lineResult.length}`,
           );
         }
         result.push(lineResult);
@@ -444,6 +444,33 @@ export function parse(input: string): string[][];
  * const result = parse(string, { comment: "#" });
  *
  * assertEquals(result, [["a", "b", "c"], ["d", "e", "f"]]);
+ * ```
+ *
+ * @example fieldsPerRecord: 0 (infer the number of fields from the first row)
+ *  ```ts
+ * import { parse } from "@std/csv/parse";
+ * import { assertThrows } from "@std/assert/throws";
+ *
+ * // Note that the second row has more fields than the first row
+ * const string = "a,b\nc,d,e";
+ * assertThrows(
+ *   () => parse(string, { fieldsPerRecord: 0 }),
+ *   SyntaxError,
+ *   "record on line 2: expected 2 fields but got 3",
+ * );
+ * ```
+ *
+ * @example fieldsPerRecord: 2 (enforce the number of fields for each row)
+ *  ```ts
+ * import { parse } from "@std/csv/parse";
+ * import { assertThrows } from "@std/assert/throws";
+ *
+ * const string = "a,b\nc,d,e";
+ * assertThrows(
+ *   () => parse(string, { fieldsPerRecord: 2 }),
+ *   SyntaxError,
+ *   "record on line 2: expected 2 fields but got 3",
+ * );
  * ```
  *
  * @typeParam T The options' type for parsing.
