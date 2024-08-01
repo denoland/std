@@ -51,7 +51,7 @@ export type MemoizeOptions<
    * avoided for functions with variable argument length (`...rest` or default
    * params)
    *
-   * @default false
+   * @default {false}
    */
   truncateArgs?: boolean;
   /**
