@@ -96,7 +96,7 @@ export function memoize<
   >,
 >(
   fn: Fn,
-  options?: MemoizationOptions<Fn, Key, Cache>,
+  options?: MemoizeOptions<Fn, Key, Cache>,
 ): Fn & {
   cache: Cache;
   getKey: (this: ThisParameterType<Fn>, ...args: Parameters<Fn>) => Key;
