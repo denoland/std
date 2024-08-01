@@ -130,3 +130,34 @@ Deno.test("abortable.AsyncIterable() handles already aborted signal", async () =
   assertEquals(items, []);
   clearTimeout(t);
 });
+
+Deno.test("abortable.AsyncIterable() calls return before throwing", async () => {
+  const c = new AbortController();
+  let returnCalled = false;
+  const iterable: AsyncIterable<string> = {
+    [Symbol.asyncIterator]: () => ({
+      next: () =>
+        new Promise((resolve) =>
+          setTimeout(() => resolve({ value: "Hello", done: false }), 1)
+        ),
+      return: () => {
+        returnCalled = true;
+        return Promise.resolve({ value: undefined, done: true });
+      },
+    }),
+  };
+  setTimeout(() => c.abort(), 1);
+  const items: string[] = [];
+  const error = await assertRejects(
+    async () => {
+      for await (const item of abortable(iterable, c.signal)) {
+        items.push(item);
+      }
+    },
+    DOMException,
+    "The signal has been aborted",
+  );
+  assertEquals(returnCalled, true);
+  assertEquals(error.name, "AbortError");
+  assertEquals(items, []);
+});
