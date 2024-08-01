@@ -63,32 +63,38 @@
 <ellipse fill="lightgreen" stroke="black" cx="929" cy="-144" rx="36" ry="36"/>
 <text text-anchor="middle" x="929" y="-139.8" font-family="Times,serif" font-size="14.00">async</text>
 </g>
-<!-- cli -->
+<!-- cache -->
 <g id="node7" class="node">
+<title>cache</title>
+<ellipse fill="none" stroke="black" cx="787" cy="-360" rx="36" ry="36"/>
+<text text-anchor="middle" x="787" y="-355.8" font-family="Times,serif" font-size="14.00">cache</text>
+</g>
+<!-- cli -->
+<g id="node8" class="node">
 <title>cli</title>
 <ellipse fill="lightgreen" stroke="black" cx="569" cy="-144" rx="36" ry="36"/>
 <text text-anchor="middle" x="569" y="-139.8" font-family="Times,serif" font-size="14.00">cli</text>
 </g>
 <!-- collections -->
-<g id="node8" class="node">
+<g id="node9" class="node">
 <title>collections</title>
 <ellipse fill="lightgreen" stroke="black" cx="1493" cy="-144" rx="36" ry="36"/>
 <text text-anchor="middle" x="1493" y="-139.8" font-family="Times,serif" font-size="14.00">collections</text>
 </g>
 <!-- crypto -->
-<g id="node9" class="node">
+<g id="node10" class="node">
 <title>crypto</title>
 <ellipse fill="lightgreen" stroke="black" cx="1147" cy="-36" rx="36" ry="36"/>
 <text text-anchor="middle" x="1147" y="-31.8" font-family="Times,serif" font-size="14.00">crypto</text>
 </g>
 <!-- csv -->
-<g id="node10" class="node">
+<g id="node11" class="node">
 <title>csv</title>
 <ellipse fill="lightgreen" stroke="black" cx="36" cy="-252" rx="36" ry="36"/>
 <text text-anchor="middle" x="36" y="-247.8" font-family="Times,serif" font-size="14.00">csv</text>
 </g>
 <!-- streams -->
-<g id="node11" class="node">
+<g id="node12" class="node">
 <title>streams</title>
 <ellipse fill="lightgreen" stroke="black" cx="81" cy="-144" rx="36" ry="36"/>
 <text text-anchor="middle" x="81" y="-139.8" font-family="Times,serif" font-size="14.00">streams</text>
@@ -106,32 +112,32 @@
 <polygon fill="black" stroke="black" points="414.31,-43.72 423.97,-39.36 413.7,-36.74 414.31,-43.72"/>
 </g>
 <!-- data&#45;\nstructures -->
-<g id="node12" class="node">
+<g id="node13" class="node">
 <title>data&#45;\nstructures</title>
 <ellipse fill="lightgreen" stroke="black" cx="1275" cy="-144" rx="36" ry="36"/>
 <text text-anchor="middle" x="1275" y="-148.2" font-family="Times,serif" font-size="14.00">data&#45;</text>
 <text text-anchor="middle" x="1275" y="-131.4" font-family="Times,serif" font-size="14.00">structures</text>
 </g>
 <!-- datetime -->
-<g id="node13" class="node">
+<g id="node14" class="node">
 <title>datetime</title>
 <ellipse fill="none" stroke="black" cx="1628" cy="-360" rx="36" ry="36"/>
 <text text-anchor="middle" x="1628" y="-355.8" font-family="Times,serif" font-size="14.00">datetime</text>
 </g>
 <!-- dotenv -->
-<g id="node14" class="node">
+<g id="node15" class="node">
 <title>dotenv</title>
 <ellipse fill="none" stroke="black" cx="1718" cy="-360" rx="36" ry="36"/>
 <text text-anchor="middle" x="1718" y="-355.8" font-family="Times,serif" font-size="14.00">dotenv</text>
 </g>
 <!-- encoding -->
-<g id="node15" class="node">
+<g id="node16" class="node">
 <title>encoding</title>
 <ellipse fill="lightgreen" stroke="black" cx="261" cy="-144" rx="36" ry="36"/>
 <text text-anchor="middle" x="261" y="-139.8" font-family="Times,serif" font-size="14.00">encoding</text>
 </g>
 <!-- expect -->
-<g id="node16" class="node">
+<g id="node17" class="node">
 <title>expect</title>
 <ellipse fill="lightgreen" stroke="black" cx="1384" cy="-252" rx="36" ry="36"/>
 <text text-anchor="middle" x="1384" y="-247.8" font-family="Times,serif" font-size="14.00">expect</text>
@@ -149,20 +155,20 @@
 <polygon fill="black" stroke="black" points="1395.87,-70.54 1387.37,-64.22 1390.08,-74.47 1395.87,-70.54"/>
 </g>
 <!-- fmt -->
-<g id="node17" class="node">
+<g id="node18" class="node">
 <title>fmt</title>
 <ellipse fill="lightgreen" stroke="black" cx="659" cy="-144" rx="36" ry="36"/>
 <text text-anchor="middle" x="659" y="-139.8" font-family="Times,serif" font-size="14.00">fmt</text>
 </g>
 <!-- front&#45;\nmatter -->
-<g id="node18" class="node">
+<g id="node19" class="node">
 <title>front&#45;\nmatter</title>
 <ellipse fill="lightgreen" stroke="black" cx="1538" cy="-360" rx="36" ry="36"/>
 <text text-anchor="middle" x="1538" y="-364.2" font-family="Times,serif" font-size="14.00">front&#45;</text>
 <text text-anchor="middle" x="1538" y="-347.4" font-family="Times,serif" font-size="14.00">matter</text>
 </g>
 <!-- toml -->
-<g id="node19" class="node">
+<g id="node20" class="node">
 <title>toml</title>
 <ellipse fill="lightgreen" stroke="black" cx="1493" cy="-252" rx="36" ry="36"/>
 <text text-anchor="middle" x="1493" y="-247.8" font-family="Times,serif" font-size="14.00">toml</text>
@@ -174,7 +180,7 @@
 <polygon fill="black" stroke="black" points="1513.95,-293.38 1506.82,-285.55 1507.5,-296.12 1513.95,-293.38"/>
 </g>
 <!-- yaml -->
-<g id="node20" class="node">
+<g id="node21" class="node">
 <title>yaml</title>
 <ellipse fill="lightgreen" stroke="black" cx="1583" cy="-252" rx="36" ry="36"/>
 <text text-anchor="middle" x="1583" y="-247.8" font-family="Times,serif" font-size="14.00">yaml</text>
@@ -192,13 +198,13 @@
 <polygon fill="black" stroke="black" points="1496.5,-190.33 1493,-180.33 1489.5,-190.33 1496.5,-190.33"/>
 </g>
 <!-- fs -->
-<g id="node21" class="node">
+<g id="node22" class="node">
 <title>fs</title>
 <ellipse fill="lightgreen" stroke="black" cx="839" cy="-144" rx="36" ry="36"/>
 <text text-anchor="middle" x="839" y="-139.8" font-family="Times,serif" font-size="14.00">fs</text>
 </g>
 <!-- path -->
-<g id="node22" class="node">
+<g id="node23" class="node">
 <title>path</title>
 <ellipse fill="lightgreen" stroke="black" cx="929" cy="-36" rx="36" ry="36"/>
 <text text-anchor="middle" x="929" y="-31.8" font-family="Times,serif" font-size="14.00">path</text>
@@ -210,13 +216,13 @@
 <polygon fill="black" stroke="black" points="902.29,-73.86 906.1,-63.97 896.96,-69.33 902.29,-73.86"/>
 </g>
 <!-- html -->
-<g id="node23" class="node">
+<g id="node24" class="node">
 <title>html</title>
 <ellipse fill="lightgreen" stroke="black" cx="1808" cy="-360" rx="36" ry="36"/>
 <text text-anchor="middle" x="1808" y="-355.8" font-family="Times,serif" font-size="14.00">html</text>
 </g>
 <!-- http -->
-<g id="node24" class="node">
+<g id="node25" class="node">
 <title>http</title>
 <ellipse fill="lightgreen" stroke="black" cx="389" cy="-252" rx="36" ry="36"/>
 <text text-anchor="middle" x="389" y="-247.8" font-family="Times,serif" font-size="14.00">http</text>
@@ -252,7 +258,7 @@
 <polygon fill="black" stroke="black" points="883.17,-44.42 892.83,-40.07 882.56,-37.44 883.17,-44.42"/>
 </g>
 <!-- media&#45;\ntypes -->
-<g id="node25" class="node">
+<g id="node26" class="node">
 <title>media&#45;\ntypes</title>
 <ellipse fill="lightgreen" stroke="black" cx="389" cy="-144" rx="36" ry="36"/>
 <text text-anchor="middle" x="389" y="-148.2" font-family="Times,serif" font-size="14.00">media&#45;</text>
@@ -265,7 +271,7 @@
 <polygon fill="black" stroke="black" points="392.5,-190.33 389,-180.33 385.5,-190.33 392.5,-190.33"/>
 </g>
 <!-- net -->
-<g id="node26" class="node">
+<g id="node27" class="node">
 <title>net</title>
 <ellipse fill="lightgreen" stroke="black" cx="479" cy="-144" rx="36" ry="36"/>
 <text text-anchor="middle" x="479" y="-139.8" font-family="Times,serif" font-size="14.00">net</text>
@@ -277,13 +283,13 @@
 <polygon fill="black" stroke="black" points="452.29,-181.86 456.1,-171.97 446.96,-177.33 452.29,-181.86"/>
 </g>
 <!-- ini -->
-<g id="node27" class="node">
+<g id="node28" class="node">
 <title>ini</title>
 <ellipse fill="lightgreen" stroke="black" cx="1898" cy="-360" rx="36" ry="36"/>
 <text text-anchor="middle" x="1898" y="-355.8" font-family="Times,serif" font-size="14.00">ini</text>
 </g>
 <!-- json -->
-<g id="node28" class="node">
+<g id="node29" class="node">
 <title>json</title>
 <ellipse fill="lightgreen" stroke="black" cx="126" cy="-252" rx="36" ry="36"/>
 <text text-anchor="middle" x="126" y="-247.8" font-family="Times,serif" font-size="14.00">json</text>
@@ -295,7 +301,7 @@
 <polygon fill="black" stroke="black" points="101.95,-185.38 94.82,-177.55 95.5,-188.12 101.95,-185.38"/>
 </g>
 <!-- jsonc -->
-<g id="node29" class="node">
+<g id="node30" class="node">
 <title>jsonc</title>
 <ellipse fill="lightgreen" stroke="black" cx="126" cy="-360" rx="36" ry="36"/>
 <text text-anchor="middle" x="126" y="-355.8" font-family="Times,serif" font-size="14.00">jsonc</text>
@@ -307,7 +313,7 @@
 <polygon fill="black" stroke="black" points="129.5,-298.33 126,-288.33 122.5,-298.33 129.5,-298.33"/>
 </g>
 <!-- log -->
-<g id="node30" class="node">
+<g id="node31" class="node">
 <title>log</title>
 <ellipse fill="none" stroke="black" cx="794" cy="-252" rx="36" ry="36"/>
 <text text-anchor="middle" x="794" y="-247.8" font-family="Times,serif" font-size="14.00">log</text>
@@ -331,7 +337,7 @@
 <polygon fill="black" stroke="black" points="824.5,-188.12 825.18,-177.55 818.05,-185.38 824.5,-188.12"/>
 </g>
 <!-- msgpack -->
-<g id="node31" class="node">
+<g id="node32" class="node">
 <title>msgpack</title>
 <ellipse fill="lightgreen" stroke="black" cx="171" cy="-144" rx="36" ry="36"/>
 <text text-anchor="middle" x="171" y="-139.8" font-family="Times,serif" font-size="14.00">msgpack</text>
@@ -343,19 +349,19 @@
 <polygon fill="black" stroke="black" points="415.34,-48.29 424.5,-42.97 414.02,-41.42 415.34,-48.29"/>
 </g>
 <!-- regexp -->
-<g id="node32" class="node">
+<g id="node33" class="node">
 <title>regexp</title>
 <ellipse fill="lightgreen" stroke="black" cx="1988" cy="-360" rx="36" ry="36"/>
 <text text-anchor="middle" x="1988" y="-355.8" font-family="Times,serif" font-size="14.00">regexp</text>
 </g>
 <!-- semver -->
-<g id="node33" class="node">
+<g id="node34" class="node">
 <title>semver</title>
 <ellipse fill="lightgreen" stroke="black" cx="2078" cy="-360" rx="36" ry="36"/>
 <text text-anchor="middle" x="2078" y="-355.8" font-family="Times,serif" font-size="14.00">semver</text>
 </g>
 <!-- testing -->
-<g id="node34" class="node">
+<g id="node35" class="node">
 <title>testing</title>
 <ellipse fill="lightgreen" stroke="black" cx="1147" cy="-252" rx="36" ry="36"/>
 <text text-anchor="middle" x="1147" y="-247.8" font-family="Times,serif" font-size="14.00">testing</text>
@@ -397,19 +403,19 @@
 <polygon fill="black" stroke="black" points="973.64,-48.73 963.05,-48.33 971.08,-55.24 973.64,-48.73"/>
 </g>
 <!-- text -->
-<g id="node35" class="node">
+<g id="node36" class="node">
 <title>text</title>
 <ellipse fill="lightgreen" stroke="black" cx="2168" cy="-360" rx="36" ry="36"/>
 <text text-anchor="middle" x="2168" y="-355.8" font-family="Times,serif" font-size="14.00">text</text>
 </g>
 <!-- ulid -->
-<g id="node36" class="node">
+<g id="node37" class="node">
 <title>ulid</title>
 <ellipse fill="lightgreen" stroke="black" cx="2258" cy="-360" rx="36" ry="36"/>
 <text text-anchor="middle" x="2258" y="-355.8" font-family="Times,serif" font-size="14.00">ulid</text>
 </g>
 <!-- url -->
-<g id="node37" class="node">
+<g id="node38" class="node">
 <title>url</title>
 <ellipse fill="lightgreen" stroke="black" cx="1019" cy="-144" rx="36" ry="36"/>
 <text text-anchor="middle" x="1019" y="-139.8" font-family="Times,serif" font-size="14.00">url</text>
@@ -421,7 +427,7 @@
 <polygon fill="black" stroke="black" points="961.04,-69.33 951.9,-63.97 955.71,-73.86 961.04,-69.33"/>
 </g>
 <!-- uuid -->
-<g id="node38" class="node">
+<g id="node39" class="node">
 <title>uuid</title>
 <ellipse fill="lightgreen" stroke="black" cx="1147" cy="-144" rx="36" ry="36"/>
 <text text-anchor="middle" x="1147" y="-139.8" font-family="Times,serif" font-size="14.00">uuid</text>
@@ -439,7 +445,7 @@
 <polygon fill="black" stroke="black" points="1150.5,-82.33 1147,-72.33 1143.5,-82.33 1150.5,-82.33"/>
 </g>
 <!-- webgpu -->
-<g id="node39" class="node">
+<g id="node40" class="node">
 <title>webgpu</title>
 <ellipse fill="none" stroke="black" cx="2348" cy="-360" rx="36" ry="36"/>
 <text text-anchor="middle" x="2348" y="-355.8" font-family="Times,serif" font-size="14.00">webgpu</text>
