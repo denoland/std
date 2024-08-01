@@ -359,10 +359,10 @@
  *
  * ## Custom handlers
  *
- * Custom handlers can be implemented by subclassing {@linkcode BaseHandler} or
+ * Custom handlers can be implemented by subclassing {@linkcode Handler} or
  * {@linkcode WriterHandler}.
  *
- * {@linkcode BaseHandler} is bare-bones handler that has no output logic at all,
+ * {@linkcode Handler} is bare-bones handler that has no output logic at all,
  *
  * {@linkcode WriterHandler} is an abstract class that supports any target with
  * `Writer` interface.
