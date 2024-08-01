@@ -774,14 +774,9 @@ export function parseArgs<
   }
 
   if (doubleDash) {
-    argv["--"] = [];
-    for (const key of notFlags) {
-      argv["--"].push(key);
-    }
+    argv["--"] = notFlags;
   } else {
-    for (const key of notFlags) {
-      argv._.push(key);
-    }
+    argv._.push(...notFlags);
   }
 
   return argv as Args<TArgs, TDoubleDash>;
