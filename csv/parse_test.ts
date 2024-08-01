@@ -257,7 +257,7 @@ Deno.test({
         assertThrows(
           () => parse(input, { fieldsPerRecord: 0 }),
           SyntaxError,
-          "record on line 2: wrong number of fields",
+          "record on line 2: expected 3 fields but got 2",
         );
       },
     });
@@ -268,7 +268,7 @@ Deno.test({
         assertThrows(
           () => parse(input, { fieldsPerRecord: 2 }),
           SyntaxError,
-          "record on line 1: wrong number of fields",
+          "record on line 1: expected 2 fields but got 3",
         );
       },
     });
