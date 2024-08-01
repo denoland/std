@@ -139,19 +139,6 @@ export class CsvParseStream<
 
   /** Construct a new instance.
    *
-   * @example Usage
-   * ```ts no-assert
-   * import { CsvParseStream } from "@std/csv/parse-stream";
-   *
-   * const source = ReadableStream.from([
-   *   "name,age",
-   *   "Alice,34",
-   *   "Bob,24",
-   *   "Charlie,45",
-   * ]);
-   * const parts = source.pipeThrough(new CsvParseStream());
-   * ```
-   *
    * @param options Options for the stream.
    */
   constructor(options?: T) {

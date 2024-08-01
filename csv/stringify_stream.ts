@@ -54,25 +54,6 @@ export class CsvStringifyStream<TOptions extends CsvStringifyStreamOptions>
   /**
    * Construct a new instance.
    *
-   * @example Usage
-   * ```ts no-assert
-   * import { CsvStringifyStream } from "@std/csv/stringify-stream";
-   *
-   * const path = await Deno.makeTempFile();
-   *
-   * const file = await Deno.open(path, { create: true, write: true });
-   * const readable = ReadableStream.from([
-   *   { id: 1, name: "one" },
-   *   { id: 2, name: "two" },
-   *   { id: 3, name: "three" },
-   * ]);
-   *
-   * await readable
-   *   .pipeThrough(new CsvStringifyStream({ columns: ["id", "name"] }))
-   *   .pipeThrough(new TextEncoderStream())
-   *   .pipeTo(file.writable);
-   * ```
-   *
    * @param options Options for the stream.
    */
   constructor(options?: TOptions) {

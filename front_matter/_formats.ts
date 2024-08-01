@@ -1,51 +1,39 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-type Delimiter = string | [begin: string, end: string];
+const BOM = "\\ufeff?";
 
-function getBeginToken(delimiter: Delimiter): string {
-  return Array.isArray(delimiter) ? delimiter[0] : delimiter;
-}
+const YAML_DELIMITER = "= yaml =|---";
+const YAML_HEADER = `(---yaml|${YAML_DELIMITER})`;
+const YAML_FOOTER = `(?:---|${YAML_DELIMITER})`;
 
-function getEndToken(delimiter: Delimiter): string {
-  return Array.isArray(delimiter) ? delimiter[1] : delimiter;
-}
+const TOML_DELIMITER = "\\+\\+\\+|= toml =";
+const TOML_HEADER = `(---toml|${TOML_DELIMITER})`;
+const TOML_FOOTER = `(?:---|${TOML_DELIMITER})`;
 
-function createRegExps(delimiters: Delimiter[]): [RegExp, RegExp] {
-  const beginPattern = "(" + delimiters.map(getBeginToken).join("|") + ")";
-  const pattern = "^(" +
-    "\\ufeff?" + // Maybe byte order mark
-    beginPattern +
-    "$([\\s\\S]+?)" +
-    "^(?:" + delimiters.map(getEndToken).join("|") + ")\\s*" +
-    "$" +
-    (globalThis?.Deno?.build?.os === "windows" ? "\\r?" : "") +
-    "(?:\\n)?)";
+const JSON_DELIMITER = `= json =`;
+const JSON_HEADER = `(---json|${JSON_DELIMITER})`;
+const JSON_FOOTER = `(?:---|${JSON_DELIMITER})`;
 
-  return [
-    new RegExp("^" + beginPattern + "$", "im"),
-    new RegExp(pattern, "im"),
-  ];
-}
+const DATA = "([\\s\\S]+?)";
+const NEWLINE = `${
+  globalThis?.Deno?.build?.os === "windows" ? "\\r?" : ""
+}(?:\\n)?`;
 
-export const [RECOGNIZE_YAML_REGEXP, EXTRACT_YAML_REGEXP] = createRegExps(
-  [
-    ["---yaml", "---"],
-    "= yaml =",
-    "---",
-  ],
+export const RECOGNIZE_YAML_REGEXP = new RegExp(`^${YAML_HEADER}$`, "im");
+export const RECOGNIZE_TOML_REGEXP = new RegExp(`^${TOML_HEADER}$`, "im");
+export const RECOGNIZE_JSON_REGEXP = new RegExp(`^${JSON_HEADER}$`, "im");
+
+export const EXTRACT_YAML_REGEXP = new RegExp(
+  `^(${BOM}${YAML_HEADER}$${DATA}^${YAML_FOOTER}\\s*$${NEWLINE})`,
+  "im",
 );
-export const [RECOGNIZE_TOML_REGEXP, EXTRACT_TOML_REGEXP] = createRegExps(
-  [
-    ["---toml", "---"],
-    "\\+\\+\\+",
-    "= toml =",
-  ],
+export const EXTRACT_TOML_REGEXP = new RegExp(
+  `^(${BOM}${TOML_HEADER}$${DATA}^${TOML_FOOTER}\\s*$${NEWLINE})`,
+  "im",
 );
-export const [RECOGNIZE_JSON_REGEXP, EXTRACT_JSON_REGEXP] = createRegExps(
-  [
-    ["---json", "---"],
-    "= json =",
-  ],
+export const EXTRACT_JSON_REGEXP = new RegExp(
+  `^(${BOM}${JSON_HEADER}$${DATA}^${JSON_FOOTER}\\s*$${NEWLINE})`,
+  "im",
 );
 
 export const RECOGNIZE_REGEXP_MAP = new Map([
