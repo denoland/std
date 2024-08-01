@@ -45,7 +45,7 @@ Deno.test({
     await assertRejects(
       () => reader.read(),
       SyntaxError,
-      `record on line 4; parse error on line 5, column 0: extraneous or missing " in quoted-field`,
+      `record on line 4; parse error on line 5, column 1: extraneous or missing " in quoted-field`,
     );
   },
 });

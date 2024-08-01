@@ -159,7 +159,6 @@ export async function parseRecord(
           // Hit end of line (copy all data so far).
           recordBuffer += line;
           const r = await reader.readLine();
-          zeroBasedLine++;
           line = r ?? ""; // This is a workaround for making this module behave similarly to the encoding/csv/reader.go.
           fullLine = line;
           if (r === null) {
@@ -177,6 +176,7 @@ export async function parseRecord(
             fieldIndexes.push(recordBuffer.length);
             break parseField;
           }
+          zeroBasedLine++;
           recordBuffer += "\n"; // preserve line feed (This is because TextProtoReader removes it.)
         } else {
           // Abrupt end of file (EOF on error).

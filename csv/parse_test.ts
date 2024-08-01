@@ -381,7 +381,8 @@ Deno.test({
     await t.step({
       name: "StartLine1", // Issue 19019
       fn() {
-        const input = 'a,"b\nc"d,e';
+        const input = `a,"b
+c"d,e`;
         assertThrows(
           () => parse(input, { fieldsPerRecord: 2 }),
           SyntaxError,
@@ -392,11 +393,29 @@ Deno.test({
     await t.step({
       name: "StartLine2",
       fn() {
-        const input = 'a,b\n"d\n\n,e';
+        const input = `a,b
+"d
+
+,e`;
         assertThrows(
           () => parse(input, { fieldsPerRecord: 2 }),
           SyntaxError,
-          'record on line 2; parse error on line 5, column 1: extraneous or missing " in quoted-field',
+          'record on line 2; parse error on line 4, column 1: extraneous or missing " in quoted-field',
+        );
+      },
+    });
+    await t.step({
+      name: "ParseErrorLine",
+      fn() {
+        const input = `id,name
+
+1,foo
+2,"baz
+`;
+        assertThrows(
+          () => parse(input),
+          SyntaxError,
+          'record on line 4; parse error on line 4, column 1: extraneous or missing " in quoted-field',
         );
       },
     });

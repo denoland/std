@@ -163,7 +163,6 @@ class Parser {
             // Hit end of line (copy all data so far).
             recordBuffer += line;
             const r = this.#readLine();
-            zeroBasedLine++;
             line = r ?? ""; // This is a workaround for making this module behave similarly to the encoding/csv/reader.go.
             fullLine = line;
             if (r === null) {
@@ -181,6 +180,7 @@ class Parser {
               fieldIndexes.push(recordBuffer.length);
               break parseField;
             }
+            zeroBasedLine++;
             recordBuffer += "\n"; // preserve line feed (This is because TextProtoReader removes it.)
           } else {
             // Abrupt end of file (EOF on error).
