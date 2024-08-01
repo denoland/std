@@ -472,20 +472,21 @@ export class CsvParseStream<
    * The instance's {@linkcode ReadableStream}.
    *
    * @example Usage
-   * ```ts no-assert
+   * ```ts
    * import { CsvParseStream } from "@std/csv/parse-stream";
+   * import { assertEquals } from "@std/assert/equals";
    *
    * const source = ReadableStream.from([
-   *   "name,age",
-   *   "Alice,34",
-   *   "Bob,24",
-   *   "Charlie,45",
+   *   "name,age\n",
+   *   "Alice,34\n",
+   *   "Bob,24\n",
    * ]);
-   * const parseStream = new CsvParseStream();
+   * const parseStream = new CsvParseStream({ skipFirstRow: true });
    * const parts = source.pipeTo(parseStream.writable);
-   * for await (const part of parseStream.readable) {
-   *   console.log(part);
-   * }
+   * assertEquals(await Array.fromAsync(parseStream.readable), [
+   *   { name: "Alice", age: "34" },
+   *   { name: "Bob", age: "24" },
+   * ]);
    * ```
    *
    * @returns The instance's {@linkcode ReadableStream}.
@@ -498,20 +499,21 @@ export class CsvParseStream<
    * The instance's {@linkcode WritableStream}.
    *
    * @example Usage
-   * ```ts no-assert
+   * ```ts
    * import { CsvParseStream } from "@std/csv/parse-stream";
+   * import { assertEquals } from "@std/assert/equals";
    *
    * const source = ReadableStream.from([
-   *   "name,age",
-   *   "Alice,34",
-   *   "Bob,24",
-   *   "Charlie,45",
+   *   "name,age\n",
+   *   "Alice,34\n",
+   *   "Bob,24\n",
    * ]);
-   * const parseStream = new CsvParseStream();
+   * const parseStream = new CsvParseStream({ skipFirstRow: true });
    * const parts = source.pipeTo(parseStream.writable);
-   * for await (const part of parseStream.readable) {
-   *   console.log(part);
-   * }
+   * assertEquals(await Array.fromAsync(parseStream.readable), [
+   *   { name: "Alice", age: "34" },
+   *   { name: "Bob", age: "24" },
+   * ]);
    * ```
    *
    * @returns The instance's {@linkcode WritableStream}.
