@@ -18,7 +18,7 @@ export type MemoizeOptions<
 > = {
   /**
    * Provide a custom cache for getting previous results. By default, a new
-   * `Map` object is instantiated upon memoization and used as a cache, with no
+   * {@linkcode Map} object is instantiated upon memoization and used as a cache, with no
    * limit on the number of results to be cached.
    *
    * Alternatively, you can supply a {@linkcode LruCache} with a specified max
