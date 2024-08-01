@@ -27,7 +27,7 @@ import {
 /**
  * Name of the schema to use.
  *
- * > ![NOTE]
+ * > [!NOTE]
  * > It is recommended to use the schema that is most appropriate for your use
  * > case. Doing so will avoid any unnecessary processing and benefit
  * > performance.
@@ -37,7 +37,7 @@ import {
  * strings.
  * - `json`: extends `failsafe` schema by also supporting nulls, booleans,
  * integers and floats.
- * - `core`: extends `json` schema by also supporting tag resolution.
+ * - `core`: functionally the same as `json` schema.
  * - `default`: extends `core` schema by also supporting binary, omap, pairs and
  * set types.
  * - `extended`: extends `default` schema by also supporting regular

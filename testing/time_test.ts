@@ -700,7 +700,7 @@ Deno.test("FakeTime can be constructed with number, Date, or string", () => {
 });
 
 Deno.test("FakeTime throws when NaN is provided", () => {
-  assertThrows(() => new FakeTime(NaN), TimeError, "Invalid start");
+  assertThrows(() => new FakeTime(NaN), TypeError, "Invalid start time");
 });
 
 Deno.test("FakeTime.restore() throws when the time is already restored", () => {
@@ -721,8 +721,8 @@ Deno.test("time.now = N throws when N < time.now", () => {
     () => {
       time.now = 999;
     },
-    Error,
-    "time cannot go backwards",
+    RangeError,
+    "Time cannot go backwards",
   );
 });
 

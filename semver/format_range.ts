@@ -2,10 +2,13 @@
 // This module is browser compatible.
 import { format } from "./format.ts";
 import type { Comparator, Range } from "./types.ts";
+import { isWildcardComparator } from "./_shared.ts";
 
 function formatComparator(comparator: Comparator): string {
   const { operator } = comparator;
-  return `${operator === undefined ? "" : operator}${format(comparator)}`;
+  return `${operator === undefined ? "" : operator}${
+    isWildcardComparator(comparator) ? "*" : format(comparator)
+  }`;
 }
 
 /**
