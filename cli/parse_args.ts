@@ -534,10 +534,11 @@ export function parseArgs<
   let allBools = false;
 
   if (alias) {
-    for (const key in alias) {
-      const val = (alias as Record<string, unknown>)[key];
-      if (val === undefined) throw new TypeError("Alias value must be defined");
-      const aliases = Array.isArray(val) ? val : [val];
+    for (const [key, value] of Object.entries(alias)) {
+      if (value === undefined) {
+        throw new TypeError("Alias value must be defined");
+      }
+      const aliases = Array.isArray(value) ? value : [value];
       aliasMap.set(key, new Set(aliases));
       aliases.forEach((alias) =>
         aliasMap.set(
@@ -624,6 +625,7 @@ export function parseArgs<
     args = args.slice(0, index);
   }
 
+  argsLoop:
   for (let i = 0; i < args.length; i++) {
     const arg = args[i]!;
 
@@ -679,7 +681,6 @@ export function parseArgs<
       }
       const letters = arg.slice(1, -1).split("");
 
-      let broken = false;
       for (const [j, letter] of letters.entries()) {
         const next = arg.slice(j + 2);
 
@@ -692,20 +693,17 @@ export function parseArgs<
           const groups = VALUE_REGEXP.exec(next)?.groups;
           if (groups) {
             setArgument(letter, groups.value!, arg, true);
-            broken = true;
-            break;
+            continue argsLoop;
           }
           if (NUMBER_REGEXP.test(next)) {
             setArgument(letter, next, arg, true);
-            broken = true;
-            break;
+            continue argsLoop;
           }
         }
 
         if (letters[j + 1] && letters[j + 1]!.match(SPECIAL_CHAR_REGEXP)) {
           setArgument(letter, arg.slice(j + 2), arg, true);
-          broken = true;
-          break;
+          continue argsLoop;
         }
         setArgument(
           letter,
@@ -716,26 +714,25 @@ export function parseArgs<
       }
 
       key = arg.slice(-1);
-      if (!broken && key !== "-") {
-        const nextArg = args[i + 1];
-        if (
-          nextArg &&
-          !HYPHEN_REGEXP.test(nextArg) &&
-          !booleanSet.has(key) &&
-          (aliasMap.get(key)
-            ? !aliasIsBoolean(aliasMap, booleanSet, key)
-            : true)
-        ) {
-          setArgument(key, nextArg, arg, true);
-          i++;
-        } else if (nextArg && isBooleanString(nextArg)) {
-          const value = parseBooleanString(nextArg);
-          setArgument(key, value, arg, true);
-          i++;
-        } else {
-          setArgument(key, stringSet.has(key) ? "" : true, arg, true);
-        }
+      if (key === "-") continue;
+
+      const nextArg = args[i + 1];
+      if (
+        nextArg &&
+        !HYPHEN_REGEXP.test(nextArg) &&
+        !booleanSet.has(key) &&
+        (aliasMap.get(key) ? !aliasIsBoolean(aliasMap, booleanSet, key) : true)
+      ) {
+        setArgument(key, nextArg, arg, true);
+        i++;
+      } else if (nextArg && isBooleanString(nextArg)) {
+        const value = parseBooleanString(nextArg);
+        setArgument(key, value, arg, true);
+        i++;
+      } else {
+        setArgument(key, stringSet.has(key) ? "" : true, arg, true);
       }
+
       continue;
     }
 
