@@ -108,17 +108,209 @@ export type RowType<T> = T extends undefined ? string[]
  * A `CsvParseStream` expects input conforming to
  * {@link https://www.rfc-editor.org/rfc/rfc4180.html | RFC 4180}.
  *
- * @example Usage
- * ```ts no-assert
+ * @example default options
+ * ```ts
  * import { CsvParseStream } from "@std/csv/parse-stream";
+ * import { assertEquals } from "@std/assert/equals";
+ * import { assertType, IsExact } from "@std/testing/types"
  *
  * const source = ReadableStream.from([
- *   "name,age",
- *   "Alice,34",
- *   "Bob,24",
- *   "Charlie,45",
+ *   "name,age\n",
+ *   "Alice,34\n",
+ *   "Bob,24\n",
  * ]);
- * const parts = source.pipeThrough(new CsvParseStream());
+ * const stream = source.pipeThrough(new CsvParseStream());
+ * const result = await Array.fromAsync(stream);
+ *
+ * assertEquals(result, [
+ *   ["name", "age"],
+ *   ["Alice", "34"],
+ *   ["Bob", "24"],
+ * ]);
+ * assertType<IsExact<typeof result, string[][]>>(true);
+ * ```
+ *
+ * @example skipFirstRow: true
+ * ```ts
+ * import { CsvParseStream } from "@std/csv/parse-stream";
+ * import { assertEquals } from "@std/assert/equals";
+ * import { assertType, IsExact } from "@std/testing/types"
+ *
+ * const source = ReadableStream.from([
+ *   "name,age\n",
+ *   "Alice,34\n",
+ *   "Bob,24\n",
+ * ]);
+ * const stream = source.pipeThrough(new CsvParseStream({ skipFirstRow: true }));
+ * const result = await Array.fromAsync(stream);
+ *
+ * assertEquals(result, [
+ *   { name: "Alice", age: "34" },
+ *   { name: "Bob", age: "24" },
+ * ]);
+ * assertType<IsExact<typeof result, Record<string, string | undefined>[]>>(true);
+ * ```
+ *
+ * @example specify columns
+ * ```ts
+ * import { CsvParseStream } from "@std/csv/parse-stream";
+ * import { assertEquals } from "@std/assert/equals";
+ * import { assertType, IsExact } from "@std/testing/types"
+ *
+ * const source = ReadableStream.from([
+ *   "Alice,34\n",
+ *   "Bob,24\n",
+ * ]);
+ * const stream = source.pipeThrough(new CsvParseStream({
+ *   columns: ["name", "age"]
+ * }));
+ * const result = await Array.fromAsync(stream);
+ *
+ * assertEquals(result, [
+ *   { name: "Alice", age: "34" },
+ *   { name: "Bob", age: "24" },
+ * ]);
+ * assertType<IsExact<typeof result, Record<"name" | "age", string>[]>>(true);
+ * ```
+ *
+ * @example specify columns with skipFirstRow
+ * ```ts
+ * import { CsvParseStream } from "@std/csv/parse-stream";
+ * import { assertEquals } from "@std/assert/equals";
+ * import { assertType, IsExact } from "@std/testing/types"
+ *
+ * const source = ReadableStream.from([
+ *   "Alice,34\n",
+ *   "Bob,24\n",
+ * ]);
+ * const stream = source.pipeThrough(new CsvParseStream({
+ *   columns: ["name", "age"],
+ *   skipFirstRow: true,
+ * }));
+ * const result = await Array.fromAsync(stream);
+ *
+ * assertEquals(result, [{ name: "Bob", age: "24" }]);
+ * assertType<IsExact<typeof result, Record<"name" | "age", string>[]>>(true);
+ * ```
+ *
+ * @example TSV (tab-separated values)
+ * ```ts
+ * import { CsvParseStream } from "@std/csv/parse-stream";
+ * import { assertEquals } from "@std/assert/equals";
+ *
+ * const source = ReadableStream.from([
+ *   "Alice\t34\n",
+ *   "Bob\t24\n",
+ * ]);
+ * const stream = source.pipeThrough(new CsvParseStream({
+ *   separator: "\t",
+ * }));
+ * const result = await Array.fromAsync(stream);
+ *
+ * assertEquals(result, [
+ *   ["Alice", "34"],
+ *   ["Bob", "24"],
+ * ]);
+ * ```
+ *
+ * @example trimLeadingSpace: true
+ * ```ts
+ * import { CsvParseStream } from "@std/csv/parse-stream";
+ * import { assertEquals } from "@std/assert/equals";
+ *
+ * const source = ReadableStream.from([
+ *   "      Alice,34\n          ",
+ *   "Bob,     24\n",
+ * ]);
+ * const stream = source.pipeThrough(new CsvParseStream({
+ *   trimLeadingSpace: true,
+ * }));
+ * const result = await Array.fromAsync(stream);
+ *
+ * assertEquals(result, [
+ *   ["Alice", "34"],
+ *   ["Bob", "24"],
+ * ]);
+ * ```
+ *
+ * @example Quoted fields
+ * ```ts
+ * import { CsvParseStream } from "@std/csv/parse-stream";
+ * import { assertEquals } from "@std/assert/equals";
+ *
+ * const source = ReadableStream.from([
+ *   `"a ""word""","com`,
+ *   `ma,","newline`,
+ *   `\n"\nfoo,bar,b`,
+ *   `az\n`,
+ * ]);
+ * const stream = source.pipeThrough(new CsvParseStream());
+ * const result = await Array.fromAsync(stream);
+ *
+ * assertEquals(result, [
+ *   ['a "word"', "comma,", "newline\n"],
+ *   ["foo", "bar", "baz"]
+ * ]);
+ * ```
+ *
+ * @example lazyQuotes: true
+ * ```ts
+ * import { CsvParseStream } from "@std/csv/parse-stream";
+ * import { assertEquals } from "@std/assert/equals";
+ *
+ * const source = ReadableStream.from([
+ *   `a "word","1"`,
+ *   `2",a","b`,
+ * ]);
+ * const stream = source.pipeThrough(new CsvParseStream({
+ *   lazyQuotes: true,
+ * }));
+ * const result = await Array.fromAsync(stream);
+ *
+ * assertEquals(result, [['a "word"', '1"2', 'a"', 'b']]);
+ * ```
+ *
+ * @example comment
+ * ```ts
+ * import { CsvParseStream } from "@std/csv/parse-stream";
+ * import { assertEquals } from "@std/assert/equals";
+ *
+ * const source = ReadableStream.from([
+ *   "Alice,34\n",
+ *   "# THIS IS A COMMENT\n",
+ *   "Bob,24\n",
+ * ]);
+ * const stream = source.pipeThrough(new CsvParseStream({
+ *   comment: "#",
+ * }));
+ * const result = await Array.fromAsync(stream);
+ *
+ * assertEquals(result, [
+ *   ["Alice", "34"],
+ *   ["Bob", "24"],
+ * ]);
+ * ```
+ *
+ * @example fieldsPerRecord: 0 (infer the number of fields from the first row)
+ * ```ts
+ * import { CsvParseStream } from "@std/csv/parse-stream";
+ * import { assertEquals } from "@std/assert/equals";
+ *
+ * const source = ReadableStream.from([
+ *   "Alice,34\n",
+ *   "Bob,24,CA\n", // Note that this row has more fields than the first row
+ * ]);
+ * const stream = source.pipeThrough(new CsvParseStream({
+ *   fieldsPerRecord: 0,
+ * }));
+ * for await (const row of stream) {
+ * }
+ * const result = await Array.fromAsync(stream);
+ *
+ * assertEquals(result, [
+ *   ["Alice", "34"],
+ *   ["Bob", "24"],
+ * ]);
  * ```
  *
  * @typeParam T The type of options for the stream.
