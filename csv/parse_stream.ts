@@ -135,6 +135,17 @@ export class CsvParseStream<
   #lineIndex = 0;
   #isFirstRow = true;
 
+  // The number of fields per record that is either inferred from the first row
+  // (when options.fieldsPerRecord = 0), or set by the caller (when
+  // options.fieldsPerRecord > 0).
+  //
+  // Each possible variant means the following:
+  // "ANY": Variable number of fields is allowed.
+  // "UNINITIALIZED": The first row has not been read yet. Once it's read, the
+  //                  number of fields will be set.
+  // <number>: The number of fields per record that every record must follow.
+  #fieldsPerRecord: "ANY" | "UNINITIALIZED" | number;
+
   #headers: readonly string[] = [];
 
   /** Construct a new instance.
@@ -146,6 +157,18 @@ export class CsvParseStream<
       ...defaultReadOptions,
       ...options,
     };
+
+    if (
+      this.#options.fieldsPerRecord === undefined ||
+      this.#options.fieldsPerRecord < 0
+    ) {
+      this.#fieldsPerRecord = "ANY";
+    } else if (this.#options.fieldsPerRecord === 0) {
+      this.#fieldsPerRecord = "UNINITIALIZED";
+    } else {
+      // TODO: Should we check if it's a valid integer?
+      this.#fieldsPerRecord = this.#options.fieldsPerRecord;
+    }
 
     this.#lines = new TextDelimiterStream("\n");
     this.#lineReader = new StreamLineReader(this.#lines.readable.getReader());
@@ -198,6 +221,21 @@ export class CsvParseStream<
       if (this.#options.skipFirstRow) {
         return this.#pull(controller);
       }
+
+      if (this.#fieldsPerRecord === "UNINITIALIZED") {
+        this.#fieldsPerRecord = record.length;
+      }
+    }
+
+    if (
+      typeof this.#fieldsPerRecord === "number" &&
+      record.length !== this.#fieldsPerRecord
+    ) {
+      throw new SyntaxError(
+        `record on line ${
+          this.#lineIndex + 1
+        }: expected ${this.#fieldsPerRecord} fields but got ${record.length}`,
+      );
     }
 
     this.#lineIndex++;
