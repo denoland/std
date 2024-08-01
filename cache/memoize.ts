@@ -10,7 +10,8 @@ export type MemoizationCache<K, V> = {
   delete: (key: K) => unknown;
 };
 
-export type MemoizationOptions<
+/** Options for {@linkcode memoize}. */
+export type MemoizeOptions<
   Fn extends (...args: never[]) => unknown,
   Key,
   Cache extends MemoizationCache<Key, ReturnType<Fn>>,
