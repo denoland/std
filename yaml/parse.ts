@@ -5,25 +5,36 @@
 // This module is browser compatible.
 
 import { load, loadDocuments } from "./_loader.ts";
-import { SCHEMA_MAP } from "./_schema.ts";
+import { SCHEMA_MAP, type SchemaType } from "./_schema.ts";
 
-/**
- * Options for parsing YAML.
- */
+export type { SchemaType };
+
+/** Options for {@linkcode parse}. */
 export interface ParseOptions {
-  /** Name of the schema to use.*/
-  schema?: "core" | "default" | "failsafe" | "json" | "extended";
-  /** compatibility with JSON.parse behaviour. */
+  /**
+   * Name of the schema to use.
+   *
+   * @default {"default"}
+   */
+  schema?: SchemaType;
+  /**
+   * If `true`, duplicate keys will overwrite previous values. Otherwise,
+   * duplicate keys will throw a {@linkcode SyntaxError}.
+   *
+   * @default {false}
+   */
   allowDuplicateKeys?: boolean;
-  /** function to call on warning messages. */
-  onWarning?(error?: Error): void;
+  /**
+   * If defined, a function to call on warning messages taking an
+   * {@linkcode Error} as its only argument.
+   */
+  onWarning?(error: Error): void;
 }
 
 /**
- * Parse `content` as single YAML document, and return it.
+ * Parse and return a YAML string as a parsed YAML document object.
  *
- * This function does not support regexps, functions, and undefined by default.
- * This method is safe for parsing untrusted data.
+ * Note: This does not support functions. Untrusted data is safe to parse.
  *
  * @example Usage
  * ```ts
@@ -38,7 +49,7 @@ export interface ParseOptions {
  * assertEquals(data, { id: 1, name: "Alice" });
  * ```
  *
- * @throws {YamlError} Throws error on invalid YAML.
+ * @throws {SyntaxError} Throws error on invalid YAML.
  * @param content YAML string to parse.
  * @param options Parsing options.
  * @returns Parsed document.
@@ -51,8 +62,8 @@ export function parse(
 }
 
 /**
- * Same as `parse()`, but understands multi-document sources.
- * Applies iterator to each document if specified, or returns array of documents.
+ * Same as {@linkcode parse}, but understands multi-document YAML sources, and
+ * returns multiple parsed YAML document objects.
  *
  * @example Usage
  * ```ts

@@ -207,8 +207,6 @@ for (const s of scenes) {
           "--no-lock",
           "--quiet",
           "--no-prompt",
-          "--config",
-          "deno.json",
         ];
 
         if (s.read) {

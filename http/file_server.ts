@@ -40,7 +40,7 @@ import { relative } from "@std/path/relative";
 import { resolve } from "@std/path/resolve";
 import { SEPARATOR_PATTERN } from "@std/path/constants";
 import { contentType } from "@std/media-types/content-type";
-import { calculate, ifNoneMatch } from "./etag.ts";
+import { eTag, ifNoneMatch } from "./etag.ts";
 import {
   isRedirectStatus,
   STATUS_CODE,
@@ -67,7 +67,7 @@ const DENO_DEPLOYMENT_ID = ENV_PERM_STATUS === "granted"
   ? Deno.env.get("DENO_DEPLOYMENT_ID")
   : undefined;
 const HASHED_DENO_DEPLOYMENT_ID = DENO_DEPLOYMENT_ID
-  ? calculate(DENO_DEPLOYMENT_ID, { weak: true })
+  ? eTag(DENO_DEPLOYMENT_ID, { weak: true })
   : undefined;
 
 function modeToString(isDir: boolean, maybeMode: number | null): string {
@@ -141,7 +141,13 @@ export interface ServeFileOptions {
    * @default {"SHA-256"}
    */
   etagAlgorithm?: AlgorithmIdentifier;
-  /** An optional FileInfo object returned by Deno.stat. It is used for optimization purposes. */
+  /**
+   * An optional object returned by {@linkcode Deno.stat}. It is used for
+   * optimization purposes.
+   *
+   * Defaults to the result of calling {@linkcode Deno.stat} with the provided
+   * `filePath`.
+   */
   fileInfo?: Deno.FileInfo;
 }
 
@@ -159,13 +165,16 @@ export interface ServeFileOptions {
  *
  * @param req The server request context used to cleanup the file handle.
  * @param filePath Path of the file to serve.
+ * @param options Additional options.
  * @returns A response for the request.
  */
 export async function serveFile(
   req: Request,
   filePath: string,
-  { etagAlgorithm: algorithm, fileInfo }: ServeFileOptions = {},
+  options?: ServeFileOptions,
 ): Promise<Response> {
+  let { etagAlgorithm: algorithm, fileInfo } = options ?? {};
+
   try {
     fileInfo ??= await Deno.stat(filePath);
   } catch (error) {
@@ -190,7 +199,7 @@ export async function serveFile(
   }
 
   const etag = fileInfo.mtime
-    ? await calculate(fileInfo, { algorithm })
+    ? await eTag(fileInfo, { algorithm })
     : await HASHED_DENO_DEPLOYMENT_ID;
 
   // Set last modified header if last modification timestamp is available
@@ -544,8 +553,6 @@ export interface ServeDirOptions {
    */
   fsRoot?: string;
   /** Specified that part is stripped from the beginning of the requested pathname.
-   *
-   * @default {undefined}
    */
   urlRoot?: string;
   /** Enable directory listing.
@@ -823,7 +830,13 @@ function main() {
   const useTls = !!(keyFile && certFile);
 
   function onListen({ port, hostname }: { port: number; hostname: string }) {
-    const networkAddress = getNetworkAddress();
+    let networkAddress: string | undefined = undefined;
+    if (
+      Deno.permissions.querySync({ name: "sys", kind: "networkInterfaces" })
+        .state === "granted"
+    ) {
+      networkAddress = getNetworkAddress();
+    }
     const protocol = useTls ? "https" : "http";
     let message = `Listening on:\n- Local: ${protocol}://${hostname}:${port}`;
     if (networkAddress && !DENO_DEPLOYMENT_ID) {
