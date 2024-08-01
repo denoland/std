@@ -534,10 +534,11 @@ export function parseArgs<
   let allBools = false;
 
   if (alias) {
-    for (const key in alias) {
-      const val = (alias as Record<string, unknown>)[key];
-      if (val === undefined) throw new TypeError("Alias value must be defined");
-      const aliases = Array.isArray(val) ? val : [val];
+    for (const [key, value] of Object.entries(alias)) {
+      if (value === undefined) {
+        throw new TypeError("Alias value must be defined");
+      }
+      const aliases = Array.isArray(value) ? value : [value];
       aliasMap.set(key, new Set(aliases));
       aliases.forEach((alias) =>
         aliasMap.set(
