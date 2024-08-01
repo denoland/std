@@ -53,5 +53,6 @@ const POTENTIAL_CUSTOM_ELEMENT_NAME_CHARS =
  */
 export function isValidCustomElementName(elementName: string): boolean {
   return !FORBIDDEN_CUSTOM_ELEMENT_NAMES.includes(elementName) &&
-    POTENTIAL_CUSTOM_ELEMENT_NAME_CHARS.test(elementName);
+    POTENTIAL_CUSTOM_ELEMENT_NAME_CHARS.test(elementName) &&
+    elementName.includes("-");
 }

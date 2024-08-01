@@ -33,14 +33,19 @@ Deno.test("isValidCustomElementName()", async (t) => {
   });
 
   await t.step("handles custom names with underscores", () => {
-    assertEquals(isValidCustomElementName("custom_element"), true);
+    assertEquals(isValidCustomElementName("custom_element"), false);
   });
 
   await t.step("handles custom names with points", () => {
-    assertEquals(isValidCustomElementName("custom.element"), true);
+    assertEquals(isValidCustomElementName("custom.element"), false);
   });
 
   await t.step("handles valid custom names", () => {
     assertEquals(isValidCustomElementName("custom-element"), true);
+  });
+
+  await t.step("handles large variety of names", () => {
+    assertEquals(isValidCustomElementName("math-α"), true);
+    assertEquals(isValidCustomElementName("emotion-😍"), true);
   });
 });
