@@ -24,7 +24,7 @@ Deno.test("isValidCustomElementName()", async (t) => {
     assertEquals(isValidCustomElementName("Custom-element"), false);
   });
 
-  await t.step("handles custom names with especial chars", () => {
+  await t.step("handles custom names with special chars", () => {
     assertEquals(isValidCustomElementName("custom-element@"), false);
   });
 
