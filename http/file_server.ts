@@ -43,8 +43,8 @@ import { contentType } from "@std/media-types/content-type";
 import { eTag, ifNoneMatch } from "./etag.ts";
 import {
   isRedirectStatus,
-  STATUS_CODE,
-  STATUS_TEXT,
+  STATUS_CODES,
+  STATUS_TEXTS,
   type StatusCode,
 } from "./status.ts";
 import { ByteSliceStream } from "@std/streams/byte-slice-stream";
@@ -90,7 +90,7 @@ function modeToString(isDir: boolean, maybeMode: number | null): string {
 }
 
 function createStandardResponse(status: StatusCode, init?: ResponseInit) {
-  const statusText = STATUS_TEXT[status];
+  const statusText = STATUS_TEXTS[status];
   return new Response(statusText, { status, statusText, ...init });
 }
 
@@ -180,7 +180,7 @@ export async function serveFile(
   } catch (error) {
     if (error instanceof Deno.errors.NotFound) {
       await req.body?.cancel();
-      return createStandardResponse(STATUS_CODE.NotFound);
+      return createStandardResponse(STATUS_CODES.NotFound);
     } else {
       throw error;
     }
@@ -188,7 +188,7 @@ export async function serveFile(
 
   if (fileInfo.isDirectory) {
     await req.body?.cancel();
-    return createStandardResponse(STATUS_CODE.NotFound);
+    return createStandardResponse(STATUS_CODES.NotFound);
   }
 
   const headers = createBaseHeaders();
@@ -224,10 +224,10 @@ export async function serveFile(
         fileInfo.mtime.getTime() <
           new Date(ifModifiedSinceValue).getTime() + 1000)
     ) {
-      const status = STATUS_CODE.NotModified;
+      const status = STATUS_CODES.NotModified;
       return new Response(null, {
         status,
-        statusText: STATUS_TEXT[status],
+        statusText: STATUS_TEXTS[status],
         headers,
       });
     }
@@ -256,10 +256,10 @@ export async function serveFile(
       headers.set("content-length", `${fileSize}`);
 
       const file = await Deno.open(filePath);
-      const status = STATUS_CODE.OK;
+      const status = STATUS_CODES.OK;
       return new Response(file.readable, {
         status,
-        statusText: STATUS_TEXT[status],
+        statusText: STATUS_TEXTS[status],
         headers,
       });
     }
@@ -274,7 +274,7 @@ export async function serveFile(
       headers.set("content-range", `bytes */${fileSize}`);
 
       return createStandardResponse(
-        STATUS_CODE.RangeNotSatisfiable,
+        STATUS_CODES.RangeNotSatisfiable,
         { headers },
       );
     }
@@ -295,10 +295,10 @@ export async function serveFile(
     await file.seek(start, Deno.SeekMode.Start);
     const sliced = file.readable
       .pipeThrough(new ByteSliceStream(0, contentLength - 1));
-    const status = STATUS_CODE.PartialContent;
+    const status = STATUS_CODES.PartialContent;
     return new Response(sliced, {
       status,
-      statusText: STATUS_TEXT[status],
+      statusText: STATUS_TEXTS[status],
       headers,
     });
   }
@@ -307,10 +307,10 @@ export async function serveFile(
   headers.set("content-length", `${fileSize}`);
 
   const file = await Deno.open(filePath);
-  const status = STATUS_CODE.OK;
+  const status = STATUS_CODES.OK;
   return new Response(file.readable, {
     status,
-    statusText: STATUS_TEXT[status],
+    statusText: STATUS_TEXTS[status],
     headers,
   });
 }
@@ -388,24 +388,24 @@ async function serveDirIndex(
   const headers = createBaseHeaders();
   headers.set("content-type", "text/html; charset=UTF-8");
 
-  const status = STATUS_CODE.OK;
+  const status = STATUS_CODES.OK;
   return new Response(page, {
     status,
-    statusText: STATUS_TEXT[status],
+    statusText: STATUS_TEXTS[status],
     headers,
   });
 }
 
 function serveFallback(maybeError: unknown): Response {
   if (maybeError instanceof URIError) {
-    return createStandardResponse(STATUS_CODE.BadRequest);
+    return createStandardResponse(STATUS_CODES.BadRequest);
   }
 
   if (maybeError instanceof Deno.errors.NotFound) {
-    return createStandardResponse(STATUS_CODE.NotFound);
+    return createStandardResponse(STATUS_CODES.NotFound);
   }
 
-  return createStandardResponse(STATUS_CODE.InternalServerError);
+  return createStandardResponse(STATUS_CODES.InternalServerError);
 }
 
 function serverLog(req: Request, status: number) {
@@ -683,7 +683,7 @@ async function createServeDirResponse(
   let normalizedPath = posixNormalize(decodedUrl);
 
   if (urlRoot && !normalizedPath.startsWith("/" + urlRoot)) {
-    return createStandardResponse(STATUS_CODE.NotFound);
+    return createStandardResponse(STATUS_CODES.NotFound);
   }
 
   // Redirect paths like `/foo////bar` and `/foo/bar/////` to normalized paths.
@@ -755,7 +755,7 @@ async function createServeDirResponse(
     return serveDirIndex(fsPath, { urlRoot, showDotfiles, target, quiet });
   }
 
-  return createStandardResponse(STATUS_CODE.NotFound);
+  return createStandardResponse(STATUS_CODES.NotFound);
 }
 
 function logError(error: Error) {
