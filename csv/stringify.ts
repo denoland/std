@@ -219,23 +219,99 @@ function getValuesFromItem(
 /**
  * Converts an array of objects into a CSV string.
  *
- * @example Usage
+ * @example default options
+ * ```ts
+ * import { stringify } from "@std/csv/stringify";
+ * import { assertEquals } from "@std/assert/equals";
+ *
+ * const data = [
+ *   ["Rick", 70],
+ *   ["Morty", 14],
+ * ];
+ *
+ * assertEquals(stringify(data), `Rick,70\r\nMorty,14\r\n`);
+ * ```
+ *
+ * @example an array of objects and specify columns
+ * ```ts
+ * import { stringify } from "@std/csv/stringify";
+ * import { assertEquals } from "@std/assert/equals";
+ *
+ * const data = [
+ *   { name: "Rick", age: 70 },
+ *   { name: "Morty", age: 14 },
+ * ];
+ *
+ * const columns = ["name", "age"];
+ *
+ * assertEquals(stringify(data, { columns }), `name,age\r\nRick,70\r\nMorty,14\r\n`);
+ * ```
+ *
+ * @example an array of objects without specifying columns
+ * ```ts
+ * import { stringify } from "@std/csv/stringify";
+ * import { assertThrows } from "@std/assert/throws";
+ *
+ * const data = [
+ *   { name: "Rick", age: 70 },
+ *   { name: "Morty", age: 14 },
+ * ];
+ *
+ * assertThrows(
+ *   () => stringify(data),
+ *   TypeError,
+ *   "No property accessor function was provided for object",
+ * );
+ * ```
+ *
+ * @example an array of objects and specify columns with headers: false
+ * ```ts
+ * import { stringify } from "@std/csv/stringify";
+ * import { assertEquals } from "@std/assert/equals";
+ *
+ * const data = [
+ *   { name: "Rick", age: 70 },
+ *   { name: "Morty", age: 14 },
+ * ];
+ *
+ * const columns = ["name", "age"];
+ *
+ * assertEquals(
+ *   stringify(data, { columns, headers: false }),
+ *  `Rick,70\r\nMorty,14\r\n`,
+ * );
+ * ```
+ *
+ * @example an array of objects and specify columns with renaming
+ * ```ts
+ * import { stringify } from "@std/csv/stringify";
+ * import { assertEquals } from "@std/assert/equals";
+ *
+ * const data = [
+ *   { name: "Rick", age: 70 },
+ *   { name: "Morty", age: 14 },
+ * ];
+ *
+ * const columns = [
+ *   { prop: "name", header: "user name" },
+ *   "age",
+ * ];
+ *
+ * assertEquals(
+ *   stringify(data, { columns }),
+ *  `user name,age\r\nRick,70\r\nMorty,14\r\n`,
+ * );
+ * ```
+ *
+ * @example an array of objects with nested property and specify columns
  * ```ts
  * import {
  *   Column,
  *   stringify,
  * } from "@std/csv/stringify";
- * import { assertEquals } from "@std/assert";
+ * import { assertEquals } from "@std/assert/equals";
  *
- * type Character = {
- *   age: number;
- *   name: {
- *     first: string;
- *     last: string;
- *   };
- * };
- *
- * const data: Character[] = [
+ * const data = [
  *   {
  *     age: 70,
  *     name: {
@@ -252,12 +328,95 @@ function getValuesFromItem(
  *   },
  * ];
  *
- * let columns: Column[] = [
+ * const columns: Column[] = [
  *   ["name", "first"],
  *   "age",
  * ];
  *
- * assertEquals(stringify(data, { columns }), `first,age\r\nRick,70\r\nMorty,14\r\n`);
+ * assertEquals(
+ *   stringify(data, { columns }),
+ *  `first,age\r\nRick,70\r\nMorty,14\r\n`,
+ * );
+ * ```
+ *
+ * @example an array of objects with nested property and specify columns with renaming
+ * ```ts
+ * import {
+ *   Column,
+ *   stringify,
+ * } from "@std/csv/stringify";
+ * import { assertEquals } from "@std/assert/equals";
+ *
+ * const data = [
+ *   {
+ *     age: 70,
+ *     name: {
+ *       first: "Rick",
+ *       last: "Sanchez",
+ *     },
+ *   },
+ *   {
+ *     age: 14,
+ *     name: {
+ *       first: "Morty",
+ *       last: "Smith",
+ *     },
+ *   },
+ * ];
+ *
+ * const columns: Column[] = [
+ *   { prop: ["name", "first"], header: "first name" },
+ *   "age",
+ * ];
+ *
+ * assertEquals(
+ *   stringify(data, { columns }),
+ *  `first name,age\r\nRick,70\r\nMorty,14\r\n`,
+ * );
+ * ```
+ *
+ * @example an array of string arrays and specify columns with renaming
+ * ```ts
+ * import { stringify } from "@std/csv/stringify";
+ * import { assertEquals } from "@std/assert/equals";
+ *
+ * const data = [
+ *   ["Rick", 70],
+ *   ["Morty", 14],
+ * ];
+ *
+ * const columns = [
+ *   { prop: 0, header: "name" },
+ *   { prop: 1, header: "age" },
+ * ];
+ *
+ * assertEquals(
+ *   stringify(data, { columns }),
+ *  `name,age\r\nRick,70\r\nMorty,14\r\n`,
+ * );
+ * ```
+ *
+ * @example emit TSV (tab-separated values)
+ * ```ts
+ * import { stringify } from "@std/csv/stringify";
+ * import { assertEquals } from "@std/assert/equals";
+ *
+ * const data = [
+ *   ["Rick", 70],
+ *   ["Morty", 14],
+ * ];
+ *
+ * assertEquals(stringify(data, { separator: "\t" }), `Rick\t70\r\nMorty\t14\r\n`);
+ * ```
+ *
+ * @example bom: true
+ * ```ts
+ * import { stringify } from "@std/csv/stringify";
+ * import { assert } from "@std/assert/assert";
+ *
+ * const data = [];
+ *
+ * assert(stringify(data, { bom: true }).startsWith("\ufeff"));
  * ```
  *
  * @param data The source data to stringify. It's an array of items which are
