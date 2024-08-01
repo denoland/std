@@ -3,6 +3,7 @@
   "version": "0.224.5",
   "exports": {
     ".": "./mod.ts",
+    "./handler": "./handler.ts",
     "./base-handler": "./base_handler.ts",
     "./console-handler": "./console_handler.ts",
     "./critical": "./critical.ts",
