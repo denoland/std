@@ -650,26 +650,25 @@ export function parseArgs<
 
         const next = args[i + 1];
 
-        if (
-          !booleanSet.has(key) &&
-          !allBools &&
-          next &&
-          !IS_FLAG_REGEXP.test(next) &&
-          (aliasMap.get(key)
-            ? !aliasIsBoolean(aliasMap, booleanSet, key)
-            : true)
-        ) {
-          value = next;
-          i++;
-          setArgument(key, value, arg, true);
-          continue;
-        }
+        if (next) {
+          if (
+            !booleanSet.has(key) &&
+            !allBools &&
+            !IS_FLAG_REGEXP.test(next) &&
+            (!aliasMap.has(key) || !aliasIsBoolean(aliasMap, booleanSet, key))
+          ) {
+            value = next;
+            i++;
+            setArgument(key, value, arg, true);
+            continue;
+          }
 
-        if (next && isBooleanString(next)) {
-          value = parseBooleanString(next);
-          i++;
-          setArgument(key, value, arg, true);
-          continue;
+          if (isBooleanString(next)) {
+            value = parseBooleanString(next);
+            i++;
+            setArgument(key, value, arg, true);
+            continue;
+          }
         }
 
         value = stringSet.has(key) ? "" : true;
@@ -698,38 +697,36 @@ export function parseArgs<
           }
         }
 
-        if (letters[j + 1] && letters[j + 1]!.match(SPECIAL_CHAR_REGEXP)) {
+        if (letters[j + 1]?.match(SPECIAL_CHAR_REGEXP)) {
           setArgument(letter, arg.slice(j + 2), arg, true);
           continue argsLoop;
         }
-        setArgument(
-          letter,
-          stringSet.has(letter) ? "" : true,
-          arg,
-          true,
-        );
+        setArgument(letter, stringSet.has(letter) ? "" : true, arg, true);
       }
 
       key = arg.slice(-1);
       if (key === "-") continue;
 
       const nextArg = args[i + 1];
-      if (
-        nextArg &&
-        !HYPHEN_REGEXP.test(nextArg) &&
-        !booleanSet.has(key) &&
-        (aliasMap.get(key) ? !aliasIsBoolean(aliasMap, booleanSet, key) : true)
-      ) {
-        setArgument(key, nextArg, arg, true);
-        i++;
-      } else if (nextArg && isBooleanString(nextArg)) {
-        const value = parseBooleanString(nextArg);
-        setArgument(key, value, arg, true);
-        i++;
-      } else {
-        setArgument(key, stringSet.has(key) ? "" : true, arg, true);
-      }
 
+      if (nextArg) {
+        if (
+          !HYPHEN_REGEXP.test(nextArg) &&
+          !booleanSet.has(key) &&
+          (!aliasMap.has(key) || !aliasIsBoolean(aliasMap, booleanSet, key))
+        ) {
+          setArgument(key, nextArg, arg, true);
+          i++;
+          continue;
+        }
+        if (isBooleanString(nextArg)) {
+          const value = parseBooleanString(nextArg);
+          setArgument(key, value, arg, true);
+          i++;
+          continue;
+        }
+      }
+      setArgument(key, stringSet.has(key) ? "" : true, arg, true);
       continue;
     }
 
