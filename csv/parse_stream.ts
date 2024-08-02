@@ -148,7 +148,7 @@ export type RowType<T> = T extends undefined ? string[]
  *   { name: "Alice", age: "34" },
  *   { name: "Bob", age: "24" },
  * ]);
- * assertType<IsExact<typeof result, Record<string, string | undefined>[]>>(true);
+ * assertType<IsExact<typeof result, Record<string, string>[]>>(true);
  * ```
  *
  * @example Specify columns with `columns` option
