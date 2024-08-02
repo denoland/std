@@ -102,8 +102,8 @@ export type RowType<T> = T extends undefined ? string[]
   : ParseResult<CsvParseStreamOptions, T>[number];
 
 /**
- * Read data from a CSV-encoded stream or file. Provides an auto/custom mapper
- * for columns.
+ * `CsvParseStream` transforms a stream of CSV-encoded text into a stream of
+ * parsed objects.
  *
  * A `CsvParseStream` expects input conforming to
  * {@link https://www.rfc-editor.org/rfc/rfc4180.html | RFC 4180}.
