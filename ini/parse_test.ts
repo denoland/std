@@ -104,7 +104,7 @@ Deno.test({
     });
     assertEquals(ini, json);
     assertEquals((ini as Record<string, number>).__proto__, 100);
-    assertEquals((ini as Record<string, string>).__proto__, json.__proto__);
+    assertEquals((ini as Record<string, undefined>).__proto__, json.__proto__);
     assertStrictEquals(Object.getPrototypeOf(ini), Object.prototype);
     assertStrictEquals(
       Object.getPrototypeOf(ini),
