@@ -397,7 +397,7 @@ function getValuesFromItem(
  * );
  * ```
  *
- * @example emit TSV (tab-separated values)
+ * @example Emit TSV (tab-separated values)
  * ```ts
  * import { stringify } from "@std/csv/stringify";
  * import { assertEquals } from "@std/assert/equals";
