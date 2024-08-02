@@ -413,11 +413,11 @@ function getValuesFromItem(
  * @example Prepend a byte-order mark with `bom: true`
  * ```ts
  * import { stringify } from "@std/csv/stringify";
- * import { assert } from "@std/assert/assert";
+ * import { assertEquals } from "@std/assert/equals";
  *
- * const data = [];
+ * const data = ["Rick", 70];
  *
- * assert(stringify(data, { bom: true }).startsWith("\ufeff"));
+ * assertEquals(stringify(data, { bom: true }), "\ufeffRick,70\r\n"));
  * ```
  *
  * @param data The source data to stringify. It's an array of items which are

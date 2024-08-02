@@ -29,7 +29,7 @@ export interface CsvStringifyStreamOptions {
  * import { CsvStringifyStream } from "@std/csv/stringify-stream";
  * import { assertEquals } from "@std/assert/equals";
  *
- * async function writeCsvToTempFile(): string {
+ * async function writeCsvToTempFile(): Promise<string> {
  *   const path = await Deno.makeTempFile();
  *   using file = await Deno.open(path, { write: true });
  *
@@ -57,7 +57,7 @@ export interface CsvStringifyStreamOptions {
  * import { CsvStringifyStream } from "@std/csv/stringify-stream";
  * import { assertEquals } from "@std/assert/equals";
  *
- * async function writeTsvToTempFile(): string {
+ * async function writeTsvToTempFile(): Promise<string> {
  *   const path = await Deno.makeTempFile();
  *   using file = await Deno.open(path, { write: true });
  *
