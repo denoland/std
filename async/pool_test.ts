@@ -13,13 +13,13 @@ Deno.test("pooledMap()", async () => {
   const results = pooledMap(
     2,
     [1, 2, 3],
-    (i) => new Promise<number>((r) => setTimeout(() => r(i), 10)),
+    (i) => new Promise<number>((r) => setTimeout(() => r(i), 100)),
   );
   const array = await Array.fromAsync(results);
   assertEquals(array, [1, 2, 3]);
   const diff = new Date().getTime() - start.getTime();
-  assert(diff >= 20);
-  assert(diff < 30);
+  assert(diff >= 200);
+  assert(diff < 300);
 });
 
 Deno.test("pooledMap() handles errors", async () => {
