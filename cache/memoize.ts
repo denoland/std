@@ -14,7 +14,13 @@ export type MemoizationCache<K, V> = {
   delete: (key: K) => unknown;
 };
 
-/** Options for {@linkcode memoize}. */
+/**
+ * Options for {@linkcode memoize}.
+ *
+ * @typeParam Fn - The type of the function to memoize.
+ * @typeParam Key - The type of the cache key.
+ * @typeParam Cache - The type of the cache.
+ */
 export type MemoizeOptions<
   Fn extends (...args: never[]) => unknown,
   Key,
@@ -54,10 +60,15 @@ export type MemoizeOptions<
 /**
  * Cache the results of a function based on its arguments.
  *
+ * @typeParam Fn - The type of the function to memoize.
+ * @typeParam Key - The type of the cache key.
+ * @typeParam Cache - The type of the cache.
  * @param fn - The function to memoize
  * @param options - Options for memoization
  *
- * @example
+ * @returns The memoized function.
+ *
+ * @example Basic usage
  * ```ts
  * import { memoize } from "@std/cache";
  * import { assertEquals } from "@std/assert";

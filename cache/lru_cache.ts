@@ -10,7 +10,10 @@ export type { MemoizationCache } from "./memoize.ts";
  * Automatically removes entries above the max size based on when they were
  * last accessed with `get`, `set`, or `has`.
  *
- * @example
+ * @typeParam K - The type of the cache keys.
+ * @typeParam V - The type of the cache values.
+ *
+ * @example Basic usage
  * ```ts
  * import { LruCache } from "@std/cache";
  * import { assert, assertEquals } from "@std/assert";
@@ -35,12 +38,27 @@ export type { MemoizationCache } from "./memoize.ts";
 export class LruCache<K, V> extends Map<K, V>
   implements MemoizationCache<K, V> {
   /**
+   * The maximum number of entries to store in the cache.
+   *
+   * @example Max size
+   * ```ts no-assert
+   * import { LruCache } from "@std/cache";
+   * import { assertEquals } from "@std/assert";
+   *
+   * const cache = new LruCache<string, number>(100);
+   * assertEquals(cache.maxSize, 100);
+   * ```
+   */
+  maxSize: number;
+
+  /**
    * Constructs a new `LruCache`.
    *
    * @param maxSize The maximum number of entries to store in the cache.
    */
-  constructor(public maxSize: number) {
+  constructor(maxSize: number) {
     super();
+    this.maxSize = maxSize;
   }
 
   #setMostRecentlyUsed(key: K, value: V): void {
@@ -57,6 +75,20 @@ export class LruCache<K, V> extends Map<K, V>
 
   /**
    * Checks whether an element with the specified key exists or not.
+   *
+   * @param key - The key to check.
+   * @returns `true` if the cache contains the specified key, otherwise `false`.
+   *
+   * @example Checking for the existence of a key
+   * ```ts
+   * import { LruCache } from "@std/cache";
+   * import { assert } from "@std/assert";
+   *
+   * const cache = new LruCache<string, number>(100);
+   *
+   * cache.set("a", 1);
+   * assert(cache.has("a"));
+   * ```
    */
   override has(key: K): boolean {
     const exists = super.has(key);
@@ -70,6 +102,20 @@ export class LruCache<K, V> extends Map<K, V>
 
   /**
    * Gets the element with the specified key.
+   *
+   * @param key - The key to get the value for.
+   * @returns The value associated with the specified key, or `undefined` if the key is not present in the cache.
+   *
+   * @example Getting a value from the cache
+   * ```ts
+   * import { LruCache } from "@std/cache";
+   * import { assertEquals } from "@std/assert";
+   *
+   * const cache = new LruCache<string, number>(100);
+   *
+   * cache.set("a", 1);
+   * assertEquals(cache.get("a"), 1);
+   * ```
    */
   override get(key: K): V | undefined {
     if (super.has(key)) {
@@ -83,6 +129,18 @@ export class LruCache<K, V> extends Map<K, V>
 
   /**
    * Sets the specified key to the specified value.
+   *
+   * @param key - The key to set the value for.
+   * @param value - The value to set.
+   * @returns `this` for chaining.
+   *
+   * @example Setting a value in the cache
+   * ```ts no-assert
+   * import { LruCache } from "@std/cache";
+   *
+   * const cache = new LruCache<string, number>(100);
+   * cache.set("a", 1);
+   * ```
    */
   override set(key: K, value: V): this {
     this.#setMostRecentlyUsed(key, value);
