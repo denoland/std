@@ -384,12 +384,10 @@ function setNested(
   value: unknown,
   collect = false,
 ) {
-  keys.slice(0, -1).forEach((key) => {
-    object[key] ??= {};
-    object = object[key] as NestedMapping;
-  });
+  keys = [...keys];
+  const key = keys.pop()!;
 
-  const key = keys.at(-1)!;
+  keys.forEach((key) => object = (object[key] ??= {}) as NestedMapping);
 
   if (collect) {
     const v = object[key];
@@ -405,14 +403,12 @@ function setNested(
 }
 
 function hasNested(object: NestedMapping, keys: string[]): boolean {
-  keys = [...keys];
-  const lastKey = keys.pop();
-  if (!lastKey) return false;
   for (const key of keys) {
-    if (!object[key]) return false;
-    object = object[key] as NestedMapping;
+    const value = object[key];
+    if (!Object.hasOwn(object, key)) return false;
+    object = value as NestedMapping;
   }
-  return Object.hasOwn(object, lastKey);
+  return true;
 }
 
 function aliasIsBoolean(
@@ -654,26 +650,25 @@ export function parseArgs<
 
         const next = args[i + 1];
 
-        if (
-          !booleanSet.has(key) &&
-          !allBools &&
-          next &&
-          !IS_FLAG_REGEXP.test(next) &&
-          (aliasMap.get(key)
-            ? !aliasIsBoolean(aliasMap, booleanSet, key)
-            : true)
-        ) {
-          value = next;
-          i++;
-          setArgument(key, value, arg, true);
-          continue;
-        }
+        if (next) {
+          if (
+            !booleanSet.has(key) &&
+            !allBools &&
+            !IS_FLAG_REGEXP.test(next) &&
+            (!aliasMap.has(key) || !aliasIsBoolean(aliasMap, booleanSet, key))
+          ) {
+            value = next;
+            i++;
+            setArgument(key, value, arg, true);
+            continue;
+          }
 
-        if (next && isBooleanString(next)) {
-          value = parseBooleanString(next);
-          i++;
-          setArgument(key, value, arg, true);
-          continue;
+          if (isBooleanString(next)) {
+            value = parseBooleanString(next);
+            i++;
+            setArgument(key, value, arg, true);
+            continue;
+          }
         }
 
         value = stringSet.has(key) ? "" : true;
@@ -702,38 +697,36 @@ export function parseArgs<
           }
         }
 
-        if (letters[j + 1] && letters[j + 1]!.match(SPECIAL_CHAR_REGEXP)) {
+        if (letters[j + 1]?.match(SPECIAL_CHAR_REGEXP)) {
           setArgument(letter, arg.slice(j + 2), arg, true);
           continue argsLoop;
         }
-        setArgument(
-          letter,
-          stringSet.has(letter) ? "" : true,
-          arg,
-          true,
-        );
+        setArgument(letter, stringSet.has(letter) ? "" : true, arg, true);
       }
 
       key = arg.slice(-1);
       if (key === "-") continue;
 
       const nextArg = args[i + 1];
-      if (
-        nextArg &&
-        !HYPHEN_REGEXP.test(nextArg) &&
-        !booleanSet.has(key) &&
-        (aliasMap.get(key) ? !aliasIsBoolean(aliasMap, booleanSet, key) : true)
-      ) {
-        setArgument(key, nextArg, arg, true);
-        i++;
-      } else if (nextArg && isBooleanString(nextArg)) {
-        const value = parseBooleanString(nextArg);
-        setArgument(key, value, arg, true);
-        i++;
-      } else {
-        setArgument(key, stringSet.has(key) ? "" : true, arg, true);
-      }
 
+      if (nextArg) {
+        if (
+          !HYPHEN_REGEXP.test(nextArg) &&
+          !booleanSet.has(key) &&
+          (!aliasMap.has(key) || !aliasIsBoolean(aliasMap, booleanSet, key))
+        ) {
+          setArgument(key, nextArg, arg, true);
+          i++;
+          continue;
+        }
+        if (isBooleanString(nextArg)) {
+          const value = parseBooleanString(nextArg);
+          setArgument(key, value, arg, true);
+          i++;
+          continue;
+        }
+      }
+      setArgument(key, stringSet.has(key) ? "" : true, arg, true);
       continue;
     }
 
@@ -775,14 +768,9 @@ export function parseArgs<
   }
 
   if (doubleDash) {
-    argv["--"] = [];
-    for (const key of notFlags) {
-      argv["--"].push(key);
-    }
+    argv["--"] = notFlags;
   } else {
-    for (const key of notFlags) {
-      argv._.push(key);
-    }
+    argv._.push(...notFlags);
   }
 
   return argv as Args<TArgs, TDoubleDash>;

@@ -2,23 +2,25 @@
 // This module is browser compatible.
 
 import { IniMap, type ReviverFunction } from "./_ini_map.ts";
-export type { ParseOptions, ReviverFunction };
+export type { ReviverFunction };
 
 /** Options for {@linkcode parse}. */
-interface ParseOptions {
+// deno-lint-ignore no-explicit-any
+export interface ParseOptions<T = any> {
   /**
    * Provide custom parsing of the value in a key/value pair. Similar to the
    * {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/parse#reviver | reviver}
    * function in {@linkcode JSON.parse}.
    */
-  reviver?: ReviverFunction;
+  reviver?: ReviverFunction<T>;
 }
 
 /**
  * Parse an INI config string into an object.
  *
  * Values are parsed as strings by default to preserve data parity from the
- * original.
+ * original. To parse values as other types besides strings, use
+ * {@linkcode ParseOptions.reviver}.
  *
  * Nested sections, repeated key names within a section, and key/value arrays
  * are not supported. White space padding and lines starting with `#`, `;`, or
@@ -75,11 +77,13 @@ interface ParseOptions {
  *
  * @param text The text to parse
  * @param options The options to use
+ * @typeParam T The type of the value
  * @return The parsed object
  */
-export function parse(
+// deno-lint-ignore no-explicit-any
+export function parse<T = any>(
   text: string,
-  options?: ParseOptions,
-): Record<string, unknown | Record<string, unknown>> {
+  options?: ParseOptions<T>,
+): Record<string, T | Record<string, T>> {
   return IniMap.from(text, options).toObject();
 }
