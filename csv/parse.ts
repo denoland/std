@@ -295,8 +295,8 @@ export interface ParseOptions {
    * If negative, no check is made and records may have a variable number of
    * fields.
    *
-   * If the wrong number of fields is in a row, a {@linkcode https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/SyntaxError | SyntaxError}
-   * is thrown.
+   * If the wrong number of fields is in a row, a {@linkcode SyntaxError} is
+   * thrown.
    */
   fieldsPerRecord?: number;
   /**
@@ -350,7 +350,7 @@ export function parse(input: string): string[][];
  * If `columns` or `skipFirstRow` option is provided, it returns an array of
  * objects, otherwise it returns an array of arrays of string.
  *
- * @example skipFirstRow: false
+ * @example Don't skip first row with `skipFirstRow: false`
  * ```ts
  * import { parse } from "@std/csv/parse";
  * import { assertEquals } from "@std/assert/equals";
@@ -363,7 +363,7 @@ export function parse(input: string): string[][];
  * assertType<IsExact<typeof result, string[][]>>(true);
  * ```
  *
- * @example skipFirstRow: true
+ * @example Skip first row with `skipFirstRow: true`
  * ```ts
  * import { parse } from "@std/csv/parse";
  * import { assertEquals } from "@std/assert/equals";
@@ -376,7 +376,7 @@ export function parse(input: string): string[][];
  * assertType<IsExact<typeof result, Record<string, string | undefined>[]>>(true);
  * ```
  *
- * @example specify columns
+ * @example Specify columns with `columns` option
  * ```ts
  * import { parse } from "@std/csv/parse";
  * import { assertEquals } from "@std/assert/equals";
@@ -389,7 +389,8 @@ export function parse(input: string): string[][];
  * assertType<IsExact<typeof result, Record<"x" | "y" | "z", string>[]>>(true);
  * ```
  *
- * @example specify columns with skipFirstRow
+ * @example Specify columns with `columns` option and skip first row with
+ * `skipFirstRow: true`
  * ```ts
  * import { parse } from "@std/csv/parse";
  * import { assertEquals } from "@std/assert/equals";
@@ -402,7 +403,7 @@ export function parse(input: string): string[][];
  * assertType<IsExact<typeof result, Record<"x" | "y" | "z", string>[]>>(true);
  * ```
  *
- * @example TSV (tab-separated values)
+ * @example TSV (tab-separated values) with `separator: "\t"`
  * ```ts
  * import { parse } from "@std/csv/parse";
  * import { assertEquals } from "@std/assert/equals";
@@ -413,7 +414,7 @@ export function parse(input: string): string[][];
  * assertEquals(result, [["a", "b", "c"], ["d", "e", "f"]]);
  * ```
  *
- * @example trimLeadingSpace: true
+ * @example Trim leading space with `trimLeadingSpace: true`
  * ```ts
  * import { parse } from "@std/csv/parse";
  * import { assertEquals } from "@std/assert/equals";
@@ -424,7 +425,7 @@ export function parse(input: string): string[][];
  * assertEquals(result, [["a", "b", "c"]]);
  * ```
  *
- * @example lazyQuotes: true
+ * @example Lazy quotes with `lazyQuotes: true`
  * ```ts
  * import { parse } from "@std/csv/parse";
  * import { assertEquals } from "@std/assert/equals";
@@ -435,7 +436,7 @@ export function parse(input: string): string[][];
  * assertEquals(result, [['a "word"', '1"2', 'a"', 'b']]);
  * ```
  *
- * @example comment
+ * @example Set comment prefix with `comment` option
  * ```ts
  * import { parse } from "@std/csv/parse";
  * import { assertEquals } from "@std/assert/equals";
@@ -446,7 +447,7 @@ export function parse(input: string): string[][];
  * assertEquals(result, [["a", "b", "c"], ["d", "e", "f"]]);
  * ```
  *
- * @example fieldsPerRecord: 0 (infer the number of fields from the first row)
+ * @example Infer the number of fields from the first row with `fieldsPerRecord: 0`
  *  ```ts
  * import { parse } from "@std/csv/parse";
  * import { assertThrows } from "@std/assert/throws";
@@ -460,7 +461,7 @@ export function parse(input: string): string[][];
  * );
  * ```
  *
- * @example fieldsPerRecord: 2 (enforce the number of fields for each row)
+ * @example Enforce the number of fields for each row with `fieldsPerRecord: 2`
  *  ```ts
  * import { parse } from "@std/csv/parse";
  * import { assertThrows } from "@std/assert/throws";
@@ -476,8 +477,9 @@ export function parse(input: string): string[][];
  * @typeParam T The options' type for parsing.
  * @param input The input to parse.
  * @param options The options for parsing.
- * @returns If you don't provide `options.skipFirstRow` or `options.columns`, it returns `string[][]`.
- *   If you provide `options.skipFirstRow` or `options.columns`, it returns `Record<string, string>[]`.
+ * @returns If you don't provide `options.skipFirstRow` or `options.columns`, it
+ * returns `string[][]`. If you provide `options.skipFirstRow` or
+ * `options.columns`, it returns `Record<string, string>[]`.
  */
 export function parse<const T extends ParseOptions>(
   input: string,

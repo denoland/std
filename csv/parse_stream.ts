@@ -108,7 +108,7 @@ export type RowType<T> = T extends undefined ? string[]
  * A `CsvParseStream` expects input conforming to
  * {@link https://www.rfc-editor.org/rfc/rfc4180.html | RFC 4180}.
  *
- * @example default options
+ * @example Usage with default options
  * ```ts
  * import { CsvParseStream } from "@std/csv/parse-stream";
  * import { assertEquals } from "@std/assert/equals";
@@ -130,7 +130,7 @@ export type RowType<T> = T extends undefined ? string[]
  * assertType<IsExact<typeof result, string[][]>>(true);
  * ```
  *
- * @example skipFirstRow: true
+ * @example Skip first row with `skipFirstRow: true`
  * ```ts
  * import { CsvParseStream } from "@std/csv/parse-stream";
  * import { assertEquals } from "@std/assert/equals";
@@ -151,7 +151,7 @@ export type RowType<T> = T extends undefined ? string[]
  * assertType<IsExact<typeof result, Record<string, string | undefined>[]>>(true);
  * ```
  *
- * @example specify columns
+ * @example Specify columns with `columns` option
  * ```ts
  * import { CsvParseStream } from "@std/csv/parse-stream";
  * import { assertEquals } from "@std/assert/equals";
@@ -173,7 +173,8 @@ export type RowType<T> = T extends undefined ? string[]
  * assertType<IsExact<typeof result, Record<"name" | "age", string>[]>>(true);
  * ```
  *
- * @example specify columns with skipFirstRow
+ * @example Specify columns with `columns` option and skip first row with
+ * `skipFirstRow: true`
  * ```ts
  * import { CsvParseStream } from "@std/csv/parse-stream";
  * import { assertEquals } from "@std/assert/equals";
@@ -193,7 +194,7 @@ export type RowType<T> = T extends undefined ? string[]
  * assertType<IsExact<typeof result, Record<"name" | "age", string>[]>>(true);
  * ```
  *
- * @example TSV (tab-separated values)
+ * @example TSV (tab-separated values) with `separator: "\t"`
  * ```ts
  * import { CsvParseStream } from "@std/csv/parse-stream";
  * import { assertEquals } from "@std/assert/equals";
@@ -213,7 +214,7 @@ export type RowType<T> = T extends undefined ? string[]
  * ]);
  * ```
  *
- * @example trimLeadingSpace: true
+ * @example Trim leading space with `trimLeadingSpace: true`
  * ```ts
  * import { CsvParseStream } from "@std/csv/parse-stream";
  * import { assertEquals } from "@std/assert/equals";
@@ -253,7 +254,7 @@ export type RowType<T> = T extends undefined ? string[]
  * ]);
  * ```
  *
- * @example lazyQuotes: true
+ * @example Allow lazy quotes with `lazyQuotes: true`
  * ```ts
  * import { CsvParseStream } from "@std/csv/parse-stream";
  * import { assertEquals } from "@std/assert/equals";
@@ -270,7 +271,7 @@ export type RowType<T> = T extends undefined ? string[]
  * assertEquals(result, [['a "word"', '1"2', 'a"', 'b']]);
  * ```
  *
- * @example comment
+ * @example Define comment prefix with `comment` option
  * ```ts
  * import { CsvParseStream } from "@std/csv/parse-stream";
  * import { assertEquals } from "@std/assert/equals";
@@ -291,7 +292,8 @@ export type RowType<T> = T extends undefined ? string[]
  * ]);
  * ```
  *
- * @example fieldsPerRecord: 0 (infer the number of fields from the first row)
+ * @example Infer the number of fields from the first row with
+ * `fieldsPerRecord: 0`
  * ```ts
  * import { CsvParseStream } from "@std/csv/parse-stream";
  * import { assertEquals } from "@std/assert/equals";
@@ -313,7 +315,7 @@ export type RowType<T> = T extends undefined ? string[]
  * );
  * ```
  *
- * @example fieldsPerRecord: 2 (enforce the number of fields for each row)
+ * @example Enforce the number of field for each row with `fieldsPerRecord: 2`
  * ```ts
  * import { CsvParseStream } from "@std/csv/parse-stream";
  * import { assertEquals } from "@std/assert/equals";
