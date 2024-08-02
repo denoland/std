@@ -1,8 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-import { unreachable } from "../assert/unreachable.ts";
-
 function digits(value: string | number, count = 2): string {
   return String(value).padStart(count, "0");
 }
