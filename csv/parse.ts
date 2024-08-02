@@ -208,7 +208,7 @@ class Parser {
     this.#input = input.startsWith(BYTE_ORDER_MARK) ? input.slice(1) : input;
     this.#cursor = 0;
     const result: string[][] = [];
-    let _nbFields: number | undefined;
+
     let lineResult: string[];
     let first = true;
     let lineIndex = 0;
@@ -225,6 +225,25 @@ class Parser {
       throw new Error("Invalid Delimiter");
     }
 
+    // The number of fields per record that is either inferred from the first
+    // row (when options.fieldsPerRecord = 0), or set by the caller (when
+    // options.fieldsPerRecord > 0).
+    //
+    // Each possible variant means the following:
+    // "ANY": Variable number of fields is allowed.
+    // "UNINITIALIZED": The first row has not been read yet. Once it's read, the
+    //                  number of fields will be set.
+    // <number>: The number of fields per record that every record must follow.
+    let _nbFields: "ANY" | "UNINITIALIZED" | number;
+    if (options.fieldsPerRecord === undefined || options.fieldsPerRecord < 0) {
+      _nbFields = "ANY";
+    } else if (options.fieldsPerRecord === 0) {
+      _nbFields = "UNINITIALIZED";
+    } else {
+      // TODO: Should we check if it's a valid integer?
+      _nbFields = options.fieldsPerRecord;
+    }
+
     while (true) {
       const r = this.#parseRecord(lineIndex);
       if (r === null) break;
@@ -234,17 +253,13 @@ class Parser {
       // the number of fields in the first record
       if (first) {
         first = false;
-        if (options.fieldsPerRecord !== undefined) {
-          if (options.fieldsPerRecord === 0) {
-            _nbFields = lineResult.length;
-          } else {
-            _nbFields = options.fieldsPerRecord;
-          }
+        if (_nbFields === "UNINITIALIZED") {
+          _nbFields = lineResult.length;
         }
       }
 
       if (lineResult.length > 0) {
-        if (_nbFields && _nbFields !== lineResult.length) {
+        if (typeof _nbFields === "number" && _nbFields !== lineResult.length) {
           throw new SyntaxError(
             `record on line ${lineIndex}: expected ${_nbFields} fields but got ${lineResult.length}`,
           );

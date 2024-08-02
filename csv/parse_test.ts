@@ -310,6 +310,17 @@ Deno.test({
       },
     });
     await t.step({
+      name: "NegativeFieldsPerRecord",
+      fn() {
+        const input = `a,b,c\nd,e`;
+        const output = [
+          ["a", "b", "c"],
+          ["d", "e"],
+        ];
+        assertEquals(parse(input, { fieldsPerRecord: -1 }), output);
+      },
+    });
+    await t.step({
       name: "FieldCount",
       fn() {
         const input = "a,b,c\nd,e";
