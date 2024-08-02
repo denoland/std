@@ -491,13 +491,13 @@ Deno.test({
       // `skipFirstRow` may be `true` or `false`.
       // `columns` may be `undefined` or `string[]`.
       // If you don't know exactly what the value of the option is,
-      // the return type is ReadableStream<string[] | Record<string, string | undefined>>
+      // the return type is ReadableStream<string[] | Record<string, string>>
       const options: CsvParseStreamOptions = {};
       const { readable } = new CsvParseStream(options);
       type _ = AssertTrue<
         IsExact<
           typeof readable,
-          ReadableStream<string[] | Record<string, string | undefined>>
+          ReadableStream<string[] | Record<string, string>>
         >
       >;
     }
@@ -520,7 +520,7 @@ Deno.test({
       type _ = AssertTrue<
         IsExact<
           typeof readable,
-          ReadableStream<Record<string, string | undefined>>
+          ReadableStream<Record<string, string>>
         >
       >;
     }
@@ -541,7 +541,7 @@ Deno.test({
       type _ = AssertTrue<
         IsExact<
           typeof readable,
-          ReadableStream<Record<string, string | undefined>>
+          ReadableStream<Record<string, string>>
         >
       >;
     }
@@ -562,7 +562,7 @@ Deno.test({
       type _ = AssertTrue<
         IsExact<
           typeof readable,
-          ReadableStream<Record<string, string | undefined>>
+          ReadableStream<Record<string, string>>
         >
       >;
     }

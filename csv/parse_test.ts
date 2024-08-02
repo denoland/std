@@ -943,13 +943,13 @@ Deno.test({
       // `skipFirstRow` may be `true` or `false`.
       // `columns` may be `undefined` or `string[]`.
       // If you don't know exactly what the value of the option is,
-      // the return type is string[][] | Record<string, string|undefined>[]
+      // the return type is string[][] | Record<string, string>[]
       const options: ParseOptions = {};
       const parsed = parse("a\nb", options);
       type _ = AssertTrue<
         IsExact<
           typeof parsed,
-          string[][] | Record<string, string | undefined>[]
+          string[][] | Record<string, string>[]
         >
       >;
     }
@@ -970,7 +970,7 @@ Deno.test({
     {
       const parsed = parse("a\nb", { skipFirstRow: true });
       type _ = AssertTrue<
-        IsExact<typeof parsed, Record<string, string | undefined>[]>
+        IsExact<typeof parsed, Record<string, string>[]>
       >;
     }
 
@@ -988,7 +988,7 @@ Deno.test({
     {
       const parsed = parse("a\nb", { columns: ["aaa"] as string[] });
       type _ = AssertTrue<
-        IsExact<typeof parsed, Record<string, string | undefined>[]>
+        IsExact<typeof parsed, Record<string, string>[]>
       >;
     }
 
@@ -1000,7 +1000,7 @@ Deno.test({
     {
       const parsed = parse("a\nb", { skipFirstRow: true, columns: undefined });
       type _ = AssertTrue<
-        IsExact<typeof parsed, Record<string, string | undefined>[]>
+        IsExact<typeof parsed, Record<string, string>[]>
       >;
     }
     {

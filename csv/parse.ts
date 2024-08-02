@@ -388,7 +388,7 @@ export function parse(input: string): string[][];
  * const result = parse(string, { skipFirstRow: true });
  *
  * assertEquals(result, [{ a: "d", b: "e", c: "f" }]);
- * assertType<IsExact<typeof result, Record<string, string | undefined>[]>>(true);
+ * assertType<IsExact<typeof result, Record<string, string>[]>>(true);
  * ```
  *
  * @example Specify columns with `columns` option
