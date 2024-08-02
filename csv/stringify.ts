@@ -219,7 +219,7 @@ function getValuesFromItem(
 /**
  * Converts an array of objects into a CSV string.
  *
- * @example default options
+ * @example Default options
  * ```ts
  * import { stringify } from "@std/csv/stringify";
  * import { assertEquals } from "@std/assert/equals";
@@ -232,7 +232,7 @@ function getValuesFromItem(
  * assertEquals(stringify(data), `Rick,70\r\nMorty,14\r\n`);
  * ```
  *
- * @example an array of objects and specify columns
+ * @example Give an array of objects and specify columns
  * ```ts
  * import { stringify } from "@std/csv/stringify";
  * import { assertEquals } from "@std/assert/equals";
@@ -247,7 +247,7 @@ function getValuesFromItem(
  * assertEquals(stringify(data, { columns }), `name,age\r\nRick,70\r\nMorty,14\r\n`);
  * ```
  *
- * @example an array of objects without specifying columns
+ * @example Give an array of objects without specifying columns
  * ```ts
  * import { stringify } from "@std/csv/stringify";
  * import { assertThrows } from "@std/assert/throws";
@@ -264,7 +264,7 @@ function getValuesFromItem(
  * );
  * ```
  *
- * @example an array of objects and specify columns with headers: false
+ * @example Give an array of objects and specify columns with `headers: false`
  * ```ts
  * import { stringify } from "@std/csv/stringify";
  * import { assertEquals } from "@std/assert/equals";
@@ -282,7 +282,7 @@ function getValuesFromItem(
  * );
  * ```
  *
- * @example an array of objects and specify columns with renaming
+ * @example Give an array of objects and specify columns with renaming
  * ```ts
  * import { stringify } from "@std/csv/stringify";
  * import { assertEquals } from "@std/assert/equals";
@@ -303,7 +303,7 @@ function getValuesFromItem(
  * );
  * ```
  *
- * @example an array of objects with nested property and specify columns
+ * @example Give an array of objects with nested property and specify columns
  * ```ts
  * import {
  *   Column,
@@ -339,7 +339,8 @@ function getValuesFromItem(
  * );
  * ```
  *
- * @example an array of objects with nested property and specify columns with renaming
+ * @example Give an array of objects with nested property and specify columns
+ * with renaming
  * ```ts
  * import {
  *   Column,
@@ -375,7 +376,7 @@ function getValuesFromItem(
  * );
  * ```
  *
- * @example an array of string arrays and specify columns with renaming
+ * @example Give an array of string arrays and specify columns with renaming
  * ```ts
  * import { stringify } from "@std/csv/stringify";
  * import { assertEquals } from "@std/assert/equals";
@@ -409,7 +410,7 @@ function getValuesFromItem(
  * assertEquals(stringify(data, { separator: "\t" }), `Rick\t70\r\nMorty\t14\r\n`);
  * ```
  *
- * @example bom: true
+ * @example Prepend a byte-order mark with `bom: true`
  * ```ts
  * import { stringify } from "@std/csv/stringify";
  * import { assert } from "@std/assert/assert";
