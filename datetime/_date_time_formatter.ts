@@ -44,7 +44,7 @@ const SYMBOL_REGEXP = /^(?<symbol>([a-zA-Z])\2*)/;
 
 // according to unicode symbols (http://www.unicode.org/reports/tr35/tr35-dates.html#Date_Field_Symbol_Table)
 function formatToParts(format: string) {
-  const tokens = [];
+  const tokens: Format = [];
   let index = 0;
   while (index < format.length) {
     const substring = format.slice(index);
@@ -119,14 +119,14 @@ function formatToParts(format: string) {
         index += symbol.length;
         continue;
       case "a":
-        tokens.push({ type: "dayPeriod" });
+        tokens.push({ type: "dayPeriod", value: 1 });
         index += symbol.length;
         continue;
     }
 
     const quotedLiteralMatch = QUOTED_LITERAL_REGEXP.exec(substring);
     if (quotedLiteralMatch) {
-      const value = quotedLiteralMatch.groups!.value;
+      const value = quotedLiteralMatch.groups!.value as string;
       tokens.push({ type: "literal", value });
       index += quotedLiteralMatch[0].length;
       continue;
@@ -145,7 +145,7 @@ export class DateTimeFormatter {
   #format: Format;
 
   constructor(formatString: string) {
-    this.#format = formatToParts(formatString) as Format;
+    this.#format = formatToParts(formatString);
   }
 
   format(date: Date, options: Options = {}): string {
