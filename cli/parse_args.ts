@@ -373,12 +373,11 @@ function setNested(
   value: unknown,
   collect = false,
 ) {
-  keys.slice(0, -1).forEach((key) => {
-    object[key] ??= {};
-    object = object[key] as NestedMapping;
-  });
+  keys = [...keys];
+  const key = keys.pop();
+  if (!key) throw new Error(`'keys' cannot be an empty array.`);
 
-  const key = keys.at(-1)!;
+  keys.forEach((key) => object = (object[key] ??= {}) as NestedMapping);
 
   if (collect) {
     const v = object[key];
@@ -394,14 +393,12 @@ function setNested(
 }
 
 function hasNested(object: NestedMapping, keys: string[]): boolean {
-  keys = [...keys];
-  const lastKey = keys.pop();
-  if (!lastKey) return false;
   for (const key of keys) {
-    if (!object[key]) return false;
-    object = object[key] as NestedMapping;
+    const value = object[key];
+    if (!Object.hasOwn(object, key)) return false;
+    object = value as NestedMapping;
   }
-  return Object.hasOwn(object, lastKey);
+  return true;
 }
 
 function aliasIsBoolean(
