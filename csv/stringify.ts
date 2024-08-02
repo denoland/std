@@ -417,7 +417,7 @@ function getValuesFromItem(
  *
  * const data = ["Rick", 70];
  *
- * assertEquals(stringify(data, { bom: true }), "\ufeffRick,70\r\n"));
+ * assertEquals(stringify(data, { bom: true }), "\ufeffRick,70\r\n");
  * ```
  *
  * @param data The source data to stringify. It's an array of items which are
