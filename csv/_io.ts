@@ -45,7 +45,8 @@ export interface ReadOptions {
    * If negative, no check is made and records may have a variable number of
    * fields.
    *
-   * If the wrong number of fields is in a row, a `ParseError` is thrown.
+   * If the wrong number of fields is in a row, a {@linkcode SyntaxError} is
+   * thrown.
    */
   fieldsPerRecord?: number;
 }
@@ -227,11 +228,13 @@ export function createQuoteErrorMessage(
 export function convertRowToObject(
   row: string[],
   headers: readonly string[],
-  index: number,
+  zeroBasedLine: number,
 ) {
   if (row.length !== headers.length) {
     throw new Error(
-      `Error number of fields line: ${index}\nNumber of fields found: ${headers.length}\nExpected number of fields: ${row.length}`,
+      `record on line ${
+        zeroBasedLine + 1
+      } has ${row.length} fields, but the header has ${headers.length} fields`,
     );
   }
   const out: Record<string, unknown> = {};
