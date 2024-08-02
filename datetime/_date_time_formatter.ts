@@ -231,6 +231,13 @@ type FormatPart = {
 };
 type Format = FormatPart[];
 
+function throwInvalidValueError(type: string, value: string, string: string) {
+  if (!value) {
+    throw Error(
+      `value not valid for token { ${type} ${value} } ${string.slice(0, 25)}`,
+    );
+  }
+}
 export class DateTimeFormatter {
   #format: Format;
 
@@ -401,13 +408,6 @@ export class DateTimeFormatter {
 
     return string;
   }
-  #throwInvalidValueError(type: string, value: string, string: string) {
-    if (!value) {
-      throw Error(
-        `value not valid for token { ${type} ${value} } ${string.slice(0, 25)}`,
-      );
-    }
-  }
 
   parseToParts(string: string): DateTimeFormatPart[] {
     const parts: DateTimeFormatPart[] = [];
@@ -423,14 +423,14 @@ export class DateTimeFormatter {
           switch (token.value) {
             case "numeric": {
               value = /^\d{1,4}/.exec(substring)?.[0] as string;
-              if (!value) this.#throwInvalidValueError(type, value, substring);
+              if (!value) throwInvalidValueError(type, value, substring);
               parts.push({ type, value });
               index += value.length;
               break;
             }
             case "2-digit": {
               value = /^\d{1,2}/.exec(substring)?.[0] as string;
-              if (!value) this.#throwInvalidValueError(type, value, substring);
+              if (!value) throwInvalidValueError(type, value, substring);
               parts.push({ type, value });
               index += value.length;
               break;
@@ -446,35 +446,35 @@ export class DateTimeFormatter {
           switch (token.value) {
             case "numeric": {
               value = /^\d{1,2}/.exec(substring)?.[0] as string;
-              if (!value) this.#throwInvalidValueError(type, value, substring);
+              if (!value) throwInvalidValueError(type, value, substring);
               parts.push({ type, value });
               index += value.length;
               break;
             }
             case "2-digit": {
               value = /^\d{2}/.exec(substring)?.[0] as string;
-              if (!value) this.#throwInvalidValueError(type, value, substring);
+              if (!value) throwInvalidValueError(type, value, substring);
               parts.push({ type, value });
               index += value.length;
               break;
             }
             case "narrow": {
               value = /^[a-zA-Z]+/.exec(substring)?.[0] as string;
-              if (!value) this.#throwInvalidValueError(type, value, substring);
+              if (!value) throwInvalidValueError(type, value, substring);
               parts.push({ type, value });
               index += value.length;
               break;
             }
             case "short": {
               value = /^[a-zA-Z]+/.exec(substring)?.[0] as string;
-              if (!value) this.#throwInvalidValueError(type, value, substring);
+              if (!value) throwInvalidValueError(type, value, substring);
               parts.push({ type, value });
               index += value.length;
               break;
             }
             case "long": {
               value = /^[a-zA-Z]+/.exec(substring)?.[0] as string;
-              if (!value) this.#throwInvalidValueError(type, value, substring);
+              if (!value) throwInvalidValueError(type, value, substring);
               parts.push({ type, value });
               index += value.length;
               break;
@@ -490,14 +490,14 @@ export class DateTimeFormatter {
           switch (token.value) {
             case "numeric": {
               value = /^\d{1,2}/.exec(substring)?.[0] as string;
-              if (!value) this.#throwInvalidValueError(type, value, substring);
+              if (!value) throwInvalidValueError(type, value, substring);
               parts.push({ type, value });
               index += value.length;
               break;
             }
             case "2-digit": {
               value = /^\d{2}/.exec(substring)?.[0] as string;
-              if (!value) this.#throwInvalidValueError(type, value, substring);
+              if (!value) throwInvalidValueError(type, value, substring);
               parts.push({ type, value });
               index += value.length;
               break;
@@ -513,7 +513,7 @@ export class DateTimeFormatter {
           switch (token.value) {
             case "numeric": {
               value = /^\d{1,2}/.exec(substring)?.[0] as string;
-              if (!value) this.#throwInvalidValueError(type, value, substring);
+              if (!value) throwInvalidValueError(type, value, substring);
               parts.push({ type, value });
               index += value.length;
               if (token.hour12 && parseInt(value) > 12) {
@@ -525,7 +525,7 @@ export class DateTimeFormatter {
             }
             case "2-digit": {
               value = /^\d{2}/.exec(substring)?.[0] as string;
-              if (!value) this.#throwInvalidValueError(type, value, substring);
+              if (!value) throwInvalidValueError(type, value, substring);
               parts.push({ type, value });
               index += value.length;
               if (token.hour12 && parseInt(value) > 12) {
@@ -546,14 +546,14 @@ export class DateTimeFormatter {
           switch (token.value) {
             case "numeric": {
               value = /^\d{1,2}/.exec(substring)?.[0] as string;
-              if (!value) this.#throwInvalidValueError(type, value, substring);
+              if (!value) throwInvalidValueError(type, value, substring);
               parts.push({ type, value });
               index += value.length;
               break;
             }
             case "2-digit": {
               value = /^\d{2}/.exec(substring)?.[0] as string;
-              if (!value) this.#throwInvalidValueError(type, value, substring);
+              if (!value) throwInvalidValueError(type, value, substring);
               parts.push({ type, value });
               index += value.length;
               break;
@@ -569,14 +569,14 @@ export class DateTimeFormatter {
           switch (token.value) {
             case "numeric": {
               value = /^\d{1,2}/.exec(substring)?.[0] as string;
-              if (!value) this.#throwInvalidValueError(type, value, substring);
+              if (!value) throwInvalidValueError(type, value, substring);
               parts.push({ type, value });
               index += value.length;
               break;
             }
             case "2-digit": {
               value = /^\d{2}/.exec(substring)?.[0] as string;
-              if (!value) this.#throwInvalidValueError(type, value, substring);
+              if (!value) throwInvalidValueError(type, value, substring);
               parts.push({ type, value });
               index += value.length;
               break;
@@ -591,21 +591,21 @@ export class DateTimeFormatter {
         case "fractionalSecond": {
           value = new RegExp(`^\\d{${token.value}}`).exec(substring)
             ?.[0] as string;
-          if (!value) this.#throwInvalidValueError(type, value, substring);
+          if (!value) throwInvalidValueError(type, value, substring);
           parts.push({ type, value });
           index += value.length;
           break;
         }
         case "timeZoneName": {
           value = token.value as string;
-          if (!value) this.#throwInvalidValueError(type, value, substring);
+          if (!value) throwInvalidValueError(type, value, substring);
           parts.push({ type, value });
           index += value.length;
           break;
         }
         case "dayPeriod": {
           value = /^[AP](?:\.M\.|M\.?)/i.exec(substring)?.[0] as string;
-          if (!value) this.#throwInvalidValueError(type, value, substring);
+          if (!value) throwInvalidValueError(type, value, substring);
           switch (value.toUpperCase()) {
             case "AM":
             case "AM.":
@@ -631,7 +631,7 @@ export class DateTimeFormatter {
             );
           }
           value = token.value as string;
-          if (!value) this.#throwInvalidValueError(type, value, substring);
+          if (!value) throwInvalidValueError(type, value, substring);
           parts.push({ type, value });
           index += value.length;
           break;
