@@ -401,23 +401,38 @@ export class DateTimeFormatter {
 
     return string;
   }
+  #throwInvalidValueError(type: string, value: string, string: string) {
+    if (!value) {
+      throw Error(
+        `value not valid for token { ${type} ${value} } ${string.slice(0, 25)}`,
+      );
+    }
+  }
 
   parseToParts(string: string): DateTimeFormatPart[] {
     const parts: DateTimeFormatPart[] = [];
 
+    let index = 0;
     for (const token of this.#format) {
+      const substring = string.slice(index);
       const type = token.type;
 
       let value = "";
-      switch (token.type) {
+      switch (type) {
         case "year": {
           switch (token.value) {
             case "numeric": {
-              value = /^\d{1,4}/.exec(string)?.[0] as string;
+              value = /^\d{1,4}/.exec(substring)?.[0] as string;
+              if (!value) this.#throwInvalidValueError(type, value, substring);
+              parts.push({ type, value });
+              index += value.length;
               break;
             }
             case "2-digit": {
-              value = /^\d{1,2}/.exec(string)?.[0] as string;
+              value = /^\d{1,2}/.exec(substring)?.[0] as string;
+              if (!value) this.#throwInvalidValueError(type, value, substring);
+              parts.push({ type, value });
+              index += value.length;
               break;
             }
             default:
@@ -430,23 +445,38 @@ export class DateTimeFormatter {
         case "month": {
           switch (token.value) {
             case "numeric": {
-              value = /^\d{1,2}/.exec(string)?.[0] as string;
+              value = /^\d{1,2}/.exec(substring)?.[0] as string;
+              if (!value) this.#throwInvalidValueError(type, value, substring);
+              parts.push({ type, value });
+              index += value.length;
               break;
             }
             case "2-digit": {
-              value = /^\d{2}/.exec(string)?.[0] as string;
+              value = /^\d{2}/.exec(substring)?.[0] as string;
+              if (!value) this.#throwInvalidValueError(type, value, substring);
+              parts.push({ type, value });
+              index += value.length;
               break;
             }
             case "narrow": {
-              value = /^[a-zA-Z]+/.exec(string)?.[0] as string;
+              value = /^[a-zA-Z]+/.exec(substring)?.[0] as string;
+              if (!value) this.#throwInvalidValueError(type, value, substring);
+              parts.push({ type, value });
+              index += value.length;
               break;
             }
             case "short": {
-              value = /^[a-zA-Z]+/.exec(string)?.[0] as string;
+              value = /^[a-zA-Z]+/.exec(substring)?.[0] as string;
+              if (!value) this.#throwInvalidValueError(type, value, substring);
+              parts.push({ type, value });
+              index += value.length;
               break;
             }
             case "long": {
-              value = /^[a-zA-Z]+/.exec(string)?.[0] as string;
+              value = /^[a-zA-Z]+/.exec(substring)?.[0] as string;
+              if (!value) this.#throwInvalidValueError(type, value, substring);
+              parts.push({ type, value });
+              index += value.length;
               break;
             }
             default:
@@ -459,11 +489,17 @@ export class DateTimeFormatter {
         case "day": {
           switch (token.value) {
             case "numeric": {
-              value = /^\d{1,2}/.exec(string)?.[0] as string;
+              value = /^\d{1,2}/.exec(substring)?.[0] as string;
+              if (!value) this.#throwInvalidValueError(type, value, substring);
+              parts.push({ type, value });
+              index += value.length;
               break;
             }
             case "2-digit": {
-              value = /^\d{2}/.exec(string)?.[0] as string;
+              value = /^\d{2}/.exec(substring)?.[0] as string;
+              if (!value) this.#throwInvalidValueError(type, value, substring);
+              parts.push({ type, value });
+              index += value.length;
               break;
             }
             default:
@@ -476,7 +512,10 @@ export class DateTimeFormatter {
         case "hour": {
           switch (token.value) {
             case "numeric": {
-              value = /^\d{1,2}/.exec(string)?.[0] as string;
+              value = /^\d{1,2}/.exec(substring)?.[0] as string;
+              if (!value) this.#throwInvalidValueError(type, value, substring);
+              parts.push({ type, value });
+              index += value.length;
               if (token.hour12 && parseInt(value) > 12) {
                 console.error(
                   `Trying to parse hour greater than 12. Use 'H' instead of 'h'.`,
@@ -485,7 +524,10 @@ export class DateTimeFormatter {
               break;
             }
             case "2-digit": {
-              value = /^\d{2}/.exec(string)?.[0] as string;
+              value = /^\d{2}/.exec(substring)?.[0] as string;
+              if (!value) this.#throwInvalidValueError(type, value, substring);
+              parts.push({ type, value });
+              index += value.length;
               if (token.hour12 && parseInt(value) > 12) {
                 console.error(
                   `Trying to parse hour greater than 12. Use 'HH' instead of 'hh'.`,
@@ -503,11 +545,17 @@ export class DateTimeFormatter {
         case "minute": {
           switch (token.value) {
             case "numeric": {
-              value = /^\d{1,2}/.exec(string)?.[0] as string;
+              value = /^\d{1,2}/.exec(substring)?.[0] as string;
+              if (!value) this.#throwInvalidValueError(type, value, substring);
+              parts.push({ type, value });
+              index += value.length;
               break;
             }
             case "2-digit": {
-              value = /^\d{2}/.exec(string)?.[0] as string;
+              value = /^\d{2}/.exec(substring)?.[0] as string;
+              if (!value) this.#throwInvalidValueError(type, value, substring);
+              parts.push({ type, value });
+              index += value.length;
               break;
             }
             default:
@@ -520,11 +568,17 @@ export class DateTimeFormatter {
         case "second": {
           switch (token.value) {
             case "numeric": {
-              value = /^\d{1,2}/.exec(string)?.[0] as string;
+              value = /^\d{1,2}/.exec(substring)?.[0] as string;
+              if (!value) this.#throwInvalidValueError(type, value, substring);
+              parts.push({ type, value });
+              index += value.length;
               break;
             }
             case "2-digit": {
-              value = /^\d{2}/.exec(string)?.[0] as string;
+              value = /^\d{2}/.exec(substring)?.[0] as string;
+              if (!value) this.#throwInvalidValueError(type, value, substring);
+              parts.push({ type, value });
+              index += value.length;
               break;
             }
             default:
@@ -535,50 +589,61 @@ export class DateTimeFormatter {
           break;
         }
         case "fractionalSecond": {
-          value = new RegExp(`^\\d{${token.value}}`).exec(string)
+          value = new RegExp(`^\\d{${token.value}}`).exec(substring)
             ?.[0] as string;
+          if (!value) this.#throwInvalidValueError(type, value, substring);
+          parts.push({ type, value });
+          index += value.length;
           break;
         }
         case "timeZoneName": {
           value = token.value as string;
+          if (!value) this.#throwInvalidValueError(type, value, substring);
+          parts.push({ type, value });
+          index += value.length;
           break;
         }
         case "dayPeriod": {
-          value = /^(A|P)\.?M\.?/i.exec(string)?.[0] as string;
+          value = /^[AP](?:\.M\.|M\.?)/i.exec(substring)?.[0] as string;
+          if (!value) this.#throwInvalidValueError(type, value, substring);
+          switch (value.toUpperCase()) {
+            case "AM":
+            case "AM.":
+            case "A.M.":
+              value = "AM";
+              break;
+            case "PM":
+            case "PM.":
+            case "P.M.":
+              value = "PM";
+              break;
+            default:
+              throw new Error(`dayPeriod '${value}' is not supported.`);
+          }
+          parts.push({ type, value });
+          index += value.length;
           break;
         }
         case "literal": {
-          if (!string.startsWith(token.value as string)) {
+          if (!substring.startsWith(token.value as string)) {
             throw Error(
-              `Literal "${token.value}" not found "${string.slice(0, 25)}"`,
+              `Literal "${token.value}" not found "${substring.slice(0, 25)}"`,
             );
           }
           value = token.value as string;
+          if (!value) this.#throwInvalidValueError(type, value, substring);
+          parts.push({ type, value });
+          index += value.length;
           break;
         }
-
         default:
           throw Error(`${token.type} ${token.value}`);
       }
-
-      if (!value) {
-        throw Error(
-          `value not valid for token { ${type} ${value} } ${
-            string.slice(
-              0,
-              25,
-            )
-          }`,
-        );
-      }
-      parts.push({ type, value });
-
-      string = string.slice(value.length);
     }
 
-    if (string.length) {
+    if (index < string.length) {
       throw Error(
-        `datetime string was not fully parsed! ${string.slice(0, 25)}`,
+        `datetime string was not fully parsed! ${string.slice(index)}`,
       );
     }
 
@@ -644,7 +709,24 @@ export class DateTimeFormatter {
           const dayPeriod = parts.find(
             (part: DateTimeFormatPart) => part.type === "dayPeriod",
           );
-          if (dayPeriod?.value === "PM") value += 12;
+          if (dayPeriod) {
+            switch (dayPeriod.value.toUpperCase()) {
+              case "AM":
+              case "AM.":
+              case "A.M.":
+                // ignore
+                break;
+              case "PM":
+              case "PM.":
+              case "P.M.":
+                value += 12;
+                break;
+              default:
+                throw new Error(
+                  `dayPeriod '${dayPeriod.value}' is not supported.`,
+                );
+            }
+          }
           utc ? date.setUTCHours(value) : date.setHours(value);
           break;
         }
