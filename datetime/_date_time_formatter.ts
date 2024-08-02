@@ -1,6 +1,8 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
+import { unreachable } from "../assert/unreachable.ts";
+
 function digits(value: string | number, count = 2): string {
   return String(value).padStart(count, "0");
 }
@@ -132,15 +134,10 @@ function formatToParts(format: string) {
       continue;
     }
 
-    const literalGroups = LITERAL_REGEXP.exec(substring)?.groups;
-    if (literalGroups) {
-      const value = literalGroups.value as string;
-      tokens.push({ type: "literal", value });
-      index += value.length;
-      continue;
-    }
-
-    throw new Error(`format "${substring}" is not supported.`);
+    const literalGroups = LITERAL_REGEXP.exec(substring)!.groups!;
+    const value = literalGroups.value as string;
+    tokens.push({ type: "literal", value });
+    index += value.length;
   }
 
   return tokens;
