@@ -56,7 +56,9 @@
  *
  * results in
  *
+ * ```ts no-assert
  * [`the "word" is true`, `a "quoted-field"`]
+ * ```
  *
  * Newlines and commas may be included in a quoted-field
  *
