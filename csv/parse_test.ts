@@ -23,6 +23,7 @@ Deno.test({
         );
       },
     });
+
     await t.step({
       name: "CRLF",
       fn() {
@@ -93,6 +94,42 @@ Deno.test({
         assertEquals(
           parse(input),
           [["two\nline", "one line", "three\nline\nfield"]],
+        );
+      },
+    });
+
+    await t.step({
+      name: "BlankField",
+      fn() {
+        const input = "a,b,c\nd,,f";
+        assertEquals(
+          parse(input),
+          [["a", "b", "c"], ["d", "", "f"]],
+        );
+      },
+    });
+
+    await t.step({
+      name: "BlankField2",
+      fn() {
+        const input = "a,b,c\nd,,f";
+        assertEquals(
+          parse(input, { skipFirstRow: true }),
+          [{ a: "d", b: "", c: "f" }],
+        );
+      },
+    });
+
+    await t.step({
+      name: "BlankField3",
+      fn() {
+        const input = "a,b,c\nd,,f";
+        assertEquals(
+          parse(input, { columns: ["one", "two", "three"] }),
+          [
+            { one: "a", two: "b", three: "c" },
+            { one: "d", two: "", three: "f" },
+          ],
         );
       },
     });
@@ -257,7 +294,7 @@ Deno.test({
         assertThrows(
           () => parse(input, { fieldsPerRecord: 0 }),
           SyntaxError,
-          "record on line 2: wrong number of fields",
+          "record on line 2: expected 3 fields but got 2",
         );
       },
     });
@@ -268,8 +305,19 @@ Deno.test({
         assertThrows(
           () => parse(input, { fieldsPerRecord: 2 }),
           SyntaxError,
-          "record on line 1: wrong number of fields",
+          "record on line 1: expected 2 fields but got 3",
         );
+      },
+    });
+    await t.step({
+      name: "NegativeFieldsPerRecord",
+      fn() {
+        const input = `a,b,c\nd,e`;
+        const output = [
+          ["a", "b", "c"],
+          ["d", "e"],
+        ];
+        assertEquals(parse(input, { fieldsPerRecord: -1 }), output);
       },
     });
     await t.step({
@@ -783,7 +831,7 @@ c"d,e`;
       },
     });
     await t.step({
-      name: "mismatching number of headers and fields",
+      name: "mismatching number of headers and fields 1",
       fn() {
         const input = "a,b,c\nd,e";
         assertThrows(
@@ -793,7 +841,22 @@ c"d,e`;
               columns: ["foo", "bar", "baz"],
             }),
           Error,
-          "Error number of fields line: 1\nNumber of fields found: 3\nExpected number of fields: 2",
+          "record on line 2 has 2 fields, but the header has 3 fields",
+        );
+      },
+    });
+    await t.step({
+      name: "mismatching number of headers and fields 2",
+      fn() {
+        const input = "a,b,c\nd,e,,g";
+        assertThrows(
+          () =>
+            parse(input, {
+              skipFirstRow: true,
+              columns: ["foo", "bar", "baz"],
+            }),
+          Error,
+          "record on line 2 has 4 fields, but the header has 3 fields",
         );
       },
     });
@@ -880,13 +943,13 @@ Deno.test({
       // `skipFirstRow` may be `true` or `false`.
       // `columns` may be `undefined` or `string[]`.
       // If you don't know exactly what the value of the option is,
-      // the return type is string[][] | Record<string, string|undefined>[]
+      // the return type is string[][] | Record<string, string>[]
       const options: ParseOptions = {};
       const parsed = parse("a\nb", options);
       type _ = AssertTrue<
         IsExact<
           typeof parsed,
-          string[][] | Record<string, string | undefined>[]
+          string[][] | Record<string, string>[]
         >
       >;
     }
@@ -907,7 +970,7 @@ Deno.test({
     {
       const parsed = parse("a\nb", { skipFirstRow: true });
       type _ = AssertTrue<
-        IsExact<typeof parsed, Record<string, string | undefined>[]>
+        IsExact<typeof parsed, Record<string, string>[]>
       >;
     }
 
@@ -925,7 +988,7 @@ Deno.test({
     {
       const parsed = parse("a\nb", { columns: ["aaa"] as string[] });
       type _ = AssertTrue<
-        IsExact<typeof parsed, Record<string, string | undefined>[]>
+        IsExact<typeof parsed, Record<string, string>[]>
       >;
     }
 
@@ -937,7 +1000,7 @@ Deno.test({
     {
       const parsed = parse("a\nb", { skipFirstRow: true, columns: undefined });
       type _ = AssertTrue<
-        IsExact<typeof parsed, Record<string, string | undefined>[]>
+        IsExact<typeof parsed, Record<string, string>[]>
       >;
     }
     {

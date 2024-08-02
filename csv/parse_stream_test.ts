@@ -350,14 +350,23 @@ x,,,
         columns: ["foo", "bar", "baz"],
       },
       {
-        name: "mismatching number of headers and fields",
+        name: "mismatching number of headers and fields 1",
         input: "a,b,c\nd,e",
         skipFirstRow: true,
         columns: ["foo", "bar", "baz"],
         error: {
           klass: Error,
-          msg:
-            "Error number of fields line: 1\nNumber of fields found: 3\nExpected number of fields: 2",
+          msg: "record on line 2 has 2 fields, but the header has 3 fields",
+        },
+      },
+      {
+        name: "mismatching number of headers and fields 2",
+        input: "a,b,c\nd,e,,g",
+        skipFirstRow: true,
+        columns: ["foo", "bar", "baz"],
+        error: {
+          klass: Error,
+          msg: "record on line 2 has 4 fields, but the header has 3 fields",
         },
       },
       {
@@ -482,13 +491,13 @@ Deno.test({
       // `skipFirstRow` may be `true` or `false`.
       // `columns` may be `undefined` or `string[]`.
       // If you don't know exactly what the value of the option is,
-      // the return type is ReadableStream<string[] | Record<string, string | undefined>>
+      // the return type is ReadableStream<string[] | Record<string, string>>
       const options: CsvParseStreamOptions = {};
       const { readable } = new CsvParseStream(options);
       type _ = AssertTrue<
         IsExact<
           typeof readable,
-          ReadableStream<string[] | Record<string, string | undefined>>
+          ReadableStream<string[] | Record<string, string>>
         >
       >;
     }
@@ -511,7 +520,7 @@ Deno.test({
       type _ = AssertTrue<
         IsExact<
           typeof readable,
-          ReadableStream<Record<string, string | undefined>>
+          ReadableStream<Record<string, string>>
         >
       >;
     }
@@ -532,7 +541,7 @@ Deno.test({
       type _ = AssertTrue<
         IsExact<
           typeof readable,
-          ReadableStream<Record<string, string | undefined>>
+          ReadableStream<Record<string, string>>
         >
       >;
     }
@@ -553,7 +562,7 @@ Deno.test({
       type _ = AssertTrue<
         IsExact<
           typeof readable,
-          ReadableStream<Record<string, string | undefined>>
+          ReadableStream<Record<string, string>>
         >
       >;
     }
