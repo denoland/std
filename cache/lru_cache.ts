@@ -1,5 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import type { MemoizationCache } from "./memoize.ts";
+export type { MemoizationCache } from "./memoize.ts";
 
 /**
  * [Least-recently-used](
@@ -8,9 +9,36 @@ import type { MemoizationCache } from "./memoize.ts";
  *
  * Automatically removes entries above the max size based on when they were
  * last accessed with `get`, `set`, or `has`.
+ *
+ * @example
+ * ```ts
+ * import { LruCache } from "@std/cache";
+ * import { assert, assertEquals } from "@std/assert";
+ *
+ * const MAX_SIZE = 3;
+ * const cache = new LruCache<string, number>(MAX_SIZE);
+ *
+ * cache.set("a", 1);
+ * cache.set("b", 2);
+ * cache.set("c", 3);
+ * cache.set("d", 4);
+ *
+ * // most recent values are stored up to `MAX_SIZE`
+ * assertEquals(cache.get("b"), 2);
+ * assertEquals(cache.get("c"), 3);
+ * assertEquals(cache.get("d"), 4);
+ *
+ * // less recent values are removed
+ * assert(!cache.has("a"));
+ * ```
  */
 export class LruCache<K, V> extends Map<K, V>
   implements MemoizationCache<K, V> {
+  /**
+   * Constructs a new `LruCache`.
+   *
+   * @param maxSize The maximum number of entries to store in the cache.
+   */
   constructor(public maxSize: number) {
     super();
   }
@@ -27,6 +55,9 @@ export class LruCache<K, V> extends Map<K, V>
     }
   }
 
+  /**
+   * Checks whether an element with the specified key exists or not.
+   */
   override has(key: K): boolean {
     const exists = super.has(key);
 
@@ -37,6 +68,9 @@ export class LruCache<K, V> extends Map<K, V>
     return exists;
   }
 
+  /**
+   * Gets the element with the specified key.
+   */
   override get(key: K): V | undefined {
     if (super.has(key)) {
       const value = super.get(key)!;
@@ -47,6 +81,9 @@ export class LruCache<K, V> extends Map<K, V>
     return undefined;
   }
 
+  /**
+   * Sets the specified key to the specified value.
+   */
   override set(key: K, value: V): this {
     this.#setMostRecentlyUsed(key, value);
     this.#pruneToMaxSize();

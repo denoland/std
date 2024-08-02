@@ -68,8 +68,6 @@ Deno.test("memoize() is performant for expensive fibonacci function", () => {
   const startTime = Date.now();
   assertEquals(fib(100n), 354224848179261915075n);
 
-  assertEquals(fib.cache.get(fib.getKey.call(undefined, 50n)), 12586269025n);
-
   assertAlmostEquals(Date.now(), startTime, 10);
 });
 
@@ -122,20 +120,6 @@ Deno.test(
 
     assertEquals([1, 1, 2, 2].map(fn), [-1, -1, -2, -2]);
     assertEquals(numTimesCalled, 4);
-  },
-);
-
-Deno.test(
-  "memoize() caches unary function by single arg if `truncateArgs: true` (even if implicitly passed extra args)",
-  () => {
-    let numTimesCalled = 0;
-    const fn = memoize((n: number) => {
-      ++numTimesCalled;
-      return 0 - n;
-    }, { truncateArgs: true });
-
-    assertEquals([1, 1, 2, 2].map(fn), [-1, -1, -2, -2]);
-    assertEquals(numTimesCalled, 2);
   },
 );
 
@@ -395,28 +379,6 @@ Deno.test(
 );
 
 Deno.test(
-  "memoize() caches rejected promises for future function calls if `options.cacheRejectedPromises` is `true`",
-  async () => {
-    let rejectNext = true;
-    const fn = memoize(async (n: number) => {
-      await Promise.resolve();
-      const thisCallWillReject = rejectNext;
-      rejectNext = !rejectNext;
-      if (thisCallWillReject) {
-        throw new Error();
-      }
-      return 0 - n;
-    }, { cacheRejectedPromises: true });
-
-    // first call rejects
-    await assertRejects(() => fn(42));
-    // subsequent calls continue to reject (rejected responses from cache are used)
-    await assertRejects(() => fn(42));
-    await assertRejects(() => fn(42));
-  },
-);
-
-Deno.test(
   "memoize() causes async functions called in parallel to return the same promise (even if rejected)",
   async () => {
     let rejectNext = true;
@@ -427,9 +389,9 @@ Deno.test(
         throw new Error(`Rejected ${n}`);
       }
       return 0 - n;
-    }, { truncateArgs: true });
+    });
 
-    const promises = [42, 42, 888, 888].map(fn);
+    const promises = [42, 42, 888, 888].map((x) => fn(x));
 
     const results = await Promise.allSettled(promises);
 
@@ -440,27 +402,6 @@ Deno.test(
     assert(promises[3] === promises[2]);
     assert(results[3]!.status === "fulfilled");
     assert(results[3]!.value === -888);
-  },
-);
-
-Deno.test(
-  "memoize() allows manipulating the `cache` property of the memoized function",
-  () => {
-    let numTimesCalled = 0;
-    const fn = memoize((n: number) => {
-      ++numTimesCalled;
-      return 0 - n;
-    });
-
-    assertEquals(fn(42), -42);
-    assertEquals(numTimesCalled, 1);
-    assertEquals(fn(42), -42);
-    assertEquals(numTimesCalled, 1);
-
-    fn.cache.delete(fn.getKey.call(undefined, 42));
-
-    assertEquals(fn(42), -42);
-    assertEquals(numTimesCalled, 2);
   },
 );
 
@@ -476,11 +417,6 @@ Deno.test("memoize() allows passing a `Map` as a cache", () => {
   assertEquals(numTimesCalled, 1);
   assertEquals(fn(42), -42);
   assertEquals(numTimesCalled, 1);
-
-  cache.delete(fn.getKey.call(undefined, 42));
-
-  assertEquals(fn(42), -42);
-  assertEquals(numTimesCalled, 2);
 });
 
 Deno.test("memoize() allows passing a custom cache object", () => {
@@ -550,17 +486,6 @@ Deno.test("memoize() only caches single latest result with a `LruCache` of maxSi
 
   assertEquals(fn(1), -1);
   assertEquals(numTimesCalled, 2);
-});
-
-Deno.test("memoize() allows introspecting the cache", () => {
-  const fn = memoize((...args: unknown[]) => args);
-  assertEquals(fn(1), [1]);
-  assertEquals(fn("a"), ["a"]);
-  assertEquals(fn("a", "b"), ["a", "b"]);
-
-  assertEquals(fn.cache.get(fn.getKey.call(undefined, 1)), [1]);
-  assertEquals(fn.cache.get(fn.getKey.call(undefined, "a")), ["a"]);
-  assertEquals(fn.cache.get(fn.getKey.call(undefined, "a", "b")), ["a", "b"]);
 });
 
 Deno.test("memoize() preserves function length", () => {
@@ -633,147 +558,4 @@ Deno.test("memoize() has correct TS types", async (t) => {
       const _fn5: typeof fn<string> = (n: number) => n;
     });
   });
-
-  await t.step(
-    "memoize() gives correct types of props on returned function",
-    async (t) => {
-      await t.step(
-        "with no options",
-        () => {
-          // no need to run, only for type checking
-          void (() => {
-            const fn = (x: 1) => x;
-            const memoized = memoize(fn);
-
-            const _map1: Map<string, 1> = memoized.cache;
-            // @ts-expect-error Type '1' is not assignable to type '2'.
-            const _map2: Map<string, 2> = memoized.cache;
-            // @ts-expect-error Type '1' is not assignable to type string.
-            const _map3: Map<1, 1> = memoized.cache;
-
-            const _gk1: (x: 1) => string = memoized.getKey;
-            // @ts-expect-error Type '1' is not assignable to type '2'.
-            const _gk2: (x: 2) => string = memoized.getKey;
-            // @ts-expect-error Type 'string' is not assignable to type '1'.
-            const _gk3: (x: 1) => 1 = memoized.getKey;
-          });
-        },
-      );
-      await t.step(
-        "with empty options",
-        () => {
-          // no need to run, only for type checking
-          void (() => {
-            const fn = (x: 1) => x;
-            const memoized = memoize(fn, {});
-
-            const _map1: Map<string, 1> = memoized.cache;
-            // @ts-expect-error Type '1' is not assignable to type '2'.
-            const _map2: Map<string, 2> = memoized.cache;
-            // @ts-expect-error Type '1' is not assignable to type string.
-            const _map3: Map<1, 1> = memoized.cache;
-
-            const _gk1: (x: 1) => string = memoized.getKey;
-            // @ts-expect-error Type '1' is not assignable to type '2'.
-            const _gk2: (x: 2) => string = memoized.getKey;
-            // @ts-expect-error Type 'string' is not assignable to type '1'.
-            const _gk3: (x: 1) => 1 = memoized.getKey;
-          });
-        },
-      );
-
-      await t.step(
-        "with getKey specified",
-        () => {
-          // no need to run, only for type checking
-          void (() => {
-            const fn = (x: 1) => x;
-            const memoized = memoize(fn, {
-              getKey: () => 2 as const,
-            });
-
-            const _map1: Map<2, 1> = memoized.cache;
-            // @ts-expect-error Type '1' is not assignable to type '2'.
-            const _map2: Map<2, 2> = memoized.cache;
-            // @ts-expect-error Type '1' is not assignable to type string.
-            const _map3: Map<1, 1> = memoized.cache;
-
-            const _gk1: (x: 1) => 2 = memoized.getKey;
-            // @ts-expect-error Type '1' is not assignable to type '2'.
-            const _gk2: (x: 2) => 2 = memoized.getKey;
-            // @ts-expect-error Type 'string' is not assignable to type '1'.
-            const _gk3: (x: 1) => 1 = memoized.getKey;
-          });
-        },
-      );
-      await t.step(
-        "with cache specified",
-        () => {
-          // no need to run, only for type checking
-          void (() => {
-            const fn = (x: 1) => x;
-            const memoized = memoize(fn, {
-              cache: new LruCache<string, 1>(99),
-            });
-
-            const _lru1: LruCache<string, 1> = memoized.cache;
-            // @ts-expect-error Type '1' is not assignable to type '2'.
-            const _lru2: LruCache<string, 2> = memoized.cache;
-            // @ts-expect-error Type '1' is not assignable to type string.
-            const _lru3: LruCache<1, 1> = memoized.cache;
-
-            const _gk1: (x: 1) => string = memoized.getKey;
-            // @ts-expect-error Type '1' is not assignable to type '2'.
-            const _gk2: (x: 2) => string = memoized.getKey;
-            // @ts-expect-error Type 'string' is not assignable to type '1'.
-            const _gk3: (x: 1) => 1 = memoized.getKey;
-          });
-        },
-      );
-      await t.step(
-        "with both specified",
-        () => {
-          // no need to run, only for type checking
-          void (() => {
-            const fn = (x: 1) => x;
-            const memoized = memoize(fn, {
-              getKey: () => "",
-              cache: new LruCache<string, 1>(99),
-            });
-
-            const _lru1: LruCache<string, 1> = memoized.cache;
-            // @ts-expect-error Type '1' is not assignable to type '2'.
-            const _lru2: LruCache<string, 2> = memoized.cache;
-            // @ts-expect-error Type '1' is not assignable to type string.
-            const _lru3: LruCache<1, 1> = memoized.cache;
-
-            const _gk1: (x: 1) => string = memoized.getKey;
-            // @ts-expect-error Type '1' is not assignable to type '2'.
-            const _gk2: (x: 2) => string = memoized.getKey;
-            // @ts-expect-error Type 'string' is not assignable to type '1'.
-            const _gk3: (x: 1) => 1 = memoized.getKey;
-          });
-        },
-      );
-      await t.step(
-        "conflicting types",
-        () => {
-          // no need to run, only for type checking
-          void (() => {
-            const fn = (x: 1) => x;
-            const _memoized1 = memoize(fn, {
-              getKey: () => 2 as const,
-              // @ts-expect-error Type 'LruCache<string, 1>' is not assignable to type 'MemoizationCache<2, 1>'.
-              cache: new LruCache<string, 1>(99),
-            });
-
-            const _memoized2 = memoize(fn, {
-              // @ts-expect-error Type '(x: 2) => string' is not assignable to type '(this: unknown, x: 1) => string'.
-              getKey: (_x: 2) => "",
-            });
-          });
-        },
-      );
-    },
-  );
 });

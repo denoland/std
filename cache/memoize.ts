@@ -2,7 +2,11 @@
 
 // deno-lint-ignore no-unused-vars
 import type { LruCache } from "./lru_cache.ts";
+import { _serializeArgList } from "./_serialize_arg_list.ts";
 
+/**
+ * A cache suitable for use with {@linkcode memoize}.
+ */
 export type MemoizationCache<K, V> = {
   has: (key: K) => boolean;
   get: (key: K) => V | undefined;
@@ -45,23 +49,6 @@ export type MemoizeOptions<
    * ```
    */
   getKey?: (this: ThisParameterType<Fn>, ...args: Parameters<Fn>) => Key;
-  /**
-   * Only use args as cache keys up to the `length` property of the function.
-   * Useful for passing unary functions as array callbacks, but should be
-   * avoided for functions with variable argument length (`...rest` or default
-   * params)
-   *
-   * @default {false}
-   */
-  truncateArgs?: boolean;
-  /**
-   * By default, promises are automatically removed from the cache upon
-   * rejection. If `cacheRejectedPromises` is set to `true`, promises will be
-   * retained in the cache even if rejected.
-   *
-   * @default {false}
-   */
-  cacheRejectedPromises?: boolean;
 };
 
 /**
@@ -81,11 +68,18 @@ export type MemoizeOptions<
  * });
  *
  * assertEquals(fib(100n), 354224848179261915075n);
- *
- * // you can also introspect cached values using the `cache` and `getKey`
- * // properties of the memoized function
- * assertEquals(fib.cache.get(fib.getKey.call(undefined, 30n)), 832040n);
  * ```
+ *
+ * > [!NOTE]
+ * > * By default, memoization is on the basis of all arguments passed to the
+ * >   function, with equality determined by reference. This means that, for
+ * >   example, passing a memoized function as `arr.map(func)` will not use the
+ * >   cached results, as the index is implicitly passed as an argument. To
+ * >   avoid this, you can pass a custom `getKey` option or use the memoized
+ * >   function inside an anonymous callback like `arr.map((x) => func(x))`.
+ * > * Memoization will not cache thrown errors and will eject promises from
+ * >   the cache upon rejection. If you want to retain errors or rejected
+ * >   promises in the cache, you will need to catch and return them.
  */
 export function memoize<
   Fn extends (...args: never[]) => unknown,
@@ -97,10 +91,7 @@ export function memoize<
 >(
   fn: Fn,
   options?: MemoizeOptions<Fn, Key, Cache>,
-): Fn & {
-  cache: Cache;
-  getKey: (this: ThisParameterType<Fn>, ...args: Parameters<Fn>) => Key;
-} {
+): Fn {
   const cache = options?.cache ?? new Map();
   const getKey = options?.getKey ??
     _serializeArgList(
@@ -108,15 +99,10 @@ export function memoize<
     ) as unknown as (
       (this: ThisParameterType<Fn>, ...args: Parameters<Fn>) => Key
     );
-  const truncateArgs = options?.truncateArgs ?? false;
-  const cacheRejectedPromises = options?.cacheRejectedPromises ?? false;
-
   const memoized = function (
     this: ThisParameterType<Fn>,
     ...args: Parameters<Fn>
   ): ReturnType<Fn> {
-    if (truncateArgs) args = args.slice(0, fn.length) as Parameters<Fn>;
-
     const key = getKey.apply(this, args) as Key;
 
     if (cache.has(key)) {
@@ -125,7 +111,7 @@ export function memoize<
 
     let val = fn.apply(this, args) as ReturnType<Fn>;
 
-    if (val instanceof Promise && !cacheRejectedPromises) {
+    if (val instanceof Promise) {
       val = val.catch((reason) => {
         cache.delete(key);
         throw reason;
@@ -138,91 +124,10 @@ export function memoize<
   } as Fn;
 
   return Object.defineProperties(
-    Object.assign(memoized, { cache: cache as Cache, getKey }),
+    memoized,
     {
       length: { value: fn.length },
       name: { value: fn.name },
     },
   );
-}
-
-/**
- * Default serialization of arguments list for use as cache keys. Equivalence
- * follows [`SameValueZero`](https://tc39.es/ecma262/multipage/abstract-operations.html#sec-samevaluezero)
- * reference equality, such that `getKey(x, y) === getKey(x, y)` for all values
- * of `x` and `y`, but `getKey({}) !== getKey({})`.
- *
- * @param cache - The cache for which the keys will be used.
- * @returns `getKey`, the function for getting cache keys.
- */
-export function _serializeArgList<Return>(
-  cache: MemoizationCache<unknown, Return>,
-): (this: unknown, ...args: unknown[]) => string {
-  const weakKeyToKeySegmentCache = new WeakMap<WeakKey, string>();
-  const weakKeySegmentToKeyCache = new Map<string, string[]>();
-  let i = 0;
-
-  const registry = new FinalizationRegistry<string>((keySegment) => {
-    for (const key of weakKeySegmentToKeyCache.get(keySegment) ?? []) {
-      cache.delete(key);
-    }
-    weakKeySegmentToKeyCache.delete(keySegment);
-  });
-
-  return function getKey(...args) {
-    const weakKeySegments: string[] = [];
-    const keySegments = [this, ...args].map((arg) => {
-      if (typeof arg === "undefined") return "undefined";
-      if (typeof arg === "bigint") return `${arg}n`;
-
-      if (typeof arg === "number") {
-        return String(arg);
-      }
-
-      if (
-        arg === null ||
-        typeof arg === "string" ||
-        typeof arg === "boolean"
-      ) {
-        // This branch will need to be updated if further types are added to
-        // the language that support value equality,
-        // e.g. https://github.com/tc39/proposal-record-tuple
-        return JSON.stringify(arg);
-      }
-
-      try {
-        assertWeakKey(arg);
-      } catch (e) {
-        if (typeof arg === "symbol") {
-          return `Symbol.for(${JSON.stringify(arg.description)})`;
-        }
-        throw e;
-      }
-
-      if (!weakKeyToKeySegmentCache.has(arg)) {
-        const keySegment = `{${i++}}`;
-        weakKeySegments.push(keySegment);
-        registry.register(arg, keySegment);
-        weakKeyToKeySegmentCache.set(arg, keySegment);
-      }
-
-      const keySegment = weakKeyToKeySegmentCache.get(arg)!;
-      weakKeySegments.push(keySegment);
-      return keySegment;
-    });
-
-    const key = keySegments.join(",");
-
-    for (const keySegment of weakKeySegments) {
-      const keys = weakKeySegmentToKeyCache.get(keySegment) ?? [];
-      keys.push(key);
-      weakKeySegmentToKeyCache.set(keySegment, keys);
-    }
-
-    return key;
-  };
-}
-
-function assertWeakKey(arg: unknown): asserts arg is WeakKey {
-  new WeakRef(arg as WeakKey);
 }

@@ -1,6 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import { assertEquals } from "@std/assert";
-import { _serializeArgList } from "./memoize.ts";
+import { _serializeArgList } from "./_serialize_arg_list.ts";
 import { delay } from "@std/async";
 
 Deno.test("_serializeArgList() serializes simple numbers", () => {
