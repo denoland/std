@@ -903,20 +903,3 @@ export class DumperState {
     this.usedDuplicates = new Set();
   }
 }
-
-// deno-lint-ignore no-explicit-any
-export function dump(input: any, options: DumperStateOptions = {}): string {
-  const state = new DumperState(options);
-
-  if (state.useAnchors) state.getDuplicateReferences(input);
-
-  if (
-    state.writeNode(0, input, {
-      block: true,
-      compact: true,
-      isKey: false,
-    })
-  ) return `${state.dump}\n`;
-
-  return "";
-}

@@ -58,7 +58,7 @@ const PATTERN_TAG_HANDLE = /^(?:!|!!|![a-z\-]+!)$/i;
 const PATTERN_TAG_URI =
   /^(?:!|[^,\[\]\{\}])(?:%[0-9a-f]{2}|[0-9a-z\-#;\/\?:@&=\+\$,_\.!~\*'\(\)\[\]])*$/i;
 
-interface LoaderStateOptions {
+export interface LoaderStateOptions {
   /** specifies a schema to use. */
   schema?: Schema;
   /** compatibility with JSON.parse behaviour. */
@@ -136,7 +136,7 @@ function codepointToChar(codepoint: number): string {
   );
 }
 
-class LoaderState {
+export class LoaderState {
   schema: Schema;
   input: string;
   length: number;
@@ -209,6 +209,131 @@ class LoaderState {
   dispatchWarning(message: string) {
     const error = this.#createError(message);
     this.onWarning?.(error);
+  }
+
+  readDocument(state: LoaderState) {
+    const documentStart = state.position;
+    let position: number;
+    let directiveName: string;
+    let directiveArgs: string[];
+    let hasDirectives = false;
+    let ch: number;
+
+    state.version = null;
+    state.checkLineBreaks = false;
+    state.tagMap = Object.create(null);
+    state.anchorMap = Object.create(null);
+
+    while ((ch = state.peek()) !== 0) {
+      skipSeparationSpace(state, true, -1);
+
+      ch = state.peek();
+
+      if (state.lineIndent > 0 || ch !== PERCENT) {
+        break;
+      }
+
+      hasDirectives = true;
+      ch = state.next();
+      position = state.position;
+
+      while (ch !== 0 && !isWhiteSpaceOrEOL(ch)) {
+        ch = state.next();
+      }
+
+      directiveName = state.input.slice(position, state.position);
+      directiveArgs = [];
+
+      if (directiveName.length < 1) {
+        return state.throwError(
+          "directive name must not be less than one character in length",
+        );
+      }
+
+      while (ch !== 0) {
+        while (isWhiteSpace(ch)) {
+          ch = state.next();
+        }
+
+        if (ch === SHARP) {
+          do {
+            ch = state.next();
+          } while (ch !== 0 && !isEOL(ch));
+          break;
+        }
+
+        if (isEOL(ch)) break;
+
+        position = state.position;
+
+        while (ch !== 0 && !isWhiteSpaceOrEOL(ch)) {
+          ch = state.next();
+        }
+
+        directiveArgs.push(state.input.slice(position, state.position));
+      }
+
+      if (ch !== 0) readLineBreak(state);
+
+      switch (directiveName) {
+        case "YAML":
+          yamlDirectiveHandler(state, ...directiveArgs);
+          break;
+        case "TAG":
+          tagDirectiveHandler(state, ...directiveArgs);
+          break;
+        default:
+          state.dispatchWarning(
+            `unknown document directive "${directiveName}"`,
+          );
+          break;
+      }
+    }
+
+    skipSeparationSpace(state, true, -1);
+
+    if (
+      state.lineIndent === 0 &&
+      state.peek() === MINUS &&
+      state.peek(1) === MINUS &&
+      state.peek(2) === MINUS
+    ) {
+      state.position += 3;
+      skipSeparationSpace(state, true, -1);
+    } else if (hasDirectives) {
+      return state.throwError("directives end mark is expected");
+    }
+
+    composeNode(state, state.lineIndent - 1, CONTEXT_BLOCK_OUT, false, true);
+    skipSeparationSpace(state, true, -1);
+
+    if (
+      state.checkLineBreaks &&
+      PATTERN_NON_ASCII_LINE_BREAKS.test(
+        state.input.slice(documentStart, state.position),
+      )
+    ) {
+      state.dispatchWarning("non-ASCII line breaks are interpreted as content");
+    }
+
+    if (state.position === state.lineStart && testDocumentSeparator(state)) {
+      if (state.peek() === DOT) {
+        state.position += 3;
+        skipSeparationSpace(state, true, -1);
+      }
+    } else if (state.position < state.length - 1) {
+      return state.throwError(
+        "end of the stream or a document separator is expected",
+      );
+    }
+
+    return state.result;
+  }
+
+  *readDocuments(state: LoaderState) {
+    while (state.position < state.length - 1) {
+      yield this.readDocument(state);
+    }
   }
 }
 
@@ -1565,166 +1690,4 @@ function composeNode(
   }
 
   return state.tag !== null || state.anchor !== null || hasContent;
-}
-
-function readDocument(state: LoaderState) {
-  const documentStart = state.position;
-  let position: number;
-  let directiveName: string;
-  let directiveArgs: string[];
-  let hasDirectives = false;
-  let ch: number;
-
-  state.version = null;
-  state.checkLineBreaks = false;
-  state.tagMap = Object.create(null);
-  state.anchorMap = Object.create(null);
-
-  while ((ch = state.peek()) !== 0) {
-    skipSeparationSpace(state, true, -1);
-
-    ch = state.peek();
-
-    if (state.lineIndent > 0 || ch !== PERCENT) {
-      break;
-    }
-
-    hasDirectives = true;
-    ch = state.next();
-    position = state.position;
-
-    while (ch !== 0 && !isWhiteSpaceOrEOL(ch)) {
-      ch = state.next();
-    }
-
-    directiveName = state.input.slice(position, state.position);
-    directiveArgs = [];
-
-    if (directiveName.length < 1) {
-      return state.throwError(
-        "directive name must not be less than one character in length",
-      );
-    }
-
-    while (ch !== 0) {
-      while (isWhiteSpace(ch)) {
-        ch = state.next();
-      }
-
-      if (ch === SHARP) {
-        do {
-          ch = state.next();
-        } while (ch !== 0 && !isEOL(ch));
-        break;
-      }
-
-      if (isEOL(ch)) break;
-
-      position = state.position;
-
-      while (ch !== 0 && !isWhiteSpaceOrEOL(ch)) {
-        ch = state.next();
-      }
-
-      directiveArgs.push(state.input.slice(position, state.position));
-    }
-
-    if (ch !== 0) readLineBreak(state);
-
-    switch (directiveName) {
-      case "YAML":
-        yamlDirectiveHandler(state, ...directiveArgs);
-        break;
-      case "TAG":
-        tagDirectiveHandler(state, ...directiveArgs);
-        break;
-      default:
-        state.dispatchWarning(`unknown document directive "${directiveName}"`);
-        break;
-    }
-  }
-
-  skipSeparationSpace(state, true, -1);
-
-  if (
-    state.lineIndent === 0 &&
-    state.peek() === MINUS &&
-    state.peek(1) === MINUS &&
-    state.peek(2) === MINUS
-  ) {
-    state.position += 3;
-    skipSeparationSpace(state, true, -1);
-  } else if (hasDirectives) {
-    return state.throwError("directives end mark is expected");
-  }
-
-  composeNode(state, state.lineIndent - 1, CONTEXT_BLOCK_OUT, false, true);
-  skipSeparationSpace(state, true, -1);
-
-  if (
-    state.checkLineBreaks &&
-    PATTERN_NON_ASCII_LINE_BREAKS.test(
-      state.input.slice(documentStart, state.position),
-    )
-  ) {
-    state.dispatchWarning("non-ASCII line breaks are interpreted as content");
-  }
-
-  if (state.position === state.lineStart && testDocumentSeparator(state)) {
-    if (state.peek() === DOT) {
-      state.position += 3;
-      skipSeparationSpace(state, true, -1);
-    }
-  } else if (state.position < state.length - 1) {
-    return state.throwError(
-      "end of the stream or a document separator is expected",
-    );
-  }
-
-  return state.result;
-}
-
-function* readDocuments(state: LoaderState) {
-  while (state.position < state.length - 1) {
-    yield readDocument(state);
-  }
-}
-
-function sanitizeInput(input: string) {
-  input = String(input);
-
-  if (input.length > 0) {
-    // Add tailing `\n` if not exists
-    if (!isEOL(input.charCodeAt(input.length - 1))) input += "\n";
-
-    // Strip BOM
-    if (input.charCodeAt(0) === 0xfeff) input = input.slice(1);
-  }
-
-  // Use 0 as string terminator. That significantly simplifies bounds check.
-  input += "\0";
-
-  return input;
-}
-
-export function loadDocuments(
-  input: string,
-  options: LoaderStateOptions = {},
-): unknown[] {
-  input = sanitizeInput(input);
-  const state = new LoaderState(input, options);
-  return [...readDocuments(state)];
-}
-
-export function load(input: string, options: LoaderStateOptions = {}): unknown {
-  input = sanitizeInput(input);
-  const state = new LoaderState(input, options);
-  const documentGenerator = readDocuments(state);
-  const document = documentGenerator.next().value;
-  if (!documentGenerator.next().done) {
-    throw new SyntaxError(
-      "expected a single document in the stream, but found more",
-    );
-  }
-  return document ?? null;
 }
