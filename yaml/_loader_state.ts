@@ -211,128 +211,128 @@ export class LoaderState {
     this.onWarning?.(error);
   }
 
-  readDocument(state: LoaderState) {
-    const documentStart = state.position;
+  readDocument() {
+    const documentStart = this.position;
     let position: number;
     let directiveName: string;
     let directiveArgs: string[];
     let hasDirectives = false;
     let ch: number;
 
-    state.version = null;
-    state.checkLineBreaks = false;
-    state.tagMap = Object.create(null);
-    state.anchorMap = Object.create(null);
+    this.version = null;
+    this.checkLineBreaks = false;
+    this.tagMap = Object.create(null);
+    this.anchorMap = Object.create(null);
 
-    while ((ch = state.peek()) !== 0) {
-      skipSeparationSpace(state, true, -1);
+    while ((ch = this.peek()) !== 0) {
+      skipSeparationSpace(this, true, -1);
 
-      ch = state.peek();
+      ch = this.peek();
 
-      if (state.lineIndent > 0 || ch !== PERCENT) {
+      if (this.lineIndent > 0 || ch !== PERCENT) {
         break;
       }
 
       hasDirectives = true;
-      ch = state.next();
-      position = state.position;
+      ch = this.next();
+      position = this.position;
 
       while (ch !== 0 && !isWhiteSpaceOrEOL(ch)) {
-        ch = state.next();
+        ch = this.next();
       }
 
-      directiveName = state.input.slice(position, state.position);
+      directiveName = this.input.slice(position, this.position);
       directiveArgs = [];
 
       if (directiveName.length < 1) {
-        return state.throwError(
+        return this.throwError(
           "directive name must not be less than one character in length",
         );
       }
 
       while (ch !== 0) {
         while (isWhiteSpace(ch)) {
-          ch = state.next();
+          ch = this.next();
         }
 
         if (ch === SHARP) {
           do {
-            ch = state.next();
+            ch = this.next();
           } while (ch !== 0 && !isEOL(ch));
           break;
         }
 
         if (isEOL(ch)) break;
 
-        position = state.position;
+        position = this.position;
 
         while (ch !== 0 && !isWhiteSpaceOrEOL(ch)) {
-          ch = state.next();
+          ch = this.next();
         }
 
-        directiveArgs.push(state.input.slice(position, state.position));
+        directiveArgs.push(this.input.slice(position, this.position));
       }
 
-      if (ch !== 0) readLineBreak(state);
+      if (ch !== 0) readLineBreak(this);
 
       switch (directiveName) {
         case "YAML":
-          yamlDirectiveHandler(state, ...directiveArgs);
+          yamlDirectiveHandler(this, ...directiveArgs);
           break;
         case "TAG":
-          tagDirectiveHandler(state, ...directiveArgs);
+          tagDirectiveHandler(this, ...directiveArgs);
           break;
         default:
-          state.dispatchWarning(
+          this.dispatchWarning(
             `unknown document directive "${directiveName}"`,
           );
           break;
       }
     }
 
-    skipSeparationSpace(state, true, -1);
+    skipSeparationSpace(this, true, -1);
 
     if (
-      state.lineIndent === 0 &&
-      state.peek() === MINUS &&
-      state.peek(1) === MINUS &&
-      state.peek(2) === MINUS
+      this.lineIndent === 0 &&
+      this.peek() === MINUS &&
+      this.peek(1) === MINUS &&
+      this.peek(2) === MINUS
     ) {
-      state.position += 3;
-      skipSeparationSpace(state, true, -1);
+      this.position += 3;
+      skipSeparationSpace(this, true, -1);
     } else if (hasDirectives) {
-      return state.throwError("directives end mark is expected");
+      return this.throwError("directives end mark is expected");
     }
 
-    composeNode(state, state.lineIndent - 1, CONTEXT_BLOCK_OUT, false, true);
-    skipSeparationSpace(state, true, -1);
+    composeNode(this, this.lineIndent - 1, CONTEXT_BLOCK_OUT, false, true);
+    skipSeparationSpace(this, true, -1);
 
     if (
-      state.checkLineBreaks &&
+      this.checkLineBreaks &&
       PATTERN_NON_ASCII_LINE_BREAKS.test(
-        state.input.slice(documentStart, state.position),
+        this.input.slice(documentStart, this.position),
       )
     ) {
-      state.dispatchWarning("non-ASCII line breaks are interpreted as content");
+      this.dispatchWarning("non-ASCII line breaks are interpreted as content");
     }
 
-    if (state.position === state.lineStart && testDocumentSeparator(state)) {
-      if (state.peek() === DOT) {
-        state.position += 3;
-        skipSeparationSpace(state, true, -1);
+    if (this.position === this.lineStart && testDocumentSeparator(this)) {
+      if (this.peek() === DOT) {
+        this.position += 3;
+        skipSeparationSpace(this, true, -1);
       }
-    } else if (state.position < state.length - 1) {
-      return state.throwError(
+    } else if (this.position < this.length - 1) {
+      return this.throwError(
         "end of the stream or a document separator is expected",
       );
     }
 
-    return state.result;
+    return this.result;
   }
 
-  *readDocuments(state: LoaderState) {
-    while (state.position < state.length - 1) {
-      yield this.readDocument(state);
+  *readDocuments() {
+    while (this.position < this.length - 1) {
+      yield this.readDocument();
     }
   }
 }

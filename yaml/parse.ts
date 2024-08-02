@@ -81,7 +81,7 @@ export function parse(
     ...options,
     schema: SCHEMA_MAP.get(options.schema!),
   });
-  const documentGenerator = state.readDocuments(state);
+  const documentGenerator = state.readDocuments();
   const document = documentGenerator.next().value;
   if (!documentGenerator.next().done) {
     throw new SyntaxError(
@@ -124,5 +124,5 @@ export function parseAll(content: string, options: ParseOptions = {}): unknown {
     ...options,
     schema: SCHEMA_MAP.get(options.schema!),
   });
-  return [...state.readDocuments(state)];
+  return [...state.readDocuments()];
 }
