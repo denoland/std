@@ -374,8 +374,7 @@ function setNested(
   collect = false,
 ) {
   keys = [...keys];
-  const key = keys.pop();
-  if (!key) throw new Error(`'keys' cannot be an empty array.`);
+  const key = keys.pop()!;
 
   keys.forEach((key) => object = (object[key] ??= {}) as NestedMapping);
 
