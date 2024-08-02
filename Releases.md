@@ -1,8 +1,9 @@
 ### 2024.08.02
 
-#### @std/assert 1.1.0 (minor)
+#### @std/assert 1.0.2 (patch)
 
-- feat(assert): add `options` parameter to `AssertionError` constructor (#5561)
+- feat(assert/unstable): add `options` parameter to `AssertionError` constructor
+  (#5561)
 - chore(assert): mark `options` argument of `AssertionError` constructor
   unstable (#5573)
 
@@ -44,6 +45,7 @@
 
 - BREAKING(fmt): rename `PrettyDurationOptions` to `FormatOptions` (#5591)
 - docs(fmt,fs,text,yaml): fix Markdown alerts (#5568)
+- chore(fmt): release `fmt@1.0.0` (#5454)
 
 #### @std/front-matter 1.0.1 (patch)
 
@@ -79,6 +81,10 @@
 #### @std/io 0.224.4 (patch)
 
 - refactor(io): use `writeAll()` within `copy()` (#5580)
+
+#### @std/net 1.0.0 (major)
+
+- chore(net): release net@1.0.0 (#5457)
 
 #### @std/semver 1.0.0 (major)
 
