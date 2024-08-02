@@ -505,9 +505,9 @@ export function parse<const T extends ParseOptions>(
       headers = options.columns;
     }
 
-    const firstLineIndex = options.skipFirstRow ? 1 : 0;
+    const zeroBasedFirstLineIndex = options.skipFirstRow ? 1 : 0;
     return r.map((row, i) => {
-      return convertRowToObject(row, headers, firstLineIndex + i);
+      return convertRowToObject(row, headers, zeroBasedFirstLineIndex + i);
     }) as ParseResult<ParseOptions, T>;
   }
   return r as ParseResult<ParseOptions, T>;

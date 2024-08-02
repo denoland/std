@@ -350,14 +350,23 @@ x,,,
         columns: ["foo", "bar", "baz"],
       },
       {
-        name: "mismatching number of headers and fields",
+        name: "mismatching number of headers and fields 1",
         input: "a,b,c\nd,e",
         skipFirstRow: true,
         columns: ["foo", "bar", "baz"],
         error: {
           klass: Error,
-          msg:
-            "Error number of fields line: 1\nNumber of fields found: 3\nExpected number of fields: 2",
+          msg: "record on line 2 has 2 fields, but the header has 3 fields",
+        },
+      },
+      {
+        name: "mismatching number of headers and fields 2",
+        input: "a,b,c\nd,e,,g",
+        skipFirstRow: true,
+        columns: ["foo", "bar", "baz"],
+        error: {
+          klass: Error,
+          msg: "record on line 2 has 4 fields, but the header has 3 fields",
         },
       },
       {

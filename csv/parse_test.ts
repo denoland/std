@@ -23,6 +23,7 @@ Deno.test({
         );
       },
     });
+
     await t.step({
       name: "CRLF",
       fn() {
@@ -93,6 +94,42 @@ Deno.test({
         assertEquals(
           parse(input),
           [["two\nline", "one line", "three\nline\nfield"]],
+        );
+      },
+    });
+
+    await t.step({
+      name: "BlankField",
+      fn() {
+        const input = "a,b,c\nd,,f";
+        assertEquals(
+          parse(input),
+          [["a", "b", "c"], ["d", "", "f"]],
+        );
+      },
+    });
+
+    await t.step({
+      name: "BlankField2",
+      fn() {
+        const input = "a,b,c\nd,,f";
+        assertEquals(
+          parse(input, { skipFirstRow: true }),
+          [{ a: "d", b: "", c: "f" }],
+        );
+      },
+    });
+
+    await t.step({
+      name: "BlankField3",
+      fn() {
+        const input = "a,b,c\nd,,f";
+        assertEquals(
+          parse(input, { columns: ["one", "two", "three"] }),
+          [
+            { one: "a", two: "b", three: "c" },
+            { one: "d", two: "", three: "f" },
+          ],
         );
       },
     });
@@ -783,7 +820,7 @@ c"d,e`;
       },
     });
     await t.step({
-      name: "mismatching number of headers and fields",
+      name: "mismatching number of headers and fields 1",
       fn() {
         const input = "a,b,c\nd,e";
         assertThrows(
@@ -793,7 +830,22 @@ c"d,e`;
               columns: ["foo", "bar", "baz"],
             }),
           Error,
-          "Error number of fields line: 1\nNumber of fields found: 3\nExpected number of fields: 2",
+          "record on line 2 has 2 fields, but the header has 3 fields",
+        );
+      },
+    });
+    await t.step({
+      name: "mismatching number of headers and fields 2",
+      fn() {
+        const input = "a,b,c\nd,e,,g";
+        assertThrows(
+          () =>
+            parse(input, {
+              skipFirstRow: true,
+              columns: ["foo", "bar", "baz"],
+            }),
+          Error,
+          "record on line 2 has 4 fields, but the header has 3 fields",
         );
       },
     });
