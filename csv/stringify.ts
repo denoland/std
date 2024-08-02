@@ -415,7 +415,7 @@ function getValuesFromItem(
  * import { stringify } from "@std/csv/stringify";
  * import { assertEquals } from "@std/assert/equals";
  *
- * const data = ["Rick", 70];
+ * const data = [["Rick", 70]];
  *
  * assertEquals(stringify(data, { bom: true }), "\ufeffRick,70\r\n");
  * ```
