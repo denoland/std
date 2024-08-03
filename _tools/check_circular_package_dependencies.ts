@@ -63,6 +63,7 @@ type Mod =
   | "msgpack"
   | "net"
   | "path"
+  | "random"
   | "regexp"
   | "semver"
   | "streams"
@@ -104,6 +105,7 @@ const ENTRYPOINTS: Record<Mod, string[]> = {
   msgpack: ["mod.ts"],
   net: ["mod.ts"],
   path: ["mod.ts"],
+  random: ["mod.ts"],
   regexp: ["mod.ts"],
   semver: ["mod.ts"],
   streams: ["mod.ts"],
