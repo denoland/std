@@ -1,5 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import { randomIntegerBetween } from "./between.ts";
+import { assert } from "@std/assert/assert";
 
 /**
  * A 3-tuple seed for a {@linkcode SeededPrng}.
@@ -61,11 +62,12 @@ export class SeededPrng {
    * @returns The seed as a 3-tuple.
    *
    * @example Usage
-   * ```ts no-assert
+   * ```ts
    * import { SeededPrng } from "@std/random";
+   * import { assertEquals } from "@std/assert";
    *
-   * const prng = new SeededPrng(1722685125224);
-   * console.log(prng.seed); // [5489, 15597, 5057]
+   * const prng = new SeededPrng(1722685125225);
+   * assertEquals(prng.seed, [5489, 15597, 5057]);
    * ```
    */
   get seed(): Seed {
@@ -77,9 +79,7 @@ export class SeededPrng {
   }
 
   set seed(seed: Seed | number) {
-    const [x, y, z] = typeof seed === "number"
-      ? this.#numberToSeed(seed)
-      : seed;
+    const [x, y, z] = this.#normalizeSeed(seed);
     this.#x = x;
     this.#y = y;
     this.#z = z;
@@ -90,14 +90,15 @@ export class SeededPrng {
    * @returns A random number between 0 and 1
    *
    * @example Usage
-   * ```ts no-assert
+   * ```ts
    * import { SeededPrng } from "@std/random";
+   * import { assertEquals } from "@std/assert";
    *
    * const prng = new SeededPrng([5489, 15597, 5057]);
    *
-   * prng.random(); // 0.8773132982020172
-   * prng.random(); // 0.18646363474450567
-   * prng.random(); // 0.12047326745398279
+   * assertEquals(prng.random(), 0.8773132982020172);
+   * assertEquals(prng.random(), 0.18646363474450567);
+   * assertEquals(prng.random(), 0.12047326745398279);
    * ```
    */
   random(): number {
@@ -116,9 +117,10 @@ export class SeededPrng {
    * @example Usage
    * ```ts no-assert
    * import { SeededPrng } from "@std/random";
+   * import { assertEquals } from "@std/assert";
    *
    * const prng = new SeededPrng([5489, 15597, 5057]);
-   * prng.randomSeed(); // [26556, 5652, 3654]
+   * assertEquals(prng.randomSeed(), [26556, 5652, 3654]);
    * ```
    */
   randomSeed(): Seed {
@@ -131,11 +133,28 @@ export class SeededPrng {
     ];
   }
 
-  #numberToSeed(seed: number): Seed {
+  #normalizeSeed(seed: Seed | number): Seed {
+    this.#assertValidSeed(seed);
+
+    const s: Seed = typeof seed === "number" ? [seed, seed, seed] : seed;
+
     return [
-      seed % (A - 1) + 1,
-      seed % (B - 1) + 1,
-      seed % (C - 1) + 1,
+      (s[0] - 1) % (A - 1) + 1,
+      (s[1] - 1) % (B - 1) + 1,
+      (s[2] - 1) % (C - 1) + 1,
     ];
+  }
+
+  #assertValidSeed(seed: Seed | number) {
+    const toCheck = typeof seed === "number"
+      ? [seed]
+      : [seed[0], seed[1], seed[2]];
+
+    for (const x of toCheck) {
+      assert(
+        Number.isSafeInteger(x) && x >= 1,
+        `Invalid seed value: ${x}. Must be a positive safe integer.`,
+      );
+    }
   }
 }

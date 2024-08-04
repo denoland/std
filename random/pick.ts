@@ -1,5 +1,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+import { assert } from "@std/assert/assert";
 import { defaultOptions, type RandomOptions } from "./_types.ts";
+import { unreachable } from "@std/assert/unreachable";
 export type { RandomOptions };
 
 /**
@@ -8,7 +10,7 @@ export type { RandomOptions };
  * @typeParam T - The type of the items in the array
  * @param items - The items to pick from
  * @param options - The options for the random number generator
- * @returns A random item from the provided items
+ * @returns A random item from the provided items or `undefined` if the array is empty
  *
  * @example Usage
  * ```ts no-assert
@@ -24,10 +26,10 @@ export type { RandomOptions };
 export function pick<T>(
   items: readonly T[],
   options?: Partial<RandomOptions>,
-): T {
+): T | undefined {
   const { random } = { ...defaultOptions, ...options };
 
-  return items[Math.floor(random() * items.length)]!;
+  return items[Math.floor(random() * items.length)];
 }
 
 /**
@@ -36,41 +38,48 @@ export function pick<T>(
  * @typeParam T - The type of the items in the array
  * @param items The items to pick from, which must each have a numeric `weight` property
  * @param options The options for the random number generator
- * @returns A random item from the provided items with a weighted probability
+ * @returns A random item from the provided items with a weighted probability or `undefined` if the array is empty
  *
  * @example Usage
  * ```ts no-assert
  * import { pickWeighted } from "@std/random";
  *
  * const items = [
- *   { name: "a", weight: 1 },
- *   { name: "b", weight: 9999 },
- *   { name: "c", weight: 2 },
+ *   { value: "a", weight: 1 },
+ *   { value: "b", weight: 9999 },
+ *   { value: "c", weight: 2 },
  * ];
  *
- * pickWeighted(items); // { name: "b", weight: 9999 }
- * pickWeighted(items); // { name: "b", weight: 9999 }
- * pickWeighted(items); // { name: "b", weight: 9999 }
+ * pickWeighted(items); // "b"
+ * pickWeighted(items); // "b"
+ * pickWeighted(items); // "b"
  * ```
  */
-export function pickWeighted<T extends { weight: number }>(
-  items: readonly T[],
+export function pickWeighted<T>(
+  items: readonly { value: T; weight: number }[],
   options?: Partial<RandomOptions>,
-): T {
+): T | undefined {
   const { random } = { ...defaultOptions, ...options };
 
-  const max = Object.values(items).reduce((sum, { weight }) => sum + weight, 0);
+  if (!items.length) return undefined;
 
-  const rand = random() * max;
-  let total = 0;
+  const total = Object.values(items).reduce(
+    (sum, { weight }) => sum + weight,
+    0,
+  );
+
+  assert(total > 0, "Total weight must be greater than 0");
+
+  const rand = random() * total;
+  let current = 0;
 
   for (const item of items) {
-    total += item.weight;
+    current += item.weight;
 
-    if (rand < total) {
-      return item;
+    if (rand < current) {
+      return item.value;
     }
   }
 
-  return items[0]!;
+  unreachable();
 }

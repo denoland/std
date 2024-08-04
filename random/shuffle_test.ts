@@ -12,7 +12,7 @@ Deno.test("shuffle() handles arrays with only one item", () => {
 });
 
 Deno.test("shuffle() shuffles the provided array", () => {
-  const { random } = new SeededPrng(1);
+  const { random } = new SeededPrng(2);
   const items = [1, 2, 3, 4, 5];
 
   assertEquals(shuffle(items, { random }), [3, 2, 5, 4, 1]);
