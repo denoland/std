@@ -1,12 +1,16 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+import { assert } from "@std/assert/assert";
+import { assertGreaterOrEqual } from "@std/assert/greater-or-equal";
 import { defaultOptions, type RandomOptions } from "./_types.ts";
 export type { RandomOptions };
 
 /**
  * Generates a random number between the provided minimum and maximum values.
  *
+ * The number is in the range `[min, max)`, i.e. `min` is included but `max` is excluded.
+ *
  * @param min - The minimum value (inclusive)
- * @param max - The maximum value (inclusive)
+ * @param max - The maximum value (exclusive)
  * @param options - The options for the random number generator
  * @returns A random number between the provided minimum and maximum values
  *
@@ -24,13 +28,16 @@ export function randomBetween(
   max: number,
   options?: RandomOptions,
 ): number {
-  const { random } = { ...defaultOptions, ...options };
+  assertGreaterOrEqual(max, min);
 
+  const { random } = { ...defaultOptions, ...options };
   return random() * (max - min) + min;
 }
 
 /**
  * Generates a random integer between the provided minimum and maximum values.
+ *
+ * The number is in the range `[min, max]`, i.e. both `min` and `max` are included.
  *
  * @param min - The minimum value (inclusive)
  * @param max - The maximum value (inclusive)
@@ -51,7 +58,12 @@ export function randomIntegerBetween(
   max: number,
   options?: RandomOptions,
 ): number {
-  const { random } = { ...defaultOptions, ...options };
+  assertGreaterOrEqual(max, min);
+  assert(
+    Number.isInteger(min) && Number.isInteger(max),
+    "min and max must be integers",
+  );
 
+  const { random } = { ...defaultOptions, ...options };
   return Math.floor(random() * (max - min + 1)) + min;
 }

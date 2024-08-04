@@ -93,5 +93,8 @@ export function sample<T>(
     unreachable();
   }
 
-  return array[randomIntegerBetween(0, array.length - 1, { random })];
+  const length = array.length;
+  return length
+    ? array[randomIntegerBetween(0, length - 1, { random })]
+    : undefined;
 }
