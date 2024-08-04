@@ -4,8 +4,6 @@
   "exports": {
     ".": "./mod.ts",
     "./between": "./between.ts",
-    "./pick": "./pick.ts",
-    "./seeded": "./seeded.ts",
-    "./shuffle": "./shuffle.ts"
+    "./seeded": "./seeded.ts"
   }
 }

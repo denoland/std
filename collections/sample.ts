@@ -1,14 +1,14 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-import { assert } from "@std/assert/assert";
+import { assertEquals } from "@std/assert/equals";
+import { assertGreater } from "@std/assert/greater";
+import { unreachable } from "@std/assert/unreachable";
 import {
   defaultOptions as defaultRandomOptions,
   type RandomOptions,
 } from "../random/_types.ts";
 import { randomIntegerBetween } from "../random/between.ts";
-import { unreachable } from "@std/assert/unreachable";
-export type { RandomOptions };
 
 /**
  * Options for {@linkcode sample}.
@@ -54,7 +54,6 @@ const defaultOptions: SampleOptions = {
  * @example Using `weights` option
  * ```ts no-assert
  * import { sample } from "@std/collections/sample";
- * import { assertArrayIncludes } from "@std/random";
  *
  * const weighted = new Map([["a", 5], ["b", 3], ["c", 2]]);
  * const result = sample([...weighted.keys()], { weights: [...weighted.values()] });
@@ -68,11 +67,17 @@ export function sample<T>(
   const { random, weights } = { ...defaultOptions, ...options };
 
   if (weights) {
+    assertEquals(
+      weights.length,
+      array.length,
+      "The length of the weights array must match the length of the input array",
+    );
+
     if (!array.length) return undefined;
 
     const total = Object.values(weights).reduce((sum, n) => sum + n, 0);
 
-    assert(total > 0, "Total weight must be greater than 0");
+    assertGreater(total, 0, "Total weight must be greater than 0");
 
     const rand = random() * total;
     let current = 0;

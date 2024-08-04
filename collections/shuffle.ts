@@ -13,7 +13,7 @@ export type { RandomOptions };
  *
  * @example Usage
  * ```ts no-assert
- * import { shuffle } from "@std/random";
+ * import { shuffle } from "@std/collections";
  *
  * const items = [1, 2, 3, 4, 5];
  *
