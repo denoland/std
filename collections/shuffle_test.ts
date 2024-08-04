@@ -1,5 +1,5 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-import { SeededPrng } from "./seeded.ts";
+import { SeededPrng } from "../random/seeded.ts";
 import { shuffle } from "./shuffle.ts";
 import { assertAlmostEquals, assertEquals } from "@std/assert";
 

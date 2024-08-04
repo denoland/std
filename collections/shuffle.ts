@@ -1,6 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-import { defaultOptions, type RandomOptions } from "./_types.ts";
-import { randomIntegerBetween } from "./between.ts";
+import { defaultOptions, type RandomOptions } from "../random/_types.ts";
+import { randomIntegerBetween } from "../random/between.ts";
 export type { RandomOptions };
 
 /**
