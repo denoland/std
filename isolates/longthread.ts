@@ -41,7 +41,7 @@ export interface Api {
     actorId: string
   }) => Promise<void>
   switchboard: (
-    params: { threadId: string; content: string; actorId: string },
+    params: { content: string; actorId: string },
   ) => Promise<void>
 }
 

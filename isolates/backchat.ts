@@ -159,13 +159,13 @@ export const functions: Functions<Api> = {
     if (threadId === backchatId) {
       log('backchat thread', threadId)
       const functions = await api.functions<longthread.Api>('longthread')
-      return functions.switchboard({ threadId, content, actorId })
+      return functions.switchboard({ content, actorId })
     }
 
     log('regular thread', threadId)
     const target = addPeer(api.pid, threadId)
     const actions = await api.actions<longthread.Api>('longthread', { target })
-    return actions.switchboard({ threadId, content, actorId })
+    return actions.switchboard({ content, actorId })
 
     // change the focus to whatever just got run
     // ensure that ai halts when the focus has shifted
