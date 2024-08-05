@@ -1,32 +1,31 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-import { ANY } from "./constants.ts";
+// This module is browser compatible.
 import type { SemVer } from "./types.ts";
 
 function formatNumber(value: number) {
-  if (value === Number.POSITIVE_INFINITY) {
-    return "∞";
-  } else if (value === Number.NEGATIVE_INFINITY) {
-    return "⧞";
-  } else {
-    return value.toFixed(0);
-  }
+  return value.toFixed(0);
 }
 
 /**
  * Format a SemVer object into a string.
  *
- * If any number is NaN then NaN will be printed.
+ * @example Usage
+ * ```ts
+ * import { format } from "@std/semver/format";
+ * import { assertEquals } from "@std/assert";
  *
- * If any number is positive or negative infinity then '∞' or '⧞' will be printed instead.
+ * const semver = {
+ *   major: 1,
+ *   minor: 2,
+ *   patch: 3,
+ * };
+ * assertEquals(format(semver), "1.2.3");
+ * ```
  *
- * @param semver The semantic version to format
+ * @param semver The SemVer to format
  * @returns The string representation of a semantic version.
  */
 export function format(semver: SemVer): string {
-  if (semver === ANY) {
-    return "*";
-  }
-
   const major = formatNumber(semver.major);
   const minor = formatNumber(semver.minor);
   const patch = formatNumber(semver.patch);

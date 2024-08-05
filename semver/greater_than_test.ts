@@ -1,5 +1,5 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-import { assertEquals } from "../assert/mod.ts";
+import { assertEquals } from "@std/assert";
 import { parse } from "./parse.ts";
 import { greaterThan } from "./greater_than.ts";
 
@@ -31,11 +31,11 @@ Deno.test({
     ];
 
     for (const [v0, v1] of versions) {
-      await t.step(`${v0} <=> ${v1}`, () => {
+      await t.step(`${v0} > ${v1}`, () => {
         const s0 = parse(v0);
         const s1 = parse(v1);
         const actual = greaterThan(s0, s1);
-        assertEquals(actual, true, `${v0} > ${v1} : ${actual}`);
+        assertEquals(actual, true);
       });
     }
   },

@@ -100,7 +100,7 @@ const FORMATS: GPUTextureFormat[] = [
   "astc-12x12-unorm-srgb",
 ] as const;
 
-Deno.test("descripbeTextureFormat()", async (t) => {
+Deno.test("describeTextureFormat()", async (t) => {
   for (const format of FORMATS) {
     await t.step(format, () => {
       describeTextureFormat(format);

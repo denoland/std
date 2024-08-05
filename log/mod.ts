@@ -13,8 +13,7 @@
  * ## Custom message format
  *
  * If you want to override default format of message you can define `formatter`
- * option for handler. It can be either simple string-based format that uses
- * `LogRecord` fields or more complicated function-based one that takes `LogRecord`
+ * option for handler. It can a function that takes `LogRecord`
  * as argument and outputs string.
  *
  * The default log format is `{levelName} {msg}`.
@@ -29,7 +28,7 @@
  * the configuration `useColors: false` to turn off the ANSI terminal colours.
  *
  * ```ts
- * import * as log from "https://deno.land/std@$STD_VERSION/log/mod.ts";
+ * import * as log from "@std/log";
  *
  * log.setup({
  *   handlers: {
@@ -46,7 +45,7 @@
  * you must pass them after the first.
  *
  * ```ts
- * import * as log from "https://deno.land/std@$STD_VERSION/log/mod.ts";
+ * import * as log from "@std/log";
  *
  * log.info("This is the message", { thisWillBe: "JSON.stringify'd"});
  * // {"level":"INFO","datetime":1702501580505,"message":"This is the message","args":{"thisWillBe":"JSON.stringify'd"}}
@@ -77,7 +76,7 @@
  * module by using a custom logger:
  *
  * ```ts
- * import { getLogger } from "https://deno.land/std@$STD_VERSION/log/mod.ts";
+ * import { getLogger } from "@std/log";
  *
  * function logger() {
  *   return getLogger("my-awesome-module");
@@ -97,7 +96,7 @@
  * The user of the module can then display the internal logs with:
  *
  * ```ts, ignore
- * import * as log from "https://deno.land/std@$STD_VERSION/log/mod.ts";
+ * import * as log from "@std/log";
  * import { sum } from "<the-awesome-module>/mod.ts";
  *
  * log.setup({
@@ -120,7 +119,7 @@
  * following won't work:
  *
  * ```ts
- * import { getLogger } from "https://deno.land/std@$STD_VERSION/log/mod.ts";
+ * import { getLogger } from "@std/log";
  *
  * const logger = getLogger("my-awesome-module");
  *
@@ -132,7 +131,7 @@
  *
  * @example
  * ```ts
- * import * as log from "https://deno.land/std@$STD_VERSION/log/mod.ts";
+ * import * as log from "@std/log";
  *
  * // Simple default logger out of the box. You can customize it
  * // by overriding logger and handler named "default", or providing
@@ -191,7 +190,7 @@
  * @example
  * Custom message format example
  * ```ts
- * import * as log from "https://deno.land/std@$STD_VERSION/log/mod.ts";
+ * import * as log from "@std/log";
  *
  * log.setup({
  *   handlers: {
@@ -244,7 +243,7 @@
  * @example
  * JSON to stdout with no color example
  * ```ts
- * import * as log from "https://deno.land/std@$STD_VERSION/log/mod.ts";
+ * import * as log from "@std/log";
  *
  * log.setup({
  *   handlers: {
@@ -281,7 +280,7 @@
  * @example
  * Custom JSON example
  * ```ts
- * import * as log from "https://deno.land/std@$STD_VERSION/log/mod.ts";
+ * import * as log from "@std/log";
  *
  * log.setup({
  *   handlers: {
@@ -313,7 +312,7 @@
  * @example
  * Inline Logging
  * ```ts
- * import * as logger from "https://deno.land/std@$STD_VERSION/log/mod.ts";
+ * import * as logger from "@std/log";
  *
  * const stringData: string = logger.debug("hello world");
  * const booleanData: boolean = logger.debug(true, 1, "abc");
@@ -329,7 +328,7 @@
  * @example
  * Lazy Log Evaluation
  * ```ts
- * import * as log from "https://deno.land/std@$STD_VERSION/log/mod.ts";
+ * import * as log from "@std/log";
  *
  * log.setup({
  *   handlers: {

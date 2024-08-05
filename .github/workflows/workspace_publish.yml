@@ -1,17 +1,13 @@
 name: workspace publish
 
 on:
-  push:
-    branches: [main, workspace_publish]
-    tags:
-      - '[0-9]+.[0-9]+.[0-9]+'
-
-env:
-  DENO_UNSTABLE_WORKSPACES: true
+  release:
+    types: [published]
+  workflow_dispatch:
 
 jobs:
   publish:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     timeout-minutes: 30
 
     permissions:
@@ -21,25 +17,17 @@ jobs:
     steps:
       - name: Clone repository
         uses: actions/checkout@v4
-        with:
-          submodules: true
 
       - name: Set up Deno
         uses: denoland/setup-deno@v1
-
-      - name: Convert to workspace
-        run: deno run -A ./_tools/convert_to_workspace.ts
+        with:
+          deno-version: canary
 
       - name: Format
-        run: deno fmt
+        run: deno fmt --check
 
-      - name: Type check
-        run: deno test --unstable --no-run --doc
+      - name: Test
+        run: deno task test
 
-      - name: Publish (dry run)
-        if: startsWith(github.ref, 'refs/tags/') == false
-        run: deno publish --dry-run
-
-      - name: Publish (real)
-        if: startsWith(github.ref, 'refs/tags/')
+      - name: Publish to JSR
         run: deno publish

@@ -1,6 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import { includesValue } from "./includes_value.ts";
-import { assert, assertEquals } from "../assert/mod.ts";
+import { assert, assertEquals } from "@std/assert";
 
 Deno.test("includesValue() handles example", () => {
   const input = {

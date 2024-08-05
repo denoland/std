@@ -1,19 +1,31 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
 
 /**
  * Error thrown when an assertion fails.
  *
- * @example
- * ```ts
- * import { AssertionError } from "https://deno.land/std@$STD_VERSION/assert/assertion_error.ts";
+ * @example Usage
+ * ```ts no-eval
+ * import { AssertionError } from "@std/assert";
  *
- * throw new AssertionError("Assertion failed");
+ * try {
+ *   throw new AssertionError("foo", { cause: "bar" });
+ * } catch (error) {
+ *   if (error instanceof AssertionError) {
+ *     error.message === "foo"; // true
+ *     error.cause === "bar"; // true
+ *   }
+ * }
  * ```
  */
 export class AssertionError extends Error {
-  /** Constructs a new instance. */
-  constructor(message: string) {
-    super(message);
+  /** Constructs a new instance.
+   *
+   * @param message The error message.
+   * @param options Additional options. This argument is still unstable. It may change in the future release.
+   */
+  constructor(message: string, options?: ErrorOptions) {
+    super(message, options);
     this.name = "AssertionError";
   }
 }

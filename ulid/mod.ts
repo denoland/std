@@ -7,88 +7,43 @@
  * Utilities for generating and working with
  * {@link https://github.com/ulid/spec | Universally Unique Lexicographically Sortable Identifiers (ULIDs)}.
  *
+ * To generate a ULID use the {@linkcode ulid} function. This will generate a
+ * ULID based on the current time.
+ *
+ * ```ts no-assert
+ * import { ulid } from "@std/ulid";
+ *
+ * ulid(); // 01HYFKMDF3HVJ4J3JZW8KXPVTY
+ * ```
+ *
+ * {@linkcode ulid} does not guarantee that the ULIDs will be strictly
+ * increasing for the same current time. If you need to guarantee that the ULIDs
+ * will be strictly increasing, even for the same current time, use the
+ * {@linkcode monotonicUlid} function.
+ *
+ * ```ts no-assert
+ * import { monotonicUlid } from "@std/ulid";
+ *
+ * monotonicUlid(); // 01HYFKHG5F8RHM2PM3D7NSTDAS
+ * monotonicUlid(); // 01HYFKHG5F8RHM2PM3D7NSTDAT
+ * ```
+ *
+ * Because each ULID encodes the time it was generated, you can extract the
+ * timestamp from a ULID using the {@linkcode decodeTime} function.
+ *
+ * ```ts
+ * import { decodeTime, ulid } from "@std/ulid";
+ * import { assertEquals } from "@std/assert";
+ *
+ * const timestamp = 150_000;
+ * const ulidString = ulid(timestamp);
+ *
+ * assertEquals(decodeTime(ulidString), timestamp);
+ * ```
+ *
  * @module
  */
 
-import {
-  encodeRandom,
-  encodeTime,
-  ENCODING,
-  ENCODING_LEN,
-  monotonicFactory,
-  RANDOM_LEN,
-  TIME_LEN,
-  TIME_MAX,
-  ULID,
-} from "./_util.ts";
-
-export type { ULID } from "./_util.ts";
-
-/**
- * Extracts the timestamp given a ULID.
- *
- * @example
- * ```ts
- * import { ulid, decodeTime } from "https://deno.land/std@$STD_VERSION/ulid/mod.ts";
- *
- * const x = ulid(150000);
- * decodeTime(x); // 150000
- * ```
- */
-export function decodeTime(id: string): number {
-  if (id.length !== TIME_LEN + RANDOM_LEN) {
-    throw new Error("malformed ulid");
-  }
-  const time = id
-    .substring(0, TIME_LEN)
-    .split("")
-    .reverse()
-    .reduce((carry, char, index) => {
-      const encodingIndex = ENCODING.indexOf(char);
-      if (encodingIndex === -1) {
-        throw new Error("invalid character found: " + char);
-      }
-      return (carry += encodingIndex * Math.pow(ENCODING_LEN, index));
-    }, 0);
-  if (time > TIME_MAX) {
-    throw new Error("malformed ulid, timestamp too large");
-  }
-  return time;
-}
-
-/**
- * Generate a monotonically increasing ULID, optionally based on a given
- * timestamp.
- *
- * @example
- * ```ts
- * import { monotonicUlid } from "https://deno.land/std@$STD_VERSION/ulid/mod.ts";
- *
- * // Strict ordering for the same timestamp, by incrementing the least-significant random bit by 1
- * monotonicUlid(150000); // 000XAL6S41ACTAV9WEVGEMMVR8
- * monotonicUlid(150000); // 000XAL6S41ACTAV9WEVGEMMVR9
- * monotonicUlid(150000); // 000XAL6S41ACTAV9WEVGEMMVRA
- * monotonicUlid(150000); // 000XAL6S41ACTAV9WEVGEMMVRB
- * monotonicUlid(150000); // 000XAL6S41ACTAV9WEVGEMMVRC
- *
- * // Even if a lower timestamp is passed (or generated), it will preserve sort order
- * monotonicUlid(100000); // 000XAL6S41ACTAV9WEVGEMMVRD
- * ```
- */
-export const monotonicUlid: ULID = monotonicFactory();
-
-/**
- * Generate a ULID, optionally based on a given timestamp.
- *
- * @example
- * ```ts
- * import { ulid } from "https://deno.land/std@$STD_VERSION/ulid/mod.ts";
- * ulid(); // 01ARZ3NDEKTSV4RRFFQ69G5FAV
- *
- * // You can also input a seed time which will consistently give you the same string for the time component
- * ulid(1469918176385); // 01ARYZ6S41TSV4RRFFQ69G5FAV
- * ```
- */
-export function ulid(seedTime: number = Date.now()): string {
-  return encodeTime(seedTime, TIME_LEN) + encodeRandom(RANDOM_LEN);
-}
+export * from "./decode_time.ts";
+export * from "./monotonic_ulid.ts";
+export * from "./ulid.ts";

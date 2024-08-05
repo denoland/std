@@ -1,14 +1,14 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-import { assert, AssertionError, unimplemented } from "./mod.ts";
+import { AssertionError, assertThrows, unimplemented } from "./mod.ts";
 
-Deno.test("AssertsUnimplemented", function () {
-  let didThrow = false;
-  try {
-    unimplemented();
-  } catch (e) {
-    assert(e instanceof AssertionError);
-    assert(e.message === "Unimplemented.");
-    didThrow = true;
-  }
-  assert(didThrow);
+Deno.test("unimplemented() throws", function () {
+  assertThrows(() => unimplemented(), AssertionError, "Unimplemented.");
+});
+
+Deno.test("unimplemented() throws with custom message", function () {
+  assertThrows(
+    () => unimplemented("CUSTOM MESSAGE"),
+    AssertionError,
+    "Unimplemented: CUSTOM MESSAGE",
+  );
 });

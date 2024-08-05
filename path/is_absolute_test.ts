@@ -1,7 +1,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // Copyright the Browserify authors. MIT License.
 // Ported from https://github.com/browserify/path-browserify/
-import { assertEquals } from "../assert/mod.ts";
+import { assertEquals } from "@std/assert";
 import * as posix from "./posix/mod.ts";
 import * as windows from "./windows/mod.ts";
 import { isAbsolute } from "./is_absolute.ts";
@@ -14,6 +14,7 @@ Deno.test("posix.isAbsolute()", function () {
 });
 
 Deno.test("windows.isAbsolute()", function () {
+  assertEquals(windows.isAbsolute(""), false);
   assertEquals(windows.isAbsolute("/"), true);
   assertEquals(windows.isAbsolute("//"), true);
   assertEquals(windows.isAbsolute("//server"), true);

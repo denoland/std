@@ -3,7 +3,7 @@
 // Copyright 2021 Yoshiya Hinosawa. All rights reserved. MIT license.
 
 import { format } from "./bytes.ts";
-import { assertEquals, assertThrows } from "../assert/mod.ts";
+import { assertEquals, assertThrows } from "@std/assert";
 
 const parts = new Intl.NumberFormat().formatToParts(1000.1);
 const decimal = parts.find(({ type }) => type === "decimal")!.value;

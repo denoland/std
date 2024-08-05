@@ -1,6 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import { Tester } from "./_types.ts";
+import type { Tester } from "./_types.ts";
 
 const customEqualityTesters: Tester[] = [];
 

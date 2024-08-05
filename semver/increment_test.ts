@@ -1,11 +1,11 @@
 // Copyright Isaac Z. Schlueter and Contributors. All rights reserved. ISC license.
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-import { assertEquals } from "../assert/mod.ts";
+import { assertEquals, assertThrows } from "@std/assert";
 import type { ReleaseType, SemVer } from "./types.ts";
 import { increment } from "./increment.ts";
 import { format } from "./format.ts";
 
-Deno.test("increment", async (t) => {
+Deno.test("increment()", async (t) => {
   //  [version, inc, result, identifier]
   //  increment(version, inc) -> result
   const versions: [
@@ -963,15 +963,19 @@ Deno.test("increment", async (t) => {
     ],
   ];
 
-  for (const [version, op, identifier, metadata, expected] of versions) {
+  for (const [version, op, prerelease, build, expected] of versions) {
     await t.step({
-      name: `${
-        format(version)
-      } ${op}+(${identifier}, ${metadata}) -> ${expected}`,
+      name: `${op} ${format(version)}`,
       fn: () => {
-        const actual = increment(version, op, identifier, metadata);
+        const actual = increment(version, op, { prerelease, build });
         assertEquals(format(actual), expected);
       },
     });
   }
+});
+
+Deno.test("increment() throws on invalid input", () => {
+  assertThrows(() =>
+    increment({ major: 1, minor: 2, patch: 3 }, "invalid" as ReleaseType)
+  );
 });

@@ -15,6 +15,7 @@ const setRawOptions = Deno.build.os === "windows"
   ? undefined
   : { cbreak: true };
 
+/** Options for {@linkcode promptSecret}. */
 export type PromptSecretOptions = {
   /** A character to print instead of the user's input. */
   mask?: string;
@@ -26,15 +27,33 @@ export type PromptSecretOptions = {
  * Shows the given message and waits for the user's input. Returns the user's input as string.
  * This is similar to `prompt()` but it print user's input as `*` to prevent password from being shown.
  * Use an empty `mask` if you don't want to show any character.
+ *
+ * @param message The prompt message to show to the user.
+ * @param options The options for the prompt.
+ * @returns The string that was entered or `null` if stdin is not a TTY.
+ *
+ * @example Usage
+ * ```ts no-eval
+ * import { promptSecret } from "@std/cli/prompt-secret";
+ *
+ * const password = promptSecret("Please provide the password:");
+ * if (password !== "some-password") {
+ *   throw new Error("Access denied.");
+ * }
+ * ```
  */
 export function promptSecret(
-  message = "Secret ",
-  { mask = "*", clear }: PromptSecretOptions = {},
+  message = "Secret",
+  options?: PromptSecretOptions,
 ): string | null {
+  const { mask = "*", clear } = options ?? {};
+
   if (!input.isTerminal()) {
     return null;
   }
 
+  // Make the output consistent with the built-in prompt()
+  message += " ";
   const callback = !mask ? undefined : (n: number) => {
     output.writeSync(CLR);
     output.writeSync(encoder.encode(`${message}${mask.repeat(n)}`));

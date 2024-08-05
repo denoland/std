@@ -1,19 +1,27 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-import { join } from "../path/join.ts";
+import { join } from "@std/path/join";
 import { toPathString } from "./_to_path_string.ts";
 
 /**
- * Ensures that a directory is empty.
- * Deletes directory contents if the directory is not empty.
- * If the directory does not exist, it is created.
- * The directory itself is not deleted.
- * Requires the `--allow-read` and `--allow-write` flag.
+ * Asynchronously ensures that a directory is empty.
  *
- * @example
- * ```ts
- * import { emptyDir } from "https://deno.land/std@$STD_VERSION/fs/mod.ts";
+ * If the directory does not exist, it is created. The directory itself is not
+ * deleted.
  *
- * emptyDir("./foo"); // returns a promise
+ * Requires `--allow-read` and `--allow-write` permissions.
+ *
+ * @see {@link https://docs.deno.com/runtime/manual/basics/permissions#file-system-access}
+ * for more information on Deno's permissions system.
+ *
+ * @param dir The path of the directory to empty, as a string or URL.
+ *
+ * @returns A void promise that resolves once the directory is empty.
+ *
+ * @example Usage
+ * ```ts no-eval
+ * import { emptyDir } from "@std/fs/empty-dir";
+ *
+ * await emptyDir("./foo");
  * ```
  */
 export async function emptyDir(dir: string | URL) {
@@ -37,17 +45,26 @@ export async function emptyDir(dir: string | URL) {
 }
 
 /**
- * Ensures that a directory is empty.
- * Deletes directory contents if the directory is not empty.
- * If the directory does not exist, it is created.
- * The directory itself is not deleted.
- * Requires the `--allow-read` and `--allow-write` flag.
+ * Synchronously ensures that a directory is empty deletes the directory
+ * contents it is not empty.
  *
- * @example
- * ```ts
- * import { emptyDirSync } from "https://deno.land/std@$STD_VERSION/fs/mod.ts";
+ * If the directory does not exist, it is created. The directory itself is not
+ * deleted.
  *
- * emptyDirSync("./foo"); // void
+ * Requires `--allow-read` and `--allow-write` permissions.
+ *
+ * @see {@link https://docs.deno.com/runtime/manual/basics/permissions#file-system-access}
+ * for more information on Deno's permissions system.
+ *
+ * @param dir The path of the directory to empty, as a string or URL.
+ *
+ * @returns A void value that returns once the directory is empty.
+ *
+ * @example Usage
+ * ```ts no-eval
+ * import { emptyDirSync } from "@std/fs/empty-dir";
+ *
+ * emptyDirSync("./foo");
  * ```
  */
 export function emptyDirSync(dir: string | URL) {

@@ -1,9 +1,9 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
 import { mergeReadableStreams } from "./merge_readable_streams.ts";
-import { assertEquals } from "../assert/mod.ts";
+import { assertEquals } from "@std/assert";
 
-Deno.test("[streams] mergeReadableStreams", async () => {
+Deno.test("mergeReadableStreams()", async () => {
   const textStream = ReadableStream.from([
     "qwertzuiopasd",
     "mnbvcxylkjhgfds",
@@ -30,7 +30,7 @@ Deno.test("[streams] mergeReadableStreams", async () => {
   ]);
 });
 
-Deno.test("[streams] mergeReadableStreams - handling errors", async () => {
+Deno.test("mergeReadableStreams() handles errors", async () => {
   const textStream = ReadableStream.from(["1", "3"]);
 
   const textStream2 = ReadableStream.from(["2", "4"]);

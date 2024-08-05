@@ -1,8 +1,8 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // Copyright the Browserify authors. MIT License.
 
-import { assertEquals } from "../assert/mod.ts";
-import * as path from "../path/mod.ts";
+import { assertEquals } from "@std/assert";
+import * as path from "@std/path";
 import { isSamePath } from "./_is_same_path.ts";
 
 Deno.test({

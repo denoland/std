@@ -1,28 +1,30 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-import { extensionsByType } from "./extensions_by_type.ts";
+import { allExtensions } from "./all_extensions.ts";
 
 /**
- * For a given media type, return the most relevant extension, or `undefined`
+ * Returns the most relevant extension for the given media type, or `undefined`
  * if no extension can be found.
  *
  * Extensions are returned without a leading `.`.
  *
- * @example
- * ```ts
- * import { extension } from "https://deno.land/std@$STD_VERSION/media_types/extension.ts";
+ * @param type The media type to get the extension for.
  *
- * extension("text/plain"); // "txt"
- * extension("application/json"); // "json"
- * extension("text/html; charset=UTF-8"); // "html"
- * extension("application/foo"); // undefined
+ * @returns The extension for the given media type, or `undefined` if no
+ * extension is found.
+ *
+ * @example Usage
+ * ```ts
+ * import { extension } from "@std/media-types/extension";
+ * import { assertEquals } from "@std/assert";
+ *
+ * assertEquals(extension("text/plain"), "txt");
+ * assertEquals(extension("application/json"), "json");
+ * assertEquals(extension("text/html; charset=UTF-8"), "html");
+ * assertEquals(extension("application/foo"), undefined);
  * ```
  */
 export function extension(type: string): string | undefined {
-  const exts = extensionsByType(type);
-  if (exts) {
-    return exts[0];
-  }
-  return undefined;
+  return allExtensions(type)?.[0];
 }

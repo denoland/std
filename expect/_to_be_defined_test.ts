@@ -2,7 +2,7 @@
 // deno-lint-ignore-file no-explicit-any
 
 import { expect } from "./expect.ts";
-import { AssertionError, assertThrows } from "../assert/mod.ts";
+import { AssertionError, assertThrows } from "@std/assert";
 
 Deno.test("expect().toBeDefined()", () => {
   expect(1).toBeDefined();

@@ -8,7 +8,7 @@ import type { Writer, WriterSync } from "./types.ts";
  *
  * @example
  * ```ts
- * import { writeAll } from "https://deno.land/std@$STD_VERSION/io/write_all.ts";
+ * import { writeAll } from "@std/io/write-all";
 
  * // Example writing to stdout
  * let contentBytes = new TextEncoder().encode("Hello World");
@@ -33,7 +33,7 @@ export async function writeAll(writer: Writer, data: Uint8Array) {
  *
  * @example
  * ```ts
- * import { writeAllSync } from "https://deno.land/std@$STD_VERSION/io/write_all.ts";
+ * import { writeAllSync } from "@std/io/write-all";
  *
  * // Example writing to stdout
  * let contentBytes = new TextEncoder().encode("Hello World");

@@ -1,6 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-import { assertRejects, assertThrows } from "../assert/mod.ts";
-import * as path from "../path/mod.ts";
+import { assertRejects, assertThrows } from "@std/assert";
+import * as path from "@std/path";
 import { ensureFile, ensureFileSync } from "./ensure_file.ts";
 
 const moduleDir = path.dirname(path.fromFileUrl(import.meta.url));
@@ -145,7 +145,7 @@ Deno.test({
       path.join(testdataDir, "ensure_file_9"),
       path.join(testdataDir, "ensure_file_9", "test.txt"),
     ],
-    run: ["deno"],
+    run: [Deno.execPath()],
   },
   async fn() {
     const testDir = path.join(testdataDir, "ensure_file_9");
@@ -182,7 +182,7 @@ Deno.test({
       path.join(testdataDir, "ensure_file_10"),
       path.join(testdataDir, "ensure_file_10", "test.txt"),
     ],
-    run: ["deno"],
+    run: [Deno.execPath()],
   },
   fn() {
     const testDir = path.join(testdataDir, "ensure_file_10");

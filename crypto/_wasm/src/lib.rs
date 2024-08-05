@@ -4,6 +4,7 @@ use js_sys::Uint8Array;
 use wasm_bindgen::prelude::*;
 
 mod digest;
+mod fnv;
 
 /// Returns the digest of the given `data` using the given hash `algorithm`.
 ///
@@ -26,7 +27,7 @@ pub fn digest(
 
 /// A context for incrementally computing a digest using a given hash algorithm.
 #[wasm_bindgen]
-#[derive(Clone, Into, From)]
+#[derive(Into, From)]
 pub struct DigestContext(digest::Context);
 
 #[wasm_bindgen]
@@ -82,44 +83,6 @@ impl DigestContext {
     Ok(())
   }
 
-  /// Returns the digest of the input data so far. This may be called repeatedly
-  /// without side effects.
-  ///
-  /// `length` will usually be left `undefined` to use the default length for
-  /// the algorithm. For algorithms with variable-length output, it can be used
-  /// to specify a non-negative integer number of bytes.
-  ///
-  /// An error will be thrown if `algorithm` is not a supported hash algorithm or
-  /// `length` is not a supported length for the algorithm.
-  #[wasm_bindgen]
-  pub fn digest(&self, length: Option<usize>) -> Result<Box<[u8]>, JsValue> {
-    self
-      .0
-      .digest(length)
-      .map_err(|message| JsValue::from(js_sys::TypeError::new(message)))
-  }
-
-  /// Returns the digest of the input data so far, and resets this context to
-  /// its initial state, as though it has not yet been provided with any input
-  /// data. (It will still use the same algorithm.)
-  ///
-  /// `length` will usually be left `undefined` to use the default length for
-  /// the algorithm. For algorithms with variable-length output, it can be used
-  /// to specify a non-negative integer number of bytes.
-  ///
-  /// An error will be thrown if `algorithm` is not a supported hash algorithm or
-  /// `length` is not a supported length for the algorithm.
-  #[wasm_bindgen(js_name=digestAndReset)]
-  pub fn digest_and_reset(
-    &mut self,
-    length: Option<usize>,
-  ) -> Result<Box<[u8]>, JsValue> {
-    self
-      .0
-      .digest_and_reset(length)
-      .map_err(|message| JsValue::from(js_sys::TypeError::new(message)))
-  }
-
   /// Returns the digest of the input data so far, and then drops the context
   /// from memory on the Wasm side. This context must no longer be used, and any
   /// further method calls will result in null pointer errors being thrown.
@@ -129,36 +92,15 @@ impl DigestContext {
   /// the algorithm. For algorithms with variable-length output, it can be used
   /// to specify a non-negative integer number of bytes.
   ///
-  /// An error will be thrown if `algorithm` is not a supported hash algorithm or
-  /// `length` is not a supported length for the algorithm.
+  /// An error will be thrown if `length` is not a supported length for the algorithm.
   #[wasm_bindgen(js_name=digestAndDrop)]
   pub fn digest_and_drop(
-    mut self,
+    self,
     length: Option<usize>,
   ) -> Result<Box<[u8]>, JsValue> {
     self
       .0
-      .digest_and_reset(length)
+      .digest_and_drop(length)
       .map_err(|message| JsValue::from(js_sys::TypeError::new(message)))
-  }
-
-  /// Resets this context to its initial state, as though it has not yet been
-  /// provided with any input data. (It will still use the same algorithm.)
-  #[wasm_bindgen]
-  pub fn reset(&mut self) -> Result<(), JsValue> {
-    self.0.reset();
-
-    Ok(())
-  }
-
-  /// Returns a new `DigestContext` that is a copy of this one, i.e., using the
-  /// same algorithm and with a copy of the same internal state.
-  ///
-  /// This may be a more efficient option for computing multiple digests that
-  /// start with a common prefix.
-  #[wasm_bindgen]
-  #[allow(clippy::should_implement_trait)]
-  pub fn clone(&self) -> DigestContext {
-    Clone::clone(self)
   }
 }

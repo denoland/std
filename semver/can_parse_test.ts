@@ -1,8 +1,8 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-import { assertEquals } from "../assert/mod.ts";
+import { assertEquals } from "@std/assert";
 import { canParse } from "./can_parse.ts";
 
-Deno.test("[semver] canParse", async (t) => {
+Deno.test("canParse()", async (t) => {
   // deno-lint-ignore no-explicit-any
   const versions: [any, boolean][] = [
     ["1.2.3", true],

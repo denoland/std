@@ -1,45 +1,46 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import { assert, assertEquals } from "../assert/mod.ts";
+import { assert, assertEquals } from "@std/assert";
+import { assertType, type IsExact } from "@std/testing/types";
 
-import { calculate, ifMatch, ifNoneMatch } from "./etag.ts";
+import { eTag, ifMatch, ifNoneMatch } from "./etag.ts";
 
 const encoder = new TextEncoder();
 
 Deno.test({
-  name: "etag - calculate - string - empty",
+  name: "eTag() handles empty string",
   async fn() {
-    const actual = await calculate("");
+    const actual = await eTag("");
     assertEquals(actual, `"0-47DEQpj8HBSa+/TImW+5JCeuQeR"`);
   },
 });
 
 Deno.test({
-  name: "etag - calculate - string",
+  name: "eTag() handles string",
   async fn() {
-    const actual = await calculate("hello deno");
+    const actual = await eTag("hello deno");
     assertEquals(actual, `"a-YdfmHmj2RiwOVqJupcf3PLK9PuJ"`);
   },
 });
 
 Deno.test({
-  name: "etag - calculate - Uint8Array - empty",
+  name: "eTag() handles empty Uint8Array",
   async fn() {
-    const actual = await calculate(new Uint8Array());
+    const actual = await eTag(new Uint8Array());
     assertEquals(actual, `"0-47DEQpj8HBSa+/TImW+5JCeuQeR"`);
   },
 });
 
 Deno.test({
-  name: "etag - calculate - Uint8Array",
+  name: "eTag() handles Uint8Array",
   async fn() {
-    const actual = await calculate(encoder.encode("hello deno"));
+    const actual = await eTag(encoder.encode("hello deno"));
     assertEquals(actual, `"a-YdfmHmj2RiwOVqJupcf3PLK9PuJ"`);
   },
 });
 
 Deno.test({
-  name: "etag - calculate - Deno.FileInfo",
+  name: "eTag() handles Deno.FileInfo",
   async fn() {
     const fixture: Deno.FileInfo = {
       isFile: true,
@@ -63,29 +64,29 @@ Deno.test({
       isFifo: null,
       isSocket: null,
     };
-    const actual = await calculate(fixture);
+    const actual = await eTag(fixture);
     assertEquals(actual, `W/"400-H0YzXysQPV20qNisAZMuvAEVuHV"`);
   },
 });
 
 Deno.test({
-  name: "etag - ifMatch",
+  name: "ifMatch()",
   async fn() {
-    assert(!ifMatch(`"abcdefg"`, await calculate("hello deno")));
+    assert(!ifMatch(`"abcdefg"`, await eTag("hello deno")));
     assert(
-      ifMatch(`"a-YdfmHmj2RiwOVqJupcf3PLK9PuJ"`, await calculate("hello deno")),
+      ifMatch(`"a-YdfmHmj2RiwOVqJupcf3PLK9PuJ"`, await eTag("hello deno")),
     );
     assert(
       ifMatch(
         `"abcdefg", "a-YdfmHmj2RiwOVqJupcf3PLK9PuJ"`,
-        await calculate("hello deno"),
+        await eTag("hello deno"),
       ),
     );
-    assert(ifMatch("*", await calculate("hello deno")));
+    assert(ifMatch("*", await eTag("hello deno")));
     assert(
       !ifMatch(
         "*",
-        await calculate({
+        await eTag({
           size: 1024,
           mtime: new Date(Date.UTC(96, 1, 2, 3, 4, 5, 6)),
         }),
@@ -95,26 +96,26 @@ Deno.test({
 });
 
 Deno.test({
-  name: "etag - ifNoneMatch",
+  name: "ifNoneMatch()",
   async fn() {
-    assert(ifNoneMatch(`"abcdefg"`, await calculate("hello deno")));
+    assert(ifNoneMatch(`"abcdefg"`, await eTag("hello deno")));
     assert(
       !ifNoneMatch(
         `"a-YdfmHmj2RiwOVqJupcf3PLK9PuJ"`,
-        await calculate("hello deno"),
+        await eTag("hello deno"),
       ),
     );
     assert(
       !ifNoneMatch(
         `"abcdefg", "a-YdfmHmj2RiwOVqJupcf3PLK9PuJ"`,
-        await calculate("hello deno"),
+        await eTag("hello deno"),
       ),
     );
-    assert(!ifNoneMatch("*", await calculate("hello deno")));
+    assert(!ifNoneMatch("*", await eTag("hello deno")));
     assert(
       !ifNoneMatch(
         `W/"400-H0YzXysQPV20qNisAZMuvAEVuHV"`,
-        await calculate({
+        await eTag({
           size: 1024,
           mtime: new Date(Date.UTC(96, 1, 2, 3, 4, 5, 6)),
         }),
@@ -123,11 +124,25 @@ Deno.test({
     assert(
       !ifNoneMatch(
         `"400-H0YzXysQPV20qNisAZMuvAEVuHV"`,
-        await calculate({
+        await eTag({
           size: 1024,
           mtime: new Date(Date.UTC(96, 1, 2, 3, 4, 5, 6)),
         }),
       ),
     );
+  },
+});
+
+Deno.test({
+  name: "eTag() returns string type for string and Uint8Array",
+  async fn() {
+    {
+      const result = await eTag("hello deno");
+      assertType<IsExact<typeof result, string>>(true);
+    }
+    {
+      const result = await eTag(new Uint8Array());
+      assertType<IsExact<typeof result, string>>(true);
+    }
   },
 });

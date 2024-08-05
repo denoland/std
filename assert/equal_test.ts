@@ -1,7 +1,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import { assert, assertFalse, assertThrows, equal } from "./mod.ts";
 
-Deno.test("EqualDifferentZero", () => {
+Deno.test("equal() different zero", () => {
   assert(equal(0, -0));
   assert(equal(0, +0));
   assert(equal(+0, -0));
@@ -13,7 +13,7 @@ Deno.test("EqualDifferentZero", () => {
   assert(equal({ msg: "hello", array: [0] }, { msg: "hello", array: [-0] }));
 });
 
-Deno.test("Equal", function () {
+Deno.test("equal()", () => {
   assert(equal("world", "world"));
   assert(!equal("hello", "world"));
   assertFalse(equal("hello", "world"));
@@ -21,9 +21,13 @@ Deno.test("Equal", function () {
   assert(!equal(5, 6));
   assertFalse(equal(5, 6));
   assert(equal(NaN, NaN));
+  assert(equal(null, null));
+  assertFalse(equal(null, undefined));
   assert(equal({ hello: "world" }, { hello: "world" }));
   assert(!equal({ world: "hello" }, { hello: "world" }));
+  assertFalse(equal({}, { hello: "world" }));
   assertFalse(equal({ world: "hello" }, { hello: "world" }));
+  assertFalse(equal({ hello: "world", world: "hello" }, { world: "hello" }));
   assert(
     equal(
       { hello: "world", hi: { there: "everyone" } },
@@ -251,7 +255,7 @@ Deno.test("Equal", function () {
   );
 });
 
-Deno.test("EqualCircular", () => {
+Deno.test("equal() circular", () => {
   const objA: { prop?: unknown } = {};
   objA.prop = objA;
   const objB: { prop?: unknown } = {};
@@ -263,4 +267,12 @@ Deno.test("EqualCircular", () => {
   const mapB = new Map();
   mapB.set("prop", mapB);
   assert(equal(mapA, mapB));
+});
+
+Deno.test("equal() WeakMap, WeakRef and WeakSet", () => {
+  assertThrows(() => equal(new WeakMap(), new WeakMap()));
+  assertThrows(() => equal(new WeakSet(), new WeakSet()));
+  assertFalse(equal(new WeakMap(), { constructor: WeakMap }));
+  assertFalse(equal(new WeakSet(), { constructor: WeakSet }));
+  assertFalse(equal(new WeakRef({}), { constructor: WeakRef }));
 });

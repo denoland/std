@@ -2,7 +2,7 @@
 
 import * as posix from "./posix/mod.ts";
 import * as windows from "./windows/mod.ts";
-import { assertEquals, assertThrows } from "../assert/mod.ts";
+import { assertEquals, assertThrows } from "@std/assert";
 
 Deno.test("posix.toFileUrl()", function () {
   assertEquals(posix.toFileUrl("/home/foo").href, "file:///home/foo");

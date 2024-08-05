@@ -104,9 +104,11 @@ export type StringifyOptions = {
    */
   separator?: string;
   /**
-   * a list of instructions for how to target and transform the data for each
+   * A list of instructions for how to target and transform the data for each
    * column of output. This is also where you can provide an explicit header
    * name for the column.
+   *
+   * @default {[]}
    */
   columns?: Column[];
   /**
@@ -147,8 +149,8 @@ type NormalizedColumn = Omit<ColumnDetails, "header" | "prop"> & {
 };
 
 function normalizeColumn(column: Column): NormalizedColumn {
-  let header: NormalizedColumn["header"],
-    prop: NormalizedColumn["prop"];
+  let header: NormalizedColumn["header"];
+  let prop: NormalizedColumn["prop"];
 
   if (typeof column === "object") {
     if (Array.isArray(column)) {
@@ -168,15 +170,6 @@ function normalizeColumn(column: Column): NormalizedColumn {
   return { header, prop };
 }
 
-/** Error thrown in {@linkcode stringify}. */
-export class StringifyError extends Error {
-  /** Construct a new instance. */
-  constructor(message?: string) {
-    super(message);
-    this.name = "StringifyError";
-  }
-}
-
 /**
  * Returns an array of values from an object using the property accessors
  * (and optional transform function) in each column
@@ -192,11 +185,13 @@ function getValuesFromItem(
       let value: unknown = item;
 
       for (const prop of column.prop) {
-        if (typeof value !== "object" || value === null) continue;
+        if (typeof value !== "object" || value === null) {
+          continue;
+        }
         if (Array.isArray(value)) {
           if (typeof prop === "number") value = value[prop];
           else {
-            throw new StringifyError(
+            throw new TypeError(
               'Property accessor is not of type "number"',
             );
           }
@@ -210,7 +205,7 @@ function getValuesFromItem(
     if (Array.isArray(item)) {
       values.push(...item);
     } else if (typeof item === "object") {
-      throw new StringifyError(
+      throw new TypeError(
         "No property accessor function was provided for object",
       );
     } else {
@@ -222,39 +217,101 @@ function getValuesFromItem(
 }
 
 /**
- * Write data using CSV encoding.
+ * Converts an array of objects into a CSV string.
  *
- * @param data The source data to stringify. It's an array of items which are
- * plain objects or arrays.
- *
- * `DataItem: Record<string, unknown> | unknown[]`
- *
+ * @example Default options
  * ```ts
+ * import { stringify } from "@std/csv/stringify";
+ * import { assertEquals } from "@std/assert/equals";
+ *
  * const data = [
- *   {
- *     name: "Deno",
- *     repo: { org: "denoland", name: "deno" },
- *     runsOn: ["Rust", "TypeScript"],
- *   },
+ *   ["Rick", 70],
+ *   ["Morty", 14],
  * ];
+ *
+ * assertEquals(stringify(data), `Rick,70\r\nMorty,14\r\n`);
  * ```
  *
- * @example
+ * @example Give an array of objects and specify columns
+ * ```ts
+ * import { stringify } from "@std/csv/stringify";
+ * import { assertEquals } from "@std/assert/equals";
+ *
+ * const data = [
+ *   { name: "Rick", age: 70 },
+ *   { name: "Morty", age: 14 },
+ * ];
+ *
+ * const columns = ["name", "age"];
+ *
+ * assertEquals(stringify(data, { columns }), `name,age\r\nRick,70\r\nMorty,14\r\n`);
+ * ```
+ *
+ * @example Give an array of objects without specifying columns
+ * ```ts
+ * import { stringify } from "@std/csv/stringify";
+ * import { assertThrows } from "@std/assert/throws";
+ *
+ * const data = [
+ *   { name: "Rick", age: 70 },
+ *   { name: "Morty", age: 14 },
+ * ];
+ *
+ * assertThrows(
+ *   () => stringify(data),
+ *   TypeError,
+ *   "No property accessor function was provided for object",
+ * );
+ * ```
+ *
+ * @example Give an array of objects and specify columns with `headers: false`
+ * ```ts
+ * import { stringify } from "@std/csv/stringify";
+ * import { assertEquals } from "@std/assert/equals";
+ *
+ * const data = [
+ *   { name: "Rick", age: 70 },
+ *   { name: "Morty", age: 14 },
+ * ];
+ *
+ * const columns = ["name", "age"];
+ *
+ * assertEquals(
+ *   stringify(data, { columns, headers: false }),
+ *  `Rick,70\r\nMorty,14\r\n`,
+ * );
+ * ```
+ *
+ * @example Give an array of objects and specify columns with renaming
+ * ```ts
+ * import { stringify } from "@std/csv/stringify";
+ * import { assertEquals } from "@std/assert/equals";
+ *
+ * const data = [
+ *   { name: "Rick", age: 70 },
+ *   { name: "Morty", age: 14 },
+ * ];
+ *
+ * const columns = [
+ *   { prop: "name", header: "user name" },
+ *   "age",
+ * ];
+ *
+ * assertEquals(
+ *   stringify(data, { columns }),
+ *  `user name,age\r\nRick,70\r\nMorty,14\r\n`,
+ * );
+ * ```
+ *
+ * @example Give an array of objects with nested property and specify columns
  * ```ts
  * import {
  *   Column,
  *   stringify,
- * } from "https://deno.land/std@$STD_VERSION/csv/stringify.ts";
+ * } from "@std/csv/stringify";
+ * import { assertEquals } from "@std/assert/equals";
  *
- * type Character = {
- *   age: number;
- *   name: {
- *     first: string;
- *     last: string;
- *   };
- * };
- *
- * const data: Character[] = [
+ * const data = [
  *   {
  *     age: 70,
  *     name: {
@@ -271,29 +328,117 @@ function getValuesFromItem(
  *   },
  * ];
  *
- * let columns: Column[] = [
+ * const columns: Column[] = [
  *   ["name", "first"],
  *   "age",
  * ];
  *
- * console.log(stringify(data, { columns }));
- * // first,age
- * // Rick,70
- * // Morty,14
+ * assertEquals(
+ *   stringify(data, { columns }),
+ *  `first,age\r\nRick,70\r\nMorty,14\r\n`,
+ * );
  * ```
+ *
+ * @example Give an array of objects with nested property and specify columns
+ * with renaming
+ * ```ts
+ * import {
+ *   Column,
+ *   stringify,
+ * } from "@std/csv/stringify";
+ * import { assertEquals } from "@std/assert/equals";
+ *
+ * const data = [
+ *   {
+ *     age: 70,
+ *     name: {
+ *       first: "Rick",
+ *       last: "Sanchez",
+ *     },
+ *   },
+ *   {
+ *     age: 14,
+ *     name: {
+ *       first: "Morty",
+ *       last: "Smith",
+ *     },
+ *   },
+ * ];
+ *
+ * const columns: Column[] = [
+ *   { prop: ["name", "first"], header: "first name" },
+ *   "age",
+ * ];
+ *
+ * assertEquals(
+ *   stringify(data, { columns }),
+ *  `first name,age\r\nRick,70\r\nMorty,14\r\n`,
+ * );
+ * ```
+ *
+ * @example Give an array of string arrays and specify columns with renaming
+ * ```ts
+ * import { stringify } from "@std/csv/stringify";
+ * import { assertEquals } from "@std/assert/equals";
+ *
+ * const data = [
+ *   ["Rick", 70],
+ *   ["Morty", 14],
+ * ];
+ *
+ * const columns = [
+ *   { prop: 0, header: "name" },
+ *   { prop: 1, header: "age" },
+ * ];
+ *
+ * assertEquals(
+ *   stringify(data, { columns }),
+ *  `name,age\r\nRick,70\r\nMorty,14\r\n`,
+ * );
+ * ```
+ *
+ * @example Emit TSV (tab-separated values) with `separator: "\t"`
+ * ```ts
+ * import { stringify } from "@std/csv/stringify";
+ * import { assertEquals } from "@std/assert/equals";
+ *
+ * const data = [
+ *   ["Rick", 70],
+ *   ["Morty", 14],
+ * ];
+ *
+ * assertEquals(stringify(data, { separator: "\t" }), `Rick\t70\r\nMorty\t14\r\n`);
+ * ```
+ *
+ * @example Prepend a byte-order mark with `bom: true`
+ * ```ts
+ * import { stringify } from "@std/csv/stringify";
+ * import { assertEquals } from "@std/assert/equals";
+ *
+ * const data = [["Rick", 70]];
+ *
+ * assertEquals(stringify(data, { bom: true }), "\ufeffRick,70\r\n");
+ * ```
+ *
+ * @param data The source data to stringify. It's an array of items which are
+ * plain objects or arrays.
+ * @param options Options for the stringification.
+ * @returns A CSV string.
  */
 export function stringify(
   data: DataItem[],
-  { headers = true, separator: sep = ",", columns = [], bom = false }:
-    StringifyOptions = {},
+  options?: StringifyOptions,
 ): string {
+  const { headers = true, separator: sep = ",", columns = [], bom = false } =
+    options ?? {};
+
   if (sep.includes(QUOTE) || sep.includes(CRLF)) {
     const message = [
       "Separator cannot include the following strings:",
       '  - U+0022: Quotation mark (")',
       "  - U+000D U+000A: Carriage Return + Line Feed (\\r\\n)",
     ].join("\n");
-    throw new StringifyError(message);
+    throw new TypeError(message);
   }
 
   const normalizedColumns = columns.map(normalizeColumn);
@@ -303,7 +448,7 @@ export function stringify(
     output += BYTE_ORDER_MARK;
   }
 
-  if (headers) {
+  if (headers && normalizedColumns.length > 0) {
     output += normalizedColumns
       .map((column) => getEscapedString(column.header, sep))
       .join(sep);

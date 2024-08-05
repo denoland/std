@@ -4,6 +4,16 @@
  * {@linkcode sprintf} and {@linkcode printf} for printing formatted strings to
  * stdout.
  *
+ * ```ts
+ * import { sprintf } from "@std/fmt/printf";
+ * import { assertEquals } from "@std/assert";
+ *
+ * assertEquals(sprintf("%d", 9), "9");
+ * assertEquals(sprintf("%o", 9), "11");
+ * assertEquals(sprintf("%f", 4), "4.000000");
+ * assertEquals(sprintf("%.3f", 0.9999), "1.000");
+ * ```
+ *
  * This implementation is inspired by POSIX and Golang but does not port
  * implementation code.
  *
@@ -256,7 +266,7 @@ class Printf {
     this.flags = new Flags();
     const flags = this.flags;
     for (; this.i < this.format.length; ++this.i) {
-      const c = this.format[this.i];
+      const c = this.format[this.i]!;
       switch (this.state) {
         case State.PERCENT:
           switch (c) {
@@ -352,7 +362,7 @@ class Printf {
   handleWidthAndPrecision(flags: Flags) {
     const fmt = this.format;
     for (; this.i !== this.format.length; ++this.i) {
-      const c = fmt[this.i];
+      const c = fmt[this.i]!;
       switch (this.state) {
         case State.WIDTH:
           switch (c) {
@@ -418,7 +428,7 @@ class Printf {
         break;
       }
       positional *= 10;
-      const val = parseInt(format[this.i]);
+      const val = parseInt(format[this.i]!, 10);
       if (isNaN(val)) {
         //throw new Error(
         //  `invalid character in positional: ${format}[${format[this.i]}]`
@@ -453,7 +463,7 @@ class Printf {
   /** Handle verb */
   handleVerb() {
     const verb = this.format[this.i];
-    this.verb = verb;
+    this.verb = verb || this.verb;
     if (this.tmpError) {
       this.buf += this.tmpError;
       this.tmpError = undefined;
@@ -691,26 +701,24 @@ class Printf {
     if (!m) {
       throw Error("can't happen, bug");
     }
-    let fractional = m[F.fractional];
     const precision = this.flags.precision !== -1
       ? this.flags.precision
       : DEFAULT_PRECISION;
-    let rounding = false;
-    [fractional, rounding] = this.roundFractionToPrecision(
-      fractional,
+    const [fractional, rounding] = this.roundFractionToPrecision(
+      m[F.fractional] || "",
       precision,
     );
 
-    let e = m[F.exponent];
-    let esign = m[F.esign];
+    let e = m[F.exponent]!;
+    let esign = m[F.esign]!;
     // scientific notation output with exponent padded to minlen 2
-    let mantissa = parseInt(m[F.mantissa]);
+    let mantissa = parseInt(m[F.mantissa]!);
     if (rounding) {
       mantissa += 1;
       if (10 <= mantissa) {
         mantissa = 1;
         const r = parseInt(esign + e) + 1;
-        e = r.toString();
+        e = Math.abs(r).toString();
         esign = r < 0 ? "-" : "+";
       }
     }
@@ -737,8 +745,8 @@ class Printf {
       }
 
       const t = n.toExponential().split("e");
-      let m = t[0].replace(".", "");
-      const e = parseInt(t[1]);
+      let m = t[0]!.replace(".", "");
+      const e = parseInt(t[1]!);
       if (e < 0) {
         let nStr = "0.";
         for (let i = 0; i !== Math.abs(e) - 1; ++i) {
@@ -755,9 +763,7 @@ class Printf {
     }
     // avoiding sign makes padding easier
     const val = expandNumber(Math.abs(n)) as string;
-    const arr = val.split(".");
-    let dig = arr[0];
-    let fractional = arr[1];
+    let [dig, fractional] = val.split(".") as [string, string];
 
     const precision = this.flags.precision !== -1
       ? this.flags.precision
@@ -814,7 +820,7 @@ class Printf {
       throw Error("can't happen");
     }
 
-    const X = parseInt(m[F.exponent]) * (m[F.esign] === "-" ? -1 : 1);
+    const X = parseInt(m[F.exponent]!) * (m[F.esign] === "-" ? -1 : 1);
     let nStr = "";
     if (P > X && X >= -4) {
       this.flags.precision = P - (X + 1);
@@ -920,11 +926,28 @@ class Printf {
 }
 
 /**
- * Converts and format a variable number of `args` as is specified by `format`.
+ * Converts and formats a variable number of `args` as is specified by `format`.
  * `sprintf` returns the formatted string.
  *
- * @param format
- * @param args
+ * See the module documentation for the available format strings.
+ *
+ * @example Usage
+ * ```ts
+ * import { sprintf } from "@std/fmt/printf";
+ * import { assertEquals } from "@std/assert";
+ *
+ * assertEquals(sprintf("%d", 9), "9");
+ *
+ * assertEquals(sprintf("%o", 9), "11");
+ *
+ * assertEquals(sprintf("%f", 4), "4.000000");
+ *
+ * assertEquals(sprintf("%.3f", 0.9999), "1.000");
+ * ```
+ *
+ * @param format The format string to use
+ * @param args The arguments to format
+ * @returns The formatted string
  */
 export function sprintf(format: string, ...args: unknown[]): string {
   const printf = new Printf(format, ...args);
@@ -934,8 +957,24 @@ export function sprintf(format: string, ...args: unknown[]): string {
 /**
  * Converts and format a variable number of `args` as is specified by `format`.
  * `printf` writes the formatted string to standard output.
- * @param format
- * @param args
+ *
+ * See the module documentation for the available format strings.
+ *
+ * @example Usage
+ * ```ts no-assert
+ * import { printf } from "@std/fmt/printf";
+ *
+ * printf("%d", 9); // Prints "9"
+ *
+ * printf("%o", 9); // Prints "11"
+ *
+ * printf("%f", 4); // Prints "4.000000"
+ *
+ * printf("%.3f", 0.9999); // Prints "1.000"
+ * ```
+ *
+ * @param format The format string to use
+ * @param args The arguments to format
  */
 export function printf(format: string, ...args: unknown[]) {
   const s = sprintf(format, ...args);

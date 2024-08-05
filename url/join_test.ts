@@ -1,6 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import { assertEquals } from "../assert/mod.ts";
+import { assertEquals } from "@std/assert";
 import * as url from "./mod.ts";
 
 const TESTSUITE: [[string | URL, ...string[]], URL][] = [
@@ -23,7 +23,7 @@ const TESTSUITE: [[string | URL, ...string[]], URL][] = [
 ];
 
 Deno.test("join()", function () {
-  for (const [[test_url, ...paths], expected] of TESTSUITE) {
-    assertEquals(url.join(test_url, ...paths), expected);
+  for (const [[testUrl, ...paths], expected] of TESTSUITE) {
+    assertEquals(url.join(testUrl, ...paths), expected);
   }
 });

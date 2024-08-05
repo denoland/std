@@ -1,13 +1,28 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-import { GlobOptions } from "../_common/glob_to_reg_exp.ts";
+import type { GlobOptions } from "../_common/glob_to_reg_exp.ts";
 import { normalize } from "./normalize.ts";
 import { SEPARATOR_PATTERN } from "./constants.ts";
 
 export type { GlobOptions };
 
-/** Like normalize(), but doesn't collapse "**\/.." when `globstar` is true. */
+/**
+ * Like normalize(), but doesn't collapse "**\/.." when `globstar` is true.
+ *
+ * @example Usage
+ * ```ts
+ * import { normalizeGlob } from "@std/path/posix/normalize-glob";
+ * import { assertEquals } from "@std/assert";
+ *
+ * const path = normalizeGlob("foo/bar/../*", { globstar: true });
+ * assertEquals(path, "foo/*");
+ * ```
+ *
+ * @param glob The glob to normalize.
+ * @param options The options to use.
+ * @returns The normalized path.
+ */
 export function normalizeGlob(
   glob: string,
   { globstar = false }: GlobOptions = {},

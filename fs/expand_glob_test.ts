@@ -1,15 +1,16 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-import { assert, assertEquals, assertStringIncludes } from "../assert/mod.ts";
 import {
-  fromFileUrl,
-  join,
-  joinGlobs,
-  normalize,
-  relative,
-} from "../path/mod.ts";
+  assert,
+  assertEquals,
+  assertMatch,
+  assertRejects,
+  assertStringIncludes,
+  assertThrows,
+} from "@std/assert";
+import { fromFileUrl, join, joinGlobs, normalize, relative } from "@std/path";
 import {
   expandGlob,
-  ExpandGlobOptions,
+  type ExpandGlobOptions,
   expandGlobSync,
 } from "./expand_glob.ts";
 
@@ -83,6 +84,55 @@ Deno.test("expandGlobSync() with wildcard input returns all test data", function
     "subdir",
   ]);
 });
+
+Deno.test("expandGlob() excludes items in `exclude` option", async function () {
+  const options = { ...EG_OPTIONS, exclude: ["abc"] };
+  assertEquals(await expandGlobArray("*", options), [
+    "a[b]c",
+    "abcdef",
+    "abcdefghi",
+    "link",
+    "subdir",
+  ]);
+  assertEquals(expandGlobSyncArray("*", options), [
+    "a[b]c",
+    "abcdef",
+    "abcdefghi",
+    "link",
+    "subdir",
+  ]);
+});
+
+Deno.test("expandGlob() returns empty array if path doesn't exist", async function () {
+  assertEquals(await expandGlobArray("nonexistent", EG_OPTIONS), []);
+  assertEquals(expandGlobSyncArray("nonexistent", EG_OPTIONS), []);
+});
+
+Deno.test(
+  "expandGlob() throws permission error if the runtime doesn't have read permission",
+  { permissions: {} },
+  async function () {
+    {
+      const e = await assertRejects(async () => {
+        await expandGlobArray("*", EG_OPTIONS);
+      }, Deno.errors.PermissionDenied);
+      assertMatch(
+        e.message,
+        /^Requires read access to "[^"]+", run again with the --allow-read flag$/,
+      );
+    }
+
+    {
+      const e = assertThrows(() => {
+        expandGlobSyncArray("*", EG_OPTIONS);
+      }, Deno.errors.PermissionDenied);
+      assertMatch(
+        e.message,
+        /^Requires read access to "[^"]+", run again with the --allow-read flag$/,
+      );
+    }
+  },
+);
 
 Deno.test("expandGlob() with */ input returns subdirs", async function () {
   const options = EG_OPTIONS;
@@ -232,18 +282,26 @@ Deno.test("expandGlobSync() accepts includeDirs option set to false", function (
   assertEquals(expandGlobSyncArray("subdir", options), []);
 });
 
-Deno.test("expandGlob() throws permission error without fs permissions", async function () {
-  const exampleUrl = new URL("testdata/expand_wildcard.js", import.meta.url);
-  const command = new Deno.Command(Deno.execPath(), {
-    args: ["run", "--quiet", "--no-lock", exampleUrl.toString()],
-  });
-  const { code, success, stdout, stderr } = await command.output();
-  const decoder = new TextDecoder();
-  assert(!success);
-  assertEquals(code, 1);
-  assertEquals(decoder.decode(stdout), "");
-  assertStringIncludes(decoder.decode(stderr), "PermissionDenied");
-});
+Deno.test(
+  "expandGlob() throws permission error without fs permissions",
+  async function () {
+    const exampleUrl = new URL("testdata/expand_wildcard.js", import.meta.url);
+    const command = new Deno.Command(Deno.execPath(), {
+      args: [
+        "run",
+        "--quiet",
+        "--no-lock",
+        exampleUrl.toString(),
+      ],
+    });
+    const { code, success, stdout, stderr } = await command.output();
+    const decoder = new TextDecoder();
+    assert(!success);
+    assertEquals(code, 1);
+    assertEquals(decoder.decode(stdout), "");
+    assertStringIncludes(decoder.decode(stderr), "PermissionDenied");
+  },
+);
 
 Deno.test("expandGlob() returns single entry when root is not glob", async function () {
   const options = { ...EG_OPTIONS, root: join(EG_OPTIONS.root!, "a[b]c") };

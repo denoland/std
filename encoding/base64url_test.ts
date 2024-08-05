@@ -1,6 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import { assertEquals, assertThrows } from "../assert/mod.ts";
+import { assertEquals, assertThrows } from "@std/assert";
 import { decodeBase64Url, encodeBase64Url } from "./base64url.ts";
 
 const testsetString = [
@@ -29,7 +29,7 @@ const testsetInvalid = [
 
 Deno.test("encodeBase64Url() encodes string", () => {
   for (const [input, output] of testsetString) {
-    assertEquals(encodeBase64Url(input), output);
+    assertEquals(encodeBase64Url(input!), output);
   }
 });
 

@@ -8,28 +8,25 @@
  * {@link https://github.com/golang/go/blob/go1.12.5/src/encoding/hex/hex.go | encoding/hex}
  * library.
  *
- * This module is browser compatible.
- *
- * @example
  * ```ts
  * import {
  *   decodeHex,
  *   encodeHex,
- * } from "https://deno.land/std@$STD_VERSION/encoding/hex.ts";
+ * } from "@std/encoding/hex";
+ * import { assertEquals } from "@std/assert";
  *
- * const binary = new TextEncoder().encode("abc");
- * const encoded = encodeHex(binary);
- * console.log(encoded);
- * // => "616263"
+ * assertEquals(encodeHex("abc"), "616263");
  *
- * console.log(decodeHex(encoded));
- * // => Uint8Array(3) [ 97, 98, 99 ]
+ * assertEquals(
+ *   decodeHex("616263"),
+ *   new TextEncoder().encode("abc"),
+ * );
  * ```
  *
  * @module
  */
 
-import { validateBinaryLike } from "./_util.ts";
+import { validateBinaryLike } from "./_validate_binary_like.ts";
 
 const hexTable = new TextEncoder().encode("0123456789abcdef");
 const textEncoder = new TextEncoder();
@@ -58,21 +55,26 @@ function fromHexChar(byte: number): number {
 /**
  * Converts data into a hex-encoded string.
  *
- * @example
- * ```ts
- * import { encodeHex } from "https://deno.land/std@$STD_VERSION/encoding/hex.ts";
+ * @param src The data to encode.
  *
- * encodeHex("abc"); // "616263"
+ * @returns The hex-encoded string.
+ *
+ * @example Usage
+ * ```ts
+ * import { encodeHex } from "@std/encoding/hex";
+ * import { assertEquals } from "@std/assert";
+ *
+ * assertEquals(encodeHex("abc"), "616263");
  * ```
  */
 export function encodeHex(src: string | Uint8Array | ArrayBuffer): string {
   const u8 = validateBinaryLike(src);
 
   const dst = new Uint8Array(u8.length * 2);
-  for (let i = 0; i < dst.length; i++) {
-    const v = u8[i];
-    dst[i * 2] = hexTable[v >> 4];
-    dst[i * 2 + 1] = hexTable[v & 0x0f];
+  for (let i = 0; i < u8.length; i++) {
+    const v = u8[i]!;
+    dst[i * 2] = hexTable[v >> 4]!;
+    dst[i * 2 + 1] = hexTable[v & 0x0f]!;
   }
   return textDecoder.decode(dst);
 }
@@ -81,26 +83,34 @@ export function encodeHex(src: string | Uint8Array | ArrayBuffer): string {
  * Decodes the given hex-encoded string. If the input is malformed, an error is
  * thrown.
  *
- * @example
- * ```ts
- * import { decodeHex } from "https://deno.land/std@$STD_VERSION/encoding/hex.ts";
+ * @param src The hex-encoded string to decode.
  *
- * decodeHex("616263"); // Uint8Array(3) [ 97, 98, 99 ]
+ * @returns The decoded data.
+ *
+ * @example Usage
+ * ```ts
+ * import { decodeHex } from "@std/encoding/hex";
+ * import { assertEquals } from "@std/assert";
+ *
+ * assertEquals(
+ *   decodeHex("616263"),
+ *   new TextEncoder().encode("abc"),
+ * );
  * ```
  */
 export function decodeHex(src: string): Uint8Array {
   const u8 = textEncoder.encode(src);
   const dst = new Uint8Array(u8.length / 2);
   for (let i = 0; i < dst.length; i++) {
-    const a = fromHexChar(u8[i * 2]);
-    const b = fromHexChar(u8[i * 2 + 1]);
+    const a = fromHexChar(u8[i * 2]!);
+    const b = fromHexChar(u8[i * 2 + 1]!);
     dst[i] = (a << 4) | b;
   }
 
   if (u8.length % 2 === 1) {
     // Check for invalid char before reporting bad length,
     // since the invalid char (if present) is an earlier problem.
-    fromHexChar(u8[dst.length * 2]);
+    fromHexChar(u8[dst.length * 2]!);
     throw errLength();
   }
 

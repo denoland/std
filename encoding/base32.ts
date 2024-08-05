@@ -4,30 +4,35 @@
 
 /**
  * Utilities for
- * {@link https://datatracker.ietf.org/doc/html/rfc4648#section-6 | base32}
+ * {@link https://www.rfc-editor.org/rfc/rfc4648.html#section-6 | base32}
  * encoding and decoding.
  *
  * Modified from {@link https://github.com/beatgammit/base64-js}.
  *
- * This module is browser compatible.
+ * ```ts
+ * import { encodeBase32, decodeBase32 } from "@std/encoding/base32";
+ * import { assertEquals } from "@std/assert";
+ *
+ * assertEquals(encodeBase32("foobar"), "MZXW6YTBOI======");
+ *
+ * assertEquals(
+ *   decodeBase32("MZXW6YTBOI======"),
+ *   new TextEncoder().encode("foobar")
+ * );
+ * ```
  *
  * @module
  */
 
-import { validateBinaryLike } from "./_util.ts";
+import { validateBinaryLike } from "./_validate_binary_like.ts";
 
-const lookup: string[] = [];
+const lookup: string[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567".split("");
 const revLookup: number[] = [];
-
-// RFC4648 base32
-const code = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
-for (let i = 0, len = code.length; i < len; ++i) {
-  lookup[i] = code[i];
-  revLookup[code.charCodeAt(i)] = i;
-}
+lookup.forEach((c, i) => revLookup[c.charCodeAt(0)] = i);
 
 const placeHolderPadLookup = [0, 1, , 2, 3, , 4];
-function _getPadLen(placeHoldersLen: number): number {
+
+function getPadLength(placeHoldersLen: number): number {
   const maybeLen = placeHolderPadLookup[placeHoldersLen];
   if (typeof maybeLen !== "number") {
     throw new Error("Invalid pad length");
@@ -50,27 +55,34 @@ function getLens(b32: string): [number, number] {
   return [validLen, placeHoldersLen];
 }
 
-function _byteLength(validLen: number, placeHoldersLen: number): number {
-  return ((validLen + placeHoldersLen) * 5) / 8 - _getPadLen(placeHoldersLen);
+function getByteLength(validLen: number, placeHoldersLen: number): number {
+  return ((validLen + placeHoldersLen) * 5) / 8 - getPadLength(placeHoldersLen);
 }
 
 /**
  * Decodes a base32-encoded string.
  *
- * @see {@link https://datatracker.ietf.org/doc/html/rfc4648#section-6}
+ * @see {@link https://www.rfc-editor.org/rfc/rfc4648.html#section-6}
  *
- * @example
+ * @param b32 The base32-encoded string to decode.
+ * @returns The decoded data.
+ *
+ * @example Usage
  * ```ts
- * import { decodeBase32 } from "https://deno.land/std@$STD_VERSION/encoding/base32.ts";
+ * import { decodeBase32 } from "@std/encoding/base32";
+ * import { assertEquals } from "@std/assert";
  *
- * decodeBase32("NRQMA==="); // Uint8Array(3) [ 108, 96, 192 ]
+ * assertEquals(
+ *   decodeBase32("GZRTMMDDGA======"),
+ *   new TextEncoder().encode("6c60c0"),
+ * );
  * ```
  */
 export function decodeBase32(b32: string): Uint8Array {
   let tmp: number;
   const [validLen, placeHoldersLen] = getLens(b32);
 
-  const arr = new Uint8Array(_byteLength(validLen, placeHoldersLen));
+  const arr = new Uint8Array(getByteLength(validLen, placeHoldersLen));
 
   let curByte = 0;
 
@@ -79,55 +91,55 @@ export function decodeBase32(b32: string): Uint8Array {
 
   let i: number;
   for (i = 0; i < len; i += 8) {
-    tmp = (revLookup[b32.charCodeAt(i)] << 20) |
-      (revLookup[b32.charCodeAt(i + 1)] << 15) |
-      (revLookup[b32.charCodeAt(i + 2)] << 10) |
-      (revLookup[b32.charCodeAt(i + 3)] << 5) |
-      revLookup[b32.charCodeAt(i + 4)];
+    tmp = (revLookup[b32.charCodeAt(i)]! << 20) |
+      (revLookup[b32.charCodeAt(i + 1)]! << 15) |
+      (revLookup[b32.charCodeAt(i + 2)]! << 10) |
+      (revLookup[b32.charCodeAt(i + 3)]! << 5) |
+      revLookup[b32.charCodeAt(i + 4)]!;
     arr[curByte++] = (tmp >> 17) & 0xff;
     arr[curByte++] = (tmp >> 9) & 0xff;
     arr[curByte++] = (tmp >> 1) & 0xff;
 
     tmp = ((tmp & 1) << 15) |
-      (revLookup[b32.charCodeAt(i + 5)] << 10) |
-      (revLookup[b32.charCodeAt(i + 6)] << 5) |
-      revLookup[b32.charCodeAt(i + 7)];
+      (revLookup[b32.charCodeAt(i + 5)]! << 10) |
+      (revLookup[b32.charCodeAt(i + 6)]! << 5) |
+      revLookup[b32.charCodeAt(i + 7)]!;
     arr[curByte++] = (tmp >> 8) & 0xff;
     arr[curByte++] = tmp & 0xff;
   }
 
   if (placeHoldersLen === 1) {
-    tmp = (revLookup[b32.charCodeAt(i)] << 20) |
-      (revLookup[b32.charCodeAt(i + 1)] << 15) |
-      (revLookup[b32.charCodeAt(i + 2)] << 10) |
-      (revLookup[b32.charCodeAt(i + 3)] << 5) |
-      revLookup[b32.charCodeAt(i + 4)];
+    tmp = (revLookup[b32.charCodeAt(i)]! << 20) |
+      (revLookup[b32.charCodeAt(i + 1)]! << 15) |
+      (revLookup[b32.charCodeAt(i + 2)]! << 10) |
+      (revLookup[b32.charCodeAt(i + 3)]! << 5) |
+      revLookup[b32.charCodeAt(i + 4)]!;
     arr[curByte++] = (tmp >> 17) & 0xff;
     arr[curByte++] = (tmp >> 9) & 0xff;
     arr[curByte++] = (tmp >> 1) & 0xff;
     tmp = ((tmp & 1) << 7) |
-      (revLookup[b32.charCodeAt(i + 5)] << 2) |
-      (revLookup[b32.charCodeAt(i + 6)] >> 3);
+      (revLookup[b32.charCodeAt(i + 5)]! << 2) |
+      (revLookup[b32.charCodeAt(i + 6)]! >> 3);
     arr[curByte++] = tmp & 0xff;
   } else if (placeHoldersLen === 3) {
-    tmp = (revLookup[b32.charCodeAt(i)] << 19) |
-      (revLookup[b32.charCodeAt(i + 1)] << 14) |
-      (revLookup[b32.charCodeAt(i + 2)] << 9) |
-      (revLookup[b32.charCodeAt(i + 3)] << 4) |
-      (revLookup[b32.charCodeAt(i + 4)] >> 1);
+    tmp = (revLookup[b32.charCodeAt(i)]! << 19) |
+      (revLookup[b32.charCodeAt(i + 1)]! << 14) |
+      (revLookup[b32.charCodeAt(i + 2)]! << 9) |
+      (revLookup[b32.charCodeAt(i + 3)]! << 4) |
+      (revLookup[b32.charCodeAt(i + 4)]! >> 1);
     arr[curByte++] = (tmp >> 16) & 0xff;
     arr[curByte++] = (tmp >> 8) & 0xff;
     arr[curByte++] = tmp & 0xff;
   } else if (placeHoldersLen === 4) {
-    tmp = (revLookup[b32.charCodeAt(i)] << 11) |
-      (revLookup[b32.charCodeAt(i + 1)] << 6) |
-      (revLookup[b32.charCodeAt(i + 2)] << 1) |
-      (revLookup[b32.charCodeAt(i + 3)] >> 4);
+    tmp = (revLookup[b32.charCodeAt(i)]! << 11) |
+      (revLookup[b32.charCodeAt(i + 1)]! << 6) |
+      (revLookup[b32.charCodeAt(i + 2)]! << 1) |
+      (revLookup[b32.charCodeAt(i + 3)]! >> 4);
     arr[curByte++] = (tmp >> 8) & 0xff;
     arr[curByte++] = tmp & 0xff;
   } else if (placeHoldersLen === 6) {
-    tmp = (revLookup[b32.charCodeAt(i)] << 3) |
-      (revLookup[b32.charCodeAt(i + 1)] >> 2);
+    tmp = (revLookup[b32.charCodeAt(i)]! << 3) |
+      (revLookup[b32.charCodeAt(i + 1)]! >> 2);
     arr[curByte++] = tmp & 0xff;
   }
 
@@ -138,16 +150,16 @@ function encodeChunk(uint8: Uint8Array, start: number, end: number): string {
   let tmp: number;
   const output = [];
   for (let i = start; i < end; i += 5) {
-    tmp = ((uint8[i] << 16) & 0xff0000) |
-      ((uint8[i + 1] << 8) & 0xff00) |
-      (uint8[i + 2] & 0xff);
+    tmp = ((uint8[i]! << 16) & 0xff0000) |
+      ((uint8[i + 1]! << 8) & 0xff00) |
+      (uint8[i + 2]! & 0xff);
     output.push(lookup[(tmp >> 19) & 0x1f]);
     output.push(lookup[(tmp >> 14) & 0x1f]);
     output.push(lookup[(tmp >> 9) & 0x1f]);
     output.push(lookup[(tmp >> 4) & 0x1f]);
     tmp = ((tmp & 0xf) << 16) |
-      ((uint8[i + 3] << 8) & 0xff00) |
-      (uint8[i + 4] & 0xff);
+      ((uint8[i + 3]! << 8) & 0xff00) |
+      (uint8[i + 4]! & 0xff);
     output.push(lookup[(tmp >> 15) & 0x1f]);
     output.push(lookup[(tmp >> 10) & 0x1f]);
     output.push(lookup[(tmp >> 5) & 0x1f]);
@@ -157,15 +169,19 @@ function encodeChunk(uint8: Uint8Array, start: number, end: number): string {
 }
 
 /**
- * Converts data to a base32-encoded string.
+ * Converts data into a base32-encoded string.
  *
- * @see {@link https://datatracker.ietf.org/doc/html/rfc4648#section-6}
+ * @see {@link https://www.rfc-editor.org/rfc/rfc4648.html#section-6}
  *
- * @example
+ * @param data The data to encode.
+ * @returns The base32-encoded string.
+ *
+ * @example Usage
  * ```ts
- * import { encodeBase32 } from "https://deno.land/std@$STD_VERSION/encoding/base32.ts";
+ * import { encodeBase32 } from "@std/encoding/base32";
+ * import { assertEquals } from "@std/assert";
  *
- * encodeBase32("6c60c0"); // "NRQMA==="
+ * assertEquals(encodeBase32("6c60c0"), "GZRTMMDDGA======");
  * ```
  */
 export function encodeBase32(data: ArrayBuffer | Uint8Array | string): string {
@@ -191,22 +207,22 @@ export function encodeBase32(data: ArrayBuffer | Uint8Array | string): string {
 
   // pad the end with zeros, but make sure to not forget the extra bytes
   if (extraBytes === 4) {
-    tmp = ((uint8[len2] & 0xff) << 16) |
-      ((uint8[len2 + 1] & 0xff) << 8) |
-      (uint8[len2 + 2] & 0xff);
+    tmp = ((uint8[len2]! & 0xff) << 16) |
+      ((uint8[len2 + 1]! & 0xff) << 8) |
+      (uint8[len2 + 2]! & 0xff);
     parts.push(lookup[(tmp >> 19) & 0x1f]);
     parts.push(lookup[(tmp >> 14) & 0x1f]);
     parts.push(lookup[(tmp >> 9) & 0x1f]);
     parts.push(lookup[(tmp >> 4) & 0x1f]);
-    tmp = ((tmp & 0xf) << 11) | (uint8[len2 + 3] << 3);
+    tmp = ((tmp & 0xf) << 11) | (uint8[len2 + 3]! << 3);
     parts.push(lookup[(tmp >> 10) & 0x1f]);
     parts.push(lookup[(tmp >> 5) & 0x1f]);
     parts.push(lookup[tmp & 0x1f]);
     parts.push("=");
   } else if (extraBytes === 3) {
-    tmp = ((uint8[len2] & 0xff) << 17) |
-      ((uint8[len2 + 1] & 0xff) << 9) |
-      ((uint8[len2 + 2] & 0xff) << 1);
+    tmp = ((uint8[len2]! & 0xff) << 17) |
+      ((uint8[len2 + 1]! & 0xff) << 9) |
+      ((uint8[len2 + 2]! & 0xff) << 1);
     parts.push(lookup[(tmp >> 20) & 0x1f]);
     parts.push(lookup[(tmp >> 15) & 0x1f]);
     parts.push(lookup[(tmp >> 10) & 0x1f]);
@@ -214,14 +230,15 @@ export function encodeBase32(data: ArrayBuffer | Uint8Array | string): string {
     parts.push(lookup[tmp & 0x1f]);
     parts.push("===");
   } else if (extraBytes === 2) {
-    tmp = ((uint8[len2] & 0xff) << 12) | ((uint8[len2 + 1] & 0xff) << 4);
+    tmp = ((uint8[len2]! & 0xff) << 12) |
+      ((uint8[len2 + 1]! & 0xff) << 4);
     parts.push(lookup[(tmp >> 15) & 0x1f]);
     parts.push(lookup[(tmp >> 10) & 0x1f]);
     parts.push(lookup[(tmp >> 5) & 0x1f]);
     parts.push(lookup[tmp & 0x1f]);
     parts.push("====");
   } else if (extraBytes === 1) {
-    tmp = (uint8[len2] & 0xff) << 2;
+    tmp = (uint8[len2]! & 0xff) << 2;
     parts.push(lookup[(tmp >> 5) & 0x1f]);
     parts.push(lookup[tmp & 0x1f]);
     parts.push("======");

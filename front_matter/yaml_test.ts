@@ -4,28 +4,28 @@ import { test } from "./test.ts";
 import { extract } from "./yaml.ts";
 import {
   runExtractTypeErrorTests,
-  runExtractYAMLTests1,
-  runExtractYAMLTests2,
+  runExtractYamlTests1,
+  runExtractYamlTests2,
   runTestInvalidInputTests,
   runTestValidInputTests,
 } from "./_test_utils.ts";
 
-Deno.test("[YAML] test valid input true", () => {
+Deno.test("yaml() tests valid input true", () => {
   runTestValidInputTests("yaml", test);
 });
 
-Deno.test("[YAML] test invalid input false", () => {
+Deno.test("yaml() tests invalid input false", () => {
   runTestInvalidInputTests("yaml", test);
 });
 
-Deno.test("[YAML] extract type error on invalid input", () => {
+Deno.test("yaml() extracts type error on invalid input", () => {
   runExtractTypeErrorTests("yaml", extract);
 });
 
-Deno.test("[YAML] parse yaml delineate by `---`", async () => {
-  await runExtractYAMLTests1(extract);
+Deno.test("yaml() parses yaml delineate by `---`", async () => {
+  await runExtractYamlTests1(extract);
 });
 
-Deno.test("[YAML] parse yaml delineate by `---yaml`", async () => {
-  await runExtractYAMLTests2(extract);
+Deno.test("yaml() parses yaml delineate by `---yaml`", async () => {
+  await runExtractYamlTests2(extract);
 });

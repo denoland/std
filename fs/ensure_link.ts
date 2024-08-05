@@ -1,21 +1,30 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-import { dirname } from "../path/dirname.ts";
+import { dirname } from "@std/path/dirname";
 import { ensureDir, ensureDirSync } from "./ensure_dir.ts";
 import { toPathString } from "./_to_path_string.ts";
 
 /**
- * Ensures that the hard link exists.
- * If the directory structure does not exist, it is created.
+ * Asynchronously ensures that the hard link exists.
  *
- * @example
- * ```ts
- * import { ensureSymlink } from "https://deno.land/std@$STD_VERSION/fs/mod.ts";
+ * If the parent directories for the hard link do not exist, they are created.
  *
- * ensureSymlink("./folder/targetFile.dat", "./folder/targetFile.link.dat"); // returns promise
+ * Requires `--allow-read` and `--allow-write` permissions.
+ *
+ * @see {@link https://docs.deno.com/runtime/manual/basics/permissions#file-system-access}
+ * for more information on Deno's permissions system.
+ *
+ * @param src The source file path as a string or URL. Directory hard links are
+ * not allowed.
+ * @param dest The destination link path as a string or URL.
+ *
+ * @returns A void promise that resolves once the hard link exists.
+ *
+ * @example Usage
+ * ```ts no-eval
+ * import { ensureLink } from "@std/fs/ensure-link";
+ *
+ * await ensureLink("./folder/targetFile.dat", "./folder/targetFile.link.dat");
  * ```
- *
- * @param src the source file path. Directory hard links are not allowed.
- * @param dest the destination link path
  */
 export async function ensureLink(src: string | URL, dest: string | URL) {
   dest = toPathString(dest);
@@ -25,18 +34,27 @@ export async function ensureLink(src: string | URL, dest: string | URL) {
 }
 
 /**
- * Ensures that the hard link exists.
- * If the directory structure does not exist, it is created.
+ * Synchronously ensures that the hard link exists.
  *
- * @example
- * ```ts
- * import { ensureSymlinkSync } from "https://deno.land/std@$STD_VERSION/fs/mod.ts";
+ * If the parent directories for the hard link do not exist, they are created.
  *
- * ensureSymlinkSync("./folder/targetFile.dat", "./folder/targetFile.link.dat"); // void
+ * Requires `--allow-read` and `--allow-write` permissions.
+ *
+ * @see {@link https://docs.deno.com/runtime/manual/basics/permissions#file-system-access}
+ * for more information on Deno's permissions system.
+ *
+ * @param src The source file path as a string or URL. Directory hard links are
+ * not allowed.
+ * @param dest The destination link path as a string or URL.
+ *
+ * @returns A void value that returns once the hard link exists.
+ *
+ * @example Usage
+ * ```ts no-eval
+ * import { ensureLinkSync } from "@std/fs/ensure-link";
+ *
+ * ensureLinkSync("./folder/targetFile.dat", "./folder/targetFile.link.dat");
  * ```
- *
- * @param src the source file path. Directory hard links are not allowed.
- * @param dest the destination link path
  */
 export function ensureLinkSync(src: string | URL, dest: string | URL) {
   dest = toPathString(dest);

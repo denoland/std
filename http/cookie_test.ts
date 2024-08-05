@@ -5,10 +5,10 @@ import {
   getSetCookies,
   setCookie,
 } from "./cookie.ts";
-import { assert, assertEquals, assertThrows } from "../assert/mod.ts";
+import { assert, assertEquals, assertThrows } from "@std/assert";
 
 Deno.test({
-  name: "Cookie parser",
+  name: "getCookies() parses cookie",
   fn() {
     let headers = new Headers();
     assertEquals(getCookies(headers), {});
@@ -35,7 +35,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "Cookie Name Validation",
+  name: "setCookie() validates names",
   fn() {
     const tokens = [
       '"id"',
@@ -60,7 +60,7 @@ Deno.test({
             maxAge: 3,
           });
         },
-        Error,
+        SyntaxError,
         'Invalid cookie name: "' + name + '".',
       );
     });
@@ -68,7 +68,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "Cookie Value Validation",
+  name: "setCookie() validates value",
   fn() {
     const tokens = [
       "1f\tWa",
@@ -97,7 +97,7 @@ Deno.test({
             },
           );
         },
-        Error,
+        SyntaxError,
         "RFC2616 cookie 'Space'",
       );
     });
@@ -109,14 +109,14 @@ Deno.test({
           value: "United Kingdom",
         });
       },
-      Error,
+      SyntaxError,
       "RFC2616 cookie 'location' cannot contain character ' '",
     );
   },
 });
 
 Deno.test({
-  name: "Cookie Path Validation",
+  name: "setCookie() validates path",
   fn() {
     const path = "/;domain=sub.domain.com";
     const headers = new Headers();
@@ -131,14 +131,14 @@ Deno.test({
           maxAge: 3,
         });
       },
-      Error,
+      SyntaxError,
       path + ": Invalid cookie path char ';'",
     );
   },
 });
 
 Deno.test({
-  name: "Cookie Domain Validation",
+  name: "setCookie() validates domain",
   fn() {
     const tokens = ["-domain.com", "domain.org.", "domain.org-"];
     const headers = new Headers();
@@ -154,7 +154,7 @@ Deno.test({
             maxAge: 3,
           });
         },
-        Error,
+        SyntaxError,
         "Invalid first/last char in cookie domain: " + domain,
       );
     });
@@ -162,7 +162,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "Cookie Delete",
+  name: "deleteCookie()",
   fn() {
     let headers = new Headers();
     deleteCookie(headers, "deno");
@@ -182,11 +182,23 @@ Deno.test({
       headers.get("Set-Cookie"),
       "Space=Cat; Domain=deno.land; Path=/, Space=; Expires=Thu, 01 Jan 1970 00:00:00 GMT",
     );
+    headers = new Headers();
+    deleteCookie(headers, "Space", {
+      domain: "deno.land",
+      path: "/",
+      secure: true,
+      httpOnly: true,
+      partitioned: true,
+    });
+    assertEquals(
+      headers.get("Set-Cookie"),
+      "Space=; Secure; HttpOnly; Partitioned; Domain=deno.land; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT",
+    );
   },
 });
 
 Deno.test({
-  name: "Cookie Set",
+  name: "setCookie() handles Set-Cookie",
   fn() {
     let headers = new Headers();
     setCookie(headers, { name: "Space", value: "Cat" });
@@ -199,6 +211,10 @@ Deno.test({
     headers = new Headers();
     setCookie(headers, { name: "Space", value: "Cat", httpOnly: true });
     assertEquals(headers.get("Set-Cookie"), "Space=Cat; HttpOnly");
+
+    headers = new Headers();
+    setCookie(headers, { name: "Space", value: "Cat", partitioned: true });
+    assertEquals(headers.get("Set-Cookie"), "Space=Cat; Partitioned");
 
     headers = new Headers();
     setCookie(headers, {
@@ -385,7 +401,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "Set-Cookie parser",
+  name: "setCookie() parses Set-Cookie",
   fn() {
     let headers = new Headers({ "set-cookie": "Space=Cat" });
     assertEquals(getSetCookies(headers), [{

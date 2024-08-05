@@ -1,7 +1,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-import { concat } from "../bytes/concat.ts";
+import { concat } from "@std/bytes/concat";
 import { DEFAULT_CHUNK_SIZE } from "./_constants.ts";
 import type { Reader, ReaderSync } from "./types.ts";
 
@@ -11,7 +11,7 @@ import type { Reader, ReaderSync } from "./types.ts";
  *
  * @example
  * ```ts
- * import { readAll } from "https://deno.land/std@$STD_VERSION/io/read_all.ts";
+ * import { readAll } from "@std/io/read-all";
  *
  * // Example from stdin
  * const stdinContent = await readAll(Deno.stdin);
@@ -43,7 +43,7 @@ export async function readAll(reader: Reader): Promise<Uint8Array> {
  *
  * @example
  * ```ts
- * import { readAllSync } from "https://deno.land/std@$STD_VERSION/io/read_all.ts";
+ * import { readAllSync } from "@std/io/read-all";
  *
  * // Example from stdin
  * const stdinContent = readAllSync(Deno.stdin);

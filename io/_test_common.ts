@@ -3,7 +3,7 @@
 import type { Reader } from "./types.ts";
 
 export const MIN_READ_BUFFER_SIZE = 16;
-export const bufsizes: number[] = [
+export const bufsizes = [
   0,
   MIN_READ_BUFFER_SIZE,
   23,
@@ -18,11 +18,14 @@ export const bufsizes: number[] = [
 
 export class BinaryReader implements Reader {
   index = 0;
+  #bytes: Uint8Array;
 
-  constructor(private bytes: Uint8Array = new Uint8Array(0)) {}
+  constructor(bytes = new Uint8Array(0)) {
+    this.#bytes = bytes;
+  }
 
   read(p: Uint8Array): Promise<number | null> {
-    p.set(this.bytes.subarray(this.index, p.byteLength));
+    p.set(this.#bytes.subarray(this.index, p.byteLength));
     this.index += p.byteLength;
     return Promise.resolve(p.byteLength);
   }

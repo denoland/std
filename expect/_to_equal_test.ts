@@ -1,14 +1,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import {
-  bold,
-  gray,
-  green,
-  red,
-  stripAnsiCode,
-  yellow,
-} from "../fmt/colors.ts";
-import { AssertionError, assertThrows } from "../assert/mod.ts";
+import { bold, gray, green, red, stripAnsiCode, yellow } from "@std/fmt/colors";
+import { AssertionError, assertThrows } from "@std/assert";
 import { expect } from "./expect.ts";
 
 const createHeader = (): string[] => [
@@ -143,7 +136,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "expect().toEqual() throws with a custom message",
+  name: "expect().toEqual() throws with custom message",
   fn() {
     assertThrows(
       () => expect(1, "CUSTOM MESSAGE").toEqual(2),
@@ -228,7 +221,7 @@ Deno.test("expect().toEqual() does not throw when a key with undfined value exis
 Deno.test("expect().toEqual() align to jest test cases", () => {
   function create() {
     class Person {
-      constructor(public readonly name = "deno") {}
+      constructor(readonly name = "deno") {}
     }
     return new Person();
   }
@@ -273,4 +266,40 @@ Deno.test("expect().toEqual() matches when Error Objects are equal", () => {
 
   const expectErrObjectWithEmail = new Error("missing param: email");
   expect(getError()).not.toEqual(expectErrObjectWithEmail);
+});
+
+Deno.test("expect().toEqual() handles Sets", () => {
+  expect(new Set([1, 2, 3])).toEqual(new Set([1, 2, 3]));
+  expect(new Set([1, 2, 3])).not.toEqual(new Set([1, 2]));
+  expect(new Set([1, 2, 3])).not.toEqual(new Set([1, 2, 4]));
+  expect(new Set([1, 2, 3, 4])).not.toEqual(new Map([[1, 2], [3, 4]]));
+  expect(new Set([1, 2, new Set([0, 1])])).toEqual(
+    new Set([1, 2, new Set([0, 1])]),
+  );
+
+  // It handles circular reference structures
+  const a = new Set<unknown>([1, 2]);
+  a.add(a);
+  const b = new Set<unknown>([1, 2]);
+  b.add(b);
+  expect(a).toEqual(b);
+});
+
+Deno.test("expect().toEqual() handles Maps", () => {
+  expect(new Map([[1, 2], [3, 4]])).toEqual(new Map([[1, 2], [3, 4]]));
+  expect(new Map([[1, 2], [3, 4]])).not.toEqual(new Map([[1, 2], [3, 5]]));
+});
+
+// TODO(kt3k): Iterator global exists in the runtime but not in the TypeScript
+// Remove the below lines when `Iterator` global is available in TypeScript
+// deno-lint-ignore no-explicit-any
+const Iterator = (globalThis as any).Iterator;
+Deno.test("expect().toEqual() handles iterators", () => {
+  expect(Iterator.from([1, 2, 3])).toEqual(Iterator.from([1, 2, 3]));
+  expect(Iterator.from([1, 2, 3])).not.toEqual(Iterator.from([1, 2, 4]));
+  expect(Iterator.from([1, 2, 3])).not.toEqual(Iterator.from([1, 2, 3, 4]));
+  const iter0 = Iterator.from([1, 2, 3]);
+  const iter1 = Iterator.from([1, 2, 3]);
+  iter1.foo = 1;
+  expect(iter0).not.toEqual(iter1);
 });

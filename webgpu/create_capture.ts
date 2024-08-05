@@ -19,10 +19,10 @@ export interface CreateCapture {
 /**
  * Creates a texture and buffer to use as a capture.
  *
- * @example
- * ```ts
- * import { createCapture } from "https://deno.land/std@$STD_VERSION/webgpu/create_capture.ts";
- * import { getRowPadding } from "https://deno.land/std@$STD_VERSION/webgpu/row_padding.ts";
+ * @example Usage
+ * ```ts no-eval
+ * import { createCapture } from "@std/webgpu/create-capture";
+ * import { getRowPadding } from "@std/webgpu/row-padding";
  *
  * const adapter = await navigator.gpu.requestAdapter();
  * const device = await adapter?.requestDevice()!;
@@ -64,6 +64,11 @@ export interface CreateCapture {
  * // outputBuffer contains the raw image data, can then be used
  * // to save as png or other formats.
  * ```
+ *
+ * @param device The device to use for creating the capture.
+ * @param width The width of the capture texture.
+ * @param height The height of the capture texture.
+ * @returns The texture to render to and buffer to read from.
  */
 export function createCapture(
   device: GPUDevice,
