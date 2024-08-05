@@ -106,6 +106,7 @@ export function abortable<T>(p: Promise<T>, signal: AbortSignal): Promise<T>;
  * assertEquals(items, []);
  * ```
  */
+
 export function abortable<T>(
   p: AsyncIterable<T>,
   signal: AbortSignal,
@@ -153,7 +154,8 @@ async function* abortableAsyncIterable<T>(
       const { done, value } = await race;
       if (done) {
         signal.removeEventListener("abort", abort);
-        return;
+        const result = await it.return?.(value);
+        return result?.value;
       }
       yield value;
     }
