@@ -70,7 +70,7 @@ The Index of Available Agents follows:
 
 - `agents/files.md`
 - `agents/hamr.md` this is the crm
-- `agents/system.md`
+- `agents/system.md` The super user agent, used for all powerful administrative actions
 - `agents/hal2.md`
 - `agents/hal3.md`
 - `agents/backchat.md` this bot knows about threads
