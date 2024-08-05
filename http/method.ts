@@ -7,7 +7,7 @@
  *
  * @see {@link https://www.iana.org/go/rfc9110 | RFC9110, Section 9.3}
  */
-export const HttpMethodRfc9110 = {
+export const METHOD = {
   /**
    * DELETE (Safe: no; Idempotent: yes)
    *
@@ -346,4 +346,4 @@ export const HttpMethod = {
   ...HttpMethodIana,
 } as const;
 
-export type HttpMethod = typeof HttpMethod[keyof typeof HttpMethod];
+export type Method = typeof HttpMethod[keyof typeof HttpMethod];
