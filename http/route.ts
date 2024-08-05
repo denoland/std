@@ -27,7 +27,7 @@ export interface Route<T extends (string | URLPattern)> {
  *   {
  *     path: "/users/:id",
  *     method: "GET",
- *     handler: (request, _info, params) => new Response(params?.pathname.groups.id),
+ *     handler: (_request, _info, params) => new Response(params?.pathname.groups.id),
  *   }
  * ];
  * function defaultHandler(request: Request) {
@@ -44,7 +44,7 @@ export function route(
   routes: Route<string | URLPattern>[],
   defaultHandler: Handler,
 ): Handler | undefined {
-  const staticRoutes = new Map();
+  const staticRoutes = new Map<string, Handler>();
   const dynamicRoutes: Route<URLPattern>[] = [];
 
   for (const route of routes) {
@@ -60,11 +60,9 @@ export function route(
     const handler = staticRoutes.get(`${request.method} ${pathname}`);
     if (handler !== undefined) return handler(request);
 
-    const route = dynamicRoutes
-      .find((route) =>
-        (route.method ?? "GET") === request.method &&
-        route.path.test(request.url)
-      );
+    const route = dynamicRoutes.find((route) =>
+      (route.method ?? "GET") === request.method && route.path.test(request.url)
+    );
 
     return route?.handler(request, info, route.path.exec(request.url)) ??
       defaultHandler(request);
