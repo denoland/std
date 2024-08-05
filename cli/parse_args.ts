@@ -369,13 +369,11 @@ const NUMBER_REGEXP = /-?\d+(\.\d*)?(e-?\d+)?$/;
 const HYPHEN_REGEXP = /^(-|--)[^-]/;
 const VALUE_REGEXP = /=(?<value>.+)/;
 const FLAG_NAME_REGEXP = /^--[^=]+$/;
-const IS_FLAG_REGEXP = /^-/;
 const SPECIAL_CHAR_REGEXP = /\W/;
-const IS_NUMBER_REGEXP =
-  /^(?:[-+]?(?:\d+(?:\.\d*)?|\.\d+)(?:e[-+]?\d+)?|0x[0-9a-f]+)$/i;
 
 function isNumber(string: string): boolean {
-  return IS_NUMBER_REGEXP.test(string);
+  const number = Number(string);
+  return string.trim() !== "" && !isNaN(number) && isFinite(number);
 }
 
 function setNested(
@@ -654,7 +652,7 @@ export function parseArgs<
           if (
             !booleanSet.has(key) &&
             !allBools &&
-            !IS_FLAG_REGEXP.test(next) &&
+            !next.startsWith("-") &&
             (!aliasMap.has(key) || !aliasIsBoolean(aliasMap, booleanSet, key))
           ) {
             value = next;
