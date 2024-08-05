@@ -1190,4 +1190,5 @@ export const HEADER = {
   XFrameOptions: "X-Frame-Options",
 } as const;
 
+/** A HTTP Header */
 export type Header = typeof HEADER[keyof typeof HEADER];
