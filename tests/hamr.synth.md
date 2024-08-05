@@ -23,10 +23,12 @@ filesystem:
 
 # Test: starter for 10
 
+Ensure that the number of customers returned is identical to the state
+
 **Prompts:**
-\`\`\`markdown
+```markdown
 list all customers
-\`\`\`
+```
 
 **Expections:**
 
