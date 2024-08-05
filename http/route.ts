@@ -1,5 +1,6 @@
 export type Handler = (
   request: Request,
+  info?: Deno.ServeHandlerInfo,
   params?: URLPatternResult | null,
 ) => Response | Promise<Response>;
 
@@ -26,7 +27,7 @@ export interface Route<T extends (string | URLPattern)> {
  *   {
  *     path: "/users/:id",
  *     method: "GET",
- *     handler: (request, params) => new Response(params?.pathname.groups.id),
+ *     handler: (request, _info, params) => new Response(params?.pathname.groups.id),
  *   }
  * ];
  * function defaultHandler(request: Request) {
@@ -54,7 +55,7 @@ export function route(
     }
   }
 
-  return (request: Request) => {
+  return (request: Request, info?: Deno.ServeHandlerInfo) => {
     const { pathname } = new URL(request.url);
     const handler = staticRoutes.get(`${request.method} ${pathname}`);
     if (handler !== undefined) return handler(request);
@@ -65,7 +66,7 @@ export function route(
         route.path.test(request.url)
       );
 
-    return route?.handler(request, route.path.exec(request.url)) ??
+    return route?.handler(request, info, route.path.exec(request.url)) ??
       defaultHandler(request);
   };
 }

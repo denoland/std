@@ -9,7 +9,8 @@ const routes: Route<string | URLPattern>[] = [
   {
     path: new URLPattern({ pathname: "/users/:id" }),
     method: "POST",
-    handler: (_request, params) => new Response(params?.pathname.groups.id),
+    handler: (_request, _info, params) =>
+      new Response(params?.pathname.groups.id),
   },
 ];
 function defaultHandler(request: Request) {
