@@ -288,4 +288,5 @@ export const METHOD = {
   VersionControl: "VERSION-CONTROL",
 } as const;
 
+/** A HTTP Method */
 export type Method = typeof METHOD[keyof typeof METHOD];
