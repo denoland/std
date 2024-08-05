@@ -8,7 +8,7 @@ import type { MemoizationCache } from "./memoize.ts";
  * reference equality, such that `getKey(x, y) === getKey(x, y)` for all values
  * of `x` and `y`, but `getKey({}) !== getKey({})`.
  *
- * @param cache - The cache for which the keys will be used.
+ * @param cache The cache for which the keys will be used.
  * @returns `getKey`, the function for getting cache keys.
  */
 

@@ -17,9 +17,9 @@ export type MemoizationCache<K, V> = {
 /**
  * Options for {@linkcode memoize}.
  *
- * @typeParam Fn - The type of the function to memoize.
- * @typeParam Key - The type of the cache key.
- * @typeParam Cache - The type of the cache.
+ * @typeParam Fn The type of the function to memoize.
+ * @typeParam Key The type of the cache key.
+ * @typeParam Cache The type of the cache.
  */
 export type MemoizeOptions<
   Fn extends (...args: never[]) => unknown,
@@ -60,11 +60,11 @@ export type MemoizeOptions<
 /**
  * Cache the results of a function based on its arguments.
  *
- * @typeParam Fn - The type of the function to memoize.
- * @typeParam Key - The type of the cache key.
- * @typeParam Cache - The type of the cache.
- * @param fn - The function to memoize
- * @param options - Options for memoization
+ * @typeParam Fn The type of the function to memoize.
+ * @typeParam Key The type of the cache key.
+ * @typeParam Cache The type of the cache.
+ * @param fn The function to memoize
+ * @param options Options for memoization
  *
  * @returns The memoized function.
  *
