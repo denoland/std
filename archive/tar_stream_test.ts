@@ -1,5 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import {
+  parsePathname,
   TarStream,
   type TarStreamInput,
   validTarStreamOptions,
@@ -131,6 +132,49 @@ Deno.test("TarStream() with NaN size", async () => {
       await Array.fromAsync(readable);
     },
     "Invalid Size Provided! Size cannot exceed 64 Gibs.",
+  );
+});
+
+Deno.test("parsePathname()", () => {
+  const encoder = new TextEncoder();
+
+  assertEquals(
+    parsePathname(
+      "./Veeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeery/LongPath",
+      true,
+    ),
+    [
+      encoder.encode(
+        "Veeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeery",
+      ),
+      encoder.encode("LongPath/"),
+    ],
+  );
+
+  assertEquals(
+    parsePathname(
+      "./some random path/with/loooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooong/path",
+      true,
+    ),
+    [
+      encoder.encode("some random path"),
+      encoder.encode(
+        "with/loooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooong/path/",
+      ),
+    ],
+  );
+
+  assertEquals(
+    parsePathname(
+      "./some random path/with/loooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooong/file",
+      false,
+    ),
+    [
+      encoder.encode("some random path"),
+      encoder.encode(
+        "with/loooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooong/file",
+      ),
+    ],
   );
 });
 
