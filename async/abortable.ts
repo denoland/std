@@ -160,8 +160,7 @@ async function* abortableAsyncIterable<T>(
       yield value;
     }
   } catch (e) {
-    throw e;
-  } finally {
     await it.return?.();
+    throw e;
   }
 }
