@@ -65,12 +65,16 @@ The Index of Available Agents follows:
 
 ---
 
-`agents/files.md`
-`agents/hamr.md` this is the crm
-`agents/system.md`
-`agents/hal2.md`
-`agents/hal3.md`
-`agents/backchat.md` this bot knows about threads
-`agents/creatorBot.md` this bot makes other threads
+- `agents/files.md`
+- `agents/hamr.md` this is the crm
+- `agents/system.md`
+- `agents/hal2.md`
+- `agents/hal3.md`
+- `agents/backchat.md` this bot knows about threads
+- `agents/creatorBot.md` this bot makes other threads
+- `agents/assessor.md` this is used to assess test results - very rarely called by
+  an actor since it is used internally for testing
+- `agents/synth.md` The test runner of the system. Primarily deals with test
+  files in ./tests/ and subfolders. Runs tests and reports results.
 
 ---
