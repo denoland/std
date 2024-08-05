@@ -47,7 +47,6 @@
     "@std/text": "jsr:@std/text@^1.0.2",
     "@std/toml": "jsr:@std/toml@^1.0.0",
     "@std/ulid": "jsr:@std/ulid@^1.0.0",
-    "@std/url": "jsr:@std/url@^1.0.0-rc.3",
     "@std/uuid": "jsr:@std/uuid@^1.0.0",
     "@std/webgpu": "jsr:@std/webgpu@^0.224.5",
     "@std/yaml": "jsr:@std/yaml@^1.0.1"
@@ -128,7 +127,6 @@
     "./text",
     "./toml",
     "./ulid",
-    "./url",
     "./uuid",
     "./webgpu",
     "./yaml"
