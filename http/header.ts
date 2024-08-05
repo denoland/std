@@ -5,7 +5,7 @@
 /**
  * HTTP Headers with status permanent
  */
-export const HttpHeaderPermanent = {
+export const HEADER = {
   /**
    * HTTP Header A-IM
    *
@@ -1682,4 +1682,4 @@ export const HttpHeader = {
   ...HttpHeaderProvisional,
 };
 
-export type HttpHeader = typeof HttpHeader[keyof typeof HttpHeader];
+export type Header = typeof HEADER[keyof typeof HEADER];
