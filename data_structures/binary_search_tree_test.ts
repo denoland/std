@@ -4,7 +4,7 @@ import {
   assertEquals,
   assertStrictEquals,
   assertThrows,
-} from "../assert/mod.ts";
+} from "@std/assert";
 import { BinarySearchTree } from "./binary_search_tree.ts";
 import { ascend, descend } from "./comparators.ts";
 
@@ -18,6 +18,14 @@ interface Container {
   id: number;
   values: number[];
 }
+
+Deno.test("BinarySearchTree throws if compare is not a function", () => {
+  assertThrows(
+    () => new BinarySearchTree({} as (a: number, b: number) => number),
+    TypeError,
+    "compare must be a function",
+  );
+});
 
 Deno.test("BinarySearchTree handles default ascend comparator", () => {
   const trees = [
@@ -545,15 +553,4 @@ Deno.test("BinarySearchTree.clear()", () => {
   const tree = BinarySearchTree.from([1]);
   tree.clear();
   assert(tree.isEmpty());
-});
-
-Deno.test("BinarySearchTree.rotateNode()", () => {
-  class MyTree<T> extends BinarySearchTree<T> {
-    rotateNode2() {
-      super.rotateNode(this.root!, "right");
-    }
-  }
-  const tree = new MyTree();
-  tree.insert(1);
-  assertThrows(() => tree.rotateNode2());
 });

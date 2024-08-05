@@ -2,10 +2,10 @@
 
 // This file is copied from `std/assert`.
 
-import { AssertionError } from "../assert/assertion_error.ts";
+import { AssertionError } from "@std/assert/assertion-error";
 import { buildNotEqualErrorMessage } from "./_build_message.ts";
 import { equal } from "./_equal.ts";
-import { EqualOptions } from "./_types.ts";
+import type { EqualOptions } from "./_types.ts";
 
 /**
  * Make an assertion that `actual` and `expected` are not equal, deeply.
@@ -15,7 +15,7 @@ import { EqualOptions } from "./_types.ts";
  *
  * @example
  * ```ts
- * import { assertNotEquals } from "https://deno.land/std@$STD_VERSION/assert/assert_not_equals.ts";
+ * import { assertNotEquals } from "@std/assert";
  *
  * assertNotEquals(1, 2); // Doesn't throw
  * assertNotEquals(1, 1); // Throws

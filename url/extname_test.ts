@@ -1,6 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import { assertEquals } from "../assert/mod.ts";
+import { assertEquals } from "@std/assert";
 import * as url from "./mod.ts";
 
 const TESTSUITE = [
@@ -13,7 +13,7 @@ const TESTSUITE = [
 ] as const;
 
 Deno.test("extname()", function () {
-  for (const [test_url, expected] of TESTSUITE) {
-    assertEquals(url.extname(test_url), expected);
+  for (const [testUrl, expected] of TESTSUITE) {
+    assertEquals(url.extname(testUrl), expected);
   }
 });

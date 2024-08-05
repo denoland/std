@@ -23,6 +23,9 @@ export type DifferenceFormat = Partial<Record<Unit, number>>;
 
 /** Options for {@linkcode difference}. */
 export type DifferenceOptions = {
+  /**
+   * Units to calculate difference in. Defaults to all units.
+   */
   units?: Unit[];
 };
 
@@ -36,36 +39,54 @@ function calculateMonthsDifference(from: Date, to: Date): number {
 }
 
 /**
- * Returns the difference of the 2 given dates in the given units. If the units
+ * Calculates the difference of the 2 given dates in various units. If the units
  * are omitted, it returns the difference in the all available units.
  *
- * @example
+ * @param from Year to calculate difference from.
+ * @param to Year to calculate difference to.
+ * @param options Options such as units to calculate difference in.
+ * @returns The difference of the 2 given dates in various units.
+ *
+ * @example Basic usage
  * ```ts
- * import { difference } from "https://deno.land/std@$STD_VERSION/datetime/difference.ts";
+ * import { difference } from "@std/datetime/difference";
+ * import { assertEquals } from "@std/assert";
  *
  * const date0 = new Date("2018-05-14");
  * const date1 = new Date("2020-05-13");
  *
- * difference(date0, date1, { units: ["days", "months", "years"] });
- * // => returns { days: 730, months: 23, years: 1 }
- *
- * difference(date0, date1);
- * // => returns {
- * //   milliseconds: 63072000000,
- * //   seconds: 63072000,
- * //   minutes: 1051200,
- * //   hours: 17520,
- * //   days: 730,
- * //   weeks: 104,
- * //   months: 23,
- * //   quarters: 7,
- * //   years: 1
- * // }
+ * assertEquals(difference(date0, date1), {
+ *   milliseconds: 63072000000,
+ *   seconds: 63072000,
+ *   minutes: 1051200,
+ *   hours: 17520,
+ *   days: 730,
+ *   weeks: 104,
+ *   months: 23,
+ *   quarters: 7,
+ *   years: 1
+ * });
  * ```
  *
- * @param from Year to calculate difference
- * @param to Year to calculate difference with
- * @param options Options for determining how to respond
+ * @example Calculate difference in specific units
+ *
+ * The `units` option defines which units to calculate the difference in.
+ *
+ * ```ts
+ * import { difference } from "@std/datetime/difference";
+ * import { assertEquals } from "@std/assert";
+ *
+ * const date0 = new Date("2018-05-14");
+ * const date1 = new Date("2020-05-13");
+ *
+ * const result = difference(date0, date1, { units: ["days", "months", "years"] });
+ *
+ * assertEquals(result, {
+ *   days: 730,
+ *   months: 23,
+ *   years: 1
+ * });
+ * ```
  */
 export function difference(
   from: Date,

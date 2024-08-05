@@ -10,10 +10,16 @@
 import type { Reader } from "./types.ts";
 
 /**
- * @deprecated (will be removed after 1.0.0) Use the {@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API | Web Streams API} instead.
+ * @deprecated This will be removed in 1.0.0. Use the {@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API | Web Streams API} instead.
  */
 export class LimitedReader implements Reader {
-  constructor(public reader: Reader, public limit: number) {}
+  reader: Reader;
+  limit: number;
+
+  constructor(reader: Reader, limit: number) {
+    this.reader = reader;
+    this.limit = limit;
+  }
 
   async read(p: Uint8Array): Promise<number | null> {
     if (this.limit <= 0) {

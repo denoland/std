@@ -2,27 +2,32 @@
 import { getFileInfoType } from "./_get_file_info_type.ts";
 
 /**
- * Ensures that the directory exists.
- * If the directory structure does not exist, it is created. Like mkdir -p.
- * Requires the `--allow-read` and `--allow-write` flag.
+ * Asynchronously ensures that the directory exists, like
+ * {@linkcode https://www.ibm.com/docs/en/aix/7.3?topic=m-mkdir-command#mkdir__row-d3e133766 | mkdir -p}.
  *
- * @example
- * ```ts
- * import { ensureDir } from "https://deno.land/std@$STD_VERSION/fs/mod.ts";
+ * If the directory already exists, this function does nothing. If the directory
+ * does not exist, it is created.
  *
- * ensureDir("./bar"); // returns a promise
+ * Requires `--allow-read` and `--allow-write` permissions.
+ *
+ * @see {@link https://docs.deno.com/runtime/manual/basics/permissions#file-system-access}
+ * for more information on Deno's permissions system.
+ *
+ * @param dir The path of the directory to ensure, as a string or URL.
+ *
+ * @returns A promise that resolves once the directory exists.
+ *
+ * @example Usage
+ * ```ts no-eval
+ * import { ensureDir } from "@std/fs/ensure-dir";
+ *
+ * await ensureDir("./bar");
  * ```
  */
 export async function ensureDir(dir: string | URL) {
   try {
-    const fileInfo = await Deno.lstat(dir);
-    if (!fileInfo.isDirectory) {
-      throw new Error(
-        `Ensure path exists, expected 'dir', got '${
-          getFileInfoType(fileInfo)
-        }'`,
-      );
-    }
+    const fileInfo = await Deno.stat(dir);
+    throwIfNotDirectory(fileInfo);
     return;
   } catch (err) {
     if (!(err instanceof Deno.errors.NotFound)) {
@@ -31,7 +36,7 @@ export async function ensureDir(dir: string | URL) {
   }
 
   // The dir doesn't exist. Create it.
-  // This can be racy. So we catch AlreadyExists and check lstat again.
+  // This can be racy. So we catch AlreadyExists and check stat again.
   try {
     await Deno.mkdir(dir, { recursive: true });
   } catch (err) {
@@ -39,39 +44,38 @@ export async function ensureDir(dir: string | URL) {
       throw err;
     }
 
-    const fileInfo = await Deno.lstat(dir);
-    if (!fileInfo.isDirectory) {
-      throw new Error(
-        `Ensure path exists, expected 'dir', got '${
-          getFileInfoType(fileInfo)
-        }'`,
-      );
-    }
+    const fileInfo = await Deno.stat(dir);
+    throwIfNotDirectory(fileInfo);
   }
 }
 
 /**
- * Ensures that the directory exists.
- * If the directory structure does not exist, it is created. Like mkdir -p.
- * Requires the `--allow-read` and `--allow-write` flag.
+ * Synchronously ensures that the directory exists, like
+ * {@linkcode https://www.ibm.com/docs/en/aix/7.3?topic=m-mkdir-command#mkdir__row-d3e133766 | mkdir -p}.
  *
- * @example
- * ```ts
- * import { ensureDirSync } from "https://deno.land/std@$STD_VERSION/fs/mod.ts";
+ * If the directory already exists, this function does nothing. If the directory
+ * does not exist, it is created.
  *
- * ensureDirSync("./ensureDirSync"); // void
+ * Requires `--allow-read` and `--allow-write` permissions.
+ *
+ * @see {@link https://docs.deno.com/runtime/manual/basics/permissions#file-system-access}
+ * for more information on Deno's permissions system.
+ *
+ * @param dir The path of the directory to ensure, as a string or URL.
+ *
+ * @returns A void value that returns once the directory exists.
+ *
+ * @example Usage
+ * ```ts no-eval
+ * import { ensureDirSync } from "@std/fs/ensure-dir";
+ *
+ * ensureDirSync("./bar");
  * ```
  */
 export function ensureDirSync(dir: string | URL) {
   try {
-    const fileInfo = Deno.lstatSync(dir);
-    if (!fileInfo.isDirectory) {
-      throw new Error(
-        `Ensure path exists, expected 'dir', got '${
-          getFileInfoType(fileInfo)
-        }'`,
-      );
-    }
+    const fileInfo = Deno.statSync(dir);
+    throwIfNotDirectory(fileInfo);
     return;
   } catch (err) {
     if (!(err instanceof Deno.errors.NotFound)) {
@@ -80,7 +84,7 @@ export function ensureDirSync(dir: string | URL) {
   }
 
   // The dir doesn't exist. Create it.
-  // This can be racy. So we catch AlreadyExists and check lstat again.
+  // This can be racy. So we catch AlreadyExists and check stat again.
   try {
     Deno.mkdirSync(dir, { recursive: true });
   } catch (err) {
@@ -88,13 +92,15 @@ export function ensureDirSync(dir: string | URL) {
       throw err;
     }
 
-    const fileInfo = Deno.lstatSync(dir);
-    if (!fileInfo.isDirectory) {
-      throw new Error(
-        `Ensure path exists, expected 'dir', got '${
-          getFileInfoType(fileInfo)
-        }'`,
-      );
-    }
+    const fileInfo = Deno.statSync(dir);
+    throwIfNotDirectory(fileInfo);
+  }
+}
+
+function throwIfNotDirectory(fileInfo: Deno.FileInfo) {
+  if (!fileInfo.isDirectory) {
+    throw new Error(
+      `Ensure path exists, expected 'dir', got '${getFileInfoType(fileInfo)}'`,
+    );
   }
 }

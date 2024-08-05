@@ -3,7 +3,8 @@
 // Copyright 2011 The Go Authors. All rights reserved. BSD license.
 // https://github.com/golang/go/blob/master/LICENSE
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-import { assert } from "../assert/assert.ts";
+
+import { codePointLength } from "./_shared.ts";
 
 /** Options for {@linkcode parseRecord}. */
 export interface ReadOptions {
@@ -44,7 +45,8 @@ export interface ReadOptions {
    * If negative, no check is made and records may have a variable number of
    * fields.
    *
-   * If the wrong number of fields is in a row, a `ParseError` is thrown.
+   * If the wrong number of fields is in a row, a {@linkcode SyntaxError} is
+   * thrown.
    */
   fieldsPerRecord?: number;
 }
@@ -60,53 +62,53 @@ export interface LineReader {
 }
 
 export async function parseRecord(
-  line: string,
+  fullLine: string,
   reader: LineReader,
-  opt: ReadOptions,
-  startLine: number,
-  lineIndex: number = startLine,
-): Promise<Array<string> | null> {
+  options: ReadOptions,
+  zeroBasedRecordStartLine: number,
+  zeroBasedLine: number = zeroBasedRecordStartLine,
+): Promise<Array<string>> {
   // line starting with comment character is ignored
-  if (opt.comment && line[0] === opt.comment) {
+  if (options.comment && fullLine[0] === options.comment) {
     return [];
   }
 
-  assert(opt.separator !== undefined);
+  if (options.separator === undefined) {
+    throw new TypeError("Separator is required");
+  }
 
-  let fullLine = line;
-  let quoteError: ParseError | null = null;
+  let line = fullLine;
   const quote = '"';
   const quoteLen = quote.length;
-  const separatorLen = opt.separator.length;
+  const separatorLen = options.separator.length;
   let recordBuffer = "";
   const fieldIndexes = [] as number[];
-  parseField:
-  for (;;) {
-    if (opt.trimLeadingSpace) {
+  parseField: while (true) {
+    if (options.trimLeadingSpace) {
       line = line.trimStart();
     }
 
     if (line.length === 0 || !line.startsWith(quote)) {
       // Non-quoted string field
-      const i = line.indexOf(opt.separator);
+      const i = line.indexOf(options.separator);
       let field = line;
       if (i >= 0) {
         field = field.substring(0, i);
       }
       // Check to make sure a quote does not appear in field.
-      if (!opt.lazyQuotes) {
+      if (!options.lazyQuotes) {
         const j = field.indexOf(quote);
         if (j >= 0) {
-          const col = runeCount(
+          const col = codePointLength(
             fullLine.slice(0, fullLine.length - line.slice(j).length),
           );
-          quoteError = new ParseError(
-            startLine + 1,
-            lineIndex,
-            col,
-            ERR_BARE_QUOTE,
+          throw new SyntaxError(
+            createBareQuoteErrorMessage(
+              zeroBasedRecordStartLine,
+              zeroBasedLine,
+              col,
+            ),
           );
-          break parseField;
         }
       }
       recordBuffer += field;
@@ -119,7 +121,7 @@ export async function parseRecord(
     } else {
       // Quoted string field
       line = line.substring(quoteLen);
-      for (;;) {
+      while (true) {
         const i = line.indexOf(quote);
         if (i >= 0) {
           // Hit next quote.
@@ -129,7 +131,7 @@ export async function parseRecord(
             // `""` sequence (append quote).
             recordBuffer += quote;
             line = line.substring(quoteLen);
-          } else if (line.startsWith(opt.separator)) {
+          } else if (line.startsWith(options.separator)) {
             // `","` sequence (end of field).
             line = line.substring(separatorLen);
             fieldIndexes.push(recordBuffer.length);
@@ -138,65 +140,62 @@ export async function parseRecord(
             // `"\n` sequence (end of line).
             fieldIndexes.push(recordBuffer.length);
             break parseField;
-          } else if (opt.lazyQuotes) {
+          } else if (options.lazyQuotes) {
             // `"` sequence (bare quote).
             recordBuffer += quote;
           } else {
             // `"*` sequence (invalid non-escaped quote).
-            const col = runeCount(
+            const col = codePointLength(
               fullLine.slice(0, fullLine.length - line.length - quoteLen),
             );
-            quoteError = new ParseError(
-              startLine + 1,
-              lineIndex,
-              col,
-              ERR_QUOTE,
+            throw new SyntaxError(
+              createQuoteErrorMessage(
+                zeroBasedRecordStartLine,
+                zeroBasedLine,
+                col,
+              ),
             );
-            break parseField;
           }
         } else if (line.length > 0 || !reader.isEOF()) {
           // Hit end of line (copy all data so far).
           recordBuffer += line;
           const r = await reader.readLine();
-          lineIndex++;
           line = r ?? ""; // This is a workaround for making this module behave similarly to the encoding/csv/reader.go.
           fullLine = line;
           if (r === null) {
             // Abrupt end of file (EOF or error).
-            if (!opt.lazyQuotes) {
-              const col = runeCount(fullLine);
-              quoteError = new ParseError(
-                startLine + 1,
-                lineIndex,
-                col,
-                ERR_QUOTE,
+            if (!options.lazyQuotes) {
+              const col = codePointLength(fullLine);
+              throw new SyntaxError(
+                createQuoteErrorMessage(
+                  zeroBasedRecordStartLine,
+                  zeroBasedLine,
+                  col,
+                ),
               );
-              break parseField;
             }
             fieldIndexes.push(recordBuffer.length);
             break parseField;
           }
+          zeroBasedLine++;
           recordBuffer += "\n"; // preserve line feed (This is because TextProtoReader removes it.)
         } else {
           // Abrupt end of file (EOF on error).
-          if (!opt.lazyQuotes) {
-            const col = runeCount(fullLine);
-            quoteError = new ParseError(
-              startLine + 1,
-              lineIndex,
-              col,
-              ERR_QUOTE,
+          if (!options.lazyQuotes) {
+            const col = codePointLength(fullLine);
+            throw new SyntaxError(
+              createQuoteErrorMessage(
+                zeroBasedRecordStartLine,
+                zeroBasedLine,
+                col,
+              ),
             );
-            break parseField;
           }
           fieldIndexes.push(recordBuffer.length);
           break parseField;
         }
       }
     }
-  }
-  if (quoteError) {
-    throw quoteError;
   }
   const result = [] as string[];
   let preIdx = 0;
@@ -207,60 +206,35 @@ export async function parseRecord(
   return result;
 }
 
-function runeCount(s: string): number {
-  // Array.from considers the surrogate pair.
-  return Array.from(s).length;
+export function createBareQuoteErrorMessage(
+  zeroBasedRecordStartLine: number,
+  zeroBasedLine: number,
+  zeroBasedColumn: number,
+) {
+  return `record on line ${zeroBasedRecordStartLine + 1}; parse error on line ${
+    zeroBasedLine + 1
+  }, column ${zeroBasedColumn + 1}: bare " in non-quoted-field`;
 }
-
-/**
- * A ParseError is returned for parsing errors.
- * Line numbers are 1-indexed and columns are 0-indexed.
- */
-export class ParseError extends SyntaxError {
-  /** Line where the record starts*/
-  startLine: number;
-  /** Line where the error occurred */
-  line: number;
-  /** Column (rune index) where the error occurred */
-  column: number | null;
-
-  /** Constructs a new instance. */
-  constructor(
-    start: number,
-    line: number,
-    column: number | null,
-    message: string,
-  ) {
-    super();
-    this.startLine = start;
-    this.column = column;
-    this.line = line;
-
-    if (message === ERR_FIELD_COUNT) {
-      this.message = `record on line ${line}: ${message}`;
-    } else if (start !== line) {
-      this.message =
-        `record on line ${start}; parse error on line ${line}, column ${column}: ${message}`;
-    } else {
-      this.message =
-        `parse error on line ${line}, column ${column}: ${message}`;
-    }
-  }
+export function createQuoteErrorMessage(
+  zeroBasedRecordStartLine: number,
+  zeroBasedLine: number,
+  zeroBasedColumn: number,
+) {
+  return `record on line ${zeroBasedRecordStartLine + 1}; parse error on line ${
+    zeroBasedLine + 1
+  }, column ${zeroBasedColumn + 1}: extraneous or missing " in quoted-field`;
 }
-
-export const ERR_BARE_QUOTE = 'bare " in non-quoted-field';
-export const ERR_QUOTE = 'extraneous or missing " in quoted-field';
-export const ERR_INVALID_DELIM = "Invalid Delimiter";
-export const ERR_FIELD_COUNT = "wrong number of fields";
 
 export function convertRowToObject(
   row: string[],
   headers: readonly string[],
-  index: number,
+  zeroBasedLine: number,
 ) {
   if (row.length !== headers.length) {
     throw new Error(
-      `Error number of fields line: ${index}\nNumber of fields found: ${headers.length}\nExpected number of fields: ${row.length}`,
+      `record on line ${
+        zeroBasedLine + 1
+      } has ${row.length} fields, but the header has ${headers.length} fields`,
     );
   }
   const out: Record<string, unknown> = {};
@@ -270,20 +244,19 @@ export function convertRowToObject(
   return out;
 }
 
-/** Options for {@linkcode parse} and {@linkcode CsvParseStream}. */
+/** Parse result type for {@linkcode parse} and {@linkcode CsvParseStream}. */
 export type ParseResult<ParseOptions, T> =
   // If `columns` option is specified, the return type is Record type.
   T extends ParseOptions & { columns: readonly (infer C extends string)[] }
     ? RecordWithColumn<C>[]
     // If `skipFirstRow` option is specified, the return type is Record type.
-    : T extends ParseOptions & { skipFirstRow: true }
-      ? Record<string, string | undefined>[]
+    : T extends ParseOptions & { skipFirstRow: true } ? Record<string, string>[]
     // If `columns` and `skipFirstRow` option is _not_ specified, the return type is string[][].
     : T extends
       ParseOptions & { columns?: undefined; skipFirstRow?: false | undefined }
       ? string[][]
     // else, the return type is Record type or string[][].
-    : Record<string, string | undefined>[] | string[][];
+    : Record<string, string>[] | string[][];
 
 /**
  * Record type with column type.
@@ -295,5 +268,5 @@ export type ParseResult<ParseOptions, T> =
  * ```
  */
 export type RecordWithColumn<C extends string> = string extends C
-  ? Record<string, string | undefined>
+  ? Record<string, string>
   : Record<C, string>;

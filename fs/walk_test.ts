@@ -1,12 +1,12 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-import { walk, WalkError, WalkOptions, walkSync } from "./walk.ts";
+import { walk, type WalkOptions, walkSync } from "./walk.ts";
 import {
   assertArrayIncludes,
   assertEquals,
   assertRejects,
   assertThrows,
-} from "../assert/mod.ts";
-import { fromFileUrl, resolve } from "../path/mod.ts";
+} from "@std/assert";
+import { fromFileUrl, resolve } from "@std/path";
 
 const testdataDir = resolve(fromFileUrl(import.meta.url), "../testdata/walk");
 
@@ -89,7 +89,17 @@ Deno.test("walk() accepts ext option as strings", async () =>
     exts: [".rs", ".ts"],
   }));
 
+Deno.test("walk() accepts ext option as strings (excluding period prefix)", async () =>
+  await assertWalkPaths("ext", ["y.rs", "x.ts"], {
+    exts: ["rs", "ts"],
+  }));
+
 Deno.test("walkSync() accepts ext option as strings", () =>
+  assertWalkSyncPaths("ext", ["y.rs", "x.ts"], {
+    exts: [".rs", ".ts"],
+  }));
+
+Deno.test("walkSync() accepts ext option as strings (excluding period prefix)", () =>
   assertWalkSyncPaths("ext", ["y.rs", "x.ts"], {
     exts: [".rs", ".ts"],
   }));
@@ -224,16 +234,19 @@ Deno.test({
   },
 });
 
-Deno.test("walk() rejects with WalkError when root is removed during execution", async () => {
+Deno.test("walk() rejects with `Deno.errors.NotFound` when root is removed during execution", async () => {
   const root = resolve(testdataDir, "error");
   await Deno.mkdir(root);
   try {
-    await assertRejects(async () => {
-      await Array.fromAsync(
-        walk(root),
-        async () => await Deno.remove(root, { recursive: true }),
-      );
-    }, WalkError);
+    await assertRejects(
+      async () => {
+        await Array.fromAsync(
+          walk(root),
+          async () => await Deno.remove(root, { recursive: true }),
+        );
+      },
+      Deno.errors.NotFound,
+    );
   } catch (err) {
     await Deno.remove(root, { recursive: true });
     throw err;

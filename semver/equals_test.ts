@@ -1,5 +1,5 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-import { assert, assertEquals } from "../assert/mod.ts";
+import { assert, assertEquals } from "@std/assert";
 import { parse } from "./parse.ts";
 import { equals } from "./equals.ts";
 
@@ -43,12 +43,11 @@ Deno.test({
         const eq1 = equals(s1, s1);
         const eq2 = equals(s0, s1);
         const eq3 = equals(s1, s0);
-        const op = expected ? "==" : "!=";
 
         assert(eq0, `${s0} == ${s0}`);
         assert(eq1, `${s1} == ${s1}`);
-        assertEquals(eq2, expected, `${s0} ${op} ${s1}`);
-        assertEquals(eq3, expected, `${s0} ${op} ${s1}`);
+        assertEquals(eq2, expected);
+        assertEquals(eq3, expected);
       });
     }
   },

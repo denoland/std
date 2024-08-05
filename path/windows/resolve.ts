@@ -7,8 +7,19 @@ import { assertPath } from "../_common/assert_path.ts";
 import { isPathSeparator, isWindowsDeviceRoot } from "./_util.ts";
 
 /**
- * Resolves path segments into a `path`
- * @param pathSegments to process to path
+ * Resolves path segments into a `path`.
+ *
+ * @example Usage
+ * ```ts
+ * import { resolve } from "@std/path/windows/resolve";
+ * import { assertEquals } from "@std/assert";
+ *
+ * const resolved = resolve("C:\\foo\\bar", "..\\baz");
+ * assertEquals(resolved, "C:\\foo\\baz");
+ * ```
+ *
+ * @param pathSegments The path segments to process to path
+ * @returns The resolved path
  */
 export function resolve(...pathSegments: string[]): string {
   let resolvedDevice = "";
@@ -20,7 +31,7 @@ export function resolve(...pathSegments: string[]): string {
     // deno-lint-ignore no-explicit-any
     const { Deno } = globalThis as any;
     if (i >= 0) {
-      path = pathSegments[i];
+      path = pathSegments[i]!;
     } else if (!resolvedDevice) {
       if (typeof Deno?.cwd !== "function") {
         throw new TypeError("Resolved a drive-letter-less path without a CWD.");

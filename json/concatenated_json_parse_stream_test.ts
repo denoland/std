@@ -1,10 +1,10 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-import { assertEquals } from "../assert/mod.ts";
+import { assertEquals } from "@std/assert";
 import { ConcatenatedJsonParseStream } from "./concatenated_json_parse_stream.ts";
-import { assertInvalidParse, assertValidParse } from "./_test_common.ts";
+import { assertInvalidParse, assertValidParse } from "./_test_utils.ts";
 
 Deno.test({
-  name: "[json] ConcatenatedJsonParseStream",
+  name: "ConcatenatedJsonParseStream",
   async fn() {
     await assertValidParse(
       ConcatenatedJsonParseStream,
@@ -40,7 +40,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[json] ConcatenatedJsonParseStream: primitive",
+  name: "ConcatenatedJsonParseStream handles primitive",
   async fn() {
     await assertValidParse(
       ConcatenatedJsonParseStream,
@@ -221,7 +221,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[json] ConcatenatedJsonParseStream: chunk",
+  name: "ConcatenatedJsonParseStream handles chunk",
   async fn() {
     await assertValidParse(
       ConcatenatedJsonParseStream,
@@ -268,11 +268,18 @@ Deno.test({
       ["tr", 'ue{"foo": "bar"}'],
       [true, { foo: "bar" }],
     );
+    // Invalid primitive which share some leading characters with the valid primitive
+    await assertInvalidParse(
+      ConcatenatedJsonParseStream,
+      ["truu"],
+      SyntaxError,
+      `Unexpected token 'u', \"truu\" is not valid JSON (parsing: 'truu')`,
+    );
   },
 });
 
 Deno.test({
-  name: "[json] ConcatenatedJsonParseStream: surrogate pair",
+  name: "ConcatenatedJsonParseStream handles surrogate pair",
   async fn() {
     await assertValidParse(
       ConcatenatedJsonParseStream,
@@ -283,7 +290,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[json] ConcatenatedJsonParseStream: symbol between double quotes",
+  name: "ConcatenatedJsonParseStream handles symbol between double quotes",
   async fn() {
     await assertValidParse(
       ConcatenatedJsonParseStream,
@@ -294,7 +301,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[json] ConcatenatedJsonParseStream: primitives in containers",
+  name: "ConcatenatedJsonParseStream handles primitives in containers",
   async fn() {
     await assertValidParse(
       ConcatenatedJsonParseStream,
@@ -305,12 +312,11 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[json] ConcatenatedJsonParseStream: halfway chunk",
+  name: "ConcatenatedJsonParseStream handles halfway chunk",
   async fn() {
     await assertInvalidParse(
       ConcatenatedJsonParseStream,
       ['{"foo": "bar"} {"foo": '],
-      {},
       SyntaxError,
       `Unexpected end of JSON input (parsing: ' {"foo": ')`,
     );
@@ -318,12 +324,11 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[json] ConcatenatedJsonParseStream: truncate error message",
+  name: "ConcatenatedJsonParseStream truncates error message",
   async fn() {
     await assertInvalidParse(
       ConcatenatedJsonParseStream,
       [`{${"foo".repeat(100)}}`],
-      {},
       SyntaxError,
       `Expected property name or '}' in JSON at position 1 (line 1 column 2) (parsing: '{foofoofoofoofoofoofoofoofoofo...')`,
     );
@@ -332,7 +337,7 @@ Deno.test({
 
 Deno.test({
   // Read the test data file
-  name: "[json] parse: testdata(concatenated-json)",
+  name: "parse() handles concatenated-json testdata",
   async fn() {
     const url = "./testdata/test.concatenated-json";
     const { body } = await fetch(new URL(url, import.meta.url).toString());

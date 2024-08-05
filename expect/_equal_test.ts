@@ -2,7 +2,7 @@
 
 // This file is copied from `std/assert`.
 
-import { assert, assertFalse, assertThrows } from "../assert/mod.ts";
+import { assert, assertFalse, assertThrows } from "@std/assert";
 import { equal } from "./_equal.ts";
 
 Deno.test("equal() matches with different zero", () => {
@@ -233,6 +233,20 @@ Deno.test("equal() matches when values are equal", function () {
       })(),
     ),
   );
+});
+
+Deno.test("equal() does not match with different instances", () => {
+  assert(!equal({}, []));
+  assert(!equal(/foo/, new Set()));
+  assert(!equal(new Set(), new Map()));
+  assert(!equal(null, 2));
+  assert(!equal(2, null));
+});
+
+Deno.test("equal() does not match with different collection contents", () => {
+  assert(!equal(new Set([1]), new Set([2])));
+  assert(!equal(new Map([[1, 2]]), new Map([[2, 1]])));
+  assert(equal(new Map([[1, 2]]), new Map([[1, 2]])));
 });
 
 Deno.test("equal() matches when values have circular references", () => {

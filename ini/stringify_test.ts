@@ -2,8 +2,8 @@
 
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import { stringify, StringifyOptions } from "./mod.ts";
-import { assertEquals } from "../assert/mod.ts";
+import { stringify, type StringifyOptions } from "./mod.ts";
+import { assertEquals } from "@std/assert";
 
 function assertValidStringify(
   obj: unknown,
@@ -18,10 +18,6 @@ Deno.test({
   fn() {
     assertValidStringify({ a: "b" }, `a=b`);
     assertValidStringify({ a: "b" }, `a = b`, { pretty: true });
-    assertValidStringify({ a: "b" }, `a : b`, {
-      assignment: ":",
-      pretty: true,
-    });
     assertValidStringify(
       { a: "b", section: { c: "d" }, e: "f" },
       `a=b\ne=f\n[section]\nc=d`,
@@ -31,5 +27,9 @@ Deno.test({
       `[dates]\na=1977-05-25T00:00:00.000Z`,
       { replacer: (_, val) => val?.toJSON() },
     );
+    assertValidStringify({
+      keyA: "1977-05-25",
+      section1: { keyA: 100 },
+    }, `keyA=1977-05-25\n[section1]\nkeyA=100`);
   },
 });

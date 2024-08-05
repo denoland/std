@@ -1,5 +1,5 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-import { assertEquals, assertExists } from "../assert/mod.ts";
+import { assertEquals, assertExists, assertThrows } from "@std/assert";
 import { format } from "./duration.ts";
 
 Deno.test({
@@ -64,8 +64,31 @@ Deno.test({
 });
 
 Deno.test({
+  name: "format() handles digital style ignore zero",
+  fn() {
+    assertEquals(
+      format(99674, { ignoreZero: true, style: "digital" }),
+      "00:00:01:39:674",
+    );
+  },
+});
+
+Deno.test({
   name: "format() handles duration rounding error",
   fn() {
     assertEquals(format(16.342, { ignoreZero: true }), "16ms 342µs");
+  },
+});
+
+Deno.test({
+  name: "format() handles default style error",
+  fn() {
+    assertThrows(
+      () => {
+        format(16.342, { style: undefined });
+      },
+      TypeError,
+      `style must be "narrow", "full", or "digital"!`,
+    );
   },
 });

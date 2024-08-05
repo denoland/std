@@ -1,7 +1,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // Copyright the Browserify authors. MIT License.
 // Ported from https://github.com/browserify/path-browserify/
-import { assertEquals } from "../assert/mod.ts";
+import { assertEquals } from "@std/assert";
 import * as posix from "./posix/mod.ts";
 import * as windows from "./windows/mod.ts";
 import { relative } from "./relative.ts";
@@ -33,7 +33,7 @@ const relativeTests = {
     ["\\\\foo\\baz", "\\\\foo\\baz-quux", "..\\baz-quux"],
     ["C:\\baz", "\\\\foo\\bar\\baz", "\\\\foo\\bar\\baz"],
     ["\\\\foo\\bar\\baz", "C:\\baz", "C:\\baz"],
-  ],
+  ] as const,
   // arguments          result
   posix: [
     ["/var/lib", "/var", ".."],
@@ -48,7 +48,7 @@ const relativeTests = {
     ["/foo/bar/baz", "/foo/bar/baz-quux", "../baz-quux"],
     ["/baz-quux", "/baz", "../baz"],
     ["/baz", "/baz-quux", "../baz-quux"],
-  ],
+  ] as const,
 };
 
 Deno.test("posix.relative()", function () {

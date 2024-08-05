@@ -2,14 +2,14 @@
 // This code has been ported almost directly from Go's src/bytes/buffer_test.go
 // Copyright 2009 The Go Authors. All rights reserved. BSD license.
 // https://github.com/golang/go/blob/master/LICENSE
-import { assertEquals } from "../assert/mod.ts";
+import { assertEquals } from "@std/assert";
 import { BufWriter, BufWriterSync } from "./buf_writer.ts";
 import { Buffer } from "./buffer.ts";
 import { StringWriter } from "./string_writer.ts";
 import { bufsizes } from "./_test_common.ts";
 import type { Writer, WriterSync } from "./types.ts";
 
-Deno.test("bufioWriter", async function () {
+Deno.test("BufWriter.write() writes different number of bytes", async function () {
   const data = new Uint8Array(8192);
 
   for (let i = 0; i < data.byteLength; i++) {
@@ -42,7 +42,7 @@ Deno.test("bufioWriter", async function () {
   }
 });
 
-Deno.test("bufioWriterSync", function () {
+Deno.test("BufWriter.writeSync()", function () {
   const data = new Uint8Array(8192);
 
   for (let i = 0; i < data.byteLength; i++) {
@@ -127,7 +127,7 @@ Deno.test({
 
     await bufWriter.flush();
     const buf = new Uint8Array(cache.length);
-    for (let i = 0; i < cache.length; i++) buf.set(cache[i], i);
+    for (const [i, val] of cache.entries()) buf.set(val, i);
 
     assertEquals(data, buf);
   },
@@ -154,7 +154,7 @@ Deno.test({
 
     bufWriter.flush();
     const buf = new Uint8Array(cache.length);
-    for (let i = 0; i < cache.length; i++) buf.set(cache[i], i);
+    for (const [i, val] of cache.entries()) buf.set(val, i);
 
     assertEquals(data, buf);
   },

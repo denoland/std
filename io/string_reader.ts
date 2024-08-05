@@ -8,7 +8,7 @@ import { Buffer } from "./buffer.ts";
  *
  * @example
  * ```ts
- * import { StringReader } from "https://deno.land/std@$STD_VERSION/io/string_reader.ts";
+ * import { StringReader } from "@std/io/string-reader";
  *
  * const data = new Uint8Array(6);
  * const r = new StringReader("abcdef");
@@ -32,7 +32,7 @@ import { Buffer } from "./buffer.ts";
  * abcdef
  * ```
  *
- * @deprecated (will be removed after 1.0.0) Use the {@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API | Web Streams API} instead.
+ * @deprecated This will be removed in 1.0.0. Use the {@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API | Web Streams API} instead.
  */
 export class StringReader extends Buffer {
   constructor(s: string) {

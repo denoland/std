@@ -1,7 +1,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // Copyright the Browserify authors. MIT License.
 // Ported from https://github.com/browserify/path-browserify/
-import { assertEquals } from "../assert/mod.ts";
+import { assertEquals } from "@std/assert";
 import { dirname } from "./dirname.ts";
 import * as posix from "./posix/mod.ts";
 import * as windows from "./windows/mod.ts";
@@ -22,7 +22,7 @@ const COREUTILS_TESTSUITE = [
   ["///a///b", "///a"],
   ["///a//b/", "///a"],
   ["", "."],
-];
+] as const;
 
 const POSIX_TESTSUITE = [
   ["/a/b/", "/a"],
@@ -33,7 +33,7 @@ const POSIX_TESTSUITE = [
   ["////", "/"],
   ["//a", "/"],
   ["foo", "."],
-];
+] as const;
 
 const WINDOWS_TESTSUITE = [
   ["c:\\", "c:\\"],
@@ -69,7 +69,7 @@ const WINDOWS_TESTSUITE = [
   ["/", "/"],
   ["////", "/"],
   ["foo", "."],
-];
+] as const;
 
 Deno.test("posix.dirname()", function () {
   for (const [name, expected] of COREUTILS_TESTSUITE) {

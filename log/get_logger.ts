@@ -1,6 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
 
-import { assert } from "../assert/assert.ts";
 import { Logger } from "./logger.ts";
 import { state } from "./_state.ts";
 
@@ -8,10 +8,11 @@ import { state } from "./_state.ts";
 export function getLogger(name?: string): Logger {
   if (!name) {
     const d = state.loggers.get("default");
-    assert(
-      d !== undefined,
-      `"default" logger must be set for getting logger without name`,
-    );
+    if (d === undefined) {
+      throw new Error(
+        `"default" logger must be set for getting logger without name`,
+      );
+    }
     return d;
   }
   const result = state.loggers.get(name);

@@ -3,24 +3,24 @@
 import { test } from "./test.ts";
 import { extract } from "./json.ts";
 import {
-  runExtractJSONTests,
+  runExtractJsonTests,
   runExtractTypeErrorTests,
   runTestInvalidInputTests,
   runTestValidInputTests,
 } from "./_test_utils.ts";
 
-Deno.test("[JSON] test valid input true", () => {
+Deno.test("test() handles valid input", () => {
   runTestValidInputTests("json", test);
 });
 
-Deno.test("[JSON] test invalid input false", () => {
+Deno.test("test() handles invalid input", () => {
   runTestInvalidInputTests("json", test);
 });
 
-Deno.test("[JSON] extract type error on invalid input", () => {
+Deno.test("json() extracts type error on invalid input", () => {
   runExtractTypeErrorTests("json", extract);
 });
 
-Deno.test("[JSON] parse json delineate by ---json", async () => {
-  await runExtractJSONTests(extract);
+Deno.test("json() parses json delineate by ---json", async () => {
+  await runExtractJsonTests(extract);
 });

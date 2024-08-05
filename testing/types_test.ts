@@ -3,17 +3,17 @@
 // deno-lint-ignore-file no-explicit-any ban-types
 
 import {
-  Assert,
-  AssertFalse,
-  AssertTrue,
+  type Assert,
+  type AssertFalse,
+  type AssertTrue,
   assertType,
-  Has,
-  IsAny,
-  IsExact,
-  IsNever,
-  IsNullable,
-  IsUnknown,
-  NotHas,
+  type Has,
+  type IsAny,
+  type IsExact,
+  type IsNever,
+  type IsNullable,
+  type IsUnknown,
+  type NotHas,
 } from "./types.ts";
 
 // IsNullable

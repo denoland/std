@@ -14,8 +14,19 @@ import { isPathSeparator, isWindowsDeviceRoot } from "./_util.ts";
  * Return the last portion of a `path`.
  * Trailing directory separators are ignored, and optional suffix is removed.
  *
- * @param path - path to extract the name from.
- * @param [suffix] - suffix to remove from extracted name.
+ * @example Usage
+ * ```ts
+ * import { basename } from "@std/path/windows/basename";
+ * import { assertEquals } from "@std/assert";
+ *
+ * assertEquals(basename("C:\\user\\Documents\\"), "Documents");
+ * assertEquals(basename("C:\\user\\Documents\\image.png"), "image.png");
+ * assertEquals(basename("C:\\user\\Documents\\image.png", ".png"), "image");
+ * ```
+ *
+ * @param path The path to extract the name from.
+ * @param suffix The suffix to remove from extracted name.
+ * @returns The extracted name.
  */
 export function basename(path: string, suffix = ""): string {
   assertArgs(path, suffix);

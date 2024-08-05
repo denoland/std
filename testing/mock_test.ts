@@ -1,18 +1,19 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-import { delay } from "../async/delay.ts";
+import { delay } from "@std/async/delay";
 import {
   assertEquals,
   AssertionError,
   assertNotEquals,
   assertRejects,
   assertThrows,
-} from "../assert/mod.ts";
+} from "@std/assert";
 import {
   assertSpyCall,
   assertSpyCallArg,
   assertSpyCallArgs,
   assertSpyCallAsync,
   assertSpyCalls,
+  type MethodSpy,
   MockError,
   mockSession,
   mockSessionAsync,
@@ -22,13 +23,14 @@ import {
   returnsArgs,
   returnsNext,
   returnsThis,
-  Spy,
+  type Spy,
   spy,
+  type Stub,
   stub,
 } from "./mock.ts";
-import { Point, PointWithExtra, stringifyPoint } from "./_test_utils.ts";
+import { Point, type PointWithExtra, stringifyPoint } from "./_test_utils.ts";
 
-Deno.test("spy default", () => {
+Deno.test("spy()", () => {
   const func = spy();
   assertSpyCalls(func, 0);
 
@@ -77,12 +79,12 @@ Deno.test("spy default", () => {
   assertThrows(
     () => func.restore(),
     MockError,
-    "function cannot be restore",
+    "Function cannot be restore",
   );
   assertEquals(func.restored, false);
 });
 
-Deno.test("spy function", () => {
+Deno.test("spy() works on function", () => {
   const func = spy((value) => value);
   assertSpyCalls(func, 0);
 
@@ -123,7 +125,7 @@ Deno.test("spy function", () => {
   assertThrows(
     () => func.restore(),
     MockError,
-    "function cannot be restored",
+    "Function cannot be restored",
   );
   assertEquals(func.restored, false);
 
@@ -146,7 +148,7 @@ Deno.test("spy function", () => {
   });
 });
 
-Deno.test("spy instance method", () => {
+Deno.test("spy() works on instance method", () => {
   const point = new Point(2, 3);
   const func = spy(point, "action");
   assertSpyCalls(func, 0);
@@ -237,12 +239,12 @@ Deno.test("spy instance method", () => {
   assertThrows(
     () => func.restore(),
     MockError,
-    "instance method already restored",
+    "Instance method already restored",
   );
   assertEquals(func.restored, true);
 });
 
-Deno.test("spy instance method symbol", () => {
+Deno.test("spy() works on instance method symbol", () => {
   const point = new Point(2, 3);
   const func = spy(point, Symbol.iterator);
   assertSpyCalls(func, 0);
@@ -275,12 +277,12 @@ Deno.test("spy instance method symbol", () => {
   assertThrows(
     () => func.restore(),
     MockError,
-    "instance method already restored",
+    "Instance method already restored",
   );
   assertEquals(func.restored, true);
 });
 
-Deno.test("spy instance method property descriptor", () => {
+Deno.test("spy() works on instance method property descriptor", () => {
   const point = new Point(2, 3);
   const actionDescriptor: PropertyDescriptor = {
     configurable: true,
@@ -340,12 +342,115 @@ Deno.test("spy instance method property descriptor", () => {
   assertThrows(
     () => action.restore(),
     MockError,
-    "instance method already restored",
+    "Instance method already restored",
   );
   assertEquals(action.restored, true);
 });
 
-Deno.test("spy constructor", () => {
+Deno.test("spy() supports explicit resource management", () => {
+  const point = new Point(2, 3);
+  let funcRef: MethodSpy<Point> | null = null;
+  {
+    using func = spy(point, "action");
+    funcRef = func;
+    assertSpyCalls(func, 0);
+
+    assertEquals(func.call(point), undefined);
+    assertSpyCall(func, 0, {
+      self: point,
+      args: [],
+      returned: undefined,
+    });
+    assertSpyCalls(func, 1);
+
+    assertEquals(point.action(), undefined);
+    assertSpyCall(func, 1, { self: point, args: [] });
+    assertSpyCalls(func, 2);
+
+    assertEquals(func.call(point, "x"), "x");
+    assertSpyCall(func, 2, {
+      self: point,
+      args: ["x"],
+      returned: "x",
+    });
+    assertSpyCalls(func, 3);
+
+    assertEquals(point.action("x"), "x");
+    assertSpyCall(func, 3, {
+      self: point,
+      args: ["x"],
+      returned: "x",
+    });
+    assertSpyCalls(func, 4);
+
+    assertEquals(func.call(point, { x: 3 }), { x: 3 });
+    assertSpyCall(func, 4, {
+      self: point,
+      args: [{ x: 3 }],
+      returned: { x: 3 },
+    });
+    assertSpyCalls(func, 5);
+
+    assertEquals(point.action({ x: 3 }), { x: 3 });
+    assertSpyCall(func, 5, {
+      self: point,
+      args: [{ x: 3 }],
+      returned: { x: 3 },
+    });
+    assertSpyCalls(func, 6);
+
+    assertEquals(func.call(point, 3, 5, 7), 3);
+    assertSpyCall(func, 6, {
+      self: point,
+      args: [3, 5, 7],
+      returned: 3,
+    });
+    assertSpyCalls(func, 7);
+
+    assertEquals(point.action(3, 5, 7), 3);
+    assertSpyCall(func, 7, {
+      self: point,
+      args: [3, 5, 7],
+      returned: 3,
+    });
+    assertSpyCalls(func, 8);
+
+    assertEquals(func.call(point, Point, stringifyPoint, point), Point);
+    assertSpyCall(func, 8, {
+      self: point,
+      args: [Point, stringifyPoint, point],
+      returned: Point,
+    });
+    assertSpyCalls(func, 9);
+
+    assertEquals(point.action(Point, stringifyPoint, point), Point);
+    assertSpyCall(func, 9, {
+      self: point,
+      args: [Point, stringifyPoint, point],
+      returned: Point,
+    });
+    assertSpyCalls(func, 10);
+
+    assertNotEquals(func, Point.prototype.action);
+    assertEquals(point.action, func);
+
+    assertEquals(func.restored, false);
+  }
+  if (funcRef) {
+    assertEquals(funcRef.restored, true);
+    assertEquals(point.action, Point.prototype.action);
+    assertThrows(
+      () => {
+        if (funcRef) funcRef.restore();
+      },
+      MockError,
+      "Instance method already restored",
+    );
+    assertEquals(funcRef.restored, true);
+  }
+});
+
+Deno.test("spy() works on constructor", () => {
   const PointSpy = spy(Point);
   assertSpyCalls(PointSpy, 0);
 
@@ -373,11 +478,11 @@ Deno.test("spy constructor", () => {
   assertThrows(
     () => PointSpy.restore(),
     MockError,
-    "constructor cannot be restored",
+    "Constructor cannot be restored",
   );
 });
 
-Deno.test("spy constructor of child class", () => {
+Deno.test("spy() works on constructor of child class", () => {
   const PointSpy = spy(Point);
   const PointSpyChild = class extends PointSpy {
     override action() {
@@ -405,7 +510,67 @@ Deno.test("spy constructor of child class", () => {
   assertSpyCalls(PointSpy, 1);
 });
 
-Deno.test("stub default", () => {
+Deno.test("spy() works on constructor that throws an error", () => {
+  class Foo {
+    constructor() {
+      throw new Error("foo");
+    }
+  }
+  const FooSpy = spy(Foo);
+  assertThrows(() => new FooSpy(), Error, "foo");
+  assertSpyCall(FooSpy, 0, {
+    self: undefined,
+    args: [],
+    error: { Class: Error, msgIncludes: "foo" },
+  });
+});
+
+Deno.test("spy() works with throwing method", () => {
+  const obj = {
+    fn() {
+      throw new Error("failed");
+    },
+  };
+  const spyFn = spy(obj, "fn");
+  assertThrows(() => obj.fn(), Error, "failed");
+  assertSpyCall(spyFn, 0, {
+    self: obj,
+    args: [],
+    error: { Class: Error, msgIncludes: "failed" },
+  });
+});
+
+Deno.test("spy() throws when try spying already spied method", () => {
+  const obj = { fn() {} };
+  spy(obj, "fn");
+  assertThrows(
+    () => spy(obj, "fn"),
+    MockError,
+    "Already spying on instance method",
+  );
+});
+
+Deno.test("spy() throws when the property is not a method", () => {
+  const obj = {};
+  assertThrows(
+    // deno-lint-ignore no-explicit-any
+    () => spy(obj as any, "fn"),
+    MockError,
+    "Property is not an instance method",
+  );
+});
+
+Deno.test("spy() throws when the property is not configurable", () => {
+  const obj = { fn() {} };
+  Object.defineProperty(obj, "fn", { configurable: false });
+  assertThrows(
+    () => spy(obj, "fn"),
+    MockError,
+    "Cannot spy on non-configurable instance method",
+  );
+});
+
+Deno.test("stub()", () => {
   const point = new Point(2, 3);
   const func = stub(point, "action");
 
@@ -437,12 +602,12 @@ Deno.test("stub default", () => {
   assertThrows(
     () => func.restore(),
     MockError,
-    "instance method already restored",
+    "Instance method already restored",
   );
   assertEquals(func.restored, true);
 });
 
-Deno.test("stub function", () => {
+Deno.test("stub() works on function", () => {
   const point = new Point(2, 3);
   const returns = [1, "b", 2, "d"];
   const func = stub(point, "action", () => returns.shift());
@@ -475,12 +640,57 @@ Deno.test("stub function", () => {
   assertThrows(
     () => func.restore(),
     MockError,
-    "instance method already restored",
+    "Instance method already restored",
   );
   assertEquals(func.restored, true);
 });
 
-Deno.test("stub non existent function", () => {
+Deno.test("stub() supports explicit resource management", () => {
+  const point = new Point(2, 3);
+  const returns = [1, "b", 2, "d"];
+  let funcRef: Stub<Point> | null = null;
+  {
+    using func = stub(point, "action", () => returns.shift());
+    funcRef = func;
+
+    assertSpyCalls(func, 0);
+
+    assertEquals(func.call(point), 1);
+    assertSpyCall(func, 0, {
+      self: point,
+      args: [],
+      returned: 1,
+    });
+    assertSpyCalls(func, 1);
+
+    assertEquals(point.action(), "b");
+    assertSpyCall(func, 1, {
+      self: point,
+      args: [],
+      returned: "b",
+    });
+    assertSpyCalls(func, 2);
+
+    assertEquals(func.original, Point.prototype.action);
+    assertEquals(point.action, func);
+
+    assertEquals(func.restored, false);
+  }
+  if (funcRef) {
+    assertEquals(funcRef.restored, true);
+    assertEquals(point.action, Point.prototype.action);
+    assertThrows(
+      () => {
+        if (funcRef) funcRef.restore();
+      },
+      MockError,
+      "Instance method already restored",
+    );
+    assertEquals(funcRef.restored, true);
+  }
+});
+
+Deno.test("stub() handles non existent function", () => {
   const point = new Point(2, 3);
   const castPoint = point as PointWithExtra;
   let i = 0;
@@ -517,13 +727,13 @@ Deno.test("stub non existent function", () => {
   assertThrows(
     () => func.restore(),
     MockError,
-    "instance method already restored",
+    "Instance method already restored",
   );
   assertEquals(func.restored, true);
 });
 
 // This doesn't test any runtime code, only if the TypeScript types are correct.
-Deno.test("stub types", () => {
+Deno.test("stub() correctly handles types", () => {
   // @ts-expect-error Stubbing with incorrect argument types should cause a type error
   stub(new Point(2, 3), "explicitTypes", (_x: string, _y: number) => true);
 
@@ -564,7 +774,54 @@ Deno.test("stub types", () => {
   });
 });
 
-Deno.test("mockSession and mockSessionAsync", async () => {
+Deno.test("stub() works with throwing fake implementation", () => {
+  const obj = {
+    fn() {
+      throw new Error("failed");
+    },
+  };
+  const stubFn = stub(obj, "fn", () => {
+    throw new Error("failed");
+  });
+  assertThrows(() => obj.fn(), Error, "failed");
+  assertSpyCall(stubFn, 0, {
+    self: obj,
+    args: [],
+    error: { Class: Error, msgIncludes: "failed" },
+  });
+});
+
+Deno.test("stub() throws when the property is not a method", () => {
+  const obj = { fn: 1 };
+  assertThrows(
+    // deno-lint-ignore no-explicit-any
+    () => stub(obj as any, "fn"),
+    MockError,
+    "Property is not an instance method",
+  );
+});
+
+Deno.test("stub() throws when try stubbing already stubbed method", () => {
+  const obj = { fn() {} };
+  stub(obj, "fn");
+  assertThrows(
+    () => stub(obj, "fn"),
+    MockError,
+    "Already spying on instance method",
+  );
+});
+
+Deno.test("stub() throws then the property is not configurable", () => {
+  const obj = { fn() {} };
+  Object.defineProperty(obj, "fn", { configurable: false });
+  assertThrows(
+    () => stub(obj, "fn"),
+    MockError,
+    "Cannot stub non-configurable instance method",
+  );
+});
+
+Deno.test("mockSession() and mockSessionAsync()", async () => {
   const points = [
     new Point(2, 3),
     new Point(2, 3),
@@ -609,7 +866,7 @@ Deno.test("mockSession and mockSessionAsync", async () => {
   assertRestored(Array(6).fill(true));
 });
 
-Deno.test("mockSession and restore current session", () => {
+Deno.test("mockSession() and restore current session", () => {
   const points = [
     new Point(2, 3),
     new Point(2, 3),
@@ -670,7 +927,7 @@ Deno.test("mockSession and restore current session", () => {
   }
 });
 
-Deno.test("mockSession and restore multiple sessions", () => {
+Deno.test("mockSession() and restore multiple sessions", () => {
   const points = [
     new Point(2, 3),
     new Point(2, 3),
@@ -711,14 +968,14 @@ Deno.test("mockSession and restore multiple sessions", () => {
   }
 });
 
-Deno.test("assertSpyCalls", () => {
+Deno.test("assertSpyCalls()", () => {
   const spyFunc = spy();
 
   assertSpyCalls(spyFunc, 0);
   assertThrows(
     () => assertSpyCalls(spyFunc, 1),
     AssertionError,
-    "spy not called as much as expected",
+    "Spy not called as much as expected",
   );
 
   spyFunc();
@@ -726,22 +983,22 @@ Deno.test("assertSpyCalls", () => {
   assertThrows(
     () => assertSpyCalls(spyFunc, 0),
     AssertionError,
-    "spy called more than expected",
+    "Spy called more than expected",
   );
   assertThrows(
     () => assertSpyCalls(spyFunc, 2),
     AssertionError,
-    "spy not called as much as expected",
+    "Spy not called as much as expected",
   );
 });
 
-Deno.test("assertSpyCall function", () => {
+Deno.test("assertSpyCall() works with function", () => {
   const spyFunc = spy((multiplier?: number) => 5 * (multiplier ?? 1));
 
   assertThrows(
     () => assertSpyCall(spyFunc, 0),
     AssertionError,
-    "spy not called as much as expected",
+    "Spy not called as much as expected",
   );
 
   spyFunc();
@@ -769,7 +1026,7 @@ Deno.test("assertSpyCall function", () => {
         returned: 2,
       }),
     AssertionError,
-    "spy not called with expected args",
+    "Spy not called with expected args",
   );
   assertThrows(
     () =>
@@ -777,7 +1034,7 @@ Deno.test("assertSpyCall function", () => {
         args: [1],
       }),
     AssertionError,
-    "spy not called with expected args",
+    "Spy not called with expected args",
   );
   assertThrows(
     () =>
@@ -785,7 +1042,7 @@ Deno.test("assertSpyCall function", () => {
         self: {},
       }),
     AssertionError,
-    "spy not called as method on expected self",
+    "Spy not called as method on expected self",
   );
   assertThrows(
     () =>
@@ -793,7 +1050,7 @@ Deno.test("assertSpyCall function", () => {
         returned: 2,
       }),
     AssertionError,
-    "spy call did not return expected value",
+    "Spy call did not return expected value",
   );
   assertThrows(
     () =>
@@ -801,23 +1058,23 @@ Deno.test("assertSpyCall function", () => {
         error: { msgIncludes: "x" },
       }),
     AssertionError,
-    "spy call did not throw an error, a value was returned.",
+    "Spy call did not throw an error, a value was returned.",
   );
   assertThrows(
     () => assertSpyCall(spyFunc, 1),
     AssertionError,
-    "spy not called as much as expected",
+    "Spy not called as much as expected",
   );
 });
 
-Deno.test("assertSpyCall method", () => {
+Deno.test("assertSpyCall() works with method", () => {
   const point = new Point(2, 3);
   const spyMethod = spy(point, "action");
 
   assertThrows(
     () => assertSpyCall(spyMethod, 0),
     AssertionError,
-    "spy not called as much as expected",
+    "Spy not called as much as expected",
   );
 
   point.action(3, 7);
@@ -845,7 +1102,7 @@ Deno.test("assertSpyCall method", () => {
         returned: 7,
       }),
     AssertionError,
-    "spy not called with expected args",
+    "Spy not called with expected args",
   );
   assertThrows(
     () =>
@@ -853,7 +1110,7 @@ Deno.test("assertSpyCall method", () => {
         args: [7, 3],
       }),
     AssertionError,
-    "spy not called with expected args",
+    "Spy not called with expected args",
   );
   assertThrows(
     () =>
@@ -861,7 +1118,7 @@ Deno.test("assertSpyCall method", () => {
         self: undefined,
       }),
     AssertionError,
-    "spy not expected to be called as method on object",
+    "Spy not expected to be called as method on object",
   );
   assertThrows(
     () =>
@@ -869,12 +1126,12 @@ Deno.test("assertSpyCall method", () => {
         returned: 7,
       }),
     AssertionError,
-    "spy call did not return expected value",
+    "Spy call did not return expected value",
   );
   assertThrows(
     () => assertSpyCall(spyMethod, 1),
     AssertionError,
-    "spy not called as much as expected",
+    "Spy not called as much as expected",
   );
 
   spyMethod.call(point, 9);
@@ -902,7 +1159,7 @@ Deno.test("assertSpyCall method", () => {
         returned: 7,
       }),
     AssertionError,
-    "spy not called with expected args",
+    "Spy not called with expected args",
   );
   assertThrows(
     () =>
@@ -910,7 +1167,7 @@ Deno.test("assertSpyCall method", () => {
         args: [7, 3],
       }),
     AssertionError,
-    "spy not called with expected args",
+    "Spy not called with expected args",
   );
   assertThrows(
     () =>
@@ -918,7 +1175,7 @@ Deno.test("assertSpyCall method", () => {
         self: new Point(1, 2),
       }),
     AssertionError,
-    "spy not called as method on expected self",
+    "Spy not called as method on expected self",
   );
   assertThrows(
     () =>
@@ -926,7 +1183,7 @@ Deno.test("assertSpyCall method", () => {
         returned: 7,
       }),
     AssertionError,
-    "spy call did not return expected value",
+    "Spy call did not return expected value",
   );
   assertThrows(
     () =>
@@ -934,19 +1191,19 @@ Deno.test("assertSpyCall method", () => {
         error: { msgIncludes: "x" },
       }),
     AssertionError,
-    "spy call did not throw an error, a value was returned.",
+    "Spy call did not throw an error, a value was returned.",
   );
   assertThrows(
     () => assertSpyCall(spyMethod, 2),
     AssertionError,
-    "spy not called as much as expected",
+    "Spy not called as much as expected",
   );
 });
 
 class ExampleError extends Error {}
 class OtherError extends Error {}
 
-Deno.test("assertSpyCall error", () => {
+Deno.test("assertSpyCall() works with error", () => {
   const spyFunc = spy((_value?: number) => {
     throw new ExampleError("failed");
   });
@@ -991,7 +1248,7 @@ Deno.test("assertSpyCall error", () => {
         },
       }),
     AssertionError,
-    "spy not called with expected args",
+    "Spy not called with expected args",
   );
   assertThrows(
     () =>
@@ -999,7 +1256,7 @@ Deno.test("assertSpyCall error", () => {
         args: [1],
       }),
     AssertionError,
-    "spy not called with expected args",
+    "Spy not called with expected args",
   );
   assertThrows(
     () =>
@@ -1007,7 +1264,7 @@ Deno.test("assertSpyCall error", () => {
         self: {},
       }),
     AssertionError,
-    "spy not called as method on expected self",
+    "Spy not called as method on expected self",
   );
   assertThrows(
     () =>
@@ -1069,16 +1326,31 @@ Deno.test("assertSpyCall error", () => {
         returned: 7,
       }),
     AssertionError,
-    "spy call did not return expected value, an error was thrown.",
+    "Spy call did not return expected value, an error was thrown.",
   );
   assertThrows(
     () => assertSpyCall(spyFunc, 1),
     AssertionError,
-    "spy not called as much as expected",
+    "Spy not called as much as expected",
   );
 });
 
-Deno.test("assertSpyCallAsync function", async () => {
+Deno.test("assertSpyCall() throws TypeError when returned and error are both provided", () => {
+  const spyFunc = spy(() => 5);
+  spyFunc();
+
+  assertThrows(
+    () =>
+      assertSpyCall(spyFunc, 0, {
+        returned: 5,
+        error: { msgIncludes: "x" },
+      }),
+    TypeError,
+    "Do not expect error and return, only one should be expected",
+  );
+});
+
+Deno.test("assertSpyCallAsync() works with function", async () => {
   const spyFunc = spy((multiplier?: number) =>
     Promise.resolve(5 * (multiplier ?? 1))
   );
@@ -1086,7 +1358,7 @@ Deno.test("assertSpyCallAsync function", async () => {
   await assertRejects(
     () => assertSpyCallAsync(spyFunc, 0),
     AssertionError,
-    "spy not called as much as expected",
+    "Spy not called as much as expected",
   );
 
   await spyFunc();
@@ -1119,7 +1391,7 @@ Deno.test("assertSpyCallAsync function", async () => {
         returned: 2,
       }),
     AssertionError,
-    "spy not called with expected args",
+    "Spy not called with expected args",
   );
   await assertRejects(
     () =>
@@ -1127,7 +1399,7 @@ Deno.test("assertSpyCallAsync function", async () => {
         args: [1],
       }),
     AssertionError,
-    "spy not called with expected args",
+    "Spy not called with expected args",
   );
   await assertRejects(
     () =>
@@ -1135,7 +1407,7 @@ Deno.test("assertSpyCallAsync function", async () => {
         self: {},
       }),
     AssertionError,
-    "spy not called as method on expected self",
+    "Spy not called as method on expected self",
   );
   await assertRejects(
     () =>
@@ -1143,7 +1415,7 @@ Deno.test("assertSpyCallAsync function", async () => {
         returned: 2,
       }),
     AssertionError,
-    "spy call did not resolve to expected value",
+    "Spy call did not resolve to expected value",
   );
   await assertRejects(
     () =>
@@ -1151,16 +1423,16 @@ Deno.test("assertSpyCallAsync function", async () => {
         returned: Promise.resolve(2),
       }),
     AssertionError,
-    "spy call did not resolve to expected value",
+    "Spy call did not resolve to expected value",
   );
   await assertRejects(
     () => assertSpyCallAsync(spyFunc, 1),
     AssertionError,
-    "spy not called as much as expected",
+    "Spy not called as much as expected",
   );
 });
 
-Deno.test("assertSpyCallAsync method", async () => {
+Deno.test("assertSpyCallAsync() works with method", async () => {
   const point: Point = new Point(2, 3);
   const spyMethod = stub(
     point,
@@ -1171,7 +1443,7 @@ Deno.test("assertSpyCallAsync method", async () => {
   await assertRejects(
     () => assertSpyCallAsync(spyMethod, 0),
     AssertionError,
-    "spy not called as much as expected",
+    "Spy not called as much as expected",
   );
 
   await point.action(3, 7);
@@ -1207,7 +1479,7 @@ Deno.test("assertSpyCallAsync method", async () => {
         returned: 7,
       }),
     AssertionError,
-    "spy not called with expected args",
+    "Spy not called with expected args",
   );
   await assertRejects(
     () =>
@@ -1215,7 +1487,7 @@ Deno.test("assertSpyCallAsync method", async () => {
         args: [7, 3],
       }),
     AssertionError,
-    "spy not called with expected args",
+    "Spy not called with expected args",
   );
   await assertRejects(
     () =>
@@ -1223,7 +1495,7 @@ Deno.test("assertSpyCallAsync method", async () => {
         self: undefined,
       }),
     AssertionError,
-    "spy not expected to be called as method on object",
+    "Spy not expected to be called as method on object",
   );
   await assertRejects(
     () =>
@@ -1231,7 +1503,7 @@ Deno.test("assertSpyCallAsync method", async () => {
         returned: 7,
       }),
     AssertionError,
-    "spy call did not resolve to expected value",
+    "Spy call did not resolve to expected value",
   );
   await assertRejects(
     () =>
@@ -1239,12 +1511,12 @@ Deno.test("assertSpyCallAsync method", async () => {
         returned: Promise.resolve(7),
       }),
     AssertionError,
-    "spy call did not resolve to expected value",
+    "Spy call did not resolve to expected value",
   );
   await assertRejects(
     () => assertSpyCallAsync(spyMethod, 1),
     AssertionError,
-    "spy not called as much as expected",
+    "Spy not called as much as expected",
   );
 
   await spyMethod.call(point, 9);
@@ -1280,7 +1552,7 @@ Deno.test("assertSpyCallAsync method", async () => {
         returned: 7,
       }),
     AssertionError,
-    "spy not called with expected args",
+    "Spy not called with expected args",
   );
   await assertRejects(
     () =>
@@ -1288,7 +1560,7 @@ Deno.test("assertSpyCallAsync method", async () => {
         args: [7, 3],
       }),
     AssertionError,
-    "spy not called with expected args",
+    "Spy not called with expected args",
   );
   await assertRejects(
     () =>
@@ -1296,7 +1568,7 @@ Deno.test("assertSpyCallAsync method", async () => {
         self: new Point(1, 2),
       }),
     AssertionError,
-    "spy not called as method on expected self",
+    "Spy not called as method on expected self",
   );
   await assertRejects(
     () =>
@@ -1304,7 +1576,7 @@ Deno.test("assertSpyCallAsync method", async () => {
         returned: 7,
       }),
     AssertionError,
-    "spy call did not resolve to expected value",
+    "Spy call did not resolve to expected value",
   );
   await assertRejects(
     () =>
@@ -1312,27 +1584,27 @@ Deno.test("assertSpyCallAsync method", async () => {
         returned: Promise.resolve(7),
       }),
     AssertionError,
-    "spy call did not resolve to expected value",
+    "Spy call did not resolve to expected value",
   );
   await assertRejects(
     () => assertSpyCallAsync(spyMethod, 2),
     AssertionError,
-    "spy not called as much as expected",
+    "Spy not called as much as expected",
   );
 });
 
-Deno.test("assertSpyCallAync on sync value", async () => {
+Deno.test("assertSpyCallAsync() rejects on sync value", async () => {
   const spyFunc = spy(() => 4 as unknown as Promise<number>);
 
   spyFunc();
   await assertRejects(
     () => assertSpyCallAsync(spyFunc, 0),
     AssertionError,
-    "spy call did not return a promise, a value was returned.",
+    "Spy call did not return a promise, a value was returned.",
   );
 });
 
-Deno.test("assertSpyCallAync on sync error", async () => {
+Deno.test("assertSpyCallAsync() rejects on sync error", async () => {
   const spyFunc = spy(() => {
     throw new ExampleError("failed");
   });
@@ -1341,11 +1613,11 @@ Deno.test("assertSpyCallAync on sync error", async () => {
   await assertRejects(
     () => assertSpyCallAsync(spyFunc, 0),
     AssertionError,
-    "spy call did not return a promise, an error was thrown.",
+    "Spy call did not return a promise, an error was thrown.",
   );
 });
 
-Deno.test("assertSpyCallAync error", async () => {
+Deno.test("assertSpyCallAsync() works with error", async () => {
   const spyFunc = spy((..._args: number[]): Promise<number> =>
     Promise.reject(new ExampleError("failed"))
   );
@@ -1378,6 +1650,16 @@ Deno.test("assertSpyCallAync error", async () => {
       msgIncludes: "fail",
     },
   });
+  await assertSpyCallAsync(spyFunc, 0, {
+    error: {
+      msgIncludes: "fail",
+    },
+  });
+  await assertSpyCallAsync(spyFunc, 0, {
+    error: {
+      Class: Error,
+    },
+  });
 
   await assertRejects(
     () =>
@@ -1390,7 +1672,7 @@ Deno.test("assertSpyCallAync error", async () => {
         },
       }),
     AssertionError,
-    "spy not called with expected args",
+    "Spy not called with expected args",
   );
   await assertRejects(
     () =>
@@ -1398,7 +1680,7 @@ Deno.test("assertSpyCallAync error", async () => {
         args: [1],
       }),
     AssertionError,
-    "spy not called with expected args",
+    "Spy not called with expected args",
   );
   await assertRejects(
     () =>
@@ -1406,7 +1688,7 @@ Deno.test("assertSpyCallAync error", async () => {
         self: {},
       }),
     AssertionError,
-    "spy not called as method on expected self",
+    "Spy not called as method on expected self",
   );
   await assertRejects(
     () =>
@@ -1468,7 +1750,7 @@ Deno.test("assertSpyCallAync error", async () => {
         returned: Promise.resolve(7),
       }),
     AssertionError,
-    "spy call returned promise was rejected",
+    "Spy call returned promise was rejected",
   );
   await assertRejects(
     () =>
@@ -1477,22 +1759,36 @@ Deno.test("assertSpyCallAync error", async () => {
         error: { msgIncludes: "x" },
       }),
     TypeError,
-    "do not expect error and return, only one should be expected",
+    "Do not expect error and return, only one should be expected",
   );
   await assertRejects(
     () => assertSpyCallAsync(spyFunc, 1),
     AssertionError,
-    "spy not called as much as expected",
+    "Spy not called as much as expected",
   );
 });
 
-Deno.test("assertSpyArg", () => {
+Deno.test("assertSpyCallAsync() throws type error if expected return value is rejected", async () => {
+  const spyFunc = spy(() => Promise.resolve(5));
+
+  spyFunc();
+  await assertRejects(
+    () =>
+      assertSpyCallAsync(spyFunc, 0, {
+        returned: Promise.reject(new Error("failed")),
+      }),
+    TypeError,
+    "Do not expect rejected promise, expect error instead",
+  );
+});
+
+Deno.test("assertSpyCallArg()", () => {
   const spyFunc = spy();
 
   assertThrows(
     () => assertSpyCallArg(spyFunc, 0, 0, undefined),
     AssertionError,
-    "spy not called as much as expected",
+    "Spy not called as much as expected",
   );
 
   spyFunc();
@@ -1553,13 +1849,13 @@ Deno.test("assertSpyArg", () => {
   );
 });
 
-Deno.test("assertSpyArgs without range", () => {
+Deno.test("assertSpyCallArgs() throws without range", () => {
   const spyFunc = spy();
 
   assertThrows(
     () => assertSpyCallArgs(spyFunc, 0, []),
     AssertionError,
-    "spy not called as much as expected",
+    "Spy not called as much as expected",
   );
 
   spyFunc();
@@ -1625,13 +1921,13 @@ Deno.test("assertSpyArgs without range", () => {
   );
 });
 
-Deno.test("assertSpyArgs with start only", () => {
+Deno.test("assertSpyCallArgs() throws with start only", () => {
   const spyFunc = spy();
 
   assertThrows(
     () => assertSpyCallArgs(spyFunc, 0, 1, []),
     AssertionError,
-    "spy not called as much as expected",
+    "Spy not called as much as expected",
   );
 
   spyFunc();
@@ -1697,13 +1993,13 @@ Deno.test("assertSpyArgs with start only", () => {
   );
 });
 
-Deno.test("assertSpyArgs with range", () => {
+Deno.test("assertSpyCallArgs() throws with range", () => {
   const spyFunc = spy();
 
   assertThrows(
     () => assertSpyCallArgs(spyFunc, 0, 1, 3, []),
     AssertionError,
-    "spy not called as much as expected",
+    "Spy not called as much as expected",
   );
 
   spyFunc();
@@ -1771,7 +2067,7 @@ Deno.test("assertSpyArgs with range", () => {
   );
 });
 
-Deno.test("returnsThis", () => {
+Deno.test("returnsThis()", () => {
   const callback = returnsThis();
   const obj = { callback, x: 1, y: 2 };
   const obj2 = { x: 2, y: 3 };
@@ -1780,7 +2076,7 @@ Deno.test("returnsThis", () => {
   assertEquals(callback.apply(obj2, []), obj2);
 });
 
-Deno.test("returnsArg", () => {
+Deno.test("returnsArg()", () => {
   let callback = returnsArg(0);
   assertEquals(callback(), undefined);
   assertEquals(callback("a"), "a");
@@ -1792,7 +2088,7 @@ Deno.test("returnsArg", () => {
   assertEquals(callback("d", "e", "f"), "e");
 });
 
-Deno.test("returnsArgs", () => {
+Deno.test("returnsArgs()", () => {
   let callback = returnsArgs();
   assertEquals(callback(), []);
   assertEquals(callback("a"), ["a"]);
@@ -1809,7 +2105,7 @@ Deno.test("returnsArgs", () => {
   assertEquals(callback("d", "e", "f", "g"), ["e", "f"]);
 });
 
-Deno.test("returnsNext with array", () => {
+Deno.test("returnsNext() works with array", () => {
   let results = [1, 2, new Error("oops"), 3];
   let callback = returnsNext(results);
   assertEquals(callback(), 1);
@@ -1819,12 +2115,12 @@ Deno.test("returnsNext with array", () => {
   assertThrows(
     () => callback(),
     MockError,
-    "not expected to be called more than 4 times",
+    "Not expected to be called more than 4 time(s)",
   );
   assertThrows(
     () => callback(),
     MockError,
-    "not expected to be called more than 4 times",
+    "Not expected to be called more than 4 time(s)",
   );
 
   results = [];
@@ -1839,17 +2135,17 @@ Deno.test("returnsNext with array", () => {
   assertThrows(
     () => callback(),
     MockError,
-    "not expected to be called more than 5 times",
+    "Not expected to be called more than 5 time(s)",
   );
   results.push(5);
   assertThrows(
     () => callback(),
     MockError,
-    "not expected to be called more than 5 times",
+    "Not expected to be called more than 5 time(s)",
   );
 });
 
-Deno.test("returnsNext with iterator", () => {
+Deno.test("returnsNext() works with iterator", () => {
   let results = [1, 2, new Error("oops"), 3];
   let callback = returnsNext(results.values());
   assertEquals(callback(), 1);
@@ -1859,12 +2155,12 @@ Deno.test("returnsNext with iterator", () => {
   assertThrows(
     () => callback(),
     MockError,
-    "not expected to be called more than 4 times",
+    "Not expected to be called more than 4 time(s)",
   );
   assertThrows(
     () => callback(),
     MockError,
-    "not expected to be called more than 4 times",
+    "Not expected to be called more than 4 time(s)",
   );
 
   results = [];
@@ -1879,17 +2175,17 @@ Deno.test("returnsNext with iterator", () => {
   assertThrows(
     () => callback(),
     MockError,
-    "not expected to be called more than 5 times",
+    "Not expected to be called more than 5 time(s)",
   );
   results.push(5);
   assertThrows(
     () => callback(),
     MockError,
-    "not expected to be called more than 5 times",
+    "Not expected to be called more than 5 time(s)",
   );
 });
 
-Deno.test("returnsNext with generator", () => {
+Deno.test("returnsNext() works with generator", () => {
   let results = [1, 2, new Error("oops"), 3];
   const generator = function* () {
     yield* results;
@@ -1902,12 +2198,12 @@ Deno.test("returnsNext with generator", () => {
   assertThrows(
     () => callback(),
     MockError,
-    "not expected to be called more than 4 times",
+    "Not expected to be called more than 4 time(s)",
   );
   assertThrows(
     () => callback(),
     MockError,
-    "not expected to be called more than 4 times",
+    "Not expected to be called more than 4 time(s)",
   );
 
   results = [];
@@ -1922,17 +2218,17 @@ Deno.test("returnsNext with generator", () => {
   assertThrows(
     () => callback(),
     MockError,
-    "not expected to be called more than 5 times",
+    "Not expected to be called more than 5 time(s)",
   );
   results.push(5);
   assertThrows(
     () => callback(),
     MockError,
-    "not expected to be called more than 5 times",
+    "Not expected to be called more than 5 time(s)",
   );
 });
 
-Deno.test("resolvesNext with array", async () => {
+Deno.test("resolvesNext() works with array", async () => {
   let results = [
     1,
     new Error("oops"),
@@ -1951,12 +2247,12 @@ Deno.test("resolvesNext with array", async () => {
   await assertRejects(
     async () => await callback(),
     MockError,
-    "not expected to be called more than 5 times",
+    "Not expected to be called more than 5 time(s)",
   );
   await assertRejects(
     async () => await callback(),
     MockError,
-    "not expected to be called more than 5 times",
+    "Not expected to be called more than 5 time(s)",
   );
 
   results = [];
@@ -1978,17 +2274,17 @@ Deno.test("resolvesNext with array", async () => {
   await assertRejects(
     async () => await callback(),
     MockError,
-    "not expected to be called more than 6 times",
+    "Not expected to be called more than 6 time(s)",
   );
   results.push(5);
   await assertRejects(
     async () => await callback(),
     MockError,
-    "not expected to be called more than 6 times",
+    "Not expected to be called more than 6 time(s)",
   );
 });
 
-Deno.test("resolvesNext with iterator", async () => {
+Deno.test("resolvesNext() works with iterator", async () => {
   let results = [
     1,
     new Error("oops"),
@@ -2007,12 +2303,12 @@ Deno.test("resolvesNext with iterator", async () => {
   await assertRejects(
     async () => await callback(),
     MockError,
-    "not expected to be called more than 5 times",
+    "Not expected to be called more than 5 time(s)",
   );
   await assertRejects(
     async () => await callback(),
     MockError,
-    "not expected to be called more than 5 times",
+    "Not expected to be called more than 5 time(s)",
   );
 
   results = [];
@@ -2034,17 +2330,17 @@ Deno.test("resolvesNext with iterator", async () => {
   await assertRejects(
     async () => await callback(),
     MockError,
-    "not expected to be called more than 6 times",
+    "Not expected to be called more than 6 time(s)",
   );
   results.push(5);
   await assertRejects(
     async () => await callback(),
     MockError,
-    "not expected to be called more than 6 times",
+    "Not expected to be called more than 6 time(s)",
   );
 });
 
-Deno.test("resolvesNext with async generator", async () => {
+Deno.test("resolvesNext() works with async generator", async () => {
   let results = [
     1,
     new Error("oops"),
@@ -2067,12 +2363,12 @@ Deno.test("resolvesNext with async generator", async () => {
   await assertRejects(
     async () => await callback(),
     MockError,
-    "not expected to be called more than 5 times",
+    "Not expected to be called more than 5 time(s)",
   );
   await assertRejects(
     async () => await callback(),
     MockError,
-    "not expected to be called more than 5 times",
+    "Not expected to be called more than 5 time(s)",
   );
 
   results = [];
@@ -2094,12 +2390,12 @@ Deno.test("resolvesNext with async generator", async () => {
   await assertRejects(
     async () => await callback(),
     MockError,
-    "not expected to be called more than 6 times",
+    "Not expected to be called more than 6 time(s)",
   );
   results.push(5);
   await assertRejects(
     async () => await callback(),
     MockError,
-    "not expected to be called more than 6 times",
+    "Not expected to be called more than 6 time(s)",
   );
 });

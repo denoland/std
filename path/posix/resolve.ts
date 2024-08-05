@@ -6,8 +6,19 @@ import { assertPath } from "../_common/assert_path.ts";
 import { isPosixPathSeparator } from "./_util.ts";
 
 /**
- * Resolves path segments into a `path`
- * @param pathSegments to process to path
+ * Resolves path segments into a `path`.
+ *
+ * @example Usage
+ * ```ts
+ * import { resolve } from "@std/path/posix/resolve";
+ * import { assertEquals } from "@std/assert";
+ *
+ * const path = resolve("/foo", "bar", "baz/asdf", "quux", "..");
+ * assertEquals(path, "/foo/bar/baz/asdf");
+ * ```
+ *
+ * @param pathSegments The path segments to resolve.
+ * @returns The resolved path.
  */
 export function resolve(...pathSegments: string[]): string {
   let resolvedPath = "";
@@ -16,7 +27,7 @@ export function resolve(...pathSegments: string[]): string {
   for (let i = pathSegments.length - 1; i >= -1 && !resolvedAbsolute; i--) {
     let path: string;
 
-    if (i >= 0) path = pathSegments[i];
+    if (i >= 0) path = pathSegments[i]!;
     else {
       // deno-lint-ignore no-explicit-any
       const { Deno } = globalThis as any;

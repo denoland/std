@@ -1,7 +1,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
 import { expect } from "./expect.ts";
-import { AssertionError, assertThrows } from "../assert/mod.ts";
+import { AssertionError, assertThrows } from "@std/assert";
 
 Deno.test("expect().toBeCloseTo()", () => {
   expect(0.2 + 0.1).toBeCloseTo(0.3);
@@ -18,4 +18,12 @@ Deno.test("expect().toBeCloseTo()", () => {
   assertThrows(() => {
     expect(0.2 + 0.1).not.toBeCloseTo(0.3);
   });
+});
+
+Deno.test("expect().toBeCloseTo() throws error when the numDigits is smaller than 0", () => {
+  assertThrows(
+    () => expect(0.2 + 0.1).toBeCloseTo(0.3, -1),
+    Error,
+    "toBeCloseTo second argument must be a non-negative integer. Got -1",
+  );
 });

@@ -1,5 +1,5 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-import { assertEquals, assertStrictEquals } from "../assert/mod.ts";
+import { assertEquals, assertStrictEquals } from "@std/assert";
 import { BinarySearchNode } from "./_binary_search_node.ts";
 
 let parent: BinarySearchNode<number>;

@@ -17,8 +17,8 @@ export function normalizeString(
   let lastSlash = -1;
   let dots = 0;
   let code: number | undefined;
-  for (let i = 0, len = path.length; i <= len; ++i) {
-    if (i < len) code = path.charCodeAt(i);
+  for (let i = 0; i <= path.length; ++i) {
+    if (i < path.length) code = path.charCodeAt(i);
     else if (isPathSeparator(code!)) break;
     else code = CHAR_FORWARD_SLASH;
 

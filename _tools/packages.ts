@@ -50,7 +50,7 @@ async function discoverExports(pkg: string) {
     if (name.includes("/testdata/")) continue; // testdata files
     if (name.endsWith("/deno.json")) continue; // deno.json files
 
-    const key = "." + name.replace(/\/mod$/, "");
+    const key = "." + name.replace(/\/mod$/, "").replaceAll("_", "-");
     exports.push([key, "." + path]);
   }
   exports.sort((a, b) => a[0].localeCompare(b[0]));

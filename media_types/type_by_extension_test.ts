@@ -1,21 +1,22 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import { assertEquals } from "../assert/mod.ts";
+import { assertEquals } from "@std/assert";
 import { typeByExtension } from "./mod.ts";
 
 Deno.test({
-  name: "media_types - typeByExtension",
+  name: "typeByExtension()",
   fn() {
     const fixtures = [
-      ["js", "application/javascript"],
-      [".js", "application/javascript"],
-      ["Js", "application/javascript"],
+      ["js", "text/javascript"],
+      [".js", "text/javascript"],
+      ["Js", "text/javascript"],
       ["html", "text/html"],
       [".html", "text/html"],
       [".HTML", "text/html"],
       ["file.json", undefined],
       ["foo", undefined],
       [".foo", undefined],
+      [".mp4", "video/mp4"],
     ] as const;
     for (const [fixture, expected] of fixtures) {
       assertEquals(typeByExtension(fixture), expected);

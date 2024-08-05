@@ -9,10 +9,10 @@ type LineParseResult = {
 
 type CharactersMap = { [key: string]: string };
 
-const RE_KeyValue =
+const RE_KEY_VALUE =
   /^\s*(?:export\s+)?(?<key>[a-zA-Z_]+[a-zA-Z0-9_]*?)\s*=[\ \t]*('\n?(?<notInterpolated>(.|\n)*?)\n?'|"\n?(?<interpolated>(.|\n)*?)\n?"|(?<unquoted>[^\n#]*)) *#*.*$/gm;
 
-const RE_ExpandValue =
+const RE_EXPAND_VALUE =
   /(\${(?<inBrackets>.+?)(\:-(?<inBracketsDefault>.+))?}|(?<!\\)\$(?<notInBrackets>\w+)(\:-(?<notInBracketsDefault>.+))?)/g;
 
 function expandCharacters(str: string): string {
@@ -29,9 +29,9 @@ function expandCharacters(str: string): string {
 }
 
 function expand(str: string, variablesMap: { [key: string]: string }): string {
-  if (RE_ExpandValue.test(str)) {
+  if (RE_EXPAND_VALUE.test(str)) {
     return expand(
-      str.replace(RE_ExpandValue, function (...params) {
+      str.replace(RE_EXPAND_VALUE, function (...params) {
         const {
           inBrackets,
           inBracketsDefault,
@@ -57,21 +57,25 @@ function expand(str: string, variablesMap: { [key: string]: string }): string {
 /**
  * Parse `.env` file output in an object.
  *
- * @example
+ * @example Usage
  * ```ts
- * import { parse } from "https://deno.land/std@$STD_VERSION/dotenv/parse.ts";
+ * import { parse } from "@std/dotenv/parse";
+ * import { assertEquals } from "@std/assert";
  *
  * const env = parse("GREETING=hello world");
- * env.GREETING; // "hello world"
+ * assertEquals(env, { GREETING: "hello world" });
  * ```
+ *
+ * @param text The text to parse.
+ * @returns The parsed object.
  */
-export function parse(rawDotenv: string): Record<string, string> {
+export function parse(text: string): Record<string, string> {
   const env: Record<string, string> = {};
 
   let match;
   const keysForExpandCheck = [];
 
-  while ((match = RE_KeyValue.exec(rawDotenv)) !== null) {
+  while ((match = RE_KEY_VALUE.exec(text)) !== null) {
     const { key, interpolated, notInterpolated, unquoted } = match
       ?.groups as LineParseResult;
 

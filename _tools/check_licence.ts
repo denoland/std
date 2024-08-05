@@ -4,6 +4,7 @@ import { globToRegExp } from "../path/glob_to_regexp.ts";
 
 const EXTENSIONS = [".mjs", ".js", ".ts", ".rs"];
 const EXCLUDED_DIRS = [
+  "**/cli/testdata",
   "**/dotenv/testdata",
   "**/fs/testdata",
   "**/http/testdata",
@@ -45,7 +46,8 @@ for await (
       console.log("Copyright header automatically added to " + path);
     }
   } else if (
-    parseInt(match[1]) !== FIRST_YEAR || parseInt(match[2]) !== CURRENT_YEAR
+    (match[1] && parseInt(match[1]) !== FIRST_YEAR) ||
+    (match[2] && parseInt(match[2]) !== CURRENT_YEAR)
   ) {
     if (CHECK) {
       console.error(`Incorrect copyright year: ${path}`);

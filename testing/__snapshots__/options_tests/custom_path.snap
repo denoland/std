@@ -1,6 +1,6 @@
 export const snapshot = {};
 
-snapshot[`Snapshot Test - Options > path > relative 1`] = `
+snapshot[`assertSnapshot() - options > path > relative 1`] = `
 [
   1,
   2,
@@ -8,7 +8,7 @@ snapshot[`Snapshot Test - Options > path > relative 1`] = `
 ]
 `;
 
-snapshot[`Snapshot Test - Options > path > absolute 1`] = `
+snapshot[`assertSnapshot() - options > path > absolute 1`] = `
 [
   1,
   2,

@@ -1,24 +1,23 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 export {
-  DigestContext,
   instantiate as instantiateWasm,
 } from "./lib/deno_std_wasm_crypto.generated.mjs";
 
 /**
- * All cryptographic hash/digest algorithms supported by std/crypto/_wasm.
+ * All cryptographic hash/digest algorithms supported by std/crypto.
  *
- * For algorithms that are supported by WebCrypto, the name here must match the
- * one used by WebCrypto. Otherwise we should prefer the formatting used in the
- * official specification. All names are uppercase to facilitate case-insensitive
- * comparisons required by the WebCrypto spec.
+ * For algorithms that are supported by WebCrypto, the name here will match the
+ * one used by WebCrypto. Otherwise we prefer the formatting used in the
+ * algorithm's official specification. All names are uppercase to facilitate
+ * case-insensitive comparisons required by the WebCrypto spec.
  */
-export const digestAlgorithms = [
+export const DIGEST_ALGORITHM_NAMES = [
+  "BLAKE2B",
   "BLAKE2B-128",
   "BLAKE2B-160",
   "BLAKE2B-224",
   "BLAKE2B-256",
   "BLAKE2B-384",
-  "BLAKE2B",
   "BLAKE2S",
   "BLAKE3",
   "KECCAK-224",
@@ -38,11 +37,16 @@ export const digestAlgorithms = [
   "SHA-224",
   "SHA-256",
   "SHA-512",
-  // insecure (collidable and length-extendable):
+  // insecure (length-extendable and collidable):
   "MD4",
   "MD5",
   "SHA-1",
+  // insecure (non-cryptographic)
+  "FNV32",
+  "FNV32A",
+  "FNV64",
+  "FNV64A",
 ] as const;
 
-/** An algorithm name supported by std/crypto/_wasm. */
-export type DigestAlgorithm = typeof digestAlgorithms[number];
+/** An algorithm name supported by std/crypto. */
+export type DigestAlgorithmName = typeof DIGEST_ALGORITHM_NAMES[number];

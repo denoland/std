@@ -6,12 +6,21 @@
  * {@link https://datatracker.ietf.org/doc/html/draft-msporny-base58-03 | base58}
  * encoding and decoding.
  *
- * This module is browser compatible.
+ * ```ts
+ * import { encodeBase58, decodeBase58 } from "@std/encoding/base58";
+ * import { assertEquals } from "@std/assert";
+ *
+ * const hello = new TextEncoder().encode("Hello World!");
+ *
+ * assertEquals(encodeBase58(hello), "2NEpo7TZRRrLZSi2U");
+ *
+ * assertEquals(decodeBase58("2NEpo7TZRRrLZSi2U"), hello);
+ * ```
  *
  * @module
  */
 
-import { validateBinaryLike } from "./_util.ts";
+import { validateBinaryLike } from "./_validate_binary_like.ts";
 
 // deno-fmt-ignore
 const mapBase58: Record<string, number> = {
@@ -27,15 +36,19 @@ const base58alphabet =
   "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz".split("");
 
 /**
- * Converts data to a base58-encoded string.
+ * Converts data into a base58-encoded string.
  *
  * @see {@link https://datatracker.ietf.org/doc/html/draft-msporny-base58-03#section-3}
  *
- * @example
- * ```ts
- * import { encodeBase58 } from "https://deno.land/std@$STD_VERSION/encoding/base58.ts";
+ * @param data The data to encode.
+ * @returns The base58-encoded string.
  *
- * encodeBase58("Hello World!"); // "2NEpo7TZRRrLZSi2U"
+ * @example Usage
+ * ```ts
+ * import { encodeBase58 } from "@std/encoding/base58";
+ * import { assertEquals } from "@std/assert";
+ *
+ * assertEquals(encodeBase58("Hello World!"), "2NEpo7TZRRrLZSi2U");
  * ```
  */
 export function encodeBase58(data: ArrayBuffer | Uint8Array | string): string {
@@ -61,12 +74,12 @@ export function encodeBase58(data: ArrayBuffer | Uint8Array | string): string {
     let carry = byte;
 
     for (
-      let reverse_iterator = size - 1;
-      (carry > 0 || i < length) && reverse_iterator !== -1;
-      reverse_iterator--, i++
+      let reverseIterator = size - 1;
+      (carry > 0 || i < length) && reverseIterator !== -1;
+      reverseIterator--, i++
     ) {
-      carry += (b58Encoding[reverse_iterator] || 0) * 256;
-      b58Encoding[reverse_iterator] = Math.round(carry % 58);
+      carry += (b58Encoding[reverseIterator] || 0) * 256;
+      b58Encoding[reverseIterator] = Math.round(carry % 58);
       carry = Math.floor(carry / 58);
     }
 
@@ -81,7 +94,9 @@ export function encodeBase58(data: ArrayBuffer | Uint8Array | string): string {
     strResult.fill("1", 0, zeroes);
   }
 
-  b58Encoding.forEach((byteValue) => strResult.push(base58alphabet[byteValue]));
+  b58Encoding.forEach((byteValue) =>
+    strResult.push(base58alphabet[byteValue]!)
+  );
 
   return strResult.join("");
 }
@@ -91,11 +106,18 @@ export function encodeBase58(data: ArrayBuffer | Uint8Array | string): string {
  *
  * @see {@link https://datatracker.ietf.org/doc/html/draft-msporny-base58-03#section-4}
  *
- * @example
- * ```ts
- * import { decodeBase58 } from "https://deno.land/std@$STD_VERSION/encoding/base58.ts";
+ * @param b58 The base58-encoded string to decode.
+ * @returns The decoded data.
  *
- * decodeBase58("2NEpo7TZRRrLZSi2U"); // Uint8Array(12) [ 72, 101, 108, 108, 111, 32,  87, 111, 114, 108, 100, 33 ]
+ * @example Usage
+ * ```ts
+ * import { decodeBase58 } from "@std/encoding/base58";
+ * import { assertEquals } from "@std/assert";
+ *
+ * assertEquals(
+ *   decodeBase58("2NEpo7TZRRrLZSi2U"),
+ *   new TextEncoder().encode("Hello World!")
+ * );
  * ```
  */
 export function decodeBase58(b58: string): Uint8Array {
@@ -121,16 +143,18 @@ export function decodeBase58(b58: string): Uint8Array {
     let i = 0;
 
     if (carry === undefined) {
-      throw new Error(`Invalid base58 char at index ${idx} with value ${char}`);
+      throw new TypeError(
+        `Invalid base58 char at index ${idx} with value ${char}`,
+      );
     }
 
     for (
-      let reverse_iterator = size - 1;
-      (carry > 0 || i < length) && reverse_iterator !== -1;
-      reverse_iterator--, i++
+      let reverseIterator = size - 1;
+      (carry > 0 || i < length) && reverseIterator !== -1;
+      reverseIterator--, i++
     ) {
-      carry += 58 * (output[reverse_iterator] || 0);
-      output[reverse_iterator] = Math.round(carry % 256);
+      carry += 58 * (output[reverseIterator] || 0);
+      output[reverseIterator] = Math.round(carry % 256);
       carry = Math.floor(carry / 256);
     }
 
