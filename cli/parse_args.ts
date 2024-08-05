@@ -372,8 +372,7 @@ const FLAG_NAME_REGEXP = /^--[^=]+$/;
 const SPECIAL_CHAR_REGEXP = /\W/;
 
 function isNumber(string: string): boolean {
-  const number = Number(string);
-  return string.trim() !== "" && !isNaN(number) && isFinite(number);
+  return string.trim() !== "" && Number.isFinite(Number(string));
 }
 
 function setNested(
