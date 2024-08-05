@@ -1,6 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import { toTransformStream } from "@std/streams/to-transform-stream";
-import type { JsonValue, ParseStreamOptions } from "./common.ts";
+import type { JsonValue } from "./types.ts";
 import { parse } from "./_common.ts";
 
 function isBlankChar(char: string | undefined) {
@@ -19,7 +19,7 @@ const primitives = new Map(
  *
  * ```ts
  * import { ConcatenatedJsonParseStream } from "@std/json/concatenated-json-parse-stream";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const stream = ReadableStream.from([
  *   `{"foo":"bar"}`,
@@ -40,7 +40,7 @@ export class ConcatenatedJsonParseStream
    * @example Usage
    * ```ts
    * import { ConcatenatedJsonParseStream } from "@std/json/concatenated-json-parse-stream";
-   * import { assertEquals } from "@std/assert/assert-equals";
+   * import { assertEquals } from "@std/assert";
    *
    * const stream = ReadableStream.from([
    *   `{"foo":"bar"}`,
@@ -60,7 +60,7 @@ export class ConcatenatedJsonParseStream
    * @example Usage
    * ```ts
    * import { ConcatenatedJsonParseStream } from "@std/json/concatenated-json-parse-stream";
-   * import { assertEquals } from "@std/assert/assert-equals";
+   * import { assertEquals } from "@std/assert";
    *
    * const stream = ReadableStream.from([
    *   `{"foo":"bar"}`,
@@ -77,28 +77,10 @@ export class ConcatenatedJsonParseStream
 
   /**
    * Constructs a new instance.
-   *
-   * @example Usage
-   *  ```ts
-   * import { ConcatenatedJsonParseStream } from "@std/json/concatenated-json-parse-stream";
-   * import { assertEquals } from "@std/assert/assert-equals";
-   *
-   * const stream = ReadableStream.from([
-   *   `{"foo":"bar"}`,
-   *   `{"baz":100}`,
-   * ]).pipeThrough(new ConcatenatedJsonParseStream());
-   *
-   * assertEquals(await Array.fromAsync(stream), [
-   *   { foo: "bar" },
-   *   { baz: 100 },
-   * ]);
-   * ```
    */
-  constructor({ writableStrategy, readableStrategy }: ParseStreamOptions = {}) {
+  constructor() {
     const { writable, readable } = toTransformStream(
       this.#concatenatedJSONIterator,
-      writableStrategy,
-      readableStrategy,
     );
     this.writable = writable;
     this.readable = readable;

@@ -22,7 +22,7 @@ export interface ByteRange {
  * range.
  *
  * ```ts
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  * import { readRange } from "@std/io/read-range";
  *
  * // Read the first 10 bytes of a file
@@ -68,7 +68,7 @@ export async function readRange(
  * within that range.
  *
  * ```ts
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  * import { readRangeSync } from "@std/io/read-range";
  *
  * // Read the first 10 bytes of a file

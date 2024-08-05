@@ -11,19 +11,17 @@ import { assertEquals, assertThrows } from "../../../assert/mod.ts";
 function assertValidParse(
   text: string,
   expected: unknown,
-  options?: JSONC.ParseOptions,
 ) {
-  assertEquals(JSONC.parse(text, options), expected);
+  assertEquals(JSONC.parse(text), expected);
 }
 function assertInvalidParse(
   text: string,
   // deno-lint-ignore no-explicit-any
   ErrorClass: (new (...args: any[]) => Error),
   msgIncludes?: string,
-  options?: JSONC.ParseOptions,
 ) {
   assertThrows(
-    () => JSONC.parse(text, options),
+    () => JSONC.parse(text),
     ErrorClass,
     msgIncludes,
   );
@@ -83,9 +81,6 @@ Deno.test("[jsonc] parse node-jsonc-parser:arrays", () => {
 
 Deno.test("[jsonc] parse node-jsonc-parser:objects with errors", () => {
   assertInvalidParse("{,}", SyntaxError);
-  assertInvalidParse('{ "foo": true, }', SyntaxError, undefined, {
-    allowTrailingComma: false,
-  });
   assertInvalidParse('{ "bar": 8 "xoo": "foo" }', SyntaxError);
   assertInvalidParse('{ ,"bar": 8 }', SyntaxError);
   assertInvalidParse('{ ,"bar": 8, "foo" }', SyntaxError);
@@ -119,13 +114,4 @@ Deno.test("[jsonc] parse node-jsonc-parser:trailing comma", () => {
   );
   assertValidParse("[ 1, 2, ]", [1, 2]);
   assertValidParse("[ 1, 2 ]", [1, 2]);
-
-  assertInvalidParse('{ "hello": [], }', SyntaxError, undefined, options);
-  assertInvalidParse(
-    '{ "hello": [], "world": {}, }',
-    SyntaxError,
-    undefined,
-    options,
-  );
-  assertInvalidParse("[ 1, 2, ]", SyntaxError, undefined, options);
 });

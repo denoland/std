@@ -3,8 +3,8 @@
 import { expect } from "./expect.ts";
 
 class Duration {
-  public time: number;
-  public unit: "H" | "M" | "S";
+  time: number;
+  unit: "H" | "M" | "S";
 
   constructor(time: number, unit: "H" | "M" | "S") {
     this.time = time;

@@ -17,7 +17,7 @@
  * @example Zip 2 streams with the same length
  * ```ts
  * import { earlyZipReadableStreams } from "@std/streams/early-zip-readable-streams";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const stream1 = ReadableStream.from(["1", "2", "3"]);
  * const stream2 = ReadableStream.from(["a", "b", "c"]);
@@ -32,7 +32,7 @@
  * @example Zip 2 streams with different length (first one is shorter)
  * ```ts
  * import { earlyZipReadableStreams } from "@std/streams/early-zip-readable-streams";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const stream1 = ReadableStream.from(["1", "2"]);
  * const stream2 = ReadableStream.from(["a", "b", "c", "d"]);
@@ -50,7 +50,7 @@
  * @example Zip 2 streams with different length (first one is longer)
  * ```ts
  * import { earlyZipReadableStreams } from "@std/streams/early-zip-readable-streams";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const stream1 = ReadableStream.from(["1", "2", "3", "4"]);
  * const stream2 = ReadableStream.from(["a", "b"]);
@@ -68,7 +68,7 @@
  * @example Zip 3 streams
  * ```ts
  * import { earlyZipReadableStreams } from "@std/streams/early-zip-readable-streams";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const stream1 = ReadableStream.from(["1"]);
  * const stream2 = ReadableStream.from(["a", "b"]);
@@ -84,26 +84,25 @@
 export function earlyZipReadableStreams<T>(
   ...streams: ReadableStream<T>[]
 ): ReadableStream<T> {
-  const readers = streams.map((s) => s.getReader());
+  const readers = streams.map((stream) => stream.getReader());
   return new ReadableStream<T>({
-    async start(controller) {
-      try {
-        loop:
-        while (true) {
-          for (const reader of readers) {
-            const { value, done } = await reader.read();
-            if (!done) {
-              controller.enqueue(value!);
-            } else {
-              await Promise.all(readers.map((reader) => reader.cancel()));
-              break loop;
-            }
-          }
+    async pull(controller) {
+      for (let i = 0; i < readers.length; ++i) {
+        const { done, value } = await readers[i]!.read();
+        if (done) {
+          await Promise.all(
+            readers.map((reader) =>
+              reader.cancel(`Stream at index ${i} ended`)
+            ),
+          );
+          controller.close();
+          return;
         }
-        controller.close();
-      } catch (e) {
-        controller.error(e);
+        controller.enqueue(value);
       }
+    },
+    async cancel(reason) {
+      await Promise.all(readers.map((reader) => reader.cancel(reason)));
     },
   });
 }

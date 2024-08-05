@@ -18,7 +18,7 @@
  * @example Basic usage
  * ```ts
  * import { mapNotNullish } from "@std/collections/map-not-nullish";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const people = [
  *   { middleName: null },

@@ -1,5 +1,5 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-import type { JsonValue } from "./common.ts";
+import type { JsonValue } from "./types.ts";
 
 /** JSON.parse with detailed error message. */
 export function parse(text: string): JsonValue {

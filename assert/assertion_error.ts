@@ -6,25 +6,26 @@
  *
  * @example Usage
  * ```ts no-eval
- * import { AssertionError } from "@std/assert/assertion-error";
+ * import { AssertionError } from "@std/assert";
  *
- * throw new AssertionError("Assertion failed");
+ * try {
+ *   throw new AssertionError("foo", { cause: "bar" });
+ * } catch (error) {
+ *   if (error instanceof AssertionError) {
+ *     error.message === "foo"; // true
+ *     error.cause === "bar"; // true
+ *   }
+ * }
  * ```
  */
 export class AssertionError extends Error {
   /** Constructs a new instance.
    *
-   * @example Usage
-   * ```ts no-eval
-   * import { AssertionError } from "@std/assert/assertion-error";
-   *
-   * throw new AssertionError("Assertion failed");
-   * ```
-   *
    * @param message The error message.
+   * @param options Additional options. This argument is still unstable. It may change in the future release.
    */
-  constructor(message: string) {
-    super(message);
+  constructor(message: string, options?: ErrorOptions) {
+    super(message, options);
     this.name = "AssertionError";
   }
 }

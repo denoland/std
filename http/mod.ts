@@ -8,9 +8,14 @@
  * A small program for serving local files over HTTP.
  *
  * ```sh
- * deno run --allow-net --allow-read --allow-sys jsr:@std/http/file-server
- * > HTTP server listening on http://localhost:4507/
+ * deno run --allow-net --allow-read jsr:@std/http/file-server
+ * Listening on:
+ * - Local: http://localhost:8000
  * ```
+ *
+ * When the `--allow-sys=networkInterfaces` permission is provided, the file
+ * server will also display the local area network addresses that can be used to
+ * access the server.
  *
  * ## HTTP Status Code and Status Text
  *
@@ -34,12 +39,6 @@
  * > `Accept-Charset` header. This is a legacy header that
  * > {@link https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Accept-Charset | clients omit and servers should ignore}
  * > therefore is not provided.
- *
- * ## Cookie maps
- *
- * An alternative to `cookie.ts` is `cookie_map.ts` which provides `CookieMap`,
- * `SecureCookieMap`, and `mergeHeaders` to manage request and response cookies
- * with the familiar `Map` interface.
  *
  * ## User agent handling
  *
@@ -66,8 +65,7 @@ export * from "./cookie.ts";
 export * from "./etag.ts";
 export * from "./status.ts";
 export * from "./negotiation.ts";
-export * from "./server.ts";
-export * from "./unstable_signed_cookie.ts";
+export * from "./signed_cookie.ts";
 export * from "./server_sent_event_stream.ts";
 export * from "./user_agent.ts";
 export * from "./file_server.ts";

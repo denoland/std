@@ -24,7 +24,7 @@ export interface ServerSentEventMessage {
 
 function assertHasNoNewline(value: string, varName: string) {
   if (value.match(NEWLINE_REGEXP) !== null) {
-    throw new RangeError(`${varName} cannot contain a newline`);
+    throw new SyntaxError(`${varName} cannot contain a newline`);
   }
 }
 

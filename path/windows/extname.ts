@@ -11,7 +11,7 @@ import { isPathSeparator, isWindowsDeviceRoot } from "./_util.ts";
  * @example Usage
  * ```ts
  * import { extname } from "@std/path/windows/extname";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const ext = extname("file.ts");
  * assertEquals(ext, ".ts");

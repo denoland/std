@@ -1,17 +1,32 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-import {
-  type FormattingOptions,
-  IniMap,
-  type ReplacerFunction,
-} from "./ini_map.ts";
+import { IniMap, type ReplacerFunction } from "./_ini_map.ts";
 
-/** Options for constructing INI strings. */
-export interface StringifyOptions extends FormattingOptions {
-  /** Provide custom string conversion for the value in a key/value pair. */
+/** Options for {@linkcode stringify}. */
+export interface StringifyOptions {
+  /**
+   * Character(s) used to break lines in the config file.
+   *
+   * @default {"\n"}
+   */
+  lineBreak?: "\n" | "\r\n" | "\r";
+  /**
+   * Use a plain assignment char or pad with spaces.
+   *
+   * @default {false}
+   */
+  pretty?: boolean;
+  /**
+   * Provide custom string conversion for the value in a key/value pair.
+   * Similar to the
+   * {@linkcode https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/stringify#replacer | replacer}
+   * function in {@linkcode JSON.stringify}.
+   */
   replacer?: ReplacerFunction;
 }
+
+export type { ReplacerFunction };
 
 /**
  * Compile an object into an INI config string. Provide formatting options to modify the output.
@@ -19,7 +34,7 @@ export interface StringifyOptions extends FormattingOptions {
  * @example Usage
  * ```ts
  * import { stringify } from "@std/ini/stringify";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const str = stringify({
  *   key1: "value1",
@@ -43,7 +58,7 @@ export interface StringifyOptions extends FormattingOptions {
  * @example Using replacer option
  * ```ts
  * import { stringify } from "@std/ini/stringify";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const str = stringify({
  *   "section X": {

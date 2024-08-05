@@ -19,9 +19,17 @@ const isWindows = Deno.build.os === "windows";
 
 /** Options for {@linkcode expandGlob} and {@linkcode expandGlobSync}. */
 export interface ExpandGlobOptions extends Omit<GlobOptions, "os"> {
-  /** File path where to expand from. */
+  /**
+   * File path where to expand from.
+   *
+   * @default {Deno.cwd()}
+   */
   root?: string;
-  /** List of glob patterns to be excluded from the expansion. */
+  /**
+   * List of glob patterns to be excluded from the expansion.
+   *
+   * @default {[]}
+   */
   exclude?: string[];
   /**
    * Whether to include directories in entries.
@@ -260,7 +268,7 @@ function comparePath(a: WalkEntry, b: WalkEntry): number {
  */
 export async function* expandGlob(
   glob: string | URL,
-  options: ExpandGlobOptions = {},
+  options?: ExpandGlobOptions,
 ): AsyncIterableIterator<WalkEntry> {
   let {
     root,
@@ -271,7 +279,7 @@ export async function* expandGlob(
     caseInsensitive,
     followSymlinks,
     canonicalize,
-  } = options;
+  } = options ?? {};
 
   const {
     segments,
@@ -290,14 +298,9 @@ export async function* expandGlob(
   const shouldInclude = (path: string): boolean =>
     !excludePatterns.some((p: RegExp): boolean => !!path.match(p));
 
-  let fixedRoot = isGlobAbsolute
-    ? winRoot !== undefined ? winRoot : "/"
-    : absRoot;
+  let fixedRoot = isGlobAbsolute ? winRoot ?? "/" : absRoot;
   while (segments.length > 0 && !isGlob(segments[0]!)) {
-    const seg = segments.shift();
-    if (seg === undefined) {
-      throw new TypeError("Unexpected undefined segment");
-    }
+    const seg = segments.shift()!;
     fixedRoot = joinGlobs([fixedRoot, seg], globOptions);
   }
 
@@ -316,12 +319,8 @@ export async function* expandGlob(
       return;
     } else if (globSegment === "..") {
       const parentPath = joinGlobs([walkInfo.path, ".."], globOptions);
-      try {
-        if (shouldInclude(parentPath)) {
-          return yield await createWalkEntry(parentPath);
-        }
-      } catch (error) {
-        throwUnlessNotFound(error);
+      if (shouldInclude(parentPath)) {
+        return yield await createWalkEntry(parentPath);
       }
       return;
     } else if (globSegment === "**") {
@@ -426,7 +425,9 @@ export async function* expandGlob(
  */
 export function* expandGlobSync(
   glob: string | URL,
-  {
+  options?: ExpandGlobOptions,
+): IterableIterator<WalkEntry> {
+  let {
     root,
     exclude = [],
     includeDirs = true,
@@ -435,8 +436,8 @@ export function* expandGlobSync(
     caseInsensitive,
     followSymlinks,
     canonicalize,
-  }: ExpandGlobOptions = {},
-): IterableIterator<WalkEntry> {
+  } = options ?? {};
+
   const {
     segments,
     isAbsolute: isGlobAbsolute,
@@ -454,14 +455,9 @@ export function* expandGlobSync(
   const shouldInclude = (path: string): boolean =>
     !excludePatterns.some((p: RegExp): boolean => !!path.match(p));
 
-  let fixedRoot = isGlobAbsolute
-    ? winRoot !== undefined ? winRoot : "/"
-    : absRoot;
+  let fixedRoot = isGlobAbsolute ? winRoot ?? "/" : absRoot;
   while (segments.length > 0 && !isGlob(segments[0]!)) {
-    const seg = segments.shift();
-    if (seg === undefined) {
-      throw new TypeError("Unexpected undefined segment");
-    }
+    const seg = segments.shift()!;
     fixedRoot = joinGlobs([fixedRoot, seg], globOptions);
   }
 
@@ -480,12 +476,8 @@ export function* expandGlobSync(
       return;
     } else if (globSegment === "..") {
       const parentPath = joinGlobs([walkInfo.path, ".."], globOptions);
-      try {
-        if (shouldInclude(parentPath)) {
-          return yield createWalkEntrySync(parentPath);
-        }
-      } catch (error) {
-        throwUnlessNotFound(error);
+      if (shouldInclude(parentPath)) {
+        return yield createWalkEntrySync(parentPath);
       }
       return;
     } else if (globSegment === "**") {

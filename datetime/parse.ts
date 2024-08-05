@@ -37,7 +37,7 @@ import { DateTimeFormatter } from "./_date_time_formatter.ts";
  * @example Basic usage
  * ```ts
  * import { parse } from "@std/datetime/parse";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * assertEquals(parse("01-03-2019 16:30", "MM-dd-yyyy HH:mm"), new Date(2019, 0, 3, 16, 30));
  *

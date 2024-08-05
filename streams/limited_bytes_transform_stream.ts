@@ -22,7 +22,7 @@ export interface LimitedBytesTransformStreamOptions {
  * @example `size` is equal to the total byte length of the chunks
  * ```ts
  * import { LimitedBytesTransformStream } from "@std/streams/limited-bytes-transform-stream";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const stream = ReadableStream.from(["1234", "5678"]);
  * const transformed = stream.pipeThrough(new TextEncoderStream()).pipeThrough(
@@ -39,7 +39,7 @@ export interface LimitedBytesTransformStreamOptions {
  * boundary of the chunks
  * ```ts
  * import { LimitedBytesTransformStream } from "@std/streams/limited-bytes-transform-stream";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const stream = ReadableStream.from(["1234", "5678"]);
  * const transformed = stream.pipeThrough(new TextEncoderStream()).pipeThrough(
@@ -58,7 +58,7 @@ export interface LimitedBytesTransformStreamOptions {
  * the boundary of the chunks
  * ```ts
  * import { LimitedBytesTransformStream } from "@std/streams/limited-bytes-transform-stream";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const stream = ReadableStream.from(["1234", "5678"]);
  * const transformed = stream.pipeThrough(new TextEncoderStream()).pipeThrough(
@@ -73,10 +73,14 @@ export interface LimitedBytesTransformStreamOptions {
  * );
  * ```
  *
- * @example error: true
+ * @example Throw error when the total byte length of the chunks exceeds the
+ * specified size
+ *
+ * To do so, set `options.error` to `true`.
+ *
  * ```ts
  * import { LimitedBytesTransformStream } from "@std/streams/limited-bytes-transform-stream";
- * import { assertRejects } from "@std/assert/assert-rejects";
+ * import { assertRejects } from "@std/assert";
  *
  * const stream = ReadableStream.from(["1234", "5678"]);
  * const transformed = stream.pipeThrough(new TextEncoderStream()).pipeThrough(
@@ -97,20 +101,6 @@ export class LimitedBytesTransformStream
    *
    * @param size A size limit in bytes.
    * @param options Options for the stream.
-   *
-   * @example size = 42
-   * ```ts no-assert
-   * import { LimitedBytesTransformStream } from "@std/streams/limited-bytes-transform-stream";
-   *
-   * const limitedBytesTransformStream = new LimitedBytesTransformStream(42);
-   * ```
-   *
-   * @example size = 42, error = true
-   * ```ts no-assert
-   * import { LimitedBytesTransformStream } from "@std/streams/limited-bytes-transform-stream";
-   *
-   * const limitedBytesTransformStream = new LimitedBytesTransformStream(42, { error: true });
-   * ```
    */
   constructor(
     size: number,

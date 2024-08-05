@@ -3,6 +3,7 @@ name: workspace publish
 on:
   release:
     types: [published]
+  workflow_dispatch:
 
 jobs:
   publish:

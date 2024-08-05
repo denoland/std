@@ -1,7 +1,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
 import { DelimiterStream } from "./delimiter_stream.ts";
-import { testTransformStream } from "./_test_common.ts";
+import { testTransformStream } from "./_test_utils.ts";
 
 const DELIMITER_STREAM_INPUTS = [
   "a", // more than one subsequent chunks with no delimiters

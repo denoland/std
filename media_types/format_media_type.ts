@@ -21,7 +21,7 @@ import { isIterator, isToken, needsEncoding } from "./_util.ts";
  * @example Basic usage
  * ```ts
  * import { formatMediaType } from "@std/media-types/format-media-type";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * assertEquals(formatMediaType("text/plain"), "text/plain");
  * ```
@@ -29,7 +29,7 @@ import { isIterator, isToken, needsEncoding } from "./_util.ts";
  * @example With parameters
  * ```ts
  * import { formatMediaType } from "@std/media-types/format-media-type";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * assertEquals(formatMediaType("text/plain", { charset: "UTF-8" }), "text/plain; charset=UTF-8");
  * ```

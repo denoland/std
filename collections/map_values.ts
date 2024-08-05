@@ -18,7 +18,7 @@
  * @example Basic usage
  * ```ts
  * import { mapValues } from "@std/collections/map-values";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const usersById = {
  *   a5ec: { name: "Mischa" },
@@ -56,7 +56,7 @@ export function mapValues<T, O, K extends string>(
  * @example Basic usage
  * ```ts
  * import { mapValues } from "@std/collections/map-values";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const usersById = {
  *   "a5ec": { name: "Mischa" },

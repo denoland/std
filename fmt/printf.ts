@@ -6,7 +6,7 @@
  *
  * ```ts
  * import { sprintf } from "@std/fmt/printf";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * assertEquals(sprintf("%d", 9), "9");
  * assertEquals(sprintf("%o", 9), "11");
@@ -718,7 +718,7 @@ class Printf {
       if (10 <= mantissa) {
         mantissa = 1;
         const r = parseInt(esign + e) + 1;
-        e = r.toString();
+        e = Math.abs(r).toString();
         esign = r < 0 ? "-" : "+";
       }
     }

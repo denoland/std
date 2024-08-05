@@ -26,7 +26,7 @@
  *   assertSpyCalls,
  *   spy,
  * } from "@std/testing/mock";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * function multiply(a: number, b: number): number {
  *   return a * b;
@@ -72,7 +72,7 @@
  *   assertSpyCalls,
  *   spy,
  * } from "@std/testing/mock";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * function multiply(a: number, b: number): number {
  *   return a * b;
@@ -125,7 +125,7 @@
  *   assertSpyCalls,
  *   spy,
  * } from "@std/testing/mock";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * function multiply(a: number, b: number): number {
  *   return a * b;
@@ -187,7 +187,7 @@
  *   returnsNext,
  *   stub,
  * } from "@std/testing/mock";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * function randomInt(lowerBound: number, upperBound: number): number {
  *   return lowerBound + Math.floor(Math.random() * (upperBound - lowerBound));
@@ -238,7 +238,7 @@
  *   returnsNext,
  *   stub,
  * } from "@std/testing/mock";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * function randomInt(lowerBound: number, upperBound: number): number {
  *   return lowerBound + Math.floor(Math.random() * (upperBound - lowerBound));
@@ -319,9 +319,9 @@
  * @module
  */
 
-import { assertEquals } from "@std/assert/assert-equals";
-import { assertIsError } from "@std/assert/assert-is-error";
-import { assertRejects } from "@std/assert/assert-rejects";
+import { assertEquals } from "@std/assert/equals";
+import { assertIsError } from "@std/assert/is-error";
+import { assertRejects } from "@std/assert/rejects";
 import { AssertionError } from "@std/assert/assertion-error";
 
 /**
@@ -330,7 +330,7 @@ import { AssertionError } from "@std/assert/assertion-error";
  * @example Usage
  * ```ts
  * import { MockError, spy } from "@std/testing/mock";
- * import { assertThrows } from "@std/assert/assert-throws";
+ * import { assertThrows } from "@std/assert";
  *
  * assertThrows(() => {
  *   spy({} as any, "no-such-method");
@@ -340,16 +340,6 @@ import { AssertionError } from "@std/assert/assertion-error";
 export class MockError extends Error {
   /**
    * Construct MockError
-   *
-   * @example Usage
-   * ```ts
-   * import { MockError, spy } from "@std/testing/mock";
-   * import { assertThrows } from "@std/assert/assert-throws";
-   *
-   * assertThrows(() => {
-   *   spy({} as any, "no-such-method");
-   * }, MockError);
-   * ```
    *
    * @param message The error message.
    */
@@ -445,7 +435,7 @@ function functionSpy<
     restore: {
       enumerable: true,
       value: () => {
-        throw new MockError("function cannot be restored");
+        throw new MockError("Function cannot be restored");
       },
     },
   });
@@ -653,15 +643,15 @@ function methodSpy<
   Return,
 >(self: Self, property: keyof Self): MethodSpy<Self, Args, Return> {
   if (typeof self[property] !== "function") {
-    throw new MockError("property is not an instance method");
+    throw new MockError("Property is not an instance method");
   }
   if (isSpy(self[property])) {
-    throw new MockError("already spying on instance method");
+    throw new MockError("Already spying on instance method");
   }
 
   const propertyDescriptor = Object.getOwnPropertyDescriptor(self, property);
   if (propertyDescriptor && !propertyDescriptor.configurable) {
-    throw new MockError("cannot spy on non configurable instance method");
+    throw new MockError("Cannot spy on non-configurable instance method");
   }
 
   const original = self[property] as unknown as (
@@ -700,7 +690,7 @@ function methodSpy<
       enumerable: true,
       value: () => {
         if (restored) {
-          throw new MockError("instance method already restored");
+          throw new MockError("Instance method already restored");
         }
         if (propertyDescriptor) {
           Object.defineProperty(self, property, propertyDescriptor);
@@ -759,10 +749,11 @@ function constructorSpy<
   const calls: SpyCall<Self, Args, Self>[] = [];
   // @ts-ignore TS2509: Can't know the type of `original` statically.
   const spy = class extends original {
+    // deno-lint-ignore constructor-super
     constructor(...args: Args) {
-      super(...args);
       const call: SpyCall<Self, Args, Self> = { args };
       try {
+        super(...args);
         call.returned = this as unknown as Self;
       } catch (error) {
         call.error = error as Error;
@@ -776,7 +767,7 @@ function constructorSpy<
     static readonly calls = calls;
     static readonly restored = false;
     static restore() {
-      throw new MockError("constructor cannot be restored");
+      throw new MockError("Constructor cannot be restored");
     }
   } as ConstructorSpy<Self, Args>;
   return spy;
@@ -1050,7 +1041,7 @@ export function stub<
  * @example Usage
  * ```ts
  * import { stub } from "@std/testing/mock";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const obj = {
  *   method(): number {
@@ -1091,15 +1082,15 @@ export function stub<
   func?: (this: Self, ...args: Args) => Return,
 ): Stub<Self, Args, Return> {
   if (self[property] !== undefined && typeof self[property] !== "function") {
-    throw new MockError("property is not an instance method");
+    throw new MockError("Property is not an instance method");
   }
   if (isSpy(self[property])) {
-    throw new MockError("already spying on instance method");
+    throw new MockError("Already spying on instance method");
   }
 
   const propertyDescriptor = Object.getOwnPropertyDescriptor(self, property);
   if (propertyDescriptor && !propertyDescriptor.configurable) {
-    throw new MockError("cannot spy on non configurable instance method");
+    throw new MockError("Cannot stub non-configurable instance method");
   }
 
   const fake = func ?? (() => {}) as (this: Self, ...args: Args) => Return;
@@ -1144,7 +1135,7 @@ export function stub<
       enumerable: true,
       value: () => {
         if (restored) {
-          throw new MockError("instance method already restored");
+          throw new MockError("Instance method already restored");
         }
         if (propertyDescriptor) {
           Object.defineProperty(self, property, propertyDescriptor);
@@ -1207,8 +1198,8 @@ export function assertSpyCalls<
   } catch (e) {
     assertIsError(e);
     let message = spy.calls.length < expectedCalls
-      ? "spy not called as much as expected:\n"
-      : "spy called more than expected:\n";
+      ? "Spy not called as much as expected:\n"
+      : "Spy called more than expected:\n";
     message += e.message.split("\n").slice(1).join("\n");
     throw new AssertionError(message);
   }
@@ -1251,7 +1242,7 @@ function getSpyCall<
   callIndex: number,
 ): SpyCall {
   if (spy.calls.length < (callIndex + 1)) {
-    throw new AssertionError("spy not called as much as expected");
+    throw new AssertionError("Spy not called as much as expected");
   }
   return spy.calls[callIndex]!;
 }
@@ -1296,7 +1287,7 @@ export function assertSpyCall<
       } catch (e) {
         assertIsError(e);
         throw new AssertionError(
-          "spy not called with expected args:\n" +
+          "Spy not called with expected args:\n" +
             e.message.split("\n").slice(1).join("\n"),
         );
       }
@@ -1308,8 +1299,8 @@ export function assertSpyCall<
       } catch (e) {
         assertIsError(e);
         let message = expected.self
-          ? "spy not called as method on expected self:\n"
-          : "spy not expected to be called as method on object:\n";
+          ? "Spy not called as method on expected self:\n"
+          : "Spy not expected to be called as method on object:\n";
         message += e.message.split("\n").slice(1).join("\n");
         throw new AssertionError(message);
       }
@@ -1318,12 +1309,12 @@ export function assertSpyCall<
     if ("returned" in expected) {
       if ("error" in expected) {
         throw new TypeError(
-          "do not expect error and return, only one should be expected",
+          "Do not expect error and return, only one should be expected",
         );
       }
       if (call.error) {
         throw new AssertionError(
-          "spy call did not return expected value, an error was thrown.",
+          "Spy call did not return expected value, an error was thrown.",
         );
       }
       try {
@@ -1331,7 +1322,7 @@ export function assertSpyCall<
       } catch (e) {
         assertIsError(e);
         throw new AssertionError(
-          "spy call did not return expected value:\n" +
+          "Spy call did not return expected value:\n" +
             e.message.split("\n").slice(1).join("\n"),
         );
       }
@@ -1340,7 +1331,7 @@ export function assertSpyCall<
     if ("error" in expected) {
       if ("returned" in call) {
         throw new AssertionError(
-          "spy call did not throw an error, a value was returned.",
+          "Spy call did not throw an error, a value was returned.",
         );
       }
       assertIsError(
@@ -1397,12 +1388,12 @@ export async function assertSpyCallAsync<
 
   if (call.error) {
     throw new AssertionError(
-      "spy call did not return a promise, an error was thrown.",
+      "Spy call did not return a promise, an error was thrown.",
     );
   }
   if (call.returned !== Promise.resolve(call.returned)) {
     throw new AssertionError(
-      "spy call did not return a promise, a value was returned.",
+      "Spy call did not return a promise, a value was returned.",
     );
   }
 
@@ -1410,12 +1401,7 @@ export async function assertSpyCallAsync<
     if ("returned" in expected) {
       if ("error" in expected) {
         throw new TypeError(
-          "do not expect error and return, only one should be expected",
-        );
-      }
-      if (call.error) {
-        throw new AssertionError(
-          "spy call did not return expected value, an error was thrown.",
+          "Do not expect error and return, only one should be expected",
         );
       }
       let expectedResolved;
@@ -1423,7 +1409,7 @@ export async function assertSpyCallAsync<
         expectedResolved = await expected.returned;
       } catch {
         throw new TypeError(
-          "do not expect rejected promise, expect error instead",
+          "Do not expect rejected promise, expect error instead",
         );
       }
 
@@ -1431,7 +1417,7 @@ export async function assertSpyCallAsync<
       try {
         resolved = await call.returned;
       } catch {
-        throw new AssertionError("spy call returned promise was rejected");
+        throw new AssertionError("Spy call returned promise was rejected");
       }
 
       try {
@@ -1439,7 +1425,7 @@ export async function assertSpyCallAsync<
       } catch (e) {
         assertIsError(e);
         throw new AssertionError(
-          "spy call did not resolve to expected value:\n" +
+          "Spy call did not resolve to expected value:\n" +
             e.message.split("\n").slice(1).join("\n"),
         );
       }
@@ -1654,7 +1640,7 @@ export function assertSpyCallArgs<
  * @example Usage
  * ```ts
  * import { returnsThis } from "@std/testing/mock";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const func = returnsThis();
  * const obj = { func };
@@ -1682,7 +1668,7 @@ export function returnsThis<
  * @example Usage
  * ```ts
  * import { returnsArg } from "@std/testing/mock";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const func = returnsArg(1);
  * assertEquals(func(1, 2, 3), 2);
@@ -1711,7 +1697,7 @@ export function returnsArg<
  * @example Usage
  * ```ts
  * import { returnsArgs } from "@std/testing/mock";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const func = returnsArgs();
  * assertEquals(func(1, 2, 3), [1, 2, 3]);
@@ -1773,7 +1759,9 @@ export function returnsNext<
   return function () {
     const next = gen.next();
     if (next.done) {
-      throw new MockError(`not expected to be called more than ${calls} times`);
+      throw new MockError(
+        `Not expected to be called more than ${calls} time(s)`,
+      );
     }
     calls++;
     const { value } = next;
@@ -1821,7 +1809,9 @@ export function resolvesNext<
   return async function () {
     const next = await gen.next();
     if (next.done) {
-      throw new MockError(`not expected to be called more than ${calls} times`);
+      throw new MockError(
+        `Not expected to be called more than ${calls} time(s)`,
+      );
     }
     calls++;
     const { value } = next;

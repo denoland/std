@@ -41,7 +41,7 @@ import { generate as generateV5, validate as validateV5 } from "./v5.ts";
  * @example Usage
  * ```ts
  * import { v1 } from "@std/uuid";
- * import { assert } from "@std/assert/assert";
+ * import { assert } from "@std/assert";
  *
  * const uuid = v1.generate();
  * assert(v1.validate(uuid as string));
@@ -59,7 +59,7 @@ export const v1 = {
  * @example Usage
  * ```ts
  * import { v3, NAMESPACE_DNS } from "@std/uuid";
- * import { assert } from "@std/assert/assert";
+ * import { assert } from "@std/assert";
  *
  * const data = new TextEncoder().encode("deno.land");
  * const uuid = await v3.generate(NAMESPACE_DNS, data);
@@ -78,7 +78,7 @@ export const v3 = {
  * @example Usage
  * ```ts
  * import { v4 } from "@std/uuid";
- * import { assert } from "@std/assert/assert";
+ * import { assert } from "@std/assert";
  *
  * const uuid = crypto.randomUUID();
  * assert(v4.validate(uuid));
@@ -95,7 +95,7 @@ export const v4 = {
  * @example Usage
  * ```ts
  * import { v5, NAMESPACE_DNS } from "@std/uuid";
- * import { assert } from "@std/assert/assert";
+ * import { assert } from "@std/assert";
  *
  * const data = new TextEncoder().encode("deno.land");
  * const uuid = await v5.generate(NAMESPACE_DNS, data);

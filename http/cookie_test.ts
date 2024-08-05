@@ -60,7 +60,7 @@ Deno.test({
             maxAge: 3,
           });
         },
-        Error,
+        SyntaxError,
         'Invalid cookie name: "' + name + '".',
       );
     });
@@ -97,7 +97,7 @@ Deno.test({
             },
           );
         },
-        Error,
+        SyntaxError,
         "RFC2616 cookie 'Space'",
       );
     });
@@ -109,7 +109,7 @@ Deno.test({
           value: "United Kingdom",
         });
       },
-      Error,
+      SyntaxError,
       "RFC2616 cookie 'location' cannot contain character ' '",
     );
   },
@@ -131,7 +131,7 @@ Deno.test({
           maxAge: 3,
         });
       },
-      Error,
+      SyntaxError,
       path + ": Invalid cookie path char ';'",
     );
   },
@@ -154,7 +154,7 @@ Deno.test({
             maxAge: 3,
           });
         },
-        Error,
+        SyntaxError,
         "Invalid first/last char in cookie domain: " + domain,
       );
     });
@@ -181,6 +181,18 @@ Deno.test({
     assertEquals(
       headers.get("Set-Cookie"),
       "Space=Cat; Domain=deno.land; Path=/, Space=; Expires=Thu, 01 Jan 1970 00:00:00 GMT",
+    );
+    headers = new Headers();
+    deleteCookie(headers, "Space", {
+      domain: "deno.land",
+      path: "/",
+      secure: true,
+      httpOnly: true,
+      partitioned: true,
+    });
+    assertEquals(
+      headers.get("Set-Cookie"),
+      "Space=; Secure; HttpOnly; Partitioned; Domain=deno.land; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT",
     );
   },
 });

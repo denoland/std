@@ -1,6 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import { assert } from "@std/assert";
-import { ALL, MIN } from "./constants.ts";
+import { ALL, MIN } from "./_constants.ts";
 import { formatRange } from "./format_range.ts";
 import { isRange } from "./is_range.ts";
 import type { Range } from "./types.ts";

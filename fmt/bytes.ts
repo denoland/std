@@ -4,6 +4,22 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
+/**
+ * Convert bytes to a human-readable string: 1337 → 1.34 kB
+ *
+ * Based on {@link https://github.com/sindresorhus/pretty-bytes | pretty-bytes}.
+ * A utility for displaying file sizes for humans.
+ *
+ * ```ts
+ * import { format } from "@std/fmt/bytes";
+ * import { assertEquals } from "@std/assert";
+ *
+ * assertEquals(format(1337), "1.34 kB");
+ * assertEquals(format(100), "100 B");
+ * ```
+ * @module
+ */
+
 type LocaleOptions = {
   minimumFractionDigits?: number;
   maximumFractionDigits?: number;
@@ -40,13 +56,17 @@ export interface FormatOptions {
   /**
    * The minimum number of fraction digits to display. If neither
    * {@linkcode minimumFractionDigits} or {@linkcode maximumFractionDigits}
-   * are set, the default behavior is to round to 3 significant digits.
+   * are set.
+   *
+   * @default {3}
    */
   minimumFractionDigits?: number;
   /**
    * The maximum number of fraction digits to display. If neither
    * {@linkcode minimumFractionDigits} or {@linkcode maximumFractionDigits}
-   * are set, the default behavior is to round to 3 significant digits.
+   * are set.
+   *
+   * @default {3}
    */
   maximumFractionDigits?: number;
 }
@@ -64,7 +84,7 @@ export interface FormatOptions {
  * @example Basic usage
  * ```ts
  * import { format } from "@std/fmt/bytes";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * assertEquals(format(1337), "1.34 kB");
  * assertEquals(format(100), "100 B");
@@ -74,7 +94,7 @@ export interface FormatOptions {
  *
  * ```ts
  * import { format } from "@std/fmt/bytes";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * assertEquals(format(1337, { bits: true }), "1.34 kbit");
  * ```
@@ -83,7 +103,7 @@ export interface FormatOptions {
  *
  * ```ts
  * import { format } from "@std/fmt/bytes";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * assertEquals(format(42, { signed: true }), "+42 B");
  * assertEquals(format(-42, { signed: true }), "-42 B");
@@ -93,7 +113,7 @@ export interface FormatOptions {
  *
  * ```ts
  * import { format } from "@std/fmt/bytes";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * assertEquals(format(1337, { locale: "de" }), "1,34 kB");
  * ```

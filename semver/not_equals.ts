@@ -4,19 +4,20 @@ import type { SemVer } from "./types.ts";
 import { compare } from "./compare.ts";
 
 /**
- * Not equal comparison
+ * Not equal comparison for two SemVers.
  *
  * This is equal to `compare(s0, s1) !== 0`.
  *
  * @example Usage
  * ```ts
  * import { parse, notEquals } from "@std/semver";
- * import { assert, assertFalse } from "@std/assert";
+ * import { assert } from "@std/assert";
  *
  * const s0 = parse("1.2.3");
  * const s1 = parse("1.2.4");
+ *
  * assert(notEquals(s0, s1));
- * assertFalse(notEquals(s0, s0));
+ * assert(!notEquals(s0, s0));
  * ```
  *
  * @param s0 The first version to compare

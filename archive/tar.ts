@@ -67,12 +67,15 @@ const USTAR_MAGIC_HEADER = "ustar\u000000" as const;
  */
 class FileReader implements Reader {
   #file?: Deno.FsFile;
+  #filePath: string;
 
-  constructor(private filePath: string) {}
+  constructor(filePath: string) {
+    this.#filePath = filePath;
+  }
 
-  public async read(p: Uint8Array): Promise<number | null> {
+  async read(p: Uint8Array): Promise<number | null> {
     if (!this.#file) {
-      this.#file = await Deno.open(this.filePath, { read: true });
+      this.#file = await Deno.open(this.#filePath, { read: true });
     }
     const res = await this.#file.read(p);
     if (res === null) {

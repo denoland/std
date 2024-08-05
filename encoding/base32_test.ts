@@ -1,7 +1,7 @@
 // Test cases copied from https://github.com/LinusU/base32-encode/blob/master/test.js
 // Copyright (c) 2016-2017 Linus Unnebäck. MIT license.
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-import { assertThrows } from "@std/assert/assert-throws";
+import { assertThrows } from "@std/assert";
 import { assertEquals, assertExists } from "@std/assert";
 import { decodeBase32, encodeBase32 } from "./base32.ts";
 import { decodeHex, encodeHex } from "./mod.ts";
