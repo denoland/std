@@ -78,35 +78,7 @@ Deno.test("TarStream() with negative size", async () => {
     async function () {
       await Array.fromAsync(readable);
     },
-    Error,
-    "Invalid Size Provided! Size cannot exceed 8 GiBs by default or 64 GiBs with sizeExtension set to true.",
-  );
-});
-
-Deno.test("TarStream() with 9 GiB size", async () => {
-  const size = 1024 ** 3 * 9;
-  const step = 1024; // Size must equally be divisible by step
-  const iterable = function* () {
-    for (let i = 0; i < size; i += step) {
-      yield new Uint8Array(step).map(() => Math.floor(Math.random() * 256));
-    }
-  }();
-
-  const readable = ReadableStream.from<TarStreamInput>([
-    {
-      pathname: "name",
-      size,
-      iterable,
-    },
-  ])
-    .pipeThrough(new TarStream());
-
-  await assertRejects(
-    async function () {
-      await Array.fromAsync(readable);
-    },
-    Error,
-    "Invalid Size Provided! Size cannot exceed 8 GiBs by default or 64 GiBs with sizeExtension set to true.",
+    "Invalid Size Provided! Size cannot exceed 64 Gibs.",
   );
 });
 
@@ -124,7 +96,6 @@ Deno.test("TarStream() with 65 GiB size", async () => {
       pathname: "name",
       size,
       iterable,
-      sizeExtension: true,
     },
   ])
     .pipeThrough(new TarStream());
@@ -133,8 +104,7 @@ Deno.test("TarStream() with 65 GiB size", async () => {
     async function () {
       await Array.fromAsync(readable);
     },
-    Error,
-    "Invalid Size Provided! Size cannot exceed 8 GiBs by default or 64 GiBs with sizeExtension set to true.",
+    "Invalid Size Provided! Size cannot exceed 64 Gibs.",
   );
 });
 
@@ -160,8 +130,7 @@ Deno.test("TarStream() with NaN size", async () => {
     async function () {
       await Array.fromAsync(readable);
     },
-    Error,
-    "Invalid Size Provided! Size cannot exceed 8 GiBs by default or 64 GiBs with sizeExtension set to true.",
+    "Invalid Size Provided! Size cannot exceed 64 Gibs.",
   );
 });
 

@@ -5,7 +5,6 @@
 export interface TarStreamFile {
   pathname: string | [Uint8Array, Uint8Array];
   size: number;
-  sizeExtension?: boolean;
   iterable: Iterable<Uint8Array> | AsyncIterable<Uint8Array>;
   options?: Partial<TarStreamOptions>;
 }
@@ -46,6 +45,8 @@ export interface TarStreamOptions {
   devmajor: string;
   devminor: string;
 }
+
+const SLASH_CODE_POINT = "/".charCodeAt(0);
 
 /**
  * ### Overview
@@ -104,43 +105,55 @@ export class TarStream {
    */
   constructor() {
     const { readable, writable } = new TransformStream<
-      TarStreamFile | TarStreamDir,
-      TarStreamFile | TarStreamDir
-    >();
-    const gen = (async function* () {
-      const paths: string[] = [];
-      for await (const chunk of readable) {
+      TarStreamInput,
+      TarStreamInput & { pathname: [Uint8Array, Uint8Array] }
+    >({
+      transform(chunk, controller) {
         if (chunk.options && !validTarStreamOptions(chunk.options)) {
-          throw new Error("Invalid Options Provided!");
+          return controller.error("Invalid Options Provided!");
         }
 
         if (
           "size" in chunk &&
-          (
-            chunk.size < 0 ||
-            Math.pow(8, chunk.sizeExtension ? 12 : 11) < chunk.size ||
-            chunk.size.toString() === "NaN"
-          )
+          (chunk.size < 0 || 8 ** 12 < chunk.size ||
+            chunk.size.toString() === "NaN")
         ) {
-          throw new Error(
-            "Invalid Size Provided! Size cannot exceed 8 GiBs by default or 64 GiBs with sizeExtension set to true.",
+          return controller.error(
+            "Invalid Size Provided! Size cannot exceed 64 Gibs.",
           );
         }
 
-        const [prefix, name] = typeof chunk.pathname === "string"
+        const pathname = typeof chunk.pathname === "string"
           ? parsePathname(chunk.pathname, !("size" in chunk))
           : function () {
-            if ("size" in chunk === (chunk.pathname[1].slice(-1)[0] === 47)) {
-              throw new Error(
+            if (
+              "size" in chunk ===
+                (chunk.pathname[1].slice(-1)[0] === SLASH_CODE_POINT)
+            ) {
+              controller.error(
                 `Pre-parsed pathname for ${
                   "size" in chunk ? "directory" : "file"
-                } is not suffixed correctly. Directories should end in a forward slash, while files shouldn't.`,
+                } is not suffixed correctly. ${
+                  "size" in chunk ? "Directories" : "Files"
+                } should${
+                  "size" in chunk ? "" : "n't"
+                } end in a forward slash.`,
               );
             }
             return chunk.pathname;
           }();
+
+        controller.enqueue({ ...chunk, pathname });
+      },
+    });
+    this.#writable = writable;
+    const gen = async function* () {
+      const paths: string[] = [];
+      const encoder = new TextEncoder();
+      const decoder = new TextDecoder();
+      for await (const chunk of readable) {
+        const [prefix, name] = chunk.pathname;
         {
-          const decoder = new TextDecoder();
           const pathname = prefix.length
             ? decoder.decode(prefix) + "/" + decoder.decode(name)
             : decoder.decode(name);
@@ -150,121 +163,94 @@ export class TarStream {
           paths.push(pathname);
         }
         const typeflag = "size" in chunk ? "0" : "5";
-        const sizeExtension = "size" in chunk && chunk.sizeExtension || false;
-        const encoder = new TextEncoder();
         const header = new Uint8Array(512);
+        const size = "size" in chunk ? chunk.size : 0;
+        const options: TarStreamOptions = {
+          mode: typeflag === "5" ? "755" : "644",
+          uid: "",
+          gid: "",
+          mtime: Math.floor(new Date().getTime() / 1000),
+          uname: "",
+          gname: "",
+          devmajor: "",
+          devminor: "",
+          ...chunk.options,
+        };
 
         header.set(name); // name
         header.set(
           encoder.encode(
-            (chunk.options?.mode ?? (typeflag === "5" ? "755" : "644"))
-              .padStart(6, "0") +
-              " \0" + // mode
-              (chunk.options?.uid ?? "").padStart(6, "0") + " \0" + // uid
-              (chunk.options?.gid ?? "").padStart(6, "0") + " \0" + // gid
-              ("size" in chunk ? chunk.size.toString(8) : "").padStart(
-                sizeExtension ? 12 : 11,
-                "0",
-              ) + (sizeExtension ? "" : " ") + // size
-              (chunk.options?.mtime?.toString(8) ??
-                Math.floor(new Date().getTime() / 1000).toString(8)).padStart(
-                  11,
-                  "0",
-                ) +
-              " " + // mtime
-              " ".repeat(8) + // checksum | Needs to be updated
+            options.mode.padStart(6, "0") + " \0" + // mode
+              options.uid.padStart(6, "0") + " \0" + //uid
+              options.gid.padStart(6, "0") + " \0" + // gid
+              size.toString(8).padStart(size < 8 ** 11 ? 11 : 12, "0") +
+              (size < 8 ** 11 ? " " : "") + // size
+              options.mtime.toString(8).padStart(11, "0") + " " + // mtime
+              " ".repeat(8) + // checksum | To be updated later
               typeflag + // typeflag
               "\0".repeat(100) + // linkname
               "ustar\0" + // magic
               "00" + // version
-              (chunk.options?.uname ?? "").padEnd(32, "\0") + // uname
-              (chunk.options?.gname ?? "").padEnd(32, "\0") + // gname
-              (chunk.options?.devmajor ?? "").padEnd(8, "\0") + // devmajor
-              (chunk.options?.devminor ?? "").padEnd(8, "\0"), // devminor
+              options.uname.padStart(32, "\0") + // uname
+              options.gname.padStart(32, "\0") + // gname
+              options.devmajor.padStart(8, "\0") + // devmajor
+              options.devminor.padStart(8, "\0"), // devminor
           ),
           100,
         );
         header.set(prefix, 345); // prefix
-
+        // Update Checksum
         header.set(
           encoder.encode(
             header.reduce((x, y) => x + y).toString(8).padStart(6, "0") + "\0",
           ),
           148,
-        ); // update checksum
+        );
         yield header;
 
         if ("size" in chunk) {
           let size = 0;
-          for await (const x of chunk.iterable) {
-            size += x.length;
-            yield x;
+          for await (const value of chunk.iterable) {
+            size += value.length;
+            yield value;
           }
           if (chunk.size !== size) {
             throw new Error(
-              "Invalid Tarball! Provided size did not match bytes read from iterable.",
+              "Invalid Tarball! Provided size did not match bytes read from provided iterable.",
             );
           }
           if (chunk.size % 512) {
-            yield new Uint8Array(new Array(512 - chunk.size % 512).fill(0));
+            yield new Uint8Array(512 - size % 512);
           }
         }
       }
-      yield new Uint8Array(new Array(1024).fill(0));
-    })();
+      yield new Uint8Array(1024);
+    }();
+    this.#readable = new ReadableStream({
+      type: "bytes",
+      async pull(controller) {
+        const { done, value } = await gen.next();
+        if (done) {
+          controller.close();
+          return controller.byobRequest?.respond(0);
+        }
+        if (controller.byobRequest?.view) {
+          const buffer = new Uint8Array(controller.byobRequest.view.buffer);
 
-    this.#readable = new ReadableStream(
-      {
-        leftover: new Uint8Array(0),
-        type: "bytes",
-        async pull(controller) {
-          // If Byte Stream
-          if (controller.byobRequest?.view) {
-            const buffer = new Uint8Array(
-              controller.byobRequest.view.buffer,
-            );
-            if (buffer.length < this.leftover.length) {
-              buffer.set(this.leftover.slice(0, buffer.length));
-              this.leftover = this.leftover.slice(buffer.length);
-              return controller.byobRequest.respond(buffer.length);
-            }
-            buffer.set(this.leftover);
-            let offset = this.leftover.length;
-            while (offset < buffer.length) {
-              const { done, value } = await gen.next();
-              if (done) {
-                try {
-                  controller.byobRequest.respond(offset); // Will throw if zero
-                  controller.close();
-                } catch {
-                  controller.close();
-                  controller.byobRequest.respond(0); // But still needs to be resolved.
-                }
-                return;
-              }
-              if (value.length > buffer.length - offset) {
-                buffer.set(value.slice(0, buffer.length - offset), offset);
-                offset = buffer.length - offset;
-                controller.byobRequest.respond(buffer.length);
-                this.leftover = value.slice(offset);
-                return;
-              }
-              buffer.set(value, offset);
-              offset += value.length;
-            }
-            this.leftover = new Uint8Array(0);
-            return controller.byobRequest.respond(buffer.length);
+          const size = buffer.length;
+          if (size < value.length) {
+            buffer.set(value.slice(0, size));
+            controller.byobRequest.respond(size);
+            controller.enqueue(value.slice(size));
+          } else {
+            buffer.set(value);
+            controller.byobRequest.respond(value.length);
           }
-          // Else Default Stream
-          const { done, value } = await gen.next();
-          if (done) {
-            return controller.close();
-          }
+        } else {
           controller.enqueue(value);
-        },
-      } as UnderlyingByteSource & { leftover: Uint8Array },
-    );
-    this.#writable = writable;
+        }
+      },
+    });
   }
 
   /**
@@ -277,7 +263,7 @@ export class TarStream {
   /**
    * The WritableStream
    */
-  get writable(): WritableStream<TarStreamFile | TarStreamDir> {
+  get writable(): WritableStream<TarStreamInput> {
     return this.#writable;
   }
 }
@@ -310,26 +296,32 @@ export function parsePathname(
     throw new Error("Invalid Pathname! Pathname cannot exceed 256 bytes.");
   }
 
-  let i = Math.max(0, name.lastIndexOf(47));
-  if (pathname.slice(i + 1).length > 100) {
+  // If length of last part is > 100, then there's no possible answer to split the path
+  let suitableSlashPos = Math.max(0, name.lastIndexOf(SLASH_CODE_POINT)); // always holds position of '/'
+  if (name.length - suitableSlashPos > 100) {
     throw new Error("Invalid Filename! Filename cannot exceed 100 bytes.");
   }
 
-  for (; i > 0; --i) {
-    i = name.lastIndexOf(47, i) + 1;
-    if (name.slice(i + 1).length > 100) {
-      i = Math.max(0, name.indexOf(47, i + 1));
+  for (
+    let nextPos = suitableSlashPos;
+    nextPos > 0;
+    suitableSlashPos = nextPos
+  ) {
+    // disclaimer: '/' won't appear at pos 0, so nextPos always be > 0 or = -1
+    nextPos = name.lastIndexOf(SLASH_CODE_POINT, suitableSlashPos - 1);
+    // disclaimer: since name.length > 100 in this case, if nextPos = -1, name.length - nextPos will also > 100
+    if (name.length - nextPos > 100) {
       break;
     }
   }
 
-  const prefix = name.slice(0, i);
+  const prefix = name.slice(0, suitableSlashPos);
   if (prefix.length > 155) {
     throw new Error(
       "Invalid Pathname! Pathname needs to be split-able on a forward slash separator into [155, 100] bytes respectively.",
     );
   }
-  return [prefix, name.slice(i + 1)];
+  return [prefix, name.slice(suitableSlashPos + 1)];
 }
 /**
  * validTarStreamOptions is a function that returns a true if all of the options
