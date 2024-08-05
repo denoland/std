@@ -64,6 +64,7 @@ jobs:
             msgpack(/unstable)?
             net(/unstable)?
             path(/unstable)?
+            random(/unstable)?
             regexp(/unstable)?
             semver(/unstable)?
             streams(/unstable)?
