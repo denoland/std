@@ -1,3 +1,30 @@
+### 2024.08.05
+
+#### @std/async 1.0.3 (patch)
+
+- fix(async): abortable should not change original outputs (#5609)
+
+#### @std/cli 1.0.3 (patch)
+
+- refactor(cli): minor cleanups (#5628)
+- refactor(cli): `isNumber()` (#5607)
+
+#### @std/csv 1.0.0 (major)
+
+- chore(csv): release `csv@1.0.0` (#5219)
+
+#### @std/semver 1.0.1 (patch)
+
+- docs(semver): remove diagram line overlaps (#5624)
+
+#### @std/url 0.225.0 (major)
+
+- chore(url): release `url@0.225.0` (#5631)
+
+#### @std/yaml 1.0.2 (patch)
+
+- refactor(yaml): move functions to class methods (#5625)
+
 ### 2024.08.02
 
 #### @std/assert 1.0.2 (patch)
