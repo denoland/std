@@ -20,6 +20,10 @@ import { join as posixJoin } from "@std/path/posix/join";
  * assertEquals(join("https://deno.land/", "std", "path", "mod.ts").href, "https://deno.land/std/path/mod.ts");
  * assertEquals(join("https://deno.land", "//std", "path/", "/mod.ts").href, "https://deno.land/std/path/mod.ts");
  * ```
+ *
+ * @deprecated Use
+ * {@linkcode https://jsr.io/@std/path/doc/posix/~/join | @std/path/posix/join}
+ * instead (examples included). `@std/url` will be removed in the future.
  */
 export function join(url: string | URL, ...paths: string[]): URL {
   url = new URL(url);

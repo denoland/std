@@ -32,6 +32,12 @@ and [architecture guide](./ARCHITECTURE.md) before contributing.
 > request that precedes the pull request that implements the new package.
 <!--deno-fmt-ignore-end-->
 
+## Suggesting a new feature
+
+When new features are accepted, they are initially accepted as 'unstable'
+features in the Standard Library. These features are later stabilized after
+receiving sufficient feedback from the community and the core team.
+
 ## Deprecations
 
 1. See the [deprecation policy](/README.md#deprecation-policy) for how
