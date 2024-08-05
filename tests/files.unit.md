@@ -1,2 +1,0 @@
-number of variations:
-temperate:
