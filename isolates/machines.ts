@@ -3,7 +3,7 @@ import {
   addBranches,
   agentHashRegex,
   Functions,
-  getBase,
+  getRoot,
   IA,
   PID,
 } from '@/constants.ts'
@@ -91,7 +91,7 @@ export const tryActorId = async (machineId: string, fs: FS) => {
 }
 
 export const getMachineTarget = (pid: PID) => {
-  const base = getBase(pid)
+  const base = getRoot(pid)
   return addBranches(base, 'machines')
 }
 

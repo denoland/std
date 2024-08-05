@@ -1,16 +1,15 @@
-import { assert, Debug, expect } from '@utils'
+import { assert, Debug } from '@utils'
 import '@std/dotenv/load' // load .env variables
 import OpenAI from 'openai'
 import {
   actorIdRegex,
   Agent,
-  backchatIdRegex,
   Functions,
+  getBaseName,
   IA,
   Params,
   print,
   Thread,
-  threadIdRegex,
 } from '@/constants.ts'
 import { loadTools, loadValidators } from './ai-load-tools.ts'
 import * as loadAgent from './load-agent.ts'
@@ -36,16 +35,15 @@ export const transcribe = async (file: File) => {
 export const api = {
   complete: {
     type: 'object',
-    required: ['threadId', 'path'],
+    required: ['path'],
     additionalProperties: false,
-    properties: { threadId: { type: 'string' }, path: { type: 'string' } },
+    properties: { path: { type: 'string' } },
   },
   once: {
     type: 'object',
-    required: ['threadId', 'path', 'content', 'actorId'],
+    required: ['path', 'content', 'actorId'],
     additionalProperties: false,
     properties: {
-      threadId: { type: 'string', pattern: threadIdRegex.source },
       path: { type: 'string' },
       content: { type: 'string' },
       actorId: { type: 'string', pattern: actorIdRegex.source },
@@ -53,35 +51,41 @@ export const api = {
   },
   halt: {
     type: 'object',
-    required: ['threadId', 'content', 'path'],
+    required: ['content', 'path'],
+    additionalProperties: false,
+    properties: { content: { type: 'string' }, path: { type: 'string' } },
+  },
+  oneshot: {
+    type: 'object',
+    required: ['path', 'contents', 'actorId'],
     additionalProperties: false,
     properties: {
-      threadId: {
-        type: 'string',
-        pattern: threadIdRegex.source + '|' + backchatIdRegex.source,
-      },
-      content: { type: 'string' },
       path: { type: 'string' },
+      contents: { type: 'array', items: { type: 'string' } },
+      actorId: { type: 'string', pattern: actorIdRegex.source },
     },
   },
 }
 
 export type Api = {
-  complete: (params: { threadId: string; path: string }) => Promise<void>
+  complete: (params: { path: string }) => Promise<void>
   once: (
     params: {
-      threadId: string
       path: string
       content: string
       actorId: string
     },
   ) => Promise<OpenAI.ChatCompletionAssistantMessageParam>
   halt: (
-    params: { threadId: string; content: string; path: string },
+    params: { content: string; path: string },
   ) => Promise<Params>
+  oneshot: (
+    params: { path: string; contents: string[]; actorId: string },
+  ) => Promise<OpenAI.ChatCompletionAssistantMessageParam>
 }
 export const functions: Functions<Api> = {
-  async complete({ threadId, path }, api) {
+  async complete({ path }, api) {
+    const threadId = getBaseName(api.pid)
     const threadPath = `threads/${threadId}.json`
     log('completing thread %o', threadId, print(api.pid))
     const thread = await api.readJSON<Thread>(threadPath)
@@ -92,7 +96,8 @@ export const functions: Functions<Api> = {
     api.writeJSON(threadPath, thread)
     log('completion complete', assistant.tool_calls?.[0], assistant.content)
   },
-  async once({ threadId, path, content, actorId }, api) {
+  async once({ path, content, actorId }, api) {
+    const threadId = getBaseName(api.pid)
     const threadPath = `threads/${threadId}.json`
     log('once %o', threadId, print(api.pid))
     const thread = await api.readJSON<Thread>(threadPath)
@@ -106,7 +111,8 @@ export const functions: Functions<Api> = {
     const result = await complete(path, messages, api)
     return result
   },
-  async halt({ threadId, content, path }, api) {
+  async halt({ content, path }, api) {
+    const threadId = getBaseName(api.pid)
     const threadPath = `threads/${threadId}.json`
     log('halt %o', threadId, content, path, print(api.pid))
     const thread = await api.readJSON<Thread>(threadPath)
@@ -129,6 +135,16 @@ export const functions: Functions<Api> = {
     log('halt complete', name, parsed)
     return parsed
   },
+  async oneshot({ path, contents, actorId }, api) {
+    log('oneshot %o', path, actorId, print(api.pid))
+    const messages: Thread['messages'] = contents.map((content) => ({
+      role: 'user',
+      content,
+      name: actorId,
+    }))
+    const assistant = await complete(path, messages, api)
+    return assistant
+  },
 }
 
 const complete = async (
@@ -140,7 +156,13 @@ const complete = async (
   const agent: Agent = await load({ path })
   const tools = await loadTools(agent.commands, api)
   const { config } = agent
-  const { model, temperature, tool_choice } = config
+  const {
+    model,
+    temperature,
+    tool_choice,
+    parallel_tool_calls,
+    presence_penalty,
+  } = config
   const sysprompt: OpenAI.ChatCompletionSystemMessageParam = {
     role: 'system',
     content: agent.instructions,
@@ -153,10 +175,18 @@ const complete = async (
     seed: 1337,
     tools: tools.length ? tools : undefined,
     tool_choice: tools.length ? tool_choice : undefined,
+    presence_penalty,
+    parallel_tool_calls: tools.length ? parallel_tool_calls : undefined,
   }
 
   log('completion started with model: %o', args.model, print(api.pid))
-  const completion = await ai.chat.completions.create(args)
+  let completion
+  try {
+    completion = await ai.chat.completions.create(args)
+  } catch (error) {
+    console.error('ai completion error', error)
+    throw error
+  }
   const result = completion.choices[0].message
   log('completion complete', agent.source.path, result)
   const assistant: OpenAI.ChatCompletionAssistantMessageParam = {

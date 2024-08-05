@@ -12,7 +12,7 @@ commands:
 
 export default (name: string, cradleMaker: CradleMaker) => {
   const prefix = name + ':isolates: '
-  Deno.test.only(prefix + 'files:ls', async (t) => {
+  Deno.test(prefix + 'files:ls', async (t) => {
     const { backchat, engine } = await cradleMaker()
     const actor = getParent(backchat.pid)
     await backchat.write('agents/files.md', agent, actor)

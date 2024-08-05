@@ -206,6 +206,10 @@ export class Backchat {
     const actions = await this.actions<Files>('files', { target })
     return actions.rm({ path })
   }
+  async ls(path: string = '.', target: PID = this.pid) {
+    const actions = await this.actions<Files>('files', { target })
+    return actions.ls({ path })
+  }
   deleteAccountUnrecoverably(): Promise<void> {
     throw new Error('not implemented')
   }
@@ -249,7 +253,9 @@ type Files = {
     opts?: ProcessOptions,
   ) => Promise<number>
   rm: (params: { path: string }) => Promise<void>
-  ls: (params: { path: string; count: number }) => Promise<string[] | number>
+  ls: (
+    params?: { path?: string; count?: boolean; all?: boolean },
+  ) => Promise<string[] | number>
   read: (params: { path: string }) => Promise<string>
   update: (params: Update) => Promise<number>
 }

@@ -25,6 +25,7 @@ import * as assistantsEffects from './assistants-effects.ts'
 import * as assistants from './assistants.ts'
 
 import * as longthread from './longthread.ts'
+import * as synth from './synth.ts'
 
 const isolatesExport = {
   system,
@@ -54,6 +55,7 @@ const isolatesExport = {
   assistants,
 
   longthread,
+  synth,
 }
 
 export default isolatesExport

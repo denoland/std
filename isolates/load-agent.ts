@@ -58,6 +58,7 @@ export const functions: Functions<Api> = {
       config,
       commands: [],
     }
+
     merge(defaults, data)
 
     const { pid, commit } = api

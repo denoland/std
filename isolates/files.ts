@@ -159,7 +159,10 @@ export const functions = {
   },
   read: async (params: { path: string }, api: IA) => {
     const { path } = params
-    return await api.read(path)
+    log('read', path, print(api.pid))
+    const result = await api.read(path)
+    log('read result', result)
+    return result
   },
   update: async (params: Update, api: IA) => {
     const { path, regex, replacement } = params

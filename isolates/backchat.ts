@@ -126,7 +126,7 @@ export const functions: Functions<Api> = {
     const path = 'agents/backchat.md'
 
     const { start } = await api.functions<longthread.Api>('longthread')
-    await start({ threadId })
+    await start()
     log('create:', threadId, path)
     const thread = await readBackchat(api)
     thread.focus = threadId
@@ -237,7 +237,7 @@ const isBackchatSummoned = async (
   const { once } = await api.actions<completions.Api>('ai-completions', opts)
   assert(threadIdRegex.test(threadId), 'Invalid threadId: ' + threadId)
 
-  const assistant = await once({ threadId, path, content, actorId })
+  const assistant = await once({ path, content, actorId })
   assert(assistant.role === 'assistant', 'role is not assistant')
   assert(assistant.tool_calls, 'tool_calls missing from once call')
   assert(assistant.tool_calls.length === 1, 'tool_calls length is not 1')

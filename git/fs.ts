@@ -282,6 +282,9 @@ export default class FS {
   }
   async read(path: string) {
     assertPath(path)
+    if (path.startsWith('./')) {
+      path = path.slice(2)
+    }
     if (this.#upserts.has(path)) {
       const upsert = this.#upserts.get(path)
       assert(upsert, 'upsert not found')

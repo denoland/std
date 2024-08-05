@@ -1,13 +1,5 @@
 import { assert, Debug } from '@utils'
-import {
-  actorIdRegex,
-  backchatIdRegex,
-  IA,
-  PID,
-  print,
-  Thread,
-  threadIdRegex,
-} from '@/constants.ts'
+import { actorIdRegex, getThreadPath, IA, print, Thread } from '@/constants.ts'
 import { Functions } from '@/constants.ts'
 import { executeTools } from '@/isolates/ai-execute-tools.ts'
 import * as completions from '@/isolates/ai-completions.ts'
@@ -18,19 +10,12 @@ export const api = {
     description: 'start a new thread for the given agent',
     type: 'object',
     additionalProperties: false,
-    required: ['threadId'],
-    properties: {
-      threadId: {
-        description: 'the id of the thread to execute',
-        type: 'string',
-      },
-    },
+    properties: {},
   },
   run: {
     type: 'object',
-    required: ['threadId', 'path', 'content', 'actorId'],
+    required: ['path', 'content', 'actorId'],
     properties: {
-      threadId: { type: 'string' },
       path: { type: 'string' },
       content: { type: 'string' },
       actorId: { type: 'string' },
@@ -39,12 +24,8 @@ export const api = {
   },
   switchboard: {
     type: 'object',
-    required: ['threadId', 'content', 'actorId'],
+    required: ['content', 'actorId'],
     properties: {
-      threadId: {
-        type: 'string',
-        pattern: threadIdRegex.source + '|' + backchatIdRegex.source,
-      },
       content: { type: 'string' },
       actorId: { type: 'string', pattern: actorIdRegex.source },
     },
@@ -52,9 +33,8 @@ export const api = {
   },
 }
 export interface Api {
-  start: (params: { threadId: string }) => Promise<PID>
+  start: (params: void) => Promise<void>
   run: (params: {
-    threadId: string
     /** Path to the agent to instantiate */
     path: string
     content: string
@@ -66,48 +46,47 @@ export interface Api {
 }
 
 export const functions: Functions<Api> = {
-  start: async ({ threadId }, api) => {
-    log('start', threadId, print(api.pid))
-    const threadPath = `threads/${threadId}.json`
+  start: async (_: void, api) => {
+    const threadPath = getThreadPath(api.pid)
+    log('start', threadPath, print(api.pid))
     assert(!await api.exists(threadPath), `thread exists: ${threadPath}`)
     const thread: Thread = {
       messages: [],
       toolCommits: {},
     }
     api.writeJSON(threadPath, thread)
-    return api.pid
   },
-  run: async ({ threadId, path, content, actorId }, api) => {
-    log('run', threadId, path, content, actorId)
-    const threadPath = `threads/${threadId}.json`
+  run: async ({ path, content, actorId }, api) => {
+    log('run', path, content, actorId)
+    const threadPath = getThreadPath(api.pid)
     const thread = await api.readJSON<Thread>(threadPath)
     thread.messages.push({ name: actorId, role: 'user', content })
     api.writeJSON(threadPath, thread)
-    await loop(threadId, path, api)
+    await loop(path, api)
   },
-  switchboard: async ({ threadId, content, actorId }, api) => {
-    const threadPath = `threads/${threadId}.json`
+  switchboard: async ({ content, actorId }, api) => {
+    const threadPath = getThreadPath(api.pid)
     const thread = await api.readJSON<Thread>(threadPath)
     thread.messages.push({ name: actorId, role: 'user', content })
     api.writeJSON(threadPath, thread)
 
     const path = `agents/switchboard.md`
     const { halt } = await api.actions<completions.Api>('ai-completions')
-    const params = await halt({ path, content, threadId })
+    const params = await halt({ path, content })
 
     log('switchboard:', params)
     assert('path' in params, 'missing path in switchboard result')
     assert(typeof params.path === 'string', 'invalid switchboard path')
 
-    await loop(threadId, params.path, api)
+    await loop(params.path, api)
   },
 }
 
-const loop = async (threadId: string, path: string, api: IA) => {
-  const threadPath = `threads/${threadId}.json`
+const loop = async (path: string, api: IA) => {
+  const threadPath = getThreadPath(api.pid)
   const { complete } = await api.actions<completions.Api>('ai-completions')
   while (!await isDone(threadPath, api)) {
-    await complete({ threadId, path })
+    await complete({ path })
     if (await isDone(threadPath, api)) {
       return
     }
@@ -125,6 +104,9 @@ const isDone = async (threadPath: string, api: IA) => {
   if (last.role === 'user' || last.role === 'assistant') {
     log(`${last.role}:${last.name}:`, last.content)
   }
+  if (last.role === 'tool') {
+    // log('tool:', last.tool_call_id, last.content)
+  }
   if (last.role !== 'assistant') {
     return false
   }
@@ -133,6 +115,7 @@ const isDone = async (threadPath: string, api: IA) => {
     return false
   }
   if ('tool_call_id' in last) {
+    log(last.name, last.content)
     return false
   }
   return true
