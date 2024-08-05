@@ -3,77 +3,11 @@
 // This module is generated from {@link https://www.iana.org/assignments/http-methods/http-methods.xhtml#methods | IANA Hypertext Transfer Protocol (HTTP) Method Registry}
 
 /**
- * HTTP Methods as defined by RFC 9110
- *
- * @see {@link https://www.iana.org/go/rfc9110 | RFC9110, Section 9.3}
- */
-export const METHOD = {
-  /**
-   * DELETE (Safe: no; Idempotent: yes)
-   *
-   * @see {@link https://www.iana.org/go/rfc9110 | RFC9110, Section 9.3.5}
-   */
-  Delete: "DELETE",
-
-  /**
-   * GET (Safe: yes; Idempotent: yes)
-   *
-   * @see {@link https://www.iana.org/go/rfc9110 | RFC9110, Section 9.3.1}
-   */
-  Get: "GET",
-
-  /**
-   * HEAD (Safe: yes; Idempotent: yes)
-   *
-   * @see {@link https://www.iana.org/go/rfc9110 | RFC9110, Section 9.3.2}
-   */
-  Head: "HEAD",
-
-  /**
-   * CONNECT (Safe: no; Idempotent: no)
-   *
-   * @see {@link https://www.iana.org/go/rfc9110 | RFC9110, Section 9.3.6}
-   */
-  Connect: "CONNECT",
-
-  /**
-   * OPTIONS (Safe: yes; Idempotent: yes)
-   *
-   * @see {@link https://www.iana.org/go/rfc9110 | RFC9110, Section 9.3.7}
-   */
-  Options: "OPTIONS",
-
-  /**
-   * POST (Safe: no; Idempotent: no)
-   *
-   * @see {@link https://www.iana.org/go/rfc9110 | RFC9110, Section 9.3.3}
-   */
-  Post: "POST",
-
-  /**
-   * PUT (Safe: no; Idempotent: yes)
-   *
-   * @see {@link https://www.iana.org/go/rfc9110 | RFC9110, Section 9.3.4}
-   */
-  Put: "PUT",
-
-  /**
-   * TRACE (Safe: yes; Idempotent: yes)
-   *
-   * @see {@link https://www.iana.org/go/rfc9110 | RFC9110, Section 9.3.8}
-   */
-  Trace: "TRACE",
-};
-
-export type HttpMethodRfc9110 =
-  typeof HttpMethodRfc9110[keyof typeof HttpMethodRfc9110];
-
-/**
- * HTTP Methods as defined by IANA Hypertext Transfer Protocol (HTTP) Method Registry
+ * HTTP Methods derived from IANA Hypertext Transfer Protocol (HTTP) Method Registry
  *
  * @see {@link https://www.iana.org/assignments/http-methods/http-methods.xhtml#methods | IANA Hypertext Transfer Protocol (HTTP) Method Registry}
  */
-export const HttpMethodIana = {
+export const METHOD = {
   /**
    * ACL (Safe: no; Idempotent: yes)
    *
@@ -122,6 +56,27 @@ export const HttpMethodIana = {
    * @see {@link https://www.iana.org/go/rfc4918 | RFC4918, Section 9.8}
    */
   Copy: "COPY",
+
+  /**
+   * DELETE (Safe: no; Idempotent: yes)
+   *
+   * @see {@link https://www.iana.org/go/rfc9110 | RFC9110, Section 9.3.5}
+   */
+  Delete: "DELETE",
+
+  /**
+   * GET (Safe: yes; Idempotent: yes)
+   *
+   * @see {@link https://www.iana.org/go/rfc9110 | RFC9110, Section 9.3.1}
+   */
+  Get: "GET",
+
+  /**
+   * HEAD (Safe: yes; Idempotent: yes)
+   *
+   * @see {@link https://www.iana.org/go/rfc9110 | RFC9110, Section 9.3.2}
+   */
+  Head: "HEAD",
 
   /**
    * LABEL (Safe: no; Idempotent: yes)
@@ -333,17 +288,4 @@ export const HttpMethodIana = {
   VersionControl: "VERSION-CONTROL",
 } as const;
 
-export type HttpMethodIana = typeof HttpMethodIana[keyof typeof HttpMethodIana];
-
-/**
- * HTTP Methods combined from all collections
- *
- * @see {@link https://www.iana.org/go/rfc9110 | RFC9110, Section 9.3}
- * @see {@link https://www.iana.org/assignments/http-methods/http-methods.xhtml#methods | IANA Hypertext Transfer Protocol (HTTP) Method Registry}
- */
-export const HttpMethod = {
-  ...HttpMethodRfc9110,
-  ...HttpMethodIana,
-} as const;
-
-export type Method = typeof HttpMethod[keyof typeof HttpMethod];
+export type Method = typeof METHOD[keyof typeof METHOD];
