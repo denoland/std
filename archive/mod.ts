@@ -62,6 +62,11 @@
  * writer.close();
  * ```
  *
+ * > [!WARNING]
+ * > **UNSTABLE**: New API, yet to be vetted.
+ *
+ * @experimental
+ *
  * @module
  */
 export * from "./tar.ts";

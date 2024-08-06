@@ -24,23 +24,65 @@ export interface CsvStringifyStreamOptions {
 /**
  * Convert each chunk to a CSV record.
  *
- * @example Usage
- * ```ts no-assert
+ * @example Write CSV to a file
+ * ```ts
  * import { CsvStringifyStream } from "@std/csv/stringify-stream";
+ * import { assertEquals } from "@std/assert/equals";
  *
- * const path = await Deno.makeTempFile();
+ * async function writeCsvToTempFile(): Promise<string> {
+ *   const path = await Deno.makeTempFile();
+ *   using file = await Deno.open(path, { write: true });
  *
- * const file = await Deno.open(path, { create: true, write: true });
- * const readable = ReadableStream.from([
- *   { id: 1, name: "one" },
- *   { id: 2, name: "two" },
- *   { id: 3, name: "three" },
- * ]);
+ *   const readable = ReadableStream.from([
+ *     { id: 1, name: "one" },
+ *     { id: 2, name: "two" },
+ *     { id: 3, name: "three" },
+ *   ]);
  *
- * await readable
- *   .pipeThrough(new CsvStringifyStream({ columns: ["id", "name"] }))
- *   .pipeThrough(new TextEncoderStream())
- *   .pipeTo(file.writable);
+ *   await readable
+ *     .pipeThrough(new CsvStringifyStream({ columns: ["id", "name"] }))
+ *     .pipeThrough(new TextEncoderStream())
+ *     .pipeTo(file.writable);
+ *
+ *   return path;
+ * }
+ *
+ * const path = await writeCsvToTempFile();
+ * const content = await Deno.readTextFile(path);
+ * assertEquals(content, "id,name\r\n1,one\r\n2,two\r\n3,three\r\n");
+ * ```
+ *
+ * @example Write TSV to a file
+ * ```ts
+ * import { CsvStringifyStream } from "@std/csv/stringify-stream";
+ * import { assertEquals } from "@std/assert/equals";
+ *
+ * async function writeTsvToTempFile(): Promise<string> {
+ *   const path = await Deno.makeTempFile();
+ *   using file = await Deno.open(path, { write: true });
+ *
+ *   const readable = ReadableStream.from([
+ *     { id: 1, name: "one" },
+ *     { id: 2, name: "two" },
+ *     { id: 3, name: "three" },
+ *   ]);
+ *
+ *   await readable
+ *     .pipeThrough(
+ *       new CsvStringifyStream({
+ *         columns: ["id", "name"],
+ *         separator: "\t",
+ *       }),
+ *     )
+ *     .pipeThrough(new TextEncoderStream())
+ *     .pipeTo(file.writable);
+ *
+ *   return path;
+ * }
+ *
+ * const path = await writeTsvToTempFile();
+ * const content = await Deno.readTextFile(path);
+ * assertEquals(content, "id\tname\r\n1\tone\r\n2\ttwo\r\n3\tthree\r\n");
  * ```
  *
  * @typeParam TOptions The type of options for the stream.
