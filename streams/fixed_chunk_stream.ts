@@ -58,6 +58,11 @@ export interface Fixable<T, U = T extends ArrayLike<infer V> ? V : never>
  *     }
  *   }))
  * ```
+ *
+ * > [!WARNING]
+ * > **UNSTABLE**: New API, yet to be vetted.
+ *
+ * @experimental
  */
 export class FixedChunkStream<T extends Fixable<T>>
   extends TransformStream<T, T> {
@@ -70,7 +75,7 @@ export class FixedChunkStream<T extends Fixable<T>>
     let push: T | undefined;
     super({
       transform(chunk, controller) {
-        if (push != undefined) {
+        if (push !== undefined) {
           const concat = new (chunk.constructor as { new (length: number): T })(
             push.length + chunk.length,
           );
