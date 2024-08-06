@@ -90,7 +90,6 @@ export interface TarEntry extends TarMetaWithLinkName {}
 
 /** Contains tar header metadata and a reader to the entry's body. */
 export class TarEntry implements Reader {
-  #header: TarHeader;
   #reader: Reader | (Reader & Deno.Seeker);
   #size: number;
   #read = 0;
@@ -100,11 +99,9 @@ export class TarEntry implements Reader {
   /** Constructs a new instance. */
   constructor(
     meta: TarMetaWithLinkName,
-    header: TarHeader,
     reader: Reader | (Reader & Deno.Seeker),
   ) {
     Object.assign(this, meta);
-    this.#header = header;
     this.#reader = reader;
 
     // File Size
@@ -327,7 +324,7 @@ export class Untar {
 
     const meta = this.#getMetadata(header);
 
-    this.#entry = new TarEntry(meta, header, this.reader);
+    this.#entry = new TarEntry(meta, this.reader);
 
     return this.#entry;
   }
