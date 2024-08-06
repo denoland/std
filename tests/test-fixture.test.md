@@ -15,3 +15,15 @@ Call the local function
 
 - local function was called
 - result was "local reply"
+
+## Fail a test
+
+**Prompts**
+
+```md
+Call the local function
+```
+
+**Expectations**
+
+- result was "this is a fail"
