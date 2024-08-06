@@ -3,7 +3,7 @@ import { TarStream, type TarStreamInput } from "./tar_stream.ts";
 import { UnTarStream } from "./untar_stream.ts";
 import { assertEquals } from "../assert/mod.ts";
 
-Deno.test("expandTarArchiveCheckingHeaders", async function () {
+Deno.test("expandTarArchiveCheckingHeaders", async () => {
   const text = new TextEncoder().encode("Hello World!");
 
   const readable = ReadableStream.from([
@@ -27,7 +27,7 @@ Deno.test("expandTarArchiveCheckingHeaders", async function () {
   assertEquals(pathnames, ["potato/", "text.txt"]);
 });
 
-Deno.test("expandTarArchiveCheckingBodiesDefaultStream", async function () {
+Deno.test("expandTarArchiveCheckingBodiesDefaultStream", async () => {
   const text = new TextEncoder().encode("Hello World!");
 
   const readable = ReadableStream.from([
@@ -61,7 +61,7 @@ Deno.test("expandTarArchiveCheckingBodiesDefaultStream", async function () {
   }
 });
 
-Deno.test("expandTarArchiveCheckingBodiesByteStream", async function () {
+Deno.test("expandTarArchiveCheckingBodiesByteStream", async () => {
   const text = new TextEncoder().encode("Hello World!");
 
   const readable = ReadableStream.from([
