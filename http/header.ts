@@ -5,6 +5,11 @@
 /**
  * HTTP Headers with status permanent
  *
+ * > [!WARNING]
+ * > **UNSTABLE**: New API, yet to be vetted.
+ *
+ * @experimental
+ *
  * @see {@link https://www.iana.org/assignments/http-fields/http-fields.xhtml#field-names | IANA Hypertext Transfer Protocol (HTTP) Field Name Registry}
  */
 export const HEADER = {
@@ -1190,5 +1195,12 @@ export const HEADER = {
   XFrameOptions: "X-Frame-Options",
 } as const;
 
-/** A HTTP Header */
+/**
+ * A HTTP Header
+ *
+ * > [!WARNING]
+ * > **UNSTABLE**: New API, yet to be vetted.
+ *
+ * @experimental
+ */
 export type Header = typeof HEADER[keyof typeof HEADER];
