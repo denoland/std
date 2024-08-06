@@ -17,9 +17,11 @@
 
 - docs(semver): remove diagram line overlaps (#5624)
 
-#### @std/url 0.225.0 (major)
+#### @std/url 0.225.0 (minor)
 
 - chore(url): release `url@0.225.0` (#5631)
+- deprecation(url): deprecate `@std/url` (#5530)
+- refactor: import from `@std/assert` (#5199)
 
 #### @std/yaml 1.0.2 (patch)
 
