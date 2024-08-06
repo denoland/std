@@ -3,16 +3,14 @@ import { addPeer, Backchat, BackchatThread, CradleMaker } from '@/constants.ts'
 import * as files from '@/isolates/files.ts'
 
 export default (name: string, cradleMaker: CradleMaker) => {
-  const prefix = name + ':threads: '
+  const prefix = name + ':focus: '
 
   // TODO make a fake thread, and then test summoner
 
   Deno.test(prefix + 'thread management', async (t) => {
     const { backchat, engine } = await cradleMaker()
     let focus: string = await getFocus(backchat)
-    log.enable(
-      'AI:tests AI:backchat AI:longthread AI:agents',
-    )
+    // log.enable('AI:tests AI:backchat AI:longthread AI:agents')
     log('initial focus', focus)
 
     await t.step('first thread, files agent', async () => {

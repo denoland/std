@@ -81,7 +81,7 @@ export const functions: Functions<Api> = {
   ls: async ({ directory = '.' }, api) => {
     const basename = posix.dirname(directory)
     const files = await api.ls(basename)
-    return files.filter((file) => file.endsWith('.synth.md'))
+    return files.filter((file) => file.endsWith('.test.md'))
   },
   test: async ({ path, prompt, assessor, expectations }, api) => {
     log('test', path, prompt, assessor, expectations, print(api.pid))

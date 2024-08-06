@@ -6,6 +6,7 @@ import splices from './guts-splices.ts'
 import backchats from './guts-backchats.ts'
 import focus from './guts-focus.ts'
 import git from './guts-git.ts'
+import synth from './guts-synth.ts'
 // import benchmarks from './benchmarks.ts'
 // import isolates from './guts-ai-isolates.ts'
 import { CradleMaker } from '@/constants.ts'
@@ -17,6 +18,7 @@ export default (name: string, cradleMaker: CradleMaker) => {
   splices(name, cradleMaker)
   focus(name, cradleMaker)
   git(name, cradleMaker)
+  synth(name, cradleMaker)
   // isolates(name, cradleMaker)
   // benchmarks(name, cradleMaker)
 }

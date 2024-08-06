@@ -11,7 +11,7 @@ import {
 import { Api } from '../isolates/longthread.ts'
 
 export default (name: string, cradleMaker: CradleMaker) => {
-  const prefix = name + ':ai: '
+  const prefix = name + ':longthread: '
   Deno.test(prefix + 'basic', async (t) => {
     const { backchat, engine } = await cradleMaker()
     log('pid', print(backchat.pid))
@@ -19,9 +19,8 @@ export default (name: string, cradleMaker: CradleMaker) => {
     await t.step('prompt', async () => {
       const { start, run } = await backchat.actions<Api>('longthread')
       const threadId = generateThreadId(t.name)
-      await start({ threadId })
+      await start()
       await run({
-        threadId,
         path: 'agents/agent-fixture.md',
         content: 'say "Hello"',
         actorId: 'ai',
@@ -42,7 +41,6 @@ export default (name: string, cradleMaker: CradleMaker) => {
     const threadPath = `threads/${threadId}.json`
     const read = readAssistant(backchat, target, threadPath)
     let latest = {}
-    log.enable('AI:tests AI:longthread')
     const splices = async () => {
       for await (const splice of backchat.watch(target, threadPath)) {
         if (!Object.keys(splice.changes).length) {
@@ -60,12 +58,11 @@ export default (name: string, cradleMaker: CradleMaker) => {
     await t.step('start thread', async () => {
       const opts = { branchName: threadId, noClose: true }
       const { start } = await backchat.actions<Api>('longthread', opts)
-      await start({ threadId })
+      await start()
     })
     const { run } = await backchat.actions<Api>('longthread', { target })
     await t.step('say the word "hello"', async () => {
       await run({
-        threadId,
         path: 'agents/agent-fixture.md',
         content: 'say the word: "hello" verbatim without calling any functions',
         actorId: 'ai',
@@ -80,7 +77,6 @@ export default (name: string, cradleMaker: CradleMaker) => {
     await t.step('what is your name ?', async () => {
       log('target', print(target))
       await run({
-        threadId,
         content: 'what is your name ?',
         path: 'agents/agent-fixture.md',
         actorId: 'ai',
@@ -95,7 +91,6 @@ export default (name: string, cradleMaker: CradleMaker) => {
 
     await t.step('repeat your last', async () => {
       await run({
-        threadId,
         content: 'repeat your last, without calling any functions',
         path: 'agents/agent-fixture.md',
         actorId: 'ai',
