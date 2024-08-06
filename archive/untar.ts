@@ -124,7 +124,12 @@ export class TarEntry implements Reader {
   #consumed = false;
   #entrySize: number;
 
-  /** Constructs a new instance. */
+  /**
+   * Constructs a new instance.
+   *
+   * @param meta The metadata of the entry.
+   * @param reader The reader to read the entry from.
+   */
   constructor(
     meta: TarMetaWithLinkName,
     reader: Reader | (Reader & Deno.Seeker),

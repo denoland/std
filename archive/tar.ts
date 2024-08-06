@@ -221,7 +221,7 @@ export interface TarDataWithSource extends TarData {
  * * Filenames (including path) cannot contain non-ASCII characters
  * * Sparse files are not supported
  *
- * @example
+ * @example Usage
  * ```ts no-eval
  * import { Tar } from "@std/archive/tar";
  * import { Buffer } from "@std/io/buffer";
@@ -275,6 +275,35 @@ export class Tar {
    * `test.txt`. Use slash for directory separators.
    * @param source Details of the source of the content including the
    * reference to the content itself and potentially any related metadata.
+   *
+   * @example Usage
+   * ```ts no-eval
+   * import { Tar } from "@std/archive/tar";
+   * import { Buffer } from "@std/io/buffer";
+   * import { copy } from "@std/io/copy";
+   *
+   * const tar = new Tar();
+   *
+   * // Now that we've created our tar, let's add some files to it:
+   *
+   * const content = new TextEncoder().encode("Some arbitrary content");
+   * await tar.append("deno.txt", {
+   *   reader: new Buffer(content),
+   *   contentSize: content.byteLength,
+   * });
+   *
+   * // This file is sourced from the filesystem (and renamed in the archive)
+   * await tar.append("filename_in_archive.txt", {
+   *   filePath: "./filename_on_filesystem.txt",
+   * });
+   *
+   * // Now let's write the tar (with it's two files) to the filesystem
+   * // use tar.getReader() to read the contents.
+   *
+   * const writer = await Deno.open("./out.tar", { write: true, create: true });
+   * await copy(tar.getReader(), writer);
+   * writer.close();
+   * ```
    */
   async append(filenameInArchive: string, source: TarOptions) {
     if (typeof filenameInArchive !== "string") {
