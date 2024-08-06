@@ -355,7 +355,7 @@ export class Untar {
 
     const meta = this.#getMetadata(header);
 
-    this.#entry = new TarEntry(meta, this.reader);
+    this.#entry = new TarEntry(meta, this.#reader);
 
     return this.#entry;
   }
