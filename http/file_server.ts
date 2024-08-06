@@ -254,7 +254,7 @@ export async function serveFile(
     // Returns 200 OK if parsing the range header fails
     if (!parsed) {
       // Set content length
-      headers.set(HEADER.ContentType, `${fileSize}`);
+      headers.set(HEADER.ContentLength, `${fileSize}`);
 
       const file = await Deno.open(filePath);
       const status = STATUS_CODE.OK;
