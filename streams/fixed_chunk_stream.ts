@@ -84,7 +84,7 @@ export class FixedChunkStream<T extends Fixable<T>>
           chunk = concat;
         }
 
-        for (let i = size; i < chunk.length; i += size) {
+        for (let i = size; i <= chunk.length; i += size) {
           controller.enqueue(chunk.slice(i - size, i));
         }
         const remainder = -chunk.length % size;
