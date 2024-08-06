@@ -106,6 +106,26 @@ function parseHeader(buffer: Uint8Array): TarHeader {
  * > **UNSTABLE**: New API, yet to be vetted.
  *
  * @experimental
+ *
+ * @example Usage
+ * ```ts no-assert
+ * import { TarEntry } from "@std/archive/untar";
+ *
+ * const content = new TextEncoder().encode("hello tar world!");
+ * const reader = new Buffer(content);
+ * const tarMeta = {
+ *   fileName: "archive/",
+ *   fileSize: 0,
+ *   fileMode: 509,
+ *   mtime: 1591800767,
+ *   uid: 1001,
+ *   gid: 1001,
+ *   owner: "deno",
+ *   group: "deno",
+ *   type: "directory",
+ * };
+ * const tarEntry: TarEntry = new TarEntry(tarMeta, reader);
+ * ```
  */
 export interface TarEntry extends TarMetaWithLinkName {}
 
@@ -144,7 +164,11 @@ export class TarEntry implements Reader {
     this.#entrySize = blocks * HEADER_LENGTH;
   }
 
-  /** Returns whether the entry has already been consumed. */
+  /**
+   * Returns whether the entry has already been consumed.
+   *
+   * @returns Whether the entry has already been consumed.
+   */
   get consumed(): boolean {
     return this.#consumed;
   }
@@ -156,6 +180,8 @@ export class TarEntry implements Reader {
    * all of `p` as scratch space during the call. If some data is available but
    * not `p.byteLength bytes`, read() conventionally resolves to what is available
    * instead of waiting for more.
+   *
+   * @param p The buffer to read the entry into.
    */
   async read(p: Uint8Array): Promise<number | null> {
     // Bytes left for entry
