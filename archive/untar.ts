@@ -43,13 +43,25 @@ import type { Reader } from "@std/io/types";
 /**
  * Extend TarMeta with the `linkName` property so that readers can access
  * symbolic link values without polluting the world of archive writers.
+ *
+ * > [!WARNING]
+ * > **UNSTABLE**: New API, yet to be vetted.
+ *
+ * @experimental
  */
 export interface TarMetaWithLinkName extends TarMeta {
   /** File name of the symbolic link. */
   linkName?: string;
 }
 
-/** Tar header with raw, unprocessed bytes as values. */
+/**
+ * Tar header with raw, unprocessed bytes as values.
+ *
+ * > [!WARNING]
+ * > **UNSTABLE**: New API, yet to be vetted.
+ *
+ * @experimental
+ */
 export type TarHeader = {
   [key in UstarFields]: Uint8Array;
 };
@@ -85,10 +97,24 @@ function parseHeader(buffer: Uint8Array): TarHeader {
   return data;
 }
 
-/** Tar entry */
+/**
+ * Tar entry
+ *
+ * > [!WARNING]
+ * > **UNSTABLE**: New API, yet to be vetted.
+ *
+ * @experimental
+ */
 export interface TarEntry extends TarMetaWithLinkName {}
 
-/** Contains tar header metadata and a reader to the entry's body. */
+/**
+ * Contains tar header metadata and a reader to the entry's body.
+ *
+ * > [!WARNING]
+ * > **UNSTABLE**: New API, yet to be vetted.
+ *
+ * @experimental
+ */
 export class TarEntry implements Reader {
   #reader: Reader | (Reader & Deno.Seeker);
   #size: number;
@@ -218,6 +244,11 @@ export class TarEntry implements Reader {
  *   await copy(entry, file);
  * }
  * ```
+ *
+ * > [!WARNING]
+ * > **UNSTABLE**: New API, yet to be vetted.
+ *
+ * @experimental
  */
 export class Untar {
   /** Internal reader. */
