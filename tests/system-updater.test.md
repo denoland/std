@@ -93,3 +93,46 @@ Delete the repo `dreamcatcher-tech/test` then clone a new repo from `dreamcatche
 **Expectations**
 
 - there is at least one repo now that was cloned from `dreamcatcher-tech/test`
+
+## Step 1
+
+**Prompts**
+
+```md
+do the first thing
+```
+
+**Expectations**
+
+- the first thing is done
+
+## Step 2
+
+**Before**
+[Step 1](#step-1)
+
+**Prompts**
+
+```md
+do step 2
+```
+
+**Expectations**
+
+- is step 2 done
+
+## Final
+
+**Before**
+[Step 2](#step-2)
+
+**Expectations**
+
+- overall expectations of all steps
+
+## Another multi step test
+
+## Step N
+
+**Invoke**
+[Step 2](#step-2)
