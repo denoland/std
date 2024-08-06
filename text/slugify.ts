@@ -414,7 +414,7 @@ function replaceChars(string: string) {
     .join("");
 }
 
-export function slugify(input: string) {
+export function slugify(input: string): string {
   return replaceChars(input)
     .trim()
     .toLowerCase()
