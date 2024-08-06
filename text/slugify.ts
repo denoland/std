@@ -414,6 +414,20 @@ function replaceChars(string: string) {
     .join("");
 }
 
+/**
+ * Converts a string into a slug.
+ *
+ * @example Usage
+ * ```ts
+ * import { slugify } from "@std/text/slugify";
+ * import { assertEquals } from "@std/assert";
+ *
+ * assertEquals(slugify("déjà vu"),"deja-vu");
+ * ```
+ *
+ * @param input The string that is going to be converted into a slug
+ * @returns The string as a slug
+ */
 export function slugify(input: string): string {
   return replaceChars(input)
     .trim()
