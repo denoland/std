@@ -173,7 +173,7 @@ export async function serveFile(
   filePath: string,
   options?: ServeFileOptions,
 ): Promise<Response> {
-  if (req.method !== "GET" && req.method !== "HEAD") {
+  if (req.method !== "GET") {
     return createStandardResponse(STATUS_CODE.MethodNotAllowed);
   }
 
@@ -639,7 +639,7 @@ export async function serveDir(
   req: Request,
   opts: ServeDirOptions = {},
 ): Promise<Response> {
-  if (req.method !== "GET" && req.method !== "HEAD") {
+  if (req.method !== "GET") {
     return createStandardResponse(STATUS_CODE.MethodNotAllowed);
   }
 
