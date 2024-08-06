@@ -362,9 +362,17 @@ interface NestedMapping {
   [key: string]: NestedMapping | unknown;
 }
 
-function isNumber(x: string): boolean {
-  if (/^0x[0-9a-f]+$/i.test(String(x))) return true;
-  return /^[-+]?(?:\d+(?:\.\d*)?|\.\d+)(e[-+]?\d+)?$/.test(String(x));
+const FLAG_REGEXP =
+  /^(?:-(?:(?<doubleDash>-)(?<negated>no-)?)?)(?<key>.+?)(?:=(?<value>.+?))?$/s;
+const LETTER_REGEXP = /[A-Za-z]/;
+const NUMBER_REGEXP = /-?\d+(\.\d*)?(e-?\d+)?$/;
+const HYPHEN_REGEXP = /^(-|--)[^-]/;
+const VALUE_REGEXP = /=(?<value>.+)/;
+const FLAG_NAME_REGEXP = /^--[^=]+$/;
+const SPECIAL_CHAR_REGEXP = /\W/;
+
+function isNumber(string: string): boolean {
+  return string.trim() !== "" && Number.isFinite(Number(string));
 }
 
 function setNested(
@@ -418,16 +426,6 @@ function isBooleanString(value: string) {
 function parseBooleanString(value: unknown) {
   return value !== "false";
 }
-
-const FLAG_REGEXP =
-  /^(?:-(?:(?<doubleDash>-)(?<negated>no-)?)?)(?<key>.+?)(?:=(?<value>.+?))?$/s;
-const LETTER_REGEXP = /[A-Za-z]/;
-const NUMBER_REGEXP = /-?\d+(\.\d*)?(e-?\d+)?$/;
-const HYPHEN_REGEXP = /^(-|--)[^-]/;
-const VALUE_REGEXP = /=(?<value>.+)/;
-const FLAG_NAME_REGEXP = /^--[^=]+$/;
-const IS_FLAG_REGEXP = /^-/;
-const SPECIAL_CHAR_REGEXP = /\W/;
 
 /**
  * Take a set of command line arguments, optionally with a set of options, and
@@ -653,7 +651,7 @@ export function parseArgs<
           if (
             !booleanSet.has(key) &&
             !allBools &&
-            !IS_FLAG_REGEXP.test(next) &&
+            !next.startsWith("-") &&
             (!aliasMap.has(key) || !aliasIsBoolean(aliasMap, booleanSet, key))
           ) {
             value = next;
