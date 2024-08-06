@@ -45,13 +45,25 @@ export type { Reader };
 /**
  * Extend TarMeta with the `linkName` property so that readers can access
  * symbolic link values without polluting the world of archive writers.
+ *
+ * > [!WARNING]
+ * > **UNSTABLE**: New API, yet to be vetted.
+ *
+ * @experimental
  */
 export interface TarMetaWithLinkName extends TarMeta {
   /** File name of the symbolic link. */
   linkName?: string;
 }
 
-/** Tar header with raw, unprocessed bytes as values. */
+/**
+ * Tar header with raw, unprocessed bytes as values.
+ *
+ * > [!WARNING]
+ * > **UNSTABLE**: New API, yet to be vetted.
+ *
+ * @experimental
+ */
 export type TarHeader = {
   [key in UstarFields]: Uint8Array;
 };
@@ -87,12 +99,25 @@ function parseHeader(buffer: Uint8Array): TarHeader {
   return data;
 }
 
-/** Tar entry */
+/**
+ * Tar entry
+ *
+ * > [!WARNING]
+ * > **UNSTABLE**: New API, yet to be vetted.
+ *
+ * @experimental
+ */
 export interface TarEntry extends TarMetaWithLinkName {}
 
-/** Contains tar header metadata and a reader to the entry's body. */
+/**
+ * Contains tar header metadata and a reader to the entry's body.
+ *
+ * > [!WARNING]
+ * > **UNSTABLE**: New API, yet to be vetted.
+ *
+ * @experimental
+ */
 export class TarEntry implements Reader {
-  #header: TarHeader;
   #reader: Reader | (Reader & Deno.Seeker);
   #size: number;
   #read = 0;
@@ -102,11 +127,9 @@ export class TarEntry implements Reader {
   /** Constructs a new instance. */
   constructor(
     meta: TarMetaWithLinkName,
-    header: TarHeader,
     reader: Reader | (Reader & Deno.Seeker),
   ) {
     Object.assign(this, meta);
-    this.#header = header;
     this.#reader = reader;
 
     // File Size
@@ -223,6 +246,11 @@ export class TarEntry implements Reader {
  *   await copy(entry, file);
  * }
  * ```
+ *
+ * > [!WARNING]
+ * > **UNSTABLE**: New API, yet to be vetted.
+ *
+ * @experimental
  */
 export class Untar {
   /** Internal reader. */
@@ -354,7 +382,7 @@ export class Untar {
 
     const meta = this.#getMetadata(header);
 
-    this.#entry = new TarEntry(meta, header, this.reader);
+    this.#entry = new TarEntry(meta, this.reader);
 
     return this.#entry;
   }
