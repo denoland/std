@@ -437,7 +437,7 @@ x,,,
           options.columns = testCase.columns;
         }
 
-        const readable = ReadableStream.from(testCase.input)
+        const readable = ReadableStream.from([testCase.input])
           .pipeThrough(new CsvParseStream(options));
 
         if (testCase.output) {
