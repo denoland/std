@@ -39,9 +39,7 @@ export function shuffle<T>(
     // j ← random integer such that 0 ≤ j ≤ i
     const j = randomIntegerBetween(0, i, opts);
     // exchange a[j] and a[i]
-    const temp = result[i];
-    result[i] = result[j]!;
-    result[j] = temp!;
+    [result[i], result[j]] = [result[j]!, result[i]!];
   }
 
   return result;

@@ -64,11 +64,11 @@ Deno.test("sample() returns undefined if the array is empty", () => {
 
 Deno.test("sample() picks a random item from the provided items", () => {
   const items = ["a", "b", "c"];
-  const { random } = new SeededPrng(1);
+  const { random } = new SeededPrng({ seed: 1n });
 
   const picks = Array.from({ length: 10 }, () => sample(items, { random }));
 
-  assertEquals(picks, ["a", "c", "a", "c", "a", "a", "a", "b", "a", "c"]);
+  assertEquals(picks, ["b", "c", "c", "a", "b", "c", "b", "a", "b", "b"]);
 });
 
 Deno.test("sample() with weights returns undefined if the array is empty", () => {
@@ -100,7 +100,7 @@ Deno.test("sample() with weights picks a random item from the provided items wit
   const weights = weightedItems.map(([, weight]) => weight);
   const values = weightedItems.map(([value]) => value);
   const totalWeight = weights.reduce((sum, n) => sum + n, 0);
-  const { random } = new SeededPrng(1);
+  const { random } = new SeededPrng({ seed: 1n });
 
   const picks = Array.from(
     { length: 1000 },
@@ -125,7 +125,7 @@ Deno.test("sample() with weights picks a random item from the provided items wit
 
 Deno.test("sample() with weights works with a Map", () => {
   const weightedItems = new Map([["a", 1], ["b", 2], ["c", 999]]);
-  const { random } = new SeededPrng(1);
+  const { random } = new SeededPrng({ seed: 1n });
 
   const result = sample([...weightedItems.keys()], {
     weights: [...weightedItems.values()],

@@ -1,19 +1,35 @@
-// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-import { randomIntegerBetween } from "./between.ts";
-import { assert } from "@std/assert/assert";
+// // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+
+const U64_CEIL = 2n ** 64n;
+const U32_CEIL = 2n ** 32n;
+const U64_MAX = U64_CEIL - 1n;
+
+// arbitrary odd value (example from https://en.wikipedia.org/wiki/Permuted_congruential_generator)
+const DEFAULT_INC = 1442695040888963407n;
+// arbitrary large value
+const DEFAULT_XOR = 7242445682386361366n;
 
 /**
- * A 3-tuple seed for a {@linkcode SeededPrng}.
+ * A 2-tuple state for a {@linkcode SeededPrng}.
  */
-export type Seed = readonly [number, number, number];
+export type State = [state: bigint, inc: bigint];
 
-const A = 30269;
-const B = 30307;
-const C = 30323;
+/**
+ * Options for {@linkcode SeededPrng}.
+ */
+type SeededPrngOptions = {
+  /**
+   * The seed for the random number generator.
+   *
+   * - If a `bigint`, the seed will be used to initialize the state and increment.
+   * - If a `State` 2-tuple, the first element will be directly used as the state and the second as the increment.
+   */
+  seed: bigint | Readonly<State>;
+};
 
 /**
  * A seeded pseudo-random number generator, implementing the
- * {@link https://en.wikipedia.org/wiki/Wichmann–Hill | Wichmann-Hill}
+ * {@link https://en.wikipedia.org/wiki/Permuted_congruential_generator | PCG32}
  * algorithm.
  *
  * @example Usage
@@ -21,36 +37,37 @@ const C = 30323;
  * import { SeededPrng } from "@std/random";
  * import { assertEquals } from "@std/assert";
  *
- * const prng = new SeededPrng([17740, 29216, 6029]);
+ * const prng = new SeededPrng({ seed: 3377567226465013078n });
  *
- * assertEquals(prng.random(), 0.8280769879176713);
- * assertEquals(prng.random(), 0.6090445210936662);
- * assertEquals(prng.random(), 0.10273315291976637);
+ * assertEquals(prng.random(), 0.3960897452197969);
+ * assertEquals(prng.random(), 0.4801766681484878);
+ * assertEquals(prng.random(), 0.1936694176401943);
  * ```
  */
 export class SeededPrng {
-  // @ts-expect-error assigned in constructor via `seed` setter
-  #x: number;
-  // @ts-expect-error assigned in constructor via `seed` setter
-  #y: number;
-  // @ts-expect-error assigned in constructor via `seed` setter
-  #z: number;
+  #state: bigint;
+  #inc: bigint;
 
   /**
    * Constructs a new instance.
    *
    * @param seed - The seed for the random number generator, which can be
-   * either a 3-tuple of positive integers or a single positive integer, which
-   * will be converted to a 3-tuple.
+   * either a 2-tuple of bigints or a single bigint, which
+   * will be converted to a state 2-tuple.
    *
    * @example Usage
    * ```ts no-assert
    * import { SeededPrng } from "@std/random";
-   * const prng = new SeededPrng([5489, 15597, 5057]);
+   * const prng = new SeededPrng({ seed: 14614327452668470620n });
    * ```
    */
-  constructor(seed: Seed | number) {
-    this.seed = seed;
+  constructor({ seed }: SeededPrngOptions) {
+    this.#inc = -1n;
+    this.#state = -1n;
+
+    this.state = typeof seed === "bigint"
+      ? SeededPrng.#seedToState(seed)
+      : seed;
 
     // For convenience, allowing destructuring and direct usage in callbacks
     // equivalently to Math.random()
@@ -58,31 +75,25 @@ export class SeededPrng {
   }
 
   /**
-   * The seed for the random number generator.
-   * @returns The seed as a 3-tuple.
+   * The state for the random number generator.
+   * @returns The state as a 2-tuple.
    *
    * @example Usage
    * ```ts
    * import { SeededPrng } from "@std/random";
    * import { assertEquals } from "@std/assert";
    *
-   * const prng = new SeededPrng(1722685125225);
-   * assertEquals(prng.seed, [5489, 15597, 5057]);
+   * const prng = new SeededPrng({ seed: 14614327452668470620n });
+   * assertEquals(prng.state, [3096394406033028526n, 18007031919395182301n]);
    * ```
    */
-  get seed(): Seed {
-    return [
-      this.#x,
-      this.#y,
-      this.#z,
-    ];
+  get state(): Readonly<State> {
+    return [this.#state, this.#inc];
   }
 
-  set seed(seed: Seed | number) {
-    const [x, y, z] = this.#normalizeSeed(seed);
-    this.#x = x;
-    this.#y = y;
-    this.#z = z;
+  set state(value: Readonly<State>) {
+    this.#state = value[0] & U64_MAX;
+    this.#inc = (value[1] | 1n) & U64_MAX;
   }
 
   /**
@@ -94,20 +105,15 @@ export class SeededPrng {
    * import { SeededPrng } from "@std/random";
    * import { assertEquals } from "@std/assert";
    *
-   * const prng = new SeededPrng([5489, 15597, 5057]);
+   * const prng = new SeededPrng({ seed: 3377567226465013078n });
    *
-   * assertEquals(prng.random(), 0.8773132982020172);
-   * assertEquals(prng.random(), 0.18646363474450567);
-   * assertEquals(prng.random(), 0.12047326745398279);
+   * assertEquals(prng.random(), 0.3960897452197969);
+   * assertEquals(prng.random(), 0.4801766681484878);
+   * assertEquals(prng.random(), 0.1936694176401943);
    * ```
    */
   random(): number {
-    // https://en.wikipedia.org/wiki/Wichmann–Hill#Implementation
-    this.#x = (this.#x * 171) % A;
-    this.#y = (this.#y * 172) % B;
-    this.#z = (this.#z * 170) % C;
-
-    return (this.#x / A + this.#y / B + this.#z / C) % 1;
+    return uint32ToFloat64(this.#randomUint32());
   }
 
   /**
@@ -119,42 +125,78 @@ export class SeededPrng {
    * import { SeededPrng } from "@std/random";
    * import { assertEquals } from "@std/assert";
    *
-   * const prng = new SeededPrng([5489, 15597, 5057]);
-   * assertEquals(prng.randomSeed(), [26556, 5652, 3654]);
+   * const prng = new SeededPrng({ seed: 14614327452668470620n });
+   * assertEquals(prng.randomSeed(), 12896216895826562279n);
    * ```
    */
-  randomSeed(): Seed {
-    const { random } = this;
+  randomSeed(): bigint {
+    return this.#randomUint64();
+  }
 
+  // port of minimal version at https://www.pcg-random.org/download.html
+  // mod U64_CEIL/U32_CEIL simulates integer overflow in C
+  #randomUint32(): bigint {
+    const oldState = this.#state;
+
+    this.#state = (this.#state * 6364136223846793005n + (this.#inc | 1n)) %
+      U64_CEIL;
+
+    const xorShifted = (((oldState >> 18n) ^ oldState) >> 27n) % U32_CEIL;
+    const rot = (oldState >> 59n) % U32_CEIL;
+
+    return ((xorShifted >> rot) | (xorShifted << ((-rot) & 31n))) % U32_CEIL;
+  }
+
+  #randomUint64(): bigint {
+    const hi = this.#randomUint32();
+    const lo = this.#randomUint32();
+    return (hi << 32n) | lo;
+  }
+
+  /**
+   * Get a random state tuple suitable for usage by `SeededPrng`.
+   */
+  #randomState(): State {
     return [
-      randomIntegerBetween(1, A, { random }),
-      randomIntegerBetween(1, B, { random }),
-      randomIntegerBetween(1, C, { random }),
+      this.#randomUint64(),
+      this.#randomUint64(),
     ];
   }
 
-  #normalizeSeed(seed: Seed | number): Seed {
-    this.#assertValidSeed(seed);
+  /**
+   * Convert a seed to a state tuple suitable for usage by `SeededPrng`.
+   */
+  static #seedToState(seed: bigint): State {
+    const state = reverseUint64Bits(seed % U64_CEIL) ^ DEFAULT_XOR;
+    const prng = new SeededPrng({ seed: [state, DEFAULT_INC] });
 
-    const s: Seed = typeof seed === "number" ? [seed, seed, seed] : seed;
-
-    return [
-      (s[0] - 1) % (A - 1) + 1,
-      (s[1] - 1) % (B - 1) + 1,
-      (s[2] - 1) % (C - 1) + 1,
-    ];
+    return prng.#randomState();
   }
+}
 
-  #assertValidSeed(seed: Seed | number) {
-    const toCheck = typeof seed === "number"
-      ? [seed]
-      : [seed[0], seed[1], seed[2]];
+/**
+ * Convert a 32-bit unsigned integer to a float64 in the range [0, 1).
+ */
+function uint32ToFloat64(u32: number | bigint): number {
+  return Number(u32) / (2 ** 32);
+}
 
-    for (const x of toCheck) {
-      assert(
-        Number.isSafeInteger(x) && x >= 1,
-        `Invalid seed value: ${x}. Must be a positive safe integer.`,
-      );
+/**
+ * Reverse the bits of a given unsigned 64-bit integer.
+ * Used to ensure less-bad results for small seeds such as 1, 2, 3, etc.
+ */
+function reverseUint64Bits(n: bigint): bigint {
+  let rev = 0n;
+
+  for (let i = 0n; i < 64n; ++i) {
+    rev <<= 1n;
+
+    if ((n & 1n) === 1n) {
+      rev ^= 1n;
     }
+
+    n >>= 1n;
   }
+
+  return rev;
 }

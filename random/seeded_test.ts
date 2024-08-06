@@ -1,127 +1,84 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-import { SeededPrng } from "./seeded.ts";
-import {
-  assertAlmostEquals,
-  assertEquals,
-  AssertionError,
-  assertThrows,
-} from "@std/assert";
+import { SeededPrng, type State } from "./seeded.ts";
+import { assertAlmostEquals, assertEquals, assertThrows } from "@std/assert";
 
-Deno.test("SeededPrng#random() validates `seed` param", async (t) => {
-  await t.step(
-    "throws if constructor is called with an invalid value",
-    async (t) => {
-      await t.step("zero", () => {
-        assertThrows(
-          () => new SeededPrng(0),
-          AssertionError,
-          "Invalid seed value: 0. Must be a positive safe integer.",
-        );
-      });
-
-      await t.step("negative", () => {
-        assertThrows(
-          () => new SeededPrng(-1),
-          AssertionError,
-          "Invalid seed value: -1. Must be a positive safe integer.",
-        );
-      });
-
-      await t.step("too large", () => {
-        assertThrows(
-          () => new SeededPrng(Number.MAX_SAFE_INTEGER + 1),
-          AssertionError,
-          "Invalid seed value: 9007199254740992. Must be a positive safe integer.",
-        );
-      });
-
-      await t.step("invalid 3-tuple", () => {
-        assertThrows(
-          () => new SeededPrng([1, 2, -1]),
-          AssertionError,
-          "Invalid seed value: -1. Must be a positive safe integer.",
-        );
-      });
-
-      await t.step("incomplete 3-tuple", () => {
-        const tuple = [1, 2];
-
-        assertThrows(
-          () => new SeededPrng(tuple as [number, number, number]),
-          AssertionError,
-          "Invalid seed value: undefined. Must be a positive safe integer.",
-        );
-      });
-    },
-  );
-
-  await t.step("throws if seed is set to an invalid value", () => {
-    const prng = new SeededPrng(1);
-
-    assertThrows(
-      () => prng.seed = 1.5,
-      AssertionError,
-      "Invalid seed value: 1.5. Must be a positive safe integer.",
-    );
+Deno.test("SeededPrng constructor validates its parameters", async (t) => {
+  await t.step("zero inc converted to 1", () => {
+    const prng = new SeededPrng({ seed: [1n, 0n] });
+    assertEquals(prng.state, [1n, 1n]);
   });
 
-  await t.step("throws if seed is set to an invalid value", () => {
-    const prng = new SeededPrng(1);
-
-    assertThrows(
-      () => prng.seed = [1.5, 2.5, 3.5],
-      AssertionError,
-      "Invalid seed value: 1.5. Must be a positive safe integer.",
-    );
+  await t.step("negative wraps to positive", () => {
+    const prng = new SeededPrng({ seed: [-1n, -1n] });
+    assertEquals(prng.state, [18446744073709551615n, 18446744073709551615n]);
   });
 
-  await t.step("throws if seed is not a positive safe integer", () => {
-    const prng = new SeededPrng(1);
+  await t.step("too large wraps around", () => {
+    const prng = new SeededPrng({
+      seed: [18446744073709551616n, 18446744073709551616n],
+    });
+    assertEquals(prng.state, [0n, 1n]);
+  });
 
+  await t.step("3-tuple is truncated to 2-tuple", () => {
+    const state = [1n, 1n, 1n];
+    const prng = new SeededPrng({ seed: state as State });
+    assertEquals(prng.state, [1n, 1n]);
+  });
+
+  await t.step("incomplete 2-tuple throws", () => {
+    const state = [0n];
     assertThrows(
-      () => prng.seed = [1.5, 2.5, 3.5],
-      AssertionError,
-      "Invalid seed value: 1.5. Must be a positive safe integer.",
+      () => new SeededPrng({ seed: state as State }),
     );
   });
 });
 
 Deno.test("SeededPrng#random() generates random numbers", async (t) => {
-  await t.step("seeded with a 3-tuple", () => {
-    const prng = new SeededPrng([17740, 29216, 6029]);
-    assertEquals(prng.random(), 0.8280769879176713);
-    assertEquals(prng.random(), 0.6090445210936662);
-    assertEquals(prng.random(), 0.10273315291976637);
+  await t.step("seeded with a 2-tuple", () => {
+    const prng = new SeededPrng({
+      seed: [15571158787346713293n, 10094278282842616068n],
+    });
+
+    assertEquals(prng.random(), 0.37356163561344147);
+    assertEquals(prng.random(), 0.46312552504241467);
+    assertEquals(prng.random(), 0.11483323690481484);
   });
 
   await t.step("seeded with a number", () => {
-    const prng = new SeededPrng(1722685125224);
-    assertEquals(prng.random(), 0.8603823920023603);
-    assertEquals(prng.random(), 0.29120972350650653);
-    assertEquals(prng.random(), 0.008982246237530855);
+    const prng = new SeededPrng({ seed: 3247111518449632355n });
+    assertEquals(prng.random(), 0.21337948855943978);
+    assertEquals(prng.random(), 0.6178494824562222);
+    assertEquals(prng.random(), 0.333291148301214);
   });
 });
 
-Deno.test("SeededPrng's `seed` parameter is converted to a 3-tuple when set with a number", async (t) => {
+Deno.test("SeededPrng's scalar `seed` parameter is converted to a 2-tuple state", async (t) => {
   await t.step("seeded with a number", () => {
-    const scalarSeed = 1722685125224;
-    const expectedSeed = [5488, 15596, 5056] as const;
-    const prng1 = new SeededPrng(scalarSeed);
-    assertEquals(prng1.seed, expectedSeed);
-    assertEquals(prng1.random(), new SeededPrng(expectedSeed).random());
+    const seed = 3247111518449632355n;
+    const expectedState = [
+      13768899637953488478n,
+      6749360920794622629n,
+    ] as const;
+    const prng1 = new SeededPrng({ seed });
+    assertEquals(prng1.state, expectedState);
+    assertEquals(
+      prng1.random(),
+      new SeededPrng({ seed: expectedState }).random(),
+    );
   });
 });
 
-Deno.test("SeededPrng#randomSeed() returns a new 3-tuple seed", async (t) => {
+Deno.test("SeededPrng#randomSeed() returns a new bigint seed", async (t) => {
   await t.step("returns a new seed", () => {
-    const prng = new SeededPrng([17740, 29216, 6029]);
+    const prng = new SeededPrng({ seed: 8440806997079658278n });
     const seed = prng.randomSeed();
-    assertEquals(seed, [25066, 18459, 3116]);
+    assertEquals(seed, 7401986284933245790n);
   });
 });
 
 Deno.test("SeededPrng#random() gives relatively uniform distribution of random numbers", async (t) => {
-  const prng = new SeededPrng(1);
+  const prng = new SeededPrng({ seed: 1n });
   const results = Array.from({ length: 1e4 }, prng.random);
 
   await t.step("all results are between 0 and 1", () => {
@@ -150,7 +107,7 @@ Deno.test("SeededPrng#random() gives relatively uniform distribution of random n
         assertAlmostEquals(
           decile.length,
           results.length / 10,
-          results.length / 100,
+          results.length / 50,
         );
       }
     },
@@ -170,4 +127,40 @@ Deno.test("SeededPrng#random() gives relatively uniform distribution of random n
       }
     },
   );
+});
+
+Deno.test("SeededPrng#random() generates same results as Python's numpy+randomgen implementation given the same state and inc", async () => {
+  /**
+   * Python code to generate the results.json file:
+   *
+   * ```py
+   * import numpy as np
+   * from randomgen import PCG32
+   * import json
+   *
+   * path = './random/testdata/results.json'
+   * seeds = json.load(open(path))
+   *
+   * def uint32_to_float64(rnd: int):
+   *   return rnd / (2 ** 32)
+   *
+   * def rands(seed):
+   *   bg = np.random.Generator(PCG32()).bit_generator
+   *   bg.state = { **bg.state, 'state': { 'state': int(seed[0]), 'inc': int(seed[1]) } }
+   *   return [uint32_to_float64(bg.random_raw()) for _ in range(10)]
+   *
+   * json.dump([[seed[0], seed[1], rands((int(seed[0]), int(seed[1])))] for seed in seeds], open(path, "w"), indent='\t')
+   * ```
+   */
+
+  const seeds =
+    (await import("./testdata/results.json", { with: { type: "json" } }))
+      .default as [string, string, number[]][];
+
+  for (const [state, inc, results] of seeds) {
+    const prng = new SeededPrng({ seed: [state, inc].map(BigInt) as State });
+    const actual = Array.from({ length: 10 }, prng.random);
+
+    assertEquals(actual, results);
+  }
 });

@@ -9,9 +9,9 @@
  * import { SeededPrng } from "@std/random";
  * import { assertEquals } from "@std/assert";
  *
- * const { random } = new SeededPrng(1722745269697);
+ * const { random } = new SeededPrng({ seed: 14614327452668470620n });
  *
- * assertEquals(randomIntegerBetween(1, 10, { random }), 9);
+ * assertEquals(randomIntegerBetween(1, 10, { random }), 7);
  * ```
  *
  * @module
