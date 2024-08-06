@@ -191,4 +191,3 @@ Deno.test("UnTarStream() with invalid ending", async () => {
   }
   assertEquals(threw, true);
 });
-
