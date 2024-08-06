@@ -27,3 +27,15 @@ Call the local function
 **Expectations**
 
 - result was "this is a fail"
+
+## Throw an error
+
+**Prompts**
+
+```md
+Call the error function
+```
+
+**Expectations**
+
+- an error was thrown
