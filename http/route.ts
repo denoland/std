@@ -1,6 +1,11 @@
 /**
  * Request handler for {@linkcode route}.
  *
+ * > [!WARNING]
+ * > **UNSTABLE**: New API, yet to be vetted.
+ *
+ * @experimental
+ *
  * Extends {@linkcode Handler} by adding a `params` argument.
  *
  * @param request Request
@@ -13,7 +18,14 @@ export type Handler = (
   params?: URLPatternResult | null,
 ) => Response | Promise<Response>;
 
-/** Static route configuration for {@linkcode route}. */
+/**
+ * Static route configuration for {@linkcode route}.
+ *
+ * > [!WARNING]
+ * > **UNSTABLE**: New API, yet to be vetted.
+ *
+ * @experimental
+ */
 export interface StaticRoute {
   /**
    * Request path.
@@ -31,7 +43,14 @@ export interface StaticRoute {
   handler: Handler;
 }
 
-/** Dynamic configuration for {@linkcode route}. */
+/**
+ * Dynamic configuration for {@linkcode route}.
+ *
+ * > [!WARNING]
+ * > **UNSTABLE**: New API, yet to be vetted.
+ *
+ * @experimental
+ */
 export interface DynamicRoute {
   /**
    * Request path.
@@ -53,11 +72,23 @@ function isDynamicRoute(route: Route): route is DynamicRoute {
   return route.path instanceof URLPattern;
 }
 
-/** Route configuration for {@linkcode route}. */
+/**
+ * Route configuration for {@linkcode route}.
+ *
+ * > [!WARNING]
+ * > **UNSTABLE**: New API, yet to be vetted.
+ *
+ * @experimental
+ */
 export type Route = StaticRoute | DynamicRoute;
 
 /**
  * Routes requests to different handlers based on the request path and method.
+ *
+ * > [!WARNING]
+ * > **UNSTABLE**: New API, yet to be vetted.
+ *
+ * @experimental
  *
  * @example Usage
  * ```ts no-eval
