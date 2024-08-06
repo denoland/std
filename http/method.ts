@@ -5,6 +5,11 @@
 /**
  * HTTP Methods derived from IANA Hypertext Transfer Protocol (HTTP) Method Registry
  *
+ * > [!WARNING]
+ * > **UNSTABLE**: New API, yet to be vetted.
+ *
+ * @experimental
+ *
  * @see {@link https://www.iana.org/assignments/http-methods/http-methods.xhtml#methods | IANA Hypertext Transfer Protocol (HTTP) Method Registry}
  */
 export const METHOD = {
@@ -288,5 +293,12 @@ export const METHOD = {
   VersionControl: "VERSION-CONTROL",
 } as const;
 
-/** A HTTP Method */
+/**
+ * A HTTP Method
+ *
+ * > [!WARNING]
+ * > **UNSTABLE**: New API, yet to be vetted.
+ *
+ * @experimental
+ */
 export type Method = typeof METHOD[keyof typeof METHOD];
