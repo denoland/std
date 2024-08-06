@@ -40,6 +40,8 @@ import {
 import { readAll } from "@std/io/read-all";
 import type { Reader } from "@std/io/types";
 
+export type { Reader };
+
 /**
  * Extend TarMeta with the `linkName` property so that readers can access
  * symbolic link values without polluting the world of archive writers.
@@ -197,8 +199,8 @@ export class TarEntry implements Reader {
  * This utility does not support decompression which must be done before extracting
  * the files.
  *
- * @example
- * ```ts
+ * @example Usage
+ * ```ts no-eval
  * import { Untar } from "@std/archive/untar";
  * import { ensureFile } from "@std/fs/ensure-file";
  * import { ensureDir } from "@std/fs/ensure-dir";
@@ -229,7 +231,11 @@ export class Untar {
   block: Uint8Array;
   #entry: TarEntry | undefined;
 
-  /** Constructs a new instance. */
+  /**
+   * Constructs a new instance.
+   *
+   * @param reader The reader to extract from.
+   */
   constructor(reader: Reader) {
     this.reader = reader;
     this.block = new Uint8Array(HEADER_LENGTH);
@@ -312,8 +318,29 @@ export class Untar {
   /**
    * Extract the next entry of the tar archive.
    *
-   * @returns A TarEntry with header metadata and a reader to the entry's
-   *          body, or null if there are no more entries to extract.
+   * @returns A TarEntry with header metadata and a reader to the entry's body,
+   * or null if there are no more entries to extract.
+   *
+   * @example Usage
+   * ```ts no-eval
+   * import { Tar, Untar } from "@std/archive";
+   *
+   * const fileName = "output.txt";
+   * const text = "hello tar world!";
+   *
+   * // create a tar archive
+   * const tar = new Tar();
+   * const content = new TextEncoder().encode(text);
+   * await tar.append(fileName, {
+   *   reader: new Buffer(content),
+   *   contentSize: content.byteLength,
+   * });
+   *
+   * // read data from a tar archive
+   * const untar = new Untar(tar.getReader());
+   * const result = await untar.extract();
+   * const untarText = new TextDecoder("utf-8").decode(await readAll(result));
+   * ```
    */
   async extract(): Promise<TarEntry | null> {
     if (this.#entry && !this.#entry.consumed) {
@@ -336,6 +363,32 @@ export class Untar {
    * Iterate over all entries of the tar archive.
    *
    * @yields A TarEntry with tar header metadata and a reader to the entry's body.
+   * @returns An async iterator.
+   *
+   * @example Usage
+   * ```ts no-eval
+   * import { Untar } from "@std/archive/untar";
+   * import { ensureFile } from "@std/fs/ensure-file";
+   * import { ensureDir } from "@std/fs/ensure-dir";
+   * import { copy } from "@std/io/copy";
+   *
+   * using reader = await Deno.open("./out.tar", { read: true });
+   * const untar = new Untar(reader);
+   *
+   * for await (const entry of untar) {
+   *   console.log(entry); // metadata
+   *
+   *   if (entry.type === "directory") {
+   *     await ensureDir(entry.fileName);
+   *     continue;
+   *   }
+   *
+   *   await ensureFile(entry.fileName);
+   *   using file = await Deno.open(entry.fileName, { write: true });
+   *   // <entry> is a reader.
+   *   await copy(entry, file);
+   * }
+   * ```
    */
   async *[Symbol.asyncIterator](): AsyncIterableIterator<TarEntry> {
     while (true) {
