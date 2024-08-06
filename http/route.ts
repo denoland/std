@@ -103,12 +103,12 @@ export function route(
   }
 
   return (request: Request, info?: Deno.ServeHandlerInfo) => {
-    const { pathname } = new URL(request.url);
+    const { pathname, href } = new URL(request.url);
     const handler = staticRoutes.get(`${request.method} ${pathname}`);
     if (handler !== undefined) return handler(request, info);
 
     for (const route of dynamicRoutes) {
-      const match = route.path.exec(pathname);
+      const match = route.path.exec(href);
       if (match) return route.handler(request, info, match);
     }
 
