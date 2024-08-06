@@ -7,7 +7,22 @@ const MAX_SAFE_INTEGER = BigInt(Number.MAX_SAFE_INTEGER);
 
 /**
  * Read big endian 64bit long from BufReader
- * @param buf
+ *
+ * @example Usage
+ * ```ts
+ * import { BufReader } from "@std/io/buf-reader";
+ * import { readLong } from "@std/io/read-long";
+ * import { assertEquals } from "@std/assert/equals";
+ *
+ * const buf = new BufReader(new Deno.Buffer(new Uint8Array([0, 0, 0, 0x12, 0x34, 0x56, 0x78, 0x9a])));
+ * const long = await readLong(buf);
+ * assertEquals(long, 0x123456789a);
+ * ```
+ *
+ * @param buf The BufReader to read from
+ * @returns The 64bit long
+ * @throws `Deno.errors.UnexpectedEof` if the reader returns unexpected EOF
+ * @throws `RangeError` if the long value is too big to be represented as a JavaScript number
  *
  * @deprecated This will be removed in 1.0.0. Use the {@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API | Web Streams API} instead.
  */

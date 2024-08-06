@@ -28,6 +28,21 @@ function createLPS(pat: Uint8Array): Uint8Array {
 /**
  * Read delimited bytes from a Reader.
  *
+ * @example Usage
+ * ```ts
+ * import { readDelim } from "@std/io/read-delim";
+ * import { assert } from "@std/assert/assert"
+ *
+ * const fileReader = await Deno.open("README.md");
+ * for await (const chunk of readDelim(fileReader, new TextEncoder().encode("\n"))) {
+ *   assert(chunk instanceof Uint8Array);
+ * }
+ * ```
+ *
+ * @param reader The reader to read from
+ * @param delim The delimiter to read until
+ * @returns The async iterator of Uint8Array
+ *
  * @deprecated This will be removed in 1.0.0. Use the {@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API | Web Streams API} instead.
  */
 export async function* readDelim(

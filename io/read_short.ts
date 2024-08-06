@@ -4,7 +4,20 @@ import type { BufReader } from "./buf_reader.ts";
 
 /**
  * Read big endian 16bit short from BufReader
- * @param buf
+ *
+ * @example Usage
+ * ```ts
+ * import { BufReader } from "@std/io/buf-reader";
+ * import { readShort } from "@std/io/read-short";
+ * import { assertEquals } from "@std/assert/equals";
+ *
+ * const buf = new BufReader(new Deno.Buffer(new Uint8Array([0x12, 0x34])));
+ * const short = await readShort(buf);
+ * assertEquals(short, 0x1234);
+ * ```
+ *
+ * @param buf The BufReader to read from
+ * @returns The 16bit short
  *
  * @deprecated This will be removed in 1.0.0. Use the {@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API | Web Streams API} instead.
  */

@@ -30,13 +30,17 @@ export interface ToReadableStreamOptions {
  * will be read.  When `null` is returned from the reader, the stream will be
  * closed along with the reader (if it is also a `Closer`).
  *
- * @example
- * ```ts
+ * @example Usage
+ * ```ts no-assert
  * import { toReadableStream } from "@std/io/to-readable-stream";
  *
- * const file = await Deno.open("./file.txt", { read: true });
+ * const file = await Deno.open("./README.md", { read: true });
  * const fileStream = toReadableStream(file);
  * ```
+ *
+ * @param reader The reader to read from
+ * @param options The options
+ * @returns The readable stream
  */
 export function toReadableStream(
   reader: Reader | (Reader & Closer),
