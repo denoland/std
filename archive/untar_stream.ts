@@ -92,213 +92,166 @@ export type TarStreamHeader = OldStyleFormat | PosixUstarFormat;
  * ```
  */
 export class UnTarStream {
+  #lock = false;
   #readable: ReadableStream<TarStreamEntry>;
   #writable: WritableStream<Uint8Array>;
-  /**
-   * Constructs a new instance.
-   */
+  #gen: AsyncGenerator<Uint8Array>;
   constructor() {
-    const { readable, writable } = function () {
-      let push: Uint8Array | undefined;
-      const array: Uint8Array[] = [];
-      return new TransformStream<Uint8Array, Uint8Array>({
-        transform(chunk, controller) {
-          if (push) {
-            const concat = new Uint8Array(push.length + chunk.length);
-            concat.set(push);
-            concat.set(chunk, push.length);
-            chunk = concat;
-          }
-          push = chunk.length % 512
-            ? chunk.slice(-chunk.length % 512)
-            : undefined;
-
-          for (let i = 512; i <= chunk.length; i += 512) {
-            array.push(chunk.slice(i - 512, i));
-          }
-          while (array.length > 2) {
-            controller.enqueue(array.shift()!);
-          }
-        },
-        flush(controller) {
-          if (push) {
-            return controller.error(
-              "Tarball has an unexpected number of bytes.",
-            );
-          }
-          if (array.length < 2) {
-            return controller.error("Tarball was too small to be valid.");
-          }
-          if (!array.every((x) => x.every((x) => x === 0))) {
-            controller.error("Tarball has invalid ending.");
-          }
-        },
-      });
-    }();
+    const { readable, writable } = new TransformStream<
+      Uint8Array,
+      Uint8Array
+    >();
+    this.#readable = ReadableStream.from(this.#untar());
     this.#writable = writable;
+
+    this.#gen = async function* () {
+      let push: Uint8Array | undefined;
+      const buffer: Uint8Array[] = [];
+      for await (let chunk of readable) {
+        if (push) {
+          const concat = new Uint8Array(push.length + chunk.length);
+          concat.set(push);
+          concat.set(chunk, push.length);
+          chunk = concat;
+        }
+
+        for (let i = 512; i <= chunk.length; i += 512) {
+          buffer.push(chunk.slice(i - 512, i));
+        }
+
+        const remainder = -chunk.length % 512;
+        push = remainder ? chunk.slice(remainder) : undefined;
+
+        while (buffer.length > 2) {
+          yield buffer.shift()!;
+        }
+      }
+      if (push) throw new Error("Tarball has an unexpected number of bytes.");
+      if (buffer.length < 2) {
+        throw new Error("Tarball was too small to be valid.");
+      }
+      if (!buffer.every((value) => value.every((x) => x === 0))) {
+        throw new Error("Tarball has invalid ending.");
+      }
+    }();
+  }
+
+  async *#untar(): AsyncGenerator<TarStreamEntry> {
     const decoder = new TextDecoder();
-    const reader = readable.getReader();
-    let header: OldStyleFormat | PosixUstarFormat | undefined;
-    let cancelled = false;
-    let reason: unknown;
-    this.#readable = new ReadableStream<TarStreamEntry>({
-      async pull(controller) {
-        while (header != undefined) {
-          await new Promise((a) => setTimeout(a, 0));
-        }
+    while (true) {
+      while (this.#lock) {
+        await new Promise((a) => setTimeout(a, 0));
+      }
 
-        const { done, value } = await reader.read();
-        if (done) {
-          return controller.close();
-        }
+      const { done, value } = await this.#gen.next();
+      if (done) break;
 
-        // Validate Checksum
-        const checksum = value.slice();
-        checksum.set(new Uint8Array(8).fill(32), 148);
-        if (
-          checksum.reduce((x, y) => x + y) !==
-            parseInt(decoder.decode(value.slice(148, 156 - 2)), 8)
-        ) {
-          return controller.error(
-            "Invalid Tarball. Header failed to pass checksum.",
-          );
-        }
+      // Validate Checksum
+      const checksum = value.slice();
+      checksum.set(new Uint8Array(8).fill(32), 148);
+      if (
+        checksum.reduce((x, y) => x + y) !==
+          parseInt(decoder.decode(value.slice(148, 156 - 2)), 8)
+      ) throw new Error("Invalid Tarball. Header failed to pass checksum.");
 
-        // Decode Header
+      // Decode Header
+      let header: OldStyleFormat | PosixUstarFormat = {
+        name: decoder.decode(value.slice(0, 100)).replaceAll("\0", ""),
+        mode: decoder.decode(value.slice(100, 108 - 2)),
+        uid: decoder.decode(value.slice(108, 116 - 2)),
+        gid: decoder.decode(value.slice(116, 124 - 2)),
+        size: parseInt(decoder.decode(value.slice(124, 136)).trimEnd(), 8),
+        mtime: parseInt(decoder.decode(value.slice(136, 148 - 1)), 8),
+        checksum: decoder.decode(value.slice(148, 156 - 2)),
+        typeflag: decoder.decode(value.slice(156, 157)),
+        linkname: decoder.decode(value.slice(157, 257)).replaceAll(
+          "\0",
+          "",
+        ),
+        pad: value.slice(257),
+      };
+      if (header.typeflag === "\0") header.typeflag = "0";
+      // "ustar\u000000"
+      if (
+        [117, 115, 116, 97, 114, 0, 48, 48].every((byte, i) =>
+          value[i + 257] === byte
+        )
+      ) {
         header = {
-          name: decoder.decode(value.slice(0, 100)).replaceAll("\0", ""),
-          mode: decoder.decode(value.slice(100, 108 - 2)),
-          uid: decoder.decode(value.slice(108, 116 - 2)),
-          gid: decoder.decode(value.slice(116, 124 - 2)),
-          size: parseInt(decoder.decode(value.slice(124, 136)).trimEnd(), 8),
-          mtime: parseInt(decoder.decode(value.slice(136, 148 - 1)), 8),
-          checksum: decoder.decode(value.slice(148, 156 - 2)),
-          typeflag: decoder.decode(value.slice(156, 157)),
-          linkname: decoder.decode(value.slice(157, 257)).replaceAll(
+          ...header,
+          magic: decoder.decode(value.slice(257, 263)),
+          version: decoder.decode(value.slice(263, 265)),
+          uname: decoder.decode(value.slice(265, 297)).replaceAll("\0", ""),
+          gname: decoder.decode(value.slice(297, 329)).replaceAll("\0", ""),
+          devmajor: decoder.decode(value.slice(329, 337)).replaceAll(
             "\0",
             "",
           ),
-          pad: value.slice(257),
+          devminor: decoder.decode(value.slice(337, 345)).replaceAll(
+            "\0",
+            "",
+          ),
+          prefix: decoder.decode(value.slice(345, 500)).replaceAll(
+            "\0",
+            "",
+          ),
+          pad: value.slice(500),
         };
-        if (header.typeflag === "\0") {
-          header.typeflag = "0";
-        }
-        if (
-          [117, 115, 116, 97, 114, 0, 48, 48].every((byte, i) =>
-            value[i + 257] === byte
-          )
-        ) {
-          header = {
-            ...header,
-            magic: decoder.decode(value.slice(257, 263)),
-            version: decoder.decode(value.slice(263, 265)),
-            uname: decoder.decode(value.slice(265, 297)).replaceAll("\0", ""),
-            gname: decoder.decode(value.slice(297, 329)).replaceAll("\0", ""),
-            devmajor: decoder.decode(value.slice(329, 337)).replaceAll(
-              "\0",
-              "",
-            ),
-            devminor: decoder.decode(value.slice(337, 345)).replaceAll(
-              "\0",
-              "",
-            ),
-            prefix: decoder.decode(value.slice(345, 500)).replaceAll(
-              "\0",
-              "",
-            ),
-            pad: value.slice(500),
-          };
-        }
+      }
 
-        if (header.typeflag === "0") {
-          const size = header.size;
-          let i = Math.ceil(size / 512);
-          let lock = false;
-          controller.enqueue({
-            pathname: ("prefix" in header && header.prefix.length
-              ? header.prefix + "/"
-              : "") + header.name,
-            header,
-            readable: new ReadableStream({
-              type: "bytes",
-              async pull(controller) {
-                if (i > 0) {
-                  lock = true;
-                  const { done, value } = await async function () {
-                    const x = await reader.read();
-                    if (!x.done && i-- === 1 && size % 512) {
-                      x.value = x.value.slice(0, size % 512); // Slice off suffix padding.
-                    }
-                    return x;
-                  }();
-                  if (done) {
-                    header = undefined;
-                    lock = false;
-                    controller.error("Tarball ended unexpectedly.");
-                    return;
-                  }
-                  if (controller.byobRequest?.view) {
-                    const buffer = new Uint8Array(
-                      controller.byobRequest.view.buffer,
-                    );
-                    const size = buffer.length;
-                    if (size < value.length) {
-                      buffer.set(value.slice(0, size));
-                      controller.byobRequest.respond(size);
-                      controller.enqueue(value.slice(size));
-                    } else {
-                      buffer.set(value);
-                      controller.byobRequest.respond(value.length);
-                    }
-                  } else {
-                    controller.enqueue(value);
-                  }
-                  lock = false;
-                } else {
-                  header = undefined;
-                  if (cancelled) {
-                    reader.cancel(reason);
-                  }
-                  controller.close();
-                  controller.byobRequest?.respond(0);
-                }
-              },
-              async cancel(r) {
-                reason = r;
-                while (lock) {
-                  await new Promise((a) =>
-                    setTimeout(a, 0)
-                  );
-                }
-                try {
-                  while (i-- > 0) {
-                    if ((await reader.read()).done) {
-                      throw new Error("Tarball ended unexpectedly.");
-                    }
-                  }
-                } catch (error) {
-                  throw error;
-                } finally {
-                  header = undefined;
-                }
-              },
-            }),
-          });
-        } else {
-          controller.enqueue({
-            pathname: ("prefix" in header && header.prefix.length
-              ? header.prefix + "/"
-              : "") + header.name,
-            header,
-          });
-          header = undefined;
-        }
+      yield {
+        pathname: ("prefix" in header && header.prefix.length
+          ? header.prefix + "/"
+          : "") + header.name,
+        header,
+        readable: header.typeflag === "0"
+          ? this.#readableFile(header.size)
+          : undefined,
+      };
+    }
+  }
+
+  #readableFile(size: number): ReadableStream<Uint8Array> {
+    const gen = this.#genFile(size);
+    return new ReadableStream({
+      type: "bytes",
+      async pull(controller) {
+        const { done, value } = await gen.next();
+        if (done) {
+          controller.close();
+          controller.byobRequest?.respond(0);
+        } else if (controller.byobRequest?.view) {
+          const buffer = new Uint8Array(controller.byobRequest.view.buffer);
+          const size = buffer.length;
+          if (value.length > size) {
+            buffer.set(value.slice(0, size));
+            controller.byobRequest.respond(size);
+            controller.enqueue(value.slice(size));
+          } else {
+            buffer.set(value);
+            controller.byobRequest.respond(value.length);
+          }
+        } else controller.enqueue(value);
       },
-      cancel(r) {
-        reason = r;
-        cancelled = true;
+      async cancel() {
+        // deno-lint-ignore no-empty
+        for await (const _ of gen) {}
       },
     });
+  }
+
+  async *#genFile(size: number): AsyncGenerator<Uint8Array> {
+    this.#lock = true;
+    for (let i = Math.ceil(size / 512); i > 0; --i) {
+      const { done, value } = await this.#gen.next();
+      if (done) {
+        this.#lock = false;
+        throw new Error("Unexpected end of Tarball.");
+      }
+      if (i === 1 && size % 512) yield value.slice(0, size % 512);
+      else yield value;
+    }
+    this.#lock = false;
   }
 
   /**

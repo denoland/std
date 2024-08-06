@@ -1,7 +1,8 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+import { concat } from "../bytes/mod.ts";
 import { TarStream, type TarStreamInput } from "./tar_stream.ts";
 import { UnTarStream } from "./untar_stream.ts";
-import { assertEquals } from "../assert/mod.ts";
+import { assert, assertEquals } from "../assert/mod.ts";
 
 Deno.test("expandTarArchiveCheckingHeaders", async () => {
   const text = new TextEncoder().encode("Hello World!");
@@ -125,3 +126,69 @@ Deno.test("UnTarStream() with size equals to multiple of 512", async () => {
     }
   }
 });
+
+Deno.test("UnTarStream() with invalid size", async () => {
+  const readable = ReadableStream.from<TarStreamInput>([
+    {
+      pathname: "newFile.txt",
+      size: 512,
+      iterable: [new Uint8Array(512).fill(97)],
+    },
+  ])
+    .pipeThrough(new TarStream())
+    .pipeThrough(
+      new TransformStream<Uint8Array, Uint8Array>({
+        flush(controller) {
+          controller.enqueue(new Uint8Array(100));
+        },
+      }),
+    )
+    .pipeThrough(new UnTarStream());
+
+  let threw = false;
+  try {
+    for await (const entry of readable) {
+      await entry.readable?.cancel();
+    }
+  } catch (error) {
+    threw = true;
+    assert(error instanceof Error);
+    assertEquals(error.message, "Tarball has an unexpected number of bytes.");
+  }
+  assertEquals(threw, true);
+});
+
+Deno.test("UnTarStream() with invalid ending", async () => {
+  const tarBytes = concat(
+    await Array.fromAsync(
+      ReadableStream.from<TarStreamInput>([
+        {
+          pathname: "newFile.txt",
+          size: 512,
+          iterable: [new Uint8Array(512).fill(97)],
+        },
+      ])
+        .pipeThrough(new TarStream()),
+    ),
+  );
+  tarBytes[tarBytes.length - 1] = 1;
+
+  const readable = ReadableStream.from([tarBytes])
+    .pipeThrough(new UnTarStream());
+
+  let threw = false;
+  try {
+    for await (const entry of readable) {
+      await entry.readable?.cancel();
+    }
+  } catch (error) {
+    threw = true;
+    assert(error instanceof Error);
+    assertEquals(
+      error.message,
+      "Tarball has invalid ending.",
+    );
+  }
+  assertEquals(threw, true);
+});
+
