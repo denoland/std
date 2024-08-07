@@ -9,7 +9,7 @@ const routes: Route[] = [
     handler: (request: Request) => new Response(new URL(request.url).pathname),
   },
   {
-    path: new URLPattern({ pathname: "/users/:id" }),
+    pattern: new URLPattern({ pathname: "/users/:id" }),
     method: "POST",
     handler: (_request, _info, params) =>
       new Response(params?.pathname.groups.id),

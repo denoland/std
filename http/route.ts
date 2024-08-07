@@ -57,7 +57,7 @@ export interface DynamicRoute {
   /**
    * Request path.
    */
-  path: URLPattern;
+  pattern: URLPattern;
   /**
    * Request method.
    *
@@ -71,7 +71,7 @@ export interface DynamicRoute {
 }
 
 function isDynamicRoute(route: Route): route is DynamicRoute {
-  return route.path instanceof URLPattern;
+  return "pattern" in route;
 }
 
 /**
@@ -141,7 +141,7 @@ export function route(
     if (handler !== undefined) return handler(request, info);
 
     for (const route of dynamicRoutes) {
-      const match = route.path.exec(href);
+      const match = route.pattern.exec(href);
       if (match) return route.handler(request, info, match);
     }
 
