@@ -8,15 +8,15 @@
  *
  * @experimental
  *
- * Extends {@linkcode Deno.ServeHandlerInfo} by adding making `info` optional
- * and adding a `params` argument.
+ * Extends {@linkcode Deno.ServeHandlerInfo} by adding making `request` and
+ * `info` optional and adding a `params` argument.
  *
  * @param request Request
  * @param info Request info
  * @param params URL pattern result
  */
 export type Handler = (
-  request: Request,
+  request?: Request,
   info?: Deno.ServeHandlerInfo,
   params?: URLPatternResult | null,
 ) => Response | Promise<Response>;
