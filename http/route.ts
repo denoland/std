@@ -31,7 +31,7 @@ export type Handler = (
  */
 export interface Route {
   /**
-   * Request path.
+   * Request URL pattern.
    */
   pattern: URLPattern;
   /**
