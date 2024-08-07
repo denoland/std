@@ -141,20 +141,9 @@ export class TarStream {
     });
     this.#writable = writable;
     const gen = async function* () {
-      const paths: string[] = [];
       const encoder = new TextEncoder();
-      const decoder = new TextDecoder();
       for await (const chunk of readable) {
         const [prefix, name] = chunk.pathname;
-        {
-          const pathname = prefix.length
-            ? decoder.decode(prefix) + "/" + decoder.decode(name)
-            : decoder.decode(name);
-          if (paths.includes(pathname)) {
-            continue;
-          }
-          paths.push(pathname);
-        }
         const typeflag = "size" in chunk ? "0" : "5";
         const header = new Uint8Array(512);
         const size = "size" in chunk ? chunk.size : 0;
