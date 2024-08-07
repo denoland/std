@@ -141,25 +141,23 @@ Deno.test("parsePathname()", () => {
   assertEquals(
     parsePathname(
       "./Veeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeery/LongPath",
-      true,
     ),
     [
       encoder.encode(
-        "Veeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeery",
+        "./Veeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeery",
       ),
-      encoder.encode("LongPath/"),
+      encoder.encode("LongPath"),
     ],
   );
 
   assertEquals(
     parsePathname(
       "./some random path/with/loooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooong/path",
-      true,
     ),
     [
-      encoder.encode("some random path"),
+      encoder.encode("./some random path"),
       encoder.encode(
-        "with/loooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooong/path/",
+        "with/loooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooong/path",
       ),
     ],
   );
@@ -167,10 +165,9 @@ Deno.test("parsePathname()", () => {
   assertEquals(
     parsePathname(
       "./some random path/with/loooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooong/file",
-      false,
     ),
     [
-      encoder.encode("some random path"),
+      encoder.encode("./some random path"),
       encoder.encode(
         "with/loooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooong/file",
       ),

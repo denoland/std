@@ -124,20 +124,13 @@ export class TarStream {
         }
 
         const pathname = typeof chunk.pathname === "string"
-          ? parsePathname(chunk.pathname, !("size" in chunk))
+          ? parsePathname(chunk.pathname)
           : function () {
             if (
-              "size" in chunk ===
-                (chunk.pathname[1].slice(-1)[0] === SLASH_CODE_POINT)
+              chunk.pathname[0].length > 155 || chunk.pathname[1].length > 100
             ) {
               controller.error(
-                `Pre-parsed pathname for ${
-                  "size" in chunk ? "directory" : "file"
-                } is not suffixed correctly. ${
-                  "size" in chunk ? "Directories" : "Files"
-                } should${
-                  "size" in chunk ? "" : "n't"
-                } end in a forward slash.`,
+                "Invalid Pathname. Pathnames, when provided as a Uint8Array, need to be no more than [155, 100] bytes respectively.",
               );
             }
             return chunk.pathname;
@@ -277,16 +270,7 @@ export class TarStream {
  */
 export function parsePathname(
   pathname: string,
-  isDirectory = false,
 ): [Uint8Array, Uint8Array] {
-  pathname = pathname.split("/").filter((x) => x).join("/");
-  if (pathname.startsWith("./")) {
-    pathname = pathname.slice(2);
-  }
-  if (isDirectory) {
-    pathname += "/";
-  }
-
   const name = new TextEncoder().encode(pathname);
   if (name.length <= 100) {
     return [new Uint8Array(0), name];

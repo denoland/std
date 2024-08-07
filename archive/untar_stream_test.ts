@@ -25,7 +25,7 @@ Deno.test("expandTarArchiveCheckingHeaders", async () => {
     pathnames.push(item.pathname);
     item.readable?.cancel();
   }
-  assertEquals(pathnames, ["potato/", "text.txt"]);
+  assertEquals(pathnames, ["./potato", "./text.txt"]);
 });
 
 Deno.test("expandTarArchiveCheckingBodiesDefaultStream", async () => {
