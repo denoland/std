@@ -91,7 +91,8 @@ export type TarStreamHeader = OldStyleFormat | PosixUstarFormat;
  * }
  * ```
  */
-export class UnTarStream {
+export class UnTarStream
+  implements TransformStream<Uint8Array, TarStreamEntry> {
   #lock = false;
   #readable: ReadableStream<TarStreamEntry>;
   #writable: WritableStream<Uint8Array>;

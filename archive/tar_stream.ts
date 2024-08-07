@@ -97,7 +97,7 @@ const SLASH_CODE_POINT = "/".charCodeAt(0);
  *   .pipeTo((await Deno.create('./out.tar.gz')).writable)
  * ```
  */
-export class TarStream {
+export class TarStream implements TransformStream<TarStreamInput, Uint8Array> {
   #readable: ReadableStream<Uint8Array>;
   #writable: WritableStream<TarStreamInput>;
   /**
