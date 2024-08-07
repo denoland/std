@@ -1,3 +1,35 @@
+### 2024.08.07
+
+#### @std/archive 0.225.0 (minor)
+
+- BREAKING(archive): remove `TarEntry.#header` (#5638)
+- fix(archive): make `data` property private in `Tar` (#5645)
+- fix(archive): make `block` and `reader` properties in `Untar` private (#5637)
+- docs(archive): mark public APIs as unstable/experimental (#5639)
+
+#### @std/csv 1.0.1 (patch)
+
+- fix(csv,streams): use string arrays in `ReadableStream.from()` in docs and
+  tests (#5635)
+
+#### @std/datetime 0.224.5 (patch)
+
+- refactor(datetime): remove `Tokenizer` class (#5622)
+
+#### @std/http 1.0.1 (patch)
+
+- feat(http/unstable): `route` module (#5644)
+- feat(http/unstable): `headers` module (#4317)
+- feat(http/unstable): `methods` module (#4320)
+- fix(http): handle wrong request method correctly (#5643)
+- refactor(http): use `headers` module in `file-server` module (#5642)
+
+#### @std/streams 1.0.1 (patch)
+
+- feat(streams/unstable): `FixedChunkStream` (#4995)
+- fix(csv,streams): use string arrays in `ReadableStream.from()` in docs and
+  tests (#5635)
+
 ### 2024.08.05
 
 #### @std/async 1.0.3 (patch)
