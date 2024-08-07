@@ -1,5 +1,11 @@
 ### 2024.08.07
 
+#### @std/http 1.0.2 (patch)
+
+- fix(http/unstable): make `info` parameter optional (#5652)
+
+### 2024.08.07
+
 #### @std/archive 0.225.0 (minor)
 
 - BREAKING(archive): remove `TarEntry.#header` (#5638)
