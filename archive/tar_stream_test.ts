@@ -6,6 +6,7 @@ import {
   validTarStreamOptions,
 } from "./tar_stream.ts";
 import { assertEquals, assertRejects } from "../assert/mod.ts";
+import { assert } from "../assert/assert.ts";
 
 Deno.test("TarStream() with default stream", async () => {
   const text = new TextEncoder().encode("Hello World!");
@@ -220,4 +221,96 @@ Deno.test("validTarStreamOptions()", () => {
   assertEquals(validTarStreamOptions({ devminor: "000" }), true);
   assertEquals(validTarStreamOptions({ devminor: "008" }), false);
   assertEquals(validTarStreamOptions({ devminor: "000000000" }), false);
+});
+
+Deno.test("TarStream() with invalid options", async () => {
+  const readable = ReadableStream.from<TarStreamInput>([
+    { pathname: "potato", options: { mode: "009" } },
+  ]).pipeThrough(new TarStream());
+
+  let threw = false;
+  try {
+    // deno-lint-ignore no-empty
+    for await (const _ of readable) {}
+  } catch (error) {
+    threw = true;
+    assert(typeof error === "string");
+    assertEquals(error, "Invalid Options Provided!");
+  }
+  assertEquals(threw, true);
+});
+
+Deno.test("TarStream() with invalid pathname", async () => {
+  const readable = ReadableStream.from<TarStreamInput>([
+    { pathname: [new Uint8Array(156), new Uint8Array(0)] },
+  ]).pipeThrough(new TarStream());
+
+  let threw = false;
+  try {
+    // deno-lint-ignore no-empty
+    for await (const _ of readable) {}
+  } catch (error) {
+    threw = true;
+    assert(typeof error === "string");
+    assertEquals(
+      error,
+      "Invalid Pathname. Pathnames, when provided as a Uint8Array, need to be no more than [155, 100] bytes respectively.",
+    );
+  }
+  assertEquals(threw, true);
+});
+
+Deno.test("TarStream() with mismatching sizes", async () => {
+  const text = new TextEncoder().encode("Hello World!");
+  const readable = ReadableStream.from<TarStreamInput>([
+    {
+      pathname: "potato",
+      size: text.length + 1,
+      iterable: [text.slice()],
+    },
+  ]).pipeThrough(new TarStream());
+
+  let threw = false;
+  try {
+    // deno-lint-ignore no-empty
+    for await (const _ of readable) {}
+  } catch (error) {
+    threw = true;
+    assert(error instanceof Error);
+    assertEquals(
+      error.message,
+      "Invalid Tarball! Provided size did not match bytes read from provided iterable.",
+    );
+  }
+  assertEquals(threw, true);
+});
+
+Deno.test("parsePathname() with too long path", () => {
+  let threw = false;
+  try {
+    parsePathname("0".repeat(300));
+  } catch (error) {
+    threw = true;
+    assert(error instanceof Error);
+    assertEquals(
+      error.message,
+      "Invalid Pathname! Pathname cannot exceed 256 bytes.",
+    );
+  }
+  assertEquals(threw, true);
+});
+
+Deno.test("parsePathname() with too long path", () => {
+  let threw = false;
+  try {
+    parsePathname("0".repeat(160) + "/");
+  } catch (error) {
+    threw = true;
+    assert(error instanceof Error);
+    assertEquals(
+      error.message,
+      "Invalid Pathname! Pathname needs to be split-able on a forward slash separator into [155, 100] bytes respectively.",
+    );
+  }
+  assertEquals(threw, true);
 });
