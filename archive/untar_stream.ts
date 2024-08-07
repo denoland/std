@@ -204,7 +204,7 @@ export class UnTarStream {
           ? header.prefix + "/"
           : "") + header.name,
         header,
-        readable: header.typeflag === "0"
+        readable: !["1", "2", "3", "4", "5", "6"].includes(header.typeflag)
           ? this.#readableFile(header.size)
           : undefined,
       };
