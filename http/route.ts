@@ -1,7 +1,26 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
 /**
- * Request handler for {@linkcode route}.
+ * Request handler for {@linkcode StaticRoute}.
+ *
+ * > [!WARNING]
+ * > **UNSTABLE**: New API, yet to be vetted.
+ *
+ * @experimental
+ *
+ * Extends {@linkcode Deno.ServeHandlerInfo} by adding making `info` optional.
+ *
+ * @param request Request
+ * @param info Request info
+ * @param params URL pattern result
+ */
+export type StaticRouteHandler = (
+  request: Request,
+  info?: Deno.ServeHandlerInfo,
+) => Response | Promise<Response>;
+
+/**
+ * Request handler for {@linkcode DynamicRoute}.
  *
  * > [!WARNING]
  * > **UNSTABLE**: New API, yet to be vetted.
@@ -15,7 +34,7 @@
  * @param info Request info
  * @param params URL pattern result
  */
-export type Handler = (
+export type DynamicRouteHandler = (
   request: Request,
   info?: Deno.ServeHandlerInfo,
   params?: URLPatternResult | null,
@@ -43,7 +62,7 @@ export interface StaticRoute {
   /**
    * Request handler.
    */
-  handler: Handler;
+  handler: StaticRouteHandler;
 }
 
 /**
@@ -68,7 +87,7 @@ export interface DynamicRoute {
   /**
    * Request handler.
    */
-  handler: Handler;
+  handler: DynamicRouteHandler;
 }
 
 function isDynamicRoute(route: Route): route is DynamicRoute {
@@ -96,20 +115,24 @@ export type Route = StaticRoute | DynamicRoute;
  * @example Usage
  * ```ts no-eval
  * import { route, type Route } from "@std/http/route";
+ * import { serveDir } from "@std/http/file-server";
  *
  * const routes: Route[] = [
  *   {
  *     path: "/about",
- *     handler: (_request) => new Response("About page"),
+ *     handler: () => new Response("About page"),
  *   },
  *   {
- *     path: "/users/:id",
- *     method: "GET",
- *     handler: (_request, _info, params) => new Response(params?.pathname.groups.id),
+ *     pattern: new URLPattern({ pathname: "/users/:id" }),
+ *     handler: (_req, _info, params) => new Response(params?.pathname.groups.id),
+ *   },
+ *   {
+ *     pattern: new URLPattern({ pathname: "/static/*" }),
+ *     handler: (req: Request) => serveDir(req)
  *   }
  * ];
  *
- * function defaultHandler(request: Request) {
+ * function defaultHandler(_req: Request) {
  *   return new Response("Not found", { status: 404 });
  * }
  *
@@ -124,9 +147,9 @@ export type Route = StaticRoute | DynamicRoute;
  */
 export function route(
   routes: Route[],
-  defaultHandler: Handler,
-): Handler {
-  const staticRoutes = new Map<string, Handler>();
+  defaultHandler: StaticRouteHandler,
+): StaticRouteHandler {
+  const staticRoutes = new Map<string, StaticRouteHandler>();
   const dynamicRoutes: DynamicRoute[] = [];
 
   for (const route of routes) {

@@ -65,20 +65,24 @@
  *
  * ```ts no-eval
  * import { route, type Route } from "@std/http/route";
+ * import { serveDir } from "@std/http/file-server";
  *
  * const routes: Route[] = [
  *   {
  *     path: "/about",
- *     method: "GET",
- *     handler: (request) => new Response("About page"),
+ *     handler: () => new Response("About page"),
  *   },
  *   {
- *     path: "/users/:id",
- *     method: "GET",
- *     handler: (_request, _info, params) => new Response(params?.pathname.groups.id),
+ *     pattern: new URLPattern({ pathname: "/users/:id" }),
+ *     handler: (_req, _info, params) => new Response(params?.pathname.groups.id),
+ *   },
+ *   {
+ *     pattern: new URLPattern({ pathname: "/static/*" }),
+ *     handler: (req: Request) => serveDir(req)
  *   }
  * ];
- * function defaultHandler(request: Request) {
+ *
+ * function defaultHandler(_req: Request) {
  *   return new Response("Not found", { status: 404 });
  * }
  *
