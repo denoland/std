@@ -1,26 +1,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
 /**
- * Request handler for {@linkcode StaticRoute}.
- *
- * > [!WARNING]
- * > **UNSTABLE**: New API, yet to be vetted.
- *
- * @experimental
- *
- * Extends {@linkcode Deno.ServeHandlerInfo} by adding making `info` optional.
- *
- * @param request Request
- * @param info Request info
- * @param params URL pattern result
- */
-export type StaticRouteHandler = (
-  request: Request,
-  info?: Deno.ServeHandlerInfo,
-) => Response | Promise<Response>;
-
-/**
- * Request handler for {@linkcode DynamicRoute}.
+ * Request handler for {@linkcode Route}.
  *
  * > [!WARNING]
  * > **UNSTABLE**: New API, yet to be vetted.
@@ -34,46 +15,21 @@ export type StaticRouteHandler = (
  * @param info Request info
  * @param params URL pattern result
  */
-export type DynamicRouteHandler = (
+export type Handler = (
   request: Request,
   info?: Deno.ServeHandlerInfo,
   params?: URLPatternResult | null,
 ) => Response | Promise<Response>;
 
 /**
- * Static route configuration for {@linkcode route}.
+ * Route configuration for {@linkcode route}.
  *
  * > [!WARNING]
  * > **UNSTABLE**: New API, yet to be vetted.
  *
  * @experimental
  */
-export interface StaticRoute {
-  /**
-   * Request path.
-   */
-  path: string;
-  /**
-   * Request method.
-   *
-   * @default {"GET"}
-   */
-  method?: string;
-  /**
-   * Request handler.
-   */
-  handler: StaticRouteHandler;
-}
-
-/**
- * Dynamic configuration for {@linkcode route}.
- *
- * > [!WARNING]
- * > **UNSTABLE**: New API, yet to be vetted.
- *
- * @experimental
- */
-export interface DynamicRoute {
+export interface Route {
   /**
    * Request path.
    */
@@ -87,22 +43,8 @@ export interface DynamicRoute {
   /**
    * Request handler.
    */
-  handler: DynamicRouteHandler;
+  handler: Handler;
 }
-
-function isDynamicRoute(route: Route): route is DynamicRoute {
-  return "pattern" in route;
-}
-
-/**
- * Route configuration for {@linkcode route}.
- *
- * > [!WARNING]
- * > **UNSTABLE**: New API, yet to be vetted.
- *
- * @experimental
- */
-export type Route = StaticRoute | DynamicRoute;
 
 /**
  * Routes requests to different handlers based on the request path and method.
@@ -119,7 +61,7 @@ export type Route = StaticRoute | DynamicRoute;
  *
  * const routes: Route[] = [
  *   {
- *     path: "/about",
+ *     pattern: new URLPattern({ pathname: "/about" }),
  *     handler: () => new Response("About page"),
  *   },
  *   {
@@ -147,29 +89,22 @@ export type Route = StaticRoute | DynamicRoute;
  */
 export function route(
   routes: Route[],
-  defaultHandler: StaticRouteHandler,
-): StaticRouteHandler {
-  const staticRoutes = new Map<string, StaticRouteHandler>();
-  const dynamicRoutes: DynamicRoute[] = [];
-
-  for (const route of routes) {
-    if (isDynamicRoute(route)) {
-      dynamicRoutes.push(route);
-    } else {
-      staticRoutes.set(`${route.method ?? "GET"} ${route.path}`, route.handler);
-    }
-  }
-
+  // TODO(iuioiua): Replace with `Deno.ServeHandler` once `info` is optional.
+  defaultHandler: (
+    request: Request,
+    info?: Deno.ServeHandlerInfo,
+  ) => Response | Promise<Response>,
+): // TODO(iuioiua): Replace with `Deno.ServeHandler` once `info` is optional.
+(
+  request: Request,
+  info?: Deno.ServeHandlerInfo,
+) => Response | Promise<Response> {
+  // TODO(iuioiua): Use `URLPatternList` once available
   return (request: Request, info?: Deno.ServeHandlerInfo) => {
-    const { pathname, href } = new URL(request.url);
-    const handler = staticRoutes.get(`${request.method} ${pathname}`);
-    if (handler) return handler(request, info);
-
-    for (const route of dynamicRoutes) {
-      const match = route.pattern.exec(href);
+    for (const route of routes) {
+      const match = route.pattern.exec(request.url);
       if (match) return route.handler(request, info, match);
     }
-
     return defaultHandler(request, info);
   };
 }

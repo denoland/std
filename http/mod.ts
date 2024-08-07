@@ -69,7 +69,7 @@
  *
  * const routes: Route[] = [
  *   {
- *     path: "/about",
+ *     pattern: new URLPattern({ pathname: "/about" }),
  *     handler: () => new Response("About page"),
  *   },
  *   {

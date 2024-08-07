@@ -5,7 +5,7 @@ import { assertEquals } from "../assert/equals.ts";
 
 const routes: Route[] = [
   {
-    path: "/about",
+    pattern: new URLPattern({ pathname: "/about" }),
     handler: (request: Request) => new Response(new URL(request.url).pathname),
   },
   {
