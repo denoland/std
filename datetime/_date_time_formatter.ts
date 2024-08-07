@@ -321,7 +321,7 @@ export class DateTimeFormatter {
     return string;
   }
 
-  parseToParts(string: string): DateTimeFormatPart[] {
+  formatToParts(string: string): DateTimeFormatPart[] {
     const parts: DateTimeFormatPart[] = [];
 
     for (const token of this.#format) {
@@ -568,7 +568,7 @@ export class DateTimeFormatter {
   }
 
   parse(string: string): Date {
-    const parts = this.parseToParts(string);
+    const parts = this.formatToParts(string);
     return this.partsToDate(parts);
   }
 }
