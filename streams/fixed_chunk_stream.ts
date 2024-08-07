@@ -1,8 +1,8 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
 /**
- * A transform stream that resize the chunks into perfectly `size` chunks with
- * the exception of the last chunk.
+ * A transform stream that resize {@linkcode Uint8Array} chunks into perfectly
+ * `size` chunks with the exception of the last chunk.
  *
  * > [!WARNING]
  * > **UNSTABLE**: New API, yet to be vetted.
