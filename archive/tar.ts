@@ -257,11 +257,11 @@ export interface TarDataWithSource extends TarData {
  */
 export class Tar {
   /** Tar data. */
-  data: TarDataWithSource[];
+  #data: TarDataWithSource[];
 
   /** Constructs a new instance. */
   constructor() {
-    this.data = [];
+    this.#data = [];
   }
 
   /**
@@ -414,7 +414,7 @@ export class Tar {
       });
 
     tarData.checksum = pad(checksum, 6) + "\u0000 ";
-    this.data.push(tarData);
+    this.#data.push(tarData);
   }
 
   /**
@@ -453,7 +453,7 @@ export class Tar {
    */
   getReader(): Reader {
     const readers: Reader[] = [];
-    this.data.forEach((tarData) => {
+    this.#data.forEach((tarData) => {
       let { reader } = tarData;
       const { filePath } = tarData;
       const headerArr = formatHeader(tarData);
