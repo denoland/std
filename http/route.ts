@@ -16,7 +16,7 @@
  */
 export type Handler = (
   request: Request,
-  info: Deno.ServeHandlerInfo,
+  info?: Deno.ServeHandlerInfo,
   params?: URLPatternResult | null,
 ) => Response | Promise<Response>;
 
@@ -88,10 +88,16 @@ export interface Route {
  */
 export function route(
   routes: Route[],
-  defaultHandler: Deno.ServeHandler,
-): Deno.ServeHandler {
+  defaultHandler: (
+    request: Request,
+    info?: Deno.ServeHandlerInfo,
+  ) => Response | Promise<Response>,
+): (
+  request: Request,
+  info?: Deno.ServeHandlerInfo,
+) => Response | Promise<Response> {
   // TODO(iuioiua): Use `URLPatternList` once available (https://github.com/whatwg/urlpattern/pull/166)
-  return (request: Request, info: Deno.ServeHandlerInfo) => {
+  return (request: Request, info?: Deno.ServeHandlerInfo) => {
     for (const route of routes) {
       const match = route.pattern.exec(request.url);
       if (match) return route.handler(request, info, match);
