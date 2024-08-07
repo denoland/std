@@ -76,7 +76,7 @@ const RX_REGEXP_ESCAPE = new RegExp(
  *
  * @example Usage
  * ```ts
- * import { escape } from "@std/regexp";
+ * import { escape } from "@std/regexp/escape";
  * import { assertEquals, assertMatch, assertNotMatch } from "@std/assert";
  *
  * const re = new RegExp(`^${escape(".")}$`, "u");

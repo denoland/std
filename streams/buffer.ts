@@ -131,29 +131,6 @@ export class Buffer {
    * Constructs a new instance.
    *
    * @param ab An optional buffer to use as the initial buffer.
-   *
-   * @example No initial buffer provided
-   * ```ts no-assert
-   * import { Buffer } from "@std/streams/buffer";
-   *
-   * const buf = new Buffer();
-   * ```
-   *
-   * @example With a pre-allocated buffer
-   * ```ts no-assert
-   * import { Buffer } from "@std/streams/buffer";
-   *
-   * const arrayBuffer = new ArrayBuffer(8);
-   * const buf = new Buffer(arrayBuffer);
-   * ```
-   *
-   * @example From Uint8Array
-   * ```ts no-assert
-   * import { Buffer } from "@std/streams/buffer";
-   *
-   * const array = new Uint8Array([0, 1, 2]);
-   * const buf = new Buffer(array.buffer);
-   * ```
    */
   constructor(ab?: ArrayBufferLike | ArrayLike<number>) {
     this.#buf = ab === undefined ? new Uint8Array(0) : new Uint8Array(ab);

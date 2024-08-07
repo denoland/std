@@ -21,10 +21,7 @@ export function canParse(version: string): boolean {
   try {
     parse(version);
     return true;
-  } catch (err) {
-    if (!(err instanceof TypeError)) {
-      throw err;
-    }
+  } catch {
     return false;
   }
 }

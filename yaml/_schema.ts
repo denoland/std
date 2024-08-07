@@ -4,7 +4,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-import { YamlError } from "./_error.ts";
 import type { KindType, Type } from "./_type.ts";
 import type { ArrayObject } from "./_utils.ts";
 import {
@@ -25,11 +24,37 @@ import {
   undefinedType,
 } from "./_type/mod.ts";
 
-function compileList(
+/**
+ * Name of the schema to use.
+ *
+ * > [!NOTE]
+ * > It is recommended to use the schema that is most appropriate for your use
+ * > case. Doing so will avoid any unnecessary processing and benefit
+ * > performance.
+ *
+ * Options include:
+ * - `failsafe`: supports generic mappings, generic sequences and generic
+ * strings.
+ * - `json`: extends `failsafe` schema by also supporting nulls, booleans,
+ * integers and floats.
+ * - `core`: functionally the same as `json` schema.
+ * - `default`: extends `core` schema by also supporting binary, omap, pairs and
+ * set types.
+ * - `extended`: extends `default` schema by also supporting regular
+ * expressions and undefined values.
+ *
+ * See
+ * {@link https://yaml.org/spec/1.2.2/#chapter-10-recommended-schemas | YAML 1.2 spec}
+ * for more details on the `failsafe`, `json` and `core` schemas.
+ */
+export type SchemaType = "failsafe" | "json" | "core" | "default" | "extended";
+
+// deno-lint-ignore no-explicit-any
+function compileList<K extends KindType, D = any>(
   schema: Schema,
   name: "implicit" | "explicit",
-  result: Type[],
-): Type[] {
+  result: Type<K, D>[],
+): Type<K, D>[] {
   const exclude: number[] = [];
 
   for (const includedSchema of schema.include) {
@@ -46,14 +71,17 @@ function compileList(
       }
     }
 
-    result.push(currentType);
+    result.push(currentType as Type<K, D>);
   }
 
   return result.filter((_type, index): unknown => !exclude.includes(index));
 }
 
-export type TypeMap = Record<KindType | "fallback", ArrayObject<Type<unknown>>>;
-function compileMap(...typesList: Type<unknown>[][]): TypeMap {
+export type TypeMap = Record<
+  KindType | "fallback",
+  ArrayObject<Type<KindType>>
+>;
+function compileMap(...typesList: Type<KindType>[][]): TypeMap {
   const result: TypeMap = {
     fallback: {},
     mapping: {},
@@ -63,40 +91,29 @@ function compileMap(...typesList: Type<unknown>[][]): TypeMap {
 
   for (const types of typesList) {
     for (const type of types) {
-      if (type.kind !== null) {
-        result[type.kind][type.tag] = result["fallback"][type.tag] = type;
-      }
+      result[type.kind][type.tag] = result["fallback"][type.tag] = type;
     }
   }
   return result;
 }
 
 export class Schema {
-  implicit: Type[];
-  explicit: Type[];
+  implicit: Type<"scalar">[];
+  explicit: Type<KindType>[];
   include: Schema[];
 
-  compiledImplicit: Type[];
-  compiledExplicit: Type[];
+  compiledImplicit: Type<"scalar">[];
+  compiledExplicit: Type<KindType>[];
   compiledTypeMap: TypeMap;
 
   constructor(definition: {
-    implicit?: Type[];
-    explicit?: Type[];
+    implicit?: Type<"scalar">[];
+    explicit?: Type<KindType>[];
     include?: Schema[];
   }) {
     this.explicit = definition.explicit || [];
     this.implicit = definition.implicit || [];
     this.include = definition.include || [];
-
-    for (const type of this.implicit) {
-      if (type.loadKind && type.loadKind !== "scalar") {
-        throw new YamlError(
-          "There is a non-scalar type in the implicit list of a schema. Implicit resolving of such types is not supported.",
-        );
-      }
-    }
-
     this.compiledImplicit = compileList(this, "implicit", []);
     this.compiledExplicit = compileList(this, "explicit", []);
     this.compiledTypeMap = compileMap(

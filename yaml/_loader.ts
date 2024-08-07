@@ -35,10 +35,9 @@ import {
   SPACE,
   VERTICAL_LINE,
 } from "./_chars.ts";
-import { YamlError } from "./_error.ts";
 import { Mark } from "./_mark.ts";
 import { DEFAULT_SCHEMA, type Schema, type TypeMap } from "./_schema.ts";
-import type { Type } from "./_type.ts";
+import type { KindType, Type } from "./_type.ts";
 import { type ArrayObject, getObjectTypeString, isObject } from "./_utils.ts";
 
 const CONTEXT_FLOW_IN = 1;
@@ -65,7 +64,7 @@ interface LoaderStateOptions {
   /** compatibility with JSON.parse behaviour. */
   allowDuplicateKeys?: boolean;
   /** function to call on warning messages. */
-  onWarning?(error?: YamlError): void;
+  onWarning?(error: Error): void;
 }
 
 type ResultType = unknown[] | Record<string, unknown> | string;
@@ -145,10 +144,9 @@ class LoaderState {
   lineStart = 0;
   position = 0;
   line = 0;
-  // deno-lint-ignore no-explicit-any
-  onWarning?: (...args: any[]) => void;
+  onWarning?: (error: Error) => void;
   allowDuplicateKeys: boolean;
-  implicitTypes: Type[];
+  implicitTypes: Type<"scalar">[];
   typeMap: TypeMap;
 
   version?: string | null;
@@ -194,14 +192,14 @@ class LoaderState {
     this.position += 1;
     return this.peek();
   }
-  #createError(message: string): YamlError {
+  #createError(message: string): SyntaxError {
     const mark = new Mark(
       this.input,
       this.position,
       this.line,
       this.position - this.lineStart,
     );
-    return new YamlError(message, mark);
+    return new SyntaxError(`${message} ${mark}`);
   }
 
   throwError(message: string): never {
@@ -211,6 +209,131 @@ class LoaderState {
   dispatchWarning(message: string) {
     const error = this.#createError(message);
     this.onWarning?.(error);
+  }
+
+  readDocument() {
+    const documentStart = this.position;
+    let position: number;
+    let directiveName: string;
+    let directiveArgs: string[];
+    let hasDirectives = false;
+    let ch: number;
+
+    this.version = null;
+    this.checkLineBreaks = false;
+    this.tagMap = Object.create(null);
+    this.anchorMap = Object.create(null);
+
+    while ((ch = this.peek()) !== 0) {
+      skipSeparationSpace(this, true, -1);
+
+      ch = this.peek();
+
+      if (this.lineIndent > 0 || ch !== PERCENT) {
+        break;
+      }
+
+      hasDirectives = true;
+      ch = this.next();
+      position = this.position;
+
+      while (ch !== 0 && !isWhiteSpaceOrEOL(ch)) {
+        ch = this.next();
+      }
+
+      directiveName = this.input.slice(position, this.position);
+      directiveArgs = [];
+
+      if (directiveName.length < 1) {
+        return this.throwError(
+          "directive name must not be less than one character in length",
+        );
+      }
+
+      while (ch !== 0) {
+        while (isWhiteSpace(ch)) {
+          ch = this.next();
+        }
+
+        if (ch === SHARP) {
+          do {
+            ch = this.next();
+          } while (ch !== 0 && !isEOL(ch));
+          break;
+        }
+
+        if (isEOL(ch)) break;
+
+        position = this.position;
+
+        while (ch !== 0 && !isWhiteSpaceOrEOL(ch)) {
+          ch = this.next();
+        }
+
+        directiveArgs.push(this.input.slice(position, this.position));
+      }
+
+      if (ch !== 0) readLineBreak(this);
+
+      switch (directiveName) {
+        case "YAML":
+          yamlDirectiveHandler(this, ...directiveArgs);
+          break;
+        case "TAG":
+          tagDirectiveHandler(this, ...directiveArgs);
+          break;
+        default:
+          this.dispatchWarning(
+            `unknown document directive "${directiveName}"`,
+          );
+          break;
+      }
+    }
+
+    skipSeparationSpace(this, true, -1);
+
+    if (
+      this.lineIndent === 0 &&
+      this.peek() === MINUS &&
+      this.peek(1) === MINUS &&
+      this.peek(2) === MINUS
+    ) {
+      this.position += 3;
+      skipSeparationSpace(this, true, -1);
+    } else if (hasDirectives) {
+      return this.throwError("directives end mark is expected");
+    }
+
+    composeNode(this, this.lineIndent - 1, CONTEXT_BLOCK_OUT, false, true);
+    skipSeparationSpace(this, true, -1);
+
+    if (
+      this.checkLineBreaks &&
+      PATTERN_NON_ASCII_LINE_BREAKS.test(
+        this.input.slice(documentStart, this.position),
+      )
+    ) {
+      this.dispatchWarning("non-ASCII line breaks are interpreted as content");
+    }
+
+    if (this.position === this.lineStart && testDocumentSeparator(this)) {
+      if (this.peek() === DOT) {
+        this.position += 3;
+        skipSeparationSpace(this, true, -1);
+      }
+    } else if (this.position < this.length - 1) {
+      return this.throwError(
+        "end of the stream or a document separator is expected",
+      );
+    }
+
+    return this.result;
+  }
+
+  *readDocuments() {
+    while (this.position < this.length - 1) {
+      yield this.readDocument();
+    }
   }
 }
 
@@ -1414,7 +1537,7 @@ function composeNode(
   let indentStatus = 1; // 1: this>parent, 0: this=parent, -1: this<parent
   let atNewLine = false;
   let hasContent = false;
-  let type: Type;
+  let type: Type<KindType>;
   let flowIndent: number;
   let blockIndent: number;
 
@@ -1569,129 +1692,6 @@ function composeNode(
   return state.tag !== null || state.anchor !== null || hasContent;
 }
 
-function readDocument(state: LoaderState) {
-  const documentStart = state.position;
-  let position: number;
-  let directiveName: string;
-  let directiveArgs: string[];
-  let hasDirectives = false;
-  let ch: number;
-
-  state.version = null;
-  state.checkLineBreaks = false;
-  state.tagMap = Object.create(null);
-  state.anchorMap = Object.create(null);
-
-  while ((ch = state.peek()) !== 0) {
-    skipSeparationSpace(state, true, -1);
-
-    ch = state.peek();
-
-    if (state.lineIndent > 0 || ch !== PERCENT) {
-      break;
-    }
-
-    hasDirectives = true;
-    ch = state.next();
-    position = state.position;
-
-    while (ch !== 0 && !isWhiteSpaceOrEOL(ch)) {
-      ch = state.next();
-    }
-
-    directiveName = state.input.slice(position, state.position);
-    directiveArgs = [];
-
-    if (directiveName.length < 1) {
-      return state.throwError(
-        "directive name must not be less than one character in length",
-      );
-    }
-
-    while (ch !== 0) {
-      while (isWhiteSpace(ch)) {
-        ch = state.next();
-      }
-
-      if (ch === SHARP) {
-        do {
-          ch = state.next();
-        } while (ch !== 0 && !isEOL(ch));
-        break;
-      }
-
-      if (isEOL(ch)) break;
-
-      position = state.position;
-
-      while (ch !== 0 && !isWhiteSpaceOrEOL(ch)) {
-        ch = state.next();
-      }
-
-      directiveArgs.push(state.input.slice(position, state.position));
-    }
-
-    if (ch !== 0) readLineBreak(state);
-
-    switch (directiveName) {
-      case "YAML":
-        yamlDirectiveHandler(state, ...directiveArgs);
-        break;
-      case "TAG":
-        tagDirectiveHandler(state, ...directiveArgs);
-        break;
-      default:
-        state.dispatchWarning(`unknown document directive "${directiveName}"`);
-        break;
-    }
-  }
-
-  skipSeparationSpace(state, true, -1);
-
-  if (
-    state.lineIndent === 0 &&
-    state.peek() === MINUS &&
-    state.peek(1) === MINUS &&
-    state.peek(2) === MINUS
-  ) {
-    state.position += 3;
-    skipSeparationSpace(state, true, -1);
-  } else if (hasDirectives) {
-    return state.throwError("directives end mark is expected");
-  }
-
-  composeNode(state, state.lineIndent - 1, CONTEXT_BLOCK_OUT, false, true);
-  skipSeparationSpace(state, true, -1);
-
-  if (
-    state.checkLineBreaks &&
-    PATTERN_NON_ASCII_LINE_BREAKS.test(
-      state.input.slice(documentStart, state.position),
-    )
-  ) {
-    state.dispatchWarning("non-ASCII line breaks are interpreted as content");
-  }
-
-  if (state.position === state.lineStart && testDocumentSeparator(state)) {
-    if (state.peek() === DOT) {
-      state.position += 3;
-      skipSeparationSpace(state, true, -1);
-    }
-  } else if (state.position < state.length - 1) {
-    return state.throwError(
-      "end of the stream or a document separator is expected",
-    );
-  }
-
-  return state.result;
-}
-
-function* readDocuments(state: LoaderState) {
-  while (state.position < state.length - 1) {
-    yield readDocument(state);
-  }
-}
-
 function sanitizeInput(input: string) {
   input = String(input);
 
@@ -1715,16 +1715,16 @@ export function loadDocuments(
 ): unknown[] {
   input = sanitizeInput(input);
   const state = new LoaderState(input, options);
-  return [...readDocuments(state)];
+  return [...state.readDocuments()];
 }
 
 export function load(input: string, options: LoaderStateOptions = {}): unknown {
   input = sanitizeInput(input);
   const state = new LoaderState(input, options);
-  const documentGenerator = readDocuments(state);
+  const documentGenerator = state.readDocuments();
   const document = documentGenerator.next().value;
   if (!documentGenerator.next().done) {
-    throw new YamlError(
+    throw new SyntaxError(
       "expected a single document in the stream, but found more",
     );
   }

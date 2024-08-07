@@ -269,7 +269,6 @@ Deno.test({
       ["<=1.2.3", "1.2.3-beta"],
 
       // invalid ranges never satisfied!
-      ["blerg", "1.2.3"],
       ["^1.2.3", "2.0.0-pre"],
 
       ["1.0.0 - 2.0.0", "0.0.0"],
