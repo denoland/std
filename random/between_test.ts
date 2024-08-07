@@ -47,9 +47,9 @@ Deno.test("randomBetween() allows negative min and max", () => {
   );
 
   assertEquals(results, [
-    -4.543302224483341,
-    -1.9496161967981607,
-    -2.61107840645127,
+    -5.2565019452013075,
+    -8.787572969682515,
+    -5.902195948874578,
   ]);
 });
 
@@ -61,9 +61,9 @@ Deno.test("randomBetween() allows non-integer min and max", () => {
   );
 
   assertEquals(results, [
-    2.1062997528351843,
-    2.394487089244649,
-    2.320991288172081,
+    2.027055339422077,
+    1.6347141144797206,
+    1.955311561236158,
   ]);
 });
 
@@ -106,7 +106,7 @@ Deno.test("randomIntegerBetween() allows negative min and max", () => {
     () => randomIntegerBetween(-10, -1, { random }),
   );
 
-  assertEquals(results, [-4, -2, -2]);
+  assertEquals(results, [-5, -9, -6]);
 });
 
 Deno.test("randomIntegerBetween() throws on non-integer min and max", () => {

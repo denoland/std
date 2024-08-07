@@ -11,7 +11,7 @@
  *
  * const { random } = new SeededPrng({ seed: 14614327452668470620n });
  *
- * assertEquals(randomIntegerBetween(1, 10, { random }), 7);
+ * assertEquals(randomIntegerBetween(1, 10, { random }), 5);
  * ```
  *
  * @module

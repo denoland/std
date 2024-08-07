@@ -68,7 +68,7 @@ Deno.test("sample() picks a random item from the provided items", () => {
 
   const picks = Array.from({ length: 10 }, () => sample(items, { random }));
 
-  assertEquals(picks, ["b", "c", "c", "a", "b", "c", "b", "a", "b", "b"]);
+  assertEquals(picks, ["b", "a", "b", "a", "c", "c", "a", "c", "b", "b"]);
 });
 
 Deno.test("sample() with weights returns undefined if the array is empty", () => {

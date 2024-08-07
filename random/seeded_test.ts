@@ -47,9 +47,9 @@ Deno.test("SeededPrng#random() generates random numbers", async (t) => {
 
   await t.step("seeded with a number", () => {
     const prng = new SeededPrng({ seed: 3247111518449632355n });
-    assertEquals(prng.random(), 0.21337948855943978);
-    assertEquals(prng.random(), 0.6178494824562222);
-    assertEquals(prng.random(), 0.333291148301214);
+    assertEquals(prng.random(), 0.24684110353700817);
+    assertEquals(prng.random(), 0.23029523785226047);
+    assertEquals(prng.random(), 0.8534279884770513);
   });
 });
 
@@ -57,8 +57,8 @@ Deno.test("SeededPrng's scalar `seed` parameter is converted to a 2-tuple state"
   await t.step("seeded with a number", () => {
     const seed = 3247111518449632355n;
     const expectedState = [
-      13768899637953488478n,
-      6749360920794622629n,
+      12286687917611493543n,
+      9966339993921492669n,
     ] as const;
     const prng1 = new SeededPrng({ seed });
     assertEquals(prng1.state, expectedState);
@@ -73,7 +73,7 @@ Deno.test("SeededPrng#randomSeed() returns a new bigint seed", async (t) => {
   await t.step("returns a new seed", () => {
     const prng = new SeededPrng({ seed: 8440806997079658278n });
     const seed = prng.randomSeed();
-    assertEquals(seed, 7401986284933245790n);
+    assertEquals(seed, 7310962475811222600n);
   });
 });
 

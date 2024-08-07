@@ -1,13 +1,23 @@
 // // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
+/**
+ * The maximum value of a 64-bit unsigned integer plus one.
+ * `n % U64_CEIL` simulates uint64 integer overflow in C.
+ */
 const U64_CEIL = 2n ** 64n;
+/**
+ * The maximum value of a 32-bit unsigned integer plus one.
+ * `n % U32_CEIL` simulates uint32 integer overflow in C.
+ */
 const U32_CEIL = 2n ** 32n;
+/**
+ * The maximum value of a 64-bit unsigned integer.
+ * `n & U64_MAX` coerces any bigint `n` to fit inside a uint64.
+ */
 const U64_MAX = U64_CEIL - 1n;
 
-// arbitrary odd value (example from https://en.wikipedia.org/wiki/Permuted_congruential_generator)
-const DEFAULT_INC = 1442695040888963407n;
-// arbitrary large value
-const DEFAULT_XOR = 7242445682386361366n;
+// arbitrary odd value (taken from example at https://en.wikipedia.org/wiki/Permuted_congruential_generator)
+const INITIAL_INC = 1442695040888963407n;
 
 /**
  * A 2-tuple state for a {@linkcode SeededPrng}.
@@ -39,9 +49,9 @@ type SeededPrngOptions = {
  *
  * const prng = new SeededPrng({ seed: 3377567226465013078n });
  *
- * assertEquals(prng.random(), 0.3960897452197969);
- * assertEquals(prng.random(), 0.4801766681484878);
- * assertEquals(prng.random(), 0.1936694176401943);
+ * assertEquals(prng.random(), 0.34011089405976236);
+ * assertEquals(prng.random(), 0.6603851807303727);
+ * assertEquals(prng.random(), 0.4863424440845847);
  * ```
  */
 export class SeededPrng {
@@ -84,7 +94,7 @@ export class SeededPrng {
    * import { assertEquals } from "@std/assert";
    *
    * const prng = new SeededPrng({ seed: 14614327452668470620n });
-   * assertEquals(prng.state, [3096394406033028526n, 18007031919395182301n]);
+   * assertEquals(prng.state, [13062938915293834817n, 10846994826184652623n]);
    * ```
    */
   get state(): Readonly<State> {
@@ -107,9 +117,9 @@ export class SeededPrng {
    *
    * const prng = new SeededPrng({ seed: 3377567226465013078n });
    *
-   * assertEquals(prng.random(), 0.3960897452197969);
-   * assertEquals(prng.random(), 0.4801766681484878);
-   * assertEquals(prng.random(), 0.1936694176401943);
+   * assertEquals(prng.random(), 0.34011089405976236);
+   * assertEquals(prng.random(), 0.6603851807303727);
+   * assertEquals(prng.random(), 0.4863424440845847);
    * ```
    */
   random(): number {
@@ -126,7 +136,7 @@ export class SeededPrng {
    * import { assertEquals } from "@std/assert";
    *
    * const prng = new SeededPrng({ seed: 14614327452668470620n });
-   * assertEquals(prng.randomSeed(), 12896216895826562279n);
+   * assertEquals(prng.randomSeed(), 7382748496997062591n);
    * ```
    */
   randomSeed(): bigint {
@@ -134,7 +144,6 @@ export class SeededPrng {
   }
 
   // port of minimal version at https://www.pcg-random.org/download.html
-  // mod U64_CEIL/U32_CEIL simulates integer overflow in C
   #randomUint32(): bigint {
     const oldState = this.#state;
 
@@ -164,12 +173,20 @@ export class SeededPrng {
   }
 
   /**
-   * Convert a seed to a state tuple suitable for usage by `SeededPrng`.
+   * Convert a user-provided scalar seed value to a state tuple suitable for
+   * usage by `SeededPrng`.
+   *
+   * Aims to provide good results for both well-randomized seeds (such as
+   * 64-bit outputs from `crypto.getRandomValues`) and low-entropy seeds (such
+   * as 1, 2, 3, keyboard mashing, etc.).
    */
   static #seedToState(seed: bigint): State {
-    const state = reverseUint64Bits(seed % U64_CEIL) ^ DEFAULT_XOR;
-    const prng = new SeededPrng({ seed: [state, DEFAULT_INC] });
-
+    seed &= U64_MAX;
+    const fnv1a = fnv1aUint64LittleEndian(seed);
+    const prng = new SeededPrng({ seed: [seed ^ fnv1a, INITIAL_INC] });
+    // advance the prng's internal state slightly to further reduce any bias
+    prng.#randomUint32();
+    // return a fresh random state
     return prng.#randomState();
   }
 }
@@ -181,22 +198,23 @@ function uint32ToFloat64(u32: number | bigint): number {
   return Number(u32) / (2 ** 32);
 }
 
+const FNV_OFFSET_BASIS = 0xcbf29ce484222325n;
+const FNV_PRIME = 0x100000001b3n;
 /**
- * Reverse the bits of a given unsigned 64-bit integer.
- * Used to ensure less-bad results for small seeds such as 1, 2, 3, etc.
+ * 64-bit {@link https://en.wikipedia.org/wiki/Fowler–Noll–Vo_hash_function#FNV-1a_hash | FNV-1a} hash function.
+ * We xor this with scalar seed inputs to ensure less-bad results for small or low-entropy seeds such as 1, 2, 3, etc.
+ * Little-endian is used to give better distribution of the lower bits.
  */
-function reverseUint64Bits(n: bigint): bigint {
-  let rev = 0n;
+function fnv1aUint64LittleEndian(num: bigint): bigint {
+  const dv = new DataView(new BigUint64Array(1).buffer);
+  dv.setBigUint64(0, num, true);
 
-  for (let i = 0n; i < 64n; ++i) {
-    rev <<= 1n;
+  let hash = FNV_OFFSET_BASIS;
 
-    if ((n & 1n) === 1n) {
-      rev ^= 1n;
-    }
-
-    n >>= 1n;
+  for (let i = 0; i < BigUint64Array.BYTES_PER_ELEMENT; ++i) {
+    hash = (hash ^ BigInt(dv.getUint8(i))) % U64_CEIL;
+    hash = (hash * FNV_PRIME) % U64_CEIL;
   }
 
-  return rev;
+  return hash;
 }
