@@ -267,6 +267,15 @@ Deno.test("serveDir() handles not found files", async () => {
   assertEquals(res.status, 404);
 });
 
+Deno.test("serveDir() handles incorrect method", async () => {
+  const req = new Request("http://localhost/", { method: "POST" });
+  const res = await serveDir(req, serveDirOptions);
+  await res.body?.cancel();
+
+  assertEquals(res.status, 405);
+  assertEquals(res.statusText, "Method Not Allowed");
+});
+
 Deno.test("serveDir() traverses path correctly", async () => {
   const req = new Request("http://localhost/../../../../../../../..");
   const res = await serveDir(req, serveDirOptions);
@@ -737,6 +746,17 @@ Deno.test("serveFile() handles file not found", async () => {
 
   assertEquals(res.status, 404);
   assertEquals(res.statusText, "Not Found");
+});
+
+Deno.test("serveFile() handles method not allowed", async () => {
+  const req = new Request("http://localhost/testdata/test_file.txt", {
+    method: "POST",
+  });
+  const res = await serveFile(req, TEST_FILE_PATH);
+  await res.body?.cancel();
+
+  assertEquals(res.status, 405);
+  assertEquals(res.statusText, "Method Not Allowed");
 });
 
 Deno.test("serveFile() serves HTTP 404 when the path is a directory", async () => {
