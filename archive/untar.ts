@@ -182,6 +182,37 @@ export class TarEntry implements Reader {
    * instead of waiting for more.
    *
    * @param p The buffer to read the entry into.
+   * @returns The number of bytes read (`0 < n <= p.byteLength`) or `null` if
+   * there are no more bytes to read.
+   *
+   * @example Usage
+   * ```ts
+   * import { Buffer } from "@std/io/buffer";
+   * import { TarEntry } from "@std/archive/untar";
+   * import { assertEquals } from "@std/assert/equals";
+   *
+   * const text = "Hello, world!";
+   *
+   * const reader = new Buffer(new TextEncoder().encode(text));
+   * const tarMeta = {
+   *   fileName: "text",
+   *   fileSize: 0,
+   *   fileMode: 509,
+   *   mtime: 1591800767,
+   *   uid: 1001,
+   *   gid: 1001,
+   *   owner: "deno",
+   *   group: "deno",
+   *   type: "file",
+   * };
+   *
+   * const tarEntry: TarEntry = new TarEntry(tarMeta, reader);
+   * const p = new Uint8Array(1024);
+   * const n = await tarEntry.read(p);
+   * const result = new TextDecoder().decode(p.subarray(0, n));
+   *
+   * assertEquals(result, text);
+   * ```
    */
   async read(p: Uint8Array): Promise<number | null> {
     // Bytes left for entry
