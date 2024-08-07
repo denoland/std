@@ -1,41 +1,13 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
 /**
- * An interface specifying the requirements for the {@linkcode FixedChunkStream} to
- * successfully resize the chunks, with the exception of the last chunk.
- */
-export interface Fixable<T, U = T extends ArrayLike<infer V> ? V : never>
-  extends ArrayLike<U> {
-  /**
-   * Validates that a constructor property exists on the type. The constructor
-   * needs a signature of `new(length: number): T`, but TypeScript is unable to
-   * validate this, so you must.
-   */
-  constructor: Exclude<unknown, undefined>;
-  /**
-   * A method that inserts the `ArrayLike<U>` in `T` at the optional `offset`
-   * index.
-   */
-  set(array: ArrayLike<U>, offset?: number): void;
-  /**
-   * A method that slices a chunk from `start` to `end` returning `T`
-   */
-  slice(start?: number, end?: number): T;
-  /**
-   * A property that returns the length of `T`
-   */
-  readonly length: number;
-}
-
-/**
  * A transform stream that resize the chunks into perfectly `size` chunks with
  * the exception of the last chunk.
  *
- * Works on any type that meets the {@linkcode Fixable} requirements.
- * TypeScript is unable to validate the constructor requirement of needing a
- * signature of `new(length:number): T` so you must validate this yourself.
+ * > [!WARNING]
+ * > **UNSTABLE**: New API, yet to be vetted.
  *
- * @typeParam T is the type inside the stream. `Uint8Array` for example.
+ * @experimental
  *
  * @example Usage
  * ```ts
@@ -58,27 +30,19 @@ export interface Fixable<T, U = T extends ArrayLike<infer V> ? V : never>
  *     }
  *   }))
  * ```
- *
- * > [!WARNING]
- * > **UNSTABLE**: New API, yet to be vetted.
- *
- * @experimental
  */
-export class FixedChunkStream<T extends Fixable<T>>
-  extends TransformStream<T, T> {
+export class FixedChunkStream extends TransformStream<Uint8Array, Uint8Array> {
   /**
    * Constructs a new instance.
    *
    * @param size The size of the chunks to be resized to.
    */
   constructor(size: number) {
-    let push: T | undefined;
+    let push: Uint8Array | undefined;
     super({
       transform(chunk, controller) {
         if (push !== undefined) {
-          const concat = new (chunk.constructor as { new (length: number): T })(
-            push.length + chunk.length,
-          );
+          const concat = new Uint8Array(push.length + chunk.length);
           concat.set(push);
           concat.set(chunk, push.length);
           chunk = concat;
