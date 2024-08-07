@@ -20,12 +20,21 @@ function defaultHandler(request: Request) {
   return new Response(new URL(request.url).pathname, { status: 404 });
 }
 
+const info: Deno.ServeHandlerInfo = {
+  remoteAddr: {
+    transport: "tcp",
+    hostname: "example.com",
+    port: 80,
+  },
+  completed: Promise.resolve(),
+};
+
 Deno.test("route()", async (t) => {
   const handler = route(routes, defaultHandler);
 
   await t.step("handles static routes", async () => {
     const request = new Request("http://example.com/about");
-    const response = await handler(request);
+    const response = await handler(request, info);
     assertEquals(response?.status, 200);
     assertEquals(await response?.text(), "/about");
   });
@@ -34,14 +43,14 @@ Deno.test("route()", async (t) => {
     const request = new Request("http://example.com/users/123", {
       method: "POST",
     });
-    const response = await handler(request);
+    const response = await handler(request, info);
     assertEquals(await response?.text(), "123");
     assertEquals(response?.status, 200);
   });
 
   await t.step("handles default handler", async () => {
     const request = new Request("http://example.com/not-found");
-    const response = await handler(request);
+    const response = await handler(request, info);
     assertEquals(response?.status, 404);
     assertEquals(await response?.text(), "/not-found");
   });

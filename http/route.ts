@@ -8,8 +8,7 @@
  *
  * @experimental
  *
- * Extends {@linkcode Deno.ServeHandlerInfo} by adding making `info` optional
- * and adding a `params` argument.
+ * Extends {@linkcode Deno.ServeHandlerInfo} by adding adding a `params` argument.
  *
  * @param request Request
  * @param info Request info
@@ -17,7 +16,7 @@
  */
 export type Handler = (
   request: Request,
-  info?: Deno.ServeHandlerInfo,
+  info: Deno.ServeHandlerInfo,
   params?: URLPatternResult | null,
 ) => Response | Promise<Response>;
 
@@ -89,18 +88,10 @@ export interface Route {
  */
 export function route(
   routes: Route[],
-  // TODO(iuioiua): Replace with `Deno.ServeHandler` once `info` is optional.
-  defaultHandler: (
-    request: Request,
-    info?: Deno.ServeHandlerInfo,
-  ) => Response | Promise<Response>,
-): // TODO(iuioiua): Replace with `Deno.ServeHandler` once `info` is optional.
-(
-  request: Request,
-  info?: Deno.ServeHandlerInfo,
-) => Response | Promise<Response> {
-  // TODO(iuioiua): Use `URLPatternList` once available
-  return (request: Request, info?: Deno.ServeHandlerInfo) => {
+  defaultHandler: Deno.ServeHandler,
+): Deno.ServeHandler {
+  // TODO(iuioiua): Use `URLPatternList` once available (https://github.com/whatwg/urlpattern/pull/166)
+  return (request: Request, info: Deno.ServeHandlerInfo) => {
     for (const route of routes) {
       const match = route.pattern.exec(request.url);
       if (match) return route.handler(request, info, match);
