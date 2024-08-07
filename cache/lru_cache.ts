@@ -1,6 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import type { MemoizationCache } from "./memoize.ts";
-export type { MemoizationCache } from "./memoize.ts";
+export type { MemoizationCache };
 
 /**
  * [Least-recently-used](
