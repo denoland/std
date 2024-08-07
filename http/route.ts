@@ -8,7 +8,8 @@
  *
  * @experimental
  *
- * Extends {@linkcode Handler} by adding a `params` argument.
+ * Extends {@linkcode Deno.ServeHandlerInfo} by adding making `info` optional
+ * and adding a `params` argument.
  *
  * @param request Request
  * @param info Request info
@@ -117,7 +118,8 @@ export type Route = StaticRoute | DynamicRoute;
  *
  * @param routes Route configurations
  * @param defaultHandler Default request handler that's returned when no route
- * matches the given request.
+ * matches the given request. Serving HTTP 404 Not Found or 405 Method Not
+ * Allowed response can be done in this function.
  * @returns Request handler
  */
 export function route(
@@ -138,7 +140,7 @@ export function route(
   return (request: Request, info?: Deno.ServeHandlerInfo) => {
     const { pathname, href } = new URL(request.url);
     const handler = staticRoutes.get(`${request.method} ${pathname}`);
-    if (handler !== undefined) return handler(request, info);
+    if (handler) return handler(request, info);
 
     for (const route of dynamicRoutes) {
       const match = route.pattern.exec(href);
