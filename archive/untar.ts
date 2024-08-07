@@ -43,13 +43,25 @@ import type { Reader } from "@std/io/types";
 /**
  * Extend TarMeta with the `linkName` property so that readers can access
  * symbolic link values without polluting the world of archive writers.
+ *
+ * > [!WARNING]
+ * > **UNSTABLE**: New API, yet to be vetted.
+ *
+ * @experimental
  */
 export interface TarMetaWithLinkName extends TarMeta {
   /** File name of the symbolic link. */
   linkName?: string;
 }
 
-/** Tar header with raw, unprocessed bytes as values. */
+/**
+ * Tar header with raw, unprocessed bytes as values.
+ *
+ * > [!WARNING]
+ * > **UNSTABLE**: New API, yet to be vetted.
+ *
+ * @experimental
+ */
 export type TarHeader = {
   [key in UstarFields]: Uint8Array;
 };
@@ -85,12 +97,25 @@ function parseHeader(buffer: Uint8Array): TarHeader {
   return data;
 }
 
-/** Tar entry */
+/**
+ * Tar entry
+ *
+ * > [!WARNING]
+ * > **UNSTABLE**: New API, yet to be vetted.
+ *
+ * @experimental
+ */
 export interface TarEntry extends TarMetaWithLinkName {}
 
-/** Contains tar header metadata and a reader to the entry's body. */
+/**
+ * Contains tar header metadata and a reader to the entry's body.
+ *
+ * > [!WARNING]
+ * > **UNSTABLE**: New API, yet to be vetted.
+ *
+ * @experimental
+ */
 export class TarEntry implements Reader {
-  #header: TarHeader;
   #reader: Reader | (Reader & Deno.Seeker);
   #size: number;
   #read = 0;
@@ -100,11 +125,9 @@ export class TarEntry implements Reader {
   /** Constructs a new instance. */
   constructor(
     meta: TarMetaWithLinkName,
-    header: TarHeader,
     reader: Reader | (Reader & Deno.Seeker),
   ) {
     Object.assign(this, meta);
-    this.#header = header;
     this.#reader = reader;
 
     // File Size
@@ -221,18 +244,23 @@ export class TarEntry implements Reader {
  *   await copy(entry, file);
  * }
  * ```
+ *
+ * > [!WARNING]
+ * > **UNSTABLE**: New API, yet to be vetted.
+ *
+ * @experimental
  */
 export class Untar {
   /** Internal reader. */
-  reader: Reader;
+  #reader: Reader;
   /** Internal block. */
-  block: Uint8Array;
+  #block: Uint8Array;
   #entry: TarEntry | undefined;
 
   /** Constructs a new instance. */
   constructor(reader: Reader) {
-    this.reader = reader;
-    this.block = new Uint8Array(HEADER_LENGTH);
+    this.#reader = reader;
+    this.#block = new Uint8Array(HEADER_LENGTH);
   }
 
   #checksum(header: Uint8Array): number {
@@ -248,12 +276,12 @@ export class Untar {
   }
 
   async #getAndValidateHeader(): Promise<TarHeader | null> {
-    await readBlock(this.reader, this.block);
-    const header = parseHeader(this.block);
+    await readBlock(this.#reader, this.#block);
+    const header = parseHeader(this.#block);
 
     // calculate the checksum
     const decoder = new TextDecoder();
-    const checksum = this.#checksum(this.block);
+    const checksum = this.#checksum(this.#block);
 
     if (parseInt(decoder.decode(header.checksum), 8) !== checksum) {
       if (checksum === initialChecksum) {
@@ -327,7 +355,7 @@ export class Untar {
 
     const meta = this.#getMetadata(header);
 
-    this.#entry = new TarEntry(meta, header, this.reader);
+    this.#entry = new TarEntry(meta, this.#reader);
 
     return this.#entry;
   }

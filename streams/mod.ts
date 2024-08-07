@@ -9,7 +9,7 @@
  * import { toText } from "@std/streams";
  * import { assertEquals } from "@std/assert";
  *
- * const stream = ReadableStream.from("Hello, world!");
+ * const stream = ReadableStream.from(["Hello, world!"]);
  * const text = await toText(stream);
  *
  * assertEquals(text, "Hello, world!");
