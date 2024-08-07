@@ -1,3 +1,188 @@
+### 2024.08.07
+
+#### @std/archive 0.225.0 (minor)
+
+- BREAKING(archive): remove `TarEntry.#header` (#5638)
+- fix(archive): make `data` property private in `Tar` (#5645)
+- fix(archive): make `block` and `reader` properties in `Untar` private (#5637)
+- docs(archive): mark public APIs as unstable/experimental (#5639)
+
+#### @std/csv 1.0.1 (patch)
+
+- fix(csv,streams): use string arrays in `ReadableStream.from()` in docs and
+  tests (#5635)
+
+#### @std/datetime 0.224.5 (patch)
+
+- refactor(datetime): remove `Tokenizer` class (#5622)
+
+#### @std/http 1.0.1 (patch)
+
+- feat(http/unstable): `route` module (#5644)
+- feat(http/unstable): `headers` module (#4317)
+- feat(http/unstable): `methods` module (#4320)
+- fix(http): handle wrong request method correctly (#5643)
+- refactor(http): use `headers` module in `file-server` module (#5642)
+
+#### @std/streams 1.0.1 (patch)
+
+- feat(streams/unstable): `FixedChunkStream` (#4995)
+- fix(csv,streams): use string arrays in `ReadableStream.from()` in docs and
+  tests (#5635)
+
+### 2024.08.05
+
+#### @std/async 1.0.3 (patch)
+
+- fix(async): abortable should not change original outputs (#5609)
+
+#### @std/cli 1.0.3 (patch)
+
+- refactor(cli): minor cleanups (#5628)
+- refactor(cli): `isNumber()` (#5607)
+
+#### @std/csv 1.0.0 (major)
+
+- chore(csv): release `csv@1.0.0` (#5219)
+
+#### @std/semver 1.0.1 (patch)
+
+- docs(semver): remove diagram line overlaps (#5624)
+
+#### @std/url 0.225.0 (minor)
+
+- chore(url): release `url@0.225.0` (#5631)
+- deprecation(url): deprecate `@std/url` (#5530)
+- refactor: import from `@std/assert` (#5199)
+
+#### @std/yaml 1.0.2 (patch)
+
+- refactor(yaml): move functions to class methods (#5625)
+
+### 2024.08.02
+
+#### @std/assert 1.0.2 (patch)
+
+- feat(assert/unstable): add `options` parameter to `AssertionError` constructor
+  (#5561)
+- chore(assert): mark `options` argument of `AssertionError` constructor
+  unstable (#5573)
+
+#### @std/async 1.0.2 (patch)
+
+- fix(async): `abortableAsyncIterable()` should call `.return()` on the
+  generator once aborted (#5560)
+- test(async): improve test speed of `async/pool_test.ts` (#5611)
+- test(async): fix `abortable.AsyncIterable() calls return before throwing` test
+  (#5596)
+
+#### @std/cli 1.0.2 (patch)
+
+- refactor(cli): use non-null assertion in `parseArgs()` logic (#5618)
+- refactor(cli): simplify `argv` and `notFlags` push (#5608)
+- refactor(cli): remove `broken` variable in favour of loop label (#5602)
+- refactor(cli): use `for of` instead of `for in` loop (#5598)
+- refactor(cli): make regexps constants (#5595)
+- chore(cli): simplify `parseArgs()` logic (#5601)
+- chore(cli): simplify `setNested()` and `hasNested()` (#5599)
+
+#### @std/csv 1.0.0-rc.6 (prerelease)
+
+- feat(csv): support `fieldsPerRecord` in `CsvParseStream` (#5600)
+- fix(csv): remove `undefined` from possible value type of parse result (#5617)
+- fix(csv): show 1-based line and column numbers in error messages (#5604)
+- docs(csv): more examples for `stringify` and `CsvStringifyStream` (#5606)
+- docs(csv): more examples for `parse` and `CsvParseStream` (#5605)
+- docs(csv): clarify `CsvParseStream` description (#5613)
+- docs(csv): clarify `parse` document (#5597)
+- docs(csv): correct thrown error type in `fieldsPerRecord` field description
+  (#5594)
+
+#### @std/datetime 0.224.4 (patch)
+
+- chore(datetime): remove console log (#5610)
+
+#### @std/fmt 1.0.0 (major)
+
+- BREAKING(fmt): rename `PrettyDurationOptions` to `FormatOptions` (#5591)
+- docs(fmt,fs,text,yaml): fix Markdown alerts (#5568)
+- chore(fmt): release `fmt@1.0.0` (#5454)
+
+#### @std/front-matter 1.0.1 (patch)
+
+- refactor(front-matter): replace regexp factory with regexp literals (#5370)
+
+#### @std/fs 1.0.1 (patch)
+
+- docs(fmt,fs,text,yaml): fix Markdown alerts (#5568)
+- docs(fs): fix incorrect examples for walk (#5559)
+
+#### @std/html 1.0.1 (patch)
+
+- feat(html/unstable): add `isValidCustomElementName()` (#5456)
+
+#### @std/http 1.0.0 (major)
+
+- BREAKING(http): remove `ETagSource` (#5577)
+- fix(http): better `eTag` return type for `string` and `Uint8Array` inputs
+  (#5571)
+- fix(http): update localhost strings in tests (#5563)
+- chore(http): release `http@1.0.0` (#5217)
+
+#### @std/ini 1.0.0-rc.3 (prerelease)
+
+- BREAKING(ini): reduce options for `stringify`, make `FormattingOptions` type
+  private (#5572)
+- feat(ini): add type param for value type (#5588)
+- fix(ini): correctly handle quoted values in `parse()` (#5592)
+- docs(ini): cleanup module documentation (#5566)
+- refactor(ini): cleanup dead code (#5576)
+- test(ini): copy tests from `ini/_ini_map_test.ts` (#5593)
+
+#### @std/io 0.224.4 (patch)
+
+- refactor(io): use `writeAll()` within `copy()` (#5580)
+
+#### @std/net 1.0.0 (major)
+
+- chore(net): release net@1.0.0 (#5457)
+
+#### @std/semver 1.0.0 (major)
+
+- BREAKING(semver): remove the handling of non-standard SemVers in format
+  function (#5587)
+- BREAKING(semver): do not accept undefined input in `tryParse` (#5584)
+- fix(semver): do not throw in `canParse` (#5583)
+- fix(semver): throw on invalid input in `parseRange()` (#5567)
+- fix(semver): correctly remove spaces between operators and versions in
+  `parseRange()` (#5564)
+- docs(semver): fix `Comparator` example (#5585)
+- docs(semver): clarify `compare` docs (#5586)
+- refactor(semver): throw `TypeError` if release is invalid in `increment()`
+  (#5565)
+- chore(semver): release `semver@1.0.0` (#5220)
+
+#### @std/testing 1.0.0 (major)
+
+- BREAKING(testing): replace `TimeError` exception in favor of built-in error
+  classes in some cases (#5550)
+- fix(testing): correct `stub()` error message (#5575)
+- docs(testing): mention default serializer (#5590)
+- refactor(testing): improve error messages in `mock` module (part 2) (#5569)
+- chore(testing): release `testing@1.0.0` (#5218)
+
+#### @std/text 1.0.2 (patch)
+
+- docs(fmt,fs,text,yaml): fix Markdown alerts (#5568)
+
+#### @std/url 1.0.0-rc.3 (prerelease)
+
+- deprecation(url): deprecate `@std/url` (#5530)
+
+#### @std/yaml 1.0.1 (patch)
+
+- docs(fmt,fs,text,yaml): fix Markdown alerts (#5568)
+
 ### 2024.07.26
 
 #### @std/assert 1.0.1 (patch)
