@@ -43,7 +43,7 @@ const LITERAL_REGEXP = /^(?<value>.+?\s*)/;
 const SYMBOL_REGEXP = /^(?<symbol>([a-zA-Z])\2*)/;
 
 // according to unicode symbols (http://www.unicode.org/reports/tr35/tr35-dates.html#Date_Field_Symbol_Table)
-function formatToParts(format: string) {
+function formatToFormatParts(format: string) {
   const tokens: Format = [];
   let index = 0;
   while (index < format.length) {
@@ -141,11 +141,34 @@ function formatToParts(format: string) {
   return tokens;
 }
 
+function sortDateTimeFormatParts(
+  parts: DateTimeFormatPart[],
+): DateTimeFormatPart[] {
+  let result: DateTimeFormatPart[] = [];
+  const typeArray = [
+    "year",
+    "month",
+    "day",
+    "hour",
+    "minute",
+    "second",
+    "fractionalSecond",
+  ];
+  for (const type of typeArray) {
+    const current = parts.findIndex((el) => el.type === type);
+    if (current !== -1) {
+      result = result.concat(parts.splice(current, 1));
+    }
+  }
+  result = result.concat(parts);
+  return result;
+}
+
 export class DateTimeFormatter {
   #format: Format;
 
   constructor(formatString: string) {
-    this.#format = formatToParts(formatString);
+    this.#format = formatToFormatParts(formatString);
   }
 
   format(date: Date, options: Options = {}): string {
@@ -481,29 +504,9 @@ export class DateTimeFormatter {
     return parts;
   }
 
-  /** sort & filter dateTimeFormatPart */
-  sortDateTimeFormatPart(parts: DateTimeFormatPart[]): DateTimeFormatPart[] {
-    let result: DateTimeFormatPart[] = [];
-    const typeArray = [
-      "year",
-      "month",
-      "day",
-      "hour",
-      "minute",
-      "second",
-      "fractionalSecond",
-    ];
-    for (const type of typeArray) {
-      const current = parts.findIndex((el) => el.type === type);
-      if (current !== -1) {
-        result = result.concat(parts.splice(current, 1));
-      }
-    }
-    result = result.concat(parts);
-    return result;
-  }
-
   partsToDate(parts: DateTimeFormatPart[]): Date {
+    parts = sortDateTimeFormatParts(parts);
+
     const date = new Date();
     const utc = parts.find(
       (part) => part.type === "timeZoneName" && part.value === "UTC",
@@ -566,7 +569,6 @@ export class DateTimeFormatter {
 
   parse(string: string): Date {
     const parts = this.parseToParts(string);
-    const sortParts = this.sortDateTimeFormatPart(parts);
-    return this.partsToDate(sortParts);
+    return this.partsToDate(parts);
   }
 }

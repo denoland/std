@@ -78,8 +78,5 @@ export function format(
   options: FormatOptions = {},
 ): string {
   const formatter = new DateTimeFormatter(formatString);
-  return formatter.format(
-    date,
-    options.utc ? { timeZone: "UTC" } : undefined,
-  );
+  return formatter.format(date, options.utc ? { timeZone: "UTC" } : undefined);
 }
