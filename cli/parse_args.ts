@@ -362,9 +362,17 @@ interface NestedMapping {
   [key: string]: NestedMapping | unknown;
 }
 
-function isNumber(x: string): boolean {
-  if (/^0x[0-9a-f]+$/i.test(String(x))) return true;
-  return /^[-+]?(?:\d+(?:\.\d*)?|\.\d+)(e[-+]?\d+)?$/.test(String(x));
+const FLAG_REGEXP =
+  /^(?:-(?:(?<doubleDash>-)(?<negated>no-)?)?)(?<key>.+?)(?:=(?<value>.+?))?$/s;
+const LETTER_REGEXP = /[A-Za-z]/;
+const NUMBER_REGEXP = /-?\d+(\.\d*)?(e-?\d+)?$/;
+const HYPHEN_REGEXP = /^(-|--)[^-]/;
+const VALUE_REGEXP = /=(?<value>.+)/;
+const FLAG_NAME_REGEXP = /^--[^=]+$/;
+const SPECIAL_CHAR_REGEXP = /\W/;
+
+function isNumber(string: string): boolean {
+  return string.trim() !== "" && Number.isFinite(Number(string));
 }
 
 function setNested(
@@ -373,12 +381,10 @@ function setNested(
   value: unknown,
   collect = false,
 ) {
-  keys.slice(0, -1).forEach((key) => {
-    object[key] ??= {};
-    object = object[key] as NestedMapping;
-  });
+  keys = [...keys];
+  const key = keys.pop()!;
 
-  const key = keys.at(-1)!;
+  keys.forEach((key) => object = (object[key] ??= {}) as NestedMapping);
 
   if (collect) {
     const v = object[key];
@@ -394,14 +400,12 @@ function setNested(
 }
 
 function hasNested(object: NestedMapping, keys: string[]): boolean {
-  keys = [...keys];
-  const lastKey = keys.pop();
-  if (!lastKey) return false;
   for (const key of keys) {
-    if (!object[key]) return false;
-    object = object[key] as NestedMapping;
+    const value = object[key];
+    if (!Object.hasOwn(object, key)) return false;
+    object = value as NestedMapping;
   }
-  return Object.hasOwn(object, lastKey);
+  return true;
 }
 
 function aliasIsBoolean(
@@ -422,9 +426,6 @@ function isBooleanString(value: string) {
 function parseBooleanString(value: unknown) {
   return value !== "false";
 }
-
-const FLAG_REGEXP =
-  /^(?:-(?:(?<doubleDash>-)(?<negated>no-)?)?)(?<key>.+?)(?:=(?<value>.+?))?$/s;
 
 /**
  * Take a set of command line arguments, optionally with a set of options, and
@@ -527,10 +528,11 @@ export function parseArgs<
   let allBools = false;
 
   if (alias) {
-    for (const key in alias) {
-      const val = (alias as Record<string, unknown>)[key];
-      if (val === undefined) throw new TypeError("Alias value must be defined");
-      const aliases = Array.isArray(val) ? val : [val];
+    for (const [key, value] of Object.entries(alias)) {
+      if (value === undefined) {
+        throw new TypeError("Alias value must be defined");
+      }
+      const aliases = Array.isArray(value) ? value : [value];
       aliasMap.set(key, new Set(aliases));
       aliases.forEach((alias) =>
         aliasMap.set(
@@ -591,11 +593,12 @@ export function parseArgs<
       !booleanSet.has(key) &&
       !stringSet.has(key) &&
       !aliasMap.has(key) &&
-      !(allBools && /^--[^=]+$/.test(arg)) &&
+      !(allBools && FLAG_NAME_REGEXP.test(arg)) &&
       unknownFn?.(arg, key, value) === false
     ) {
       return;
     }
+
     if (typeof value === "string" && !stringSet.has(key)) {
       value = isNumber(value) ? Number(value) : value;
     }
@@ -616,6 +619,7 @@ export function parseArgs<
     args = args.slice(0, index);
   }
 
+  argsLoop:
   for (let i = 0; i < args.length; i++) {
     const arg = args[i]!;
 
@@ -643,26 +647,25 @@ export function parseArgs<
 
         const next = args[i + 1];
 
-        if (
-          !booleanSet.has(key) &&
-          !allBools &&
-          next &&
-          !/^-/.test(next) &&
-          (aliasMap.get(key)
-            ? !aliasIsBoolean(aliasMap, booleanSet, key)
-            : true)
-        ) {
-          value = next;
-          i++;
-          setArgument(key, value, arg, true);
-          continue;
-        }
+        if (next) {
+          if (
+            !booleanSet.has(key) &&
+            !allBools &&
+            !next.startsWith("-") &&
+            (!aliasMap.has(key) || !aliasIsBoolean(aliasMap, booleanSet, key))
+          ) {
+            value = next;
+            i++;
+            setArgument(key, value, arg, true);
+            continue;
+          }
 
-        if (next && isBooleanString(next)) {
-          value = parseBooleanString(next);
-          i++;
-          setArgument(key, value, arg, true);
-          continue;
+          if (isBooleanString(next)) {
+            value = parseBooleanString(next);
+            i++;
+            setArgument(key, value, arg, true);
+            continue;
+          }
         }
 
         value = stringSet.has(key) ? "" : true;
@@ -671,7 +674,6 @@ export function parseArgs<
       }
       const letters = arg.slice(1, -1).split("");
 
-      let broken = false;
       for (const [j, letter] of letters.entries()) {
         const next = arg.slice(j + 2);
 
@@ -680,55 +682,48 @@ export function parseArgs<
           continue;
         }
 
-        if (/[A-Za-z]/.test(letter) && /=/.test(next)) {
-          setArgument(letter, next.split(/=(.+)/)[1]!, arg, true);
-          broken = true;
-          break;
+        if (LETTER_REGEXP.test(letter)) {
+          const groups = VALUE_REGEXP.exec(next)?.groups;
+          if (groups) {
+            setArgument(letter, groups.value!, arg, true);
+            continue argsLoop;
+          }
+          if (NUMBER_REGEXP.test(next)) {
+            setArgument(letter, next, arg, true);
+            continue argsLoop;
+          }
         }
 
-        if (
-          /[A-Za-z]/.test(letter) &&
-          /-?\d+(\.\d*)?(e-?\d+)?$/.test(next)
-        ) {
-          setArgument(letter, next, arg, true);
-          broken = true;
-          break;
-        }
-
-        if (letters[j + 1] && letters[j + 1]!.match(/\W/)) {
+        if (letters[j + 1]?.match(SPECIAL_CHAR_REGEXP)) {
           setArgument(letter, arg.slice(j + 2), arg, true);
-          broken = true;
-          break;
+          continue argsLoop;
         }
-        setArgument(
-          letter,
-          stringSet.has(letter) ? "" : true,
-          arg,
-          true,
-        );
+        setArgument(letter, stringSet.has(letter) ? "" : true, arg, true);
       }
 
       key = arg.slice(-1);
-      if (!broken && key !== "-") {
-        const nextArg = args[i + 1];
+      if (key === "-") continue;
+
+      const nextArg = args[i + 1];
+
+      if (nextArg) {
         if (
-          nextArg &&
-          !/^(-|--)[^-]/.test(nextArg) &&
+          !HYPHEN_REGEXP.test(nextArg) &&
           !booleanSet.has(key) &&
-          (aliasMap.get(key)
-            ? !aliasIsBoolean(aliasMap, booleanSet, key)
-            : true)
+          (!aliasMap.has(key) || !aliasIsBoolean(aliasMap, booleanSet, key))
         ) {
           setArgument(key, nextArg, arg, true);
           i++;
-        } else if (nextArg && isBooleanString(nextArg)) {
+          continue;
+        }
+        if (isBooleanString(nextArg)) {
           const value = parseBooleanString(nextArg);
           setArgument(key, value, arg, true);
           i++;
-        } else {
-          setArgument(key, stringSet.has(key) ? "" : true, arg, true);
+          continue;
         }
       }
+      setArgument(key, stringSet.has(key) ? "" : true, arg, true);
       continue;
     }
 
@@ -770,14 +765,9 @@ export function parseArgs<
   }
 
   if (doubleDash) {
-    argv["--"] = [];
-    for (const key of notFlags) {
-      argv["--"].push(key);
-    }
+    argv["--"] = notFlags;
   } else {
-    for (const key of notFlags) {
-      argv._.push(key);
-    }
+    argv._.push(...notFlags);
   }
 
   return argv as Args<TArgs, TDoubleDash>;

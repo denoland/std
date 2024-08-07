@@ -29,9 +29,6 @@ export const nil: Type<"scalar", null> = {
   kind: "scalar",
   predicate: isNull,
   represent: {
-    canonical(): string {
-      return "~";
-    },
     lowercase(): string {
       return "null";
     },

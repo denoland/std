@@ -1,19 +1,32 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-import {
-  type FormattingOptions,
-  IniMap,
-  type ReplacerFunction,
-} from "./_ini_map.ts";
+import { IniMap, type ReplacerFunction } from "./_ini_map.ts";
 
 /** Options for {@linkcode stringify}. */
-export interface StringifyOptions extends FormattingOptions {
-  /** Provide custom string conversion for the value in a key/value pair. */
+export interface StringifyOptions {
+  /**
+   * Character(s) used to break lines in the config file.
+   *
+   * @default {"\n"}
+   */
+  lineBreak?: "\n" | "\r\n" | "\r";
+  /**
+   * Use a plain assignment char or pad with spaces.
+   *
+   * @default {false}
+   */
+  pretty?: boolean;
+  /**
+   * Provide custom string conversion for the value in a key/value pair.
+   * Similar to the
+   * {@linkcode https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/stringify#replacer | replacer}
+   * function in {@linkcode JSON.stringify}.
+   */
   replacer?: ReplacerFunction;
 }
 
-export type { FormattingOptions, ReplacerFunction };
+export type { ReplacerFunction };
 
 /**
  * Compile an object into an INI config string. Provide formatting options to modify the output.

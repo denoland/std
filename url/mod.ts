@@ -20,6 +20,10 @@
  * assertEquals(joinedUrl.href, "https://deno.land/std/async/retry.ts");
  * ```
  *
+ * @deprecated Use functions from
+ * {@linkcode https://jsr.io/@std/path/doc/posix/~ | @std/path/posix}
+ * instead (examples included). `@std/url` will be removed in the future.
+ *
  * @module
  */
 

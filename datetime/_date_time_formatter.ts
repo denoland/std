@@ -1,81 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-type Token = {
-  type: string;
-  value: string | number;
-  index: number;
-  [key: string]: unknown;
-};
-
-interface ReceiverResult {
-  [name: string]: string | number | unknown;
-}
-type CallbackResult = {
-  type: string;
-  value: string | number;
-  [key: string]: unknown;
-};
-type CallbackFunction = (value: unknown) => CallbackResult;
-
-type TestResult = { value: unknown; length: number } | undefined;
-type TestFunction = (
-  string: string,
-) => TestResult | undefined;
-
-interface Rule {
-  test: TestFunction;
-  fn: CallbackFunction;
-}
-
-export class Tokenizer {
-  rules: Rule[];
-
-  constructor(rules: Rule[] = []) {
-    this.rules = rules;
-  }
-
-  addRule(test: TestFunction, fn: CallbackFunction): Tokenizer {
-    this.rules.push({ test, fn });
-    return this;
-  }
-
-  tokenize(
-    string: string,
-    receiver = (token: Token): ReceiverResult => token,
-  ): ReceiverResult[] {
-    function* generator(rules: Rule[]): IterableIterator<ReceiverResult> {
-      let index = 0;
-      for (const rule of rules) {
-        const result = rule.test(string);
-        if (result) {
-          const { value, length } = result;
-          index += length;
-          string = string.slice(length);
-          const token = { ...rule.fn(value), index };
-          yield receiver(token);
-          yield* generator(rules);
-        }
-      }
-    }
-    const tokenGenerator = generator(this.rules);
-
-    const tokens: ReceiverResult[] = [];
-
-    for (const token of tokenGenerator) {
-      tokens.push(token);
-    }
-
-    if (string.length) {
-      throw new Error(
-        `parser error: string not fully parsed! ${string.slice(0, 25)}`,
-      );
-    }
-
-    return tokens;
-  }
-}
-
 function digits(value: string | number, count = 2): string {
   return String(value).padStart(count, "0");
 }
@@ -106,124 +31,6 @@ interface Options {
   timeZone?: TimeZone;
 }
 
-function createLiteralTestFunction(value: string): TestFunction {
-  return (string: string): TestResult => {
-    return string.startsWith(value)
-      ? { value, length: value.length }
-      : undefined;
-  };
-}
-
-function createMatchTestFunction(match: RegExp): TestFunction {
-  return (string: string): TestResult => {
-    const result = match.exec(string);
-    if (result) return { value: result, length: result[0].length };
-  };
-}
-
-// according to unicode symbols (http://www.unicode.org/reports/tr35/tr35-dates.html#Date_Field_Symbol_Table)
-const DATE_TIME_FORMATTER_DEFAULT_RULES = [
-  {
-    test: createLiteralTestFunction("yyyy"),
-    fn: (): CallbackResult => ({ type: "year", value: "numeric" }),
-  },
-  {
-    test: createLiteralTestFunction("yy"),
-    fn: (): CallbackResult => ({ type: "year", value: "2-digit" }),
-  },
-  {
-    test: createLiteralTestFunction("MM"),
-    fn: (): CallbackResult => ({ type: "month", value: "2-digit" }),
-  },
-  {
-    test: createLiteralTestFunction("M"),
-    fn: (): CallbackResult => ({ type: "month", value: "numeric" }),
-  },
-  {
-    test: createLiteralTestFunction("dd"),
-    fn: (): CallbackResult => ({ type: "day", value: "2-digit" }),
-  },
-  {
-    test: createLiteralTestFunction("d"),
-    fn: (): CallbackResult => ({ type: "day", value: "numeric" }),
-  },
-  {
-    test: createLiteralTestFunction("HH"),
-    fn: (): CallbackResult => ({ type: "hour", value: "2-digit" }),
-  },
-  {
-    test: createLiteralTestFunction("H"),
-    fn: (): CallbackResult => ({ type: "hour", value: "numeric" }),
-  },
-  {
-    test: createLiteralTestFunction("hh"),
-    fn: (): CallbackResult => ({
-      type: "hour",
-      value: "2-digit",
-      hour12: true,
-    }),
-  },
-  {
-    test: createLiteralTestFunction("h"),
-    fn: (): CallbackResult => ({
-      type: "hour",
-      value: "numeric",
-      hour12: true,
-    }),
-  },
-  {
-    test: createLiteralTestFunction("mm"),
-    fn: (): CallbackResult => ({ type: "minute", value: "2-digit" }),
-  },
-  {
-    test: createLiteralTestFunction("m"),
-    fn: (): CallbackResult => ({ type: "minute", value: "numeric" }),
-  },
-  {
-    test: createLiteralTestFunction("ss"),
-    fn: (): CallbackResult => ({ type: "second", value: "2-digit" }),
-  },
-  {
-    test: createLiteralTestFunction("s"),
-    fn: (): CallbackResult => ({ type: "second", value: "numeric" }),
-  },
-  {
-    test: createLiteralTestFunction("SSS"),
-    fn: (): CallbackResult => ({ type: "fractionalSecond", value: 3 }),
-  },
-  {
-    test: createLiteralTestFunction("SS"),
-    fn: (): CallbackResult => ({ type: "fractionalSecond", value: 2 }),
-  },
-  {
-    test: createLiteralTestFunction("S"),
-    fn: (): CallbackResult => ({ type: "fractionalSecond", value: 1 }),
-  },
-  {
-    test: createLiteralTestFunction("a"),
-    fn: (value: unknown): CallbackResult => ({
-      type: "dayPeriod",
-      value: value as string,
-    }),
-  },
-  // quoted literal
-  {
-    test: createMatchTestFunction(/^(')(?<value>\\.|[^\']*)\1/),
-    fn: (match: unknown): CallbackResult => ({
-      type: "literal",
-      value: (match as RegExpExecArray).groups!.value as string,
-    }),
-  },
-  // literal
-  {
-    test: createMatchTestFunction(/^.+?\s*/),
-    fn: (match: unknown): CallbackResult => ({
-      type: "literal",
-      value: (match as RegExpExecArray)[0],
-    }),
-  },
-] as const;
-
 type FormatPart = {
   type: DateTimeFormatPartTypes;
   value: string | number;
@@ -231,25 +38,114 @@ type FormatPart = {
 };
 type Format = FormatPart[];
 
+const QUOTED_LITERAL_REGEXP = /^(')(?<value>\\.|[^\']*)\1/;
+const LITERAL_REGEXP = /^(?<value>.+?\s*)/;
+const SYMBOL_REGEXP = /^(?<symbol>([a-zA-Z])\2*)/;
+
+// according to unicode symbols (http://www.unicode.org/reports/tr35/tr35-dates.html#Date_Field_Symbol_Table)
+function formatToParts(format: string) {
+  const tokens: Format = [];
+  let index = 0;
+  while (index < format.length) {
+    const substring = format.slice(index);
+    const symbol = SYMBOL_REGEXP.exec(substring)?.groups?.symbol;
+    switch (symbol) {
+      case "yyyy":
+        tokens.push({ type: "year", value: "numeric" });
+        index += symbol.length;
+        continue;
+      case "yy":
+        tokens.push({ type: "year", value: "2-digit" });
+        index += symbol.length;
+        continue;
+      case "MM":
+        tokens.push({ type: "month", value: "2-digit" });
+        index += symbol.length;
+        continue;
+      case "M":
+        tokens.push({ type: "month", value: "numeric" });
+        index += symbol.length;
+        continue;
+      case "dd":
+        tokens.push({ type: "day", value: "2-digit" });
+        index += symbol.length;
+        continue;
+      case "d":
+        tokens.push({ type: "day", value: "numeric" });
+        index += symbol.length;
+        continue;
+      case "HH":
+        tokens.push({ type: "hour", value: "2-digit" });
+        index += symbol.length;
+        continue;
+      case "H":
+        tokens.push({ type: "hour", value: "numeric" });
+        index += symbol.length;
+        continue;
+      case "hh":
+        tokens.push({ type: "hour", value: "2-digit", hour12: true });
+        index += symbol.length;
+        continue;
+      case "h":
+        tokens.push({ type: "hour", value: "numeric", hour12: true });
+        index += symbol.length;
+        continue;
+      case "mm":
+        tokens.push({ type: "minute", value: "2-digit" });
+        index += symbol.length;
+        continue;
+      case "m":
+        tokens.push({ type: "minute", value: "numeric" });
+        index += symbol.length;
+        continue;
+      case "ss":
+        tokens.push({ type: "second", value: "2-digit" });
+        index += symbol.length;
+        continue;
+      case "s":
+        tokens.push({ type: "second", value: "numeric" });
+        index += symbol.length;
+        continue;
+      case "SSS":
+        tokens.push({ type: "fractionalSecond", value: 3 });
+        index += symbol.length;
+        continue;
+      case "SS":
+        tokens.push({ type: "fractionalSecond", value: 2 });
+        index += symbol.length;
+        continue;
+      case "S":
+        tokens.push({ type: "fractionalSecond", value: 1 });
+        index += symbol.length;
+        continue;
+      case "a":
+        tokens.push({ type: "dayPeriod", value: 1 });
+        index += symbol.length;
+        continue;
+    }
+
+    const quotedLiteralMatch = QUOTED_LITERAL_REGEXP.exec(substring);
+    if (quotedLiteralMatch) {
+      const value = quotedLiteralMatch.groups!.value as string;
+      tokens.push({ type: "literal", value });
+      index += quotedLiteralMatch[0].length;
+      continue;
+    }
+
+    const literalGroups = LITERAL_REGEXP.exec(substring)!.groups!;
+    const value = literalGroups.value as string;
+    tokens.push({ type: "literal", value });
+    index += value.length;
+  }
+
+  return tokens;
+}
+
 export class DateTimeFormatter {
   #format: Format;
 
-  constructor(
-    formatString: string,
-    rules: Rule[] = [...DATE_TIME_FORMATTER_DEFAULT_RULES],
-  ) {
-    const tokenizer = new Tokenizer(rules);
-    this.#format = tokenizer.tokenize(
-      formatString,
-      ({ type, value, hour12 }) => {
-        const result = {
-          type,
-          value,
-        } as unknown as ReceiverResult;
-        if (hour12) result.hour12 = hour12 as boolean;
-        return result;
-      },
-    ) as Format;
+  constructor(formatString: string) {
+    this.#format = formatToParts(formatString);
   }
 
   format(date: Date, options: Options = {}): string {

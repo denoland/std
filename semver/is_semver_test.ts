@@ -1,6 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import { assert } from "@std/assert";
-import { MAX, MIN } from "./_constants.ts";
+import { MIN } from "./_constants.ts";
 import { isSemVer } from "./is_semver.ts";
 
 Deno.test({
@@ -61,7 +61,6 @@ Deno.test({
       [{ major: 0, minor: 0, patch: 0, build: [], prerelease: ["abc"] }],
       [{ major: 0, minor: 0, patch: 0, build: [], prerelease: ["abc", 0] }],
       [MIN],
-      [MAX],
     ];
     for (const [v] of versions) {
       await t.step(

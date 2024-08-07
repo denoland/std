@@ -1,3 +1,268 @@
+### 2024.08.05
+
+#### @std/async 1.0.3 (patch)
+
+- fix(async): abortable should not change original outputs (#5609)
+
+#### @std/cli 1.0.3 (patch)
+
+- refactor(cli): minor cleanups (#5628)
+- refactor(cli): `isNumber()` (#5607)
+
+#### @std/csv 1.0.0 (major)
+
+- chore(csv): release `csv@1.0.0` (#5219)
+
+#### @std/semver 1.0.1 (patch)
+
+- docs(semver): remove diagram line overlaps (#5624)
+
+#### @std/url 0.225.0 (minor)
+
+- chore(url): release `url@0.225.0` (#5631)
+- deprecation(url): deprecate `@std/url` (#5530)
+- refactor: import from `@std/assert` (#5199)
+
+#### @std/yaml 1.0.2 (patch)
+
+- refactor(yaml): move functions to class methods (#5625)
+
+### 2024.08.02
+
+#### @std/assert 1.0.2 (patch)
+
+- feat(assert/unstable): add `options` parameter to `AssertionError` constructor
+  (#5561)
+- chore(assert): mark `options` argument of `AssertionError` constructor
+  unstable (#5573)
+
+#### @std/async 1.0.2 (patch)
+
+- fix(async): `abortableAsyncIterable()` should call `.return()` on the
+  generator once aborted (#5560)
+- test(async): improve test speed of `async/pool_test.ts` (#5611)
+- test(async): fix `abortable.AsyncIterable() calls return before throwing` test
+  (#5596)
+
+#### @std/cli 1.0.2 (patch)
+
+- refactor(cli): use non-null assertion in `parseArgs()` logic (#5618)
+- refactor(cli): simplify `argv` and `notFlags` push (#5608)
+- refactor(cli): remove `broken` variable in favour of loop label (#5602)
+- refactor(cli): use `for of` instead of `for in` loop (#5598)
+- refactor(cli): make regexps constants (#5595)
+- chore(cli): simplify `parseArgs()` logic (#5601)
+- chore(cli): simplify `setNested()` and `hasNested()` (#5599)
+
+#### @std/csv 1.0.0-rc.6 (prerelease)
+
+- feat(csv): support `fieldsPerRecord` in `CsvParseStream` (#5600)
+- fix(csv): remove `undefined` from possible value type of parse result (#5617)
+- fix(csv): show 1-based line and column numbers in error messages (#5604)
+- docs(csv): more examples for `stringify` and `CsvStringifyStream` (#5606)
+- docs(csv): more examples for `parse` and `CsvParseStream` (#5605)
+- docs(csv): clarify `CsvParseStream` description (#5613)
+- docs(csv): clarify `parse` document (#5597)
+- docs(csv): correct thrown error type in `fieldsPerRecord` field description
+  (#5594)
+
+#### @std/datetime 0.224.4 (patch)
+
+- chore(datetime): remove console log (#5610)
+
+#### @std/fmt 1.0.0 (major)
+
+- BREAKING(fmt): rename `PrettyDurationOptions` to `FormatOptions` (#5591)
+- docs(fmt,fs,text,yaml): fix Markdown alerts (#5568)
+- chore(fmt): release `fmt@1.0.0` (#5454)
+
+#### @std/front-matter 1.0.1 (patch)
+
+- refactor(front-matter): replace regexp factory with regexp literals (#5370)
+
+#### @std/fs 1.0.1 (patch)
+
+- docs(fmt,fs,text,yaml): fix Markdown alerts (#5568)
+- docs(fs): fix incorrect examples for walk (#5559)
+
+#### @std/html 1.0.1 (patch)
+
+- feat(html/unstable): add `isValidCustomElementName()` (#5456)
+
+#### @std/http 1.0.0 (major)
+
+- BREAKING(http): remove `ETagSource` (#5577)
+- fix(http): better `eTag` return type for `string` and `Uint8Array` inputs
+  (#5571)
+- fix(http): update localhost strings in tests (#5563)
+- chore(http): release `http@1.0.0` (#5217)
+
+#### @std/ini 1.0.0-rc.3 (prerelease)
+
+- BREAKING(ini): reduce options for `stringify`, make `FormattingOptions` type
+  private (#5572)
+- feat(ini): add type param for value type (#5588)
+- fix(ini): correctly handle quoted values in `parse()` (#5592)
+- docs(ini): cleanup module documentation (#5566)
+- refactor(ini): cleanup dead code (#5576)
+- test(ini): copy tests from `ini/_ini_map_test.ts` (#5593)
+
+#### @std/io 0.224.4 (patch)
+
+- refactor(io): use `writeAll()` within `copy()` (#5580)
+
+#### @std/net 1.0.0 (major)
+
+- chore(net): release net@1.0.0 (#5457)
+
+#### @std/semver 1.0.0 (major)
+
+- BREAKING(semver): remove the handling of non-standard SemVers in format
+  function (#5587)
+- BREAKING(semver): do not accept undefined input in `tryParse` (#5584)
+- fix(semver): do not throw in `canParse` (#5583)
+- fix(semver): throw on invalid input in `parseRange()` (#5567)
+- fix(semver): correctly remove spaces between operators and versions in
+  `parseRange()` (#5564)
+- docs(semver): fix `Comparator` example (#5585)
+- docs(semver): clarify `compare` docs (#5586)
+- refactor(semver): throw `TypeError` if release is invalid in `increment()`
+  (#5565)
+- chore(semver): release `semver@1.0.0` (#5220)
+
+#### @std/testing 1.0.0 (major)
+
+- BREAKING(testing): replace `TimeError` exception in favor of built-in error
+  classes in some cases (#5550)
+- fix(testing): correct `stub()` error message (#5575)
+- docs(testing): mention default serializer (#5590)
+- refactor(testing): improve error messages in `mock` module (part 2) (#5569)
+- chore(testing): release `testing@1.0.0` (#5218)
+
+#### @std/text 1.0.2 (patch)
+
+- docs(fmt,fs,text,yaml): fix Markdown alerts (#5568)
+
+#### @std/url 1.0.0-rc.3 (prerelease)
+
+- deprecation(url): deprecate `@std/url` (#5530)
+
+#### @std/yaml 1.0.1 (patch)
+
+- docs(fmt,fs,text,yaml): fix Markdown alerts (#5568)
+
+### 2024.07.26
+
+#### @std/assert 1.0.1 (patch)
+
+- fix(assert): fix `assertObjectMatch()` prints arrays as objects (#5503)
+- fix(assert): `assertObjectMatch` doesn't print whole object (#5498)
+- chore(assert): remove redundant constructor example (#5506)
+
+#### @std/async 1.0.1 (patch)
+
+- chore(async): remove redundant constructor example (#5507)
+
+#### @std/cli 1.0.1 (patch)
+
+- test(cli): stop spinner without error (#5551)
+- chore(cli): remove redundant constructor example (#5508)
+
+#### @std/crypto 1.0.2 (patch)
+
+- fix(crypto): improve handling of `length` option (#5505)
+
+#### @std/csv 1.0.0-rc.5 (prerelease)
+
+- chore(csv): remove redundant constructor examples (#5509)
+
+#### @std/data-structures 1.0.1 (patch)
+
+- chore(data-structures): remove redundant constructor examples (#5510)
+
+#### @std/expect 1.0.0 (major)
+
+- docs(expect): add examples of matcher usages (#5553)
+- docs(expect): link to matcher docs (#5502)
+- docs(expect): minor doc tweaks (#5501)
+
+#### @std/front-matter 1.0.0 (major)
+
+- chore(front-matter): release `front-matter@1.0.0` (#5376)
+
+#### @std/fs 1.0.0 (major)
+
+- BREAKING(fs): throw `Deno.errors.NotSupported` instead of
+  `SubdirectoryMoveError` in `move[Sync]()` (#5532)
+- BREAKING(fs): throw `Deno.errors.NotFound` instead of `WalkError` in
+  `walk[Sync]()` (#5477)
+- docs(fs): make `preserveTimestamps` note more prominent (#5543)
+- chore(fs): release `fs@1.0.0` (#5214)
+- chore(fs): remove redundant constructor examples (#5511)
+
+#### @std/http 1.0.0-rc.6 (prerelease)
+
+- fix(http): only show LAN address when `--allow-sys` is provided (#5547)
+- chore(http): remove redundant constructor example (#5512)
+
+#### @std/json 1.0.0 (major)
+
+- chore(json): remove redundant constructor examples (#5513)
+- chore(json): release `json@1.0.0` (#5215)
+
+#### @std/jsonc 1.0.0 (major)
+
+- chore(jsonc): tweak `JsonValue` export (#5546)
+- chore(jsonc): release `jsonc@1.0.0` (#5216)
+
+#### @std/path 1.0.2 (patch)
+
+- docs(path): cleanup `@std/path/posix` and `@std/path/windows` module
+  documentation (#5529)
+- docs(path): add examples to `@std/path/posix` examples (#5371)
+
+#### @std/streams 1.0.0 (major)
+
+- fix(streams): strictly define `toJson()` and `toText()` input (#5517)
+- chore(streams): release `streams@1.0.0` (#5518)
+- chore(streams): remove redundant constructor examples (#5514)
+
+#### @std/testing 1.0.0-rc.5 (prerelease)
+
+- fix(testing): FakeTime fakes `AbortSignal.timeout` (#5500)
+- refactor(testing): improve error messages in `mock` module (#5549)
+- refactor(testing): improve `FakeTime` error messaging (#5533)
+- chore(testing): remove redundant constructor examples (#5515)
+
+#### @std/text 1.0.1 (patch)
+
+- feat(text/unstable): add toConstantCase() (#5110)
+- fix(text): unicode support and word splitting according to case (#5447)
+- perf(text): make `levenshteinDistance()` up to 147x faster (#5527)
+- test(text): add more testcases for `levenshteinDistance` (#5528)
+
+#### @std/yaml 1.0.0 (major)
+
+- docs(yaml): correct `core` schema note (#5552)
+- docs(yaml): document compatibility policy (#5542)
+- docs(yaml): document different schemas (#5531)
+- refactor(yaml): cleanup dead sexagesimal regexp code in float type (#5545)
+- refactor(yaml): remove deprecated sexagesimal functionality for integer types
+  (#5539)
+- refactor(yaml): cleanup dead code in float `Type` implementation (#5526)
+- test(yaml): test `arrayIndent = false` option (#5521)
+- test(yaml): improve test coverage for sequence type (#5536)
+- test(yaml): improve test coverage for mapping type (#5535)
+- test(yaml): improve test coverage for string type (#5534)
+- test(yaml): test sortKeys option behavior (#5523)
+- test(yaml): check `lineWidth` option behavior (#5524)
+- test(yaml): improve coverage for nil `Type` (#5525)
+- test(yaml): check the use of reserved characters (#5519)
+- test(yaml): check stringify behavior when `skipInvalid` specified (#5522)
+- test(yaml): test `indent` option of stringify (#5520)
+- test(yaml): add check of merge of list of mapping (#5496)
+- chore(yaml): release `yaml@1.0.0` (#5264)
+
 ### 2024.07.19
 
 #### @std/async 1.0.0 (major)
