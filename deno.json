@@ -97,6 +97,7 @@
     "./assert",
     "./async",
     "./bytes",
+    "./cache",
     "./cli",
     "./collections",
     "./crypto",
