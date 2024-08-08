@@ -26,7 +26,6 @@ export class BufferFullError extends Error {
  * @deprecated This will be removed in 1.0.0. Use the {@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API | Web Streams API} instead.
  */
 export class PartialReadError extends Error {
-  partial?: Uint8Array;
   constructor() {
     super("Encountered UnexpectedEof, data only partially read");
     this.name = this.constructor.name;
