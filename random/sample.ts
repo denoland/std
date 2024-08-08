@@ -1,14 +1,11 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-import { assertEquals } from "@std/assert/equals";
-import { assertGreater } from "@std/assert/greater";
-import { unreachable } from "@std/assert/unreachable";
 import {
   defaultOptions as defaultRandomOptions,
   type RandomOptions,
-} from "../random/_types.ts";
-import { randomIntegerBetween } from "../random/integer_between.ts";
+} from "./_types.ts";
+import { randomIntegerBetween } from "./integer_between.ts";
 
 /**
  * Options for {@linkcode sample}.
@@ -68,17 +65,19 @@ export function sample<T>(
   const { random, weights } = { ...defaultOptions, ...options };
 
   if (weights) {
-    assertEquals(
-      weights.length,
-      array.length,
-      "The length of the weights array must match the length of the input array",
-    );
+    if (weights.length !== array.length) {
+      throw new RangeError(
+        "The length of the weights array must match the length of the input array",
+      );
+    }
 
     if (!array.length) return undefined;
 
     const total = Object.values(weights).reduce((sum, n) => sum + n, 0);
 
-    assertGreater(total, 0, "Total weight must be greater than 0");
+    if (total <= 0) {
+      throw new RangeError("Total weight must be greater than 0");
+    }
 
     const rand = random() * total;
     let current = 0;
@@ -91,7 +90,9 @@ export function sample<T>(
       }
     }
 
-    unreachable();
+    throw new Error(
+      "Should be unreachable. Please open an issue at https://github.com/denoland/std/issues/new",
+    );
   }
 
   const length = array.length;

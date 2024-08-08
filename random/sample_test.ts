@@ -5,7 +5,6 @@ import {
   assert,
   assertAlmostEquals,
   assertEquals,
-  AssertionError,
   assertThrows,
 } from "@std/assert";
 import { PCG32_INITIALIZER, SeededRandom } from "./seeded_random.ts";
@@ -83,7 +82,7 @@ Deno.test("sample() with weights throws if the total weight is 0", () => {
 
   assertThrows(
     () => sample(items, { weights }),
-    AssertionError,
+    RangeError,
     "Total weight must be greater than 0",
   );
 });

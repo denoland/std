@@ -31,6 +31,11 @@ Deno.test("randomIntegerBetween() throws if min or max are NaN", () => {
   assertThrows(() => randomIntegerBetween(1, NaN), RangeError);
 });
 
+Deno.test("randomIntegerBetween() throws if min or max are +/-Infinity", () => {
+  assertThrows(() => randomIntegerBetween(-Infinity, 1), RangeError);
+  assertThrows(() => randomIntegerBetween(1, Infinity), RangeError);
+});
+
 Deno.test("randomIntegerBetween() throws if max is less than min", () => {
   assertThrows(() => randomIntegerBetween(10, 1), RangeError);
 });

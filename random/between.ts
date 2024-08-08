@@ -26,11 +26,11 @@ export function randomBetween(
   max: number,
   options?: RandomOptions,
 ): number {
-  if (isNaN(min)) {
-    throw new RangeError("min cannot be NaN");
+  if (!isFinite(min)) {
+    throw new RangeError(`min cannot be ${min}`);
   }
-  if (isNaN(max)) {
-    throw new RangeError("max cannot be NaN");
+  if (!isFinite(max)) {
+    throw new RangeError(`max cannot be ${max}`);
   }
   if (max < min) {
     throw new RangeError("max must be greater than or equal to min");
