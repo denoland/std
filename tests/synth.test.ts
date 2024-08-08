@@ -1,7 +1,7 @@
 import { Engine } from '@/engine.ts'
-import { Crypto } from '@/api/web-client-crypto.ts'
+import { Crypto } from '../api/crypto.ts'
 import DB from '@/db.ts'
-import { Backchat } from '@/api/web-client-backchat.ts'
+import { Backchat } from '../api/client-backchat.ts'
 import { log } from '@utils'
 import { type Api } from '@/isolates/longthread.ts'
 
@@ -19,13 +19,13 @@ config:
   tool_choice: required
 commands:
   - files:read
-  - synth:assessments
+  - synth:assessment
 ---
-You are an assessor of test results.  AI agents will have been run previously, and their conversation threads whilst under test will be passed in to you for assessment against expectations.
+You are an expert assessor of test results.  
 
-You will be given an array of expectations that you must check against the end state of the system after the agent has been run.
+AI agents will have been run previously, and their conversation threads whilst under test will be passed in to you for assessment against an expectation.
 
-Return an array of the results of the assessment, using only ✅ or ❌, strictly in the order of the input expectations.
+Check the end state of the system against this expectation.  Describe your reaonsing step by step.  Be brief - do not repeat the expectation or the output prompt as these are already known.
 
 `
 
@@ -98,7 +98,7 @@ list all customers
 
 Deno.test('synth', async () => {
   const { backchat, engine } = await cradleMaker()
-  log.enable('AI:tests AI:longthread AI:synth')
+  log.enable('AI:tests AI:longthread AI:synth AI:qbr*')
   log('test start')
 
   await backchat.write(path, synth)
@@ -107,7 +107,7 @@ Deno.test('synth', async () => {
 
   // load up the synth runner in a thread
   const actions = await backchat.actions<Api>('longthread')
-  const content = 'run ./hamr.test.md'
+  const content = 'run just the starter for 10 test in ./hamr.test.md'
   await actions.run({ content, path, actorId })
 
   await engine.stop()
@@ -118,3 +118,5 @@ export const cradleMaker = async () => {
   const backchat = await Backchat.upsert(engine, privateKey)
   return { backchat, engine }
 }
+
+// first thing to do is generate a full tps report

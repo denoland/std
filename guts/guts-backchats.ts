@@ -1,7 +1,7 @@
 import { expect, log } from '@utils'
 import { CradleMaker, hash, print } from '@/constants.ts'
-import { Crypto } from '@/api/web-client-crypto.ts'
-import { Backchat } from '@/api/web-client-backchat.ts'
+import { Crypto } from '../api/crypto.ts'
+import { Backchat } from '../api/client-backchat.ts'
 import { Api } from '@/isolates/io-fixture.ts'
 
 export default (name: string, cradleMaker: CradleMaker) => {

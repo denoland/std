@@ -23,10 +23,10 @@ import { assert, Debug, posix } from '@utils'
 import FS from '@/git/fs.ts'
 import * as artifact from '@/isolates/artifact.ts'
 import { ulid } from 'ulid'
-import { Crypto } from '@/api/web-client-crypto.ts'
-import { PierceWatcher } from '@/api/web-client-watcher.ts'
+import { Crypto } from './api/crypto.ts'
+import { PierceWatcher } from './api/watcher.ts'
 import { ActorAdmin } from '@/isolates/actors.ts'
-import { Backchat } from '@/api/web-client-backchat.ts'
+import { Backchat } from './api/client-backchat.ts'
 import { tryActorId } from '@/isolates/machines.ts'
 const log = Debug('AI:engine')
 type Seed = Deno.KvEntry<unknown>[]

@@ -2,8 +2,8 @@
 import { Chalk } from 'chalk'
 import { ripemd160 } from '@noble/hashes/ripemd160'
 import { base32crockford } from '@scure/base'
-import { JSONSchemaType } from './web-client.ajv.ts'
-import type { Backchat } from './web-client-backchat.ts'
+import { JSONSchemaType } from './types.ajv.ts'
+import type { Backchat } from './client-backchat.ts'
 import { assert } from '@sindresorhus/is'
 import type OpenAI from 'openai'
 
@@ -162,7 +162,7 @@ export type Agent = {
   description?: string
   config: {
     model: 'gpt-3.5-turbo' | 'gpt-4-turbo' | 'gpt-4o' | 'gpt-4o-mini'
-    temperature: number
+    temperature?: number
     presence_penalty?: number
     /** control model behaviour to force it to call a tool or no tool */
     tool_choice: 'auto' | 'none' | 'required'

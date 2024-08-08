@@ -11,9 +11,9 @@ import {
   PID,
   PierceRequest,
   Splice,
-} from './web-client.types.ts'
+} from './types.ts'
 import { assert } from '@sindresorhus/is'
-import { Crypto } from './web-client-crypto.ts'
+import { Crypto } from './crypto.ts'
 
 export class WebClientEngine implements EngineInterface {
   readonly #aborts = new Set<AbortController>()

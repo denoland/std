@@ -8,7 +8,7 @@ import {
   pidSchema,
   print,
 } from '@/constants.ts'
-import { Backchat } from '@/api/web-client-backchat.ts'
+import { Backchat } from '../api/client-backchat.ts'
 import type { Tokens } from '@deno/kv-oauth'
 import { assert, Debug } from '@utils'
 import * as files from './files.ts'

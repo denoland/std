@@ -17,7 +17,7 @@ import {
   Request,
   SolidRequest,
   UnsequencedRequest,
-} from './api/web-client.types.ts'
+} from './api/types.ts'
 import FS from '@/git/fs.ts'
 import type DB from '@/db.ts'
 import type Executor from '@/exe/exe.ts'
@@ -245,4 +245,4 @@ export type CradleMaker = (
   init?: Provisioner,
 ) => Promise<{ backchat: Backchat; engine: EngineInterface }>
 
-export * from './api/web-client.types.ts'
+export * from './api/types.ts'

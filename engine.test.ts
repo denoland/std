@@ -1,6 +1,6 @@
 import { Engine } from './engine.ts'
-import { Crypto } from './api/web-client-crypto.ts'
-import { Backchat } from '@/api/web-client-backchat.ts'
+import { Crypto } from './api/crypto.ts'
+import { Backchat } from './api/client-backchat.ts'
 import guts from './guts/guts.ts'
 import { expect, log } from '@utils'
 import DB from '@/db.ts'

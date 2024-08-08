@@ -5,7 +5,6 @@ import {
   print,
   Thread,
 } from '@/constants.ts'
-import { posix } from '@utils'
 import { Debug } from '@utils'
 import * as longthread from '@/isolates/longthread.ts'
 import * as completions from '@/isolates/ai-completions.ts'
@@ -17,7 +16,8 @@ export const api = {
   ls: {
     type: 'object',
     description:
-      'list all *.synth.md files in a given directory.  If the directory is omitted, the base directory "." is used.  Directory must be relative and must end in a "/".',
+      'list all *.test.md files in a given directory.  If the directory is omitted, the base directory "." is used.  Directory must be relative and must end in a "/". Root is ".". ',
+    required: ['directory'],
     properties: { directory: { type: 'string' } },
     additionalProperties: false,
   },
@@ -25,7 +25,7 @@ export const api = {
     type: 'object',
     description:
       'test an agent with a prompt and expectations, given a path to the agent',
-    required: ['path', 'prompt', 'expectations'],
+    required: ['path', 'prompt', 'assessor', 'expectations'],
     properties: {
       path: {
         type: 'string',
@@ -49,23 +49,24 @@ export const api = {
     },
     additionalProperties: false,
   },
-  assessments: {
+  assessment: {
     type: 'object',
     description:
-      'report the the outcomes of a test assessment, in the order that the expectations were passed in',
-    required: ['outcomes'],
+      'Called by the assistant and intercepted before execution.  Reports the outcomes of a test assessment, in the order that the expectations were passed in.  Provides step by step reasoning how the outcome was reached.',
+    required: ['reasoning', 'result'],
     properties: {
-      outcomes: {
+      reasoning: {
         type: 'array',
-        items: { type: 'string', enum: ['✅', '❌'] },
+        items: { type: 'string' },
       },
+      result: { type: 'boolean' },
     },
     additionalProperties: false,
   },
 }
 
 export type Api = {
-  ls: (params: { directory?: string }) => Promise<string[]>
+  ls: (params: { directory: string }) => Promise<string[]>
   test: (params: {
     /** Path to the Agent file to invoke */
     path: string
@@ -73,14 +74,16 @@ export type Api = {
     prompt: string
     assessor: string
     expectations: string[]
-  }) => Promise<string[]>
-  assessments: (params: { outcomes: string[] }) => void
+  }) => Promise<{ reasoning: string[]; result: boolean }[]>
+  assessment: (params: { reasoning: string[]; result: boolean }) => void
+  // addResult: (params: { outcomes: boolean[] }) => void
+  // readSummary: () => Promise<string>
 }
 
 export const functions: Functions<Api> = {
-  ls: async ({ directory = '.' }, api) => {
-    const basename = posix.dirname(directory)
-    const files = await api.ls(basename)
+  ls: async ({ directory }, api) => {
+    log('ls', directory, print(api.pid))
+    const files = await api.ls(directory)
     return files.filter((file) => file.endsWith('.test.md'))
   },
   test: async ({ path, prompt, assessor, expectations }, api) => {
@@ -91,22 +94,29 @@ export const functions: Functions<Api> = {
     await start()
     await run({ path, content: prompt, actorId })
 
-    const thread = await api.readJSON<Thread>(getThreadPath(api.pid))
     log('starting assessment with:', assessor)
-    const { oneshot } = await api.actions<completions.Api>('ai-completions')
-    const contents = [
-      `Expectations: \n${JSON.stringify(expectations, null, 2)}`,
-      `Messages: \n${JSON.stringify(thread.messages, null, 2)}`,
-    ]
 
-    const assistant = await oneshot({ path: assessor, contents, actorId })
+    const thread = await api.readJSON<Thread>(getThreadPath(api.pid))
+    const promises = expectations.map(async (expectation) => {
+      const { oneshot } = await api.actions<completions.Api>('ai-completions')
+      const contents = [
+        `Expectation: \n${JSON.stringify(expectation, null, 2)}`,
+        '\n---\n',
+        `Messages: \n${JSON.stringify(thread.messages, null, 2)}`,
+      ]
 
-    assert(assistant.tool_calls?.length === 1, 'expected one tool call')
-    const outcome = assistant.tool_calls[0].function
-    log('outcome', outcome)
-    return JSON.parse(outcome.arguments)
+      const assistant = await oneshot({ path: assessor, contents, actorId })
+      assert(assistant.tool_calls?.length === 1, 'expected one tool call')
+      const outcome = assistant.tool_calls[0].function
+      log('outcome', outcome)
+      return JSON.parse(outcome.arguments)
+    })
+    const outcomes = await Promise.all(promises)
+    return outcomes
   },
-  assessments: () => {
+  assessment: () => {
     throw new Error('Not callable')
   },
+  // addResult: ({ outcomes }, api) => {
+  // },
 }

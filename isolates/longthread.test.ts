@@ -3,8 +3,8 @@ import { generateThreadId, Thread } from '../constants.ts'
 import * as longthread from './longthread.ts'
 import DB from '@/db.ts'
 import { Engine } from '@/engine.ts'
-import { Crypto } from '@/api/web-client-crypto.ts'
-import { Backchat } from '@/api/web-client-backchat.ts'
+import { Crypto } from '../api/crypto.ts'
+import { Backchat } from '../api/client-backchat.ts'
 import { assert } from '@std/assert'
 const agentMd = `
 ---

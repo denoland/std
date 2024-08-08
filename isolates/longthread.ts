@@ -57,6 +57,7 @@ export const functions: Functions<Api> = {
     api.writeJSON(threadPath, thread)
   },
   run: async ({ path, content, actorId }, api) => {
+    // TODO sniff actorId from the action source
     log('run', path, content, actorId)
     const threadPath = getThreadPath(api.pid)
     const thread = await api.readJSON<Thread>(threadPath)

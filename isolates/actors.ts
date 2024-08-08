@@ -25,7 +25,7 @@ import * as session from './session.ts'
 import * as files from './files.ts'
 import * as system from './system.ts'
 import * as machines from './machines.ts'
-import { Crypto } from '@/api/web-client-crypto.ts'
+import { Crypto } from '../api/crypto.ts'
 
 const log = Debug('AI:actors')
 

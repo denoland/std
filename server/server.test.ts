@@ -1,11 +1,11 @@
 import { Outcome, Provisioner } from '@/constants.ts'
 import Server from './server.ts'
 import { expect } from '@utils'
-import { WebClientEngine } from '@/api/web-client-engine.ts'
+import { WebClientEngine } from '../api/client-engine.ts'
 import guts from '../guts/guts.ts'
 import DB from '@/db.ts'
-import { Crypto } from '@/api/web-client-crypto.ts'
-import { Backchat } from '@/api/web-client-backchat.ts'
+import { Crypto } from '../api/crypto.ts'
+import { Backchat } from '../api/client-backchat.ts'
 import { delay } from '@std/async'
 
 const superuserPrivateKey = Crypto.generatePrivateKey()

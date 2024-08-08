@@ -48,8 +48,8 @@ export const functions: Functions<Api> = {
     assert(typeof content === 'string', 'content missing')
     const config: Agent['config'] = {
       model: 'gpt-4o-mini',
-      temperature: 0,
       tool_choice: 'auto',
+      // must be false for strict function calling
       parallel_tool_calls: true,
     }
     const defaults = {
@@ -86,6 +86,7 @@ export const functions: Functions<Api> = {
 }
 
 const assertAgent = (agent: Agent) => {
+  // TODO use a zod schema to assert
   if (!(typeof agent.instructions === 'string')) {
     throw new Error('instructions must be an array')
   }
@@ -109,9 +110,9 @@ const assertAgent = (agent: Agent) => {
     }
     if (
       agent.config.temperature &&
-      (agent.config.temperature < 0 || agent.config.temperature > 1)
+      (agent.config.temperature < 0 || agent.config.temperature > 2)
     ) {
-      throw new Error('temperature must be between 0 and 1')
+      throw new Error('temperature must be between 0 and 2')
     }
   }
   if (!agent.commands || !Array.isArray(agent.commands)) {

@@ -5,8 +5,8 @@ import { expect } from '@utils'
 import { Tokens } from '@deno/kv-oauth'
 import { getActorId } from '@/constants.ts'
 import DB from '@/db.ts'
-import { Crypto } from '@/api/web-client-crypto.ts'
-import { Backchat } from '@/api/web-client-backchat.ts'
+import { Crypto } from '../api/crypto.ts'
+import { Backchat } from '../api/client-backchat.ts'
 
 Deno.test('login with github', async (t) => {
   const superuserKey = Crypto.generatePrivateKey()

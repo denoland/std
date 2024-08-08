@@ -25,7 +25,7 @@
     "@kitsonk/kv-toolbox": "jsr:@kitsonk/kv-toolbox",
     "@noble/hashes": "npm:@noble/hashes",
     "@noble/secp256k1": "npm:@noble/secp256k1",
-    "@scure/base": "npm:@scure/base@^1.1.7",
+    "@scure/base": "npm:@scure/base",
     "@sindresorhus/is": "npm:@sindresorhus/is",
     "@std/assert": "jsr:@std/assert",
     "@std/async": "jsr:@std/async",
@@ -52,7 +52,8 @@
     "serialize-error": "npm:serialize-error",
     "supports-color": "npm:supports-color",
     "ulid": "npm:ulid",
-    "youtube-caption-extractor": "npm:youtube-caption-extractor"
+    "youtube-caption-extractor": "npm:youtube-caption-extractor",
+    "zod": "npm:zod"
   },
   "exclude": ["cov/"],
   "lint": {
@@ -66,7 +67,9 @@
     "exclude": ["coverage", "cov", "node_modules"],
     "semiColons": false,
     "singleQuote": true,
-    "proseWrap": "always"
+    "proseWrap": "always",
+    "indentWidth": 2,
+    "useTabs": false
   },
   "exports": "./main.ts"
 }

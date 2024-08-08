@@ -1,7 +1,7 @@
 import { Debug, delay, expect } from '@utils'
 import { Functions, IA, pidSchema } from '@/constants.ts'
 import { PID } from '@/constants.ts'
-import { withMeta } from '@/api/web-client.types.ts'
+import { withMeta } from '@/api/types.ts'
 const log = Debug('AI:io-fixture')
 
 export const api = {
@@ -27,6 +27,7 @@ export const api = {
     description: 'throw an error',
     type: 'object',
     additionalProperties: false,
+    required: ['message'],
     properties: {
       message: { type: 'string' },
     },

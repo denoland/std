@@ -19,10 +19,10 @@ import {
   SU_BACKCHAT,
   toActions,
   UnsequencedRequest,
-} from './web-client.types.ts'
+} from './types.ts'
 import { ulid } from 'ulid'
-import { PierceWatcher } from './web-client-watcher.ts'
-import { Crypto } from './web-client-crypto.ts'
+import { PierceWatcher } from './watcher.ts'
+import { Crypto } from './crypto.ts'
 type Init = {
   repo: string
   isolate?: string

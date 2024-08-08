@@ -1,9 +1,4 @@
-import {
-  EngineInterface,
-  IoStruct,
-  isPierceRequest,
-  PID,
-} from './web-client.types.ts'
+import { EngineInterface, IoStruct, isPierceRequest, PID } from './types.ts'
 import { deserializeError } from 'serialize-error'
 
 type PiercePromise = {

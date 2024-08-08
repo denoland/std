@@ -1,7 +1,7 @@
 import * as secp from '@noble/secp256k1'
 import { ripemd160 } from '@noble/hashes/ripemd160'
 import { base32 } from 'multiformats/bases/base32'
-import { machineIdRegex } from './web-client.types.ts'
+import { machineIdRegex } from './types.ts'
 
 export class Crypto {
   readonly #privKey: Uint8Array

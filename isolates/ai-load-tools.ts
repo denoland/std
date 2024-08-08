@@ -128,6 +128,8 @@ const isolateToGptApi = (name: string, schema: JSONSchemaType<object>) => {
     function: {
       name,
       description: schema.description,
+      // slower, but guarantees correct params
+      // strict: true,
       parameters,
     },
   }

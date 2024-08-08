@@ -5,8 +5,8 @@ import { Engine } from '@/engine.ts'
 import { Api } from '@/isolates/io-fixture.ts'
 import { assert } from '@std/assert'
 import DB from '@/db.ts'
-import { Crypto } from '@/api/web-client-crypto.ts'
-import { Backchat } from '@/api/web-client-backchat.ts'
+import { Crypto } from '../api/crypto.ts'
+import { Backchat } from '../api/client-backchat.ts'
 
 const log = Debug('AI:benchmarks')
 Debug.enable('AI:benchmarks AI:qbr')

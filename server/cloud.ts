@@ -3,10 +3,10 @@
  * Not part of regular testing since can only run after the code is deployed
  */
 import { assert } from '@utils'
-import { WebClientEngine } from '@/api/web-client-engine.ts'
+import { WebClientEngine } from '../api/client-engine.ts'
 import guts from '../guts/guts.ts'
 import '@std/dotenv/load'
-import { Backchat } from '@/api/web-client-backchat.ts'
+import { Backchat } from '../api/client-backchat.ts'
 
 let introDone = false
 
