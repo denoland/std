@@ -11,7 +11,7 @@ const CR = "\r".charCodeAt(0);
 const LF = "\n".charCodeAt(0);
 
 /**
- * BufferFullError is thrown when a write operation is attempted on a full buffer.
+ * Thrown when a write operation is attempted on a full buffer.
  *
  * @example Usage
  * ```ts
@@ -44,7 +44,7 @@ export class BufferFullError extends Error {
    */
   override name = "BufferFullError";
   /**
-   * The bytes partially read
+   * The partially read bytes
    *
    * @example Usage
    * ```ts
@@ -68,7 +68,7 @@ export class BufferFullError extends Error {
 }
 
 /**
- * PartialReadError is thrown when a read from a stream fails to read the
+ * Thrown when a read from a stream fails to read the
  * requested number of bytes.
  *
  * @example Usage
@@ -103,7 +103,7 @@ export class PartialReadError extends Error {
    */
   override name = "PartialReadError";
   /**
-   * The bytes partially read
+   * he partially read bytes
    *
    * @example Usage
    * ```ts
