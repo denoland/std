@@ -1,7 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import { RECOGNIZE_REGEXP_MAP } from "./_formats.ts";
-import type { Format } from "./_types.ts";
+import { type Format, RECOGNIZE_REGEXP_MAP } from "./_formats.ts";
 import type { Extract } from "./types.ts";
 
 /** Parser function type */
