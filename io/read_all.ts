@@ -9,8 +9,8 @@ import type { Reader, ReaderSync } from "./types.ts";
  * Read {@linkcode Reader} `r` until EOF (`null`) and resolve to the content as
  * {@linkcode Uint8Array}.
  *
- * @example
- * ```ts
+ * @example Usage
+ * ```ts no-eval
  * import { readAll } from "@std/io/read-all";
  *
  * // Example from stdin
@@ -20,6 +20,9 @@ import type { Reader, ReaderSync } from "./types.ts";
  * using file = await Deno.open("my_file.txt", {read: true});
  * const myFileContent = await readAll(file);
  * ```
+ *
+ * @param reader The reader to read from
+ * @returns The content as Uint8Array
  */
 export async function readAll(reader: Reader): Promise<Uint8Array> {
   const chunks: Uint8Array[] = [];
@@ -41,8 +44,8 @@ export async function readAll(reader: Reader): Promise<Uint8Array> {
  * Synchronously reads {@linkcode ReaderSync} `r` until EOF (`null`) and returns
  * the content as {@linkcode Uint8Array}.
  *
- * @example
- * ```ts
+ * @example Usage
+ * ```ts no-eval
  * import { readAllSync } from "@std/io/read-all";
  *
  * // Example from stdin
@@ -52,6 +55,9 @@ export async function readAll(reader: Reader): Promise<Uint8Array> {
  * using file = Deno.openSync("my_file.txt", {read: true});
  * const myFileContent = readAllSync(file);
  * ```
+ *
+ * @param reader The reader to read from
+ * @returns The content as Uint8Array
  */
 export function readAllSync(reader: ReaderSync): Uint8Array {
   const chunks: Uint8Array[] = [];
