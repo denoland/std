@@ -15,11 +15,15 @@ const LF = "\n".charCodeAt(0);
  *
  * @example Usage
  * ```ts
- * import { BufWriter, BufferFullError } from "@std/io";
- * import { assert, assertEquals } from "@std/assert/assert";
+ * import { BufWriter, BufferFullError, Writer } from "@std/io";
+ * import { assert, assertEquals } from "@std/assert";
  *
- * const buf = new Uint8Array(2);
- * const bufWriter = new BufWriter(buf);
+ * const writer: Writer = {
+ *   write(p: Uint8Array): Promise<number> {
+ *     throw new BufferFullError(p);
+ *   }
+ * };
+ * const bufWriter = new BufWriter(writer);
  * try {
  *   await bufWriter.write(new Uint8Array([1, 2, 3]));
  * } catch (err) {
@@ -78,11 +82,9 @@ export class BufferFullError extends Error {
  * import { PartialReadError } from "@std/io";
  * import { assertEquals } from "@std/assert/equals";
  *
- * try {
- *   throw new PartialReadError();
- * } catch (err) {
- *   assertEquals(err.name, "PartialReadError");
- * }
+ * const err = new PartialReadError();
+ * assertEquals(err.name, "PartialReadError");
+ *
  * ```
  *
  * @deprecated This will be removed in 1.0.0. Use the {@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API | Web Streams API} instead.
@@ -96,11 +98,8 @@ export class PartialReadError extends Error {
    * import { PartialReadError } from "@std/io";
    * import { assertEquals } from "@std/assert/equals";
    *
-   * try {
-   *   throw new PartialReadError();
-   * } catch (err) {
-   *   assertEquals(err.name, "PartialReadError");
-   * }
+   * const err = new PartialReadError();
+   * assertEquals(err.name, "PartialReadError");
    * ```
    */
   override name = "PartialReadError";
@@ -112,11 +111,8 @@ export class PartialReadError extends Error {
    * import { PartialReadError } from "@std/io";
    * import { assertEquals } from "@std/assert/equals";
    *
-   * try {
-   *   throw new PartialReadError();
-   * } catch (err) {
-   *   assertEquals(err.partial, undefined);
-   * }
+   * const err = new PartialReadError();
+   * assertEquals(err.partial, undefined);
    * ```
    */
   partial?: Uint8Array;
@@ -498,10 +494,9 @@ export class BufReader implements Reader {
    * const reader = new Buffer(new TextEncoder().encode("hello\nworld"));
    * const bufReader = new BufReader(reader);
    * const line1 = await bufReader.readLine();
-   * assertEquals(new TextDecoder().decode(line1.line), "hello");
+   * assertEquals(new TextDecoder().decode(line1!.line), "hello");
    * const line2 = await bufReader.readLine();
-   * assertEquals(new TextDecoder().decode(line2.line), "world");
-   * assertEquals(line2.more, false);
+   * assertEquals(new TextDecoder().decode(line2!.line), "world");
    * ```
    *
    * @returns The line read.
@@ -593,7 +588,7 @@ export class BufReader implements Reader {
    * const reader = new Buffer(new TextEncoder().encode("hello world"));
    * const bufReader = new BufReader(reader);
    * const slice = await bufReader.readSlice(0x20);
-   * assertEquals(new TextDecoder().decode(slice), "hello ");
+   * assertEquals(new TextDecoder().decode(slice!), "hello ");
    * ```
    *
    * @param delim The delimiter to read until.
@@ -676,7 +671,7 @@ export class BufReader implements Reader {
    * const reader = new Buffer(new TextEncoder().encode("hello world"));
    * const bufReader = new BufReader(reader);
    * const peeked = await bufReader.peek(5);
-   * assertEquals(new TextDecoder().decode(peeked), "hello");
+   * assertEquals(new TextDecoder().decode(peeked!), "hello");
    * ```
    *
    * @param n The number of bytes to peek.

@@ -17,7 +17,7 @@ const DEFAULT_BUF_SIZE = 4096;
  * import { AbstractBufBase } from "@std/io/buf-writer";
  * import { Reader } from "@std/io/types";
  *
- * class MyBufReader extends AbstractBufBase implements Reader {
+ * class MyBufReader extends AbstractBufBase {
  *   constructor(buf: Uint8Array) {
  *     super(buf);
  *   }
@@ -35,10 +35,12 @@ export abstract class AbstractBufBase {
    * import { AbstractBufBase } from "@std/io/buf-writer";
    * import { assertEquals } from "@std/assert/equals";
    *
-   * const buf = new Uint8Array(1024);
-   * const ab = new AbstractBufBase(buf);
+   * class MyBuffer extends AbstractBufBase {}
    *
-   * assertEquals(ab.buf, buf);
+   * const buf = new Uint8Array(1024);
+   * const mb = new MyBuffer(buf);
+   *
+   * assertEquals(mb.buf, buf);
    * ```
    */
   buf: Uint8Array;
@@ -50,10 +52,12 @@ export abstract class AbstractBufBase {
    * import { AbstractBufBase } from "@std/io/buf-writer";
    * import { assertEquals } from "@std/assert/equals";
    *
-   * const buf = new Uint8Array(1024);
-   * const ab = new AbstractBufBase(buf);
+   * class MyBuffer extends AbstractBufBase {}
    *
-   * assertEquals(ab.usedBufferBytes, 0);
+   * const buf = new Uint8Array(1024);
+   * const mb = new MyBuffer(buf);
+   *
+   * assertEquals(mb.usedBufferBytes, 0);
    * ```
    */
   usedBufferBytes = 0;
@@ -65,10 +69,12 @@ export abstract class AbstractBufBase {
    * import { AbstractBufBase } from "@std/io/buf-writer";
    * import { assertEquals } from "@std/assert/equals";
    *
-   * const buf = new Uint8Array(1024);
-   * const ab = new AbstractBufBase(buf);
+   * class MyBuffer extends AbstractBufBase {}
    *
-   * assertEquals(ab.err, null);
+   * const buf = new Uint8Array(1024);
+   * const mb = new MyBuffer(buf);
+   *
+   * assertEquals(mb.err, null);
    * ```
    */
   err: Error | null = null;
@@ -90,10 +96,12 @@ export abstract class AbstractBufBase {
    * import { AbstractBufBase } from "@std/io/buf-writer";
    * import { assertEquals } from "@std/assert/equals";
    *
-   * const buf = new Uint8Array(1024);
-   * const ab = new AbstractBufBase(buf);
+   * class MyBuffer extends AbstractBufBase {}
    *
-   * assertEquals(ab.size(), 1024);
+   * const buf = new Uint8Array(1024);
+   * const mb = new MyBuffer(buf);
+   *
+   * assertEquals(mb.size(), 1024);
    * ```
    *
    * @return the size of the buffer in bytes.
@@ -110,10 +118,12 @@ export abstract class AbstractBufBase {
    * import { AbstractBufBase } from "@std/io/buf-writer";
    * import { assertEquals } from "@std/assert/equals";
    *
-   * const buf = new Uint8Array(1024);
-   * const ab = new AbstractBufBase(buf);
+   * class MyBuffer extends AbstractBufBase {}
    *
-   * assertEquals(ab.available(), 1024);
+   * const buf = new Uint8Array(1024);
+   * const mb = new MyBuffer(buf);
+   *
+   * assertEquals(mb.available(), 1024);
    * ```
    *
    * @return the number of bytes that are unused in the buffer.
@@ -131,10 +141,12 @@ export abstract class AbstractBufBase {
    * import { AbstractBufBase } from "@std/io/buf-writer";
    * import { assertEquals } from "@std/assert/equals";
    *
-   * const buf = new Uint8Array(1024);
-   * const ab = new AbstractBufBase(buf);
+   * class MyBuffer extends AbstractBufBase {}
    *
-   * assertEquals(ab.buffered(), 0);
+   * const buf = new Uint8Array(1024);
+   * const mb = new MyBuffer(buf);
+   *
+   * assertEquals(mb.buffered(), 0);
    * ```
    *
    * @return the number of bytes that have been written into the current buffer.
