@@ -14,10 +14,10 @@ const LF = "\n".charCodeAt(0);
  * @deprecated This will be removed in 1.0.0. Use the {@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API | Web Streams API} instead.
  */
 export class BufferFullError extends Error {
-  override name = "BufferFullError";
   partial: Uint8Array;
   constructor(partial: Uint8Array) {
     super("Buffer full");
+    this.name = this.constructor.name;
     this.partial = partial;
   }
 }
@@ -26,10 +26,12 @@ export class BufferFullError extends Error {
  * @deprecated This will be removed in 1.0.0. Use the {@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API | Web Streams API} instead.
  */
 export class PartialReadError extends Error {
-  override name = "PartialReadError";
-  partial?: Uint8Array;
-  constructor() {
+  partial: Uint8Array;
+
+  constructor(partial: Uint8Array) {
     super("Encountered UnexpectedEof, data only partially read");
+    this.name = this.constructor.name;
+    this.partial = partial;
   }
 }
 
@@ -176,22 +178,15 @@ export class BufReader implements Reader {
   async readFull(p: Uint8Array): Promise<Uint8Array | null> {
     let bytesRead = 0;
     while (bytesRead < p.length) {
-      try {
-        const rr = await this.read(p.subarray(bytesRead));
-        if (rr === null) {
-          if (bytesRead === 0) {
-            return null;
-          } else {
-            throw new PartialReadError();
-          }
+      const rr = await this.read(p.subarray(bytesRead));
+      if (rr === null) {
+        if (bytesRead === 0) {
+          return null;
+        } else {
+          throw new PartialReadError(p.subarray(0, bytesRead));
         }
-        bytesRead += rr;
-      } catch (err) {
-        if (err instanceof PartialReadError) {
-          err.partial = p.subarray(0, bytesRead);
-        }
-        throw err;
       }
+      bytesRead += rr;
     }
     return p;
   }
@@ -254,23 +249,13 @@ export class BufReader implements Reader {
     try {
       line = await this.readSlice(LF);
     } catch (err) {
-      let partial;
-      if (err instanceof PartialReadError) {
-        partial = err.partial;
-        if (!(partial instanceof Uint8Array)) {
-          throw new TypeError(
-            "bufio: caught error from `readSlice()` without `partial` property",
-          );
-        }
-      }
-
       // Don't throw if `readSlice()` failed with `BufferFullError`, instead we
       // just return whatever is available and set the `more` flag.
       if (!(err instanceof BufferFullError)) {
         throw err;
       }
 
-      partial = err.partial;
+      let partial = err.partial;
 
       // Handle the case where "\r\n" straddles the buffer.
       if (
@@ -363,14 +348,7 @@ export class BufReader implements Reader {
       s = this.#w - this.#r; // do not rescan area we scanned before
 
       // Buffer is not full.
-      try {
-        await this.#fill();
-      } catch (err) {
-        if (err instanceof PartialReadError) {
-          err.partial = slice;
-        }
-        throw err;
-      }
+      await this.#fill();
     }
 
     // Handle last byte, if any.
@@ -401,14 +379,7 @@ export class BufReader implements Reader {
 
     let avail = this.#w - this.#r;
     while (avail < n && avail < this.#buf.byteLength && !this.#eof) {
-      try {
-        await this.#fill();
-      } catch (err) {
-        if (err instanceof PartialReadError) {
-          err.partial = this.#buf.subarray(this.#r, this.#w);
-        }
-        throw err;
-      }
+      await this.#fill();
       avail = this.#w - this.#r;
     }
 

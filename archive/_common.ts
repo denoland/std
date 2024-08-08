@@ -184,7 +184,7 @@ export async function readBlock(
       if (bytesRead === 0) {
         return null;
       } else {
-        throw new PartialReadError();
+        throw new PartialReadError(p.subarray(0, bytesRead));
       }
     }
     bytesRead += rr;
