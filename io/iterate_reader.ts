@@ -19,10 +19,7 @@ export type { Reader, ReaderSync };
  * }
  * ```
  *
- * Second argument can be used to tune size of a buffer.
- * Default size of the buffer is 32kB.
- *
- * @example Usage
+ * @example Usage with buffer size
  * ```ts no-assert
  * import { iterateReader } from "@std/io/iterate-reader";
  *
@@ -37,6 +34,7 @@ export type { Reader, ReaderSync };
  *
  * @param reader The reader to read from
  * @param options The options
+ * @param options.bufSize The size of the buffer to use
  * @returns The async iterator of Uint8Array chunks
  */
 export async function* iterateReader(
@@ -74,7 +72,7 @@ export async function* iterateReader(
  * Second argument can be used to tune size of a buffer.
  * Default size of the buffer is 32kB.
  *
- * @example Usage
+ * @example Usage with buffer size
  * ```ts
  * import { iterateReaderSync } from "@std/io/iterate-reader";
  * import { assert } from "@std/assert/assert"

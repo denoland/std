@@ -4,7 +4,7 @@
 import type { Reader } from "./types.ts";
 
 /**
- * Reader utility for combining multiple readers
+ * Reader utility for combining multiple readers.
  *
  * @example Usage
  * ```ts
@@ -17,7 +17,6 @@ import type { Reader } from "./types.ts";
  * const r2 = new StringReader("world");
  * const mr = new MultiReader([r1, r2]);
  *
- * const data = new Uint8Array(10);
  * const res = await readAll(mr);
  *
  * assertEquals(new TextDecoder().decode(res), "helloworld");
@@ -30,7 +29,7 @@ export class MultiReader implements Reader {
   #currentIndex = 0;
 
   /**
-   * Construct a {@linkcode MultiReader} instance.
+   * Construct a new instance.
    *
    * @param readers The readers to combine.
    */

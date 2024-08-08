@@ -26,7 +26,8 @@ function createLPS(pat: Uint8Array): Uint8Array {
 }
 
 /**
- * Read delimited bytes from a Reader.
+ * Read delimited bytes from a {@linkcode Reader} through an
+ * {@linkcode AsyncIterableIterator} of {@linkcode Uint8Array}.
  *
  * @example Usage
  * ```ts
@@ -41,7 +42,7 @@ function createLPS(pat: Uint8Array): Uint8Array {
  *
  * @param reader The reader to read from
  * @param delim The delimiter to read until
- * @returns The async iterator of Uint8Array
+ * @returns The {@linkcode AsyncIterableIterator} of {@linkcode Uint8Array}s.
  *
  * @deprecated This will be removed in 1.0.0. Use the {@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API | Web Streams API} instead.
  */

@@ -16,7 +16,7 @@ const LF = "\n".charCodeAt(0);
  * @example Usage
  * ```ts
  * import { BufWriter, BufferFullError } from "@std/io";
- * import { assert } from "@std/assert/assert";
+ * import { assert, assertEquals } from "@std/assert/assert";
  *
  * const buf = new Uint8Array(2);
  * const bufWriter = new BufWriter(buf);
@@ -24,6 +24,7 @@ const LF = "\n".charCodeAt(0);
  *   await bufWriter.write(new Uint8Array([1, 2, 3]));
  * } catch (err) {
  *   assert(err instanceof BufferFullError);
+ *   assertEquals(err.partial, new Uint8Array([3]));
  * }
  * ```
  *
@@ -57,7 +58,8 @@ export class BufferFullError extends Error {
    */
   partial: Uint8Array;
 
-  /** Construct a new {@linkcode BufferFullError}
+  /**
+   * Construct a new instance.
    *
    * @param partial The bytes partially read
    */
@@ -119,14 +121,14 @@ export class PartialReadError extends Error {
    */
   partial?: Uint8Array;
 
-  /** Construct a new {@linkcode PartialReadError} */
+  /** Construct a new instance. */
   constructor() {
     super("Encountered UnexpectedEof, data only partially read");
   }
 }
 
 /**
- * Result type returned by of BufReader.readLine().
+ * Result type returned by of {@linkcode BufReader.readLine}.
  *
  * @deprecated This will be removed in 1.0.0. Use the {@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API | Web Streams API} instead.
  */
@@ -138,15 +140,17 @@ export interface ReadLineResult {
 }
 
 /**
- * BufReader implements buffering for a Reader object.
+ * Implements buffering for a {@linkcode Reader} object.
  *
  * @example Usage
  * ```ts
  * import { BufReader } from "@std/io";
  * import { assertEquals } from "@std/assert/equals";
  *
+ * const encoder = new TextEncoder();
  * const decoder = new TextDecoder();
- * const reader = new BufReader(new Deno.Buffer(new TextEncoder().encode("hello world")));
+ *
+ * const reader = new BufReader(new Deno.Buffer(encoder.encode("hello world")));
  * const buf = new Uint8Array(11);
  * await reader.read(buf);
  * assertEquals(decoder.decode(buf), "hello world");
@@ -162,7 +166,7 @@ export class BufReader implements Reader {
   #eof = false;
 
   /**
-   * return new {@linkcode BufReader} unless r is BufReader
+   * Returns a new {@linkcode BufReader} if `r` is not already one.
    *
    * @example Usage
    * ```ts
@@ -176,7 +180,7 @@ export class BufReader implements Reader {
    *
    * @param r The reader to read from.
    * @param size The size of the buffer.
-   * @returns A new {@linkcode BufReader} unless r is BufReader.
+   * @returns A new {@linkcode BufReader} if `r` is not already one.
    */
   static create(r: Reader, size: number = DEFAULT_BUF_SIZE): BufReader {
     return r instanceof BufReader ? r : new BufReader(r, size);
@@ -229,7 +233,7 @@ export class BufReader implements Reader {
    * assertEquals(bufReader.buffered(), 6);
    * ```
    *
-   * @returns number of bytes that can be read from the buffer
+   * @returns Number of bytes that can be read from the buffer
    */
   buffered(): number {
     return this.#w - this.#r;
@@ -268,7 +272,7 @@ export class BufReader implements Reader {
 
   /**
    * Discards any buffered data, resets all state, and switches
-   * the buffered reader to read from r.
+   * the buffered reader to read from `r`.
    *
    * @example Usage
    * ```ts
@@ -297,11 +301,11 @@ export class BufReader implements Reader {
   };
 
   /**
-   * reads data into p.
-   * It returns the number of bytes read into p.
-   * The bytes are taken from at most one Read on the underlying Reader,
-   * hence n may be less than len(p).
-   * To read exactly len(p) bytes, use io.ReadFull(b, p).
+   * Reads data into `p`.
+   *
+   * The bytes are taken from at most one `read()` on the underlying `Reader`,
+   * hence n may be less than `len(p)`.
+   * To read exactly `len(p)` bytes, use `io.ReadFull(b, p)`.
    *
    * @example Usage
    * ```ts
@@ -316,7 +320,7 @@ export class BufReader implements Reader {
    * ```
    *
    * @param p The buffer to read data into.
-   * @returns The number of bytes read into p.
+   * @returns The number of bytes read into `p`.
    */
   async read(p: Uint8Array): Promise<number | null> {
     let rr: number | null = p.byteLength;
@@ -351,7 +355,8 @@ export class BufReader implements Reader {
     return copied;
   }
 
-  /** reads exactly `p.length` bytes into `p`.
+  /**
+   * Reads exactly `p.length` bytes into `p`.
    *
    * If successful, `p` is returned.
    *
@@ -378,7 +383,8 @@ export class BufReader implements Reader {
    * ```
    *
    * @param p The buffer to read data into.
-   * @returns The buffer `p` if the read is successful, `null` if the end of the underlying stream has been reached, and there are no more bytes available in the buffer.
+   * @returns The buffer `p` if the read is successful, `null` if the end of the
+   * underlying stream has been reached, and there are no more bytes available in the buffer.
    */
   async readFull(p: Uint8Array): Promise<Uint8Array | null> {
     let bytesRead = 0;
@@ -404,7 +410,7 @@ export class BufReader implements Reader {
   }
 
   /**
-   * Returns the next byte [0, 255] or `null`.
+   * Returns the next byte ([0, 255]) or `null`.
    *
    * @example Usage
    * ```ts
@@ -417,7 +423,7 @@ export class BufReader implements Reader {
    * assertEquals(byte, 104);
    * ```
    *
-   * @returns The next byte [0, 255] or `null`.
+   * @returns The next byte ([0, 255]) or `null`.
    */
   async readByte(): Promise<number | null> {
     while (this.#r === this.#w) {
@@ -431,14 +437,13 @@ export class BufReader implements Reader {
   }
 
   /**
-   * readString() reads until the first occurrence of delim in the input,
+   * Reads until the first occurrence of delim in the input,
    * returning a string containing the data up to and including the delimiter.
    * If ReadString encounters an error before finding a delimiter,
    * it returns the data read before the error and the error itself
    * (often `null`).
    * ReadString returns err !== null if and only if the returned data does not end
    * in delim.
-   * For simple uses, a Scanner may be more convenient.
    *
    * @example Usage
    * ```ts
@@ -467,8 +472,8 @@ export class BufReader implements Reader {
   }
 
   /**
-   * `readLine()` is a low-level line-reading primitive. Most callers should
-   * use `readString('\n')` instead or use a Scanner.
+   * A low-level line-reading primitive. Most callers should use
+   * `readString('\n')` instead.
    *
    * `readLine()` tries to return a single line, not including the end-of-line
    * bytes. If the line was too long for the buffer then `more` is set and the
@@ -477,17 +482,13 @@ export class BufReader implements Reader {
    * of the line. The returned buffer is only valid until the next call to
    * `readLine()`.
    *
-   * The text returned from ReadLine does not include the line end ("\r\n" or
+   * The text returned from this method does not include the line end ("\r\n" or
    * "\n").
    *
    * When the end of the underlying stream is reached, the final bytes in the
    * stream are returned. No indication or error is given if the input ends
    * without a final line end. When there are no more trailing bytes to read,
    * `readLine()` returns `null`.
-   *
-   * Calling `unreadByte()` after `readLine()` will always unread the last byte
-   * read (possibly a character belonging to the line end) even if that byte is
-   * not part of the line returned by `readLine()`.
    *
    * @example Usage
    * ```ts
@@ -500,6 +501,7 @@ export class BufReader implements Reader {
    * assertEquals(new TextDecoder().decode(line1.line), "hello");
    * const line2 = await bufReader.readLine();
    * assertEquals(new TextDecoder().decode(line2.line), "world");
+   * assertEquals(line2.more, false);
    * ```
    *
    * @returns The line read.
@@ -567,7 +569,7 @@ export class BufReader implements Reader {
   }
 
   /**
-   * `readSlice()` reads until the first occurrence of `delim` in the input,
+   * Reads until the first occurrence of `delim` in the input,
    * returning a slice pointing at the bytes in the buffer. The bytes stop
    * being valid at the next read.
    *
@@ -655,7 +657,7 @@ export class BufReader implements Reader {
   }
 
   /**
-   * `peek()` returns the next `n` bytes without advancing the reader. The
+   * Returns the next `n` bytes without advancing the reader. The
    * bytes stop being valid at the next read call.
    *
    * When the end of the underlying stream is reached, but there are unread
