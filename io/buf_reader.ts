@@ -70,7 +70,7 @@ export class BufferFullError extends Error {
  * import { PartialReadError } from "@std/io";
  * import { assertEquals } from "@std/assert/equals";
  *
- * const err = new PartialReadError();
+ * const err = new PartialReadError(new Uint8Array(2));
  * assertEquals(err.name, "PartialReadError");
  *
  * ```
@@ -86,8 +86,8 @@ export class PartialReadError extends Error {
    * import { PartialReadError } from "@std/io";
    * import { assertEquals } from "@std/assert/equals";
    *
-   * const err = new PartialReadError();
-   * assertEquals(err.partial, undefined);
+   * const err = new PartialReadError(new Uint8Array(2));
+   * assertEquals(err.partial, new Uint8Array(2));
    * ```
    */
   partial: Uint8Array;
