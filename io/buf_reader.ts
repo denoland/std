@@ -92,6 +92,11 @@ export class PartialReadError extends Error {
    */
   partial: Uint8Array;
 
+  /**
+   * Construct a {@linkcode PartialReadError}.
+   *
+   * @param partial The bytes partially read
+   */
   constructor(partial: Uint8Array) {
     super("Encountered UnexpectedEof, data only partially read");
     this.name = this.constructor.name;
