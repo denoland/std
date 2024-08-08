@@ -79,7 +79,7 @@ export class BufferFullError extends Error {
  */
 export class PartialReadError extends Error {
   /**
-   * he partially read bytes
+   * The partially read bytes
    *
    * @example Usage
    * ```ts
