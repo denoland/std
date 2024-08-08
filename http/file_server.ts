@@ -174,6 +174,10 @@ export async function serveFile(
   filePath: string,
   options?: ServeFileOptions,
 ): Promise<Response> {
+  if (req.method !== "GET") {
+    return createStandardResponse(STATUS_CODE.MethodNotAllowed);
+  }
+
   let { etagAlgorithm: algorithm, fileInfo } = options ?? {};
 
   try {
@@ -636,6 +640,10 @@ export async function serveDir(
   req: Request,
   opts: ServeDirOptions = {},
 ): Promise<Response> {
+  if (req.method !== "GET") {
+    return createStandardResponse(STATUS_CODE.MethodNotAllowed);
+  }
+
   let response: Response;
   try {
     response = await createServeDirResponse(req, opts);

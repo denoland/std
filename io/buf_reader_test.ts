@@ -200,15 +200,12 @@ Deno.test("BufReader.readFull() throws if array length is too big", async functi
   }
   {
     const buf = new Uint8Array(6);
-    try {
-      await bufr.readFull(buf);
-      fail("readFull() should throw PartialReadError");
-    } catch (err) {
-      assert(err instanceof PartialReadError);
-      assert(err.partial instanceof Uint8Array);
-      assertEquals(err.partial.length, 5);
-      assertEquals(dec.decode(buf.subarray(0, 5)), "World");
-    }
+    const error = await assertRejects(
+      () => bufr.readFull(buf),
+      PartialReadError,
+    );
+    assertEquals(error.partial.length, 5);
+    assertEquals(dec.decode(buf.subarray(0, 5)), "World");
   }
 });
 

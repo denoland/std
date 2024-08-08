@@ -58,7 +58,7 @@ const PATTERN_TAG_HANDLE = /^(?:!|!!|![a-z\-]+!)$/i;
 const PATTERN_TAG_URI =
   /^(?:!|[^,\[\]\{\}])(?:%[0-9a-f]{2}|[0-9a-z\-#;\/\?:@&=\+\$,_\.!~\*'\(\)\[\]])*$/i;
 
-interface LoaderStateOptions {
+export interface LoaderStateOptions {
   /** specifies a schema to use. */
   schema?: Schema;
   /** compatibility with JSON.parse behaviour. */
@@ -136,7 +136,7 @@ function codepointToChar(codepoint: number): string {
   );
 }
 
-class LoaderState {
+export class LoaderState {
   schema: Schema;
   input: string;
   length: number;
@@ -1690,43 +1690,4 @@ function composeNode(
   }
 
   return state.tag !== null || state.anchor !== null || hasContent;
-}
-
-function sanitizeInput(input: string) {
-  input = String(input);
-
-  if (input.length > 0) {
-    // Add tailing `\n` if not exists
-    if (!isEOL(input.charCodeAt(input.length - 1))) input += "\n";
-
-    // Strip BOM
-    if (input.charCodeAt(0) === 0xfeff) input = input.slice(1);
-  }
-
-  // Use 0 as string terminator. That significantly simplifies bounds check.
-  input += "\0";
-
-  return input;
-}
-
-export function loadDocuments(
-  input: string,
-  options: LoaderStateOptions = {},
-): unknown[] {
-  input = sanitizeInput(input);
-  const state = new LoaderState(input, options);
-  return [...state.readDocuments()];
-}
-
-export function load(input: string, options: LoaderStateOptions = {}): unknown {
-  input = sanitizeInput(input);
-  const state = new LoaderState(input, options);
-  const documentGenerator = state.readDocuments();
-  const document = documentGenerator.next().value;
-  if (!documentGenerator.next().done) {
-    throw new SyntaxError(
-      "expected a single document in the stream, but found more",
-    );
-  }
-  return document ?? null;
 }
