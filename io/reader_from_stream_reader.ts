@@ -8,17 +8,19 @@ import type { Reader } from "./types.ts";
 /**
  * Create a {@linkcode Reader} from a {@linkcode ReadableStreamDefaultReader}.
  *
- * @example
- * ```ts
+ * @example Usage
+ * ```ts no-assert
  * import { copy } from "@std/io/copy";
  * import { readerFromStreamReader } from "@std/io/reader-from-stream-reader";
  *
  * const res = await fetch("https://deno.land");
- * using file = await Deno.open("./deno.land.html", { create: true, write: true });
  *
  * const reader = readerFromStreamReader(res.body!.getReader());
- * await copy(reader, file);
+ * await copy(reader, Deno.stdout);
  * ```
+ *
+ * @param streamReader The stream reader to read from
+ * @returns The reader
  */
 export function readerFromStreamReader(
   streamReader: ReadableStreamDefaultReader<Uint8Array>,
