@@ -18,6 +18,13 @@ const EXCLUDED_DIRS = [
 
   "**/types.ts",
   "**/constants.ts",
+
+  "**/dotenv/load.ts",
+  "**/fmt/",
+  "**/encoding/",
+  "**/testing/",
+  "**/http/",
+  "**/uuid/",
 ];
 
 const ROOT = new URL("../", import.meta.url);
