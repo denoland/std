@@ -8,7 +8,7 @@ const decoder = new TextDecoder();
 /**
  * Writer utility for buffering string chunks.
  *
- * @example
+ * @example Usage
  * ```ts
  * import {
  *   copyN,
@@ -16,23 +16,16 @@ const decoder = new TextDecoder();
  *   StringWriter,
  * } from "@std/io";
  * import { copy } from "@std/io/copy";
+ * import { assertEquals } from "@std/assert/equals";
  *
  * const w = new StringWriter("base");
  * const r = new StringReader("0123456789");
  * await copyN(r, w, 4); // copy 4 bytes
  *
- * // Number of bytes read
- * console.log(w.toString()); //base0123
+ * assertEquals(w.toString(), "base0123");
  *
  * await copy(r, w); // copy all
- * console.log(w.toString()); // base0123456789
- * ```
- *
- * **Output:**
- *
- * ```text
- * base0123
- * base0123456789
+ * assertEquals(w.toString(), "base0123456789");
  * ```
  *
  * @deprecated This will be removed in 1.0.0. Use the {@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API | Web Streams API} instead.
@@ -43,6 +36,11 @@ export class StringWriter implements Writer, WriterSync {
   #cache: string | undefined;
   #base: string;
 
+  /**
+   * Construct a new instance.
+   *
+   * @param base The base string to write to the buffer.
+   */
   constructor(base = "") {
     const c = new TextEncoder().encode(base);
     this.#chunks.push(c);
@@ -50,10 +48,42 @@ export class StringWriter implements Writer, WriterSync {
     this.#base = base;
   }
 
+  /**
+   * Writes the bytes to the buffer asynchronously.
+   *
+   * @example Usage
+   * ```ts
+   * import { StringWriter } from "@std/io/string-writer";
+   * import { assertEquals } from "@std/assert/equals";
+   *
+   * const w = new StringWriter("base");
+   * await w.write(new TextEncoder().encode("0123"));
+   * assertEquals(w.toString(), "base0123");
+   * ```
+   *
+   * @param p The bytes to write to the buffer.
+   * @returns The number of bytes written to the buffer in total.
+   */
   write(p: Uint8Array): Promise<number> {
     return Promise.resolve(this.writeSync(p));
   }
 
+  /**
+   * Writes the bytes to the buffer synchronously.
+   *
+   * @example Usage
+   * ```ts
+   * import { StringWriter } from "@std/io/string-writer";
+   * import { assertEquals } from "@std/assert/equals";
+   *
+   * const w = new StringWriter("base");
+   * w.writeSync(new TextEncoder().encode("0123"));
+   * assertEquals(w.toString(), "base0123");
+   * ```
+   *
+   * @param p The bytes to write to the buffer.
+   * @returns The number of bytes written to the buffer in total.
+   */
   writeSync(p: Uint8Array): number {
     this.#chunks.push(new Uint8Array(p));
     this.#byteLength += p.byteLength;
@@ -61,6 +91,21 @@ export class StringWriter implements Writer, WriterSync {
     return p.byteLength;
   }
 
+  /**
+   * Returns the string written to the buffer.
+   *
+   * @example Usage
+   * ```ts
+   * import { StringWriter } from "@std/io/string-writer";
+   * import { assertEquals } from "@std/assert/equals";
+   *
+   * const w = new StringWriter("base");
+   * await w.write(new TextEncoder().encode("0123"));
+   * assertEquals(w.toString(), "base0123");
+   * ```
+   *
+   * @returns the string written to the buffer.
+   */
   toString(): string {
     if (this.#cache) {
       return this.#cache;

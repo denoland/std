@@ -11,7 +11,8 @@ import type { Reader, ReaderSync, Writer, WriterSync } from "./types.ts";
 const MIN_READ = 32 * 1024;
 const MAX_SIZE = 2 ** 32 - 2;
 
-/** A variable-sized buffer of bytes with `read()` and `write()` methods.
+/**
+ * A variable-sized buffer of bytes with `read()` and `write()` methods.
  *
  * Buffer is almost always used with some I/O like files and sockets. It allows
  * one to buffer up a download from a socket. Buffer grows and shrinks as
@@ -25,49 +26,145 @@ const MAX_SIZE = 2 ** 32 - 2;
  * ArrayBuffer.
  *
  * Based on {@link https://golang.org/pkg/bytes/#Buffer | Go Buffer}.
+ *
+ * @example Usage
+ * ```ts
+ * import { Buffer } from "@std/io/buffer";
+ * import { assertEquals } from "@std/assert/equals";
+ *
+ * const buf = new Buffer();
+ * await buf.write(new TextEncoder().encode("Hello, "));
+ * await buf.write(new TextEncoder().encode("world!"));
+ *
+ * const data = new Uint8Array(13);
+ * await buf.read(data);
+ *
+ * assertEquals(new TextDecoder().decode(data), "Hello, world!");
+ * ```
  */
-
 export class Buffer implements Writer, WriterSync, Reader, ReaderSync {
   #buf: Uint8Array; // contents are the bytes buf[off : len(buf)]
   #off = 0; // read at buf[off], write at buf[buf.byteLength]
 
+  /**
+   * Constructs a new instance with the specified {@linkcode ArrayBuffer} as its
+   * initial contents.
+   *
+   * @param ab The ArrayBuffer to use as the initial contents of the buffer.
+   */
   constructor(ab?: ArrayBufferLike | ArrayLike<number>) {
     this.#buf = ab === undefined ? new Uint8Array(0) : new Uint8Array(ab);
   }
 
-  /** Returns a slice holding the unread portion of the buffer.
+  /**
+   * Returns a slice holding the unread portion of the buffer.
    *
    * The slice is valid for use only until the next buffer modification (that
    * is, only until the next call to a method like `read()`, `write()`,
    * `reset()`, or `truncate()`). If `options.copy` is false the slice aliases the buffer content at
    * least until the next buffer modification, so immediate changes to the
    * slice will affect the result of future reads.
-   * @param [options={ copy: true }]
+   *
+   * @example Usage
+   * ```ts
+   * import { Buffer } from "@std/io/buffer";
+   * import { assertEquals } from "@std/assert/equals";
+   *
+   * const buf = new Buffer();
+   * await buf.write(new TextEncoder().encode("Hello, world!"));
+   *
+   * const slice = buf.bytes();
+   * assertEquals(new TextDecoder().decode(slice), "Hello, world!");
+   * ```
+   *
+   * @param options The options for the slice.
+   * @returns A slice holding the unread portion of the buffer.
    */
   bytes(options = { copy: true }): Uint8Array {
     if (options.copy === false) return this.#buf.subarray(this.#off);
     return this.#buf.slice(this.#off);
   }
 
-  /** Returns whether the unread portion of the buffer is empty. */
+  /**
+   * Returns whether the unread portion of the buffer is empty.
+   *
+   * @example Usage
+   * ```ts
+   * import { Buffer } from "@std/io/buffer";
+   * import { assertEquals } from "@std/assert/equals";
+   *
+   * const buf = new Buffer();
+   * assertEquals(buf.empty(), true);
+   * await buf.write(new TextEncoder().encode("Hello, world!"));
+   * assertEquals(buf.empty(), false);
+   * ```
+   *
+   * @returns `true` if the unread portion of the buffer is empty, `false`
+   *          otherwise.
+   */
   empty(): boolean {
     return this.#buf.byteLength <= this.#off;
   }
 
-  /** A read only number of bytes of the unread portion of the buffer. */
+  /**
+   * A read only number of bytes of the unread portion of the buffer.
+   *
+   * @example Usage
+   * ```ts
+   * import { Buffer } from "@std/io/buffer";
+   * import { assertEquals } from "@std/assert/equals";
+   *
+   * const buf = new Buffer();
+   * await buf.write(new TextEncoder().encode("Hello, world!"));
+   *
+   * assertEquals(buf.length, 13);
+   * ```
+   *
+   * @returns The number of bytes of the unread portion of the buffer.
+   */
   get length(): number {
     return this.#buf.byteLength - this.#off;
   }
 
-  /** The read only capacity of the buffer's underlying byte slice, that is,
-   * the total space allocated for the buffer's data. */
+  /**
+   * The read only capacity of the buffer's underlying byte slice, that is,
+   * the total space allocated for the buffer's data.
+   *
+   * @example Usage
+   * ```ts
+   * import { Buffer } from "@std/io/buffer";
+   * import { assertEquals } from "@std/assert/equals";
+   *
+   * const buf = new Buffer();
+   * assertEquals(buf.capacity, 0);
+   * await buf.write(new TextEncoder().encode("Hello, world!"));
+   * assertEquals(buf.capacity, 13);
+   * ```
+   *
+   * @returns The capacity of the buffer.
+   */
   get capacity(): number {
     return this.#buf.buffer.byteLength;
   }
 
-  /** Discards all but the first `n` unread bytes from the buffer but
+  /**
+   * Discards all but the first `n` unread bytes from the buffer but
    * continues to use the same allocated storage. It throws if `n` is
-   * negative or greater than the length of the buffer. */
+   * negative or greater than the length of the buffer.
+   *
+   * @example Usage
+   * ```ts
+   * import { Buffer } from "@std/io/buffer";
+   * import { assertEquals } from "@std/assert/equals";
+   *
+   * const buf = new Buffer();
+   * await buf.write(new TextEncoder().encode("Hello, world!"));
+   * buf.truncate(6);
+   * assertEquals(buf.length, 6);
+   * ```
+   *
+   * @param n The number of bytes to keep.
+   */
   truncate(n: number) {
     if (n === 0) {
       this.reset();
@@ -79,6 +176,20 @@ export class Buffer implements Writer, WriterSync, Reader, ReaderSync {
     this.#reslice(this.#off + n);
   }
 
+  /**
+   * Resets the contents
+   *
+   * @example Usage
+   * ```ts
+   * import { Buffer } from "@std/io/buffer";
+   * import { assertEquals } from "@std/assert/equals";
+   *
+   * const buf = new Buffer();
+   * await buf.write(new TextEncoder().encode("Hello, world!"));
+   * buf.reset();
+   * assertEquals(buf.length, 0);
+   * ```
+   */
   reset() {
     this.#reslice(0);
     this.#off = 0;
@@ -100,9 +211,29 @@ export class Buffer implements Writer, WriterSync, Reader, ReaderSync {
     this.#buf = new Uint8Array(this.#buf.buffer, 0, len);
   }
 
-  /** Reads the next `p.length` bytes from the buffer or until the buffer is
+  /**
+   * Reads the next `p.length` bytes from the buffer or until the buffer is
    * drained. Returns the number of bytes read. If the buffer has no data to
-   * return, the return is EOF (`null`). */
+   * return, the return is EOF (`null`).
+   *
+   * @example Usage
+   * ```ts
+   * import { Buffer } from "@std/io/buffer";
+   * import { assertEquals } from "@std/assert/equals";
+   *
+   * const buf = new Buffer();
+   * await buf.write(new TextEncoder().encode("Hello, world!"));
+   *
+   * const data = new Uint8Array(5);
+   * const res = await buf.read(data);
+   *
+   * assertEquals(res, 5);
+   * assertEquals(new TextDecoder().decode(data), "Hello");
+   * ```
+   *
+   * @param p The buffer to read data into.
+   * @returns The number of bytes read.
+   */
   readSync(p: Uint8Array): number | null {
     if (this.empty()) {
       // Buffer is empty, reset to recover space.
@@ -118,25 +249,85 @@ export class Buffer implements Writer, WriterSync, Reader, ReaderSync {
     return nread;
   }
 
-  /** Reads the next `p.length` bytes from the buffer or until the buffer is
+  /**
+   * Reads the next `p.length` bytes from the buffer or until the buffer is
    * drained. Resolves to the number of bytes read. If the buffer has no
    * data to return, resolves to EOF (`null`).
    *
    * NOTE: This methods reads bytes synchronously; it's provided for
    * compatibility with `Reader` interfaces.
+   *
+   * @example Usage
+   * ```ts
+   * import { Buffer } from "@std/io/buffer";
+   * import { assertEquals } from "@std/assert/equals";
+   *
+   * const buf = new Buffer();
+   * await buf.write(new TextEncoder().encode("Hello, world!"));
+   *
+   * const data = new Uint8Array(5);
+   * const res = await buf.read(data);
+   *
+   * assertEquals(res, 5);
+   * assertEquals(new TextDecoder().decode(data), "Hello");
+   * ```
+   *
+   * @param p The buffer to read data into.
+   * @returns The number of bytes read.
    */
   read(p: Uint8Array): Promise<number | null> {
     const rr = this.readSync(p);
     return Promise.resolve(rr);
   }
 
+  /**
+   * Writes the given data to the buffer.
+   *
+   * @example Usage
+   * ```ts
+   * import { Buffer } from "@std/io/buffer";
+   * import { assertEquals } from "@std/assert/equals";
+   *
+   * const buf = new Buffer();
+   * const data = new TextEncoder().encode("Hello, world!");
+   * buf.writeSync(data);
+   *
+   * const slice = buf.bytes();
+   * assertEquals(new TextDecoder().decode(slice), "Hello, world!");
+   * ```
+   *
+   * @param p The data to write to the buffer.
+   * @returns The number of bytes written.
+   */
   writeSync(p: Uint8Array): number {
     const m = this.#grow(p.byteLength);
     return copy(p, this.#buf, m);
   }
 
-  /** NOTE: This methods writes bytes synchronously; it's provided for
-   * compatibility with `Writer` interface. */
+  /**
+   * Writes the given data to the buffer. Resolves to the number of bytes
+   * written.
+   *
+   * > [!NOTE]
+   * > This methods writes bytes synchronously; it's provided for compatibility
+   * > with the {@linkcode Writer} interface.
+   *
+   * @example Usage
+   * ```ts
+   * import { Buffer } from "@std/io/buffer";
+   * import { assertEquals } from "@std/assert/equals";
+   *
+   * const buf = new Buffer();
+   * const data = new TextEncoder().encode("Hello, world!");
+   * await buf.write(data);
+   *
+   * const slice = buf.bytes();
+   * assertEquals(new TextDecoder().decode(slice), "Hello, world!");
+   * ```
+   *
+   * @param p The data to write to the buffer.
+   * @returns The number of bytes written.
+   */
   write(p: Uint8Array): Promise<number> {
     const n = this.writeSync(p);
     return Promise.resolve(n);
@@ -180,7 +371,20 @@ export class Buffer implements Writer, WriterSync, Reader, ReaderSync {
    * throw. If the buffer can't grow it will throw an error.
    *
    * Based on Go Lang's
-   * {@link https://golang.org/pkg/bytes/#Buffer.Grow | Buffer.Grow}. */
+   * {@link https://golang.org/pkg/bytes/#Buffer.Grow | Buffer.Grow}.
+   *
+   * @example Usage
+   * ```ts
+   * import { Buffer } from "@std/io/buffer";
+   * import { assertEquals } from "@std/assert/equals";
+   *
+   * const buf = new Buffer();
+   * buf.grow(10);
+   * assertEquals(buf.capacity, 10);
+   * ```
+   *
+   * @param n The number of bytes to grow the buffer by.
+   */
   grow(n: number) {
     if (n < 0) {
       throw Error("Buffer.grow: negative count");
@@ -189,12 +393,30 @@ export class Buffer implements Writer, WriterSync, Reader, ReaderSync {
     this.#reslice(m);
   }
 
-  /** Reads data from `r` until EOF (`null`) and appends it to the buffer,
+  /**
+   * Reads data from `r` until EOF (`null`) and appends it to the buffer,
    * growing the buffer as needed. It resolves to the number of bytes read.
    * If the buffer becomes too large, `.readFrom()` will reject with an error.
    *
    * Based on Go Lang's
-   * {@link https://golang.org/pkg/bytes/#Buffer.ReadFrom | Buffer.ReadFrom}. */
+   * {@link https://golang.org/pkg/bytes/#Buffer.ReadFrom | Buffer.ReadFrom}.
+   *
+   * @example Usage
+   * ```ts
+   * import { Buffer } from "@std/io/buffer";
+   * import { StringReader } from "@std/io/string-reader";
+   * import { assertEquals } from "@std/assert/equals";
+   *
+   * const buf = new Buffer();
+   * const r = new StringReader("Hello, world!");
+   * const n = await buf.readFrom(r);
+   *
+   * assertEquals(n, 13);
+   * ```
+   *
+   * @param r The reader to read from.
+   * @returns The number of bytes read.
+   */
   async readFrom(r: Reader): Promise<number> {
     let n = 0;
     const tmp = new Uint8Array(MIN_READ);
@@ -224,7 +446,24 @@ export class Buffer implements Writer, WriterSync, Reader, ReaderSync {
    * buffer becomes too large, `.readFromSync()` will throw an error.
    *
    * Based on Go Lang's
-   * {@link https://golang.org/pkg/bytes/#Buffer.ReadFrom | Buffer.ReadFrom}. */
+   * {@link https://golang.org/pkg/bytes/#Buffer.ReadFrom | Buffer.ReadFrom}.
+   *
+   * @example Usage
+   * ```ts
+   * import { Buffer } from "@std/io/buffer";
+   * import { StringReader } from "@std/io/string-reader";
+   * import { assertEquals } from "@std/assert/equals";
+   *
+   * const buf = new Buffer();
+   * const r = new StringReader("Hello, world!");
+   * const n = buf.readFromSync(r);
+   *
+   * assertEquals(n, 13);
+   * ```
+   *
+   * @param r The reader to read from.
+   * @returns The number of bytes read.
+   */
   readFromSync(r: ReaderSync): number {
     let n = 0;
     const tmp = new Uint8Array(MIN_READ);
