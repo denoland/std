@@ -308,8 +308,9 @@ export class Buffer implements Writer, WriterSync, Reader, ReaderSync {
    * Writes the given data to the buffer. Resolves to the number of bytes
    * written.
    *
-   * NOTE: This methods writes bytes synchronously; it's provided for
-   * compatibility with `Writer` interface.
+   * > [!NOTE]
+   * > This methods writes bytes synchronously; it's provided for compatibility
+   * > with the {@linkcode Writer} interface.
    *
    * @example Usage
    * ```ts
