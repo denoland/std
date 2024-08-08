@@ -1,6 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-import { defaultOptions, type RandomOptions } from "../random/_types.ts";
-import { randomIntegerBetween } from "../random/between.ts";
+import { defaultOptions, type RandomOptions } from "./_types.ts";
+import { randomIntegerBetween } from "./integer_between.ts";
 export type { RandomOptions };
 
 /**
@@ -13,7 +13,7 @@ export type { RandomOptions };
  *
  * @example Usage
  * ```ts no-assert
- * import { shuffle } from "@std/collections";
+ * import { shuffle } from "@std/random";
  *
  * const items = [1, 2, 3, 4, 5];
  *

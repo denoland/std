@@ -65,7 +65,6 @@ export * from "./pick.ts";
 export * from "./reduce_groups.ts";
 export * from "./running_reduce.ts";
 export * from "./sample.ts";
-export * from "./shuffle.ts";
 export * from "./sliding_windows.ts";
 export * from "./sort_by.ts";
 export * from "./sum_of.ts";

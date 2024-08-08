@@ -1,5 +1,5 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-import { PCG32_INITIALIZER, SeededRandom } from "../random/seeded.ts";
+import { PCG32_INITIALIZER, SeededRandom } from "./seeded_random.ts";
 import { shuffle } from "./shuffle.ts";
 import {
   assertAlmostEquals,

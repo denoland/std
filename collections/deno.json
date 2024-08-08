@@ -40,7 +40,6 @@
     "./reduce-groups": "./reduce_groups.ts",
     "./running-reduce": "./running_reduce.ts",
     "./sample": "./sample.ts",
-    "./shuffle": "./shuffle.ts",
     "./sliding-windows": "./sliding_windows.ts",
     "./sort-by": "./sort_by.ts",
     "./sum-of": "./sum_of.ts",
