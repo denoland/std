@@ -8,7 +8,7 @@ import {
   AssertionError,
   assertThrows,
 } from "@std/assert";
-import { SeededPrng } from "../random/seeded.ts";
+import { PCG32_INITIALIZER, SeededRandom } from "../random/seeded.ts";
 
 Deno.test({
   name: "sample() handles no mutation",
@@ -64,11 +64,11 @@ Deno.test("sample() returns undefined if the array is empty", () => {
 
 Deno.test("sample() picks a random item from the provided items", () => {
   const items = ["a", "b", "c"];
-  const { random } = new SeededPrng({ seed: 1n });
+  const { random } = SeededRandom.fromState(PCG32_INITIALIZER);
 
   const picks = Array.from({ length: 10 }, () => sample(items, { random }));
 
-  assertEquals(picks, ["b", "a", "b", "a", "c", "c", "a", "c", "b", "b"]);
+  assertEquals(picks, ["a", "a", "c", "c", "a", "b", "b", "a", "c", "c"]);
 });
 
 Deno.test("sample() with weights returns undefined if the array is empty", () => {
@@ -100,7 +100,7 @@ Deno.test("sample() with weights picks a random item from the provided items wit
   const weights = weightedItems.map(([, weight]) => weight);
   const values = weightedItems.map(([value]) => value);
   const totalWeight = weights.reduce((sum, n) => sum + n, 0);
-  const { random } = new SeededPrng({ seed: 1n });
+  const { random } = SeededRandom.fromState(PCG32_INITIALIZER);
 
   const picks = Array.from(
     { length: 1000 },
@@ -125,7 +125,7 @@ Deno.test("sample() with weights picks a random item from the provided items wit
 
 Deno.test("sample() with weights works with a Map", () => {
   const weightedItems = new Map([["a", 1], ["b", 2], ["c", 999]]);
-  const { random } = new SeededPrng({ seed: 1n });
+  const { random } = SeededRandom.fromState(PCG32_INITIALIZER);
 
   const result = sample([...weightedItems.keys()], {
     weights: [...weightedItems.values()],

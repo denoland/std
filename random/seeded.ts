@@ -1,4 +1,19 @@
-// // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+
+/**
+ * Equivalent to `PCG32_INITIALIZER` in the official C/C++ library.
+ *
+ * This can be used as a "default" seed in cases where uniqueness is not
+ * required, as it will always generate the same results.
+ *
+ * May be suitable for testing, but not recommended for production use.
+ */
+// deno-fmt-ignore
+export const PCG32_INITIALIZER: Readonly<SeededRandomState> = {
+  algorithm: "pcg32",
+  state: 0x853c49e6748fea9bn,
+  inc: 0xda3e39cb94b95bdbn,
+}
 
 /**
  * The maximum value of a 64-bit unsigned integer plus one.
@@ -10,31 +25,35 @@ const U64_CEIL = 2n ** 64n;
  * `n % U32_CEIL` simulates uint32 integer overflow in C.
  */
 const U32_CEIL = 2n ** 32n;
-/**
- * The maximum value of a 64-bit unsigned integer.
- * `n & U64_MAX` coerces any bigint `n` to fit inside a uint64.
- */
-const U64_MAX = U64_CEIL - 1n;
-
-// arbitrary odd value (taken from example at https://en.wikipedia.org/wiki/Permuted_congruential_generator)
-const INITIAL_INC = 1442695040888963407n;
 
 /**
- * A 2-tuple state for a {@linkcode SeededPrng}.
+ * Options for {@linkcode SeededRandom}.
  */
-export type State = [state: bigint, inc: bigint];
-
-/**
- * Options for {@linkcode SeededPrng}.
- */
-type SeededPrngOptions = {
+type SeededRandomConstructorOptions = {
   /**
-   * The seed for the random number generator.
-   *
-   * - If a `bigint`, the seed will be used to initialize the state and increment.
-   * - If a `State` 2-tuple, the first element will be directly used as the state and the second as the increment.
+   * The seed for the random number generator. Must be 16 bytes long.
    */
-  seed: bigint | Readonly<State>;
+  seed: Uint8Array;
+};
+
+/**
+ * Resumable state for a {@linkcode SeededRandom}.
+ */
+export type SeededRandomState = {
+  /**
+   * The algorithm. Currently, only `pcg32` is supported.
+   */
+  algorithm: "pcg32";
+  /**
+   * The current changeable state of the PCG random number generator.
+   * This value changes upon each iteration of the random number generator.
+   */
+  state: bigint;
+  /**
+   * The amount used to increment each iteration of the PCG random number generator.
+   * This value affects the random numbers generated but remains constant.
+   */
+  inc: bigint;
 };
 
 /**
@@ -44,19 +63,20 @@ type SeededPrngOptions = {
  *
  * @example Usage
  * ```ts
- * import { SeededPrng } from "@std/random";
+ * import { SeededRandom } from "@std/random";
  * import { assertEquals } from "@std/assert";
  *
- * const prng = new SeededPrng({ seed: 3377567226465013078n });
- *
- * assertEquals(prng.random(), 0.34011089405976236);
- * assertEquals(prng.random(), 0.6603851807303727);
- * assertEquals(prng.random(), 0.4863424440845847);
+ * const prng = new SeededRandom({
+ *  seed: new Uint8Array([25, 87, 197, 32, 109, 86, 179, 244, 110, 161, 60, 0, 180, 107, 207, 169]),
+ * });
+ * assertEquals(prng.random(), 0.9590322358999401);
+ * assertEquals(prng.random(), 0.3763687589671463);
+ * assertEquals(prng.random(), 0.5337617760524154);
  * ```
  */
-export class SeededPrng {
-  #state: bigint;
-  #inc: bigint;
+export class SeededRandom {
+  #state!: bigint;
+  #inc!: bigint;
 
   /**
    * Constructs a new instance.
@@ -67,17 +87,14 @@ export class SeededPrng {
    *
    * @example Usage
    * ```ts no-assert
-   * import { SeededPrng } from "@std/random";
-   * const prng = new SeededPrng({ seed: 14614327452668470620n });
+   * import { SeededRandom } from "@std/random";
+   * const prng = new SeededRandom({
+   *  seed: new Uint8Array([25, 87, 197, 32, 109, 86, 179, 244, 110, 161, 60, 0, 180, 107, 207, 169]),
+   * });
    * ```
    */
-  constructor({ seed }: SeededPrngOptions) {
-    this.#inc = -1n;
-    this.#state = -1n;
-
-    this.state = typeof seed === "bigint"
-      ? SeededPrng.#seedToState(seed)
-      : seed;
+  constructor({ seed }: SeededRandomConstructorOptions) {
+    this.#seed(seed);
 
     // For convenience, allowing destructuring and direct usage in callbacks
     // equivalently to Math.random()
@@ -85,25 +102,80 @@ export class SeededPrng {
   }
 
   /**
-   * The state for the random number generator.
-   * @returns The state as a 2-tuple.
+   * Creates a new instance from a given state.
+   *
+   * @param state The state to use.
+   * @returns A `SeededRandom` instance resumed from the given state.
+   *
+   * @example Usage
+   * ```ts no-eval
+   * import { SeededRandom } from "@std/random";
+   * import { assertEquals } from "@std/assert";
+   *
+   * const prng = new SeededRandom({
+   *  seed: new Uint8Array([25, 87, 197, 32, 109, 86, 179, 244, 110, 161, 60, 0, 180, 107, 207, 169]),
+   * });
+   * const state = prng.state;
+   * const prng2 = SeededRandom.fromState(state);
+   *
+   * assertEquals(prng2.state, state);
+   * ```
+   */
+  static fromState(state: Readonly<SeededRandomState>): SeededRandom {
+    // seed with empty bytes as we'll overwrite the state anyway
+    const prng = new SeededRandom({ seed: new Uint8Array(16) });
+    prng.#state = state.state;
+    prng.#inc = state.inc;
+    return prng;
+  }
+
+  /**
+   * The current state of the random number generator.
+   * @returns The state as an object.
    *
    * @example Usage
    * ```ts
-   * import { SeededPrng } from "@std/random";
+   * import { SeededRandom } from "@std/random";
    * import { assertEquals } from "@std/assert";
    *
-   * const prng = new SeededPrng({ seed: 14614327452668470620n });
-   * assertEquals(prng.state, [13062938915293834817n, 10846994826184652623n]);
+   * const prng = new SeededRandom({
+   *  seed: new Uint8Array([25, 87, 197, 32, 109, 86, 179, 244, 110, 161, 60, 0, 180, 107, 207, 169]),
+   * });
+   * assertEquals(prng.state, {
+   *  algorithm: "pcg32",
+   *  state: 16858584600331385806n,
+   *  inc: 15943437578294239059n,
+   * });
    * ```
    */
-  get state(): Readonly<State> {
-    return [this.#state, this.#inc];
+  get state(): Readonly<SeededRandomState> {
+    return {
+      algorithm: "pcg32",
+      state: this.#state,
+      inc: this.#inc,
+    };
   }
 
-  set state(value: Readonly<State>) {
-    this.#state = value[0] & U64_MAX;
-    this.#inc = (value[1] | 1n) & U64_MAX;
+  set state(value: Readonly<SeededRandomState>) {
+    this.#state = value.state;
+    this.#inc = value.inc;
+  }
+
+  // https://github.com/imneme/pcg-c-basic/blob/bc39cd76ac3d541e618606bcc6e1e5ba5e5e6aa3/pcg_basic.c#L42-L49
+  #seed(seed: Uint8Array): void {
+    if (seed.byteLength !== 16) {
+      throw new RangeError(`Seed must be 16 bytes; got ${seed.byteLength}`);
+    }
+
+    const dv = new DataView(seed.buffer);
+    const initState = BigInt(dv.getBigUint64(0));
+    const initSeq = BigInt(dv.getBigUint64(8));
+
+    this.#state = 0n;
+    this.#inc = ((initSeq << 1n) | 1n) % U64_CEIL;
+    this.#randomUint32();
+    this.#state += initState;
+    this.#randomUint32();
   }
 
   /**
@@ -112,14 +184,16 @@ export class SeededPrng {
    *
    * @example Usage
    * ```ts
-   * import { SeededPrng } from "@std/random";
+   * import { SeededRandom } from "@std/random";
    * import { assertEquals } from "@std/assert";
    *
-   * const prng = new SeededPrng({ seed: 3377567226465013078n });
+   * const prng = new SeededRandom({
+   *  seed: new Uint8Array([25, 87, 197, 32, 109, 86, 179, 244, 110, 161, 60, 0, 180, 107, 207, 169]),
+   * });
    *
-   * assertEquals(prng.random(), 0.34011089405976236);
-   * assertEquals(prng.random(), 0.6603851807303727);
-   * assertEquals(prng.random(), 0.4863424440845847);
+   * assertEquals(prng.random(), 0.9590322358999401);
+   * assertEquals(prng.random(), 0.3763687589671463);
+   * assertEquals(prng.random(), 0.5337617760524154);
    * ```
    */
   random(): number {
@@ -132,19 +206,31 @@ export class SeededPrng {
    *
    * @example Usage
    * ```ts no-assert
-   * import { SeededPrng } from "@std/random";
+   * import { SeededRandom } from "@std/random";
    * import { assertEquals } from "@std/assert";
    *
-   * const prng = new SeededPrng({ seed: 14614327452668470620n });
-   * assertEquals(prng.randomSeed(), 7382748496997062591n);
+   * const prng = new SeededRandom({
+   *  seed: new Uint8Array([25, 87, 197, 32, 109, 86, 179, 244, 110, 161, 60, 0, 180, 107, 207, 169]),
+   * });
+   * assertEquals(
+   *  prng.randomSeed(),
+   *  new Uint8Array([245, 131, 34, 249, 96, 89, 179, 247, 136, 164, 156, 156, 42, 174, 157, 149]),
+   * );
    * ```
    */
-  randomSeed(): bigint {
-    return this.#randomUint64();
+  randomSeed(): Uint8Array {
+    const bytes = new Uint8Array(16);
+    const dv = new DataView(bytes.buffer);
+
+    for (let i = 0; i < 4; i++) {
+      dv.setUint32(i * 4, this.#randomUint32());
+    }
+
+    return bytes;
   }
 
   // port of minimal version at https://www.pcg-random.org/download.html
-  #randomUint32(): bigint {
+  #randomUint32(): number {
     const oldState = this.#state;
 
     this.#state = (this.#state * 6364136223846793005n + (this.#inc | 1n)) %
@@ -153,68 +239,15 @@ export class SeededPrng {
     const xorShifted = (((oldState >> 18n) ^ oldState) >> 27n) % U32_CEIL;
     const rot = (oldState >> 59n) % U32_CEIL;
 
-    return ((xorShifted >> rot) | (xorShifted << ((-rot) & 31n))) % U32_CEIL;
-  }
-
-  #randomUint64(): bigint {
-    const hi = this.#randomUint32();
-    const lo = this.#randomUint32();
-    return (hi << 32n) | lo;
-  }
-
-  /**
-   * Get a random state tuple suitable for usage by `SeededPrng`.
-   */
-  #randomState(): State {
-    return [
-      this.#randomUint64(),
-      this.#randomUint64(),
-    ];
-  }
-
-  /**
-   * Convert a user-provided scalar seed value to a state tuple suitable for
-   * usage by `SeededPrng`.
-   *
-   * Aims to provide good results for both well-randomized seeds (such as
-   * 64-bit outputs from `crypto.getRandomValues`) and low-entropy seeds (such
-   * as 1, 2, 3, keyboard mashing, etc.).
-   */
-  static #seedToState(seed: bigint): State {
-    seed &= U64_MAX;
-    const fnv1a = fnv1aUint64LittleEndian(seed);
-    const prng = new SeededPrng({ seed: [seed ^ fnv1a, INITIAL_INC] });
-    // advance the prng's internal state slightly to further reduce any bias
-    prng.#randomUint32();
-    // return a fresh random state
-    return prng.#randomState();
+    return Number(
+      ((xorShifted >> rot) | (xorShifted << ((-rot) & 31n))) % U32_CEIL,
+    );
   }
 }
 
 /**
  * Convert a 32-bit unsigned integer to a float64 in the range [0, 1).
  */
-function uint32ToFloat64(u32: number | bigint): number {
-  return Number(u32) / (2 ** 32);
-}
-
-const FNV_OFFSET_BASIS = 0xcbf29ce484222325n;
-const FNV_PRIME = 0x100000001b3n;
-/**
- * 64-bit {@link https://en.wikipedia.org/wiki/Fowler–Noll–Vo_hash_function#FNV-1a_hash | FNV-1a} hash function.
- * We xor this with scalar seed inputs to ensure less-bad results for small or low-entropy seeds such as 1, 2, 3, etc.
- * Little-endian is used to give better distribution of the lower bits.
- */
-function fnv1aUint64LittleEndian(num: bigint): bigint {
-  const dv = new DataView(new BigUint64Array(1).buffer);
-  dv.setBigUint64(0, num, true);
-
-  let hash = FNV_OFFSET_BASIS;
-
-  for (let i = 0; i < BigUint64Array.BYTES_PER_ELEMENT; ++i) {
-    hash = (hash ^ BigInt(dv.getUint8(i))) % U64_CEIL;
-    hash = (hash * FNV_PRIME) % U64_CEIL;
-  }
-
-  return hash;
+function uint32ToFloat64(u32: number): number {
+  return u32 / (2 ** 32);
 }

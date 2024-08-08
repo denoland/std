@@ -1,6 +1,4 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-import { assert } from "@std/assert/assert";
-import { assertGreaterOrEqual } from "@std/assert/greater-or-equal";
 import { defaultOptions, type RandomOptions } from "./_types.ts";
 export type { RandomOptions };
 
@@ -28,7 +26,15 @@ export function randomBetween(
   max: number,
   options?: RandomOptions,
 ): number {
-  assertGreaterOrEqual(max, min);
+  if (isNaN(min)) {
+    throw new RangeError("min cannot be NaN");
+  }
+  if (isNaN(max)) {
+    throw new RangeError("max cannot be NaN");
+  }
+  if (max < min) {
+    throw new RangeError("max must be greater than or equal to min");
+  }
 
   const { random } = { ...defaultOptions, ...options };
   return random() * (max - min) + min;
@@ -58,12 +64,10 @@ export function randomIntegerBetween(
   max: number,
   options?: RandomOptions,
 ): number {
-  assertGreaterOrEqual(max, min);
-  assert(
-    Number.isInteger(min) && Number.isInteger(max),
-    "min and max must be integers",
-  );
+  if (!Number.isInteger(min) || !Number.isInteger(max)) {
+    throw new RangeError("min and max must be integers");
+  }
 
-  const { random } = { ...defaultOptions, ...options };
-  return Math.floor(random() * (max - min + 1)) + min;
+  const opts = { ...defaultOptions, ...options };
+  return Math.floor(randomBetween(min, max + 1, opts));
 }

@@ -6,10 +6,12 @@
  *
  * ```ts
  * import { randomIntegerBetween } from "@std/random";
- * import { SeededPrng } from "@std/random";
+ * import { SeededRandom } from "@std/random";
  * import { assertEquals } from "@std/assert";
  *
- * const { random } = new SeededPrng({ seed: 14614327452668470620n });
+ * const { random } = new SeededRandom({
+ *  seed: new Uint8Array([166, 37, 217, 191, 201, 30, 251, 92, 186, 74, 134, 60, 164, 218, 137, 370]),
+ * });
  *
  * assertEquals(randomIntegerBetween(1, 10, { random }), 5);
  * ```

@@ -1,5 +1,5 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-import { SeededPrng } from "../random/seeded.ts";
+import { PCG32_INITIALIZER, SeededRandom } from "../random/seeded.ts";
 import { shuffle } from "./shuffle.ts";
 import {
   assertAlmostEquals,
@@ -24,12 +24,12 @@ Deno.test("shuffle() handles arrays with only one item", () => {
 });
 
 Deno.test("shuffle() shuffles the provided array", () => {
-  const { random } = new SeededPrng({ seed: 1n });
+  const { random } = SeededRandom.fromState(PCG32_INITIALIZER);
   const items = [1, 2, 3, 4, 5];
 
-  assertEquals(shuffle(items, { random }), [5, 4, 2, 1, 3]);
-  assertEquals(shuffle(items, { random }), [3, 2, 1, 4, 5]);
-  assertEquals(shuffle(items, { random }), [4, 1, 3, 5, 2]);
+  assertEquals(shuffle(items, { random }), [4, 2, 3, 5, 1]);
+  assertEquals(shuffle(items, { random }), [4, 5, 2, 3, 1]);
+  assertEquals(shuffle(items, { random }), [2, 1, 3, 5, 4]);
 });
 
 Deno.test("shuffle() returns a copy and without modifying the original array", () => {
@@ -43,7 +43,7 @@ Deno.test("shuffle() returns a copy and without modifying the original array", (
 });
 
 Deno.test("shuffle() gives relatively uniform distribution of results", () => {
-  const { random } = new SeededPrng({ seed: 1n });
+  const { random } = SeededRandom.fromState(PCG32_INITIALIZER);
   const items = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 
   const results = Array.from({ length: 1e3 }, () => shuffle(items, { random }));
