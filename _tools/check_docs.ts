@@ -31,6 +31,7 @@ const ENTRY_POINTS = [
   "../assert/mod.ts",
   "../async/mod.ts",
   "../bytes/mod.ts",
+  "../cache/mod.ts",
   "../cli/mod.ts",
   "../crypto/mod.ts",
   "../collections/mod.ts",
