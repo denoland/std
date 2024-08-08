@@ -16,13 +16,10 @@ conveying information using the filesystem.
 The customer agent enters in the customer details to create a new customer.
 
 **Before**
-[Become customer agent](#become-customer-agent)
+
+- [Become customer agent](#become-customer-agent)
 
 **Prompts**
-
-```md
-Become a customer agent
-```
 
 ```md
 Add a new customer named Janis Jopplin who lives at 9 Gona Way, Cambridge, Hamilton.  
@@ -36,10 +33,23 @@ She wants to have a weekly pickup on tuesdays.
 
 ## Routing the new customer
 
-**whoami**
-`Duty Manager`
+System state is changed using the Configure directive, which simulates the
+customer agent having added a customer already, then the thread is preloaded
+using the Before directive, ensuring we are acting as the duty manager.
 
-? how to specify what auth credentials to impersonate ?
+**Configure**
+
+- [Set up new customer](#set-up-new-customer)
+
+**Before**
+
+- [Become Duty Manager](#become-duty-manager)
+
+**Prompts**
+
+```md
+Route all unrouted customers
+```
 
 ## Become Customer Agent
 
@@ -57,10 +67,15 @@ Create a customer agent named Sam, then become that customer agent
 Create a Duty Manager named Bully, then become that Duty Manager
 ```
 
-# Customer agents sharing data
+## Customer agents sharing data
 
 When two customer agents update two different customer records, each one can see
 the new records of the other as soon as they are created
+
+We should start one agent, make a second agent, make a change, switch back to
+the first agent, and verify that we can see this change in customers.
+
+We should do this for a new customer as well as editing and deleting.
 
 # Customer agents conflict resolution
 

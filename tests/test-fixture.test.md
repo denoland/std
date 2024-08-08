@@ -26,7 +26,7 @@ Call the local function
 
 **Expectations**
 
-- result was "this is a fail"
+- result was "this expectation should fail"
 
 ## Throw an error
 

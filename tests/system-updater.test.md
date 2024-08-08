@@ -3,6 +3,10 @@ target: agents/system.md
 assessor: agents/assessor.md
 ---
 
+These tests are about the ability to update the main natural language repo that
+drives the Dreamcatcher based on a single command. The tests extend into
+updating any repo in any branch from a remote github repo.
+
 ## List the main branch
 
 **Prompts**
