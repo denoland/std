@@ -3,7 +3,7 @@
 import type { BufReader } from "./buf_reader.ts";
 
 /**
- * Read big endian 16bit short from BufReader
+ * Read big endian 16bit short from a {@linkcode BufReader}.
  *
  * @example Usage
  * ```ts
@@ -16,7 +16,7 @@ import type { BufReader } from "./buf_reader.ts";
  * assertEquals(short, 0x1234);
  * ```
  *
- * @param buf The BufReader to read from
+ * @param buf The reader to read from
  * @returns The 16bit short
  *
  * @deprecated This will be removed in 1.0.0. Use the {@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API | Web Streams API} instead.

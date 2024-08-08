@@ -47,7 +47,7 @@ export class Buffer implements Writer, WriterSync, Reader, ReaderSync {
   #off = 0; // read at buf[off], write at buf[buf.byteLength]
 
   /**
-   * Constructs a new {@linkcode Buffer} with the specified ArrayBuffer as its
+   * Constructs a new instance with the specified {@linkcode ArrayBuffer} as its
    * initial contents.
    *
    * @param ab The ArrayBuffer to use as the initial contents of the buffer.

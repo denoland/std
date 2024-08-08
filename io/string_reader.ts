@@ -25,7 +25,7 @@ import { Buffer } from "./buffer.ts";
  */
 export class StringReader extends Buffer {
   /**
-   * Construct a {@linkcode StringReader} instance.
+   * Construct a new instance.
    *
    * @param s The string to read.
    */

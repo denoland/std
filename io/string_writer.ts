@@ -37,7 +37,7 @@ export class StringWriter implements Writer, WriterSync {
   #base: string;
 
   /**
-   * Construct a {@linkcode StringWriter} instance.
+   * Construct a new instance.
    *
    * @param base The base string to write to the buffer.
    */

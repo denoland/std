@@ -6,7 +6,7 @@ import { BufReader } from "./buf_reader.ts";
 import { concat } from "@std/bytes/concat";
 
 /**
- * Read strings line-by-line from a Reader.
+ * Read strings line-by-line from a {@linkcode Reader}.
  *
  * @example Usage
  * ```ts

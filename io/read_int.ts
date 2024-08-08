@@ -4,7 +4,7 @@ import type { BufReader } from "./buf_reader.ts";
 import { readShort } from "./read_short.ts";
 
 /**
- * Read big endian 32bit integer from BufReader
+ * Read big endian 32bit integer from a {@linkcode BufReader}.
  *
  * @example Usage
  * ```ts
@@ -17,7 +17,7 @@ import { readShort } from "./read_short.ts";
  * assertEquals(int, 0x12345678);
  * ```
  *
- * @param buf The BufReader to read from
+ * @param buf The buffer reader to read from
  * @returns The 32bit integer
  *
  * @deprecated This will be removed in 1.0.0. Use the {@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API | Web Streams API} instead.

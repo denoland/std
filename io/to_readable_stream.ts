@@ -14,11 +14,14 @@ export interface ToReadableStreamOptions {
    */
   autoClose?: boolean;
 
-  /** The size of chunks to allocate to read, the default is ~16KiB, which is
-   * the maximum size that Deno operations can currently support. */
+  /**
+   * The size of chunks to allocate to read.
+   *
+   * @default {16640}
+   */
   chunkSize?: number;
 
-  /** The queuing strategy to create the `ReadableStream` with. */
+  /** The queuing strategy to create the {@linkcode ReadableStream} with. */
   strategy?: QueuingStrategy<Uint8Array>;
 }
 

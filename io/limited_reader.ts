@@ -4,7 +4,7 @@
 import type { Reader } from "./types.ts";
 
 /**
- * A `LimitedReader` reads from `reader` but limits the amount of data returned to just `limit` bytes.
+ * Reads from `reader` but limits the amount of data returned to just `limit` bytes.
  * Each call to `read` updates `limit` to reflect the new amount remaining.
  * `read` returns `null` when `limit` <= `0` or
  * when the underlying `reader` returns `null`.
@@ -60,7 +60,7 @@ export class LimitedReader implements Reader {
   limit: number;
 
   /**
-   * Construct a {@linkcode LimitedReader} instance.
+   * Construct a new instance.
    *
    * @param reader The reader to read from.
    * @param limit The number of bytes to limit the reader to.

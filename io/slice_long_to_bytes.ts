@@ -2,7 +2,7 @@
 // This module is browser compatible.
 
 /**
- * Slice number into 64bit big endian byte array
+ * Slice number into 64bit big endian byte array.
  *
  * @example Usage
  * ```ts
