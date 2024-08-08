@@ -58,6 +58,37 @@
  * });
  * ```
  *
+ * ### Routing
+ *
+ * {@linkcode route} provides an easy way to route requests to different
+ * handlers based on the request path and method.
+ *
+ * ```ts no-eval
+ * import { route, type Route } from "@std/http/route";
+ * import { serveDir } from "@std/http/file-server";
+ *
+ * const routes: Route[] = [
+ *   {
+ *     pattern: new URLPattern({ pathname: "/about" }),
+ *     handler: () => new Response("About page"),
+ *   },
+ *   {
+ *     pattern: new URLPattern({ pathname: "/users/:id" }),
+ *     handler: (_req, _info, params) => new Response(params?.pathname.groups.id),
+ *   },
+ *   {
+ *     pattern: new URLPattern({ pathname: "/static/*" }),
+ *     handler: (req: Request) => serveDir(req)
+ *   }
+ * ];
+ *
+ * function defaultHandler(_req: Request) {
+ *   return new Response("Not found", { status: 404 });
+ * }
+ *
+ * Deno.serve(route(routes, defaultHandler));
+ * ```
+ *
  * @module
  */
 
@@ -69,5 +100,6 @@ export * from "./signed_cookie.ts";
 export * from "./server_sent_event_stream.ts";
 export * from "./user_agent.ts";
 export * from "./file_server.ts";
+export * from "./route.ts";
 export * from "./header.ts";
 export * from "./method.ts";

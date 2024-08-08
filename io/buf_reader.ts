@@ -36,19 +36,6 @@ const LF = "\n".charCodeAt(0);
  */
 export class BufferFullError extends Error {
   /**
-   * The name
-   *
-   * @example Usage
-   * ```ts
-   * import { BufferFullError } from "@std/io";
-   * import { assertEquals } from "@std/assert/equals";
-   *
-   * const err = new BufferFullError(new Uint8Array(2));
-   * assertEquals(err.name, "BufferFullError");
-   * ```
-   */
-  override name = "BufferFullError";
-  /**
    * The partially read bytes
    *
    * @example Usage
@@ -69,6 +56,7 @@ export class BufferFullError extends Error {
    */
   constructor(partial: Uint8Array) {
     super("Buffer full");
+    this.name = this.constructor.name;
     this.partial = partial;
   }
 }
@@ -91,19 +79,6 @@ export class BufferFullError extends Error {
  */
 export class PartialReadError extends Error {
   /**
-   * The name
-   *
-   * @example Usage
-   * ```ts
-   * import { PartialReadError } from "@std/io";
-   * import { assertEquals } from "@std/assert/equals";
-   *
-   * const err = new PartialReadError();
-   * assertEquals(err.name, "PartialReadError");
-   * ```
-   */
-  override name = "PartialReadError";
-  /**
    * he partially read bytes
    *
    * @example Usage
@@ -115,11 +90,12 @@ export class PartialReadError extends Error {
    * assertEquals(err.partial, undefined);
    * ```
    */
-  partial?: Uint8Array;
+  partial: Uint8Array;
 
-  /** Construct a new instance. */
-  constructor() {
+  constructor(partial: Uint8Array) {
     super("Encountered UnexpectedEof, data only partially read");
+    this.name = this.constructor.name;
+    this.partial = partial;
   }
 }
 
@@ -385,22 +361,15 @@ export class BufReader implements Reader {
   async readFull(p: Uint8Array): Promise<Uint8Array | null> {
     let bytesRead = 0;
     while (bytesRead < p.length) {
-      try {
-        const rr = await this.read(p.subarray(bytesRead));
-        if (rr === null) {
-          if (bytesRead === 0) {
-            return null;
-          } else {
-            throw new PartialReadError();
-          }
+      const rr = await this.read(p.subarray(bytesRead));
+      if (rr === null) {
+        if (bytesRead === 0) {
+          return null;
+        } else {
+          throw new PartialReadError(p.subarray(0, bytesRead));
         }
-        bytesRead += rr;
-      } catch (err) {
-        if (err instanceof PartialReadError) {
-          err.partial = p.subarray(0, bytesRead);
-        }
-        throw err;
       }
+      bytesRead += rr;
     }
     return p;
   }
@@ -507,23 +476,13 @@ export class BufReader implements Reader {
     try {
       line = await this.readSlice(LF);
     } catch (err) {
-      let partial;
-      if (err instanceof PartialReadError) {
-        partial = err.partial;
-        if (!(partial instanceof Uint8Array)) {
-          throw new TypeError(
-            "bufio: caught error from `readSlice()` without `partial` property",
-          );
-        }
-      }
-
       // Don't throw if `readSlice()` failed with `BufferFullError`, instead we
       // just return whatever is available and set the `more` flag.
       if (!(err instanceof BufferFullError)) {
         throw err;
       }
 
-      partial = err.partial;
+      let partial = err.partial;
 
       // Handle the case where "\r\n" straddles the buffer.
       if (
@@ -631,14 +590,7 @@ export class BufReader implements Reader {
       s = this.#w - this.#r; // do not rescan area we scanned before
 
       // Buffer is not full.
-      try {
-        await this.#fill();
-      } catch (err) {
-        if (err instanceof PartialReadError) {
-          err.partial = slice;
-        }
-        throw err;
-      }
+      await this.#fill();
     }
 
     // Handle last byte, if any.
@@ -684,14 +636,7 @@ export class BufReader implements Reader {
 
     let avail = this.#w - this.#r;
     while (avail < n && avail < this.#buf.byteLength && !this.#eof) {
-      try {
-        await this.#fill();
-      } catch (err) {
-        if (err instanceof PartialReadError) {
-          err.partial = this.#buf.subarray(this.#r, this.#w);
-        }
-        throw err;
-      }
+      await this.#fill();
       avail = this.#w - this.#r;
     }
 
