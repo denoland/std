@@ -1,7 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import { PCG32_INITIALIZER, SeededRandom } from "./seeded_random.ts";
 import { assertAlmostEquals, assertEquals, assertThrows } from "@std/assert";
-import { decodeHex } from "@std/encoding/hex";
 
 Deno.test("SeededRandom constructor validates its parameters", async (t) => {
   await t.step("seed length ok", () => {
@@ -28,12 +27,16 @@ Deno.test("SeededRandom#random() generates random numbers", () => {
 Deno.test("SeededRandom's `seed` parameter is converted to state", () => {
   const expectedState = {
     algorithm: "pcg32",
-    state: 14506600247079996869n,
-    inc: 3974137807558967291n,
+    state: [0xc9, 0x51, 0xcc, 0x10, 0xc1, 0xcc, 0x0d, 0xc5],
+    inc: [0x37, 0x26, 0xf9, 0x47, 0xb4, 0x00, 0x7f, 0xfb],
   } as const;
 
   const prng1 = new SeededRandom({
-    seed: decodeHex("7e07ed4ef50573371b937ca3da003ffd"),
+    // deno-fmt-ignore
+    seed: [
+      0x7e, 0x07, 0xed, 0x4e, 0xf5, 0x05, 0x73, 0x37,
+      0x1b, 0x93, 0x7c, 0xa3, 0xda, 0x00, 0x3f, 0xfd,
+    ],
   });
   const prng2 = SeededRandom.fromState(expectedState);
 
@@ -168,7 +171,11 @@ Deno.test(
 
     await t.step("Seed (0x99a93b4a325d9348, 0xebee5b2aa08119cb)", () => {
       const prng = new SeededRandom({
-        seed: decodeHex(["99a93b4a325d9348", "ebee5b2aa08119cb"].join("")),
+        // deno-fmt-ignore
+        seed: [
+          0x99, 0xa9, 0x3b, 0x4a, 0x32, 0x5d, 0x93, 0x48,
+          0xeb, 0xee, 0x5b, 0x2a, 0xa0, 0x81, 0x19, 0xcb,
+        ],
       });
 
       // deno-fmt-ignore
@@ -226,7 +233,11 @@ Deno.test(
 
     await t.step("Seed (0x01f125a59ffb5a04, 0x70f7e17e846603e5)", () => {
       const prng = new SeededRandom({
-        seed: decodeHex(["01f125a59ffb5a04", "70f7e17e846603e5"].join("")),
+        // deno-fmt-ignore
+        seed: [
+          0x01, 0xf1, 0x25, 0xa5, 0x9f, 0xfb, 0x5a, 0x04,
+          0x70, 0xf7, 0xe1, 0x7e, 0x84, 0x66, 0x03, 0xe5,
+        ],
       });
 
       // deno-fmt-ignore

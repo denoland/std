@@ -10,7 +10,10 @@
  * import { assertEquals } from "@std/assert";
  *
  * const { random } = new SeededRandom({
- *  seed: new Uint8Array([166, 37, 217, 191, 201, 30, 251, 92, 186, 74, 134, 60, 164, 218, 137, 370]),
+ *  seed: [
+ *    0xa6, 0x25, 0xd9, 0xbf, 0xc9, 0x1e, 0xfb, 0x5c,
+ *    0xba, 0x4a, 0x86, 0x3c, 0xa4, 0xda, 0x89, 0x72,
+ *  ],
  * });
  *
  * assertEquals(randomIntegerBetween(1, 10, { random }), 5);
