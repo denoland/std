@@ -11,10 +11,49 @@ const CR = "\r".charCodeAt(0);
 const LF = "\n".charCodeAt(0);
 
 /**
+ * Thrown when a write operation is attempted on a full buffer.
+ *
+ * @example Usage
+ * ```ts
+ * import { BufWriter, BufferFullError, Writer } from "@std/io";
+ * import { assert, assertEquals } from "@std/assert";
+ *
+ * const writer: Writer = {
+ *   write(p: Uint8Array): Promise<number> {
+ *     throw new BufferFullError(p);
+ *   }
+ * };
+ * const bufWriter = new BufWriter(writer);
+ * try {
+ *   await bufWriter.write(new Uint8Array([1, 2, 3]));
+ * } catch (err) {
+ *   assert(err instanceof BufferFullError);
+ *   assertEquals(err.partial, new Uint8Array([3]));
+ * }
+ * ```
+ *
  * @deprecated This will be removed in 1.0.0. Use the {@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API | Web Streams API} instead.
  */
 export class BufferFullError extends Error {
+  /**
+   * The partially read bytes
+   *
+   * @example Usage
+   * ```ts
+   * import { BufferFullError } from "@std/io";
+   * import { assertEquals } from "@std/assert/equals";
+   *
+   * const err = new BufferFullError(new Uint8Array(2));
+   * assertEquals(err.partial, new Uint8Array(2));
+   * ```
+   */
   partial: Uint8Array;
+
+  /**
+   * Construct a new instance.
+   *
+   * @param partial The bytes partially read
+   */
   constructor(partial: Uint8Array) {
     super("Buffer full");
     this.name = this.constructor.name;
@@ -23,11 +62,41 @@ export class BufferFullError extends Error {
 }
 
 /**
+ * Thrown when a read from a stream fails to read the
+ * requested number of bytes.
+ *
+ * @example Usage
+ * ```ts
+ * import { PartialReadError } from "@std/io";
+ * import { assertEquals } from "@std/assert/equals";
+ *
+ * const err = new PartialReadError(new Uint8Array(2));
+ * assertEquals(err.name, "PartialReadError");
+ *
+ * ```
+ *
  * @deprecated This will be removed in 1.0.0. Use the {@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API | Web Streams API} instead.
  */
 export class PartialReadError extends Error {
+  /**
+   * The partially read bytes
+   *
+   * @example Usage
+   * ```ts
+   * import { PartialReadError } from "@std/io";
+   * import { assertEquals } from "@std/assert/equals";
+   *
+   * const err = new PartialReadError(new Uint8Array(2));
+   * assertEquals(err.partial, new Uint8Array(2));
+   * ```
+   */
   partial: Uint8Array;
 
+  /**
+   * Construct a {@linkcode PartialReadError}.
+   *
+   * @param partial The bytes partially read
+   */
   constructor(partial: Uint8Array) {
     super("Encountered UnexpectedEof, data only partially read");
     this.name = this.constructor.name;
@@ -36,16 +105,34 @@ export class PartialReadError extends Error {
 }
 
 /**
- * Result type returned by of BufReader.readLine().
+ * Result type returned by of {@linkcode BufReader.readLine}.
  *
  * @deprecated This will be removed in 1.0.0. Use the {@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API | Web Streams API} instead.
  */
 export interface ReadLineResult {
+  /** The line read */
   line: Uint8Array;
+  /** `true  if the end of the line has not been reached, `false` otherwise. */
   more: boolean;
 }
 
 /**
+ * Implements buffering for a {@linkcode Reader} object.
+ *
+ * @example Usage
+ * ```ts
+ * import { BufReader } from "@std/io";
+ * import { assertEquals } from "@std/assert/equals";
+ *
+ * const encoder = new TextEncoder();
+ * const decoder = new TextDecoder();
+ *
+ * const reader = new BufReader(new Deno.Buffer(encoder.encode("hello world")));
+ * const buf = new Uint8Array(11);
+ * await reader.read(buf);
+ * assertEquals(decoder.decode(buf), "hello world");
+ * ```
+ *
  * @deprecated This will be removed in 1.0.0. Use the {@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API | Web Streams API} instead.
  */
 export class BufReader implements Reader {
@@ -55,11 +142,33 @@ export class BufReader implements Reader {
   #w = 0; // buf write position.
   #eof = false;
 
-  /** return new BufReader unless r is BufReader */
+  /**
+   * Returns a new {@linkcode BufReader} if `r` is not already one.
+   *
+   * @example Usage
+   * ```ts
+   * import { BufReader, Buffer } from "@std/io";
+   * import { assert } from "@std/assert/assert";
+   *
+   * const reader = new Buffer(new TextEncoder().encode("hello world"));
+   * const bufReader = BufReader.create(reader);
+   * assert(bufReader instanceof BufReader);
+   * ```
+   *
+   * @param r The reader to read from.
+   * @param size The size of the buffer.
+   * @returns A new {@linkcode BufReader} if `r` is not already one.
+   */
   static create(r: Reader, size: number = DEFAULT_BUF_SIZE): BufReader {
     return r instanceof BufReader ? r : new BufReader(r, size);
   }
 
+  /**
+   * Constructs a new {@linkcode BufReader} for the given reader and buffer size.
+   *
+   * @param rd The reader to read from.
+   * @param size The size of the buffer.
+   */
   constructor(rd: Reader, size: number = DEFAULT_BUF_SIZE) {
     if (size < MIN_BUF_SIZE) {
       size = MIN_BUF_SIZE;
@@ -67,11 +176,42 @@ export class BufReader implements Reader {
     this.#reset(new Uint8Array(size), rd);
   }
 
-  /** Returns the size of the underlying buffer in bytes. */
+  /**
+   * Returns the size of the underlying buffer in bytes.
+   *
+   * @example Usage
+   * ```ts
+   * import { BufReader, Buffer } from "@std/io";
+   * import { assertEquals } from "@std/assert/equals";
+   *
+   * const reader = new Buffer(new TextEncoder().encode("hello world"));
+   * const bufReader = new BufReader(reader);
+   *
+   * assertEquals(bufReader.size(), 4096);
+   * ```
+   *
+   * @returns The size of the underlying buffer in bytes.
+   */
   size(): number {
     return this.#buf.byteLength;
   }
 
+  /**
+   * Returns the number of bytes that can be read from the current buffer.
+   *
+   * @example Usage
+   * ```ts
+   * import { BufReader, Buffer } from "@std/io";
+   * import { assertEquals } from "@std/assert/equals";
+   *
+   * const reader = new Buffer(new TextEncoder().encode("hello world"));
+   * const bufReader = new BufReader(reader);
+   * await bufReader.read(new Uint8Array(5));
+   * assertEquals(bufReader.buffered(), 6);
+   * ```
+   *
+   * @returns Number of bytes that can be read from the buffer
+   */
   buffered(): number {
     return this.#w - this.#r;
   }
@@ -107,8 +247,23 @@ export class BufReader implements Reader {
     );
   };
 
-  /** Discards any buffered data, resets all state, and switches
-   * the buffered reader to read from r.
+  /**
+   * Discards any buffered data, resets all state, and switches
+   * the buffered reader to read from `r`.
+   *
+   * @example Usage
+   * ```ts
+   * import { BufReader, Buffer } from "@std/io";
+   * import { assertEquals } from "@std/assert/equals";
+   *
+   * const reader = new Buffer(new TextEncoder().encode("hello world"));
+   * const bufReader = new BufReader(reader);
+   * await bufReader.read(new Uint8Array(5));
+   * bufReader.reset(reader);
+   * assertEquals(bufReader.buffered(), 6);
+   * ```
+   *
+   * @param r The reader to read from.
    */
   reset(r: Reader) {
     this.#reset(this.#buf, r);
@@ -122,11 +277,27 @@ export class BufReader implements Reader {
     // this.lastCharSize = -1;
   };
 
-  /** reads data into p.
-   * It returns the number of bytes read into p.
-   * The bytes are taken from at most one Read on the underlying Reader,
-   * hence n may be less than len(p).
-   * To read exactly len(p) bytes, use io.ReadFull(b, p).
+  /**
+   * Reads data into `p`.
+   *
+   * The bytes are taken from at most one `read()` on the underlying `Reader`,
+   * hence n may be less than `len(p)`.
+   * To read exactly `len(p)` bytes, use `io.ReadFull(b, p)`.
+   *
+   * @example Usage
+   * ```ts
+   * import { BufReader, Buffer } from "@std/io";
+   * import { assertEquals } from "@std/assert/equals";
+   *
+   * const reader = new Buffer(new TextEncoder().encode("hello world"));
+   * const bufReader = new BufReader(reader);
+   * const buf = new Uint8Array(5);
+   * await bufReader.read(buf);
+   * assertEquals(new TextDecoder().decode(buf), "hello");
+   * ```
+   *
+   * @param p The buffer to read data into.
+   * @returns The number of bytes read into `p`.
    */
   async read(p: Uint8Array): Promise<number | null> {
     let rr: number | null = p.byteLength;
@@ -161,7 +332,8 @@ export class BufReader implements Reader {
     return copied;
   }
 
-  /** reads exactly `p.length` bytes into `p`.
+  /**
+   * Reads exactly `p.length` bytes into `p`.
    *
    * If successful, `p` is returned.
    *
@@ -174,6 +346,22 @@ export class BufReader implements Reader {
    * buffer that has been successfully filled with data.
    *
    * Ported from https://golang.org/pkg/io/#ReadFull
+   *
+   * @example Usage
+   * ```ts
+   * import { BufReader, Buffer } from "@std/io";
+   * import { assertEquals } from "@std/assert/equals";
+   *
+   * const reader = new Buffer(new TextEncoder().encode("hello world"));
+   * const bufReader = new BufReader(reader);
+   * const buf = new Uint8Array(5);
+   * await bufReader.readFull(buf);
+   * assertEquals(new TextDecoder().decode(buf), "hello");
+   * ```
+   *
+   * @param p The buffer to read data into.
+   * @returns The buffer `p` if the read is successful, `null` if the end of the
+   * underlying stream has been reached, and there are no more bytes available in the buffer.
    */
   async readFull(p: Uint8Array): Promise<Uint8Array | null> {
     let bytesRead = 0;
@@ -191,7 +379,22 @@ export class BufReader implements Reader {
     return p;
   }
 
-  /** Returns the next byte [0, 255] or `null`. */
+  /**
+   * Returns the next byte ([0, 255]) or `null`.
+   *
+   * @example Usage
+   * ```ts
+   * import { BufReader, Buffer } from "@std/io";
+   * import { assertEquals } from "@std/assert/equals";
+   *
+   * const reader = new Buffer(new TextEncoder().encode("hello world"));
+   * const bufReader = new BufReader(reader);
+   * const byte = await bufReader.readByte();
+   * assertEquals(byte, 104);
+   * ```
+   *
+   * @returns The next byte ([0, 255]) or `null`.
+   */
   async readByte(): Promise<number | null> {
     while (this.#r === this.#w) {
       if (this.#eof) return null;
@@ -203,14 +406,31 @@ export class BufReader implements Reader {
     return c;
   }
 
-  /** readString() reads until the first occurrence of delim in the input,
+  /**
+   * Reads until the first occurrence of delim in the input,
    * returning a string containing the data up to and including the delimiter.
    * If ReadString encounters an error before finding a delimiter,
    * it returns the data read before the error and the error itself
    * (often `null`).
    * ReadString returns err !== null if and only if the returned data does not end
    * in delim.
-   * For simple uses, a Scanner may be more convenient.
+   *
+   * @example Usage
+   * ```ts
+   * import { BufReader, Buffer } from "@std/io";
+   * import { assertEquals } from "@std/assert/equals";
+   *
+   * const reader = new Buffer(new TextEncoder().encode("hello world"));
+   * const bufReader = new BufReader(reader);
+   * const str = await bufReader.readString(" ");
+   * assertEquals(str, "hello ");
+   *
+   * const str2 = await bufReader.readString(" ");
+   * assertEquals(str2, "world");
+   * ```
+   *
+   * @param delim The delimiter to read until.
+   * @returns The string containing the data up to and including the delimiter.
    */
   async readString(delim: string): Promise<string | null> {
     if (delim.length !== 1) {
@@ -221,8 +441,9 @@ export class BufReader implements Reader {
     return new TextDecoder().decode(buffer);
   }
 
-  /** `readLine()` is a low-level line-reading primitive. Most callers should
-   * use `readString('\n')` instead or use a Scanner.
+  /**
+   * A low-level line-reading primitive. Most callers should use
+   * `readString('\n')` instead.
    *
    * `readLine()` tries to return a single line, not including the end-of-line
    * bytes. If the line was too long for the buffer then `more` is set and the
@@ -231,7 +452,7 @@ export class BufReader implements Reader {
    * of the line. The returned buffer is only valid until the next call to
    * `readLine()`.
    *
-   * The text returned from ReadLine does not include the line end ("\r\n" or
+   * The text returned from this method does not include the line end ("\r\n" or
    * "\n").
    *
    * When the end of the underlying stream is reached, the final bytes in the
@@ -239,9 +460,20 @@ export class BufReader implements Reader {
    * without a final line end. When there are no more trailing bytes to read,
    * `readLine()` returns `null`.
    *
-   * Calling `unreadByte()` after `readLine()` will always unread the last byte
-   * read (possibly a character belonging to the line end) even if that byte is
-   * not part of the line returned by `readLine()`.
+   * @example Usage
+   * ```ts
+   * import { BufReader, Buffer } from "@std/io";
+   * import { assertEquals } from "@std/assert/equals";
+   *
+   * const reader = new Buffer(new TextEncoder().encode("hello\nworld"));
+   * const bufReader = new BufReader(reader);
+   * const line1 = await bufReader.readLine();
+   * assertEquals(new TextDecoder().decode(line1!.line), "hello");
+   * const line2 = await bufReader.readLine();
+   * assertEquals(new TextDecoder().decode(line2!.line), "world");
+   * ```
+   *
+   * @returns The line read.
    */
   async readLine(): Promise<ReadLineResult | null> {
     let line: Uint8Array | null = null;
@@ -295,7 +527,8 @@ export class BufReader implements Reader {
     return { line, more: false };
   }
 
-  /** `readSlice()` reads until the first occurrence of `delim` in the input,
+  /**
+   * Reads until the first occurrence of `delim` in the input,
    * returning a slice pointing at the bytes in the buffer. The bytes stop
    * being valid at the next read.
    *
@@ -310,6 +543,20 @@ export class BufReader implements Reader {
    *
    * Because the data returned from `readSlice()` will be overwritten by the
    * next I/O operation, most clients should use `readString()` instead.
+   *
+   * @example Usage
+   * ```ts
+   * import { BufReader, Buffer } from "@std/io";
+   * import { assertEquals } from "@std/assert/equals";
+   *
+   * const reader = new Buffer(new TextEncoder().encode("hello world"));
+   * const bufReader = new BufReader(reader);
+   * const slice = await bufReader.readSlice(0x20);
+   * assertEquals(new TextDecoder().decode(slice!), "hello ");
+   * ```
+   *
+   * @param delim The delimiter to read until.
+   * @returns A slice pointing at the bytes in the buffer.
    */
   async readSlice(delim: number): Promise<Uint8Array | null> {
     let s = 0; // search start index
@@ -361,7 +608,8 @@ export class BufReader implements Reader {
     return slice;
   }
 
-  /** `peek()` returns the next `n` bytes without advancing the reader. The
+  /**
+   * Returns the next `n` bytes without advancing the reader. The
    * bytes stop being valid at the next read call.
    *
    * When the end of the underlying stream is reached, but there are unread
@@ -371,6 +619,20 @@ export class BufReader implements Reader {
    * If an error is encountered before `n` bytes are available, `peek()` throws
    * an error with the `partial` property set to a slice of the buffer that
    * contains the bytes that were available before the error occurred.
+   *
+   * @example Usage
+   * ```ts
+   * import { BufReader, Buffer } from "@std/io";
+   * import { assertEquals } from "@std/assert/equals";
+   *
+   * const reader = new Buffer(new TextEncoder().encode("hello world"));
+   * const bufReader = new BufReader(reader);
+   * const peeked = await bufReader.peek(5);
+   * assertEquals(new TextDecoder().decode(peeked!), "hello");
+   * ```
+   *
+   * @param n The number of bytes to peek.
+   * @returns The next `n` bytes without advancing the reader.
    */
   async peek(n: number): Promise<Uint8Array | null> {
     if (n < 0) {

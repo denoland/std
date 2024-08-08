@@ -36,12 +36,11 @@ type FormatPart = {
   value: string | number;
   hour12?: boolean;
 };
-type Format = FormatPart[];
 
 function throwInvalidValueError(type: string, value: string, string: string) {
   if (!value) {
     throw Error(
-      `value not valid for token { ${type} ${value} } ${string.slice(0, 25)}`,
+      `value not valid for part { ${type} ${value} } ${string.slice(0, 25)}`,
     );
   }
 }
@@ -50,83 +49,83 @@ const LITERAL_REGEXP = /^(?<value>.+?\s*)/;
 const SYMBOL_REGEXP = /^(?<symbol>([a-zA-Z])\2*)/;
 
 // according to unicode symbols (http://www.unicode.org/reports/tr35/tr35-dates.html#Date_Field_Symbol_Table)
-function formatToParts(format: string) {
-  const tokens: Format = [];
+function formatToFormatParts(format: string) {
+  const formatParts: FormatPart[] = [];
   let index = 0;
   while (index < format.length) {
     const substring = format.slice(index);
     const symbol = SYMBOL_REGEXP.exec(substring)?.groups?.symbol;
     switch (symbol) {
       case "yyyy":
-        tokens.push({ type: "year", value: "numeric" });
+        formatParts.push({ type: "year", value: "numeric" });
         index += symbol.length;
         continue;
       case "yy":
-        tokens.push({ type: "year", value: "2-digit" });
+        formatParts.push({ type: "year", value: "2-digit" });
         index += symbol.length;
         continue;
       case "MM":
-        tokens.push({ type: "month", value: "2-digit" });
+        formatParts.push({ type: "month", value: "2-digit" });
         index += symbol.length;
         continue;
       case "M":
-        tokens.push({ type: "month", value: "numeric" });
+        formatParts.push({ type: "month", value: "numeric" });
         index += symbol.length;
         continue;
       case "dd":
-        tokens.push({ type: "day", value: "2-digit" });
+        formatParts.push({ type: "day", value: "2-digit" });
         index += symbol.length;
         continue;
       case "d":
-        tokens.push({ type: "day", value: "numeric" });
+        formatParts.push({ type: "day", value: "numeric" });
         index += symbol.length;
         continue;
       case "HH":
-        tokens.push({ type: "hour", value: "2-digit" });
+        formatParts.push({ type: "hour", value: "2-digit" });
         index += symbol.length;
         continue;
       case "H":
-        tokens.push({ type: "hour", value: "numeric" });
+        formatParts.push({ type: "hour", value: "numeric" });
         index += symbol.length;
         continue;
       case "hh":
-        tokens.push({ type: "hour", value: "2-digit", hour12: true });
+        formatParts.push({ type: "hour", value: "2-digit", hour12: true });
         index += symbol.length;
         continue;
       case "h":
-        tokens.push({ type: "hour", value: "numeric", hour12: true });
+        formatParts.push({ type: "hour", value: "numeric", hour12: true });
         index += symbol.length;
         continue;
       case "mm":
-        tokens.push({ type: "minute", value: "2-digit" });
+        formatParts.push({ type: "minute", value: "2-digit" });
         index += symbol.length;
         continue;
       case "m":
-        tokens.push({ type: "minute", value: "numeric" });
+        formatParts.push({ type: "minute", value: "numeric" });
         index += symbol.length;
         continue;
       case "ss":
-        tokens.push({ type: "second", value: "2-digit" });
+        formatParts.push({ type: "second", value: "2-digit" });
         index += symbol.length;
         continue;
       case "s":
-        tokens.push({ type: "second", value: "numeric" });
+        formatParts.push({ type: "second", value: "numeric" });
         index += symbol.length;
         continue;
       case "SSS":
-        tokens.push({ type: "fractionalSecond", value: 3 });
+        formatParts.push({ type: "fractionalSecond", value: 3 });
         index += symbol.length;
         continue;
       case "SS":
-        tokens.push({ type: "fractionalSecond", value: 2 });
+        formatParts.push({ type: "fractionalSecond", value: 2 });
         index += symbol.length;
         continue;
       case "S":
-        tokens.push({ type: "fractionalSecond", value: 1 });
+        formatParts.push({ type: "fractionalSecond", value: 1 });
         index += symbol.length;
         continue;
       case "a":
-        tokens.push({ type: "dayPeriod", value: 1 });
+        formatParts.push({ type: "dayPeriod", value: 1 });
         index += symbol.length;
         continue;
     }
@@ -134,25 +133,48 @@ function formatToParts(format: string) {
     const quotedLiteralMatch = QUOTED_LITERAL_REGEXP.exec(substring);
     if (quotedLiteralMatch) {
       const value = quotedLiteralMatch.groups!.value as string;
-      tokens.push({ type: "literal", value });
+      formatParts.push({ type: "literal", value });
       index += quotedLiteralMatch[0].length;
       continue;
     }
 
     const literalGroups = LITERAL_REGEXP.exec(substring)!.groups!;
     const value = literalGroups.value as string;
-    tokens.push({ type: "literal", value });
+    formatParts.push({ type: "literal", value });
     index += value.length;
   }
 
-  return tokens;
+  return formatParts;
+}
+
+function sortDateTimeFormatParts(
+  parts: DateTimeFormatPart[],
+): DateTimeFormatPart[] {
+  let result: DateTimeFormatPart[] = [];
+  const typeArray = [
+    "year",
+    "month",
+    "day",
+    "hour",
+    "minute",
+    "second",
+    "fractionalSecond",
+  ];
+  for (const type of typeArray) {
+    const current = parts.findIndex((el) => el.type === type);
+    if (current !== -1) {
+      result = result.concat(parts.splice(current, 1));
+    }
+  }
+  result = result.concat(parts);
+  return result;
 }
 
 export class DateTimeFormatter {
-  #format: Format;
+  #formatParts: FormatPart[];
 
   constructor(formatString: string) {
-    this.#format = formatToParts(formatString);
+    this.#formatParts = formatToFormatParts(formatString);
   }
 
   format(date: Date, options: Options = {}): string {
@@ -160,13 +182,13 @@ export class DateTimeFormatter {
 
     const utc = options.timeZone === "UTC";
 
-    for (const token of this.#format) {
-      const type = token.type;
+    for (const part of this.#formatParts) {
+      const type = part.type;
 
       switch (type) {
         case "year": {
           const value = utc ? date.getUTCFullYear() : date.getFullYear();
-          switch (token.value) {
+          switch (part.value) {
             case "numeric": {
               string += value;
               break;
@@ -177,14 +199,14 @@ export class DateTimeFormatter {
             }
             default:
               throw Error(
-                `FormatterError: value "${token.value}" is not supported`,
+                `FormatterError: value "${part.value}" is not supported`,
               );
           }
           break;
         }
         case "month": {
           const value = (utc ? date.getUTCMonth() : date.getMonth()) + 1;
-          switch (token.value) {
+          switch (part.value) {
             case "numeric": {
               string += value;
               break;
@@ -195,14 +217,14 @@ export class DateTimeFormatter {
             }
             default:
               throw Error(
-                `FormatterError: value "${token.value}" is not supported`,
+                `FormatterError: value "${part.value}" is not supported`,
               );
           }
           break;
         }
         case "day": {
           const value = utc ? date.getUTCDate() : date.getDate();
-          switch (token.value) {
+          switch (part.value) {
             case "numeric": {
               string += value;
               break;
@@ -213,18 +235,18 @@ export class DateTimeFormatter {
             }
             default:
               throw Error(
-                `FormatterError: value "${token.value}" is not supported`,
+                `FormatterError: value "${part.value}" is not supported`,
               );
           }
           break;
         }
         case "hour": {
           let value = utc ? date.getUTCHours() : date.getHours();
-          if (token.hour12) {
+          if (part.hour12) {
             if (value === 0) value = 12;
             else if (value > 12) value -= 12;
           }
-          switch (token.value) {
+          switch (part.value) {
             case "numeric": {
               string += value;
               break;
@@ -235,14 +257,14 @@ export class DateTimeFormatter {
             }
             default:
               throw Error(
-                `FormatterError: value "${token.value}" is not supported`,
+                `FormatterError: value "${part.value}" is not supported`,
               );
           }
           break;
         }
         case "minute": {
           const value = utc ? date.getUTCMinutes() : date.getMinutes();
-          switch (token.value) {
+          switch (part.value) {
             case "numeric": {
               string += value;
               break;
@@ -253,14 +275,14 @@ export class DateTimeFormatter {
             }
             default:
               throw Error(
-                `FormatterError: value "${token.value}" is not supported`,
+                `FormatterError: value "${part.value}" is not supported`,
               );
           }
           break;
         }
         case "second": {
           const value = utc ? date.getUTCSeconds() : date.getSeconds();
-          switch (token.value) {
+          switch (part.value) {
             case "numeric": {
               string += value;
               break;
@@ -271,7 +293,7 @@ export class DateTimeFormatter {
             }
             default:
               throw Error(
-                `FormatterError: value "${token.value}" is not supported`,
+                `FormatterError: value "${part.value}" is not supported`,
               );
           }
           break;
@@ -280,12 +302,12 @@ export class DateTimeFormatter {
           const value = utc
             ? date.getUTCMilliseconds()
             : date.getMilliseconds();
-          string += digits(value, Number(token.value));
+          string += digits(value, Number(part.value));
           break;
         }
         // FIXME(bartlomieju)
         case "timeZoneName": {
-          // string += utc ? "Z" : token.value
+          // string += utc ? "Z" : part.value
           break;
         }
         case "dayPeriod": {
@@ -293,30 +315,30 @@ export class DateTimeFormatter {
           break;
         }
         case "literal": {
-          string += token.value;
+          string += part.value;
           break;
         }
 
         default:
-          throw Error(`FormatterError: { ${token.type} ${token.value} }`);
+          throw Error(`FormatterError: { ${part.type} ${part.value} }`);
       }
     }
 
     return string;
   }
 
-  parseToParts(string: string): DateTimeFormatPart[] {
+  formatToParts(string: string): DateTimeFormatPart[] {
     const parts: DateTimeFormatPart[] = [];
 
     let index = 0;
-    for (const token of this.#format) {
+    for (const part of this.#formatParts) {
       const substring = string.slice(index);
-      const type = token.type;
+      const type = part.type;
 
       let value = "";
       switch (type) {
         case "year": {
-          switch (token.value) {
+          switch (part.value) {
             case "numeric": {
               value = /^\d{1,4}/.exec(substring)?.[0] as string;
               if (!value) throwInvalidValueError(type, value, substring);
@@ -333,13 +355,13 @@ export class DateTimeFormatter {
             }
             default:
               throw Error(
-                `ParserError: value "${token.value}" is not supported`,
+                `ParserError: value "${part.value}" is not supported`,
               );
           }
           break;
         }
         case "month": {
-          switch (token.value) {
+          switch (part.value) {
             case "numeric": {
               value = /^\d{1,2}/.exec(substring)?.[0] as string;
               if (!value) throwInvalidValueError(type, value, substring);
@@ -377,13 +399,13 @@ export class DateTimeFormatter {
             }
             default:
               throw Error(
-                `ParserError: value "${token.value}" is not supported`,
+                `ParserError: value "${part.value}" is not supported`,
               );
           }
           break;
         }
         case "day": {
-          switch (token.value) {
+          switch (part.value) {
             case "numeric": {
               value = /^\d{1,2}/.exec(substring)?.[0] as string;
               if (!value) throwInvalidValueError(type, value, substring);
@@ -400,19 +422,19 @@ export class DateTimeFormatter {
             }
             default:
               throw Error(
-                `ParserError: value "${token.value}" is not supported`,
+                `ParserError: value "${part.value}" is not supported`,
               );
           }
           break;
         }
         case "hour": {
-          switch (token.value) {
+          switch (part.value) {
             case "numeric": {
               value = /^\d{1,2}/.exec(substring)?.[0] as string;
               if (!value) throwInvalidValueError(type, value, substring);
               parts.push({ type, value });
               index += value.length;
-              if (token.hour12 && parseInt(value) > 12) {
+              if (part.hour12 && parseInt(value) > 12) {
                 console.error(
                   `Trying to parse hour greater than 12. Use 'H' instead of 'h'.`,
                 );
@@ -424,7 +446,7 @@ export class DateTimeFormatter {
               if (!value) throwInvalidValueError(type, value, substring);
               parts.push({ type, value });
               index += value.length;
-              if (token.hour12 && parseInt(value) > 12) {
+              if (part.hour12 && parseInt(value) > 12) {
                 console.error(
                   `Trying to parse hour greater than 12. Use 'HH' instead of 'hh'.`,
                 );
@@ -433,13 +455,13 @@ export class DateTimeFormatter {
             }
             default:
               throw Error(
-                `ParserError: value "${token.value}" is not supported`,
+                `ParserError: value "${part.value}" is not supported`,
               );
           }
           break;
         }
         case "minute": {
-          switch (token.value) {
+          switch (part.value) {
             case "numeric": {
               value = /^\d{1,2}/.exec(substring)?.[0] as string;
               if (!value) throwInvalidValueError(type, value, substring);
@@ -456,13 +478,13 @@ export class DateTimeFormatter {
             }
             default:
               throw Error(
-                `ParserError: value "${token.value}" is not supported`,
+                `ParserError: value "${part.value}" is not supported`,
               );
           }
           break;
         }
         case "second": {
-          switch (token.value) {
+          switch (part.value) {
             case "numeric": {
               value = /^\d{1,2}/.exec(substring)?.[0] as string;
               if (!value) throwInvalidValueError(type, value, substring);
@@ -479,13 +501,13 @@ export class DateTimeFormatter {
             }
             default:
               throw Error(
-                `ParserError: value "${token.value}" is not supported`,
+                `ParserError: value "${part.value}" is not supported`,
               );
           }
           break;
         }
         case "fractionalSecond": {
-          value = new RegExp(`^\\d{${token.value}}`).exec(substring)
+          value = new RegExp(`^\\d{${part.value}}`).exec(substring)
             ?.[0] as string;
           if (!value) throwInvalidValueError(type, value, substring);
           parts.push({ type, value });
@@ -493,7 +515,7 @@ export class DateTimeFormatter {
           break;
         }
         case "timeZoneName": {
-          value = token.value as string;
+          value = part.value as string;
           if (!value) throwInvalidValueError(type, value, substring);
           parts.push({ type, value });
           index += value.length;
@@ -521,19 +543,19 @@ export class DateTimeFormatter {
           break;
         }
         case "literal": {
-          if (!substring.startsWith(token.value as string)) {
+          if (!substring.startsWith(part.value as string)) {
             throw Error(
-              `Literal "${token.value}" not found "${substring.slice(0, 25)}"`,
+              `Literal "${part.value}" not found "${substring.slice(0, 25)}"`,
             );
           }
-          value = token.value as string;
+          value = part.value as string;
           if (!value) throwInvalidValueError(type, value, substring);
           parts.push({ type, value });
           index += value.length;
           break;
         }
         default:
-          throw Error(`${token.type} ${token.value}`);
+          throw Error(`${part.type} ${part.value}`);
       }
     }
 
@@ -546,29 +568,9 @@ export class DateTimeFormatter {
     return parts;
   }
 
-  /** sort & filter dateTimeFormatPart */
-  sortDateTimeFormatPart(parts: DateTimeFormatPart[]): DateTimeFormatPart[] {
-    let result: DateTimeFormatPart[] = [];
-    const typeArray = [
-      "year",
-      "month",
-      "day",
-      "hour",
-      "minute",
-      "second",
-      "fractionalSecond",
-    ];
-    for (const type of typeArray) {
-      const current = parts.findIndex((el) => el.type === type);
-      if (current !== -1) {
-        result = result.concat(parts.splice(current, 1));
-      }
-    }
-    result = result.concat(parts);
-    return result;
-  }
-
   partsToDate(parts: DateTimeFormatPart[]): Date {
+    parts = sortDateTimeFormatParts(parts);
+
     const date = new Date();
     const utc = parts.find(
       (part) => part.type === "timeZoneName" && part.value === "UTC",
@@ -647,8 +649,7 @@ export class DateTimeFormatter {
   }
 
   parse(string: string): Date {
-    const parts = this.parseToParts(string);
-    const sortParts = this.sortDateTimeFormatPart(parts);
-    return this.partsToDate(sortParts);
+    const parts = this.formatToParts(string);
+    return this.partsToDate(parts);
   }
 }
