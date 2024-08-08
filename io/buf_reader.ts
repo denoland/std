@@ -14,10 +14,10 @@ const LF = "\n".charCodeAt(0);
  * @deprecated This will be removed in 1.0.0. Use the {@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API | Web Streams API} instead.
  */
 export class BufferFullError extends Error {
-  override name = "BufferFullError";
   partial: Uint8Array;
   constructor(partial: Uint8Array) {
     super("Buffer full");
+    this.name = this.constructor.name;
     this.partial = partial;
   }
 }
