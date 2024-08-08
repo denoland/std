@@ -1,5 +1,4 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-import { unreachable } from "@std/assert/unreachable";
 import type { MemoizationCache } from "./memoize.ts";
 
 /**
@@ -54,8 +53,8 @@ export function _serializeArgList<Return>(
           return `Symbol.for(${JSON.stringify(arg.description)})`;
         }
         // Non-weak keys other than `Symbol.for(...)` are handled by the branches above.
-        unreachable(
-          "This is a bug in @std/cache. Please open an issue at https://github.com/denoland/std/issues/new",
+        throw new Error(
+          "Should be unreachable. Please open an issue at https://github.com/denoland/std/issues/new",
         );
       }
 
