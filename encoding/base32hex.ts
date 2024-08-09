@@ -2,7 +2,7 @@
 // Copyright (c) 2014 Jameson Little. MIT License.
 // This module is browser compatible.
 
-import { decode, encode } from "./_utils.ts";
+import { decode, encode } from "./_base32_common.ts";
 
 /**
  * Utilities for
@@ -32,7 +32,7 @@ import { decode, encode } from "./_utils.ts";
 
 const lookup: string[] = "0123456789ABCDEFGHIJKLMNOPQRSTUV".split("");
 const revLookup: number[] = [];
-lookup.forEach((c, i) => (revLookup[c.charCodeAt(0)] = i));
+lookup.forEach((c, i) => revLookup[c.charCodeAt(0)] = i);
 
 /**
  * Decodes a base32hex-encoded string.

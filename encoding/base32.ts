@@ -2,7 +2,7 @@
 // Copyright (c) 2014 Jameson Little. MIT License.
 // This module is browser compatible.
 
-import { decode, encode } from "./_utils.ts";
+import { decode, encode } from "./_base32_common.ts";
 
 /**
  * Utilities for
