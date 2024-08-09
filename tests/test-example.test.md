@@ -3,6 +3,11 @@ target: agents/hamr.md
 assessor: agents/assessor.md
 ---
 
+## Actors
+
+- **Duty Manager** Makes decisions about routing
+- **Customer Agent** Interacts with customers
+
 ## Starter for 10
 
 Ensure that the number of customers returned is identical to the state
@@ -24,7 +29,7 @@ list all customers
 In this test, the actor that is making the prompts is switched, with their last
 thread being resumed.
 
-**Impersonate**: Duty Manager
+**Actor**: Duty Manager
 
 **Chain**
 

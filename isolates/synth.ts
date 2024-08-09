@@ -16,7 +16,7 @@ export const api = {
   ls: {
     type: 'object',
     description:
-      'list all *.test.md files in a given directory.  If the directory is omitted, the base directory "." is used.  Directory must be relative and must end in a "/". Root is ".". ',
+      'list all *.test.md files in a given directory.  Directory must be relative and must end in a "/". Root is ".". ',
     required: ['directory'],
     properties: { directory: { type: 'string' } },
     additionalProperties: false,

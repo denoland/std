@@ -17,9 +17,14 @@ export const api = {
   },
   switch: {
     type: 'object',
-    description: 'Switch to a new agent',
-    required: ['path'],
+    description:
+      'Called with step by step reasoning how the selected path was decided upon, and the path to the new agent to call',
+    required: ['reasoning', 'path'],
     properties: {
+      reasoning: {
+        type: 'array',
+        items: { type: 'string' },
+      },
       path: {
         type: 'string',
         description: 'The path to the agent file to switch to',
@@ -36,7 +41,7 @@ interface SearchResult {
 }
 export type Api = {
   search: (params: { query: string }) => Promise<SearchResult[]>
-  switch: (params: { path: string }) => Promise<void>
+  switch: (params: { reasoning: string[]; path: string }) => Promise<void>
 }
 
 export const functions: Functions<Api> = {

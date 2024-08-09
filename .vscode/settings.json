@@ -33,5 +33,8 @@
   ],
   "coverage-gutters.showLineCoverage": true,
   "coverage-gutters.showRulerCoverage": false,
-  "coverage-gutters.showGutterCoverage": false
+  "coverage-gutters.showGutterCoverage": false,
+  "[markdown]": {
+    "editor.defaultFormatter": "denoland.vscode-deno"
+  }
 }
