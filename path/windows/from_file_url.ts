@@ -9,7 +9,7 @@ import { assertArg } from "../_common/from_file_url.ts";
  * @example Usage
  * ```ts
  * import { fromFileUrl } from "@std/path/windows/from-file-url";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * assertEquals(fromFileUrl("file:///home/foo"), "\\home\\foo");
  * assertEquals(fromFileUrl("file:///C:/Users/foo"), "C:\\Users\\foo");

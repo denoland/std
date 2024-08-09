@@ -18,7 +18,7 @@ import { strip } from "./_strip.ts";
  * @example Basic usage
  * ```ts
  * import { basename } from "@std/url/basename";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * assertEquals(basename("https://deno.land/std/assert/mod.ts"), "mod.ts");
  * assertEquals(basename(new URL("https://deno.land/std/assert/mod.ts")), "mod.ts");
@@ -33,13 +33,17 @@ import { strip } from "./_strip.ts";
  *
  * ```ts
  * import { basename } from "@std/url/basename";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * assertEquals(basename("https://deno.land/std/assert/mod.ts", ".ts"), "mod");
  * assertEquals(basename(new URL("https://deno.land/std/assert/mod.ts"), ".ts"), "mod");
  * assertEquals(basename("https://deno.land/std/assert/mod.ts?a=b", ".ts"), "mod");
  * assertEquals(basename("https://deno.land/std/assert/mod.ts#header", ".ts"), "mod");
  * ```
+ *
+ * @deprecated Use
+ * {@linkcode https://jsr.io/@std/path/doc/posix/~/basename | @std/path/posix/basename}
+ * instead (examples included). `@std/url` will be removed in the future.
  */
 export function basename(url: string | URL, suffix?: string): string {
   url = new URL(url);

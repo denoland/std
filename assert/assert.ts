@@ -7,7 +7,7 @@ import { AssertionError } from "./assertion_error.ts";
  *
  * @example Usage
  * ```ts no-eval
- * import { assert } from "@std/assert/assert";
+ * import { assert } from "@std/assert";
  *
  * assert("hello".includes("ello")); // Doesn't throw
  * assert("hello".includes("world")); // Throws

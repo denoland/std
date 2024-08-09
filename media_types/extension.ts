@@ -17,7 +17,7 @@ import { allExtensions } from "./all_extensions.ts";
  * @example Usage
  * ```ts
  * import { extension } from "@std/media-types/extension";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * assertEquals(extension("text/plain"), "txt");
  * assertEquals(extension("application/json"), "json");

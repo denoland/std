@@ -1,7 +1,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
 import { TextDelimiterStream } from "./text_delimiter_stream.ts";
-import { testTransformStream } from "./_test_common.ts";
+import { testTransformStream } from "./_test_utils.ts";
 
 Deno.test("TextDelimiterStream handles discard", async () => {
   const delimStream = new TextDelimiterStream("foo", {

@@ -6,7 +6,7 @@
  *
  * ```ts
  * import { format } from "@std/fmt/duration";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * assertEquals(format(99674, { style: "digital" }), "00:00:01:39:674:000:000");
  *
@@ -74,19 +74,25 @@ function durationArray(
 }
 
 /** Options for {@linkcode format}. */
-export interface PrettyDurationOptions {
+export interface FormatOptions {
   /**
+   * The style for formatting the duration.
+   *
    * "narrow" for "0d 0h 0m 0s 0ms..."
    * "digital" for "00:00:00:00:000..."
    * "full" for "0 days, 0 hours, 0 minutes,..."
+   *
+   * @default {"narrow"}
    */
-  style: "narrow" | "digital" | "full";
+  style?: "narrow" | "digital" | "full";
   /**
    * Whether to ignore zero values.
    * With style="narrow" | "full", all zero values are ignored.
    * With style="digital", only values in the ends are ignored.
+   *
+   * @default {false}
    */
-  ignoreZero: boolean;
+  ignoreZero?: boolean;
 }
 
 /**
@@ -95,7 +101,7 @@ export interface PrettyDurationOptions {
  * @example Usage
  * ```ts
  * import { format } from "@std/fmt/duration";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * assertEquals(format(99674, { style: "digital" }), "00:00:01:39:674:000:000");
  *
@@ -112,7 +118,7 @@ export interface PrettyDurationOptions {
  */
 export function format(
   ms: number,
-  options: Partial<PrettyDurationOptions> = {},
+  options: FormatOptions = {},
 ): string {
   const opt = Object.assign(
     { style: "narrow", ignoreZero: false },

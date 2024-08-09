@@ -12,13 +12,6 @@ import { preferredEncodings } from "./_negotiation/encoding.ts";
 import { preferredLanguages } from "./_negotiation/language.ts";
 import { preferredMediaTypes } from "./_negotiation/media_type.ts";
 
-/** Loose copy of {@linkcode Request}. */
-export type Request = {
-  headers: {
-    get(key: string): string | null;
-  };
-};
-
 /**
  * Returns an array of media types accepted by the request, in order of
  * preference. If there are no media types supplied in the request, then any
@@ -27,7 +20,7 @@ export type Request = {
  * @example Usage
  * ```ts
  * import { accepts } from "@std/http/negotiation";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const request = new Request("https://example.com/", {
  *   headers: {
@@ -56,7 +49,7 @@ export function accepts(request: Request): string[];
  *  @example Usage
  * ```ts
  * import { accepts } from "@std/http/negotiation";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const request = new Request("https://example.com/", {
  *   headers: {
@@ -96,7 +89,7 @@ export function accepts(
  * @example Usage
  * ```ts
  * import { acceptsEncodings } from "@std/http/negotiation";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const request = new Request("https://example.com/", {
  *   headers: { "accept-encoding": "deflate, gzip;q=1.0, *;q=0.5" },
@@ -121,7 +114,7 @@ export function acceptsEncodings(request: Request): string[];
  * @example Usage
  * ```ts
  * import { acceptsEncodings } from "@std/http/negotiation";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const request = new Request("https://example.com/", {
  *   headers: { "accept-encoding": "deflate, gzip;q=1.0, *;q=0.5" },
@@ -160,7 +153,7 @@ export function acceptsEncodings(
  * @example Usage
  * ```ts
  * import { acceptsLanguages } from "@std/http/negotiation";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const request = new Request("https://example.com/", {
  *   headers: {
@@ -182,7 +175,7 @@ export function acceptsLanguages(request: Request): string[];
  * @example Usage
  * ```ts
  * import { acceptsLanguages } from "@std/http/negotiation";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const request = new Request("https://example.com/", {
  *   headers: {

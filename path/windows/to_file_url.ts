@@ -10,7 +10,7 @@ import { isAbsolute } from "./is_absolute.ts";
  * @example Usage
  * ```ts
  * import { toFileUrl } from "@std/path/windows/to-file-url";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * assertEquals(toFileUrl("\\home\\foo"), new URL("file:///home/foo"));
  * assertEquals(toFileUrl("C:\\Users\\foo"), new URL("file:///C:/Users/foo"));

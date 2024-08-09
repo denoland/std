@@ -9,7 +9,7 @@
  * values for AssertionError messages in browsers.
  *
  * ```ts no-eval
- * import { assert } from "@std/assert/assert";
+ * import { assert } from "@std/assert";
  *
  * assert("I am truthy"); // Doesn't throw
  * assert(false); // Throws `AssertionError`
@@ -18,27 +18,27 @@
  * @module
  */
 
-export * from "./assert_almost_equals.ts";
-export * from "./assert_array_includes.ts";
-export * from "./assert_equals.ts";
-export * from "./assert_exists.ts";
-export * from "./assert_false.ts";
-export * from "./assert_greater_or_equal.ts";
-export * from "./assert_greater.ts";
-export * from "./assert_instance_of.ts";
-export * from "./assert_is_error.ts";
-export * from "./assert_less_or_equal.ts";
-export * from "./assert_less.ts";
-export * from "./assert_match.ts";
-export * from "./assert_not_equals.ts";
-export * from "./assert_not_instance_of.ts";
-export * from "./assert_not_match.ts";
-export * from "./assert_not_strict_equals.ts";
-export * from "./assert_object_match.ts";
-export * from "./assert_rejects.ts";
-export * from "./assert_strict_equals.ts";
-export * from "./assert_string_includes.ts";
-export * from "./assert_throws.ts";
+export * from "./almost_equals.ts";
+export * from "./array_includes.ts";
+export * from "./equals.ts";
+export * from "./exists.ts";
+export * from "./false.ts";
+export * from "./greater_or_equal.ts";
+export * from "./greater.ts";
+export * from "./instance_of.ts";
+export * from "./is_error.ts";
+export * from "./less_or_equal.ts";
+export * from "./less.ts";
+export * from "./match.ts";
+export * from "./not_equals.ts";
+export * from "./not_instance_of.ts";
+export * from "./not_match.ts";
+export * from "./not_strict_equals.ts";
+export * from "./object_match.ts";
+export * from "./rejects.ts";
+export * from "./strict_equals.ts";
+export * from "./string_includes.ts";
+export * from "./throws.ts";
 export * from "./assert.ts";
 export * from "./assertion_error.ts";
 export * from "./equal.ts";

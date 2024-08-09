@@ -17,7 +17,7 @@
  * @example Basic usage
  * ```ts
  * import { lastIndexOfNeedle } from "@std/bytes/last-index-of-needle";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const source = new Uint8Array([0, 1, 2, 1, 2, 1, 2, 3]);
  * const needle = new Uint8Array([1, 2]);
@@ -30,7 +30,7 @@
  * @example Start index
  * ```ts
  * import { lastIndexOfNeedle } from "@std/bytes/last-index-of-needle";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const source = new Uint8Array([0, 1, 2, 1, 2, 1, 2, 3]);
  * const needle = new Uint8Array([1, 2]);

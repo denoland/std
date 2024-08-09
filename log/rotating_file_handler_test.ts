@@ -204,20 +204,10 @@ Deno.test({
     ); // 'ERROR AAA\n' = 10 bytes
     fileHandler.destroy();
 
-    const decoder = new TextDecoder();
-    assertEquals(decoder.decode(Deno.readFileSync(LOG_FILE)), "ERROR AAA\n");
-    assertEquals(
-      decoder.decode(Deno.readFileSync(LOG_FILE + ".1")),
-      "original log file",
-    );
-    assertEquals(
-      decoder.decode(Deno.readFileSync(LOG_FILE + ".2")),
-      "original log.1 file",
-    );
-    assertEquals(
-      decoder.decode(Deno.readFileSync(LOG_FILE + ".3")),
-      "original log.2 file",
-    );
+    assertEquals(Deno.readTextFileSync(LOG_FILE), "ERROR AAA\n");
+    assertEquals(Deno.readTextFileSync(LOG_FILE + ".1"), "original log file");
+    assertEquals(Deno.readTextFileSync(LOG_FILE + ".2"), "original log.1 file");
+    assertEquals(Deno.readTextFileSync(LOG_FILE + ".3"), "original log.2 file");
     assert(!existsSync(LOG_FILE + ".4"));
 
     Deno.removeSync(LOG_FILE);

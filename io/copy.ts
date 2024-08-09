@@ -2,6 +2,7 @@
 // This module is browser compatible.
 
 import { DEFAULT_BUFFER_SIZE } from "./_constants.ts";
+import { writeAll } from "./write_all.ts";
 import type { Reader, Writer } from "./types.ts";
 
 /**
@@ -9,8 +10,8 @@ import type { Reader, Writer } from "./types.ts";
  * an error occurs. It resolves to the number of bytes copied or rejects with
  * the first error encountered while copying.
  *
- * @example
- * ```ts
+ * @example Usage
+ * ```ts no-eval
  * import { copy } from "@std/io/copy";
  *
  * const source = await Deno.open("my_file.txt");
@@ -22,6 +23,7 @@ import type { Reader, Writer } from "./types.ts";
  * @param src The source to copy from
  * @param dst The destination to copy to
  * @param options Can be used to tune size of the buffer. Default size is 32kB
+ * @returns Number of bytes copied
  */
 export async function copy(
   src: Reader,
@@ -31,20 +33,12 @@ export async function copy(
   },
 ): Promise<number> {
   let n = 0;
-  const bufSize = options?.bufSize ?? DEFAULT_BUFFER_SIZE;
-  const b = new Uint8Array(bufSize);
-  let gotEOF = false;
-  while (gotEOF === false) {
+  const b = new Uint8Array(options?.bufSize ?? DEFAULT_BUFFER_SIZE);
+  while (true) {
     const result = await src.read(b);
-    if (result === null) {
-      gotEOF = true;
-    } else {
-      let nwritten = 0;
-      while (nwritten < result) {
-        nwritten += await dst.write(b.subarray(nwritten, result));
-      }
-      n += nwritten;
-    }
+    if (result === null) break;
+    await writeAll(dst, b.subarray(0, result));
+    n += result;
   }
   return n;
 }

@@ -6,6 +6,8 @@ import type { Reader, ReaderSync } from "./types.ts";
 const DEFAULT_BUFFER_SIZE = 32 * 1024;
 
 /**
+ * The range of bytes to read from a file or other resource that is readable.
+ *
  * @deprecated This will be removed in 1.0.0. Use the {@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API | Web Streams API} instead.
  */
 export interface ByteRange {
@@ -21,8 +23,9 @@ export interface ByteRange {
  * seekable.  The range start and end are inclusive of the bytes within that
  * range.
  *
- * ```ts
- * import { assertEquals } from "@std/assert/assert-equals";
+ * @example Usage
+ * ```ts no-eval
+ * import { assertEquals } from "@std/assert";
  * import { readRange } from "@std/io/read-range";
  *
  * // Read the first 10 bytes of a file
@@ -30,6 +33,10 @@ export interface ByteRange {
  * const bytes = await readRange(file, { start: 0, end: 9 });
  * assertEquals(bytes.length, 10);
  * ```
+ *
+ * @param r The reader to read from
+ * @param range The range of bytes to read
+ * @returns The bytes read
  *
  * @deprecated This will be removed in 1.0.0. Use the {@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API | Web Streams API} instead.
  */
@@ -67,8 +74,9 @@ export async function readRange(
  * readable and seekable.  The range start and end are inclusive of the bytes
  * within that range.
  *
- * ```ts
- * import { assertEquals } from "@std/assert/assert-equals";
+ * @example Usage
+ * ```ts no-eval
+ * import { assertEquals } from "@std/assert";
  * import { readRangeSync } from "@std/io/read-range";
  *
  * // Read the first 10 bytes of a file
@@ -76,6 +84,10 @@ export async function readRange(
  * const bytes = readRangeSync(file, { start: 0, end: 9 });
  * assertEquals(bytes.length, 10);
  * ```
+ *
+ * @param r The reader to read from
+ * @param range The range of bytes to read
+ * @returns The bytes read
  *
  * @deprecated This will be removed in 1.0.0. Use the {@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API | Web Streams API} instead.
  */

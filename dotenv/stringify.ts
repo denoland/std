@@ -7,7 +7,7 @@
  * @example Usage
  * ```ts
  * import { stringify } from "@std/dotenv/stringify";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const object = { GREETING: "hello world" };
  * assertEquals(stringify(object), "GREETING='hello world'");

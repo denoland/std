@@ -1,6 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import { parse, type ParseOptions } from "./parse.ts";
+import { parse } from "./parse.ts";
 import {
   assert,
   assertEquals,
@@ -14,12 +14,8 @@ import "./testdata/test262/test.ts";
 
 // The test code for the jsonc module can also be found in the testcode directory.
 
-function assertValidParse(
-  text: string,
-  expected: unknown,
-  options?: ParseOptions,
-) {
-  assertEquals(parse(text, options), expected);
+function assertValidParse(text: string, expected: unknown) {
+  assertEquals(parse(text), expected);
 }
 
 function assertInvalidParse(
@@ -27,10 +23,9 @@ function assertInvalidParse(
   // deno-lint-ignore no-explicit-any
   ErrorClass: new (...args: any[]) => Error,
   msgIncludes?: string,
-  options?: ParseOptions,
 ) {
   assertThrows(
-    () => parse(text, options),
+    () => parse(text),
     ErrorClass,
     msgIncludes,
   );
@@ -230,4 +225,8 @@ Deno.test({
       "parse is not a constructor",
     );
   },
+});
+
+Deno.test("parse() handles lone continuation byte in key and tailing comma", () => {
+  assertEquals(parse('{"�":"0",}'), { "�": "0" });
 });

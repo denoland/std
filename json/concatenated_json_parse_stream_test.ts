@@ -1,7 +1,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import { assertEquals } from "@std/assert";
 import { ConcatenatedJsonParseStream } from "./concatenated_json_parse_stream.ts";
-import { assertInvalidParse, assertValidParse } from "./_test_common.ts";
+import { assertInvalidParse, assertValidParse } from "./_test_utils.ts";
 
 Deno.test({
   name: "ConcatenatedJsonParseStream",

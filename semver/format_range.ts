@@ -2,14 +2,18 @@
 // This module is browser compatible.
 import { format } from "./format.ts";
 import type { Comparator, Range } from "./types.ts";
+import { isWildcardComparator } from "./_shared.ts";
 
 function formatComparator(comparator: Comparator): string {
   const { operator } = comparator;
-  return `${operator === undefined ? "" : operator}${format(comparator)}`;
+  return `${operator === undefined ? "" : operator}${
+    isWildcardComparator(comparator) ? "*" : format(comparator)
+  }`;
 }
 
 /**
- * Formats the range into a string
+ * Formats the SemVerrange into a string.
+ *
  * @example Usage
  * ```ts
  * import { formatRange, parseRange } from "@std/semver";
@@ -20,7 +24,7 @@ function formatComparator(comparator: Comparator): string {
  * ```
  *
  * @param range The range to format
- * @returns A string representation of the range
+ * @returns A string representation of the SemVer range
  */
 export function formatRange(range: Range): string {
   return range.map((c) => c.map((c) => formatComparator(c)).join(" "))

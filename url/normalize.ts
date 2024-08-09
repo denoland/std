@@ -14,11 +14,15 @@ import { normalize as posixNormalize } from "@std/path/posix/normalize";
  *
  * ```ts
  * import { normalize } from "@std/url/normalize";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * assertEquals(normalize("https:///deno.land///std//assert//.//mod.ts").href, "https://deno.land/std/assert/mod.ts");
  * assertEquals(normalize("https://deno.land/std/assert/../async/retry.ts").href, "https://deno.land/std/async/retry.ts");
  * ```
+ *
+ * @deprecated Use
+ * {@linkcode https://jsr.io/@std/path/doc/posix/~/normalize | @std/path/posix/normalize}
+ * instead (examples included). `@std/url` will be removed in the future.
  */
 export function normalize(url: string | URL): URL {
   url = new URL(url);

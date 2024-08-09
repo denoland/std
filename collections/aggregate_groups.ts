@@ -20,7 +20,7 @@ import { mapEntries } from "./map_entries.ts";
  * @example Basic usage
  * ```ts
  * import { aggregateGroups } from "@std/collections/aggregate-groups";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const foodProperties = {
  *   Curry: ["spicy", "vegan"],

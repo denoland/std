@@ -5,7 +5,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
 import { assert, assertEquals, assertThrows } from "@std/assert";
-import { parse, ParseError, type ParseOptions } from "./parse.ts";
+import { parse, type ParseOptions } from "./parse.ts";
 import type { AssertTrue, IsExact } from "@std/testing/types";
 
 const BYTE_ORDER_MARK = "\ufeff";
@@ -23,6 +23,7 @@ Deno.test({
         );
       },
     });
+
     await t.step({
       name: "CRLF",
       fn() {
@@ -93,6 +94,42 @@ Deno.test({
         assertEquals(
           parse(input),
           [["two\nline", "one line", "three\nline\nfield"]],
+        );
+      },
+    });
+
+    await t.step({
+      name: "BlankField",
+      fn() {
+        const input = "a,b,c\nd,,f";
+        assertEquals(
+          parse(input),
+          [["a", "b", "c"], ["d", "", "f"]],
+        );
+      },
+    });
+
+    await t.step({
+      name: "BlankField2",
+      fn() {
+        const input = "a,b,c\nd,,f";
+        assertEquals(
+          parse(input, { skipFirstRow: true }),
+          [{ a: "d", b: "", c: "f" }],
+        );
+      },
+    });
+
+    await t.step({
+      name: "BlankField3",
+      fn() {
+        const input = "a,b,c\nd,,f";
+        assertEquals(
+          parse(input, { columns: ["one", "two", "three"] }),
+          [
+            { one: "a", two: "b", three: "c" },
+            { one: "d", two: "", three: "f" },
+          ],
         );
       },
     });
@@ -193,8 +230,19 @@ Deno.test({
         const input = `a""b,c`;
         assertThrows(
           () => parse(input),
-          ParseError,
-          'parse error on line 1, column 1: bare " in non-quoted-field',
+          SyntaxError,
+          'parse error on line 1, column 2: bare " in non-quoted-field',
+        );
+      },
+    });
+    await t.step({
+      name: "error column Unicode code point number",
+      fn() {
+        const input = `a,b,🐱"`;
+        assertThrows(
+          () => parse(input),
+          SyntaxError,
+          'parse error on line 1, column 6: bare " in non-quoted-field',
         );
       },
     });
@@ -212,8 +260,8 @@ Deno.test({
         const input = `a "word","b"`;
         assertThrows(
           () => parse(input),
-          ParseError,
-          'parse error on line 1, column 2: bare " in non-quoted-field',
+          SyntaxError,
+          'parse error on line 1, column 3: bare " in non-quoted-field',
         );
       },
     });
@@ -223,8 +271,8 @@ Deno.test({
         const input = `"a word",b"`;
         assertThrows(
           () => parse(input),
-          ParseError,
-          'parse error on line 1, column 10: bare " in non-quoted-field',
+          SyntaxError,
+          'parse error on line 1, column 11: bare " in non-quoted-field',
         );
       },
     });
@@ -234,8 +282,8 @@ Deno.test({
         const input = `"a "word","b"`;
         assertThrows(
           () => parse(input),
-          ParseError,
-          `parse error on line 1, column 3: extraneous or missing " in quoted-field`,
+          SyntaxError,
+          `parse error on line 1, column 4: extraneous or missing " in quoted-field`,
         );
       },
     });
@@ -245,8 +293,8 @@ Deno.test({
         const input = "a,b,c\nd,e";
         assertThrows(
           () => parse(input, { fieldsPerRecord: 0 }),
-          ParseError,
-          "record on line 2: wrong number of fields",
+          SyntaxError,
+          "record on line 2: expected 3 fields but got 2",
         );
       },
     });
@@ -256,9 +304,20 @@ Deno.test({
         const input = `a,b,c`;
         assertThrows(
           () => parse(input, { fieldsPerRecord: 2 }),
-          ParseError,
-          "record on line 1: wrong number of fields",
+          SyntaxError,
+          "record on line 1: expected 2 fields but got 3",
         );
+      },
+    });
+    await t.step({
+      name: "NegativeFieldsPerRecord",
+      fn() {
+        const input = `a,b,c\nd,e`;
+        const output = [
+          ["a", "b", "c"],
+          ["d", "e"],
+        ];
+        assertEquals(parse(input, { fieldsPerRecord: -1 }), output);
       },
     });
     await t.step({
@@ -370,22 +429,41 @@ Deno.test({
     await t.step({
       name: "StartLine1", // Issue 19019
       fn() {
-        const input = 'a,"b\nc"d,e';
+        const input = `a,"b
+c"d,e`;
         assertThrows(
           () => parse(input, { fieldsPerRecord: 2 }),
-          ParseError,
-          'record on line 1; parse error on line 2, column 1: extraneous or missing " in quoted-field',
+          SyntaxError,
+          'record on line 1; parse error on line 2, column 2: extraneous or missing " in quoted-field',
         );
       },
     });
     await t.step({
       name: "StartLine2",
       fn() {
-        const input = 'a,b\n"d\n\n,e';
+        const input = `a,b
+"d
+
+,e`;
         assertThrows(
           () => parse(input, { fieldsPerRecord: 2 }),
-          ParseError,
-          'record on line 2; parse error on line 5, column 0: extraneous or missing " in quoted-field',
+          SyntaxError,
+          'record on line 2; parse error on line 4, column 1: extraneous or missing " in quoted-field',
+        );
+      },
+    });
+    await t.step({
+      name: "ParseErrorLine",
+      fn() {
+        const input = `id,name
+
+1,foo
+2,"baz
+`;
+        assertThrows(
+          () => parse(input),
+          SyntaxError,
+          'record on line 4; parse error on line 4, column 1: extraneous or missing " in quoted-field',
         );
       },
     });
@@ -427,8 +505,8 @@ Deno.test({
         const input = '"field"\r\r';
         assertThrows(
           () => parse(input, { fieldsPerRecord: 2 }),
-          ParseError,
-          'parse error on line 1, column 6: extraneous or missing " in quoted-field',
+          SyntaxError,
+          'parse error on line 1, column 7: extraneous or missing " in quoted-field',
         );
       },
     });
@@ -570,8 +648,8 @@ Deno.test({
         const input = '"foo"bar"\r\n';
         assertThrows(
           () => parse(input),
-          ParseError,
-          `parse error on line 1, column 4: extraneous or missing " in quoted-field`,
+          SyntaxError,
+          `parse error on line 1, column 5: extraneous or missing " in quoted-field`,
         );
       },
     });
@@ -605,8 +683,8 @@ Deno.test({
         const input = `"""""""`;
         assertThrows(
           () => parse(input),
-          ParseError,
-          `parse error on line 1, column 7: extraneous or missing " in quoted-field`,
+          SyntaxError,
+          `parse error on line 1, column 8: extraneous or missing " in quoted-field`,
         );
       },
     });
@@ -753,7 +831,7 @@ Deno.test({
       },
     });
     await t.step({
-      name: "mismatching number of headers and fields",
+      name: "mismatching number of headers and fields 1",
       fn() {
         const input = "a,b,c\nd,e";
         assertThrows(
@@ -763,7 +841,22 @@ Deno.test({
               columns: ["foo", "bar", "baz"],
             }),
           Error,
-          "Error number of fields line: 1\nNumber of fields found: 3\nExpected number of fields: 2",
+          "record on line 2 has 2 fields, but the header has 3 fields",
+        );
+      },
+    });
+    await t.step({
+      name: "mismatching number of headers and fields 2",
+      fn() {
+        const input = "a,b,c\nd,e,,g";
+        assertThrows(
+          () =>
+            parse(input, {
+              skipFirstRow: true,
+              columns: ["foo", "bar", "baz"],
+            }),
+          Error,
+          "record on line 2 has 4 fields, but the header has 3 fields",
         );
       },
     });
@@ -813,6 +906,24 @@ Deno.test({
         assertEquals(parse(input, { trimLeadingSpace: true }), output);
       },
     });
+    await t.step({
+      name: "leading line breaks",
+      fn() {
+        const input = "\n\na,b,c";
+        const output = [["a", "b", "c"]];
+        assertEquals(parse(input), output);
+      },
+    });
+    await t.step({
+      name: "throws when skipFirstRow=true with empty data",
+      fn() {
+        assertThrows(
+          () => parse("", { skipFirstRow: true }),
+          Error,
+          "Headers must be defined",
+        );
+      },
+    });
   },
 });
 
@@ -832,13 +943,13 @@ Deno.test({
       // `skipFirstRow` may be `true` or `false`.
       // `columns` may be `undefined` or `string[]`.
       // If you don't know exactly what the value of the option is,
-      // the return type is string[][] | Record<string, string|undefined>[]
+      // the return type is string[][] | Record<string, string>[]
       const options: ParseOptions = {};
       const parsed = parse("a\nb", options);
       type _ = AssertTrue<
         IsExact<
           typeof parsed,
-          string[][] | Record<string, string | undefined>[]
+          string[][] | Record<string, string>[]
         >
       >;
     }
@@ -859,7 +970,7 @@ Deno.test({
     {
       const parsed = parse("a\nb", { skipFirstRow: true });
       type _ = AssertTrue<
-        IsExact<typeof parsed, Record<string, string | undefined>[]>
+        IsExact<typeof parsed, Record<string, string>[]>
       >;
     }
 
@@ -877,7 +988,7 @@ Deno.test({
     {
       const parsed = parse("a\nb", { columns: ["aaa"] as string[] });
       type _ = AssertTrue<
-        IsExact<typeof parsed, Record<string, string | undefined>[]>
+        IsExact<typeof parsed, Record<string, string>[]>
       >;
     }
 
@@ -889,7 +1000,7 @@ Deno.test({
     {
       const parsed = parse("a\nb", { skipFirstRow: true, columns: undefined });
       type _ = AssertTrue<
-        IsExact<typeof parsed, Record<string, string | undefined>[]>
+        IsExact<typeof parsed, Record<string, string>[]>
       >;
     }
     {

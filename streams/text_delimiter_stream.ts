@@ -19,7 +19,7 @@ import type {
  * @example Comma-separated values
  * ```ts
  * import { TextDelimiterStream } from "@std/streams/text-delimiter-stream";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const stream = ReadableStream.from([
  *   "alice,20,",
@@ -37,7 +37,7 @@ import type {
  * @example Semicolon-separated values with suffix disposition
  * ```ts
  * import { TextDelimiterStream } from "@std/streams/text-delimiter-stream";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const stream = ReadableStream.from([
  *   "const a = 42;;let b =",
@@ -67,22 +67,6 @@ export class TextDelimiterStream extends TransformStream<string, string> {
    *
    * @param delimiter A delimiter to split the stream by.
    * @param options Options for the stream.
-   *
-   * @example Comma as a delimiter
-   * ```ts no-assert
-   * import { TextDelimiterStream } from "@std/streams/text-delimiter-stream";
-   *
-   * const delimiterStream = new TextDelimiterStream(",");
-   * ```
-   *
-   * @example Semicolon as a delimiter, and disposition set to `"suffix"`
-   * ```ts no-assert
-   * import { TextDelimiterStream } from "@std/streams/text-delimiter-stream";
-   *
-   * const delimiterStream = new TextDelimiterStream(",", {
-   *   disposition: "suffix",
-   * });
-   * ```
    */
   constructor(
     delimiter: string,

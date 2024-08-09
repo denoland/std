@@ -7,7 +7,7 @@
  *
  * ```ts
  * import { basename, join, normalize } from "@std/url";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const url = new URL("https:///deno.land///std//assert//.//mod.ts");
  * const normalizedUrl = normalize(url);
@@ -19,6 +19,10 @@
  *
  * assertEquals(joinedUrl.href, "https://deno.land/std/async/retry.ts");
  * ```
+ *
+ * @deprecated Use functions from
+ * {@linkcode https://jsr.io/@std/path/doc/posix/~ | @std/path/posix}
+ * instead (examples included). `@std/url` will be removed in the future.
  *
  * @module
  */

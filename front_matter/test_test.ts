@@ -6,13 +6,13 @@ import {
   runTestInvalidInputTests,
   runTestValidInputTests,
 } from "./_test_utils.ts";
-import { test } from "./test.ts";
+import { type Format, test } from "./test.ts";
 
 // GENERAL TESTS //
 
 Deno.test("test() tests for unknown format", () => {
   assertThrows(
-    () => test("foo", ["unknown"]),
+    () => test("foo", ["unknown"] as unknown as Format[]),
     TypeError,
     "Unable to test for unknown front matter format",
   );

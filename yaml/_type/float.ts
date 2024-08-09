@@ -3,8 +3,8 @@
 // Copyright 2011-2015 by Vitaly Puzrin. All rights reserved. MIT license.
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import { type StyleVariant, Type } from "../type.ts";
-import { type Any, isNegativeZero } from "../_utils.ts";
+import type { StyleVariant, Type } from "../_type.ts";
+import { isNegativeZero } from "../_utils.ts";
 
 const YAML_FLOAT_PATTERN = new RegExp(
   // 2.5e4, 2.5 and integers
@@ -12,8 +12,6 @@ const YAML_FLOAT_PATTERN = new RegExp(
     // .2e4, .2
     // special case, seems not from spec
     "|\\.[0-9_]+(?:[eE][-+]?[0-9]+)?" +
-    // 20:59
-    "|[-+]?[0-9][0-9_]*(?::[0-5]?[0-9])+\\.[0-9_]*" +
     // .inf
     "|[-+]?\\.(?:inf|Inf|INF)" +
     // .nan
@@ -36,9 +34,8 @@ function resolveYamlFloat(data: string): boolean {
 function constructYamlFloat(data: string): number {
   let value = data.replace(/_/g, "").toLowerCase();
   const sign = value[0] === "-" ? -1 : 1;
-  const digits: number[] = [];
 
-  if (value[0] && "+-".indexOf(value[0]) >= 0) {
+  if (value[0] && "+-".includes(value[0])) {
     value = value.slice(1);
   }
 
@@ -48,27 +45,13 @@ function constructYamlFloat(data: string): number {
   if (value === ".nan") {
     return NaN;
   }
-  if (value.indexOf(":") >= 0) {
-    value.split(":").forEach((v) => {
-      digits.unshift(parseFloat(v));
-    });
-
-    let valueNb = 0.0;
-    let base = 1;
-
-    digits.forEach((d) => {
-      valueNb += d * base;
-      base *= 60;
-    });
-
-    return sign * valueNb;
-  }
   return sign * parseFloat(value);
 }
 
 const SCIENTIFIC_WITHOUT_DOT = /^[-+]?[0-9]+e/;
 
-function representYamlFloat(object: Any, style?: StyleVariant): Any {
+// deno-lint-ignore no-explicit-any
+function representYamlFloat(object: any, style?: StyleVariant): any {
   if (isNaN(object)) {
     switch (style) {
       case "lowercase":
@@ -108,18 +91,17 @@ function representYamlFloat(object: Any, style?: StyleVariant): Any {
   return SCIENTIFIC_WITHOUT_DOT.test(res) ? res.replace("e", ".e") : res;
 }
 
-function isFloat(object: Any): boolean {
-  return (
-    Object.prototype.toString.call(object) === "[object Number]" &&
-    (object % 1 !== 0 || isNegativeZero(object))
-  );
+function isFloat(object: unknown): object is number {
+  return typeof object === "number" &&
+    (object % 1 !== 0 || isNegativeZero(object));
 }
 
-export const float = new Type("tag:yaml.org,2002:float", {
+export const float: Type<"scalar", number> = {
+  tag: "tag:yaml.org,2002:float",
   construct: constructYamlFloat,
   defaultStyle: "lowercase",
   kind: "scalar",
   predicate: isFloat,
   represent: representYamlFloat,
   resolve: resolveYamlFloat,
-});
+};

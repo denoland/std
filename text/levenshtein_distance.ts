@@ -1,15 +1,116 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
+const { ceil } = Math;
+
+// This implements Myers' bit-vector algorithm as described here:
+// https://dl.acm.org/doi/pdf/10.1145/316542.316550
+const peq = new Uint32Array(0x10000);
+
+function myers32(t: string, p: string): number {
+  const n = t.length;
+  const m = p.length;
+  for (let i = 0; i < m; i++) {
+    peq[p.charCodeAt(i)]! |= 1 << i;
+  }
+  const last = m - 1;
+  let pv = -1;
+  let mv = 0;
+  let score = m;
+  for (let j = 0; j < n; j++) {
+    const eq = peq[t.charCodeAt(j)]!;
+    const xv = eq | mv;
+    const xh = (((eq & pv) + pv) ^ pv) | eq;
+    let ph = mv | ~(xh | pv);
+    let mh = pv & xh;
+    score += ((ph >>> last) & 1) - ((mh >>> last) & 1);
+    // Set the horizontal delta in the first row to +1
+    // because we are computing the distance between two full strings.
+    ph = (ph << 1) | 1;
+    mh = mh << 1;
+    pv = mh | ~(xv | ph);
+    mv = ph & xv;
+  }
+  for (let i = 0; i < m; i++) {
+    peq[p.charCodeAt(i)] = 0;
+  }
+  return score;
+}
+
+function myersX(t: string, p: string): number {
+  const n = t.length;
+  const m = p.length;
+  // Initialize the horizontal deltas to +1.
+  const h = new Int8Array(n).fill(1);
+  const bmax = ceil(m / 32) - 1;
+  // Process the blocks row by row so that we can use the fixed-size peq array.
+  for (let b = 0; b < bmax; b++) {
+    const start = b * 32;
+    const end = (b + 1) * 32;
+    for (let i = start; i < end; i++) {
+      peq[p.charCodeAt(i)]! |= 1 << i;
+    }
+    let pv = -1;
+    let mv = 0;
+    for (let j = 0; j < n; j++) {
+      const hin = h[j]!;
+      let eq = peq[t.charCodeAt(j)]!;
+      const xv = eq | mv;
+      eq |= hin >>> 31;
+      const xh = (((eq & pv) + pv) ^ pv) | eq;
+      let ph = mv | ~(xh | pv);
+      let mh = pv & xh;
+      h[j] = (ph >>> 31) - (mh >>> 31);
+      ph = (ph << 1) | (-hin >>> 31);
+      mh = (mh << 1) | (hin >>> 31);
+      pv = mh | ~(xv | ph);
+      mv = ph & xv;
+    }
+    for (let i = start; i < end; i++) {
+      peq[p.charCodeAt(i)] = 0;
+    }
+  }
+  const start = bmax * 32;
+  for (let i = start; i < m; i++) {
+    peq[p.charCodeAt(i)]! |= 1 << i;
+  }
+  const last = m - 1;
+  let pv = -1;
+  let mv = 0;
+  let score = m;
+  for (let j = 0; j < n; j++) {
+    const hin = h[j]!;
+    let eq = peq[t.charCodeAt(j)]!;
+    const xv = eq | mv;
+    eq |= hin >>> 31;
+    const xh = (((eq & pv) + pv) ^ pv) | eq;
+    let ph = mv | ~(xh | pv);
+    let mh = pv & xh;
+    score += ((ph >>> last) & 1) - ((mh >>> last) & 1);
+    ph = (ph << 1) | (-hin >>> 31);
+    mh = (mh << 1) | (hin >>> 31);
+    pv = mh | ~(xv | ph);
+    mv = ph & xv;
+  }
+  for (let i = start; i < m; i++) {
+    peq[p.charCodeAt(i)] = 0;
+  }
+  return score;
+}
 
 /**
  * Calculates the
  * {@link https://en.wikipedia.org/wiki/Levenshtein_distance | Levenshtein distance}
  * between two strings.
  *
+ * > [!NOTE]
+ * > The complexity of this function is O(m * n), where m and n are the lengths
+ * > of the two strings. It's recommended to limit the length and validate input
+ * > if arbitrarily accepting input.
+ *
  * @example Usage
  * ```ts
  * import { levenshteinDistance } from "@std/text/levenshtein-distance";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * assertEquals(levenshteinDistance("aa", "bb"), 2);
  * ```
@@ -18,33 +119,13 @@
  * @returns The Levenshtein distance between the two strings.
  */
 export function levenshteinDistance(str1: string, str2: string): number {
-  if (str1.length > str2.length) {
-    [str1, str2] = [str2, str1];
+  if (str1.length < str2.length) {
+    const tmp = str1;
+    str1 = str2;
+    str2 = tmp;
   }
-
-  let distances: number[] = Array.from(
-    { length: str1.length + 1 },
-    (_, i) => +i,
-  );
-  for (let str2Index = 0; str2Index < str2.length; str2Index++) {
-    const tempDistances: number[] = [str2Index + 1];
-    for (let str1Index = 0; str1Index < str1.length; str1Index++) {
-      const char1 = str1[str1Index];
-      const char2 = str2[str2Index];
-      if (char1 === char2) {
-        tempDistances.push(distances[str1Index]!);
-      } else {
-        tempDistances.push(
-          1 +
-            Math.min(
-              distances[str1Index]!,
-              distances[str1Index + 1]!,
-              tempDistances.at(-1)!,
-            ),
-        );
-      }
-    }
-    distances = tempDistances;
+  if (str2.length === 0) {
+    return str1.length;
   }
-  return distances.at(-1)!;
+  return str2.length <= 32 ? myers32(str1, str2) : myersX(str1, str2);
 }

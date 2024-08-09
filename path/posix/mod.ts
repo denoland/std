@@ -4,15 +4,11 @@
 // This module is browser compatible.
 
 /**
- * Utilities for working with OS-specific file paths.
- *
- * Codes in the examples uses POSIX path but it automatically use Windows path
- * on Windows. Use methods under `posix` or `win32` object instead to handle non
- * platform specific path like:
+ * Utilities for working with POSIX-formatted paths.
  *
  * ```ts
- * import { fromFileUrl } from "@std/path/posix";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { fromFileUrl } from "@std/path/posix/from-file-url";
+ * import { assertEquals } from "@std/assert";
  *
  * assertEquals(fromFileUrl("file:///home/foo"), "/home/foo");
  * ```
@@ -34,7 +30,7 @@ export * from "./resolve.ts";
 export * from "./to_file_url.ts";
 export * from "./to_namespaced_path.ts";
 export * from "./common.ts";
-export * from "../_interface.ts";
+export * from "../types.ts";
 export * from "./glob_to_regexp.ts";
 export * from "./is_glob.ts";
 export * from "./join_globs.ts";

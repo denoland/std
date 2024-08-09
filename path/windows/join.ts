@@ -11,7 +11,7 @@ import { normalize } from "./normalize.ts";
  * @example Usage
  * ```ts
  * import { join } from "@std/path/windows/join";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const joined = join("C:\\foo", "bar", "baz\\..");
  * assertEquals(joined, "C:\\foo\\bar");
