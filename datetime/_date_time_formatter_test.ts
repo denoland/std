@@ -81,7 +81,7 @@ Deno.test("dateTimeFormatter.partsToDate()", () => {
   const format = "yyyy-MM-dd HH:mm:ss.SSS a";
   const formatter = new DateTimeFormatter(format);
   assertEquals(
-    +formatter.partsToDate([
+    formatter.partsToDate([
       { type: "year", value: "2020" },
       { type: "month", value: "01" },
       { type: "day", value: "01" },
@@ -92,7 +92,7 @@ Deno.test("dateTimeFormatter.partsToDate()", () => {
       { type: "dayPeriod", value: "AM" },
       { type: "timeZoneName", value: "UTC" },
     ]),
-    +date,
+    date,
   );
 });
 Deno.test("dateTimeFormatter.partsToDate() works with am dayPeriod", () => {
@@ -101,52 +101,52 @@ Deno.test("dateTimeFormatter.partsToDate() works with am dayPeriod", () => {
   const format = "HH a";
   const formatter = new DateTimeFormatter(format);
   assertEquals(
-    +formatter.partsToDate([
+    formatter.partsToDate([
       { type: "hour", value: "00" },
       { type: "dayPeriod", value: "AM" },
       { type: "timeZoneName", value: "UTC" },
     ]),
-    +date,
+    date,
   );
   assertEquals(
-    +formatter.partsToDate([
+    formatter.partsToDate([
       { type: "hour", value: "00" },
       { type: "dayPeriod", value: "AM." },
       { type: "timeZoneName", value: "UTC" },
     ]),
-    +date,
+    date,
   );
   assertEquals(
-    +formatter.partsToDate([
+    formatter.partsToDate([
       { type: "hour", value: "00" },
       { type: "dayPeriod", value: "A.M." },
       { type: "timeZoneName", value: "UTC" },
     ]),
-    +date,
+    date,
   );
   assertEquals(
-    +formatter.partsToDate([
+    formatter.partsToDate([
       { type: "hour", value: "00" },
       { type: "dayPeriod", value: "am" },
       { type: "timeZoneName", value: "UTC" },
     ]),
-    +date,
+    date,
   );
   assertEquals(
-    +formatter.partsToDate([
+    formatter.partsToDate([
       { type: "hour", value: "00" },
       { type: "dayPeriod", value: "am." },
       { type: "timeZoneName", value: "UTC" },
     ]),
-    +date,
+    date,
   );
   assertEquals(
-    +formatter.partsToDate([
+    formatter.partsToDate([
       { type: "hour", value: "00" },
       { type: "dayPeriod", value: "a.m." },
       { type: "timeZoneName", value: "UTC" },
     ]),
-    +date,
+    date,
   );
 });
 Deno.test("dateTimeFormatter.partsToDate() works with pm dayPeriod", () => {
@@ -156,52 +156,52 @@ Deno.test("dateTimeFormatter.partsToDate() works with pm dayPeriod", () => {
   const formatter = new DateTimeFormatter(format);
 
   assertEquals(
-    +formatter.partsToDate([
+    formatter.partsToDate([
       { type: "hour", value: "01" },
       { type: "dayPeriod", value: "PM" },
       { type: "timeZoneName", value: "UTC" },
     ]),
-    +date,
+    date,
   );
   assertEquals(
-    +formatter.partsToDate([
+    formatter.partsToDate([
       { type: "hour", value: "01" },
       { type: "dayPeriod", value: "PM." },
       { type: "timeZoneName", value: "UTC" },
     ]),
-    +date,
+    date,
   );
   assertEquals(
-    +formatter.partsToDate([
+    formatter.partsToDate([
       { type: "hour", value: "01" },
       { type: "dayPeriod", value: "P.M." },
       { type: "timeZoneName", value: "UTC" },
     ]),
-    +date,
+    date,
   );
   assertEquals(
-    +formatter.partsToDate([
+    formatter.partsToDate([
       { type: "hour", value: "01" },
       { type: "dayPeriod", value: "pm" },
       { type: "timeZoneName", value: "UTC" },
     ]),
-    +date,
+    date,
   );
   assertEquals(
-    +formatter.partsToDate([
+    formatter.partsToDate([
       { type: "hour", value: "01" },
       { type: "dayPeriod", value: "pm." },
       { type: "timeZoneName", value: "UTC" },
     ]),
-    +date,
+    date,
   );
   assertEquals(
-    +formatter.partsToDate([
+    formatter.partsToDate([
       { type: "hour", value: "01" },
       { type: "dayPeriod", value: "p.m." },
       { type: "timeZoneName", value: "UTC" },
     ]),
-    +date,
+    date,
   );
 });
 Deno.test("dateTimeFormatter.partsToDate() throws with invalid dayPeriods", () => {
@@ -288,6 +288,6 @@ Deno.test("dateTimeFormatter.partsToDate() sets utc", () => {
   ] as const;
   for (const [format, input, output] of cases) {
     const formatter = new DateTimeFormatter(format);
-    assertEquals(+formatter.partsToDate([...input]), +output);
+    assertEquals(formatter.partsToDate([...input]), output);
   }
 });
