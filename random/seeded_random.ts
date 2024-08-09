@@ -65,17 +65,17 @@ export type SeededRandomState = {
   /**
    * The algorithm. Currently, only `pcg32` is supported.
    */
-  readonly algorithm: "pcg32";
+  algorithm: "pcg32";
   /**
    * The current changeable state of the PCG random number generator.
    * This value changes upon each iteration of the random number generator.
    */
-  readonly state: readonly Byte[] & { length: 8 };
+  state: readonly Byte[] & { length: 8 };
   /**
    * The amount used to increment each iteration of the PCG random number generator.
    * This value affects the random numbers generated but remains constant.
    */
-  readonly inc: readonly Byte[] & { length: 8 };
+  inc: readonly Byte[] & { length: 8 };
 };
 
 /**
@@ -122,7 +122,7 @@ export class SeededRandom {
    * ```
    */
   constructor({ seed }: SeededRandomConstructorOptions) {
-    this.#seed(Uint8Array.from(seed));
+    this.#seed(seed);
 
     // For convenience, allowing destructuring and direct usage in callbacks
     // equivalently to Math.random()
@@ -200,28 +200,19 @@ export class SeededRandom {
   }
 
   set state(value: Readonly<SeededRandomState>) {
-    const dv = new DataView(
-      Uint8Array.from([...value.state, ...value.inc]).buffer,
-    );
-
-    this.#state = BigInt(dv.getBigUint64(0));
-    this.#inc = BigInt(dv.getBigUint64(8));
+    const [state, inc] = getUint64s([...value.state, ...value.inc], 2);
+    this.#state = state!;
+    this.#inc = inc!;
   }
 
   // https://github.com/imneme/pcg-c-basic/blob/bc39cd76ac3d541e618606bcc6e1e5ba5e5e6aa3/pcg_basic.c#L42-L49
-  #seed(seed: Uint8Array): void {
-    if (seed.byteLength !== 16) {
-      throw new RangeError(`Seed must be 16 bytes; got ${seed.byteLength}`);
-    }
-
-    const dv = new DataView(seed.buffer);
-    const initState = BigInt(dv.getBigUint64(0));
-    const initSeq = BigInt(dv.getBigUint64(8));
+  #seed(seed: Uint8Array | (Byte[] & { length: 16 })): void {
+    const [initState, initSeq] = getUint64s(seed, 2);
 
     this.#state = 0n;
-    this.#inc = ((initSeq << 1n) | 1n) % U64_CEIL;
+    this.#inc = ((initSeq! << 1n) | 1n) % U64_CEIL;
     this.#randomUint32();
-    this.#state += initState;
+    this.#state += initState!;
     this.#randomUint32();
   }
 
@@ -279,7 +270,7 @@ export class SeededRandom {
     return bytes;
   }
 
-  // port of minimal version at https://www.pcg-random.org/download.html
+  // https://github.com/imneme/pcg-c-basic/blob/bc39cd76ac3d541e618606bcc6e1e5ba5e5e6aa3/pcg_basic.c#L60-L67
   #randomUint32(): number {
     const oldState = this.#state;
 
@@ -295,9 +286,16 @@ export class SeededRandom {
   }
 }
 
-/**
- * Convert a 32-bit unsigned integer to a float64 in the range [0, 1).
- */
+/** Convert a 32-bit unsigned integer to a float64 in the range [0, 1). */
 function uint32ToFloat64(u32: number): number {
   return u32 / (2 ** 32);
+}
+
+/** Convert byte array to array of `n` uint64s, reading big-endian. */
+function getUint64s(arr: Uint8Array | Byte[], n: number) {
+  const dv = new DataView(Uint8Array.from(arr).buffer);
+  if (dv.byteLength !== n * 8) {
+    throw new Error(`Expected byte length ${n * 8}; got ${dv.byteLength}`);
+  }
+  return Array.from({ length: n }, (_, i) => dv.getBigUint64(i * 8));
 }
