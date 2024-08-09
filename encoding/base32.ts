@@ -2,8 +2,6 @@
 // Copyright (c) 2014 Jameson Little. MIT License.
 // This module is browser compatible.
 
-import { decode, encode } from "./_base32_common.ts";
-
 /**
  * Utilities for
  * {@link https://www.rfc-editor.org/rfc/rfc4648.html#section-6 | base32}
@@ -25,6 +23,7 @@ import { decode, encode } from "./_base32_common.ts";
  *
  * @module
  */
+import { decode, encode } from "./_base32_common.ts";
 
 const lookup: string[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567".split("");
 const revLookup: number[] = [];
