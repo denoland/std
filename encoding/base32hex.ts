@@ -2,6 +2,37 @@
 // Copyright (c) 2014 Jameson Little. MIT License.
 
 /**
+ * Utilities for
+ * {@link https://www.rfc-editor.org/rfc/rfc4648.html#section-7 | base32hex}
+ * encoding and decoding.
+ *
+ * Modified from {@link [base32]}.
+ *
+ * This module is browser compatible.
+ *
+ * ```ts
+ * import { encodeBase32Hex, decodeBase32Hex } from "@std/encoding/base32hex";
+ * import { assertEquals } from "@std/assert";
+ *
+ * assertEquals(encodeBase32Hex("foobar"), "CPNMUOJ1E8======");
+ *
+ * assertEquals(
+ *   decodeBase32Hex("CPNMUOJ1E8======"),
+ *   new TextEncoder().encode("foobar")
+ * );
+ * ```
+ *
+ * @experimental
+ *
+ * @module
+ */
+import { decode, encode } from "./_base32_common.ts";
+
+const lookup: string[] = "0123456789ABCDEFGHIJKLMNOPQRSTUV".split("");
+const revLookup: number[] = [];
+lookup.forEach((c, i) => revLookup[c.charCodeAt(0)] = i);
+
+/**
  * Decodes a base32hex-encoded string.
  *
  * @see {@link https://www.rfc-editor.org/rfc/rfc4648.html#section-7}
@@ -22,13 +53,6 @@
  *
  * @experimental
  */
-
-import { decode, encode } from "./_base32_common.ts";
-
-const lookup: string[] = "0123456789ABCDEFGHIJKLMNOPQRSTUV".split("");
-const revLookup: number[] = [];
-lookup.forEach((c, i) => revLookup[c.charCodeAt(0)] = i);
-
 export function decodeBase32Hex(b32: string): Uint8Array {
   return decode(b32, lookup);
 }
