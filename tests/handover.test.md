@@ -7,22 +7,34 @@ assessor: agents/assessor.md
 
 Onboarding a customer involves getting name and address from the customer, then
 passing to the duty manager to do routing in order that the address get serviced
-by a truck. We need a test scenario to simulate this flow of information
-without the customer agent passing any context to the duty manager, but rather
-conveying information using the filesystem.
+by a truck. We need a test scenario to simulate this flow of information without
+the customer agent passing any context to the duty manager, but rather conveying
+information using the filesystem.
+
+## Actors
+
+- Duty Manager
+- Customer Agent
+
+**Steps:**
+
+- Set up the Duty Manager role and assign it to
+
+Actors section could have a provisioning set of prompts that run as super ?
 
 ## Set up new customer
 
 The customer agent enters in the customer details to create a new customer.
 
-**Before**
+**Actor:** Customer Agent
 
 - [Become customer agent](#become-customer-agent)
 
 **Prompts**
 
 ```md
-Add a new customer named Janis Jopplin who lives at 9 Gona Way, Cambridge, Hamilton.  
+Add a new customer named Janis Jopplin who lives at 9 Gona Way, Cambridge,
+Hamilton.\
 She wants to have a weekly pickup on tuesdays.
 ```
 
@@ -80,4 +92,5 @@ We should do this for a new customer as well as editing and deleting.
 # Customer agents conflict resolution
 
 Two customer agents attempt to change the same customer record at the same time.
-First one wins, but the failed one should get a polite message informing of the difference.
+First one wins, but the failed one should get a polite message informing of the
+difference.
