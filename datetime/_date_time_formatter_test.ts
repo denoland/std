@@ -137,7 +137,7 @@ Deno.test("dateTimeFormatter.partsToDate()", () => {
     +date,
   );
 });
-Deno.test("dateTimeFormatter.partsToDate() works with dayPeriod", () => {
+Deno.test("dateTimeFormatter.partsToDate() works with am dayPeriod", () => {
   const date = new Date("2020-01-01T00:00:00.000Z");
   using _time = new FakeTime(date);
   const format = "HH a";
@@ -191,45 +191,115 @@ Deno.test("dateTimeFormatter.partsToDate() works with dayPeriod", () => {
     +date,
   );
 });
+Deno.test("dateTimeFormatter.partsToDate() works with pm dayPeriod", () => {
+  const date = new Date("2020-01-01T13:00:00.000Z");
+  using _time = new FakeTime(date);
+  const format = "HH a";
+  const formatter = new DateTimeFormatter(format);
+
+  assertEquals(
+    +formatter.partsToDate([
+      { type: "hour", value: "01" },
+      { type: "dayPeriod", value: "PM" },
+      { type: "timeZoneName", value: "UTC" },
+    ]),
+    +date,
+  );
+  assertEquals(
+    +formatter.partsToDate([
+      { type: "hour", value: "01" },
+      { type: "dayPeriod", value: "PM." },
+      { type: "timeZoneName", value: "UTC" },
+    ]),
+    +date,
+  );
+  assertEquals(
+    +formatter.partsToDate([
+      { type: "hour", value: "01" },
+      { type: "dayPeriod", value: "P.M." },
+      { type: "timeZoneName", value: "UTC" },
+    ]),
+    +date,
+  );
+  assertEquals(
+    +formatter.partsToDate([
+      { type: "hour", value: "01" },
+      { type: "dayPeriod", value: "pm" },
+      { type: "timeZoneName", value: "UTC" },
+    ]),
+    +date,
+  );
+  assertEquals(
+    +formatter.partsToDate([
+      { type: "hour", value: "01" },
+      { type: "dayPeriod", value: "pm." },
+      { type: "timeZoneName", value: "UTC" },
+    ]),
+    +date,
+  );
+  assertEquals(
+    +formatter.partsToDate([
+      { type: "hour", value: "01" },
+      { type: "dayPeriod", value: "p.m." },
+      { type: "timeZoneName", value: "UTC" },
+    ]),
+    +date,
+  );
+});
 Deno.test("dateTimeFormatter.partsToDate() throws with invalid dayPeriods", () => {
   const date = new Date("2020-01-01T00:00:00.000Z");
   using _time = new FakeTime(date);
   const format = "HH a";
   const formatter = new DateTimeFormatter(format);
-  assertThrows(() =>
-    formatter.partsToDate([
-      { type: "hour", value: "00" },
-      { type: "dayPeriod", value: "A.M" },
-      { type: "timeZoneName", value: "UTC" },
-    ])
+  assertThrows(
+    () =>
+      formatter.partsToDate([
+        { type: "hour", value: "00" },
+        { type: "dayPeriod", value: "A.M" },
+        { type: "timeZoneName", value: "UTC" },
+      ]),
+    Error,
+    "dayPeriod 'A.M' is not supported.",
   );
-  assertThrows(() =>
-    formatter.partsToDate([
-      { type: "hour", value: "00" },
-      { type: "dayPeriod", value: "a.m" },
-      { type: "timeZoneName", value: "UTC" },
-    ])
+  assertThrows(
+    () =>
+      formatter.partsToDate([
+        { type: "hour", value: "00" },
+        { type: "dayPeriod", value: "a.m" },
+        { type: "timeZoneName", value: "UTC" },
+      ]),
+    Error,
+    "dayPeriod 'a.m' is not supported.",
   );
-  assertThrows(() =>
-    formatter.partsToDate([
-      { type: "hour", value: "00" },
-      { type: "dayPeriod", value: "P.M" },
-      { type: "timeZoneName", value: "UTC" },
-    ])
+  assertThrows(
+    () =>
+      formatter.partsToDate([
+        { type: "hour", value: "00" },
+        { type: "dayPeriod", value: "P.M" },
+        { type: "timeZoneName", value: "UTC" },
+      ]),
+    Error,
+    "dayPeriod 'P.M' is not supported.",
   );
-  assertThrows(() =>
-    formatter.partsToDate([
-      { type: "hour", value: "00" },
-      { type: "dayPeriod", value: "p.m" },
-      { type: "timeZoneName", value: "UTC" },
-    ])
+  assertThrows(
+    () =>
+      formatter.partsToDate([
+        { type: "hour", value: "00" },
+        { type: "dayPeriod", value: "p.m" },
+        { type: "timeZoneName", value: "UTC" },
+      ]),
+    Error,
+    "dayPeriod 'p.m' is not supported.",
   );
-  assertThrows(() =>
-    formatter.partsToDate([
-      { type: "hour", value: "00" },
-      { type: "dayPeriod", value: "noon" },
-      { type: "timeZoneName", value: "UTC" },
-    ])
+  assertThrows(
+    () =>
+      formatter.partsToDate([
+        { type: "hour", value: "00" },
+        { type: "dayPeriod", value: "noon" },
+        { type: "timeZoneName", value: "UTC" },
+      ]),
+    Error,
+    "dayPeriod 'noon' is not supported.",
   );
 });
 
