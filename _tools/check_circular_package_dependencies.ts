@@ -39,6 +39,7 @@ type Mod =
   | "assert"
   | "async"
   | "bytes"
+  | "cache"
   | "cli"
   | "collections"
   | "crypto"
@@ -81,6 +82,7 @@ const ENTRYPOINTS: Record<Mod, string[]> = {
   assert: ["mod.ts"],
   async: ["mod.ts"],
   bytes: ["mod.ts"],
+  cache: ["mod.ts"],
   cli: ["mod.ts"],
   collections: ["mod.ts"],
   crypto: ["mod.ts"],

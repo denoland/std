@@ -36,10 +36,10 @@ Deno.test("dateTimeFormatter.parse()", () => {
   assertEquals(formatter.parse("2020-01-01"), new Date(2020, 0, 1));
 });
 
-Deno.test("dateTimeFormatter.parseToParts()", () => {
+Deno.test("dateTimeFormatter.formatToParts()", () => {
   const format = "yyyy-MM-dd";
   const formatter = new DateTimeFormatter(format);
-  assertEquals(formatter.parseToParts("2020-01-01"), [
+  assertEquals(formatter.formatToParts("2020-01-01"), [
     { type: "year", value: "2020" },
     { type: "literal", value: "-" },
     { type: "month", value: "01" },
@@ -48,21 +48,21 @@ Deno.test("dateTimeFormatter.parseToParts()", () => {
   ]);
 });
 
-Deno.test("dateTimeFormatter.parseToParts() throws on an empty string", () => {
+Deno.test("dateTimeFormatter.formatToParts() throws on an empty string", () => {
   const format = "yyyy-MM-dd";
   const formatter = new DateTimeFormatter(format);
   assertThrows(
-    () => formatter.parseToParts(""),
+    () => formatter.formatToParts(""),
     Error,
-    "value not valid for token",
+    "value not valid for part",
   );
 });
 
-Deno.test("dateTimeFormatter.parseToParts() throws on a string which exceeds the format", () => {
+Deno.test("dateTimeFormatter.formatToParts() throws on a string which exceeds the format", () => {
   const format = "yyyy-MM-dd";
   const formatter = new DateTimeFormatter(format);
   assertThrows(
-    () => formatter.parseToParts("2020-01-01T00:00:00.000Z"),
+    () => formatter.formatToParts("2020-01-01T00:00:00.000Z"),
     Error,
     "datetime string was not fully parsed!",
   );

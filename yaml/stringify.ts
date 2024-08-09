@@ -4,7 +4,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-import { dump } from "./_dumper.ts";
+import { DumperState } from "./_dumper_state.ts";
 import { SCHEMA_MAP, type SchemaType } from "./_schema.ts";
 import type { StyleVariant } from "./_type.ts";
 
@@ -110,5 +110,16 @@ export function stringify(
   data: unknown,
   options: StringifyOptions = {},
 ): string {
-  return dump(data, { ...options, schema: SCHEMA_MAP.get(options.schema!) });
+  const state = new DumperState({
+    ...options,
+    schema: SCHEMA_MAP.get(options.schema!),
+  });
+
+  // deno-lint-ignore no-explicit-any
+  if (state.useAnchors) state.getDuplicateReferences(data as any);
+
+  if (state.writeNode(0, data, { block: true, compact: true, isKey: false })) {
+    return `${state.dump}\n`;
+  }
+  return "";
 }

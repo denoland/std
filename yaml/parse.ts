@@ -4,7 +4,8 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-import { load, loadDocuments } from "./_loader.ts";
+import { isEOL } from "./_chars.ts";
+import { LoaderState } from "./_loader_state.ts";
 import { SCHEMA_MAP, type SchemaType } from "./_schema.ts";
 
 export type { SchemaType };
@@ -29,6 +30,23 @@ export interface ParseOptions {
    * {@linkcode Error} as its only argument.
    */
   onWarning?(error: Error): void;
+}
+
+function sanitizeInput(input: string) {
+  input = String(input);
+
+  if (input.length > 0) {
+    // Add tailing `\n` if not exists
+    if (!isEOL(input.charCodeAt(input.length - 1))) input += "\n";
+
+    // Strip BOM
+    if (input.charCodeAt(0) === 0xfeff) input = input.slice(1);
+  }
+
+  // Use 0 as string terminator. That significantly simplifies bounds check.
+  input += "\0";
+
+  return input;
 }
 
 /**
@@ -58,7 +76,19 @@ export function parse(
   content: string,
   options: ParseOptions = {},
 ): unknown {
-  return load(content, { ...options, schema: SCHEMA_MAP.get(options.schema!) });
+  content = sanitizeInput(content);
+  const state = new LoaderState(content, {
+    ...options,
+    schema: SCHEMA_MAP.get(options.schema!),
+  });
+  const documentGenerator = state.readDocuments();
+  const document = documentGenerator.next().value;
+  if (!documentGenerator.next().done) {
+    throw new SyntaxError(
+      "expected a single document in the stream, but found more",
+    );
+  }
+  return document ?? null;
 }
 
 /**
@@ -89,8 +119,10 @@ export function parse(
  * @returns Array of parsed documents.
  */
 export function parseAll(content: string, options: ParseOptions = {}): unknown {
-  return loadDocuments(content, {
+  content = sanitizeInput(content);
+  const state = new LoaderState(content, {
     ...options,
     schema: SCHEMA_MAP.get(options.schema!),
   });
+  return [...state.readDocuments()];
 }
