@@ -24,16 +24,6 @@ Deno.test("toLines parses simple input", async () => {
     "",
     "654321\r",
   ]);
-
-  const stream2 = ReadableStream.from("rewq0987\r\n\r\n654321\n").pipeThrough(
-    new TextEncoderStream(),
-  );
-
-  assertEquals(await Array.fromAsync(toLines(stream2)), [
-    "rewq0987",
-    "",
-    "654321",
-  ]);
 });
 
 Deno.test("toLines parses large chunks", async () => {

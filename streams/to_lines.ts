@@ -3,42 +3,37 @@
 import { TextLineStream } from "./text_line_stream.ts";
 
 /**
- * Converts a ReadableStream of `Uint8Array` or `string` into an
- * `AsyncGenerator` of `string`, where each value is divided by a newline at
- * `\n` or `\r\n`. Trimming the last line if it is empty.
+ * Converts a {@linkcode ReadableStream} of {@linkcode Uint8Array}s into one of
+ * lines delimited by `\n` or `\r\n`. Trims the last line if empty.
  *
- * @param readable A `ReadableStream` of `Uint8Array` or `string`.
- * @param options An optional `PipeOptions`.
- * @returns A `ReadableStream<string>`
+ * @param readable A stream of {@linkcode Uint8Array}s.
+ * @param options Stream options.
+ * @returns A stream of lines delimited by `\n`.
  *
- * @example JSON Lines
+ * @example Usage
  * ```ts
  * import { toLines } from "@std/streams/to-lines";
  * import { assertEquals } from "@std/assert/assert-equals";
  *
  * const readable = ReadableStream.from([
- *   '{"name": "Alice", "age": ',
- *   '30}\r\n{"name": "Bob", "age"',
- *   ": 25}\n",
- * ])
- *   .pipeThrough(new TextEncoderStream());
+ *   "qwertzu",
+ *   "iopasd\r\nmnbvc",
+ *   "xylk\rjhgfds\napoiuzt\r",
+ *   "qwr\r09ei\rqwrjiowqr\r",
+ * ]).pipeThrough(new TextEncoderStream());
  *
- * type Person = { name: string, age: number };
- *
- * const people: Person[] = []
- * for await (const line of toLines(readable)) {
- *   people.push(JSON.parse(line) as Person)
- * }
- *
- * assertEquals(
- *   people,
- *   [{ "name": "Alice", "age": 30 }, { "name": "Bob", "age": 25 }],
- * );
+ * assertEquals(await Array.fromAsync(toLines(readable)), [
+ *   "qwertzuiopasd",
+ *   "mnbvcxylk\rjhgfds",
+ *   "apoiuzt\rqwr\r09ei\rqwrjiowqr",
+ * ]);
  * ```
+ *
+ * @experimental
  */
 export function toLines(
   readable: ReadableStream<Uint8Array>,
-  options?: PipeOptions,
+  options?: StreamPipeOptions,
 ): ReadableStream<string> {
   return readable
     .pipeThrough(new TextDecoderStream())
