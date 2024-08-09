@@ -94,48 +94,6 @@ Deno.test("dateTimeFormatter.partsToDate()", () => {
     ]),
     +date,
   );
-  assertEquals(
-    +formatter.partsToDate([
-      { type: "year", value: "2020" },
-      { type: "month", value: "01" },
-      { type: "day", value: "01" },
-      { type: "hour", value: "00" },
-      { type: "minute", value: "00" },
-      { type: "second", value: "00" },
-      { type: "fractionalSecond", value: "000" },
-      { type: "dayPeriod", value: "am" },
-      { type: "timeZoneName", value: "UTC" },
-    ]),
-    +date,
-  );
-  assertEquals(
-    +formatter.partsToDate([
-      { type: "year", value: "2020" },
-      { type: "month", value: "01" },
-      { type: "day", value: "01" },
-      { type: "hour", value: "00" },
-      { type: "minute", value: "00" },
-      { type: "second", value: "00" },
-      { type: "fractionalSecond", value: "000" },
-      { type: "dayPeriod", value: "a.m." },
-      { type: "timeZoneName", value: "UTC" },
-    ]),
-    +date,
-  );
-  assertEquals(
-    +formatter.partsToDate([
-      { type: "year", value: "2020" },
-      { type: "month", value: "01" },
-      { type: "day", value: "01" },
-      { type: "hour", value: "00" },
-      { type: "minute", value: "00" },
-      { type: "second", value: "00" },
-      { type: "fractionalSecond", value: "000" },
-      { type: "dayPeriod", value: "am." },
-      { type: "timeZoneName", value: "UTC" },
-    ]),
-    +date,
-  );
 });
 Deno.test("dateTimeFormatter.partsToDate() works with am dayPeriod", () => {
   const date = new Date("2020-01-01T00:00:00.000Z");
@@ -247,8 +205,6 @@ Deno.test("dateTimeFormatter.partsToDate() works with pm dayPeriod", () => {
   );
 });
 Deno.test("dateTimeFormatter.partsToDate() throws with invalid dayPeriods", () => {
-  const date = new Date("2020-01-01T00:00:00.000Z");
-  using _time = new FakeTime(date);
   const format = "HH a";
   const formatter = new DateTimeFormatter(format);
   assertThrows(
