@@ -4,6 +4,7 @@
 import { assertEquals, assertExists, assertThrows } from "@std/assert";
 import { decodeBase32, encodeBase32 } from "./base32.ts";
 
+// Test vectors from https://www.rfc-editor.org/rfc/rfc4648.html#section-10
 const testCases = [
   ["", ""],
   ["f", "MY======"],
