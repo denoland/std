@@ -10,6 +10,8 @@ const outcome = z
   .describe(
     'the result of a single test run along with chain of thought reasoning for how the outcome was reached',
   )
+
+type Run = z.infer<typeof run>
 const run = z
   .object({
     commit: md5.describe('the commit of the branch this run completed on'),
@@ -39,7 +41,9 @@ const summary = z
       .int()
       .gte(0)
       .default(0)
-      .describe('the number of iterations that have completed'),
+      .describe(
+        'the lowest number of iterations of a test that have completed.  Tests complete asynchronously, so one test might complete all its planned iterations before another test.  The overall progress is based on the lowest number of completed iterations',
+      ),
   })
   .describe(
     'A summary of the test results combining all individual results into a ratio',
@@ -113,7 +117,7 @@ export const testSuiteSchema = z
       tests: z
         .number()
         .int()
-        .gt(0)
+        .gte(0)
         .describe('the number of tests specified in the test file'),
     })
       .refine((value) => value.completed <= value.iterations, {
@@ -125,3 +129,59 @@ export const testSuiteSchema = z
     message: 'the number of tests cannot be less than the number of results',
     path: ['results'],
   })
+
+export const create = (path: string, hash: string, iterations: number) => {
+  const blank: TestSuiteSchema = {
+    summary: {
+      timestamp: Date.now(),
+      path,
+      hash,
+      tests: 0,
+      elapsed: 0,
+      iterations,
+      completed: 0,
+    },
+    results: [],
+  }
+  return testSuiteSchema.parse(blank)
+}
+
+export const addTest = (base: TestSuiteSchema, expectations: number) => {
+  const copy = testSuiteSchema.parse(base)
+  const test: SingleTestSchema = {
+    summary: {
+      timestamp: Date.now(),
+      elapsed: 0,
+      iterations: copy.summary.iterations,
+      expectations,
+      completed: 0,
+      successes: Array(expectations).fill(0),
+    },
+    runs: [],
+  }
+  copy.results.push(test)
+  copy.summary.tests++
+  return testSuiteSchema.parse(copy)
+}
+
+export const addRun = (base: TestSuiteSchema, index: number, run: Run) => {
+  const copy = testSuiteSchema.parse(base)
+  const test = copy.results[index]
+  test.summary.completed++
+  test.summary.elapsed = Date.now() - test.summary.timestamp
+  run.outcomes.forEach(({ outcome }, index) => {
+    if (outcome) {
+      test.summary.successes[index]++
+    }
+  })
+  test.runs.push(run)
+  let leastCompleted = Number.MAX_SAFE_INTEGER
+  for (const _test of copy.results) {
+    if (_test.summary.completed < leastCompleted) {
+      leastCompleted = _test.summary.completed
+    }
+  }
+  copy.summary.completed = leastCompleted
+  copy.summary.elapsed = Date.now() - copy.summary.timestamp
+  return testSuiteSchema.parse(copy)
+}
