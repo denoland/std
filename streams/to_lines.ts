@@ -8,12 +8,12 @@ import { TextLineStream } from "./text_line_stream.ts";
  *
  * @param readable A stream of {@linkcode Uint8Array}s.
  * @param options Stream options.
- * @returns A stream of lines delimited by `\n`.
+ * @returns A stream of lines delimited by `\n` or `\r\n`.
  *
  * @example Usage
  * ```ts
  * import { toLines } from "@std/streams/to-lines";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert/equals";
  *
  * const readable = ReadableStream.from([
  *   "qwertzu",
@@ -25,7 +25,7 @@ import { TextLineStream } from "./text_line_stream.ts";
  * assertEquals(await Array.fromAsync(toLines(readable)), [
  *   "qwertzuiopasd",
  *   "mnbvcxylk\rjhgfds",
- *   "apoiuzt\rqwr\r09ei\rqwrjiowqr",
+ *   "apoiuzt\rqwr\r09ei\rqwrjiowqr\r",
  * ]);
  * ```
  *
