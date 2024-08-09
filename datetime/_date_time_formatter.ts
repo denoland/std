@@ -462,7 +462,21 @@ export class DateTimeFormatter {
           break;
         }
         case "dayPeriod": {
-          value = /^(A|P)M/.exec(string)?.[0] as string;
+          value = /^[AP](?:\.M\.|M\.?)/i.exec(string)?.[0] as string;
+          switch (value.toUpperCase()) {
+            case "AM":
+            case "AM.":
+            case "A.M.":
+              value = "AM";
+              break;
+            case "PM":
+            case "PM.":
+            case "P.M.":
+              value = "PM";
+              break;
+            default:
+              throw new Error(`dayPeriod '${value}' is not supported.`);
+          }
           break;
         }
         case "literal": {
@@ -542,7 +556,24 @@ export class DateTimeFormatter {
           const dayPeriod = parts.find(
             (part: DateTimeFormatPart) => part.type === "dayPeriod",
           );
-          if (dayPeriod?.value === "PM") value += 12;
+          if (dayPeriod) {
+            switch (dayPeriod.value.toUpperCase()) {
+              case "AM":
+              case "AM.":
+              case "A.M.":
+                // ignore
+                break;
+              case "PM":
+              case "PM.":
+              case "P.M.":
+                value += 12;
+                break;
+              default:
+                throw new Error(
+                  `dayPeriod '${dayPeriod.value}' is not supported.`,
+                );
+            }
+          }
           utc ? date.setUTCHours(value) : date.setHours(value);
           break;
         }
