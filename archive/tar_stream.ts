@@ -25,24 +25,39 @@ export type TarStreamInput = TarStreamFile | TarStreamDir;
 
 /**
  * The options that can go along with a file or directory.
- * @param mode An octal number in ASCII.
- * @param uid An octal number in ASCII.
- * @param gid An octal number in ASCII.
- * @param mtime A number of seconds since the start of epoch. Avoid negative
- * values.
- * @param uname An ASCII string. Should be used in preference of uid.
- * @param gname An ASCII string. Should be used in preference of gid.
- * @param devmajor The major number for character device.
- * @param devminor The minor number for block device entry.
  */
 export interface TarStreamOptions {
+  /**
+   * An octal number in ASCII
+   */
   mode: string;
+  /**
+   * An octal number in ASCII.
+   */
   uid: string;
+  /**
+   * An octal number in ASCII.
+   */
   gid: string;
+  /**
+   * A number of seconds since the start of epoch. Avoid negative values.
+   */
   mtime: number;
+  /**
+   * An ASCII string. Should be used in preference of uid.
+   */
   uname: string;
+  /**
+   * An ASCII string. Should be used in preference of gid.
+   */
   gname: string;
+  /**
+   * The major number for character device.
+   */
   devmajor: string;
+  /**
+   * The minor number for block device entry.
+   */
   devminor: string;
 }
 
