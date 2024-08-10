@@ -212,8 +212,8 @@ export class TarStream implements TransformStream<TarStreamInput, Uint8Array> {
             yield value;
           }
           if (chunk.size !== size) {
-            throw new Error(
-              "Invalid Tarball! Provided size did not match bytes read from provided iterable.",
+            throw new RangeError(
+              "Provided size did not match bytes read from provided iterable",
             );
           }
           if (chunk.size % 512) {
@@ -281,13 +281,13 @@ export function parsePathname(
   }
 
   if (name.length > 256) {
-    throw new Error("Invalid Pathname! Pathname cannot exceed 256 bytes.");
+    throw new RangeError("Pathname cannot exceed 256 bytes");
   }
 
   // If length of last part is > 100, then there's no possible answer to split the path
   let suitableSlashPos = Math.max(0, name.lastIndexOf(SLASH_CODE_POINT)); // always holds position of '/'
   if (name.length - suitableSlashPos > 100) {
-    throw new Error("Invalid Filename! Filename cannot exceed 100 bytes.");
+    throw new RangeError("Filename cannot exceed 100 bytes");
   }
 
   for (

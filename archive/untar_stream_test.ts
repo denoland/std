@@ -234,10 +234,10 @@ Deno.test("UnTarStream() with invalid checksum", async () => {
     }
   } catch (error) {
     threw = true;
-    assert(error instanceof Error);
+    assert(error instanceof SyntaxError);
     assertEquals(
       error.message,
-      "Invalid Tarball. Header failed to pass checksum.",
+      "Tarball header failed to pass checksum",
     );
   }
   assertEquals(threw, true);

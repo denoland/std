@@ -109,7 +109,9 @@ export class UnTarStream
 
     this.#gen = async function* () {
       const buffer: Uint8Array[] = [];
-      for await (const chunk of readable.pipeThrough(new FixedChunkStream(512))) {
+      for await (
+        const chunk of readable.pipeThrough(new FixedChunkStream(512))
+      ) {
         if (chunk.length !== 512) {
           throw new Error("Tarball has an unexpected number of bytes.");
         }
@@ -142,7 +144,7 @@ export class UnTarStream
       if (
         checksum.reduce((x, y) => x + y) !==
           parseInt(decoder.decode(value.slice(148, 156 - 2)), 8)
-      ) throw new Error("Invalid Tarball. Header failed to pass checksum.");
+      ) throw new SyntaxError("Tarball header failed to pass checksum");
 
       // Decode Header
       let header: OldStyleFormat | PosixUstarFormat = {

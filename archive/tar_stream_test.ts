@@ -276,10 +276,10 @@ Deno.test("TarStream() with mismatching sizes", async () => {
     for await (const _ of readable) {}
   } catch (error) {
     threw = true;
-    assert(error instanceof Error);
+    assert(error instanceof RangeError);
     assertEquals(
       error.message,
-      "Invalid Tarball! Provided size did not match bytes read from provided iterable.",
+      "Provided size did not match bytes read from provided iterable",
     );
   }
   assertEquals(threw, true);
@@ -291,10 +291,10 @@ Deno.test("parsePathname() with too long path", () => {
     parsePathname("0".repeat(300));
   } catch (error) {
     threw = true;
-    assert(error instanceof Error);
+    assert(error instanceof RangeError);
     assertEquals(
       error.message,
-      "Invalid Pathname! Pathname cannot exceed 256 bytes.",
+      "Pathname cannot exceed 256 bytes",
     );
   }
   assertEquals(threw, true);
