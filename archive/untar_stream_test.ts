@@ -22,13 +22,12 @@ Deno.test("expandTarArchiveCheckingHeaders", async () => {
 
   const pathnames: string[] = [];
   for await (const item of readable) {
-    pathnames.push(item.pathname);
-    item.readable?.cancel();
+    if (item.type === "header") pathnames.push(item.pathname);
   }
   assertEquals(pathnames, ["./potato", "./text.txt"]);
 });
 
-Deno.test("expandTarArchiveCheckingBodiesDefaultStream", async () => {
+Deno.test("expandTarArchiveCheckingBodies", async () => {
   const text = new TextEncoder().encode("Hello World!");
 
   const readable = ReadableStream.from<TarStreamInput>([
@@ -44,58 +43,15 @@ Deno.test("expandTarArchiveCheckingBodiesDefaultStream", async () => {
     .pipeThrough(new TarStream())
     .pipeThrough(new UnTarStream());
 
+  const buffer = new Uint8Array(text.length);
+  let offset = 0;
   for await (const item of readable) {
-    if (item.readable) {
-      const buffer = new Uint8Array(text.length);
-      let offset = 0;
-      const reader = item.readable.getReader();
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) {
-          break;
-        }
-        buffer.set(value, offset);
-        offset += value.length;
-      }
-      assertEquals(buffer, text);
+    if (item.type === "data") {
+      buffer.set(item.data, offset);
+      offset += item.data.length;
     }
   }
-});
-
-Deno.test("expandTarArchiveCheckingBodiesByteStream", async () => {
-  const text = new TextEncoder().encode("Hello World!");
-
-  const readable = ReadableStream.from<TarStreamInput>([
-    {
-      pathname: "./potato",
-    },
-    {
-      pathname: "./text.txt",
-      size: text.length,
-      readable: ReadableStream.from([text.slice()]),
-    },
-  ])
-    .pipeThrough(new TarStream())
-    .pipeThrough(new UnTarStream());
-
-  for await (const item of readable) {
-    if (item.readable) {
-      const buffer = new Uint8Array(text.length);
-      let offset = 0;
-      const reader = item.readable.getReader({ mode: "byob" });
-      while (true) {
-        const { done, value } = await reader.read(
-          new Uint8Array(Math.ceil(Math.random() * 1024)),
-        );
-        if (done) {
-          break;
-        }
-        buffer.set(value, offset);
-        offset += value.length;
-      }
-      assertEquals(buffer, text);
-    }
-  }
+  assertEquals(buffer, text);
 });
 
 Deno.test("UnTarStream() with size equals to multiple of 512", async () => {
@@ -115,16 +71,14 @@ Deno.test("UnTarStream() with size equals to multiple of 512", async () => {
     .pipeThrough(new TarStream())
     .pipeThrough(new UnTarStream());
 
-  for await (const item of readable) {
-    if (item.readable) {
-      assertEquals(
-        Uint8Array.from(
-          (await Array.fromAsync(item.readable)).map((x) => [...x]).flat(),
-        ),
-        data,
-      );
-    }
-  }
+  assertEquals(
+    concat(
+      (await Array.fromAsync(readable)).filter((x) => x.type === "data").map(
+        (x) => x.data,
+      ),
+    ),
+    data,
+  );
 });
 
 Deno.test("UnTarStream() with invalid size", async () => {
@@ -147,9 +101,8 @@ Deno.test("UnTarStream() with invalid size", async () => {
 
   let threw = false;
   try {
-    for await (const entry of readable) {
-      await entry.readable?.cancel();
-    }
+    // deno-lint-ignore no-empty
+    for await (const _ of readable) {}
   } catch (error) {
     threw = true;
     assert(error instanceof Error);
@@ -178,9 +131,8 @@ Deno.test("UnTarStream() with invalid ending", async () => {
 
   let threw = false;
   try {
-    for await (const entry of readable) {
-      await entry.readable?.cancel();
-    }
+    // deno-lint-ignore no-empty
+    for await (const _ of readable) {}
   } catch (error) {
     threw = true;
     assert(error instanceof Error);
@@ -198,9 +150,8 @@ Deno.test("UnTarStream() with too small size", async () => {
 
   let threw = false;
   try {
-    for await (const entry of readable) {
-      await entry.readable?.cancel();
-    }
+    // deno-lint-ignore no-empty
+    for await (const _ of readable) {}
   } catch (error) {
     threw = true;
     assert(error instanceof Error);
@@ -229,9 +180,8 @@ Deno.test("UnTarStream() with invalid checksum", async () => {
 
   let threw = false;
   try {
-    for await (const entry of readable) {
-      await entry.readable?.cancel();
-    }
+    // deno-lint-ignore no-empty
+    for await (const _ of readable) {}
   } catch (error) {
     threw = true;
     assert(error instanceof SyntaxError);

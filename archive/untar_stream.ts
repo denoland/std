@@ -2,15 +2,6 @@
 import { FixedChunkStream } from "@std/streams";
 
 /**
- * The interface extracted from the archive.
- */
-export interface TarStreamEntry {
-  pathname: string;
-  header: TarStreamHeader;
-  readable?: ReadableStream<Uint8Array>;
-}
-
-/**
  * The original tar	archive	header format.
  */
 export interface OldStyleFormat {
@@ -52,7 +43,24 @@ export interface PosixUstarFormat {
 /**
  * The header of an entry in the archive.
  */
-export type TarStreamHeader = OldStyleFormat | PosixUstarFormat;
+export interface TarStreamHeader {
+  type: "header";
+  pathname: string;
+  header: OldStyleFormat | PosixUstarFormat;
+}
+
+/**
+ * The data belonging to the last entry returned.
+ */
+export interface TarStreamData {
+  type: "data";
+  data: Uint8Array;
+}
+
+/**
+ * The type extracted from the archive.
+ */
+export type TarStreamChunk = TarStreamHeader | TarStreamData;
 
 /**
  * ### Overview
@@ -94,9 +102,8 @@ export type TarStreamHeader = OldStyleFormat | PosixUstarFormat;
  * ```
  */
 export class UnTarStream
-  implements TransformStream<Uint8Array, TarStreamEntry> {
-  #lock = false;
-  #readable: ReadableStream<TarStreamEntry>;
+  implements TransformStream<Uint8Array, TarStreamChunk> {
+  #readable: ReadableStream<TarStreamChunk>;
   #writable: WritableStream<Uint8Array>;
   #gen: AsyncGenerator<Uint8Array>;
   constructor() {
@@ -128,13 +135,9 @@ export class UnTarStream
     }();
   }
 
-  async *#untar(): AsyncGenerator<TarStreamEntry> {
+  async *#untar(): AsyncGenerator<TarStreamChunk> {
     const decoder = new TextDecoder();
     while (true) {
-      while (this.#lock) {
-        await new Promise((a) => setTimeout(a, 0));
-      }
-
       const { done, value } = await this.#gen.next();
       if (done) break;
 
@@ -192,64 +195,33 @@ export class UnTarStream
       }
 
       yield {
+        type: "header",
         pathname: ("prefix" in header && header.prefix.length
           ? header.prefix + "/"
           : "") + header.name,
         header,
-        readable: !["1", "2", "3", "4", "5", "6"].includes(header.typeflag)
-          ? this.#readableFile(header.size)
-          : undefined,
       };
+      if (!["1", "2", "3", "4", "5", "6"].includes(header.typeflag)) {
+        for await (const data of this.#genFile(header.size)) {
+          yield { type: "data", data };
+        }
+      }
     }
-  }
-
-  #readableFile(size: number): ReadableStream<Uint8Array> {
-    const gen = this.#genFile(size);
-    return new ReadableStream({
-      type: "bytes",
-      async pull(controller) {
-        const { done, value } = await gen.next();
-        if (done) {
-          controller.close();
-          controller.byobRequest?.respond(0);
-        } else if (controller.byobRequest?.view) {
-          const buffer = new Uint8Array(controller.byobRequest.view.buffer);
-          const size = buffer.length;
-          if (value.length > size) {
-            buffer.set(value.slice(0, size));
-            controller.byobRequest.respond(size);
-            controller.enqueue(value.slice(size));
-          } else {
-            buffer.set(value);
-            controller.byobRequest.respond(value.length);
-          }
-        } else controller.enqueue(value);
-      },
-      async cancel() {
-        // deno-lint-ignore no-empty
-        for await (const _ of gen) {}
-      },
-    });
   }
 
   async *#genFile(size: number): AsyncGenerator<Uint8Array> {
-    this.#lock = true;
     for (let i = Math.ceil(size / 512); i > 0; --i) {
       const { done, value } = await this.#gen.next();
-      if (done) {
-        this.#lock = false;
-        throw new Error("Unexpected end of Tarball");
-      }
+      if (done) throw new Error("Unexpected end of Tarball");
       if (i === 1 && size % 512) yield value.slice(0, size % 512);
       else yield value;
     }
-    this.#lock = false;
   }
 
   /**
    * The ReadableStream
    */
-  get readable(): ReadableStream<TarStreamEntry> {
+  get readable(): ReadableStream<TarStreamChunk> {
     return this.#readable;
   }
 
