@@ -1,4 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+import { FixedChunkStream } from "@std/streams";
+
 /**
  * The interface extracted from the archive.
  */
@@ -106,28 +108,15 @@ export class UnTarStream
     this.#writable = writable;
 
     this.#gen = async function* () {
-      let push: Uint8Array | undefined;
       const buffer: Uint8Array[] = [];
-      for await (let chunk of readable) {
-        if (push) {
-          const concat = new Uint8Array(push.length + chunk.length);
-          concat.set(push);
-          concat.set(chunk, push.length);
-          chunk = concat;
+      for await (let chunk of readable.pipeThrough(new FixedChunkStream(512))) {
+        if (chunk.length !== 512) {
+          throw new Error("Tarball has an unexpected number of bytes.");
         }
 
-        for (let i = 512; i <= chunk.length; i += 512) {
-          buffer.push(chunk.slice(i - 512, i));
-        }
-
-        const remainder = -chunk.length % 512;
-        push = remainder ? chunk.slice(remainder) : undefined;
-
-        while (buffer.length > 2) {
-          yield buffer.shift()!;
-        }
+        buffer.push(chunk);
+        if (buffer.length > 2) yield buffer.shift()!;
       }
-      if (push) throw new Error("Tarball has an unexpected number of bytes.");
       if (buffer.length < 2) {
         throw new Error("Tarball was too small to be valid.");
       }
