@@ -18,7 +18,7 @@ Deno.test("TarStream() with default stream", async () => {
     {
       pathname: "./text.txt",
       size: text.length,
-      iterable: [text.slice()],
+      readable: ReadableStream.from([text.slice()]),
     },
   ])
     .pipeThrough(new TarStream())
@@ -45,7 +45,7 @@ Deno.test("TarStream() with byte stream", async () => {
     {
       pathname: "./text.txt",
       size: text.length,
-      iterable: [text.slice()],
+      readable: ReadableStream.from([text.slice()]),
     },
   ])
     .pipeThrough(new TarStream())
@@ -71,7 +71,7 @@ Deno.test("TarStream() with negative size", async () => {
     {
       pathname: "name",
       size: -text.length,
-      iterable: [text.slice()],
+      readable: ReadableStream.from([text.slice()]),
     },
   ])
     .pipeThrough(new TarStream());
@@ -97,7 +97,7 @@ Deno.test("TarStream() with 65 GiB size", async () => {
     {
       pathname: "name",
       size,
-      iterable,
+      readable: ReadableStream.from(iterable),
     },
   ])
     .pipeThrough(new TarStream());
@@ -123,7 +123,7 @@ Deno.test("TarStream() with NaN size", async () => {
     {
       pathname: "name",
       size,
-      iterable,
+      readable: ReadableStream.from(iterable),
     },
   ])
     .pipeThrough(new TarStream());
@@ -266,7 +266,7 @@ Deno.test("TarStream() with mismatching sizes", async () => {
     {
       pathname: "potato",
       size: text.length + 1,
-      iterable: [text.slice()],
+      readable: ReadableStream.from([text.slice()]),
     },
   ]).pipeThrough(new TarStream());
 

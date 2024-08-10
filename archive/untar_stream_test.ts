@@ -7,14 +7,14 @@ import { assert, assertEquals } from "../assert/mod.ts";
 Deno.test("expandTarArchiveCheckingHeaders", async () => {
   const text = new TextEncoder().encode("Hello World!");
 
-  const readable = ReadableStream.from([
+  const readable = ReadableStream.from<TarStreamInput>([
     {
       pathname: "./potato",
     },
     {
       pathname: "./text.txt",
       size: text.length,
-      iterable: [text],
+      readable: ReadableStream.from([text]),
     },
   ])
     .pipeThrough(new TarStream())
@@ -31,14 +31,14 @@ Deno.test("expandTarArchiveCheckingHeaders", async () => {
 Deno.test("expandTarArchiveCheckingBodiesDefaultStream", async () => {
   const text = new TextEncoder().encode("Hello World!");
 
-  const readable = ReadableStream.from([
+  const readable = ReadableStream.from<TarStreamInput>([
     {
       pathname: "./potato",
     },
     {
       pathname: "./text.txt",
       size: text.length,
-      iterable: [text.slice()],
+      readable: ReadableStream.from([text.slice()]),
     },
   ])
     .pipeThrough(new TarStream())
@@ -65,14 +65,14 @@ Deno.test("expandTarArchiveCheckingBodiesDefaultStream", async () => {
 Deno.test("expandTarArchiveCheckingBodiesByteStream", async () => {
   const text = new TextEncoder().encode("Hello World!");
 
-  const readable = ReadableStream.from([
+  const readable = ReadableStream.from<TarStreamInput>([
     {
       pathname: "./potato",
     },
     {
       pathname: "./text.txt",
       size: text.length,
-      iterable: [text.slice()],
+      readable: ReadableStream.from([text.slice()]),
     },
   ])
     .pipeThrough(new TarStream())
@@ -109,7 +109,7 @@ Deno.test("UnTarStream() with size equals to multiple of 512", async () => {
     {
       pathname: "name",
       size,
-      iterable: [data.slice()],
+      readable: ReadableStream.from([data.slice()]),
     },
   ])
     .pipeThrough(new TarStream())
@@ -132,7 +132,7 @@ Deno.test("UnTarStream() with invalid size", async () => {
     {
       pathname: "newFile.txt",
       size: 512,
-      iterable: [new Uint8Array(512).fill(97)],
+      readable: ReadableStream.from([new Uint8Array(512).fill(97)]),
     },
   ])
     .pipeThrough(new TarStream())
@@ -165,7 +165,7 @@ Deno.test("UnTarStream() with invalid ending", async () => {
         {
           pathname: "newFile.txt",
           size: 512,
-          iterable: [new Uint8Array(512).fill(97)],
+          readable: ReadableStream.from([new Uint8Array(512).fill(97)]),
         },
       ])
         .pipeThrough(new TarStream()),
@@ -216,7 +216,7 @@ Deno.test("UnTarStream() with invalid checksum", async () => {
         {
           pathname: "newFile.txt",
           size: 512,
-          iterable: [new Uint8Array(512).fill(97)],
+          readable: ReadableStream.from([new Uint8Array(512).fill(97)]),
         },
       ])
         .pipeThrough(new TarStream()),

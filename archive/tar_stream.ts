@@ -5,7 +5,7 @@
 export interface TarStreamFile {
   pathname: string | [Uint8Array, Uint8Array];
   size: number;
-  iterable: Iterable<Uint8Array> | AsyncIterable<Uint8Array>;
+  readable: ReadableStream<Uint8Array>;
   options?: Partial<TarStreamOptions>;
 }
 
@@ -207,7 +207,7 @@ export class TarStream implements TransformStream<TarStreamInput, Uint8Array> {
 
         if ("size" in chunk) {
           let size = 0;
-          for await (const value of chunk.iterable) {
+          for await (const value of chunk.readable) {
             size += value.length;
             yield value;
           }
