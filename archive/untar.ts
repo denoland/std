@@ -252,15 +252,15 @@ export class TarEntry implements Reader {
  */
 export class Untar {
   /** Internal reader. */
-  reader: Reader;
+  #reader: Reader;
   /** Internal block. */
-  block: Uint8Array;
+  #block: Uint8Array;
   #entry: TarEntry | undefined;
 
   /** Constructs a new instance. */
   constructor(reader: Reader) {
-    this.reader = reader;
-    this.block = new Uint8Array(HEADER_LENGTH);
+    this.#reader = reader;
+    this.#block = new Uint8Array(HEADER_LENGTH);
   }
 
   #checksum(header: Uint8Array): number {
@@ -276,12 +276,12 @@ export class Untar {
   }
 
   async #getAndValidateHeader(): Promise<TarHeader | null> {
-    await readBlock(this.reader, this.block);
-    const header = parseHeader(this.block);
+    await readBlock(this.#reader, this.#block);
+    const header = parseHeader(this.#block);
 
     // calculate the checksum
     const decoder = new TextDecoder();
-    const checksum = this.#checksum(this.block);
+    const checksum = this.#checksum(this.#block);
 
     if (parseInt(decoder.decode(header.checksum), 8) !== checksum) {
       if (checksum === initialChecksum) {
@@ -355,7 +355,7 @@ export class Untar {
 
     const meta = this.#getMetadata(header);
 
-    this.#entry = new TarEntry(meta, this.reader);
+    this.#entry = new TarEntry(meta, this.#reader);
 
     return this.#entry;
   }

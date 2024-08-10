@@ -1,6 +1,6 @@
 {
   "name": "@std/streams",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "exports": {
     ".": "./mod.ts",
     "./buffer": "./buffer.ts",
@@ -11,11 +11,13 @@
     "./limited-bytes-transform-stream": "./limited_bytes_transform_stream.ts",
     "./limited-transform-stream": "./limited_transform_stream.ts",
     "./merge-readable-streams": "./merge_readable_streams.ts",
+    "./fixed-chunk-stream": "./fixed_chunk_stream.ts",
     "./text-delimiter-stream": "./text_delimiter_stream.ts",
     "./text-line-stream": "./text_line_stream.ts",
     "./to-array-buffer": "./to_array_buffer.ts",
     "./to-blob": "./to_blob.ts",
     "./to-json": "./to_json.ts",
+    "./to-lines": "./to_lines.ts",
     "./to-text": "./to_text.ts",
     "./to-transform-stream": "./to_transform_stream.ts",
     "./zip-readable-streams": "./zip_readable_streams.ts"
