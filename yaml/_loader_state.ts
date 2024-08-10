@@ -16,6 +16,10 @@ import {
   EXCLAMATION,
   GRAVE_ACCENT,
   GREATER_THAN,
+  isEOL,
+  isFlowIndicator,
+  isWhiteSpace,
+  isWhiteSpaceOrEOL,
   LEFT_CURLY_BRACKET,
   LEFT_SQUARE_BRACKET,
   LINE_FEED,
@@ -29,17 +33,12 @@ import {
   SINGLE_QUOTE,
   SMALLER_THAN,
   SPACE,
-  TAB,
   VERTICAL_LINE,
 } from "./_chars.ts";
-import { YamlError } from "./_error.ts";
 import { Mark } from "./_mark.ts";
 import { DEFAULT_SCHEMA, type Schema, type TypeMap } from "./_schema.ts";
-import type { Type } from "./_type.ts";
-import * as common from "./_utils.ts";
-
-type Any = common.Any;
-type ArrayObject<T = Any> = common.ArrayObject<T>;
+import type { KindType, Type } from "./_type.ts";
+import { type ArrayObject, getObjectTypeString, isObject } from "./_utils.ts";
 
 const CONTEXT_FLOW_IN = 1;
 const CONTEXT_FLOW_OUT = 2;
@@ -59,19 +58,85 @@ const PATTERN_TAG_HANDLE = /^(?:!|!!|![a-z\-]+!)$/i;
 const PATTERN_TAG_URI =
   /^(?:!|[^,\[\]\{\}])(?:%[0-9a-f]{2}|[0-9a-z\-#;\/\?:@&=\+\$,_\.!~\*'\(\)\[\]])*$/i;
 
-interface LoaderStateOptions {
+export interface LoaderStateOptions {
   /** specifies a schema to use. */
   schema?: Schema;
   /** compatibility with JSON.parse behaviour. */
   allowDuplicateKeys?: boolean;
   /** function to call on warning messages. */
-  onWarning?(error?: YamlError): void;
+  onWarning?(error: Error): void;
 }
 
-// deno-lint-ignore no-explicit-any
-type ResultType = any[] | Record<string, any> | string;
+type ResultType = unknown[] | Record<string, unknown> | string;
 
-class LoaderState {
+const ESCAPED_HEX_LENGTHS = new Map<number, number>([
+  [0x78, 2], // x
+  [0x75, 4], // u
+  [0x55, 8], // U
+]);
+
+const SIMPLE_ESCAPE_SEQUENCES = new Map<number, string>([
+  [0x30, "\x00"], // 0
+  [0x61, "\x07"], // a
+  [0x62, "\x08"], // b
+  [0x74, "\x09"], // t
+  [0x09, "\x09"], // Tab
+  [0x6e, "\x0A"], // n
+  [0x76, "\x0B"], // v
+  [0x66, "\x0C"], // f
+  [0x72, "\x0D"], // r
+  [0x65, "\x1B"], // e
+  [0x20, " "], // Space
+  [0x22, '"'], // "
+  [0x2f, "/"], // /
+  [0x5c, "\\"], // \
+  [0x4e, "\x85"], // N
+  [0x5f, "\xA0"], // _
+  [0x4c, "\u2028"], // L
+  [0x50, "\u2029"], // P
+]);
+
+/**
+ * Converts a hexadecimal character code to its decimal value.
+ */
+function hexCharCodeToNumber(charCode: number) {
+  // Check if the character code is in the range for '0' to '9'
+  if (0x30 <= charCode && charCode <= 0x39) return charCode - 0x30; // Convert '0'-'9' to 0-9
+
+  // Normalize the character code to lowercase if it's a letter
+  const lc = charCode | 0x20;
+
+  // Check if the character code is in the range for 'a' to 'f'
+  if (0x61 <= lc && lc <= 0x66) return lc - 0x61 + 10; // Convert 'a'-'f' to 10-15
+
+  return -1;
+}
+
+/**
+ * Converts a decimal character code to its decimal value.
+ */
+function decimalCharCodeToNumber(charCode: number): number {
+  // Check if the character code is in the range for '0' to '9'
+  if (0x30 <= charCode && charCode <= 0x39) return charCode - 0x30; // Convert '0'-'9' to 0-9
+  return -1;
+}
+
+/**
+ * Converts a Unicode code point to a string.
+ */
+function codepointToChar(codepoint: number): string {
+  // Check if the code point is within the Basic Multilingual Plane (BMP)
+  if (codepoint <= 0xffff) return String.fromCharCode(codepoint); // Convert BMP code point to character
+
+  // Encode UTF-16 surrogate pair for code points beyond BMP
+  // Reference: https://en.wikipedia.org/wiki/UTF-16#Code_points_U.2B010000_to_U.2B10FFFF
+  return String.fromCharCode(
+    ((codepoint - 0x010000) >> 10) + 0xd800, // High surrogate
+    ((codepoint - 0x010000) & 0x03ff) + 0xdc00, // Low surrogate
+  );
+}
+
+export class LoaderState {
   schema: Schema;
   input: string;
   length: number;
@@ -79,9 +144,9 @@ class LoaderState {
   lineStart = 0;
   position = 0;
   line = 0;
-  onWarning?: (...args: Any[]) => void;
+  onWarning?: (error: Error) => void;
   allowDuplicateKeys: boolean;
-  implicitTypes: Type[];
+  implicitTypes: Type<"scalar">[];
   typeMap: TypeMap;
 
   version?: string | null;
@@ -109,9 +174,14 @@ class LoaderState {
     this.typeMap = this.schema.compiledTypeMap;
     this.length = input.length;
 
-    while (this.peek() === SPACE) {
+    this.readIndent();
+  }
+
+  readIndent() {
+    let char = this.peek();
+    while (char === SPACE) {
       this.lineIndent += 1;
-      this.position += 1;
+      char = this.next();
     }
   }
 
@@ -122,111 +192,149 @@ class LoaderState {
     this.position += 1;
     return this.peek();
   }
-  #createError(message: string): YamlError {
+  #createError(message: string): SyntaxError {
     const mark = new Mark(
       this.input,
       this.position,
       this.line,
       this.position - this.lineStart,
     );
-    return new YamlError(message, mark);
+    return new SyntaxError(`${message} ${mark}`);
   }
 
   throwError(message: string): never {
     throw this.#createError(message);
   }
 
-  throwWarning(message: string) {
+  dispatchWarning(message: string) {
     const error = this.#createError(message);
     this.onWarning?.(error);
   }
-}
 
-function _class(obj: unknown): string {
-  return Object.prototype.toString.call(obj);
-}
+  readDocument() {
+    const documentStart = this.position;
+    let position: number;
+    let directiveName: string;
+    let directiveArgs: string[];
+    let hasDirectives = false;
+    let ch: number;
 
-function isEOL(c: number): boolean {
-  return c === LINE_FEED || c === CARRIAGE_RETURN;
-}
+    this.version = null;
+    this.checkLineBreaks = false;
+    this.tagMap = Object.create(null);
+    this.anchorMap = Object.create(null);
 
-function isWhiteSpace(c: number): boolean {
-  return c === TAB || c === SPACE;
-}
+    while ((ch = this.peek()) !== 0) {
+      skipSeparationSpace(this, true, -1);
 
-function isWhiteSpaceOrEOL(c: number): boolean {
-  return isWhiteSpace(c) || isEOL(c);
-}
+      ch = this.peek();
 
-function isFlowIndicator(c: number): boolean {
-  return (
-    c === COMMA ||
-    c === LEFT_SQUARE_BRACKET ||
-    c === RIGHT_SQUARE_BRACKET ||
-    c === LEFT_CURLY_BRACKET ||
-    c === RIGHT_CURLY_BRACKET
-  );
-}
+      if (this.lineIndent > 0 || ch !== PERCENT) {
+        break;
+      }
 
-function fromHexCode(c: number): number {
-  if (0x30 <= /* 0 */ c && c <= 0x39 /* 9 */) {
-    return c - 0x30;
+      hasDirectives = true;
+      ch = this.next();
+      position = this.position;
+
+      while (ch !== 0 && !isWhiteSpaceOrEOL(ch)) {
+        ch = this.next();
+      }
+
+      directiveName = this.input.slice(position, this.position);
+      directiveArgs = [];
+
+      if (directiveName.length < 1) {
+        return this.throwError(
+          "directive name must not be less than one character in length",
+        );
+      }
+
+      while (ch !== 0) {
+        while (isWhiteSpace(ch)) {
+          ch = this.next();
+        }
+
+        if (ch === SHARP) {
+          do {
+            ch = this.next();
+          } while (ch !== 0 && !isEOL(ch));
+          break;
+        }
+
+        if (isEOL(ch)) break;
+
+        position = this.position;
+
+        while (ch !== 0 && !isWhiteSpaceOrEOL(ch)) {
+          ch = this.next();
+        }
+
+        directiveArgs.push(this.input.slice(position, this.position));
+      }
+
+      if (ch !== 0) readLineBreak(this);
+
+      switch (directiveName) {
+        case "YAML":
+          yamlDirectiveHandler(this, ...directiveArgs);
+          break;
+        case "TAG":
+          tagDirectiveHandler(this, ...directiveArgs);
+          break;
+        default:
+          this.dispatchWarning(
+            `unknown document directive "${directiveName}"`,
+          );
+          break;
+      }
+    }
+
+    skipSeparationSpace(this, true, -1);
+
+    if (
+      this.lineIndent === 0 &&
+      this.peek() === MINUS &&
+      this.peek(1) === MINUS &&
+      this.peek(2) === MINUS
+    ) {
+      this.position += 3;
+      skipSeparationSpace(this, true, -1);
+    } else if (hasDirectives) {
+      return this.throwError("directives end mark is expected");
+    }
+
+    composeNode(this, this.lineIndent - 1, CONTEXT_BLOCK_OUT, false, true);
+    skipSeparationSpace(this, true, -1);
+
+    if (
+      this.checkLineBreaks &&
+      PATTERN_NON_ASCII_LINE_BREAKS.test(
+        this.input.slice(documentStart, this.position),
+      )
+    ) {
+      this.dispatchWarning("non-ASCII line breaks are interpreted as content");
+    }
+
+    if (this.position === this.lineStart && testDocumentSeparator(this)) {
+      if (this.peek() === DOT) {
+        this.position += 3;
+        skipSeparationSpace(this, true, -1);
+      }
+    } else if (this.position < this.length - 1) {
+      return this.throwError(
+        "end of the stream or a document separator is expected",
+      );
+    }
+
+    return this.result;
   }
 
-  const lc = c | 0x20;
-
-  if (0x61 <= /* a */ lc && lc <= 0x66 /* f */) {
-    return lc - 0x61 + 10;
+  *readDocuments() {
+    while (this.position < this.length - 1) {
+      yield this.readDocument();
+    }
   }
-
-  return -1;
-}
-
-const ESCAPED_HEX_LENGTHS = new Map<number, number>([
-  [0x78, 2], // x
-  [0x75, 4], // u
-  [0x55, 8], // U
-]);
-
-function fromDecimalCode(c: number): number {
-  if (0x30 <= /* 0 */ c && c <= 0x39 /* 9 */) {
-    return c - 0x30;
-  }
-
-  return -1;
-}
-
-const SIMPLE_ESCAPE_SEQUENCES = new Map<number, string>([
-  [0x30, "\x00"], // 0
-  [0x61, "\x07"], // a
-  [0x62, "\x08"], // b
-  [0x74, "\x09"], // t
-  [0x09, "\x09"], // Tab
-  [0x6e, "\x0A"], // n
-  [0x76, "\x0B"], // v
-  [0x66, "\x0C"], // f
-  [0x72, "\x0D"], // r
-  [0x65, "\x1B"], // e
-  [0x20, " "], // Space
-  [0x22, '"'], // "
-  [0x2f, "/"], // /
-  [0x5c, "\\"], // \
-  [0x4e, "\x85"], // N
-  [0x5f, "\xA0"], // _
-  [0x4c, "\u2028"], // L
-  [0x50, "\u2029"], // P
-]);
-
-function charFromCodepoint(c: number): string {
-  if (c <= 0xffff) {
-    return String.fromCharCode(c);
-  }
-  // Encode UTF-16 surrogate pair
-  // https://en.wikipedia.org/wiki/UTF-16#Code_points_U.2B010000_to_U.2B10FFFF
-  return String.fromCharCode(
-    ((c - 0x010000) >> 10) + 0xd800,
-    ((c - 0x010000) & 0x03ff) + 0xdc00,
-  );
 }
 
 function yamlDirectiveHandler(state: LoaderState, ...args: string[]) {
@@ -252,7 +360,7 @@ function yamlDirectiveHandler(state: LoaderState, ...args: string[]) {
   state.version = args[0];
   state.checkLineBreaks = minor < 2;
   if (minor !== 1 && minor !== 2) {
-    return state.throwWarning("unsupported YAML version of the document");
+    return state.dispatchWarning("unsupported YAML version of the document");
   }
 }
 function tagDirectiveHandler(state: LoaderState, ...args: string[]) {
@@ -321,22 +429,21 @@ function mergeMappings(
   source: ArrayObject,
   overridableKeys: ArrayObject<boolean>,
 ) {
-  if (!common.isObject(source)) {
+  if (!isObject(source)) {
     return state.throwError(
       "cannot merge mappings; the provided source object is unacceptable",
     );
   }
 
-  for (const key of Object.keys(source)) {
-    if (!Object.hasOwn(destination, key)) {
-      Object.defineProperty(destination, key, {
-        value: source[key],
-        writable: true,
-        enumerable: true,
-        configurable: true,
-      });
-      overridableKeys[key] = true;
-    }
+  for (const [key, value] of Object.entries(source)) {
+    if (Object.hasOwn(destination, key)) continue;
+    Object.defineProperty(destination, key, {
+      value,
+      writable: true,
+      enumerable: true,
+      configurable: true,
+    });
+    overridableKeys[key] = true;
   }
 }
 
@@ -345,7 +452,7 @@ function storeMappingPair(
   result: ArrayObject | null,
   overridableKeys: ArrayObject<boolean>,
   keyTag: string | null,
-  keyNode: Any,
+  keyNode: Record<PropertyKey, unknown> | unknown[] | string | null,
   valueNode: unknown,
   startLine?: number,
   startPos?: number,
@@ -363,7 +470,7 @@ function storeMappingPair(
 
       if (
         typeof keyNode === "object" &&
-        _class(keyNode[index]) === "[object Object]"
+        getObjectTypeString(keyNode[index]) === "[object Object]"
       ) {
         keyNode[index] = "[object Object]";
       }
@@ -373,7 +480,10 @@ function storeMappingPair(
   // Avoid code execution in load() via toString property
   // (still use its own toString for arrays, timestamps,
   // and whatever user schema extensions happen to have @@toStringTag)
-  if (typeof keyNode === "object" && _class(keyNode) === "[object Object]") {
+  if (
+    typeof keyNode === "object" &&
+    getObjectTypeString(keyNode) === "[object Object]"
+  ) {
     keyNode = "[object Object]";
   }
 
@@ -461,10 +571,8 @@ function skipSeparationSpace(
       lineBreaks++;
       state.lineIndent = 0;
 
-      while (ch === SPACE) {
-        state.lineIndent++;
-        ch = state.next();
-      }
+      state.readIndent();
+      ch = state.peek();
     } else {
       break;
     }
@@ -475,7 +583,7 @@ function skipSeparationSpace(
     lineBreaks !== 0 &&
     state.lineIndent < checkIndent
   ) {
-    state.throwWarning("deficient indentation");
+    state.dispatchWarning("deficient indentation");
   }
 
   return lineBreaks;
@@ -505,7 +613,7 @@ function writeFoldedLines(state: LoaderState, count: number) {
   if (count === 1) {
     state.result += " ";
   } else if (count > 1) {
-    state.result += common.repeat("\n", count - 1);
+    state.result += "\n".repeat(count - 1);
   }
 }
 
@@ -710,14 +818,14 @@ function readDoubleQuotedScalar(
         for (; hexLength > 0; hexLength--) {
           ch = state.next();
 
-          if ((tmp = fromHexCode(ch)) >= 0) {
+          if ((tmp = hexCharCodeToNumber(ch)) >= 0) {
             hexResult = (hexResult << 4) + tmp;
           } else {
             return state.throwError("expected hexadecimal character");
           }
         }
 
-        state.result += charFromCodepoint(hexResult);
+        state.result += codepointToChar(hexResult);
 
         state.position++;
       } else {
@@ -900,7 +1008,7 @@ function readBlockScalar(state: LoaderState, nodeIndent: number): boolean {
       } else {
         return state.throwError("repeat of a chomping mode identifier");
       }
-    } else if ((tmp = fromDecimalCode(ch)) >= 0) {
+    } else if ((tmp = decimalCharCodeToNumber(ch)) >= 0) {
       if (tmp === 0) {
         return state.throwError(
           "bad explicit indentation width of a block scalar; it cannot be less than one",
@@ -955,8 +1063,7 @@ function readBlockScalar(state: LoaderState, nodeIndent: number): boolean {
     if (state.lineIndent < textIndent) {
       // Perform the chomping.
       if (chomping === CHOMPING_KEEP) {
-        state.result += common.repeat(
-          "\n",
+        state.result += "\n".repeat(
           didReadContent ? 1 + emptyLines : emptyLines,
         );
       } else if (chomping === CHOMPING_CLIP) {
@@ -976,15 +1083,14 @@ function readBlockScalar(state: LoaderState, nodeIndent: number): boolean {
       if (isWhiteSpace(ch)) {
         atMoreIndented = true;
         // except for the first content line (cf. Example 8.1)
-        state.result += common.repeat(
-          "\n",
+        state.result += "\n".repeat(
           didReadContent ? 1 + emptyLines : emptyLines,
         );
 
         // End of more-indented block.
       } else if (atMoreIndented) {
         atMoreIndented = false;
-        state.result += common.repeat("\n", emptyLines + 1);
+        state.result += "\n".repeat(emptyLines + 1);
 
         // Just one line break - perceive as the same line.
       } else if (emptyLines === 0) {
@@ -995,16 +1101,13 @@ function readBlockScalar(state: LoaderState, nodeIndent: number): boolean {
 
         // Several line breaks - perceive as different lines.
       } else {
-        state.result += common.repeat("\n", emptyLines);
+        state.result += "\n".repeat(emptyLines);
       }
 
       // Literal style: just add exact number of line breaks between content lines.
     } else {
       // Keep all line breaks except the header line break.
-      state.result += common.repeat(
-        "\n",
-        didReadContent ? 1 + emptyLines : emptyLines,
-      );
+      state.result += "\n".repeat(didReadContent ? 1 + emptyLines : emptyLines);
     }
 
     didReadContent = true;
@@ -1434,7 +1537,7 @@ function composeNode(
   let indentStatus = 1; // 1: this>parent, 0: this=parent, -1: this<parent
   let atNewLine = false;
   let hasContent = false;
-  let type: Type;
+  let type: Type<KindType>;
   let flowIndent: number;
   let blockIndent: number;
 
@@ -1587,166 +1690,4 @@ function composeNode(
   }
 
   return state.tag !== null || state.anchor !== null || hasContent;
-}
-
-function readDocument(state: LoaderState) {
-  const documentStart = state.position;
-  let position: number;
-  let directiveName: string;
-  let directiveArgs: string[];
-  let hasDirectives = false;
-  let ch: number;
-
-  state.version = null;
-  state.checkLineBreaks = false;
-  state.tagMap = Object.create(null);
-  state.anchorMap = Object.create(null);
-
-  while ((ch = state.peek()) !== 0) {
-    skipSeparationSpace(state, true, -1);
-
-    ch = state.peek();
-
-    if (state.lineIndent > 0 || ch !== PERCENT) {
-      break;
-    }
-
-    hasDirectives = true;
-    ch = state.next();
-    position = state.position;
-
-    while (ch !== 0 && !isWhiteSpaceOrEOL(ch)) {
-      ch = state.next();
-    }
-
-    directiveName = state.input.slice(position, state.position);
-    directiveArgs = [];
-
-    if (directiveName.length < 1) {
-      return state.throwError(
-        "directive name must not be less than one character in length",
-      );
-    }
-
-    while (ch !== 0) {
-      while (isWhiteSpace(ch)) {
-        ch = state.next();
-      }
-
-      if (ch === SHARP) {
-        do {
-          ch = state.next();
-        } while (ch !== 0 && !isEOL(ch));
-        break;
-      }
-
-      if (isEOL(ch)) break;
-
-      position = state.position;
-
-      while (ch !== 0 && !isWhiteSpaceOrEOL(ch)) {
-        ch = state.next();
-      }
-
-      directiveArgs.push(state.input.slice(position, state.position));
-    }
-
-    if (ch !== 0) readLineBreak(state);
-
-    switch (directiveName) {
-      case "YAML":
-        yamlDirectiveHandler(state, ...directiveArgs);
-        break;
-      case "TAG":
-        tagDirectiveHandler(state, ...directiveArgs);
-        break;
-      default:
-        state.throwWarning(`unknown document directive "${directiveName}"`);
-        break;
-    }
-  }
-
-  skipSeparationSpace(state, true, -1);
-
-  if (
-    state.lineIndent === 0 &&
-    state.peek() === MINUS &&
-    state.peek(1) === MINUS &&
-    state.peek(2) === MINUS
-  ) {
-    state.position += 3;
-    skipSeparationSpace(state, true, -1);
-  } else if (hasDirectives) {
-    return state.throwError("directives end mark is expected");
-  }
-
-  composeNode(state, state.lineIndent - 1, CONTEXT_BLOCK_OUT, false, true);
-  skipSeparationSpace(state, true, -1);
-
-  if (
-    state.checkLineBreaks &&
-    PATTERN_NON_ASCII_LINE_BREAKS.test(
-      state.input.slice(documentStart, state.position),
-    )
-  ) {
-    state.throwWarning("non-ASCII line breaks are interpreted as content");
-  }
-
-  if (state.position === state.lineStart && testDocumentSeparator(state)) {
-    if (state.peek() === DOT) {
-      state.position += 3;
-      skipSeparationSpace(state, true, -1);
-    }
-  } else if (state.position < state.length - 1) {
-    return state.throwError(
-      "end of the stream or a document separator is expected",
-    );
-  }
-
-  return state.result;
-}
-
-function* readDocuments(state: LoaderState) {
-  while (state.position < state.length - 1) {
-    yield readDocument(state);
-  }
-}
-
-function sanitizeInput(input: string) {
-  input = String(input);
-
-  if (input.length > 0) {
-    // Add tailing `\n` if not exists
-    if (!isEOL(input.charCodeAt(input.length - 1))) input += "\n";
-
-    // Strip BOM
-    if (input.charCodeAt(0) === 0xfeff) input = input.slice(1);
-  }
-
-  // Use 0 as string terminator. That significantly simplifies bounds check.
-  input += "\0";
-
-  return input;
-}
-
-export function loadDocuments(
-  input: string,
-  options: LoaderStateOptions = {},
-): unknown[] {
-  input = sanitizeInput(input);
-  const state = new LoaderState(input, options);
-  return [...readDocuments(state)];
-}
-
-export function load(input: string, options: LoaderStateOptions = {}): unknown {
-  input = sanitizeInput(input);
-  const state = new LoaderState(input, options);
-  const documentGenerator = readDocuments(state);
-  const document = documentGenerator.next().value;
-  if (!documentGenerator.next().done) {
-    throw new YamlError(
-      "expected a single document in the stream, but found more",
-    );
-  }
-  return document ?? null;
 }

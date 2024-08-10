@@ -1,26 +1,43 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
+const hexTable: string[] = [];
+
+for (let i = 0; i < 256; ++i) {
+  hexTable.push(i < 0x10 ? "0" + i.toString(16) : i.toString(16));
+}
+
 /**
  * Converts the byte array to a UUID string
  * @param bytes Used to convert Byte to Hex
  */
 export function bytesToUuid(bytes: number[] | Uint8Array): string {
-  const bits = [...bytes].map((bit) => {
-    const s = bit.toString(16);
-    return bit < 0x10 ? "0" + s : s;
-  });
-  return [
-    ...bits.slice(0, 4),
-    "-",
-    ...bits.slice(4, 6),
-    "-",
-    ...bits.slice(6, 8),
-    "-",
-    ...bits.slice(8, 10),
-    "-",
-    ...bits.slice(10, 16),
-  ].join("");
+  return (
+    hexTable[bytes[0]!]! +
+    hexTable[bytes[1]!]! +
+    hexTable[bytes[2]!]! +
+    hexTable[bytes[3]!]! +
+    "-" +
+    hexTable[bytes[4]!]! +
+    hexTable[bytes[5]!]! +
+    "-" +
+    hexTable[bytes[6]!]! +
+    hexTable[bytes[7]!]! +
+    "-" +
+    hexTable[bytes[8]!]! +
+    hexTable[bytes[9]!]! +
+    "-" +
+    hexTable[bytes[10]!]! +
+    hexTable[bytes[11]!]! +
+    hexTable[bytes[12]!]! +
+    hexTable[bytes[13]!]! +
+    hexTable[bytes[14]!]! +
+    hexTable[bytes[15]!]!
+    // Use .toLowerCase() to avoid the v8 engine memory issue
+    // when concatenating strings with "+" operator. See:
+    // - https://issues.chromium.org/issues/42206473
+    // - https://github.com/uuidjs/uuid/pull/434
+  ).toLowerCase();
 }
 
 /**
@@ -28,9 +45,35 @@ export function bytesToUuid(bytes: number[] | Uint8Array): string {
  * @param uuid Value that gets converted.
  */
 export function uuidToBytes(uuid: string): Uint8Array {
-  const bytes = uuid
-    .replaceAll("-", "")
-    .match(/.{1,2}/g)!
-    .map((byte) => parseInt(byte, 16));
-  return new Uint8Array(bytes);
+  const bytes = new Uint8Array(16);
+  let i = 0;
+
+  for (const str of uuid.split("-")) {
+    const hex = parseInt(str, 16);
+    switch (str.length) {
+      case 4: {
+        bytes[i++] = (hex >>> 8) & 0xff;
+        bytes[i++] = hex & 0xff;
+        break;
+      }
+      case 8: {
+        bytes[i++] = (hex >>> 24) & 0xff;
+        bytes[i++] = (hex >>> 16) & 0xff;
+        bytes[i++] = (hex >>> 8) & 0xff;
+        bytes[i++] = hex & 0xff;
+        break;
+      }
+      case 12: {
+        bytes[i++] = (hex / 0x10000000000) & 0xff;
+        bytes[i++] = (hex / 0x100000000) & 0xff;
+        bytes[i++] = (hex >>> 24) & 0xff;
+        bytes[i++] = (hex >>> 16) & 0xff;
+        bytes[i++] = (hex >>> 8) & 0xff;
+        bytes[i++] = hex & 0xff;
+        break;
+      }
+    }
+  }
+
+  return bytes;
 }

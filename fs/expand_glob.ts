@@ -19,9 +19,17 @@ const isWindows = Deno.build.os === "windows";
 
 /** Options for {@linkcode expandGlob} and {@linkcode expandGlobSync}. */
 export interface ExpandGlobOptions extends Omit<GlobOptions, "os"> {
-  /** File path where to expand from. */
+  /**
+   * File path where to expand from.
+   *
+   * @default {Deno.cwd()}
+   */
   root?: string;
-  /** List of glob patterns to be excluded from the expansion. */
+  /**
+   * List of glob patterns to be excluded from the expansion.
+   *
+   * @default {[]}
+   */
   exclude?: string[];
   /**
    * Whether to include directories in entries.
@@ -260,7 +268,7 @@ function comparePath(a: WalkEntry, b: WalkEntry): number {
  */
 export async function* expandGlob(
   glob: string | URL,
-  options: ExpandGlobOptions = {},
+  options?: ExpandGlobOptions,
 ): AsyncIterableIterator<WalkEntry> {
   let {
     root,
@@ -271,7 +279,7 @@ export async function* expandGlob(
     caseInsensitive,
     followSymlinks,
     canonicalize,
-  } = options;
+  } = options ?? {};
 
   const {
     segments,
@@ -417,7 +425,9 @@ export async function* expandGlob(
  */
 export function* expandGlobSync(
   glob: string | URL,
-  {
+  options?: ExpandGlobOptions,
+): IterableIterator<WalkEntry> {
+  let {
     root,
     exclude = [],
     includeDirs = true,
@@ -426,8 +436,8 @@ export function* expandGlobSync(
     caseInsensitive,
     followSymlinks,
     canonicalize,
-  }: ExpandGlobOptions = {},
-): IterableIterator<WalkEntry> {
+  } = options ?? {};
+
   const {
     segments,
     isAbsolute: isGlobAbsolute,

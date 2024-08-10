@@ -67,22 +67,6 @@ export class TextDelimiterStream extends TransformStream<string, string> {
    *
    * @param delimiter A delimiter to split the stream by.
    * @param options Options for the stream.
-   *
-   * @example Comma as a delimiter
-   * ```ts no-assert
-   * import { TextDelimiterStream } from "@std/streams/text-delimiter-stream";
-   *
-   * const delimiterStream = new TextDelimiterStream(",");
-   * ```
-   *
-   * @example Semicolon as a delimiter, and disposition set to `"suffix"`
-   * ```ts no-assert
-   * import { TextDelimiterStream } from "@std/streams/text-delimiter-stream";
-   *
-   * const delimiterStream = new TextDelimiterStream(",", {
-   *   disposition: "suffix",
-   * });
-   * ```
    */
   constructor(
     delimiter: string,

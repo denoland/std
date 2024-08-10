@@ -32,6 +32,12 @@ and [architecture guide](./ARCHITECTURE.md) before contributing.
 > request that precedes the pull request that implements the new package.
 <!--deno-fmt-ignore-end-->
 
+## Suggesting a new feature
+
+When new features are accepted, they are initially accepted as 'unstable'
+features in the Standard Library. These features are later stabilized after
+receiving sufficient feedback from the community and the core team.
+
 ## Deprecations
 
 1. See the [deprecation policy](/README.md#deprecation-policy) for how
@@ -53,6 +59,14 @@ and [architecture guide](./ARCHITECTURE.md) before contributing.
    ```
    deprecation(<package>): <symbol>
    ```
+
+## Implementations
+
+### Assertions
+
+Do not use assertions from [`@std/assert`](https://jsr.io/@std/assert) to assert
+values in implementation code. Instead, check values inline. `@std/assert`
+functions should only be used in testing. See #4865 for details.
 
 ## Tests
 
@@ -133,3 +147,23 @@ delimiter. E.g.
  * ```
  */
 ````
+
+### Notices for unstable APIs
+
+Each unstable API must have the
+[`@experimental`](https://tsdoc.org/pages/tags/experimental/) TSDoc tag and a
+[warning alert](https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax#alerts)
+after the starting description.
+
+```ts
+/**
+ * <description>
+ *
+ * > [!WARNING]
+ * > **UNSTABLE**: New API, yet to be vetted.
+ *
+ * @experimental
+ *
+ * ...
+ */
+```

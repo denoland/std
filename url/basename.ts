@@ -40,6 +40,10 @@ import { strip } from "./_strip.ts";
  * assertEquals(basename("https://deno.land/std/assert/mod.ts?a=b", ".ts"), "mod");
  * assertEquals(basename("https://deno.land/std/assert/mod.ts#header", ".ts"), "mod");
  * ```
+ *
+ * @deprecated Use
+ * {@linkcode https://jsr.io/@std/path/doc/posix/~/basename | @std/path/posix/basename}
+ * instead (examples included). `@std/url` will be removed in the future.
  */
 export function basename(url: string | URL, suffix?: string): string {
   url = new URL(url);

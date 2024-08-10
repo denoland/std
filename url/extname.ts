@@ -23,6 +23,10 @@ import { strip } from "./_strip.ts";
  * assertEquals(extname("https://deno.land/std/path/mod.ts?a=b"), ".ts");
  * assertEquals(extname("https://deno.land/"), "");
  * ```
+ *
+ * @deprecated Use
+ * {@linkcode https://jsr.io/@std/path/doc/posix/~/extname | @std/path/posix/extname}
+ * instead (examples included). `@std/url` will be removed in the future.
  */
 export function extname(url: string | URL): string {
   url = new URL(url);

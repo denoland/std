@@ -915,20 +915,20 @@ export type DescribeArgs<T> =
     name: string,
     options: Omit<DescribeDefinition<T>, "name">,
   ]
-  | [name: string, fn: () => void]
-  | [fn: () => void]
+  | [name: string, fn: () => void | undefined]
+  | [fn: () => void | undefined]
   | [
     name: string,
     options: Omit<DescribeDefinition<T>, "fn" | "name">,
-    fn: () => void,
+    fn: () => void | undefined,
   ]
   | [
     options: Omit<DescribeDefinition<T>, "fn">,
-    fn: () => void,
+    fn: () => void | undefined,
   ]
   | [
     options: Omit<DescribeDefinition<T>, "fn" | "name">,
-    fn: () => void,
+    fn: () => void | undefined,
   ]
   | [
     suite: TestSuite<T>,
@@ -942,27 +942,27 @@ export type DescribeArgs<T> =
   | [
     suite: TestSuite<T>,
     name: string,
-    fn: () => void,
+    fn: () => void | undefined,
   ]
   | [
     suite: TestSuite<T>,
-    fn: () => void,
+    fn: () => void | undefined,
   ]
   | [
     suite: TestSuite<T>,
     name: string,
     options: Omit<DescribeDefinition<T>, "fn" | "name" | "suite">,
-    fn: () => void,
+    fn: () => void | undefined,
   ]
   | [
     suite: TestSuite<T>,
     options: Omit<DescribeDefinition<T>, "fn" | "suite">,
-    fn: () => void,
+    fn: () => void | undefined,
   ]
   | [
     suite: TestSuite<T>,
     options: Omit<DescribeDefinition<T>, "fn" | "name" | "suite">,
-    fn: () => void,
+    fn: () => void | undefined,
   ];
 
 /** Generates a DescribeDefinition from DescribeArgs. */

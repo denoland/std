@@ -9,13 +9,20 @@
  * Ported from
  * {@link https://github.com/nodeca/js-yaml/commit/665aadda42349dcae869f12040d9b10ef18d12da | js-yaml v3.13.1}.
  *
- * If your YAML contains multiple documents in it, you can use {@linkcode parseAll} for
- * handling it.
+ * Use {@linkcode parseAll} for parsing multiple documents in a single YAML
+ * string.
  *
- * ## :warning: Limitations
- * - `binary` type is currently not stable.
+ * This package generally supports
+ * {@link https://yaml.org/spec/1.2.2/ | YAML 1.2.x} (latest) and some
+ * {@link https://yaml.org/spec/1.1/current.html | YAML 1.1} features that are
+ * commonly used in the wild.
  *
- * For further examples see https://github.com/nodeca/js-yaml/tree/master/examples.
+ * Supported YAML 1.1 features include:
+ * - {@link https://yaml.org/type/merge.html | Merge} type (`<<` symbol)
+ *
+ * Unsupported YAML 1.1 features include:
+ * - Yes, No, On, Off literals for bool type
+ * - Sexagesimal numbers (e.g. `3:25:45`)
  *
  * ```ts
  * import { parse, stringify } from "@std/yaml";
@@ -36,6 +43,9 @@
  *   - quux
  * `);
  * ```
+ *
+ * ## Limitations
+ * - `binary` type is currently not stable.
  *
  * @module
  */

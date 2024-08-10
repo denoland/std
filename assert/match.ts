@@ -10,8 +10,8 @@ import { AssertionError } from "./assertion_error.ts";
  * ```ts no-eval
  * import { assertMatch } from "@std/assert";
  *
- * assertMatch("Raptor", RegExp(/Raptor/)); // Doesn't throw
- * assertMatch("Denosaurus", RegExp(/Raptor/)); // Throws
+ * assertMatch("Raptor", /Raptor/); // Doesn't throw
+ * assertMatch("Denosaurus", /Raptor/); // Throws
  * ```
  *
  * @param actual The actual value to be matched.

@@ -4,12 +4,13 @@ import { assertEquals } from "@std/assert";
 import { toText } from "./to_text.ts";
 
 Deno.test("toText()", async () => {
-  const byteStream = ReadableStream.from(["hello", " js ", "fans"])
+  const strings = ["hello", " js ", "fans", " 中文♥"];
+  const expected = "hello js fans 中文♥";
+
+  const byteStream = ReadableStream.from(strings)
     .pipeThrough(new TextEncoderStream());
+  assertEquals(await toText(byteStream), expected);
 
-  assertEquals(await toText(byteStream), "hello js fans");
-
-  const stringStream = ReadableStream.from(["hello", " deno ", "world"]);
-
-  assertEquals(await toText(stringStream), "hello deno world");
+  const stringStream = ReadableStream.from(strings);
+  assertEquals(await toText(stringStream), expected);
 });

@@ -38,21 +38,60 @@ export type Async<T> = {
 /**
  * The Expected interface defines the available assertion methods.
  */
-export interface Expected {
+export interface Expected<IsAsync = false> {
   /**
    * Asserts that the function was called with the specified arguments.
+   *
+   * @example Usage
+   * ```ts
+   * import { expect, fn } from "@std/expect";
+   *
+   * const mock = fn();
+   * mock("foo", 42);
+   * mock("bar", 43)
+   *
+   * expect(mock).lastCalledWith("bar", 43);
+   * expect(mock).not.lastCalledWith("foo", 42);
+   * ```
+   *
    * @param expected The expected arguments.
    */
   lastCalledWith(...expected: unknown[]): void;
 
   /**
    * Asserts that the function returned the specified value.
+   *
+   * @example Usage
+   * ```ts
+   * import { expect, fn } from "@std/expect";
+   *
+   * const mock = fn((str: string, num: number) => [str, num]);
+   * mock("foo", 42);
+   * mock("bar", 43);
+   *
+   * expect(mock).lastReturnedWith(["bar", 43]);
+   * expect(mock).not.lastReturnedWith(["foo", 42]);
+   *
    * @param expected The expected return value.
    */
   lastReturnedWith(expected: unknown): void;
 
   /**
    * Asserts that the function was called with the specified arguments at the specified call index.
+   *
+   * @example Usage
+   * ```ts
+   * import { expect, fn } from "@std/expect";
+   *
+   * const mock = fn();
+   * mock("foo", 42);
+   * mock("bar", 43);
+   * mock("baz", 44);
+   *
+   * expect(mock).nthCalledWith(1, "foo", 42);
+   * expect(mock).nthCalledWith(2, "bar", 43);
+   * expect(mock).nthCalledWith(3, "baz", 44);
+   * ```
    * @param nth The call index.
    * @param expected The expected arguments.
    */
@@ -60,6 +99,21 @@ export interface Expected {
 
   /**
    * Asserts that the function returned the specified value at the specified call index.
+   *
+   * @example Usage
+   * ```ts
+   * import { expect, fn } from "@std/expect";
+   *
+   * const mock = fn((str: string, num: number) => [str, num]);
+   * mock("foo", 42);
+   * mock("bar", 43);
+   * mock("baz", 44);
+   *
+   * expect(mock).nthReturnedWith(1, ["foo", 42]);
+   * expect(mock).nthReturnedWith(2, ["bar", 43]);
+   * expect(mock).nthReturnedWith(3, ["baz", 44]);
+   * ```
+   *
    * @param nth The call index.
    * @param expected The expected return value.
    */
@@ -67,23 +121,73 @@ export interface Expected {
 
   /**
    * Asserts that the function was called at least once.
+   *
+   * @example Usage
+   * ```ts
+   * import { expect, fn } from "@std/expect";
+   *
+   * const mock = fn();
+   * const mock2 = fn();
+   * mock();
+   *
+   * expect(mock).toBeCalled();
+   * expect(mock2).not.toBeCalled();
+   * ```
    */
   toBeCalled(): void;
 
   /**
    * Asserts that the function was called the specified number of times.
+   *
+   * @example Usage
+   * ```ts
+   * import { expect, fn } from "@std/expect";
+   *
+   * const mock = fn();
+   * mock();
+   * mock();
+   *
+   * expect(mock).not.toBeCalledTimes(1);
+   * expect(mock).toBeCalledTimes(2);
+   * expect(mock).not.toBeCalledTimes(3);
+   * ```
+   *
    * @param expected The expected number of times.
    */
   toBeCalledTimes(expected: number): void;
 
   /**
    * Asserts that the function was called with the specified arguments.
+   *
+   * @example Usage
+   * ```ts
+   * import { expect, fn } from "@std/expect";
+   *
+   * const mock = fn();
+   * mock("foo", 42);
+   * mock("bar", 43);
+   *
+   * expect(mock).toBeCalledWith("foo", 42);
+   * expect(mock).toBeCalledWith("bar", 43);
+   * expect(mock).not.toBeCalledWith("baz", 44);
+   * ```
+   *
    * @param expected The expected arguments.
    */
   toBeCalledWith(...expected: unknown[]): void;
 
   /**
    * Asserts that the value is close to the specified number within a tolerance.
+   *
+   * @example Usage
+   * ```ts
+   * import { expect } from "@std/expect";
+   *
+   * expect(0.2 + 0.1).toBeCloseTo(0.3);
+   * expect(0.2 + 0.1).toBeCloseTo(0.3, 15);
+   * expect(0.2 + 0.1).not.toBeCloseTo(0.3, 16);
+   * ```
+   *
    * @param candidate The candidate number.
    * @param tolerance The tolerance value (optional).
    */
@@ -91,113 +195,346 @@ export interface Expected {
 
   /**
    * Asserts that the value is defined.
+   *
+   * @example Usage
+   * ```ts
+   * import { expect } from "@std/expect";
+   *
+   * expect(null).toBeDefined();
+   * expect(undefined).not.toBeDefined();
+   * ```
    */
   toBeDefined(): void;
 
   /**
    * Asserts that the value is falsy.
+   *
+   * @example Usage
+   * ```ts
+   * import { expect } from "@std/expect";
+   *
+   * expect(null).toBeFalsy();
+   * expect(undefined).toBeFalsy();
+   * expect(0).toBeFalsy();
+   * expect("").toBeFalsy();
+   * expect(false).toBeFalsy();
+   * expect(NaN).toBeFalsy();
+   *
+   * expect(1).not.toBeFalsy();
+   * expect("foo").not.toBeFalsy();
+   * expect([]).not.toBeFalsy();
+   * ```
    */
   toBeFalsy(): void;
 
   /**
    * Asserts that the value is greater than the specified number.
+   *
+   * @example Usage
+   * ```ts
+   * import { expect } from "@std/expect";
+   *
+   * expect(2).toBeGreaterThan(1);
+   * expect(2).not.toBeGreaterThan(2);
+   * expect(2).not.toBeGreaterThan(3);
+   * ```
+   *
    * @param expected The expected number.
    */
   toBeGreaterThan(expected: number): void;
 
   /**
    * Asserts that the value is greater than or equal to the specified number.
+   *
+   * @example Usage
+   * ```ts
+   * import { expect } from "@std/expect";
+   *
+   * expect(2).toBeGreaterThanOrEqual(1);
+   * expect(2).toBeGreaterThanOrEqual(2);
+   * expect(2).not.toBeGreaterThanOrEqual(3);
+   * ```
+   *
    * @param expected The expected number.
    */
   toBeGreaterThanOrEqual(expected: number): void;
 
   /**
    * Asserts that the value is an instance of the specified constructor.
+   *
+   * @example Usage
+   * ```ts
+   * import { expect } from "@std/expect";
+   *
+   * expect(new Error()).toBeInstanceOf(Error);
+   * expect(new Error()).not.toBeInstanceOf(TypeError);
+   * ```
+   *
    * @param expected The expected constructor.
    */
   toBeInstanceOf<T extends AnyConstructor>(expected: T): void;
 
   /**
    * Asserts that the value is less than the specified number.
+   *
+   * @example Usage
+   * ```ts
+   * import { expect } from "@std/expect";
+   *
+   * expect(1).toBeLessThan(2);
+   * expect(1).not.toBeLessThan(1);
+   * expect(1).not.toBeLessThan(0);
+   * ```
+   *
    * @param expected The expected number.
    */
   toBeLessThan(expected: number): void;
 
   /**
    * Asserts that the value is less than or equal to the specified number.
+   *
+   * @example Usage
+   * ```ts
+   * import { expect } from "@std/expect";
+   *
+   * expect(1).toBeLessThanOrEqual(2);
+   * expect(1).toBeLessThanOrEqual(1);
+   * expect(1).not.toBeLessThanOrEqual(0);
+   * ```
+   *
    * @param expected The expected number.
    */
   toBeLessThanOrEqual(expected: number): void;
 
   /**
    * Asserts that the value is NaN.
+   *
+   * @example Usage
+   * ```ts
+   * import { expect } from "@std/expect";
+   *
+   * expect(NaN).toBeNaN();
+   * expect(1).not.toBeNaN();
+   * expect(undefined).toBeNaN();
+   * expect(null).not.toBeNaN();
+   * ```
    */
   toBeNaN(): void;
 
   /**
    * Asserts that the value is null.
+   *
+   * @example Usage
+   * ```ts
+   * import { expect } from "@std/expect";
+   *
+   * expect(null).toBeNull();
+   * expect(undefined).not.toBeNull();
+   * ```
    */
   toBeNull(): void;
 
   /**
    * Asserts that the value is truthy.
+   *
+   * @example Usage
+   * ```ts
+   * import { expect } from "@std/expect";
+   *
+   * expect(1).toBeTruthy();
+   * expect("foo").toBeTruthy();
+   * expect([]).toBeTruthy();
+   * expect({}).toBeTruthy();
+   * expect(true).toBeTruthy();
+   *
+   * expect(0).not.toBeTruthy();
+   * expect("").not.toBeTruthy();
+   * expect(null).not.toBeTruthy();
+   * expect(undefined).not.toBeTruthy();
+   * expect(false).not.toBeTruthy();
+   * expect(NaN).not.toBeTruthy();
+   * ```
    */
   toBeTruthy(): void;
 
   /**
    * Asserts that the value is undefined.
+   *
+   * @example Usage
+   * ```ts
+   * import { expect } from "@std/expect";
+   *
+   * expect(undefined).toBeUndefined();
+   * expect(null).not.toBeUndefined();
+   * ```
    */
   toBeUndefined(): void;
 
   /**
    * Asserts that the value is equal to the specified value.
    * @param expected The expected value.
+   *
+   * @example Usage
+   * ```ts
+   * import { expect } from "@std/expect";
+   *
+   * expect(42).toBe(42);
+   * expect("foo").toBe("foo");
+   *
+   * const obj = {};
+   * expect(obj).toBe(obj);
+   * expect(obj).not.toBe({});
+   * ```
    */
   toBe(expected: unknown): void;
 
   /**
    * Asserts that the value contains the specified value (deep equality).
+   *
+   * @example Usage
+   * ```ts
+   * import { expect } from "@std/expect";
+   *
+   * expect([1, 2, 3]).toContainEqual(2);
+   * expect([1, 2, 3]).not.toContainEqual(4);
+   *
+   * expect([{ foo: 42 }, { bar: 43 }]).toContainEqual({ bar: 43 });
+   * expect([{ foo: 42 }, { bar: 43 }]).not.toContainEqual({ baz: 44 });
+   * ```
+   *
    * @param expected The expected value.
    */
   toContainEqual(expected: unknown): void;
 
   /**
    * Asserts that the value contains the specified value (shallow equality).
+   *
+   * @example Usage
+   * ```ts
+   * import { expect } from "@std/expect";
+   *
+   * expect([1, 2, 3]).toContain(2);
+   * expect([1, 2, 3]).not.toContain(4);
+   *
+   * const item0 = { foo: 42 };
+   * const item1 = { bar: 43 };
+   * const items = [item0, item1];
+   * expect(items).toContain(item1);
+   * expect(items).not.toContain({ foo: 42 });
+   * ```
+   *
    * @param expected The expected value.
    */
   toContain(expected: unknown): void;
 
   /**
    * Asserts that the value is equal to the specified value (deep equality).
+   *
+   * @example Usage
+   * ```ts
+   * import { expect } from "@std/expect";
+   *
+   * expect(42).toEqual(42);
+   * expect({ foo: 42 }).toEqual({ foo: 42 });
+   * expect([1, 2, 3]).toEqual([1, 2, 3]);
+   * ```
+   *
    * @param expected The expected value.
    */
   toEqual(expected: unknown): void;
 
   /**
    * Asserts that the function was called the specified number of times.
+   *
+   * @example Usage
+   * ```ts
+   * import { expect, fn } from "@std/expect";
+   *
+   * const mock = fn();
+   * mock();
+   * mock();
+   *
+   * expect(mock).not.toHaveBeenCalledTimes(1);
+   * expect(mock).toHaveBeenCalledTimes(2);
+   * expect(mock).not.toHaveBeenCalledTimes(3);
+   * ```
    * @param expected The expected number of times.
    */
   toHaveBeenCalledTimes(expected: number): void;
 
   /**
    * Asserts that the function was called with the specified arguments.
+   *
+   * @example Usage
+   * ```ts
+   * import { expect, fn } from "@std/expect";
+   *
+   * const mock = fn();
+   * mock("foo", 42);
+   * mock("bar", 43);
+   *
+   * expect(mock).toHaveBeenCalledWith("foo", 42);
+   * expect(mock).toHaveBeenCalledWith("bar", 43);
+   * expect(mock).not.toHaveBeenCalledWith("baz", 44);
+   * ```
    * @param expected The expected arguments.
    */
   toHaveBeenCalledWith(...expected: unknown[]): void;
 
   /**
    * Asserts that the function was called at least once.
+   *
+   * @example Usage
+   * ```ts
+   * import { expect, fn } from "@std/expect";
+   *
+   * const mock = fn();
+   * const mock2 = fn();
+   *
+   * mock();
+   *
+   * expect(mock).toHaveBeenCalled();
+   * expect(mock2).not.toHaveBeenCalled();
+   * ```
    */
   toHaveBeenCalled(): void;
 
   /**
    * Asserts that the function was last called with the specified arguments.
+   *
+   * @example Usage
+   * ```ts
+   * import { expect, fn } from "@std/expect";
+   *
+   * const mock = fn();
+   * mock("foo", 42);
+   * mock("bar", 43);
+   *
+   * expect(mock).toHaveBeenLastCalledWith("bar", 43);
+   * expect(mock).not.toHaveBeenLastCalledWith("foo", 42);
+   * ```
+   *
    * @param expected The expected arguments.
    */
   toHaveBeenLastCalledWith(...expected: unknown[]): void;
 
   /**
    * Asserts that the function was called with the specified arguments at the specified call index.
+   *
+   * @example Usage
+   * ```ts
+   * import { expect, fn } from "@std/expect";
+   *
+   * const mock = fn();
+   * mock("foo", 42);
+   * mock("bar", 43);
+   * mock("baz", 44);
+   *
+   * expect(mock).toHaveBeenNthCalledWith(1, "foo", 42);
+   * expect(mock).toHaveBeenNthCalledWith(2, "bar", 43);
+   * expect(mock).toHaveBeenNthCalledWith(3, "baz", 44);
+   * ```
+   *
    * @param nth The call index.
    * @param expected The expected arguments.
    */
@@ -205,18 +542,56 @@ export interface Expected {
 
   /**
    * Asserts that the value has the specified length.
+   *
+   * @example Usage
+   * ```ts
+   * import { expect } from "@std/expect";
+   *
+   * expect([1, 2, 3]).toHaveLength(3);
+   * expect("foo").toHaveLength(3);
+   * expect([]).toHaveLength(0);
+   * ```
+   *
    * @param expected The expected length.
    */
   toHaveLength(expected: number): void;
 
   /**
    * Asserts that the function last returned the specified value.
+   *
+   * @example Usage
+   * ```ts
+   * import { expect, fn } from "@std/expect";
+   *
+   * const mock = fn((str: string, num: number) => [str, num]);
+   * mock("foo", 42);
+   * mock("bar", 43);
+   *
+   * expect(mock).toHaveLastReturnedWith(["bar", 43]);
+   * expect(mock).not.toHaveLastReturnedWith(["foo", 42]);
+   * ```
+   *
    * @param expected The expected return value.
    */
   toHaveLastReturnedWith(expected: unknown): void;
 
   /**
    * Asserts that the function returned the specified value at the specified call index.
+   *
+   * @example Usage
+   * ```ts
+   * import { expect, fn } from "@std/expect";
+   *
+   * const mock = fn((str: string, num: number) => [str, num]);
+   * mock("foo", 42);
+   * mock("bar", 43);
+   * mock("baz", 44);
+   *
+   * expect(mock).toHaveNthReturnedWith(1, ["foo", 42]);
+   * expect(mock).toHaveNthReturnedWith(2, ["bar", 43]);
+   * expect(mock).toHaveNthReturnedWith(3, ["baz", 44]);
+   * ```
+   *
    * @param nth The call index.
    * @param expected The expected return value.
    */
@@ -224,6 +599,16 @@ export interface Expected {
 
   /**
    * Asserts that the value has the specified property with an optional value.
+   *
+   * @example Usage
+   * ```ts
+   * import { expect } from "@std/expect";
+   *
+   * expect({ foo: 42 }).toHaveProperty("foo");
+   * expect({ foo: 42 }).toHaveProperty("foo", 42);
+   * expect({ foo: 42 }).not.toHaveProperty("bar");
+   * ```
+   *
    * @param propName The property name or an array of property names.
    * @param value The expected value (optional).
    */
@@ -231,29 +616,85 @@ export interface Expected {
 
   /**
    * Asserts that the function returned the specified number of times.
+   *
+   * @example Usage
+   * ```ts
+   * import { expect, fn } from "@std/expect";
+   *
+   * const mock = fn();
+   * mock();
+   * mock();
+   *
+   * expect(mock).toHaveReturnedTimes(2);
+   * expect(mock).not.toHaveReturnedTimes(3);
+   * ```
+   *
    * @param expected The expected number of times.
    */
   toHaveReturnedTimes(expected: number): void;
 
   /**
    * Asserts that the function returned the specified value.
+   *
+   * @example Usage
+   * ```ts
+   * import { expect, fn } from "@std/expect";
+   *
+   * const mock = fn(() => 42);
+   * mock();
+   *
+   * expect(mock).toHaveReturnedWith(42);
+   * expect(mock).not.toHaveReturnedWith(43);
+   * ```
+   *
    * @param expected The expected return value.
    */
   toHaveReturnedWith(expected: unknown): void;
 
   /**
-   * Asserts that the function returned a value.
+   * Asserts that the function returned.
+   *
+   * @example Usage
+   * ```ts
+   * import { expect, fn } from "@std/expect";
+   *
+   * const mock = fn();
+   *
+   * expect(mock).not.toHaveReturned();
+   *
+   * mock();
+   *
+   * expect(mock).toHaveReturned();
+   * ```
    */
   toHaveReturned(): void;
 
   /**
    * Asserts that the value matches the specified regular expression.
+   *
+   * @example Usage
+   * ```ts
+   * import { expect } from "@std/expect";
+   *
+   * expect("foo").toMatch(/^foo$/);
+   * expect("bar").not.toMatch(/^foo$/);
+   * ```
+   *
    * @param expected The expected regular expression.
    */
   toMatch(expected: RegExp): void;
 
   /**
    * Asserts that the value matches the specified object (deep equality).
+   *
+   * @example Usage
+   * ```ts
+   * import { expect } from "@std/expect";
+   *
+   * expect({ foo: 42 }).toMatchObject({ foo: 42 });
+   * expect({ foo: 42 }).not.toMatchObject({ foo: 43 });
+   * ```
+   *
    * @param expected The expected object or array of objects.
    */
   toMatchObject(
@@ -261,30 +702,99 @@ export interface Expected {
   ): void;
 
   /**
-   * Asserts that the function returns a value.
+   * Asserts that the function returned.
+   *
+   * @example Usage
+   * ```ts
+   * import { expect, fn } from "@std/expect";
+   *
+   * const mock = fn();
+   *
+   * expect(mock).not.toReturn();
+   *
+   * mock();
+   *
+   * expect(mock).toReturn();
    */
   toReturn(): void;
 
   /**
    * Asserts that the function returns the specified number of times.
+   *
+   * @example Usage
+   * ```ts
+   * import { expect, fn } from "@std/expect";
+   *
+   * const mock = fn();
+   * mock();
+   * mock();
+   *
+   * expect(mock).not.toReturnTimes(1);
+   * expect(mock).toReturnTimes(2);
+   * expect(mock).not.toReturnTimes(3);
+   * ```
+   *
    * @param expected The expected number of times.
    */
   toReturnTimes(expected: number): void;
 
   /**
    * Asserts that the function returns the specified value.
+   *
+   * @example Usage
+   * ```ts
+   * import { expect, fn } from "@std/expect";
+   *
+   * const mock = fn(() => 42);
+   *
+   * expect(mock).toReturnWith(42);
+   * expect(mock).not.toReturnWith(43);
+   * ```
+   *
    * @param expected The expected return value.
    */
   toReturnWith(expected: unknown): void;
 
   /**
    * Asserts that the value is strictly equal to the specified value.
+   *
+   * @example Usage
+   * ```ts
+   * import { expect } from "@std/expect";
+   *
+   * expect(42).toStrictEqual(42);
+   * expect("foo").toStrictEqual("foo");
+   *
+   * const obj = {};
+   * expect(obj).toStrictEqual(obj);
+   * expect(obj).not.toStrictEqual({});
+   * ```
+   *
    * @param candidate The candidate value.
    */
   toStrictEqual(candidate: unknown): void;
 
   /**
    * Asserts that the function throws an error.
+   *
+   * @example Usage
+   * ```ts
+   * import { expect } from "@std/expect";
+   *
+   * const fn = () => { throw new TypeError("foo") };
+   * const fn2 = () => {};
+   *
+   * expect(fn).toThrow();
+   * expect(fn2).not.toThrow();
+   *
+   * expect(fn).toThrow(TypeError);
+   * expect(fn).toThrow("foo");
+   * expect(fn).toThrow(/foo/);
+   *
+   * expect(fn).not.toThrow(SyntaxError);
+   * expect(fn).not.toThrow("bar");
+   * expect(fn).not.toThrow(/bar/);
+   * ```
    * @param expected The expected error message, regular expression, or error constructor.
    */
   toThrow<E extends Error = Error>(
@@ -294,17 +804,17 @@ export interface Expected {
   /**
    * The negation object that allows chaining negated assertions.
    */
-  not: Expected;
+  not: IsAsync extends true ? Async<Expected<true>> : Expected<false>;
 
   /**
    * The object that allows chaining assertions with async functions that are expected to resolve to a value.
    */
-  resolves: Async<Expected>;
+  resolves: Async<Expected<true>>;
 
   /**
    * The object that allows chaining assertions with async functions that are expected to throw an error.
    */
-  rejects: Async<Expected>;
+  rejects: Async<Expected<true>>;
 
   /**
    * Additional custom assertion methods can be added here.

@@ -6,20 +6,23 @@ import { BufReader } from "./buf_reader.ts";
 import { concat } from "@std/bytes/concat";
 
 /**
- * Read strings line-by-line from a Reader.
+ * Read strings line-by-line from a {@linkcode Reader}.
  *
- *  @example
+ * @example Usage
  * ```ts
  * import { readLines } from "@std/io/read-lines";
- * import * as path from "@std/path";
+ * import { assert } from "@std/assert/assert"
  *
- * const filename = path.join(Deno.cwd(), "std/io/README.md");
- * let fileReader = await Deno.open(filename);
+ * let fileReader = await Deno.open("README.md");
  *
  * for await (let line of readLines(fileReader)) {
- *   console.log(line);
+ *   assert(typeof line === "string");
  * }
  * ```
+ *
+ * @param reader The reader to read from
+ * @param decoderOpts The options
+ * @returns The async iterator of strings
  *
  * @deprecated This will be removed in 1.0.0. Use the {@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API | Web Streams API} instead.
  */

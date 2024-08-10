@@ -6,4 +6,4 @@ const spinner = new Spinner({
 
 spinner.start();
 
-setTimeout(spinner.stop, 1000);
+setTimeout(() => spinner.stop(), 1000);
