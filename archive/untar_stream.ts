@@ -109,7 +109,7 @@ export class UnTarStream
 
     this.#gen = async function* () {
       const buffer: Uint8Array[] = [];
-      for await (let chunk of readable.pipeThrough(new FixedChunkStream(512))) {
+      for await (const chunk of readable.pipeThrough(new FixedChunkStream(512))) {
         if (chunk.length !== 512) {
           throw new Error("Tarball has an unexpected number of bytes.");
         }
