@@ -88,16 +88,17 @@ export type TarStreamChunk = TarStreamHeader | TarStreamData;
  * ```ts
  * import { UnTarStream } from "@std/archive/untar-stream";
  *
+ * let fileWriter: WritableStreamDefaultWriter | undefined;
  * for await (
  *   const entry of (await Deno.open('./out.tar.gz'))
  *     .readable
  *     .pipeThrough(new DecompressionStream('gzip'))
  *     .pipeThrough(new UnTarStream())
  * ) {
- *   console.log(entry.pathname)
- *   entry
- *     .readable
- *     ?.pipeTo((await Deno.create(entry.pathname)).writable)
+ *   if (entry.type === "header") {
+ *     fileWriter?.close();
+ *     fileWriter = (await Deno.create(entry.pathname)).writable.getWriter();
+ *   } else await fileWriter!.write(entry.data);
  * }
  * ```
  */
