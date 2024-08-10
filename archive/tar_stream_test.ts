@@ -246,26 +246,6 @@ Deno.test("TarStream() with invalid options", async () => {
   assertEquals(threw, true);
 });
 
-Deno.test("TarStream() with invalid pathname", async () => {
-  const readable = ReadableStream.from<TarStreamInput>([
-    { pathname: [new Uint8Array(156), new Uint8Array(0)] },
-  ]).pipeThrough(new TarStream());
-
-  let threw = false;
-  try {
-    // deno-lint-ignore no-empty
-    for await (const _ of readable) {}
-  } catch (error) {
-    threw = true;
-    assert(typeof error === "string");
-    assertEquals(
-      error,
-      "Pathnames, when provided as a Uint8Array, need to be no more than [155, 100] bytes respectively",
-    );
-  }
-  assertEquals(threw, true);
-});
-
 Deno.test("TarStream() with mismatching sizes", async () => {
   const text = new TextEncoder().encode("Hello World!");
   const readable = ReadableStream.from<TarStreamInput>([

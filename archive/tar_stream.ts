@@ -3,7 +3,7 @@
  * The interface required to provide a file.
  */
 export interface TarStreamFile {
-  pathname: string | [Uint8Array, Uint8Array];
+  pathname: string;
   size: number;
   readable: ReadableStream<Uint8Array>;
   options?: Partial<TarStreamOptions>;
@@ -13,7 +13,7 @@ export interface TarStreamFile {
  * The interface required to provide a directory.
  */
 export interface TarStreamDir {
-  pathname: string | [Uint8Array, Uint8Array];
+  pathname: string;
   options?: Partial<TarStreamOptions>;
 }
 
@@ -22,6 +22,9 @@ export interface TarStreamDir {
  * TarStream class.
  */
 export type TarStreamInput = TarStreamFile | TarStreamDir;
+type TarStreamInputInternal =
+  & (Omit<TarStreamFile, "pathname"> | Omit<TarStreamDir, "pathname">)
+  & { pathname: [Uint8Array, Uint8Array] };
 
 /**
  * The options that can go along with a file or directory.
@@ -112,6 +115,7 @@ const SLASH_CODE_POINT = "/".charCodeAt(0);
  *   .pipeTo((await Deno.create('./out.tar.gz')).writable)
  * ```
  */
+
 export class TarStream implements TransformStream<TarStreamInput, Uint8Array> {
   #readable: ReadableStream<Uint8Array>;
   #writable: WritableStream<TarStreamInput>;
@@ -121,7 +125,7 @@ export class TarStream implements TransformStream<TarStreamInput, Uint8Array> {
   constructor() {
     const { readable, writable } = new TransformStream<
       TarStreamInput,
-      TarStreamInput & { pathname: [Uint8Array, Uint8Array] }
+      TarStreamInputInternal
     >({
       transform(chunk, controller) {
         if (chunk.options && !validTarStreamOptions(chunk.options)) {
@@ -138,18 +142,7 @@ export class TarStream implements TransformStream<TarStreamInput, Uint8Array> {
           );
         }
 
-        const pathname = typeof chunk.pathname === "string"
-          ? parsePathname(chunk.pathname)
-          : function () {
-            if (
-              chunk.pathname[0].length > 155 || chunk.pathname[1].length > 100
-            ) {
-              controller.error(
-                "Pathnames, when provided as a Uint8Array, need to be no more than [155, 100] bytes respectively",
-              );
-            }
-            return chunk.pathname;
-          }();
+        const pathname = parsePathname(chunk.pathname);
 
         controller.enqueue({ ...chunk, pathname });
       },
