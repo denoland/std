@@ -30,15 +30,15 @@ export interface TarStreamOptions {
   /**
    * An octal number in ASCII
    */
-  mode: string;
+  mode: number;
   /**
    * An octal number in ASCII.
    */
-  uid: string;
+  uid: number;
   /**
    * An octal number in ASCII.
    */
-  gid: string;
+  gid: number;
   /**
    * A number of seconds since the start of epoch. Avoid negative values.
    */
@@ -163,9 +163,9 @@ export class TarStream implements TransformStream<TarStreamInput, Uint8Array> {
         const header = new Uint8Array(512);
         const size = "size" in chunk ? chunk.size : 0;
         const options: TarStreamOptions = {
-          mode: typeflag === "5" ? "755" : "644",
-          uid: "",
-          gid: "",
+          mode: typeflag === "5" ? 755 : 644,
+          uid: 0,
+          gid: 0,
           mtime: Math.floor(new Date().getTime() / 1000),
           uname: "",
           gname: "",
@@ -177,9 +177,9 @@ export class TarStream implements TransformStream<TarStreamInput, Uint8Array> {
         header.set(name); // name
         header.set(
           encoder.encode(
-            options.mode.padStart(6, "0") + " \0" + // mode
-              options.uid.padStart(6, "0") + " \0" + //uid
-              options.gid.padStart(6, "0") + " \0" + // gid
+            options.mode.toString().padStart(6, "0") + " \0" + // mode
+              options.uid.toString().padStart(6, "0") + " \0" + //uid
+              options.gid.toString().padStart(6, "0") + " \0" + // gid
               size.toString(8).padStart(size < 8 ** 11 ? 11 : 12, "0") +
               (size < 8 ** 11 ? " " : "") + // size
               options.mtime.toString(8).padStart(11, "0") + " " + // mtime
@@ -319,13 +319,19 @@ export function validTarStreamOptions(
   options: Partial<TarStreamOptions>,
 ): boolean {
   if (
-    options.mode && (options.mode.length > 6 || !/^[0-7]*$/.test(options.mode))
+    options.mode &&
+    (options.mode.toString().length > 6 ||
+      !/^[0-7]*$/.test(options.mode.toString()))
   ) return false;
   if (
-    options.uid && (options.uid.length > 6 || !/^[0-7]*$/.test(options.uid))
+    options.uid &&
+    (options.uid.toString().length > 6 ||
+      !/^[0-7]*$/.test(options.uid.toString()))
   ) return false;
   if (
-    options.gid && (options.gid.length > 6 || !/^[0-7]*$/.test(options.gid))
+    options.gid &&
+    (options.gid.toString().length > 6 ||
+      !/^[0-7]*$/.test(options.gid.toString()))
   ) return false;
   if (
     options.mtime != undefined &&

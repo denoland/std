@@ -188,20 +188,17 @@ Deno.test("parsePathname()", () => {
 Deno.test("validTarStreamOptions()", () => {
   assertEquals(validTarStreamOptions({}), true);
 
-  assertEquals(validTarStreamOptions({ mode: "" }), true);
-  assertEquals(validTarStreamOptions({ mode: "000" }), true);
-  assertEquals(validTarStreamOptions({ mode: "008" }), false);
-  assertEquals(validTarStreamOptions({ mode: "0000000" }), false);
+  assertEquals(validTarStreamOptions({ mode: 0 }), true);
+  assertEquals(validTarStreamOptions({ mode: 8 }), false);
+  assertEquals(validTarStreamOptions({ mode: 1111111 }), false);
 
-  assertEquals(validTarStreamOptions({ uid: "" }), true);
-  assertEquals(validTarStreamOptions({ uid: "000" }), true);
-  assertEquals(validTarStreamOptions({ uid: "008" }), false);
-  assertEquals(validTarStreamOptions({ uid: "0000000" }), false);
+  assertEquals(validTarStreamOptions({ uid: 0 }), true);
+  assertEquals(validTarStreamOptions({ uid: 8 }), false);
+  assertEquals(validTarStreamOptions({ uid: 1111111 }), false);
 
-  assertEquals(validTarStreamOptions({ gid: "" }), true);
-  assertEquals(validTarStreamOptions({ gid: "000" }), true);
-  assertEquals(validTarStreamOptions({ gid: "008" }), false);
-  assertEquals(validTarStreamOptions({ gid: "0000000" }), false);
+  assertEquals(validTarStreamOptions({ gid: 0 }), true);
+  assertEquals(validTarStreamOptions({ gid: 8 }), false);
+  assertEquals(validTarStreamOptions({ gid: 1111111 }), false);
 
   assertEquals(validTarStreamOptions({ mtime: 0 }), true);
   assertEquals(validTarStreamOptions({ mtime: NaN }), false);
@@ -234,7 +231,7 @@ Deno.test("validTarStreamOptions()", () => {
 
 Deno.test("TarStream() with invalid options", async () => {
   const readable = ReadableStream.from<TarStreamInput>([
-    { pathname: "potato", options: { mode: "009" } },
+    { pathname: "potato", options: { mode: 9 } },
   ]).pipeThrough(new TarStream());
 
   let threw = false;
