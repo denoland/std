@@ -45,9 +45,35 @@ export function bytesToUuid(bytes: number[] | Uint8Array): string {
  * @param uuid Value that gets converted.
  */
 export function uuidToBytes(uuid: string): Uint8Array {
-  const bytes = uuid
-    .replaceAll("-", "")
-    .match(/.{1,2}/g)!
-    .map((byte) => parseInt(byte, 16));
-  return new Uint8Array(bytes);
+  const bytes = new Uint8Array(16);
+  let i = 0;
+
+  for (const str of uuid.split("-")) {
+    const hex = parseInt(str, 16);
+    switch (str.length) {
+      case 4: {
+        bytes[i++] = (hex >>> 8) & 0xff;
+        bytes[i++] = hex & 0xff;
+        break;
+      }
+      case 8: {
+        bytes[i++] = (hex >>> 24) & 0xff;
+        bytes[i++] = (hex >>> 16) & 0xff;
+        bytes[i++] = (hex >>> 8) & 0xff;
+        bytes[i++] = hex & 0xff;
+        break;
+      }
+      case 12: {
+        bytes[i++] = (hex / 0x10000000000) & 0xff;
+        bytes[i++] = (hex / 0x100000000) & 0xff;
+        bytes[i++] = (hex >>> 24) & 0xff;
+        bytes[i++] = (hex >>> 16) & 0xff;
+        bytes[i++] = (hex >>> 8) & 0xff;
+        bytes[i++] = hex & 0xff;
+        break;
+      }
+    }
+  }
+
+  return bytes;
 }
