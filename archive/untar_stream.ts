@@ -113,17 +113,17 @@ export class UnTarStream
         const chunk of readable.pipeThrough(new FixedChunkStream(512))
       ) {
         if (chunk.length !== 512) {
-          throw new Error("Tarball has an unexpected number of bytes.");
+          throw new Error("Tarball has an unexpected number of bytes");
         }
 
         buffer.push(chunk);
         if (buffer.length > 2) yield buffer.shift()!;
       }
       if (buffer.length < 2) {
-        throw new Error("Tarball was too small to be valid.");
+        throw new Error("Tarball was too small to be valid");
       }
       if (!buffer.every((value) => value.every((x) => x === 0))) {
-        throw new Error("Tarball has invalid ending.");
+        throw new Error("Tarball has invalid ending");
       }
     }();
   }
@@ -238,7 +238,7 @@ export class UnTarStream
       const { done, value } = await this.#gen.next();
       if (done) {
         this.#lock = false;
-        throw new Error("Unexpected end of Tarball.");
+        throw new Error("Unexpected end of Tarball");
       }
       if (i === 1 && size % 512) yield value.slice(0, size % 512);
       else yield value;

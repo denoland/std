@@ -5,7 +5,7 @@ import {
   type TarStreamInput,
   validTarStreamOptions,
 } from "./tar_stream.ts";
-import { assertEquals, assertRejects } from "../assert/mod.ts";
+import { assertEquals } from "../assert/mod.ts";
 import { assert } from "../assert/assert.ts";
 
 Deno.test("TarStream() with default stream", async () => {
@@ -76,12 +76,15 @@ Deno.test("TarStream() with negative size", async () => {
   ])
     .pipeThrough(new TarStream());
 
-  await assertRejects(
-    async function () {
-      await Array.fromAsync(readable);
-    },
-    "Invalid Size Provided! Size cannot exceed 64 Gibs.",
-  );
+  let threw = false;
+  try {
+    await Array.fromAsync(readable);
+  } catch (error) {
+    threw = true;
+    assert(typeof error === "string");
+    assertEquals(error, "Size cannot exceed 64 Gibs");
+  }
+  assertEquals(threw, true);
 });
 
 Deno.test("TarStream() with 65 GiB size", async () => {
@@ -102,12 +105,15 @@ Deno.test("TarStream() with 65 GiB size", async () => {
   ])
     .pipeThrough(new TarStream());
 
-  await assertRejects(
-    async function () {
-      await Array.fromAsync(readable);
-    },
-    "Invalid Size Provided! Size cannot exceed 64 Gibs.",
-  );
+  let threw = false;
+  try {
+    await Array.fromAsync(readable);
+  } catch (error) {
+    threw = true;
+    assert(typeof error === "string");
+    assertEquals(error, "Size cannot exceed 64 Gibs");
+  }
+  assertEquals(threw, true);
 });
 
 Deno.test("TarStream() with NaN size", async () => {
@@ -128,12 +134,15 @@ Deno.test("TarStream() with NaN size", async () => {
   ])
     .pipeThrough(new TarStream());
 
-  await assertRejects(
-    async function () {
-      await Array.fromAsync(readable);
-    },
-    "Invalid Size Provided! Size cannot exceed 64 Gibs.",
-  );
+  let threw = false;
+  try {
+    await Array.fromAsync(readable);
+  } catch (error) {
+    threw = true;
+    assert(typeof error === "string");
+    assertEquals(error, "Size cannot exceed 64 Gibs");
+  }
+  assertEquals(threw, true);
 });
 
 Deno.test("parsePathname()", () => {
@@ -235,7 +244,7 @@ Deno.test("TarStream() with invalid options", async () => {
   } catch (error) {
     threw = true;
     assert(typeof error === "string");
-    assertEquals(error, "Invalid Options Provided!");
+    assertEquals(error, "Invalid TarStreamOptions Provided");
   }
   assertEquals(threw, true);
 });
@@ -254,7 +263,7 @@ Deno.test("TarStream() with invalid pathname", async () => {
     assert(typeof error === "string");
     assertEquals(
       error,
-      "Invalid Pathname. Pathnames, when provided as a Uint8Array, need to be no more than [155, 100] bytes respectively.",
+      "Pathnames, when provided as a Uint8Array, need to be no more than [155, 100] bytes respectively",
     );
   }
   assertEquals(threw, true);
@@ -279,7 +288,7 @@ Deno.test("TarStream() with mismatching sizes", async () => {
     assert(error instanceof RangeError);
     assertEquals(
       error.message,
-      "Provided size did not match bytes read from provided iterable",
+      "Provided size did not match bytes read from provided readable",
     );
   }
   assertEquals(threw, true);
@@ -309,7 +318,7 @@ Deno.test("parsePathname() with too long path", () => {
     assert(error instanceof Error);
     assertEquals(
       error.message,
-      "Invalid Pathname! Pathname needs to be split-able on a forward slash separator into [155, 100] bytes respectively.",
+      "Pathname needs to be split-able on a forward slash separator into [155, 100] bytes respectively",
     );
   }
   assertEquals(threw, true);

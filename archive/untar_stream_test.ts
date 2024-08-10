@@ -153,7 +153,7 @@ Deno.test("UnTarStream() with invalid size", async () => {
   } catch (error) {
     threw = true;
     assert(error instanceof Error);
-    assertEquals(error.message, "Tarball has an unexpected number of bytes.");
+    assertEquals(error.message, "Tarball has an unexpected number of bytes");
   }
   assertEquals(threw, true);
 });
@@ -186,7 +186,7 @@ Deno.test("UnTarStream() with invalid ending", async () => {
     assert(error instanceof Error);
     assertEquals(
       error.message,
-      "Tarball has invalid ending.",
+      "Tarball has invalid ending",
     );
   }
   assertEquals(threw, true);
@@ -204,7 +204,7 @@ Deno.test("UnTarStream() with too small size", async () => {
   } catch (error) {
     threw = true;
     assert(error instanceof Error);
-    assertEquals(error.message, "Tarball was too small to be valid.");
+    assertEquals(error.message, "Tarball was too small to be valid");
   }
   assertEquals(threw, true);
 });

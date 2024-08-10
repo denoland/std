@@ -125,7 +125,7 @@ export class TarStream implements TransformStream<TarStreamInput, Uint8Array> {
     >({
       transform(chunk, controller) {
         if (chunk.options && !validTarStreamOptions(chunk.options)) {
-          return controller.error("Invalid Options Provided!");
+          return controller.error("Invalid TarStreamOptions Provided");
         }
 
         if (
@@ -134,7 +134,7 @@ export class TarStream implements TransformStream<TarStreamInput, Uint8Array> {
             chunk.size.toString() === "NaN")
         ) {
           return controller.error(
-            "Invalid Size Provided! Size cannot exceed 64 Gibs.",
+            "Size cannot exceed 64 Gibs",
           );
         }
 
@@ -145,7 +145,7 @@ export class TarStream implements TransformStream<TarStreamInput, Uint8Array> {
               chunk.pathname[0].length > 155 || chunk.pathname[1].length > 100
             ) {
               controller.error(
-                "Invalid Pathname. Pathnames, when provided as a Uint8Array, need to be no more than [155, 100] bytes respectively.",
+                "Pathnames, when provided as a Uint8Array, need to be no more than [155, 100] bytes respectively",
               );
             }
             return chunk.pathname;
@@ -213,7 +213,7 @@ export class TarStream implements TransformStream<TarStreamInput, Uint8Array> {
           }
           if (chunk.size !== size) {
             throw new RangeError(
-              "Provided size did not match bytes read from provided iterable",
+              "Provided size did not match bytes read from provided readable",
             );
           }
           if (chunk.size % 512) {
@@ -306,7 +306,7 @@ export function parsePathname(
   const prefix = name.slice(0, suitableSlashPos);
   if (prefix.length > 155) {
     throw new Error(
-      "Invalid Pathname! Pathname needs to be split-able on a forward slash separator into [155, 100] bytes respectively.",
+      "Pathname needs to be split-able on a forward slash separator into [155, 100] bytes respectively",
     );
   }
   return [prefix, name.slice(suitableSlashPos + 1)];
