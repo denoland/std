@@ -11,10 +11,8 @@ export interface OldStyleFormat {
   gid: string;
   size: number;
   mtime: number;
-  checksum: string;
   typeflag: string;
   linkname: string;
-  pad: Uint8Array;
 }
 
 /**
@@ -27,7 +25,6 @@ export interface PosixUstarFormat {
   gid: string;
   size: number;
   mtime: number;
-  checksum: string;
   typeflag: string;
   linkname: string;
   magic: string;
@@ -37,7 +34,6 @@ export interface PosixUstarFormat {
   devmajor: string;
   devminor: string;
   prefix: string;
-  pad: Uint8Array;
 }
 
 /**
@@ -158,13 +154,11 @@ export class UnTarStream
         gid: decoder.decode(value.slice(116, 124 - 2)),
         size: parseInt(decoder.decode(value.slice(124, 136)).trimEnd(), 8),
         mtime: parseInt(decoder.decode(value.slice(136, 148 - 1)), 8),
-        checksum: decoder.decode(value.slice(148, 156 - 2)),
         typeflag: decoder.decode(value.slice(156, 157)),
         linkname: decoder.decode(value.slice(157, 257)).replaceAll(
           "\0",
           "",
         ),
-        pad: value.slice(257),
       };
       if (header.typeflag === "\0") header.typeflag = "0";
       // "ustar\u000000"
@@ -188,7 +182,6 @@ export class UnTarStream
             "",
           ),
           prefix: decoder.decode(value.slice(345, 500)).split("\0")[0]!,
-          pad: value.slice(500),
         };
       }
 
