@@ -5,8 +5,7 @@
 /**
  * HTTP Headers with status permanent
  *
- * > [!WARNING]
- * > **UNSTABLE**: New API, yet to be vetted.
+
  *
  * @experimental
  *
@@ -1198,8 +1197,7 @@ export const HEADER = {
 /**
  * A HTTP Header
  *
- * > [!WARNING]
- * > **UNSTABLE**: New API, yet to be vetted.
+
  *
  * @experimental
  */

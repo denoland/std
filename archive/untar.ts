@@ -44,8 +44,7 @@ import type { Reader } from "@std/io/types";
  * Extend TarMeta with the `linkName` property so that readers can access
  * symbolic link values without polluting the world of archive writers.
  *
- * > [!WARNING]
- * > **UNSTABLE**: New API, yet to be vetted.
+
  *
  * @experimental
  */
@@ -57,8 +56,7 @@ export interface TarMetaWithLinkName extends TarMeta {
 /**
  * Tar header with raw, unprocessed bytes as values.
  *
- * > [!WARNING]
- * > **UNSTABLE**: New API, yet to be vetted.
+
  *
  * @experimental
  */
@@ -100,8 +98,7 @@ function parseHeader(buffer: Uint8Array): TarHeader {
 /**
  * Tar entry
  *
- * > [!WARNING]
- * > **UNSTABLE**: New API, yet to be vetted.
+
  *
  * @experimental
  */
@@ -110,8 +107,7 @@ export interface TarEntry extends TarMetaWithLinkName {}
 /**
  * Contains tar header metadata and a reader to the entry's body.
  *
- * > [!WARNING]
- * > **UNSTABLE**: New API, yet to be vetted.
+
  *
  * @experimental
  */
@@ -245,8 +241,7 @@ export class TarEntry implements Reader {
  * }
  * ```
  *
- * > [!WARNING]
- * > **UNSTABLE**: New API, yet to be vetted.
+
  *
  * @experimental
  */

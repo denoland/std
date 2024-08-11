@@ -44,8 +44,7 @@ export type { TarInfo, TarMeta };
 /**
  * Options for {@linkcode Tar.append}.
  *
- * > [!WARNING]
- * > **UNSTABLE**: New API, yet to be vetted.
+
  *
  * @experimental
  */
@@ -125,8 +124,7 @@ function formatHeader(data: TarData): Uint8Array {
 /**
  * Base interface for {@linkcode TarDataWithSource}.
  *
- * > [!WARNING]
- * > **UNSTABLE**: New API, yet to be vetted.
+
  *
  * @experimental
  */
@@ -179,8 +177,7 @@ export interface TarData {
 /**
  * Tar data interface for {@linkcode Tar.data}.
  *
- * > [!WARNING]
- * > **UNSTABLE**: New API, yet to be vetted.
+
  *
  * @experimental
  */
@@ -250,8 +247,7 @@ export interface TarDataWithSource extends TarData {
  * writer.close();
  * ```
  *
- * > [!WARNING]
- * > **UNSTABLE**: New API, yet to be vetted.
+
  *
  * @experimental
  */

@@ -15,8 +15,7 @@ function splitByLast(value: string, separator: string): [string, string] {
  * Returns a promise with the signed cookie value from the given cryptographic
  * key.
  *
- * > [!WARNING]
- * > **UNSTABLE**: New API, yet to be vetted.
+
  *
  * @experimental
  *
@@ -58,8 +57,7 @@ export async function signCookie(
 /**
  * Returns a promise of a boolean indicating whether the signed cookie is valid.
  *
- * > [!WARNING]
- * > **UNSTABLE**: New API, yet to be vetted.
+
  *
  * @experimental
  *
@@ -102,8 +100,7 @@ export async function verifySignedCookie(
 /**
  * Parses a signed cookie to get its value.
  *
- * > [!WARNING]
- * > **UNSTABLE**: New API, yet to be vetted.
+
  *
  * Important: always verify the cookie using {@linkcode verifySignedCookie} first.
  *

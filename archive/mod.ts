@@ -62,8 +62,7 @@
  * writer.close();
  * ```
  *
- * > [!WARNING]
- * > **UNSTABLE**: New API, yet to be vetted.
+
  *
  * @experimental
  *

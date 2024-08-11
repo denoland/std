@@ -3,8 +3,7 @@
 /**
  * Request handler for {@linkcode Route}.
  *
- * > [!WARNING]
- * > **UNSTABLE**: New API, yet to be vetted.
+
  *
  * @experimental
  *
@@ -23,8 +22,7 @@ export type Handler = (
 /**
  * Route configuration for {@linkcode route}.
  *
- * > [!WARNING]
- * > **UNSTABLE**: New API, yet to be vetted.
+
  *
  * @experimental
  */
@@ -48,8 +46,7 @@ export interface Route {
 /**
  * Routes requests to different handlers based on the request path and method.
  *
- * > [!WARNING]
- * > **UNSTABLE**: New API, yet to be vetted.
+
  *
  * @experimental
  *

@@ -2,8 +2,7 @@
 /**
  * Gets the IPv4 or IPv6 network address of the machine.
  *
- * > [!WARNING]
- * > **UNSTABLE**: New API, yet to be vetted.
+
  *
  * This is inspired by the util of the same name in
  * {@linkcode https://www.npmjs.com/package/serve | npm:serve}.
