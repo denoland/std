@@ -139,12 +139,14 @@ export class UnTarStream
       if (done) break;
 
       // Validate Checksum
-      const checksum = value.slice();
-      checksum.set(new Uint8Array(8).fill(32), 148);
-      if (
-        checksum.reduce((x, y) => x + y) !==
-          parseInt(decoder.decode(value.slice(148, 156 - 2)), 8)
-      ) throw new SyntaxError("Tarball header failed to pass checksum");
+      const checksum = parseInt(
+        decoder.decode(value.subarray(148, 156 - 2)),
+        8,
+      );
+      value.fill(32, 148, 156);
+      if (value.reduce((x, y) => x + y) !== checksum) {
+        throw new SyntaxError("Tarball header failed to pass checksum");
+      }
 
       // Decode Header
       let header: OldStyleFormat | PosixUstarFormat = {
