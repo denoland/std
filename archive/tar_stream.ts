@@ -6,7 +6,7 @@ export interface TarStreamFile {
   pathname: string;
   size: number;
   readable: ReadableStream<Uint8Array>;
-  options?: Partial<TarStreamOptions>;
+  options?: TarStreamOptions;
 }
 
 /**
@@ -14,7 +14,7 @@ export interface TarStreamFile {
  */
 export interface TarStreamDir {
   pathname: string;
-  options?: Partial<TarStreamOptions>;
+  options?: TarStreamOptions;
 }
 
 /**
@@ -33,35 +33,41 @@ export interface TarStreamOptions {
   /**
    * An octal literal.
    */
-  mode: number;
+  mode?: number;
   /**
    * An octal literal.
+   * @default {0}
    */
-  uid: number;
+  uid?: number;
   /**
    * An octal literal.
+   * @default {0}
    */
-  gid: number;
+  gid?: number;
   /**
    * A number of seconds since the start of epoch. Avoid negative values.
    */
-  mtime: number;
+  mtime?: number;
   /**
    * An ASCII string. Should be used in preference of uid.
+   * @default {''}
    */
-  uname: string;
+  uname?: string;
   /**
    * An ASCII string. Should be used in preference of gid.
+   * @default {''}
    */
-  gname: string;
+  gname?: string;
   /**
    * The major number for character device.
+   * @default {''}
    */
-  devmajor: string;
+  devmajor?: string;
   /**
    * The minor number for block device entry.
+   * @default {''}
    */
-  devminor: string;
+  devminor?: string;
 }
 
 const SLASH_CODE_POINT = "/".charCodeAt(0);
@@ -155,7 +161,7 @@ export class TarStream implements TransformStream<TarStreamInput, Uint8Array> {
         const typeflag = "size" in chunk ? "0" : "5";
         const header = new Uint8Array(512);
         const size = "size" in chunk ? chunk.size : 0;
-        const options: TarStreamOptions = {
+        const options: Required<TarStreamOptions> = {
           mode: typeflag === "5" ? 755 : 644,
           uid: 0,
           gid: 0,
@@ -309,7 +315,7 @@ export function parsePathname(
  * provided are in the correct format, otherwise returns false.
  */
 export function validTarStreamOptions(
-  options: Partial<TarStreamOptions>,
+  options: TarStreamOptions,
 ): boolean {
   if (
     options.mode &&
