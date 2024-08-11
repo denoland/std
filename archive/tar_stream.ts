@@ -3,9 +3,21 @@
  * The interface required to provide a file.
  */
 export interface TarStreamFile {
+  /**
+   * The name of the file.
+   */
   pathname: string;
+  /**
+   * The size of the file.
+   */
   size: number;
+  /**
+   * The contents of the file.
+   */
   readable: ReadableStream<Uint8Array>;
+  /**
+   * The metadata of the file.
+   */
   options?: TarStreamOptions;
 }
 
@@ -13,7 +25,13 @@ export interface TarStreamFile {
  * The interface required to provide a directory.
  */
 export interface TarStreamDir {
+  /**
+   * The name of the directory.
+   */
   pathname: string;
+  /**
+   * The metadata of the directory.
+   */
   options?: TarStreamOptions;
 }
 

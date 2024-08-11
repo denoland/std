@@ -5,13 +5,37 @@ import { FixedChunkStream } from "@std/streams";
  * The original tar	archive	header format.
  */
 export interface OldStyleFormat {
+  /**
+   * The name of the entry.
+   */
   name: string;
+  /**
+   * The mode of the entry.
+   */
   mode: string;
+  /**
+   * The uid of the entry.
+   */
   uid: string;
+  /**
+   * The gid of the entry.
+   */
   gid: string;
+  /**
+   * The size of the entry.
+   */
   size: number;
+  /**
+   * The mtime of the entry.
+   */
   mtime: number;
+  /**
+   * The typeflag of the entry.
+   */
   typeflag: string;
+  /**
+   * The linkname of the entry.
+   */
   linkname: string;
 }
 
@@ -19,20 +43,65 @@ export interface OldStyleFormat {
  * The POSIX ustar archive header format.
  */
 export interface PosixUstarFormat {
+  /**
+   * The latter half of the name of the entry.
+   */
   name: string;
+  /**
+   * The mode of the entry.
+   */
   mode: string;
+  /**
+   * The uid of the entry.
+   */
   uid: string;
+  /**
+   * The gid of the entry.
+   */
   gid: string;
+  /**
+   * The size of the entry.
+   */
   size: number;
+  /**
+   * The mtime of the entry.
+   */
   mtime: number;
+  /**
+   * The typeflag of the entry.
+   */
   typeflag: string;
+  /**
+   * The linkname of the entry.
+   */
   linkname: string;
+  /**
+   * The magic number of the entry.
+   */
   magic: string;
+  /**
+   * The version number of the entry.
+   */
   version: string;
+  /**
+   * The uname of the entry.
+   */
   uname: string;
+  /**
+   * The gname of the entry.
+   */
   gname: string;
+  /**
+   * The devmajor of the entry.
+   */
   devmajor: string;
+  /**
+   * The devminor of the entry.
+   */
   devminor: string;
+  /**
+   * The former half of the name of the entry.
+   */
   prefix: string;
 }
 
@@ -40,8 +109,17 @@ export interface PosixUstarFormat {
  * The header of an entry in the archive.
  */
 export interface TarStreamHeader {
+  /**
+   * The type 'header' indicating the start of a new entry.
+   */
   type: "header";
+  /**
+   * The pathname of the entry.
+   */
   pathname: string;
+  /**
+   * The header of the entry.
+   */
   header: OldStyleFormat | PosixUstarFormat;
 }
 
@@ -49,7 +127,14 @@ export interface TarStreamHeader {
  * The data belonging to the last entry returned.
  */
 export interface TarStreamData {
+  /**
+   * The type 'data' indicating a chunk of content from the last 'header'
+   * resolved.
+   */
   type: "data";
+  /**
+   * A chunk of content of from the entry.
+   */
   data: Uint8Array;
 }
 
