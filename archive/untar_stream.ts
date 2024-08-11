@@ -150,14 +150,14 @@ export class UnTarStream
 
       // Decode Header
       let header: OldStyleFormat | PosixUstarFormat = {
-        name: decoder.decode(value.slice(0, 100)).split("\0")[0]!,
-        mode: decoder.decode(value.slice(100, 108 - 2)),
-        uid: decoder.decode(value.slice(108, 116 - 2)),
-        gid: decoder.decode(value.slice(116, 124 - 2)),
-        size: parseInt(decoder.decode(value.slice(124, 136)).trimEnd(), 8),
-        mtime: parseInt(decoder.decode(value.slice(136, 148 - 1)), 8),
-        typeflag: decoder.decode(value.slice(156, 157)),
-        linkname: decoder.decode(value.slice(157, 257)).replaceAll(
+        name: decoder.decode(value.subarray(0, 100)).split("\0")[0]!,
+        mode: decoder.decode(value.subarray(100, 108 - 2)),
+        uid: decoder.decode(value.subarray(108, 116 - 2)),
+        gid: decoder.decode(value.subarray(116, 124 - 2)),
+        size: parseInt(decoder.decode(value.subarray(124, 136)).trimEnd(), 8),
+        mtime: parseInt(decoder.decode(value.subarray(136, 148 - 1)), 8),
+        typeflag: decoder.decode(value.subarray(156, 157)),
+        linkname: decoder.decode(value.subarray(157, 257)).replaceAll(
           "\0",
           "",
         ),
@@ -171,19 +171,19 @@ export class UnTarStream
       ) {
         header = {
           ...header,
-          magic: decoder.decode(value.slice(257, 263)),
-          version: decoder.decode(value.slice(263, 265)),
-          uname: decoder.decode(value.slice(265, 297)).replaceAll("\0", ""),
-          gname: decoder.decode(value.slice(297, 329)).replaceAll("\0", ""),
-          devmajor: decoder.decode(value.slice(329, 337)).replaceAll(
+          magic: decoder.decode(value.subarray(257, 263)),
+          version: decoder.decode(value.subarray(263, 265)),
+          uname: decoder.decode(value.subarray(265, 297)).replaceAll("\0", ""),
+          gname: decoder.decode(value.subarray(297, 329)).replaceAll("\0", ""),
+          devmajor: decoder.decode(value.subarray(329, 337)).replaceAll(
             "\0",
             "",
           ),
-          devminor: decoder.decode(value.slice(337, 345)).replaceAll(
+          devminor: decoder.decode(value.subarray(337, 345)).replaceAll(
             "\0",
             "",
           ),
-          prefix: decoder.decode(value.slice(345, 500)).split("\0")[0]!,
+          prefix: decoder.decode(value.subarray(345, 500)).split("\0")[0]!,
         };
       }
 
@@ -206,7 +206,7 @@ export class UnTarStream
     for (let i = Math.ceil(size / 512); i > 0; --i) {
       const { done, value } = await this.#gen.next();
       if (done) throw new Error("Unexpected end of Tarball");
-      if (i === 1 && size % 512) yield value.slice(0, size % 512);
+      if (i === 1 && size % 512) yield value.subarray(0, size % 512);
       else yield value;
     }
   }
