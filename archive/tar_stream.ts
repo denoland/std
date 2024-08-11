@@ -31,15 +31,15 @@ type TarStreamInputInternal =
  */
 export interface TarStreamOptions {
   /**
-   * An octal number in ASCII
+   * An octal literal.
    */
   mode: number;
   /**
-   * An octal number in ASCII.
+   * An octal literal.
    */
   uid: number;
   /**
-   * An octal number in ASCII.
+   * An octal literal.
    */
   gid: number;
   /**
