@@ -7,7 +7,6 @@ _fpr = "_fpr"
 
 [default.extend-words]
 ws = "ws"
-ue = "ue"
 
 [files]
 extend-exclude = [
