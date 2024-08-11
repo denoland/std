@@ -152,7 +152,7 @@ export class UnTarStream
 
       // Decode Header
       let header: OldStyleFormat | PosixUstarFormat = {
-        name: decoder.decode(value.slice(0, 100)).replaceAll("\0", ""),
+        name: decoder.decode(value.slice(0, 100)).split("\0")[0]!,
         mode: decoder.decode(value.slice(100, 108 - 2)),
         uid: decoder.decode(value.slice(108, 116 - 2)),
         gid: decoder.decode(value.slice(116, 124 - 2)),
@@ -187,10 +187,7 @@ export class UnTarStream
             "\0",
             "",
           ),
-          prefix: decoder.decode(value.slice(345, 500)).replaceAll(
-            "\0",
-            "",
-          ),
+          prefix: decoder.decode(value.slice(345, 500)).split("\0")[0]!,
           pad: value.slice(500),
         };
       }
